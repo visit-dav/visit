@@ -89,6 +89,16 @@ using std::map;
 using std::vector;
 
 //
+// This macro can be used to subselect out a portion of a csg
+// region for debugging purposes.
+//
+#if 0
+#define SWAP_REGION if (reg == 200) reg = 100
+#else
+#define SWAP_REGION
+#endif
+
+//
 // Since we're passing Silo's CSG rep directly to this
 // class, we need to know these definitions. Eventually,
 // we should go through some kind of conversion from Silo's
@@ -167,6 +177,13 @@ typedef enum {
     FUNC_SPHERE,
     FUNC_UNKNOWN_IMPLICIT
 } ImplicitFuncType;
+
+inline double
+relative_diff(double val1, double val2)
+{
+    return fabs(val1) + fabs(val2) == 0. ? 0. :
+               fabs(val1 - val2) / (fabs(val1) + fabs(val2));
+}
 
 static ImplicitFuncType GetImplicitFuncType(const vtkObject *obj)
 {
@@ -2187,20 +2204,28 @@ vtkCSGGrid::DiscretizeSpace(
 //   surfaces is above the internal limit. I converted the class to use
 //   vtkCSGFixedLengthBitField instead of FixedLengthBitField.
 //
+//   Eric Brugger, Tue Dec  2 17:43:00 PST 2014
+//   I modified the multipass discretization to partition space for a
+//   specific region with only the unique boundaries. It now finds all the
+//   unique boundaries, then creates a new region tree for the specific
+//   region that uses only the unique boundaries and then uses it to
+//   discretize the region.
+//
 // ****************************************************************************
 
 bool
 vtkCSGGrid::EvaluateRegionBits(int reg, vtkCSGFixedLengthBitField &bits)
 {
-    int leftID  = leftIds[reg];
-    int rightID = rightIds[reg];
+    SWAP_REGION;
+    int leftID  = leftIds2[reg];
+    int rightID = rightIds2[reg];
 
-    switch (regTypeFlags[reg])
+    switch (regTypeFlags2[reg])
     {
       case DBCSG_INNER:
-        return bits.TestBit(zoneMap[leftID]);
+        return bits.TestBit(leftID);
       case DBCSG_OUTER:
-        return ! bits.TestBit(zoneMap[leftID]);
+        return ! bits.TestBit(leftID);
       case DBCSG_COMPLIMENT:
         return ! EvaluateRegionBits(leftID, bits);
       case DBCSG_UNION:
@@ -2232,12 +2257,19 @@ vtkCSGGrid::EvaluateRegionBits(int reg, vtkCSGFixedLengthBitField &bits)
 // Creation:    April 3, 2014
 //
 // Modifications:
+//   Eric Brugger, Tue Dec  2 17:43:00 PST 2014
+//   I modified the multipass discretization to partition space for a
+//   specific region with only the unique boundaries. It now finds all the
+//   unique boundaries, then creates a new region tree for the specific
+//   region that uses only the unique boundaries and then uses it to
+//   discretize the region.
 //
 // ****************************************************************************
 
 void
 vtkCSGGrid::GetRegionBounds(int reg, std::vector<int> &bounds)
 {
+    SWAP_REGION;
     int leftID  = leftIds[reg];
     int rightID = rightIds[reg];
 
@@ -2270,61 +2302,137 @@ vtkCSGGrid::GetRegionBounds(int reg, std::vector<int> &bounds)
 //   Print the boundary tree for the specified region.
 //
 // Arguments:
-//   reg        The region we're printing
-//   indent     The indentation level
+//   reg          The region we're printing
+//   leftIds      The left ids of the tree.
+//   rightIds     The right ids of the tree.
+//   regTypeFlags The region type flags of the tree.
+//   indent       The indentation level
 //
 // Programmer:  Eric Brugger
 // Creation:    November 24, 2014
+//
+// Modifications:
+//   Eric Brugger, Tue Dec  2 17:43:00 PST 2014
+//   I modified the multipass discretization to partition space for a
+//   specific region with only the unique boundaries. It now finds all the
+//   unique boundaries, then creates a new region tree for the specific
+//   region that uses only the unique boundaries and then uses it to
+//   discretize the region.
+//
+// ****************************************************************************
+
+void
+vtkCSGGrid::PrintRegionTree(int reg, int *leftIds, int *rightIds,
+    int *regTypeFlags, int indent)
+{
+    SWAP_REGION;
+    int leftID  = leftIds[reg];
+    int rightID = rightIds[reg];
+
+    for (int i = 0; i < indent; i++)
+        debug5 << "  ";
+    debug5 << indent << ":" << reg << ":";
+
+    switch (regTypeFlags[reg])
+    {
+      case DBCSG_INNER:
+        debug5 << "Inner:" << leftID << endl;
+        break;
+      case DBCSG_OUTER:
+        debug5 << "Outer:" << leftID << endl;
+        break;
+      case DBCSG_COMPLIMENT:
+        debug5 << "Compliment:" << endl;
+        PrintRegionTree(leftID, leftIds, rightIds, regTypeFlags, indent+1);
+        break;
+      case DBCSG_UNION:
+        debug5 << "Union:" << endl;
+        PrintRegionTree(leftID, leftIds, rightIds, regTypeFlags, indent+1);
+        PrintRegionTree(rightID, leftIds, rightIds, regTypeFlags, indent+1);
+        break;
+      case DBCSG_INTERSECT:
+        debug5 << "Intersect:" << endl;
+        PrintRegionTree(leftID, leftIds, rightIds, regTypeFlags, indent+1);
+        PrintRegionTree(rightID, leftIds, rightIds, regTypeFlags, indent+1);
+        break;
+      case DBCSG_DIFF:
+        debug5 << "Diff:" << endl;
+        PrintRegionTree(leftID, leftIds, rightIds, regTypeFlags, indent+1);
+        PrintRegionTree(rightID, leftIds, rightIds, regTypeFlags, indent+1);
+        break;
+      case DBCSG_XFORM:
+        debug5 << "Xform:" << endl;
+        break;
+      case DBCSG_SWEEP:
+        debug5 << "Sweep:" << endl;
+        break;
+      default:
+        debug5 << "Unknown:" << endl;
+        break;
+    }
+}
+
+// ****************************************************************************
+// Method:  vtkCSGGrid::GetRegionTree
+//
+// Purpose:
+//   Get the tree associated for the specified region.
+//
+// Arguments:
+//   reg          The region we're getting the tree for.
+//
+// Programmer:  Eric Brugger
+// Creation:    December 2, 2014
 //
 // Modifications:
 //
 // ****************************************************************************
 
 void
-vtkCSGGrid::PrintRegionTree(int reg, int indent)
+vtkCSGGrid::GetRegionTree(int reg)
 {
+    SWAP_REGION;
     int leftID  = leftIds[reg];
     int rightID = rightIds[reg];
 
-    for (int i = 0; i < indent; i++)
-        cerr << "  ";
-    cerr << indent << ":" << reg << ":";
-
+    int reg2 = numRegions2;
     switch (regTypeFlags[reg])
     {
       case DBCSG_INNER:
-        cerr << "Inner:" << leftID << endl;
+        leftIds2[reg2] = zoneMap[leftID];
+        if (regionBounds2[zoneMap2[leftID]*11] < 0)
+            regTypeFlags2[reg2] = DBCSG_OUTER;
+        else
+            regTypeFlags2[reg2] = DBCSG_INNER;
+        numRegions2++;
         break;
       case DBCSG_OUTER:
-        cerr << "Outer:" << leftID << endl;
+        leftIds2[reg2] = zoneMap[leftID];
+        if (regionBounds2[zoneMap2[leftID]*11] < 0)
+            regTypeFlags2[reg2] = DBCSG_INNER;
+        else
+            regTypeFlags2[reg2] = DBCSG_OUTER;
+        numRegions2++;
         break;
       case DBCSG_COMPLIMENT:
-        cerr << "Compliment:" << endl;
-        PrintRegionTree(leftID, indent+1);
+        regTypeFlags2[reg2] = regTypeFlags[reg];
+        numRegions2++;
+        leftIds2[reg2] = numRegions2;
+        GetRegionTree(leftID);
         break;
       case DBCSG_UNION:
-        cerr << "Union:" << endl;
-        PrintRegionTree(leftID, indent+1);
-        PrintRegionTree(rightID, indent+1);
-        break;
       case DBCSG_INTERSECT:
-        cerr << "Intersect:" << endl;
-        PrintRegionTree(leftID, indent+1);
-        PrintRegionTree(rightID, indent+1);
-        break;
       case DBCSG_DIFF:
-        cerr << "Diff:" << endl;
-        PrintRegionTree(leftID, indent+1);
-        PrintRegionTree(rightID, indent+1);
+        regTypeFlags2[reg2] = regTypeFlags[reg];
+        numRegions2++;
+        leftIds2[reg2] = numRegions2;
+        GetRegionTree(leftID);
+        rightIds2[reg2] = numRegions2;
+        GetRegionTree(rightID);
         break;
       case DBCSG_XFORM:
-        cerr << "Xform:" << endl;
-        break;
       case DBCSG_SWEEP:
-        cerr << "Sweep:" << endl;
-        break;
       default:
-        cerr << "Unknown:" << endl;
         break;
     }
 }
@@ -2493,6 +2601,282 @@ vtkCSGGrid::SplitGrid(vtkRectilinearGrid *rgrid, const int nBounds,
 }
 
 // ****************************************************************************
+// Method:  CompareRegionBounds
+//
+// Purpose:
+//   Compare two region boundaries for use in a qsort call.
+//
+// Returns:     An integer indicating if the first boundary is less than,
+//              equal to, or greater than the second boundary.
+//
+// Arguments:
+//   val1       Pointer to the first boundary.
+//   val2       Pointer to the second boundary.
+//
+// Programmer:  Eric Brugger
+// Creation:    December 2, 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static int
+CompareRegionBounds(const void *val1, const void *val2)
+{
+    double *dval1 = (double *)val1;
+    double *dval2 = (double *)val2;
+    int i = 0;
+    for (; i < 10; i++)
+    {
+        if (relative_diff(dval1[1+i], dval2[1+i]) > 0.0001)
+            break;
+    }
+    if (i == 10)
+        return 0;
+    if (dval1[1+i] < dval2[1+i])
+        return -1;
+    else
+        return +1;
+}
+
+// ****************************************************************************
+// Method:  vtkCSGGrid::ExtractRegionBounds
+//
+// Purpose:
+//   Extract the boundary equations for the given region.
+//
+// Returns:  A boolean indicating success or failure.
+//
+// Arguments:
+//   specificZone   The region to extract the boundary equations for.
+//   nRegionBounds  The returned number of boundary equations.
+//   regionBounds   The returned boundary equations.
+//
+// Programmer:  Eric Brugger
+// Creation:    December 2, 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+vtkCSGGrid::ExtractRegionBounds(int specificZone, int &nRegionBounds,
+    double *&regionBounds)
+{
+    //
+    // Determine the unique set of bounds referenced by this region.
+    // First we create a list of all the bounds referenced by the region,
+    // then we sort them and then eliminate duplicates. The duplicates
+    // will be next to each other once they are sorted.
+    //
+    std::vector<int> bounds;
+    GetRegionBounds(gridZones[specificZone], bounds);
+    std::sort(bounds.begin(), bounds.end());
+
+    nRegionBounds = 0;
+    regionBounds2 = new double[11*bounds.size()];
+
+    int lastGridBound = -1;
+    for (size_t i = 0; i < bounds.size(); i++)
+    {
+        if (bounds[i] != lastGridBound)
+        {
+            lastGridBound = bounds[i];
+            bounds[nRegionBounds] = bounds[i];
+            regionBounds2[nRegionBounds*11] = 1.;
+            for (int j = 0; j < 10; j++)
+                regionBounds2[nRegionBounds*11+1+j] =
+                    gridBoundaries[lastGridBound*10+j];
+            nRegionBounds++;
+        }
+    }
+    bounds.resize(nRegionBounds);
+
+    debug5 << "Original bounds: nBounds=" << nRegionBounds << endl;
+    for (int i = 0; i < nRegionBounds; i++)
+        debug5 << "bound[" << i << "]" << bounds[i] << ":="
+               << regionBounds2[i*11+1] << ","
+               << regionBounds2[i*11+2] << ","
+               << regionBounds2[i*11+3] << ","
+               << regionBounds2[i*11+4] << ","
+               << regionBounds2[i*11+5] << ","
+               << regionBounds2[i*11+6] << ","
+               << regionBounds2[i*11+7] << ","
+               << regionBounds2[i*11+8] << ","
+               << regionBounds2[i*11+9] << ","
+               << regionBounds2[i*11+10] << endl;
+
+    //
+    // We want to eliminate duplicate boundaries. Duplicates create extra
+    // extremely thin zones since the first clip isn't exactly on the
+    // boundary and then when it gets clipped again, extremely thin zones
+    // are created.
+    //
+
+    //
+    // First, we want to find duplicate boundaries. If the coefficients of
+    // two boundaries match then we have a match, but we also have a match
+    // if the coefficients are all the opposite sign. We can detect the
+    // opposite sign case by forcing them all into a cannonical format
+    // where the first non-zero coefficient is positive.  We do that right
+    // here. We make the boundary number negative when we negate all the
+    // coefficients so that we can switch the inside / outside test later
+    // on.
+    //
+    for (int i = 0; i < nRegionBounds; i++)
+    {
+        bool firstNegative = false;
+        int j;
+        for (j = 1; j < 11; j++)
+        {
+            if (regionBounds2[i*11+j] != 0)
+            {
+                if (regionBounds2[i*11+j] < 0.)
+                {
+                    firstNegative = true;
+                }
+                break;
+            }
+        }
+        if (firstNegative)
+        {
+            regionBounds2[i*11] = -1.;
+            for (; j < 11; j++)
+            {
+                if (regionBounds2[i*11+j] != 0.)
+                    regionBounds2[i*11+j] *= -1.0;
+            }
+        }
+    }
+
+    debug5 << "Negated bounds: nBounds=" << nRegionBounds << endl;
+    for (int i = 0; i < nRegionBounds; i++)
+    {
+        debug5 << regionBounds2[i*11+0] << ","
+               << regionBounds2[i*11+1] << ","
+               << regionBounds2[i*11+2] << ","
+               << regionBounds2[i*11+3] << ","
+               << regionBounds2[i*11+4] << ","
+               << regionBounds2[i*11+5] << ","
+               << regionBounds2[i*11+6] << ","
+               << regionBounds2[i*11+7] << ","
+               << regionBounds2[i*11+8] << ","
+               << regionBounds2[i*11+9] << ","
+               << regionBounds2[i*11+10] << endl;
+    }
+
+    //
+    // Now we eliminate duplicate boundaries. We do that by sorting the
+    // boundaries and then eliminating the duplicates, which are next to
+    // each other once they are sorted.
+    //
+    for (int i = 0; i < nRegionBounds; i++)
+    {
+        regionBounds2[i*11] *= bounds[i];
+    }
+
+    qsort(regionBounds2, nRegionBounds, sizeof(double[11]),
+          CompareRegionBounds);
+
+    debug5 << "Sorted bounds: nBounds=" << nRegionBounds << endl;
+    for (int i = 0; i < nRegionBounds; i++)
+    {
+        debug5 << regionBounds2[i*11+0] << ":"
+               << regionBounds2[i*11+1] << ","
+               << regionBounds2[i*11+2] << ","
+               << regionBounds2[i*11+3] << ","
+               << regionBounds2[i*11+4] << ","
+               << regionBounds2[i*11+5] << ","
+               << regionBounds2[i*11+6] << ","
+               << regionBounds2[i*11+7] << ","
+               << regionBounds2[i*11+8] << ","
+               << regionBounds2[i*11+9] << ","
+               << regionBounds2[i*11+10] << endl;
+    }
+    zoneMap2 = new int[numBoundaries];
+    for (size_t i = 0; i < nRegionBounds; i++)
+        zoneMap2[(int)fabs(regionBounds2[i*11])] = (int)i;
+
+    int nRegionBounds3 = 0;
+    double *regionBounds3 = new double[nRegionBounds*10];
+
+    for (int i = 0; i < 10; i++)
+    {
+        regionBounds3[0*10+i] = regionBounds2[0*11+1+i];
+    }
+    zoneMap[(int)fabs(regionBounds2[0*11])] = nRegionBounds3;
+
+    for (int i = 1; i < nRegionBounds; i++)
+    {
+        bool match = true;
+        for (int j = 0; j < 10; j++)
+        {
+            if (relative_diff(regionBounds3[nRegionBounds3*10+j],
+                              regionBounds2[i*11+1+j]) > 0.0001)
+                match = false;
+        }
+        if (match == false)
+        {
+            nRegionBounds3++;
+            for (int j = 0; j < 10; j++)
+            {
+                regionBounds3[nRegionBounds3*10+j] = regionBounds2[i*11+1+j];
+            }
+        }
+        zoneMap[(int)fabs(regionBounds2[i*11])] = nRegionBounds3;
+    }
+    nRegionBounds3++;
+
+    debug5 << "Reduced bounds: nBounds=" << nRegionBounds3 << endl;
+    for (int i = 0; i < nRegionBounds3; i++)
+    {
+        debug5 << regionBounds3[i*10+0] << ","
+               << regionBounds3[i*10+1] << ","
+               << regionBounds3[i*10+2] << ","
+               << regionBounds3[i*10+3] << ","
+               << regionBounds3[i*10+4] << ","
+               << regionBounds3[i*10+5] << ","
+               << regionBounds3[i*10+6] << ","
+               << regionBounds3[i*10+7] << ","
+               << regionBounds3[i*10+8] << ","
+               << regionBounds3[i*10+9] << endl;
+    }
+
+    //
+    // Now we create a new region tree for this region that only references
+    // the unique boundaries and has the inside / outside flag swapped for
+    // for any boundaries that were negated.
+    //
+    numRegions2 = 0;
+    leftIds2 = new int[numRegions];
+    rightIds2 = new int[numRegions];
+    regTypeFlags2 = new int[numRegions];
+    GetRegionTree(gridZones[specificZone]);
+
+    debug5 << "numRegions2=" << numRegions2 << endl;
+    if (DebugStream::Level5())
+        PrintRegionTree(0, leftIds2, rightIds2, regTypeFlags2, 0);
+
+    delete [] regionBounds2;
+    delete [] zoneMap2;
+
+    nRegionBounds = nRegionBounds3;
+    regionBounds = regionBounds3;
+
+    if (nRegionBounds > VTK_CSG_MAX_BITS)
+    {
+        debug1 << "Warning: The multi pass discretization can't handle "
+               << "more than " << VTK_CSG_MAX_BITS << " boundaries per "
+               << "region. Region " << specificZone << " had "
+               << nRegionBounds << " boundaries. Ignoring the region."
+               << endl;
+        return false;
+    }
+
+    return true;
+}
+
+// ****************************************************************************
 // Method:  vtkCSGGrid::DiscretizeSpaceMultiPass
 //
 // Purpose:
@@ -2545,6 +2929,13 @@ vtkCSGGrid::SplitGrid(vtkRectilinearGrid *rgrid, const int nBounds,
 //   I added a control that specifies if all the regions should be discretized
 //   at once. I added code to print the region tree if the debug level is 5.
 //
+//   Eric Brugger, Tue Dec  2 17:43:00 PST 2014
+//   I modified the multipass discretization to partition space for a
+//   specific region with only the unique boundaries. It now finds all the
+//   unique boundaries, then creates a new region tree for the specific
+//   region that uses only the unique boundaries and then uses it to
+//   discretize the region.
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid *
@@ -2553,7 +2944,8 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
     const int subRegion[6])
 {
     if (DebugStream::Level5())
-        PrintRegionTree(gridZones[specificZone], 0);
+        PrintRegionTree(gridZones[specificZone], leftIds, rightIds,
+                        regTypeFlags, 0);
 
     zoneMap = new int[numBoundaries];
     if (discretizeAllRegionsAtOnce && numBoundaries <= VTK_CSG_MAX_BITS)
@@ -2575,6 +2967,10 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
 
         for (int i = 0; i < numBoundaries; i++)
             zoneMap[i] = i;
+
+        leftIds2 = leftIds;
+        rightIds2 = rightIds;
+        regTypeFlags2 = regTypeFlags;
     }
     else
     {
@@ -2596,36 +2992,15 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
         //
         // Determine the boundaries used by this region.
         //
-        std::vector<int> bounds;
-        GetRegionBounds(gridZones[specificZone], bounds);
-        std::sort(bounds.begin(), bounds.end());
-
         int nRegionBounds = 0;
-        double *regionBounds = new double[10*bounds.size()];
-
-        int lastGridBound = -1;
-        for (size_t i = 0; i < bounds.size(); i++)
+        double *regionBounds = NULL;
+        if (ExtractRegionBounds(specificZone, nRegionBounds, regionBounds)
+            == false)
         {
-            if (bounds[i] != lastGridBound)
-            {
-                lastGridBound = bounds[i];
-                bounds[nRegionBounds] = bounds[i];
-                for (int j = 0; j < 10; j++)
-                    regionBounds[nRegionBounds*10+j] =
-                        gridBoundaries[lastGridBound*10+j];
-                nRegionBounds++;
-            }
-        }
-        bounds.resize(nRegionBounds);
-
-        if (bounds.size() > VTK_CSG_MAX_BITS)
-        {
-            debug1 << "Warning: The multi pass discretization can't handle "
-                   << "more than " << VTK_CSG_MAX_BITS << " boundaries per "
-                   << "region. Region " << specificZone << " had "
-                   << bounds.size() << " boundaries. Ignoring the region."
-                   << endl;
             delete [] zoneMap;
+            delete [] leftIds2;
+            delete [] rightIds2;
+            delete [] regTypeFlags2;
             return NULL;
         }
 
@@ -2639,15 +3014,15 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
 
         rgrid->Delete();
         delete [] regionBounds;
-
-        for (size_t i = 0; i < bounds.size(); i++)
-            zoneMap[bounds[i]] = (int)i;
     }
 
     vtkUnstructuredGrid *rv = multipassProcessedGrid;
     if (rv == NULL)
     {
         delete [] zoneMap;
+        if (leftIds != leftIds2) delete [] leftIds2;
+        if (rightIds != rightIds2) delete [] rightIds2;
+        if (regTypeFlags != regTypeFlags2) delete [] regTypeFlags2;
         return NULL;
     }
 
@@ -2655,16 +3030,21 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
     vtkIntArray *in = vtkIntArray::New();
     in->SetNumberOfComponents(1);
     in->SetNumberOfTuples(rv->GetNumberOfCells());
-    int zone = gridZones[specificZone];
+    int zone = 0;
+    if (discretizeAllRegionsAtOnce && numBoundaries <= VTK_CSG_MAX_BITS)
+        zone = gridZones[specificZone];
     for (int i=0; i<rv->GetNumberOfCells(); i++)
     {
-        bool InOut = EvaluateRegionBits(zone,
-                                        multipassTags->operator[](i));
+        bool InOut = EvaluateRegionBits(zone, multipassTags->operator[](i));
         in->SetTuple1(i, InOut ? 1 : 0);
     }
     rv->GetCellData()->SetScalars(in);
 
     delete [] zoneMap;
+
+    if (leftIds != leftIds2) delete [] leftIds2;
+    if (rightIds != rightIds2) delete [] rightIds2;
+    if (regTypeFlags != regTypeFlags2) delete [] regTypeFlags2;
 
     // Threshold out the cells for this region
     vtkThreshold *threshold = vtkThreshold::New();
