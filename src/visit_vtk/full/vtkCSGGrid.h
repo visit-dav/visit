@@ -109,6 +109,13 @@
 //    I added an argument to DiscretizeSpaceMultiPass to control if all the
 //    regions are discretized at once. I added PrintRegionTree. 
 //
+//    Eric Brugger, Tue Dec  2 17:29:30 PST 2014
+//    I modified the multipass discretization to partition space for a
+//    specific region with only the unique boundaries. It now finds all the
+//    unique boundaries, then creates a new region tree for the specific
+//    region that uses only the unique boundaries and then uses it to
+//    discretize the region.
+//
 
 // .SECTION See Also
 // vtkImplicitFunction, vtkQuadric, vtkUnstructuredGrid, vtkDataSet
@@ -324,10 +331,14 @@ protected:
                                             const int subRegion[6]);
   vtkUnstructuredGrid *SplitGrid(vtkRectilinearGrid *rgrid,
                                  const int nBounds, double *bounds);
+  bool ExtractRegionBounds(int specificZone, int &nRegionBounds,
+                           double *&regionBounds);
 
-  bool EvaluateRegionBits(int region, vtkCSGFixedLengthBitField &bits);
+  bool EvaluateRegionBits(int reg, vtkCSGFixedLengthBitField &bits);
   void GetRegionBounds(int reg, std::vector<int> &bounds);
-  void PrintRegionTree(int reg, int indent);
+  void PrintRegionTree(int reg, int *leftIds, int *rightIds,
+                        int *regTypeFlags, int indent);
+  void GetRegionTree(int reg);
 
   //
   // We put this in the protected part of the interface because
@@ -363,6 +374,13 @@ protected:
   int numZones;
   int *gridZones;
   int *zoneMap;
+
+  // These are used to store the region and boundary information for
+  // a specific region when using the multipass algorithm.
+  int numRegions2;
+  int *leftIds2, *rightIds2, *regTypeFlags2;
+  int *zoneMap2;
+  double *regionBounds2;
 private:
 
 
