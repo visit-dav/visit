@@ -892,7 +892,7 @@ avtPoincareFilter::CreateIntegralCurve( const avtIVPSolver* model,
                                         long ID ) 
 {
     // need at least these three attributes
-    unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
+    unsigned int attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
 
     if( puncturePlotType == PoincareAttributes::Double )
       attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
