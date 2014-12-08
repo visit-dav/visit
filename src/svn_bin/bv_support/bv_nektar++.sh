@@ -225,23 +225,23 @@ EOF
 
 function apply_nektar++_patch
 {
-    if [[ "${NEKTAR_PLUS_PLUS_VERSION}" == 4.0.0 ]] ; then
+#    if [[ "${NEKTAR_PLUS_PLUS_VERSION}" == 4.0.0 ]] ; then
 
-        apply_nektar++_zlib_patch
-        if [[ $? != 0 ]]; then
-           return 1
-        fi
+#        apply_nektar++_zlib_patch
+#        if [[ $? != 0 ]]; then
+#           return 1
+#        fi
 
-        apply_nektar++_cmakelists_patch
-        if [[ $? != 0 ]]; then
-            return 1
-        fi
-    fi
+#        apply_nektar++_cmakelists_patch
+#        if [[ $? != 0 ]]; then
+#            return 1
+#        fi
+#    fi
 
     return 0
 }
 # *************************************************************************** #
-#              Function 8.1, build_nektar++                           #
+#              Function 8.1, build_nektar++                                   #
 # *************************************************************************** #
 
 function build_nektar++
