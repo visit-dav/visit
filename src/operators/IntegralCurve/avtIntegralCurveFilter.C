@@ -2466,7 +2466,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
                       (crop_value - last_crop_value);
                 }
 
-                // Get the parameter for the endding interpolation value. 
+                // Get the parameter for the ending interpolation value. 
                 if( cropEndInterpolate &&
                     last_crop_value < cropEndValue &&
                     cropEndValue < crop_value )             

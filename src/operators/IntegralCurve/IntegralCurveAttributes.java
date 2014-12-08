@@ -107,7 +107,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public final static int FIELDTYPE_M3DC12DFIELD = 2;
     public final static int FIELDTYPE_M3DC13DFIELD = 3;
     public final static int FIELDTYPE_NEK5000FIELD = 4;
-    public final static int FIELDTYPE_NIMRODFIELD = 5;
+    public final static int FIELDTYPE_NEKTARPPFIELD = 5;
+    public final static int FIELDTYPE_NIMRODFIELD = 6;
 
     public final static int INTEGRATIONTYPE_EULER = 0;
     public final static int INTEGRATIONTYPE_LEAPFROG = 1;
@@ -1586,6 +1587,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             str = str + "FIELDTYPE_M3DC13DFIELD";
         if(fieldType == FIELDTYPE_NEK5000FIELD)
             str = str + "FIELDTYPE_NEK5000FIELD";
+        if(fieldType == FIELDTYPE_NEKTARPPFIELD)
+            str = str + "FIELDTYPE_NEKTARPPFIELD";
         if(fieldType == FIELDTYPE_NIMRODFIELD)
             str = str + "FIELDTYPE_NIMRODFIELD";
         str = str + "\n";

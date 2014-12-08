@@ -821,7 +821,8 @@ thresholdStats( std::vector< std::pair< unsigned int, double > >& stats,
     if( stats[i].second <= cutoff && stats[i+1].second > cutoff )
     {
       if( verboseFlag )
-        std::cerr << "vet max  " << maxVet << "  " << "Threshold " << cutoff << std::endl;
+        std::cerr << "vet max  " << maxVet << "  "
+                  << "Threshold " << cutoff << std::endl;
       }
   }
 
@@ -839,7 +840,8 @@ thresholdStats( std::vector< std::pair< unsigned int, double > >& stats,
     if( stats[i].second <= cutoff && stats[i+1].second > cutoff )
     {
       if( verboseFlag )
-        std::cerr << "vet max  " << maxVet << "  " << "Threshold " << cutoff << std::endl;
+        std::cerr << "vet max  " << maxVet << "  "
+                  << "Threshold " << cutoff << std::endl;
     }
   }
 
@@ -1347,9 +1349,9 @@ periodicityStats( std::vector< Point >& points,
 
   if( verboseFlag )
     std::cerr << "Best period " << best_period << "  "
-         <<  (checkType == 2 ? "distance  " :  "variance  " )
-         << calculateSumOfSquares( points, best_period, checkType )
-         << std::endl;
+              <<  (checkType == 2 ? "distance  " :  "variance  " )
+              << calculateSumOfSquares( points, best_period, checkType )
+              << std::endl;
 
   if( stats.size() == 0 )
     stats.push_back( std::pair< unsigned int, double > (best_period, best_var ) );
@@ -1718,14 +1720,14 @@ islandChecks( std::vector< Point >& points,
 
       if( turns && verboseFlag )
         std::cerr << "Island " << i << " - "
-             << " nodes " << nodes[i]
-             << " turns " << turns
-             << " first " << firstTurn
-             << " mid " << midTurn
-             << " last " << lastTurn
-             << " base " << base
-             << " start " << start
-             << std::endl;
+                  << " nodes " << nodes[i]
+                  << " turns " << turns
+                  << " first " << firstTurn
+                  << " mid " << midTurn
+                  << " last " << lastTurn
+                  << " base " << base
+                  << " start " << start
+                  << std::endl;
 
       for( unsigned int j=start, k=j+toroidalWinding;
            k<points.size();
@@ -1873,23 +1875,24 @@ islandChecks( std::vector< Point >& points,
         }
 
         std::cerr << "gap " << min_gap_index << "  "
-             << "len " << min_len_index << "  "
-             << "dist " << min_dist_index << "  "
-             << "dist2 " << min_dist2_index << "  "
-             << "nodes " << (min_dist_index-i)/toroidalWinding << std::endl;
+                  << "len " << min_len_index << "  "
+                  << "dist " << min_dist_index << "  "
+                  << "dist2 " << min_dist2_index << "  "
+                  << "nodes " << (min_dist_index-i)/toroidalWinding
+                  << std::endl;
       }
     }
     
     if( turns && verboseFlag )
       std::cerr << "Island " << i << " - "
-           << " nodes " << nodes[i]
-           << " turns " << turns 
-           << " first " << firstTurn
-           << " mid " << midTurn
-           << " last " << lastTurn
-           << " overlap " << overlap
-           << " complete " << complete
-           << std::endl;
+                << " nodes " << nodes[i]
+                << " turns " << turns 
+                << " first " << firstTurn
+                << " mid " << midTurn
+                << " last " << lastTurn
+                << " overlap " << overlap
+                << " complete " << complete
+                << std::endl;
 
     nnodes += nodes[i];
 
@@ -1901,7 +1904,8 @@ islandChecks( std::vector< Point >& points,
       --islands;
 
       if( turns && verboseFlag )
-        std::cerr << "  !!!!!!!!!!!!!!! Separatrice !!!!!!!!!!!!!!!" << std::endl;
+        std::cerr << "  !!!!!!!!!!!!!!! Separatrice !!!!!!!!!!!!!!!"
+                  << std::endl;
     }
   }
 
@@ -1933,14 +1937,15 @@ islandChecks( std::vector< Point >& points,
       if( nodes[i] < nnodes - 1 || nnodes + 1 < nodes[i] )
       {
         if( verboseFlag )
+        {        
           std::cerr << "Appears to be islands but not self consistent, "
-               << "average number of nodes  " << nnodes << "   (  ";
+                    << "average number of nodes  " << nnodes << "   (  ";
           
-        for( unsigned int i=0; i<toroidalWinding; i++ )
-            if( verboseFlag )
-              std::cerr << nodes[i] << "  ";
+          for( unsigned int i=0; i<toroidalWinding; i++ )
+            std::cerr << nodes[i] << "  ";
 
-        std::cerr << ")" << std::endl;
+          std::cerr << ")" << std::endl;
+        }
 
         break;
       }
@@ -2357,7 +2362,7 @@ FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
   // have been found.
   if( verboseFlag )
     std::cerr << poloidal_puncture_pts.size() << " poloidal puncture pts, "
-         << ridgeline_points.size() << " ridgeline pts " << std::endl;
+              << ridgeline_points.size() << " ridgeline pts " << std::endl;
 
   // Get the average distance between puncture points for finding
   // periodic fieldlines (i.e. rational surfaces and re-connection).
@@ -2385,7 +2390,8 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
 
     if( fp == NULL )
     {
-      std::cerr << "Trying to perform O-line analysis but the O-line axis file can not be openned." << std::endl;
+      std::cerr << "Trying to perform O-line analysis "
+                << "but the O-line axis file can not be openned." << std::endl;
 
       return Point(0,0,0);
     }
@@ -2399,7 +2405,8 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
       {
         if( feof(fp) == 0 )
         {
-          std::cerr << "Trying to perform O-line analysis but the O-line axis file can not be read." << std::endl;
+          std::cerr << "Trying to perform O-line analysis "
+                    << "but the O-line axis file can not be read." << std::endl;
           
           OLineAxisPts.clear();
           OLineAxisPhiAngles.clear();
@@ -2678,11 +2685,54 @@ GetPeriodWindingPairs( std::vector< WindingPairStat > &baseWindingPairStats,
   {
     if( verboseFlag && i<10 )
       std::cerr << "Period based winding pair:  " 
-           << periodWindingPairStats[i].toroidal << ","
-           << periodWindingPairStats[i].poloidal << "  "
-           << "Distance  " << periodWindingPairStats[i].stat << "  "
-           << "Rank  " << periodWindingPairStats[i].ranking << "  "
-           << std::endl;
+                << periodWindingPairStats[i].toroidal << ","
+                << periodWindingPairStats[i].poloidal << "  "
+                << "Distance  " << periodWindingPairStats[i].stat << "  "
+                << "Rank  " << periodWindingPairStats[i].ranking << "  "
+                << std::endl;
+  }
+}
+
+
+double
+FieldlineLib::fieldlinePeriod( std::vector< Point > &ptList,
+                               std::vector< double > &timeList,
+                               double maxPeriod )
+{
+  int nTimeSteps = (double) (maxPeriod / (timeList[1] - timeList[0]));
+
+  double bestPeriod = 0;
+  double maxDotProd = 0;
+
+  std::vector< double > dotProds(nTimeSteps+1);
+
+  dotProds[0] = 0;
+
+  for( unsigned int i=1; i<=nTimeSteps; i++ )
+  {
+    dotProds[i] = 0;
+
+    avtVector v0 = ptList[1] - ptList[0];
+
+    for( unsigned int j=1, k=2; k<ptList.size(); ++j, ++k )
+    {
+      avtVector v1 = ptList[k] - ptList[j];
+
+      dotProds[i] += Dot(v0, v1);
+
+      v0 = v1;
+    }
+
+    if( maxDotProd < dotProds[i] )
+    {
+      bestPeriod = i*(timeList[1] - timeList[0]);
+
+      maxDotProd = dotProds[i];
+
+      std::cerr << i << "  " << i*(timeList[1] - timeList[0]) << "  "
+                << dotProds[i] << "  " 
+                << std::endl;
+    }
   }
 }
 
@@ -2934,10 +2984,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   // nodes.
   if( verboseFlag )
     std::cerr << "Toroidal Winding via "
-         << poloidal_puncture_pts.size() << "  "
-         << "poloidal punctures, "
-         << "max period " << toroidalWindingMax
-         << std::endl;
+              << poloidal_puncture_pts.size() << "  "
+              << "poloidal punctures, "
+              << "max period " << toroidalWindingMax
+              << std::endl;
 
   periodicityStats( poloidal_puncture_pts, toroidalStats,
                     toroidalWindingMax, 2 );
@@ -2948,10 +2998,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   // nodes.
   if( verboseFlag )
     std::cerr << "Poloidal Winding via "
-         << ridgeline_points.size() << "  "
-         << "ridgeline points, "
-         << "max period " << poloidalWindingMax
-         << std::endl;
+              << ridgeline_points.size() << "  "
+              << "ridgeline points, "
+              << "max period " << poloidalWindingMax
+              << std::endl;
   
   periodicityStats( ridgeline_points, poloidalStats, poloidalWindingMax, 1 );
   
@@ -3056,7 +3106,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
           if( drawable )
           {
-            std::cerr << i << "  "
+            std::cerr << "Drawable " << i << "  winding pair  "
                       << mergedWindingPairStats[i].toroidal << "  "
                       << mergedWindingPairStats[i].poloidal << "  "
                       << std::endl;
@@ -3233,11 +3283,11 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         
         if( verboseFlag && (drawable || i < 10) )
           std::cerr << "Rotational sum error, "
-               << "expected windingGroupOffset " << toroidalStats2[0].first
-               << " or " << mergedWindingPairStats[i].toroidal/gcd - toroidalStats2[0].first
-               << " got " << windingGroupOffset << std::endl
-               << "Incorrect poloidal winding is " << mergedWindingPairStats[i].poloidal/gcd
-               << "  ";
+                    << "expected windingGroupOffset " << toroidalStats2[0].first
+                    << " or " << mergedWindingPairStats[i].toroidal/gcd - toroidalStats2[0].first
+                    << " got " << windingGroupOffset << std::endl
+                    << "Incorrect poloidal winding is " << mergedWindingPairStats[i].poloidal/gcd
+                    << "  ";
 
         // Low order Blankinship offset which is an indication of what
         // value to check.
@@ -3328,12 +3378,12 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     // Now have valid winding pairs.
     if( verboseFlag && (drawable || i < 10) )
       std::cerr << "Final " << i << "  "
-           << (drawable ? "Drawable " : "Rejected ") 
-           << "winding pair:  " 
-           << mergedWindingPairStats[i].toroidal << ","
-           << mergedWindingPairStats[i].poloidal << "  "
-           << "Distance  " << mergedWindingPairStats[i].stat << "  "
-           << "Rank  " << mergedWindingPairStats[i].ranking << "  ";
+                << (drawable ? "Drawable " : "Rejected ") 
+                << "winding pair:  " 
+                << mergedWindingPairStats[i].toroidal << ","
+                << mergedWindingPairStats[i].poloidal << "  "
+                << "Distance  " << mergedWindingPairStats[i].stat << "  "
+                << "Rank  " << mergedWindingPairStats[i].ranking << "  ";
 
     if( (drawableRank == -1 ||
          drawableRank == mergedWindingPairStats[i].ranking) &&
@@ -3529,9 +3579,9 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
       if( verboseFlag )
         std::cerr << "Primary resonances = "
-             << toroidalResonance << "," << poloidalResonance << " with "
-             << islands << " islands "
-             << std::endl;
+                  << toroidalResonance << "," << poloidalResonance << " with "
+                  << islands << " islands "
+                  << std::endl;
     }
 
     // The resonance GCD (aka second order resonance) is the number of
@@ -3542,11 +3592,11 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
       if( verboseFlag )
         std::cerr << "Secondary resonances = "
-             << toroidalResonance << "," << poloidalResonance << " with "
-             << islands << " islands "
-             << "(" << islands / resonanceGCD << " groups with "
-             << resonanceGCD << " islands each)"
-             << std::endl;
+                  << toroidalResonance << "," << poloidalResonance << " with "
+                  << islands << " islands "
+                  << "(" << islands / resonanceGCD << " groups with "
+                  << resonanceGCD << " islands each)"
+                  << std::endl;
     }
 
     // When the drawable winding pair is the resonance then potentially
@@ -3766,9 +3816,9 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       }
 
       if( verboseFlag )
-        std::cerr
-          << "Checking for a secondary axis using a base toroidal winding of "
-          << toroidalWindingP << std::endl; 
+        std::cerr << "Checking for a secondary axis "
+                  << "using a base toroidal winding of "
+                  << toroidalWindingP << std::endl; 
       
       std::vector< std::pair< Point, unsigned int > > hullPts;
       
@@ -3789,8 +3839,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       {
         if( verboseFlag )
           std::cerr << "The surface does not have a convex hull, "
-               << toroidalWindingP-nHullPts << " point(s) are missing."
-               << std::endl; 
+                    << toroidalWindingP-nHullPts << " point(s) are missing."
+                    << std::endl; 
         
         convexHull( hullPts, nHullPts, toroidalWindingP, -helicity );
 
@@ -4096,15 +4146,15 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       if( nodes[i] < nnodes - 1 || nnodes + 1 < nodes[i] )
       {
         if( verboseFlag )
+        {
           std::cerr << "Appears to be a flux surface but not self consistent, "
-               << "average number of nodes  " << nnodes << "   (  ";
+                    << "average number of nodes  " << nnodes << "   (  ";
           
-        for( unsigned int i=0; i<toroidalWinding; i++ )
-          if( verboseFlag )
+          for( unsigned int i=0; i<toroidalWinding; i++ )
             std::cerr << nodes[i] << "  ";
 
-        if( verboseFlag )
           std::cerr << ")" << std::endl;
+        }
 
         break;
       }
@@ -5100,8 +5150,8 @@ removeOverlap( std::vector< std::vector < Point > > &bins,
       {
         if( verboseFlag )
           std::cerr << "removeOverlap - "
-               << "Island properties returned ZERO NODES for island "
-               << i << std::endl;
+                    << "Island properties returned ZERO NODES for island "
+                    << i << std::endl;
 
         nodes = (unsigned int)bins[i].size();
       }
@@ -5110,8 +5160,9 @@ removeOverlap( std::vector< std::vector < Point > > &bins,
       if( nodes > nnodes+1 )
       {
         if( verboseFlag )
-          std::cerr << "removeOverlap - Island " << i
-               << " nnodes mismatch " << nnodes << "  " << nodes << std::endl;
+          std::cerr << "removeOverlap - Island " << i << "  "
+                    << "nnodes mismatch " << nnodes << "  "
+                    << nodes << std::endl;
       }
 
       // Erase all of the overlapping points.
@@ -5142,8 +5193,8 @@ removeOverlap( std::vector< std::vector < Point > > &bins,
     {
       if( verboseFlag )
           std::cerr << "removeOverlap - "
-               << "Surface properties returned ZERO NODES for surface "
-               << std::endl;
+                    << "Surface properties returned ZERO NODES for surface "
+                    << std::endl;
 
       nnodes = (unsigned int)bins[0].size();
 
@@ -5182,8 +5233,9 @@ removeOverlap( std::vector< std::vector < Point > > &bins,
       if( nodes > nnodes+1 )
       {
         if( verboseFlag )
-          std::cerr << "removeOverlap - Surface " << i
-             << " nnodes mismatch " << nnodes << "  " << nodes << std::endl;
+          std::cerr << "removeOverlap - Surface " << i << "  "
+                    << "nnodes mismatch " << nnodes << "  "
+                    << nodes << std::endl;
       }
 
       // Erase all of the overlapping points.
@@ -5235,10 +5287,11 @@ smoothCurve( std::vector< std::vector < Point > > &bins,
           Vector v1 = (Vector) bins[i][j ] - (Vector) bins[i][j_1];
 
           if( verboseFlag )
-            std::cerr << i << " smooth " << j_1 << " "  << j << " "  << j1 << "  "
-                 << ( v0.length() > v1.length() ?
-                      v0.length() / v1.length() :
-                      v1.length() / v0.length() ) << std::endl;
+            std::cerr << i << "  smooth  " << j_1 << "  "
+                      << j << " "  << j1 << "  "
+                      << ( v0.length() > v1.length() ?
+                           v0.length() / v1.length() :
+                           v1.length() / v0.length() ) << std::endl;
 
           if( Dot( v0, v1 ) > 0 &&
               ( v0.length() > v1.length() ?
@@ -5398,7 +5451,8 @@ smoothCurve( std::vector< std::vector < Point > > &bins,
               newPts[k].first /= newPts[k].second;
               
               if( verboseFlag )
-                std::cerr << i << " insert " << j << "  " << newPts[k].first << std::endl;
+                std::cerr << i << "  insert  " << j << "  "
+                          << newPts[k].first << std::endl;
               
               bins[i].insert( bins[i].begin()+j, newPts[k].first );
             }
@@ -5466,7 +5520,8 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
           tmp_bins[i].push_back( bins[i][j] );
 
         if( verboseFlag )
-          std::cerr << i << " stored extra points " << tmp_bins[i].size() << std::endl;
+          std::cerr << i << " stored extra points "
+                    << tmp_bins[i].size() << std::endl;
 
         // Erase all of the overlapping points.
         bins[i].erase( bins[i].begin()+nnodes, bins[i].end() );
@@ -5516,9 +5571,9 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
 
           if( verboseFlag )
             std::cerr << i << "  " << modulo << "  " << j + nnodes
-               << "  Prediction " << index_prediction
-               << " actual " << angleIndex << "  "
-               << (angleIndex == index_prediction) << std::endl;
+                      << "  Prediction " << index_prediction
+                      << " actual " << angleIndex << "  "
+                      << (angleIndex == index_prediction) << std::endl;
 
           // Check to see if the prediction and the actual index are
           // the same.
@@ -5536,9 +5591,9 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
 
         if( verboseFlag )
           std::cerr << "ToroidalWinding " << i << " inserted "
-               << prediction_true+prediction_false << " nodes "
-               << " True " << prediction_true
-               << " False " << prediction_false << std::endl;
+                    << prediction_true+prediction_false << " nodes "
+                    << " True " << prediction_true
+                    << " False " << prediction_false << std::endl;
 
         // If more of the predictions are incorrect than correct
         // insert based on the predictions.
@@ -5573,7 +5628,7 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
 
             if( verboseFlag )
               std::cerr << i << "  " << modulo << "  " << j + nnodes
-                   << " actual " << index << std::endl;
+                        << " actual " << index << std::endl;
 
             // Predict where the next insertion will take place.
             if( (j+1) % modulo == 0 )
@@ -5610,8 +5665,8 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
 
                   if( verboseFlag )
                     std::cerr << " merge self intersection " 
-                         << start0 << "  " << end0 << "  "
-                         << start1 << "  " << end1 << std::endl;
+                              << start0 << "  " << end0 << "  "
+                              << start1 << "  " << end1 << std::endl;
 
                   if( 0 ) {
                     std::vector < Point > tmp_bins[2];
@@ -5684,14 +5739,15 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
       if( nodes > nnodes+1 )
         if( verboseFlag )
           std::cerr << "Surface fill " << i
-               << " nnodes mismatch " << nodes << std::endl;
+                    << " nnodes mismatch " << nodes << std::endl;
 
       // Store the overlapping points.
       for( unsigned int j=nodes; j<bins[i].size(); j++ )
         tmp_bins[i].push_back( bins[i][j] );
 
       if( verboseFlag )
-        std::cerr << i << " stored extra points " << tmp_bins[i].size() << std::endl;
+        std::cerr << i << " stored extra points "
+                  << tmp_bins[i].size() << std::endl;
 
       // Erase all of the overlapping points.
       bins[i].erase( bins[i].begin()+nodes, bins[i].end() );
@@ -5743,16 +5799,18 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
                                tmp_bins[i][i0] );
 
         if( verboseFlag )
-          std::cerr << "ToroidalWinding prediction " << toroidalWinding_prediction
-               << " actual " << index_wd
-               << "  Index prediction  " << index_prediction
-               << " actual " << index_pt << "  "
-               << (index_wd == toroidalWinding_prediction &&
-                 index_pt == index_prediction) << std::endl;
+          std::cerr << "ToroidalWinding prediction "
+                    << toroidalWinding_prediction
+                    << " actual " << index_wd
+                    << "  Index prediction  " << index_prediction
+                    << " actual " << index_pt << "  "
+                    << (index_wd == toroidalWinding_prediction &&
+                        index_pt == index_prediction) << std::endl;
 
         // Check to see if the prediction of where the point was inserted
         // is correct;
-        if( index_wd == toroidalWinding_prediction && index_pt == index_prediction )
+        if( index_wd == toroidalWinding_prediction &&
+            index_pt == index_prediction )
           prediction_true++;
         else 
           prediction_false++;
@@ -6426,7 +6484,8 @@ FieldlineLib::findSkeletonCenter( Skeleton::Skeleton &s,
           std::cerr << "Dispite trimming too many end points." << std::endl;
     }
 
-    std::cerr << "O Point " << center << std::endl;
+    if( verboseFlag )
+      std::cerr << "O Point " << center << std::endl;
 
     return center;
 }

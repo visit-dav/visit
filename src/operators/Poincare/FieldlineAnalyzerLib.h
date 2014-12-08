@@ -198,6 +198,11 @@ public:
                          std::vector< std::pair< unsigned int, double > > &toroidalStats,
                          std::vector< std::pair< unsigned int, double > > &poloidalStats );
 
+  double
+  fieldlinePeriod( std::vector< Point > &ptList,
+                   std::vector< double > &timeList,
+                   double maxPeriod );
+
   void
   fieldlineProperties( std::vector< Point > &ptList,
                        std::vector< double > &timeList,

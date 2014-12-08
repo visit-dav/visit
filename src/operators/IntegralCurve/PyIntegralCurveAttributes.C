@@ -394,7 +394,7 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
     SNPRINTF(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
     const char *fieldType_names = "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
-        "NIMRODField";
+        "NektarPPField, NIMRODField";
     switch (atts->GetFieldType())
     {
       case IntegralCurveAttributes::Default:
@@ -415,6 +415,10 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           break;
       case IntegralCurveAttributes::Nek5000Field:
           SNPRINTF(tmpStr, 1000, "%sfieldType = %sNek5000Field  # %s\n", prefix, prefix, fieldType_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::NektarPPField:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNektarPPField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case IntegralCurveAttributes::NIMRODField:
@@ -1710,15 +1714,15 @@ IntegralCurveAttributes_SetFieldType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the fieldType in the object.
-    if(ival >= 0 && ival < 6)
+    if(ival >= 0 && ival < 7)
         obj->data->SetFieldType(IntegralCurveAttributes::FieldType(ival));
     else
     {
         fprintf(stderr, "An invalid fieldType value was given. "
-                        "Valid values are in the range of [0,5]. "
+                        "Valid values are in the range of [0,6]. "
                         "You can also use the following names: "
                         "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
-                        "NIMRODField.");
+                        "NektarPPField, NIMRODField.");
         return NULL;
     }
 
@@ -2947,6 +2951,8 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(IntegralCurveAttributes::M3DC13DField));
     if(strcmp(name, "Nek5000Field") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Nek5000Field));
+    if(strcmp(name, "NektarPPField") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::NektarPPField));
     if(strcmp(name, "NIMRODField") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::NIMRODField));
 
