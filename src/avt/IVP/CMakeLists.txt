@@ -85,6 +85,14 @@ avtStreamlineFilter.C
 avtStreamlinePolyDataFilter.C
 )
 
+IF( NEKTAR++_FOUND )
+    SET( AVTIVP_SOURCES ${AVTIVP_SOURCES} avtIVPNektar++Field.C )
+
+    ADD_DEFINITIONS("-DNEKTAR_MEMORY_POOL_ENABLED")
+    ADD_DEFINITIONS("-DNEKTAR_USING_LAPACK")
+    ADD_DEFINITIONS("-DNEKTAR_USING_BLAS")
+ENDIF( NEKTAR++_FOUND )
+
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
@@ -103,24 +111,28 @@ ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/third_party_builtin/nek5000/jl
 ${VTK_INCLUDE_DIRS}
+${NEKTAR++_INCLUDE_DIR}
+${NEKTAR++_INCLUDE_DIRS}
+${NEKTAR++_TP_INCLUDE_DIRS}
+${ACCELERATE_FRAMEWORK_INCLUDE_DIR}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS})
 
 #ADD_LIBRARY(avtivp ${AVTIVP_SOURCES})
-#TARGET_LINK_LIBRARIES(avtivp avtfilters avtmath visitcommon visit_vtk vtkCommonCore vtkFiltersCore)
+#TARGET_LINK_LIBRARIES(avtivp avtfilters avtmath visitcommon visit_vtk vtkCommonCore vtkFiltersCore ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES})
 #VISIT_INSTALL_TARGETS(avtivp)
 
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtivp_ser ${AVTIVP_SOURCES})
-TARGET_LINK_LIBRARIES(avtivp_ser avtfilters_ser lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts visitcommon visit_vtk vtkCommonCore vtkFiltersCore nek5000_interp)
+TARGET_LINK_LIBRARIES(avtivp_ser avtfilters_ser lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts visitcommon visit_vtk vtkCommonCore vtkFiltersCore nek5000_interp ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES})
 VISIT_INSTALL_TARGETS(avtivp_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtivp_par ${AVTIVP_SOURCES})
-    TARGET_LINK_LIBRARIES(avtivp_par avtfilters_par lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts visitcommon visit_vtk vtkCommonCore vtkFiltersCore nek5000_interp)
+    TARGET_LINK_LIBRARIES(avtivp_par avtfilters_par lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts visitcommon visit_vtk vtkCommonCore vtkFiltersCore nek5000_interp ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES})
     VISIT_INSTALL_TARGETS(avtivp_par)
 ENDIF(VISIT_PARALLEL)

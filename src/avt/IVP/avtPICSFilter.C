@@ -100,6 +100,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPM3DC1Integrator.h>
 #include <avtIVPM3DC1Field.h>
 #include <avtIVPNek5000Field.h>
+#include <avtIVPNektar++Field.h>
 #include <avtIVPNIMRODField.h>
 #include <avtIVPFlashField.h>
 #include <avtIntervalTree.h>
@@ -2217,6 +2218,9 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
       else if( fieldType == PICS_FIELD_NEK5000 )
          return new avtIVPNek5000Field(ds, *locator);
 
+      else if( fieldType == PICS_FIELD_NEKTARPP )
+         return new avtIVPNektarPPField(ds, *locator);
+
       else if( fieldType == PICS_FIELD_NIMROD )
          return new avtIVPNIMRODField(ds, *locator);
 
@@ -3351,6 +3355,12 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
 
         // Assume the user has selected velocity as the primary variable.
     }
+    else if ( fieldType == PICS_FIELD_NEKTARPP )
+    {
+        // Add in the other fields that the Nektar++ Interpolation needs
+
+        // Assume the user has selected velocity as the primary variable.
+    }
     else if ( fieldType == PICS_FIELD_NIMROD )
     {
         // Add in the other fields that the NIMROD Interpolation needs
@@ -3629,6 +3639,9 @@ avtPICSFilter::CheckStagger( vtkDataSet *ds, bool &isEdge, bool &isFace )
 {
     isFace = false;
     isEdge = false;
+
+    return;
+
     // staggered data are always defined on the nodal sized mesh
     vtkDataArray* velData = ds->GetPointData()->GetVectors();
     if (velData)
