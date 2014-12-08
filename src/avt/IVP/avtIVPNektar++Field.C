@@ -83,7 +83,7 @@ avtIVPNektarPPField::avtIVPNektarPPField( vtkDataSet* dataset,
   //   EXCEPTION1( InvalidVariableException,
   //               "avtIVPNektar++Field - Can not find velocity variable." );
   // }
-
+#ifdef NEKTAR_PLUS_PLUS_FOUND
   // Get the Nektar++ field data from the VTK field
   long *fp =
     (long *) (fieldData->GetAbstractArray("Nektar++FieldPointers")->GetVoidPointer(0));
@@ -98,6 +98,7 @@ avtIVPNektarPPField::avtIVPNektarPPField( vtkDataSet* dataset,
     }
   }
   else 
+#endif
   {
     EXCEPTION1( InvalidVariableException,
                 "Uninitialized option. (Please contact visit-developer mailing list to report)" );
@@ -144,6 +145,7 @@ avtIVPNektarPPField::operator()( const double &t,
                                  const avtVector &p,
                                  avtVector &vec ) const
 {
+#ifdef NEKTAR_PLUS_PLUS_FOUND
     static int el = 0; // element
 
     // Locate the cell that surrounds the point.
@@ -159,7 +161,6 @@ avtIVPNektarPPField::operator()( const double &t,
 
     if( el < 0 )
       return OUTSIDE_SPATIAL;
-
 
     // Get the Nektar++ element id.
     int nt_el = el, nt_numElements = nektar_field[0]->GetExpSize();
@@ -194,6 +195,11 @@ avtIVPNektarPPField::operator()( const double &t,
     }
 
     return OK;
+
+#else
+
+    return avtIVPVTKField::operator()( t, p, vec );
+#endif
 }
 
 // ****************************************************************************

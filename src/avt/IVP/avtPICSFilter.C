@@ -100,7 +100,9 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPM3DC1Integrator.h>
 #include <avtIVPM3DC1Field.h>
 #include <avtIVPNek5000Field.h>
+#ifdef NEKTAR_PLUS_PLUS_FOUND
 #include <avtIVPNektar++Field.h>
+#endif
 #include <avtIVPNIMRODField.h>
 #include <avtIVPFlashField.h>
 #include <avtIntervalTree.h>
@@ -2219,8 +2221,14 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
          return new avtIVPNek5000Field(ds, *locator);
 
       else if( fieldType == PICS_FIELD_NEKTARPP )
+      {
+#ifdef NEKTAR_PLUS_PLUS_FOUND
          return new avtIVPNektarPPField(ds, *locator);
+#else
+        EXCEPTION1(ImproperUseException, "Requesting Nektar++ interpolation but VisIt has not been built with Nektar++ support .");
 
+#endif
+      }
       else if( fieldType == PICS_FIELD_NIMROD )
          return new avtIVPNIMRODField(ds, *locator);
 
