@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+  <Plugin name="NektarPP" type="database" label="avtNektarPP" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
+    <CXXFLAGS>
+      ${NEKTAR++_INCLUDE_DIR}
+      ${NEKTAR++_INCLUDE_DIRS}
+      ${NEKTAR++_TP_INCLUDE_DIRS})
+      ${ACCELERATE_FRAMEWORK_INCLUDE_DIR}
+    </CXXFLAGS>
+    <DEFINES>
+      ${NEKTAR++_DEFINITIONS}
+    </DEFINES>
+    <LDFLAGS>
+      ${NEKTAR++_LIBRARY_DIR}
+      ${NEKTAR++_LIBRARY_DIRS}
+      ${NEKTAR++_TP_LIBRARY_DIRS}
+      ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
+    </LDFLAGS>
+    <LIBS>
+      ${NEKTAR++_LIB}
+      ${NEKTAR++_LIBRARIES}
+      ${NEKTAR++_TP_LIBRARIES}
+      vtkIOXML
+    </LIBS>
+    <FilePatterns>
+      *.chk *.fld
+    </FilePatterns>
+    <Files components="M">
+      avtNektarPPFileFormat.C
+      avtNektarPPOptions.C
+<!--      avtNektar++Field.C -->
+    </Files>
+    <Files components="E">
+      avtNektarPPFileFormat.C
+      avtNektarPPOptions.C
+<!--      avtNektar++Field.C -->
+    </Files>
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
