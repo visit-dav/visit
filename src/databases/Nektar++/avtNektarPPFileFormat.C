@@ -521,14 +521,48 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       }
     }
 
-    // If at least two values (u,v) are found then create a velocity
-    // variable that will be spectral only.
+    // If at least two values (u,v) or (uv,w) are found then
+    // create a velocity variable for the refined and spectral mesh.
     if( vector_dim >= 2 )
     {
-      // Though not needed just so the user knows the velocity has the
-      // potential for the spectral evaluation prefix it with SE_.
-      std::string varname;
+      // The refined mesh velosity will be an expression.
+      std::string varname, definition;
 
+      if( vector_dim == 2 )
+      {
+        varname = std::string("velocity_uv");
+        definition = std::string("{u, v, 0}");
+      }
+      else //if( vector_dim == 3 )
+      {
+        varname = std::string("velocity_uvw");
+        definition = std::string("{u, v, w}");
+      }
+
+      Expression velocity_expr;
+      velocity_expr.SetName(varname);
+      velocity_expr.SetDefinition(definition);
+      velocity_expr.SetType(Expression::VectorMeshVar);
+      md->AddExpression(&velocity_expr);
+
+      // if( vector_dim == 2 )
+      // {
+      //        varname = std::string("velocity_uv_magnitude");
+      //        definition = std::string("magnitude(velocity_uv)");
+      // }
+      // else //if( vector_dim == 3 )
+      // {
+      //        varname = std::string("velocity_uvw_magnitude");
+      //        definition = std::string("magnitude(velocity_uvw)");
+      // }
+
+      // Expression magnitude_expr;
+      // magnitude_expr.SetName(varname);
+      // magnitude_expr.SetDefinition(definition);
+      // magnitude_expr.SetType(Expression::ScalarMeshVar);
+      // md->AddExpression(&magnitude_expr);
+
+      // Create a velocity for the spectral evaluation prefix it with SE_.
       if( vector_dim == 2 )
         varname = std::string("SE_velocity_uv");
       else //if( vector_dim == 3 )
@@ -542,23 +576,8 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       
       AddVectorVarToMetaData(md, varname, std::string("SE_")+meshName,
                              cent, vector_dim);
+
     }
-
-    //
-    //
-    // Here's the way to add expressions:
-    //Expression momentum_expr;
-    //momentum_expr.SetName("momentum");
-    //momentum_expr.SetDefinition("{u, v}");
-    //momentum_expr.SetType(Expression::VectorMeshVar);
-    //md->AddExpression(&momentum_expr);
-
-    //Expression KineticEnergy_expr;
-    //KineticEnergy_expr.SetName("KineticEnergy");
-    //KineticEnergy_expr.SetDefinition("0.5*(momentum*momentum)/(rho*rho)");
-    //KineticEnergy_expr.SetType(Expression::ScalarMeshVar);
-    //md->AddExpression(&KineticEnergy_expr);
-    //
 }
 
 
@@ -875,6 +894,10 @@ avtNektarPPFileFormat::GetVar(int timestate, const char *varname)
 vtkDataArray *
 avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
 {
+  if( std::string(varname) != std::string("SE_velocity_uv") &&
+      std::string(varname) != std::string("SE_velocity_uvw") )
+    return 0;
+
     //----------------------------------------------
     // Read in mesh from input file
     SpatialDomains::MeshGraphSharedPtr graphShPt =
