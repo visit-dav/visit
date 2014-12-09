@@ -47,7 +47,9 @@
 
 #include <vtkUnstructuredGrid.h>
 
+#include <SpatialDomains/MeshGraph.h>
 #include <MultiRegions/ExpList.h>
+#include <SpatialDomains/Geometry.h>
 
 #include <vector>
 
@@ -114,7 +116,15 @@ class avtNektarPPFileFormat : public avtMTSDFileFormat
 
     vtkDataSet *refinedDataSet;
 
-    std::string readfile( std::string var );
+    std::string GetNektarFileAsXMLString( std::string var );
+
+    double GetNektarVar( const Nektar::Array<OneD, NekDouble> &coords,
+                         const int nt_el,
+                         const int index ) const;
+  
+    void GetNektarVectorVar( const Nektar::Array<OneD, NekDouble> &coords,
+                             const int nt_el,
+                             double *vec ) const;
 
     Nektar::MultiRegions::ExpListSharedPtr nektar_field[3];
 };

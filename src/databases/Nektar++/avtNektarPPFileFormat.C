@@ -272,6 +272,46 @@ avtNektarPPFileFormat::GetNTimesteps(void)
 
 
 // ****************************************************************************
+//  Method: avtNektarPPFileFormat::GetCycles
+//
+//  Purpose:
+//      Returns the cycles
+//
+//  Arguments:
+//      c          the cycles
+//
+//  Programmer: allen
+//  Creation:   
+//
+// ****************************************************************************
+
+void avtNektarPPFileFormat::GetCycles(std::vector<int> &cycles)
+{
+    cycles = m_cycles;
+}
+
+
+// ****************************************************************************
+//  Method: avtNektarPPFileFormat::GetTimes
+//
+//  Purpose:
+//      Returns the times
+//
+//  Arguments:
+//      t          the times
+//
+//  Programmer: allen
+//  Creation:   
+//
+// ****************************************************************************
+
+void avtNektarPPFileFormat::GetTimes(std::vector<double> &times)
+{
+    times = m_times;
+}
+
+
+// ****************************************************************************
 // Method: avtNektarPPFileFormat::Initialize
 //
 // Purpose:
@@ -289,7 +329,7 @@ avtNektarPPFileFormat::Initialize()
 
   if( refinedDataSet == NULL )
   {
-    std::string xmlstr = readfile("");
+    std::string xmlstr = GetNektarFileAsXMLString("");
 
     ofstream outstream("/tmp/visit_tmp.vtu");
 
@@ -447,7 +487,7 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
     md->Add(mmd);
 
 
-    // Hidden mesh for the spectral element evaluation.
+    // Original mesh for the spectral element evaluation.
     mmd = new avtMeshMetaData(std::string("SE_") + meshName,
                               nblocks, block_origin,
                               cell_origin, group_origin,
@@ -570,6 +610,7 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
 
     int nVerts = graphShPt->GetNvertices();
 
+
     // VTK structure for holding the mesh points. 
     vtkPoints *vtkPts = vtkPoints::New();
     vtkPts->SetDataTypeToDouble();
@@ -595,162 +636,132 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
     if( graphShPt->GetMeshDimension() == 2 )
     {
       // Add in all of the triangle elements
+      vtkTriangle *tri = vtkTriangle::New();
       SpatialDomains::TriGeomMap triGeomMap = graphShPt->GetAllTriGeoms();
-
-      if( triGeomMap.size() )
-      {
-        vtkTriangle *tri = vtkTriangle::New();
+      SpatialDomains::TriGeomMapIter triGeomMapIter = triGeomMap.begin();
         
-        SpatialDomains::TriGeomMapIter triGeomMapIter = triGeomMap.begin();
+      while( triGeomMapIter != triGeomMap.end() )
+      {       
+        SpatialDomains::TriGeomSharedPtr triGeom = triGeomMapIter->second;
         
-        while( triGeomMapIter != triGeomMap.end() )
-        {       
-          SpatialDomains::TriGeomSharedPtr triGeom = triGeomMapIter->second;
-          
-          for( int i=0; i<3; ++i )
-            tri->GetPointIds()->SetId( i, triGeom->GetVertex(i)->GetVid() );
-          
-          ugrid->InsertNextCell( tri->GetCellType(), tri->GetPointIds() );
-          
-          ++triGeomMapIter;
-        }
+        for( int i=0; i<triGeom->GetNumVerts(); ++i )
+          tri->GetPointIds()->SetId( i, triGeom->GetVertex(i)->GetVid() );
         
-        tri->Delete();
+        ugrid->InsertNextCell( tri->GetCellType(), tri->GetPointIds() );
+        
+        ++triGeomMapIter;
       }
+        
+      tri->Delete();
       
       // Add in all of the quad elements
+      vtkQuad *quad = vtkQuad::New();
       SpatialDomains::QuadGeomMap quadGeomMap = graphShPt->GetAllQuadGeoms();
-      
-      if( quadGeomMap.size() )
-      {
-        vtkQuad *quad = vtkQuad::New();
+      SpatialDomains::QuadGeomMapIter quadGeomMapIter = quadGeomMap.begin();
         
-        SpatialDomains::QuadGeomMapIter quadGeomMapIter = quadGeomMap.begin();
+      while( quadGeomMapIter != quadGeomMap.end() )
+      {       
+        SpatialDomains::QuadGeomSharedPtr quadGeom = quadGeomMapIter->second;
         
-        while( quadGeomMapIter != quadGeomMap.end() )
-        {       
-          SpatialDomains::QuadGeomSharedPtr quadGeom = quadGeomMapIter->second;
-
-          for( int i=0; i<4; ++i )
-            quad->GetPointIds()->SetId( i, quadGeom->GetVertex(i)->GetVid() );
-          
-          ugrid->InsertNextCell( quad->GetCellType(), quad->GetPointIds() );
-          
-          ++quadGeomMapIter;
-        }
+        for( int i=0; i<quadGeom->GetNumVerts(); ++i )
+          quad->GetPointIds()->SetId( i, quadGeom->GetVertex(i)->GetVid() );
         
-        quad->Delete();
+        ugrid->InsertNextCell( quad->GetCellType(), quad->GetPointIds() );
+        
+        ++quadGeomMapIter;
       }
+        
+      quad->Delete();
     }
 
     // for a 3D mesh read in the tet, pyramid, prism, and hex elements.
     else if( graphShPt->GetMeshDimension() == 3 )
     {
       // Add in all of the tet elements
+      vtkTetra *tet = vtkTetra::New();
       SpatialDomains::TetGeomMap tetGeomMap = graphShPt->GetAllTetGeoms();
-
-      if( tetGeomMap.size() )
-      {
-        vtkTetra *tet = vtkTetra::New();
+      SpatialDomains::TetGeomMapIter tetGeomMapIter = tetGeomMap.begin();
         
-        SpatialDomains::TetGeomMapIter tetGeomMapIter = tetGeomMap.begin();
+      while( tetGeomMapIter != tetGeomMap.end() )
+      {       
+        SpatialDomains::TetGeomSharedPtr tetGeom = tetGeomMapIter->second;
         
-        while( tetGeomMapIter != tetGeomMap.end() )
-        {       
-          SpatialDomains::TetGeomSharedPtr tetGeom = tetGeomMapIter->second;
-          
-          for( int i=0; i<4; ++i )
-            tet->GetPointIds()->SetId( i, tetGeom->GetVertex(i)->GetVid() );
-          
-          ugrid->InsertNextCell( tet->GetCellType(), tet->GetPointIds() );
-          
-          ++tetGeomMapIter;
-        }
+        for( int i=0; i<tetGeom->GetNumVerts(); ++i )
+          tet->GetPointIds()->SetId( i, tetGeom->GetVertex(i)->GetVid() );
         
-        tet->Delete();
+        ugrid->InsertNextCell( tet->GetCellType(), tet->GetPointIds() );
+        
+        ++tetGeomMapIter;
       }
+        
+      tet->Delete();
 
       // Add in all of the pyramid elements
+      vtkPyramid *pyramid = vtkPyramid::New();
       SpatialDomains::PyrGeomMap pyramidGeomMap = graphShPt->GetAllPyrGeoms();
-
-      if( pyramidGeomMap.size() )
-      {
-        vtkPyramid *pyramid = vtkPyramid::New();
+      SpatialDomains::PyrGeomMapIter pyramidGeomMapIter = pyramidGeomMap.begin();
+      
+      while( pyramidGeomMapIter != pyramidGeomMap.end() )
+      {       
+        SpatialDomains::PyrGeomSharedPtr pyramidGeom = pyramidGeomMapIter->second;
         
-        SpatialDomains::PyrGeomMapIter pyramidGeomMapIter = pyramidGeomMap.begin();
-
-        while( pyramidGeomMapIter != pyramidGeomMap.end() )
-        {       
-          SpatialDomains::PyrGeomSharedPtr pyramidGeom = pyramidGeomMapIter->second;
-
-          for( int i=0; i<5; ++i )
-            pyramid->GetPointIds()->SetId( i, pyramidGeom->GetVertex(i)->GetVid() );
+        for( int i=0; i<pyramidGeom->GetNumVerts(); ++i )
+          pyramid->GetPointIds()->SetId( i, pyramidGeom->GetVertex(i)->GetVid() );
           
-          ugrid->InsertNextCell( pyramid->GetCellType(), pyramid->GetPointIds() );
+        ugrid->InsertNextCell( pyramid->GetCellType(), pyramid->GetPointIds() );
 
-          ++pyramidGeomMapIter;
-        }
-        
-        pyramid->Delete();
+        ++pyramidGeomMapIter;
       }
+        
+      pyramid->Delete();
 
       // Add in all of the prism elements
+      vtkWedge *wedge = vtkWedge::New();
       SpatialDomains::PrismGeomMap prismGeomMap = graphShPt->GetAllPrismGeoms();
+      SpatialDomains::PrismGeomMapIter prismGeomMapIter = prismGeomMap.begin();
+        
+      while( prismGeomMapIter != prismGeomMap.end() )
+      {       
+        SpatialDomains::PrismGeomSharedPtr prismGeom = prismGeomMapIter->second;        
+        // for( int i=0; i<prismGeom->GetNumVerts(); ++i )
+        //   wedge->GetPointIds()->SetId( i, prismGeom->GetVertex(i)->GetVid() );
 
-      if( prismGeomMap.size() )
-      {
-        vtkWedge *wedge = vtkWedge::New();
+        // Nektar++ uses a prism whereas VTK uses a wedge which have
+        // a slightly different ordering. A prism would be decribed
+        // via a quad and two points. Whereas a wedge would be
+        // described via two triangles.
+        wedge->GetPointIds()->SetId( 0, prismGeom->GetVertex(0)->GetVid() );
+        wedge->GetPointIds()->SetId( 1, prismGeom->GetVertex(1)->GetVid() );
+        wedge->GetPointIds()->SetId( 2, prismGeom->GetVertex(4)->GetVid() );
+        wedge->GetPointIds()->SetId( 3, prismGeom->GetVertex(3)->GetVid() );
+        wedge->GetPointIds()->SetId( 4, prismGeom->GetVertex(2)->GetVid() );
+        wedge->GetPointIds()->SetId( 5, prismGeom->GetVertex(5)->GetVid() );
         
-        SpatialDomains::PrismGeomMapIter prismGeomMapIter = prismGeomMap.begin();
+        ugrid->InsertNextCell( wedge->GetCellType(), wedge->GetPointIds() );
         
-        while( prismGeomMapIter != prismGeomMap.end() )
-        {       
-          SpatialDomains::PrismGeomSharedPtr prismGeom = prismGeomMapIter->second;        
-          // for( int i=0; i<6; ++i )
-          //   wedge->GetPointIds()->SetId( i, prismGeom->GetVertex(i)->GetVid() );
-
-          // Nektar++ uses a prism whereas VTK uses a wedge which have
-          // a slightly different ordering. A prism would be decribed
-          // via a quad and two points. Whereas a wedge would be
-          // described via two triangles.
-          wedge->GetPointIds()->SetId( 0, prismGeom->GetVertex(0)->GetVid() );
-          wedge->GetPointIds()->SetId( 1, prismGeom->GetVertex(1)->GetVid() );
-          wedge->GetPointIds()->SetId( 2, prismGeom->GetVertex(4)->GetVid() );
-          wedge->GetPointIds()->SetId( 3, prismGeom->GetVertex(3)->GetVid() );
-          wedge->GetPointIds()->SetId( 4, prismGeom->GetVertex(2)->GetVid() );
-          wedge->GetPointIds()->SetId( 5, prismGeom->GetVertex(5)->GetVid() );
-          
-          ugrid->InsertNextCell( wedge->GetCellType(), wedge->GetPointIds() );
-          
-          ++prismGeomMapIter;
-        }
-        
-        wedge->Delete();
+        ++prismGeomMapIter;
       }
+        
+      wedge->Delete();
 
       // Add in all of the hex elements
+      vtkHexahedron *hex = vtkHexahedron::New();
       SpatialDomains::HexGeomMap hexGeomMap = graphShPt->GetAllHexGeoms();
+      SpatialDomains::HexGeomMapIter hexGeomMapIter = hexGeomMap.begin();
 
-      if( hexGeomMap.size() )
-      {
-        vtkHexahedron *hex = vtkHexahedron::New();
-
-        SpatialDomains::HexGeomMapIter hexGeomMapIter = hexGeomMap.begin();
-
-        while( hexGeomMapIter != hexGeomMap.end() )
-        {       
-          SpatialDomains::HexGeomSharedPtr hexGeom = hexGeomMapIter->second;
-          
-          for( int i=0; i<8; ++i )
-            hex->GetPointIds()->SetId( i, hexGeom->GetVertex(i)->GetVid() );
-          
-          ugrid->InsertNextCell( hex->GetCellType(), hex->GetPointIds() );
-          
-          ++hexGeomMapIter;
-        }
-    
-        hex->Delete();
+      while( hexGeomMapIter != hexGeomMap.end() )
+      {       
+        SpatialDomains::HexGeomSharedPtr hexGeom = hexGeomMapIter->second;
+        
+        for( int i=0; i<8; ++i )
+          hex->GetPointIds()->SetId( i, hexGeom->GetVertex(i)->GetVid() );
+        
+        ugrid->InsertNextCell( hex->GetCellType(), hex->GetPointIds() );
+        
+        ++hexGeomMapIter;
       }
+    
+      hex->Delete();
     }
 
     // Save the pointer to the nektar++ field data for use in the
@@ -817,7 +828,7 @@ avtNektarPPFileFormat::GetVar(int timestate, const char *varname)
 {
   //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
 
-  // At thsi point the original nektar++ field has been refined and
+  // At this point the original nektar++ field has been refined and
   // converted into a VTK mesh so just grab the variable needed.
   vtkDataArray *dataArray =
       refinedDataSet->GetPointData()->GetArray(varname);
@@ -864,33 +875,23 @@ avtNektarPPFileFormat::GetVar(int timestate, const char *varname)
 vtkDataArray *
 avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
 {
-    const char *vecCompStr[] = {"u", "v", "z"};
-
-    vtkDataArray *dataArray[3] = {0,0,0};
-
-    int nComps = 0;  // This is the rank of the vector - typically 2 or 3.
-    
-    for( int i=0; i<3; ++i )
-    {
-      for( int j=0; j<m_scalarVarNames.size(); ++j )
-      {
-        if( m_scalarVarNames[j] == std::string(vecCompStr[i]) )
-        {
-          dataArray[i] =
-            refinedDataSet->GetPointData()->GetArray(vecCompStr[i]);
-
-          ++nComps;
-        }
-      }
-    }
-
     //----------------------------------------------
     // Read in mesh from input file
     SpatialDomains::MeshGraphSharedPtr graphShPt =
       SpatialDomains::MeshGraph::Read(m_meshFile);
 
+    // For each vertex evluate the velocity at that location using the
+    // previously stored Nektar++ fields.
     int nVerts = graphShPt->GetNvertices();
 
+    // Vertices may be used multiple times in the mesh. As such,
+    // evaluate each vertex once using a counter.
+    std::vector< int > vertexCheck(nVerts);
+
+    for( int i=0; i<nVerts; ++i )
+      vertexCheck[i] = 0;
+
+    // VTK array for the vector values.
     vtkFloatArray *rv = vtkFloatArray::New();
 
     // Set the number of components before setting the number of tuples
@@ -898,31 +899,171 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
     rv->SetNumberOfComponents(3);
     rv->SetNumberOfTuples(nVerts);
 
-    float vec[3];
-      
-    for (int i = 0 ; i < nVerts ; i++)
+    Nektar::Array<OneD, NekDouble> coords(3);
+    double vec[3];
+
+    // for a 2D mesh read in the trianagle and quad elements.
+    if( graphShPt->GetMeshDimension() == 2 )
     {
+      // Add in all of the triangle elements
+      SpatialDomains::TriGeomMap triGeomMap = graphShPt->GetAllTriGeoms();
+      SpatialDomains::TriGeomMapIter triGeomMapIter = triGeomMap.begin();
+        
+      while( triGeomMapIter != triGeomMap.end() )
+      {       
+        int nt_el = triGeomMapIter->first;
+        SpatialDomains::TriGeomSharedPtr triGeom = triGeomMapIter->second;
 
-      // TODO : Get the variable values at the original nodes.
-      for (int j = 0 ; j < nComps ; j++)
-        vec[j] = 0;
+        for( int i=0; i<triGeom->GetNumVerts(); ++i )
+        {
+          int vertex_id = triGeom->GetVertex(i)->GetVid();
+          
+          if( vertexCheck[vertex_id]++ == 0 )
+          {
+            graphShPt->GetVertex(vertex_id)->GetCoords(coords);
+            GetNektarVectorVar( coords, nt_el, vec );
+            rv->SetTuple(vertex_id, vec); 
+          }
+        }
+        
+        ++triGeomMapIter;
+      }
       
-      for (int j = nComps ; j < 3 ; j++)
-        vec[j] = 0;
+      // Add in all of the quad elements
+      SpatialDomains::QuadGeomMap quadGeomMap = graphShPt->GetAllQuadGeoms();
+      SpatialDomains::QuadGeomMapIter quadGeomMapIter = quadGeomMap.begin();
+        
+      while( quadGeomMapIter != quadGeomMap.end() )
+      {       
+        int nt_el = quadGeomMapIter->first;
+        SpatialDomains::QuadGeomSharedPtr quadGeom = quadGeomMapIter->second;
+        
+        for( int i=0; i<quadGeom->GetNumVerts(); ++i )
+        {
+          int vertex_id = quadGeom->GetVertex(i)->GetVid();
+          
+          if( vertexCheck[vertex_id]++ == 0 )
+          {
+            graphShPt->GetVertex(vertex_id)->GetCoords(coords);
+            GetNektarVectorVar( coords, nt_el, vec );
+            rv->SetTuple(vertex_id, vec); 
+          }
+        }
+          
+        ++quadGeomMapIter;
+      }
+    }
 
-      rv->SetTuple(i, vec); 
+    // for a 3D mesh read in the tet, pyramid, prism, and hex elements.
+    else if( graphShPt->GetMeshDimension() == 3 )
+    {
+      // Add in all of the tet elements
+      SpatialDomains::TetGeomMap tetGeomMap = graphShPt->GetAllTetGeoms();
+      SpatialDomains::TetGeomMapIter tetGeomMapIter = tetGeomMap.begin();
+        
+      while( tetGeomMapIter != tetGeomMap.end() )
+      {       
+        int nt_el = tetGeomMapIter->first;
+        SpatialDomains::TetGeomSharedPtr tetGeom = tetGeomMapIter->second;
+
+        for( int i=0; i<tetGeom->GetNumVerts(); ++i )
+        {
+          int vertex_id = tetGeom->GetVertex(i)->GetVid();
+          
+          if( vertexCheck[vertex_id]++ == 0 )
+          {
+            graphShPt->GetVertex(vertex_id)->GetCoords(coords);
+            GetNektarVectorVar( coords, nt_el, vec );
+            rv->SetTuple(vertex_id, vec); 
+          }
+        }
+        
+        ++tetGeomMapIter;
+      }
+        
+      // Add in all of the pyramid elements
+      SpatialDomains::PyrGeomMap pyramidGeomMap = graphShPt->GetAllPyrGeoms();
+      SpatialDomains::PyrGeomMapIter pyramidGeomMapIter = pyramidGeomMap.begin();
+      
+      while( pyramidGeomMapIter != pyramidGeomMap.end() )
+      {       
+        int nt_el = pyramidGeomMapIter->first;
+        SpatialDomains::PyrGeomSharedPtr pyramidGeom = pyramidGeomMapIter->second;
+
+        for( int i=0; i<pyramidGeom->GetNumVerts(); ++i )
+        {
+          int vertex_id = pyramidGeom->GetVertex(i)->GetVid();
+          
+          if( vertexCheck[vertex_id]++ == 0 )
+          {
+            graphShPt->GetVertex(vertex_id)->GetCoords(coords);
+            GetNektarVectorVar( coords, nt_el, vec );
+            rv->SetTuple(vertex_id, vec); 
+          }
+        }
+
+        ++pyramidGeomMapIter;
+      }
+        
+      // Add in all of the prism elements
+      SpatialDomains::PrismGeomMap prismGeomMap = graphShPt->GetAllPrismGeoms();
+      SpatialDomains::PrismGeomMapIter prismGeomMapIter = prismGeomMap.begin();
+        
+      while( prismGeomMapIter != prismGeomMap.end() )
+      {       
+        int nt_el = prismGeomMapIter->first;
+        SpatialDomains::PrismGeomSharedPtr prismGeom = prismGeomMapIter->second;
+
+        for( int i=0; i<prismGeom->GetNumVerts(); ++i )
+        {
+          int vertex_id = prismGeom->GetVertex(i)->GetVid();
+          
+          if( vertexCheck[vertex_id]++ == 0 )
+          {
+            graphShPt->GetVertex(vertex_id)->GetCoords(coords);
+            GetNektarVectorVar( coords, nt_el, vec );
+            rv->SetTuple(vertex_id, vec); 
+          }
+        }
+        
+        ++prismGeomMapIter;
+      }
+        
+      // Add in all of the hex elements
+      SpatialDomains::HexGeomMap hexGeomMap = graphShPt->GetAllHexGeoms();
+      SpatialDomains::HexGeomMapIter hexGeomMapIter = hexGeomMap.begin();
+
+      while( hexGeomMapIter != hexGeomMap.end() )
+      {       
+        int nt_el = hexGeomMapIter->first;
+        SpatialDomains::HexGeomSharedPtr hexGeom = hexGeomMapIter->second;
+
+        for( int i=0; i<hexGeom->GetNumVerts(); ++i )
+        {
+          int vertex_id = hexGeom->GetVertex(i)->GetVid();
+          
+          if( vertexCheck[vertex_id]++ == 0 )
+          {
+            graphShPt->GetVertex(vertex_id)->GetCoords(coords);
+            GetNektarVectorVar( coords, nt_el, vec );
+            rv->SetTuple(vertex_id, vec); 
+          }
+        }
+        
+        ++hexGeomMapIter;
+      }
     }
 
     return rv;    
 }
 
-
 // ****************************************************************************
-//  Method: avtNektarPPFileFormat::readFile
+//  Method: avtNektarPPFileFormat::GetNektarFileAsXMLString
 //
 //  Purpose:
 //      Reads Nektar++ file and creates a refined mesh with all values
-//      on the mesh for display using linear interpolation.
+//      on the mesh for display using linear interpolation. Returns an
+//      XML string that VTK can convert into a vtkDataSet.
 //
 //      Code is from the Nektar++ postporcessing utility FldToVtk
 //
@@ -934,7 +1075,7 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
 //
 // ****************************************************************************
 
-std::string avtNektarPPFileFormat::readfile( std::string var )
+std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
 {
   //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
 
@@ -970,6 +1111,16 @@ std::string avtNektarPPFileFormat::readfile( std::string var )
   vector<LibUtilities::FieldDefinitionsSharedPtr> fielddef;
   vector<vector<NekDouble> > fielddata;
   LibUtilities::Import(fieldfile,fielddef,fielddata);
+
+  // std::cerr << "nVerts = " << graphShPt->GetNvertices() << std::endl;
+
+  // std::cerr << "nfields = " << fielddef[0]->m_fields.size() << std::endl;
+
+  // std::cerr << fielddata.size() << std::endl;
+
+  // for(int i = 0; i < fielddata.size(); ++i)
+  //   std::cerr << fielddata[i].size()<< std::endl;
+
   bool useFFT = false;
   bool dealiasing = false;
   //----------------------------------------------
@@ -1020,7 +1171,7 @@ std::string avtNektarPPFileFormat::readfile( std::string var )
 
   for(int i = 0; i < nfields; ++i)
   {
-    if( var == std::string(fielddef[0]->m_fields[i]) )
+    if( var == std::string( fielddef[0]->m_fields[i]) )
     {
       fieldIndex = i;
       break;
@@ -1230,40 +1381,55 @@ std::string avtNektarPPFileFormat::readfile( std::string var )
 
 
 // ****************************************************************************
-//  Method: avtNektarPPFileFormat::GetCycles
+//  Method: avtNektarPPFileFormat::GetNektarVar
 //
 //  Purpose:
-//      Returns the cycles
+//      Returns the vector component value at an arbitrary location
+//      using the spectral interpolation.
 //
 //  Arguments:
-//      c          the cycles
+//      coords     the point
+//      nt_el      index of the nektar++ element
+//      index      index of the vector component
 //
 //  Programmer: allen
 //  Creation:   
 //
 // ****************************************************************************
 
-void avtNektarPPFileFormat::GetCycles(std::vector<int> &cycles)
+double avtNektarPPFileFormat::GetNektarVar( const Nektar::Array<OneD, NekDouble> &coords,
+                                            const int nt_el,
+                                            const int index ) const
 {
-    cycles = m_cycles;
+    if( 3 <= index || !nektar_field[index] )
+      return 0.0;
+
+    Nektar::Array<Nektar::OneD, Nektar::NekDouble> physVals =
+      nektar_field[index]->GetPhys() + nektar_field[index]->GetPhys_Offset(nt_el);
+    return nektar_field[index]->GetExp(nt_el)->PhysEvaluate(coords, physVals);
 }
 
-
 // ****************************************************************************
-//  Method: avtNektarPPFileFormat::GetTimes
+//  Method: avtNektarPPFileFormat::GetNektarVectorVar
 //
 //  Purpose:
-//      Returns the times
+//      Returns the vector value at an arbitrary location
+//      using the spectral interpolation.
 //
 //  Arguments:
-//      t          the times
+//      coords     the point
+//      nt_el      index of the nektar++ element
+//      vec        vector value
 //
-//  Programmer: allen
-//  Creation:   
+//  Programmer: Allen Sanderson
+//  Creation:   Fri Nov 7 13:51:33 PST 2014
 //
 // ****************************************************************************
 
-void avtNektarPPFileFormat::GetTimes(std::vector<double> &times)
+void avtNektarPPFileFormat::GetNektarVectorVar( const Nektar::Array<OneD, NekDouble> &coords,
+                                                const int nt_el,
+                                                double *vec ) const
 {
-    times = m_times;
+  for( int i=0; i<3; ++i )
+    vec[i] = GetNektarVar( coords, nt_el, i );
 }
