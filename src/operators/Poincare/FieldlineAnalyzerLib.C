@@ -2734,6 +2734,8 @@ FieldlineLib::fieldlinePeriod( std::vector< Point > &ptList,
                 << std::endl;
     }
   }
+
+  return bestPeriod;
 }
 
 
