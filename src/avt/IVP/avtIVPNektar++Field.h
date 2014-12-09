@@ -91,9 +91,7 @@ class IVP_API avtIVPNektarPPField: public avtIVPVTKField
  protected:
 
   // Nektar++ field
-#ifdef NEKTAR_PLUS_PLUS_FOUND
   Nektar::MultiRegions::ExpListSharedPtr nektar_field[3];
-#endif
 
   // Lookup table for going from VTK elements to Nektar elements
 //  int *nektar_element_lookup;

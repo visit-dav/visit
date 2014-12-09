@@ -2225,7 +2225,7 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
 #ifdef NEKTAR_PLUS_PLUS_FOUND
          return new avtIVPNektarPPField(ds, *locator);
 #else
-        EXCEPTION1(ImproperUseException, "Requesting Nektar++ interpolation but VisIt has not been built with Nektar++ support .");
+        EXCEPTION1(ImproperUseException, "Requesting Nektar++ interpolation but VisIt has not been built with Nektar++ support.");
 
 #endif
       }
