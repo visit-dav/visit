@@ -82,9 +82,6 @@ function bv_ccmio_dry_run
     echo "Dry run option not set for ccmio."
   fi
 }
-# *************************************************************************** #
-#                         Function 8.11, build_ccmio                          #
-# *************************************************************************** #
 
 function apply_ccmio_261_darwin_patch
 {
@@ -120,7 +117,7 @@ diff -c a/config/config.system libccmio-2.6.1/config/config.system
       ppc64-unknown-linux-gnu)
   	echo ppc64-unknown-linux-gnu ;;
   
-!     i386-apple-darwin8* | i386-apple-darwin9* | i386-apple-darwin10* | i386-apple-darwin11* | i386-apple-darwin12*)
+!     i386-apple-darwin8* | i386-apple-darwin9* | i386-apple-darwin10* | i386-apple-darwin11* | i386-apple-darwin12* | i386-apple-darwin13*)
   	echo i386-apple-darwin8 ;;
   
 +     powerpc-apple-darwin7* | powerpc-apple-darwin8* | powerpc-apple-darwin9* )
@@ -274,6 +271,14 @@ function apply_ccmio_patch
 
    return 0
 }
+
+# *************************************************************************** #
+#                         Function 8.11, build_ccmio                          #
+#                                                                             #
+# Kevin Griffin, Thu Nov 13 18:20:10 PST 2014                                 #
+# Added additional option (i386-apple-darwin13*) to patch                     #
+# apply_ccmio_261_darwin_patch to support OS X 10.9 Mavericks.                #
+# *************************************************************************** #
 
 function build_ccmio
 {
