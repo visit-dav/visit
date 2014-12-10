@@ -27,7 +27,7 @@ function bv_nektar++_alt_nektar++_dir
 
 function bv_nektar++_depends_on
 {
-    depends_on="cmake"
+    depends_on="cmake boost"
 
     if [[ "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "yes" ]]; then
         echo ""
@@ -117,11 +117,11 @@ function bv_nektar++_host_profile
 function bv_nektar++_ensure
 {
     if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" && "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "no" ]] ; then
-        ensure_built_or_ready "nektar_PLUS_PLUS" $NEKTAR_PLUS_PLUS_VERSION $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE $NEKTAR_PLUS_PLUS_URL 
+        ensure_built_or_ready "nektar++" $NEKTAR_PLUS_PLUS_VERSION $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE $NEKTAR_PLUS_PLUS_URL 
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_NEKTAR_PLUS_PLUS="no"
-            error "Unable to build NEKTAR_PLUS_PLUS.  ${NEKTAR_PLUS_PLUS_FILE} not found."
+            error "Unable to build Netar++.  ${NEKTAR_PLUS_PLUS_FILE} not found."
         fi
     fi
 }
@@ -304,6 +304,18 @@ function build_nektar++
 #    if test "${OPSYS}" = "Darwin" ; then
 #        ntopts="${ntopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${nektar_plus_plus_inst_path}/lib"
 #    fi
+
+    if test "x${DO_BOOST}" = "xyes"; then
+        info "boost requested.  Configuring NEKTAR++ with boost support."
+        ntopts="${ntopts} -DBOOST_ROOT:PATH=${VISITDIR}/boost/${BOOST_VERSION}/${VISITARCH}"
+
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            export DYLD_LIBRARY_PATH="$VISITDIR/boost/$BOOST_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+        else
+            export LD_LIBRARY_PATH="$VISITDIR/boost/$BOOST_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+        fi
+    fi
+
 
     if test "x${DO_ZLIB}" = "xyes"; then
         info "zlib requested.  Configuring NEKTAR++ with zlib support."

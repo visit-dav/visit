@@ -696,7 +696,6 @@ ELSE(APPLE OR WIN32)
     OPTION(VISIT_USE_X "Use X11" ON)
 ENDIF(APPLE OR WIN32)
 OPTION(VISIT_USE_GLEW "Use GLEW to call GL functions." ON)
-OPTION(VISIT_USE_BOOST "Use system boost library." ON)
 
 OPTION(VISIT_THREAD "Build VisIt with thread support." OFF)
 
@@ -761,6 +760,7 @@ ENDIF(WIN32)
 #       and link).
 VISIT_3RDPARTY_VAR(ADIOS_DIR     "Path containing the ADIOS library's include and lib")
 VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
+VISIT_3RDPARTY_VAR(BOOST_DIR     "Path containing the BOOST library's include and lib")
 VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include and lib")
 VISIT_3RDPARTY_VAR(CCMIO_DIR     "Path containing the CCMIO library's include and lib")
 VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
@@ -778,8 +778,8 @@ VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include a
 VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
-VISIT_3RDPARTY_VAR(NEKTAR++_DIR      "Path containing the Nektar++ library's include and lib")
-VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP   "Nektar++ library dependencies")
+VISIT_3RDPARTY_VAR(NEKTAR++_DIR  "Path containing the Nektar++ library's include and lib")
+VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP "Nektar++ library dependencies")
 VISIT_3RDPARTY_VAR(OPENGL_DIR    "Path containing the OpenGL library's include and lib")
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
@@ -1001,9 +1001,7 @@ INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CheckSymbolExists.cmake)
-IF(VISIT_USE_BOOST)
-    INCLUDE(${CMAKE_ROOT}/Modules/FindBoost.cmake)
-ENDIF(VISIT_USE_BOOST)
+
 IF(VISIT_USE_X)
     INCLUDE(${CMAKE_ROOT}/Modules/FindX11.cmake)
     IF(NOT X11_X11_LIB)
@@ -1020,40 +1018,56 @@ ELSE(VISIT_USE_X)
 ENDIF(VISIT_USE_X)
 INCLUDE(${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
 
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItBoost.cmake)
+IF(BOOST_FOUND)
+  SET(HAVE_BOOST 1)
+ENDIF(BOOST_FOUND)
+
+#IF(VISIT_USE_BOOST)
+#    INCLUDE(${CMAKE_ROOT}/Modules/FindBoost.cmake)
+#ENDIF(VISIT_USE_BOOST)
+
+# Cmake's FindBoost sets Boost_VERSION whereas
+# VisIt's FindVisItBoost's sets BOOST_VERSION.
+# As such, copy over from one to the other. However, we use
+# SET_APP_VERSION in the site-config file which does all that so
+# none of this code is needed any more.
+
+#SET(Boost_VERSION ${BOOST_VERSION})
+
 # Set the boost directory if requested otherwise use the visit built in.
-IF(Boost_VERSION)
-    MESSAGE(STATUS "  Boost_VERSION=${Boost_VERSION}")
+#IF(Boost_VERSION)
+#    MESSAGE(STATUS "  Boost_VERSION=${Boost_VERSION}")
+#    # FindBoost.cmake does not always properly set the major, minor
+#    # and subminor versions correctly, so do that ourselves.
+#    STRING(REPLACE "." "0" Boost_VERSION_NUMERIC "${Boost_VERSION}")
+#    SET(Boost_MAJOR_VERSION 0)
+#    SET(Boost_MINOR_VERSION 0)
+#    SET(Boost_SUBMINOR_VERSION 0)
+#    IF(NOT "${Boost_VERSION_NUMERIC}" STREQUAL "0")
+#        MATH(EXPR Boost_MAJOR_VERSION "${Boost_VERSION_NUMERIC} / 100000")
+#        MATH(EXPR Boost_MINOR_VERSION "${Boost_VERSION_NUMERIC} / 100 % 1000")
+#        MATH(EXPR Boost_SUBMINOR_VERSION "${Boost_VERSION_NUMERIC} % 100")
+#    ENDIF(NOT "${Boost_VERSION_NUMERIC}" STREQUAL "0")
+#    MESSAGE(STATUS "  Boost_MAJOR_VERSION=${Boost_MAJOR_VERSION}")
+#    MESSAGE(STATUS "  Boost_MINOR_VERSION=${Boost_MINOR_VERSION}")
+#    MESSAGE(STATUS "  Boost_SUBMINOR_VERSION=${Boost_SUBMINOR_VERSION}")
 
-    # FindBoost.cmake does not always properly set the major, minor
-    # and subminor versions correctly, so do that ourselves.
-    STRING(REPLACE "." "0" Boost_VERSION_NUMERIC "${Boost_VERSION}")
-    SET(Boost_MAJOR_VERSION 0)
-    SET(Boost_MINOR_VERSION 0)
-    SET(Boost_SUBMINOR_VERSION 0)
-    IF(NOT "${Boost_VERSION_NUMERIC}" STREQUAL "0")
-        MATH(EXPR Boost_MAJOR_VERSION "${Boost_VERSION_NUMERIC} / 100000")
-        MATH(EXPR Boost_MINOR_VERSION "${Boost_VERSION_NUMERIC} / 100 % 1000")
-        MATH(EXPR Boost_SUBMINOR_VERSION "${Boost_VERSION_NUMERIC} % 100")
-    ENDIF(NOT "${Boost_VERSION_NUMERIC}" STREQUAL "0")
-    MESSAGE(STATUS "  Boost_MAJOR_VERSION=${Boost_MAJOR_VERSION}")
-    MESSAGE(STATUS "  Boost_MINOR_VERSION=${Boost_MINOR_VERSION}")
-    MESSAGE(STATUS "  Boost_SUBMINOR_VERSION=${Boost_SUBMINOR_VERSION}")
+#    SET(BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIR} CACHE PATH "Path to boost lib")
+#ELSE(Boost_VERSION)
+#    SET(BOOST_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/bilib/boost_1_42_0 CACHE PATH "Path to boost lib")
+#ENDIF(Boost_VERSION)
 
-    SET(BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIR} CACHE PATH "Path to boost lib")
-ELSE(Boost_VERSION)
-    SET(BOOST_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/bilib/boost_1_42_0 CACHE PATH "Path to boost lib")
-ENDIF(Boost_VERSION)
-
-# Set Boost_USABLE_PARADIS if boost 1.36.0 or later is found. ParaDIS
+# Set BOOST_USABLE_PARADIS if boost 1.36.0 or later is found. ParaDIS
 # uses make_shared, which was only introduced in boost 1.36.0.
 
 IF(VISIT_PARADIS)
-    IF(Boost_MAJOR_VERSION GREATER 0 AND Boost_MINOR_VERSION GREATER 35)
-        SET(Boost_USABLE_PARADIS 1)
+    IF(BOOST_MAJOR_VERSION GREATER 0 AND BOOST_MINOR_VERSION GREATER 35)
+        SET(BOOST_USABLE_PARADIS 1)
         MESSAGE(STATUS "  Boost usable by paraDIS")
-    ELSE(Boost_MAJOR_VERSION GREATER 0 AND Boost_MINOR_VERSION GREATER 35)
+    ELSE(BOOST_MAJOR_VERSION GREATER 0 AND BOOST_MINOR_VERSION GREATER 35)
         MESSAGE(STATUS "  Boost was not found or is not usable by paraDIS")
-    ENDIF(Boost_MAJOR_VERSION GREATER 0 AND Boost_MINOR_VERSION GREATER 35)
+    ENDIF(BOOST_MAJOR_VERSION GREATER 0 AND BOOST_MINOR_VERSION GREATER 35)
 ENDIF(VISIT_PARADIS)
 
 IF( (VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)

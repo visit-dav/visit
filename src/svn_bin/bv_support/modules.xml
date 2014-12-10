@@ -13,6 +13,7 @@
         <optional>
             <lib name="adios"/>
             <lib name="advio"/>
+            <lib name="boost"/>
             <lib name="boxlib"/>
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
@@ -55,6 +56,7 @@
         <group name="optional" comment="All optional libraries">
             <lib name="adios"/>
             <lib name="advio"/>
+            <lib name="boost"/>
             <lib name="boxlib"/>
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
