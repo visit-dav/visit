@@ -3648,8 +3648,6 @@ avtPICSFilter::CheckStagger( vtkDataSet *ds, bool &isEdge, bool &isFace )
     isFace = false;
     isEdge = false;
 
-    return;
-
     // staggered data are always defined on the nodal sized mesh
     vtkDataArray* velData = ds->GetPointData()->GetVectors();
     if (velData)
