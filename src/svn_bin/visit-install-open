@@ -39,7 +39,7 @@
 #   I added sidious.
 #
 #   Eric Brugger, Thu Mar  1 12:56:56 PST 2012
-#   I added ubuntu1104_64.
+#   I added ubuntu1104-64.
 #
 #   Eric Brugger, Thu May  3 08:30:22 PDT 2012
 #   I removed ellipse and xchem.  I modified hoth, kickit, sidious and
@@ -64,6 +64,9 @@
 #
 #   Eric Brugger, Tue Oct 22 11:11:01 PDT 2013
 #   I removed rzthriller.
+#
+#   Eric Brugger, Wed Dec 10 13:32:49 PST 2014
+#   I added ubuntu1404-64.
 #
 #-----------------------------------------------------------------------
 
@@ -107,7 +110,8 @@ esac
 #
 kickit=true
 sidious=false
-ubuntu1104_64=false
+ubuntu1104-64=false
+ubuntu1404-64=false
 aztec=true
 rzzeus=true
 rzuseq=false
@@ -128,7 +132,8 @@ do
       -none)
          kickit=false
          sidious=false
-         ubuntu1104_64=false
+         ubuntu1104-64=false
+         ubuntu1404-64=false
          aztec=false
          rzzeus=false
          carver=false
@@ -152,12 +157,20 @@ do
          sidious=true
          shift
          ;;
-      -ubuntu1104_64)
-         ubuntu1104_64=false
+      -ubuntu1104-64)
+         ubuntu1104-64=false
          shift
          ;;
-      +ubuntu1104_64)
-         ubuntu1104_64=true
+      +ubuntu1104-64)
+         ubuntu1104-64=true
+         shift
+         ;;
+      -ubuntu1404-64)
+         ubuntu1404-64=false
+         shift
+         ;;
+      +ubuntu1404-64)
+         ubuntu1404-64=true
          shift
          ;;
       -aztec)
@@ -307,14 +320,14 @@ then
 fi
 
 #
-# Install on ubuntu1104_64.
+# Install on ubuntu1104-64.
 #
-rm -f ubuntu1104_64
-cat <<EOF > ubuntu1104_64
+rm -f ubuntu1104-64
+cat <<EOF > ubuntu1104-64
 #!/bin/sh
 ./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64-ubuntu11 /home/visit/visit > installlog 2>&1
 rm -f resultlog
-echo "      install of visit on ubuntu1104_64"      > resultlog 2>&1
+echo "      install of visit on ubuntu1104-64"      > resultlog 2>&1
 echo "     -----------------------------------"    >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /home/visit/visit                            >> resultlog 2>&1
@@ -329,13 +342,46 @@ echo "The database plugins:"                       >> resultlog 2>&1
 ls /home/visit/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/home\/visit\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $ubuntu1104_64 = true ]
+if [ $ubuntu1104-64 = true ]
 then
    if [ $test = no ]
    then
-      cp /home/visit/ubuntu1104_64/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-ubuntu11.tar.gz
-      scp ubuntu1104_64 ubuntu1104_64_install
-      chmod 750 ubuntu1104_64_install;./ubuntu1104_64_install
+      cp /home/visit/ubuntu1104-64/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-ubuntu11.tar.gz
+      scp ubuntu1104-64 ubuntu1104-64_install
+      chmod 750 ubuntu1104-64_install;./ubuntu1104-64_install
+   fi
+fi
+
+#
+# Install on ubuntu1404-64.
+#
+rm -f ubuntu1404-64
+cat <<EOF > ubuntu1404-64
+#!/bin/sh
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64-ubuntu11 /home/visit/visit > installlog 2>&1
+rm -f resultlog
+echo "      install of visit on ubuntu1404-64"      > resultlog 2>&1
+echo "     -----------------------------------"    >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /home/visit/visit                            >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /home/visit/visit/$ver+/linux-x86_64/bin     >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /home/visit/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /home/visit/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /home/visit/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /home/visit/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/home\/visit\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $ubuntu1404-64 = true ]
+then
+   if [ $test = no ]
+   then
+      cp /home/visit/ubuntu1404-64/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-ubuntu14.tar.gz
+      scp ubuntu1404-64 ubuntu1404-64_install
+      chmod 750 ubuntu1404-64_install;./ubuntu1404-64_install
    fi
 fi
 
@@ -563,5 +609,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104_64 aztec rzuseq rzzeus carver glory redsky
+   rm -f kickit sidious ubuntu1104-64 ubuntu1404-64 aztec rzuseq rzzeus carver glory redsky
 fi
