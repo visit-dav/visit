@@ -222,15 +222,16 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
 
     // Build the vector out of components. Face and edge vectors are expected
     // to have a stagger for each component. 
-    bool isFace = true;
-    bool isEdge = true;
+    int isFaceCount = 0;
+    int isEdgeCount = 0;
+
     std::vector<avtVector> offsets(3);
     vtkInformation* data1Info = data1->GetInformation();
     if ( data1Info->Has(avtVariableCache::STAGGER()) ) 
     {
         const char *stagger = data1Info->Get(avtVariableCache::STAGGER());
-        isFace &= (strcmp(stagger, "face") == 0);
-        isEdge &= (strcmp(stagger, "edge") == 0);
+        if(strcmp(stagger, "face") == 0) isFaceCount++;
+        if(strcmp(stagger, "edge") == 0) isEdgeCount++;
     }
     else if ( data1Info->Has(avtVariableCache::OFFSET_3()) ) 
     {
@@ -244,8 +245,8 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
     if ( data2Info->Has(avtVariableCache::STAGGER()) ) 
     {
         const char *stagger = data2Info->Get(avtVariableCache::STAGGER());
-        isFace &= (strcmp(stagger, "face") == 0);
-        isEdge &= (strcmp(stagger, "edge") == 0);
+        if(strcmp(stagger, "face") == 0) isFaceCount++;
+        if(strcmp(stagger, "edge") == 0) isEdgeCount++;
     }
     else if ( data2Info->Has(avtVariableCache::OFFSET_3()) ) 
     {
@@ -260,8 +261,8 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
       if ( data3Info->Has(avtVariableCache::STAGGER()) ) 
       {
           const char *stagger = data3Info->Get(avtVariableCache::STAGGER());
-          isFace &= (strcmp(stagger, "face") == 0);
-          isEdge &= (strcmp(stagger, "edge") == 0);
+          if(strcmp(stagger, "face") == 0) isFaceCount++;
+          if(strcmp(stagger, "edge") == 0) isEdgeCount++;
       }
       else if ( data3Info->Has(avtVariableCache::OFFSET_3()) ) 
       {
@@ -271,6 +272,10 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
           offsets[2].z = vals[2];
       }
     }
+
+    bool isFace = (isFaceCount == numinputs);
+    bool isEdge = (isEdgeCount == numinputs);
+
 
     vtkIdType nvals1 = data1->GetNumberOfTuples();
     vtkIdType nvals2 = data2->GetNumberOfTuples();
