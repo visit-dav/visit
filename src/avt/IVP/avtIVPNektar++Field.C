@@ -171,24 +171,23 @@ avtIVPNektarPPField::operator()( const double &t,
     //   }
     // }
 
-    // Set up velocity
-
+    // Set up the point in the Nektar++ format.
     Nektar::Array<OneD, NekDouble> coords(3);
     coords[0] = p[0];
     coords[1] = p[1];
     coords[2] = p[2];
     
     // Now loop through each coordinate and do the appropriate
-    // interpolation.
+    // interpolation on each velocity component.
     for (int i = 0; i < 3; ++i)
     {
-        if( !nektar_field[i] )
-            break;
-
-        Nektar::Array<Nektar::OneD, Nektar::NekDouble> physVals =
-          nektar_field[i]->GetPhys() + nektar_field[i]->GetPhys_Offset(nt_el);
-
-        vec[i] = nektar_field[i]->GetExp(nt_el)->PhysEvaluate(coords, physVals);
+      if( !nektar_field[i] )
+        break;
+      
+      Nektar::Array<Nektar::OneD, Nektar::NekDouble> physVals =
+        nektar_field[i]->GetPhys() + nektar_field[i]->GetPhys_Offset(nt_el);
+      
+      vec[i] = nektar_field[i]->GetExp(nt_el)->PhysEvaluate(coords, physVals);
     }
 
     return OK;
