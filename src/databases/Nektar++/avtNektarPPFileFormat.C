@@ -45,6 +45,7 @@
 #include <string>
 #include <sys/stat.h>
 
+#include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkLongArray.h>
 #include <vtkFloatArray.h>
@@ -61,6 +62,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkXMLUnstructuredGridReader.h>
 
+#include <avtVariableCache.h>
 #include <avtDatabaseMetaData.h>
 
 #include <DBOptionsAttributes.h>
@@ -206,7 +208,8 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
     EXCEPTION1( InvalidFilesException, m_meshFile );
   }
 
-  // Get the field file for the time slice and number of elements.
+  // Get the Nektar++ field file for the time slice and number of
+  // elements.
   std::string fieldFile(filename);
 
   LibUtilities::FieldMetaDataMap fieldMetaDataMap;
@@ -331,19 +334,19 @@ avtNektarPPFileFormat::Initialize()
   {
     std::string xmlstr = GetNektarFileAsXMLString("");
 
-    ofstream outstream("/tmp/visit_tmp.vtu");
-
-    outstream << xmlstr;
-
-    outstream.flush();
-
     vtkSmartPointer<vtkXMLUnstructuredGridReader> reader =
       vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
     
-    reader->SetFileName("/tmp/visit_tmp.vtu");
+#if (6 <= VTK_MAJOR_VERSION && 2 <= VTK_MINOR_VERSION )
+    reader->ReadFromInputStringOn();
+    reader->SetInputString(xmlstr);
+#else
+    ofstream outstream("/tmp/visit_tmp.vtu");
+    outstream << xmlstr;
+    outstream.close();
 
-//  reader->ReadFromInputStringOn();
-//  reader->SetInputString(xmlstr);
+    reader->SetFileName("/tmp/visit_tmp.vtu");
+#endif
 
     reader->Update();
     reader->GetOutput()->Register(reader);
@@ -497,11 +500,9 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
     mmd->SetBounds( bounds );
     mmd->SetNumberCells( m_nElements );
     mmd->SetExtents( extents );
-//  mmd->hideFromGUI = true;
     md->Add(mmd);
 
-
-    // Add in the scalar vars while checking for a potential vector.
+    // Add in the scalar vars while checking for a potential vector var.
     int vector_dim = 0;
 
     for ( size_t i = 0; i < m_scalarVarNames.size(); ++i )
@@ -521,13 +522,14 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       }
     }
 
+
     // If at least two values (u,v) or (uv,w) are found then
     // create a velocity variable for the refined and spectral mesh.
-    if( vector_dim >= 2 )
+    if( 2 <= vector_dim )
     {
-      // The refined mesh velosity will be an expression.
       std::string varname, definition;
 
+      // The refined mesh velocity will be an expression.
       if( vector_dim == 2 )
       {
         varname = std::string("velocity_uv");
@@ -545,24 +547,9 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       velocity_expr.SetType(Expression::VectorMeshVar);
       md->AddExpression(&velocity_expr);
 
-      // if( vector_dim == 2 )
-      // {
-      //        varname = std::string("velocity_uv_magnitude");
-      //        definition = std::string("magnitude(velocity_uv)");
-      // }
-      // else //if( vector_dim == 3 )
-      // {
-      //        varname = std::string("velocity_uvw_magnitude");
-      //        definition = std::string("magnitude(velocity_uvw)");
-      // }
-
-      // Expression magnitude_expr;
-      // magnitude_expr.SetName(varname);
-      // magnitude_expr.SetDefinition(definition);
-      // magnitude_expr.SetType(Expression::ScalarMeshVar);
-      // md->AddExpression(&magnitude_expr);
-
-      // Create a velocity for the spectral evaluation prefix it with SE_.
+      // Create a velocity var for the spectral evaluation prefix it
+      // with SE_ to differentiate from the refined vector var
+      // expression.
       if( vector_dim == 2 )
         varname = std::string("SE_velocity_uv");
       else //if( vector_dim == 3 )
@@ -576,7 +563,6 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       
       AddVectorVarToMetaData(md, varname, std::string("SE_")+meshName,
                              cent, vector_dim);
-
     }
 }
 
@@ -606,9 +592,9 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
   //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
   vtkUnstructuredGrid* ugrid = NULL;
 
-  // Request for the refined mesh.  At this point the original nektar++
-  // field has been refined and converted into a VTK grid so just grab
-  // the grid.
+  // Request for the refined mesh.  At this point the original
+  // nektar++ field has been refined and converted into a VTK grid so
+  // just grab the grid.
   if( std::string(meshname) == std::string("mesh") )
   {
     ugrid = vtkUnstructuredGrid::New();
@@ -618,8 +604,8 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
     ugrid->Register(NULL);
   }
 
-  // Request for the original spectral elemetn ment mesh. Create a VTK
-  // grid for the original spectral mesh.
+  // Request for the original spectral element mesh. Create a VTK grid
+  // for the original spectral mesh.
   else if( strncmp(meshname, "SE_mesh", 7 ) == 0 )
   {
     //----------------------------------------------
@@ -848,7 +834,7 @@ avtNektarPPFileFormat::GetVar(int timestate, const char *varname)
   //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
 
   // At this point the original nektar++ field has been refined and
-  // converted into a VTK mesh so just grab the variable needed.
+  // converted into a vtkDataArray so just grab the variable needed.
   vtkDataArray *dataArray =
       refinedDataSet->GetPointData()->GetArray(varname);
 
@@ -915,7 +901,7 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
       vertexCheck[i] = 0;
 
     // VTK array for the vector values.
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkDoubleArray *rv = vtkDoubleArray::New();
 
     // Set the number of components before setting the number of tuples
     // for proper memory allocation.
