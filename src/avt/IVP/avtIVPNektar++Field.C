@@ -69,20 +69,6 @@ avtIVPNektarPPField::avtIVPNektarPPField( vtkDataSet* dataset,
 {
   vtkFieldData *fieldData = dataset->GetFieldData();
 
-  // Pick off all of the data stored with the vtk field.
-  // vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid*) dataset;
-
-  // vtkPoints *pts = ugrid->GetPoints();
-  // if (pts == NULL) {
-  //   EXCEPTION1( InvalidVariableException,
-  //               "avtIVPNektar++Field - Can not find vertices." );
-  // }
-
-  // vtkDataArray *vecs = ugrid->GetPointData()->GetVectors();
-  // if (vecs == NULL) {
-  //   EXCEPTION1( InvalidVariableException,
-  //               "avtIVPNektar++Field - Can not find velocity variable." );
-  // }
   // Get the Nektar++ field data from the VTK field
   long *fp =
     (long *) (fieldData->GetAbstractArray("Nektar++FieldPointers")->GetVoidPointer(0));
@@ -99,7 +85,7 @@ avtIVPNektarPPField::avtIVPNektarPPField( vtkDataSet* dataset,
   else 
   {
     EXCEPTION1( InvalidVariableException,
-                "Uninitialized option. (Please contact visit-developer mailing list to report)" );
+                "Uninitialized option: Nektar++FieldPointers. (Please contact visit-developer mailing list to report)" );
   }
 
   // nektar_element_lookup =
@@ -108,7 +94,7 @@ avtIVPNektarPPField::avtIVPNektarPPField( vtkDataSet* dataset,
   // if( nektar_element_lookup == NULL )
   // {
   //   EXCEPTION1( InvalidVariableException,
-  //               "Uninitialized option. (Please contact visit-developer mailing list to report)" );
+  //               "Uninitialized option: Nektar++ElementLookup. (Please contact visit-developer mailing list to report)" );
   // }
 }
 
@@ -159,7 +145,9 @@ avtIVPNektarPPField::operator()( const double &t,
     if( el < 0 )
       return OUTSIDE_SPATIAL;
 
-    // Get the Nektar++ element id.
+    // Get the Nektar++ element id at this point. Assume the cell
+    // boundaries are liner and not curves thus the nektar element is
+    // the vtk element.
     int nt_el = el, nt_numElements = nektar_field[0]->GetExpSize();
 
     // for( int i=0, j=1; j<nt_numElements; ++i, ++j)
@@ -177,8 +165,8 @@ avtIVPNektarPPField::operator()( const double &t,
     coords[1] = p[1];
     coords[2] = p[2];
     
-    // Now loop through each coordinate and do the appropriate
-    // interpolation on each velocity component.
+    // Loop through each velocity component and do the appropriate
+    // interpolation at the given point.
     for (int i = 0; i < 3; ++i)
     {
       if( !nektar_field[i] )
