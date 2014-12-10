@@ -278,7 +278,6 @@ function uncompress_untar
         warn "unsupported uncompression method"
         return 1
     fi
-    warn "uncompression method ${COMPRESSTYPE} ${TAR}"
     TARVERSION=$($TAR --version >/dev/null 2>&1)
     if [[ $? == 0 ]] ; then
         case $COMPRESSTYPE in
