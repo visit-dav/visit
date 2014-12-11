@@ -43,11 +43,11 @@ function bv_boost_initialize_vars
 
 function bv_boost_info
 {
-export BOOST_VERSION=${BOOST_VERSION:-"1_56_0"}
+export BOOST_VERSION=${BOOST_VERSION:-"1_57_0"}
 export BOOST_FILE=${BOOST_FILE:-"boost_${BOOST_VERSION}.tar.gz"}
-export BOOST_COMPATIBILITY_VERSION=${BOOST_COMPATIBILITY_VERSION:-"1_56"}
+export BOOST_COMPATIBILITY_VERSION=${BOOST_COMPATIBILITY_VERSION:-"1_57"}
 export BOOST_BUILD_DIR=${BOOST_BUILD_DIR:-"boost_${BOOST_VERSION}"}
-export BOOST_URL=${BOOST_URL:-"http://sourceforge.net/projects/boost/files/boost/1.56.0"}
+export BOOST_URL=${BOOST_URL:-"http://sourceforge.net/projects/boost/files/boost/1.57.0"}
 }
 
 function bv_boost_print
