@@ -54,7 +54,7 @@
         <Field name="partitionSet" type="bool">true</Field>
         <Field name="partition" type="string">pbatch</Field>
         <Field name="bankSet" type="bool">true</Field>
-        <Field name="bank" type="string">bdivp</Field>
+        <Field name="bank" type="string">wbronze</Field>
         <Field name="timeLimitSet" type="bool">true</Field>
         <Field name="timeLimit" type="string">60:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
