@@ -328,6 +328,29 @@ function build_nektar++
         fi
     fi
 
+#    if test "x${DO_MPICH}" = "xyes"; then
+#        info "mpich requested.  Configuring NEKTAR++ with mpich support."
+#        ntopts="${ntopts} -DMPI_ROOT:PATH=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}"
+
+#        if [[ "$OPSYS" == "Darwin" ]]; then
+#            export DYLD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+#        else
+#            export LD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+#        fi
+#    fi
+
+    if test "x${DO_VTK}" = "xyes"; then
+        info "vtk requested.  Configuring NEKTAR++ with vtk support."
+        ntopts="${ntopts} -DNEKTAR_USE_VTK=ON -DVTK_DIR:PATH=${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/cmake/vtk-${VTK_SHORT_VERSION}
+"
+
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            export DYLD_LIBRARY_PATH="$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+        else
+            export LD_LIBRARY_PATH="$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+        fi
+    fi
+
     info "Configuring Nektar++ . . ."
 
     cd "$START_DIR"
