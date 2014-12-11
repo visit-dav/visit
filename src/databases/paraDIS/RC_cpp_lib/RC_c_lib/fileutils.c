@@ -54,7 +54,7 @@ size_t fread_loop(void *bufp, size_t elemSize, size_t elems2Read, FILE *theFile)
     if (!numread) { /* EOF */
       return totalRead;
     }
-    if (numread < 0) {
+    if (numread < (elems2Read - totalRead)) {
       fprintf(stderr, "Warning:  bad read in fread_loop, continuing...\n"); 
     }
     bufp = (void*)((char*)bufp + numread); 
