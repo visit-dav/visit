@@ -98,8 +98,6 @@ public class ViewerState
             Register(attsSILAttributes);
         attsDBPluginInfoAttributes = new DBPluginInfoAttributes();
             Register(attsDBPluginInfoAttributes);
-        attsExportDBAttributes = new ExportDBAttributes();
-            Register(attsExportDBAttributes);
         attsConstructDataBinningAttributes = new ConstructDataBinningAttributes();
             Register(attsConstructDataBinningAttributes);
         attsClientMethod = new ClientMethod();
@@ -111,6 +109,8 @@ public class ViewerState
         attsSimulationUIValues = new SimulationUIValues();
             Register(attsSimulationUIValues);
 
+        attsExportDBAttributes = new ExportDBAttributes();
+            Register(attsExportDBAttributes);
         attsPluginManagerAttributes = new PluginManagerAttributes();
             Register(attsPluginManagerAttributes);
         attsAppearanceAttributes = new AppearanceAttributes();
