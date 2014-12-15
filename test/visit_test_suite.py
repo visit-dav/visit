@@ -423,7 +423,7 @@ def default_suite_options():
                       "cleanup_delay":10,
                       "executable":visit_exe_def,
                       "interactive":False,
-                      "pixdiff":0,
+                      "pixdiff":0.0,
                       "avgdiff":0,
                       "numdiff":0.0,
                       "vargs": "",
@@ -464,6 +464,9 @@ def finalize_options(opts):
 #
 #    Kathleen Biagas, Wed Nov 5 14:32:21 PST 2014 
 #    On windows, glob any '*.py' tests names.
+#
+#    Matthew Wheeler, Mon Dec 15 12:56:00 GMT 2014
+#    Changed pixdiff % to be a float rather than an int
 #
 # ----------------------------------------------------------------------------
 def parse_args():
@@ -592,9 +595,9 @@ def parse_args():
                            "Just bring up CLI and let user Source() "
                            "the .py file explicitly.")
     parser.add_option("--pixdiff",
-                      type="int",
+                      type="float",
                       default=defs["pixdiff"],
-                      help="allowed % of pixels different [default = 0%]")
+                      help="allowed % of pixels different [default = 0.0%]")
     parser.add_option("--avgdiff",
                       type="int",
                       default=defs["avgdiff"],
