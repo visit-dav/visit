@@ -306,6 +306,9 @@ class IVP_API ICStatus
 //   Added a Serialize flag to the arguments. This is to support the restore
 //   ICs code.
 //
+//   Dave Pugmire, Mon Dec 15 11:00:23 EST 2014
+//   Return number of steps taken.
+//
 // ****************************************************************************
 
 class IVP_API avtIntegralCurve
@@ -336,7 +339,7 @@ class IVP_API avtIntegralCurve
     avtIntegralCurve();
     virtual ~avtIntegralCurve();
 
-    void Advance(avtIVPField* field);
+    int Advance(avtIVPField* field);
 
     double    CurrentTime()     const {return ivp->GetCurrentT();}
     avtVector CurrentLocation() const {return ivp->GetCurrentY();}

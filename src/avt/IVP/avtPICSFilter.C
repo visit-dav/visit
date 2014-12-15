@@ -2716,17 +2716,22 @@ avtPICSFilter::DomainToRank(BlockIDType &domain)
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
 //   Use avtStreamlines, not avtStreamlineWrappers.
 //
+//   Dave Pugmire, Mon Dec 15 11:00:23 EST 2014
+//   Return number of steps taken.
+//
 // ****************************************************************************
 
-void
+int
 avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
 {
+    int numStepsTaken = 0;
+    
     //If no blockList, see if we can set it.
     if (ic->blockList.empty())
         FindCandidateBlocks(ic);
     
     if (!ic->status.Integrateable())
-        return;
+        return numStepsTaken;
 
     bool haveBlock = false;
     BlockIDType blk;
@@ -2750,7 +2755,6 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
     }
 
     // std::cerr << (haveBlock ? "have block" : "no block") << std::endl;
-
     if (!haveBlock)
     {
         ic->status.ClearTemporalBoundary();
@@ -2760,10 +2764,10 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
             ic->status.SetExitSpatialBoundary();
         else
             ic->status.SetAtSpatialBoundary();
-        return;
+        return numStepsTaken;
     }
 
-    ic->Advance(field);
+    numStepsTaken = ic->Advance(field);
     delete field;
 
     // double dt = ((double) ((int) (ic->CurrentTime()*100.0)) / 100.0);
@@ -2777,6 +2781,7 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
 
     if (!ic->status.Terminated())
         FindCandidateBlocks(ic, &blk);
+    return numStepsTaken;
 }
 
 

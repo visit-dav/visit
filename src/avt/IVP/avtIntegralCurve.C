@@ -242,13 +242,17 @@ avtIntegralCurve::~avtIntegralCurve()
 //   Dave Pugmire, Wed Jun  5 14:31:18 EDT 2013
 //   Fix bug in terminating the while loop. Was checking for OK(), and not Integrateable().
 //
+//   Dave Pugmire, Mon Dec 15 11:00:23 EST 2014
+//   Return number of steps taken.
+//
 // ****************************************************************************
 
-void
+int
 avtIntegralCurve::Advance(avtIVPField *field)
 {
     status.Clear();
     status.SetOK();
+    int numStepsTaken = 0;
 
     double range[2];
     field->GetTimeRange(range);
@@ -272,7 +276,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
         if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL ||
             fieldRes == avtIVPField::OUTSIDE_BOTH)
             status.SetAtTemporalBoundary();
-        return;
+        return numStepsTaken;
     }
 
     // Determine the maximum integration time from the field's temporal
@@ -301,6 +305,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
         avtIVPStep           step;
         avtIVPSolver::Result result;
         result = ivp->Step( field, tfinal, &step );
+        numStepsTaken++;
 
         if (result == avtIVPSolver::OK || result == avtIVPSolver::TERMINATE)
         {
@@ -478,6 +483,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
     {
         debug5 << "avtIntegralCurve::Advance(): done, status: "<<status<<endl;
     }
+    return numStepsTaken;
 }
 
 

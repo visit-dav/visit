@@ -112,6 +112,9 @@
 //   David Camp, Mon Aug 22 12:59:31 PDT 2011
 //   Added SetDomain method, which forwards the call to the PICs filter.
 //
+//   Dave Pugmire, Mon Dec 15 11:00:23 EST 2014
+//   Add a #steps taken counter.
+//
 // ****************************************************************************
 
 class avtICAlgorithm
@@ -217,7 +220,7 @@ class avtICAlgorithm
     ICStatistics              TotalTime, IOTime, IntegrateTime, SortTime,
                               ExtraTime;
     //Counters.
-    ICStatistics              IntegrateCnt, DomLoadCnt, DomPurgeCnt;
+    ICStatistics              IntegrateCnt, IntegrateStepCnt, DomLoadCnt, DomPurgeCnt;
 
     //Special counters.
     int                       domainsUsed, totDomainsLoaded, domainLoadedMin, domainLoadedMax;
