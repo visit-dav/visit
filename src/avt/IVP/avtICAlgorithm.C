@@ -82,15 +82,17 @@ avtICAlgorithm::ICStatistics::operator << (std::ostream &out) const
 //   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
 //   Change reference from streamline filter to PICS filter.
 //
+//   Dave Pugmire, Mon Dec 15 11:00:23 EST 2014
+//   Add a #steps taken counter.
+//
 // ****************************************************************************
 
 avtICAlgorithm::avtICAlgorithm( avtPICSFilter *f ) :
     TotalTime("totT"), IOTime("ioT"), IntegrateTime("intT"), SortTime("sorT"), ExtraTime("extT"),
-    IntegrateCnt("intC"), DomLoadCnt("domLC"), DomPurgeCnt("domPC")
+    IntegrateCnt("intC"), IntegrateStepCnt("stepC"), DomLoadCnt("domLC"), DomPurgeCnt("domPC")
 {
     picsFilter = f;
     numDomains = picsFilter->numDomains;
-
     domainsUsed = 0;
     totDomainsLoaded = 0;
     domainLoadedMin = 0;
@@ -212,11 +214,12 @@ void
 avtICAlgorithm::AdvectParticle(avtIntegralCurve *s)
 {
     int timerHandle = visitTimer->StartTimer();
-
-    picsFilter->AdvectParticle(s);
+    
+    int nStepsTaken = picsFilter->AdvectParticle(s);
 
     IntegrateTime.value += visitTimer->StopTimer(timerHandle, "AdvectParticle()");
     IntegrateCnt.value++;
+    IntegrateStepCnt.value += nStepsTaken;
 }
 
 
@@ -576,6 +579,7 @@ void
 avtICAlgorithm::CompileCounterStatistics()
 {
     ComputeStatistic(IntegrateCnt);
+    ComputeStatistic(IntegrateStepCnt);
     DomLoadCnt.value += picsFilter->GetLoadDSCount();
     DomPurgeCnt.value += picsFilter->GetPurgeDSCount();
     ComputeStatistic(DomLoadCnt);
