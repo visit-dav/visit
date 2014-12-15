@@ -2236,7 +2236,7 @@ class TestEnv(object):
                "threshold_diff": False,
                "threshold_error": {},
                "avgdiff":     0.0,
-               "pixdiff":     0,
+               "pixdiff":     0.0,
                "numdiff":     0.0,
                "serial" :     True,
                "scalable":    False,
