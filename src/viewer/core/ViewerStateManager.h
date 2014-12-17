@@ -99,6 +99,7 @@ public:
     // For user-defined host profiles
     void ReadHostProfiles();
     void WriteHostProfiles();
+    void ReadHostProfilesFromDirectory(const std::string &, bool);
 
     // Helper methods
     ViewerDatabaseCorrelationMethods *GetDatabaseCorrelationMethods();

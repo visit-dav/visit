@@ -415,6 +415,7 @@ public:
     void ImportEntireStateWithDifferentSources(const std::string &filename,
                                                bool inVisItDir,
                                                const stringVector &sources);
+    void ReadHostProfilesFromDirectory(const std::string &dir, bool clear);
 
     void SetPlotSILRestriction();
 

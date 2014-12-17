@@ -1,0 +1,193 @@
+#!/bin/sh
+
+# Function: create_trunk_tarballs
+#
+# Arguments:
+#    destDir   : The destination directory where the tarball will be placed.
+#    tmpDir    : The temporary directory where the svn sources will be checked out.
+#    user      : The local username.
+#
+# Returns: 0 on success; 1 on error.
+#
+function create_trunk_tarballs
+{
+    destDir=$1
+    tmpDir=$2
+    user=$3
+    workingDir="nightly_checkout"
+
+    # Create the checkout container directory.
+    echo "Removing any old checkouts at: $tmpDir/$user/$workingDir"
+    rm -rf $tmpDir/$user/$workingDir
+    mkdir $tmpDir/$user/$workingDir
+    cd $tmpDir/$user/$workingDir
+
+    # Check out the source+data from anonymous svn
+    echo "Checkouts (src+data) started at: `date`"
+    svn co http://portal.nersc.gov/svn/visit/trunk/src > buildlog 2>&1
+    svn co http://portal.nersc.gov/svn/visit/trunk/data >> buildlog 2>&1
+    if test ! -e src; then
+        return 1
+    fi
+    if test ! -e data; then
+        return 1
+    fi
+
+    # Run visit-dist to make the nightly tarball.
+    visitVer=`cat src/VERSION | sed "s/b//g"`
+    ./src/svn_bin/visit-dist visit$visitVer
+
+    # Copy the tarball and VERSION file to the nightly destination.
+    cp -f visit$visitVer.tar.gz $destDir
+    cp -f src/VERSION $destDir
+    cp -f src/svn_bin/visit-install $destDir
+    chmod 664 $destDir/*
+    chmod 775 $destDir/visit-install
+
+    echo "Checkouts completed at: `date`"
+    return 0
+}
+
+# Function: vulcan_build
+#
+#    destDir   : The destination directory where the tarball will be placed.
+#    tmpDir    : The temporary directory where we'll build.
+#    user      : The local username.
+#
+# Notes: We have to build VisIt on the vulcan LAC nodes since the compute nodes
+#        are a different platform. This means that we don't need to submit a 
+#        a job for the build.
+#
+function vulcan_build
+{
+    destDir=$1
+    tmpDir=$2
+    user=$3
+    workingDir="nightly_build"
+
+    # Create the build container directory.
+    echo "Removing any old builds at: $tmpDir/$user/$workingDir"
+    rm -rf $tmpDir/$user/$workingDir
+    mkdir $tmpDir/$user/$workingDir
+    cd $tmpDir/$user/$workingDir
+
+    # Copy the source tarball to this workingDir. Extract the svn_bin dir from it.
+    echo "Extract svn_bin from $destDir/visit$visitVer.tar.gz"
+    visitVer=`cat $destDir/VERSION | sed "s/b//g"`
+    if test ! -e $destDir/visit$visitVer.tar.gz ; then
+        echo "vulcan_build: Could not locate source tarball."
+        return 1
+    fi
+    cp $destDir/visit$visitVer.tar.gz .
+    mkdir unpack
+    cd unpack
+    tar zxvf ../visit$visitVer.tar.gz
+    mv visit$visitVer/src/svn_bin ..
+    cd ..
+    rm -rf unpack
+    if test ! -e svn_bin ; then
+        echo "vulcan_build: Could not locate svn_bin extracted from source tarball."
+        return 1
+    fi
+
+    # Make some symlinks
+    ln -s svn_bin/build_visit .
+    ln -s svn_bin/bv_support .
+
+    # Create a version of build_visit_BGQ that replaces its "2.9.0" version string
+    # with the current version string.
+#FIXME:    sed svn_bin/build_visit_BGQ "s/VISIT_VERSION=\"2.9.0\"/VISIT_VERSION=\"$visitVer\"/g" > build_visit_BGQ
+    cp svn_bin/build_visit_BGQ .
+    chmod 700 build_visit_BGQ
+
+    # Run the build_visit_BGQ script to build the code in the local tarball.
+    echo "Running build_visit_BGQ"
+    #./build_visit_BGQ --thirdparty-path /g/g17/whitlocb/build/thirdparty_static/2.9.0 --makeflags -j2
+    ./build_visit_BGQ --thirdparty-path /usr/gapps/visit/thirdparty_static/$visitVer --makeflags -j2
+
+    # If a binary distribution was produced, copy it to the destDir.
+    tarballVer=`cat $destDir/VERSION | tr . _ | sed "s/b//g"`
+    tarballVerCorrect=`cat $destDir/VERSION | tr . _ `
+    tarball="visit$tarballVer.linux-ppc64-BGQ.tar.gz"
+    if test ! -e $tarball ; then
+        echo "vulcan_build: The BGQ binary distribution for VisIt was not located."
+        return 1
+    fi
+
+    # Copy the tarball into the destDir. Note that we will rename it if the 
+    # version contains a 'b' to make sure that visit-install works later.
+    cp -f $tarball $destDir/visit$tarballVerCorrect.linux-ppc64-BGQ.tar.gz
+
+    return 0
+}
+
+function main
+{
+    # Defaults
+    user=`whoami`
+    tmpDir="/nfs/tmp2/"
+    tonight=`date "+visit%Y-%m-%d"`
+    vulcanbank="sspwork"
+
+    # Handle command line args.
+    for abc
+    do
+        case $1 in
+            -user)
+                 user=$2
+                 shift 2
+                 ;;
+            -tmpdir)
+                 tmpDir=$2
+                 shift 2
+                 ;;
+            -tonight)
+                 tonight=$2
+                 shift 2
+                 ;;
+            -vulcanbank)
+                 vulcanbank=$2
+                 shift 2
+                 ;;
+        esac
+    done
+
+    # For debugging:
+    #echo "user=$user"
+    #echo "tmpDir=$tmpDir"
+    #echo "tonight=$tonight"
+    #echo "vulcanbank=$vulcanbank"
+    #exit 1
+
+    # Make sure that there is a destination directory for tonight's tarball.
+    if test ! -e $HOME/visit_nightly; then
+        mkdir $HOME/visit_nightly
+    fi
+    if test ! -e $HOME/visit_nightly/$tonight; then
+        mkdir $HOME/visit_nightly/$tonight
+    fi
+    chmod 755 $HOME/visit_nightly
+    chmod 755 $HOME/visit_nightly/$tonight
+
+    # Make sure that there's a temp directory.
+    if test ! -e $tmpDir/$user; then
+        mkdir $tmpDir/$user
+    fi
+
+    # Create tonight's source tarballs.
+    create_trunk_tarballs $HOME/visit_nightly/$tonight $tmpDir $user
+    if [[ $? != 0 ]] ; then
+        echo "Nightly checkouts could not be completed. `date`" 
+        exit 1
+    fi
+
+    # Do the build to make a binary distribution.
+    vulcan_build $HOME/visit_nightly/$tonight $tmpDir $user $vulcanbank
+    if [[ $? != 0 ]] ; then
+        echo "Nightly vulcan build could not be completed. `date`" 
+        exit 1
+    fi
+}
+
+# Run main
+main $@

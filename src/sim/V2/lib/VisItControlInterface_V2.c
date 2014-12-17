@@ -120,6 +120,9 @@
 
 #define MAX_SIMULATION_FILENAME 1024
 
+#define LIBSIM_MAX_STRING_SIZE      1024
+#define LIBSIM_MAX_STRING_LIST_SIZE 100
+
 static int BroadcastInt(int *value, int sender);
 
 
@@ -800,6 +803,7 @@ static int SendStringOverSocket(char *buffer, VISIT_SOCKET desc)
 {
     size_t      nleft, nwritten;
     const char *sptr;
+
     LIBSIM_API_ENTER2(SendStringOverSocket, "buffer=%s, desc=%d", buffer,desc);
     /* Send it! */
     sptr = (const char*)buffer;
@@ -923,14 +927,14 @@ static int VerifySecurityKeys(VISIT_SOCKET desc)
 {
    int securityKeyLen;
    int offeredKeyLen;
-   char offeredKey[2000] = "";
+   char offeredKey[VISIT_SOCKET_BUFFER_SIZE] = "";
 
    LIBSIM_API_ENTER1(VerifySecurityKeys, "desc=%d", desc);
 
    if (parallelRank == 0)
    {
       /* The first thing the VCL sends is the key */
-      ReceiveSingleLineFromSocket(offeredKey, 2000, desc);
+      ReceiveSingleLineFromSocket(offeredKey, VISIT_SOCKET_BUFFER_SIZE, desc);
 
       if (isParallel)
       {
@@ -992,7 +996,7 @@ static int VerifySecurityKeys(VISIT_SOCKET desc)
 *******************************************************************************/
 static int GetConnectionParameters(VISIT_SOCKET desc)
 {
-   char buf[2000] = "";
+   char buf[VISIT_SOCKET_BUFFER_SIZE] = "";
    char *tmpbuf;
    char *nxtbuf;
    int i;
@@ -1009,7 +1013,7 @@ static int GetConnectionParameters(VISIT_SOCKET desc)
       tmpbuf = buf;
       while (1)
       {
-         nxtbuf = ReceiveContinuousLineFromSocket(tmpbuf, 2000, desc);
+         nxtbuf = ReceiveContinuousLineFromSocket(tmpbuf, VISIT_SOCKET_BUFFER_SIZE, desc);
 
          if (strlen(tmpbuf) == 0)
             break;
@@ -1076,6 +1080,9 @@ static int GetConnectionParameters(VISIT_SOCKET desc)
 *   Brad Whitlock, Thu Sep 18 16:12:37 PDT 2014
 *   I made it call a different initialization function for batch.
 *
+*   Brad Whitlock, Tue Nov 11 17:32:10 PST 2014
+*   Get batch mode options from visit_options string.
+*
 *******************************************************************************/
 
 static int CreateEngine(int batch)
@@ -1106,13 +1113,42 @@ static int CreateEngine(int batch)
              */
             if(engine_argc == 0)
             {
-                engine_argc = 4;
-                engine_argv = (char **)malloc(sizeof(char*)*5);
+                engine_argc = 1;
+                engine_argv = (char **)malloc(sizeof(char*)*LIBSIM_MAX_STRING_LIST_SIZE);
+                memset(engine_argv, 0, sizeof(char*)*LIBSIM_MAX_STRING_LIST_SIZE);
                 engine_argv[0] = strdup("/usr/gapps/visit/bin/visit");
+#if 1
+                if(visit_options != NULL)
+                {
+                    char *start, *end, *tmpstr;
+                    start = end = visit_options;
+                    tmpstr = (char *)malloc(LIBSIM_MAX_STRING_SIZE);
+                    while(start != NULL)
+                    {
+                        int len = 0;
+                        end = start;
+                        while(*end != ' ' && *end != '\0')
+                            ++end;
+                        len = end - start;
+                        if(len > LIBSIM_MAX_STRING_SIZE-1)
+                            len = LIBSIM_MAX_STRING_SIZE-1;
+                        memcpy(tmpstr, start, len);
+                        tmpstr[len] = '\0';
+                        if(len > 0 && engine_argc < LIBSIM_MAX_STRING_LIST_SIZE)
+                            engine_argv[engine_argc++] = strdup(tmpstr);
+                        if(*end == '\0')
+                            start = NULL;
+                        else
+                            start = end + 1;
+                    }
+                    free(tmpstr);
+                }
+#else
                 engine_argv[1] = strdup("-debug");
                 engine_argv[2] = strdup("5");
                 engine_argv[3] = strdup("-clobber_vlogs");
-                engine_argv[4] = NULL;
+                engine_argc = 4;
+#endif
             }
 
             LIBSIM_MESSAGE_STRINGLIST("Calling visit_initialize: argv=",
@@ -2131,7 +2167,7 @@ char *VisItGetEnvironment(void)
     char *new_env = NULL;
 
     LIBSIM_API_ENTER(VisItGetEnvironment);
-
+#if !defined(VISIT_BLUE_GENE_Q)
     new_env = (char*)(malloc(ENV_BUF_SIZE));
     memset(new_env, 0, ENV_BUF_SIZE * sizeof(char));
 
@@ -2161,7 +2197,7 @@ char *VisItGetEnvironment(void)
         free(new_env);
         new_env = NULL;
     }
-
+#endif
     LIBSIM_API_LEAVE1(VisItGetEnvironment, "return %s", 
                      (new_env ? new_env : "NULL"));
 
@@ -2253,7 +2289,7 @@ int VisItSetupEnvironment2(char *env)
    char *ptr;
 
    LIBSIM_API_ENTER(VisItSetupEnvironment2);
-
+#if !defined(VISIT_BLUE_GENE_Q)
    /* Make a copy of the input string. */
    new_env = (char*)(malloc(ENV_BUF_SIZE));
    memset(new_env, 0, ENV_BUF_SIZE * sizeof(char));
@@ -2319,6 +2355,8 @@ int VisItSetupEnvironment2(char *env)
       ptr += i+1;
    }
    /* free(new_env); <--- NO!  You are not supposed to free this memory! */
+#endif
+
 #endif
    LIBSIM_API_LEAVE1(VisItSetupEnvironment2, "return %d", TRUE);
    return TRUE;
@@ -2773,6 +2811,20 @@ waitforevents:
     return VisItDetectInput_return_value;
 }
 #else
+
+#ifdef VISIT_BLUE_GENE_Q
+static int VisItDetectInputWithTimeout_bgq_ncalls = 0;
+
+int
+VisItDetectInputWithTimeout(int blocking, int timeoutVal,
+    int consoleFileDescriptor)
+{
+    int retval = 1; /* Listen socket input */
+    if(++VisItDetectInputWithTimeout_bgq_ncalls > 1)
+        retval = 2; /* Engine socket input */
+    return retval;
+}
+#else
 int
 VisItDetectInputWithTimeout(int blocking, int timeoutVal,
     int consoleFileDescriptor)
@@ -2851,12 +2903,20 @@ VisItDetectInputWithTimeout(int blocking, int timeoutVal,
                            -1);
          return -1;
       }
+      else if (errno == EBADF)
+      {
+         /* Interruption will likely cause a program exit anyway */
+         LIBSIM_API_LEAVE1(VisItDetectInput,
+                           "Invalid file descriptor given to select. return %d",
+                           -1);
+         return -1;
+      }
       else
       {
          /* This should never happen; internal error */
-         LIBSIM_API_LEAVE1(VisItDetectInput,
-                           "Unknown error in select. return %d",
-                           -2);
+         LIBSIM_API_LEAVE2(VisItDetectInput,
+                           "Error \"%s\" in select. return %d",
+                           strerror(errno), -2);
          return -2;
       }
    }
@@ -2906,6 +2966,7 @@ VisItDetectInputWithTimeout(int blocking, int timeoutVal,
    }
    /*return -5; Compilers complain because this line cannot be reached */
 }
+#endif
 #endif
 
 /*******************************************************************************
@@ -3381,7 +3442,9 @@ void VisItDisconnect(void)
 #ifdef _WIN32
     selectThreadStarted = 0;
 #endif
-
+#ifdef VISIT_BLUE_GENE_Q
+    VisItDetectInputWithTimeout_bgq_ncalls = 0;
+#endif
     viewer_connected = 0;
 
     CloseVisItLibrary();

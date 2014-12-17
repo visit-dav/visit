@@ -305,3 +305,6 @@
 
 /* Force WinMain entry point on applications. */
 #cmakedefine VISIT_WINDOWS_APPLICATION
+
+/* Define a uniform socket buffer size that we can use in various places. */
+#define VISIT_SOCKET_BUFFER_SIZE 1024

@@ -197,6 +197,8 @@ ViewerFactory::CreateViewerWindow(int windowIndex)
 // Creation:   Fri Aug 22 15:29:20 PDT 2014
 //
 // Modifications:
+//   Brad Whitlock, Mon Dec 15 15:05:49 PST 2014
+//   Added ReadHostProfilesFromDirectoryRPC.
 //
 // ****************************************************************************
 
@@ -286,6 +288,7 @@ ViewerFactory::SetActionManagerLogic(ViewerActionManager *mgr, ViewerWindow *win
     mgr->SetLogic(ViewerRPC::QueryRPC,                      new QueryAction(win));
     mgr->SetLogic(ViewerRPC::RaiseActiveAnnotationObjectsRPC,new RaiseActiveAnnotationObjectsAction(win));
     mgr->SetLogic(ViewerRPC::ReOpenDatabaseRPC,             new ReOpenDatabaseAction(win));
+    mgr->SetLogic(ViewerRPC::ReadHostProfilesFromDirectoryRPC, new ReadHostProfilesFromDirectoryAction(win));
     mgr->SetLogic(ViewerRPC::RecenterViewRPC,               new RecenterViewAction(win));
     mgr->SetLogic(ViewerRPC::RedoViewRPC,                   new RedoViewAction(win));
     mgr->SetLogic(ViewerRPC::RedrawRPC,                     new RedrawAction(win));

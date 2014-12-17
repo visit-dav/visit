@@ -266,6 +266,7 @@ public:
         ReleaseToDDTRPC,
         PlotDDTVispointVariablesRPC,
         ExportRPC,
+        ReadHostProfilesFromDirectoryRPC,
         MaxRPC
     };
 

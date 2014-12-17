@@ -129,6 +129,7 @@ private:
 
     bool                        useSSHTunneling;
     bool                        keepGoing;
+    bool                        fixedBufferMode;
     int                         timeout;
     std::vector<Connection*>    childOutput;
     LaunchService               launch;

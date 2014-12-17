@@ -160,6 +160,30 @@ public:
 };
 
 // ****************************************************************************
+// Class: ReadHostProfilesFromDirectoryAction
+//
+// Purpose:
+//   Handles ViewerRPC::ReadHostProfilesFromDirectoryRPC
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 15 14:59:45 PST 2014
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWERCORE_API ReadHostProfilesFromDirectoryAction : public ViewerActionLogic
+{
+public:
+    ReadHostProfilesFromDirectoryAction(ViewerWindow *win) : ViewerActionLogic(win) {}
+    virtual ~ReadHostProfilesFromDirectoryAction() {}
+
+    virtual void Execute();
+};
+
+// ****************************************************************************
 // Class: ResetAnnotationAttributesAction
 //
 // Purpose:
