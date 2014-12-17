@@ -59,6 +59,9 @@
 #   Eric Brugger, Wed Apr 17 12:00:47 PDT 2013
 #   Also build qtssh on unix.
 #
+#   Eric Brugger, Wed Dec 17 12:37:22 PST 2014
+#   Add avtexamples.
+#
 #****************************************************************************/
 
 MACRO(VISIT_TOOLS_ADD_FOLDER type)
@@ -76,6 +79,7 @@ IF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
 ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
     # We always want these to be built
     ADD_SUBDIRECTORY(annotations)
+    ADD_SUBDIRECTORY(avtexamples)
     ADD_SUBDIRECTORY(convert)
     ADD_SUBDIRECTORY(embedviewer)
     ADD_SUBDIRECTORY(imagetools)
