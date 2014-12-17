@@ -1,0 +1,6 @@
+You must set the following environment variables when running the
+examples in a development build.
+
+setenv VISITARCHHOME path_to_visit/src/
+setenv VISITHOME path_to_visit/src
+setenv VISITPLUGINDIR path_to_visit/src/plugins
