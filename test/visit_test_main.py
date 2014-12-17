@@ -112,6 +112,10 @@ def out_path(*args):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#    Brad Whitlock, Fri Dec 12 17:56:34 PST 2014
+#    Optionally prepend a remote host to the database path.
 # ----------------------------------------------------------------------------
 def data_path(*args):
     """
@@ -119,7 +123,10 @@ def data_path(*args):
     """
     rargs = [TestEnv.params["data_dir"]]
     rargs.extend(args)
-    return abs_path(*rargs)
+    dp = abs_path(*rargs)
+    if TestEnv.params["data_host"] != "localhost":
+        dp = TestEnv.params["data_host"] + ":" + dp
+    return dp
 
 
 # ----------------------------------------------------------------------------
@@ -2344,6 +2351,8 @@ def AddSkipCase(case_name):
 #    Eric Brugger, Fri Aug 15 10:16:22 PDT 2014
 #    I added the ability to specify the parallel launch method.
 #
+#    Brad Whitlock, Fri Dec 12 18:03:31 PST 2014
+#    Use data_host for instead of "localhost" so we can do client/server to data.
 # ----------------------------------------------------------------------------
 def InitTestEnv():
     """
@@ -2371,19 +2380,52 @@ def InitTestEnv():
         ra = GetRenderingAttributes()
         ra.scalableActivationMode = ra.Never
         SetRenderingAttributes(ra)
-    # start parallel engine if parallel
-    haveParallelEngine = True
-    if TestEnv.params["parallel"]:
-        if TestEnv.params["parallel_launch"] == "mpirun":
-            haveParallelEngine = (OpenComputeEngine("localhost", ("-np", "2")) == 1)
-        elif TestEnv.params["parallel_launch"] == "srun":
-            haveParallelEngine = (OpenComputeEngine("localhost", ("-l", "srun", "-np", "2")) == 1)
+
+    # If we passed a directory to use for reading host profiles then let's 
+    # use the host profiles to launch the engine (since it has settings we
+    # probably want for the machine profile).
+    if TestEnv.params["host_profile_dir"] != "":
+        ReadHostProfilesFromDirectory(TestEnv.params["host_profile_dir"], 1)
+        if TestEnv.params["data_host"] in GetMachineProfileNames():
+            mp = GetMachineProfile(TestEnv.params["data_host"])
+            # Make some modifications to the machine profile.
+            if TestEnv.params["parallel_launch"] not in ("mpirun", "srun"):
+                plaunch = string.split(TestEnv.params["parallel_launch"], " ")
+                idx = 0
+                try:
+                    while idx < len(plaunch):
+                        if plaunch[idx] == "-dir":
+                            mp.directory = plaunch[idx+1]
+                            idx = idx + 2
+                        elif plaunch[idx] == "-b":
+                            bank = plaunch[idx+1]
+                            for i in range(mp.GetNumLaunchProfiles()):
+                                mp.GetLaunchProfiles(i).bank = bank
+                                mp.GetLaunchProfiles(i).bankSet = 1
+                            idx = idx + 2
+                        else:
+                            idx = idx + 1
+                except:
+                    pass    
+            #print mp
+
+            # Use the machine profile to start the engine.
+            OpenComputeEngine(mp)
         else:
-            haveParallelEngine = (OpenComputeEngine("localhost", ("-np", "2")) == 1)
-    if haveParallelEngine == False:
-        Exit()
+            Exit()
     else:
-        OpenComputeEngine("localhost")
+        # start parallel engine if parallel
+        haveParallelEngine = True
+        if TestEnv.params["parallel"]:
+            if TestEnv.params["parallel_launch"] == "mpirun":
+                haveParallelEngine = (OpenComputeEngine(TestEnv.params["data_host"], ("-np", "2")) == 1)
+            elif TestEnv.params["parallel_launch"] == "srun":
+                haveParallelEngine = (OpenComputeEngine(TestEnv.params["data_host"], ("-l", "srun", "-np", "2")) == 1)
+        if haveParallelEngine == False:
+            Exit()
+        else:
+            OpenComputeEngine(TestEnv.params["data_host"])
+
     # Automatically turn off all annotations
     # This is to prevent new tests getting committed that
     # are unnecessarily dependent on annotations.

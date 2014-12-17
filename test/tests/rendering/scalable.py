@@ -37,6 +37,9 @@
 #    Changed the parallel job launching logic to use srun on surface instead
 #    of edge.
 #
+#    Brad Whitlock, Mon Dec 15 17:22:38 PST 2014
+#    Only close the compute engine if it is not parallel.
+#
 # ----------------------------------------------------------------------------
 
 # sleep is needed to allow viewer to complete update of window information
@@ -51,15 +54,19 @@ if "useCompression" in dir():
     ra.compressionActivationMode = ra.Always
 SetRenderingAttributes(ra)
 
-# close the compute engine, if any, so we can start a new, parallel one
-CloseComputeEngine()
-# explicitly open a parallel engine, if possible
-# if it fails, the OpenDatabase will start a serial engine
-import socket
-if "surface" in socket.gethostname():
-    haveParallelEngine = OpenComputeEngine("localhost", ("-l", "srun", "-np", "2"))
-else:
-    haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))
+# Close the compute engine, if it is not already parallel.
+engines = GetEngineList()
+if len(engines) > 0:
+    props = GetEngineProperties(engines[0])
+    if props.numProcessors < 2:
+        CloseComputeEngine()
+        # explicitly open a parallel engine, if possible
+        # if it fails, the OpenDatabase will start a serial engine
+        import socket
+        if "surface" in socket.gethostname():
+            haveParallelEngine = OpenComputeEngine("localhost", ("-l", "srun", "-np", "2"))
+        else:
+            haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))
 
 OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
