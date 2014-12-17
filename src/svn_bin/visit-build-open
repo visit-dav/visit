@@ -78,7 +78,7 @@
 #   I added sidious.
 #
 #   Eric Brugger, Wed Feb 29 12:15:34 PST 2012
-#   I added ubuntu1104-64.
+#   I added ubuntu1104_64.
 #
 #   Eric Brugger, Thu Mar  1 07:57:45 PST 2012
 #   I modified the builds on hoth and sidious to use the serial config
@@ -115,7 +115,7 @@
 #   I modified the carver build to point to the new cmake.
 #
 #   Eric Brugger, Wed Nov 28 08:38:09 PST 2012
-#   I modified the ubuntu1104-64 build to point to the new cmake.
+#   I modified the ubuntu1104_64 build to point to the new cmake.
 #
 #   Brad Whitlock, Fri May 31 10:21:17 PDT 2013
 #   Replace "carver" with "carver". Add build for rzuseq.
@@ -129,7 +129,7 @@
 #   several of the LLNL builds.
 #
 #   Eric Brugger, Wed Dec 10 13:26:12 PST 2014
-#   I added ubuntu1404-64.
+#   I added ubuntu1404_64.
 #
 #-----------------------------------------------------------------------
 
@@ -173,8 +173,8 @@ esac
 #
 kickit=true
 sidious=false
-ubuntu1104-64=false
-ubuntu1404-64=false
+ubuntu1104_64=false
+ubuntu1404_64=false
 aztec=true
 rzzeus=true
 rzuseq=false
@@ -195,8 +195,8 @@ do
       -none)
          kickit=false
          sidious=false
-         ubuntu1104-64=false
-         ubuntu1404-64=false
+         ubuntu1104_64=false
+         ubuntu1404_64=false
          aztec=false
          rzzeus=false
          carver=false
@@ -220,20 +220,20 @@ do
          sidious=true
          shift
          ;;
-      -ubuntu1104-64)
-         ubuntu1104-64=false
+      -ubuntu1104_64)
+         ubuntu1104_64=false
          shift
          ;;
-      +ubuntu1104-64)
-         ubuntu1104-64=true
+      +ubuntu1104_64)
+         ubuntu1104_64=true
          shift
          ;;
-      -ubuntu1404-64)
-         ubuntu1404-64=false
+      -ubuntu1404_64)
+         ubuntu1404_64=false
          shift
          ;;
-      +ubuntu1404-64)
-         ubuntu1404-64=true
+      +ubuntu1404_64)
+         ubuntu1404_64=true
          shift
          ;;
       -aztec)
@@ -300,8 +300,8 @@ then
    echo "Valid machine names:"
    echo "    kickit (B-Div, Linux, x86_64),"
    echo "    sidious(B-Div, Linux, x86_64),"
-   echo "    ubunut1104-64(B-Div, Linux, x86_64),"
-   echo "    ubunut1404-64(B-Div, Linux, x86_64),"
+   echo "    ubuntu1104_64(B-Div, Linux, x86_64),"
+   echo "    ubuntu1404_64(B-Div, Linux, x86_64),"
    echo "    aztec (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
    echo "    rzuesq (LC, Linux, ppc64-BG/Q),"
@@ -426,18 +426,18 @@ then
 fi
 
 #
-# Build on ubuntu1104-64.
+# Build on ubuntu1104_64.
 #
-rm -f ubuntu1104-64
-cat <<EOF > ubuntu1104-64
+rm -f ubuntu1104_64
+cat <<EOF > ubuntu1104_64
 #!/bin/sh
-if test ! -e /home/visit/ubuntu1104-64; then
-   mkdir /home/visit/ubuntu1104-64
+if test ! -e /home/visit/ubuntu1104_64; then
+   mkdir /home/visit/ubuntu1104_64
 fi
-rm -rf /home/visit/ubuntu1104-64/visitbuild
-mkdir /home/visit/ubuntu1104-64/visitbuild
-mv ubuntu1104-64_$dist.tar.gz /home/visit/ubuntu1104-64/visitbuild/$dist.tar.gz
-cd /home/visit/ubuntu1104-64/visitbuild
+rm -rf /home/visit/ubuntu1104_64/visitbuild
+mkdir /home/visit/ubuntu1104_64/visitbuild
+mv ubuntu1104_64_$dist.tar.gz /home/visit/ubuntu1104_64/visitbuild/$dist.tar.gz
+cd /home/visit/ubuntu1104_64/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
@@ -448,7 +448,7 @@ make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "     build of visit on ubuntu1104-64"    > resultlog 2>&1
+echo "     build of visit on ubuntu1104_64"    > resultlog 2>&1
 echo "    ---------------------------------"  >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
@@ -461,41 +461,41 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $ubuntu1104-64 = true ]
+if [ $ubuntu1104_64 = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on ubuntu1104-64"
-      cp ubuntu1104-64 ubuntu1104-64_buildit
-      cp $dist.tar.gz ubuntu1104-64_$dist.tar.gz
-      chmod 750 ubuntu1104-64_buildit;./ubuntu1104-64_buildit &
+      echo "Building on ubuntu1104_64"
+      cp ubuntu1104_64 ubuntu1104_64_buildit
+      cp $dist.tar.gz ubuntu1104_64_$dist.tar.gz
+      chmod 750 ubuntu1104_64_buildit;./ubuntu1104_64_buildit &
    fi
 fi
 
 #
-# Build on ubuntu1404-64.
+# Build on ubuntu1404_64.
 #
-rm -f ubuntu1404-64
-cat <<EOF > ubuntu1404-64
+rm -f ubuntu1404_64
+cat <<EOF > ubuntu1404_64
 #!/bin/sh
-if test ! -e /home/visit/ubuntu1404-64; then
-   mkdir /home/visit/ubuntu1404-64
+if test ! -e /home/visit/ubuntu1404_64; then
+   mkdir /home/visit/ubuntu1404_64
 fi
-rm -rf /home/visit/ubuntu1404-64/visitbuild
-mkdir /home/visit/ubuntu1404-64/visitbuild
-mv ubuntu1404-64_$dist.tar.gz /home/visit/ubuntu1404-64/visitbuild/$dist.tar.gz
-cd /home/visit/ubuntu1404-64/visitbuild
+rm -rf /home/visit/ubuntu1404_64/visitbuild
+mkdir /home/visit/ubuntu1404_64/visitbuild
+mv ubuntu1404_64_$dist.tar.gz /home/visit/ubuntu1404_64/visitbuild/$dist.tar.gz
+cd /home/visit/ubuntu1404_64/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/home/visit/visit/cmake/2.8.12.2/linux-x86_64_gcc-4.5/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/home/visit/visit/cmake/2.8.12.2/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 2 >> ../../buildlog 2>&1
 make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "     build of visit on ubuntu1404-64"    > resultlog 2>&1
+echo "     build of visit on ubuntu1404_64"    > resultlog 2>&1
 echo "    ---------------------------------"  >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
@@ -508,14 +508,14 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $ubuntu1404-64 = true ]
+if [ $ubuntu1404_64 = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on ubuntu1404-64"
-      cp ubuntu1404-64 ubuntu1404-64_buildit
-      cp $dist.tar.gz ubuntu1404-64_$dist.tar.gz
-      chmod 750 ubuntu1404-64_buildit;./ubuntu1404-64_buildit &
+      echo "Building on ubuntu1404_64"
+      cp ubuntu1404_64 ubuntu1404_64_buildit
+      cp $dist.tar.gz ubuntu1404_64_$dist.tar.gz
+      chmod 750 ubuntu1404_64_buildit;./ubuntu1404_64_buildit &
    fi
 fi
 
@@ -859,5 +859,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104-64 ubuntu1404-64 aztec rzzeus rzuseq carver glory redsky
+   rm -f kickit sidious ubuntu1104_64 ubuntu1404_64 aztec rzzeus rzuseq carver glory redsky
 fi
