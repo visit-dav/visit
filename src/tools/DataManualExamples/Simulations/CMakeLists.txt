@@ -96,36 +96,6 @@ IF(NOT VISIT_DATA_MANUAL_EXAMPLES)
     ENDIF()
 ENDIF(NOT VISIT_DATA_MANUAL_EXAMPLES)
 
-IF(VISIT_STATIC)
-  # Create a single static simV2 archive containing all relevant visit libraries
-
-  # create a library that depends on a dummy source file
-  set(SIMV2_STATIC_SRC ${CMAKE_CURRENT_BINARY_DIR}/simv2_static_dummy.c)
-  set(SIMV2_STATIC_SER ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libsimV2_static_ser.a)
-  set(SIMV2_STATIC_PAR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libsimV2_static_par.a)
-  add_library(simV2_static_ser STATIC ${SIMV2_STATIC_SRC})
-
-  # create the dummy source file
-  add_custom_command(OUTPUT ${SIMV2_STATIC_SRC} 
-                     COMMAND ${CMAKE_COMMAND} -E touch ${SIMV2_STATIC_SRC}
-  )
-
-  configure_file(${VISIT_SOURCE_DIR}/CMake/CreateStaticSimV2.cmake.in
-                 ${CMAKE_CURRENT_BINARY_DIR}/CreateStaticSimV2.cmake
-                 @ONLY
-  )
-  add_custom_command(TARGET simV2_static_ser POST_BUILD
-                     COMMAND ${CMAKE_COMMAND} -P
-                     ${CMAKE_CURRENT_BINARY_DIR}/CreateStaticSimV2.cmake
-                     COMMENT "CREATING SIMV2 STATIC ARCHIVE"
-  )
-
-  if (VISIT_PARALLEL)
-      add_library(simV2_static_par STATIC ${SIMV2_STATIC_SRC})
-  endif()
-
-ENDIF()
-
 # The simulation will be built here but not added to the "all" target. This means
 # it won't be built unless we explicitly build it or make the "all_simulations"
 # target.
@@ -163,6 +133,12 @@ ELSE(WIN32)
     ENDIF(NOT APPLE)
 ENDIF(WIN32)
 
+SET(VTK_LIBS vtkCommonCore vtkImagingCore vtkRenderingCore vtkIOLegacy vtkIOPLY
+             vtkInteractionStyle vtkRenderingOpenGL vtkRenderingFreeTypeOpenGL
+             vtkFiltersHybrid vtkFiltersModeling vtkGeovisCore)
+IF(BLUEGENEQ)
+    LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
+ENDIF(BLUEGENEQ)
 
 ##
 ## SimV2 functions
@@ -175,9 +151,6 @@ FUNCTION(ADD_SIMV2_SIMULATION target)
     IF(NOT VISIT_STATIC)
         TARGET_LINK_LIBRARIES(sim_${target} simV2 ${EXTRA_SIM_LIBS})
     ELSE()
-        SET(VTK_LIBS vtkCommonCore vtkImagingCore vtkRenderingCore vtkIOLegacy vtkIOPLY
-                     vtkInteractionStyle vtkRenderingOpenGL vtkRenderingFreeTypeOpenGL
-                     vtkFiltersHybrid vtkFiltersModeling vtkGeovisCore)
         TARGET_LINK_LIBRARIES(sim_${target} simV2_static_ser ${VTK_LIBS} ${ZLIB_LIB}
                                                              ${EXTRA_SIM_LIBS})
     ENDIF()
@@ -195,15 +168,25 @@ ENDFUNCTION(ADD_FORTRAN_SIMV2_SIMULATION)
 
 FUNCTION(ADD_PARALLEL_SIMV2_SIMULATION target)
     IF(VISIT_PARALLEL)
+        IF(BLUEGENEQ)
+            SET(TMP_NOLINK ${VISIT_NOLINK_MPI_WITH_LIBRARIES})
+            # Do this to try and control the order of MPI libraries on the command line
+            SET(VISIT_NOLINK_MPI_WITH_LIBRARIES ON)
+            SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${ICET_LIB} ${VISIT_PARALLEL_LIBS})
+        ENDIF(BLUEGENEQ)
         ADD_PARALLEL_EXECUTABLE(sim_${target} ${ARGN})
         SET_SIMULATION_PROPERTIES(${target})
         SET_TARGET_PROPERTIES(sim_${target} PROPERTIES HAS_CXX ON)
         IF(NOT VISIT_STATIC)
             TARGET_LINK_LIBRARIES(sim_${target} simV2 ${EXTRA_SIM_LIBS})
         ELSE()
-            TARGET_LINK_LIBRARIES(sim_${target} simV2_static_par ${EXTRA_SIM_LIBS})
+            TARGET_LINK_LIBRARIES(sim_${target} simV2_static_par ${VTK_LIBS} ${ZLIB_LIB}
+                                                                 ${EXTRA_SIM_LIBS})
         ENDIF()
         ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
+        IF(BLUEGENEQ)
+            SET(VISIT_NOLINK_MPI_WITH_LIBRARIES ${TMP_NOLINK})
+        ENDIF(BLUEGENEQ)
     ENDIF(VISIT_PARALLEL)
 ENDFUNCTION(ADD_PARALLEL_SIMV2_SIMULATION)
 

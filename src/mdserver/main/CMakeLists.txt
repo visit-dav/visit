@@ -51,6 +51,10 @@
 #   Brad Whitlock, Fri May 18 16:09:34 PST 2012
 #   Use different resource file.
 #
+#   Brad Whitlock, Tue Nov 11 20:11:26 PST 2014
+#   Force inclusion of SimV2 plugin sources here for static builds. We don't
+#   do it the normal way because we don't want that plugin in the engine.
+#
 #****************************************************************************/
 
 SET(MDSERVER_SOURCES
@@ -75,9 +79,17 @@ main.C
 
 # If the mdserver is static then we need some static symbol lookup functions
 IF(VISIT_STATIC)
-    SET(MDSERVER_STATIC_SOURCES MDServerStaticSymbolLocator.C)
+    SET(SIMV2_PLUGIN_DIR ${VISIT_SOURCE_DIR}/databases/SimV2)
+    SET(SIMV2_PLUGIN_SOURCES
+        ${SIMV2_PLUGIN_DIR}/SimV2CommonPluginInfo.C
+        ${SIMV2_PLUGIN_DIR}/SimV2MDServerPluginInfo.C
+        ${SIMV2_PLUGIN_DIR}/SimV2PluginInfo.C
+        ${SIMV2_PLUGIN_DIR}/avtSimV2FileFormat.C
+     )
+    SET(MDSERVER_STATIC_SOURCES ${SIMV2_PLUGIN_SOURCES} MDServerStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
 
+ADD_DEFINITIONS(-DMDSERVER)
 IF (NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
     ADD_DEFINITIONS(-DCOMM_EXPORTS)
@@ -86,16 +98,20 @@ ENDIF (NOT WIN32)
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
+${VTK_INCLUDE_DIRS}
 ${VISIT_SOURCE_DIR}/mdserver/rpc
 ${VISIT_SOURCE_DIR}/mdserver/proxy
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
 ${VISIT_SOURCE_DIR}/avt/Database/Database
+${VISIT_SOURCE_DIR}/avt/Database/Formats
+${VISIT_SOURCE_DIR}/avt/Database/Ghost
 ${VISIT_SOURCE_DIR}/avt/Math
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
+${SIMV2_PLUGIN_DIR}
 )
 
 LINK_DIRECTORIES(

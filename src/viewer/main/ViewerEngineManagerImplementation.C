@@ -830,6 +830,10 @@ ViewerEngineManagerImplementation::CreateEngineEx(const EngineKey &ek,
 //    host/port arguments are translated in SimConnectThroughLauncher when we
 //    do ssh tunneling.
 //
+//    Brad Whitlock, Tue Nov 11 23:38:28 PST 2014
+//    Add extra arguments from the launch profile it it exists. This will
+//    ensure that argmuments like -fixed-buffer-sockets get passed along.
+//
 // ****************************************************************************
 
 bool
@@ -888,6 +892,17 @@ ViewerEngineManagerImplementation::ConnectSim(const EngineKey &ek,
     TRY
     {
         MachineProfile profile = GetMachineProfile(ek.HostName());
+
+        // Add extra arguments from the launch profile
+        const LaunchProfile *launch = profile.GetActiveLaunchProfile();
+        if(launch != NULL)
+        {
+            if(!launch->GetArguments().empty())
+            {
+                for(size_t i = 0; i < launch->GetArguments().size(); ++i)
+                   newEngine.proxy->AddArgument(launch->GetArguments()[i]);
+            }
+        }
 
         //
         // Launch the engine.

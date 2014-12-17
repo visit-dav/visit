@@ -15794,6 +15794,39 @@ visit_SuppressMessages(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_ReadHostProfilesFromDirectory
+//
+// Purpose:
+//   Reads host profiles from a directory.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 15 15:14:17 PST 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ReadHostProfilesFromDirectory(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    //
+    // Get the name of the time slider that we want to use.
+    //
+    char *dirName = NULL; int flag = 0;
+    if(!PyArg_ParseTuple(args, "si", &dirName, &flag))
+        return NULL;
+
+    MUTEX_LOCK();
+        GetViewerMethods()->ReadHostProfilesFromDirectory(dirName, flag != 0);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Method: ENSURE_CALLBACK_MANAGER_EXISTS
 //
 // Purpose:
@@ -17157,6 +17190,7 @@ AddProxyMethods()
     AddMethod("QueryOverTime", visit_QueryOverTime, visit_QueryOverTime_doc);
     AddMethod("PythonQuery", visit_PythonQuery,visit_PythonQuery_doc);
     AddMethod("DefinePythonExpression", visit_DefinePythonExpression,visit_DefinePythonExpression_doc);
+    AddMethod("ReadHostProfilesFromDirectory", visit_ReadHostProfilesFromDirectory, visit_ReadHostProfilesFromDirectory_doc);
     AddMethod("RecenterView", visit_RecenterView, visit_RecenterView_doc);
     AddMethod("RedrawWindow", visit_RedrawWindow, visit_RedrawWindow_doc);
     AddMethod("RemoveAllOperators", visit_RemoveAllOperators,

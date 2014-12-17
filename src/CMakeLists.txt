@@ -2233,9 +2233,12 @@ ADD_SUBDIRECTORY(avt)
 IF(NOT VISIT_DBIO_ONLY)
     ADD_SUBDIRECTORY(sim)
     ADD_SUBDIRECTORY(viewer)   # sim depends on viewercore
-    ADD_SUBDIRECTORY(engine)   # viewercore depends on rpc and proxy libs.
-    ADD_SUBDIRECTORY(launcher) # viewercore depends on rpc and proxy libs.
-    ADD_SUBDIRECTORY(mdserver) # viewercore depends on rpc and proxy libs.
+    ADD_SUBDIRECTORY(engine)   # sim depends on engine
+
+    IF(NOT VISIT_ENGINE_ONLY)
+        ADD_SUBDIRECTORY(launcher)
+        ADD_SUBDIRECTORY(mdserver)
+    ENDIF(NOT VISIT_ENGINE_ONLY)
 ENDIF(NOT VISIT_DBIO_ONLY)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
@@ -2301,9 +2304,20 @@ ADD_SUBDIRECTORY(tools)
 # binaries. This is needed to link the plugins into the exe.
 IF(VISIT_STATIC)
     ADD_SUBDIRECTORY(engine/main)
+    ADD_SUBDIRECTORY(sim/V2/static)
+
+    # Make it possible to build some sim examples since we've created the 
+    # static sim library.
+    IF(NOT WIN32)
+        IF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
+            ADD_SUBDIRECTORY(tools/DataManualExamples/Simulations)
+        ENDIF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
+    ENDIF(NOT WIN32)
+
     IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
         ADD_SUBDIRECTORY(mdserver/main)
     ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+
     IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
         ADD_SUBDIRECTORY(gui/main)
         ADD_SUBDIRECTORY(viewer/main)

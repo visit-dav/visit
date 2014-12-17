@@ -1090,6 +1090,39 @@ ViewerStateManager::ReadHostProfiles()
 }
 
 // ****************************************************************************
+// Method: ViewerStateManager::ReadHostProfilesFromDirectory
+//
+// Purpose:
+//   Read host profiles from the specified directory.
+//
+// Arguments:
+//   dir   : The directory from which we'll read host profiles.
+//   clear : Whether to clear the list first.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 15 14:56:40 PST 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerStateManager::ReadHostProfilesFromDirectory(const std::string &dir, bool clear)
+{
+    if(clear)
+        GetViewerState()->GetHostProfileList()->ClearMachines();
+
+    // Read host profiles from the specified directory.
+    FileFunctions::ReadAndProcessDirectory(dir,
+                                           &ReadHostProfileCallback,
+                                           GetViewerState()->GetHostProfileList());
+}
+
+// ****************************************************************************
 // Method: ViewerStateManager::WriteHostProfiles
 //
 // Purpose:

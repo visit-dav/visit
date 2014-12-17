@@ -70,9 +70,7 @@
 
 // This value determines the size of the buffer exchanged when we send fixed
 // buffer sizes over the network.
-#define BUFFER_SIZE 1024
-
-const int SocketConnection::FIXED_BUFFER_SIZE = BUFFER_SIZE;
+const int SocketConnection::FIXED_BUFFER_SIZE = VISIT_SOCKET_BUFFER_SIZE;
 
 // ****************************************************************************
 // Method: SocketConnection::SocketConnection
@@ -350,9 +348,9 @@ SocketConnection::Fill()
     DEBUG_SOCKETS(debug5 << mName << "begin" << endl;)
 
     const int iteration_limit = 100;
-    unsigned char tmp[BUFFER_SIZE];
+    unsigned char tmp[VISIT_SOCKET_BUFFER_SIZE];
 
-    // If we're in fixed buffer mode, make sure we get BUFFER_SIZE bytes
+    // If we're in fixed buffer mode, make sure we get VISIT_SOCKET_BUFFER_SIZE bytes
     // before we process the message coming through. Most of the time, we
     // should get the buffer size amount but, just in case, we loop until
     // we get the right message size.
@@ -368,10 +366,10 @@ SocketConnection::Fill()
         }
 
         DEBUG_SOCKETS(debug5 << mName << "recv(bufferSize="
-                             << BUFFER_SIZE << ")" << endl;)
+                             << VISIT_SOCKET_BUFFER_SIZE << ")" << endl;)
 
 #if defined(_WIN32)
-        amountRead = recv(descriptor, (char FAR *)ptr, BUFFER_SIZE-totalRead, 0);
+        amountRead = recv(descriptor, (char FAR *)ptr, VISIT_SOCKET_BUFFER_SIZE-totalRead, 0);
         if(amountRead == SOCKET_ERROR)
         {
             LogWindowsSocketError("SocketConnection", "Fill");
@@ -379,7 +377,7 @@ SocketConnection::Fill()
                 return -1;
         }
 #else
-        amountRead = recv(descriptor, (void *)ptr, BUFFER_SIZE-totalRead, 0);
+        amountRead = recv(descriptor, (void *)ptr, VISIT_SOCKET_BUFFER_SIZE-totalRead, 0);
 #endif
 
         if(fixedBufferMode)
@@ -398,7 +396,7 @@ SocketConnection::Fill()
 
         totalRead += amountRead;
     }
-    while(fixedBufferMode && totalRead < BUFFER_SIZE);
+    while(fixedBufferMode && totalRead < VISIT_SOCKET_BUFFER_SIZE);
 
     if(totalRead > 0)
     {
@@ -483,11 +481,11 @@ void
 SocketConnection::Flush()
 {
     DEBUG_SOCKETS_CODE(const char *mName = "SocketConnection::Flush: ";)
-    unsigned char buf[BUFFER_SIZE];
+    unsigned char buf[VISIT_SOCKET_BUFFER_SIZE];
 
     if(fixedBufferMode)
     {
-        memset(buf, 0, BUFFER_SIZE * sizeof(unsigned char));
+        memset(buf, 0, VISIT_SOCKET_BUFFER_SIZE * sizeof(unsigned char));
 
         // Get the header size.
         int headerSize = 0;
@@ -497,7 +495,7 @@ SocketConnection::Flush()
         int unsent = (int)buffer.size();
         DEBUG_SOCKETS(debug5 << mName << "fixed buffer send. buffer.size=" << buffer.size() << endl;)
 
-        int maxData = BUFFER_SIZE - headerSize;
+        int maxData = VISIT_SOCKET_BUFFER_SIZE - headerSize;
 
         while(unsent > 0)
         {
@@ -513,7 +511,7 @@ SocketConnection::Flush()
             // Wait for the descriptor to be ready.
             WaitForDescriptor(false);
 
-            DEBUG_SOCKETS(debug5 << mName << "sending " << BUFFER_SIZE 
+            DEBUG_SOCKETS(debug5 << mName << "sending " << VISIT_SOCKET_BUFFER_SIZE 
                                  << " bytes (" << thisChunkSize 
                                  << " are real) {";
                 int n = std::min(10, thisChunkSize);
@@ -526,12 +524,12 @@ SocketConnection::Flush()
 
             // Send this fixed size chunk.
 #if defined(_WIN32)
-            DEBUG_SOCKETS_CODE(int sz = ) send(descriptor, (const char FAR *)buf, BUFFER_SIZE, 0);
+            DEBUG_SOCKETS_CODE(int sz = ) send(descriptor, (const char FAR *)buf, VISIT_SOCKET_BUFFER_SIZE, 0);
 #else
 #ifdef MSG_NOSIGNAL
-            DEBUG_SOCKETS_CODE(ssize_t sz = ) send(descriptor, (const void *)buf, BUFFER_SIZE, MSG_NOSIGNAL);
+            DEBUG_SOCKETS_CODE(ssize_t sz = ) send(descriptor, (const void *)buf, VISIT_SOCKET_BUFFER_SIZE, MSG_NOSIGNAL);
 #else
-            DEBUG_SOCKETS_CODE(ssize_t sz = ) send(descriptor, (const void *)buf, BUFFER_SIZE, 0);
+            DEBUG_SOCKETS_CODE(ssize_t sz = ) send(descriptor, (const void *)buf, VISIT_SOCKET_BUFFER_SIZE, 0);
 #endif
 #endif
             DEBUG_SOCKETS(debug5 << mName << "sent " << sz << " bytes" << endl;)
@@ -544,7 +542,7 @@ SocketConnection::Flush()
     {
         DEBUG_SOCKETS(debug5 << mName << "normal buffer send. buffer.size=" << buffer.size() << endl;)
 
-        const int bufSize = BUFFER_SIZE;
+        const int bufSize = VISIT_SOCKET_BUFFER_SIZE;
         int count = 0;
         // Write out the entire buffer, in pieces, to the socket descriptor.
         for(size_t bufindex = 0; bufindex < buffer.size(); ++bufindex)

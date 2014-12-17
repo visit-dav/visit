@@ -52,6 +52,7 @@ class MDServerDatabasePluginInfo;
 // Declare the databases.
 #define PLUGIN_VERB DECLARE_DATABASE
 #include <enabled_databases.h>
+PLUGIN_VERB(SimV2)
 #undef PLUGIN_VERB
 
 
@@ -70,6 +71,7 @@ database_dlsym(const std::string &sym)
 {
     void *retval = NULL;
     #include <enabled_databases.h>
+    PLUGIN_VERB(SimV2)
     return retval;
 }
 #undef PLUGIN_VERB
@@ -99,6 +101,7 @@ StaticGetSupportedLibs(std::vector<std::pair<std::string, std::string> > &libs,
         // Add the databases
 #define PLUGIN_VERB ADD_DATABASE_PLUGIN
 #include <enabled_databases.h>
+        PLUGIN_VERB(SimV2)
 #undef PLUGIN_VERB
     }
 }

@@ -3873,6 +3873,32 @@ ViewerMethods::ImportEntireStateWithDifferentSources(const std::string &filename
 }
 
 // ****************************************************************************
+// Method: ViewerMethods::ReadHostProfilesFromDirectory
+//
+// Purpose:
+//   Tells the viewer to read host profiles from a specific directory.
+//
+// Arguments:
+//   dir   : The directory from which host profiles will be read.
+//   clear : Whether to clear the list prior to reading.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 15 15:08:45 PST 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerMethods::ReadHostProfilesFromDirectory(const std::string &dir, bool clear)
+{
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ReadHostProfilesFromDirectoryRPC);
+    state->GetViewerRPC()->SetDatabase(dir);
+    state->GetViewerRPC()->SetBoolFlag(clear);
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerMethods::SetCenterOfRotation
 //
 // Purpose: 

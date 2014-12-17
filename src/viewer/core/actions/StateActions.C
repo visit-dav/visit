@@ -38,10 +38,12 @@
 #include <StateActions.h>
 
 #include <ViewerState.h>
+#include <ViewerStateManager.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
 
 #include <AnnotationObject.h>
+#include <HostProfileList.h>
 
 //
 // These methods were adapted from ViewerSubject handlers.
@@ -150,6 +152,28 @@ void
 RaiseActiveAnnotationObjectsAction::Execute()
 {
     windowMgr->RaiseActiveAnnotationObjects();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ReadHostProfilesFromDirectoryAction::Execute
+//
+// Purpose: 
+//   Execute ViewerRPC::ReadHostProfilesFromDirectoryRPC
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 15 15:00:47 PST 2014
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ReadHostProfilesFromDirectoryAction::Execute()
+{
+    GetViewerStateManager()->ReadHostProfilesFromDirectory(args.GetDatabase(), args.GetBoolFlag());
+    GetViewerState()->GetHostProfileList()->Notify();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

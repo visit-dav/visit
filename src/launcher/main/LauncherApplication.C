@@ -235,6 +235,7 @@ LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
     timeout = 60;
     keepGoing = true;
     useSSHTunneling = false;
+    fixedBufferMode = false;
 
 #if !defined(_WIN32)
     // Set up an alarm signal handler to exit gracefully.
@@ -343,6 +344,10 @@ LauncherApplication::ProcessArguments(int *argcp, char **argvp[])
         else if (arg == "-sshtunneling")
         {
             useSSHTunneling = true;
+        }
+        else if (arg == "-fixed-buffer-sockets")
+        {
+            fixedBufferMode = true;
         }
     }
 }
@@ -738,6 +743,9 @@ LauncherApplication::LaunchProcess(const stringVector &args)
 //    Brad Whitlock, Mon Apr 27 16:31:23 PST 2009
 //    I added support for SSH tunnelling.
 //
+//    Brad Whitlock, Tue Nov 11 21:25:26 PST 2014
+//    Added support for fixed buffer sockets needed for BGQ.
+//
 // ****************************************************************************
 
 void
@@ -845,14 +853,17 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
     //
     // Send the security key and launch information to the simulation
     //
-    char tmp[2000];
+    char tmp[VISIT_SOCKET_BUFFER_SIZE*2];
     int          nleft, nwritten;
     const char      *ptr;
 
+    memset(tmp, 0, sizeof(char) * VISIT_SOCKET_BUFFER_SIZE*2);
     sprintf(tmp, "%s\n", simSecurityKey.c_str());
 
     ptr = (const char*)tmp;
     nleft = strlen(tmp);
+    if(fixedBufferMode)
+        nleft = VISIT_SOCKET_BUFFER_SIZE;
     while (nleft > 0)
     {
         if((nwritten = send(s, (const char *)ptr, nleft, 0)) <= 0)
@@ -874,7 +885,7 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
     char *newline = strstr(tbuf, "\n");
     while (!newline)
     {
-        n = recv(s, tptr, 2000, 0);
+        n = recv(s, tptr, VISIT_SOCKET_BUFFER_SIZE, 0);
         tptr += n;
         *tptr = 0;
         newline = strstr(tbuf, "\n");
@@ -886,6 +897,7 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
     }
 
     // Create the Launch args
+    memset(tmp, 0, sizeof(char) * VISIT_SOCKET_BUFFER_SIZE*2);
     strcpy(tmp, "");
     for (size_t i=0; i<launchArgs.size(); i++)
     {
@@ -897,6 +909,8 @@ LauncherApplication::ConnectSimulation(const stringVector &origLaunchArgs,
     // Send it!
     ptr = (const char*)tmp;
     nleft = strlen(tmp);
+    if(fixedBufferMode)
+        nleft = VISIT_SOCKET_BUFFER_SIZE;
     while (nleft > 0)
     {
         if((nwritten = send(s, (const char *)ptr, nleft, 0)) <= 0)

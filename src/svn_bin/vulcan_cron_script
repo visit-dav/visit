@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Change directories to the working directory.
+cd visit_run_tests
+
+# The surface test suite run will have already freshened the svn_bin directory here.
+
+# Defaults
+user=`whoami`
+tmpDir="/nfs/tmp2/"
+tonight=`date "+visit%Y-%m-%d"`
+vulcanbank="sspwork"
+
+# Run the vulcan nightly build
+svn_bin/vulcan_nightly_build -user $user -tmpdir $tmpDir -tonight $tonight -vulcanbank $vulcanbank
+
+# Run the vulcan nightly test
+svn_bin/vulcan_nightly_test -user $user -tmpdir $tmpDir -tonight $tonight -vulcanbank $vulcanbank
+

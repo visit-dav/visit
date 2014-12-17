@@ -175,6 +175,7 @@ extern const char *visit_Queries_doc;
 extern const char *visit_QueryOverTime_doc;
 extern const char *visit_Query_doc;
 extern const char *visit_ReOpenDatabase_doc;
+extern const char *visit_ReadHostProfilesFromDirectory_doc;
 extern const char *visit_RecenterView_doc;
 extern const char *visit_RedoView_doc;
 extern const char *visit_RedrawWindow_doc;
