@@ -46,6 +46,10 @@
 
 #include <vtkDataSet.h>
 #include <vtkDataSetWriter.h>
+#include <vtkXMLPolyDataWriter.h>
+#include <vtkXMLRectilinearGridWriter.h>
+#include <vtkXMLStructuredGridWriter.h>
+#include <vtkXMLUnstructuredGridWriter.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtParallel.h>
@@ -70,12 +74,16 @@ using     std::vector;
 //    Jeremy Meredith, Tue Mar 27 15:10:21 EDT 2007
 //    Added nblocks so we don't have to trust the meta data.
 //
+//    Kathleen Biagas, Thu Dec 18 14:10:36 PST 2014
+//    Add doXML.
+//
 // ****************************************************************************
 
 avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts)
 {
     doBinary = atts->GetBool("Binary format");
     doMultiBlock = true;
+    doXML = atts->GetBool("XML format");
     nblocks = 0;
 }
 
@@ -167,6 +175,9 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Hank Childs, Thu Mar 30 12:20:24 PST 2006
 //    Change name based on whether or not we are doing multi-block.
 //
+//    Kathleen Biagas, Thu Dec 18 14:10:06 PST 2014
+//    Add support for XML format through DB options.
+//
 // ****************************************************************************
 
 void
@@ -174,17 +185,57 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     char chunkname[1024];
     if (doMultiBlock)
-        sprintf(chunkname, "%s.%d.vtk", stem.c_str(), chunk);
+        sprintf(chunkname, "%s.%d", stem.c_str(), chunk);
     else
-        sprintf(chunkname, "%s.vtk", stem.c_str());
-    vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
-    if (doBinary)
-        wrtr->SetFileTypeToBinary();
-    wrtr->SetInputData(ds);
-    wrtr->SetFileName(chunkname);
-    wrtr->Write();
+        sprintf(chunkname, "%s", stem.c_str());
 
-    wrtr->Delete();
+    if (!doXML)
+    {
+        sprintf(chunkname, "%s.vtk", chunkname);
+        vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
+        if (doBinary)
+            wrtr->SetFileTypeToBinary();
+        wrtr->SetInputData(ds);
+        wrtr->SetFileName(chunkname);
+        wrtr->Write();
+
+        wrtr->Delete();
+    }
+    else
+    {
+        vtkXMLWriter *wrtr = NULL;
+        if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+           sprintf(chunkname, "%s.vtr", chunkname);
+           wrtr = vtkXMLRectilinearGridWriter::New();
+        }
+        else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+        {
+           sprintf(chunkname, "%s.vts", chunkname);
+           wrtr = vtkXMLStructuredGridWriter::New();
+        }
+        else if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+           sprintf(chunkname, "%s.vtu", chunkname);
+           wrtr = vtkXMLUnstructuredGridWriter::New();
+        }
+        else if (ds->GetDataObjectType() == VTK_POLY_DATA)
+        {
+           sprintf(chunkname, "%s.vtp", chunkname);
+           wrtr = vtkXMLPolyDataWriter::New();
+        }
+
+        if (wrtr)
+        {
+            if(doBinary)
+                wrtr->SetDataModeToBinary();
+            wrtr->SetInputData(ds);
+            wrtr->SetFileName(chunkname);
+            wrtr->Write();
+
+            wrtr->Delete();
+        }
+    }
 }
 
 

@@ -70,6 +70,9 @@ class DBOptionsAttributes;
 //    Added numblocks to the OpenFile method, and save off the actual
 //    encountered mesh types, because we cannot trust the metadata.
 //
+//    Kathleen Biagas, Thu Dec 18 14:19:13 PST 2014
+//    Added doXML.
+//
 // ****************************************************************************
 
 class
@@ -83,6 +86,7 @@ avtVTKWriter : public virtual avtDatabaseWriter
     std::string    stem;
     bool           doBinary;
     bool           doMultiBlock;
+    bool           doXML;
     int            nblocks;
 
     virtual void   OpenFile(const std::string &, int);
