@@ -2,16 +2,12 @@
 
 #include <DatabasePluginInfo.h>
 #include <DatabasePluginManager.h>
-#include <OperatorPluginManager.h>
-#include <PlotPluginManager.h>
 
 #include <avtContourFilter.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
 #include <avtDatabaseWriter.h>
 #include <avtLinearTransformFilter.h>
-#include <avtOriginatingSource.h>
-#include <avtParallel.h>
 
 #include <VisItException.h>
 #include <visitstream.h>
@@ -31,13 +27,6 @@ using std::vector;
 //
 // 3) If you specify the contour levels with NLevels the program will crash.
 //
-// 4) The Update calls after each filter is added may be extraneous and
-//    may be causing the network to execute unnecessarily.
-//
-// 5) The operator and plot managers are not used.
-//
-// 6) Parallel has never been tested and probably doesn't work.
-//
 
 int
 main(int argc, char *argv[])
@@ -46,13 +35,6 @@ main(int argc, char *argv[])
     // Initialize VisIt.
     //
     cerr << "Initializing VisIt." << endl;
-    bool parallel = false;
-#ifdef PARALLEL
-    parallel = true;
-#endif
-
-    PAR_Init(argc, argv);
-
     VisItInit::SetComponentName("engine");
     VisItInit::Initialize(argc, argv);
 
@@ -61,22 +43,10 @@ main(int argc, char *argv[])
     //
     cerr << "Creating the plugin managers." << endl;
     DatabasePluginManager *dbmgr = new DatabasePluginManager;
-    OperatorPluginManager  *omgr = new OperatorPluginManager;
-    PlotPluginManager      *pmgr = new PlotPluginManager;
 
-    dbmgr->Initialize(DatabasePluginManager::Engine, parallel);
-    omgr->Initialize(DatabasePluginManager::Engine, parallel);
-    pmgr->Initialize(DatabasePluginManager::Engine, parallel);
+    dbmgr->Initialize(DatabasePluginManager::Engine, false);
 
-#if 0
-    dbmgr->LoadPluginsOnDemand();
-    omgr->LoadPluginsOnDemand();
-    pmgr->LoadPluginsOnDemand();
-#else
     dbmgr->LoadPluginsNow();
-    omgr->LoadPluginsNow();
-    pmgr->LoadPluginsNow();
-#endif
 
     //
     // Instantiate the database.
@@ -91,31 +61,24 @@ main(int argc, char *argv[])
     }
     CATCHALL
     {
-        if (PAR_Rank() == 0)
-            cerr << "The file " << filename << " does not exist or could "
-                 << "not be opened." << endl;
-        PAR_Exit();
+        cerr << "The file " << filename << " does not exist or could "
+             << "not be opened." << endl;
         exit(EXIT_FAILURE);
     }
     ENDTRY
 
     if (db == NULL)
     {
-        if (PAR_Rank() == 0)
-            cerr << "Could not open file " << argv[1] << ".  Tried using plugins ";
+        cerr << "Could not open file " << argv[1] << ".  Tried using plugins ";
         for (size_t i = 0 ; i < pluginList.size() ; i++)
         {
-            if (PAR_Rank() == 0)
-            {
-                cerr << pluginList[i];
-                if (i != pluginList.size()-1)
-                    cerr << ", ";
-                else
-                    cerr << endl;
-            }
+            cerr << pluginList[i];
+            if (i != pluginList.size()-1)
+                cerr << ", ";
+            else
+                cerr << endl;
         }
 
-        PAR_Exit();
         exit(EXIT_FAILURE);
     }
 
@@ -123,10 +86,6 @@ main(int argc, char *argv[])
     // Get the database object.
     //
     avtDataObject_p dob = db->GetOutput("d", 0);
-
-    avtOriginatingSource  *src = dob->GetOriginatingSource();
-    avtDataRequest_p ds  = src->GetFullDataRequest();
-    avtContract_p contractForDB = new avtContract(ds, 0);
 
     //
     // Apply a linear transform.
@@ -140,7 +99,6 @@ main(int argc, char *argv[])
     atts.SetM20(0.); atts.SetM21(0.); atts.SetM22(1.); atts.SetM23(0.);
     atts.SetM30(0.); atts.SetM31(0.); atts.SetM32(0.); atts.SetM33(1.);
     filter->SetAtts(&atts);
-    filter->Update(contractForDB);
     avtDataObject_p output = filter->GetOutput();
 
     //
@@ -155,7 +113,6 @@ main(int argc, char *argv[])
     atts2.SetM20(0.); atts2.SetM21(0.); atts2.SetM22(1.); atts2.SetM23(0.);
     atts2.SetM30(0.); atts2.SetM31(0.); atts2.SetM32(0.); atts2.SetM33(1.);
     filter2->SetAtts(&atts2);
-    filter2->Update(contractForDB);
     avtDataObject_p output2 = filter2->GetOutput();
 
     //
@@ -168,7 +125,6 @@ main(int argc, char *argv[])
     atts3.SetContourPercent(levels);
     avtContourFilter *filter3 = new avtContourFilter(atts3);
     filter3->SetInput(output2);
-    filter3->Update(contractForDB);
     avtDataObject_p output3 = filter3->GetOutput();
 
     //
@@ -179,7 +135,6 @@ main(int argc, char *argv[])
 
     if (edpi == NULL)
     {
-        PAR_Exit();
         exit(EXIT_FAILURE);
     }
 
@@ -187,7 +142,6 @@ main(int argc, char *argv[])
 
     if (wrtr == NULL)
     {
-        PAR_Exit();
         exit(EXIT_FAILURE);
     }
 
@@ -203,15 +157,12 @@ main(int argc, char *argv[])
     //
     cerr << "Cleaning up." << endl;
     delete dbmgr;
-    delete omgr;
-    delete pmgr;
 
     delete filter;
     delete filter2;
     delete filter3;
 
     cerr << "Exiting." << endl;
-    PAR_Exit();
 
     return 0;
 }

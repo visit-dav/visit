@@ -38,10 +38,6 @@
 #
 #****************************************************************************/
 
-SET(SOURCES
-avtFilterExample.C
-)
-
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
@@ -90,11 +86,33 @@ ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 ${ICET_LIBRARY_DIR}
 )
 
-ADD_EXECUTABLE(avtFilterExample ${SOURCES})
+ADD_EXECUTABLE(avtFilterExample avtFilterExample.C)
 VISIT_INSTALL_TARGETS(avtFilterExample)
 VISIT_TOOLS_ADD_FOLDER(avtFilterExample)
 
 TARGET_LINK_LIBRARIES(avtFilterExample
+${engine_ser_exe_IDatabase}
+${engine_ser_exe_EDatabase_ser}
+avtdatabase_ser
+avtdbatts
+avtfilters_ser
+avtpipeline_ser
+lightweight_visit_vtk 
+visitcommon
+visit_vtk
+${ALL_THIRDPARTY_IO_LIB} 
+${VTK_EXTRA_LIBS}
+${MESA_LIBS}
+${GL_LIBS}
+${CMAKE_THREAD_LIBS} 
+${ZLIB_LIB}
+)
+
+ADD_EXECUTABLE(avtPluginExample avtPluginExample.C)
+VISIT_INSTALL_TARGETS(avtPluginExample)
+VISIT_TOOLS_ADD_FOLDER(avtPluginExample)
+
+TARGET_LINK_LIBRARIES(avtPluginExample
 ${engine_ser_exe_IDatabase}
 ${engine_ser_exe_EDatabase_ser}
 avtdatabase_ser
