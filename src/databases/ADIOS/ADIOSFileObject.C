@@ -540,11 +540,8 @@ ADIOSFileObject::ReadScalarData(const std::string &nm, int ts, ADIOS_SELECTION *
     bool val = ReadScalarData(avi, ts, s, arr);
     
     if (sel == NULL)
-    {
-        delete [] s->u.bb.start;
-        delete [] s->u.bb.count;
         adios_selection_delete(s);
-    }
+    
     return val;
 }
 
