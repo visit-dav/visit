@@ -325,6 +325,8 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
         {
             AddScalarVarToMetaData(md, vname, "mesh", AVT_NODECENT);
             AddScalarVarToMetaData(md, vname, "LatLon_mesh", AVT_NODECENT);
+
+            AddVectorVarToMetaData(md, "LatLonR_coords", "mesh", AVT_NODECENT, 3);
         }
         
         for (int i = 0; i < regions.size(); i++)
@@ -338,6 +340,9 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
                 sprintf(var2, "reg%d/LatLon/%s", i+1, vname.c_str());
                 AddScalarVarToMetaData(md, var, mesh, AVT_NODECENT);
                 AddScalarVarToMetaData(md, var2, mesh2, AVT_NODECENT);
+
+                sprintf(var, "reg%d/LatLonR_coords", i+1);
+                AddVectorVarToMetaData(md, var, mesh, AVT_NODECENT, 3);
             }
         }
     }
@@ -732,6 +737,86 @@ avtSpecFEMFileFormat::GetVar(int ts, int domain, const char *varname)
         v->Delete();
     }
     
+    return arr;
+}
+
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::GetVectorVar
+//
+// Purpose:
+//   Retreive a vector variable.
+//
+// Arguments:
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    December 19, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+vtkDataArray *
+avtSpecFEMFileFormat::GetVectorVar(int ts, int domain, const char *varname)
+{
+    Initialize();
+
+    string vName = varname;
+    if (vName.find("reg") != string::npos)
+        return GetVectorVarRegion(vName, ts, domain);
+
+    EXCEPTION0(ImproperUseException);
+    return NULL;
+}
+
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::GetVectorVarRegion
+//
+// Purpose:
+//   Retreive a vector variable.
+//
+// Arguments:
+//   
+//
+// Programmer:  Dave Pugmire
+// Creation:    December 19, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+vtkDataArray *
+avtSpecFEMFileFormat::GetVectorVarRegion(std::string &nm, int ts, int dom)
+{
+    if (nm.find("LatLonR_coords") == string::npos)
+        return NULL;
+    
+    int region = GetRegion(nm);
+    vtkDataSet *mesh = GetRegionMesh(ts, dom, region, true);
+
+    int nPts = mesh->GetNumberOfPoints();
+    vtkFloatArray *arr = vtkFloatArray::New();
+    arr->SetNumberOfComponents(3);
+    arr->SetNumberOfTuples(nPts);
+
+    double lat = 0.0, lon = 0.0, r = 0.0;
+    double pt[3];
+    for (int i = 0; i < nPts; i++)
+    {
+        mesh->GetPoint(i, pt);
+        convertToLatLon(pt[0], pt[1], pt[2], r, lat, lon);
+        lat = 90.0 - lat;
+        /*
+        if (lon > 180.0)
+            lon = lon - 360.0;
+        */
+        
+        arr->SetComponent(i, 0, lat);
+        arr->SetComponent(i, 1, lon);
+        arr->SetComponent(i, 2, r);
+    }
+
+    mesh->Delete();
     return arr;
 }
 
