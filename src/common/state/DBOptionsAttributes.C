@@ -127,6 +127,7 @@ void DBOptionsAttributes::Copy(const DBOptionsAttributes &obj)
     enumStrings = obj.enumStrings;
     enumStringsSizes = obj.enumStringsSizes;
     obsoleteNames = obj.obsoleteNames;
+    help = obj.help;
 
     DBOptionsAttributes::SelectAll();
 }
@@ -294,7 +295,8 @@ DBOptionsAttributes::operator == (const DBOptionsAttributes &obj) const
             (optEnums == obj.optEnums) &&
             (enumStrings == obj.enumStrings) &&
             (enumStringsSizes == obj.enumStringsSizes) &&
-            (obsoleteNames == obj.obsoleteNames));
+            (obsoleteNames == obj.obsoleteNames) &&
+            true /* can ignore help */);
 }
 
 // ****************************************************************************
@@ -449,6 +451,7 @@ DBOptionsAttributes::SelectAll()
     Select(ID_enumStrings,      (void *)&enumStrings);
     Select(ID_enumStringsSizes, (void *)&enumStringsSizes);
     Select(ID_obsoleteNames,    (void *)&obsoleteNames);
+    Select(ID_help,             (void *)&help);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -547,6 +550,12 @@ DBOptionsAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("obsoleteNames", obsoleteNames));
     }
 
+    if(completeSave || !FieldsEqual(ID_help, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("help", help));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -605,6 +614,8 @@ DBOptionsAttributes::SetFromNode(DataNode *parentNode)
         SetEnumStringsSizes(node->AsIntVector());
     if((node = searchNode->GetNode("obsoleteNames")) != 0)
         SetObsoleteNames(node->AsStringVector());
+    if((node = searchNode->GetNode("help")) != 0)
+        SetHelp(node->AsString());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -686,6 +697,13 @@ DBOptionsAttributes::SetObsoleteNames(const stringVector &obsoleteNames_)
 {
     obsoleteNames = obsoleteNames_;
     Select(ID_obsoleteNames, (void *)&obsoleteNames);
+}
+
+void
+DBOptionsAttributes::SetHelp(const std::string &help_)
+{
+    help = help_;
+    Select(ID_help, (void *)&help);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -824,6 +842,18 @@ DBOptionsAttributes::GetObsoleteNames()
     return obsoleteNames;
 }
 
+const std::string &
+DBOptionsAttributes::GetHelp() const
+{
+    return help;
+}
+
+std::string &
+DBOptionsAttributes::GetHelp()
+{
+    return help;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -894,6 +924,12 @@ DBOptionsAttributes::SelectObsoleteNames()
     Select(ID_obsoleteNames, (void *)&obsoleteNames);
 }
 
+void
+DBOptionsAttributes::SelectHelp()
+{
+    Select(ID_help, (void *)&help);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -929,6 +965,7 @@ DBOptionsAttributes::GetFieldName(int index) const
     case ID_enumStrings:      return "enumStrings";
     case ID_enumStringsSizes: return "enumStringsSizes";
     case ID_obsoleteNames:    return "obsoleteNames";
+    case ID_help:             return "help";
     default:  return "invalid index";
     }
 }
@@ -964,6 +1001,7 @@ DBOptionsAttributes::GetFieldType(int index) const
     case ID_enumStrings:      return FieldType_stringVector;
     case ID_enumStringsSizes: return FieldType_intVector;
     case ID_obsoleteNames:    return FieldType_stringVector;
+    case ID_help:             return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -999,6 +1037,7 @@ DBOptionsAttributes::GetFieldTypeName(int index) const
     case ID_enumStrings:      return "stringVector";
     case ID_enumStringsSizes: return "intVector";
     case ID_obsoleteNames:    return "stringVector";
+    case ID_help:             return "string";
     default:  return "invalid index";
     }
 }
@@ -1078,6 +1117,11 @@ DBOptionsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_obsoleteNames:
         {  // new scope
         retval = (obsoleteNames == obj.obsoleteNames);
+        }
+        break;
+    case ID_help:
+        {  // new scope
+        retval = (help == obj.help);
         }
         break;
     default: retval = false;

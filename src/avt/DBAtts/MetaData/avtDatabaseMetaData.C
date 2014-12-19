@@ -5898,6 +5898,8 @@ avtDatabaseMetaData::GetNDomains(const std::string &var) const
 //    Brad Whitlock, Tue Jan 20 16:01:51 PST 2009
 //    Change conversion function.
 //
+//    Mark C. Miller, Thu Dec 18 17:55:57 PST 2014
+//    Replaced terminating exception with return of UNKNOWN_VAR
 // ****************************************************************************
 #include <avtExpressionTypeConversions.h>
 
@@ -6018,7 +6020,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
         }
     }
 
-    EXCEPTION1(InvalidVariableException, var);
+    return AVT_UNKNOWN_TYPE;
 }
 
 // ****************************************************************************

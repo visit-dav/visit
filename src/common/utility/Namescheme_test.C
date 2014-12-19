@@ -38,7 +38,7 @@
 #include <Namescheme.h>
 #include <string.h>
 //#include <iostream>
-//#include <stdio.h>
+#include <stdio.h>
 
 int main()
 {
@@ -52,6 +52,15 @@ int main()
     if (strcmp(ns->GetName(25), "foo_+01") != 0)
         return 1;
     delete ns;
+
+    // Test a constant namescheme
+    ns = new Namescheme("gorfo");
+    if (strcmp(ns->GetName(0), "gorfo") != 0)
+        return 1;
+    if (strcmp(ns->GetName(151), "gorfo") != 0)
+        return 1;
+    if (strcmp(ns->GetName(20861), "gorfo") != 0)
+        return 1;
 
     // Test ?:: operator
     ns = new Namescheme("@foo_%d@(n-5)?14:77:");
@@ -102,6 +111,8 @@ int main()
 
     // Test embedded string value results
     ns = new Namescheme("#foo_%s#(n-5)?'master':'slave':");
+    if (strcmp(ns->GetName(5), "foo_slave") != 0)
+        return 1;
     if (strcmp(ns->GetName(6), "foo_master") != 0)
         return 1;
     delete ns;
@@ -130,12 +141,29 @@ int main()
     if (strcmp(ns->GetName(6), "foo_red") != 0) return 1;
     delete ns;
 
-    // Test McCandless' example
+    // Test McCandless' example (new way)
+    ns = new Namescheme("@%s@(n/4)?'&myfilename.%d&n/4':'':@");
+    if (strcmp(ns->GetName(0), "") != 0) return 1;
+    if (strcmp(ns->GetName(1), "") != 0) return 1;
+    if (strcmp(ns->GetName(4), "myfilename.1") != 0) return 1;
+    if (strcmp(ns->GetName(15), "myfilename.3") != 0) return 1;
+    delete ns;
+
+    // Test McCandless' example (old way)
     ns = new Namescheme("@%s%s@(n/4)?'myfilename.':'':@(n/4)?$/arr_dir/FileNumbers[n/4-1]:'':",FileNumbers);
     if (strcmp(ns->GetName(0), "") != 0) return 1;
     if (strcmp(ns->GetName(1), "") != 0) return 1;
     if (strcmp(ns->GetName(4), "myfilename.1") != 0) return 1;
     if (strcmp(ns->GetName(15), "myfilename.3") != 0) return 1;
+    delete ns;
+
+    // Text Exodus material volume fraction variable convention
+    ns = new Namescheme("@%s@n>?'&VOLFRC_%d&n':'VOID_FRC':@");
+    if (strcmp(ns->GetName(0), "VOID_FRC") != 0) return 1;
+    if (strcmp(ns->GetName(1), "VOLFRC_1") != 0) return 1;
+    if (strcmp(ns->GetName(2), "VOLFRC_2") != 0) return 1;
+    if (strcmp(ns->GetName(10), "VOLFRC_10") != 0) return 1;
+    if (strcmp(ns->GetName(2746), "VOLFRC_2746") != 0) return 1;
     delete ns;
 
     return 0;

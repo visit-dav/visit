@@ -52,6 +52,7 @@
 
 
 class     avtVariableCache;
+class     DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtExodusFileFormat
@@ -87,12 +88,16 @@ class     avtVariableCache;
 //
 //    Mark C. Miller, Mon Sep 16 15:04:12 PDT 2013
 //    Removed SetTimestep method.
+//
+//    Mark C. Miller, Thu Dec 18 12:57:59 PST 2014
+//    Added database options. Added SetZeroIndexInstance,
+//    CopyFromZeroIndexInstance.
 // ****************************************************************************
 
 class avtExodusFileFormat : public avtMTSDFileFormat
 {
   public:
-                                avtExodusFileFormat(const char *);
+                                avtExodusFileFormat(const char *, DBOptionsAttributes *rdatts);
     virtual                    ~avtExodusFileFormat();
  
     virtual void                FreeUpResources(void);
@@ -114,6 +119,16 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     static int                  RegisterFileList(const char *const *, int);
     void                        SetFileList(int fl) { fileList = fl; };
 
+    void                        SetZeroIndexInstance(avtExodusFileFormat *zidx) { zidxInstance = zidx; };
+    void                        CopyFromZeroIndexInstance()
+                                {
+                                    if (this == zidxInstance) return;
+                                    numBlocks = zidxInstance->numBlocks;
+                                    matCount = zidxInstance->matCount;
+                                    matConvention = zidxInstance->matConvention;
+                                };
+
+
   private:
     int                         GetFileHandle();
     void                        GetTimesteps(int *ntimes, std::vector<double> *times);
@@ -127,8 +142,14 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     std::vector<int>            blockId;
     std::vector<std::string>    blockName;
     int                         fileList;
+    avtExodusFileFormat        *zidxInstance;
     int                         ncExIIId;
     std::map<int, int>          blockIdToMatMap;
+    bool                        autoDetectCompoundVars;
+    int                         matConvention;
+    int                         matCount;
+    std::string                 matVolFracNamescheme;
+    std::string                 matVarSpecNamescheme;
 
     // Note: this needs to be a pointer because there are issues with 
     // constructors being called in shared libraries for static objects.

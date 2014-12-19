@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Exodus" label="Exodus" type="database" dbtype="MTSD" version="1.0">
+  <Plugin name="Exodus" label="Exodus" type="database" dbtype="MTSD" version="1.0" hasoptions="true">
     <FilePatterns>
     *.ex
     *.e
@@ -38,6 +38,7 @@
     </FilePatterns>
     <Files components="M,E">
       avtExodusFileFormat.C
+      avtExodusOptions.C
     </Files>
     <CXXFLAGS>
       ${NETCDF_INCLUDE_DIR}
