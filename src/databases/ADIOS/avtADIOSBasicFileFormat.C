@@ -270,7 +270,7 @@ avtADIOSBasicFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
         else
         {
             std::string meshName = GenerateMeshName(v->second);
-    string originalName = v->first, name = v->first;
+            string originalName = v->first, name = v->first;
             if (name[0] == '/')
                 name = string(&name[1]);
             
