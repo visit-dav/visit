@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class DBOptionsAttributes extends AttributeSubject
 {
-    private static int DBOptionsAttributes_numAdditionalAtts = 11;
+    private static int DBOptionsAttributes_numAdditionalAtts = 12;
 
     // Enum values
     public final static int OPTIONTYPE_BOOL = 0;
@@ -85,6 +85,7 @@ public class DBOptionsAttributes extends AttributeSubject
         enumStrings = new Vector();
         enumStringsSizes = new Vector();
         obsoleteNames = new Vector();
+        help = new String("");
     }
 
     public DBOptionsAttributes(int nMoreFields)
@@ -102,6 +103,7 @@ public class DBOptionsAttributes extends AttributeSubject
         enumStrings = new Vector();
         enumStringsSizes = new Vector();
         obsoleteNames = new Vector();
+        help = new String("");
     }
 
     public DBOptionsAttributes(DBOptionsAttributes obj)
@@ -170,6 +172,7 @@ public class DBOptionsAttributes extends AttributeSubject
         for(i = 0; i < obj.obsoleteNames.size(); ++i)
             obsoleteNames.addElement(new String((String)obj.obsoleteNames.elementAt(i)));
 
+        help = new String(obj.help);
 
         SelectAll();
     }
@@ -298,7 +301,8 @@ public class DBOptionsAttributes extends AttributeSubject
                 optEnums_equal &&
                 enumStrings_equal &&
                 enumStringsSizes_equal &&
-                obsoleteNames_equal);
+                obsoleteNames_equal &&
+                true /* can ignore help */);
     }
 
     // Property setting methods
@@ -368,6 +372,12 @@ public class DBOptionsAttributes extends AttributeSubject
         Select(10);
     }
 
+    public void SetHelp(String help_)
+    {
+        help = help_;
+        Select(11);
+    }
+
     // Property getting methods
     public Vector GetTypes() { return types; }
     public Vector GetNames() { return names; }
@@ -380,6 +390,7 @@ public class DBOptionsAttributes extends AttributeSubject
     public Vector GetEnumStrings() { return enumStrings; }
     public Vector GetEnumStringsSizes() { return enumStringsSizes; }
     public Vector GetObsoleteNames() { return obsoleteNames; }
+    public String GetHelp() { return help; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -406,6 +417,8 @@ public class DBOptionsAttributes extends AttributeSubject
             buf.WriteIntVector(enumStringsSizes);
         if(WriteSelect(10, buf))
             buf.WriteStringVector(obsoleteNames);
+        if(WriteSelect(11, buf))
+            buf.WriteString(help);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -445,6 +458,9 @@ public class DBOptionsAttributes extends AttributeSubject
         case 10:
             SetObsoleteNames(buf.ReadStringVector());
             break;
+        case 11:
+            SetHelp(buf.ReadString());
+            break;
         }
     }
 
@@ -462,6 +478,7 @@ public class DBOptionsAttributes extends AttributeSubject
         str = str + stringVectorToString("enumStrings", enumStrings, indent) + "\n";
         str = str + intVectorToString("enumStringsSizes", enumStringsSizes, indent) + "\n";
         str = str + stringVectorToString("obsoleteNames", obsoleteNames, indent) + "\n";
+        str = str + stringToString("help", help, indent) + "\n";
         return str;
     }
 
@@ -478,5 +495,6 @@ public class DBOptionsAttributes extends AttributeSubject
     private Vector enumStrings; // vector of String objects
     private Vector enumStringsSizes; // vector of Integer objects
     private Vector obsoleteNames; // vector of String objects
+    private String help;
 }
 

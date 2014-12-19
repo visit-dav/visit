@@ -92,6 +92,8 @@ PyDBOptionsAttributes_ToString(const DBOptionsAttributes *atts, const char *pref
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    SNPRINTF(tmpStr, 1000, "%shelp = \"%s\"\n", prefix, atts->GetHelp().c_str());
+    str += tmpStr;
     return str;
 }
 
@@ -167,12 +169,38 @@ DBOptionsAttributes_GetTypes(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+DBOptionsAttributes_SetHelp(PyObject *self, PyObject *args)
+{
+    DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the help in the object.
+    obj->data->SetHelp(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+DBOptionsAttributes_GetHelp(PyObject *self, PyObject *args)
+{
+    DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetHelp().c_str());
+    return retval;
+}
+
 
 
 PyMethodDef PyDBOptionsAttributes_methods[DBOPTIONSATTRIBUTES_NMETH] = {
     {"Notify", DBOptionsAttributes_Notify, METH_VARARGS},
     {"SetTypes", DBOptionsAttributes_SetTypes, METH_VARARGS},
     {"GetTypes", DBOptionsAttributes_GetTypes, METH_VARARGS},
+    {"SetHelp", DBOptionsAttributes_SetHelp, METH_VARARGS},
+    {"GetHelp", DBOptionsAttributes_GetHelp, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -203,6 +231,8 @@ PyDBOptionsAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "types") == 0)
         return DBOptionsAttributes_GetTypes(self, NULL);
+    if(strcmp(name, "help") == 0)
+        return DBOptionsAttributes_GetHelp(self, NULL);
 
     return Py_FindMethod(PyDBOptionsAttributes_methods, self, name);
 }
@@ -219,6 +249,8 @@ PyDBOptionsAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "types") == 0)
         obj = DBOptionsAttributes_SetTypes(self, tuple);
+    else if(strcmp(name, "help") == 0)
+        obj = DBOptionsAttributes_SetHelp(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

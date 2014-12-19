@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DBOPTIONSATTRIBUTES_NMETH 4
+#define DBOPTIONSATTRIBUTES_NMETH 6
 void VISITPY_API           PyDBOptionsAttributes_StartUp(DBOptionsAttributes *subj, void *data);
 void VISITPY_API           PyDBOptionsAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyDBOptionsAttributes_GetMethodTable(int *nMethods);
