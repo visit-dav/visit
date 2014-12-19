@@ -58,13 +58,14 @@ s.TurnOffSet(files[3])
 SetPlotSILRestriction(s)
 Test("exodus_04")
 
+ToggleMaintainViewMode()
 d = DisplaceAttributes()
 d.variable = "DISPL"
 SetDefaultOperatorOptions(d)
 AddOperator("Displace")
 DrawPlots()
 Test("exodus_05")
-
+ToggleMaintainViewMode()
 
 TestSection("Testing SHELL4 support")
 DeleteAllPlots()
@@ -95,7 +96,7 @@ DeleteAllPlots()
 CloseDatabase(data_path("exodus_test_data/aircraft.exoII"))
 OpenDatabase(data_path("exodus_test_data/test.exo"))
 
-AddPlot("FilledBoundary", "ElementBlock")
+AddPlot("Subset", "ElementBlock")
 AddPlot("Label", "ElementBlock")
 DrawPlots()
 Test("exodus_07")
