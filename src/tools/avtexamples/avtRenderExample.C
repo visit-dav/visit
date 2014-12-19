@@ -2,13 +2,20 @@
 
 #include <DatabasePluginInfo.h>
 #include <DatabasePluginManager.h>
+#include <SaveWindowAttributes.h>
 
 #include <avtContourFilter.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
 #include <avtDatabaseWriter.h>
+#include <avtFileWriter.h>
+#include <avtImage.h>
 #include <avtLinearTransformFilter.h>
+#include <avtLookupTable.h>
 #include <avtOriginatingSource.h>
+#include <avtTheater.h>
+#include <avtVariablePointGlyphMapper.h>
+#include <VisWindow.h>
 
 #include <VisItException.h>
 #include <visitstream.h>
@@ -22,11 +29,7 @@ using std::vector;
 //
 // Things to note:
 //
-// 1) If you specify VTK_1.0 to the visit writer the program will crash.
-//
-// 2) If you specify more than one contour level the program will crash.
-//
-// 3) If you specify the contour levels with NLevels the program will crash.
+// 1) The program crashes after calling return.
 //
 
 int
@@ -88,10 +91,6 @@ main(int argc, char *argv[])
     //
     avtDataObject_p dob = db->GetOutput("d", 0);
 
-    avtOriginatingSource  *src = dob->GetOriginatingSource();
-    avtDataRequest_p ds  = src->GetFullDataRequest();
-    avtContract_p contract = new avtContract(ds, 0);
-
     //
     // Apply a linear transform.
     //
@@ -121,42 +120,53 @@ main(int argc, char *argv[])
     avtDataObject_p output2 = filter2->GetOutput();
 
     //
-    // Apply a contour filter.
+    // Create the actor.
     //
-    cerr << "Applying a contour filter." << endl;
-    ContourOpAttributes atts3;
-    doubleVector levels;
-    levels.push_back(0.5);
-    atts3.SetContourPercent(levels);
-    avtContourFilter *filter3 = new avtContourFilter(atts3);
-    filter3->SetInput(output2);
-    filter3->Update(contract);
-    avtDataObject_p output3 = filter3->GetOutput();
+    cerr << "Creating the actor." << endl;
+    avtVariablePointGlyphMapper *mapper = new avtVariablePointGlyphMapper;
+    avtLookupTable *LUT = new avtLookupTable;
+    mapper->SetLookupTable(LUT->GetLookupTable());
+
+    avtOriginatingSource *src = output2->GetOriginatingSource();
+    avtContract_p contract = new avtContract(src->GetFullDataRequest(), 0);
+
+    mapper->SetInput(output2);
+    mapper->Execute(contract);
+
+    avtDrawable_p drawable = mapper->GetDrawable();
+    avtDrawable_p decorations = NULL;
+
+    avtDataObjectInformation info;
+    info.Copy(output2->GetInfo());
+    avtBehavior *behavior = new avtBehavior();
+    behavior->SetInfo(info);
+    behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_2D);
+
+    avtActor_p actor = new avtActor();
+    actor->SetDrawable(drawable);
+    actor->SetDecorations(decorations);
+    actor->SetBehavior(behavior);
 
     //
-    // Write out the output.
+    // Create the window and add the actor.
     //
-    cerr << "Writing the output." << endl;
-    EngineDatabasePluginInfo *edpi = dbmgr->GetEnginePluginInfo("Silo_1.0");
+    cerr << "Creating the window and adding the actor." << endl;
+    VisWindow *window = new VisWindow();
+    window->Realize();
+    window->AddPlot(actor);
 
-    if (edpi == NULL)
-    {
-        exit(EXIT_FAILURE);
-    }
+    //
+    // Save the image.
+    //
+    cerr << "Saving the image." << endl;
+    avtImage_p image = window->ScreenCapture();
+    avtDataObject_p tmpImage;
+    CopyTo(tmpImage, image);
 
-    avtDatabaseWriter *wrtr = edpi->GetWriter();
-
-    if (wrtr == NULL)
-    {
-        exit(EXIT_FAILURE);
-    }
-
-    const avtDatabaseMetaData *md = db->GetMetaData(0);
-
-    vector<string> vars;
-    vars.push_back("d");
-    wrtr->SetInput(output3);
-    wrtr->Write("", "output", md, vars);
+    avtFileWriter *fileWriter = new avtFileWriter();
+    fileWriter->SetFormat(SaveWindowAttributes::PNG);
+    fileWriter->Write("output.png", tmpImage, 100, false, 1, false);
+    delete fileWriter;
 
     //
     // Clean up and exit.
@@ -166,7 +176,10 @@ main(int argc, char *argv[])
 
     delete filter;
     delete filter2;
-    delete filter3;
+    delete mapper;
+    delete LUT;
+    delete behavior;
+    delete window;
 
     cerr << "Exiting." << endl;
 

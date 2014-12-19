@@ -108,6 +108,32 @@ ${CMAKE_THREAD_LIBS}
 ${ZLIB_LIB}
 )
 
+ADD_EXECUTABLE(avtRenderExample avtRenderExample.C)
+VISIT_INSTALL_TARGETS(avtRenderExample)
+VISIT_TOOLS_ADD_FOLDER(avtRenderExample)
+
+TARGET_LINK_LIBRARIES(avtRenderExample
+${engine_ser_exe_IDatabase}
+${engine_ser_exe_EDatabase_ser}
+avtdatabase_ser
+avtdbatts
+avtfilters_ser
+avtpipeline_ser
+avtplotter_ser
+avtview
+avtviswindow_ser
+avtwriter_ser
+lightweight_visit_vtk 
+visitcommon
+visit_vtk
+${ALL_THIRDPARTY_IO_LIB} 
+${VTK_EXTRA_LIBS}
+${MESA_LIBS}
+${GL_LIBS}
+${CMAKE_THREAD_LIBS} 
+${ZLIB_LIB}
+)
+
 ADD_EXECUTABLE(avtPluginExample avtPluginExample.C)
 VISIT_INSTALL_TARGETS(avtPluginExample)
 VISIT_TOOLS_ADD_FOLDER(avtPluginExample)
