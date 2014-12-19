@@ -16,12 +16,14 @@ SET(LIBM_SOURCES
 ExodusMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtExodusFileFormat.C
+avtExodusOptions.C
 )
 
 SET(LIBE_SOURCES
 ExodusEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtExodusFileFormat.C
+avtExodusOptions.C
 )
 
 INCLUDE_DIRECTORIES(

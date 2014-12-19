@@ -91,6 +91,9 @@ avtLabelSubsetsFilter::avtLabelSubsetsFilter()
 //    Eric Brugger, Tue Aug 19 10:52:38 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //    
+//    Mark C. Miller, Fri Dec 19 14:59:31 PST 2014
+//    Incorporate logic from Jeremy added to avtSubsetFilter to handle enum
+//    scalar labeling on both node and cell centered variables.
 // ****************************************************************************
 
 avtDataTree_p
@@ -112,8 +115,17 @@ avtLabelSubsetsFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
     vector<string> labels;
     int            nDataSets = 0;
     vtkDataSet   **out_ds = NULL;
+    bool nodal = false;
 
     vtkDataArray *subsetArray = in_ds->GetCellData()->GetArray("avtSubsets");
+    if (!subsetArray)
+        subsetArray = in_ds->GetCellData()->GetScalars();
+    if (!subsetArray)
+    {
+        subsetArray = in_ds->GetPointData()->GetScalars();
+        if (subsetArray)
+            nodal = true;
+    }
 
     if (subsetArray)
     {
@@ -132,19 +144,17 @@ avtLabelSubsetsFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
             avtDataTree_p rv = new avtDataTree();
             return rv;
         }
+
         //
         // Break up the dataset into a collection of datasets, one
         // per subset.
         //
-        int *subsetList = ((vtkIntArray*)subsetArray)->GetPointer(0);
-
         if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
         {
             EXCEPTION0(ImproperUseException);
         }
 
         vtkPolyData *in_pd = (vtkPolyData *)in_ds;
-        int ntotalcells = in_pd->GetNumberOfCells();
 
         vtkCellData *in_CD = in_ds->GetCellData();
 
@@ -187,9 +197,10 @@ avtLabelSubsetsFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         {
             subsetCounts[s] = 0;
         }
-        for (i = 0; i < ntotalcells; i++)
+        int nArrayValues = subsetArray->GetNumberOfTuples();
+        for (i = 0; i < nArrayValues; i++)
         {
-            subsetCounts[subsetList[i]]++;
+            subsetCounts[int(subsetArray->GetTuple1(i))]++;
         }
 
         //
@@ -206,6 +217,7 @@ avtLabelSubsetsFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         //
         in_pd->GetCellType(0);
         
+        int ntotalcells = in_pd->GetNumberOfCells();
         for (i = 0; i < nSelectedSubsets; i++)
         {
             int s = selectedSubsets[i];
@@ -230,12 +242,34 @@ avtLabelSubsetsFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
                 int numNewCells = 0;
                 for (int j = 0; j < ntotalcells; j++)
                 {
-                    if (subsetList[j] == s)
+                    if (nodal)
                     {
                         in_pd->GetCellPoints(j, npts, pts);
-                        out_pd->InsertNextCell(in_pd->GetCellType(j),
-                                               npts, pts);
-                        out_CD->CopyData(in_CD, j, numNewCells++); 
+                        bool include = true;
+                        for (int k=0; k<npts; ++k)
+                        {
+                            if (subsetArray->GetTuple1(pts[k]) != s)
+                            {
+                                include = false;
+                                break;
+                            }
+                        }
+                        if (include)
+                        {
+                            out_pd->InsertNextCell(in_pd->GetCellType(j),
+                                                   npts, pts);
+                            out_CD->CopyData(in_CD, j, numNewCells++);
+                        }
+                    }
+                    else
+                    {
+                        if (subsetArray->GetTuple1(j) == s)
+                        {
+                            in_pd->GetCellPoints(j, npts, pts);
+                            out_pd->InsertNextCell(in_pd->GetCellType(j),
+                                                   npts, pts);
+                            out_CD->CopyData(in_CD, j, numNewCells++); 
+                        }
                     }
                 }
                 out_CD->RemoveArray("avtSubsets");
@@ -256,7 +290,10 @@ avtLabelSubsetsFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         // The dataset represents a single subset, so just turn it into
         // a data tree.
         //
-        labels.push_back(label);
+        if (label=="")
+            labels.push_back("Whole");
+        else
+            labels.push_back(label);
 
         out_ds = new vtkDataSet *[1];
         out_ds[0] = in_ds;

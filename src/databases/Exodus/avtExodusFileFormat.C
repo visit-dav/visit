@@ -41,12 +41,7 @@
 // ************************************************************************* //
 
 #include <avtExodusFileFormat.h>
-#include <netcdf.h>
-
-#include <algorithm>
-#include <map>
-#include <string>
-#include <vector>
+#include <avtExodusOptions.h>
 
 #include <vtkBitArray.h>
 #include <vtkCellData.h>
@@ -78,19 +73,30 @@
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
+#include <avtMixedVariable.h>
 #include <avtVariableCache.h>
 
 #include <BadIndexException.h>
+#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <Namescheme.h>
 #include <UnexpectedValueException.h>
 #include <Utility.h>
+
+#include <netcdf.h>
 
 #include <string.h>
 #ifdef HAVE_VTK_SIZEOF___INT64
 #include <boost/cstdint.hpp>
 #endif
+
+#include <cstdlib> // for qsort
+
+#include <map>
+#include <string>
+#include <vector>
 
 #if defined(_WIN32)
 #define STRNCASECMP _strnicmp
@@ -99,12 +105,12 @@
 #endif
 
 using     std::map;
-using     std::sort;
 using     std::string;
 using     std::vector;
 #ifdef HAVE_VTK_SIZEOF___INT64
 using     boost::int64_t;
 #endif
+using namespace ExodusDBOptions;
 
 static int VisItNCErr;
 static map<string, int> messageCounts;
@@ -147,7 +153,27 @@ static void FreeStringListFromExodusIINCvar(char **list)
     free(list);
 }
 
-static char **GetStringListFromExodusIINCvar(int exfid, char const *var_name)
+// ****************************************************************************
+// Compare function for qsort in GetStringListFromExodusIINCvar
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
+
+static int CompareStrings(void const *_a, void const *_b)
+{
+    char const **a = (char const **) _a;
+    char const **b = (char const **) _b;
+    return strcmp(*a,*b);
+}
+
+// ****************************************************************************
+// Given an Exodus variable known to contain a list of strings, read it and
+// optionally, sort it.
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
+
+char **GetStringListFromExodusIINCvar(int exfid, char const *var_name, bool sort_results = false)
 {
     int ncerr;
     char **retval = (char**) malloc(1 * sizeof(char*));
@@ -212,30 +238,332 @@ static char **GetStringListFromExodusIINCvar(int exfid, char const *var_name)
     retval[i] = 0;
     free(buf);
 
+    if (sort_results)
+        qsort(&retval[0], nstrings, sizeof(char *), CompareStrings);
+
     return retval;
 }
 
-static int AreSuccessiveStringsRelatedComponentNames(char const * const *list, int i,
-    int *ncomps, char *compositeName)
+// ****************************************************************************
+// These functions and macros, fill_tmp_suffixes, BEGIN_CASES, CASE, END_CASES
+// are used within AreSuccessive... to facilitate creation of expressions
+// for composite variables when known patterns of groups of variable names
+// are discovered. For example, if VEL_X, VEL_Y, VEL_Z are discovered, the
+// vector expression for 'VEL' will be created.
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
+
+static char *tmp_suffixes[16];
+static void fill_tmp_suffixes(int n, ...)
 {
+    va_list ap;
+
+    memset(tmp_suffixes, 0, sizeof(tmp_suffixes));
+
+    va_start(ap, n);
+    for (int i = 0; i < n; i++)
+        tmp_suffixes[i] = va_arg(ap, char*);
+    va_end(ap);
+}
+
+#define BEGIN_CASES                                                    \
+{   bool found_match = false
+
+#define CASE(STRLIST)                                                  \
+{                                                                      \
+    if (!found_match && unadornedEntry == 0)                           \
+    {                                                                  \
+        fill_tmp_suffixes STRLIST;                                     \
+        int q = 0;                                                     \
+        bool things_match = true;                                      \
+        while (tmp_suffixes[q] && things_match)                        \
+        {                                                              \
+            char sepStr[2] = {sepChar, '\0'};                          \
+            char ex_var_name[256];                                     \
+            SNPRINTF(ex_var_name, sizeof(ex_var_name),                 \
+                "%s%s%s", prefix.c_str(), &sepStr[0], tmp_suffixes[q]);\
+            if (strcasecmp(ex_var_name, list[i+q]))                    \
+                things_match = false;                                  \
+            q++;                                                       \
+        }                                                              \
+        found_match = things_match && q == *ncomps;                    \
+    }                                                                  \
+}
+
+#define END_CASES(DEFN, TYPE)                                          \
+    if (found_match)                                                   \
+    {                                                                  \
+        bool do_it = true;                                             \
+        if (Expression::TYPE == Expression::VectorMeshVar &&           \
+            (sdim == matcnt || sdim != *ncomps))                       \
+            do_it = false;                                             \
+        if (do_it)                                                     \
+        {                                                              \
+            Expression expr;                                           \
+            expr.SetName(prefix);                                      \
+            expr.SetDefinition(DEFN);                                  \
+            expr.SetType(Expression::TYPE);                            \
+            md->AddExpression(&expr);                                  \
+            return 1;                                                  \
+        }                                                              \
+    }                                                                  \
+}
+
+// ****************************************************************************
+// At the ith member of the (sorted) list of Exodus variable names, try to 
+// guess whether the successive members are really the components of a
+// composite variable (like a vector or a tensor). If so, attempt to match
+// the variable naming pattern to some known conventions and if a match is
+// found, define the composite expression. However, be careful not to confuse
+// material-specific variable naming conventions (e.g. FOO_1, FOO_2, FOO_3 with
+// composite variable naming conventions. If there is potential for confusion,
+// err on the side of caution and do not define the expression.
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
+
+static int AreSuccessiveStringsRelatedComponentNames(avtDatabaseMetaData *md,
+    char const * const *list, int i, int sdim, int matcnt, int *ncomps)
+{
+    static char const *commonSepChars = "_-:.~@|>;+=";
+
+    // If we're at the end of the list, return immediately.
     if (!list[i+1]) return 0;
-    size_t maxlen = strlen(list[i]);
-    while (maxlen)
+
+    // Examine first two strings in list for longest common prefix
+    int prefixlen = (int) strlen(list[i]);
+    while (prefixlen)
     {
-        if (!strncmp(list[i],list[i+1],maxlen)) break;
-        maxlen--;
+        if (!strncmp(list[i],list[i+1],prefixlen)) break;
+        prefixlen--;
     }
-    if (maxlen < 2) return 0;
-    *ncomps = 1;
-    while (list[i+1])
+
+    // Return immediately if no common prefix found in first two entries in list.
+    if (prefixlen < 1) return 0;
+
+    // Walk backwards looking for a seperator char to ensure we don't
+    // accidentally gobble up a seperator char and part of the suffix
+    // in the greatest common prefix matched above.
+    int prefixlen_tmp = prefixlen;
+    while (prefixlen_tmp > 0)
     {
-        if (strncmp(list[i],list[i+1],maxlen)) break;
-        i++;
+        if (strchr(commonSepChars, list[i+1][prefixlen_tmp-1]))
+        {
+            prefixlen = prefixlen_tmp;
+            break;
+        }
+        prefixlen_tmp--;
+    }
+
+    // Check if first entry is adorned with a component suffix string.
+    int unadornedEntry = 0; // no unadorned entry
+    if (strlen(list[i]) < strlen(list[i+1]))
+        unadornedEntry = 1; // first item in list is unadorned
+
+    // Look for a seperator character (use 2nd list entry for this in 
+    // case first entry is unadorned).
+    char sepChar = '\0';
+    for (int j = 0; j < (int) sizeof(commonSepChars); j++)
+    {
+        if (list[i+1][prefixlen-1] == commonSepChars[j] ||
+            list[i+1][prefixlen  ] == commonSepChars[j])
+        {
+            sepChar = commonSepChars[j];
+            break;
+        }
+    }
+
+    // We don't want to include the separator char in the prefix
+    if (unadornedEntry == 0 && sepChar != '\0' && list[i+1][prefixlen-1] == sepChar)
+        prefixlen--;
+    int add1 = sepChar == '\0' ? 0 : 1;
+
+    // Walk through successive entries with the common prefix.
+    // Count them. Determine min/max number of chars in postix.
+    // Depending on first two entries, any separator char present
+    // in the strings in list may or may not be included in the
+    // prefix.
+    int suffixlen_min, suffixlen_max, k = i;
+    suffixlen_min = strlen(&list[i+1][prefixlen+add1]);
+    suffixlen_max = suffixlen_min;
+    *ncomps = 1;
+    while (list[k+1])
+    {
+        if (strncmp(list[k],list[k+1],prefixlen)) break;
+        int suffixlen = strlen(&list[k+1][prefixlen+add1]);
+        if (suffixlen < suffixlen_min) suffixlen_min = suffixlen;
+        if (suffixlen > suffixlen_max) suffixlen_max = suffixlen;
+        k++;
         *ncomps = *ncomps + 1;
     }
-    strncpy(compositeName, list[i], maxlen);
-    compositeName[maxlen] = '\0';
-    return 1;
+
+    // If first entry wasn't adorned, check if last entry is.
+    if (unadornedEntry == 0)
+    {
+        if (strlen(list[i+*ncomps-1]) < strlen(list[i+*ncomps-2]))
+            unadornedEntry = 2;
+    }
+
+    // The shorter the prefix string, the greater the chance we've bound together
+    // strings that should really be treated as separate. We use heuristic of 2
+    // characters as the cut-off of whether to check. If we decide to check, we
+    // just examine all the strings and see if we wind up with larger prefixes
+    // than what we started with.
+    int pflen_max = 0;
+    if (prefixlen < 3 && *ncomps > 1)
+    {
+        for (int q = 1; q < *ncomps-1; q++)
+        {
+            int pflen = strlen(list[i+q]);
+            while (pflen)
+            {
+                if (!strncmp(list[i+q],list[i+q+1],pflen)) break;
+                pflen--;
+            }
+            if (pflen > pflen_max) pflen_max = pflen;
+        }
+    }
+    if (pflen_max > prefixlen)
+        return 0;
+
+    string prefix = string(list[i+1], prefixlen);
+
+    if (unadornedEntry != 0 && (*ncomps == matcnt-1 || *ncomps == matcnt))
+    {
+        return 1;
+    }
+
+    char defn[256];
+    int ok = 0;
+    for (int k = 0; k < 9; k++)
+    {
+        if (list[i+k])
+            ok++;
+        else
+            break;
+    }
+    char const * const list2[9] = {
+        ok>0?list[i+0]:"",
+        ok>1?list[i+1]:"",
+        ok>2?list[i+2]:"",
+        ok>3?list[i+3]:"",
+        ok>4?list[i+4]:"",
+        ok>5?list[i+5]:"",
+        ok>6?list[i+6]:"",
+        ok>7?list[i+7]:"",
+        ok>8?list[i+8]:""
+    };
+
+    //
+    // Examine variable names for common constructions and infer
+    // expressions to be created.
+    //
+    BEGIN_CASES; // 2D cartesian vectors
+        CASE((2, "x", "y"));
+        CASE((2, "i", "j"));
+        CASE((2, "u", "v"));
+        CASE((2, "1", "2"));
+        CASE((2, "0", "1"));
+        CASE((2, "r", "z")); // Still cartesian in RZ plane
+        CASE((2, "z", "r")); // Still cartesian in RZ plane
+        SNPRINTF(defn, sizeof(defn), "{%s, %s}", list2[0], list2[1]);
+    END_CASES(defn, VectorMeshVar);
+    BEGIN_CASES; // 2D polar vectors
+        CASE((2, "r", "t"));
+        CASE((2, "r", "theta"));
+        SNPRINTF(defn, sizeof(defn), "{%s*cos(%s), %s*sin(%s)}",
+            list2[0], list2[1], list2[0], list2[1]);
+    END_CASES(defn, VectorMeshVar);
+    BEGIN_CASES; // 3D cartesian vectors
+        CASE((3, "x", "y", "z"));
+        CASE((3, "i", "j", "k"));
+        CASE((3, "u", "v", "w"));
+        CASE((3, "1", "2", "3"));
+        CASE((3, "0", "1", "2"));
+        SNPRINTF(defn, sizeof(defn), "{%s, %s, %s}", list2[0], list2[1], list2[2]);
+    END_CASES(defn, VectorMeshVar);
+    BEGIN_CASES; // 3D cylindrical vectors
+        CASE((3, "r", "t", "z"));
+        CASE((3, "r", "theta", "z"));
+        SNPRINTF(defn, sizeof(defn), "{%s*cos(%s), %s*sin(%s), %s}",
+            list2[0], list2[1], list2[0], list2[1], list2[2]);
+    END_CASES(defn, VectorMeshVar);
+    BEGIN_CASES; // 3D spherical vectors
+        CASE((3, "r", "t", "p"));
+        CASE((3, "r", "theta", "phi"));
+        SNPRINTF(defn, sizeof(defn), "{%s*cos(%s)*sin(%s), %s*sin(%s)*sin(%s), %s*cos(%s)}",
+            list2[0], list2[1], list2[2],
+            list2[0], list2[1], list2[2],
+            list2[0], list2[2]);
+    END_CASES(defn, VectorMeshVar);
+    BEGIN_CASES; // 2D, cartesian symmetric tensors (Voigt notation order)
+        CASE((3, "xx", "yy", "xy"));
+        CASE((3, "ii", "jj", "ij"));
+        CASE((3, "uu", "vv", "uv"));
+        CASE((3, "11", "22", "12"));
+        CASE((3, "00", "11", "01"));
+        SNPRINTF(defn, sizeof(defn), "{{%s, %s}, {%s, %s}}",
+            list2[0], list2[2], list2[2], list2[1]);
+    END_CASES(defn, TensorMeshVar);
+    BEGIN_CASES; // 2D, cartesian symmetric tensors (upper triangular row-by-row)
+        CASE((3, "xx", "xy", "yy"));
+        CASE((3, "ii", "ij", "ji"));
+        CASE((3, "uu", "uv", "vu"));
+        CASE((3, "11", "12", "21"));
+        CASE((3, "00", "01", "10"));
+        SNPRINTF(defn, sizeof(defn), "{{%s, %s}, {%s, %s}}",
+            list2[0], list2[1], list2[1], list2[2]);
+    END_CASES(defn, TensorMeshVar);
+    BEGIN_CASES; // 2D, cartesian full tensors
+        CASE((4, "xx", "xy", "yx", "yy"));
+        CASE((4, "ii", "ij", "ji", "jj"));
+        CASE((4, "uu", "uv", "vu", "vv"));
+        CASE((4, "11", "12", "21", "22"));
+        CASE((4, "00", "01", "10", "11"));
+        SNPRINTF(defn, sizeof(defn), "{{%s, %s}, {%s, %s}}",
+            list2[0], list2[1], list2[2], list2[3]);
+    END_CASES(defn, TensorMeshVar);
+    BEGIN_CASES; // 3D, cartesian symmetric tensors (Voigt notation order) 
+        CASE((6, "xx", "yy", "zz", "yz", "xz", "xy"));
+        CASE((6, "ii", "jj", "kk", "jk", "ik", "ij"));
+        CASE((6, "uu", "vv", "ww", "vw", "uw", "uv"));
+        CASE((6, "11", "22", "33", "23", "13", "12"));
+        CASE((6, "00", "11", "22", "12", "02", "01"));
+        SNPRINTF(defn, sizeof(defn), "{{%s, %s, %s}, {%s, %s, %s}, {%s, %s, %s}}",
+            list2[0], list2[5], list2[4],
+            list2[5], list2[1], list2[3],
+            list2[4], list2[3], list2[2]);
+    END_CASES(defn, TensorMeshVar);
+    BEGIN_CASES; // 3D, cartesian symmetric tensors (upper triangular row-by-row)
+        CASE((6, "xx", "xy", "xz", "yy", "yz", "zz"));
+        CASE((6, "ii", "ij", "ik", "jj", "jk", "kk"));
+        CASE((6, "uu", "uv", "uw", "vv", "vw", "ww"));
+        CASE((6, "11", "12", "13", "22", "23", "33"));
+        CASE((6, "00", "01", "02", "11", "12", "22"));
+        SNPRINTF(defn, sizeof(defn), "{{%s, %s, %s}, {%s, %s, %s}, {%s, %s, %s}}",
+            list2[0], list2[1], list2[2],
+            list2[1], list2[3], list2[4],
+            list2[2], list2[4], list2[5]);
+    END_CASES(defn, TensorMeshVar);
+    BEGIN_CASES; // 3D, cartesian full tensors
+        CASE((9, "xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz"));
+        CASE((9, "ii", "ij", "ik", "ji", "jj", "jk", "ki", "kj", "kk"));
+        CASE((9, "uu", "uv", "uw", "vu", "vv", "vw", "wu", "wv", "ww"));
+        CASE((9, "11", "12", "13", "21", "22", "23", "31", "32", "33"));
+        CASE((9, "00", "01", "02", "10", "11", "12", "20", "21", "22"));
+        SNPRINTF(defn, sizeof(defn), "{{%s, %s, %s}, {%s, %s, %s}, {%s, %s, %s}}",
+            list2[0], list2[1], list2[2],
+            list2[3], list2[4], list2[5],
+            list2[6], list2[7], list2[8]);
+    END_CASES(defn, TensorMeshVar);
+    BEGIN_CASES; // 2D symmetric cartesian tensor with out of plane z-component
+        CASE((4, "xx", "xy", "yy", "zz"));
+        SNPRINTF(defn, sizeof(defn), "{{%s, %s, 0}, {%s, %s, 0}, {0, 0, %s}}",
+            list2[0], list2[1], list2[1], list2[2], list2[3]);
+    END_CASES(defn, TensorMeshVar);
+
+    return 0;
 }
 
 static int SizeOfNCType(int type)
@@ -265,8 +593,14 @@ static int SizeOfNCType(int type)
     return 0;
 }
 
-#define SWAP_NODES(A,B) {vtkIdType tmp=verts[A]; verts[A]=verts[B]; verts[B]=tmp;}
+// ****************************************************************************
+// Handle node order differences between Exodus and VTK for certain cell types
+// known to be different.
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
 
+#define SWAP_NODES(A,B) {vtkIdType tmp=verts[A]; verts[A]=verts[B]; verts[B]=tmp;}
 static bool
 InsertExodusCellInVTKUnstructuredGrid(vtkUnstructuredGrid *ugrid, int vtk_celltype, int nnodes, vtkIdType *verts)
 {
@@ -315,6 +649,12 @@ InsertExodusCellInVTKUnstructuredGrid(vtkUnstructuredGrid *ugrid, int vtk_cellty
     ugrid->InsertNextCell(vtk_celltype, nnodes, verts);
     return contains_nonlinear_elems;
 }
+
+// ****************************************************************************
+// Main work-horse to read problem sized array data of various flavors.
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
 
 static void
 GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, avtVarType vt, 
@@ -777,6 +1117,13 @@ MakeVTKDataArrayByTakingOwnershipOfNCVarData(nc_type type,
 }
 
 
+// ****************************************************************************
+// Read the identifiers (e.g. numerical names) for various sets identified
+// in the Exodus file.
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
+
 static void
 GetExodusSetIDs(int exncfid, string stype, vector<int>& retval)
 {
@@ -820,6 +1167,13 @@ GetExodusSetIDs(int exncfid, string stype, vector<int>& retval)
     // Read integer data directly into STL vector obj's buffer
     ncerr = nc_get_var_int(exncfid, prop1_varid, &retval[0]);
 }
+
+// ****************************************************************************
+// Read an Exodus variable known to contain subset ids (nodesets, sidesets,
+// etc.) and return a vtkBitArray for use in an enum scalar variable.
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
 
 static vtkBitArray*
 GetExodusSetsVar(int exncfid, int ts, char const *var, int numNodes, int numElems)
@@ -934,6 +1288,12 @@ GetExodusSetsVar(int exncfid, int ts, char const *var, int numNodes, int numElem
     return retval;
 }
 
+// ****************************************************************************
+// Template to read integer block ids as int or int64
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
+
 template <class T>
 static void ReadBlockIds(int fid, int vid, int numBlocks, vector<int>& blockId, int (*NcRdFunc)(int,int,int*))
 {
@@ -950,7 +1310,19 @@ static void ReadBlockIds(int fid, int vid, int numBlocks, vector<int>& blockId, 
     }
     delete [] buf;
 }
+
+// ****************************************************************************
+// Convenient shorter name for instancing a block id read
+// ****************************************************************************
+
 #define READ_BLOCK_IDS(F,V,N,BIDS,TYPE) ReadBlockIds<TYPE>(F,V,N,BIDS,nc_get_var_ ## TYPE);
+
+// ****************************************************************************
+// Reads a string-valued variables and attributes from the netcdf file known
+// to contain Exodus element block names and ids.
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
 
 static void
 GetElementBlockNamesAndIds(int ncExIIId, int numBlocks,
@@ -1065,9 +1437,12 @@ avtExodusFileFormat::RegisterFileList(const char *const *list, int nlist)
 //    Hank Childs, Mon Aug 23 13:41:54 PDT 2004
 //    Rename cache object to avoid namespace conflict with base class.
 //
+//    Mark C. Miller, Fri Dec 19 11:14:09 PST 2014
+//    Added options for material conventions and automagic composite variable
+//    detection.
 // ****************************************************************************
 
-avtExodusFileFormat::avtExodusFileFormat(const char *name)
+avtExodusFileFormat::avtExodusFileFormat(const char *name, DBOptionsAttributes *rdatts)
    : avtMTSDFileFormat(&name, 1)
 {
     fileList = -1;
@@ -1075,6 +1450,55 @@ avtExodusFileFormat::avtExodusFileFormat(const char *name)
     numBlocks = -1;
     numNodes = -1;
     numElems = -1;
+    autoDetectCompoundVars = false;
+    matConvention = None;
+    matCount = -1;
+
+    // Make a pass through read options but skip material nameschemes for now.
+    for (int i = 0; rdatts != 0 && i < rdatts->GetNumberOfOptions(); ++i)
+    {
+        if      (rdatts->GetName(i) == EXODUS_DETECT_COMPOUND_VARS)
+            autoDetectCompoundVars = rdatts->GetBool(EXODUS_DETECT_COMPOUND_VARS) ? 1 : 0;
+        else if (rdatts->GetName(i) == EXODUS_MATERIAL_COUNT)
+            matCount = rdatts->GetInt(EXODUS_MATERIAL_COUNT);
+        else if (rdatts->GetName(i) == EXODUS_MATERIAL_CONVENTION)
+            matConvention = rdatts->GetEnum(EXODUS_MATERIAL_CONVENTION);
+        else if (rdatts->GetName(i) == EXODUS_VOLFRAC_NAMESCHEME)
+            continue;
+        else if (rdatts->GetName(i) == EXODUS_MATSPEC_NAMESCHEME)
+            continue;
+        else
+            debug1 << "Ignoring unknown option \"" << rdatts->GetName(i) << "\"" << endl;
+    }
+
+    // Based on specified convention, set nameschemes
+    switch (matConvention)
+    {
+        case Custom: // Get var nameschemes from read options
+        {
+            for (int i = 0; rdatts != 0 && i < rdatts->GetNumberOfOptions(); ++i)
+            {
+                if      (rdatts->GetName(i) == EXODUS_VOLFRAC_NAMESCHEME)
+                    matVolFracNamescheme = rdatts->GetString(EXODUS_VOLFRAC_NAMESCHEME);
+                else if (rdatts->GetName(i) == EXODUS_MATSPEC_NAMESCHEME)
+                    matVarSpecNamescheme = rdatts->GetString(EXODUS_MATSPEC_NAMESCHEME);
+            }
+            break;
+        }
+        case Alegra: // Use Alegra's conventions
+        {
+            matVolFracNamescheme = EXODUS_VOLFRAC_NAMESCHEME_ALEGRA;
+            matVarSpecNamescheme = EXODUS_MATSPEC_NAMESCHEME_ALEGRA;
+            break;
+        }
+        case CTH: // Use CTH's conventions
+        {
+            matVolFracNamescheme = EXODUS_VOLFRAC_NAMESCHEME_CTH;
+            matVarSpecNamescheme = EXODUS_MATSPEC_NAMESCHEME_CTH;
+            break;
+        }
+        default: break;
+    }
 }
 
 // ****************************************************************************
@@ -1137,16 +1561,7 @@ avtExodusFileFormat::FreeUpResources(void)
 //  Arguments:
 //      times  A place to put the times numbers.
 //
-//  Programmer: Hank Childs
-//  Creation:   April 17, 2004
-//
-//  Modifications:
-//
-//    Hank Childs, Wed Jul 14 07:35:25 PDT 2004
-//    Explicitly tell the reader to load the times -- it turns out that this
-//    is a costly operation and we should only do it when necessary -- hence
-//    we explicitly tell the reader when we want them.
-//
+//  Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
 // ****************************************************************************
 
 void
@@ -1237,6 +1652,12 @@ avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
     }
 }
 
+// ****************************************************************************
+// Template for extending a vtkDataArray with additional components of zeros
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
+
 template <class T, typename N>
 static T* ExtendCoordsTemplate(T *rhs)
 {
@@ -1256,7 +1677,19 @@ static T* ExtendCoordsTemplate(T *rhs)
     return retval;
 }
 
+// ****************************************************************************
+// Convenient name for ExtendCoordsTemplate
+// ****************************************************************************
 #define ECT(T,t) ExtendCoordsTemplate<vtk ## T ## Array, t>((vtk ## T ## Array *)rhs)
+
+// ****************************************************************************
+// Takes a single vtkDataArray of any type that may have only 2-tuples
+// (e.g. xy) and turns it into a 3-component vtkDataArray with 3rd component
+// zero.
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
+
 static vtkDataArray * ExtendCoords(vtkDataArray *rhs)
 {
     switch (rhs->GetDataType())
@@ -1272,6 +1705,12 @@ static vtkDataArray * ExtendCoords(vtkDataArray *rhs)
     }
     return NULL;
 }
+
+// ****************************************************************************
+// Template to compose vtkDataArrays
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
 
 template <class T, typename N>
 static T* ComposeUpTo3ArraysTemplate(int narrs, T *rhsx, T *rhsy, T* rhsz)
@@ -1296,7 +1735,18 @@ static T* ComposeUpTo3ArraysTemplate(int narrs, T *rhsx, T *rhsy, T* rhsz)
     return retval;
 }
 
+// ****************************************************************************
+// A convenient macro-name to call ComposeUpTo3ArraysTemplate
+// ****************************************************************************
 #define CCT(N,T,t) ComposeUpTo3ArraysTemplate<vtk ## T ## Array, t>(N,(vtk ## T ## Array *)rhsx,(vtk ## T ## Array *)rhsy,(vtk ## T ## Array *)rhsz)
+
+// ****************************************************************************
+// Takes as many as 3 individual vtkDataArrays of any type and combines them
+// into a single vtkDataArray (typically used to compose vectors -- coords).
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+// ****************************************************************************
+
 static vtkDataArray * ComposeCoords(vtkDataArray *rhsx, vtkDataArray *rhsy, vtkDataArray *rhsz)
 {
     switch (rhsx->GetDataType())
@@ -1314,39 +1764,14 @@ static vtkDataArray * ComposeCoords(vtkDataArray *rhsx, vtkDataArray *rhsy, vtkD
     return NULL;
 }
 
-#if 0
-template <class T, typename N>
-static void PlusEqualTemplate(T *lhs, T *rhs)
-{
-    for (int t = 0; t < lhs->GetNumberOfTuples(); t++)
-    {
-        N lhstuple[32];
-        N rhstuple[32];
-        lhs->GetTupleValue(t, lhstuple);
-        rhs->GetTupleValue(t, rhstuple);
-        for (int c = 0; c < lhs->GetNumberOfComponents(); c++)
-            lhstuple[c] += rhstuple[c];
-        lhs->SetTupleValue(t, lhstuple);
-    }
-}
-
-#define PUT(T,t) PlusEqualTemplate<vtk ## T ## Array, t>((vtk ## T ## Array *)lhs,(vtk ## T ## Array *)rhs)
-static void PlusEqual(vtkDataArray *lhs, vtkDataArray *rhs)
-{
-    switch (lhs->GetDataType())
-    {
-        case VTK_CHAR:           PUT(Char,char); break;
-        case VTK_UNSIGNED_CHAR:  PUT(UnsignedChar,unsigned char); break;
-        case VTK_SHORT:          PUT(Short,short); break;
-        case VTK_UNSIGNED_SHORT: PUT(UnsignedShort,unsigned short); break;
-        case VTK_INT:            PUT(Int,int); break;
-        case VTK_UNSIGNED_INT:   PUT(UnsignedInt,unsigned int); break;
-        case VTK_FLOAT:          PUT(Float,float); break;
-        case VTK_DOUBLE:         PUT(Double,double); break;
-    }
-}
-#endif
 // ****************************************************************************
+// Examine Exodus strings encoding element type and together with that and
+// knowledge of node count, and number of spatial dimensions, make a good
+// guess regarding the topological dimension of the type and its assoc.
+// VTK cell type.
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+//
 //  Modifications:
 //    Kathleen Biagas, Tue Sep 10 16:06:30 PDT 2013
 //    Add 'num_nodes' argument and use it to determine if cell types are
@@ -1597,6 +2022,12 @@ ExodusElemTypeAtt2VTKCellType(const char *ex_elem_type_att, int num_nodes, int n
     return ctype;
 }
 
+// ****************************************************************************
+// Add a variable making smart guesses about the variable's type.
+//
+// Programmer: Mark C. Miller, Fri Dec 19 11:04:16 PST 2014
+// ****************************************************************************
+
 void
 avtExodusFileFormat::AddVar(avtDatabaseMetaData *md, char const *vname,
     int topo_dim, int ncomps, avtCentering centering)
@@ -1639,46 +2070,18 @@ avtExodusFileFormat::AddVar(avtDatabaseMetaData *md, char const *vname,
 // ****************************************************************************
 //  Method: avtExodusFileFormat::PopulateDatabaseMetaData
 //
-//  Purpose:
-//      Sets the database meta-data from the Exodus file.
-//
-//  Programmer: Hank Childs
-//  Creation:   October 8, 2001
+//  Programmer: Mark C. Miller, Fri Dec 19 11:02:07 PST 2014
 //
 //  Modifications:
-//
-//    Hank Childs, Mon Mar 11 08:52:59 PST 2002
-//    Renamed to PopulateDatabaseMetaData.
-//
-//    Hank Childs, Tue May 28 14:07:25 PDT 2002
-//    Renamed materials and domains to element block and files.  This is more
-//    like how Exodus users think of these terms.
-//
-//    Hank Childs, Tue Apr  8 10:58:18 PDT 2003
-//    Make sure the file is read in before proceeding.
-//
-//    Hank Childs, Sun Jun 27 13:20:51 PDT 2004
-//    Indicate that we have global node ids.
-//
-//    Hank Childs, Thu Jul 22 14:41:51 PDT 2004
-//    Use the real filenames when creating the SIL.
-//
-//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
-//    Removed setting of avtMeshMetadata->containsGlobalNodeIds
-//
-//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
-//    Added timeState arg since this is an MTXX database. Nonetheless,
-//    timeState argument is ununsed
-//
-//    Eric Brugger, Fri Mar  9 14:43:07 PST 2007
-//    Added support for element block names.
-//
-//    Hank Childs, Thu Dec  2 08:45:31 PST 2010
-//    No longer sort the block names.  It creates indexing issues later.
 //
 //    Mark C. Miller, Tue Sep 17 16:04:32 PDT 2013
 //    Add logic to populate *both* composite variables like vectors and
 //    tensors as well as scalar components.
+//
+//    Mark C. Miller, Fri Dec 19 11:02:32 PST 2014
+//    Adjust logic for composite variables to be smarter about combining
+//    related strings into composite variables and also to define expressions
+//    instead of just variables the plugin is responsible for serving up.
 // ****************************************************************************
 
 #ifdef MAX
@@ -1775,33 +2178,92 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     delete [] global_title_attval;
 
     //
-    // Set up the material to 'spoof' Exodus element blocks. This is a critical
-    // design consideration as Exodus element blocks can 'span' multiple VisIt
-    // 'SD' block files. So, the logical way to handle that with VisIt is to 
-    // treat Exodus' element blocks as materials and indeed, many Exodus
-    // applications tend to think of them that way anyways. Finally, all Exodus
-    // element blocks are homogeneous in material and mesh properties so no
-    // need to worry about 'mixed' materials in this context.
+    // Previous version of the Exodus plugin used a material object
+    // to 'spoof' Exodus element blocks. However, that prevents the plugin
+    // from then properly handling material data in Exodus files such as
+    // codes like Alegra produce. So, here, we handle the element block 
+    // decomposition as an enumerated scalar variable.
     //
     GetElementBlockNamesAndIds(ncExIIId, numBlocks, blockName, blockId);
-
-    string materialName = "ElementBlock";
-    vector<string> matNames;
+    avtScalarMetaData *ebsmd = new avtScalarMetaData("ElementBlock", meshName, AVT_ZONECENT);
+    ebsmd->SetEnumerationType(avtScalarMetaData::ByValue);
     if (numBlocks > 0 && blockName[0] == "")
     {
         for (i = 0 ; i < numBlocks ; i++)
         {
             char name[128];
             sprintf(name, "%d", blockId[i]);
-            matNames.push_back(name);
+            ebsmd->AddEnumNameValue(name,blockId[i]);
         }
     }
     else
     {
         for (i = 0 ; i < numBlocks ; i++)
-            matNames.push_back(blockName[i]);
+            ebsmd->AddEnumNameValue(blockName[i],blockId[i]);
     }
-    AddMaterialToMetaData(md, materialName, meshName, numBlocks, matNames);
+    md->Add(ebsmd);
+
+    // 
+    // Examine element variables names for those matching material namescheme conventions
+    //
+    if (matConvention != None)
+    {
+        bool const do_sort = false;
+        char **elem_var_names = GetStringListFromExodusIINCvar(ncExIIId, "name_elem_var", do_sort);
+
+        // First, look for volume fraction variable names until we cannot find any more
+        Namescheme vfns(matVolFracNamescheme.c_str());
+        int cur_mat_num = 0;
+        while (true)
+        {
+            char const *cur_vfrac_varname = vfns.GetName(cur_mat_num);
+            i = 0;
+            bool found_it = false;
+            while (elem_var_names[i])
+            {
+                if (!strcmp(cur_vfrac_varname, elem_var_names[i]))
+                {
+                    cur_mat_num++;
+                    found_it = true;
+                    break;
+                }
+                i++;
+            }
+            if (!found_it)
+                break;
+        }
+        if (matCount == -1)
+        {
+            matCount = cur_mat_num;
+            debug1 << "Guessed " << matCount << " materials in this database." << endl;
+            debug4 << "Volume fraction variables found..." << endl;
+            for (int m = 0; m < matCount; m++)
+                debug4 << "    \"" << vfns.GetName(m) << "\"" << endl;
+        }
+        else if (matCount != cur_mat_num)
+        {
+            debug1 << "User specified material count of " << matCount
+                   << " doesn't match number of volume fraction variables found " << cur_mat_num << "." << endl;
+            debug1 << "Further attempts to configure materials for this database will be skipped." << endl;
+            matConvention = None;
+        }
+
+        if (matConvention != None && matCount > 0)
+        {
+            vector<string> matnames;
+            for (int m = 0; m < matCount; m++)
+            {
+                char tmpstr[8];
+                SNPRINTF(tmpstr, sizeof(tmpstr), "%d", m);
+                matnames.push_back(tmpstr);
+            }
+            avtMaterialMetaData *mmd = new avtMaterialMetaData("Materials", "Mesh", matCount, matnames);
+            md->Add(mmd);
+        }
+
+        FreeStringListFromExodusIINCvar(elem_var_names);
+        vfns.GetName(-1); // clear static circ-buff (non-essential)
+    }
 
     //
     // Add nodal and zonal variables
@@ -1814,19 +2276,19 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     VisItNCErr = nc_inq_dimid(ncExIIId, "num_elem", &num_elem_dimId);
     CheckNCError(nc_inq_dimid);
 
-    char **node_var_names = GetStringListFromExodusIINCvar(ncExIIId, "name_nod_var");
+    bool const do_sort = true;
+    char **node_var_names = GetStringListFromExodusIINCvar(ncExIIId, "name_nod_var", do_sort);
     i = 0;
     int skip_composite = -1;
     while (node_var_names[i])
     {
         if (i > skip_composite)
         {
-            char composite_name[NC_MAX_NAME];
             int ncomps;
-            if (AreSuccessiveStringsRelatedComponentNames(node_var_names, i,
-                &ncomps, composite_name))
+            if (autoDetectCompoundVars &&
+                AreSuccessiveStringsRelatedComponentNames(md, node_var_names, i,
+                    spatialDimension, matCount, &ncomps))
             {
-                AddVar(md, composite_name, topologicalDimension, ncomps, AVT_NODECENT);
                 skip_composite = i + ncomps - 1;
             }
         }
@@ -1837,19 +2299,18 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
     FreeStringListFromExodusIINCvar(node_var_names);
 
-    char **elem_var_names = GetStringListFromExodusIINCvar(ncExIIId, "name_elem_var");
+    char **elem_var_names = GetStringListFromExodusIINCvar(ncExIIId, "name_elem_var", do_sort);
     i = 0;
     skip_composite = -1;
     while (elem_var_names[i])
     {
         if (i > skip_composite)
         {
-            char composite_name[NC_MAX_NAME];
             int ncomps;
-            if (AreSuccessiveStringsRelatedComponentNames(elem_var_names, i,
-                &ncomps, composite_name))
+            if (autoDetectCompoundVars && 
+                AreSuccessiveStringsRelatedComponentNames(md, elem_var_names, i,
+                    spatialDimension, matCount, &ncomps))
             {
-                AddVar(md, composite_name, topologicalDimension, ncomps, AVT_ZONECENT);
                 skip_composite = i + ncomps - 1;
             }
         }
@@ -1893,22 +2354,10 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             }
         }
         if (centering == AVT_UNKNOWN_CENT) continue;
-        // We don't know if the variable may have already been added
-        // by logic above, so we use this attempt to determine var
-        // type as a way of avoiding duplicates. However, that function
-        // throws an exception if the var is not already present
-        // and so we need a try/catch block.
-        TRY
-        {
-            const bool do_expr = false;
-            avtVarType vt = md->DetermineVarType(vname, do_expr); (void) vt;
-        }
-        CATCH(InvalidVariableException)
-        {
-            debug5 << "Using exception to deduce \"" << vname << "\" was not already present in database metadata." << endl;
+
+        const bool do_expr = false;
+        if (md->DetermineVarType(vname, do_expr) == AVT_UNKNOWN_TYPE)
             AddVar(md, vname, topologicalDimension, ncomps, centering);
-        }
-        ENDTRY
     }
 
     //
@@ -1955,28 +2404,9 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 // ****************************************************************************
 //  Method: avtExodusFileFormat::GetMesh
 //
-//  Purpose:
-//      Returns the mesh for a specific timestep.
-//
-//  Arguments:
-//      ts      The timestep of interest.
-//      mesh    The name of the mesh of interest.
-//
-//  Returns:    The mesh.  Note that the "material" can be set beforehand and
-//              that will alter how the mesh is read in.
-//
-//  Programmer: Hank Childs
-//  Creation:   October 9, 2001
+//  Programmer: Mark C. Miller, Fri Dec 19 11:00:59 PST 2014
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 16:31:30 PST 2002  
-//    Use NewInstance instead of MakeObject in order to match vtk's new api.
-//
-//    Hank Childs, Tue Apr  8 10:58:18 PDT 2003
-//    Make sure the file is read in before proceeding.
-//
-//    Mark C. Miller, Thu Aug  5 14:17:36 PDT 2004
-//    Moved whole of implementation to ReadMesh
 //
 //    Mark C. Miller, Thu Jun 27 10:13:46 PDT 2013
 //    Removed logic to automagically add displacements.
@@ -1994,6 +2424,8 @@ vtkDataSet *
 avtExodusFileFormat::GetMesh(int ts, const char *mesh)
 {
     GetFileHandle();
+
+    CopyFromZeroIndexInstance();
 
     // Get block count if we don't know it already
     if (numBlocks == -1)
@@ -2420,6 +2852,36 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
 }
 
 // ****************************************************************************
+//  Returns element block decomposition as enumerated scalar variable.
+//
+//  Programmer: Mark C. Miller, Fri Dec 19 10:58:59 PST 2014
+// ****************************************************************************
+
+vtkDataArray *
+avtExodusFileFormat::GetEBDecompAsEnumScalar()
+{
+    int nzones = 0;
+    for (map<int,int>::const_iterator
+        it = blockIdToMatMap.begin(); it != blockIdToMatMap.end(); it++)
+        nzones += it->second;
+
+    vtkIntArray *ebarr = vtkIntArray::New();
+    ebarr->SetNumberOfComponents(1);
+    ebarr->SetNumberOfTuples(nzones);
+
+    int zone = 0;
+    for (map<int,int>::const_iterator
+        it = blockIdToMatMap.begin(); it != blockIdToMatMap.end(); it++)
+    {
+        for (int j = 0; j < it->second; j++, zone++)
+            ebarr->SetComponent(zone, 0, it->first);
+    }
+    ebarr->SetName("avtSubsets");
+
+    return ebarr;
+}
+
+// ****************************************************************************
 //  Method: avtExodusFileFormat::GetVar
 //
 //  Purpose:
@@ -2432,15 +2894,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
 //  Returns:    The variable.  Note that the "material" can be set beforehand
 //              and that will alter how the variable is read in.
 //
-//  Programmer: Hank Childs
-//  Creation:   October 11, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr  8 10:58:18 PDT 2003
-//    Make sure the file is read in before proceeding.
+//  Programmer: Mark C. Miller, Fri Dec 19 10:58:59 PST 2014
 //
 // ****************************************************************************
 
@@ -2464,6 +2918,11 @@ avtExodusFileFormat::GetVar(int ts, const char *var)
     void *buf;
     avtCentering vc = AVT_UNKNOWN_CENT;
 
+    CopyFromZeroIndexInstance();
+
+    if (string(var) == "ElementBlock")
+        return GetEBDecompAsEnumScalar();
+
     GET_CENTERING(vc, var);
 
     if (string(var) == "Nodesets" || string(var) == "Sidesets")
@@ -2471,6 +2930,118 @@ avtExodusFileFormat::GetVar(int ts, const char *var)
 
     GetData(ncExIIId, ts, var, numBlocks, AVT_SCALAR_VAR, vc,
         &type, &num_comps, &num_vals, &buf);
+
+    if (!buf) return 0;
+
+    // Handle possible material specific values by attempting to read them
+    // and, if succesful, contrusting the avtMixedVariable thingy and poking
+    // it into the variable cache.
+    if (matConvention != None && matCount != -1 && matVarSpecNamescheme != "")
+    {
+        // Replace "%V" everywhere it occurs in namescheme with the variable name
+        string mvstr = string(matVarSpecNamescheme);
+        while (true)
+        {
+            bool found_one = false;
+            for (int i = 0; i < ((int) mvstr.size())-1; i++)
+            {
+                if (mvstr[i] == '%' && mvstr[i+1] == 'V')
+                {
+                    mvstr.replace(i,2,var);
+                    found_one = true;
+                    break;
+                }
+            }
+            if (!found_one) break;
+        }
+
+        Namescheme mvns(mvstr.c_str());
+
+        // Read all material specific variables and create temporary vtkDataArray
+        // objects from them.
+        void **mv_buf = new void*[matCount](); // initializes to all zeros
+        vtkDataArray **mvarr = new vtkDataArray*[matCount]();
+        int foundCount = 0;
+        for (int m = 0; m < matCount; m++)
+        {
+            nc_type mv_type;
+            int mv_num_vals, mv_num_comps;
+
+            TRY
+            {
+                GetData(ncExIIId, ts, mvns.GetName(m), numBlocks, AVT_SCALAR_VAR, vc,
+                    &mv_type, &mv_num_comps, &mv_num_vals, &mv_buf[m]);
+            }
+            CATCH(InvalidVariableException)
+            {
+                mv_buf[m] = 0;
+            }
+            ENDTRY
+
+            if (!mv_buf[m]) break;
+            
+            foundCount++;
+            mvarr[m] = MakeVTKDataArrayByTakingOwnershipOfNCVarData(
+                mv_type, mv_num_comps, mv_num_vals, mv_buf[m]);
+        }
+
+        if (foundCount == matCount)
+        {
+            // First, see if material object is already cached
+            void_ref_ptr vr = cache->GetVoidRef("Materials", AUXILIARY_DATA_MATERIAL, ts, myDomain);
+            avtMaterial *mat = (avtMaterial*) *vr;
+
+            // If we don't have it, read it and cache it
+            if (!mat)
+            {
+                DestructorFunction df;
+                void *p = GetAuxiliaryData("Materials", ts, AUXILIARY_DATA_MATERIAL, (void*)0, df);
+                mat = (avtMaterial*) p;
+                void_ref_ptr vrtmp = void_ref_ptr(p, df);
+                cache->CacheVoidRef("Materials", AUXILIARY_DATA_MATERIAL, ts, myDomain, vrtmp);
+            }
+
+            if (!mat) goto skipMatSpecific;
+
+            // Build the mixvals array we need to construct the avtMixedMaterial
+            // object we need to return here. Along the way, convert everything to float.
+            vector<float> mixvals;
+            for (int z = 0; z < mat->GetNZones(); z++)
+            {
+                vector<float> vfracs;
+                mat->GetVolFracsForZone(z, vfracs);
+                for (int m = 0; m < vfracs.size(); m++)
+                {
+                    if (vfracs[m] > 0 && vfracs[m] < 1 && mvarr[m])
+                        mixvals.push_back(mvarr[m]->GetTuple1(z));
+                }
+            }
+
+            if ((int) mixvals.size() != mat->GetMixlen())
+            {
+                char errmsg[256];
+                SNPRINTF(errmsg, sizeof(errmsg), "Mixed variable size, %d, doesn't agree with material "
+                    "mixlen, %d, for variable \"%s\"", (int) mixvals.size(), mat->GetMixlen(), var);
+                avtCallback::IssueWarning(errmsg);
+                goto skipMatSpecific;
+            }
+
+            avtMixedVariable *mv = new avtMixedVariable(&mixvals[0], (int) mixvals.size(), var);
+            vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
+            cache->CacheVoidRef(var, AUXILIARY_DATA_MIXED_VARIABLE, ts, myDomain, vr);
+        }
+
+skipMatSpecific:
+            ;
+
+        for (int m = 0; m < matCount; m++)
+        {
+            if (mvarr[m])
+                mvarr[m]->Delete(); // deletes the individual mv_bufs too because mvarr owns them
+        }
+        delete [] mvarr;
+        delete [] mv_buf;
+    }
 
     return MakeVTKDataArrayByTakingOwnershipOfNCVarData(type, num_comps, num_vals, buf);
 }
@@ -2488,19 +3059,7 @@ avtExodusFileFormat::GetVar(int ts, const char *var)
 //  Returns:    The variable.  Note that the "material" can be set beforehand
 //              and that will alter how the variable is read in.
 //
-//  Programmer: Hank Childs
-//  Creation:   October 11, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray instead.
-//
-//    Hank Childs, Tue Apr  8 10:58:18 PDT 2003
-//    Make sure the file is read in before proceeding.
-//
-//    Kathleen Biagas, Wed Sep 11 08:37:55 PDT 2013
-//    Convert 2-component vector if mesh is 3D.
-//
+//  Programmer: Mark C. Miller, Fri Dec 19 10:57:20 PST 2014
 // ****************************************************************************
 
 vtkDataArray *
@@ -2539,7 +3098,6 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
     return arr;
 }
 
-
 // ****************************************************************************
 //  Method: avtExodusFileFormat::GetAuxiliaryData
 //
@@ -2555,36 +3113,11 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
 //
 //  Returns:    The auxiliary data.
 //
-//  Programmer: Hank Childs
-//  Creation:   July 22, 2004
+//  Programmer: Mark C. Miller, Fri Dec 19 10:58:11 PST 2014
 //
-//  Modifications:
-//
-//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
-//    Added code to read global node/zone ids. Unfortunately, I saw no easy
-//    way to do it *without* reading the whole mesh first. In typical usage,
-//    that will have already been done and the global node/zone ids cached and
-//    so we'll rarely, if ever, wind up in here making an explicit request
-//    for them.
-//
-//    Hank Childs, Mon Aug 23 13:41:54 PDT 2004
-//    Rename cache object to avoid namespace conflict with base class.
-//    Also increment reference counts of arrays that are becoming void refs.
-//
-//    Hank Childs, Tue Feb  6 15:47:22 PST 2007
-//    Do not assume that global node ids exist.
-//
-//    Eric Brugger, Fri Mar  9 14:43:07 PST 2007
-//    Added support for element block names.
-//
-//    Hank Childs, Thu Dec  2 08:45:31 PST 2010
-//    Fix problem with establishing material IDs.  There are two possible 
-//    conventions and we were following the wrong one.  I confirmed with Greg
-//    Sjaardema of Sandia that this new code follows the correct convention.
-//
-//    Mark C. Miller, Mon Jun 24 14:33:54 PDT 2013
-//    Fixed off-by-one error in matlist entries. The should start from zero
-//    for the avtMaterial constructor being used here.
+//  Modifications
+//    Mark C. Miller, Fri Dec 19 11:17:16 PST 2014
+//    Added support for (true) materials from Exodus files.
 // ****************************************************************************
 
 void *
@@ -2592,49 +3125,80 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
                                       const char * type, void *,
                                       DestructorFunction &df)
 {
-    int i;
+    CopyFromZeroIndexInstance();
 
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-        if (strstr(var, "ElementBlock") != var)
-            EXCEPTION1(InvalidVariableException, var);
+        if (matConvention == None || matCount <= 0)
+            return 0;
 
-        int nzones = 0;
-        for (map<int,int>::const_iterator
-            it = blockIdToMatMap.begin(); it != blockIdToMatMap.end(); it++)
-            nzones += it->second;
-
-        int *matlist = new int[nzones];
-        int zone = 0;
-        for (map<int,int>::const_iterator
-            it = blockIdToMatMap.begin(); it != blockIdToMatMap.end(); it++)
+        float **volFracRawData = new float*[matCount]();
+        int nzones = -1;
+        TRY
         {
-            for (int j = 0; j < it->second; j++, zone++)
-                matlist[zone] = it->first-1;
-        }
-
-        if (blockName.size() == 0 && blockId.size() == 0)
-            GetElementBlockNamesAndIds(ncExIIId, numBlocks, blockName, blockId);
-
-        vector<string> mats(numBlocks);
-        if (numBlocks > 0 && blockName[0] == "")
-        {
-            for (i = 0 ; i < numBlocks ; i++)
+            // Read all volume fraction variables
+            Namescheme vfns(matVolFracNamescheme.c_str());
+            for (int m = 0; m < matCount; m++)
             {
-                char num[1024];
-                sprintf(num, "%d", blockId[i]);
-                mats[i] = num;
+                vtkDataArray *volFracVarArray = GetVar(ts, vfns.GetName(m));
+                if (!volFracVarArray) 
+                {
+                    char errmsg[256];
+                    SNPRINTF(errmsg, sizeof(errmsg), "Unable to get material volume "
+                        "fraction array \"%s\"", vfns.GetName(m));
+                    EXCEPTION1(InvalidVariableException, errmsg);
+                }
+                if (nzones == -1)
+                    nzones = volFracVarArray->GetNumberOfTuples();
+                else if (nzones != volFracVarArray->GetNumberOfTuples())
+                {
+                    char errmsg[256];
+                    SNPRINTF(errmsg, sizeof(errmsg), "Material volume fraction array \"%s\" "
+                        "not the same size (%d) as previously read arrays (%d)",
+                        vfns.GetName(m),(int)volFracVarArray->GetNumberOfTuples(),nzones);
+                    EXCEPTION1(InvalidVariableException, errmsg);
+                }
+                volFracRawData[m] = new float[nzones];
+                for (int z = 0; z < nzones; z++)
+                    volFracRawData[m][z] = volFracVarArray->GetTuple1(z);
+                volFracVarArray->Delete();
             }
         }
-        else
+        CATCH(InvalidVariableException)
         {
-            for (i = 0 ; i < numBlocks ; i++)
-                mats[i] = blockName[i];
+            for (int q = 0; q < matCount; q++)
+            {
+                if (volFracRawData[q])
+                    delete [] volFracRawData[q];
+            }
+            delete [] volFracRawData;
+            RETHROW;
+        }
+        ENDTRY
+
+        char thisDomain[16];
+        SNPRINTF(thisDomain, sizeof(thisDomain), "File%d", myDomain);
+        int *matids = new int[matCount];
+        char **matnames = new char*[matCount];
+        for (int m = 0; m < matCount; m++)
+        {
+            matids[m] = m;
+            matnames[m] = new char[16];
+            SNPRINTF(matnames[m],sizeof(matnames[m]),"%d",m);
         }
 
-        avtMaterial *mat = new avtMaterial(numBlocks, mats, nzones, matlist,
-                                           0, NULL, NULL, NULL, NULL);
-        delete [] matlist;
+        avtMaterial *mat = new avtMaterial(matCount, matids, matnames,
+                         1, &nzones, 0, volFracRawData, thisDomain);
+
+        for (int m = 0; m < matCount; m++)
+        {
+            delete [] matnames[m];
+            delete [] volFracRawData[m];
+        }
+        delete [] matids;
+        delete [] matnames;
+        delete [] volFracRawData;
+
         df = avtMaterial::Destruct;
         return (void*) mat;
     }

@@ -62,6 +62,8 @@ class DBOptionsAttributes;
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
 //
+//    Mark C. Miller, Thu Dec 18 13:19:38 PST 2014
+//    Added helpClicked and helpButton.
 // ****************************************************************************
 
 class QvisDBOptionsDialog : public QDialog
@@ -72,6 +74,7 @@ public:
     virtual ~QvisDBOptionsDialog();
 public slots:
     void okayClicked();
+    void helpClicked();
 
 private:
     DBOptionsAttributes *atts;
@@ -81,6 +84,7 @@ private:
     QList<QComboBox*>    comboboxes;
 
     QPushButton         *okButton;
+    QPushButton         *helpButton;
     QPushButton         *cancelButton;
 };
 

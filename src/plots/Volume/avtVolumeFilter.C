@@ -72,7 +72,6 @@
 
 #include <avtCallback.h>
 #include <avtDatabase.h>
-#include <avtDatabaseMetaData.h>
 
 #include <string>
 #include <vector>

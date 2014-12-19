@@ -37,11 +37,15 @@
 *****************************************************************************/
 
 #include <QvisDBOptionsDialog.h>
+#include <QvisDBOptionsHelpWindow.h>
 #include <QLayout>
 #include <QPushButton>
 #include <QComboBox>
 #include <QCheckBox>
 #include <QLineEdit>
+#include <QTextEdit>
+
+#include <cstring>
 
 #include <DebugStream.h>
 #include <DBOptionsAttributes.h>
@@ -75,6 +79,9 @@
 //    Jeremy Meredith, Mon Jan  4 14:27:45 EST 2010
 //    Fixed bug with floats.
 //
+//    Mark C. Miller, Thu Dec 18 13:06:50 PST 2014
+//    Added tr() around the name strings passed to the Qt items. Also,
+//    added the help button.
 // ****************************************************************************
 
 QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
@@ -101,7 +108,7 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
         {
           case DBOptionsAttributes::Bool:
             { // new scope
-            QCheckBox *chk_box = new QCheckBox(name.c_str(), this);
+            QCheckBox *chk_box = new QCheckBox(tr(name.c_str()), this);
             chk_box->setChecked(atts->GetBool(name));
             grid->addWidget(chk_box, i,0,1,2);
             checkboxes.append(chk_box);
@@ -110,28 +117,28 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
           case DBOptionsAttributes::Int:
             txt.setNum(atts->GetInt(name));
             ledit = new QLineEdit(txt, this);
-            grid->addWidget(new QLabel(name.c_str(), this), i, 0);
+            grid->addWidget(new QLabel(tr(name.c_str()), this), i, 0);
             grid->addWidget(ledit, i, 1);
             lineedits.append(ledit);
             break;
           case DBOptionsAttributes::Float:
             txt.setNum(atts->GetFloat(name));
             ledit = new QLineEdit(txt, this);
-            grid->addWidget(new QLabel(name.c_str(), this), i, 0);
+            grid->addWidget(new QLabel(tr(name.c_str()), this), i, 0);
             grid->addWidget(ledit, i, 1);
             lineedits.append(ledit);
             break;
           case DBOptionsAttributes::Double:
             txt.setNum(atts->GetDouble(name));
             ledit = new QLineEdit(txt, this);
-            grid->addWidget(new QLabel(name.c_str(), this), i, 0);
+            grid->addWidget(new QLabel(tr(name.c_str()), this), i, 0);
             grid->addWidget(ledit, i, 1);
             lineedits.append(ledit);
             break;
           case DBOptionsAttributes::String:
             txt = atts->GetString(name).c_str();
             ledit = new QLineEdit(txt, this);
-            grid->addWidget(new QLabel(name.c_str(), this), i, 0);
+            grid->addWidget(new QLabel(tr(name.c_str()), this), i, 0);
             grid->addWidget(ledit, i, 1);
             lineedits.append(ledit);
             break;
@@ -140,12 +147,12 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
             QComboBox *cbo_box = new QComboBox(this);
             for (size_t j=0; j<atts->GetEnumStrings(name).size(); j++)
             {
-                QString curr_name(atts->GetEnumStrings(name)[j].c_str());
+                QString curr_name(tr(atts->GetEnumStrings(name)[j].c_str()));
                 cbo_box->addItem(curr_name);
             }
             cbo_box->setCurrentIndex(atts->GetEnum(name));
             
-            grid->addWidget(new QLabel(name.c_str(), this), i, 0);
+            grid->addWidget(new QLabel(tr(name.c_str()), this), i, 0);
             grid->addWidget(cbo_box, i, 1);
             comboboxes.append(cbo_box);
             }
@@ -160,6 +167,13 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
     connect(okButton, SIGNAL(clicked()),
             this, SLOT(okayClicked()));
     btnLayout->addWidget(okButton);
+
+    helpButton = new QPushButton(tr("Help"), this);
+    connect(helpButton, SIGNAL(clicked()),
+            this, SLOT(helpClicked()));
+    btnLayout->addWidget(helpButton);
+    if (atts->GetHelp() == "")
+        helpButton->setEnabled(false);
 
     cancelButton = new QPushButton(tr("Cancel"), this);
     connect(cancelButton, SIGNAL(clicked()),
@@ -266,4 +280,27 @@ QvisDBOptionsDialog::okayClicked()
     
 
     accept();
+}
+
+// ****************************************************************************
+// Method: QvisDBOptionsDialog::helpClicked
+//
+// Purpose: Slot to handle help button
+//
+// Creation: Mark C. Miller, Fri Dec 19 14:58:24 PST 2014
+//
+// ****************************************************************************
+void
+QvisDBOptionsDialog::helpClicked()
+{
+    char format[128];
+    QvisDBOptionsHelpWindow *optshelp = new QvisDBOptionsHelpWindow(atts, NULL);
+    QString title = this->windowTitle();
+    if (sscanf(title.toStdString().c_str(), "Default file opening options for %s reader", format) != 1)
+        if (sscanf(title.toStdString().c_str(), "Export options for %1 writer", format) != 1)
+            strncpy(format, "unknown", sizeof(format));
+    QString caption = tr("Options help for %1 plugin").arg(format);
+    optshelp->setWindowTitle(caption);
+    optshelp->exec();
+    delete optshelp;
 }

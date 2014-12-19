@@ -341,6 +341,8 @@ VariableMenuPopulator::ClearGroupingInfo()
 //    on meshes whose hideFromGUI flag  was true. I added logic to
 //    prevent that.
 //
+//    Mark C. Miller, Thu Dec 18 13:20:17 PST 2014
+//    Allow enum scalars in the Subset plot menu.
 // ****************************************************************************
 
 bool
@@ -576,7 +578,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
             //
             if (role == SIL_MATERIAL)
                 materialVars.AddVariable(varName, validVariable);
-            else if (role != SIL_ENUMERATION)
+            else
                 subsetVars.AddVariable(varName, validVariable);
         }
     }

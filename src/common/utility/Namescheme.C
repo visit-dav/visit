@@ -45,7 +45,7 @@
 #include <Namescheme.h>
 #include <Utility.h>
 
-#define FREE(M) if(M)free(M);
+#define FREE(M) if(M){free(M);M=0;}
 
 // ****************************************************************************
 //  Function: helper functions and types for namescheme expression evaluation. 
@@ -246,12 +246,13 @@ Namescheme::DBexprnode *Namescheme::BuildExprTree(const char **porig)
     return tree;
 }
 
-/* very simple circular cache for a handful of embedded strings used internally */
+/* very simple circular cache for a handful of embedded nameschemes used internally */
 int Namescheme::SaveInternalString(Namescheme *ns, char const * const sval)
 {
     int modn = ns->nembed++ % Namescheme::max_expstrs;
-    FREE(ns->embedstrs[modn]);
-    ns->embedstrs[modn] = strdup(sval);
+    if (ns->embedns[modn])
+        delete ns->embedns[modn];
+    ns->embedns[modn] = new Namescheme(sval);
     return modn;
 }
 
@@ -301,9 +302,7 @@ int Namescheme::EvalExprTree(Namescheme *ns, Namescheme::DBexprnode *tree, int n
     }
     else if (tree->left != 0 && tree->right != 0)
     {
-        int vc = 0;
-        int vl = 0;
-        int vr = 0;
+        int vc = 0, vl = 0, vr = 0;
         if (tree->type == '?')
         {
             vc = EvalExprTree(ns, tree->left, n);
@@ -323,8 +322,8 @@ int Namescheme::EvalExprTree(Namescheme *ns, Namescheme::DBexprnode *tree, int n
             case '+': return vl + vr;
             case '-': return vl - vr;
             case '*': return vl * vr;
-            case '/': return vl / vr;
-            case '%': return vl % vr;
+            case '/': return (vr != 0 ? vl / vr : 1);
+            case '%': return (vr != 0 ? vl % vr : 1);
             case '|': return vl | vr;
             case '&': return vl & vr;
             case '^': return vl ^ vr;
@@ -350,6 +349,11 @@ char * Namescheme::retstrbuf[max_retstrs];
 //    Brad Whitlock, Wed Sep  2 15:59:27 PDT 2009
 //    I removed a dependence on strndup, which isn't on Mac.
 //
+//    Mark C. Miller, Thu Dec 18 13:02:29 PST 2014
+//    Enhanced embedded strings to themselves be namescheme strings.
+//    Also, to support constant valued strings (e.g. namescheme strings with
+//    no conversion specs (%), allowed for them to NOT require being lead
+//    with the delimiter character.
 // ****************************************************************************
 Namescheme::Namescheme(const char *fmt, ...)
 {
@@ -360,7 +364,7 @@ Namescheme::Namescheme(const char *fmt, ...)
     this->ncspecs = 0;
     this->delim = 0;
     this->nembed = 0;
-    this->embedstrs = (char **)calloc(max_expstrs,sizeof(char*));
+    this->embedns = (Namescheme **) calloc(max_expstrs, sizeof(Namescheme*));
     this->narrefs = 0;
     this->arrnames = 0;
     this->arrvals = 0;
@@ -375,7 +379,17 @@ Namescheme::Namescheme(const char *fmt, ...)
         return;
 
     // set the delimeter character
-    this->delim = fmt[0];
+    n = 0;
+    while (fmt[n] != '\0')
+    {
+        if (fmt[n] == '%' && fmt[n+1] != '%')
+            break;
+        n++;
+    }
+    if (fmt[n] == '%') // have at least one conversion spec
+        this->delim = fmt[0];
+    else
+        this->delim = '\0';
 
     // compute length up to max of 4096 of initial segment of fmt representing
     // the printf-style format string.
@@ -410,9 +424,15 @@ Namescheme::Namescheme(const char *fmt, ...)
     }
     this->fmtptrs[this->ncspecs] = &(this->fmt[n+1]);
 
-    // If there are no conversion specs., we have nothing to do
+    // If there are no conversion specs., we have nothing more to do.
+    // However, in this case, assume the first char is a real char.
     if (this->ncspecs == 0)
+    {
+        free(this->fmt);
+        this->fmt = C_strndup(&fmt[0],n);
+        this->fmtlen = n;
         return;
+    }
 
     // Make a pass through rest of fmt string to count array refs in the
     // expression substrings.
@@ -471,8 +491,7 @@ Namescheme::Namescheme(const char *fmt, ...)
             this->exprtrees[ncspecs] = BuildExprTree((const char **) &exprstr1);
             free(exprstr2);
             ncspecs++;
-            if (fmt[i] == '\0' ||
-                (fmt[i] == this->delim && fmt[i] == '\0'))
+            if (fmt[i] == '\0')
                 done = 1;
             n = i;
         }
@@ -489,6 +508,10 @@ Namescheme::Namescheme(const char *fmt, ...)
 //  Programmer: Mark C. Miller
 //  Creation:   Wed Aug 26 15:34:45 PDT 2009
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Dec 18 13:04:31 PST 2014
+//    Changed embedded strings to be embedded nameschemes.
 // ****************************************************************************
 Namescheme::~Namescheme()
 {
@@ -498,8 +521,11 @@ Namescheme::~Namescheme()
     FREE(fmt);
     FREE(fmtptrs);
     for (i = 0; i < max_expstrs; i++)
-        FREE(embedstrs[i]);
-    FREE(embedstrs);
+    {
+        if (embedns[i])
+            delete embedns[i];
+    }
+    FREE(embedns);
     for (i = 0; i < ncspecs; i++)
     {
         FREE(exprstrs[i]);
@@ -524,15 +550,21 @@ Namescheme::~Namescheme()
 //  Programmer: Mark C. Miller
 //  Creation:   Wed Aug 26 15:34:45 PDT 2009
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Dec 18 13:05:08 PST 2014
+//    Changed embedded strings to act as embedded nameschemes.
 // ****************************************************************************
 const char *Namescheme::GetName(int natnum)
 {
     char *currentExpr, *tmpExpr;
-    static char retval[1024];
+    char retval[1024];
     int i;
 
     /* a hackish way to cleanup the saved returned string buffer */
     if (natnum < 0) return SaveReturnedString(0);
+
+    if (!this->fmt) return "";
 
     retval[0] = '\0';
     strncat(retval, this->fmt, this->fmtptrs[0] - this->fmt);
@@ -557,7 +589,7 @@ const char *Namescheme::GetName(int natnum)
         FreeTree(exprtree);
         strncpy(tmpfmt, this->fmtptrs[i], this->fmtptrs[i+1] - this->fmtptrs[i]);
         if (strncmp(tmpfmt, "%s", 2) == 0 && 0 <= theVal && theVal < max_retstrs)
-            sprintf(tmp, tmpfmt, this->embedstrs[theVal]);
+            sprintf(tmp, tmpfmt, this->embedns[theVal]->GetName(natnum));
         else
             sprintf(tmp, tmpfmt, theVal);
         strcat(retval, tmp);

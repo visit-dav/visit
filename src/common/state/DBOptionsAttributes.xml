@@ -30,6 +30,8 @@
     </Field>
     <Field name="obsoleteNames" label="Names of obsolete options" type="stringVector" internal="true">
     </Field>
+    <Field name="help" label="help" type="string" ignoreeq="true">
+    </Field>
     <Function name="FindIndex" user="true" member="true">
     </Function>
     <Function name="SetBool" user="true" member="true">

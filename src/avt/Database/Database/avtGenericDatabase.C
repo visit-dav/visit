@@ -5146,6 +5146,10 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Mark C. Miller, Tue Feb 11 19:35:08 PST 2014
 //    Fix size_t/int type mixing in loop completion expression causing loop
 //    body to be executed for empty vectors.
+//
+//    Mark C. Miller, Thu Dec 18 12:55:50 PST 2014
+//    Incorporated changes from Jeremy to properly pass along labels for
+//    enum scalars. Thanks Jeremy!
 // ****************************************************************************
 
 void
@@ -5187,6 +5191,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
     intVector groupIdsBasedOnRange;
     int domOrigin = 0;
     int grpOrigin = 0;
+    string enumScalarLabel;
 
     avtSubsetType subT = GetMetaData(ts)->DetermineSubsetType(var);
     if (subT == AVT_DOMAIN_SUBSET || subT == AVT_GROUP_SUBSET)
@@ -5199,6 +5204,27 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         gIds       =  GetMetaData(ts)->GetMesh(meshName)->groupIds;
         groupIdsBasedOnRange =  GetMetaData(ts)->GetMesh(meshName)->groupIdsBasedOnRange;
     }
+    else if (subT == AVT_ENUMSCALAR_SUBSET)
+    {
+        const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var);
+        int n = smd->enumNames.size();
+        char tmp[100];
+        sprintf(tmp,"%d",n);
+        enumScalarLabel += tmp;
+        enumScalarLabel += ";";
+        for (int i=0; i<n; ++i)
+        {
+            string name = smd->enumNames[i];
+            int value = smd->enumRanges[2*i];
+            sprintf(tmp, "%d", value);
+            enumScalarLabel += tmp;
+            enumScalarLabel += ";";
+            enumScalarLabel += name;
+            enumScalarLabel += ";";
+        }
+        enumScalarLabel += "mixed";
+    }
+
 
     //
     // Some file formats have variables that are defined for only some of
@@ -5354,6 +5380,10 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         else if (subT == AVT_MATERIAL_SUBSET)
         {
             labels = matnames;
+        }
+        else if (subT == AVT_ENUMSCALAR_SUBSET)
+        {
+            labels.push_back(enumScalarLabel);
         }
 
         ds.labels[i] = labels;

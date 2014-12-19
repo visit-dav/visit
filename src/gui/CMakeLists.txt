@@ -100,6 +100,7 @@ QvisColorTableWindow.C
 QvisCommandWindow.C
 QvisCompositeTransition.C
 QvisDBOptionsDialog.C
+QvisDBOptionsHelpWindow.C
 QvisDatabaseCorrelationListWindow.C
 QvisDatabaseCorrelationWindow.C
 QvisDelayedWindow.C
@@ -240,6 +241,7 @@ QvisColorSelectionWidget.h
 QvisColorTableWindow.h
 QvisCommandWindow.h
 QvisDBOptionsDialog.h
+QvisDBOptionsHelpWindow.h
 QvisDatabaseCorrelationListWindow.h
 QvisDatabaseCorrelationWindow.h
 QvisDelayedWindow.h
