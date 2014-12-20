@@ -93,6 +93,7 @@
 #endif
 
 #include <cstdlib> // for qsort
+#include <cstdarg>
 
 #include <map>
 #include <string>
