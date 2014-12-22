@@ -332,6 +332,9 @@ class SelectionSummary;
 //    Cameron Christensen, Wednesday, June 11, 2014
 //    Added UpdateBackendType.
 //
+//    Kathleen Biagas, Mon Dec 22 10:14:22 PST 2014
+//    Added UpdateRemoveDuplicateNodes.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManagerImplementation : public ViewerServerManager,
@@ -471,6 +474,7 @@ public:
     void UpdateDefaultFileOpenOptions(FileOpenOptions*);
     void UpdatePrecisionType(const int);
     void UpdateBackendType(const int);
+    void UpdateRemoveDuplicateNodes(const bool);
 
 public:
     void CreateNode(DataNode *, bool detailed) const;

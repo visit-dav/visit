@@ -90,6 +90,9 @@
     <Field name="backendType" label="backend" type="enum" subtype="BackendType">
       VTK
     </Field>
+    <Field name="removeDuplicateNodes" label="Remove Duplicate Nodes" type="bool">
+      false
+    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">

@@ -327,6 +327,29 @@ public:
     virtual void Execute();
 };
 
+
+// ****************************************************************************
+// Class: SetRemoveDuplicateNodesAction
+//
+// Purpose:
+//   Handles ViewerRPC::SetRemoveDuplicateNodesRPC
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 18, 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class VIEWERCORE_API SetRemoveDuplicateNodesAction : public ViewerActionLogic
+{
+public:
+    SetRemoveDuplicateNodesAction(ViewerWindow *win) : ViewerActionLogic(win) {}
+    virtual ~SetRemoveDuplicateNodesAction() {}
+
+    virtual void Execute();
+};
+
 // ****************************************************************************
 // Class: SetTreatAllDBsAsTimeVaryingAction
 //

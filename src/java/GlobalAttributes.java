@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class GlobalAttributes extends AttributeSubject
 {
-    private static int GlobalAttributes_numAdditionalAtts = 27;
+    private static int GlobalAttributes_numAdditionalAtts = 28;
 
     // Enum values
     public final static int PRECISIONTYPE_FLOAT = 0;
@@ -102,6 +102,7 @@ public class GlobalAttributes extends AttributeSubject
         userRestoreSessionFile = false;
         precisionType = PRECISIONTYPE_NATIVE;
         backendType = BACKENDTYPE_VTK;
+        removeDuplicateNodes = false;
     }
 
     public GlobalAttributes(int nMoreFields)
@@ -135,6 +136,7 @@ public class GlobalAttributes extends AttributeSubject
         userRestoreSessionFile = false;
         precisionType = PRECISIONTYPE_NATIVE;
         backendType = BACKENDTYPE_VTK;
+        removeDuplicateNodes = false;
     }
 
     public GlobalAttributes(GlobalAttributes obj)
@@ -178,6 +180,7 @@ public class GlobalAttributes extends AttributeSubject
         userRestoreSessionFile = obj.userRestoreSessionFile;
         precisionType = obj.precisionType;
         backendType = obj.backendType;
+        removeDuplicateNodes = obj.removeDuplicateNodes;
 
         SelectAll();
     }
@@ -241,7 +244,8 @@ public class GlobalAttributes extends AttributeSubject
                 (expandNewPlots == obj.expandNewPlots) &&
                 (userRestoreSessionFile == obj.userRestoreSessionFile) &&
                 (precisionType == obj.precisionType) &&
-                (backendType == obj.backendType));
+                (backendType == obj.backendType) &&
+                (removeDuplicateNodes == obj.removeDuplicateNodes));
     }
 
     // Property setting methods
@@ -407,6 +411,12 @@ public class GlobalAttributes extends AttributeSubject
         Select(26);
     }
 
+    public void SetRemoveDuplicateNodes(boolean removeDuplicateNodes_)
+    {
+        removeDuplicateNodes = removeDuplicateNodes_;
+        Select(27);
+    }
+
     // Property getting methods
     public Vector  GetSources() { return sources; }
     public Vector  GetWindows() { return windows; }
@@ -435,6 +445,7 @@ public class GlobalAttributes extends AttributeSubject
     public boolean GetUserRestoreSessionFile() { return userRestoreSessionFile; }
     public int     GetPrecisionType() { return precisionType; }
     public int     GetBackendType() { return backendType; }
+    public boolean GetRemoveDuplicateNodes() { return removeDuplicateNodes; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -493,6 +504,8 @@ public class GlobalAttributes extends AttributeSubject
             buf.WriteInt(precisionType);
         if(WriteSelect(26, buf))
             buf.WriteInt(backendType);
+        if(WriteSelect(27, buf))
+            buf.WriteBool(removeDuplicateNodes);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -580,6 +593,9 @@ public class GlobalAttributes extends AttributeSubject
         case 26:
             SetBackendType(buf.ReadInt());
             break;
+        case 27:
+            SetRemoveDuplicateNodes(buf.ReadBool());
+            break;
         }
     }
 
@@ -629,6 +645,7 @@ public class GlobalAttributes extends AttributeSubject
         if(backendType == BACKENDTYPE_PISTON)
             str = str + "BACKENDTYPE_PISTON";
         str = str + "\n";
+        str = str + boolToString("removeDuplicateNodes", removeDuplicateNodes, indent) + "\n";
         return str;
     }
 
@@ -661,5 +678,6 @@ public class GlobalAttributes extends AttributeSubject
     private boolean userRestoreSessionFile;
     private int     precisionType;
     private int     backendType;
+    private boolean removeDuplicateNodes;
 }
 

@@ -119,6 +119,9 @@ class QSpinBox;
 //   Cameron Christensen, Tuesday, June 10, 2014
 //   Added a preference for setting the backend type.
 //
+//   Kathleen Biagas, Mon Dec 22 10:45:42 PST 2014
+//   Added preference for automatically removing duplicate nodes.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -160,6 +163,7 @@ private slots:
     void createMeshQualityToggled(bool);
     void createTimeDerivativeToggled(bool);
     void createVectorMagnitudeToggled(bool);
+    void removeDuplicateNodesToggled(bool);
     void newPlotsInheritSILRestrictionToggled(bool);
     void expandNewPlotsToggled(bool);
     void userDirForSessionFilesToggled(bool);
@@ -184,6 +188,7 @@ private:
     QCheckBox        *createMeshQualityToggle;
     QCheckBox        *createTimeDerivativeToggle;
     QCheckBox        *createVectorMagnitudeToggle;
+    QCheckBox        *removeDuplicateNodesToggle;
     QCheckBox        *newPlotsInheritSILRestrictionToggle;
     QCheckBox        *expandNewPlotsToggle;
     QCheckBox        *userDirForSessionFilesToggle;

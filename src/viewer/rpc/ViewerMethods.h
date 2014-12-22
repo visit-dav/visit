@@ -176,6 +176,9 @@ class ViewerState;
 //   Cameron Christensen, Tuesday, June 10, 2014
 //   Added SetBackendType.
 //
+//   Kathleen Biagas, Mon Dec 22 10:19:45 PST 2014
+//   Add SetRemoveDuplicateNodes.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -402,6 +405,7 @@ public:
     void SetCreateVectorMagnitudeExpressions(int flag);
     void SetPrecisionType(int flag);
     void SetBackendType(int flag);
+    void SetRemoveDuplicateNodes(bool flag);
     
     void SetSuppressMessages(int flag);
 

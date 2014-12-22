@@ -9652,3 +9652,21 @@ void ViewerWindowManager::SetBackendType(int newVal)
     }
 }
 
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetRemoveDuplicateNodes
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   December 18, 2014
+//
+// ****************************************************************************
+
+void ViewerWindowManager::SetRemoveDuplicateNodes(bool newVal)
+{
+    if (GetViewerState()->GetGlobalAttributes()->GetRemoveDuplicateNodes() != newVal)
+    {
+        GetViewerState()->GetGlobalAttributes()->SetRemoveDuplicateNodes(newVal);
+        GetViewerEngineManager()->UpdateRemoveDuplicateNodes(newVal);
+        GetViewerState()->GetGlobalAttributes()->Notify();
+    }
+}
+

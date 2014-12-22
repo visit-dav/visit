@@ -232,6 +232,7 @@ public:
     virtual void UpdateDefaultFileOpenOptions(FileOpenOptions*);
     virtual void UpdatePrecisionType(const int);
     virtual void UpdateBackendType(const int);
+    virtual void UpdateRemoveDuplicateNodes(const bool);
 
     virtual bool LaunchProcess(const EngineKey &ek, const stringVector &args);
 

@@ -1614,3 +1614,24 @@ EngineMethods::LaunchProcess(const stringVector &args)
 {
     state->launchRPC(args);
 }
+
+
+// ****************************************************************************
+//  Method:  EngineMethods::SetRemoveDuplicateNodes
+//
+//  Purpose:
+//    Tells the engine about the removeDuplicateNodes.
+//
+//  Arguments:
+//    flag      The new removeDuplicateNodes flag.
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    December 22, 2014
+//
+// ****************************************************************************
+
+void
+EngineMethods::SetRemoveDuplicateNodes(bool flag)
+{
+    state->setRemoveDuplicateNodesRPC(flag);
+}

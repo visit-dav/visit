@@ -5454,6 +5454,40 @@ visit_SetPrecisionType(PyObject *self, PyObject *args)
     return PyLong_FromLong(long(errorFlag == 0));
 }
 
+
+// ****************************************************************************
+// Function: visit_SetRemoveDuplicateNodes
+//
+// Purpose:
+//   Sets the removal of duplicate nodes for the pipeline.
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 16, 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetRemoveDuplicateNodes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int flag;
+    if (!PyArg_ParseTuple(args, "i", &flag))
+        return NULL;
+
+    MUTEX_LOCK();
+        GetViewerMethods()->SetRemoveDuplicateNodes(flag);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    int errorFlag = Synchronize();
+    return PyLong_FromLong(long(errorFlag == 0));
+}
+
 // ****************************************************************************
 // Function: visit_SetDefaultAnnotationAttributes
 //
@@ -16943,6 +16977,9 @@ AddMethod(const char *methodName,
 //   Brad Whitlock, Wed Jul 16 11:52:54 PDT 2014
 //   Add GetEngineProperties.
 //
+//   Kathleen Biagas, Mon Dec 22 10:29:52 PST 2014
+//   Added SetRemoveDuplicateNodes to Proxy methods.
+//
 // ****************************************************************************
 
 static void
@@ -17300,6 +17337,9 @@ AddProxyMethods()
               visit_SetPreferredFileFormats_doc);
     AddMethod("SetPrinterAttributes", visit_SetPrinterAttributes,
                                                visit_SetPrinterAttributes_doc);
+    AddMethod("SetRemoveDuplicateNodes",
+               visit_SetRemoveDuplicateNodes,
+               visit_SetRemoveDuplicateNodes_doc);
     AddMethod("SetRenderingAttributes", visit_SetRenderingAttributes,
                                              visit_SetRenderingAttributes_doc);
     AddMethod("SetSaveWindowAttributes", visit_SetSaveWindowAttributes,

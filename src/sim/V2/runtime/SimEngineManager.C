@@ -1519,6 +1519,29 @@ SimEngineManager::UpdateBackendType(const int type)
     avtCallback::SetBackendType((GlobalAttributes::BackendType)type);
 }
 
+
+// ****************************************************************************
+// Method: SimEngineManager::UpdateRemoveDuplicateNodes
+//
+// Purpose:
+//   Update the flag specifying duplicate node removal.
+//
+// Arguments:
+//   val : the flag.
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 18, 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void 
+SimEngineManager::UpdateRemoveDuplicateNodes(const bool val)
+{
+    avtDatabaseFactory::SetRemoveDuplicateNodes(val);
+}
+
 // ****************************************************************************
 // Method: SimEngineManager::LaunchProcess
 //

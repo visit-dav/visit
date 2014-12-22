@@ -1171,6 +1171,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new EngineRPCExecutor<SetEFileOpenOptionsRPC>(&enginestate->GetSetEFileOpenOptionsRPC()));
     rpcExecutors.push_back(new EngineRPCExecutor<SetPrecisionTypeRPC>(&enginestate->GetSetPrecisionTypeRPC()));
     rpcExecutors.push_back(new EngineRPCExecutor<SetBackendTypeRPC>(&enginestate->GetSetBackendTypeRPC()));
+    rpcExecutors.push_back(new EngineRPCExecutor<SetRemoveDuplicateNodesRPC>(&enginestate->GetSetRemoveDuplicateNodesRPC()));
     rpcExecutors.push_back(new EngineRPCExecutor<EnginePropertiesRPC>(&enginestate->GetEnginePropertiesRPC()));
     rpcExecutors.push_back(new EngineRPCExecutor<LaunchRPC>(&enginestate->GetLaunchRPC()));
   

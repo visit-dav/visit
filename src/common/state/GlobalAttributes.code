@@ -245,6 +245,13 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
                       backendType));
     }
 
+    if(completeSave || !FieldsEqual(ID_removeDuplicateNodes, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("removeDuplicateNodes",
+                      removeDuplicateNodes));
+    }
+
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -411,5 +418,7 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
                 SetBackendType(value);
         }
     }
+    if((node = searchNode->GetNode("removeDuplicateNodes")) != 0)
+        SetRemoveDuplicateNodes(node->AsBool());
 }
 

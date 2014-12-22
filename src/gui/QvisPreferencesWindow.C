@@ -207,6 +207,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Eric Brugger, Tue Sep 30 15:02:07 PDT 2014
 //   I made the code for setting the backend type depend on having EAVL.
 //
+//   Kathleen Biagas, Mon Dec 22 10:46:10 PST 2014
+//   Added a preference for automatically removing duplicate nodes.
+//
 // ****************************************************************************
 
 void
@@ -345,6 +348,12 @@ QvisPreferencesWindow::CreateWindowContents()
     connect(createVectorMagnitudeToggle, SIGNAL(toggled(bool)),
             this, SLOT(createVectorMagnitudeToggled(bool)));
     dbOptionsLayout->addWidget(createVectorMagnitudeToggle);
+
+    removeDuplicateNodesToggle =
+        new QCheckBox(tr("Automatically remove duplicate nodes from fully disconnected unstructured grids"),dbControlsGroup);
+    connect(removeDuplicateNodesToggle, SIGNAL(toggled(bool)),
+            this, SLOT(removeDuplicateNodesToggled(bool)));
+    dbOptionsLayout->addWidget(removeDuplicateNodesToggle);
 
     //
     // Create group box for session file controls.
@@ -551,6 +560,9 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   Cameron Christensen, Tuesday, June 10, 2014
 //   Added a preference for setting the backend type.
 //
+//   Kathleen Biagas, Mon Dec 22 10:46:10 PST 2014
+//   Added a preference for automatically removing duplicate nodes.
+//
 // ****************************************************************************
 
 void
@@ -662,6 +674,14 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         createVectorMagnitudeToggle->setChecked(
             atts->GetCreateVectorMagnitudeExpressions());
         createVectorMagnitudeToggle->blockSignals(false);
+    }
+
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_removeDuplicateNodes))
+    {
+        removeDuplicateNodesToggle->blockSignals(true);
+        removeDuplicateNodesToggle->setChecked(
+            atts->GetRemoveDuplicateNodes());
+        removeDuplicateNodesToggle->blockSignals(false);
     }
 
     if (doAll || atts->IsSelected(GlobalAttributes::ID_userDirForSessionFiles))
@@ -1421,6 +1441,31 @@ QvisPreferencesWindow::backendTypeChanged(int val)
 {
     atts->SetBackendType(GlobalAttributes::BackendType(val));
     GetViewerProxy()->GetViewerMethods()->SetBackendType(val);
+    atts->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::removeDuplicateNodesToggled
+//
+// Purpose:
+//   This is a Qt slot function that is called when removeDuplicateNodes
+//   is toggled.
+//
+// Arguments:
+//   val : The new value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 22, 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::removeDuplicateNodesToggled(bool val)
+{
+    atts->SetRemoveDuplicateNodes(val);
+    GetViewerProxy()->GetViewerMethods()->SetRemoveDuplicateNodes(val);
     atts->Notify();
 }
 

@@ -161,6 +161,7 @@ void GlobalAttributes::Init()
     userRestoreSessionFile = false;
     precisionType = Native;
     backendType = VTK;
+    removeDuplicateNodes = false;
 
     GlobalAttributes::SelectAll();
 }
@@ -209,6 +210,7 @@ void GlobalAttributes::Copy(const GlobalAttributes &obj)
     userRestoreSessionFile = obj.userRestoreSessionFile;
     precisionType = obj.precisionType;
     backendType = obj.backendType;
+    removeDuplicateNodes = obj.removeDuplicateNodes;
 
     GlobalAttributes::SelectAll();
 }
@@ -392,7 +394,8 @@ GlobalAttributes::operator == (const GlobalAttributes &obj) const
             (expandNewPlots == obj.expandNewPlots) &&
             (userRestoreSessionFile == obj.userRestoreSessionFile) &&
             (precisionType == obj.precisionType) &&
-            (backendType == obj.backendType));
+            (backendType == obj.backendType) &&
+            (removeDuplicateNodes == obj.removeDuplicateNodes));
 }
 
 // ****************************************************************************
@@ -563,6 +566,7 @@ GlobalAttributes::SelectAll()
     Select(ID_userRestoreSessionFile,           (void *)&userRestoreSessionFile);
     Select(ID_precisionType,                    (void *)&precisionType);
     Select(ID_backendType,                      (void *)&backendType);
+    Select(ID_removeDuplicateNodes,             (void *)&removeDuplicateNodes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -806,6 +810,13 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
                       backendType));
     }
 
+    if(completeSave || !FieldsEqual(ID_removeDuplicateNodes, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("removeDuplicateNodes",
+                      removeDuplicateNodes));
+    }
+
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -967,6 +978,11 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
             if (BackendType_FromString(node->AsString(), value))
                 SetBackendType(value);
         }
+    }
+    if((node = searchNode->GetNode("removeDuplicateNodes")) != 0)
+    {
+cerr <<"   setting SetRemoveDup to " << node->AsBool() << endl;
+        SetRemoveDuplicateNodes(node->AsBool());
     }
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -1162,6 +1178,13 @@ GlobalAttributes::SetBackendType(GlobalAttributes::BackendType backendType_)
     Select(ID_backendType, (void *)&backendType);
 }
 
+void
+GlobalAttributes::SetRemoveDuplicateNodes(bool removeDuplicateNodes_)
+{
+    removeDuplicateNodes = removeDuplicateNodes_;
+    Select(ID_removeDuplicateNodes, (void *)&removeDuplicateNodes);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1340,6 +1363,12 @@ GlobalAttributes::GetBackendType() const
     return BackendType(backendType);
 }
 
+bool
+GlobalAttributes::GetRemoveDuplicateNodes() const
+{
+    return removeDuplicateNodes;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1407,6 +1436,7 @@ GlobalAttributes::GetFieldName(int index) const
     case ID_userRestoreSessionFile:           return "userRestoreSessionFile";
     case ID_precisionType:                    return "precisionType";
     case ID_backendType:                      return "backendType";
+    case ID_removeDuplicateNodes:             return "removeDuplicateNodes";
     default:  return "invalid index";
     }
 }
@@ -1458,6 +1488,7 @@ GlobalAttributes::GetFieldType(int index) const
     case ID_userRestoreSessionFile:           return FieldType_bool;
     case ID_precisionType:                    return FieldType_enum;
     case ID_backendType:                      return FieldType_enum;
+    case ID_removeDuplicateNodes:             return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1509,6 +1540,7 @@ GlobalAttributes::GetFieldTypeName(int index) const
     case ID_userRestoreSessionFile:           return "bool";
     case ID_precisionType:                    return "enum";
     case ID_backendType:                      return "enum";
+    case ID_removeDuplicateNodes:             return "bool";
     default:  return "invalid index";
     }
 }
@@ -1668,6 +1700,11 @@ GlobalAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_backendType:
         {  // new scope
         retval = (backendType == obj.backendType);
+        }
+        break;
+    case ID_removeDuplicateNodes:
+        {  // new scope
+        retval = (removeDuplicateNodes == obj.removeDuplicateNodes);
         }
         break;
     default: retval = false;

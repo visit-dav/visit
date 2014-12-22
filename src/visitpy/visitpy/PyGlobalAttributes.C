@@ -259,6 +259,11 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
           break;
     }
 
+    if(atts->GetRemoveDuplicateNodes())
+        SNPRINTF(tmpStr, 1000, "%sremoveDuplicateNodes = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sremoveDuplicateNodes = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -1001,6 +1006,30 @@ GlobalAttributes_GetBackendType(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+GlobalAttributes_SetRemoveDuplicateNodes(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the removeDuplicateNodes in the object.
+    obj->data->SetRemoveDuplicateNodes(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+GlobalAttributes_GetRemoveDuplicateNodes(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetRemoveDuplicateNodes()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
@@ -1059,6 +1088,8 @@ PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
     {"GetPrecisionType", GlobalAttributes_GetPrecisionType, METH_VARARGS},
     {"SetBackendType", GlobalAttributes_SetBackendType, METH_VARARGS},
     {"GetBackendType", GlobalAttributes_GetBackendType, METH_VARARGS},
+    {"SetRemoveDuplicateNodes", GlobalAttributes_SetRemoveDuplicateNodes, METH_VARARGS},
+    {"GetRemoveDuplicateNodes", GlobalAttributes_GetRemoveDuplicateNodes, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1157,6 +1188,8 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "PISTON") == 0)
         return PyInt_FromLong(long(GlobalAttributes::PISTON));
 
+    if(strcmp(name, "removeDuplicateNodes") == 0)
+        return GlobalAttributes_GetRemoveDuplicateNodes(self, NULL);
 
     return Py_FindMethod(PyGlobalAttributes_methods, self, name);
 }
@@ -1225,6 +1258,8 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = GlobalAttributes_SetPrecisionType(self, tuple);
     else if(strcmp(name, "backendType") == 0)
         obj = GlobalAttributes_SetBackendType(self, tuple);
+    else if(strcmp(name, "removeDuplicateNodes") == 0)
+        obj = GlobalAttributes_SetRemoveDuplicateNodes(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
