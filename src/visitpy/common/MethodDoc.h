@@ -234,6 +234,7 @@ extern const char *visit_SetQueryOutputToValue_doc;
 extern const char *visit_SetQueryOutputToString_doc;
 extern const char *visit_SetQueryFloatFormat_doc;
 extern const char *visit_SetQueryOverTimeAttributes_doc;
+extern const char *visit_SetRemoveDuplicateNodes_doc;
 extern const char *visit_SetRenderingAttributes_doc;
 extern const char *visit_SetSaveWindowAttributes_doc;
 extern const char *visit_SetTimeSliderState_doc;

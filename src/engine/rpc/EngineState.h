@@ -71,6 +71,7 @@
 #include <FileOpenOptions.h>
 #include <SetEFileOpenOptionsRPC.h>
 #include <SetPrecisionTypeRPC.h>
+#include <SetRemoveDuplicateNodesRPC.h>
 #include <SetBackendTypeRPC.h>
 #include <SelectionProperties.h>
 #include <StatusAttributes.h>
@@ -111,6 +112,7 @@ public:
     SetEFileOpenOptionsRPC&     GetSetEFileOpenOptionsRPC() { return setEFileOpenOptionsRPC; }
     SetPrecisionTypeRPC&        GetSetPrecisionTypeRPC() { return setPrecisionTypeRPC; }
     SetBackendTypeRPC&          GetSetBackendTypeRPC() { return setBackendTypeRPC; }
+    SetRemoveDuplicateNodesRPC& GetSetRemoveDuplicateNodesRPC() { return setRemoveDuplicateNodesRPC; }
     EnginePropertiesRPC&        GetEnginePropertiesRPC() { return enginePropertiesRPC; }
     LaunchRPC&                  GetLaunchRPC() { return launchRPC; }
 private:
@@ -141,6 +143,7 @@ private:
     SetEFileOpenOptionsRPC   setEFileOpenOptionsRPC;
     SetPrecisionTypeRPC      setPrecisionTypeRPC;
     SetBackendTypeRPC        setBackendTypeRPC;
+    SetRemoveDuplicateNodesRPC setRemoveDuplicateNodesRPC;
     EnginePropertiesRPC      enginePropertiesRPC;
     LaunchRPC                launchRPC;
     StatusAttributes        *statusAtts;

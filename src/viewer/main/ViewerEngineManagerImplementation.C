@@ -454,6 +454,9 @@ ViewerEngineManagerImplementation::CreateEngine(const EngineKey &ek,
 //    Brad Whitlock, Tue Sep  9 18:11:01 PDT 2014
 //    Use ViewerConnectionProgress.
 //
+//    Kathleen Biagas, Mon Dec 22 10:13:14 PST 2014
+//    Send removeDuplicateNodes to newly created engine.
+//
 // ****************************************************************************
 
 bool
@@ -667,6 +670,11 @@ ViewerEngineManagerImplementation::CreateEngineEx(const EngineKey &ek,
         newEngine.proxy->GetEngineMethods()->SetBackendType(
             GetViewerState()->GetGlobalAttributes()->
                     GetBackendType());
+
+        // Tell the new engine the removeduplicatenodes
+        newEngine.proxy->GetEngineMethods()->SetRemoveDuplicateNodes(
+            GetViewerState()->GetGlobalAttributes()->
+                    GetRemoveDuplicateNodes());
 
         // Now that the new engine is in the list, tell the GUI.
         UpdateEngineList();
@@ -2535,6 +2543,27 @@ ViewerEngineManagerImplementation::UpdateBackendType(const int bType)
     for (EngineMap::iterator it = engines.begin() ; it != engines.end(); it++)
     {
         it->second.proxy->GetEngineMethods()->SetBackendType(bType);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManagerImplementation::UpdateRemoveDuplicateNodes
+//
+//  Purpose:
+//      Sets the flag for removing duplicate nodes.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   December 18, 2014
+//
+// ****************************************************************************
+
+void
+ViewerEngineManagerImplementation::UpdateRemoveDuplicateNodes(const bool flag)
+{
+    for (EngineMap::iterator it = engines.begin() ; it != engines.end(); it++)
+    {
+        it->second.proxy->GetEngineMethods()->SetRemoveDuplicateNodes(flag);
     }
 }
 

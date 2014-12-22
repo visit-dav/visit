@@ -437,6 +437,9 @@ typedef struct {
 //    Cameron Christensen, Tuesday, June 10, 2014
 //    Added SetBackendType.
 //
+//    Kathleen Biagas, Thu Dec 18 15:17:21 PST 2014
+//    Added SetRemoveDuplicateNodes.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindowManager : public ViewerBase
@@ -592,6 +595,7 @@ public:
     bool SetCreateVectorMagnitudeExpressions(bool val);
     void SetPrecisionType(int val);
     void SetBackendType(int val);
+    void SetRemoveDuplicateNodes(bool val);
 
     void ReplaceDatabase(const EngineKey &key,
                          const std::string &database,

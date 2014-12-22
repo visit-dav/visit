@@ -267,6 +267,7 @@ public:
         PlotDDTVispointVariablesRPC,
         ExportRPC,
         ReadHostProfilesFromDirectoryRPC,
+        SetRemoveDuplicateNodesRPC,
         MaxRPC
     };
 

@@ -82,6 +82,8 @@ class WindowAttributes;
 //  Creation:   Tue Sep  9 16:51:11 PDT 2014
 //
 //  Modifications:
+//    Kathleen Biagas, Mon Dec 22 10:22:11 PST 2014
+//    Add UpdateRemoveDuplicateNodes.
 //
 // ****************************************************************************
 
@@ -252,6 +254,7 @@ public:
     virtual void UpdateDefaultFileOpenOptions(FileOpenOptions*) = 0;
     virtual void UpdatePrecisionType(const int) = 0;
     virtual void UpdateBackendType(const int) = 0;
+    virtual void UpdateRemoveDuplicateNodes(const bool) = 0;
 
     virtual bool LaunchProcess(const EngineKey &ek, const stringVector &args) = 0;
 

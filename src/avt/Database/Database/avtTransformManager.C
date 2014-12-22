@@ -39,6 +39,7 @@
 // ************************************************************************* //
 //                           avtTransformManager.C                           //
 // ************************************************************************* //
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCSGGrid.h>
 #include <vtkCharArray.h>
@@ -2448,6 +2449,11 @@ avtTransformManager::TransformSingleDataset(vtkDataSet *ds,
 
         //ds = PolyhedralToZoo(md, d_spec, ds);
 
+        if (avtDatabaseFactory::GetRemoveDuplicateNodes())
+        {
+            ds = RemoveDuplicateNodes(ds);
+        }
+
         ds = NativeToFloat(md, d_spec, ds, domain);
     }
     CATCH(PointerNotInCacheException)
@@ -2457,4 +2463,115 @@ avtTransformManager::TransformSingleDataset(vtkDataSet *ds,
     ENDTRY
 
     return ds;
+}
+
+
+// ****************************************************************************
+//  Method: RemoveDuplicateNodes
+//
+//  Purpose: Remove duplicate nodes from fully-disonnected unstructured grids.
+//
+//  Notes:
+//    Moved from avtVTKFileReader::ReadInDataset on December 22, 2014.
+//
+//  Programmer: Mark C. Miller
+//  Creation: July 2, 2014
+//  
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
+{
+    //
+    // Try to remove duplicate nodes in datasets meeting the following
+    // criteria...
+    //    a) unstructured grid, and
+    //    b) more than 1,000,000 points, and
+    //    c) number of points is 3x more than number of cells
+ 
+    if (ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
+    {
+        return ds;
+    }
+
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::SafeDownCast(ds);
+
+    // Detect the "fully disconnected" case
+    if ((ugrid->GetCells()->GetSize() - ugrid->GetNumberOfCells()) <
+         ugrid->GetNumberOfPoints())
+    {
+       return ds;
+    }
+
+    debug2 << "In avtVTKFileReader::ReadInDataset, the unstructured grid is"
+           << " fully disconnected..." << endl;
+    debug2 << "...detecting and removing any spatial duplicate points to"
+           << " re-connect mesh." << endl;
+
+    // build list of unique points
+    vtkPoints *pts = ugrid->GetPoints();
+    std::map<double, std::map<double, std::map<double, vtkIdType> > > uniqpts;
+    int n = 0;
+    for (int i = 0; i < pts->GetNumberOfPoints(); i++)
+    {
+        double pt[3];
+        pts->GetPoint(i, pt);
+        std::map<double, std::map<double, std::map<double, vtkIdType> > >::iterator e0it = uniqpts.find(pt[0]);
+        if (e0it != uniqpts.end())
+        {
+            std::map<double, std::map<double, vtkIdType> >::iterator e1it = e0it->second.find(pt[1]);
+            if (e1it != e0it->second.end())
+            {
+                std::map<double, vtkIdType>::iterator e2it = e1it->second.find(pt[2]);
+                if (e2it != e1it->second.end())
+                    continue;
+            }
+        }
+        uniqpts[pt[0]][pt[1]][pt[2]] = n++;
+    }
+
+    debug2 << "...discovered " << 100.0 * n / pts->GetNumberOfPoints()
+           << "% of points are spatially unique." << endl;
+    debug2 << "...now reconnecting mesh using unique points." << endl;
+
+    for (int i = 0; i < ugrid->GetNumberOfCells(); i++)
+    {
+        vtkIdType nCellPts=0, *cellPts=0;
+        ugrid->GetCellPoints(i, nCellPts, cellPts);
+        for (int j = 0; j < nCellPts; j++)
+        {
+            double pt[3];
+            pts->GetPoint(cellPts[j], pt);
+            std::map<double, std::map<double, std::map<double, vtkIdType> > >::const_iterator e0it = uniqpts.find(pt[0]);
+            if (e0it == uniqpts.end())
+                continue;
+            std::map<double, std::map<double, vtkIdType> >::const_iterator e1it = e0it->second.find(pt[1]);
+            if (e1it == e0it->second.end())
+                continue;
+            std::map<double, vtkIdType>::const_iterator e2it = e1it->second.find(pt[2]);
+            if (e2it == e1it->second.end())
+                continue;
+            cellPts[j] = e2it->second;
+        }
+        ugrid->ReplaceCell(i, nCellPts, cellPts);
+    }
+
+    pts->Initialize();
+    pts->SetNumberOfPoints(n);
+    std::map<double, 
+             std::map<double, std::map<double, vtkIdType> >
+            >::iterator e0it;
+    for (e0it = uniqpts.begin(); e0it != uniqpts.end(); e0it++)
+    {
+        std::map<double, std::map<double, vtkIdType> >::iterator e1it;
+        for (e1it = e0it->second.begin(); e1it != e0it->second.end(); e1it++)
+        {
+            std::map<double, vtkIdType>::iterator e2it;
+            for (e2it = e1it->second.begin(); e2it != e1it->second.end(); e2it++)
+                pts->SetPoint(e2it->second, e0it->first, e1it->first, e2it->first);
+        }
+    }
+    return ugrid;
 }

@@ -153,6 +153,7 @@ public:
     void                     SetDefaultFileOpenOptions(const FileOpenOptions&);
     void                     SetPrecisionType(const int);
     void                     SetBackendType(const int);
+    void                     SetRemoveDuplicateNodes(bool);
 
     avtDataObjectReader_p    Render(bool, const intVector&, int, int, bool,
                                  void (*waitCB)(void *), void *cbData);

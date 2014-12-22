@@ -126,7 +126,8 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
         "InitializeNamedSelectionVariablesRPC, MenuQuitRPC, SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, "
         "MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, RenamePickLabelRPC, "
         "GetQueryParametersRPC, DDTConnectRPC, DDTFocusRPC, ReleaseToDDTRPC, "
-        "PlotDDTVispointVariablesRPC, ExportRPC, ReadHostProfilesFromDirectoryRPC, MaxRPC";
+        "PlotDDTVispointVariablesRPC, ExportRPC, ReadHostProfilesFromDirectoryRPC, SetRemoveDuplicateNodesRPC, "
+        "MaxRPC";
     switch (atts->GetRPCType())
     {
       case ViewerRPC::CloseRPC:
@@ -945,6 +946,10 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sReadHostProfilesFromDirectoryRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
+      case ViewerRPC::SetRemoveDuplicateNodesRPC:
+          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetRemoveDuplicateNodesRPC  # %s\n", prefix, prefix, RPCType_names);
+          str += tmpStr;
+          break;
       case ViewerRPC::MaxRPC:
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sMaxRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
@@ -1123,12 +1128,12 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the RPCType in the object.
-    if(ival >= 0 && ival < 205)
+    if(ival >= 0 && ival < 206)
         obj->data->SetRPCType(ViewerRPC::ViewerRPCType(ival));
     else
     {
         fprintf(stderr, "An invalid RPCType value was given. "
-                        "Valid values are in the range of [0,204]. "
+                        "Valid values are in the range of [0,205]. "
                         "You can also use the following names: "
                         "CloseRPC, DetachRPC, AddWindowRPC, DeleteWindowRPC, SetWindowLayoutRPC, "
                         "SetActiveWindowRPC, ClearWindowRPC, ClearAllWindowsRPC, OpenDatabaseRPC, "
@@ -1180,8 +1185,8 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
                         "InitializeNamedSelectionVariablesRPC, MenuQuitRPC, SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, "
                         "MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, RenamePickLabelRPC, "
                         "GetQueryParametersRPC, DDTConnectRPC, DDTFocusRPC, ReleaseToDDTRPC, "
-                        "PlotDDTVispointVariablesRPC, ExportRPC, ReadHostProfilesFromDirectoryRPC, MaxRPC"
-                        ".");
+                        "PlotDDTVispointVariablesRPC, ExportRPC, ReadHostProfilesFromDirectoryRPC, SetRemoveDuplicateNodesRPC, "
+                        "MaxRPC.");
         return NULL;
     }
 
@@ -2649,6 +2654,8 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ViewerRPC::ExportRPC));
     if(strcmp(name, "ReadHostProfilesFromDirectoryRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::ReadHostProfilesFromDirectoryRPC));
+    if(strcmp(name, "SetRemoveDuplicateNodesRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::SetRemoveDuplicateNodesRPC));
     if(strcmp(name, "MaxRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::MaxRPC));
 

@@ -310,6 +310,28 @@ SetPrecisionTypeAction::Execute()
     windowMgr->SetPrecisionType(args.GetIntArg1());
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: SetRemoveDuplicateNodesAction::Execute
+//
+// Purpose: 
+//   Execute ViewerRPC::RemoveDuplicateNodesRPC
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 18, 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+SetRemoveDuplicateNodesAction::Execute()
+{
+    windowMgr->SetRemoveDuplicateNodes(args.GetBoolFlag());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
@@ -322,7 +344,7 @@ SetPrecisionTypeAction::Execute()
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

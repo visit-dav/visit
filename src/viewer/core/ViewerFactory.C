@@ -200,6 +200,9 @@ ViewerFactory::CreateViewerWindow(int windowIndex)
 //   Brad Whitlock, Mon Dec 15 15:05:49 PST 2014
 //   Added ReadHostProfilesFromDirectoryRPC.
 //
+//   Kathleen Biagas, Mon Dec 22 10:21:22 PST 2014
+//   Add SetRemoveDuplicateNodesRPC.
+//
 // ****************************************************************************
 
 void
@@ -359,6 +362,7 @@ ViewerFactory::SetActionManagerLogic(ViewerActionManager *mgr, ViewerWindow *win
     mgr->SetLogic(ViewerRPC::SetPrecisionTypeRPC,           new SetPrecisionTypeAction(win));
     mgr->SetLogic(ViewerRPC::SetQueryFloatFormatRPC,        new SetQueryFloatFormatAction(win));
     mgr->SetLogic(ViewerRPC::SetQueryOverTimeAttributesRPC, new SetQueryOverTimeAttributesAction(win));
+    mgr->SetLogic(ViewerRPC::SetRemoveDuplicateNodesRPC,    new SetRemoveDuplicateNodesAction(win));
     mgr->SetLogic(ViewerRPC::SetRenderingAttributesRPC,     new SetRenderingAttributesAction(win));
     mgr->SetLogic(ViewerRPC::SetSuppressMessagesRPC,        new SetSuppressMessagesAction(win));
     mgr->SetLogic(ViewerRPC::SetTimeSliderStateRPC,         new SetTimeSliderStateAction(win));

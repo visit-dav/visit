@@ -5480,6 +5480,27 @@ ViewerMethods::SetBackendType(int flag)
     state->GetViewerRPC()->Notify();
 }
 
+
+// ****************************************************************************
+//  Method: ViewerMethods::SetRemoveDuplicateNodes
+//
+//  Purpose: Tells viewer to set the flag for removing duplicate nodes
+//           in the pipeline.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   December 16, 2014
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SetRemoveDuplicateNodes(bool flag)
+{
+    state->GetViewerRPC()->SetRPCType(
+        ViewerRPC::SetRemoveDuplicateNodesRPC);
+    state->GetViewerRPC()->SetBoolFlag(flag);
+    state->GetViewerRPC()->Notify();
+}
+
 // ****************************************************************************
 //  Method: ViewerMethods::SetSuppressMessages
 //

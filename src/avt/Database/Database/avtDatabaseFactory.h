@@ -137,6 +137,9 @@ class DatabasePluginManager;
 //    Brad Whitlock, Thu Sep 18 23:02:56 PDT 2014
 //    Added methods for bypassing file permission checks.
 //
+//    Kathleen Biagas, Mon Dec 22 10:59:56 PST 2014
+//    Added methods for setting the user preference for duplicate node removal.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -173,6 +176,11 @@ class DATABASE_API avtDatabaseFactory
     static bool                  GetCreateVectorMagnitudeExpressions(void)
                                   {return createVectorMagnitudeExpressions;}
 
+    static void                  SetRemoveDuplicateNodes(bool f)
+                                     {removeDuplicateNodes = f;}
+    static bool                  GetRemoveDuplicateNodes()
+                                     { return removeDuplicateNodes;}
+
     static void                  SetPrecisionType(const int pType);
     static avtPrecisionType      GetPrecisionType()
                                      { return precisionType;}
@@ -195,6 +203,7 @@ class DATABASE_API avtDatabaseFactory
     static bool                  createTimeDerivativeExpressions;
     static bool                  createVectorMagnitudeExpressions;
     static bool                  checkFilePermissions;
+    static bool                  removeDuplicateNodes;
     static FileOpenOptions       defaultFileOpenOptions;
     static avtPrecisionType      precisionType;
     static avtBackendType        backendType;

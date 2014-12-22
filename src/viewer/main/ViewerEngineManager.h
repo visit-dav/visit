@@ -56,6 +56,8 @@
 //  Creation:   Tue Sep  9 16:51:11 PDT 2014
 //
 //  Modifications:
+//    Kathleen Biagas, Mon Dec 22 10:12:05 PST 2014
+//    Added UpdateRemoveDuplicateNodes.
 //
 // ****************************************************************************
 
@@ -229,6 +231,7 @@ public:
     virtual void UpdateDefaultFileOpenOptions(FileOpenOptions*);
     virtual void UpdatePrecisionType(const int);
     virtual void UpdateBackendType(const int);
+    virtual void UpdateRemoveDuplicateNodes(const bool);
 
     virtual bool LaunchProcess(const EngineKey &ek, const stringVector &args);
 

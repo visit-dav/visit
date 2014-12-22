@@ -114,6 +114,9 @@ class avtSourceFromDatabase;
 //    regions, so this is a significant saving. CSG meshes with thousands
 //    of regions were exhausting memory in the previous scheme.
 //
+//    Kathleen Biagas, Mon Dec 22 10:10:29 PST 2014
+//    Added RemoveDuplicateNodes.
+//
 // ****************************************************************************
 
 class DATABASE_API avtTransformManager
@@ -162,6 +165,8 @@ class DATABASE_API avtTransformManager
                                    vtkDataSet *ds, int dom);
     vtkDataSet                *ConvertCurvesToRectGrids(avtDatabaseMetaData *md,
                                    vtkDataSet *ds, int dom);
+
+    vtkDataSet                *RemoveDuplicateNodes(vtkDataSet *ds);
 
     avtVariableCache           cache;
     avtVariableCache          *gdbCache;

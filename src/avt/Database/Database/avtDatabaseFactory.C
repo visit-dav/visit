@@ -92,6 +92,7 @@ bool    avtDatabaseFactory::createMeshQualityExpressions = true;
 bool    avtDatabaseFactory::createTimeDerivativeExpressions = true;
 bool    avtDatabaseFactory::createVectorMagnitudeExpressions = true;
 bool    avtDatabaseFactory::checkFilePermissions = true;
+bool    avtDatabaseFactory::removeDuplicateNodes = false;
 FileOpenOptions avtDatabaseFactory::defaultFileOpenOptions;
 avtPrecisionType avtDatabaseFactory::precisionType = AVT_PRECISION_NATIVE;
 avtBackendType avtDatabaseFactory::backendType = AVT_BACKEND_VTK;

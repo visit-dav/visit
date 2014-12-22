@@ -1905,6 +1905,26 @@ EngineRPCExecutor<SetBackendTypeRPC>::Execute(SetBackendTypeRPC *rpc)
     rpc->SendReply();
 }
 
+
+// ****************************************************************************
+//  Method:  EngineRPCExecutor<SetRemoveDuplicateNodesRPC>::Execute
+//
+//  Purpose:
+//    Set the flag specifying removal of duplicate nodes in the database
+//    factory.
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    December 22, 2014
+//
+// ****************************************************************************
+template<>
+void
+EngineRPCExecutor<SetRemoveDuplicateNodesRPC>::Execute(SetRemoveDuplicateNodesRPC *rpc)
+{
+    avtDatabaseFactory::SetRemoveDuplicateNodes(rpc->GetRemoveDuplicateNodes());
+    rpc->SendReply();
+}
+
 // ****************************************************************************
 //  Method: EngineRPCExecutor<LaunchRPC>::Execute
 //

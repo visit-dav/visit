@@ -410,6 +410,11 @@ void ViewerEngineManager::UpdateBackendType(const int type)
     IMPL()->UpdateBackendType(type);
 }
 
+void ViewerEngineManager::UpdateRemoveDuplicateNodes(const bool flag)
+{
+    IMPL()->UpdateRemoveDuplicateNodes(flag);
+}
+
 
 bool ViewerEngineManager::LaunchProcess(const EngineKey &ek, const stringVector &args)
 {

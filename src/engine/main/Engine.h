@@ -72,6 +72,7 @@ class SimulationCommandRPC;
 class SetEFileOpenOptionsRPC;
 class SetPrecisionTypeRPC;
 class SetBackendTypeRPC;
+class SetRemoveDuplicateNodesRPC;
 class LaunchRPC;
 class EngineState;
 
