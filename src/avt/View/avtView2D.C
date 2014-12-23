@@ -43,6 +43,7 @@
 #include <avtView2D.h>
 
 #include <cmath>
+#include <algorithm>
 
 #include <avtViewInfo.h>
 #include <View2DAttributes.h>

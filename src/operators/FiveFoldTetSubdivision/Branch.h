@@ -2,6 +2,7 @@
 #define _BRANCH_H_
 
 #include <boost/cstdint.hpp>
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <vector>

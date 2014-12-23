@@ -50,6 +50,7 @@
 #include <vtkIdList.h>
 
 #include <math.h>
+#include <algorithm>
 
 // ****************************************************************************
 //  Method: avtIVPNIMRODField constructor

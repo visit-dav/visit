@@ -44,6 +44,7 @@
 #include <avtIVPStateHelper.h>
 #include <DebugStream.h>
 
+#include <algorithm>
 #include <limits>
 #include <cmath>
 #include <float.h>
