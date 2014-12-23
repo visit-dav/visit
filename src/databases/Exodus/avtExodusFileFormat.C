@@ -268,6 +268,10 @@ static void fill_tmp_suffixes(int n, ...)
     va_end(ap);
 }
 
+#ifdef WIN32
+#define strcasecmp stricmp
+#endif
+
 #define BEGIN_CASES                                                    \
 {   bool found_match = false
 

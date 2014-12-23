@@ -41,6 +41,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <visit-config.h>
 
 // ****************************************************************************
 // Class: ViewerText
@@ -78,7 +79,9 @@ public:
     ViewerText arg(int    val);
     ViewerText arg(unsigned int val);
     ViewerText arg(long   val);
+#if (SIZEOF_UNSIGNED_INT != SIZEOF_SIZE_T)
     ViewerText arg(size_t val);
+#endif
     ViewerText arg(float  val);
     ViewerText arg(double val);
     ViewerText arg(const std::string &val);
