@@ -62,6 +62,9 @@
 #   Eric Brugger, Wed Dec 17 12:37:22 PST 2014
 #   Add avtexamples.
 #
+#   Kathleen Biagas, Dec 22, 2014
+#   Add ability to turn off building of avt examples.
+#
 #****************************************************************************/
 
 MACRO(VISIT_TOOLS_ADD_FOLDER type)
@@ -72,14 +75,18 @@ MACRO(VISIT_TOOLS_ADD_FOLDER type)
     ENDIF(${ARGC} GREATER 1)
 ENDMACRO(VISIT_TOOLS_ADD_FOLDER)
 
-ADD_SUBDIRECTORY(diagnostics)
+IF(VISIT_BUILD_DIAGNOSTICS)
+    ADD_SUBDIRECTORY(diagnostics)
+ENDIF()
 
 IF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
     ADD_SUBDIRECTORY(convert)
 ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
     # We always want these to be built
     ADD_SUBDIRECTORY(annotations)
+    if(VISIT_BUILD_AVTEXAMPLES)
     ADD_SUBDIRECTORY(avtexamples)
+    endif()
     ADD_SUBDIRECTORY(convert)
     ADD_SUBDIRECTORY(embedviewer)
     ADD_SUBDIRECTORY(imagetools)

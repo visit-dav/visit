@@ -138,11 +138,13 @@ ViewerText::arg(long val)
     return *this;
 }
 
+#if (SIZEOF_UNSIGNED_INT != SIZEOF_SIZE_T)
 ViewerText
 ViewerText::arg(size_t val)
 {
     return arg((unsigned int)val);
 }
+#endif
 
 ViewerText
 ViewerText::arg(float val)

@@ -221,6 +221,9 @@
 /* The size of `unsigned int', as computed by sizeof. */
 #cmakedefine SIZEOF_UNSIGNED_INT @SIZEOF_UNSIGNED_INT@
 
+/* The size of `size_t', as computed by sizeof. */
+#cmakedefine SIZEOF_SIZE_T @SIZEOF_SIZE_T@
+
 /* The size of `unsigned long', as computed by sizeof. */
 #cmakedefine SIZEOF_UNSIGNED_LONG @SIZEOF_UNSIGNED_LONG@
 

@@ -88,7 +88,7 @@ ${ICET_LIBRARY_DIR}
 
 ADD_EXECUTABLE(avtFilterExample avtFilterExample.C)
 VISIT_INSTALL_TARGETS(avtFilterExample)
-VISIT_TOOLS_ADD_FOLDER(avtFilterExample)
+VISIT_TOOLS_ADD_FOLDER(avtexamples avtFilterExample)
 
 TARGET_LINK_LIBRARIES(avtFilterExample
 ${engine_ser_exe_IDatabase}
@@ -110,7 +110,7 @@ ${ZLIB_LIB}
 
 ADD_EXECUTABLE(avtRenderExample avtRenderExample.C)
 VISIT_INSTALL_TARGETS(avtRenderExample)
-VISIT_TOOLS_ADD_FOLDER(avtRenderExample)
+VISIT_TOOLS_ADD_FOLDER(avtexamples avtRenderExample)
 
 TARGET_LINK_LIBRARIES(avtRenderExample
 ${engine_ser_exe_IDatabase}
@@ -136,7 +136,7 @@ ${ZLIB_LIB}
 
 ADD_EXECUTABLE(avtPluginExample avtPluginExample.C)
 VISIT_INSTALL_TARGETS(avtPluginExample)
-VISIT_TOOLS_ADD_FOLDER(avtPluginExample)
+VISIT_TOOLS_ADD_FOLDER(avtexamples avtPluginExample)
 
 TARGET_LINK_LIBRARIES(avtPluginExample
 ${engine_ser_exe_IDatabase}

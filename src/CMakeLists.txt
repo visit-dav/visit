@@ -698,6 +698,8 @@ ENDIF(APPLE OR WIN32)
 OPTION(VISIT_USE_GLEW "Use GLEW to call GL functions." ON)
 
 OPTION(VISIT_THREAD "Build VisIt with thread support." OFF)
+OPTION(VISIT_BUILD_AVTEXAMPLES  "Enable building of avtexamples" ON)
+OPTION(VISIT_BUILD_DIAGNOSTICS  "Enable building of diagnostices" ON)
 
 OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # OFF for now
 
@@ -1872,6 +1874,7 @@ CHECK_TYPE_SIZE("long long"          SIZEOF_LONG_LONG)          # ${CMAKE_SIZEOF
 CHECK_TYPE_SIZE(short                SIZEOF_SHORT)              # ${CMAKE_SIZEOF_SHORT})
 CHECK_TYPE_SIZE("unsigned char"      SIZEOF_UNSIGNED_CHAR)      # ${CMAKE_SIZEOF_UNSIGNED_CHAR})
 CHECK_TYPE_SIZE("unsigned int"       SIZEOF_UNSIGNED_INT)       # ${CMAKE_SIZEOF_UNSIGNED_INT})
+CHECK_TYPE_SIZE("size_t"             SIZEOF_SIZE_T)             # ${CMAKE_SIZEOF_SIZE_T})
 CHECK_TYPE_SIZE("unsigned long"      SIZEOF_UNSIGNED_LONG)      # ${CMAKE_SIZEOF_UNSIGNED_LONG})
 CHECK_TYPE_SIZE("unsigned long long" SIZEOF_UNSIGNED_LONG_LONG) # ${CMAKE_SIZEOF_UNSIGNED_LONG_LONG})
 CHECK_TYPE_SIZE("unsigned short"     SIZEOF_UNSIGNED_SHORT)     # ${CMAKE_SIZEOF_UNSIGNED_SHORT})
