@@ -25,3 +25,4 @@ expandNewPlots = 0
 userRestoreSessionFile = 0
 precisionType = Native  # Float, Native, Double
 backendType = VTK  # VTK, DAX, EAVL, PISTON
+removeDuplicateNodes = 0
