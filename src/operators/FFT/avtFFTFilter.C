@@ -53,6 +53,7 @@
 #include <fstream>
 #include <DebugStream.h>
 
+#include <algorithm>
 #include <math.h>
 
 #if defined(_MSC_VER)

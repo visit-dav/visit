@@ -45,6 +45,7 @@
 #include <math.h>
 
 #include <cmath>
+#include <algorithm>
 
 #include <avtViewInfo.h>
 #include <View3DAttributes.h>

@@ -33,6 +33,7 @@
 #include <slivr/ShaderProgramARB.h>
 #include <slivr/Texture.h>
 #include <slivr/Utils.h>
+#include <algorithm>
 
 namespace SLIVR {
 

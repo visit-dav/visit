@@ -1,4 +1,6 @@
 #include <AMRreaderWithLevels.h>
+
+#include <algorithm>
 #include <math.h>
 
 AMRreaderWithLevels::AMRreaderWithLevels() : AMRreaderInterface(), patchesBuilt(false), patches(), blkkey2bid()
