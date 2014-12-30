@@ -4,16 +4,13 @@
 #include <DatabasePluginManager.h>
 #include <SaveWindowAttributes.h>
 
-#include <avtContourFilter.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
-#include <avtDatabaseWriter.h>
 #include <avtFileWriter.h>
 #include <avtImage.h>
 #include <avtLinearTransformFilter.h>
 #include <avtLookupTable.h>
 #include <avtOriginatingSource.h>
-#include <avtTheater.h>
 #include <avtVariablePointGlyphMapper.h>
 #include <VisWindow.h>
 
