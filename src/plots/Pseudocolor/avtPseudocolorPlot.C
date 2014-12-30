@@ -749,6 +749,10 @@ avtPseudocolorPlot::GetDataExtents(std::vector<double> &extents)
 //    Kathleen Bonnell, Mon Jan 17 18:00:41 MST 2011
 //    Retrieve invertColorTableToggle and send to avtLUT.
 //
+//    Eric Brugger, Mon Dec 29 13:46:32 PST 2014
+//    I added a call to SetScaling so that setting the color table would
+//    set the color tables in the legend and mapper.
+//
 // ****************************************************************************
 
 bool
@@ -785,6 +789,9 @@ avtPseudocolorPlot::SetColorTable(const char *ctName)
                                         useOpacities, 
                                         atts.GetInvertColorTable(),
                                         rampOpacity ); 
+
+    SetScaling(atts.GetScaling(), atts.GetSkewFactor());
+
     return retval;
 }
 

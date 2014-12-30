@@ -6,13 +6,16 @@
 #include <OperatorPluginManager.h>
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
+#include <SaveWindowAttributes.h>
 
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
-#include <avtDatabaseWriter.h>
-#include <avtParallel.h>
+#include <avtFileWriter.h>
+#include <avtImage.h>
 #include <avtPlot.h>
 #include <avtPluginFilter.h>
+#include <avtView2D.h>
+#include <VisWindow.h>
 
 #include <VisItException.h>
 #include <visitstream.h>
@@ -26,19 +29,8 @@ using std::vector;
 //
 // Things to note:
 //
-// 1) If you specify VTK_1.0 to the visit writer the program will crash.
+// 1) The program crashes after calling return.
 //
-// 2) The pseudocolor plot is not used.
-//
-// 3) It is impossible to set the clip attributes since you can't set
-//    any attributes of a ClipAttributes without linking that code into
-//    this example.
-//
-// 4) Parallel has never been tested and probably doesn't work.
-//
-// 5) The program crashes after calling return. It is probably in the
-//    destructor for the avtPlot, since commenting out the code that
-//    allocates the avtPlot for the pseudocolor plot fixes the crash.
 //
 
 int
@@ -48,13 +40,6 @@ main(int argc, char *argv[])
     // Initialize VisIt.
     //
     cerr << "Initializing VisIt." << endl;
-    bool parallel = false;
-#ifdef PARALLEL
-    parallel = true;
-#endif
-
-    PAR_Init(argc, argv);
-
     VisItInit::SetComponentName("engine");
     VisItInit::Initialize(argc, argv);
 
@@ -66,9 +51,9 @@ main(int argc, char *argv[])
     OperatorPluginManager  *omgr = new OperatorPluginManager;
     PlotPluginManager      *pmgr = new PlotPluginManager;
 
-    dbmgr->Initialize(DatabasePluginManager::Engine, parallel);
-    omgr->Initialize(DatabasePluginManager::Engine, parallel);
-    pmgr->Initialize(DatabasePluginManager::Engine, parallel);
+    dbmgr->Initialize(DatabasePluginManager::Engine, false);
+    omgr->Initialize(DatabasePluginManager::Engine, false);
+    pmgr->Initialize(DatabasePluginManager::Engine, false);
 
     dbmgr->LoadPluginsNow();
     omgr->LoadPluginsOnDemand();
@@ -83,14 +68,12 @@ main(int argc, char *argv[])
     if (!success)
     {
         cerr << "Unable to load the " << plotName << " plugin." << endl;
-        PAR_Exit();
         exit(EXIT_FAILURE);
     }
     avtPlot_p plot = pmgr->GetEnginePluginInfo(plotName)->AllocAvtPlot();
     if (*plot == NULL)
     {
         cerr << "Unable to allocate the " << plotName << " plugin." << endl;
-        PAR_Exit();
         exit(EXIT_FAILURE);
     }
 
@@ -103,14 +86,12 @@ main(int argc, char *argv[])
     if (!success)
     {
         cerr << "Unable to load the " << filterName << " plugin." << endl;
-        PAR_Exit();
         exit(EXIT_FAILURE);
     }
     avtPluginFilter *filter = omgr->GetEnginePluginInfo(filterName)->AllocAvtPluginFilter();
     if (filter == NULL)
     {
         cerr << "Unable to allocate the " << filterName << " plugin." << endl;
-        PAR_Exit();
         exit(EXIT_FAILURE);
     }
 
@@ -127,31 +108,24 @@ main(int argc, char *argv[])
     }
     CATCHALL
     {
-        if (PAR_Rank() == 0)
-            cerr << "The file " << filename << " does not exist or could "
-                 << "not be opened." << endl;
-        PAR_Exit();
+        cerr << "The file " << filename << " does not exist or could "
+             << "not be opened." << endl;
         exit(EXIT_FAILURE);
     }
     ENDTRY
 
     if (db == NULL)
     {
-        if (PAR_Rank() == 0)
-            cerr << "Could not open file " << argv[1] << ".  Tried using plugins ";
+        cerr << "Could not open file " << argv[1] << ".  Tried using plugins ";
         for (size_t i = 0 ; i < pluginList.size() ; i++)
         {
-            if (PAR_Rank() == 0)
-            {
-                cerr << pluginList[i];
-                if (i != pluginList.size()-1)
-                    cerr << ", ";
-                else
-                    cerr << endl;
-            }
+            cerr << pluginList[i];
+            if (i != pluginList.size()-1)
+                cerr << ", ";
+            else
+                cerr << endl;
         }
 
-        PAR_Exit();
         exit(EXIT_FAILURE);
     }
 
@@ -167,33 +141,55 @@ main(int argc, char *argv[])
     filter->SetInput(dob);
     avtDataObject_p output = filter->GetOutput();
 
+    avtOriginatingSource *src = dob->GetOriginatingSource();
+    avtContract_p contract = new avtContract(src->GetFullDataRequest(), 0);
+
+    output->Update(contract);
+
     //
-    // Write out the output.
+    // Create the actor from the plot.
     //
-    cerr << "Writing the output." << endl;
-    EngineDatabasePluginInfo *edpi = dbmgr->GetEnginePluginInfo("Silo_1.0");
+    cerr << "Creating the actor from the pseudocolor plot." << endl;
+    plot->SetColorTable("Default");
+    avtActor_p actor = plot->Execute(NULL, output);
 
-    if (edpi == NULL)
-    {
-        PAR_Exit();
-        exit(EXIT_FAILURE);
-    }
+    //
+    // Create the window and add the actor.
+    //
+    cerr << "Creating the window and adding the actor." << endl;
+    VisWindow *window = new VisWindow();
+    window->Realize();
+    window->AddPlot(actor);
 
-    avtDatabaseWriter *wrtr = edpi->GetWriter();
+    //
+    // Set the view.
+    //
+    avtView2D view2D;
+    view2D.viewport[0] = 0.1;
+    view2D.viewport[1] = 0.9;
+    view2D.viewport[2] = 0.1;
+    view2D.viewport[3] = 0.9;
+    view2D.window[0] = -5.;
+    view2D.window[1] =  5.;
+    view2D.window[2] =  0.;
+    view2D.window[3] =  5.;
+    view2D.windowValid = true;
+    window->SetView2D(view2D);
 
-    if (wrtr == NULL)
-    {
-        PAR_Exit();
-        exit(EXIT_FAILURE);
-    }
+    //
+    // Save the image.
+    //
+    cerr << "Saving the image." << endl;
+    avtImage_p image = window->ScreenCapture();
+    avtDataObject_p tmpImage;
+    CopyTo(tmpImage, image);
 
-    const avtDatabaseMetaData *md = db->GetMetaData(0);
+    avtFileWriter *fileWriter = new avtFileWriter();
+    fileWriter->SetFormat(SaveWindowAttributes::PNG);
+    fileWriter->Write("output.png", tmpImage, 100, false, 1, false);
+    delete fileWriter;
 
-    vector<string> vars;
-    vars.push_back("d");
-    wrtr->SetInput(output);
-    wrtr->Write("", "output", md, vars);
-
+    //
     // Clean up and exit.
     //
     cerr << "Cleaning up." << endl;
@@ -201,8 +197,9 @@ main(int argc, char *argv[])
     delete omgr;
     delete pmgr;
 
+    delete window;
+
     cerr << "Exiting." << endl;
-    PAR_Exit();
 
     return 0;
 }
