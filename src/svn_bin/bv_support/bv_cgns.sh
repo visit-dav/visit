@@ -97,8 +97,101 @@ function bv_cgns_dry_run
   fi
 }
 
+function apply_cgns_321_mavericks_patch
+{
+   patch -p0 << \EOF
+diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
+*** cgnslib_3.2.1/src/configure.orig	2014-12-17 15:31:56.000000000 -0800
+--- cgnslib_3.2.1/src/configure	2014-12-17 15:33:22.000000000 -0800
+***************
+*** 2324,2333 ****
+  echo "$ac_t""$shared" 1>&6
+  
+  if test $shared = all; then
+!   exts="so sl a"
+    shared=yes
+  else
+!   exts="a so sl"
+  fi
+  if test $shared = yes; then
+    cgnsdir=`pwd`
+--- 2324,2333 ----
+  echo "$ac_t""$shared" 1>&6
+  
+  if test $shared = all; then
+!   exts="dylib so sl a"
+    shared=yes
+  else
+!   exts="dylib a so sl"
+  fi
+  if test $shared = yes; then
+    cgnsdir=`pwd`
+***************
+*** 2352,2363 ****
+        shared=no
+      else
+        CFGFLAGS="-fPIC $CFGFLAGS"
+!       AR_LIB="\$(CC) -shared $SYSCFLAGS -Wl,-rpath,$LIBDIR:$cgnsdir/$BUILDDIR -o"
+!       EXT_LIB=so
+      fi
+    fi
+    if test $shared = yes; then
+!     RAN_LIB="\$(STRIP)"
+    fi
+  fi
+  
+--- 2352,2363 ----
+        shared=no
+      else
+        CFGFLAGS="-fPIC $CFGFLAGS"
+!       AR_LIB="\$(CC) -shared $SYSCFLAGS -Wl,-L$with_hdf5/lib -Wl,-lhdf5 -o"
+!       EXT_LIB=dylib
+      fi
+    fi
+    if test $shared = yes; then
+!     RAN_LIB="\$(STRIP) -x"
+    fi
+  fi
+  
+EOF
+   if [[ $? != 0 ]] ; then
+      return 1
+   fi
+
+   return 0
+}
+
+function apply_cgns_321_patch
+{
+   if [[ "$OPSYS" == "Darwin" ]] ; then
+      if [[ `sw_vers -productVersion` == 10.9.[0-9]* ]] ; then
+         info "Applying OS X 10.9 Mavericks patch . . ."
+         apply_cgns_321_mavericks_patch
+      fi
+   fi
+
+   return $?
+}
+
+function apply_cgns_patch
+{
+   if [[ ${CGNS_VERSION} == 3.2.1 ]] ; then
+      apply_cgns_321_patch
+      if [[ $? != 0 ]] ; then
+         return 1
+      fi
+   fi
+
+   return 0
+}
+
 # *************************************************************************** #
 #                         Function 8.5, build_cgns                            #
+#                                                                             #
+# Kevin Griffin, Tue Dec 30 11:39:02 PST 2014                                 #
+# Added a patch for the configure script to correctly locate and use the      #
+# the dylib for hdf5 and szip. Added the correct linker options to the        #
+# dynamic library creation.                                                   #
 # *************************************************************************** #
 
 function build_cgns
@@ -114,6 +207,21 @@ function build_cgns
     fi
 
     #
+    # Apply patches
+    #
+    apply_cgns_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_cgns == 1 ]] ; then
+          warn "Giving up on CGNS build because the patch failed."
+          return 1
+       else
+          warn "Patch failed, but continuing.  I believe that this script\n" \
+          warn "tried to apply a patch to an existing directory which had\n" \
+          warn "already been patched ... that is, that the patch is\n" \
+          warn "failing harmlessly on a second application."
+       fi
+    fi
+
     info "Configuring CGNS . . ."
     cd $CGNS_BUILD_DIR || error "Can't cd to CGNS build dir."
     info "Invoking command to configure CGNS"
@@ -127,19 +235,29 @@ function build_cgns
     if [[ "$DO_HDF5" == "yes" ]] ; then
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
-            H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+            H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.dylib"
         fi
         if [[ "$DO_ZLIB" == "yes" ]] ; then
             H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
         fi
     fi
-    info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+    if [[ "$OPSYS" == "Darwin" ]] ; then
+       info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+       CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
+       ./configure --enable-64bit --enable-shared=all $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
+
+       env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+       CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+       ./configure --enable-64bit --enable-shared=all $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
+    else
+       info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
        ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
 
-    env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+       env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
+       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
+    fi
 
     if [[ $? != 0 ]] ; then
        warn "CGNS configure failed.  Giving up"
@@ -178,35 +296,20 @@ function build_cgns
         #
         info "Creating dynamic libraries for CGNS . . ."
 
-        # Check for version >= 8.0.0 (MacOS 10.4, Tiger) for SystemStubs
-        VER=$(uname -r)
-        if (( ${VER%%.*} > 7 && ${VER%%.*} < 12)) ; then
-           USESTUBS="-lSystemStubs"
-        else
-           USESTUBS=""
-        fi
-
         INSTALLNAMEPATH="$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH/lib"
 
-        H5LINK=""
-        if [[ "$DO_HDF5" == "yes" ]] ; then
-            H5LINK="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.dylib"
-            if [[ "$DO_SZIP" == "yes" ]] ; then
-                H5LINK="$H5LINK $VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.dylib"
-            fi
-        fi
-        /usr/bin/libtool -o libcgns.${SO_EXT} \
-	   -dynamic $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib/libcgns.a \
-           -lSystem $USESTUBS $H5LINK -headerpad_max_install_names \
-           -install_name $INSTALLNAMEPATH/libcgns.${SO_EXT} \
-           -compatibility_version $CGNS_COMPATIBILITY_VERSION \
-           -current_version $CGNS_VERSION
+        $C_COMPILER -dynamiclib -o libcgns.${SO_EXT} lib/*.o \
+           -Wl,-headerpad_max_install_names \
+	   -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
+           -Wl,-install_name,$INSTALLNAMEPATH/libcgns.${SO_EXT} \
+           -Wl,-compatibility_version,$CGNS_COMPATIBILITY_VERSION \
+           -Wl,-current_version,$CGNS_VERSION -lSystem 
         if [[ $? != 0 ]] ; then
            warn "CGNS dynamic library creation failed.  Giving up"
            return 1
         fi
+        rm -f "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib/libcgns.${SO_EXT}"
         cp libcgns.${SO_EXT} "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib"
-        rm "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib/libcgns.a"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
