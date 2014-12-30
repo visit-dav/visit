@@ -74,6 +74,7 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Colleagues
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
+${VISIT_SOURCE_DIR}/engine/main
 ${VTK_INCLUDE_DIRS}
 )
 
@@ -171,6 +172,33 @@ avtplotter_ser
 avtview
 avtviswindow_ser
 avtwriter_ser
+lightweight_visit_vtk 
+visitcommon
+visit_vtk
+${ALL_THIRDPARTY_IO_LIB} 
+${VTK_EXTRA_LIBS}
+${MESA_LIBS}
+${GL_LIBS}
+${CMAKE_THREAD_LIBS} 
+${ZLIB_LIB}
+)
+
+ADD_EXECUTABLE(networkManagerExample networkManagerExample.C)
+VISIT_INSTALL_TARGETS(networkManagerExample)
+VISIT_TOOLS_ADD_FOLDER(networkManagerExample)
+
+TARGET_LINK_LIBRARIES(networkManagerExample
+${engine_ser_exe_IDatabase}
+${engine_ser_exe_EDatabase_ser}
+avtdatabase_ser
+avtdbatts
+avtfilters_ser
+avtpipeline_ser
+avtplotter_ser
+avtview
+avtviswindow_ser
+avtwriter_ser
+engine_ser
 lightweight_visit_vtk 
 visitcommon
 visit_vtk
