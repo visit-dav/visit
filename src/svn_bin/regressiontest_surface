@@ -69,11 +69,11 @@ userEmail=unknown
 case $user in
     bonnell)
         userNersc=bonnell
-        userEmail=bonnell2@llnl.gov
+        userEmail=biagas2@llnl.gov
         ;;
     kbonnell)
         userNersc=bonnell
-        userEmail=bonnell2@llnl.gov
+        userEmail=biagas2@llnl.gov
         ;;
     brugger)
         userNersc=brugger
