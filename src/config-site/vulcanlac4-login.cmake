@@ -31,6 +31,9 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ##
 VISIT_OPTION_DEFAULT(VISIT_USE_BOOST OFF TYPE BOOL)
 
+## Still need boost headers, point to third_party_builtin for now:
+SET(BOOST_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/bilib/boost_1_42_0)
+
 ##############################################################
 ##
 ## Database reader plugin support libraries

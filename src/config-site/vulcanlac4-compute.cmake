@@ -28,6 +28,8 @@ VISIT_OPTION_DEFAULT(VISIT_DISABLE_SELECT   ON)
 VISIT_OPTION_DEFAULT(VISIT_USE_NOSPIN_BCAST OFF)
 VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR       ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 ADD_DEFINITIONS(-DVISIT_BLUE_GENE_Q)
+## Still need boost headers, point to third_party_builtin for now:
+SET(BOOST_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/bilib/boost_1_42_0)
 
 ##
 ## Parallel Build Setup.
