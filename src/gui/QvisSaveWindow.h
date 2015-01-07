@@ -98,6 +98,9 @@ class QvisOpacitySlider;
 //   Brad Whitlock, Wed Aug 25 13:32:46 PDT 2010
 //   I moved some code into helper methods.
 //
+//   Kathleen Biagas, Wed Jan  7 12:39:12 PST 2015
+//   Added dismissOnSave flag, dismissAndSaveButtonClicked slot.
+//
 // ****************************************************************************
 
 class GUI_API QvisSaveWindow : public QvisPostableWindowObserver
@@ -138,6 +141,7 @@ protected slots:
     void saveWindow();
     void selectOutputDirectory();
     void saveButtonClicked();
+    void saveAndDismissButtonClicked();
     void forceMergeToggled(bool);
     void advancedMultiWinSaveToggled(bool);
     void processmwsWidthText();
@@ -153,6 +157,7 @@ protected slots:
 
 private:
     int currentWindow;
+    bool dismissOnSave;
 
     QCheckBox           *outputToCurrentDirectoryCheckBox;
     QLabel              *outputDirectoryLabel;
