@@ -2338,7 +2338,12 @@ class MakeMovie(object):
             # Determine the name of the movie template base class's file.
             prefix = ""
             if os.name == "nt":
-                prefix = sys.executable[:-7] + "resources" + self.slash
+                pos = string.find(sys.executable[:-7], "exe")
+                if pos != -1:
+                    # Development version
+                    prefix = sys.executable[:pos] + "resources" + self.slash
+                else:
+                    prefix = sys.executable[:-7] + "resources" + self.slash
             else:
                 pos = string.find(sys.argv[0], "exe" + self.slash + "cli")
                 if pos != -1:

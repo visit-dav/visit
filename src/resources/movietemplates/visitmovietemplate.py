@@ -1408,6 +1408,10 @@ class VisItMovieTemplate(object):
     #   Brad Whitlock, Thu Apr  4 11:35:01 PDT 2013
     #   Update for formatInfo changes.
     #
+    #   Kathleen Biagas, Wed Jan 7 15:39:22 PST 2015 
+    #   Call visit_composite directly, instead of visit -composite.  Also
+    #   removed Version args from the call.
+    #
     ###########################################################################
 
     def CompositeFrames(self, sequence_frames, movieFormats, percents):
@@ -1662,7 +1666,7 @@ class VisItMovieTemplate(object):
                         index = index + 1
                     f.close()
 
-                    command = "visit -composite -v %s %s %s" % (Version(), paramFile, outputName)
+                    command = "visit_composite %s %s" % (paramFile, outputName)
                     self.Debug(5, command)
                     os.system(command)
 
