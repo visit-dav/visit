@@ -78,7 +78,7 @@ SET_UP_THIRD_PARTY(UINTAH lib ${INCLUDE_TMP_DIR}
 #  CCA_Components_Solvers
 #  CCA_Components_SwitchingCriteria
   CCA_Ports
-  Core_Basis
+#  Core_Basis
   Core_Containers
   Core_DataArchive
   Core_Datatypes

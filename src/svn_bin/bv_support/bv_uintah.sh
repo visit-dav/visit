@@ -59,7 +59,7 @@ function bv_uintah_initialize_vars
 
 function bv_uintah_info
 {
-export UINTAH_VERSION=${UINTAH_VERSION:-"1.6.0beta"}
+export UINTAH_VERSION=${UINTAH_VERSION:-"1.6.0"}
 export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
 export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"1.6"}
 export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
@@ -289,7 +289,14 @@ function build_uintah
     #
     info "Installing UINTAH . . ."
 
-    mkdir $VISITDIR/uintah/ || error "Can't make UINTAH install dir."
+    if [[! -e $VISITDIR/uintah ]] ; then
+        mkdir $VISITDIR/uintah/ || error "Can't make UINTAH install dir."
+    fi
+
+    if [[-e $VISITDIR/uintah/$UINTAH_VERSION ]] ; then
+        rm -rf $VISITDIR/uintah/$UINTAH_VERSION || error "Can't remove old UINTAH install dir."
+    fi
+
     mkdir $VISITDIR/uintah/$UINTAH_VERSION/ || error "Can't make UINTAH install dir."
     mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH || error "Can't make UINTAH install dir."
     mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/lib || error "Can't make UINTAH install dir."
