@@ -84,6 +84,9 @@
 //   Brad Whitlock, Wed Apr  9 10:56:38 PDT 2008
 //   QString for caption, shortName.
 //
+//   Kathleen Biagas, Wed Jan  7 12:39:12 PST 2015
+//   Added dismissOnSave.
+//
 // ****************************************************************************
 
 QvisSaveWindow::QvisSaveWindow(
@@ -94,6 +97,7 @@ QvisSaveWindow::QvisSaveWindow(
 {
     saveWindowAtts = subj;
     currentWindow = 0;
+    dismissOnSave = true;
 }
 
 // ****************************************************************************
@@ -184,6 +188,9 @@ QvisSaveWindow::~QvisSaveWindow()
 //
 //   Brad Whitlock, Wed Aug 25 13:33:08 PDT 2010
 //   I moved some code into helper methods.
+//
+//   Kathleen Biagas, Wed Jan  7 12:43:15 PST 2015
+//   Added 'Save and Dismiss' button.
 //
 // ****************************************************************************
 
@@ -325,6 +332,11 @@ QvisSaveWindow::CreateWindowContents()
     connect(saveButton, SIGNAL(clicked()),
             this, SLOT(saveButtonClicked()));
     saveButtonLayout->addWidget(saveButton);
+
+    QPushButton *saveAndDismissButton = new QPushButton(tr("Save and Dismiss"), central);
+    connect(saveAndDismissButton, SIGNAL(clicked()),
+            this, SLOT(saveAndDismissButtonClicked()));
+    saveButtonLayout->addWidget(saveAndDismissButton);
     saveButtonLayout->addStretch(50);
 }
 
@@ -1881,12 +1893,14 @@ void QvisSaveWindow::imageTransparencyChanged(int val)
 // Purpose: 
 //   This is Qt slot function that is called when the Save button is clicked.
 //
-// Note:       Hides the window and saves the active vis window.
+// Note:       Saves the active vis window and may hide the window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jul 30 15:51:57 PST 2004
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jan  7 12:39:12 PST 2015
+//   Added dismissOnSave flag.
 //   
 // ****************************************************************************
 
@@ -1894,7 +1908,7 @@ void
 QvisSaveWindow::saveWindow()
 {
     Apply();
-    if(isVisible() && !posted())
+    if(isVisible() && !posted() && dismissOnSave)
         hide();
     GetViewerMethods()->SaveWindow();
 }
@@ -1953,6 +1967,8 @@ QvisSaveWindow::selectOutputDirectory()
 // Creation:   December 15, 2004 
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jan  7 12:39:12 PST 2015
+//   Added dismissOnSave flag.
 //
 // ****************************************************************************
 
@@ -1960,6 +1976,30 @@ void
 QvisSaveWindow::saveButtonClicked()
 {
     apply();
+    dismissOnSave = false;
+    saveWindow();
+}
+
+
+// ****************************************************************************
+// Method: QvisSaveWindow::saveAndDismissButtonClicked
+//
+// Purpose: 
+//   This is Qt slot function that is called when the saveAndDismis button
+//   is clicked. 
+//
+// Programmer: Kathleen Biagas 
+// Creation:   January 7, 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::saveAndDismissButtonClicked()
+{
+    apply();
+    dismissOnSave = true;
     saveWindow();
 }
 
