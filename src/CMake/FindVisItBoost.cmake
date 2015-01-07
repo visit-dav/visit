@@ -40,23 +40,20 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF(WIN32 AND BOOST_LIBNAMES_AFFIX_DLL)
-  SET_UP_THIRD_PARTY(BOOST lib include
-   boost_iostreams
-   boost_thread
-   boost_date_time
-   boost_filesystem
-   boost_system
-   boost_program_options
-    )
-ELSE()
-  SET_UP_THIRD_PARTY(BOOST lib include
-   boost_iostreams
-   boost_thread
-   boost_date_time
-   boost_filesystem
-   boost_system
-   boost_program_options
-    )
+SET(BOOST_LIBS boost_system)
 
+IF(NEKTAR++_FOUND)
+  SET(BOOST_LIBS ${BOOST_LIBS}
+   boost_iostreams
+   boost_thread
+   boost_date_time
+   boost_filesystem
+   boost_system
+   boost_program_options)
+ENDIF()
+
+IF(WIN32 AND BOOST_LIBNAMES_AFFIX_DLL)
+  SET_UP_THIRD_PARTY(BOOST lib include ${BOOST_LIBS} )
+ELSE()
+  SET_UP_THIRD_PARTY(BOOST lib include ${BOOST_LIBS} )
 ENDIF()
