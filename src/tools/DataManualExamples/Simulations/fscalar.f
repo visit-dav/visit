@@ -440,6 +440,16 @@ c as there are nodes. Send back DOUBLE PRECISION data.
       visitgetvariable = h
       end
 
+c---------------------------------------------------------------------------
+c visitgetmixedvariable
+c---------------------------------------------------------------------------
+      integer function visitgetmixedvariable(domain, name, lname)
+      implicit none
+      character*8 name
+      integer     domain, lname
+      include "visitfortransimV2interface.inc"
+      visitgetmixedvariable = VISIT_INVALID_HANDLE
+      end
 
 c---------------------------------------------------------------------------
 c visitgetcurve

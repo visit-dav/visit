@@ -48,6 +48,7 @@ visit_handle VisItGetMetaData(void *);
 visit_handle VisItGetMesh(int domain, const char *name, void *);
 visit_handle VisItGetMaterial(int domain, const char *name, void *);
 visit_handle VisItGetVariable(int domain, const char *name, void *);
+visit_handle VisItGetMixedVariable(int domain, const char *name, void *);
 visit_handle VisItGetCurve(const char *name, void *);
 visit_handle VisItGetDomainList(const char *, void *);
 visit_handle VisItGetDomainBoundaries(const char *, void *);
@@ -160,6 +161,7 @@ f_visit_internal_InstallCallbacks(void)
     VisItSetGetMesh(VisItGetMesh, NULL);
     VisItSetGetMaterial(VisItGetMaterial, NULL);
     VisItSetGetVariable(VisItGetVariable, NULL);
+    VisItSetGetMixedVariable(VisItGetMixedVariable, NULL);
     VisItSetGetCurve(VisItGetCurve, NULL);
     VisItSetGetDomainList(VisItGetDomainList, NULL);
     VisItSetGetDomainBoundaries(VisItGetDomainBoundaries, NULL);
@@ -1181,6 +1183,7 @@ F_VISITRESTORESESSION(VISIT_F77STRING filename, int *lfilename)
 #define F_VISITGETMETADATA      F77_ID(visitgetmetadata_,visitgetmetadata,VISITGETMETADATA)
 #define F_VISITGETMESH          F77_ID(visitgetmesh_,visitgetmesh,VISITGETMESH)
 #define F_VISITGETVARIABLE      F77_ID(visitgetvariable_,visitgetvariable,VISITGETVARIABLE)
+#define F_VISITGETMIXEDVARIABLE F77_ID(visitgetmixedvariable_,visitgetmixedvariable,VISITGETMIXEDVARIABLE)
 #define F_VISITGETMATERIAL      F77_ID(visitgetmaterial_,visitgetmaterial,VISITGETMATERIAL)
 #define F_VISITGETCURVE         F77_ID(visitgetcurve_,visitgetcurve,VISITGETCURVE)
 #define F_VISITGETDOMAINLIST    F77_ID(visitgetdomainlist_,visitgetdomainlist,VISITGETDOMAINLIST)
@@ -1191,6 +1194,7 @@ extern int F_VISITACTIVATETIMESTEP(void);
 extern int F_VISITGETMETADATA(void);
 extern int F_VISITGETMESH(int *, const char *, int *);
 extern int F_VISITGETVARIABLE(int *, const char *, int *);
+extern int F_VISITGETMIXEDVARIABLE(int *, const char *, int *);
 extern int F_VISITGETMATERIAL(int *, const char *, int *);
 extern int F_VISITGETCURVE(const char *, int *);
 extern int F_VISITGETDOMAINLIST(const char *, int *);
@@ -1319,6 +1323,31 @@ VisItGetVariable(int domain, const char *name, void *cbdata)
 {
     int lname = strlen(name);
     return F_VISITGETVARIABLE(&domain, name, &lname);
+}
+
+/******************************************************************************
+ * Function: VisItGetMixedVariable
+ *
+ * Purpose:   Calls FORTRAN "visitgetscalar" to populate a scalar object.
+ *
+ * Arguments:
+ *   domain : The domain for which we want the scalar.
+ *   name   : The name of the scalar to return.
+ *   var    : The variable object we're filling in.
+ *   cbdata : Programmer callback data.
+ *
+ * Programmer: Jim Eliot
+ * Date:       Mon Dec 01 08:46:15 GMT 2014
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+visit_handle
+VisItGetMixedVariable(int domain, const char *name, void *cbdata)
+{
+    int lname = strlen(name);
+    return F_VISITGETMIXEDVARIABLE(&domain, name, &lname);
 }
 
 /******************************************************************************
