@@ -297,7 +297,7 @@ QvisDBOptionsDialog::helpClicked()
     QvisDBOptionsHelpWindow *optshelp = new QvisDBOptionsHelpWindow(atts, NULL);
     QString title = this->windowTitle();
     if (sscanf(title.toStdString().c_str(), "Default file opening options for %s reader", format) != 1)
-        if (sscanf(title.toStdString().c_str(), "Export options for %1 writer", format) != 1)
+        if (sscanf(title.toStdString().c_str(), "Export options for %s writer", format) != 1)
             strncpy(format, "unknown", sizeof(format));
     QString caption = tr("Options help for %1 plugin").arg(format);
     optshelp->setWindowTitle(caption);

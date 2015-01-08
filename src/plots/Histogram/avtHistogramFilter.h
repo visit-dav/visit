@@ -85,6 +85,8 @@
 //    Eric Brugger, Tue Aug 19 10:28:00 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Mark C. Miller, Thu Jan  8 14:27:03 PST 2015
+//    Adjusted to use doubles everywhere.
 // ****************************************************************************
 
 class avtHistogramFilter : public avtDataTreeIterator
@@ -101,10 +103,10 @@ class avtHistogramFilter : public avtDataTreeIterator
    
   protected:
     HistogramAttributes       atts;
-    float                    *bins;
-    float                     binStep, logBinStep, sqrtBinStep;
+    double                   *bins;
+    double                    binStep, logBinStep, sqrtBinStep;
     double                    dataValueRange[2];
-    float                     workingRange[2];
+    double                    workingRange[2];
     double                    logWorkingRange[2], sqrtWorkingRange[2];
     int                       workingNumBins;
 
@@ -120,7 +122,7 @@ class avtHistogramFilter : public avtDataTreeIterator
     virtual void              VariableExecute(vtkDataSet *);
     virtual void              ArrayVarExecute(vtkDataSet *, int);
 
-    virtual int               ComputeBinIndex( const float &value ) const;
+    virtual int               ComputeBinIndex( const double &value ) const;
     virtual void              ScaleBins();
     virtual void              SetWorkingMin( double dataMin );
     virtual double            GetWorkingMin() const;

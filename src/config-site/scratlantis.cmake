@@ -25,6 +25,11 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
 VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /Users/miller86/installs/openmpi/1.6.4/i386-apple-darwin12_gcc-4.2/bin/mpicc TYPE FILEPATH)
 
+##
+## VisIt Boost Option.
+##
+VISIT_OPTION_DEFAULT(VISIT_USE_BOOST ON TYPE BOOL)
+
 ##############################################################
 ##
 ## Database reader plugin support libraries
