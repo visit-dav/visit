@@ -139,6 +139,8 @@ avtHistogramFilter::SetAttributes(const HistogramAttributes &h_atts)
 //    Hank Childs, Wed Mar  5 09:54:20 PST 2008
 //    Don't get the data range if the min and max are already specified.
 //
+//    Mark C. Miller, Thu Jan  8 14:27:03 PST 2015
+//    Adjusted to use doubles everywhere.
 // ****************************************************************************
 
 void
@@ -159,7 +161,7 @@ avtHistogramFilter::PreExecute(void)
         
         if (bins != NULL)
             delete [] bins;
-        bins = new float[workingNumBins];
+        bins = new double[workingNumBins];
         for (int i = 0 ; i < workingNumBins ; i++)
             bins[i] = 0.;
     }
@@ -226,6 +228,8 @@ avtHistogramFilter::PreExecute(void)
 //    Added code to change the y-axis units to "Probability" if the histogram
 //    has been normalized.
 //
+//    Mark C. Miller, Thu Jan  8 14:27:03 PST 2015
+//    Adjusted to use doubles everywhere.
 // ****************************************************************************
 
 void
@@ -251,16 +255,16 @@ avtHistogramFilter::PostExecute(void)
         }
         if (bins == NULL)
         {
-            bins = new float[workingNumBins];
+            bins = new double[workingNumBins];
             for (i = 0 ; i < workingNumBins ; i++)
                 bins[i] = 0.;
         }
         workingRange[0] = 0.;
-        workingRange[1] = (float)workingNumBins;
+        workingRange[1] = (double)workingNumBins;
     }
 
-    float *newBins = new float[workingNumBins];
-    SumFloatArrayAcrossAllProcessors(bins, newBins, workingNumBins);
+    double *newBins = new double[workingNumBins];
+    SumDoubleArrayAcrossAllProcessors(bins, newBins, workingNumBins);
     for (i = 0 ; i < workingNumBins ; i++)
         bins[i] = newBins[i];
 
@@ -291,10 +295,10 @@ avtHistogramFilter::PostExecute(void)
     {
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(workingNumBins);
-        float jump = (GetWorkingMax() - GetWorkingMin()) / (workingNumBins);
+        double jump = (GetWorkingMax() - GetWorkingMin()) / (workingNumBins);
         for (i = 0 ; i < workingNumBins ; i++)
         {
-            float pt[3];
+            double pt[3];
             if (spaceBins)
                 pt[0] = (ranges[i]+ranges[i+1])/2.;
             else
@@ -321,10 +325,10 @@ avtHistogramFilter::PostExecute(void)
     {
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(4*workingNumBins);
-        float jump = (GetWorkingMax() - GetWorkingMin()) / (workingNumBins);
+        double jump = (GetWorkingMax() - GetWorkingMin()) / (workingNumBins);
 
         int ptIndex = 0;
-        float pt[3] = { 0., 0., 0. };
+        double pt[3] = { 0., 0., 0. };
 
         for (i = 0 ; i < workingNumBins ; i++)
         {
@@ -411,8 +415,8 @@ avtHistogramFilter::PostExecute(void)
     //
     // Set up the extents of the output.
     //
-    float low = +FLT_MAX;
-    float hi  = -FLT_MAX;
+    double low = +DBL_MAX;
+    double hi  = -DBL_MAX;
     for (i = 0 ; i < workingNumBins ; i++)
     {
         low = (low < bins[i] ? low : bins[i]);
@@ -649,6 +653,9 @@ avtHistogramFilter::ExecuteData(avtDataRepresentation *inDR)
 //    David Camp, Tue Mar 12 13:19:37 PDT 2013
 //    Made function thread safe.
 //
+//    Mark C. Miller, Thu Jan  8 14:27:03 PST 2015
+//    Adjusted to use doubles everywhere.
+//
 // ****************************************************************************
 
 void
@@ -673,10 +680,10 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
             ghosts = g->GetPointer(0);
     }
 
-    float *threadBins;
+    double *threadBins;
 #if defined(VISIT_THREADS)
-    threadBins = new float[workingNumBins];
-    memset( threadBins, 0, sizeof(float)*workingNumBins );
+    threadBins = new double[workingNumBins];
+    memset( threadBins, 0, sizeof(double)*workingNumBins );
 #else
     threadBins = bins;
 #endif // VISIT_THREADS
@@ -689,7 +696,7 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
     {
         if (ghosts != NULL && ghosts[i] != '\0')
             continue;
-        float val = bin_arr->GetTuple1(i);
+        double val = bin_arr->GetTuple1(i);
         int index = ComputeBinIndex( val );
         if ( index < 0 )
             continue;
@@ -733,6 +740,8 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
 //    David Camp, Tue Mar 12 13:19:37 PDT 2013
 //    Made function thread safe.
 //
+//    Mark C. Miller, Thu Jan  8 14:27:03 PST 2015
+//    Adjusted to use doubles everywhere.
 // ****************************************************************************
 
 void
@@ -799,10 +808,10 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
     //
     int nvals = bin_arr->GetNumberOfTuples();
     
-    float *threadBins;
+    double *threadBins;
 #if defined(VISIT_THREADS)
-    threadBins = new float[workingNumBins];
-    memset( threadBins, 0, sizeof(float)*workingNumBins );
+    threadBins = new double[workingNumBins];
+    memset( threadBins, 0, sizeof(double)*workingNumBins );
 #else
     threadBins = bins;
 #endif // VISIT_THREADS
@@ -811,13 +820,13 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
     {
         if (ghosts != NULL && ghosts[i] != '\0')
             continue;
-        float val = bin_arr->GetTuple1(i);
+        double val = bin_arr->GetTuple1(i);
         int index = ComputeBinIndex( val );
         if ( index < 0 )
             continue;
         if (index >= workingNumBins)
             index = workingNumBins-1;
-        float amount = amount_arr->GetTuple1(i);
+        double amount = amount_arr->GetTuple1(i);
         threadBins[index] += amount;
     }
 
@@ -850,6 +859,8 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
 //    David Camp, Tue Mar 12 13:19:37 PDT 2013
 //    Made function thread safe.
 //
+//    Mark C. Miller, Thu Jan  8 14:27:03 PST 2015
+//    Adjusted to use doubles everywhere.
 // ****************************************************************************
 
 void
@@ -941,10 +952,10 @@ avtHistogramFilter::VariableExecute(vtkDataSet *inDS)
             ghosts = g->GetPointer(0);
     }
 
-    float *threadBins;
+    double *threadBins;
 #if defined(VISIT_THREADS)
-    threadBins = new float[workingNumBins];
-    memset( threadBins, 0, sizeof(float)*workingNumBins );
+    threadBins = new double[workingNumBins];
+    memset( threadBins, 0, sizeof(double)*workingNumBins );
 #else
     threadBins = bins;
 #endif // VISIT_THREADS
@@ -956,13 +967,13 @@ avtHistogramFilter::VariableExecute(vtkDataSet *inDS)
     {
         if (ghosts != NULL && ghosts[i] != '\0')
             continue;
-        float val = histIndexVar->GetTuple1(i);
+        double val = histIndexVar->GetTuple1(i);
         int index = ComputeBinIndex( val );
         if ( index < 0 )
             continue;
         if (index >= workingNumBins)
             index = workingNumBins-1;
-        float amount = weightVar->GetTuple1(i);
+        double amount = weightVar->GetTuple1(i);
         threadBins[index] += amount;
     }
 
@@ -996,7 +1007,9 @@ avtHistogramFilter::VariableExecute(vtkDataSet *inDS)
 //    David Camp, Tue Mar 12 13:19:37 PDT 2013
 //    Hank and I look at this function. It should be thread safe because only
 //    one data block should have the zone in it.
-//    
+//
+//    Mark C. Miller, Thu Jan  8 14:27:03 PST 2015
+//    Adjusted to use doubles everywhere.
 // ****************************************************************************
 
 void
@@ -1047,7 +1060,7 @@ avtHistogramFilter::ArrayVarExecute(vtkDataSet *inDS, int chunk)
             if (bins != NULL)
                 delete [] bins;
 
-            bins = new float[workingNumBins];
+            bins = new double[workingNumBins];
             for (int i = 0 ; i < workingNumBins ; i++)
             {
                 bins[i] = vals[i];
@@ -1163,10 +1176,13 @@ avtHistogramFilter::ModifyContract(avtContract_p spec)
 //  Programmer: Dave Pugmire
 //  Creation:   November 01, 2007
 //
+//  Modifications:
+//    Mark C. Miller, Thu Jan  8 14:27:03 PST 2015
+//    Adjusted to use doubles everywhere.
 // ****************************************************************************
 
 int
-avtHistogramFilter::ComputeBinIndex( const float &value ) const
+avtHistogramFilter::ComputeBinIndex( const double &value ) const
 {
     // Value out of bounds, just return.
     if ( value < workingRange[0] || value > workingRange[1] )
@@ -1183,14 +1199,14 @@ avtHistogramFilter::ComputeBinIndex( const float &value ) const
     }
     else if ( atts.GetDataScale() == HistogramAttributes::SquareRoot )
     {
-        float sign = (value < 0 ? -1.0 : 1.0);
-        float x = sign * sqrt( fabs(value) );
+        double sign = (value < 0 ? -1.0 : 1.0);
+        double x = sign * sqrt( fabs(value) );
         index = (int)((x - sqrtWorkingRange[0]) / sqrtBinStep);        
     }
     else if ( atts.GetDataScale() == HistogramAttributes::Log )
     {
-        float sign = (value < 0 ? -1.0 : 1.0);
-        float x = sign * log10( fabs( value ) + 1.0 );
+        double sign = (value < 0 ? -1.0 : 1.0);
+        double x = sign * log10( fabs( value ) + 1.0 );
         index = (int)((x - logWorkingRange[0]) / logBinStep);
     }
 
@@ -1211,6 +1227,8 @@ avtHistogramFilter::ComputeBinIndex( const float &value ) const
 //    Added code to compute CDF if desired and to normalize histogram
 //    if specified by the attributes.
 //
+//    Mark C. Miller, Thu Jan  8 14:27:03 PST 2015
+//    Adjusted to use doubles everywhere.
 // ****************************************************************************
 
 void
@@ -1220,7 +1238,7 @@ avtHistogramFilter::ScaleBins()
     {
         for ( int i = 0; i < workingNumBins; i++ )
         {
-            float x = bins[i];
+            double x = bins[i];
             if ( x > 0.0 )
                 x = log10(x);
             bins[i] = x;
@@ -1267,6 +1285,9 @@ avtHistogramFilter::ScaleBins()
 //  Programmer: Dave Pugmire
 //  Creation:   November 01, 2007
 //
+//  Modifications:
+//    Mark C. Miller, Thu Jan  8 14:27:03 PST 2015
+//    Adjusted to use doubles everywhere.
 // ****************************************************************************
 
 void
@@ -1274,7 +1295,7 @@ avtHistogramFilter::SetWorkingMin( double dataMin )
 {
     workingRange[0] = dataMin;
     double abs_dataMin = fabs( dataMin );
-    float sign = (dataMin < 0 ? -1.0 : 1.0);
+    double sign = (dataMin < 0 ? -1.0 : 1.0);
     logWorkingRange[0] = sign * log10( abs_dataMin + 1.0 );
     sqrtWorkingRange[0] = sign * sqrt( abs_dataMin );
 }
@@ -1319,6 +1340,9 @@ avtHistogramFilter::GetWorkingMin() const
 //  Programmer: Dave Pugmire
 //  Creation:   November 01, 2007
 //
+//  Modifications:
+//    Mark C. Miller, Thu Jan  8 14:27:03 PST 2015
+//    Adjusted to use doubles everywhere.
 // ****************************************************************************
 
 void
@@ -1327,7 +1351,7 @@ avtHistogramFilter::SetWorkingMax( double dataMax )
     workingRange[1] = dataMax;
     double abs_dataMax = fabs( dataMax );
 
-    float sign = (dataMax < 0 ? -1.0 : 1.0);
+    double sign = (dataMax < 0 ? -1.0 : 1.0);
     logWorkingRange[1] = sign * log10( abs_dataMax + 1.0 );
     sqrtWorkingRange[1] = sign * sqrt( abs_dataMax );
 }
