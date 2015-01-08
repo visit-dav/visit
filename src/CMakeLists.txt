@@ -1066,9 +1066,9 @@ ENDIF(BOOST_FOUND)
 # WILL STILL COMPILE.
 
 # Set the boost directory if requested otherwise use the visit built in.
-IF(NOT  BOOST_INCLUDE_DIR)
+IF(NOT BOOST_INCLUDE_DIR)
     SET(BOOST_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/bilib/boost_1_42_0 CACHE PATH "Path to boost lib")
-ENDIF(BOOST_INCLUDE_DIR)
+ENDIF(NOT BOOST_INCLUDE_DIR)
 
 
 # Set BOOST_USABLE_PARADIS if boost 1.36.0 or later is found. ParaDIS
