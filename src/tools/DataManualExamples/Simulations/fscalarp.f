@@ -451,6 +451,17 @@ c are nodes. Send back REAL data.
       end
 
 c---------------------------------------------------------------------------
+c visitgetmixedvariable
+c---------------------------------------------------------------------------
+      integer function visitgetmixedvariable(domain, name, lname)
+      implicit none
+      character*8 name
+      integer     domain, lname
+      include "visitfortransimV2interface.inc"
+      visitgetmixedvariable = VISIT_INVALID_HANDLE
+      end
+
+c---------------------------------------------------------------------------
 c visitgetcurve
 c---------------------------------------------------------------------------
       integer function visitgetcurve(handle, name, lname)

@@ -84,6 +84,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Libsim's plot and operator creation functions have been enhanced to use the <i>viewercore</i> library so that they can faithfully set up plots as the viewer would do it. This ensures that the functions work using tried and true VisIt code. Internally within libsim, the viewercore library uses VisIt engine components directly to produce the data needed by the plots.</li>
   <li>VisIt's network communication was enhanced to provide an optional fixed size buffer socket communication mode. This option enables VisIt to connect to machines which expect fixed size send/recv buffers.</li>
   <li>A global preference was added that tells VisIt to automatically remove duplicate nodes from fully disconnected unstructured grids.  This preference is off by default, and can be changed in the gui's Options->Preferences window or via 'SetRemoveGlobalNodes(0|1) via the cli.  This preferences is saved with other settings. This new preferences subsumes the behavior introduced in 2.8 series where the VTK reader would perform this duplicate node removal for .vtu files without user intervention.</li>
+  <li>Libsim's Fortran interface has been modified to include the VisItGetMixedVariable function. This change will require users of the Fortran interface to include the VisItGetMixedVariable stub function in their code to enable building. See the Fortran simulation examples in DataManualExamples for reference.</li>
   <li></li>
 </ul>
 
