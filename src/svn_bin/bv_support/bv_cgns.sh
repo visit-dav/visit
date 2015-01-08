@@ -97,7 +97,7 @@ function bv_cgns_dry_run
   fi
 }
 
-function apply_cgns_321_mavericks_patch
+function apply_cgns_321_darwin_patch
 {
    patch -p0 << \EOF
 diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
@@ -164,10 +164,8 @@ EOF
 function apply_cgns_321_patch
 {
    if [[ "$OPSYS" == "Darwin" ]] ; then
-      if [[ `sw_vers -productVersion` == 10.9.[0-9]* ]] ; then
-         info "Applying OS X 10.9 Mavericks patch . . ."
-         apply_cgns_321_mavericks_patch
-      fi
+       info "Applying OS X patch . . ."
+       apply_cgns_321_darwin_patch
    fi
 
    return $?
