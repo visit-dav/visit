@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # You should do this in both the src and data directories. You might also
-# just do a find over all file names when you are finished for "2000 - 2011"
+# just do a find over all file names when you are finished for "2000 - 2014"
 # to check if you missed any files.
 #
 find -type f -name "*.c" -exec sed -i "s/Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/" {} \; -print
@@ -16,3 +16,5 @@ find -type f -name "*.py" -exec sed -i "s/Copyright (c) 2000 - 2014, Lawrence Li
 find -type f -name "*.sh" -exec sed -i "s/Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/" {} \; -print
 find -type f -name "*.cxx" -exec sed -i "s/Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/" {} \; -print
 find -type f -name "*.hxx" -exec sed -i "s/Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.cpp" -exec sed -i "s/Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.mm" -exec sed -i "s/Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/" {} \; -print
