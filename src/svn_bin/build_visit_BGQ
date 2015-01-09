@@ -428,7 +428,7 @@ function build_cmake
     banner "Building CMake"
     env BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --no-boost --static --no-visit $SVN $TARBALL\
+        --console --static --no-visit $SVN $TARBALL\
         --no-thirdparty --cmake\
         --log-file building_cmake.txt \
         --arch "${ARCH}" \
@@ -477,7 +477,7 @@ function build_zlib_BGQ
     banner "Building zlib (Compute Node)"
     $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --no-boost --static --no-visit $SVN $TARBALL --engine-only \
+        --console --static --no-visit $SVN $TARBALL --engine-only \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
         --prefix "${PREFIX}" \
@@ -552,7 +552,7 @@ function build_vtk_BGQ
     banner "Building VTK (Compute Node)"
     env VTK_EXTRA_OPTIONS="${vopts}" C_COMPILER=$BG_CC BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --no-boost --static --no-visit $SVN $TARBALL --engine-only \
+        --console --static --no-visit $SVN $TARBALL --engine-only \
         --no-thirdparty --cmake --vtk \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
@@ -589,7 +589,7 @@ function build_icet_BGQ
     banner "Building Ice-T (Compute Node)"
     env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --no-boost --static --no-visit $SVN $TARBALL --engine-only \
+        --console --static --no-visit $SVN $TARBALL --engine-only \
         --no-thirdparty --cmake --icet \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
@@ -663,7 +663,7 @@ function build_for_compute_node
     banner "Building I/O libraries (Compute Node)"
     env SILO_EXTRA_OPTIONS="--disable-browser --disable-hzip --disable-fpzip" BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --no-boost --static --no-visit $SVN $TARBALL --engine-only \
+        --console --static --no-visit $SVN $TARBALL --engine-only \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
         --prefix "${PREFIX}" \
@@ -689,7 +689,7 @@ function build_for_compute_node
     banner "Building VisIt (Compute Node)"
     env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --no-boost --static $NO_VISIT $SVN $TARBALL --engine-only\
+        --console --static $NO_VISIT $SVN $TARBALL --engine-only\
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
         --prefix "${PREFIX}" \
@@ -734,7 +734,7 @@ function build_for_login_node
     banner "Building Dependencies (Login Node)"
     $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --no-boost --static --no-visit $SVN $TARBALL --server-components-only \
+        --console --static --no-visit $SVN $TARBALL --server-components-only \
         --log-file login_node.txt \
         --arch $ARCH \
         --prefix "${PREFIX}" \
@@ -755,7 +755,7 @@ function build_for_login_node
     banner "Building VisIt (Login Node)"
     $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --no-boost --static $NO_VISIT $SVN $TARBALL --server-components-only \
+        --console --static $NO_VISIT $SVN $TARBALL --server-components-only \
         --log-file login_node.txt \
         --arch $ARCH \
         --prefix "${PREFIX}" \
