@@ -28,7 +28,7 @@ BG_MPI_C_OPT_FLAGS=""
 BG_MPI_CXX_OPT_FLAGS=""
 BG_MPI_CXX=mpixlC
 
-BUILD_MODE="Release"
+BUILD_MODE="Debug"
 CC=gcc
 C_OPT_FLAGS=""
 CXX=g++
