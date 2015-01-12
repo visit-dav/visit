@@ -4,6 +4,7 @@
 #include <DatabasePluginManager.h>
 #include <SaveWindowAttributes.h>
 
+#include <avtContourFilter.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
 #include <avtFileWriter.h>
@@ -95,25 +96,23 @@ main(int argc, char *argv[])
     avtLinearTransformFilter *filter = new avtLinearTransformFilter;
     filter->SetInput(dob);
     LinearTransformAttributes atts;
-    atts.SetM00(2.); atts.SetM01(0.); atts.SetM02(0.); atts.SetM03(0.);
-    atts.SetM10(0.); atts.SetM11(4.); atts.SetM12(0.); atts.SetM13(0.);
-    atts.SetM20(0.); atts.SetM21(0.); atts.SetM22(1.); atts.SetM23(0.);
-    atts.SetM30(0.); atts.SetM31(0.); atts.SetM32(0.); atts.SetM33(1.);
+    atts.SetM00(0.5); atts.SetM01(0.);  atts.SetM02(0.); atts.SetM03(0.);
+    atts.SetM10(0.);  atts.SetM11(0.5); atts.SetM12(0.); atts.SetM13(0.);
+    atts.SetM20(0.);  atts.SetM21(0.);  atts.SetM22(1.); atts.SetM23(0.);
+    atts.SetM30(0.);  atts.SetM31(0.);  atts.SetM32(0.); atts.SetM33(1.);
     filter->SetAtts(&atts);
     avtDataObject_p output = filter->GetOutput();
 
     //
-    // Apply a second linear transform.
+    // Apply a contour filter.
     //
-    cerr << "Applying a second linear transform." << endl;
-    avtLinearTransformFilter *filter2 = new avtLinearTransformFilter;
+    cerr << "Applying a contour filter." << endl;
+    ContourOpAttributes atts2;
+    doubleVector levels;
+    levels.push_back(0.5);
+    atts2.SetContourPercent(levels);
+    avtContourFilter *filter2 = new avtContourFilter(atts2);
     filter2->SetInput(output);
-    LinearTransformAttributes atts2;
-    atts2.SetM00(3.); atts2.SetM01(0.); atts2.SetM02(0.); atts2.SetM03(0.);
-    atts2.SetM10(0.); atts2.SetM11(2.); atts2.SetM12(0.); atts2.SetM13(0.);
-    atts2.SetM20(0.); atts2.SetM21(0.); atts2.SetM22(1.); atts2.SetM23(0.);
-    atts2.SetM30(0.); atts2.SetM31(0.); atts2.SetM32(0.); atts2.SetM33(1.);
-    filter2->SetAtts(&atts2);
     avtDataObject_p output2 = filter2->GetOutput();
 
     //
@@ -123,6 +122,16 @@ main(int argc, char *argv[])
     avtVariablePointGlyphMapper *mapper = new avtVariablePointGlyphMapper;
     avtLookupTable *LUT = new avtLookupTable;
     mapper->SetLookupTable(LUT->GetLookupTable());
+    mapper->SetMin(0.);
+    mapper->SetMax(1.);
+    mapper->SetLineWidth(LW_0);
+    mapper->SetLineStyle(SOLID);
+    mapper->SetPointSize(5.);
+    // The following 2 lines are necessary to get an image rendered on
+    // LLNL clusters because of nvidia driver bug that affects texture
+    // mapping.
+    mapper->SetColorTexturingFlag(false);
+    mapper->SetColorTexturingFlagAllowed(false);
 
     avtOriginatingSource *src = output2->GetOriginatingSource();
     avtContract_p contract = new avtContract(src->GetFullDataRequest(), 0);
