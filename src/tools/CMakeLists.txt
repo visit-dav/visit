@@ -125,16 +125,9 @@ ENDIF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
 # These do not need to be built:
 # antialiased_shadows
 # avt_do_add
-# avtprep
 # clidriver
-# curv3dprep
 # doxygenate
 # escan
 # surfcomp
 # vtk_debug_parser
-
-# These should be removed because they are obsolete:
-# windowmaker
-# mpeg_encode
-
 
