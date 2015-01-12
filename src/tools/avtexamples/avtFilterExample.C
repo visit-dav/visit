@@ -2,7 +2,9 @@
 
 #include <DatabasePluginInfo.h>
 #include <DatabasePluginManager.h>
+#include <GlobalAttributes.h>
 
+#include <avtCallback.h>
 #include <avtContourFilter.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
@@ -38,6 +40,11 @@ main(int argc, char *argv[])
     cerr << "Initializing VisIt." << endl;
     VisItInit::SetComponentName("engine");
     VisItInit::Initialize(argc, argv);
+
+    //
+    // Turn on EAVL.
+    //
+    avtCallback::SetBackendType(GlobalAttributes::EAVL);
 
     //
     // Create the database plugin manager.
