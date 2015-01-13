@@ -54,6 +54,10 @@
 #   Eric Brugger, Wed Oct 29 08:04:01 PDT 2014
 #   I modified the script to use surface.
 #
+#   Eric Brugger, Tue Jan 13 14:09:04 PST 2015
+#   I modified the script to use the account views for submitting the batch
+#   job.
+#
 
 
 #
@@ -386,5 +390,5 @@ chmod 750 $testHost
 if test "$testHost" = "surface" ; then
     scp surface surface:surface_testit
     subTag=`date +%Y-%m-%d-%H:%M`
-    ssh surface "msub -l nodes=1:ppn=12 -l gres=ignore -l walltime=12:00:00 -o surface_testit_$subTag.out -q pbatch -A bdivp -z ./surface_testit"
+    ssh surface "msub -l nodes=1:ppn=12 -l gres=ignore -l walltime=12:00:00 -o surface_testit_$subTag.out -q pbatch -A views -z ./surface_testit"
 fi
