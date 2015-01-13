@@ -177,9 +177,9 @@ ImageObject::Write(const char *filename, const char *format)
             vtkImageData *image = vtkImageData::New();
             image->SetDimensions(w,h,1);
             image->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
-            for (unsigned int x = 0; x < w; ++x)
+            for (int x = 0; x < w; ++x)
             {
-                for (unsigned int y = 0; y < h; ++y)
+                for (int y = 0; y < h; ++y)
                 {
                 unsigned char *ip = static_cast<unsigned char*>(image->GetScalarPointer(x, h-y-1, 0));
                 unsigned char *P = Pixel(x,y);
