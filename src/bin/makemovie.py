@@ -2634,6 +2634,9 @@ class MakeMovie(object):
     #   Brad Whitlock, Wed Apr  3 16:30:39 PDT 2013
     #   Rename to EncodeMPEGMovie_old and remove ffmpeg code.
     #
+    #   Kathleen Biagas, Tue Jan 13 11:00:19 PST 2015
+    #   Use mpeg2encode directly (instead of visit -mpeg2encode)
+    #
     ###########################################################################
 
     def EncodeMPEGMovie_old(self, moviename, imageFormatString, xres, yres):
@@ -2737,7 +2740,7 @@ class MakeMovie(object):
             f.close();
             # Create the movie
             if (sys.platform != "win32"):
-                command = "visit -v %s -mpeg2encode %s %s" % (Version(), paramFile, absMovieName)
+                command = "mpeg2encode %s %s" % (paramFile, absMovieName)
             else:
                 command = "mpeg2encode.exe "  + '"' + paramFile + '" "' + absMovieName + '"'
             self.Debug(1, command)

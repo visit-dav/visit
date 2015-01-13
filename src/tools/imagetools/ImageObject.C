@@ -39,6 +39,15 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <vtkImageData.h>
+#include <vtkPNGWriter.h>
+#include <vtkBMPWriter.h>
+#include <vtkJPEGWriter.h>
+#include <vtkVisItTIFFWriter.h>
+#include <vtkPPMWriter.h>
+#include <vtkRGBWriter.h>
+#include <vtkPNGWriter.h>
+
 // ****************************************************************************
 // Method: ImageObject::ImageObject
 //
@@ -112,6 +121,7 @@ ImageObject::~ImageObject()
 //
 // Arguments:
 //   filename : The name of the file to write.
+//   format   : <optional> The format to write.
 //
 // Returns:    True on success; False otherwise.
 //
@@ -122,34 +132,85 @@ ImageObject::~ImageObject()
 // Creation:   Wed Oct 11 09:03:14 PDT 2006
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Mon Jan 12 16:36:30 PST 2015
+//    Add 'format' argument. Use VTK to write non-ppm formats.
+//
 // ****************************************************************************
 
 bool
-ImageObject::Write(const char *filename)
+ImageObject::Write(const char *filename, const char *format)
 {
     if(depth != 3)
         return false;
 
-    // Check the extension.
-    bool retval = true;
-    //int len = (int) strlen(filename);
-    //int writeType = 0;
-    //if(len > 4)
-    //{
-        //const char *ext = filename + len - 4;
-        //if(strcmp(ext, ".ppm") == 0)
-        //    writeType = 1;
-    //}
 
-    FILE *ppm = fopen(filename, "wb");
-    retval = (ppm != NULL);
-    if(ppm)
+    bool retval = false;
+
+    // Check the requested extension.
+    if (format && strcmp(format, "ppm") != 0)
     {
-        // Figure out the header and write it to the file.
-        fprintf(ppm, "P6\n%d %d\n255\n", w, h);
-        fwrite(pixels, 3 * w * h, 1, ppm);
-        fclose(ppm);
+        vtkImageWriter *writer = NULL;
+        if(strcmp(format, "tiff") != 0)
+        {
+            writer = vtkVisItTIFFWriter::New();
+        }
+        else if(strcmp(format, "jpeg") != 0)
+        {
+            writer = vtkJPEGWriter::New();
+            // quality? progressive?
+        }
+        else if(strcmp(format, "bmp") != 0)
+        {
+            writer = vtkBMPWriter::New();
+        }
+        else if(strcmp(format, "rgb") != 0)
+        {
+            writer = vtkRGBWriter::New();
+        }
+        else if(strcmp(format, "png") != 0)
+        {
+            writer = vtkPNGWriter::New();
+        }
+        if (writer != NULL)
+        {
+            // create vtkImageData as input for vtkImageWriter
+            vtkImageData *image = vtkImageData::New();
+            image->SetDimensions(w,h,1);
+            image->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
+            for (unsigned int x = 0; x < w; ++x)
+            {
+                for (unsigned int y = 0; y < h; ++y)
+                {
+                unsigned char *ip = static_cast<unsigned char*>(image->GetScalarPointer(x, h-y-1, 0));
+                unsigned char *P = Pixel(x,y);
+                ip[0] = P[0]; 
+                ip[1] = P[1]; 
+                ip[2] = P[2];
+                }
+            }
+            writer->SetFileName(filename);
+            writer->SetInputData(image);
+            writer->Write();
+            writer->Delete();
+            image->Delete();
+            retval = true;
+        }
+        else
+        {
+            retval = false;
+        }
+    }
+    else
+    {
+        FILE *ppm = fopen(filename, "wb");
+        retval = (ppm != NULL);
+        if(ppm)
+        {
+            // Figure out the header and write it to the file.
+            fprintf(ppm, "P6\n%d %d\n255\n", w, h);
+            fwrite(pixels, 3 * w * h, 1, ppm);
+            fclose(ppm);
+        }
     }
 
     return retval;
