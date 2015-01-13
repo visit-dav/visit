@@ -50,7 +50,9 @@
 // Creation:   Thu Sep 21 17:39:16 PST 2006
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Mon Jan 12 16:36:30 PST 2015
+//    Add optional 'format' argument to 'Write' method.
+//
 // ****************************************************************************
 
 class ImageObject
@@ -87,7 +89,7 @@ public:
         return depth;
     }
 
-    bool Write(const char *filename);
+    bool Write(const char *filename, const char *format= 0);
     bool Read(const char *filename);
 
     void SetAllPixelsToColor(const int *rgb);

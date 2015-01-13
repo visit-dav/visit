@@ -1062,6 +1062,8 @@ class VisItMovieTemplate(object):
     # Date:       Fri Oct 13 11:19:18 PDT 2006
     #
     # Modifications:
+    #   Kathleen Biagas, Tue Jan 13 11:02:12 PST 2015
+    #   Call visit_transition directly, instead of 'visit -transition.'
     #
     ###########################################################################
 
@@ -1069,7 +1071,7 @@ class VisItMovieTemplate(object):
 
         vkeys = self.viewport_data.keys()
         vkeys.sort()
-        # Map sequence transition types to "visit -transition" args.
+        # Map sequence transition types to "visit_transition" args.
         transitionTypes2Arg = {"Fade" : "fade", "LRWipe":"lrwipe", \
             "RLWipe":"rlwipe", "TBWipe":"tbwipe", "BTWipe":"btwipe", \
             "LRSlide":"lrslide", "RLSlide":"rlslide", "TBSlide":"tbslide",\
@@ -1212,7 +1214,7 @@ class VisItMovieTemplate(object):
                                               "seqBase=%s, outputName=%s" % \
                                               (nFrames, seqBase, outputName))
 
-                                command = "visit -transition %s %s %s %s" % \
+                                command = "visit_transition %s %s %s %s" % \
                                 (transitionInputs[0], transitionInputs[1],\
                                  transitionInputs[2], transitionInputs[3])
                                 command = command + " -style %s" % transitionTypes2Arg[thisSequence["sequenceType"]]
@@ -1231,8 +1233,8 @@ class VisItMovieTemplate(object):
                                           "seqBase=%s, outputName=%s" % \
                                           (nFrames, seqBase, outputName))
 
-                            command = "visit -transition -v %s %s %s %s %s" % \
-                            (Version(), transitionInputs[0], transitionInputs[1],\
+                            command = "visit_transition %s %s %s %s" % \
+                            (transitionInputs[0], transitionInputs[1],\
                              transitionInputs[2], transitionInputs[3])
                             command = command + " -style %s" % transitionTypes2Arg[thisSequence["sequenceType"]]
                             command = command + " -output %s -nframes %d" % (outputName, nFrames)
@@ -1412,6 +1414,10 @@ class VisItMovieTemplate(object):
     #   Call visit_composite directly, instead of visit -composite.  Also
     #   removed Version args from the call.
     #
+    #   Kathleen Biagas, Mon Jan 12 16:20:20 PST 2015
+    #   Remove convert, in favor of having visit_composite write out
+    #   appropriate file type.
+    # 
     ###########################################################################
 
     def CompositeFrames(self, sequence_frames, movieFormats, percents):
@@ -1435,22 +1441,16 @@ class VisItMovieTemplate(object):
             fmt_percents = [fmt_start_percent, fmt_start_percent+fmt_incr]
             fmt_start_percent = fmt_start_percent+fmt_incr
 
-            # If we're writing PPM images then we can write directly to outputDir
-            # instead of to tmpDir. Other formats will go to tmpDir and then will
-            # be converted out to outDir.
-            doFormatConvert = 0
+            # If we're writing PPM images then we can write directly to
+            # outputDir instead of to tmpDir. Other formats will go to 
+            # tmpDir and then will be converted out to outDir.
             formatExtension = ".ppm"
             destDir = self.moviemaker.tmpDir
-            convertDir = self.moviemaker.outputDir
             if format[1] == "ppm":
                 destDir = self.moviemaker.outputDir
             elif format[1] == self.moviemaker.formatInfo[format[1]][self.moviemaker.FMT_INPUTFORMAT]:
-                doFormatConvert = 1
                 formatExtension = self.moviemaker.OutputExtension(format[1])
             else:
-                # We need to convert for an image encoder that does not take PPM.
-                convertDir = self.moviemaker.tmpDir
-                doFormatConvert = 1
                 cf = self.moviemaker.formatInfo[format[1]][self.moviemaker.FMT_INPUTFORMAT]
                 formatExtension = self.moviemaker.OutputExtension(cf)
 
@@ -1573,7 +1573,8 @@ class VisItMovieTemplate(object):
                     f.write("%s %s\n" % (width, height))              # Image size
                     f.write("255 255 255\n")                          # Image background color
                     # Output image name.
-                    outputName = "%s.ppm" % format[0] % composite_index
+                    outFmt = self.moviemaker.formatInfo[format[1]][self.moviemaker.FMT_INPUTFORMAT]
+                    outputName = "%s.%s" % (format[0] % composite_index, outFmt)
                     outputName = self.InsertPrefix(outputName, sPrefix)
                     outputName = destDir + self.moviemaker.slash + outputName
                     f.write(outputName + "\n")
@@ -1666,18 +1667,9 @@ class VisItMovieTemplate(object):
                         index = index + 1
                     f.close()
 
-                    command = "visit_composite %s %s" % (paramFile, outputName)
+                    command = "visit_composite %s %s %s" % (paramFile, outputName, outFmt)
                     self.Debug(5, command)
                     os.system(command)
-
-                    # If we need to do format conversion then do it now with ImageMagick.
-                    if doFormatConvert:
-                        newFormatName = "%s%s" % (format[0] % composite_index, formatExtension)
-                        newFormatName = self.InsertPrefix(newFormatName, sPrefix)
-                        newFormatName = convertDir + self.moviemaker.slash + newFormatName
-                        command = "convert -depth 8 %s %s" % (outputName, newFormatName)
-                        self.Debug(5, command)
-                        os.system(command)
 
                 # If we are doing something with the image then report progress.
                 if iterating:

@@ -316,11 +316,13 @@ CreateDropShadowMask(const ViewportInfo *vpInfo, int offx, int offy, int r)
 // Creation:   Thu Sep 21 17:40:26 PST 2006
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Tue Jan 13 10:53:13 PST 2015
+//    Add 'format' argument.
+//
 // ****************************************************************************
 
 int
-CreateCompositeImage(CompositeParameters &params, const char *outName)
+CreateCompositeImage(CompositeParameters &params, const char *outName, const char *format)
 {
     // Try to read in all of the inputs.
     bool noError = true;
@@ -512,7 +514,7 @@ CreateCompositeImage(CompositeParameters &params, const char *outName)
     }
 
     // Write the output image.
-    output->Write(outName);
+    output->Write(outName, format);
 
     if(startViewport == 0)
         delete output;
@@ -532,7 +534,9 @@ CreateCompositeImage(CompositeParameters &params, const char *outName)
 // Creation:   Thu Sep 21 17:41:24 PST 2006
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Tue Jan 13 10:53:55 PST 2015
+//    Added 3rd required argument, a string representing the output format.
+//
 // ****************************************************************************
 
 int
@@ -540,9 +544,9 @@ main(int argc, char *argv[])
 {
     CompositeParameters params;    
 
-    if(argc < 3)
+    if(argc < 4)
     {
-        fprintf(stderr, "Usage: %s paramfile outfile\n", argv[0]);
+        fprintf(stderr, "Usage: %s paramfile outfile format\n", argv[0]);
         fprintf(stderr, "\n");
         fprintf(stderr, "The parameter file controls the inputs to this program and\n");
         fprintf(stderr, "it is composed of a global section followed by one or more\n");
@@ -573,5 +577,5 @@ main(int argc, char *argv[])
         return -2;
     }
 
-    return CreateCompositeImage(params, argv[2]);
+    return CreateCompositeImage(params, argv[2], argv[3]);
 }
