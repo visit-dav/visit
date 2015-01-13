@@ -46,11 +46,11 @@ function bv_eavl_initialize_vars
 
 function bv_eavl_info
 {
-export EAVL_VERSION=${EAVL_VERSION:-"9e7ffd1a93"}
+export EAVL_VERSION=${EAVL_VERSION:-"5f53629eed"}
 export EAVL_FILE=${EAVL_FILE:-"EAVL-${EAVL_VERSION}.tar.gz"}
 export EAVL_BUILD_DIR=${EAVL_BUILD_DIR:-"EAVL-${EAVL_VERSION}"}
-export EAVL_MD5_CHECKSUM="d61a6f9eb67071a66ac843174fa3690a"
-export EAVL_SHA256_CHECKSUM="95b16dba8e84ba2aa7cfbd9667429b7342103606629301de364f8023f0fa75a5"
+export EAVL_MD5_CHECKSUM="b18015799f81384be0ac91ce11d842bd"
+export EAVL_SHA256_CHECKSUM="d1911e6790858c1ab8fa29da4ee451295f79bd0e0795fc33afd5732769c14f7f"
 }
 
 function bv_eavl_print
@@ -109,14 +109,14 @@ function bv_eavl_dry_run
 #
 # *************************************************************************** #
 
-function apply_EAVL_9e7ffd1a93_patch
+function apply_EAVL_5f53629eed_patch
 {
    patch -p0 <<\EOF
-diff -c a/configure EAVL-9e7ffd1a93/configure
+diff -c a/configure EAVL-5f53629eed/configure
 *** a/configure	Tue Aug 12 16:25:47 2014
---- EAVL-9e7ffd1a93/configure	Tue Aug 12 16:26:02 2014
+--- EAVL-5f53629eed/configure	Tue Aug 12 16:26:02 2014
 ***************
-*** 4403,4412 ****
+*** 4435,4444 ****
   
   # don't use everything -- we only need enough to do data set conversion.
   VTK_ALL_LIBS="
@@ -127,7 +127,7 @@ diff -c a/configure EAVL-9e7ffd1a93/configure
       "
   
   VTK_CPPFLAGS=""
---- 4403,4412 ----
+--- 4435,4444 ----
   
   # don't use everything -- we only need enough to do data set conversion.
   VTK_ALL_LIBS="
@@ -139,7 +139,7 @@ diff -c a/configure EAVL-9e7ffd1a93/configure
   
   VTK_CPPFLAGS=""
 ***************
-*** 4422,4428 ****
+*** 4454,4460 ****
   
   if test "$VTK" != "yes" -a "$VTK" != "no"; then
      # specified path
@@ -147,7 +147,7 @@ diff -c a/configure EAVL-9e7ffd1a93/configure
      VTK_LDFLAGS="-L""$VTK""/lib"
      if test "$UNAME" = "Darwin"; then
                VTK_LDFLAGS="$VTK_LDFLAGS"
---- 4422,4428 ----
+--- 4454,4460 ----
   
   if test "$VTK" != "yes" -a "$VTK" != "no"; then
      # specified path
@@ -157,7 +157,7 @@ diff -c a/configure EAVL-9e7ffd1a93/configure
                VTK_LDFLAGS="$VTK_LDFLAGS"
 EOF
    if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch to EAVL 9e7ffd1a93"
+        warn "Unable to apply patch to EAVL 5f53629eed"
         return 1
    else
         return 0
@@ -167,8 +167,8 @@ EOF
 function apply_EAVL_patch
 {
    info "Patching EAVL . . ."
-   if [[ ${EAVL_VERSION} == "9e7ffd1a93" ]] ; then
-      apply_EAVL_9e7ffd1a93_patch
+   if [[ ${EAVL_VERSION} == "5f53629eed" ]] ; then
+      apply_EAVL_5f53629eed_patch
       if [[ $? != 0 ]] ; then
         return 1
       fi
