@@ -43,19 +43,25 @@ int mkdir_recursive(const char *targetdir){
 }
      
   
-/* read in a loop until done or fread returns zero (EOF) (caller then needs to use feof() or ferror() )
-   return number of bytes read
+/* read in a loop until done or fread returns zero (EOF)
+   return total number of bytes read
 */
 size_t fread_loop(void *bufp, size_t elemSize, size_t elems2Read, FILE *theFile) {
   size_t totalRead = fread(bufp, elemSize, elems2Read, theFile);
   bufp = (void*)((char*)bufp + totalRead); 
   while (elems2Read > totalRead) {
     size_t numread = fread(bufp, elemSize, elems2Read - totalRead, theFile); 
-    if (!numread) { /* EOF */
-      return totalRead;
-    }
     if (numread < (elems2Read - totalRead)) {
-      fprintf(stderr, "Warning:  bad read in fread_loop, continuing...\n"); 
+      /* EOF or Error */
+      if (feof(theFile) != 0) {
+        fprintf(stderr, "Warning:  Premature EOF in fread_loop.\n"); 
+      }
+      if (ferror(theFile) != 0) {
+        fprintf(stderr, "Warning:  Stream Error in fread_loop.\n"); 
+      }
+      if (!numread) {
+        return totalRead;
+      }
     }
     bufp = (void*)((char*)bufp + numread); 
     totalRead += numread; 
