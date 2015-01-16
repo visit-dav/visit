@@ -190,6 +190,10 @@ function apply_cgns_patch
 # Added a patch for the configure script to correctly locate and use the      #
 # the dylib for hdf5 and szip. Added the correct linker options to the        #
 # dynamic library creation.                                                   #
+#                                                                             #
+# Kevin Griffin, Fri Jan 16 10:28:21 PST 2015                                 #
+# Fixed the --with-szip and --with-zlib to specify the full path to the       #
+# library for both OSX and linux                                              #
 # *************************************************************************** #
 
 function build_cgns
@@ -233,10 +237,18 @@ function build_cgns
     if [[ "$DO_HDF5" == "yes" ]] ; then
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
-            H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.dylib"
+            if [[ "$OPSYS" == "Darwin" ]] ; then
+               H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.dylib"
+            else
+               H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.so"
+            fi
         fi
         if [[ "$DO_ZLIB" == "yes" ]] ; then
-            H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
+            if [[ "$OPSYS" == "Darwin" ]] ; then
+               H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.dylib"
+            else
+               H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.so"
+            fi
         fi
     fi
     if [[ "$OPSYS" == "Darwin" ]] ; then
