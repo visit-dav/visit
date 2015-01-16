@@ -2532,6 +2532,10 @@ avtSAMRAIFileFormat::GetTime()
 //    Mark C. Miller, Mon Nov  5 19:34:12 PST 2007
 //    Added expressions
 //
+//    Kevin Griffin, Thu Jan 15 16:42:43 PST 2015
+//    Added the drawInternal subset attribute for the default plot so that
+//    the wireframe will also outline the internal domains
+//
 // ****************************************************************************
 
 void
@@ -2641,6 +2645,8 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             sprintf(attribute,"%d SubsetAttributes lineWidth 1", INT_NODE);
             plot->AddAttribute(attribute);
             sprintf(attribute,"%d SubsetAttributes wireframe true", BOOL_NODE);
+            plot->AddAttribute(attribute);
+            sprintf(attribute,"%d SubsetAttributes drawInternal true", BOOL_NODE);
             plot->AddAttribute(attribute);
             md->Add(plot);
         }
