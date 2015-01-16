@@ -1,4 +1,4 @@
-#/usr/local/graphics/visit/cmake/2.8.12.2/linux-x86_64_gcc-4.6/bin/cmake
+#/usr/local/graphics/visit/cmake/3.0.2/linux-x86_64_gcc-4.6/bin/cmake
 ##
 ## ./build_visit generated host.cmake, modified by Paul Selby
 ## created: Fri May 10 17:47:39 BST 2013
@@ -33,11 +33,6 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/usr/lib64/mpi/gcc/openmpi/lib64")
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 
-##
-## VisIt Boost Option.
-##
-VISIT_OPTION_DEFAULT(VISIT_USE_BOOST ON TYPE BOOL)
-
 ##############################################################
 ##
 ## Database reader plugin support libraries
@@ -50,6 +45,11 @@ VISIT_OPTION_DEFAULT(VISIT_USE_BOOST ON TYPE BOOL)
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 ##
+
+##
+## Mesa
+##
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
 
 ##
 ## Python
@@ -67,6 +67,12 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 SETUP_APP_VERSION(VTK 6.1.0)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 ##
+
+##
+## BOOST
+##
+SETUP_APP_VERSION(BOOST 1_57_0)
+VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost/1_57_0/${VISITARCH})
 
 ##
 ## SZIP
