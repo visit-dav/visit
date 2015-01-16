@@ -560,6 +560,12 @@ avtSubsetPlot::ApplyOperators(avtDataObject_p input)
 //    Added the block merge filter to the pipeline for the block wireframe
 //    option.
 //
+//    Kevin Griffin, Thu Jan 15 16:42:43 PST 2015
+//    Added the drawInternal flag check so that the wireframe behavior of the
+//    subset plot of blocks executes like the old (incorrect) wireframe behavior
+//    when this flag is true. If the drawInteral flag is false, the wireframe of
+//    subset plots of blocks will only outline the blocks.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -657,8 +663,8 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
             {
                 sub->SetInput(fl->GetOutput());
             }
-
-            if (type == SubsetAttributes::Group)
+            
+            if ((type == SubsetAttributes::Group) && !atts.GetDrawInternal())
             {
                 sbmf->SetInput(sub->GetOutput());
                 wf->SetInput(sbmf->GetOutput());
