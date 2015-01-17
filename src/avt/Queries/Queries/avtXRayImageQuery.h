@@ -93,6 +93,11 @@
 //    Added a new way to specify the view that matches the way the view is
 //    specified for plots.
 //
+//    Eric Brugger, Thu Jan 15 13:26:26 PST 2015
+//    I added support for specifying background intensities on a per bin
+//    basis.
+//
+//
 // ****************************************************************************
 
 class QUERY_API avtXRayImageQuery : public avtDatasetQuery
@@ -119,14 +124,18 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetWidth(const double &size);
     void                      SetHeight(const double &size);
     void                      SetImageSize(const intVector &size);
-    void                      SetDivideEmisByAbsorb(bool flag);
-    void                      SetBackgroundIntensity(double);
+    void                      SetDivideEmisByAbsorb(const bool &flag);
+    void                      SetBackgroundIntensity(const double &intensity);
+    void                      SetBackgroundIntensities(
+                                  const doubleVector &intensities);
     void                      SetOutputType(int type);
     void                      SetOutputType(const std::string &type);
 
   protected:
     bool                      divideEmisByAbsorb;
     double                    backgroundIntensity;
+    double                   *backgroundIntensities;
+    int                       nBackgroundIntensities;
     int                       outputType;
     bool                      useSpecifiedUpVector;
     bool                      useOldView;

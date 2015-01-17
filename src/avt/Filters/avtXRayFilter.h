@@ -98,6 +98,10 @@
 //    I modified SetImageProperties so that its arguments map one for one
 //    with the actual image properties stored in the class.
 //
+//    Eric Brugger, Mon Dec  3 13:41:10 PST 2012
+//    I added support for specifying background intensities on a per bin
+//    basis.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
@@ -130,6 +134,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                                        int    *_imageSize);
     void                            SetDivideEmisByAbsorb(bool);
     void                            SetBackgroundIntensity(double);
+    void                            SetBackgroundIntensities(double *, int);
 
   protected:
     std::string                     absVarName;
@@ -153,6 +158,8 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
 
     bool                            divideEmisByAbsorb;
     double                          backgroundIntensity;
+    double                         *backgroundIntensities;
+    int                             nBackgroundIntensities;
 
     int                             numPixels;
     int                             numPixelsPerIteration;
