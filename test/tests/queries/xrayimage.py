@@ -240,4 +240,29 @@ Test("xrayimage25", 0, 1)
 s = GetQueryOutputString()
 TestText("xrayimage26", s)
 
+#
+# Test with background intensities.
+#
+DefineArrayExpression("wa", "array_compose(w1,w1)")
+DefineArrayExpression("va", "array_compose(v4,v4)")
+
+DeleteAllPlots()
+
+OpenDatabase(silo_data_path("globe.silo"))
+
+AddPlot("Pseudocolor", "u")
+DrawPlots()
+
+params = dict(output_type="png", divide_emis_by_absorb=1, theta=90., phi=0., width=20., height=20., image_size=(300, 300), vars=("wa", "va"), background_intensities=(0.05, 0.1))
+Query("XRay Image", params)
+
+os.rename("output00.png", out_path(out_base,"xrayimage27.png"))
+os.rename("output01.png", out_path(out_base,"xrayimage28.png"))
+
+Test("xrayimage27", 0, 1)
+Test("xrayimage28", 0, 1)
+
+s = GetQueryOutputString()
+TestText("xrayimage29", s)
+
 Exit()
