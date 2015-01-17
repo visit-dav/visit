@@ -101,6 +101,10 @@
 //    Added a new way to specify the view that matches the way the view is
 //    specified for plots.
 //
+//    Eric Brugger,Thu Jan 15 13:32:48 PST 2015
+//    I added support for specifying background intensities on a per bin
+//    basis.
+//
 // ****************************************************************************
 
 avtXRayImageQuery::avtXRayImageQuery():
@@ -109,6 +113,8 @@ avtXRayImageQuery::avtXRayImageQuery():
 {
     divideEmisByAbsorb = false;
     backgroundIntensity = 0.0;
+    backgroundIntensities = NULL;
+    nBackgroundIntensities = 0;
     outputType = 2; // png
     useSpecifiedUpVector = true;
     useOldView = true;
@@ -163,10 +169,17 @@ avtXRayImageQuery::avtXRayImageQuery():
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
 //
+//  Modifications:
+//    Eric Brugger,Thu Jan 15 13:32:48 PST 2015
+//    I added support for specifying background intensities on a per bin
+//    basis.
+//
 // ****************************************************************************
 
 avtXRayImageQuery::~avtXRayImageQuery()
 {
+    if (backgroundIntensities != NULL)
+        delete [] backgroundIntensities;
 }
 
 // ****************************************************************************
@@ -195,6 +208,10 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //    Added a new way to specify the view that matches the way the view is
 //    specified for plots.
 //
+//    Eric Brugger,Thu Jan 15 13:32:48 PST 2015
+//    I added support for specifying background intensities on a per bin
+//    basis.
+//
 // ****************************************************************************
 
 void
@@ -215,6 +232,13 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
 
     if (params.HasNumericEntry("background_intensity"))
         SetBackgroundIntensity(params.GetEntry("background_intensity")->ToDouble());
+
+    if (params.HasNumericVectorEntry("background_intensities"))
+    {
+        doubleVector v;
+        params.GetEntry("background_intensities")->ToDoubleVector(v);
+        SetBackgroundIntensities(v);
+    }
 
     if (params.HasEntry("output_type"))
     {
@@ -558,7 +582,7 @@ avtXRayImageQuery::SetImageSize(const intVector &size)
 // ****************************************************************************
 
 void
-avtXRayImageQuery::SetDivideEmisByAbsorb(bool flag)
+avtXRayImageQuery::SetDivideEmisByAbsorb(const bool &flag)
 {
     divideEmisByAbsorb = flag;
 }
@@ -575,9 +599,32 @@ avtXRayImageQuery::SetDivideEmisByAbsorb(bool flag)
 // ****************************************************************************
 
 void
-avtXRayImageQuery::SetBackgroundIntensity(double intensity)
+avtXRayImageQuery::SetBackgroundIntensity(const double &intensity)
 {
     backgroundIntensity = intensity;
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetBackgroundIntensities
+//
+//  Purpose:
+//    Set the background intensities entering the volume on a per bin basis.
+//
+//  Programmer: Eric Brugger
+//  Creation:   January 15, 2015
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetBackgroundIntensities(const doubleVector &intensities)
+{
+    if (backgroundIntensities != NULL)
+        delete [] backgroundIntensities;
+
+    backgroundIntensities = new double[intensities.size()];
+    for (int i = 0; i < intensities.size(); i++)
+        backgroundIntensities[i] = intensities[i];
+    nBackgroundIntensities = intensities.size();
 }
 
 // ****************************************************************************
@@ -707,6 +754,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Added a new way to specify the view that matches the way the view is
 //    specified for plots.
 //
+//    Eric Brugger,Thu Jan 15 13:32:48 PST 2015
+//    I added support for specifying background intensities on a per bin
+//    basis.
+//
 // ****************************************************************************
 
 void
@@ -763,6 +814,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
     filt->SetDivideEmisByAbsorb(divideEmisByAbsorb);
     filt->SetBackgroundIntensity(backgroundIntensity);
+    filt->SetBackgroundIntensities(backgroundIntensities,
+        nBackgroundIntensities);
     filt->SetVariableNames(absVarName, emisVarName);
     filt->SetInput(dob);
 

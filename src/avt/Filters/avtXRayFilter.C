@@ -296,6 +296,10 @@ static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
 //    Gunther H. Weber, Wed Jan 23 15:23:14 PST 2013
 //    Add support for specifying background intensity.
 //
+//    Eric Brugger, Thu Jan 15 11:02:10 PST 2015
+//    I added support for specifying background intensities on a per bin
+//    basis.
+//
 // ****************************************************************************
 
 avtXRayFilter::avtXRayFilter()
@@ -328,6 +332,8 @@ avtXRayFilter::avtXRayFilter()
     numPixelsPerIteration = 4000;
 
     backgroundIntensity = 0.0;
+    backgroundIntensities = NULL;
+    nBackgroundIntensities = 0;
     radBins = NULL;
     numBins = 1;
 
@@ -341,12 +347,19 @@ avtXRayFilter::avtXRayFilter()
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
 //
+//  Modifications:
+//    Eric Brugger, Thu Jan 15 11:02:10 PST 2015
+//    I added support for specifying background intensities on a per bin
+//    basis.
+//
 // ****************************************************************************
 
 avtXRayFilter::~avtXRayFilter()
 {
     if (lines != NULL)
         delete [] lines;
+    if (backgroundIntensities != NULL)
+        delete [] backgroundIntensities;
 }
 
 
@@ -468,6 +481,28 @@ void
 avtXRayFilter::SetBackgroundIntensity(double intensity)
 {
     backgroundIntensity = intensity;
+}
+
+// ****************************************************************************
+//  Method: avtXRayFilter::SetBackgroundIntensities
+//
+//  Purpose:
+//    Set the background intensities entering the volume, one per bin.
+//
+//  Programmer: Eric Brugger
+//  Creation:   January 15, 2015
+//
+// ****************************************************************************
+
+void
+avtXRayFilter::SetBackgroundIntensities(double *intensities, int nIntensities)
+{
+    if (backgroundIntensities != NULL)
+        delete [] backgroundIntensities;
+
+    backgroundIntensities = new double[nIntensities];
+    memcpy(backgroundIntensities, intensities, nIntensities*sizeof(double));
+    nBackgroundIntensities = nIntensities;
 }
 
 // ****************************************************************************
@@ -2376,6 +2411,10 @@ SortSegments(int nLines, int *lineId, double *dists)
 //    Gunther H. Weber, Wed Jan 23 15:23:14 PST 2013
 //    Add support for specifying background intensity.
 //
+//    Eric Brugger, Thu Jan 15 11:02:10 PST 2015
+//    I added support for specifying background intensities on a per bin
+//    basis.
+//
 // ****************************************************************************
 
 template <typename T>
@@ -2389,6 +2428,20 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     int *segmentOrder = SortSegments(nPts, lineId, dist);
 
     //
+    // Set the background intensities used by the calculation. It uses
+    // background intensities specified on a per bin basis and then fills
+    // in with the single background.
+    //
+    double *background = new double[numBins];
+
+    int nBackground =
+        numBins < nBackgroundIntensities ? numBins : nBackgroundIntensities;
+    for (int i = 0; i < nBackground; i++)
+        background[i] = backgroundIntensities[i];
+    for (int i = nBackground; i < numBins; i++)
+        background[i] = backgroundIntensity;
+
+    //
     // Do the integration.
     //
     if (radBins == NULL)
@@ -2397,7 +2450,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     }
     for (int i = 0 ; i < numBins ; i++)
     {
-        radBins[i] = backgroundIntensity;
+        radBins[i] = background[i];
     }
 
     int prevLineId = -1;
@@ -2408,15 +2461,12 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 
     imageFragments[iFragment]->SetNumberOfTuples(imageFragmentSizes[iFragment]*numBins);
 
-
     avtDirectAccessor<T> currentImageFragment(imageFragments[iFragment]);
-    //float *currentImageFragment = imageFragments[iFragment];
-    while (currentImageFragment.Iterating())
+    for (int i = 0; i < imageFragmentSizes[iFragment]; i++)
     {
-        currentImageFragment.SetTuple1(backgroundIntensity);
-        currentImageFragment++;
+        for (int j = 0; j < numBins; j++)
+            currentImageFragment.SetTuple1(i*numBins+j, background[j]);
     }
-
 
     iFragment++;
 
@@ -2435,7 +2485,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 
             for (int j = 0; j < numBins; j++)
             {
-                radBins[j] = backgroundIntensity;
+                radBins[j] = background[j];
             }
             prevLineId = lineId[iPt];
         }
@@ -2469,6 +2519,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     }
 
     delete [] segmentOrder;
+    delete [] background;
 }
 
 
