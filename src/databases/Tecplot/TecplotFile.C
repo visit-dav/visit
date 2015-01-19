@@ -65,6 +65,7 @@
         B = tmp;
 
 #define TECPLOT_VERSION_7X(v) (v >= TECPLOT_71 && v <= 79)
+#define TECPLOT_VERSION_104GE(v) (v >= TECPLOT_104)
 
 // ****************************************************************************
 // Method: tecplot_reverse_endian32
@@ -989,7 +990,7 @@ TecplotZone::Read(FILE *f)
                 centering[i] = ReadInt(f);
         }
         rawLocalFaceNeighbors = ReadInt(f);
-        if(version >= TECPLOT_102) //> TECPLOT_107)
+        if(version > TECPLOT_107)
         {
             numUserDefinedNeighborConnections = ReadInt(f);
             if(numUserDefinedNeighborConnections != 0)
@@ -2148,6 +2149,18 @@ operator << (ostream &os, const TecplotDataRecord &obj)
 //   Just set their offsets and data sizes to a sentinel, -1, and when
 //   reading them, we'll use the shared variable's version instead.
 //   
+//   Jean Favre, Thu Nov  6 11:57:51 CET 2014
+//   I have found out after quite a bit of debugging that zone data is no
+//   longer stored as array sized by NumNodes after version 103
+//   in file tecxxx.cpp of the tecio library source, I found the comment below:
+//       /*
+//        * As of version 103 Tecplot writes binary data files so that the ordered
+//       * cell centered field data includes the ghost cells. This makes it much
+//       * easier for Tecplot to map the data when reading by simply writing out
+//        * field data's as a block. As of version 104 the ghost cells of the
+//       * slowest moving index are not included.
+//       */
+//   Thus, I created a numItems variable
 // ****************************************************************************
 
 void
@@ -2212,6 +2225,7 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
     else
     {
         int numNodes = zone.GetNumNodes();
+        int centering, numItems;
         long offset = 0;
         for(size_t i = 0; i < variables.size(); ++i)
         {
@@ -2225,21 +2239,29 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
                    << ": (shared; irrelevant; not explicitly in file" << endl;
                 continue;
             }
+            centering = zone.centering[i];
+            numItems = numNodes;
+            if(zone.zoneType == ORDERED)
+            {
+            TecplotOrderedZone *z = (TecplotOrderedZone *)zone.zoneData;
+            if(centering  && TECPLOT_VERSION_104GE(version)) 
+              numItems = z->iMax * z->jMax * (z->kMax - 1);
+            }
 
             variables[i].dataOffset = dataOffset + offset;
 
             if(variables[i].dataType == TecplotFloat)
-                variables[i].dataSize = numNodes * sizeof(float);
+                variables[i].dataSize = numItems * sizeof(float);
             else if(variables[i].dataType == TecplotDouble)
-                variables[i].dataSize = numNodes * sizeof(double);
+                variables[i].dataSize = numItems * sizeof(double);
             else if(variables[i].dataType == TecplotLongInt)
-                variables[i].dataSize = numNodes * sizeof(int);
+                variables[i].dataSize = numItems * sizeof(int);
             else if(variables[i].dataType == TecplotShortInt)
-                variables[i].dataSize = numNodes * sizeof(short);
+                variables[i].dataSize = numItems * sizeof(short);
             else if(variables[i].dataType == TecplotByte)
-                variables[i].dataSize = numNodes;
+                variables[i].dataSize = numItems;
             else
-                variables[i].dataSize = (numNodes / 8) + 1; // ???
+                variables[i].dataSize = (numItems / 8) + 1; // ???
     
             offset += variables[i].dataSize;
 
