@@ -2187,7 +2187,9 @@ VisWinRendering::SetCompactDomainsAutoThreshold(int val)
 
 void
 VisWinRendering::InvokeRenderCallback() {
+    std::cout << "invoking" << " " << renderEvent << " "  << GetRenderUpdate() << std::endl;
     if(renderEvent && GetRenderUpdate() == true) {
+        std::cout << "Up??" << std::endl;
         renderEvent(renderEventData,inMotion);
     }
 }
@@ -2204,6 +2206,7 @@ VisWinRendering::UpdateMouseActions(std::string action, double start_dx, double 
         return;
     }
 
+    std::cout << "HERE>" << std::endl;
     enum MouseButton { LeftButton, MiddleButton, RightButton };
 
     MouseButton mb = LeftButton;

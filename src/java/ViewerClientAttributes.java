@@ -58,7 +58,7 @@ import java.util.Vector;
 
 public class ViewerClientAttributes extends AttributeSubject
 {
-    private static int ViewerClientAttributes_numAdditionalAtts = 8;
+    private static int ViewerClientAttributes_numAdditionalAtts = 9;
 
     // Enum values
     public final static int RENDERTYPE_NONE = 0;
@@ -78,6 +78,7 @@ public class ViewerClientAttributes extends AttributeSubject
         imageHeight = 300;
         imageResolutionPcnt = 100;
         externalClient = false;
+        renderingTypes = new Vector();
     }
 
     public ViewerClientAttributes(int nMoreFields)
@@ -92,6 +93,7 @@ public class ViewerClientAttributes extends AttributeSubject
         imageHeight = 300;
         imageResolutionPcnt = 100;
         externalClient = false;
+        renderingTypes = new Vector();
     }
 
     public ViewerClientAttributes(ViewerClientAttributes obj)
@@ -113,6 +115,12 @@ public class ViewerClientAttributes extends AttributeSubject
         imageHeight = obj.imageHeight;
         imageResolutionPcnt = obj.imageResolutionPcnt;
         externalClient = obj.externalClient;
+        renderingTypes = new Vector();
+        for(i = 0; i < obj.renderingTypes.size(); ++i)
+        {
+            Integer iv = (Integer)obj.renderingTypes.elementAt(i);
+            renderingTypes.addElement(new Integer(iv.intValue()));
+        }
 
         SelectAll();
     }
@@ -140,6 +148,15 @@ public class ViewerClientAttributes extends AttributeSubject
             Integer windowIds2 = (Integer)obj.windowIds.elementAt(i);
             windowIds_equal = windowIds1.equals(windowIds2);
         }
+        // Compare the elements in the renderingTypes vector.
+        boolean renderingTypes_equal = (obj.renderingTypes.size() == renderingTypes.size());
+        for(i = 0; (i < renderingTypes.size()) && renderingTypes_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer renderingTypes1 = (Integer)renderingTypes.elementAt(i);
+            Integer renderingTypes2 = (Integer)obj.renderingTypes.elementAt(i);
+            renderingTypes_equal = renderingTypes1.equals(renderingTypes2);
+        }
         // Create the return value
         return ((renderingType == obj.renderingType) &&
                 (id == obj.id) &&
@@ -148,7 +165,8 @@ public class ViewerClientAttributes extends AttributeSubject
                 (imageWidth == obj.imageWidth) &&
                 (imageHeight == obj.imageHeight) &&
                 (imageResolutionPcnt == obj.imageResolutionPcnt) &&
-                (externalClient == obj.externalClient));
+                (externalClient == obj.externalClient) &&
+                renderingTypes_equal);
     }
 
     // Property setting methods
@@ -200,6 +218,12 @@ public class ViewerClientAttributes extends AttributeSubject
         Select(7);
     }
 
+    public void SetRenderingTypes(Vector renderingTypes_)
+    {
+        renderingTypes = renderingTypes_;
+        Select(8);
+    }
+
     // Property getting methods
     public int     GetRenderingType() { return renderingType; }
     public int     GetId() { return id; }
@@ -209,6 +233,7 @@ public class ViewerClientAttributes extends AttributeSubject
     public int     GetImageHeight() { return imageHeight; }
     public double  GetImageResolutionPcnt() { return imageResolutionPcnt; }
     public boolean GetExternalClient() { return externalClient; }
+    public Vector  GetRenderingTypes() { return renderingTypes; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -229,6 +254,8 @@ public class ViewerClientAttributes extends AttributeSubject
             buf.WriteDouble(imageResolutionPcnt);
         if(WriteSelect(7, buf))
             buf.WriteBool(externalClient);
+        if(WriteSelect(8, buf))
+            buf.WriteIntVector(renderingTypes);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -259,6 +286,9 @@ public class ViewerClientAttributes extends AttributeSubject
         case 7:
             SetExternalClient(buf.ReadBool());
             break;
+        case 8:
+            SetRenderingTypes(buf.ReadIntVector());
+            break;
         }
     }
 
@@ -280,6 +310,7 @@ public class ViewerClientAttributes extends AttributeSubject
         str = str + intToString("imageHeight", imageHeight, indent) + "\n";
         str = str + doubleToString("imageResolutionPcnt", imageResolutionPcnt, indent) + "\n";
         str = str + boolToString("externalClient", externalClient, indent) + "\n";
+        str = str + intVectorToString("renderingTypes", renderingTypes, indent) + "\n";
         return str;
     }
 
@@ -293,5 +324,6 @@ public class ViewerClientAttributes extends AttributeSubject
     private int     imageHeight;
     private double  imageResolutionPcnt;
     private boolean externalClient;
+    private Vector  renderingTypes; // vector of Integer objects
 }
 

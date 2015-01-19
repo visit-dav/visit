@@ -37,11 +37,13 @@
 *****************************************************************************/
 #include <AttributeSubjectSerialize.h>
 #include <Connection.h>
+#include <SocketConnection.h>
 #include <MapNode.h>
 #include <JSONNode.h>
 #include <AttributeSubject.h>
 
 #include <stdlib.h>
+#include <sys/socket.h>
 
 AttributeSubjectSerialize::AttributeSubjectSerialize() : conn(NULL)
 {
@@ -86,50 +88,70 @@ AttributeSubjectSerialize::Fill()
         {
             std::string xmlString = "";
 
+            char tmp[1001]; //leave 1 for null termination//
+
             int amountRead = 0;
             do
             {
-                amountRead = conn->Fill();
-    
+
+    #if defined(_WIN32)
+                int amountRead = recv(conn->GetDescriptor(), (char FAR *)tmp, 1000, 0);
+                if(amountRead == SOCKET_ERROR)
+                {
+                    LogWindowsSocketError("SocketConnection", "Fill");
+                    if(WSAGetLastError() == WSAEWOULDBLOCK)
+                        return -1;
+                }
+    #else
+                amountRead = recv(conn->GetDescriptor(), (void *)tmp, 1000, 0);
+    #endif
+
                 if(amountRead > 0)
                 {
-                    char *tmp = new char[amountRead];
-                    for(int i = 0; i < amountRead; ++i)
-                        conn->Read((unsigned char *)(tmp + i));
-                    tmp[amountRead] = '\0';
+                    //zeroesRead = 0;
+                    tmp[amountRead] = 0;
                     xmlString += tmp;
-                    delete [] tmp;
                 }
-            }
-            while(amountRead == 1000); //if it gets entire list..
 
-            if(xmlString.size() > 0)
+                //++zeroesRead;
+
+                // If we have had a certain number of zero length reads in a row,
+                // assume the connection died.
+//                if(zeroesRead > 100)
+//                {
+//                     EXCEPTION0(LostConnectionException);
+//                }
+            }while(amountRead == 1000); //if it gets entire list..
+
+            //std::cout << "raw string: " << xmlString << std::endl;
+
+            //buffer.clear();
+
+            size_t bytes = 0;
+            while(xmlString.size() > 0)
             {
                 JSONNode node;
-                node.Parse(xmlString);
+                size_t amt = node.Parse(xmlString);
 
-                //std::cout << node.ToString() << std::endl;
+                //std::cout << "message processing: " << node.ToString() << " " << amt << " " << xmlString.size() << std::endl;
 
                 int guido = node["id"].GetInt();
 
                 JSONNode contents = node["contents"];
                 JSONNode metadata = node["metadata"];
 
-                /// With the information I have I could probably
-                /// just use JSONNode to convert completely..
-                /// but that would leave MapNode incomplete..
+                bytes += Write(guido, contents, metadata); //Write(guido,&mapnode); //,&metadata["data"]
 
-                //MapNode mapnode(contents, metadata, false);
+                if(amt >= xmlString.size())
+                    break;
 
-                //std::cout << mapnode.ToXML(false) << std::endl;
-                //std::cout << metadata["data"] << std::endl;
-
-                return Write(guido, contents, metadata); //Write(guido,&mapnode); //,&metadata["data"]
+                xmlString = xmlString.substr(amt);
             }
+            return bytes;
         }
         else
         {
-            conn->Fill();
+            //return conn->Fill();
         }
     }
 
@@ -178,36 +200,93 @@ AttributeSubjectSerialize::Flush(AttributeSubject *subject)
 //                  << subject->CalculateMessageSize(*this)
 //                  << std::endl;
 
-        if(subject->GetSendMetaInformation())
-        {
-            JSONNode meta;
+        AttributeSubjectSocketConnection* ascomm = dynamic_cast<AttributeSubjectSocketConnection*>(conn);
+
+        if(ascomm) {
+            ascomm->Flush(subject);
+        }
+        else {
+            /*
+            if(subject->GetSendMetaInformation())
+            {
+                JSONNode meta;
+                JSONNode node;
+
+                subject->WriteAPI(meta);
+
+                node["id"] = subject->GetGuido();
+                node["typename"] = subject->TypeName();
+                node["api"] = meta;
+
+                const std::string& output = node.ToString().c_str();
+                conn->Append((const unsigned char *)output.c_str(), output.size());
+                conn->Flush();
+            }
+
+            JSONNode child, metadata;
             JSONNode node;
 
-            subject->WriteAPI(meta);
+            subject->Write(child);
+            subject->WriteMetaData(metadata);
 
             node["id"] = subject->GetGuido();
             node["typename"] = subject->TypeName();
-            node["api"] = meta;
+            node["contents"] = child; //.ToJSONNode(false);
+            node["metadata"] = metadata; //.ToJSONNode(false);
 
-            const std::string& output = node.ToString().c_str();
+            const std::string& output = node.ToString();
             conn->Append((const unsigned char *)output.c_str(), output.size());
             conn->Flush();
+            */
+
+            //        std::cout << subject->TypeName() << " "
+            //                  << subject->CalculateMessageSize(*this)
+            //                  << std::endl;
+
+            if(subject->GetSendMetaInformation())
+            {
+                JSONNode meta;
+                JSONNode node;
+
+                subject->WriteAPI(meta);
+
+                node["id"] = subject->GetGuido();
+                node["typename"] = subject->TypeName();
+                node["api"] = meta;
+
+                const std::string& output = node.ToString().c_str();
+#if defined(_WIN32)
+            send(conn->GetDescriptor(), (const char FAR *)output.c_str(), output.size(), 0);
+#else
+#ifdef MSG_NOSIGNAL
+            send(conn->GetDescriptor(), (const void *)output.c_str(), output.size(), MSG_NOSIGNAL);
+#else
+            send(conn->GetDescriptor(), (const void *)output.c_str(), output.size(), 0);
+#endif
+#endif
+            }
+
+            JSONNode child, metadata;
+            JSONNode node;
+
+            subject->Write(child);
+            subject->WriteMetaData(metadata);
+
+            node["id"] = subject->GetGuido();
+            node["typename"] = subject->TypeName();
+            node["contents"] = child; //.ToJSONNode(false);
+            node["metadata"] = metadata; //.ToJSONNode(false);
+            const std::string& output = node.ToString().c_str();
+#if defined(_WIN32)
+            send(conn->GetDescriptor(), (const char FAR *)output.c_str(), output.size(), 0);
+#else
+#ifdef MSG_NOSIGNAL
+            send(conn->GetDescriptor(), (const void *)output.c_str(), output.size(), MSG_NOSIGNAL);
+#else
+            send(conn->GetDescriptor(), (const void *)output.c_str(), output.size(), 0);
+#endif
+#endif
         }
-
-        JSONNode child, metadata;
-        JSONNode node;
-
-        subject->Write(child);
-        subject->WriteMetaData(metadata);
-
-        node["id"] = subject->GetGuido();
-        node["typename"] = subject->TypeName();
-        node["contents"] = child; //.ToJSONNode(false);
-        node["metadata"] = metadata; //.ToJSONNode(false);
-
-        const std::string& output = node.ToString();
-        conn->Append((const unsigned char *)output.c_str(), output.size());
-        conn->Flush();
     }
 }
 

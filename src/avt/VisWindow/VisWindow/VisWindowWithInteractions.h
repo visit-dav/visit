@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -36,30 +36,47 @@
 *
 *****************************************************************************/
 
-#ifndef PY_VIEWERCLIENTATTRIBUTES_H
-#define PY_VIEWERCLIENTATTRIBUTES_H
-#include <Python.h>
-#include <ViewerClientAttributes.h>
-#include <visitpy_exports.h>
+// ************************************************************************* //
+//                              QtVisWindow.h                                //
+// ************************************************************************* //
 
+#ifndef VIS_WINDOW_WITH_INTERACTIONS_H
+#define VIS_WINDOW_WITH_INTERACTIONS_H
+
+#include <viswindow_exports.h>
+
+#include <VisWindow.h>
+#include <vtkRenderWindow.h>
+
+//class vtkQtRenderWindow;
+
+// ****************************************************************************
+//  Class: VisWindowWithInteractions
 //
-// Functions exposed to the VisIt module.
+//  Purpose:
+//      A Vis Window that has support for interactions.
+//      Should be using vtkRenderWindowInteractor, but it pops up a window.
+//      TODO: create a test example and file a bug with VTK.
 //
-#define VIEWERCLIENTATTRIBUTES_NMETH 20
-void VISITPY_API           PyViewerClientAttributes_StartUp(ViewerClientAttributes *subj, void *data);
-void VISITPY_API           PyViewerClientAttributes_CloseDown();
-VISITPY_API PyMethodDef *  PyViewerClientAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyViewerClientAttributes_Check(PyObject *obj);
-VISITPY_API ViewerClientAttributes *  PyViewerClientAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *     PyViewerClientAttributes_New();
-VISITPY_API PyObject *     PyViewerClientAttributes_Wrap(const ViewerClientAttributes *attr);
-void VISITPY_API           PyViewerClientAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyViewerClientAttributes_SetDefaults(const ViewerClientAttributes *atts);
-std::string VISITPY_API    PyViewerClientAttributes_GetLogString();
-std::string VISITPY_API    PyViewerClientAttributes_ToString(const ViewerClientAttributes *, const char *);
-VISITPY_API PyObject *     PyViewerClientAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyViewerClientAttributes_setattr(PyObject *self, char *name, PyObject *args);
-VISITPY_API extern PyMethodDef PyViewerClientAttributes_methods[VIEWERCLIENTATTRIBUTES_NMETH];
+//  Programmer: Hari Krishnan
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+class VISWINDOW_API VisWindowWithInteractions : public VisWindow
+{
+  public:
+    VisWindowWithInteractions();
+    virtual ~VisWindowWithInteractions() {}
+
+    void UpdateMouseActions(std::string action,
+                            double start_dx, double start_dy,
+                            double end_dx, double end_dy,
+                            bool ctrl, bool shift);
+};
 
 #endif
+
 

@@ -90,6 +90,9 @@
 #include <string>
 #include <vector>
 
+void (*ViewerWindow::renderEventFunction)(int, bool, void*)  = 0;
+void* ViewerWindow::renderEventFunctionData = 0;
+
 //
 // Local macros.
 //
@@ -424,6 +427,12 @@ ViewerWindow::SetVisWindow(VisWindow *vw)
     // Callback for render information.
     //
     visWindow->SetRenderInfoCallback(ViewerWindowManager::RenderInformationCallback,
+        &windowId);
+
+    //
+    // Callback for render information.
+    //
+    visWindow->SetRenderEventCallback(RenderEventCallback,
         &windowId);
 
     //
@@ -10317,5 +10326,29 @@ ViewerWindow::GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE wm)
     {
         ds = LINEAR;
         rs = LINEAR; 
+    }
+}
+
+void
+ViewerWindow::UpdateMouseActions(std::string action,
+                                 double start_dx, double start_dy,
+                                 double end_dx, double end_dy,
+                                 bool ctrl, bool shift)
+{
+    visWindow->UpdateMouseActions(action, start_dx, start_dy, end_dx, end_dy, ctrl, shift);
+}
+
+void ViewerWindow::SetRenderEventCallback(void (*cb)(int,bool,void*),void *cbdata) {
+
+    renderEventFunction = cb;
+    renderEventFunctionData = cbdata;
+}
+
+void ViewerWindow::RenderEventCallback(void *data, bool inMotion) {
+    int index = *((int*)data);
+
+    //viewerSubject->BroadcastImage(index,inMotion);
+    if(renderEventFunction) {
+        renderEventFunction(index, inMotion, renderEventFunctionData);
     }
 }

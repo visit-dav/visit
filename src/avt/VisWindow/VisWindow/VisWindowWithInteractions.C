@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -40,11 +40,12 @@
 //                               QtVisWindow.C                               //
 // ************************************************************************* //
 #include <VisWindowWithInteractions.h>
-#include <VisWinRenderingWithWindow.h>
+//#include <VisWinRenderingWithWindow.h>
 #include <VisWinRenderingWithoutWindowWithInteractions.h>
 #include <VisWinInteractions.h>
 
 #include <VisitHotPointInteractor.h>
+#include  <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 
 // ****************************************************************************
@@ -68,6 +69,10 @@ VisWindowWithInteractions::UpdateMouseActions(std::string action,
                         bool ctrl, bool shift) {
 
     VisWinRenderingWithoutWindowWithInteractions* ren = dynamic_cast<VisWinRenderingWithoutWindowWithInteractions*>(rendering);
+
+    if(rendering == NULL) {
+        return;
+    }
 
     vtkRenderWindowInteractor* iren = ren->GetRenderWindowInteractor();
 

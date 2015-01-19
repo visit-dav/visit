@@ -95,6 +95,7 @@ public:
     virtual void SelectAll();
     void SelectTitle();
     void SelectWindowIds();
+    void SelectRenderingTypes();
 
     // Property setting methods
     void SetRenderingType(RenderType renderingType_);
@@ -105,6 +106,7 @@ public:
     void SetImageHeight(int imageHeight_);
     void SetImageResolutionPcnt(double imageResolutionPcnt_);
     void SetExternalClient(bool externalClient_);
+    void SetRenderingTypes(const intVector &renderingTypes_);
 
     // Property getting methods
     RenderType        GetRenderingType() const;
@@ -117,6 +119,8 @@ public:
     int               GetImageHeight() const;
     double            GetImageResolutionPcnt() const;
     bool              GetExternalClient() const;
+    const intVector   &GetRenderingTypes() const;
+          intVector   &GetRenderingTypes();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -146,6 +150,7 @@ public:
         ID_imageHeight,
         ID_imageResolutionPcnt,
         ID_externalClient,
+        ID_renderingTypes,
         ID__LAST
     };
 
@@ -158,11 +163,12 @@ private:
     int         imageHeight;
     double      imageResolutionPcnt;
     bool        externalClient;
+    intVector   renderingTypes;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEWERCLIENTATTRIBUTES_TMFS "iisi*iidb"
+#define VIEWERCLIENTATTRIBUTES_TMFS "iisi*iidbi*"
 
 #endif

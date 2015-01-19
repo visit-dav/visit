@@ -130,6 +130,7 @@ void ViewerClientAttributes::Copy(const ViewerClientAttributes &obj)
     imageHeight = obj.imageHeight;
     imageResolutionPcnt = obj.imageResolutionPcnt;
     externalClient = obj.externalClient;
+    renderingTypes = obj.renderingTypes;
 
     ViewerClientAttributes::SelectAll();
 }
@@ -294,7 +295,8 @@ ViewerClientAttributes::operator == (const ViewerClientAttributes &obj) const
             (imageWidth == obj.imageWidth) &&
             (imageHeight == obj.imageHeight) &&
             (imageResolutionPcnt == obj.imageResolutionPcnt) &&
-            (externalClient == obj.externalClient));
+            (externalClient == obj.externalClient) &&
+            (renderingTypes == obj.renderingTypes));
 }
 
 // ****************************************************************************
@@ -446,6 +448,7 @@ ViewerClientAttributes::SelectAll()
     Select(ID_imageHeight,         (void *)&imageHeight);
     Select(ID_imageResolutionPcnt, (void *)&imageResolutionPcnt);
     Select(ID_externalClient,      (void *)&externalClient);
+    Select(ID_renderingTypes,      (void *)&renderingTypes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -526,6 +529,12 @@ ViewerClientAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool
         node->AddNode(new DataNode("externalClient", externalClient));
     }
 
+    if(completeSave || !FieldsEqual(ID_renderingTypes, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("renderingTypes", renderingTypes));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -592,6 +601,8 @@ ViewerClientAttributes::SetFromNode(DataNode *parentNode)
         SetImageResolutionPcnt(node->AsDouble());
     if((node = searchNode->GetNode("externalClient")) != 0)
         SetExternalClient(node->AsBool());
+    if((node = searchNode->GetNode("renderingTypes")) != 0)
+        SetRenderingTypes(node->AsIntVector());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -652,6 +663,13 @@ ViewerClientAttributes::SetExternalClient(bool externalClient_)
 {
     externalClient = externalClient_;
     Select(ID_externalClient, (void *)&externalClient);
+}
+
+void
+ViewerClientAttributes::SetRenderingTypes(const intVector &renderingTypes_)
+{
+    renderingTypes = renderingTypes_;
+    Select(ID_renderingTypes, (void *)&renderingTypes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -718,6 +736,18 @@ ViewerClientAttributes::GetExternalClient() const
     return externalClient;
 }
 
+const intVector &
+ViewerClientAttributes::GetRenderingTypes() const
+{
+    return renderingTypes;
+}
+
+intVector &
+ViewerClientAttributes::GetRenderingTypes()
+{
+    return renderingTypes;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -732,6 +762,12 @@ void
 ViewerClientAttributes::SelectWindowIds()
 {
     Select(ID_windowIds, (void *)&windowIds);
+}
+
+void
+ViewerClientAttributes::SelectRenderingTypes()
+{
+    Select(ID_renderingTypes, (void *)&renderingTypes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -766,6 +802,7 @@ ViewerClientAttributes::GetFieldName(int index) const
     case ID_imageHeight:         return "imageHeight";
     case ID_imageResolutionPcnt: return "imageResolutionPcnt";
     case ID_externalClient:      return "externalClient";
+    case ID_renderingTypes:      return "renderingTypes";
     default:  return "invalid index";
     }
 }
@@ -798,6 +835,7 @@ ViewerClientAttributes::GetFieldType(int index) const
     case ID_imageHeight:         return FieldType_int;
     case ID_imageResolutionPcnt: return FieldType_double;
     case ID_externalClient:      return FieldType_bool;
+    case ID_renderingTypes:      return FieldType_intVector;
     default:  return FieldType_unknown;
     }
 }
@@ -830,6 +868,7 @@ ViewerClientAttributes::GetFieldTypeName(int index) const
     case ID_imageHeight:         return "int";
     case ID_imageResolutionPcnt: return "double";
     case ID_externalClient:      return "bool";
+    case ID_renderingTypes:      return "intVector";
     default:  return "invalid index";
     }
 }
@@ -894,6 +933,11 @@ ViewerClientAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_externalClient:
         {  // new scope
         retval = (externalClient == obj.externalClient);
+        }
+        break;
+    case ID_renderingTypes:
+        {  // new scope
+        retval = (renderingTypes == obj.renderingTypes);
         }
         break;
     default: retval = false;
