@@ -28,4 +28,6 @@
     <Field name="externalClient" label="externalClient" type="bool">
       false
     </Field>
+    <Field name="renderingTypes" label="renderingTypes" type="intVector">
+    </Field>
   </Attribute>

@@ -49,6 +49,7 @@
 #include <Xfer.h>
 #include <ViewerState.h>
 #include <ViewerRPC.h>
+#include <WebSocketConnection.h>
 
 #include <DebugStream.h>
 
@@ -308,10 +309,23 @@ ViewerClientConnection::LaunchClient(const std::string &program,
         {
             debug1 << mName << "Creating socket notifier to listen to client."
                    << endl;
-            notifier = new QSocketNotifier(desc, QSocketNotifier::Read, 0);
-            connect(notifier, SIGNAL(activated(int)),
-                    this, SLOT(ReadFromClientAndProcess(int)));
-            ownsNotifier = true;
+            WebSocketConnection* conn = dynamic_cast<WebSocketConnection*>(remoteProcess->GetWriteConnection());
+
+            if(conn) {
+                connect(conn, SIGNAL(activated(int)), this, SLOT(ReadFromClientAndProcess(int)));
+                connect(conn, SIGNAL(disconnected()), this, SLOT(ForceDisconnectClient()));
+            }
+            else {
+                notifier = new QSocketNotifier(desc, QSocketNotifier::Read, 0);
+                connect(notifier, SIGNAL(activated(int)),
+                        this, SLOT(ReadFromClientAndProcess(int)));
+                ownsNotifier = true;
+            }
+
+            /// if there is a close from client
+//            QTcpSocket* s = new QTcpSocket();
+//            s->setSocketDescriptor(desc);
+//            connect(s, SIGNAL(aboutToClose()), SLOT(ForceDisconnectClient()));
         }
     }
 
@@ -584,6 +598,23 @@ ViewerClientConnection::Name() const
     return name;
 }
 
+// ****************************************************************************
+// Method: ViewerClientConnection::Name
+//
+// Purpose:
+//   Return the name of the client.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May  9 14:44:06 PDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerClientConnection::ForceDisconnectClient() {
+    emit DisconnectClient(this);
+}
 
 
 

@@ -852,7 +852,7 @@ QWsSocket::initializeWebSocket(const QString &request, QString &response)
 //
 // ****************************************************************************
 
-WebSocketConnection::WebSocketConnection(QTcpSocket* tcpSocket,const QString& request) : SocketConnection(tcpSocket->socketDescriptor()) //DESCRIPTOR descriptor_) : SocketConnection(descriptor_) /*: buffer()*/
+WebSocketConnection::WebSocketConnection(QTcpSocket* tcpSocket,const QString& request) : AttributeSubjectSocketConnection(tcpSocket->socketDescriptor()) //DESCRIPTOR descriptor_) : SocketConnection(descriptor_) /*: buffer()*/
 {
     QString response = "";
 

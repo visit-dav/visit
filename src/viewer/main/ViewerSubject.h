@@ -75,6 +75,7 @@ class ViewerRPC;
 class ViewerSILAttsObserver;
 class ViewerStateBuffered;
 class SharedDaemon;
+class vtkRenderWindowInteractor;
 
 // ****************************************************************************
 //  Class: ViewerSubject
@@ -253,11 +254,15 @@ private:
     int               animationTimeout;
     int               lastAnimation;
 private:
-    // Experimental web client stuff.
-    void BroadcastAdvanced(AttributeSubject *subj);
+    /// Experimental Web Client Stuff
+    //void BroadcastAdvanced(int windowId, bool inMotion);
+    void BroadcastImage(int windowId, bool inMotion);
+    void BroadcastData(int windowId, int clientId);
     void Export();
     void ExportWindow();
     void ExportHostProfile();
+    static void RenderEventCallback(int windowId, bool inMotion, void* data);
+    static vtkRenderWindowInteractor* CreateGlobalInteractor();
 
     SharedDaemon             *shared_viewer_daemon;
     size_t                   clientIds;

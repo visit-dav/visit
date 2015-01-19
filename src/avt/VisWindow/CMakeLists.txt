@@ -62,6 +62,7 @@ Colleagues/VisWinPlots.C
 Colleagues/VisWinQuery.C
 Colleagues/VisWinRendering.C
 Colleagues/VisWinRenderingWithoutWindow.C
+Colleagues/VisWinRenderingWithoutWindowWithInteractions.C
 Colleagues/VisWinTools.C
 Colleagues/VisWinTriad.C
 Colleagues/VisWinUserInfo.C
@@ -155,6 +156,7 @@ Tools/avtToolInterface.C
 
 SET(VISWINDOW_SOURCES
 VisWindow/VisWindow.C
+VisWindow/VisWindowWithInteractions.C
 VisWindow/VisWindowTypes.C
 )
 

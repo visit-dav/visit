@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -42,9 +42,12 @@
 
 #include <VisWinRenderingWithoutWindowWithInteractions.h>
 #include <vtkRenderWindow.h>
-#include <QVTKInteractor.h>
+#include <vtkRenderWindowInteractor.h>
+//#include <QVTKInteractor.h>
 #include <VisWindowColleagueProxy.h>
+#include <VisitHotPointInteractor.h>
 
+vtkRenderWindowInteractor* (*VisWinRenderingWithoutWindowWithInteractions::createInteractor)()  = 0;
 // ****************************************************************************
 //  Method: VisWinRenderingWithoutWindow constructor
 //
@@ -85,9 +88,15 @@ VisWinRenderingWithoutWindowWithInteractions::Initialize(VisitHotPointInteractor
 
     if(iren == NULL) {
         ownsInteractor = true;
-        //iren = vtkRenderWindowInteractor::New();
-        iren = QVTKInteractor::New();
-        iren->SetInteractorStyle(i);
-        renWin->SetInteractor(iren);
+        if(createInteractor) {
+            iren = createInteractor();
+            iren->SetInteractorStyle(i);
+            renWin->SetInteractor(iren);
+        } else {
+            iren = vtkRenderWindowInteractor::New();
+            //iren = QVTKInteractor::New();
+            iren->SetInteractorStyle(i);
+            renWin->SetInteractor(iren);
+        }
     }
 }

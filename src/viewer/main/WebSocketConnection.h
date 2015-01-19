@@ -155,7 +155,7 @@ public:
 class AttributeSubject;
 class MapNode;
 class JSONNode;
-class VIEWER_API WebSocketConnection : public QObject, public SocketConnection
+class VIEWER_API WebSocketConnection : public QObject, public AttributeSubjectSocketConnection
 {
     Q_OBJECT
 public:

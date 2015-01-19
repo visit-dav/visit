@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #include <SocketConnection.h>
+#include <AttributeSubjectSerialize.h>
 #include <visit-config.h>
 #if defined(_WIN32)
 #include <winsock2.h>
@@ -347,6 +348,17 @@ SocketConnection::Fill()
     DEBUG_SOCKETS_CODE(const char *mName = "SocketConnection::Fill: ";)
     DEBUG_SOCKETS(debug5 << mName << "begin" << endl;)
 
+    if(destFormat.Format == TypeRepresentation::ASCIIFORMAT) {
+
+        buffer.clear();
+
+        AttributeSubjectSerialize s;
+        s.SetConnection(this);
+        int amt = s.Fill();
+        return amt;
+    }
+
+    /// The code below should move into AttributeSubjectSerialize
     const int iteration_limit = 100;
     unsigned char tmp[VISIT_SOCKET_BUFFER_SIZE];
 

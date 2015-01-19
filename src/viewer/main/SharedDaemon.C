@@ -40,7 +40,7 @@
 
 #include <ViewerClientConnection.h>
 #include <ViewerSubject.h>
-
+#include <ViewerState.h>
 #include <QMap>
 #include <QTcpSocket>
 #include <QTcpServer>
@@ -57,6 +57,8 @@
 
 #include <iostream>
 #include <string>
+
+#include <ViewerRPC.h>
 
 #ifdef _WIN32
 #include <win32commhelpers.h>
@@ -260,7 +262,7 @@ void SharedDaemon::handleConnection()
         socket->close();
         return;
     }
-    std::cout << "user: " 
+    std::cout << "user: "
               << socket->peerAddress().toString().toStdString()
               << " is attempting to connect" << std::endl;
 
@@ -395,25 +397,42 @@ void SharedDaemon::handleConnection()
     }
 
     /// advanced rendering can be true or false (image only), or string none,image,data
-    if(jo.count("canRender") == 0)
+    if(jo.count("canRender") == 0) {
         clientAtts.SetRenderingType(ViewerClientAttributes::None);
+        clientAtts.GetRenderingTypes().push_back(ViewerClientAttributes::None);
+    }
     else
     {
         const JSONNode& node = jo["canRender"];
+        QString type = node.GetString().c_str();
+        type = type.toLower();
 
         /// TODO: remove the boolean check and make all current clients comply..
-        if(node.GetType() == JSONNode::JSONBOOL)
+        if(node.GetType() == JSONNode::JSONBOOL) {
             clientAtts.SetRenderingType( node.GetBool() ? ViewerClientAttributes::Image :
                                                           ViewerClientAttributes::None);
+            clientAtts.GetRenderingTypes().push_back(node.GetBool() ? ViewerClientAttributes::Image :
+                                                                      ViewerClientAttributes::None);
+        }
         else if(node.GetType() == JSONNode::JSONSTRING)
         {
-            if(node.GetString() == "image") clientAtts.SetRenderingType(ViewerClientAttributes::Image);
-            else if(node.GetString() == "data") clientAtts.SetRenderingType(ViewerClientAttributes::Data);
-            else clientAtts.SetRenderingType(ViewerClientAttributes::None);
+            if(type == "image") {
+                clientAtts.SetRenderingType(ViewerClientAttributes::Image);
+                clientAtts.GetRenderingTypes().push_back((int)ViewerClientAttributes::Image);
+            }
+            else if(type == "data") {
+                clientAtts.SetRenderingType(ViewerClientAttributes::Data);
+                clientAtts.GetRenderingTypes().push_back((int)ViewerClientAttributes::Data);
+            }
+            else {
+                clientAtts.SetRenderingType(ViewerClientAttributes::None);
+                clientAtts.GetRenderingTypes().push_back((int)ViewerClientAttributes::None);
+            }
         }
         else
         {
             clientAtts.SetRenderingType(ViewerClientAttributes::None);
+            clientAtts.GetRenderingTypes().push_back((int)ViewerClientAttributes::None);
         }
     }
     stringVector args;
@@ -424,9 +443,10 @@ void SharedDaemon::handleConnection()
 
     TRY
     {
-        void* data[2];
+        void* data[3];
         data[0] = &typeOfConnection;
         data[1] = (void*)finalSocket;
+        data[2] = (void*)subject->GetViewerState();
 
         newClient->LaunchClient(program,args,AddNewClient,data,0,0);
 
@@ -473,6 +493,7 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
     void** data = (void**)cbdata;
     ConnectionType typeOfConnection = *((ConnectionType*)(data[0]));
     QAbstractSocket* socket = static_cast<QAbstractSocket*>(data[1]);
+    ViewerState* viewerState = static_cast<ViewerState*>(data[2]);
 
     JSONNode node;
 
@@ -485,6 +506,14 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
     node["port"]  = args[7]; //port
     node["version"] = args[2]; //version
     node["securityKey"] = args[9]; //key
+    node["numStates"] = viewerState->GetNumStateObjects(); //number of states
+
+    JSONNode::JSONArray rpc_array = JSONNode::JSONArray();
+
+    for(size_t i = 0; i < ViewerRPC::MaxRPC; ++i) {
+        rpc_array.push_back(ViewerRPC::ViewerRPCType_ToString((ViewerRPC::ViewerRPCType)i));
+    }
+    node["rpc_array"] = rpc_array;
 
     if(typeOfConnection == TcpConnection)
     {

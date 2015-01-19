@@ -112,6 +112,7 @@ signals:
     void DisconnectClient(ViewerClientConnection *);
     void InputFromClient(ViewerClientConnection *, AttributeSubject *);
 private slots:
+    void ForceDisconnectClient();
     void ReadFromClientAndProcess(int);
     void sendInitialState();
 private:

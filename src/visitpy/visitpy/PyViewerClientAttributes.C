@@ -126,6 +126,22 @@ PyViewerClientAttributes_ToString(const ViewerClientAttributes *atts, const char
     else
         SNPRINTF(tmpStr, 1000, "%sexternalClient = 0\n", prefix);
     str += tmpStr;
+    {   const intVector &renderingTypes = atts->GetRenderingTypes();
+        SNPRINTF(tmpStr, 1000, "%srenderingTypes = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < renderingTypes.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", renderingTypes[i]);
+            str += tmpStr;
+            if(i < renderingTypes.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -378,6 +394,69 @@ ViewerClientAttributes_GetExternalClient(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ViewerClientAttributes_SetRenderingTypes(PyObject *self, PyObject *args)
+{
+    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+
+    intVector  &vec = obj->data->GetRenderingTypes();
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the renderingTypes in the object as modified.
+    obj->data->SelectRenderingTypes();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ViewerClientAttributes_GetRenderingTypes(PyObject *self, PyObject *args)
+{
+    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the renderingTypes.
+    const intVector &renderingTypes = obj->data->GetRenderingTypes();
+    PyObject *retval = PyTuple_New(renderingTypes.size());
+    for(size_t i = 0; i < renderingTypes.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(renderingTypes[i])));
+    return retval;
+}
+
 
 
 PyMethodDef PyViewerClientAttributes_methods[VIEWERCLIENTATTRIBUTES_NMETH] = {
@@ -398,6 +477,8 @@ PyMethodDef PyViewerClientAttributes_methods[VIEWERCLIENTATTRIBUTES_NMETH] = {
     {"GetImageResolutionPcnt", ViewerClientAttributes_GetImageResolutionPcnt, METH_VARARGS},
     {"SetExternalClient", ViewerClientAttributes_SetExternalClient, METH_VARARGS},
     {"GetExternalClient", ViewerClientAttributes_GetExternalClient, METH_VARARGS},
+    {"SetRenderingTypes", ViewerClientAttributes_SetRenderingTypes, METH_VARARGS},
+    {"GetRenderingTypes", ViewerClientAttributes_GetRenderingTypes, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -449,6 +530,8 @@ PyViewerClientAttributes_getattr(PyObject *self, char *name)
         return ViewerClientAttributes_GetImageResolutionPcnt(self, NULL);
     if(strcmp(name, "externalClient") == 0)
         return ViewerClientAttributes_GetExternalClient(self, NULL);
+    if(strcmp(name, "renderingTypes") == 0)
+        return ViewerClientAttributes_GetRenderingTypes(self, NULL);
 
     return Py_FindMethod(PyViewerClientAttributes_methods, self, name);
 }
@@ -479,6 +562,8 @@ PyViewerClientAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewerClientAttributes_SetImageResolutionPcnt(self, tuple);
     else if(strcmp(name, "externalClient") == 0)
         obj = ViewerClientAttributes_SetExternalClient(self, tuple);
+    else if(strcmp(name, "renderingTypes") == 0)
+        obj = ViewerClientAttributes_SetRenderingTypes(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

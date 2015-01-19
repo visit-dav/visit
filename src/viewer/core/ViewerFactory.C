@@ -38,7 +38,7 @@
 #include <ViewerFactory.h>
 
 #include <VisWindow.h>
-
+#include <VisWindowWithInteractions.h>
 #include <ClientActions.h>
 #include <AnimationActions.h>
 #include <CopyActions.h>
@@ -54,6 +54,7 @@
 #include <ViewActions.h>
 #include <SelectionActions.h>
 #include <StateActions.h>
+#include <avtCallback.h>
 
 #include <OperatorPluginManager.h>
 #include <PlotPluginManager.h>
@@ -120,7 +121,15 @@ ViewerFactory::~ViewerFactory()
 VisWindow *
 ViewerFactory::CreateVisWindow()
 {
-    return new VisWindow;
+    //return new VisWindow;
+    VisWindow* visWindow;
+    if(!avtCallback::GetNowinInteractionMode()) {
+        visWindow = new VisWindow();
+    } else {
+        visWindow = new VisWindowWithInteractions();
+    }
+
+    return visWindow;
 }
 
 // ****************************************************************************

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -37,26 +37,23 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              QtVisWindow.h                                //
+//                       VisWinRenderingWithoutWindow.h                      //
 // ************************************************************************* //
 
-#ifndef QT_VIS_WINDOW_WITH_INTERACTIONS_H
-#define QT_VIS_WINDOW_WITH_INTERACTIONS_H
+#ifndef VIS_WIN_RENDERING_WITHOUT_WINDOW_WITH_INTERACTIONS_H
+#define VIS_WIN_RENDERING_WITHOUT_WINDOW_WITH_INTERACTIONS_H
+#include <viswindow_exports.h>
+#include <VisWinRenderingWithoutWindow.h>
 
-#include <qtviswindow_exports.h>
-
-#include <VisWindow.h>
-#include <vtkRenderWindow.h>
-
-class vtkQtRenderWindow;
+class VisitHotPointInteractor;
+class vtkRenderWindowInteractor;
 
 // ****************************************************************************
-//  Class: VisWindowWithInteractions
+//  Class: VisWinRenderingWithoutWindowWithInteractions
 //
 //  Purpose:
-//      A Vis Window that has support for interactions.
-//      Should be using vtkRenderWindowInteractor, but it pops up a window.
-//      TODO: create a test example and file a bug with VTK.
+//      A derived type of VisWinRendering that assumes that there will be no
+//      window on the screen but this version adds interactions.
 //
 //  Programmer: Hari Krishnan
 //  Creation:
@@ -65,18 +62,24 @@ class vtkQtRenderWindow;
 //
 // ****************************************************************************
 
-class QTVISWINDOW_API VisWindowWithInteractions : public VisWindow
+class VISWINDOW_API VisWinRenderingWithoutWindowWithInteractions : public VisWinRenderingWithoutWindow
 {
   public:
-    VisWindowWithInteractions();
-    virtual ~VisWindowWithInteractions() {}
+    VisWinRenderingWithoutWindowWithInteractions(VisWindowColleagueProxy &);
 
-    void UpdateMouseActions(std::string action,
-                            double start_dx, double start_dy,
-                            double end_dx, double end_dy,
-                            bool ctrl, bool shift);
+    virtual ~VisWinRenderingWithoutWindowWithInteractions();
+    virtual vtkRenderWindowInteractor* GetRenderWindowInteractor();
+
+    void Initialize(VisitHotPointInteractor* i);
+
+    static void SetInteractorCallback(vtkRenderWindowInteractor* (*cb)()) {
+        createInteractor = cb;
+    }
+
+private:
+    static vtkRenderWindowInteractor* (*createInteractor)();
+
+    vtkRenderWindowInteractor* iren;
+    bool ownsInteractor;
 };
-
 #endif
-
-

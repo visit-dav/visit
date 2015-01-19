@@ -66,6 +66,8 @@
 #include <ViewerPasswordWindow.h>
 #include <ViewerWindowUI.h>
 #include <VisWindow.h>
+#include <VisWindowWithInteractions.h>
+#include <avtCallback.h>
 
 // ****************************************************************************
 // Method: ViewerFactoryUI::ViewerFactoryUI
@@ -128,7 +130,12 @@ ViewerFactoryUI::CreateVisWindow()
     VisWindow *visWindow = NULL;
     if (GetViewerProperties()->GetNowin())
     {
-        visWindow = new VisWindow();
+        //visWindow = new VisWindow();
+        if(!avtCallback::GetNowinInteractionMode()) {
+            visWindow = new VisWindow();
+        } else {
+            visWindow = new VisWindowWithInteractions();
+        }
     }
     else
     {
