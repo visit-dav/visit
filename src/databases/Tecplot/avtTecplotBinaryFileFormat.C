@@ -66,6 +66,7 @@
 #include <avtCallback.h>
 #include <DebugStream.h>
 #include <snprintf.h>
+#include <string.h>
 #include <map>
 
 #include <TecplotFile.h>
@@ -729,7 +730,8 @@ avtTecplotBinaryFileFormat::GetCurvilinearMesh(int zoneId)
     dims[0] = ordered->iMax;
     dims[1] = ordered->jMax;
     dims[2] = ordered->kMax;
-
+    debug4 << "avtTecplotBinaryFileFormat::GetCurvilinearMesh(zoneId=" << zoneId << ")\n";
+    debug4 << "dims[] = {" << dims[0] << "," << dims[1] << "," << dims[2] << "}\n";
     //
     // Create the vtkStructuredGrid and vtkPoints objects.
     //
@@ -949,6 +951,9 @@ avtTecplotBinaryFileFormat::GetPolyMesh(int zoneId)
 //    Call File() first to avoid problem with maps not being initialized on
 //    later time steps.
 //
+//    Jean Favre, Thu Nov  6 11:57:51 CET 2014
+//    As of version 103, zone-based data are stored with ghost-cells filled with zeros
+//    I added the code to extract the hyperslab
 // ****************************************************************************
 
 vtkDataArray *
@@ -983,10 +988,36 @@ avtTecplotBinaryFileFormat::GetVar(int domain, const char *varname)
     if(slash != -1)
         varName = varName.substr(slash+1, varName.size() - slash);
     int zoneId = pos->second[domain];
+    int centering = f->zones[zoneId].centering[f->VarNameToIndex(varName)];
     vtkFloatArray *arr = vtkFloatArray::New();
-    arr->SetNumberOfTuples(f->zones[zoneId].GetNumNodes());
-    f->ReadVariableAsFloat(zoneId, varName, (float*)arr->GetVoidPointer(0));
-
+    if(!centering)
+      {
+      arr->SetNumberOfTuples(f->zones[zoneId].GetNumNodes());
+      f->ReadVariableAsFloat(zoneId, varName, (float*)arr->GetVoidPointer(0));
+      }
+    else
+      {
+      arr->SetNumberOfTuples(f->zones[zoneId].GetNumElements());
+      float *tmp = new float[f->zones[zoneId].GetNumNodes()]; // temporary location to hold tecplot scalar field
+      float *dest = (float*)arr->GetVoidPointer(0); // destination where to copy cell-centered data
+      f->ReadVariableAsFloat(zoneId, varName, tmp);
+      TecplotOrderedZone *oZone = static_cast<TecplotOrderedZone*>(f->zones[zoneId].zoneData);
+      int iMax, jMax, kMax, IJk, I1J1k;
+      iMax = oZone->iMax;
+      jMax = oZone->jMax;
+      kMax = oZone->kMax;
+      for(int k=0; k < kMax-1; k++)
+        {
+        IJk = iMax*jMax*k;
+        I1J1k = (iMax-1)*(jMax-1)*k;
+        for(int j=0; j < jMax-1; j++)
+          {
+          //copy a full scanline of (iMax-1) floats
+          memcpy(dest + I1J1k + (iMax-1)*j, tmp + IJk + iMax*j, (iMax-1)*sizeof(float));
+          }
+        }
+      delete [] tmp;
+      }
     return arr;
 #endif
 }
