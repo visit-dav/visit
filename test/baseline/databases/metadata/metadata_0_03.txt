@@ -317,7 +317,7 @@ GetSpecies(0).GetSpecies(3).validVariable = 1
 #labels does not contain any avtLabelMetaData objects.
 GetDefaultPlots(0).pluginID = "Subset_1.0"
 GetDefaultPlots(0).plotVar = "levels"
-GetDefaultPlots(0).plotAttributes = ("0 NULL ViewerPlot", "0 ViewerPlot SubsetAttributes", "3 SubsetAttributes lineWidth 1", "8 SubsetAttributes wireframe true")
+GetDefaultPlots(0).plotAttributes = ("0 NULL ViewerPlot", "0 ViewerPlot SubsetAttributes", "3 SubsetAttributes lineWidth 1", "8 SubsetAttributes wireframe true", "8 SubsetAttributes drawInternal true")
 isSimulation = 0
 simInfo.host = ""
 simInfo.port = 0
