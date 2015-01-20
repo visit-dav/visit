@@ -68,6 +68,7 @@ public:
     virtual int  Fill();
     virtual void Flush();
     virtual long Size();
+    virtual void Reset();
 
     virtual void Write(unsigned char value);
     virtual void Read(unsigned char *address);

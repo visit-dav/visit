@@ -415,7 +415,7 @@ avtALSFileFormat::GetTomoDataSet(hid_t file) {
         dimsm[0] = 0;
         dimsm[1] = dims_out[1];
         dimsm[2] = dims_out[2];
-        dimsm[3] = zslices;
+        //dimsm[3] = zslices;
 
         memspace = H5Screate_simple (4, dimsm, NULL);
 
@@ -425,12 +425,12 @@ avtALSFileFormat::GetTomoDataSet(hid_t file) {
         offset_out[0] = 0;
         offset_out[1] = 0;
         offset_out[2] = 0;
-        offset_out[3] = 0;
+        //offset_out[3] = 0;
 
         count_out[0]  = 0;
         count_out[1]  = dims_out[1];
         count_out[2]  = dims_out[2];
-        count_out[3]  = zslices;
+        //count_out[3]  = zslices;
 
         status = H5Sselect_hyperslab (memspace, H5S_SELECT_SET, offset_out, NULL,
                                       count_out, NULL);
@@ -709,9 +709,9 @@ avtALSFileFormat::GetVar(int domain, const char *varname)
 {
      if(m_dataType == TOMO) {
          std::string name = varname;
-         if(varname == "intensity1") m_ver = 0;
-         if(varname == "intensity2") m_ver = 1;
-         if(varname == "intensity3") m_ver = 2;
+         if(name == "intensity1") m_ver = 0;
+         if(name == "intensity2") m_ver = 1;
+         if(name == "intensity3") m_ver = 2;
 
      }
      return GetDataSet();

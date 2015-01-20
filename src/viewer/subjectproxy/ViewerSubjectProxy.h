@@ -92,6 +92,8 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
         virtual int  Fill(){ return 0; }
         virtual void Flush(){}
         virtual long Size(){ return 0; }
+        virtual void Reset() {}
+
         virtual void Write(unsigned char value) {}
         virtual void Read(unsigned char *address) {}
         virtual void Append(const unsigned char *buf, int count){}

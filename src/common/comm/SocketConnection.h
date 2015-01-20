@@ -79,6 +79,7 @@ public:
     virtual int  Fill();
     virtual void Flush();
     virtual long Size();
+    virtual void Reset();
     virtual void Write(unsigned char value);
     virtual void Read(unsigned char *address);
     virtual void Append(const unsigned char *buf, int count);
@@ -90,6 +91,7 @@ public:
     virtual int  GetDescriptor() const;
 
     void SetFixedBufferMode(bool val);
+    bool GetFixedBufferMode();
 
     static const int FIXED_BUFFER_SIZE;
 protected:
@@ -113,7 +115,7 @@ public:
     virtual void FlushAttr(AttributeSubject*) = 0;
     virtual int Fill() = 0;
 
-    std::string serializeMetaData(AttributeSubject*);
-    std::string serializeAttributeSubject(AttributeSubject*);
+    static std::string serializeMetaData(AttributeSubject*);
+    static std::string serializeAttributeSubject(AttributeSubject*);
 };
 #endif

@@ -66,6 +66,12 @@ BufferConnection::Size()
 }
 
 void
+BufferConnection::Reset()
+{
+    buffer.clear();
+}
+
+void
 BufferConnection::Write(unsigned char value)
 {
     buffer.push_back(value);

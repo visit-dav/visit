@@ -207,50 +207,48 @@ AttributeSubjectSerialize::Flush(AttributeSubject *subject)
         }
         else {
 
-            if(subject->GetSendMetaInformation())
-            {
-                JSONNode meta;
-                JSONNode node;
+            SocketConnection* sconn = NULL;
 
-                subject->WriteAPI(meta);
-
-                node["id"] = subject->GetGuido();
-                node["typename"] = subject->TypeName();
-                node["api"] = meta;
-
-                const std::string& output = node.ToString().c_str();
-#if defined(_WIN32)
-            send(conn->GetDescriptor(), (const char FAR *)output.c_str(), output.size(), 0);
-#else
-#ifdef MSG_NOSIGNAL
-            send(conn->GetDescriptor(), (const void *)output.c_str(), output.size(), MSG_NOSIGNAL);
-#else
-            send(conn->GetDescriptor(), (const void *)output.c_str(), output.size(), 0);
-#endif
-#endif
+            sconn = dynamic_cast<SocketConnection*>(conn);
+            bool fixBufferMode = false;
+            if(sconn) {
+                fixBufferMode = sconn->GetFixedBufferMode();
+                sconn->SetFixedBufferMode(false);
             }
 
-            JSONNode child, metadata;
-            JSONNode node;
+            conn->Reset();
 
-            subject->Write(child);
-            subject->WriteMetaData(metadata);
+            JSONNode startTag;
+            startTag[0] = "startTag";
+            const std::string& start = startTag.ToString().c_str();
 
-            node["id"] = subject->GetGuido();
-            node["typename"] = subject->TypeName();
-            node["contents"] = child; //.ToJSONNode(false);
-            node["metadata"] = metadata; //.ToJSONNode(false);
-            const std::string& output = node.ToString().c_str();
+            JSONNode endTag;
+            endTag[0] = "endTag";
+            const std::string& end = endTag.ToString().c_str();
 
-#if defined(_WIN32)
-            send(conn->GetDescriptor(), (const char FAR *)output.c_str(), output.size(), 0);
-#else
-#ifdef MSG_NOSIGNAL
-            send(conn->GetDescriptor(), (const void *)output.c_str(), output.size(), MSG_NOSIGNAL);
-#else
-            send(conn->GetDescriptor(), (const void *)output.c_str(), output.size(), 0);
-#endif
-#endif
+            if(subject->GetSendMetaInformation())
+            {
+                conn->Append((const unsigned char *)start.c_str(), start.size());
+
+                const std::string& api = AttributeSubjectSocketConnection::serializeMetaData(subject);
+                conn->Append((const unsigned char *)api.c_str(), api.size());
+
+                conn->Append((const unsigned char *)end.c_str(), end.size());
+
+            }
+
+            conn->Append((const unsigned char *)start.c_str(), start.size());
+
+            const std::string& output = AttributeSubjectSocketConnection::serializeAttributeSubject(subject);
+            conn->Append((const unsigned char *)output.c_str(), output.size());
+
+            conn->Append((const unsigned char *)end.c_str(), end.size());
+
+            conn->Flush();
+
+            if(sconn) {
+                sconn->SetFixedBufferMode(fixBufferMode);
+            }
         }
     }
 }
