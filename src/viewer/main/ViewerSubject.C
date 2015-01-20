@@ -5834,7 +5834,6 @@ ViewerSubject::HandleAnimation()
 }
 
 void ViewerSubject::RenderEventCallback(int windowId, bool inMotion, void* data) {
-    std::cout << "Render Event Callback" << std::endl;
     ViewerSubject* vs = (ViewerSubject*)data;
     vs->BroadcastImage(windowId, inMotion);
 }
