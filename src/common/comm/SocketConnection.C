@@ -251,6 +251,33 @@ SocketConnection::SetFixedBufferMode(bool val)
 }
 
 // ****************************************************************************
+// Method: SocketConnection::GetFixedBufferMode
+//
+// Purpose:
+//   Get the socket's fixed buffer mode.
+//
+// Arguments:
+//   val : Whether to do fixed buffer mode.
+//
+// Returns:
+//
+// Note:       Fixed buffer mode is a communication style where we send
+//             fixed-size chunks of data that may contain smaller variable-length
+//             payloads.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 14 15:50:00 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+SocketConnection::GetFixedBufferMode()
+{
+    return fixedBufferMode;
+}
+// ****************************************************************************
 // Method: SocketConnection::WaitForDescriptor
 //
 // Purpose:
@@ -614,6 +641,28 @@ long
 SocketConnection::Size()
 {
     return (long)buffer.size();
+}
+
+// ****************************************************************************
+// Method: SocketConnection::Reset
+//
+// Purpose:
+//   Resets the connection's buffer.
+//
+// Arguments:
+//   value : The character to append.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 29 12:19:23 PDT 2000
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+SocketConnection::Reset()
+{
+    buffer.clear();
 }
 
 // ****************************************************************************

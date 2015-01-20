@@ -78,6 +78,7 @@ public:
     virtual int  Fill() = 0;
     virtual void Flush() = 0;
     virtual long Size() = 0;
+    virtual void Reset() = 0; /// Reset Connection State
 
     // These read or write a byte to whatever we're using
     // as the connection.
