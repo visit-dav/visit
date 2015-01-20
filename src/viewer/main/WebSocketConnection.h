@@ -165,7 +165,7 @@ public:
 
     virtual int  Fill();
     virtual void Flush();
-    virtual void Flush(AttributeSubject*);
+    virtual void FlushAttr(AttributeSubject*);
     virtual long Size();
     virtual void Write(unsigned char value);
     virtual void Read(unsigned char *address);

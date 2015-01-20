@@ -110,7 +110,10 @@ public:
     AttributeSubjectSocketConnection(DESCRIPTOR descriptor_): SocketConnection(descriptor_) {}
     virtual ~AttributeSubjectSocketConnection() {}
 
-    virtual void Flush(AttributeSubject*) = 0;
+    virtual void FlushAttr(AttributeSubject*) = 0;
     virtual int Fill() = 0;
+
+    std::string serializeMetaData(AttributeSubject*);
+    std::string serializeAttributeSubject(AttributeSubject*);
 };
 #endif
