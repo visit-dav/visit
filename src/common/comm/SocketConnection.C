@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #include <SocketConnection.h>
+#include <AttributeSubject.h>
 #include <AttributeSubjectSerialize.h>
 #include <visit-config.h>
 #if defined(_WIN32)
@@ -889,4 +890,34 @@ SocketConnection::NeedsRead(bool blocking) const
     // Assume that read will block for input.
     return true;
 #endif
+}
+
+std::string
+AttributeSubjectSocketConnection::serializeMetaData(AttributeSubject *subject)
+{
+    JSONNode meta;
+    JSONNode node;
+
+    subject->WriteAPI(meta);
+
+    node["id"] = subject->GetGuido();
+    node["typename"] = subject->TypeName();
+    node["api"] = meta; //.ToJSONNode(false,false);
+
+    return node.ToString();
+}
+
+std::string
+AttributeSubjectSocketConnection::serializeAttributeSubject(AttributeSubject *subject) {
+    JSONNode child, metadata;
+    JSONNode node;
+
+    subject->Write(child);
+    subject->WriteMetaData(metadata);
+    node["id"] = subject->GetGuido();
+    node["typename"] = subject->TypeName();
+    node["contents"] = child; //.ToJSONNode(false,true);
+    node["metadata"] = metadata;
+
+    return node.ToString();
 }

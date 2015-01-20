@@ -203,45 +203,9 @@ AttributeSubjectSerialize::Flush(AttributeSubject *subject)
         AttributeSubjectSocketConnection* ascomm = dynamic_cast<AttributeSubjectSocketConnection*>(conn);
 
         if(ascomm) {
-            ascomm->Flush(subject);
+            ascomm->FlushAttr(subject);
         }
         else {
-            /*
-            if(subject->GetSendMetaInformation())
-            {
-                JSONNode meta;
-                JSONNode node;
-
-                subject->WriteAPI(meta);
-
-                node["id"] = subject->GetGuido();
-                node["typename"] = subject->TypeName();
-                node["api"] = meta;
-
-                const std::string& output = node.ToString().c_str();
-                conn->Append((const unsigned char *)output.c_str(), output.size());
-                conn->Flush();
-            }
-
-            JSONNode child, metadata;
-            JSONNode node;
-
-            subject->Write(child);
-            subject->WriteMetaData(metadata);
-
-            node["id"] = subject->GetGuido();
-            node["typename"] = subject->TypeName();
-            node["contents"] = child; //.ToJSONNode(false);
-            node["metadata"] = metadata; //.ToJSONNode(false);
-
-            const std::string& output = node.ToString();
-            conn->Append((const unsigned char *)output.c_str(), output.size());
-            conn->Flush();
-            */
-
-            //        std::cout << subject->TypeName() << " "
-            //                  << subject->CalculateMessageSize(*this)
-            //                  << std::endl;
 
             if(subject->GetSendMetaInformation())
             {
@@ -277,6 +241,7 @@ AttributeSubjectSerialize::Flush(AttributeSubject *subject)
             node["contents"] = child; //.ToJSONNode(false);
             node["metadata"] = metadata; //.ToJSONNode(false);
             const std::string& output = node.ToString().c_str();
+
 #if defined(_WIN32)
             send(conn->GetDescriptor(), (const char FAR *)output.c_str(), output.size(), 0);
 #else
