@@ -43,7 +43,11 @@
 #include <AttributeSubject.h>
 
 #include <stdlib.h>
+#if defined(_WIN32)
+#include <win32commhelpers.h>
+#else
 #include <sys/socket.h>
+#endif
 
 AttributeSubjectSerialize::AttributeSubjectSerialize() : conn(NULL)
 {
