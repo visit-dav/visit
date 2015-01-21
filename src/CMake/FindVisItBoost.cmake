@@ -40,10 +40,10 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET(BOOST_LIBS boost_system)
+SET(BOOST_LIBS NO_LIBS)
 
 IF(NEKTAR++_FOUND)
-  SET(BOOST_LIBS ${BOOST_LIBS}
+  SET(BOOST_LIBS
    boost_iostreams
    boost_thread
    boost_date_time
