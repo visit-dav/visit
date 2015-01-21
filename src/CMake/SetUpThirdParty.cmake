@@ -159,12 +159,13 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
     ENDIF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
   ENDIF(${${lib_skip_install}})
 
-  SET(all_libs ${libs})
-  FOREACH (X ${ARGN})
-      SET(all_libs ${all_libs} ${X})
-  ENDFOREACH (X ${ARGN})
+  IF(NOT "${libs}" STREQUAL "NO_LIBS")
+    SET(all_libs ${libs})
+    FOREACH (X ${ARGN})
+        SET(all_libs ${all_libs} ${X})
+    ENDFOREACH (X ${ARGN})
 
-  FOREACH (X ${all_libs})
+    FOREACH (X ${all_libs})
       FIND_LIBRARY(full_lib_path ${X}
                    PATHS ${${lib_dir_var}}
                    NO_DEFAULT_PATH
@@ -192,18 +193,18 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
           RETURN()
       ENDIF(full_lib_path)
       UNSET(full_lib_path CACHE)
-  ENDFOREACH (X ${all_libs})
+    ENDFOREACH (X ${all_libs})
 
-  SET(lib_dep "${pkg}_LIBDEP")
-  IF(NOT "${${lib_dep}}" STREQUAL "")
-    MESSAGE(STATUS "  Looking for dependent libraries for ${pkg}")
-  ENDIF(NOT "${${lib_dep}}" STREQUAL "")
+    SET(lib_dep "${pkg}_LIBDEP")
+    IF(NOT "${${lib_dep}}" STREQUAL "")
+      MESSAGE(STATUS "  Looking for dependent libraries for ${pkg}")
+    ENDIF(NOT "${${lib_dep}}" STREQUAL "")
   
-  #
-  # This alternates between a reading path & a lib from ${pkg}_LIBDEP
-  #
-  SET(is_lib 1)
-  FOREACH (X ${${lib_dep}})
+    #
+    # This alternates between a reading path & a lib from ${pkg}_LIBDEP
+    #
+    SET(is_lib 1)
+    FOREACH (X ${${lib_dep}})
       IF(${X})
           SET(X_VALUE ${${X}})
       ELSE(${X})
@@ -244,21 +245,30 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
           ENDIF(full_lib_path)
           UNSET(full_lib_path CACHE)
       ENDIF(is_lib)
-  ENDFOREACH (X ${${lib_dep}})
+    ENDFOREACH (X ${${lib_dep}})
+  ENDIF()
 
   # Cache final results
   SET("${tp_found}"    1                 CACHE BOOL   "${pkg} library found" FORCE)
   SET("${base_dir}"    ${${base_dir}}    CACHE PATH   "${pkg} base directory" FORCE)
   SET("${inc_dir_var}" ${${inc_dir_var}} CACHE PATH   "${pkg} include directory" FORCE)
-  SET("${lib_dir_var}" ${${lib_dir_var}} CACHE PATH   "${pkg} library directory" FORCE)
-  SET("${lib_var}"     ${${lib_var}}     CACHE STRING "${pkg} library" FORCE)
+
+  IF(NOT "${libs}" STREQUAL "NO_LIBS")
+    SET("${lib_dir_var}" ${${lib_dir_var}} CACHE PATH   "${pkg} library directory" FORCE)
+    SET("${lib_var}"     ${${lib_var}}     CACHE STRING "${pkg} library" FORCE)
+  ENDIF()
 
   MARK_AS_ADVANCED("${tp_found}"
                    "${base_dir}"
                    "${inc_dir_var}"
                    "${lib_dir_var}"
                    "${lib_var}")
-  MESSAGE(STATUS "  ${pkg} found")
+
+  IF(NOT "${libs}" STREQUAL "NO_LIBS")
+    MESSAGE(STATUS "  ${pkg} found")
+  ELSE()
+    MESSAGE(STATUS "  ${pkg} found - headers only - no libs")
+  ENDIF()
 
 ENDFUNCTION(SET_UP_THIRD_PARTY)
 
