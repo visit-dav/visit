@@ -62,7 +62,7 @@ function bv_uintah_info
 export UINTAH_VERSION=${UINTAH_VERSION:-"1.6.0"}
 export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
 export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"1.6"}
-export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
+export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"uintah-${UINTAH_COMPATIBILITY_VERSION}/optimized"}
 #export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}/${UINTAH_FILE}"}
 export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/devbuilds/icse/uintah/${UINTAH_VERSION}"}
 
@@ -289,7 +289,7 @@ function build_uintah
     #
     info "Installing UINTAH . . ."
 
-    if [[! -e $VISITDIR/uintah ]] ; then
+    if [[ ! -e $VISITDIR/uintah ]] ; then
         mkdir $VISITDIR/uintah/ || error "Can't make UINTAH install dir."
     fi
 
