@@ -130,11 +130,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The <i>viewer</i> library has been split into 2 parts: <i>viewercore</i>, and <i>viewer</i>. The <i>viewercore</i> library contains much of the viewer's machinery but it has <b>NO Qt DEPENDENCIES</b> so it can be used in other contexts that do not rely on Qt. The <i></i> library contains all of the Qt-specific code, which includes Qt vis windows, action UI's, socket notifiers, timers, information boxes, etc. The viewer creates objects via a ViewerFactory class and depending on whether -nowin is given it creates objects suitable for nowin mode or objects suitable for a Qt gui mode. As a result of the split, the viewer in general has been greatly changed internally. Outside of the viewer, there should be no obvious changes and embedded viewer applications and PySide applications should continue to work as before.
   </li>
   <li>The xml2info and xml2cmake tools were modified to generate engine and viewer plugin information that has a shared "viewerengine" base class. The base class contains all functionality that needs to be shared by both classes of plug-ins. The additional viewer functionality now exposed to the engine plug-ins allows most viewer functions to be satisfied by engine plug-ins, as is the case when libsim is used in batch mode.</li>
+  <li>The xml2avt tool was modified to create the ExecuteData method with the new signature that uses avtDataRepresentation instead of vtkDataSet, domain and label.</li>
   <li>An option for specifying help text for database options was added.</li>
   <li>A help button and additional window for displaying help text was added to GUI to support database options help.</li>
   <li>Changed failure mode of avtDatabaseMetaData::DetermineVarType() to return AVT_UNKNOWN_TYPE instead of excepting out.</li>
   <li>The makemovie python script was changed so that visitmovietemplate.py can be correctly found from a development version on Windows.</li>
-  <li></li>
   <li></li>
 </ul>
 
