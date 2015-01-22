@@ -144,6 +144,18 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
   ENDIF()
 
 #
+# If the library is NO_LIBS then header only installation
+#
+IF( "${libs}" STREQUAL "NO_LIBS")
+
+  IF(${${lib_skip_install}})
+    MESSAGE(STATUS "Skipping installation of ${pkg}")
+  ELSE(${${lib_skip_install}})
+    THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${${inc_dir_var}})
+  ENDIF(${${lib_skip_install}})
+
+ELSE()
+#
 # If non empty string, lib_dir was found
 #
   IF(NOT "${libs}" STREQUAL "NO_LIBS")
@@ -171,7 +183,6 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
     ENDIF()
   ENDIF(${${lib_skip_install}})
 
-  IF(NOT "${libs}" STREQUAL "NO_LIBS")
     SET(all_libs ${libs})
     FOREACH (X ${ARGN})
         SET(all_libs ${all_libs} ${X})
