@@ -86,7 +86,7 @@ JSONRootPath::~JSONRootPath()
 // ****************************************************************************
 //  Method: JSONRootPath::Expand
 //
-//  Purpose: Maps a doman id to is file system or in db path.
+//  Purpose: Maps a domain id to is file system or in db path.
 //
 //
 //  Programmer:  Cyrus Harrison
@@ -96,12 +96,15 @@ JSONRootPath::~JSONRootPath()
 //   Cyrus Harrison, Tue Sep 23 14:42:52 PDT 2014
 //   Added support for simple domain expansion.
 //
+//   Cyrus Harrison, Wed Jan 21 15:02:21 PST 2015
+//   Added support for "%06d", which is the new MFEM standard format string
+//
 // ****************************************************************************
 std::string
 JSONRootPath::Expand(int domain) const
 {
     //
-    // Note: This currenlty only handles "%05d" as the format string.
+    // Note: This currently only handles "%05d" or "%06d" as the format string.
     //
     
     std::size_t path_pattern = path.find("%05d");
@@ -114,10 +117,19 @@ JSONRootPath::Expand(int domain) const
                                       "%05d",
                                       std::string(buff));
     }
-    else
+    
+    path_pattern = path.find("%06d");
+    
+    if(path_pattern != std::string::npos)
     {
-        return path;
+        char buff[64];
+        SNPRINTF(buff,64,"%06d",domain);    
+        return StringHelpers::Replace(path,
+                                      "%06d",
+                                      std::string(buff));
     }
+
+    return path;
 }
 
 // ****************************************************************************
