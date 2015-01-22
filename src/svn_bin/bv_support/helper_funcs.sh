@@ -274,6 +274,8 @@ function uncompress_untar
         COMPRESSTYPE="bzip"
     elif [[ $(echo $1 | egrep "\.tgz$" ) != "" ]] ; then
         COMPRESSTYPE="targzip"
+    elif [[ $(echo $1 | egrep "\.tar.gz$" ) != "" ]] ; then
+        COMPRESSTYPE="targzip"
     else
         warn "unsupported uncompression method"
         return 1

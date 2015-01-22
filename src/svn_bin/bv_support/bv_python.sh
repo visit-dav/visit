@@ -116,6 +116,8 @@ export PYTHON_VERSION=${PYTHON_VERSION:-"2.7.6"}
 export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"2.7"}
 export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
 export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
+export PYTHON_MD5_CHECKSUM="2cf641732ac23b18d139be077bd906cd"
+export PYTHON_SHA256_CHECKSUM=""
 
 export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
 export PIL_FILE=${PIL_FILE:-"Imaging-1.1.6.tar.gz"}
@@ -123,8 +125,14 @@ export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.6"}
 
 export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-1.5.2.tar.gz"}
 export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
-export PYTHON_MD5_CHECKSUM="2cf641732ac23b18d139be077bd906cd"
-export PYTHON_SHA256_CHECKSUM=""
+
+export PYREQUESTS_FILE=${PYREQUESTS_FILE:-"requests-2.5.1.tar.gz"}
+export PYREQUESTS_BUILD_DIR=${PYREQUESTS_BUILD_DIR:-"requests-2.5.1"}
+
+export SEEDME_FILE=${SEEDME_FILE:-"seedme-python-client-cb1f3c409788.tar.gz"}
+export SEEDME_BUILD_DIR=${SEEDME_BUILD_DIR:-"seedme-python-client-cb1f3c409788"}
+
+
 }
 
 function bv_python_print
@@ -532,6 +540,82 @@ function build_pyparsing
     return 0
 }
 
+# *************************************************************************** #
+#                            Function 7.3, build_requests                     #
+# *************************************************************************** #
+function build_requests
+{
+    if ! test -f ${PYREQUESTS_FILE} ; then
+        download_file ${PYREQUESTS_FILE}
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${PYREQUESTS_FILE}"
+            return 1
+        fi
+    fi
+    if ! test -d ${PYREQUESTS_BUILD_DIR} ; then
+        info "Extracting python requests module ..."
+        uncompress_untar ${PYREQUESTS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${PYREQUESTS_FILE}"
+            return 1
+        fi
+    fi
+
+    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
+    pushd $PYREQUESTS_BUILD_DIR > /dev/null
+        info "Installing python requests module ..."
+        ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    popd > /dev/null
+
+    # installs into site-packages dir of VisIt's Python.
+    # Simply re-execute the python perms command.
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/python"
+       chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    info "Done with python requests module."
+    return 0
+}
+
+# *************************************************************************** #
+#                            Function 7.4, build_seedme                       #
+# *************************************************************************** #
+function build_seedme
+{
+    if ! test -f ${SEEDME_FILE} ; then
+        download_file ${SEEDME_FILE}
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SEEDME_FILE}"
+            return 1
+        fi
+    fi
+    if ! test -d ${SEEDME_BUILD_DIR} ; then
+        info "Extracting seedme python module ..."
+        uncompress_untar ${SEEDME_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SEEDME_BUILD_DIR}"
+            return 1
+        fi
+    fi
+
+    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
+    pushd $SEEDME_BUILD_DIR > /dev/null
+        info "Installing python requests module ..."
+        ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    popd > /dev/null
+
+    # installs into site-packages dir of VisIt's Python.
+    # Simply re-execute the python perms command.
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/python"
+       chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    info "Done with seedme python module."
+    return 0
+}
+
 function bv_python_is_enabled
 {
     if [[ $DO_PYTHON == "yes" ]]; then
@@ -582,6 +666,19 @@ if [[ "$DO_PYTHON" == "yes" && "$USE_SYSTEM_PYTHON" == "no" ]] ; then
             warn "pyparsing build failed."
         fi
         info "Done building the pyparsing module."
+
+        build_requests
+        if [[ $? != 0 ]] ; then
+            warn "requests python module build failed."
+        fi
+        info "Done building the requests python module."
+
+        build_seedme
+        if [[ $? != 0 ]] ; then
+            warn "seedme python module build failed."
+        fi
+        info "Done building the requests seedme python module."
+
     fi
 fi
 }
