@@ -9,7 +9,7 @@ cd visit_run_tests
 user=`whoami`
 tmpDir="/nfs/tmp2/"
 tonight=`date "+visit%Y-%m-%d"`
-vulcanbank="sspwork"
+vulcanbank="ddcwork"
 
 # Run the vulcan nightly build
 svn_bin/vulcan_nightly_build -user $user -tmpdir $tmpDir -tonight $tonight -vulcanbank $vulcanbank
