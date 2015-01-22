@@ -41,10 +41,23 @@
 #   Tom Fogal, Tue Mar 16 17:20:59 MDT 2010
 #   Set the proper type for some MESSAGE calls which report errors.
 #
+#   Mark C. Miller, Thu Jul 29 23:39:05 PDT 2010
+#   Adjusted to fail fatally when things cannot be found and to override
+#   this failure behavior with option IGNORE_THIRD_PARTY_LIB_PROBLEMS.
+#   Replaced multiple leves of indentation with inverted IF logic
+#   and early returns. Got rid of setup_lib_error variable. Output
+#   'not requested' message if pkg was not specified by user. Tried
+#   to make status message for failure to find distinguishable in
+#   cmake output from other messages.
+#
 #   Brad Whitlock, Mon Apr 18 15:18:08 PDT 2011
 #   Added another check for xxx-NOTFOUND so we don't assume just because we
 #   didn't specify a library like TCMALLOC that we have an error situation
 #   when it does not exist.
+#
+#   Allen Sanderson, Kathleen Biagas, Thu Jan 22 08:55:21 MST 2015 
+#   Added logic for headers-only installs (like boost).  Pass 'NO_LIBS'
+#   for 'libs' argument to specify a headers-only build. 
 #
 #****************************************************************************/
 
@@ -69,16 +82,7 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 #
 #  uses path specified by pkg_DIR as base path for the files
 #
-#  Modfications:
-#    Mark C. Miller, Thu Jul 29 23:39:05 PDT 2010
-#    Adjusted to fail fatally when things cannot be found and to override
-#    this failure behavior with option IGNORE_THIRD_PARTY_LIB_PROBLEMS.
-#    Replaced multiple leves of indentation with inverted IF logic
-#    and early returns. Got rid of setup_lib_error variable. Output
-#    'not requested' message if pkg was not specified by user. Tried
-#    to make status message for failure to find distinguishable in
-#    cmake output from other messages.
-#
+
 FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
   MESSAGE(STATUS "Looking for ${pkg}")
   SET(base_dir "${pkg}_DIR")
@@ -131,22 +135,26 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
 # they do for Qt.
 ##
   SET(${lib_dir_var} "")
-  FOREACH(X ${libdirextensions})
-    IF(EXISTS ${base_dir_val}/${X} AND "${${lib_dir_var}}" STREQUAL "")
-      SET(${lib_dir_var} ${base_dir_val}/${X})
-    ENDIF()
-  ENDFOREACH(X)
+  IF(NOT "${libs}" STREQUAL "NO_LIBS")
+    FOREACH(X ${libdirextensions})
+      IF(EXISTS ${base_dir_val}/${X} AND "${${lib_dir_var}}" STREQUAL "")
+        SET(${lib_dir_var} ${base_dir_val}/${X})
+      ENDIF()
+    ENDFOREACH(X)
+  ENDIF()
 
 #
 # If non empty string, lib_dir was found
 #
-  IF("${${lib_dir_var}}" STREQUAL "")
+  IF(NOT "${libs}" STREQUAL "NO_LIBS")
+    IF("${${lib_dir_var}}" STREQUAL "")
       IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
           MESSAGE(STATUS "\n** \n** \n** None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
       ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
           MESSAGE(FATAL_ERROR "   None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
       ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
       RETURN()
+    ENDIF()
   ENDIF()
 
   # If the inc and lib directories are different then attempt to
@@ -154,9 +162,13 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
   IF(${${lib_skip_install}})
     MESSAGE(STATUS "Skipping installation of ${pkg}")
   ELSE(${${lib_skip_install}})
-    IF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
+    IF(NOT "${libs}" STREQUAL "NO_LIBS")
+      IF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
         THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${${inc_dir_var}})
-    ENDIF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
+      ENDIF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
+    ELSE()
+      THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${${inc_dir_var}})
+    ENDIF()
   ENDIF(${${lib_skip_install}})
 
   IF(NOT "${libs}" STREQUAL "NO_LIBS")
