@@ -1,14 +1,14 @@
-#/Projects/VisIt/trunk/thirdparty/visit/cmake/3.0.2/i386-apple-darwin12_gcc/bin/cmake
+#/Users/allen/Projects/VisIt/Thirdparty/visit/cmake/3.0.2/i386-apple-darwin12_gcc/bin/cmake
 ##
-## ../src/svn_bin/build_visit generated host.cmake
-## created: Thu Oct 23 14:05:24 MDT 2014
+## ../trunk//src/svn_bin/build_visit generated host.cmake
+## created: Wed Jan 21 21:06:14 MST 2015
 ## system: Darwin lautertun.sci.utah.edu 12.5.0 Darwin Kernel Version 12.5.0: Sun Sep 29 13:33:47 PDT 2013; root:xnu-2050.48.12~1/RELEASE_X86_64 x86_64
 ## by: allen
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /Projects/VisIt/trunk/thirdparty/visit)
+SET(VISITHOME /Users/allen/Projects/VisIt/Thirdparty/visit)
 SET(VISITARCH i386-apple-darwin12_gcc)
 
 ## Compiler flags.
@@ -47,6 +47,11 @@ VISIT_OPTION_DEFAULT(VISIT_PARADIS ON TYPE BOOL)
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 ##
+
+##
+## R
+##
+VISIT_OPTION_DEFAULT(VISIT_R_DIR ${VISITHOME}/R/2.13.2/${VISITARCH}/lib/R)
 
 ##
 ## Python
@@ -91,7 +96,7 @@ VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost/1_57_0/${VISITARCH})
 ##
 ## AdvIO
 ##
-VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH})
+#VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH})
 
 ##
 ## Boxlib
@@ -210,4 +215,5 @@ VISIT_OPTION_DEFAULT(VISIT_INSTALL_THIRD_PARTY ON TYPE BOOL)
 ##
 SET(VISIT_CREATE_APPBUNDLE_PACKAGE TRUE)
 VISIT_OPTION_DEFAULT(VISIT_CREATE_APPBUNDLE_PACKAGE ON TYPE BOOL)
+
 
