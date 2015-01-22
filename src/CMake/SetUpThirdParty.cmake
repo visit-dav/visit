@@ -144,17 +144,27 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
   ENDIF()
 
 #
+# If the library is NO_LIBS then header only installation
+#
+IF( "${libs}" STREQUAL "NO_LIBS")
+
+  IF(${${lib_skip_install}})
+    MESSAGE(STATUS "Skipping installation of ${pkg}")
+  ELSE(${${lib_skip_install}})
+    THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${${inc_dir_var}})
+  ENDIF(${${lib_skip_install}})
+
+ELSE()
+#
 # If non empty string, lib_dir was found
 #
-  IF(NOT "${libs}" STREQUAL "NO_LIBS")
-    IF("${${lib_dir_var}}" STREQUAL "")
-      IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-          MESSAGE(STATUS "\n** \n** \n** None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
-      ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-          MESSAGE(FATAL_ERROR "   None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
-      ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-      RETURN()
-    ENDIF()
+  IF("${${lib_dir_var}}" STREQUAL "")
+    IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+        MESSAGE(STATUS "\n** \n** \n** None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
+    ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+        MESSAGE(FATAL_ERROR "   None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
+    ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+    RETURN()
   ENDIF()
 
   # If the inc and lib directories are different then attempt to
@@ -162,16 +172,11 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
   IF(${${lib_skip_install}})
     MESSAGE(STATUS "Skipping installation of ${pkg}")
   ELSE(${${lib_skip_install}})
-    IF(NOT "${libs}" STREQUAL "NO_LIBS")
-      IF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
-        THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${${inc_dir_var}})
-      ENDIF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
-    ELSE()
+    IF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
       THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${${inc_dir_var}})
-    ENDIF()
+    ENDIF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
   ENDIF(${${lib_skip_install}})
 
-  IF(NOT "${libs}" STREQUAL "NO_LIBS")
     SET(all_libs ${libs})
     FOREACH (X ${ARGN})
         SET(all_libs ${all_libs} ${X})
