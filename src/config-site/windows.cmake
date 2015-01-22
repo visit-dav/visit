@@ -36,13 +36,17 @@ SET(VISITHOME ${VISIT_WINDOWS_DIR}/${VISIT_MSVC_VERSION})
 
 # Create the NSIS installer package (override default from root CMakeLists.txt
 OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS." ON)
-SET(BOOST_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/bilib/boost_1_42_0 CACHE PATH "boost include")
 
 ##############################################################
 ##
 ## Required libraries
 ##
 ##############################################################
+
+##
+## BOOST
+##
+VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost_minimal_headers/1.57.0)
 
 
 ##

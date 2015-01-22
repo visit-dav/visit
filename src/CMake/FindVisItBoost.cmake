@@ -40,10 +40,10 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET(BOOST_LIBS boost_system)
+SET(BOOST_LIBS NO_LIBS)
 
 IF(NEKTAR++_FOUND)
-  SET(BOOST_LIBS ${BOOST_LIBS}
+  SET(BOOST_LIBS
    boost_iostreams
    boost_thread
    boost_date_time
@@ -52,8 +52,38 @@ IF(NEKTAR++_FOUND)
    boost_program_options)
 ENDIF()
 
-IF(WIN32 AND BOOST_LIBNAMES_AFFIX_DLL)
-  SET_UP_THIRD_PARTY(BOOST lib include ${BOOST_LIBS} )
-ELSE()
-  SET_UP_THIRD_PARTY(BOOST lib include ${BOOST_LIBS} )
-ENDIF()
+SET_UP_THIRD_PARTY(BOOST lib include ${BOOST_LIBS} )
+
+# Notes to Windows developers on building boost:
+# grab the .zip or .7z tarball and extract
+# Open command prompt in the extracted boost_<version> directory
+# To build everything and install to default C:\Boost location:
+#   .\bootstrap
+#   .\b2
+#   .\b2 install
+#
+# To change install location, add --prefix="\path\to\boost" to
+# all commands. (All might be overkill, but I experienced problems
+# when specified for only bootrap or b2, so I added it to all).
+#
+# If you want shared libs only, linked with shared CRT, release only, 64-bit:
+#
+#   .\boostrap --prefix="C:\path\to\where\you\want\boost"
+#   .\b2 --prefix="C:\path\to\where\you\want\boost" link=shared runtime-link=shared variant=release threading=multi address-model=64
+#   .\b2 --prefix="C:\path\to\where\you\want\boost" link=shared runtime-link=shared variant=release threading=multi address-model=64 install
+#
+# If you only want a subset of the libraries add a '--with-<lib>' for each 
+# library you want:
+#   .\boostrap --prefix="C:\path\to\where\you\want\boost"
+#   .\b2 --with-system --prefix="C:\path\to\where\you\want\boost" link=shared runtime-link=shared variant=release threading=multi address-model=64
+#   .\b2 --with-system --prefix="C:\path\to\where\you\want\boost" link=shared runtime-link=shared variant=release threading=multi address-model=64 install
+#
+# Still not certain that all the arguments are needed for the 'install' step
+# of running b2, but I ran into problems without using them, so ...
+#
+# I found the following links helpful, as well as running '.\b2 --help'
+# once I had bootstrapped.
+#
+# http://www.boost.org/doc/libs/1_57_0/more/getting_started/windows.html#simplified-build-from-source
+# 
+# http://www.boost.org/build/doc/html/bbv2/overview/invocation.html
