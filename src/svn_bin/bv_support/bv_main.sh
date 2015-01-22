@@ -275,9 +275,6 @@ done
 export DO_HOSTCONF="yes"
 export ON_HOSTCONF="on"
 
-export DO_BOOST="yes"
-export ON_BOOST="on"
-
 export DO_DEBUG="no"
 export ON_DEBUG="off"
 export DO_GROUP="no"
