@@ -62,7 +62,7 @@ function bv_uintah_info
 export UINTAH_VERSION=${UINTAH_VERSION:-"1.6.0"}
 export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
 export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"1.6"}
-export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"uintah-${UINTAH_COMPATIBILITY_VERSION}/optimized"}
+export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
 #export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}/${UINTAH_FILE}"}
 export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/devbuilds/icse/uintah/${UINTAH_VERSION}"}
 
@@ -217,7 +217,8 @@ function build_uintah
     if [[ "$FC_COMPILER" == "no" ]] ; then
 
         warn "Uintah may require fortran to be enabled. It does not appear that the --fortran "
-        warn "agrument was set. If Uintah fails to build try adding the --fortran argument"
+        warn "agrument was set. If Uintah fails to build try adding the --fortra
+	n argument"
         FORTRANARGS="--without-fortran"
         #return 1
 
@@ -249,27 +250,57 @@ function build_uintah
 
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
-    info "Invoking command to configure UINTAH"
-    info "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+
+      info "Invoking command to configure UINTAH"
+      info "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_darwin} \
-        --enable-optimize="-O2" \
-        --enable-assertion-level=0
-        --enable-64bit
+        ${cf_build_type} \
+        --enable-optimize \
         --with-mpi="${PAR_INCLUDE_DIR}/.." "
-    sh -c "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+
+#        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
+#        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
+
+      sh -c "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+        MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
+        $FORTRANARGS \
+        --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
+        ${cf_darwin} \
+        ${cf_build_type} \
+        --enable-optimize \
+        --with-mpi="${PAR_INCLUDE_DIR}/.." "
+
+#        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
+#        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
+
+    else
+
+      info "Invoking command to configure UINTAH"
+      info "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
-        --enable-optimize="-O2" \
-        --enable-assertion-level=0 \
-        --enable-64bit \
-        --with-mpi="${PAR_INCLUDE_DIR}/.." "
+        --enable-optimize"
+
+      sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+        MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
+        $FORTRANARGS \
+        --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
+        ${cf_build_type} \
+        --enable-optimize"
+    fi
+
+
     if [[ $? != 0 ]] ; then
        warn "UINTAH configure failed.  Giving up"
        return 1
@@ -290,10 +321,10 @@ function build_uintah
     info "Installing UINTAH . . ."
 
     if [[ ! -e $VISITDIR/uintah ]] ; then
-        mkdir $VISITDIR/uintah/ || error "Can't make UINTAH install dir."
+        mkdir $VISITDIR/uintah || error "Can't make UINTAH install dir."
     fi
 
-    if [[-e $VISITDIR/uintah/$UINTAH_VERSION ]] ; then
+    if [[ -e $VISITDIR/uintah/$UINTAH_VERSION ]] ; then
         rm -rf $VISITDIR/uintah/$UINTAH_VERSION || error "Can't remove old UINTAH install dir."
     fi
 
