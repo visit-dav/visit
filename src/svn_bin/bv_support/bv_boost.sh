@@ -138,9 +138,8 @@ function build_boost
     fi
 
     build_libs=""
-
     if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
-        build_libs="$build_libs --with-libraries=\"iostreams,thread,date_time,filesystem,system,program_options\" "
+        build_libs="$build_libs --with-libraries=\"iostreams,thread,date_time,filesystem,system,program_options,regex\" "
     fi
 
     if [[ "$build_libs" != ""  ]] ; then
