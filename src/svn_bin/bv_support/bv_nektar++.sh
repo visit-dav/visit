@@ -49,11 +49,10 @@ function bv_nektar++_initialize_vars
 
 function bv_nektar++_info
 {
-export NEKTAR_PLUS_PLUS_VERSION=${NEKTAR_PLUS_PLUS_VERSION:-"4.0.0"}
+export NEKTAR_PLUS_PLUS_VERSION=${NEKTAR_PLUS_PLUS_VERSION:-"4.0.1"}
 export NEKTAR_PLUS_PLUS_FILE=${NEKTAR_PLUS_PLUS_FILE:-"nektar++-${NEKTAR_PLUS_PLUS_VERSION}.tar.gz"}
 export NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION=${NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION:-"1.8"}
 export NEKTAR_PLUS_PLUS_BUILD_DIR=${NEKTAR_PLUS_PLUS_BUILD_DIR:-"nektar++-${NEKTAR_PLUS_PLUS_VERSION}"}
-# Note: Versions of NEKTAR_PLUS_PLUS 1.6.5 and earlier DO NOT have last path component
 export NEKTAR_PLUS_PLUS_URL=${NEKTAR_PLUS_PLUS_URL:-"http://www.nektar.info/downloads/nektar++-${NEKTAR_PLUS_PLUS_VERSION}/src"}
 export NEKTAR_PLUS_PLUS_MD5_CHECKSUM=""
 export NEKTAR_PLUS_PLUS_SHA256_CHECKSUM=""
@@ -133,227 +132,21 @@ function bv_nektar++_dry_run
   fi
 }
 
-
-function apply_nektar++_cmakelists_patch
-{
-    info "Patching Nektar++ CMakeLists.txt"
-    patch -p0 << \EOF
-diff -c CMakeLists.txt.orig CMakeLists.txt
-*** CMakeLists.txt.orig	2014-10-28 18:12:48.000000000 -0600
---- CMakeLists.txt	2014-10-28 18:17:26.000000000 -0600
-***************
-*** 27,35 ****
-  
-  # Find the modules included with Nektar
-  SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-! IF( NOT NEKTAR_PASSED_FIRST_CONFIGURE )
-!   SET(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/dist CACHE PATH "" FORCE)
-! ENDIF()
-  
-  # Attempt to retrieve git branch and SHA1 hash
-  INCLUDE(GetGitRevisionDescription)
---- 27,36 ----
-  
-  # Find the modules included with Nektar
-  SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-! OPTION(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/dist)
-! #IF( NOT NEKTAR_PASSED_FIRST_CONFIGURE )
-! #  SET(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/dist CACHE PATH "" FORCE)
-! #ENDIF()
-  
-  # Attempt to retrieve git branch and SHA1 hash
-  INCLUDE(GetGitRevisionDescription)
-***************
-*** 51,57 ****
-  # Set up RPATH
-  SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-! SET(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${LIB_DIR}")
-  LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
-  	"${CMAKE_INSTALL_PREFIX}/${LIB_DIR}" isSystemDir)
-  IF("${isSystemDir}" STREQUAL "-1")
---- 52,58 ----
-  # Set up RPATH
-  SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-! OPTION(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${LIB_DIR}")
-  LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
-  	"${CMAKE_INSTALL_PREFIX}/${LIB_DIR}" isSystemDir)
-  IF("${isSystemDir}" STREQUAL "-1")
-EOF
-    if [[ $? != 0 ]] ; then
-      warn "Nektar++ patch failed."
-      return 1
-    fi
-
-    return 0
-}
-
-
-function apply_nektar++_zlib_patch
-{
-    info "Patching Nektar++ cmake/ThirdPartyZlib.cmake"
-    patch -p0 << \EOF
-diff -c cmake/ThirdPartyZlib.cmake.orig cmake/ThirdPartyZlib.cmake
-*** cmake/ThirdPartyZlib.cmake.orig	2014-10-28 16:27:11.000000000 -0600
---- cmake/ThirdPartyZlib.cmake	2014-10-28 16:28:00.000000000 -0600
-***************
-*** 8,14 ****
-  
-  # Attempt to identify Macports libraries, if they exist. This prevents
-  # cmake warnings later on.
-! SET(ZLIB_ROOT /opt/local/)
-  
-  
-  # Find a system ZLIB library
---- 8,14 ----
-  
-  # Attempt to identify Macports libraries, if they exist. This prevents
-  # cmake warnings later on.
-! OPTION(ZLIB_ROOT /opt/local/)
-  
-  
-  # Find a system ZLIB library
-EOF
-    if [[ $? != 0 ]] ; then
-      warn "Nektar++ patch failed."
-      return 1
-    fi
-
-    return 0
-}
-
-
-function apply_nektar++_Nektar++Config.cmake.in_patch
-{
-    info "Patching Nektar++ cmake/Nektar++Config.cmake.in"
-    patch -p0 << \EOF
-*** ../../thirdparty/nektar++-4.0.0/cmake/Nektar++Config.cmake.in.orig	2014-11-07 07:46:35.000000000 -0700
---- ../../thirdparty/nektar++-4.0.0/cmake/Nektar++Config.cmake.in	2014-12-11 14:52:41.000000000 -0700
-***************
-*** 47,85 ****
-  SET(Boost_LIBRARY_DIRS "@Boost_CONFIG_LIBRARY_DIR@")
-  SET(NEKTAR++_TP_LIBRARIES ${NEKTAR++_TP_LIBRARIES} ${Boost_LIBRARIES})
-  
-- SET(NEKTAR_USE_MPI "@NEKTAR_USE_MPI@")
-- SET(MPI_LIBRARY "@MPI_LIBRARY@")
-- SET(MPI_EXTRA_LIBRARY "@MPI_EXTRA_LIBRARY@")
-- SET(MPI_INCLUDE_PATH "@MPI_INCLUDE_PATH@")
-- SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${MPI_INCLUDE_PATH})
-- SET(NEKTAR++_TP_LIBRARIES ${NEKTAR++_TP_LIBRARIES} ${MPI_LIBRARY} ${MPI_EXTRA_LIBRARY})
-- IF( NEKTAR_USE_MPI )
--     SET(NEKTAR++_DEFINITIONS "${NEKTAR++_DEFINITIONS} -DNEKTAR_USE_MPI")
-- ENDIF( NEKTAR_USE_MPI )
-- 
-  SET(LOKI_INCLUDE_DIRS "@LOKI_CONFIG_INCLUDE_DIR@")
-  SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${LOKI_INCLUDE_DIRS})
-  
-  SET(TINYXML_INCLUDE_DIRS "@TINYXML_CONFIG_INCLUDE_DIR@")
-  SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${TINYXML_INCLUDE_DIRS})
-  
-- SET(SCOTCH_INCLUDE_DIRS "@SCOTCH_CONFIG_INCLUDE_DIR@")
-- SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${SCOTCH_INCLUDE_DIRS})
-- 
-  SET(ZLIB_INCLUDE_DIRS "@ZLIB_CONFIG_INCLUDE_DIR@")
-  SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS})
-  
-! SET(FFTW_INCLUDE_DIR "@FFTW_INCLUDE_DIR@")
-! SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${FFTW_INCLUDE_DIR})
-! 
-! SET(ARPACK_INCLUDE_DIR "@ARPACK_INCLUDE_DIR@")
-! SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${ARPACK_INCLUDE_DIR})
-  
-! SET(VTK_INCLUDE_DIRS "@VTK_INCLUDE_DIRS@")
-! SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${VTK_INCLUDE_DIRS})
-  
-  # find and add Nektar++ libraries
-! INCLUDE(${NEKTAR++_LIBRARY_DIRS}/Nektar++Libraries.cmake)
-  
-  # platform dependent options
-  if(${CMAKE_SYSTEM} MATCHES "Linux.*")
---- 47,97 ----
-  SET(Boost_LIBRARY_DIRS "@Boost_CONFIG_LIBRARY_DIR@")
-  SET(NEKTAR++_TP_LIBRARIES ${NEKTAR++_TP_LIBRARIES} ${Boost_LIBRARIES})
-  
-  SET(LOKI_INCLUDE_DIRS "@LOKI_CONFIG_INCLUDE_DIR@")
-  SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${LOKI_INCLUDE_DIRS})
-  
-  SET(TINYXML_INCLUDE_DIRS "@TINYXML_CONFIG_INCLUDE_DIR@")
-  SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${TINYXML_INCLUDE_DIRS})
-  
-  SET(ZLIB_INCLUDE_DIRS "@ZLIB_CONFIG_INCLUDE_DIR@")
-  SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS})
-  
-! SET(NEKTAR_USE_MPI "@NEKTAR_USE_MPI@")
-! IF( NEKTAR_USE_MPI )
-!     SET(MPI_LIBRARY "@MPI_LIBRARY@")
-!     SET(MPI_EXTRA_LIBRARY "@MPI_EXTRA_LIBRARY@")
-!     SET(MPI_INCLUDE_PATH "@MPI_INCLUDE_PATH@")
-!     SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${MPI_INCLUDE_PATH})
-!     SET(NEKTAR++_TP_LIBRARIES ${NEKTAR++_TP_LIBRARIES} ${MPI_LIBRARY} ${MPI_EXTRA_LIBRARY})
-!     SET(NEKTAR++_DEFINITIONS "${NEKTAR++_DEFINITIONS} -DNEKTAR_USE_MPI")
-! ENDIF( NEKTAR_USE_MPI )
-  
-! SET(NEKTAR_USE_SCOTCH "@NEKTAR_USE_SCOTCH@")
-! IF( NEKTAR_USE_SCOTCH )
-!     SET(SCOTCH_INCLUDE_DIRS "@SCOTCH_CONFIG_INCLUDE_DIR@")
-!     SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${SCOTCH_INCLUDE_DIRS})
-! ENDIF( NEKTAR_USE_SCOTCH )
-! 
-! SET(NEKTAR_USE_FFTW "@NEKTAR_USE_FFTW@")
-! IF( NEKTAR_USE_FFTW )
-!     SET(FFTW_INCLUDE_DIR "@FFTW_INCLUDE_DIR@")
-!     SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${FFTW_INCLUDE_DIR})
-! ENDIF( NEKTAR_USE_FFTW )
-! 
-! SET(NEKTAR_USE_ARPACK "@NEKTAR_USE_ARPACK@")
-! IF( NEKTAR_USE_ARPACK )
-!     SET(ARPACK_INCLUDE_DIR "@ARPACK_INCLUDE_DIR@")
-!     SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${ARPACK_INCLUDE_DIR})
-! ENDIF( NEKTAR_USE_ARPACK )
-! 
-! SET(NEKTAR_USE_VTK "@NEKTAR_USE_VTK@")
-! IF( NEKTAR_USE_VTK )
-!     SET(VTK_INCLUDE_DIRS "@VTK_INCLUDE_DIRS@")
-!     SET(NEKTAR++_TP_INCLUDE_DIRS ${NEKTAR++_TP_INCLUDE_DIRS} ${VTK_INCLUDE_DIRS})
-! ENDIF( NEKTAR_USE_VTK )
-  
-  # find and add Nektar++ libraries
-! INCLUDE(${NEKTAR++_LIBRARY_DIRS}/cmake/Nektar++Libraries.cmake)
-  
-  # platform dependent options
-  if(${CMAKE_SYSTEM} MATCHES "Linux.*")
-EOF
-    if [[ $? != 0 ]] ; then
-      warn "Nektar++ patch failed."
-      return 1
-    fi
-
-    return 0
-}
-
-
 function apply_nektar++_patch
 {
 #    if [[ "${NEKTAR_PLUS_PLUS_VERSION}" == 4.0.0 ]] ; then
-
 #        apply_nektar++_zlib_patch
 #        if [[ $? != 0 ]]; then
 #           return 1
-#        fi
-
-#        apply_nektar++_cmakelists_patch
-#        if [[ $? != 0 ]]; then
-#            return 1
 #        fi
 #    fi
 
     return 0
 }
+
 # *************************************************************************** #
 #              Function 8.1, build_nektar++                                   #
 # *************************************************************************** #
-
 function build_nektar++
 {
     #
@@ -449,17 +242,16 @@ function build_nektar++
 #        fi
 #    fi
 
-    if test "x${DO_VTK}" = "xyes"; then
-        info "vtk requested.  Configuring NEKTAR++ with vtk support."
-        ntopts="${ntopts} -DNEKTAR_USE_VTK=ON -DVTK_DIR:PATH=${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/cmake/vtk-${VTK_SHORT_VERSION}
-"
+#    if test "x${DO_VTK}" = "xyes"; then
+#        info "vtk requested.  Configuring NEKTAR++ with vtk support."
+#        ntopts="${ntopts} -DNEKTAR_USE_VTK=ON -DVTK_DIR:PATH=${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/cmake/vtk-${VTK_SHORT_VERSION}"
 
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            export DYLD_LIBRARY_PATH="$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-        else
-            export LD_LIBRARY_PATH="$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
-        fi
-    fi
+#        if [[ "$OPSYS" == "Darwin" ]]; then
+#            export DYLD_LIBRARY_PATH="$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+#        else
+#            export LD_LIBRARY_PATH="$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+#        fi
+#    fi
 
     info "Configuring Nektar++ . . ."
 
@@ -512,7 +304,7 @@ function build_nektar++
        return 1
     fi
 
-    mv ${nektar_plus_plus_inst_path}/lib64/* ${nektar_plus_plus_inst_path}/lib
+#    mv ${nektar_plus_plus_inst_path}/lib64/* ${nektar_plus_plus_inst_path}/lib
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/nektar++"

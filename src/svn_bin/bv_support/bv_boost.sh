@@ -120,17 +120,6 @@ function apply_boost_patch
 
 function build_boost
 {
-
-    build_libs="$build_libs --with-libraries=\"system\" "
-
-    if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
-        build_libs="$build_libs --with-libraries=\"iostreams,thread,date_time,filesystem,system,program_options\" "
-    fi
-
-#    if [[ "$build_libs" == ""  ]] ; then
-#        build_libs="--without-libraries=\"chrono,context,filesystem,graph_parallel,iostreams,locale,mpi,program_options,python,regex,serialization,signals,system,thread,timer,wave,date_time,graph,math,random,test,exception\" "
-#    fi
-
     #
     # Prepare build dir
     #
@@ -147,59 +136,87 @@ function build_boost
     if [[ $? != 0 ]]; then
         warn "Patch failed, but continuing."
     fi
-    info "Configuring BOOST . . . $build_libs"
 
-    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
-            cf_build_type="--disable-shared --enable-static"
-        else
-            cf_build_type="--enable-shared --disable-static"
+    build_libs=""
+    if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
+        build_libs="$build_libs --with-libraries=\"iostreams,thread,date_time,filesystem,system,program_options,regex\" "
     fi
 
-    cf_build_thread=""
-    if [[ "$DO_THREAD_BUILD" == "yes" ]]; then
-        cf_build_thread="--enable-threadsafe --with-pthread"
-    fi
+    if [[ "$build_libs" != ""  ]] ; then
 
-    # In order to ensure $FORTRANARGS is expanded to build the arguments to
-    # configure, we wrap the invokation in 'sh -c "..."' syntax
-    info "Invoking command to configure BOOST"
-#    info  "./bootstrap.sh $build_libs \
-#        --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
+        info "Configuring BOOST . . . $build_libs"
 
-    sh -c "./bootstrap.sh $build_libs \
-        --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
+#        if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+#            cf_build_type="--disable-shared --enable-static"
+#        else
+#            cf_build_type="--enable-shared --disable-static"
+#        fi
 
-    if [[ $? != 0 ]] ; then
-       warn "BOOST configure failed.  Giving up"
-       return 1
-    fi
+#        if [[ "$DO_THREAD_BUILD" == "yes" ]]; then
+#            cf_build_thread="--enable-threadsafe --with-pthread"
+#        else
+#            cf_build_thread=""
+#        fi
 
-    #
-    # Build BOOST
-    #
-    info "Making BOOST . . ."
+        # In order to ensure $FORTRANARGS is expanded to build the arguments to
+        # configure, we wrap the invokation in 'sh -c "..."' syntax
+        info "Invoking command to configure BOOST"
+#        info  "./bootstrap.sh $build_libs \
+#            --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
 
-    sh -c "./b2"
-    if [[ $? != 0 ]] ; then
-       warn "BOOST build failed.  Giving up"
-       return 1
-    fi
-    #
-    # Install into the VisIt third party location.
-    #
-    info "Installing BOOST . . ."
-    sh -c "./b2 install"
-    if [[ $? != 0 ]] ; then
-       warn "BOOST install failed.  Giving up"
-       return 1
-    fi
+        sh -c "./bootstrap.sh $build_libs \
+            --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
 
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
+        if [[ $? != 0 ]] ; then
+           warn "BOOST configure failed.  Giving up"
+           return 1
+        fi
+
         #
-        # Make dynamic executable, need to patch up the install path and
-        # version information.
+        # Build BOOST
         #
-        info "Creating dynamic libraries for BOOST . . ."
+        info "Making BOOST . . ."
+
+        sh -c "./b2"
+        if [[ $? != 0 ]] ; then
+           warn "BOOST build failed.  Giving up"
+           return 1
+        fi
+
+        #
+        # Install into the VisIt third party location.
+        #
+        info "Installing BOOST . . ."
+        sh -c "./b2 install \
+              --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
+
+        if [[ $? != 0 ]] ; then
+           warn "BOOST install failed.  Giving up"
+           return 1
+        fi
+
+        if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
+            #
+            # Make dynamic executable, need to patch up the install path and
+            # version information.
+            #
+            info "Creating dynamic libraries for BOOST . . ."
+        fi
+
+    else
+        info "Installing BOOST . . . headers only"
+
+	mkdir "$VISITDIR/boost"
+	mkdir "$VISITDIR/boost/$BOOST_VERSION"
+	mkdir "$VISITDIR/boost/$BOOST_VERSION/$VISITARCH"
+	mkdir "$VISITDIR/boost/$BOOST_VERSION/$VISITARCH/include"
+
+	cp -r boost $VISITDIR/boost/$BOOST_VERSION/$VISITARCH/include
+
+        if [[ $? != 0 ]] ; then
+           warn "BOOST install failed.  Giving up"
+           return 1
+        fi
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
