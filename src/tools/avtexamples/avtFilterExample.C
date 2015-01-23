@@ -134,6 +134,10 @@ main(int argc, char *argv[])
     ContourOpAttributes atts3;
     doubleVector levels;
     levels.push_back(0.5);
+    atts3.SetMinFlag(false);
+    atts3.SetMaxFlag(false);
+    atts3.SetScaling(ContourOpAttributes::Linear);
+    atts3.SetContourMethod(ContourOpAttributes::Percent);
     atts3.SetContourPercent(levels);
     avtContourFilter *filter3 = new avtContourFilter(atts3);
     filter3->SetInput(output2);
