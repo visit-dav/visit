@@ -72,9 +72,11 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 SET_UP_THIRD_PARTY(NEKTAR++
     lib/nektar++-${NEKTAR++_VERSION}
     include/nektar++-${NEKTAR++_VERSION}
-    MultiRegions
+    LibUtilities
     LocalRegions
+    MultiRegions
+    SolverUtils
     SpatialDomains
     StdRegions
-    LibUtilities)
-
+    metis
+    tinyxml)

@@ -137,8 +137,14 @@ function build_boost
         warn "Patch failed, but continuing."
     fi
 
+    libs=""
     build_libs=""
+
     if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
+	libs="$libs \
+              iostreams thread date_time filesystem \
+              system program_options regex"
+
         build_libs="$build_libs --with-libraries=\"iostreams,thread,date_time,filesystem,system,program_options,regex\" "
     fi
 
@@ -201,6 +207,22 @@ function build_boost
             # version information.
             #
             info "Creating dynamic libraries for BOOST . . ."
+            INSTALLNAMEPATH="$VISITDIR/boost/${BOOST_VERSION}/$VISITARCH/lib"
+
+	    for lib in $libs;
+	    do
+                install_name_tool \
+		    -id $INSTALLNAMEPATH/libboost_${lib}.${SO_EXT} \
+                    $INSTALLNAMEPATH/libboost_${lib}.${SO_EXT}
+
+		# The filesystem and thread library depend on the 
+		# system library so fix up those paths as well
+		if [[ $lib == "filesystem" || $lib == "thread" ]] ; then
+		    install_name_tool -change \
+			libboost_system.${SO_EXT} $INSTALLNAMEPATH/libboost_system.${SO_EXT} \
+			$INSTALLNAMEPATH/libboost_${lib}.${SO_EXT}
+		fi
+            done
         fi
 
     else
