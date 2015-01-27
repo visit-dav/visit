@@ -52,6 +52,7 @@
 class JSONRoot;
 
 
+
 // ****************************************************************************
 //  Class: avtMFEMFileFormat
 //
@@ -103,7 +104,7 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
   private:
     int                              selectedLOD;
 
-    Mesh                            *FetchMesh(const std::string &mesh_name,
+    mfem::Mesh                     *FetchMesh(const std::string &mesh_name,
                                               int chunk);
                                               
     vtkDataSet                      *GetRefinedMesh(const std::string &mesh_name,
