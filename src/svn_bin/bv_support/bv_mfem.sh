@@ -102,8 +102,8 @@ function build_mfem
     # Call configure
     #
     info "Configuring mfem . . ."
-    info $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS"
-    $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS"
+    info $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS"
+    $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS"
 
     #
     # Build mfem
