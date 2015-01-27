@@ -136,5 +136,7 @@ protected:
 
   GridDataRaw*     (*getGridData)(DataArchive*, GridP*, int, int, std::string, int, int, int[3], int[3]);
   ParticleDataRaw* (*getParticleData)(DataArchive*, GridP*, int, int, std::string, int, int);
+
+  std::string      (*getParticlePositionName)(DataArchive*);
 };
 #endif
