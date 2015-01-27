@@ -1306,8 +1306,9 @@ ViewerSubject::DisconnectClient(ViewerClientConnection *client)
 
         debug1 << "VisIt's viewer lost a connection to one of its clients ("
                << client->Name().toStdString() << ")." << endl;
-        if(client->GetViewerClientAttributes().GetExternalClient())
+        if(client->GetViewerClientAttributes().GetExternalClient()) {
             std::cout << "Disconnecting client: " << client->GetViewerClientAttributes().GetTitle() << std::endl;
+        }
         client->deleteLater();
 
         // check to see if all other clients are remote, if they are then quit since
@@ -3235,7 +3236,7 @@ ViewerSubject::Export()
                 expanded.truncate(expanded.length()-2);
             }
 
-            std::cout << "expanded: " << expanded.toStdString() << std::endl;
+            //std::cout << "expanded: " << expanded.toStdString() << std::endl;
 
             info->proxy->GetMDServerMethods()->ChangeDirectory(expanded.toStdString());
 
@@ -3263,7 +3264,7 @@ ViewerSubject::Export()
     if(action == "RegisterNewWindow") {
         int windowId = node["windowId"].GetInt();
         std::string typeMap = node["type"].ToString();
-        std::cout << typeMap << std::endl;
+        //std::cout << typeMap << std::endl;
         int type = (int)ViewerClientAttributes::None;
         if(typeMap == "Image" || typeMap == "\"Image\"") {
             type = (int)ViewerClientAttributes::Image;
@@ -3283,8 +3284,8 @@ ViewerSubject::Export()
                     break;
                 }
             }
-            std::cout << "registering new window for clientId " << activeWindows.size() << " "
-                      << clientId << " " << index << "  " << " " << windowId << " " << type << std::endl;
+            //std::cout << "registering new window for clientId " << activeWindows.size() << " "
+            //          << clientId << " " << index << "  " << " " << windowId << " " << type << std::endl;
             if(index == -1) {
                 activeWindows.push_back(windowId);
                 typeWindows.push_back(type);
@@ -3306,7 +3307,7 @@ ViewerSubject::Export()
         intVector alpha = node["alpha"].AsIntVector();
         intVector pcnt = node["pcnt"].AsIntVector();
 
-        std::cout << "creating colormap: " << node.ToString() << std::endl;
+        //std::cout << "creating colormap: " << node.ToString() << std::endl;
 
         ColorTableAttributes* ctAtts = GetViewerState()->GetColorTableAttributes();
 
@@ -3343,7 +3344,7 @@ ViewerSubject::Export()
             //std::cout << (int)colors[0] << " " << (int)colors[1] << " " << (int)colors[2] << " " << (int)colors[3] << " " << position << std::endl;
         }
 
-        std::cout << "setting color table:" << name << std::endl;
+        //std::cout << "setting color table:" << name << std::endl;
         ctAtts->AddColorTable(name,ccpl);
         ctAtts->Notify();
 
@@ -3368,7 +3369,7 @@ ViewerSubject::Export()
             return;
         }
 
-        std::cout << "button action: " << button << std::endl;
+        //std::cout << "button action: " << button << std::endl;
         if(button == "Pan") {
             avtView3D v = win->GetView3D();
             v.imagePan[0] = start_dx;
@@ -4082,7 +4083,7 @@ ViewerSubject::BroadcastData(int windowId, int clientId)
         const intVector& typeWindows = clatts.GetRenderingTypes();
 
         for(size_t j = 0; j < activeWindows.size(); ++j) {
-            std::cout << activeWindows[j] << " " << typeWindows[j] << std::endl;
+            //std::cout << activeWindows[j] << " " << typeWindows[j] << std::endl;
             if(activeWindows[j] == windowId+1 &&
               (ViewerClientAttributes::RenderType)typeWindows[j] == ViewerClientAttributes::Data) {
                 activeClients.push_back(clients[i]);
@@ -4150,7 +4151,7 @@ ViewerSubject::BroadcastData(int windowId, int clientId)
         for(size_t k = 0; k < elementList.size(); ++k) {
             qatts->AddVars(elementList[k]);
         }
-        std::cout << "broadcasting data" << std::endl;
+        //std::cout << "broadcasting data" << std::endl;
         activeClients[i]->BroadcastToClient(qatts);
     }
 
