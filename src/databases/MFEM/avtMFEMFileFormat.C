@@ -74,6 +74,9 @@
 #include <JSONRoot.h>
 using     std::string;
 using     std::ostringstream;
+using     std::vector;
+
+using namespace mfem;
 
 // ****************************************************************************
 //  Method: avtMFEMFileFormat constructor
