@@ -1020,6 +1020,15 @@ ELSE(VISIT_USE_X)
 ENDIF(VISIT_USE_X)
 INCLUDE(${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
 
+
+# Configure Nektar++ support. 
+# Do it before the other libraries like boost because many can depend on it.
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
+IF(NEKTAR++_FOUND)
+    SET(HAVE_LIBNEKTAR++ 1)
+ENDIF(NEKTAR++_FOUND)
+
+
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItBoost.cmake)
 IF(BOOST_FOUND)
   SET(HAVE_BOOST 1)
@@ -1388,13 +1397,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     IF(MILI_FOUND)
         SET(HAVE_LIBMILI 1)
     ENDIF(MILI_FOUND)
-
-    # Configure Nektar++ support. 
-    # Do it before the other libraries since many can depend on it.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
-    IF(NEKTAR++_FOUND)
-        SET(HAVE_LIBNEKTAR++ 1)
-    ENDIF(NEKTAR++_FOUND)
 
     # Configure netcdf support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNetcdf.cmake)
