@@ -37,11 +37,14 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtIVPVTKTimeVaryingField.C                        //
+//                        avtIVPNektar++TimeVaryingField.C                   //
 // ************************************************************************* //
 
-#include <avtIVPVTKTimeVaryingField.h>
+#include <avtIVPNektar++TimeVaryingField.h>
 
+#include <vtkCellData.h>
+#include <vtkLongArray.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
@@ -49,14 +52,16 @@
 #include <vtkGenericCell.h>
 #include <DebugStream.h>
 
+#include <InvalidVariableException.h>
+
 #include <iostream>
 #include <limits>
 
-//const char* avtIVPVTKTimeVaryingField::NextTimePrefix = "__nextTimePrefix_";
-const char* avtIVPVTKTimeVaryingField::NextTimePrefix = "__pathlineNextTimeVar__";
+//const char* avtIVPNektarPPTimeVaryingField::NextTimePrefix = "__nextTimePrefix_";
+const char* avtIVPNektarPPTimeVaryingField::NextTimePrefix = "__pathlineNextTimeVar__";
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField constructor
+//  Method: avtIVPNektarPPTimeVaryingField constructor
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
@@ -67,11 +72,11 @@ const char* avtIVPVTKTimeVaryingField::NextTimePrefix = "__pathlineNextTimeVar__
 //    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
 //
 //   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
-//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPNektarPPTimeVaryingField.
 //
 // ****************************************************************************
 
-avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkDataSet* dataset, 
+avtIVPNektarPPTimeVaryingField::avtIVPNektarPPTimeVaryingField( vtkDataSet* dataset, 
                                                       avtCellLocator* locator,
                                                       double _t0, double _t1 ) 
   : ds(dataset), loc(locator), t0(_t0), t1(_t1), dt(_t1-_t0)
@@ -79,30 +84,30 @@ avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkDataSet* dataset,
     if( ds )
         ds->Register( NULL );
 
-    if( (velData[0] = ds->GetPointData()->GetVectors()) )
-    {
-        velCellBased = false;
+    // if( (velData[0] = ds->GetPointData()->GetVectors()) )
+    // {
+    //     velCellBased = false;
 
-        velData[1] = ds->GetPointData()->GetArray( NextTimePrefix );
-    }
-    else if( (velData[0] = ds->GetCellData()->GetVectors()) )
-    {
-        velCellBased = true;
+    //     velData[1] = ds->GetPointData()->GetArray( NextTimePrefix );
+    // }
+    // else if( (velData[0] = ds->GetCellData()->GetVectors()) )
+    // {
+    //     velCellBased = true;
 
-        velData[1] = ds->GetCellData()->GetArray( NextTimePrefix );
-    }
-    else 
-    {
-        velData[0] = velData[1] = NULL;
-        EXCEPTION1( ImproperUseException, 
-                    "avtIVPVTKTimeVaryingField: Can't locate vectors to interpolate." );
-    }
+    //     velData[1] = ds->GetCellData()->GetArray( NextTimePrefix );
+    // }
+    // else 
+    // {
+    //     velData[0] = velData[1] = NULL;
+    //     EXCEPTION1( ImproperUseException, 
+    //                 "avtIVPNektarPPTimeVaryingField: Can't locate vectors to interpolate." );
+    // }
 
-    if( velData[1] == NULL )
-    {
-        EXCEPTION1( ImproperUseException, 
-                    "avtIVPVTKTimeVaryingField: Can't locate second pair of vectors to interpolate." );
-    }
+    // if( velData[1] == NULL )
+    // {
+    //     EXCEPTION1( ImproperUseException, 
+    //                 "avtIVPNektarPPTimeVaryingField: Can't locate second pair of vectors to interpolate." );
+    // }
 
     lastCell = -1;
     lastPos.x = lastPos.y = lastPos.z =
@@ -113,27 +118,64 @@ avtIVPVTKTimeVaryingField::avtIVPVTKTimeVaryingField( vtkDataSet* dataset,
     std::fill( sclCellBased, sclCellBased+256, false );
 
     sclDataName.resize( 256 );
+
+    // Get the Nektar++ data.
+    vtkFieldData *fieldData = ds->GetFieldData();
+
+    long *fp[2];
+
+    const char *fieldname[2] = {"Nektar++FieldPointers",
+                                "Nektar++FieldPointers2" };
+
+    for (int i = 0; i < 2; ++i)
+    {
+      fp[i] =
+        (long *) (fieldData->GetAbstractArray(fieldname[i])->GetVoidPointer(0));
+
+      if( fp[i] )
+      {
+        // std::cerr << "Get info " << t0 << "  ";
+
+        for (int j = 0; j < 3; ++j)
+        {
+          if( fp[i][j] )
+            nektar_field[i][j] = (Nektar::MultiRegions::ExpListSharedPtr)
+              (*((Nektar::MultiRegions::ExpListSharedPtr*) fp[i][j]));
+
+          // std::cerr << (intptr_t) &(nektar_field[i][j]) << "  ";
+          // std::cerr << nektar_field[i][j] << "  ";
+          // std::cerr << std::endl;
+        }
+
+        // std::cerr << std::endl;
+      }
+      else
+      {
+        EXCEPTION1( InvalidVariableException,
+                    "Uninitialized option: Nektar++FieldPointers. (Please contact visit-developer mailing list to report)" );
+      }
+    }
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField destructor
+//  Method: avtIVPNektarPPTimeVaryingField destructor
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
 //
 //   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
-//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPNektarPPTimeVaryingField.
 //
 // ****************************************************************************
 
-avtIVPVTKTimeVaryingField::~avtIVPVTKTimeVaryingField()
+avtIVPNektarPPTimeVaryingField::~avtIVPNektarPPTimeVaryingField()
 {
     if( ds )
         ds->Delete();
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::GetExtents
+//  Method: avtIVPNektarPPTimeVaryingField::GetExtents
 //
 //  Purpose:
 //      Get field bounding box.
@@ -144,17 +186,17 @@ avtIVPVTKTimeVaryingField::~avtIVPVTKTimeVaryingField()
 //  Modifications:
 //
 //   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
-//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPNektarPPTimeVaryingField.
 //
 // ****************************************************************************
 void
-avtIVPVTKTimeVaryingField::GetExtents( double extents[6] ) const
+avtIVPNektarPPTimeVaryingField::GetExtents( double extents[6] ) const
 {
     ds->GetBounds(extents);
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::FindCell
+//  Method: avtIVPNektarPPTimeVaryingField::FindCell
 //
 //  Purpose:
 //      Find the cell containing a given position. Does nothing
@@ -182,7 +224,7 @@ avtIVPVTKTimeVaryingField::GetExtents( double extents[6] ) const
 // ****************************************************************************
 
 avtIVPField::Result
-avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) const
+avtIVPNektarPPTimeVaryingField::FindCell( const double& time, const avtVector& pos ) const
 {
     bool inside[2] = {true, true};
 
@@ -217,7 +259,7 @@ avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) 
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::operator
+//  Method: avtIVPNektarPPTimeVaryingField::operator
 //
 //  Purpose:
 //      Evaluates a point location by consulting a VTK grid.
@@ -234,7 +276,7 @@ avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) 
 //    Switch from avtVec to avtVector.
 //
 //   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
-//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPNektarPPTimeVaryingField.
 //
 //   Hank Childs, Fri Mar  9 16:50:48 PST 2012
 //   Add support for reverse pathlines.
@@ -242,7 +284,7 @@ avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) 
 // ****************************************************************************
 
 avtIVPField::Result
-avtIVPVTKTimeVaryingField::operator()( const double &t,
+avtIVPNektarPPTimeVaryingField::operator()( const double &t,
                                        const avtVector &p,
                                        avtVector &vel ) const
 {
@@ -255,38 +297,86 @@ avtIVPVTKTimeVaryingField::operator()( const double &t,
     double p0 = (t1-t)/dt;
     double p1 = (t-t0)/dt;
 
-    if (velCellBased)
-    {
-        velData[0]->GetTuple( lastCell, v0 );
-        velData[1]->GetTuple( lastCell, v1 );
+    // if (velCellBased)
+    // {
+    //     velData[0]->GetTuple( lastCell, v0 );
+    //     velData[1]->GetTuple( lastCell, v1 );
 
-        vel.x = p1 * v1[0] + p0 * v0[0];
-        vel.y = p1 * v1[1] + p0 * v0[1];
-        vel.z = p1 * v1[2] + p0 * v0[2];
-    }
-    else
+    //     vel.x = p1 * v1[0] + p0 * v0[0];
+    //     vel.y = p1 * v1[1] + p0 * v0[1];
+    //     vel.z = p1 * v1[2] + p0 * v0[2];
+    // }
+    // else
+    // {
+    //     for( avtInterpolationWeights::const_iterator wi=lastWeights.begin();
+    //          wi!=lastWeights.end(); ++wi )
+    //     {
+    //         velData[0]->GetTuple( wi->i, v0 );
+    //         velData[1]->GetTuple( wi->i, v1 );
+
+    //         v0[0] = p1 * v1[0] + p0 * v0[0];
+    //         v0[1] = p1 * v1[1] + p0 * v0[1];
+    //         v0[2] = p1 * v1[2] + p0 * v0[2];
+
+    //         vel.x += wi->w * v0[0];
+    //         vel.y += wi->w * v0[1];
+    //         vel.z += wi->w * v0[2];
+    //     }
+    // }
+
+    double vec[2][3];
+
+    // Get the Nektar++ element id at this point. Assume the cell
+    // boundaries are liner and not curves thus the nektar element is
+    // the vtk element.
+    int nt_el = lastCell, nt_numElements = nektar_field[0][0]->GetExpSize();
+
+    // for( int i=0, j=1; j<nt_numElements; ++i, ++j)
+    // {
+    //   if( nektar_element_lookup[i] <= el && el < nektar_element_lookup[i] )
+    //   {
+    //    nt_el = i;
+    //    break;
+    //   }
+    // }
+
+    // Set up the point in the Nektar++ format.
+    Nektar::Array<OneD, NekDouble> coords(3);
+    coords[0] = p[0];
+    coords[1] = p[1];
+    coords[2] = p[2];
+    
+    // Loop through each velocity component and do the appropriate
+    // interpolation at the given point.
+    for (int i = 0; i < 2; ++i)
     {
-        for( avtInterpolationWeights::const_iterator wi=lastWeights.begin();
-             wi!=lastWeights.end(); ++wi )
+      for (int j = 0; j < 3; ++j)
+      {
+        if( nektar_field[i][j] )
         {
-            velData[0]->GetTuple( wi->i, v0 );
-            velData[1]->GetTuple( wi->i, v1 );
-
-            v0[0] = p1 * v1[0] + p0 * v0[0];
-            v0[1] = p1 * v1[1] + p0 * v0[1];
-            v0[2] = p1 * v1[2] + p0 * v0[2];
-
-            vel.x += wi->w * v0[0];
-            vel.y += wi->w * v0[1];
-            vel.z += wi->w * v0[2];
+          Nektar::Array<Nektar::OneD, Nektar::NekDouble> physVals =
+            nektar_field[i][j]->GetPhys() +
+            nektar_field[i][j]->GetPhys_Offset(nt_el);
+          
+          vec[i][j] =
+            nektar_field[i][j]->GetExp(nt_el)->PhysEvaluate(coords, physVals);
         }
+        else
+        {
+          vec[i][j] = 0;
+        }
+      }
     }
+
+    vel.x = p1 * vec[1][0] + p0 * vec[0][0];
+    vel.y = p1 * vec[1][1] + p0 * vec[0][1];
+    vel.z = p1 * vec[1][2] + p0 * vec[0][2];
 
     return OK;
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::ConvertToCartesian
+//  Method: avtIVPNektarPPTimeVaryingField::ConvertToCartesian
 //
 //  Purpose: Does nothing because the original coordinate system is
 //      unknown.
@@ -297,13 +387,13 @@ avtIVPVTKTimeVaryingField::operator()( const double &t,
 // ****************************************************************************
 
 avtVector 
-avtIVPVTKTimeVaryingField::ConvertToCartesian(const avtVector& pt) const
+avtIVPNektarPPTimeVaryingField::ConvertToCartesian(const avtVector& pt) const
 {
   return pt;
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::ConvertToCylindrical
+//  Method: avtIVPNektarPPTimeVaryingField::ConvertToCylindrical
 //
 //  Purpose: Does nothing because the original coordinate system is
 //      unknown.
@@ -314,13 +404,13 @@ avtIVPVTKTimeVaryingField::ConvertToCartesian(const avtVector& pt) const
 // ****************************************************************************
 
 avtVector 
-avtIVPVTKTimeVaryingField::ConvertToCylindrical(const avtVector& pt) const
+avtIVPNektarPPTimeVaryingField::ConvertToCylindrical(const avtVector& pt) const
 {
   return pt;
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::ComputeVorticity
+//  Method: avtIVPNektarPPTimeVaryingField::ComputeVorticity
 //
 //  Purpose:
 //      Computes the vorticity at a point.
@@ -341,13 +431,13 @@ avtIVPVTKTimeVaryingField::ConvertToCylindrical(const avtVector& pt) const
 //    Switch from avtVec to avtVector.
 //
 //    Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
-//    Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField, and
+//    Incorporate vtkVisItInterpolatedVelocityField in avtIVPNektarPPTimeVaryingField, and
 //    use vtkGenericCell for thread safety.
 //
 // ****************************************************************************
 
 double
-avtIVPVTKTimeVaryingField::ComputeVorticity( const double& t, const avtVector &pt ) const
+avtIVPNektarPPTimeVaryingField::ComputeVorticity( const double& t, const avtVector &pt ) const
 {
 #if 0
     if( velCellBased )
@@ -391,7 +481,7 @@ avtIVPVTKTimeVaryingField::ComputeVorticity( const double& t, const avtVector &p
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::ComputeScalarVariable
+//  Method: avtIVPNektarPPTimeVaryingField::ComputeScalarVariable
 //
 //  Purpose:
 //      Computes the variable value at a point.
@@ -408,12 +498,12 @@ avtIVPVTKTimeVaryingField::ComputeVorticity( const double& t, const avtVector &p
 //   Generalize the compute scalar variable.
 //
 //   Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
-//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
+//   Incorporate vtkVisItInterpolatedVelocityField in avtIVPNektarPPTimeVaryingField.
 //
 // ****************************************************************************
 
 double
-avtIVPVTKTimeVaryingField::ComputeScalarVariable(unsigned char index,
+avtIVPNektarPPTimeVaryingField::ComputeScalarVariable(unsigned char index,
                                                  const double& t,
                                                  const avtVector &pt) const
 {
@@ -471,7 +561,7 @@ avtIVPVTKTimeVaryingField::ComputeScalarVariable(unsigned char index,
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::SetScalarVariable
+//  Method: avtIVPNektarPPTimeVaryingField::SetScalarVariable
 //
 //  Purpose:
 //      Set up a scalar variable for query through ComputeScalarVariable().
@@ -482,7 +572,7 @@ avtIVPVTKTimeVaryingField::ComputeScalarVariable(unsigned char index,
 // ****************************************************************************
 
 void
-avtIVPVTKTimeVaryingField::SetScalarVariable(unsigned char index, const std::string& name)
+avtIVPNektarPPTimeVaryingField::SetScalarVariable(unsigned char index, const std::string& name)
 {
     vtkDataArray* data[2] = { NULL, NULL };
     bool cellBased;
@@ -501,20 +591,20 @@ avtIVPVTKTimeVaryingField::SetScalarVariable(unsigned char index, const std::str
     }
     else
         EXCEPTION1( ImproperUseException, 
-                    "avtIVPVTKTimeVaryingField: Can't locate scalar \"" + name + 
+                    "avtIVPNektarPPTimeVaryingField: Can't locate scalar \"" + name + 
                     "\" to interpolate." );
 
 /* TODO. not sure we want all data to have a second value
     if( data[1] == NULL )
         EXCEPTION1( ImproperUseException, 
-                    "avtIVPVTKTimeVaryingField: Can't locate next scalar \"" + name + 
+                    "avtIVPNektarPPTimeVaryingField: Can't locate next scalar \"" + name + 
                     "\" to interpolate." );
 */
 
     if( data[0]->GetNumberOfComponents() != 1 || 
         (data[1] && data[1]->GetNumberOfComponents() != 1) )
         EXCEPTION1( ImproperUseException,
-                    "avtIVPVTKTimeVaryingField: Given variable \"" + name +
+                    "avtIVPNektarPPTimeVaryingField: Given variable \"" + name +
                     "\" is not scalar." );
         
     sclDataName[index] = name;
@@ -524,7 +614,7 @@ avtIVPVTKTimeVaryingField::SetScalarVariable(unsigned char index, const std::str
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::IsInside
+//  Method: avtIVPNektarPPTimeVaryingField::IsInside
 //
 //  Purpose:
 //      Determines if a point is inside a field.
@@ -541,18 +631,18 @@ avtIVPVTKTimeVaryingField::SetScalarVariable(unsigned char index, const std::str
 //    Switch from avtVec to avtVector.
 //
 //    Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
-//    Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField.
+//    Incorporate vtkVisItInterpolatedVelocityField in avtIVPNektarPPTimeVaryingField.
 //
 // ****************************************************************************
 
 avtIVPField::Result
-avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVector &pt ) const
+avtIVPNektarPPTimeVaryingField::IsInside( const double& t, const avtVector &pt ) const
 {
     return FindCell( t, pt );
 }
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::GetDimension
+//  Method: avtIVPNektarPPTimeVaryingField::GetDimension
 //
 //  Purpose:
 //      Gets the dimension.
@@ -569,13 +659,13 @@ avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVector &pt ) cons
 // ****************************************************************************
 
 unsigned int 
-avtIVPVTKTimeVaryingField::GetDimension() const
+avtIVPNektarPPTimeVaryingField::GetDimension() const
 {
     return 3;
 }  
 
 // ****************************************************************************
-//  Method: avtIVPVTKTimeVaryingField::GetTimeRange
+//  Method: avtIVPNektarPPTimeVaryingField::GetTimeRange
 //
 //  Purpose:
 //      Returns temporal extent of the field.
@@ -586,7 +676,7 @@ avtIVPVTKTimeVaryingField::GetDimension() const
 // ****************************************************************************
 
 void
-avtIVPVTKTimeVaryingField::GetTimeRange( double range[2] ) const
+avtIVPNektarPPTimeVaryingField::GetTimeRange( double range[2] ) const
 {
     if (t0 < t1)
     {

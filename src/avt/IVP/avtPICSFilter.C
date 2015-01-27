@@ -102,6 +102,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPNek5000Field.h>
 #ifdef NEKTAR_PLUS_PLUS_FOUND
 #include <avtIVPNektar++Field.h>
+#include <avtIVPNektar++TimeVaryingField.h>
 #endif
 #include <avtIVPNIMRODField.h>
 #include <avtIVPFlashField.h>
@@ -451,6 +452,7 @@ avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
             std::string velocityName, meshName;
             avtDataRequest_p dr = lastContract->GetDataRequest();
             GetPathlineVelocityMeshVariables(dr, velocityName, meshName);
+
             if (ds->GetPointData()->GetArray(velocityName.c_str()) != NULL)
                ds->GetPointData()->SetActiveAttribute(velocityName.c_str(), vtkDataSetAttributes::VECTORS);
             else if (ds->GetCellData()->GetArray(velocityName.c_str()) != NULL)
@@ -773,10 +775,10 @@ avtPICSFilter::LoadNextTimeSlice()
     // domain numbers have changed.
     ComputeDomainToRankMapping();
 
-    // The mesh may have changed and the ICs need to update their domain.
-    // If they want a conn_cmfe, then don't do this expensive step.
-    // If they want a pos_cmfe, then we better do it.
-    if (pathlineCMFE != PICS_CONN_CMFE)
+    // The mesh may have changed and the ICs need to update their
+    // domain.  If a pos_cmfe, then update the domains. If a
+    // conn_cmfe, this expensive step is not needed
+    if (pathlineCMFE == PICS_POS_CMFE)
         icAlgo->UpdateICsDomain( curTimeSlice );
 
     return true;
@@ -1643,7 +1645,9 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
 
         if (md->AreAllTimesAccurateAndValid() != true)
         {
-            avtCallback::IssueWarning("Pathlines - The time data does not appear to be accurate and valid. Will continue.");
+            avtCallback::IssueWarning("Pathlines - The time data does not "
+                                      "appear to be accurate and valid. "
+                                      "Will continue.");
         }
 
         if (! pathlineOverrideTime)
@@ -1654,9 +1658,12 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
         {
             if (DebugStream::Level5()) 
             {
-                debug5 << "Pathlines - Only one time slice in the data sett, two or more are needed\n";
+                debug5 << "Pathlines - Only one time slice in the data set, "
+                       << "two or more are needed\n";
             }
-            EXCEPTION1(VisItException, "Pathlines - Only one time slice in the data sett, two or more are needed.");
+            EXCEPTION1(VisItException,
+                       "Pathlines - Only one time slice in the data set, "
+                       "two or more are needed.");
         }
 
         timeSliceInterval = md->GetTimes()[1] - md->GetTimes()[0];
@@ -1676,23 +1683,31 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
           // Period checks make sure there are enough time slices
           if( numTimes < 2 )
           {
-            EXCEPTION1(VisItException, "Periodic Pathlines - cannot advect in time periodically because there are less than three time slices." );
+            EXCEPTION1(VisItException, "Periodic Pathlines - "
+                       "Cannot advect in time periodically "
+                       "because there are less than three time slices." );
           }
 
           if( baseTime                 < md->GetTimes()[0] ||
               md->GetTimes()[numTimes] < baseTime+period )
           {
-            EXCEPTION1(VisItException, "Periodic Pathlines - cannot advect in time because the specified period time is outside the time slices available" );
+            EXCEPTION1(VisItException, "Periodic Pathlines - "
+                       "cannot advect in time because the specified "
+                       "period time is outside the time slices available" );
           }
 
           if( seedTime0 < baseTime || baseTime+period < seedTime0 )
           {
-            EXCEPTION1(VisItException, "Periodic Pathlines - cannot advect in time because the specified time is outside of the time period specified." );
+            EXCEPTION1(VisItException, "Periodic Pathlines - "
+                       "cannot advect in time because the specified time "
+                       "is outside of the time period specified." );
           }
 
           if( period < md->GetTimes()[2] - md->GetTimes()[0] )
           {
-            EXCEPTION1(VisItException, "Periodic Pathlines - the period must be greater than twice the time slice interval.");
+            EXCEPTION1(VisItException, "Periodic Pathlines - "
+                       "the period must be greater than twice the "
+                       "time slice interval.");
           }
 
           double intPart, fracPart = modf(period / timeSliceInterval, &intPart);
@@ -1705,7 +1720,9 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
 
           if( fracPart > FLT_EPSILON )
           {
-            EXCEPTION1(VisItException, "Periodic Pathlines - the period must be an integer multiple of the time slice interval .");
+            EXCEPTION1(VisItException, "Periodic Pathlines - "
+                       "the period must be an integer multiple of the "
+                       "time slice interval .");
           }
         }
           
@@ -1737,12 +1754,16 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
             }
             if (intv[0] >= intv[1])
             {
-                EXCEPTION1(VisItException, "Pathlines - Found two adjacent steps that are not increasing or equal in time.");
+                EXCEPTION1(VisItException,
+                           "Pathlines - Found two adjacent steps that are not "
+                           "increasing or equal in time.");
             }
 
             if (period && fabs((intv[1]-intv[0]) - timeSliceInterval) > FLT_EPSILON )
             {
-                EXCEPTION1(VisItException, "Periodic Pathlines - Found two adjacent time steps that do not have the same interval as the others.");
+                EXCEPTION1(VisItException, "Periodic Pathlines - "
+                           "Found two adjacent time steps that do not have the "
+                           "same interval as the others.");
             }
 
             domainTimeIntervals.push_back(intv);
@@ -1805,7 +1826,8 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
         {
             if (DebugStream::Level5()) 
             {
-                debug5 << "Did not find starting interval for seedTime0: " << seedTime0 << endl;
+                debug5 << "Pathlines - Did not find starting interval for "
+                       << "seedTime0: " << seedTime0 << endl;
             }
             EXCEPTION1(VisItException, "Invalid pathline starting time value.");
         }
@@ -1836,9 +1858,9 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
             //  far of a step backwards with this assumption.)
             if (DebugStream::Level1())
             {
-                debug1 << "This file format reader does dynamic decomposition." << endl;
-                debug1 << "We are assuming it can handle hints about what data "
-                       << "to read." << endl;
+                debug1 << "Pathlines - This file format reader does dynamic "
+                       << "decomposition. Assuming it can handle hints about "
+                       << "what data to read." << endl;
             }
             specifyPoint = true;
 
@@ -2058,20 +2080,23 @@ avtPICSFilter::SetupLocator( const BlockIDType &domain, vtkDataSet *ds )
         }
         else
         {
-            std::string velocityName, meshName;
-            int timeSliceForLocator = curTimeSlice;
+            int timeSliceForLocator;
             if (doPathlines && (pathlineCMFE == PICS_CONN_CMFE))
                 timeSliceForLocator = -1; // share between time slices
-            int tsfl = timeSliceForLocator;
+            else // if (doPathlines && (pathlineCMFE == PICS_POS_CMFE))
+                timeSliceForLocator = curTimeSlice; // share between time slices
+
+            std::string velocityName, meshName;
 
             if (CacheLocators())
             {
                 avtDataRequest_p dr = lastContract->GetDataRequest();
                 GetPathlineVelocityMeshVariables(dr, velocityName, meshName);
 
-                void_ref_ptr vrp = FetchArbitraryRefPtr(SPATIAL_DEPENDENCE,
-                                           velocityName.c_str(), domain.domain, 
-                                           tsfl, "BIH_CELL_LOCATOR");
+                void_ref_ptr vrp =
+                  FetchArbitraryRefPtr(SPATIAL_DEPENDENCE,
+                                       velocityName.c_str(), domain.domain, 
+                                       timeSliceForLocator, "BIH_CELL_LOCATOR");
                 if (*vrp != NULL)
                 {
                     locator = ref_ptr<avtCellLocator>((avtCellLocator*) (*vrp),
@@ -2088,9 +2113,11 @@ avtPICSFilter::SetupLocator( const BlockIDType &domain, vtkDataSet *ds )
                 {
                     void_ref_ptr vrp(*locator, avtCellLocator::Destruct, 
                                      locator.GetN());
+
                     StoreArbitraryRefPtr(SPATIAL_DEPENDENCE,
                                          velocityName.c_str(), domain.domain,
-                                         tsfl, "BIH_CELL_LOCATOR", vrp);
+                                         timeSliceForLocator,
+                                         "BIH_CELL_LOCATOR", vrp);
                 }
             }
         }
@@ -2198,9 +2225,27 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
                                        domainTimeIntervals[curTimeSlice][0], 
                                        domainTimeIntervals[curTimeSlice][1]);
       }
+      else if( fieldType == PICS_FIELD_NEKTARPP )
+      {
+#ifdef NEKTAR_PLUS_PLUS_FOUND
+        if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+            return new avtIVPNektarPPTimeVaryingField(ds, *locator, 
+                                       domainTimeIntervals[curTimeSlice-1][1],
+                                       domainTimeIntervals[curTimeSlice-1][0]);
+        else
+            return new avtIVPNektarPPTimeVaryingField(ds, *locator, 
+                                       domainTimeIntervals[curTimeSlice][0], 
+                                       domainTimeIntervals[curTimeSlice][1]);
+#else
+        EXCEPTION1(ImproperUseException, "Requesting Nektar++ interpolation but VisIt has not been built with Nektar++ support.");
+
+#endif
+      }
       else
       {
-        EXCEPTION1(ImproperUseException, "Can not do pathlines with higher order elements at this time - use the default field type for linear interpolation.");
+        EXCEPTION1(ImproperUseException, "Can not do pathlines with "
+                   "higher order elements at this time. "
+                   "Use the default field type for linear interpolation.");
       }
     }
     else
@@ -3396,24 +3441,9 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         out_dr->AddSecondaryVariable("E");  // Eletric Field
     }
 
-    if (doPathlines)
-    {
-        out_dr->AddSecondaryVariable(avtIVPVTKTimeVaryingField::NextTimePrefix);
-    }
-    
-    avtContract_p out_contract;
-    if ( *out_dr )
-        out_contract = new avtContract(in_contract, out_dr);
-    else
-        out_contract = new avtContract(in_contract);
-
-    out_contract->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
-    //out_contract->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
-
-#ifdef PARALLEL
-    out_contract->SetReplicateSingleDomainOnAllProcessors(true);
-#endif
-
+    // Create a CMFE expression that will contain the vector values at
+    // the next time step. These values will be added to to current
+    // time as a secondary variable.
     if (doPathlines)
     {
         ExpressionList *elist = ParsingExprList::Instance()->GetList();
@@ -3429,32 +3459,55 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
             }
         }
 
-        std::string meshName, pathlineName;
+        std::string pathlineName, meshName;
         GetPathlineVelocityMeshVariables(out_dr, pathlineName, meshName);
 
-        Expression *e = new Expression();
-        e->SetName(avtIVPVTKTimeVaryingField::NextTimePrefix);
-
-        char defn[1024];
-        int timeOffset = +1;
-        if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+        int timeOffset;
+        if (integrationDirection == VTK_INTEGRATE_FORWARD)
+            timeOffset = +1;
+        else //if (integrationDirection == VTK_INTEGRATE_BACKWARD)
             timeOffset = -1;
+
+        // Same mesh between the two time steps
+        char defn[1024];
         if( pathlineCMFE == PICS_CONN_CMFE )
         {
             SNPRINTF(defn, 1024, "conn_cmfe(<[%d]id:%s>, <%s>)",
                      timeOffset, pathlineName.c_str(), meshName.c_str());
         }
-        else
+        // Different mesh between the two time steps
+        else //if( pathlineCMFE == PICS_POS_CMFE )
         {
             SNPRINTF(defn, 1024, "pos_cmfe(<[%d]id:%s>, <%s>, <%s>)",
                      timeOffset, pathlineName.c_str(), meshName.c_str(),
                      pathlineName.c_str());
         }
+
+        Expression *e = new Expression();
+        e->SetName(avtIVPVTKTimeVaryingField::NextTimePrefix);
         e->SetDefinition(defn);
         e->SetType(Expression::VectorMeshVar);
         elist->AddExpressions(*e);
         delete e;
+
+
+        // Ask for a secondary var that will be the vector values at the
+        // next time step.
+        out_dr->AddSecondaryVariable(avtIVPVTKTimeVaryingField::NextTimePrefix);
     }
+    
+    avtContract_p out_contract;
+    if ( *out_dr )
+        out_contract = new avtContract(in_contract, out_dr);
+    else
+        out_contract = new avtContract(in_contract);
+
+    out_contract->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
+    //out_contract->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+
+#ifdef PARALLEL
+    out_contract->SetReplicateSingleDomainOnAllProcessors(true);
+#endif
 
     if( CheckIfRestart(restart) )
     {
