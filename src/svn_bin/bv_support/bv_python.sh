@@ -129,8 +129,8 @@ export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
 export PYREQUESTS_FILE=${PYREQUESTS_FILE:-"requests-2.5.1.tar.gz"}
 export PYREQUESTS_BUILD_DIR=${PYREQUESTS_BUILD_DIR:-"requests-2.5.1"}
 
-export SEEDME_FILE=${SEEDME_FILE:-"seedme-python-client-cb1f3c409788.tar.gz"}
-export SEEDME_BUILD_DIR=${SEEDME_BUILD_DIR:-"seedme-python-client-cb1f3c409788"}
+export SEEDME_FILE=${SEEDME_FILE:-"seedme-seedme-python-client-c8818385bc88.tar.gz"}
+export SEEDME_BUILD_DIR=${SEEDME_BUILD_DIR:-"seedme-seedme-python-client-c8818385bc88"}
 
 
 }
@@ -601,7 +601,7 @@ function build_seedme
 
     PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $SEEDME_BUILD_DIR > /dev/null
-        info "Installing python requests module ..."
+        info "Installing seedme python module ..."
         ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
     popd > /dev/null
 
