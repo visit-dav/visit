@@ -184,6 +184,9 @@ private:
     QWsSocket                 *socket;
     QString messageRead;
     std::vector<QString> messages;
+
+signals:
+    void frameRead(int);
 };
 
 #endif

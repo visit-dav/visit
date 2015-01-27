@@ -312,7 +312,7 @@ ViewerClientConnection::LaunchClient(const std::string &program,
             WebSocketConnection* conn = dynamic_cast<WebSocketConnection*>(remoteProcess->GetWriteConnection());
 
             if(conn) {
-                connect(conn, SIGNAL(activated(int)), this, SLOT(ReadFromClientAndProcess(int)));
+                connect(conn, SIGNAL(frameRead(int)), this, SLOT(ReadFromClientAndProcess(int)));
                 connect(conn, SIGNAL(disconnected()), this, SLOT(ForceDisconnectClient()));
             }
             else {
