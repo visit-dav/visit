@@ -53,6 +53,8 @@
 
 #include <vector>
 
+class vtkDataSet;
+class vtkDataArray;
 class DBOptionsAttributes;
 
 // ****************************************************************************
@@ -107,6 +109,8 @@ class avtNektarPPFileFormat : public avtMTSDFileFormat
     std::vector<double> m_times;
 
     std::string m_meshFile;
+
+    std::string vectorVarComponents[3];
 
     int m_nElements;
     std::vector<std::string> m_scalarVarNames;

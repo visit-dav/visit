@@ -48,6 +48,7 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
+#include <vtkLongArray.h>
 
 #include <avtSILRestrictionTraverser.h>
 
@@ -258,6 +259,43 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
             EXCEPTION1(InvalidMergeException, msg);
         }
 
+        // 
+        // At this point copy field data from the second data set to
+        // the first data set. This is a backdoor method for time
+        // varying fields and moving higher element data that is
+        // stored in the field data.
+        //
+        vtkFieldData *fd1 = in_ds1->GetFieldData();
+        vtkFieldData *fd2 = in_ds2->GetFieldData();
+
+        if( fd1->GetNumberOfArrays() && fd2->GetNumberOfArrays() )
+        {
+          for( int i=0; i<fd1->GetNumberOfArrays(); ++i )
+          {
+            // Copy only arrays found in both datasets.
+            const char *name1 = fd1->GetArrayName(i);
+            vtkAbstractArray *fp2 = fd2->GetAbstractArray(name1);
+        
+            if( fp2 )
+            {
+              // Make a copy of the array found in dataset2
+              vtkAbstractArray *fp = (vtkAbstractArray *) fp2->NewInstance();
+              fp->DeepCopy( fp2 );
+
+              // Append '2' to the name so not to have any name conflicts.
+              char name[128];
+              sprintf( name, "%s2", name1);
+
+              fp->SetName(name);
+              in_ds1->GetFieldData()->AddArray(fp);
+              fp->Delete();
+            }
+          }
+        }
+
+        //
+        // 
+        //
         vtkDataArray *addvar = NULL;
         bool deleteAddvar = false;
         if (invar == outvar)
@@ -324,5 +362,3 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
         return (rv);
     }
 }
-
-

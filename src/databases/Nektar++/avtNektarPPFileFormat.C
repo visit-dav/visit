@@ -45,7 +45,6 @@
 #include <string>
 #include <sys/stat.h>
 
-#include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkLongArray.h>
 #include <vtkFloatArray.h>
@@ -72,6 +71,8 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
+//#include <vtkNektar++.h>
+
 #include <MultiRegions/ExpList.h>
 #include <MultiRegions/ExpList1D.h>
 #include <MultiRegions/ExpList2D.h>
@@ -83,6 +84,11 @@
 #define ACCELERATE_FRAMEWORK_LINK_FLAGS 1
 
 using namespace Nektar;
+
+// extern vtkInformationUnsignedLongKey *NEKTAR_RT_U_FIELD;
+// extern vtkInformationUnsignedLongKey *NEKTAR_RT_V_FIELD;
+// extern vtkInformationUnsignedLongKey *NEKTAR_RT_W_FIELD;
+
 
 // ****************************************************************************
 //  Method: avtNektarPPFileFormat constructor
@@ -96,6 +102,17 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
   : avtMTSDFileFormat(&filename, 1), refinedDataSet(0)
 {
   //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
+
+  vectorVarComponents[0] = std::string("u");
+  vectorVarComponents[1] = std::string("v");
+  vectorVarComponents[2] = std::string("w");
+
+  // if( NEKTAR_RT_U_FIELD == 0 )
+  //   NEKTAR_RT_U_FIELD = new vtkInformationUnsignedLongKey( "U field", "Not used");
+  // if( NEKTAR_RT_V_FIELD == 0 )
+  //   NEKTAR_RT_V_FIELD = new vtkInformationUnsignedLongKey( "V field", "Not used");
+  // if( NEKTAR_RT_W_FIELD == 0 )
+  //   NEKTAR_RT_W_FIELD = new vtkInformationUnsignedLongKey( "W field", "Not used");
 
   // If *.xml just a mesh no field data.
 
@@ -514,14 +531,15 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       md->Add(smd);
       
       // Is the var is a potential coordinate for the velocity?
-      if( m_scalarVarNames[i] == std::string("u") ||
-          m_scalarVarNames[i] == std::string("v") ||
-          m_scalarVarNames[i] == std::string("w") )
+      for(int j = 0; j < 3; ++j)
       {
-        ++vector_dim;
+        if( m_scalarVarNames[i] == vectorVarComponents[j] )
+        {
+          ++vector_dim;
+          break;
+        }
       }
     }
-
 
     // If at least two values (u,v) or (uv,w) are found then
     // create a velocity variable for the refined and spectral mesh.
@@ -902,6 +920,7 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
 
     // VTK array for the vector values.
     vtkDoubleArray *rv = vtkDoubleArray::New();
+    // vtkNektarDoubleArray *rv = vtkNektarDoubleArray::New();
 
     // Set the number of components before setting the number of tuples
     // for proper memory allocation.
@@ -1062,8 +1081,47 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
         ++hexGeomMapIter;
       }
     }
+    
+    // // Store the shared pointer address. 
+    // if( nektar_field[0] )
+    //   rv->SetNektarUField( (intptr_t) &(nektar_field[0]) );
+    // else
+    //   rv->SetNektarUField( 0 );
 
-    return rv;    
+    // if( nektar_field[1] )
+    //   rv->SetNektarVField( (intptr_t) &(nektar_field[1]) );
+    // else
+    //   rv->SetNektarVField( 0 );
+
+    // if( nektar_field[2] )
+    //   rv->SetNektarWField( (intptr_t) &(nektar_field[2]) );
+    // else
+    //   rv->SetNektarWField( 0 );
+
+    
+    // Store the shared pointer address. 
+    // if( nektar_field[0] )
+    //   NEKTAR_RT_U_FIELD->Set( rv->GetInformation(), (intptr_t) &(nektar_field[0]) );
+    // else
+    //   NEKTAR_RT_U_FIELD->Set( rv->GetInformation(), 0 );
+
+    // if( nektar_field[1] )
+    //   NEKTAR_RT_V_FIELD->Set( rv->GetInformation(), (intptr_t) &(nektar_field[1]) );
+    // else
+    //   NEKTAR_RT_V_FIELD->Set( rv->GetInformation(), 0 );
+
+    // if( nektar_field[2] )
+    //   NEKTAR_RT_W_FIELD->Set( rv->GetInformation(), (intptr_t) &(nektar_field[2]) );
+    // else
+    //   NEKTAR_RT_W_FIELD->Set( rv->GetInformation(), 0 );
+
+    // std::cerr << "Set info " << m_times[0] << "  "
+    //        << (intptr_t) &(nektar_field[0]) << "  " 
+    //        << (intptr_t) &(nektar_field[1]) << "  " 
+    //        << (intptr_t) &(nektar_field[2]) << "  " 
+    //        << std::endl;
+
+    return rv;
 }
 
 // ****************************************************************************
@@ -1377,9 +1435,9 @@ std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
 
   for(int i = 0; i < fielddata.size(); ++i)
   {
-    if( fielddef[0]->m_fields[i] == "u") nektar_field[0] = Exp[i];
-    if( fielddef[0]->m_fields[i] == "v") nektar_field[1] = Exp[i];
-    if( fielddef[0]->m_fields[i] == "w") nektar_field[2] = Exp[i];
+    for(int j = 0; j < 3; ++j)
+      if( fielddef[0]->m_fields[i] == vectorVarComponents[j] )
+        nektar_field[j] = Exp[i];
   }
 
   outstream.flush();
