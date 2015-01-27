@@ -906,6 +906,8 @@ WebSocketConnection::ReadFrame(const QString &str)
 
     messageRead = str;
     messages.push_back(str);
+
+    emit frameRead(socket->internalSocket()->socketDescriptor());
 }
 
 // ****************************************************************************
@@ -1123,18 +1125,6 @@ WebSocketConnection::FlushAttr(AttributeSubject *subject)
     try{
         if(subject->GetSendMetaInformation())
         {
-//            JSONNode meta;
-//            JSONNode node;
-
-//            subject->WriteAPI(meta);
-
-//            node["id"] = subject->GetGuido();
-//            node["typename"] = subject->TypeName();
-//            node["api"] = meta; //.ToJSONNode(false,false);
-
-//            std::string output = node.ToString();
-
-//            QString qoutput = output.c_str();
             QString qoutput = serializeMetaData(subject).c_str();
             socket->write(qoutput);
 
@@ -1142,19 +1132,6 @@ WebSocketConnection::FlushAttr(AttributeSubject *subject)
                 socket->internalSocket()->waitForBytesWritten();
         }
 
-//        JSONNode child, metadata;
-//        JSONNode node;
-
-//        subject->Write(child);
-//        subject->WriteMetaData(metadata);
-//        node["id"] = subject->GetGuido();
-//        node["typename"] = subject->TypeName();
-//        node["contents"] = child; //.ToJSONNode(false,true);
-//        node["metadata"] = metadata;
-
-//        std::string output = node.ToString();
-
-//        QString qoutput = output.c_str();
         QString qoutput = serializeAttributeSubject(subject).c_str();
         socket->write(qoutput);
 
