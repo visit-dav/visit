@@ -361,6 +361,11 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
     EXCEPTION1(InvalidDBTypeException, "The function getParticleData could not be located in the library!!!");
   }
 
+  getParticlePositionName = (std::string (*)(DataArchive*)) dlsym(libHandle, "getParticlePositionName");
+  if((error = dlerror()) != NULL) {
+    EXCEPTION1(InvalidDBTypeException, "The function getParticlePositionName could not be located in the library!!!");
+  }
+
 
   // use the folder name, not the index.xml file name to open the archive
   string folder(filename);
@@ -1247,7 +1252,8 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
       matlNo = atoi(matl.c_str());
 
     // we always want p.x when setting up the mesh
-    string vars = "p.x";
+//    string vars = "p.x";
+    string vars = (*getParticlePositionName)(archive);
 
     ParticleDataRaw *pd = (*getParticleData)(archive, grid, level, local_patch, vars, matlNo, timestate);
 
