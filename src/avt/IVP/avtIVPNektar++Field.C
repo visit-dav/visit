@@ -44,6 +44,8 @@
 
 #include "avtIVPNektar++Field.h"
 
+//#include <vtkNektar++.h>
+
 #include <limits>
 
 #include <DebugStream.h>
@@ -52,6 +54,9 @@
 #include <vtkCellData.h>
 #include <vtkLongArray.h>
 #include <vtkUnstructuredGrid.h>
+
+//#include <vtkInformation.h>
+//#include <vtkInformationUnsignedLongKey.h>
 
 #include <InvalidVariableException.h>
 
@@ -69,6 +74,57 @@ avtIVPNektarPPField::avtIVPNektarPPField( vtkDataSet* dataset,
 {
   vtkFieldData *fieldData = dataset->GetFieldData();
 
+  // vtkDoubleArray *vecs =
+  //   (vtkDoubleArray*) dataset->GetPointData()->GetVectors();
+
+  // vtkNektarDoubleArray *vecs =
+  //   (vtkNektarDoubleArray*) dataset->GetPointData()->GetVectors();
+
+  // if (vecs == NULL) {
+  //   EXCEPTION1( InvalidVariableException,
+  //               "avtIVPNektar++Field - Can not find the velocity variable." );
+  // }
+
+  // const std::string vectorVarComponents[3] = { "u", "v", "w" };
+
+  // Get the Nektar++ field data from the VTK data
+  // unsigned long fptr = vecs->GetNektarUField();
+
+  // if( fptr )
+  //   nektar_field[0] = (Nektar::MultiRegions::ExpListSharedPtr)
+  //     (*((Nektar::MultiRegions::ExpListSharedPtr*) fptr));
+
+  // fptr = vecs->GetNektarVField();
+
+  // if( fptr )
+  //   nektar_field[1] = (Nektar::MultiRegions::ExpListSharedPtr)
+  //     (*((Nektar::MultiRegions::ExpListSharedPtr*) fptr));
+
+  // fptr = vecs->GetNektarWField();
+
+  // if( fptr )
+  //   nektar_field[2] = (Nektar::MultiRegions::ExpListSharedPtr)
+  //     (*((Nektar::MultiRegions::ExpListSharedPtr*) fptr));
+
+
+  // unsigned long fptr = NEKTAR_RT_U_FIELD->Get( vecs->GetInformation() );
+
+  // if( fptr )
+  //   nektar_field[0] = (Nektar::MultiRegions::ExpListSharedPtr)
+  //     (*((Nektar::MultiRegions::ExpListSharedPtr*) fptr));
+
+  // fptr = NEKTAR_RT_V_FIELD->Get( vecs->GetInformation() );
+
+  // if( fptr )
+  //   nektar_field[1] = (Nektar::MultiRegions::ExpListSharedPtr)
+  //     (*((Nektar::MultiRegions::ExpListSharedPtr*) fptr));
+
+  // fptr = NEKTAR_RT_W_FIELD->Get( vecs->GetInformation() );
+
+  // if( fptr )
+  //   nektar_field[2] = (Nektar::MultiRegions::ExpListSharedPtr)
+  //     (*((Nektar::MultiRegions::ExpListSharedPtr*) fptr));
+
   // Get the Nektar++ field data from the VTK field
   long *fp =
     (long *) (fieldData->GetAbstractArray("Nektar++FieldPointers")->GetVoidPointer(0));
@@ -79,10 +135,10 @@ avtIVPNektarPPField::avtIVPNektarPPField( vtkDataSet* dataset,
     {
       if( fp[i] )
         nektar_field[i] = (Nektar::MultiRegions::ExpListSharedPtr)
-          (*((Nektar::MultiRegions::ExpListSharedPtr*)fp[i]));
+          (*((Nektar::MultiRegions::ExpListSharedPtr*) fp[i]));
     }
   }
-  else 
+  else
   {
     EXCEPTION1( InvalidVariableException,
                 "Uninitialized option: Nektar++FieldPointers. (Please contact visit-developer mailing list to report)" );
@@ -169,13 +225,17 @@ avtIVPNektarPPField::operator()( const double &t,
     // interpolation at the given point.
     for (int i = 0; i < 3; ++i)
     {
-      if( !nektar_field[i] )
-        break;
-      
-      Nektar::Array<Nektar::OneD, Nektar::NekDouble> physVals =
-        nektar_field[i]->GetPhys() + nektar_field[i]->GetPhys_Offset(nt_el);
-      
-      vec[i] = nektar_field[i]->GetExp(nt_el)->PhysEvaluate(coords, physVals);
+      if( nektar_field[i] )
+      {
+        Nektar::Array<Nektar::OneD, Nektar::NekDouble> physVals =
+          nektar_field[i]->GetPhys() + nektar_field[i]->GetPhys_Offset(nt_el);
+          
+        vec[i] = nektar_field[i]->GetExp(nt_el)->PhysEvaluate(coords, physVals);
+      }
+      else
+      {
+        vec[i] = 0;
+      }
     }
 
     return OK;
