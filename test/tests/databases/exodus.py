@@ -58,12 +58,14 @@ s.TurnOffSet(files[3])
 SetPlotSILRestriction(s)
 Test("exodus_04")
 
+ToggleMaintainViewMode()
 d = DisplaceAttributes()
 d.variable = "DISPL"
 SetDefaultOperatorOptions(d)
 AddOperator("Displace")
 DrawPlots()
 Test("exodus_05")
+ToggleMaintainViewMode()
 
 TestSection("Testing SHELL4 support")
 DeleteAllPlots()
