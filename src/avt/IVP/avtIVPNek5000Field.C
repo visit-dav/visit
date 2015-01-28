@@ -232,9 +232,9 @@ avtIVPNek5000Field::~avtIVPNek5000Field()
   if( nek_pts[1] ) delete [] nek_pts[1];
   if( nek_pts[2] ) delete [] nek_pts[2];
   
-  if( nek_pts[0] ) delete [] nek_vec[0];
-  if( nek_pts[1] ) delete [] nek_vec[1];
-  if( nek_pts[2] ) delete [] nek_vec[2];
+  if( nek_vec[0] ) delete [] nek_vec[0];
+  if( nek_vec[1] ) delete [] nek_vec[1];
+  if( nek_vec[2] ) delete [] nek_vec[2];
 
   if( nek_fld ) findpts_local_free( nek_fld );
 }

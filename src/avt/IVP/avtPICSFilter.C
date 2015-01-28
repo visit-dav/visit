@@ -100,6 +100,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPM3DC1Integrator.h>
 #include <avtIVPM3DC1Field.h>
 #include <avtIVPNek5000Field.h>
+#include <avtIVPNek5000TimeVaryingField.h>
 #ifdef NEKTAR_PLUS_PLUS_FOUND
 #include <avtIVPNektar++Field.h>
 #include <avtIVPNektar++TimeVaryingField.h>
@@ -2222,6 +2223,17 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
                                        domainTimeIntervals[curTimeSlice-1][0]);
         else
             return new avtIVPVTKTimeVaryingField(ds, *locator, 
+                                       domainTimeIntervals[curTimeSlice][0], 
+                                       domainTimeIntervals[curTimeSlice][1]);
+      }
+      else if( fieldType == PICS_FIELD_NEK5000 )
+      {
+        if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+            return new avtIVPNek5000TimeVaryingField(ds, *locator, 
+                                       domainTimeIntervals[curTimeSlice-1][1],
+                                       domainTimeIntervals[curTimeSlice-1][0]);
+        else
+            return new avtIVPNek5000TimeVaryingField(ds, *locator, 
                                        domainTimeIntervals[curTimeSlice][0], 
                                        domainTimeIntervals[curTimeSlice][1]);
       }
