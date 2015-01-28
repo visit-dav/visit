@@ -113,6 +113,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The XRay Image query now supports specifying background intensities. The background intensity may be specified as a single value for all the bins or on a per bin basis. An example of specifying one value per bin is:<pre>params = dict(output_type="png", divide_emis_by_absorb=1, theta=0., phi=0., width=10., height=10.,</pre><pre>image_size=(300,300), vars=("abs", "emis"), background_intensities=(1., 2.))</pre><pre>Query("XRay Image", params)</pre></pre>An example of specifying a single value for all the bins is:<pre>params = dict(output_type="png", divide_emis_by_absorb=1, theta=0., phi=0., width=10., height=10.,</pre><pre>image_size=(300,300), vars=("abs", "emis"), background_intensity=1.)</pre><pre>Query("XRay Image", params)</pre></li>
 </ul>
 
+<a name="PICS_changes"></a>
+<p><b><font size="4">Changes to VisIt's PICS version in 2.9.0</font></b></p>
+<ul>
+  <li>Higher element support for time varying Nektar++ and Nek5000 databases</li>
+</ul>
+
+
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 2.9.0</font></b></p>
 <ul>
