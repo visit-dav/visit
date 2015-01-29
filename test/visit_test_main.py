@@ -2406,7 +2406,17 @@ def InitTestEnv():
                         else:
                             idx = idx + 1
                 except:
-                    pass    
+                    pass
+            # Make sure that we select a parallel profile if we want to run
+            # in parallel.
+            if TestEnv.params["parallel"]:
+                ap = -1
+                for i in range(mp.GetNumLaunchProfiles()):
+                    if mp.GetLaunchProfiles(i).parallel:
+                        ap = i
+                        break
+                if ap != -1:
+                    mp.activeProfile = ap   
             #print mp
 
             # Use the machine profile to start the engine.
