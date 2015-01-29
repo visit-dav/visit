@@ -50,6 +50,7 @@
 #include <windows.h>
 #include <userenv.h> // for GetProfilesDirectory
 #include <direct.h>
+#include <Shlwapi.h> // PathIsRelative
 #else
 #include <unistd.h>
 #include <dirent.h>
@@ -815,6 +816,9 @@ FileFunctions::Normalize(const std::string &path, const std::string &pathSep)
 //    VISIT_SLASH_STRING.  Use of non-platform specific case my be needed if
 //    parsing internal database path-names.
 //
+//    Kathleen Biagas, Thu Jan 29 15:53:12 MST 2015
+//    Some tweaks on windows to hanlde cwd_context of '.'.
+//
 // ****************************************************************************
 
 const char *
@@ -853,7 +857,24 @@ FileFunctions::Absname(const char *cwd_context, const char *path,
         return StaticStringBuf;
     }
 
-    if (cwd_context[0] != pathSep[0]) return StaticStringBuf;
+#ifndef _WIN32
+    if (cwd_context[0] != pathSep[0])
+    {
+        return StaticStringBuf;
+    }
+#else
+    if(cwd_context[0] == '.')
+    {
+        if (PathIsRelative(path))
+        {
+            if(_fullpath(StaticStringBuf, ".\\", _MAX_PATH) != NULL)
+                return StaticStringBuf;
+            else
+                return path;
+        }
+        return path;
+    }
+#endif
 
     // Catenate path to cwd_context and then Normalize the result
     std::string path2 = std::string(cwd_context) + std::string(pathSep) + std::string(path);
