@@ -5,28 +5,14 @@
   <meta http-equiv="Content-Language" content="en-us">
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
   <meta name="ProgId" content="FrontPage.Editor.Document">
-  <title>VisIt 2.9.0 Release Notes</title>
+  <title>VisIt 2.9 Release Notes</title>
 </head>
 <body>
 
-<!--
-Instructions for starting a new Release Notes file.
-
-    1. Copy this file to a new release notes file with the name "relnotesA.B.html" or
-       "relnotesA.B.C.html". The script logic in the above header will glean the version
-       number from the filename and then re-use the 'visitVersion' variable everywhere
-       in this file.
-
-    2. Remove any sections that are not relevant to the current release.
-
-    3. Update the Previous release link at the bottom of the page.
--->
-
-<center><b><font size="6">VisIt 2.9.0 Release Notes</font></b></center>
+<center><b><font size="6">VisIt 2.9 Release Notes</font></b></center>
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
-
 
 <p><b>Sections</b></p>
 <ul>
@@ -34,7 +20,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Advanced_Features">Features for advanced users</a></li>
   <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
   <li><a href="#File_format">Changes to file format readers</a></li>
-  <li><a href="#Operator_changes">Changes to operators</a></li>
+  <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
@@ -42,107 +28,79 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 
 <a name="General_Features"></a>
-<p><b><font size="4">General features added in version 2.9.0</font></b></p>
+<p><b><font size="4">General features added in version 2.9</font></b></p>
 <ul>
   <li>VisIt was ported to BlueGene/Q. The <i>build_visit_BGQ</i> script can be used to build a statically linked version of VisIt's server components for use on BlueGene/Q.</li>
-  <li>Enhanced the wireframe option for the subset plot of blocks to also outline the internal domains if the "Draw Internal Surfaces" option is checked</li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Advanced_Features"></a>
-<p><b><font size="4">Advanced features added in version 2.9.0</font></b></p>
+<p><b><font size="4">Advanced features added in version 2.9</font></b></p>
 <ul>
-  <li>Libsim was enhanced so it provides a <i>VisItRestoreSession()</i> function which can be used to set up visualizations for a simulation that is run in batch mode. VisIt can be run normally to connect interactively to the simulation to set up plots and save a session file. The session file that gets created can be used to set up plots for subsequent batch-only simulation runs. Once plots have been set up via VisItRestoreSession(), the <i>VisItSaveWindow()</i> function can be used to save images.</li>
+  <li>Libsim was enhanced so it provides a <i>VisItRestoreSession()</i> function which can be used to set up visualizations for a simulation that is run in batch mode. VisIt can be run normally to connect interactively to the simulation to set up plots and save a session file. The session file that gets created can be used to set up plots for subsequent batch-only simulation runs. Once plots have been set up via <i>VisItRestoreSession()</i>, the <i>VisItSaveWindow()</i> function can be used to save images.</li>
   <li>Libsim was enhanced so it provides a <i>VisItExportDatabase()</i> function which can be used to export the active plots in a simulation that is run in batch mode. This function enables users to automatically export processed geometry from libsim.</li>
-  <li>Libsim's plot and operator creation functions have been enhanced to use the <i>viewercore</i> library so that they can faithfully set up plots as the viewer would do it. This ensures that the functions work using tried and true VisIt code. Internally within libsim, the viewercore library uses VisIt engine components directly to produce the data needed by the plots.</li>
+  <li>Libsim's plot and operator creation functions have been enhanced to use the <i>viewercore</i> library so that they can faithfully set up plots as the viewer would do it. This ensures that the functions work using tried and true VisIt code. Internally within libsim, the <i>viewercore</i> library uses VisIt engine components directly to produce the data needed by the plots.</li>
   <li>VisIt's network communication was enhanced to provide an optional fixed size buffer socket communication mode. This option enables VisIt to connect to machines which expect fixed size send/recv buffers.</li>
-  <li>A global preference was added that tells VisIt to automatically remove duplicate nodes from fully disconnected unstructured grids.  This preference is off by default, and can be changed in the gui's Options->Preferences window or via 'SetRemoveGlobalNodes(0|1) via the cli.  This preferences is saved with other settings. This new preferences subsumes the behavior introduced in 2.8 series where the VTK reader would perform this duplicate node removal for .vtu files without user intervention.</li>
-  <li>Libsim's Fortran interface has been modified to include the VisItGetMixedVariable function. This change will require users of the Fortran interface to include the VisItGetMixedVariable stub function in their code to enable building. See the Fortran simulation examples in DataManualExamples for reference.</li>
-  <li></li>
+  <li>Libsim's Fortran interface was modified to include the <i>VisItGetMixedVariable</i> function. This change will require users of the Fortran interface to include the <i>VisItGetMixedVariable</i> stub function in their code to enable building. See the Fortran simulation examples in DataManualExamples for reference.</li>
+  <li>A global preference was added that tells VisIt to automatically remove duplicate nodes from fully disconnected unstructured grids. This preference is off by default, and can be changed in the GUI's Options->Preferences window or via <i>SetRemoveGlobalNodes(0|1)</i> via the CLI. This preference is saved with other settings. This new preference subsumes the behavior introduced in 2.8 series where the VTK reader would perform this duplicate node removal for .vtu files without user intervention.</li>
+  <li>VisIt's Parallel Integral Curve System (PICS) was enhanced to add higher-order element support for time varying Nektar++ and Nek5000 databases.</li>
 </ul>
 
 <a name="GUI_Changes"></a>
-<p><b><font size="4">Changes in GUI behavior for version 2.9.0</font></b></p>
+<p><b><font size="4">Changes in GUI behavior for version 2.9</font></b></p>
 <ul>
   <li>Enumerated scalar variables can now be plotted with the Subset and Label plots.</li>
-  <li>The 'Set save options' window now has a 'Save and Dismiss' button, which performs a 'Save Window', then dismisses the options window.  This is the same behavior that used to be provided by the 'Save' button.  The 'Save' button is still present, but no longer dismisses the window.</li>
+  <li>The 'Set save options' window now has a 'Save and Dismiss' button, which performs a 'Save Window', then dismisses the options window. This is the same behavior that used to be provided by the 'Save' button. The 'Save' button is still present, but no longer dismisses the window.</li>
 </ul>
 
 <a name="File_format"></a>
-<p><b><font size="4">File format reader changes in version 2.9.0</font></b></p>
+<p><b><font size="4">File format reader changes in version 2.9</font></b></p>
 <ul>
-  <li>Material, including mixing material, support was added to Exodus plugin. Conventions for naming
-      of material volume fraction data and material specific parts of mesh variables are pre-defined
-      for ALEGRA and CTH. In addition, users can define their own custom variable naming conventions. 
-      These features are controlled by database options a user can set when opening Exodus files.</li>
-  <li>Exodus ElementBlock decomposition is now served up by Exodus plugin as an Enumerated Scalar
-      instead of a material.</li>
-  <li>Added read options to Exodus plugin to turn off auto-detection of composite variables.</li>
-  <li>When Exodus plugin auto-detects composite variables, it now defines expressions for them instead
-      of advertising them as database variables.</li>
-  <li>Improved auto-detection logic of composite variables in Exodus plugin.</li>
+  <li>Material, including mixing material, support was added to the Exodus plugin. Conventions for naming of material volume fraction data and material specific parts of mesh variables are pre-defined for ALEGRA and CTH. In addition, users can define their own custom variable naming conventions. These features are controlled by database options a user can set when opening Exodus files.</li>
+  <li>Exodus ElementBlock decomposition is now served up by the Exodus plugin as an Enumerated Scalar instead of a material.</li>
+  <li>Added read options to the Exodus plugin to turn off auto-detection of composite variables.</li>
+  <li>When the Exodus plugin auto-detects composite variables, it now defines expressions for them instead of advertising them as database variables.</li>
+  <li>Improved the auto-detection logic of composite variables in the Exodus plugin.</li>
   <li>Improved support for cell-centered data in newer versions of Tecplot binary files.</li>
 </ul>
 
-<a name="Operator_changes"></a>
-<p><b><font size="4">Changes to VisIt's operators version in 2.9.0</font></b></p>
+<a name="Plot_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 2.9</font></b></p>
 <ul>
-  <li>Operator Changes 1</li>
-  <li>Operator Changes 2</li>
+  <li>Enhanced the wireframe option for the subset plot of blocks to also outline the internal domains if the "Draw Internal Surfaces" option is checked.</li>
 </ul>
 
 <a name="Expression_changes"></a>
-<p><b><font size="4">Changes to VisIt's expression language in version 2.9.0</font></b></p>
+<p><b><font size="4">Changes to VisIt's expression language in version 2.9</font></b></p>
 <ul>
-  <li>The <i>zonetype</i> expression has been deprecated. Instead use either <i>zonetype_label</i> or <i>zonetype_rank</i>
-      expressions. The <i>zonetype_label</i> expression behaves much like the now deprecated <i>zonetype</i> expression
-      except that it creates labels three characters in length instead of one. The new <i>zonetype_rank</i> expression
-      assigns an integer value to each zone based on the zone's celltype using a PATRAN-like rank ordering; first by
-      topological dimension and then by node count.</li>
-  <li></li>
+  <li>The <i>zonetype</i> expression was been deprecated. Instead use either <i>zonetype_label</i> or <i>zonetype_rank</i> expressions. The <i>zonetype_label</i> expression behaves much like the now deprecated <i>zonetype</i> expression except that it creates labels three characters in length instead of one. The new <i>zonetype_rank</i> expression assigns an integer value to each zone based on the zone's celltype using a PATRAN-like rank ordering; first by topological dimension and then by node count.</li>
 </ul>
 
 <a name="Query_changes"></a>
-<p><b><font size="4">Changes to VisIt's picks and queries in version 2.9.0</font></b></p>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 2.9</font></b></p>
 <ul>
-  <li>Pick Window's SaveAs now saves Pick letter.</li>
-  <li>Query Changes 2</li>
+  <li>Pick Window's 'SaveAs' now saves the pick letter.</li>
   <li>The XRay Image query now supports specifying background intensities. The background intensity may be specified as a single value for all the bins or on a per bin basis. An example of specifying one value per bin is:<pre>params = dict(output_type="png", divide_emis_by_absorb=1, theta=0., phi=0., width=10., height=10.,</pre><pre>image_size=(300,300), vars=("abs", "emis"), background_intensities=(1., 2.))</pre><pre>Query("XRay Image", params)</pre></pre>An example of specifying a single value for all the bins is:<pre>params = dict(output_type="png", divide_emis_by_absorb=1, theta=0., phi=0., width=10., height=10.,</pre><pre>image_size=(300,300), vars=("abs", "emis"), background_intensity=1.)</pre><pre>Query("XRay Image", params)</pre></li>
 </ul>
 
-<a name="PICS_changes"></a>
-<p><b><font size="4">Changes to VisIt's PICS version in 2.9.0</font></b></p>
-<ul>
-  <li>Higher element support for time varying Nektar++ and Nek5000 databases</li>
-</ul>
-
-
 <a name="Bugs_fixed"></a>
-<p><b><font size="4">Other bugs fixed in version 2.9.0</font></b></p>
+<p><b><font size="4">Other bugs fixed in version 2.9</font></b></p>
 <ul>
-  <li>Setting Contour Plot's MultiColor via a python script no longer results in an indexing or out of range error.</li>
+  <li>Setting the Contour Plot's MultiColor via a python script no longer results in an indexing or out of range error.</li>
   <li>Fixed a bug with invalid arguments being sent to visit_composite during templated movie making.</li>
-  <li>Fixed Histogram plot so that individual bins can count higher the highest integer that can be stored in a float.</li>
-  <li>Added the full path to the szip and zlib libraries for both OSX and Linux in the bv_cgns.sh build visit support file</li>
-  <li></li>
-  <li></li>
+  <li>Fixed the Histogram plot so that individual bins can count up to the largest integer that can be stored in a double.</li>
+  <li>Added the full path to the szip and zlib libraries for both OSX and Linux in the bv_cgns.sh build_visit support file.</li>
 </ul>
 
 <a name="Dev_changes"></a>
-<p><b><font size="4">Changes for VisIt developers in version 2.9.0</font></b></p>
+<p><b><font size="4">Changes for VisIt developers in version 2.9</font></b></p>
 <ul>
-  <li>The <i>viewer</i> library has been split into 2 parts: <i>viewercore</i>, and <i>viewer</i>. The <i>viewercore</i> library contains much of the viewer's machinery but it has <b>NO Qt DEPENDENCIES</b> so it can be used in other contexts that do not rely on Qt. The <i></i> library contains all of the Qt-specific code, which includes Qt vis windows, action UI's, socket notifiers, timers, information boxes, etc. The viewer creates objects via a ViewerFactory class and depending on whether -nowin is given it creates objects suitable for nowin mode or objects suitable for a Qt gui mode. As a result of the split, the viewer in general has been greatly changed internally. Outside of the viewer, there should be no obvious changes and embedded viewer applications and PySide applications should continue to work as before.
-  </li>
+  <li>The <i>viewer</i> library was split into 2 parts: <i>viewercore</i>, and <i>viewer</i>. The <i>viewercore</i> library contains much of the viewer's machinery but it has <b>NO Qt DEPENDENCIES</b> so it can be used in other contexts that do not rely on Qt. The <i>viewer</i> library contains all of the Qt-specific code, which includes Qt vis windows, action UI's, socket notifiers, timers, information boxes, etc. The viewer creates objects via a ViewerFactory class and depending on whether -nowin is given it creates objects suitable for nowin mode or objects suitable for a Qt GUI mode. As a result of the split, the viewer in general was greatly changed internally. Outside of the viewer, there should be no obvious changes and embedded viewer applications and PySide applications should continue to work as before.</li>
   <li>The xml2info and xml2cmake tools were modified to generate engine and viewer plugin information that has a shared "viewerengine" base class. The base class contains all functionality that needs to be shared by both classes of plug-ins. The additional viewer functionality now exposed to the engine plug-ins allows most viewer functions to be satisfied by engine plug-ins, as is the case when libsim is used in batch mode.</li>
   <li>The xml2avt tool was modified to create the ExecuteData method with the new signature that uses avtDataRepresentation instead of vtkDataSet, domain and label.</li>
   <li>An option for specifying help text for database options was added.</li>
-  <li>A help button and additional window for displaying help text was added to GUI to support database options help.</li>
+  <li>A help button and additional window for displaying help text was added to the GUI to support database options help.</li>
   <li>Changed failure mode of avtDatabaseMetaData::DetermineVarType() to return AVT_UNKNOWN_TYPE instead of excepting out.</li>
   <li>The makemovie python script was changed so that visitmovietemplate.py can be correctly found from a development version on Windows.</li>
-  <li></li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
