@@ -842,7 +842,11 @@ avtMFEMFileFormat::GetRefinedElementColoring(const std::string &mesh_name,
     //
     
     //srandom(time(0)); don't seed, may have side effects for other parts of visit
+#ifdef _WIN32
+    double a = double(rand()) / (double(RAND_MAX) + 1.);
+#else
     double a = double(random()) / (double(RAND_MAX) + 1.);
+#endif
     int el0 = (int)floor(a * mesh->GetNE());
     mesh->GetElementColoring(coloring, el0);
     int ref_idx=0;
