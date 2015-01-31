@@ -16,7 +16,8 @@
 #include <vtkUnsignedCharArray.h>
 
 #ifdef __linux__
-# include <GL/glx.h>
+#define GLX_GLXEXT_LEGACY
+#include <GL/glx.h>
 #endif
 
 // ****************************************************************************
