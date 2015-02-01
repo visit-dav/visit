@@ -488,7 +488,7 @@ CGetNumberOfOriginalZones(avtDataRepresentation &data, void *arg, bool &)
 // ****************************************************************************
 
 void
-CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
+CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey, bool &)
 {
     if (!data.Valid())
     {
@@ -500,6 +500,15 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
     {
         vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
         vtkPolyData *out_pd = vtkPolyData::New();
+        int avtTopoDim = 2;
+
+        if (dataAndKey)
+        {
+            int intVal;
+            if (sscanf((char*)dataAndKey, "avtTopoDim=%d", &intVal) == 1)
+                avtTopoDim = intVal;
+        }
+
         out_pd->SetPoints(ugrid->GetPoints());
         out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
         out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
@@ -508,60 +517,32 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
         out_pd->Allocate(ncells);
         for (vtkIdType i = 0 ; i < ncells ; i++)
         {
-            int celltype = ugrid->GetCellType(i);
-            if (celltype == VTK_HEXAHEDRON ||
-                celltype == VTK_VOXEL || 
-                celltype == VTK_WEDGE || 
-                celltype == VTK_TETRA ||
-                celltype == VTK_PYRAMID ||
-                celltype == VTK_QUADRATIC_TETRA ||
-                celltype == VTK_QUADRATIC_HEXAHEDRON ||
-                celltype == VTK_QUADRATIC_WEDGE ||
-                celltype == VTK_QUADRATIC_PYRAMID ||
-                celltype == VTK_QUADRATIC_LINEAR_QUAD ||
-                celltype == VTK_QUADRATIC_LINEAR_WEDGE
-               )
+            int cellTopoDim = ugrid->GetCell(i)->GetCellDimension();
+            if (cellTopoDim > avtTopoDim)
             {
+                vtkIdType *pts;
                 static bool issuedWarning = false;
                 if (!issuedWarning)
                 {
-                    avtCallback::IssueWarning("The data set has "
-                          "a topologically three dimensional cell even "
-                          "thought it supposedly is topologically 2D."
-                          "  This occurs most often when there is an error in "
-                          "the file format reader.  Your 3D cells are being "
-                          "discarded.  Please contact a VisIt developer to "
-                          "resolve this issue.  (This warning will only be "
-                          "issued once per session.)");
+                    avtCallback::IssueWarning("Encountered a cell of topological "
+                        "dimension greater than the underlying dataset in which "
+                        "it is embedded. This occurs most often when there is an "
+                        "error in the file format reader. This cell and any others "
+                        "like it are being discarded.  Please contact a VisIt "
+                        "developer to resolve this issue.  (This warning will be "
+                        "issued only once per session.)");
                     issuedWarning = true;
                 }
-                continue;
+                out_pd->InsertNextCell(VTK_EMPTY_CELL, 0, pts);
             }
-            if(celltype == VTK_QUADRATIC_EDGE || 
-               celltype == VTK_QUADRATIC_TRIANGLE ||
-               celltype == VTK_QUADRATIC_QUAD
-              )
+            else
             {
-                static bool issuedWarning2 = false;
-                if (!issuedWarning2)
-                {
-                    avtCallback::IssueWarning("The data set has "
-                          "a quadratic element in it and this code to "
-                          "convert 2D elements to polydata is only capable "
-                          "of 1:1 cell to cell translation, whereas quadratic "
-                          "cells produce a 1:N translation. Please contact a "
-                          "VisIt developer to resolve this issue. "
-                          "(This warning will only be issued once per session.)");
-                    issuedWarning2 = true;
-                }
-                continue;
+                vtkIdType *pts, npts;
+                ugrid->GetCellPoints(i, npts, pts);
+                out_pd->InsertNextCell(ugrid->GetCellType(i), npts, pts);
             }
-            vtkIdType *pts, npts;
-            ugrid->GetCellPoints(i, npts, pts);
-            out_pd->InsertNextCell(celltype, npts, pts);
         }
-        avtDataRepresentation new_data(out_pd, data.GetDomain(),
-                                       data.GetLabel());
+        avtDataRepresentation new_data(out_pd, data.GetDomain(), data.GetLabel());
         data = new_data;
         out_pd->Delete();
     }

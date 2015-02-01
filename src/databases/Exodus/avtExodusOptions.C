@@ -101,10 +101,15 @@ GetExodusReadOptions(void)
         "silo/LLNL-SM-654357.pdf\">Silo user's manual</a>. The nameschemes used here are identical "
         "to those described in the Silo user's manual with one extension. The conversion specifier %%V "
         "is used to denote the basename (non-material-specific) name of a set of scalar variables "
-        "holding material specific values. The ALEGRA nameschemes "
-        "for volume fraction and material specific variables  are \"%s\" and \"%s\". The CTH "
-        "nameschemes are \"%s\" and \"%s\". Finally, it is assumed materials are identified starting "
-        "from one (1). The special material id of zero (0) is used to denote void.",
+        "holding material specific values."
+        "<p> "
+        "<p>The ALEGRA nameschemes for volume fraction and material specific variables  are "
+        "\"%s\" and \"%s\"."
+        "<p> "
+        "<p>The CTH nameschemes are \"%s\" and \"%s\"."
+        "<p> "
+        "<p>Finally, it is assumed materials are identified starting from one (1). The special "
+        "material id of zero (0) is used to denote void.",
             EXODUS_DETECT_COMPOUND_VARS,
             EXODUS_MATERIAL_COUNT, 
             EXODUS_MATERIAL_CONVENTION,
