@@ -695,6 +695,10 @@ function ensure_built_or_ready
 # Programmer: Cyrus Harrison                                                  #
 # Date: Thu Nov 13 09:28:26 PST 2008                                          #
 #                                                                             #
+# Modifications:                                                              #
+#                                                                             #
+#   Paul Selby, Wed  4 Feb 17:25:22 GMT 2015                                  #
+#   Fixed typo which prevented verify_checksum being called                   #
 # *************************************************************************** #
 function prepare_build_dir
 {
@@ -710,8 +714,8 @@ function prepare_build_dir
        info "Found ${BUILD_DIR} . . ."
        untarred_src=0
     elif [[ -f ${SRC_FILE} ]] ; then
-       if [[ $CHECKSUM != "" && $CHECKSUM_TYPE != "" ]]; then
-            verify_checksum $CHECKSUM_TYPE $CHECKSUM ${SRC_FILE}
+       if [[ $CHECKSUM_VALUE != "" && $CHECKSUM_TYPE != "" ]]; then
+            verify_checksum $CHECKSUM_TYPE $CHECKSUM_VALUE ${SRC_FILE}
             if [[ $? != 0 ]]; then
                 return 2
             fi
