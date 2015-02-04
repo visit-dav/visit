@@ -402,33 +402,9 @@ void mainloop_batch(simulation_data *sim)
     else
     {
         /* Set up some plots using libsim functions. */
-#if 1
         VisItAddPlot("Mesh", "mesh2d");
         VisItAddPlot("Contour", "zonal");
         VisItAddPlot("Pseudocolor", "zonal");
-        VisItSetPlotOptionsS("colorTableName", "hot_desaturated");
-        VisItAddOperator("Elevate", 1);
-        VisItSetOperatorOptionsS("variable", "zonal");
-#else
-        double isos[] = {0.1, 0.2, 0.5, 1., 2., 2.5, 3.5, 5.};
-        VisItAddPlot("Pseudocolor", "zonal");
-        VisItSetPlotOptionsS("colorTableName", "hot_desaturated");
-        VisItSetPlotOptionsB("lightingFlag", 0);
-        VisItSetPlotOptionsI("scaling", 1);
-        VisItSetPlotOptionsI("minFlag", 1);
-        VisItSetPlotOptionsD("min", 0.5);
-        VisItSetPlotOptionsI("maxFlag", 1);
-        VisItSetPlotOptionsD("max", 3.5);
-
-        /*VisItAddOperator("Extrude", 1);
-        VisItSetOperatorOptionsD("length", 5.);
-        VisItSetOperatorOptionsI("steps", 10);*/
-
-        VisItAddOperator("Isosurface", 1);
-        VisItSetOperatorOptionsS("variable", "zonal");
-        VisItSetOperatorOptionsDv("contourValue", isos, 8);
-        VisItSetOperatorOptionsI("contourMethod", 1);
-#endif
         VisItDrawPlots();
     }
 
