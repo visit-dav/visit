@@ -148,8 +148,10 @@ typedef struct
     int   (*add_operator)(void *, const char *, int);
     int   (*draw_plots)(void *);
     int   (*delete_active_plots)(void *);
-    int   (*set_plot_options)(void *, int, const char *, int, void *, int);
-    int   (*set_operator_options)(void *, int, int, const char *, int, void *, int);
+    int   (*set_active_plots)(void *, const int *, int);
+
+    int   (*set_plot_options)(void *, const char *, int, void *, int);
+    int   (*set_operator_options)(void *, const char *, int, void *, int);
 
 
     int   (*exportdatabase)(void *, const char *, const char *, visit_handle);
@@ -1896,8 +1898,9 @@ static int LoadVisItLibrary(void)
         CONTROL_DLSYM_OPTIONAL(add_operator,         int,    (void *, const char *, int));
         CONTROL_DLSYM_OPTIONAL(draw_plots,           int,    (void *));
         CONTROL_DLSYM_OPTIONAL(delete_active_plots,  int,    (void *));
-        CONTROL_DLSYM_OPTIONAL(set_plot_options,     int,    (void *, int, const char *, int, void *, int));
-        CONTROL_DLSYM_OPTIONAL(set_operator_options, int,    (void *, int, int, const char *, int, void *, int));
+        CONTROL_DLSYM_OPTIONAL(set_active_plots,     int,    (void *, const int *, int));
+        CONTROL_DLSYM_OPTIONAL(set_plot_options,     int,    (void *, const char *, int, void *, int));
+        CONTROL_DLSYM_OPTIONAL(set_operator_options, int,    (void *, const char *, int, void *, int));
 
         CONTROL_DLSYM_OPTIONAL(initialize_batch,     int,    (void *, int, char **));
         CONTROL_DLSYM_OPTIONAL(exportdatabase,       int,    (void *, const char *, const char *, visit_handle));
@@ -4093,77 +4096,122 @@ VisItDeleteActivePlots(void)
     return retval;
 }
 
+/******************************************************************************
+*
+* Name: VisItSetActivePlots
+*
+* Purpose: Set the active plots in the plot list.
+*
+* Programmer: Brad Whitlock
+* Date:       Mon Feb  2 13:44:02 PST 2015
+*
+* Modifications:
+*
+******************************************************************************/
+
+int
+VisItSetActivePlots(const int *ids, int nids)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItSetActivePlots);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.set_active_plots)
+    {
+        retval = (*callbacks->control.set_active_plots)(engine, ids, nids);
+    }
+    LIBSIM_API_LEAVE(VisItSetActivePlots)
+    return retval;
+}
+
+/******************************************************************************
+*
+* Name: VisItSetPlotOptions*
+*
+* Purpose: Sets the operator options for the active operator.
+*
+* Programmer: Brad Whitlock
+* Date:       Mon Feb  2 13:55:43 PST 2015
+*
+* Modifications:
+*
+******************************************************************************/
+
 static int
-PlotOpt(int plotID, const char *fieldName, int fieldType, void *fieldVal, int fieldLen)
+PlotOpt(const char *fieldName, int fieldType, void *fieldVal, int fieldLen)
 {
     int retval = VISIT_ERROR;
 
     LIBSIM_API_ENTER(VisItSetPlotOptions);
-#if 0
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.set_plot_options)
     {
-        retval = (*callbacks->control.set_plot_options)(engine, plotID, fieldName, fieldType, fieldVal, fieldLen);
+        retval = (*callbacks->control.set_plot_options)(engine, fieldName, fieldType, fieldVal, fieldLen);
     }
-#endif
     LIBSIM_API_LEAVE(VisItSetPlotOptions)
     return retval;
 }
 
-int VisItSetPlotOptionsC(int id,const char*n,char v){ return PlotOpt(id,n,VISIT_FIELDTYPE_CHAR,(void*)&v,1); }
-int VisItSetPlotOptionsUC(int id,const char*n,unsigned char v){ return PlotOpt(id,n,VISIT_FIELDTYPE_UNSIGNED_CHAR,(void*)&v,1); }
-int VisItSetPlotOptionsI(int id,const char*n,int v){ return PlotOpt(id,n,VISIT_FIELDTYPE_INT,(void*)&v,1); }
-int VisItSetPlotOptionsL(int id,const char*n,long v){ return PlotOpt(id,n,VISIT_FIELDTYPE_LONG,(void*)&v,1); }
-int VisItSetPlotOptionsF(int id,const char*n,float v){ return PlotOpt(id,n,VISIT_FIELDTYPE_FLOAT,(void*)&v,1); }
-int VisItSetPlotOptionsD(int id,const char*n,double v){ return PlotOpt(id,n,VISIT_FIELDTYPE_DOUBLE,(void*)&v,1); }
-int VisItSetPlotOptionsS(int id,const char*n,const char *v){ return PlotOpt(id,n,VISIT_FIELDTYPE_STRING,(void*)v,1); }
+int VisItSetPlotOptionsC(const char *name,char v){ return PlotOpt(name,VISIT_FIELDTYPE_CHAR,(void*)&v,1); }
+int VisItSetPlotOptionsUC(const char *name,unsigned char v){ return PlotOpt(name,VISIT_FIELDTYPE_UNSIGNED_CHAR,(void*)&v,1); }
+int VisItSetPlotOptionsB(const char *name,int v){ return PlotOpt(name,VISIT_FIELDTYPE_INT,(void*)&v,1); }
+int VisItSetPlotOptionsI(const char *name,int v){ return PlotOpt(name,VISIT_FIELDTYPE_INT,(void*)&v,1); }
+int VisItSetPlotOptionsL(const char *name,long v){ return PlotOpt(name,VISIT_FIELDTYPE_LONG,(void*)&v,1); }
+int VisItSetPlotOptionsF(const char *name,float v){ return PlotOpt(name,VISIT_FIELDTYPE_FLOAT,(void*)&v,1); }
+int VisItSetPlotOptionsD(const char *name,double v){ return PlotOpt(name,VISIT_FIELDTYPE_DOUBLE,(void*)&v,1); }
+int VisItSetPlotOptionsS(const char *name,const char *v){ return PlotOpt(name,VISIT_FIELDTYPE_STRING,(void*)v,1); }
 
-int VisItSetPlotOptionsCv(int id,const char*n,const char *v,int L){ return PlotOpt(id,n,VISIT_FIELDTYPE_CHAR_ARRAY,(void*)v,L); }
-int VisItSetPlotOptionsUCv(int id,const char*n,const unsigned char *v,int L){ return PlotOpt(id,n,VISIT_FIELDTYPE_UNSIGNED_CHAR_ARRAY,(void*)v,L); }
-int VisItSetPlotOptionsIv(int id,const char*n,const int *v,int L){ return PlotOpt(id,n,VISIT_FIELDTYPE_INT_ARRAY,(void*)v,L); }
-int VisItSetPlotOptionsLv(int id,const char*n,const long *v,int L){ return PlotOpt(id,n,VISIT_FIELDTYPE_LONG_ARRAY,(void*)v,L); }
-int VisItSetPlotOptionsFv(int id,const char*n,const float *v,int L){ return PlotOpt(id,n,VISIT_FIELDTYPE_FLOAT_ARRAY,(void*)v,L); }
-int VisItSetPlotOptionsDv(int id,const char*n,const double *v,int L){ return PlotOpt(id,n,VISIT_FIELDTYPE_DOUBLE_ARRAY,(void*)v,L); }
-int VisItSetPlotOptionsSv(int id,const char*n,const char **v,int L){ return PlotOpt(id,n,VISIT_FIELDTYPE_STRING_ARRAY,(void*)v,L); }
+int VisItSetPlotOptionsCv(const char *name,const char *v,int L){ return PlotOpt(name,VISIT_FIELDTYPE_CHAR_ARRAY,(void*)v,L); }
+int VisItSetPlotOptionsUCv(const char *name,const unsigned char *v,int L){ return PlotOpt(name,VISIT_FIELDTYPE_UNSIGNED_CHAR_ARRAY,(void*)v,L); }
+int VisItSetPlotOptionsIv(const char *name,const int *v,int L){ return PlotOpt(name,VISIT_FIELDTYPE_INT_ARRAY,(void*)v,L); }
+int VisItSetPlotOptionsLv(const char *name,const long *v,int L){ return PlotOpt(name,VISIT_FIELDTYPE_LONG_ARRAY,(void*)v,L); }
+int VisItSetPlotOptionsFv(const char *name,const float *v,int L){ return PlotOpt(name,VISIT_FIELDTYPE_FLOAT_ARRAY,(void*)v,L); }
+int VisItSetPlotOptionsDv(const char *name,const double *v,int L){ return PlotOpt(name,VISIT_FIELDTYPE_DOUBLE_ARRAY,(void*)v,L); }
+int VisItSetPlotOptionsSv(const char *name,const char **v,int L){ return PlotOpt(name,VISIT_FIELDTYPE_STRING_ARRAY,(void*)v,L); }
 
+/******************************************************************************
+*
+* Name: VisItSetOperatorOptions*
+*
+* Purpose: Sets the operator options for the active operator.
+*
+* Programmer: Brad Whitlock
+* Date:       Mon Feb  2 13:55:43 PST 2015
+*
+* Modifications:
+*
+******************************************************************************/
 static int
-OperatorOpt(int plotID, int operatorID, const char *fieldName, int fieldType, void *fieldVal, int fieldLen)
+OperatorOpt(const char *fieldName, int fieldType, void *fieldVal, int fieldLen)
 {
     int retval = VISIT_ERROR;
 
     LIBSIM_API_ENTER(VisItSetOperatorOptions);
-#if 0
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.set_operator_options)
     {
-        retval = (*callbacks->control.set_operator_options)(engine, plotID, operatorID, fieldName, fieldType, fieldVal, fieldLen);
+        retval = (*callbacks->control.set_operator_options)(engine, fieldName, fieldType, fieldVal, fieldLen);
     }
-#endif
     LIBSIM_API_LEAVE(VisItSetOperatorOptions)
     return retval;
 }
 
-int VisItSetOperatorOptionsC(int pid, int oid,const char*n,char v){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_CHAR_ARRAY,(void*)&v,1); }
-int VisItSetOperatorOptionsUC(int pid, int oid,const char*n,unsigned char v){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_UNSIGNED_CHAR_ARRAY,(void*)&v,1); }
-int VisItSetOperatorOptionsI(int pid, int oid,const char*n,int v){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_INT_ARRAY,(void*)&v,1); }
-int VisItSetOperatorOptionsL(int pid, int oid,const char*n,long v){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_LONG_ARRAY,(void*)&v,1); }
-int VisItSetOperatorOptionsF(int pid, int oid,const char*n,float v){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_FLOAT_ARRAY,(void*)&v,1); }
-int VisItSetOperatorOptionsD(int pid, int oid,const char*n,double v){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_DOUBLE_ARRAY,(void*)&v,1); }
-int VisItSetOperatorOptionsS(int pid, int oid,const char*n,const char *v){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_STRING_ARRAY,(void*)v,1); }
+int VisItSetOperatorOptionsC(const char *name,char v){ return OperatorOpt(name,VISIT_FIELDTYPE_CHAR,(void*)&v,1); }
+int VisItSetOperatorOptionsUC(const char *name,unsigned char v){ return OperatorOpt(name,VISIT_FIELDTYPE_UNSIGNED_CHAR,(void*)&v,1); }
+int VisItSetOperatorOptionsB(const char *name,int v){ return OperatorOpt(name,VISIT_FIELDTYPE_INT,(void*)&v,1); }
+int VisItSetOperatorOptionsI(const char *name,int v){ return OperatorOpt(name,VISIT_FIELDTYPE_INT,(void*)&v,1); }
+int VisItSetOperatorOptionsL(const char *name,long v){ return OperatorOpt(name,VISIT_FIELDTYPE_LONG,(void*)&v,1); }
+int VisItSetOperatorOptionsF(const char *name,float v){ return OperatorOpt(name,VISIT_FIELDTYPE_FLOAT,(void*)&v,1); }
+int VisItSetOperatorOptionsD(const char *name,double v){ return OperatorOpt(name,VISIT_FIELDTYPE_DOUBLE,(void*)&v,1); }
+int VisItSetOperatorOptionsS(const char *name,const char *v){ return OperatorOpt(name,VISIT_FIELDTYPE_STRING,(void*)v,1); }
 
-int VisItSetOperatorOptionsCv(int pid, int oid,const char*n,const char *v,int L){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_CHAR_ARRAY,(void*)v,L); }
-int VisItSetOperatorOptionsUCv(int pid, int oid,const char*n,const unsigned char *v,int L){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_UNSIGNED_CHAR_ARRAY,(void*)v,L); }
-int VisItSetOperatorOptionsIv(int pid, int oid,const char*n,const int *v,int L){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_INT_ARRAY,(void*)v,L); }
-int VisItSetOperatorOptionsLv(int pid, int oid,const char*n,const long *v,int L){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_LONG_ARRAY,(void*)v,L); }
-int VisItSetOperatorOptionsFv(int pid, int oid,const char*n,const float *v,int L){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_FLOAT_ARRAY,(void*)v,L); }
-int VisItSetOperatorOptionsDv(int pid, int oid,const char*n,const double *v,int L){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_DOUBLE_ARRAY,(void*)v,L); }
-int VisItSetOperatorOptionsSv(int pid, int oid,const char*n,const char **v,int L){ return OperatorOpt(pid,oid,n,VISIT_FIELDTYPE_STRING_ARRAY,(void*)v,L); }
-
-/***************************************************************************
-
-                        EXPERIMENTAL CODE
-
-****************************************************************************/
+int VisItSetOperatorOptionsCv(const char *name,const char *v,int L){ return OperatorOpt(name,VISIT_FIELDTYPE_CHAR_ARRAY,(void*)v,L); }
+int VisItSetOperatorOptionsUCv(const char *name,const unsigned char *v,int L){ return OperatorOpt(name,VISIT_FIELDTYPE_UNSIGNED_CHAR_ARRAY,(void*)v,L); }
+int VisItSetOperatorOptionsIv(const char *name,const int *v,int L){ return OperatorOpt(name,VISIT_FIELDTYPE_INT_ARRAY,(void*)v,L); }
+int VisItSetOperatorOptionsLv(const char *name,const long *v,int L){ return OperatorOpt(name,VISIT_FIELDTYPE_LONG_ARRAY,(void*)v,L); }
+int VisItSetOperatorOptionsFv(const char *name,const float *v,int L){ return OperatorOpt(name,VISIT_FIELDTYPE_FLOAT_ARRAY,(void*)v,L); }
+int VisItSetOperatorOptionsDv(const char *name,const double *v,int L){ return OperatorOpt(name,VISIT_FIELDTYPE_DOUBLE_ARRAY,(void*)v,L); }
+int VisItSetOperatorOptionsSv(const char *name,const char **v,int L){ return OperatorOpt(name,VISIT_FIELDTYPE_STRING_ARRAY,(void*)v,L); }
 
 /******************************************************************************
 *

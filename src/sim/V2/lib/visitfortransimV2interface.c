@@ -218,6 +218,7 @@ f_visit_internal_InstallCallbacks(void)
 #define F_VISITADDOPERATOR          F77_ID(visitaddoperator_,visitaddoperator,VISITADDOPERATOR)
 #define F_VISITDRAWPLOTS            F77_ID(visitdrawplots_,visitdrawplots,VISITDRAWPLOTS)
 #define F_VISITDELETEACTIVEPLOTS    F77_ID(visitdeleteactiveplots_,visitdeleteactiveplots,VISITDELETEACTIVEPLOTS)
+#define F_VISITSETACTIVEPLOTS       F77_ID(visitsetactiveplots_,visitsetactiveplots,VISITSETACTIVEPLOTS)
 #define F_VISITGETMEMORY            F77_ID(visitgetmemory_,visitgetmemory,VISITGETMEMORY)
 #define F_VISITEXPORTDATABASE       F77_ID(visitexportdatabase_,visitexportdatabase,VISITEXPORTDATABASE)
 #define F_VISITRESTORESESSION       F77_ID(visitrestoresession_,visitrestoresession,VISITRESTORESESSION)
@@ -1040,12 +1041,12 @@ F_VISITADDPLOT(const char *plotType, int *lplotType, const char *var, int *lvar)
  *****************************************************************************/
 
 FORTRAN
-F_VISITADDOPERATOR(const char *operatorType, int *loperatorType, int applyToAll)
+F_VISITADDOPERATOR(const char *operatorType, int *loperatorType, int *applyToAll)
 {
     int ret = VISIT_ERROR;
     char *f_operatorType = NULL;
     COPY_FORTRAN_STRING(f_operatorType, operatorType, loperatorType);
-    ret = VisItAddOperator(f_operatorType, applyToAll);
+    ret = VisItAddOperator(f_operatorType, *applyToAll);
     FREE(f_operatorType);
     return ret;
 }
@@ -1084,6 +1085,24 @@ FORTRAN
 F_VISITDELETEACTIVEPLOTS(void)
 {
     return VisItDeleteActivePlots();
+}
+
+/******************************************************************************
+ * Function: F_VISITSETACTIVEPLOTS
+ *
+ * Purpose:   Allows FORTRAN to set the active plots
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Feb  2 15:08:42 PST 2015
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITSETACTIVEPLOTS(int *ids, int *nids)
+{
+    return VisItSetActivePlots(ids, *nids);
 }
 
 /******************************************************************************
@@ -1157,6 +1176,348 @@ F_VISITRESTORESESSION(VISIT_F77STRING filename, int *lfilename)
     retval = VisItRestoreSession(f_filename);
 
     FREE(f_filename);
+    return retval;
+}
+
+/******************************************************************************
+ *****************************************************************************/
+#define F_VISITSETPLOTOPTIONSC    F77_ID(visitsetplotoptionsc_,visitsetplotoptionsc,VISITSETPLOTOPTIONSC)
+#define F_VISITSETPLOTOPTIONSUC   F77_ID(visitsetplotoptionsuc_,visitsetplotoptionsuc,VISITSETPLOTOPTIONSUC)
+#define F_VISITSETPLOTOPTIONSB    F77_ID(visitsetplotoptionsb_,visitsetplotoptionsb,VISITSETPLOTOPTIONSB)
+#define F_VISITSETPLOTOPTIONSI    F77_ID(visitsetplotoptionsi_,visitsetplotoptionsi,VISITSETPLOTOPTIONSI)
+#define F_VISITSETPLOTOPTIONSL    F77_ID(visitsetplotoptionsl_,visitsetplotoptionsl,VISITSETPLOTOPTIONSL)
+#define F_VISITSETPLOTOPTIONSF    F77_ID(visitsetplotoptionsf_,visitsetplotoptionsf,VISITSETPLOTOPTIONSF)
+#define F_VISITSETPLOTOPTIONSD    F77_ID(visitsetplotoptionsd_,visitsetplotoptionsd,VISITSETPLOTOPTIONSD)
+#define F_VISITSETPLOTOPTIONSS    F77_ID(visitsetplotoptionss_,visitsetplotoptionss,VISITSETPLOTOPTIONSS)
+#define F_VISITSETPLOTOPTIONSCV   F77_ID(visitsetplotoptionscv_,visitsetplotoptionscv,VISITSETPLOTOPTIONSCV)
+#define F_VISITSETPLOTOPTIONSUCV  F77_ID(visitsetplotoptionsucv_,visitsetplotoptionsucv,VISITSETPLOTOPTIONSUCV)
+#define F_VISITSETPLOTOPTIONSIV   F77_ID(visitsetplotoptionsiv_,visitsetplotoptionsiv,VISITSETPLOTOPTIONSIV)
+#define F_VISITSETPLOTOPTIONSLV   F77_ID(visitsetplotoptionslv_,visitsetplotoptionslv,VISITSETPLOTOPTIONSLV)
+#define F_VISITSETPLOTOPTIONSFV   F77_ID(visitsetplotoptionsfv_,visitsetplotoptionsfv,VISITSETPLOTOPTIONSFV)
+#define F_VISITSETPLOTOPTIONSDV   F77_ID(visitsetplotoptionsdv_,visitsetplotoptionsdv,VISITSETPLOTOPTIONSDV)
+#define F_VISITSETPLOTOPTIONSSV   F77_ID(visitsetplotoptionssv_,visitsetplotoptionssv,VISITSETPLOTOPTIONSSV)
+
+FORTRAN F_VISITSETPLOTOPTIONSC(VISIT_F77STRING name, int *lname, char *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsC(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSUC(VISIT_F77STRING name, int *lname, unsigned char *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsUC(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSB(VISIT_F77STRING name, int *lname, int *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsI(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSI(VISIT_F77STRING name, int *lname, int *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsI(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSL(VISIT_F77STRING name, int *lname, long *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsL(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSF(VISIT_F77STRING name, int *lname, float *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsF(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSD(VISIT_F77STRING name, int *lname, double *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsD(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSS(VISIT_F77STRING name, int *lname, char *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL, *f_value = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    COPY_FORTRAN_STRING(f_value, v, lv);
+    retval = VisItSetPlotOptionsS(f_name, f_value);
+    FREE(f_name);
+    FREE(f_value);
+    return retval;
+}
+/* array/vector functions */
+FORTRAN F_VISITSETPLOTOPTIONSCV(VISIT_F77STRING name, int *lname, char *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsCv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSUCV(VISIT_F77STRING name, int *lname, unsigned char *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsUCv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSIV(VISIT_F77STRING name, int *lname, int *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsIv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSLV(VISIT_F77STRING name, int *lname, long *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsLv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSFV(VISIT_F77STRING name, int *lname, float *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsFv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSDV(VISIT_F77STRING name, int *lname, double *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetPlotOptionsDv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETPLOTOPTIONSSV(VISIT_F77STRING name, int *lname, char *v, int *lv, int *stringWidth)
+{
+    FORTRAN retval;
+    int i;
+    char *f_name = NULL, **f_values = NULL, *start = NULL, *tmp = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    f_values = (char **)malloc(*lv * sizeof(char*));
+    start = v;
+    for(i = 0; i < *lv; ++i)
+    {
+        COPY_FORTRAN_STRING(tmp, start, stringWidth);
+        f_values[i] = tmp;
+        start += *stringWidth;
+    }
+    retval = VisItSetPlotOptionsSv(f_name, (const char **)f_values, *lv);
+    FREE(f_name);
+    for(i = 0; i < *lv; ++i)
+    {
+        FREE(f_values[i]);
+    }
+    FREE(f_values);
+    return retval;
+}
+
+/******************************************************************************
+ *****************************************************************************/
+#define F_VISITSETOPERATOROPTIONSC    F77_ID(visitsetoperatoroptionsc_,visitsetoperatoroptionsc,VISITSETOPERATOROPTIONSC)
+#define F_VISITSETOPERATOROPTIONSUC   F77_ID(visitsetoperatoroptionsuc_,visitsetoperatoroptionsuc,VISITSETOPERATOROPTIONSUC)
+#define F_VISITSETOPERATOROPTIONSB    F77_ID(visitsetoperatoroptionsb_,visitsetoperatoroptionsb,VISITSETOPERATOROPTIONSB)
+#define F_VISITSETOPERATOROPTIONSI    F77_ID(visitsetoperatoroptionsi_,visitsetoperatoroptionsi,VISITSETOPERATOROPTIONSI)
+#define F_VISITSETOPERATOROPTIONSL    F77_ID(visitsetoperatoroptionsl_,visitsetoperatoroptionsl,VISITSETOPERATOROPTIONSL)
+#define F_VISITSETOPERATOROPTIONSF    F77_ID(visitsetoperatoroptionsf_,visitsetoperatoroptionsf,VISITSETOPERATOROPTIONSF)
+#define F_VISITSETOPERATOROPTIONSD    F77_ID(visitsetoperatoroptionsd_,visitsetoperatoroptionsd,VISITSETOPERATOROPTIONSD)
+#define F_VISITSETOPERATOROPTIONSS    F77_ID(visitsetoperatoroptionss_,visitsetoperatoroptionss,VISITSETOPERATOROPTIONSS)
+#define F_VISITSETOPERATOROPTIONSCV   F77_ID(visitsetoperatoroptionscv_,visitsetoperatoroptionscv,VISITSETOPERATOROPTIONSCV)
+#define F_VISITSETOPERATOROPTIONSUCV  F77_ID(visitsetoperatoroptionsucv_,visitsetoperatoroptionsucv,VISITSETOPERATOROPTIONSUCV)
+#define F_VISITSETOPERATOROPTIONSIV   F77_ID(visitsetoperatoroptionsiv_,visitsetoperatoroptionsiv,VISITSETOPERATOROPTIONSIV)
+#define F_VISITSETOPERATOROPTIONSLV   F77_ID(visitsetoperatoroptionslv_,visitsetoperatoroptionslv,VISITSETOPERATOROPTIONSLV)
+#define F_VISITSETOPERATOROPTIONSFV   F77_ID(visitsetoperatoroptionsfv_,visitsetoperatoroptionsfv,VISITSETOPERATOROPTIONSFV)
+#define F_VISITSETOPERATOROPTIONSDV   F77_ID(visitsetoperatoroptionsdv_,visitsetoperatoroptionsdv,VISITSETOPERATOROPTIONSDV)
+#define F_VISITSETOPERATOROPTIONSSV   F77_ID(visitsetoperatoroptionssv_,visitsetoperatoroptionssv,VISITSETOPERATOROPTIONSSV)
+
+FORTRAN F_VISITSETOPERATOROPTIONSC(VISIT_F77STRING name, int *lname, char *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsC(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSUC(VISIT_F77STRING name, int *lname, unsigned char *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsUC(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSB(VISIT_F77STRING name, int *lname, int *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsI(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSI(VISIT_F77STRING name, int *lname, int *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsI(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSL(VISIT_F77STRING name, int *lname, long *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsL(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSF(VISIT_F77STRING name, int *lname, float *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsF(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSD(VISIT_F77STRING name, int *lname, double *v)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsD(f_name, *v);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSS(VISIT_F77STRING name, int *lname, char *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL, *f_value = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    COPY_FORTRAN_STRING(f_value, v, lv);
+    retval = VisItSetOperatorOptionsS(f_name, f_value);
+    FREE(f_name);
+    FREE(f_value);
+    return retval;
+}
+/* array/vector functions */
+FORTRAN F_VISITSETOPERATOROPTIONSCV(VISIT_F77STRING name, int *lname, char *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsCv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSUCV(VISIT_F77STRING name, int *lname, unsigned char *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsUCv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSIV(VISIT_F77STRING name, int *lname, int *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsIv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSLV(VISIT_F77STRING name, int *lname, long *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsLv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSFV(VISIT_F77STRING name, int *lname, float *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsFv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSDV(VISIT_F77STRING name, int *lname, double *v, int *lv)
+{
+    FORTRAN retval;
+    char *f_name = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisItSetOperatorOptionsDv(f_name, v, *lv);
+    FREE(f_name);
+    return retval;
+}
+FORTRAN F_VISITSETOPERATOROPTIONSSV(VISIT_F77STRING name, int *lname, char *v, int *lv, int *stringWidth)
+{
+    FORTRAN retval;
+    int i;
+    char *f_name = NULL, **f_values = NULL, *start = NULL, *tmp = NULL;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    f_values = (char **)malloc(*lv * sizeof(char*));
+    start = v;
+    for(i = 0; i < *lv; ++i)
+    {
+        COPY_FORTRAN_STRING(tmp, start, stringWidth);
+        f_values[i] = tmp;
+        start += *stringWidth;
+    }
+    retval = VisItSetOperatorOptionsSv(f_name, (const char **)f_values, *lv);
+    FREE(f_name);
+    for(i = 0; i < *lv; ++i)
+    {
+        FREE(f_values[i]);
+    }
+    FREE(f_values);
     return retval;
 }
 
