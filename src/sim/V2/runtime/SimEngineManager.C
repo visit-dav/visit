@@ -770,7 +770,8 @@ SimEngineManager::Execute(const EngineKey &/*ek*/, avtDataObjectReader_p &rdr,
                                      &currentNetworkGlobalCellCount);
 
             // Read the data object string that we harvested in WriteCallback.
-            ReadDataObjectString(rdr, dos);
+            if(success)
+                ReadDataObjectString(rdr, dos);
         }
         CATCH(VisItException)
         {

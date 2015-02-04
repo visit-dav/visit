@@ -684,216 +684,97 @@ simv2_delete_active_plots(void *e)
     return engine->DeleteActivePlots() ? VISIT_OKAY : VISIT_ERROR;
 }
 
-#if 0
-// We don't need this stuff just yet...
-
-template <class T>
-static std::vector<T> makevector(const T *val, int nval)
-{
-    std::vector<T> vec;
-    vec.reserve(nval);
-    for(int i = 0; i < nval; ++i)
-        vec.push_back(val[i]);
-    return vec;
-}
-
-static int 
-SetAttributeSubjectValues(AttributeSubject *atts, 
-    const std::string &name, int fieldType, void *fieldVal, int fieldLen)
-{
-    int status = VISIT_OKAY;
-    int fIndex = atts->FieldNameToIndex(name);
-    if(fIndex < 0)
-        return VISIT_ERROR;
-    AttributeGroup::FieldType ft = atts->GetFieldType(fIndex);
-
-    if(fieldType == VISIT_FIELDTYPE_CHAR)
-    {
-        const char *val = (const char *)fieldVal;
-        if(ft == AttributeGroup::FieldType_bool)
-            atts->SetValue(name, *val > 0);
-        else
-            atts->SetValue(name, *val);
-    }
-    else if(fieldType == VISIT_FIELDTYPE_UNSIGNED_CHAR)
-    {
-        const unsigned char *val = (const unsigned char *)fieldVal;
-        if(ft == AttributeGroup::FieldType_uchar)
-            atts->SetValue(name, *val);
-        else if(ft == AttributeGroup::FieldType_bool)
-            atts->SetValue(name, *val > 0);
-        else
-            status = VISIT_ERROR;
-    }
-    else if(fieldType == VISIT_FIELDTYPE_INT)
-    {
-        const int *val = (const int *)fieldVal;
-        if(ft == AttributeGroup::FieldType_bool)
-            atts->SetValue(name, *val > 0);
-//        else if(ft == AttributeGroup::FieldType_long)
-//            atts->SetValue(name, long(*val));
-        else if(ft == AttributeGroup::FieldType_float)
-            atts->SetValue(name, float(*val));
-        else if(ft == AttributeGroup::FieldType_double)
-            atts->SetValue(name, double(*val));
-        else
-            atts->SetValue(name, *val);
-    }
-    else if(fieldType == VISIT_FIELDTYPE_LONG)
-    {
-        const long *val = (const long *)fieldVal;
-        if(ft == AttributeGroup::FieldType_bool)
-            atts->SetValue(name, *val > 0);
-        else if(ft == AttributeGroup::FieldType_int)
-            atts->SetValue(name, int(*val));
-        else if(ft == AttributeGroup::FieldType_float)
-            atts->SetValue(name, float(*val));
-        else if(ft == AttributeGroup::FieldType_double)
-            atts->SetValue(name, double(*val));
-        else
-            atts->SetValue(name, *val);
-    }
-    else if(fieldType == VISIT_FIELDTYPE_FLOAT)
-    {
-        const float *val = (const float *)fieldVal;
-        if(ft == AttributeGroup::FieldType_bool)
-            atts->SetValue(name, *val > 0);
-        else if(ft == AttributeGroup::FieldType_int)
-            atts->SetValue(name, int(*val));
-//        else if(ft == AttributeGroup::FieldType_long)
-//            atts->SetValue(name, long(*val));
-        else if(ft == AttributeGroup::FieldType_double)
-            atts->SetValue(name, double(*val));
-        else
-            atts->SetValue(name, *val);
-    }
-    else if(fieldType == VISIT_FIELDTYPE_LONG)
-    {
-        const double *val = (const double *)fieldVal;
-        if(ft == AttributeGroup::FieldType_bool)
-            atts->SetValue(name, *val > 0);
-        else if(ft == AttributeGroup::FieldType_int)
-            atts->SetValue(name, int(*val));
-        else if(ft == AttributeGroup::FieldType_float)
-            atts->SetValue(name, float(*val));
-        else if(ft == AttributeGroup::FieldType_double)
-            atts->SetValue(name, *val);
-        else
-            atts->SetValue(name, long(*val));
-    }
-    else if(fieldType == VISIT_FIELDTYPE_STRING)
-    {
-        std::string val((const char *)fieldVal);
-        atts->SetValue(name, val);
-    }
-    // Array and vector
-    if(fieldType == VISIT_FIELDTYPE_CHAR_ARRAY)
-    {
-        const char *val = (const char *)fieldVal;
-        atts->SetValue(name, val, fieldLen);
-    }
-    else if(fieldType == VISIT_FIELDTYPE_UNSIGNED_CHAR_ARRAY)
-    {
-        const unsigned char *val = (const unsigned char *)fieldVal;
-        if(ft == AttributeGroup::FieldType_ucharVector)
-            atts->SetValue(name, makevector(val, fieldLen));
-        else
-            atts->SetValue(name, val, fieldLen);
-    }
-    else if(fieldType == VISIT_FIELDTYPE_INT_ARRAY)
-    {
-        const int *val = (const int *)fieldVal;
-        if(ft == AttributeGroup::FieldType_intVector)
-            atts->SetValue(name, makevector(val, fieldLen));
-        else
-            atts->SetValue(name, val, fieldLen);
-    }
-    else if(fieldType == VISIT_FIELDTYPE_LONG_ARRAY)
-    {
-        const long *val = (const long *)fieldVal;
-//        if(ft == AttributeGroup::FieldType_longVector)
-//            atts->SetValue(name, makevector(val, fieldLen));
-//        else
-            atts->SetValue(name, val, fieldLen);
-    }
-    else if(fieldType == VISIT_FIELDTYPE_FLOAT_ARRAY)
-    {
-        const float *val = (const float *)fieldVal;
-//        if(ft == AttributeGroup::FieldType_floatVector)
-//            atts->SetValue(name, makevector(val, fieldLen));
-//        else
-            atts->SetValue(name, val, fieldLen);
-    }
-    else if(fieldType == VISIT_FIELDTYPE_DOUBLE_ARRAY)
-    {
-        const double *val = (const double *)fieldVal;
-        if(ft == AttributeGroup::FieldType_doubleVector)
-            atts->SetValue(name, makevector(val, fieldLen));
-        else
-            atts->SetValue(name, val, fieldLen);
-    }
-    else if(fieldType == VISIT_FIELDTYPE_STRING_ARRAY)
-    {
-        const char **val = (const char **)fieldVal;
-        stringVector s;
-        s.resize(fieldLen);
-        for(int i = 0; i < fieldLen; ++i)
-            s[i] = std::string(val[i]);        
-        atts->SetValue(name, &s[0], fieldLen);
-    }
-    else
-        status = VISIT_ERROR;
-
-    return status;
-}
-#endif
+// ****************************************************************************
+// Method: simv2_set_active_plots
+//
+// Purpose:
+//   SimV2 function to set the active plots.
+//
+// Arguments:
+//   e    : The engine pointer.
+//   ids  : The list of plot ids.
+//   nids : The number of plot ids.
+//
+// Returns:    OKAY on success, FALSE on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Feb  2 13:57:29 PST 2015
+//
+// Modifications:
+//
+// ****************************************************************************
 
 int
-simv2_set_plot_options(void * /*e*/, int plotID, const char *fieldName, 
-    int fieldType, void *fieldVal, int fieldLen)
+simv2_set_active_plots(void *e, const int *ids, int nids)
 {
-    int status = VISIT_ERROR;
-#if 0
-    TRY
-    {
-        std::map<int, PlotInformation>::iterator it = GetPlotInformation()->find(plotID);
-        if(it != GetPlotInformation()->end() && fieldVal != NULL)
-        {
-            status = SetAttributeSubjectValues(it->second.atts, std::string(fieldName), fieldType, fieldVal, fieldLen);
-        }
-    }
-    CATCHALL
-    {
-    }
-    ENDTRY
-#endif
-    return status;
+    SimEngine *engine = (SimEngine*)(e);
+    return engine->SetActivePlots(ids, nids) ? VISIT_OKAY : VISIT_ERROR;
 }
 
+// ****************************************************************************
+// Method: simv2_set_plot_options
+//
+// Purpose:
+//   SimV2 function to set plot options.
+//
+// Arguments:
+//   e : The engine pointer.
+//   fieldName : The name of the field to set.
+//   fieldType : The type of the data we're passing in.
+//   fieldVal  : A pointer to the field data we're passing in.
+//   fieldLen  : The length of the field data (if it is an array).
+//
+// Returns:    OKAY on success, FALSE on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Feb  2 14:07:11 PST 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
 int
-simv2_set_operator_options(void * /*e*/, int plotID, int operatorID, const char *fieldName, 
+simv2_set_plot_options(void *e, const char *fieldName, 
     int fieldType, void *fieldVal, int fieldLen)
 {
-    int status = VISIT_ERROR;
-#if 0
-    TRY
-    {
-        std::map<int, PlotInformation>::iterator it = GetPlotInformation()->find(plotID);
-        if(it != GetPlotInformation()->end() && fieldVal != NULL)
-        {
-            if(operatorID >= 0 && operatorID < static_cast<int>(it->second.operators.size()))
-            {
-                status = SetAttributeSubjectValues(it->second.operators[operatorID].atts, 
-                    std::string(fieldName), fieldType, fieldVal, fieldLen); 
-            }
-        }
-    }
-    CATCHALL
-    {
-    }
-    ENDTRY
-#endif
-    return status;
+    SimEngine *engine = (SimEngine*)(e);
+    return engine->SetPlotOptions(fieldName, fieldType, fieldVal, fieldLen) ? VISIT_OKAY : VISIT_ERROR;
+}
+
+// ****************************************************************************
+// Method: simv2_set_operator_options
+//
+// Purpose:
+//   SimV2 function to set operator options.
+//
+// Arguments:
+//   e : The engine pointer.
+//   fieldName : The name of the field to set.
+//   fieldType : The type of the data we're passing in.
+//   fieldVal  : A pointer to the field data we're passing in.
+//   fieldLen  : The length of the field data (if it is an array).
+//
+// Returns:    OKAY on success, FALSE on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Feb  2 14:07:11 PST 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+simv2_set_operator_options(void *e, 
+    const char *fieldName, int fieldType, void *fieldVal, int fieldLen)
+{
+    SimEngine *engine = (SimEngine*)(e);
+    return engine->SetOperatorOptions(fieldName, fieldType, fieldVal, fieldLen) ? VISIT_OKAY : VISIT_ERROR;
 }
 
 // ****************************************************************************

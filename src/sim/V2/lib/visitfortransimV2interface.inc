@@ -489,6 +489,10 @@
       external visitdeleteactiveplots
       integer  visitdeleteactiveplots
 
+! visitsetactiveplots(int ids, int nids)
+      external visitdeleteactiveplots
+      integer  visitdeleteactiveplots
+
 ! visitexportdatabase(string filename, int lfilename,
 !                     string format, int lformat,
 !                     visit_handle vars)
@@ -499,6 +503,125 @@
       external visitrestoresession
       integer  visitrestoresession
 
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! Prototype plot attribute setting functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! visitsetplotoptionsc(string name, int lname, char val)
+      external visitsetplotoptionsc
+      integer  visitsetplotoptionsc
+
+! visitsetplotoptionsuc(string name, int lname, uchar val)
+      external visitsetplotoptionsuc
+      integer  visitsetplotoptionsuc
+
+! visitsetplotoptionsi(string name, int lname, int val)
+      external visitsetplotoptionsi
+      integer  visitsetplotoptionsi
+
+! visitsetplotoptionsl(string name, int lname, long val)
+      external visitsetplotoptionsl
+      integer  visitsetplotoptionsl
+
+! visitsetplotoptionsf(string name, int lname, float val)
+      external visitsetplotoptionsf
+      integer  visitsetplotoptionsf
+
+! visitsetplotoptionsd(string name, int lname, double val)
+      external visitsetplotoptionsd
+      integer  visitsetplotoptionsd
+
+! visitsetplotoptionss(string name, int lname, string val, int lval)
+      external visitsetplotoptionss
+      integer  visitsetplotoptionss
+
+! visitsetplotoptionscv(string name, int lname, char val, int nval)
+      external visitsetplotoptionscv
+      integer  visitsetplotoptionscv
+
+! visitsetplotoptionsucv(string name, int lname, uchar val, int nval)
+      external visitsetplotoptionsucv
+      integer  visitsetplotoptionsucv
+
+! visitsetplotoptionsiv(string name, int lname, int val, int nval)
+      external visitsetplotoptionsiv
+      integer  visitsetplotoptionsiv
+
+! visitsetplotoptionslv(string name, int lname, long val, int nval)
+      external visitsetplotoptionslv
+      integer  visitsetplotoptionslv
+
+! visitsetplotoptionsfv(string name, int lname, float val, int nval)
+      external visitsetplotoptionsfv
+      integer  visitsetplotoptionsfv
+
+! visitsetplotoptionsdv(string name, int lname, double val, int nval)
+      external visitsetplotoptionsdv
+      integer  visitsetplotoptionsdv
+
+! visitsetplotoptionssv(string name, int lname, string val, int nval,
+!                       int stringWidth)
+      external visitsetplotoptionssv
+      integer  visitsetplotoptionssv
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! Prototype operator attribute setting functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! visitsetoperatoroptionsc(string name, int lname, char val)
+      external visitsetoperatoroptionsc
+      integer  visitsetoperatoroptionsc
+
+! visitsetoperatoroptionsuc(string name, int lname, uchar val)
+      external visitsetoperatoroptionsuc
+      integer  visitsetoperatoroptionsuc
+
+! visitsetoperatoroptionsi(string name, int lname, int val)
+      external visitsetoperatoroptionsi
+      integer  visitsetoperatoroptionsi
+
+! visitsetoperatoroptionsl(string name, int lname, long val)
+      external visitsetoperatoroptionsl
+      integer  visitsetoperatoroptionsl
+
+! visitsetoperatoroptionsf(string name, int lname, float val)
+      external visitsetoperatoroptionsf
+      integer  visitsetoperatoroptionsf
+
+! visitsetoperatoroptionsd(string name, int lname, double val)
+      external visitsetoperatoroptionsd
+      integer  visitsetoperatoroptionsd
+
+! visitsetoperatoroptionss(string name, int lname, string val, int lval)
+      external visitsetoperatoroptionss
+      integer  visitsetoperatoroptionss
+
+! visitsetoperatoroptionscv(string name, int lname, char val, int nval)
+      external visitsetoperatoroptionscv
+      integer  visitsetoperatoroptionscv
+
+! visitsetoperatoroptionsucv(string name, int lname, uchar val, int nval)
+      external visitsetoperatoroptionsucv
+      integer  visitsetoperatoroptionsucv
+
+! visitsetoperatoroptionsiv(string name, int lname, int val, int nval)
+      external visitsetoperatoroptionsiv
+      integer  visitsetoperatoroptionsiv
+
+! visitsetoperatoroptionslv(string name, int lname, long val, int nval)
+      external visitsetoperatoroptionslv
+      integer  visitsetoperatoroptionslv
+
+! visitsetoperatoroptionsfv(string name, int lname, float val, int nval)
+      external visitsetoperatoroptionsfv
+      integer  visitsetoperatoroptionsfv
+
+! visitsetoperatoroptionsdv(string name, int lname, double val, int nval)
+      external visitsetoperatoroptionsdv
+      integer  visitsetoperatoroptionsdv
+
+! visitsetoperatoroptionssv(string name, int lname, string val, 
+!                           int nval, int stringWidth)
+      external visitsetoperatoroptionssv
+      integer  visitsetoperatoroptionssv
 
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! Metric functions 

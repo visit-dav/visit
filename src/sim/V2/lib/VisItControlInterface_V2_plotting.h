@@ -14,39 +14,42 @@ int VisItAddPlot(const char *plotType, const char *var);
 int VisItAddOperator(const char *operatorType, int applyToAll);
 int VisItDrawPlots(void);
 int VisItDeleteActivePlots(void);
+int VisItSetActivePlots(const int *ids, int nids);
 
-/* Maybe having 1 function is better...*/
-int VisItSetPlotOptionsC(int id,const char*n,char v);
-int VisItSetPlotOptionsUC(int id,const char*n,unsigned char v);
-int VisItSetPlotOptionsI(int id,const char*n,int v);
-int VisItSetPlotOptionsL(int id,const char*n,long v);
-int VisItSetPlotOptionsF(int id,const char*n,float v);
-int VisItSetPlotOptionsD(int id,const char*n,double v);
-int VisItSetPlotOptionsS(int id,const char*n,const char *v);
+/* Set values for the current plot */
+int VisItSetPlotOptionsC(const char *name,char v);
+int VisItSetPlotOptionsUC(const char *name,unsigned char v);
+int VisItSetPlotOptionsB(const char *name,int v);
+int VisItSetPlotOptionsI(const char *name,int v);
+int VisItSetPlotOptionsL(const char *name,long v);
+int VisItSetPlotOptionsF(const char *name,float v);
+int VisItSetPlotOptionsD(const char *name,double v);
+int VisItSetPlotOptionsS(const char *name,const char *v);
 
-int VisItSetPlotOptionsCv(int id,const char*n,const char *v,int L);
-int VisItSetPlotOptionsUCv(int id,const char*n,const unsigned char *v,int L);
-int VisItSetPlotOptionsIv(int id,const char*n,const int *v,int L);
-int VisItSetPlotOptionsLv(int id,const char*n,const long *v,int L);
-int VisItSetPlotOptionsFv(int id,const char*n,const float *v,int L);
-int VisItSetPlotOptionsDv(int id,const char*n,const double *v,int L);
-int VisItSetPlotOptionsSv(int id,const char*n,const char **v,int L);
+int VisItSetPlotOptionsCv(const char *name,const char *v,int L);
+int VisItSetPlotOptionsUCv(const char *name,const unsigned char *v,int L);
+int VisItSetPlotOptionsIv(const char *name,const int *v,int L);
+int VisItSetPlotOptionsLv(const char *name,const long *v,int L);
+int VisItSetPlotOptionsFv(const char *name,const float *v,int L);
+int VisItSetPlotOptionsDv(const char *name,const double *v,int L);
+int VisItSetPlotOptionsSv(const char *name,const char **v,int L);
 
-/* Maybe having 1 function is better...*/
-int VisItSetOperatorOptionsC(int pid, int oid,const char*n,char v);
-int VisItSetOperatorOptionsUC(int pid, int oid,const char*n,unsigned char v);
-int VisItSetOperatorOptionsI(int pid, int oid,const char*n,int v);
-int VisItSetOperatorOptionsL(int pid, int oid,const char*n,long v);
-int VisItSetOperatorOptionsF(int pid, int oid,const char*n,float v);
-int VisItSetOperatorOptionsD(int pid, int oid,const char*n,double v);
-int VisItSetOperatorOptionsS(int pid, int oid,const char*n,const char *v);
+/* Set values for the current operator */
+int VisItSetOperatorOptionsC(const char *name,char v);
+int VisItSetOperatorOptionsUC(const char *name,unsigned char v);
+int VisItSetOperatorOptionsB(const char *name,int v);
+int VisItSetOperatorOptionsI(const char *name,int v);
+int VisItSetOperatorOptionsL(const char *name,long v);
+int VisItSetOperatorOptionsF(const char *name,float v);
+int VisItSetOperatorOptionsD(const char *name,double v);
+int VisItSetOperatorOptionsS(const char *name,const char *v);
 
-int VisItSetOperatorOptionsCv(int pid, int oid,const char*n,const char *v,int L);
-int VisItSetOperatorOptionsUCv(int pid, int oid,const char*n,const unsigned char *v,int L);
-int VisItSetOperatorOptionsIv(int pid, int oid,const char*n,const int *v,int L);
-int VisItSetOperatorOptionsLv(int pid, int oid,const char*n,const long *v,int L);
-int VisItSetOperatorOptionsFv(int pid, int oid,const char*n,const float *v,int L);
-int VisItSetOperatorOptionsDv(int pid, int oid,const char*n,const double *v,int L);
-int VisItSetOperatorOptionsSv(int pid, int oid,const char*n,const char **v,int L);
+int VisItSetOperatorOptionsCv(const char *name,const char *v,int L);
+int VisItSetOperatorOptionsUCv(const char *name,const unsigned char *v,int L);
+int VisItSetOperatorOptionsIv(const char *name,const int *v,int L);
+int VisItSetOperatorOptionsLv(const char *name,const long *v,int L);
+int VisItSetOperatorOptionsFv(const char *name,const float *v,int L);
+int VisItSetOperatorOptionsDv(const char *name,const double *v,int L);
+int VisItSetOperatorOptionsSv(const char *name,const char **v,int L);
 
 #endif
