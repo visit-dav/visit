@@ -43,6 +43,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Libsim's Fortran interface was modified to include the <i>VisItGetMixedVariable</i> function. This change will require users of the Fortran interface to include the <i>VisItGetMixedVariable</i> stub function in their code to enable building. See the Fortran simulation examples in DataManualExamples for reference.</li>
   <li>A global preference was added that tells VisIt to automatically remove duplicate nodes from fully disconnected unstructured grids. This preference is off by default, and can be changed in the GUI's Options->Preferences window or via <i>SetRemoveGlobalNodes(0|1)</i> via the CLI. This preference is saved with other settings. This new preference subsumes the behavior introduced in 2.8 series where the VTK reader would perform this duplicate node removal for .vtu files without user intervention.</li>
   <li>VisIt's Parallel Integral Curve System (PICS) was enhanced to add higher-order element support for time varying Nektar++ and Nek5000 databases.</li>
+  <li>Libsim was enhanced so the <i>VisItAddPlot()</i> and <i>VisItAddOperator()</i> functions can create plots and operators, enabling programmatic setup of a scene for in situ visualization and data export.</li>
+  <li>Libsim was extended with <i>VisItSetPlotOptions*()</i> and <i>VisItSetOperatorOptions*()</i> functions that allow plot and operator attributes to be set. Each family of functions enables callers to set plot and operator attribute data from a simulation. The functions essentially use key/value pairs to set plot and operator attributes (e.g. <i>VisItSetPlotOptionsS("colorTableName", "hot_desaturated")</i>). The keys are the names of the fields in the plot attribute state objects.</li>
 </ul>
 
 <a name="GUI_Changes"></a>
@@ -89,6 +91,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with invalid arguments being sent to visit_composite during templated movie making.</li>
   <li>Fixed the Histogram plot so that individual bins can count up to the largest integer that can be stored in a double.</li>
   <li>Added the full path to the szip and zlib libraries for both OSX and Linux in the bv_cgns.sh build_visit support file.</li>
+  <li>The visual representations for the Line, Sphere, and Box tools have been fixed so that they are once again visible.</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -101,6 +104,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A help button and additional window for displaying help text was added to the GUI to support database options help.</li>
   <li>Changed failure mode of avtDatabaseMetaData::DetermineVarType() to return AVT_UNKNOWN_TYPE instead of excepting out.</li>
   <li>The makemovie python script was changed so that visitmovietemplate.py can be correctly found from a development version on Windows.</li>
+  <li>The build_visit script was enhanced with a <i>--xdb</i> command line argument that enables the user to enable FieldView XDB output.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

@@ -380,6 +380,9 @@ VisitSphereTool::UpdateView()
 //   Hank Childs, Thu Jun  8 11:27:37 PDT 2006
 //   Fix compiler warning for casts.
 //
+//   Brad Whitlock, Wed Feb  4 13:55:32 PST 2015
+//   Update the sphere source so it has some geometry.
+//
 // ****************************************************************************
 
 void
@@ -392,6 +395,7 @@ VisitSphereTool::CreateSphereActor()
     source->SetLatLongTessellation(1);
     source->SetPhiResolution(15);
     source->SetThetaResolution(15);
+    source->Update();
     sphereData = source->GetOutput();
     sphereData->Register(NULL);
 
