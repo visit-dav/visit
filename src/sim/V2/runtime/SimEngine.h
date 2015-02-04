@@ -92,6 +92,11 @@ public:
     bool AddOperator(const std::string &operatorType, bool applyToAll);
     bool DrawPlots();
     bool DeleteActivePlots();
+    bool SetActivePlots(const int *ids, int nids);
+    bool SetPlotOptions(const std::string &fieldName, 
+                        int fieldType, void *fieldVal, int fieldLen);
+    bool SetOperatorOptions(const std::string &fieldName, 
+                            int fieldType, void *fieldVal, int fieldLen);
 private:
     virtual void CreatePluginManagers();
 

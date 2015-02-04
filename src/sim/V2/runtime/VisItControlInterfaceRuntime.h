@@ -61,6 +61,9 @@ extern "C" {
 //    Brad Whitlock, Thu Sep 18 16:16:29 PDT 2014
 //    I added simv2_initialize_batch, simv2_exportdatabase, simv2_restoresession.
 //
+//    Brad Whitlock, Mon Feb  2 13:58:45 PST 2015
+//    Added simv2_set_active_plots, changed set_plot_options, set_operator_options.
+//
 // ****************************************************************************
 
 SIMV2_API void   *simv2_get_engine();
@@ -82,8 +85,10 @@ SIMV2_API int     simv2_add_plot(void *, const char *, const char *);
 SIMV2_API int     simv2_add_operator(void *, const char *, int);
 SIMV2_API int     simv2_draw_plots(void *);
 SIMV2_API int     simv2_delete_active_plots(void *);
-SIMV2_API int     simv2_set_plot_options(void *, int, const char *, int, void *, int);
-SIMV2_API int     simv2_set_operator_options(void *, int, int, const char *, int, void *, int);
+SIMV2_API int     simv2_set_active_plots(void *, const int *, int);
+
+SIMV2_API int     simv2_set_plot_options(void *, const char *, int, void *, int);
+SIMV2_API int     simv2_set_operator_options(void *, const char *, int, void *, int);
 
 SIMV2_API int     simv2_exportdatabase(void *, const char *, const char *, visit_handle);
 SIMV2_API int     simv2_restoresession(void *, const char *);
