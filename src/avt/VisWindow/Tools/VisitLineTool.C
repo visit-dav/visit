@@ -523,6 +523,9 @@ VisitLineTool::CreateLineActor()
 //   Kathleen Bonnell, Fri Jul 26 10:52:09 PDT 2002   
 //   Register lineData to avoid memory problems.
 //   
+//   Brad Whitlock, Wed Feb  4 13:55:32 PST 2015
+//   Update the source so it has some geometry.
+//
 // ****************************************************************************
 
 void
@@ -533,6 +536,7 @@ VisitLineTool::UpdateLine()
     lineSource->SetPoint1(p1.x, p1.y, p1.z);
     lineSource->SetPoint2(p2.x, p2.y, p2.z);
     lineSource->SetResolution(1);
+    lineSource->Update();
     lineData = lineSource->GetOutput();
     lineData->Register(NULL);
 
