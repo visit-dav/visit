@@ -490,8 +490,8 @@
       integer  visitdeleteactiveplots
 
 ! visitsetactiveplots(int ids, int nids)
-      external visitdeleteactiveplots
-      integer  visitdeleteactiveplots
+      external visitsetactiveplots
+      integer  visitsetactiveplots
 
 ! visitexportdatabase(string filename, int lfilename,
 !                     string format, int lformat,
@@ -517,6 +517,10 @@
 ! visitsetplotoptionsi(string name, int lname, int val)
       external visitsetplotoptionsi
       integer  visitsetplotoptionsi
+
+! visitsetplotoptionsb(string name, int lname, int val)
+      external visitsetplotoptionsb
+      integer  visitsetplotoptionsb
 
 ! visitsetplotoptionsl(string name, int lname, long val)
       external visitsetplotoptionsl
@@ -577,6 +581,10 @@
 ! visitsetoperatoroptionsi(string name, int lname, int val)
       external visitsetoperatoroptionsi
       integer  visitsetoperatoroptionsi
+
+! visitsetoperatoroptionsb(string name, int lname, int val)
+      external visitsetoperatoroptionsb
+      integer  visitsetoperatoroptionsb
 
 ! visitsetoperatoroptionsl(string name, int lname, long val)
       external visitsetoperatoroptionsl
