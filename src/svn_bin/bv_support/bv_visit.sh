@@ -362,6 +362,11 @@ function build_visit
        FEATURES="${FEATURES} -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON"
     fi
 
+    # Let the user turn on XDB.
+    if [[ "${DO_XDB}" == "yes" ]] ; then
+       FEATURES="${FEATURES} -DVISIT_ENABLE_XDB:BOOL=ON"
+    fi
+
     # Let the user pick a subset of plugins.
     if [[ "${VISIT_SELECTED_DATABASE_PLUGINS}" != "" ]] ; then
        FEATURES="${FEATURES} -DVISIT_SELECTED_DATABASE_PLUGINS:STRING=${VISIT_SELECTED_DATABASE_PLUGINS}"
