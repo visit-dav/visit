@@ -6,6 +6,9 @@
 #   Purpose:
 #        Constructs a new build visit module with default parameters filled out..
 #
+#   Modifications:
+#     Paul Selby, Wed  4 Feb 17:30:32 GMT 2015
+#     Fixed name of _ensure function and check_if_installed call in _build
 
 output=$1
 uppercase_out=`echo $1 | tr '[a-z]' '[A-Z]'`
@@ -94,7 +97,7 @@ function bv_${output}_host_profile
 }
 
 #prepare the module and check whether it is built or is ready to be built.
-function bv_${output}_ensure_built_or_ready
+function bv_${output}_ensure
 {
     if [[ \"\$DO_${uppercase_out}\" == \"yes\" ]] ; then
         ensure_built_or_ready \"${uppercase_out}\" \$${uppercase_out}_VERSION \$${uppercase_out}_BUILD_DIR \$${uppercase_out}_FILE
@@ -140,7 +143,7 @@ function bv_${output}_build
 {
 
     if [[ \"\$DO_${uppercase_out}\" == \"yes\" ]] ; then
-        check_if_installed \"${uppercase_out}\" ${uppercase_out}_VERSION
+        check_if_installed \"${output}\" \$${uppercase_out}_VERSION
         if [[ \$? == 0 ]] ; then
             info \"Skipping ${uppercase_out} build.  ${uppercase_out} is already installed.\"
         else
