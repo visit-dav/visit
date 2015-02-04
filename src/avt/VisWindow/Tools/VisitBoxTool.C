@@ -482,6 +482,8 @@ VisitBoxTool::UpdateTool()
 // Creation:   Wed Oct 30 12:22:25 PDT 2002
 //
 // Modifications:
+//   Brad Whitlock, Wed Feb  4 13:55:32 PST 2015
+//   Update the source so it has some geometry.
 //
 // ****************************************************************************
 
@@ -498,6 +500,7 @@ VisitBoxTool::CreateBoxActor()
     extents[4] = 0.;
     extents[5] = BOX_SIZE;
     source->SetBounds(extents);
+    source->Update();
     boxData = source->GetOutput();
     boxData->Register(NULL);
 
@@ -1010,6 +1013,9 @@ VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
 //   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //
+//   Brad Whitlock, Wed Feb  4 13:55:32 PST 2015
+//   Update the source so it has some geometry.
+//
 // ****************************************************************************
 
 void
@@ -1047,6 +1053,7 @@ VisitBoxTool::UpdateOutline()
              extents[4] = (i == 2) ? totalExtents[4] : hotPoints[0].pt.z;
              extents[5] = (i == 2) ? totalExtents[5] : hotPoints[LAST_HOTPOINT].pt.z;
              source->SetBounds(extents);
+             source->Update();
              outlineData[i] = source->GetOutput();
              outlineData[i]->Register(NULL);
              source->Delete();
