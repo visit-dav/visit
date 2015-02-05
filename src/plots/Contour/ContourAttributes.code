@@ -293,31 +293,31 @@ ContourAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
     else
         delete defaultPaletteNode;
 
-    if(completeSave || completeSave || !FieldsEqual(2, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_colorType, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("colorType", ColoringMethod_ToString(colorType)));
     }
 
-    if(completeSave || completeSave || !FieldsEqual(3, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_colorTableName, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("colorTableName", colorTableName));
     }
 
-    if(completeSave || completeSave || !FieldsEqual(4, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("legendFlag", legendFlag));
     }
 
-    if(completeSave || !FieldsEqual(5, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lineStyle", lineStyle));
     }
 
-    if(completeSave || !FieldsEqual(6, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lineWidth", lineWidth));
@@ -332,66 +332,71 @@ ContourAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
         else
             delete singleColorNode;
 
-    if(completeSave || !FieldsEqual(9, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_contourNLevels, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("contourNLevels", contourNLevels));
     }
 
-    if(completeSave || !FieldsEqual(10, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_contourValue, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("contourValue", contourValue));
     }
 
-    if(completeSave || !FieldsEqual(11, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_contourPercent, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("contourPercent", contourPercent));
     }
 
-    if(completeSave || !FieldsEqual(12, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_contourMethod, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("contourMethod", Select_by_ToString(contourMethod)));
     }
 
-    if(completeSave || !FieldsEqual(13, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_minFlag, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("minFlag", minFlag));
     }
 
-    if(completeSave || !FieldsEqual(14, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_maxFlag, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("maxFlag", maxFlag));
     }
 
-    if(completeSave || !FieldsEqual(15, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_min, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("min", min));
     }
 
-    if(completeSave || !FieldsEqual(16, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_max, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("max", max));
     }
 
-    if(completeSave || !FieldsEqual(17, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_scaling, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("scaling", Scaling_ToString(scaling)));
     }
 
-    if(completeSave || !FieldsEqual(18, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_wireframe, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("wireframe", wireframe));
     }
 
+    if(completeSave || !FieldsEqual(ID_invertColorTable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("invertColorTable", invertColorTable));
+    }
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -456,6 +461,8 @@ ContourAttributes::SetFromNode(DataNode *parentNode)
         SetColorTableName(node->AsString());
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
+    if((node = searchNode->GetNode("invertColorTable")) != 0)
+        SetInvertColorTable(node->AsBool());
     if((node = searchNode->GetNode("lineStyle")) != 0)
         SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineWidth")) != 0)

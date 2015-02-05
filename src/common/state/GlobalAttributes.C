@@ -981,7 +981,6 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("removeDuplicateNodes")) != 0)
     {
-cerr <<"   setting SetRemoveDup to " << node->AsBool() << endl;
         SetRemoveDuplicateNodes(node->AsBool());
     }
 }
