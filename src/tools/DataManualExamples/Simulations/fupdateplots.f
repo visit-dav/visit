@@ -49,32 +49,70 @@ c-----------------------------------------------------------------
       implicit none
       include "visitfortransimV2interface.inc"
 ccc   local variables
-      integer err
+      integer ierr, batch, simSave, simExport
+      integer i, N, len
+      character (len=80) str
 
-      call simulationarguments()
-      err = visitsetupenv()
-      err = visitinitializesim("fupdateplots", 12,
-     . "Demonstrates visitupdateplots function", 38,
-     . "/no/useful/path", 15,
-     . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
-     . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
-     . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
-      call mainloop()
+      batch = 0
+      simSave = 0
+      simExport = 0
+
+      ierr = visitopentracefile("trace.txt", 9)
+
+ccc   Handle command line arguments
+      N = iargc()
+      i = 1
+      len = 80
+5     if (i.le.N) then
+          call getarg(i, str)
+          if(str.eq."-dir") then
+              call getarg(i+1, str)
+              ierr = visitsetdirectory(str, len)
+              i = i + 1
+          elseif(str.eq."-options") then
+              call getarg(i+1, str)
+              ierr = visitsetoptions(str, len)
+              i = i + 1
+          elseif(str.eq."-save") then
+              simSave = 1
+          elseif(str.eq."-export") then
+              simExport = 1
+          elseif(str.eq."-batch") then
+              batch = 1
+          endif
+          i = i + 1
+          goto 5
+      endif
+
+      ierr = visitsetupenv()
+
+      if(batch.eq.1) then
+          call mainloop_batch(simSave, simExport)
+      else
+          ierr = visitinitializesim("fupdateplots", 12,
+     .        "Demonstrates visitupdateplots function", 38,
+     .        "/no/useful/path", 15,
+     .        VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
+     .        VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
+     .        VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
+          call mainloop(simSave, simExport)
+      endif
       stop
       end
 
 c-----------------------------------------------------------------
 c mainloop
 c-----------------------------------------------------------------
-      subroutine mainloop()
+      subroutine mainloop(simSave, simExport)
       implicit none
+      integer simSave, simExport
       include "visitfortransimV2interface.inc"
 ccc   local variables
-      integer visitstate, result, blocking
+      integer visitstate, result, blocking, simUpdate
 ccc   SIMSTATE common block
-      integer runflag, simcycle, simUpdate
+      integer runflag, simcycle
       double precision simtime
-      common /SIMSTATE/ simtime, runflag, simcycle, simUpdate
+      common /SIMSTATE/ simtime, runflag, simcycle
       save /SIMSTATE/
 
 c     main loop
@@ -94,7 +132,7 @@ c     main loop
           if (visitstate.lt.0) then
               goto 1234
           elseif (visitstate.eq.0) then
-              call simulate_one_timestep()
+              call simulate_one_timestep(simUpdate,simSave,simExport)
           elseif (visitstate.eq.1) then
               runflag = 0
               result = visitattemptconnection()
@@ -114,13 +152,36 @@ c     main loop
 10    continue
 1234  end
 
-      subroutine simulate_one_timestep()
+      subroutine mainloop_batch(simSave, simExport)
       implicit none
+      integer simSave, simExport
+      include "visitfortransimV2interface.inc"
+ccc   Local vars
+      integer ierr
+
+      ierr = visitinitializeruntime()
+      ierr = visittimestepchanged()
+      ierr = visitaddplot("Mesh", 4, "mesh2d", 6)
+      ierr = visitaddplot("Contour", 7, "zonal", 5)
+      ierr = visitaddplot("Pseudocolor", 11, "zonal", 5)
+      ierr = visitsetplotoptionss("colorTableName",14,"calewhite",9)
+      ierr = visitaddoperator("Elevate", 7, 1)
+      ierr = visitsetoperatoroptionss("variable", 8, "zonal",5)
+      ierr = visitdrawplots()
+
+      do 20
+          call simulate_one_timestep(1, simSave, simExport)
+20    continue
+      end
+
+      subroutine simulate_one_timestep(simUpdate, simSave, simExport)
+      implicit none
+      integer simUpdate, simSave, simExport
       include "visitfortransimV2interface.inc" 
 ccc   SIMSTATE common block
-      integer runFlag, simcycle, simUpdate
+      integer runFlag, simcycle
       double precision simtime
-      common /SIMSTATE/ simtime, runflag, simcycle, simUpdate
+      common /SIMSTATE/ simtime, runflag, simcycle
 ccc   RECTMESH common block
       integer NX, NY
       parameter (NX = 50)
@@ -133,7 +194,8 @@ c Rectilinear mesh data
       data rmndims /2/
       data rmdims /NX, NY, 1/
 ccc   Local vars
-      integer err
+      integer err, vars
+      character (len=80) fn
 
 c Simulate one time step
       simcycle = simcycle + 1
@@ -146,6 +208,28 @@ c         Tell VisIt that the timestep changed
           err = visittimestepchanged()
 c         Tell VisIt to update its plots
           err = visitupdateplots()
+
+          if(simSave.eq.1) then
+              write (fn, 50), simcycle
+50            format("updateplots", I4.4, ".jpg" )
+              err=visitsavewindow(fn,19,800,800,VISIT_IMAGEFORMAT_JPEG)
+              if(err.eq.VISIT_OKAY) then
+                  write (6,*) 'Saved ', fn
+              endif
+          endif
+
+          if(simExport.eq.1) then
+              err = visitnamelistalloc(vars)
+              err = visitnamelistaddname(vars, "default", 7)
+              write (fn, 60), simcycle
+60            format("updateplots_export", I4.4 )
+              err=visitexportdatabase(fn,22,
+     .            "FieldViewXDB_1.0",16,vars)
+              if(err.eq.VISIT_OKAY) then
+                  write (6,*) 'Exported ', fn
+              endif
+              err = visitnamelistfree(vars)
+          endif
       endif
       end
 
@@ -164,9 +248,9 @@ c---------------------------------------------------------------------------
       integer     lcmd, largs
       include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
-      integer runflag, simcycle, simUpdate
+      integer runflag, simcycle
       double precision simtime
-      common /SIMSTATE/ simtime, runflag, simcycle, simUpdate
+      common /SIMSTATE/ simtime, runflag, simcycle
 
 c     Handle the commands that we define in visitgetmetadata.
       if(visitstrcmp(cmd, lcmd, "halt", 4).eq.0) then
@@ -223,9 +307,9 @@ c---------------------------------------------------------------------------
       implicit none
       include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
-      integer runflag, simcycle, simUpdate
+      integer runflag, simcycle
       double precision simtime
-      common /SIMSTATE/ simtime, runflag, simcycle, simUpdate
+      common /SIMSTATE/ simtime, runflag, simcycle
       integer md, mmd, vmd, cmd, err
 
       if(visitmdsimalloc(md).eq.VISIT_OKAY) then
@@ -344,9 +428,9 @@ c---------------------------------------------------------------------------
       integer     domain, lname
       include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
-      integer runFlag, simcycle, simUpdate
+      integer runFlag, simcycle
       double precision simtime
-      common /SIMSTATE/ simtime, runflag, simcycle, simUpdate
+      common /SIMSTATE/ simtime, runflag, simcycle
 ccc   RECTMESH common block
       integer NX, NY
       parameter (NX = 50)
@@ -405,9 +489,9 @@ c---------------------------------------------------------------------------
       integer     lname
       include "visitfortransimV2interface.inc"
 ccc   SIMSTATE common block
-      integer runFlag, simcycle, simUpdate
+      integer runFlag, simcycle
       double precision simtime
-      common /SIMSTATE/ simtime, runflag, simcycle, simUpdate
+      common /SIMSTATE/ simtime, runflag, simcycle
 ccc   local vars
       integer i, h, hx, hy, NPTS, err
       parameter   (NPTS = 200)
