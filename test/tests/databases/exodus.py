@@ -30,7 +30,7 @@
 #
 # ----------------------------------------------------------------------------
 
-OpenDatabase(data_path("exodus_test_data/balls.exodus"))
+OpenDatabase(data_path("exodus_test_data/balls.e.4.* database"))
 
 AddPlot("Pseudocolor", "EQPS")
 DrawPlots()
@@ -69,7 +69,7 @@ ToggleMaintainViewMode()
 
 TestSection("Testing SHELL4 support")
 DeleteAllPlots()
-CloseDatabase(data_path("exodus_test_data/balls.exodus"))
+CloseDatabase(data_path("exodus_test_data/balls.e.4.* database"))
 OpenDatabase(data_path("exodus_test_data/aircraft.exoII"))
 
 AddPlot("Mesh", "Mesh")
@@ -137,6 +137,57 @@ DrawPlots()
 ResetView()
 Test("exodus_10")
 
+DeleteAllPlots()
+CloseDatabase(data_path("exodus_test_data/dodecahedron.exo"))
+OpenDatabase(data_path("exodus_test_data/tri3.exo"))
+AddPlot("Mesh","Mesh")
+AddPlot("Pseudocolor","elem_map")
+DrawPlots()
+ResetView()
+Test("exodus_11")
+
+DeleteAllPlots()
+CloseDatabase(data_path("exodus_test_data/tri3.exo"))
+OpenDatabase(data_path("exodus_test_data/tri6.exo"))
+AddPlot("Mesh","Mesh")
+AddPlot("Pseudocolor","elem_map")
+DrawPlots()
+ResetView()
+Test("exodus_12")
+
+DeleteAllPlots()
+CloseDatabase(data_path("exodus_test_data/tri6.exo"))
+OpenDatabase(data_path("exodus_test_data/exo-plugin-problem-kassbohm.exo"))
+AddPlot("Mesh","Mesh")
+AddPlot("Subset","ElementBlock")
+DrawPlots()
+ResetView()
+Test("exodus_13")
+
+s = SILRestriction()
+ebsets = s.SetsInCategory("ElementBlock")
+s.TurnOffSet(ebsets[2]) # Triangles
+SetPlotSILRestriction(s)
+sa = SubsetAttributes()
+sa.lineWidth = 4
+SetPlotOptions(sa)
+Test("exodus_14")
+
+SET_THE_OPTIONS
+DeleteAllPlots()
+CloseDatabase(data_path("exodus_test_data/exo-plugin-problem-kassbohm.exo"))
+OpenDatabase(data_path("exodus_test_data/snl_data/mixed2d/explwire2d.exo.8.* database"))
+AddPlot("FilledBoundary", "Materials")
+DrawPlots()
+ResetView()
+Test("exodus_15")
+TimeSliderSetState(4)
+Test("exodus_16")
+DeleteAllPlots()
+AddPlot("Vector","Velocity")
+DrawPlots()
+Test("exodus_17")
+TimeSliderNextState()
+Test("exodus_18")
+
 Exit()
-
-
