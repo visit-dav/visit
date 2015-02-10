@@ -25,7 +25,7 @@ function bv_mfem_depends_on
 
 function bv_mfem_info
 {
-export MFEM_VERSION=${MFEM_VERSION:-"3.0"}
+export MFEM_VERSION=${MFEM_VERSION:-"3.0.1"}
 export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
 export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
 export MFEM_URL=${MFEM_URL:-"https://mfem.googlecode.com/files/mfem-${MFEM_VERSION}.tgz"}
