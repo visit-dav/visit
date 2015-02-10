@@ -98,7 +98,11 @@ IF (VISUS_INCLUDE_DIR)
    IF (VISUS_JUCE)
     FIND_LIBRARY(VISUS_GUI_IMPL_LIB Juce                   ${VISUS_DIR}/lib NO_DEFAULT_PATH)
    ENDIF()
-   FIND_LIBRARY(VISUS_CURL_LIB      curl                   ${VISUS_DIR}/lib NO_DEFAULT_PATH)
+   IF(WIN32)
+     FIND_LIBRARY(VISUS_CURL_LIB      libcurl                ${VISUS_DIR}/lib NO_DEFAULT_PATH)
+   ELSE()
+     FIND_LIBRARY(VISUS_CURL_LIB      curl                   ${VISUS_DIR}/lib NO_DEFAULT_PATH)
+   ENDIF()
    FIND_LIBRARY(VISUS_FREEIMAGE_LIB FreeImage              ${VISUS_DIR}/lib NO_DEFAULT_PATH)
    FIND_LIBRARY(VISUS_XML_LIB       tinyxml                ${VISUS_DIR}/lib NO_DEFAULT_PATH)
    FIND_LIBRARY(VISUS_LIBZ_LIB      libz                   ${VISUS_DIR}/lib NO_DEFAULT_PATH)
@@ -152,6 +156,7 @@ IF (VISUS_INCLUDE_DIR)
          Winmm.lib;
          shlwapi.lib
          Wininet.lib
+         psapi.lib
      )
 
    ###########################################
