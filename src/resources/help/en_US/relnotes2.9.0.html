@@ -31,6 +31,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">General features added in version 2.9</font></b></p>
 <ul>
   <li>VisIt was ported to BlueGene/Q. The <i>build_visit_BGQ</i> script can be used to build a statically linked version of VisIt's server components for use on BlueGene/Q.</li>
+  <li><a href="https://www.seedme.org/">SeedMe.org</a> Integration. Share your visualizations results easily via the SeedMe python module, which is now included in VisIt's CLI. See the <a href="http://visitusers.org/index.php?title=Seedme">Seedme examples wiki page</a> on visitusers.org, the <a href="https://www.seedme.org/documentation/programmatic-python-usage"> SeedMe programatic guide</a> and the <a href="https://www.seedme.org/cli-guide">SeedMe command line guide</a> for examples.
+</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -63,6 +65,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>When the Exodus plugin auto-detects composite variables, it now defines expressions for them instead of advertising them as database variables.</li>
   <li>Improved the auto-detection logic of composite variables in the Exodus plugin.</li>
   <li>Improved support for cell-centered data in newer versions of Tecplot binary files.</li>
+  <li>The MFEM database plugin was updated to support version 3.0.1 of MFEM. This includes support for reading <i>mfem_root</i> files generated from the MFEM library.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -107,6 +110,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Changed failure mode of avtDatabaseMetaData::DetermineVarType() to return AVT_UNKNOWN_TYPE instead of excepting out.</li>
   <li>The makemovie python script was changed so that visitmovietemplate.py can be correctly found from a development version on Windows.</li>
   <li>The build_visit script was enhanced with a <i>--xdb</i> command line argument that enables the user to enable FieldView XDB output.</li>
+  <li>The build_visit script now supports building a limited set of the Boost C++ libraries.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
