@@ -415,6 +415,9 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Initial bare-bones support for 4D Chombo files (fairly limited and 
 //    "hackish")
 //
+//    Gunther H. Weber, Tue Feb 10 21:06:28 PST 2015
+//    Add support for vec_dx for 4D Chombo files
+//
 // ****************************************************************************
 
 extern "C"  herr_t
@@ -600,6 +603,11 @@ avtChomboFileFormat::InitializeReader(void)
     H5Tinsert (doublevect3d_id, "x", HOFFSET(doublevect3d, x), H5T_NATIVE_DOUBLE);
     H5Tinsert (doublevect3d_id, "y", HOFFSET(doublevect3d, y), H5T_NATIVE_DOUBLE);
     H5Tinsert (doublevect3d_id, "z", HOFFSET(doublevect3d, z), H5T_NATIVE_DOUBLE);
+    hid_t doublevect4d_id = H5Tcreate (H5T_COMPOUND, sizeof(doublevect4d));
+    H5Tinsert (doublevect4d_id, "x", HOFFSET(doublevect4d, x), H5T_NATIVE_DOUBLE);
+    H5Tinsert (doublevect4d_id, "y", HOFFSET(doublevect4d, y), H5T_NATIVE_DOUBLE);
+    H5Tinsert (doublevect4d_id, "z", HOFFSET(doublevect4d, z), H5T_NATIVE_DOUBLE);
+    H5Tinsert (doublevect4d_id, "u", HOFFSET(doublevect4d, u), H5T_NATIVE_DOUBLE);
 
     if (hasProbLo)
     {
@@ -873,9 +881,13 @@ avtChomboFileFormat::InitializeReader(void)
             }
             else
             {
-                EXCEPTION1(InvalidDBTypeException, "vec_dx not yet supported for 4D data");
+                doublevect4d dx_tmp;
+                H5Aread(dx_id, doublevect4d_id, &dx_tmp);
+                dx[i].push_back(dx_tmp.x);
+                dx[i].push_back(dx_tmp.y);
+                dx[i].push_back(dx_tmp.z);
+                dx[i].push_back(dx_tmp.u);
             }
- 
         }
         else
         {
@@ -954,6 +966,7 @@ avtChomboFileFormat::InitializeReader(void)
 
     H5Tclose(doublevect2d_id);
     H5Tclose(doublevect3d_id);
+    H5Tclose(doublevect4d_id);
 
     //
     // Now that we know how many total patches there are, create our data
