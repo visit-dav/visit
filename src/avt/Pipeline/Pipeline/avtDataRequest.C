@@ -189,6 +189,9 @@ using     std::map;
 //    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
 //    Add missingDataBehavior.
 //
+//    Cyrus Harrison, Mon Jan 26 21:26:34 PST 2015
+//    Changed check from boost interval template lib to boost proper.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -224,7 +227,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     needNativePrecision = false;
     discTol = 0.01;
     flatTol = 0.05;
-#ifdef HAVE_BILIB
+#ifdef HAVE_BOOST
     discMode = 1; // adaptive
 #else
     discMode = 0; // uniform 
@@ -1683,13 +1686,17 @@ avtDataRequest::GetAdmissibleDataTypes() const
 //    Mark C. Miller, Wed Mar  3 07:59:15 PST 2010
 //    Changed form of conditional compilation check for HAVE_BILIB from
 //    numeric test to existence test.
+//
+//    Cyrus Harrison, Mon Jan 26 21:26:34 PST 2015
+//    Changed check from boost interval template lib to boost proper.
+//
 // ****************************************************************************
 
 void
 avtDataRequest::SetDiscMode(int mode)
 {
     discMode = mode;
-#ifndef HAVE_BILIB
+#ifndef HAVE_BOOST
     if (discMode == 1) // Adaptive
     {
         debug1 << "Adaptive not available. "
