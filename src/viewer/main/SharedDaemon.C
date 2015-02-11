@@ -145,7 +145,12 @@ SharedDaemon::~SharedDaemon()
 
 void SharedDaemon::init()
 {
-    listen(QHostAddress::Any,listen_port);
+    if(listen_port > 0) {
+        listen(QHostAddress::Any,listen_port);
+    } else {
+        listen(QHostAddress::Any);
+        listen_port = serverPort();
+    }
 
     if(isListening())
         std::cerr << "Starting to listen on port: " << listen_port << std::endl;

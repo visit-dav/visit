@@ -180,6 +180,8 @@
 #include <SharedDaemon.h>
 #include <MDServerManager.h>
 
+#include <CommunicationHeader.h>
+
 #ifdef HAVE_DDT
 #include <DDTManager.h>
 #endif
@@ -2379,6 +2381,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
 
     int shared_daemon_port = -1;
     std::string shared_daemon_password = "";
+    bool enable_shared = false;
 
     //
     // Process the command line for the viewer.
@@ -2744,13 +2747,24 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-shared_port") == 0)
         {
-            if ((i + 1 >= argc) || (!isdigit(*(argv[i+1]))))
+            if ((i + 1 >= argc)) // || (!isdigit(*(argv[i+1]))))
             {
                 cerr << "The -shared_port option must be followed by an "
                         "integer(valid port) number." << endl;
                 continue;
             }
-            shared_daemon_port = atoi(argv[i+1]);
+
+            QString port_number = argv[i+1];
+            bool ok = false;
+            shared_daemon_port = port_number.toInt(&ok);
+
+            if(ok) {
+                enable_shared = true;
+            } else {
+                std::cerr << "Viewer Sharing not enabled port not set correctly"
+                    << std::endl;
+            }
+
             ++i;
         }
         else if (strcmp(argv[i], "-shared_password") == 0)
@@ -2775,25 +2789,25 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
 #endif
     }
 
-    if(shared_daemon_port != -1 || shared_daemon_password.length() > 0)
-    {
-        if(shared_daemon_port == -1 || shared_daemon_password == "")
-        {
-             std::cerr << "Viewer Sharing not enabled port or password not set correctly"
-                 << std::endl;
+    if(enable_shared) {
+        /// if no password given then create one..
+        if(shared_daemon_password.length() == 0) {
+            /// create OTP password using RandomKey from CommunicationHeader.
+            shared_daemon_password = CommunicationHeader::CreateRandomKey(20);
+            std::cout << "Shared Key: " << shared_daemon_password << std::endl;
         }
-        else
-        {
-            shared_viewer_daemon = new SharedDaemon(this,shared_daemon_port,shared_daemon_password);
-            ///register visWindow update function
-            ///TODO: possibly come up with a better solution?
-            ViewerWindow::SetRenderEventCallback(RenderEventCallback, this);
-            VisWinRenderingWithoutWindowWithInteractions::SetInteractorCallback(CreateGlobalInteractor);
-            /// force shared mode to have interactions when in nowin mode..
-            avtCallback::SetNowinInteractionMode(true);
 
-        }
+        shared_viewer_daemon = new SharedDaemon(this,shared_daemon_port,shared_daemon_password);
+
+        ///register visWindow update function
+        ///TODO: possibly come up with a better solution?
+        ViewerWindow::SetRenderEventCallback(RenderEventCallback, this);
+        VisWinRenderingWithoutWindowWithInteractions::SetInteractorCallback(CreateGlobalInteractor);
+        /// force shared mode to have interactions when in nowin mode..
+        avtCallback::SetNowinInteractionMode(true);
+
     }
+
 
     // Set the geometry based on the argument that was provided with
     // -viewer_geometry taking precedence.
@@ -3198,7 +3212,7 @@ ViewerSubject::Export()
     JSONNode node;
     std::string str = GetViewerState()->GetViewerRPC()->GetStringArg1();
     int clientId = GetViewerState()->GetViewerRPC()->GetIntArg1();
-
+    std::cout << "EXPORT" << std::endl;
     replaceAll(str,"\\\\", "\\");
     replaceAll(str,"\\\"", "\"");
     node.Parse(str);
@@ -3217,7 +3231,7 @@ ViewerSubject::Export()
         std::string host = node["host"].GetString();
         std::string remotePath = node["path"].GetString();
 
-        //std::cout << "host!" << host << " " << remotePath << std::endl;
+        std::cout << "host!" << host << " " << remotePath << std::endl;
 
         GetViewerFileServer()->NoFaultStartServer(host, stringVector());
 
