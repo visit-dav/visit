@@ -108,10 +108,18 @@ struct {
   double z;
 } typedef doublevect3d;
 
+struct {
+  double x;
+  double y;
+  double z;
+  double u;
+} typedef doublevect4d;
+
 union
 {
   doublevect2d dv2;
   doublevect3d dv3;
+  doublevect3d dv4;
 } typedef doublevect;
 
 class DBOptionsAttributes;
@@ -169,6 +177,9 @@ class DBOptionsAttributes;
 //    Gunther H. Weber, Thu Aug 15 11:37:51 PDT 2013
 //    Initial bare-bones support for 4D Chombo files (fairly limited and 
 //    "hackish")
+//
+//    Gunther H. Weber, Tue Feb 10 21:06:28 PST 2015
+//    Add support for vec_dx for 4D Chombo files
 //
 // ****************************************************************************
 
