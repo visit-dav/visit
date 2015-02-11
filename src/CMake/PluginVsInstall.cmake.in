@@ -85,6 +85,9 @@
 #   these are now available in VisItMacros.cmake, and can be used without
 #   re-write.  Include VisItMacros.cmake.
 #
+#   Cyrus Harrison, Tue Feb 10 20:06:07 PST 2015
+#   Changed boost support.
+#
 #****************************************************************************/
 
 ##
@@ -178,7 +181,7 @@ SET(EAVL_INCLUDE_DIR @EAVL_INCLUDE_DIR@)
 SET(EAVL_LIBRARY_DIR @EAVL_LIBRARY_DIR@)
 
 # Set up BOOST
-SET(BOOST_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/bilib/boost_1_42_0)
+SET(BOOST_INCLUDE_DIR @BOOST_INCLUDE_DIR@)
 
 # Set up Qt
 SET(QT_INCLUDE_DIR           ${VISIT_INCLUDE_DIR}/qt/include)

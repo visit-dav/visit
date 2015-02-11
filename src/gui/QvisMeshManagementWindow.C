@@ -145,6 +145,10 @@ QvisMeshManagementWindow::~QvisMeshManagementWindow()
 //   Mark C. Miller, Wed Mar  3 07:59:15 PST 2010
 //   Changed form of conditional compilation check for HAVE_BILIB from
 //   numeric test to existence test.
+//
+//   Cyrus Harrison, Mon Jan 26 21:26:34 PST 2015
+//   Changed check from boost interval template lib to boost proper.
+//
 // ****************************************************************************
 
 void
@@ -189,7 +193,7 @@ QvisMeshManagementWindow::CreateWindowContents()
     layoutCSGGroup->addWidget(discretizeUniform, 2, 1);
     discretizeAdaptive = new QRadioButton(tr("Adaptive"), pageCSGGroup);
     discretizationMode->addButton(discretizeAdaptive,1);
-#ifndef HAVE_BILIB
+#ifndef HAVE_BOOST
     discretizeAdaptive->setEnabled(false);
 #endif
     layoutCSGGroup->addWidget(discretizeAdaptive, 2, 2);
@@ -255,6 +259,10 @@ QvisMeshManagementWindow::CreateWindowContents()
 //   Mark C. Miller, Wed Mar  3 07:59:15 PST 2010
 //   Changed form of conditional compilation check for HAVE_BILIB from
 //   numeric test to existence test.
+//
+//   Cyrus Harrison, Mon Jan 26 21:26:34 PST 2015
+//   Changed check from boost interval template lib to boost proper.
+//
 // ****************************************************************************
 
 void
@@ -301,7 +309,7 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
                 }
                 else if (dMode == MeshManagementAttributes::Adaptive)
                 {
-#ifdef HAVE_BILIB
+#ifdef HAVE_BOOST
                     discretizationMode->button(1)->setChecked(true);
                     flatEnoughLineEdit->setEnabled(true);
 #else
@@ -512,7 +520,7 @@ QvisMeshManagementWindow::discretizationModeChanged(int val)
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Uniform);
     else if (val == 1)
     {
-#ifdef HAVE_BILIB
+#ifdef HAVE_BOOST
         mmAtts->SetDiscretizationMode(MeshManagementAttributes::Adaptive);
         flatEnoughLineEdit->setEnabled(true);
 #else

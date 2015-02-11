@@ -179,6 +179,10 @@
 #    Dave Pugmire, Thu Nov  6 11:42:22 EST 2014
 #    Removed TCGA from Windows builds.
 #
+#    Cyrus Harrison, Tue Feb 10 19:54:31 PST 2015
+#    Changed BOOST logic and added CHECK_THIRDPARTY_SATISIFED, 
+#    which is used for explicitly check 3rd party deps for each db plugin.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -189,123 +193,191 @@ ENDIF(NOT WIN32)
 
 SET(THIRDPARTY_DEPENDENT_PLUGINS)
 
-MACRO(CHECK_THIRDPARTY_DEPENDENT_PLUGINS libname targets)
-    SET(alltargets ${targets})
+
+#####
+# Macro that helps us check db plugin dependancies.
+#
+# Using an explicit list of deps per db plugin gives us all the info we need to
+# check each db plugin with one call to this marco.
+#####
+MACRO(CHECK_THIRDPARTY_SATISIFED dbplugin dep_libs)
+    # setup vars used in this macro
+    # (due to the nature of cmake macros, these do leak outside of this scope)
+    SET(all_satisfied 1)
+    SET(deps_found)
+    SET(deps_not_found)
+    SET(all_deps ${dep_libs})
+    # build deps list from arguments passed to the macro
     FOREACH (X ${ARGN})
-       SET(alltargets ${alltargets} ${X})
-    ENDFOREACH (X ${ARGN})
-    SET(libname2 "${libname}_FOUND")
-    IF(${libname2})
+       LIST(APPEND all_deps ${X})
+    ENDFOREACH()
+    # make sure we have found ALL of the deps
+    MESSAGE(STATUS "Checking ${dbplugin} plugin dependencies: ${all_deps}")
+    FOREACH (lib_check ${all_deps})
+    SET(dep_lib_check "${lib_check}_FOUND")
+        IF(${dep_lib_check})
+            LIST(APPEND deps_found ${lib_check})
+        ELSE()
+            SET(all_satisfied 0)
+            LIST(APPEND deps_not_found ${lib_check})
+        ENDIF()
+    ENDFOREACH()
+    # print out results of deps check so we have the full details
+    LIST(LENGTH deps_found num_deps_found)
+    LIST(LENGTH deps_not_found num_deps_not_found)
+    IF(num_deps_found)
+        MESSAGE(STATUS " FOUND: ${deps_found}")
+    ENDIF()
+    IF(num_deps_not_found)
+        MESSAGE(STATUS " NOT FOUND: ${deps_not_found}")
+    ENDIF()
+    IF(all_satisfied)
+        MESSAGE(STATUS "Enabling ${dbplugin}")
+        LIST(FIND THIRDPARTY_DEPENDENT_PLUGINS ${dbplugin} findVar)
+        IF(findVar EQUAL -1)
+            LIST(APPEND THIRDPARTY_DEPENDENT_PLUGINS ${dbplugin})            
+        ELSE()
+            # sanity check when we enable a plugin, we could keep a list 
+            # of all of the plugins and make sure we don't try to add them
+            # twice, but checking at enable seems like a good enough check
+            MESSAGE(FATAL_ERROR "CHECK_THIRDPARTY_SATISIFED should be called once per database plugin with all dependencies")
+        ENDIF()
+        #
+        # tracking for static linking house of cards logic
+        #
         IF(VISIT_STATIC)
-            SET(libdir "${libname}_LIBRARY_DIR")
-            SET(libs "${libname}_LIB")
-            IF(${libdir})
-                SET(TMP_THIRDPARTY_IO_LIBRARY_DIR ${TMP_THIRDPARTY_IO_LIBRARY_DIR} ${${libdir}})
-            ENDIF(${libdir})
-            IF(${libs})
-                FOREACH(lib ${${libs}})
-                    LIST(FIND TMP_THIRDPARTY_IO_LIB ${lib} findVar)
+            FOREACH(lib_check ${all_deps})
+                SET(dep_lib_dir "${lib_check}_LIBRARY_DIR")
+                SET(dep_libs "${lib_check}_LIB")
+                IF(${dep_lib_dir})
+                    LIST(FIND TMP_THIRDPARTY_IO_LIB ${${dep_lib_dir}} findVar)
                     IF(findVar EQUAL -1)
-                        SET(TMP_THIRDPARTY_IO_LIB ${TMP_THIRDPARTY_IO_LIB} ${lib})
-                    ENDIF(findVar EQUAL -1)
-                ENDFOREACH(lib)
-            ENDIF(${libs})
+                        LIST(APPEND TMP_THIRDPARTY_IO_LIBRARY_DIR
+                                    ${${dep_lib_dir}})
+                    ENDIF()
+                ENDIF()
+                IF(${dep_libs})
+                    FOREACH(dep_lib ${${dep_libs}})
+                        LIST(FIND TMP_THIRDPARTY_IO_LIB ${dep_lib} findVar)
+                        IF(findVar EQUAL -1)
+                            LIST(APPEND TMP_THIRDPARTY_IO_LIB ${dep_lib})
+                        ENDIF()
+                    ENDFOREACH(lib)
+                ENDIF(${libs})
+            ENDFOREACH()
         ENDIF(VISIT_STATIC)
-        # Add each target individually so we can check if it is already in the
-        # list. It might be in the list already if it might depend on multiple
-        # libraries (H5PART, FASTBIT)
-        FOREACH(target ${alltargets})
-            LIST(FIND THIRDPARTY_DEPENDENT_PLUGINS ${target} findVar)
-            IF(findVar EQUAL -1)
-                SET(THIRDPARTY_DEPENDENT_PLUGINS ${THIRDPARTY_DEPENDENT_PLUGINS} ${target})
-            ENDIF(findVar EQUAL -1)
-        ENDFOREACH(target)
-    ELSE(${libname2})
-        VISIT_SELECTED_PLUGIN_ERROR(DATABASE ${alltargets} " third party dependency not found: ${libname}")
-    ENDIF(${libname2})
-    
-ENDMACRO(CHECK_THIRDPARTY_DEPENDENT_PLUGINS libname targets)
+    ELSE()
+        MESSAGE(STATUS "Disabling ${dbplugin}")
+        VISIT_SELECTED_PLUGIN_ERROR(DATABASE ${dbplugin} 
+            " third party dependencies not found: ${deps_not_found}")
+    ENDIF()
+ENDMACRO()
 
 # These are the various targets that are optional since they depend on 3rd-
-# party I/O libraries to be present. We pass the name of the 3rd party library
-# to THIRDPARTY_DEPENDENT_PLUGINS and it checks whether there is a HAVE_XXXX
-# symbol defined for that library. If so, the targets that use that 3rd party
-# library are added to the mix.
+# party I/O libraries to be present. We use CHECK_THIRDPARTY_SATISIFED to
+# check the dependencies for each db plugin. If all dependencies are
+# satisfied, db plugin is added to the mix.
+
 UNSET(TMP_THIRDPARTY_IO_LIBRARY_DIR)
 UNSET(TMP_THIRDPARTY_IO_LIB)
 
-# HDF5-related plugins (HDF5 comes last due to static link order)
-IF (NOT WIN32)
-    CHECK_THIRDPARTY_DEPENDENT_PLUGINS(SILO     Cale KullLite PDB Silo SAMI Vista)
-    CHECK_THIRDPARTY_DEPENDENT_PLUGINS(FASTBIT  H5Part)
-ELSE (NOT WIN32)
-    CHECK_THIRDPARTY_DEPENDENT_PLUGINS(SILO     Cale KullLite PDB Silo SAMI)
-ENDIF (NOT WIN32)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(CGNS     CGNS)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(H5PART   H5Part)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(NEKTAR++ Nektar++ )
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(NETCDF   NETCDF S3D Exodus )
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(NETCDF_CXX  MFIXCDF)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(XDMF     Xdmf)
-IF(NOT XDMF_FOUND)
-    SET(XDMF_READER VisItXdmf)
-ENDIF(NOT XDMF_FOUND)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(HDF5
-#ALS
-AMR
-BATL
-CaleHDF5
-CarpetHDF5
-Chombo
-CosmosPP
-Enzo
-FLASH
-Geqdsk
-GTC
-H5Nimrod
-M3D
-M3DC1
-PFLOTRAN
-Pixie
-PVLD
-SAMRAI
-SXRIS
-Tetrad
-UNIC
-Velodyne
-Vs
-${XDMF_READER}
-)
+MESSAGE(STATUS "Checking database plugin dependencies.")
 
-# Non-HDF5-related plugins
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(ADIOS    ADIOS)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(ADVIO    Adventure)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(BOXLIB   Boxlib2D Boxlib3D)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(CCMIO    CCM)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(CFITSIO  FITS)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(GDAL     GDAL)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(HDF4     Cosmos RAGE ZeusMP)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(MDSPLUS  MDSplus)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(MILI     Mili)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(UINTAH   Uintah)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(VISUS    IDX)
-CHECK_THIRDPARTY_DEPENDENT_PLUGINS(MFEM     MFEM)
-IF (WIN32)
-    CHECK_THIRDPARTY_DEPENDENT_PLUGINS(ZLIB     VCellMTMD)
-ENDIF (WIN32)
+CHECK_THIRDPARTY_SATISIFED(CGNS CGNS)
+
+CHECK_THIRDPARTY_SATISIFED(Cale SILO)
+CHECK_THIRDPARTY_SATISIFED(KullLite SILO)
+CHECK_THIRDPARTY_SATISIFED(PDB SILO)
+CHECK_THIRDPARTY_SATISIFED(Silo SILO)
+CHECK_THIRDPARTY_SATISIFED(SAMI SILO)
+
+CHECK_THIRDPARTY_SATISIFED(Nektar++ NEKTAR++ BOOST)
+CHECK_THIRDPARTY_SATISIFED(NETCDF NETCDF)
+CHECK_THIRDPARTY_SATISIFED(S3D NETCDF)
+CHECK_THIRDPARTY_SATISIFED(Exodus NETCDF BOOST)
+
+CHECK_THIRDPARTY_SATISIFED(MFIXCDF NETCDF_CXX)
+CHECK_THIRDPARTY_SATISIFED(Xdmf XDMF)
+
+CHECK_THIRDPARTY_SATISIFED(Chombo BOOST HDF5)
+CHECK_THIRDPARTY_SATISIFED(Miranda BOOST)
+CHECK_THIRDPARTY_SATISIFED(Nek5000 BOOST)
+CHECK_THIRDPARTY_SATISIFED(SAS BOOST)
+
+#CHECK_THIRDPARTY_SATISIFED(ALS HDF5)
+CHECK_THIRDPARTY_SATISIFED(AMR HDF5)
+CHECK_THIRDPARTY_SATISIFED(BATL HDF5)
+CHECK_THIRDPARTY_SATISIFED(CaleHDF5 HDF5)
+CHECK_THIRDPARTY_SATISIFED(CarpetHDF5 HDF5)
+CHECK_THIRDPARTY_SATISIFED(CosmosPP HDF5)
+CHECK_THIRDPARTY_SATISIFED(Enzo HDF5)
+CHECK_THIRDPARTY_SATISIFED(FLASH HDF5)
+CHECK_THIRDPARTY_SATISIFED(Geqdsk HDF5)
+CHECK_THIRDPARTY_SATISIFED(GTC HDF5)
+CHECK_THIRDPARTY_SATISIFED(H5Nimrod HDF5)
+CHECK_THIRDPARTY_SATISIFED(M3D HDF5)
+CHECK_THIRDPARTY_SATISIFED(M3DC1 HDF5)
+CHECK_THIRDPARTY_SATISIFED(PFLOTRAN HDF5)
+CHECK_THIRDPARTY_SATISIFED(Pixie HDF5)
+CHECK_THIRDPARTY_SATISIFED(PVLD HDF5)
+CHECK_THIRDPARTY_SATISIFED(SAMRAI HDF5)
+CHECK_THIRDPARTY_SATISIFED(SXRIS HDF5)
+CHECK_THIRDPARTY_SATISIFED(Tetrad HDF5)
+CHECK_THIRDPARTY_SATISIFED(UNIC HDF5)
+CHECK_THIRDPARTY_SATISIFED(Velodyne HDF5)
+CHECK_THIRDPARTY_SATISIFED(Vs HDF5)
+
+# if we don't have the xdmf lib, we can fall back to VisIt's xdmf reader
+# that only uses hdf5
+IF(NOT XDMF_FOUND)
+    CHECK_THIRDPARTY_SATISIFED(VisItXdmf HDF5)
+ENDIF(NOT XDMF_FOUND)
+
+
+CHECK_THIRDPARTY_SATISIFED(ADIOS ADIOS)
+CHECK_THIRDPARTY_SATISIFED(Adventure ADVIO)
+
+CHECK_THIRDPARTY_SATISIFED(Boxlib2D BOXLIB)
+CHECK_THIRDPARTY_SATISIFED(Boxlib3D BOXLIB)
+
+CHECK_THIRDPARTY_SATISIFED(CCM CCMIO)
+CHECK_THIRDPARTY_SATISIFED(FITS CFITSIO)
+CHECK_THIRDPARTY_SATISIFED(GDAL GDAL)
+
+CHECK_THIRDPARTY_SATISIFED(Cosmos HDF4)
+CHECK_THIRDPARTY_SATISIFED(RAGE   HDF4)
+CHECK_THIRDPARTY_SATISIFED(ZeusMP HDF4)
+
+CHECK_THIRDPARTY_SATISIFED(MDSplus MDSPLUS)
+CHECK_THIRDPARTY_SATISIFED(Mili    MILI)
+CHECK_THIRDPARTY_SATISIFED(Uintah  UINTAH)
+CHECK_THIRDPARTY_SATISIFED(IDX     VISUS)
+CHECK_THIRDPARTY_SATISIFED(MFEM    MFEM)
+
+
+# special cases for windows
+IF(WIN32)
+    CHECK_THIRDPARTY_SATISIFED(VCellMTMD ZLIB)
+ELSE()
+    CHECK_THIRDPARTY_SATISIFED(H5Part FASTBIT H5PART BOOST)
+    CHECK_THIRDPARTY_SATISIFED(Vista SILO)
+    CHECK_THIRDPARTY_SATISIFED(paraDIS BOOST)
+    CHECK_THIRDPARTY_SATISIFED(paraDIS_tecplot BOOST)
+ENDIF()
+
 
 # Add ITAPS
 IF(ITAPS_DIRS)
-    SET(THIRDPARTY_DEPENDENT_PLUGINS ${THIRDPARTY_DEPENDENT_PLUGINS} ${ITAPS_DIRS})
+    LIST(APPEND THIRDPARTY_DEPENDENT_PLUGINS ${ITAPS_DIRS})
     IF(VISIT_STATIC)
         FOREACH(impl ${ITAPS_DIRS})
             SET(itapslib "${impl}_LIB")
             IF(${itapslib})
-                SET(TMP_THIRDPARTY_IO_LIB ${TMP_THIRDPARTY_IO_LIB} ${${itapslib}})
+                LIST(APPEND TMP_THIRDPARTY_IO_LIB  ${${itapslib}})
             ENDIF(${itapslib})
-            SET(itapslibdir "${impl}_LIBRARY_DIR")
+            SET(itapslibdir "${imps}_LIBRARY_DIR")
             IF(${itapslibdir})
-                SET(TMP_THIRDPARTY_IO_LIBRARY_DIR ${TMP_THIRDPARTY_IO_LIBRARY_DIR} ${${itapslibdir}})
+                LIST(APPEND TMP_THIRDPARTY_IO_LIBRARY_DIR ${${itapslibdir}})
             ENDIF(${itapslibdir})
         ENDFOREACH(impl)
     ENDIF(VISIT_STATIC)
@@ -355,9 +427,7 @@ Lines
 MFIX
 MM5
 MatrixMarket
-Miranda
 NASTRAN
-Nek5000
 Nek3D
 OVERFLOW
 OpenFOAM
@@ -370,7 +440,6 @@ Point3D
 ProteinDataBank
 RAW
 SAR
-SAS
 STL
 Shapefile
 ${SIMV2_PLUGIN}
@@ -402,24 +471,11 @@ ELSE()
     ENDIF()
 ENDIF(TARGET vtkIOEnSight)
 
-IF(NOT WIN32)
-    IF (VISIT_PARADIS AND BOOST_USABLE_PARADIS)
-        LIST(APPEND REQUIRED_DATABASE_PLUGINS
-            paraDIS
-            paraDIS_tecplot
-        )
-    ELSE()
-        VISIT_SELECTED_PLUGIN_ERROR(DATABASE "paraDIS;paraDIS_tecplot" "Useable boost libraries not found.")
-    ENDIF()
-ELSE(NOT WIN32)
-    VISIT_SELECTED_PLUGIN_ERROR(DATABASE "paraDIS;paraDIS_tecplot" "not currently buildable on Windows")
-ENDIF (NOT WIN32)
-
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS 
         Claw
         STAR
-	TCGA
+        TCGA
         Vis5D
         ZipWrapper
     )
