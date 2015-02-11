@@ -41,8 +41,8 @@
  * Optional libraries
  ******************************************************************************/
 
-/* Define if you have the boost interval template library. */
-#cmakedefine HAVE_BILIB
+/* Define if you have the boost library. */
+#cmakedefine HAVE_BOOST
 
 /* Define if you have the EAVL library. */
 #cmakedefine HAVE_LIBEAVL
