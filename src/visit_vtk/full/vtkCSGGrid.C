@@ -83,6 +83,7 @@ using boost::numeric::interval;
 #include <deque>
 #include <map>
 #include <vector>
+#include <algorithm>
 
 using std::deque;
 using std::map;
