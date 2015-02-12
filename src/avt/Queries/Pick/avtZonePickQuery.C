@@ -218,7 +218,7 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
     {
         bool success = false;
         GetZoneCoords(ds, pickedZone);
-        success = RetrieveNodes(ds, pickedZone);
+        success = RetrieveNodes(ds, pickedZone, needRealId);
         if (success)
         {
             pickAtts.SetElementNumber(pickedZone);

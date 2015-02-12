@@ -168,17 +168,17 @@ VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5  VTK_LIBRARY_DIRS v
 
 ELSE()  # NOT STATIC 
 
-#/home/biagas2/visit/thirdparty/2.8.1/cmake/2.8.12.2/linux-x86_64_gcc-4.4/bin/cmake
+#/home/biagas2/visit/thirdparty/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake
 ##
-## ./bv281 generated host.cmake
-## created: Thu Oct 16 16:18:26 PDT 2014
+## ./bv290 generated host.cmake
+## created: Wed Feb 11 12:23:14 PST 2015
 ## system: Linux beetlehunter 2.6.32-358.6.1.el6.x86_64 #1 SMP Fri Mar 29 16:51:51 EDT 2013 x86_64 x86_64 x86_64 GNU/Linux
 ## by: biagas2
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /home/biagas2/visit/thirdparty/2.8.1)
+SET(VISITHOME /home/biagas2/visit/thirdparty/2.9.0)
 SET(VISITARCH linux-x86_64_gcc-4.4)
 
 ## Compiler flags.
@@ -192,11 +192,6 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ## VisIt Thread Option
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
-
-##
-## VisIt Boost Option.
-##
-VISIT_OPTION_DEFAULT(VISIT_USE_BOOST ON TYPE BOOL)
 
 ##############################################################
 ##
@@ -236,6 +231,12 @@ VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 ## AdvIO
 ##
 VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH})
+
+##
+## BOOST
+##
+SETUP_APP_VERSION(BOOST 1_57_0)
+VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost/1_57_0/${VISITARCH})
 
 ##
 ## Boxlib
@@ -319,12 +320,7 @@ ITAPS_LINK_DIRECTORIES(GRUMMP ${VISITHOME}/itaps/1.4/GRUMMP/0.6.5/${VISITARCH}/l
 ##
 ## MFEM
 ##
-VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/3.0/${VISITARCH})
-
-##
-## Mili
-##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/13.1.1-patch/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/3.0.1/${VISITARCH})
 
 ##
 ## PySide
@@ -336,13 +332,6 @@ VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.2.2/${VISITARCH}/)
 ##
 VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
-
-##
-## VISUS 
-##
-#VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR ${VISITHOME}/visus/27d3d79/${VISITARCH})
-# 'system' visus
-#VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR /home/biagas2/BV281c/visit/visus/27d3d79/linux-x86_64_gcc-4.4)
 
 ##
 ## Xdmf
