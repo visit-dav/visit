@@ -138,6 +138,15 @@ function bv_uintah_dry_run
 
 function build_uintah
 {
+
+    if [[ "$OPSYS" == "Linux" && "$PAR_COMPILER" == "" && "$PAR_INCLUDE" == "" ]]; then
+       warn "For Linux builds the PAR_COMPILER and PAR_INCLUDE environment variables must be set."
+       warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpicc\""
+       warn "PAR_INCLUDE should be of the form \"-I/path/to/mpi/include\""
+       warn "Giving Up!"
+       return 1
+    fi
+
     PAR_INCLUDE_STRING=""
     if [[ "$PAR_INCLUDE" != "" ]] ; then
         PAR_INCLUDE_STRING=$PAR_INCLUDE
@@ -163,7 +172,7 @@ function build_uintah
     fi
 
     if [[ "$PAR_INCLUDE_STRING" == "" ]] ; then
-       warn "You must set either the PAR_COMPILER or PAR_INCLUDE environment variable to be Uintah."
+       warn "You must set either the PAR_COMPILER or PAR_INCLUDE environment variables."
        warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpicc\""
        warn "PAR_INCLUDE should be of the form \"-I/path/to/mpi/include\""
        warn "Giving Up!"
