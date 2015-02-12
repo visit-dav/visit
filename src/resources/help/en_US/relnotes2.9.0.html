@@ -97,6 +97,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The visual representations for the Line, Sphere, and Box tools have been fixed so that they are once again visible.</li>
   <li>The Contour plot's invertColorTable setting was not stored in session files.</li>
   <li>Lineout produced no data when applied after Displace operator.</li>
+  <li>Fixed a bug where VisIt internally would not handle 3D surface meshes consisting of 2D quadratic elements.</li>
+  <li>Fixed a bug where Silo reader would crash the engine if it encountered a ucdmesh object with no topological
+      entities defined (e.g. not zonelist, facelist, edgelist or phzonelist). In this case, the reader will now
+      load up the mesh as a point mesh.</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -111,6 +115,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The makemovie python script was changed so that visitmovietemplate.py can be correctly found from a development version on Windows.</li>
   <li>The build_visit script was enhanced with a <i>--xdb</i> command line argument that enables the user to enable FieldView XDB output.</li>
   <li>The build_visit script now supports building a limited set of the Boost C++ libraries.</li>
+  <li>Nameschemes now support a kind of recursive definition in that a string-valued conversion specifier in a Namescheme
+      can itself be controlled by another, different namescheme. This feature is now being used in Exodus plugin for
+      nameschemes for material volume fraction data.</li>
+  <li>Fixed some overruns on the src buffer in several memcpy calls in avtUnstructuredDomainBoundaries::ExchangeMixedMaterial. </li>
+  <li>The avtMaterial constructor for full-zonal volume fraction arrays was improved to behave better in the presence numerically likely but nonetheless mal-formed volume fractions.</li>
+  <li>avtMaterial will now check and assert correct structure in debug builds.</li>
+  <li>Some new exodus test datasets were added thanks to John Niederhaus.</li>
+  <li>New exodus tests were added for material data.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
