@@ -211,11 +211,11 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomai
 
     if (twoDVector)
     {
-        if ((which_comp > 1) || (which_comp < 0))
-        {
-            EXCEPTION2(ExpressionException, outputVariableName, 
-                       "The only valid indices for 2D vectors are 0 and 1.");
-        }
+        // if ((which_comp > 1) || (which_comp < 0))
+        // {
+        //     EXCEPTION2(ExpressionException, outputVariableName, 
+        //                "The only valid indices for 2D vectors are 0 and 1.");
+        // }
         if (arr->GetNumberOfComponents() == 3)
         {
             rv->SetNumberOfComponents(1);
@@ -291,11 +291,11 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomai
     }
     else
     {
-        if ((which_comp > 2) || (which_comp < 0))
-        {
-            EXCEPTION2(ExpressionException, outputVariableName, 
-                      "The only valid indices for 3D vectors are 0, 1, and 2");
-        }
+        // if ((which_comp > 2) || (which_comp < 0))
+        // {
+        //     EXCEPTION2(ExpressionException, outputVariableName, 
+        //               "The only valid indices for 3D vectors are 0, 1, and 2");
+        // }
         if (arr->GetNumberOfComponents() == 3)
         {
             //
