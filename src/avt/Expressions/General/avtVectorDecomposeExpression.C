@@ -275,9 +275,19 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomai
         }
         else
         {
-            EXCEPTION2(ExpressionException, outputVariableName, 
-                       "You can only decompose vectors and tensors.");
+            rv->SetNumberOfComponents(1);
+            rv->SetNumberOfTuples(ntuples);
+            for (vtkIdType i = 0 ; i < ntuples ; i++)
+            {
+                double val = arr->GetComponent(i, which_comp);
+                rv->SetTuple1(i, val);
+            }
         }
+        // else
+        // {
+        //     EXCEPTION2(ExpressionException, outputVariableName, 
+        //                "You can only decompose vectors and tensors.");
+        // }
     }
     else
     {
@@ -353,12 +363,20 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomai
         }
         else
         {
-            EXCEPTION2(ExpressionException, outputVariableName, 
-                       "You can only decompose vectors and tensors.");
+            rv->SetNumberOfComponents(1);
+            rv->SetNumberOfTuples(ntuples);
+            for (vtkIdType i = 0 ; i < ntuples ; i++)
+            {
+                double val = arr->GetComponent(i, which_comp);
+                rv->SetTuple1(i, val);
+            }
         }
+        // else
+        // {
+        //     EXCEPTION2(ExpressionException, outputVariableName, 
+        //                "You can only decompose vectors and tensors.");
+        // }
     }
 
     return rv;
 }
-
-
