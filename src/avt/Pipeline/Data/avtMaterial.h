@@ -162,6 +162,9 @@ struct MatZoneMap
 //    fraction for a material in a zone.  Also  an internal variable,
 //    mixalloc, which specifies how long the mixed arrays have been allocated.
 //
+//    Mark C. Miller, Wed Feb 11 17:02:22 PST 2015
+//    Added AssertSelfIsValid which is only ever active in debug builds. It
+//    does a more thorough check of the material object that gets constucted.  
 // ****************************************************************************
 
 class PIPELINE_API avtMaterial
@@ -301,6 +304,7 @@ class PIPELINE_API avtMaterial
     // meaningful, that's fine.
                          avtMaterial(const avtMaterial &) {;};
     avtMaterial         &operator=(const avtMaterial &) { return *this; };
+    void                       AssertSelfIsValid() const;
 };
 
 

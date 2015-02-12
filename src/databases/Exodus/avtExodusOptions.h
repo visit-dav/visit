@@ -65,10 +65,11 @@ namespace ExodusDBOptions
     char const * const EXODUS_MATSPEC_NAMESCHEME = "Namescheme for material specific variables"; 
 
     // Read options default values
-    char const * const EXODUS_VOLFRAC_NAMESCHEME_ALEGRA = "@%s@n>?'&VOLFRC_%d&n':'VOID_FRC':@";
+    // Note that the n>0 path specifies a namescheme sub-expression bracketed by '&' chars.
+    char const * const EXODUS_VOLFRAC_NAMESCHEME_ALEGRA = "@%s@n?'&VOLFRC_%d&n&':'VOID_FRC':@";
     char const * const EXODUS_MATSPEC_NAMESCHEME_ALEGRA = "@%V_%d@n";
 
-    char const * const EXODUS_VOLFRAC_NAMESCHEME_CTH = "@%s@n>?'&VOLM_%d&n':'VOID_FRC':@";
+    char const * const EXODUS_VOLFRAC_NAMESCHEME_CTH = "@%s@n?'&VOLM_%d&n&':'VOID_FRC':@";
     char const * const EXODUS_MATSPEC_NAMESCHEME_CTH = "@%V_%d@n";
 }
 

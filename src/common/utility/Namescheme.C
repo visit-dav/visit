@@ -354,6 +354,9 @@ char * Namescheme::retstrbuf[max_retstrs];
 //    Also, to support constant valued strings (e.g. namescheme strings with
 //    no conversion specs (%), allowed for them to NOT require being lead
 //    with the delimiter character.
+//
+//    Mark C. Miller, Wed Feb 11 16:58:15 PST 2015
+//    Fix a problem with loop termination with string ends with delim char.
 // ****************************************************************************
 Namescheme::Namescheme(const char *fmt, ...)
 {
@@ -491,7 +494,8 @@ Namescheme::Namescheme(const char *fmt, ...)
             this->exprtrees[ncspecs] = BuildExprTree((const char **) &exprstr1);
             free(exprstr2);
             ncspecs++;
-            if (fmt[i] == '\0')
+            if ((fmt[i] == '\0') ||
+                (fmt[i] == this->delim && fmt[i+1] == '\0'))
                 done = 1;
             n = i;
         }

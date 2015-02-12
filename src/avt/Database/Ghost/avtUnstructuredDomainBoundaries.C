@@ -806,7 +806,17 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
 //  Programmer:  Hank Childs
 //  Creation:    February 13, 2007
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Feb  9 17:11:23 PST 2015
+//    Adjust memcpy calls to copy minimum size of old/new buffers. I used
+//    MIN instead of always using old sizes because I was not absolutely sure
+//    whether the new sizes could indeed be smaller.
 // ****************************************************************************
+
+#ifndef MIN
+#define MIN(A,B) ((A)>(B)?(B):(A))
+#endif
 
 vector<avtMaterial*>
 avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
@@ -833,8 +843,10 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
         //
         // Estimate the sizes we will need for the new object.
         // 
-        int newNCells  = oldMat->GetNZones();
-        int newMixlen  = oldMat->GetMixlen();
+        int oldNCells = oldMat->GetNZones();
+        int oldMixlen = oldMat->GetMixlen();
+        int newNCells  = oldNCells;
+        int newMixlen  = oldMixlen;
         for (int j = 0 ; j < nTotalDomains ; j++)
         {
             newNCells += nGainedCells[j][domainNum[i]];
@@ -846,23 +858,23 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
         //
         int         *new_matlist  = new int[newNCells];
         const int   *old_matlist  = mats[i]->GetMatlist();
-        memcpy(new_matlist, old_matlist, sizeof(int)*newNCells);
+        memcpy(new_matlist, old_matlist, sizeof(int)*MIN(oldNCells,newNCells));
 
         int         *new_mix_next = new int[newMixlen];
         const int   *old_mix_next = mats[i]->GetMixNext();
-        memcpy(new_mix_next, old_mix_next, sizeof(int)*newMixlen);
+        memcpy(new_mix_next, old_mix_next, sizeof(int)*MIN(oldMixlen,newMixlen));
 
         int         *new_mix_mat  = new int[newMixlen];
         const int   *old_mix_mat  = oldMat->GetMixMat();
-        memcpy(new_mix_mat, old_mix_mat, sizeof(int)*newMixlen);
+        memcpy(new_mix_mat, old_mix_mat, sizeof(int)*MIN(oldMixlen,newMixlen));
 
         float       *new_mix_vf   = new float[newMixlen];
         const float *old_mix_vf   = oldMat->GetMixVF();
-        memcpy(new_mix_vf, old_mix_vf, sizeof(float)*newMixlen);
+        memcpy(new_mix_vf, old_mix_vf, sizeof(float)*MIN(oldMixlen,newMixlen));
 
         int         *new_mix_zone = new int[newMixlen];
         const int   *old_mix_zone = oldMat->GetMixZone();
-        memcpy(new_mix_zone, old_mix_zone, sizeof(int)*newMixlen);
+        memcpy(new_mix_zone, old_mix_zone, sizeof(int)*MIN(oldMixlen,newMixlen));
 
         //
         // Now copy over the ghost information.  By iterating over the
@@ -886,21 +898,19 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
                 {
                     // Decode how many materials in the cell.
                     new_matlist[matlist_cnt] = -(mixlen_cnt+1);
-                    matlist_cnt++;
                     int nmats = -matlist[j][domainNum[i]][k];
+                    matlist_cnt++;
                     for (int l = 0 ; l < nmats ; l++)
                     {
                         new_mix_mat[mixlen_cnt]  = mixm[j][domainNum[i]][lml];
                         new_mix_vf[mixlen_cnt]   = mixvf[j][domainNum[i]][lml];
                         new_mix_zone[mixlen_cnt] = -1;
-                        new_mix_next[mixlen_cnt] =
-                                              (l < nmats-1 ? mixlen_cnt+2 : 0);
+                        new_mix_next[mixlen_cnt] = (l < nmats-1 ? mixlen_cnt+2 : 0);
                         lml++;
                         mixlen_cnt++;
                     }
                 }
             }
-
         }
 
         out[i] = new avtMaterial(oldMat->GetNMaterials(), 

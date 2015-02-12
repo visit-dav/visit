@@ -9491,6 +9491,8 @@ RemapFacelistForPolyhedronZones(DBfacelist *sfl, DBzonelist *szl)
 //    Kathleen Biagas, Wed Sep 17 09:56:05 PDT 2014
 //    Create avtOriginaNodeNumbers array when nodes added (eg arb poly).
 //
+//    Mark C. Miller, Wed Feb 11 17:06:02 PST 2015
+//    Made it return a point mesh for a DBucdmesh with no topology defined.
 // ****************************************************************************
 
 vtkDataSet *
@@ -9545,6 +9547,45 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         DBFreeUcdmesh(um);
         EXCEPTION1(InvalidVariableException, "The Silo reader supports only "
             "float and double precision coordinates in unstructured meshes.");
+    }
+
+    // 
+    // Quick check to see if this is really a point mesh 
+    //
+    if (um->faces == 0 && um->zones == 0 && um->edges == 0 && um->phzones == 0)
+    {
+        //
+        // Create the VTK objects and connect them up.
+        //
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+        ugrid->SetPoints(points);
+        ugrid->Allocate(um->nnodes);
+        vtkIdType onevertex[1];
+        for (int i = 0 ; i < um->nnodes; i++)
+        {
+            onevertex[0] = i;
+            ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
+        }
+
+        //
+        // If we have global node ids, set them up and cache 'em
+        //
+        if (um->gnodeno != NULL)
+        {
+            vtkDataArray *arr = CreateDataArray(um->gnznodtype, um->gnodeno, um->nnodes);
+            um->gnodeno = 0; // vtkDataArray now owns the data.
+
+            //
+            // Cache this VTK object but in the VoidRefCache, not the VTK cache
+            // so that it can be obtained through the GetAuxiliaryData call
+            //
+            void_ref_ptr vr = void_ref_ptr(arr, avtVariableCache::DestructVTKObject);
+            cache->CacheVoidRef(mn, AUXILIARY_DATA_GLOBAL_NODE_IDS, timestep, domain, vr);
+        }
+
+        points->Delete();
+        DBFreeUcdmesh(um);
+        return ugrid;
     }
     
     //
