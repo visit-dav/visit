@@ -150,6 +150,9 @@ IF (VISUS_INCLUDE_DIR)
       SET (VISUS_LIBRARIES 
          ${VISUS_CORE_LIBRARIES}
          ${VISUS_ADDL_LIBRARIES}
+         ${VISUS_DIR}/lib/hdf.lib
+         ${VISUS_DIR}/lib/mfhdf.lib
+         ${VISUS_DIR}/lib/xdr.lib
          Vfw32.lib
          Version.lib
          Imm32.lib

@@ -82,7 +82,7 @@ private:
 // ****************************************************************************
 
 class DummyNode;
-class avtView3D;
+struct avtView3D;
 class avtIDXFileFormat : public avtMTMDFileFormat, public Visus::Object
 {
     friend class avtIDXQueryNode;
