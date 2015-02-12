@@ -39,8 +39,6 @@
 #ifndef __SKELET_H_INCLUDED
 #define __SKELET_H_INCLUDED
 
-#define NDEBUG 1
-
 #include <math.h>
 #include <assert.h>
 #include <iostream>

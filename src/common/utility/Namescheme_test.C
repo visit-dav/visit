@@ -158,7 +158,7 @@ int main()
     delete ns;
 
     // Text Exodus material volume fraction variable convention
-    ns = new Namescheme("@%s@n>?'&VOLFRC_%d&n':'VOID_FRC':@");
+    ns = new Namescheme("@%s@n?'&VOLFRC_%d&n':'VOID_FRC':@");
     if (strcmp(ns->GetName(0), "VOID_FRC") != 0) return 1;
     if (strcmp(ns->GetName(1), "VOLFRC_1") != 0) return 1;
     if (strcmp(ns->GetName(2), "VOLFRC_2") != 0) return 1;
