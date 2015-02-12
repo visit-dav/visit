@@ -282,7 +282,7 @@ static void fill_tmp_suffixes(int n, ...)
         fill_tmp_suffixes STRLIST;                                     \
         int q = 0;                                                     \
         bool things_match = true;                                      \
-        while (tmp_suffixes[q] && things_match)                        \
+        while (list[i+q] && tmp_suffixes[q] && things_match)           \
         {                                                              \
             char sepStr[2] = {sepChar, '\0'};                          \
             char ex_var_name[256];                                     \
