@@ -58,6 +58,9 @@
 #   I modified the script to use the account views for submitting the batch
 #   job.
 #
+#   Eric Brugger, Thu Feb 12 08:17:18 PST 2015
+#   I modified the script to use cmake 3.0.2 to configure visit.
+#
 
 
 #
@@ -254,7 +257,7 @@ export OPENGLLIB=-L/opt/cudatoolkit-6.0/lib64 -lcudart -lcuda
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/surface86.cmake
 fi
-/usr/gapps/visit/thirdparty_shared/2.8.0/cmake/2.8.12.2/linux-x86_64_gcc-4.4/bin/cmake \
+/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake \
     -DVISIT_CONFIG_SITE=config-site/surface86.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DVISIT_BUILD_ALL_PLUGINS=1 \
