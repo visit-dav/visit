@@ -225,6 +225,8 @@ Point: <-13.8996, 2.17188>
 Zone:  86
 Incident Nodes:  90  111  112  91  
 p:  <zonal> = 15.0276
+        material 1 Top = 10.0214
+        material 3 Bottom = 5.00621
 
 
 W:  specmix_ucd.silo
@@ -246,7 +248,11 @@ Node:  89
 Incident Zones:  64  65  84  85  
 p:  <zonal> 
     (64) = 17.0352
+        material 3 Bottom = 0.415493
+        material 4 Left = 16.6197
     (65) = 17.0082
+        material 3 Bottom = 0.414833
+        material 4 Left = 16.5933
     (84) = 15.0042
     (85) = 15.0026
 
@@ -265,6 +271,9 @@ Point: <6.06556, 1.73438>
 Zone:  297
 Incident Nodes:  311  332  333  312  
 p:  <zonal> = 5.22209
+        material 1 Top = 1.25504
+        material 2 Lower right = 1.08418
+        material 3 Bottom = 2.88286
 
 
 a:  specmix_ucd.silo
@@ -286,8 +295,13 @@ Node:  333
 Incident Zones:  297  298  317  318  
 p:  <zonal> 
     (297) = 5.22209
+        material 1 Top = 1.25504
+        material 2 Lower right = 1.08418
+        material 3 Bottom = 2.88286
     (298) = 5.63751
     (317) = 7.10857
+        material 1 Top = 2.36389
+        material 2 Lower right = 4.74469
     (318) = 7.39046
 
 
