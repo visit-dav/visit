@@ -35,6 +35,20 @@ enhancements and bug-fixes that were added to this release.</p>
 </li>
 </ul>
 
+
+<a name="Build_Features"></a>
+<p><b><font size="4">Build features added in version 2.9</font></b></p>
+<ul>
+  <li>The build visit script now builds boost. Previously if a system version of boost was not found VisIt would default to an internal version. This defaulting is no longer the case and the user must specify the --boost flag to build boost. This change was to support additional databases that use both boost headers and libraries.
+  <li>The following databases depend on boost: Chombo, Exodus, H5Part, Miranda, Nektar++, Nek5000, paraDIS, paraDis_tecplot, SAS.
+  </li>
+  <li>The --all-io flag will build all I/O libraries but as on an optional basis. That is when using the build_visit script with the --all-io flag all I/O libraries will be attempted to be built. However, if a library fails to build the failure will be reported in the log file but the build script will continue. Previously, the build script would stop. As such, one should should review the build log fro possible unexpected failures. The same when building VisIt - check the log to make sure the optional databases are built.
+  </li>
+  <li>As such, if one is expecting a database that depends on the a library and it is not there and it is a must have, explicitly add that library's flag to the build script so it will be forced to be built. If the library fails to build the script will stop.
+  </li>
+</ul>
+
+
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.9</font></b></p>
 <ul>
@@ -66,6 +80,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Improved the auto-detection logic of composite variables in the Exodus plugin.</li>
   <li>Improved support for cell-centered data in newer versions of Tecplot binary files.</li>
   <li>The MFEM database plugin was updated to support version 3.0.1 of MFEM. This includes support for reading <i>mfem_root</i> files generated from the MFEM library.</li>
+  <li>Support for Nektar++ databases. Depends on the boost and zlib library</li>
 </ul>
 
 <a name="Plot_changes"></a>
