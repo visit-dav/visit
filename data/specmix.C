@@ -54,6 +54,7 @@
  *   Added conditional compilation logic to support float or double
  *   for mix-relevant data.
  *-----------------------------------------------------------------------*/
+#include <assert.h>
 #include <math.h>
 #include <silo.h>
 #include <string.h>
@@ -115,10 +116,19 @@ typedef struct {
 } Mesh;
 void Mesh_Create(Mesh*,int,int); /* constructor */
 
+typedef struct _mixinfo {
+    int     matlist[1000];
+    int     mix_mat[1000];
+    int     mix_zone[1000];
+    int     mix_next[1000];
+    float   mix_vf[1000];
+    int     mixc;
+} MixInfo;
+
 /* file-writing functions */
-void writemesh_curv2d(DBfile*);
-void writemesh_ucd2d(DBfile*);
-void writematspec(DBfile*);
+void writemesh_curv2d(DBfile*,MixInfo*);
+void writemesh_ucd2d(DBfile*,MixInfo*);
+MixInfo *writematspec(DBfile*);
 
 /* problem specifics */
 enum ZVARS { ZV_P, ZV_D };
@@ -192,6 +202,7 @@ int main(int argc, char *argv[]) {
   int i, driver=DB_PDB;
   char filename[64], *file_ext=".silo";
   DBfile *db;
+  MixInfo *mixinfo;
 
   /* Parse command-line */
   for (i=1; i<argc; i++) {
@@ -427,8 +438,9 @@ int main(int argc, char *argv[]) {
       sprintf(filename, "specmix_double_quad%s", file_ext);
   printf("Writing %s using curvilinear mesh.\n", filename);
   db=DBCreate(filename, DB_CLOBBER, DB_LOCAL, "Mixed zone species test", driver);
-  writemesh_curv2d(db);
-  writematspec(db);
+  mixinfo = writematspec(db);
+  writemesh_curv2d(db, mixinfo);
+  free(mixinfo);
   DBClose(db);
 
   if (DBMIXTYPE == DB_FLOAT)
@@ -437,8 +449,9 @@ int main(int argc, char *argv[]) {
       sprintf(filename, "specmix_double_ucd%s", file_ext);
   printf("Writing %s using unstructured mesh.\n", filename);
   db=DBCreate(filename, DB_CLOBBER, DB_LOCAL, "Mixed zone species test", driver);
-  writemesh_ucd2d(db);
-  writematspec(db);
+  mixinfo = writematspec(db);
+  writemesh_ucd2d(db, mixinfo);
+  free(mixinfo);
   DBClose(db);
 
   printf("Done!\n");
@@ -458,7 +471,7 @@ int main(int argc, char *argv[]) {
  *
  * Modifications:
  *---------------------------------------------------------------------------*/
-void writemesh_curv2d(DBfile *db) {
+void writemesh_curv2d(DBfile *db, MixInfo *mixinfo) {
 
   float f1[1000],f2[1000];
   int x,y,c;
@@ -603,10 +616,11 @@ void writemesh_curv2d(DBfile *db) {
  *
  * Modifications:
  *---------------------------------------------------------------------------*/
-void writemesh_ucd2d(DBfile *db) {
+void writemesh_ucd2d(DBfile *db, MixInfo *mixinfo) {
 
   int   nl[5000];
   float f1[1000],f2[1000];
+  float f1_mix[1000],f2_mix[1000];
   int x,y,c;
   char  *coordnames[2];
   float *coord[2];
@@ -618,6 +632,7 @@ void writemesh_ucd2d(DBfile *db) {
   long long *Lnvar, *Lzvar;
   float *fnvar, *fzvar;
   double *dnvar, *dzvar;
+  int mixc;
 
   int lnodelist;
   int nnodes;
@@ -733,10 +748,23 @@ void writemesh_ucd2d(DBfile *db) {
   fzvar = (float *)       new float[nzones]; 
   dzvar = (double *)      new double[nzones]; 
   c=0;
+  mixc = 0;
   for (x=0;x<mesh.zx;x++) {
     for (y=0;y<mesh.zy;y++) {
       f1[c]=mesh.zone[x][y].vars[ZV_P];
       f2[c]=mesh.zone[x][y].vars[ZV_D];
+      if (mixinfo->matlist[c] < 0)
+      {
+          int mixidx = -mixinfo->matlist[c] - 1;
+          while (mixidx >= 0)
+          {
+              float vf = mixinfo->mix_vf[mixidx];
+              f1_mix[mixc] = f1[c] * vf;
+              f2_mix[mixc] = f2[c] * vf;
+              mixidx = mixinfo->mix_next[mixidx]-1;
+              mixc++;
+          }
+      }
       czvar[c] = (char)        (x<y?x:y);
       szvar[c] = (short)       (x<y?x:y);
       izvar[c] = (int)         (x<y?x:y);
@@ -747,9 +775,10 @@ void writemesh_ucd2d(DBfile *db) {
       c++;
     }
   }
+  assert(mixc == mixinfo->mixc);
 
-  DBPutUcdvar1(db, "p", "Mesh", f1, nzones, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
-  DBPutUcdvar1(db, "d", "Mesh", f2, nzones, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "p", "Mesh", f1, nzones, f1_mix, mixc, DB_FLOAT, DB_ZONECENT, NULL);
+  DBPutUcdvar1(db, "d", "Mesh", f2, nzones, f2_mix, mixc, DB_FLOAT, DB_ZONECENT, NULL);
   DBPutUcdvar1(db, "czvar", "Mesh", (float*)czvar, nzones, NULL, 0, DB_CHAR, DB_ZONECENT, NULL);
   DBPutUcdvar1(db, "szvar", "Mesh", (float*)szvar, nzones, NULL, 0, DB_SHORT, DB_ZONECENT, NULL);
   DBPutUcdvar1(db, "izvar", "Mesh", (float*)izvar, nzones, NULL, 0, DB_INT, DB_ZONECENT, NULL);
@@ -781,7 +810,7 @@ void writemesh_ucd2d(DBfile *db) {
  *    Sean Ahern, Wed Feb  6 16:32:35 PST 2002
  *    Added material names.
  *---------------------------------------------------------------------------*/
-void
+MixInfo*
 writematspec(DBfile *db)
 {
     int     x, y, c;
@@ -797,6 +826,8 @@ writematspec(DBfile *db)
     int     mixspeclist[1000];
     float   specmf[10000];
     DBoptlist      *optlist;
+    MixInfo *mixinfo;
+    int i;
 
     dims[0] = mesh.zx;
     dims[1] = mesh.zy;
@@ -926,4 +957,17 @@ writematspec(DBfile *db)
     DBPutMatspecies(db, "Species", "Material", nmat, nspec, speclist, dims, 2,
                     mfc, specmf, mixspeclist, mixc, DBMIXTYPE, NULL);
 
+
+    mixinfo = (MixInfo*) malloc(sizeof(MixInfo));    
+    for (i = 0; i < sizeof(matlist)/sizeof(matlist[0]); i++)
+    {
+        mixinfo->matlist[i] = matlist[i];
+        mixinfo->mix_mat[i] = mix_mat[i];
+        mixinfo->mix_zone[i] = mix_zone[i];
+        mixinfo->mix_next[i] = mix_next[i];
+        mixinfo->mix_vf[i] = mix_vf[i];
+    }
+    mixinfo->mixc = mixc;
+
+    return mixinfo;
 }
