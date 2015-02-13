@@ -217,7 +217,7 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
     if (!pickAtts.GetMatSelected())
     {
         GetNodeCoords(ds, pickedNode);
-        if (RetrieveZones(ds, pickedNode))
+        if (RetrieveZones(ds, pickedNode, needRealId))
         {
             pickAtts.SetElementNumber(pickedNode);
             RetrieveVarInfo(ds);
@@ -248,7 +248,8 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
     // 
     src->Query(&pickAtts);
 
-    if (pickAtts.GetMatSelected())
+    if (pickAtts.GetMatSelected() ||
+        !GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
         //
         // The zone numbers stored in IncidentElements are not the correct
