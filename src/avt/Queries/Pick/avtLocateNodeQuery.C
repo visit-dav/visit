@@ -310,6 +310,9 @@ avtLocateNodeQuery::RGridFindNode(vtkDataSet *ds, double &dist, double *isect)
 //    Hank Childs, Thu Mar 10 10:27:57 PST 2005
 //    Fix memory leak.
 //
+//    Kathleen Biagas, Tue Feb 10 10:16:44 PST 2015
+//    Don't include added Nodes, signified by '-1' for an OriginalNode number.
+//
 // ****************************************************************************
 
 int
@@ -324,16 +327,26 @@ avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell,
    int numPts = ptIds->GetNumberOfIds();
    double dist2;
    double minDist2 = FLT_MAX;
-
+   vtkDataArray *origNodes = ds->GetPointData()->
+                              GetArray("avtOriginalNodeNumbers");
+   int comp = (origNodes != NULL ? origNodes->GetNumberOfComponents() -1 : 0);
    for (int i = 0; i < numPts; i++)
    {
+        bool skipNode = false;
         id = ptIds->GetId(i);
-
-        dist2 = vtkMath::Distance2BetweenPoints(ppoint, ds->GetPoint(id));
-        if (dist2 < minDist2)
+        if (origNodes)
         {
-               minDist2 = dist2; 
-               minId = id; 
+            // is this an added node?
+            skipNode =  ((int) origNodes->GetComponent(id, comp) == -1);
+        }
+        if (!skipNode)
+        {
+            dist2 = vtkMath::Distance2BetweenPoints(ppoint, ds->GetPoint(id));
+            if (dist2 < minDist2)
+            {
+                   minDist2 = dist2; 
+                   minId = id; 
+            }
         }
     }
 
