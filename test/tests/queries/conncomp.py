@@ -127,7 +127,7 @@ DeleteAllPlots()
 
 DefineScalarExpression("_ccl_test_3d", "conn_components(Mesh,1)")
 # exodus test
-OpenDatabase(data_path("exodus_test_data/balls.exodus"))
+OpenDatabase(data_path("exodus_test_data/balls.e.4.* database"))
 
 
 AddPlot("Pseudocolor", "_ccl_test_3d")
