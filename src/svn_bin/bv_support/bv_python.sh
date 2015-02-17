@@ -129,8 +129,8 @@ export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
 export PYREQUESTS_FILE=${PYREQUESTS_FILE:-"requests-2.5.1.tar.gz"}
 export PYREQUESTS_BUILD_DIR=${PYREQUESTS_BUILD_DIR:-"requests-2.5.1"}
 
-export SEEDME_FILE=${SEEDME_FILE:-"seedme-seedme-python-client-c8818385bc88.tar.gz"}
-export SEEDME_BUILD_DIR=${SEEDME_BUILD_DIR:-"seedme-seedme-python-client-c8818385bc88"}
+export SEEDME_FILE=${SEEDME_FILE:-"seedme-seedme-python-client-0a365da9c861.tar.gz"}
+export SEEDME_BUILD_DIR=${SEEDME_BUILD_DIR:-"seedme-seedme-python-client-0a365da9c861"}
 
 
 }
