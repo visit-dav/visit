@@ -614,11 +614,15 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                 }
                 else if(type == VISIT_VARTYPE_VECTOR)
                 {
+                    int nComponents = 1;
+                    simv2_VariableMetaData_getNumComponents(h, &nComponents);
+
                     avtVectorMetaData *vector = new avtVectorMetaData;
                     vector->name = name;
                     vector->originalName = name;
                     vector->meshName = meshName;
                     vector->centering = centering;
+                    vector->varDim = nComponents;
                     vector->units = units;
                     vector->hasUnits = hasUnits;
                     vector->hideFromGUI = hideFromGUI;
@@ -628,11 +632,15 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                 }
                 else if(type == VISIT_VARTYPE_TENSOR)
                 {
+                    int nComponents = 1;
+                    simv2_VariableMetaData_getNumComponents(h, &nComponents);
+
                     avtTensorMetaData *tensor = new avtTensorMetaData;
                     tensor->name = name;
                     tensor->originalName = name;
                     tensor->meshName = meshName;
                     tensor->centering = centering;
+                    tensor->dim = nComponents;
                     tensor->units = units;
                     tensor->hasUnits = hasUnits;
                     tensor->hideFromGUI = hideFromGUI;
@@ -642,11 +650,15 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                 }
                 else if(type == VISIT_VARTYPE_SYMMETRIC_TENSOR)
                 {
+                    int nComponents = 1;
+                    simv2_VariableMetaData_getNumComponents(h, &nComponents);
+
                     avtSymmetricTensorMetaData *tensor = new avtSymmetricTensorMetaData;
                     tensor->name = name;
                     tensor->originalName = name;
                     tensor->meshName = meshName;
                     tensor->centering = centering;
+                    tensor->dim = nComponents;
                     tensor->units = units;
                     tensor->hasUnits = hasUnits;
                     tensor->hideFromGUI = hideFromGUI;
