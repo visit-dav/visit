@@ -1,14 +1,14 @@
-#/usr/gapps/visit/thirdparty_shared/2.8.1/cmake/2.8.12.2/linux-x86_64_gcc-4.4/bin/cmake
+#/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake
 ##
-## ./build_visit2_8_1 generated host.cmake
-## created: Wed Oct  8 08:40:28 PDT 2014
-## system: Linux rzmerl107 2.6.32-431.23.3.1chaos.ch5.2.x86_64 #1 SMP Tue Jul 29 14:58:25 PDT 2014 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_9_0 generated host.cmake
+## created: Wed Feb 18 11:42:40 PST 2015
+## system: Linux rzmerl18 2.6.32-431.29.2.2chaos.ch5.2.x86_64 #1 SMP Thu Dec 18 17:47:12 PST 2014 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_shared/2.8.1)
+SET(VISITHOME /usr/gapps/visit/thirdparty_shared/2.9.0)
 SET(VISITARCH linux-x86_64_gcc-4.4)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE)
 
@@ -83,6 +83,12 @@ VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 ## AdvIO
 ##
 VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH})
+
+##
+## BOOST
+##
+SETUP_APP_VERSION(BOOST 1_57_0)
+VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost/1_57_0/${VISITARCH})
 
 ##
 ## Boxlib
@@ -171,7 +177,7 @@ ITAPS_LINK_DIRECTORIES(GRUMMP ${VISITHOME}/itaps/1.4/GRUMMP/0.6.5/${VISITARCH}/l
 ##
 ## MFEM 
 ##
-VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/68e941f8fe/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/3.0.1/${VISITARCH})
 
 ##
 ## Mili
