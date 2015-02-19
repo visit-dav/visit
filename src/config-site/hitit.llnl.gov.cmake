@@ -1,14 +1,14 @@
-#/usr/gapps/visit/thirdparty_shared/2.8.1/cmake/2.8.12.2/linux-x86_64_gcc-4.4/bin/cmake
+#/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake
 ##
-## ./build_visit2_8_1 generated host.cmake
-## created: Wed Oct  8 10:29:06 PDT 2014
+## ./build_visit2_9_0 generated host.cmake
+## created: Thu Feb 19 10:47:56 PST 2015
 ## system: Linux hitit.llnl.gov 2.6.32-431.29.2.el6.x86_64 #1 SMP Sun Jul 27 15:55:46 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger1
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_shared/2.8.1)
+SET(VISITHOME /usr/gapps/visit/thirdparty_shared/2.9.0)
 SET(VISITARCH linux-x86_64_gcc-4.4)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE)
 
@@ -23,11 +23,6 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ## VisIt Thread Option
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
-
-##
-## VisIt Boost Option.
-##
-VISIT_OPTION_DEFAULT(VISIT_USE_BOOST ON TYPE BOOL)
 
 ##############################################################
 ##
@@ -68,6 +63,12 @@ VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 ## AdvIO
 ##
 VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH})
+
+##
+## BOOST
+##
+SETUP_APP_VERSION(BOOST 1_57_0)
+VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost/1_57_0/${VISITARCH})
 
 ##
 ## Boxlib
@@ -128,6 +129,11 @@ VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ##
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
+
+##
+## MFEM
+##
+VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/3.0.1/${VISITARCH})
 
 ##
 ## Mili
