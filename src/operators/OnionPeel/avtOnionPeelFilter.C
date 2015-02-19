@@ -652,6 +652,9 @@ avtOnionPeelFilter::UpdateDataObjectInfo(void)
 //    Hank Childs, Mon Dec 14 16:43:16 PST 2009
 //    Update for new SIL interface.
 //
+//    Kathleen Biagas, Thu Feb 19 10:32:41 PST 2015
+//    Request ghost-nodes when using node for seed.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -756,6 +759,12 @@ avtOnionPeelFilter::ModifyContract(avtContract_p spec)
         rv->GetDataRequest()->TurnZoneNumbersOn();
         if (atts.GetSeedType() == OnionPeelAttributes::SeedNode)
             rv->GetDataRequest()->TurnNodeNumbersOn();
+    }
+    if (atts.GetSeedType() == OnionPeelAttributes::SeedNode &&
+        rv->GetDataRequest()->GetDesiredGhostDataType() != GHOST_ZONE_DATA && 
+        GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
+    {
+        rv->GetDataRequest()->SetDesiredGhostDataType(GHOST_NODE_DATA);
     }
     return rv;
 }
