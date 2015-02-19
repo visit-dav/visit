@@ -131,6 +131,9 @@
 #   Eric Brugger, Wed Dec 10 13:26:12 PST 2014
 #   I added ubuntu1404_64.
 #
+#   Eric Brugger, Thu Feb 19 09:05:16 PST 2015
+#   I removed redsky. I modified many of the builds to use cmake 3.0.2.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -180,7 +183,6 @@ rzzeus=true
 rzuseq=false
 carver=true
 glory=false
-redsky=false
 
 dist=undefined
 
@@ -201,7 +203,6 @@ do
          rzzeus=false
          carver=false
          glory=false
-         redsky=false
          shift
          ;;
       -kickit)
@@ -276,14 +277,6 @@ do
          glory=true
          shift
          ;;
-      -redsky)
-         redsky=false
-         shift
-         ;;
-      +redsky)
-         redsky=true
-         shift
-         ;;
       -d)
          dist=$2
          shift 2
@@ -307,7 +300,6 @@ then
    echo "    rzuesq (LC, Linux, ppc64-BG/Q),"
    echo "    carver (LBNL, Linux, x86_64),"
    echo "    glory (Sandia, Linux)"
-   echo "    redsky (Sandia, Linux)"
    exit
 fi
 
@@ -341,7 +333,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared/2.8.1/cmake/2.8.12.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -395,7 +387,7 @@ mv sidious.llnl.gov.serial.cmake sidious.llnl.gov.cmake
 cd ..
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared/2.8.1/cmake/2.8.12.2/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -442,7 +434,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/home/visit/visit/thirdparty_shared/2.8.1/cmake/2.8.12.2/linux-x86_64_gcc-4.5/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/home/visit/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.5/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 2 >> ../../buildlog 2>&1
 make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -489,7 +481,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/home/visit/visit/cmake/2.8.12.2/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/home/visit/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 2 >> ../../buildlog 2>&1
 make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -540,7 +532,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/thirdparty_shared/2.8.1/cmake/2.8.12.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_CONFIG_SITE=config-site/aztec-vtk6.0.cmake >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_CONFIG_SITE=config-site/aztec-vtk6.0.cmake >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -592,7 +584,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/thirdparty_shared/2.8.1/cmake/2.8.12.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -656,7 +648,7 @@ mkdir visit\${ver2}.linux-ppc64
 bgqinstdir=\`pwd\`/visit\${ver2}.linux-ppc64
 # Build for compute node, engine-only version
 cd compute_build
-/usr/gapps/visit/thirdparty_static/2.8.1/cmake/2.8.12.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/rzuseqlac2-compute.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_static/2.9.0/cmake/3.0.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/rzuseqlac2-compute.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
 sh svn_bin/filter_link_commands_BGQ.sh >> ../../buildlog 2>&1
 make install >> ../../buildlog 2>&1
 cd ..
@@ -664,7 +656,7 @@ cd ..
 mv .data data
 # Build for login node, server-components-only version
 cd login_build
-/usr/gapps/visit/thirdparty_static/2.8.1/cmake/2.8.12.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/rzuseqlac2-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_static/2.9.0/cmake/3.0.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/rzuseqlac2-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
 make install >> ../../buildlog 2>&1
 cd ..
 # Now, tar up the common install directory.
@@ -768,7 +760,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/projects/visit/thirdparty_shared/2.8.1/cmake/2.8.12.2/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
+/projects/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
 make -j 2 >> ../../buildlog 2>&1
 make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -800,64 +792,9 @@ then
 fi
 
 #
-# Build on redsky.
-#
-rm -f redsky
-cat <<EOF > redsky
-#!/bin/sh
-module load compilers/gcc-4.3.4
-if test ! -d /usr/tmp ; then
-   mkdir /usr/tmp
-fi
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/redsky; then
-   mkdir /usr/tmp/$user/redsky
-fi
-rm -rf /usr/tmp/$user/redsky/visitbuild
-mkdir /usr/tmp/$user/redsky/visitbuild
-mv redsky_$dist.tar.gz /usr/tmp/$user/redsky/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/redsky/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/projects/visit/thirdparty_shared/2.8.1/cmake/2.8.12.2/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
-make >> ../../buildlog 2>&1
-make package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on redsky"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): redsky" $emailName < resultlog
-EOF
-
-if [ $redsky = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on redsky"
-      cp redsky redsky_buildit
-      cp $dist.tar.gz redsky_$dist.tar.gz
-      chmod 750 redsky_buildit;./redsky_buildit &
-   fi
-fi
-
-#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104_64 ubuntu1404_64 aztec rzzeus rzuseq carver glory redsky
+   rm -f kickit sidious ubuntu1104_64 ubuntu1404_64 aztec rzzeus rzuseq carver glory
 fi

@@ -24,6 +24,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Build_Features">Changes to build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
 
@@ -31,28 +32,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">General features added in version 2.9</font></b></p>
 <ul>
   <li>VisIt was ported to BlueGene/Q. The <i>build_visit_BGQ</i> script can be used to build a statically linked version of VisIt's server components for use on BlueGene/Q.</li>
-  <li><a href="https://www.seedme.org/">SeedMe.org</a> Integration. Share your visualizations results easily via the SeedMe python module, which is now included in VisIt's CLI. See the <a href="http://visitusers.org/index.php?title=Seedme">Seedme examples wiki page</a> on visitusers.org, the <a href="https://www.seedme.org/documentation/programmatic-python-usage"> SeedMe programatic guide</a> and the <a href="https://www.seedme.org/cli-guide">SeedMe command line guide</a> for examples.
+  <li>VisIt was integrated with <a href="https://www.seedme.org/">SeedMe.org</a>. It is now possible to easily share your visualizations results via the SeedMe python module, which is now included in VisIt's CLI. See the <a href="http://visitusers.org/index.php?title=Seedme">Seedme examples wiki page</a> on visitusers.org, the <a href="https://www.seedme.org/documentation/programmatic-python-usage"> SeedMe programatic guide</a> and the <a href="https://www.seedme.org/cli-guide">SeedMe command line guide</a> for examples.
 </li>
 </ul>
-
-
-<a name="Build_Features"></a>
-<p><b><font size="4">Build features added in version 2.9</font></b></p>
-<ul>
-  <li>The build visit script now builds boost. Previously if a system version of boost was not found VisIt would default to an internal version. This defaulting is no longer the case and the user must specify the --boost flag to build boost. This change was to support additional databases that use both boost headers and libraries.
-  <li>The following databases depend on boost: Chombo, Exodus, H5Part, Miranda, Nektar++, Nek5000, paraDIS, paraDis_tecplot, SAS.
-  </li>
-  <li>The --all-io flag will build all I/O libraries but as on an optional basis. That is when using the build_visit script with the --all-io flag all I/O libraries will be attempted to be built. However, if a library fails to build the failure will be reported in the log file but the build script will continue. Previously, the build script would stop. As such, one should should review the build log fro possible unexpected failures. The same when building VisIt - check the log to make sure the optional databases are built.
-  </li>
-  <li>As such, if one is expecting a database that depends on the a library and it is not there and it is a must have, explicitly add that library's flag to the build script so it will be forced to be built. If the library fails to build the script will stop.
-  </li>
-</ul>
-
 
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.9</font></b></p>
 <ul>
-  <li>Libsim was enhanced so it provides a <i>VisItRestoreSession()</i> function which can be used to set up visualizations for a simulation that is run in batch mode. VisIt can be run normally to connect interactively to the simulation to set up plots and save a session file. The session file that gets created can be used to set up plots for subsequent batch-only simulation runs. Once plots have been set up via <i>VisItRestoreSession()</i>, the <i>VisItSaveWindow()</i> function can be used to save images.</li>
+  <li>Libsim was enhanced so that it provides a <i>VisItRestoreSession()</i> function which can be used to set up visualizations for a simulation that is run in batch mode. VisIt can be run normally to connect interactively to the simulation to set up plots and save a session file. The session file that gets created can be used to set up plots for subsequent batch-only simulation runs. Once plots have been set up via <i>VisItRestoreSession()</i>, the <i>VisItSaveWindow()</i> function can be used to save images.</li>
   <li>Libsim was enhanced so it provides a <i>VisItExportDatabase()</i> function which can be used to export the active plots in a simulation that is run in batch mode. This function enables users to automatically export processed geometry from libsim.</li>
   <li>Libsim's plot and operator creation functions have been enhanced to use the <i>viewercore</i> library so that they can faithfully set up plots as the viewer would do it. This ensures that the functions work using tried and true VisIt code. Internally within libsim, the <i>viewercore</i> library uses VisIt engine components directly to produce the data needed by the plots.</li>
   <li>VisIt's network communication was enhanced to provide an optional fixed size buffer socket communication mode. This option enables VisIt to connect to machines which expect fixed size send/recv buffers.</li>
@@ -60,33 +47,33 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A global preference was added that tells VisIt to automatically remove duplicate nodes from fully disconnected unstructured grids. This preference is off by default, and can be changed in the GUI's Options->Preferences window or via <i>SetRemoveGlobalNodes(0|1)</i> via the CLI. This preference is saved with other settings. This new preference subsumes the behavior introduced in 2.8 series where the VTK reader would perform this duplicate node removal for .vtu files without user intervention.</li>
   <li>VisIt's Parallel Integral Curve System (PICS) was enhanced to add higher-order element support for time varying Nektar++ and Nek5000 databases.</li>
   <li>Libsim was enhanced so the <i>VisItAddPlot()</i> and <i>VisItAddOperator()</i> functions can create plots and operators, enabling programmatic setup of a scene for in situ visualization and data export.</li>
-  <li>Libsim was extended with <i>VisItSetPlotOptions*()</i> and <i>VisItSetOperatorOptions*()</i> functions that allow plot and operator attributes to be set. Each family of functions enables callers to set plot and operator attribute data from a simulation. The functions essentially use key/value pairs to set plot and operator attributes (e.g. <i>VisItSetPlotOptionsS("colorTableName", "hot_desaturated")</i>). The keys are the names of the fields in the plot attribute state objects.</li>
+  <li>Libsim was extended with the <i>VisItSetPlotOptions*()</i> and <i>VisItSetOperatorOptions*()</i> functions that allow plot and operator attributes to be set. Each family of functions enables callers to set plot and operator attribute data from a simulation. The functions essentially use key/value pairs to set plot and operator attributes (e.g. <i>VisItSetPlotOptionsS("colorTableName", "hot_desaturated")</i>). The keys are the names of the fields in the plot attribute state objects.</li>
 </ul>
 
 <a name="GUI_Changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 2.9</font></b></p>
 <ul>
-  <li>Enumerated scalar variables can now be plotted with the Subset and Label plots.</li>
   <li>The 'Set save options' window now has a 'Save and Dismiss' button, which performs a 'Save Window', then dismisses the options window. This is the same behavior that used to be provided by the 'Save' button. The 'Save' button is still present, but no longer dismisses the window.</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.9</font></b></p>
 <ul>
-  <li>Material, including mixing material, support was added to the Exodus plugin. Conventions for naming of material volume fraction data and material specific parts of mesh variables are pre-defined for ALEGRA and CTH. In addition, users can define their own custom variable naming conventions. These features are controlled by database options a user can set when opening Exodus files.</li>
+  <li>Material, including mixing material, support was added to the Exodus plugin. Common conventions for the naming of material volume fraction data and material specific parts of mesh variables are pre-defined. In addition, users can define their own custom variable naming conventions. These features are controlled by database options a user can set when opening Exodus files.</li>
   <li>Exodus ElementBlock decomposition is now served up by the Exodus plugin as an Enumerated Scalar instead of a material.</li>
   <li>Added read options to the Exodus plugin to turn off auto-detection of composite variables.</li>
   <li>When the Exodus plugin auto-detects composite variables, it now defines expressions for them instead of advertising them as database variables.</li>
   <li>Improved the auto-detection logic of composite variables in the Exodus plugin.</li>
   <li>Improved support for cell-centered data in newer versions of Tecplot binary files.</li>
   <li>The MFEM database plugin was updated to support version 3.0.1 of MFEM. This includes support for reading <i>mfem_root</i> files generated from the MFEM library.</li>
-  <li>Support for Nektar++ databases. Depends on the boost and zlib library</li>
+  <li>A database reader was added to read Nektar++ databases.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.9</font></b></p>
 <ul>
   <li>Enhanced the wireframe option for the subset plot of blocks to also outline the internal domains if the "Draw Internal Surfaces" option is checked.</li>
+  <li>Enumerated scalar variables can now be plotted with the Subset and Label plots.</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -108,14 +95,24 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Setting the Contour Plot's MultiColor via a python script no longer results in an indexing or out of range error.</li>
   <li>Fixed a bug with invalid arguments being sent to visit_composite during templated movie making.</li>
   <li>Fixed the Histogram plot so that individual bins can count up to the largest integer that can be stored in a double.</li>
-  <li>Added the full path to the szip and zlib libraries for both OSX and Linux in the bv_cgns.sh build_visit support file.</li>
   <li>The visual representations for the Line, Sphere, and Box tools have been fixed so that they are once again visible.</li>
   <li>The Contour plot's invertColorTable setting was not stored in session files.</li>
   <li>Lineout produced no data when applied after Displace operator.</li>
   <li>Fixed a bug where VisIt internally would not handle 3D surface meshes consisting of 2D quadratic elements.</li>
   <li>Fixed a bug where Silo reader would crash the engine if it encountered a ucdmesh object with no topological entities defined (e.g. not zonelist, facelist, edgelist or phzonelist). In this case, the reader will now load up the mesh as a point mesh.</li>
-  <li>Pick returned incorrect information for abitray polyhedral meshes.</li>
-  <li>Fixed bug with OnionPeel of a Mesh Plot with 'show internal' option turned on.</li>
+  <li>Pick returned the incorrect information for abitrary polyhedral meshes.</li>
+  <li>Fixed a bug with OnionPeel of a Mesh Plot with the 'show internal' option turned on.</li>
+</ul>
+
+<a name="Build_Features"></a>
+<p><b><font size="4">Build features added in version 2.9</font></b></p>
+<ul>
+  <li>The build visit script now builds boost. Previously if a system version of boost was not found VisIt would default to an internal version. This default behavior is no longer the case and the user must specify the --boost flag to build boost. This change was to support additional databases that use both boost headers and libraries.</li>
+  <ul>
+  <li>The following databases depend on boost: Chombo, Exodus, H5Part, Miranda, Nektar++, Nek5000, paraDIS, paraDis_tecplot, SAS.</li>
+  </ul>
+  <li>The --all-io flag will now build all the I/O libraries on an optional basis instead of stopping when a library fails to build. Specifically, when using the build_visit script with the --all-io flag, all I/O libraries will be attempted to be built. However, if a library fails to build, the failure will be reported in the log file and the build script will continue. Previously, the build script would stop. As such, one should review the build log for possible unexpected failures. The same applies to building VisIt - check the log to make sure the optional databases are built. If you need a third party library for a database reader that you definitely want built, then you should explicitly add that library's flag to the build script so it will be forced to be built. If the library fails to build it, the script will stop.</li>
+  <li>The build_visit script was enhanced with a <i>--xdb</i> command line argument that enables the user to enable FieldView XDB output.</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -126,18 +123,15 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The xml2avt tool was modified to create the ExecuteData method with the new signature that uses avtDataRepresentation instead of vtkDataSet, domain and label.</li>
   <li>An option for specifying help text for database options was added.</li>
   <li>A help button and additional window for displaying help text was added to the GUI to support database options help.</li>
-  <li>Changed failure mode of avtDatabaseMetaData::DetermineVarType() to return AVT_UNKNOWN_TYPE instead of excepting out.</li>
+  <li>The failure mode of avtDatabaseMetaData::DetermineVarType() was changed to return AVT_UNKNOWN_TYPE instead of excepting out.</li>
   <li>The makemovie python script was changed so that visitmovietemplate.py can be correctly found from a development version on Windows.</li>
-  <li>The build_visit script was enhanced with a <i>--xdb</i> command line argument that enables the user to enable FieldView XDB output.</li>
-  <li>The build_visit script now supports building a limited set of the Boost C++ libraries.</li>
-  <li>Nameschemes now support a kind of recursive definition in that a string-valued conversion specifier in a Namescheme
-      can itself be controlled by another, different namescheme. This feature is now being used in Exodus plugin for
-      nameschemes for material volume fraction data.</li>
-  <li>Fixed some overruns on the src buffer in several memcpy calls in avtUnstructuredDomainBoundaries::ExchangeMixedMaterial. </li>
-  <li>The avtMaterial constructor for full-zonal volume fraction arrays was improved to behave better in the presence numerically likely but nonetheless mal-formed volume fractions.</li>
+  <li>Nameschemes now support a kind of recursive definition in that a string-valued conversion specifier in a Namescheme can itself be controlled by another, different namescheme. This feature is now being used in the Exodus plugin for nameschemes for material volume fraction data.</li>
+  <li>Fixed some overruns on the src buffer in several memcpy calls in avtUnstructuredDomainBoundaries::ExchangeMixedMaterial.</li>
+  <li>The avtMaterial constructor for full-zonal volume fraction arrays was improved to behave better in the presence of numerically likely but nonetheless mal-formed volume fractions.</li>
   <li>avtMaterial will now check and assert correct structure in debug builds.</li>
   <li>Some new exodus test datasets were added thanks to John Niederhaus.</li>
   <li>New exodus tests were added for material data.</li>
+  <li>Added the full path to the szip and zlib libraries for both OSX and Linux in the bv_cgns.sh build_visit support file.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
