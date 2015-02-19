@@ -304,7 +304,7 @@ GetVectors(0).hasDataExtents = 0
 GetVectors(0).minDataExtents = 0
 GetVectors(0).maxDataExtents = 0
 GetVectors(0).matRestricted = (0, 1)
-GetVectors(0).varDim = 0
+GetVectors(0).varDim = 3
 #tensors does not contain any avtTensorMetaData objects.
 #symmTensors does not contain any avtSymmetricTensorMetaData objects.
 #arrays does not contain any avtArrayMetaData objects.

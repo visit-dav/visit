@@ -218,7 +218,7 @@ GetVectors(0).hasDataExtents = 0
 GetVectors(0).minDataExtents = 0
 GetVectors(0).maxDataExtents = 0
 GetVectors(0).matRestricted = ()
-GetVectors(0).varDim = 0
+GetVectors(0).varDim = 3
 GetVectors(1).name = "nodal_vector"
 GetVectors(1).originalName = "nodal_vector"
 GetVectors(1).meshName = "mesh3d"
@@ -231,7 +231,7 @@ GetVectors(1).hasDataExtents = 0
 GetVectors(1).minDataExtents = 0
 GetVectors(1).maxDataExtents = 0
 GetVectors(1).matRestricted = ()
-GetVectors(1).varDim = 0
+GetVectors(1).varDim = 3
 #tensors does not contain any avtTensorMetaData objects.
 #symmTensors does not contain any avtSymmetricTensorMetaData objects.
 GetArrays(0).name = "zonal_array"
