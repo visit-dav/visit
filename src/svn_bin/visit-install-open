@@ -68,6 +68,9 @@
 #   Eric Brugger, Wed Dec 10 13:32:49 PST 2014
 #   I added ubuntu1404_64.
 #
+#   Eric Brugger, Thu Feb 19 09:14:29 PST 2015
+#   I removed redsky.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -117,7 +120,6 @@ rzzeus=true
 rzuseq=false
 carver=true
 glory=false
-redsky=false
 
 ver=undefined
 
@@ -138,7 +140,6 @@ do
          rzzeus=false
          carver=false
          glory=false
-         redsky=false
          shift
          ;;
       -kickit)
@@ -211,14 +212,6 @@ do
          ;;
       +glory)
          glory=true
-         shift
-         ;;
-      -redsky)
-         redsky=false
-         shift
-         ;;
-      +redsky)
-         redsky=true
          shift
          ;;
       -v)
@@ -571,43 +564,9 @@ then
 fi
 
 #
-# Install on redsky.
-#
-rm -f redsky
-cat <<EOF > redsky
-#!/bin/sh
-./visit-install -private -c sandia -l $ver linux-redsky /projects/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on redsky"          > resultlog 2>&1
-echo "       ----------------------------"         >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /projects/visit                              >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /projects/visit/$ver+/linux-x86_64/bin       >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /projects/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /projects/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /projects/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /projects/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/projects\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): redsky" $emailName < resultlog
-EOF
-
-if [ $redsky = true ]
-then
-   if [ $test = no ]
-   then
-      cp /usr/tmp/$user/redsky/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-redsky.tar.gz
-      cp redsky redsky_install
-      chmod 750 redsky_install;./redsky_install
-   fi
-fi
-
-#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104_64 ubuntu1404_64 aztec rzuseq rzzeus carver glory redsky
+   rm -f kickit sidious ubuntu1104_64 ubuntu1404_64 aztec rzuseq rzzeus carver glory
 fi
