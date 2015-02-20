@@ -655,6 +655,10 @@ avtOnionPeelFilter::UpdateDataObjectInfo(void)
 //    Kathleen Biagas, Thu Feb 19 10:32:41 PST 2015
 //    Request ghost-nodes when using node for seed.
 //
+//    Kathleen Biagas, Thu Feb 19 14:07:04 PST 2015
+//    Be a bit more restrictive when deciding to request ghosts, and
+//    requst ghost cells when needed.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -760,12 +764,20 @@ avtOnionPeelFilter::ModifyContract(avtContract_p spec)
         if (atts.GetSeedType() == OnionPeelAttributes::SeedNode)
             rv->GetDataRequest()->TurnNodeNumbersOn();
     }
-    if (atts.GetSeedType() == OnionPeelAttributes::SeedNode &&
-        rv->GetDataRequest()->GetDesiredGhostDataType() != GHOST_ZONE_DATA && 
-        GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
+
+    if (groupCategory && atts.GetLogical())
     {
-        rv->GetDataRequest()->SetDesiredGhostDataType(GHOST_NODE_DATA);
+        if (atts.GetSeedType() == OnionPeelAttributes::SeedCell)
+        {
+            rv->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        }
+        else if (rv->GetDataRequest()->GetDesiredGhostDataType() !=
+                  GHOST_ZONE_DATA)
+        {
+            rv->GetDataRequest()->SetDesiredGhostDataType(GHOST_NODE_DATA);
+        }
     }
+
     return rv;
 }
 
