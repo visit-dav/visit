@@ -424,6 +424,203 @@ def TestArbPoly():
 
     DeleteAllPlots()
 
+def TestBigSilMesh():
+    # use actual spatial extents
+    SetViewExtentsType(1)
+
+    # non-logical index
+    OpenDatabase(silo_data_path("bigsil.silo"))
+    AddPlot("Mesh", "mesh")
+    mesh = MeshAttributes()
+    mesh.showInternal = 1
+    SetPlotOptions(mesh)
+
+    AddPlot("Label", "mesh")
+    label = LabelAttributes()
+    label.showNodes = 1
+    label.showCells = 1
+    label.drawLabelsFacing = label.FrontAndBack
+    label.labelDisplayFormat = label.Index
+    label.specifyTextColor1 = 1
+    label.textColor1 = (255, 0, 0, 0)
+    label.specifyTextColor2 = 1
+    label.textColor2 = (0, 0, 255, 0)
+    label.depthTestMode = label.LABEL_DT_NEVER
+    SetPlotOptions(label)
+
+    AddOperator("OnionPeel", 1)
+    op = OnionPeelAttributes()
+    op.categoryName = "domains"
+    op.subsetName = "domain14"
+    op.logical = 0
+    op.index = (211)
+    op.requestedLayer = 0
+    op.seedType = op.SeedNode
+    SetOperatorOptions(op,0, 1);
+    DrawPlots()
+    Test("bigsil_mesh_01")
+
+    op.seedType = op.SeedCell
+    op.index = (223)
+    op.requestedLayer = 1
+    SetOperatorOptions(op,0, 1);
+    DrawPlots()
+    Test("bigsil_mesh_02")
+   
+    # Blocks/Domains, logical index
+    op.logical = 1
+    op.index = (3, 2, 3)
+    op.requestedLayer = 0
+    op.seedType = op.SeedNode
+    SetOperatorOptions(op,0, 1);
+    DrawPlots()
+    Test("bigsil_mesh_03")
+
+    op.seedType = op.SeedCell
+    op.index = (6, 3, 4)
+    op.requestedLayer = 1
+    SetOperatorOptions(op,0, 1);
+    DrawPlots()
+    Test("bigsil_mesh_04")
+
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("bigsil.silo"))
+    # use original spatial extents
+    SetViewExtentsType(0)
+
+def TestAMR():
+    # AMR Mesh
+    OpenDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
+
+    # delete the default subset plot, as OnionPeel does not appear to
+    # work with samrai amr data and subset plot
+    DeleteAllPlots()
+
+    # use actual spatial extents
+    SetViewExtentsType(1)
+
+    AddPlot("Mesh", "amr_mesh")
+    mesh = MeshAttributes()
+    mesh.showInternal = 1
+    SetPlotOptions(mesh)
+
+    AddPlot("Label", "amr_mesh")
+    label = LabelAttributes()
+    label.showNodes = 1
+    label.showCells = 1
+    label.drawLabelsFacing = label.FrontAndBack
+    label.labelDisplayFormat = label.Index
+    label.specifyTextColor1 = 1
+    label.textColor1 = (255, 0, 0, 0)
+    label.specifyTextColor2 = 1
+    label.textColor2 = (0, 0, 255, 0)
+    label.depthTestMode = label.LABEL_DT_NEVER
+    SetPlotOptions(label)
+
+    AddOperator("OnionPeel", 1)
+    op = OnionPeelAttributes()
+    op.categoryName = "levels"
+    op.subsetName = "level2"
+    op.logical = 1
+    op.index = (11, 15, 8)
+    op.seedType = op.SeedNode
+    SetOperatorOptions(op,0, 1);
+    DrawPlots()
+    Test("amr_3d_01")
+
+    op.seedType = op.SeedCell
+    op.index = (10, 15, 8)
+    op.requestedLayer = 1
+    SetOperatorOptions(op,0, 1);
+    Test("amr_3d_02")
+
+    DeleteAllPlots()
+    CloseDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
+
+    # Test Vector plot
+    OpenDatabase(data_path("samrai_test_data/mats-par3/dumps.visit"))
+    # Delete default Subset Plot.
+    DeleteAllPlots()
+
+    AddPlot("Mesh", "amr_mesh")
+    AddPlot("Vector", "Velocity")
+    TimeSliderNextState()
+    AddOperator("OnionPeel", 1)
+    op = OnionPeelAttributes()
+    op.categoryName = "levels"
+    op.subsetName = "level1"
+    op.logical = 1
+    op.index = (12, 15, 10)
+    op.seedType = op.SeedCell
+    op.requestedLayer = 1
+    SetOperatorOptions(op,0, 1);
+    DrawPlots()
+    Test("amr_3d_03")
+
+    op.seedType = op.SeedNode
+    op.index = (13, 15, 10)
+    op.requestedLayer = 0
+    SetOperatorOptions(op,0, 1);
+    Test("amr_3d_04")
+   
+    DeleteAllPlots()
+    CloseDatabase(data_path("samrai_test_data/mats-par3/dumps.visit"))
+
+    # 2D AMR Mesh
+    OpenDatabase(data_path("samrai_test_data/ale2d/dumps.visit"))
+
+    # use actual spatial extents
+    SetViewExtentsType(1)
+
+    AddPlot("Mesh", "amr_mesh")
+    AddPlot("Contour", "Density")
+
+    AddOperator("OnionPeel", 1)
+    op = OnionPeelAttributes()
+    op.categoryName = "levels"
+    op.subsetName = "level2"
+    op.logical = 1
+    op.index = (384, 490)
+    op.seedType = op.SeedCell
+    op.requestedLayer = 1 
+    SetOperatorOptions(op,0, 1);
+    DrawPlots()
+    Test("amr_2d_01")
+
+    DeleteAllPlots()
+    CloseDatabase(data_path("samrai_test_data/ale2d/dumps.visit"))
+
+    OpenDatabase(data_path("AMRStitchCell_test_data/AMRStitchCellTest.1.no_ghost.phi.2d.hdf5"))
+    AddPlot("Subset", "levels")
+    AddPlot("Mesh", "Mesh")
+    AddPlot("Contour", "phi")
+    AddPlot("Label", "Mesh")
+    label = LabelAttributes()
+    label.showNodes = 1
+    label.showCells = 1
+    label.drawLabelsFacing = label.FrontAndBack
+    label.labelDisplayFormat = label.Index
+    label.specifyTextColor1 = 1
+    label.textColor1 = (255, 0, 0, 0)
+    label.specifyTextColor2 = 1
+    label.textColor2 = (0, 0, 255, 0)
+    label.depthTestMode = label.LABEL_DT_NEVER
+    SetPlotOptions(label)
+
+    AddOperator("OnionPeel", 1)
+    op = OnionPeelAttributes()
+    op.categoryName = "levels"
+    op.subsetName = "level2"
+    op.logical = 1
+    op.seedType = op.SeedCell
+    op.requestedLayer = 1
+    op.index = (24, 35)
+    SetOperatorOptions(op, 0, 1)
+    DrawPlots()
+    Test("amr_2d_02")
+    # use original spatial extents
+    SetViewExtentsType(0)
+
 def Main():
     TestBigSil()
     TestUCD()
@@ -433,6 +630,8 @@ def Main():
     TestFilledBoundary()
     TestBoundary()
     TestArbPoly()
+    TestBigSilMesh()
+    TestAMR()
 
 Main()
 Exit()
