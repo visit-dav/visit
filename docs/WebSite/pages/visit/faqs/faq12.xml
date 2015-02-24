@@ -22,7 +22,7 @@
 </ul>
 
 <h2>12. What data file formats can VisIt read?</h2>
-<p> VisIt can read several dozen file formats. The table below lists some of the most popular data file formats that VisIt can currently read in and visualize. For a complete list of supported file formats, at the time of the last documentation revision, look in the <a href="https://wci.llnl.gov/codes/visit/1.5/VisItUsersManual1.5.pdf">VisIt User's Manual</a>. You can also look at the <a href="new.html">What's New page</a> for more supported file formats. Finally, the <a href="http://www.visitusers.org/index.php?title=File_formats">File formats table at visitusers.org</a> is another good resource. Each file format is read in by a database reader plug-in that is distributed with VisIt. If you want to use VisIt with your data, you can write your data to a file format that VisIt already understands or you can write your own database reader plug-in. You can find out more about writing compatible files and writing a database reader plug-in in the <a href="https://wci.llnl.gov/codes/visit/2.0.0/GettingDataIntoVisIt2.0.0.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. </p>
+<p> VisIt can read several dozen file formats. The table below lists some of the most popular data file formats that VisIt can currently read in and visualize. For a complete list of supported file formats, at the time of the last documentation revision, look in the <a href="content/assets/docs/simulation/computer-codes/visit/VisItUsersManual1.5.pdf">VisIt User's Manual</a>. You can also look at the <a href="simulation/computer-codes/visit/new">What's New page</a> for more supported file formats. Finally, the <a href="http://www.visitusers.org/index.php?title=File_formats">File formats table at visitusers.org</a> is another good resource. Each file format is read in by a database reader plug-in that is distributed with VisIt. If you want to use VisIt with your data, you can write your data to a file format that VisIt already understands or you can write your own database reader plug-in. You can find out more about writing compatible files and writing a database reader plug-in in the <a href="content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisIt2.0.0.pdf" title="GDIV">Getting Data Into VisIt</a> manual. </p>
 <table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
   <tbody>
     <tr>
@@ -42,7 +42,7 @@
     </tr>
     <tr>
       <td>BOV (brick of values)</td>
-      <td>BOV data are stored in two files. The first file is binary and it contains all of the data for an implied rectilinear grid stored as a brick of floats, doubles, etc. The second file is an ASCII header file that indicates the size of the data in the brick file as well as other attributes such as whether the brick is compressed. The contents of the ASCII header are described in the <a href="https://wci.llnl.gov/codes/visit/2.0.0/GettingDataIntoVisIt2.0.0.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual.</td>
+      <td>BOV data are stored in two files. The first file is binary and it contains all of the data for an implied rectilinear grid stored as a brick of floats, doubles, etc. The second file is an ASCII header file that indicates the size of the data in the brick file as well as other attributes such as whether the brick is compressed. The contents of the ASCII header are described in the <a href="content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisIt2.0.0.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual.</td>
       <td>&nbsp;</td>
     </tr>
     <tr>
@@ -215,9 +215,7 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
     <tr>
       <td>Silo</td>
       <td>LLNL data file format for storing rectilinear, curvilinear, unstructured, or point meshes in 2D and 3D. Scalar, vector, and material data can be defined on meshes. Data can be broken up into different files (multi-block) to increase parallel performance.</td>
-      <td><a href="https://wci.llnl.gov/codes/visit/3rd_party/silo020506.sh">Download Silo source code</a> <br />
-          <br />
-        Download Silo documentation [<a href="https://wci.llnl.gov/codes/visit/3rd_part/Silo.book.pdf">PDF</a>] </td>
+      <td><a href="simulation/computer-codes/silo">Silo Home Page</a> </td>
     </tr>
     <tr>
       <td>Spheral</td>
@@ -266,7 +264,7 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
     </tr>
     <tr>
       <td>ZeusMP (HDF4) </td>
-      <td>This database reader plugin reads HDF4 files from ZEUS-MP, which is a parallel addition to the ZEUS line of community application codes developed by the </A><a href="http://cosmos.ucsd.edu/" target="_blank">Laboratory for Computational Astrophysics</a>.</td>
+      <td>This database reader plugin reads HDF4 files from ZEUS-MP, which is a parallel addition to the ZEUS line of community application codes developed by the <a href="http://cosmos.ucsd.edu/" target="_blank">Laboratory for Computational Astrophysics</a>.</td>
       <td><p><a href="http://jhpc.ucsd.edu/ZEUS-2/" target="_blank">Zeus-MP 2.0 home page</a></p>
       <p><a href="http://cosmos.ucsd.edu/lca-www/software/lca_intro_zeusmp.html" target="_blank">Zeus-MP home page</a></p></td>
     </tr>

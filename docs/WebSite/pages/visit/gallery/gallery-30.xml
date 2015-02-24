@@ -30,7 +30,7 @@
 <div class="span3">
 <p>VisIt was used to visualize the results from the <a href="http://www.llnl.gov/CASC/SAMRAI/">SAMRAI simulation framework</a> of an atmospheric anomaly in and around Times Square. A high resolution satellite image of Manhattan was combined with the visualization to provide visual context. In addition, to add realism during the fly-through sequence, VisIt uses a sky-blue background and renders the buildings with shadows. In the final sequence showing a slice through the anomaly at ground level, VisIt's expression feature is used to render a few quantization levels of interest.</p>
 
-<p><a href="https://wci.llnl.gov/codes/visit/media/gallery/gallery_30.mpeg">View a movie</a> [MPEG 47.1 Mb]</p>
+<p><a href="content/assets/video/simulation/computer-codes/visit/gallery/gallery_30.mpeg">View a movie</a> [MPEG 47.1 Mb]</p>
 
 <p>The data used to make the movie are courtesy of Andrew Wissink Ph.D., LLNL.</p>
 
