@@ -1,14 +1,14 @@
-#/home/visit/visit/thirdparty_shared/2.8.1/cmake/2.8.12.2/linux-x86_64_gcc-4.5/bin/cmake
+#/home/visit/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.5/bin/cmake
 ##
-## ./build_visit2_8_1 generated host.cmake
-## created: Wed Oct  8 13:32:03 PDT 2014
+## ./build_visit2_9_0 generated host.cmake
+## created: Mon Feb 23 13:22:03 PST 2015
 ## system: Linux ubuntu1104-64 2.6.38-8-generic #42-Ubuntu SMP Mon Apr 11 03:31:24 UTC 2011 x86_64 x86_64 x86_64 GNU/Linux
 ## by: visit
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /home/visit/visit/thirdparty_shared/2.8.1)
+SET(VISITHOME /home/visit/visit/thirdparty_shared/2.9.0)
 SET(VISITARCH linux-x86_64_gcc-4.5)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE)
 
@@ -23,11 +23,6 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ## VisIt Thread Option
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
-
-##
-## VisIt Boost Option.
-##
-VISIT_OPTION_DEFAULT(VISIT_USE_BOOST ON TYPE BOOL)
 
 ##############################################################
 ##
@@ -66,6 +61,7 @@ VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 
 ##
 ## ADIOS
+## (configured w/ mpi compiler wrapper)
 ##
 VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/adios/1.7.0/${VISITARCH})
 
@@ -73,6 +69,12 @@ VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/adios/1.7.0/${VISITARCH})
 ## AdvIO
 ##
 VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH})
+
+##
+## BOOST
+##
+SETUP_APP_VERSION(BOOST 1_57_0)
+VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost/1_57_0/${VISITARCH})
 
 ##
 ## Boxlib
