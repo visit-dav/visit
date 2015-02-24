@@ -45,15 +45,21 @@
 
 If( EXISTS ${VISIT_NEKTAR++_DIR} )
 
-    IF(EXISTS ${VISIT_NEKTAR++_DIR}/lib/nektar++-${NEKTAR++_VERSION}/cmake/NEKTAR++Config.cmake)
+    IF(EXISTS ${VISIT_NEKTAR++_DIR}/lib64)
+        SET(LIB lib64)
+    ELSE()
+        SET(LIB lib)
+    ENDIF()
+
+    IF(EXISTS ${VISIT_NEKTAR++_DIR}/${LIB}/nektar++-${NEKTAR++_VERSION}/cmake/NEKTAR++Config.cmake)
         SET(NEKTAR++_DIR ${VISIT_NEKTAR++_DIR})
     ENDIF()
 
-    MESSAGE(STATUS "Checking for Nektar++ in ${NEKTAR++_DIR}/lib/nektar++-${NEKTAR++_VERSION}/cmake")
+    MESSAGE(STATUS "Checking for Nektar++ in ${NEKTAR++_DIR}/${LIB}/nektar++-${NEKTAR++_VERSION}/cmake")
 
     #  Find Nektar++
-    set(CMAKE_PREFIX_PATH ${VISIT_NEKTAR++_DIR}/lib/nektar++-${NEKTAR++_VERSION}/cmake ${CMAKE_PREFIX_PATH})
-    set(CMAKE_LIBRARY_PATH ${VISIT_NEKTAR++_DIR}/lib/nektar++-${NEKTAR++_VERSION} ${CMAKE_LIBRARY_PATH})
+    set(CMAKE_PREFIX_PATH ${VISIT_NEKTAR++_DIR}/${LIB}/nektar++-${NEKTAR++_VERSION}/cmake ${CMAKE_PREFIX_PATH})
+    set(CMAKE_LIBRARY_PATH ${VISIT_NEKTAR++_DIR}/${LIB}/nektar++-${NEKTAR++_VERSION} ${CMAKE_LIBRARY_PATH})
 
     FIND_PACKAGE(Nektar++)
     #FIND_PACKAGE(NEKTAR++ 4.0.0 REQUIRED PATHS ${NEKTAR++_DIR})
@@ -70,7 +76,7 @@ ENDIF()
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 SET_UP_THIRD_PARTY(NEKTAR++
-    lib/nektar++-${NEKTAR++_VERSION}
+    ${LIB}/nektar++-${NEKTAR++_VERSION}
     include/nektar++-${NEKTAR++_VERSION}
     LibUtilities
     LocalRegions
