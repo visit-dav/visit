@@ -22,7 +22,7 @@
 </ul>
 
 <h2>10. How do I access data on a remote machine?</h2>
-<p> First, VisIt must be installed on the remote machine. Then, in order to access data on remote machines, simply type in the name of the remote machine in the <strong>Host</strong> field in the <strong>File Selection</strong>  window in the VisIt graphical user interface and include <strong>visit</strong> in your search path on the remote machine. For more information, read the Distributed Mode portion of the Remote Visualization section in the <a href="https://wci.llnl.gov/codes/visit/1.5/VisItUsersManual1.5.pdf"> <em>VisIt Users Manual</em></a>.</p>
+<p> First, VisIt must be installed on the remote machine. Then, in order to access data on remote machines, simply type in the name of the remote machine in the <strong>Host</strong> field in the <strong>File Selection</strong>  window in the VisIt graphical user interface and include <strong>visit</strong> in your search path on the remote machine. For more information, read the Distributed Mode portion of the Remote Visualization section in the <a href="content/assets/docs/simulation/computer-codes/visit/VisItUsersManual1.5.pdf"> <em>VisIt Users Manual</em></a>.</p>
 
 </div>
 </div>	

@@ -33,7 +33,7 @@
       <td width="20%"><p> Has rich feature set for scalar, vector, and tensor field visualization</p></td>
       <td width="40%"><p>VisIt's visualization capabilities are primarily grouped into two categories: </p>
           <ul>
-            <li><b><a href="screens.html">Plots</a></b> are used to visualize data and include boundary, contour, curve, label, mesh, pseudocolor, scatter, streamline, subset, surface, tensor, vector, and volume. See <a href="simulation/computer-codes/visit/screenshots">plotting screen shots</a>.</li>
+            <li><b><a href="simulation/computer-codes/visit/screenshots">Plots</a></b> are used to visualize data and include boundary, contour, curve, label, mesh, pseudocolor, scatter, streamline, subset, surface, tensor, vector, and volume. See <a href="simulation/computer-codes/visit/screenshots">plotting screen shots</a>.</li>
             <li><b><a href="simulation/computer-codes/visit/screenshots2">Operators</a></b> consist of operations that can be performed on the data prior to visualization. Some examples include slice, index select, iso-surface, onion peel, reflect, threshold, and part selection. See <a href="simulation/computer-codes/visit/screenshots2">operator screen shots</a>.</li>
           </ul>
           <p> VisIt handles 2D and 3D data equally well. VisIt also has the ability to animate data, allowing users to see the time evolution of their data. A complete table of visualization features is presented below.</p></td>
@@ -43,13 +43,13 @@
       <td width="20%"><p>VisIt is also a powerful analysis tool. It provides support for derived fields, which allow new fields to be calculated using existing fields. For example, if a dataset contains a velocity field, it is possible to define a new field that is the velocity magnitude. VisIt's quantitative analysis tools include:</p>
           <ul>
             <li> <a href="simulation/computer-codes/visit/screenshots3">Line-out</a>, which allows you to create curves from higher dimensional datasets by interactively defining lines using the mouse. </li>
-            <li><a href="screens3.html">Pick and query</a>, which allows you to query the dataset by clicking on images. </li>
+            <li><a href="simulation/computer-codes/visit/screenshots3">Pick and query</a>, which allows you to query the dataset by clicking on images. </li>
           </ul>
           <p>VisIt also supports a generalized query interface, which allows you to query derived quantities such as volume or surface area. See <a href="simulation/computer-codes/visit/screenshots3">data exploration screen shots</a>.</p></td>
     </tr>
     <tr valign="top">
       <td width="20%" ><p>Supports multiple mesh types</p></td>
-      <td width="20%" ><p>VisIt provides support for a wide range of computational meshes, including two- and three-dimensional point, rectilinear, curvilinear, and unstructured meshes. In addition, VisIt supports structured AMR meshes and CSG meshes. <b> </b>See screenshots of <a href="screens3.html">2D</a> and <a href="screens.html">3D</a> images produced by VisIt.</p></td>
+      <td width="20%" ><p>VisIt provides support for a wide range of computational meshes, including two- and three-dimensional point, rectilinear, curvilinear, and unstructured meshes. In addition, VisIt supports structured AMR meshes and CSG meshes. <b> </b>See screenshots of <a href="simulation/computer-codes/visit/screenshots3">2D</a> and <a href="simulation/computer-codes/visit/screenshots">3D</a> images produced by VisIt.</p></td>
     </tr>
     <tr valign="top">
       <td width="20%" ><p>Powerful, full-featured graphical user interface (GUI)</p></td>

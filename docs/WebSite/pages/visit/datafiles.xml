@@ -33,8 +33,8 @@
       <th width="35%">Example image</th>
     </tr>
     <tr>
-      <td><a href="https://wci.llnl.gov/codes/visit/media/data/visit_data_files.tar.gz">VisIt Data files</a><br /><i>(Silo, etc.)</i></td>
-      <td><a href="https://wci.llnl.gov/codes/visit/media/data/visit_data_files.tar.gz"><img src="content/assets/images/simulation/computer-codes/visit/visit_data_files.jpg" width="150" height="150" /></a></td>
+      <td><a href="content/assets/docs/simulation/computer-codes/visit/visit_data_files.tar.gz">VisIt Data files</a><br /><i>(Silo, etc.)</i></td>
+      <td><a href="content/assets/docs/simulation/computer-codes/visit/visit_data_files.tar.gz"><img src="content/assets/images/simulation/computer-codes/visit/visit_data_files.jpg" width="150" height="150" /></a></td>
       <td><a href="http://arcdata.esri.com/data/tiger2000/tiger_download.cfm" target="_blank">ESRI Shapefile</a></td>
       <td><a href="http://arcdata.esri.com/data/tiger2000/tiger_download.cfm" target="_blank"><img src="content/assets/images/simulation/computer-codes/visit/gallery/thumb_gallery_14.jpg" width="150" height="150" /></a></td>
     </tr>
