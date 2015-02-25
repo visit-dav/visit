@@ -73,6 +73,9 @@ class DBOptionsAttributes;
 //    Kathleen Biagas, Thu Dec 18 14:19:13 PST 2014
 //    Added doXML.
 //
+//    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
+//    Added meshName.
+//
 // ****************************************************************************
 
 class
@@ -84,6 +87,7 @@ avtVTKWriter : public virtual avtDatabaseWriter
 
   protected:
     std::string    stem;
+    std::string    meshName;
     bool           doBinary;
     bool           doMultiBlock;
     bool           doXML;

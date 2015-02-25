@@ -57,6 +57,7 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkStringArray.h>
 #include <vtkStructuredGrid.h>
 #include <vtkStructuredPoints.h>
 #include <vtkUnstructuredGrid.h>
@@ -135,7 +136,8 @@ double avtVTKFileReader::INVALID_TIME = -DBL_MAX;
 //
 // ****************************************************************************
 
-avtVTKFileReader::avtVTKFileReader(const char *fname, DBOptionsAttributes *) 
+avtVTKFileReader::avtVTKFileReader(const char *fname, DBOptionsAttributes *) :
+    vtk_meshname()
 {
     filename = new char[strlen(fname)+1];
     strcpy(filename, fname);
@@ -450,6 +452,9 @@ avtVTKFileReader::ReadInFile(int _domain)
 //    Moved logic for duplicate node removal into avtTransformManager, it
 //    is now controlled by setting a global preference.
 //
+//    Kathleen Biagas, Fri Feb  6 06:00:16 PST 2015
+//    Added ability for parsing 'MeshName' field data from vtk file.
+//
 // ****************************************************************************
 
 void
@@ -577,6 +582,14 @@ avtVTKFileReader::ReadInDataset(int domain)
     if (dataset->GetFieldData()->GetArray("CYCLE") != 0)
     {
         vtk_cycle = (int)dataset->GetFieldData()->GetArray("CYCLE")->GetTuple1(0);
+    }
+    vtk_meshname.clear();
+    if (dataset->GetFieldData()->GetAbstractArray("MeshName") != 0)
+    {
+        vtkStringArray *mn = vtkStringArray::SafeDownCast(
+            dataset->GetFieldData()->GetAbstractArray("MeshName"));
+        if (mn)
+            vtk_meshname = mn->GetValue(0);
     }
 
     if (dataset->GetDataObjectType() == VTK_STRUCTURED_POINTS ||
@@ -840,12 +853,16 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
 //    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
 //    I enhanced the reader so that it can read parallel VTK files.
 //
+//    Kathleen Biagas, Fri Feb  6 06:06:24 PST 2015
+//    Use meshname from file (vtk_meshname), if available.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtVTKFileReader::GetMesh(int domain, const char *mesh)
 {
-    debug5 << "Getting mesh from VTK file \"" << filename << "\", domain = " << domain << endl;
+    debug5 << "Getting mesh from VTK file \"" << filename << "\", domain = "
+           << domain << endl;
 
     if (!readInDataset)
     {
@@ -866,9 +883,19 @@ avtVTKFileReader::GetMesh(int domain, const char *mesh)
         return pos->second;
     }
 
-    if (strcmp(mesh, MESHNAME) != 0)
+    if(vtk_meshname.empty())
     {
-        EXCEPTION1(InvalidVariableException, mesh);
+        if (strcmp(mesh, MESHNAME) != 0)
+        {
+            EXCEPTION1(InvalidVariableException, mesh);
+        }
+    }
+    else
+    {
+        if (strcmp(mesh, vtk_meshname.c_str()) != 0)
+        {
+            EXCEPTION1(InvalidVariableException, mesh);
+        }
     }
 
     //
@@ -1107,6 +1134,10 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 //    FreeUpResources before leaving. This is to ensure mdserver and non-zero
 //    mpi-ranks don't hang onto the VTK data read here solely for purposes
 //    of populating md.
+//
+//    Kathleen Biagas, Fri Feb  6 06:00:16 PST 2015
+//    Use 'MeshName' from file if provided (stored in vtk_meshname).
+//
 // ****************************************************************************
 
 void
@@ -1216,7 +1247,14 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
  
     avtMeshMetaData *mesh = new avtMeshMetaData;
-    mesh->name = MESHNAME;
+    if(vtk_meshname.empty())
+    {
+        mesh->name = MESHNAME;
+    }
+    else
+    {
+        mesh->name = vtk_meshname;
+    }
     mesh->meshType = type;
     mesh->spatialDimension = spat;
     mesh->topologicalDimension = topo;
@@ -1305,26 +1343,26 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if (ncomp == 1)
         {
             bool ascii = arr->GetDataType() == VTK_CHAR;
-            AddScalarVarToMetaData(md, name, MESHNAME, AVT_NODECENT, NULL, ascii);
+            AddScalarVarToMetaData(md, name, mesh->name, AVT_NODECENT, NULL, ascii);
         }
         else if (ncomp <= 4)
         {
-            AddVectorVarToMetaData(md, name, MESHNAME, AVT_NODECENT, ncomp);
+            AddVectorVarToMetaData(md, name, mesh->name, AVT_NODECENT, ncomp);
         }
         else if (ncomp == 9)
         {
-            AddTensorVarToMetaData(md, name, MESHNAME, AVT_NODECENT);
+            AddTensorVarToMetaData(md, name, mesh->name, AVT_NODECENT);
         }
         else
         {
             if(arr->GetDataType() == VTK_UNSIGNED_CHAR ||
                arr->GetDataType() == VTK_CHAR)
             {
-                md->Add(new avtLabelMetaData(name, MESHNAME, AVT_NODECENT));
+                md->Add(new avtLabelMetaData(name, mesh->name, AVT_NODECENT));
             }
             else
             {
-                AddArrayVarToMetaData(md, name, ncomp, MESHNAME, AVT_NODECENT);
+                AddArrayVarToMetaData(md, name, ncomp, mesh->name, AVT_NODECENT);
                 int compnamelen = strlen(name) + 40;
                 char *exp_name = new char[compnamelen];
                 char *exp_def = new char[compnamelen];
@@ -1389,8 +1427,9 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 matnos.push_back(it->first);
             }
 
-            avtMaterialMetaData *mmd = new avtMaterialMetaData("materials", MESHNAME,
-                                              (int)valMap.size(), matnames);
+            avtMaterialMetaData *mmd =
+                new avtMaterialMetaData("materials", mesh->name,
+                                        (int)valMap.size(), matnames);
             md->Add(mmd);
 
             if (strncmp(name, "internal_var_Subsets", strlen("internal_var_Subsets")) == 0)
@@ -1401,26 +1440,26 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         else if (ncomp == 1)
         {
             bool ascii = arr->GetDataType() == VTK_CHAR;
-            AddScalarVarToMetaData(md, name, MESHNAME, AVT_ZONECENT, NULL, ascii);
+            AddScalarVarToMetaData(md, name, mesh->name, AVT_ZONECENT, NULL, ascii);
         }
         else if (ncomp <= 4)
         {
-            AddVectorVarToMetaData(md, name, MESHNAME, AVT_ZONECENT, ncomp);
+            AddVectorVarToMetaData(md, name, mesh->name, AVT_ZONECENT, ncomp);
         }
         else if (ncomp == 9)
         {
-            AddTensorVarToMetaData(md, name, MESHNAME, AVT_ZONECENT);
+            AddTensorVarToMetaData(md, name, mesh->name, AVT_ZONECENT);
         }
         else
         {
             if(arr->GetDataType() == VTK_UNSIGNED_CHAR ||
                arr->GetDataType() == VTK_CHAR)
             {
-                md->Add(new avtLabelMetaData(name, MESHNAME, AVT_ZONECENT));
+                md->Add(new avtLabelMetaData(name, mesh->name, AVT_ZONECENT));
             }
             else
             {
-                AddArrayVarToMetaData(md, name, ncomp, MESHNAME, AVT_ZONECENT);
+                AddArrayVarToMetaData(md, name, ncomp, mesh->name, AVT_ZONECENT);
                 int compnamelen = strlen(name) + 40;
                 char *exp_name = new char[compnamelen];
                 char *exp_def = new char[compnamelen];
