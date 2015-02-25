@@ -46,6 +46,8 @@
 
 #include <vtkDataSet.h>
 #include <vtkDataSetWriter.h>
+#include <vtkFieldData.h>
+#include <vtkStringArray.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLRectilinearGridWriter.h>
 #include <vtkXMLStructuredGridWriter.h>
@@ -77,9 +79,12 @@ using     std::vector;
 //    Kathleen Biagas, Thu Dec 18 14:10:36 PST 2014
 //    Add doXML.
 //
+//    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
+//    Added meshName.
+//
 // ****************************************************************************
 
-avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts)
+avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName()
 {
     doBinary = atts->GetBool("Binary format");
     doMultiBlock = true;
@@ -134,6 +139,9 @@ avtVTKWriter::OpenFile(const string &stemname, int nb)
 //    Hank Childs, Thu Oct 29 17:21:14 PDT 2009
 //    Only have processor 0 write out the header file.
 //
+//    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
+//    Retrieve meshName.
+//
 // ****************************************************************************
 
 void
@@ -155,6 +163,7 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
             ofile << chunkname << endl;
         }
     }
+    meshName = GetMeshName(md);
 }
 
 
@@ -178,6 +187,9 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Kathleen Biagas, Thu Dec 18 14:10:06 PST 2014
 //    Add support for XML format through DB options.
 //
+//    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
+//    Use meshName if not empty.
+//
 // ****************************************************************************
 
 void
@@ -188,6 +200,16 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
         sprintf(chunkname, "%s.%d", stem.c_str(), chunk);
     else
         sprintf(chunkname, "%s", stem.c_str());
+
+    if (!meshName.empty())
+    {
+        vtkStringArray *mn = vtkStringArray::New();
+        mn->SetNumberOfValues(1);
+        mn->SetValue(0, meshName);
+        mn->SetName("MeshName");
+        ds->GetFieldData()->AddArray(mn);
+        mn->Delete();
+    }
 
     if (!doXML)
     {
