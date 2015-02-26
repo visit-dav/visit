@@ -27,7 +27,12 @@
 #    Fixed typo of missing '()' on call to DeleteAllPlots
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
-#    Added ability to swtich between Silo's HDF5 and PDB data.
+#    Added ability to switch between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Wed Feb 25 14:08:53 PST 2015
+#    Add Mesh Plot for silo data exported as VTK, to test that mesh name
+#    was properly exported.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -77,6 +82,11 @@ OpenDatabase("test_ex_db3.vtk")
 AddPlot("Pseudocolor", "cmfe")
 DrawPlots()
 Test("export_db_03")
+
+# Ensure meshname was written by creating mesh plot with old db's meshname
+AddPlot("Mesh", "quadmesh")
+DrawPlots()
+Test("export_db_04")
 
 Exit()
 
