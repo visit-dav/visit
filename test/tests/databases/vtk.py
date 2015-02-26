@@ -23,6 +23,10 @@
 #    Eric Brugger, Tue Jun 25 18:20:31 PDT 2013
 #    I added a test for PVTI files.
 #
+#    Kathleen Biagas, Wed Feb 25 14:10:13 PST 2015
+#    Mesh name has been added to blocks.vtu test data, so add mesh plot
+#    to test is has been read correctly.
+#
 # ----------------------------------------------------------------------------
 
 def TestMaterials():
@@ -168,7 +172,7 @@ def TestHigherOrder():
     TestSection("Quadratic triangles in VTK")
     OpenDatabase(data_path("vtk_test_data/higher_order_triangles.vtk"))
 
-    AddPlot("Mesh", "mesh");
+    AddPlot("Mesh", "highorder_triangles");
     DrawPlots()
 
     v = View3DAttributes()
@@ -190,7 +194,7 @@ def TestHigherOrder():
     Test("vtk_28")
     DeleteAllPlots()
 
-    DefineScalarExpression("zoneid", "zoneid(mesh)")
+    DefineScalarExpression("zoneid", "zoneid(highorder_triangles)")
     AddPlot("Pseudocolor", "zoneid")
     p = PseudocolorAttributes()
     p.colorTableName = "levels"
@@ -236,6 +240,10 @@ def TestPVTU():
     DrawPlots()
     ResetView()
     Test("vtk_34")
+    # MeshName recently added, so test.
+    AddPlot("Mesh", "blocks")
+    DrawPlots()
+    Test("vtk_34a")
     DeleteAllPlots()
 
 def TestPVTI():
