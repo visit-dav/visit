@@ -5,6 +5,7 @@ Clemson University network:clemson
 Lawrence Livermore National Laboratory (LLNL) closed network:llnl_closed
 Lawrence Livermore National Laboratory (LLNL) open network:llnl
 Lawrence Livermore National Laboratory (LLNL) open (RZ only) network:llnl_rz
+Los Alamos National Laboratory (LANL) open network:lanl
 Los Alamos National Laboratory (LANL) closed network:lanl_closed
 Lousiana State University network:lsu
 National Center for Atmospheric Research (NCAR) network:ncar
