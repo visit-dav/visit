@@ -1000,6 +1000,9 @@ QvisViewWindow::Update2D(bool doAll)
 //   Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //   Add shear for oblique projection support.
 //
+//   Jeremy Meredith, Fri Mar  6 17:11:07 EST 2015
+//   Set the view axis combo box based on the view normal/up.
+//
 // ****************************************************************************
 
 void
@@ -1009,6 +1012,7 @@ QvisViewWindow::Update3D(bool doAll)
         return;
 
     QString temp;
+    bool mustUpdateViewCombo = false;
 
     for(int i = 0; i < view3d->NumAttributes(); ++i)
     {
@@ -1020,6 +1024,7 @@ QvisViewWindow::Update3D(bool doAll)
         case View3DAttributes::ID_viewNormal:
             temp = DoublesToQString(view3d->GetViewNormal(), 3);
             normalLineEdit->setText(temp);
+            mustUpdateViewCombo = true;
             break;
         case View3DAttributes::ID_focus:
             temp = DoublesToQString(view3d->GetFocus(), 3);
@@ -1028,6 +1033,7 @@ QvisViewWindow::Update3D(bool doAll)
         case View3DAttributes::ID_viewUp:
             temp = DoublesToQString(view3d->GetViewUp(), 3);
             upvectorLineEdit->setText(temp);
+            mustUpdateViewCombo = true;
             break;
         case View3DAttributes::ID_viewAngle:
             temp.setNum(view3d->GetViewAngle());
@@ -1088,6 +1094,53 @@ QvisViewWindow::Update3D(bool doAll)
             break;
         }
     }
+
+    if (mustUpdateViewCombo)
+    {
+        int index = 0;
+        double *n = view3d->GetViewNormal();
+        double *u = view3d->GetViewUp();
+        if      (n[0]==+1 && n[1]==0  && n[2]==0  &&
+                 u[0]==0  && u[1]==+1 && u[2]==0)
+        {
+            // -X
+            index = 1;
+        }
+        else if (n[0]==-1 && n[1]==0  && n[2]==0  &&
+                 u[0]==0  && u[1]==+1 && u[2]==0)
+        {
+            // +X
+            index = 2;
+        }
+        else if (n[0]==0  && n[1]==+1 && n[2]==0  &&
+                 u[0]==0  && u[1]==0  && u[2]==-1)
+        {
+            // -Y
+            index = 3;
+        }
+        else if (n[0]==0  && n[1]==-1 && n[2]==0  &&
+                 u[0]==0  && u[1]==0  && u[2]==+1)
+        {
+            // +Y
+            index = 4;
+        }
+        else if (n[0]==0  && n[1]==0  && n[2]==+1 &&
+                 u[0]==0  && u[1]==+1 && u[2]==0)
+        {
+            // -Z
+            index = 5;
+        }
+        else if (n[0]==0  && n[1]==0  && n[2]==-1 &&
+                 u[0]==0  && u[1]==+1 && u[2]==0)
+        {
+            // +Z
+            index = 6;
+        }
+        alignComboBox->blockSignals(true);
+        alignComboBox->setCurrentIndex(index);
+        alignComboBox->blockSignals(false);
+    }
+
 }
 
 // ****************************************************************************
@@ -2600,6 +2653,10 @@ QvisViewWindow::perspectiveToggled(bool val)
 //   Brad Whitlock, Thu Jun 19 09:37:19 PDT 2008
 //   Use DoublesToQString.
 //
+//   Jeremy Meredith, Fri Mar  6 17:11:32 EST 2015
+//   Don't change the view combo box to index 0 (invalid).  This will now
+//   happen anyway when the user changes the view off the selected direction.
+//
 // ****************************************************************************
 
 void
@@ -2609,12 +2666,6 @@ QvisViewWindow::viewButtonClicked(int index)
     --index;
     if(index < 0)
         return;
-    else
-    {
-        alignComboBox->blockSignals(true);
-        alignComboBox->setCurrentIndex(0);
-        alignComboBox->blockSignals(false);
-    }
 
     double viewNormal[3];
     double viewUp[3];
