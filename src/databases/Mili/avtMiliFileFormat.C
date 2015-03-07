@@ -1005,11 +1005,19 @@ avtMiliFileFormat::DecodeMultiLevelVarname(const string &inname, string &decoded
 void
 avtMiliFileFormat::OpenDB(int dom)
 {
+    char const * const root_fmtstrs[] = {
+        "%s%.3d",
+        "%s%.4d",
+        "%s%.5d",
+        "%s%.6d",
+    };
+
     if (dbid[dom] == -1)
     {
         int rval;
         if (ndomains == 1)
         {
+            debug3 << "Attempting mc_open on root=\"" << famroot << "\", path=\"" << fampath << "\"." << endl;
             rval = mc_open( famroot, fampath, "r", &(dbid[dom]) );
 
             if ( rval != OK )
@@ -1017,18 +1025,27 @@ avtMiliFileFormat::OpenDB(int dom)
                 // Try putting in the domain number and see what happens...
                 // We need this because makemili accepts it and there are
                 // legacy .mili files that look like fam rather than fam000.
-                char rootname[255];
-                sprintf(rootname, "%s%.3d", famroot, dom);
-                rval = mc_open(rootname, fampath, "r", &(dbid[dom]) );
+                int i; char rootname[255];
+                for (i = 0; i < 4 && rval != OK; i++)
+                {
+                    sprintf(rootname, root_fmtstrs[i], famroot, dom);
+                    debug3 << "Attempting mc_open on root=\"" << rootname << "\", path=\"" << fampath << "\"." << endl;
+                    rval = mc_open(rootname, fampath, "r", &(dbid[dom]) );
+                }
             }
             if ( rval != OK )
                 EXCEPTION1(InvalidFilesException, famroot);
         }
         else
         {
-            char famname[128];
-            sprintf(famname, "%s%.3d", famroot, dom);
-            rval = mc_open( famname, fampath, "r", &(dbid[dom]) );
+            int i; char famname[128];
+            for (i = 0; i < 4; i++)
+            {
+                sprintf(famname, root_fmtstrs[i], famroot, dom);
+                debug3 << "Attempting mc_open on root=\"" << famname << "\", path=\"" << fampath << "\"." << endl;
+                rval = mc_open( famname, fampath, "r", &(dbid[dom]) );
+                if (rval == OK) break;
+            }
             if ( rval != OK )
                 EXCEPTION1(InvalidFilesException, famname);
         }
