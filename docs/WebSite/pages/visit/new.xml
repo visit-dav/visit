@@ -3,7 +3,7 @@
   <title><![CDATA[What's New in VisIt]]></title>
   <IM>LLNL-WEB-667075</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[February 25, 2015]]></lastchanged>
+  <lastchanged><![CDATA[March 9, 2015]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,7 +22,7 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>February, 2015 - VisIt 2.9 released</h2>
+<h2>March, 2015 - VisIt 2.9 released</h2>
 <p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.9, which can be <a href="simulation/computer-codes/visit/downloads">downloaded from this site</a>, contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.9.0">VisIt 2.9 Release Notes</a>.</p>
 <h4>1.  VisIt was ported to the BlueGene/Q platform.</h4>
 <p>The <i>build_visit_BGQ</i> script can be used to build a statically linked version of VisIt's server components for use on BlueGene/Q.</p>
