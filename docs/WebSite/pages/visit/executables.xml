@@ -78,7 +78,7 @@ is suspected during the download process.</p>
         </tr>
         <tr>
           <td>Mac OS X 10.9 - Intel 64 bit<br />
-          Darwin 10.8.5, Darwin Kernel Version 12.5.0, gcc 4.2.1, MPICH<br />
+          Darwin 10.9.5, Darwin Kernel Version 13.4.0, Apple LLVM version 5.1 (clang-503.0.38) (based on LLvm 3.4svn), MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI. It only runs on Mac OS X 10.9 and later. It should only be used if you need the ViSUS reader.)</i></td>
           <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/VisIt-2.9.0-10.9.dmg">Download</a></td>
         </tr>
