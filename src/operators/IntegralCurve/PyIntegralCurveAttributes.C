@@ -328,7 +328,8 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
 
     SNPRINTF(tmpStr, 1000, "%sdataVariable = \"%s\"\n", prefix, atts->GetDataVariable().c_str());
     str += tmpStr;
-    const char *integrationDirection_names = "Forward, Backward, Both";
+    const char *integrationDirection_names = "Forward, Backward, Both, ForwardDirectionless, BackwardDirectionless, "
+        "BothDirectionless";
     switch (atts->GetIntegrationDirection())
     {
       case IntegralCurveAttributes::Forward:
@@ -341,6 +342,18 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           break;
       case IntegralCurveAttributes::Both:
           SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBoth  # %s\n", prefix, prefix, integrationDirection_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::ForwardDirectionless:
+          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sForwardDirectionless  # %s\n", prefix, prefix, integrationDirection_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::BackwardDirectionless:
+          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBackwardDirectionless  # %s\n", prefix, prefix, integrationDirection_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::BothDirectionless:
+          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBothDirectionless  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       default:
@@ -1384,14 +1397,15 @@ IntegralCurveAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the integrationDirection in the object.
-    if(ival >= 0 && ival < 3)
+    if(ival >= 0 && ival < 6)
         obj->data->SetIntegrationDirection(IntegralCurveAttributes::IntegrationDirection(ival));
     else
     {
         fprintf(stderr, "An invalid integrationDirection value was given. "
-                        "Valid values are in the range of [0,2]. "
+                        "Valid values are in the range of [0,5]. "
                         "You can also use the following names: "
-                        "Forward, Backward, Both.");
+                        "Forward, Backward, Both, ForwardDirectionless, BackwardDirectionless, "
+                        "BothDirectionless.");
         return NULL;
     }
 
@@ -2909,6 +2923,12 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(IntegralCurveAttributes::Backward));
     if(strcmp(name, "Both") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Both));
+    if(strcmp(name, "ForwardDirectionless") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::ForwardDirectionless));
+    if(strcmp(name, "BackwardDirectionless") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::BackwardDirectionless));
+    if(strcmp(name, "BothDirectionless") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::BothDirectionless));
 
     if(strcmp(name, "maxSteps") == 0)
         return IntegralCurveAttributes_GetMaxSteps(self, NULL);
