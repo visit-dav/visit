@@ -4334,6 +4334,11 @@ bool
 ViewerPlot::ExecuteEngineRPC()
 {
     //
+    // Update the variable description with each execution.
+    //
+    UpdateVariableDescription();
+
+    //
     //  Release data on previous network.
     //
     if (networkID != -1)
