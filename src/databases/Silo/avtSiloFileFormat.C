@@ -2679,6 +2679,11 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
 //    Mark C. Miller, Mon Aug 11 20:09:51 PDT 2014
 //    Decode and utilize multivar's tensor_rank member if its set. Populate
 //    metadata accordingly.
+//
+//    Eric Brugger, Wed Mar 11 11:03:57 PDT 2015
+//    I corrected a bug where a NULL pointer would be de-referenced causing
+//    a crash if a multivar was completely empty.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
@@ -2788,12 +2793,13 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
             string  varUnits;
             int nvals = 1;
             double missing_value = DB_MISSING_VALUE_NOT_SET;
-            if (mv->missing_value != DB_MISSING_VALUE_NOT_SET)
-                missing_value = mv->missing_value;
-            if (mv->tensor_rank != 0)
-                tensor_rank = mv->tensor_rank;
             if (valid_var && mv)
             {
+                if (mv->missing_value != DB_MISSING_VALUE_NOT_SET)
+                    missing_value = mv->missing_value;
+                if (mv->tensor_rank != 0)
+                    tensor_rank = mv->tensor_rank;
+
                 DetermineFileAndDirectory(mb_varname.c_str(),"",
                                           correctFile, realvar);
 
