@@ -88,6 +88,8 @@ avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator )
     lastCell = -1;
     lastPos.x = lastPos.y = lastPos.z =
         std::numeric_limits<double>::quiet_NaN();
+    lastVel.x = lastVel.y = lastVel.z =
+        std::numeric_limits<double>::quiet_NaN();
 
     std::fill( sclData, sclData+256, (vtkDataArray*)NULL );
     std::fill( sclCellBased, sclCellBased+256, false );
@@ -165,7 +167,7 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
     {
         lastPos  = pos;
         lastCell = loc->FindCell(&pos.x, &lastWeights, false);
-    }       
+    }
     
     return (lastCell != -1 ? OK : OUTSIDE_SPATIAL);
 }
@@ -217,24 +219,115 @@ avtIVPVTKField::FindValue(vtkDataArray *vectorData, avtVector &vel) const
 {
     vel.x = vel.y = vel.z = 0.0;
 
-    if (velCellBased)
-        vectorData->GetTuple(lastCell, &vel.x);
-    else
+    if( directionless )
     {
-        double tmp[3];
+      // Cell based with directionless field.
+      if (velCellBased)
+      {
+        vectorData->GetTuple(lastCell, &vel.x);
 
+        // For a directionless field orient each vector so that it is
+        // in the same direction as the last vector.
+        if(lastVel.dot( vel ) < 0 )
+          vel *= -1.0;
+      }
+
+      // Node based with directionless field.
+      else
+      {
         for (avtInterpolationWeights::const_iterator wi=lastWeights.begin();
              wi!=lastWeights.end(); ++wi)
         {
-            vectorData->GetTuple( wi->i, tmp );
-
+          double tmp[3];
+          vectorData->GetTuple( wi->i, tmp );
+          
+          // For a directionless field orient each vector so that it is
+          // in the same direction as the last vector.
+          if( tmp[0]*lastVel.x + tmp[1]*lastVel.y + tmp[2]*lastVel.z > 0 )
+          {
             vel.x += wi->w * tmp[0];
             vel.y += wi->w * tmp[1];
             vel.z += wi->w * tmp[2];
+          }
+          else
+          {
+            vel.x -= wi->w * tmp[0];
+            vel.y -= wi->w * tmp[1];
+            vel.z -= wi->w * tmp[2];
+          }
         }
+      }
+      
+      lastVel = vel;
+    }
+
+    // Cell based with directional field.
+    else if (velCellBased)
+    {
+      vectorData->GetTuple(lastCell, &vel.x);
+    }
+
+    // Node based with directional field.
+    else
+    {
+      for (avtInterpolationWeights::const_iterator wi=lastWeights.begin();
+           wi!=lastWeights.end(); ++wi)
+      {
+        double tmp[3];
+        vectorData->GetTuple( wi->i, tmp );
+        
+        vel.x += wi->w * tmp[0];
+        vel.y += wi->w * tmp[1];
+        vel.z += wi->w * tmp[2];
+      }
     }
 
     return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPVTKField::SetLastVelocity
+//
+//  Purpose: Sets the last velocity based on the nearest neighbor and
+//           is used for integrating directionless fields
+//
+//  Programmer: Allen Sanderson
+//  Creation:   March 5, 2015
+//
+// ****************************************************************************
+
+avtIVPField::Result
+avtIVPVTKField::SetLastVelocity(const double &t, const avtVector &p)
+{
+  if (FindCell(t, p) != OK )
+    return OUTSIDE_SPATIAL;
+
+  if (velCellBased)
+    velData->GetTuple(lastCell, &lastVel.x);
+  else
+  {
+    double tmp[3], w = std::numeric_limits<double>::max();
+
+    // Based on the weights find the closest neighbor and set it to be
+    // the last velocity value.
+    for (avtInterpolationWeights::const_iterator wi=lastWeights.begin();
+         wi!=lastWeights.end(); ++wi)
+    {
+      velData->GetTuple( wi->i, tmp );
+
+      if( w > wi->w )
+      {
+        w = wi->w;
+
+        lastVel.x = tmp[0];
+        lastVel.y = tmp[1];
+        lastVel.z = tmp[2];
+      }
+    }
+  }
+    
+  return OK;
 }
 
 
@@ -480,4 +573,3 @@ avtIVPVTKField::GetTimeRange(double range[2]) const
     range[0] = -std::numeric_limits<double>::infinity();
     range[1] =  std::numeric_limits<double>::infinity();
 }
- 

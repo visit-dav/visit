@@ -103,7 +103,7 @@ class IVP_API avtIVPField
         FAIL
     };
 
-                         avtIVPField() : order(1) {}
+    avtIVPField() : order(1), directionless(false) {}
     virtual             ~avtIVPField() {}
 
     virtual Result       operator()(const double& t, 
@@ -136,8 +136,14 @@ class IVP_API avtIVPField
     virtual void         SetOrder( unsigned int val ) { order = val; }
     virtual unsigned int GetOrder() { return order; }
 
+    virtual void         SetDirectionless( bool val ) { directionless = val; }
+    virtual bool         GetDirectionless() { return directionless; }
+    virtual Result       SetLastVelocity(const double &t,
+                                         const avtVector &p) { return OK; }
+
  protected:
     unsigned int order;
+    bool directionless;
 };
 
 // ostream operators for avtICStatus
@@ -156,6 +162,5 @@ inline std::ostream& operator<<(std::ostream& out,
         out<<"FAIL"<<endl;
     return out;
 }
-
 
 #endif
