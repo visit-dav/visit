@@ -228,6 +228,7 @@ class IVP_API avtPICSFilter :
     bool   absTolIsFraction;
     int    integrationType;
     int    integrationDirection;
+    bool   directionlessField;
     int    dataSpatialDimension;
     bool   convertToCartesian;
 
@@ -347,4 +348,5 @@ class IVP_API avtPICSFilter :
 
     friend class avtICAlgorithm;
 };
+
 #endif

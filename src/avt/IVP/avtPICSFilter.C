@@ -181,6 +181,7 @@ avtPICSFilter::avtPICSFilter()
 
     maxStepLength = 0.;
     integrationDirection = VTK_INTEGRATE_FORWARD;
+    directionlessField = false;
     integrationType = PICS_INTEGRATE_DORMAND_PRINCE;
     relTol = 1e-7;
     absTol = 0;
@@ -1098,12 +1099,24 @@ avtPICSFilter::SetTolerances(double reltol, double abstol, bool isFraction)
 void
 avtPICSFilter::SetIntegrationDirection(int dir)
 {
-    integrationDirection = dir;
+    // Note the direction is based on the VTK definitions in:
+    // Filters/FlowPaths/vtkStreamer.h 
+    // #define VTK_INTEGRATE_FORWARD  0
+    // #define VTK_INTEGRATE_BACKWARD 1
+    // #define VTK_INTEGRATE_BOTH     2
+
+    // The directionless attribute is specific to VisIt.
+    // #define VTK_INTEGRATE_FORWARD_DIRECTIONLESS  3
+    // #define VTK_INTEGRATE_BACKWARD_DIRECTIONLESS 4
+    // #define VTK_INTEGRATE_BOTH_DIRECTIONLESS     5
+
+    integrationDirection = dir % 3;
+    directionlessField = (dir >= 3);
 
     if (doPathlines && (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS))
     {
         EXCEPTION1(VisItException, "VisIt is not capable of doing pathlines "
-                     "calculations both forwards and backwards.  Please contact "
+                     "calculations both forwards and backwards. Please contact "
                      "a developer if this capability is needed.");
     }
 }
@@ -2822,6 +2835,22 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
         else
             ic->status.SetAtSpatialBoundary();
         return numStepsTaken;
+    }
+
+    // For a directionless field the initial velocity direction needs
+    // to be known.
+    if( directionlessField )
+    {
+      field->SetDirectionless( true );
+
+      double t = ic->CurrentTime();
+      avtVector pt = ic->CurrentLocation();
+
+      field->SetLastVelocity(t, pt);
+    }
+    else
+    {
+      field->SetDirectionless( false );
     }
 
     numStepsTaken = ic->Advance(field);
