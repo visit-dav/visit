@@ -49,6 +49,9 @@
         Forward
         Backward
         Both
+        ForwardDirectionless
+        BackwardDirectionless
+        BothDirectionless
       </Enum>
       <Enum name="ParallelizationAlgorithmType">
         LoadOnDemand

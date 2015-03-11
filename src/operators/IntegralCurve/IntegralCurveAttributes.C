@@ -206,21 +206,22 @@ IntegralCurveAttributes::DisplayGeometry_FromString(const std::string &s, Integr
 //
 
 static const char *IntegrationDirection_strings[] = {
-"Forward", "Backward", "Both"
+"Forward", "Backward", "Both", 
+"ForwardDirectionless", "BackwardDirectionless", "BothDirectionless"
 };
 
 std::string
 IntegralCurveAttributes::IntegrationDirection_ToString(IntegralCurveAttributes::IntegrationDirection t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 6) index = 0;
     return IntegrationDirection_strings[index];
 }
 
 std::string
 IntegralCurveAttributes::IntegrationDirection_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 6) ? 0 : t;
     return IntegrationDirection_strings[index];
 }
 
@@ -228,7 +229,7 @@ bool
 IntegralCurveAttributes::IntegrationDirection_FromString(const std::string &s, IntegralCurveAttributes::IntegrationDirection &val)
 {
     val = IntegralCurveAttributes::Forward;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == IntegrationDirection_strings[i])
         {
@@ -1775,7 +1776,7 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 6)
                 SetIntegrationDirection(IntegrationDirection(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

@@ -618,6 +618,9 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     directionType->addItem(tr("Forward"));
     directionType->addItem(tr("Backward"));
     directionType->addItem(tr("Both"));
+    directionType->addItem(tr("Forward Directionless"));
+    directionType->addItem(tr("Backward Directionless"));
+    directionType->addItem(tr("Both Directionless"));
     connect(directionType, SIGNAL(activated(int)),
             this, SLOT(directionTypeChanged(int)));
     integrationLayout->addWidget(directionType, 0, 1);

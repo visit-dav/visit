@@ -96,6 +96,9 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public final static int INTEGRATIONDIRECTION_FORWARD = 0;
     public final static int INTEGRATIONDIRECTION_BACKWARD = 1;
     public final static int INTEGRATIONDIRECTION_BOTH = 2;
+    public final static int INTEGRATIONDIRECTION_FORWARDDIRECTIONLESS = 3;
+    public final static int INTEGRATIONDIRECTION_BACKWARDDIRECTIONLESS = 4;
+    public final static int INTEGRATIONDIRECTION_BOTHDIRECTIONLESS = 5;
 
     public final static int PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND = 0;
     public final static int PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
@@ -1558,6 +1561,12 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             str = str + "INTEGRATIONDIRECTION_BACKWARD";
         if(integrationDirection == INTEGRATIONDIRECTION_BOTH)
             str = str + "INTEGRATIONDIRECTION_BOTH";
+        if(integrationDirection == INTEGRATIONDIRECTION_FORWARDDIRECTIONLESS)
+            str = str + "INTEGRATIONDIRECTION_FORWARDDIRECTIONLESS";
+        if(integrationDirection == INTEGRATIONDIRECTION_BACKWARDDIRECTIONLESS)
+            str = str + "INTEGRATIONDIRECTION_BACKWARDDIRECTIONLESS";
+        if(integrationDirection == INTEGRATIONDIRECTION_BOTHDIRECTIONLESS)
+            str = str + "INTEGRATIONDIRECTION_BOTHDIRECTIONLESS";
         str = str + "\n";
         str = str + intToString("maxSteps", maxSteps, indent) + "\n";
         str = str + boolToString("terminateByDistance", terminateByDistance, indent) + "\n";

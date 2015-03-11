@@ -101,7 +101,10 @@ public:
     {
         Forward,
         Backward,
-        Both
+        Both,
+        ForwardDirectionless,
+        BackwardDirectionless,
+        BothDirectionless
     };
     enum ParallelizationAlgorithmType
     {
