@@ -1629,25 +1629,3 @@ RequestMetaDataAction::Execute()
         GetViewerMessaging()->Warning(err);
     }
 }
-
-///////////////////////////////////////////////////////////////////////////////
-
-// ****************************************************************************
-// Method: UpdateDBPluginInfoAction::Execute
-//
-// Purpose: 
-//   Execute ViewerRPC::UpdateDBPluginInfoRPC
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Aug 22 10:57:49 PDT 2014
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-UpdateDBPluginInfoAction::Execute()
-{
-    const std::string &hostName = args.GetProgramHost();
-    GetViewerFileServer()->UpdateDBPluginInfo(hostName);
-}

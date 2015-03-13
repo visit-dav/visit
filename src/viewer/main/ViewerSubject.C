@@ -4016,6 +4016,10 @@ ViewerSubject::HandleViewerRPC()
 //    Brad Whitlock, Fri Aug 29 00:10:15 PDT 2014
 //    Massive rewrite.
 //
+//    Kathleen Biagas, Thu Mar 12 18:56:27 MST 2015
+//    Move UpdateDBPluginInfo out of Actions, back to being handled here,
+//    to prevent a startup hang on Windows.
+//
 // ****************************************************************************
 
 void
@@ -4045,10 +4049,15 @@ ViewerSubject::HandleViewerRPCEx()
         Close();
         break;
     case ViewerRPC::ConnectToMetaDataServerRPC:
-        // This comes in before the action manager is initialized so let's handle
-        // it without actions. It's okay since this is not an RPC that we'd usually
-        // handle from something that's not the viewer.
+        // This comes in before the action manager is initialized so let's
+        // handle it without actions. It's okay since this is not an RPC that
+        // we'd usually handle from something that's not the viewer.
         ConnectToMetaDataServer();
+        break;
+    case ViewerRPC::UpdateDBPluginInfoRPC:
+        // This comes in before the action manager is initialized (at least
+        // on Windows), so let's handle it without actions.
+        GetViewerFileServer()->UpdateDBPluginInfo(GetViewerState()->GetViewerRPC()->GetProgramHost());
         break;
     case ViewerRPC::OpenClientRPC:
         // This action only has relevance for the viewer.

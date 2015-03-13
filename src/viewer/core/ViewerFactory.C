@@ -402,7 +402,6 @@ ViewerFactory::SetActionManagerLogic(ViewerActionManager *mgr, ViewerWindow *win
     mgr->SetLogic(ViewerRPC::TurnOffAllLocksRPC,            new TurnOffAllLocksAction(win));
     mgr->SetLogic(ViewerRPC::UndoViewRPC,                   new UndoViewAction(win));
     mgr->SetLogic(ViewerRPC::UpdateColorTableRPC,           new UpdateColorTableAction(win));
-    mgr->SetLogic(ViewerRPC::UpdateDBPluginInfoRPC,         new UpdateDBPluginInfoAction(win));
     mgr->SetLogic(ViewerRPC::UpdateNamedSelectionRPC,       new UpdateNamedSelectionAction(win));
     mgr->SetLogic(ViewerRPC::WriteConfigFileRPC,            new WriteConfigFileAction(win));
 }

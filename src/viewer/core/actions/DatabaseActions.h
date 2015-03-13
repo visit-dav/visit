@@ -344,28 +344,4 @@ public:
     virtual void Execute();
 };
 
-// ****************************************************************************
-// Class: UpdateDBPluginInfoAction
-//
-// Purpose:
-//   Handles ViewerRPC::UpdateDBPluginInfoRPC
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Aug 22 10:48:37 PDT 2014
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-class VIEWERCORE_API UpdateDBPluginInfoAction : public DatabaseActionBase
-{
-public:
-    UpdateDBPluginInfoAction(ViewerWindow *win) : DatabaseActionBase(win) {}
-    virtual ~UpdateDBPluginInfoAction() {}
-
-    virtual void Execute();
-};
-
 #endif
