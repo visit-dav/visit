@@ -101,7 +101,7 @@ is suspected during the download process.</p>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
-          <td>Coming soon!</td>
+          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/jvisit2.9.0.tar.gz">Download</a></td>
         </tr>
       </table>  
   
