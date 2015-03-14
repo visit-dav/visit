@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define LCSATTRIBUTES_NMETH 88
+#define LCSATTRIBUTES_NMETH 90
 void           PyLCSAttributes_StartUp(LCSAttributes *subj, void *data);
 void           PyLCSAttributes_CloseDown();
 PyMethodDef *  PyLCSAttributes_GetMethodTable(int *nMethods);

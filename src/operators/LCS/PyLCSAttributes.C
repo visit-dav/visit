@@ -190,13 +190,10 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
 
     SNPRINTF(tmpStr, 1000, "%smaxSteps = %d\n", prefix, atts->GetMaxSteps());
     str += tmpStr;
-    const char *operationType_names = "Lyapunov, IntegrationTime, ArcLength, AverageDistanceFromSeed";
+    const char *operationType_names = "IntegrationTime, ArcLength, AverageDistanceFromSeed, EigenValue, EigenVector, "
+        "Lyapunov";
     switch (atts->GetOperationType())
     {
-      case LCSAttributes::Lyapunov:
-          SNPRINTF(tmpStr, 1000, "%soperationType = %sLyapunov  # %s\n", prefix, prefix, operationType_names);
-          str += tmpStr;
-          break;
       case LCSAttributes::IntegrationTime:
           SNPRINTF(tmpStr, 1000, "%soperationType = %sIntegrationTime  # %s\n", prefix, prefix, operationType_names);
           str += tmpStr;
@@ -207,6 +204,37 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
       case LCSAttributes::AverageDistanceFromSeed:
           SNPRINTF(tmpStr, 1000, "%soperationType = %sAverageDistanceFromSeed  # %s\n", prefix, prefix, operationType_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::EigenValue:
+          SNPRINTF(tmpStr, 1000, "%soperationType = %sEigenValue  # %s\n", prefix, prefix, operationType_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::EigenVector:
+          SNPRINTF(tmpStr, 1000, "%soperationType = %sEigenVector  # %s\n", prefix, prefix, operationType_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::Lyapunov:
+          SNPRINTF(tmpStr, 1000, "%soperationType = %sLyapunov  # %s\n", prefix, prefix, operationType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *eigenComponent_names = "First, Second, Third";
+    switch (atts->GetEigenComponent())
+    {
+      case LCSAttributes::First:
+          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sFirst  # %s\n", prefix, prefix, eigenComponent_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::Second:
+          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sSecond  # %s\n", prefix, prefix, eigenComponent_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::Third:
+          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sThird  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
       default:
@@ -809,14 +837,15 @@ LCSAttributes_SetOperationType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the operationType in the object.
-    if(ival >= 0 && ival < 4)
+    if(ival >= 0 && ival < 6)
         obj->data->SetOperationType(LCSAttributes::OperationType(ival));
     else
     {
         fprintf(stderr, "An invalid operationType value was given. "
-                        "Valid values are in the range of [0,3]. "
+                        "Valid values are in the range of [0,5]. "
                         "You can also use the following names: "
-                        "Lyapunov, IntegrationTime, ArcLength, AverageDistanceFromSeed.");
+                        "IntegrationTime, ArcLength, AverageDistanceFromSeed, EigenValue, EigenVector, "
+                        "Lyapunov.");
         return NULL;
     }
 
@@ -829,6 +858,39 @@ LCSAttributes_GetOperationType(PyObject *self, PyObject *args)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOperationType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LCSAttributes_SetEigenComponent(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the eigenComponent in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetEigenComponent(LCSAttributes::EigenComponent(ival));
+    else
+    {
+        fprintf(stderr, "An invalid eigenComponent value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "First, Second, Third.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetEigenComponent(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetEigenComponent()));
     return retval;
 }
 
@@ -1765,6 +1827,8 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
     {"GetMaxSteps", LCSAttributes_GetMaxSteps, METH_VARARGS},
     {"SetOperationType", LCSAttributes_SetOperationType, METH_VARARGS},
     {"GetOperationType", LCSAttributes_GetOperationType, METH_VARARGS},
+    {"SetEigenComponent", LCSAttributes_SetEigenComponent, METH_VARARGS},
+    {"GetEigenComponent", LCSAttributes_GetEigenComponent, METH_VARARGS},
     {"SetOperatorType", LCSAttributes_SetOperatorType, METH_VARARGS},
     {"GetOperatorType", LCSAttributes_GetOperatorType, METH_VARARGS},
     {"SetTerminationType", LCSAttributes_SetTerminationType, METH_VARARGS},
@@ -1901,14 +1965,27 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
         return LCSAttributes_GetMaxSteps(self, NULL);
     if(strcmp(name, "operationType") == 0)
         return LCSAttributes_GetOperationType(self, NULL);
-    if(strcmp(name, "Lyapunov") == 0)
-        return PyInt_FromLong(long(LCSAttributes::Lyapunov));
     if(strcmp(name, "IntegrationTime") == 0)
         return PyInt_FromLong(long(LCSAttributes::IntegrationTime));
     if(strcmp(name, "ArcLength") == 0)
         return PyInt_FromLong(long(LCSAttributes::ArcLength));
     if(strcmp(name, "AverageDistanceFromSeed") == 0)
         return PyInt_FromLong(long(LCSAttributes::AverageDistanceFromSeed));
+    if(strcmp(name, "EigenValue") == 0)
+        return PyInt_FromLong(long(LCSAttributes::EigenValue));
+    if(strcmp(name, "EigenVector") == 0)
+        return PyInt_FromLong(long(LCSAttributes::EigenVector));
+    if(strcmp(name, "Lyapunov") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Lyapunov));
+
+    if(strcmp(name, "eigenComponent") == 0)
+        return LCSAttributes_GetEigenComponent(self, NULL);
+    if(strcmp(name, "First") == 0)
+        return PyInt_FromLong(long(LCSAttributes::First));
+    if(strcmp(name, "Second") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Second));
+    if(strcmp(name, "Third") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Third));
 
     if(strcmp(name, "operatorType") == 0)
         return LCSAttributes_GetOperatorType(self, NULL);
@@ -2069,6 +2146,8 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LCSAttributes_SetMaxSteps(self, tuple);
     else if(strcmp(name, "operationType") == 0)
         obj = LCSAttributes_SetOperationType(self, tuple);
+    else if(strcmp(name, "eigenComponent") == 0)
+        obj = LCSAttributes_SetEigenComponent(self, tuple);
     else if(strcmp(name, "operatorType") == 0)
         obj = LCSAttributes_SetOperatorType(self, tuple);
     else if(strcmp(name, "terminationType") == 0)

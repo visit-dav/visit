@@ -406,14 +406,28 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
                                             central), 0, 0);
 
     operationType = new QComboBox(central);
-    operationType->addItem(tr("Lyapunov Exponent"));
     operationType->addItem(tr("Integration time"));
     operationType->addItem(tr("Arc length"));
     operationType->addItem(tr("Average distance from seed"));
+    operationType->addItem(tr("Eigen Value"));
+    operationType->addItem(tr("Eigen Vector"));
+    operationType->addItem(tr("Lyapunov Exponent"));
     connect(operationType, SIGNAL(activated(int)),
             this, SLOT(operationTypeChanged(int)));
     terminationLayout->addWidget(operationType, 0, 1);
 
+    // Create the eigenComponent of integration.
+
+    eigenComponentLabel = new QLabel(tr("Eigen component"), central);
+    terminationLayout->addWidget(eigenComponentLabel, 1, 0);
+
+    eigenComponent = new QComboBox(central);
+    eigenComponent->addItem(tr("First"));
+    eigenComponent->addItem(tr("Second"));
+    eigenComponent->addItem(tr("Third"));
+    connect(eigenComponent, SIGNAL(activated(int)),
+            this, SLOT(eigenComponentChanged(int)));
+    terminationLayout->addWidget(eigenComponent, 1, 1);
 
     // Create the operator of integrator.
     operatorType = new QComboBox(central);
@@ -430,51 +444,51 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // Radio button termination type
     rb = new QRadioButton(tr("Limit maximum advection time i.e. FTLE"), terminationGroup);
     terminationTypeButtonGroup->addButton(rb, 0);
-    terminationLayout->addWidget(rb, 1, 0, 1, 2);
+    terminationLayout->addWidget(rb, 2, 0, 1, 2);
 
     rb->setChecked(true);
 
     rb = new QRadioButton(tr("Limit maximum advection distance i.e. FLLE"), terminationGroup);
     terminationTypeButtonGroup->addButton(rb, 1);
-    terminationLayout->addWidget(rb, 2, 0, 1, 2);
+    terminationLayout->addWidget(rb, 3, 0, 1, 2);
 
     rb = new QRadioButton(tr("Limit maximum size i.e. FSLE"), terminationGroup);
     terminationTypeButtonGroup->addButton(rb, 2);
-    terminationLayout->addWidget(rb, 3, 0, 1, 2);
+    terminationLayout->addWidget(rb, 4, 0, 1, 2);
 
     connect(terminationTypeButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(terminationTypeButtonGroupChanged(int)));
 
     // Check box termination type
     limitMaxTime = new QCheckBox(tr("Limit maximum advection time"), terminationGroup);
     connect(limitMaxTime, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeChanged(bool)));
-    terminationLayout->addWidget(limitMaxTime, 1, 0, 1, 2);
+    terminationLayout->addWidget(limitMaxTime, 2, 0, 1, 2);
     limitMaxTime->hide();
 
     limitMaxDistance = new QCheckBox(tr("Limit maximum advection distance"), terminationGroup);
     connect(limitMaxDistance, SIGNAL(toggled(bool)), this, SLOT(limitMaxDistanceChanged(bool)));
-    terminationLayout->addWidget(limitMaxDistance, 2, 0, 1, 2);
+    terminationLayout->addWidget(limitMaxDistance, 3, 0, 1, 2);
     limitMaxDistance->hide();
 
     // Termination values
     maxTime = new QLineEdit(central);
     connect(maxTime, SIGNAL(returnPressed()), this, SLOT(maxTimeProcessText()));
-    terminationLayout->addWidget(maxTime, 1, 2);
+    terminationLayout->addWidget(maxTime, 2, 2);
 
     maxDistance = new QLineEdit(central);
     connect(maxDistance, SIGNAL(returnPressed()), this, SLOT(maxDistanceProcessText()));
-    terminationLayout->addWidget(maxDistance, 2, 2);
+    terminationLayout->addWidget(maxDistance, 3, 2);
 
     maxSize = new QLineEdit(central);
     connect(maxSize, SIGNAL(returnPressed()), this, SLOT(maxSizeProcessText()));
-    terminationLayout->addWidget(maxSize, 3, 2);
+    terminationLayout->addWidget(maxSize, 4, 2);
 
     // Max steps override
     QLabel *maxStepsLabel = new QLabel(tr("Maximum number of steps"), terminationGroup);
-    terminationLayout->addWidget(maxStepsLabel, 4, 0, 1, 2);
+    terminationLayout->addWidget(maxStepsLabel, 5, 0, 1, 2);
     maxSteps = new QLineEdit(central);
     connect(maxSteps, SIGNAL(returnPressed()),
             this, SLOT(maxStepsProcessText()));
-    terminationLayout->addWidget(maxSteps, 4, 2);
+    terminationLayout->addWidget(maxSteps, 5, 2);
 }
 
 
@@ -827,12 +841,14 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             operationType->setCurrentIndex(int(atts->GetOperationType()) );
             operationType->blockSignals(false);
 
-            if( atts->GetOperationType() == LCSAttributes::Lyapunov)
+            if( atts->GetOperationType() == LCSAttributes::Lyapunov )
             {
               terminationTypeButtonGroup->blockSignals(true);
               terminationTypeButtonGroup->button(0)->show();
               terminationTypeButtonGroup->button(1)->show();
               terminationTypeButtonGroup->button(2)->show();
+              eigenComponentLabel->show();
+              eigenComponent->show();
               maxSize->show();
               limitMaxDistance->hide();
               limitMaxTime->hide();
@@ -851,10 +867,24 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               terminationTypeButtonGroup->button(0)->hide();
               terminationTypeButtonGroup->button(1)->hide();
               terminationTypeButtonGroup->button(2)->hide();
+
+              if( atts->GetOperationType() == LCSAttributes::EigenValue ||
+                  atts->GetOperationType() == LCSAttributes::EigenVector )
+              {
+                eigenComponentLabel->show();
+                eigenComponent->show();
+                operatorType->hide();
+              }
+              else
+              {
+                eigenComponentLabel->hide();
+                eigenComponent->hide();
+                operatorType->show();
+              }
+
               maxSize->hide();
               limitMaxDistance->show();
               limitMaxTime->show();
-              operatorType->show();
               if( atts->GetOperatorType() == LCSAttributes::BaseValue)
                 clampLogValues->hide();
               else
@@ -1660,6 +1690,16 @@ QvisLCSWindow::operationTypeChanged(int val)
     if(val != atts->GetOperationType())
     {
         atts->SetOperationType(LCSAttributes::OperationType(val));
+        Apply();
+    }
+}   
+
+void
+QvisLCSWindow::eigenComponentChanged(int val)
+ {
+    if(val != atts->GetEigenComponent())
+    {
+        atts->SetEigenComponent(LCSAttributes::EigenComponent(val));
         Apply();
     }
 }   
