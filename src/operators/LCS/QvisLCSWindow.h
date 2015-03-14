@@ -126,7 +126,9 @@ class QvisLCSWindow : public QvisOperatorWindow
     void limitMaxDistanceChanged(bool);
 
     void operationTypeChanged(int);
+    void eigenComponentChanged(int);
     void operatorTypeChanged(int);
+ 
     void terminationTypeButtonGroupChanged(int);
     void clampLogValuesChanged(bool);
 
@@ -188,6 +190,8 @@ class QvisLCSWindow : public QvisOperatorWindow
     QCheckBox *limitMaxDistance;
 
     QComboBox *operationType;
+    QLabel    *eigenComponentLabel;
+    QComboBox *eigenComponent;
     QComboBox *operatorType;
     QCheckBox *clampLogValues;
 
