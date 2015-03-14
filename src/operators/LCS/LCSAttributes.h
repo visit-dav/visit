@@ -109,10 +109,18 @@ public:
     };
     enum OperationType
     {
-        Lyapunov,
         IntegrationTime,
         ArcLength,
-        AverageDistanceFromSeed
+        AverageDistanceFromSeed,
+        EigenValue,
+        EigenVector,
+        Lyapunov
+    };
+    enum EigenComponent
+    {
+        First,
+        Second,
+        Third
     };
     enum OperatorType
     {
@@ -171,6 +179,7 @@ public:
     void SetIntegrationDirection(IntegrationDirection integrationDirection_);
     void SetMaxSteps(int maxSteps_);
     void SetOperationType(OperationType operationType_);
+    void SetEigenComponent(EigenComponent eigenComponent_);
     void SetOperatorType(OperatorType operatorType_);
     void SetTerminationType(TerminationType terminationType_);
     void SetTerminateBySize(bool terminateBySize_);
@@ -219,6 +228,7 @@ public:
     IntegrationDirection GetIntegrationDirection() const;
     int          GetMaxSteps() const;
     OperationType GetOperationType() const;
+    EigenComponent GetEigenComponent() const;
     OperatorType GetOperatorType() const;
     TerminationType GetTerminationType() const;
     bool         GetTerminateBySize() const;
@@ -300,6 +310,11 @@ public:
 protected:
     static std::string OperationType_ToString(int);
 public:
+    static std::string EigenComponent_ToString(EigenComponent);
+    static bool EigenComponent_FromString(const std::string &, EigenComponent &);
+protected:
+    static std::string EigenComponent_ToString(int);
+public:
     static std::string OperatorType_ToString(OperatorType);
     static bool OperatorType_FromString(const std::string &, OperatorType &);
 protected:
@@ -336,6 +351,7 @@ public:
         ID_integrationDirection,
         ID_maxSteps,
         ID_operationType,
+        ID_eigenComponent,
         ID_operatorType,
         ID_terminationType,
         ID_terminateBySize,
@@ -383,6 +399,7 @@ private:
     int    integrationDirection;
     int    maxSteps;
     int    operationType;
+    int    eigenComponent;
     int    operatorType;
     int    terminationType;
     bool   terminateBySize;
@@ -422,6 +439,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LCSATTRIBUTES_TMFS "iIiDiDiiiiibdbdbddbddiddidDibiiiibbddibbbbd"
+#define LCSATTRIBUTES_TMFS "iIiDiDiiiiiibdbdbddbddiddidDibiiiibbddibbbbd"
 
 #endif

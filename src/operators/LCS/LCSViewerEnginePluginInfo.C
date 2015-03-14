@@ -1,4 +1,4 @@
-/*****************************************************************************
+>/*****************************************************************************
 *
 * Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
@@ -219,9 +219,10 @@ LCSViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 {
     LCSAttributes *atts_in = (LCSAttributes *)atts;
 
-    const char *typeString[2][3] = { { "FTLE", "FDLE", "FSLE" },
-                                     { "Time", "Arc length",
-                                       "Ave. dist. from seed" } };
+    const char *typeString[3][3] = { { "Time", "Arc length",
+                                       "Ave. dist. from seed" },
+                                     { "First", "Second", "Third" },
+                                     { "FTLE", "FDLE", "FSLE" } };
 
     const char *operatorString[4] = { "Base", "Gradient", "Jacobian", "Ratio" };
 
@@ -237,22 +238,38 @@ LCSViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 
     int i, j, k;
 
-    if( atts_in->GetOperationType() == LCSAttributes::Lyapunov )
+    if( atts_in->GetOperationType() == LCSAttributes::IntegrationTime ||
+        atts_in->GetOperationType() == LCSAttributes::ArcLength ||
+        atts_in->GetOperationType() == LCSAttributes::AverageDistanceFromSeed )
     {
         i = 0;
-        j = atts_in->GetTerminationType();
-
-        var += std::string(" - ") + std::string(typeString[i][j]);
-    }
-    else
-    {
-        i = 1;
-        j = atts_in->GetOperationType() - 1;
+        j = atts_in->GetOperationType();
         k = atts_in->GetOperatorType();
 
         var += std::string(" - ") + std::string(typeString[i][j]) +
                std::string(" - ") + std::string(operatorString[k]);
 
+    }
+    else if( atts_in->GetOperationType() == LCSAttributes::EigenValue ||
+             atts_in->GetOperationType() == LCSAttributes::EigenVector )
+    {
+        i = 1;
+        j = atts_in->GetEigenComponent();
+
+        var += std::string(" - ") + std::string(typeString[i][j]) +
+          std::string(" Eigen ");
+
+        if( atts_in->GetOperationType() == LCSAttributes::EigenValue )
+          var += std::string( "value" );
+        else if( atts_in->GetOperationType() == LCSAttributes::EigenVector )
+          var += std::string( "vector" );
+    }
+    else //if( atts_in->GetOperationType() == LCSAttributes::Lyapunov )
+    {
+        i = 2;
+        j = atts_in->GetTerminationType();
+
+        var += std::string(" - ") + std::string(typeString[i][j]);
     }
 
     return var;
@@ -276,4 +293,3 @@ LCSViewerEnginePluginInfo::GetMenuName() const
 {
     return "LCS";
 }
-
