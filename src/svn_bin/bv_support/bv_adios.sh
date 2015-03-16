@@ -286,14 +286,15 @@ function build_ADIOS
     
     info "Invoking command to configure ADIOS"
     if [[ "$VISIT_MPI_COMPILER" != "" ]] ; then
-        ADIOS_MPI_OPTS="MPICC=\"$VISIT_MPI_COMPILER\"  MPICXX=\"$VISIT_MPI_COMPILER_CXX\""
+        ADIOS_MPI_OPTS="MPICC=\"$VISIT_MPI_COMPILER\"  MPICXX=\"$VISIT_MPI_COMPILER_CXX\" LDFLAGS=\"$PAR_LINKER_FLAGS\""
+        ADIOS_MPI_INC="$PAR_INCLUDE"
 
     else
         ADIOS_MPI_OPTS="--without-mpi"
     fi
        info     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-                  CC="$C_COMPILER" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-                  CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+                  CC="$C_COMPILER" CFLAGS=\"$CFLAGS $C_OPT_FLAGS $ADIOS_MPI_INC\" \
+                  CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $ADIOS_MPI_INC\" \
                   $ADIOS_MPI_OPTS \
                   --disable-fortran \
 	              --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
@@ -301,7 +302,7 @@ function build_ADIOS
                   --prefix="$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH"
         
         sh -c "./configure ${OPTIONAL} CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-                CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+                CFLAGS=\"$CFLAGS $C_OPT_FLAGS $ADIOS_MPI_INC\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $ADIOS_MPI_INC\" \
                 $ADIOS_MPI_OPTS \
                 --disable-fortran \
 	            --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
