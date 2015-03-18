@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="hostNickname" type="string">Euler</Field>
+    <Field name="hostNickname" type="string">ETH Zurich Euler</Field>
     <Field name="host" type="string">euler.ethz.ch</Field>
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string"></Field>
