@@ -332,8 +332,8 @@ avtPickQuery::PostExecute(void)
 //    Minimize work done by creating new SIL.
 //
 //    Kathleen Bonnell, Mon Apr 19 15:40:23 PDT 2004
-//    Simplified use of contract and dataRequest.   No longer use dataRequest's timestep
-//    to set pickAtts' timestep.
+//    Simplified use of contract and dataRequest.   No longer use
+//    dataRequest's timestep to set pickAtts' timestep.
 //
 //    Kathleen Bonnell, Tue May  4 14:25:07 PDT 2004
 //    Set SILRestriction via member restriction, instead of SILUseSet.
@@ -378,6 +378,10 @@ avtPickQuery::PostExecute(void)
 //    Add data selections from original executions, which makes index
 //    calculations be consistent and also reduces amount of data loaded.
 //
+//    Kathleen Biagas, Wed Mar 18 15:38:36 PDT 2015
+//    Provide secondary vars and request Node/Zones on all procs, to prevent
+//    engine crash/hang on pipeline re-execution.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -421,47 +425,35 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 
     dataRequest = new avtDataRequest(pickAtts.GetActiveVariable().c_str(),
                                      pickAtts.GetTimeStep(), querySILR);
-    //
-    //  If maxDom == -1, then all procs will be doing real work.  Otherwise,
-    //  only the proc with pickAtt.domain == maxDom will do real work.
-    //
-    int maxDom = UnifyMaximumValue(pickAtts.GetDomain());
 
-
-    //
-    // Only set vars and turn on zone/node numbers if this process
-    // will be doing real work.
-    //
-    if (maxDom == -1 || maxDom == pickAtts.GetDomain())
+    stringVector vars = pickAtts.GetVariables();
+    for (size_t i = 0; i < vars.size(); i++)
     {
-        stringVector vars = pickAtts.GetVariables();
-        for (size_t i = 0; i < vars.size(); i++)
+        if (dataRequest->GetVariable() != vars[i])
         {
-            if (dataRequest->GetVariable() != vars[i])
+            if (!dataRequest->HasSecondaryVariable(vars[i].c_str()))
             {
-                if (!dataRequest->HasSecondaryVariable(vars[i].c_str()))
-                {
-                    dataRequest->AddSecondaryVariable(vars[i].c_str());
-                    requiresUpdate = true;
-                }
+                dataRequest->AddSecondaryVariable(vars[i].c_str());
+                requiresUpdate = true;
             }
         }
-
-        if (pickAtts.GetMatSelected())
-        {
-            dataRequest->TurnZoneNumbersOn();
-            dataRequest->TurnNodeNumbersOn();
-            requiresUpdate = true;
-        }
-        if (pickAtts.GetShowGlobalIds() || pickAtts.GetElementIsGlobal()) 
-        {
-            dataRequest->TurnGlobalZoneNumbersOn();
-            dataRequest->TurnGlobalNodeNumbersOn();
-            dataRequest->TurnZoneNumbersOn();
-            dataRequest->TurnNodeNumbersOn();
-            requiresUpdate = true;
-        }
     }
+
+    if (pickAtts.GetMatSelected())
+    {
+        dataRequest->TurnZoneNumbersOn();
+        dataRequest->TurnNodeNumbersOn();
+        requiresUpdate = true;
+    }
+    if (pickAtts.GetShowGlobalIds() || pickAtts.GetElementIsGlobal()) 
+    {
+        dataRequest->TurnGlobalZoneNumbersOn();
+        dataRequest->TurnGlobalNodeNumbersOn();
+        dataRequest->TurnZoneNumbersOn();
+        dataRequest->TurnNodeNumbersOn();
+        requiresUpdate = true;
+    }
+
     if (currentTime != pickAtts.GetTimeStep())
     {
         requiresUpdate = true;
@@ -470,6 +462,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     requiresUpdate = (bool)UnifyMaximumValue((int)requiresUpdate);
     if (requiresUpdate)
     {
+        int maxDom = UnifyMaximumValue(pickAtts.GetDomain());
         if (!singleDomain && maxDom != -1)
         {
             intVector dlist;
