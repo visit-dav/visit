@@ -81,7 +81,7 @@ static inline double sign( const double& a, const double& b )
 //
 // ****************************************************************************
 
-avtIVPEuler::avtIVPEuler() : vCur(0,0,0)
+avtIVPEuler::avtIVPEuler()
 {
     // set (somewhat) reasonable defaults
     tol = 1e-8;
@@ -104,42 +104,6 @@ avtIVPEuler::avtIVPEuler() : vCur(0,0,0)
 avtIVPEuler::~avtIVPEuler()
 {
 }
-
-
-// ****************************************************************************
-//  Method: avtIVPEuler::GetCurrentV
-//
-//  Purpose:
-//      Gets the current V.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-avtVector 
-avtIVPEuler::GetCurrentV() const
-{
-    return vCur;
-}
-
-// ****************************************************************************
-//  Method: avtIVPEuler::SetCurrentV
-//
-//  Purpose:
-//      Sets the current V.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-// ****************************************************************************
-
-void
-avtIVPEuler::SetCurrentV(const avtVector &newV)
-{
-    vCur = newV;
-}
-
 
 // ****************************************************************************
 //  Method: avtIVPEuler::Reset
@@ -183,11 +147,11 @@ avtIVPEuler::Reset(const double& t_start,
                    const avtVector &v_start)
 {
     t = t_start;
-    numStep = 0;
-
     yCur = y_start;
     vCur = v_start;
     h = h_max;
+
+    numStep = 0;
 }
 
 
@@ -266,6 +230,7 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
         if ((fieldResult = (*field)(t_local, yCur, vCur)) != avtIVPField::OK)
             return ConvertResult(fieldResult);
 
+        vNew = vCur;
         yNew = yCur + h * vCur;     // New position
     }
     

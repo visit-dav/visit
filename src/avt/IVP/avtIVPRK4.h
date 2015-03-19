@@ -85,9 +85,6 @@ class IVP_API avtIVPRK4: public avtIVPSolver
   protected:
     // state serialization
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
-    
-  private:
-    int numStep;
 };
 
 #endif

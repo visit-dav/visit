@@ -70,7 +70,7 @@ static inline double sign( const double& a, const double& b )
 //
 // ****************************************************************************
 
-avtIVPLeapfrog::avtIVPLeapfrog() : vCur(0,0,0)
+avtIVPLeapfrog::avtIVPLeapfrog()
 {
     // set (somewhat) reasonable defaults
     tol = 1e-8;
@@ -99,45 +99,6 @@ avtIVPLeapfrog::~avtIVPLeapfrog()
 
 
 // ****************************************************************************
-//  Method: avtIVPLeapfrog::GetCurrentV
-//
-//  Purpose:
-//      Gets the current V.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-//  Modifications:
-
-// ****************************************************************************
-
-avtVector 
-avtIVPLeapfrog::GetCurrentV() const
-{
-    return vCur;
-}
-
-// ****************************************************************************
-//  Method: avtIVPLeapfrog::SetCurrentV
-//
-//  Purpose:
-//      Sets the current V.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 5, 2008
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtIVPLeapfrog::SetCurrentV(const avtVector &newV)
-{
-    vCur = newV;
-}
-
-
-// ****************************************************************************
 //  Method: avtIVPLeapfrog::Reset
 //
 //  Purpose:
@@ -154,11 +115,11 @@ avtIVPLeapfrog::Reset(const double& t_start,
                       const avtVector &v_start)
 {
     t = t_start;
-    numStep = 0;
-
     yCur = y_start;
     vCur = v_start;
     h = h_max;
+
+    numStep = 0;
 }
 
 
@@ -232,6 +193,7 @@ avtIVPLeapfrog::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
         if ((fieldResult = (*field)(t_local, yCur, vCur)) != avtIVPField::OK)
             return ConvertResult(fieldResult);
 
+        vNew = vCur;
         yNew = yCur + vCur * h;     // New position
     }
     

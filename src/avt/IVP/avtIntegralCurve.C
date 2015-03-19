@@ -279,6 +279,22 @@ avtIntegralCurve::Advance(avtIVPField *field)
         return numStepsTaken;
     }
 
+    // For a directionless field the initial velocity direction needs
+    // to be known.
+    if( field->GetDirectionless() )
+    {
+      // Find the value sans orientation checks.
+      field->SetDirectionless( false );
+
+      avtVector vel;
+      (*field)(ivp->GetCurrentT(), ivp->GetCurrentY(), vel);
+
+      ivp->SetCurrentV(vel);
+
+      // Restore the orientation checks.
+      field->SetDirectionless( true );
+    }
+
     // Determine the maximum integration time from the field's temporal
     // extent and the time termination criterion (if set).
     double tfinal;

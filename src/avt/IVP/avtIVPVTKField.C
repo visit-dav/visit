@@ -88,8 +88,6 @@ avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator )
     lastCell = -1;
     lastPos.x = lastPos.y = lastPos.z =
         std::numeric_limits<double>::quiet_NaN();
-    lastVel.x = lastVel.y = lastVel.z =
-        std::numeric_limits<double>::quiet_NaN();
 
     std::fill( sclData, sclData+256, (vtkDataArray*)NULL );
     std::fill( sclCellBased, sclCellBased+256, false );
@@ -217,10 +215,10 @@ avtIVPVTKField::operator()(const double &t, const avtVector &p, avtVector &retV)
 bool
 avtIVPVTKField::FindValue(vtkDataArray *vectorData, avtVector &vel) const
 {
-    vel.x = vel.y = vel.z = 0.0;
-
     if( directionless )
     {
+      avtVector lastVel = vel;  // Save obtaining the dot product.
+
       // Cell based with directionless field.
       if (velCellBased)
       {
@@ -235,25 +233,27 @@ avtIVPVTKField::FindValue(vtkDataArray *vectorData, avtVector &vel) const
       // Node based with directionless field.
       else
       {
+        vel.x = vel.y = vel.z = 0.0;
+
         for (avtInterpolationWeights::const_iterator wi=lastWeights.begin();
              wi!=lastWeights.end(); ++wi)
         {
           double tmp[3];
           vectorData->GetTuple( wi->i, tmp );
-          
+
           // For a directionless field orient each vector so that it is
           // in the same direction as the last vector.
-          if( tmp[0]*lastVel.x + tmp[1]*lastVel.y + tmp[2]*lastVel.z > 0 )
-          {
-            vel.x += wi->w * tmp[0];
-            vel.y += wi->w * tmp[1];
-            vel.z += wi->w * tmp[2];
-          }
-          else
+          if( tmp[0]*lastVel.x + tmp[1]*lastVel.y + tmp[2]*lastVel.z < 0 )
           {
             vel.x -= wi->w * tmp[0];
             vel.y -= wi->w * tmp[1];
             vel.z -= wi->w * tmp[2];
+          }
+          else
+          {
+            vel.x += wi->w * tmp[0];
+            vel.y += wi->w * tmp[1];
+            vel.z += wi->w * tmp[2];
           }
         }
       }
@@ -270,6 +270,8 @@ avtIVPVTKField::FindValue(vtkDataArray *vectorData, avtVector &vel) const
     // Node based with directional field.
     else
     {
+      vel.x = vel.y = vel.z = 0.0;
+
       for (avtInterpolationWeights::const_iterator wi=lastWeights.begin();
            wi!=lastWeights.end(); ++wi)
       {
@@ -284,52 +286,6 @@ avtIVPVTKField::FindValue(vtkDataArray *vectorData, avtVector &vel) const
 
     return true;
 }
-
-
-// ****************************************************************************
-//  Method: avtIVPVTKField::SetLastVelocity
-//
-//  Purpose: Sets the last velocity based on the nearest neighbor and
-//           is used for integrating directionless fields
-//
-//  Programmer: Allen Sanderson
-//  Creation:   March 5, 2015
-//
-// ****************************************************************************
-
-avtIVPField::Result
-avtIVPVTKField::SetLastVelocity(const double &t, const avtVector &p)
-{
-  if (FindCell(t, p) != OK )
-    return OUTSIDE_SPATIAL;
-
-  if (velCellBased)
-    velData->GetTuple(lastCell, &lastVel.x);
-  else
-  {
-    double tmp[3], w = std::numeric_limits<double>::max();
-
-    // Based on the weights find the closest neighbor and set it to be
-    // the last velocity value.
-    for (avtInterpolationWeights::const_iterator wi=lastWeights.begin();
-         wi!=lastWeights.end(); ++wi)
-    {
-      velData->GetTuple( wi->i, tmp );
-
-      if( w > wi->w )
-      {
-        w = wi->w;
-
-        lastVel.x = tmp[0];
-        lastVel.y = tmp[1];
-        lastVel.z = tmp[2];
-      }
-    }
-  }
-    
-  return OK;
-}
-
 
 // ****************************************************************************
 //  Method: avtIVPVTKField::ConvertToCartesian

@@ -112,7 +112,6 @@ class IVP_API avtIVPM3DC1Integrator: public avtIVPSolver
                      int dflag, double *Bpout);
 
   private:
-    int numStep;
     unsigned int max_degenerate_iterations;
     unsigned int degenerate_iterations;
     double stiffness_eps;

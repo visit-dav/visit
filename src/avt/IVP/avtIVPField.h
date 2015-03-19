@@ -138,8 +138,6 @@ class IVP_API avtIVPField
 
     virtual void         SetDirectionless( bool val ) { directionless = val; }
     virtual bool         GetDirectionless() { return directionless; }
-    virtual Result       SetLastVelocity(const double &t,
-                                         const avtVector &p) { return OK; }
 
  protected:
     unsigned int order;
