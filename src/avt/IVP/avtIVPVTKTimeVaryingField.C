@@ -266,6 +266,8 @@ avtIVPVTKTimeVaryingField::operator()( const double &t,
     }
     else
     {
+        vel.x = vel.y = vel.z = 0.0;
+
         for( avtInterpolationWeights::const_iterator wi=lastWeights.begin();
              wi!=lastWeights.end(); ++wi )
         {
