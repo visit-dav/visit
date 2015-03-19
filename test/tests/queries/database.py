@@ -1005,6 +1005,9 @@ def QueryZR_RZ():
 
     TestText("QueryZR_RZ", s)
 
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_cylindrical_test_data/poly_RZ.vtk"))
+
 def QueryArbPoly():
     SetQueryOutputToString()
 
