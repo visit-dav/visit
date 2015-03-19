@@ -77,9 +77,6 @@ class IVP_API avtIVPEuler: public avtIVPSolver
 
     virtual void    OnExitDomain();
 
-    virtual avtVector GetCurrentV() const;
-    virtual void      SetCurrentV( const avtVector &newV );
-
     virtual avtIVPEuler* Clone() const
     {
         return new avtIVPEuler( *this );
@@ -88,10 +85,6 @@ class IVP_API avtIVPEuler: public avtIVPSolver
   protected:
     // state serialization
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
-    
-  private:
-    int numStep;
-    avtVector vCur;
 };
 
 #endif

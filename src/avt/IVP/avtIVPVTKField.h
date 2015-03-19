@@ -110,7 +110,7 @@ class IVP_API avtIVPVTKField: public avtIVPField
                                        avtVector &retV) const
     { return FAIL; }
 
-    virtual bool      FindValue(vtkDataArray* vectorData, avtVector &vel) const;
+    virtual bool      FindValue(vtkDataArray *vectorData, avtVector &vel) const;
     virtual bool      FindValue(vtkDataArray *vectorData, avtVector &vel,
                                 double t, const avtVector &p) const 
                                 { return FindValue(vectorData, vel); }
@@ -135,9 +135,6 @@ class IVP_API avtIVPVTKField: public avtIVPField
 
     Result             FindCell( const double& t, const avtVector& p ) const;
 
-    Result             SetLastVelocity(const double &t,
-                                       const avtVector &p);
-
     vtkDataSet*        ds;
     avtCellLocator*    loc;
 
@@ -147,7 +144,6 @@ class IVP_API avtIVPVTKField: public avtIVPField
     bool               sclCellBased[256];
 
     mutable avtVector               lastPos;
-    mutable avtVector               lastVel;
     mutable vtkIdType               lastCell;
     mutable avtInterpolationWeights lastWeights;
 

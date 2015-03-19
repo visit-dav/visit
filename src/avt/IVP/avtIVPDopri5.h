@@ -111,7 +111,6 @@ class IVP_API avtIVPDopri5: public avtIVPSolver
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
 
   private:
-    int numStep;
     double reltol;
     double abstol;
 

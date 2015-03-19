@@ -178,14 +178,16 @@ avtIVPAdamsBashforth::Reset(const double& t_start,
                             const avtVector &v_start)
 {
     t = t_start;
-    numStep = 0;
+    yCur = y_start;
+    vCur = v_start;
+    h = h_max;
 
     degenerate_iterations = 0;
-    yCur = y_start;
-    h = h_max;
 
     abStep = 0;
     abNSteps = 1;
+
+    numStep = 0;
 }
 
 
@@ -280,14 +282,12 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
         return avtIVPSolver::STEPSIZE_UNDERFLOW;
 
     avtIVPField::Result fieldResult;
-    avtVector yNew, vCur, vNew(0,0,0);
+    avtVector yNew, vTmp, vNew(0,0,0);
 
     // Get the first vector value for the history. 
     if ((fieldResult = (*field)(t_local, yCur, vCur)) != avtIVPField::OK)
       return ConvertResult(fieldResult);
 
-    // NOTE: DO NOT pass history[0] to the above as it gets a bogus
-    // value when calculating pathlines.
     history[0] = vCur;
 
     // Calculate the new velocity using the Adams-Bashforth algorithm
@@ -330,6 +330,7 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
     numStep++;
 
     yCur = yNew;
+    vCur = vNew;
     t = t+h;
 
     if( period && last )
@@ -371,6 +372,7 @@ avtIVPAdamsBashforth::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(h_max)
         .Accept(t)
         .Accept(yCur)
+        .Accept(vCur)
         .Accept(history[0])
         .Accept(history[1])
         .Accept(history[2])

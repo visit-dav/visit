@@ -43,7 +43,6 @@
 #include <avtIVPSolver.h>
 #include <avtIVPStateHelper.h>
 
-
 // ****************************************************************************
 //  Method: avtIVPSolver::GetState
 //
@@ -56,7 +55,7 @@
 // ****************************************************************************
 
 avtIVPSolver::avtIVPSolver() : convertToCartesian(false), convertToCylindrical(false),
-                               order(1), yCur(avtVector()), h(1e-5), h_max(1e-5),
+                               order(1), yCur(avtVector()), vCur(avtVector()), h(1e-5), h_max(1e-5),
                                tol(1e-8), t(0.0), period(0), baseTime(0), maxTime(1),
                                direction(DIRECTION_BACKWARD)
 {
@@ -80,6 +79,7 @@ avtIVPSolver::GetCurrentY() const
     return yCur;
 }
 
+
 // ****************************************************************************
 //  Method: avtIVPSolver::SetCurrentY
 //
@@ -95,6 +95,42 @@ void
 avtIVPSolver::SetCurrentY(const avtVector &newY)
 {
     yCur = newY;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetCurrentV
+//
+//  Purpose:
+//      Gets the current V.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+avtVector 
+avtIVPSolver::GetCurrentV() const
+{
+    return vCur;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetCurrentV
+//
+//  Purpose:
+//      Sets the current V.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   August 5, 2008
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetCurrentV(const avtVector &newV)
+{
+    vCur = newV;
 }
 
 
@@ -395,6 +431,7 @@ avtIVPSolver::GetBaseTime() const
     return baseTime;
 }
 
+
 // ****************************************************************************
 //  Method: avtIVPSolver::SetBaseTime
 //
@@ -430,6 +467,7 @@ avtIVPSolver::GetDirection() const
 {
     return direction;
 }
+
 
 // ****************************************************************************
 //  Method: avtIVPSolver::SetDirection

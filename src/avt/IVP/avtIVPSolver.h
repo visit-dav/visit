@@ -458,6 +458,9 @@ class IVP_API avtIVPSolver
     virtual void      SetCurrentY(const avtVector &newY);
     virtual avtVector GetCurrentY() const;
 
+    virtual void      SetCurrentV(const avtVector &newV);
+    virtual avtVector GetCurrentV() const;
+
     virtual void   SetNextStepSize(const double& h);
     virtual double GetNextStepSize() const;
 
@@ -497,8 +500,10 @@ protected:
     bool convertToCylindrical;
 
     unsigned int order;
+    unsigned int numStep;
 
     avtVector yCur;
+    avtVector vCur;
     double h, h_max;
     double tol;
     double t;
@@ -551,4 +556,5 @@ inline std::ostream& operator<<( std::ostream& out,
         return out<<"UNKNOWN";
     }
 }
+
 #endif

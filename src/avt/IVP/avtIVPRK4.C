@@ -146,10 +146,11 @@ avtIVPRK4::Reset(const double& t_start,
                  const avtVector &v_start)
 {
     t = t_start;
-    numStep = 0;
-
     yCur = y_start;
+    vCur = v_start;
     h = h_max;
+
+    numStep = 0;
 }
 
 
@@ -212,25 +213,32 @@ avtIVPRK4::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
 
     avtIVPField::Result fieldResult;
 
+    avtVector yNew, vNew, k1, k2, k3, k4;
+
     // Compute the RK4 values.
-    avtVector k1;
+    k1 = vCur;  // Set for usage with directionless fields
+                // so that the current direction is known.
     if ((fieldResult = (*field)(t_local, yCur, k1)) != avtIVPField::OK )
         return ConvertResult(fieldResult);
 
-    avtVector k2;
-    if ((fieldResult = (*field)(t_local+0.5*h, yCur+0.5*h*k1, k2)) != avtIVPField::OK)
+    k2 = k1 * 0.5;
+    yNew = yCur + h * k2;
+    if ((fieldResult = (*field)(t_local+0.5*h, yNew, k2)) != avtIVPField::OK)
         return ConvertResult(fieldResult);
     
-    avtVector k3;
-    if ((fieldResult = (*field)(t_local+0.5*h, yCur+0.5*h*k2, k3)) != avtIVPField::OK)
+    k3 = k2 * 0.5;
+    yNew = yCur + h * k3;
+    if ((fieldResult = (*field)(t_local+0.5*h, yNew, k3)) != avtIVPField::OK)
         return ConvertResult(fieldResult);
 
-    avtVector k4;
-    if ((fieldResult = (*field)(t_local+h, yCur+h*k3, k4)) != avtIVPField::OK)
+    k4 = k3;
+    yNew = yCur + h * k4;
+    if ((fieldResult = (*field)(t_local+h, yNew, k4)) != avtIVPField::OK)
         return ConvertResult(fieldResult);
 
     // Calculate the new position.
-    avtVector yNew = yCur + h*(k1 + 2.0*k2 + 2.0*k3 + k4)/6.0;
+    vNew = (k1 + 2.0*k2 + 2.0*k3 + k4) / 6.0;
+    yNew = yCur + h * vCur;
 
     // Convert and save the position.
     ivpstep->resize(2);
@@ -253,6 +261,7 @@ avtIVPRK4::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     numStep++;
     
     yCur = yNew;
+    vCur = vNew;
     t = t+h;
     
     if( period && last )

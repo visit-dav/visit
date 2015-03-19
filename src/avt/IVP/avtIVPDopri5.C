@@ -175,6 +175,11 @@ avtIVPDopri5::Reset(const double& t_start,
                     const avtVector& y_start,
                     const avtVector& v_start)
 {
+    t = t_start;
+    yCur = y_start;
+    vCur = v_start;
+    k1 = vCur;    // Note K1 and vCur contain the same value.
+
     h = h_init = 0.0;
     
     n_accepted = n_rejected = n_steps = n_eval = 0;
@@ -182,11 +187,8 @@ avtIVPDopri5::Reset(const double& t_start,
     facold = 1e-4;
     hlamb  = 0.0;
     iasti  = 0;
-    
-    t = t_start;
+
     numStep = 0;
-    yCur = y_start;
-    k1 = avtVector(0,0,0);
 }
 
 
@@ -273,8 +275,11 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
         h = sign( h, direction );
 
         // perform an explicit Euler step
-        avtVector k2, k3 = yCur + h * k1;
-        if ((*field)(t_local+h, k3, k2) != avtIVPField::OK)
+        avtVector y_new = yCur + h * k1;
+        avtVector k2 = k1;  // Set for usage with directionless fields
+                            // so that the current direction is known.
+
+        if ((*field)(t_local+h, y_new, k2) != avtIVPField::OK)
         {
             // Somehow we couldn't evaluate one of the points we need for the
             // starting estimate. The above code adheres to the h_max that is
@@ -297,7 +302,6 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 
             continue;
         }
-
 
         n_eval++;
 
@@ -402,6 +406,8 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
     // maybe also needed for hinit())
     if( n_steps == 0 )
     {
+        k1 = vCur;  // Set for usage with directionless fields
+                    // so that the current direction is known.
         if ((fieldResult = (*field)( t_local, yCur, k1 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
         n_eval++;
@@ -465,27 +471,33 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
         avtVector k2, k3, k4, k5, k6, k7;
 
         // perform stages
-        y_new = yCur + h*a21*k1;
+        k2 = a21*k1;               // Set for usage with directionless fields
+        y_new = yCur + h * k2;     // so that the current direction is known.
         if ((fieldResult = (*field)( t_local+c2*h, y_new, k2 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
 
-        y_new = yCur + h * ( a31*k1 + a32*k2 );
+        k3 = a31*k1 + a32*k2;
+        y_new = yCur + h * k3;
         if ((fieldResult = (*field)( t_local+c3*h, y_new, k3 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
         
-        y_new = yCur + h * ( a41*k1 + a42*k2 + a43*k3 );
+        k4 = a41*k1 + a42*k2 + a43*k3;
+        y_new = yCur + h * k4;
         if ((fieldResult = (*field)( t_local+c4*h, y_new, k4 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
         
-        y_new = yCur + h * ( a51*k1 + a52*k2 + a53*k3 + a54*k4 );
+        k5 = a51*k1 + a52*k2 + a53*k3 + a54*k4;
+        y_new = yCur + h * k5;
         if ((fieldResult = (*field)( t_local+c5*h, y_new, k5 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
 
-        y_stiff = y_new = yCur + h * (a61*k1 + a62*k2 + a63*k3 + a64*k4 + a65*k5);
+        k6 = a61*k1 + a62*k2 + a63*k3 + a64*k4 + a65*k5;
+        y_stiff = y_new = yCur + h * k6;
         if ((fieldResult = (*field)( t_local+h, y_new, k6 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
         
-        y_new = yCur + h * (a71*k1 + a73*k3 + a74*k4 + a75*k5 + a76*k6 );
+        k7 = a71*k1 + a73*k3 + a74*k4 + a75*k5 + a76*k6;
+        y_new = yCur + h * k7;
         if ((fieldResult = (*field)( t_local+h, y_new, k7 )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
 
@@ -605,15 +617,16 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
                 ivpstep->t0 = t;
                 ivpstep->t1 = t + h;
             }
-            
+
             // update internal state
             // first-same-as-last for k1
             k1 = k7;
-
+            
             // Update for the next step.
             numStep++;
 
             yCur = y_new;
+            vCur = k1;    // Note K1 and vCur contain the same value.
             t = t+h;
 
             if( period && last )
@@ -676,5 +689,6 @@ avtIVPDopri5::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(iasti)
         .Accept(nonsti)
         .Accept(yCur)
+        .Accept(vCur)
         .Accept(k1);
 }

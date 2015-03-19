@@ -387,7 +387,8 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
     }
 
     // std::cerr << (blockLoaded ? "block loaded  " : "no block to load  ")
-    //        << timeStep << "  " << skipBlk
+    //        << timeStep << "  " << skipBlk << "  "
+    //        << pt << "  " << doms.size() << "  " 
     //        << std::endl;
 
     // No blocks, exited spatial boundary.
@@ -1279,6 +1280,7 @@ avtPICSFilter::Execute(void)
     else
     {
         GetIntegralCurvesFromInitialSeeds(_ics);
+
         icAlgo->Initialize(_ics);
     }
 
@@ -1355,6 +1357,8 @@ avtPICSFilter::Execute(void)
                 break;
         }
     }
+
+    // std::cerr << _ics.size() << std::endl;
 }
 
 
@@ -1859,6 +1863,8 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
 {
     if (OperatingOnDemand())
     {
+      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
+
         // Get/Compute the interval tree.
         avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents(timeSlice);
 
@@ -1903,6 +1909,11 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
         if (dataIsReplicated)
             performCalculationsOverAllProcs = false;
         GetTypedInput()->RenumberDomainIDs(performCalculationsOverAllProcs);
+
+        // std::cerr << __FUNCTION__ << "  " << __LINE__  << "  "
+        //        << dataIsReplicated << "  "
+        //        << performCalculationsOverAllProcs << std::endl;
+
         TRY
         {
             if (intervalTree)
@@ -2794,14 +2805,28 @@ avtPICSFilter::DomainToRank(BlockIDType &domain)
 int
 avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
 {
+    // if( directionlessField )
+    //   std::cerr << "AdvectParticle " << ic->id << "  "
+    //          << __LINE__ << std::endl;
+
     int numStepsTaken = 0;
     
     //If no blockList, see if we can set it.
     if (ic->blockList.empty())
         FindCandidateBlocks(ic);
+
+    // std::cerr << "AdvectParticle " << ic->id << "  "
+    //        << __LINE__ << "  "
+    //        << ic->status << "  "
+    //        << ic->status.Integrateable()
+    //        << std::endl;
     
     if (!ic->status.Integrateable())
         return numStepsTaken;
+
+    // if( directionlessField )
+    //   std::cerr << "AdvectParticle " << ic->id << "  "
+    //          << __LINE__ << std::endl;
 
     bool haveBlock = false;
     BlockIDType blk;
@@ -2824,6 +2849,10 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
             delete field;
     }
 
+    // if( directionlessField )
+    //   std::cerr << "AdvectParticle " << ic->id << "  "
+    //          << __LINE__ << std::endl;
+
     // std::cerr << (haveBlock ? "have block" : "no block") << std::endl;
     if (!haveBlock)
     {
@@ -2837,23 +2866,13 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
         return numStepsTaken;
     }
 
-    // For a directionless field the initial velocity direction needs
-    // to be known.
-    if( directionlessField )
-    {
-      field->SetDirectionless( true );
-
-      double t = ic->CurrentTime();
-      avtVector pt = ic->CurrentLocation();
-
-      field->SetLastVelocity(t, pt);
-    }
-    else
-    {
-      field->SetDirectionless( false );
-    }
+    field->SetDirectionless( directionlessField );
 
     numStepsTaken = ic->Advance(field);
+
+    // if( directionlessField )
+    //   std::cerr << "Advancing " << ic->id << std::endl;
+
     delete field;
 
     // double dt = ((double) ((int) (ic->CurrentTime()*100.0)) / 100.0);
@@ -3274,20 +3293,11 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         }
         else
           seedPt = pts[i];
-        
+       
         vector<int> seedPtIds;
+
         // Need a single ID for the IC even if there are many domains.
-        int currentID = i;
-        int nextID = -1;
-
-        currentID = GetNextCurveID();
-        if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
-        {
-            currentID = 2*i;
-            nextID = 2*i+1;
-
-            nextID = GetNextCurveID();
-        }
+        int currentID = GetNextCurveID();
 
         if (integrationDirection == VTK_INTEGRATE_FORWARD)
         {
@@ -3325,16 +3335,22 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
             curves.push_back(ic0);
             seedPtIds.push_back(ic0->id);
             
+            currentID = GetNextCurveID();
+
             solver->SetDirection( avtIVPSolver::DIRECTION_BACKWARD );
             avtIntegralCurve *ic1 =
                 CreateIntegralCurve(solver,
                                     avtIntegralCurve::DIRECTION_BACKWARD,
                                     seedTime0, seedPt, seedVel,
-                                    nextID);
+                                    currentID);
             FindCandidateBlocks(ic1);
             curves.push_back(ic1);
             seedPtIds.push_back(ic1->id);
-            
+
+            // if( directionlessField )
+            //   std::cerr << "Creating " << ic0->id << "  " 
+            //          << ic1->id << std::endl;
+
             fwdBwdICPairs.push_back(std::pair<int,int> (ic0->id, ic1->id));
         }
         
