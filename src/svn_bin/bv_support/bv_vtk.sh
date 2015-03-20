@@ -202,6 +202,219 @@ EOF
     return 0;
 }
 
+function apply_vtk_610_patch_2
+{
+   patch -p0 << \EOF
+diff -c Rendering/Core/vtkMapper.cxx.orig Rendering/Core/vtkMapper.cxx
+*** Rendering/Core/vtkMapper.cxx.orig	2015-03-19 18:46:17.000000000 -0700
+--- Rendering/Core/vtkMapper.cxx	2015-03-19 18:44:43.000000000 -0700
+***************
+*** 18,23 ****
+--- 18,24 ----
+  #include "vtkExecutive.h"
+  #include "vtkLookupTable.h"
+  #include "vtkFloatArray.h"
++ #include "vtkDoubleArray.h"
+  #include "vtkImageData.h"
+  #include "vtkPointData.h"
+  #include "vtkMath.h"
+***************
+*** 517,523 ****
+  template<class T>
+  void vtkMapperCreateColorTextureCoordinates(T* input, float* output,
+                                              vtkIdType num, int numComps,
+!                                             int component, double* range)
+  {
+    double tmp, sum;
+    double k = 1.0 / (range[1]-range[0]);
+--- 518,524 ----
+  template<class T>
+  void vtkMapperCreateColorTextureCoordinates(T* input, float* output,
+                                              vtkIdType num, int numComps,
+!                                             int component, double* range, bool isLogScale)
+  {
+    double tmp, sum;
+    double k = 1.0 / (range[1]-range[0]);
+***************
+*** 529,540 ****
+      for (i = 0; i < num; ++i)
+        {
+        sum = 0;
+!       for (j = 0; j < numComps; ++j)
+!         {
+!         tmp = static_cast<double>(*input);
+!         sum += (tmp * tmp);
+!         ++input;
+!         }
+        output[i] = k * (sqrt(sum) - range[0]);
+        if (output[i] > 1.0)
+          {
+--- 530,545 ----
+      for (i = 0; i < num; ++i)
+        {
+        sum = 0;
+!       for (j = 0; j < numComps; ++j) {
+!           if(!isLogScale) {
+!               tmp = static_cast<double>(*input);
+!           } else {
+!               tmp = static_cast<double>(log10(*input));
+!           }
+!           
+!           sum += (tmp * tmp);
+!           ++input;
+!       }
+        output[i] = k * (sqrt(sum) - range[0]);
+        if (output[i] > 1.0)
+          {
+***************
+*** 551,557 ****
+      input += component;
+      for (i = 0; i < num; ++i)
+        {
+!       output[i] = k * (static_cast<double>(*input) - range[0]);
+        if (output[i] > 1.0)
+          {
+          output[i] = 1.0;
+--- 556,570 ----
+      input += component;
+      for (i = 0; i < num; ++i)
+        {
+!           if(!isLogScale) {
+!               output[i] = k * (static_cast<double>(*input) - range[0]);
+!           } else {
+!               if(*input > 0) {
+!                   output[i] = k * (static_cast<double>(log10(*input)) - range[0]);
+!               } else {
+!                   output[i] = 0;
+!               }
+!           }
+        if (output[i] > 1.0)
+          {
+          output[i] = 1.0;
+***************
+*** 565,571 ****
+      }
+  }
+  
+- 
+  #define ColorTextureMapSize 256
+  // a side effect of this is that this->ColorCoordinates and
+  // this->ColorTexture are set.
+--- 578,583 ----
+***************
+*** 583,588 ****
+--- 595,604 ----
+      this->Colors = 0;
+      }
+  
++     double minRange = range[0];
++     double maxRange = range[1];
++     bool isLogScale = this->LookupTable->UsingLogScale() == 1;
++     
+    // If the lookup table has changed, the recreate the color texture map.
+    // Set a new lookup table changes this->MTime.
+    if (this->ColorTextureMap == 0 ||
+***************
+*** 599,618 ****
+      // Get the texture map from the lookup table.
+      // Create a dummy ramp of scalars.
+      // In the future, we could extend vtkScalarsToColors.
+!     double k = (range[1]-range[0]) / (ColorTextureMapSize-1);
+!     vtkFloatArray* tmp = vtkFloatArray::New();
+      tmp->SetNumberOfTuples(ColorTextureMapSize);
+!     float* ptr = tmp->GetPointer(0);
+      for (int i = 0; i < ColorTextureMapSize; ++i)
+!       {
+!       *ptr = range[0] + i * k;
+!       ++ptr;
+!       }
+      this->ColorTextureMap = vtkImageData::New();
+      this->ColorTextureMap->SetExtent(0,ColorTextureMapSize-1,
+                                       0,0, 0,0);
+!     this->ColorTextureMap->GetPointData()->SetScalars(
+!          this->LookupTable->MapScalars(tmp, this->ColorMode, 0));
+      this->LookupTable->SetAlpha(orig_alpha);
+      // Do we need to delete the scalars?
+      this->ColorTextureMap->GetPointData()->GetScalars()->Delete();
+--- 615,643 ----
+      // Get the texture map from the lookup table.
+      // Create a dummy ramp of scalars.
+      // In the future, we could extend vtkScalarsToColors.
+!     if(isLogScale) {
+!         double logRange[2];
+!         vtkLookupTable::GetLogRange(range, logRange);
+!         minRange = logRange[0];
+!         maxRange = logRange[1];
+!     }
+! 
+!     double k = (maxRange - minRange) / (double)(ColorTextureMapSize-1);
+!     vtkDoubleArray* tmp = vtkDoubleArray::New();
+      tmp->SetNumberOfTuples(ColorTextureMapSize);
+!     double* ptr = tmp->GetPointer(0);
+!     
+      for (int i = 0; i < ColorTextureMapSize; ++i)
+!     {
+!         double tmpVal = minRange + i * k;
+!         *ptr = !isLogScale ? tmpVal : (double)pow(10., tmpVal);
+!         ++ptr;
+!     }
+!         
+      this->ColorTextureMap = vtkImageData::New();
+      this->ColorTextureMap->SetExtent(0,ColorTextureMapSize-1,
+                                       0,0, 0,0);
+!     this->ColorTextureMap->GetPointData()->SetScalars(this->LookupTable->MapScalars(tmp, this->ColorMode, 0));
+      this->LookupTable->SetAlpha(orig_alpha);
+      // Do we need to delete the scalars?
+      this->ColorTextureMap->GetPointData()->GetScalars()->Delete();
+***************
+*** 635,641 ****
+        this->ColorCoordinates->UnRegister(this);
+        this->ColorCoordinates = 0;
+        }
+! 
+      // Now create the color texture coordinates.
+      int numComps = scalars->GetNumberOfComponents();
+      void* input = scalars->GetVoidPointer(0);
+--- 660,671 ----
+        this->ColorCoordinates->UnRegister(this);
+        this->ColorCoordinates = 0;
+        }
+!         
+!     if(isLogScale) {
+!         range[0] = minRange;
+!         range[1] = maxRange;
+!     }
+!         
+      // Now create the color texture coordinates.
+      int numComps = scalars->GetNumberOfComponents();
+      void* input = scalars->GetVoidPointer(0);
+***************
+*** 660,666 ****
+        vtkTemplateMacro(
+          vtkMapperCreateColorTextureCoordinates(static_cast<VTK_TT*>(input),
+                                                 output, num, numComps,
+!                                                scalarComponent, range)
+          );
+        case VTK_BIT:
+          vtkErrorMacro("Cannot color by bit array.");
+--- 690,696 ----
+        vtkTemplateMacro(
+          vtkMapperCreateColorTextureCoordinates(static_cast<VTK_TT*>(input),
+                                                 output, num, numComps,
+!                                                scalarComponent, range, isLogScale)
+          );
+        case VTK_BIT:
+          vtkErrorMacro("Cannot color by bit array.");
+
+EOF
+    if [[ $? != 0 ]] ; then
+      warn "vtk610_2 patch failed."
+      return 1
+    fi
+
+    return 0;
+}
+
 function apply_vtk_patch
 {
     if [[ ${VTK_VERSION} == 6.0.0 ]] ; then
@@ -215,6 +428,7 @@ function apply_vtk_patch
     
     if [[ ${VTK_VERSION} == 6.1.0 ]] ; then
         apply_vtk_600_patch
+        apply_vtk_610_patch_2
         if [[ "$OPSYS" == "Linux" ]] ; then
 	   apply_vtk_610_patch
         fi
