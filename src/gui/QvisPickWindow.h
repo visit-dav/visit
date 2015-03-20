@@ -182,6 +182,9 @@ public:
 //   Jonathan Byrd (Allinea Software), Sun Dec 18 2011
 //   Added slot for 'Focus DDT on Pick' button clicks. Added pickRecords array
 //
+//   Kathleen Biagas, Fri Mar 20 16:07:53 PDT 2015
+//   Added slot 'resetPickLetter'.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -243,6 +246,7 @@ private slots:
     void preserveCoordActivated(int);
     void timeCurveTypeActivated(int);
     void clearPicks();
+    void resetPickLetter();
     void redoPickClicked();
     void redoPickWithSpreadsheetClicked();
     void optionsTabSelected(int);

@@ -326,6 +326,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Dirk Schubert (Allinea Software), Fri Oct 12, 2012
 //   Add "Focus DDT on Pick" button optionally (HAVE_DDT)
 //
+//   Kathleen Biagas, Fri Mar 20 16:07:53 PDT 2015
+//   Added button for resetting pick letter.
+//
 // ****************************************************************************
 
 void
@@ -417,6 +420,11 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(clearPicks()));
     gLayout->addWidget(clearPicksButton, 4, 2, 1, 2);
 
+    QPushButton *resetLetterButton = new QPushButton(tr("Reset Pick Letter"), 
+                                                    central);
+    connect(resetLetterButton, SIGNAL(clicked()),
+            this, SLOT(resetPickLetter()));
+    gLayout->addWidget(resetLetterButton, 5, 2, 1, 2);
   
     optionsTabWidget = new QTabWidget(central);
     connect(optionsTabWidget, SIGNAL(currentChanged(int)),
@@ -2105,6 +2113,27 @@ QvisPickWindow::clearPicks()
 {
     GetViewerMethods()->ClearPickPoints();
 }
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::resetPickLetter
+//
+// Purpose:
+//   This is a Qt slot function for resetting the Pick letter.
+//
+// Programmer: Kathleen Biagas
+// Creation:   March 20, 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::resetPickLetter()
+{
+    GetViewerMethods()->ResetPickLetter();
+}
+
 
 // ****************************************************************************
 // Method: QvisPickWindow::redoPickClicked()
