@@ -246,6 +246,30 @@ avtIVPVTKTimeVaryingField::operator()( const double &t,
                                        const avtVector &p,
                                        avtVector &vel ) const
 {
+#if 0
+
+  // Test code for a double gyre.
+  double xi = p.x;
+  double yi = p.y;
+
+  double A = 0.25;
+  double delta = 0.25;
+  double omega = 2 * M_PI;
+
+  vel.x =
+    -M_PI * A * sin(M_PI * (delta * sin(omega * t) * xi*xi +
+                            (1.0 - 2.0 * delta * sin(omega * t)) * xi)) *
+    cos(M_PI * yi);
+
+  vel.y =
+    M_PI * A * cos(M_PI * (delta * sin(omega * t) * xi*xi +
+                           (1.0 - 2.0 * delta * sin(omega * t)) * xi)) *
+    sin(M_PI * yi) * (delta * sin(omega * t) * 2.0 * xi +
+                      (1.0 - 2.0 * delta * sin(omega * t)));
+  vel.z = 0;
+
+#else
+
     Result res = FindCell(t, p);
     if (res != OK)
         return res;
@@ -283,6 +307,8 @@ avtIVPVTKTimeVaryingField::operator()( const double &t,
             vel.z += wi->w * v0[2];
         }
     }
+
+#endif
 
     return OK;
 }

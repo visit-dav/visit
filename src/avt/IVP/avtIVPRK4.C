@@ -238,7 +238,7 @@ avtIVPRK4::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
 
     // Calculate the new position.
     vNew = (k1 + 2.0*k2 + 2.0*k3 + k4) / 6.0;
-    yNew = yCur + h * vCur;
+    yNew = yCur + h * vNew;
 
     // Convert and save the position.
     ivpstep->resize(2);
@@ -299,5 +299,6 @@ avtIVPRK4::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(h)
         .Accept(h_max)
         .Accept(t)
-        .Accept(yCur);
+        .Accept(yCur)
+        .Accept(vCur);
 }

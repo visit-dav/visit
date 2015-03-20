@@ -68,7 +68,7 @@
 // ****************************************************************************
 
 avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator ) 
-    : ds(dataset), loc(locator)
+  : ds(dataset), loc(locator)
 {
     if( ds )
         ds->Register( NULL );
@@ -84,6 +84,8 @@ avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator )
         velData = 0;
         EXCEPTION1( ImproperUseException, "avtIVPVTKField: Can't locate vectors to interpolate." );
     }
+
+    directionless = false;
 
     lastCell = -1;
     lastPos.x = lastPos.y = lastPos.z =
@@ -195,9 +197,33 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
 avtIVPField::Result
 avtIVPVTKField::operator()(const double &t, const avtVector &p, avtVector &retV) const
 {
+#if 0
+  // Test code for a double gyre.
+  double xi = p.x;
+  double yi = p.y;
+
+  double A = 0.25;
+  double delta = 0.25;
+  double omega = 2 * M_PI;
+
+  retV.x =
+    -M_PI * A * sin(M_PI * (delta * sin(omega * t) * xi*xi +
+                            (1.0 - 2.0 * delta * sin(omega * t)) * xi)) *
+    cos(M_PI * yi);
+
+  retV.y =
+    M_PI * A * cos(M_PI * (delta * sin(omega * t) * xi*xi +
+                           (1.0 - 2.0 * delta * sin(omega * t)) * xi)) *
+    sin(M_PI * yi) * (delta * sin(omega * t) * 2.0 * xi +
+                      (1.0 - 2.0 * delta * sin(omega * t)));
+  retV.z = 0;
+
+#else
+
     if (FindCell(t, p) != OK || !FindValue(velData, retV))
         return OUTSIDE_SPATIAL;
-    
+#endif    
+
     return OK;
 }
 
