@@ -81,6 +81,10 @@
 //    Eric Brugger, Tue Aug 19 11:13:13 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Fri Mar 20 11:44:28 PDT 2015
+//    Make 'PointMeshFromVariables' a templated method to support double
+//    precision.
+//
 // ****************************************************************************
 
 class avtScatterFilter : public avtDataTreeIterator
@@ -130,11 +134,14 @@ protected:
                                             bool &deleteArray);
     vtkDataArray              *Recenter(vtkDataSet *ds, vtkDataArray *arr, 
                                         avtCentering cent) const;
+
+    template <typename T>
     vtkDataSet                *PointMeshFromVariables(DataInput *d1,
                                                       DataInput *d2,
                                                       DataInput *d3,
                                                       DataInput *d4, bool &,
-                                                      vtkDataArray *);
+                                                      vtkDataArray *,
+                                                      int);
     int                        CountSpatialDimensions() const;
     void                       PopulateDataInputs(DataInput *orderedArrays,
                                                   vtkDataArray **arr) const;
