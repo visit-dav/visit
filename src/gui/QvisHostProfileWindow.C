@@ -1932,13 +1932,35 @@ QvisHostProfileWindow::UpdateLaunchProfile()
         timeout->setValue(currentLaunch->GetTimeout());
         threads->setValue(currentLaunch->GetNumThreads());
 
+        bool laFlag = false;
         QString temp;
         stringVector::const_iterator pos;
+
         for(pos = currentLaunch->GetArguments().begin();
             pos != currentLaunch->GetArguments().end(); ++pos)
         {
-            temp += QString(pos->c_str());
-            temp += " ";
+            // If the last arg was not -la process as normal
+            if( !laFlag )
+            {
+              temp += QString(pos->c_str());
+              temp += " ";
+
+              // If the arg is -la the next arg must have quotes
+              // placed around it so that it gets parced correctly.
+              if( std::string(pos->c_str()) == "-la" )
+                laFlag = true;
+            }
+
+            // If the last arg was -la so place quotes arount it ad
+            // reset the flag.
+            else if( laFlag )
+            {
+              temp += "\"";
+              temp += QString(pos->c_str());
+              temp += "\" ";
+              
+              laFlag = false;
+            }
         }
         engineArguments->setText(temp);
 
@@ -2505,9 +2527,14 @@ QvisHostProfileWindow::GetCurrentValues()
     // Do the engine command line arguments.
     if (currentLaunch)
     {
+        // Terminal character for multiple space separated args sent
+        // to the -la option which are in quotes.
+        std::string terminal("\"");
+
         stringVector arguments;
         QString temp(engineArguments->displayText());
         temp = temp.simplified();
+
         if(!(temp.isEmpty()))
         {
             // Split the arguments into a string list.
@@ -2516,9 +2543,54 @@ QvisHostProfileWindow::GetCurrentValues()
             // Fill the arguments vector.
             for(int i = 0; i < str.count(); ++i)
             {
-                arguments.push_back(std::string(str[i].toStdString()));
+                if( std::string(str[i].toStdString()) != std::string("-la") )
+                    arguments.push_back(std::string(str[i].toStdString()));
+
+                // If the argument is -la the next args will have
+                // spaces but should start and end with quotes but it
+                // has been split so put it back together.
+
+                // NOTE: if the quotes are missing the compositing
+                // will go to the last arg.  This may not be correct
+                // but that is what is interperted and does not fail.
+                else 
+                {
+                    // Save the -la argument as normal.
+                    arguments.push_back(std::string(str[i].toStdString()));
+
+                    // Go to the next argument and start compositing it
+                    if( ++i < str.count() )
+                    {
+                        std::string composite(str[i].toStdString());
+
+                        // Strip the quote as it will get added back
+                        // in when it is processed.
+                        if(composite.find(terminal) == 0)
+                            composite.erase( composite.find(terminal), 1 );
+
+                        // Process the rest of the arguments stopping when
+                        // another quote is found.
+                        while( ++i < str.count() )
+                        {
+                          std::string tmp(str[i].toStdString());
+                          composite += std::string(" ") + tmp;
+                          
+                          // Strip the quote as it will get added back
+                          // in when it is processed. Then quit.
+                          if( composite.find(terminal) == composite.size()-1 )
+                          {
+                              composite.erase( composite.find(terminal), 1 );
+                              break;
+                          }
+                        }
+
+                        // Send the composite argument.
+                        arguments.push_back(composite);
+                    }
+                }
             }
         }
+
         // Set the arguments.
         currentLaunch->SetArguments(arguments);
     }
