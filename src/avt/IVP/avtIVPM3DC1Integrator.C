@@ -648,6 +648,7 @@ avtIVPM3DC1Integrator::AcceptStateVisitor(avtIVPStateHelper& aiss)
         .Accept(h_max)
         .Accept(t)
         .Accept(yCur)
+        .Accept(vCur)
         .Accept(ys[0])
         .Accept(ys[1]);
 }

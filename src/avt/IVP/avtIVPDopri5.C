@@ -178,7 +178,6 @@ avtIVPDopri5::Reset(const double& t_start,
     t = t_start;
     yCur = y_start;
     vCur = v_start;
-    k1 = vCur;    // Note K1 and vCur contain the same value.
 
     h = h_init = 0.0;
     
@@ -260,7 +259,7 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
         for(size_t i=0 ; i < 3; i++) 
         {
             sk = abstol + reltol * std::abs(yCur[i]);
-            sqr = k1[i] / sk;
+            sqr = vCur[i] / sk;
             dnf += sqr * sqr;
             sqr = yCur[i] / sk;
             dny += sqr * sqr;
@@ -275,11 +274,12 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
         h = sign( h, direction );
 
         // perform an explicit Euler step
-        avtVector y_new = yCur + h * k1;
-        avtVector k2 = k1;  // Set for usage with directionless fields
-                            // so that the current direction is known.
+        avtVector k1 = vCur;  // Set for usage with directionless fields
+                              // so that the current direction is known.
 
-        if ((*field)(t_local+h, y_new, k2) != avtIVPField::OK)
+        avtVector y_new = yCur + h * k1;
+
+        if ((*field)(t_local+h, y_new, k1) != avtIVPField::OK)
         {
             // Somehow we couldn't evaluate one of the points we need for the
             // starting estimate. The above code adheres to the h_max that is
@@ -311,7 +311,7 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
         for( size_t i=0; i < 3; i++) 
         {
             sk = abstol + reltol * std::abs( yCur[i] );
-            sqr = ( k2[i] - k1[i] ) / sk;
+            sqr = ( k1[i] - vCur[i] ) / sk;
             der2 += sqr*sqr;
         }
 
@@ -406,9 +406,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
     // maybe also needed for hinit())
     if( n_steps == 0 )
     {
-        k1 = vCur;  // Set for usage with directionless fields
-                    // so that the current direction is known.
-        if ((fieldResult = (*field)( t_local, yCur, k1 )) != avtIVPField::OK)
+        if ((fieldResult = (*field)( t_local, yCur, vCur )) != avtIVPField::OK)
             return ConvertResult(fieldResult);
         n_eval++;
     }
@@ -468,7 +466,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
                    << ", h = " << h << ", t+h = " << t+h << '\n';
         }
 
-        avtVector k2, k3, k4, k5, k6, k7;
+        avtVector k1 = vCur, k2, k3, k4, k5, k6, k7;
 
         // perform stages
         k2 = a21*k1;               // Set for usage with directionless fields
@@ -620,13 +618,13 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
 
             // update internal state
             // first-same-as-last for k1
-            k1 = k7;
+            // k1 = k7; // No longer needed now that that vCur is persisent.
             
             // Update for the next step.
             numStep++;
 
             yCur = y_new;
-            vCur = k1;    // Note K1 and vCur contain the same value.
+            vCur = k7;
             t = t+h;
 
             if( period && last )
