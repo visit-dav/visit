@@ -643,6 +643,10 @@ avtBehavior::GetRenderOrder(bool antialiased)
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Kathleen Biagas, Thu Mar 19 10:29:49 PDT 2015
+//    No need to re-execute if points transformed but zones or nodes are
+//    preserved and intact.
+//
 // ****************************************************************************
 
 bool
@@ -652,6 +656,7 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT,
     bool retval = false;
     if (GetInfo().GetValidity().AreWeStreaming())
         retval = true;
+
     else if (info.GetAttributes().GetTopologicalDimension() == 0) 
     {
         // 
@@ -659,8 +664,8 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT,
         // 
         bool zonesAvailable = info.GetAttributes().GetContainsOriginalCells();
         bool nodesAvailable = info.GetAttributes().GetContainsOriginalNodes();
-        bool keptNodeZone = info.GetAttributes().GetKeepNodeZoneArrays();
-        bool canUseZones = info.GetAttributes().CanUseOrigZones();
+        bool keptNodeZone   = info.GetAttributes().GetKeepNodeZoneArrays();
+        bool canUseZones    = info.GetAttributes().CanUseOrigZones();
 
         if (needZones)
         {
@@ -674,30 +679,37 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT,
     else if (info.GetValidity().GetPointsWereTransformed())
     {
         bool invXformAvailable  = info.GetAttributes().HasInvTransform() &&
-                              info.GetAttributes().GetCanUseInvTransform();
+                                  info.GetAttributes().GetCanUseInvTransform();
 
         bool xformAvailable  = info.GetAttributes().HasTransform() &&
-                           info.GetAttributes().GetCanUseTransform();
+                               info.GetAttributes().GetCanUseTransform();
 
         bool zonesAvailable = info.GetAttributes().GetContainsOriginalCells();
         bool nodesAvailable = info.GetAttributes().GetContainsOriginalNodes();
-        bool canUseZones = info.GetAttributes().CanUseOrigZones();
+        bool canUseZones    = info.GetAttributes().CanUseOrigZones();
+        bool zonesPreserved = info.GetValidity().GetZonesPreserved();
+        bool nodesPreserved = info.GetValidity().GetNodesPreserved();
+        bool zonesIntact     = info.GetValidity().GetOriginalZonesIntact();
 
-        if (needInvT && needZones)
+        if (needInvT)
         {
-            retval = !invXformAvailable && canUseZones && !zonesAvailable;
+            if (needZones)
+            {
+                if (!(zonesPreserved && zonesIntact))
+                  retval = !invXformAvailable && canUseZones && !zonesAvailable;
+            }
+            else 
+            {
+                if (!nodesPreserved)
+                  retval = !invXformAvailable && !nodesAvailable;
+            }
         }
-        else if (needInvT && !needZones) 
+        else
         {
-            retval = !invXformAvailable && !nodesAvailable;
-        }
-        else if (!needInvT && needZones)
-        {
-            retval = !xformAvailable && canUseZones && !zonesAvailable;
-        }
-        else  //  if (!needInvT && !needZones) 
-        {
-            retval = !xformAvailable && !nodesAvailable;
+            if (needZones)
+                retval = !xformAvailable && canUseZones && !zonesAvailable;
+            else  //  if (!needInvT && !needZones) 
+                retval = !xformAvailable && !nodesAvailable;
         }
 
         if (info.GetAttributes().OrigElementsRequiredForPick())
