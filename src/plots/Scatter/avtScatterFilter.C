@@ -245,6 +245,10 @@ avtScatterFilter::PreExecute(void)
 //    Eric Brugger, Tue Aug 19 11:13:44 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Fri Mar 20 11:44:28 PDT 2015
+//    Make 'PointMeshFromVariables' a templated method to support double
+//    precision.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -346,10 +350,27 @@ avtScatterFilter::ExecuteData(avtDataRepresentation *inDR)
         //
         // Create the point mesh from the input data arrays.
         //
-        outDS = PointMeshFromVariables(&orderedArrays[0],
-            &orderedArrays[1], &orderedArrays[2], &orderedArrays[3],
-            createdData,
-            inDS->GetPointData()->GetArray("avtOriginalNodeNumbers"));
+        if ((orderedArrays[0].data &&
+             orderedArrays[0].data->GetDataType() == VTK_DOUBLE)
+         || (orderedArrays[1].data &&
+             orderedArrays[1].data->GetDataType() == VTK_DOUBLE)
+         || (orderedArrays[2].data &&
+             orderedArrays[2].data->GetDataType() == VTK_DOUBLE))
+        {
+            outDS = PointMeshFromVariables<double>(&orderedArrays[0],
+                &orderedArrays[1], &orderedArrays[2], &orderedArrays[3],
+                createdData,
+                inDS->GetPointData()->GetArray("avtOriginalNodeNumbers"),
+                VTK_DOUBLE);
+        }
+        else
+        {
+            outDS = PointMeshFromVariables<float>(&orderedArrays[0],
+                &orderedArrays[1], &orderedArrays[2], &orderedArrays[3],
+                createdData,
+                inDS->GetPointData()->GetArray("avtOriginalNodeNumbers"),
+                VTK_FLOAT);
+        }
 
         //
         // If we have a variable that's taking on the color role then add it
@@ -543,19 +564,23 @@ avtScatterFilter::PostExecute(void)
 //    Kathleen Biagas, Thu Mar  1 14:49:50 MST 2012
 //    Keep track of original node numbers.
 //
+//    Kathleen Biagas, Fri Mar 20 11:44:28 PDT 2015
+//    Make this method templated to support double precision.
+//
 // ****************************************************************************
 
+template <typename T>
 vtkDataSet *
 avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     DataInput *d2, DataInput *d3, DataInput *d4, bool &createdData,
-    vtkDataArray *origNodes)
+    vtkDataArray *origNodes, int vtktype)
 {
     const char *mName = "avtScatterFilter::PointMeshFromVariables: ";
     vtkPolyData *outDS = vtkPolyData::New();
     int n = d1->data->GetNumberOfTuples();
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkPoints::New(vtktype);
     pts->SetNumberOfPoints(n);
-    float *coord = (float *)pts->GetVoidPointer(0);
+    T *coord = (T *)pts->GetVoidPointer(0);
     vtkCellArray *cells = vtkCellArray::New();
     cells->Allocate(n); 
     outDS->SetPoints(pts);
@@ -582,12 +607,12 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     // Initially set the min/max values to the calculated extents. Note that
     // the extents here will not have been calculated if we are using user-
     // specified extents but we take care of that later.
-    float xMin = float(xExtents[0]);
-    float xMax = float(xExtents[1]);
-    float yMin = float(yExtents[0]);
-    float yMax = float(yExtents[1]);
-    float zMin = float(zExtents[0]);
-    float zMax = float(zExtents[1]);
+    T xMin = T(xExtents[0]);
+    T xMax = T(xExtents[1]);
+    T yMin = T(yExtents[0]);
+    T yMax = T(yExtents[1]);
+    T zMin = T(zExtents[0]);
+    T zMax = T(zExtents[1]);
     debug4 << mName << "xExtents = [" << xMin << ", " << xMax << "] "
            << "yExtents = [" << yMin << ", " << yMax << "] "
            << "zExtents = [" << zMin << ", " << zMax << "]" << endl;
@@ -599,12 +624,12 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     debug4 << mName << "arr2 = " << arr2->GetName()
            << ", ntuples=" << arr2->GetNumberOfTuples() << endl;
 
-    float d1min = d1->min;
-    float d1max = d1->max;
-    float d2min = d2->min;
-    float d2max = d2->max;
-    float d3min = d3->min;
-    float d3max = d3->max;
+    T d1min = d1->min;
+    T d1max = d1->max;
+    T d2min = d2->min;
+    T d2max = d2->max;
+    T d3min = d3->min;
+    T d3max = d3->max;
 
     //
     // If arr3 == 0 then we're creating a 2D mesh.
@@ -788,10 +813,10 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     int d3scale = d3->scale;
     if(d1scale > 0 || d2scale > 0 || d3scale > 0)
     {    
-        coord = (float *)pts->GetVoidPointer(0);
+        coord = (T *)pts->GetVoidPointer(0);
 
         // Variables for skew scaling.
-        float x_range = 0, x_rangeInverse = 0, x_logSkew = 0, x_k = 0;
+        T x_range = 0, x_rangeInverse = 0, x_logSkew = 0, x_k = 0;
         if(d1scale == 2)
         {
             x_range = xMax - xMin; 
@@ -799,7 +824,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
             x_logSkew = log(d1->skew);
             x_k = x_range / (d1->skew - 1.);
         }
-        float y_range = 0, y_rangeInverse = 0, y_logSkew = 0, y_k = 0;
+        T y_range = 0, y_rangeInverse = 0, y_logSkew = 0, y_k = 0;
         if(d2scale == 2)
         {
             y_range = yMax - yMin; 
@@ -821,7 +846,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                     coord[0] = LOG10_X(coord[0]);
                 else if(d1scale == 2)
                 {
-                    float tmp = (coord[0] - xMin) * x_rangeInverse;
+                    T tmp = (coord[0] - xMin) * x_rangeInverse;
                     coord[0] = x_k * (exp(tmp * x_logSkew) - 1.) + xMin;
                 }
 
@@ -830,14 +855,14 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                     coord[1] = LOG10_Y(coord[1]);
                 else if(d2scale == 2)
                 {
-                    float tmp = (coord[1] - yMin) * y_rangeInverse;
+                    T tmp = (coord[1] - yMin) * y_rangeInverse;
                     coord[1] = y_k * (exp(tmp * y_logSkew) - 1.) + yMin;
                 }
             }
         }
         else
         {
-            float z_range = 0, z_rangeInverse = 0, z_logSkew = 0, z_k = 0;
+            T z_range = 0, z_rangeInverse = 0, z_logSkew = 0, z_k = 0;
             if(d3->scale == 2)
             {
                 z_range = zMax - zMin; 
@@ -853,7 +878,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                     coord[0] = LOG10_X(coord[0]);
                 else if(d1scale == 2)
                 {
-                    float tmp = (coord[0] - xMin) * x_rangeInverse;
+                    T tmp = (coord[0] - xMin) * x_rangeInverse;
                     coord[0] = x_k * (exp(tmp * x_logSkew) - 1.) + xMin;
                 }
 
@@ -862,7 +887,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                     coord[1] = LOG10_Y(coord[1]);
                 else if(d2scale == 2)
                 {
-                    float tmp = (coord[1] - yMin) * y_rangeInverse;
+                    T tmp = (coord[1] - yMin) * y_rangeInverse;
                     coord[1] = y_k * (exp(tmp * y_logSkew) - 1.) + yMin;
                 }
 
@@ -871,7 +896,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
                     coord[2] = LOG10_Z(coord[2]);
                 else if(d3scale == 2)
                 {
-                    float tmp = (coord[2] - zMin) * z_rangeInverse;
+                    T tmp = (coord[2] - zMin) * z_rangeInverse;
                     coord[2] = z_k * (exp(tmp * z_logSkew) - 1.) + zMin;
                 }
             }
@@ -884,8 +909,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
         bool badLimits = false;
         if(d1scale == 1)
         {
-            float uxMin = d1->useMin ? d1min : xMin;
-            float uxMax = d1->useMax ? d1max : xMax;
+            T uxMin = d1->useMin ? d1min : xMin;
+            T uxMax = d1->useMax ? d1max : xMax;
             badLimits |= (uxMin <= 0. || uxMax <= 0.);
             xMin = LOG10_X(uxMin);
             xMax = LOG10_X(uxMax);
@@ -893,8 +918,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
 
         if(d2scale == 1)
         {
-            float uyMin = d2->useMin ? d2min : yMin;
-            float uyMax = d2->useMax ? d2max : yMax;
+            T uyMin = d2->useMin ? d2min : yMin;
+            T uyMax = d2->useMax ? d2max : yMax;
             badLimits |= (uyMin <= 0. || uyMax <= 0.);
             yMin = LOG10_Y(uyMin);
             yMax = LOG10_Y(uyMax);
@@ -902,8 +927,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
 
         if(arr3 != 0 && d3scale == 1)
         {
-            float uzMin = d3->useMin ? d3min : zMin;
-            float uzMax = d3->useMax ? d3max : zMax;
+            T uzMin = d3->useMin ? d3min : zMin;
+            T uzMax = d3->useMax ? d3max : zMax;
             badLimits |= (uzMin <= 0. || uzMax <= 0.);
             zMin = LOG10_Z(uzMin);
             zMax = LOG10_Z(uzMax);
@@ -921,12 +946,12 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     //
     if(atts.GetScaleCube())
     {
-        const float boxSize = 1.f;
-        float dX = xMax - xMin;
-        float dY = yMax - yMin;
-        float x_rangeInverse = (dX == 0.f) ? 1.f : (boxSize / dX);
-        float y_rangeInverse = (dY == 0.f) ? 1.f : (boxSize / dY);
-        coord = (float *)pts->GetVoidPointer(0);
+        const T boxSize = 1.;
+        T dX = xMax - xMin;
+        T dY = yMax - yMin;
+        T x_rangeInverse = (dX == 0.) ? 1. : (boxSize / dX);
+        T y_rangeInverse = (dY == 0.) ? 1. : (boxSize / dY);
+        coord = (T *)pts->GetVoidPointer(0);
         if(arr3 == 0)
         {
             for(int i = 0; i < nCells; ++i, coord += 3)
@@ -937,8 +962,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
         }
         else
         {
-            float dZ = zMax - zMin;
-            float z_rangeInverse = (dZ == 0.f) ? 1.f : (boxSize / dZ);
+            T dZ = zMax - zMin;
+            T z_rangeInverse = (dZ == 0.) ? 1. : (boxSize / dZ);
             for(int i = 0; i < nCells; ++i, coord += 3)
             {
                 coord[0] = (coord[0] - xMin) * x_rangeInverse;
@@ -948,8 +973,8 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
         }
 
         // Min, max of scaled coordinates.
-        xMin = yMin = zMin = 0.f;
-        xMax = yMax = zMax = 1.f;
+        xMin = yMin = zMin = 0.;
+        xMax = yMax = zMax = 1.;
     }
 
     //
