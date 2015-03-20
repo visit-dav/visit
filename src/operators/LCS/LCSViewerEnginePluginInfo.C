@@ -221,7 +221,7 @@ LCSViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 
     const char *typeString[3][3] = { { "Time", "Arc length",
                                        "Ave. dist. from seed" },
-                                     { "First", "Second", "Third" },
+                                     { "Smallest", "Intermediate", "Largest" },
                                      { "FTLE", "FDLE", "FSLE" } };
 
     const char *operatorString[4] = { "Base", "Gradient", "Jacobian", "Ratio" };

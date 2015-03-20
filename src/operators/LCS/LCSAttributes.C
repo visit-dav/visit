@@ -114,6 +114,44 @@ LCSAttributes::Extents_FromString(const std::string &s, LCSAttributes::Extents &
 }
 
 //
+// Enum conversion methods for LCSAttributes::AuxiliaryGrid
+//
+
+static const char *AuxiliaryGrid_strings[] = {
+"None", "TwoDim", "ThreeDim"
+};
+
+std::string
+LCSAttributes::AuxiliaryGrid_ToString(LCSAttributes::AuxiliaryGrid t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return AuxiliaryGrid_strings[index];
+}
+
+std::string
+LCSAttributes::AuxiliaryGrid_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return AuxiliaryGrid_strings[index];
+}
+
+bool
+LCSAttributes::AuxiliaryGrid_FromString(const std::string &s, LCSAttributes::AuxiliaryGrid &val)
+{
+    val = LCSAttributes::None;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == AuxiliaryGrid_strings[i])
+        {
+            val = (AuxiliaryGrid)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for LCSAttributes::IntegrationDirection
 //
 
@@ -348,7 +386,7 @@ LCSAttributes::OperationType_FromString(const std::string &s, LCSAttributes::Ope
 //
 
 static const char *EigenComponent_strings[] = {
-"First", "Second", "Third"
+"Smallest", "Intermediate", "Largest"
 };
 
 std::string
@@ -369,7 +407,7 @@ LCSAttributes::EigenComponent_ToString(int t)
 bool
 LCSAttributes::EigenComponent_FromString(const std::string &s, LCSAttributes::EigenComponent &val)
 {
-    val = LCSAttributes::First;
+    val = LCSAttributes::Smallest;
     for(int i = 0; i < 3; ++i)
     {
         if(s == EigenComponent_strings[i])
@@ -523,9 +561,11 @@ void LCSAttributes::Init()
     EndPosition[1] = 1;
     EndPosition[2] = 1;
     integrationDirection = Forward;
+    auxiliaryGrid = None;
+    auxiliaryGridSpacing = 0.0001;
     maxSteps = 1000;
     operationType = Lyapunov;
-    eigenComponent = First;
+    eigenComponent = Smallest;
     operatorType = BaseValue;
     terminationType = Time;
     terminateBySize = false;
@@ -599,6 +639,8 @@ void LCSAttributes::Copy(const LCSAttributes &obj)
     EndPosition[2] = obj.EndPosition[2];
 
     integrationDirection = obj.integrationDirection;
+    auxiliaryGrid = obj.auxiliaryGrid;
+    auxiliaryGridSpacing = obj.auxiliaryGridSpacing;
     maxSteps = obj.maxSteps;
     operationType = obj.operationType;
     eigenComponent = obj.eigenComponent;
@@ -823,6 +865,8 @@ LCSAttributes::operator == (const LCSAttributes &obj) const
             (UseDataSetEnd == obj.UseDataSetEnd) &&
             EndPosition_equal &&
             (integrationDirection == obj.integrationDirection) &&
+            (auxiliaryGrid == obj.auxiliaryGrid) &&
+            (auxiliaryGridSpacing == obj.auxiliaryGridSpacing) &&
             (maxSteps == obj.maxSteps) &&
             (operationType == obj.operationType) &&
             (eigenComponent == obj.eigenComponent) &&
@@ -1024,6 +1068,8 @@ LCSAttributes::SelectAll()
     Select(ID_UseDataSetEnd,                     (void *)&UseDataSetEnd);
     Select(ID_EndPosition,                       (void *)EndPosition, 3);
     Select(ID_integrationDirection,              (void *)&integrationDirection);
+    Select(ID_auxiliaryGrid,                     (void *)&auxiliaryGrid);
+    Select(ID_auxiliaryGridSpacing,              (void *)&auxiliaryGridSpacing);
     Select(ID_maxSteps,                          (void *)&maxSteps);
     Select(ID_operationType,                     (void *)&operationType);
     Select(ID_eigenComponent,                    (void *)&eigenComponent);
@@ -1133,6 +1179,18 @@ LCSAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
     {
         addToParent = true;
         node->AddNode(new DataNode("integrationDirection", IntegrationDirection_ToString(integrationDirection)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_auxiliaryGrid, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("auxiliaryGrid", AuxiliaryGrid_ToString(auxiliaryGrid)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_auxiliaryGridSpacing, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("auxiliaryGridSpacing", auxiliaryGridSpacing));
     }
 
     if(completeSave || !FieldsEqual(ID_maxSteps, &defaultObject))
@@ -1463,6 +1521,24 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
                 SetIntegrationDirection(value);
         }
     }
+    if((node = searchNode->GetNode("auxiliaryGrid")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetAuxiliaryGrid(AuxiliaryGrid(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            AuxiliaryGrid value;
+            if(AuxiliaryGrid_FromString(node->AsString(), value))
+                SetAuxiliaryGrid(value);
+        }
+    }
+    if((node = searchNode->GetNode("auxiliaryGridSpacing")) != 0)
+        SetAuxiliaryGridSpacing(node->AsDouble());
     if((node = searchNode->GetNode("maxSteps")) != 0)
         SetMaxSteps(node->AsInt());
     if((node = searchNode->GetNode("operationType")) != 0)
@@ -1722,6 +1798,20 @@ LCSAttributes::SetIntegrationDirection(LCSAttributes::IntegrationDirection integ
 {
     integrationDirection = integrationDirection_;
     Select(ID_integrationDirection, (void *)&integrationDirection);
+}
+
+void
+LCSAttributes::SetAuxiliaryGrid(LCSAttributes::AuxiliaryGrid auxiliaryGrid_)
+{
+    auxiliaryGrid = auxiliaryGrid_;
+    Select(ID_auxiliaryGrid, (void *)&auxiliaryGrid);
+}
+
+void
+LCSAttributes::SetAuxiliaryGridSpacing(double auxiliaryGridSpacing_)
+{
+    auxiliaryGridSpacing = auxiliaryGridSpacing_;
+    Select(ID_auxiliaryGridSpacing, (void *)&auxiliaryGridSpacing);
 }
 
 void
@@ -2049,6 +2139,18 @@ LCSAttributes::GetIntegrationDirection() const
     return IntegrationDirection(integrationDirection);
 }
 
+LCSAttributes::AuxiliaryGrid
+LCSAttributes::GetAuxiliaryGrid() const
+{
+    return AuxiliaryGrid(auxiliaryGrid);
+}
+
+double
+LCSAttributes::GetAuxiliaryGridSpacing() const
+{
+    return auxiliaryGridSpacing;
+}
+
 int
 LCSAttributes::GetMaxSteps() const
 {
@@ -2336,6 +2438,8 @@ LCSAttributes::GetFieldName(int index) const
     case ID_UseDataSetEnd:                     return "UseDataSetEnd";
     case ID_EndPosition:                       return "EndPosition";
     case ID_integrationDirection:              return "integrationDirection";
+    case ID_auxiliaryGrid:                     return "auxiliaryGrid";
+    case ID_auxiliaryGridSpacing:              return "auxiliaryGridSpacing";
     case ID_maxSteps:                          return "maxSteps";
     case ID_operationType:                     return "operationType";
     case ID_eigenComponent:                    return "eigenComponent";
@@ -2404,6 +2508,8 @@ LCSAttributes::GetFieldType(int index) const
     case ID_UseDataSetEnd:                     return FieldType_enum;
     case ID_EndPosition:                       return FieldType_doubleArray;
     case ID_integrationDirection:              return FieldType_enum;
+    case ID_auxiliaryGrid:                     return FieldType_enum;
+    case ID_auxiliaryGridSpacing:              return FieldType_double;
     case ID_maxSteps:                          return FieldType_int;
     case ID_operationType:                     return FieldType_enum;
     case ID_eigenComponent:                    return FieldType_enum;
@@ -2472,6 +2578,8 @@ LCSAttributes::GetFieldTypeName(int index) const
     case ID_UseDataSetEnd:                     return "enum";
     case ID_EndPosition:                       return "doubleArray";
     case ID_integrationDirection:              return "enum";
+    case ID_auxiliaryGrid:                     return "enum";
+    case ID_auxiliaryGridSpacing:              return "double";
     case ID_maxSteps:                          return "int";
     case ID_operationType:                     return "enum";
     case ID_eigenComponent:                    return "enum";
@@ -2583,6 +2691,16 @@ LCSAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_integrationDirection:
         {  // new scope
         retval = (integrationDirection == obj.integrationDirection);
+        }
+        break;
+    case ID_auxiliaryGrid:
+        {  // new scope
+        retval = (auxiliaryGrid == obj.auxiliaryGrid);
+        }
+        break;
+    case ID_auxiliaryGridSpacing:
+        {  // new scope
+        retval = (auxiliaryGridSpacing == obj.auxiliaryGridSpacing);
         }
         break;
     case ID_maxSteps:

@@ -261,6 +261,36 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
             this, SLOT(EndPositionProcessText()));
     rgridLayout->addWidget(EndPosition, 2,3);
 
+
+    // Create the auxiliary grid group box.
+    QGroupBox *auxiliaryGridGroup = new QGroupBox(central);
+    auxiliaryGridGroup->setTitle(tr("Auxiliary Grid"));
+    sourceLayout->addWidget(auxiliaryGridGroup, 5, 0, 1, 4);
+
+    QGridLayout *auxiliaryGridLayout = new QGridLayout(auxiliaryGridGroup);
+    auxiliaryGridLayout->setMargin(5);
+    auxiliaryGridLayout->setSpacing(10);
+
+    // Auxiliary grid label and combo box
+    auxiliaryGridLayout->addWidget( new QLabel(tr("Auxiliary Grid"), auxiliaryGridGroup), 0,0);
+
+    auxiliaryGrid = new QComboBox(auxiliaryGridGroup);
+    auxiliaryGrid->addItem(tr("None"));
+    auxiliaryGrid->addItem(tr("2D"));
+    auxiliaryGrid->addItem(tr("3D"));
+    connect(auxiliaryGrid, SIGNAL(activated(int)),
+            this, SLOT(auxiliaryGridChanged(int)));
+    auxiliaryGridLayout->addWidget(auxiliaryGrid, 0,1);
+    
+    // Create the auxiliary grid spacing
+    auxiliaryGridSpacingLabel = new QLabel(tr("Spacing"), auxiliaryGridGroup);
+    auxiliaryGridSpacing = new QLineEdit(auxiliaryGridGroup);
+    connect(auxiliaryGridSpacing, SIGNAL(returnPressed()), this,
+            SLOT(auxiliaryGridSpacingProcessText()));
+    auxiliaryGridLayout->addWidget(auxiliaryGridSpacingLabel, 0,2);
+    auxiliaryGridLayout->addWidget(auxiliaryGridSpacing, 0,3);
+
+
     // Create the field group box.
     QGroupBox *fieldGroup = new QGroupBox(central);
     fieldGroup->setTitle(tr("Field"));
@@ -289,7 +319,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fieldConstantLabel = new QLabel(tr("Constant"), fieldGroup);
     fieldConstant = new QLineEdit(fieldGroup);
     connect(fieldConstant, SIGNAL(returnPressed()), this,
-            SLOT(fieldConstantProccessText()));
+            SLOT(fieldConstantProcessText()));
     fieldLayout->addWidget(fieldConstantLabel, 0,2);
     fieldLayout->addWidget(fieldConstant, 0,3);
 
@@ -422,9 +452,9 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     terminationLayout->addWidget(eigenComponentLabel, 1, 0);
 
     eigenComponent = new QComboBox(central);
-    eigenComponent->addItem(tr("First"));
-    eigenComponent->addItem(tr("Second"));
-    eigenComponent->addItem(tr("Third"));
+    eigenComponent->addItem(tr("Smallest"));
+    eigenComponent->addItem(tr("Intermediate (3D only)"));
+    eigenComponent->addItem(tr("Largest"));
     connect(eigenComponent, SIGNAL(activated(int)),
             this, SLOT(eigenComponentChanged(int)));
     terminationLayout->addWidget(eigenComponent, 1, 1);
@@ -892,6 +922,12 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             }
             break;
 
+        case LCSAttributes::ID_eigenComponent:
+            eigenComponent->blockSignals(true);
+            eigenComponent->setCurrentIndex(int(atts->GetEigenComponent()) );
+            eigenComponent->blockSignals(false);
+            break;
+
         case LCSAttributes::ID_operatorType:
             operatorType->blockSignals(true);
             operatorType->setCurrentIndex(int(atts->GetOperatorType()) );
@@ -973,6 +1009,21 @@ QvisLCSWindow::UpdateWindow(bool doAll)
                 absTol->setText(temp);
             }
             break;
+        case LCSAttributes::ID_auxiliaryGrid:
+            auxiliaryGrid->blockSignals(true);
+            auxiliaryGrid->setCurrentIndex(atts->GetAuxiliaryGrid());
+            auxiliaryGrid->blockSignals(false);
+
+            auxiliaryGridSpacingLabel->setEnabled(!(atts->GetAuxiliaryGrid() ==
+                                                    LCSAttributes::None));
+            auxiliaryGridSpacing->setEnabled(!(atts->GetAuxiliaryGrid() ==
+                                               LCSAttributes::None));
+            break;
+
+        case LCSAttributes::ID_auxiliaryGridSpacing:
+            auxiliaryGridSpacing->setText(DoubleToQString(atts->GetAuxiliaryGridSpacing()));
+            break;
+
         case LCSAttributes::ID_fieldType:
             // Update lots of widget visibility and enabled states.
             UpdateFieldAttributes();
@@ -1337,6 +1388,20 @@ QvisLCSWindow::GetCurrentValues(int which_widget)
     }
 
 
+    // Do auxiliaryGridSpacing
+    if(which_widget == LCSAttributes::ID_auxiliaryGridSpacing || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(auxiliaryGridSpacing, val))
+            atts->SetAuxiliaryGridSpacing(val);
+        else
+        {
+            ResettingError(tr("auxiliary grid spacing"),
+                DoubleToQString(atts->GetAuxiliaryGridSpacing()));
+            atts->SetAuxiliaryGridSpacing(atts->GetAuxiliaryGridSpacing());
+        }
+    }
+
     // Do fieldConstant
     if(which_widget == LCSAttributes::ID_fieldConstant || doAll)
     {
@@ -1617,9 +1682,26 @@ QvisLCSWindow::fieldTypeChanged(int val)
 }   
 
 void
-QvisLCSWindow::fieldConstantProccessText()
+QvisLCSWindow::fieldConstantProcessText()
 {
     GetCurrentValues(LCSAttributes::ID_fieldConstant);
+    Apply();
+}
+
+void
+QvisLCSWindow::auxiliaryGridChanged(int val)
+ {
+    if(val != atts->GetAuxiliaryGrid())
+    {
+        atts->SetAuxiliaryGrid(LCSAttributes::AuxiliaryGrid(val));
+        Apply();
+    }
+}   
+
+void
+QvisLCSWindow::auxiliaryGridSpacingProcessText()
+{
+    GetCurrentValues(LCSAttributes::ID_auxiliaryGridSpacing);
     Apply();
 }
 

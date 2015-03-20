@@ -15,6 +15,11 @@
         Full
         Subset
       </Enum>
+      <Enum name="AuxiliaryGrid">
+        None
+        TwoDim
+        ThreeDim
+      </Enum>
       <Enum name="IntegrationDirection">
         Forward
         Backward
@@ -56,9 +61,9 @@
         Lyapunov
       </Enum>
       <Enum name="EigenComponent">
-        First
-        Second
-        Third        
+        Smallest
+        Intermediate
+        Largest     
       </Enum>
       <Enum name="OperatorType">
         BaseValue
@@ -97,8 +102,14 @@
         1.000000
         1.000000
       </Field>
-      <Field name="integrationDirection" label="integrationDirection" type="enum" subtype="IntegrationDirection">
+      <Field name="integrationDirection" label="Integration Direction" type="enum" subtype="IntegrationDirection">
         Forward
+      </Field>
+      <Field name="auxiliaryGrid" label="Auxiliary Grid" type="enum" subtype="AuxiliaryGrid">
+        None
+      </Field>
+      <Field name="auxiliaryGridSpacing" label="Auxiliary grid sspacing" type="double" enabler="auxiliaryGrid:2D">
+        0.0001
       </Field>
       <Field name="maxSteps" label="Maximum number of steps" type="int">
         1000
@@ -107,7 +118,7 @@
         Lyapunov
       </Field>
       <Field name="eigenComponent" label="Eigen component" type="enum" subtype="EigenComponent">
-        First
+        Smallest
       </Field>
       <Field name="operatorType" label="Operator type" type="enum" subtype="OperatorType">
         BaseValue

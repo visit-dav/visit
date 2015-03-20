@@ -188,6 +188,27 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
     }
 
+    const char *auxiliaryGrid_names = "None, TwoDim, ThreeDim";
+    switch (atts->GetAuxiliaryGrid())
+    {
+      case LCSAttributes::None:
+          SNPRINTF(tmpStr, 1000, "%sauxiliaryGrid = %sNone  # %s\n", prefix, prefix, auxiliaryGrid_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::TwoDim:
+          SNPRINTF(tmpStr, 1000, "%sauxiliaryGrid = %sTwoDim  # %s\n", prefix, prefix, auxiliaryGrid_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::ThreeDim:
+          SNPRINTF(tmpStr, 1000, "%sauxiliaryGrid = %sThreeDim  # %s\n", prefix, prefix, auxiliaryGrid_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%sauxiliaryGridSpacing = %g\n", prefix, atts->GetAuxiliaryGridSpacing());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxSteps = %d\n", prefix, atts->GetMaxSteps());
     str += tmpStr;
     const char *operationType_names = "IntegrationTime, ArcLength, AverageDistanceFromSeed, EigenValue, EigenVector, "
@@ -222,19 +243,19 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
     }
 
-    const char *eigenComponent_names = "First, Second, Third";
+    const char *eigenComponent_names = "Smallest, Intermediate, Largest";
     switch (atts->GetEigenComponent())
     {
-      case LCSAttributes::First:
-          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sFirst  # %s\n", prefix, prefix, eigenComponent_names);
+      case LCSAttributes::Smallest:
+          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sSmallest  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
-      case LCSAttributes::Second:
-          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sSecond  # %s\n", prefix, prefix, eigenComponent_names);
+      case LCSAttributes::Intermediate:
+          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sIntermediate  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
-      case LCSAttributes::Third:
-          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sThird  # %s\n", prefix, prefix, eigenComponent_names);
+      case LCSAttributes::Largest:
+          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sLargest  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
       default:
@@ -804,6 +825,63 @@ LCSAttributes_GetIntegrationDirection(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LCSAttributes_SetAuxiliaryGrid(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the auxiliaryGrid in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetAuxiliaryGrid(LCSAttributes::AuxiliaryGrid(ival));
+    else
+    {
+        fprintf(stderr, "An invalid auxiliaryGrid value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "None, TwoDim, ThreeDim.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetAuxiliaryGrid(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAuxiliaryGrid()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LCSAttributes_SetAuxiliaryGridSpacing(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the auxiliaryGridSpacing in the object.
+    obj->data->SetAuxiliaryGridSpacing(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetAuxiliaryGridSpacing(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetAuxiliaryGridSpacing());
+    return retval;
+}
+
+/*static*/ PyObject *
 LCSAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)self;
@@ -878,7 +956,7 @@ LCSAttributes_SetEigenComponent(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid eigenComponent value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "First, Second, Third.");
+                        "Smallest, Intermediate, Largest.");
         return NULL;
     }
 
@@ -1823,6 +1901,10 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
     {"GetEndPosition", LCSAttributes_GetEndPosition, METH_VARARGS},
     {"SetIntegrationDirection", LCSAttributes_SetIntegrationDirection, METH_VARARGS},
     {"GetIntegrationDirection", LCSAttributes_GetIntegrationDirection, METH_VARARGS},
+    {"SetAuxiliaryGrid", LCSAttributes_SetAuxiliaryGrid, METH_VARARGS},
+    {"GetAuxiliaryGrid", LCSAttributes_GetAuxiliaryGrid, METH_VARARGS},
+    {"SetAuxiliaryGridSpacing", LCSAttributes_SetAuxiliaryGridSpacing, METH_VARARGS},
+    {"GetAuxiliaryGridSpacing", LCSAttributes_GetAuxiliaryGridSpacing, METH_VARARGS},
     {"SetMaxSteps", LCSAttributes_SetMaxSteps, METH_VARARGS},
     {"GetMaxSteps", LCSAttributes_GetMaxSteps, METH_VARARGS},
     {"SetOperationType", LCSAttributes_SetOperationType, METH_VARARGS},
@@ -1961,6 +2043,17 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Both") == 0)
         return PyInt_FromLong(long(LCSAttributes::Both));
 
+    if(strcmp(name, "auxiliaryGrid") == 0)
+        return LCSAttributes_GetAuxiliaryGrid(self, NULL);
+    if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(LCSAttributes::None));
+    if(strcmp(name, "TwoDim") == 0)
+        return PyInt_FromLong(long(LCSAttributes::TwoDim));
+    if(strcmp(name, "ThreeDim") == 0)
+        return PyInt_FromLong(long(LCSAttributes::ThreeDim));
+
+    if(strcmp(name, "auxiliaryGridSpacing") == 0)
+        return LCSAttributes_GetAuxiliaryGridSpacing(self, NULL);
     if(strcmp(name, "maxSteps") == 0)
         return LCSAttributes_GetMaxSteps(self, NULL);
     if(strcmp(name, "operationType") == 0)
@@ -1980,12 +2073,12 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "eigenComponent") == 0)
         return LCSAttributes_GetEigenComponent(self, NULL);
-    if(strcmp(name, "First") == 0)
-        return PyInt_FromLong(long(LCSAttributes::First));
-    if(strcmp(name, "Second") == 0)
-        return PyInt_FromLong(long(LCSAttributes::Second));
-    if(strcmp(name, "Third") == 0)
-        return PyInt_FromLong(long(LCSAttributes::Third));
+    if(strcmp(name, "Smallest") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Smallest));
+    if(strcmp(name, "Intermediate") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Intermediate));
+    if(strcmp(name, "Largest") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Largest));
 
     if(strcmp(name, "operatorType") == 0)
         return LCSAttributes_GetOperatorType(self, NULL);
@@ -2142,6 +2235,10 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LCSAttributes_SetEndPosition(self, tuple);
     else if(strcmp(name, "integrationDirection") == 0)
         obj = LCSAttributes_SetIntegrationDirection(self, tuple);
+    else if(strcmp(name, "auxiliaryGrid") == 0)
+        obj = LCSAttributes_SetAuxiliaryGrid(self, tuple);
+    else if(strcmp(name, "auxiliaryGridSpacing") == 0)
+        obj = LCSAttributes_SetAuxiliaryGridSpacing(self, tuple);
     else if(strcmp(name, "maxSteps") == 0)
         obj = LCSAttributes_SetMaxSteps(self, tuple);
     else if(strcmp(name, "operationType") == 0)

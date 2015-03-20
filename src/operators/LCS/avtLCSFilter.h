@@ -159,7 +159,9 @@ protected:
 
     void ComputeRightCauchyGreenTensor(double **j);
 
-    int Jacobi(double **a, double *w);
+    int Jacobi2D(double **j, double *w);
+    int Jacobi2D(double **j, double *w, double **v);
+    int Jacobi3D(double **a, double *w);
   
     // Iterative cacluation methods for FSLE, and similar methods
     bool RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics );
@@ -229,6 +231,12 @@ protected:
     double          global_bounds[6];
     int             global_resolution[3];
     int             timeState;
+
+    int eigenComponent;
+
+    int auxIdx;
+    int nAuxPts;
+    double auxSpacing;
 
     int      numSteps;
     int      maxSteps;
