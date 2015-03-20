@@ -107,8 +107,11 @@ class QvisLCSWindow : public QvisOperatorWindow
     void UseDataSetEndChanged(int);
     void EndPositionProcessText();
 
+    void auxiliaryGridChanged(int val);
+    void auxiliaryGridSpacingProcessText();
+
     void fieldTypeChanged(int val);
-    void fieldConstantProccessText();
+    void fieldConstantProcessText();
     void velocitySourceProcessText();
 //    void forceNodalChanged(bool);
 
@@ -159,12 +162,16 @@ class QvisLCSWindow : public QvisOperatorWindow
 
     // Integration
     QComboBox *sourceType;
-    QLabel *ResolutionLabel;
-    QLineEdit *Resolution;
+    QLabel       *ResolutionLabel;
+    QLineEdit    *Resolution;
     QButtonGroup *UseDataSetStart;
-    QLineEdit *StartPosition;
+    QLineEdit    *StartPosition;
     QButtonGroup *UseDataSetEnd;
-    QLineEdit *EndPosition;
+    QLineEdit    *EndPosition;
+
+    QComboBox *auxiliaryGrid;
+    QLabel    *auxiliaryGridSpacingLabel;
+    QLineEdit *auxiliaryGridSpacing;
 
     QComboBox *fieldType;
     QLabel    *fieldConstantLabel;

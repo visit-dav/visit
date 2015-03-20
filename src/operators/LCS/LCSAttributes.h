@@ -70,6 +70,12 @@ public:
         Full,
         Subset
     };
+    enum AuxiliaryGrid
+    {
+        None,
+        TwoDim,
+        ThreeDim
+    };
     enum IntegrationDirection
     {
         Forward,
@@ -118,9 +124,9 @@ public:
     };
     enum EigenComponent
     {
-        First,
-        Second,
-        Third
+        Smallest,
+        Intermediate,
+        Largest
     };
     enum OperatorType
     {
@@ -177,6 +183,8 @@ public:
     void SetUseDataSetEnd(Extents UseDataSetEnd_);
     void SetEndPosition(const double *EndPosition_);
     void SetIntegrationDirection(IntegrationDirection integrationDirection_);
+    void SetAuxiliaryGrid(AuxiliaryGrid auxiliaryGrid_);
+    void SetAuxiliaryGridSpacing(double auxiliaryGridSpacing_);
     void SetMaxSteps(int maxSteps_);
     void SetOperationType(OperationType operationType_);
     void SetEigenComponent(EigenComponent eigenComponent_);
@@ -226,6 +234,8 @@ public:
     const double *GetEndPosition() const;
           double *GetEndPosition();
     IntegrationDirection GetIntegrationDirection() const;
+    AuxiliaryGrid GetAuxiliaryGrid() const;
+    double       GetAuxiliaryGridSpacing() const;
     int          GetMaxSteps() const;
     OperationType GetOperationType() const;
     EigenComponent GetEigenComponent() const;
@@ -279,6 +289,11 @@ public:
     static bool Extents_FromString(const std::string &, Extents &);
 protected:
     static std::string Extents_ToString(int);
+public:
+    static std::string AuxiliaryGrid_ToString(AuxiliaryGrid);
+    static bool AuxiliaryGrid_FromString(const std::string &, AuxiliaryGrid &);
+protected:
+    static std::string AuxiliaryGrid_ToString(int);
 public:
     static std::string IntegrationDirection_ToString(IntegrationDirection);
     static bool IntegrationDirection_FromString(const std::string &, IntegrationDirection &);
@@ -349,6 +364,8 @@ public:
         ID_UseDataSetEnd,
         ID_EndPosition,
         ID_integrationDirection,
+        ID_auxiliaryGrid,
+        ID_auxiliaryGridSpacing,
         ID_maxSteps,
         ID_operationType,
         ID_eigenComponent,
@@ -397,6 +414,8 @@ private:
     int    UseDataSetEnd;
     double EndPosition[3];
     int    integrationDirection;
+    int    auxiliaryGrid;
+    double auxiliaryGridSpacing;
     int    maxSteps;
     int    operationType;
     int    eigenComponent;
@@ -439,6 +458,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LCSATTRIBUTES_TMFS "iIiDiDiiiiiibdbdbddbddiddidDibiiiibbddibbbbd"
+#define LCSATTRIBUTES_TMFS "iIiDiDiidiiiiibdbdbddbddiddidDibiiiibbddibbbbd"
 
 #endif
