@@ -48,6 +48,7 @@ IF(NEKTAR++_FOUND)
    boost_thread
    boost_date_time
    boost_filesystem
+   boost_regex
    boost_system
    boost_program_options)
 ENDIF()
