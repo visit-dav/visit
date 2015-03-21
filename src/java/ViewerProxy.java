@@ -248,6 +248,9 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Fri Jan  9 15:53:40 PST 2009
 //   I added code to skip the plot info atts for each plot plugin -- for now.
 //
+//   Kathleen Biagas, Fri Mar 20 17:19:02 PDT 2015
+//   Check userRoot for visithome key, then check systemroot if not found.
+//
 // ****************************************************************************
 /**
  * ViewerProxy is the main class that users of the Java VisIt Interface need to
@@ -316,7 +319,20 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
         try
         {
             String visitHomeKey = new String("/llnl/visit");           
-            if(Preferences.systemRoot().nodeExists(visitHomeKey))
+            if(Preferences.userRoot().nodeExists(visitHomeKey))
+            {
+                // Get the node
+                Preferences visitNode = Preferences.userRoot().node(visitHomeKey);
+                String defaultValue = new String("");
+                String visitPath = visitNode.get("VISITHOME", defaultValue);
+                if(!visitPath.equals(defaultValue))
+                {
+                    PrintMessage("Setting visit path to: " + visitPath);
+                    SetBinPath(visitPath);
+                    dataPath = new String(visitPath + "\\data\\");
+                }
+            }
+            else if(Preferences.systemRoot().nodeExists(visitHomeKey))
             {
                 // Get the node
                 Preferences visitNode = Preferences.systemRoot().node(visitHomeKey);
@@ -423,7 +439,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
         {
             retval = true;
 
-            PrintMessage("Adding state objects.");
+            System.out.println("Adding state objects.");
 
             // Set up xfer and the RPC's. The state objects herein must appear
             // in the same order as in ViewerState.h.
@@ -500,7 +516,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
      */
     public boolean Close()
     {
-        PrintMessage("Closing the viewer.");
+        System.out.println("Closing the viewer.");
         xfer.StopProcessing();
         methods.Close();
         viewer.Close();
