@@ -439,7 +439,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
         {
             retval = true;
 
-            System.out.println("Adding state objects.");
+            PrintMessage("Adding state objects.");
 
             // Set up xfer and the RPC's. The state objects herein must appear
             // in the same order as in ViewerState.h.
@@ -516,7 +516,7 @@ public class ViewerProxy implements SimpleObserver, ProxyInterface
      */
     public boolean Close()
     {
-        System.out.println("Closing the viewer.");
+        PrintMessage("Closing the viewer.");
         xfer.StopProcessing();
         methods.Close();
         viewer.Close();
