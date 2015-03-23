@@ -595,6 +595,9 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
 //    Change argument to GetFileName, as it now takes the time slice 
 //    corresponding to the VisIt time index, not the Nek time index.
 //
+//    Kathleen Biagas, Mon Mar 23 09:46 MST 2015
+//    Specify binary file when opening.
+//
 // ****************************************************************************
 
 void
@@ -606,7 +609,7 @@ avtNek5000FileFormat::ParseNekFileHeader()
     char *blockfilename = new char[ fileTemplate.size() + 64 ];
 
     GetFileName(0, 0, blockfilename, (int)fileTemplate.size() + 64);
-    ifstream  f(blockfilename);
+    ifstream  f(blockfilename, ifstream::binary);
 
     if (!f.is_open())
     {
@@ -893,6 +896,9 @@ void avtNek5000FileFormat::ParseFieldTags(ifstream &f)
 //    Hank Childs, Thu Jan 22 16:28:43 CST 2009
 //    Change the parallel error handling if a block file can't be found.
 //
+//    Kathleen Biagas, Mon Mar 23 09:46 MST 2015
+//    Specify binary file when opening.
+//
 // ****************************************************************************
 void
 avtNek5000FileFormat::ReadBlockLocations()
@@ -934,7 +940,7 @@ avtNek5000FileFormat::ReadBlockLocations()
     {
         int t0 = visitTimer->StartTimer();
         GetFileName(0, ii, blockfilename, (int)fileTemplate.size() + 64);
-        f.open(blockfilename);
+        f.open(blockfilename, ifstream::binary);
         visitTimer->StopTimer(t0, "avtNek5000FileFormat constructor, time to open a file");
         if (!f.is_open())
         {
