@@ -46,11 +46,11 @@ function bv_eavl_initialize_vars
 
 function bv_eavl_info
 {
-export EAVL_VERSION=${EAVL_VERSION:-"5f53629eed"}
+export EAVL_VERSION=${EAVL_VERSION:-"4593630"}
 export EAVL_FILE=${EAVL_FILE:-"EAVL-${EAVL_VERSION}.tar.gz"}
 export EAVL_BUILD_DIR=${EAVL_BUILD_DIR:-"EAVL-${EAVL_VERSION}"}
-export EAVL_MD5_CHECKSUM="b18015799f81384be0ac91ce11d842bd"
-export EAVL_SHA256_CHECKSUM="d1911e6790858c1ab8fa29da4ee451295f79bd0e0795fc33afd5732769c14f7f"
+export EAVL_MD5_CHECKSUM="3528aec602573baa6da327594eb7d061"
+export EAVL_SHA256_CHECKSUM="c6a94b503d6800c4875af8dc3235a510e9564efcb524a04bd07d1e295c45f9fe"
 }
 
 function bv_eavl_print
