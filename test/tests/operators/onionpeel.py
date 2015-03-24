@@ -48,6 +48,11 @@
 #
 #    Kathleen Biagas, Fri Jul 25 15:10:11 MST 2014
 #    Added ArbPoly test, which demonstrates use of new att: honorOriginalMesh.
+#
+#    Kathleen Biagas, Mon Mar 23 17:25:07 PDT 2015
+#    Modified AMR test to include the default Subset plot, now that it
+#    is fixed.
+#
 # ----------------------------------------------------------------------------
 
 def TestBigSil():
@@ -491,11 +496,6 @@ def TestBigSilMesh():
 def TestAMR():
     # AMR Mesh
     OpenDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
-
-    # delete the default subset plot, as OnionPeel does not appear to
-    # work with samrai amr data and subset plot
-    DeleteAllPlots()
-
     # use actual spatial extents
     SetViewExtentsType(1)
 
@@ -539,8 +539,6 @@ def TestAMR():
 
     # Test Vector plot
     OpenDatabase(data_path("samrai_test_data/mats-par3/dumps.visit"))
-    # Delete default Subset Plot.
-    DeleteAllPlots()
 
     AddPlot("Mesh", "amr_mesh")
     AddPlot("Vector", "Velocity")
