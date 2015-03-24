@@ -659,6 +659,11 @@ avtOnionPeelFilter::UpdateDataObjectInfo(void)
 //    Be a bit more restrictive when deciding to request ghosts, and
 //    requst ghost cells when needed.
 //
+//    Kathleen Biagas, Mon Mar 23 17:15:05 PDT 2015
+//    For logical index, only request ghost zones (not nodes), and do so
+//    whether or not the category is 'group' type.  Also request structured
+//    indices.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -765,17 +770,10 @@ avtOnionPeelFilter::ModifyContract(avtContract_p spec)
             rv->GetDataRequest()->TurnNodeNumbersOn();
     }
 
-    if (groupCategory && atts.GetLogical())
+    if (atts.GetLogical())
     {
-        if (atts.GetSeedType() == OnionPeelAttributes::SeedCell)
-        {
-            rv->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
-        }
-        else if (rv->GetDataRequest()->GetDesiredGhostDataType() !=
-                  GHOST_ZONE_DATA)
-        {
-            rv->GetDataRequest()->SetDesiredGhostDataType(GHOST_NODE_DATA);
-        }
+        rv->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        rv->GetDataRequest()->SetNeedStructuredIndices(true);
     }
 
     return rv;
