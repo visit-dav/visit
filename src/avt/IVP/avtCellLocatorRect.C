@@ -202,10 +202,6 @@ avtCellLocatorRect::FindCell(const double pos[3],
         }
     }
 
-    // std::cerr << i[0] << "  " << i[1] << "  " << i[2] << "  "
-    //        << l[0] << "  " << l[1] << "  " << l[2] << "  "
-    //        << std::endl;
-
     vtkIdType cell = (i[2]*(coord[1].size()-1) + i[1])*(coord[0].size()-1) + i[0];
 
     if( ignoreGhostCells && ghostPtr && ghostPtr[cell] )

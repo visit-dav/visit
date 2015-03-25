@@ -332,17 +332,19 @@ public:
   public:
     virtual bool CheckForTermination(avtIVPStep& step, avtIVPField *);
 
-    bool         TerminatedBecauseOfMaxIntersections(void) 
+    virtual bool TerminatedBecauseOfMaxIntersections(void) 
                             { return terminatedBecauseOfMaxIntersections; };
 
-    bool         TerminatedBecauseOfMaxSteps(void) 
+    virtual bool TerminatedBecauseOfMaxSteps(void) 
                             { return terminatedBecauseOfMaxSteps; };
 
+    virtual void SetMaxIntersections( int mi ) { maxIntersections = mi; };
+
+  protected:
     // Intersection points.
     unsigned int    numIntersections;
     unsigned int    maxIntersections;
 
-  protected:
     double intersectPlaneEq[4]; // Typically the Y=0 plane i.e. 0, 1, 0
     bool   terminatedBecauseOfMaxIntersections;
 

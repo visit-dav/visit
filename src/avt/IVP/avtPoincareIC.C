@@ -334,13 +334,6 @@ avtPoincareIC::IntersectPlane(const avtVector &p0, const avtVector &p1,
           // to zero for an even period.
           double intPart, fracPart = modf(nPeriods, &intPart);
           
-          // std::cerr << t0 << "  " << t1 << "  "
-          //        << time << "  " << nPeriods << "  "
-          //        << intPart << "  " << fracPart << "  "
-          //        << (fracPart < puncturePeriodTolerance ||
-          //            1.0-puncturePeriodTolerance < fracPart ? "save" : "")
-          //        << std::endl;
-          
           if( fracPart < puncturePeriodTolerance ||
               1.0-puncturePeriodTolerance < fracPart )
             return true;
@@ -376,5 +369,12 @@ avtPoincareIC::Serialize(MemStream::Mode mode, MemStream &buff,
     // Have the base class serialize its part
     avtStateRecorderIntegralCurve::Serialize(mode, buff, solver, serializeFlags);
 
+    buff.io(mode, numSteps);
+    buff.io(mode, maxSteps);
+    buff.io(mode, doTime);
+    buff.io(mode, maxTime);
+    buff.io(mode, terminatedBecauseOfMaxSteps);
     buff.io(mode, numIntersections);
+    buff.io(mode, maxIntersections);
+    buff.io(mode, terminatedBecauseOfMaxIntersections);
 }

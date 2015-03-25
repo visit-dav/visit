@@ -80,15 +80,16 @@ public:
     virtual bool    UseFixedTerminationDistance(void) { return doDistance; };
     virtual double  FixedTerminationDistance(void)    { return maxDistance; };
 
-    bool            TerminatedBecauseOfMaxSteps(void) 
-                                 { return terminatedBecauseOfMaxSteps; };
-
   protected:
     avtLCSIC( const avtLCSIC& );
     avtLCSIC& operator=( const avtLCSIC& );
     
   public:
     virtual bool   CheckForTermination(avtIVPStep& step, avtIVPField *);
+    virtual bool   TerminatedBecauseOfMaxSteps(void) 
+                            { return terminatedBecauseOfMaxSteps; };
+    virtual void   SetMaxSteps( unsigned int ms ) { maxSteps = ms; };
+    virtual int    GetMaxSteps() { return maxSteps; };
 
     virtual int    GetNumSteps()  { return numSteps; }
     virtual double GetTime()      { return time; }
@@ -106,9 +107,8 @@ public:
     avtVector GetStartPoint() { return p_start; }
     avtVector GetEndPoint() { return p_end; }
 
-  public:
-    unsigned int     maxSteps;
   protected:
+    unsigned int     maxSteps;
     unsigned int     numSteps;
     bool             doDistance;
     double           maxDistance;

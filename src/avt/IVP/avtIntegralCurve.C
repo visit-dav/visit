@@ -257,8 +257,6 @@ avtIntegralCurve::Advance(avtIVPField *field)
     double range[2];
     field->GetTimeRange(range);
 
-//    std::cerr << ivp->GetCurrentT() << std::endl;
-
     // Catch cases where the start position is outside the
     // domain of field; in this case, mark the curve 
     avtIVPField::Result fieldRes =
@@ -321,7 +319,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
         avtIVPStep           step;
         avtIVPSolver::Result result;
         result = ivp->Step( field, tfinal, &step );
-        numStepsTaken++;
+        ++numStepsTaken;
 
         if (result == avtIVPSolver::OK || result == avtIVPSolver::TERMINATE)
         {
@@ -341,6 +339,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 {
                     debug5 << "avtIntegralCurve::Advance(): step ended in ghost data\n";
                 }
+
                 if (fieldRes == avtIVPField::OUTSIDE_SPATIAL ||
                     fieldRes == avtIVPField::OUTSIDE_BOTH)
                     status.SetAtSpatialBoundary();

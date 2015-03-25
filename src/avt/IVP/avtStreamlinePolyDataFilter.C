@@ -164,13 +164,12 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
         if (numSamps > 1)
             numPts += numSamps;
 
+        if (ic->CurrentVelocity().length() <= criticalPointThreshold)
+          numCritPts++;
+
         if (ic->TerminatedBecauseOfMaxSteps())
-        {
-            if (ic->SpeedAtTermination() <= criticalPointThreshold)
-                numCritPts++;
-            else
-                numEarlyTerminators++;
-        }
+          numEarlyTerminators++;
+
         if (ic->EncounteredNumericalProblems())
             numStiff++;
     }
@@ -306,8 +305,6 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
         line->GetPointIds()->SetNumberOfIds(numSamps);
 
         float theta = 0.0, prevT = 0.0;
-
-        //cerr << phiScaling << "  " << (phiScaling == 0.0) << endl;
 
         for (size_t j = 0; j < numSamps; j++)
         {

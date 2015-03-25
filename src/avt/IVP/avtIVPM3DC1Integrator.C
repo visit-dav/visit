@@ -73,7 +73,7 @@ avtIVPM3DC1Integrator::avtIVPM3DC1Integrator()
     tol = 1e-8;
     h = 1e-5;
     t = 0.0;
-    numStep = 0;
+
     degenerate_iterations = 0;
     stiffness_eps = tol / 1000.0;
 }
@@ -145,11 +145,10 @@ avtIVPM3DC1Integrator::Reset(const double& t_start,
                              const avtVector& v_start)
 {
     t = t_start;
-    numStep = 0;
-
-    degenerate_iterations = 0;
     yCur = y_start;
     h = h_max;
+
+    degenerate_iterations = 0;
 }
 
 
@@ -230,7 +229,6 @@ avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
 
         ivpstep->t0 = t;
         ivpstep->t1 = t + h;
-        numStep++;
 
         yCur = yNew;
         t = t+h;
@@ -639,8 +637,7 @@ avtIVPM3DC1Integrator::getBfield2(const avtIVPField* field,
 void
 avtIVPM3DC1Integrator::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
-    aiss.Accept(numStep)
-        .Accept(tol)
+    aiss.Accept(tol)
         .Accept(degenerate_iterations)
         .Accept(max_degenerate_iterations)
         .Accept(stiffness_eps)

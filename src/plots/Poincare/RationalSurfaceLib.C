@@ -133,7 +133,7 @@ bool SetupNewBracketA(avtPoincareIC *bracketA, avtPoincareIC *parent_seed, avtVe
   bracketA->src_seed_ic = parent_seed;
   bracketA->src_rational_ic = parent_seed->src_rational_ic;
   bracketA->properties.iteration = properties.iteration + 1;
-  bracketA->maxIntersections = 8 * (properties.toroidalWinding + 2);
+  bracketA->SetMaxIntersections( 8 * (properties.toroidalWinding + 2) );
   bracketA->properties.type = FieldlineProperties::IRRATIONAL;
   bracketA->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
   bracketA->properties.searchState = FieldlineProperties::MINIMIZING_A;
@@ -157,7 +157,7 @@ bool SetupNewBracketB(avtPoincareIC *bracketB, avtPoincareIC *parent_seed, avtVe
   bracketB->src_seed_ic = parent_seed;
   bracketB->src_rational_ic = parent_seed->src_rational_ic;
   bracketB->properties.iteration = properties.iteration + 1;
-  bracketB->maxIntersections = 8 * (properties.toroidalWinding + 2);
+  bracketB->SetMaxIntersections( 8 * (properties.toroidalWinding + 2) );
   bracketB->properties.type = FieldlineProperties::IRRATIONAL;
   bracketB->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
   bracketB->properties.searchState = FieldlineProperties::MINIMIZING_B;
@@ -181,7 +181,7 @@ bool SetupNewBracketC(avtPoincareIC *bracketC, avtPoincareIC *parent_seed, avtVe
   bracketC->src_seed_ic = parent_seed;
   bracketC->src_rational_ic = parent_seed->src_rational_ic;
   bracketC->properties.iteration = properties.iteration + 1;
-  bracketC->maxIntersections = 8 * (properties.toroidalWinding + 2);
+  bracketC->SetMaxIntersections( 8 * (properties.toroidalWinding + 2) );
   bracketC->properties.type = FieldlineProperties::IRRATIONAL;
   bracketC->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
   bracketC->properties.searchState = FieldlineProperties::MINIMIZING_C;
@@ -425,7 +425,7 @@ bool SetupNewSeed(avtPoincareIC *seed,
   seed->src_rational_ic = rational;
   seed->src_seed_ic = seed;
   seed->properties.iteration = properties.iteration + 1;
-  seed->maxIntersections = 8 * (properties.toroidalWinding + 2);
+  seed->SetMaxIntersections( 8 * (properties.toroidalWinding + 2) );
   seed->properties.type = FieldlineProperties::IRRATIONAL;
   seed->properties.analysisMethod = FieldlineProperties::RATIONAL_SEARCH;
   seed->properties.searchState = FieldlineProperties::SEARCHING_SEED;

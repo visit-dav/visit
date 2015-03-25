@@ -500,7 +500,6 @@ protected:
     bool convertToCylindrical;
 
     unsigned int order;
-    unsigned int numStep;
 
     avtVector yCur;
     avtVector vCur;

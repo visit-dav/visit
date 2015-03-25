@@ -922,7 +922,7 @@ avtIntegralCurve *
 avtIntegralCurveFilter::CreateIntegralCurve()
 {
     avtStreamlineIC *ic = new avtStreamlineIC();
-    ic->maxSteps = maxSteps;
+    ic->SetMaxSteps( maxSteps );
     ic->historyMask = GenerateAttributeFields();
     return ic;
 }
@@ -2132,14 +2132,14 @@ void
 avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 {
     int numICs = (int)ics.size();
-//    int numPts = 0;
+
     int numEarlyTerminators = 0;
     int numStiff = 0;
     int numCritPts = 0;
 
     if (DebugStream::Level5())
     {
-        debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
+        debug5 << "::ReportWarnings " << ics.size() << endl;
     }
 
     //See how many pts, ics we have so we can preallocate everything.
@@ -2147,18 +2147,11 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     {
         avtStreamlineIC *ic = dynamic_cast<avtStreamlineIC*>(ics[i]);
 
-        // NOT USED ??????????????????????????
-        // size_t numSamps = (ic ? ic->GetNumberOfSamples() : 0);
-        // if (numSamps > 1)
-        //     numPts += numSamps;
+        if (ic->CurrentVelocity().length() <= criticalPointThreshold)
+            numCritPts++;
 
         if (ic->TerminatedBecauseOfMaxSteps())
-        {
-            if (ic->SpeedAtTermination() <= criticalPointThreshold)
-                numCritPts++;
-            else
-                numEarlyTerminators++;
-        }
+            numEarlyTerminators++;
 
         if (ic->EncounteredNumericalProblems())
             numStiff++;

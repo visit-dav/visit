@@ -93,10 +93,10 @@ avtIVPAdamsBashforth::avtIVPAdamsBashforth()
     tol = 1e-8;
     h = 1e-5;
     t = 0.0;
-    numStep = 0;
+
     degenerate_iterations = 0;
     stiffness_eps = tol / 1000.0;
-    abStep = 0;
+    abCIndex = 0;
     abNSteps = 1;
 }
 
@@ -184,10 +184,8 @@ avtIVPAdamsBashforth::Reset(const double& t_start,
 
     degenerate_iterations = 0;
 
-    abStep = 0;
+    abCIndex = 0;
     abNSteps = 1;
-
-    numStep = 0;
 }
 
 
@@ -271,7 +269,7 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
     bool last = false;
 
     // do not run past integration end
-    if( (t_local + 1.01*h - t_max) * direction > 0.0 ) 
+    if( (t_local + h - t_max) * direction > 0.0 ) 
     {
         last = true;
         h = t_max - t_local;
@@ -292,7 +290,7 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
 
     // Calculate the new velocity using the Adams-Bashforth algorithm
     for (int i = 0; i < abNSteps; ++i)
-        vNew += bashforth[abStep][i] * history[i];
+        vNew += bashforth[abCIndex][i] * history[i];
 
     // Calculate the new position.
     yNew = yCur + h * vNew;
@@ -300,13 +298,13 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
     // Increment the number of steps to be taken.
     if( abNSteps < ADAMS_BASHFORTH_NSTEPS )
     {
-      ++abStep;    // Index of the coefficents for the step order.
+      ++abCIndex;  // Index of the coefficents for the step order.
       ++abNSteps;  // Number of steps to be taken
     }
 
     // Update the history to save the last N vector values. Note: the
-    // history needs to be updated after the abStep is incremented.
-    for (size_t i = abStep; i>0; --i)
+    // history needs to be updated after the abCIndex is incremented.
+    for (size_t i = abCIndex; i>0; --i)
       history[i] = history[i-1];
 
     // Convert and save the position.
@@ -325,9 +323,6 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
     
     ivpstep->t0 = t;
     ivpstep->t1 = t + h;
-
-    // Update for the next step.
-    numStep++;
 
     yCur = yNew;
     vCur = vNew;
@@ -364,7 +359,8 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
 void
 avtIVPAdamsBashforth::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
-    aiss.Accept(numStep)
+    aiss.Accept(abCIndex)
+        .Accept(abNSteps)
         .Accept(tol)
         .Accept(degenerate_iterations)
         .Accept(stiffness_eps)

@@ -157,7 +157,11 @@ protected:
                               vtkDataArray* result,
                               vtkDataArray* secondary );
 
-    void ComputeRightCauchyGreenTensor(double **j);
+    void ComputeLeftCauchyGreenTensor2D(double **j);
+    void ComputeLeftCauchyGreenTensor3D(double **j);
+
+    void ComputeRightCauchyGreenTensor2D(double **j);
+    void ComputeRightCauchyGreenTensor3D(double **j);
 
     int Jacobi2D(double **j, double *w);
     int Jacobi2D(double **j, double *w, double **v);
@@ -212,6 +216,10 @@ protected:
 
     void          SetVelocitySource(const double *v);
 
+    void          IssueWarningForAdvection(bool v) 
+                               { issueWarningForAdvection = v; };
+    void          IssueWarningForBoundary(bool v) 
+                               { issueWarningForBoundary = v; };
     void          IssueWarningForMaxStepsTermination(bool v) 
                                { issueWarningForMaxStepsTermination = v; };
     void          IssueWarningForStiffness(bool v) 
@@ -232,8 +240,10 @@ protected:
     int             global_resolution[3];
     int             timeState;
 
+    int cgTensor;
     int eigenComponent;
 
+    int nDim;
     int auxIdx;
     int nAuxPts;
     double auxSpacing;
@@ -249,6 +259,8 @@ protected:
 
     double    minSizeValue, maxSizeValue;
 
+    bool      issueWarningForAdvection;
+    bool      issueWarningForBoundary;
     bool      issueWarningForMaxStepsTermination;
     bool      issueWarningForStiffness;
     bool      issueWarningForCriticalPoints;

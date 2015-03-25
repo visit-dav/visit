@@ -446,10 +446,20 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
             this, SLOT(operationTypeChanged(int)));
     terminationLayout->addWidget(operationType, 0, 1);
 
-    // Create the eigenComponent of integration.
+    // Create the cauchyGreenTensor of integration.
+    cauchyGreenTensorLabel = new QLabel(tr("Tensor"), central);
+    terminationLayout->addWidget(cauchyGreenTensorLabel, 1, 0);
 
-    eigenComponentLabel = new QLabel(tr("Eigen component"), central);
-    terminationLayout->addWidget(eigenComponentLabel, 1, 0);
+    cauchyGreenTensor = new QComboBox(central);
+    cauchyGreenTensor->addItem(tr("Left Cauchy Green"));
+    cauchyGreenTensor->addItem(tr("Right Cauchy Green"));
+    connect(cauchyGreenTensor, SIGNAL(activated(int)),
+            this, SLOT(cauchyGreenTensorChanged(int)));
+    terminationLayout->addWidget(cauchyGreenTensor, 1, 1);
+
+    // Create the eigenComponent of integration.
+    eigenComponentLabel = new QLabel(tr("Eigen value"), central);
+    terminationLayout->addWidget(eigenComponentLabel, 1, 2);
 
     eigenComponent = new QComboBox(central);
     eigenComponent->addItem(tr("Smallest"));
@@ -457,7 +467,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     eigenComponent->addItem(tr("Largest"));
     connect(eigenComponent, SIGNAL(activated(int)),
             this, SLOT(eigenComponentChanged(int)));
-    terminationLayout->addWidget(eigenComponent, 1, 1);
+    terminationLayout->addWidget(eigenComponent, 1, 3);
 
     // Create the operator of integrator.
     operatorType = new QComboBox(central);
@@ -696,40 +706,54 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     warningsGLayout->setSpacing(10);
     warningsGLayout->setColumnStretch(1,10);
 
+    issueWarningForAdvection = new QCheckBox(central);
+    connect(issueWarningForAdvection, SIGNAL(toggled(bool)),
+            this, SLOT(issueWarningForAdvectionChanged(bool)));
+    warningsGLayout->addWidget(issueWarningForAdvection, 0, 0);
+    QLabel *advectionLabel = new QLabel(tr("Issue warning if the advection limit is not reached."), warningsGrp);
+    warningsGLayout->addWidget(advectionLabel, 0, 1, 1, 2);
+
+    issueWarningForBoundary = new QCheckBox(central);
+    connect(issueWarningForBoundary, SIGNAL(toggled(bool)),
+            this, SLOT(issueWarningForBoundaryChanged(bool)));
+    warningsGLayout->addWidget(issueWarningForBoundary, 7, 0);
+    QLabel *boundaryLabel = new QLabel(tr("Issue warning if the boundary is reached."), warningsGrp);
+    warningsGLayout->addWidget(boundaryLabel, 1, 1, 1, 2);
+
     issueWarningForMaxSteps = new QCheckBox(central);
     connect(issueWarningForMaxSteps, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForMaxStepsChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForMaxSteps, 0, 0);
+    warningsGLayout->addWidget(issueWarningForMaxSteps, 2, 0);
     QLabel *maxStepsLabel = new QLabel(tr("Issue warning when the maximum number of steps is reached."), warningsGrp);
-    warningsGLayout->addWidget(maxStepsLabel, 0, 1, 1, 2);
+    warningsGLayout->addWidget(maxStepsLabel, 2, 1, 1, 2);
 
     issueWarningForStiffness = new QCheckBox(central);
     connect(issueWarningForStiffness, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForStiffnessChanged(bool)));
     warningsGLayout->addWidget(issueWarningForStiffness, 1, 0);
     QLabel *stiffnessLabel = new QLabel(tr("Issue warning when stiffness is detected."), warningsGrp);
-    warningsGLayout->addWidget(stiffnessLabel, 1, 1, 1, 2);
+    warningsGLayout->addWidget(stiffnessLabel, 3, 1, 1, 2);
     QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel1, 2, 1, 1, 2);
+    warningsGLayout->addWidget(stiffnessDescLabel1, 4, 1, 1, 2);
     QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel2, 3, 1, 1, 2);
+    warningsGLayout->addWidget(stiffnessDescLabel2, 5, 1, 1, 2);
     
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForCriticalPoints, 4, 0);
+    warningsGLayout->addWidget(issueWarningForCriticalPoints, 6, 0);
     QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
-    warningsGLayout->addWidget(critPointLabel, 4, 1, 1, 2);
+    warningsGLayout->addWidget(critPointLabel, 6, 1, 1, 2);
     QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
-    warningsGLayout->addWidget(critPointDescLabel, 5, 1, 1, 2);
+    warningsGLayout->addWidget(critPointDescLabel, 7, 1, 1, 2);
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-    warningsGLayout->addWidget(criticalPointThresholdLabel, 6, 1);
+    warningsGLayout->addWidget(criticalPointThresholdLabel, 8, 1);
     criticalPointThreshold = new QLineEdit(warningsGrp);
     criticalPointThreshold->setAlignment(Qt::AlignLeft);
     connect(criticalPointThreshold, SIGNAL(returnPressed()),
             this, SLOT(criticalPointThresholdProcessText()));
-    warningsGLayout->addWidget(criticalPointThreshold, 6, 2);
+    warningsGLayout->addWidget(criticalPointThreshold, 8, 2);
 }
 
 
@@ -877,6 +901,8 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               terminationTypeButtonGroup->button(0)->show();
               terminationTypeButtonGroup->button(1)->show();
               terminationTypeButtonGroup->button(2)->show();
+              cauchyGreenTensorLabel->show();
+              cauchyGreenTensor->show();
               eigenComponentLabel->show();
               eigenComponent->show();
               maxSize->show();
@@ -901,12 +927,16 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               if( atts->GetOperationType() == LCSAttributes::EigenValue ||
                   atts->GetOperationType() == LCSAttributes::EigenVector )
               {
+                cauchyGreenTensorLabel->show();
+                cauchyGreenTensor->show();
                 eigenComponentLabel->show();
                 eigenComponent->show();
                 operatorType->hide();
               }
               else
               {
+                cauchyGreenTensorLabel->hide();
+                cauchyGreenTensor->hide();
                 eigenComponentLabel->hide();
                 eigenComponent->hide();
                 operatorType->show();
@@ -920,6 +950,12 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               else
                 clampLogValues->show();
             }
+            break;
+
+        case LCSAttributes::ID_cauchyGreenTensor:
+            cauchyGreenTensor->blockSignals(true);
+            cauchyGreenTensor->setCurrentIndex(int(atts->GetCauchyGreenTensor()) );
+            cauchyGreenTensor->blockSignals(false);
             break;
 
         case LCSAttributes::ID_eigenComponent:
@@ -1142,6 +1178,18 @@ QvisLCSWindow::UpdateWindow(bool doAll)
         //     forceNodal->blockSignals(false);
         //     break;
 
+        case LCSAttributes::ID_issueAdvectionWarnings:
+            issueWarningForAdvection->blockSignals(true);
+            issueWarningForAdvection->setChecked(atts->GetIssueAdvectionWarnings());
+            issueWarningForAdvection->blockSignals(false);
+            break;
+
+        case LCSAttributes::ID_issueBoundaryWarnings:
+            issueWarningForBoundary->blockSignals(true);
+            issueWarningForBoundary->setChecked(atts->GetIssueBoundaryWarnings());
+            issueWarningForBoundary->blockSignals(false);
+            break;
+
         case LCSAttributes::ID_issueTerminationWarnings:
             issueWarningForMaxSteps->blockSignals(true);
             issueWarningForMaxSteps->setChecked(atts->GetIssueTerminationWarnings());
@@ -1161,6 +1209,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             issueWarningForStiffness->setChecked(atts->GetIssueStiffnessWarnings());
             issueWarningForStiffness->blockSignals(false);
             break;
+
         case LCSAttributes::ID_criticalPointThreshold:
             temp.setNum(atts->GetCriticalPointThreshold());
             criticalPointThreshold->setText(temp);
@@ -1777,6 +1826,16 @@ QvisLCSWindow::operationTypeChanged(int val)
 }   
 
 void
+QvisLCSWindow::cauchyGreenTensorChanged(int val)
+ {
+    if(val != atts->GetCauchyGreenTensor())
+    {
+        atts->SetCauchyGreenTensor(LCSAttributes::CauchyGreenTensor(val));
+        Apply();
+    }
+}   
+
+void
 QvisLCSWindow::eigenComponentChanged(int val)
  {
     if(val != atts->GetEigenComponent())
@@ -1942,6 +2001,20 @@ QvisLCSWindow::velocitySourceProcessText()
 }
 
 void
+QvisLCSWindow::issueWarningForAdvectionChanged(bool val)
+{
+    atts->SetIssueAdvectionWarnings(val);
+    Apply();
+}
+
+void
+QvisLCSWindow::issueWarningForBoundaryChanged(bool val)
+{
+    atts->SetIssueBoundaryWarnings(val);
+    Apply();
+}
+
+void
 QvisLCSWindow::issueWarningForMaxStepsChanged(bool val)
 {
     atts->SetIssueTerminationWarnings(val);
@@ -1968,7 +2041,6 @@ QvisLCSWindow::criticalPointThresholdProcessText(void)
     GetCurrentValues(LCSAttributes::ID_criticalPointThreshold);
     Apply();
 }
-
 static void
 TurnOn(QWidget *w0, QWidget *w1)
 {

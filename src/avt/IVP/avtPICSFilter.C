@@ -386,11 +386,6 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
         }
     }
 
-    // std::cerr << (blockLoaded ? "block loaded  " : "no block to load  ")
-    //        << timeStep << "  " << skipBlk << "  "
-    //        << pt << "  " << doms.size() << "  " 
-    //        << std::endl;
-
     // No blocks, exited spatial boundary.
     if (ic->blockList.empty())
         ic->status.SetExitSpatialBoundary();
@@ -692,9 +687,6 @@ avtPICSFilter::LoadNextTimeSlice()
             rollover = true;
         }
     }
-
-    // std::cerr << "LoadNextTimeSlice() " << curTimeSlice << " tsMax= " << domainTimeIntervals.size() <<"  " << period << std::endl;
-
 
     if (DebugStream::Level5()) 
     {
@@ -1357,8 +1349,6 @@ avtPICSFilter::Execute(void)
                 break;
         }
     }
-
-    // std::cerr << _ics.size() << std::endl;
 }
 
 
@@ -1694,10 +1684,6 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
           else
             baseTime = md->GetTimes()[currentTimeSliderIndex];
 
-          // std::cerr << baseTime << "  " << md->GetTimes()[0] << "  "
-          //        << md->GetTimes()[numTimes] << "  " << baseTime+period
-          //        << std::endl;
-
           // Period checks make sure there are enough time slices
           if( numTimes < 2 )
           {
@@ -1730,12 +1716,6 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
 
           double intPart, fracPart = modf(period / timeSliceInterval, &intPart);
 
-          // std::cerr << period << "  " << timeSliceInterval << "  "
-          //        << period / timeSliceInterval << "  "
-          //        << intPart << "  " << fracPart << "  "
-          //        << FLT_EPSILON << "  " << DBL_EPSILON
-          //        << std::endl;
-
           if( fracPart > FLT_EPSILON )
           {
             EXCEPTION1(VisItException, "Periodic Pathlines - "
@@ -1748,7 +1728,6 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
         {
             debug5<<"Times: [";
         }
-
 
         for (int i = 0; i < numTimes; i++)
         {
@@ -1863,12 +1842,10 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
 {
     if (OperatingOnDemand())
     {
-      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
-
         // Get/Compute the interval tree.
         avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents(timeSlice);
 
-// TODO: The code below can be simplified. Move duplicate code out side of the if statement.
+        // TODO: The code below can be simplified. Move duplicate code out side of the if statement.
         if (GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition())
         {
             // We are going to assume that the format that operates on
@@ -1909,10 +1886,6 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
         if (dataIsReplicated)
             performCalculationsOverAllProcs = false;
         GetTypedInput()->RenumberDomainIDs(performCalculationsOverAllProcs);
-
-        // std::cerr << __FUNCTION__ << "  " << __LINE__  << "  "
-        //        << dataIsReplicated << "  "
-        //        << performCalculationsOverAllProcs << std::endl;
 
         TRY
         {
@@ -2412,8 +2385,9 @@ avtPICSFilter::ICInBlock(const avtIntegralCurve *ic, const BlockIDType &block)
 
     //Rectilinear dataset.
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
         return ICInRectilinearBlock(ic, block, ds);
-    
+    }
 
     // check if we have a locator
     std::map<BlockIDType,avtCellLocator_p>::iterator cli = domainToCellLocatorMap.find(block);
@@ -2483,10 +2457,10 @@ avtPICSFilter::ICInRectilinearBlock(const avtIntegralCurve *ic,
 
     // If we're on a face, we want to avoid cases where the next step will move
     // the point outside the block.
-    if (OnFaceAndPushedOut(ic, block, ds, bbox))
-        return false;
-    if (OnFaceAndPushedIn(ic, block, ds, bbox))
-        return true;
+    // if (OnFaceAndPushedOut(ic, block, ds, bbox))
+    //     return false;
+    // if (OnFaceAndPushedIn(ic, block, ds, bbox))
+    //     return true;
     
     // If no ghost zones, the pt is in dataset.
     vtkDataArray *ghosts = ds->GetCellData()->GetArray("avtGhostZones");
@@ -2805,28 +2779,14 @@ avtPICSFilter::DomainToRank(BlockIDType &domain)
 int
 avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
 {
-    // if( directionlessField )
-    //   std::cerr << "AdvectParticle " << ic->id << "  "
-    //          << __LINE__ << std::endl;
-
     int numStepsTaken = 0;
     
     //If no blockList, see if we can set it.
     if (ic->blockList.empty())
         FindCandidateBlocks(ic);
 
-    // std::cerr << "AdvectParticle " << ic->id << "  "
-    //        << __LINE__ << "  "
-    //        << ic->status << "  "
-    //        << ic->status.Integrateable()
-    //        << std::endl;
-    
     if (!ic->status.Integrateable())
         return numStepsTaken;
-
-    // if( directionlessField )
-    //   std::cerr << "AdvectParticle " << ic->id << "  "
-    //          << __LINE__ << std::endl;
 
     bool haveBlock = false;
     BlockIDType blk;
@@ -2849,11 +2809,6 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
             delete field;
     }
 
-    // if( directionlessField )
-    //   std::cerr << "AdvectParticle " << ic->id << "  "
-    //          << __LINE__ << std::endl;
-
-    // std::cerr << (haveBlock ? "have block" : "no block") << std::endl;
     if (!haveBlock)
     {
         ic->status.ClearTemporalBoundary();
@@ -2870,22 +2825,11 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
 
     numStepsTaken = ic->Advance(field);
 
-    // if( directionlessField )
-    //   std::cerr << "Advancing " << ic->id << std::endl;
-
     delete field;
-
-    // double dt = ((double) ((int) (ic->CurrentTime()*100.0)) / 100.0);
-
-    // std::cerr << (ic->CurrentTime()-dt) << "  "
-    //        << dt << "  "
-    //        << ic->CurrentTime() << "  "
-    //        << ic->CurrentLocation() << "  "
-    //        << ic->status << "  "
-    //        << std::endl;
 
     if (!ic->status.Terminated())
         FindCandidateBlocks(ic, &blk);
+
     return numStepsTaken;
 }
 
@@ -3347,14 +3291,10 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
             curves.push_back(ic1);
             seedPtIds.push_back(ic1->id);
 
-            // if( directionlessField )
-            //   std::cerr << "Creating " << ic0->id << "  " 
-            //          << ic1->id << std::endl;
-
             fwdBwdICPairs.push_back(std::pair<int,int> (ic0->id, ic1->id));
         }
         
-// TODO: what happens if we get 0 domains returned. We will still add the seed point to the list.
+        // TODO: what happens if we get 0 domains returned. We will still add the seed point to the list.
         ids.push_back(seedPtIds);
     }
 
