@@ -290,14 +290,7 @@ class IVP_API avtPICSFilter :
     bool                      ICInRectilinearBlock(const avtIntegralCurve *ic, 
                                                    const BlockIDType &block,
                                                    vtkDataSet *ds);
-    bool                      OnFaceAndPushedOut(const avtIntegralCurve *ic,
-                                                 const BlockIDType &block,
-                                                 vtkDataSet *ds,
-                                                 double *bbox);
-    bool                      OnFaceAndPushedIn(const avtIntegralCurve *ic,
-                                                const BlockIDType &block,
-                                                vtkDataSet *ds,
-                                                double *bbox);
+    int                       OnFace(const avtIntegralCurve *ic, double *bbox);
     int                       GetNextCurveID(){ int id = MaxID; MaxID++; return id;}
     void                      CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                                                          std::vector<avtVector> &vels,

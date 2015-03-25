@@ -2455,13 +2455,13 @@ avtPICSFilter::ICInRectilinearBlock(const avtIntegralCurve *ic,
     if (dataSpatialDimension == 3 && (pt.z < bbox[4] || pt.z > bbox[5]))
         return false;
 
-    // If we're on a face, we want to avoid cases where the next step will move
-    // the point outside the block.
-    // if (OnFaceAndPushedOut(ic, block, ds, bbox))
-    //     return false;
-    // if (OnFaceAndPushedIn(ic, block, ds, bbox))
-    //     return true;
-    
+    // If we're on a face, we want to avoid cases where the next step
+    // will move the point outside the block.
+    int onFace = OnFace(ic, bbox);
+
+    if( onFace < 0 ) return false; // next step goes outside the block 
+    if( onFace > 0 ) return true;  // next step goes  inside the block 
+  
     // If no ghost zones, the pt is in dataset.
     vtkDataArray *ghosts = ds->GetCellData()->GetArray("avtGhostZones");
     if (ghosts == NULL)
@@ -2483,128 +2483,51 @@ avtPICSFilter::ICInRectilinearBlock(const avtIntegralCurve *ic,
 }
 
 //****************************************************************************
-// Method:  avtPICSFilter::OnFaceAndPushedOut
+// Method:  avtPICSFilter::OnFace
 //
 // Purpose:
-//   Determines if the IC is on a rectilinear face, but is pushed out
-//   of the block.
+//   Determines if the IC is on a rectilinear face, and is pushed out
+//   or in of the block.
 //
 //
-// Programmer:  Dave Pugmire
-// Creation:    June  5, 2013
-//
-// Modifications:
-//  Kevin Bensema Thu Aug 1 20:51 PDT 
-//  freed avtIVPField* field pointer to fix memory leak.
+// Programmer:  Allen Sanderson
+// Creation:    March 15, 2015
 //
 //****************************************************************************
 
-bool
-avtPICSFilter::OnFaceAndPushedOut(const avtIntegralCurve *ic,
-                                  const BlockIDType &block,
-                                  vtkDataSet *ds,
-                                  double *bbox)
+int
+avtPICSFilter::OnFace(const avtIntegralCurve *ic,
+                      double *bbox)
 {
-    avtVector pt = ic->CurrentLocation();
-    double time = ic->CurrentTime();
-    double t[3] = {(pt.x-bbox[0]) / (bbox[1]-bbox[0]),
-                   (pt.y-bbox[2]) / (bbox[3]-bbox[2]),
-                   0.0};
-    if (dataSpatialDimension == 3)
-        t[2] = (pt.z-bbox[4]) / (bbox[5]-bbox[4]);
-    
-    //avtVector v = ic->CurrentV();
-    avtIVPField *field = GetFieldForDomain(block, ds);
-    avtVector vec;
-    (*field)(time, pt, vec);
-    //vec = v;
+    avtVector pt  = ic->CurrentLocation();
+    avtVector vec = ic->CurrentVelocity();
+    double      h = ic->NextStepSize();
+
     if (ic->direction == avtIntegralCurve::DIRECTION_BACKWARD)
         vec = -vec;
 
-    delete field;
+    // Guess at the next step at a %10 WAG factor.
+    avtVector nextPt = pt + h * vec * 0.1;
 
-    if (t[0] < 0.01 && vec[0] < 0.0)
-        return true;
-    if (t[0] > 0.99 && vec[0] > 0.0)
-        return true;
+    int val = 0;  // To start assume the points stays on the face.
 
-    if (t[1] < 0.01 && vec[1] < 0.0)
-        return true;
-    if (t[1] > 0.99 && vec[1] > 0.0)
-        return true;
-    
-    if (dataSpatialDimension == 3)
+    for( int i=0, j=0; i<dataSpatialDimension; ++i,j+=2 )
     {
-        if (t[2] < 0.01 && vec[2] < 0.0)
-            return true;
-        if (t[2] > 0.99 && vec[2] > 0.0)
-            return true;
+      // Calculate the bounding box parameter.
+      double t = (nextPt[i]-bbox[j]) / (bbox[j+1]-bbox[j]);
+
+      // Next step will push the point in, make sure all directions
+      // are also in.
+      if (0.0 < t && t < 1.0)
+        val = 1;
+
+      // Next step will push the point out, return immediately.
+      if (t < 0.0 || 1.0 < t)
+        return -1;
     }
 
-    return false;
-}
-
-//****************************************************************************
-// Method:  avtPICSFilter::OnFaceAndPushedIn
-//
-// Purpose:
-//   Determines if the IC is on a rectilinear face, but is pushed out
-//   of the block.
-//
-//
-// Programmer:  Dave Pugmire
-// Creation:    June  5, 2013
-//
-// Modifications:
-//  Kevin Bensema Thu Aug 1 20:51 PDT 
-//  freed avtIVPField* field pointer to fix memory leak.
-//
-//
-//****************************************************************************
-
-bool
-avtPICSFilter::OnFaceAndPushedIn(const avtIntegralCurve *ic,
-                                  const BlockIDType &block,
-                                  vtkDataSet *ds,
-                                  double *bbox)
-{
-    avtVector pt = ic->CurrentLocation();
-    double time = ic->CurrentTime();
-    double t[3] = {(pt.x-bbox[0]) / (bbox[1]-bbox[0]),
-                   (pt.y-bbox[2]) / (bbox[3]-bbox[2]),
-                   0.0};
-    if (dataSpatialDimension == 3)
-        t[2] = (pt.z-bbox[4]) / (bbox[5]-bbox[4]);
-    
-    //avtVector v = ic->CurrentV();
-    avtIVPField *field = GetFieldForDomain(block, ds);
-    avtVector vec;
-    (*field)(time, pt, vec);
-    //vec = v;
-    if (ic->direction == avtIntegralCurve::DIRECTION_BACKWARD)
-        vec = -vec;
-    
-    delete field;
-
-    if (t[0] < 0.01 && vec[0] > 0.0)
-        return true;
-    if (t[0] > 0.99 && vec[0] < 0.0)
-        return true;
-
-    if (t[1] < 0.01 && vec[1] > 0.0)
-        return true;
-    if (t[1] > 0.99 && vec[1] < 0.0)
-        return true;
-    
-    if (dataSpatialDimension == 3)
-    {
-        if (t[2] < 0.01 && vec[2] > 0.0)
-            return true;
-        if (t[2] > 0.99 && vec[2] < 0.0)
-            return true;
-    }
-
-    return false;
+    // Either still on the face (0) or pushed in (1).
+    return val;
 }
 
 
