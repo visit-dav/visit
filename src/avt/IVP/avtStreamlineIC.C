@@ -95,7 +95,6 @@ avtStreamlineIC::avtStreamlineIC(
     maxTime = maxTime_;
 
     terminatedBecauseOfMaxSteps  = false;
-    speedAtTermination = 0.;
 }
 
 
@@ -123,7 +122,6 @@ avtStreamlineIC::avtStreamlineIC() : avtStateRecorderIntegralCurve()
     maxTime = 0.;
 
     terminatedBecauseOfMaxSteps = false;
-    speedAtTermination = 0.;
 }
 
 
@@ -205,7 +203,6 @@ avtStreamlineIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
     {
         terminatedBecauseOfMaxSteps = true;
         shouldTerminate = true;
-        speedAtTermination = step.GetV(step.GetT1()).length();
     }
 
     // Update other termination criteria.
@@ -252,5 +249,4 @@ avtStreamlineIC::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, doTime);
     buff.io(mode, maxTime);
     buff.io(mode, terminatedBecauseOfMaxSteps);
-    buff.io(mode, speedAtTermination);
 }

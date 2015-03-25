@@ -122,6 +122,11 @@ public:
         EigenVector,
         Lyapunov
     };
+    enum CauchyGreenTensor
+    {
+        Left,
+        Right
+    };
     enum EigenComponent
     {
         Smallest,
@@ -187,6 +192,7 @@ public:
     void SetAuxiliaryGridSpacing(double auxiliaryGridSpacing_);
     void SetMaxSteps(int maxSteps_);
     void SetOperationType(OperationType operationType_);
+    void SetCauchyGreenTensor(CauchyGreenTensor cauchyGreenTensor_);
     void SetEigenComponent(EigenComponent eigenComponent_);
     void SetOperatorType(OperatorType operatorType_);
     void SetTerminationType(TerminationType terminationType_);
@@ -218,6 +224,8 @@ public:
     void SetPathlinesPeriod(double pathlinesPeriod_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
     void SetForceNodeCenteredData(bool forceNodeCenteredData_);
+    void SetIssueAdvectionWarnings(bool issueAdvectionWarnings_);
+    void SetIssueBoundaryWarnings(bool issueBoundaryWarnings_);
     void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
     void SetIssueStiffnessWarnings(bool issueStiffnessWarnings_);
     void SetIssueCriticalPointsWarnings(bool issueCriticalPointsWarnings_);
@@ -238,6 +246,7 @@ public:
     double       GetAuxiliaryGridSpacing() const;
     int          GetMaxSteps() const;
     OperationType GetOperationType() const;
+    CauchyGreenTensor GetCauchyGreenTensor() const;
     EigenComponent GetEigenComponent() const;
     OperatorType GetOperatorType() const;
     TerminationType GetTerminationType() const;
@@ -270,6 +279,8 @@ public:
     double       GetPathlinesPeriod() const;
     PathlinesCMFE GetPathlinesCMFE() const;
     bool         GetForceNodeCenteredData() const;
+    bool         GetIssueAdvectionWarnings() const;
+    bool         GetIssueBoundaryWarnings() const;
     bool         GetIssueTerminationWarnings() const;
     bool         GetIssueStiffnessWarnings() const;
     bool         GetIssueCriticalPointsWarnings() const;
@@ -325,6 +336,11 @@ public:
 protected:
     static std::string OperationType_ToString(int);
 public:
+    static std::string CauchyGreenTensor_ToString(CauchyGreenTensor);
+    static bool CauchyGreenTensor_FromString(const std::string &, CauchyGreenTensor &);
+protected:
+    static std::string CauchyGreenTensor_ToString(int);
+public:
     static std::string EigenComponent_ToString(EigenComponent);
     static bool EigenComponent_FromString(const std::string &, EigenComponent &);
 protected:
@@ -368,6 +384,7 @@ public:
         ID_auxiliaryGridSpacing,
         ID_maxSteps,
         ID_operationType,
+        ID_cauchyGreenTensor,
         ID_eigenComponent,
         ID_operatorType,
         ID_terminationType,
@@ -399,6 +416,8 @@ public:
         ID_pathlinesPeriod,
         ID_pathlinesCMFE,
         ID_forceNodeCenteredData,
+        ID_issueAdvectionWarnings,
+        ID_issueBoundaryWarnings,
         ID_issueTerminationWarnings,
         ID_issueStiffnessWarnings,
         ID_issueCriticalPointsWarnings,
@@ -418,6 +437,7 @@ private:
     double auxiliaryGridSpacing;
     int    maxSteps;
     int    operationType;
+    int    cauchyGreenTensor;
     int    eigenComponent;
     int    operatorType;
     int    terminationType;
@@ -449,6 +469,8 @@ private:
     double pathlinesPeriod;
     int    pathlinesCMFE;
     bool   forceNodeCenteredData;
+    bool   issueAdvectionWarnings;
+    bool   issueBoundaryWarnings;
     bool   issueTerminationWarnings;
     bool   issueStiffnessWarnings;
     bool   issueCriticalPointsWarnings;
@@ -458,6 +480,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LCSATTRIBUTES_TMFS "iIiDiDiidiiiiibdbdbddbddiddidDibiiiibbddibbbbd"
+#define LCSATTRIBUTES_TMFS "iIiDiDiidiiiiiibdbdbddbddiddidDibiiiibbddibbbbbbd"
 
 #endif

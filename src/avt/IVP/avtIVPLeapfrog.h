@@ -81,6 +81,8 @@ class IVP_API avtIVPLeapfrog: public avtIVPSolver
     }
 
   protected:
+    bool firstStep;
+
     // state serialization
     virtual void     AcceptStateVisitor(avtIVPStateHelper &aiss);
 };

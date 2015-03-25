@@ -343,6 +343,7 @@ class IVP_API avtIntegralCurve
 
     double    CurrentTime()     const {return ivp->GetCurrentT();}
     avtVector CurrentLocation() const {return ivp->GetCurrentY();}
+    avtVector CurrentVelocity() const {return ivp->GetCurrentV();}
 
     virtual void      Serialize(MemStream::Mode mode, MemStream &buff, 
                                 avtIVPSolver *solver, SerializeFlags serializeFlags);
@@ -426,7 +427,7 @@ inline std::ostream& operator<<(std::ostream& out,
     else
         out<<"ERROR: {";
     if (status.TerminationMet())
-        out<<"Term ";
+        out<<"Terminated ";
     if (status.EncounteredSpatialBoundary())
         out<<"AtSpatialBoundary ";
     if (status.EncounteredTemporalBoundary())

@@ -70,7 +70,6 @@
 class IVP_API avtStreamlineIC : public avtStateRecorderIntegralCurve
 {
 public:
-
     avtStreamlineIC(int maxSteps, bool doDistance, double maxDistance,
                     bool doTime, double maxTime,
                     unsigned int mask, const avtIVPSolver* model, 
@@ -88,10 +87,10 @@ public:
     virtual bool    UseFixedTerminationDistance(void) { return doDistance; };
     virtual double  FixedTerminationDistance(void)    { return maxDistance; };
 
-    bool            TerminatedBecauseOfMaxSteps(void) 
+    virtual bool    TerminatedBecauseOfMaxSteps(void)
                                  { return terminatedBecauseOfMaxSteps; };
-    double          SpeedAtTermination(void) 
-                                 { return speedAtTermination; };
+    virtual void    SetMaxSteps( unsigned int ms ) { maxSteps = ms; };
+    virtual int     GetMaxSteps() { return maxSteps; }
 
   protected:
     avtStreamlineIC( const avtStreamlineIC& );
@@ -99,16 +98,14 @@ public:
     
     virtual bool     CheckForTermination(avtIVPStep& step, avtIVPField *);
 
-  public:
-    unsigned int     maxSteps;
   protected:
+    unsigned int     maxSteps;
     unsigned int     numSteps;
     bool             doDistance;
     double           maxDistance;
     bool             doTime;
     double           maxTime;
     bool             terminatedBecauseOfMaxSteps;
-    double           speedAtTermination;
 };
 
 #endif 

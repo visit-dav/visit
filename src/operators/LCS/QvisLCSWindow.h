@@ -129,6 +129,7 @@ class QvisLCSWindow : public QvisOperatorWindow
     void limitMaxDistanceChanged(bool);
 
     void operationTypeChanged(int);
+    void cauchyGreenTensorChanged(int);
     void eigenComponentChanged(int);
     void operatorTypeChanged(int);
  
@@ -152,6 +153,8 @@ class QvisLCSWindow : public QvisOperatorWindow
     void pathlinePeriodProcessText();
     void pathlineCMFEButtonGroupChanged(int val);
 
+    void issueWarningForAdvectionChanged(bool);
+    void issueWarningForBoundaryChanged(bool);
     void issueWarningForMaxStepsChanged(bool);
     void issueWarningForStiffnessChanged(bool);
     void issueWarningForCriticalPointsChanged(bool);
@@ -197,6 +200,8 @@ class QvisLCSWindow : public QvisOperatorWindow
     QCheckBox *limitMaxDistance;
 
     QComboBox *operationType;
+    QLabel    *cauchyGreenTensorLabel;
+    QComboBox *cauchyGreenTensor;
     QLabel    *eigenComponentLabel;
     QComboBox *eigenComponent;
     QComboBox *operatorType;
@@ -223,6 +228,8 @@ class QvisLCSWindow : public QvisOperatorWindow
     QLineEdit *pathlinePeriod;
     QButtonGroup *pathlineCMFEButtonGroup;
 
+    QCheckBox *issueWarningForAdvection;
+    QCheckBox *issueWarningForBoundary;
     QCheckBox *issueWarningForMaxSteps;
     QCheckBox *issueWarningForStiffness;
     QCheckBox *issueWarningForCriticalPoints;

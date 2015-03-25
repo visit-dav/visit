@@ -382,6 +382,43 @@ LCSAttributes::OperationType_FromString(const std::string &s, LCSAttributes::Ope
 }
 
 //
+// Enum conversion methods for LCSAttributes::CauchyGreenTensor
+//
+
+static const char *CauchyGreenTensor_strings[] = {
+"Left", "Right"};
+
+std::string
+LCSAttributes::CauchyGreenTensor_ToString(LCSAttributes::CauchyGreenTensor t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return CauchyGreenTensor_strings[index];
+}
+
+std::string
+LCSAttributes::CauchyGreenTensor_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return CauchyGreenTensor_strings[index];
+}
+
+bool
+LCSAttributes::CauchyGreenTensor_FromString(const std::string &s, LCSAttributes::CauchyGreenTensor &val)
+{
+    val = LCSAttributes::Left;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == CauchyGreenTensor_strings[i])
+        {
+            val = (CauchyGreenTensor)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for LCSAttributes::EigenComponent
 //
 
@@ -565,6 +602,7 @@ void LCSAttributes::Init()
     auxiliaryGridSpacing = 0.0001;
     maxSteps = 1000;
     operationType = Lyapunov;
+    cauchyGreenTensor = Right;
     eigenComponent = Smallest;
     operatorType = BaseValue;
     terminationType = Time;
@@ -598,6 +636,8 @@ void LCSAttributes::Init()
     pathlinesPeriod = 0;
     pathlinesCMFE = POS_CMFE;
     forceNodeCenteredData = false;
+    issueAdvectionWarnings = true;
+    issueBoundaryWarnings = true;
     issueTerminationWarnings = true;
     issueStiffnessWarnings = true;
     issueCriticalPointsWarnings = true;
@@ -643,6 +683,7 @@ void LCSAttributes::Copy(const LCSAttributes &obj)
     auxiliaryGridSpacing = obj.auxiliaryGridSpacing;
     maxSteps = obj.maxSteps;
     operationType = obj.operationType;
+    cauchyGreenTensor = obj.cauchyGreenTensor;
     eigenComponent = obj.eigenComponent;
     operatorType = obj.operatorType;
     terminationType = obj.terminationType;
@@ -677,6 +718,8 @@ void LCSAttributes::Copy(const LCSAttributes &obj)
     pathlinesPeriod = obj.pathlinesPeriod;
     pathlinesCMFE = obj.pathlinesCMFE;
     forceNodeCenteredData = obj.forceNodeCenteredData;
+    issueAdvectionWarnings = obj.issueAdvectionWarnings;
+    issueBoundaryWarnings = obj.issueBoundaryWarnings;
     issueTerminationWarnings = obj.issueTerminationWarnings;
     issueStiffnessWarnings = obj.issueStiffnessWarnings;
     issueCriticalPointsWarnings = obj.issueCriticalPointsWarnings;
@@ -869,6 +912,7 @@ LCSAttributes::operator == (const LCSAttributes &obj) const
             (auxiliaryGridSpacing == obj.auxiliaryGridSpacing) &&
             (maxSteps == obj.maxSteps) &&
             (operationType == obj.operationType) &&
+            (cauchyGreenTensor == obj.cauchyGreenTensor) &&
             (eigenComponent == obj.eigenComponent) &&
             (operatorType == obj.operatorType) &&
             (terminationType == obj.terminationType) &&
@@ -900,6 +944,8 @@ LCSAttributes::operator == (const LCSAttributes &obj) const
             (pathlinesPeriod == obj.pathlinesPeriod) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
             (forceNodeCenteredData == obj.forceNodeCenteredData) &&
+            (issueAdvectionWarnings == obj.issueAdvectionWarnings) &&
+            (issueBoundaryWarnings == obj.issueBoundaryWarnings) &&
             (issueTerminationWarnings == obj.issueTerminationWarnings) &&
             (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
             (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings) &&
@@ -1072,6 +1118,7 @@ LCSAttributes::SelectAll()
     Select(ID_auxiliaryGridSpacing,              (void *)&auxiliaryGridSpacing);
     Select(ID_maxSteps,                          (void *)&maxSteps);
     Select(ID_operationType,                     (void *)&operationType);
+    Select(ID_cauchyGreenTensor,                 (void *)&cauchyGreenTensor);
     Select(ID_eigenComponent,                    (void *)&eigenComponent);
     Select(ID_operatorType,                      (void *)&operatorType);
     Select(ID_terminationType,                   (void *)&terminationType);
@@ -1103,6 +1150,8 @@ LCSAttributes::SelectAll()
     Select(ID_pathlinesPeriod,                   (void *)&pathlinesPeriod);
     Select(ID_pathlinesCMFE,                     (void *)&pathlinesCMFE);
     Select(ID_forceNodeCenteredData,             (void *)&forceNodeCenteredData);
+    Select(ID_issueAdvectionWarnings,            (void *)&issueAdvectionWarnings);
+    Select(ID_issueBoundaryWarnings,             (void *)&issueBoundaryWarnings);
     Select(ID_issueTerminationWarnings,          (void *)&issueTerminationWarnings);
     Select(ID_issueStiffnessWarnings,            (void *)&issueStiffnessWarnings);
     Select(ID_issueCriticalPointsWarnings,       (void *)&issueCriticalPointsWarnings);
@@ -1203,6 +1252,12 @@ LCSAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
     {
         addToParent = true;
         node->AddNode(new DataNode("operationType", OperationType_ToString(operationType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_cauchyGreenTensor, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("cauchyGreenTensor", CauchyGreenTensor_ToString(cauchyGreenTensor)));
     }
 
     if(completeSave || !FieldsEqual(ID_eigenComponent, &defaultObject))
@@ -1391,6 +1446,18 @@ LCSAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
         node->AddNode(new DataNode("forceNodeCenteredData", forceNodeCenteredData));
     }
 
+    if(completeSave || !FieldsEqual(ID_issueAdvectionWarnings, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("issueAdvectionWarnings", issueAdvectionWarnings));
+    }
+
+    if(completeSave || !FieldsEqual(ID_issueBoundaryWarnings, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("issueBoundaryWarnings", issueBoundaryWarnings));
+    }
+
     if(completeSave || !FieldsEqual(ID_issueTerminationWarnings, &defaultObject))
     {
         addToParent = true;
@@ -1555,6 +1622,22 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
             OperationType value;
             if(OperationType_FromString(node->AsString(), value))
                 SetOperationType(value);
+        }
+    }
+    if((node = searchNode->GetNode("cauchyGreenTensor")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetCauchyGreenTensor(CauchyGreenTensor(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            CauchyGreenTensor value;
+            if(CauchyGreenTensor_FromString(node->AsString(), value))
+                SetCauchyGreenTensor(value);
         }
     }
     if((node = searchNode->GetNode("eigenComponent")) != 0)
@@ -1731,6 +1814,10 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("forceNodeCenteredData")) != 0)
         SetForceNodeCenteredData(node->AsBool());
+    if((node = searchNode->GetNode("issueAdvectionWarnings")) != 0)
+        SetIssueAdvectionWarnings(node->AsBool());
+    if((node = searchNode->GetNode("issueBoundaryWarnings")) != 0)
+        SetIssueBoundaryWarnings(node->AsBool());
     if((node = searchNode->GetNode("issueTerminationWarnings")) != 0)
         SetIssueTerminationWarnings(node->AsBool());
     if((node = searchNode->GetNode("issueStiffnessWarnings")) != 0)
@@ -1826,6 +1913,13 @@ LCSAttributes::SetOperationType(LCSAttributes::OperationType operationType_)
 {
     operationType = operationType_;
     Select(ID_operationType, (void *)&operationType);
+}
+
+void
+LCSAttributes::SetCauchyGreenTensor(LCSAttributes::CauchyGreenTensor cauchyGreenTensor_)
+{
+    cauchyGreenTensor = cauchyGreenTensor_;
+    Select(ID_cauchyGreenTensor, (void *)&cauchyGreenTensor);
 }
 
 void
@@ -2048,6 +2142,20 @@ LCSAttributes::SetForceNodeCenteredData(bool forceNodeCenteredData_)
 }
 
 void
+LCSAttributes::SetIssueAdvectionWarnings(bool issueAdvectionWarnings_)
+{
+    issueAdvectionWarnings = issueAdvectionWarnings_;
+    Select(ID_issueAdvectionWarnings, (void *)&issueAdvectionWarnings);
+}
+
+void
+LCSAttributes::SetIssueBoundaryWarnings(bool issueBoundaryWarnings_)
+{
+    issueBoundaryWarnings = issueBoundaryWarnings_;
+    Select(ID_issueBoundaryWarnings, (void *)&issueBoundaryWarnings);
+}
+
+void
 LCSAttributes::SetIssueTerminationWarnings(bool issueTerminationWarnings_)
 {
     issueTerminationWarnings = issueTerminationWarnings_;
@@ -2161,6 +2269,12 @@ LCSAttributes::OperationType
 LCSAttributes::GetOperationType() const
 {
     return OperationType(operationType);
+}
+
+LCSAttributes::CauchyGreenTensor
+LCSAttributes::GetCauchyGreenTensor() const
+{
+    return CauchyGreenTensor(cauchyGreenTensor);
 }
 
 LCSAttributes::EigenComponent
@@ -2356,6 +2470,18 @@ LCSAttributes::GetForceNodeCenteredData() const
 }
 
 bool
+LCSAttributes::GetIssueAdvectionWarnings() const
+{
+    return issueAdvectionWarnings;
+}
+
+bool
+LCSAttributes::GetIssueBoundaryWarnings() const
+{
+    return issueBoundaryWarnings;
+}
+
+bool
 LCSAttributes::GetIssueTerminationWarnings() const
 {
     return issueTerminationWarnings;
@@ -2442,6 +2568,7 @@ LCSAttributes::GetFieldName(int index) const
     case ID_auxiliaryGridSpacing:              return "auxiliaryGridSpacing";
     case ID_maxSteps:                          return "maxSteps";
     case ID_operationType:                     return "operationType";
+    case ID_cauchyGreenTensor:                 return "cauchyGreenTensor";
     case ID_eigenComponent:                    return "eigenComponent";
     case ID_operatorType:                      return "operatorType";
     case ID_terminationType:                   return "terminationType";
@@ -2473,6 +2600,8 @@ LCSAttributes::GetFieldName(int index) const
     case ID_pathlinesPeriod:                   return "pathlinesPeriod";
     case ID_pathlinesCMFE:                     return "pathlinesCMFE";
     case ID_forceNodeCenteredData:             return "forceNodeCenteredData";
+    case ID_issueAdvectionWarnings:            return "issueAdvectionWarnings";
+    case ID_issueBoundaryWarnings:             return "issueBoundaryWarnings";
     case ID_issueTerminationWarnings:          return "issueTerminationWarnings";
     case ID_issueStiffnessWarnings:            return "issueStiffnessWarnings";
     case ID_issueCriticalPointsWarnings:       return "issueCriticalPointsWarnings";
@@ -2512,6 +2641,7 @@ LCSAttributes::GetFieldType(int index) const
     case ID_auxiliaryGridSpacing:              return FieldType_double;
     case ID_maxSteps:                          return FieldType_int;
     case ID_operationType:                     return FieldType_enum;
+    case ID_cauchyGreenTensor:                 return FieldType_enum;
     case ID_eigenComponent:                    return FieldType_enum;
     case ID_operatorType:                      return FieldType_enum;
     case ID_terminationType:                   return FieldType_enum;
@@ -2543,6 +2673,8 @@ LCSAttributes::GetFieldType(int index) const
     case ID_pathlinesPeriod:                   return FieldType_double;
     case ID_pathlinesCMFE:                     return FieldType_enum;
     case ID_forceNodeCenteredData:             return FieldType_bool;
+    case ID_issueAdvectionWarnings:            return FieldType_bool;
+    case ID_issueBoundaryWarnings:             return FieldType_bool;
     case ID_issueTerminationWarnings:          return FieldType_bool;
     case ID_issueStiffnessWarnings:            return FieldType_bool;
     case ID_issueCriticalPointsWarnings:       return FieldType_bool;
@@ -2582,6 +2714,7 @@ LCSAttributes::GetFieldTypeName(int index) const
     case ID_auxiliaryGridSpacing:              return "double";
     case ID_maxSteps:                          return "int";
     case ID_operationType:                     return "enum";
+    case ID_cauchyGreenTensor:                 return "enum";
     case ID_eigenComponent:                    return "enum";
     case ID_operatorType:                      return "enum";
     case ID_terminationType:                   return "enum";
@@ -2613,6 +2746,8 @@ LCSAttributes::GetFieldTypeName(int index) const
     case ID_pathlinesPeriod:                   return "double";
     case ID_pathlinesCMFE:                     return "enum";
     case ID_forceNodeCenteredData:             return "bool";
+    case ID_issueAdvectionWarnings:            return "bool";
+    case ID_issueBoundaryWarnings:             return "bool";
     case ID_issueTerminationWarnings:          return "bool";
     case ID_issueStiffnessWarnings:            return "bool";
     case ID_issueCriticalPointsWarnings:       return "bool";
@@ -2711,6 +2846,11 @@ LCSAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_operationType:
         {  // new scope
         retval = (operationType == obj.operationType);
+        }
+        break;
+    case ID_cauchyGreenTensor:
+        {  // new scope
+        retval = (cauchyGreenTensor == obj.cauchyGreenTensor);
         }
         break;
     case ID_eigenComponent:
@@ -2871,6 +3011,16 @@ LCSAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_forceNodeCenteredData:
         {  // new scope
         retval = (forceNodeCenteredData == obj.forceNodeCenteredData);
+        }
+        break;
+    case ID_issueAdvectionWarnings:
+        {  // new scope
+        retval = (issueAdvectionWarnings == obj.issueAdvectionWarnings);
+        }
+        break;
+    case ID_issueBoundaryWarnings:
+        {  // new scope
+        retval = (issueBoundaryWarnings == obj.issueBoundaryWarnings);
         }
         break;
     case ID_issueTerminationWarnings:

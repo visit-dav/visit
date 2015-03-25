@@ -77,7 +77,7 @@ static inline double sign( const double& a, const double& b )
 //    Add a tolerance and counter for handling stiffness detection.
 //
 //    Dave Pugmire, Tue Feb 24 14:35:38 EST 2009
-//    Remove moulton corrector code, use RK4 at startup, terminate on numSteps.
+//    Remove moulton corrector code, use RK4 at startup, terminate on numStepss.
 //
 // ****************************************************************************
 
@@ -87,7 +87,6 @@ avtIVPEuler::avtIVPEuler()
     tol = 1e-8;
     h = 1e-5;
     t = 0.0;
-    numStep = 0;
 
     order = 2; // Highest order ODE that the integrator can support.
 }
@@ -150,8 +149,6 @@ avtIVPEuler::Reset(const double& t_start,
     yCur = y_start;
     vCur = v_start;
     h = h_max;
-
-    numStep = 0;
 }
 
 
@@ -251,9 +248,6 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     ivpstep->t0 = t;
     ivpstep->t1 = t + h;
 
-    // Update for the next step.
-    numStep++;
-    
     yCur = yNew;
     vCur = vNew;
     t = t+h;
@@ -288,8 +282,7 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
 void
 avtIVPEuler::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
-    aiss.Accept(numStep)
-        .Accept(tol)
+    aiss.Accept(tol)
         .Accept(h)
         .Accept(h_max)
         .Accept(t)

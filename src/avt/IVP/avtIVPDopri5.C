@@ -186,8 +186,6 @@ avtIVPDopri5::Reset(const double& t_start,
     facold = 1e-4;
     hlamb  = 0.0;
     iasti  = 0;
-
-    numStep = 0;
 }
 
 
@@ -620,9 +618,6 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             // first-same-as-last for k1
             // k1 = k7; // No longer needed now that that vCur is persisent.
             
-            // Update for the next step.
-            numStep++;
-
             yCur = y_new;
             vCur = k7;
             t = t+h;
@@ -671,8 +666,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
 void
 avtIVPDopri5::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
-    aiss.Accept(numStep)
-        .Accept(reltol)
+    aiss.Accept(reltol)
         .Accept(abstol)
         .Accept(h)
         .Accept(h_max)

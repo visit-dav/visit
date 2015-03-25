@@ -76,7 +76,8 @@
 #include <limits>
 #include <cmath>
 
-#define PID (0.33*(double)nTuples)
+//#define PID (int) (0.31415*(double)nTuples)
+#define PID (int) (6305)
 
 // ****************************************************************************
 //  Method: avtLCSFilter constructor
@@ -112,6 +113,7 @@ avtLCSFilter::avtLCSFilter() : seedVelocity(0,0,0)
     absTol = 1e-6;
     relTol = 1e-7;
 
+    nDim = 3;
     auxIdx = 0;
     nAuxPts = 1;
     auxSpacing = 0;
@@ -119,6 +121,8 @@ avtLCSFilter::avtLCSFilter() : seedVelocity(0,0,0)
     numSteps = 0;
     fsle_dt = 0;
     fsle_ds = 0;
+
+    cgTensor = 1;
 
     minSizeValue = std::numeric_limits<double>::max();
     maxSizeValue = std::numeric_limits<double>::min();
@@ -190,6 +194,7 @@ avtLCSFilter::SetAtts(const AttributeGroup *a)
         atts.GetOperationType() == LCSAttributes::ArcLength ||
         atts.GetOperationType() == LCSAttributes::AverageDistanceFromSeed )
     {
+      nDim = 3;
       auxIdx = 0;
       nAuxPts = 1;
       auxSpacing = 0;
@@ -199,22 +204,27 @@ avtLCSFilter::SetAtts(const AttributeGroup *a)
     
     else if( atts.GetAuxiliaryGrid() == LCSAttributes::None )
     {
+      nDim = 3;
       auxIdx = 0;
       nAuxPts = 1;
       auxSpacing = 0;
     }
     else if( atts.GetAuxiliaryGrid() == LCSAttributes::TwoDim )
     {
+      nDim = 3;
       auxIdx = 1;
       nAuxPts = 4;
       auxSpacing = atts.GetAuxiliaryGridSpacing();
     }
     else if( atts.GetAuxiliaryGrid() == LCSAttributes::ThreeDim )
     {
+      nDim = 3;
       auxIdx = 2;
       nAuxPts = 6;
       auxSpacing = atts.GetAuxiliaryGridSpacing();
     }
+
+    cgTensor = atts.GetCauchyGreenTensor();
         
     int CMFEType = (atts.GetPathlinesCMFE() == LCSAttributes::CONN_CMFE
                     ? PICS_CONN_CMFE : PICS_POS_CMFE);
@@ -277,6 +287,8 @@ avtLCSFilter::SetAtts(const AttributeGroup *a)
                    atts.GetTerminateBySize(),
                    atts.GetTermSize());
 
+    IssueWarningForAdvection(atts.GetIssueAdvectionWarnings());
+    IssueWarningForBoundary(atts.GetIssueBoundaryWarnings());
     IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
     IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
     IssueWarningForCriticalPoints(atts.GetIssueCriticalPointsWarnings(),
@@ -746,8 +758,6 @@ avtLCSFilter::ContinueExecute()
     {
       if( doSize )
       {
-//      std::cerr << "Continue execute " << numSteps << std::endl;
-        
         std::vector<avtIntegralCurve *> ics;
         
         GetTerminatedIntegralCurves(ics);
@@ -942,6 +952,9 @@ avtLCSFilter::GetInitialLocationsFromRectilinearGrid()
                                      { {-1., 0., 0.}, { 1., 0., 0.},
                                        { 0.,-1., 0.}, { 0., 1., 0.},
                                        { 0., 0.,-1.}, { 0., 0., 1.} } };
+
+    size_t nTuples =
+      global_resolution[0] * global_resolution[1] * global_resolution[2];
 
     //compute total number of seeds that will be generated.
     size_t numberOfSeeds = 0;
@@ -1191,22 +1204,18 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     }
     else
     {
-        //copy the original seed points
-        for(size_t i = 0; i < remapPoints.size(); ++i)
-            remapPoints[i] = seedPoints.at(offset + i);
+      //copy the original seed points
+      for(size_t i = 0; i < remapPoints.size(); ++i)
+        remapPoints[i] = seedPoints.at(offset + i);
     }
 
     for(size_t i = 0; i < ics.size(); ++i)
     {
         size_t index = ics[i]->id;
         int l = (int)(index-offset);
-        //std::cout << "l = " << l << " " << nTuples << std::endl;
+
         if(l >= 0 && l < (int)remapPoints.size())
         {
-
-          // remapPoints[l] = ((avtLCSIC*)ics[i])->GetEndPoint() -
-          //                ((avtLCSIC*)ics[i])->GetStartPoint();
-
           if( atts.GetOperationType() == LCSAttributes::EigenValue ||
               atts.GetOperationType() == LCSAttributes::EigenVector ||
               atts.GetOperationType() == LCSAttributes::Lyapunov )
@@ -1297,6 +1306,7 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
 
           double dx, dy, dz;
 
+          // Do the x, y, and possibly the z component.
           if( i <= auxIdx )
           {
             for(size_t j = 0, k = 0; j < nTuples; ++j, k+=nAuxPts)
@@ -1312,6 +1322,7 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
               jacobian[i]->SetTuple3(j, dx, dy, dz);
             }
           }
+          // For a 2D auxiliary grid just zero out the z grid.
           else
           {
             for (int j = 0; j < nTuples; ++j)
@@ -1509,9 +1520,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         {
           avtVector end_point = ((avtLCSIC*)ics[i])->GetEndPoint();
           
-          // std::cout << PAR_Rank() << " ics: " << indices[i] << " "
-          //             << end_point << std::endl;
-
           points[j+0] = end_point[0];
           points[j+1] = end_point[1];
           points[j+2] = end_point[2];
@@ -1528,15 +1536,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
             points[j+2] = 0;
         }
     }
-
-    // std::cerr << "Max steps " << maxSteps
-    //           << "  max time " << maxTime
-    //           << "  max arc length " << maxLength
-    //           << std::endl;
-
-    // std::cout << PAR_Rank() << " total integral pts: "
-    //        << ics.size() << std::endl;
-    // std::flush(cout);
 
     int* all_indices = 0;
     int* index_counts = 0;
@@ -1570,7 +1569,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
     //matching end positions.
     if(PAR_Rank() != 0)
     {
-        //std::cout << PAR_Rank() << " creating dummy output" << std::endl;
         avtDataTree* dummy = new avtDataTree();
         SetOutputDataTree(dummy);
     }
@@ -1622,11 +1620,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         lycoord->Delete();
         lzcoord->Delete();
 
-        // std::cout << "final resolution: " << PAR_Rank() << " "
-        //         << global_resolution[0] << " "
-        //         << global_resolution[1] << " "
-        //         << global_resolution[2] << std::endl;
-
         vtkDoubleArray *outputArray = vtkDoubleArray::New();
         outputArray->SetName(var.c_str());
         if( atts.GetOperationType() == LCSAttributes::EigenVector )
@@ -1653,46 +1646,37 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         size_t total = 0;
         for(int i = 0; i < par_size; ++i)
         {
-            if(index_counts[i]*3 != point_counts[i])
+            if(index_counts[i]*3 == point_counts[i])
             {
-              EXCEPTION1(VisItException,
-                         "Index count does not the result count." );
+                total += index_counts[i];
             }
-            total += index_counts[i];
+            else
+            {
+                EXCEPTION1(VisItException,
+                           "Index count does not the result count." );
+            }
         }
-
-        // std::cout << "total number integrated: " << total << std::endl;
 
         for(size_t j = 0, k = 0; j < total; ++j, k += 3)
         {
             size_t index = all_indices[j];
 
-            if(index >= nTuples*nAuxPts)
+            if(index < nTuples*nAuxPts)
+            {
+              remapTimes[index] = all_times[j];
+              remapLengths[index] = all_lengths[j];
+              remapPoints[index].set( all_points[k+0],
+                                      all_points[k+1],
+                                      all_points[k+2]);
+            }
+            else
             {
               EXCEPTION1(VisItException,
                          "More integral curves were generatated than "
                          "grid points." );
             }
-
-            // std::cout << index << " before " << remapPoints[index]
-            //        << std::endl;
-
-            remapTimes[index] = all_times[j];
-            remapLengths[index] = all_lengths[j];
-            remapPoints[index].set( all_points[k+0],
-                                    all_points[k+1],
-                                    all_points[k+2]);
-            
-            // std::cout << PAR_Rank() << " " << index << " "
-            //        << remapPoints[index] << std::endl;
-            // std::cout << "middle: " << avtVector( all_points[k+0],
-            //                                    all_points[k+1],
-            //                                    all_points[k+2])
-            //        << std::endl;
-            // std::cout << index << " after " << remapPoints[index]
-            //        << std::endl;
         }
-
+      
         if( atts.GetOperationType() == LCSAttributes::EigenValue ||
             atts.GetOperationType() == LCSAttributes::EigenVector ||
             atts.GetOperationType() == LCSAttributes::Lyapunov )
@@ -1711,7 +1695,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
             }
           }
           else //if( auxIdx == LCSAttributes::TwoDim ||
-            //    auxIdx == LCSAttributes::ThreeDim )
+               //    auxIdx == LCSAttributes::ThreeDim )
           {
             double delta = 1.0 / (2.0 * auxSpacing);
             
@@ -1737,18 +1721,18 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
                     dz = 0;
                   
                   jacobian[i]->SetTuple3(j, dx, dy, dz);
-                 }
+                }
               }
               else
               {
                 for (int j = 0; j < nTuples; ++j)
-                  jacobian[i]->SetTuple3(j, 0., 0., 1);
+                  jacobian[i]->SetTuple3(j, 0., 0., 1.);
               }
             }
           }
 
-          for (size_t l = 0; l < nTuples; l++)
-            outputArray->SetTuple1(l, std::numeric_limits<double>::epsilon());
+          // for (size_t l = 0; l < nTuples; l++)
+          //   outputArray->SetTuple1(l, std::numeric_limits<double>::epsilon());
 
           if( atts.GetOperationType() == LCSAttributes::EigenValue )
             ComputeEigenValues(jacobian, outputArray);
@@ -1865,15 +1849,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         if (point_counts) delete [] point_counts;
 
         //store this dataset in Cache for next time.
-        // double bounds[6];
-        // rect_grid->GetBounds(bounds);
-
-        // std::cout << "final size and bounds: "
-        //        << PAR_Rank() << " " << nTuples << " "
-        //        << bounds[0] << " " << bounds[1] << " " << bounds[2]
-        //        << " " << bounds[3] << " " << bounds[4] << " "
-        //        << bounds[5] << std::endl;
-
         std::string str = CreateCacheString();
         StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                                 outVarName.c_str(), -1, -1,
@@ -1883,8 +1858,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         avtDataTree* dt = new avtDataTree(rect_grid,index);
         int x = 0;
         dt->GetAllLeaves(x);
-
-        // std::cout << "total leaves:: " << x << std::endl;
 
         SetOutputDataTree(dt);
 
@@ -1905,7 +1878,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::ComputeRightCauchyGreenTensor
+//  Method: avtLCSFilter::ComputeLeftCauchyGreenTensor2D
 //
 //  Purpose:
 //      Given a Gradient in place compute the Right Cauchy Green Tensor.
@@ -1917,19 +1890,58 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 //
 // ****************************************************************************
 
-void avtLCSFilter::ComputeRightCauchyGreenTensor(double **j)
+void avtLCSFilter::ComputeLeftCauchyGreenTensor2D(double **j)
+{
+    double *j0 = j[0];
+    double *j1 = j[1];
+    
+    // From the gradients compute the left Cauchy-Green Tensor J*J^T
+
+    // j0[0]  j0[1] |  j0[0]  j1[0]
+    // j1[0]  j1[1] |  j0[1]  j1[1]
+
+    double a = j0[0]*j0[0] + j0[1]*j0[1];
+    double b = j0[0]*j1[0] + j0[1]*j1[1];
+
+    double d = j1[0]*j1[0] + j1[1]*j1[1];
+
+    j0[0] = a;       j0[1] = b;
+    j1[0] = b;       j1[1] = d;
+}
+
+
+// ****************************************************************************
+//  Method: avtLCSFilter::ComputeLeftCauchyGreenTensor3D
+//
+//  Purpose:
+//      Given a Gradient in place compute the Right Cauchy Green Tensor.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   March 5, 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void avtLCSFilter::ComputeLeftCauchyGreenTensor3D(double **j)
 {
     double *j0 = j[0];
     double *j1 = j[1];
     double *j2 = j[2];
     
     // From the gradients compute the right Cauchy-Green Tensor J*J^T   
+
+    // j0[0]  j0[1] j0[2] |  j0[0]  j1[0]  j2[0]
+    // j1[0]  j1[1] j1[2] |  j0[1]  j1[1]  j2[1]
+    // j2[0]  j2[1] j2[2] |  j0[2]  j1[2]  j2[2]
+
     double a = j0[0]*j0[0] + j0[1]*j0[1] + j0[2]*j0[2];
     double b = j0[0]*j1[0] + j0[1]*j1[1] + j0[2]*j1[2];
     double c = j0[0]*j2[0] + j0[1]*j2[1] + j0[2]*j2[2];
-    
+
     double d = j1[0]*j1[0] + j1[1]*j1[1] + j1[2]*j1[2];
     double e = j1[0]*j2[0] + j1[1]*j2[1] + j1[2]*j2[2];
+ 
     double f = j2[0]*j2[0] + j2[1]*j2[1] + j2[2]*j2[2];
 
     j0[0] = a;       j0[1] = b;       j0[2] = c;
@@ -1939,10 +1951,84 @@ void avtLCSFilter::ComputeRightCauchyGreenTensor(double **j)
 
 
 // ****************************************************************************
-//  Method: avtLCSFilter::ComputeEigenValue
+//  Method: avtLCSFilter::ComputeRightCauchyGreenTensor2D
 //
 //  Purpose:
-//      Computes the eigen vectors given a Jacobian.
+//      Given a Gradient in place compute the Right Cauchy Green Tensor.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   March 5, 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void avtLCSFilter::ComputeRightCauchyGreenTensor2D(double **j)
+{
+    double *j0 = j[0];
+    double *j1 = j[1];
+    
+    // From the gradients compute the right Cauchy-Green Tensor J^T*J
+
+    // j0[0]  j1[0] | j0[0]  j0[1]
+    // j0[1]  j1[1] | j1[0]  j1[1]
+
+    double a = j0[0]*j0[0] + j1[0]*j1[0];
+    double b = j0[0]*j0[1] + j1[0]*j1[1];
+
+    double d = j0[1]*j0[1] + j1[1]*j1[1];
+
+    j0[0] = a;       j0[1] = b;
+    j1[0] = b;       j1[1] = d;
+}
+
+
+// ****************************************************************************
+//  Method: avtLCSFilter::ComputeRightCauchyGreenTensor3D
+//
+//  Purpose:
+//      Given a Gradient in place compute the Right Cauchy Green Tensor.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   March 5, 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void avtLCSFilter::ComputeRightCauchyGreenTensor3D(double **j)
+{
+    double *j0 = j[0];
+    double *j1 = j[1];
+    double *j2 = j[2];
+
+    // From the gradients compute the right Cauchy-Green Tensor J^T*J   
+
+    // j0[0]  j1[0]  j2[0] | j0[0]  j0[1] j0[2]
+    // j0[1]  j1[1]  j2[1] | j1[0]  j1[1] j1[2]
+    // j0[2]  j1[2]  j2[2] | j2[0]  j2[1] j2[2]
+
+
+    double a = j0[0]*j0[0] + j1[0]*j1[0] + j2[0]*j2[0];
+    double b = j0[0]*j0[1] + j1[0]*j1[1] + j2[0]*j2[1];
+    double c = j0[0]*j0[2] + j1[0]*j1[2] + j2[0]*j2[2];
+
+    double d = j0[1]*j0[0] + j1[1]*j1[0] + j2[1]*j2[0];
+    double e = j0[1]*j0[1] + j1[1]*j1[1] + j2[1]*j2[1];
+ 
+    double f = j0[2]*j0[2] + j1[2]*j1[2] + j2[2]*j2[2];
+
+    j0[0] = a;       j0[1] = b;       j0[2] = c;
+    j1[0] = b;       j1[1] = d;       j1[2] = e;
+    j2[0] = c;       j2[1] = e;       j2[2] = f;
+}
+
+
+// ****************************************************************************
+//  Method: avtLCSFilter::Jacobi2D
+//
+//  Purpose:
+//      Computes the eigen vectors given a symmetric Jacobian.
 //
 //  Programmer: Allen Sanderson
 //  Creation:   March 5, 2015
@@ -1956,33 +2042,30 @@ int avtLCSFilter::Jacobi2D(double **j, double *w)
     double *j0 = j[0];
     double *j1 = j[1];
 
+    // Assume a symetric matrix
     // a b
-    // c d
+    // b c
 
     double a = j0[0];
     double b = j0[1];
-    double c = j1[0];
-    double d = j1[1];
+    double c = j1[1];
 
-
-    double trace = (a + d) / 2.0;
-    double det = a*d - b*c;
+    double trace = (a + c) / 2.0;
+    double det = a*c - b*b;
     double sqrtr = sqrt(trace * trace - det);
 
-    double w1 = trace + sqrtr;
-    double w0 = trace - sqrtr;
-
-    if( w0 > w1 ) { w[0] = w0;  w[1] = w1; w[2] = 1; }
-    else          { w[0] = w1;  w[1] = w0; w[2] = 1; }
+    // Order the largest first to match VTK
+    w[0] = trace + sqrtr;
+    w[1] = trace - sqrtr;
 
     return 1;
 }
 
 // ****************************************************************************
-//  Method: avtLCSFilter::ComputeEigenValue
+//  Method: avtLCSFilter::Jacobi2D
 //
 //  Purpose:
-//      Computes the eigen vectors given a Jacobian.
+//      Computes the eigen vectors given a symmetric Jacobian.
 //
 //  Programmer: Allen Sanderson
 //  Creation:   March 5, 2015
@@ -1995,53 +2078,59 @@ int avtLCSFilter::Jacobi2D(double **j, double *w, double **v)
 {
     double *j0 = j[0];
     double *j1 = j[1];
-
+    
+    // Assume a symetric matrix
     // a b
-    // c d
+    // b c
 
     double a = j0[0];
     double b = j0[1];
-    double c = j1[0];
-    double d = j1[1];
+    double c = j1[1];
 
-    double trace = (a + d) / 2.0;
-    double det = a*d - b*c;
+    double trace = (a + c) / 2.0;
+    double det = a*c - b*b;
     double sqrtr = sqrt(trace * trace - det);
 
-    double w0 = trace - sqrtr;
-    double w1 = trace + sqrtr;
+    // Order the largest first to match VTK
+    w[0] = trace + sqrtr;
+    w[1] = trace - sqrtr;
 
-    avtVector vec0 = avtVector( b, w0-a, 0.0 );
+    // Use the largest value to get the first vector.
+    avtVector vec0 = avtVector( -b, a-w[0], 0.0 );
     vec0.normalize();
+    avtVector vec1 = avtVector( vec0.y, -vec0.x, 0.0 );
 
-    avtVector vec1 = avtVector( b, w1-a, 0.0 );
-    vec1.normalize();
+    v[0][0] = vec0.x;   v[0][1] = vec0.y; 
+    v[1][0] = vec1.x;   v[1][1] = vec1.y; 
 
-    if( w0 > w1 )
-    {
-      w[0] = w0; w[1] = w1; w[2] = 1;
 
-      v[0][0] = vec0.x;   v[0][1] = vec0.y;  v[0][2] = vec0.z;
-      v[1][0] = vec1.x;   v[1][1] = vec1.y;  v[1][2] = vec1.z;
-      v[2][0] = 0;        v[2][1] = 0;       v[2][2] = 1;
-    }
-    else
-    {
-      w[0] = w1; w[1] = w0; w[2] = 1;
+    // // Sorted in decreasing order.
+    // double eigenvals[2];
+    // double *eigenvecs[2];
 
-      v[0][0] = vec1.x;   v[0][1] = vec1.y;  v[0][2] = vec1.z;
-      v[1][0] = vec0.x;   v[1][1] = vec0.y;  v[1][2] = vec0.z;
-      v[2][0] = 0;        v[2][1] = 0;       v[2][2] = 1;
-    }      
+    // double outrow0[2];
+    // double outrow1[2];
+    
+    // eigenvecs[0] = outrow0;
+    // eigenvecs[1] = outrow1;
+
+    // vtkMath::JacobiN(j, 2, w, eigenvecs);
+
+    // avtVector vec0 = avtVector( eigenvecs[0][0], eigenvecs[1][0], 0.0 );
+    // vec0.normalize();
+    // avtVector vec1 = avtVector( vec0.y, -vec0.x, 0.0 );
+
+    // v[0][0] = vec0.x;   v[0][1] = vec0.y; 
+    // v[1][0] = vec1.x;   v[1][1] = vec1.y; 
 
     return 1;
 }
 
 // ****************************************************************************
-//  Method: avtLCSFilter::ComputeEigenValue
+//  Method: avtLCSFilter::Jacobi3D
 //
 //  Purpose:
-//      Computes the eigen vectors given a Jacobian.
+//      Computes the eigen vectors given a symmetric Jacobian.
 //
 //  Programmer: Allen Sanderson
 //  Creation:   March 5, 2015
@@ -2056,6 +2145,7 @@ int avtLCSFilter::Jacobi3D(double **j, double *w)
     double *j1 = j[1];
     double *j2 = j[2];
 
+    // Assume a symetric matrix
     // a b c
     // b d e
     // c e f
@@ -2080,10 +2170,6 @@ int avtLCSFilter::Jacobi3D(double **j, double *w)
 
     double D = (r*r*r - q*q);
     double phi = 0.0f;
-
-    // std::cout << a << " " << b << " " << c << " " << d << " "
-    //           << e << " " << f << " " << x << " " << q << " "
-    //           << r << std::endl;
 
     if( D < std::numeric_limits<double>::epsilon())
       phi = 0.0f;
@@ -2155,24 +2241,17 @@ void avtLCSFilter::ComputeEigenValues(vtkDataArray *jacobian[3],
     {
       for(size_t l = 0; l < nTuples; ++l)
       {
-        double *input[3];
+        double *input[2];
         input[0] = jacobian[0]->GetTuple3(l);
         input[1] = jacobian[1]->GetTuple3(l);
-        input[2] = jacobian[2]->GetTuple3(l);
 
-        ComputeRightCauchyGreenTensor(input);
+        if( cgTensor == LCSAttributes::Right )
+          ComputeRightCauchyGreenTensor2D(input);
+        else //if( cgTensor == LCSAttributes::Left )
+          ComputeLeftCauchyGreenTensor2D(input);
 
-        double eigenvals[3];
-
+        double eigenvals[2];
         Jacobi2D(input, eigenvals);
-
-        // if( PID-2 < l && l < PID+2 )
-        // {
-        //   for( int i=0; i<3; ++i )
-        //     std::cerr << eigenvals[i] << "    "
-        //            << std::endl;
-        //   std::cerr << std::endl;
-        // }
 
         if( eigenComponent == LCSAttributes::Largest )
           valArray->SetTuple1(l, eigenvals[0]);
@@ -2189,19 +2268,13 @@ void avtLCSFilter::ComputeEigenValues(vtkDataArray *jacobian[3],
         input[1] = jacobian[1]->GetTuple3(l);
         input[2] = jacobian[2]->GetTuple3(l);
 
-        ComputeRightCauchyGreenTensor(input);
+        if( cgTensor == LCSAttributes::Right )
+          ComputeRightCauchyGreenTensor3D(input);
+        else //if( cgTensor == LCSAttributes::Left )
+          ComputeLeftCauchyGreenTensor3D(input);
 
         double eigenvals[3];
-
         Jacobi3D(input, eigenvals);
-
-        // if( PID-2 < l && l < PID+2 )
-        // {
-        //   for( int i=0; i<3; ++i )
-        //     std::cerr << eigenvals[i] << "    "
-        //            << std::endl;
-        //   std::cerr << std::endl;
-        // }
 
         if( eigenComponent == LCSAttributes::Largest )
           valArray->SetTuple1(l, eigenvals[0]);
@@ -2237,44 +2310,35 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
     {
       for(size_t l = 0; l < nTuples; ++l)
       {
-        double *input[3];
+        double *input[2];
         input[0] = jacobian[0]->GetTuple3(l);
         input[1] = jacobian[1]->GetTuple3(l);
-        input[2] = jacobian[2]->GetTuple3(l);
 
-        ComputeRightCauchyGreenTensor(input);
+        if( cgTensor == LCSAttributes::Right )
+          ComputeRightCauchyGreenTensor2D(input);
+        else //if( cgTensor == LCSAttributes::Left )
+          ComputeLeftCauchyGreenTensor2D(input);
 
         // Sorted in decreasing order.
-        double eigenvals[3];
-        double *eigenvecs[3];
+        double eigenvals[2];
+        double *eigenvecs[2];
 
         double outrow0[3];
         double outrow1[3];
-        double outrow2[3];
         eigenvecs[0] = outrow0;
         eigenvecs[1] = outrow1;
-        eigenvecs[2] = outrow2;
 
         Jacobi2D(input, eigenvals, eigenvecs);
 
-        // if( PID-2 < l && l < PID+2 )
-        // {
-        //   for( int i=0; i<3; ++i )
-        //     std::cerr << eigenvals[i] << "    "
-        //            << eigenvecs[i][0] << "  "
-        //            << eigenvecs[i][1] << "  "
-        //            << eigenvecs[i][2] << "  "
-        //            << std::endl;
-        //   std::cerr << std::endl;
-        // }
-
         if( eigenComponent == LCSAttributes::Largest )
         {
+          eigenvecs[0][2] = 0;
           valArray->SetTuple1(l, eigenvals[0]);
           vecArray->SetTuple(l, eigenvecs[0]);
         }
         else // if( eigenComponent == LCSAttributes::Smallest )
         {
+          eigenvecs[1][2] = 0;
           valArray->SetTuple1(l, eigenvals[1]);
           vecArray->SetTuple(l, eigenvecs[1]);
         }
@@ -2289,7 +2353,10 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
         input[1] = jacobian[1]->GetTuple3(l);
         input[2] = jacobian[2]->GetTuple3(l);
 
-        ComputeRightCauchyGreenTensor(input);
+        if( cgTensor == LCSAttributes::Right )
+          ComputeRightCauchyGreenTensor3D(input);
+        else //if( cgTensor == LCSAttributes::Left )
+          ComputeLeftCauchyGreenTensor3D(input);
 
         // Sorted in decreasing order.
         double eigenvals[3];
@@ -2303,17 +2370,6 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
         eigenvecs[2] = outrow2;
 
         vtkMath::Jacobi(input, eigenvals, eigenvecs);
-
-        // if( PID-2 < l && l < PID+2 )
-        // {
-        //   for( int i=0; i<3; ++i )
-        //     std::cerr << eigenvals[i] << "    "
-        //            << eigenvecs[i][0] << "  "
-        //            << eigenvecs[i][1] << "  "
-        //            << eigenvecs[i][2] << "  "
-        //            << std::endl;
-        //   std::cerr << std::endl;
-        // }
 
         if( eigenComponent == LCSAttributes::Largest )
         {
@@ -2332,9 +2388,6 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
         }
       }
     }
-
-    // if( cc )
-    //   std::cerr << cc << "VTK bad eigen vector(s) " << maxDiff << std::endl;
 }
 
 
@@ -2384,63 +2437,25 @@ void avtLCSFilter::ComputeLyapunovExponent(vtkDataArray *jacobian[3],
     {
       for(size_t l = 0; l < nTuples; ++l)
       {
-        double *input[3];
+        double *input[2];
         input[0] = jacobian[0]->GetTuple3(l);
         input[1] = jacobian[1]->GetTuple3(l);
-        input[2] = jacobian[2]->GetTuple3(l);
 
-        ComputeRightCauchyGreenTensor(input);
-
-        double eigenvals[3];
-
-        if( PID-2 < l && l < PID+2 )
-        {
-          double *eigenvecs[3];
-
-          double outrow0[3];
-          double outrow1[3];
-          double outrow2[3];
-          eigenvecs[0] = outrow0;
-          eigenvecs[1] = outrow1;
-          eigenvecs[2] = outrow2;
-
-          std::cerr << "jacobian  " << std::endl;
-
-          for( int i=0; i<3; ++i )
-            std::cerr << input[i][0] << "  "
-                      << input[i][1] << "  "
-                      << input[i][2] << "  "
-                      << std::endl;
-          std::cerr << std::endl;
-
-
-          Jacobi2D( input, eigenvals, eigenvecs );
-
-          std::cerr << "2D  " << std::endl;
-
-          for( int i=0; i<3; ++i )
-            std::cerr << eigenvals[i] << "    "
-                      << eigenvecs[i][0] << "  "
-                      << eigenvecs[i][1] << "  "
-                      << eigenvecs[i][2] << "  "
-                      << std::endl;
-          std::cerr << std::endl;
-
-          vtkMath::JacobiN( input, 2, eigenvals, eigenvecs );
-
-          std::cerr << "3D  " << std::endl;
-
-          for( int i=0; i<3; ++i )
-            std::cerr << eigenvals[i] << "    "
-                      << eigenvecs[i][0] << "  "
-                      << eigenvecs[i][1] << "  "
-                      << eigenvecs[i][2] << "  "
-                      << std::endl;
-          std::cerr << std::endl;
-        }
+        if( cgTensor == LCSAttributes::Right ) 
+          ComputeRightCauchyGreenTensor2D(input);
+        else //if( cgTensor == LCSAttributes::Left )
+          ComputeLeftCauchyGreenTensor2D(input);
 
         // Get the eigen values.
-        Jacobi2D( input, eigenvals );
+        double eigenvals[2];
+        double *eigenvecs[2];
+
+        double outrow0[2];
+        double outrow1[2];
+        eigenvecs[0] = outrow0;
+        eigenvecs[1] = outrow1;
+
+        Jacobi2D( input, eigenvals, eigenvecs );
 
         double lambda = baseValue;
 
@@ -2466,11 +2481,13 @@ void avtLCSFilter::ComputeLyapunovExponent(vtkDataArray *jacobian[3],
         input[1] = jacobian[1]->GetTuple3(l);
         input[2] = jacobian[2]->GetTuple3(l);
 
-        ComputeRightCauchyGreenTensor(input);
-
-        double eigenvals[3];
+        if( cgTensor == LCSAttributes::Right ) 
+          ComputeRightCauchyGreenTensor3D(input);
+        else //if( cgTensor == LCSAttributes::Left ) 
+          ComputeLeftCauchyGreenTensor3D(input);
 
         // Get the eigen values.
+        double eigenvals[3];
         Jacobi3D( input, eigenvals );
 
         double lambda = baseValue;
@@ -2664,11 +2681,6 @@ avtLCSFilter::CreateIterativeCalcDataSet()
   lxcoord->Delete();
   lycoord->Delete();
   lzcoord->Delete();
-
-  // std::cout << "final resolution: " << PAR_Rank() << " "
-  //         << global_resolution[0] << " "
-  //         << global_resolution[1] << " "
-  //         << global_resolution[2] << std::endl;
 
   // Create storage for the components that need to be used
   // for calculating the exponent. All arrays but the exponent
@@ -2924,12 +2936,8 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
         size_t index = ic->id;
         int l = (int)(index-offset);
 
-        //std::cout << "l = " << l << " " << nTuples << std::endl;
         if(l >= 0 && l < (int)remapPoints.size())
         {
-          // remapPoints[l] = ((avtLCSIC*)ics[i])->GetEndPoint() -
-          //                ((avtLCSIC*)ics[i])->GetStartPoint();
-
           remapPoints.at(l) = ic->GetEndPoint();
 
           if( doPathlines )
@@ -2993,15 +3001,17 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
       size_t index = ic->id;
       size_t l = (index-offset);
 
-      if( ic->maxSteps < (unsigned int)maxSteps )
+      int ms = ic->GetMaxSteps();
+
+      if( ms < (unsigned int)maxSteps )
       {
-        ic->maxSteps++;
+        ic->SetMaxSteps(ms+1);
         ic->status.ClearTerminationMet();
       }
 
       // Check to see if all exponents have been found.
       if( exponents->GetTuple1(l) == std::numeric_limits<double>::min() &&
-          ic->maxSteps < (unsigned int)maxSteps )
+          ic->GetMaxSteps() < (unsigned int)maxSteps )
         haveAllExponents = false;
     }
     
@@ -3031,8 +3041,6 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
 bool
 avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics )
 {
-//  std::cerr << "Computing ... " << std::endl;
-
     //algorithm sends index to global datastructure as well as end points.
     //Send List of index into global array to rank 0
     //Send end positions into global array to rank 0
@@ -3048,18 +3056,7 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
         avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
 
         indices[i] = ic->id;
-
-//        avtVector spoint = ic->GetStartPoint();
-
         avtVector point = ic->GetEndPoint();
-
-//      if( spoint[0] == 79 && spoint[1] == 90 && spoint[2] == 10 )
-        // if( spoint[0] == 76 && spoint[1] == 88 && spoint[2] == 10 )
-        //   std::cerr << i << "   " << ic->id << "   "
-        //          << spoint[0] << "  " << spoint[1] << "  " << spoint[2] << "    "
-
-        //          << point[0] << "  " << point[1] << "  " << point[2] << "  "
-        //          << std::endl;
 
         points[j+0] = point[0];
         points[j+1] = point[1];
@@ -3069,14 +3066,7 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
           times[i] = ic->GetTime() - seedTime0;
         else
           times[i] = ic->GetTime();
-
-        // std::cout << PAR_Rank() << " ics: " << indices[i] << " "
-        //             << end_point << std::endl;
     }
-
-    // std::cout << PAR_Rank() << " total integral pts: "
-    //        << ics.size() << std::endl;
-    // std::flush(cout);
 
     int* all_indices = 0;
     int* index_counts = 0;
@@ -3144,8 +3134,6 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
             total += index_counts[i];
         }
 
-        // std::cout << "total number integrated: " << total << std::endl;
-
         for(size_t j=0, k=0; j<total; ++j, k+=3)
         {
             size_t index = all_indices[j];
@@ -3157,23 +3145,11 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
                          "grid points." );
             }
 
-            // std::cout << index << " before " << remapPoints[index]
-            //        << std::endl;
-            
             remapPoints[index].set( all_points[k+0],
                                     all_points[k+1],
                                     all_points[k+2]);
 
             remapTimes[index] = all_times[j];
-
-            // std::cout << PAR_Rank() << " " << index << " "
-            //        << remapPoints[index] << std::endl;
-            // std::cout << "middle: " << avtVector( all_points[k+0],
-            //                                    all_points[k+1],
-            //                                    all_points[k+2])
-            //        << std::endl;
-            // std::cout << index << " after " << remapPoints[index]
-            //        << std::endl;
         }
 
         // Store the times for the exponent.
@@ -3218,9 +3194,11 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
         {
           avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
 
-          if( ic->maxSteps < (unsigned int)maxSteps )
+          int ms = ic->GetMaxSteps();
+
+          if( ms < (unsigned int)maxSteps )
           {
-            ic->maxSteps++;
+            ic->SetMaxSteps(ms+1);
             ic->status.ClearTerminationMet();
           }
 
@@ -3228,11 +3206,9 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
 
           // Check to see if all exponents have been found.
           if( exponents->GetTuple1(l) == std::numeric_limits<double>::min() &&
-              ic->maxSteps < (unsigned int)maxSteps )
+              ic->GetMaxSteps() < (unsigned int)maxSteps )
             haveAllExponents = false;
         }
-
-//      std::cerr << haveAllExponents << std::endl;
 
         //cleanup.
         if (all_indices)   delete [] all_indices;
@@ -3272,17 +3248,9 @@ void avtLCSFilter::ComputeFSLE( vtkDataArray *component,
   {
     double lambda = exponents->GetTuple1(l);
 
-    // if( l == 20200 )
-    //   std::cerr << lambda << std::endl;
-
     // If the exponent was previously set skip checking it.
     if( lambda == std::numeric_limits<double>::min() )
     {
-      // if( l == 20200 )
-      //        std::cerr
-      //          << floor( fabs(times->GetTuple1(l)) / maxStepLength + 0.5) << "  "
-      //          << numSteps << std::endl;
-
       // Check for a curve that has terminated which will not have
       // taken a step forward or backwards.
       if( floor( fabs(times->GetTuple1(l)) / maxStepLength + 0.5) != numSteps )
@@ -3311,8 +3279,6 @@ void avtLCSFilter::ComputeFSLE( vtkDataArray *component,
       }
     }
   }
-
-  // std::cerr << minSizeValue << "  " << maxSizeValue << std::endl;
 }
 
 
@@ -3615,19 +3581,6 @@ avtLCSFilter::CreateSingleBlockIterativeCalcOutput( vtkDataSet *in_ds,
   //done with offset, increment it for the next call to this
   //function.
   offset += nTuples;
-
-  //store this dataset in Cache for next time.
-  // double bounds[6];
-  // fsle_ds->GetBounds(bounds);
-          
-  // std::cout << "final size and bounds: "
-  //          << PAR_Rank() << " " << nTuples << " "
-  //          << bounds[0] << " " << bounds[1] << " " << bounds[2]
-  //          << " " << bounds[3] << " " << bounds[4] << " "
-  //          << bounds[5] << std::endl;
-
-  // std::cerr << "Caching fsle_ds" << std::endl;
-  
   
   //Store this dataset in Cache for next time.
   std::string str = CreateCacheString();  
@@ -3657,7 +3610,6 @@ avtLCSFilter::CreateRectilinearGridIterativeCalcOutput(std::vector<avtIntegralCu
     //matching end positions.
     if(PAR_Rank() != 0)
     {
-        //std::cout << PAR_Rank() << " creating dummy output" << std::endl;
         avtDataTree* dummy = new avtDataTree();
         SetOutputDataTree(dummy);
     }
@@ -3748,17 +3700,6 @@ avtLCSFilter::CreateRectilinearGridIterativeCalcOutput(std::vector<avtIntegralCu
       fsle_ds->GetPointData()->RemoveArray("component");
       fsle_ds->GetPointData()->RemoveArray("times");
 
-      //store this dataset in Cache for next time.
-      // double bounds[6];
-      // fsle_ds->GetBounds(bounds);
-          
-      // std::cout << "final size and bounds: "
-      //          << PAR_Rank() << " " << nTuples << " "
-      //          << bounds[0] << " " << bounds[1] << " " << bounds[2]
-      //          << " " << bounds[3] << " " << bounds[4] << " "
-      //          << bounds[5] << std::endl;
-
-      // std::cerr << "Caching fsle_ds" << std::endl;
       std::string str = CreateCacheString();
       StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                               outVarName.c_str(), -1, -1,
@@ -3768,8 +3709,6 @@ avtLCSFilter::CreateRectilinearGridIterativeCalcOutput(std::vector<avtIntegralCu
       avtDataTree* dt = new avtDataTree(fsle_ds,index);
       int x = 0;
       dt->GetAllLeaves(x);
-      
-      // std::cout << "total leaves:: " << x << std::endl;
       
       SetOutputDataTree(dt);
       
@@ -3801,58 +3740,103 @@ avtLCSFilter::CreateRectilinearGridIterativeCalcOutput(std::vector<avtIntegralCu
 void
 avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 {
-    if (ics.size() == 0)
-        return;
-
     int numICs = (int)ics.size();
-//    int numPts = 0;
+
+    int numSize = 0;
+    int numTime = 0;
+    int numDistance = 0;
+    int numBoundary = 0;
+
     int numEarlyTerminators = 0;
     int numStiff = 0;
     int numCritPts = 0;
 
     if (DebugStream::Level5())
     {
-        debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
+        debug5 << "::ReportWarnings " << ics.size() << endl;
     }
 
     //See how many pts, ics we have so we can preallocate everything.
     for (int i = 0; i < numICs; i++)
     {
-        bool terminatedBecauseOfMaxSteps;
-        bool encounteredNumericalProblems;
-
         if( doSize )
         {
             avtStreamlineIC *ic = dynamic_cast<avtStreamlineIC*>(ics[i]);
-            terminatedBecauseOfMaxSteps  = ic->TerminatedBecauseOfMaxSteps();
-            encounteredNumericalProblems = ic->EncounteredNumericalProblems();
+
+            if (ic->CurrentVelocity().length() <= criticalPointThreshold)
+              numCritPts++;
+
+            if (ic->TerminatedBecauseOfMaxSteps())
+              numEarlyTerminators++;
+            
+            if (ic->EncounteredNumericalProblems())
+              numStiff++;
+
+            if(ic->status.EncounteredSpatialBoundary() ||
+               ic->status.ExitedSpatialBoundary() )
+              numBoundary++;
+
+            // if (doSize && ic->GetTime() < maxSize);
+            //   numSize++;         
         }
         else
         {
             avtLCSIC *ic = dynamic_cast<avtLCSIC*>(ics[i]);
-            terminatedBecauseOfMaxSteps  = ic->TerminatedBecauseOfMaxSteps();
-            encounteredNumericalProblems = ic->EncounteredNumericalProblems();
+
+            if (ic->CurrentVelocity().length() <= criticalPointThreshold)
+              numCritPts++;
+
+            if (ic->TerminatedBecauseOfMaxSteps())
+              numEarlyTerminators++;
+            
+            if (ic->EncounteredNumericalProblems())
+              numStiff++;
+
+            if(ic->status.EncounteredSpatialBoundary() ||
+               ic->status.ExitedSpatialBoundary() )
+              numBoundary++;
+
+            if (doTime && ic->GetTime() < maxTime)
+              numTime++;
+
+            if (doDistance && ic->GetDistance() < maxDistance)
+              numDistance++;
         }
-
-        // NOT USED ??????????????????????????
-        // size_t numSamps = (ic ? ic->GetNumberOfSamples() : 0);
-        // if (numSamps > 1)
-        //     numPts += numSamps;
-
-        if (terminatedBecauseOfMaxSteps)
-        {
-            // Calculated only with avtStateRecorderIntegralCurve
-            // if (ic->SpeedAtTermination() <= criticalPointThreshold)
-            //     numCritPts++;
-            // else
-            numEarlyTerminators++;
-        }
-
-        if (encounteredNumericalProblems)
-            numStiff++;
     }
 
     char str[4096] = "";
+
+    if (issueWarningForAdvection)
+    {
+        SumIntAcrossAllProcessors(numSize);
+        SumIntAcrossAllProcessors(numTime);
+        SumIntAcrossAllProcessors(numDistance);
+
+        if (numSize || numTime || numDistance )
+        {
+          SNPRINTF(str, 4096,
+                   "%s\n%d of your integral curves terminated before they reached "
+                   "the maximum advection criteria.  This may be indicative of your "
+                   "time, distance, or size criteria being too large. If you want to disable "
+                   "this message, you can do this under the Advaced tab."
+                   "  Note that this message does not mean that an error has occurred; it simply "
+                   "means that VisIt stopped advecting particles before they reached the maximum.\n",
+                   str, numSize+numTime+numDistance);
+        }
+    }
+
+    if ((doDistance || doTime || doSize) && issueWarningForBoundary)
+    {
+        SumIntAcrossAllProcessors(numBoundary);
+        if (numBoundary > 0)
+        {
+            SNPRINTF(str, 4096, 
+                     "%s\n%d of your integral curves exited the domain. This will all likelihood, "
+                     "skew the results of any relative gradient based (Eigen value/vector) calculations."
+                     "If you want to disable this message, you can do this under "
+                     "the Advanced tab.\n", str, numBoundary);
+        }
+    }
 
     if ((doDistance || doTime || doSize) && issueWarningForMaxStepsTermination)
     {
@@ -3901,7 +3885,7 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                      "relatively constant, then it is not possible to choose step sizes that "
                      "remain within tolerances.  This condition is referred to as stiffness and "
                      "VisIt stops advecting in this case.  If you want to disable this message, "
-                     "you can do this under the Advanced tab.\n", str,numStiff);
+                     "you can do this under the Advanced tab.\n", str, numStiff);
         }
     }
 
@@ -3957,6 +3941,7 @@ avtLCSFilter::CreateCacheString(void)
      << atts.GetAuxiliaryGridSpacing() << " "
      << atts.GetIntegrationDirection() << " "
      << atts.GetMaxSteps() << " "
+     << atts.GetCauchyGreenTensor() << " "
      << atts.GetOperationType() << " "
      << atts.GetEigenComponent() << " "
      << atts.GetOperatorType() << " "

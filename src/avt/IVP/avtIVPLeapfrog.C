@@ -76,8 +76,8 @@ avtIVPLeapfrog::avtIVPLeapfrog()
     tol = 1e-8;
     h = 1e-5;
     t = 0.0;
-    numStep = 0;
 
+    firstStep = true;
     order = 2; // Highest order ODE that the integrator can support.
 }
 
@@ -119,7 +119,7 @@ avtIVPLeapfrog::Reset(const double& t_start,
     vCur = v_start;
     h = h_max;
 
-    numStep = 0;
+    firstStep = true;
 }
 
 
@@ -181,7 +181,7 @@ avtIVPLeapfrog::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
         if ((fieldResult = (*field)(t_local, yCur, vCur, aCur)) != avtIVPField::OK)
             return ConvertResult(fieldResult);
 
-        if( numStep )
+        if( firstStep )
             vNew = vCur + aCur * h;      // New velocity
         else
             vNew = vCur + aCur * h/2.0;  // Initial velocity at half step
@@ -214,9 +214,6 @@ avtIVPLeapfrog::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     ivpstep->t0 = t;
     ivpstep->t1 = t + h;
 
-    // Update for the next step.
-    numStep++;
-    
     yCur = yNew;
     vCur = vNew;
     t = t+h;
@@ -243,7 +240,7 @@ avtIVPLeapfrog::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
 void
 avtIVPLeapfrog::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
-    aiss.Accept(numStep)
+    aiss.Accept(firstStep)
         .Accept(tol)
         .Accept(h)
         .Accept(h_max)

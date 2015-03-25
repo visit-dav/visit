@@ -377,7 +377,7 @@ avtIntegralCurve *
 avtStreamlineFilter::CreateIntegralCurve()
 {
     avtStreamlineIC *ic = new avtStreamlineIC();
-    ic->maxSteps = maxSteps;
+    ic->SetMaxSteps( maxSteps );
     ic->historyMask = GenerateAttributeFields();
     return ic;
 }

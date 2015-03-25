@@ -243,6 +243,21 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
     }
 
+    const char *cauchyGreenTensor_names = "Left, Right";
+    switch (atts->GetCauchyGreenTensor())
+    {
+      case LCSAttributes::Left:
+          SNPRINTF(tmpStr, 1000, "%scauchyGreenTensor = %sLeft  # %s\n", prefix, prefix, cauchyGreenTensor_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::Right:
+          SNPRINTF(tmpStr, 1000, "%scauchyGreenTensor = %sRight  # %s\n", prefix, prefix, cauchyGreenTensor_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     const char *eigenComponent_names = "Smallest, Intermediate, Largest";
     switch (atts->GetEigenComponent())
     {
@@ -500,6 +515,16 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetIssueAdvectionWarnings())
+        SNPRINTF(tmpStr, 1000, "%sissueAdvectionWarnings = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sissueAdvectionWarnings = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetIssueBoundaryWarnings())
+        SNPRINTF(tmpStr, 1000, "%sissueBoundaryWarnings = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sissueBoundaryWarnings = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueTerminationWarnings())
         SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 1\n", prefix);
@@ -936,6 +961,39 @@ LCSAttributes_GetOperationType(PyObject *self, PyObject *args)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOperationType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LCSAttributes_SetCauchyGreenTensor(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the cauchyGreenTensor in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetCauchyGreenTensor(LCSAttributes::CauchyGreenTensor(ival));
+    else
+    {
+        fprintf(stderr, "An invalid cauchyGreenTensor value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Left, Right.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetCauchyGreenTensor(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCauchyGreenTensor()));
     return retval;
 }
 
@@ -1788,6 +1846,54 @@ LCSAttributes_GetForceNodeCenteredData(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LCSAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the issueAdvectionWarnings in the object.
+    obj->data->SetIssueAdvectionWarnings(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetIssueAdvectionWarnings(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetIssueAdvectionWarnings()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+LCSAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the issueBoundaryWarnings in the object.
+    obj->data->SetIssueBoundaryWarnings(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetIssueBoundaryWarnings(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetIssueBoundaryWarnings()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 LCSAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)self;
@@ -1909,6 +2015,8 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
     {"GetMaxSteps", LCSAttributes_GetMaxSteps, METH_VARARGS},
     {"SetOperationType", LCSAttributes_SetOperationType, METH_VARARGS},
     {"GetOperationType", LCSAttributes_GetOperationType, METH_VARARGS},
+    {"SetCauchyGreenTensor", LCSAttributes_SetCauchyGreenTensor, METH_VARARGS},
+    {"GetCauchyGreenTensor", LCSAttributes_GetCauchyGreenTensor, METH_VARARGS},
     {"SetEigenComponent", LCSAttributes_SetEigenComponent, METH_VARARGS},
     {"GetEigenComponent", LCSAttributes_GetEigenComponent, METH_VARARGS},
     {"SetOperatorType", LCSAttributes_SetOperatorType, METH_VARARGS},
@@ -1971,6 +2079,10 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
     {"GetPathlinesCMFE", LCSAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetForceNodeCenteredData", LCSAttributes_SetForceNodeCenteredData, METH_VARARGS},
     {"GetForceNodeCenteredData", LCSAttributes_GetForceNodeCenteredData, METH_VARARGS},
+    {"SetIssueAdvectionWarnings", LCSAttributes_SetIssueAdvectionWarnings, METH_VARARGS},
+    {"GetIssueAdvectionWarnings", LCSAttributes_GetIssueAdvectionWarnings, METH_VARARGS},
+    {"SetIssueBoundaryWarnings", LCSAttributes_SetIssueBoundaryWarnings, METH_VARARGS},
+    {"GetIssueBoundaryWarnings", LCSAttributes_GetIssueBoundaryWarnings, METH_VARARGS},
     {"SetIssueTerminationWarnings", LCSAttributes_SetIssueTerminationWarnings, METH_VARARGS},
     {"GetIssueTerminationWarnings", LCSAttributes_GetIssueTerminationWarnings, METH_VARARGS},
     {"SetIssueStiffnessWarnings", LCSAttributes_SetIssueStiffnessWarnings, METH_VARARGS},
@@ -2070,6 +2182,13 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LCSAttributes::EigenVector));
     if(strcmp(name, "Lyapunov") == 0)
         return PyInt_FromLong(long(LCSAttributes::Lyapunov));
+
+    if(strcmp(name, "cauchyGreenTensor") == 0)
+        return LCSAttributes_GetCauchyGreenTensor(self, NULL);
+    if(strcmp(name, "Left") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Left));
+    if(strcmp(name, "Right") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Right));
 
     if(strcmp(name, "eigenComponent") == 0)
         return LCSAttributes_GetEigenComponent(self, NULL);
@@ -2199,6 +2318,10 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "forceNodeCenteredData") == 0)
         return LCSAttributes_GetForceNodeCenteredData(self, NULL);
+    if(strcmp(name, "issueAdvectionWarnings") == 0)
+        return LCSAttributes_GetIssueAdvectionWarnings(self, NULL);
+    if(strcmp(name, "issueBoundaryWarnings") == 0)
+        return LCSAttributes_GetIssueBoundaryWarnings(self, NULL);
     if(strcmp(name, "issueTerminationWarnings") == 0)
         return LCSAttributes_GetIssueTerminationWarnings(self, NULL);
     if(strcmp(name, "issueStiffnessWarnings") == 0)
@@ -2243,6 +2366,8 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LCSAttributes_SetMaxSteps(self, tuple);
     else if(strcmp(name, "operationType") == 0)
         obj = LCSAttributes_SetOperationType(self, tuple);
+    else if(strcmp(name, "cauchyGreenTensor") == 0)
+        obj = LCSAttributes_SetCauchyGreenTensor(self, tuple);
     else if(strcmp(name, "eigenComponent") == 0)
         obj = LCSAttributes_SetEigenComponent(self, tuple);
     else if(strcmp(name, "operatorType") == 0)
@@ -2305,6 +2430,10 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LCSAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "forceNodeCenteredData") == 0)
         obj = LCSAttributes_SetForceNodeCenteredData(self, tuple);
+    else if(strcmp(name, "issueAdvectionWarnings") == 0)
+        obj = LCSAttributes_SetIssueAdvectionWarnings(self, tuple);
+    else if(strcmp(name, "issueBoundaryWarnings") == 0)
+        obj = LCSAttributes_SetIssueBoundaryWarnings(self, tuple);
     else if(strcmp(name, "issueTerminationWarnings") == 0)
         obj = LCSAttributes_SetIssueTerminationWarnings(self, tuple);
     else if(strcmp(name, "issueStiffnessWarnings") == 0)

@@ -198,24 +198,47 @@ avtIVPField::Result
 avtIVPVTKField::operator()(const double &t, const avtVector &p, avtVector &retV) const
 {
 #if 0
+
+  //#warning "Compiling avtIVPVTKField::operator test code 0"
+
   // Test code for a double gyre.
   double xi = p.x;
   double yi = p.y;
 
   double A = 0.25;
-  double delta = 0.25;
-  double omega = 2 * M_PI;
+  double epsilon = .25;
+  double omega = 2.0 * M_PI;
 
-  retV.x =
-    -M_PI * A * sin(M_PI * (delta * sin(omega * t) * xi*xi +
-                            (1.0 - 2.0 * delta * sin(omega * t)) * xi)) *
-    cos(M_PI * yi);
+  double at = epsilon * sin(omega * t);
+  double bt = 1.0 - 2.0 * at;
 
-  retV.y =
-    M_PI * A * cos(M_PI * (delta * sin(omega * t) * xi*xi +
-                           (1.0 - 2.0 * delta * sin(omega * t)) * xi)) *
-    sin(M_PI * yi) * (delta * sin(omega * t) * 2.0 * xi +
-                      (1.0 - 2.0 * delta * sin(omega * t)));
+  double fxt = (at * xi + bt) * xi;
+  double dfx = (2.0 * at * xi + bt);
+  
+  retV.x = -M_PI * A * sin(M_PI * fxt) * cos(M_PI * yi);
+  retV.y =  M_PI * A * cos(M_PI * fxt) * sin(M_PI * yi) * dfx;
+  retV.z = 0;
+
+#elif 0
+
+  //#warning "Compiling avtIVPVTKField::operator test code 1"
+
+  // Test code for a double gyre.
+  double xi = p.x;
+  double yi = p.y;
+
+  double A = 0.1;
+  double epsilon = 0.1;
+  double omega = 2.0 * M_PI / 5.0;
+
+  double at = epsilon * sin(omega * t);
+  double bt = 1.0  - 2.0 * at;
+
+  double fxt = (at * xi + bt) * xi;
+  double dfx = (2.0 * at * xi + bt);
+
+  retV.x = -M_PI * A * sin(M_PI * fxt) * cos(M_PI * yi);
+  retV.y =  M_PI * A * cos(M_PI * fxt) * sin(M_PI * yi) * dfx;
   retV.z = 0;
 
 #else

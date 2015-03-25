@@ -85,7 +85,6 @@ avtIVPRK4::avtIVPRK4()
     tol = 1e-8;
     h = 1e-5;
     t = 0.0;
-    numStep = 0;
 
     order = 2; // Highest order ODE that the integrator can support.
 }
@@ -149,8 +148,6 @@ avtIVPRK4::Reset(const double& t_start,
     yCur = y_start;
     vCur = v_start;
     h = h_max;
-
-    numStep = 0;
 }
 
 
@@ -256,9 +253,6 @@ avtIVPRK4::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     
     ivpstep->t0 = t;
     ivpstep->t1 = t + h;
-
-    // Update for the next step.
-    numStep++;
     
     yCur = yNew;
     vCur = vNew;
@@ -294,8 +288,7 @@ avtIVPRK4::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
 void
 avtIVPRK4::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
-    aiss.Accept(numStep)
-        .Accept(tol)
+    aiss.Accept(tol)
         .Accept(h)
         .Accept(h_max)
         .Accept(t)

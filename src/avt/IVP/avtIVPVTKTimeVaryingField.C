@@ -248,24 +248,58 @@ avtIVPVTKTimeVaryingField::operator()( const double &t,
 {
 #if 0
 
+  //#warning "Compiling avtIVPVTKTimeVaryingField::operator test code 0"
+
   // Test code for a double gyre.
   double xi = p.x;
   double yi = p.y;
 
   double A = 0.25;
-  double delta = 0.25;
+  double epsilon = 0.25;
   double omega = 2 * M_PI;
 
-  vel.x =
-    -M_PI * A * sin(M_PI * (delta * sin(omega * t) * xi*xi +
-                            (1.0 - 2.0 * delta * sin(omega * t)) * xi)) *
-    cos(M_PI * yi);
+  double at = epsilon * sin( omega * t );
+  double bt = 1.0  - 2.0 * at;
 
-  vel.y =
-    M_PI * A * cos(M_PI * (delta * sin(omega * t) * xi*xi +
-                           (1.0 - 2.0 * delta * sin(omega * t)) * xi)) *
-    sin(M_PI * yi) * (delta * sin(omega * t) * 2.0 * xi +
-                      (1.0 - 2.0 * delta * sin(omega * t)));
+  double fxt = (at * xi + bt) * xi;
+  double dfx = (2.0 * at * xi + bt);
+
+  vel.x = -M_PI * A * sin(M_PI * fxt) * cos(M_PI * yi);
+  vel.y =  M_PI * A * cos(M_PI * fxt) * sin(M_PI * yi) * dfx;
+  vel.z = 0;
+
+  // vel.x =
+  //   -M_PI * A * sin(M_PI * (epsilon * sin(omega * t) * xi*xi +
+  //                           (1.0 - 2.0 * epsilon * sin(omega * t)) * xi)) *
+  //   cos(M_PI * yi);
+
+  // vel.y =
+  //   M_PI * A * cos(M_PI * (epsilon * sin(omega * t) * xi*xi +
+  //                          (1.0 - 2.0 * epsilon * sin(omega * t)) * xi)) *
+  //   sin(M_PI * yi) * (epsilon * sin(omega * t) * 2.0 * xi +
+  //                     (1.0 - 2.0 * epsilon * sin(omega * t)));
+  // vel.z = 0;
+
+#elif 0
+
+  //#warning "Compiling avtIVPVTKTimeVaryingField::operator test code 1"
+
+  // Test code for a double gyre.
+  double xi = p.x;
+  double yi = p.y;
+
+  double epsilon = 0.1;
+  double A = 0.1;
+  double omega = 2 * M_PI / 5.0;
+
+  double at = epsilon * sin( omega * t );
+  double bt = 1.0  - 2.0 * at;
+
+  double fxt = (at * xi + bt) * xi;
+  double dfx = (2.0 * at * xi + bt);
+
+  vel.x = -M_PI * A * sin(M_PI * fxt) * cos(M_PI * yi);
+  vel.y =  M_PI * A * cos(M_PI * fxt) * sin(M_PI * yi) * dfx;
   vel.z = 0;
 
 #else
@@ -298,13 +332,9 @@ avtIVPVTKTimeVaryingField::operator()( const double &t,
             velData[0]->GetTuple( wi->i, v0 );
             velData[1]->GetTuple( wi->i, v1 );
 
-            v0[0] = p1 * v1[0] + p0 * v0[0];
-            v0[1] = p1 * v1[1] + p0 * v0[1];
-            v0[2] = p1 * v1[2] + p0 * v0[2];
-
-            vel.x += wi->w * v0[0];
-            vel.y += wi->w * v0[1];
-            vel.z += wi->w * v0[2];
+            vel.x += wi->w * (p1 * v1[0] + p0 * v0[0]);
+            vel.y += wi->w * (p1 * v1[1] + p0 * v0[1]);
+            vel.z += wi->w * (p1 * v1[2] + p0 * v0[2]);
         }
     }
 

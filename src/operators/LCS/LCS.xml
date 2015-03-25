@@ -60,6 +60,10 @@
         EigenVector
         Lyapunov
       </Enum>
+      <Enum name="CauchyGreenTensor">
+        Left
+        Right
+      </Enum>
       <Enum name="EigenComponent">
         Smallest
         Intermediate
@@ -116,6 +120,9 @@
       </Field>
       <Field name="operationType" label="Operation type" type="enum" subtype="OperationType">
         Lyapunov
+      </Field>
+      <Field name="cauchyGreenTensor" label="Cauchy Green Tensor" type="enum" subtype="CauchyGreenTensor">
+        Right
       </Field>
       <Field name="eigenComponent" label="Eigen component" type="enum" subtype="EigenComponent">
         Smallest
@@ -212,6 +219,12 @@
 
       <Field name="forceNodeCenteredData" label="forceNodeCenteredData" type="bool">
         false
+      </Field>
+      <Field name="issueAdvectionWarnings" label="Issue warning when the advection stops before the limits" type="bool">
+        true
+      </Field>
+      <Field name="issueBoundaryWarnings" label="Issue warning when the advection stops at the boundary" type="bool">
+        true
       </Field>
       <Field name="issueTerminationWarnings" label="Issue Warning When Termination Criteria Is Not Met" type="bool">
         true
