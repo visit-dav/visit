@@ -344,6 +344,7 @@ class IVP_API avtIntegralCurve
     double    CurrentTime()     const {return ivp->GetCurrentT();}
     avtVector CurrentLocation() const {return ivp->GetCurrentY();}
     avtVector CurrentVelocity() const {return ivp->GetCurrentV();}
+    double    NextStepSize()    const {return ivp->GetNextStepSize();}
 
     virtual void      Serialize(MemStream::Mode mode, MemStream &buff, 
                                 avtIVPSolver *solver, SerializeFlags serializeFlags);
