@@ -166,9 +166,9 @@ avtCellLocatorRectEdge::FindCell(const double pos[3],
 
         vtkIdType base = (i[2]*coord[1].size() + i[1])*coord[0].size() + i[0];
 
-        vtkIdType dx = i[0] ? 1 : 0;
-        vtkIdType dy = i[1] ? coord[0].size() : 0;
-        vtkIdType dz = i[2] ? coord[1].size()*coord[0].size() : 0;
+        vtkIdType dx = (coord[0].size() > 1) ? 1 : 0;
+        vtkIdType dy = (coord[1].size() > 1) ? coord[0].size() : 0;
+        vtkIdType dz = (coord[2].size() > 1) ? coord[1].size()*coord[0].size() : 0;
         vtkIdType deltas[] = {dx, dy, dz};
         size_t dir1 = (this->direction + 1) % 3;
         size_t dir2 = (this->direction + 2) % 3;
@@ -188,7 +188,6 @@ avtCellLocatorRectEdge::FindCell(const double pos[3],
         
         (*weights)[3].i = base + indxOffset2;
         (*weights)[3].w = k[dir1] * l[dir2];
-
     }
 
     return cell;
