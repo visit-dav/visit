@@ -2507,7 +2507,7 @@ avtPICSFilter::OnFace(const avtIntegralCurve *ic,
         vec = -vec;
 
     // Guess at the next step at a %10 WAG factor.
-    avtVector nextPt = pt + h * vec * 0.1;
+    avtVector nextPt = pt + h * vec * 0.01;
 
     int val = 0;  // To start assume the points stays on the face.
 
