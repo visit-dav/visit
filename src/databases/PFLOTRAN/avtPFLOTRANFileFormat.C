@@ -1259,6 +1259,10 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
 //    Jeremy Meredith, Wed Dec 19 13:12:27 EST 2012
 //    Add unstructured grid support.
 //
+//    Kathleen Biagas, Thu Mar 26 10:08:35 PDT 2015
+//    Fix segv by moving declaration of 'double *out = NULL' outside of
+//    for loop.
+// 
 // ****************************************************************************
 
 vtkDataArray *
@@ -1275,7 +1279,8 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
     if (unstructured)
     {
         hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
-        vtkDoubleArray *array;
+        vtkDoubleArray *array = NULL;
+        double *out = NULL;
         for(int comp=0; comp<3; comp++)
         {
             hid_t ds = H5Dopen(ts, varnames[comp].c_str());
@@ -1291,7 +1296,6 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
             hsize_t nvals, maxvals;
             H5Sget_simple_extent_dims(dsSpace, &nvals, &maxvals);
 
-            double *out = NULL; ///TODO: check on fix for uninitialized var
             if (comp == 0)
             {
                 array = vtkDoubleArray::New();
@@ -1340,7 +1344,8 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
     else
     {
         hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
-        vtkDoubleArray *array = NULL; ///TODO: check on fix for uninitialized var
+        vtkDoubleArray *array = NULL;
+        double *out = NULL;
         for(int comp=0; comp<3; comp++)
         {
             hid_t ds = H5Dopen(ts, varnames[comp].c_str());
@@ -1375,7 +1380,6 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
             hid_t memSpace = H5Screate_simple(3,count,NULL);
 
             // Set up the VTK object.
-            double *out = NULL; //TODO: check on fix for uninitalized var
             if (comp == 0)
             {
                 array = vtkDoubleArray::New();
