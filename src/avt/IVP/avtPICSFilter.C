@@ -425,8 +425,6 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
 vtkDataSet *
 avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
 {
-    debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<endl;
-
     if (domain.domain == -1 || domain.timeStep == -1)
         return NULL;
 
@@ -1228,6 +1226,7 @@ void
 avtPICSFilter::Execute(void)
 {
     Initialize();
+
     if (emptyDataset)
     {
         avtCallback::IssueWarning("There was no data to advect over.");
@@ -1556,7 +1555,7 @@ avtPICSFilter::Initialize()
             myDoms.resize(numDomains, 0);
             for (size_t i = 0; i < ds_list.domains.size(); i++)
                 myDoms[ ds_list.domains[i] ] = rank;
-            SumIntArrayAcrossAllProcessors(&myDoms[0],&domainToRank[0],numDomains);
+            SumIntArrayAcrossAllProcessors(&myDoms[0], &domainToRank[0], numDomains);
             if (DebugStream::Level5()) 
             {
                 debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<endl;
@@ -2506,8 +2505,8 @@ avtPICSFilter::OnFace(const avtIntegralCurve *ic,
     if (ic->direction == avtIntegralCurve::DIRECTION_BACKWARD)
         vec = -vec;
 
-    // Guess at the next step at a %10 WAG factor.
-    avtVector nextPt = pt + h * vec * 0.01;
+    // Guess at the next step using a very small step size.
+    avtVector nextPt = pt + h * vec * FLT_EPSILON;
 
     int val = 0;  // To start assume the points stays on the face.
 
@@ -2517,7 +2516,7 @@ avtPICSFilter::OnFace(const avtIntegralCurve *ic,
       double t = (nextPt[i]-bbox[j]) / (bbox[j+1]-bbox[j]);
 
       // Next step will push the point in, make sure all directions
-      // are also in.
+      // are also in or still on the face.
       if (0.0 < t && t < 1.0)
         val = 1;
 
@@ -2614,6 +2613,7 @@ avtPICSFilter::ComputeDomainToRankMapping()
         bool dummy = false;
         GetInputDataTree()->Traverse(CGetAllDatasets, (void*)&ds_list, dummy);
 
+        // Set and communicate all the domains.
 #ifdef PARALLEL
         if (numDomains > 1)
         {
