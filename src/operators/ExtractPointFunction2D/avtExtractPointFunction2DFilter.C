@@ -61,6 +61,14 @@
 
 avtExtractPointFunction2DFilter::avtExtractPointFunction2DFilter()
 {
+    range[0] = 0;
+    range[1] = 0;
+    spatialExtents[0] = 0;
+    spatialExtents[1] = 0;
+    spatialExtents[2] = 0;
+    spatialExtents[3] = 0;
+    spatialExtents[4] = 0;
+    spatialExtents[5] = 0;
 }
 
 
@@ -154,6 +162,12 @@ avtExtractPointFunction2DFilter::PreExecute(void)
     avtPluginDataTreeIterator::PreExecute();
     range[0] =  FLT_MAX;
     range[1] = -FLT_MAX;
+    spatialExtents[0] = 0;
+    spatialExtents[1] = 0;
+    spatialExtents[2] = 0;
+    spatialExtents[3] = 0;
+    spatialExtents[4] = 0;
+    spatialExtents[5] = 0;
 }
 
 
@@ -224,25 +238,57 @@ avtExtractPointFunction2DFilter::ExecuteData(avtDataRepresentation *in_dr)
 
     if (iMin <= atts.GetI() && atts.GetI() <= iMax && jMin <= atts.GetJ() && atts.GetJ() <= jMax)
     {
-        double dx = 1.0;
+        double dvpar = 1.0;
+        double dmu = 1.0;
         vtkDoubleArray *dx_arr = dynamic_cast<vtkDoubleArray*>(in_ds->GetFieldData()->GetArray("dx_array"));
+        vtkIntArray *v_base_index_arr = dynamic_cast<vtkIntArray*>(in_ds->GetFieldData()->GetArray("v_base_index"));
+        vtkIntArray *v_dims_arr = dynamic_cast<vtkIntArray*>(in_ds->GetFieldData()->GetArray("v_dims"));
         if (dx_arr)
-            dx = dx_arr->GetValue(0);
+        {
+            dvpar = dx_arr->GetValue(0);
+            dmu = dx_arr->GetValue(1);
+        }
+
+        int v_base_index[2] = { 0, 0 };
+        int v_dims[2] = { 0, 0 };
+        if (v_base_index_arr && v_dims_arr)
+        {
+            for (int i = 0; i < 2; ++i)
+            {
+                v_base_index[i] = v_base_index_arr->GetValue(i);
+                v_dims[i] = v_dims_arr->GetValue(i);
+            }
+        }
+        else
+        {
+            EXCEPTION1(ImproperUseException,
+                    "Internal error: Velocity base index and dimensions not set by database plugin.");
+        }
 
         const char *justTheVar = pipelineVariable + strlen("operators/ExtractPointFunction2D/");
-        int nK = dims[2];
         vtkDataArray *data = in_ds->GetCellData()->GetArray(justTheVar);
-        int nL = data->GetNumberOfComponents();
 
         vtkRectilinearGrid *ogrid = vtkRectilinearGrid::New();
-        ogrid->SetDimensions(nK+1, nL+1, 1);
-        ogrid->SetXCoordinates(rgrid->GetZCoordinates());
+        ogrid->SetDimensions(v_dims[0]+1, v_dims[1]+1, 1);
+        vtkDataArray *xCoords = rgrid->GetZCoordinates()->NewInstance();
+        xCoords->SetNumberOfTuples(v_dims[0]+1);
+        for (int k = 0; k < v_dims[0]+1; ++k)
+            xCoords->SetTuple1(k, (v_base_index[0]+k)*dvpar);
+        ogrid->SetXCoordinates(xCoords);
+        xCoords->Delete();
         vtkDataArray *yCoords = rgrid->GetZCoordinates()->NewInstance();
-        yCoords->SetNumberOfTuples(nL+1);
-        for (int l = 0; l < nL+1; ++l)
-            yCoords->SetTuple1(l, l*dx);
+        yCoords->SetNumberOfTuples(v_dims[1]+1);
+        for (int l = 0; l < v_dims[1]+1; ++l)
+            yCoords->SetTuple1(l, (v_base_index[1]+l)*dmu);
         ogrid->SetYCoordinates(yCoords);
         yCoords->Delete();
+
+        spatialExtents[0] = v_base_index[0] * dvpar;
+        spatialExtents[1] = (v_base_index[0] + v_dims[0]) * dvpar;
+        spatialExtents[2] = v_base_index[1] * dmu;
+        spatialExtents[3] = (v_base_index[1] + v_dims[1]) * dmu;
+        spatialExtents[4] = 0;
+        spatialExtents[5] = 0;
 
         vtkDataArray *zCoords = rgrid->GetZCoordinates()->NewInstance();
         zCoords->SetNumberOfTuples(1);
@@ -252,23 +298,19 @@ avtExtractPointFunction2DFilter::ExecuteData(avtDataRepresentation *in_dr)
 
         vtkDataArray *odata = data->NewInstance();
         odata->SetNumberOfComponents(1);
-        odata->SetNumberOfTuples(nK*nL);
-        for (int k = 0; k < nK; ++k)
-        {
-            for (int l = 0; l < nL; ++l)
+        odata->SetNumberOfTuples(v_dims[0]*v_dims[1]);
+        int ijk_f[3] = { atts.GetI() - base_index[0], atts.GetJ() - base_index[1], 0 };
+        vtkIdType id_f = rgrid->ComputeCellId(ijk_f);
+        for (int k = 0; k < v_dims[0]; ++k)
+            for (int l = 0; l < v_dims[1]; ++l)
             {
-                int ijk_f[3] = { atts.GetI() - base_index[0], atts.GetJ() - base_index[1], k };
-                vtkIdType id_f = rgrid->ComputeCellId(ijk_f);
                 int ijk_t[3] = { k, l, 0 };
                 vtkIdType id_t = ogrid->ComputeCellId(ijk_t);
-                double val = data->GetComponent(id_f, l);
-                //std::cout << val << " ";
+                double val = data->GetComponent(id_f, k*v_dims[1]+l);
                 odata->SetTuple1(id_t, val);
                 if (val < range[0]) range[0] = val;
                 if (val > range[1]) range[1] = val;
             }
-            //std::cout << std::endl;
-        }
         ogrid->GetCellData()->SetScalars(odata);
         odata->Delete();
 
@@ -306,6 +348,8 @@ avtExtractPointFunction2DFilter::PostExecute(void)
         avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
         atts.GetThisProcsOriginalDataExtents(outVarName.c_str())->Set(range);
         atts.GetThisProcsActualDataExtents(outVarName.c_str())->Set(range);
+        atts.GetOriginalSpatialExtents()->Clear();
+        atts.GetThisProcsOriginalSpatialExtents()->Set(spatialExtents);
     }
 }
 
@@ -357,7 +401,13 @@ avtExtractPointFunction2DFilter::UpdateDataObjectInfo(void)
     avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
     atts.SetSpatialDimension(2);
     atts.SetTopologicalDimension(2);
+    atts.AddFilterMetaData("ExtractPointFunction2D");
+
+    GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
+    GetOutput()->GetInfo().GetAttributes().SetCanUseTransform(false);
+    GetOutput()->GetInfo().GetAttributes().SetCanUseInvTransform(false);
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
+    GetOutput()->GetInfo().GetValidity().InvalidateDataMetaData();
 
    if (outVarName != "")
    {

@@ -89,6 +89,7 @@ class avtExtractPointFunction2DFilter : public avtPluginDataTreeIterator
     virtual void          PostExecute(void);
 
   private:
+    double spatialExtents[6];
     double range[2];
 };
 
