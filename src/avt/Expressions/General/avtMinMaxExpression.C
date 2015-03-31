@@ -125,9 +125,53 @@ avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
         {
             for (int j = 0 ; j < in1ncomps ; j++)
             {
-                int tup1 = (var1IsSingleton ? 0 : i);
-                int tup2 = (var2IsSingleton ? 0 : i);
+                vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+                vtkIdType tup2 = (var2IsSingleton ? 0 : i);
                 double val1 = in1->GetComponent(tup1, j);
+                double val2 = in2->GetComponent(tup2, j);
+                bool val1Bigger = (val1 > val2);
+                // Circumflex (^) is the exclusive or.
+                // doMin == true  && val1Bigger == true  --> val2
+                // doMin == false && val1Bigger == true  --> val1
+                // doMin == true  && val1Bigger == false --> val1
+                // doMin == false && val1Bigger == false --> val2
+                //  --> values same, then val2, values different, then val1
+                double outval = (doMin ^ val1Bigger ? val1 : val2);
+                out->SetComponent(i, j, outval);
+            }
+        }
+    }
+    else if (in1ncomps > 1 && in2ncomps == 1)
+    {
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
+            double val2 = in2->GetTuple1(tup2);
+            for (int j = 0 ; j < in1ncomps ; j++)
+            {
+                double val1 = in1->GetComponent(tup1, j);
+                bool val1Bigger = (val1 > val2);
+                // Circumflex (^) is the exclusive or.
+                // doMin == true  && val1Bigger == true  --> val2
+                // doMin == false && val1Bigger == true  --> val1
+                // doMin == true  && val1Bigger == false --> val1
+                // doMin == false && val1Bigger == false --> val2
+                //  --> values same, then val2, values different, then val1
+                double outval = (doMin ^ val1Bigger ? val1 : val2);
+                out->SetComponent(i, j, outval);
+            }
+        }
+    }
+    else if (in1ncomps == 1 && in2ncomps > 1)
+    {
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
+            double val1 = in1->GetTuple1(tup1);
+            for (int j = 0 ; j < in2ncomps ; j++)
+            {
                 double val2 = in2->GetComponent(tup2, j);
                 bool val1Bigger = (val1 > val2);
                 // Circumflex (^) is the exclusive or.
@@ -148,5 +192,3 @@ avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                          "maximums with data of differing dimensions.");
     }
 }
-
-
