@@ -1,3 +1,4 @@
+import os.path
 import re
 import time
 
@@ -130,6 +131,36 @@ def onOpenDatabase(database, timestate, addDefaultPlots, forcedFileType):
     while filename != database:
         time.sleep(0.1) 
         filename = GetWindowInformation().activeSource
+
+    if "4d" in filename and "dfn" in filename:
+        # <HACK>
+        # TEMPORARY HACK: Define expressions for 4D vis
+        # ... hardcoded mass
+        if not 'm' in [ e[0] for e in Expressions() ]:
+            DefineScalarExpression("m", "cell_constant(Mesh, 2)")
+        # ... import B and Bstar
+        dirname = os.path.dirname(':'.join(filename.split(":")[1:]))
+        DefineArrayExpression("Bstar", "conn_cmfe(<"+dirname+"/plt.Bstar_par0000.1.hydrogen.4d.hdf5:component_0>, <Mesh>)")
+        DefineScalarExpression("B", "conn_cmfe(<"+dirname+"/BFieldMag2d.hdf5:component_0>, <Mesh>)")
+        # ... Expressions to compute derived quantities
+        DefineArrayExpression("f_times_Bstar", "array_componentwise_product(component_0, Bstar)")
+        DefineScalarExpression("n", "(_dv_par*_dmu)/m*array_sum(f_times_Bstar)")
+        DefineScalarExpression("Vpar", "(_dv_par*_dmu)/m*array_sum(array_componentwise_product(f_times_Bstar, _vpar))/n")
+        DefineArrayExpression("vpardiff", "_vpar-Vpar")
+        DefineScalarExpression("T", "(_dv_par*_dmu)/m*array_sum(array_componentwise_product(f_times_Bstar, m*array_componentwise_product(vpardiff,vpardiff)+_mu*B))/(3*n)")
+        densfilename = ':'.join(filename.split(":")[1:]).replace('dfn','density').replace('4d','2d')
+        DefineScalarExpression("n_diff", "conn_cmfe(<"+densfilename+":component_0>, <Mesh>) - n")
+        DefineScalarExpression("n_reldiff", "n_diff / n")
+        temperaturefilename = densfilename.replace('density','temperature')
+        DefineScalarExpression("T_diff", "conn_cmfe(<"+temperaturefilename+":component_0>, <Mesh>) - T")
+        DefineScalarExpression("T_reldiff", "T_diff / T")
+        DefineArrayExpression("FM", "1/((2*T/m)^1.5*1.772453850905516)*n*exp(-(m*sqr(_vpar-Vpar) + _mu*B)/(2*T))")
+        #DefineArrayExpression("deltaF", "component_0 - FM")
+        DefineArrayExpression("deltaF", "array_componentwise_product(Bstar, component_0 - FM)")
+        deltaF_filename = ':'.join(filename.split(":")[1:]).replace('dfn','deltaF')
+        DefineArrayExpression("deltaF_COGENT", "conn_cmfe(<"+deltaF_filename+":component_0>, <Mesh>)")
+        DefineArrayExpression("deltaF_diff", "deltaF - deltaF_COGENT")
+        # </HACK>
 
     # Check if there is already a plot for opened database. If there is,
     # we do not add further plots. If there are not any plots, we
@@ -305,19 +336,21 @@ def PerformPick4D(pa):
         match = pattern.search(lastPickOutput)
         if match != None:
             try:
-                print match.group(1)
-                (i, j , dummy)=match.group(1).split(",")
+                (i, j) = match.group(1).split(",")
                 i = int(i)
                 j = int(j)
-                SetActiveWindow(2)
                 RegisterCallback("SetActivePlotsRPC")
-                DeleteAllPlots()
-                AddPlot("Pseudocolor", "operators/ExtractPointFunction2D/component_0")
-                ExtractPointFunction2DAtts = ExtractPointFunction2DAttributes()
-                ExtractPointFunction2DAtts.I = i
-                ExtractPointFunction2DAtts.J = j
-                SetOperatorOptions(ExtractPointFunction2DAtts)
-                DrawPlots()
+                distributions = [ "component_0", "FM", "deltaF" ]
+                for window, distribution in enumerate(distributions, 2):
+                    SetActiveWindow(window)
+                    DeleteAllPlots()
+                    AddPlot("Pseudocolor", "operators/ExtractPointFunction2D/%s" % distribution)
+                    ExtractPointFunction2DAtts = ExtractPointFunction2DAttributes()
+                    ExtractPointFunction2DAtts.I = i
+                    ExtractPointFunction2DAtts.J = j
+                    SetOperatorOptions(ExtractPointFunction2DAtts)
+                    DrawPlots()
+
                 RegisterCallback("SetActivePlotsRPC", onSetActivePlots)
                 SetActiveWindow(1)
             except:
@@ -348,7 +381,7 @@ def StartPick4D():
     SetPickAttributes(pickAtts)
     RegisterCallback("PickAttributes", PerformPick4D)
     SetWindowMode("zone pick")
-    SetWindowLayout(2)
+    SetWindowLayout(4)
     SetActiveWindow(1)
 
 def EndPick4D():
