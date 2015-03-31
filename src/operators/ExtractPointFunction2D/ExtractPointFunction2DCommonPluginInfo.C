@@ -121,6 +121,28 @@ ExtractPointFunction2DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseM
         el->AddExpressions(e);
     }
 
+    const ExpressionList &oldEL = md->GetExprList();
+    for (int i = 0 ; i < oldEL.GetNumExpressions() ; i++)
+    {
+        const Expression &e = oldEL.GetExpressions(i);
+        if (e.GetType() == Expression::ArrayMeshVar)
+        {
+            {
+                if (e.GetFromOperator())
+                    continue; // weird ordering behavior otherwise
+                Expression e2;
+                sprintf(name, "operators/ExtractPointFunction2D/%s", e.GetName().c_str());
+                e2.SetName(name);
+                e2.SetType(Expression::ScalarMeshVar);
+                e2.SetFromOperator(true);
+                e2.SetOperatorName("ExtractPointFunction2D");
+                sprintf(defn, "cell_constant(<%s>, 0.)", e.GetName().c_str());
+                e2.SetDefinition(defn);
+                el->AddExpressions(e2);
+            }
+        }
+    }
+
     return el;
 }
 

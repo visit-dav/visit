@@ -37,57 +37,58 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtMinMaxExpression.C                         //
+//                      avtArrayComponentwiseProductExpression.C                       //
 // ************************************************************************* //
 
-#include <avtMinMaxExpression.h>
+#include <avtArrayComponentwiseProductExpression.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataArray.h>
 
 #include <ExpressionException.h>
 
 
 // ****************************************************************************
-//  Method: avtMinMaxExpression constructor
+//  Method: avtArrayComponentwiseProductExpression constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
 //      header because it causes problems for certain compilers.
 //
 //  Programmer: Hank Childs
-//  Creation:   March 13, 2006
+//  Creation:   February 5, 2004
 //
 // ****************************************************************************
 
-avtMinMaxExpression::avtMinMaxExpression()
-{
-    doMin = false;
-}
-
-
-// ****************************************************************************
-//  Method: avtMinMaxExpression destructor
-//
-//  Purpose:
-//      Defines the destructor.  Note: this should not be inlined in the header
-//      because it causes problems for certain compilers.
-//
-//  Programmer: Hank Childs
-//  Creation:   March 13, 2006
-//
-// ****************************************************************************
-
-avtMinMaxExpression::~avtMinMaxExpression()
+avtArrayComponentwiseProductExpression::avtArrayComponentwiseProductExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtMinMaxExpression::DoOperation
+//  Method: avtArrayComponentwiseProductExpression destructor
 //
 //  Purpose:
-//      Finds the minimum or maximum value.
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtArrayComponentwiseProductExpression::~avtArrayComponentwiseProductExpression()
+{
+    ;
+}
+
+
+// ****************************************************************************
+//  Method: avtArrayComponentwiseProductExpression::DoOperation
+//
+//  Purpose:
+//      Componentwise product of  two arrays into a third array.
 //
 //  Arguments:
 //      in1           The first input data array.
@@ -97,47 +98,32 @@ avtMinMaxExpression::~avtMinMaxExpression()
 //                    vectors, etc.)
 //      ntuples       The number of tuples (ie 'npoints' or 'ncells')
 //
-//  Programmer: Hank Childs
-//  Creation:   March 13, 2006
+//  Programmer: Gunther H. Weber (based on avtBinaryAddExpression by Sean Ahern)
+//  Creation:   March 2, 2015
 //
 //  Modifications:
-//
-//    Hank Childs, Mon Jan 14 18:26:58 PST 2008
-//    Add support for singleton constants.
-//
-//    Kathleen Biagas, Wed Apr 4 12:13:10 PDT 2012
-//    Change float to double.
 //
 // ****************************************************************************
 
 void
-avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
+avtArrayComponentwiseProductExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                 vtkDataArray *out, int ncomponents,int ntuples)
 {
     bool var1IsSingleton = (in1->GetNumberOfTuples() == 1);
     bool var2IsSingleton = (in2->GetNumberOfTuples() == 1);
-
     int in1ncomps = in1->GetNumberOfComponents();
     int in2ncomps = in2->GetNumberOfComponents();
     if (in1ncomps == in2ncomps)
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
+            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
             for (int j = 0 ; j < in1ncomps ; j++)
             {
-                vtkIdType tup1 = (var1IsSingleton ? 0 : i);
-                vtkIdType tup2 = (var2IsSingleton ? 0 : i);
                 double val1 = in1->GetComponent(tup1, j);
                 double val2 = in2->GetComponent(tup2, j);
-                bool val1Bigger = (val1 > val2);
-                // Circumflex (^) is the exclusive or.
-                // doMin == true  && val1Bigger == true  --> val2
-                // doMin == false && val1Bigger == true  --> val1
-                // doMin == true  && val1Bigger == false --> val1
-                // doMin == false && val1Bigger == false --> val2
-                //  --> values same, then val2, values different, then val1
-                double outval = (doMin ^ val1Bigger ? val1 : val2);
-                out->SetComponent(i, j, outval);
+                out->SetComponent(i, j, val1 * val2);
             }
         }
     }
@@ -151,15 +137,7 @@ avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             for (int j = 0 ; j < in1ncomps ; j++)
             {
                 double val1 = in1->GetComponent(tup1, j);
-                bool val1Bigger = (val1 > val2);
-                // Circumflex (^) is the exclusive or.
-                // doMin == true  && val1Bigger == true  --> val2
-                // doMin == false && val1Bigger == true  --> val1
-                // doMin == true  && val1Bigger == false --> val1
-                // doMin == false && val1Bigger == false --> val2
-                //  --> values same, then val2, values different, then val1
-                double outval = (doMin ^ val1Bigger ? val1 : val2);
-                out->SetComponent(i, j, outval);
+                out->SetComponent(i, j, val1 * val2);
             }
         }
     }
@@ -173,22 +151,69 @@ avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             for (int j = 0 ; j < in2ncomps ; j++)
             {
                 double val2 = in2->GetComponent(tup2, j);
-                bool val1Bigger = (val1 > val2);
-                // Circumflex (^) is the exclusive or.
-                // doMin == true  && val1Bigger == true  --> val2
-                // doMin == false && val1Bigger == true  --> val1
-                // doMin == true  && val1Bigger == false --> val1
-                // doMin == false && val1Bigger == false --> val2
-                //  --> values same, then val2, values different, then val1
-                double outval = (doMin ^ val1Bigger ? val1 : val2);
-                out->SetComponent(i, j, outval);
+                out->SetComponent(i, j, val1 * val2);
             }
         }
     }
     else
     {
-        EXCEPTION2(ExpressionException, outputVariableName, 
-                         "Don't know how to take minimums or "
-                         "maximums with data of differing dimensions.");
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "Don't know how to compute componentwise prodcut for arrays of differing dimensions.");
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtArrayComponentwiseProductExpression::GetVariableType
+//
+//  Purpose:
+//    Better support for array variables.  We actually return the output
+//    type to be the same as the input type (assuming they are the same,
+//    or if one has 1 compoent).
+//
+//  Note:
+//    This can't yet be pulled up into avtBinaryMathExpression because
+//    mult and div do non-elementwise operations.  If that changes,
+//    we should pull this up.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 18, 2009
+//
+// ****************************************************************************
+
+avtVarType
+avtArrayComponentwiseProductExpression::GetVariableType()
+{
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    if (varnames.size() != 2)
+        return AVT_UNKNOWN_TYPE;
+
+    if (!atts.ValidVariable(varnames[0]) ||
+        !atts.ValidVariable(varnames[1]))
+        return AVT_UNKNOWN_TYPE;
+
+    int ncomp1 = atts.GetVariableDimension(varnames[0]);
+    int ncomp2 = atts.GetVariableDimension(varnames[1]);
+    avtVarType type1 = atts.GetVariableType(varnames[0]);
+    avtVarType type2 = atts.GetVariableType(varnames[1]);
+
+    if (type1 == type2)
+    {
+        return type1;
+    }
+    else if (ncomp1 == 1)
+    {
+        return type2;
+    }
+    else if (ncomp2 == 1)
+    {
+        return type1;
+    }
+    else
+    {
+        return AVT_UNKNOWN_TYPE;
     }
 }
