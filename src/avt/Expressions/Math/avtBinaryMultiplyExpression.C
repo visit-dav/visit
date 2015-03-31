@@ -273,19 +273,14 @@ avtBinaryMultiplyExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
 int
 avtBinaryMultiplyExpression::GetNumberOfComponentsInOutput(int in1, int in2)
 {
-    if ((in1 == 3) && (in2 == 3))
-        return 1;  // We will do a dot product.
-
     if ((in1 == 9) && (in2 == 9))
         return 9;  // Matrix multiply
-
-    if ((in1 == 3) && (in2 == 9))
+    else if ((in1 == 3) && (in2 == 9))
         return 3;  // Vector x Matrix = Vector
-
-    if ((in1 == 9) && (in2 == 3))
+    else if ((in1 == 9) && (in2 == 3))
         return 3;  // Matrix x Vector = Vector
-
-    return (in1 > in2 ? in1 : in2);
+    else if (in1 == in2)
+        return 1;  // We will do a dot product
+    else
+        return (in1 > in2 ? in1 : in2);
 }
-
-

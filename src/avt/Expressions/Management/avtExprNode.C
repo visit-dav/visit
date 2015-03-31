@@ -53,6 +53,8 @@
 #include <avtArrayComposeExpression.h>
 #include <avtArrayComposeWithBinsExpression.h>
 #include <avtArrayDecomposeExpression.h>
+#include <avtArrayComponentwiseDivisionExpression.h>
+#include <avtArrayComponentwiseProductExpression.h>
 #include <avtArraySumExpression.h>
 #include <avtBinExpression.h>
 #include <avtBinaryAddExpression.h>
@@ -532,6 +534,10 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtApplyEnumerationExpression();
     if (functionName == "map")
         return new avtApplyMapExpression();
+    if (functionName == "array_componentwise_division")
+        return new avtArrayComponentwiseDivisionExpression();
+    if (functionName == "array_componentwise_product")
+        return new avtArrayComponentwiseProductExpression();
     if (functionName == "array_compose")
         return new avtArrayComposeExpression();
     if (functionName == "array_compose_with_bins")
