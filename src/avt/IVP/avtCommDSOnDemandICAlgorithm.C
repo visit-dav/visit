@@ -167,7 +167,7 @@ avtCommDSOnDemandICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
     for (int i = i1; i < nSeeds; i++)
         delete ics[i];
     
-    debug5 << "I have seeds: "<<i0<<" to "<<(i1-1)<<" of "<<nSeeds<<endl;
+    debug5 << "I have seeds: "<<i0<<" to "<<(i1-1)<<" of "<<nSeeds<<" seeds"<<endl;
     
     // Filter the seeds for proper domain inclusion and fill the activeICs list.
     avtVector endPt;

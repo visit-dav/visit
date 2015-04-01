@@ -211,7 +211,7 @@ avtSerialICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
 #endif
     }
 
-    debug1 << "I have seeds: "<<i0<<" to "<<i1<<" of "<<nSeeds<<endl;
+    debug5 << "I have seeds: "<<i0<<" to "<<(i1-1)<<" of "<<nSeeds<<" seeds"<<endl;
 }
 
 // ****************************************************************************
