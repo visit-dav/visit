@@ -98,7 +98,7 @@ class avtStateRecorderIntegralCurve;
 // ****************************************************************************
 
 class avtIntegralCurveFilter : public virtual avtPluginFilter,
-                               public avtPICSFilter
+                               public virtual avtPICSFilter
 {
   public:
     // default constructor
@@ -150,6 +150,7 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     void SetSelectionSource(std::string selectionName,
                             int stride,
                             bool random, int seed, int numPts);
+    void SetFieldDataSource();
     
     void SetDisplayGeometry(int d);
     void SetDataValue(int, const std::string &var="");
@@ -204,6 +205,9 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     void GenerateSeedPointsFromCircle(std::vector<avtVector> &pts);
     void GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
     void GenerateSeedPointsFromSelection(std::vector<avtVector> &pts);
+    void GenerateSeedPointsFromFieldData(std::vector<avtVector> &pts);
+    void GenerateSeedPointsFromFieldData(avtDataTree_p inDT);
+    void GenerateSeedPointsFromFieldData(vtkDataSet *in_ds);
 
     unsigned int GenerateAttributeFields() const;
 

@@ -367,7 +367,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
     
-    if (sourceType == PointList)
+    if (sourceType == PointList || sourceType == FieldData)
     {
         if (pointList.size() != obj.pointList.size())
             return true;
@@ -434,6 +434,14 @@ IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject 
       var = justTheVar;
     }
     
+    else if( strncmp(var.c_str(), "operators/LCS/",
+                     strlen("operators/LCS/")) == 0)
+    {
+      std::string justTheVar = var.substr(strlen("operators/LCS/"));
+
+      var = justTheVar;
+    }
+
     var += std::string(" - ") +
         std::string(typeString[atts_in->GetDataValue()]);
 

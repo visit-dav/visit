@@ -21,6 +21,7 @@
         Sphere
         Box
         Selection
+        FieldData
       </Enum>
       <Enum name="DataValue">
         Solid
