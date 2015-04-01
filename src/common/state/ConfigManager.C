@@ -45,6 +45,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #endif
+#include <clocale>
 #include <visit-config.h>
 
 // ****************************************************************************
@@ -1099,13 +1100,28 @@ ConfigManager::ReadFieldData(std::istream& in, const std::string &tagName, NodeT
 //
 // Modifications:
 //   
+//    Mark C. Miller, Tue Mar 31 18:54:53 PDT 2015
+//    Incorporate changes as per Brad's guidance to force locale to en_US
+//    when reading.
 // ****************************************************************************
 
 bool
 ConfigManager::ReadObject(std::istream& in, DataNode *parentNode)
 {
+    // Query current locale setting
+    std::string current_locale = setlocale(LC_ALL, 0);
+
+    // Force US locale.
+    setlocale(LC_ALL, "en_US");
+
+    // Read the settings.
     bool te = false;
-    return ReadObjectHelper(in, parentNode, te);
+    bool retval = ReadObjectHelper(in, parentNode, te);
+
+    // Restore previous locale.
+    setlocale(LC_ALL, current_locale.c_str());
+
+    return retval;
 }
 
 // ****************************************************************************
