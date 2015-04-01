@@ -423,21 +423,21 @@ LCSAttributes::CauchyGreenTensor_FromString(const std::string &s, LCSAttributes:
 //
 
 static const char *EigenComponent_strings[] = {
-"Smallest", "Intermediate", "Largest"
-};
+"Smallest", "Intermediate", "Largest", 
+"Combination"};
 
 std::string
 LCSAttributes::EigenComponent_ToString(LCSAttributes::EigenComponent t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 4) index = 0;
     return EigenComponent_strings[index];
 }
 
 std::string
 LCSAttributes::EigenComponent_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 4) ? 0 : t;
     return EigenComponent_strings[index];
 }
 
@@ -445,7 +445,7 @@ bool
 LCSAttributes::EigenComponent_FromString(const std::string &s, LCSAttributes::EigenComponent &val)
 {
     val = LCSAttributes::Smallest;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 4; ++i)
     {
         if(s == EigenComponent_strings[i])
         {
@@ -604,6 +604,7 @@ void LCSAttributes::Init()
     operationType = Lyapunov;
     cauchyGreenTensor = Right;
     eigenComponent = Smallest;
+    eigenWeight = 0;
     operatorType = BaseValue;
     terminationType = Time;
     terminateBySize = false;
@@ -685,6 +686,7 @@ void LCSAttributes::Copy(const LCSAttributes &obj)
     operationType = obj.operationType;
     cauchyGreenTensor = obj.cauchyGreenTensor;
     eigenComponent = obj.eigenComponent;
+    eigenWeight = obj.eigenWeight;
     operatorType = obj.operatorType;
     terminationType = obj.terminationType;
     terminateBySize = obj.terminateBySize;
@@ -914,6 +916,7 @@ LCSAttributes::operator == (const LCSAttributes &obj) const
             (operationType == obj.operationType) &&
             (cauchyGreenTensor == obj.cauchyGreenTensor) &&
             (eigenComponent == obj.eigenComponent) &&
+            (eigenWeight == obj.eigenWeight) &&
             (operatorType == obj.operatorType) &&
             (terminationType == obj.terminationType) &&
             (terminateBySize == obj.terminateBySize) &&
@@ -1120,6 +1123,7 @@ LCSAttributes::SelectAll()
     Select(ID_operationType,                     (void *)&operationType);
     Select(ID_cauchyGreenTensor,                 (void *)&cauchyGreenTensor);
     Select(ID_eigenComponent,                    (void *)&eigenComponent);
+    Select(ID_eigenWeight,                       (void *)&eigenWeight);
     Select(ID_operatorType,                      (void *)&operatorType);
     Select(ID_terminationType,                   (void *)&terminationType);
     Select(ID_terminateBySize,                   (void *)&terminateBySize);
@@ -1264,6 +1268,12 @@ LCSAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
     {
         addToParent = true;
         node->AddNode(new DataNode("eigenComponent", EigenComponent_ToString(eigenComponent)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_eigenWeight, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("eigenWeight", eigenWeight));
     }
 
     if(completeSave || !FieldsEqual(ID_operatorType, &defaultObject))
@@ -1646,7 +1656,7 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 4)
                 SetEigenComponent(EigenComponent(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1656,6 +1666,8 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
                 SetEigenComponent(value);
         }
     }
+    if((node = searchNode->GetNode("eigenWeight")) != 0)
+        SetEigenWeight(node->AsDouble());
     if((node = searchNode->GetNode("operatorType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1927,6 +1939,13 @@ LCSAttributes::SetEigenComponent(LCSAttributes::EigenComponent eigenComponent_)
 {
     eigenComponent = eigenComponent_;
     Select(ID_eigenComponent, (void *)&eigenComponent);
+}
+
+void
+LCSAttributes::SetEigenWeight(double eigenWeight_)
+{
+    eigenWeight = eigenWeight_;
+    Select(ID_eigenWeight, (void *)&eigenWeight);
 }
 
 void
@@ -2283,6 +2302,12 @@ LCSAttributes::GetEigenComponent() const
     return EigenComponent(eigenComponent);
 }
 
+double
+LCSAttributes::GetEigenWeight() const
+{
+    return eigenWeight;
+}
+
 LCSAttributes::OperatorType
 LCSAttributes::GetOperatorType() const
 {
@@ -2570,6 +2595,7 @@ LCSAttributes::GetFieldName(int index) const
     case ID_operationType:                     return "operationType";
     case ID_cauchyGreenTensor:                 return "cauchyGreenTensor";
     case ID_eigenComponent:                    return "eigenComponent";
+    case ID_eigenWeight:                       return "eigenWeight";
     case ID_operatorType:                      return "operatorType";
     case ID_terminationType:                   return "terminationType";
     case ID_terminateBySize:                   return "terminateBySize";
@@ -2643,6 +2669,7 @@ LCSAttributes::GetFieldType(int index) const
     case ID_operationType:                     return FieldType_enum;
     case ID_cauchyGreenTensor:                 return FieldType_enum;
     case ID_eigenComponent:                    return FieldType_enum;
+    case ID_eigenWeight:                       return FieldType_double;
     case ID_operatorType:                      return FieldType_enum;
     case ID_terminationType:                   return FieldType_enum;
     case ID_terminateBySize:                   return FieldType_bool;
@@ -2716,6 +2743,7 @@ LCSAttributes::GetFieldTypeName(int index) const
     case ID_operationType:                     return "enum";
     case ID_cauchyGreenTensor:                 return "enum";
     case ID_eigenComponent:                    return "enum";
+    case ID_eigenWeight:                       return "double";
     case ID_operatorType:                      return "enum";
     case ID_terminationType:                   return "enum";
     case ID_terminateBySize:                   return "bool";
@@ -2856,6 +2884,11 @@ LCSAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_eigenComponent:
         {  // new scope
         retval = (eigenComponent == obj.eigenComponent);
+        }
+        break;
+    case ID_eigenWeight:
+        {  // new scope
+        retval = (eigenWeight == obj.eigenWeight);
         }
         break;
     case ID_operatorType:

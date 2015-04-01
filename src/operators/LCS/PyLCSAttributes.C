@@ -258,7 +258,7 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
     }
 
-    const char *eigenComponent_names = "Smallest, Intermediate, Largest";
+    const char *eigenComponent_names = "Smallest, Intermediate, Largest, Combination";
     switch (atts->GetEigenComponent())
     {
       case LCSAttributes::Smallest:
@@ -273,10 +273,16 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%seigenComponent = %sLargest  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
+      case LCSAttributes::Combination:
+          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sCombination  # %s\n", prefix, prefix, eigenComponent_names);
+          str += tmpStr;
+          break;
       default:
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%seigenWeight = %g\n", prefix, atts->GetEigenWeight());
+    str += tmpStr;
     const char *operatorType_names = "BaseValue, Gradient";
     switch (atts->GetOperatorType())
     {
@@ -1007,14 +1013,14 @@ LCSAttributes_SetEigenComponent(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the eigenComponent in the object.
-    if(ival >= 0 && ival < 3)
+    if(ival >= 0 && ival < 4)
         obj->data->SetEigenComponent(LCSAttributes::EigenComponent(ival));
     else
     {
         fprintf(stderr, "An invalid eigenComponent value was given. "
-                        "Valid values are in the range of [0,2]. "
+                        "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
-                        "Smallest, Intermediate, Largest.");
+                        "Smallest, Intermediate, Largest, Combination.");
         return NULL;
     }
 
@@ -1027,6 +1033,30 @@ LCSAttributes_GetEigenComponent(PyObject *self, PyObject *args)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetEigenComponent()));
+    return retval;
+}
+
+/*static*/ PyObject *
+LCSAttributes_SetEigenWeight(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the eigenWeight in the object.
+    obj->data->SetEigenWeight(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetEigenWeight(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetEigenWeight());
     return retval;
 }
 
@@ -2019,6 +2049,8 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
     {"GetCauchyGreenTensor", LCSAttributes_GetCauchyGreenTensor, METH_VARARGS},
     {"SetEigenComponent", LCSAttributes_SetEigenComponent, METH_VARARGS},
     {"GetEigenComponent", LCSAttributes_GetEigenComponent, METH_VARARGS},
+    {"SetEigenWeight", LCSAttributes_SetEigenWeight, METH_VARARGS},
+    {"GetEigenWeight", LCSAttributes_GetEigenWeight, METH_VARARGS},
     {"SetOperatorType", LCSAttributes_SetOperatorType, METH_VARARGS},
     {"GetOperatorType", LCSAttributes_GetOperatorType, METH_VARARGS},
     {"SetTerminationType", LCSAttributes_SetTerminationType, METH_VARARGS},
@@ -2198,7 +2230,11 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LCSAttributes::Intermediate));
     if(strcmp(name, "Largest") == 0)
         return PyInt_FromLong(long(LCSAttributes::Largest));
+    if(strcmp(name, "Combination") == 0)
+        return PyInt_FromLong(long(LCSAttributes::Combination));
 
+    if(strcmp(name, "eigenWeight") == 0)
+        return LCSAttributes_GetEigenWeight(self, NULL);
     if(strcmp(name, "operatorType") == 0)
         return LCSAttributes_GetOperatorType(self, NULL);
     if(strcmp(name, "BaseValue") == 0)
@@ -2370,6 +2406,8 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LCSAttributes_SetCauchyGreenTensor(self, tuple);
     else if(strcmp(name, "eigenComponent") == 0)
         obj = LCSAttributes_SetEigenComponent(self, tuple);
+    else if(strcmp(name, "eigenWeight") == 0)
+        obj = LCSAttributes_SetEigenWeight(self, tuple);
     else if(strcmp(name, "operatorType") == 0)
         obj = LCSAttributes_SetOperatorType(self, tuple);
     else if(strcmp(name, "terminationType") == 0)

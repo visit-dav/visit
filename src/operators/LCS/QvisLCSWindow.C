@@ -448,26 +448,27 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
     // Create the cauchyGreenTensor of integration.
     cauchyGreenTensorLabel = new QLabel(tr("Tensor"), central);
-    terminationLayout->addWidget(cauchyGreenTensorLabel, 1, 0);
+    terminationLayout->addWidget(cauchyGreenTensorLabel, 0, 2);
 
     cauchyGreenTensor = new QComboBox(central);
     cauchyGreenTensor->addItem(tr("Left Cauchy Green"));
     cauchyGreenTensor->addItem(tr("Right Cauchy Green"));
     connect(cauchyGreenTensor, SIGNAL(activated(int)),
             this, SLOT(cauchyGreenTensorChanged(int)));
-    terminationLayout->addWidget(cauchyGreenTensor, 1, 1);
+    terminationLayout->addWidget(cauchyGreenTensor, 0, 3);
 
     // Create the eigenComponent of integration.
     eigenComponentLabel = new QLabel(tr("Eigen value"), central);
-    terminationLayout->addWidget(eigenComponentLabel, 1, 2);
+    terminationLayout->addWidget(eigenComponentLabel, 1, 0);
 
     eigenComponent = new QComboBox(central);
     eigenComponent->addItem(tr("Smallest"));
     eigenComponent->addItem(tr("Intermediate (3D only)"));
     eigenComponent->addItem(tr("Largest"));
+    eigenComponent->addItem(tr("Combination"));
     connect(eigenComponent, SIGNAL(activated(int)),
             this, SLOT(eigenComponentChanged(int)));
-    terminationLayout->addWidget(eigenComponent, 1, 3);
+    terminationLayout->addWidget(eigenComponent, 1, 1);
 
     // Create the operator of integrator.
     operatorType = new QComboBox(central);
@@ -479,7 +480,15 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
     clampLogValues = new QCheckBox(tr("Clamp exponent values"), central);
     connect(clampLogValues, SIGNAL(toggled(bool)), this, SLOT(clampLogValuesChanged(bool)));
-    terminationLayout->addWidget(clampLogValues, 0, 3);
+    terminationLayout->addWidget(clampLogValues, 1, 3);
+
+    // Create the eigen weight text field.
+    eigenWeightLabel = new QLabel(tr("Weight"), central);
+    eigenWeight = new QLineEdit(terminationGroup);
+    connect(eigenWeight, SIGNAL(returnPressed()), this, SLOT(eigenWeightProcessText()));
+    terminationLayout->addWidget(eigenWeightLabel, 1, 2);
+    terminationLayout->addWidget(eigenWeight, 1, 3);
+
 
     // Radio button termination type
     rb = new QRadioButton(tr("Limit maximum advection time i.e. FTLE"), terminationGroup);
@@ -903,6 +912,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               terminationTypeButtonGroup->button(2)->show();
               cauchyGreenTensorLabel->show();
               cauchyGreenTensor->show();
+              eigenComponent->removeItem(3);
               eigenComponentLabel->show();
               eigenComponent->show();
               maxSize->show();
@@ -913,8 +923,10 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               atts->SetTerminateByDistance( atts->GetTerminationType() == LCSAttributes::Distance);
               atts->SetTerminateBySize(     atts->GetTerminationType() == LCSAttributes::Size);
 
-              clampLogValues->show();
+              eigenWeightLabel->hide();
+              eigenWeight->hide();
               operatorType->hide();
+              clampLogValues->show();
 
               terminationTypeButtonGroup->blockSignals(false);
             }
@@ -923,6 +935,20 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               terminationTypeButtonGroup->button(0)->hide();
               terminationTypeButtonGroup->button(1)->hide();
               terminationTypeButtonGroup->button(2)->hide();
+
+
+              if( atts->GetOperationType() == LCSAttributes::EigenVector )
+              {
+                eigenComponent->addItem(tr("Combination"));
+                eigenWeightLabel->show();
+                eigenWeight->show();
+              }
+              else
+              {
+                eigenComponent->removeItem(3);
+                eigenWeightLabel->hide();
+                eigenWeight->hide();
+              }
 
               if( atts->GetOperationType() == LCSAttributes::EigenValue ||
                   atts->GetOperationType() == LCSAttributes::EigenVector )
@@ -962,6 +988,11 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             eigenComponent->blockSignals(true);
             eigenComponent->setCurrentIndex(int(atts->GetEigenComponent()) );
             eigenComponent->blockSignals(false);
+
+            eigenWeightLabel->setEnabled( atts->GetEigenComponent() ==
+                                          LCSAttributes::Combination );
+            eigenWeight->setEnabled( atts->GetEigenComponent() ==
+                                     LCSAttributes::Combination );
             break;
 
         case LCSAttributes::ID_operatorType:
@@ -974,6 +1005,11 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               clampLogValues->show();
             else
               clampLogValues->hide();
+            break;
+
+        case LCSAttributes::ID_eigenWeight:
+            temp.setNum(atts->GetEigenWeight());
+            eigenWeight->setText(temp);
             break;
 
         case LCSAttributes::ID_clampLogValues:
@@ -1494,6 +1530,19 @@ QvisLCSWindow::GetCurrentValues(int which_widget)
     }
 
     // Do termination
+    if(which_widget == LCSAttributes::ID_eigenWeight || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(eigenWeight, val) && 0.0 <= val && val <= 1.0)
+            atts->SetEigenWeight(val);
+        else
+        {
+            ResettingError(tr("eigen weight"),
+                DoubleToQString(atts->GetEigenWeight()));
+            atts->SetEigenWeight(atts->GetEigenWeight());
+        }
+    }
+
     if(which_widget == LCSAttributes::ID_maxSteps || doAll)
     {
         int val;
@@ -1501,7 +1550,7 @@ QvisLCSWindow::GetCurrentValues(int which_widget)
             atts->SetMaxSteps(val);
         else
         {
-            ResettingError(tr("maxsteps"),
+            ResettingError(tr("max steps"),
                 IntToQString(atts->GetMaxSteps()));
             atts->SetMaxSteps(atts->GetMaxSteps());
         }
@@ -1513,7 +1562,7 @@ QvisLCSWindow::GetCurrentValues(int which_widget)
             atts->SetTermTime(val);
         else
         {
-            ResettingError(tr("maxtime"),
+            ResettingError(tr("max time"),
                 DoubleToQString(atts->GetTermTime()));
             atts->SetTermTime(atts->GetTermTime());
         }
@@ -1525,7 +1574,7 @@ QvisLCSWindow::GetCurrentValues(int which_widget)
             atts->SetTermDistance(val);
         else
         {
-            ResettingError(tr("maxdistance"),
+            ResettingError(tr("max distance"),
                 DoubleToQString(atts->GetTermDistance()));
             atts->SetTermDistance(atts->GetTermDistance());
         }
@@ -1537,7 +1586,7 @@ QvisLCSWindow::GetCurrentValues(int which_widget)
             atts->SetTermSize(val);
         else
         {
-            ResettingError(tr("maxsize"),
+            ResettingError(tr("max size"),
                 DoubleToQString(atts->GetTermSize()));
             atts->SetTermSize(atts->GetTermSize());
         }
@@ -1854,6 +1903,14 @@ QvisLCSWindow::operatorTypeChanged(int val)
         Apply();
     }
 }   
+
+void
+QvisLCSWindow::eigenWeightProcessText()
+{
+    GetCurrentValues(LCSAttributes::ID_eigenWeight);
+    Apply();
+}
+
 
 void
 QvisLCSWindow::clampLogValuesChanged(bool val)

@@ -131,7 +131,8 @@ public:
     {
         Smallest,
         Intermediate,
-        Largest
+        Largest,
+        Combination
     };
     enum OperatorType
     {
@@ -194,6 +195,7 @@ public:
     void SetOperationType(OperationType operationType_);
     void SetCauchyGreenTensor(CauchyGreenTensor cauchyGreenTensor_);
     void SetEigenComponent(EigenComponent eigenComponent_);
+    void SetEigenWeight(double eigenWeight_);
     void SetOperatorType(OperatorType operatorType_);
     void SetTerminationType(TerminationType terminationType_);
     void SetTerminateBySize(bool terminateBySize_);
@@ -248,6 +250,7 @@ public:
     OperationType GetOperationType() const;
     CauchyGreenTensor GetCauchyGreenTensor() const;
     EigenComponent GetEigenComponent() const;
+    double       GetEigenWeight() const;
     OperatorType GetOperatorType() const;
     TerminationType GetTerminationType() const;
     bool         GetTerminateBySize() const;
@@ -386,6 +389,7 @@ public:
         ID_operationType,
         ID_cauchyGreenTensor,
         ID_eigenComponent,
+        ID_eigenWeight,
         ID_operatorType,
         ID_terminationType,
         ID_terminateBySize,
@@ -439,6 +443,7 @@ private:
     int    operationType;
     int    cauchyGreenTensor;
     int    eigenComponent;
+    double eigenWeight;
     int    operatorType;
     int    terminationType;
     bool   terminateBySize;
@@ -480,6 +485,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LCSATTRIBUTES_TMFS "iIiDiDiidiiiiiibdbdbddbddiddidDibiiiibbddibbbbbbd"
+#define LCSATTRIBUTES_TMFS "iIiDiDiidiiiidiibdbdbddbddiddidDibiiiibbddibbbbbbd"
 
 #endif
