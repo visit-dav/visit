@@ -70,7 +70,7 @@
 // ****************************************************************************
 
 class avtPoincareFilter : public virtual avtPluginFilter,
-                          public avtPICSFilter
+                          public virtual avtPICSFilter
 {
   public:
     // default constructor
