@@ -69,7 +69,8 @@ public:
         Plane,
         Sphere,
         Box,
-        Selection
+        Selection,
+        FieldData
     };
     enum DataValue
     {

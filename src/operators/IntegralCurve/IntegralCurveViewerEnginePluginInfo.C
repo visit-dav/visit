@@ -234,6 +234,14 @@ IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject 
       var = justTheVar;
     }
     
+    else if( strncmp(var.c_str(), "operators/LCS/",
+                     strlen("operators/LCS/")) == 0)
+    {
+      std::string justTheVar = var.substr(strlen("operators/LCS/"));
+
+      var = justTheVar;
+    }
+    
     var += std::string(" - ") +
         std::string(typeString[atts_in->GetDataValue()]);
 
@@ -263,4 +271,3 @@ IntegralCurveViewerEnginePluginInfo::GetMenuName() const
 {
     return "IntegralCurve";
 }
-

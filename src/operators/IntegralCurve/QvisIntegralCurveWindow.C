@@ -296,6 +296,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sourceType->addItem(tr("Sphere"));
     sourceType->addItem(tr("Box"));
     sourceType->addItem(tr("Selection"));
+    sourceType->addItem(tr("Field Data"));
     connect(sourceType, SIGNAL(activated(int)),
             this, SLOT(sourceTypeChanged(int)));
     sourceLayout->addWidget(sourceType, 0, 1, 1, 2);
@@ -2589,7 +2590,6 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
     }
 }
 
-
 void
 QvisIntegralCurveWindow::sourceTypeChanged(int val)
 {
@@ -2597,6 +2597,29 @@ QvisIntegralCurveWindow::sourceTypeChanged(int val)
     {
         atts->SetSourceType(IntegralCurveAttributes::SourceType(val));
         Apply();
+
+        // The field data can contain seed points and wil stuff them
+        // into the pint list so teh user can see the points so when
+        // ever switching to the point list do an update.
+        if(val == IntegralCurveAttributes::PointList )
+        {
+            std::vector<double> points = atts->GetPointList();
+          
+            pointList->clear();
+            for (size_t i = 0; i < points.size(); i+= 3)
+            {
+                fprintf(stderr, "%lf %lf %lf\n",
+                        points[i], points[i+1], points[i+2]);
+
+                char tmp[256];
+                sprintf(tmp, "%lf %lf %lf",
+                        points[i], points[i+1], points[i+2]);
+                QString str = tmp;
+                QListWidgetItem *item = new QListWidgetItem(str, pointList);
+                item->setFlags(item->flags() | Qt::ItemIsEditable);
+                pointList->setCurrentItem(item);
+            }
+        }
     }
 }
 

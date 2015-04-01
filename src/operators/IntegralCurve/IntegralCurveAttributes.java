@@ -72,6 +72,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public final static int SOURCETYPE_SPHERE = 5;
     public final static int SOURCETYPE_BOX = 6;
     public final static int SOURCETYPE_SELECTION = 7;
+    public final static int SOURCETYPE_FIELDDATA = 8;
 
     public final static int DATAVALUE_SOLID = 0;
     public final static int DATAVALUE_SEEDPOINTID = 1;
@@ -1514,6 +1515,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             str = str + "SOURCETYPE_BOX";
         if(sourceType == SOURCETYPE_SELECTION)
             str = str + "SOURCETYPE_SELECTION";
+        if(sourceType == SOURCETYPE_FIELDDATA)
+            str = str + "SOURCETYPE_FIELDDATA";
         str = str + "\n";
         str = str + doubleArrayToString("pointSource", pointSource, indent) + "\n";
         str = str + doubleArrayToString("lineStart", lineStart, indent) + "\n";

@@ -53,20 +53,21 @@
 static const char *SourceType_strings[] = {
 "Point", "PointList", "Line_", 
 "Circle", "Plane", "Sphere", 
-"Box", "Selection"};
+"Box", "Selection", "FieldData"
+};
 
 std::string
 IntegralCurveAttributes::SourceType_ToString(IntegralCurveAttributes::SourceType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 8) index = 0;
+    if(index < 0 || index >= 9) index = 0;
     return SourceType_strings[index];
 }
 
 std::string
 IntegralCurveAttributes::SourceType_ToString(int t)
 {
-    int index = (t < 0 || t >= 8) ? 0 : t;
+    int index = (t < 0 || t >= 9) ? 0 : t;
     return SourceType_strings[index];
 }
 
@@ -74,7 +75,7 @@ bool
 IntegralCurveAttributes::SourceType_FromString(const std::string &s, IntegralCurveAttributes::SourceType &val)
 {
     val = IntegralCurveAttributes::Point;
-    for(int i = 0; i < 8; ++i)
+    for(int i = 0; i < 9; ++i)
     {
         if(s == SourceType_strings[i])
         {
@@ -1714,7 +1715,7 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 8)
+            if(ival >= 0 && ival < 9)
                 SetSourceType(SourceType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -3898,7 +3899,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
     
-    if (sourceType == PointList)
+    if (sourceType == PointList || sourceType == FieldData)
     {
         if (pointList.size() != obj.pointList.size())
             return true;

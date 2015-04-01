@@ -77,7 +77,7 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
     char tmpStr[1000];
 
     const char *sourceType_names = "Point, PointList, Line_, Circle, Plane, "
-        "Sphere, Box, Selection";
+        "Sphere, Box, Selection, FieldData";
     switch (atts->GetSourceType())
     {
       case IntegralCurveAttributes::Point:
@@ -110,6 +110,10 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           break;
       case IntegralCurveAttributes::Selection:
           SNPRINTF(tmpStr, 1000, "%ssourceType = %sSelection  # %s\n", prefix, prefix, sourceType_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::FieldData:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sFieldData  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       default:
@@ -689,15 +693,16 @@ IntegralCurveAttributes_SetSourceType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the sourceType in the object.
-    if(ival >= 0 && ival < 8)
+    if(ival >= 0 && ival < 9)
         obj->data->SetSourceType(IntegralCurveAttributes::SourceType(ival));
     else
     {
         fprintf(stderr, "An invalid sourceType value was given. "
-                        "Valid values are in the range of [0,7]. "
+                        "Valid values are in the range of [0,8]. "
                         "You can also use the following names: "
                         "Point, PointList, Line_, Circle, Plane, "
-                        "Sphere, Box, Selection.");
+                        "Sphere, Box, Selection, FieldData"
+                        ".");
         return NULL;
     }
 
@@ -2859,6 +2864,8 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(IntegralCurveAttributes::Box));
     if(strcmp(name, "Selection") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Selection));
+    if(strcmp(name, "FieldData") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::FieldData));
 
     if(strcmp(name, "pointSource") == 0)
         return IntegralCurveAttributes_GetPointSource(self, NULL);

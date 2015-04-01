@@ -45,8 +45,9 @@
 #include <vtkSphereSource.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkMath.h>
+#include <vtkFieldData.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyLine.h>
@@ -105,7 +106,7 @@ CreateVTKVertex(double p[3], double val,
     pd->Allocate(1);
     pd->InsertNextCell(VTK_VERTEX, 1, ids);
 
-    vtkFloatArray *arr = vtkFloatArray::New();
+    vtkDoubleArray *arr = vtkDoubleArray::New();
     arr->SetName("colorVar");
     arr->SetNumberOfTuples(1);
     arr->SetTuple1(0, val);
@@ -116,7 +117,7 @@ CreateVTKVertex(double p[3], double val,
     // secondary scalars
     for( unsigned int i=0; i<secondaryVariables.size(); ++i )
     {
-        vtkFloatArray *secondary = vtkFloatArray::New();
+        vtkDoubleArray *secondary = vtkDoubleArray::New();
         secondary->SetName(secondaryVariables[i].c_str());
         secondary->SetNumberOfTuples(1);
         secondary->SetTuple1(0, secondaryVals[i]);
@@ -425,6 +426,16 @@ avtIntegralCurveFilter::ModifyContract(avtContract_p in_contract)
         out_dr = new avtDataRequest(in_dr, justTheVar.c_str());
     }
 
+    if( strncmp(var.c_str(), "operators/LCS/",
+                strlen("operators/LCS/")) == 0)
+    {
+        std::string justTheVar = var.substr(strlen("operators/LCS/"));
+
+        outVarName = justTheVar;
+
+        out_dr = new avtDataRequest(in_dr, justTheVar.c_str());
+    }
+
     else if (strcmp(in_dr->GetVariable(), "colorVar") == 0 ||
              secondaryVariables.size() )
     {
@@ -433,7 +444,9 @@ avtIntegralCurveFilter::ModifyContract(avtContract_p in_contract)
         out_dr = new avtDataRequest(in_dr, in_dr->GetOriginalVariable());
     }
     else
+    {
         out_dr = new avtDataRequest(in_dr);
+    }
 
     if (dataValue == IntegralCurveAttributes::Variable)
         out_dr->AddSecondaryVariable(dataVariable.c_str());
@@ -516,7 +529,7 @@ avtIntegralCurveFilter::UpdateDataObjectInfo(void)
 
     out_atts.SetTopologicalDimension(1);
 
-    avtPluginFilter::UpdateDataObjectInfo();
+//    avtPluginFilter::UpdateDataObjectInfo();
     avtPICSFilter::UpdateDataObjectInfo();
 
     out_atts.AddFilterMetaData("IntegralCurve");
@@ -602,9 +615,13 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
                            atts.GetRandomSamples(), atts.GetRandomSeed(),
                            atts.GetNumberOfRandomSamples());
         break;
+      case IntegralCurveAttributes::FieldData:
+        SetFieldDataSource();
+        break;
     }
 
-    int CMFEType = (atts.GetPathlinesCMFE() == IntegralCurveAttributes::CONN_CMFE
+    int CMFEType = (atts.GetPathlinesCMFE() ==
+                    IntegralCurveAttributes::CONN_CMFE
                     ? PICS_CONN_CMFE : PICS_POS_CMFE);
 
     SetPathlines(atts.GetPathlines(),
@@ -692,6 +709,7 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
 void
 avtIntegralCurveFilter::PreExecute(void)
 {
+    SetActiveVariable(outVarName.c_str());
     avtPICSFilter::PreExecute();
 }
 
@@ -976,7 +994,7 @@ avtIntegralCurveFilter::CreateIntegralCurve( const avtIVPSolver* model,
             t_end = maxTime;
     }
 
-    avtStateRecorderIntegralCurve *rv = 
+    avtStreamlineIC *rv = 
         new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, t_end,
                             attr, model, dir, t_start, p_start, v_start, ID);
 
@@ -1344,11 +1362,23 @@ avtIntegralCurveFilter::SetPointListSource(const std::vector<double> &ptList)
 }
 
 
+// ****************************************************************************
+// Method: avtIntegralCurveFilter::SetSelectionSource
+//
+// Purpose: 
+//   Sets the integral curve point list source.
+//
+// Arguments:
+//   ptlist : A list of points
+//
+// Programmer: Dave Pugmire
+// Creation:   Fri Apr  3 09:18:03 EDT 2009
+//
+
 void
 avtIntegralCurveFilter::SetSelectionSource(std::string nm,
-                                        int stride,
-                                        bool random, int seed, int numPts)
-
+                                           int stride,
+                                           bool random, int seed, int numPts)
 {
     sourceType = IntegralCurveAttributes::Selection;
     sourceSelection = nm;
@@ -1357,6 +1387,25 @@ avtIntegralCurveFilter::SetSelectionSource(std::string nm,
     randomSamples = random;
     randomSeed = seed;
 }
+
+
+// ****************************************************************************
+// Method: avtIntegralCurveFilter::SetFieldDataSource
+//
+// Purpose: 
+//   Sets the integral curve point list source.
+//
+// Programmer: Allen Sanderson
+// Creation:   30 March 2015
+//
+
+void
+avtIntegralCurveFilter::SetFieldDataSource()
+
+{
+    sourceType = IntegralCurveAttributes::FieldData;
+}
+
 
 // ****************************************************************************
 // Method: avtIntegralCurveFilter::SeedInfoString
@@ -1415,7 +1464,8 @@ avtIntegralCurveFilter::SeedInfoString() const
                 vectors[0].x, vectors[0].y, vectors[0].z,
                 sampleDistance[0],
                 sampleDensity[0], sampleDensity[1]);
-    else if (sourceType == IntegralCurveAttributes::PointList)
+    else if (sourceType == IntegralCurveAttributes::PointList ||
+             sourceType == IntegralCurveAttributes::FieldData)
         strcpy(buff, "Point list [points not printed]");
     else
         sprintf(buff, "%s", "UNKNOWN");
@@ -1492,6 +1542,8 @@ avtIntegralCurveFilter::GetInitialLocations(void)
         GenerateSeedPointsFromPointList(seedPts);
     else if (sourceType == IntegralCurveAttributes::Selection)
         GenerateSeedPointsFromSelection(seedPts);
+    else if (sourceType == IntegralCurveAttributes::FieldData)
+      GenerateSeedPointsFromFieldData(seedPts);
 
     //Check for 2D input.
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
@@ -2014,6 +2066,7 @@ avtIntegralCurveFilter::GenerateSeedPointsFromBox(std::vector<avtVector> &pts)
     }
 }
 
+
 // ****************************************************************************
 //  Method: avtIntegralCurveFilter::GenerateSeedPointsFromPointList
 //
@@ -2048,6 +2101,20 @@ avtIntegralCurveFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtIntegralCurveFilter::GenerateSeedPointsFromSelection
+//
+//  Purpose:
+//      
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+//  Modifications:
+//
+// ****************************************************************************
+
 void
 avtIntegralCurveFilter::GenerateSeedPointsFromSelection(std::vector<avtVector> &pts)
 {
@@ -2071,6 +2138,162 @@ avtIntegralCurveFilter::GenerateSeedPointsFromSelection(std::vector<avtVector> &
         for (size_t i = 0 ; i < npts ; i+= sampleDensity[0])
             pts.push_back(allPts[i]);
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtIntegralCurveFilter::GenerateSeedPointsFromFieldData
+//
+//  Purpose: Gets the seeds point from the field data
+//      
+//
+//  Programmer: Allen Sanderson
+//  Creation:   March 30, 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(std::vector<avtVector> &pts)
+{
+    std::vector<double> tmpListOfPoints = listOfPoints;
+
+    // Use the listOfPoint for storage.
+    listOfPoints.clear();
+
+    // Get the seeds from the daa tree.
+    GenerateSeedPointsFromFieldData( GetInputDataTree() );
+
+    // Set the attributes - but how to them to update the gui.
+    if ( listOfPoints.size() )
+      atts.SetPointList( listOfPoints );
+    else
+      EXCEPTION1(VisItException,
+                 "The data set does not contain any seed points.");
+
+    // Check for a recalculation
+    if (listOfPoints.size() != tmpListOfPoints.size())
+      needsRecalculation = true;
+    else
+      for (size_t i = 0 ; i < tmpListOfPoints.size() ; i++)
+        if (listOfPoints[i] != tmpListOfPoints[i])
+          needsRecalculation = true;
+
+    GenerateSeedPointsFromPointList(pts);
+}
+
+
+// ****************************************************************************
+//  Method: avtIntegralCurveFilter::GenerateSeedPointsFromFieldData
+//
+//  Purpose: Gets the seeds point from the field data by looping through
+//           the data tree.
+//      
+//
+//  Programmer: Allen Sanderson
+//  Creation:   March 30, 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(avtDataTree_p inDT)
+{
+    if (*inDT == NULL)
+        return;
+
+    int nc = inDT->GetNChildren();
+
+    if (nc < 0 && !inDT->HasData())
+    {
+        return;
+    }
+
+    if (nc == 0)
+    {
+        //
+        // there is only one dataset to process
+        //
+        vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
+
+        GenerateSeedPointsFromFieldData(in_ds);
+    }
+    else
+    {
+        //
+        // there is more than one input dataset to process
+        // and we need an output datatree for each
+        //
+        for (int j = 0; j < nc; j++)
+        {
+            if (inDT->ChildIsPresent(j))
+            {
+                GenerateSeedPointsFromFieldData(inDT->GetChild(j));
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtIntegralCurveFilter::GenerateSeedPointsFromFieldData
+//
+//  Purpose: Gets the seeds point from the field data.
+//      
+//
+//  Programmer: Allen Sanderson
+//  Creation:   March 30, 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(vtkDataSet *in_ds)
+{
+  vtkFieldData *fieldData = in_ds->GetFieldData();
+
+  if ( fieldData == 0 )
+  {
+    avtCallback::IssueWarning("The data set does not contain any field data "
+                              "so seed points can not be located.");
+
+    return;
+  }
+
+  for( int i=0; i<fieldData->GetNumberOfArrays (); ++i )
+  {  
+    vtkDataArray *seedPts = (vtkDataArray *) (fieldData->GetAbstractArray(i));
+
+    if( std::string( seedPts->GetName() ).find("Seed Points") == 0 )
+    {
+      size_t nTuples = seedPts->GetNumberOfTuples();
+
+      if ( nTuples == 0 )
+      {
+        avtCallback::IssueWarning("The field data contains a seed point array "
+                                  "but it does not contain any seed points.");
+
+        continue;
+      }
+
+      int totalSeeds = listOfPoints.size() + nTuples;
+      listOfPoints.resize( totalSeeds * 3 );
+      
+      // Extract all of the seed points.                        
+      for (size_t i = 0, j = 0 ; i < nTuples ; i++, j+=3)
+      {
+        double *seedPt = seedPts->GetTuple3( i );
+        
+        // Save the points in the point list so the user can see them
+        listOfPoints[j  ] = seedPt[0];
+        listOfPoints[j+1] = seedPt[1];
+        listOfPoints[j+2] = seedPt[2];
+      }
+    }
+  }
 }
 
 
@@ -2293,11 +2516,11 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     //Make a polydata.
     vtkPoints     *points   = vtkPoints::New();
     vtkCellArray  *lines    = vtkCellArray::New();
-    vtkFloatArray *scalars  = vtkFloatArray::New();
-    vtkFloatArray *tangents = vtkFloatArray::New();
-    vtkFloatArray *thetas   = NULL;
+    vtkDoubleArray *scalars  = vtkDoubleArray::New();
+    vtkDoubleArray *tangents = vtkDoubleArray::New();
+    vtkDoubleArray *thetas   = NULL;
 
-    std::vector< vtkFloatArray * > secondarys;
+    std::vector< vtkDoubleArray * > secondarys;
     secondarys.resize(secondaryVariables.size());
 
     lines->Allocate(numICs);
@@ -2319,7 +2542,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     // theta scalars
     if(displayGeometry == IntegralCurveAttributes::Ribbons)
     {
-        thetas = vtkFloatArray::New();
+        thetas = vtkDoubleArray::New();
         thetas->Allocate(numPts);
         thetas->SetName(thetaArrayName.c_str());
         pd->GetPointData()->AddArray(thetas);
@@ -2328,7 +2551,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     // secondary scalars
     for( unsigned int i=0; i<secondaryVariables.size(); ++i )
     {
-        secondarys[i] = vtkFloatArray::New();
+        secondarys[i] = vtkDoubleArray::New();
         secondarys[i]->Allocate(numPts);
         secondarys[i]->SetName(secondaryVariables[i].c_str());
         pd->GetPointData()->AddArray(secondarys[i]);
