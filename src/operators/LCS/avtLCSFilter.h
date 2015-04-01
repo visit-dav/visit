@@ -68,7 +68,7 @@ class vtkDataSet;
 // ****************************************************************************
 
 class avtLCSFilter : public virtual avtPluginFilter, 
-                      public virtual avtPICSFilter
+                     public virtual avtPICSFilter
 {
   public:
     // default constructor
@@ -117,6 +117,7 @@ class avtLCSFilter : public virtual avtPluginFilter,
     virtual avtContract_p   ModifyContract(avtContract_p);
 
     virtual void  PreExecute(void);
+    virtual void  PostExecute(void);
     virtual void  Execute(void);
     virtual bool  ContinueExecute();
 
@@ -151,11 +152,11 @@ protected:
                                   vtkDataArray* result );
 
     void ComputeEigenValues( vtkDataArray* jacobian[3], 
-                              vtkDataArray* result );
+                             vtkDataArray* result );
 
     void ComputeEigenVectors( vtkDataArray* jacobian[3], 
-                              vtkDataArray* result,
-                              vtkDataArray* secondary );
+                              vtkDataArray* secondary,
+                              vtkDataArray* result );
 
     void ComputeLeftCauchyGreenTensor2D(double **j);
     void ComputeLeftCauchyGreenTensor3D(double **j);
@@ -167,6 +168,8 @@ protected:
     int Jacobi2D(double **j, double *w, double **v);
     int Jacobi3D(double **a, double *w);
   
+    void GetSeedPoints( vtkDataSet *in_ds, bool getMax );
+
     // Iterative cacluation methods for FSLE, and similar methods
     bool RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics );
     bool NativeMeshIterativeCalc( std::vector<avtIntegralCurve*> &ics );
@@ -240,11 +243,11 @@ protected:
     int             global_resolution[3];
     int             timeState;
 
-    int cgTensor;
-    int eigenComponent;
+    LCSAttributes::CauchyGreenTensor cgTensor;
+    LCSAttributes::EigenComponent eigenComponent;
 
     int nDim;
-    int auxIdx;
+    LCSAttributes::AuxiliaryGrid auxIdx;
     int nAuxPts;
     double auxSpacing;
 
@@ -257,14 +260,16 @@ protected:
     bool     doSize;
     double   maxSize;
 
-    double    minSizeValue, maxSizeValue;
+    double   minSizeValue, maxSizeValue;
 
-    bool      issueWarningForAdvection;
-    bool      issueWarningForBoundary;
-    bool      issueWarningForMaxStepsTermination;
-    bool      issueWarningForStiffness;
-    bool      issueWarningForCriticalPoints;
-    double    criticalPointThreshold;
+    bool     clampLogValues;
+
+    bool     issueWarningForAdvection;
+    bool     issueWarningForBoundary;
+    bool     issueWarningForMaxStepsTermination;
+    bool     issueWarningForStiffness;
+    bool     issueWarningForCriticalPoints;
+    double   criticalPointThreshold;
 
     avtVector seedVelocity;
 

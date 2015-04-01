@@ -3,9 +3,11 @@
     <Attribute name="LCSAttributes" purpose="Attributes for LCS" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LCSAttributes.code">
     <LIBS components="ESer">
       avtivp_ser
+      vtkImagingGeneral
     </LIBS>
     <LIBS components="EPar">
       avtivp_par
+      vtkImagingGeneral
     </LIBS>
       <Enum name="SourceType">
         NativeMesh
@@ -67,7 +69,8 @@
       <Enum name="EigenComponent">
         Smallest
         Intermediate
-        Largest     
+        Largest
+        Combination
       </Enum>
       <Enum name="OperatorType">
         BaseValue
@@ -125,6 +128,9 @@
         Right
       </Field>
       <Field name="eigenComponent" label="Eigen component" type="enum" subtype="EigenComponent">
+        Smallest
+      </Field>
+      <Field name="eigenWeight" label="Weight" type="double" enabler="eigenComponent:Combination">
         Smallest
       </Field>
       <Field name="operatorType" label="Operator type" type="enum" subtype="OperatorType">

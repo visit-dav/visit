@@ -70,7 +70,9 @@
 #include <vtkStructuredGrid.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
-#include <vtkStreamer.h>
+#include <vtkImageReslice.h>
+#include <vtkMatrix4x4.h>
+#include <vtkImageGaussianSmooth.h>
 
 #include <iostream>
 #include <limits>
@@ -78,6 +80,22 @@
 
 //#define PID (int) (0.31415*(double)nTuples)
 #define PID (int) (6305)
+
+template <class T1, class T2, class Pred = std::greater<T2> >
+struct sort_pair_max_second {
+    bool operator()(const std::pair<T1,T2>&left, const std::pair<T1,T2>&right) {
+        Pred p;
+        return p(left.second, right.second);
+    }
+};
+
+template <class T1, class T2, class Pred = std::less<T2> >
+struct sort_pair_min_second {
+    bool operator()(const std::pair<T1,T2>&left, const std::pair<T1,T2>&right) {
+        Pred p;
+        return p(left.second, right.second);
+    }
+};
 
 // ****************************************************************************
 //  Method: avtLCSFilter constructor
@@ -114,7 +132,7 @@ avtLCSFilter::avtLCSFilter() : seedVelocity(0,0,0)
     relTol = 1e-7;
 
     nDim = 3;
-    auxIdx = 0;
+    auxIdx = LCSAttributes::None;
     nAuxPts = 1;
     auxSpacing = 0;
 
@@ -122,10 +140,11 @@ avtLCSFilter::avtLCSFilter() : seedVelocity(0,0,0)
     fsle_dt = 0;
     fsle_ds = 0;
 
-    cgTensor = 1;
+    cgTensor = LCSAttributes::Right;
+    eigenComponent = LCSAttributes::Smallest;
 
-    minSizeValue = std::numeric_limits<double>::max();
-    maxSizeValue = std::numeric_limits<double>::min();
+    minSizeValue =  std::numeric_limits<double>::max();
+    maxSizeValue = -std::numeric_limits<double>::max();
 }
 
 
@@ -189,37 +208,41 @@ avtLCSFilter::SetAtts(const AttributeGroup *a)
       atts.ChangesRequireRecalculation(*(const LCSAttributes*)a);
 
     eigenComponent = atts.GetEigenComponent();
+    clampLogValues = atts.GetClampLogValues();
+
+    auxIdx = atts.GetAuxiliaryGrid();
 
     if( atts.GetOperationType() == LCSAttributes::IntegrationTime ||
         atts.GetOperationType() == LCSAttributes::ArcLength ||
         atts.GetOperationType() == LCSAttributes::AverageDistanceFromSeed )
     {
       nDim = 3;
-      auxIdx = 0;
       nAuxPts = 1;
       auxSpacing = 0;
 
-      avtCallback::IssueWarning("Requesting an auxiliary grid when none is needed. Ignoring request.");
+      if( auxIdx != LCSAttributes::None )
+      {
+        avtCallback::IssueWarning("Requesting an auxiliary grid when none is needed. Ignoring request.");
+
+        auxIdx = LCSAttributes::None;
+      }
     }
     
-    else if( atts.GetAuxiliaryGrid() == LCSAttributes::None )
+    else if( auxIdx == LCSAttributes::None )
     {
       nDim = 3;
-      auxIdx = 0;
       nAuxPts = 1;
       auxSpacing = 0;
     }
-    else if( atts.GetAuxiliaryGrid() == LCSAttributes::TwoDim )
+    else if( auxIdx == LCSAttributes::TwoDim )
     {
-      nDim = 3;
-      auxIdx = 1;
+      nDim = 2;
       nAuxPts = 4;
       auxSpacing = atts.GetAuxiliaryGridSpacing();
     }
-    else if( atts.GetAuxiliaryGrid() == LCSAttributes::ThreeDim )
+    else if( auxIdx == LCSAttributes::ThreeDim )
     {
       nDim = 3;
-      auxIdx = 2;
       nAuxPts = 6;
       auxSpacing = atts.GetAuxiliaryGridSpacing();
     }
@@ -490,12 +513,14 @@ avtLCSFilter::ModifyContract(avtContract_p in_contract)
 //    in_contract->SetOnDemandStreaming(false);
 //    in_contract->GetDataRequest();
     in_dr->SetUsesAllDomains(true);
+
     if( strncmp(var.c_str(), "operators/LCS/", strlen("operators/LCS/")) == 0)
     {
         std::string justTheVar = var.substr(strlen("operators/LCS/"));
 
         outVarName = justTheVar;
-        avtDataRequest_p out_dr = new avtDataRequest(in_dr,justTheVar.c_str());
+
+        avtDataRequest_p out_dr = new avtDataRequest(in_dr, justTheVar.c_str());
         //out_dr->SetDesiredGhostDataType(GHOST_NODE_DATA);
         //out_dr->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
@@ -583,10 +608,11 @@ avtLCSFilter::UpdateDataObjectInfo(void)
 //
 // ****************************************************************************
 
-// void 
-// avtLCSFilter::PostExecute(void)
-// {
-// }
+void 
+avtLCSFilter::PostExecute(void)
+{
+    avtPICSFilter::PostExecute();
+}
 
 // ****************************************************************************
 //  Method: avtLCSFilter::PreExecute
@@ -781,6 +807,7 @@ avtLCSFilter::ContinueExecute()
 
     return false;
 }
+
 
 // ****************************************************************************
 //  Method: avtLCSFilter::CreateIntegralCurveOutput
@@ -1025,8 +1052,8 @@ void avtLCSFilter::NativeMeshSingleCalc(std::vector<avtIntegralCurve*> &ics)
     //or do jacobian then accumulate?
     //picking the first.
 
-    double minv   = std::numeric_limits<double>::max();
-    double maxv   = std::numeric_limits<double>::min();
+    double minv   =  std::numeric_limits<double>::max();
+    double maxv   = -std::numeric_limits<double>::max();
     int    offset = 0;
 
     avtDataTree_p outTree =
@@ -1320,6 +1347,17 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
                 dz = 0;
 
               jacobian[i]->SetTuple3(j, dx, dy, dz);
+
+              // ARS FIX ME - what does this do?
+              if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+              {
+                double *newvals = new double[nTuples*nAuxPts*3];
+                double *origvals = (double *) jacobian[i]->GetVoidPointer(0);
+                SumDoubleArrayAcrossAllProcessors(origvals, newvals, nTuples*nAuxPts*3);
+                // copy newvals back into origvals
+                memcpy(origvals, newvals, nTuples*sizeof(double));
+                delete [] newvals;
+              }
             }
           }
           // For a 2D auxiliary grid just zero out the z grid.
@@ -1376,7 +1414,7 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
       // positive or both positive and negative.
       double baseValue;
       
-      if (atts.GetClampLogValues() == true )
+      if (clampLogValues == true )
         baseValue = 1.0;
       else
         baseValue = std::numeric_limits<double>::epsilon();
@@ -1483,10 +1521,6 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
 void
 avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 {
-    int    maxSteps = std::numeric_limits<int>::min();
-    double maxTime = std::numeric_limits<double>::min();
-    double maxLength = std::numeric_limits<double>::min();
-
     //variable name.
     std::string var = outVarRoot + outVarName;
 
@@ -1502,17 +1536,11 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
     intVector indices(nTuples*nAuxPts);
     doubleVector points(nTuples*nAuxPts*3);
     doubleVector times(nTuples*nAuxPts);
-    doubleVector lengths(nTuples*nAuxPts);
 
     for(size_t i=0, j=0; i<ics.size(); ++i, j+=3)
     {
         indices[i] = ics[i]->id;
-        times[i] = ((avtLCSIC*)ics[i])->GetTime();
-        lengths[i] = ((avtLCSIC*)ics[i])->GetArcLength();
-
-        maxSteps  = std::max( ((avtLCSIC*)ics[i])->GetNumSteps(), maxSteps);
-        maxTime   = std::max( ((avtLCSIC*)ics[i])->GetTime(), maxTime);
-        maxLength = std::max( ((avtLCSIC*)ics[i])->GetArcLength(), maxLength);
+        times[i]   = ((avtLCSIC*)ics[i])->GetTime();
 
         if( atts.GetOperationType() == LCSAttributes::EigenValue ||
             atts.GetOperationType() == LCSAttributes::EigenVector ||
@@ -1543,9 +1571,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
     double* all_times = 0;
     int *time_counts = 0;
 
-    double* all_lengths = 0;
-    int *length_counts = 0;
-
     double* all_points = 0;
     int *point_counts = 0;
 
@@ -1556,9 +1581,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 
     CollectDoubleArraysOnRootProc(all_times, time_counts,
                                   &times.front(), (int)times.size());
-
-    CollectDoubleArraysOnRootProc(all_lengths, time_counts,
-                                  &lengths.front(), (int)lengths.size());
 
     CollectDoubleArraysOnRootProc(all_points, point_counts,
                                   &points.front(), (int)points.size());
@@ -1638,7 +1660,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
     
         //calculate jacobian in parts (x,y,z).
         std::vector<double> remapTimes(nTuples*nAuxPts);
-        std::vector<double> remapLengths(nTuples*nAuxPts);
         std::vector<avtVector> remapPoints(nTuples*nAuxPts);
 
         //update remapPoints with new value bounds from integral curves.
@@ -1664,7 +1685,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
             if(index < nTuples*nAuxPts)
             {
               remapTimes[index] = all_times[j];
-              remapLengths[index] = all_lengths[j];
               remapPoints[index].set( all_points[k+0],
                                       all_points[k+1],
                                       all_points[k+2]);
@@ -1731,13 +1751,45 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
             }
           }
 
-          // for (size_t l = 0; l < nTuples; l++)
-          //   outputArray->SetTuple1(l, std::numeric_limits<double>::epsilon());
-
           if( atts.GetOperationType() == LCSAttributes::EigenValue )
             ComputeEigenValues(jacobian, outputArray);
           else if( atts.GetOperationType() == LCSAttributes::EigenVector )
+          {
             ComputeEigenVectors(jacobian, workingArray, outputArray);
+
+            bool clv = clampLogValues;
+            clampLogValues = false;
+
+            LCSAttributes::EigenComponent ec = eigenComponent;
+
+            if( eigenComponent == LCSAttributes::Largest )
+            {
+              // Get the largest eigen values.
+              eigenComponent = LCSAttributes::Smallest;
+              ComputeLyapunovExponent(jacobian, workingArray);
+
+              // Get the maximal values as seeds from the smallest eigen values.
+              GetSeedPoints( rect_grid, true );
+              
+              // Get the minimal values as seeds from the smallest eigen values.
+              GetSeedPoints( rect_grid, false );
+            }
+            else //if( eigenComponent == LCSAttributes::Smallest )
+            {
+              // Get the largest eigen values.
+              eigenComponent = LCSAttributes::Largest;
+              ComputeLyapunovExponent(jacobian, workingArray);
+
+              // Get the maximal values as seeds from the largest eigen values.
+              GetSeedPoints( rect_grid, true );
+              
+              // Get the minimal values as seeds from the largest eigen values.
+              GetSeedPoints( rect_grid, false );
+            }
+
+            clampLogValues = clv;
+            eigenComponent = ec;              
+          }
           else if( atts.GetOperationType() == LCSAttributes::Lyapunov )
             ComputeLyapunovExponent(jacobian, outputArray);
 
@@ -1765,7 +1817,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
           // positive or both positive and negative.
           double baseValue;
 
-          if (atts.GetClampLogValues() == true )
+          if (clampLogValues == true )
             baseValue = 1.0;
           else
             baseValue = std::numeric_limits<double>::epsilon();
@@ -1798,8 +1850,8 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         }
 
         //min and max values over all datasets of the tree.
-        double minv = std::numeric_limits<double>::max();
-        double maxv = std::numeric_limits<double>::min();
+        double minv =  std::numeric_limits<double>::max();
+        double maxv = -std::numeric_limits<double>::max();
 
         if( atts.GetOperationType() == LCSAttributes::EigenVector )
         {
@@ -1841,9 +1893,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 
         if (all_times)  delete [] all_times;
         if (time_counts) delete [] time_counts;
-
-        if (all_lengths)  delete [] all_lengths;
-        if (length_counts) delete [] length_counts;
 
         if (all_points)   delete [] all_points;
         if (point_counts) delete [] point_counts;
@@ -2423,10 +2472,10 @@ void avtLCSFilter::ComputeLyapunovExponent(vtkDataArray *jacobian[3],
     double baseValue, denominator = 1.0;
 
     // Clamp only if taking the log.
-    if (takeLog && atts.GetClampLogValues() == true )
+    if (takeLog && clampLogValues == true )
       baseValue = 1.0;
     else
-      baseValue = std::numeric_limits<double>::epsilon();
+      baseValue = -std::numeric_limits<double>::max();
 
     if( doTime )
       denominator /= maxTime;
@@ -2447,7 +2496,7 @@ void avtLCSFilter::ComputeLyapunovExponent(vtkDataArray *jacobian[3],
           ComputeLeftCauchyGreenTensor2D(input);
 
         // Get the eigen values.
-        double eigenvals[2];
+        double  eigenvals[2];
         double *eigenvecs[2];
 
         double outrow0[2];
@@ -3379,8 +3428,8 @@ avtLCSFilter::CreateNativeMeshIterativeCalcOutput(std::vector<avtIntegralCurve*>
     //picking the first.
 
     int    offset = 0;
-    double minv   = std::numeric_limits<double>::max();
-    double maxv   = std::numeric_limits<double>::min();
+    double minv   =  std::numeric_limits<double>::max();
+    double maxv   = -std::numeric_limits<double>::max();
     int    count  = 0;
 
     CreateMultiBlockIterativeCalcOutput(GetInputDataTree(), GetDataTree(),
@@ -3393,7 +3442,7 @@ avtLCSFilter::CreateNativeMeshIterativeCalcOutput(std::vector<avtIntegralCurve*>
       if( minSizeValue == std::numeric_limits<double>::max() )
         minSizeValue = 0.0;
       
-      if( maxSizeValue == std::numeric_limits<double>::min() )
+      if( maxSizeValue == -std::numeric_limits<double>::max() )
         maxSizeValue = 0.0;
       
       char str[1028];
@@ -3538,8 +3587,6 @@ avtLCSFilter::CreateSingleBlockIterativeCalcOutput( vtkDataSet *in_ds,
 
   int nTuples = exponents->GetNumberOfTuples();
 
-  bool clampLogValues = atts.GetClampLogValues();
-
   for(size_t i=0; i<ics.size(); ++i)
   {
     avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
@@ -3549,7 +3596,7 @@ avtLCSFilter::CreateSingleBlockIterativeCalcOutput( vtkDataSet *in_ds,
 
     double lambda = exponents->GetTuple1(l);
     
-    if( lambda == std::numeric_limits<double>::min() )
+    if( lambda == -std::numeric_limits<double>::max() )
     {
       lambda = 0;
       exponents->SetTuple1(l, lambda );
@@ -3631,12 +3678,10 @@ avtLCSFilter::CreateRectilinearGridIterativeCalcOutput(std::vector<avtIntegralCu
       int nTuples = exponents->GetNumberOfTuples();
 
       //min and max values over all datasets of the tree.
-      double minv = std::numeric_limits<double>::max();
-      double maxv = std::numeric_limits<double>::min();
+      double minv =  std::numeric_limits<double>::max();
+      double maxv = -std::numeric_limits<double>::max();
       
       int count = 0;
-
-      bool clampLogValues = atts.GetClampLogValues();
 
       for(size_t i=0; i<ics.size(); ++i)
       {
@@ -3646,7 +3691,7 @@ avtLCSFilter::CreateRectilinearGridIterativeCalcOutput(std::vector<avtIntegralCu
 
         double lambda = exponents->GetTuple1(l);
 
-        if( lambda == std::numeric_limits<double>::min() )
+        if( lambda == -std::numeric_limits<double>::max() )
         {
           lambda = 0;
           exponents->SetTuple1(l, lambda );
@@ -3672,7 +3717,7 @@ avtLCSFilter::CreateRectilinearGridIterativeCalcOutput(std::vector<avtIntegralCu
         if( minSizeValue == std::numeric_limits<double>::max() )
           minSizeValue = 0.0;
 
-        if( maxSizeValue == std::numeric_limits<double>::min() )
+        if( maxSizeValue == -std::numeric_limits<double>::max() )
           maxSizeValue = 0.0;
 
         char str[1028];
@@ -4127,4 +4172,255 @@ avtLCSFilter::GetCachedResampledDataSet()
     }
 
     return NULL;
+}
+
+
+
+// ****************************************************************************
+//  Method: avtLCSFilter::GetSeedPoints
+//
+//  Purpose:
+//
+//  Programmer: Allen Sanderson
+//  Creation:   March 25, 2015
+//
+// ****************************************************************************
+
+void
+avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
+{
+  bool getMin = !getMax;
+
+  double cx = (global_bounds[0]+global_bounds[1]) / 2.0;
+  double cy = (global_bounds[2]+global_bounds[3]) / 2.0;
+  double cz = (global_bounds[4]+global_bounds[5]) / 2.0;
+
+  double x = global_bounds[0];
+  double y = global_bounds[2];
+  double z = global_bounds[4];
+  
+  double dx = ( (global_bounds[1] - global_bounds[0]) /
+                (double) (global_resolution[0]-1) );
+  
+  double dy = ( (global_bounds[3] - global_bounds[2]) /
+                (double) (global_resolution[1]-1) );
+  
+  double dz = ( (global_bounds[5] - global_bounds[4]) /
+                (double) (global_resolution[2]-1) );
+  
+  vtkImageData *image_ds = vtkImageData::New();
+
+  image_ds->SetDimensions(global_resolution);
+  image_ds->SetOrigin(x,y,z);
+  image_ds->SetSpacing(dx,dy,dz);
+  image_ds->ShallowCopy( in_ds );
+
+  // Extract a slice in the desired orientation
+  static double axialElements[16] = { 1, 0, 0, 0,
+                                      0, 1, 0, 0,
+                                      0, 0, 1, 0,
+                                      0, 0, 0, 1 };
+  
+  // Set the slice orientation
+  vtkMatrix4x4 *resliceAxes = vtkMatrix4x4::New();
+  resliceAxes->DeepCopy(axialElements);
+  
+  // Set the point through which to slice
+  resliceAxes->SetElement(0, 3, cx);
+  resliceAxes->SetElement(1, 3, cy);
+  resliceAxes->SetElement(2, 3, cz);
+  
+  vtkImageReslice *reslice = vtkImageReslice::New();
+  reslice->SetInputData( image_ds );
+  reslice->SetOutputDimensionality(2);
+  reslice->SetResliceAxes(resliceAxes);
+  reslice->SetInterpolationModeToCubic();
+  reslice->Update();
+
+//          vtkImageGaussianSmooth *smooth = vtkImageGaussianSmooth::New();
+//          smooth->SetInputData( reslice->GetOutput() );
+//          smooth->SetDimensionality(2);
+//          smooth->SetStandardDeviation(1, 1, 0);
+// //       smooth->SetStandardDeviation(dx, dy, dz);
+//          smooth->SetRadiusFactors(2.5, 2.5, 0);
+//          smooth->Update();
+
+  vtkImageData *slice_ds = vtkImageData::New();
+  slice_ds->ShallowCopy(reslice->GetOutput());
+
+  resliceAxes->Delete();
+  reslice->Delete();
+//  smooth->Delete();
+
+  int dims[3];
+  slice_ds->SetOrigin(x,y,cz);
+  slice_ds->GetDimensions(dims);
+  slice_ds->GetOrigin(x,y,z);
+  slice_ds->GetSpacing(dx,dy,dz);
+  
+  vtkDoubleArray *tmpArray =
+    (vtkDoubleArray *) slice_ds->GetPointData()->GetScalars();
+
+  int nTuples = tmpArray->GetNumberOfTuples();
+
+  // Get te FTLE minimal and maximal values.
+  double ftle;
+  double minFTLE =  std::numeric_limits<double>::max();
+  double maxFTLE = -std::numeric_limits<double>::max();
+
+  double edgeBoundary = 0.15;
+  
+  for(size_t l = 0; l < nTuples; ++l)
+  {
+    ftle = tmpArray->GetTuple1( l );
+    
+    if( maxFTLE < ftle || ftle < minFTLE )
+    {
+      double *gridPt = slice_ds->GetPoint( l );
+      
+      bool inBounds = true;
+      
+      // Discard points near the boundaries
+      for (int i=0, j=0; i<nDim; ++i, j+=2)
+      {
+        double t = ((gridPt[i]          - global_bounds[j]) /
+                    (global_bounds[j+1] - global_bounds[j]));
+        
+        if( t < edgeBoundary || 1.0-edgeBoundary < t )
+        {
+          inBounds = false;
+          break;
+        }
+      }
+      
+      if( inBounds )
+      {
+        if( maxFTLE < ftle )
+          maxFTLE = ftle;
+        else
+          minFTLE = ftle;
+      }
+    }
+  }
+  
+  double threshold;
+
+  if( getMax )
+    threshold = maxFTLE - (maxFTLE-minFTLE) * 0.1;
+  else //if( getMin )
+    threshold = minFTLE + (maxFTLE-minFTLE) * 0.01;
+
+  std::vector< std::pair< avtVector, double > > ptList;
+
+  for(size_t l = 0; l < nTuples; ++l)
+  {
+    ftle = tmpArray->GetTuple1( l );
+
+    if( (getMin && ftle < threshold) || (getMax && threshold < ftle) )          
+    {
+      double *gridPt = slice_ds->GetPoint( l );
+      
+      bool inBounds = true;
+      
+      // Discard points near the boundaries
+      for (int i=0, j=0; i<nDim; ++i, j+=2)
+      {
+        double t = ((gridPt[i]          - global_bounds[j]) /
+                    (global_bounds[j+1] - global_bounds[j]));
+        
+        if( t < edgeBoundary || 1.0-edgeBoundary < t )
+        {
+          inBounds = false;
+          break;
+        }
+      }
+      
+      if( inBounds )
+      {
+        ptList.push_back( std::pair< avtVector,
+                             double >( avtVector( gridPt[0],
+                                                  gridPt[1],
+                                                  gridPt[2] ),
+                                       ftle ) );
+      }
+    }
+  }
+  
+  // Sort the points either descending or ascending.
+  if( getMax )
+    std::sort( ptList.begin(), ptList.end(),
+               sort_pair_max_second< avtVector, double >() ); 
+  else //if( getMin )
+    std::sort( ptList.begin(), ptList.end(),
+               sort_pair_min_second< avtVector, double >() ); 
+
+  std::vector< std::pair< avtVector, double > >::iterator iter =
+    ptList.begin();
+
+  double radius = 5.0;
+  double distance = radius * sqrt(dx*dx+dy*dy);
+
+  // Start the first point and remove all those that are too close.
+  while( iter != ptList.end() )
+  {
+    std::vector< std::pair< avtVector, double > >::iterator iter2 =
+      ptList.end();
+    
+    --iter2;
+
+    while( iter2 != iter )
+    {
+      if( avtVector( (*iter).first[0] - (*iter2).first[0],
+                     (*iter).first[1] - (*iter2).first[1],
+                     (*iter).first[2] - (*iter2).first[2] ).length() <
+          distance )
+      {
+        ptList.erase( iter2 );
+      }
+      
+      --iter2;
+    }
+    
+    ++iter;
+  }
+  
+  if( getMax )
+    std::cerr << "Have " << ptList.size() << " max seed points "<< std::endl;
+  else
+    std::cerr << "Have " << ptList.size() << " min seed points "<< std::endl;
+  
+  if( ptList.size() > 10 ) ptList.resize(10);
+
+  vtkDoubleArray *seedPts = vtkDoubleArray::New();
+  
+  if( getMax )
+    seedPts->SetName("Seed Points - Maximal");
+  else
+    seedPts->SetName("Seed Points - Minimal");
+
+  // Set the number of components before setting the number of tuples
+  // for proper memory allocation.
+  seedPts->SetNumberOfComponents( 3 );
+  seedPts->SetNumberOfTuples( ptList.size() );
+
+  in_ds->GetFieldData()->AddArray(seedPts);
+
+  for (int i = 0; i < ptList.size(); ++i)
+  {
+    std::cerr << ptList[i].second << "     "
+              << ptList[i].first.x << "  "
+              << ptList[i].first.y << "  "
+              << ptList[i].first.z << "  "
+              << std::endl;
+    
+    seedPts->SetTuple3(i,
+                       ptList[i].first.x,
+                       ptList[i].first.y,
+                       ptList[i].first.z );
+  }
+  
+  seedPts->Delete();
+
+  slice_ds->Delete();
+  image_ds->Delete();
 }

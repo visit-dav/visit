@@ -131,10 +131,11 @@ class QvisLCSWindow : public QvisOperatorWindow
     void operationTypeChanged(int);
     void cauchyGreenTensorChanged(int);
     void eigenComponentChanged(int);
-    void operatorTypeChanged(int);
- 
+    void operatorTypeChanged(int); 
+
     void terminationTypeButtonGroupChanged(int);
     void clampLogValuesChanged(bool);
+    void eigenWeightProcessText();
 
     void maxTimeProcessText();
     void maxDistanceProcessText();
@@ -206,6 +207,8 @@ class QvisLCSWindow : public QvisOperatorWindow
     QComboBox *eigenComponent;
     QComboBox *operatorType;
     QCheckBox *clampLogValues;
+    QLineEdit *eigenWeight;
+    QLabel    *eigenWeightLabel;
 
     QButtonGroup *terminationTypeButtonGroup;
     QLineEdit *maxTime;

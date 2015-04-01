@@ -266,9 +266,12 @@ LCSViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
     }
     else //if( atts_in->GetOperationType() == LCSAttributes::Lyapunov )
     {
+        i = 1;
+        j = atts_in->GetEigenComponent();
+        var += std::string(" - ") + std::string(typeString[i][j]);
+
         i = 2;
         j = atts_in->GetTerminationType();
-
         var += std::string(" - ") + std::string(typeString[i][j]);
     }
 

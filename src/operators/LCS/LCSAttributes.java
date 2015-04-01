@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class LCSAttributes extends AttributeSubject implements Plugin
 {
-    private static int LCSAttributes_numAdditionalAtts = 49;
+    private static int LCSAttributes_numAdditionalAtts = 50;
 
     // Enum values
     public final static int SOURCETYPE_NATIVEMESH = 0;
@@ -112,6 +112,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     public final static int EIGENCOMPONENT_SMALLEST = 0;
     public final static int EIGENCOMPONENT_INTERMEDIATE = 1;
     public final static int EIGENCOMPONENT_LARGEST = 2;
+    public final static int EIGENCOMPONENT_COMBINATION = 3;
 
     public final static int OPERATORTYPE_BASEVALUE = 0;
     public final static int OPERATORTYPE_GRADIENT = 1;
@@ -150,6 +151,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         operationType = OPERATIONTYPE_LYAPUNOV;
         cauchyGreenTensor = CAUCHYGREENTENSOR_RIGHT;
         eigenComponent = EIGENCOMPONENT_SMALLEST;
+        eigenWeight = 0;
         operatorType = OPERATORTYPE_BASEVALUE;
         terminationType = TERMINATIONTYPE_TIME;
         terminateBySize = false;
@@ -217,6 +219,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         operationType = OPERATIONTYPE_LYAPUNOV;
         cauchyGreenTensor = CAUCHYGREENTENSOR_RIGHT;
         eigenComponent = EIGENCOMPONENT_SMALLEST;
+        eigenWeight = 0;
         operatorType = OPERATORTYPE_BASEVALUE;
         terminationType = TERMINATIONTYPE_TIME;
         terminateBySize = false;
@@ -289,6 +292,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         operationType = obj.operationType;
         cauchyGreenTensor = obj.cauchyGreenTensor;
         eigenComponent = obj.eigenComponent;
+        eigenWeight = obj.eigenWeight;
         operatorType = obj.operatorType;
         terminationType = obj.terminationType;
         terminateBySize = obj.terminateBySize;
@@ -381,6 +385,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
                 (operationType == obj.operationType) &&
                 (cauchyGreenTensor == obj.cauchyGreenTensor) &&
                 (eigenComponent == obj.eigenComponent) &&
+                (eigenWeight == obj.eigenWeight) &&
                 (operatorType == obj.operatorType) &&
                 (terminationType == obj.terminationType) &&
                 (terminateBySize == obj.terminateBySize) &&
@@ -531,106 +536,112 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         Select(12);
     }
 
+    public void SetEigenWeight(double eigenWeight_)
+    {
+        eigenWeight = eigenWeight_;
+        Select(13);
+    }
+
     public void SetOperatorType(int operatorType_)
     {
         operatorType = operatorType_;
-        Select(13);
+        Select(14);
     }
 
     public void SetTerminationType(int terminationType_)
     {
         terminationType = terminationType_;
-        Select(14);
+        Select(15);
     }
 
     public void SetTerminateBySize(boolean terminateBySize_)
     {
         terminateBySize = terminateBySize_;
-        Select(15);
+        Select(16);
     }
 
     public void SetTermSize(double termSize_)
     {
         termSize = termSize_;
-        Select(16);
+        Select(17);
     }
 
     public void SetTerminateByDistance(boolean terminateByDistance_)
     {
         terminateByDistance = terminateByDistance_;
-        Select(17);
+        Select(18);
     }
 
     public void SetTermDistance(double termDistance_)
     {
         termDistance = termDistance_;
-        Select(18);
+        Select(19);
     }
 
     public void SetTerminateByTime(boolean terminateByTime_)
     {
         terminateByTime = terminateByTime_;
-        Select(19);
+        Select(20);
     }
 
     public void SetTermTime(double termTime_)
     {
         termTime = termTime_;
-        Select(20);
+        Select(21);
     }
 
     public void SetMaxStepLength(double maxStepLength_)
     {
         maxStepLength = maxStepLength_;
-        Select(21);
+        Select(22);
     }
 
     public void SetLimitMaximumTimestep(boolean limitMaximumTimestep_)
     {
         limitMaximumTimestep = limitMaximumTimestep_;
-        Select(22);
+        Select(23);
     }
 
     public void SetMaxTimeStep(double maxTimeStep_)
     {
         maxTimeStep = maxTimeStep_;
-        Select(23);
+        Select(24);
     }
 
     public void SetRelTol(double relTol_)
     {
         relTol = relTol_;
-        Select(24);
+        Select(25);
     }
 
     public void SetAbsTolSizeType(int absTolSizeType_)
     {
         absTolSizeType = absTolSizeType_;
-        Select(25);
+        Select(26);
     }
 
     public void SetAbsTolAbsolute(double absTolAbsolute_)
     {
         absTolAbsolute = absTolAbsolute_;
-        Select(26);
+        Select(27);
     }
 
     public void SetAbsTolBBox(double absTolBBox_)
     {
         absTolBBox = absTolBBox_;
-        Select(27);
+        Select(28);
     }
 
     public void SetFieldType(int fieldType_)
     {
         fieldType = fieldType_;
-        Select(28);
+        Select(29);
     }
 
     public void SetFieldConstant(double fieldConstant_)
     {
         fieldConstant = fieldConstant_;
-        Select(29);
+        Select(30);
     }
 
     public void SetVelocitySource(double[] velocitySource_)
@@ -638,7 +649,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         velocitySource[0] = velocitySource_[0];
         velocitySource[1] = velocitySource_[1];
         velocitySource[2] = velocitySource_[2];
-        Select(30);
+        Select(31);
     }
 
     public void SetVelocitySource(double e0, double e1, double e2)
@@ -646,115 +657,115 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         velocitySource[0] = e0;
         velocitySource[1] = e1;
         velocitySource[2] = e2;
-        Select(30);
+        Select(31);
     }
 
     public void SetIntegrationType(int integrationType_)
     {
         integrationType = integrationType_;
-        Select(31);
+        Select(32);
     }
 
     public void SetClampLogValues(boolean clampLogValues_)
     {
         clampLogValues = clampLogValues_;
-        Select(32);
+        Select(33);
     }
 
     public void SetParallelizationAlgorithmType(int parallelizationAlgorithmType_)
     {
         parallelizationAlgorithmType = parallelizationAlgorithmType_;
-        Select(33);
+        Select(34);
     }
 
     public void SetMaxProcessCount(int maxProcessCount_)
     {
         maxProcessCount = maxProcessCount_;
-        Select(34);
+        Select(35);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(35);
+        Select(36);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(36);
+        Select(37);
     }
 
     public void SetPathlines(boolean pathlines_)
     {
         pathlines = pathlines_;
-        Select(37);
+        Select(38);
     }
 
     public void SetPathlinesOverrideStartingTimeFlag(boolean pathlinesOverrideStartingTimeFlag_)
     {
         pathlinesOverrideStartingTimeFlag = pathlinesOverrideStartingTimeFlag_;
-        Select(38);
+        Select(39);
     }
 
     public void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_)
     {
         pathlinesOverrideStartingTime = pathlinesOverrideStartingTime_;
-        Select(39);
+        Select(40);
     }
 
     public void SetPathlinesPeriod(double pathlinesPeriod_)
     {
         pathlinesPeriod = pathlinesPeriod_;
-        Select(40);
+        Select(41);
     }
 
     public void SetPathlinesCMFE(int pathlinesCMFE_)
     {
         pathlinesCMFE = pathlinesCMFE_;
-        Select(41);
+        Select(42);
     }
 
     public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
     {
         forceNodeCenteredData = forceNodeCenteredData_;
-        Select(42);
+        Select(43);
     }
 
     public void SetIssueAdvectionWarnings(boolean issueAdvectionWarnings_)
     {
         issueAdvectionWarnings = issueAdvectionWarnings_;
-        Select(43);
+        Select(44);
     }
 
     public void SetIssueBoundaryWarnings(boolean issueBoundaryWarnings_)
     {
         issueBoundaryWarnings = issueBoundaryWarnings_;
-        Select(44);
+        Select(45);
     }
 
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(45);
+        Select(46);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(46);
+        Select(47);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(47);
+        Select(48);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(48);
+        Select(49);
     }
 
     // Property getting methods
@@ -771,6 +782,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     public int      GetOperationType() { return operationType; }
     public int      GetCauchyGreenTensor() { return cauchyGreenTensor; }
     public int      GetEigenComponent() { return eigenComponent; }
+    public double   GetEigenWeight() { return eigenWeight; }
     public int      GetOperatorType() { return operatorType; }
     public int      GetTerminationType() { return terminationType; }
     public boolean  GetTerminateBySize() { return terminateBySize; }
@@ -838,76 +850,78 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(12, buf))
             buf.WriteInt(eigenComponent);
         if(WriteSelect(13, buf))
-            buf.WriteInt(operatorType);
+            buf.WriteDouble(eigenWeight);
         if(WriteSelect(14, buf))
-            buf.WriteInt(terminationType);
+            buf.WriteInt(operatorType);
         if(WriteSelect(15, buf))
-            buf.WriteBool(terminateBySize);
+            buf.WriteInt(terminationType);
         if(WriteSelect(16, buf))
-            buf.WriteDouble(termSize);
+            buf.WriteBool(terminateBySize);
         if(WriteSelect(17, buf))
-            buf.WriteBool(terminateByDistance);
+            buf.WriteDouble(termSize);
         if(WriteSelect(18, buf))
-            buf.WriteDouble(termDistance);
+            buf.WriteBool(terminateByDistance);
         if(WriteSelect(19, buf))
-            buf.WriteBool(terminateByTime);
+            buf.WriteDouble(termDistance);
         if(WriteSelect(20, buf))
-            buf.WriteDouble(termTime);
+            buf.WriteBool(terminateByTime);
         if(WriteSelect(21, buf))
-            buf.WriteDouble(maxStepLength);
+            buf.WriteDouble(termTime);
         if(WriteSelect(22, buf))
-            buf.WriteBool(limitMaximumTimestep);
+            buf.WriteDouble(maxStepLength);
         if(WriteSelect(23, buf))
-            buf.WriteDouble(maxTimeStep);
+            buf.WriteBool(limitMaximumTimestep);
         if(WriteSelect(24, buf))
-            buf.WriteDouble(relTol);
+            buf.WriteDouble(maxTimeStep);
         if(WriteSelect(25, buf))
-            buf.WriteInt(absTolSizeType);
+            buf.WriteDouble(relTol);
         if(WriteSelect(26, buf))
-            buf.WriteDouble(absTolAbsolute);
+            buf.WriteInt(absTolSizeType);
         if(WriteSelect(27, buf))
-            buf.WriteDouble(absTolBBox);
+            buf.WriteDouble(absTolAbsolute);
         if(WriteSelect(28, buf))
-            buf.WriteInt(fieldType);
+            buf.WriteDouble(absTolBBox);
         if(WriteSelect(29, buf))
-            buf.WriteDouble(fieldConstant);
+            buf.WriteInt(fieldType);
         if(WriteSelect(30, buf))
-            buf.WriteDoubleArray(velocitySource);
+            buf.WriteDouble(fieldConstant);
         if(WriteSelect(31, buf))
-            buf.WriteInt(integrationType);
+            buf.WriteDoubleArray(velocitySource);
         if(WriteSelect(32, buf))
-            buf.WriteBool(clampLogValues);
+            buf.WriteInt(integrationType);
         if(WriteSelect(33, buf))
-            buf.WriteInt(parallelizationAlgorithmType);
+            buf.WriteBool(clampLogValues);
         if(WriteSelect(34, buf))
-            buf.WriteInt(maxProcessCount);
+            buf.WriteInt(parallelizationAlgorithmType);
         if(WriteSelect(35, buf))
-            buf.WriteInt(maxDomainCacheSize);
+            buf.WriteInt(maxProcessCount);
         if(WriteSelect(36, buf))
-            buf.WriteInt(workGroupSize);
+            buf.WriteInt(maxDomainCacheSize);
         if(WriteSelect(37, buf))
-            buf.WriteBool(pathlines);
+            buf.WriteInt(workGroupSize);
         if(WriteSelect(38, buf))
-            buf.WriteBool(pathlinesOverrideStartingTimeFlag);
+            buf.WriteBool(pathlines);
         if(WriteSelect(39, buf))
-            buf.WriteDouble(pathlinesOverrideStartingTime);
+            buf.WriteBool(pathlinesOverrideStartingTimeFlag);
         if(WriteSelect(40, buf))
-            buf.WriteDouble(pathlinesPeriod);
+            buf.WriteDouble(pathlinesOverrideStartingTime);
         if(WriteSelect(41, buf))
-            buf.WriteInt(pathlinesCMFE);
+            buf.WriteDouble(pathlinesPeriod);
         if(WriteSelect(42, buf))
-            buf.WriteBool(forceNodeCenteredData);
+            buf.WriteInt(pathlinesCMFE);
         if(WriteSelect(43, buf))
-            buf.WriteBool(issueAdvectionWarnings);
+            buf.WriteBool(forceNodeCenteredData);
         if(WriteSelect(44, buf))
-            buf.WriteBool(issueBoundaryWarnings);
+            buf.WriteBool(issueAdvectionWarnings);
         if(WriteSelect(45, buf))
-            buf.WriteBool(issueTerminationWarnings);
+            buf.WriteBool(issueBoundaryWarnings);
         if(WriteSelect(46, buf))
-            buf.WriteBool(issueStiffnessWarnings);
+            buf.WriteBool(issueTerminationWarnings);
         if(WriteSelect(47, buf))
-            buf.WriteBool(issueCriticalPointsWarnings);
+            buf.WriteBool(issueStiffnessWarnings);
         if(WriteSelect(48, buf))
+            buf.WriteBool(issueCriticalPointsWarnings);
+        if(WriteSelect(49, buf))
             buf.WriteDouble(criticalPointThreshold);
     }
 
@@ -955,111 +969,114 @@ public class LCSAttributes extends AttributeSubject implements Plugin
             SetEigenComponent(buf.ReadInt());
             break;
         case 13:
-            SetOperatorType(buf.ReadInt());
+            SetEigenWeight(buf.ReadDouble());
             break;
         case 14:
-            SetTerminationType(buf.ReadInt());
+            SetOperatorType(buf.ReadInt());
             break;
         case 15:
-            SetTerminateBySize(buf.ReadBool());
+            SetTerminationType(buf.ReadInt());
             break;
         case 16:
-            SetTermSize(buf.ReadDouble());
+            SetTerminateBySize(buf.ReadBool());
             break;
         case 17:
-            SetTerminateByDistance(buf.ReadBool());
+            SetTermSize(buf.ReadDouble());
             break;
         case 18:
-            SetTermDistance(buf.ReadDouble());
+            SetTerminateByDistance(buf.ReadBool());
             break;
         case 19:
-            SetTerminateByTime(buf.ReadBool());
+            SetTermDistance(buf.ReadDouble());
             break;
         case 20:
-            SetTermTime(buf.ReadDouble());
+            SetTerminateByTime(buf.ReadBool());
             break;
         case 21:
-            SetMaxStepLength(buf.ReadDouble());
+            SetTermTime(buf.ReadDouble());
             break;
         case 22:
-            SetLimitMaximumTimestep(buf.ReadBool());
+            SetMaxStepLength(buf.ReadDouble());
             break;
         case 23:
-            SetMaxTimeStep(buf.ReadDouble());
+            SetLimitMaximumTimestep(buf.ReadBool());
             break;
         case 24:
-            SetRelTol(buf.ReadDouble());
+            SetMaxTimeStep(buf.ReadDouble());
             break;
         case 25:
-            SetAbsTolSizeType(buf.ReadInt());
+            SetRelTol(buf.ReadDouble());
             break;
         case 26:
-            SetAbsTolAbsolute(buf.ReadDouble());
+            SetAbsTolSizeType(buf.ReadInt());
             break;
         case 27:
-            SetAbsTolBBox(buf.ReadDouble());
+            SetAbsTolAbsolute(buf.ReadDouble());
             break;
         case 28:
-            SetFieldType(buf.ReadInt());
+            SetAbsTolBBox(buf.ReadDouble());
             break;
         case 29:
-            SetFieldConstant(buf.ReadDouble());
+            SetFieldType(buf.ReadInt());
             break;
         case 30:
-            SetVelocitySource(buf.ReadDoubleArray());
+            SetFieldConstant(buf.ReadDouble());
             break;
         case 31:
-            SetIntegrationType(buf.ReadInt());
+            SetVelocitySource(buf.ReadDoubleArray());
             break;
         case 32:
-            SetClampLogValues(buf.ReadBool());
+            SetIntegrationType(buf.ReadInt());
             break;
         case 33:
-            SetParallelizationAlgorithmType(buf.ReadInt());
+            SetClampLogValues(buf.ReadBool());
             break;
         case 34:
-            SetMaxProcessCount(buf.ReadInt());
+            SetParallelizationAlgorithmType(buf.ReadInt());
             break;
         case 35:
-            SetMaxDomainCacheSize(buf.ReadInt());
+            SetMaxProcessCount(buf.ReadInt());
             break;
         case 36:
-            SetWorkGroupSize(buf.ReadInt());
+            SetMaxDomainCacheSize(buf.ReadInt());
             break;
         case 37:
-            SetPathlines(buf.ReadBool());
+            SetWorkGroupSize(buf.ReadInt());
             break;
         case 38:
-            SetPathlinesOverrideStartingTimeFlag(buf.ReadBool());
+            SetPathlines(buf.ReadBool());
             break;
         case 39:
-            SetPathlinesOverrideStartingTime(buf.ReadDouble());
+            SetPathlinesOverrideStartingTimeFlag(buf.ReadBool());
             break;
         case 40:
-            SetPathlinesPeriod(buf.ReadDouble());
+            SetPathlinesOverrideStartingTime(buf.ReadDouble());
             break;
         case 41:
-            SetPathlinesCMFE(buf.ReadInt());
+            SetPathlinesPeriod(buf.ReadDouble());
             break;
         case 42:
-            SetForceNodeCenteredData(buf.ReadBool());
+            SetPathlinesCMFE(buf.ReadInt());
             break;
         case 43:
-            SetIssueAdvectionWarnings(buf.ReadBool());
+            SetForceNodeCenteredData(buf.ReadBool());
             break;
         case 44:
-            SetIssueBoundaryWarnings(buf.ReadBool());
+            SetIssueAdvectionWarnings(buf.ReadBool());
             break;
         case 45:
-            SetIssueTerminationWarnings(buf.ReadBool());
+            SetIssueBoundaryWarnings(buf.ReadBool());
             break;
         case 46:
-            SetIssueStiffnessWarnings(buf.ReadBool());
+            SetIssueTerminationWarnings(buf.ReadBool());
             break;
         case 47:
-            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            SetIssueStiffnessWarnings(buf.ReadBool());
             break;
         case 48:
+            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            break;
+        case 49:
             SetCriticalPointThreshold(buf.ReadDouble());
             break;
         }
@@ -1134,7 +1151,10 @@ public class LCSAttributes extends AttributeSubject implements Plugin
             str = str + "EIGENCOMPONENT_INTERMEDIATE";
         if(eigenComponent == EIGENCOMPONENT_LARGEST)
             str = str + "EIGENCOMPONENT_LARGEST";
+        if(eigenComponent == EIGENCOMPONENT_COMBINATION)
+            str = str + "EIGENCOMPONENT_COMBINATION";
         str = str + "\n";
+        str = str + doubleToString("eigenWeight", eigenWeight, indent) + "\n";
         str = str + indent + "operatorType = ";
         if(operatorType == OPERATORTYPE_BASEVALUE)
             str = str + "OPERATORTYPE_BASEVALUE";
@@ -1248,6 +1268,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     private int      operationType;
     private int      cauchyGreenTensor;
     private int      eigenComponent;
+    private double   eigenWeight;
     private int      operatorType;
     private int      terminationType;
     private boolean  terminateBySize;
