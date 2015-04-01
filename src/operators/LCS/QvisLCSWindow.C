@@ -466,6 +466,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     eigenComponent->addItem(tr("Intermediate (3D only)"));
     eigenComponent->addItem(tr("Largest"));
     eigenComponent->addItem(tr("Combination"));
+    eigenComponent->setMaxCount(4);
     connect(eigenComponent, SIGNAL(activated(int)),
             this, SLOT(eigenComponentChanged(int)));
     terminationLayout->addWidget(eigenComponent, 1, 1);
@@ -936,16 +937,20 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               terminationTypeButtonGroup->button(1)->hide();
               terminationTypeButtonGroup->button(2)->hide();
 
-
               if( atts->GetOperationType() == LCSAttributes::EigenVector )
               {
-                eigenComponent->addItem(tr("Combination"));
+                if( eigenComponent->itemText(3).isNull() ||
+                    eigenComponent->itemText(3).isEmpty() )
+                  eigenComponent->addItem(tr("Combination"));
+
                 eigenWeightLabel->show();
                 eigenWeight->show();
               }
               else
               {
-                eigenComponent->removeItem(3);
+                if( !(eigenComponent->itemText(3).isNull()) &&
+                    !(eigenComponent->itemText(3).isEmpty()) )
+                  eigenComponent->removeItem(3);
                 eigenWeightLabel->hide();
                 eigenWeight->hide();
               }
