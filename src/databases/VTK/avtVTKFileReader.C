@@ -840,6 +840,9 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
 //    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
 //    I enhanced the reader so that it can read parallel VTK files.
 //
+//    Kathleen Biagas, Thu Apr  2 12:22:55 PDT 2015
+//    Return NULL a dataset with 0 points is read in.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -857,6 +860,11 @@ avtVTKFileReader::GetMesh(int domain, const char *mesh)
         ReadInDataset(domain);
     }
     vtkDataSet *dataset = pieceDatasets[domain];
+
+    if (dataset->GetNumberOfPoints() == 0)
+    {
+        return NULL;
+    }
 
     // If the requested mesh is a curve, return it.
     std::map<std::string, vtkRectilinearGrid *>::iterator pos = vtkCurves.find(mesh);
