@@ -79,7 +79,7 @@
 #include <cmath>
 
 //#define PID (int) (0.31415*(double)nTuples)
-#define PID (int) (6305)
+#define PID (int) (37990)
 
 template <class T1, class T2, class Pred = std::greater<T2> >
 struct sort_pair_max_second {
@@ -1062,6 +1062,7 @@ void avtLCSFilter::NativeMeshSingleCalc(std::vector<avtIntegralCurve*> &ics)
     if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
         if (PAR_Rank() != 0)
             outTree = new avtDataTree();
+
     SetOutputDataTree(outTree);
 
     avtDataAttributes &dataatts = GetOutput()->GetInfo().GetAttributes();
@@ -1186,62 +1187,72 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
                                      int &offset, int domain,
                                      double &minv, double &maxv )
 {
-    //variable name.
+    // Variable name and number of points.
     std::string var = outVarRoot + outVarName;
 
-    //create new instance from old.
-    vtkDataSet* out_grid = in_ds->NewInstance();
-    out_grid->ShallowCopy(in_ds);
     int nTuples = in_ds->GetNumberOfPoints();
 
-    //an array for the initial locations.
-    std::vector<avtVector> remapPoints;
-    remapPoints.resize(nTuples*nAuxPts);
+    // Storage for the points and times
+    std::vector<avtVector> remapPoints(nTuples*nAuxPts);
+    std::vector<double>    remapTimes(nTuples*nAuxPts);
 
-    if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+    // Zero out the points.
+    for(size_t i = 0; i < remapPoints.size(); ++i)
     {
-        // The parallel synchronization for when data is replicated involves
-        // a sum across all processors.  So we want remapPoints to have the
-        // location of the particle on one processor, and zero on the rest.
-        // Do that here.
-        // Special care is needed for the case where the particle never
-        // advected.  Then we need to put the initial location on just one
-        // processor.  We do this on rank 0.
-        std::vector<int> iHavePoint(nTuples*nAuxPts, 0);
-        std::vector<int> anyoneHasPoint;
-
-        for (size_t idx = 0; idx < ics.size(); idx++)
-        {
-            size_t index = ics[idx]->id;
-            size_t l = (index-offset);
-            if(l < remapPoints.size()) ///TODO: l >=0 is always true
-            {
-                iHavePoint[l] = 1;
-            }
-        }
-
-        UnifyMaximumValue(iHavePoint, anyoneHasPoint);
-        avtVector zero;
-        zero.x = zero.y = zero.z = 0.;
-        for (size_t i = 0; i < (size_t)nTuples*nAuxPts; i++)
-            if (PAR_Rank() == 0 && !anyoneHasPoint[i])
-                remapPoints[i] = seedPoints.at(offset + i);
-            else
-                remapPoints[i] = zero;
-    }
-    else
-    {
-      //copy the original seed points
-      for(size_t i = 0; i < remapPoints.size(); ++i)
-        remapPoints[i] = seedPoints.at(offset + i);
+      remapPoints[i] = avtVector(0,0,0);
+      remapTimes[i] = 0;
     }
 
+    // ARS - This code does not nothing of use that I can see. The
+    // remapPoints just need to be zeroed out.
+
+    // if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+    // {
+    //     // The parallel synchronization for when data is replicated involves
+    //     // a sum across all processors.  So we want remapPoints to have the
+    //     // location of the particle on one processor, and zero on the rest.
+    //     // Do that here.
+    //     // Special care is needed for the case where the particle never
+    //     // advected.  Then we need to put the initial location on just one
+    //     // processor.  We do this on rank 0.
+    //     std::vector<int> iHavePoint(nTuples*nAuxPts, 0);
+    //     std::vector<int> anyoneHasPoint;
+
+    //     for (size_t i = 0; i < ics.size(); ++i)
+    //     {
+    //         size_t index = ics[i]->id;
+    //         size_t l = (index-offset);
+
+    //         if(l < remapPoints.size()) ///TODO: l >=0 is always true
+    //         {
+    //             iHavePoint[l] = 1;
+    //         }
+    //     }
+
+    //     UnifyMaximumValue(iHavePoint, anyoneHasPoint);
+    //     avtVector zero(0,0,0);
+
+    //     for (size_t i = 0; i < remapPoints.size(); ++i)
+    //         if (PAR_Rank() == 0 && !anyoneHasPoint[i])
+    //             remapPoints[i] = seedPoints.at(offset + i);
+    //         else
+    //             remapPoints[i] = zero;
+    // }
+    // else
+    // {
+    //   //copy the original seed points
+    //   for(size_t i = 0; i < remapPoints.size(); ++i)
+    //     remapPoints[i] = seedPoints.at(offset + i);
+    // }
+
+    // The processor has a partial set of the curves so some values in
+    // remapPoint will be zero.
     for(size_t i = 0; i < ics.size(); ++i)
     {
         size_t index = ics[i]->id;
-        int l = (int)(index-offset);
+        size_t l = (index-offset);
 
-        if(l >= 0 && l < (int)remapPoints.size())
+        if(l < remapPoints.size())
         {
           if( atts.GetOperationType() == LCSAttributes::EigenValue ||
               atts.GetOperationType() == LCSAttributes::EigenVector ||
@@ -1271,6 +1282,10 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     //done with offset, increment it for the next call to this
     //function.
     offset += nTuples;
+
+    //create new instance from old.
+    vtkDataSet* out_grid = in_ds->NewInstance();
+    out_grid->ShallowCopy(in_ds);
 
     //use static function in avtGradientExpression to calculate
     //gradients.  since this function only does scalar, break our
@@ -1304,7 +1319,9 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
           for(size_t j = 0; j < (size_t)nTuples; ++j)
             workingArray->SetTuple1(j, remapPoints[j][i]);
 
-          // ARS FIX ME - what does this do?
+          // remapPoints does not contain all of the values only the
+          // ones for the integral curves on this processor. So sum
+          // all of the values across all of the processors.
           if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
           {
             double *newvals = new double[nTuples];
@@ -1324,6 +1341,10 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
       {
         double delta = 1.0 / (2.0 * auxSpacing);
 
+        double *dx = new double[nTuples];
+        double *dy = new double[nTuples];
+        double *dz = new double[nTuples];
+
         for(int i = 0; i < 3; ++i)
         {
           jacobian[i] =
@@ -1331,46 +1352,53 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
           jacobian[i]->SetNumberOfComponents(3);
           jacobian[i]->SetNumberOfTuples(nTuples);
 
-          double dx, dy, dz;
-
           // Do the x, y, and possibly the z component.
           if( i <= auxIdx )
           {
             for(size_t j = 0, k = 0; j < nTuples; ++j, k+=nAuxPts)
             {
-              dx = (remapPoints[k+1][i] - remapPoints[k+0][i]) * delta;
-              dy = (remapPoints[k+3][i] - remapPoints[k+2][i]) * delta;
+              dx[j] = (remapPoints[k+1][i] - remapPoints[k+0][i]) * delta;
+              dy[j] = (remapPoints[k+3][i] - remapPoints[k+2][i]) * delta;
 
               if( auxIdx == LCSAttributes::ThreeDim )
-                dz = (remapPoints[k+5][i] - remapPoints[k+4][i]) * delta;
+                dz[j] = (remapPoints[k+5][i] - remapPoints[k+4][i]) * delta;
               else
-                dz = 0;
+                dz[j] = 0;
+            }
 
-              jacobian[i]->SetTuple3(j, dx, dy, dz);
+            // remapPoints does not contain all of the values only the
+            // ones for the integral curves on this processor. So sum
+            // all of the values across all of the processors.
+            if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+            {
+              double *dd[3] = {dx, dy, dz};
 
-              // ARS FIX ME - what does this do?
-              if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+              for(size_t j = 0; j < 3; ++j)
               {
-                double *newvals = new double[nTuples*nAuxPts*3];
-                double *origvals = (double *) jacobian[i]->GetVoidPointer(0);
-                SumDoubleArrayAcrossAllProcessors(origvals, newvals, nTuples*nAuxPts*3);
+                double *newvals = new double[nTuples];
+                SumDoubleArrayAcrossAllProcessors(dd[j], newvals, nTuples);
                 // copy newvals back into origvals
-                memcpy(origvals, newvals, nTuples*sizeof(double));
+                memcpy(dd[j], newvals, nTuples*sizeof(double));
                 delete [] newvals;
               }
             }
+
+            for(size_t j = 0; j < nTuples; ++j)
+              jacobian[i]->SetTuple3(j, dx[j], dy[j], dz[j]);
           }
-          // For a 2D auxiliary grid just zero out the z grid.
+          // For a 2D auxiliary grid just zero out the z grid. No need
+          // to sum across all processors as this sets all values.
           else
           {
-            for (int j = 0; j < nTuples; ++j)
+            for (size_t j = 0; j < nTuples; ++j)
               jacobian[i]->SetTuple3(j, 0., 0., 1.);
           }
         }
-      }
 
-      for (int i = 0; i < nTuples; i++)
-        outputArray->SetTuple1(i, std::numeric_limits<double>::epsilon());
+        delete dx;
+        delete dy;
+        delete dz;
+      }
 
       //now have the jacobian - 3 arrays with 3 workingArrays.
       if( atts.GetOperationType() == LCSAttributes::EigenValue )
@@ -1395,7 +1423,9 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
       for(size_t j = 0; j < (size_t)nTuples; ++j)
         outputArray->SetTuple1(j, remapPoints[j][index]);
 
-      // ARS FIX ME - what does this do?
+      // remapPoints does not contain all of the values only the ones
+      // for the integral curves on this processor. So sum all of the
+      // values across all of the processors.
       if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
       {
         double *newvals = new double[nTuples];
@@ -1422,7 +1452,9 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
       for (size_t l = 0; l < nTuples; l++)
         workingArray->SetTuple1(l, remapPoints[l][index]);
 
-      // ARS FIX ME - what does this do?
+      // remapPoints does not contain all of the values only the
+      // ones for the integral curves on this processor. So sum
+      // all of the values across all of the processors.
       if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
       {
         double *newvals = new double[nTuples];
@@ -1728,6 +1760,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
               
               double dx, dy, dz;
               
+              // Do the x, y, and possibly the z component.
               if( i <= auxIdx )
               {
                 for(size_t j = 0, k = 0; j < nTuples; ++j, k+=nAuxPts)
@@ -1745,7 +1778,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
               }
               else
               {
-                for (int j = 0; j < nTuples; ++j)
+                for (size_t j = 0; j < nTuples; ++j)
                   jacobian[i]->SetTuple3(j, 0., 0., 1.);
               }
             }
@@ -2497,14 +2530,7 @@ void avtLCSFilter::ComputeLyapunovExponent(vtkDataArray *jacobian[3],
 
         // Get the eigen values.
         double  eigenvals[2];
-        double *eigenvecs[2];
-
-        double outrow0[2];
-        double outrow1[2];
-        eigenvecs[0] = outrow0;
-        eigenvecs[1] = outrow1;
-
-        Jacobi2D( input, eigenvals, eigenvecs );
+        Jacobi2D( input, eigenvals );
 
         double lambda = baseValue;
 
@@ -2885,28 +2911,23 @@ avtLCSFilter::MultiBlockIterativeCalc(avtDataTree_p inDT,
 // ****************************************************************************
 
 bool
-avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
+avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *in_ds,
                                         std::vector<avtIntegralCurve*> &ics,
                                         int &offset )
 {
-    //variable name.
-    std::string var = outVarRoot + outVarName;
-
-    int nTuples = out_ds->GetNumberOfPoints();
-    
     int dims[3];
 
-    if (out_ds->GetDataObjectType() == VTK_UNIFORM_GRID)
+    if (in_ds->GetDataObjectType() == VTK_UNIFORM_GRID)
     {
-      ((vtkUniformGrid*)out_ds)->GetDimensions(dims);
+      ((vtkUniformGrid*)in_ds)->GetDimensions(dims);
     }      
-    else if (out_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    else if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-      ((vtkRectilinearGrid*)out_ds)->GetDimensions(dims);
+      ((vtkRectilinearGrid*)in_ds)->GetDimensions(dims);
     }      
-    else if (out_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
-      ((vtkStructuredGrid*)out_ds)->GetDimensions(dims);
+      ((vtkStructuredGrid*)in_ds)->GetDimensions(dims);
     }      
     else
     {
@@ -2915,68 +2936,73 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
                  "imagedata, rectilinear grids, or structured grids. ");
     }
 
-    // Get the stored data arrays
-    vtkDataArray* jacobian[3];
-    
-    vtkDoubleArray *exponents = (vtkDoubleArray *)
-      out_ds->GetPointData()->GetArray(var.c_str());
-    vtkDoubleArray *component = (vtkDoubleArray *)
-      out_ds->GetPointData()->GetArray("component");
-    vtkDoubleArray *times = (vtkDoubleArray *)
-      out_ds->GetPointData()->GetArray("times");
+    // Variable name and number of points.
+    std::string var = outVarRoot + outVarName;
 
+    int nTuples = in_ds->GetNumberOfPoints();
+    
     // Storage for the points and times
     std::vector<avtVector> remapPoints(nTuples);
-    std::vector<double> remapTimes(nTuples);
+    std::vector<double>    remapTimes(nTuples);
 
-    if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+    // Zero out the points.
+    for(size_t i = 0; i < remapPoints.size(); ++i)
     {
-        // The parallel synchronization for when data is replicated involves
-        // a sum across all processors.  So we want remapPoints to have the
-        // location of the particle on one processor, and zero on the rest.
-        // Do that here.
-        // Special care is needed for the case where the particle never
-        // advected.  Then we need to put the initial location on just one
-        // processor.  We do this on rank 0.
-        std::vector<int> iHavePoint(nTuples, 0);
-        std::vector<int> anyoneHasPoint;
-
-        for (size_t idx = 0; idx < ics.size(); idx++)
-        {
-            size_t index = ics[idx]->id;
-            size_t l = (index-offset);
-            if(l < remapPoints.size()) ///l >= 0 is always true
-            {
-                iHavePoint[l] = 1;
-            }
-        }
-
-        UnifyMaximumValue(iHavePoint, anyoneHasPoint);
-        avtVector zero;
-        zero.x = zero.y = zero.z = 0.;
-        for (size_t i = 0; i < (size_t)nTuples; i++)
-        {
-            if (PAR_Rank() == 0 && !anyoneHasPoint[i])
-            {
-                remapPoints[i] = seedPoints.at(offset + i);
-                remapTimes[i] = 0;
-            }
-            else
-            {
-                remapPoints[i] = zero;
-                remapTimes[i] = 0;
-            }
-        }
+      remapPoints[i] = avtVector(0,0,0);
+      remapTimes[i] = 0;
     }
-    else
-    {
-        //copy the original seed points
-        for(size_t i = 0; i < remapPoints.size(); ++i)
-        {
-            remapPoints[i] = seedPoints.at(offset + i);
-            remapTimes[i] = 0;
-        }
-    }
+
+    // ARS - This code does not nothing of use that I can see. The
+    // remapPoints just need to be zeroed out.
+
+    // if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+    // {
+    //     // The parallel synchronization for when data is replicated involves
+    //     // a sum across all processors.  So we want remapPoints to have the
+    //     // location of the particle on one processor, and zero on the rest.
+    //     // Do that here.
+    //     // Special care is needed for the case where the particle never
+    //     // advected.  Then we need to put the initial location on just one
+    //     // processor.  We do this on rank 0.
+    //     std::vector<int> iHavePoint(nTuples, 0);
+    //     std::vector<int> anyoneHasPoint;
+
+    //     for (size_t idx = 0; idx < ics.size(); idx++)
+    //     {
+    //         size_t index = ics[idx]->id;
+    //         size_t l = (index-offset);
+    //         if(l < remapPoints.size()) ///l >= 0 is always true
+    //         {
+    //             iHavePoint[l] = 1;
+    //         }
+    //     }
+
+    //     UnifyMaximumValue(iHavePoint, anyoneHasPoint);
+    //     avtVector zero;
+    //     zero.x = zero.y = zero.z = 0.;
+    //     for (size_t i = 0; i < (size_t)nTuples; i++)
+    //     {
+    //         if (PAR_Rank() == 0 && !anyoneHasPoint[i])
+    //         {
+    //             remapPoints[i] = seedPoints.at(offset + i);
+    //             remapTimes[i] = 0;
+    //         }
+    //         else
+    //         {
+    //             remapPoints[i] = zero;
+    //             remapTimes[i] = 0;
+    //         }
+    //     }
+    // }
+    // else
+    // {
+    //     //copy the original seed points
+    //     for(size_t i = 0; i < remapPoints.size(); ++i)
+    //     {
+    //         remapPoints[i] = seedPoints.at(offset + i);
+    //         remapTimes[i] = 0;
+    //     }
+    // }
 
     for(size_t i = 0; i < ics.size(); ++i)
     {
@@ -2995,6 +3021,16 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
             remapTimes.at(l) = ic->GetTime();
         }
     }
+
+    // Get the stored data arrays
+    vtkDataArray* jacobian[3];
+    
+    vtkDoubleArray *exponents = (vtkDoubleArray *)
+      in_ds->GetPointData()->GetArray(var.c_str());
+    vtkDoubleArray *component = (vtkDoubleArray *)
+      in_ds->GetPointData()->GetArray("component");
+    vtkDoubleArray *times = (vtkDoubleArray *)
+      in_ds->GetPointData()->GetArray("times");
 
     //use static function in avtGradientExpression to calculate
     //gradients.  since this function only does scalar, break our
@@ -3017,7 +3053,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *out_ds,
         }
 
         jacobian[i] =
-          avtGradientExpression::CalculateGradient(out_ds, var.c_str());
+          avtGradientExpression::CalculateGradient(in_ds, var.c_str());
     }
 
     // Store the times for the exponent.
@@ -3515,7 +3551,7 @@ avtLCSFilter::CreateMultiBlockIterativeCalcOutput( avtDataTree_p inDT,
         //
         // there is only one dataset to process
         //
-        vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
+        vtkDataSet  *in_ds =  inDT->GetDataRepresentation().GetDataVTK();
         vtkDataSet *out_ds = outDT->GetDataRepresentation().GetDataVTK();
 
         int dom = inDT->GetDataRepresentation().GetDomain();
