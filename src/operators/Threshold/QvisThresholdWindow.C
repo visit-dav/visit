@@ -52,6 +52,7 @@
 #include <QButtonGroup>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QLineEdit>
 #include <QvisVariableButton.h>
 
 #include <stdio.h>
@@ -283,6 +284,12 @@ TrimTrailing(const QString &s0)
 //
 // Modifications:
 //
+//   Kevin Griffin, Wed Apr 1 16:58:38 PDT 2015
+//   Changed the argument format in the setNum() to 'g' so that it can use
+//   e or f format to display numbers in scientific notation when appropriate.
+//   Removed call to TrimTrailing() since it truncatted whole numbers. (i.e.
+//   600 would be changed to 6).
+//
 // ****************************************************************************
 
 void
@@ -292,12 +299,12 @@ QvisThresholdWindow::SetLowerUpper(int idx, double lower, double upper)
     if (lower < -9e+36)
         lStr = "min";
     else
-        lStr = TrimTrailing(QString().setNum(lower, 'f'));
+        lStr = QString().setNum(lower, 'g');
 
     if (upper > 9e+36)
         uStr = "max";
     else
-        uStr = TrimTrailing(QString().setNum(upper, 'f'));
+        uStr = QString().setNum(upper, 'g');
 
     threshVars->item(idx, 1)->setText(lStr);
     threshVars->item(idx, 2)->setText(uStr);
@@ -517,8 +524,8 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
     {
         curVarNames.push_back(guiFullVarNames[rowNum]);
         
-        lowerBoundText = threshVars->item(rowNum,1)->text().simplified();
-        upperBoundText = threshVars->item(rowNum,2)->text().simplified();
+        lowerBoundText = threshVars->item(rowNum,1)->text().trimmed();
+        upperBoundText = threshVars->item(rowNum,2)->text().trimmed();
         
         if (lowerBoundText == QString(tr("min"))) lowerBound = -1e+37;
         else
