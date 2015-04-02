@@ -6108,6 +6108,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    case all the processors would have domain 0, which caused problems.
 //    Now it temporarily sets the domain number to the processor rank.
 //
+//    Kathleen Biagas, Wed Apr  1 16:33:37 PDT 2015
+//    Obtain FieldData arrays as AbstractArray.
+//
 // ****************************************************************************
 
 bool
@@ -6236,7 +6239,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         vtkFieldData *fd = list[i]->GetFieldData();
         for (k = 0; k < (size_t)fd->GetNumberOfArrays(); k++)
         {
-            newList[i]->GetFieldData()->AddArray(fd->GetArray(k));
+            newList[i]->GetFieldData()->AddArray(fd->GetAbstractArray(k));
         }
         ds.SetDataset(i, 0, newList[i]);
         newList[i]->Delete();

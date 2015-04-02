@@ -125,24 +125,21 @@ void
 print_array_names(vtkDataSet *inDS)
 {
     vtkPointData *pd = inDS->GetPointData();
-    int i;
-    for (i = 0 ; i < pd->GetNumberOfArrays() ; i++)
+    for (int i = 0 ; i < pd->GetNumberOfArrays() ; i++)
     {
-        vtkDataArray *arr = pd->GetArray(i);
-        debug3 << "\tPoint Data array[" << i << "] = " << arr->GetName() << endl;
+        debug3 << "\tPoint Data array[" << i << "] = " << pd->GetArrayName(i) << endl;
     }
 
     vtkCellData *cd = inDS->GetCellData();
-    for (i = 0 ; i < cd->GetNumberOfArrays() ; i++)
+    for (int i = 0 ; i < cd->GetNumberOfArrays() ; i++)
     {
-        vtkDataArray *arr = cd->GetArray(i);
-        debug3 << "\tCell Data array[" << i << "] = " << arr->GetName() << endl;
+        debug3 << "\tCell Data array[" << i << "] = " << cd->GetArrayName(i) << endl;
     }
 
-    for (i = 0 ; i < inDS->GetFieldData()->GetNumberOfArrays() ; i++)
+    vtkFieldData *fd = inDS->GetFieldData();
+    for (int i = 0 ; i < fd->GetNumberOfArrays() ; i++)
     {
-        vtkDataArray *arr = inDS->GetFieldData()->GetArray(i);
-        debug3 << "\tField Data array[" << i << "] = " << arr->GetName() << endl;
+        debug3 << "\tField Data array[" << i << "] = " << fd->GetArrayName(i) << endl;
     }
 }
 #endif

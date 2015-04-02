@@ -1270,6 +1270,9 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Tom Fogal, Tue Sep 27 11:04:08 MDT 2011
 //    Fix warning.
 //
+//    Kathleen Biagas, Wed Apr  1 16:34:55 PDT 2015
+//    Access FieldData arrays via AbstractArray interface.
+//
 // ****************************************************************************
 
 const char *
@@ -1334,16 +1337,15 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 
         for(int i = 0; i < nfield; i++)
         {
-            vtkDataArray *arr = newDS->GetFieldData()->GetArray(i);
             string cur_name("");
-            if (arr->GetName() != NULL)
-                cur_name = arr->GetName();
+            if (newDS->GetFieldData()->GetArrayName(i) != NULL)
+                cur_name = newDS->GetFieldData()->GetArrayName(i);
             string dmp_name = cur_name;
             orig_names.push_back(cur_name);
             if( cur_name.find("avt") == 0 )
             {
                 dmp_name = "dump_internal_" + dmp_name.substr(3);
-                arr->SetName(dmp_name.c_str());
+                newDS->GetFieldData()->GetAbstractArray(i)->SetName(dmp_name.c_str());
                 dump_names.push_back(dmp_name);
             }
             else
@@ -1425,7 +1427,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         for(int i = 0; i < nfield; i++, idx++)
         {
             if(orig_names[idx] != dump_names[idx])
-                newDS->GetFieldData()->GetArray(i)->SetName(orig_names[idx].c_str());
+                newDS->GetFieldData()->GetAbstractArray(i)->SetName(orig_names[idx].c_str());
         }
 
         for(int i = 0; i < npt; i++, idx++)
@@ -1531,7 +1533,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
             for (int i=0; i<data[fd]->GetNumberOfArrays(); i++)
             {
                 const char *arr_type = "<unknown>";
-                switch (data[fd]->GetArray(i)->GetDataType())
+                switch (data[fd]->GetAbstractArray(i)->GetDataType())
                 {
                   case VTK_CHAR:
                     arr_type = "char";
@@ -1564,15 +1566,15 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
                     arr_type = "id_type";
                     break;
                 }
-                oss << "<li>" << data[fd]->GetArray(i)->GetName() 
+                oss << "<li>" << data[fd]->GetAbstractArray(i)->GetName() 
                     << "<ul>" 
                     << "<li>" 
-                    << "refs = "  << data[fd]->GetArray(i)->GetReferenceCount()
+                    << "refs = "  << data[fd]->GetAbstractArray(i)->GetReferenceCount()
                     << "</li><li>" 
-                    << "vals = " << data[fd]->GetArray(i)->GetNumberOfTuples()
+                    << "vals = " << data[fd]->GetAbstractArray(i)->GetNumberOfTuples()
                     << "</li><li>" 
                     << "ncomps = " 
-                    << data[fd]->GetArray(i)->GetNumberOfComponents()
+                    << data[fd]->GetAbstractArray(i)->GetNumberOfComponents()
                     << "</li><li>" 
                     << "type = " 
                     << arr_type
