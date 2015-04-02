@@ -855,6 +855,9 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
 //
 //    Kathleen Biagas, Fri Feb  6 06:06:24 PST 2015
 //    Use meshname from file (vtk_meshname), if available.
+
+//    Kathleen Biagas, Thu Apr  2 12:22:55 PDT 2015
+//    Return NULL a dataset with 0 points is read in.
 //
 // ****************************************************************************
 
@@ -874,6 +877,11 @@ avtVTKFileReader::GetMesh(int domain, const char *mesh)
         ReadInDataset(domain);
     }
     vtkDataSet *dataset = pieceDatasets[domain];
+
+    if (dataset->GetNumberOfPoints() == 0)
+    {
+        return NULL;
+    }
 
     // If the requested mesh is a curve, return it.
     std::map<std::string, vtkRectilinearGrid *>::iterator pos = vtkCurves.find(mesh);
