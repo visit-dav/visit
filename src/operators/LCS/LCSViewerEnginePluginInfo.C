@@ -247,7 +247,7 @@ LCSViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
         k = atts_in->GetOperatorType();
 
         var += std::string(" - ") + std::string(typeString[i][j]) +
-               std::string(" - ") + std::string(operatorString[k]);
+               std::string(" ")   + std::string(operatorString[k]);
 
     }
     else if( atts_in->GetOperationType() == LCSAttributes::EigenValue ||
@@ -272,7 +272,7 @@ LCSViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 
         i = 2;
         j = atts_in->GetTerminationType();
-        var += std::string(" - ") + std::string(typeString[i][j]);
+        var += std::string(" ")   + std::string(typeString[i][j]);
     }
 
     return var;
