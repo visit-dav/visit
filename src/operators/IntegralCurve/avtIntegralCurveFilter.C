@@ -426,7 +426,7 @@ avtIntegralCurveFilter::ModifyContract(avtContract_p in_contract)
         out_dr = new avtDataRequest(in_dr, justTheVar.c_str());
     }
 
-    if( strncmp(var.c_str(), "operators/LCS/",
+    else if( strncmp(var.c_str(), "operators/LCS/",
                 strlen("operators/LCS/")) == 0)
     {
         std::string justTheVar = var.substr(strlen("operators/LCS/"));
