@@ -32,6 +32,8 @@ SET(LIBE_SOURCES
 LCSViewerEnginePluginInfo.C
 LCSEnginePluginInfo.C
 avtLCSFilter.C
+avtLCSFilterFTLE.C
+avtLCSFilterFSLE.C
 ${COMMON_SOURCES}
 )
 

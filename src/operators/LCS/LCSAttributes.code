@@ -147,7 +147,11 @@ LCSAttributes::ChangesRequireRecalculation(const LCSAttributes &obj) const
         absTolAbsolute != obj.absTolAbsolute ||
         absTolBBox != obj.absTolBBox ||
         fieldType != obj.fieldType ||
-        fieldConstant != obj. fieldConstant||
+        fieldConstant != obj.fieldConstant ||
+        thresholdLimit != obj.thresholdLimit ||
+        radialLimit != obj.radialLimit ||
+        boundaryLimit != obj.boundaryLimit ||
+        seedLimit != obj.seedLimit ||
         integrationType != obj.integrationType ||
         parallelizationAlgorithmType != obj.parallelizationAlgorithmType ||
         maxProcessCount != obj.maxProcessCount ||

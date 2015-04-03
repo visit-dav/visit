@@ -110,6 +110,11 @@ class QvisLCSWindow : public QvisOperatorWindow
     void auxiliaryGridChanged(int val);
     void auxiliaryGridSpacingProcessText();
 
+    void thresholdLimitProcessText();
+    void radialLimitProcessText();
+    void boundaryLimitProcessText();
+    void seedLimitChanged(int val);
+
     void fieldTypeChanged(int val);
     void fieldConstantProcessText();
     void velocitySourceProcessText();
@@ -176,6 +181,11 @@ class QvisLCSWindow : public QvisOperatorWindow
     QComboBox *auxiliaryGrid;
     QLabel    *auxiliaryGridSpacingLabel;
     QLineEdit *auxiliaryGridSpacing;
+
+    QLineEdit *thresholdLimit;
+    QLineEdit *radialLimit;
+    QLineEdit *boundaryLimit;
+    QSpinBox  *seedLimit;
 
     QComboBox *fieldType;
     QLabel    *fieldConstantLabel;

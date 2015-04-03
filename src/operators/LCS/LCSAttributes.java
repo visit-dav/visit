@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class LCSAttributes extends AttributeSubject implements Plugin
 {
-    private static int LCSAttributes_numAdditionalAtts = 50;
+    private static int LCSAttributes_numAdditionalAtts = 54;
 
     // Enum values
     public final static int SOURCETYPE_NATIVEMESH = 0;
@@ -184,6 +184,10 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         pathlinesOverrideStartingTime = 0;
         pathlinesPeriod = 0;
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
+        thresholdLimit = 0.1;
+        radialLimit = 0.1;
+        boundaryLimit = 0.1;
+        seedLimit = 10;
         forceNodeCenteredData = false;
         issueAdvectionWarnings = true;
         issueBoundaryWarnings = true;
@@ -252,6 +256,10 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         pathlinesOverrideStartingTime = 0;
         pathlinesPeriod = 0;
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
+        thresholdLimit = 0.1;
+        radialLimit = 0.1;
+        boundaryLimit = 0.1;
+        seedLimit = 10;
         forceNodeCenteredData = false;
         issueAdvectionWarnings = true;
         issueBoundaryWarnings = true;
@@ -326,6 +334,10 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
         pathlinesPeriod = obj.pathlinesPeriod;
         pathlinesCMFE = obj.pathlinesCMFE;
+        thresholdLimit = obj.thresholdLimit;
+        radialLimit = obj.radialLimit;
+        boundaryLimit = obj.boundaryLimit;
+        seedLimit = obj.seedLimit;
         forceNodeCenteredData = obj.forceNodeCenteredData;
         issueAdvectionWarnings = obj.issueAdvectionWarnings;
         issueBoundaryWarnings = obj.issueBoundaryWarnings;
@@ -415,6 +427,10 @@ public class LCSAttributes extends AttributeSubject implements Plugin
                 (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
                 (pathlinesPeriod == obj.pathlinesPeriod) &&
                 (pathlinesCMFE == obj.pathlinesCMFE) &&
+                (thresholdLimit == obj.thresholdLimit) &&
+                (radialLimit == obj.radialLimit) &&
+                (boundaryLimit == obj.boundaryLimit) &&
+                (seedLimit == obj.seedLimit) &&
                 (forceNodeCenteredData == obj.forceNodeCenteredData) &&
                 (issueAdvectionWarnings == obj.issueAdvectionWarnings) &&
                 (issueBoundaryWarnings == obj.issueBoundaryWarnings) &&
@@ -726,46 +742,70 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         Select(42);
     }
 
+    public void SetThresholdLimit(double thresholdLimit_)
+    {
+        thresholdLimit = thresholdLimit_;
+        Select(43);
+    }
+
+    public void SetRadialLimit(double radialLimit_)
+    {
+        radialLimit = radialLimit_;
+        Select(44);
+    }
+
+    public void SetBoundaryLimit(double boundaryLimit_)
+    {
+        boundaryLimit = boundaryLimit_;
+        Select(45);
+    }
+
+    public void SetSeedLimit(int seedLimit_)
+    {
+        seedLimit = seedLimit_;
+        Select(46);
+    }
+
     public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
     {
         forceNodeCenteredData = forceNodeCenteredData_;
-        Select(43);
+        Select(47);
     }
 
     public void SetIssueAdvectionWarnings(boolean issueAdvectionWarnings_)
     {
         issueAdvectionWarnings = issueAdvectionWarnings_;
-        Select(44);
+        Select(48);
     }
 
     public void SetIssueBoundaryWarnings(boolean issueBoundaryWarnings_)
     {
         issueBoundaryWarnings = issueBoundaryWarnings_;
-        Select(45);
+        Select(49);
     }
 
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(46);
+        Select(50);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(47);
+        Select(51);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(48);
+        Select(52);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(49);
+        Select(53);
     }
 
     // Property getting methods
@@ -812,6 +852,10 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     public double   GetPathlinesOverrideStartingTime() { return pathlinesOverrideStartingTime; }
     public double   GetPathlinesPeriod() { return pathlinesPeriod; }
     public int      GetPathlinesCMFE() { return pathlinesCMFE; }
+    public double   GetThresholdLimit() { return thresholdLimit; }
+    public double   GetRadialLimit() { return radialLimit; }
+    public double   GetBoundaryLimit() { return boundaryLimit; }
+    public int      GetSeedLimit() { return seedLimit; }
     public boolean  GetForceNodeCenteredData() { return forceNodeCenteredData; }
     public boolean  GetIssueAdvectionWarnings() { return issueAdvectionWarnings; }
     public boolean  GetIssueBoundaryWarnings() { return issueBoundaryWarnings; }
@@ -910,18 +954,26 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(42, buf))
             buf.WriteInt(pathlinesCMFE);
         if(WriteSelect(43, buf))
-            buf.WriteBool(forceNodeCenteredData);
+            buf.WriteDouble(thresholdLimit);
         if(WriteSelect(44, buf))
-            buf.WriteBool(issueAdvectionWarnings);
+            buf.WriteDouble(radialLimit);
         if(WriteSelect(45, buf))
-            buf.WriteBool(issueBoundaryWarnings);
+            buf.WriteDouble(boundaryLimit);
         if(WriteSelect(46, buf))
-            buf.WriteBool(issueTerminationWarnings);
+            buf.WriteInt(seedLimit);
         if(WriteSelect(47, buf))
-            buf.WriteBool(issueStiffnessWarnings);
+            buf.WriteBool(forceNodeCenteredData);
         if(WriteSelect(48, buf))
-            buf.WriteBool(issueCriticalPointsWarnings);
+            buf.WriteBool(issueAdvectionWarnings);
         if(WriteSelect(49, buf))
+            buf.WriteBool(issueBoundaryWarnings);
+        if(WriteSelect(50, buf))
+            buf.WriteBool(issueTerminationWarnings);
+        if(WriteSelect(51, buf))
+            buf.WriteBool(issueStiffnessWarnings);
+        if(WriteSelect(52, buf))
+            buf.WriteBool(issueCriticalPointsWarnings);
+        if(WriteSelect(53, buf))
             buf.WriteDouble(criticalPointThreshold);
     }
 
@@ -1059,24 +1111,36 @@ public class LCSAttributes extends AttributeSubject implements Plugin
             SetPathlinesCMFE(buf.ReadInt());
             break;
         case 43:
-            SetForceNodeCenteredData(buf.ReadBool());
+            SetThresholdLimit(buf.ReadDouble());
             break;
         case 44:
-            SetIssueAdvectionWarnings(buf.ReadBool());
+            SetRadialLimit(buf.ReadDouble());
             break;
         case 45:
-            SetIssueBoundaryWarnings(buf.ReadBool());
+            SetBoundaryLimit(buf.ReadDouble());
             break;
         case 46:
-            SetIssueTerminationWarnings(buf.ReadBool());
+            SetSeedLimit(buf.ReadInt());
             break;
         case 47:
-            SetIssueStiffnessWarnings(buf.ReadBool());
+            SetForceNodeCenteredData(buf.ReadBool());
             break;
         case 48:
-            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            SetIssueAdvectionWarnings(buf.ReadBool());
             break;
         case 49:
+            SetIssueBoundaryWarnings(buf.ReadBool());
+            break;
+        case 50:
+            SetIssueTerminationWarnings(buf.ReadBool());
+            break;
+        case 51:
+            SetIssueStiffnessWarnings(buf.ReadBool());
+            break;
+        case 52:
+            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            break;
+        case 53:
             SetCriticalPointThreshold(buf.ReadDouble());
             break;
         }
@@ -1243,6 +1307,10 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         if(pathlinesCMFE == PATHLINESCMFE_POS_CMFE)
             str = str + "PATHLINESCMFE_POS_CMFE";
         str = str + "\n";
+        str = str + doubleToString("thresholdLimit", thresholdLimit, indent) + "\n";
+        str = str + doubleToString("radialLimit", radialLimit, indent) + "\n";
+        str = str + doubleToString("boundaryLimit", boundaryLimit, indent) + "\n";
+        str = str + intToString("seedLimit", seedLimit, indent) + "\n";
         str = str + boolToString("forceNodeCenteredData", forceNodeCenteredData, indent) + "\n";
         str = str + boolToString("issueAdvectionWarnings", issueAdvectionWarnings, indent) + "\n";
         str = str + boolToString("issueBoundaryWarnings", issueBoundaryWarnings, indent) + "\n";
@@ -1298,6 +1366,10 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     private double   pathlinesOverrideStartingTime;
     private double   pathlinesPeriod;
     private int      pathlinesCMFE;
+    private double   thresholdLimit;
+    private double   radialLimit;
+    private double   boundaryLimit;
+    private int      seedLimit;
     private boolean  forceNodeCenteredData;
     private boolean  issueAdvectionWarnings;
     private boolean  issueBoundaryWarnings;
