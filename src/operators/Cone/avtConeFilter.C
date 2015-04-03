@@ -878,6 +878,9 @@ avtConeFilter::Equivalent(const AttributeGroup *a)
 //    Eric Brugger, Wed Jul 23 08:38:09 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Fri Apr  3 14:54:56 PDT 2015
+//    If 'empty' output is created (0 points), return NULL instead of DR.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -940,8 +943,9 @@ avtConeFilter::ExecuteData(avtDataRepresentation *in_dr)
 
     DestroyVTKObjects(obj);
 
-    avtDataRepresentation *out_dr = new avtDataRepresentation(ds,
-        in_dr->GetDomain(), in_dr->GetLabel());
+    avtDataRepresentation *out_dr = NULL;
+    if (ds->GetNumberOfPoints() > 0)
+        out_dr = new avtDataRepresentation(ds, in_dr->GetDomain(), in_dr->GetLabel());
 
     ds->Delete();
 
