@@ -7787,6 +7787,9 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Eric Brugger, Fri Oct 28 10:07:28 PDT 2011
 //    Add a multi resolution display capability for AMR data.
 //
+//    Kathleen Biagas, Thu Apr  2 17:06:22 PDT 2015
+//    Ensure color texturing flag gets set.
+//
 // ****************************************************************************
 
 void
@@ -7830,6 +7833,7 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
                                 GetViewerState()->GetRenderingAttributes()->GetDepthCueingAutomatic(),
                                 GetViewerState()->GetRenderingAttributes()->GetStartCuePoint(),
                                 GetViewerState()->GetRenderingAttributes()->GetEndCuePoint());
+    w->SetColorTexturingFlag(GetViewerState()->GetRenderingAttributes()->GetColorTexturingFlag());
 }
 
 // ****************************************************************************
