@@ -636,6 +636,10 @@ void LCSAttributes::Init()
     pathlinesOverrideStartingTime = 0;
     pathlinesPeriod = 0;
     pathlinesCMFE = POS_CMFE;
+    thresholdLimit = 0.1;
+    radialLimit = 0.1;
+    boundaryLimit = 0.1;
+    seedLimit = 10;
     forceNodeCenteredData = false;
     issueAdvectionWarnings = true;
     issueBoundaryWarnings = true;
@@ -719,6 +723,10 @@ void LCSAttributes::Copy(const LCSAttributes &obj)
     pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
     pathlinesPeriod = obj.pathlinesPeriod;
     pathlinesCMFE = obj.pathlinesCMFE;
+    thresholdLimit = obj.thresholdLimit;
+    radialLimit = obj.radialLimit;
+    boundaryLimit = obj.boundaryLimit;
+    seedLimit = obj.seedLimit;
     forceNodeCenteredData = obj.forceNodeCenteredData;
     issueAdvectionWarnings = obj.issueAdvectionWarnings;
     issueBoundaryWarnings = obj.issueBoundaryWarnings;
@@ -946,6 +954,10 @@ LCSAttributes::operator == (const LCSAttributes &obj) const
             (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
             (pathlinesPeriod == obj.pathlinesPeriod) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
+            (thresholdLimit == obj.thresholdLimit) &&
+            (radialLimit == obj.radialLimit) &&
+            (boundaryLimit == obj.boundaryLimit) &&
+            (seedLimit == obj.seedLimit) &&
             (forceNodeCenteredData == obj.forceNodeCenteredData) &&
             (issueAdvectionWarnings == obj.issueAdvectionWarnings) &&
             (issueBoundaryWarnings == obj.issueBoundaryWarnings) &&
@@ -1153,6 +1165,10 @@ LCSAttributes::SelectAll()
     Select(ID_pathlinesOverrideStartingTime,     (void *)&pathlinesOverrideStartingTime);
     Select(ID_pathlinesPeriod,                   (void *)&pathlinesPeriod);
     Select(ID_pathlinesCMFE,                     (void *)&pathlinesCMFE);
+    Select(ID_thresholdLimit,                    (void *)&thresholdLimit);
+    Select(ID_radialLimit,                       (void *)&radialLimit);
+    Select(ID_boundaryLimit,                     (void *)&boundaryLimit);
+    Select(ID_seedLimit,                         (void *)&seedLimit);
     Select(ID_forceNodeCenteredData,             (void *)&forceNodeCenteredData);
     Select(ID_issueAdvectionWarnings,            (void *)&issueAdvectionWarnings);
     Select(ID_issueBoundaryWarnings,             (void *)&issueBoundaryWarnings);
@@ -1448,6 +1464,30 @@ LCSAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
     {
         addToParent = true;
         node->AddNode(new DataNode("pathlinesCMFE", PathlinesCMFE_ToString(pathlinesCMFE)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_thresholdLimit, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("thresholdLimit", thresholdLimit));
+    }
+
+    if(completeSave || !FieldsEqual(ID_radialLimit, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("radialLimit", radialLimit));
+    }
+
+    if(completeSave || !FieldsEqual(ID_boundaryLimit, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("boundaryLimit", boundaryLimit));
+    }
+
+    if(completeSave || !FieldsEqual(ID_seedLimit, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("seedLimit", seedLimit));
     }
 
     if(completeSave || !FieldsEqual(ID_forceNodeCenteredData, &defaultObject))
@@ -1824,6 +1864,14 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
                 SetPathlinesCMFE(value);
         }
     }
+    if((node = searchNode->GetNode("thresholdLimit")) != 0)
+        SetThresholdLimit(node->AsDouble());
+    if((node = searchNode->GetNode("radialLimit")) != 0)
+        SetRadialLimit(node->AsDouble());
+    if((node = searchNode->GetNode("boundaryLimit")) != 0)
+        SetBoundaryLimit(node->AsDouble());
+    if((node = searchNode->GetNode("seedLimit")) != 0)
+        SetSeedLimit(node->AsInt());
     if((node = searchNode->GetNode("forceNodeCenteredData")) != 0)
         SetForceNodeCenteredData(node->AsBool());
     if((node = searchNode->GetNode("issueAdvectionWarnings")) != 0)
@@ -2151,6 +2199,34 @@ LCSAttributes::SetPathlinesCMFE(LCSAttributes::PathlinesCMFE pathlinesCMFE_)
 {
     pathlinesCMFE = pathlinesCMFE_;
     Select(ID_pathlinesCMFE, (void *)&pathlinesCMFE);
+}
+
+void
+LCSAttributes::SetThresholdLimit(double thresholdLimit_)
+{
+    thresholdLimit = thresholdLimit_;
+    Select(ID_thresholdLimit, (void *)&thresholdLimit);
+}
+
+void
+LCSAttributes::SetRadialLimit(double radialLimit_)
+{
+    radialLimit = radialLimit_;
+    Select(ID_radialLimit, (void *)&radialLimit);
+}
+
+void
+LCSAttributes::SetBoundaryLimit(double boundaryLimit_)
+{
+    boundaryLimit = boundaryLimit_;
+    Select(ID_boundaryLimit, (void *)&boundaryLimit);
+}
+
+void
+LCSAttributes::SetSeedLimit(int seedLimit_)
+{
+    seedLimit = seedLimit_;
+    Select(ID_seedLimit, (void *)&seedLimit);
 }
 
 void
@@ -2488,6 +2564,30 @@ LCSAttributes::GetPathlinesCMFE() const
     return PathlinesCMFE(pathlinesCMFE);
 }
 
+double
+LCSAttributes::GetThresholdLimit() const
+{
+    return thresholdLimit;
+}
+
+double
+LCSAttributes::GetRadialLimit() const
+{
+    return radialLimit;
+}
+
+double
+LCSAttributes::GetBoundaryLimit() const
+{
+    return boundaryLimit;
+}
+
+int
+LCSAttributes::GetSeedLimit() const
+{
+    return seedLimit;
+}
+
 bool
 LCSAttributes::GetForceNodeCenteredData() const
 {
@@ -2625,6 +2725,10 @@ LCSAttributes::GetFieldName(int index) const
     case ID_pathlinesOverrideStartingTime:     return "pathlinesOverrideStartingTime";
     case ID_pathlinesPeriod:                   return "pathlinesPeriod";
     case ID_pathlinesCMFE:                     return "pathlinesCMFE";
+    case ID_thresholdLimit:                    return "thresholdLimit";
+    case ID_radialLimit:                       return "radialLimit";
+    case ID_boundaryLimit:                     return "boundaryLimit";
+    case ID_seedLimit:                         return "seedLimit";
     case ID_forceNodeCenteredData:             return "forceNodeCenteredData";
     case ID_issueAdvectionWarnings:            return "issueAdvectionWarnings";
     case ID_issueBoundaryWarnings:             return "issueBoundaryWarnings";
@@ -2699,6 +2803,10 @@ LCSAttributes::GetFieldType(int index) const
     case ID_pathlinesOverrideStartingTime:     return FieldType_double;
     case ID_pathlinesPeriod:                   return FieldType_double;
     case ID_pathlinesCMFE:                     return FieldType_enum;
+    case ID_thresholdLimit:                    return FieldType_double;
+    case ID_radialLimit:                       return FieldType_double;
+    case ID_boundaryLimit:                     return FieldType_double;
+    case ID_seedLimit:                         return FieldType_int;
     case ID_forceNodeCenteredData:             return FieldType_bool;
     case ID_issueAdvectionWarnings:            return FieldType_bool;
     case ID_issueBoundaryWarnings:             return FieldType_bool;
@@ -2773,6 +2881,10 @@ LCSAttributes::GetFieldTypeName(int index) const
     case ID_pathlinesOverrideStartingTime:     return "double";
     case ID_pathlinesPeriod:                   return "double";
     case ID_pathlinesCMFE:                     return "enum";
+    case ID_thresholdLimit:                    return "double";
+    case ID_radialLimit:                       return "double";
+    case ID_boundaryLimit:                     return "double";
+    case ID_seedLimit:                         return "int";
     case ID_forceNodeCenteredData:             return "bool";
     case ID_issueAdvectionWarnings:            return "bool";
     case ID_issueBoundaryWarnings:             return "bool";
@@ -3041,6 +3153,26 @@ LCSAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (pathlinesCMFE == obj.pathlinesCMFE);
         }
         break;
+    case ID_thresholdLimit:
+        {  // new scope
+        retval = (thresholdLimit == obj.thresholdLimit);
+        }
+        break;
+    case ID_radialLimit:
+        {  // new scope
+        retval = (radialLimit == obj.radialLimit);
+        }
+        break;
+    case ID_boundaryLimit:
+        {  // new scope
+        retval = (boundaryLimit == obj.boundaryLimit);
+        }
+        break;
+    case ID_seedLimit:
+        {  // new scope
+        retval = (seedLimit == obj.seedLimit);
+        }
+        break;
     case ID_forceNodeCenteredData:
         {  // new scope
         retval = (forceNodeCenteredData == obj.forceNodeCenteredData);
@@ -3155,7 +3287,11 @@ LCSAttributes::ChangesRequireRecalculation(const LCSAttributes &obj) const
         absTolAbsolute != obj.absTolAbsolute ||
         absTolBBox != obj.absTolBBox ||
         fieldType != obj.fieldType ||
-        fieldConstant != obj. fieldConstant||
+        fieldConstant != obj.fieldConstant ||
+        thresholdLimit != obj.thresholdLimit ||
+        radialLimit != obj.radialLimit ||
+        boundaryLimit != obj.boundaryLimit ||
+        seedLimit != obj.seedLimit ||
         integrationType != obj.integrationType ||
         parallelizationAlgorithmType != obj.parallelizationAlgorithmType ||
         maxProcessCount != obj.maxProcessCount ||

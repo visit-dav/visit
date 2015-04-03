@@ -448,6 +448,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
     // Create the cauchyGreenTensor of integration.
     cauchyGreenTensorLabel = new QLabel(tr("Tensor"), central);
+    cauchyGreenTensorLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
     terminationLayout->addWidget(cauchyGreenTensorLabel, 0, 2);
 
     cauchyGreenTensor = new QComboBox(central);
@@ -485,6 +486,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
     // Create the eigen weight text field.
     eigenWeightLabel = new QLabel(tr("Weight"), central);
+    eigenWeightLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
     eigenWeight = new QLineEdit(terminationGroup);
     connect(eigenWeight, SIGNAL(returnPressed()), this, SLOT(eigenWeightProcessText()));
     terminationLayout->addWidget(eigenWeightLabel, 1, 2);
@@ -543,7 +545,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
 
 // ****************************************************************************
-// Method: QvisLCSWindow::CreateAdvancedTab
+// Method: QvisLCSWindow::CreateAppearanceTab
 //
 // Purpose: 
 //   Populates the appearance tab.
@@ -561,6 +563,51 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
     QGridLayout *mainLayout = new QGridLayout(pageAppearance);
     mainLayout->setMargin(5);
     mainLayout->setSpacing(10);
+
+    // Seed generation group.
+    QGroupBox *seedGroup = new QGroupBox(pageAppearance);
+    seedGroup->setTitle(tr("Seed generation"));
+    mainLayout->addWidget(seedGroup, 0, 0);
+
+    QGridLayout *seedGroupLayout = new QGridLayout(seedGroup);
+    seedGroupLayout->setSpacing(10);
+    seedGroupLayout->setColumnStretch(1,10);
+
+    QLabel *thresholdLimitLabel = new QLabel(tr("Threshold limit"), seedGroup);
+    thresholdLimitLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    seedGroupLayout->addWidget(thresholdLimitLabel, 0, 0);
+    thresholdLimit = new QLineEdit(seedGroup);
+    connect(thresholdLimit, SIGNAL(returnPressed()),
+            this, SLOT(thresholdLimitProcessText()));
+    seedGroupLayout->addWidget(thresholdLimit, 0, 1);
+
+
+    QLabel *radialLimitLabel = new QLabel(tr("Radial limit"), seedGroup);
+    radialLimitLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    seedGroupLayout->addWidget(radialLimitLabel, 1, 0);
+    radialLimit = new QLineEdit(seedGroup);
+    connect(radialLimit, SIGNAL(returnPressed()),
+            this, SLOT(radialLimitProcessText()));
+    seedGroupLayout->addWidget(radialLimit, 1, 1);
+
+
+    QLabel *boundaryLimitLabel = new QLabel(tr("Boundary limit"), seedGroup);
+    boundaryLimitLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    seedGroupLayout->addWidget(boundaryLimitLabel, 2, 0);
+    boundaryLimit = new QLineEdit(seedGroup);
+    connect(boundaryLimit, SIGNAL(returnPressed()),
+            this, SLOT(boundaryLimitProcessText()));
+    seedGroupLayout->addWidget(boundaryLimit, 2, 1);
+
+    QLabel *seedLimitLabel = new QLabel(tr("Maximum number of seeds"), seedGroup);
+    seedLimitLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    seedGroupLayout->addWidget( seedLimitLabel, 3, 0);
+    seedLimit = new QSpinBox(seedGroup);
+    seedLimit->setMinimum(1);
+    seedLimit->setMaximum(100);
+    connect(seedLimit, SIGNAL(valueChanged(int)),
+            this, SLOT(seedLimitChanged(int)));
+    seedGroupLayout->addWidget( seedLimit, 3, 1);
 
     // Streamlines/Pathline Group.
     QGroupBox *icGrp = new QGroupBox(pageAppearance);
@@ -1158,6 +1205,25 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             fieldType->blockSignals(false);
 
             break;
+
+        case LCSAttributes::ID_thresholdLimit:
+            temp.setNum(atts->GetThresholdLimit(), 'g', 16);
+            thresholdLimit->setText(temp);
+            break;
+        case LCSAttributes::ID_radialLimit:
+            temp.setNum(atts->GetRadialLimit(), 'g', 16);
+            radialLimit->setText(temp);
+            break;
+        case LCSAttributes::ID_boundaryLimit:
+            temp.setNum(atts->GetBoundaryLimit(), 'g', 16);
+            boundaryLimit->setText(temp);
+            break;
+        case LCSAttributes::ID_seedLimit:
+            seedLimit->blockSignals(true);
+            seedLimit->setValue(atts->GetSeedLimit());
+            seedLimit->blockSignals(false);
+            break;
+
         case LCSAttributes::ID_parallelizationAlgorithmType:
             // Update lots of widget visibility and enabled states.
             UpdateAlgorithmAttributes();
@@ -1679,6 +1745,55 @@ QvisLCSWindow::GetCurrentValues(int which_widget)
     }
 
 
+    if(which_widget == LCSAttributes::ID_thresholdLimit || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(thresholdLimit, val))
+            atts->SetThresholdLimit(val);
+        else
+        {
+            ResettingError(tr("Threshold Limit"),
+                DoubleToQString(atts->GetThresholdLimit()));
+            atts->SetThresholdLimit(atts->GetThresholdLimit());
+        }
+    }
+
+    if(which_widget == LCSAttributes::ID_radialLimit || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(radialLimit, val))
+            atts->SetRadialLimit(val);
+        else
+        {
+            ResettingError(tr("Radial Limit"),
+                DoubleToQString(atts->GetRadialLimit()));
+            atts->SetRadialLimit(atts->GetRadialLimit());
+        }
+    }
+
+    if(which_widget == LCSAttributes::ID_boundaryLimit || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(boundaryLimit, val))
+            atts->SetBoundaryLimit(val);
+        else
+        {
+            ResettingError(tr("Boundary Limit"),
+                DoubleToQString(atts->GetBoundaryLimit()));
+            atts->SetBoundaryLimit(atts->GetBoundaryLimit());
+        }
+    }
+
+    // seedLimit
+    if (which_widget == LCSAttributes::ID_seedLimit || doAll)
+    {
+        // This can only be an integer, so no error checking is needed.
+        int val = seedLimit->value();
+        if (val >= 0)
+            atts->SetSeedLimit(val);
+    }
+    
+
     // maxProcessCount
     if (which_widget == LCSAttributes::ID_maxProcessCount || doAll)
     {
@@ -1961,6 +2076,35 @@ QvisLCSWindow::relTolProcessText()
     GetCurrentValues(LCSAttributes::ID_relTol);
     Apply();
 }
+
+void
+QvisLCSWindow::thresholdLimitProcessText()
+{
+    GetCurrentValues(LCSAttributes::ID_thresholdLimit);
+    Apply();
+}
+
+void
+QvisLCSWindow::radialLimitProcessText()
+{
+    GetCurrentValues(LCSAttributes::ID_radialLimit);
+    Apply();
+}
+
+void
+QvisLCSWindow::boundaryLimitProcessText()
+{
+    GetCurrentValues(LCSAttributes::ID_boundaryLimit);
+    Apply();
+}
+
+void
+QvisLCSWindow::seedLimitChanged(int val)
+{
+    atts->SetSeedLimit(val);
+    Apply();
+}
+
 
 void
 QvisLCSWindow::maxSLCountChanged(int val)

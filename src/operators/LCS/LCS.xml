@@ -222,6 +222,18 @@
       <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
         POS_CMFE
       </Field>
+      <Field name="thresholdLimit" label="Threshold limit" type="double">
+        0.1
+      </Field>
+      <Field name="radialLimit" label="Radial crop distance" type="double">
+        0.1
+      </Field>
+      <Field name="boundaryLimit" label="Boundary crop distance" type="double">
+        0.1
+      </Field>
+      <Field name="seedLimit" label="Maximum number of seeds" type="int">
+        10
+      </Field>
 
       <Field name="forceNodeCenteredData" label="forceNodeCenteredData" type="bool">
         false

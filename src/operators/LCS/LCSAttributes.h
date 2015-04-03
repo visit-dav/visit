@@ -225,6 +225,10 @@ public:
     void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_);
     void SetPathlinesPeriod(double pathlinesPeriod_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
+    void SetThresholdLimit(double thresholdLimit_);
+    void SetRadialLimit(double radialLimit_);
+    void SetBoundaryLimit(double boundaryLimit_);
+    void SetSeedLimit(int seedLimit_);
     void SetForceNodeCenteredData(bool forceNodeCenteredData_);
     void SetIssueAdvectionWarnings(bool issueAdvectionWarnings_);
     void SetIssueBoundaryWarnings(bool issueBoundaryWarnings_);
@@ -281,6 +285,10 @@ public:
     double       GetPathlinesOverrideStartingTime() const;
     double       GetPathlinesPeriod() const;
     PathlinesCMFE GetPathlinesCMFE() const;
+    double       GetThresholdLimit() const;
+    double       GetRadialLimit() const;
+    double       GetBoundaryLimit() const;
+    int          GetSeedLimit() const;
     bool         GetForceNodeCenteredData() const;
     bool         GetIssueAdvectionWarnings() const;
     bool         GetIssueBoundaryWarnings() const;
@@ -419,6 +427,10 @@ public:
         ID_pathlinesOverrideStartingTime,
         ID_pathlinesPeriod,
         ID_pathlinesCMFE,
+        ID_thresholdLimit,
+        ID_radialLimit,
+        ID_boundaryLimit,
+        ID_seedLimit,
         ID_forceNodeCenteredData,
         ID_issueAdvectionWarnings,
         ID_issueBoundaryWarnings,
@@ -473,6 +485,10 @@ private:
     double pathlinesOverrideStartingTime;
     double pathlinesPeriod;
     int    pathlinesCMFE;
+    double thresholdLimit;
+    double radialLimit;
+    double boundaryLimit;
+    int    seedLimit;
     bool   forceNodeCenteredData;
     bool   issueAdvectionWarnings;
     bool   issueBoundaryWarnings;
@@ -485,6 +501,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LCSATTRIBUTES_TMFS "iIiDiDiidiiiidiibdbdbddbddiddidDibiiiibbddibbbbbbd"
+#define LCSATTRIBUTES_TMFS "iIiDiDiidiiiidiibdbdbddbddiddidDibiiiibbddidddibbbbbbd"
 
 #endif

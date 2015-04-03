@@ -517,6 +517,14 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%sthresholdLimit = %g\n", prefix, atts->GetThresholdLimit());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sradialLimit = %g\n", prefix, atts->GetRadialLimit());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sboundaryLimit = %g\n", prefix, atts->GetBoundaryLimit());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sseedLimit = %d\n", prefix, atts->GetSeedLimit());
+    str += tmpStr;
     if(atts->GetForceNodeCenteredData())
         SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 1\n", prefix);
     else
@@ -1852,6 +1860,102 @@ LCSAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LCSAttributes_SetThresholdLimit(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the thresholdLimit in the object.
+    obj->data->SetThresholdLimit(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetThresholdLimit(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetThresholdLimit());
+    return retval;
+}
+
+/*static*/ PyObject *
+LCSAttributes_SetRadialLimit(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the radialLimit in the object.
+    obj->data->SetRadialLimit(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetRadialLimit(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetRadialLimit());
+    return retval;
+}
+
+/*static*/ PyObject *
+LCSAttributes_SetBoundaryLimit(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the boundaryLimit in the object.
+    obj->data->SetBoundaryLimit(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetBoundaryLimit(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetBoundaryLimit());
+    return retval;
+}
+
+/*static*/ PyObject *
+LCSAttributes_SetSeedLimit(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the seedLimit in the object.
+    obj->data->SetSeedLimit((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetSeedLimit(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetSeedLimit()));
+    return retval;
+}
+
+/*static*/ PyObject *
 LCSAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)self;
@@ -2109,6 +2213,14 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
     {"GetPathlinesPeriod", LCSAttributes_GetPathlinesPeriod, METH_VARARGS},
     {"SetPathlinesCMFE", LCSAttributes_SetPathlinesCMFE, METH_VARARGS},
     {"GetPathlinesCMFE", LCSAttributes_GetPathlinesCMFE, METH_VARARGS},
+    {"SetThresholdLimit", LCSAttributes_SetThresholdLimit, METH_VARARGS},
+    {"GetThresholdLimit", LCSAttributes_GetThresholdLimit, METH_VARARGS},
+    {"SetRadialLimit", LCSAttributes_SetRadialLimit, METH_VARARGS},
+    {"GetRadialLimit", LCSAttributes_GetRadialLimit, METH_VARARGS},
+    {"SetBoundaryLimit", LCSAttributes_SetBoundaryLimit, METH_VARARGS},
+    {"GetBoundaryLimit", LCSAttributes_GetBoundaryLimit, METH_VARARGS},
+    {"SetSeedLimit", LCSAttributes_SetSeedLimit, METH_VARARGS},
+    {"GetSeedLimit", LCSAttributes_GetSeedLimit, METH_VARARGS},
     {"SetForceNodeCenteredData", LCSAttributes_SetForceNodeCenteredData, METH_VARARGS},
     {"GetForceNodeCenteredData", LCSAttributes_GetForceNodeCenteredData, METH_VARARGS},
     {"SetIssueAdvectionWarnings", LCSAttributes_SetIssueAdvectionWarnings, METH_VARARGS},
@@ -2352,6 +2464,14 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "POS_CMFE") == 0)
         return PyInt_FromLong(long(LCSAttributes::POS_CMFE));
 
+    if(strcmp(name, "thresholdLimit") == 0)
+        return LCSAttributes_GetThresholdLimit(self, NULL);
+    if(strcmp(name, "radialLimit") == 0)
+        return LCSAttributes_GetRadialLimit(self, NULL);
+    if(strcmp(name, "boundaryLimit") == 0)
+        return LCSAttributes_GetBoundaryLimit(self, NULL);
+    if(strcmp(name, "seedLimit") == 0)
+        return LCSAttributes_GetSeedLimit(self, NULL);
     if(strcmp(name, "forceNodeCenteredData") == 0)
         return LCSAttributes_GetForceNodeCenteredData(self, NULL);
     if(strcmp(name, "issueAdvectionWarnings") == 0)
@@ -2466,6 +2586,14 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LCSAttributes_SetPathlinesPeriod(self, tuple);
     else if(strcmp(name, "pathlinesCMFE") == 0)
         obj = LCSAttributes_SetPathlinesCMFE(self, tuple);
+    else if(strcmp(name, "thresholdLimit") == 0)
+        obj = LCSAttributes_SetThresholdLimit(self, tuple);
+    else if(strcmp(name, "radialLimit") == 0)
+        obj = LCSAttributes_SetRadialLimit(self, tuple);
+    else if(strcmp(name, "boundaryLimit") == 0)
+        obj = LCSAttributes_SetBoundaryLimit(self, tuple);
+    else if(strcmp(name, "seedLimit") == 0)
+        obj = LCSAttributes_SetSeedLimit(self, tuple);
     else if(strcmp(name, "forceNodeCenteredData") == 0)
         obj = LCSAttributes_SetForceNodeCenteredData(self, tuple);
     else if(strcmp(name, "issueAdvectionWarnings") == 0)
