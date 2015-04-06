@@ -48,6 +48,8 @@
 #include <vtkDataSetWriter.h>
 #include <vtkFieldData.h>
 #include <vtkStringArray.h>
+#include <vtkIntArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLRectilinearGridWriter.h>
 #include <vtkXMLStructuredGridWriter.h>
@@ -61,6 +63,8 @@
 using     std::string;
 using     std::vector;
 
+int    avtVTKWriter::INVALID_CYCLE = -INT_MAX;
+double avtVTKWriter::INVALID_TIME = -DBL_MAX;
 
 // ****************************************************************************
 //  Method: avtVTKWriter constructor
@@ -164,6 +168,8 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
         }
     }
     meshName = GetMeshName(md);
+    time     = GetTime();
+    cycle    = GetCycle();
 }
 
 
@@ -207,6 +213,26 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
         mn->SetNumberOfValues(1);
         mn->SetValue(0, meshName);
         mn->SetName("MeshName");
+        ds->GetFieldData()->AddArray(mn);
+        mn->Delete();
+    }
+
+    if (cycle != INVALID_CYCLE)
+    {
+        vtkIntArray *mn = vtkIntArray::New();
+        mn->SetNumberOfValues(1);
+        mn->SetValue(0, cycle);
+        mn->SetName("CYCLE");
+        ds->GetFieldData()->AddArray(mn);
+        mn->Delete();
+    }
+
+    if (time != INVALID_TIME )
+    {
+        vtkDoubleArray *mn = vtkDoubleArray::New();
+        mn->SetNumberOfValues(1);
+        mn->SetValue(0, time);
+        mn->SetName("TIME");
         ds->GetFieldData()->AddArray(mn);
         mn->Delete();
     }

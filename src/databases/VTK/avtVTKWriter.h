@@ -86,8 +86,13 @@ avtVTKWriter : public virtual avtDatabaseWriter
     virtual       ~avtVTKWriter() {;};
 
   protected:
+    static int            INVALID_CYCLE;
+    static double         INVALID_TIME;
+
     std::string    stem;
     std::string    meshName;
+    double         time;
+    int            cycle;
     bool           doBinary;
     bool           doMultiBlock;
     bool           doXML;
