@@ -184,6 +184,8 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
     virtual bool        CreateNormals() const;
 
     std::string         GetMeshName(const avtDatabaseMetaData *md) const;
+    double              GetTime() const;
+    int                 GetCycle() const;
 
     virtual int         GetVariables(const std::string &meshname,
                                      const avtDatabaseMetaData *md,

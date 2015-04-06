@@ -399,6 +399,46 @@ avtDatabaseWriter::GetMeshName(const avtDatabaseMetaData *md) const
 }
 
 // ****************************************************************************
+// Method: avtDatabaseWriter::GetTime
+//
+// Purpose:
+//   Get the time of the pipeline.
+//
+// Returns:    The time of the pipetime.
+//
+// Programmer: Allen Sanderson
+// Creation:   April 4 2015
+//
+// ****************************************************************************
+
+double
+avtDatabaseWriter::GetTime() const
+{
+    const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    return atts.GetTime(); 
+}
+
+// ****************************************************************************
+// Method: avtDatabaseWriter::GetCycle
+//
+// Purpose:
+//   Get the cycle of the pipeline
+//
+// Returns:    The cycle of the pipeline.
+//
+// Programmer: Allen Sanderson
+// Creation:   April 4 2015
+//
+// ****************************************************************************
+
+int
+avtDatabaseWriter::GetCycle() const
+{
+    const avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    return atts.GetCycle();
+}
+
+// ****************************************************************************
 // Method: avtDatabaseWriter::GetVariables
 //
 // Purpose:
