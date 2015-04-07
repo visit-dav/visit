@@ -1524,6 +1524,10 @@ QvisCMFEWizard::GetMeshForTargetDatabase(void)
 //   Hank Childs, Mon Oct 10 10:54:45 PDT 2011
 //   Increment the expression name after creating the CMFE.  (cmfe0->cmfe1)
 //
+//   Kathleen Biagas, Tue Apr  7 14:10:40 PDT 2015
+//   Don't wrap fillstr with '<>' if using a value, only if using a var,
+//   if decision_var is empty, retreive VarType from first donor var.
+//
 // ****************************************************************************
 
 void
@@ -1666,17 +1670,17 @@ QvisCMFEWizard::AddCMFEExpression(void)
             if (decision_fill == FILL_CONSTANT)
               SNPRINTF(fillstr, 1024, "%f", decision_fillval);
             else
-              strcpy(fillstr, decision_fillvar.c_str());
+              SNPRINTF(fillstr, 1024, "<%s>", decision_fillvar.c_str());
             
-            SNPRINTF(cmfe_part, 1024, "%s pos_cmfe(<%s>, <%s>, <%s>)", 
+            SNPRINTF(cmfe_part, 1024, "%s pos_cmfe(<%s>, <%s>, %s)", 
                      cmfe_part_tmp, file_var_part.c_str(),
                      decision_mesh.c_str(), fillstr);
 
             if(decision_exprtype == EXPRESSION_VARIANCE)
               SNPRINTF(cmfe_part_var, 1024,
                        "%s "
-                       "((pos_cmfe(<%s>, <%s>, <%s>) - %s_average) *"
-                       " (pos_cmfe(<%s>, <%s>, <%s>) - %s_average))", 
+                       "((pos_cmfe(<%s>, <%s>, %s) - %s_average) *"
+                       " (pos_cmfe(<%s>, <%s>, %s) - %s_average))", 
                        cmfe_part_tmp_var,
                        file_var_part.c_str(), decision_mesh.c_str(), fillstr,
                        decision_exprname.c_str(),
@@ -1724,13 +1728,27 @@ QvisCMFEWizard::AddCMFEExpression(void)
         SNPRINTF(defn_var, 1024, "(%s) / %d", cmfe_part_var, donorList->count()-1 );
     }
 
+    int varType = 0; // Unknown type
+    if (decision_variable == "")
+    {
+        if (donorList->count() > 0 && donorList->item(0))
+        {
+            QString t = donorList->item(0)->text();
+            QString donorVar = t.right(t.size()- t.lastIndexOf(":")-1);
+            varType = GetVarType(donorVar.toStdString());
+        }
+    }
+    else
+    {
+        varType = GetVarType(decision_variable);
+    }
 
     if( (decision_donorType == DONOR_SINGLE_DATABASE ||
          decision_donorType == DONOR_MULTIPLE_DATABASES) &&
         decision_exprtype == EXPRESSION_VARIANCE && donorList->count() > 1)
     {
       Expression *e = new Expression();
-      e->SetType(GetVarType(decision_variable));
+      e->SetType(Expression::ExprType(varType));
 
       e->SetName(decision_exprname + "_average");
       e->SetDefinition(defn);
@@ -1744,7 +1762,7 @@ QvisCMFEWizard::AddCMFEExpression(void)
     else
     {
       Expression *e = new Expression();
-      e->SetType(GetVarType(decision_variable));
+      e->SetType(Expression::ExprType(varType));
 
       e->SetName(decision_exprname);
       e->SetDefinition(defn);
