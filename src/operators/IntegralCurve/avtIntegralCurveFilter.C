@@ -2165,7 +2165,7 @@ avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(std::vector<avtVector> &
     // Get the seeds from the daa tree.
     GenerateSeedPointsFromFieldData( GetInputDataTree() );
 
-    // Set the attributes - but how to them to update the gui.
+    // Set the attributes.
     if ( listOfPoints.size() )
       atts.SetPointList( listOfPoints );
     else
@@ -2180,7 +2180,16 @@ avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(std::vector<avtVector> &
         if (listOfPoints[i] != tmpListOfPoints[i])
           needsRecalculation = true;
 
+    // Generate the points as seeds.
     GenerateSeedPointsFromPointList(pts);
+
+    // Send the list of points back to the operator GUI
+    MapNode ptsNode;
+    ptsNode["listofpoints_size"]  = (int) listOfPoints.size();
+    ptsNode["listofpoints_coordinates"] = listOfPoints;
+
+    GetOutput()->GetInfo().GetAttributes().AddPlotInformation("ListOfPoints",
+                                                              ptsNode);
 }
 
 
