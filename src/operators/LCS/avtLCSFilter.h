@@ -55,6 +55,8 @@
 
 class vtkDataSet;
 
+#define PID (int) (0.31415*(double)nTuples)
+//#define PID (int) (17990)
 
 // ****************************************************************************
 //  Class: avtLCSFilter

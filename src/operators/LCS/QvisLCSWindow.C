@@ -831,7 +831,6 @@ void
 QvisLCSWindow::UpdateWindow(bool doAll)
 {
     QString       temp;
-    QColor        tempcolor;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
