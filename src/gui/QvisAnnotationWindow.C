@@ -770,6 +770,9 @@ QvisAnnotationWindow::Create3DTab()
 //   Hank Childs, Fri May 13 16:00:24 PDT 2011
 //   Add widgets for setting bounding box location.
 //
+//   Kathleen Biagas, Wed Apr  8 07:54:30 PDT 2015
+//   Added labels for Tick location, axis type and line width.
+//
 // ****************************************************************************
 
 QWidget *
@@ -807,9 +810,9 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     connect(axes3DTickLocationComboBox, SIGNAL(activated(int)),
             this, SLOT(axes3DTickLocationChanged(int)));
     rLayout->addWidget(axes3DTickLocationComboBox, row, 1);
-    QLabel *l = new QLabel(tr("Tick mark locations"), top);
-    l->setBuddy(axes3DTickLocationComboBox);
-    rLayout->addWidget(l, row, 0);
+    axes3DTickLocationLabel = new QLabel(tr("Tick mark locations"), top);
+    axes3DTickLocationLabel->setBuddy(axes3DTickLocationComboBox);
+    rLayout->addWidget(axes3DTickLocationLabel, row, 0);
     ++row;
 
     // Create the 3D axes type combobox.
@@ -822,9 +825,9 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     connect(axes3DTypeComboBox, SIGNAL(activated(int)),
             this, SLOT(axes3DTypeChanged(int)));
     rLayout->addWidget(axes3DTypeComboBox, row, 1);
-    l = new QLabel(tr("Axis type"), top);
-    l->setBuddy(axes3DTypeComboBox);
-    rLayout->addWidget(l, row, 0);
+    axes3DTypeLabel = new QLabel(tr("Axis type"), top);
+    axes3DTypeLabel->setBuddy(axes3DTypeComboBox);
+    rLayout->addWidget(axes3DTypeLabel, row, 0);
     ++row;
 
     // Create the 2D line width widget.
@@ -832,9 +835,9 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     rLayout->addWidget(axesLineWidth, row, 1);
     connect(axesLineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(axesLineWidthChanged(int)));
-    l = new QLabel(tr("Line width"), top);
-    l->setBuddy(axesLineWidth);
-    rLayout->addWidget(l, row, 0);
+    axesLineWidthLabel = new QLabel(tr("Line width"), top);
+    axesLineWidthLabel->setBuddy(axesLineWidth);
+    rLayout->addWidget(axesLineWidthLabel, row, 0);
     ++row;
 
     setBBoxLocationToggle = new QCheckBox(tr("Set bounding box location manually"), top);
@@ -1461,6 +1464,13 @@ QvisAnnotationWindow::UpdateAxes2D()
 //   
 //   Hank Childs, Mon May 23 10:31:29 PDT 2011
 //   Add support for setting bounding box location.
+//
+//   Kathleen Biagas, Wed Apr  8 07:55:22 PDT 2015
+//   Modified how widgets are enabled:  'Show axes' contols enabled state of
+//   autoSetTicks, autoSetScaling, Tick location and axes type.
+//   'Show bounding box' controls enabled state of bounding box controls.
+//   If either of these are true, the line width control is enabled.
+//
 // ****************************************************************************
 
 void
@@ -1472,27 +1482,34 @@ QvisAnnotationWindow::UpdateAxes3D()
     axes3DVisible->setChecked(axes.GetVisible());
     axes3DVisible->blockSignals(false);
 
-    page3DTabs->setEnabled(axes.GetVisible());
 
     axesAutoSetTicksToggle->blockSignals(true);
     axesAutoSetTicksToggle->setChecked(axes.GetAutoSetTicks());
     axesAutoSetTicksToggle->blockSignals(false);
+    axesAutoSetTicksToggle->setEnabled(axes.GetVisible());
 
     labelAutoSetScalingToggle->blockSignals(true);
     labelAutoSetScalingToggle->setChecked(axes.GetAutoSetScaling());
     labelAutoSetScalingToggle->blockSignals(false);
-
-    axesLineWidth->blockSignals(true);
-    axesLineWidth->SetLineWidth(axes.GetLineWidth());
-    axesLineWidth->blockSignals(false);
+    labelAutoSetScalingToggle->setEnabled(axes.GetVisible());
 
     axes3DTickLocationComboBox->blockSignals(true);
     axes3DTickLocationComboBox->setCurrentIndex(axes.GetTickLocation());
     axes3DTickLocationComboBox->blockSignals(false);
+    axes3DTickLocationComboBox->setEnabled(axes.GetVisible());
+    axes3DTickLocationLabel->setEnabled(axes.GetVisible());
 
     axes3DTypeComboBox->blockSignals(true);
     axes3DTypeComboBox->setCurrentIndex(axes.GetAxesType());
     axes3DTypeComboBox->blockSignals(false);
+    axes3DTypeComboBox->setEnabled(axes.GetVisible());
+    axes3DTypeLabel->setEnabled(axes.GetVisible());
+
+    axesLineWidth->blockSignals(true);
+    axesLineWidth->SetLineWidth(axes.GetLineWidth());
+    axesLineWidth->blockSignals(false);
+    axesLineWidth->setEnabled(axes.GetVisible() || axes.GetBboxFlag());
+    axesLineWidthLabel->setEnabled(axes.GetVisible() || axes.GetBboxFlag());
 
     triadFlagToggle->blockSignals(true);
     triadFlagToggle->setChecked(axes.GetTriadFlag());
@@ -1513,9 +1530,11 @@ QvisAnnotationWindow::UpdateAxes3D()
     axes3D[2]->setAutoTickMarks(axes.GetAutoSetTicks());
     axes3D[2]->setAxisAttributes(axes.GetZAxis());
 
+    setBBoxLocationToggle->setEnabled(axes.GetBboxFlag());
     setBBoxLocationToggle->blockSignals(true);
     setBBoxLocationToggle->setChecked(axes.GetSetBBoxLocation());
-    if (axes.GetSetBBoxLocation())
+
+    if (axes.GetSetBBoxLocation() && axes.GetBboxFlag())
     {
         for (int i = 0 ; i < 6 ; i++)
         {
@@ -3046,6 +3065,9 @@ QvisAnnotationWindow::triadFlagChecked(bool val)
 //   Brad Whitlock, Fri Jan 25 11:50:50 PST 2008
 //   Updated for new AnnotationAttributes.
 //   
+//   Kathleen Biagas, Wed Apr  8 07:58:02 PDT 2015
+//   Allow this toggle to update the window.
+//
 // ****************************************************************************
 
 void
@@ -3053,7 +3075,6 @@ QvisAnnotationWindow::bboxFlagChecked(bool val)
 {
     annotationAtts->GetAxes3D().SetBboxFlag(val);
     annotationAtts->SelectAxes3D();
-    SetUpdate(false);
     Apply();
 }
 
