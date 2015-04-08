@@ -2741,6 +2741,7 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
             ic->status.SetExitSpatialBoundary();
         else
             ic->status.SetAtSpatialBoundary();
+
         return numStepsTaken;
     }
 
@@ -3631,12 +3632,13 @@ avtPICSFilter::CheckStagger( vtkDataSet *ds, bool &isEdge, bool &isFace )
     if (velData)
     {
         vtkInformation* info = velData->GetInformation();
-        debug5 << "avtPICSFilter::CheckStagger: checking if vector field " 
-               << velData << " has STAGGER\n";
+        // debug5 << "avtPICSFilter::CheckStagger: checking if vector field " 
+        //        << velData << " has STAGGER\n";
         if (info->Has(avtVariableCache::STAGGER()))
         {
             const char* stagger = info->Get(avtVariableCache::STAGGER());
-            debug5 << "avtPICSFilter::CheckStagger: field has stagger " << stagger << std::endl;
+            debug5 << "avtPICSFilter::CheckStagger: field has stagger "
+                   << stagger << std::endl;
             if (strcmp(stagger, "face") == 0) 
             {
               isFace = true;
