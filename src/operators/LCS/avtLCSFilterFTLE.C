@@ -78,9 +78,6 @@
 #include <limits>
 #include <cmath>
 
-//#define PID (int) (0.31415*(double)nTuples)
-#define PID (int) (37990)
-
 template <class T1, class T2, class Pred = std::greater<T2> >
 struct sort_pair_max_second {
     bool operator()(const std::pair<T1,T2>&left, const std::pair<T1,T2>&right) {
@@ -322,6 +319,11 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
               atts.GetOperationType() == LCSAttributes::EigenVector ||
               atts.GetOperationType() == LCSAttributes::Lyapunov )
           {
+            if( doTime )
+              remapTimes.at(l) = ((avtLCSIC*)ics[i])->GetTime();
+            else if( doDistance )
+              remapTimes.at(l) = ((avtLCSIC*)ics[i])->GetDistance();
+
             remapPoints.at(l) = ((avtLCSIC*)ics[i])->GetEndPoint();
           }
           else
@@ -374,8 +376,28 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
         atts.GetOperationType() == LCSAttributes::EigenVector ||
         atts.GetOperationType() == LCSAttributes::Lyapunov )
     {
+      // Save the times/distances so that points that do not fully
+      // advect can be culled.
+      for(size_t j = 0; j < (size_t)nTuples; ++j)
+        outputArray->SetTuple1(j, remapTimes[j]);
+
+      // remapTimes does not contain all of the values only the
+      // ones for the integral curves on this processor. So sum
+      // all of the values across all of the processors.
+      if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+      {
+        double *newvals = new double[nTuples];
+        double *origvals = (double *) outputArray->GetVoidPointer(0);
+        SumDoubleArrayAcrossAllProcessors(origvals, newvals, nTuples);
+        // copy newvals back into origvals
+        memcpy(origvals, newvals, nTuples*sizeof(double));
+        delete [] newvals;
+      }
+
+      // Calculate the jacobian.
       vtkDataArray* jacobian[3];
     
+      // No auxiliary grid so use the values from the grid.
       if( auxIdx == LCSAttributes::None )
       {
         for(int i = 0; i < 3; ++i)
@@ -400,6 +422,8 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
             avtGradientExpression::CalculateGradient(out_grid, var.c_str());
         }
       }
+
+      // Auxiliary grid so use the values from the curves.
       else //if( auxIdx == LCSAttributes::TwoDim ||
            //    auxIdx == LCSAttributes::ThreeDim )
       {
@@ -636,7 +660,10 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
     for(size_t i=0, j=0; i<ics.size(); ++i, j+=3)
     {
         indices[i] = ics[i]->id;
-        times[i]   = ((avtLCSIC*)ics[i])->GetTime();
+        if( doTime )
+          times[i] = ((avtLCSIC*)ics[i])->GetTime();
+        else if( doDistance )
+          times[i] = ((avtLCSIC*)ics[i])->GetDistance();
 
         // if( ics[i]->id == 749 )
         //   std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -658,7 +685,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         else
         {
           points[j+0] = ((avtLCSIC*)ics[i])->GetTime();
-          points[j+1] = ((avtLCSIC*)ics[i])->GetArcLength();
+          points[j+1] = ((avtLCSIC*)ics[i])->GetDistance();
 
           if( ((avtLCSIC*)ics[i])->GetNumSteps() )
             points[j+2] = (((avtLCSIC*)ics[i])->GetSummation0() /
@@ -700,6 +727,45 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
     else
     {
         //rank 0
+
+        //update remapPoints with new value bounds from integral curves.
+        std::vector<double> remapTimes(nTuples*nAuxPts);
+        std::vector<avtVector> remapPoints(nTuples*nAuxPts);
+      
+        int par_size = PAR_Size();
+        size_t total = 0;
+        for(int i = 0; i < par_size; ++i)
+        {
+            if(index_counts[i]*3 == point_counts[i])
+            {
+                total += index_counts[i];
+            }
+            else
+            {
+                EXCEPTION1(VisItException,
+                           "Index count does not the result count." );
+            }
+        }
+
+        for(size_t j = 0, k = 0; j < total; ++j, k += 3)
+        {
+            size_t index = all_indices[j];
+
+            if(index < nTuples*nAuxPts)
+            {
+              remapTimes[index] = all_times[j];
+              remapPoints[index].set( all_points[k+0],
+                                      all_points[k+1],
+                                      all_points[k+2]);
+            }
+            else
+            {
+              EXCEPTION1(VisItException,
+                         "More integral curves were generatated than "
+                         "grid points." );
+            }
+        }
+
         //now create a rectilinear grid.
         vtkRectilinearGrid* rect_grid = vtkRectilinearGrid::New();
 
@@ -745,6 +811,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         lycoord->Delete();
         lzcoord->Delete();
 
+        //now create the output and working array
         vtkDoubleArray *outputArray = vtkDoubleArray::New();
         outputArray->SetName(var.c_str());
         if( atts.GetOperationType() == LCSAttributes::EigenVector )
@@ -762,48 +829,13 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         rect_grid->GetPointData()->SetActiveScalars("workingArray");
     
         //calculate jacobian in parts (x,y,z).
-        std::vector<double> remapTimes(nTuples*nAuxPts);
-        std::vector<avtVector> remapPoints(nTuples*nAuxPts);
-
-        //update remapPoints with new value bounds from integral curves.
-        int par_size = PAR_Size();
-        size_t total = 0;
-        for(int i = 0; i < par_size; ++i)
-        {
-            if(index_counts[i]*3 == point_counts[i])
-            {
-                total += index_counts[i];
-            }
-            else
-            {
-                EXCEPTION1(VisItException,
-                           "Index count does not the result count." );
-            }
-        }
-
-        for(size_t j = 0, k = 0; j < total; ++j, k += 3)
-        {
-            size_t index = all_indices[j];
-
-            if(index < nTuples*nAuxPts)
-            {
-              remapTimes[index] = all_times[j];
-              remapPoints[index].set( all_points[k+0],
-                                      all_points[k+1],
-                                      all_points[k+2]);
-            }
-            else
-            {
-              EXCEPTION1(VisItException,
-                         "More integral curves were generatated than "
-                         "grid points." );
-            }
-        }
-      
         if( atts.GetOperationType() == LCSAttributes::EigenValue ||
             atts.GetOperationType() == LCSAttributes::EigenVector ||
             atts.GetOperationType() == LCSAttributes::Lyapunov )
         {
+          for (size_t l = 0; l < nTuples; l++)
+            outputArray->SetTuple1(l, remapTimes[l]);
+
           vtkDataArray* jacobian[3];
 
           if( auxIdx == LCSAttributes::None )
@@ -844,6 +876,11 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
                   else
                     dz = 0;
                   
+                  // if( PID == j )
+                  //   std::cerr << "Jacobian "
+                  //          << dx << "  "  << dy << "  "  << dz << "  "
+                  //          << std::endl;
+                    
                   jacobian[i]->SetTuple3(j, dx, dy, dz);
                 }
               }

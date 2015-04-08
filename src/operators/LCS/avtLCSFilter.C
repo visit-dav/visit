@@ -961,7 +961,7 @@ avtLCSFilter::GetInitialLocationsFromRectilinearGrid()
                                        { 0.,-1., 0.}, { 0., 1., 0.},
                                        { 0., 0.,-1.}, { 0., 0., 1.} } };
 
-    size_t nTuples =
+    size_t tuple = 0, nTuples =
       global_resolution[0] * global_resolution[1] * global_resolution[2];
 
     //compute total number of seeds that will be generated.
@@ -1008,7 +1008,14 @@ avtLCSFilter::GetInitialLocationsFromRectilinearGrid()
                     point[l] = base[l] + auxSpacing * offset[auxIdx][a][l];
 
                   seedPoints[numberOfSeeds++].set(point);
+
+                  // if( PID == tuple)
+                  //   std::cerr << "Seed "
+                  //          << point[0] << "  "  << point[1] << "  "  << point[2]
+                  //          << "  " << std::endl;
                 }
+
+                ++tuple;
             }
         }
     }
@@ -1151,8 +1158,8 @@ void avtLCSFilter::ComputeRightCauchyGreenTensor3D(double **j)
     double b = j0[0]*j0[1] + j1[0]*j1[1] + j2[0]*j2[1];
     double c = j0[0]*j0[2] + j1[0]*j1[2] + j2[0]*j2[2];
 
-    double d = j0[1]*j0[0] + j1[1]*j1[0] + j2[1]*j2[0];
-    double e = j0[1]*j0[1] + j1[1]*j1[1] + j2[1]*j2[1];
+    double d = j0[1]*j0[1] + j1[1]*j1[1] + j2[1]*j2[1];
+    double e = j0[1]*j0[2] + j1[1]*j1[2] + j2[1]*j2[2];
  
     double f = j0[2]*j0[2] + j1[2]*j1[2] + j2[2]*j2[2];
 
@@ -1509,20 +1516,26 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
 
         vtkMath::Jacobi(input, eigenvals, eigenvecs);
 
+        // vtkMath::Jacobi and vtkMath::JacobiN return the vectors in
+        // a column ordering. That is the first vector is in:
+        // eigenvecs[0][0] eigenvecs[1][0] eigenvecs[2][0] and that
+        // output[0] output[1] output[1] does NOT contain the first
+        // eigen value but the first component of each eigen vector.
+            
         if( eigenComponent == LCSAttributes::Largest )
         {
           valArray->SetTuple1(l, eigenvals[0]);
-          vecArray->SetTuple(l, eigenvecs[0]);
+          vecArray->SetTuple3(l, eigenvecs[0][0], eigenvecs[1][0], eigenvecs[2][0]);
         }
         else if( eigenComponent == LCSAttributes::Intermediate )
         {
           valArray->SetTuple1(l, eigenvals[1]);
-          vecArray->SetTuple(l, eigenvecs[1]);
+          vecArray->SetTuple3(l, eigenvecs[0][1], eigenvecs[1][1], eigenvecs[2][1]);
         }
         else // if( eigenComponent == LCSAttributes::Smallest )
         {
           valArray->SetTuple1(l, eigenvals[2]);
-          vecArray->SetTuple(l, eigenvecs[2]);
+          vecArray->SetTuple3(l, eigenvecs[0][2], eigenvecs[1][2], eigenvecs[2][2]);
         }
       }
     }
@@ -1575,67 +1588,99 @@ void avtLCSFilter::ComputeLyapunovExponent(vtkDataArray *jacobian[3],
     {
       for(size_t l = 0; l < nTuples; ++l)
       {
-        double *input[2];
-        input[0] = jacobian[0]->GetTuple3(l);
-        input[1] = jacobian[1]->GetTuple3(l);
+        // if( (doTime     && expArray->GetTuple1(l) < maxTime) ||
+        //     (doDistance && expArray->GetTuple1(l) < maxDistance) )
+        //   expArray->SetTuple1(l, 0);
+        // else
+        {
+          double *input[2];
+          input[0] = jacobian[0]->GetTuple3(l);
+          input[1] = jacobian[1]->GetTuple3(l);
 
-        if( cgTensor == LCSAttributes::Right ) 
-          ComputeRightCauchyGreenTensor2D(input);
-        else //if( cgTensor == LCSAttributes::Left )
-          ComputeLeftCauchyGreenTensor2D(input);
+          if( cgTensor == LCSAttributes::Right ) 
+            ComputeRightCauchyGreenTensor2D(input);
+          else //if( cgTensor == LCSAttributes::Left )
+            ComputeLeftCauchyGreenTensor2D(input);
 
-        // Get the eigen values.
-        double  eigenvals[2];
-        Jacobi2D( input, eigenvals );
+          // Get the eigen values.
+          double  eigenvals[2];
+          Jacobi2D( input, eigenvals );
 
-        double lambda = baseValue;
+          double lambda = baseValue;
 
-        if( eigenComponent == LCSAttributes::Largest )
-          lambda = sqrt( std::max( lambda, eigenvals[0] ) );
-        else // if( eigenComponent == LCSAttributes::Smallest )
-          lambda = sqrt( std::max( lambda, eigenvals[1] ) );
+          if( eigenComponent == LCSAttributes::Largest )
+            lambda = sqrt( std::max( lambda, eigenvals[0] ) );
+          else // if( eigenComponent == LCSAttributes::Smallest )
+            lambda = sqrt( std::max( lambda, eigenvals[1] ) );
 
-        if( takeLog )
-          lambda = log( lambda );
+          if( takeLog )
+            lambda = log( lambda );
 
-        lambda *= denominator;
+          lambda *= denominator;
 
-        expArray->SetTuple1(l, lambda);
+          expArray->SetTuple1(l, lambda);
+        }
       }
     }
     else
     {
       for(size_t l = 0; l < nTuples; ++l)
       {
-        double *input[3];
-        input[0] = jacobian[0]->GetTuple3(l);
-        input[1] = jacobian[1]->GetTuple3(l);
-        input[2] = jacobian[2]->GetTuple3(l);
+        // if( (doTime     && expArray->GetTuple1(l) < maxTime) ||
+        //     (doDistance && expArray->GetTuple1(l) < maxDistance) )
+        //   expArray->SetTuple1(l, 0);
+        // else
+        {
+          double *input[3];
+          input[0] = jacobian[0]->GetTuple3(l);
+          input[1] = jacobian[1]->GetTuple3(l);
+          input[2] = jacobian[2]->GetTuple3(l);
 
-        if( cgTensor == LCSAttributes::Right ) 
-          ComputeRightCauchyGreenTensor3D(input);
-        else //if( cgTensor == LCSAttributes::Left ) 
-          ComputeLeftCauchyGreenTensor3D(input);
+          // if( PID == l )
+          //   std::cerr << "jacobian " << std::endl
+          //          << input[0][0] << "  "  << input[0][1] << "  "  << input[0][2] << "  " << std::endl
+          //          << input[1][0] << "  "  << input[1][1] << "  "  << input[1][2] << "  " << std::endl
+          //          << input[2][0] << "  "  << input[2][1] << "  "  << input[2][2] << "  " << std::endl
+          //          << std::endl;
 
-        // Get the eigen values.
-        double eigenvals[3];
-        Jacobi3D( input, eigenvals );
 
-        double lambda = baseValue;
+          if( cgTensor == LCSAttributes::Right ) 
+            ComputeRightCauchyGreenTensor3D(input);
+          else //if( cgTensor == LCSAttributes::Left ) 
+            ComputeLeftCauchyGreenTensor3D(input);
 
-        if( eigenComponent == LCSAttributes::Largest )
-          lambda = sqrt( std::max( lambda, eigenvals[0] ) );
-        else if( eigenComponent == LCSAttributes::Intermediate )
-          lambda = sqrt( std::max( lambda, eigenvals[1] ) );
-        else // if( eigenComponent == LCSAttributes::Smallest )
-          lambda = sqrt( std::max( lambda, eigenvals[2] ) );
+          // if( PID == l )
+          //   std::cerr << "CG tensor " << std::endl
+          //          << input[0][0] << "  "  << input[0][1] << "  "  << input[0][2] << "  " << std::endl
+          //          << input[1][0] << "  "  << input[1][1] << "  "  << input[1][2] << "  " << std::endl
+          //          << input[2][0] << "  "  << input[2][1] << "  "  << input[2][2] << "  " << std::endl
+          //          << std::endl;
 
-        if( takeLog )
-          lambda = log( lambda );
+          // Get the eigen values.
+          double eigenvals[3];
+          Jacobi3D( input, eigenvals );
 
-        lambda *= denominator;
+          // if( PID == l )
+          //   std::cerr << "eigenvals " << std::endl
+          //          << eigenvals[0] << "  "  << eigenvals[1] << "  "  << eigenvals[2] << "  "
+          //          << std::endl;
 
-        expArray->SetTuple1(l, lambda);
+          double lambda = baseValue;
+
+          if( eigenComponent == LCSAttributes::Largest )
+            lambda = sqrt( std::max( lambda, eigenvals[0] ) );
+          else if( eigenComponent == LCSAttributes::Intermediate )
+            lambda = sqrt( std::max( lambda, eigenvals[1] ) );
+          else // if( eigenComponent == LCSAttributes::Smallest )
+            lambda = sqrt( std::max( lambda, eigenvals[2] ) );
+
+          if( takeLog )
+            lambda = log( lambda );
+
+          lambda *= denominator;
+
+          expArray->SetTuple1(l, lambda);
+        }
       }
     }
 }
