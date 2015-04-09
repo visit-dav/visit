@@ -459,6 +459,16 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     gRow++;
 
 
+    //Point list.
+    fieldData = new QListWidget(sourceGroup);
+    geometryLayout->addWidget(fieldData, gRow, 0);
+
+    fieldDataCopyPoints = new QPushButton(tr("Copy to point list"), sourceGroup);
+    connect(fieldDataCopyPoints, SIGNAL(clicked()), this, SLOT(copyPoints()));
+    geometryLayout->addWidget(fieldDataCopyPoints, gRow, 1);
+    gRow++;
+
+
     //Sampling options.
     samplingGroup = new QGroupBox(sourceGroup);
     samplingGroup->setTitle(tr("Sampling"));
@@ -1145,16 +1155,11 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
           
           if( nValues )
           {
-            // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
-            //        << doAll << "  " << (SelectedSubject() == info) << "  "
-            //        << atts << "  "
-            //        << "have points " << nValues/3 << std::endl;
-
             const doubleVector &points =
               ptsNode["listofpoints_coordinates"].AsDoubleVector();
       
             // Update the GUI
-            pointList->clear();
+            fieldData->clear();
       
             for (size_t i = 0; i < nValues; i+= 3)
             {
@@ -1164,19 +1169,18 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
               // std::cerr << tmp << std::endl;
               
               QString str = tmp;
-              QListWidgetItem *item = new QListWidgetItem(str, pointList);
-              item->setFlags(item->flags() | Qt::ItemIsEditable);
-              pointList->setCurrentItem(item);
+              QListWidgetItem *item = new QListWidgetItem(str, fieldData);
+//            item->setFlags(item->flags() | Qt::ItemIsEditable);
+              fieldData->setCurrentItem(item);
             }
 
             // Update the attributes.
-            atts->SetPointList( points );
-            Apply();
+            atts->SetFieldData( points );
 
             if(!doAll)
               return;
-            else
-              break;
+           else
+             break;
           }
         }
       }
@@ -1283,11 +1287,6 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
         case IntegralCurveAttributes::ID_pointList:
             {
                 std::vector<double> points = atts->GetPointList();
-
-                // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
-                //        << atts << "  "
-                //        << "have points " << points.size()/3 << std::endl;
-
 
                 pointList->clear();
                 for (size_t i = 0; i < points.size(); i+= 3)
@@ -1726,6 +1725,9 @@ QvisIntegralCurveWindow::TurnOffSourceAttributes()
     TurnOff(pointListAddPoint);
     TurnOff(pointListReadPoints);
 
+    TurnOff(fieldData);
+    TurnOff(fieldDataCopyPoints);
+
     TurnOff(fillLabel);
     TurnOff(fillButtons[0]);
     TurnOff(fillButtons[1]);
@@ -1951,6 +1953,11 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
             sampleDensity[0]->setMinimum(1);
         }
 
+    }
+    else if (atts->GetSourceType() == IntegralCurveAttributes::FieldData)
+    {
+        TurnOn(fieldData);
+        TurnOn(fieldDataCopyPoints);
     }
 
     if (showSampling)
@@ -2571,9 +2578,6 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
             }
         }
         atts->SetPointList(points);
-
-        // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
-        //        << "have points " << points.size()/3 << std::endl;
     }
 
     // maxIntegralCurveProcessCount
@@ -2689,29 +2693,6 @@ QvisIntegralCurveWindow::sourceTypeChanged(int val)
     {
         atts->SetSourceType(IntegralCurveAttributes::SourceType(val));
         Apply();
-
-        // The field data can contain seed points and will stuff them
-        // into the point list so the user can see the points so when
-        // ever switching to the point list do an update.
-        if(val == IntegralCurveAttributes::PointList )
-        {
-            std::vector<double> points = atts->GetPointList();
-
-            // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
-            //        << "have points " << points.size()/3 << std::endl;
-          
-            pointList->clear();
-            for (size_t i = 0; i < points.size(); i+= 3)
-            {
-                char tmp[256];
-                sprintf(tmp, "%lf %lf %lf",
-                        points[i], points[i+1], points[i+2]);
-                QString str = tmp;
-                QListWidgetItem *item = new QListWidgetItem(str, pointList);
-                item->setFlags(item->flags() | Qt::ItemIsEditable);
-                pointList->setCurrentItem(item);
-            }
-        }
     }
 }
 
@@ -3168,6 +3149,29 @@ QvisIntegralCurveWindow::readPoints()
 
     f.close();
 }
+
+
+void
+QvisIntegralCurveWindow::copyPoints()
+{
+    pointList->clear();
+
+    std::vector<double> points;
+    double x,y,z;
+    for (int i = 0; i < fieldData->count(); i++)
+    {
+        QListWidgetItem *item = fieldData->item(i);
+        
+        if (item)
+        {
+            std::string str = item->text().toLatin1().data();
+            item = new QListWidgetItem(str.c_str(), pointList);
+            item->setFlags(item->flags() | Qt::ItemIsEditable);
+            pointList->setCurrentItem(item);
+        }
+    }
+}
+
 
 void
 QvisIntegralCurveWindow::correlationDistanceMinDistTypeChanged(int v)

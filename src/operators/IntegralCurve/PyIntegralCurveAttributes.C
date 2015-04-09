@@ -271,6 +271,22 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const doubleVector &fieldData = atts->GetFieldData();
+        SNPRINTF(tmpStr, 1000, "%sfieldData = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < fieldData.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", fieldData[i]);
+            str += tmpStr;
+            if(i < fieldData.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     SNPRINTF(tmpStr, 1000, "%ssampleDensity0 = %d\n", prefix, atts->GetSampleDensity0());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssampleDensity1 = %d\n", prefix, atts->GetSampleDensity1());
@@ -1258,6 +1274,69 @@ IntegralCurveAttributes_GetPointList(PyObject *self, PyObject *args)
     PyObject *retval = PyTuple_New(pointList.size());
     for(size_t i = 0; i < pointList.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(pointList[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_SetFieldData(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+
+    doubleVector  &vec = obj->data->GetFieldData();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                vec[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = PyLong_AsDouble(item);
+            else
+                vec[i] = 0.;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyFloat_AS_DOUBLE(tuple);
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = double(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyLong_AsDouble(tuple);
+    }
+    else
+        return NULL;
+
+    // Mark the fieldData in the object as modified.
+    obj->data->SelectFieldData();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_GetFieldData(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the fieldData.
+    const doubleVector &fieldData = obj->data->GetFieldData();
+    PyObject *retval = PyTuple_New(fieldData.size());
+    for(size_t i = 0; i < fieldData.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(fieldData[i]));
     return retval;
 }
 
@@ -2710,6 +2789,8 @@ PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH] = {
     {"GetUseWholeBox", IntegralCurveAttributes_GetUseWholeBox, METH_VARARGS},
     {"SetPointList", IntegralCurveAttributes_SetPointList, METH_VARARGS},
     {"GetPointList", IntegralCurveAttributes_GetPointList, METH_VARARGS},
+    {"SetFieldData", IntegralCurveAttributes_SetFieldData, METH_VARARGS},
+    {"GetFieldData", IntegralCurveAttributes_GetFieldData, METH_VARARGS},
     {"SetSampleDensity0", IntegralCurveAttributes_SetSampleDensity0, METH_VARARGS},
     {"GetSampleDensity0", IntegralCurveAttributes_GetSampleDensity0, METH_VARARGS},
     {"SetSampleDensity1", IntegralCurveAttributes_SetSampleDensity1, METH_VARARGS},
@@ -2889,6 +2970,8 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return IntegralCurveAttributes_GetUseWholeBox(self, NULL);
     if(strcmp(name, "pointList") == 0)
         return IntegralCurveAttributes_GetPointList(self, NULL);
+    if(strcmp(name, "fieldData") == 0)
+        return IntegralCurveAttributes_GetFieldData(self, NULL);
     if(strcmp(name, "sampleDensity0") == 0)
         return IntegralCurveAttributes_GetSampleDensity0(self, NULL);
     if(strcmp(name, "sampleDensity1") == 0)
@@ -3137,6 +3220,8 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IntegralCurveAttributes_SetUseWholeBox(self, tuple);
     else if(strcmp(name, "pointList") == 0)
         obj = IntegralCurveAttributes_SetPointList(self, tuple);
+    else if(strcmp(name, "fieldData") == 0)
+        obj = IntegralCurveAttributes_SetFieldData(self, tuple);
     else if(strcmp(name, "sampleDensity0") == 0)
         obj = IntegralCurveAttributes_SetSampleDensity0(self, tuple);
     else if(strcmp(name, "sampleDensity1") == 0)
