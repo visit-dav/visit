@@ -76,6 +76,21 @@ avtIVPSolver::avtIVPSolver() : convertToCartesian(false), convertToCylindrical(f
 avtVector 
 avtIVPSolver::GetCurrentY() const
 {
+    // double val = 100.0;
+
+    // avtVector pt = yCur;
+  
+    // while( pt.x < 0    ) pt.x += val;
+    // while(  val < pt.x ) pt.x -= val;
+  
+    // while( pt.y < 0   ) pt.y += val;
+    // while(  val < pt.y ) pt.y -= val;
+  
+    // while( pt.z < 0    ) pt.z += val;
+    // while(  val < pt.z ) pt.z -= val;
+
+    // return pt;
+
     return yCur;
 }
 
