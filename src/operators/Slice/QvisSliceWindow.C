@@ -471,13 +471,15 @@ QvisSliceWindow::CreateWindowContents()
 //   The doAll flag shouldn't cause this function to exit early.
 //   (First window initialization wasn't updating this window.)
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisSliceWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     if (!doAll && selectedSubject == fileServer)
     {
         UpdateMeshNames();
@@ -512,32 +514,26 @@ QvisSliceWindow::UpdateWindow(bool doAll)
             originTypeGroup->blockSignals(false);
             break;
           case SliceAttributes::ID_originPoint:
-            dptr = sliceAtts->GetOriginPoint();
-            originPointLineEdit->setText(DoublesToQString(dptr,3));
+            originPointLineEdit->setText(DoublesToQString(sliceAtts->GetOriginPoint(),3));
             break;
           case SliceAttributes::ID_originIntercept:
-            temp.setNum(sliceAtts->GetOriginIntercept());
-            originInterceptLineEdit->setText(temp);
+            originInterceptLineEdit->setText(DoubleToQString(sliceAtts->GetOriginIntercept()));
             break;
           case SliceAttributes::ID_originPercent:
-            temp.setNum(sliceAtts->GetOriginPercent());
-            originPercentLineEdit->setText(temp);
+            originPercentLineEdit->setText(DoubleToQString(sliceAtts->GetOriginPercent()));
             ival = int(qMin(qMax(0.0,sliceAtts->GetOriginPercent()),100.0));
             originPercentSlider->blockSignals(true);
             originPercentSlider->setValue(ival);
             originPercentSlider->blockSignals(false);
             break;
           case SliceAttributes::ID_originZone:
-            temp.sprintf("%d", sliceAtts->GetOriginZone());
-            originZoneLineEdit->setText(temp);
+            originZoneLineEdit->setText(IntToQString(sliceAtts->GetOriginZone()));
             break;
           case SliceAttributes::ID_originNode:
-            temp.sprintf("%d", sliceAtts->GetOriginNode());
-            originNodeLineEdit->setText(temp);
+            originNodeLineEdit->setText(IntToQString(sliceAtts->GetOriginNode()));
             break;
           case SliceAttributes::ID_normal:
-            dptr = sliceAtts->GetNormal();
-            normalLineEdit->setText(DoublesToQString(dptr, 3));
+            normalLineEdit->setText(DoublesToQString(sliceAtts->GetNormal(), 3));
             break;
           case SliceAttributes::ID_axisType:
             normalTypeGroup->blockSignals(true);
@@ -550,8 +546,7 @@ QvisSliceWindow::UpdateWindow(bool doAll)
             upAxisLabel->setEnabled(!orthogonal && sliceAtts->GetProject2d());
             break;
           case SliceAttributes::ID_upAxis:
-            dptr = sliceAtts->GetUpAxis();
-            upAxisLineEdit->setText(DoublesToQString(dptr, 3));
+            upAxisLineEdit->setText(DoublesToQString(sliceAtts->GetUpAxis(), 3));
             break;
           case SliceAttributes::ID_project2d:
             projectToggle->blockSignals(true);
@@ -574,17 +569,14 @@ QvisSliceWindow::UpdateWindow(bool doAll)
             flipNormalToggle->blockSignals(false);
             break;
           case SliceAttributes::ID_originZoneDomain:
-            temp.sprintf("%d", sliceAtts->GetOriginZoneDomain());
-            originZoneDomainLineEdit->setText(temp);
+            originZoneDomainLineEdit->setText(IntToQString(sliceAtts->GetOriginZoneDomain()));
             break;
           case SliceAttributes::ID_originNodeDomain:
-            temp.sprintf("%d", sliceAtts->GetOriginNodeDomain());
-            originNodeDomainLineEdit->setText(temp);
+            originNodeDomainLineEdit->setText(IntToQString(sliceAtts->GetOriginNodeDomain()));
             break;
           case SliceAttributes::ID_theta:
           case SliceAttributes::ID_phi:
-            temp.sprintf( "%g %g", sliceAtts->GetTheta(), sliceAtts->GetPhi());
-            thetaPhiLineEdit->setText(temp);
+            thetaPhiLineEdit->setText(DoubleToQString(sliceAtts->GetTheta()) + QString(" ") + DoubleToQString(sliceAtts->GetPhi()));
             break;
         }
     } // end for
@@ -1045,7 +1037,7 @@ QvisSliceWindow::processOriginPercentText()
 // Creation:   May  5, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1053,9 +1045,7 @@ QvisSliceWindow::originPercentSliderChanged(int pct)
 {
     sliceAtts->SetOriginPercent(pct);
 
-    QString tmp;
-    tmp.sprintf("%d", pct);
-    originPercentLineEdit->setText(tmp);
+    originPercentLineEdit->setText(IntToQString(pct));
 
     if (!sliderDragging)
         Apply();
@@ -1347,35 +1337,23 @@ QvisSliceWindow::interactiveToggled(bool val)
 //   Brad Whitlock, Wed Jul  9 14:03:54 PDT 2008
 //   Use helper methods.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisSliceWindow::normalTypeChanged(int index)
 {
-    QString temp;
-
     // If we're switching from arbitrary to orthogonal 
     if (sliceAtts->GetAxisType() == SliceAttributes::Arbitrary &&
         sliceAtts->GetOriginType() == SliceAttributes::Point   &&
         (index==0 || index==1 || index==2))
     {
-        double intercept; 
-        if (index == 0) // x axis
-        {
-            intercept = sliceAtts->GetOriginPoint()[0];
-        }
-        else if (index == 1) // y axis
-        {
-            intercept = sliceAtts->GetOriginPoint()[1];
-        }
-        else // (index == 2) // z axis
-        {
-            intercept = sliceAtts->GetOriginPoint()[2];
-        }
         sliceAtts->SetOriginType(SliceAttributes::Intercept);
-        sliceAtts->SetOriginIntercept(intercept);
-        temp.setNum(intercept);
-        originInterceptLineEdit->setText(temp);
+        sliceAtts->SetOriginIntercept(sliceAtts->GetOriginPoint()[index]);
+        originInterceptLineEdit->setText(DoubleToQString(sliceAtts->GetOriginPoint()[index]));
         UpdateOriginArea();
     }
 
@@ -1396,8 +1374,7 @@ QvisSliceWindow::normalTypeChanged(int index)
     // on because of Apply's call to GetCurrentValues.
     normalLineEdit->setText(DoublesToQString(sliceAtts->GetNormal(), 3));
     upAxisLineEdit->setText(DoublesToQString(sliceAtts->GetUpAxis(), 3));
-    temp.sprintf("%g %g", sliceAtts->GetTheta(), sliceAtts->GetPhi());
-    thetaPhiLineEdit->setText( temp );
+    thetaPhiLineEdit->setText(DoubleToQString(sliceAtts->GetTheta()) + QString(" ") + DoubleToQString(sliceAtts->GetPhi()));
 
     Apply();
 }

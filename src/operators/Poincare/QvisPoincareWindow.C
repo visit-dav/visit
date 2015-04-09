@@ -1058,14 +1058,15 @@ QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisPoincareWindow::UpdateWindow(bool doAll)
 {
-    QString       temp;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -1114,8 +1115,7 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             puncturePeriodTolerance->setText(DoubleToQString(atts->GetPuncturePeriodTolerance()));
             break;
           case PoincareAttributes::ID_maxSteps:
-            temp.setNum(atts->GetMaxSteps());
-            maxSteps->setText(temp);
+            maxSteps->setText(IntToQString(atts->GetMaxSteps()));
             break;
           case PoincareAttributes::ID_terminateByTime:
             limitMaxTime->blockSignals(true);
@@ -1124,8 +1124,7 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             maxTime->setEnabled(atts->GetTerminateByTime());
             break;
           case PoincareAttributes::ID_termTime:
-            temp.setNum(atts->GetTermTime(), 'g', 16);
-            maxTime->setText(temp);
+            maxTime->setText(DoubleToQString(atts->GetTermTime()));
             break;
           case PoincareAttributes::ID_puncturePlane:
             puncturePlaneButtonGroup->blockSignals(true);
@@ -1288,31 +1287,23 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             absTolSizeType->blockSignals(false);
             if (atts->GetAbsTolSizeType() == PoincareAttributes::FractionOfBBox)
             {
-                QString temp;
-                temp.setNum(atts->GetAbsTolBBox());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolBBox()));
             }
             if (atts->GetAbsTolSizeType() == PoincareAttributes::Absolute)
             {
-                QString temp;
-                temp.setNum(atts->GetAbsTolAbsolute());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolAbsolute()));
             }
             break;
         case PoincareAttributes::ID_absTolBBox:
             if (atts->GetAbsTolSizeType() == PoincareAttributes::FractionOfBBox)
             {
-                QString temp;
-                temp.setNum(atts->GetAbsTolBBox());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolBBox()));
             }
             break;
         case PoincareAttributes::ID_absTolAbsolute:
             if (atts->GetAbsTolSizeType() == PoincareAttributes::Absolute)
             {
-                QString temp;
-                temp.setNum(atts->GetAbsTolAbsolute());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolAbsolute()));
             }
             break;
 //          case PoincareAttributes::ID_coordinateSystem:
@@ -1514,12 +1505,10 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             pathlineOverrideStartingTimeFlag->blockSignals(false);
             break;
         case PoincareAttributes::ID_pathlinesOverrideStartingTime:
-            temp.setNum(atts->GetPathlinesOverrideStartingTime(), 'g', 16);
-            pathlineOverrideStartingTime->setText(temp);
+            pathlineOverrideStartingTime->setText(DoubleToQString(atts->GetPathlinesOverrideStartingTime()));
             break;
         case PoincareAttributes::ID_pathlinesPeriod:
-            temp.setNum(atts->GetPathlinesPeriod(), 'g', 16);
-            pathlinePeriod->setText(temp);
+            pathlinePeriod->setText(DoubleToQString(atts->GetPathlinesPeriod()));
             break;
         case PoincareAttributes::ID_pathlinesCMFE:
             pathlineCMFEButtonGroup->blockSignals(true);
@@ -1547,8 +1536,7 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             issueWarningForStiffness->blockSignals(false);
             break;
         case PoincareAttributes::ID_criticalPointThreshold:
-            temp.setNum(atts->GetCriticalPointThreshold());
-            criticalPointThreshold->setText(temp);
+            criticalPointThreshold->setText(DoubleToQString(atts->GetCriticalPointThreshold()));
             break;
         }
     }

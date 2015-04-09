@@ -413,13 +413,15 @@ QvisContourPlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Mon Jan 17 17:59:09 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Wed Apr  8 08:42:11 PDT 2015
+//   Use DoubleToQString helper function, for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisContourPlotWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     bool updateColors = false;
     bool updateNames = false;
     int  index;
@@ -566,12 +568,10 @@ QvisContourPlotWindow::UpdateWindow(bool doAll)
             maxToggle->blockSignals(false);
             break;
         case ContourAttributes::ID_min:
-            temp.setNum(contourAtts->GetMin());
-            minLineEdit->setText(temp);
+            minLineEdit->setText(DoubleToQString(contourAtts->GetMin()));
             break;
         case ContourAttributes::ID_max:
-            temp.setNum(contourAtts->GetMax());
-            maxLineEdit->setText(temp);
+            maxLineEdit->setText(DoubleToQString(contourAtts->GetMax()));
             break;
         case ContourAttributes::ID_scaling:
             scalingButtons->button(contourAtts->GetScaling())->setChecked(true);
@@ -712,6 +712,10 @@ QvisContourPlotWindow::UpdateMultipleAreaColors()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 QString
@@ -721,11 +725,14 @@ QvisContourPlotWindow::LevelString(int i)
     int     cm = contourAtts->GetContourMethod();
 
     if(cm == ContourAttributes::Level)
-        retval.sprintf("%d", i + 1);
+        retval  = IntToQString(i+1);
     else if(cm == ContourAttributes::Value)
-        retval.setNum(contourAtts->GetContourValue()[i]);
+        retval = DoubleToQString(contourAtts->GetContourValue()[i]);
     else
-        retval.sprintf("%g %%", contourAtts->GetContourPercent()[i]);
+    {
+        retval = DoubleToQString(contourAtts->GetContourPercent()[i]);
+        retval += "%";
+    }
 
     return retval;
 }
@@ -815,25 +822,27 @@ QvisContourPlotWindow::UpdateMultipleAreaNames()
 // Creation:   Sat Feb 17 12:18:33 PDT 2001
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisContourPlotWindow::UpdateSelectByText()
 {
-    QString temp, temp2;
+    QString temp, temp2(" ");
     size_t     i;
 
     if(contourAtts->GetContourMethod() == ContourAttributes::Level)
     {
-        temp.sprintf("%d", contourAtts->GetContourNLevels());
-        selectByLineEdit->setText(temp);
+        selectByLineEdit->setText(IntToQString(contourAtts->GetContourNLevels()));
     }
     else if(contourAtts->GetContourMethod() == ContourAttributes::Value)
     {
         for(i = 0; i < contourAtts->GetContourValue().size(); ++i)
         {
-            temp2.sprintf("%g ", contourAtts->GetContourValue()[i]);
+            temp += DoubleToQString(contourAtts->GetContourValue()[i]);
             temp += temp2;
         }
         selectByLineEdit->setText(temp);
@@ -842,7 +851,7 @@ QvisContourPlotWindow::UpdateSelectByText()
     {
         for(i = 0; i < contourAtts->GetContourPercent().size(); ++i)
         {
-            temp2.sprintf("%g ", contourAtts->GetContourPercent()[i]);
+            temp += DoubleToQString(contourAtts->GetContourPercent()[i]);
             temp += temp2;
         }
         selectByLineEdit->setText(temp);

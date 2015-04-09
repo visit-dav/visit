@@ -884,13 +884,15 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //   Kathleen Bonnell, Mon Jan 17 18:02:39 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
     // for displaying the state values and setting widget sensitivity.
@@ -921,8 +923,7 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
 
             break;
         case PseudocolorAttributes::ID_skewFactor:
-            temp.setNum(pcAtts->GetSkewFactor());
-            skewLineEdit->setText(temp);
+            skewLineEdit->setText(DoubleToQString(pcAtts->GetSkewFactor()));
             break;
 
             // limits
@@ -932,12 +933,10 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             limitsSelect->blockSignals(false);
             break;
         case PseudocolorAttributes::ID_min:
-            temp.setNum(pcAtts->GetMin());
-            minLineEdit->setText(temp);
+            minLineEdit->setText(DoubleToQString(pcAtts->GetMin()));
             break;
         case PseudocolorAttributes::ID_max:
-            temp.setNum(pcAtts->GetMax());
-            maxLineEdit->setText(temp);
+            maxLineEdit->setText(DoubleToQString(pcAtts->GetMax()));
             break;
         case PseudocolorAttributes::ID_minFlag:
             // Disconnect the slot before setting the toggle and
@@ -977,8 +976,7 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
 
             // opacity
         case PseudocolorAttributes::ID_opacityVariable:
-          temp = pcAtts->GetOpacityVariable().c_str();
-          opacityVar->setText(temp);
+          opacityVar->setText(pcAtts->GetOpacityVariable().c_str());
           break;
             
         case PseudocolorAttributes::ID_opacity:
@@ -988,13 +986,11 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             break;
 
         case PseudocolorAttributes::ID_opacityVarMin:
-          temp.setNum(pcAtts->GetOpacityVarMin());
-          opacityVarMin->setText(temp);
+          opacityVarMin->setText(DoubleToQString(pcAtts->GetOpacityVarMin()));
           break;
 
         case PseudocolorAttributes::ID_opacityVarMax:
-          temp.setNum(pcAtts->GetOpacityVarMax());
-          opacityVarMax->setText(temp);
+          opacityVarMax->setText(DoubleToQString(pcAtts->GetOpacityVarMax()));
           break;
             
         case PseudocolorAttributes::ID_opacityType:
@@ -1072,10 +1068,12 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             pointControl->blockSignals(false);
             break;
         case PseudocolorAttributes::ID_pointSizeVar:
+            {
             pointControl->blockSignals(true);
-            temp = QString(pcAtts->GetPointSizeVar().c_str());
+            QString temp(pcAtts->GetPointSizeVar().c_str());
             pointControl->SetPointSizeVar(temp);
             pointControl->blockSignals(false);
+            }
             break;
         case PseudocolorAttributes::ID_pointSizePixels:
             pointControl->blockSignals(true);
@@ -1160,27 +1158,23 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             tubeRadiusSizeType->blockSignals(false);
             if (pcAtts->GetTubeRadiusSizeType() == PseudocolorAttributes::Absolute)
             {
-                temp.setNum(pcAtts->GetTubeRadiusAbsolute());
-                tubeRadius->setText(temp);
+                tubeRadius->setText(DoubleToQString(pcAtts->GetTubeRadiusAbsolute()));
             }
             else
             {
-                temp.setNum(pcAtts->GetTubeRadiusBBox());
-                tubeRadius->setText(temp);
+                tubeRadius->setText(DoubleToQString(pcAtts->GetTubeRadiusBBox()));
             }
             break;
         case PseudocolorAttributes::ID_tubeRadiusAbsolute:
             if (pcAtts->GetTubeRadiusSizeType() == PseudocolorAttributes::Absolute)
             {
-                temp.setNum(pcAtts->GetTubeRadiusAbsolute());
-                tubeRadius->setText(temp);
+                tubeRadius->setText(DoubleToQString(pcAtts->GetTubeRadiusAbsolute()));
             }
             break;
         case PseudocolorAttributes::ID_tubeRadiusBBox:
             if (pcAtts->GetTubeRadiusSizeType() == PseudocolorAttributes::FractionOfBBox)
             {
-                temp.setNum(pcAtts->GetTubeRadiusBBox());
-                tubeRadius->setText(temp);
+                tubeRadius->setText(DoubleToQString(pcAtts->GetTubeRadiusBBox()));
             }
             break;
 
@@ -1196,15 +1190,13 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
 
         case PseudocolorAttributes::ID_varyTubeRadiusVariable:
             tubeRadiusVaryVariable->blockSignals(true);
-            temp = pcAtts->GetVaryTubeRadiusVariable().c_str();
-            tubeRadiusVaryVariable->setText(temp);
+            tubeRadiusVaryVariable->setText(pcAtts->GetVaryTubeRadiusVariable().c_str());
             tubeRadiusVaryVariable->blockSignals(false);
             break;
 
         case PseudocolorAttributes::ID_varyTubeRadiusFactor:
             tubeRadiusVaryFactorEdit->blockSignals(true);
-            temp.setNum(pcAtts->GetVaryTubeRadiusFactor());
-            tubeRadiusVaryFactorEdit->setText(temp);
+            tubeRadiusVaryFactorEdit->setText(DoubleToQString(pcAtts->GetVaryTubeRadiusFactor()));
             tubeRadiusVaryFactorEdit->blockSignals(false);
             break;
 
@@ -1270,32 +1262,27 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             endPointRadiusSizeType->blockSignals(false);
             if (pcAtts->GetEndPointRadiusSizeType() == PseudocolorAttributes::Absolute)
             {
-                temp.setNum(pcAtts->GetEndPointRadiusAbsolute());
-                endPointRadius->setText(temp);
+                endPointRadius->setText(DoubleToQString(pcAtts->GetEndPointRadiusAbsolute()));
             }
             else
             {
-                temp.setNum(pcAtts->GetEndPointRadiusBBox());
-                endPointRadius->setText(temp);
+                endPointRadius->setText(DoubleToQString(pcAtts->GetEndPointRadiusBBox()));
             }
             break;
         case PseudocolorAttributes::ID_endPointRadiusAbsolute:
             if (pcAtts->GetEndPointRadiusSizeType() == PseudocolorAttributes::Absolute)
             {
-                temp.setNum(pcAtts->GetEndPointRadiusAbsolute());
-                endPointRadius->setText(temp);
+                endPointRadius->setText(DoubleToQString(pcAtts->GetEndPointRadiusAbsolute()));
             }
             break;
         case PseudocolorAttributes::ID_endPointRadiusBBox:
             if (pcAtts->GetEndPointRadiusSizeType() == PseudocolorAttributes::FractionOfBBox)
             {
-                temp.setNum(pcAtts->GetEndPointRadiusBBox());
-                endPointRadius->setText(temp);
+                endPointRadius->setText(DoubleToQString(pcAtts->GetEndPointRadiusBBox()));
             }
             break;
         case PseudocolorAttributes::ID_endPointRatio:
-            temp.setNum(pcAtts->GetEndPointRatio());
-            endPointRatio->setText(temp);
+            endPointRatio->setText(DoubleToQString(pcAtts->GetEndPointRatio()));
             break;
 
             // smoothing
@@ -1394,7 +1381,7 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
             pcAtts->SetSkewFactor(val);
         else
         {
-            ResettingError(tr("maximum value"), DoubleToQString(pcAtts->GetSkewFactor()));
+            ResettingError(tr("skew"), DoubleToQString(pcAtts->GetSkewFactor()));
             pcAtts->SetSkewFactor(pcAtts->GetSkewFactor());
         }
     }

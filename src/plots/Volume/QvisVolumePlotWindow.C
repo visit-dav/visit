@@ -1594,12 +1594,15 @@ QvisVolumePlotWindow::UpdateHistogram(bool need2D)
 //   Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
 //   Make resampling optional.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisVolumePlotWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
     double *mat;
 
     // If the plot info atts changed then update the histogram.
@@ -1657,8 +1660,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             break;
         case VolumeAttributes::ID_lowGradientLightingClampValue:
             lowGradientClamp->blockSignals(true);
-            temp.setNum(volumeAtts->GetLowGradientLightingClampValue());
-            lowGradientClamp->setText(temp);
+            lowGradientClamp->setText(DoubleToQString(volumeAtts->GetLowGradientLightingClampValue()));
             lowGradientClamp->blockSignals(false);
             break;
         case VolumeAttributes::ID_colorControlPoints:
@@ -1702,8 +1704,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             resampleTarget->blockSignals(false);
             break;
         case VolumeAttributes::ID_opacityVariable:
-            temp = volumeAtts->GetOpacityVariable().c_str();
-            opacityVariable->setText(temp);
+            opacityVariable->setText(volumeAtts->GetOpacityVariable().c_str());
             break;
         case VolumeAttributes::ID_freeformOpacity:
             UpdateFreeform();
@@ -1720,8 +1721,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             colorMin->setEnabled(volumeAtts->GetUseColorVarMin());
             break;
         case VolumeAttributes::ID_colorVarMin:
-            temp.setNum(volumeAtts->GetColorVarMin());
-            colorMin->setText(temp);
+            colorMin->setText(FloatToQString(volumeAtts->GetColorVarMin()));
             break;
         case VolumeAttributes::ID_useColorVarMax:
             colorMaxToggle->blockSignals(true);
@@ -1730,8 +1730,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             colorMax->setEnabled(volumeAtts->GetUseColorVarMax());
             break;
         case VolumeAttributes::ID_colorVarMax:
-            temp.setNum(volumeAtts->GetColorVarMax());
-            colorMax->setText(temp);
+            colorMax->setText(FloatToQString(volumeAtts->GetColorVarMax()));
             break;
         case VolumeAttributes::ID_useOpacityVarMin:
             opacityMinToggle->blockSignals(true);
@@ -1740,8 +1739,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             opacityMin->setEnabled(volumeAtts->GetUseOpacityVarMin());
             break;
         case VolumeAttributes::ID_opacityVarMin:
-            temp.setNum(volumeAtts->GetOpacityVarMin());
-            opacityMin->setText(temp);
+            opacityMin->setText(FloatToQString(volumeAtts->GetOpacityVarMin()));
             break;
         case VolumeAttributes::ID_useOpacityVarMax:
             opacityMaxToggle->blockSignals(true);
@@ -1750,8 +1748,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             opacityMax->setEnabled(volumeAtts->GetUseOpacityVarMax());
             break;
         case VolumeAttributes::ID_opacityVarMax:
-            temp.setNum(volumeAtts->GetOpacityVarMax());
-            opacityMax->setText(temp);
+            opacityMax->setText(FloatToQString(volumeAtts->GetOpacityVarMax()));
             break;
         case VolumeAttributes::ID_smoothData:
             smoothDataToggle->blockSignals(true);
@@ -1832,8 +1829,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                                       VolumeAttributes::Skew);
             break;
         case VolumeAttributes::ID_skewFactor:
-            temp.setNum(volumeAtts->GetSkewFactor());
-            skewLineEdit->setText(temp);
+            skewLineEdit->setText(DoubleToQString(volumeAtts->GetSkewFactor()));
             break;
         case VolumeAttributes::ID_sampling:
             samplingButtonGroup->blockSignals(true);

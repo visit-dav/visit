@@ -448,13 +448,15 @@ QvisTransformWindow::CreateWindowContents()
 //    Tom Fogal, Tue Jul 27 11:06:46 MDT 2010
 //    Add cases for 4x4 matrix elements.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisTransformWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -499,8 +501,7 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             rotateAxis->setText(DoublesToQString(atts->GetRotateAxis(),3));
             break;
           case TransformAttributes::ID_rotateAmount:
-            temp.setNum(atts->GetRotateAmount());
-            rotateAmount->setText(temp);
+            rotateAmount->setText(DoubleToQString(atts->GetRotateAmount()));
             break;
           case TransformAttributes::ID_rotateType:
             rotateType->blockSignals(true);
@@ -538,16 +539,13 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             scaleOrigin->setText(DoublesToQString(atts->GetScaleOrigin(),3));
             break;
           case TransformAttributes::ID_scaleX:
-            temp.setNum(atts->GetScaleX());
-            scaleX->setText(temp);
+            scaleX->setText(DoubleToQString(atts->GetScaleX()));
             break;
           case TransformAttributes::ID_scaleY:
-            temp.setNum(atts->GetScaleY());
-            scaleY->setText(temp);
+            scaleY->setText(DoubleToQString(atts->GetScaleY()));
             break;
           case TransformAttributes::ID_scaleZ:
-            temp.setNum(atts->GetScaleZ());
-            scaleZ->setText(temp);
+            scaleZ->setText(DoubleToQString(atts->GetScaleZ()));
             break;
           case TransformAttributes::ID_doTranslate:
             if (atts->GetDoTranslate() == true)
@@ -573,16 +571,13 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             doTranslate->blockSignals(false);
             break;
           case TransformAttributes::ID_translateX:
-            temp.setNum(atts->GetTranslateX());
-            translateX->setText(temp);
+            translateX->setText(DoubleToQString(atts->GetTranslateX()));
             break;
           case TransformAttributes::ID_translateY:
-            temp.setNum(atts->GetTranslateY());
-            translateY->setText(temp);
+            translateY->setText(DoubleToQString(atts->GetTranslateY()));
             break;
           case TransformAttributes::ID_translateZ:
-            temp.setNum(atts->GetTranslateZ());
-            translateZ->setText(temp);
+            translateZ->setText(DoubleToQString(atts->GetTranslateZ()));
             break;
           case TransformAttributes::ID_transformType:
             if (atts->GetTransformType() == TransformAttributes::Similarity)
@@ -636,71 +631,55 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             continuousPhi->blockSignals(false);
             break;
           case TransformAttributes::ID_m00:
-            temp.setNum(atts->GetM00());
-            m00->setText(temp);
+            m00->setText(DoubleToQString(atts->GetM00()));
             break;
           case TransformAttributes::ID_m01:
-            temp.setNum(atts->GetM01());
-            m01->setText(temp);
+            m01->setText(DoubleToQString(atts->GetM01()));
             break;
           case TransformAttributes::ID_m02:
-            temp.setNum(atts->GetM02());
-            m02->setText(temp);
+            m02->setText(DoubleToQString(atts->GetM02()));
             break;
           case TransformAttributes::ID_m03:
-            temp.setNum(atts->GetM03());
-            m03->setText(temp);
+            m03->setText(DoubleToQString(atts->GetM03()));
             break;
 
           case TransformAttributes::ID_m10:
-            temp.setNum(atts->GetM10());
-            m10->setText(temp);
+            m10->setText(DoubleToQString(atts->GetM10()));
             break;
           case TransformAttributes::ID_m11:
-            temp.setNum(atts->GetM11());
-            m11->setText(temp);
+            m11->setText(DoubleToQString(atts->GetM11()));
             break;
           case TransformAttributes::ID_m12:
-            temp.setNum(atts->GetM12());
-            m12->setText(temp);
+            m12->setText(DoubleToQString(atts->GetM12()));
             break;
           case TransformAttributes::ID_m13:
-            temp.setNum(atts->GetM13());
-            m13->setText(temp);
+            m13->setText(DoubleToQString(atts->GetM13()));
             break;
 
           case TransformAttributes::ID_m20:
-            temp.setNum(atts->GetM20());
-            m20->setText(temp);
+            m20->setText(DoubleToQString(atts->GetM20()));
             break;
           case TransformAttributes::ID_m21:
-            temp.setNum(atts->GetM21());
-            m21->setText(temp);
+            m21->setText(DoubleToQString(atts->GetM21()));
             break;
           case TransformAttributes::ID_m22:
-            temp.setNum(atts->GetM22());
-            m22->setText(temp);
+            m22->setText(DoubleToQString(atts->GetM22()));
             break;
           case TransformAttributes::ID_m23:
-            temp.setNum(atts->GetM23());
-            m23->setText(temp);
+            m23->setText(DoubleToQString(atts->GetM23()));
             break;
 
           case TransformAttributes::ID_m30:
-            temp.setNum(atts->GetM30());
-            m30->setText(temp);
+            m30->setText(DoubleToQString(atts->GetM30()));
             break;
           case TransformAttributes::ID_m31:
-            temp.setNum(atts->GetM31());
-            m31->setText(temp);
+            m31->setText(DoubleToQString(atts->GetM31()));
             break;
           case TransformAttributes::ID_m32:
-            temp.setNum(atts->GetM32());
-            m32->setText(temp);
+            m32->setText(DoubleToQString(atts->GetM32()));
             break;
           case TransformAttributes::ID_m33:
-            temp.setNum(atts->GetM33());
-            m33->setText(temp);
+            m33->setText(DoubleToQString(atts->GetM33()));
             break;
 
           case TransformAttributes::ID_invertLinearTransform:
@@ -760,7 +739,7 @@ void
 QvisTransformWindow::GetCurrentValues(int which_widget)
 {
     bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    QString msg;
 
     // Do rotateOrigin
     if(which_widget == TransformAttributes::ID_rotateOrigin || doAll)
@@ -804,7 +783,7 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
         else
         {
             ResettingError(tr("rotate amount"),
-                FloatToQString(atts->GetRotateAmount()));
+                DoubleToQString(atts->GetRotateAmount()));
             atts->SetRotateAmount(atts->GetRotateAmount());
         }
     }
@@ -831,7 +810,7 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
             atts->SetScaleX(val);
         else
         {
-            ResettingError(tr("X scale"), FloatToQString(atts->GetScaleX()));
+            ResettingError(tr("X scale"), DoubleToQString(atts->GetScaleX()));
             atts->SetScaleX(atts->GetScaleX());
         }
     }
@@ -844,7 +823,7 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
             atts->SetScaleY(val);
         else
         {
-            ResettingError(tr("Y scale"), FloatToQString(atts->GetScaleY()));
+            ResettingError(tr("Y scale"), DoubleToQString(atts->GetScaleY()));
             atts->SetScaleY(atts->GetScaleY());
         }
     }
@@ -857,7 +836,7 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
             atts->SetScaleZ(val);
         else
         {
-            ResettingError(tr("Z scale"), FloatToQString(atts->GetScaleZ()));
+            ResettingError(tr("Z scale"), DoubleToQString(atts->GetScaleZ()));
             atts->SetScaleZ(atts->GetScaleZ());
         }
     }
@@ -870,7 +849,7 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
             atts->SetTranslateX(val);
         else
         {
-            ResettingError(tr("translation in X"), FloatToQString(atts->GetTranslateX()));
+            ResettingError(tr("translation in X"), DoubleToQString(atts->GetTranslateX()));
             atts->SetTranslateX(atts->GetTranslateX());
         }
     }
@@ -883,7 +862,7 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
             atts->SetTranslateY(val);
         else
         {
-            ResettingError(tr("translation in Y"), FloatToQString(atts->GetTranslateY()));
+            ResettingError(tr("translation in Y"), DoubleToQString(atts->GetTranslateY()));
             atts->SetTranslateY(atts->GetTranslateY());
         }
     }
@@ -896,7 +875,7 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
             atts->SetTranslateZ(val);
         else
         {
-            ResettingError(tr("translation in Z"), FloatToQString(atts->GetTranslateZ()));
+            ResettingError(tr("translation in Z"), DoubleToQString(atts->GetTranslateZ()));
             atts->SetTranslateZ(atts->GetTranslateZ());
         }
     }
@@ -904,25 +883,122 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     // Do linear transform matrix elements
     if (which_widget == 100 || doAll)
     {
-        atts->SetM00(m00->displayText().trimmed().toFloat());
-        atts->SetM01(m01->displayText().trimmed().toFloat());
-        atts->SetM02(m02->displayText().trimmed().toFloat());
-        atts->SetM03(m03->displayText().trimmed().toFloat());
+        double val;
+        if(LineEditGetDouble(m00, val))
+            atts->SetM00(val);
+        else
+        {
+            ResettingError(tr("Matrix 00"), DoubleToQString(atts->GetM00()));
+            atts->SetM00(atts->GetM00());
+        }
+        if(LineEditGetDouble(m01, val))
+            atts->SetM01(val);
+        else
+        {
+            ResettingError(tr("Matrix 01"), DoubleToQString(atts->GetM01()));
+            atts->SetM01(atts->GetM01());
+        }
+        if(LineEditGetDouble(m02, val))
+            atts->SetM02(val);
+        else
+        {
+            ResettingError(tr("Matrix 02"), DoubleToQString(atts->GetM02()));
+            atts->SetM02(atts->GetM02());
+        }
+        if(LineEditGetDouble(m03, val))
+            atts->SetM03(val);
+        else
+        {
+            ResettingError(tr("Matrix 03"), DoubleToQString(atts->GetM03()));
+            atts->SetM03(atts->GetM03());
+        }
 
-        atts->SetM10(m10->displayText().trimmed().toFloat());
-        atts->SetM11(m11->displayText().trimmed().toFloat());
-        atts->SetM12(m12->displayText().trimmed().toFloat());
-        atts->SetM13(m13->displayText().trimmed().toFloat());
+        if(LineEditGetDouble(m10, val))
+            atts->SetM10(val);
+        else
+        {
+            ResettingError(tr("Matrix 10"), DoubleToQString(atts->GetM10()));
+            atts->SetM10(atts->GetM10());
+        }
+        if(LineEditGetDouble(m11, val))
+            atts->SetM11(val);
+        else
+        {
+            ResettingError(tr("Matrix 11"), DoubleToQString(atts->GetM11()));
+            atts->SetM11(atts->GetM11());
+        }
+        if(LineEditGetDouble(m12, val))
+            atts->SetM12(val);
+        else
+        {
+            ResettingError(tr("Matrix 12"), DoubleToQString(atts->GetM12()));
+            atts->SetM12(atts->GetM12());
+        }
+        if(LineEditGetDouble(m13, val))
+            atts->SetM13(val);
+        else
+        {
+            ResettingError(tr("Matrix 13"), DoubleToQString(atts->GetM13()));
+            atts->SetM13(atts->GetM13());
+        }
 
-        atts->SetM20(m20->displayText().trimmed().toFloat());
-        atts->SetM21(m21->displayText().trimmed().toFloat());
-        atts->SetM22(m22->displayText().trimmed().toFloat());
-        atts->SetM23(m23->displayText().trimmed().toFloat());
+        if(LineEditGetDouble(m20, val))
+            atts->SetM20(val);
+        else
+        {
+            ResettingError(tr("Matrix 20"), DoubleToQString(atts->GetM20()));
+            atts->SetM20(atts->GetM20());
+        }
+        if(LineEditGetDouble(m21, val))
+            atts->SetM21(val);
+        else
+        {
+            ResettingError(tr("Matrix 21"), DoubleToQString(atts->GetM21()));
+            atts->SetM21(atts->GetM21());
+        }
+        if(LineEditGetDouble(m22, val))
+            atts->SetM22(val);
+        else
+        {
+            ResettingError(tr("Matrix 22"), DoubleToQString(atts->GetM22()));
+            atts->SetM22(atts->GetM22());
+        }
+        if(LineEditGetDouble(m23, val))
+            atts->SetM23(val);
+        else
+        {
+            ResettingError(tr("Matrix 23"), DoubleToQString(atts->GetM23()));
+            atts->SetM23(atts->GetM23());
+        }
 
-        atts->SetM30(m30->displayText().trimmed().toFloat());
-        atts->SetM31(m31->displayText().trimmed().toFloat());
-        atts->SetM32(m32->displayText().trimmed().toFloat());
-        atts->SetM33(m33->displayText().trimmed().toFloat());
+        if(LineEditGetDouble(m30, val))
+            atts->SetM30(val);
+        else
+        {
+            ResettingError(tr("Matrix 30"), DoubleToQString(atts->GetM30()));
+            atts->SetM30(atts->GetM30());
+        }
+        if(LineEditGetDouble(m31, val))
+            atts->SetM31(val);
+        else
+        {
+            ResettingError(tr("Matrix 31"), DoubleToQString(atts->GetM31()));
+            atts->SetM31(atts->GetM31());
+        }
+        if(LineEditGetDouble(m32, val))
+            atts->SetM32(val);
+        else
+        {
+            ResettingError(tr("Matrix 32"), DoubleToQString(atts->GetM32()));
+            atts->SetM32(atts->GetM32());
+        }
+        if(LineEditGetDouble(m33, val))
+            atts->SetM33(val);
+        else
+        {
+            ResettingError(tr("Matrix 33"), DoubleToQString(atts->GetM33()));
+            atts->SetM33(atts->GetM33());
+        }
     }
 }
 

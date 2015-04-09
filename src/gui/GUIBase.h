@@ -112,6 +112,9 @@ class QvisHelpWindow;
 //   Cyrus Harrison, Tue Aug 26 07:46:41 PDT 2008
 //   Made helper functions public static so other classes can utilize them.
 //
+//   Kathleen Biagas, Thu Apr  9 11:48:50 PDT 2015
+//   Add precision argument to FloatsToQString and DoublesToQString.
+//
 // ****************************************************************************
 
 class GUI_API GUIBase
@@ -124,11 +127,11 @@ public:
     void ConnectMessageAttr(MessageAttributes *attr);
     
     // Helpers for converting between values and qstrings
-    static QString FloatsToQString(const float *, int);
-    static QString FloatToQString(float);
-    static QString DoublesToQString(const double *, int);
-    static QString DoublesToQString(const doubleVector &);
-    static QString DoubleToQString(double);
+    static QString FloatsToQString(const float *, int, int precision=7);
+    static QString FloatToQString(float, int precision=7);
+    static QString DoublesToQString(const double *, int, int precision=16);
+    static QString DoublesToQString(const doubleVector &, int precision=16);
+    static QString DoubleToQString(double, int precision=16);
     static QString IntsToQString(const int *, int);
     static QString IntsToQString(const intVector &);
     static QString IntToQString(int);

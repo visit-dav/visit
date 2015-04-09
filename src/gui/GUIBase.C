@@ -909,16 +909,18 @@ GUIBase::ResettingError(const QString &name, const QString &val)
 // Creation:   Thu Jun 19 10:35:31 PDT 2008
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr  8 08:22:33 PDT 2015
+//    Added precision argument for 'setNum' call.
 //   
 // ****************************************************************************
 
 QString
-GUIBase::DoublesToQString(const double *vals, int nvals)
+GUIBase::DoublesToQString(const double *vals, int nvals, int precision)
 {
     QString s;
     for(int i = 0; i < nvals; ++i)
     {
-        s += QString().setNum(vals[i]);
+        s += QString().setNum(vals[i], 'g', precision);
         if(i < nvals-1)
             s += " ";
     }
@@ -944,16 +946,18 @@ GUIBase::DoublesToQString(const double *vals, int nvals)
 // Creation:   Thu Jun 19 10:35:31 PDT 2008
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr  8 08:22:33 PDT 2015
+//    Added precision argument for 'setNum' call.
 //   
 // ****************************************************************************
 
 QString
-GUIBase::DoublesToQString(const doubleVector &vals)
+GUIBase::DoublesToQString(const doubleVector &vals, int precision)
 {
     QString s;
     for(size_t i = 0; i < vals.size(); ++i)
     {
-        s += QString().setNum(vals[i]);
+        s += QString().setNum(vals[i], 'g', precision);
         if(i < vals.size()-1)
             s += " ";
     }
@@ -978,13 +982,15 @@ GUIBase::DoublesToQString(const doubleVector &vals)
 // Creation:   Thu Jun 19 10:35:31 PDT 2008
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr  8 08:22:33 PDT 2015
+//    Added precision argument for 'setNum' call.
 //   
 // ****************************************************************************
 
 QString
-GUIBase::DoubleToQString(double val)
+GUIBase::DoubleToQString(double val, int precision)
 {
-    return QString().setNum(val);
+    return QString().setNum(val, 'g', precision);
 }
 
 // ****************************************************************************
@@ -1006,16 +1012,18 @@ GUIBase::DoubleToQString(double val)
 // Creation:   Thu Jun 19 10:35:31 PDT 2008
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr  8 08:22:33 PDT 2015
+//    Added precision argument for 'setNum' call.
 //   
 // ****************************************************************************
 
 QString
-GUIBase::FloatsToQString(const float *vals, int nvals)
+GUIBase::FloatsToQString(const float *vals, int nvals, int precision)
 {
     QString s;
     for(int i = 0; i < nvals; ++i)
     {
-        s += QString().setNum(vals[i]);
+        s += QString().setNum(vals[i], 'g', precision);
         if(i < nvals-1)
             s += " ";
     }
@@ -1040,13 +1048,15 @@ GUIBase::FloatsToQString(const float *vals, int nvals)
 // Creation:   Thu Jun 19 10:35:31 PDT 2008
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr  8 08:22:33 PDT 2015
+//    Added precision argument for 'setNum' call.
 //   
 // ****************************************************************************
 
 QString
-GUIBase::FloatToQString(float val)
+GUIBase::FloatToQString(float val, int precision)
 {
-    return QString().setNum(val);
+    return QString().setNum(val, 'g', precision);
 }
 
 // ****************************************************************************

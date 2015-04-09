@@ -408,13 +408,15 @@ QvisMoleculePlotWindow::CreateWindowContents()
 //   Cyrus Harrison, Fri Jul 18 14:38:14 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function FloatToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisMoleculePlotWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -580,12 +582,10 @@ QvisMoleculePlotWindow::UpdateWindow(bool doAll)
             radiusVariable->setText(atts->GetRadiusVariable().c_str());
             break;
           case MoleculeAttributes::ID_radiusScaleFactor:
-            temp.setNum(atts->GetRadiusScaleFactor());
-            radiusScaleFactor->setText(temp);
+            radiusScaleFactor->setText(FloatToQString(atts->GetRadiusScaleFactor()));
             break;
           case MoleculeAttributes::ID_radiusFixed:
-            temp.setNum(atts->GetRadiusFixed());
-            radiusFixed->setText(temp);
+            radiusFixed->setText(FloatToQString(atts->GetRadiusFixed()));
             break;
           case MoleculeAttributes::ID_atomSphereQuality:
             atomSphereQuality->blockSignals(true);
@@ -598,8 +598,7 @@ QvisMoleculePlotWindow::UpdateWindow(bool doAll)
             bondCylinderQuality->blockSignals(false);
             break;
           case MoleculeAttributes::ID_bondRadius:
-            temp.setNum(atts->GetBondRadius());
-            bondRadius->setText(temp);
+            bondRadius->setText(FloatToQString(atts->GetBondRadius()));
             break;
           case MoleculeAttributes::ID_bondLineWidth:
             bondLineWidth->blockSignals(true);
@@ -642,8 +641,7 @@ QvisMoleculePlotWindow::UpdateWindow(bool doAll)
             minFlag->blockSignals(false);
             break;
           case MoleculeAttributes::ID_scalarMin:
-            temp.setNum(atts->GetScalarMin());
-            scalarMin->setText(temp);
+            scalarMin->setText(FloatToQString(atts->GetScalarMin()));
             break;
           case MoleculeAttributes::ID_maxFlag:
             if (atts->GetMaxFlag() == true)
@@ -659,8 +657,7 @@ QvisMoleculePlotWindow::UpdateWindow(bool doAll)
             maxFlag->blockSignals(false);
             break;
           case MoleculeAttributes::ID_scalarMax:
-            temp.setNum(atts->GetScalarMax());
-            scalarMax->setText(temp);
+            scalarMax->setText(FloatToQString(atts->GetScalarMax()));
             break;
         }
     }

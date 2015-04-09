@@ -483,9 +483,9 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
             {
                 QString name, emin("min"), emax("max");
                 if (atts->GetExtentMinima()[ax] > -1e+37)
-                    emin.sprintf("%f",atts->GetExtentMinima()[ax]);
+                    emin = DoubleToQString(atts->GetExtentMinima()[ax]);
                 if (atts->GetExtentMaxima()[ax] < +1e+37)
-                    emax.sprintf("%f",atts->GetExtentMaxima()[ax]);
+                    emax = DoubleToQString(atts->GetExtentMaxima()[ax]);
                 if (atts->GetVisualAxisNames().size() > ax)
                     name = (atts->GetVisualAxisNames()[ax]).c_str();
                 else
@@ -520,11 +520,10 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
           case ParallelCoordinatesAttributes::ID_linesNumPartitions:
             linesNumPartitions->blockSignals(true);
             linesNumPartitionsSlider->blockSignals(true);
-            temp.sprintf("%d", atts->GetLinesNumPartitions());
             sliderpos = int(log(float(atts->GetLinesNumPartitions()))/log(2.f)+.5)-5;
             sliderpos = qMin(qMax(1, sliderpos), 10);
             linesNumPartitionsSlider->setValue(sliderpos);
-            linesNumPartitions->setText(temp);
+            linesNumPartitions->setText(IntToQString(atts->GetLinesNumPartitions()));
             linesNumPartitions->blockSignals(false);
             linesNumPartitionsSlider->blockSignals(false);
             break;
@@ -536,8 +535,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
           case ParallelCoordinatesAttributes::ID_contextGamma:
             contextGamma->blockSignals(true);
             contextGammaSlider->blockSignals(true);
-            temp.sprintf("%.2f", atts->GetContextGamma());
-            contextGamma->setText(temp);
+            contextGamma->setText(FloatToQString(atts->GetContextGamma()));
             sliderpos = int(50 + 50*log10(atts->GetContextGamma()) + .5);
             sliderpos = qMin(qMax(0, sliderpos), 100);
             contextGammaSlider->setValue(sliderpos);
@@ -547,11 +545,10 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
           case ParallelCoordinatesAttributes::ID_contextNumPartitions:
             contextNumPartitions->blockSignals(true);
             contextNumPartitionsSlider->blockSignals(true);
-            temp.sprintf("%d", atts->GetContextNumPartitions());
             sliderpos = int(log((float)atts->GetContextNumPartitions())/log(2.f)+.5);
             sliderpos = qMin(qMax(1, sliderpos), 10);
             contextNumPartitionsSlider->setValue(sliderpos);
-            contextNumPartitions->setText(temp);
+            contextNumPartitions->setText(IntToQString(atts->GetContextNumPartitions()));
             contextNumPartitions->blockSignals(false);
             contextNumPartitionsSlider->blockSignals(false);
             break;
@@ -576,8 +573,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
           case ParallelCoordinatesAttributes::ID_focusGamma:
             focusGamma->blockSignals(true);
             focusGammaSlider->blockSignals(true);
-            temp.sprintf("%.2f", atts->GetFocusGamma());
-            focusGamma->setText(temp);
+            focusGamma->setText(FloatToQString(atts->GetFocusGamma()));
             sliderpos = int(50 + 50*log10(atts->GetFocusGamma()) + .5);
             sliderpos = qMin(qMax(0, sliderpos), 119);
             focusGammaSlider->setValue(sliderpos);
@@ -666,6 +662,9 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
 //    Jeremy Meredith, Mon Apr 27 13:03:11 EDT 2009
 //    Qt4 port of new additions.
 //
+//    Kathleen Biagas, Thu Apr  9 08:41:58 PDT 2015
+//    Use helper functions.
+//
 // ****************************************************************************
 
 void
@@ -677,23 +676,19 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
     // Do contextGamma
     if(which_widget == ParallelCoordinatesAttributes::ID_contextGamma || doAll)
     {
-        temp = contextGamma->displayText().simplified();
-        okay = !temp.isEmpty();
-        if(okay)
+        float val;
+        bool okay = false;
+        if(LineEditGetFloat(contextGamma, val))
         {
-            float val = temp.toFloat(&okay);
-            if (val>0 && val<1000)
+            if (val > 0 && val < 1000)
+            {
                 atts->SetContextGamma(val);
-            else
-                okay = false;
+                okay = true;
+            }
         }
-
-        if(!okay)
+        if (!okay)
         {
-            msg = tr("The value of contextGamma was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetContextGamma());
-            Message(msg);
+            ResettingError(tr("Context gamma"), FloatToQString(atts->GetContextGamma()));
             atts->SetContextGamma(atts->GetContextGamma());
         }
     }
@@ -701,23 +696,19 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
     // Do focusGamma
     if(which_widget == ParallelCoordinatesAttributes::ID_focusGamma || doAll)
     {
-        temp = focusGamma->displayText().simplified();
-        okay = !temp.isEmpty();
-        if(okay)
+        float val;
+        bool okay = false;
+        if(LineEditGetFloat(focusGamma, val))
         {
-            float val = temp.toFloat(&okay);
-            if (val>0 && val<1000)
+            if (val > 0 && val < 1000)
+            {
                 atts->SetFocusGamma(val);
-            else
-                okay = false;
+                okay = true;
+            }
         }
-
-        if(!okay)
+        if (!okay)
         {
-            msg = tr("The value of focusGamma was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetFocusGamma());
-            Message(msg);
+            ResettingError(tr("Focus gamma"), FloatToQString(atts->GetFocusGamma()));
             atts->SetFocusGamma(atts->GetFocusGamma());
         }
     }
@@ -725,23 +716,19 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
     // Do contextNumPartitions
     if(which_widget == ParallelCoordinatesAttributes::ID_contextNumPartitions || doAll)
     {
-        temp = contextNumPartitions->displayText().simplified();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        bool okay = false;
+        if(LineEditGetInt(contextNumPartitions, val))
         {
-            int val = temp.toInt(&okay);
-            if (val>0 && val<10000)
+            if (val > 0 && val < 10000)
+            {
                 atts->SetContextNumPartitions(val);
-            else
-                okay = false;
+                okay = true;
+            }
         }
-
-        if(!okay)
+        if (!okay)
         {
-            msg = tr("The value of contextNumPartitions was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetContextNumPartitions());
-            Message(msg);
+            ResettingError(tr("Context num partitions"), IntToQString(atts->GetContextNumPartitions()));
             atts->SetContextNumPartitions(atts->GetContextNumPartitions());
         }
     }
@@ -749,23 +736,19 @@ QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
     // Do linesNumPartitionsSlider
     if(which_widget == ParallelCoordinatesAttributes::ID_linesNumPartitions || doAll)
     {
-        temp = linesNumPartitions->displayText().simplified();
-        okay = !temp.isEmpty();
-        if(okay)
+        int val;
+        bool okay = false;
+        if(LineEditGetInt(linesNumPartitions, val))
         {
-            int val = temp.toInt(&okay);
-            if (val>0 && val<10000)
+            if (val > 0 && val < 10000)
+            {
                 atts->SetLinesNumPartitions(val);
-            else
-                okay = false;
+                okay = true;
+            }
         }
-
-        if(!okay)
+        if (!okay)
         {
-            msg.sprintf("The value of linesNumPartitions was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetLinesNumPartitions());
-            Message(msg);
+            ResettingError(tr("Lines num partitions"), IntToQString(atts->GetLinesNumPartitions()));
             atts->SetLinesNumPartitions(atts->GetLinesNumPartitions());
         }
     }
@@ -1223,9 +1206,7 @@ QvisParallelCoordinatesPlotWindow::contextGammaSliderChanged(int val)
     atts->SetContextGamma(gamma);
 
     // Set the value in the line edit.
-    QString tmp;
-    tmp.sprintf("%.2f", gamma);
-    contextGamma->setText(tmp);
+    contextGamma->setText(FloatToQString(gamma));
 }
 
 // ****************************************************************************
@@ -1280,9 +1261,7 @@ QvisParallelCoordinatesPlotWindow::focusGammaSliderChanged(int val)
     atts->SetFocusGamma(gamma);
 
     // Set the value in the line edit.
-    QString tmp;
-    tmp.sprintf("%.2f", gamma);
-    focusGamma->setText(tmp);
+    focusGamma->setText(FloatToQString(gamma));
 }
 
 // ****************************************************************************
@@ -1327,9 +1306,7 @@ QvisParallelCoordinatesPlotWindow::contextNumPartitionsSliderChanged(int val)
     atts->SetContextNumPartitions(nparts);
 
     // Set the value in the line edit.
-    QString tmp;
-    tmp.sprintf("%d", nparts);
-    contextNumPartitions->setText(tmp);
+    contextNumPartitions->setText(IntToQString(nparts));
 }
 
 // ****************************************************************************
@@ -1444,9 +1421,7 @@ QvisParallelCoordinatesPlotWindow::linesNumPartitionsSliderChanged(int val)
     atts->SetLinesNumPartitions(nparts);
 
     // Set the value in the line edit.
-    QString tmp;
-    tmp.sprintf("%d", nparts);
-    linesNumPartitions->setText(tmp);
+    linesNumPartitions->setText(IntToQString(nparts));
 }
 
 // ****************************************************************************

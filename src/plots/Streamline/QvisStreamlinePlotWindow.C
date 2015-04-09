@@ -1446,12 +1446,15 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
 {
-    QString       temp;
     QColor        tempcolor;
 
     for(int i = 0; i < streamAtts->NumAttributes(); ++i)
@@ -1474,8 +1477,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             sourceType->blockSignals(false);
             break;
         case StreamlineAttributes::ID_maxStepLength:
-            temp.setNum(streamAtts->GetMaxStepLength());
-            maxStepLength->setText(temp);
+            maxStepLength->setText(DoubleToQString(streamAtts->GetMaxStepLength()));
             break;
         case StreamlineAttributes::ID_limitMaximumTimestep:
             limitMaxTimeStep->blockSignals(true);
@@ -1494,12 +1496,10 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             maxTimeStep->blockSignals(false);
             break;
         case StreamlineAttributes::ID_maxTimeStep:
-            temp.setNum(streamAtts->GetMaxTimeStep());
-            maxTimeStep->setText(temp);
+            maxTimeStep->setText(DoubleToQString(streamAtts->GetMaxTimeStep()));
             break;
         case StreamlineAttributes::ID_maxSteps:
-            temp.setNum(streamAtts->GetMaxSteps());
-            maxSteps->setText(temp);
+            maxSteps->setText(IntToQString(streamAtts->GetMaxSteps()));
             break;
         case StreamlineAttributes::ID_terminateByDistance:
             limitMaxDistance->blockSignals(true);
@@ -1508,8 +1508,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             maxDistance->setEnabled(streamAtts->GetTerminateByDistance());
             break;
         case StreamlineAttributes::ID_termDistance:
-            temp.setNum(streamAtts->GetTermDistance());
-            maxDistance->setText(temp);
+            maxDistance->setText(DoubleToQString(streamAtts->GetTermDistance()));
             break;
         case StreamlineAttributes::ID_terminateByTime:
             limitMaxTime->blockSignals(true);
@@ -1518,8 +1517,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             maxTime->setEnabled(streamAtts->GetTerminateByTime());
             break;
         case StreamlineAttributes::ID_termTime:
-            temp.setNum(streamAtts->GetTermTime(), 'g', 16);
-            maxTime->setText(temp);
+            maxTime->setText(DoubleToQString(streamAtts->GetTermTime()));
             break;
         case StreamlineAttributes::ID_velocitySource:
             velocitySource->setText(DoublesToQString(streamAtts->GetVelocitySource(),3));
@@ -1543,8 +1541,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             planeUpAxis->setText(DoublesToQString(streamAtts->GetPlaneUpAxis(),3));
             break;
         case StreamlineAttributes::ID_radius:
-            temp.setNum(streamAtts->GetRadius());
-            radius->setText(temp);
+            radius->setText(DoubleToQString(streamAtts->GetRadius()));
             break;
         case StreamlineAttributes::ID_sphereOrigin:
             sphereOrigin->setText(DoublesToQString(streamAtts->GetSphereOrigin(),3));
@@ -1560,9 +1557,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 pointList->clear();
                 for (size_t i = 0; i < points.size(); i+= 3)
                 {
-                    char tmp[256];
-                    sprintf(tmp, "%lf %lf %lf", points[i], points[i+1], points[i+2]);
-                    QString str = tmp;
+                    QString str = DoublesToQString(&points[i], 3);
                     QListWidgetItem *item = new QListWidgetItem(str, pointList);
                     item->setFlags(item->flags() | Qt::ItemIsEditable);
                 }
@@ -1621,16 +1616,13 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             break;
 
         case StreamlineAttributes::ID_sampleDistance0:
-            temp.setNum(streamAtts->GetSampleDistance0());
-            sampleDistance[0]->setText(temp);
+            sampleDistance[0]->setText(DoubleToQString(streamAtts->GetSampleDistance0()));
             break;
         case StreamlineAttributes::ID_sampleDistance1:
-            temp.setNum(streamAtts->GetSampleDistance1());
-            sampleDistance[1]->setText(temp);
+            sampleDistance[1]->setText(DoubleToQString(streamAtts->GetSampleDistance1()));
             break;
         case StreamlineAttributes::ID_sampleDistance2:
-            temp.setNum(streamAtts->GetSampleDistance2());
-            sampleDistance[2]->setText(temp);
+            sampleDistance[2]->setText(DoubleToQString(streamAtts->GetSampleDistance2()));
             break;
 
 
@@ -1754,21 +1746,18 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             break;
           case StreamlineAttributes::ID_varyTubeRadiusVariable:
             tubeRadiusVaryVariable->blockSignals(true);
-            temp = streamAtts->GetVaryTubeRadiusVariable().c_str();
-            tubeRadiusVaryVariable->setText(temp);
+            tubeRadiusVaryVariable->setText(streamAtts->GetVaryTubeRadiusVariable().c_str());
             tubeRadiusVaryVariable->blockSignals(false);
             break;
           case StreamlineAttributes::ID_varyTubeRadiusFactor:
             tubeRadiusVaryFactorEdit->blockSignals(true);
-            temp.setNum(streamAtts->GetVaryTubeRadiusFactor());
-            tubeRadiusVaryFactorEdit->setText(temp);
+            tubeRadiusVaryFactorEdit->setText(DoubleToQString(streamAtts->GetVaryTubeRadiusFactor()));
             tubeRadiusVaryFactorEdit->blockSignals(false);
             break;
             
         case StreamlineAttributes::ID_coloringVariable:
             coloringVar->blockSignals(true);
-            temp = streamAtts->GetColoringVariable().c_str();
-            coloringVar->setText(temp);
+            coloringVar->setText(streamAtts->GetColoringVariable().c_str());
             coloringVar->blockSignals(false);
           break;
           
@@ -1805,27 +1794,23 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             seedSizeType->blockSignals(false);
             if (streamAtts->GetSeedRadiusSizeType() == StreamlineAttributes::Absolute)
             {
-                temp.setNum(streamAtts->GetSeedRadiusAbsolute());
-                seedRadius->setText(temp);
+                seedRadius->setText(DoubleToQString(streamAtts->GetSeedRadiusAbsolute()));
             }
             else
             {
-                temp.setNum(streamAtts->GetSeedRadiusBBox());
-                seedRadius->setText(temp);
+                seedRadius->setText(DoubleToQString(streamAtts->GetSeedRadiusBBox()));
             }
             break;
         case StreamlineAttributes::ID_seedRadiusAbsolute:
             if (streamAtts->GetSeedRadiusSizeType() == StreamlineAttributes::Absolute)
             {
-                temp.setNum(streamAtts->GetSeedRadiusAbsolute());
-                seedRadius->setText(temp);
+                seedRadius->setText(DoubleToQString(streamAtts->GetSeedRadiusAbsolute()));
             }
             break;
         case StreamlineAttributes::ID_seedRadiusBBox:
             if (streamAtts->GetSeedRadiusSizeType() == StreamlineAttributes::FractionOfBBox)
             {
-                temp.setNum(streamAtts->GetSeedRadiusBBox());
-                seedRadius->setText(temp);
+                seedRadius->setText(DoubleToQString(streamAtts->GetSeedRadiusBBox()));
             }
             break;
         case StreamlineAttributes::ID_headRadiusSizeType:
@@ -1834,32 +1819,27 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             headSizeType->blockSignals(false);
             if (streamAtts->GetHeadRadiusSizeType() == StreamlineAttributes::Absolute)
             {
-                temp.setNum(streamAtts->GetHeadRadiusAbsolute());
-                headRadius->setText(temp);
+                headRadius->setText(DoubleToQString(streamAtts->GetHeadRadiusAbsolute()));
             }
             else
             {
-                temp.setNum(streamAtts->GetHeadRadiusBBox());
-                headRadius->setText(temp);
+                headRadius->setText(DoubleToQString(streamAtts->GetHeadRadiusBBox()));
             }
             break;
         case StreamlineAttributes::ID_headRadiusAbsolute:
             if (streamAtts->GetHeadRadiusSizeType() == StreamlineAttributes::Absolute)
             {
-                temp.setNum(streamAtts->GetHeadRadiusAbsolute());
-                headRadius->setText(temp);
+                headRadius->setText(DoubleToQString(streamAtts->GetHeadRadiusAbsolute()));
             }
             break;
         case StreamlineAttributes::ID_headRadiusBBox:
             if (streamAtts->GetHeadRadiusSizeType() == StreamlineAttributes::FractionOfBBox)
             {
-                temp.setNum(streamAtts->GetHeadRadiusBBox());
-                headRadius->setText(temp);
+                headRadius->setText(DoubleToQString(streamAtts->GetHeadRadiusBBox()));
             }
             break;
         case StreamlineAttributes::ID_headHeightRatio:
-            temp.setNum(streamAtts->GetHeadHeightRatio());
-            headHeight->setText(temp);
+            headHeight->setText(DoubleToQString(streamAtts->GetHeadHeightRatio()));
             break;
 
         case StreamlineAttributes::ID_tubeSizeType:
@@ -1868,27 +1848,23 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             tubeSizeType->blockSignals(false);
             if (streamAtts->GetTubeSizeType() == StreamlineAttributes::Absolute)
             {
-                temp.setNum(streamAtts->GetTubeRadiusAbsolute());
-                tubeRadius->setText(temp);
+                tubeRadius->setText(DoubleToQString(streamAtts->GetTubeRadiusAbsolute()));
             }
             else
             {
-                temp.setNum(streamAtts->GetTubeRadiusBBox());
-                tubeRadius->setText(temp);
+                tubeRadius->setText(DoubleToQString(streamAtts->GetTubeRadiusBBox()));
             }
             break;
         case StreamlineAttributes::ID_tubeRadiusAbsolute:
             if (streamAtts->GetTubeSizeType() == StreamlineAttributes::Absolute)
             {
-                temp.setNum(streamAtts->GetTubeRadiusAbsolute());
-                tubeRadius->setText(temp);
+                tubeRadius->setText(DoubleToQString(streamAtts->GetTubeRadiusAbsolute()));
             }
             break;
         case StreamlineAttributes::ID_tubeRadiusBBox:
             if (streamAtts->GetTubeSizeType() == StreamlineAttributes::FractionOfBBox)
             {
-                temp.setNum(streamAtts->GetTubeRadiusBBox());
-                tubeRadius->setText(temp);
+                tubeRadius->setText(DoubleToQString(streamAtts->GetTubeRadiusBBox()));
             }
             break;
         case StreamlineAttributes::ID_ribbonWidthSizeType:
@@ -1897,27 +1873,23 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             ribbonSizeType->blockSignals(false);
             if (streamAtts->GetRibbonWidthSizeType() == StreamlineAttributes::Absolute)
             {
-                temp.setNum(streamAtts->GetRibbonWidthAbsolute());
-                ribbonWidth->setText(temp);
+                ribbonWidth->setText(DoubleToQString(streamAtts->GetRibbonWidthAbsolute()));
             }
             else
             {
-                temp.setNum(streamAtts->GetRibbonWidthBBox());
-                ribbonWidth->setText(temp);
+                ribbonWidth->setText(DoubleToQString(streamAtts->GetRibbonWidthBBox()));
             }
             break;
         case StreamlineAttributes::ID_ribbonWidthAbsolute:
             if (streamAtts->GetRibbonWidthSizeType() == StreamlineAttributes::Absolute)
             {
-                temp.setNum(streamAtts->GetRibbonWidthAbsolute());
-                ribbonWidth->setText(temp);
+                ribbonWidth->setText(DoubleToQString(streamAtts->GetRibbonWidthAbsolute()));
             }
             break;
         case StreamlineAttributes::ID_ribbonWidthBBox:
             if (streamAtts->GetRibbonWidthSizeType() == StreamlineAttributes::FractionOfBBox)
             {
-                temp.setNum(streamAtts->GetRibbonWidthBBox());
-                ribbonWidth->setText(temp);
+                ribbonWidth->setText(DoubleToQString(streamAtts->GetRibbonWidthBBox()));
             }
             break;
         case StreamlineAttributes::ID_lineWidth:
@@ -2007,8 +1979,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             directionType->blockSignals(false);
             break;
         case StreamlineAttributes::ID_relTol:
-            temp.setNum(streamAtts->GetRelTol());
-            relTol->setText(temp);
+            relTol->setText(DoubleToQString(streamAtts->GetRelTol()));
             break;
         case StreamlineAttributes::ID_absTolSizeType:
             absTolSizeType->blockSignals(true);
@@ -2016,27 +1987,23 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             absTolSizeType->blockSignals(false);
             if (streamAtts->GetAbsTolSizeType() == StreamlineAttributes::FractionOfBBox)
             {
-                temp.setNum(streamAtts->GetAbsTolBBox());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(streamAtts->GetAbsTolBBox()));
             }
             if (streamAtts->GetAbsTolSizeType() == StreamlineAttributes::Absolute)
             {
-                temp.setNum(streamAtts->GetAbsTolAbsolute());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(streamAtts->GetAbsTolAbsolute()));
             }
             break;
         case StreamlineAttributes::ID_absTolBBox:
             if (streamAtts->GetAbsTolSizeType() == StreamlineAttributes::FractionOfBBox)
             {
-                temp.setNum(streamAtts->GetAbsTolBBox());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(streamAtts->GetAbsTolBBox()));
             }
             break;
         case StreamlineAttributes::ID_absTolAbsolute:
             if (streamAtts->GetAbsTolSizeType() == StreamlineAttributes::Absolute)
             {
-                temp.setNum(streamAtts->GetAbsTolAbsolute());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(streamAtts->GetAbsTolAbsolute()));
             }
             break;
         case StreamlineAttributes::ID_fieldType:
@@ -2151,8 +2118,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             pathlineOverrideStartingTimeFlag->blockSignals(false);
             break;
         case StreamlineAttributes::ID_pathlinesOverrideStartingTime:
-            temp.setNum(streamAtts->GetPathlinesOverrideStartingTime(), 'g', 16);
-            pathlineOverrideStartingTime->setText(temp);
+            pathlineOverrideStartingTime->setText(DoubleToQString(streamAtts->GetPathlinesOverrideStartingTime()));
             break;
         case StreamlineAttributes::ID_pathlinesCMFE:
             pathlineCMFEButtonGroup->blockSignals(true);
@@ -2175,12 +2141,10 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             break;
 
           case StreamlineAttributes::ID_legendMin:
-            temp.setNum(streamAtts->GetLegendMin());
-            legendMinEdit->setText(temp);
+            legendMinEdit->setText(DoubleToQString(streamAtts->GetLegendMin()));
             break;
           case StreamlineAttributes::ID_legendMax:
-            temp.setNum(streamAtts->GetLegendMax());
-            legendMaxEdit->setText(temp);
+            legendMaxEdit->setText(DoubleToQString(streamAtts->GetLegendMax()));
             break;
 
           case StreamlineAttributes::ID_displayBeginFlag:
@@ -2201,13 +2165,11 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
 
           case StreamlineAttributes::ID_displayBegin:
             displayBeginEdit->setEnabled(streamAtts->GetDisplayBeginFlag());
-            temp.setNum(streamAtts->GetDisplayBegin());
-            displayBeginEdit->setText(temp);
+            displayBeginEdit->setText(DoubleToQString(streamAtts->GetDisplayBegin()));
             break;
           case StreamlineAttributes::ID_displayEnd:
             displayEndEdit->setEnabled(streamAtts->GetDisplayEndFlag());
-            temp.setNum(streamAtts->GetDisplayEnd());
-            displayEndEdit->setText(temp);
+            displayEndEdit->setText(DoubleToQString(streamAtts->GetDisplayEnd()));
             break;
           case StreamlineAttributes::ID_referenceTypeForDisplay:
             displayReferenceType->blockSignals(true);
@@ -2216,8 +2178,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             break;
 
           case StreamlineAttributes::ID_opacityVariable:
-            temp = streamAtts->GetOpacityVariable().c_str();
-            opacityVar->setText(temp);
+            opacityVar->setText(streamAtts->GetOpacityVariable().c_str());
             break;
             
           case StreamlineAttributes::ID_opacity:
@@ -2227,13 +2188,11 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             break;
 
           case StreamlineAttributes::ID_opacityVarMin:
-            temp.setNum(streamAtts->GetOpacityVarMin());
-            opacityVarMin->setText(temp);
+            opacityVarMin->setText(DoubleToQString(streamAtts->GetOpacityVarMin()));
             break;
 
           case StreamlineAttributes::ID_opacityVarMax:
-            temp.setNum(streamAtts->GetOpacityVarMax());
-            opacityVarMax->setText(temp);
+            opacityVarMax->setText(DoubleToQString(streamAtts->GetOpacityVarMax()));
             break;
             
           case StreamlineAttributes::ID_opacityType:
@@ -2342,14 +2301,12 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
               issueWarningForStiffness->blockSignals(false);
               break;
             case StreamlineAttributes::ID_criticalPointThreshold:
-              temp.setNum(streamAtts->GetCriticalPointThreshold());
-              criticalPointThreshold->setText(temp);
+              criticalPointThreshold->setText(DoubleToQString(streamAtts->GetCriticalPointThreshold()));
               break;
 
           case StreamlineAttributes::ID_correlationDistanceAngTol:
             correlationDistanceAngTolEdit->blockSignals(true);
-            temp.setNum(streamAtts->GetCorrelationDistanceAngTol());
-            correlationDistanceAngTolEdit->setText(temp);
+            correlationDistanceAngTolEdit->setText(DoubleToQString(streamAtts->GetCorrelationDistanceAngTol()));
             correlationDistanceAngTolEdit->blockSignals(false);
             break;
             
@@ -2357,8 +2314,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             if (streamAtts->GetCorrelationDistanceMinDistType() == StreamlineAttributes::Absolute)
             {
                 correlationDistanceMinDistEdit->blockSignals(true);
-                temp.setNum(streamAtts->GetCorrelationDistanceMinDistAbsolute());
-                correlationDistanceMinDistEdit->setText(temp);
+                correlationDistanceMinDistEdit->setText(DoubleToQString(streamAtts->GetCorrelationDistanceMinDistAbsolute()));
                 correlationDistanceMinDistEdit->blockSignals(false);
             }
             break;
@@ -2366,8 +2322,7 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             if (streamAtts->GetCorrelationDistanceMinDistType() == StreamlineAttributes::FractionOfBBox)
             {
                 correlationDistanceMinDistEdit->blockSignals(true);
-                temp.setNum(streamAtts->GetCorrelationDistanceMinDistBBox());
-                correlationDistanceMinDistEdit->setText(temp);
+                correlationDistanceMinDistEdit->setText(DoubleToQString(streamAtts->GetCorrelationDistanceMinDistBBox()));
                 correlationDistanceMinDistEdit->blockSignals(false);
             }
             break;
@@ -2378,13 +2333,11 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             correlationDistanceMinDistType->blockSignals(false);
             if (streamAtts->GetCorrelationDistanceMinDistType() == StreamlineAttributes::FractionOfBBox)
             {
-                temp.setNum(streamAtts->GetCorrelationDistanceMinDistBBox());
-                correlationDistanceMinDistEdit->setText(temp);
+                correlationDistanceMinDistEdit->setText(DoubleToQString(streamAtts->GetCorrelationDistanceMinDistBBox()));
             }
             if (streamAtts->GetCorrelationDistanceMinDistType() == StreamlineAttributes::Absolute)
             {
-                temp.setNum(streamAtts->GetCorrelationDistanceMinDistAbsolute());
-                correlationDistanceMinDistEdit->setText(temp);
+                correlationDistanceMinDistEdit->setText(DoubleToQString(streamAtts->GetCorrelationDistanceMinDistAbsolute()));
             }
             break;
 

@@ -1068,14 +1068,15 @@ QvisPoincarePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisPoincarePlotWindow::UpdateWindow(bool doAll)
 {
-    QString       temp;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -1259,31 +1260,23 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             absTolSizeType->blockSignals(false);
             if (atts->GetAbsTolSizeType() == PoincareAttributes::FractionOfBBox)
             {
-                QString temp;
-                temp.setNum(atts->GetAbsTolBBox());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolBBox()));
             }
             if (atts->GetAbsTolSizeType() == PoincareAttributes::Absolute)
             {
-                QString temp;
-                temp.setNum(atts->GetAbsTolAbsolute());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolAbsolute()));
             }
             break;
         case PoincareAttributes::ID_absTolBBox:
             if (atts->GetAbsTolSizeType() == PoincareAttributes::FractionOfBBox)
             {
-                QString temp;
-                temp.setNum(atts->GetAbsTolBBox());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolBBox()));
             }
             break;
         case PoincareAttributes::ID_absTolAbsolute:
             if (atts->GetAbsTolSizeType() == PoincareAttributes::Absolute)
             {
-                QString temp;
-                temp.setNum(atts->GetAbsTolAbsolute());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolAbsolute()));
             }
             break;
           case PoincareAttributes::ID_coordinateSystem:
@@ -1605,8 +1598,7 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             pathlineOverrideStartingTimeFlag->blockSignals(false);
             break;
         case PoincareAttributes::ID_pathlinesOverrideStartingTime:
-            temp.setNum(atts->GetPathlinesOverrideStartingTime(), 'g', 16);
-            pathlineOverrideStartingTime->setText(temp);
+            pathlineOverrideStartingTime->setText(DoubleToQString(atts->GetPathlinesOverrideStartingTime()));
             break;
         case PoincareAttributes::ID_pathlinesCMFE:
             pathlineCMFEButtonGroup->blockSignals(true);
@@ -1634,8 +1626,7 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             issueWarningForStiffness->blockSignals(false);
             break;
         case PoincareAttributes::ID_criticalPointThreshold:
-            temp.setNum(atts->GetCriticalPointThreshold());
-            criticalPointThreshold->setText(temp);
+            criticalPointThreshold->setText(DoubleToQString(atts->GetCriticalPointThreshold()));
             break;
         }
     }
