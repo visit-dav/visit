@@ -135,6 +135,14 @@ avtEigenvectorExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
             eigenvecs[1] = outrow2;
             eigenvecs[2] = outrow3;
             double eigenvals[3];
+
+            // vtkMath::Jacobi and vtkMath::JacobiN return the vectors
+            // in a column ordering. That is the first vector is in:
+            // eigenvecs[0][0] eigenvecs[1][0] eigenvecs[2][0] and
+            // that output[0] output[1] output[1] does NOT contain the
+            // first eigen value but the first component of each eigen
+            // vector.
+            
             vtkMath::Jacobi(input, eigenvals, eigenvecs);
             double output[9];
             output[0] = eigenvecs[0][0];
@@ -154,5 +162,3 @@ avtEigenvectorExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
         EXCEPTION2(ExpressionException, outputVariableName, "Cannot determine tensor type");
     }
 }
-
-
