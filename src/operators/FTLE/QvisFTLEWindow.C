@@ -660,15 +660,15 @@ QvisFTLEWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
 //
 // ****************************************************************************
 
 void
 QvisFTLEWindow::UpdateWindow(bool doAll)
 {
-    QString       temp;
-    QColor        tempcolor;
-
     for(int i = 0; i < FTLEAtts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -741,8 +741,7 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
             EndPosition->setText(DoublesToQString(FTLEAtts->GetEndPosition(), 3));
             break;
         case FTLEAttributes::ID_maxStepLength:
-            temp.setNum(FTLEAtts->GetMaxStepLength());
-            maxStepLength->setText(temp);
+            maxStepLength->setText(DoubleToQString(FTLEAtts->GetMaxStepLength()));
             break;
         case FTLEAttributes::ID_limitMaximumTimestep:
             limitMaxTimeStep->blockSignals(true);
@@ -761,12 +760,10 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
             maxTimeStep->blockSignals(false);
             break;
         case FTLEAttributes::ID_maxTimeStep:
-            temp.setNum(FTLEAtts->GetMaxTimeStep());
-            maxTimeStep->setText(temp);
+            maxTimeStep->setText(DoubleToQString(FTLEAtts->GetMaxTimeStep()));
             break;
         case FTLEAttributes::ID_maxSteps:
-            temp.setNum(FTLEAtts->GetMaxSteps());
-            maxSteps->setText(temp);
+            maxSteps->setText(IntToQSTring(FTLEAtts->GetMaxSteps()));
             break;
         case FTLEAttributes::ID_terminationType:
             limitButtonGroup->blockSignals(true);
@@ -778,16 +775,13 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
             maxSize->setEnabled(FTLEAtts->GetTerminationType()==2);
             break;
         case FTLEAttributes::ID_termSize:
-            temp.setNum(FTLEAtts->GetTermSize());
-            maxSize->setText(temp);
+            maxSize->setText(DoubleToQString(FTLEAtts->GetTermSize()));
             break;
         case FTLEAttributes::ID_termDistance:
-            temp.setNum(FTLEAtts->GetTermDistance());
-            maxDistance->setText(temp);
+            maxDistance->setText(DoubleToQString(FTLEAtts->GetTermDistance()));
             break;
         case FTLEAttributes::ID_termTime:
-            temp.setNum(FTLEAtts->GetTermTime(), 'g', 16);
-            maxTime->setText(temp);
+            maxTime->setText(DoubleToQString(FTLEAtts->GetTermTime()));
             break;
         case FTLEAttributes::ID_velocitySource:
             velocitySource->setText(DoublesToQString(FTLEAtts->GetVelocitySource(),3));
@@ -799,8 +793,7 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
             directionType->blockSignals(false);
             break;
         case FTLEAttributes::ID_relTol:
-            temp.setNum(FTLEAtts->GetRelTol());
-            relTol->setText(temp);
+            relTol->setText(DoubleToQString(FTLEAtts->GetRelTol()));
             break;
         case FTLEAttributes::ID_absTolSizeType:
             absTolSizeType->blockSignals(true);
@@ -808,27 +801,23 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
             absTolSizeType->blockSignals(false);
             if (FTLEAtts->GetAbsTolSizeType() == FTLEAttributes::FractionOfBBox)
             {
-                temp.setNum(FTLEAtts->GetAbsTolBBox());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(FTLEAtts->GetAbsTolBBox()));
             }
             if (FTLEAtts->GetAbsTolSizeType() == FTLEAttributes::Absolute)
             {
-                temp.setNum(FTLEAtts->GetAbsTolAbsolute());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(FTLEAtts->GetAbsTolAbsolute()));
             }
             break;
         case FTLEAttributes::ID_absTolBBox:
             if (FTLEAtts->GetAbsTolSizeType() == FTLEAttributes::FractionOfBBox)
             {
-                temp.setNum(FTLEAtts->GetAbsTolBBox());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(FTLEAtts->GetAbsTolBBox()));
             }
             break;
         case FTLEAttributes::ID_absTolAbsolute:
             if (FTLEAtts->GetAbsTolSizeType() == FTLEAttributes::Absolute)
             {
-                temp.setNum(FTLEAtts->GetAbsTolAbsolute());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(FTLEAtts->GetAbsTolAbsolute()));
             }
             break;
         case FTLEAttributes::ID_fieldType:
@@ -929,8 +918,7 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
             pathlineOverrideStartingTimeFlag->blockSignals(false);
             break;
         case FTLEAttributes::ID_pathlinesOverrideStartingTime:
-            temp.setNum(FTLEAtts->GetPathlinesOverrideStartingTime(), 'g', 16);
-            pathlineOverrideStartingTime->setText(temp);
+            pathlineOverrideStartingTime->setText(DoubleToQString(FTLEAtts->GetPathlinesOverrideStartingTime()));
             break;
         case FTLEAttributes::ID_pathlinesCMFE:
             pathlineCMFEButtonGroup->blockSignals(true);
@@ -964,8 +952,7 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
             issueWarningForStiffness->blockSignals(false);
             break;
         case FTLEAttributes::ID_criticalPointThreshold:
-            temp.setNum(FTLEAtts->GetCriticalPointThreshold());
-            criticalPointThreshold->setText(temp);
+            criticalPointThreshold->setText(DoubleToQString(FTLEAtts->GetCriticalPointThreshold()));
             break;
         }
     }

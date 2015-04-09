@@ -712,13 +712,15 @@ QvisVectorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //   Kathleen Bonnell, Mon Jan 17 18:07:08 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisVectorPlotWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
     // for displaying the state values and setting widget sensitivity.
@@ -747,12 +749,10 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             strideLineEdit->setEnabled(vectorAtts->GetUseStride());
             break;
           case VectorAttributes::ID_stride:
-            temp.sprintf("%d", vectorAtts->GetStride());
-            strideLineEdit->setText(temp);
+            strideLineEdit->setText(IntToQString(vectorAtts->GetStride()));
             break;
           case VectorAttributes::ID_nVectors:
-            temp.sprintf("%d", vectorAtts->GetNVectors());
-            nVectorsLineEdit->setText(temp);
+            nVectorsLineEdit->setText(IntToQString(vectorAtts->GetNVectors()));
             break;
           case VectorAttributes::ID_lineStyle:
             lineStyle->blockSignals(true);
@@ -765,8 +765,7 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             lineWidth->blockSignals(false);
             break;
           case VectorAttributes::ID_scale:
-            temp.setNum(vectorAtts->GetScale());
-            scaleLineEdit->setText(temp);
+            scaleLineEdit->setText(DoubleToQString(vectorAtts->GetScale()));
             break;
           case VectorAttributes::ID_scaleByMagnitude:
             scaleByMagnitudeToggle->blockSignals(true);
@@ -779,8 +778,7 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             autoScaleToggle->blockSignals(false);
             break;
           case VectorAttributes::ID_headSize:
-            temp.setNum(vectorAtts->GetHeadSize());
-            headSizeLineEdit->setText(temp);
+            headSizeLineEdit->setText(DoubleToQString(vectorAtts->GetHeadSize()));
             break;
           case VectorAttributes::ID_headOn:
             drawHeadToggle->blockSignals(true);
@@ -855,12 +853,10 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             limitsSelect->blockSignals(false);
             break;
           case VectorAttributes::ID_min:
-            temp.setNum(vectorAtts->GetMin());
-            minLineEdit->setText(temp);
+            minLineEdit->setText(DoubleToQString(vectorAtts->GetMin()));
             break;
           case VectorAttributes::ID_max:
-            temp.setNum(vectorAtts->GetMax());
-            maxLineEdit->setText(temp);
+            maxLineEdit->setText(DoubleToQString(vectorAtts->GetMax()));
             break;
           case VectorAttributes::ID_lineStem:
             lineStem->blockSignals(true);
@@ -876,8 +872,7 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             geometryQualityButtons->blockSignals(false);
             break;
           case VectorAttributes::ID_stemWidth:
-            temp.setNum(vectorAtts->GetStemWidth());
-            stemWidthEdit->setText(temp);
+            stemWidthEdit->setText(DoubleToQString(vectorAtts->GetStemWidth()));
             break;
           case VectorAttributes::ID_origOnly:
             limitToOrigToggle->blockSignals(true);

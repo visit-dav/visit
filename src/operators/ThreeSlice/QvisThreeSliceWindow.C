@@ -168,7 +168,9 @@ QvisThreeSliceWindow::CreateWindowContents()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Changed 'FloatToQString' DoubleToQString to reflect underlying data type.
+//
 // ****************************************************************************
 
 void
@@ -188,13 +190,13 @@ QvisThreeSliceWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case ThreeSliceAttributes::ID_x:
-            x->setText(FloatToQString(atts->GetX()));
+            x->setText(DoubleToQString(atts->GetX()));
             break;
           case ThreeSliceAttributes::ID_y:
-            y->setText(FloatToQString(atts->GetY()));
+            y->setText(DoubleToQString(atts->GetY()));
             break;
           case ThreeSliceAttributes::ID_z:
-            z->setText(FloatToQString(atts->GetZ()));
+            z->setText(DoubleToQString(atts->GetZ()));
             break;
           case ThreeSliceAttributes::ID_interactive:
             interactive->blockSignals(true);
@@ -218,7 +220,9 @@ QvisThreeSliceWindow::UpdateWindow(bool doAll)
 // Creation:   omitted
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Thu Apr  9 10:57:35 PDT 2015
+//    Modified to use double, to reflect data type in atts.
+//
 // ****************************************************************************
 
 void
@@ -229,13 +233,13 @@ QvisThreeSliceWindow::GetCurrentValues(int which_widget)
     // Do x
     if(which_widget == ThreeSliceAttributes::ID_x || doAll)
     {
-        float val;
-        if(LineEditGetFloat(x, val))
+        double val;
+        if(LineEditGetDouble(x, val))
             atts->SetX(val);
         else
         {
             ResettingError(tr("x"),
-                FloatToQString(atts->GetX()));
+                DoubleToQString(atts->GetX()));
             atts->SetX(atts->GetX());
         }
     }
@@ -243,13 +247,13 @@ QvisThreeSliceWindow::GetCurrentValues(int which_widget)
     // Do y
     if(which_widget == ThreeSliceAttributes::ID_y || doAll)
     {
-        float val;
-        if(LineEditGetFloat(y, val))
+        double val;
+        if(LineEditGetDouble(y, val))
             atts->SetY(val);
         else
         {
             ResettingError(tr("y"),
-                FloatToQString(atts->GetY()));
+                DoubleToQString(atts->GetY()));
             atts->SetY(atts->GetY());
         }
     }
@@ -257,13 +261,13 @@ QvisThreeSliceWindow::GetCurrentValues(int which_widget)
     // Do z
     if(which_widget == ThreeSliceAttributes::ID_z || doAll)
     {
-        float val;
-        if(LineEditGetFloat(z, val))
+        double val;
+        if(LineEditGetDouble(z, val))
             atts->SetZ(val);
         else
         {
             ResettingError(tr("z"),
-                FloatToQString(atts->GetZ()));
+                DoubleToQString(atts->GetZ()));
             atts->SetZ(atts->GetZ());
         }
     }

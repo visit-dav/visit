@@ -188,6 +188,10 @@ QvisZoneDumpWindow::CreateWindowContents()
 //    Kathleen Bonnell, Tue Jul 1 12:00:05 PDT 2008
 //    Removed unreferenced variables.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
@@ -217,7 +221,7 @@ QvisZoneDumpWindow::UpdateWindow(bool doAll)
             if (atts->GetLowerBound() == -1e+37)
                 temp = "min";
             else
-                temp.setNum(atts->GetLowerBound());
+                temp = DoubleToQString(atts->GetLowerBound());
             lowerBound->setText(temp);
             lowerBound->blockSignals(false);
             break;
@@ -226,7 +230,7 @@ QvisZoneDumpWindow::UpdateWindow(bool doAll)
             if (atts->GetUpperBound() == 1e+37)
                 temp = "max";
             else
-                temp.setNum(atts->GetUpperBound());
+                temp = DoubleToQString(atts->GetUpperBound());
             upperBound->setText(temp);
             upperBound->blockSignals(false);
             break;

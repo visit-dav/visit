@@ -508,13 +508,15 @@ QvisHistogramPlotWindow::CreateWindowContents()
 //    Kevin Bensema, Mon Nov 11 12:55 PST 2013
 //    Added code for ComputeAsCDF and NormalizeHistogram options.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisHistogramPlotWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -672,14 +674,12 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             break;
           case HistogramAttributes::ID_min:
             minLineEdit->blockSignals(true);
-            temp.setNum(atts->GetMin());
-            minLineEdit->setText(temp);
+            minLineEdit->setText(DoubleToQString(atts->GetMin()));
             minLineEdit->blockSignals(false);
             break;
           case HistogramAttributes::ID_max:
             maxLineEdit->blockSignals(true);
-            temp.setNum(atts->GetMax());
-            maxLineEdit->setText(temp);
+            maxLineEdit->setText(DoubleToQString(atts->GetMax()));
             maxLineEdit->blockSignals(false);
             break;
           case HistogramAttributes::ID_numBins:
@@ -689,14 +689,12 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             break;
           case HistogramAttributes::ID_domain:
             domain->blockSignals(true);
-            temp.setNum(atts->GetDomain());
-            domain->setText(temp);
+            domain->setText(IntToQString(atts->GetDomain()));
             domain->blockSignals(false);
             break;
           case HistogramAttributes::ID_zone:
             zone->blockSignals(true);
-            temp.setNum(atts->GetZone());
-            zone->setText(temp);
+            zone->setText(IntToQString(atts->GetZone()));
             zone->blockSignals(false);
             break;
           case HistogramAttributes::ID_useBinWidths:

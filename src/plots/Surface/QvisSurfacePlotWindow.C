@@ -406,13 +406,15 @@ QvisSurfacePlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Mon Jan 17 17:54:48 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisSurfacePlotWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
     // for displaying the state values and setting widget sensitivity.
@@ -518,18 +520,15 @@ QvisSurfacePlotWindow::UpdateWindow(bool doAll)
             break;
 
         case SurfaceAttributes::ID_skewFactor:
-            temp.setNum(surfaceAtts->GetSkewFactor());
-            skewLineEdit->setText(temp);
+            skewLineEdit->setText(DoubleToQString(surfaceAtts->GetSkewFactor()));
             break;
 
         case SurfaceAttributes::ID_min:
-            temp.setNum(surfaceAtts->GetMin());
-            minLineEdit->setText(temp);
+            minLineEdit->setText(DoubleToQString(surfaceAtts->GetMin()));
             break;
 
         case SurfaceAttributes::ID_max:
-            temp.setNum(surfaceAtts->GetMax());
-            maxLineEdit->setText(temp);
+            maxLineEdit->setText(DoubleToQString(surfaceAtts->GetMax()));
             break;
 
         case SurfaceAttributes::ID_colorTableName:

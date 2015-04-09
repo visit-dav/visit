@@ -319,13 +319,15 @@ QvisTensorPlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Mon Jan 17 18:17:26 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisTensorPlotWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
     // for displaying the state values and setting widget sensitivity.
@@ -354,8 +356,7 @@ QvisTensorPlotWindow::UpdateWindow(bool doAll)
             nTensorsLineEdit->setText(IntToQString(tensorAtts->GetNTensors()));
             break;
         case TensorAttributes::ID_scale:
-            temp.setNum(tensorAtts->GetScale());
-            scaleLineEdit->setText(temp);
+            scaleLineEdit->setText(DoubleToQString(tensorAtts->GetScale()));
             break;
         case TensorAttributes::ID_scaleByMagnitude:
             scaleByMagnitudeToggle->blockSignals(true);

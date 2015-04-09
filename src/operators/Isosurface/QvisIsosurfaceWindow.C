@@ -246,8 +246,6 @@ QvisIsosurfaceWindow::CreateWindowContents()
 void
 QvisIsosurfaceWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)

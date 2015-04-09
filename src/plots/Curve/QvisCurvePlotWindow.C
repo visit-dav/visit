@@ -701,6 +701,10 @@ QvisCurvePlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //   Kathleen Biagas, Wed Jun 4 11:45:17 PDT 2014
 //   Added blockSignals to widgets without them.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
@@ -763,8 +767,7 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             break;
           case CurveAttributes::ID_pointSize:
             pointSize->blockSignals(true);
-            tempText.setNum(atts->GetPointSize());
-            pointSize->setText(tempText);
+            pointSize->setText(DoubleToQString(atts->GetPointSize()));
             pointSize->blockSignals(false);
             break;
           case CurveAttributes::ID_pointFillMode:
