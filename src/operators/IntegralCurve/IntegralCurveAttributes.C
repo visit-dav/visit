@@ -598,6 +598,7 @@ void IntegralCurveAttributes::Copy(const IntegralCurveAttributes &obj)
 
     useWholeBox = obj.useWholeBox;
     pointList = obj.pointList;
+    fieldData = obj.fieldData;
     sampleDensity0 = obj.sampleDensity0;
     sampleDensity1 = obj.sampleDensity1;
     sampleDensity2 = obj.sampleDensity2;
@@ -869,6 +870,7 @@ IntegralCurveAttributes::operator == (const IntegralCurveAttributes &obj) const
             boxExtents_equal &&
             (useWholeBox == obj.useWholeBox) &&
             (pointList == obj.pointList) &&
+            (fieldData == obj.fieldData) &&
             (sampleDensity0 == obj.sampleDensity0) &&
             (sampleDensity1 == obj.sampleDensity1) &&
             (sampleDensity2 == obj.sampleDensity2) &&
@@ -1191,6 +1193,7 @@ IntegralCurveAttributes::SelectAll()
     Select(ID_boxExtents,                         (void *)boxExtents, 6);
     Select(ID_useWholeBox,                        (void *)&useWholeBox);
     Select(ID_pointList,                          (void *)&pointList);
+    Select(ID_fieldData,                          (void *)&fieldData);
     Select(ID_sampleDensity0,                     (void *)&sampleDensity0);
     Select(ID_sampleDensity1,                     (void *)&sampleDensity1);
     Select(ID_sampleDensity2,                     (void *)&sampleDensity2);
@@ -1347,6 +1350,12 @@ IntegralCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
     {
         addToParent = true;
         node->AddNode(new DataNode("pointList", pointList));
+    }
+
+    if(completeSave || !FieldsEqual(ID_fieldData, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("fieldData", fieldData));
     }
 
     if(completeSave || !FieldsEqual(ID_sampleDensity0, &defaultObject))
@@ -1747,6 +1756,8 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
         SetUseWholeBox(node->AsBool());
     if((node = searchNode->GetNode("pointList")) != 0)
         SetPointList(node->AsDoubleVector());
+    if((node = searchNode->GetNode("fieldData")) != 0)
+        SetFieldData(node->AsDoubleVector());
     if((node = searchNode->GetNode("sampleDensity0")) != 0)
         SetSampleDensity0(node->AsInt());
     if((node = searchNode->GetNode("sampleDensity1")) != 0)
@@ -2098,6 +2109,13 @@ IntegralCurveAttributes::SetPointList(const doubleVector &pointList_)
 {
     pointList = pointList_;
     Select(ID_pointList, (void *)&pointList);
+}
+
+void
+IntegralCurveAttributes::SetFieldData(const doubleVector &fieldData_)
+{
+    fieldData = fieldData_;
+    Select(ID_fieldData, (void *)&fieldData);
 }
 
 void
@@ -2610,6 +2628,18 @@ IntegralCurveAttributes::GetPointList()
     return pointList;
 }
 
+const doubleVector &
+IntegralCurveAttributes::GetFieldData() const
+{
+    return fieldData;
+}
+
+doubleVector &
+IntegralCurveAttributes::GetFieldData()
+{
+    return fieldData;
+}
+
 int
 IntegralCurveAttributes::GetSampleDensity0() const
 {
@@ -3011,6 +3041,12 @@ IntegralCurveAttributes::SelectPointList()
 }
 
 void
+IntegralCurveAttributes::SelectFieldData()
+{
+    Select(ID_fieldData, (void *)&fieldData);
+}
+
+void
 IntegralCurveAttributes::SelectDataVariable()
 {
     Select(ID_dataVariable, (void *)&dataVariable);
@@ -3064,6 +3100,7 @@ IntegralCurveAttributes::GetFieldName(int index) const
     case ID_boxExtents:                         return "boxExtents";
     case ID_useWholeBox:                        return "useWholeBox";
     case ID_pointList:                          return "pointList";
+    case ID_fieldData:                          return "fieldData";
     case ID_sampleDensity0:                     return "sampleDensity0";
     case ID_sampleDensity1:                     return "sampleDensity1";
     case ID_sampleDensity2:                     return "sampleDensity2";
@@ -3154,6 +3191,7 @@ IntegralCurveAttributes::GetFieldType(int index) const
     case ID_boxExtents:                         return FieldType_doubleArray;
     case ID_useWholeBox:                        return FieldType_bool;
     case ID_pointList:                          return FieldType_doubleVector;
+    case ID_fieldData:                          return FieldType_doubleVector;
     case ID_sampleDensity0:                     return FieldType_int;
     case ID_sampleDensity1:                     return FieldType_int;
     case ID_sampleDensity2:                     return FieldType_int;
@@ -3244,6 +3282,7 @@ IntegralCurveAttributes::GetFieldTypeName(int index) const
     case ID_boxExtents:                         return "doubleArray";
     case ID_useWholeBox:                        return "bool";
     case ID_pointList:                          return "doubleVector";
+    case ID_fieldData:                          return "doubleVector";
     case ID_sampleDensity0:                     return "int";
     case ID_sampleDensity1:                     return "int";
     case ID_sampleDensity2:                     return "int";
@@ -3422,6 +3461,11 @@ IntegralCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
     case ID_pointList:
         {  // new scope
         retval = (pointList == obj.pointList);
+        }
+        break;
+    case ID_fieldData:
+        {  // new scope
+        retval = (fieldData == obj.fieldData);
         }
         break;
     case ID_sampleDensity0:

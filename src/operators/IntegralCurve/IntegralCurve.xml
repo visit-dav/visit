@@ -148,6 +148,8 @@
         1.000000
         0.000000
       </Field>
+      <Field name="fieldData" label="List of Points" type="doubleVector" enabler="sourceType:FeildData">
+      </Field>
       <Field name="sampleDensity0" label="sampleDensity0" type="int">
         2
       </Field>

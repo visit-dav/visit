@@ -212,6 +212,7 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     void deletePoint();
     void deletePoints();
     void readPoints();
+    void copyPoints();
     void textChanged(const QString &currentText);
 
     void samplingTypeChanged(int);
@@ -286,6 +287,8 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     QLabel    *lineEndLabel;
     QListWidget *pointList;
     QPushButton *pointListDelPoint, *pointListDelAllPoints, *pointListAddPoint, *pointListReadPoints;
+    QListWidget *fieldData;
+    QPushButton *fieldDataCopyPoints;
     QLineEdit *planeOrigin;
     QLabel    *planeOriginLabel;
     QLineEdit *planeNormal;
