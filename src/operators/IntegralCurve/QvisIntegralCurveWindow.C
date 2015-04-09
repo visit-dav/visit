@@ -105,9 +105,6 @@ QvisIntegralCurveWindow::QvisIntegralCurveWindow(const int type,
     plotType = type;
     atts = subj;
     selectionList = GetViewerState()->GetSelectionList();
-
-    // Watch the plot info atts too.
-    //    GetViewerState()->GetPlotInformation(plotType)->Attach(this);
 }
 
 
@@ -126,7 +123,6 @@ QvisIntegralCurveWindow::QvisIntegralCurveWindow(const int type,
 
 QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
 {
-  //    GetViewerState()->GetPlotInformation(plotType)->Detach(this);
 }
 
 
@@ -1106,83 +1102,86 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 void
 QvisIntegralCurveWindow::UpdateWindow(bool doAll)
 {
-    // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
-    //        << doAll << "  "
-    //        << plotType << "  "
-    //        << SelectedSubject() << "  "
-    //        << GetViewerState()->GetOperatorAttributes(plotType) << "  "
-    //        << std::endl;
+    // Attach and detach this operator to the plot information.
+    if( SelectedSubject() == GetViewerState()->GetOperatorAttributes(plotType) )
+    {
+      // Detach from plot information objects (maybe keep a list of
+      // ones this window observes)
+      for( int i = 0; i < GetViewerState()->GetNumStateObjects(); ++i)
+      {
+        PlotInfoAttributes *info = GetViewerState()->GetPlotInformation(i);
 
-    PlotInfoAttributes *info = 0;
-    MapNode *node = 0;
+        if( info )
+          info->Detach(this);
+      }
+      
+      // Attach to the selected plot types
+      for(int i = 0; i < GetViewerState()->GetPlotList()->GetNumPlots(); ++i)
+      {
+        const Plot &p = GetViewerState()->GetPlotList()->GetPlots(i);
+        GetViewerState()->GetPlotInformation(p.GetPlotType())->Attach(this);
+      }
+    }
 
+    // Look for a SelectedSubject that matches one of the plots. Note
+    // the doAll condition which will probably never result in anthing
+    // because nothing will have been executed yet. And the data is
+    // only there after execution.
     for( int i = 0; i < GetViewerState()->GetPlotList()->GetNumPlots(); ++i)
     {
       const Plot &p = GetViewerState()->GetPlotList()->GetPlots(i);
-
-      if( (info = GetViewerState()->GetPlotInformation(p.GetPlotType())) )
+      
+      PlotInfoAttributes *info =
+        GetViewerState()->GetPlotInformation(p.GetPlotType());
+      
+      if( doAll || SelectedSubject() == info )
       {
-        if( (node = info->GetData().GetEntry("ListOfPoints")) )
+        MapNode *node = info->GetData().GetEntry("ListOfPoints");
+
+        if( node )
         {
           MapNode &ptsNode = *node;
-
-          if( ptsNode["listofpoints_size"].AsInt() ) 
-          {
-            break;
-          }
-          else
-            node = 0;
-        }
-      }
-    }
-
-    // If the plot info atts changed then update the point list.
-    // if(doAll ||
-    //    SelectedSubject() == GetViewerState()->GetPlotInformation(plotType))
-    {
-//      PlotInfoAttributes *info = GetViewerState()->GetPlotInformation(plotType);
-
-      if(info != 0)
-      {
-//      MapNode *node = info->GetData().GetEntry("ListOfPoints");
-
-        if(node != 0)
-        {
-          MapNode &ptsNode = *node;
-
           int nValues = ptsNode["listofpoints_size"].AsInt();
-
-          // std::cerr << "have points " << nValues/3 << std::endl;
-
-          const doubleVector &points =
-            ptsNode["listofpoints_coordinates"].AsDoubleVector();
-
-          // Update the attributes.
-          atts->SetPointList( points );
-
-          // Update the GUI
-          pointList->clear();
-
-          for (size_t i = 0; i < nValues; i+= 3)
+          
+          if( nValues )
           {
-            char tmp[256];
-            sprintf(tmp, "%lf %lf %lf", points[i], points[i+1], points[i+2]);
+            // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
+            //        << doAll << "  " << (SelectedSubject() == info) << "  "
+            //        << atts << "  "
+            //        << "have points " << nValues/3 << std::endl;
 
-            // std::cerr << tmp << std::endl;
+            const doubleVector &points =
+              ptsNode["listofpoints_coordinates"].AsDoubleVector();
+      
+            // Update the GUI
+            pointList->clear();
+      
+            for (size_t i = 0; i < nValues; i+= 3)
+            {
+              char tmp[256];
+              sprintf(tmp, "%lf %lf %lf", points[i], points[i+1], points[i+2]);
+              
+              // std::cerr << tmp << std::endl;
+              
+              QString str = tmp;
+              QListWidgetItem *item = new QListWidgetItem(str, pointList);
+              item->setFlags(item->flags() | Qt::ItemIsEditable);
+              pointList->setCurrentItem(item);
+            }
 
-            QString str = tmp;
-            QListWidgetItem *item = new QListWidgetItem(str, pointList);
-            item->setFlags(item->flags() | Qt::ItemIsEditable);
-            pointList->setCurrentItem(item);
+            // Update the attributes.
+            atts->SetPointList( points );
+            Apply();
+
+            if(!doAll)
+              return;
+            else
+              break;
           }
-
-//        info->GetData().RemoveEntry("ListOfPoints");
-
-          // if(!doAll)
-          //   return;
         }
       }
     }
+
 
     QString       temp;
 
@@ -1285,11 +1284,17 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             {
                 std::vector<double> points = atts->GetPointList();
 
+                // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
+                //        << atts << "  "
+                //        << "have points " << points.size()/3 << std::endl;
+
+
                 pointList->clear();
                 for (size_t i = 0; i < points.size(); i+= 3)
                 {
                     char tmp[256];
-                    sprintf(tmp, "%lf %lf %lf", points[i], points[i+1], points[i+2]);
+                    sprintf(tmp, "%lf %lf %lf",
+                            points[i], points[i+1], points[i+2]);
                     QString str = tmp;
                     QListWidgetItem *item = new QListWidgetItem(str, pointList);
                     item->setFlags(item->flags() | Qt::ItemIsEditable);
@@ -2566,6 +2571,9 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
             }
         }
         atts->SetPointList(points);
+
+        // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
+        //        << "have points " << points.size()/3 << std::endl;
     }
 
     // maxIntegralCurveProcessCount
@@ -2682,12 +2690,15 @@ QvisIntegralCurveWindow::sourceTypeChanged(int val)
         atts->SetSourceType(IntegralCurveAttributes::SourceType(val));
         Apply();
 
-        // The field data can contain seed points and wil stuff them
-        // into the pint list so teh user can see the points so when
+        // The field data can contain seed points and will stuff them
+        // into the point list so the user can see the points so when
         // ever switching to the point list do an update.
         if(val == IntegralCurveAttributes::PointList )
         {
             std::vector<double> points = atts->GetPointList();
+
+            // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
+            //        << "have points " << points.size()/3 << std::endl;
           
             pointList->clear();
             for (size_t i = 0; i < points.size(); i+= 3)
