@@ -46,6 +46,7 @@
 #include <stdlib.h>
 #endif
 #include <clocale>
+#include <iomanip>
 #include <visit-config.h>
 
 // ****************************************************************************
@@ -243,6 +244,10 @@ ConfigManager::WriteEscapedString(std::ostream &out, const std::string &str)
 //   Brad Whitlock, Thu Oct 28 12:16:40 PDT 2010
 //   Only quote single strings on write if they contain spaces.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Set precision for floats and doubles (to highest value that doesn't
+//   convert '0.009' to '0.00899999999'.
+//
 // ****************************************************************************
 
 void
@@ -263,10 +268,10 @@ ConfigManager::WriteData(std::ostream& out, DataNode *node)
         out << node->AsLong();
         break;
     case FLOAT_NODE:
-        out << node->AsFloat();
+        out << std::setprecision(7) <<  node->AsFloat();
         break;
     case DOUBLE_NODE:
-        out << node->AsDouble();
+        out <<  std::setprecision(15) << node->AsDouble();
         break;
     case STRING_NODE:
         { // new scope
@@ -316,14 +321,14 @@ ConfigManager::WriteData(std::ostream& out, DataNode *node)
         { // new scope
             const float *fptr = node->AsFloatArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                out << *fptr++ << " ";
+                out << std::setprecision(7) << *fptr++ << " ";
         }
         break;
     case DOUBLE_ARRAY_NODE:
         { // new scope
             const double *dptr = node->AsDoubleArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                out << *dptr++ << " ";
+                out << std::setprecision(15) << *dptr++ << " ";
         }
         break;
     case STRING_ARRAY_NODE:
@@ -377,14 +382,14 @@ ConfigManager::WriteData(std::ostream& out, DataNode *node)
        { // new scope
             const floatVector &fvec = node->AsFloatVector();
             for(size_t i = 0; i < fvec.size(); ++i)
-                out << fvec[i] << " ";
+                out << std::setprecision(7) << fvec[i] << " ";
        }
        break;
     case DOUBLE_VECTOR_NODE:
        { // new scope
             const doubleVector &dvec = node->AsDoubleVector();
             for(size_t i = 0; i < dvec.size(); ++i)
-               out << dvec[i] << " ";
+               out << std::setprecision(15) << dvec[i] << " ";
        }
        break;
     case STRING_VECTOR_NODE:

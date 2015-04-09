@@ -294,13 +294,16 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
 //   Eric Brugger, Fri Feb 15 16:36:01 PST 2013
 //   I added markerScale and markerLineWidth.
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
 QvisMultiCurvePlotWindow::UpdateWindow(bool doAll)
 {
     int    index;
-    QString temp;
 
     bool updateColors = false;
 
@@ -375,8 +378,7 @@ QvisMultiCurvePlotWindow::UpdateWindow(bool doAll)
             displayMarkers->blockSignals(false);
             break;
           case MultiCurveAttributes::ID_markerScale:
-            temp.setNum(atts->GetMarkerScale());
-            markerScale->setText(temp);
+            markerScale->setText(DoubleToQString(atts->GetMarkerScale()));
             break;
           case MultiCurveAttributes::ID_markerLineWidth:
             markerLineWidth->blockSignals(true);

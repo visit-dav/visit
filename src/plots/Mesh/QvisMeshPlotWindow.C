@@ -484,8 +484,6 @@ QvisMeshPlotWindow::CreateWindowContents()
 void
 QvisMeshPlotWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
-
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
     // for displaying the state values and setting widget sensitivity.
@@ -539,8 +537,7 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             //errorToleranceLabel->setEnabled(meshAtts->GetOutlineOnlyFlag());
             break;
         case MeshAttributes::ID_errorTolerance:
-            temp.setNum(meshAtts->GetErrorTolerance());
-            errorToleranceLineEdit->setText(temp);
+            errorToleranceLineEdit->setText(DoubleToQString(meshAtts->GetErrorTolerance()));
             break;
         case MeshAttributes::ID_opaqueMode:
             opaqueModeGroup->blockSignals(true);
@@ -623,10 +620,12 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             pointControl->blockSignals(false);
             break;
         case MeshAttributes::ID_pointSizeVar:
+            {
             pointControl->blockSignals(true);
-            temp = QString(meshAtts->GetPointSizeVar().c_str());
+            QString temp(meshAtts->GetPointSizeVar().c_str());
             pointControl->SetPointSizeVar(temp);
             pointControl->blockSignals(false);
+            }
             break;
         case MeshAttributes::ID_pointType:
             pointControl->blockSignals(true);

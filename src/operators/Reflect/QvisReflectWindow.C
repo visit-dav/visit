@@ -266,12 +266,15 @@ QvisReflectWindow::CreateWindowContents()
 //    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
 //    Qt4 Port.
 //
+//    Kathleen Biagas, Thu Apr 9 07:17:44 MST 2015
+//    Use helper functions DoubleToQString for consistency in formatting across
+//    all windows.
+//
 // ****************************************************************************
 
 void
 QvisReflectWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
     bool    setOctant  = false;
     bool    originIs3D = (operator2WidgetOctants[atts->GetOctant()] > 3);
     bool    reflection3D = false;
@@ -299,8 +302,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             specifiedX->setEnabled(atts->GetUseXBoundary() ? false : true);
             break;
           case 2: //specifiedX
-            temp.setNum(atts->GetSpecifiedX());
-            specifiedX->setText(temp);
+            specifiedX->setText(DoubleToQString(atts->GetSpecifiedX()));
             break;
           case 3: //yBound
             yUseData->setText((atts->GetOctant()&0x02) ? tr("Use dataset max") : tr("Use dataset min"));
@@ -308,8 +310,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             specifiedY->setEnabled(atts->GetUseYBoundary() ? false : true);
             break;
           case 4: //specifiedY
-            temp.setNum(atts->GetSpecifiedY());
-            specifiedY->setText(temp);
+            specifiedY->setText(DoubleToQString(atts->GetSpecifiedY()));
             break;
           case 5: //zBound
             zUseData->setText((atts->GetOctant()&0x04) ? tr("Use dataset max") : tr("Use dataset min"));
@@ -317,8 +318,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             specifiedZ->setEnabled(atts->GetUseZBoundary() ? false : true);
             break;
           case 6: //specifiedZ
-            temp.setNum(atts->GetSpecifiedZ());
-            specifiedZ->setText(temp);
+            specifiedZ->setText(DoubleToQString(atts->GetSpecifiedZ()));
             break;
           case 7: //reflections
             {
@@ -443,7 +443,7 @@ void
 QvisReflectWindow::GetCurrentValues(int which_field)
 {
     bool doAll = (which_field == -1);
-    QString msg, temp;
+    QString msg;
 
     // Do specifiedX
     if(which_field == ReflectAttributes::ID_specifiedX || doAll)

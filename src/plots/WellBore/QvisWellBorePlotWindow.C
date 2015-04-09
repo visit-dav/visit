@@ -373,7 +373,6 @@ QvisWellBorePlotWindow::CreateWindowContents()
 void
 QvisWellBorePlotWindow::UpdateWindow(bool doAll)
 {
-    QString temp;
     int    index;
 
     bool updateColors = false;
@@ -490,8 +489,7 @@ QvisWellBorePlotWindow::UpdateWindow(bool doAll)
             break;
           case WellBoreAttributes::ID_wellRadius:
             wellRadius->blockSignals(true);
-            temp.setNum(atts->GetWellRadius());
-            wellRadius->setText(temp);
+            wellRadius->setText(FloatToQString(atts->GetWellRadius()));
             wellRadius->blockSignals(false);
             break;
           case WellBoreAttributes::ID_wellLineWidth:
@@ -539,15 +537,13 @@ QvisWellBorePlotWindow::UpdateWindow(bool doAll)
             break;
           case WellBoreAttributes::ID_wellStemHeight:
             wellStemHeight->blockSignals(true);
-            temp.setNum(atts->GetWellStemHeight());
-            wellStemHeight->setText(temp);
+            wellStemHeight->setText(FloatToQString(atts->GetWellStemHeight()));
             wellStemHeight->blockSignals(false);
             break;
           case WellBoreAttributes::ID_wellNameScale:
 #ifdef FIX_WELL_NAME_SCALE
             wellNameScale->blockSignals(true);
-            temp.setNum(atts->GetWellNameScale());
-            wellNameScale->setText(temp);
+            wellNameScale->setText(FloatToQString(atts->GetWellNameScale()));
             wellNameScale->blockSignals(false);
 #endif
             break;
@@ -852,7 +848,6 @@ QvisWellBorePlotWindow::UpdateWellDefinition(int index)
             if (wellBores[i] == -1)
                 wellCount++;
         }
-        char str[80];
         int line[3];
         int iLine = 0;
         int nLines = 0;
@@ -861,22 +856,19 @@ QvisWellBorePlotWindow::UpdateWellDefinition(int index)
             line[iLine++] = wellBores[i];
             if (iLine == 3)
             {
-                sprintf(str, "%d %d %d", line[0], line[1], line[2]);
-                wellDefinition->insertPlainText(QString(str));
+                wellDefinition->insertPlainText(IntsToQString(line, 3));
                 nLines++;
                 iLine = 0;
             }
         }
         if (iLine == 1)
         {
-            sprintf(str, "%d", line[0]);
-            wellDefinition->insertPlainText(QString(str));
+            wellDefinition->insertPlainText(IntToQString(line[0]));
             nLines++;
         }
         else if (iLine == 2)
         {
-            sprintf(str, "%d %d", line[0], line[1]);
-            wellDefinition->insertPlainText(QString(str));
+            wellDefinition->insertPlainText(IntsToQString(line, 2));
             nLines++;
         }
 #if 0
@@ -911,6 +903,9 @@ QvisWellBorePlotWindow::UpdateWellDefinition(int index)
 //   Eric Brugger, Mon Nov 10 13:18:02 PST 2008
 //   Added the ability to display well bore names and stems.
 //   
+//   Kathleen Biagas, Thu Apr  9 08:20:43 PDT 2015
+//   Use helpfer functions.
+//
 // ****************************************************************************
 
 void
@@ -922,21 +917,12 @@ QvisWellBorePlotWindow::GetCurrentValues(int which_widget)
     // Do wellRadius
     if(which_widget == WellBoreAttributes::ID_wellRadius || doAll)
     {
-        temp = wellRadius->displayText().simplified();
-        okay = !temp.isEmpty();
-        if(okay)
+        float val;
+        if (LineEditGetFloat(wellRadius, val))
+            atts->SetWellRadius(val);
+        else 
         {
-            float val = temp.toFloat(&okay);
-            if(okay)
-                atts->SetWellRadius(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of wellRadius was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetWellRadius());
-            Message(msg);
+            ResettingError(tr("Well radius"), FloatToQString(atts->GetWellRadius()));
             atts->SetWellRadius(atts->GetWellRadius());
         }
     }
@@ -944,21 +930,12 @@ QvisWellBorePlotWindow::GetCurrentValues(int which_widget)
     // Do wellStemHeight
     if(which_widget == WellBoreAttributes::ID_wellStemHeight || doAll)
     {
-        temp = wellStemHeight->displayText().simplified();
-        okay = !temp.isEmpty();
-        if(okay)
+        float val;
+        if (LineEditGetFloat(wellStemHeight, val))
+            atts->SetWellStemHeight(val);
+        else 
         {
-            float val = temp.toFloat(&okay);
-            if(okay)
-                atts->SetWellStemHeight(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of wellStemHeight was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetWellStemHeight());
-            Message(msg);
+            ResettingError(tr("Well stem height"), FloatToQString(atts->GetWellStemHeight()));
             atts->SetWellStemHeight(atts->GetWellStemHeight());
         }
     }
@@ -967,21 +944,12 @@ QvisWellBorePlotWindow::GetCurrentValues(int which_widget)
     // Do wellNameScale
     if(which_widget == WellBoreAttributes::ID_wellNameScale || doAll)
     {
-        temp = wellNameScale->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        float val;
+        if (LineEditGetFloat(wellNameScale, val))
+            atts->SetWellNameScale(val);
+        else 
         {
-            float val = temp.toFloat(&okay);
-            if(okay)
-                atts->SetWellNameScale(val);
-        }
-
-        if(!okay)
-        {
-            msg = tr("The value of wellNameScale was invalid. "
-                     "Resetting to the last good value of %1.").
-                  arg(atts->GetWellNameScale());
-            Message(msg);
+            ResettingError(tr("Well name scale"), FloatToQString(atts->GetWellNameScale()));
             atts->SetWellNameScale(atts->GetWellNameScale());
         }
     }

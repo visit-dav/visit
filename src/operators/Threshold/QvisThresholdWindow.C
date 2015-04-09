@@ -290,6 +290,10 @@ TrimTrailing(const QString &s0)
 //   Removed call to TrimTrailing() since it truncatted whole numbers. (i.e.
 //   600 would be changed to 6).
 //
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
+//
 // ****************************************************************************
 
 void
@@ -299,12 +303,12 @@ QvisThresholdWindow::SetLowerUpper(int idx, double lower, double upper)
     if (lower < -9e+36)
         lStr = "min";
     else
-        lStr = QString().setNum(lower, 'g');
+        lStr = DoubleToQString(lower);
 
     if (upper > 9e+36)
         uStr = "max";
     else
-        uStr = QString().setNum(upper, 'g');
+        uStr = DoubleToQString(upper);
 
     threshVars->item(idx, 1)->setText(lStr);
     threshVars->item(idx, 2)->setText(uStr);

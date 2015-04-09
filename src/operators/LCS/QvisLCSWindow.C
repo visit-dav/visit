@@ -824,14 +824,15 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
+//   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
+//   Use helper function DoubleToQString for consistency in formatting across
+//   all windows.
 //
 // ****************************************************************************
 
 void
 QvisLCSWindow::UpdateWindow(bool doAll)
 {
-    QString       temp;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -904,8 +905,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             EndPosition->setText(DoublesToQString(atts->GetEndPosition(), 3));
             break;
         case LCSAttributes::ID_maxStepLength:
-            temp.setNum(atts->GetMaxStepLength());
-            maxStepLength->setText(temp);
+            maxStepLength->setText(DoubleToQString(atts->GetMaxStepLength()));
             break;
         case LCSAttributes::ID_limitMaximumTimestep:
             limitMaxTimeStep->blockSignals(true);
@@ -924,12 +924,10 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             maxTimeStep->blockSignals(false);
             break;
         case LCSAttributes::ID_maxTimeStep:
-            temp.setNum(atts->GetMaxTimeStep());
-            maxTimeStep->setText(temp);
+            maxTimeStep->setText(DoubleToQString(atts->GetMaxTimeStep()));
             break;
         case LCSAttributes::ID_maxSteps:
-            temp.setNum(atts->GetMaxSteps());
-            maxSteps->setText(temp);
+            maxSteps->setText(IntToQString(atts->GetMaxSteps()));
             break;
 
         case LCSAttributes::ID_terminateByDistance:
@@ -1059,8 +1057,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             break;
 
         case LCSAttributes::ID_eigenWeight:
-            temp.setNum(atts->GetEigenWeight());
-            eigenWeight->setText(temp);
+            eigenWeight->setText(DoubleToQString(atts->GetEigenWeight()));
             break;
 
         case LCSAttributes::ID_clampLogValues:
@@ -1079,16 +1076,13 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             maxSize->setEnabled(atts->GetTerminationType()==2);
             break;
         case LCSAttributes::ID_termSize:
-            temp.setNum(atts->GetTermSize());
-            maxSize->setText(temp);
+            maxSize->setText(DoubleToQString(atts->GetTermSize()));
             break;
         case LCSAttributes::ID_termDistance:
-            temp.setNum(atts->GetTermDistance());
-            maxDistance->setText(temp);
+            maxDistance->setText(DoubleToQString(atts->GetTermDistance()));
             break;
         case LCSAttributes::ID_termTime:
-            temp.setNum(atts->GetTermTime(), 'g', 16);
-            maxTime->setText(temp);
+            maxTime->setText(DoubleToQString(atts->GetTermTime()));
             break;
         case LCSAttributes::ID_velocitySource:
             velocitySource->setText(DoublesToQString(atts->GetVelocitySource(),3));
@@ -1100,8 +1094,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             directionType->blockSignals(false);
             break;
         case LCSAttributes::ID_relTol:
-            temp.setNum(atts->GetRelTol());
-            relTol->setText(temp);
+            relTol->setText(DoubleToQString(atts->GetRelTol()));
             break;
         case LCSAttributes::ID_absTolSizeType:
             absTolSizeType->blockSignals(true);
@@ -1109,27 +1102,23 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             absTolSizeType->blockSignals(false);
             if (atts->GetAbsTolSizeType() == LCSAttributes::FractionOfBBox)
             {
-                temp.setNum(atts->GetAbsTolBBox());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolBBox()));
             }
             if (atts->GetAbsTolSizeType() == LCSAttributes::Absolute)
             {
-                temp.setNum(atts->GetAbsTolAbsolute());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolAbsolute()));
             }
             break;
         case LCSAttributes::ID_absTolBBox:
             if (atts->GetAbsTolSizeType() == LCSAttributes::FractionOfBBox)
             {
-                temp.setNum(atts->GetAbsTolBBox());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolBBox()));
             }
             break;
         case LCSAttributes::ID_absTolAbsolute:
             if (atts->GetAbsTolSizeType() == LCSAttributes::Absolute)
             {
-                temp.setNum(atts->GetAbsTolAbsolute());
-                absTol->setText(temp);
+                absTol->setText(DoubleToQString(atts->GetAbsTolAbsolute()));
             }
             break;
         case LCSAttributes::ID_auxiliaryGrid:
@@ -1206,16 +1195,13 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             break;
 
         case LCSAttributes::ID_thresholdLimit:
-            temp.setNum(atts->GetThresholdLimit(), 'g', 16);
-            thresholdLimit->setText(temp);
+            thresholdLimit->setText(DoubleToQString(atts->GetThresholdLimit()));
             break;
         case LCSAttributes::ID_radialLimit:
-            temp.setNum(atts->GetRadialLimit(), 'g', 16);
-            radialLimit->setText(temp);
+            radialLimit->setText(DoubleToQString(atts->GetRadialLimit()));
             break;
         case LCSAttributes::ID_boundaryLimit:
-            temp.setNum(atts->GetBoundaryLimit(), 'g', 16);
-            boundaryLimit->setText(temp);
+            boundaryLimit->setText(DoubleToQString(atts->GetBoundaryLimit()));
             break;
         case LCSAttributes::ID_seedLimit:
             seedLimit->blockSignals(true);
@@ -1265,12 +1251,10 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             pathlineOverrideStartingTimeFlag->blockSignals(false);
             break;
         case LCSAttributes::ID_pathlinesOverrideStartingTime:
-            temp.setNum(atts->GetPathlinesOverrideStartingTime(), 'g', 16);
-            pathlineOverrideStartingTime->setText(temp);
+            pathlineOverrideStartingTime->setText(DoubleToQString(atts->GetPathlinesOverrideStartingTime()));
             break;
         case LCSAttributes::ID_pathlinesPeriod:
-            temp.setNum(atts->GetPathlinesPeriod(), 'g', 16);
-            pathlinePeriod->setText(temp);
+            pathlinePeriod->setText(DoubleToQString(atts->GetPathlinesPeriod()));
             break;
         case LCSAttributes::ID_pathlinesCMFE:
             pathlineCMFEButtonGroup->blockSignals(true);
@@ -1317,8 +1301,7 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             break;
 
         case LCSAttributes::ID_criticalPointThreshold:
-            temp.setNum(atts->GetCriticalPointThreshold());
-            criticalPointThreshold->setText(temp);
+            criticalPointThreshold->setText(DoubleToQString(atts->GetCriticalPointThreshold()));
             break;
         }
     }
@@ -1498,7 +1481,7 @@ void
 QvisLCSWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
-    QString msg, temp;
+    QString msg;
 
     // Do resolution
     if(which_widget == LCSAttributes::ID_Resolution || doAll)
