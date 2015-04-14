@@ -89,7 +89,7 @@
 
 #include <string.h>
 #ifdef HAVE_VTK_SIZEOF___INT64
-#include <boost/cstdint.hpp>
+#include <cstdint>
 #endif
 
 #include <cstdlib> // for qsort
@@ -108,9 +108,6 @@
 using     std::map;
 using     std::string;
 using     std::vector;
-#ifdef HAVE_VTK_SIZEOF___INT64
-using     boost::int64_t;
-#endif
 using namespace ExodusDBOptions;
 
 static int VisItNCErr;

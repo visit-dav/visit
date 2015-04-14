@@ -1,7 +1,7 @@
 #ifndef _BASE_INTERFACE_H
 #define _BASE_INTERFACE_H
 
-#include <boost/cstdint.hpp>
+#include <cstdint>
 
 #include "hdf5.h"
 #include <stdio.h>

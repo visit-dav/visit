@@ -99,6 +99,7 @@ ExternalSurface
 ExtractPointFunction2D
 Extrude
 FFT
+FiveFoldTetSubdivision
 Flux
 LCS
 IndexSelect
@@ -136,14 +137,6 @@ TriangulateRegularPoints
 Tube
 ZoneDump
 )
-
-#####
-# FiveFoldTetSubdivision requires boost
-#####
-
-IF(BOOST_FOUND)
-  LIST(APPEND REQUIRED_OPERATOR_PLUGINS FiveFoldTetSubdivision)
-ENDIF()
 
 # Do not include Poincare on BlueGene/Q because it has a std::map symbol
 # that prevents static linking of libpami.a which is needed by MPI on 

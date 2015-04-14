@@ -55,7 +55,7 @@ struct Assembly
 };
 
 
-#include <boost/cstdint.hpp>
+#include <cstdint>
 
 // ****************************************************************************
 //  Class: avtSASFileFormat
@@ -104,7 +104,7 @@ class avtSASFileFormat : public avtMTMDFileFormat
     int                    nAssemblyTypes;
     AssemblyType          *aAssemblyTypes;
     int                    nAssemblys;
-    boost::int64_t         iAssemblyDiskLoc;   //location of first assembly
+    int64_t                iAssemblyDiskLoc;   //location of first assembly
 
     std::vector<Assembly>  aCachedAssemblies;
 
