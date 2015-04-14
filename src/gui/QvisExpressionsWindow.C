@@ -1585,12 +1585,15 @@ QvisExpressionsWindow::UpdatePythonExpressionEditor(const QString &expr_def)
 //
 //  Modifications:
 //
+//    Kathleen Biagas, Tue Apr 14 08:21:02 PDT 2015
+//    Use 'setPlainText' so html isn't parsed (eg <P> becoming new paragraph).
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 {
     BlockAllSignals(true);
-    stdDefinitionEdit->setText(expr_def);
+    stdDefinitionEdit->setPlainText(expr_def);
     BlockAllSignals(false);
 }
 
