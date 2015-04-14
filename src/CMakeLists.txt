@@ -383,6 +383,9 @@
 #    Cyrus Harrison, Tue Feb 10 20:06:07 PST 2015
 #    Change boost support.
 #
+#    Kathleen Biagas, Tue Apr 14 14:56:12 MST 2015
+#    Added find_file for MS HPC Scheduler.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -1556,6 +1559,7 @@ IF(VISIT_PARALLEL)
                       SET(VISIT_PARALLEL_LINKER_FLAGS "${MPI_LINK_FLAGS}"
                           CACHE STRING "Parallel LDFLAGS")
                   ENDIF(MPI_LINK_FLAGS)
+                  find_file(HAVE_HPC_SCHEDULER "Microsoft.Hpc.Scheduler.tlb")
                 ELSE(MPI_FOUND)
                   MESSAGE(FATAL_ERROR "To build parallel VisIt, you must at a "
                           "minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS. "

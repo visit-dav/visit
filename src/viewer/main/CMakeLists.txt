@@ -44,15 +44,19 @@
 #  Brad Whitlock, Thu Sep 11 10:45:23 PDT 2014
 #  Moved many files to viewercore.
 #
+#  Kathleen Biagas, Tue Apr 14 14:55:01 MST 2015
+#  Only add ViewerSubmitParallEngineToWindowsHPC if we actually have the
+#  HPC scheduler.
+#
 #****************************************************************************/
-IF(VISIT_PARALLEL AND WIN32)
+IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
     SET(VIEWERLIB_WIN32_SOURCES
         ViewerSubmitParallelEngineToWindowsHPC.cpp
     )
     SET_SOURCE_FILES_PROPERTIES(ViewerEngineManager.C PROPERTIES
         COMPILE_DEFINITIONS VISIT_SUPPORTS_WINDOWS_HPC
     )
-ENDIF(VISIT_PARALLEL AND WIN32)
+ENDIF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
 
 IF(VISIT_DDT)
 SET(VIEWER_DDT
