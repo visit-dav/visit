@@ -154,6 +154,7 @@ class avtXdmfFileFormat: public avtMTMDFileFormat
         void GetStructuredGhostZones(int[3], int[6], vtkDataSet *);
         void ScaleExtents(int[6], int[6], int[3]);
         void SetCurrentGrid(int, const char *);
+        XdmfGrid *FirstRealGrid(XdmfGrid *start);
 };
 
 #endif

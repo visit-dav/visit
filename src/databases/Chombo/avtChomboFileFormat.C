@@ -94,8 +94,7 @@
 #define H5_USE_16_API
 #include <hdf5.h>
 #include <visit-hdf5.h>
-#include <boost/cstdint.hpp>
-// using     boost::boost::int32_t; // This conflicts with Visual Studio 10
+#include <cstdint>
 using     std::string;
 
 
@@ -2348,7 +2347,7 @@ avtChomboFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 class LookUpOrderCmp
 {
     public:
-        LookUpOrderCmp(const boost::int32_t *d1, const boost::int32_t *d2) : order1Var(d1), order2Var(d2) {}
+        LookUpOrderCmp(const int32_t *d1, const int32_t *d2) : order1Var(d1), order2Var(d2) {}
         bool operator()(vtkIdType a, vtkIdType b)
         {
             return order1Var[a] < order1Var[b] ||
@@ -2356,8 +2355,8 @@ class LookUpOrderCmp
         }
 
     private:
-        const boost::int32_t *order1Var;
-        const boost::int32_t *order2Var;
+        const int32_t *order1Var;
+        const int32_t *order2Var;
 };
 
 vtkDataSet *
@@ -2757,8 +2756,8 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             }
         }
 
-        boost::int32_t *particleOrder = 0;
-        boost::int32_t *polymerNo = 0;
+        int32_t *particleOrder = 0;
+        int32_t *polymerNo = 0;
 
         if (connectParticles &&
             std::find(
@@ -2781,7 +2780,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
                         H5Sget_simple_extent_dims(dataSpace, &nParticlesCheck, NULL);
                         if (nParticles == nParticlesCheck)
                         {
-                            particleOrder = new boost::int32_t[nParticles];
+                            particleOrder = new int32_t[nParticles];
                             H5Dread(dataSet, H5T_NATIVE_INT32, H5S_ALL, H5S_ALL, H5P_DEFAULT, particleOrder);
                         }
                     }
@@ -2801,7 +2800,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
                         H5Sget_simple_extent_dims(dataSpace, &nParticlesCheck, NULL);
                         if (nParticles == nParticlesCheck)
                         {
-                            polymerNo = new boost::int32_t[nParticles];
+                            polymerNo = new int32_t[nParticles];
                             H5Dread(dataSet, H5T_NATIVE_INT32, H5S_ALL, H5S_ALL, H5P_DEFAULT, polymerNo);
                         }
                     }

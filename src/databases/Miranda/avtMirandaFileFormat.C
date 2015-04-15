@@ -72,7 +72,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <snprintf.h>
-#include <boost/cstdint.hpp>
+#include <cstdint>
 
 using std::string;
 using std::vector; 
@@ -1442,7 +1442,7 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
           FILE *fd = fopen(filename, "rb");
           if (fd == NULL)
             EXCEPTION1(InvalidFilesException, filename);
-          boost::int32_t numfloats = iBlockSize[0]*iBlockSize[1]*iBlockSize[2]; 
+          int32_t numfloats = iBlockSize[0]*iBlockSize[1]*iBlockSize[2]; 
           floatvectors[ii].resize(numfloats); 
           aRawBlocks[ii] = &floatvectors[ii][0];
           ReadRawScalar(fd, nPrevComp, aRawBlocks[ii], filename, domain);
