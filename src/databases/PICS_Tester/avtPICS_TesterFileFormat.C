@@ -44,7 +44,7 @@
 
 #include <string>
 
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -60,9 +60,6 @@
 #include <InvalidVariableException.h>
 
 
-using     std::string;
-
-
 // ****************************************************************************
 //  Method: avtPICS_TesterFileFormat constructor
 //
@@ -74,68 +71,276 @@ using     std::string;
 avtPICS_TesterFileFormat::avtPICS_TesterFileFormat(const char *filename)
     : avtMTMDFileFormat(filename)
 {
+    flowType = STANDARD;
+    rank = 3;
     isRectilinear = true;
-    is3D = true;
+
     ReadHeader(filename);
 }
 
 void
 avtPICS_TesterFileFormat::ReadHeader(const char *filename)
 {
+    times.clear();
+    cycles.clear();
+    
+    numBlocks[0].clear();
+    numBlocks[1].clear();
+    numBlocks[2].clear();
+    
+    numCells[0].clear();
+    numCells[1].clear();
+    numCells[2].clear();
+
     char line[1024];
     ifstream ifile(filename);
+
     while (! ifile.eof())
     {
-        ifile.getline(line, 1024);
-        if (line[0] == '#')
-            continue;
-        if (strcmp(line, "3D") == 0)
-        {
-            is3D = true;
-            continue;
-        }
-        if (strcmp(line, "2D") == 0)
-        {
-            is3D = false;
-            continue;
-        }
-        if (strcmp(line, "rectilinear") == 0)
-        {
-            isRectilinear = true;
-            continue;
-        }
-        if (strcmp(line, "unstructured") == 0)
-        {
-            isRectilinear = false;
-            continue;
-        }
-        float time;
+      ifile.getline(line, 1024);
+
+      if (line[0] == '#' || strlen(line) == 0)
+        continue;
+      else if (strcmp(line, "3D") == 0)
+      {
+        rank = 3;
+      }
+      else if (strcmp(line, "2D") == 0)
+      {
+       rank = 2;
+      }
+      else if (strcmp(line, "rectilinear") == 0)
+      {
+        flowType = STANDARD;
+        isRectilinear = true;
+      }
+      else if (strcmp(line, "unstructured") == 0)
+      {
+        flowType = STANDARD;
+        isRectilinear = false;
+      }
+      else if (strcmp(line, "DOUBLE_GYRE") == 0)
+      {
+        flowType = DOUBLE_GYRE;
+        rank = 3;
+        isRectilinear = true;
+      }
+      else if (strcmp(line, "ABC_FLOW_STEADY_STATE") == 0)
+      {
+        flowType = ABC_FLOW_STEADY_STATE;
+        rank = 3;
+        isRectilinear = true;
+      }
+      else if (strcmp(line, "ABC_FLOW_APERIODIC") == 0)
+      {
+        flowType = ABC_FLOW_APERIODIC;
+        rank = 3;
+        isRectilinear = true;
+      }
+      
+      else if( flowType == STANDARD )
+      {
+        double time;
         int nb;
         int nc;
-        float velx, vely, velz;
-        float magnitude;
+        double velx, vely, velz;
+        double magnitude;
         bool validScan = false;
-        if (is3D)
+        
+        global_bounds[0] = 1.0;
+        global_bounds[1] = 1.0;
+
+        if (rank == 2)
+          global_bounds[2] = 0.0;
+        else
+          global_bounds[2] = 1.0;
+          
+        if (rank == 3)
         {
-            validScan = (sscanf(line, "%f %d %d %f %f %f %f", &time, &nb, &nc,
-                               &velx, &vely, &velz, &magnitude) == 7);
+         validScan = (sscanf(line, "%lf %d %d %lf %lf %lf %lf",
+                             &time, &nb, &nc,
+                             &velx, &vely, &velz, &magnitude) == 7);
         }
         else
         {
-            validScan = (sscanf(line, "%f %d %d %f %f %f", &time, &nb, &nc,
-                               &velx, &vely, &magnitude) == 6);
-            velz = 0.;
+         validScan = (sscanf(line, "%lf %d %d %lf %lf %lf",
+                             &time, &nb, &nc,
+                             &velx, &vely, &magnitude) == 6);
+         velz = 0.;
         }
+ 
         if (validScan)
         {
-            times.push_back(time);
-            numBlocks.push_back(nb);
-            numCells.push_back(nc);
-            vels.push_back(velx);
-            vels.push_back(vely);
-            vels.push_back(velz);
-            magnitudes.push_back(magnitude);
+         times.push_back(time);
+         cycles.push_back(cycles.size());
+         
+         numBlocks[0].push_back(nb);
+         numBlocks[1].push_back(nb);
+         
+         if (rank == 2)
+           numBlocks[2].push_back(1);
+         else
+           numBlocks[2].push_back(nb);
+         
+         numCells[0].push_back(nc);
+         numCells[1].push_back(nc);
+         
+         if (rank == 2)
+           numCells[2].push_back(1);
+         else
+           numCells[2].push_back(nc);
+         
+         vels.push_back(velx);
+         vels.push_back(vely);
+         vels.push_back(velz);
+         
+         magnitudes.push_back(magnitude);
         }
+        else
+          flowType = UNKNOWN;
+      }
+      else if( flowType == DOUBLE_GYRE )
+      {
+        int nTimes, nx, ny, nz;
+        double time, bx, by, bz;
+        
+        bool validScan = (sscanf(line,
+                                "%d %lf %d %d %d %lf %lf %lf %lf %lf %lf",
+                                &nTimes, &time,
+                                &nx, &ny, &nz,
+                                &bx, &by, &bz,
+                                &dg_A, &dg_epsilon, &dg_period) == 11);
+ 
+        if( validScan )
+        {
+          times.clear();
+          cycles.clear();
+
+          numBlocks[0].clear();
+          numBlocks[1].clear();
+          numBlocks[2].clear();
+          
+          numCells[0].clear();
+          numCells[1].clear();
+          numCells[2].clear();
+
+          if (nz == 1)
+            rank = 2;
+          else
+            rank = 3;
+              
+          global_bounds[0] = bx;
+          global_bounds[1] = by;
+          global_bounds[2] = bz;
+          
+          for( int i=0; i<nTimes+1; ++i )
+          {
+            if( nTimes > 1 )
+              times.push_back((double) i * time / (double) nTimes);
+            else
+              times.push_back(0);
+            
+            cycles.push_back(i);
+            
+            numBlocks[0].push_back(1);
+            numBlocks[1].push_back(1);
+            numBlocks[2].push_back(1);
+            
+            numCells[0].push_back(nx);
+            numCells[1].push_back(ny);
+            numCells[2].push_back(nz);
+          }
+        }
+        else
+          flowType = UNKNOWN;
+      }
+      else if( flowType == ABC_FLOW_STEADY_STATE )
+      {
+        int nx, ny, nz;
+
+        bool validScan = (sscanf(line, "%d %d %d", &nx, &ny, &nz ) == 3);
+ 
+        if( validScan )
+        {
+          times.clear();
+          cycles.clear();
+
+          numBlocks[0].clear();
+          numBlocks[1].clear();
+          numBlocks[2].clear();
+          
+          numCells[0].clear();
+          numCells[1].clear();
+          numCells[2].clear();
+
+          global_bounds[0] = 2.0 * M_PI;
+          global_bounds[1] = 2.0 * M_PI;
+          global_bounds[2] = 2.0 * M_PI;
+          
+          times.push_back(0);       
+          cycles.push_back(0);
+            
+          numBlocks[0].push_back(1);
+          numBlocks[1].push_back(1);
+          numBlocks[2].push_back(1);
+          
+          numCells[0].push_back(nx);
+          numCells[1].push_back(ny);
+          numCells[2].push_back(nz);
+        }
+        else
+          flowType = UNKNOWN;
+      }
+      else if( flowType == ABC_FLOW_APERIODIC )
+      {
+        double nTimes, time;
+        int nx, ny, nz;
+
+        bool validScan = (sscanf(line,
+                                 "%lf %lf %d %d %d %lf %lf %lf %d %d %d",
+                                 &nTimes, &time,
+                                 &nx, &ny, &nz,
+                                 &abc_c0, &abc_c1, &abc_c2,
+                                 &abc_signalA, &abc_signalB, &abc_signalC) == 11);
+ 
+        if( validScan )
+        {
+          times.clear();
+          cycles.clear();
+
+          numBlocks[0].clear();
+          numBlocks[1].clear();
+          numBlocks[2].clear();
+          
+          numCells[0].clear();
+          numCells[1].clear();
+          numCells[2].clear();
+
+          global_bounds[0] = 2.0 * M_PI;
+          global_bounds[1] = 2.0 * M_PI;
+          global_bounds[2] = 2.0 * M_PI;
+          
+          for( int i=0; i<nTimes+1; ++i )
+          {
+            if( nTimes > 1 )
+              times.push_back((double) i * time / (double) nTimes);
+            else
+              times.push_back(0);
+            
+            cycles.push_back(i);
+            
+            numBlocks[0].push_back(1);
+            numBlocks[1].push_back(1);
+            numBlocks[2].push_back(1);
+            
+            numCells[0].push_back(nx);
+            numCells[1].push_back(ny);
+            numCells[2].push_back(nz);
+          }
+        }
+        else
+          flowType = UNKNOWN;
+      }
     }
 }
 
@@ -194,28 +399,50 @@ avtPICS_TesterFileFormat::FreeUpResources(void)
 void
 avtPICS_TesterFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
-    string meshname = "mesh";
+    std::string meshname = "mesh";
     avtMeshType mt = AVT_RECTILINEAR_MESH;
     if (! isRectilinear)
         mt = AVT_UNSTRUCTURED_MESH;
 
-    int nblocks = numBlocks[timeState]*numBlocks[timeState];
-    if (is3D)
-        nblocks *= numBlocks[timeState];
+    double bounds[6];
+    bounds[0] = 0;
+    bounds[1] = global_bounds[0];
+    bounds[2] = 0;
+    bounds[3] = global_bounds[1];
+    bounds[4] = 0;
+    bounds[5] = global_bounds[2];
+
+    int nblocks = 1;
+
+    for( int i=0; i<rank; ++i )
+      nblocks *= numBlocks[i][timeState];
 
     int block_origin = 0;
-    int spatial_dimension = is3D ? 3 : 2;
-    int topological_dimension = is3D ? 3 : 2;
-    AddMeshToMetaData(md, meshname, mt, NULL, nblocks, block_origin,
-                      spatial_dimension, topological_dimension);
+    int spatial_dimension = rank;
+    int topological_dimension = rank;
 
-    string varname = "velocity";
+    int nnodes[3] = {numCells[0][timeState]+1,
+                     numCells[1][timeState]+1,
+                     numCells[2][timeState]+1};
+
+    if (rank == 2)
+      nnodes[2] = 1;
+
+    AddMeshToMetaData(md, meshname, mt, bounds, nblocks, block_origin,
+                      spatial_dimension, topological_dimension, nnodes);
+
+    std::string varname = "velocity";
     int vector_dim = spatial_dimension;
     avtCentering cent = AVT_NODECENT;
-    AddVectorVarToMetaData(md, varname, meshname, cent,vector_dim);
+    AddVectorVarToMetaData(md, varname, meshname, cent, vector_dim);
 
     md->SetTimes(times);
     md->SetTimesAreAccurate(true);
+    md->SetCycles(cycles);
+    md->SetCyclesAreAccurate(true);
+
+    md->SetTemporalExtents(0, times[times.size()-1]);
+    md->SetHasTemporalExtents(true);
 }
 
 
@@ -242,11 +469,11 @@ avtPICS_TesterFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int 
 // ****************************************************************************
 
 void
-RotatePoint(const float *pt3, float *pt2)
+RotatePoint(const double *pt3, double *pt2)
 {
     double mid[3] = { 0.5, 0.5, 0.5 };
 
-    float pt[3];
+    double pt[3];
     pt[0] = pt3[0] - mid[0];
     pt[1] = pt3[1] - mid[1];
     pt[2] = pt3[2] - mid[2];
@@ -263,22 +490,29 @@ RotatePoint(const float *pt3, float *pt2)
 vtkDataSet *
 avtPICS_TesterFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
-    int nblocks = numBlocks[timestate]*numBlocks[timestate];
-    if (is3D)
-        nblocks *= numBlocks[timestate];
+    int nblocks = 1;
+
+    for( int i=0; i<rank; ++i )
+      nblocks *= numBlocks[i][timestate];
+
     if (domain >= nblocks)
     {
         EXCEPTION1(VisItException, "Invalid mesh requested!");
     }
 
-    double sizePerBlock = 1.0/numBlocks[timestate];
-    int xOff = domain % numBlocks[timestate];
-    int yOff = (domain/numBlocks[timestate]) % numBlocks[timestate];
-    int zOff = domain/(numBlocks[timestate]*numBlocks[timestate]);
+    double xSizePerBlock = global_bounds[0]/numBlocks[0][timestate];
+    double ySizePerBlock = global_bounds[1]/numBlocks[1][timestate];
+    double zSizePerBlock = global_bounds[2]/numBlocks[2][timestate];
 
-    int dims[3] = { numCells[timestate]+1, numCells[timestate]+1, numCells[timestate]+1 };
-    if (! is3D)
-        dims[2] = 1;
+    int xOff = domain % numBlocks[0][timestate];
+    int yOff = (domain/numBlocks[0][timestate]) % numBlocks[1][timestate];
+    int zOff = domain/(numBlocks[0][timestate]*numBlocks[1][timestate]);
+
+    int dims[3] = { numCells[0][timestate]+1,
+                    numCells[1][timestate]+1,
+                    numCells[2][timestate]+1 };
+    if (rank == 2)
+      dims[2] = 1;
 
     if (isRectilinear)
     {
@@ -286,32 +520,32 @@ avtPICS_TesterFileFormat::GetMesh(int timestate, int domain, const char *meshnam
     
         rgrid->SetDimensions(dims);
     
-        vtkFloatArray *x = vtkFloatArray::New();
-        x->SetNumberOfTuples(numCells[timestate]+1);
-        for (int i = 0 ; i < numCells[timestate]+1 ; i++)
-            x->SetTuple1(i, sizePerBlock*xOff + i*sizePerBlock/numCells[timestate]);
+        vtkDoubleArray *x = vtkDoubleArray::New();
+        x->SetNumberOfTuples(numCells[0][timestate]+1);
+        for (int i = 0 ; i < numCells[0][timestate]+1 ; i++)
+            x->SetTuple1(i, xSizePerBlock*xOff + i*xSizePerBlock/numCells[0][timestate]);
         rgrid->SetXCoordinates(x);
         x->Delete();
     
-        vtkFloatArray *y = vtkFloatArray::New();
-        y->SetNumberOfTuples(numCells[timestate]+1);
-        for (int i = 0 ; i < numCells[timestate]+1 ; i++)
-            y->SetTuple1(i, sizePerBlock*yOff + i*sizePerBlock/numCells[timestate]);
+        vtkDoubleArray *y = vtkDoubleArray::New();
+        y->SetNumberOfTuples(numCells[1][timestate]+1);
+        for (int i = 0 ; i < numCells[1][timestate]+1 ; i++)
+            y->SetTuple1(i, ySizePerBlock*yOff + i*ySizePerBlock/numCells[1][timestate]);
         rgrid->SetYCoordinates(y);
         y->Delete();
     
-        if (is3D)
+        if (rank == 3)
         {
-            vtkFloatArray *z = vtkFloatArray::New();
-            z->SetNumberOfTuples(numCells[timestate]+1);
-            for (int i = 0 ; i < numCells[timestate]+1 ; i++)
-                z->SetTuple1(i, sizePerBlock*zOff + i*sizePerBlock/numCells[timestate]);
+            vtkDoubleArray *z = vtkDoubleArray::New();
+            z->SetNumberOfTuples(numCells[2][timestate]+1);
+            for (int i = 0 ; i < numCells[2][timestate]+1 ; i++)
+                z->SetTuple1(i, zSizePerBlock*zOff + i*zSizePerBlock/numCells[2][timestate]);
             rgrid->SetZCoordinates(z);
             z->Delete();
         }
         else
         {
-            vtkFloatArray *z = vtkFloatArray::New();
+            vtkDoubleArray *z = vtkDoubleArray::New();
             z->SetNumberOfTuples(1);
             z->SetTuple1(0, 0.0);
             rgrid->SetZCoordinates(z);
@@ -332,12 +566,15 @@ avtPICS_TesterFileFormat::GetMesh(int timestate, int domain, const char *meshnam
             for (int j = 0 ; j < dims[1] ; j++)
                 for (int k = 0 ; k < dims[2] ; k++)
                 {
-                    float pt[3];
-                    pt[0] = sizePerBlock*xOff + i*sizePerBlock/numCells[timestate];
-                    pt[1] = sizePerBlock*yOff + j*sizePerBlock/numCells[timestate];
-                    pt[2] = sizePerBlock*zOff + k*sizePerBlock/numCells[timestate];
+                    double pt[3];
+                    pt[0] = xSizePerBlock*xOff +
+                      i*xSizePerBlock/numCells[0][timestate];
+                    pt[1] = ySizePerBlock*yOff +
+                      j*ySizePerBlock/numCells[1][timestate];
+                    pt[2] = zSizePerBlock*zOff +
+                      k*zSizePerBlock/numCells[2][timestate];
   
-                    float pt2[3];
+                    double pt2[3];
                     RotatePoint(pt, pt2);
                     pts->SetPoint(idx++, pt2);
                 }
@@ -358,7 +595,7 @@ avtPICS_TesterFileFormat::GetMesh(int timestate, int domain, const char *meshnam
 //
 //  Purpose:
 //      Gets a scalar variable associated with this file.  Although VTK has
-//      support for many different types, the best bet is vtkFloatArray, since
+//      support for many different types, the best bet is vtkDoubleArray, since
 //      that is supported everywhere through VisIt.
 //
 //  Arguments:
@@ -386,7 +623,7 @@ avtPICS_TesterFileFormat::GetVar(int timestate, int domain, const char *varname)
 //
 //  Purpose:
 //      Gets a vector variable associated with this file.  Although VTK has
-//      support for many different types, the best bet is vtkFloatArray, since
+//      support for many different types, the best bet is vtkDoubleArray, since
 //      that is supported everywhere through VisIt.
 //
 //  Arguments:
@@ -403,31 +640,134 @@ avtPICS_TesterFileFormat::GetVar(int timestate, int domain, const char *varname)
 // ****************************************************************************
 
 vtkDataArray *
-avtPICS_TesterFileFormat::GetVectorVar(int timestate, int domain,const char *varname)
+avtPICS_TesterFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 {
-    int dims[3] = { numCells[timestate]+1, numCells[timestate]+1, numCells[timestate]+1 };
-    if (! is3D)
+    double t = times[timestate];
+
+    double pt[3], vec[3];
+
+    int dims[3] = { numCells[0][timestate]+1,
+                    numCells[1][timestate]+1,
+                    numCells[2][timestate]+1 };
+    if (rank == 2)
         dims[2] = 1;
 
     int ntuples = dims[0]*dims[1]*dims[2];
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkDoubleArray *rv = vtkDoubleArray::New();
     rv->SetNumberOfComponents(3);
     rv->SetNumberOfTuples(ntuples);
-    srand((timestate+1)*(domain+1));
-    for (int i = 0 ; i < ntuples ; i++)
+
+    if( flowType == STANDARD )
     {
-        double vec[3];
-        for (int j = 0 ; j < 3 ; j++)
+        srand((timestate+1)*(domain+1));
+        for (int i = 0 ; i < ntuples ; i++)
         {
-            if (j == 2 && ! is3D)
+            for (int j = 0 ; j < 3 ; j++)
             {
-                vec[2] = 0.;
-                continue;
+                if( j < rank )
+                {
+                    double r = (rand()%1000)/1000.0;
+                    vec[j] = vels[3*timestate+j]+magnitudes[timestate]*r;
+                }
+                else
+                  vec[j] = 0.0;
             }
-            double r = (rand()%1000)/1000.0;
-            vec[j] = vels[3*timestate+j]+magnitudes[timestate]*r;
+            rv->SetTuple(i, vec);
         }
-        rv->SetTuple(i, vec);
+    }
+    else if( flowType == DOUBLE_GYRE )
+    {
+        vtkDataSet * rectGrid = GetMesh(timestate, domain, "mesh");
+
+        double A = dg_A;
+        double epsilon = dg_epsilon;
+        double omega = 2.0 * M_PI / dg_period;
+            
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+            rectGrid->GetPoint( i, pt );
+
+            // Test code for a double gyre.
+            double xi = pt[0];
+            double yi = pt[1];
+            
+            double at = epsilon * sin( omega * t );
+            double bt = 1.0  - 2.0 * at;
+            
+            double fxt = (at * xi + bt) * xi;
+            double dfx = (2.0 * at * xi + bt);
+            
+            vec[0] = -M_PI * A * sin(M_PI * fxt) * cos(M_PI * yi);
+            vec[1] =  M_PI * A * cos(M_PI * fxt) * sin(M_PI * yi) * dfx;
+            vec[2] = 0;
+
+            rv->SetTuple(i, vec);
+        }
+
+        rectGrid->Delete();
+    }
+    else if( flowType == ABC_FLOW_STEADY_STATE )
+    {
+        vtkDataSet * rectGrid = GetMesh(timestate, domain, "mesh");
+
+        double A = sqrt(3.0);
+        double B = sqrt(2.0);
+        double C = 1.0;
+ 
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+            rectGrid->GetPoint( i, pt );
+
+            // Test code for the ABC.
+            double xi = pt[0];
+            double yi = pt[1];
+            double zi = pt[2];
+            
+            vec[0] = A * sin(zi) + C * cos(yi);
+            vec[1] = B * sin(xi) + A * cos(zi);
+            vec[2] = C * sin(yi) + B * cos(xi);
+
+            rv->SetTuple(i, vec);
+        }
+
+        rectGrid->Delete();
+    }
+    else if( flowType == ABC_FLOW_APERIODIC )
+    {
+        vtkDataSet * rectGrid = GetMesh(timestate, domain, "mesh");
+
+        double A = sqrt(3.0);
+        double B = sqrt(2.0);
+        double C = 1.0;
+        
+        double c0 = abc_c0;
+        double c1 = abc_c1;
+        double c2 = abc_c2;
+
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+            rectGrid->GetPoint( i, pt );
+
+            // Test code for the ABC.
+            double xi = pt[0];
+            double yi = pt[1];
+            double zi = pt[2];
+
+            double signalA =
+              (abc_signalA ? A*c0*tanh(c1*t)*sin((c2*t)*(c2*t)) : 0);
+            double signalB = 
+              (abc_signalB ? B*c0*tanh(c1*t)*cos((c2*t)*(c2*t)) : 0);
+            double signalC = 
+              (abc_signalC ? C*c0*tanh(c1*t)*sin((c2*t)*(c2*t)) : 0);
+
+            vec[0] = (A+signalA) * sin(zi) + (C+signalC) * cos(yi);
+            vec[1] = (B+signalB) * sin(xi) + (A+signalA) * cos(zi);
+            vec[2] = (C+signalC) * sin(yi) + (B+signalB) * cos(xi);
+
+            rv->SetTuple(i, vec);
+        }
+
+        rectGrid->Delete();
     }
 
     return rv;
@@ -435,35 +775,39 @@ avtPICS_TesterFileFormat::GetVectorVar(int timestate, int domain,const char *var
 
 void *
 avtPICS_TesterFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
-                                      const char * type, void *,
-                                      DestructorFunction &df)
+                                           const char * type, void *,
+                                           DestructorFunction &df)
 {
     if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
     {
-        int nblocks = numBlocks[ts]*numBlocks[ts];
-        if (is3D)
-            nblocks *= numBlocks[ts];
+        int nblocks = 1;
 
-        int dimension = (is3D ? 3 : 2);
+        for( int i=0; i<rank; ++i )
+          nblocks *= numBlocks[i][ts];
+
+        int dimension = rank;
         avtIntervalTree *itree = new avtIntervalTree(nblocks, dimension);
 
-        double sizePerBlock = 1.0/numBlocks[ts];
+        double xSizePerBlock = global_bounds[0]/numBlocks[0][ts];
+        double ySizePerBlock = global_bounds[1]/numBlocks[1][ts];
+        double zSizePerBlock = global_bounds[2]/numBlocks[2][ts];
 
         for (int domain = 0 ; domain < nblocks ; domain++)
         {
-            int xOff = domain % numBlocks[ts];
-            int yOff = (domain/numBlocks[ts]) % numBlocks[ts];
-            int zOff = domain/(numBlocks[ts]*numBlocks[ts]);
+            int xOff = domain % numBlocks[0][ts];
+            int yOff = (domain/numBlocks[0][ts]) % numBlocks[1][ts];
+            int zOff = domain/(numBlocks[0][ts]*numBlocks[1][ts]);
 
             double bounds[6];
-            bounds[0] = xOff*sizePerBlock;
-            bounds[1] = (xOff+1)*sizePerBlock;
-            bounds[2] = yOff*sizePerBlock;
-            bounds[3] = (yOff+1)*sizePerBlock;
-            if (is3D)
+            bounds[0] = xOff*xSizePerBlock;
+            bounds[1] = (xOff+1)*xSizePerBlock;
+            bounds[2] = yOff*ySizePerBlock;
+            bounds[3] = (yOff+1)*ySizePerBlock;
+
+            if (rank == 3)
             {
-                bounds[4] = zOff*sizePerBlock;
-                bounds[5] = (zOff+1)*sizePerBlock;
+                bounds[4] = zOff*zSizePerBlock;
+                bounds[5] = (zOff+1)*zSizePerBlock;
             }
             else
             {
@@ -474,16 +818,17 @@ avtPICS_TesterFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
             {
                 int i;
                 double b[6] = { 10, -10, 10, -10, 10, -10 };
-                if (! is3D)
+
+                if (rank == 2)
                    b[4] = b[5] = 0.0;
 
                 for (i = 0 ; i < 8 ; i++)
                 {
-                    float pt[3];
+                    double pt[3];
                     pt[0] = (i%2 ? bounds[0] : bounds[1]);
                     pt[1] = (((i/2)%2) ? bounds[2] : bounds[3]);
                     pt[2] = (i/2 ? bounds[4] : bounds[5]);
-                    float pt2[3];
+                    double pt2[3];
                     RotatePoint(pt, pt2);
                     b[0] = (b[0] < pt2[0] ? b[0] : pt2[0]);
                     b[1] = (b[1] > pt2[0] ? b[1] : pt2[0]);
@@ -506,4 +851,3 @@ avtPICS_TesterFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
 
     return NULL;
 }
-

@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtPICS_TesterFileFormat.h                           //
+//                            avtPICS_TesterFileFormat.h                     //
 // ************************************************************************* //
 
 #ifndef AVT_PICS_Tester_FILE_FORMAT_H
@@ -101,13 +101,37 @@ class avtPICS_TesterFileFormat : public avtMTMDFileFormat
     void                   ReadHeader(const char *);
 
     bool                   isRectilinear;
-    bool                   is3D;
-    std::vector<int>       numBlocks;
-    std::vector<int>       numCells;
+    int                    rank;
+    std::vector<int>       numBlocks[3];
+    std::vector<int>       numCells[3];
     std::vector<double>    times;
+    std::vector<int>       cycles;
     std::vector<double>    vels;
     std::vector<double>    magnitudes;
-};
 
+    enum FlowType { UNKNOWN,
+                    STANDARD,
+                    DOUBLE_GYRE,
+                    ABC_FLOW_STEADY_STATE,
+                    ABC_FLOW_APERIODIC };
+
+    FlowType flowType;
+
+    double global_bounds[3];
+
+    // Double gyre flow constants
+    double dg_A;
+    double dg_epsilon;
+    double dg_period;
+
+    // ABC flow constants
+    double abc_c0;
+    double abc_c1;
+    double abc_c2;
+
+    int abc_signalA;
+    int abc_signalB;
+    int abc_signalC;
+};
 
 #endif
