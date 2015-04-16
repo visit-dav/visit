@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class LCSAttributes extends AttributeSubject implements Plugin
 {
-    private static int LCSAttributes_numAdditionalAtts = 54;
+    private static int LCSAttributes_numAdditionalAtts = 55;
 
     // Enum values
     public final static int SOURCETYPE_NATIVEMESH = 0;
@@ -192,6 +192,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         issueAdvectionWarnings = true;
         issueBoundaryWarnings = true;
         issueTerminationWarnings = true;
+        issueStepsizeWarnings = true;
         issueStiffnessWarnings = true;
         issueCriticalPointsWarnings = true;
         criticalPointThreshold = 0.001;
@@ -264,6 +265,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         issueAdvectionWarnings = true;
         issueBoundaryWarnings = true;
         issueTerminationWarnings = true;
+        issueStepsizeWarnings = true;
         issueStiffnessWarnings = true;
         issueCriticalPointsWarnings = true;
         criticalPointThreshold = 0.001;
@@ -342,6 +344,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         issueAdvectionWarnings = obj.issueAdvectionWarnings;
         issueBoundaryWarnings = obj.issueBoundaryWarnings;
         issueTerminationWarnings = obj.issueTerminationWarnings;
+        issueStepsizeWarnings = obj.issueStepsizeWarnings;
         issueStiffnessWarnings = obj.issueStiffnessWarnings;
         issueCriticalPointsWarnings = obj.issueCriticalPointsWarnings;
         criticalPointThreshold = obj.criticalPointThreshold;
@@ -435,6 +438,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
                 (issueAdvectionWarnings == obj.issueAdvectionWarnings) &&
                 (issueBoundaryWarnings == obj.issueBoundaryWarnings) &&
                 (issueTerminationWarnings == obj.issueTerminationWarnings) &&
+                (issueStepsizeWarnings == obj.issueStepsizeWarnings) &&
                 (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
                 (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings) &&
                 (criticalPointThreshold == obj.criticalPointThreshold));
@@ -790,22 +794,28 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         Select(50);
     }
 
+    public void SetIssueStepsizeWarnings(boolean issueStepsizeWarnings_)
+    {
+        issueStepsizeWarnings = issueStepsizeWarnings_;
+        Select(51);
+    }
+
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(51);
+        Select(52);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(52);
+        Select(53);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(53);
+        Select(54);
     }
 
     // Property getting methods
@@ -860,6 +870,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     public boolean  GetIssueAdvectionWarnings() { return issueAdvectionWarnings; }
     public boolean  GetIssueBoundaryWarnings() { return issueBoundaryWarnings; }
     public boolean  GetIssueTerminationWarnings() { return issueTerminationWarnings; }
+    public boolean  GetIssueStepsizeWarnings() { return issueStepsizeWarnings; }
     public boolean  GetIssueStiffnessWarnings() { return issueStiffnessWarnings; }
     public boolean  GetIssueCriticalPointsWarnings() { return issueCriticalPointsWarnings; }
     public double   GetCriticalPointThreshold() { return criticalPointThreshold; }
@@ -970,10 +981,12 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(50, buf))
             buf.WriteBool(issueTerminationWarnings);
         if(WriteSelect(51, buf))
-            buf.WriteBool(issueStiffnessWarnings);
+            buf.WriteBool(issueStepsizeWarnings);
         if(WriteSelect(52, buf))
-            buf.WriteBool(issueCriticalPointsWarnings);
+            buf.WriteBool(issueStiffnessWarnings);
         if(WriteSelect(53, buf))
+            buf.WriteBool(issueCriticalPointsWarnings);
+        if(WriteSelect(54, buf))
             buf.WriteDouble(criticalPointThreshold);
     }
 
@@ -1135,12 +1148,15 @@ public class LCSAttributes extends AttributeSubject implements Plugin
             SetIssueTerminationWarnings(buf.ReadBool());
             break;
         case 51:
-            SetIssueStiffnessWarnings(buf.ReadBool());
+            SetIssueStepsizeWarnings(buf.ReadBool());
             break;
         case 52:
-            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            SetIssueStiffnessWarnings(buf.ReadBool());
             break;
         case 53:
+            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            break;
+        case 54:
             SetCriticalPointThreshold(buf.ReadDouble());
             break;
         }
@@ -1315,6 +1331,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("issueAdvectionWarnings", issueAdvectionWarnings, indent) + "\n";
         str = str + boolToString("issueBoundaryWarnings", issueBoundaryWarnings, indent) + "\n";
         str = str + boolToString("issueTerminationWarnings", issueTerminationWarnings, indent) + "\n";
+        str = str + boolToString("issueStepsizeWarnings", issueStepsizeWarnings, indent) + "\n";
         str = str + boolToString("issueStiffnessWarnings", issueStiffnessWarnings, indent) + "\n";
         str = str + boolToString("issueCriticalPointsWarnings", issueCriticalPointsWarnings, indent) + "\n";
         str = str + doubleToString("criticalPointThreshold", criticalPointThreshold, indent) + "\n";
@@ -1374,6 +1391,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     private boolean  issueAdvectionWarnings;
     private boolean  issueBoundaryWarnings;
     private boolean  issueTerminationWarnings;
+    private boolean  issueStepsizeWarnings;
     private boolean  issueStiffnessWarnings;
     private boolean  issueCriticalPointsWarnings;
     private double   criticalPointThreshold;

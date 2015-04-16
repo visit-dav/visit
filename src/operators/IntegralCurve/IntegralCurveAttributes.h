@@ -243,6 +243,7 @@ public:
     void SetNumberOfRandomSamples(int numberOfRandomSamples_);
     void SetForceNodeCenteredData(bool forceNodeCenteredData_);
     void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
+    void SetIssueStepsizeWarnings(bool issueStepsizeWarnings_);
     void SetIssueStiffnessWarnings(bool issueStiffnessWarnings_);
     void SetIssueCriticalPointsWarnings(bool issueCriticalPointsWarnings_);
     void SetCriticalPointThreshold(double criticalPointThreshold_);
@@ -324,6 +325,7 @@ public:
     int                GetNumberOfRandomSamples() const;
     bool               GetForceNodeCenteredData() const;
     bool               GetIssueTerminationWarnings() const;
+    bool               GetIssueStepsizeWarnings() const;
     bool               GetIssueStiffnessWarnings() const;
     bool               GetIssueCriticalPointsWarnings() const;
     double             GetCriticalPointThreshold() const;
@@ -460,6 +462,7 @@ public:
         ID_numberOfRandomSamples,
         ID_forceNodeCenteredData,
         ID_issueTerminationWarnings,
+        ID_issueStepsizeWarnings,
         ID_issueStiffnessWarnings,
         ID_issueCriticalPointsWarnings,
         ID_criticalPointThreshold,
@@ -531,6 +534,7 @@ private:
     int          numberOfRandomSamples;
     bool         forceNodeCenteredData;
     bool         issueTerminationWarnings;
+    bool         issueStepsizeWarnings;
     bool         issueStiffnessWarnings;
     bool         issueCriticalPointsWarnings;
     double       criticalPointThreshold;
@@ -544,6 +548,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*d*iiiisiibdbddbddiddidDiiiiibbddiibdbdidddbbiibbbbddddis"
+#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*d*iiiisiibdbddbddiddidDiiiiibbddiibdbdidddbbiibbbbbddddis"
 
 #endif

@@ -227,6 +227,8 @@ protected:
                                { issueWarningForBoundary = v; };
     void          IssueWarningForMaxStepsTermination(bool v) 
                                { issueWarningForMaxStepsTermination = v; };
+    void          IssueWarningForStepsize(bool v) 
+                               { issueWarningForStepsize = v; };
     void          IssueWarningForStiffness(bool v) 
                                { issueWarningForStiffness = v; };
     void          IssueWarningForCriticalPoints(bool v, double speed) 
@@ -269,6 +271,7 @@ protected:
     bool     issueWarningForAdvection;
     bool     issueWarningForBoundary;
     bool     issueWarningForMaxStepsTermination;
+    bool     issueWarningForStepsize;
     bool     issueWarningForStiffness;
     bool     issueWarningForCriticalPoints;
     double   criticalPointThreshold;

@@ -233,6 +233,7 @@ public:
     void SetIssueAdvectionWarnings(bool issueAdvectionWarnings_);
     void SetIssueBoundaryWarnings(bool issueBoundaryWarnings_);
     void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
+    void SetIssueStepsizeWarnings(bool issueStepsizeWarnings_);
     void SetIssueStiffnessWarnings(bool issueStiffnessWarnings_);
     void SetIssueCriticalPointsWarnings(bool issueCriticalPointsWarnings_);
     void SetCriticalPointThreshold(double criticalPointThreshold_);
@@ -293,6 +294,7 @@ public:
     bool         GetIssueAdvectionWarnings() const;
     bool         GetIssueBoundaryWarnings() const;
     bool         GetIssueTerminationWarnings() const;
+    bool         GetIssueStepsizeWarnings() const;
     bool         GetIssueStiffnessWarnings() const;
     bool         GetIssueCriticalPointsWarnings() const;
     double       GetCriticalPointThreshold() const;
@@ -435,6 +437,7 @@ public:
         ID_issueAdvectionWarnings,
         ID_issueBoundaryWarnings,
         ID_issueTerminationWarnings,
+        ID_issueStepsizeWarnings,
         ID_issueStiffnessWarnings,
         ID_issueCriticalPointsWarnings,
         ID_criticalPointThreshold,
@@ -493,6 +496,7 @@ private:
     bool   issueAdvectionWarnings;
     bool   issueBoundaryWarnings;
     bool   issueTerminationWarnings;
+    bool   issueStepsizeWarnings;
     bool   issueStiffnessWarnings;
     bool   issueCriticalPointsWarnings;
     double criticalPointThreshold;
@@ -501,6 +505,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LCSATTRIBUTES_TMFS "iIiDiDiidiiiidiibdbdbddbddiddidDibiiiibbddidddibbbbbbd"
+#define LCSATTRIBUTES_TMFS "iIiDiDiidiiiidiibdbdbddbddiddidDibiiiibbddidddibbbbbbbd"
 
 #endif

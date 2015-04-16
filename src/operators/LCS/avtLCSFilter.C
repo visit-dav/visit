@@ -126,6 +126,13 @@ avtLCSFilter::avtLCSFilter() : seedVelocity(0,0,0)
 
     minSizeValue =  std::numeric_limits<double>::max();
     maxSizeValue = -std::numeric_limits<double>::max();
+
+    issueWarningForMaxStepsTermination = true;
+    issueWarningForStepsize = true;
+    issueWarningForStiffness = true;
+    issueWarningForCriticalPoints = true;
+
+    criticalPointThreshold = 1e-3;
 }
 
 
@@ -294,6 +301,7 @@ avtLCSFilter::SetAtts(const AttributeGroup *a)
     IssueWarningForAdvection(atts.GetIssueAdvectionWarnings());
     IssueWarningForBoundary(atts.GetIssueBoundaryWarnings());
     IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
+    IssueWarningForStepsize(atts.GetIssueStepsizeWarnings());
     IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
     IssueWarningForCriticalPoints(atts.GetIssueCriticalPointsWarnings(),
                                   atts.GetCriticalPointThreshold());
@@ -386,91 +394,6 @@ avtLCSFilter::SetTermination(int maxSteps_,
     maxTime = maxTime_;
     doSize = doSize_;
     maxSize = maxSize_;
-}
-
-
-// ****************************************************************************
-//  Method: avtLCSFilter::CreateIntegralCurve
-//
-//  Purpose:
-//      Create an uninitialized integral curve.
-//
-//  Programmer: Hari Krishnan
-//  Creation:   December 5, 2011
-//
-// ****************************************************************************
-
-avtIntegralCurve*
-avtLCSFilter::CreateIntegralCurve(void)
-{
-  if( doSize ) 
-    return (new avtStreamlineIC());
-  else
-    return (new avtLCSIC());
-}
-
-
-// ****************************************************************************
-//  Method: avtLCSFilter::CreateIntegralCurve
-//
-//  Purpose:
-//      Create an integral curve with specific IDs and parameters.
-//
-//  Programmer: Hari Krishnan
-//  Creation:   December 5, 2011
-//
-// ****************************************************************************
-
-avtIntegralCurve*
-avtLCSFilter::CreateIntegralCurve(const avtIVPSolver* model,
-                                  avtIntegralCurve::Direction dir,
-                                  const double& t_start,
-                                  const avtVector &p_start,
-                                  const avtVector& v_start, long ID)
-{
-    double t;
-
-    if (doPathlines)
-    {
-        if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
-            t = seedTime0 - maxTime;
-        else
-            t = seedTime0 + maxTime;
-    }
-    else
-    {
-        if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
-            t = -maxTime;
-        else
-            t = maxTime;
-    }
-
-    if( doSize )
-    {
-      // For now use the avtLCSIC as the state does not need to be
-      // recorded for the FSLE. That is because currently the
-      // integration is being done step by step rather than in
-      // chunks. However, the code is set up to use
-      // avtStreamlineIC. Which if the integration is done in chucks
-      // will probably be more efficient.
-
-      // unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
-      // attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
-      // attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
-      
-      // return
-      //   (new avtStreamlineIC(numSteps, doDistance, maxDistance, doTime, t,
-      //                        attr, model, dir, t_start, p_start, v_start, ID));
-      return
-        (new avtLCSIC(numSteps, doDistance, maxDistance, doTime, t,
-                       model, dir, t_start, p_start, v_start, ID));
-    }
-    else
-    {
-      return
-        (new avtLCSIC(maxSteps, doDistance, maxDistance, doTime, t,
-                       model, dir, t_start, p_start, v_start, ID));
-    }
 }
 
 
@@ -724,11 +647,12 @@ avtLCSFilter::Execute(void)
     if (!needsRecalculation && *dt != NULL)
     {
         debug1 << "LCS: using cached version" << std::endl;
+
         if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
             if (PAR_Rank() != 0)
                 dt = new avtDataTree();
+
         SetOutputDataTree(dt);
-        return;
     }
     else
     {
@@ -787,38 +711,6 @@ avtLCSFilter::ContinueExecute()
     }
 
     return false;
-}
-
-
-// ****************************************************************************
-//  Method: avtLCSFilter::CreateIntegralCurveOutput
-//
-//  Purpose:
-//      Computes the LCS output (via sub-routines) after the PICS filter has
-//      calculated the final particle positions.
-//
-//  Programmer: Hari Krishnan
-//  Creation:   December 5, 2011
-//
-// ****************************************************************************
-
-void 
-avtLCSFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve*> &ics)
-{
-  if( atts.GetOperationType() == LCSAttributes::Lyapunov && doSize )
-  {
-      if (atts.GetSourceType() == LCSAttributes::NativeMesh)
-        CreateNativeMeshIterativeCalcOutput(ics);
-      else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
-        CreateRectilinearGridIterativeCalcOutput(ics);
-  }
-  else
-  {
-      if (atts.GetSourceType() == LCSAttributes::NativeMesh)
-          NativeMeshSingleCalc(ics);
-      else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
-          RectilinearGridSingleCalc(ics);
-    }
 }
 
 
@@ -1018,6 +910,123 @@ avtLCSFilter::GetInitialLocationsFromRectilinearGrid()
                 ++tuple;
             }
         }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtLCSFilter::CreateIntegralCurve
+//
+//  Purpose:
+//      Create an uninitialized integral curve.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+avtIntegralCurve*
+avtLCSFilter::CreateIntegralCurve(void)
+{
+  if( doSize ) 
+    return (new avtStreamlineIC());
+  else
+    return (new avtLCSIC());
+}
+
+
+// ****************************************************************************
+//  Method: avtLCSFilter::CreateIntegralCurve
+//
+//  Purpose:
+//      Create an integral curve with specific IDs and parameters.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+avtIntegralCurve*
+avtLCSFilter::CreateIntegralCurve(const avtIVPSolver* model,
+                                  avtIntegralCurve::Direction dir,
+                                  const double& t_start,
+                                  const avtVector &p_start,
+                                  const avtVector& v_start, long ID)
+{
+    double t;
+
+    if (doPathlines)
+    {
+        if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
+            t = seedTime0 - maxTime;
+        else
+            t = seedTime0 + maxTime;
+    }
+    else
+    {
+        if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
+            t = -maxTime;
+        else
+            t = maxTime;
+    }
+
+    if( doSize )
+    {
+      // For now use the avtLCSIC as the state does not need to be
+      // recorded for the FSLE. That is because currently the
+      // integration is being done step by step rather than in
+      // chunks. However, the code is set up to use
+      // avtStreamlineIC. Which if the integration is done in chucks
+      // will probably be more efficient.
+
+      // unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
+      // attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
+      // attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
+      
+      // return
+      //   (new avtStreamlineIC(numSteps, doDistance, maxDistance, doTime, t,
+      //                        attr, model, dir, t_start, p_start, v_start, ID));
+      return
+        (new avtLCSIC(numSteps, doDistance, maxDistance, doTime, t,
+                       model, dir, t_start, p_start, v_start, ID));
+    }
+    else
+    {
+      return
+        (new avtLCSIC(maxSteps, doDistance, maxDistance, doTime, t,
+                       model, dir, t_start, p_start, v_start, ID));
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtLCSFilter::CreateIntegralCurveOutput
+//
+//  Purpose:
+//      Computes the LCS output (via sub-routines) after the PICS filter has
+//      calculated the final particle positions.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+void 
+avtLCSFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve*> &ics)
+{
+  if( atts.GetOperationType() == LCSAttributes::Lyapunov && doSize )
+  {
+      if (atts.GetSourceType() == LCSAttributes::NativeMesh)
+        CreateNativeMeshIterativeCalcOutput(ics);
+      else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
+        CreateRectilinearGridIterativeCalcOutput(ics);
+  }
+  else
+  {
+      if (atts.GetSourceType() == LCSAttributes::NativeMesh)
+          NativeMeshSingleCalc(ics);
+      else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
+          RectilinearGridSingleCalc(ics);
     }
 }
 
@@ -1534,6 +1543,19 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
         }
         else // if( eigenComponent == LCSAttributes::Smallest )
         {
+          // // if( fabs(eigenvecs[2][2]) > fabs(eigenvecs[0][2]) && 
+          // //     fabs(eigenvecs[2][2]) > fabs(eigenvecs[1][2]) )
+          //   {
+          //     std::cerr << seedPoints[l*nAuxPts].x << "  " << seedPoints[l*nAuxPts].y << "  " << seedPoints[l*nAuxPts].z << "\n"
+          //            << eigenvals[0] << "  " << eigenvals[1] << "  " << eigenvals[2] << "\n"
+          //            <<  eigenvecs[0][0] << "  " << eigenvecs[1][0] << "  " << eigenvecs[2][0] << "\n"
+          //            <<  eigenvecs[0][1] << "  " << eigenvecs[1][1] << "  " << eigenvecs[2][1] << "\n"
+          //            <<  eigenvecs[0][2] << "  " << eigenvecs[1][2] << "  " << eigenvecs[2][2] << "\n"
+          //            << std::endl;
+
+          //   }
+
+
           valArray->SetTuple1(l, eigenvals[2]);
           vecArray->SetTuple3(l, eigenvecs[0][2], eigenvecs[1][2], eigenvecs[2][2]);
         }
@@ -1710,6 +1732,7 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     int numBoundary = 0;
 
     int numEarlyTerminators = 0;
+    int numStepSize = 0;
     int numStiff = 0;
     int numCritPts = 0;
 
@@ -1731,6 +1754,9 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
             if (ic->TerminatedBecauseOfMaxSteps())
               numEarlyTerminators++;
             
+            if (ic->status.StepSizeUnderflow())
+              numStepSize++;
+
             if (ic->EncounteredNumericalProblems())
               numStiff++;
 
@@ -1751,6 +1777,9 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
             if (ic->TerminatedBecauseOfMaxSteps())
               numEarlyTerminators++;
             
+            if (ic->status.StepSizeUnderflow())
+              numStepSize++;
+
             if (ic->EncounteredNumericalProblems())
               numStiff++;
 
@@ -1833,6 +1862,21 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                      "additional steps will _not_ help this problem and only cause execution to "
                      "take longer.  If you want to disable this message, you can do this under "
                      "the Advanced tab.\n", str, numCritPts);
+        }
+    }
+
+    if (issueWarningForStepsize)
+    {
+        SumIntAcrossAllProcessors(numStepSize);
+        if (numStepSize > 0)
+        {
+            SNPRINTF(str, 4096, 
+                     "%s\n%d of your integral curves were unable to advect because of the \"stepsize\".  "
+                     "Often the step size becomes too small when appraoching a spatial "
+                     "or temporal boundary. This especially happens when the step size matches "
+                     "the temporal spacing. This condition is referred to as stepsize underflow and "
+                     "VisIt stops advecting in this case.  If you want to disable this message, "
+                     "you can do this under the Advanced tab.\n", str, numStepSize);
         }
     }
 

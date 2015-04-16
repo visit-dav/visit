@@ -167,6 +167,8 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
 
     void IssueWarningForMaxStepsTermination(bool v) 
                  { issueWarningForMaxStepsTermination = v; };
+    void IssueWarningForStepsize(bool v) 
+                 { issueWarningForStepsize = v; };
     void IssueWarningForStiffness(bool v) 
                  { issueWarningForStiffness = v; };
     void IssueWarningForCriticalPoints(bool v, double speed) 
@@ -261,6 +263,7 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     bool      storeVelocitiesForLighting;
 
     bool      issueWarningForMaxStepsTermination;
+    bool      issueWarningForStepsize;
     bool      issueWarningForStiffness;
     bool      issueWarningForCriticalPoints;
     double    criticalPointThreshold;

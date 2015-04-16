@@ -162,6 +162,7 @@ class QvisLCSWindow : public QvisOperatorWindow
     void issueWarningForAdvectionChanged(bool);
     void issueWarningForBoundaryChanged(bool);
     void issueWarningForMaxStepsChanged(bool);
+    void issueWarningForStepsizeChanged(bool);
     void issueWarningForStiffnessChanged(bool);
     void issueWarningForCriticalPointsChanged(bool);
     void criticalPointThresholdProcessText();
@@ -244,6 +245,7 @@ class QvisLCSWindow : public QvisOperatorWindow
     QCheckBox *issueWarningForAdvection;
     QCheckBox *issueWarningForBoundary;
     QCheckBox *issueWarningForMaxSteps;
+    QCheckBox *issueWarningForStepsize;
     QCheckBox *issueWarningForStiffness;
     QCheckBox *issueWarningForCriticalPoints;
     QLineEdit *criticalPointThreshold;

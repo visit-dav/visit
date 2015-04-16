@@ -185,6 +185,7 @@ class QvisPoincareWindow : public QvisOperatorWindow
     void pathlineCMFEButtonGroupChanged(int val);
 
     void issueWarningForMaxStepsChanged(bool);
+    void issueWarningForStepsizeChanged(bool);
     void issueWarningForStiffnessChanged(bool);
     void issueWarningForCriticalPointsChanged(bool);
     void criticalPointThresholdProcessText();
@@ -317,6 +318,7 @@ class QvisPoincareWindow : public QvisOperatorWindow
     QButtonGroup *pathlineCMFEButtonGroup;
 
     QCheckBox *issueWarningForMaxSteps;
+    QCheckBox *issueWarningForStepsize;
     QCheckBox *issueWarningForStiffness;
     QCheckBox *issueWarningForCriticalPoints;
     QLineEdit *criticalPointThreshold;
