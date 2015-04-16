@@ -328,6 +328,9 @@ def DisableAutomaticMapping():
     RemoveMappingFromAllPlots()
     RegisterCallback("AddPlotRPC")
 
+#pick4d_distributions = [ "component_0", "FM", "deltaF" ]
+pick4d_distributions = [ "component_0" ]
+
 def PerformPick4D(pa):
     global lastPickOutput
     if lastPickOutput != GetPickOutput():
@@ -340,8 +343,7 @@ def PerformPick4D(pa):
                 i = int(i)
                 j = int(j)
                 RegisterCallback("SetActivePlotsRPC")
-                distributions = [ "component_0", "FM", "deltaF" ]
-                for window, distribution in enumerate(distributions, 2):
+                for window, distribution in enumerate(pick4d_distributions, 2):
                     SetActiveWindow(window)
                     DeleteAllPlots()
                     AddPlot("Pseudocolor", "operators/ExtractPointFunction2D/%s" % distribution)
@@ -381,7 +383,10 @@ def StartPick4D():
     SetPickAttributes(pickAtts)
     RegisterCallback("PickAttributes", PerformPick4D)
     SetWindowMode("zone pick")
-    SetWindowLayout(4)
+    if len(pick4d_distributions) == 1:
+        SetWindowLayout(2)
+    else:
+        SetWindowLayout(4)
     SetActiveWindow(1)
 
 def EndPick4D():

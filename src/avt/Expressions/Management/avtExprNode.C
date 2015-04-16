@@ -53,6 +53,7 @@
 #include <avtArrayComposeExpression.h>
 #include <avtArrayComposeWithBinsExpression.h>
 #include <avtArrayDecomposeExpression.h>
+#include <avtArrayDecompose2DExpression.h>
 #include <avtArrayComponentwiseDivisionExpression.h>
 #include <avtArrayComponentwiseProductExpression.h>
 #include <avtArraySumExpression.h>
@@ -544,6 +545,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtArrayComposeWithBinsExpression();
     if (functionName == "array_decompose")
         return new avtArrayDecomposeExpression();
+    if (functionName == "array_decompose2d")
+        return new avtArrayDecompose2DExpression();
     if (functionName == "array_sum")
         return new avtArraySumExpression();
     if (functionName == "localized_compactness")
