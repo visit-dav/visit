@@ -425,8 +425,10 @@ Lines
 MFIX
 MM5
 MatrixMarket
+Miranda
 NASTRAN
 Nek3D
+Nek5000
 OVERFLOW
 OpenFOAM
 PATRAN
@@ -438,6 +440,7 @@ Point3D
 ProteinDataBank
 RAW
 SAR
+SAS
 STL
 Shapefile
 ${SIMV2_PLUGIN}
