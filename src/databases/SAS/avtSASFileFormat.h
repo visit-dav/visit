@@ -52,7 +52,7 @@
 #define READ    ::_read
 #define WRITE   ::_write
 #define LSEEK64 ::_lseeki64
-#define OFF64_T ::__int64
+#define OFF64_T __int64
 #define ssize_t int
 
 #else
