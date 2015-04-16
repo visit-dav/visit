@@ -65,33 +65,6 @@ using namespace std;
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#ifdef WIN32
-#include <io.h>
-#define CLOSE   ::_close
-#define OPEN    ::_open
-#define LSEEK64 ::_lseeki64
-#define READ    ::_read
-#define WRITE   ::_write
-#define ssize_t int
-
-#else
-#include <unistd.h>
-
-#define O_BINARY 0
-#define OPEN  ::open
-#define CLOSE ::close
-#define READ  ::read
-#define WRITE ::write
-#if defined(__APPLE__) || defined(_OSF_SOURCE)
-#define LSEEK64 ::lseek
-#define OFF64_T off_t
-#else
-#define LSEEK64 ::lseek64
-#define OFF64_T off64_t
-#endif
-
-#endif
-
 // ****************************************************************************
 //  Method: avtSASFileFormat constructor
 //
