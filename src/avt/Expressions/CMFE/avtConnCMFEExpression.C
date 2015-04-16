@@ -150,6 +150,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
     if (numNull == 2)
         return NULL;
 
+    debug5 << "avtConnCMFEExpression::ExecuteTree: numNull=" << numNull << std::endl;
     if (numNull == 1)
         EXCEPTION1(InvalidMergeException, "The databases cannot be compared "
                    "because they have a different number of domains.");
@@ -157,6 +158,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
     int nc1 = in1->GetNChildren();
     int nc2 = in1->GetNChildren();
 
+    debug5 << "avtConnCMFEExpression::ExecuteTree: nc1=" << nc1 << " nc2= " << nc2 << std::endl;
     if (nc1 != nc2)
         EXCEPTION1(InvalidMergeException, "The databases cannot be compared "
                    "because they have a different number of domains.");
@@ -168,6 +170,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
             numHaveData++;
         if (in2->HasData())
             numHaveData++;
+        debug5 << "avtConnCMFEExpression::ExecuteTree: numHaveData " << numHaveData << std::endl;
         if (numHaveData == 1)
             EXCEPTION1(InvalidMergeException, "The databases cannot be "
                   "compared because they have a different number of domains.");
