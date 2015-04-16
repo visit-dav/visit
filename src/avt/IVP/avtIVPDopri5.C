@@ -434,8 +434,10 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
         bool last = false;
         avtVector y_new, y_stiff;
 
-        // stepsize underflow?
-        if( 0.1*std::abs(h) <= std::abs(t)*epsilon ) 
+        // stepsize underflow - go right up to the smallest value
+        // needed for pathlines.
+        // if( 0.1*std::abs(h) <= std::abs(t_local)*epsilon )
+        if( std::abs(h) < epsilon )
         {
             if (DebugStream::Level5())
             {

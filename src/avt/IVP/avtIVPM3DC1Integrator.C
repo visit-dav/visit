@@ -197,8 +197,10 @@ avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
     if( (t + 1.01*h - t_max) * direction > 0.0 ) 
         h = t_max - t;
 
-    // stepsize underflow?
-    if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
+    // stepsize underflow - go right up to the smallest value
+    // needed for pathlines.
+    // if( 0.1*std::abs(h) <= std::abs(t_local)*epsilon )
+    if( std::abs(h) < epsilon )
         return avtIVPSolver::STEPSIZE_UNDERFLOW;
 
     avtIVPSolver::Result res;
