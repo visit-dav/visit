@@ -1,7 +1,6 @@
 #ifndef _BRANCH_H_
 #define _BRANCH_H_
 
-#include <cstdint>
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -10,7 +9,7 @@
 class Branch
 {
     public:
-        typedef uint64_t IdxT;
+        typedef unsigned long long IdxT;
         typedef double ValueT;
         IdxT extremum;
         ValueT extremumVal;
