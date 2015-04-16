@@ -482,6 +482,13 @@ class IVP_API avtIVPSolver
     virtual void   SetPeriod(const double& p);
     virtual double GetPeriod() const;
 
+    virtual void   SetBoundaries( const double& x,
+                                  const double& y,
+                                  const double& z );
+    virtual void   GetBoundaries( double& x,
+                                  double& y,
+                                  double& z ) const;
+
     virtual void   SetBaseTime(const double& t);
     virtual double GetBaseTime() const;
 
@@ -507,8 +514,10 @@ protected:
     double tol;
     double t;
 
+    double periodic_boundary_x, periodic_boundary_y, periodic_boundary_z;
     double period;
     double baseTime, maxTime;
+
     Direction direction;
 
 protected:

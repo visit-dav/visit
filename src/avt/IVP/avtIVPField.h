@@ -103,7 +103,10 @@ class IVP_API avtIVPField
         FAIL
     };
 
-    avtIVPField() : order(1), directionless(false) {}
+    avtIVPField() : order(1), directionless(false),
+      hasPeriodicBoundaries(false),
+      periodic_boundary_x(0), periodic_boundary_y(0), periodic_boundary_z(0) {}
+
     virtual             ~avtIVPField() {}
 
     virtual Result       operator()(const double& t, 
@@ -139,9 +142,15 @@ class IVP_API avtIVPField
     virtual void         SetDirectionless( bool val ) { directionless = val; }
     virtual bool         GetDirectionless() { return directionless; }
 
+    virtual bool         HasPeriodicBoundaries() const { return false; }
+    virtual void         GetBoundaries( double& x,
+                                        double& y,
+                                        double& z) const { x = y = z = 0; }
+
  protected:
     unsigned int order;
-    bool directionless;
+    bool directionless, hasPeriodicBoundaries;
+    double periodic_boundary_x, periodic_boundary_y, periodic_boundary_z;
 };
 
 // ostream operators for avtICStatus
