@@ -65,10 +65,10 @@
 #define WRITE ::write
 #if defined(__APPLE__) || defined(_OSF_SOURCE)
 #define LSEEK64 ::lseek
-#define OFF64_T off_t
+#define OFF64_T ::off_t
 #else
 #define LSEEK64 ::lseek64
-#define OFF64_T off64_t
+#define OFF64_T ::off64_t
 #endif
 
 #endif
