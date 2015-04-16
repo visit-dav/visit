@@ -54,9 +54,6 @@ struct Assembly
     vtkUnstructuredGrid *grid;
 };
 
-
-#include <cstdint>
-
 // ****************************************************************************
 //  Class: avtSASFileFormat
 //
