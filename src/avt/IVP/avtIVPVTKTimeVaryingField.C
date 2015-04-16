@@ -193,9 +193,6 @@ avtIVPVTKTimeVaryingField::GetExtents( double extents[6] ) const
 //   Hank Childs, Fri Mar  9 16:50:48 PST 2012
 //   Add support for reverse pathlines.
 //
-//   Dave Pugmire, Wed Jun  5 09:57:41 EDT 2013
-//   Fix for pathlines. change from >=, <= to >, < in inclusion for time.
-//
 // ****************************************************************************
 
 avtIVPField::Result
@@ -205,7 +202,7 @@ avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) 
 
     if( pos != lastPos )
     {
-        lastPos  = pos;
+        lastPos = pos;
 
         if( hasPeriodicBoundaries )
         {
@@ -236,7 +233,10 @@ avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) 
 
         inside[0] = (lastCell != -1);
     }       
-    
+
+    // The time interval should beginning and including the start time
+    // (t0) up to BUT not including the last time (t1). Once the last
+    // time is reached the next time domain should be used.
     if (t0 < t1)
     {
         if( time < t0 || t1 <= time )
@@ -383,8 +383,8 @@ avtIVPVTKTimeVaryingField::ConvertToCylindrical(const avtVector& pt) const
 //    Switch from avtVec to avtVector.
 //
 //    Christoph Garth, Fri Jul 9, 10:10:22 PDT 2010
-//    Incorporate vtkVisItInterpolatedVelocityField in avtIVPVTKTimeVaryingField, and
-//    use vtkGenericCell for thread safety.
+//    Incorporate vtkVisItInterpolatedVelocityField in
+//    avtIVPVTKTimeVaryingField, and use vtkGenericCell for thread safety.
 //
 // ****************************************************************************
 
