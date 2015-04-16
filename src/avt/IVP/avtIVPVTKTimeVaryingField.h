@@ -130,6 +130,9 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
     virtual void   GetTimeRange( double range[2] ) const;
     virtual bool   VelocityIsInstantaneous(void) { return false; };
 
+    virtual bool   HasPeriodicBoundaries() const;
+    virtual void   GetBoundaries( double& x, double& y, double& z) const;
+
     static const char* NextTimePrefix;
 
   protected:

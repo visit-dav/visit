@@ -131,6 +131,9 @@ class IVP_API avtIVPVTKField: public avtIVPField
     virtual void      GetExtents( double extents[6] ) const;
     virtual void      GetTimeRange( double range[2] ) const;
 
+    virtual bool      HasPeriodicBoundaries() const;
+    virtual void      GetBoundaries( double& x, double& y, double& z) const;
+
   protected:
 
     Result             FindCell( const double& t, const avtVector& p ) const;

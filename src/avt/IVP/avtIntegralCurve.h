@@ -143,12 +143,17 @@ class IVP_API ICStatus
     }
     bool Terminated() const
     {
-        return Error() || TerminationMet() ||
-            ExitedSpatialBoundary()||ExitedTemporalBoundary();
+        return (Error() ||
+                TerminationMet() ||
+                ExitedSpatialBoundary() ||
+                ExitedTemporalBoundary() ||
+                StepSizeUnderflow());
     }
     bool Integrateable() const
     {
-        return !Terminated() && !EncounteredSpatialBoundary() && !EncounteredTemporalBoundary();
+        return (!Terminated() &&
+                !EncounteredSpatialBoundary() &&
+                !EncounteredTemporalBoundary());
     }
     bool OutsideBoundary() const {return EncounteredSpatialBoundary()||EncounteredTemporalBoundary();}
     bool TerminationMet() const {return CheckBit(TERMINATION_MET);}
@@ -156,6 +161,7 @@ class IVP_API ICStatus
     bool EncounteredTemporalBoundary() const {return CheckBit(ENCOUNTERED_TEMPORAL_BOUNDARY);}
     bool ExitedSpatialBoundary() const {return CheckBit(EXITED_SPATIAL_BOUNDARY);}
     bool ExitedTemporalBoundary() const {return CheckBit(EXITED_TEMPORAL_BOUNDARY);}
+    bool StepSizeUnderflow() const {return CheckBit(STEPSIZE_UNDERFLOW);}
     bool NumericalError() const {return CheckBit(NUMERICAL_ERROR);}
     bool BadStepError() const {return CheckBit(BAD_STEP_ERROR);}
 
@@ -169,6 +175,7 @@ class IVP_API ICStatus
     void SetAtTemporalBoundary() {SetBit(ENCOUNTERED_TEMPORAL_BOUNDARY);}
     void SetExitSpatialBoundary() {SetBit(EXITED_SPATIAL_BOUNDARY);}
     void SetExitTemporalBoundary() {SetBit(EXITED_TEMPORAL_BOUNDARY);}
+    void SetStepSizeUnderflow() {SetBit(STEPSIZE_UNDERFLOW);}
     void SetNumericalError() {SetError(); SetBit(NUMERICAL_ERROR);}
     void SetBadStepError() {SetError(); SetBit(BAD_STEP_ERROR);}
 
@@ -181,6 +188,7 @@ class IVP_API ICStatus
     void ClearAtTemporalBoundary() {ClearBit(ENCOUNTERED_TEMPORAL_BOUNDARY);}
     void ClearExitTemporalBoundary() {ClearBit(EXITED_TEMPORAL_BOUNDARY);}
     void ClearTemporalBoundary(){ ClearAtTemporalBoundary(); ClearExitTemporalBoundary();}
+    void ClearStepSizeUnderflow() {ClearBit(STEPSIZE_UNDERFLOW);}
     void ClearNumericalError() {ClearBit(NUMERICAL_ERROR);}
     void ClearBadStepError() {ClearBit(BAD_STEP_ERROR);}
 
@@ -193,8 +201,9 @@ class IVP_API ICStatus
     //2:   termination met
     //3,4: at spatial/temporal boundary
     //5,6: exit spatial/temporal
-    //7:   numerical error
-    //8:   bad step error
+    //7:   step size underflow
+    //8:   numerical error
+    //16:  bad step error
     unsigned long status;
 
     enum ICStatusBits
@@ -206,8 +215,9 @@ class IVP_API ICStatus
         ENCOUNTERED_TEMPORAL_BOUNDARY = 0x0010,
         EXITED_SPATIAL_BOUNDARY       = 0x0020,
         EXITED_TEMPORAL_BOUNDARY      = 0x0040,
-        NUMERICAL_ERROR               = 0x0080,
-        BAD_STEP_ERROR                = 0x0100
+        STEPSIZE_UNDERFLOW            = 0x0080,
+        NUMERICAL_ERROR               = 0x0100,
+        BAD_STEP_ERROR                = 0x0200
     };
 
     void SetBit(const ICStatusBits &b) {status |= b;}
@@ -437,6 +447,8 @@ inline std::ostream& operator<<(std::ostream& out,
         out<<"ExitSpatialBoundary ";
     if (status.ExitedTemporalBoundary())
         out<<"ExitTemporalBoundary ";
+    if (status.StepSizeUnderflow())
+        out<<"StepSizeUnderflow ";
     if (status.NumericalError())
         out<<"NumericalError ";
     if (status.BadStepError())

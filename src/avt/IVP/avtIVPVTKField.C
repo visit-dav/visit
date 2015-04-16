@@ -41,14 +41,15 @@
 // ************************************************************************* //
 
 #include <avtIVPVTKField.h>
-#include <iostream>
-#include <limits>
 
 #include <vtkUnsignedCharArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkFieldData.h>
+#include <vtkDoubleArray.h>
 #include <vtkGenericCell.h>
+
 #include <DebugStream.h>
 
 // ****************************************************************************
@@ -93,6 +94,23 @@ avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator )
 
     std::fill( sclData, sclData+256, (vtkDataArray*)NULL );
     std::fill( sclCellBased, sclCellBased+256, false );
+
+    // Periodic boundaries are posible.
+    vtkFieldData *fieldData = ds->GetFieldData();
+
+    vtkDoubleArray *boundaries = 
+      (vtkDoubleArray *) fieldData->GetAbstractArray("Periodic Boundaries");
+    
+    if( boundaries )
+    {
+      hasPeriodicBoundaries = true;
+      periodic_boundary_x = boundaries->GetValue(0);
+      periodic_boundary_y = boundaries->GetValue(1);
+      periodic_boundary_z = boundaries->GetValue(2);
+    }
+    else
+      hasPeriodicBoundaries =
+        periodic_boundary_x = periodic_boundary_y = periodic_boundary_z = 0;
 }
 
 // ****************************************************************************
@@ -166,7 +184,33 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
     if (pos != lastPos)
     {
         lastPos  = pos;
-        lastCell = loc->FindCell(&pos.x, &lastWeights, false);
+
+        if( hasPeriodicBoundaries )
+        {
+          avtVector pt = pos;
+
+          if( periodic_boundary_x > 0 )
+          {
+            while(                pt.x < 0    ) pt.x += periodic_boundary_x;
+            while( periodic_boundary_x < pt.x ) pt.x -= periodic_boundary_x;
+          }
+
+          if( periodic_boundary_y > 0 )
+          {
+            while(                pt.y < 0   ) pt.y += periodic_boundary_y;
+            while( periodic_boundary_y < pt.y ) pt.y -= periodic_boundary_y;
+          }
+
+          if( periodic_boundary_z > 0 )
+          {
+            while(                pt.z < 0    ) pt.z += periodic_boundary_z;
+            while( periodic_boundary_z < pt.z ) pt.z -= periodic_boundary_z;
+          }
+
+          lastCell = loc->FindCell(&pt.x, &lastWeights, false);
+        }
+        else
+          lastCell = loc->FindCell(&pos.x, &lastWeights, false);
     }
     
     return (lastCell != -1 ? OK : OUTSIDE_SPATIAL);
@@ -194,134 +238,13 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
 //
 // ****************************************************************************
 
-//#define DOUBLE_GYRE_1
-//#define DOUBLE_GYRE_2
-//#define ABC_FLOW_STEADY_STATE
-//#define ABC_FLOW_APERIODIC_1
-//#define ABC_FLOW_APERIODIC_2
-
 avtIVPField::Result
 avtIVPVTKField::operator()(const double &t, const avtVector &p, avtVector &retV) const
 {
-#if defined(DOUBLE_GYRE_1)
-
-  //#warning "Compiling avtIVPVTKField::operator DOUBLE_GYRE_1 test code"
-
-  // Test code for a double gyre.
-  double xi = p.x;
-  double yi = p.y;
-
-  double A = 0.25;
-  double epsilon = .25;
-  double omega = 2.0 * M_PI;
-
-  double at = epsilon * sin(omega * t);
-  double bt = 1.0 - 2.0 * at;
-
-  double fxt = (at * xi + bt) * xi;
-  double dfx = (2.0 * at * xi + bt);
-  
-  retV.x = -M_PI * A * sin(M_PI * fxt) * cos(M_PI * yi);
-  retV.y =  M_PI * A * cos(M_PI * fxt) * sin(M_PI * yi) * dfx;
-  retV.z = 0;
-
-#elif defined(DOUBLE_GYRE_2)
-
-  //#warning "Compiling avtIVPVTKField::operator DOUBLE_GYRE_2 test code"
-
-  // Test code for a double gyre.
-  double xi = p.x;
-  double yi = p.y;
-
-  double A = 0.1;
-  double epsilon = 0.1;
-  double omega = 2.0 * M_PI / 10.0;
-
-  double at = epsilon * sin(omega * t);
-  double bt = 1.0  - 2.0 * at;
-
-  double fxt = (at * xi + bt) * xi;
-  double dfx = (2.0 * at * xi + bt);
-
-  retV.x = -M_PI * A * sin(M_PI * fxt) * cos(M_PI * yi);
-  retV.y =  M_PI * A * cos(M_PI * fxt) * sin(M_PI * yi) * dfx;
-  retV.z = 0;
-
-#elif defined(ABC_FLOW_STEADY_STATE)
-
-  //#warning "Compiling avtIVPVTKField::operator ABC_FLOW_STEADY_STATE test code"
-
-  // Test code for the ABC.
-  double xi = p.x * 2.0 * M_PI / 100.0;
-  double yi = p.y * 2.0 * M_PI / 100.0;
-  double zi = p.z * 2.0 * M_PI / 100.0;
-
-//  std::cerr << xi << "  " << yi << "  " << zi << "  " << std::endl;
-
-  double A = sqrt(3.0);
-  double B = sqrt(2.0);
-  double C = 1.0;
- 
-  retV.x = A * sin(zi) + C * cos(yi);
-  retV.y = B * sin(xi) + A * cos(zi);
-  retV.z = C * sin(yi) + B * cos(xi);
-
-#elif defined(ABC_FLOW_APERIODIC_1)
-
-  //#warning "Compiling avtIVPVTKField::operator ABC_FLOW_APERIODIC_1 test code"
-
-  // Test code for the ABC.
-  double xi = p.x * 2.0 * M_PI / 100.0;
-  double yi = p.y * 2.0 * M_PI / 100.0;
-  double zi = p.z * 2.0 * M_PI / 100.0;
-
-  double A = sqrt(3.0);
-  double B = sqrt(2.0);
-  double C = 1.0;
-   
-  double c0 = 0.15;
-  double c1 = 0.05;
-  double c2 = 0.12;
-
-  double signalA = 0;
-  double signalB = B*c0*tanh(c1*t)*cos((c2*t)^2);
-  double signalC = C*c0*tanh(c1*t)*sin((c2*t)^2);
-   
-  retV.x = (A+signalA) * sin(zi) + (C+signalC) * cos(yi);
-  retV.y = (B+signalB) * sin(xi) + (A+signalA) * cos(zi);
-  retV.z = (C+signalC) * sin(yi) + (B+signalB) * cos(xi);
-
-#elif defined(ABC_FLOW_APERIODIC_2)
-
-  //#warning "Compiling avtIVPVTKField::operator ABC_FLOW_APERIODIC_2 test code"
-
-  // Test code for the ABC.
-  double xi = p.x * 2.0 * M_PI / 100.0;
-  double yi = p.y * 2.0 * M_PI / 100.0;
-  double zi = p.z * 2.0 * M_PI / 100.0;
-
-   double A = sqrt(3.0);
-   double B = sqrt(2.0);
-   double C = 1.0;
-   
-   double c0 = 0.1;
-   double c1 = 0.02;
-   double c2 = 0.12;
-
-   double signalA = A*c0*tanh(c1*t)*sin((c2*t)^2);
-   double signalB = 0;
-   double signalC = 0;
-   
-   retV.x = (A+signalA) * sin(zi) + (C+signalC) * cos(yi);
-   retV.y = (B+signalB) * sin(xi) + (A+signalA) * cos(zi);
-   retV.z = (C+signalC) * sin(yi) + (B+signalB) * cos(xi);
- 
-#else
     if (FindCell(t, p) != OK || !FindValue(velData, retV))
         return OUTSIDE_SPATIAL;
-#endif    
-
-    return OK;
+    else
+        return OK;
 }
 
 // ****************************************************************************
@@ -651,4 +574,43 @@ avtIVPVTKField::GetTimeRange(double range[2]) const
 {
     range[0] = -std::numeric_limits<double>::infinity();
     range[1] =  std::numeric_limits<double>::infinity();
+}
+
+// ****************************************************************************
+//  Method: avtIVPVTKField::HasPeriodicBoundaries
+//
+//  Purpose:
+//      
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2015
+//
+// ****************************************************************************
+
+bool
+avtIVPVTKField::HasPeriodicBoundaries() const
+{
+  return hasPeriodicBoundaries;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPVTKField::HasPeriodicBoundaries
+//
+//  Purpose:
+//      
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2015
+//
+// ****************************************************************************
+
+void
+avtIVPVTKField::GetBoundaries( double& x,
+                               double& y,
+                               double& z) const
+{
+  x = periodic_boundary_x;
+  y = periodic_boundary_y;
+  z = periodic_boundary_z;
 }

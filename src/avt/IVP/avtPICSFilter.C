@@ -464,7 +464,6 @@ avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
     }
     else
     {
-        debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<endl;
         ds = dataSets[domain.domain];
     }
     
@@ -861,7 +860,9 @@ avtPICSFilter::BlockLoaded(BlockIDType &domain) const
 #else
     val = true;
 #endif
+
     debug1<<"BlockLoaded("<<domain<<")= "<<val<<endl;
+
     return val;
 }
 

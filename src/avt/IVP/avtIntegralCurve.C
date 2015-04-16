@@ -277,6 +277,16 @@ avtIntegralCurve::Advance(avtIVPField *field)
         return numStepsTaken;
     }
 
+    // Some of the test PICS flow fields have periodic boundaries.
+    if( field->HasPeriodicBoundaries() )
+    {
+      double x, y, z;
+
+      field->GetBoundaries( x, y, z );
+
+      ivp->SetBoundaries( x, y, z );
+    }
+
     // For a directionless field the initial velocity direction needs
     // to be known.
     if( field->GetDirectionless() )
@@ -477,6 +487,17 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
             // Retry with halved stepsize.
             ivp->SetNextStepSize(h/2.0);
+        }
+        else if (result == avtIVPSolver::STEPSIZE_UNDERFLOW)
+        {
+            // If we get here, the integration step size was too small
+            // as it approached a spatial or temporal boundary.
+            if (DebugStream::Level5())
+            {
+                debug5 << "avtIntegralCurve::Advance(): "
+                       << "step size underflow during step, finished\n";
+            }
+            status.SetStepSizeUnderflow();
         }
         else
         {

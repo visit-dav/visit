@@ -54,9 +54,15 @@
 //
 // ****************************************************************************
 
-avtIVPSolver::avtIVPSolver() : convertToCartesian(false), convertToCylindrical(false),
-                               order(1), yCur(avtVector()), vCur(avtVector()), h(1e-5), h_max(1e-5),
-                               tol(1e-8), t(0.0), period(0), baseTime(0), maxTime(1),
+avtIVPSolver::avtIVPSolver() : convertToCartesian(false),
+                               convertToCylindrical(false),
+                               order(1),
+                               yCur(avtVector()), vCur(avtVector()),
+                               h(1e-5), h_max(1e-5), tol(1e-8), t(0.0),
+                               periodic_boundary_x(0),
+                               periodic_boundary_y(0),
+                               periodic_boundary_z(0),
+                               period(0), baseTime(0), maxTime(1),
                                direction(DIRECTION_BACKWARD)
 {
 }
@@ -76,22 +82,27 @@ avtIVPSolver::avtIVPSolver() : convertToCartesian(false), convertToCylindrical(f
 avtVector 
 avtIVPSolver::GetCurrentY() const
 {
-    // double val = 100.0;
+    avtVector pt = yCur;
 
-    // avtVector pt = yCur;
-  
-    // while( pt.x < 0    ) pt.x += val;
-    // while(  val < pt.x ) pt.x -= val;
-  
-    // while( pt.y < 0   ) pt.y += val;
-    // while(  val < pt.y ) pt.y -= val;
-  
-    // while( pt.z < 0    ) pt.z += val;
-    // while(  val < pt.z ) pt.z -= val;
+    if( periodic_boundary_x > 0 )
+    {
+      while(                pt.x < 0    ) pt.x += periodic_boundary_x;
+      while( periodic_boundary_x < pt.x ) pt.x -= periodic_boundary_x;
+    }
 
-    // return pt;
+    if( periodic_boundary_y > 0 )
+    {
+      while(                pt.y < 0   ) pt.y += periodic_boundary_y;
+      while( periodic_boundary_y < pt.y ) pt.y -= periodic_boundary_y;
+    }
 
-    return yCur;
+    if( periodic_boundary_z > 0 )
+    {
+      while(                pt.z < 0    ) pt.z += periodic_boundary_z;
+      while( periodic_boundary_z < pt.z ) pt.z -= periodic_boundary_z;
+    }
+
+    return pt;
 }
 
 
@@ -390,6 +401,45 @@ void
 avtIVPSolver::SetToCylindrical(bool val)
 {
     convertToCylindrical = val;
+}
+
+
+// ****************************************************************************
+//  Method: avtIVPSolver::GetBoundary
+//
+//  Purpose:
+//      Gets the periodic boundary.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2015
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::GetBoundaries(double &x, double &y, double &z ) const
+{
+  x = periodic_boundary_x;
+  y = periodic_boundary_y;
+  z = periodic_boundary_z;
+}
+
+// ****************************************************************************
+//  Method: avtIVPSolver::SetBoundary
+//
+//  Purpose:
+//      Sets for periodic boundary.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   April 16, 2015
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::SetBoundaries(const double &x, const double &y, const double &z )
+{
+  periodic_boundary_x = x;
+  periodic_boundary_y = y;
+  periodic_boundary_z = z;
 }
 
 
