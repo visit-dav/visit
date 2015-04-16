@@ -743,6 +743,7 @@ void PoincareAttributes::Init()
     pathlinesPeriod = 0;
     pathlinesCMFE = POS_CMFE;
     issueTerminationWarnings = true;
+    issueStepsizeWarnings = true;
     issueStiffnessWarnings = true;
     issueCriticalPointsWarnings = true;
     criticalPointThreshold = 0.001;
@@ -852,6 +853,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     pathlinesPeriod = obj.pathlinesPeriod;
     pathlinesCMFE = obj.pathlinesCMFE;
     issueTerminationWarnings = obj.issueTerminationWarnings;
+    issueStepsizeWarnings = obj.issueStepsizeWarnings;
     issueStiffnessWarnings = obj.issueStiffnessWarnings;
     issueCriticalPointsWarnings = obj.issueCriticalPointsWarnings;
     criticalPointThreshold = obj.criticalPointThreshold;
@@ -1107,6 +1109,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (pathlinesPeriod == obj.pathlinesPeriod) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
             (issueTerminationWarnings == obj.issueTerminationWarnings) &&
+            (issueStepsizeWarnings == obj.issueStepsizeWarnings) &&
             (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
             (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings) &&
             (criticalPointThreshold == obj.criticalPointThreshold));
@@ -1351,6 +1354,7 @@ PoincareAttributes::SelectAll()
     Select(ID_pathlinesPeriod,                   (void *)&pathlinesPeriod);
     Select(ID_pathlinesCMFE,                     (void *)&pathlinesCMFE);
     Select(ID_issueTerminationWarnings,          (void *)&issueTerminationWarnings);
+    Select(ID_issueStepsizeWarnings,             (void *)&issueStepsizeWarnings);
     Select(ID_issueStiffnessWarnings,            (void *)&issueStiffnessWarnings);
     Select(ID_issueCriticalPointsWarnings,       (void *)&issueCriticalPointsWarnings);
     Select(ID_criticalPointThreshold,            (void *)&criticalPointThreshold);
@@ -1826,6 +1830,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("issueTerminationWarnings", issueTerminationWarnings));
     }
 
+    if(completeSave || !FieldsEqual(ID_issueStepsizeWarnings, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("issueStepsizeWarnings", issueStepsizeWarnings));
+    }
+
     if(completeSave || !FieldsEqual(ID_issueStiffnessWarnings, &defaultObject))
     {
         addToParent = true;
@@ -2236,6 +2246,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("issueTerminationWarnings")) != 0)
         SetIssueTerminationWarnings(node->AsBool());
+    if((node = searchNode->GetNode("issueStepsizeWarnings")) != 0)
+        SetIssueStepsizeWarnings(node->AsBool());
     if((node = searchNode->GetNode("issueStiffnessWarnings")) != 0)
         SetIssueStiffnessWarnings(node->AsBool());
     if((node = searchNode->GetNode("issueCriticalPointsWarnings")) != 0)
@@ -2768,6 +2780,13 @@ PoincareAttributes::SetIssueTerminationWarnings(bool issueTerminationWarnings_)
 }
 
 void
+PoincareAttributes::SetIssueStepsizeWarnings(bool issueStepsizeWarnings_)
+{
+    issueStepsizeWarnings = issueStepsizeWarnings_;
+    Select(ID_issueStepsizeWarnings, (void *)&issueStepsizeWarnings);
+}
+
+void
 PoincareAttributes::SetIssueStiffnessWarnings(bool issueStiffnessWarnings_)
 {
     issueStiffnessWarnings = issueStiffnessWarnings_;
@@ -3273,6 +3292,12 @@ PoincareAttributes::GetIssueTerminationWarnings() const
 }
 
 bool
+PoincareAttributes::GetIssueStepsizeWarnings() const
+{
+    return issueStepsizeWarnings;
+}
+
+bool
 PoincareAttributes::GetIssueStiffnessWarnings() const
 {
     return issueStiffnessWarnings;
@@ -3433,6 +3458,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_pathlinesPeriod:                   return "pathlinesPeriod";
     case ID_pathlinesCMFE:                     return "pathlinesCMFE";
     case ID_issueTerminationWarnings:          return "issueTerminationWarnings";
+    case ID_issueStepsizeWarnings:             return "issueStepsizeWarnings";
     case ID_issueStiffnessWarnings:            return "issueStiffnessWarnings";
     case ID_issueCriticalPointsWarnings:       return "issueCriticalPointsWarnings";
     case ID_criticalPointThreshold:            return "criticalPointThreshold";
@@ -3533,6 +3559,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_pathlinesPeriod:                   return FieldType_double;
     case ID_pathlinesCMFE:                     return FieldType_enum;
     case ID_issueTerminationWarnings:          return FieldType_bool;
+    case ID_issueStepsizeWarnings:             return FieldType_bool;
     case ID_issueStiffnessWarnings:            return FieldType_bool;
     case ID_issueCriticalPointsWarnings:       return FieldType_bool;
     case ID_criticalPointThreshold:            return FieldType_double;
@@ -3633,6 +3660,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_pathlinesPeriod:                   return "double";
     case ID_pathlinesCMFE:                     return "enum";
     case ID_issueTerminationWarnings:          return "bool";
+    case ID_issueStepsizeWarnings:             return "bool";
     case ID_issueStiffnessWarnings:            return "bool";
     case ID_issueCriticalPointsWarnings:       return "bool";
     case ID_criticalPointThreshold:            return "double";
@@ -4045,6 +4073,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_issueTerminationWarnings:
         {  // new scope
         retval = (issueTerminationWarnings == obj.issueTerminationWarnings);
+        }
+        break;
+    case ID_issueStepsizeWarnings:
+        {  // new scope
+        retval = (issueStepsizeWarnings == obj.issueStepsizeWarnings);
         }
         break;
     case ID_issueStiffnessWarnings:

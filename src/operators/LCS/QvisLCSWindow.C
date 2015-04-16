@@ -773,7 +773,7 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     issueWarningForBoundary = new QCheckBox(central);
     connect(issueWarningForBoundary, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForBoundaryChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForBoundary, 7, 0);
+    warningsGLayout->addWidget(issueWarningForBoundary, 1, 0);
     QLabel *boundaryLabel = new QLabel(tr("Issue warning if the boundary is reached."), warningsGrp);
     warningsGLayout->addWidget(boundaryLabel, 1, 1, 1, 2);
 
@@ -784,33 +784,40 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     QLabel *maxStepsLabel = new QLabel(tr("Issue warning when the maximum number of steps is reached."), warningsGrp);
     warningsGLayout->addWidget(maxStepsLabel, 2, 1, 1, 2);
 
+    issueWarningForStepsize = new QCheckBox(central);
+    connect(issueWarningForStepsize, SIGNAL(toggled(bool)),
+            this, SLOT(issueWarningForStepsizeChanged(bool)));
+    warningsGLayout->addWidget(issueWarningForStepsize, 3, 0);
+    QLabel *stepsizeLabel = new QLabel(tr("Issue warning when a step size underflow is detected."), warningsGrp);
+    warningsGLayout->addWidget(stepsizeLabel, 3, 1, 1, 2);
+ 
     issueWarningForStiffness = new QCheckBox(central);
     connect(issueWarningForStiffness, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForStiffnessChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForStiffness, 1, 0);
-    QLabel *stiffnessLabel = new QLabel(tr("Issue warning when stiffness is detected."), warningsGrp);
-    warningsGLayout->addWidget(stiffnessLabel, 3, 1, 1, 2);
+    warningsGLayout->addWidget(issueWarningForStiffness, 4, 0);
+    QLabel *stiffnessLabel = new QLabel(tr("Issue warning when a stiffness condition is detected."), warningsGrp);
+    warningsGLayout->addWidget(stiffnessLabel, 4, 1, 1, 2);
     QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel1, 4, 1, 1, 2);
+    warningsGLayout->addWidget(stiffnessDescLabel1, 5, 1, 1, 2);
     QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
-    warningsGLayout->addWidget(stiffnessDescLabel2, 5, 1, 1, 2);
+    warningsGLayout->addWidget(stiffnessDescLabel2, 6, 1, 1, 2);
     
     issueWarningForCriticalPoints = new QCheckBox(central);
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
-    warningsGLayout->addWidget(issueWarningForCriticalPoints, 6, 0);
+    warningsGLayout->addWidget(issueWarningForCriticalPoints, 7, 0);
     QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
-    warningsGLayout->addWidget(critPointLabel, 6, 1, 1, 2);
+    warningsGLayout->addWidget(critPointLabel, 7, 1, 1, 2);
     QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
-    warningsGLayout->addWidget(critPointDescLabel, 7, 1, 1, 2);
+    warningsGLayout->addWidget(critPointDescLabel, 8, 1, 1, 2);
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-    warningsGLayout->addWidget(criticalPointThresholdLabel, 8, 1);
+    warningsGLayout->addWidget(criticalPointThresholdLabel, 9, 1);
     criticalPointThreshold = new QLineEdit(warningsGrp);
     criticalPointThreshold->setAlignment(Qt::AlignLeft);
     connect(criticalPointThreshold, SIGNAL(returnPressed()),
             this, SLOT(criticalPointThresholdProcessText()));
-    warningsGLayout->addWidget(criticalPointThreshold, 8, 2);
+    warningsGLayout->addWidget(criticalPointThreshold, 9, 2);
 }
 
 
@@ -1292,6 +1299,12 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             criticalPointThreshold->setEnabled(atts->GetIssueCriticalPointsWarnings());
             criticalPointThresholdLabel->setEnabled(atts->GetIssueCriticalPointsWarnings());
             issueWarningForCriticalPoints->blockSignals(false);
+            break;
+
+        case LCSAttributes::ID_issueStepsizeWarnings:
+            issueWarningForStepsize->blockSignals(true);
+            issueWarningForStepsize->setChecked(atts->GetIssueStepsizeWarnings());
+            issueWarningForStepsize->blockSignals(false);
             break;
 
         case LCSAttributes::ID_issueStiffnessWarnings:
@@ -2206,6 +2219,13 @@ void
 QvisLCSWindow::issueWarningForMaxStepsChanged(bool val)
 {
     atts->SetIssueTerminationWarnings(val);
+    Apply();
+}
+
+void
+QvisLCSWindow::issueWarningForStepsizeChanged(bool val)
+{
+    atts->SetIssueStepsizeWarnings(val);
     Apply();
 }
 

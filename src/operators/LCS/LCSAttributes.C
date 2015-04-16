@@ -644,6 +644,7 @@ void LCSAttributes::Init()
     issueAdvectionWarnings = true;
     issueBoundaryWarnings = true;
     issueTerminationWarnings = true;
+    issueStepsizeWarnings = true;
     issueStiffnessWarnings = true;
     issueCriticalPointsWarnings = true;
     criticalPointThreshold = 0.001;
@@ -731,6 +732,7 @@ void LCSAttributes::Copy(const LCSAttributes &obj)
     issueAdvectionWarnings = obj.issueAdvectionWarnings;
     issueBoundaryWarnings = obj.issueBoundaryWarnings;
     issueTerminationWarnings = obj.issueTerminationWarnings;
+    issueStepsizeWarnings = obj.issueStepsizeWarnings;
     issueStiffnessWarnings = obj.issueStiffnessWarnings;
     issueCriticalPointsWarnings = obj.issueCriticalPointsWarnings;
     criticalPointThreshold = obj.criticalPointThreshold;
@@ -962,6 +964,7 @@ LCSAttributes::operator == (const LCSAttributes &obj) const
             (issueAdvectionWarnings == obj.issueAdvectionWarnings) &&
             (issueBoundaryWarnings == obj.issueBoundaryWarnings) &&
             (issueTerminationWarnings == obj.issueTerminationWarnings) &&
+            (issueStepsizeWarnings == obj.issueStepsizeWarnings) &&
             (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
             (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings) &&
             (criticalPointThreshold == obj.criticalPointThreshold));
@@ -1173,6 +1176,7 @@ LCSAttributes::SelectAll()
     Select(ID_issueAdvectionWarnings,            (void *)&issueAdvectionWarnings);
     Select(ID_issueBoundaryWarnings,             (void *)&issueBoundaryWarnings);
     Select(ID_issueTerminationWarnings,          (void *)&issueTerminationWarnings);
+    Select(ID_issueStepsizeWarnings,             (void *)&issueStepsizeWarnings);
     Select(ID_issueStiffnessWarnings,            (void *)&issueStiffnessWarnings);
     Select(ID_issueCriticalPointsWarnings,       (void *)&issueCriticalPointsWarnings);
     Select(ID_criticalPointThreshold,            (void *)&criticalPointThreshold);
@@ -1512,6 +1516,12 @@ LCSAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
     {
         addToParent = true;
         node->AddNode(new DataNode("issueTerminationWarnings", issueTerminationWarnings));
+    }
+
+    if(completeSave || !FieldsEqual(ID_issueStepsizeWarnings, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("issueStepsizeWarnings", issueStepsizeWarnings));
     }
 
     if(completeSave || !FieldsEqual(ID_issueStiffnessWarnings, &defaultObject))
@@ -1880,6 +1890,8 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
         SetIssueBoundaryWarnings(node->AsBool());
     if((node = searchNode->GetNode("issueTerminationWarnings")) != 0)
         SetIssueTerminationWarnings(node->AsBool());
+    if((node = searchNode->GetNode("issueStepsizeWarnings")) != 0)
+        SetIssueStepsizeWarnings(node->AsBool());
     if((node = searchNode->GetNode("issueStiffnessWarnings")) != 0)
         SetIssueStiffnessWarnings(node->AsBool());
     if((node = searchNode->GetNode("issueCriticalPointsWarnings")) != 0)
@@ -2258,6 +2270,13 @@ LCSAttributes::SetIssueTerminationWarnings(bool issueTerminationWarnings_)
 }
 
 void
+LCSAttributes::SetIssueStepsizeWarnings(bool issueStepsizeWarnings_)
+{
+    issueStepsizeWarnings = issueStepsizeWarnings_;
+    Select(ID_issueStepsizeWarnings, (void *)&issueStepsizeWarnings);
+}
+
+void
 LCSAttributes::SetIssueStiffnessWarnings(bool issueStiffnessWarnings_)
 {
     issueStiffnessWarnings = issueStiffnessWarnings_;
@@ -2613,6 +2632,12 @@ LCSAttributes::GetIssueTerminationWarnings() const
 }
 
 bool
+LCSAttributes::GetIssueStepsizeWarnings() const
+{
+    return issueStepsizeWarnings;
+}
+
+bool
 LCSAttributes::GetIssueStiffnessWarnings() const
 {
     return issueStiffnessWarnings;
@@ -2733,6 +2758,7 @@ LCSAttributes::GetFieldName(int index) const
     case ID_issueAdvectionWarnings:            return "issueAdvectionWarnings";
     case ID_issueBoundaryWarnings:             return "issueBoundaryWarnings";
     case ID_issueTerminationWarnings:          return "issueTerminationWarnings";
+    case ID_issueStepsizeWarnings:             return "issueStepsizeWarnings";
     case ID_issueStiffnessWarnings:            return "issueStiffnessWarnings";
     case ID_issueCriticalPointsWarnings:       return "issueCriticalPointsWarnings";
     case ID_criticalPointThreshold:            return "criticalPointThreshold";
@@ -2811,6 +2837,7 @@ LCSAttributes::GetFieldType(int index) const
     case ID_issueAdvectionWarnings:            return FieldType_bool;
     case ID_issueBoundaryWarnings:             return FieldType_bool;
     case ID_issueTerminationWarnings:          return FieldType_bool;
+    case ID_issueStepsizeWarnings:             return FieldType_bool;
     case ID_issueStiffnessWarnings:            return FieldType_bool;
     case ID_issueCriticalPointsWarnings:       return FieldType_bool;
     case ID_criticalPointThreshold:            return FieldType_double;
@@ -2889,6 +2916,7 @@ LCSAttributes::GetFieldTypeName(int index) const
     case ID_issueAdvectionWarnings:            return "bool";
     case ID_issueBoundaryWarnings:             return "bool";
     case ID_issueTerminationWarnings:          return "bool";
+    case ID_issueStepsizeWarnings:             return "bool";
     case ID_issueStiffnessWarnings:            return "bool";
     case ID_issueCriticalPointsWarnings:       return "bool";
     case ID_criticalPointThreshold:            return "double";
@@ -3191,6 +3219,11 @@ LCSAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_issueTerminationWarnings:
         {  // new scope
         retval = (issueTerminationWarnings == obj.issueTerminationWarnings);
+        }
+        break;
+    case ID_issueStepsizeWarnings:
+        {  // new scope
+        retval = (issueStepsizeWarnings == obj.issueStepsizeWarnings);
         }
         break;
     case ID_issueStiffnessWarnings:

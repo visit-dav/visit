@@ -213,8 +213,10 @@ avtPoincareFilter::avtPoincareFilter() :
     randomSeed = 0;
 
     issueWarningForMaxStepsTermination = true;
+    issueWarningForStepsize = true;
     issueWarningForStiffness = true;
     issueWarningForCriticalPoints = true;
+
     criticalPointThreshold = 1e-3;
 
     planes.resize(1);
@@ -515,6 +517,7 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
     maxTime = atts.GetTermTime();
 
     IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
+    IssueWarningForStepsize(atts.GetIssueStepsizeWarnings());
     IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
     IssueWarningForCriticalPoints(atts.GetIssueCriticalPointsWarnings(), atts.GetCriticalPointThreshold());
 
@@ -1091,6 +1094,7 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     int numICs = (int)ics.size();
 
     int numEarlyTerminators = 0;
+    int numStepSize = 0;
     int numStiff = 0;
     int numCritPts = 0;
 
@@ -1109,9 +1113,12 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 
         if (ic->TerminatedBecauseOfMaxSteps())
           numEarlyTerminators++;
+        
+        if (ic->status.StepSizeUnderflow())
+          numStepSize++;
 
         if (ic->EncounteredNumericalProblems())
-            numStiff++;
+          numStiff++;
     }
 
     char str[4096] = "";
@@ -1150,6 +1157,21 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                      "additional steps will _not_ help this problem and only cause execution to "
                      "take longer.  If you want to disable this message, you can do this under "
                      "the Advanced tab.\n", str, numCritPts);
+        }
+    }
+
+    if (issueWarningForStepsize)
+    {
+        SumIntAcrossAllProcessors(numStepSize);
+        if (numStepSize > 0)
+        {
+            SNPRINTF(str, 4096, 
+                     "%s\n%d of your integral curves were unable to advect because of the \"stepsize\".  "
+                     "Often the step size becomes too small when appraoching a spatial "
+                     "or temporal boundary. This especially happens when the step size matches "
+                     "the temporal spacing. This condition is referred to as stepsize underflow and "
+                     "VisIt stops advecting in this case.  If you want to disable this message, "
+                     "you can do this under the Advanced tab.\n", str, numStepSize);
         }
     }
 

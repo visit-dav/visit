@@ -289,6 +289,9 @@
       <Field name="issueTerminationWarnings" label="Issue Warning When Termination Criteria Is Not Met" type="bool">
         true
       </Field>
+      <Field name="issueStepsizeWarnings" label="Issue warnings when the stepsize is too small" type="bool">
+        true
+      </Field>
       <Field name="issueStiffnessWarnings" label="Issue warnings when stiffness is encountered" type="bool">
         true
       </Field>

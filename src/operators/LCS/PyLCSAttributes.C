@@ -545,6 +545,11 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetIssueStepsizeWarnings())
+        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetIssueStiffnessWarnings())
         SNPRINTF(tmpStr, 1000, "%sissueStiffnessWarnings = 1\n", prefix);
     else
@@ -2052,6 +2057,30 @@ LCSAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LCSAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the issueStepsizeWarnings in the object.
+    obj->data->SetIssueStepsizeWarnings(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LCSAttributes_GetIssueStepsizeWarnings(PyObject *self, PyObject *args)
+{
+    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetIssueStepsizeWarnings()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 LCSAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)self;
@@ -2229,6 +2258,8 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
     {"GetIssueBoundaryWarnings", LCSAttributes_GetIssueBoundaryWarnings, METH_VARARGS},
     {"SetIssueTerminationWarnings", LCSAttributes_SetIssueTerminationWarnings, METH_VARARGS},
     {"GetIssueTerminationWarnings", LCSAttributes_GetIssueTerminationWarnings, METH_VARARGS},
+    {"SetIssueStepsizeWarnings", LCSAttributes_SetIssueStepsizeWarnings, METH_VARARGS},
+    {"GetIssueStepsizeWarnings", LCSAttributes_GetIssueStepsizeWarnings, METH_VARARGS},
     {"SetIssueStiffnessWarnings", LCSAttributes_SetIssueStiffnessWarnings, METH_VARARGS},
     {"GetIssueStiffnessWarnings", LCSAttributes_GetIssueStiffnessWarnings, METH_VARARGS},
     {"SetIssueCriticalPointsWarnings", LCSAttributes_SetIssueCriticalPointsWarnings, METH_VARARGS},
@@ -2480,6 +2511,8 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
         return LCSAttributes_GetIssueBoundaryWarnings(self, NULL);
     if(strcmp(name, "issueTerminationWarnings") == 0)
         return LCSAttributes_GetIssueTerminationWarnings(self, NULL);
+    if(strcmp(name, "issueStepsizeWarnings") == 0)
+        return LCSAttributes_GetIssueStepsizeWarnings(self, NULL);
     if(strcmp(name, "issueStiffnessWarnings") == 0)
         return LCSAttributes_GetIssueStiffnessWarnings(self, NULL);
     if(strcmp(name, "issueCriticalPointsWarnings") == 0)
@@ -2602,6 +2635,8 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LCSAttributes_SetIssueBoundaryWarnings(self, tuple);
     else if(strcmp(name, "issueTerminationWarnings") == 0)
         obj = LCSAttributes_SetIssueTerminationWarnings(self, tuple);
+    else if(strcmp(name, "issueStepsizeWarnings") == 0)
+        obj = LCSAttributes_SetIssueStepsizeWarnings(self, tuple);
     else if(strcmp(name, "issueStiffnessWarnings") == 0)
         obj = LCSAttributes_SetIssueStiffnessWarnings(self, tuple);
     else if(strcmp(name, "issueCriticalPointsWarnings") == 0)

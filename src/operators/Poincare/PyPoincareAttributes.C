@@ -641,6 +641,11 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     else
         SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetIssueStepsizeWarnings())
+        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetIssueStiffnessWarnings())
         SNPRINTF(tmpStr, 1000, "%sissueStiffnessWarnings = 1\n", prefix);
     else
@@ -2731,6 +2736,30 @@ PoincareAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PoincareAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the issueStepsizeWarnings in the object.
+    obj->data->SetIssueStepsizeWarnings(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetIssueStepsizeWarnings(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetIssueStepsizeWarnings()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 PoincareAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -2952,6 +2981,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetPathlinesCMFE", PoincareAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetIssueTerminationWarnings", PoincareAttributes_SetIssueTerminationWarnings, METH_VARARGS},
     {"GetIssueTerminationWarnings", PoincareAttributes_GetIssueTerminationWarnings, METH_VARARGS},
+    {"SetIssueStepsizeWarnings", PoincareAttributes_SetIssueStepsizeWarnings, METH_VARARGS},
+    {"GetIssueStepsizeWarnings", PoincareAttributes_GetIssueStepsizeWarnings, METH_VARARGS},
     {"SetIssueStiffnessWarnings", PoincareAttributes_SetIssueStiffnessWarnings, METH_VARARGS},
     {"GetIssueStiffnessWarnings", PoincareAttributes_GetIssueStiffnessWarnings, METH_VARARGS},
     {"SetIssueCriticalPointsWarnings", PoincareAttributes_SetIssueCriticalPointsWarnings, METH_VARARGS},
@@ -3259,6 +3290,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "issueTerminationWarnings") == 0)
         return PoincareAttributes_GetIssueTerminationWarnings(self, NULL);
+    if(strcmp(name, "issueStepsizeWarnings") == 0)
+        return PoincareAttributes_GetIssueStepsizeWarnings(self, NULL);
     if(strcmp(name, "issueStiffnessWarnings") == 0)
         return PoincareAttributes_GetIssueStiffnessWarnings(self, NULL);
     if(strcmp(name, "issueCriticalPointsWarnings") == 0)
@@ -3425,6 +3458,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "issueTerminationWarnings") == 0)
         obj = PoincareAttributes_SetIssueTerminationWarnings(self, tuple);
+    else if(strcmp(name, "issueStepsizeWarnings") == 0)
+        obj = PoincareAttributes_SetIssueStepsizeWarnings(self, tuple);
     else if(strcmp(name, "issueStiffnessWarnings") == 0)
         obj = PoincareAttributes_SetIssueStiffnessWarnings(self, tuple);
     else if(strcmp(name, "issueCriticalPointsWarnings") == 0)

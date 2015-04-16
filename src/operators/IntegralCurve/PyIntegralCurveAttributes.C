@@ -652,6 +652,11 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
     else
         SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetIssueStepsizeWarnings())
+        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sissueStepsizeWarnings = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetIssueStiffnessWarnings())
         SNPRINTF(tmpStr, 1000, "%sissueStiffnessWarnings = 1\n", prefix);
     else
@@ -2561,6 +2566,30 @@ IntegralCurveAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *ar
 }
 
 /*static*/ PyObject *
+IntegralCurveAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the issueStepsizeWarnings in the object.
+    obj->data->SetIssueStepsizeWarnings(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+IntegralCurveAttributes_GetIssueStepsizeWarnings(PyObject *self, PyObject *args)
+{
+    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetIssueStepsizeWarnings()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 IntegralCurveAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
@@ -2883,6 +2912,8 @@ PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH] = {
     {"GetForceNodeCenteredData", IntegralCurveAttributes_GetForceNodeCenteredData, METH_VARARGS},
     {"SetIssueTerminationWarnings", IntegralCurveAttributes_SetIssueTerminationWarnings, METH_VARARGS},
     {"GetIssueTerminationWarnings", IntegralCurveAttributes_GetIssueTerminationWarnings, METH_VARARGS},
+    {"SetIssueStepsizeWarnings", IntegralCurveAttributes_SetIssueStepsizeWarnings, METH_VARARGS},
+    {"GetIssueStepsizeWarnings", IntegralCurveAttributes_GetIssueStepsizeWarnings, METH_VARARGS},
     {"SetIssueStiffnessWarnings", IntegralCurveAttributes_SetIssueStiffnessWarnings, METH_VARARGS},
     {"GetIssueStiffnessWarnings", IntegralCurveAttributes_GetIssueStiffnessWarnings, METH_VARARGS},
     {"SetIssueCriticalPointsWarnings", IntegralCurveAttributes_SetIssueCriticalPointsWarnings, METH_VARARGS},
@@ -3161,6 +3192,8 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return IntegralCurveAttributes_GetForceNodeCenteredData(self, NULL);
     if(strcmp(name, "issueTerminationWarnings") == 0)
         return IntegralCurveAttributes_GetIssueTerminationWarnings(self, NULL);
+    if(strcmp(name, "issueStepsizeWarnings") == 0)
+        return IntegralCurveAttributes_GetIssueStepsizeWarnings(self, NULL);
     if(strcmp(name, "issueStiffnessWarnings") == 0)
         return IntegralCurveAttributes_GetIssueStiffnessWarnings(self, NULL);
     if(strcmp(name, "issueCriticalPointsWarnings") == 0)
@@ -3314,6 +3347,8 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IntegralCurveAttributes_SetForceNodeCenteredData(self, tuple);
     else if(strcmp(name, "issueTerminationWarnings") == 0)
         obj = IntegralCurveAttributes_SetIssueTerminationWarnings(self, tuple);
+    else if(strcmp(name, "issueStepsizeWarnings") == 0)
+        obj = IntegralCurveAttributes_SetIssueStepsizeWarnings(self, tuple);
     else if(strcmp(name, "issueStiffnessWarnings") == 0)
         obj = IntegralCurveAttributes_SetIssueStiffnessWarnings(self, tuple);
     else if(strcmp(name, "issueCriticalPointsWarnings") == 0)
