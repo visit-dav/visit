@@ -50,6 +50,8 @@
 #include <vtkDoubleArray.h>
 #include <vtkGenericCell.h>
 
+#include <limits>
+
 #include <DebugStream.h>
 
 // ****************************************************************************
