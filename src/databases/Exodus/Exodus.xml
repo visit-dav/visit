@@ -42,7 +42,6 @@
     </Files>
     <CXXFLAGS>
       ${NETCDF_INCLUDE_DIR}
-      ${BOOST_INCLUDE_DIR}
     </CXXFLAGS>
     <LDFLAGS>
       ${NETCDF_LIBRARY_DIR}
