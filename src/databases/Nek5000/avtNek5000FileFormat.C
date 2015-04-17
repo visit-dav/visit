@@ -48,6 +48,19 @@
 #endif
 #include <float.h>
 
+#ifdef WIN32
+#define FSEEK64 ::_fseeki64
+#define OFF64_T __int64
+#else
+#if defined(__APPLE__) || defined(_OSF_SOURCE)
+#define FSEEK64 ::fseek
+#define OFF64_T long
+#else
+#define FSEEK64 ::fseek64
+#define OFF64_T long long
+#endif
+
+#endif
 
 #include <vtkCellArray.h>
 #include <vtkIntArray.h>
@@ -95,8 +108,6 @@
 #  define STREQUAL(a,b)              strcasecmp(a,b)
 #endif
 #endif
-
-#include <cstdint>
 
 #include <algorithm>
 #include <fstream>
@@ -1541,7 +1552,7 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
     GetDomainSizeAndVarOffset(timestepToUseForMesh, NULL, nFloatsInDomain, 
                               d1, d2, d3);
 
-    int64_t iRealHeaderSize = iHeaderSize + (bParFormat ? aBlocksPerFile[iCurrMeshProc]*sizeof(int) : 0);
+    OFF64_T iRealHeaderSize = iHeaderSize + (bParFormat ? aBlocksPerFile[iCurrMeshProc]*sizeof(int) : 0);
 
     if (bBinary)
     {
@@ -1552,7 +1563,7 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
         if (iPrecision == 4)
         {
             float *tmppts = new float[nPts*iDim];
-            fseek(fdMesh, iRealHeaderSize + (int64_t)nFloatsInDomain*sizeof(float)*element, SEEK_SET);
+            FSEEK64(fdMesh, iRealHeaderSize + (OFF64_T)nFloatsInDomain*sizeof(float)*element, SEEK_SET);
             size_t res = fread(tmppts, sizeof(float), nPts*iDim, fdMesh); (void) res;
             if (bSwapEndian)
                 ByteSwap32(tmppts, nPts*iDim);
@@ -1577,7 +1588,9 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
         else
         {
             double *tmppts = new double[nPts*iDim];
-            fseek(fdMesh, iRealHeaderSize + (int64_t)nFloatsInDomain*sizeof(double)*element, SEEK_SET);
+            FSEEK64(fdMesh, iRealHeaderSize +
+                            (OFF64_T)nFloatsInDomain*sizeof(double)*element,
+                    SEEK_SET);
             size_t res = fread(tmppts, sizeof(double), nPts*iDim, fdMesh); (void) res;
             if (bSwapEndian)
                 ByteSwap64(tmppts, nPts*iDim);
@@ -1605,9 +1618,9 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
         float *pts_tmp = pts;
         for (ii = 0 ; ii < nPts ; ii++)
         {
-            fseek(fdMesh, (int64_t)iAsciiMeshFileStart + 
-                          (int64_t)element*iAsciiMeshFileLineLen*nPts + 
-                          (int64_t)ii*iAsciiMeshFileLineLen, SEEK_SET);
+            FSEEK64(fdMesh, (OFF64_T)iAsciiMeshFileStart + 
+                            (OFF64_T)element*iAsciiMeshFileLineLen*nPts + 
+                            (OFF64_T)ii*iAsciiMeshFileLineLen, SEEK_SET);
             if (iDim == 3)
             {
                 int res = fscanf(fdMesh, " %f %f %f", pts_tmp, pts_tmp+1, pts_tmp+2); (void) res;
@@ -1806,32 +1819,32 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
     if (bParFormat)
         element = aBlockLocs[element*2 + 1];
 
-    int iRealHeaderSize = iHeaderSize + (bParFormat ? aBlocksPerFile[iCurrVarProc]*sizeof(int) : 0);
+    OFF64_T iRealHeaderSize = iHeaderSize + (bParFormat ? aBlocksPerFile[iCurrVarProc]*sizeof(int) : 0);
 
     if (bBinary)
     {
-        int64_t filepos;
+        OFF64_T filepos;
         if (!bParFormat)
-            filepos = (int64_t)iRealHeaderSize + ((int64_t)nFloatsInDomain*element + iBinaryOffset)*sizeof(float);
+            filepos = (OFF64_T)iRealHeaderSize + ((OFF64_T)nFloatsInDomain*element + iBinaryOffset)*sizeof(float);
         else
         {
             // This assumes uvw for all fields comes after the mesh as [block0: 216u 216v 216w]...
             // then p or t as   [block0: 216p][block1: 216p][block2: 216p]...
             if (strcmp(varname+2, "velocity") == 0)
             {
-                filepos  = (int64_t)iRealHeaderSize +                              //header
-                           (int64_t)iHasMesh*aBlocksPerFile[iCurrVarProc]*nPts*iDim*iPrecision + //mesh
-                           (int64_t)element*nPts*iDim*iPrecision +                  //start of block
-                           (int64_t)(varname[0] - 'x')*nPts*iPrecision;            //position within block
+                filepos  = (OFF64_T)iRealHeaderSize +                              //header
+                           (OFF64_T)iHasMesh*aBlocksPerFile[iCurrVarProc]*nPts*iDim*iPrecision + //mesh
+                           (OFF64_T)element*nPts*iDim*iPrecision +                  //start of block
+                           (OFF64_T)(varname[0] - 'x')*nPts*iPrecision;            //position within block
             }
             else
-                filepos = (int64_t)iRealHeaderSize + 
-                          (int64_t)aBlocksPerFile[iCurrVarProc]*iBinaryOffset*iPrecision + //the header, mesh, vel if present,
-                          (int64_t)element*nPts*iPrecision;
+                filepos = (OFF64_T)iRealHeaderSize + 
+                          (OFF64_T)aBlocksPerFile[iCurrVarProc]*iBinaryOffset*iPrecision + //the header, mesh, vel if present,
+                          (OFF64_T)element*nPts*iPrecision;
         }
         if (iPrecision==4)
         {
-            fseek(fdVar, filepos, SEEK_SET);
+            FSEEK64(fdVar, filepos, SEEK_SET);
             size_t res = fread(var, sizeof(float), nPts, fdVar); (void) res;
             if (bSwapEndian)
                 ByteSwap32(var, nPts);
@@ -1840,7 +1853,7 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
         {
             double *tmp = new double[nPts];
 
-            fseek(fdVar, filepos, SEEK_SET);
+            FSEEK64(fdVar, filepos, SEEK_SET);
             size_t res = fread(tmp, sizeof(double), nPts, fdVar); (void) res;
             if (bSwapEndian)
                 ByteSwap64(tmp, nPts);
@@ -1856,10 +1869,10 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
         float *var_tmp = var;
         for (ii = 0 ; ii < nPts ; ii++)
         {
-            fseek(fdVar, (int64_t)iAsciiCurrFileStart + 
-                         (int64_t)element*iAsciiCurrFileLineLen*nPts + 
-                         (int64_t)ii*iAsciiCurrFileLineLen + 
-                         (int64_t)iAsciiOffset, SEEK_SET);
+            FSEEK64(fdVar, (OFF64_T)iAsciiCurrFileStart + 
+                           (OFF64_T)element*iAsciiCurrFileLineLen*nPts + 
+                           (OFF64_T)ii*iAsciiCurrFileLineLen + 
+                         (OFF64_T)iAsciiOffset, SEEK_SET);
             int res = fscanf(fdVar, " %f", var_tmp); (void) res;
             var_tmp++;
         }
@@ -2046,23 +2059,23 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
     if (bParFormat)
         element = aBlockLocs[element*2 + 1];
 
-    int iRealHeaderSize = iHeaderSize + (bParFormat ? aBlocksPerFile[iCurrVarProc]*sizeof(int) : 0);
+    OFF64_T iRealHeaderSize = iHeaderSize + (bParFormat ? aBlocksPerFile[iCurrVarProc]*sizeof(int) : 0);
 
     if (bBinary)
     {
-        int64_t filepos;
+        OFF64_T filepos;
         if (!bParFormat)
-            filepos = (int64_t)iRealHeaderSize + (int64_t)(nFloatsInDomain*element + iBinaryOffset)*sizeof(float);
+            filepos = (OFF64_T)iRealHeaderSize + (OFF64_T)(nFloatsInDomain*element + iBinaryOffset)*sizeof(float);
         else
             //This assumes [block 0: 216u 216v 216w][block 1: 216u 216v 216w]...[block n: 216u 216v 216w]
-            filepos = (int64_t)iRealHeaderSize + 
-                      (int64_t)aBlocksPerFile[iCurrVarProc]*iBinaryOffset*iPrecision + //the header and mesh if one exists
-                      (int64_t)element*nPts*iDim*iPrecision;
+            filepos = (OFF64_T)iRealHeaderSize + 
+                      (OFF64_T)aBlocksPerFile[iCurrVarProc]*iBinaryOffset*iPrecision + //the header and mesh if one exists
+                      (OFF64_T)element*nPts*iDim*iPrecision;
         if (iPrecision == 4)
         {
             float *tmppts = new float[nPts*iDim];
 
-            fseek(fdVar, filepos, SEEK_SET);
+            FSEEK64(fdVar, filepos, SEEK_SET);
             size_t res = fread(tmppts, sizeof(float), nPts*iDim, fdVar); (void) res;
 
             if (bSwapEndian)
@@ -2088,7 +2101,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
         else
         {
             double *tmppts = new double[nPts*iDim];
-            fseek(fdVar, filepos, SEEK_SET);
+            FSEEK64(fdVar, filepos, SEEK_SET);
             size_t res = fread(tmppts, sizeof(double), nPts*iDim, fdVar); (void) res;
 
             if (bSwapEndian)
@@ -2117,10 +2130,10 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
         float *var_tmp = var;
         for (ii = 0 ; ii < nPts ; ii++)
         {
-            fseek(fdVar, (int64_t)iAsciiCurrFileStart + 
-                         (int64_t)element*iAsciiCurrFileLineLen*nPts + 
-                         (int64_t)ii*iAsciiCurrFileLineLen + 
-                         (int64_t)iAsciiOffset, SEEK_SET);
+            FSEEK64(fdVar, (OFF64_T)iAsciiCurrFileStart + 
+                           (OFF64_T)element*iAsciiCurrFileLineLen*nPts + 
+                           (OFF64_T)ii*iAsciiCurrFileLineLen + 
+                           (OFF64_T)iAsciiOffset, SEEK_SET);
             if (iDim == 3)
             {
                 int res = fscanf(fdVar, " %f %f %f", var_tmp, var_tmp+1, var_tmp+2); (void) res;
@@ -2593,7 +2606,7 @@ avtNek5000FileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLi
 {
     //Skip the header, then read a float for each block.  Then skip beyond the
     //newline character and return the current position.
-    fseek(fd, iHeaderSize, SEEK_SET);
+    FSEEK64(fd, iHeaderSize, SEEK_SET);
     for (int ii = 0 ; ii < iNumBlocks ; ii++)
     {
         float dummy;
@@ -2783,11 +2796,11 @@ avtNek5000FileFormat::GetBoundingBoxIntervalTree(int timestep)
 
     for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
     {
-        int64_t iFileSizeWithoutMetaData = 136 
+        OFF64_T iFileSizeWithoutMetaData = 136 
                 + sizeof(int)*aBlocksPerFile[ii] 
-                + ((int64_t)nFloatsPerDomain)*sizeof(float)*((int64_t)aBlocksPerFile[ii]);
+                + ((OFF64_T)nFloatsPerDomain)*sizeof(float)*((OFF64_T)aBlocksPerFile[ii]);
 
-        int64_t iMDSize = (nFloatsPerDomain * 2 * sizeof(float) * aBlocksPerFile[ii]) / 
+        OFF64_T iMDSize = (nFloatsPerDomain * 2 * sizeof(float) * aBlocksPerFile[ii]) / 
                     (iBlockSize[0]*iBlockSize[1]*iBlockSize[2]);
 
         GetFileName(timestep, ii, blockfilename, (int)fileTemplate.size() + 64);
@@ -2798,7 +2811,7 @@ avtNek5000FileFormat::GetBoundingBoxIntervalTree(int timestep)
             break;
         }
         f.seekg( 0, std::ios_base::end );
-        int64_t iFileSize = f.tellg();
+        OFF64_T iFileSize = f.tellg();
         if (iFileSize < iFileSizeWithoutMetaData+iMDSize)
         {
             errorReadingData = 1;
@@ -3022,13 +3035,13 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
 
     for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
     {
-        int64_t iFileSizeWithoutMetaData = 136 
+        OFF64_T iFileSizeWithoutMetaData = 136 
                 + sizeof(int)*aBlocksPerFile[ii] 
-                + ((int64_t)nFloatsPerDomain)*sizeof(float)*((int64_t)aBlocksPerFile[ii]);
+                + ((OFF64_T)nFloatsPerDomain)*sizeof(float)*((OFF64_T)aBlocksPerFile[ii]);
 
-        int64_t iBBSize = 2*iDim * sizeof(float) * aBlocksPerFile[ii];
-        int64_t iDESize = 2 * sizeof(float) * aBlocksPerFile[ii] * numVars;
-        int64_t iMDSize = iBBSize + iDESize;
+        OFF64_T iBBSize = 2*iDim * sizeof(float) * aBlocksPerFile[ii];
+        OFF64_T iDESize = 2 * sizeof(float) * aBlocksPerFile[ii] * numVars;
+        OFF64_T iMDSize = iBBSize + iDESize;
 
         GetFileName(timestep, ii, blockfilename, (int)fileTemplate.size() + 64);
         f.open(blockfilename);
@@ -3038,7 +3051,7 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
             break;
         }
         f.seekg( 0, std::ios_base::end );
-        int64_t iFileSize = f.tellg();
+        OFF64_T iFileSize = f.tellg();
         if (iFileSize != iFileSizeWithoutMetaData+iMDSize)
         {
             iBBSize = 0;
@@ -3077,7 +3090,7 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
             else
                 varIndex = (bHasVelocity ? iDim : 0) + (bHasPressure ? 1 : 0) + 
                        (bHasTemperature ? 1 : 0) + sComp;
-            int64_t offsetForDE = varIndex*2*sizeof(float)*aBlocksPerFile[ii];
+            OFF64_T offsetForDE = varIndex*2*sizeof(float)*aBlocksPerFile[ii];
             f.seekg(iFileSizeWithoutMetaData+iBBSize+offsetForDE, std::ios_base::beg);
             f.read( (char *)(bounds + nPrecedingBlocks*2), aBlocksPerFile[ii]*2*sizeof(float) );
         }
