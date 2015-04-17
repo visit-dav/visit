@@ -88,10 +88,6 @@
 #include <netcdf.h>
 
 #include <string.h>
-#ifdef HAVE_VTK_SIZEOF___INT64
-#include <cstdint>
-#endif
-
 #include <cstdlib> // for qsort
 #include <cstdarg>
 
@@ -585,7 +581,7 @@ static int SizeOfNCType(int type)
 #ifdef HAVE_VTK_SIZEOF___INT64
         case NC_INT64:
         case NC_UINT64:
-            return sizeof(int64_t);
+            return sizeof(__int64);
 #endif
         case NC_FLOAT:
             return sizeof(float);
@@ -1088,26 +1084,26 @@ MakeVTKDataArrayByTakingOwnershipOfNCVarData(nc_type type,
         {
             if (num_comps > 1)
             {
-                void *newbuf = (void*) Interleave<int64_t>((int64_t*) buf, num_comps, num_vals);
+                void *newbuf = (void*) Interleave<__int64>((__int64*) buf, num_comps, num_vals);
                 free(buf);
                 buf = newbuf;
             }
             vtk__Int64Array *arr = vtk__Int64Array::New();
             arr->SetNumberOfComponents(num_comps);
-            arr->SetArray((int64_t*)buf, num_comps * num_vals, SAVE_ARRAY, VTK_DA_FREE);
+            arr->SetArray((__int64*)buf, num_comps * num_vals, SAVE_ARRAY, VTK_DA_FREE);
             return arr;
         }
         case NC_UINT64:
         {
             if (num_comps > 1)
             {
-                void *newbuf = (void*) Interleave<unsigned int64_t>((unsigned int64_t*) buf, num_comps, num_vals);
+                void *newbuf = (void*) Interleave<unsigned __int64>((unsigned __int64*) buf, num_comps, num_vals);
                 free(buf);
                 buf = newbuf;
             }
             vtkUnsigned__Int64Array *arr = vtkUnsigned__Int64Array::New();
             arr->SetNumberOfComponents(num_comps);
-            arr->SetArray((unsigned int64_t*)buf, num_comps * num_vals, SAVE_ARRAY, VTK_DA_FREE);
+            arr->SetArray((unsigned __int64*)buf, num_comps * num_vals, SAVE_ARRAY, VTK_DA_FREE);
             return arr;
         }
 #endif
@@ -1407,7 +1403,7 @@ GetElementBlockNamesAndIds(int ncExIIId, int numBlocks,
     {
         case NC_INT:   READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, int); break;
 #ifdef HAVE_VTK_SIZEOF___INT64
-        case NC_INT64: READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, int64_t); break;
+        case NC_INT64: READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, __int64); break;
 #endif
     }
 }

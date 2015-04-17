@@ -65,33 +65,6 @@ using namespace std;
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#ifdef WIN32
-#include <io.h>
-#define CLOSE   ::_close
-#define OPEN    ::_open
-#define LSEEK64 ::_lseeki64
-#define READ    ::_read
-#define WRITE   ::_write
-#define ssize_t int
-
-#else
-#include <unistd.h>
-
-#define O_BINARY 0
-#define OPEN  ::open
-#define CLOSE ::close
-#define READ  ::read
-#define WRITE ::write
-#if defined(__APPLE__) || defined(_OSF_SOURCE)
-#define LSEEK64 ::lseek
-#else
-#define LSEEK64 ::lseek64
-#endif
-
-#endif
-
-
-
 // ****************************************************************************
 //  Method: avtSASFileFormat constructor
 //
@@ -396,7 +369,7 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
 
     // Size is: fortran header/footer + 80 char title +
     //          fortran header/footer + assembly id, type, channel index offset, and x,y,z offset
-    int64_t iAssemblyInstanceSize = sizeof(int)*2 + 80 + 
+    OFF64_T iAssemblyInstanceSize = sizeof(int)*2 + 80 + 
                                     sizeof(int)*2 + sizeof(int)*3 + sizeof(double)*3;
 
     LSEEK64(f, iAssemblyDiskLoc + domain*iAssemblyInstanceSize + sizeof(int)*3 + 80, SEEK_SET);
@@ -544,7 +517,7 @@ avtSASFileFormat::GetVar(int timestate, int domain, const char *varname)
 
     // Size is: fortran header/footer + 80 char title +
     //          fortran header/footer + assembly id, type, channel index offset, and x,y,z offset
-    int64_t iAssemblyInstanceSize = sizeof(int)*2 + 80 + 
+    OFF64_T iAssemblyInstanceSize = sizeof(int)*2 + 80 + 
                                     sizeof(int)*2 + sizeof(int)*3 + sizeof(double)*3;
     LSEEK64(f, iAssemblyDiskLoc + domain*iAssemblyInstanceSize + sizeof(int)*3 + 80, SEEK_SET);
 
@@ -576,7 +549,7 @@ avtSASFileFormat::GetVar(int timestate, int domain, const char *varname)
     if (bReadingTemp)
         f = OPEN(dataFileName.c_str(), O_RDONLY | O_BINARY);
 
-    int64_t iTimeOffset = (int64_t)timestate * (int64_t)iTimeStepSize;
+    OFF64_T iTimeOffset = (OFF64_T)timestate * (OFF64_T)iTimeStepSize;
     double *tmpData = new double[pType->nZVals-1];
 
     for (ii = 0; ii < pType->nChannels; ii++)
@@ -868,7 +841,7 @@ avtSASFileFormat::ReadTimeStepData()
 {
     int f = OPEN(dataFileName.c_str(), O_RDONLY | O_BINARY);
     
-    int64_t end = LSEEK64(f, 0, SEEK_END);
+    OFF64_T end = LSEEK64(f, 0, SEEK_END);
     LSEEK64(f, 0, SEEK_SET);
 
     ReadInt(f);
@@ -891,7 +864,7 @@ avtSASFileFormat::ReadTimeStepData()
     }
 
     // Skip date/time strings, footer, and two lines of title data
-    int64_t startTimesteps = LSEEK64(f, 8+8+4+(sizeof(int)*2+80) * 2, SEEK_CUR );
+    OFF64_T startTimesteps = LSEEK64(f, 8+8+4+(sizeof(int)*2+80) * 2, SEEK_CUR );
     iTimeStepSize = 0;
 
     int header = ReadInt(f);
@@ -952,9 +925,9 @@ avtSASFileFormat::ReadTimeStepData()
         eChannelOrder = UNSORTED_CHANNELS;
     }
 
-    int64_t iTotalTimestepSize = end - startTimesteps;
+    OFF64_T iTotalTimestepSize = end - startTimesteps;
 
-    int64_t nTimesteps = iTotalTimestepSize / iTimeStepSize;
+    OFF64_T nTimesteps = iTotalTimestepSize / iTimeStepSize;
 
     if (iTotalTimestepSize % iTimeStepSize != 0)
     {

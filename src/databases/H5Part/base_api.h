@@ -1,7 +1,9 @@
 #ifndef _BASE_INTERFACE_H
 #define _BASE_INTERFACE_H
 
-#include <cstdint>
+#ifdef HAVE_LIBFASTBIT
+#include "const.h"
+#endif
 
 #include "hdf5.h"
 #include <stdio.h>
