@@ -236,18 +236,16 @@ avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) 
         inside[0] = (lastCell != -1);
     }       
 
-    // The time interval should beginning and including the start time
-    // (t0) up to BUT not including the last time (t1). Once the last
-    // time is reached the next time domain should be used.
+    // For computation the time can include the temporal boundaries.
     if (t0 < t1)
     {
-        if( time < t0 || t1 <= time )
+        if( time < t0 || t1 < time )
             inside[1] = false;
     }
     else
     {
         // backwards integration
-        if( time <= t1 || t0 < time )
+        if( time < t1 || t0 < time )
             inside[1] = false;
     }
 
@@ -590,9 +588,73 @@ avtIVPVTKTimeVaryingField::SetScalarVariable(unsigned char index, const std::str
 // ****************************************************************************
 
 avtIVPField::Result
-avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVector &pt ) const
+avtIVPVTKTimeVaryingField::IsInside( const double& time, const avtVector &pos ) const
 {
-    return FindCell( t, pt );
+    bool inside[2] = {true, true};
+
+    if( pos != lastPos )
+    {
+        lastPos = pos;
+
+        if( hasPeriodicBoundaries )
+        {
+          avtVector pt = pos;
+
+          if( periodic_boundary_x > 0 )
+          {
+            while(                pt.x < 0    ) pt.x += periodic_boundary_x;
+            while( periodic_boundary_x < pt.x ) pt.x -= periodic_boundary_x;
+          }
+
+          if( periodic_boundary_y > 0 )
+          {
+            while(                pt.y < 0    ) pt.y += periodic_boundary_y;
+            while( periodic_boundary_y < pt.y ) pt.y -= periodic_boundary_y;
+          }
+
+          if( periodic_boundary_z > 0 )
+          {
+            while(                pt.z < 0    ) pt.z += periodic_boundary_z;
+            while( periodic_boundary_z < pt.z ) pt.z -= periodic_boundary_z;
+          }
+
+          lastCell = loc->FindCell(&pt.x, &lastWeights, false);
+        }
+        else
+          lastCell = loc->FindCell(&pos.x, &lastWeights, false);
+
+        inside[0] = (lastCell != -1);
+    }       
+
+    // The time interval should begin with and including the start time
+    // (t0) up to BUT not include the last time (t1). Once the last
+    // time is reached the next time domain should be used.
+    if (t0 < t1)
+    {
+        if( time < t0 || t1 < time )
+            inside[1] = false;
+    }
+    else
+    {
+        // backwards integration
+        if( time < t1 || t0 < time )
+            inside[1] = false;
+    }
+
+    debug5 << inside[0] << "  " << inside[1] << "  "
+              << (time < t0) << "  " << (t1 <= time) << "  "
+              << t0 << "  " << time << "  " << t1 << "  "
+              << std::endl;
+
+    if (inside[0] && inside[1])
+        return OK;
+    else if (!inside[0] && !inside[1])
+        return OUTSIDE_BOTH;
+    else if (!inside[0])
+        return OUTSIDE_SPATIAL;
+    else
+        return OUTSIDE_TEMPORAL;
+    //    return FindCell( timt, pos );
 }
 
 // ****************************************************************************

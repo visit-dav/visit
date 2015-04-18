@@ -269,17 +269,22 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
     bool last = false;
 
     // do not run past integration end
-    if( (t_local + h - t_max) * direction > 0.0 ) 
+    if( (t_local + 1.01*h - t_max) * direction > 0.0 ) 
     {
         last = true;
         h = t_max - t_local;
     }
 
-    // stepsize underflow - go right up to the smallest value
-    // needed for pathlines.
-    // if( 0.1*std::abs(h) <= std::abs(t_local)*epsilon )
-    if( std::abs(h) < epsilon )
-      return avtIVPSolver::STEPSIZE_UNDERFLOW;
+    // stepsize underflow??
+    if( 0.1*std::abs(h) <= std::abs(t_local)*epsilon )
+    {
+        if (DebugStream::Level5())
+        {
+            debug5 << "\tavtIVPAdamsBashforth::Step(): exiting at t = " 
+                   << t << ", step size too small (h = " << h << ")\n";
+        }
+        return avtIVPSolver::STEPSIZE_UNDERFLOW;
+    }
 
     avtIVPField::Result fieldResult;
     avtVector yNew, vTmp, vNew(0,0,0);

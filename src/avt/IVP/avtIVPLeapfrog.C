@@ -168,11 +168,16 @@ avtIVPLeapfrog::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
         h = t_max - t_local;
     }
 
-    // stepsize underflow - go right up to the smallest value
-    // needed for pathlines.
-    // if( 0.1*std::abs(h) <= std::abs(t_local)*epsilon )
-    if( std::abs(h) < epsilon )
-      return avtIVPSolver::STEPSIZE_UNDERFLOW;
+    // stepsize underflow??
+    if( 0.1*std::abs(h) <= std::abs(t_local)*epsilon )
+    {
+        if (DebugStream::Level5())
+        {
+            debug5 << "\tavtIVPLeapfrog::Step(): exiting at t = " 
+                   << t << ", step size too small (h = " << h << ")\n";
+        }
+        return avtIVPSolver::STEPSIZE_UNDERFLOW;
+    }
     
     avtIVPField::Result fieldResult;
     avtVector yNew, vNew;
@@ -218,7 +223,7 @@ avtIVPLeapfrog::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
 
     yCur = yNew;
     vCur = vNew;
-    t = t+h;
+    t = t + h;
     
     if( period && last )
       t += FLT_EPSILON;

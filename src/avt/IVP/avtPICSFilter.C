@@ -677,7 +677,7 @@ avtPICSFilter::LoadNextTimeSlice()
     {
         curTimeSlice++;
 
-        // When going forwards can not use the lasst time slice.
+        // When going forwards can not use the last time slice.
         if ( period > 0 && curTimeSlice >= (int)domainTimeIntervals.size())
         {
             curTimeSlice = 0;
@@ -2459,8 +2459,8 @@ avtPICSFilter::ICInRectilinearBlock(const avtIntegralCurve *ic,
     // will move the point outside the block.
     int onFace = OnFace(ic, bbox);
 
-    if( onFace < 0 ) return false; // next step goes outside the block 
-    if( onFace > 0 ) return true;  // next step goes  inside the block 
+    // if( onFace < 0 ) return false; // next step goes outside the block 
+    // if( onFace > 0 ) return true;  // next step goes  inside the block 
   
     // If no ghost zones, the pt is in dataset.
     vtkDataArray *ghosts = ds->GetCellData()->GetArray("avtGhostZones");

@@ -199,9 +199,15 @@ avtIVPM3DC1Integrator::Step(avtIVPField* field, double t_max,
 
     // stepsize underflow - go right up to the smallest value
     // needed for pathlines.
-    // if( 0.1*std::abs(h) <= std::abs(t_local)*epsilon )
-    if( std::abs(h) < epsilon )
+    if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
+    {
+        if (DebugStream::Level5())
+        {
+            debug5 << "\tavtIVPM3DC1Integrator::Step(): exiting at t = " 
+                   << t << ", step size too small (h = " << h << ")\n";
+        }
         return avtIVPSolver::STEPSIZE_UNDERFLOW;
+    }
 
     avtIVPSolver::Result res;
     avtVector yNew = yCur;

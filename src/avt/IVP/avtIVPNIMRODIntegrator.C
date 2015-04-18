@@ -193,14 +193,20 @@ avtIVPNIMRODIntegrator::Step(avtIVPField* field, double t_max,
     h = sign( h, direction );
     
     // do not run past integration end
-    if( (t + 1.01*h - t_max) * direction > 0.0 ) 
+    if( (t + h - 1.01*t_max) * direction > 0.0 ) 
         h = t_max - t;
 
     // stepsize underflow - go right up to the smallest value
     // needed for pathlines.
-    // if( 0.1*std::abs(h) <= std::abs(t_local)*epsilon )
-    if( std::abs(h) < epsilon )
+    if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
+    {
+        if (DebugStream::Level5())
+        {
+            debug5 << "\tavtIVPNIMRODIntegrator::Step(): exiting at t = " 
+                   << t << ", step size too small (h = " << h << ")\n";
+        }
         return avtIVPSolver::STEPSIZE_UNDERFLOW;
+    }
 
     avtIVPSolver::Result res;
     avtVector yNew = yCur;
