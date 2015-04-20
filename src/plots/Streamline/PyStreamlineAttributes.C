@@ -275,7 +275,7 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     SNPRINTF(tmpStr, 1000, "%ssampleDensity2 = %d\n", prefix, atts->GetSampleDensity2());
     str += tmpStr;
     const char *coloringMethod_names = "Solid, ColorBySpeed, ColorByVorticity, ColorByLength, ColorByTime, "
-        "ColorBySeedPointID, ColorByVariable, ColorByCorrelationDistance";
+        "ColorBySeedPointID, ColorByVariable, ColorByCorrelationDistance, ColorByNumberDomainsVisited";
     switch (atts->GetColoringMethod())
     {
       case StreamlineAttributes::Solid:
@@ -308,6 +308,10 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
       case StreamlineAttributes::ColorByCorrelationDistance:
           SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sColorByCorrelationDistance  # %s\n", prefix, prefix, coloringMethod_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::ColorByNumberDomainsVisited:
+          SNPRINTF(tmpStr, 1000, "%scoloringMethod = %sColorByNumberDomainsVisited  # %s\n", prefix, prefix, coloringMethod_names);
           str += tmpStr;
           break;
       default:
@@ -1554,15 +1558,16 @@ StreamlineAttributes_SetColoringMethod(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the coloringMethod in the object.
-    if(ival >= 0 && ival < 8)
+    if(ival >= 0 && ival < 9)
         obj->data->SetColoringMethod(StreamlineAttributes::ColoringMethod(ival));
     else
     {
         fprintf(stderr, "An invalid coloringMethod value was given. "
-                        "Valid values are in the range of [0,7]. "
+                        "Valid values are in the range of [0,8]. "
                         "You can also use the following names: "
                         "Solid, ColorBySpeed, ColorByVorticity, ColorByLength, ColorByTime, "
-                        "ColorBySeedPointID, ColorByVariable, ColorByCorrelationDistance.");
+                        "ColorBySeedPointID, ColorByVariable, ColorByCorrelationDistance, ColorByNumberDomainsVisited"
+                        ".");
         return NULL;
     }
 
@@ -4294,6 +4299,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(StreamlineAttributes::ColorByVariable));
     if(strcmp(name, "ColorByCorrelationDistance") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::ColorByCorrelationDistance));
+    if(strcmp(name, "ColorByNumberDomainsVisited") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::ColorByNumberDomainsVisited));
 
     if(strcmp(name, "colorTableName") == 0)
         return StreamlineAttributes_GetColorTableName(self, NULL);

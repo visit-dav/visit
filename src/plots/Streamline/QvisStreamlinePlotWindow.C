@@ -793,6 +793,7 @@ QvisStreamlinePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataValueComboBox->addItem(tr("Seed point ID"),5);
     dataValueComboBox->addItem(tr("Variable"),6);
     dataValueComboBox->addItem(tr("Correlation Distance"),7);
+    dataValueComboBox->addItem(tr("Number of Domains Visited"),8);
     connect(dataValueComboBox, SIGNAL(activated(int)),
             this, SLOT(coloringMethodChanged(int)));
     dataLayout->addWidget(dataValueComboBox, 0, 1);

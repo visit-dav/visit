@@ -81,7 +81,8 @@ public:
         ColorByTime,
         ColorBySeedPointID,
         ColorByVariable,
-        ColorByCorrelationDistance
+        ColorByCorrelationDistance,
+        ColorByNumberDomainsVisited
     };
     enum CoordinateSystem
     {

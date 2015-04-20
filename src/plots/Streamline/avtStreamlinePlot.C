@@ -734,6 +734,9 @@ avtStreamlinePlot::UpdateMapperAndLegend()
       case StreamlineAttributes::ColorBySeedPointID:
         varLegend->SetVarName("Seed point ID");
         break;
+      case StreamlineAttributes::ColorByNumberDomainsVisited:
+        varLegend->SetVarName("Number of domains visited");
+        break;
       case StreamlineAttributes::ColorByVariable:
         varLegend->SetVarName(atts.GetColoringVariable().c_str());
         break;

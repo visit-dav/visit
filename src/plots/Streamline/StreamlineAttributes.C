@@ -92,20 +92,21 @@ StreamlineAttributes::SourceType_FromString(const std::string &s, StreamlineAttr
 static const char *ColoringMethod_strings[] = {
 "Solid", "ColorBySpeed", "ColorByVorticity", 
 "ColorByLength", "ColorByTime", "ColorBySeedPointID", 
-"ColorByVariable", "ColorByCorrelationDistance"};
+"ColorByVariable", "ColorByCorrelationDistance", "ColorByNumberDomainsVisited"
+};
 
 std::string
 StreamlineAttributes::ColoringMethod_ToString(StreamlineAttributes::ColoringMethod t)
 {
     int index = int(t);
-    if(index < 0 || index >= 8) index = 0;
+    if(index < 0 || index >= 9) index = 0;
     return ColoringMethod_strings[index];
 }
 
 std::string
 StreamlineAttributes::ColoringMethod_ToString(int t)
 {
-    int index = (t < 0 || t >= 8) ? 0 : t;
+    int index = (t < 0 || t >= 9) ? 0 : t;
     return ColoringMethod_strings[index];
 }
 
@@ -113,7 +114,7 @@ bool
 StreamlineAttributes::ColoringMethod_FromString(const std::string &s, StreamlineAttributes::ColoringMethod &val)
 {
     val = StreamlineAttributes::Solid;
-    for(int i = 0; i < 8; ++i)
+    for(int i = 0; i < 9; ++i)
     {
         if(s == ColoringMethod_strings[i])
         {
@@ -2344,7 +2345,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 8)
+            if(ival >= 0 && ival < 9)
                 SetColoringMethod(ColoringMethod(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
