@@ -82,6 +82,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public final static int COLORINGMETHOD_COLORBYSEEDPOINTID = 5;
     public final static int COLORINGMETHOD_COLORBYVARIABLE = 6;
     public final static int COLORINGMETHOD_COLORBYCORRELATIONDISTANCE = 7;
+    public final static int COLORINGMETHOD_COLORBYNUMBERDOMAINSVISITED = 8;
 
     public final static int COORDINATESYSTEM_ASIS = 0;
     public final static int COORDINATESYSTEM_CYLINDRICALTOCARTESIAN = 1;
@@ -2201,6 +2202,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             str = str + "COLORINGMETHOD_COLORBYVARIABLE";
         if(coloringMethod == COLORINGMETHOD_COLORBYCORRELATIONDISTANCE)
             str = str + "COLORINGMETHOD_COLORBYCORRELATIONDISTANCE";
+        if(coloringMethod == COLORINGMETHOD_COLORBYNUMBERDOMAINSVISITED)
+            str = str + "COLORINGMETHOD_COLORBYNUMBERDOMAINSVISITED";
         str = str + "\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
         str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
