@@ -1079,6 +1079,8 @@ avtParICAlgorithm::RecvDS(vector<DSCommData> &ds)
 void
 avtParICAlgorithm::PostRunAlgorithm()
 {
+    avtICAlgorithm::PostRunAlgorithm();
+    
     // We are enumerating the possible communication styles and then just
     // calling the correct one.  This is an okay solution if there are a small
     // number of styles (which there are right now).  That said, it would be

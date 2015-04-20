@@ -98,7 +98,7 @@ public:
     virtual double GetSummation0() { return summation0; }
     virtual double GetSummation1() { return summation1; }
 
-    virtual void     AnalyzeStep( avtIVPStep &step, avtIVPField *field);
+    virtual void     AnalyzeStep( avtIVPStep &step, avtIVPField *field, bool firstStep=false);
   
     bool LessThan(const avtIntegralCurve *ic) const;
 

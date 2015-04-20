@@ -315,6 +315,9 @@ avtStreamlineFilter::GenerateAttributeFields() const
       case PICS_COLOR_VARIABLE:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_SECONDARY0;
         break;
+      case PICS_COLOR_NUM_DOM_VISIT:
+        attr |= avtStateRecorderIntegralCurve:: SAMPLE_DOM_VISIT;
+        break;
     }
 
     // opacity scalar

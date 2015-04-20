@@ -67,6 +67,7 @@ class vtkAppendPolyData;
 #define PICS_COLOR_ID          5
 #define PICS_COLOR_VARIABLE    6
 #define PICS_CORRELATION_DISTANCE 7
+#define PICS_COLOR_NUM_DOM_VISIT 8
 
 #define PICS_DISPLAY_LINES     0
 #define PICS_DISPLAY_TUBES     1

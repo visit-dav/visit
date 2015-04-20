@@ -359,6 +359,9 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
               case PICS_COLOR_ARCLENGTH:
                 scalars->InsertTuple1(pIdx, s.arclength);
                 break;
+              case PICS_COLOR_NUM_DOM_VISIT:
+                scalars->InsertTuple1(pIdx, s.numDomainsVisited);
+                break;
               case PICS_COLOR_VARIABLE:
                 scalars->InsertTuple1(pIdx, s.secondarys[0]);
                 break;

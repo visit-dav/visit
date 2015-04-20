@@ -100,13 +100,14 @@ public:
         SAMPLE_VELOCITY   = 0x0004,
         SAMPLE_VORTICITY  = 0x0008,
         SAMPLE_ARCLENGTH  = 0x0010,
-        SAMPLE_VARIABLE   = 0x0020,
-        SAMPLE_SECONDARY0 = 0x0040,
-        SAMPLE_SECONDARY1 = 0x0080,
-        SAMPLE_SECONDARY2 = 0x0100,
-        SAMPLE_SECONDARY3 = 0x0200,
-        SAMPLE_SECONDARY4 = 0x0400,
-        SAMPLE_SECONDARY5 = 0x0800
+        SAMPLE_DOM_VISIT  = 0x0020,
+        SAMPLE_VARIABLE   = 0x0040,
+        SAMPLE_SECONDARY0 = 0x0080,
+        SAMPLE_SECONDARY1 = 0x0100,
+        SAMPLE_SECONDARY2 = 0x0200,
+        SAMPLE_SECONDARY3 = 0x0400,
+        SAMPLE_SECONDARY4 = 0x0800,
+        SAMPLE_SECONDARY5 = 0x1000
     };
 
     struct Sample
@@ -116,6 +117,7 @@ public:
         avtVector velocity;
         double    vorticity;
         double    arclength;
+        double    numDomainsVisited;
         double    variable;
         double    secondarys[6];
     };
@@ -133,6 +135,7 @@ public:
     avtStateRecorderIntegralCurve();
     virtual ~avtStateRecorderIntegralCurve();
 
+    virtual void  Finalize();
     virtual void  Serialize(MemStream::Mode mode, MemStream &buff, 
                             avtIVPSolver *solver, SerializeFlags serializeFlags);
     virtual void  PrepareForSend(void)
@@ -164,6 +167,7 @@ public:
     avtStateRecorderIntegralCurve& operator=( const avtStateRecorderIntegralCurve& );
     
     size_t    GetSampleStride() const;
+    size_t    GetSampleIndex(const Attribute &attr) const;
 
   public:
     SerializeFlags      _serializeFlags;
@@ -181,10 +185,12 @@ public:
 
     void RecordStep( const avtIVPField* field, 
                      const avtIVPStep& step, 
-                     double t );
+                     double t,
+                     bool firstStep);
 
     virtual void AnalyzeStep( avtIVPStep& step,
-                              avtIVPField* field );
+                              avtIVPField* field,
+                              bool firstStep=false);
 };
 
 #endif 
