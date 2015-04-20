@@ -356,6 +356,7 @@ class IVP_API avtIntegralCurve
     avtVector CurrentVelocity() const {return ivp->GetCurrentV();}
     double    NextStepSize()    const {return ivp->GetNextStepSize();}
 
+    virtual void  Finalize() {}
     virtual void      Serialize(MemStream::Mode mode, MemStream &buff, 
                                 avtIVPSolver *solver, SerializeFlags serializeFlags);
 
@@ -390,7 +391,8 @@ class IVP_API avtIntegralCurve
     avtIntegralCurve& operator=(const avtIntegralCurve&);
     
     virtual void AnalyzeStep(avtIVPStep &step,
-                             avtIVPField *field) = 0;
+                             avtIVPField *field,
+                             bool firstStep=false) = 0;
     virtual bool    UseFixedTerminationTime() {return false;}
     virtual double  FixedTerminationTime()    {return 0;}
 

@@ -133,6 +133,21 @@ avtStateRecorderIntegralCurve::~avtStateRecorderIntegralCurve()
 {
 }
 
+void
+avtStateRecorderIntegralCurve::Finalize()
+{
+    if (historyMask & SAMPLE_DOM_VISIT)
+    {
+        size_t nSamp = GetNumberOfSamples();
+        if (nSamp > 0)
+        {
+            double val = GetSample(nSamp-1).numDomainsVisited;
+            for (size_t i = 0; i < nSamp; i++)
+                history[i*GetSampleStride() + GetSampleIndex(SAMPLE_DOM_VISIT)] = val;
+        }
+    }
+}
+
 // ****************************************************************************
 //  Method: avtStateRecorderIntegralCurve::RecordStep
 //
@@ -154,7 +169,8 @@ avtStateRecorderIntegralCurve::~avtStateRecorderIntegralCurve()
 
 void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
                                                const avtIVPStep& step,
-                                               double t)
+                                               double t,
+                                               bool firstStep)
 {
     avtVector p = step.GetP(t);
 
@@ -190,12 +206,34 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
         history.push_back( v.y );
         history.push_back( v.z );
     }
-        
+    
     if( historyMask & SAMPLE_VORTICITY )
         history.push_back( field->ComputeVorticity( t, p ) );
         
     if( historyMask & SAMPLE_ARCLENGTH )
         history.push_back( distance );
+    
+    if (historyMask & SAMPLE_DOM_VISIT)
+    {
+        double val = 0.0;
+        
+        //First step gets recorded with two samples. Seed point, and first step.
+        //Set the number of visits to 1.
+        
+        size_t nSamp = GetNumberOfSamples();
+        if (nSamp == 0 || nSamp == 1)
+            val = 1.0;
+        else
+        {
+            Sample prevSamp = GetSample(nSamp-1);
+            val = prevSamp.numDomainsVisited;
+            
+            //First step in a domain, increment the val.
+            if (firstStep)
+                val = val + 1;
+        }
+        history.push_back(val);
+    }
         
     if( historyMask & SAMPLE_VARIABLE )
         history.push_back( field->ComputeScalarVariable( variableIndex, t, p ) );
@@ -248,12 +286,13 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
 
 void
 avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step, 
-                                            avtIVPField* field )
+                                            avtIVPField* field,
+                                            bool firstStep)
 {
     if (history.size() == 0)
     {
         // Record the first position of the step.
-        RecordStep( field, step, step.GetT0() );
+        RecordStep( field, step, step.GetT0(), false );
     }
 
     if (CheckForTermination(step, field))
@@ -267,7 +306,7 @@ avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step,
     time = step.GetT1();
     distance += step.GetLength();
 
-    RecordStep( field, step, step.GetT1() );
+    RecordStep( field, step, step.GetT1(), firstStep );
 }
 
 // ****************************************************************************
@@ -299,6 +338,7 @@ size_t avtStateRecorderIntegralCurve::GetSampleStride() const
     TEST_AND_INCREMENT( SAMPLE_VELOCITY, 3 );
     TEST_AND_INCREMENT( SAMPLE_VORTICITY, 1 );
     TEST_AND_INCREMENT( SAMPLE_ARCLENGTH, 1 );
+    TEST_AND_INCREMENT( SAMPLE_DOM_VISIT, 1 );
     TEST_AND_INCREMENT( SAMPLE_VARIABLE, 1 );
     TEST_AND_INCREMENT( SAMPLE_SECONDARY0, 1 );
     TEST_AND_INCREMENT( SAMPLE_SECONDARY1, 1 );
@@ -311,6 +351,38 @@ size_t avtStateRecorderIntegralCurve::GetSampleStride() const
 
     return stride;
 };
+
+size_t
+avtStateRecorderIntegralCurve::GetSampleIndex(const Attribute &attr) const
+{
+    size_t idx = 0;
+
+#define TEST_AND_INCREMENT(f, n)   \
+    if (historyMask & f)           \
+        if (f == attr)             \
+            return idx;            \
+        else                       \
+            idx += n;              \
+
+    TEST_AND_INCREMENT(SAMPLE_TIME, 1);
+    TEST_AND_INCREMENT(SAMPLE_POSITION, 3);
+    TEST_AND_INCREMENT(SAMPLE_VELOCITY, 3);
+    TEST_AND_INCREMENT(SAMPLE_VORTICITY, 1);
+    TEST_AND_INCREMENT(SAMPLE_ARCLENGTH, 1);
+    TEST_AND_INCREMENT(SAMPLE_DOM_VISIT, 1);
+    TEST_AND_INCREMENT(SAMPLE_VARIABLE, 1);
+    TEST_AND_INCREMENT(SAMPLE_SECONDARY0, 1);
+    TEST_AND_INCREMENT(SAMPLE_SECONDARY1, 1);
+    TEST_AND_INCREMENT(SAMPLE_SECONDARY2, 1);
+    TEST_AND_INCREMENT(SAMPLE_SECONDARY3, 1);
+    TEST_AND_INCREMENT(SAMPLE_SECONDARY4, 1);
+    TEST_AND_INCREMENT(SAMPLE_SECONDARY5, 1);
+#undef TEST_AND_INCREMENT
+    
+    EXCEPTION1(ImproperUseException, 
+        "Invalid attribute to avtStateRecorderIntegralCurve::GetSampleIndex");
+}
+
 
 // ****************************************************************************
 //  Method: avtStateRecorderIntegralCurve::GetSample()
@@ -368,6 +440,11 @@ avtStateRecorderIntegralCurve::GetSample( size_t n ) const
         s.arclength = *(m++);
     else
         s.arclength = 0;
+
+    if (historyMask & SAMPLE_DOM_VISIT)
+        s.numDomainsVisited = *(m++);
+    else
+        s.numDomainsVisited = 0.0;
 
     if( historyMask & SAMPLE_VARIABLE )
         s.variable = *(m++);
@@ -546,6 +623,24 @@ avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtIntegra
         // sanity check: make sure all ids are the same
         assert( v[i]->id == v[0]->id );
     }
+
+    //If use color by 'domains visited' we need to increment the pieces.
+    
+    if (historyMask & SAMPLE_DOM_VISIT)
+    {
+        double lastVal = 0.0;
+
+        for (size_t i = 0; i < vSize; i++)
+            lastVal += v[i]->GetSample(v[i]->GetNumberOfSamples()-1).numDomainsVisited;
+        
+        for (size_t i = 0; i < vSize; i++)
+        {
+            size_t nSamp = v[i]->GetNumberOfSamples();
+            for (size_t j = 0; j < nSamp; j++)
+                v[i]->history[j*GetSampleStride() + GetSampleIndex(SAMPLE_DOM_VISIT)] = lastVal;
+        }
+    }
+    
         
     // now curve pieces are in sorted order and we can simply merge the histories
     // in sequence order; we merge by appending to the first (v[0]'s) history

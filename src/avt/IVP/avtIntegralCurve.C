@@ -323,6 +323,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
     }
 
     status.SetInsideBlock();
+    bool firstStep = true;
     // Loop doing integration steps.
     do
     {
@@ -335,7 +336,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
         {
             // The step was successful, call AnalyzeStep() which will
             // determine((among other things) whether to terminate.
-            AnalyzeStep(step, field);
+            AnalyzeStep(step, field, firstStep);
+            firstStep = false;
 
             // Check if the new position is outside the domain
             // (or in the domain's ghost data); in this case

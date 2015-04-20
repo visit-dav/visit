@@ -126,6 +126,14 @@ avtICAlgorithm::~avtICAlgorithm()
     picsFilter = NULL;
 }
 
+void
+avtICAlgorithm::PostRunAlgorithm()
+{
+    list<avtIntegralCurve *>::const_iterator s;
+    for (s=terminatedICs.begin(); s != terminatedICs.end(); ++s)
+        (*s)->Finalize();
+}
+
 // ****************************************************************************
 //  Method: avtICAlgorithm::GetDomain
 //

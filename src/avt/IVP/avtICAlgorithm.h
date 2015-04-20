@@ -142,7 +142,7 @@ class avtICAlgorithm
   protected:
     virtual void              RunAlgorithm() = 0;
     virtual void              PreRunAlgorithm() {}
-    virtual void              PostRunAlgorithm() {}
+    virtual void              PostRunAlgorithm();
     
     std::string               activeICInfo() const;
     std::string               terminatedICInfo() const;

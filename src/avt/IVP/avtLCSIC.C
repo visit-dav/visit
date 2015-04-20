@@ -199,7 +199,8 @@ avtLCSIC::MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v)
 //
 // ****************************************************************************
 void avtLCSIC::AnalyzeStep( avtIVPStep &step,
-                            avtIVPField *field)
+                            avtIVPField *field,
+                            bool firstStep)
 {
     if (CheckForTermination(step, field))
         status.SetTerminationMet();
