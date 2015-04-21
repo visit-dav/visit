@@ -33,7 +33,7 @@
             <lib name="manta"/>
             <lib name="mpich"/>
             <lib name="mxml"/>
-            <lib name="nektar++"/>
+            <lib name="nektarpp"/>
             <lib name="netcdf"/>
             <lib name="pyside"/>
             <lib name="uintah"/>
@@ -68,7 +68,7 @@
             <lib name="mpich"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
-            <lib name="nektar++"/>
+            <lib name="nektarpp"/>
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
@@ -100,7 +100,7 @@
             <lib name="hdf5"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
-            <lib name="nektar++"/>
+            <lib name="nektarpp"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="visus"/>
@@ -122,7 +122,7 @@
             <lib name="hdf5"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
-            <lib name="nektar++"/>
+            <lib name="nektarpp"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="visus"/>
