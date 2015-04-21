@@ -1,31 +1,31 @@
-function bv_nektar++_initialize
+function bv_nektarpp_initialize
 {
 export DO_NEKTAR_PLUS_PLUS="no"
 export ON_NEKTAR_PLUS_PLUS="off"
 export USE_SYSTEM_NEKTAR_PLUS_PLUS="no"
-add_extra_commandline_args "nektar++" "alt-nektar++-dir" 1 "Use alternative directory for nektar++"
+add_extra_commandline_args "nektarpp" "alt-nektarpp-dir" 1 "Use alternative directory for nektar++"
 }
 
-function bv_nektar++_enable
+function bv_nektarpp_enable
 {
 DO_NEKTAR_PLUS_PLUS="yes"
 ON_NEKTAR_PLUS_PLUS="on"
 }
 
-function bv_nektar++_disable
+function bv_nektarpp_disable
 {
 DO_NEKTAR_PLUS_PLUS="no"
 ON_NEKTAR_PLUS_PLUS="off"
 }
 
-function bv_nektar++_alt_nektar++_dir
+function bv_nektarpp_alt_nektarpp_dir
 {
-    bv_nektar++_enable
+    bv_nektarpp_enable
     USE_SYSTEM_NEKTAR_PLUS_PLUS="yes"
     NEKTAR_PLUS_PLUS_INSTALL_DIR="$1"
 }
 
-function bv_nektar++_depends_on
+function bv_nektarpp_depends_on
 {
     depends_on="cmake boost"
 
@@ -40,14 +40,14 @@ function bv_nektar++_depends_on
     fi
 }
 
-function bv_nektar++_initialize_vars
+function bv_nektarpp_initialize_vars
 {
     if [[ "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "no" ]]; then
         NEKTAR_PLUS_PLUS_INSTALL_DIR="${VISITDIR}/nektar++/$NEKTAR_PLUS_PLUS_VERSION/${VISITARCH}"
     fi
 }
 
-function bv_nektar++_info
+function bv_nektarpp_info
 {
 export NEKTAR_PLUS_PLUS_VERSION=${NEKTAR_PLUS_PLUS_VERSION:-"4.0.1"}
 export NEKTAR_PLUS_PLUS_FILE=${NEKTAR_PLUS_PLUS_FILE:-"nektar++-${NEKTAR_PLUS_PLUS_VERSION}.tar.gz"}
@@ -58,7 +58,7 @@ export NEKTAR_PLUS_PLUS_MD5_CHECKSUM=""
 export NEKTAR_PLUS_PLUS_SHA256_CHECKSUM=""
 }
 
-function bv_nektar++_print
+function bv_nektarpp_print
 {
   printf "%s%s\n" "NEKTAR_PLUS_PLUS_FILE=" "${NEKTAR_PLUS_PLUS_FILE}"
   printf "%s%s\n" "NEKTAR_PLUS_PLUS_VERSION=" "${NEKTAR_PLUS_PLUS_VERSION}"
@@ -66,18 +66,18 @@ function bv_nektar++_print
   printf "%s%s\n" "NEKTAR_PLUS_PLUS_BUILD_DIR=" "${NEKTAR_PLUS_PLUS_BUILD_DIR}"
 }
 
-function bv_nektar++_print_usage
+function bv_nektarpp_print_usage
 {
-printf "%-15s %s [%s]\n" "--nektar++" "Build NEKTAR_PLUS_PLUS" "${DO_NEKTAR_PLUS_PLUS}"
+printf "%-15s %s [%s]\n" "--nektarpp" "Build NEKTAR_PLUS_PLUS" "${DO_NEKTAR_PLUS_PLUS}"
 }
 
-function bv_nektar++_graphical
+function bv_nektarpp_graphical
 {
 local graphical_out="NEKTAR_PLUS_PLUS     $NEKTAR_PLUS_PLUS_VERSION($NEKTAR_PLUS_PLUS_FILE)      $ON_NEKTAR_PLUS_PLUS"
 echo $graphical_out
 }
 
-function bv_nektar++_host_profile
+function bv_nektarpp_host_profile
 {
     if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
         echo >> $HOSTCONF
@@ -113,7 +113,7 @@ function bv_nektar++_host_profile
     fi
 }
 
-function bv_nektar++_ensure
+function bv_nektarpp_ensure
 {
     if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" && "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "no" ]] ; then
         ensure_built_or_ready "nektar++" $NEKTAR_PLUS_PLUS_VERSION $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE $NEKTAR_PLUS_PLUS_URL 
@@ -125,17 +125,17 @@ function bv_nektar++_ensure
     fi
 }
 
-function bv_nektar++_dry_run
+function bv_nektarpp_dry_run
 {
   if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
     echo "Dry run option not set for nektar_PLUS_PLUS."
   fi
 }
 
-function apply_nektar++_patch
+function apply_nektarpp_patch
 {
 #    if [[ "${NEKTAR_PLUS_PLUS_VERSION}" == 4.0.0 ]] ; then
-#        apply_nektar++_zlib_patch
+#        apply_nektarpp_zlib_patch
 #        if [[ $? != 0 ]]; then
 #           return 1
 #        fi
@@ -145,9 +145,9 @@ function apply_nektar++_patch
 }
 
 # *************************************************************************** #
-#              Function 8.1, build_nektar++                                   #
+#              Function 8.1, build_nektarpp                                   #
 # *************************************************************************** #
-function build_nektar++
+function build_nektarpp
 {
     #
     # CMake is the build system for VTK.  Call another script that will build
@@ -176,7 +176,7 @@ function build_nektar++
 
     #
     cd $NEKTAR_PLUS_PLUS_BUILD_DIR || error "Can't cd to Nektar++ build dir." $NEKTAR_PLUS_PLUS_BUILD_DIR 
-    apply_nektar++_patch
+    apply_nektarpp_patch
     if [[ $? != 0 ]]; then
         warn "Patch failed, but continuing."
     fi
@@ -315,7 +315,7 @@ function build_nektar++
     return 0
 }
 
-function bv_nektar++_is_enabled
+function bv_nektarpp_is_enabled
 {
     if [[ $DO_NEKTAR_PLUS_PLUS == "yes" ]]; then
         return 1    
@@ -323,7 +323,7 @@ function bv_nektar++_is_enabled
     return 0
 }
 
-function bv_nektar++_is_installed
+function bv_nektarpp_is_installed
 {
 
     if [[ "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "yes" ]]; then
@@ -337,7 +337,7 @@ function bv_nektar++_is_installed
     return 0
 }
 
-function bv_nektar++_build
+function bv_nektarpp_build
 {
 cd "$START_DIR"
 
@@ -347,7 +347,7 @@ if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" && "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "no" 
         info "Skipping Nektar++ build.  Nektar++ is already installed."
     else
         info "Building Nektar++ (~10 minutes)"
-        build_nektar++
+        build_nektarpp
         if [[ $? != 0 ]] ; then
             error "Unable to build or install Nektar++.  Bailing out."
         fi
