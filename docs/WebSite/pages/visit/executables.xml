@@ -27,7 +27,7 @@ The unix and Mac OS X executables require downloading an install script along wi
 Instructions for installing VisIt can be found in the install notes. The checksums and file sizes are provided for checking that the files were properly downloaded if corruption of the files 
 is suspected during the download process.</p>
 
-<p>All the executables listed on this page only contain serial versions of VisIt unless the platform description indicates that it contains parallel support. If you need a parallel version for a platform not already provided you will need to build visit from source using the <a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/build_visit2_9_0">build_visit</a> script.</p>
+<p>All the executables listed on this page only contain serial versions of VisIt unless the platform description indicates that it contains parallel support. If you need a parallel version for a platform not already provided you will need to build visit from source using the <a href="http://portal.nersc.gov/project/visit/releases/2.9.0/build_visit2_9_0">build_visit</a> script.</p>
 
 <p>If you encounter problems downloading files from this page, NERSC's <code>/project</code> filesystem may be down. You can go <a href="https://www.nersc.gov/users/live-status">here</a> to check for yourself. There, you should find a page that looks something like <a href="content/assets/images/simulation/computer-codes/visit/nersc_live_status3.png" target="_blank">this one</a>. If it shows that <code>/project</code> is down, please try again later.</p>
 
@@ -43,12 +43,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.9.0">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/visit-install2_9_0">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/visit_filesizes">VisIt file sizes</a><br><br> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/visit-install2_9_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/visit_filesizes">VisIt file sizes</a><br><br> </li>
 </ul>
 
 <br /><br />
@@ -62,46 +62,46 @@ is suspected during the download process.</p>
           <td>Windows (Vista / 7 / 8) 32 bit<br />
           Visual Studio 2012<br />
           <i>(Has issues loading lots of database plugins on some systems. Limit the number of database plugins if VisIt hangs on startup.)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/visit2.9.0.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/visit2.9.0.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 64 bit<br />
           Visual Studio 2012<br />
           <i>(Has issues loading lots of database plugins on some systems. Limit the number of database plugins if VisIt hangs on startup.)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/visit2.9.0_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/visit2.9.0_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X 10.8 - Intel 64 bit<br />
           Darwin 10.8.5, Darwin Kernel Version 12.5.0, gcc 4.2.1, MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI. Works on all versions of Mac OS X 10.8 and later. It should be used unless you need the ViSUS reader.)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/VisIt-2.9.0-10.8.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/VisIt-2.9.0-10.8.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X 10.9 - Intel 64 bit<br />
           Darwin 10.9.5, Darwin Kernel Version 13.4.0, Apple LLVM version 5.1 (clang-503.0.38) (based on LLvm 3.4svn), MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI. It only runs on Mac OS X 10.9 and later. It should only be used if you need the ViSUS reader.)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/VisIt-2.9.0-10.9.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/VisIt-2.9.0-10.9.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Redhat Enterprise Linux 6, 2.6.32-504.3.3.el6.x86_64 #1 SMP, gcc 4.4.7<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI and Mesa support for rendering without a display)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/visit2_9_0.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/visit2_9_0.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Ubuntu 11.04, 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5<br />
           <i>(Includes Mesa support for rendering without a display)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/visit2_9_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/visit2_9_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Ubuntu 14.04, 3.13.0-43-generic #72-Ubuntu SMP, gcc 4.8</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/visit2_9_0.linux-x86_64-ubuntu14.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/visit2_9_0.linux-x86_64-ubuntu14.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.9.0/jvisit2.9.0.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.0/jvisit2.9.0.tar.gz">Download</a></td>
         </tr>
       </table>  
   
@@ -109,12 +109,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.8.2">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/visit-install2_8_2">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/visit_filesizes">VisIt file sizes</a><br><br> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/visit-install2_8_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/visit_filesizes">VisIt file sizes</a><br><br> </li>
 </ul>
 
 <br /><br />
@@ -127,33 +127,33 @@ is suspected during the download process.</p>
         <tr>
           <td>Windows (Vista / 7 / 8) 32 bit<br />
           Visual Studio 2012</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/visit2.8.2.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/visit2.8.2.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 64 bit<br />
           Visual Studio 2012</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/visit2.8.2_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/visit2.8.2_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />
           Darwin 10.8.5, Darwin Kernel Version 12.5.0, gcc 4.2.1, MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/VisIt-2.8.2.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/VisIt-2.8.2.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Redhat Enterprise Linux 6, kickit.llnl.gov , 2.6.32-431.29.2.el6.x86_64 #1 SMP gcc 4.4.7<br />
           <i>(Will work on many Linux x86_64 systems.)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/visit2_8_2.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/visit2_8_2.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/visit2_8_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/visit2_8_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.2/jvisit2.8.2.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.2/jvisit2.8.2.tar.gz">Download</a></td>
         </tr>
       </table>  
   
@@ -161,12 +161,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.8.1">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/visit-install2_8_1">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/visit_filesizes">VisIt file sizes</a><br><br> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/visit-install2_8_1">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/visit_filesizes">VisIt file sizes</a><br><br> </li>
 </ul>
 
 <br /><br />
@@ -178,33 +178,33 @@ is suspected during the download process.</p>
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 32 bit<br>Visual Studio 2012</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/visit2.8.1.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/visit2.8.1.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 64 bit<br />
           Visual Studio 2012</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/visit2.8.1_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/visit2.8.1_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />
             Darwin 10.8.5, Darwin Kernel Version 12.5.0, gcc 4.2.1, MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/VisIt-2.8.1.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/VisIt-2.8.1.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
             Redhat Enterprise Linux 6, kickit.llnl.gov , 2.6.32-431.29.2.el6.x86_64 #1 SMP gcc 4.4.7<br />
           Will work on many Linux x86_64 systems.</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/visit2_8_1.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/visit2_8_1.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/visit2_8_1.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/visit2_8_1.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.1/jvisit2.8.1.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.1/jvisit2.8.1.tar.gz">Download</a></td>
         </tr>
       </table>  
   
@@ -212,12 +212,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.8.0">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit-install2_8_0">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit_filesizes">VisIt file sizes</a><br><br> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/visit-install2_8_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/visit_filesizes">VisIt file sizes</a><br><br> </li>
 </ul>
 
 <br /><br />
@@ -229,33 +229,33 @@ is suspected during the download process.</p>
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 32 bit<br>Visual Studio 2012</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit2.8.0.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/visit2.8.0.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 64 bit<br />
           Visual Studio 2012</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit2.8.0_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/visit2.8.0_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />
             Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/VisIt-2.8.0.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/VisIt-2.8.0.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
             Redhat Enterprise Linux 6, kickit.llnl.gov , 2.6.32-358.18.1.el6.x86_64 #1 SMP gcc 4.4.7<br />
           Will work on many Linux x86_64 systems.</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit2_8_0.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/visit2_8_0.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/visit2_8_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/visit2_8_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.8.0/jvisit2.8.0.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.8.0/jvisit2.8.0.tar.gz">Download</a></td>
         </tr>
       </table>  
   
@@ -263,12 +263,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.7.3">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/visit-install2_7_3">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/visit_filesizes">VisIt file sizes</a><br><br> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/visit-install2_7_3">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/visit_filesizes">VisIt file sizes</a><br><br> </li>
 </ul>
 
 <br /><br />
@@ -280,33 +280,33 @@ is suspected during the download process.</p>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 32 bit<br>Visual Studio 2010</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/visit2.7.3.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/visit2.7.3.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />
           Visual Studio 2010</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/visit2.7.3_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/visit2.7.3_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />
             Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/VisIt-2.7.3.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/VisIt-2.7.3.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
             Redhat Enterprise Linux 6, kickit.llnl.gov , 2.6.32-358.18.1.el6.x86_64 #1 SMP gcc 4.4.7<br />
           Will work on many Linux x86_64 systems.</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/visit2_7_3.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/visit2_7_3.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/visit2_7_3.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/visit2_7_3.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.3/jvisit2.7.3.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.3/jvisit2.7.3.tar.gz">Download</a></td>
         </tr>
       </table>  
   
@@ -314,12 +314,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.7.2">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/visit-install2_7_2">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/visit_filesizes">VisIt file sizes</a><br><br> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/visit-install2_7_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/visit_filesizes">VisIt file sizes</a><br><br> </li>
 </ul>
 
 <br /><br />
@@ -331,33 +331,33 @@ is suspected during the download process.</p>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 32 bit<br>Visual Studio 2010</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/visit2.7.2.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/visit2.7.2.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />
           Visual Studio 2010</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/visit2.7.2_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/visit2.7.2_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />
             Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/VisIt-2.7.2.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/VisIt-2.7.2.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
             Redhat Enterprise Linux 6, kickit.llnl.gov , 2.6.32-358.18.1.el6.x86_64 #1 SMP gcc 4.4.7<br />
           Will work on many Linux x86_64 systems.</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/visit2_7_2.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/visit2_7_2.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/visit2_7_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/visit2_7_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.2/jvisit2.7.2.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.2/jvisit2.7.2.tar.gz">Download</a></td>
         </tr>
       </table>  
 
@@ -365,12 +365,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.7.1">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit-install2_7_1">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit_filesizes">VisIt file sizes</a></li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/visit-install2_7_1">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/visit_filesizes">VisIt file sizes</a></li>
 </ul>
 <br /><br />
 
@@ -381,33 +381,33 @@ is suspected during the download process.</p>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 32 bit<br>Visual Studio 2010</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit2.7.1.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/visit2.7.1.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />
           Visual Studio 2010</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit2.7.1_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/visit2.7.1_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />
             Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/VisIt-2.7.1.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/VisIt-2.7.1.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
             Redhat Enterprise Linux 6, kickit.llnl.gov , 2.6.32-358.18.1.el6.x86_64 #1 SMP gcc 4.4.7<br />
           Will work on many Linux x86_64 systems.</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit2_7_1.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/visit2_7_1.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/visit2_7_1.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/visit2_7_1.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.1/jvisit2.7.1.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.1/jvisit2.7.1.tar.gz">Download</a></td>
         </tr>
       </table>  
 
@@ -415,12 +415,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.7.0">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit-install2_7_0">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit_filesizes">VisIt file sizes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/visit-install2_7_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/visit_filesizes">VisIt file sizes</a> </li>
 </ul>
 <br /><br />
 
@@ -431,45 +431,45 @@ is suspected during the download process.</p>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 32 bit<br>Visual Studio 2010</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit2.7.0.exe">Download<</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/visit2.7.0.exe">Download<</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />
           Visual Studio 2010</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit2.7.0_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/visit2.7.0_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />
             Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/VisIt-2.7.0-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/VisIt-2.7.0-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
             Redhat Enterprise Linux 6, kickit.llnl.gov , 2.6.32-358.18.1.el6.x86_64 #1 SMP gcc 4.4.7<br />
           Will work on many Linux x86_64 systems.</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit2_7_0.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/visit2_7_0.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/visit2_7_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/visit2_7_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.7.0/jvisit2.7.0.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.7.0/jvisit2.7.0.tar.gz">Download</a></td>
         </tr>
       </table> 
   
 <h2>VisIt 2.6.3</h2>
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.6.3">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit-install2_6_3">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit_filesizes">VisIt file sizes</a></li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/visit-install2_6_3">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/visit_filesizes">VisIt file sizes</a></li>
 </ul>
 <br /><br />
  
@@ -482,44 +482,44 @@ is suspected during the download process.</p>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 32 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit2.6.3.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/visit2.6.3.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit2.6.3_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/visit2.6.3_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/VisIt-2.6.3-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/VisIt-2.6.3-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov , 2.6.32-279.9.1.el6.x86_64 #1 SMP gcc 4.4.6<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit2_6_3.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/visit2_6_3.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/visit2_6_3.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/visit2_6_3.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.3/jvisit2.6.3.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.3/jvisit2.6.3.tar.gz">Download</a></td>
         </tr>
       </table>
 
 <h2>VisIt 2.6.2</h2>
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.6.2">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit-install2_6_2">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit_filesizes">VisIt file sizes</a></li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/visit-install2_6_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/visit_filesizes">VisIt file sizes</a></li>
 </ul>
 <table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
         <tr> 
@@ -530,44 +530,44 @@ is suspected during the download process.</p>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 32 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit2.6.2.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/visit2.6.2.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit2.6.2_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/visit2.6.2_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/VisIt-2.6.2-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/VisIt-2.6.2-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov , 2.6.32-279.9.1.el6.x86_64 #1 SMP gcc 4.4.6<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit2_6_2.linux-x86_64-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/visit2_6_2.linux-x86_64-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/visit2_6_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/visit2_6_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.2/jvisit2.6.2.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.2/jvisit2.6.2.tar.gz">Download</a></td>
         </tr>
 </table>
   
 <h2>VisIt 2.6.1</h2>
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.6.1">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit-install2_6_1">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit_filesizes">VisIt file sizes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/visit-install2_6_1">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/visit_filesizes">VisIt file sizes</a> </li>
 </ul>
 
 <table class="table table-striped" border="0" align="center" cellpadding="3" cellspacing="1">
@@ -579,44 +579,44 @@ is suspected during the download process.</p>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 32 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit2.6.1.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/visit2.6.1.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit2.6.1_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/visit2.6.1_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/VisIt-2.6.1-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/VisIt-2.6.1-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov, 2.6.32-279.9.1.el6.x86_64 #1 SMP gcc 4.4.6<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit2_6_1.linux-x86_64-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/visit2_6_1.linux-x86_64-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/visit2_6_1.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/visit2_6_1.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.1/jvisit2.6.1.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.1/jvisit2.6.1.tar.gz">Download</a></td>
         </tr>
 </table>
 
 <h2>VisIt 2.6</h2>
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.6.0">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit-install2_6_0">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit_filesizes">VisIt file sizes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/visit-install2_6_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/visit_filesizes">VisIt file sizes</a> </li>
 </ul>
 
 <table class="table table-striped" border="0" align="center" cellpadding="3" cellspacing="1">
@@ -628,44 +628,44 @@ is suspected during the download process.</p>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 32 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit2.6.0.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/visit2.6.0.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7 / 8) 64 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit2.6.0_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/visit2.6.0_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/VisIt-2.6.0-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/VisIt-2.6.0-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov , 2.6.32-279.9.1.el6.x86_64 #1 SMP gcc 4.4.6<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit2_6_0.linux-x86_64-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/visit2_6_0.linux-x86_64-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/visit2_6_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/visit2_6_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.6.0/jvisit2.6.0.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.6.0/jvisit2.6.0.tar.gz">Download</a></td>
         </tr>
 </table>
 
 <h2>VisIt 2.5.2</h2>
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.5.2">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit-install2_5_2">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit-install2_5_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
 </ul>
 
 <table class="table table-striped" border="0" align="center" cellpadding="3" cellspacing="1">
@@ -677,64 +677,64 @@ is suspected during the download process.</p>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-308.1.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2_5_2.linux-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit2_5_2.linux-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, sidious.llnl.gov 2.6.18-308.4.1.el5 #1 SMP, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2_5_2.linux-x86_64-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit2_5_2.linux-x86_64-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 6, hoth.llnl.gov 2.6.32-220.13.1.el6.x86_64 #1 SMP, gcc 4.4.6</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2_5_2.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit2_5_2.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2_5_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit2_5_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2_5_2.linux-euclid.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit2_5_2.linux-euclid.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 32 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2.5.2.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit2.5.2.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 64 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/visit2.5.2_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/visit2.5.2_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
           <td>darwin-i386</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/VisIt-2.5.2-i386-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/VisIt-2.5.2-i386-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/VisIt-2.5.2-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/VisIt-2.5.2-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.2/jvisit2.5.2.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.2/jvisit2.5.2.tar.gz">Download</a></td>
         </tr>
 </table>
 
 <h2>VisIt 2.5.1</h2>
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.5.1">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit-install2_5_1">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit-install2_5_1">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
 </ul>
 
 <table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
@@ -746,64 +746,64 @@ is suspected during the download process.</p>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-308.1.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2_5_1.linux-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit2_5_1.linux-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, sidious.llnl.gov 2.6.18-308.4.1.el5 #1 SMP, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2_5_1.linux-x86_64-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit2_5_1.linux-x86_64-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 6, hoth.llnl.gov 2.6.32-220.13.1.el6.x86_64 #1 SMP, gcc 4.4.6</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2_5_1.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit2_5_1.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2_5_1.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit2_5_1.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2_5_1.linux-euclid.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit2_5_1.linux-euclid.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 32 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2.5.1.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit2.5.1.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 64 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/visit2.5.1_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/visit2.5.1_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
           <td>darwin-i386</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/VisIt-2.5.1-i386-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/VisIt-2.5.1-i386-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/VisIt-2.5.1-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/VisIt-2.5.1-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.1/jvisit2.5.1.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.1/jvisit2.5.1.tar.gz">Download</a></td>
         </tr>
 </table>
 
 <h2>VisIt 2.5</h2>
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.5.0">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit-install2_5_0">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit-install2_5_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
 </ul>
 
 <table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
@@ -815,64 +815,64 @@ is suspected during the download process.</p>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-308.1.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2_5_0.linux-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit2_5_0.linux-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, sidious.llnl.gov 2.6.18-308.4.1.el5 #1 SMP, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2_5_0.linux-x86_64-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit2_5_0.linux-x86_64-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 6, hoth.llnl.gov 2.6.32-220.13.1.el6.x86_64 #1 SMP, gcc 4.4.6</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2_5_0.linux-x86_64-rhel6.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit2_5_0.linux-x86_64-rhel6.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2_5_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit2_5_0.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2_5_0.linux-euclid.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit2_5_0.linux-euclid.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 32 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2.5.0.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit2.5.0.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 64 bit<br />Visual Studio 2010</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/visit2.5.0_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/visit2.5.0_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
           <td>darwin-i386</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/VisIt-2.5.0-i386-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/VisIt-2.5.0-i386-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/VisIt-2.5.0-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/VisIt-2.5.0-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.5.0/jvisit2.5.0.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.5.0/jvisit2.5.0.tar.gz">Download</a></td>
         </tr>
 </table>
 
 <h2>VisIt 2.4.2</h2>
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.4.2">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit-install2_4_2">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit-install2_4_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
 </ul>
 
 <table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
@@ -884,64 +884,64 @@ is suspected during the download process.</p>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2_4_2.linux-rhel3.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit2_4_2.linux-rhel3.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-238.12.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2_4_2.linux-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit2_4_2.linux-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, sidious.llnl.gov 2.6.18-308.el5 #1 SMP, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2_4_2.linux-x86_64.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit2_4_2.linux-x86_64.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 11.04, ubuntu1104-64.llnl.gov 2.6.38-8-generic #42-Ubuntu SMP, gcc 4.5.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2_4_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit2_4_2.linux-x86_64-ubuntu11.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2_4_2.linux-euclid.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit2_4_2.linux-euclid.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2.4.2.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit2.4.2.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/visit2.4.2_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/visit2.4.2_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
           <td>darwin-i386</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/VisIt-2.4.2-i386-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/VisIt-2.4.2-i386-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/VisIt-2.4.2-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/VisIt-2.4.2-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.2/jvisit2.4.2.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.2/jvisit2.4.2.tar.gz">Download</a></td>
         </tr>
 </table>
 
 <h2>VisIt 2.4.1</h2>
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.4.1">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit-install2_4_1">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit-install2_4_1">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
 </ul>
 
 <table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
@@ -953,62 +953,62 @@ is suspected during the download process.</p>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-rhel3.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit2_4_1.linux-rhel3.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-rhel4.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit2_4_1.linux-rhel4.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-238.12.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit2_4_1.linux-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-x86_64-rhel4.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit2_4_1.linux-x86_64-rhel4.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit2_4_1.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-x86_64.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit2_4_1.linux-x86_64.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2_4_1.linux-euclid.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit2_4_1.linux-euclid.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2.4.1.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit2.4.1.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/visit2.4.1_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/visit2.4.1_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
           <td>darwin-i386</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/VisIt-2.4.1-i386-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/VisIt-2.4.1-i386-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/VisIt-2.4.1-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/VisIt-2.4.1-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.1/jvisit2.4.1.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.1/jvisit2.4.1.tar.gz">Download</a></td>
         </tr>
 </table>
 
@@ -1016,12 +1016,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.4.0">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit-install2_4_0">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit-install2_4_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
 </ul>
 
 <table class="table table-striped" border="0" cellpadding="3" cellspacing="1">
@@ -1033,57 +1033,57 @@ is suspected during the download process.</p>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-rhel3.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit2_4_0.linux-rhel3.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-rhel4.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit2_4_0.linux-rhel4.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-238.12.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit2_4_0.linux-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-x86_64-rhel4.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit2_4_0.linux-x86_64-rhel4.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit2_4_0.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-x86_64.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit2_4_0.linux-x86_64.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2_4_0.linux-euclid.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit2_4_0.linux-euclid.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2.4.0.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit2.4.0.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/visit2.4.0_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/visit2.4.0_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
           <td>darwin-i386</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/VisIt-2.4.0-i386-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/VisIt-2.4.0-i386-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.4.0/VisIt-2.4.0-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.4.0/VisIt-2.4.0-x86_64-installer.dmg">Download</a></td>
         </tr>
 </table>
 
@@ -1091,12 +1091,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.3.2">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit-install2_3_2">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit-install2_3_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
 </ul>
 
 <table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
@@ -1108,62 +1108,62 @@ is suspected during the download process.</p>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-rhel3.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit2_3_2.linux-rhel3.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-rhel4.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit2_3_2.linux-rhel4.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-238.12.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit2_3_2.linux-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-x86_64-rhel4.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit2_3_2.linux-x86_64-rhel4.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit2_3_2.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-x86_64.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit2_3_2.linux-x86_64.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2_3_2.linux-euclid.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit2_3_2.linux-euclid.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2.3.2.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit2.3.2.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/visit2.3.2_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/visit2.3.2_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
           <td>darwin-i386</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/VisIt-2.3.2-i386-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/VisIt-2.3.2-i386-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/VisIt-2.3.2-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/VisIt-2.3.2-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.2/jvisit2.3.2.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.2/jvisit2.3.2.tar.gz">Download</a></td>
         </tr>
 </table>
 
@@ -1171,12 +1171,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.3.1">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit-install2_3_1">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit-install2_3_1">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
 </ul>
 
 <table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
@@ -1188,62 +1188,62 @@ is suspected during the download process.</p>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-rhel3.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit2_3_1.linux-rhel3.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-rhel4.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit2_3_1.linux-rhel4.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 5, kickit.llnl.gov 2.6.18-238.12.1.el5PAE #1 SMP, gcc 4.1.2<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-rhel5.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit2_3_1.linux-rhel5.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-x86_64-rhel4.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit2_3_1.linux-x86_64-rhel4.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit2_3_1.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-x86_64.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit2_3_1.linux-x86_64.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2_3_1.linux-euclid.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit2_3_1.linux-euclid.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2.3.1.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit2.3.1.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/visit2.3.1_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/visit2.3.1_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
           <td>darwin-i386</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/VisIt-2.3.1-i386-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/VisIt-2.3.1-i386-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/VisIt-2.3.1-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/VisIt-2.3.1-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.1/jvisit2.3.1.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.1/jvisit2.3.1.tar.gz">Download</a></td>
         </tr>
 </table>
 
@@ -1251,12 +1251,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.3.0">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit-install2_3_0">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit-install2_3_0">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
 </ul>
 
 <table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
@@ -1268,52 +1268,52 @@ is suspected during the download process.</p>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
           <td>linux-intel</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-rhel3.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit2_3_0.linux-rhel3.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit2_3_0.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-x86_64-rhel4.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit2_3_0.linux-x86_64-rhel4.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-x86_64.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit2_3_0.linux-x86_64.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
           <td>linux-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2_3_0.linux-euclid.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit2_3_0.linux-euclid.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2.3.0.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit2.3.0.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/visit2.3.0_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/visit2.3.0_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
           <td>darwin-i386</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/VisIt-2.3.0-i386-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/VisIt-2.3.0-i386-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
           <td>darwin-x86_64</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/VisIt-2.3.0-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/VisIt-2.3.0-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
           <td>&nbsp;</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.3.0/jvisit2.3.0.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.3.0/jvisit2.3.0.tar.gz">Download</a></td>
         </tr>
 </table>
 
@@ -1321,12 +1321,12 @@ is suspected during the download process.</p>
 
 <ul>
   <li><a href="simulation/computer-codes/visit/releases/release-notes-2.2.2">VisIt release notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit-install2_2_2">VisIt install script</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/INSTALL_NOTES">VisIt install notes</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
-  <li><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit-install2_2_2">VisIt install script</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/INSTALL_NOTES">VisIt install notes</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit_sha256_checksums">VisIt sha256 checksums</a> </li>
+  <li><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit_filesizes">VisIt file sizes</a><br /><br /> </li>
 </ul>
 
 <table class="table table-striped"  border="0" cellpadding="3" cellspacing="1">
@@ -1336,47 +1336,47 @@ is suspected during the download process.</p>
         </tr>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2c.ELsmp, gcc 3.2.3<br />Will work on most Linux x86 systems.</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-rhel3.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit2_2_2.linux-rhel3.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86 32 bit<br />Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-89.0.16.ELsmp, gcc 3.4.6<br />Will work on most Linux x86 systems.</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-rhel4.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit2_2_2.linux-rhel4.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Ubuntu 8.04, pion.ornl.gov 2.6.24-19, gcc 4.2.4</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit2_2_2.linux-x86_64-ubuntu8.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 4, photon.ornl.gov 2.6.9-89.0.20.ELsmp, gcc 3.4.6<br />Will work on most Linux x86_64 systems.</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-x86_64-rhel4.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit2_2_2.linux-x86_64-rhel4.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Redhat Enterprise Linux 5, aztec.llnl.gov 2.6.18-102chaos, gcc 4.1.2<br />Will work on most Linux x86_64 systems.</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-x86_64.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit2_2_2.linux-x86_64.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />Scientific Linux SL release 5.4, euclid.nersc.gov 2.6.18-164.9.1.el5-bsdv3, gcc 4.1.2</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2_2_2.linux-euclid.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit2_2_2.linux-euclid.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 32 bit<br />MSVC9, Visual Studio 2008</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2.2.2.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit2.2.2.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Xp / Vista / 7) 64 bit<br />MSVC9, Visual Studio 2008</td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/visit2.2.2_x64.exe">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/visit2.2.2_x64.exe">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel<br />Darwin 10.5, Darwin Kernel Version 9.7.0, gcc 4.0.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.5's default MPI)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/VisIt-2.2.2-i386-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/VisIt-2.2.2-i386-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Mac OS X - Intel 64 bit<br />Darwin 10.6.3, Darwin Kernel Version 10.3.0, gcc 4.2.1, OpenMPI<br /><i>(Includes parallel VisIt compatible with MacOS X 10.6's default MPI)</i></td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/VisIt-2.2.2-x86_64-installer.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/VisIt-2.2.2-x86_64-installer.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
-          <td><a href="http://portal.nersc.gov/svn/visit/trunk/releases/2.2.2/jvisit2.2.2.tar.gz">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.2.2/jvisit2.2.2.tar.gz">Download</a></td>
         </tr>
 </table>
 
