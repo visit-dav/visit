@@ -5679,6 +5679,10 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
 //
+//    Kevin Griffin, Tue Apr 21 17:41:51 PDT 2015
+//    Changed all calls from Exchange*Vector (* = Float, Double, etc) to
+//    ExchangeVector.
+//
 // ****************************************************************************
 
 bool
@@ -6316,7 +6320,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             vectors.push_back(s);
         }
         vector<vtkDataArray *> vectorsOut;
-        vectorsOut = dbi->ExchangeFloatVector(doms, isPointData, vectors);
+        vectorsOut = dbi->ExchangeVector(doms, isPointData, vectors);
         for (i = 0 ; i < doms.size() ; i++)
         {
             vtkDataSet *ds1 = ds.GetDataset(i, 0);
@@ -6423,8 +6427,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                     vectors.push_back(atts->GetArray(*curVar));
                 }
                 vector<vtkDataArray *> vectorsOut;
-                vectorsOut = dbi->ExchangeFloatVector(doms,isPointData,
-                                                      vectors);
+                vectorsOut = dbi->ExchangeVector(doms,isPointData,vectors);
                 for (j = 0 ; j < doms.size() ; j++)
                 {
                     vtkDataSet *ds1 = ds.GetDataset(j, 0);
@@ -6563,7 +6566,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                                                 "avtOriginalNodeNumbers"));
         }
         vector<vtkDataArray *> nodeNumsOut;
-        nodeNumsOut = dbi->ExchangeIntVector(doms,true,nodeNums);
+        nodeNumsOut = dbi->ExchangeVector(doms,true,nodeNums);
         for (j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);
@@ -6585,7 +6588,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                                                 "avtOriginalCellNumbers"));
         }
         vector<vtkDataArray *> cellNumsOut;
-        cellNumsOut = dbi->ExchangeIntVector(doms,false,cellNums);
+        cellNumsOut = dbi->ExchangeVector(doms,false,cellNums);
         for (j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);
@@ -6607,7 +6610,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                                                 "avtGlobalNodeNumbers"));
         }
         vector<vtkDataArray *> nodeNumsOut;
-        nodeNumsOut = dbi->ExchangeIntVector(doms,true,nodeNums);
+        nodeNumsOut = dbi->ExchangeVector(doms,true,nodeNums);
         for (j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);
@@ -6629,7 +6632,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                                                 "avtGlobalZoneNumbers"));
         }
         vector<vtkDataArray *> cellNumsOut;
-        cellNumsOut = dbi->ExchangeIntVector(doms,false,cellNums);
+        cellNumsOut = dbi->ExchangeVector(doms,false,cellNums);
         for (j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);

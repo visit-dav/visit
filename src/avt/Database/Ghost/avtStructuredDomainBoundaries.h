@@ -295,6 +295,10 @@ class BoundaryHelperFunctions
 //    Gunther H. Weber, Thu Aug 21 14:16:29 PDT 2014
 //    Make new ghost zone generation method default.
 //
+//    Kevin Griffin, Tue Apr 21 17:41:51 PDT 2015
+//    Added the ExchangeVector method so that the Exchange*Vector methods can
+//    be called based on the underlying data type.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
@@ -334,17 +338,9 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
                                              bool                  isPointData,
                                              std::vector<vtkDataArray*> scalars);
 
-    virtual std::vector<vtkDataArray*>     ExchangeFloatVector(std::vector<int> domainNum,
-                                            bool                   isPointData,
-                                            std::vector<vtkDataArray*>  vectors);
-
-    virtual std::vector<vtkDataArray*>     ExchangeDoubleVector(std::vector<int> domainNum,
-                                            bool                   isPointData,
-                                            std::vector<vtkDataArray*>  vectors);
-
-    virtual std::vector<vtkDataArray*>     ExchangeIntVector(std::vector<int>  domainNum,
-                                             bool                  isPointData,
-                                             std::vector<vtkDataArray*> vectors);
+    virtual std::vector<vtkDataArray*>     ExchangeVector(std::vector<int> domainNum,
+                                                               bool                   isPointData,
+                                                               std::vector<vtkDataArray*>  vectors);
 
     virtual std::vector<avtMaterial*>      ExchangeMaterial(std::vector<int>   domainNum,
                                               std::vector<avtMaterial*>   mats);
@@ -378,6 +374,18 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     virtual std::vector<vtkDataArray*>     ExchangeUCharScalar(std::vector<int> domainNum,
                                              bool                  isPointData,
                                              std::vector<vtkDataArray*> scalars);
+    
+    virtual std::vector<vtkDataArray*>     ExchangeFloatVector(std::vector<int> domainNum,
+                                                               bool                   isPointData,
+                                                               std::vector<vtkDataArray*>  vectors);
+    
+    virtual std::vector<vtkDataArray*>     ExchangeDoubleVector(std::vector<int> domainNum,
+                                                                bool                   isPointData,
+                                                                std::vector<vtkDataArray*>  vectors);
+    
+    virtual std::vector<vtkDataArray*>     ExchangeIntVector(std::vector<int>  domainNum,
+                                                             bool                  isPointData,
+                                                             std::vector<vtkDataArray*> vectors);
 
 
     static bool                       createGhostsForTIntersections;
