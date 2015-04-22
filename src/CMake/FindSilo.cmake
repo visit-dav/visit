@@ -103,6 +103,11 @@ IF (WIN32)
         )
   ENDIF()
 ELSE (WIN32)
+# Note: We're not handling silo's possible direct dependence on zlib
+# correctly here. If we were, we would check Silo for whether it was
+# compiled with hzip/fpzip compression enabled (which it is by default)
+# and then add (or not add) 'z' for both siloh5 and silo targets.
+# This is issue #2240
     FIND_LIBRARY(SILOH5_LIBRARY_EXISTS
       NAME siloh5
       PATHS ${SILO_DIR}/lib
@@ -111,7 +116,7 @@ ELSE (WIN32)
       NO_CMAKE_PATH
       NO_SYSTEM_ENVIRONMENT_PATH)
     IF(SILOH5_LIBRARY_EXISTS)
-        SET_UP_THIRD_PARTY(SILO lib include siloh5)
+        SET_UP_THIRD_PARTY(SILO lib include siloh5 hdf5)
     ELSE(SILOH5_LIBRARY_EXISTS)
         SET_UP_THIRD_PARTY(SILO lib include silo)
     ENDIF(SILOH5_LIBRARY_EXISTS)
