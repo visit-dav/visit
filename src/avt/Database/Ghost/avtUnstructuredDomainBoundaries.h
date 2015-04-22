@@ -87,6 +87,10 @@ class avtMaterial;
 //    Hank Childs, Fri Mar  2 07:43:47 PST 2007
 //    Add support for exchanging mixed materials.
 //
+//    Kevin Griffin, Tue Apr 21 17:41:51 PDT 2015
+//    Added the ExchangeVector method to call the correct Exchange*Vector method
+//    based on the underlying data. (* = Float, Double, etc)
+//
 // ****************************************************************************
 
 class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
@@ -110,26 +114,15 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
     virtual std::vector<vtkDataSet*>    ExchangeMesh(
                                          std::vector<int> domainNum,
                                          std::vector<vtkDataSet*>   meshes);
-
+    
     virtual std::vector<vtkDataArray*>  ExchangeScalar(
                                          std::vector<int> domainNum,
                                          bool isPointData,
                                          std::vector<vtkDataArray*> scalars);
-
-    virtual std::vector<vtkDataArray*>  ExchangeFloatVector(
-                                         std::vector<int> domainNum,
-                                         bool isPointData,
-                                         std::vector<vtkDataArray*> vectors);
-
-    virtual std::vector<vtkDataArray*>  ExchangeDoubleVector(
-                                         std::vector<int> domainNum,
-                                         bool isPointData,
-                                         std::vector<vtkDataArray*> vectors);
-
-    virtual std::vector<vtkDataArray*>  ExchangeIntVector(
-                                         std::vector<int> domainNum,
-                                         bool isPointData,
-                                         std::vector<vtkDataArray*> vectors);
+    
+    virtual std::vector<vtkDataArray*>  ExchangeVector(std::vector<int> domainNum,
+                                                       bool isPointData,
+                                                       std::vector<vtkDataArray*> vectors);
 
     virtual std::vector<avtMaterial*>   ExchangeMaterial(
                                          std::vector<int> domainNum,
@@ -222,6 +215,23 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                bool isPointData,
                                T ***&gainedData,
                                int **&nGainedTuples);
+    
+private:
+    
+    virtual std::vector<vtkDataArray*>  ExchangeFloatVector(
+                                                            std::vector<int> domainNum,
+                                                            bool isPointData,
+                                                            std::vector<vtkDataArray*> vectors);
+    
+    virtual std::vector<vtkDataArray*>  ExchangeDoubleVector(
+                                                             std::vector<int> domainNum,
+                                                             bool isPointData,
+                                                             std::vector<vtkDataArray*> vectors);
+    
+    virtual std::vector<vtkDataArray*>  ExchangeIntVector(
+                                                          std::vector<int> domainNum,
+                                                          bool isPointData,
+                                                          std::vector<vtkDataArray*> vectors);
 };
 
 #endif

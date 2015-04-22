@@ -59,7 +59,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The 3D tab in the Annotations window has been modified so that the bounding box settings can be modified even when the axes portion is turned off.</li>
   <li>A bug was fixed where Plot/Operator windows accepting doubles as input would truncate and/or round numbers being entered, thus possibly causing loss of significant digits.  Occurred generally for very small numbers.</li>
   <li>Fixed a glitch with the Expression creator window, where text could be parsed as html, eg &lt;P&gt; became new paragraph.</li>
- 
+  <li>Created a generic ExchangeVector method to call the correct Exchange*Vector method based on the underlying data type during ghost zone communication.</li> 
 </ul>
 
 <a name="Enhancements"></a>
