@@ -94,6 +94,10 @@ class avtMaterial;
 //    Brad Whitlock, Sun Apr 22 10:32:28 PDT 2012
 //    Added ExchangeDoubleVector.
 //
+//    Kevin Griffin, Tue Apr 21 17:41:51 PDT 2015
+//    Removed the Exchange*Vector methods and replaced with ExchangeVector
+//    so that the right method is called based on the data type like ExchangeScalar.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDomainBoundaries
@@ -108,18 +112,10 @@ class DATABASE_API avtDomainBoundaries
     virtual std::vector<vtkDataArray*>     ExchangeScalar(std::vector<int>     domainNum,
                                                bool                  isPointData,
                                                std::vector<vtkDataArray*> scalars) =0;
-
-    virtual std::vector<vtkDataArray*>     ExchangeFloatVector(std::vector<int> domainNum,
-                                               bool                   isPointData,
-                                               std::vector<vtkDataArray*>  vectors) =0;
-
-    virtual std::vector<vtkDataArray*>     ExchangeDoubleVector(std::vector<int> domainNum,
-                                               bool                   isPointData,
-                                               std::vector<vtkDataArray*>  vectors) =0;
-
-    virtual std::vector<vtkDataArray*>     ExchangeIntVector(std::vector<int>  domainNum,
-                                               bool                  isPointData,
-                                               std::vector<vtkDataArray*> vectors) =0;
+    
+    virtual std::vector<vtkDataArray*>     ExchangeVector(std::vector<int> domainNum,
+                                                               bool                   isPointData,
+                                                               std::vector<vtkDataArray*>  vectors) =0;
 
     virtual std::vector<avtMaterial*>      ExchangeMaterial(std::vector<int>   domainNum,
                                               std::vector<avtMaterial*>   mats)    =0;

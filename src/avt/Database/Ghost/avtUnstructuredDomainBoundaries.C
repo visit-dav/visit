@@ -658,6 +658,50 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
     return scalars;
 }
 
+// ****************************************************************************
+//  Method:  avtUnstructuredDomainBoundaries::ExchangeVector
+//
+//  Purpose:
+//    Exchange the ghost zone information for some vectors,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    vectors      an array of vectors
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    April 21, 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vector<vtkDataArray*>
+avtUnstructuredDomainBoundaries::ExchangeVector(vector<int> domainNum, bool isPointData, vector<vtkDataArray*> vectors)
+{
+    int dataType = (vectors.empty() ? -1 : vectors[0]->GetDataType());
+    
+    if (dataType < 0)
+        return vectors;
+    
+    switch (dataType)
+    {
+        case VTK_FLOAT:
+            return ExchangeFloatVector(domainNum, isPointData, vectors);
+            break;
+        case VTK_DOUBLE:
+            return ExchangeDoubleVector(domainNum, isPointData, vectors);
+            break;
+        case VTK_INT:
+        case VTK_UNSIGNED_INT:
+            return ExchangeIntVector(domainNum, isPointData, vectors);
+            break;
+        default:
+            EXCEPTION1(VisItException, "Unknown vector type in "
+                       "avtUnstructuredDomainBoundaries::ExchangeVector");
+    }
+}
 
 // ****************************************************************************
 //  Method:  avtUnstructuredDomainBoundaries::ExchangeFloatVector
