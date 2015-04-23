@@ -460,4 +460,15 @@ inline std::ostream& operator<<(std::ostream& out,
     return out;
 }
 
+template< class IC>
+IC * icFromID(int id, std::vector<IC *> &ics)
+{
+    for (size_t i = 0; i < ics.size(); i++)
+    {
+        if (ics[i]->id == id)
+            return dynamic_cast<IC *>(ics[i]);
+    }
+
+    return NULL;
+}
 #endif //  AVT_INTEGRAL_CURVE_H
