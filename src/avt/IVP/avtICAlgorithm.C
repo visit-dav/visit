@@ -165,6 +165,9 @@ avtICAlgorithm::PostRunAlgorithm()
 vtkDataSet *
 avtICAlgorithm::GetDomain(avtIntegralCurve *ic)
 {
+  if( ic == NULL )
+    return NULL;
+
   if (!ic->blockList.empty())
   {
     avtVector pt = ic->CurrentLocation();

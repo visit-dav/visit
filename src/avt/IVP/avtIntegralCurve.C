@@ -289,7 +289,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
     // For a directionless field the initial velocity direction needs
     // to be known.
-    if( field->GetDirectionless() )
+    if( field->GetDirectionless() && ivp->GetCurrentV().length() == 0.0 )
+
     {
       // Find the value sans orientation checks.
       field->SetDirectionless( false );
@@ -519,8 +520,16 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
     if (DebugStream::Level5())
     {
-        debug5 << "avtIntegralCurve::Advance(): done, status: "<<status<<endl;
+        debug5 << "avtIntegralCurve::Advance(): done, "
+               << "numver of steps taken " << numStepsTaken << "  "
+               << "status: " << status << std::endl;
     }
+
+    // if( 1000 < id && id < 1002 )
+    // std::cerr << "avtIntegralCurve::Advance(): done, "
+    //        << "numver of steps taken " << numStepsTaken << "  "
+    //        << "status: " << status << std::endl;
+
     return numStepsTaken;
 }
 
