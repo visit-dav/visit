@@ -91,13 +91,6 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
     const unsigned char *meshColor = atts->GetMeshColor().GetColor();
     SNPRINTF(tmpStr, 1000, "%smeshColor = (%d, %d, %d, %d)\n", prefix, int(meshColor[0]), int(meshColor[1]), int(meshColor[2]), int(meshColor[3]));
     str += tmpStr;
-    if(atts->GetOutlineOnlyFlag())
-        SNPRINTF(tmpStr, 1000, "%soutlineOnlyFlag = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%soutlineOnlyFlag = 0\n", prefix);
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%serrorTolerance = %g\n", prefix, atts->GetErrorTolerance());
-    str += tmpStr;
     const char *meshColorSource_names = "Foreground, MeshCustom";
     switch (atts->GetMeshColorSource())
     {
@@ -394,54 +387,6 @@ MeshAttributes_GetMeshColor(PyObject *self, PyObject *args)
     PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(meshColor[1])));
     PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(meshColor[2])));
     PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(meshColor[3])));
-    return retval;
-}
-
-/*static*/ PyObject *
-MeshAttributes_SetOutlineOnlyFlag(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the outlineOnlyFlag in the object.
-    obj->data->SetOutlineOnlyFlag(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-MeshAttributes_GetOutlineOnlyFlag(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOutlineOnlyFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-MeshAttributes_SetErrorTolerance(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the errorTolerance in the object.
-    obj->data->SetErrorTolerance(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-MeshAttributes_GetErrorTolerance(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetErrorTolerance());
     return retval;
 }
 
@@ -844,10 +789,6 @@ PyMethodDef PyMeshAttributes_methods[MESHATTRIBUTES_NMETH] = {
     {"GetLineWidth", MeshAttributes_GetLineWidth, METH_VARARGS},
     {"SetMeshColor", MeshAttributes_SetMeshColor, METH_VARARGS},
     {"GetMeshColor", MeshAttributes_GetMeshColor, METH_VARARGS},
-    {"SetOutlineOnlyFlag", MeshAttributes_SetOutlineOnlyFlag, METH_VARARGS},
-    {"GetOutlineOnlyFlag", MeshAttributes_GetOutlineOnlyFlag, METH_VARARGS},
-    {"SetErrorTolerance", MeshAttributes_SetErrorTolerance, METH_VARARGS},
-    {"GetErrorTolerance", MeshAttributes_GetErrorTolerance, METH_VARARGS},
     {"SetMeshColorSource", MeshAttributes_SetMeshColorSource, METH_VARARGS},
     {"GetMeshColorSource", MeshAttributes_GetMeshColorSource, METH_VARARGS},
     {"SetOpaqueColorSource", MeshAttributes_SetOpaqueColorSource, METH_VARARGS},
@@ -917,10 +858,6 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
         return MeshAttributes_GetLineWidth(self, NULL);
     if(strcmp(name, "meshColor") == 0)
         return MeshAttributes_GetMeshColor(self, NULL);
-    if(strcmp(name, "outlineOnlyFlag") == 0)
-        return MeshAttributes_GetOutlineOnlyFlag(self, NULL);
-    if(strcmp(name, "errorTolerance") == 0)
-        return MeshAttributes_GetErrorTolerance(self, NULL);
     if(strcmp(name, "meshColorSource") == 0)
         return MeshAttributes_GetMeshColorSource(self, NULL);
     if(strcmp(name, "Foreground") == 0)
@@ -1021,10 +958,6 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MeshAttributes_SetLineWidth(self, tuple);
     else if(strcmp(name, "meshColor") == 0)
         obj = MeshAttributes_SetMeshColor(self, tuple);
-    else if(strcmp(name, "outlineOnlyFlag") == 0)
-        obj = MeshAttributes_SetOutlineOnlyFlag(self, tuple);
-    else if(strcmp(name, "errorTolerance") == 0)
-        obj = MeshAttributes_SetErrorTolerance(self, tuple);
     else if(strcmp(name, "meshColorSource") == 0)
         obj = MeshAttributes_SetMeshColorSource(self, tuple);
     else if(strcmp(name, "opaqueColorSource") == 0)

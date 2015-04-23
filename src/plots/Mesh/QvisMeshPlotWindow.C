@@ -164,6 +164,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Brad Whitlock, Wed Mar 24 16:42:50 PDT 2010
 //   Subtle layout tweaks.
 //
+//   Kathleen Biagas, Thu Apr 23 13:13:16 PDT 2015
+//   Removed never used outlineOnly and errorTolerance widgets.
+//
 // ****************************************************************************
 
 void
@@ -185,23 +188,6 @@ QvisMeshPlotWindow::CreateWindowContents()
     connect(showInternalToggle, SIGNAL(toggled(bool)),
             this, SLOT(showInternalToggled(bool)));
     zoneLayout->addWidget(showInternalToggle, 0, 0, 1, 2);
-
-    // Create the outline only toggle
-    outlineOnlyToggle = new QCheckBox(tr("Outline only"), central);
-    connect(outlineOnlyToggle, SIGNAL(toggled(bool)),
-            this, SLOT(outlineOnlyToggled(bool)));
-    zoneLayout->addWidget(outlineOnlyToggle, 1, 0, 1, 2);
-
-    // Create the error tolerance line edit
-    errorToleranceLabel = new QLabel(tr("Tolerance"),central);
-    errorToleranceLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    zoneLayout->addWidget(errorToleranceLabel, 1, 2);
-
-    errorToleranceLineEdit = new QLineEdit(central);
-    zoneLayout->addWidget(errorToleranceLineEdit, 1, 3);
-
-    connect(errorToleranceLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processErrorToleranceText()));
 
     //
     // Create the color stuff
@@ -479,6 +465,9 @@ QvisMeshPlotWindow::CreateWindowContents()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Kathleen Biagas, Thu Apr 23 13:13:16 PDT 2015
+//   Removed never used outlineOnly and errorTolerance widgets.
+//
 // ****************************************************************************
 
 void
@@ -520,24 +509,6 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             meshColor->setButtonColor(temp);
             meshColor->blockSignals(false);
             }
-            break;
-        case MeshAttributes::ID_outlineOnlyFlag :
-            // disabled until implemented
-            outlineOnlyToggle->setEnabled(false);
-            errorToleranceLineEdit->setEnabled(false);
-            errorToleranceLabel->setEnabled(false);
-            // 
-            // Uncomment following and delete above when implemented
-            // 
-            //outlineOnlyToggle->blockSignals(true);
-            //outlineOnlyToggle->setChecked(meshAtts->GetOutlineOnlyFlag());
-            //outlineOnlyToggle->blockSignals(false);
-        
-            //errorToleranceLineEdit->setEnabled(meshAtts->GetOutlineOnlyFlag());
-            //errorToleranceLabel->setEnabled(meshAtts->GetOutlineOnlyFlag());
-            break;
-        case MeshAttributes::ID_errorTolerance:
-            errorToleranceLineEdit->setText(DoubleToQString(meshAtts->GetErrorTolerance()));
             break;
         case MeshAttributes::ID_opaqueMode:
             opaqueModeGroup->blockSignals(true);
@@ -703,26 +674,15 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Mon Aug 11 11:13:36 PDT 2008
 //   Changed to new style.
 //
+//   Kathleen Biagas, Thu Apr 23 13:13:16 PDT 2015
+//   Removed never used outlineOnly and errorTolerance widgets.
+//
 // ****************************************************************************
 
 void
 QvisMeshPlotWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
-
-    // Do the error tolerance.
-    if(which_widget == MeshAttributes::ID_errorTolerance || doAll)
-    {
-        double val;
-        if(LineEditGetDouble(errorToleranceLineEdit, val))
-            meshAtts->SetErrorTolerance(val);
-        else
-        {
-            ResettingError(tr("error tolerance"),
-                DoubleToQString(meshAtts->GetErrorTolerance()));
-            meshAtts->SetErrorTolerance(meshAtts->GetErrorTolerance());
-        }
-    }
 
     if(doAll)
     {
@@ -986,31 +946,6 @@ QvisMeshPlotWindow::opaqueColorChanged(const QColor &color)
     Apply();
 }
 
-// ****************************************************************************
-// Method: QvisMeshPlotWindow::outlineOnlyToggled
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the outline only toggle
-//   button is toggled.
-//
-// Arguments:
-//   val : The new state of the "outline only" toggle.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 9 17:33:10 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisMeshPlotWindow::outlineOnlyToggled(bool val)
-{
-    meshAtts->SetOutlineOnlyFlag(val);
-    SetUpdate(false);
-    Apply();
-}
-
 
 // ****************************************************************************
 // Method: QvisMeshPlotWindow::opaqueModeChanged
@@ -1102,27 +1037,6 @@ QvisMeshPlotWindow::meshColorClicked(int val)
         meshColor->setEnabled(val);
         Apply();
     }
-}
-
-// ****************************************************************************
-// Method: QvisMeshPlotWindow::processErrorToleranceText
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the
-//   error tolerance text and pressed the Enter key.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 9 17:34:22 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisMeshPlotWindow::processErrorToleranceText()
-{
-    GetCurrentValues(MeshAttributes::ID_errorTolerance);
-    Apply();
 }
 
 

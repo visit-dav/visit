@@ -83,6 +83,9 @@ Definition:
 //    Removed point type and point size from test, changed pointSizeVar test
 //    so that only true if changes require adding new secondary varaible. 
 //
+//    Kathleen Biagas, Thu Apr 23 13:14:51 PDT 2015
+//    Removed never-used oulineOnly and errorTolerance atts.
+//
 // ****************************************************************************
 
 bool
@@ -95,9 +98,7 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
                              (obj.pointSizeVar != "") &&
                              (obj.pointSizeVar != "\0"))); 
 
-    return ((outlineOnlyFlag != obj.outlineOnlyFlag) ||
-            (errorTolerance != obj.errorTolerance) ||
-            (needSecondaryVar) ||
+    return ((needSecondaryVar) ||
             (smoothingLevel != obj.smoothingLevel) ||
             (showInternal != obj.showInternal && spatDim == 3));
 }

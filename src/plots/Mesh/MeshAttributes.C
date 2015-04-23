@@ -248,8 +248,6 @@ void MeshAttributes::Init()
     legendFlag = true;
     lineStyle = 0;
     lineWidth = 0;
-    outlineOnlyFlag = false;
-    errorTolerance = 0.01;
     meshColorSource = Foreground;
     opaqueColorSource = Background;
     opaqueMode = Auto;
@@ -286,8 +284,6 @@ void MeshAttributes::Copy(const MeshAttributes &obj)
     lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     meshColor = obj.meshColor;
-    outlineOnlyFlag = obj.outlineOnlyFlag;
-    errorTolerance = obj.errorTolerance;
     meshColorSource = obj.meshColorSource;
     opaqueColorSource = obj.opaqueColorSource;
     opaqueMode = obj.opaqueMode;
@@ -466,8 +462,6 @@ MeshAttributes::operator == (const MeshAttributes &obj) const
             (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (meshColor == obj.meshColor) &&
-            (outlineOnlyFlag == obj.outlineOnlyFlag) &&
-            (errorTolerance == obj.errorTolerance) &&
             (meshColorSource == obj.meshColorSource) &&
             (opaqueColorSource == obj.opaqueColorSource) &&
             (opaqueMode == obj.opaqueMode) &&
@@ -628,8 +622,6 @@ MeshAttributes::SelectAll()
     Select(ID_lineStyle,               (void *)&lineStyle);
     Select(ID_lineWidth,               (void *)&lineWidth);
     Select(ID_meshColor,               (void *)&meshColor);
-    Select(ID_outlineOnlyFlag,         (void *)&outlineOnlyFlag);
-    Select(ID_errorTolerance,          (void *)&errorTolerance);
     Select(ID_meshColorSource,         (void *)&meshColorSource);
     Select(ID_opaqueColorSource,       (void *)&opaqueColorSource);
     Select(ID_opaqueMode,              (void *)&opaqueMode);
@@ -701,18 +693,6 @@ MeshAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         }
         else
             delete meshColorNode;
-    if(completeSave || !FieldsEqual(ID_outlineOnlyFlag, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("outlineOnlyFlag", outlineOnlyFlag));
-    }
-
-    if(completeSave || !FieldsEqual(ID_errorTolerance, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("errorTolerance", errorTolerance));
-    }
-
     if(completeSave || !FieldsEqual(ID_meshColorSource, &defaultObject))
     {
         addToParent = true;
@@ -837,10 +817,6 @@ MeshAttributes::SetFromNode(DataNode *parentNode)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("meshColor")) != 0)
         meshColor.SetFromNode(node);
-    if((node = searchNode->GetNode("outlineOnlyFlag")) != 0)
-        SetOutlineOnlyFlag(node->AsBool());
-    if((node = searchNode->GetNode("errorTolerance")) != 0)
-        SetErrorTolerance(node->AsDouble());
     if((node = searchNode->GetNode("meshColorSource")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -972,20 +948,6 @@ MeshAttributes::SetMeshColor(const ColorAttribute &meshColor_)
 }
 
 void
-MeshAttributes::SetOutlineOnlyFlag(bool outlineOnlyFlag_)
-{
-    outlineOnlyFlag = outlineOnlyFlag_;
-    Select(ID_outlineOnlyFlag, (void *)&outlineOnlyFlag);
-}
-
-void
-MeshAttributes::SetErrorTolerance(double errorTolerance_)
-{
-    errorTolerance = errorTolerance_;
-    Select(ID_errorTolerance, (void *)&errorTolerance);
-}
-
-void
 MeshAttributes::SetMeshColorSource(MeshAttributes::MeshColor meshColorSource_)
 {
     meshColorSource = meshColorSource_;
@@ -1108,18 +1070,6 @@ ColorAttribute &
 MeshAttributes::GetMeshColor()
 {
     return meshColor;
-}
-
-bool
-MeshAttributes::GetOutlineOnlyFlag() const
-{
-    return outlineOnlyFlag;
-}
-
-double
-MeshAttributes::GetErrorTolerance() const
-{
-    return errorTolerance;
 }
 
 MeshAttributes::MeshColor
@@ -1262,8 +1212,6 @@ MeshAttributes::GetFieldName(int index) const
     case ID_lineStyle:               return "lineStyle";
     case ID_lineWidth:               return "lineWidth";
     case ID_meshColor:               return "meshColor";
-    case ID_outlineOnlyFlag:         return "outlineOnlyFlag";
-    case ID_errorTolerance:          return "errorTolerance";
     case ID_meshColorSource:         return "meshColorSource";
     case ID_opaqueColorSource:       return "opaqueColorSource";
     case ID_opaqueMode:              return "opaqueMode";
@@ -1305,8 +1253,6 @@ MeshAttributes::GetFieldType(int index) const
     case ID_lineStyle:               return FieldType_linestyle;
     case ID_lineWidth:               return FieldType_linewidth;
     case ID_meshColor:               return FieldType_color;
-    case ID_outlineOnlyFlag:         return FieldType_bool;
-    case ID_errorTolerance:          return FieldType_double;
     case ID_meshColorSource:         return FieldType_enum;
     case ID_opaqueColorSource:       return FieldType_enum;
     case ID_opaqueMode:              return FieldType_enum;
@@ -1348,8 +1294,6 @@ MeshAttributes::GetFieldTypeName(int index) const
     case ID_lineStyle:               return "linestyle";
     case ID_lineWidth:               return "linewidth";
     case ID_meshColor:               return "color";
-    case ID_outlineOnlyFlag:         return "bool";
-    case ID_errorTolerance:          return "double";
     case ID_meshColorSource:         return "enum";
     case ID_opaqueColorSource:       return "enum";
     case ID_opaqueMode:              return "enum";
@@ -1407,16 +1351,6 @@ MeshAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_meshColor:
         {  // new scope
         retval = (meshColor == obj.meshColor);
-        }
-        break;
-    case ID_outlineOnlyFlag:
-        {  // new scope
-        retval = (outlineOnlyFlag == obj.outlineOnlyFlag);
-        }
-        break;
-    case ID_errorTolerance:
-        {  // new scope
-        retval = (errorTolerance == obj.errorTolerance);
         }
         break;
     case ID_meshColorSource:
@@ -1528,9 +1462,7 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
                              (obj.pointSizeVar != "") &&
                              (obj.pointSizeVar != "\0"))); 
 
-    return ((outlineOnlyFlag != obj.outlineOnlyFlag) ||
-            (errorTolerance != obj.errorTolerance) ||
-            (needSecondaryVar) ||
+    return ((needSecondaryVar) ||
             (smoothingLevel != obj.smoothingLevel) ||
             (showInternal != obj.showInternal && spatDim == 3));
 }
