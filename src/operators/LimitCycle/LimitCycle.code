@@ -1,0 +1,312 @@
+Target: xml2atts
+Function: CopyAttributes
+Declaration: bool CopyAttributes(const AttributeGroup *atts);
+Definition:
+// ****************************************************************************
+// Method: StreamlineAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the LimitCycleAttributes class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 4 15:22:57 PST 2002
+//
+// Modifications:
+//    Brad Whitlock, Wed Dec 22 12:57:53 PDT 2004
+//    I added code to support the point tool.
+//
+//    Hank Childs, Sat Mar  3 09:00:12 PST 2007
+//    Disable useWholeBox if we are copying box extents.
+//
+//    Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//    New seed sources.
+//
+// ****************************************************************************
+
+bool
+LimitCycleAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const LimitCycleAttributes *tmp = (const LimitCycleAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "Line")
+    {
+        if(sourceType == Line_)
+        {
+            const Line *line = (const Line *)atts;
+            SetLineStart(line->GetPoint1());
+            SetLineEnd(line->GetPoint2());
+            retval = true;
+        }
+    }
+    else if(atts->TypeName() == "PlaneAttributes")
+    {
+        if(sourceType == Plane)
+        {
+            const PlaneAttributes *plane = (const PlaneAttributes *)atts;
+            SetPlaneOrigin(plane->GetOrigin());
+            SetPlaneNormal(plane->GetNormal());
+            SetPlaneUpAxis(plane->GetUpAxis());
+            retval = true;
+        }
+    }
+
+    return retval;
+}
+
+Target: xml2atts
+Function: CreateCompatible
+Declaration: AttributeSubject *CreateCompatible(const std::string &tname) const
+Definition:
+// ****************************************************************************
+//  Method: LimitCycleAttributes::CreateCompatible
+//
+//  Purpose:
+//     Creates a new state object of the desired type.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Oct 4 15:22:57 PST 2002
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jan 21 12:33:04 PDT 2003
+//    I added code to set the "have radius" flag to true so the plane tool
+//    resizes properly when resizing the plane radius.
+//
+//    Brad Whitlock, Wed Dec 22 12:54:43 PDT 2004
+//    I added code to support the point tool.
+//
+// ****************************************************************************
+
+AttributeSubject *
+LimitCycleAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new LimitCycleAttributes(*this);
+    }
+    else if(tname == "Line")
+    {
+        Line *l = new Line;
+        l->SetPoint1(GetLineStart());
+        l->SetPoint2(GetLineEnd());
+        retval = l;
+    }
+    else if(tname == "PlaneAttributes")
+    {
+        PlaneAttributes *p = new PlaneAttributes;
+        p->SetOrigin(GetPlaneOrigin());
+        p->SetNormal(GetPlaneNormal());
+        p->SetUpAxis(GetPlaneUpAxis());
+//        p->SetRadius(GetRadius());
+        p->SetHaveRadius(false);
+        retval = p;
+    }
+
+    return retval;
+}
+
+Target: xml2atts
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const LimitCycleAttributes &) const;
+Definition:
+// ****************************************************************************
+//  Method: LimitCycleAttributes::ChangesRequireRecalculation
+//
+//  Purpose:
+//     Determines whether or not the curves must be recalculated based on the
+//     new attributes.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Oct 4 15:22:57 PST 2002
+//
+//  Notes:  Most attributes cause the streamline to change.
+//
+//  Modifications:
+//    Brad Whitlock, Wed Dec 22 12:52:45 PDT 2004
+//    I made the coloring method matter when comparing streamline attributes
+//    and I added support for ribbons.
+//
+//    Hank Childs, Sat Mar  3 09:00:12 PST 2007
+//    Add support for useWholeBox.
+//
+//    Hank Childs, Sun May  3 11:49:31 CDT 2009
+//    Add support for point lists.
+//
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options.
+//
+//   Christoph Garth, Wed Jan 13 17:14:21 PST 2010 
+//   Add support for circle source.
+//
+//   Hank Childs, Fri Oct  1 20:43:34 PDT 2010
+//   Add support for absTol that is fraction of the bounding box.
+//
+//   Hank Childs, Mon Oct  4 14:32:06 PDT 2010
+//   Add support for having multiple termination criterias.
+//
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add vary tube radius by variable.
+//
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
+//
+// ****************************************************************************
+
+#define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
+#define POINT_DIFFERS(p1,p2) (PDIF(p1,p2,0) || PDIF(p1,p2,1) || PDIF(p1,p2,2))
+
+bool
+LimitCycleAttributes::ChangesRequireRecalculation(const LimitCycleAttributes &obj) const
+{
+    //Check the general stuff first...
+    if (sourceType != obj.sourceType ||
+        maxSteps != obj.maxSteps ||
+        terminateByDistance != obj.terminateByDistance ||
+        termDistance != obj.termDistance ||
+        terminateByTime != obj.terminateByTime ||
+        termTime != obj.termTime ||
+        integrationDirection != obj.integrationDirection ||
+        fieldType != obj.fieldType ||
+        fieldConstant != obj.fieldConstant ||
+        integrationType != obj.integrationType ||
+        maxStepLength != obj.maxStepLength ||
+        maxTimeStep != obj.maxTimeStep ||
+        limitMaximumTimestep != obj.limitMaximumTimestep ||
+        relTol != obj.relTol ||
+        absTolAbsolute != obj.absTolAbsolute ||
+        absTolBBox != obj.absTolBBox ||
+        absTolSizeType != obj.absTolSizeType ||
+        forceNodeCenteredData != obj.forceNodeCenteredData ||
+        pathlines != obj.pathlines ||
+        pathlinesOverrideStartingTimeFlag != obj.pathlinesOverrideStartingTimeFlag ||
+        pathlinesOverrideStartingTime != obj.pathlinesOverrideStartingTime ||
+        pathlinesCMFE != obj.pathlinesCMFE ||
+        dataVariable != obj.dataVariable ||
+        (dataValue != obj.dataValue && obj.dataValue != Solid) ||
+        ((dataValue == CorrelationDistance) &&
+         (correlationDistanceAngTol != obj.correlationDistanceAngTol ||
+          correlationDistanceMinDistAbsolute != obj.correlationDistanceMinDistAbsolute ||
+          correlationDistanceMinDistBBox != obj.correlationDistanceMinDistBBox ||
+          correlationDistanceMinDistType != obj.correlationDistanceMinDistType)) ||
+        0 )
+    {
+
+        return true;
+    }
+         
+    // If they say they don't want warnings, then don't re-execute.  If they say they do,
+    // then we better re-execute so we can give them that warning.
+    if (issueTerminationWarnings != obj.issueTerminationWarnings &&
+        obj.issueTerminationWarnings == true)
+        return true;
+
+    if (fieldType == FlashField &&
+        POINT_DIFFERS(velocitySource, obj.velocitySource))
+    {
+        return true;
+    }
+
+    //Check by source type.
+    if (sourceType == Line_)
+    {
+        if (POINT_DIFFERS(lineStart, obj.lineStart) ||
+            POINT_DIFFERS(lineEnd, obj.lineEnd) ||
+            randomSamples != obj.randomSamples ||
+            (!randomSamples && (sampleDensity0 != obj.sampleDensity0)) ||
+            (randomSamples && (randomSeed != obj.randomSeed ||
+                               numberOfRandomSamples != obj.numberOfRandomSamples)))
+        {
+            return true;
+        }
+    }
+
+    if (sourceType == Plane)
+    {
+        if (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
+            POINT_DIFFERS(planeNormal, obj.planeNormal) ||
+            POINT_DIFFERS(planeUpAxis, obj.planeUpAxis) ||
+            sampleDistance0 != obj.sampleDistance0 ||
+            sampleDistance1 != obj.sampleDistance1 ||
+            randomSamples != obj.randomSamples ||
+            fillInterior != obj.fillInterior ||
+            (randomSamples && (randomSeed != obj.randomSeed ||
+                               numberOfRandomSamples != obj.numberOfRandomSamples)) ||
+            (!randomSamples && (sampleDensity0 != obj.sampleDensity0 ||
+                                sampleDensity1 != obj.sampleDensity1)))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+Target: xml2info
+Function: LimitCycleViewerEnginePluginInfo::GetOperatorVarDescription
+Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const avtPlotMetaData &plot);
+Definition:
+// ****************************************************************************
+//  Method: LimitCycleViewerEnginePluginInfo::GetOperatorVarDescription
+//
+//  Purpose:
+//    Return the operator variable description.
+//
+//  Arguments:
+//    atts        The attribute subject to initialize.
+//    plot        The viewer plot that owns the operator.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   19 August 2013
+//
+// ****************************************************************************
+
+#include <avtPlotMetaData.h>
+#include <cstring>
+std::string
+LimitCycleViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
+                                                               const avtPlotMetaData &plot)
+{
+    LimitCycleAttributes *atts_in = (LimitCycleAttributes *)atts;
+
+    const char *typeString[11] =
+      { "None", "Seed Point ID", "Speed", "Vorticity", "Arc Length",
+         "Absolute Time", "Relative Time",
+         "Ave. dist. from seed", "Correlation Distance", "Difference",
+         "Variable" };
+
+    std::string var = plot.GetVariableName();
+
+    if( strncmp(var.c_str(), "operators/LimitCycle/",
+                strlen("operators/LimitCycle/")) == 0)
+    {
+      std::string justTheVar = var.substr(strlen("operators/LimitCycle/"));
+
+      var = justTheVar;
+    }
+    
+    else if( strncmp(var.c_str(), "operators/LCS/",
+                     strlen("operators/LCS/")) == 0)
+    {
+      std::string justTheVar = var.substr(strlen("operators/LCS/"));
+
+      var = justTheVar;
+    }
+
+    var += std::string(" - ") +
+        std::string(typeString[atts_in->GetDataValue()]);
+
+    if( atts_in->GetDataValue() == LimitCycleAttributes::Variable ) 
+    {
+        var += std::string(": ") + atts_in->GetDataVariable();
+    }
+
+    return var;
+}

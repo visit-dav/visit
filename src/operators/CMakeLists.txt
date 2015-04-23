@@ -108,6 +108,7 @@ InverseGhostZone
 Isosurface
 Isovolume
 Lagrangian
+LimitCycle
 Lineout
 LineSampler
 Merge
@@ -116,6 +117,7 @@ MultiresControl
 OnionPeel
 PDF
 PersistentParticles
+#ProgrammableOp
 Project
 RectilinearProject2D
 Reflect
