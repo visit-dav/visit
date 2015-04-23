@@ -267,12 +267,13 @@ avtPICSFilter::ClearDomainToCellLocatorMap()
 // ****************************************************************************
 
 void
-avtPICSFilter::ComputeRankList(const vector<int> &domList, 
-                                     vector<int> &ranks, vector<int> &doms)
+avtPICSFilter::ComputeRankList(const std::vector<int> &domList, 
+                               std::vector<int> &ranks,
+                               std::vector<int> &doms)
 {
     ranks.resize(0);
     
-    vector<int> r;
+    std::vector<int> r;
     for (size_t i = 0; i < domList.size(); i++)
     {
         int dom = domList[i];
@@ -570,7 +571,7 @@ avtPICSFilter::RestoreICsFilename( int timeStep, char *filename, size_t filename
 // ****************************************************************************
 
 void
-avtPICSFilter::RestoreICs( vector<avtIntegralCurve *> &ics, int timeStep )
+avtPICSFilter::RestoreICs( std::vector<avtIntegralCurve *> &ics, int timeStep )
 {
     int i, icNum;
 
@@ -1618,7 +1619,7 @@ avtPICSFilter::Initialize()
 #ifdef PARALLEL
         if (numDomains > 1)
         {
-            vector<int> myDoms;
+            std::vector<int> myDoms;
             myDoms.resize(numDomains, 0);
             for (size_t i = 0; i < ds_list.domains.size(); i++)
                 myDoms[ ds_list.domains[i] ] = rank;
@@ -1807,7 +1808,7 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
                     break;
             }
 
-            vector<double> intv(2);
+            std::vector<double> intv(2);
             intv[0] = md->GetTimes()[i];
             intv[1] = md->GetTimes()[i+1];
             
@@ -2720,7 +2721,7 @@ avtPICSFilter::ComputeDomainToRankMapping()
 #ifdef PARALLEL
         if (numDomains > 1)
         {
-            vector<int> myDoms;
+            std::vector<int> myDoms;
             myDoms.resize(numDomains, 0);
             for (size_t i = 0; i < ds_list.domains.size(); i++)
                 myDoms[ ds_list.domains[i] ] = rank;
@@ -3147,7 +3148,7 @@ avtPICSFilter::GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *>
       // Use the last velocity if available or initalize to be zero.
       seedVels.push_back( seedVels.empty() ? avtVector(0,0,0) : seedVels[i-1]);
 
-    vector<vector<int> > ids;
+    std::vector<vector<int> > ids;
     CreateIntegralCurvesFromSeeds(seedPts, seedVels, curves, ids);
 }
 
@@ -3207,7 +3208,7 @@ avtPICSFilter::AddSeedPoints(std::vector<avtVector> &pts,
 {
     for (size_t i = 0; i < pts.size(); i++)
     {
-        vector<avtIntegralCurve *> icsFromPt;
+        std::vector<avtIntegralCurve *> icsFromPt;
         AddSeedPoint(pts[i], vels[i], icsFromPt);
         
         ics.push_back(icsFromPt);
@@ -3285,7 +3286,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         else
           seedPt = pts[i];
        
-        vector<int> seedPtIds;
+        std::vector<int> seedPtIds;
 
         // Need a single ID for the IC even if there are many domains.
         int currentID = GetNextCurveID();
@@ -3612,7 +3613,7 @@ avtPICSFilter::ExamineContract(avtContract_p in_contract)
 // ****************************************************************************
 
 void
-avtPICSFilter::GetTerminatedIntegralCurves(vector<avtIntegralCurve *> &ics)
+avtPICSFilter::GetTerminatedIntegralCurves(std::vector<avtIntegralCurve *> &ics)
 {
     ics.resize(0);
     if (icAlgo)
@@ -3634,7 +3635,7 @@ avtPICSFilter::GetTerminatedIntegralCurves(vector<avtIntegralCurve *> &ics)
 // ****************************************************************************
 
 void
-avtPICSFilter::DeleteIntegralCurves(vector<int> &icIDs)
+avtPICSFilter::DeleteIntegralCurves(std::vector<int> &icIDs)
 {
     icAlgo->DeleteIntegralCurves(icIDs);
 }
