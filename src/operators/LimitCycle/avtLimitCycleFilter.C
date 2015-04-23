@@ -636,20 +636,22 @@ avtLimitCycleFilter::ContinueExecute()
 
         iteration = ic0->properties.iteration;
 
-        std::cerr << ic0->properties.iteration << "  v0 "
-                  << vec0.length() << "  v1 "
-                  << vec1.length() << "  dot "
-                  << vec0.dot( vec1 ) << "  distance "
-                  << (ic0->points[0] - ic1->points[0]).length() << "  ";
+        // std::cerr << ic0->properties.iteration << "  v0 "
+        //           << vec0.length() << "  v1 "
+        //           << vec1.length() << "  dot "
+        //           << vec0.dot( vec1 ) << "  distance "
+        //           << (ic0->points[0] - ic1->points[0]).length() << "  ";
 
         // If the vectors are in the opposite direction then there is
         // a zero crossing.
         if( vec0.dot( vec1 ) < 0 )
         {
+          // std::cerr << " zero crossing, " << std::endl;
+
           // If the vector length is really small then a cycle has been found.
           if( vec0.length() < tolerance && vec1.length() < tolerance )
           {
-            std::cerr << " small vectors, ";
+            // std::cerr << " small vectors, ";
 
             // If the seeds are close to each other then keep one curve
             // and delete the other.
@@ -657,7 +659,7 @@ avtLimitCycleFilter::ContinueExecute()
             {
               ids_to_delete.push_back( ic0->id );
               pairs_to_delete.push_back( std::pair<int,int>(ic0->id, ic1->id) );
-              std::cerr << " points match " << std::endl;
+              // std::cerr << " cycle found " << std::endl;
               continue;
             }
           }
@@ -712,21 +714,21 @@ avtLimitCycleFilter::ContinueExecute()
             ids_to_delete.push_back( ic1->id );
 
             newSeeds = true;
-            std::cerr << " splitting " << std::endl;
+            // std::cerr << " splitting " << std::endl;
           }
           else
           {
-            std::cerr << " max iterations " << std::endl;
+            // std::cerr << " max iterations " << std::endl;
           }
         }
 
         // No zero crossing so delete the pair.
         else
         {
-          std::cerr << " no zero " << std::endl;
           pairs_to_delete.push_back( std::pair<int,int>(ic0->id, ic1->id) );
           ids_to_delete.push_back( ic0->id );
           ids_to_delete.push_back( ic1->id );
+          // std::cerr << " no zero crosing found" << std::endl;
         }
       }
 
@@ -755,11 +757,11 @@ avtLimitCycleFilter::ContinueExecute()
 
     DeleteIntegralCurves( ids_to_delete );
 
-    GetTerminatedIntegralCurves(ics);
-    std::cerr << "Iteration  " << iteration << "  "
-              << "number of curves " << ics.size() << "  "
-              << "number of pairs " << ICPairs.size() << "  "
-              << std::endl;
+    // GetTerminatedIntegralCurves(ics);
+    // std::cerr << "Iteration  " << iteration << "  "
+    //           << "number of curves " << ics.size() << "  "
+    //           << "number of pairs " << ICPairs.size() << "  "
+    //           << std::endl;
 
     return newSeeds;
 }
