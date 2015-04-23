@@ -785,6 +785,8 @@ avtIntegralCurveFilter::PostExecute(void)
 void
 avtIntegralCurveFilter::Execute(void)
 {
+  // std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << std::endl;
+
     avtPICSFilter::Execute();
 
     std::vector<avtIntegralCurve *> ics;
@@ -1601,7 +1603,7 @@ avtIntegralCurveFilter::GenerateSeedPointsFromPoint(std::vector<avtVector> &pts)
 void
 avtIntegralCurveFilter::GenerateSeedPointsFromLine(std::vector<avtVector> &pts)
 {
-    avtVector v = points[1]-points[0];
+    avtVector v = points[1] - points[0];
 
     if (randomSamples)
     {
@@ -1613,14 +1615,17 @@ avtIntegralCurveFilter::GenerateSeedPointsFromLine(std::vector<avtVector> &pts)
     }
     else
     {
-        double t = 0.0, dt;
+        double t, dt;
         if (sampleDensity[0] == 1)
         {
             t = 0.5;
             dt = 0.5;
         }
         else
+        {
+            t = 0.0;
             dt = 1.0/(double)(sampleDensity[0]-1);
+        }
     
         for (int i = 0; i < sampleDensity[0]; i++)
         {
@@ -2159,14 +2164,17 @@ avtIntegralCurveFilter::GenerateSeedPointsFromSelection(std::vector<avtVector> &
 void
 avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(std::vector<avtVector> &pts)
 {
+      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
     std::vector<double> tmpListOfPoints = listOfPoints;
 
     // Use the listOfPoint for storage.
     listOfPoints.clear();
 
+      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
     // Get the seeds from the daa tree.
     GenerateSeedPointsFromFieldData( GetInputDataTree() );
 
+      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
     // Set the attributes.
     if ( listOfPoints.size() )
       atts.SetPointList( listOfPoints );
@@ -2212,18 +2220,22 @@ avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(std::vector<avtVector> &
 void
 avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(avtDataTree_p inDT)
 {
+      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
     if (*inDT == NULL)
         return;
 
+      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
     int nc = inDT->GetNChildren();
 
     if (nc < 0 && !inDT->HasData())
     {
+      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
         return;
     }
 
     if (nc == 0)
     {
+      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
         //
         // there is only one dataset to process
         //
@@ -2233,6 +2245,7 @@ avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(avtDataTree_p inDT)
     }
     else
     {
+      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
         //
         // there is more than one input dataset to process
         // and we need an output datatree for each
@@ -2265,6 +2278,7 @@ void
 avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(vtkDataSet *in_ds)
 {
   vtkFieldData *fieldData = in_ds->GetFieldData();
+      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
 
   if ( fieldData == 0 )
   {
@@ -2273,6 +2287,7 @@ avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(vtkDataSet *in_ds)
 
     return;
   }
+      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
 
   for( int i=0; i<fieldData->GetNumberOfArrays (); ++i )
   {  
@@ -3063,18 +3078,6 @@ avtIntegralCurveFilter::ComputeCorrelationDistance(int idx,
 }
 
 
-static avtStateRecorderIntegralCurve *
-icFromID(int id, std::vector<avtIntegralCurve *> &ics)
-{
-    for (size_t i = 0; i < ics.size(); i++)
-    {
-        if (ics[i]->id == id)
-            return dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
-    }
-
-    return NULL;
-}
-
 // ****************************************************************************
 // Method:  avtIntegralCurveFilter::ProcessVaryTubeRadiusByScalar
 //
@@ -3091,18 +3094,18 @@ icFromID(int id, std::vector<avtIntegralCurve *> &ics)
 void
 avtIntegralCurveFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegralCurve *> &ics)
 {
-    for (size_t i = 0; i < fwdBwdICPairs.size(); i++)
+    for (size_t i = 0; i < ICPairs.size(); i++)
     {
         avtStateRecorderIntegralCurve *ic[2] =
-          { icFromID(fwdBwdICPairs[i].first, ics),
-            icFromID(fwdBwdICPairs[i].second, ics)};
+          { (avtStateRecorderIntegralCurve*) icFromID(ICPairs[i].first, ics),
+            (avtStateRecorderIntegralCurve*) icFromID(ICPairs[i].second, ics)};
 
         if (ic[0] == NULL || ic[1] == NULL)
         {
             EXCEPTION1(ImproperUseException, "Integral curve ID not found.");
         }
 
-        //Get the min/max for each pair of ICs.
+        // Get the min/max for each pair of ICs.
         double range[2] = { std::numeric_limits<double>::max(),
                            -std::numeric_limits<double>::max()};
 
@@ -3120,7 +3123,7 @@ avtIntegralCurveFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegralCur
         }
 
         double dRange = range[1]-range[0];
-        //Scale them into the same range.
+        // Scale them into the same range.
         for (int i = 0; i < 2; i++)
         {
             size_t n = ic[i]->GetNumberOfSamples();
