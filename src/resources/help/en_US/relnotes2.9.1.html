@@ -39,6 +39,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A bug was fixed where plot and operator windows accepting double precision values as input would truncate and/or round numbers being entered, thus possibly causing loss of significant digits. This generally only occurred for very small numbers.</li>
   <li>Fixed a glitch with the <i>Expression</i> creation window, where text could be parsed as html. For example, "&lt;P&gt;" became a new paragraph.</li>
   <li>Corrected a bug where operations involving double precision vector data could crash or hang the compute engine when running in parallel.</li> 
+  <li>PLOT3D solution (Q) files are no longer required to be present in order for the reader to successfully read geometry files.</li>
+  <li>The PLOT3D reader was fixed so that it will successfully read very larg files.</li>
 </ul>
 
 <a name="Enhancements"></a>

@@ -76,6 +76,11 @@
 //   vtkMultiBlockPLOT3DReader that has yet to be implemented in this class:
 //      auto-detection of file-format, 
 //      overflow support.
+//
+//  Modifications:
+//    Kathleen Biagas, Thu Apr 23 11:00:42 PDT 2015
+//    Save File offsets using long instead of int.
+//
 
 #ifndef __vtkPLOT3DReader_h
 #define __vtkPLOT3DReader_h
@@ -315,9 +320,9 @@ protected:
   int   GridNumber;
 
   // storage used to cache grid offsets for multi-grid files
-  int * GridSizes;
-  int * GridOffsets;
-  int * SolutionOffsets;
+  long * GridSizes;
+  long * GridOffsets;
+  long * SolutionOffsets;
   int * GridDimensions;
 
 private:
@@ -325,10 +330,10 @@ private:
   void operator=(const vtkPLOT3DReader&);  // Not implemented.
 
   int ReadGrid(FILE *xyzFp, vtkStructuredGrid *output);
-  int ComputeGridOffset(FILE *xyzFp);
+  long ComputeGridOffset(FILE *xyzFp);
   int ReadSolution(FILE *qFp, vtkStructuredGrid *output);
   int ReadSolutionProperties(FILE *qFp);
-  int ComputeSolutionOffset(FILE *qFp);
+  long ComputeSolutionOffset(FILE *qFp);
 
   void MapFunction(int fNumber, vtkPointData *outputPD);
 

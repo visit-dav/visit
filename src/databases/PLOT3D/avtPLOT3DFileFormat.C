@@ -85,6 +85,9 @@ using std::string;
 //    Kathleen Biagas, Tue Aug 19 14:30:10 PDT 2014
 //    Save metafile for later use. Reader is now external, has updated api.
 //
+//    Kathleen Biagas, Thu Apr 23 10:38:31 PDT 2015
+//    Added haveSolutionFile.
+//
 // ****************************************************************************
 
 avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
@@ -94,20 +97,29 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
     char *s_file = NULL;
     char *x_file = NULL;
     bool guessedQFile = false;
+    haveSolutionFile = false;
     if (strstr(fname, ".vp3d") != NULL)
     {
         visitMetaFile = filenames[0];
     }
     else if (strstr(fname, ".x") != NULL)
     {
+        x_file = filenames[0];
+
         char soln_file[1024];
         const char *q = strstr(fname, ".x");
         strncpy(soln_file, fname, q-fname);
         strcpy(soln_file + (q-fname), ".q");
-        AddFile(soln_file);
-        x_file = filenames[0];
-        s_file = filenames[1];
-        guessedQFile = true;
+        // see if this q file exists
+        FILE *file = fopen(soln_file, "r");
+        if (file != NULL)
+        {
+            fclose(file);
+            AddFile(soln_file);
+            s_file = filenames[1];
+            guessedQFile = true;
+            haveSolutionFile = true;
+        }
     }
     else if (strstr(fname, ".q") != NULL)
     {
@@ -120,6 +132,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
 
         x_file = filenames[1];
         s_file = filenames[0];
+        haveSolutionFile = true;
     }
     else
     {
@@ -135,6 +148,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
                 AddFile(solnFile.c_str());
                 x_file = filenames[0];
                 s_file = filenames[1];
+                haveSolutionFile = true;
             }
         }
         if (x_file == NULL)
@@ -153,8 +167,6 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
         reader->SetXYZFileName(x_file);
     if (s_file)
         reader->SetQFileName(s_file);
-
-
 
     // we assume 
     if (visitMetaFile.empty() && readOpts)
@@ -227,6 +239,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
                     string solnFile = xFileName.substr(0, pos+1);
                     solnFile += qFileName;
                     reader->SetQFileName(solnFile.c_str());
+                    haveSolutionFile = true;
                 }
             }
         }
@@ -553,68 +566,71 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->hasSpatialExtents = false;
     md->Add(mesh);
 
-    const int NUM_SCALARS = 11;
-    const char *scalar_names[NUM_SCALARS] = { "Density", "Pressure",
-         "Temperature", "Enthalpy", "InternalEnergy", "KineticEnergy",
-         "VelocityMagnitude", "StagnationEnergy", "Entropy", "Swirl",
-         "VorticityMagnitude" };
-
-    int i;
-    for (i = 0; i < NUM_SCALARS; i++)
+    if(haveSolutionFile)
     {
-        avtScalarMetaData *sd1 = new avtScalarMetaData;
-        sd1->name = scalar_names[i];
-        sd1->meshName = "mesh";
-        sd1->centering = AVT_NODECENT;
-        sd1->hasDataExtents = false;
-        md->Add(sd1);
-    }
+        const int NUM_SCALARS = 11;
+        const char *scalar_names[NUM_SCALARS] = { "Density", "Pressure",
+             "Temperature", "Enthalpy", "InternalEnergy", "KineticEnergy",
+             "VelocityMagnitude", "StagnationEnergy", "Entropy", "Swirl",
+             "VorticityMagnitude" };
 
-    const int NUM_VECTORS = 5;
-    const char *vector_names[NUM_VECTORS] = { "Velocity", "Vorticity", "Momentum",
-                                    "PressureGradient", "StrainRate"};
-    for (i = 0; i < NUM_VECTORS; i++)
-    {
-        avtVectorMetaData *vd1 = new avtVectorMetaData;
-        vd1->name = vector_names[i];
-        vd1->meshName = "mesh";
-        vd1->centering = AVT_NODECENT;
-        vd1->hasDataExtents = false;
-        vd1->varDim = 3;
-        md->Add(vd1);
-    }
+        int i;
+        for (i = 0; i < NUM_SCALARS; i++)
+        {
+            avtScalarMetaData *sd1 = new avtScalarMetaData;
+            sd1->name = scalar_names[i];
+            sd1->meshName = "mesh";
+            sd1->centering = AVT_NODECENT;
+            sd1->hasDataExtents = false;
+            md->Add(sd1);
+        }
 
-    // Retrieve the "Properties" array.
-    vtkDataArray *props = reader->GetProperties();
-    if (props != NULL && props->GetNumberOfTuples() == 4)
-    {
-        char def[1024];
-        Expression exp;
+        const int NUM_VECTORS = 5;
+        const char *vector_names[NUM_VECTORS] = { "Velocity", "Vorticity",
+             "Momentum", "PressureGradient", "StrainRate"};
+        for (i = 0; i < NUM_VECTORS; i++)
+        {
+            avtVectorMetaData *vd1 = new avtVectorMetaData;
+            vd1->name = vector_names[i];
+            vd1->meshName = "mesh";
+            vd1->centering = AVT_NODECENT;
+            vd1->hasDataExtents = false;
+            vd1->varDim = 3;
+            md->Add(vd1);
+        }
 
-        exp.SetName("Free-stream mach number");
-        sprintf(def,"%f",props->GetTuple1(0));
-        exp.SetDefinition(def);
-        exp.SetType(Expression::Unknown);
-        md->AddExpression(&exp);
+        // Retrieve the "Properties" array.
+        vtkDataArray *props = reader->GetProperties();
+        if (props != NULL && props->GetNumberOfTuples() == 4)
+        {
+            char def[1024];
+            Expression exp;
 
-        exp.SetName("Angle of attack");
-        sprintf(def,"%f",props->GetTuple1(1));
-        exp.SetDefinition(def);
-        exp.SetType(Expression::Unknown);
-        md->AddExpression(&exp);
+            exp.SetName("Free-stream mach number");
+            sprintf(def,"%f",props->GetTuple1(0));
+            exp.SetDefinition(def);
+            exp.SetType(Expression::Unknown);
+            md->AddExpression(&exp);
 
-        exp.SetName("Reynold's number");
-        sprintf(def,"%f",props->GetTuple1(2));
-        exp.SetDefinition(def);
-        exp.SetType(Expression::Unknown);
-        md->AddExpression(&exp);
+            exp.SetName("Angle of attack");
+            sprintf(def,"%f",props->GetTuple1(1));
+            exp.SetDefinition(def);
+            exp.SetType(Expression::Unknown);
+            md->AddExpression(&exp);
 
-        exp.SetName("Integration time");
-        sprintf(def,"%f",props->GetTuple1(3));
-        exp.SetDefinition(def);
-        exp.SetType(Expression::Unknown);
-        md->AddExpression(&exp);
-    }
+            exp.SetName("Reynold's number");
+            sprintf(def,"%f",props->GetTuple1(2));
+            exp.SetDefinition(def);
+            exp.SetType(Expression::Unknown);
+            md->AddExpression(&exp);
+
+            exp.SetName("Integration time");
+            sprintf(def,"%f",props->GetTuple1(3));
+            exp.SetDefinition(def);
+            exp.SetType(Expression::Unknown);
+            md->AddExpression(&exp);
+        }
+    } // if haveSolutionFile
 }
 
 
@@ -680,6 +696,9 @@ MatchesSubstring(const char *c1, const char *c2)
 //    Kathleen Biagas, Mon Aug 11 10:57:06 PDT 2014
 //    Added to avtPLOT3DFileFormat class, and modified to be used with
 //    vtkMultiBlockPLOT3DReader.
+//
+//    Kathleen Biagas, Thu Apr 23 10:40:03 PDT 2015
+//    Set haveSolutionFile.
 //
 // ****************************************************************************
 
@@ -788,6 +807,7 @@ avtPLOT3DFileFormat::ReadVisItMetaFile()
                 else
                     sprintf(s_file, "%s/%s", path.c_str(), tmp);
                 reader->SetQFileName(s_file);
+                haveSolutionFile = true;
             }
         }
         fclose(vp3dFp);
@@ -800,7 +820,13 @@ avtPLOT3DFileFormat::ReadVisItMetaFile()
         if (reader->GetQFileName() == NULL)
         {
             string soln_file = base + ".q";
-            reader->SetQFileName(soln_file.c_str());
+            FILE *file = fopen(soln_file.c_str(), "r");
+            if (file != NULL)
+            {
+                reader->SetQFileName(soln_file.c_str());
+                haveSolutionFile = true;
+                flcose(file);
+            }
         }
     }
     return fileFound;
