@@ -585,24 +585,80 @@ avtLimitCycleFilter::ContinueExecute()
     GetTerminatedIntegralCurves(ics);
     GetIntegralCurvePoints(ics);
 
-    if( ics.size() == 0 )
+    if( ics.size() == 0 || ICPairs.size() == 0 )
       return false;
 
     bool newSeeds = false;
     int iteration, maxIterations = atts.GetMaxIterations();
     double tolerance = atts.GetCycleTolerance();
 
-    std::vector< int >   ids_to_delete;
-    std::vector< std::pair<int,int> > pairs_to_delete;
+    // Find the curves in the list not being used in any pair.  These
+    // curves are prviously found cycles.
+    std::vector< int > ids_to_keep;
+
+    for (int i=0; i<ics.size(); ++i)
+    {
+      bool keep_id = true;
+
+      int id = ics[i]->id;
+
+      // Check for curves not being used and make sure they are kept.
+      for (int j=0; j<ICPairs.size(); ++j)
+      {
+        if( id == ICPairs[j].first || id == ICPairs[j].second )
+        {
+          keep_id = false;
+          break;
+        }
+      }
+
+      if( keep_id )
+        ids_to_keep.push_back( id );
+    }
       
-    // Because points are added the size will change so get the
-    // inital size so that new seeds are not processed.
+    // Because pairs are added the size will change so get the
+    // inital size so that new pairs are not processed.
     size_t npairs = ICPairs.size();
     
     for (size_t i = 0; i < npairs; i++)
     {
+      bool split = false;
+
       avtPoincareIC *ic0 = (avtPoincareIC *) icFromID(ICPairs[i].first,  ics );
       avtPoincareIC *ic1 = (avtPoincareIC *) icFromID(ICPairs[i].second, ics );
+
+      iteration = ic0->properties.iteration;
+
+      // std::cerr << iteration << "   " << ic0->id << "  " << ic1->id << "  ";
+
+      avtVector vec0, vec1;
+
+      if( ic0->TerminatedBecauseOfMaxIntersections() )
+      {
+        // Get the intersecting point.
+        avtVector intPt0 =
+          GetIntersectingPoint( ic0->points[ic0->points.size()-2],
+                                ic0->points[ic0->points.size()-1] );
+
+        // Calculate the vector between the first and last point.
+        vec0 = ic0->points[0] - intPt0;
+
+        // std::cerr << "v0 " << vec0.length() << "  ";
+      }
+
+      if( ic1->TerminatedBecauseOfMaxIntersections() )
+      {
+        // Get the intersecting point.
+        avtVector intPt1 =
+          GetIntersectingPoint( ic1->points[ic1->points.size()-2],
+                                ic1->points[ic1->points.size()-1] );
+        
+
+         // Calculate the vector between the first and last point.
+         vec1 = ic1->points[0] - intPt1;
+
+         // std::cerr << "v1 " << vec1.length() << "  ";
+      }
 
       // Exception check
       if (ic0 == NULL && ic1 == NULL)
@@ -613,146 +669,168 @@ avtLimitCycleFilter::ContinueExecute()
       // Exception check
       else if (ic0 == NULL || ic1 == NULL)
       {
-        EXCEPTION1(ImproperUseException, "Integral curve ID not found.");
+        EXCEPTION1(ImproperUseException, "Integral curve IDs not found.");
       }
 
-      // Only check points that have actually intersected the plane
+      // Check points that have intersected the Poincare plane twice.
       else if( ic0->TerminatedBecauseOfMaxIntersections() && 
                ic1->TerminatedBecauseOfMaxIntersections() )
       {
-        // Get the intersecting point.
-        avtVector intPt0 =
-          GetIntersectingPoint( ic0->points[ic0->points.size()-2],
-                                ic0->points[ic0->points.size()-1] );
-
-        avtVector intPt1 =
-          GetIntersectingPoint( ic1->points[ic1->points.size()-2],
-                                ic1->points[ic1->points.size()-1] );
-
-        // Calculate the vector between the first and last point.
-        avtVector vec0 = ic0->points[0] - intPt0;
-        avtVector vec1 = ic1->points[0] - intPt1;
-
-
-        iteration = ic0->properties.iteration;
-
-        // std::cerr << ic0->properties.iteration << "  v0 "
-        //           << vec0.length() << "  v1 "
-        //           << vec1.length() << "  dot "
-        //           << vec0.dot( vec1 ) << "  distance "
-        //           << (ic0->points[0] - ic1->points[0]).length() << "  ";
-
+        // std::cerr << "dot " << vec0.dot( vec1 ) << "  "
+                  // << "distance " << (ic0->points[0]-ic1->points[0]).length()
+                  // << "  ";
+                  
         // If the vectors are in the opposite direction then there is
         // a zero crossing.
         if( vec0.dot( vec1 ) < 0 )
         {
-          // std::cerr << " zero crossing, " << std::endl;
+          // std::cerr << " zero crossing found, ";
 
-          // If the vector length is really small then a cycle has been found.
+          // If the vector length is really small then a cycle is
+          // close by.  This check is also used to prevent tangent
+          // issues (i.e. the plane is tangent to the limit cycle).
           if( vec0.length() < tolerance && vec1.length() < tolerance )
           {
-            // std::cerr << " small vectors, ";
-
-            // If the seeds are close to each other then keep one curve
-            // and delete the other.
+            // If the curves are close to each other keep one and
+            // delete the other.
             if( (ic0->points[0] - ic1->points[0]).length() < tolerance )
             {
-              ids_to_delete.push_back( ic0->id );
-              pairs_to_delete.push_back( std::pair<int,int>(ic0->id, ic1->id) );
-              // std::cerr << " cycle found " << std::endl;
+              // std::cerr << " cycle found  ic0" << std::endl;
+
+              ids_to_keep.push_back( ic0->id );
               continue;
             }
-          }
-
-          // Split the interval and search the two smaller intervals
-          // for the crossing.
-          if( ic0->properties.iteration < maxIterations &&
-              ic1->properties.iteration < maxIterations )
-          {
-            std::vector< std::vector< avtIntegralCurve * > > new_ics;
-
-            avtVector seed0 = ic0->points[0];
-            avtVector seed = (ic0->points[0] + ic1->points[0]) * 0.5;
-            avtVector seed1 = ic1->points[0];
-
-            std::vector< avtVector > vecs;
-            std::vector< avtVector > seeds;
-
-            vecs.push_back( planeN );
-            vecs.push_back( planeN );
-            vecs.push_back( planeN );
-            vecs.push_back( planeN );
-
-            seeds.push_back( seed0 );
-            seeds.push_back( seed );
-            seeds.push_back( seed );
-            seeds.push_back( seed1 );
-
-            AddSeedPoints( seeds, vecs, new_ics );
-            for( unsigned int j=0; j<new_ics.size(); ++j )
+            else
             {
-              for( unsigned int k=0; k<new_ics[j].size(); ++k )
-              {
-                avtPoincareIC* seed_poincare_ic =
-                  (avtPoincareIC *) new_ics[j][k];
-                
-                // Transfer and update properties.
-                seed_poincare_ic->properties = ic0->properties;
-                
-                seed_poincare_ic->properties.iteration =
-                  ic0->properties.iteration + 1;
-              }
+              // std::cerr << " nearing cycle, ";
             }
-
-            ICPairs.push_back(std::pair<int,int> (new_ics[0][0]->id,
-                                                  new_ics[1][0]->id));
-            ICPairs.push_back(std::pair<int,int> (new_ics[2][0]->id,
-                                                  new_ics[3][0]->id));
-
-            pairs_to_delete.push_back( std::pair<int,int>(ic0->id, ic1->id) );
-            ids_to_delete.push_back( ic0->id );
-            ids_to_delete.push_back( ic1->id );
-
-            newSeeds = true;
-            // std::cerr << " splitting " << std::endl;
           }
-          else
-          {
-            // std::cerr << " max iterations " << std::endl;
-          }
+          
+          split = true;
         }
 
-        // No zero crossing so delete the pair.
+        // No zero crossing. Delete the pair.
+
+        // Note: if there are two zero crossings within the interval
+        // it will not be be detected. We could continue to split the
+        // interval however the user is controlling the minimal
+        // interval via the gui.
         else
         {
-          pairs_to_delete.push_back( std::pair<int,int>(ic0->id, ic1->id) );
-          ids_to_delete.push_back( ic0->id );
-          ids_to_delete.push_back( ic1->id );
           // std::cerr << " no zero crosing found" << std::endl;
         }
       }
 
-      // Curves one or both curves did not terminate with two Poincae
-      // intersection.
+      // One of the curves did not intersect the Poincare plane twice
+      // so split the interval.
+      else if( ic0->TerminatedBecauseOfMaxIntersections() ||
+               ic1->TerminatedBecauseOfMaxIntersections() )
+      {
+        // std::cerr << "One curve does not have enough punctures ";
+
+        split = true;
+      }
+      
+      // Neither curve intersected the Poincare plane twice so assume
+      // there can not be a limit cycle in between. Delete the pair.
       else
       {
-        pairs_to_delete.push_back( std::pair<int,int>(ic0->id, ic1->id) );
-        ids_to_delete.push_back( ic0->id );
-        ids_to_delete.push_back( ic1->id );
+        // std::cerr << "Neighter curve has enough punctures " << std::endl;
+      }
+
+      if( split )
+      {
+          // Split the interval and search the two smaller intervals
+          // for the crossing.
+          if( ic0->properties.iteration < maxIterations ||
+              ic1->properties.iteration < maxIterations )
+          {
+            std::vector< avtIntegralCurve * > new_ics;
+
+            avtVector seed = (ic0->points[0] + ic1->points[0]) * 0.5;
+
+            AddSeedPoint( seed, planeN, new_ics );
+
+            for( unsigned int j=0; j<new_ics.size(); ++j )
+            {
+              avtPoincareIC* seed_poincare_ic =
+                (avtPoincareIC *) new_ics[j];
+                
+              // Transfer and update properties.
+              seed_poincare_ic->properties = ic0->properties;
+              seed_poincare_ic->properties.iteration = iteration + 1;
+            }
+
+            ic0->properties.iteration = iteration + 1;
+            ic1->properties.iteration = iteration + 1;
+
+            ICPairs.push_back(std::pair<int,int> (ic0->id, new_ics[0]->id));
+            ICPairs.push_back(std::pair<int,int> (new_ics[0]->id, ic1->id));
+
+            newSeeds = true;
+            // std::cerr << " splitting " << std::endl;
+          }
+
+          // Max out on the iteration but there is probably a limit
+          // cycle because of being near the edge or a zero
+          // crossing. So leave one or both curves.
+          else
+          {
+            // std::cerr << " max iterations " << std::endl;
+
+            if( ic0->TerminatedBecauseOfMaxIntersections() &&
+                vec0.length() < tolerance )
+            {
+              // std::cerr << " ic0 ";
+              ids_to_keep.push_back( ic0->id );
+            }
+
+            if( ic1->TerminatedBecauseOfMaxIntersections() &&
+                vec1.length() < tolerance )
+              {
+                // std::cerr << " ic1 ";
+                ids_to_keep.push_back( ic1->id );
+              }
+          }
       }
     }
 
-    // Remove the seeds from the pair list.
-    for (int i=0; i<pairs_to_delete.size(); ++i)
+    // Delete all of the old pairs.
+    ICPairs.erase( ICPairs.begin(), ICPairs.begin()+npairs );
+
+    // Remove the curves from the ic list if not being used. Curves
+    // may be used by more than one pair.
+    std::vector< int > ids_to_delete;
+
+    for (int i=0; i<ics.size(); ++i)
     {
-      for (int j=0; j<ICPairs.size(); ++j)
+      bool delete_id = true;
+
+      int id = ics[i]->id;
+
+      // These are limit cycles found so do not delete them.
+      for (int j=0; j<ids_to_keep.size(); ++j)
       {
-        if( ICPairs[j] == pairs_to_delete[i] )
+        if( id == ids_to_keep[j] )
         {
-          ICPairs.erase( ICPairs.begin()+j );
+          delete_id = false;
           break;
         }
       }
+      
+      // Check for curves not being used in any pair and schedule them
+      // for deletion.
+      for (int j=0; j<ICPairs.size(); ++j)
+      {
+        if( id == ICPairs[j].first || id == ICPairs[j].second )
+        {
+          delete_id = false;
+          break;
+        }
+      }
+
+      if( delete_id )
+        ids_to_delete.push_back( id );
     }
 
     DeleteIntegralCurves( ids_to_delete );
@@ -1272,13 +1350,16 @@ avtLimitCycleFilter::GenerateSeedPointsFromLine(std::vector<avtVector> &pts)
 
             pts.push_back(p);
 
-            if( 0 < i && i < sampleDensity[0] )
-              pts.push_back(p);
+            // if( 0 < i && i < sampleDensity[0] )
+            //   pts.push_back(p);
         }
     }
 
-    for (int i = 0; i < pts.size(); i+=2)
+    for (int i = 0; i < pts.size()-1; ++i)
       ICPairs.push_back(std::pair<int,int> (i, i+1));
+
+    // for (int i = 0; i < pts.size(); i+=2)
+    //   ICPairs.push_back(std::pair<int,int> (i, i+1));
 }
 
 // ****************************************************************************
@@ -1777,33 +1858,6 @@ avtLimitCycleFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &
     
     avtDataTree *dt = new avtDataTree(outPD, 0);
     SetOutputDataTree(dt);
-
-
-/*
-    if (1)
-    {
-        char f[51];
-        sprintf(f, "streamlines_%03d.txt", PAR_Rank());
-        FILE *fp = fopen(f, "w");
-        for (int i = 0; i < numICs; i++)
-        {
-            avtStateRecorderIntegralCurve *ic = dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
-            size_t nSamples = (ic ? ic->GetNumberOfSamples() : 0);
-            if (nSamples == 0)
-                continue;
-
-            fprintf(fp, "%d\n", (int)nSamples);
-            for (int j = 0; j < nSamples; j++)
-            {
-                avtStateRecorderIntegralCurve::Sample s = ic->GetSample(j);
-                fprintf(fp, "%lf %lf %lf %lf %lf\n", s.position.x, s.position.y, s.position.z, s.time, s.scalar0);
-            
-            }
-        }
-        fflush(fp);
-        fclose(fp);
-    }
- */
 }
 
 // ****************************************************************************
@@ -1821,7 +1875,6 @@ avtLimitCycleFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &
 // Creation:    February 21, 2011
 //
 // ****************************************************************************
-
 
 float
 avtLimitCycleFilter::ComputeCorrelationDistance(int idx,
@@ -1910,6 +1963,21 @@ avtLimitCycleFilter::SetIntersectionCriteria()
 }
 
 
+// ****************************************************************************
+// Method: avtLimitCycleFilter::GetIntersectingPoint
+//
+// Purpose:
+//   Gets the intersecting point given two points on either side of a plane.
+//
+// Arguments:
+//   Two points on either side of a plane.
+//
+// Programmer: Allen Sanderson
+// Creation:   11 April 2015
+//
+// Modifications:
+//
+// ****************************************************************************
 
 avtVector
 avtLimitCycleFilter::GetIntersectingPoint( avtVector pt0, avtVector pt1 )
