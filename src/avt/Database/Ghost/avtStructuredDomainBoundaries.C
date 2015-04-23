@@ -2112,7 +2112,7 @@ avtStructuredDomainBoundaries::ExchangeVector(vector<int>           domainNum,
     
 #ifdef PARALLEL
     // Let's get them all to agree on one data type.
-    int myDataType = dataType;
+    int myDataType = dataType;    
     MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
 #endif
     
@@ -2131,7 +2131,6 @@ avtStructuredDomainBoundaries::ExchangeVector(vector<int>           domainNum,
         case VTK_UNSIGNED_INT:
             return ExchangeIntVector(domainNum, isPointData, vectors);
             break;
-
         default:
             EXCEPTION1(VisItException, "Unknown vector type in "
                        "avtStructuredDomainBoundaries::ExchangeVector");
