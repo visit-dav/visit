@@ -372,11 +372,6 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
 
     atts = *(const MeshAttributes*)a;
 
-    if (atts.GetOutlineOnlyFlag())
-    {
-       // do decimation here, using atts.GetErrorTolerance();
-    }
-
     SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
     SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
     if (atts.GetMeshColorSource()==0)

@@ -129,8 +129,6 @@ public:
     void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetMeshColor(const ColorAttribute &meshColor_);
-    void SetOutlineOnlyFlag(bool outlineOnlyFlag_);
-    void SetErrorTolerance(double errorTolerance_);
     void SetMeshColorSource(MeshColor meshColorSource_);
     void SetOpaqueColorSource(OpaqueColor opaqueColorSource_);
     void SetOpaqueMode(OpaqueMode opaqueMode_);
@@ -151,8 +149,6 @@ public:
     int                  GetLineWidth() const;
     const ColorAttribute &GetMeshColor() const;
           ColorAttribute &GetMeshColor();
-    bool                 GetOutlineOnlyFlag() const;
-    double               GetErrorTolerance() const;
     MeshColor            GetMeshColorSource() const;
     OpaqueColor          GetOpaqueColorSource() const;
     OpaqueMode           GetOpaqueMode() const;
@@ -216,8 +212,6 @@ public:
         ID_lineStyle,
         ID_lineWidth,
         ID_meshColor,
-        ID_outlineOnlyFlag,
-        ID_errorTolerance,
         ID_meshColorSource,
         ID_opaqueColorSource,
         ID_opaqueMode,
@@ -239,8 +233,6 @@ private:
     int            lineStyle;
     int            lineWidth;
     ColorAttribute meshColor;
-    bool           outlineOnlyFlag;
-    double         errorTolerance;
     int            meshColorSource;
     int            opaqueColorSource;
     int            opaqueMode;
@@ -259,6 +251,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MESHATTRIBUTES_TMFS "biiabdiiidaibsibbid"
+#define MESHATTRIBUTES_TMFS "biiaiiidaibsibbid"
 
 #endif

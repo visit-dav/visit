@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class MeshAttributes extends AttributeSubject implements Plugin
 {
-    private static int MeshAttributes_numAdditionalAtts = 19;
+    private static int MeshAttributes_numAdditionalAtts = 17;
 
     // Enum values
     public final static int POINTTYPE_BOX = 0;
@@ -95,8 +95,6 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         lineStyle = 0;
         lineWidth = 0;
         meshColor = new ColorAttribute(0, 0, 0);
-        outlineOnlyFlag = false;
-        errorTolerance = 0.01;
         meshColorSource = MESHCOLOR_FOREGROUND;
         opaqueColorSource = OPAQUECOLOR_BACKGROUND;
         opaqueMode = OPAQUEMODE_AUTO;
@@ -120,8 +118,6 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         lineStyle = 0;
         lineWidth = 0;
         meshColor = new ColorAttribute(0, 0, 0);
-        outlineOnlyFlag = false;
-        errorTolerance = 0.01;
         meshColorSource = MESHCOLOR_FOREGROUND;
         opaqueColorSource = OPAQUECOLOR_BACKGROUND;
         opaqueMode = OPAQUEMODE_AUTO;
@@ -145,8 +141,6 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
         meshColor = new ColorAttribute(obj.meshColor);
-        outlineOnlyFlag = obj.outlineOnlyFlag;
-        errorTolerance = obj.errorTolerance;
         meshColorSource = obj.meshColorSource;
         opaqueColorSource = obj.opaqueColorSource;
         opaqueMode = obj.opaqueMode;
@@ -181,8 +175,6 @@ public class MeshAttributes extends AttributeSubject implements Plugin
                 (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
                 (meshColor == obj.meshColor) &&
-                (outlineOnlyFlag == obj.outlineOnlyFlag) &&
-                (errorTolerance == obj.errorTolerance) &&
                 (meshColorSource == obj.meshColorSource) &&
                 (opaqueColorSource == obj.opaqueColorSource) &&
                 (opaqueMode == obj.opaqueMode) &&
@@ -226,94 +218,82 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         Select(3);
     }
 
-    public void SetOutlineOnlyFlag(boolean outlineOnlyFlag_)
-    {
-        outlineOnlyFlag = outlineOnlyFlag_;
-        Select(4);
-    }
-
-    public void SetErrorTolerance(double errorTolerance_)
-    {
-        errorTolerance = errorTolerance_;
-        Select(5);
-    }
-
     public void SetMeshColorSource(int meshColorSource_)
     {
         meshColorSource = meshColorSource_;
-        Select(6);
+        Select(4);
     }
 
     public void SetOpaqueColorSource(int opaqueColorSource_)
     {
         opaqueColorSource = opaqueColorSource_;
-        Select(7);
+        Select(5);
     }
 
     public void SetOpaqueMode(int opaqueMode_)
     {
         opaqueMode = opaqueMode_;
-        Select(8);
+        Select(6);
     }
 
     public void SetPointSize(double pointSize_)
     {
         pointSize = pointSize_;
-        Select(9);
+        Select(7);
     }
 
     public void SetOpaqueColor(ColorAttribute opaqueColor_)
     {
         opaqueColor = opaqueColor_;
-        Select(10);
+        Select(8);
     }
 
     public void SetSmoothingLevel(int smoothingLevel_)
     {
         smoothingLevel = smoothingLevel_;
-        Select(11);
+        Select(9);
     }
 
     public void SetPointSizeVarEnabled(boolean pointSizeVarEnabled_)
     {
         pointSizeVarEnabled = pointSizeVarEnabled_;
-        Select(12);
+        Select(10);
     }
 
     public void SetPointSizeVar(String pointSizeVar_)
     {
         pointSizeVar = pointSizeVar_;
-        Select(13);
+        Select(11);
     }
 
     public void SetPointType(int pointType_)
     {
         pointType = pointType_;
-        Select(14);
+        Select(12);
     }
 
     public void SetOpaqueMeshIsAppropriate(boolean opaqueMeshIsAppropriate_)
     {
         opaqueMeshIsAppropriate = opaqueMeshIsAppropriate_;
-        Select(15);
+        Select(13);
     }
 
     public void SetShowInternal(boolean showInternal_)
     {
         showInternal = showInternal_;
-        Select(16);
+        Select(14);
     }
 
     public void SetPointSizePixels(int pointSizePixels_)
     {
         pointSizePixels = pointSizePixels_;
-        Select(17);
+        Select(15);
     }
 
     public void SetOpacity(double opacity_)
     {
         opacity = opacity_;
-        Select(18);
+        Select(16);
     }
 
     // Property getting methods
@@ -321,8 +301,6 @@ public class MeshAttributes extends AttributeSubject implements Plugin
     public int            GetLineStyle() { return lineStyle; }
     public int            GetLineWidth() { return lineWidth; }
     public ColorAttribute GetMeshColor() { return meshColor; }
-    public boolean        GetOutlineOnlyFlag() { return outlineOnlyFlag; }
-    public double         GetErrorTolerance() { return errorTolerance; }
     public int            GetMeshColorSource() { return meshColorSource; }
     public int            GetOpaqueColorSource() { return opaqueColorSource; }
     public int            GetOpaqueMode() { return opaqueMode; }
@@ -349,34 +327,30 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(3, buf))
             meshColor.Write(buf);
         if(WriteSelect(4, buf))
-            buf.WriteBool(outlineOnlyFlag);
-        if(WriteSelect(5, buf))
-            buf.WriteDouble(errorTolerance);
-        if(WriteSelect(6, buf))
             buf.WriteInt(meshColorSource);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(5, buf))
             buf.WriteInt(opaqueColorSource);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(6, buf))
             buf.WriteInt(opaqueMode);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(7, buf))
             buf.WriteDouble(pointSize);
-        if(WriteSelect(10, buf))
+        if(WriteSelect(8, buf))
             opaqueColor.Write(buf);
-        if(WriteSelect(11, buf))
+        if(WriteSelect(9, buf))
             buf.WriteInt(smoothingLevel);
-        if(WriteSelect(12, buf))
+        if(WriteSelect(10, buf))
             buf.WriteBool(pointSizeVarEnabled);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(11, buf))
             buf.WriteString(pointSizeVar);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(12, buf))
             buf.WriteInt(pointType);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(13, buf))
             buf.WriteBool(opaqueMeshIsAppropriate);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(14, buf))
             buf.WriteBool(showInternal);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(15, buf))
             buf.WriteInt(pointSizePixels);
-        if(WriteSelect(18, buf))
+        if(WriteSelect(16, buf))
             buf.WriteDouble(opacity);
     }
 
@@ -398,49 +372,43 @@ public class MeshAttributes extends AttributeSubject implements Plugin
             Select(3);
             break;
         case 4:
-            SetOutlineOnlyFlag(buf.ReadBool());
-            break;
-        case 5:
-            SetErrorTolerance(buf.ReadDouble());
-            break;
-        case 6:
             SetMeshColorSource(buf.ReadInt());
             break;
-        case 7:
+        case 5:
             SetOpaqueColorSource(buf.ReadInt());
             break;
-        case 8:
+        case 6:
             SetOpaqueMode(buf.ReadInt());
             break;
-        case 9:
+        case 7:
             SetPointSize(buf.ReadDouble());
             break;
-        case 10:
+        case 8:
             opaqueColor.Read(buf);
-            Select(10);
+            Select(8);
             break;
-        case 11:
+        case 9:
             SetSmoothingLevel(buf.ReadInt());
             break;
-        case 12:
+        case 10:
             SetPointSizeVarEnabled(buf.ReadBool());
             break;
-        case 13:
+        case 11:
             SetPointSizeVar(buf.ReadString());
             break;
-        case 14:
+        case 12:
             SetPointType(buf.ReadInt());
             break;
-        case 15:
+        case 13:
             SetOpaqueMeshIsAppropriate(buf.ReadBool());
             break;
-        case 16:
+        case 14:
             SetShowInternal(buf.ReadBool());
             break;
-        case 17:
+        case 15:
             SetPointSizePixels(buf.ReadInt());
             break;
-        case 18:
+        case 16:
             SetOpacity(buf.ReadDouble());
             break;
         }
@@ -453,8 +421,6 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + indent + "meshColor = {" + meshColor.Red() + ", " + meshColor.Green() + ", " + meshColor.Blue() + ", " + meshColor.Alpha() + "}\n";
-        str = str + boolToString("outlineOnlyFlag", outlineOnlyFlag, indent) + "\n";
-        str = str + doubleToString("errorTolerance", errorTolerance, indent) + "\n";
         str = str + indent + "meshColorSource = ";
         if(meshColorSource == MESHCOLOR_FOREGROUND)
             str = str + "MESHCOLOR_FOREGROUND";
@@ -518,8 +484,6 @@ public class MeshAttributes extends AttributeSubject implements Plugin
     private int            lineStyle;
     private int            lineWidth;
     private ColorAttribute meshColor;
-    private boolean        outlineOnlyFlag;
-    private double         errorTolerance;
     private int            meshColorSource;
     private int            opaqueColorSource;
     private int            opaqueMode;

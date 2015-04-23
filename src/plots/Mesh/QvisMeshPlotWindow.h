@@ -103,6 +103,9 @@ class QvisOpacitySlider;
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Kathleen Biagas, Thu Apr 23 13:12:22 PDT 2015
+//   Removed never-implemented outlineOnly and errorTolerance widgets.
+// 
 // ****************************************************************************
 
 class QvisMeshPlotWindow : public QvisPostableWindowObserver
@@ -129,9 +132,7 @@ private slots:
     void legendToggled(bool val);
     void showInternalToggled(bool val);
     void meshColorChanged(const QColor &color);
-    void outlineOnlyToggled(bool on);
     void opaqueModeChanged(int val);
-    void processErrorToleranceText();
     void opaqueColorChanged(const QColor &color);
     void meshColorClicked(int val);
     void opaqueColorClicked(int val);
@@ -150,9 +151,6 @@ private:
     MeshAttributes         *meshAtts;
     QvisLineStyleWidget    *lineStyle;
     QvisLineWidthWidget    *lineWidth;
-    QCheckBox              *outlineOnlyToggle;
-    QLabel                 *errorToleranceLabel;
-    QLineEdit              *errorToleranceLineEdit;
     QButtonGroup           *opaqueModeGroup;
     QCheckBox              *legendToggle;
     QCheckBox              *showInternalToggle;

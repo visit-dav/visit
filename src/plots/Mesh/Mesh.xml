@@ -44,12 +44,6 @@
         0
         255
       </Field>
-      <Field name="outlineOnlyFlag" label="Outline only" type="bool">
-        false
-      </Field>
-      <Field name="errorTolerance" label="Tolerance" type="double">
-        0.010000
-      </Field>
       <Field name="meshColorSource" label="Mesh Color" type="enum" subtype="MeshColor">
         Foreground
       </Field>

@@ -240,12 +240,6 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
     else
         revisedInput = inDS;
 
-    if (atts.GetOutlineOnlyFlag())
-    {
-     // we need to do some decimation (?) here
-     // use atts.GetErrorTolerance();
-    }
-
     //
     // Do not perform opaque if topological dimension of input == 0 or 1 
     // 
