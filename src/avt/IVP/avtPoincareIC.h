@@ -339,6 +339,7 @@ public:
                             { return terminatedBecauseOfMaxSteps; };
 
     virtual void SetMaxIntersections( int mi ) { maxIntersections = mi; };
+    virtual int  GetNumIntersections( ) { return numIntersections; };
 
   protected:
     // Intersection points.
@@ -368,7 +369,6 @@ public:
 
     // The fieldline properties as returned from the analysis library.
     FieldlineProperties properties;
-
 
     ////// Code for rational surface search
     avtPoincareIC *src_seed_ic;

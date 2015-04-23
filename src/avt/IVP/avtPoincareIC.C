@@ -161,8 +161,8 @@ avtPoincareIC::CheckForTermination(avtIVPStep& step, avtIVPField *)
     bool shouldTerminate = false;
 
     // Check for termination.
-    if (IntersectPlane( step.GetP0(), step.GetP1(),
-                        step.GetT0(), step.GetT1() ))
+    if (numSteps && IntersectPlane( step.GetP0(), step.GetP1(),
+                                    step.GetT0(), step.GetT1() ))
     {
         numIntersections++;
 
@@ -173,7 +173,7 @@ avtPoincareIC::CheckForTermination(avtIVPStep& step, avtIVPField *)
         }
     }
 
-    // When doing a double puncture plot many points are exained and
+    // When doing a double puncture plot many points are examined and
     // one may not get enough points for the analysis thus allow a cut
     // off so not to integrate forever.
     if( puncturePeriod )
@@ -184,13 +184,13 @@ avtPoincareIC::CheckForTermination(avtIVPStep& step, avtIVPField *)
             (direction == DIRECTION_BACKWARD && step.GetT1() <= maxTime) )
             shouldTerminate = true;
       }
-      
-      // If max steps is zero ignore the test.
-      if( !shouldTerminate && maxSteps && numSteps >= maxSteps )
-      {
-        terminatedBecauseOfMaxSteps = true;
-        shouldTerminate = true;
-      }
+    }      
+     
+    // If max steps is zero ignore the test.
+    if( !shouldTerminate && maxSteps && numSteps >= maxSteps )
+    {
+      terminatedBecauseOfMaxSteps = true;
+      shouldTerminate = true;
     }
 
     // Update other termination criteria.
@@ -224,14 +224,15 @@ avtPoincareIC::SetIntersectionCriteria(vtkObject *obj, int maxInts)
         EXCEPTION1(ImproperUseException, "Can not SetIntersectionCriteria in avtPoincare, the Poincare plot only supports plane intersections.");
 
 
-    avtVector intersectPlanePt = avtVector(((vtkPlane *)obj)->GetOrigin());
+    avtVector intersectPlanePt   = avtVector(((vtkPlane *)obj)->GetOrigin());
     avtVector intersectPlaneNorm = avtVector(((vtkPlane *)obj)->GetNormal());
 
     intersectPlaneNorm.normalize();
     intersectPlaneEq[0] = intersectPlaneNorm.x;
     intersectPlaneEq[1] = intersectPlaneNorm.y;
     intersectPlaneEq[2] = intersectPlaneNorm.z;
-    intersectPlaneEq[3] = intersectPlanePt.length();
+//    intersectPlaneEq[3] = intersectPlanePt.length();
+    intersectPlaneEq[3] = intersectPlanePt.dot(intersectPlaneNorm);
 
     maxIntersections = maxInts;
 }
@@ -285,26 +286,26 @@ avtPoincareIC::IntersectPlane(const avtVector &p0, const avtVector &p1,
 {
     double distP0 = intersectPlaneEq[0] * p0.x +
                     intersectPlaneEq[1] * p0.y +
-                    intersectPlaneEq[2] * p0.z +
+                    intersectPlaneEq[2] * p0.z -
                     intersectPlaneEq[3];
 
     double distP1 = intersectPlaneEq[0] * p1.x +
                     intersectPlaneEq[1] * p1.y +
-                    intersectPlaneEq[2] * p1.z +
+                    intersectPlaneEq[2] * p1.z -
                     intersectPlaneEq[3];
 
 #define SIGN(x) ((x) < 0.0 ? -1 : 1)
 
     // If either point on the plane, or points on opposite
     // sides of the plane, the line intersects.
-    if( //distP0 == 0.0 || distP1 == 0.0 ||
+    if( // distP0 == 0.0 || distP1 == 0.0 ||
         SIGN(distP0) != SIGN(distP1) )
     {
       avtVector dir(p1-p0);
       
       double dot = intersectPlaneEq[0] * dir.x +
                    intersectPlaneEq[1] * dir.y +
-                   intersectPlaneEq[2] * dir.z +
+                   intersectPlaneEq[2] * dir.z -
                    intersectPlaneEq[3];
 
       // If the segment is in the same direction as the poloidal plane
@@ -320,7 +321,7 @@ avtPoincareIC::IntersectPlane(const avtVector &p0, const avtVector &p1,
           
           double t = -(intersectPlaneEq[0] * w.x +
                        intersectPlaneEq[1] * w.y +
-                       intersectPlaneEq[2] * w.z +
+                       intersectPlaneEq[2] * w.z -
                        intersectPlaneEq[3]) / dot;
           
 //        avtVector point = avtVector(p0 + dir * t);
