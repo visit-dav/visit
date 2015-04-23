@@ -682,6 +682,12 @@ avtUnstructuredDomainBoundaries::ExchangeVector(vector<int> domainNum, bool isPo
 {
     int dataType = (vectors.empty() ? -1 : vectors[0]->GetDataType());
     
+#ifdef PARALLEL
+    // Let's get them all to agree on one data type.
+    int myDataType = dataType;
+    MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+#endif
+    
     if (dataType < 0)
         return vectors;
     
