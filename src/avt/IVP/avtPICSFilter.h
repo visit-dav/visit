@@ -189,7 +189,7 @@ class IVP_API avtPICSFilter :
     virtual std::vector<avtVector>  GetInitialLocations() = 0;
     virtual std::vector<avtVector>  GetInitialVelocities() = 0;
     virtual CommunicationPattern    GetCommunicationPattern() = 0;
-    std::vector<std::pair<int,int> > GetFwdBwdICPairs() { return fwdBwdICPairs; }
+    std::vector<std::pair<int,int> > GetICPairs() { return ICPairs; }
     
     // Methods to set the filter's attributes.
     void SetFieldType(int val);
@@ -257,7 +257,7 @@ class IVP_API avtPICSFilter :
     std::vector<int> domainToRank;
     std::vector<vtkDataSet*>dataSets;
     std::map<BlockIDType, avtCellLocator_p> domainToCellLocatorMap;
-    std::vector<std::pair<int,int> > fwdBwdICPairs;
+    std::vector<std::pair<int,int> > ICPairs;
 
     std::vector<double> pointList;
 

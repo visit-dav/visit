@@ -546,10 +546,10 @@ static avtStateRecorderIntegralCurve * icFromID(int id, std::vector<avtIntegralC
 void
 avtStreamlinePolyDataFilter::ProcessVaryTubeRadiusByScalar(std::vector<avtIntegralCurve *> &ics)
 {
-    for (size_t i = 0; i < fwdBwdICPairs.size(); i++)
+    for (size_t i = 0; i < ICPairs.size(); i++)
     {
-        avtStateRecorderIntegralCurve *ic[2] = {icFromID(fwdBwdICPairs[i].first, ics),
-                                                icFromID(fwdBwdICPairs[i].second, ics)};
+        avtStateRecorderIntegralCurve *ic[2] = {icFromID(ICPairs[i].first, ics),
+                                                icFromID(ICPairs[i].second, ics)};
         if (ic[0] == NULL || ic[1] == NULL)
         {
             EXCEPTION1(ImproperUseException, "Integral curve ID not found.");
