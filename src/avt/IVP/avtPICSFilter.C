@@ -3148,7 +3148,7 @@ avtPICSFilter::GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *>
       // Use the last velocity if available or initalize to be zero.
       seedVels.push_back( seedVels.empty() ? avtVector(0,0,0) : seedVels[i-1]);
 
-    std::vector<vector<int> > ids;
+    std::vector< std::vector<int> > ids;
     CreateIntegralCurvesFromSeeds(seedPts, seedVels, curves, ids);
 }
 
