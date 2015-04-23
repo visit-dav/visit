@@ -825,7 +825,7 @@ avtPLOT3DFileFormat::ReadVisItMetaFile()
             {
                 reader->SetQFileName(soln_file.c_str());
                 haveSolutionFile = true;
-                flcose(file);
+                fclose(file);
             }
         }
     }
