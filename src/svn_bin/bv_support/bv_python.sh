@@ -47,7 +47,7 @@ function python_set_vars_helper
   PYTHON_INCLUDE_DIR="$PYTHON_INCLUDE_PATH"
   PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
   #remove all other libraries except for python..
-  PYTHON_LIBRARY="${PYTHON_LIBRARY##-l*-l}"
+  PYTHON_LIBRARY=`echo $PYTHON_LIBRARY | sed "s/.*\(python[^ ]*\).*/\1/g"`
 
   if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
        PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.a"
