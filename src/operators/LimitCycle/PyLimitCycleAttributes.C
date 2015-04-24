@@ -477,9 +477,14 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 0\n", prefix);
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%scycleTolerance = %g\n", prefix, atts->GetCycleTolerance());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxIterations = %d\n", prefix, atts->GetMaxIterations());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scycleTolerance = %g\n", prefix, atts->GetCycleTolerance());
+    if(atts->GetShowPartialResults())
+        SNPRINTF(tmpStr, 1000, "%sshowPartialResults = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowPartialResults = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueTerminationWarnings())
         SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 1\n", prefix);
@@ -1850,6 +1855,30 @@ LimitCycleAttributes_GetForceNodeCenteredData(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LimitCycleAttributes_SetCycleTolerance(PyObject *self, PyObject *args)
+{
+    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the cycleTolerance in the object.
+    obj->data->SetCycleTolerance(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LimitCycleAttributes_GetCycleTolerance(PyObject *self, PyObject *args)
+{
+    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetCycleTolerance());
+    return retval;
+}
+
+/*static*/ PyObject *
 LimitCycleAttributes_SetMaxIterations(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
@@ -1874,26 +1903,26 @@ LimitCycleAttributes_GetMaxIterations(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LimitCycleAttributes_SetCycleTolerance(PyObject *self, PyObject *args)
+LimitCycleAttributes_SetShowPartialResults(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the cycleTolerance in the object.
-    obj->data->SetCycleTolerance(dval);
+    // Set the showPartialResults in the object.
+    obj->data->SetShowPartialResults(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LimitCycleAttributes_GetCycleTolerance(PyObject *self, PyObject *args)
+LimitCycleAttributes_GetShowPartialResults(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetCycleTolerance());
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowPartialResults()?1L:0L);
     return retval;
 }
 
@@ -2214,10 +2243,12 @@ PyMethodDef PyLimitCycleAttributes_methods[LIMITCYCLEATTRIBUTES_NMETH] = {
     {"GetNumberOfRandomSamples", LimitCycleAttributes_GetNumberOfRandomSamples, METH_VARARGS},
     {"SetForceNodeCenteredData", LimitCycleAttributes_SetForceNodeCenteredData, METH_VARARGS},
     {"GetForceNodeCenteredData", LimitCycleAttributes_GetForceNodeCenteredData, METH_VARARGS},
-    {"SetMaxIterations", LimitCycleAttributes_SetMaxIterations, METH_VARARGS},
-    {"GetMaxIterations", LimitCycleAttributes_GetMaxIterations, METH_VARARGS},
     {"SetCycleTolerance", LimitCycleAttributes_SetCycleTolerance, METH_VARARGS},
     {"GetCycleTolerance", LimitCycleAttributes_GetCycleTolerance, METH_VARARGS},
+    {"SetMaxIterations", LimitCycleAttributes_SetMaxIterations, METH_VARARGS},
+    {"GetMaxIterations", LimitCycleAttributes_GetMaxIterations, METH_VARARGS},
+    {"SetShowPartialResults", LimitCycleAttributes_SetShowPartialResults, METH_VARARGS},
+    {"GetShowPartialResults", LimitCycleAttributes_GetShowPartialResults, METH_VARARGS},
     {"SetIssueTerminationWarnings", LimitCycleAttributes_SetIssueTerminationWarnings, METH_VARARGS},
     {"GetIssueTerminationWarnings", LimitCycleAttributes_GetIssueTerminationWarnings, METH_VARARGS},
     {"SetIssueStepsizeWarnings", LimitCycleAttributes_SetIssueStepsizeWarnings, METH_VARARGS},
@@ -2440,10 +2471,12 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
         return LimitCycleAttributes_GetNumberOfRandomSamples(self, NULL);
     if(strcmp(name, "forceNodeCenteredData") == 0)
         return LimitCycleAttributes_GetForceNodeCenteredData(self, NULL);
-    if(strcmp(name, "maxIterations") == 0)
-        return LimitCycleAttributes_GetMaxIterations(self, NULL);
     if(strcmp(name, "cycleTolerance") == 0)
         return LimitCycleAttributes_GetCycleTolerance(self, NULL);
+    if(strcmp(name, "maxIterations") == 0)
+        return LimitCycleAttributes_GetMaxIterations(self, NULL);
+    if(strcmp(name, "showPartialResults") == 0)
+        return LimitCycleAttributes_GetShowPartialResults(self, NULL);
     if(strcmp(name, "issueTerminationWarnings") == 0)
         return LimitCycleAttributes_GetIssueTerminationWarnings(self, NULL);
     if(strcmp(name, "issueStepsizeWarnings") == 0)
@@ -2569,10 +2602,12 @@ PyLimitCycleAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LimitCycleAttributes_SetNumberOfRandomSamples(self, tuple);
     else if(strcmp(name, "forceNodeCenteredData") == 0)
         obj = LimitCycleAttributes_SetForceNodeCenteredData(self, tuple);
-    else if(strcmp(name, "maxIterations") == 0)
-        obj = LimitCycleAttributes_SetMaxIterations(self, tuple);
     else if(strcmp(name, "cycleTolerance") == 0)
         obj = LimitCycleAttributes_SetCycleTolerance(self, tuple);
+    else if(strcmp(name, "maxIterations") == 0)
+        obj = LimitCycleAttributes_SetMaxIterations(self, tuple);
+    else if(strcmp(name, "showPartialResults") == 0)
+        obj = LimitCycleAttributes_SetShowPartialResults(self, tuple);
     else if(strcmp(name, "issueTerminationWarnings") == 0)
         obj = LimitCycleAttributes_SetIssueTerminationWarnings(self, tuple);
     else if(strcmp(name, "issueStepsizeWarnings") == 0)

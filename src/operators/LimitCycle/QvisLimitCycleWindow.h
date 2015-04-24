@@ -223,8 +223,9 @@ class QvisLimitCycleWindow : public QvisOperatorWindow
     void maxDistanceProcessText();
 
   // Appearance
-    void maxIterationsProcessText();
     void cycleToleranceProcessText();
+    void maxIterationsProcessText();
+    void showPartialResultsChanged(bool);
 
     void dataValueChanged(int val);
     void dataVariableChanged(const QString &var);
@@ -313,8 +314,9 @@ class QvisLimitCycleWindow : public QvisOperatorWindow
     QLineEdit *maxDistance;
 
   // Appearance
-    QLineEdit *maxIterations;
     QLineEdit *cycleTolerance;
+    QLineEdit *maxIterations;
+    QCheckBox *showPartialResults;
 
     QComboBox *dataValueComboBox;
     QvisVariableButton *dataVariable;

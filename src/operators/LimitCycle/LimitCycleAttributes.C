@@ -424,8 +424,9 @@ void LimitCycleAttributes::Init()
     randomSeed = 0;
     numberOfRandomSamples = 1;
     forceNodeCenteredData = false;
-    maxIterations = 10;
     cycleTolerance = 1e-06;
+    maxIterations = 10;
+    showPartialResults = true;
     issueTerminationWarnings = true;
     issueStepsizeWarnings = true;
     issueStiffnessWarnings = true;
@@ -518,8 +519,9 @@ void LimitCycleAttributes::Copy(const LimitCycleAttributes &obj)
     randomSeed = obj.randomSeed;
     numberOfRandomSamples = obj.numberOfRandomSamples;
     forceNodeCenteredData = obj.forceNodeCenteredData;
-    maxIterations = obj.maxIterations;
     cycleTolerance = obj.cycleTolerance;
+    maxIterations = obj.maxIterations;
+    showPartialResults = obj.showPartialResults;
     issueTerminationWarnings = obj.issueTerminationWarnings;
     issueStepsizeWarnings = obj.issueStepsizeWarnings;
     issueStiffnessWarnings = obj.issueStiffnessWarnings;
@@ -760,8 +762,9 @@ LimitCycleAttributes::operator == (const LimitCycleAttributes &obj) const
             (randomSeed == obj.randomSeed) &&
             (numberOfRandomSamples == obj.numberOfRandomSamples) &&
             (forceNodeCenteredData == obj.forceNodeCenteredData) &&
-            (maxIterations == obj.maxIterations) &&
             (cycleTolerance == obj.cycleTolerance) &&
+            (maxIterations == obj.maxIterations) &&
+            (showPartialResults == obj.showPartialResults) &&
             (issueTerminationWarnings == obj.issueTerminationWarnings) &&
             (issueStepsizeWarnings == obj.issueStepsizeWarnings) &&
             (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
@@ -1011,8 +1014,9 @@ LimitCycleAttributes::SelectAll()
     Select(ID_randomSeed,                         (void *)&randomSeed);
     Select(ID_numberOfRandomSamples,              (void *)&numberOfRandomSamples);
     Select(ID_forceNodeCenteredData,              (void *)&forceNodeCenteredData);
-    Select(ID_maxIterations,                      (void *)&maxIterations);
     Select(ID_cycleTolerance,                     (void *)&cycleTolerance);
+    Select(ID_maxIterations,                      (void *)&maxIterations);
+    Select(ID_showPartialResults,                 (void *)&showPartialResults);
     Select(ID_issueTerminationWarnings,           (void *)&issueTerminationWarnings);
     Select(ID_issueStepsizeWarnings,              (void *)&issueStepsizeWarnings);
     Select(ID_issueStiffnessWarnings,             (void *)&issueStiffnessWarnings);
@@ -1318,16 +1322,22 @@ LimitCycleAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("forceNodeCenteredData", forceNodeCenteredData));
     }
 
+    if(completeSave || !FieldsEqual(ID_cycleTolerance, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("cycleTolerance", cycleTolerance));
+    }
+
     if(completeSave || !FieldsEqual(ID_maxIterations, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("maxIterations", maxIterations));
     }
 
-    if(completeSave || !FieldsEqual(ID_cycleTolerance, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showPartialResults, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("cycleTolerance", cycleTolerance));
+        node->AddNode(new DataNode("showPartialResults", showPartialResults));
     }
 
     if(completeSave || !FieldsEqual(ID_issueTerminationWarnings, &defaultObject))
@@ -1620,10 +1630,12 @@ LimitCycleAttributes::SetFromNode(DataNode *parentNode)
         SetNumberOfRandomSamples(node->AsInt());
     if((node = searchNode->GetNode("forceNodeCenteredData")) != 0)
         SetForceNodeCenteredData(node->AsBool());
-    if((node = searchNode->GetNode("maxIterations")) != 0)
-        SetMaxIterations(node->AsInt());
     if((node = searchNode->GetNode("cycleTolerance")) != 0)
         SetCycleTolerance(node->AsDouble());
+    if((node = searchNode->GetNode("maxIterations")) != 0)
+        SetMaxIterations(node->AsInt());
+    if((node = searchNode->GetNode("showPartialResults")) != 0)
+        SetShowPartialResults(node->AsBool());
     if((node = searchNode->GetNode("issueTerminationWarnings")) != 0)
         SetIssueTerminationWarnings(node->AsBool());
     if((node = searchNode->GetNode("issueStepsizeWarnings")) != 0)
@@ -1983,6 +1995,13 @@ LimitCycleAttributes::SetForceNodeCenteredData(bool forceNodeCenteredData_)
 }
 
 void
+LimitCycleAttributes::SetCycleTolerance(double cycleTolerance_)
+{
+    cycleTolerance = cycleTolerance_;
+    Select(ID_cycleTolerance, (void *)&cycleTolerance);
+}
+
+void
 LimitCycleAttributes::SetMaxIterations(int maxIterations_)
 {
     maxIterations = maxIterations_;
@@ -1990,10 +2009,10 @@ LimitCycleAttributes::SetMaxIterations(int maxIterations_)
 }
 
 void
-LimitCycleAttributes::SetCycleTolerance(double cycleTolerance_)
+LimitCycleAttributes::SetShowPartialResults(bool showPartialResults_)
 {
-    cycleTolerance = cycleTolerance_;
-    Select(ID_cycleTolerance, (void *)&cycleTolerance);
+    showPartialResults = showPartialResults_;
+    Select(ID_showPartialResults, (void *)&showPartialResults);
 }
 
 void
@@ -2369,16 +2388,22 @@ LimitCycleAttributes::GetForceNodeCenteredData() const
     return forceNodeCenteredData;
 }
 
+double
+LimitCycleAttributes::GetCycleTolerance() const
+{
+    return cycleTolerance;
+}
+
 int
 LimitCycleAttributes::GetMaxIterations() const
 {
     return maxIterations;
 }
 
-double
-LimitCycleAttributes::GetCycleTolerance() const
+bool
+LimitCycleAttributes::GetShowPartialResults() const
 {
-    return cycleTolerance;
+    return showPartialResults;
 }
 
 bool
@@ -2549,8 +2574,9 @@ LimitCycleAttributes::GetFieldName(int index) const
     case ID_randomSeed:                         return "randomSeed";
     case ID_numberOfRandomSamples:              return "numberOfRandomSamples";
     case ID_forceNodeCenteredData:              return "forceNodeCenteredData";
-    case ID_maxIterations:                      return "maxIterations";
     case ID_cycleTolerance:                     return "cycleTolerance";
+    case ID_maxIterations:                      return "maxIterations";
+    case ID_showPartialResults:                 return "showPartialResults";
     case ID_issueTerminationWarnings:           return "issueTerminationWarnings";
     case ID_issueStepsizeWarnings:              return "issueStepsizeWarnings";
     case ID_issueStiffnessWarnings:             return "issueStiffnessWarnings";
@@ -2628,8 +2654,9 @@ LimitCycleAttributes::GetFieldType(int index) const
     case ID_randomSeed:                         return FieldType_int;
     case ID_numberOfRandomSamples:              return FieldType_int;
     case ID_forceNodeCenteredData:              return FieldType_bool;
-    case ID_maxIterations:                      return FieldType_int;
     case ID_cycleTolerance:                     return FieldType_double;
+    case ID_maxIterations:                      return FieldType_int;
+    case ID_showPartialResults:                 return FieldType_bool;
     case ID_issueTerminationWarnings:           return FieldType_bool;
     case ID_issueStepsizeWarnings:              return FieldType_bool;
     case ID_issueStiffnessWarnings:             return FieldType_bool;
@@ -2707,8 +2734,9 @@ LimitCycleAttributes::GetFieldTypeName(int index) const
     case ID_randomSeed:                         return "int";
     case ID_numberOfRandomSamples:              return "int";
     case ID_forceNodeCenteredData:              return "bool";
-    case ID_maxIterations:                      return "int";
     case ID_cycleTolerance:                     return "double";
+    case ID_maxIterations:                      return "int";
+    case ID_showPartialResults:                 return "bool";
     case ID_issueTerminationWarnings:           return "bool";
     case ID_issueStepsizeWarnings:              return "bool";
     case ID_issueStiffnessWarnings:             return "bool";
@@ -2994,14 +3022,19 @@ LimitCycleAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (forceNodeCenteredData == obj.forceNodeCenteredData);
         }
         break;
+    case ID_cycleTolerance:
+        {  // new scope
+        retval = (cycleTolerance == obj.cycleTolerance);
+        }
+        break;
     case ID_maxIterations:
         {  // new scope
         retval = (maxIterations == obj.maxIterations);
         }
         break;
-    case ID_cycleTolerance:
+    case ID_showPartialResults:
         {  // new scope
-        retval = (cycleTolerance == obj.cycleTolerance);
+        retval = (showPartialResults == obj.showPartialResults);
         }
         break;
     case ID_issueTerminationWarnings:

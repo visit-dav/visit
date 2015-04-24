@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class LimitCycleAttributes extends AttributeSubject implements Plugin
 {
-    private static int LimitCycleAttributes_numAdditionalAtts = 55;
+    private static int LimitCycleAttributes_numAdditionalAtts = 56;
 
     // Enum values
     public final static int SOURCETYPE_LINE_ = 0;
@@ -177,8 +177,9 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
         randomSeed = 0;
         numberOfRandomSamples = 1;
         forceNodeCenteredData = false;
-        maxIterations = 10;
         cycleTolerance = 1e-06;
+        maxIterations = 10;
+        showPartialResults = true;
         issueTerminationWarnings = true;
         issueStepsizeWarnings = true;
         issueStiffnessWarnings = true;
@@ -256,8 +257,9 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
         randomSeed = 0;
         numberOfRandomSamples = 1;
         forceNodeCenteredData = false;
-        maxIterations = 10;
         cycleTolerance = 1e-06;
+        maxIterations = 10;
+        showPartialResults = true;
         issueTerminationWarnings = true;
         issueStepsizeWarnings = true;
         issueStiffnessWarnings = true;
@@ -343,8 +345,9 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
         randomSeed = obj.randomSeed;
         numberOfRandomSamples = obj.numberOfRandomSamples;
         forceNodeCenteredData = obj.forceNodeCenteredData;
-        maxIterations = obj.maxIterations;
         cycleTolerance = obj.cycleTolerance;
+        maxIterations = obj.maxIterations;
+        showPartialResults = obj.showPartialResults;
         issueTerminationWarnings = obj.issueTerminationWarnings;
         issueStepsizeWarnings = obj.issueStepsizeWarnings;
         issueStiffnessWarnings = obj.issueStiffnessWarnings;
@@ -447,8 +450,9 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
                 (randomSeed == obj.randomSeed) &&
                 (numberOfRandomSamples == obj.numberOfRandomSamples) &&
                 (forceNodeCenteredData == obj.forceNodeCenteredData) &&
-                (maxIterations == obj.maxIterations) &&
                 (cycleTolerance == obj.cycleTolerance) &&
+                (maxIterations == obj.maxIterations) &&
+                (showPartialResults == obj.showPartialResults) &&
                 (issueTerminationWarnings == obj.issueTerminationWarnings) &&
                 (issueStepsizeWarnings == obj.issueStepsizeWarnings) &&
                 (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
@@ -788,70 +792,76 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
         Select(43);
     }
 
-    public void SetMaxIterations(int maxIterations_)
-    {
-        maxIterations = maxIterations_;
-        Select(44);
-    }
-
     public void SetCycleTolerance(double cycleTolerance_)
     {
         cycleTolerance = cycleTolerance_;
+        Select(44);
+    }
+
+    public void SetMaxIterations(int maxIterations_)
+    {
+        maxIterations = maxIterations_;
         Select(45);
+    }
+
+    public void SetShowPartialResults(boolean showPartialResults_)
+    {
+        showPartialResults = showPartialResults_;
+        Select(46);
     }
 
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(46);
+        Select(47);
     }
 
     public void SetIssueStepsizeWarnings(boolean issueStepsizeWarnings_)
     {
         issueStepsizeWarnings = issueStepsizeWarnings_;
-        Select(47);
+        Select(48);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(48);
+        Select(49);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(49);
+        Select(50);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(50);
+        Select(51);
     }
 
     public void SetCorrelationDistanceAngTol(double correlationDistanceAngTol_)
     {
         correlationDistanceAngTol = correlationDistanceAngTol_;
-        Select(51);
+        Select(52);
     }
 
     public void SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_)
     {
         correlationDistanceMinDistAbsolute = correlationDistanceMinDistAbsolute_;
-        Select(52);
+        Select(53);
     }
 
     public void SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_)
     {
         correlationDistanceMinDistBBox = correlationDistanceMinDistBBox_;
-        Select(53);
+        Select(54);
     }
 
     public void SetCorrelationDistanceMinDistType(int correlationDistanceMinDistType_)
     {
         correlationDistanceMinDistType = correlationDistanceMinDistType_;
-        Select(54);
+        Select(55);
     }
 
     // Property getting methods
@@ -899,8 +909,9 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
     public int      GetRandomSeed() { return randomSeed; }
     public int      GetNumberOfRandomSamples() { return numberOfRandomSamples; }
     public boolean  GetForceNodeCenteredData() { return forceNodeCenteredData; }
-    public int      GetMaxIterations() { return maxIterations; }
     public double   GetCycleTolerance() { return cycleTolerance; }
+    public int      GetMaxIterations() { return maxIterations; }
+    public boolean  GetShowPartialResults() { return showPartialResults; }
     public boolean  GetIssueTerminationWarnings() { return issueTerminationWarnings; }
     public boolean  GetIssueStepsizeWarnings() { return issueStepsizeWarnings; }
     public boolean  GetIssueStiffnessWarnings() { return issueStiffnessWarnings; }
@@ -1003,26 +1014,28 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(43, buf))
             buf.WriteBool(forceNodeCenteredData);
         if(WriteSelect(44, buf))
-            buf.WriteInt(maxIterations);
-        if(WriteSelect(45, buf))
             buf.WriteDouble(cycleTolerance);
+        if(WriteSelect(45, buf))
+            buf.WriteInt(maxIterations);
         if(WriteSelect(46, buf))
-            buf.WriteBool(issueTerminationWarnings);
+            buf.WriteBool(showPartialResults);
         if(WriteSelect(47, buf))
-            buf.WriteBool(issueStepsizeWarnings);
+            buf.WriteBool(issueTerminationWarnings);
         if(WriteSelect(48, buf))
-            buf.WriteBool(issueStiffnessWarnings);
+            buf.WriteBool(issueStepsizeWarnings);
         if(WriteSelect(49, buf))
-            buf.WriteBool(issueCriticalPointsWarnings);
+            buf.WriteBool(issueStiffnessWarnings);
         if(WriteSelect(50, buf))
-            buf.WriteDouble(criticalPointThreshold);
+            buf.WriteBool(issueCriticalPointsWarnings);
         if(WriteSelect(51, buf))
-            buf.WriteDouble(correlationDistanceAngTol);
+            buf.WriteDouble(criticalPointThreshold);
         if(WriteSelect(52, buf))
-            buf.WriteDouble(correlationDistanceMinDistAbsolute);
+            buf.WriteDouble(correlationDistanceAngTol);
         if(WriteSelect(53, buf))
-            buf.WriteDouble(correlationDistanceMinDistBBox);
+            buf.WriteDouble(correlationDistanceMinDistAbsolute);
         if(WriteSelect(54, buf))
+            buf.WriteDouble(correlationDistanceMinDistBBox);
+        if(WriteSelect(55, buf))
             buf.WriteInt(correlationDistanceMinDistType);
     }
 
@@ -1163,36 +1176,39 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
             SetForceNodeCenteredData(buf.ReadBool());
             break;
         case 44:
-            SetMaxIterations(buf.ReadInt());
-            break;
-        case 45:
             SetCycleTolerance(buf.ReadDouble());
             break;
+        case 45:
+            SetMaxIterations(buf.ReadInt());
+            break;
         case 46:
-            SetIssueTerminationWarnings(buf.ReadBool());
+            SetShowPartialResults(buf.ReadBool());
             break;
         case 47:
-            SetIssueStepsizeWarnings(buf.ReadBool());
+            SetIssueTerminationWarnings(buf.ReadBool());
             break;
         case 48:
-            SetIssueStiffnessWarnings(buf.ReadBool());
+            SetIssueStepsizeWarnings(buf.ReadBool());
             break;
         case 49:
-            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            SetIssueStiffnessWarnings(buf.ReadBool());
             break;
         case 50:
-            SetCriticalPointThreshold(buf.ReadDouble());
+            SetIssueCriticalPointsWarnings(buf.ReadBool());
             break;
         case 51:
-            SetCorrelationDistanceAngTol(buf.ReadDouble());
+            SetCriticalPointThreshold(buf.ReadDouble());
             break;
         case 52:
-            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
+            SetCorrelationDistanceAngTol(buf.ReadDouble());
             break;
         case 53:
-            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
+            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
             break;
         case 54:
+            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
+            break;
+        case 55:
             SetCorrelationDistanceMinDistType(buf.ReadInt());
             break;
         }
@@ -1333,8 +1349,9 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
         str = str + intToString("randomSeed", randomSeed, indent) + "\n";
         str = str + intToString("numberOfRandomSamples", numberOfRandomSamples, indent) + "\n";
         str = str + boolToString("forceNodeCenteredData", forceNodeCenteredData, indent) + "\n";
-        str = str + intToString("maxIterations", maxIterations, indent) + "\n";
         str = str + doubleToString("cycleTolerance", cycleTolerance, indent) + "\n";
+        str = str + intToString("maxIterations", maxIterations, indent) + "\n";
+        str = str + boolToString("showPartialResults", showPartialResults, indent) + "\n";
         str = str + boolToString("issueTerminationWarnings", issueTerminationWarnings, indent) + "\n";
         str = str + boolToString("issueStepsizeWarnings", issueStepsizeWarnings, indent) + "\n";
         str = str + boolToString("issueStiffnessWarnings", issueStiffnessWarnings, indent) + "\n";
@@ -1398,8 +1415,9 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
     private int      randomSeed;
     private int      numberOfRandomSamples;
     private boolean  forceNodeCenteredData;
-    private int      maxIterations;
     private double   cycleTolerance;
+    private int      maxIterations;
+    private boolean  showPartialResults;
     private boolean  issueTerminationWarnings;
     private boolean  issueStepsizeWarnings;
     private boolean  issueStiffnessWarnings;
