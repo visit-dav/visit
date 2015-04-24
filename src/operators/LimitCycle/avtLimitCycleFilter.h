@@ -224,7 +224,7 @@ class avtLimitCycleFilter : public virtual avtPluginFilter,
 
     avtVector planePt, planeN;
     vtkPlane *intPlane; 
-    int maxIntersections;
+    int iteration;
 
     std::string  SeedInfoString() const;
 };

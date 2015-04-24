@@ -648,20 +648,26 @@ QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
     cycleLayout->setSpacing(10);
     cycleLayout->setColumnStretch(2,10);
 
-    QLabel *maxIterationsLabel = new QLabel(tr("Maximum iterations"), cycleGroup);
-    cycleLayout->addWidget(maxIterationsLabel, 0,0);
-    maxIterations = new QLineEdit(central);
-    connect(maxIterations, SIGNAL(returnPressed()),
-            this, SLOT(maxIterationsProcessText()));
-    cycleLayout->addWidget(maxIterations, 0,1);
-
     QLabel *cycleToleranceLabel = new QLabel(tr("Cycle tolerance"), cycleGroup);
-    cycleLayout->addWidget(cycleToleranceLabel, 1,0);
+    cycleLayout->addWidget(cycleToleranceLabel, 0,0);
 
     cycleTolerance = new QLineEdit(central);
     connect(cycleTolerance, SIGNAL(returnPressed()),
             this, SLOT(cycleToleranceProcessText()));
-    cycleLayout->addWidget(cycleTolerance, 1,1);
+    cycleLayout->addWidget(cycleTolerance, 0,1);
+
+
+    QLabel *maxIterationsLabel = new QLabel(tr("Maximum iterations"), cycleGroup);
+    cycleLayout->addWidget(maxIterationsLabel, 1,0);
+    maxIterations = new QLineEdit(central);
+    connect(maxIterations, SIGNAL(returnPressed()),
+            this, SLOT(maxIterationsProcessText()));
+    cycleLayout->addWidget(maxIterations, 1,1);
+
+
+    showPartialResults = new QCheckBox(tr("Show partial results (limit cycle may not be present)"), cycleGroup);
+    connect(showPartialResults, SIGNAL(toggled(bool)), this, SLOT(showPartialResultsChanged(bool)));
+    cycleLayout->addWidget(showPartialResults, 2,0, 1,2);
 
     // Create the data group
     QGroupBox *dataGroup = new QGroupBox(pageAppearance);
@@ -1108,6 +1114,10 @@ QvisLimitCycleWindow::UpdateWindow(bool doAll)
         case LimitCycleAttributes::ID_maxIterations:
             maxIterations->setText(IntToQString(atts->GetMaxIterations()));
             break;
+        case LimitCycleAttributes::ID_showPartialResults:
+            showPartialResults->blockSignals(true);
+            showPartialResults->setChecked(atts->GetShowPartialResults());
+            showPartialResults->blockSignals(false);
 
         case LimitCycleAttributes::ID_dataVariable:
             dataVariable->blockSignals(true);
@@ -2327,6 +2337,13 @@ QvisLimitCycleWindow::workGroupSizeChanged(int val)
 }
 
 void
+QvisLimitCycleWindow::cycleToleranceProcessText()
+{
+    GetCurrentValues(LimitCycleAttributes::ID_cycleTolerance);
+    Apply();
+}
+
+void
 QvisLimitCycleWindow::maxIterationsProcessText()
 {
     GetCurrentValues(LimitCycleAttributes::ID_maxIterations);
@@ -2334,9 +2351,9 @@ QvisLimitCycleWindow::maxIterationsProcessText()
 }
 
 void
-QvisLimitCycleWindow::cycleToleranceProcessText()
+QvisLimitCycleWindow::showPartialResultsChanged(bool val)
 {
-    GetCurrentValues(LimitCycleAttributes::ID_cycleTolerance);
+    atts->SetShowPartialResults(val);
     Apply();
 }
 

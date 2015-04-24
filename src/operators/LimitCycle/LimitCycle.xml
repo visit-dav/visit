@@ -211,11 +211,14 @@
       <Field name="forceNodeCenteredData" label="forceNodeCenteredData" type="bool">
         false
       </Field>
+      <Field name="cycleTolerance" label="Cycle tolerance" type="double">
+        1.0e-6
+      </Field>
       <Field name="maxIterations" label="Maximum interations" type="int">
         10
       </Field>
-      <Field name="cycleTolerance" label="Cycle tolerance" type="double">
-        1.0e-6
+      <Field name="showPartialResults" label="Show partial cycle results" type="bool">
+        true
       </Field>
       <Field name="issueTerminationWarnings" label="Issue Warning When Termination Criteria Is Not Met" type="bool">
         true

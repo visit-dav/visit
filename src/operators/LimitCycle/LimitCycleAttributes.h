@@ -203,8 +203,9 @@ public:
     void SetRandomSeed(int randomSeed_);
     void SetNumberOfRandomSamples(int numberOfRandomSamples_);
     void SetForceNodeCenteredData(bool forceNodeCenteredData_);
-    void SetMaxIterations(int maxIterations_);
     void SetCycleTolerance(double cycleTolerance_);
+    void SetMaxIterations(int maxIterations_);
+    void SetShowPartialResults(bool showPartialResults_);
     void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
     void SetIssueStepsizeWarnings(bool issueStepsizeWarnings_);
     void SetIssueStiffnessWarnings(bool issueStiffnessWarnings_);
@@ -267,8 +268,9 @@ public:
     int               GetRandomSeed() const;
     int               GetNumberOfRandomSamples() const;
     bool              GetForceNodeCenteredData() const;
-    int               GetMaxIterations() const;
     double            GetCycleTolerance() const;
+    int               GetMaxIterations() const;
+    bool              GetShowPartialResults() const;
     bool              GetIssueTerminationWarnings() const;
     bool              GetIssueStepsizeWarnings() const;
     bool              GetIssueStiffnessWarnings() const;
@@ -380,8 +382,9 @@ public:
         ID_randomSeed,
         ID_numberOfRandomSamples,
         ID_forceNodeCenteredData,
-        ID_maxIterations,
         ID_cycleTolerance,
+        ID_maxIterations,
+        ID_showPartialResults,
         ID_issueTerminationWarnings,
         ID_issueStepsizeWarnings,
         ID_issueStiffnessWarnings,
@@ -439,8 +442,9 @@ private:
     int         randomSeed;
     int         numberOfRandomSamples;
     bool        forceNodeCenteredData;
-    int         maxIterations;
     double      cycleTolerance;
+    int         maxIterations;
+    bool        showPartialResults;
     bool        issueTerminationWarnings;
     bool        issueStepsizeWarnings;
     bool        issueStiffnessWarnings;
@@ -455,6 +459,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LIMITCYCLEATTRIBUTES_TMFS "iDDDDDiiisiibdbddbddiddidDiiiiibbddidddbbiibidbbbbddddi"
+#define LIMITCYCLEATTRIBUTES_TMFS "iDDDDDiiisiibdbddbddiddidDiiiiibbddidddbbiibdibbbbbddddi"
 
 #endif
