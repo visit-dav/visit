@@ -131,8 +131,6 @@ def test2(datapath):
     m.lineStyle = m.SOLID  # SOLID, DASH, DOT, DOTDASH
     m.lineWidth = 1
     m.meshColor = (255, 0, 0, 255)
-    m.outlineOnlyFlag = 0
-    m.errorTolerance = 0.01
     m.meshColorSource = m.MeshCustom  # Foreground, MeshCustom
     m.opaqueColorSource = m.OpaqueCustom  # Background, OpaqueCustom
     m.opaqueMode = m.Auto  # Auto, On, Off
