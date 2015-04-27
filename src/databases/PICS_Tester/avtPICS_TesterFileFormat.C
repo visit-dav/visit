@@ -49,6 +49,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkFieldData.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
@@ -202,14 +203,14 @@ avtPICS_TesterFileFormat::ReadHeader(const char *filename)
       else if( flowType == DOUBLE_GYRE )
       {
         int nTimes, nx, ny, nz;
-        double time, bx, by, bz;
+        double startTime, endTime, simulationTime, dt, bx, by, bz;
         
         bool validScan = (sscanf(line,
-                                "%d %lf %d %d %d %lf %lf %lf %lf %lf %lf",
-                                &nTimes, &time,
-                                &nx, &ny, &nz,
-                                &bx, &by, &bz,
-                                &dg_A, &dg_epsilon, &dg_period) == 11);
+                                 "%d %lf %lf %d %d %d %lf %lf %lf %lf %lf %lf",
+                                 &nTimes, &startTime, &simulationTime,
+                                 &nx, &ny, &nz,
+                                 &bx, &by, &bz,
+                                 &dg_A, &dg_epsilon, &dg_period) == 12);
  
         if( validScan )
         {
@@ -232,14 +233,20 @@ avtPICS_TesterFileFormat::ReadHeader(const char *filename)
           global_bounds[0] = bx;
           global_bounds[1] = by;
           global_bounds[2] = bz;
-          
+
+          if( simulationTime > 0 )
+            endTime = startTime + simulationTime;
+          else
+          {
+            endTime = startTime;
+            startTime = endTime + simulationTime;
+          }
+
+          dt = (endTime - startTime) / (double) nTimes;
+
           for( int i=0; i<nTimes+1; ++i )
           {
-            if( nTimes > 1 )
-              times.push_back((double) i * time / (double) nTimes);
-            else
-              times.push_back(0);
-            
+            times.push_back( startTime + (double) i * dt );
             cycles.push_back(i);
             
             numBlocks[0].push_back(1);
@@ -293,15 +300,15 @@ avtPICS_TesterFileFormat::ReadHeader(const char *filename)
       }
       else if( flowType == ABC_FLOW_APERIODIC )
       {
-        double nTimes, time;
-        int nx, ny, nz;
-
+        int nTimes, nx, ny, nz;
+        double startTime, endTime, simulationTime, dt;
+        
         bool validScan = (sscanf(line,
-                                 "%lf %lf %d %d %d %lf %lf %lf %d %d %d",
-                                 &nTimes, &time,
+                                 "%d %lf %lf %d %d %d %lf %lf %lf %d %d %d",
+                                 &nTimes, &startTime, &simulationTime,
                                  &nx, &ny, &nz,
                                  &abc_c0, &abc_c1, &abc_c2,
-                                 &abc_signalA, &abc_signalB, &abc_signalC) == 11);
+                                 &abc_signalA, &abc_signalB, &abc_signalC) == 12);
  
         if( validScan )
         {
@@ -320,13 +327,19 @@ avtPICS_TesterFileFormat::ReadHeader(const char *filename)
           global_bounds[1] = 2.0 * M_PI;
           global_bounds[2] = 2.0 * M_PI;
           
+          if( simulationTime > 0 )
+            endTime = startTime + simulationTime;
+          else
+          {
+            endTime = startTime;
+            startTime = endTime + simulationTime;
+          }
+
+          dt = (endTime - startTime) / (double) nTimes;
+
           for( int i=0; i<nTimes+1; ++i )
           {
-            if( nTimes > 1 )
-              times.push_back((double) i * time / (double) nTimes);
-            else
-              times.push_back(0);
-            
+            times.push_back( startTime + (double) i * dt );
             cycles.push_back(i);
             
             numBlocks[0].push_back(1);
@@ -441,7 +454,7 @@ avtPICS_TesterFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int 
     md->SetCycles(cycles);
     md->SetCyclesAreAccurate(true);
 
-    md->SetTemporalExtents(0, times[times.size()-1]);
+    md->SetTemporalExtents(times[0], times[times.size()-1]);
     md->SetHasTemporalExtents(true);
 }
 
@@ -550,6 +563,27 @@ avtPICS_TesterFileFormat::GetMesh(int timestate, int domain, const char *meshnam
             z->SetTuple1(0, 0.0);
             rgrid->SetZCoordinates(z);
             z->Delete();
+        }
+
+        // Sneak in periodic boundaries for the avtIVPsolver.
+        if( flowType == ABC_FLOW_STEADY_STATE ||
+            flowType == ABC_FLOW_APERIODIC )
+        {
+            vtkDoubleArray *bounds = vtkDoubleArray::New();
+            bounds->SetName("Periodic Boundaries");
+
+            // Set the number of components before setting the number of tuples
+            // for proper memory allocation.
+            bounds->SetNumberOfComponents( 1 );
+            bounds->SetNumberOfTuples( 3 );
+
+            bounds->SetTuple1(0, global_bounds[0] );
+            bounds->SetTuple1(1, global_bounds[1] );
+            bounds->SetTuple1(2, global_bounds[2] );
+  
+            rgrid->GetFieldData()->AddArray(bounds);
+
+            bounds->Delete();
         }
     
         return rgrid;
