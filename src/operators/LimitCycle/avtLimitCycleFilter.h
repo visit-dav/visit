@@ -226,6 +226,8 @@ class avtLimitCycleFilter : public virtual avtPluginFilter,
     vtkPlane *intPlane; 
     int iteration;
 
+    std::vector< double > returnDistances;
+
     std::string  SeedInfoString() const;
 };
 

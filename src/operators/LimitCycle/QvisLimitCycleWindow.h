@@ -226,6 +226,7 @@ class QvisLimitCycleWindow : public QvisOperatorWindow
     void cycleToleranceProcessText();
     void maxIterationsProcessText();
     void showPartialResultsChanged(bool);
+    void showReturnDistancesChanged(bool);
 
     void dataValueChanged(int val);
     void dataVariableChanged(const QString &var);
@@ -317,6 +318,7 @@ class QvisLimitCycleWindow : public QvisOperatorWindow
     QLineEdit *cycleTolerance;
     QLineEdit *maxIterations;
     QCheckBox *showPartialResults;
+    QCheckBox *showReturnDistances;
 
     QComboBox *dataValueComboBox;
     QvisVariableButton *dataVariable;

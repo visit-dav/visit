@@ -427,6 +427,7 @@ void LimitCycleAttributes::Init()
     cycleTolerance = 1e-06;
     maxIterations = 10;
     showPartialResults = true;
+    showReturnDistances = false;
     issueTerminationWarnings = true;
     issueStepsizeWarnings = true;
     issueStiffnessWarnings = true;
@@ -522,6 +523,7 @@ void LimitCycleAttributes::Copy(const LimitCycleAttributes &obj)
     cycleTolerance = obj.cycleTolerance;
     maxIterations = obj.maxIterations;
     showPartialResults = obj.showPartialResults;
+    showReturnDistances = obj.showReturnDistances;
     issueTerminationWarnings = obj.issueTerminationWarnings;
     issueStepsizeWarnings = obj.issueStepsizeWarnings;
     issueStiffnessWarnings = obj.issueStiffnessWarnings;
@@ -765,6 +767,7 @@ LimitCycleAttributes::operator == (const LimitCycleAttributes &obj) const
             (cycleTolerance == obj.cycleTolerance) &&
             (maxIterations == obj.maxIterations) &&
             (showPartialResults == obj.showPartialResults) &&
+            (showReturnDistances == obj.showReturnDistances) &&
             (issueTerminationWarnings == obj.issueTerminationWarnings) &&
             (issueStepsizeWarnings == obj.issueStepsizeWarnings) &&
             (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
@@ -1017,6 +1020,7 @@ LimitCycleAttributes::SelectAll()
     Select(ID_cycleTolerance,                     (void *)&cycleTolerance);
     Select(ID_maxIterations,                      (void *)&maxIterations);
     Select(ID_showPartialResults,                 (void *)&showPartialResults);
+    Select(ID_showReturnDistances,                (void *)&showReturnDistances);
     Select(ID_issueTerminationWarnings,           (void *)&issueTerminationWarnings);
     Select(ID_issueStepsizeWarnings,              (void *)&issueStepsizeWarnings);
     Select(ID_issueStiffnessWarnings,             (void *)&issueStiffnessWarnings);
@@ -1340,6 +1344,12 @@ LimitCycleAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("showPartialResults", showPartialResults));
     }
 
+    if(completeSave || !FieldsEqual(ID_showReturnDistances, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showReturnDistances", showReturnDistances));
+    }
+
     if(completeSave || !FieldsEqual(ID_issueTerminationWarnings, &defaultObject))
     {
         addToParent = true;
@@ -1636,6 +1646,8 @@ LimitCycleAttributes::SetFromNode(DataNode *parentNode)
         SetMaxIterations(node->AsInt());
     if((node = searchNode->GetNode("showPartialResults")) != 0)
         SetShowPartialResults(node->AsBool());
+    if((node = searchNode->GetNode("showReturnDistances")) != 0)
+        SetShowReturnDistances(node->AsBool());
     if((node = searchNode->GetNode("issueTerminationWarnings")) != 0)
         SetIssueTerminationWarnings(node->AsBool());
     if((node = searchNode->GetNode("issueStepsizeWarnings")) != 0)
@@ -2013,6 +2025,13 @@ LimitCycleAttributes::SetShowPartialResults(bool showPartialResults_)
 {
     showPartialResults = showPartialResults_;
     Select(ID_showPartialResults, (void *)&showPartialResults);
+}
+
+void
+LimitCycleAttributes::SetShowReturnDistances(bool showReturnDistances_)
+{
+    showReturnDistances = showReturnDistances_;
+    Select(ID_showReturnDistances, (void *)&showReturnDistances);
 }
 
 void
@@ -2407,6 +2426,12 @@ LimitCycleAttributes::GetShowPartialResults() const
 }
 
 bool
+LimitCycleAttributes::GetShowReturnDistances() const
+{
+    return showReturnDistances;
+}
+
+bool
 LimitCycleAttributes::GetIssueTerminationWarnings() const
 {
     return issueTerminationWarnings;
@@ -2577,6 +2602,7 @@ LimitCycleAttributes::GetFieldName(int index) const
     case ID_cycleTolerance:                     return "cycleTolerance";
     case ID_maxIterations:                      return "maxIterations";
     case ID_showPartialResults:                 return "showPartialResults";
+    case ID_showReturnDistances:                return "showReturnDistances";
     case ID_issueTerminationWarnings:           return "issueTerminationWarnings";
     case ID_issueStepsizeWarnings:              return "issueStepsizeWarnings";
     case ID_issueStiffnessWarnings:             return "issueStiffnessWarnings";
@@ -2657,6 +2683,7 @@ LimitCycleAttributes::GetFieldType(int index) const
     case ID_cycleTolerance:                     return FieldType_double;
     case ID_maxIterations:                      return FieldType_int;
     case ID_showPartialResults:                 return FieldType_bool;
+    case ID_showReturnDistances:                return FieldType_bool;
     case ID_issueTerminationWarnings:           return FieldType_bool;
     case ID_issueStepsizeWarnings:              return FieldType_bool;
     case ID_issueStiffnessWarnings:             return FieldType_bool;
@@ -2737,6 +2764,7 @@ LimitCycleAttributes::GetFieldTypeName(int index) const
     case ID_cycleTolerance:                     return "double";
     case ID_maxIterations:                      return "int";
     case ID_showPartialResults:                 return "bool";
+    case ID_showReturnDistances:                return "bool";
     case ID_issueTerminationWarnings:           return "bool";
     case ID_issueStepsizeWarnings:              return "bool";
     case ID_issueStiffnessWarnings:             return "bool";
@@ -3035,6 +3063,11 @@ LimitCycleAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_showPartialResults:
         {  // new scope
         retval = (showPartialResults == obj.showPartialResults);
+        }
+        break;
+    case ID_showReturnDistances:
+        {  // new scope
+        retval = (showReturnDistances == obj.showReturnDistances);
         }
         break;
     case ID_issueTerminationWarnings:

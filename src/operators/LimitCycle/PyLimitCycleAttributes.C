@@ -486,6 +486,11 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%sshowPartialResults = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetShowReturnDistances())
+        SNPRINTF(tmpStr, 1000, "%sshowReturnDistances = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowReturnDistances = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetIssueTerminationWarnings())
         SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 1\n", prefix);
     else
@@ -1927,6 +1932,30 @@ LimitCycleAttributes_GetShowPartialResults(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LimitCycleAttributes_SetShowReturnDistances(PyObject *self, PyObject *args)
+{
+    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showReturnDistances in the object.
+    obj->data->SetShowReturnDistances(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LimitCycleAttributes_GetShowReturnDistances(PyObject *self, PyObject *args)
+{
+    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowReturnDistances()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 LimitCycleAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
@@ -2249,6 +2278,8 @@ PyMethodDef PyLimitCycleAttributes_methods[LIMITCYCLEATTRIBUTES_NMETH] = {
     {"GetMaxIterations", LimitCycleAttributes_GetMaxIterations, METH_VARARGS},
     {"SetShowPartialResults", LimitCycleAttributes_SetShowPartialResults, METH_VARARGS},
     {"GetShowPartialResults", LimitCycleAttributes_GetShowPartialResults, METH_VARARGS},
+    {"SetShowReturnDistances", LimitCycleAttributes_SetShowReturnDistances, METH_VARARGS},
+    {"GetShowReturnDistances", LimitCycleAttributes_GetShowReturnDistances, METH_VARARGS},
     {"SetIssueTerminationWarnings", LimitCycleAttributes_SetIssueTerminationWarnings, METH_VARARGS},
     {"GetIssueTerminationWarnings", LimitCycleAttributes_GetIssueTerminationWarnings, METH_VARARGS},
     {"SetIssueStepsizeWarnings", LimitCycleAttributes_SetIssueStepsizeWarnings, METH_VARARGS},
@@ -2477,6 +2508,8 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
         return LimitCycleAttributes_GetMaxIterations(self, NULL);
     if(strcmp(name, "showPartialResults") == 0)
         return LimitCycleAttributes_GetShowPartialResults(self, NULL);
+    if(strcmp(name, "showReturnDistances") == 0)
+        return LimitCycleAttributes_GetShowReturnDistances(self, NULL);
     if(strcmp(name, "issueTerminationWarnings") == 0)
         return LimitCycleAttributes_GetIssueTerminationWarnings(self, NULL);
     if(strcmp(name, "issueStepsizeWarnings") == 0)
@@ -2608,6 +2641,8 @@ PyLimitCycleAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LimitCycleAttributes_SetMaxIterations(self, tuple);
     else if(strcmp(name, "showPartialResults") == 0)
         obj = LimitCycleAttributes_SetShowPartialResults(self, tuple);
+    else if(strcmp(name, "showReturnDistances") == 0)
+        obj = LimitCycleAttributes_SetShowReturnDistances(self, tuple);
     else if(strcmp(name, "issueTerminationWarnings") == 0)
         obj = LimitCycleAttributes_SetIssueTerminationWarnings(self, tuple);
     else if(strcmp(name, "issueStepsizeWarnings") == 0)
