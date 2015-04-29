@@ -26,7 +26,7 @@ class JobSubmitter_aprun_NERSC(JobSubmitter_aprun):
         if self.launcher.nersc_host == "edison":
             return ["env", "DISPLAY=", "CRAY_ROOTFS=DSL", "/opt/cray/alps/default/bin/aprun"]
         else:
-            return ["env", "DISPLAY=", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
+            return ["env", "DISPLAY=", "CRAY_ROOTFS=DSL", "/opt/cray/alps/5.2.1-2.0502.9072.13.1.gem/bin/aprun"]
 
 ###############################################################################
 # Class: JobSubmitter_mpiexec_NERSC
@@ -100,11 +100,11 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
         if self.launcher.nersc_host == "carver":
             return ["/usr/syscom/opt/torque/default/bin/qsub"]
         elif self.launcher.nersc_host == "edison":
-            return ["/opt/torque/default/bin/qsub"]
+            return ["/opt/torque/5.0.1/bin/qsub"]
         elif self.launcher.nersc_host == "grace":
-            return ["/usr/common/nsg/bin/qsub"]
+            return ["/opt/torque/5.0.1/bin/qsub"]
         elif self.launcher.nersc_host == "hopper":
-            return ["/opt/torque/default/bin/qsub"]
+            return ["/usr/common/nsg/bin/qsub"]
         else:
             print "Error: unknown NERSC host '%s'. Using default qsub executable." % self.launcher.nersc_host
             print "If this does not work, please contact consult@nersc.gov."
@@ -116,7 +116,7 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
         if self.launcher.nersc_host == "edison":
             return ["env", "CRAY_ROOTFS=DSL", "/opt/cray/alps/default/bin/aprun"]
         else:
-            return ["env", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
+            return ["env", "CRAY_ROOTFS=DSL", "/opt/cray/alps/5.2.1-2.0502.9072.13.1.gem/bin/aprun"]
 
     def mpirun(self):
         # Currently, this method will only be called on Carver.
@@ -263,14 +263,14 @@ For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/r
         # ----
             # Add GCC libraries to LD_LIBRARY_PATH
             ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
-            added_ld_library_paths = ["/opt/gcc/4.8.2/snos/lib64"]
+            added_ld_library_paths = ["/opt/gcc/4.9.0/snos/lib64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
 
             # Running the gui on Hopper or a serial engine on a login node are "verboten"
             if self.sectorname() == "grace" or self.sectorname() == "hopper":
                 if not self.generalArgs.env and self.generalArgs.exe_name == "gui" and not self.visitver[-1] =="b":
                     msg = """
-Do not run the VisIt GUI on Edison. Run it on your local workstation (preferred/best performance) or on Carver!
+Do not run the VisIt GUI on Hopper. Run it on your local workstation (preferred/best performance) or on Carver!
 
 For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/
 """
