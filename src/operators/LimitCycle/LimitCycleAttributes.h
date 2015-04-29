@@ -206,6 +206,7 @@ public:
     void SetCycleTolerance(double cycleTolerance_);
     void SetMaxIterations(int maxIterations_);
     void SetShowPartialResults(bool showPartialResults_);
+    void SetShowReturnDistances(bool showReturnDistances_);
     void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
     void SetIssueStepsizeWarnings(bool issueStepsizeWarnings_);
     void SetIssueStiffnessWarnings(bool issueStiffnessWarnings_);
@@ -271,6 +272,7 @@ public:
     double            GetCycleTolerance() const;
     int               GetMaxIterations() const;
     bool              GetShowPartialResults() const;
+    bool              GetShowReturnDistances() const;
     bool              GetIssueTerminationWarnings() const;
     bool              GetIssueStepsizeWarnings() const;
     bool              GetIssueStiffnessWarnings() const;
@@ -385,6 +387,7 @@ public:
         ID_cycleTolerance,
         ID_maxIterations,
         ID_showPartialResults,
+        ID_showReturnDistances,
         ID_issueTerminationWarnings,
         ID_issueStepsizeWarnings,
         ID_issueStiffnessWarnings,
@@ -445,6 +448,7 @@ private:
     double      cycleTolerance;
     int         maxIterations;
     bool        showPartialResults;
+    bool        showReturnDistances;
     bool        issueTerminationWarnings;
     bool        issueStepsizeWarnings;
     bool        issueStiffnessWarnings;
@@ -459,6 +463,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LIMITCYCLEATTRIBUTES_TMFS "iDDDDDiiisiibdbddbddiddidDiiiiibbddidddbbiibdibbbbbddddi"
+#define LIMITCYCLEATTRIBUTES_TMFS "iDDDDDiiisiibdbddbddiddidDiiiiibbddidddbbiibdibbbbbbddddi"
 
 #endif

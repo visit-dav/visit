@@ -669,6 +669,11 @@ QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(showPartialResults, SIGNAL(toggled(bool)), this, SLOT(showPartialResultsChanged(bool)));
     cycleLayout->addWidget(showPartialResults, 2,0, 1,2);
 
+
+    showReturnDistances = new QCheckBox(tr("Show the signed return distances for the first iteration"), cycleGroup);
+    connect(showReturnDistances, SIGNAL(toggled(bool)), this, SLOT(showReturnDistancesChanged(bool)));
+    cycleLayout->addWidget(showReturnDistances, 3,0, 1,2);
+
     // Create the data group
     QGroupBox *dataGroup = new QGroupBox(pageAppearance);
     dataGroup->setTitle(tr("Data"));
@@ -1118,6 +1123,10 @@ QvisLimitCycleWindow::UpdateWindow(bool doAll)
             showPartialResults->blockSignals(true);
             showPartialResults->setChecked(atts->GetShowPartialResults());
             showPartialResults->blockSignals(false);
+        case LimitCycleAttributes::ID_showReturnDistances:
+            showReturnDistances->blockSignals(true);
+            showReturnDistances->setChecked(atts->GetShowReturnDistances());
+            showReturnDistances->blockSignals(false);
 
         case LimitCycleAttributes::ID_dataVariable:
             dataVariable->blockSignals(true);
@@ -2354,6 +2363,13 @@ void
 QvisLimitCycleWindow::showPartialResultsChanged(bool val)
 {
     atts->SetShowPartialResults(val);
+    Apply();
+}
+
+void
+QvisLimitCycleWindow::showReturnDistancesChanged(bool val)
+{
+    atts->SetShowReturnDistances(val);
     Apply();
 }
 
