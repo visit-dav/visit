@@ -101,8 +101,8 @@ function apply_cgns_321_darwin_patch
 {
    patch -p0 << \EOF
 diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
-*** cgnslib_3.2.1/src/configure.orig	2014-12-17 15:31:56.000000000 -0800
---- cgnslib_3.2.1/src/configure	2014-12-17 15:33:22.000000000 -0800
+*** cgnslib_3.2.1/src/configure.orig	2015-04-27 15:11:36.000000000 -0700
+--- cgnslib_3.2.1/src/configure	2015-04-27 14:24:48.000000000 -0700
 ***************
 *** 2324,2333 ****
   echo "$ac_t""$shared" 1>&6
@@ -153,6 +153,61 @@ diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
     fi
   fi
   
+***************
+*** 2490,2495 ****
+--- 2490,2496 ----
+  if test "${with_zlib+set}" = set; then
+    withval="$with_zlib"
+    withzlib=$withval
++   ZLIBLIB=$withval
+  else
+    withzlib="no"
+  fi
+***************
+*** 2499,2504 ****
+--- 2500,2506 ----
+    else
+      H5NEEDZLIB=1
+      if test -z "$withzlib" || test "$withzlib" = "yes"; then
++       ZLIBLIB=""
+        zlibdir=""
+        echo "$ac_t""yes" 1>&6
+        ac_safe=`echo "zlib.h" | sed 'y%./+-%__p_%'` 
+
+EOF
+   if [[ $? != 0 ]] ; then
+      return 1
+   fi
+
+   return 0
+}
+
+function apply_cgns_321_zlib_patch
+{
+   patch -p0 << \EOF
+diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
+*** cgnslib_3.2.1/src/configure.orig	2013-06-19 21:04:00.000000000 -0700
+--- cgnslib_3.2.1/src/configure	2015-04-27 15:03:16.000000000 -0700
+***************
+*** 2490,2495 ****
+--- 2490,2496 ----
+  if test "${with_zlib+set}" = set; then
+    withval="$with_zlib"
+    withzlib=$withval
++   ZLIBLIB=$withval
+  else
+    withzlib="no"
+  fi
+***************
+*** 2499,2504 ****
+--- 2500,2506 ----
+    else
+      H5NEEDZLIB=1
+      if test -z "$withzlib" || test "$withzlib" = "yes"; then
++       ZLIBLIB=""
+        zlibdir=""
+        echo "$ac_t""yes" 1>&6
+        ac_safe=`echo "zlib.h" | sed 'y%./+-%__p_%'`
 EOF
    if [[ $? != 0 ]] ; then
       return 1
@@ -163,9 +218,13 @@ EOF
 
 function apply_cgns_321_patch
 {
+
    if [[ "$OPSYS" == "Darwin" ]] ; then
        info "Applying OS X patch . . ."
        apply_cgns_321_darwin_patch
+   else 
+       info "Applying patch . . ."
+       apply_cgns_321_zlib_patch
    fi
 
    return $?
@@ -194,6 +253,11 @@ function apply_cgns_patch
 # Kevin Griffin, Fri Jan 16 10:28:21 PST 2015                                 #
 # Fixed the --with-szip and --with-zlib to specify the full path to the       #
 # library for both OSX and linux                                              #
+#                                                                             #
+# Kevin Griffin, Mon Apr 27 15:20:43 PDT 2015                                 #
+# Patched the configure file to use the zlib library specified in the         #
+# --with-zlib option.                                                         #
+#                                                                             #
 # *************************************************************************** #
 
 function build_cgns
