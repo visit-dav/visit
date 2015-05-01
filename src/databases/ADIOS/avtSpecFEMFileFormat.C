@@ -58,6 +58,8 @@
 #include <vtkStructuredGrid.h>
 #include <snprintf.h>
 
+#include <vtkEarthSource.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -160,6 +162,7 @@ avtSpecFEMFileFormat::avtSpecFEMFileFormat(const char *nm)
     initialized = false;
     //This needs to be put into the file.
     ngllx = nglly = ngllz = 5;
+    //ngllx = nglly = ngllz = 1;
 }
 
 // ****************************************************************************
@@ -311,6 +314,12 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
         }
     }
 
+    AddMeshToMetaData(md, "hotSpots", AVT_POINT_MESH, NULL, 1, 0, 3, 1);
+    AddMeshToMetaData(md, "LatLon_hotSpots", AVT_POINT_MESH, NULL, 1, 0, 3, 1);
+
+    AddMeshToMetaData(md, "continents", AVT_SURFACE_MESH, NULL, 1, 0, 3, 2);
+    AddMeshToMetaData(md, "LatLon_continents", AVT_SURFACE_MESH, NULL, 1, 0, 3, 2);
+
     bool allRegionsPresent = true;
     for (int i = 0; i < regions.size(); i++)
         allRegionsPresent &= regions[i];
@@ -349,6 +358,220 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
 }
 
 //****************************************************************************
+// Method:  avtSpecFEMFileFormat::GetHotSpotsMesh
+//
+// Purpose:
+//   Get mesh of hot spots.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+vtkDataSet *
+avtSpecFEMFileFormat::GetHotSpotsMesh(bool xyzMesh)
+{
+    vector<pair<int, int> > hotspots;
+
+    hotspots.push_back(make_pair(12, 42)); //"AFAR
+    hotspots.push_back(make_pair(-37, 77)); //AMSTERDAM/ST.PAUL
+    hotspots.push_back(make_pair(-8, -14)); //ASCENSION
+    hotspots.push_back(make_pair(38, -28)); //AZORES
+    hotspots.push_back(make_pair(27, -113)); //BAJA/GUADALUPE
+    hotspots.push_back(make_pair(-67, 165)); //BALLENY
+    hotspots.push_back(make_pair(30, -60)); //BERMUDA
+    hotspots.push_back(make_pair(-54, 3)); //BOUVET
+    hotspots.push_back(make_pair(54, -136)); //"BOWIE SEAMOUNT
+    hotspots.push_back(make_pair(-54, 9)); //CAMEROON LINE
+    hotspots.push_back(make_pair(28, -17)); //CANARY ISLANDS
+    hotspots.push_back(make_pair(15, -24)); //CAPE VERDE
+    hotspots.push_back(make_pair(5, 166)); //CAROLINE ISLANDS
+    hotspots.push_back(make_pair(-35, 80)); //CHRISTMAS
+    hotspots.push_back(make_pair(46, -130)); //COBB
+    hotspots.push_back(make_pair(-12, 44)); //COMORES ISLANDS
+    hotspots.push_back(make_pair(-29, -140)); //COOK-AUSTRALS
+    hotspots.push_back(make_pair(-46, 45)); //CROZET/PRINCE EDWARD
+    hotspots.push_back(make_pair(13, 24)); //DARFUR
+    hotspots.push_back(make_pair(-42, 0)); //DISCOVERY
+    hotspots.push_back(make_pair(6, 34)); //E.AFRICA
+    hotspots.push_back(make_pair(-38, 143)); //E.AUSTRALIA
+    hotspots.push_back(make_pair(-27, -109)); //EASTER/SALA Y GOMEZ
+    hotspots.push_back(make_pair(50, 7)); //EIFEL
+    hotspots.push_back(make_pair(-4, -32)); //FERNANDO DO NORONA
+    hotspots.push_back(make_pair(-39, -111)); //FOUNDATION SMTS.
+    hotspots.push_back(make_pair(1, -86)); //GALAPAGOS
+    hotspots.push_back(make_pair(-40, -10)); //GOUGH
+    hotspots.push_back(make_pair(30, 28)); //GREAT METEOR
+    hotspots.push_back(make_pair(29, -118)); //GUADALUPE
+    hotspots.push_back(make_pair(20, -155)); //HAWAII
+    hotspots.push_back(make_pair(23, 6)); //"HOGGAR MOUNTAINS
+    hotspots.push_back(make_pair(64, -20)); //ICELAND
+    hotspots.push_back(make_pair(71, -8)); //JAN MAYEN
+    hotspots.push_back(make_pair(-34, -79)); //JUAN FERNANDEZ
+    hotspots.push_back(make_pair(-49, 63)); //KERGUELEN
+    hotspots.push_back(make_pair(-31, 159)); //LORD HOWE
+    hotspots.push_back(make_pair(-51, -138)); //LOUISVILLE HOTSPOT
+    hotspots.push_back(make_pair(-29, -140)); //MACDONALD
+    hotspots.push_back(make_pair(33, -17)); //MADEIRA
+    hotspots.push_back(make_pair(-47, 38)); //MARION
+    hotspots.push_back(make_pair(-8, -138)); //MARQUESAS ISLANDS
+    hotspots.push_back(make_pair(-21, -154)); //MARSHALL-GILBERT ISLANDS
+    hotspots.push_back(make_pair(-21, -29)); //MARTEN VAZ
+    hotspots.push_back(make_pair(-52, 1)); //METEOR
+    hotspots.push_back(make_pair(-78, 167)); //MOUNT EREBUS
+    hotspots.push_back(make_pair(-32, 28)); //NEW ENGLAND
+    hotspots.push_back(make_pair(-24, -130)); //PITCAIRN ISLAND
+    hotspots.push_back(make_pair(36, -104)); //"RATON
+    hotspots.push_back(make_pair(-21, 56)); //REUNION (FOURNAISE) (GVP)
+    hotspots.push_back(make_pair(-77, 168)); //ROSS SEA
+    hotspots.push_back(make_pair(-14, -170)); //SAMOA
+    hotspots.push_back(make_pair(-26, -80)); //SAN FELIX
+    hotspots.push_back(make_pair(-52, 0)); //SHONA
+    hotspots.push_back(make_pair(19, -111)); //SOCORRO
+    hotspots.push_back(make_pair(-17, -10)); //ST. HELENA
+    hotspots.push_back(make_pair(-39, 78)); //ST. PAUL ISLAND (GVP)
+    hotspots.push_back(make_pair(-18, -150)); //TAHITI
+    hotspots.push_back(make_pair(-39, 157)); //TASMANTID
+    hotspots.push_back(make_pair(21, 17)); //"TIBESTI
+    hotspots.push_back(make_pair(-21, -29)); //TRINIDADE/MARTEN
+    hotspots.push_back(make_pair(-37, -12)); //TRISTAN DA CUNHA
+    hotspots.push_back(make_pair(-32, 16)); //VEMA SEAMOUNT
+    hotspots.push_back(make_pair(44, -111)); //YELLOWSTONE
+
+    int nPts = hotspots.size();
+    vtkPoints *pts = vtkPoints::New();
+    vtkUnstructuredGrid *mesh = vtkUnstructuredGrid::New();
+    mesh->SetPoints(pts);
+
+    vtkIdType vid;
+    const double toRad = M_PI/180.0;
+    for (int i = 0; i < nPts; i++)
+    {
+        //first, convert to x,y,z
+        double lat = hotspots[i].first * toRad;
+        double lon = hotspots[i].second * toRad;
+        double x = cos(lat)*cos(lon);
+        double y = cos(lat)*sin(lon);
+        double z = sin(lat);
+
+        if (xyzMesh)
+            vid = pts->InsertNextPoint(x,y,z);
+        else
+        {
+            double nx, ny, nz;
+            convertToLatLon(x,y,z, nx,ny,nz);
+            vid = pts->InsertNextPoint(nx,ny,nz);
+        }
+        mesh->InsertNextCell(VTK_VERTEX, 1, &vid);
+    }
+    pts->Delete();
+
+    return mesh;
+}
+
+//****************************************************************************
+// Method:  avtSpecFEMFileFormat::GetHotSpotsMesh
+//
+// Purpose:
+//   Get mesh of hot spots.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April  9, 2014
+//
+// Modifications:
+//
+//****************************************************************************
+
+vtkDataSet *
+avtSpecFEMFileFormat::GetContinents(bool xyzMesh)
+{
+    vtkEarthSource *es = vtkEarthSource::New();
+    es->SetRadius(1.0);
+    es->SetOnRatio(0);
+    es->SetOutline(1);
+    es->Update();
+    
+    vtkDataSet *ds = es->GetOutput();
+
+    if (xyzMesh)
+        return ds;
+
+#if 0
+
+    vtkGeoProjection *proj = vtkGeoProjection::New();
+    vtkGeoTransform *geoXform = vtkGeoTransform::New();
+    proj->SetCentralMeridian(0.0);
+    proj->SetName("Aitoff");
+    
+    geoXform->SetDestinationProjection(proj);
+    
+    vtkPolyData *pd = static_cast<vtkPolyData *>(ds);
+    vtkPoints *pts = pd->GetPoints();
+    vtkIdType nPts = pts->GetNumberOfPoints();
+    double pt[3], pt2[3];
+    for (vtkIdType i = 0; i < nPts; i++)
+    {
+        pts->GetPoint(i, pt);
+        geoXform->InternalTransformPoint(pt, pt2);
+        if (i < 20)
+            cout<<i<<" :"<<pt[0]<<" "<<pt[1]<<" "<<pt[2]<<" --> "<<pt2[0]<<" "<<pt2[1]<<" "<<pt2[2]<<endl;
+
+        pts->SetPoint(i, pt2);
+    }
+
+    /*
+    
+    vtkPolyData *pd = static_cast<vtkPolyData *>(ds);
+    vtkPoints *inPts = pd->GetPoints();
+    vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());
+    
+    geoXform->SetInputConnection(ds->GetOutputPort());
+
+    ds = geoXform->GetOutput();
+    */
+
+    /*
+    geoXform->TransformPoints(inPts, outPts);
+    
+    vtkIdType nPts = inPts->GetNumberOfPoints();
+    double pt[3];
+    for (vtkIdType i = 0; i < nPts; i++)
+    {
+        outPts->GetPoint(i, pt);
+        inPts->SetPoint(i, pt);
+    }
+    pd->SetPoints(outPts);
+    */
+#endif
+
+    vtkPolyData *pd = static_cast<vtkPolyData *>(ds);
+    vtkPoints *pts = pd->GetPoints();
+    vtkIdType nPts = pts->GetNumberOfPoints();
+    double pt[3];
+    for (vtkIdType i = 0; i < nPts; i++)
+    {
+        pts->GetPoint(i, pt);
+
+        double nx, ny, nz;
+        convertToLatLon(pt[0], pt[1], pt[2], nx,ny,nz);
+        pt[0] = nx;
+        pt[1] = ny;
+        pt[2] = nz;
+
+        /*
+        pt[0] = nz;
+        pt[1] = ny;
+        pt[2] = 1.0;
+        */
+        pts->SetPoint(i, pt);
+    }
+    
+    return ds;
+}
+
+//****************************************************************************
 // Method:  avtSpecFEMFileFormat::GetWholeMesh
 //
 // Purpose:
@@ -360,7 +583,6 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
 // Modifications:
 //
 //****************************************************************************
-
 
 vtkDataSet *
 avtSpecFEMFileFormat::GetWholeMesh(int ts, int dom, bool xyzMesh)
@@ -603,6 +825,14 @@ avtSpecFEMFileFormat::GetMesh(int ts, int domain, const char *meshname)
 {
     debug1 << "avtSpecFEMFileFormat::GetMesh " << meshname << endl;
     Initialize();
+    if (!strcmp(meshname, "hotSpots"))
+        return GetHotSpotsMesh(true);
+    else if (!strcmp(meshname, "LatLon_hotSpots"))
+        return GetHotSpotsMesh(false);
+    else if (!strcmp(meshname, "continents"))
+        return GetContinents(true);
+    else if (!strcmp(meshname, "LatLon_continents"))
+        return GetContinents(false);
 
     bool xyzMesh = string(meshname).find("LatLon") == string::npos;
     bool wholeMesh = string(meshname).find("reg") == string::npos;
@@ -1035,4 +1265,14 @@ convertToLatLon(double x, double y, double z, double &nx, double &ny, double &nz
     //nx *= 6371.0; //Convert to km
     ny *= toDeg;
     nz *= toDeg;
+
+    ny = -ny + 90.0;
+    //ny -= 90.0;
+    nz -= 180.0;
+
+    
+/*
+    if (nz > 340.0)
+        nz = -(360.0-nz);
+*/
 }
