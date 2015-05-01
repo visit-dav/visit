@@ -749,10 +749,10 @@ avtSpecFEMFileFormat::AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
                             for (int q = 0; cellGood && q < 8; q++)
                                 if (p != q)
                                 {
+                                    double dx = fabs(verts[p][0]-verts[q][0]);
                                     double dy = fabs(verts[p][1]-verts[q][1]);
-                                    double dz = fabs(verts[p][2]-verts[q][2]);
+                                    if (dx > M_PI) cellGood = false;
                                     if (dy > M_PI) cellGood = false;
-                                    if (dz > M_PI) cellGood = false;
                                 }
                         if (cellGood)
                         {
@@ -1254,8 +1254,29 @@ convertToLatLon(double x, double y, double z, double &nx, double &ny, double &nz
 {
     const double twopi = 2.0*M_PI;
     const double toDeg = 180./M_PI;
+    const double earthRad = 6371.0; //6371.0; // km
 
     double R = sqrt(x*x + y*y + z*z);
+    double lon = atan2(y,x);
+    double lat = acos(z/R);
+    
+    if (lon < 0.0)
+        lon += twopi;
+
+    nx = lon * toDeg;
+    ny = lat * toDeg;
+    nz = (R-1.0) * earthRad;
+
+    ny = -ny + 90.0;
+
+
+    //normalize it....
+    //nx /= 360.;
+    //ny /= 180.;
+    //nz = (R - 1.0) * 6.371;
+
+    /*
+    
     nx = R;
     ny = acos(z/R);
     nz = atan2(y, x);
@@ -1269,7 +1290,7 @@ convertToLatLon(double x, double y, double z, double &nx, double &ny, double &nz
     ny = -ny + 90.0;
     //ny -= 90.0;
     nz -= 180.0;
-
+    */
     
 /*
     if (nz > 340.0)
