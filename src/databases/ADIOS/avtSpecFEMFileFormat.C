@@ -1034,15 +1034,10 @@ avtSpecFEMFileFormat::GetVectorVarRegion(std::string &nm, int ts, int dom)
     for (int i = 0; i < nPts; i++)
     {
         mesh->GetPoint(i, pt);
-        convertToLatLon(pt[0], pt[1], pt[2], r, lat, lon);
-        lat = 90.0 - lat;
-        /*
-        if (lon > 180.0)
-            lon = lon - 360.0;
-        */
+        convertToLatLon(pt[0], pt[1], pt[2], lon, lat, r);
         
-        arr->SetComponent(i, 0, lat);
-        arr->SetComponent(i, 1, lon);
+        arr->SetComponent(i, 0, lon);
+        arr->SetComponent(i, 1, lat);
         arr->SetComponent(i, 2, r);
     }
 
