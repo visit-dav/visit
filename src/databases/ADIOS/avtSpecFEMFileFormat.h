@@ -105,6 +105,8 @@ class avtSpecFEMFileFormat : public avtMTMDFileFormat
     vtkDataSet *     GetRegionMesh(int ts, int dom, int region, bool xyzMesh);
     void             AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
                                    bool xyzMesh, int ptOffset=0);
+    vtkDataSet *     GetHotSpotsMesh(bool xyzMesh);
+    vtkDataSet *     GetContinents(bool xyzMesh);
 
     vtkDataArray *   GetVarRegion(std::string &nm, int ts, int dom);
     vtkDataArray *   GetVectorVarRegion(std::string &nm, int ts, int dom);
