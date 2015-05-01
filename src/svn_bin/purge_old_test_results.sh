@@ -25,6 +25,7 @@ purge_range () {
     if [[ $dir_count -gt 1 ]]; then
         dirs_to_remove=$(echo $dirs_in_range | cut -d' ' -f2-)
         if [[ -n "$dirs_to_remove" ]]; then
+            removals=$(expr $removals + $dir_count - 1)
             rm -rf $dirs_to_remove
         fi
     fi
@@ -34,7 +35,7 @@ purge_range () {
 # Loop to purge ranges of length 7 days (1 week)
 # starting at 30 days through one half year back (180 days)
 #
-echo "30-180 days"
+removals=0
 i=30
 len=7
 while [[ $i -lt 180 ]]; do
@@ -48,7 +49,6 @@ done
 # starting at 180 days though 2.5 years back
 # (910 days)
 #
-echo "180 - 910 days"
 i=180
 len=30
 while [[ $i -lt 910 ]]; do
@@ -61,3 +61,7 @@ done
 # clear out anything older than 910 days
 #
 purge_range 910 9999 $root
+
+if [[ $removals -gt 0 ]]; then
+    echo "Removed $removals VisIt test results"
+fi
