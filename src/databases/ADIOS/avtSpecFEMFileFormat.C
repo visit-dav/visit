@@ -59,6 +59,11 @@
 #include <snprintf.h>
 
 #include <vtkEarthSource.h>
+#include <vtkImplicitBoolean.h>
+#include <vtkPlane.h>
+#include <vtkClipPolyData.h>
+#include <vtkAppendPolyData.h>
+#include <vtkCellArray.h>
 
 #include <set>
 #include <string>
@@ -498,77 +503,81 @@ avtSpecFEMFileFormat::GetContinents(bool xyzMesh)
     if (xyzMesh)
         return ds;
 
-#if 0
+    //create the earth from 180 to 360
+    vtkImplicitBoolean *func0 = vtkImplicitBoolean::New();
+    vtkPlane *pln0 = vtkPlane::New();
+    pln0->SetOrigin(0,0,0);
+    pln0->SetNormal(0,1,0);
+    func0->AddFunction(pln0);
+    vtkClipPolyData *clip0 = vtkClipPolyData::New();
+    clip0->SetInputData(ds);
+    clip0->SetClipFunction(func0);
+    clip0->SetInsideOut(true);
+    clip0->Update();
+    vtkDataSet *ds0 = clip0->GetOutput();
 
-    vtkGeoProjection *proj = vtkGeoProjection::New();
-    vtkGeoTransform *geoXform = vtkGeoTransform::New();
-    proj->SetCentralMeridian(0.0);
-    proj->SetName("Aitoff");
-    
-    geoXform->SetDestinationProjection(proj);
-    
-    vtkPolyData *pd = static_cast<vtkPolyData *>(ds);
-    vtkPoints *pts = pd->GetPoints();
-    vtkIdType nPts = pts->GetNumberOfPoints();
-    double pt[3], pt2[3];
-    for (vtkIdType i = 0; i < nPts; i++)
-    {
-        pts->GetPoint(i, pt);
-        geoXform->InternalTransformPoint(pt, pt2);
-        if (i < 20)
-            cout<<i<<" :"<<pt[0]<<" "<<pt[1]<<" "<<pt[2]<<" --> "<<pt2[0]<<" "<<pt2[1]<<" "<<pt2[2]<<endl;
-
-        pts->SetPoint(i, pt2);
-    }
-
-    /*
-    
-    vtkPolyData *pd = static_cast<vtkPolyData *>(ds);
-    vtkPoints *inPts = pd->GetPoints();
-    vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());
-    
-    geoXform->SetInputConnection(ds->GetOutputPort());
-
-    ds = geoXform->GetOutput();
-    */
-
-    /*
-    geoXform->TransformPoints(inPts, outPts);
-    
-    vtkIdType nPts = inPts->GetNumberOfPoints();
+    //convert to lat/lon
+    vtkPolyData *pd = static_cast<vtkPolyData *>(ds0);
+    vtkIdType nPts = pd->GetPoints()->GetNumberOfPoints();
     double pt[3];
     for (vtkIdType i = 0; i < nPts; i++)
     {
-        outPts->GetPoint(i, pt);
-        inPts->SetPoint(i, pt);
-    }
-    pd->SetPoints(outPts);
-    */
-#endif
+        pd->GetPoints()->GetPoint(i, pt);
 
-    vtkPolyData *pd = static_cast<vtkPolyData *>(ds);
-    vtkPoints *pts = pd->GetPoints();
-    vtkIdType nPts = pts->GetNumberOfPoints();
-    double pt[3];
+        double nx, ny, nz;
+        convertToLatLon(pt[0], pt[1], pt[2], nx,ny,nz);
+        if (nx < 180.0) nx = 360.0;
+        pt[0] = nx;
+        pt[1] = ny;
+        pt[2] = nz;
+        pd->GetPoints()->SetPoint(i, pt);
+    }
+
+    //create the earth from 0 to 180
+    vtkImplicitBoolean *func1 = vtkImplicitBoolean::New();
+    vtkPlane *pln1 = vtkPlane::New();
+    pln1->SetOrigin(0,0,0);
+    pln1->SetNormal(0,-1,0);
+    func1->AddFunction(pln1);
+    vtkClipPolyData *clip1 = vtkClipPolyData::New();
+    clip1->SetInputData(ds);
+    clip1->SetClipFunction(func1);
+    clip1->SetInsideOut(true);
+    clip1->Update();
+    vtkDataSet *ds1 = clip1->GetOutput();
+    
+    //convert to lat/lon
+    pd = static_cast<vtkPolyData *>(ds1);
+    nPts = pd->GetPoints()->GetNumberOfPoints();
     for (vtkIdType i = 0; i < nPts; i++)
     {
-        pts->GetPoint(i, pt);
+        pd->GetPoints()->GetPoint(i, pt);
 
         double nx, ny, nz;
         convertToLatLon(pt[0], pt[1], pt[2], nx,ny,nz);
         pt[0] = nx;
         pt[1] = ny;
         pt[2] = nz;
-
-        /*
-        pt[0] = nz;
-        pt[1] = ny;
-        pt[2] = 1.0;
-        */
-        pts->SetPoint(i, pt);
+        pd->GetPoints()->SetPoint(i, pt);
     }
     
-    return ds;
+    vtkAppendPolyData *app = vtkAppendPolyData::New();
+    app->AddInputData(static_cast<vtkPolyData *>(ds0));
+    app->AddInputData(static_cast<vtkPolyData *>(ds1));
+    app->Update();
+
+    vtkDataSet *out_ds = app->GetOutput();
+    out_ds->Register(NULL);
+
+    pln0->Delete();
+    func0->Delete();
+    clip0->Delete();
+    pln1->Delete();
+    func1->Delete();
+    clip1->Delete();
+    app->Delete();
+
+    return out_ds;
 }
 
 //****************************************************************************
