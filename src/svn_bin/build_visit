@@ -64,17 +64,17 @@ export VISIT_VERSION=${VISIT_VERSION:-"2.9.1"}
 ###
 # RC Branch:
 ###
-export TRUNK_BUILD="no"
-export SVN_SOURCE_PATH="branches/2.9RC/src"
-export SVN_THIRDPARTY_PATH="branches/2.9RC/third_party"
+#export TRUNK_BUILD="no"
+#export SVN_SOURCE_PATH="branches/2.9RC/src"
+#export SVN_THIRDPARTY_PATH="branches/2.9RC/third_party"
 
 
 ###
 # Tagged Release:
 ###
-#export TRUNK_BUILD="no"
-#export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
-#export SVN_THIRDPARTY_PATH="tags/${VISIT_VERSION}/third_party"
+export TRUNK_BUILD="no"
+export SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
+export SVN_THIRDPARTY_PATH="tags/${VISIT_VERSION}/third_party"
 
 export INITIAL_PWD=$PWD
 
