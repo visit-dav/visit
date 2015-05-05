@@ -53,15 +53,41 @@ fi
 version2=`echo $version | tr "." "_"`
 
 #
-# Create the directory to check out the files into.
+# List the third_party files.
+#
+third_party_files="AdvIO-1.2.tar.gz BoxLib-2011.04.28.tar.gz EAVL-4593630.tar.gz EAVL-5f53629eed.tar.gz EAVL-9e7ffd1a93.tar.gz EAVL-ac39232.tar.gz FMDB-1.2.tar.gz GRUMMP-0.6.3.tar.gz GRUMMP-0.6.5.tar.gz H5Part-1.6.4.tar.gz H5Part-1.6.6.tar.gz IceT-1-0-0.tar.gz Imaging-1.1.6.tar.gz MesaLib-7.10.2.tar.gz MesaLib-7.8.2.tar.gz Python-2.6.4.tgz Python-2.7.3.tgz Python-2.7.5.tgz Python-2.7.6.tgz R-2.13.2.tar.gz R-3.0.2.tar.gz Uintah-1.6.0.tar.gz VTK-6.1.0.tar.gz Xdmf-2.1.1.tar.gz adios-1.6.0.tar.gz adios-1.7.0.tar.gz cfitsio3006.tar.gz cgns-3.0.8-Source.tar.gz cgnslib_3.2.1.tar.gz cmake-2.8.10.2.tar.gz cmake-2.8.12.2.tar.gz cmake-2.8.8.tar.gz cmake-3.0.2.tar.gz exodusii-4.98.tar.gz exodusii-5.10.tar.gz fastbit-ibis1.2.0.tar.gz gdal-1.10.0.tar.gz gdal-1.7.1.tar.gz google-perftools-0.97.tar.gz hdf-4.2.5.tar.gz hdf5-1.8.7.tar.gz libccmio-2.6.1.tar.gz manta-2540.tar.gz mfem-3.0.1.tgz mfem-3.0.tgz mfem-68e941f8fe.tgz moab-4.0.1RC2.tar.gz mpich-3.0.4.tar.gz mxml-2.6.tar.gz nektar++-4.0.1.tar.gz netcdf-4.1.1.tar.gz pyparsing-1.5.2.tar.gz pyside-combined-1.1.1.tar.gz pyside-combined-1.2.1.tar.gz pyside-combined-1.2.2.tar.gz qt-everywhere-opensource-src-4.8.3.tar.gz qt-everywhere-opensource-src-4.8.6.tar.gz qt-everywhere-opensource-src-5.2.1.tar.gz requests-2.5.1.tar.gz seedme-seedme-python-client-0a365da9c861.tar.gz seedme-seedme-python-client-c8818385bc88.tar.gz silo-4.10.1.tar.gz silo-4.10.tar.gz silo-4.9.1.tar.gz szip-2.1.tar.gz visit-vtk-5.8.0.a.tar.gz vtk-6.0.0.tar.gz zlib-1.2.7.tar.gz zlib-1.2.8.tar.gz"
+
+#
+# List the release files.
+#
+release_files="INSTALL_NOTES VisIt-$version.dmg jvisit$version.tar.gz visit${version}.exe visit-install$version2 visit${version}_x64.exe visit$version2.darwin-x86_64.tar.gz visit$version2.linux-x86_64-ubuntu11.tar.gz visit$version2.linux-x86_64-ubuntu14.tar.gz visit$version2.linux-x86_64-rhel6.tar.gz build_visit$version2 $dist.tar.gz visitdev$version.exe"
+
+#
+# Download the files.
 #
 rm -rf checksum_dir
 mkdir checksum_dir
 cd checksum_dir
-echo "Checking out third_party..."
-svn co http://portal.nersc.gov/svn/visit/tags/$version/third_party
-echo "Checking out $version..."
-svn co http://portal.nersc.gov/svn/visit/trunk/releases/$version
+echo "Downloading third_party..."
+mkdir third_party
+cd third_party
+for file in $third_party_files
+do
+   echo "   Downloading $file"
+   wget --no-check-certificate -o /dev/null http://portal.nersc.gov/project/visit/third_party/$file
+   shift
+done
+cd ..
+echo "Downloading $version..."
+mkdir $version
+cd $version
+for file in $release_files
+do
+   echo "   Downloading $file"
+   wget --no-check-certificate -o /dev/null http://portal.nersc.gov/project/visit/releases/$version/$file
+   shift
+done
+cd ..
 
 #
 # Create an awk script for use with the filesize command
