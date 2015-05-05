@@ -379,6 +379,12 @@ if test "$post" = "true" ; then
         src/svn_bin/visit-notify-test-failure -host $testHost
     fi
 
+    # If its a sunday, purge old test results
+    if test "$(date +%A)" = "Sunday" ; then
+        scp src/svn_bin/purge_old_test_results.sh $userNersc@$nerscHost:
+        ssh $userNersc@$nerscHost "./purge_old_test_results.sh"
+    fi
+
     # Set the permissions so that others may access the test directory.
     cd ..
     chgrp -R visit $workingDir
