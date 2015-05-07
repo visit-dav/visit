@@ -134,6 +134,9 @@
 #   Eric Brugger, Thu Feb 19 09:05:16 PST 2015
 #   I removed redsky. I modified many of the builds to use cmake 3.0.2.
 #
+#   Kathleen Biagas, Thu May  7 09:33:43 PDT 2015
+#   Added build for vulcan (copied from rzuseq).
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -183,6 +186,7 @@ rzzeus=true
 rzuseq=false
 carver=true
 glory=false
+vulcan=false
 
 dist=undefined
 
@@ -275,6 +279,14 @@ do
          ;;
       +glory)
          glory=true
+         shift
+         ;;
+      -vulcan)
+         vulcan=false
+         shift
+         ;;
+      +vulcan)
+         vulcan=true
          shift
          ;;
       -d)
@@ -791,10 +803,81 @@ then
    fi
 fi
 
+
+#
+# Build on vulcan.
+#
+rm -f vulcan
+cat <<EOF > vulcan
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/vulcan ; then
+   mkdir /usr/tmp/$user/vulcan
+fi
+rm -rf /usr/tmp/$user/vulcan/visitbuild
+mkdir /usr/tmp/$user/vulcan/visitbuild
+mv vulcan_$dist.tar.gz /usr/tmp/$user/vulcan/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/vulcan/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+cd ..
+# **NOTE** We do 2 in-source builds because of a weird problem with cmake
+# Make a copy of src called login_build
+cp -R src login_build
+# Rename src to compute_build
+mv src compute_build
+# Rename the data directory since the data programs won't run.
+mv data .data
+# install dir
+mkdir visit\${ver2}.linux-ppc64
+bgqinstdir=\`pwd\`/visit\${ver2}.linux-ppc64
+# Build for compute node, engine-only version
+cd compute_build
+/usr/gapps/visit/thirdparty_static/2.9.0/cmake/3.0.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-compute.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
+sh svn_bin/filter_link_commands_BGQ.sh >> ../../buildlog 2>&1
+make install >> ../../buildlog 2>&1
+cd ..
+# Restore data directory
+mv .data data
+# Build for login node, server-components-only version
+cd login_build
+/usr/gapps/visit/thirdparty_static/2.9.0/cmake/3.0.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
+make install >> ../../buildlog 2>&1
+cd ..
+# Now, tar up the common install directory.
+tar zcf ../visit\$ver2.linux-ppc64-BGQ.tar.gz visit\${ver2}.linux-ppc64
+cd ..
+rm -f resultlog
+echo "        build of visit on vulcan"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = (statically linked)" >> resultlog 2>&1
+echo "number of operator plugins = (statically linked)" >> resultlog 2>&1
+echo "number of plot plugins = (statically linked)" >> resultlog 2>&1
+mail  -s "VisIt build ($dist): vulcan" $emailName < resultlog
+EOF
+
+if [ $vulcan = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on vulcan"
+      scp vulcan vulcanlac4:vulcan_buildit
+      scp $dist.tar.gz vulcanlac4:vulcan_$dist.tar.gz
+      ssh vulcanlac4 "chmod 750 vulcan_buildit;./vulcan_buildit" &
+   fi
+fi
+
 #
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104_64 ubuntu1404_64 aztec rzzeus rzuseq carver glory
+   rm -f kickit sidious ubuntu1104_64 ubuntu1404_64 aztec rzzeus rzuseq carver glory vulcan
 fi

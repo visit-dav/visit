@@ -71,6 +71,9 @@
 #   Eric Brugger, Thu Feb 19 09:14:29 PST 2015
 #   I removed redsky.
 #
+#   Kathleen Biagas, Thu May  7 09:35:34 PDT 2015
+#   Added vulcan, changed rzuseq bank to wbronze.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -120,6 +123,7 @@ rzzeus=true
 rzuseq=false
 carver=true
 glory=false
+vulcan=false
 
 ver=undefined
 
@@ -212,6 +216,14 @@ do
          ;;
       +glory)
          glory=true
+         shift
+         ;;
+      -vulcan)
+         vulcan=false
+         shift
+         ;;
+      +vulcan)
+         vulcan=true
          shift
          ;;
       -v)
@@ -466,7 +478,7 @@ fi
 rm -f rzuseq
 cat <<EOF > rzuseq
 #!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b bdivp -gw -l $ver linux-ppc64-BGQ /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-ppc64-BGQ /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on rzuseq"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -564,9 +576,42 @@ then
 fi
 
 #
+# Install on vulcan.
+#
+rm -f vulcan
+cat <<EOF > vulcan
+#!/bin/sh
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-ppc64-BGQ /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on vulcan"          > resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-ppc64/bin       >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = (statically linked)" >> resultlog 2>&1
+echo "number of operator plugins = (statically linked)" >> resultlog 2>&1
+echo "number of plot plugins = (statically linked)" >> resultlog 2>&1
+mail -s "VisIt install ($ver): vulcan" $emailName < resultlog
+EOF
+
+if [ $vulcan = true ]
+then
+   if [ $test = no ]
+   then
+      scp vulcanlac4:/usr/tmp/$user/vulcan/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-ppc64-BGQ.tar.gz
+      scp visit$ver2.linux-ppc64-BGQ.tar.gz vulcanlac4:
+      scp visit-install vulcanlac4:
+      scp vulcan vulcanlac4:vulcan_install
+      ssh vulcanlac4 "chmod 750 vulcan_install;./vulcan_install"
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104_64 ubuntu1404_64 aztec rzuseq rzzeus carver glory
+   rm -f kickit sidious ubuntu1104_64 ubuntu1404_64 aztec rzuseq rzzeus carver glory vulcan
 fi

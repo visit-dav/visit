@@ -6326,6 +6326,9 @@ QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
 //   Brad Whitlock, Tue Mar 10 09:25:27 PDT 2009
 //   Quit instead of rethrowing the exception into Qt.
 //
+//   Kathleen Biagas, Thu May  7 09:14:34 PDT 2015
+//   Update the link for the FAQ.
+//
 // ****************************************************************************
 
 void
@@ -6343,7 +6346,7 @@ QvisGUIApplication::ReadFromViewer(int)
             cerr << "VisIt's viewer exited abnormally! Aborting the Graphical "
                  << "User Interface. VisIt's developers may be reached via "
                  << "the visit-users mailing list.  Please see:" << std::endl
-                 << "        http://visit.llnl.gov/FAQ.html#1"
+                 << "        https://wci.llnl.gov/simulation/computer-codes/visit/faqs/faq01"
                  << endl;
             viewerIsAlive = false;
 
