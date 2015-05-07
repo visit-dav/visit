@@ -2429,6 +2429,10 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //
 //    Mark C. Miller, Thu Sep 26 12:01:01 PDT 2013
 //    Fixed assumption that length of connect variable was always dimension 0.
+//
+//    Mark C. Miller, Thu May  7 11:01:30 PDT 2015
+//    Bracket query for "elem_num_map" with TRY/CATCH. It isn't always in an
+//    exodus file.    
 // ****************************************************************************
 
 vtkDataSet *
@@ -2828,7 +2832,16 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         // track element edges correctly
         if (contains_nonlinear_elems)
         {
-            vtkDataArray *gzoneIds = GetVar(ts, "elem_num_map");
+            vtkDataArray *gzoneIds = 0;
+            TRY
+            {
+                gzoneIds = GetVar(ts, "elem_num_map");
+            }
+            CATCH(InvalidVariableException)
+            {
+                ; // no-op
+            }
+            ENDTRY
             if (gzoneIds)
             {
                 vtkDataArray *domNums;
