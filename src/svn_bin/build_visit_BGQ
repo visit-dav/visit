@@ -698,7 +698,7 @@ function build_for_compute_node
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
         --cc $BG_CC $CFLAGSARGS \
         --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
-        --no-thirdparty --boost --zlib $IO_PACKAGES \
+        --no-thirdparty --no-boost --zlib $IO_PACKAGES \
         --parallel --cmake --icet \
         --group $GROUP \
         --database-plugins $VISIT_SELECTED_DATABASE_PLUGINS
@@ -764,7 +764,7 @@ function build_for_login_node
         --installation-build-dir $INSTALLATION_BUILD_DIR \
         --cc $CC $CFLAGSARGS \
         --cxx $CXX $CXXFLAGSARGS $MAKEARGS \
-        --no-thirdparty --boost --cmake --vtk $IO_PACKAGES --python \
+        --no-thirdparty --no-boost --cmake --vtk $IO_PACKAGES --python \
         --group $GROUP \
         --database-plugins $VISIT_SELECTED_DATABASE_PLUGINS
     if [[ $? != 0 ]] ; then
