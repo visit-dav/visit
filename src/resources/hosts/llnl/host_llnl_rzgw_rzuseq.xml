@@ -3,7 +3,7 @@
     <Field name="host" type="string">rzuseq</Field>
     <Field name="hostAliases" type="string">rzuseqlac#.llnl.gov rzuseqlac#</Field>
     <Field name="hostNickname" type="string">LLNL RZ uSeq</Field>
-    <Field name="directory" type="string">/g/g16/kbonnell/visit2.9.0b_BGQ</Field>
+    <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="useGateway" type="bool">true</Field>
     <Field name="gatewayHost" type="string">rzgw.llnl.gov</Field>
     <Field name="tunnelSSH" type="bool">true</Field>
