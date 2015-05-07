@@ -1,4 +1,4 @@
-#/usr/gapps/visit/thirdparty_static/2.7.0/cmake/2.8.10.2/linux-ppc64_gcc-4.4/bin/cmake
+#/usr/gapps/visit/thirdparty_static/2.9.0/cmake/3.0.2/linux-ppc64_gcc-4.4/bin/cmake
 ##
 ## ./build_visit generated host.cmake
 ## created: Fri May 31 12:16:29 PDT 2013
@@ -8,7 +8,7 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_static/2.7.0)
+SET(VISITHOME /usr/gapps/visit/thirdparty_static/2.9.0)
 SET(VISITARCH linux-ppc64_gcc-4.4)
 MESSAGE(status "************* login node build")
 ## Compiler flags.
@@ -40,12 +40,12 @@ VISIT_OPTION_DEFAULT(VISIT_SERVER_COMPONENTS_ONLY ON TYPE BOOL)
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr/gapps/visit/thirdparty_static/2.7.0/python/2.7.3/linux-ppc64_gcc-4.4)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.6/linux-ppc64_gcc-4.4)
 
 ##
 ## VTK
 ##
-SETUP_APP_VERSION(VTK 6.0.0)
+SETUP_APP_VERSION(VTK 6.1.0)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 ##
 
@@ -63,11 +63,11 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.11.1/${VISITARCH})
+#VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.11.1/${VISITARCH})
 
 ##
 ## Silo
 ##
-VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.9.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 

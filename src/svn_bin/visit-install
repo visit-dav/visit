@@ -364,6 +364,9 @@
 #    Kathleen Biagas, Mon Jan 26 07:46:28 PST 2015
 #    Removed host profile for edge.
 #
+#    Kathleen Biagas, Thu May  7 09:48:06 PDT 2015
+#    Fix second 'data' conditional to test for "$distributiondir"/data
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -1002,7 +1005,7 @@ for f in `echo $platformPath | tr "/" " "`; do
 done
 # Copy the files
 find . -print | cpio -pmud "$dir"/$version+
-if [ -e "$dir"/data ]; then
+if [ -e "$distributiondir"/data ]; then
     cd ../data
     find . -print | cpio -pmud "$dir"/data
 fi
