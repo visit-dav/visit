@@ -1269,7 +1269,8 @@ convertToLatLon(double x, double y, double z, double &nx, double &ny, double &nz
 
     nx = lon * toDeg;
     ny = lat * toDeg;
-    nz = (R-1.0) * earthRad;
+    //nz = (R-1.0) * earthRad;
+    nz = R * earthRad;
 
     ny = -ny + 90.0;
 
