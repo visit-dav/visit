@@ -1038,8 +1038,8 @@ class InfoGeneratorPlugin : public Plugin
             c << "            e2.SetDefinition(defn);" << endl;
             c << "            el->AddExpressions(e2);" << endl;
             c << "        }" << endl;
-            c << "    }" << endl;
         }
+        c << "    }" << endl;
     }
     void AddExpressionFromExpr(QTextStream &c, QString opName, std::vector<QString> outtypes, QString exprType)
     {
