@@ -289,7 +289,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sourceLayout->addWidget(new QLabel(tr("Source type"), sourceGroup), 0, 0);
     sourceType = new QComboBox(sourceGroup);
     sourceType->addItem(tr("Line"));
-    sourceType->addItem(tr("Plane"));
+//    sourceType->addItem(tr("Plane"));
     connect(sourceType, SIGNAL(activated(int)),
             this, SLOT(sourceTypeChanged(int)));
     sourceLayout->addWidget(sourceType, 0, 1, 1, 2);
@@ -368,12 +368,12 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(samplingTypeLabel, sRow, 0);
     samplingTypeButtonGroup = new QButtonGroup(samplingGroup);
     samplingTypeButtons[0] = new QRadioButton(tr("Uniform"), samplingGroup);
-    samplingTypeButtons[1] = new QRadioButton(tr("Random"), samplingGroup);
+//    samplingTypeButtons[1] = new QRadioButton(tr("Random"), samplingGroup);
     samplingTypeButtons[0]->setChecked(true);
     samplingTypeButtonGroup->addButton(samplingTypeButtons[0], 0);
-    samplingTypeButtonGroup->addButton(samplingTypeButtons[1], 1);
+//    samplingTypeButtonGroup->addButton(samplingTypeButtons[1], 1);
     samplingLayout->addWidget(samplingTypeButtons[0], sRow, 1);
-    samplingLayout->addWidget(samplingTypeButtons[1], sRow, 2);
+//    samplingLayout->addWidget(samplingTypeButtons[1], sRow, 2);
     connect(samplingTypeButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(samplingTypeChanged(int)));
 
     fillLabel = new QLabel(tr("Sampling along:"), samplingGroup);
@@ -1424,7 +1424,7 @@ QvisLimitCycleWindow::TurnOffSourceAttributes()
 
     TurnOff(samplingTypeLabel);
     TurnOff(samplingTypeButtons[0]);
-    TurnOff(samplingTypeButtons[1]);
+//    TurnOff(samplingTypeButtons[1]);
 
     TurnOff(numberOfRandomSamples, numberOfRandomSamplesLabel);
     TurnOff(randomSeed, randomSeedLabel);
@@ -1523,7 +1523,7 @@ QvisLimitCycleWindow::UpdateSourceAttributes()
 
         TurnOn(samplingTypeLabel);
         TurnOn(samplingTypeButtons[0]);
-        TurnOn(samplingTypeButtons[1]);
+//        TurnOn(samplingTypeButtons[1]);
 
         if (enableFill)
         {

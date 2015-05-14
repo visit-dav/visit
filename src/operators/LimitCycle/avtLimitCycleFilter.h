@@ -74,6 +74,13 @@ class avtStateRecorderIntegralCurve;
 class avtLimitCycleFilter : public virtual avtPluginFilter,
                             public virtual avtPICSFilter
 {
+  enum status { UNKNOWN       = 0x0000,
+                INTERSECTIONS = 0x0001,
+                DIRECTION     = 0x0002,
+                SEGMENT       = 0x0004,
+                PROXIMENT     = 0x0008,
+                VALID         = 0x000f };
+
   public:
     // default constructor
                               avtLimitCycleFilter();

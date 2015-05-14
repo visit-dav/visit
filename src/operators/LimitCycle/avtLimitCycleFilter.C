@@ -586,10 +586,12 @@ avtLimitCycleFilter::ContinueExecute()
     //loop over all the integral curves and add it back to the
     //original list of seeds.
     intVector indices(nics);
+    intVector  status(nics);
     doubleVector startPts(nics*3);
     doubleVector   endPts(nics*3);
-    intVector maxIntersections(nics);
-    intVector consistentDir(nics);
+
+    double dv = avtVector(points[1] - points[0]).length() /
+          (double) sampleDensity[0];
 
     for(size_t i=0, j=0; i<nics; ++i, j+=3)
     {
@@ -601,6 +603,7 @@ avtLimitCycleFilter::ContinueExecute()
 
         avtVector point0 = ic->GetSample(0).position;
         avtVector point1 = ic->GetSample(1).position;
+        avtVector pointN;
         avtVector pointN_2 = ic->GetSample(nSamples-2).position;
         avtVector pointN_1 = ic->GetSample(nSamples-1).position;
           
@@ -608,36 +611,53 @@ avtLimitCycleFilter::ContinueExecute()
         startPts[j+1] = point0[1];
         startPts[j+2] = point0[2];
 
+        status[i] = 0;
+
         // Get the puncture point.  
         if( ic->TerminatedBecauseOfMaxIntersections() )
         {
-          avtVector pointN = GetIntersectingPoint( pointN_2, pointN_1 );
+          status[i] |= INTERSECTIONS;
+          
+          pointN = GetIntersectingPoint( pointN_2, pointN_1 );
+        
+          // Make sure the puncture point is on the initial puncture line.
+          double t = (pointN[0] - points[0][0]) / (points[1][0] - points[0][0]);
 
-          endPts[j+0] = pointN[0];
-          endPts[j+1] = pointN[1];
-          endPts[j+2] = pointN[2];
+          if( -0.1 < t && t < 1.1 )
+            status[i] |= SEGMENT;
+
+          // Make sure the puncture point within twice the initial
+          // spacing.
+          if( (pointN - point0).length() < 2.0 * dv )
+            status[i] |= PROXIMENT;
+ 
+          // Make sure the puncture point direction in the same
+          // direction as the starting points.
+          avtVector vec0 = (point1   - point0);
+          avtVector vecN = (pointN_1 - pointN_2);
+
+          if( vec0.dot( vecN ) > 0 )
+            status[i] |= DIRECTION;
         }
-        // Not enough intereections so no punture point.
-        else
-        {
 
-          std::cerr << ics[i]->id << "  " << point0 << std::endl;
+        // Set the status to zero if all conditions are not met.
+        status[i] = (status[i] == VALID);
 
-          endPts[j+0] = point0[0];
-          endPts[j+1] = point0[1];
-          endPts[j+2] = point0[2];
-        }
+        // If reseting set the punction to be the start point so the
+        // residual distenace.
+        if( status[i] == 0 )
+          pointN = point0;
 
-        maxIntersections[i] = ic->TerminatedBecauseOfMaxIntersections();
-
-        avtVector vec0 = (point1 - point0);
-        avtVector vecN = (pointN_1 - pointN_2);
-
-        consistentDir[i] = ( vec0.dot( vecN ) < 0 ? -1 : +1 );
+        endPts[j+0] = pointN[0];
+        endPts[j+1] = pointN[1];
+        endPts[j+2] = pointN[2];
     }
 
     int*  all_indices = 0;
     int* index_counts = 0;
+
+    int*   all_status = 0;
+    int *status_counts = 0;
 
     double* all_startPts = 0;
     int *startPts_counts = 0;
@@ -645,30 +665,19 @@ avtLimitCycleFilter::ContinueExecute()
     double* all_endPts = 0;
     int *endPts_counts = 0;
 
-    int*   all_maxInter = 0;
-    int *maxInter_counts = 0;
-
-    int*   all_consistentDir = 0;
-    int *consistentDir_counts = 0;
-
     Barrier();
 
     CollectIntArraysOnRootProc(all_indices, index_counts,
                                &indices.front(), (int)indices.size());
+
+    CollectIntArraysOnRootProc(all_status, status_counts,
+                               &status.front(), (int)status.size());
 
     CollectDoubleArraysOnRootProc(all_startPts, startPts_counts,
                                   &startPts.front(), (int)startPts.size());
 
     CollectDoubleArraysOnRootProc(all_endPts, endPts_counts,
                                   &endPts.front(), (int)endPts.size());
-
-    CollectIntArraysOnRootProc(all_maxInter, maxInter_counts,
-                               &maxIntersections.front(),
-                               (int)maxIntersections.size());
-
-    CollectIntArraysOnRootProc(all_consistentDir, consistentDir_counts,
-                               &consistentDir.front(),
-                               (int)consistentDir.size());
 
     Barrier();
 
@@ -685,8 +694,7 @@ avtLimitCycleFilter::ContinueExecute()
         int par_size = PAR_Size();
         for(int i = 0; i < par_size; ++i)
         {
-          if( index_counts[i]   == maxInter_counts[i] &&
-              index_counts[i]   == consistentDir_counts[i] &&
+          if( index_counts[i]   == status_counts[i] &&
               index_counts[i]*3 == startPts_counts[i] &&
               index_counts[i]*3 ==   endPts_counts[i] )
           {
@@ -706,7 +714,7 @@ avtLimitCycleFilter::ContinueExecute()
 
           if( sourceType == LimitCycleAttributes::Line_ )
           {
-            tangent = avtVector(points[0] - points[1]);
+            tangent = avtVector(points[1] - points[0]);
             tangent.normalize();
           }
           else if( sourceType == LimitCycleAttributes::Plane )
@@ -717,9 +725,12 @@ avtLimitCycleFilter::ContinueExecute()
 
           returnDistances.resize( nics );
 
+          for (size_t i=0; i<nics; ++i)
+            returnDistances[i] = 0;
+
           double dv = (points[1] - points[0]).length() /
             (double) sampleDensity[0];
-          
+           
           for (size_t i=0; i<nics; ++i)
           {
             avtVector sPt( &(all_startPts[ i*3 ]) );
@@ -735,6 +746,9 @@ avtLimitCycleFilter::ContinueExecute()
 
             returnDistances[index] = signVal * vec.length();
           }
+
+          // for (size_t i=0; i<50; ++i)
+            //std::cerr << i << "  " << returnDistances[i] << std::endl;
         }
         else
         {
@@ -786,11 +800,11 @@ avtLimitCycleFilter::ContinueExecute()
             // they maybe deleted because they can not be avected (scattered
             // to domains). So skip over them. However, one curve should
             // remain which will be valid with it's sibling.
-            // std::cerr << iteration << "   " << id0 << "  " << id1 << "  ";
+            //std::cerr << iteration << "   " << id0 << "  " << id1 << "  ";
             
             if (id0 == -1 || id1 == -1)
             {
-              // std::cerr << "missing IC " << std::endl;
+              //std::cerr << "missing IC " << std::endl;
               continue;
             }
             
@@ -804,36 +818,35 @@ avtLimitCycleFilter::ContinueExecute()
             
             avtVector vec0, vec1;
             
-            if( all_maxInter[ index0 ] && all_consistentDir[ index0 ] )
+            if( all_status[ index0 ] )
             {
               // Calculate the vector between the first and last point.
               vec0 = sPt0 - ePt0;
               
-              // std::cerr << "v0 " << vec0.length() << "  ";
+              //std::cerr << "v0 " << vec0.length() << "  ";
             }
             
-            if( all_maxInter[ index1 ]&& all_consistentDir[ index1 ] )
+            if( all_status[ index1 ] )
             {
               // Calculate the vector between the first and last point.
               vec1 = sPt1 - ePt1;
               
-              // std::cerr << "v1 " << vec1.length() << "  ";
+              //std::cerr << "v1 " << vec1.length() << "  ";
             }
 
             // Check points that have intersected the Poincare plane
             // twice and the direction of the intersection with the
             // Poincare plane are consitent.
-            if( all_maxInter[ index0 ] && all_maxInter[ index1 ] &&
-                all_consistentDir[ index0 ] && all_consistentDir[ index1 ] )
+            if( all_status[ index0 ] && all_status[ index1 ] )
             {
-              // std::cerr << "dot " << vec0.dot( vec1 ) << "  "
-              // << "distance " << (sPt0 - sPt1).length() << "  ";
-            
+              //std::cerr << "dot " << vec0.dot( vec1 ) << "  "
+                        // << "distance " << (sPt0 - sPt1).length() << "  ";
+              
               // If the vectors are in the opposite direction then there is
               // a zero crossing.
               if( vec0.dot( vec1 ) < 0 )
               {
-                // std::cerr << " zero crossing found, ";
+                //std::cerr << " zero crossing found, ";
                 
                 // If the vector length is really small then a cycle is
                 // close by.  This check is also used to prevent tangent
@@ -844,14 +857,14 @@ avtLimitCycleFilter::ContinueExecute()
                   // delete the other.
                   if( (sPt0 - sPt1).length() < tolerance )
                   {
-                    // std::cerr << " cycle found  ic0" << std::endl;
+                    //std::cerr << " cycle found  ic0" << std::endl;
                     
                     ids_to_keep.push_back( id0 );
                     continue;
                   }
                   else
                   {
-                    // std::cerr << " nearing cycle, ";
+                    //std::cerr << " nearing cycle, ";
                   }
                 }
               
@@ -866,16 +879,15 @@ avtLimitCycleFilter::ContinueExecute()
               // interval via the gui.
               else
               {
-                // std::cerr << " no zero crosing found" << std::endl;
+                //std::cerr << " no zero crosing found" << std::endl;
               }
             }
 
             // If one of the curves intersected the Poincare plane twice
             // and was consistent directionally split the interval.
-            else if( (all_maxInter[ index0 ] && all_consistentDir[ index0 ] ) ||
-                     (all_maxInter[ index1 ] && all_consistentDir[ index1 ]) )
+            else if( (all_status[ index0 ]) || (all_status[ index1 ]) )
             {
-              // std::cerr << "One curve does not have enough punctures ";
+              //std::cerr << "One curve does not have enough punctures ";
               
               split = true;
             }
@@ -884,7 +896,7 @@ avtLimitCycleFilter::ContinueExecute()
             // there can not be a limit cycle in between. Delete the pair.
             else
             {
-              // std::cerr << "Neighter curve has enough punctures " << std::endl;
+              //std::cerr << "Neither curve has enough punctures " << std::endl;
             }
             
             if( split )
@@ -909,7 +921,7 @@ avtLimitCycleFilter::ContinueExecute()
                 }
                 
                 newSeeds = true;
-                // std::cerr << " splitting " << std::endl;
+                //std::cerr << " splitting " << std::endl;
               }
               
               // Max out on the iteration but there is probably a limit
@@ -917,19 +929,19 @@ avtLimitCycleFilter::ContinueExecute()
               // crossing. So leave one or both curves.
               else
               {
-                // std::cerr << " max iterations " << std::endl;
+                //std::cerr << " max iterations " << std::endl;
                 
-                if( all_maxInter[index0] && all_consistentDir[index0] &&
+                if( all_status[index0] &&
                     (atts.GetShowPartialResults() || vec0.length() < tolerance) )
                 {
-                  // std::cerr << " ic0 ";
+                  //std::cerr << " ic0 ";
                   ids_to_keep.push_back( id0 );
                 }
                 
-                if( all_maxInter[index1] && all_consistentDir[index1] &&
+                if( all_status[index1] &&
                     (atts.GetShowPartialResults() || vec1.length() < tolerance) )
                 {
-                  // std::cerr << " ic1 ";
+                  //std::cerr << " ic1 ";
                   ids_to_keep.push_back( id1 );
                 }
               }
@@ -990,11 +1002,11 @@ avtLimitCycleFilter::ContinueExecute()
       // SumIntAcrossAllProcessors(nics);
       
       // if( PAR_Rank() == 0 )
-      // std::cerr << PAR_Rank() << "  "
-      // << "Iteration  " << iteration << "  "
-      // << "number of curves " << nics << "  "
-      // << "number of pairs " << ICPairs.size() << "  "
-      // << std::endl;
+        //std::cerr << PAR_Rank() << "  "
+                  // << "Iteration  " << iteration << "  "
+                  // << "number of curves " << nics << "  "
+                  // << "number of pairs " << ICPairs.size() << "  "
+                  // << std::endl;
       
       ++iteration;
       
@@ -1218,7 +1230,7 @@ avtLimitCycleFilter::CreateIntegralCurve( const avtIVPSolver* model,
                                           long ID ) 
 {
     unsigned int attr = GenerateAttributeFields();
-    int maxPunctures = 2;
+    int maxPunctures = 1;
     double t_end;
 
     if (doPathlines)
@@ -1871,7 +1883,8 @@ avtLimitCycleFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &
 
       if( sourceType == LimitCycleAttributes::Line_ )
       {
-        avtVector dv = avtVector(points[1] - points[0]) / (double) sampleDensity[0];
+        avtVector dv = avtVector(points[1] - points[0]) /
+          (double) sampleDensity[0];
 
         for (size_t i = 0; i < returnDistances.size(); i++)
         {
@@ -2175,10 +2188,10 @@ avtLimitCycleFilter::SetIntersectionCriteria()
 {
     if( sourceType == LimitCycleAttributes::Line_ )
     {
-        planePt = avtVector(points[0] + points[1]);
+        planePt = avtVector(points[1] + points[0]);
         planePt *= 0.5;
         
-        avtVector tangent(points[0] - points[1]);
+        avtVector tangent(points[1] - points[0]);
         tangent.normalize();
         
         planeN = avtVector(tangent[1],-tangent[0],tangent[2]);

@@ -5,6 +5,9 @@
     <Files components="E">
       avtLimitCycleFilter.C
     </Files>
+    <LDFLAGS>
+      ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
+    </LDFLAGS>
     <LIBS components="ESer">
       avtivp_ser
     </LIBS>
