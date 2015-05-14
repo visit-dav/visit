@@ -9,6 +9,9 @@
     <FilePatterns>
       *.bp
     </FilePatterns>
+    <LIBS>
+      vtkFiltersHybrid
+    </LIBS>
     <Files components="M">
       avtADIOSFileFormat.C
       avtADIOSBasicFileFormat.C
