@@ -931,7 +931,7 @@ avtPoincareFilter::CreateIntegralCurve( const avtIVPSolver* model,
 }
 
 // ****************************************************************************
-//  Method: avtPoincareFilter::GetFieldlinePoints
+//  Method: avtPoincareFilter::GetIntegralCurvePoints
 //
 //  Purpose:
 //      Gets the points from the fieldline and changes them in to a Vector.
@@ -1135,8 +1135,7 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                    "time or distance criteria being too large or of other attributes being "
                    "set incorrectly (example: your step size is too small).  If you are "
                    "confident in your settings and want the particles to advect farther, "
-                   "you should increase the maximum number of steps.  If you want to disable "
-                   "this message, you can do this under the Advaced tab."
+                   "you should increase the maximum number of steps."
                    "  Note that this message does not mean that an error has occurred; it simply "
                    "means that VisIt stopped advecting particles because it reached the maximum "
                    "number of steps. (That said, this case happens most often when other attributes "
@@ -1155,8 +1154,7 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                      "to the critical point location and terminate.  However, VisIt was not able "
                      "to do this for these particles due to numerical issues.  In all likelihood, "
                      "additional steps will _not_ help this problem and only cause execution to "
-                     "take longer.  If you want to disable this message, you can do this under "
-                     "the Advanced tab.\n", str, numCritPts);
+                     "take longer.\n", str, numCritPts);
         }
     }
 
@@ -1170,8 +1168,7 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                      "Often the step size becomes too small when appraoching a spatial "
                      "or temporal boundary. This especially happens when the step size matches "
                      "the temporal spacing. This condition is referred to as stepsize underflow and "
-                     "VisIt stops advecting in this case.  If you want to disable this message, "
-                     "you can do this under the Advanced tab.\n", str, numStepSize);
+                     "VisIt stops advecting in this case.\n", str, numStepSize);
         }
     }
 
@@ -1185,14 +1182,20 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                      "When one component of a velocity field varies quickly and another stays "
                      "relatively constant, then it is not possible to choose step sizes that "
                      "remain within tolerances.  This condition is referred to as stiffness and "
-                     "VisIt stops advecting in this case.  If you want to disable this message, "
-                     "you can do this under the Advanced tab.\n", str,numStiff);
+                     "VisIt stops advecting in this case.\n", str,numStiff);
         }
     }
 
     if( strlen( str ) )
-      avtCallback::IssueWarning(str);
+    {
+        SNPRINTF(str, 4096, 
+                 "%s\nIf you want to disable any of these messages, "
+                     "you can do so under the Advanced tab.\n", str);
+
+        avtCallback::IssueWarning(str);
+    }
 }
+
 
 // ****************************************************************************
 //  Method: avtPoincareFilter::ContinueExecute
