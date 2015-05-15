@@ -325,6 +325,9 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
     AddMeshToMetaData(md, "continents", AVT_SURFACE_MESH, NULL, 1, 0, 3, 2);
     AddMeshToMetaData(md, "LatLon_continents", AVT_SURFACE_MESH, NULL, 1, 0, 3, 2);
 
+    AddMeshToMetaData(md, "plates", AVT_SURFACE_MESH, NULL, 1, 0, 3, 2);
+    AddMeshToMetaData(md, "LatLon_plates", AVT_SURFACE_MESH, NULL, 1, 0, 3, 2);
+
     bool allRegionsPresent = true;
     for (int i = 0; i < regions.size(); i++)
         allRegionsPresent &= regions[i];
@@ -502,6 +505,9 @@ avtSpecFEMFileFormat::GetContinents(bool xyzMesh)
 
     if (xyzMesh)
         return ds;
+    return LatLonClip(ds);
+
+#if 0
 
     //create the earth from 180 to 360
     vtkImplicitBoolean *func0 = vtkImplicitBoolean::New();
@@ -569,6 +575,137 @@ avtSpecFEMFileFormat::GetContinents(bool xyzMesh)
     vtkDataSet *out_ds = app->GetOutput();
     out_ds->Register(NULL);
 
+    pln0->Delete();
+    func0->Delete();
+    clip0->Delete();
+    pln1->Delete();
+    func1->Delete();
+    clip1->Delete();
+    app->Delete();
+
+    return out_ds;
+#endif
+}
+
+#include <platePoints.h>
+
+vtkDataSet *
+avtSpecFEMFileFormat::GetPlates(bool xyzMesh)
+{
+    vtkPolyData *ds = vtkPolyData::New();
+    vtkPoints *pts = vtkPoints::New();
+    vtkCellArray *lines = vtkCellArray::New();
+
+
+    //First, make an XYZ plates mesh.
+    const double toRad = M_PI/180.;
+    int idx = 0, numPts;
+    vtkIdType ptID = 0;
+    while (1)
+    {
+        numPts = (int)platePts[idx];
+        if (numPts == 0)
+            break;
+        
+        idx++;
+        std::vector<vtkIdType> ids(numPts);
+        for (int i = 0; i < numPts; i++, idx+=2)
+        {
+            double lon_rad = toRad*platePts[idx];
+            double lat_rad = toRad*platePts[idx+1];
+            double x = cos(lat_rad) * cos(lon_rad);
+            double y = cos(lat_rad) * sin(lon_rad);
+            double z = sin(lat_rad);
+            
+            pts->InsertNextPoint(x,y,z);
+            ids[i] = ptID;
+            ptID++;
+        }
+        lines->InsertNextCell(numPts, &(ids[0]));
+    }
+
+    ds->SetPoints(pts);
+    ds->SetLines(lines);
+    pts->Delete();
+    lines->Delete();
+
+    if (xyzMesh)
+        return ds;
+    return LatLonClip(ds);
+}
+
+vtkDataSet *
+avtSpecFEMFileFormat::LatLonClip(vtkDataSet *ds)
+{
+    //For lat/lon, we need to clip it and merge.
+    //create the earth from 180 to 360
+    vtkImplicitBoolean *func0 = vtkImplicitBoolean::New();
+    vtkPlane *pln0 = vtkPlane::New();
+    pln0->SetOrigin(0,0,0);
+    pln0->SetNormal(0,1,0);
+    func0->AddFunction(pln0);
+    vtkClipPolyData *clip0 = vtkClipPolyData::New();
+    clip0->SetInputData(ds);
+    clip0->SetClipFunction(func0);
+    clip0->SetInsideOut(true);
+    clip0->Update();
+    vtkDataSet *ds0 = clip0->GetOutput();
+
+    //convert to lat/lon
+    vtkPolyData *pd = static_cast<vtkPolyData *>(ds0);
+    vtkIdType nPts = pd->GetPoints()->GetNumberOfPoints();
+    double pt[3];
+    for (vtkIdType i = 0; i < nPts; i++)
+    {
+        pd->GetPoints()->GetPoint(i, pt);
+
+        double nx, ny, nz;
+        convertToLatLon(pt[0], pt[1], pt[2], nx,ny,nz);
+        if (nx < 180.0) nx = 360.0;
+        pt[0] = nx;
+        pt[1] = ny;
+        pt[2] = nz;
+        pd->GetPoints()->SetPoint(i, pt);
+    }
+
+    //create the earth from 0 to 180
+    vtkImplicitBoolean *func1 = vtkImplicitBoolean::New();
+    vtkPlane *pln1 = vtkPlane::New();
+    pln1->SetOrigin(0,0,0);
+    pln1->SetNormal(0,-1,0);
+    func1->AddFunction(pln1);
+    vtkClipPolyData *clip1 = vtkClipPolyData::New();
+    clip1->SetInputData(ds);
+    clip1->SetClipFunction(func1);
+    clip1->SetInsideOut(true);
+    clip1->Update();
+    vtkDataSet *ds1 = clip1->GetOutput();
+    
+    //convert to lat/lon
+    pd = static_cast<vtkPolyData *>(ds1);
+    nPts = pd->GetPoints()->GetNumberOfPoints();
+    for (vtkIdType i = 0; i < nPts; i++)
+    {
+        pd->GetPoints()->GetPoint(i, pt);
+
+        double nx, ny, nz;
+        convertToLatLon(pt[0], pt[1], pt[2], nx,ny,nz);
+        if (nx > 359) nx = 0.0;
+        pt[0] = nx;
+        pt[1] = ny;
+        pt[2] = nz;
+        pd->GetPoints()->SetPoint(i, pt);
+    }
+    
+    vtkAppendPolyData *app = vtkAppendPolyData::New();
+    app->AddInputData(static_cast<vtkPolyData *>(ds0));
+    app->AddInputData(static_cast<vtkPolyData *>(ds1));
+    app->Update();
+
+    vtkDataSet *out_ds = app->GetOutput();
+    out_ds->Register(NULL);
+
+    ds->Delete();
     pln0->Delete();
     func0->Delete();
     clip0->Delete();
@@ -842,6 +979,10 @@ avtSpecFEMFileFormat::GetMesh(int ts, int domain, const char *meshname)
         return GetContinents(true);
     else if (!strcmp(meshname, "LatLon_continents"))
         return GetContinents(false);
+    else if (!strcmp(meshname, "plates"))
+        return GetPlates(true);
+    else if (!strcmp(meshname, "LatLon_plates"))
+        return GetPlates(false);
 
     bool xyzMesh = string(meshname).find("LatLon") == string::npos;
     bool wholeMesh = string(meshname).find("reg") == string::npos;
