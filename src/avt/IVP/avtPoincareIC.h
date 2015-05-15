@@ -342,12 +342,18 @@ public:
     virtual int  GetNumIntersections( ) { return numIntersections; };
 
   protected:
-    // Intersection points.
-    unsigned int    numIntersections;
-    unsigned int    maxIntersections;
+
+    // Intersection plane definition.
+    avtVector intersectPlanePt;
+    avtVector intersectPlaneNorm;
 
     double intersectPlaneEq[4]; // Typically the Y=0 plane i.e. 0, 1, 0
-    bool   terminatedBecauseOfMaxIntersections;
+
+    // Intersection counts.
+    unsigned int     numIntersections;
+    unsigned int     maxIntersections;
+
+    bool             terminatedBecauseOfMaxIntersections;
 
     bool             doTime;
     double           maxTime;

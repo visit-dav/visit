@@ -224,14 +224,13 @@ avtPoincareIC::SetIntersectionCriteria(vtkObject *obj, int maxInts)
         EXCEPTION1(ImproperUseException, "Can not SetIntersectionCriteria in avtPoincare, the Poincare plot only supports plane intersections.");
 
 
-    avtVector intersectPlanePt   = avtVector(((vtkPlane *)obj)->GetOrigin());
-    avtVector intersectPlaneNorm = avtVector(((vtkPlane *)obj)->GetNormal());
+    intersectPlanePt   = avtVector(((vtkPlane *)obj)->GetOrigin());
+    intersectPlaneNorm = avtVector(((vtkPlane *)obj)->GetNormal());
 
     intersectPlaneNorm.normalize();
     intersectPlaneEq[0] = intersectPlaneNorm.x;
     intersectPlaneEq[1] = intersectPlaneNorm.y;
     intersectPlaneEq[2] = intersectPlaneNorm.z;
-//    intersectPlaneEq[3] = intersectPlanePt.length();
     intersectPlaneEq[3] = intersectPlanePt.dot(intersectPlaneNorm);
 
     maxIntersections = maxInts;
@@ -284,6 +283,8 @@ bool
 avtPoincareIC::IntersectPlane(const avtVector &p0, const avtVector &p1,
                               const double    &t0, const double    &t1)
 {
+    bool foundIntersection = false;
+
     double distP0 = intersectPlaneEq[0] * p0.x +
                     intersectPlaneEq[1] * p0.y +
                     intersectPlaneEq[2] * p0.z -
@@ -305,28 +306,26 @@ avtPoincareIC::IntersectPlane(const avtVector &p0, const avtVector &p1,
       
       double dot = intersectPlaneEq[0] * dir.x +
                    intersectPlaneEq[1] * dir.y +
-                   intersectPlaneEq[2] * dir.z -
-                   intersectPlaneEq[3];
+                   intersectPlaneEq[2] * dir.z;
 
-      // If the segment is in the same direction as the poloidal plane
-      // then find where it intersects the plane.
+      // If the segment is in the same direction as the plane then
+      // count the intersection.
       if( dot > 0.0 )
       {
         // Double Poincare puncture test.
         if( puncturePeriod > 0 )
         {
-          avtVector planePt(0,0,0);
-
-          avtVector w = (avtVector) p0 - planePt;
+          avtVector w = p1 - intersectPlanePt;
           
+          // Find where it intersects the plane.
           double t = -(intersectPlaneEq[0] * w.x +
                        intersectPlaneEq[1] * w.y +
                        intersectPlaneEq[2] * w.z -
                        intersectPlaneEq[3]) / dot;
           
-//        avtVector point = avtVector(p0 + dir * t);
+          avtVector point = avtVector(p1 + dir * t);
 
-          double time = t0 + (t1-t0) * t;
+          double time = t0 + (t1-t0) * (point - p0).length() / (p1-p0).length();
 
           // Get the number of periods traversed.
           double nPeriods = time / puncturePeriod;
@@ -337,14 +336,15 @@ avtPoincareIC::IntersectPlane(const avtVector &p0, const avtVector &p1,
           
           if( fracPart < puncturePeriodTolerance ||
               1.0-puncturePeriodTolerance < fracPart )
-            return true;
+            foundIntersection = true;
         }
         else
-          return true;
+            foundIntersection = true;
+
       }
     }
     
-    return false;
+    return foundIntersection;
 }
 
 
