@@ -611,7 +611,7 @@ avtSpecFEMFileFormat::GetPlates(bool xyzMesh)
         std::vector<vtkIdType> ids(numPts);
         for (int i = 0; i < numPts; i++, idx+=2)
         {
-            double lon_rad = toRad*platePts[idx];
+            double lon_rad = toRad*(platePts[idx]-180);
             double lat_rad = toRad*platePts[idx+1];
             double x = cos(lat_rad) * cos(lon_rad);
             double y = cos(lat_rad) * sin(lon_rad);
