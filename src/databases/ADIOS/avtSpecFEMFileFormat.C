@@ -505,86 +505,8 @@ avtSpecFEMFileFormat::GetContinents(bool xyzMesh)
 
     if (xyzMesh)
         return ds;
+    
     return LatLonClip(ds);
-
-#if 0
-
-    //create the earth from 180 to 360
-    vtkImplicitBoolean *func0 = vtkImplicitBoolean::New();
-    vtkPlane *pln0 = vtkPlane::New();
-    pln0->SetOrigin(0,0,0);
-    pln0->SetNormal(0,1,0);
-    func0->AddFunction(pln0);
-    vtkClipPolyData *clip0 = vtkClipPolyData::New();
-    clip0->SetInputData(ds);
-    clip0->SetClipFunction(func0);
-    clip0->SetInsideOut(true);
-    clip0->Update();
-    vtkDataSet *ds0 = clip0->GetOutput();
-
-    //convert to lat/lon
-    vtkPolyData *pd = static_cast<vtkPolyData *>(ds0);
-    vtkIdType nPts = pd->GetPoints()->GetNumberOfPoints();
-    double pt[3];
-    for (vtkIdType i = 0; i < nPts; i++)
-    {
-        pd->GetPoints()->GetPoint(i, pt);
-
-        double nx, ny, nz;
-        convertToLatLon(pt[0], pt[1], pt[2], nx,ny,nz);
-        if (nx < 180.0) nx = 360.0;
-        pt[0] = nx;
-        pt[1] = ny;
-        pt[2] = nz;
-        pd->GetPoints()->SetPoint(i, pt);
-    }
-
-    //create the earth from 0 to 180
-    vtkImplicitBoolean *func1 = vtkImplicitBoolean::New();
-    vtkPlane *pln1 = vtkPlane::New();
-    pln1->SetOrigin(0,0,0);
-    pln1->SetNormal(0,-1,0);
-    func1->AddFunction(pln1);
-    vtkClipPolyData *clip1 = vtkClipPolyData::New();
-    clip1->SetInputData(ds);
-    clip1->SetClipFunction(func1);
-    clip1->SetInsideOut(true);
-    clip1->Update();
-    vtkDataSet *ds1 = clip1->GetOutput();
-    
-    //convert to lat/lon
-    pd = static_cast<vtkPolyData *>(ds1);
-    nPts = pd->GetPoints()->GetNumberOfPoints();
-    for (vtkIdType i = 0; i < nPts; i++)
-    {
-        pd->GetPoints()->GetPoint(i, pt);
-
-        double nx, ny, nz;
-        convertToLatLon(pt[0], pt[1], pt[2], nx,ny,nz);
-        pt[0] = nx;
-        pt[1] = ny;
-        pt[2] = nz;
-        pd->GetPoints()->SetPoint(i, pt);
-    }
-    
-    vtkAppendPolyData *app = vtkAppendPolyData::New();
-    app->AddInputData(static_cast<vtkPolyData *>(ds0));
-    app->AddInputData(static_cast<vtkPolyData *>(ds1));
-    app->Update();
-
-    vtkDataSet *out_ds = app->GetOutput();
-    out_ds->Register(NULL);
-
-    pln0->Delete();
-    func0->Delete();
-    clip0->Delete();
-    pln1->Delete();
-    func1->Delete();
-    clip1->Delete();
-    app->Delete();
-
-    return out_ds;
-#endif
 }
 
 #include <platePoints.h>
@@ -1414,7 +1336,6 @@ convertToLatLon(double x, double y, double z, double &nx, double &ny, double &nz
     nz = R * earthRad;
 
     ny = -ny + 90.0;
-
 
     //normalize it....
     //nx /= 360.;
