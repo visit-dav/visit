@@ -266,9 +266,11 @@ avtSummationFilter::PostExecute(void)
 //
 // ****************************************************************************
 
-vtkDataSet *
-avtSummationFilter::ExecuteData(vtkDataSet *ds, int dom, std::string)
+avtDataRepresentation  *
+avtSummationFilter::ExecuteData(avtDataRepresentation *inDR)
 {
+    vtkDataSet *ds = inDR->GetDataVTK();
+
     bool pointData = true;
     vtkDataArray *arr = ds->GetPointData()->GetArray(variableName.c_str());
     if (arr == NULL)
@@ -304,7 +306,7 @@ avtSummationFilter::ExecuteData(vtkDataSet *ds, int dom, std::string)
         sum += val;
     }
 
-    return (passData ? ds : NULL);
+    return (passData ? inDR : NULL);
 }
 
 

@@ -97,7 +97,7 @@ class AVTFILTERS_API avtSummationFilter : public avtDataTreeIterator
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
 
-    virtual vtkDataSet             *ExecuteData(vtkDataSet *, int,std::string);
+    virtual avtDataRepresentation  *ExecuteData(avtDataRepresentation *);
 };
 
 
