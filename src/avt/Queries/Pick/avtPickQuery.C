@@ -1165,7 +1165,6 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
                  ((ds->GetPointData()->GetArray("avtGhostNodes") != NULL) ||
                   (ds->GetCellData()->GetArray("avtGhostZones") != NULL)));
         pickAtts.SetIncludeGhosts(findGhosts);
-        bool skipNode = false;
         if (findGhosts)
         {
             vtkUnsignedCharArray *gn = (vtkUnsignedCharArray*)ds->
