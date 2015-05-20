@@ -813,7 +813,10 @@ simv2_exportdatabase(void *e, const char *filename, const char *format,
             if(simv2_NameList_getName(names, i, &var) == VISIT_OKAY)
             {
                 if(var != NULL)
-                     varNames.push_back(var);
+                {
+                    varNames.push_back(var);
+                    free(var); // simv2_NameList_getName used malloc.
+                }
             }
         }
     }
