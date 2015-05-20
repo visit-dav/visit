@@ -270,7 +270,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
             painter.scale(scale, scale);
             QFont font("helvetica", 20, QFont::Bold, true);
             font.setItalic(false);
-            int x = 250;
+            int x = 260;
             int y = pictures[i].height() - 8;
             painter.setPen(Qt::black);
             painter.drawText(int(x / scale), int(y / scale), ver);
