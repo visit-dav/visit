@@ -520,7 +520,7 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
             int cellTopoDim = ugrid->GetCell(i)->GetCellDimension();
             if (cellTopoDim > avtTopoDim)
             {
-                vtkIdType *pts;
+                vtkIdType *pts = NULL;
                 static bool issuedWarning = false;
                 if (!issuedWarning)
                 {
