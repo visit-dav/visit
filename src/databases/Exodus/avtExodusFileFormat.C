@@ -2856,23 +2856,29 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
                     domNums = vtkLongLongArray::New();
                     sz = sizeof(long long);
                 }
+                if(domNums != NULL)
+                {
+                    domNums->SetNumberOfComponents(1);
+                    domNums->SetNumberOfTuples(gzoneIds->GetNumberOfTuples());
+                    memset(domNums->GetVoidPointer(0), 0, sz*gzoneIds->GetNumberOfTuples());
 
-                domNums->SetNumberOfComponents(1);
-                domNums->SetNumberOfTuples(gzoneIds->GetNumberOfTuples());
-                memset(domNums->GetVoidPointer(0), 0, sz*gzoneIds->GetNumberOfTuples());
-
-                vtkDataArray *oca;
-                if (gzoneIds->GetDataType() == VTK_INT)
-                    oca = ComposeUpTo3ArraysTemplate<vtkIntArray,int>(2, (vtkIntArray*)gzoneIds,
+                    vtkDataArray *oca = NULL;
+                    if (gzoneIds->GetDataType() == VTK_INT)
+                        oca = ComposeUpTo3ArraysTemplate<vtkIntArray,int>(2, (vtkIntArray*)gzoneIds,
                               (vtkIntArray*)domNums, (vtkIntArray*)0);
-                else if (gzoneIds->GetDataType() == VTK_LONG_LONG)
-                    oca = ComposeUpTo3ArraysTemplate<vtkLongLongArray,long long>(2, (vtkLongLongArray*)gzoneIds,
+                    else if (gzoneIds->GetDataType() == VTK_LONG_LONG)
+                        oca = ComposeUpTo3ArraysTemplate<vtkLongLongArray,long long>(2, (vtkLongLongArray*)gzoneIds,
                               (vtkLongLongArray*)domNums, (vtkLongLongArray*)0);
+                
+                    domNums->Delete();
+                    if(oca != NULL)
+                    {
+                        oca->SetName("avtOriginalCellNumbers");
+                        ugrid->GetCellData()->AddArray(oca);
+                        oca->Delete();
+                    }
+                }
                 gzoneIds->Delete();
-                domNums->Delete();
-                oca->SetName("avtOriginalCellNumbers");
-                ugrid->GetCellData()->AddArray(oca);
-                oca->Delete();
             }
         }
     }
@@ -3039,7 +3045,7 @@ avtExodusFileFormat::GetVar(int ts, const char *var)
             {
                 vector<float> vfracs;
                 mat->GetVolFracsForZone(z, vfracs);
-                for (int m = 0; m < vfracs.size(); m++)
+                for (size_t m = 0; m < vfracs.size(); m++)
                 {
                     if (vfracs[m] > 0 && vfracs[m] < 1 && mvarr[m])
                         mixvals.push_back(mvarr[m]->GetTuple1(z));
