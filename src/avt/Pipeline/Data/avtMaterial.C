@@ -832,7 +832,6 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
     int timerHandle = visitTimer->StartTimer();
     const int notSet = INT_MAX;
     int i,m,z;
-    bool haveIssuedWarning = false;
 
     //
     // build material names vector
