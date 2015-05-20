@@ -1137,6 +1137,8 @@ avtDatabaseWriter::CreateSinglePolyData(avtDataTree_p root)
 
     // Convert all datasets into polydata.
     std::vector<vtkPolyData *> pds = ConvertDatasetsIntoPolyData(ds, nds);
+    if(ds != NULL)
+        delete [] ds;
 
     // Send the polydatas to rank 0.
     std::vector<vtkPolyData *> allpds = SendPolyDataToRank0(pds);

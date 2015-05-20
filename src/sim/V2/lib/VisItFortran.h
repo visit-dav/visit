@@ -18,6 +18,9 @@
 #ifdef _INCLUDE_HPUX_SOURCE     /* HPUX */
 #define F77_ID(x_, x, X)  x
 #endif
+#ifdef VISIT_BLUE_GENE_Q        /* BlueGene/Q */
+#define F77_ID(x_, x, X)  x
+#endif
 #ifndef F77_ID
 #define F77_ID(x_, x, X)  x_
 #endif
