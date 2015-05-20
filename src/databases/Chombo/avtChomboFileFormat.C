@@ -3328,7 +3328,7 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
         farr->SetNumberOfTuples(num_tuples);
         double *ptr = farr->GetPointer(0);
         size_t sz = farr->GetNumberOfComponents() * farr->GetNumberOfTuples();
-        for (int it = 0; it < sz; ++it) ptr[it] = std::numeric_limits<double>::quiet_NaN();
+        for (size_t it = 0; it < sz; ++it) ptr[it] = std::numeric_limits<double>::quiet_NaN();
 
         for (std::vector<int>::const_iterator it = representedBoxes[patch].begin(); it != representedBoxes[patch].end(); ++it)
         {
@@ -3566,15 +3566,15 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
         vtkDoubleArray *farr = vtkDoubleArray::New();
         farr->SetNumberOfComponents(num_array_comps);
         farr->SetNumberOfTuples(num_tuples);
-        double *ptr = farr->GetPointer(0);
+        vtkIdType nTuples = (vtkIdType)num_tuples;
 
         if (generatedVar == vpar)
-            for (int tuple = 0; tuple < num_tuples; ++tuple)
+            for (vtkIdType tuple = 0; tuple < nTuples; ++tuple)
                 for (int k =0; k < outputNK; ++k)
                     for (int l = 0; l < outputNL; ++l)
                         farr->SetComponent(tuple, k*outputNL+l, (lowProbK[0] + k + 0.5) * dx[0][2]);
         else if (generatedVar == mu)
-            for (int tuple = 0; tuple < num_tuples; ++tuple)
+            for (vtkIdType tuple = 0; tuple < nTuples; ++tuple)
                 for (int k =0; k < outputNK; ++k)
                     for (int l = 0; l < outputNL; ++l)
                         farr->SetComponent(tuple, k*outputNL+l, (lowProbL[0] + l + 0.5) * dx[0][3]);
