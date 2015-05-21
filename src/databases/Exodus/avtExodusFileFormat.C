@@ -3215,11 +3215,12 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         SNPRINTF(thisDomain, sizeof(thisDomain), "File%d", myDomain);
         int *matids = new int[matCount];
         char **matnames = new char*[matCount];
+        const int matnamelen = 16;
         for (int m = 0; m < matCount; m++)
         {
             matids[m] = m;
-            matnames[m] = new char[16];
-            SNPRINTF(matnames[m],sizeof(matnames[m]),"%d",m);
+            matnames[m] = new char[matnamelen];
+            SNPRINTF(matnames[m],matnamelen,"%d",m);
         }
 
         avtMaterial *mat = new avtMaterial(matCount, matids, matnames,
