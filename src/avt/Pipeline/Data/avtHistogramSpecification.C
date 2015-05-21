@@ -956,7 +956,9 @@ avtHistogramSpecification::SumAcrossAllProcessors()
 {
     // Make sure all processors agree on the size
     int length = GetTotalNumberOfBins();
-    double minMaxLength[2] = {length, length};
+    double minMaxLength[2];
+    minMaxLength[0] = double(length);
+    minMaxLength[1] = double(length);
     UnifyMinMax(minMaxLength, 2);
     if (minMaxLength[0] != minMaxLength[1])
         return false;
