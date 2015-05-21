@@ -130,27 +130,27 @@ avtSubsetBlockMergeFilter::Execute()
     inputTree->GetAllUniqueLabels(uniqueLabels);
     
     // Merge datasets for each block
-    int outSize = uniqueLabels.size();
+    size_t outSize = uniqueLabels.size();
     
     vtkDataSet **outDataSets = new vtkDataSet *[outSize];
     vtkAppendPolyData **appender = new vtkAppendPolyData *[outSize];
     vtkCleanPolyData **cleaner = new vtkCleanPolyData *[outSize];
     
-    for(int i=0; i<outSize; i++)
+    for(size_t i=0; i<outSize; i++)
     {
         appender[i] = vtkAppendPolyData::New();
         cleaner[i] = vtkCleanPolyData::New();
     }
     
     // :ASSUMPTION: Assuming that datasets are in the same order as labels
-    for(int i=0; i<labels.size(); i++)
+    for(size_t i=0; i<labels.size(); i++)
     {
         int index = GetIndexFromBlockId(labels[i], uniqueLabels);
         appender[index]->AddInputData(dynamic_cast<vtkPolyData *>(dataSets[i]));
     }
     
     // Clean all merged data sets
-    for(int i=0; i<outSize; i++)
+    for(size_t i=0; i<outSize; i++)
     {
         cleaner[i]->SetInputConnection(appender[i]->GetOutputPort());
         cleaner[i]->Update();
@@ -184,7 +184,7 @@ avtSubsetBlockMergeFilter::Execute()
     
     if(iter != procDatasetMap.end())
     {
-        for(int j=0; j<iter->second.size(); j++)
+        for(size_t j=0; j<iter->second.size(); j++)
         {
             map<string, vtkAppendPolyData *>::iterator iter2 = blockAppenderMap.find(iter->second[j].blockId);
             if(iter2 != blockAppenderMap.end())
@@ -224,7 +224,7 @@ avtSubsetBlockMergeFilter::Execute()
     delete [] appender;
     delete [] outDataSets;
     
-    for(int i=0; i<outSize; i++)
+    for(size_t i=0; i<outSize; i++)
     {
         cleaner[i]->Delete();
     }
@@ -559,7 +559,7 @@ avtSubsetBlockMergeFilter::GetProcessorIdFromBlockId(const int blockId) const
 const int
 avtSubsetBlockMergeFilter::GetIndexFromBlockId(const std::string blockId, const std::vector<std::string> &labels) const
 {
-    for(int i=0; i<labels.size(); i++)
+    for(size_t i=0; i<labels.size(); i++)
     {
         if(blockId.compare(labels[i]) == 0)
         {

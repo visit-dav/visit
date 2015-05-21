@@ -45,6 +45,7 @@
 
 #include <filters_exports.h>
 #include <pipeline_exports.h>
+#include <imgMetaData.h>
 #include <avtSamplePointExtractor.h>
 #include <algorithm>
 #include <string>

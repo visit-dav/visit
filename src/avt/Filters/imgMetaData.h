@@ -35,30 +35,79 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef IMG_METADATA_H
+#define IMG_METADATA_H
+#include <stdio.h>
+#include <string>
+#include <iostream>
 
-#ifndef AVTFILTERS_EXPORTS_H
-#define AVTFILTERS_EXPORTS_H
+// ****************************************************************************
+//  Struct:  imgMetaData
+//
+//  Purpose:
+//    Holds information about patches but not the image 
+//
+//  Programmer:  
+//  Creation:   
+//
+// ****************************************************************************
+struct imgMetaData{
+  int procId;       // processor that produced the patch
+  int patchNumber;  // id of the patch on that processor - with procId, acts as a key
 
-#if defined(_WIN32)
-#if defined(AVTFILTERS_EXPORTS) || defined(avtfilters_ser_EXPORTS) || defined(avtfilters_par_EXPORTS)
-#define AVTFILTERS_API __declspec(dllexport)
-#else
-#define AVTFILTERS_API __declspec(dllimport)
-#endif
-#if defined(_MSC_VER)
-// Turn off warning about lack of DLL interface
-#pragma warning(disable:4251)
-// Turn off warning non-dll class is base for dll-interface class.
-#pragma warning(disable:4275)
-// Turn off warning about identifier truncation
-#pragma warning(disable:4786)
-#endif
-#else
-# if __GNUC__ >= 4 && (defined(AVTFILTERS_EXPORTS) || defined(avtfilters_ser_EXPORTS) || defined(avtfilters_par_EXPORTS))
-#   define AVTFILTERS_API __attribute__ ((visibility("default")))
-# else
-#   define AVTFILTERS_API /* hidden by default */
-# endif
-#endif
+  int destProcId;   // destination proc where this patch gets composited
+
+  int inUse;   // whether the patch is composed locally or not
+  int dims[2];      // height, width
+  int screen_ll[2]; // position in the final image
+  int screen_ur[2];
+  float avg_z;      // depth of the patch
+};
+
+
+// ****************************************************************************
+//  Struct:  imgData
+//
+//  Purpose:
+//    Holds the image data generated
+//
+//  Programmer:  
+//  Creation:    
+//
+// ****************************************************************************
+struct imgData{
+  int procId;         // processor that produced the patch
+  int patchNumber;    // id of the patch on that processor  - with procId, acts as a key
+
+  float *imagePatch;  // the image data - RGBA
+
+  bool operator==(const imgData &a){
+    return (patchNumber == a.patchNumber);// && (procId == a.procId);
+ }   
+};
+
+
+// ****************************************************************************
+//  Struct:  iotaMeta
+//
+//  Purpose:
+//    Holds the image data generated
+//
+//  Programmer:  
+//  Creation:    
+//
+// ****************************************************************************
+struct iotaMeta{
+  int procId;  
+  int patchNumber; 
+  
+  int dims[2];      // height, width
+  int screen_ll[2]; // position in the final image
+  float avg_z;   
+
+  bool operator==(const iotaMeta &a){
+    return (patchNumber == a.patchNumber) && (procId == a.procId);
+ }    
+};
 
 #endif

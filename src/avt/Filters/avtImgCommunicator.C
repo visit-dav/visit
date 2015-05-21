@@ -781,11 +781,14 @@ void avtImgCommunicator::patchAllocationLogic(){
 //
 // ****************************************************************************
 
-void avtImgCommunicator::scatterNumDataToCompose(int &totalSendData, int &totalRecvData, int &numDivisions, int &totalPatchesToCompositeLocally){
-  int totalSendRecvData[4];
-  #ifdef PARALLEL
+void
+avtImgCommunicator::scatterNumDataToCompose(int &totalSendData, int &totalRecvData,
+    int &numDivisions, int &totalPatchesToCompositeLocally)
+{
+  int totalSendRecvData[4] = {0,0,0,0};
+#ifdef PARALLEL
     MPI_Scatter(numPatchesToSendRecvArray, 4, MPI_INT, totalSendRecvData, 4, MPI_INT, 0, MPI_COMM_WORLD);
-  #endif
+#endif
 
   totalSendData = totalSendRecvData[0];
   totalRecvData = totalSendRecvData[1];
