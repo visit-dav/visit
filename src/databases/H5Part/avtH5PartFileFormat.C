@@ -129,11 +129,15 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     // Check options
     //bool idVarNameSpecified = false;
     if (readOpts != NULL)
+    {
         for (int i = 0; i < readOpts->GetNumberOfOptions(); ++i)
+        {
             if (readOpts->GetName(i) == "Use FastBit index")
                 useFastBitIndex = readOpts->GetBool("Use FastBit index");
             else if (readOpts->GetName(i) == "Disable domain decomposition")
                 disableDomainDecomposition = readOpts->GetBool("Disable domain decomposition");
+        }
+    }
 
 #ifdef HAVE_LIBFASTBIT
     dataSelectionActive = false;
