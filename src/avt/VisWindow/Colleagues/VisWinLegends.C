@@ -378,7 +378,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
     // Determine if the plots have the same database information.
     //
     int    cycle = 0;
-    double dtime;
+    double dtime = 0.;
     string filename;
     bool   haveSetData = false;
     homogeneous = true;
