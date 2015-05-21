@@ -190,7 +190,7 @@ avtTCGAFileFormat::Initialize()
             int ret = glob(line.c_str(), 0, NULL, &results);
             if (ret != 0)
                 EXCEPTION1(InvalidFilesException, GetFilename());
-            for (int i = 0; i < results.gl_pathc; i++)
+            for (size_t i = 0; i < results.gl_pathc; i++)
                 imageFiles.push_back(results.gl_pathv[i]);
             globfree(&results);
         }
@@ -200,7 +200,7 @@ avtTCGAFileFormat::Initialize()
             int ret = glob(line.c_str(), 0, NULL, &results);
             if (ret != 0)
                 EXCEPTION1(InvalidFilesException, GetFilename());
-            for (int i = 0; i < results.gl_pathc; i++)
+            for (size_t i = 0; i < results.gl_pathc; i++)
                 contourFiles.push_back(results.gl_pathv[i]);
             globfree(&results);
         }
@@ -275,7 +275,7 @@ avtTCGAFileFormat::GetMesh(int domain, const char *meshname)
     }
     else if (string(meshname) == "ContourMesh")
     {
-        if (domain >= contourFiles.size())
+        if (domain >= (int)contourFiles.size())
             return NULL;
         
         string fn = contourFiles[domain];
@@ -311,7 +311,7 @@ avtTCGAFileFormat::GetMesh(int domain, const char *meshname)
 
             //Add the verts and lines.
             vtkIdType v0 = vertID;
-            for (int i = 0; i < xy.size(); i+=2)
+            for (size_t i = 0; i < xy.size(); i+=2)
             {
                 pts->InsertNextPoint(x0 + xy[i]+0.5f, y0+xy[i+1]+0.5f, 0.0f);
                 if (i >= 2)
