@@ -1269,8 +1269,9 @@ HdfParallelClose(HDFFile *hdfFileIn)
         allTimes = NULL;
 
 #ifdef PARALLEL
-    MPI_Gather(times, nBytes, MPI_CHAR, allTimes, nBytes, MPI_CHAR, 0,
-               MPI_COMM_WORLD);
+    MPI_Gather((char *)times, nBytes, MPI_CHAR, 
+               (char *)allTimes, nBytes, MPI_CHAR,
+               0, MPI_COMM_WORLD);
 #else
     int i;
     for (i = 0; i < nBytes; i++)
