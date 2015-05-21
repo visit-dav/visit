@@ -2183,7 +2183,8 @@ GetFloatArrayToRootProc(float *fa, int nf, bool &success)
     }
     else
     {
-        MPI_Send(&success, 1, MPI_INT, 0, mpiGoodTag, VISIT_MPI_COMM);
+        int good = success ? 1 : 0;
+        MPI_Send(&good, 1, MPI_INT, 0, mpiGoodTag, VISIT_MPI_COMM);
         if (success)
         {
             MPI_Send(fa, nf, MPI_FLOAT, 0, mpiFloatArrayTag, VISIT_MPI_COMM);
