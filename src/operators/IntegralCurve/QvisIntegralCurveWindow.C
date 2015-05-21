@@ -1172,7 +1172,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             // Update the GUI
             fieldData->clear();
       
-            for (size_t i = 0; i < nValues; i+= 3)
+            for (int i = 0; i < nValues; i+= 3)
             {
               char tmp[256];
               sprintf(tmp, "%lf %lf %lf", points[i], points[i+1], points[i+2]);
@@ -3147,7 +3147,6 @@ QvisIntegralCurveWindow::copyPoints()
     pointList->clear();
 
     std::vector<double> points;
-    double x,y,z;
     for (int i = 0; i < fieldData->count(); i++)
     {
         QListWidgetItem *item = fieldData->item(i);
