@@ -417,6 +417,7 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
     pPoints->Delete();
 
     // Add the cells
+    vtkIdType pts[8] = {0,0,0,0,0,0,0,0};
     for (ii = 0; ii < (size_t)pType->nChannels; ii++)
     {
         int  iCurrChannelGlobalID = iChannelOffset+pType->aChannelIDs[ii];
@@ -436,26 +437,26 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
         {
             if (pType->aChannelSizes[ii] == 3)
             {
-                vtkIdType pts[6] = { pType->aChannelPts[ii*4 + 0] + (jj+1)*pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 1] + (jj+1)*pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 2] + (jj+1)*pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 0] + jj    *pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 1] + jj    *pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 2] + jj    *pType->nUniquePts
-                                   };
+                pts[0] = pType->aChannelPts[ii*4 + 0] + (jj+1)*pType->nUniquePts;
+                pts[1] = pType->aChannelPts[ii*4 + 1] + (jj+1)*pType->nUniquePts;
+                pts[2] = pType->aChannelPts[ii*4 + 2] + (jj+1)*pType->nUniquePts;
+                pts[3] = pType->aChannelPts[ii*4 + 0] + jj    *pType->nUniquePts;
+                pts[4] = pType->aChannelPts[ii*4 + 1] + jj    *pType->nUniquePts;
+                pts[5] = pType->aChannelPts[ii*4 + 2] + jj    *pType->nUniquePts;
+
                 grid->InsertNextCell(VTK_WEDGE, 6, pts);
             }
             else  //size == 4
             {
-                vtkIdType pts[8] = { pType->aChannelPts[ii*4 + 0] + jj    *pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 1] + jj    *pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 2] + jj    *pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 3] + jj    *pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 0] + (jj+1)*pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 1] + (jj+1)*pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 2] + (jj+1)*pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 3] + (jj+1)*pType->nUniquePts
-                                   };
+                pts[0] = pType->aChannelPts[ii*4 + 0] + jj    *pType->nUniquePts;
+                pts[1] = pType->aChannelPts[ii*4 + 1] + jj    *pType->nUniquePts;
+                pts[2] = pType->aChannelPts[ii*4 + 2] + jj    *pType->nUniquePts;
+                pts[3] = pType->aChannelPts[ii*4 + 3] + jj    *pType->nUniquePts;
+                pts[4] = pType->aChannelPts[ii*4 + 0] + (jj+1)*pType->nUniquePts;
+                pts[5] = pType->aChannelPts[ii*4 + 1] + (jj+1)*pType->nUniquePts;
+                pts[6] = pType->aChannelPts[ii*4 + 2] + (jj+1)*pType->nUniquePts;
+                pts[7] = pType->aChannelPts[ii*4 + 3] + (jj+1)*pType->nUniquePts;
+
                 grid->InsertNextCell(VTK_HEXAHEDRON, 8, pts);
             }
         }
