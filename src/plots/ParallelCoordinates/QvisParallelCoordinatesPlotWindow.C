@@ -670,7 +670,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
 void
 QvisParallelCoordinatesPlotWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
+    bool doAll = (which_widget == -1);
     QString msg, temp;
 
     // Do contextGamma
