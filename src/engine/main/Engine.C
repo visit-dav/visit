@@ -2535,8 +2535,8 @@ SwapAndMergeClonedWriterOutputs(avtDataObject_p dob,
    // swap string lengths and cell counts
    int srcTmp[2] = {srcLen, srcCnt};
    int dstTmp[2];
-   MPI_Sendrecv(&srcTmp, 2, MPI_INT, swapWithProc, mpiSwapLenTag,
-                &dstTmp, 2, MPI_INT, swapWithProc, mpiSwapLenTag,
+   MPI_Sendrecv(srcTmp, 2, MPI_INT, swapWithProc, mpiSwapLenTag,
+                dstTmp, 2, MPI_INT, swapWithProc, mpiSwapLenTag,
                 VISIT_MPI_COMM, &mpiStatus);
 
    dstLen = dstTmp[0];
@@ -3951,7 +3951,7 @@ Engine::GetProcessAttributes()
                    allPids, 1, MPI_INT, 0, VISIT_MPI_COMM);
         MPI_Gather(&myPpid, 1, MPI_INT,
                    allPpids, 1, MPI_INT, 0, VISIT_MPI_COMM);
-        MPI_Gather(&myHost, sizeof(myHost), MPI_CHAR,
+        MPI_Gather(myHost, sizeof(myHost), MPI_CHAR,
                    allHosts, sizeof(myHost), MPI_CHAR, 0, VISIT_MPI_COMM);
         int m_size_mb_tmp = (int)m_size_mb;
         MPI_Gather(&m_size_mb_tmp, 1, MPI_INT,
