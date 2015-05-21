@@ -1073,7 +1073,7 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
     avtIntervalTree *it;
     size_t varDomNum;
     size_t curDomNum;
-    size_t curDomain;
+    int    curDomain;
     intVector varDomains;
     intVector curDomains;
     intVector outDomains;
@@ -1101,7 +1101,7 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
                     {
                         for (varDomNum=0; varDomNum<varDomains.size(); varDomNum++)
                         {
-                            if ((size_t)varDomains[varDomNum] == curDomain) break;
+                            if (varDomains[varDomNum] == curDomain) break;
                         }
 
                         if (varDomNum >= varDomains.size())

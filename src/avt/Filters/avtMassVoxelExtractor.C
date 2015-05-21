@@ -2505,7 +2505,7 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
     std::vector<int>     cell_vartypes;
     std::vector<int>     cell_size;
     std::vector<int>     cell_index;
-    for (i = 0 ; i < (size_t)rgrid->GetCellData()->GetNumberOfArrays() ; i++)
+    for (i = 0 ; i < rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
         const char *name = arr->GetName();
@@ -2532,7 +2532,7 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
     std::vector<int>     pt_vartypes;
     std::vector<int>     pt_size;
     std::vector<int>     pt_index;
-    for (i = 0 ; i < (size_t)rgrid->GetPointData()->GetNumberOfArrays() ; i++)
+    for (i = 0 ; i < rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
         const char *name = arr->GetName();

@@ -58,6 +58,8 @@
 #include <utility>
 
 #include <avtImgCommunicator.h>
+#include <imgMetaData.h>
+
 class  vtkDataArray;
 class  vtkDataSet;
 class  vtkHexahedron;
