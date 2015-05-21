@@ -343,7 +343,7 @@ QualifiedFilename::DetermineSeparator(const std::string &p) const
 void
 QualifiedFilename::SetFromString(const std::string &str)
 {
-    int index;
+    std::string::size_type index;
 
     // Look for the hostname in the string.
     if((index = str.find(":")) != std::string::npos)
@@ -362,7 +362,7 @@ QualifiedFilename::SetFromString(const std::string &str)
 
     // Look for the last slash in the path if there is one.
     std::string pathAndFile(str.substr(index + 1));
-    if((index = pathAndFile.rfind(separator_str)) > 0)
+    if((index = pathAndFile.rfind(separator_str)) != std::string::npos)
     {
         path = pathAndFile.substr(0, index);
         filename = pathAndFile.substr(index + 1);
