@@ -329,6 +329,7 @@ avtTCGAFileFormat::GetMesh(int domain, const char *meshname)
         }
         return ug;
     }
+    return NULL;
 }
 
 
