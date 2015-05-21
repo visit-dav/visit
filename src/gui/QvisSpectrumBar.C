@@ -2869,7 +2869,7 @@ ControlPointList::operator [](int index) const
 float
 ControlPointList::Position(int index) const
 {
-    if(nels == 0 || list == NULL || index < 0 || (size_t)index >= nels)
+    if(nels == 0 || list == NULL || index < 0 || index >= nels)
         return 0.;
     else
         return list[index].position;

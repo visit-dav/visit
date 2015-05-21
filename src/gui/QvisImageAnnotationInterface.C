@@ -337,6 +337,7 @@ void
 QvisImageAnnotationInterface::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
+    double pos[3];
 
     if(which_widget == 0 || doAll)
     {
@@ -349,7 +350,9 @@ QvisImageAnnotationInterface::GetCurrentValues(int which_widget)
         // Get its new current value and store it in the atts.
         ForceSpinBoxUpdate(widthSpinBox);
         int w = widthSpinBox->value();
-        double pos[] = {w, annot->GetPosition2()[1], 0};
+        pos[0] = w;
+        pos[1] = annot->GetPosition2()[1];
+        pos[2] = 0.;
         annot->SetPosition2(pos);
         if(linkedWH->isChecked())
             heightSpinBox->setValue(w);
@@ -360,7 +363,9 @@ QvisImageAnnotationInterface::GetCurrentValues(int which_widget)
         // Get its new current value and store it in the atts.
         ForceSpinBoxUpdate(heightSpinBox);
         int h = heightSpinBox->value();
-        double pos[] = {annot->GetPosition2()[0], h, 0};
+        pos[0] = annot->GetPosition2()[0];
+        pos[1] = h;
+        pos[2] = 0.;
         annot->SetPosition2(pos);
         if(linkedWH->isChecked())
             widthSpinBox->setValue(h);
