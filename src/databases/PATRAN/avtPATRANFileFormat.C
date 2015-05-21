@@ -619,7 +619,7 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
             char *valstart = line + 2 + 3 * SHORT_FIELD_WIDTH;
             char *valend = valstart + SHORT_FIELD_WIDTH;
 
-            if (strlen(line) <= (valstart-line))
+            if (strlen(line) <= (size_t)(valstart-line))
                 EXCEPTION1(InvalidFilesException, filename);
 
             // Ignore N2,N3,N4,N5 for now.
