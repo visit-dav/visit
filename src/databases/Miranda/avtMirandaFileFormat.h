@@ -148,7 +148,7 @@ class avtMirandaFileFormat : public avtMTMDFileFormat
      void                   InterleaveData(float *__restrict dst, float *__restrict src, int *dstDim, int nComp);
     virtual void           PackData(float *__restrict dst, const  float * const  *__restrict src, 
                                     const int *dstDim, int nComp, bool interleave);
-    virtual void           ReadRawScalar(FILE *fd, int iComp, float *out, const char *filename, int domain);
+    virtual void           ReadRawScalar(FILE *fd, int iComp, float *out, const char *filename, int domain, int numelems);
     virtual void           FindNeighborDomains(int domain, int *neighbors, int *realdim);
 
     static  void           SkipToEndOfLine( ifstream &f, bool bCheckForBadTokens = true );
