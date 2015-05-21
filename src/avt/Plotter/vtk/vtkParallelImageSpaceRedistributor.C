@@ -616,8 +616,8 @@ vtkParallelImageSpaceRedistributor::RequestData(
     //
     int TH_communicate = visitTimer->StartTimer(); 
     unsigned char *big_recv_buffer = new unsigned char[totalRecv];
-    MPI_Alltoallv(big_send_buffer, &sendCount[0], &sendDisp[0], MPI_CHAR,
-                  big_recv_buffer, &recvCount[0], &recvDisp[0], MPI_CHAR,
+    MPI_Alltoallv(big_send_buffer, &sendCount[0], &sendDisp[0], MPI_UNSIGNED_CHAR,
+                  big_recv_buffer, &recvCount[0], &recvDisp[0], MPI_UNSIGNED_CHAR,
                   comm);
     visitTimer->StopTimer(TH_communicate, "communicate");
 
