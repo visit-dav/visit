@@ -1249,7 +1249,8 @@ HdfParallelClose(HDFFile *hdfFileIn)
     //
     // Send the timing information back to processor 0.
     //
-    struct timeval times[8];
+#define NTIMES 8
+    struct timeval times[NTIMES];
 
     times[0] = hdf5_create_start;
     times[1] = hdf5_create_end;
@@ -1260,7 +1261,7 @@ HdfParallelClose(HDFFile *hdfFileIn)
     times[6] = hdf5_put_multi_batton_passed;
     times[7] = hdf5_close_start;
 
-    int nBytes = 8 * sizeof(struct timeval);
+    int nBytes = NTIMES * sizeof(struct timeval);
 
     struct timeval *allTimes;
     if (iProc == 0)
@@ -1274,7 +1275,7 @@ HdfParallelClose(HDFFile *hdfFileIn)
                0, MPI_COMM_WORLD);
 #else
     int i;
-    for (i = 0; i < nBytes; i++)
+    for (i = 0; i < NTIMES; i++)
         allTimes[i] = times[i];
 #endif
 
