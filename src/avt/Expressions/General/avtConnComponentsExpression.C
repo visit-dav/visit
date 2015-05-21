@@ -3236,7 +3236,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
                 if (b_list[i]->IsDone())
                     continue;
                 int nregions = b_list[i]->GetNumberOfRegions();
-                for (int j = 0 ; j < (size_t)nregions ; j++)
+                for (int j = 0 ; j < nregions ; j++)
                 {
                     b_list[i]->SetNumberOfPointsForRegion(j, 0);
                 }
