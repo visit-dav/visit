@@ -2844,7 +2844,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
             ENDTRY
             if (gzoneIds)
             {
-                vtkDataArray *domNums;
+                vtkDataArray *domNums = NULL;
                 int sz = 0;
                 if (gzoneIds->GetDataType() == VTK_INT)
                 {
