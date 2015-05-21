@@ -787,7 +787,7 @@ ui_updateplots_changed(int value, void *cbdata)
 
 void mainloop(simulation_data *sim)
 {
-    int blocking, visitstate, err = 0;
+    int blocking, visitstate = 0, err = 0;
 
     /* Register some ui actions */
     VisItUI_clicked("STEP", ui_step_clicked, &sim);

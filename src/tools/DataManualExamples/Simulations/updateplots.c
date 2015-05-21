@@ -253,7 +253,7 @@ void SlaveProcessCallback(void *cbdata)
 /* Process commands from viewer on all processors. */
 int ProcessVisItCommand(simulation_data *sim)
 {
-    int command;
+    int command = VISIT_COMMAND_PROCESS;
     if (sim->par_rank==0)
     {  
         int success = VisItProcessEngineCommand();
@@ -432,7 +432,7 @@ void mainloop_batch(simulation_data *sim)
 
 void mainloop_interactive(simulation_data *sim)
 {
-    int blocking, visitstate, err = 0;
+    int blocking, visitstate = 0, err = 0;
 
     /* If we're not running by default then simulate once there's something
      * once VisIt connects.

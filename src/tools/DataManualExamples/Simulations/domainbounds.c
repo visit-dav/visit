@@ -446,7 +446,7 @@ ProcessConsoleCommand(simulation_data *sim)
 
 void mainloop(simulation_data *sim)
 {
-    int blocking, visitstate, err = 0;
+    int blocking, visitstate = 0, err = 0;
 
     /* If we're not running by default then simulate once there's something
      * once VisIt connects.
