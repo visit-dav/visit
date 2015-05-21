@@ -3260,10 +3260,10 @@ ViewerSubject::Export()
             node["files"] = JSONNode::JSONArray();
             node["dirs"] = JSONNode::JSONArray();
 
-            for(int i = 0; i < list->files.size(); ++i) {
+            for(size_t i = 0; i < list->files.size(); ++i) {
                 node["files"].Append("&quot;" + list->files[i].name + "&quot;" );
             }
-            for(int i = 0; i < list->dirs.size(); ++i) {
+            for(size_t i = 0; i < list->dirs.size(); ++i) {
                 node["dirs"].Append("&quot;" + list->dirs[i].name + "&quot;");
             }
 
@@ -3286,7 +3286,8 @@ ViewerSubject::Export()
             type = (int)ViewerClientAttributes::Data;
         }
 
-        if(clientId >= 0 && clientId < clients.size()) {
+        if(clientId >= 0 && clientId < (int)clients.size())
+        {
             ViewerClientConnection* conn = clients[clientId];
 
             intVector& activeWindows = conn->GetViewerClientAttributes().GetWindowIds();
