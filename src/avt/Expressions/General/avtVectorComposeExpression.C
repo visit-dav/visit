@@ -222,8 +222,8 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
 
     // Build the vector out of components. Face and edge vectors are expected
     // to have a stagger for each component. 
-    int isFaceCount = 0;
-    int isEdgeCount = 0;
+    size_t isFaceCount = 0;
+    size_t isEdgeCount = 0;
 
     std::vector<avtVector> offsets(3);
     vtkInformation* data1Info = data1->GetInformation();
