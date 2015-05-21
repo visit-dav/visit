@@ -504,7 +504,6 @@ QvisSliceWindow::UpdateWindow(bool doAll)
                 continue;
         }
 
-        const double *dptr;
         int ival;
         switch(i)
         {
