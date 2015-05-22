@@ -105,6 +105,9 @@
 //    I added support for specifying background intensities on a per bin
 //    basis.
 //
+//    Eric Brugger, Thu May 21 12:15:59 PDT 2015
+//    I added support for debugging a ray.
+//
 // ****************************************************************************
 
 avtXRayImageQuery::avtXRayImageQuery():
@@ -115,6 +118,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     backgroundIntensity = 0.0;
     backgroundIntensities = NULL;
     nBackgroundIntensities = 0;
+    debugRay = -1;
     outputType = 2; // png
     useSpecifiedUpVector = true;
     useOldView = true;
@@ -212,6 +216,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //    I added support for specifying background intensities on a per bin
 //    basis.
 //
+//    Eric Brugger, Thu May 21 12:15:59 PDT 2015
+//    I added support for debugging a ray.
+//
 // ****************************************************************************
 
 void
@@ -239,6 +246,9 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         params.GetEntry("background_intensities")->ToDoubleVector(v);
         SetBackgroundIntensities(v);
     }
+
+    if (params.HasNumericEntry("debug_ray"))
+        SetDebugRay(params.GetEntry("debug_ray")->AsInt());
 
     if (params.HasEntry("output_type"))
     {
@@ -628,6 +638,23 @@ avtXRayImageQuery::SetBackgroundIntensities(const doubleVector &intensities)
 }
 
 // ****************************************************************************
+//  Method: avtXRayImageQuery::SetDebugRay
+//
+//  Purpose:
+//    Set the id of the debug ray.
+//
+//  Programmer: Eric Brugger
+//  Creation:   May 21, 2015
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetDebugRay(int ray)
+{
+    debugRay = ray;
+}
+
+// ****************************************************************************
 //  Method: avtXRayImageQuery::SetOutputType
 //
 //  Purpose:
@@ -758,6 +785,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    I added support for specifying background intensities on a per bin
 //    basis.
 //
+//    Eric Brugger, Thu May 21 12:15:59 PDT 2015
+//    I added support for debugging a ray.
+//
 // ****************************************************************************
 
 void
@@ -816,6 +846,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     filt->SetBackgroundIntensity(backgroundIntensity);
     filt->SetBackgroundIntensities(backgroundIntensities,
         nBackgroundIntensities);
+    filt->SetDebugRay(debugRay);
     filt->SetVariableNames(absVarName, emisVarName);
     filt->SetInput(dob);
 
@@ -1116,6 +1147,9 @@ avtXRayImageQuery::WriteBOVHeader(int iImage, int nx, int ny, const char *type)
 //    Added a new way to specify the view that matches the way the view is
 //    specified for plots.
 //
+//    Eric Brugger, Thu May 21 12:15:59 PDT 2015
+//    I added support for debugging a ray.
+//
 // ****************************************************************************
 
 void
@@ -1128,6 +1162,7 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
 
     params["divide_emis_by_absorb"] = 0;
     params["background_intensity"] = 0.0;
+    params["debug_ray"] = -1;
     params["output_type"] = std::string("png");
 
     //

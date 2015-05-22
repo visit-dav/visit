@@ -506,6 +506,23 @@ avtXRayFilter::SetBackgroundIntensities(double *intensities, int nIntensities)
 }
 
 // ****************************************************************************
+//  Method: avtXRayFilter::SetDebugRay
+//
+//  Purpose:
+//    Set the id for the debug ray.
+//
+//  Programmer: Eric Brugger
+//  Creation:   May 21, 2015
+//
+// ****************************************************************************
+
+void
+avtXRayFilter::SetDebugRay(int ray)
+{
+    debugRay = ray;
+}
+
+// ****************************************************************************
 //  Method: avtXRayFilter::Execute
 //
 //  Purpose:
@@ -2415,6 +2432,9 @@ SortSegments(int nLines, int *lineId, double *dists)
 //    I added support for specifying background intensities on a per bin
 //    basis.
 //
+//    Eric Brugger, Thu May 21 12:21:25 PDT 2015
+//    I added support for debugging a ray.
+//
 // ****************************************************************************
 
 template <typename T>
@@ -2472,7 +2492,6 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 
     for (int i = 0; i < nPts; i++)
     {
-
         int iPt = segmentOrder[i];
 
         if (lineId[iPt] != prevLineId)
@@ -2516,6 +2535,59 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     {
         for (int j = 0; j < numBins; j++)
             currentImageFragment.SetTuple1((prevLineId-pixelOffset)*numBins+j, radBins[j]);
+    }
+
+    //
+    // Make another pass if ray debugging is set. We only trace the first
+    // bin with divideEmisByAbsorb off.
+    //
+    if (debugRay != -1)
+    {
+        double radBinZero;
+
+        prevLineId = -1;
+
+        FILE *f = NULL;
+        for (int i = 0; i < nPts; i++)
+        {
+            int iPt = segmentOrder[i];
+
+            if (lineId[iPt] != prevLineId)
+            {
+                if (lineOffset + lineId[iPt] == debugRay)
+                {
+                    char filename[80];
+                    SNPRINTF(filename, 80, "ray%d.csv", debugRay);
+                    f = fopen(filename, "w");
+                    fprintf(f, " dist1, dist2, tmp, segLength, a, e, radBinZero\n");
+                    radBinZero = background[0];
+                }
+                if (lineOffset + prevLineId == debugRay)
+                {
+                    fclose(f);
+                }
+                prevLineId = lineId[iPt];
+            }
+
+            if (lineOffset + lineId[iPt] == debugRay)
+            {
+                double segLength = dist[iPt*2+1] - dist[iPt*2];
+                T *a = &(absorbtivity[iPt*numBins]);
+                T *e = &(emissivity[iPt*numBins]);
+
+                // bin zero.
+                double tmp = exp(-a[0]*segLength);
+                radBinZero = radBinZero * tmp + e[0] * (1.0 - tmp);
+                fprintf(f, "%g, %g, %g, %g, %g, %g, %g\n",
+                        dist[iPt*2], dist[iPt*2+1], tmp, segLength,
+                        a[0], e[0], radBinZero);
+            }
+        }
+
+        if (prevLineId != -1 && lineOffset + prevLineId == debugRay)
+        {
+            fclose(f);
+        }
     }
 
     delete [] segmentOrder;
@@ -2926,6 +2998,9 @@ avtXRayFilter::FillImageArray(int iBin,  vtkDataArray *&imageArray)
 //    only hexes.
 //
 //  Modifications:
+//    Eric Brugger, Thu May 21 12:21:25 PDT 2015
+//    I enhanced the routine to support structured as well as unstructured
+//    grids.
 //
 // ****************************************************************************
 
@@ -2934,6 +3009,14 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     vector<int> &cells_matched, vector<int> &line_id,
     vtkDataSet *ds, vtkDataArray **dataArrays)
 {
+    //
+    // We can only handle structured and unstructured grids. Return if
+    // this isn't the case.
+    //
+    if (ds->GetDataObjectType() != VTK_STRUCTURED_GRID &&
+        ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
+        return;
+
     //
     // Determine the id within the current strip of the line. Return if
     // the line is outside of the current strip.
@@ -2944,7 +3027,7 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
         return;
 
     //
-    // Determine the number of cells where the line ids match. Retrun if
+    // Determine the number of cells where the line ids match. Return if
     // if no cells intersect the line of interest.
     //
     int nCells = 0;
@@ -2959,7 +3042,8 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     // Write the vtk file.
     //
     char filename[80];
-    SNPRINTF(filename, 80, "proc%02d_ds%02d.vtk", iProc, iDataset);
+    SNPRINTF(filename, 80, "ray%d_proc%02d_ds%02d.vtk",
+             debugRay, iProc, iDataset);
     FILE *f = fopen(filename, "w");
     fprintf(f, "# vtk DataFile Version 3.0\n");
     fprintf(f, "vtk output\n");
@@ -2967,31 +3051,91 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     fprintf(f, "DATASET UNSTRUCTURED_GRID\n");
     fprintf(f, "POINTS %d float\n", nCells * 8);
 
-    vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
-    vtkPoints *points = ugrid->GetPoints();
-
-    vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
-    vtkCellArray *cells = ugrid->GetCells();
-
-    vtkIdType *nl = cells->GetPointer();
-    vtkIdType *cl = cellLocations->GetPointer(0);
-
-    double p0[3], p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3];
-    for (size_t i = 0; i < cells_matched.size(); i++)
+    if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
-        if (line_id[i] == strip_id)
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) ds;
+        vtkPoints *points = sgrid->GetPoints();
+
+        int ndims[3];
+        sgrid->GetDimensions(ndims);
+
+        int zdims[3];
+        zdims[0] = ndims[0] - 1;
+        zdims[1] = ndims[1] - 1;
+        zdims[2] = ndims[2] - 1;
+
+        int nx = ndims[0];
+        int ny = ndims[1];
+        int nxy = nx * ny;
+
+        int nx2 = zdims[0];
+        int ny2 = zdims[1];
+        int nxy2 = nx2 * ny2;
+
+        double p0[3], p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3];
+        for (size_t i = 0; i < cells_matched.size(); i++)
         {
-            int iCell = cells_matched[i];
-            vtkIdType *ids = &(nl[cl[iCell]+1]);
-            avtXRayFilter_GetCellPointsMacro(8);
-            fprintf(f, "%g %g %g\n", p0[0], p0[1], p0[2]);
-            fprintf(f, "%g %g %g\n", p1[0], p1[1], p1[2]);
-            fprintf(f, "%g %g %g\n", p2[0], p2[1], p2[2]);
-            fprintf(f, "%g %g %g\n", p3[0], p3[1], p3[2]);
-            fprintf(f, "%g %g %g\n", p4[0], p4[1], p4[2]);
-            fprintf(f, "%g %g %g\n", p5[0], p5[1], p5[2]);
-            fprintf(f, "%g %g %g\n", p6[0], p6[1], p6[2]);
-            fprintf(f, "%g %g %g\n", p7[0], p7[1], p7[2]);
+            if (line_id[i] == strip_id)
+            {
+                int iCell = cells_matched[i];
+
+                int iZ = iCell / nxy2;
+                int iXY = iCell % nxy2;
+                int iY = iXY / nx2;
+                int iX = iXY % nx2;
+                int idx = iX+ iY*nx + iZ*nxy;
+
+                int ids[8];
+                ids[0] = idx;
+                ids[1] = idx + 1;
+                ids[2] = idx + 1 + nx;
+                ids[3] = idx + nx;
+                idx += nxy;
+                ids[4] = idx;
+                ids[5] = idx + 1;
+                ids[6] = idx + 1 + nx;
+                ids[7] = idx + nx;
+
+                avtXRayFilter_GetCellPointsMacro(8);
+                fprintf(f, "%g %g %g\n", p0[0], p0[1], p0[2]);
+                fprintf(f, "%g %g %g\n", p1[0], p1[1], p1[2]);
+                fprintf(f, "%g %g %g\n", p2[0], p2[1], p2[2]);
+                fprintf(f, "%g %g %g\n", p3[0], p3[1], p3[2]);
+                fprintf(f, "%g %g %g\n", p4[0], p4[1], p4[2]);
+                fprintf(f, "%g %g %g\n", p5[0], p5[1], p5[2]);
+                fprintf(f, "%g %g %g\n", p6[0], p6[1], p6[2]);
+                fprintf(f, "%g %g %g\n", p7[0], p7[1], p7[2]);
+            }
+        }
+    }
+    else if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    {
+        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
+        vtkPoints *points = ugrid->GetPoints();
+
+        vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
+        vtkCellArray *cells = ugrid->GetCells();
+
+        vtkIdType *nl = cells->GetPointer();
+        vtkIdType *cl = cellLocations->GetPointer(0);
+
+        double p0[3], p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3];
+        for (size_t i = 0; i < cells_matched.size(); i++)
+        {
+            if (line_id[i] == strip_id)
+            {
+                int iCell = cells_matched[i];
+                vtkIdType *ids = &(nl[cl[iCell]+1]);
+                avtXRayFilter_GetCellPointsMacro(8);
+                fprintf(f, "%g %g %g\n", p0[0], p0[1], p0[2]);
+                fprintf(f, "%g %g %g\n", p1[0], p1[1], p1[2]);
+                fprintf(f, "%g %g %g\n", p2[0], p2[1], p2[2]);
+                fprintf(f, "%g %g %g\n", p3[0], p3[1], p3[2]);
+                fprintf(f, "%g %g %g\n", p4[0], p4[1], p4[2]);
+                fprintf(f, "%g %g %g\n", p5[0], p5[1], p5[2]);
+                fprintf(f, "%g %g %g\n", p6[0], p6[1], p6[2]);
+                fprintf(f, "%g %g %g\n", p7[0], p7[1], p7[2]);
+            }
         }
     }
     fprintf(f, "\n");

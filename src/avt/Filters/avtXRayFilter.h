@@ -102,6 +102,9 @@
 //    I added support for specifying background intensities on a per bin
 //    basis.
 //
+//    Eric Brugger, Thu May 21 12:20:04 PDT 2015
+//    I added support for debugging a ray.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
@@ -135,6 +138,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     void                            SetDivideEmisByAbsorb(bool);
     void                            SetBackgroundIntensity(double);
     void                            SetBackgroundIntensities(double *, int);
+    void                            SetDebugRay(int);
 
   protected:
     std::string                     absVarName;
