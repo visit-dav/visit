@@ -855,6 +855,11 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label,
 //    Hank Childs, Fri Feb  4 13:46:18 PST 2011
 //    Add additional arguments so this could be a static function.
 //
+//    Brad Whitlock, Fri May 22 14:56:31 PDT 2015
+//    When converting unstructured grids to polydata, do vertices, then lines,
+//    and then the polygons. This is needed because polydata puts the those 
+//    cell types into different bins, which affects the order of the cell data.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -986,6 +991,7 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds, bool forceFaceConsolidation,
         vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *) in_ds;
         int ncells = ug->GetNumberOfCells();
         int noutcells = ncells;
+        bool containsVertices = false, containsLines = false;
         for (int i = 0 ; i < ncells ; i++)
         {
             int cellType = ug->GetCellType(i);
@@ -997,10 +1003,13 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds, bool forceFaceConsolidation,
               case VTK_QUADRATIC_LINEAR_QUAD: noutcells += 4; break;
               case VTK_BIQUADRATIC_TRIANGLE:  noutcells += 6; break;
               case VTK_BIQUADRATIC_QUAD:      noutcells += 8; break;
-              default:                        noutcells++;    break;
+
+              case VTK_LINE: containsLines = true;noutcells++;break;
+              case VTK_VERTEX: containsVertices = true;noutcells++;break;
+
+             default:                        noutcells++;    break;
             }
         }
-
 
         out_ds->Allocate(noutcells);
         vtkCellData *in_cd = ug->GetCellData();
@@ -1008,12 +1017,49 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds, bool forceFaceConsolidation,
         out_cd->CopyAllocate(in_cd, noutcells);
         vtkIdList *idlist     = vtkIdList::New();
         vtkIdList *idlist_cor = vtkIdList::New();
+
+        // Do the vertices first
+        if(containsVertices)
+        {
+            for (int i = 0 ; i < ncells ; i++)
+            {
+                int newid;
+                ug->GetCellPoints(i, idlist);
+                int cellType = ug->GetCellType(i);
+                if (cellType == VTK_VERTEX)
+                {
+                    newid = out_ds->InsertNextCell(cellType, idlist);
+                    out_cd->CopyData(in_cd, i, newid);
+                }
+            }
+        }
+
+        // Do the lines second
+        if(containsLines)
+        {
+            for (int i = 0 ; i < ncells ; i++)
+            {
+                int newid;
+                ug->GetCellPoints(i, idlist);
+                int cellType = ug->GetCellType(i);
+                if (cellType == VTK_LINE)
+                {
+                    newid = out_ds->InsertNextCell(cellType, idlist);
+                    out_cd->CopyData(in_cd, i, newid);
+                }
+            }
+        }
+
+        // Do all other cells last
         for (int i = 0 ; i < ncells ; i++)
         {
             int newid;
             ug->GetCellPoints(i, idlist);
             int cellType = ug->GetCellType(i);
-            if (cellType == VTK_QUADRATIC_EDGE)
+
+            if (cellType == VTK_VERTEX || cellType == VTK_LINE)
+                continue;
+            else if (cellType == VTK_QUADRATIC_EDGE)
             {
                 idlist_cor->SetNumberOfIds(3);
                 idlist_cor->SetId(0, idlist->GetId(0));
