@@ -155,52 +155,6 @@ avtTensorFilter::SetNTensors(int n)
     nTensors  = n;
 }
 
-
-// ****************************************************************************
-//  Method: avtTensorFilter::Equivalent
-//
-//  Purpose:
-//      Determines if this vector filter is equivalent to the attributes.
-//
-//  Arguments:
-//      us      A boolean indicating if you should use the stride (true) or
-//              stick with a fixed number of vectors (false).
-//      red     The reduction factor, the stride of number of vectors depending
-//              on us.
-//
-//  Returns:     true if it is equal, false otherwise.
-//
-//  Programmer:  Hank Childs
-//  Creation:    September 23, 2003
-//
-// ****************************************************************************
-
-bool
-avtTensorFilter::Equivalent(bool us, int red)
-{
-    if (us != useStride)
-    {
-        return false;
-    }
-    if (useStride)
-    {
-        if (red != stride)
-        {
-            return false;
-        }
-    }
-    else
-    {
-        if (red != nTensors)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
 // ****************************************************************************
 //  Method: avtTensorFilter::ExecuteData
 //
