@@ -97,6 +97,8 @@
 //    I added support for specifying background intensities on a per bin
 //    basis.
 //
+//    Eric Brugger, Thu May 21 12:15:18 PDT 2015
+//    I added support for debugging a ray.
 //
 // ****************************************************************************
 
@@ -128,6 +130,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetBackgroundIntensity(const double &intensity);
     void                      SetBackgroundIntensities(
                                   const doubleVector &intensities);
+    void                      SetDebugRay(int ray);
     void                      SetOutputType(int type);
     void                      SetOutputType(const std::string &type);
 
@@ -136,6 +139,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     double                    backgroundIntensity;
     double                   *backgroundIntensities;
     int                       nBackgroundIntensities;
+    int                       debugRay;
     int                       outputType;
     bool                      useSpecifiedUpVector;
     bool                      useOldView;
