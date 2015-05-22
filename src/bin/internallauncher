@@ -1151,6 +1151,32 @@ class DDTDebugger(Debugger):
         ddt_cmd = self.Executable() + ddt_args + args
         return ddt_cmd
 
+###############################################################################
+# Class: CudaDebugger
+#
+# Purpose:  Launch a CUDA-enabled VisIt component under the NVIDIA command-line
+#           profiler  
+#
+# Programmer: Kevin Griffin 
+# Date:       Wed May 20 18:33:04 PDT 2015
+#
+# Modifications:
+#
+###############################################################################
+
+class CudaDebugger(Debugger):
+    def __init__(self, launcher):
+        super(CudaDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["nvprof"]
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
+        vgargs = self.DebuggerArguments()
+        if len(vgargs) == 0:
+            vgargs = ["--output-profile", "timeline_%h_%p.nvprof"]
+        return launcherargs + self.Executable() + vgargs + visitargs
 
 ###############################################################################
 # Class: ValgrindDebugger
@@ -2670,6 +2696,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Cyrus Harrison, Fri Jul 25 15:59:02 PDT 2014
     #   Added lldb.
     #
+    #   Kevin Griffin, Wed May 20 18:33:04 PDT 2015
+    #   Added nvprof.
+    #
     ############################################################################
     def Debuggers(self):
         return ["gdb",
@@ -2679,7 +2708,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 "apitrace",
                 "debug-malloc",
                 "ddt",
-                "lldb"]
+                "lldb",
+                "nvprof"]
 
     ############################################################################
     # Method: DebuggerFactory
@@ -2698,6 +2728,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #
     #   Cyrus Harrison, Fri Jul 25 15:59:02 PDT 2014
     #   Added lldb.
+    #
+    #   Kevin Griffin,
+    #   Added nvprof.
     #
     ############################################################################
 
@@ -2718,6 +2751,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return DDTDebugger(self)
         elif debugger == "lldb":
             return LLDBDebugger(self)
+        elif debugger == "nvprof":
+            return CudaDebugger(self)
         # Return a debugger that does not do anything.
         return Debugger(self)
 
