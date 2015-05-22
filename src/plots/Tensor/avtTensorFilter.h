@@ -80,8 +80,6 @@ class avtTensorFilter : public avtDataTreeIterator
 
     virtual void              ReleaseData(void);
 
-    bool                      Equivalent(bool, int);
-
     void                      SetStride(int);
     void                      SetNTensors(int);
 

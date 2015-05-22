@@ -103,8 +103,6 @@ class avtVectorFilter : public avtDataTreeIterator
     virtual const char       *GetDescription(void)
                                   { return "Creating vectors"; };
 
-    bool                      Equivalent(bool us, int red, bool orig);
-
     void                      SetStride(int);
     void                      SetNVectors(int);
     void                      SetMagVarName(const std::string &);
