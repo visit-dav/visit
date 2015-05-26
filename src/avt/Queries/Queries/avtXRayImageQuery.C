@@ -219,6 +219,10 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //    Eric Brugger, Thu May 21 12:15:59 PDT 2015
 //    I added support for debugging a ray.
 //
+//    Eric BBrugger, Tue May 26 11:47:12 PDT 2015
+//    I corrected a bug with the processing of image_pan, where the values
+//    were being interpreted as integers instead of doubles.
+//
 // ****************************************************************************
 
 void
@@ -319,8 +323,8 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
 
     if (params.HasNumericVectorEntry("image_pan"))
     {
-        intVector v;
-        params.GetEntry("image_pan")->ToIntVector(v);
+        doubleVector v;
+        params.GetEntry("image_pan")->ToDoubleVector(v);
         if (v.size() != 2)
             EXCEPTION2(QueryArgumentException, "image_pan", 2);
         imagePan[0] = v[0]; imagePan[1] = v[1];
