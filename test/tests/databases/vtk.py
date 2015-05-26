@@ -254,6 +254,15 @@ def TestPVTI():
     ResetView()
     Test("vtk_35")
     DeleteAllPlots()
+    
+def TestMixedTopology():
+    TestSection("2D Unstructured grids with lines")
+    OpenDatabase(data_path("vtk_test_data/test_bound.vtk"))
+    AddPlot("Pseudocolor", "data_cells_with_bound")
+    DrawPlots()
+    ResetView()
+    Test("vtk_36")
+    DeleteAllPlots()
 
 TestMaterials()
 TestXML()
@@ -261,5 +270,6 @@ TestHigherOrder()
 TestNBLOCKS()
 TestPVTU()
 TestPVTI()
+TestMixedTopology()
 
 Exit()
