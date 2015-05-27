@@ -792,6 +792,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Eric Brugger, Thu May 21 12:15:59 PDT 2015
 //    I added support for debugging a ray.
 //
+//    Eric Brugger, Wed May 27 10:47:29 PDT 2015
+//    I modified the query to also output the path length field when
+//    outputting in bof or bov format.
+//
 // ****************************************************************************
 
 void
@@ -872,11 +876,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         avtDataTree_p tree = filt->GetTypedOutput()->GetDataTree();
 
-        int nLeaves;
+        int numLeaves;
         vtkDataSet **leaves;
-        leaves = tree->GetAllLeaves(nLeaves);
+        leaves = tree->GetAllLeaves(numLeaves);
 
-        if (nLeaves <= 0)
+        if (numLeaves <= 0)
         {
             // Free the memory from the GetAllLeaves function call.
             delete [] leaves;
@@ -885,55 +889,90 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             EXCEPTION1(VisItException, "There must be at least one bin.");
         }
 
+        int numBins = numLeaves / 2;
         //
-        // Write out the image.
+        // Write out the intensity and path length. The path length is only
+        // put out when the output format is bof or bov.
         //
-        vtkDataArray *image;
+        vtkDataArray *intensity;
+        vtkDataArray *pathLength;
         if (outputType >= 0 && outputType <=3)
         {
-            for (int i = 0; i < nLeaves; i++)
+            for (int i = 0; i < numBins; i++)
             {
-                image = leaves[i]->GetPointData()->GetArray("Image");
-                if (image->GetDataType() == VTK_FLOAT)
-                   WriteImage(i, numPixels, (float*) image->GetVoidPointer(0));
-                else if (image->GetDataType() == VTK_DOUBLE)
-                   WriteImage(i, numPixels, (double*) image->GetVoidPointer(0));
-                else if (image->GetDataType() == VTK_INT)
-                   WriteImage(i, numPixels, (int*) image->GetVoidPointer(0));
+                intensity= leaves[i]->GetPointData()->GetArray("Intensity");
+                if (intensity->GetDataType() == VTK_FLOAT)
+                    WriteImage(i, numPixels,
+                        (float*) intensity->GetVoidPointer(0));
+                else if (intensity->GetDataType() == VTK_DOUBLE)
+                    WriteImage(i, numPixels,
+                        (double*) intensity->GetVoidPointer(0));
+                else if (intensity->GetDataType() == VTK_INT)
+                    WriteImage(i, numPixels,
+                        (int*) intensity->GetVoidPointer(0));
             }
         }
         else if (outputType == 4)
         {
-            for (int i = 0; i < nLeaves; i++)
+            for (int i = 0; i < numBins; i++)
             {
-                image = leaves[i]->GetPointData()->GetArray("Image");
-                if (image->GetDataType() == VTK_FLOAT)
-                   WriteFloats(i, numPixels, (float*)image->GetVoidPointer(0));
-                else if (image->GetDataType() == VTK_DOUBLE)
-                   WriteFloats(i, numPixels, (double*)image->GetVoidPointer(0));
-                else if (image->GetDataType() == VTK_INT)
-                   WriteFloats(i, numPixels, (int*)image->GetVoidPointer(0));
+                intensity = leaves[i]->GetPointData()->GetArray("Intensity");
+                pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
+                if (intensity->GetDataType() == VTK_FLOAT)
+                {
+                    WriteFloats(i, numPixels,
+                        (float*)intensity->GetVoidPointer(0));
+                    WriteFloats(numBins+i, numPixels,
+                        (float*)pathLength->GetVoidPointer(0));
+                }
+                else if (intensity->GetDataType() == VTK_DOUBLE)
+                {
+                    WriteFloats(i, numPixels,
+                        (double*)intensity->GetVoidPointer(0));
+                    WriteFloats(numBins+i, numPixels,
+                        (double*)pathLength->GetVoidPointer(0));
+                }
+                else if (intensity->GetDataType() == VTK_INT)
+                {
+                    WriteFloats(i, numPixels,
+                        (int*)intensity->GetVoidPointer(0));
+                    WriteFloats(numBins+i, numPixels,
+                        (int*)pathLength->GetVoidPointer(0));
+                }
             }
         }
         else if (outputType == 5)
         {
-            for (int i = 0; i < nLeaves; i++)
+            for (int i = 0; i < numBins; i++)
             {
-                image = leaves[i]->GetPointData()->GetArray("Image");
-                if (image->GetDataType() == VTK_FLOAT)
+                intensity = leaves[i]->GetPointData()->GetArray("Intensity");
+                pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
+                if (intensity->GetDataType() == VTK_FLOAT)
                 {
-                   WriteFloats(i, numPixels, (float*)image->GetVoidPointer(0));
-                   WriteBOVHeader(i, nx, ny, "FLOAT");
+                    WriteFloats(i, numPixels,
+                        (float*)intensity->GetVoidPointer(0));
+                    WriteBOVHeader("intensity", i, nx, ny, "FLOAT");
+                    WriteFloats(numBins+i, numPixels,
+                        (float*)pathLength->GetVoidPointer(0));
+                    WriteBOVHeader("path_length", numBins+i, nx, ny, "FLOAT");
                 }
-                else if (image->GetDataType() == VTK_DOUBLE)
+                else if (intensity->GetDataType() == VTK_DOUBLE)
                 {
-                   WriteFloats(i, numPixels, (double*)image->GetVoidPointer(0));
-                   WriteBOVHeader(i, nx, ny, "DOUBLE");
+                    WriteFloats(i, numPixels,
+                        (double*)intensity->GetVoidPointer(0));
+                    WriteBOVHeader("intensity", i, nx, ny, "DOUBLE");
+                    WriteFloats(numBins+i, numPixels,
+                        (double*)pathLength->GetVoidPointer(0));
+                    WriteBOVHeader("path_length", numBins+i, nx, ny, "FLOAT");
                 }
-                else if (image->GetDataType() == VTK_INT)
+                else if (intensity->GetDataType() == VTK_INT)
                 {
-                   WriteFloats(i, numPixels, (int*)image->GetVoidPointer(0));
-                   WriteBOVHeader(i, nx, ny, "INT");
+                    WriteFloats(i, numPixels,
+                        (int*)intensity->GetVoidPointer(0));
+                    WriteBOVHeader("intensity", i, nx, ny, "INT");
+                    WriteFloats(numBins+i, numPixels,
+                        (int*)pathLength->GetVoidPointer(0));
+                    WriteBOVHeader("path_length", numBins+i, nx, ny, "FLOAT");
                 }
             }
         }
@@ -947,14 +986,19 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             const char *exts[6] = {"bmp", "jpeg", "png", "tif", "bof", "bov"};
             char buf[512];
     
-            if (nLeaves == 1)
+            if (numLeaves == 1)
                 SNPRINTF(buf, 512, "The x ray image query results were "
                          "written to the file output00.%s\n",
                          exts[outputType]);
             else
-                SNPRINTF(buf, 512, "The x ray image query results were "
-                         "written to the files output00.%s - output%02d.%s\n",
-                         exts[outputType], nLeaves - 1, exts[outputType]);
+                if (outputType < 4)
+                    SNPRINTF(buf, 512, "The x ray image query results were "
+                        "written to the files output00.%s - output%02d.%s\n",
+                        exts[outputType], numLeaves - 1, exts[outputType]);
+                else
+                    SNPRINTF(buf, 512, "The x ray image query results were "
+                        "written to the files output00.%s - output%02d.%s\n",
+                        exts[outputType], 2*numLeaves - 1, exts[outputType]);
             msg += buf;
 
             SetResultMessage(msg);
@@ -1109,19 +1153,25 @@ avtXRayImageQuery::WriteFloats(int iImage, int nPixels, T *fbuf)
 //  Programmer: Eric Brugger
 //  Creation:   May 14, 2012
 //
+//  Modifications:
+//    Eric Brugger, Wed May 27 10:47:29 PDT 2015
+//    I modified the query to also output the path length field when
+//    outputting in bof or bov format.
+//
 // ****************************************************************************
 
 void
-avtXRayImageQuery::WriteBOVHeader(int iImage, int nx, int ny, const char *type)
+avtXRayImageQuery::WriteBOVHeader(const char *varName, int iBin,
+    int nx, int ny, const char *type)
 {
     char fileName[24];
-    sprintf(fileName, "output%02d.bov", iImage);
+    sprintf(fileName, "output%02d.bov", iBin);
     FILE *file = fopen(fileName, "w");
     fprintf(file, "TIME: 0\n");
-    fprintf(file, "DATA_FILE: output%02d.bof\n", iImage);
+    fprintf(file, "DATA_FILE: output%02d.bof\n", iBin);
     fprintf(file, "DATA_SIZE: %d %d 1\n", nx, ny);
     fprintf(file, "DATA_FORMAT: %s\n", type);
-    fprintf(file, "VARIABLE: image\n");
+    fprintf(file, "VARIABLE: %s\n", varName);
     const int one = 1;
     unsigned char *ptr = (unsigned char *)&one;
     if (ptr[0] == 1)
