@@ -100,6 +100,10 @@
 //    Eric Brugger, Thu May 21 12:15:18 PDT 2015
 //    I added support for debugging a ray.
 //
+//    Eric Brugger, Wed May 27 10:45:28 PDT 2015
+//    I modified the query to also output the path length field when
+//    outputting in bof or bov format.
+//
 // ****************************************************************************
 
 class QUERY_API avtXRayImageQuery : public avtDatasetQuery
@@ -178,7 +182,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      WriteImage(int, int, T*);
     template <typename T>
     void                      WriteFloats(int, int, T*);
-    void                      WriteBOVHeader(int, int, int, const char *);
+    void                      WriteBOVHeader(const char *, int, int, int,
+                                  const char *);
 
     void                      ConvertOldImagePropertiesToNew();
 };

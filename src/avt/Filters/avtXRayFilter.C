@@ -300,6 +300,9 @@ static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
 //    I added support for specifying background intensities on a per bin
 //    basis.
 //
+//    Eric Brugger, Wed May 27 10:10:28 PDT 2015
+//    I modified the filter to also output the path length field.
+//
 // ****************************************************************************
 
 avtXRayFilter::avtXRayFilter()
@@ -334,7 +337,8 @@ avtXRayFilter::avtXRayFilter()
     backgroundIntensity = 0.0;
     backgroundIntensities = NULL;
     nBackgroundIntensities = 0;
-    radBins = NULL;
+    intensityBins = NULL;
+    pathBins = NULL;
     numBins = 1;
 
     debugRay = -1;
@@ -352,6 +356,9 @@ avtXRayFilter::avtXRayFilter()
 //    I added support for specifying background intensities on a per bin
 //    basis.
 //
+//    Eric Brugger, Wed May 27 10:10:28 PDT 2015
+//    I modified the filter to also output the path length field.
+//
 // ****************************************************************************
 
 avtXRayFilter::~avtXRayFilter()
@@ -360,6 +367,10 @@ avtXRayFilter::~avtXRayFilter()
         delete [] lines;
     if (backgroundIntensities != NULL)
         delete [] backgroundIntensities;
+    if (intensityBins != NULL)
+        delete [] intensityBins;
+    if (pathBins != NULL)
+        delete [] pathBins;
 }
 
 
@@ -562,6 +573,9 @@ avtXRayFilter::SetDebugRay(int ray)
 //    I added the ability to output the cells intersected by a specified
 //    ray to a vtk file.
 //
+//    Eric Brugger, Wed May 27 10:10:28 PDT 2015
+//    I modified the filter to also output the path length field.
+//
 // ****************************************************************************
 
 void
@@ -599,7 +613,8 @@ avtXRayFilter::Execute(void)
     iFragment = 0;
     nImageFragments = numPasses;
     imageFragmentSizes = new int[nImageFragments];
-    imageFragments = new vtkDataArray *[nImageFragments];
+    intensityFragments = new vtkDataArray *[nImageFragments];
+    pathLengthFragments = new vtkDataArray *[nImageFragments];
 
     //
     // Get the input data tree to obtain the data sets.
@@ -658,7 +673,7 @@ avtXRayFilter::Execute(void)
     }
 
     //
-    // Collect all the images on the root processor.
+    // Collect all the fragments on the root processor.
     //
     int t1;
     if (PAR_Size() > 1)
@@ -667,58 +682,88 @@ avtXRayFilter::Execute(void)
         // Collect the images.
         //
         t1 = visitTimer->StartTimer();
-        vtkDataArray *image = NULL;
+        vtkDataArray *intensity = NULL;
+        vtkDataArray *pathLength = NULL;
         if (cellDataType == VTK_DOUBLE)
         {
-            CollectImages<double>(0, image);
+            CollectFragments<double>(0, nImageFragments, imageFragmentSizes,
+                                     intensityFragments, intensity);
+            CollectFragments<double>(0, nImageFragments, imageFragmentSizes,
+                                     pathLengthFragments, pathLength);
         }
         else
         {
-            CollectImages<float>(0, image);
+            CollectFragments<float>(0, nImageFragments, imageFragmentSizes,
+                                    intensityFragments, intensity);
+            CollectFragments<float>(0, nImageFragments, imageFragmentSizes,
+                                    pathLengthFragments, pathLength);
         }
-        visitTimer->StopTimer(t1, "avtXRayImageQuery::CollectImages");
+        visitTimer->StopTimer(t1, "avtXRayImageQuery::CollectFragments");
 
         //
-        // Swap out the current imageFragments and replace them with the
-        // unified one.
+        // Swap out the current fragments and replace them with the
+        // unified ones.
         //
         for (int i = 0; i < nImageFragments; i++)
-            imageFragments[i]->Delete();
+        {
+            intensityFragments[i]->Delete();
+            pathLengthFragments[i]->Delete();
+        }
         if (PAR_Rank() == 0)
             nImageFragments = 1;
         else
             nImageFragments = 0;
         imageFragmentSizes[0] = numPixels;
-        imageFragments[0] = image;
+        intensityFragments[0] = intensity;
+        pathLengthFragments[0] = pathLength;
     }
 
     //
-    // Merge all the images together.
+    // Merge all the fragments together.
     //
     if (PAR_Rank() == 0)
     {
-        vtkDataSet **pdarray = new vtkDataSet*[numBins];
-        int        *indarray = new int[numBins];
+        vtkDataSet **pdarray = new vtkDataSet*[2*numBins];
+        int        *indarray = new int[2*numBins];
 
+        //
+        // Add the intensities.
+        //
         for (int iBin = 0; iBin < numBins; iBin++)
         {
-            vtkDataArray *imageArray;
-            FillImageArray(iBin, imageArray);
-            imageArray->SetName("Image");
+            vtkDataArray *intensityArray;
+            MergeFragments(iBin, intensityFragments, intensityArray);
+            intensityArray->SetName("Intensity");
             vtkDataSet *outDataSet = vtkPolyData::New();
-            outDataSet->GetPointData()->AddArray(imageArray);
-            outDataSet->GetPointData()->CopyFieldOn("Image");
+            outDataSet->GetPointData()->AddArray(intensityArray);
+            outDataSet->GetPointData()->CopyFieldOn("Intensity");
 
             pdarray[iBin] = outDataSet;
             indarray[iBin] = iBin;
         }
 
         //
+        // Add the path lengths.
+        //
+        for (int iBin = 0; iBin < numBins; iBin++)
+        {
+            vtkDataArray *pathArray;
+            MergeFragments(iBin, pathLengthFragments, pathArray);
+            pathArray->SetName("PathLength");
+            vtkDataSet *outDataSet = vtkPolyData::New();
+            outDataSet->GetPointData()->AddArray(pathArray);
+            outDataSet->GetPointData()->CopyFieldOn("PathLength");
+
+            pdarray[numBins+iBin] = outDataSet;
+            indarray[numBins+iBin] = numBins+iBin;
+        }
+
+        //
         // Create an avtDataTree to return the results in.
         //
-        avtDataTree_p newtree = new avtDataTree(numBins, pdarray, indarray);
+        avtDataTree_p newtree = new avtDataTree(2*numBins, pdarray, indarray);
         SetOutputDataTree(newtree);
-        for (int iBin = 0; iBin < numBins; iBin++)
+        for (int iBin = 0; iBin < 2*numBins; iBin++)
         {
             pdarray[iBin]->Delete();
         }
@@ -736,9 +781,15 @@ avtXRayFilter::Execute(void)
     // Clean up temporary arrays.
     //
     for (int i = 0; i < nImageFragments; i++)
-        imageFragments[i]->Delete();
+    {
+        intensityFragments[i]->Delete();
+        pathLengthFragments[i]->Delete();
+    }
     delete [] imageFragmentSizes;
-    delete [] imageFragments;
+    delete [] intensityFragments;
+    delete [] pathLengthFragments;
+    intensityFragments = NULL;
+    pathLengthFragments = NULL;
 
     // Free the memory from the GetAllLeaves function call.
     delete [] dataSets;
@@ -2435,6 +2486,9 @@ SortSegments(int nLines, int *lineId, double *dists)
 //    Eric Brugger, Thu May 21 12:21:25 PDT 2015
 //    I added support for debugging a ray.
 //
+//    Eric Brugger, Wed May 27 10:10:28 PDT 2015
+//    I modified the filter to also output the path length field.
+//
 // ****************************************************************************
 
 template <typename T>
@@ -2464,28 +2518,40 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     //
     // Do the integration.
     //
-    if (radBins == NULL)
+    if (intensityBins == NULL)
     {
-        radBins = new double[numBins];
+        intensityBins = new double[numBins];
+        pathBins = new double[numBins];
     }
     for (int i = 0 ; i < numBins ; i++)
     {
-        radBins[i] = background[i];
+        intensityBins[i] = background[i];
+        pathBins[i] = 0.;
     }
 
     int prevLineId = -1;
     if (cellDataType == VTK_FLOAT)
-        imageFragments[iFragment] = vtkFloatArray::New();
+    {
+        intensityFragments[iFragment] = vtkFloatArray::New();
+        pathLengthFragments[iFragment] = vtkFloatArray::New();
+    }
     else
-        imageFragments[iFragment] = vtkDoubleArray::New();
+    {
+        intensityFragments[iFragment] = vtkDoubleArray::New();
+        pathLengthFragments[iFragment] = vtkDoubleArray::New();
+    }
 
-    imageFragments[iFragment]->SetNumberOfTuples(imageFragmentSizes[iFragment]*numBins);
+    intensityFragments[iFragment]->SetNumberOfTuples(imageFragmentSizes[iFragment]*numBins);
+    pathLengthFragments[iFragment]->SetNumberOfTuples(imageFragmentSizes[iFragment]*numBins);
 
-    avtDirectAccessor<T> currentImageFragment(imageFragments[iFragment]);
+    avtDirectAccessor<T> currentIntensityFragment(intensityFragments[iFragment]);
+    avtDirectAccessor<T> currentPathFragment(pathLengthFragments[iFragment]);
     for (int i = 0; i < imageFragmentSizes[iFragment]; i++)
     {
         for (int j = 0; j < numBins; j++)
-            currentImageFragment.SetTuple1(i*numBins+j, background[j]);
+            currentIntensityFragment.SetTuple1(i*numBins+j, background[j]);
+        for (int j = 0; j < numBins; j++)
+            currentPathFragment.SetTuple1(i*numBins+j, 0.);
     }
 
     iFragment++;
@@ -2499,12 +2565,15 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
             if (prevLineId != -1)
             {
                 for (int j = 0; j < numBins; j++)
-                    currentImageFragment.SetTuple1((prevLineId-pixelOffset)*numBins+j, radBins[j]);
+                    currentIntensityFragment.SetTuple1((prevLineId-pixelOffset)*numBins+j, intensityBins[j]);
+                for (int j = 0; j < numBins; j++)
+                    currentPathFragment.SetTuple1((prevLineId-pixelOffset)*numBins+j, pathBins[j]);
             }
 
             for (int j = 0; j < numBins; j++)
             {
-                radBins[j] = background[j];
+                intensityBins[j] = background[j];
+                pathBins[j] = 0.;
             }
             prevLineId = lineId[iPt];
         }
@@ -2517,16 +2586,18 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
         {
             for (int j = 0 ; j < numBins ; j++)
             {
-                double tmp = exp(-a[j]*segLength);
-                radBins[j] = radBins[j] * tmp + (e[j] / a[j]) * (1.0 - tmp);
+                double tmp = exp(-a[j] * segLength);
+                intensityBins[j] = intensityBins[j] * tmp + (e[j] / a[j]) * (1.0 - tmp);
+                pathBins[j] = pathBins[j] + a[j] * segLength;
             }
         }
         else
         {
             for (int j = 0 ; j < numBins ; j++)
             {
-                double tmp = exp(-a[j]*segLength);
-                radBins[j] = radBins[j] * tmp + e[j] * (1.0 - tmp);
+                double tmp = exp(-a[j] * segLength);
+                intensityBins[j] = intensityBins[j] * tmp + e[j] * (1.0 - tmp);
+                pathBins[j] = pathBins[j] + a[j] * segLength;
             }
         }
     }
@@ -2534,7 +2605,9 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     if (prevLineId != -1)
     {
         for (int j = 0; j < numBins; j++)
-            currentImageFragment.SetTuple1((prevLineId-pixelOffset)*numBins+j, radBins[j]);
+            currentIntensityFragment.SetTuple1((prevLineId-pixelOffset)*numBins+j, intensityBins[j]);
+        for (int j = 0; j < numBins; j++)
+            currentPathFragment.SetTuple1((prevLineId-pixelOffset)*numBins+j, pathBins[j]);
     }
 
     //
@@ -2543,7 +2616,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     //
     if (debugRay != -1)
     {
-        double radBinZero;
+        double intensityBinZero;
 
         prevLineId = -1;
 
@@ -2559,8 +2632,8 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
                     char filename[80];
                     SNPRINTF(filename, 80, "ray%d.csv", debugRay);
                     f = fopen(filename, "w");
-                    fprintf(f, " dist1, dist2, tmp, segLength, a, e, radBinZero\n");
-                    radBinZero = background[0];
+                    fprintf(f, " dist1, dist2, tmp, segLength, a, e, intensityBinZero\n");
+                    intensityBinZero = background[0];
                 }
                 if (lineOffset + prevLineId == debugRay)
                 {
@@ -2576,11 +2649,11 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
                 T *e = &(emissivity[iPt*numBins]);
 
                 // bin zero.
-                double tmp = exp(-a[0]*segLength);
-                radBinZero = radBinZero * tmp + e[0] * (1.0 - tmp);
+                double tmp = exp(-a[0] * segLength);
+                intensityBinZero = intensityBinZero * tmp + e[0] * (1.0 - tmp);
                 fprintf(f, "%g, %g, %g, %g, %g, %g, %g\n",
                         dist[iPt*2], dist[iPt*2+1], tmp, segLength,
-                        a[0], e[0], radBinZero);
+                        a[0], e[0], intensityBinZero);
             }
         }
 
@@ -2596,10 +2669,10 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 
 
 // ****************************************************************************
-//  Method: avtXRayFilter::CollectImages
+//  Method: avtXRayFilter::CollectFragments
 //
 //  Purpose:
-//    Collect the images on the first processor.
+//    Collect the fragments on the first processor.
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
@@ -2614,11 +2687,15 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 //    I modified the routine to only create the final image on processor
 //    zero. This didn't seem to cause any problems, but was wasteful.
 //
+//    Eric Brugger, Wed May 27 10:10:28 PDT 2015
+//    I modified the filter to also output the path length field.
+//
 // ****************************************************************************
 
 template <typename T>
 void
-avtXRayFilter::CollectImages(int root, vtkDataArray *&image)
+avtXRayFilter::CollectFragments(int root, int nFragments, int *fragmentSizes,
+    vtkDataArray **fragments, vtkDataArray *&collectedFragments)
 {
 #ifdef PARALLEL
     int nProcs = PAR_Size();
@@ -2627,17 +2704,17 @@ avtXRayFilter::CollectImages(int root, vtkDataArray *&image)
     // Set up the send information.
     //
     int sendCount = 0;
-    for (int i = 0; i < nImageFragments; i++)
-        sendCount += imageFragmentSizes[i]*numBins;
+    for (int i = 0; i < nFragments; i++)
+        sendCount += fragmentSizes[i]*numBins;
 
     T *sendBuf = new T[sendCount];
-    for (int i = 0, ndx = 0; i < nImageFragments; i++)
+    for (int i = 0, ndx = 0; i < nFragments; i++)
     {
-        avtDirectAccessor<T> currentImageFragment(imageFragments[i]);
-        while (currentImageFragment.Iterating())
+        avtDirectAccessor<T> currentFragment(fragments[i]);
+        while (currentFragment.Iterating())
         {
-            sendBuf[ndx] = currentImageFragment.GetTuple1();
-            currentImageFragment++;
+            sendBuf[ndx] = currentFragment.GetTuple1();
+            currentFragment++;
             ndx++;
         }
     }
@@ -2648,16 +2725,16 @@ avtXRayFilter::CollectImages(int root, vtkDataArray *&image)
     int *recvCounts = new int[nProcs];
     int *displs = new int[nProcs];
 
-    recvCounts[0] = ((nImageFragments - 1) * pixelsForFirstPassFirstProc +
+    recvCounts[0] = ((nFragments - 1) * pixelsForFirstPassFirstProc +
         pixelsForLastPassFirstProc) * numBins;
     displs[0] = 0;
     for (int i = 1; i < nProcs-1; i++)
     {
-        recvCounts[i] = ((nImageFragments - 1) * pixelsForFirstPassFirstProc +
+        recvCounts[i] = ((nFragments - 1) * pixelsForFirstPassFirstProc +
             pixelsForLastPassFirstProc) * numBins;
         displs[i] = displs[i-1] + recvCounts[i-1];
     }
-    recvCounts[nProcs-1] = ((nImageFragments - 1) * pixelsForFirstPassLastProc +
+    recvCounts[nProcs-1] = ((nFragments - 1) * pixelsForFirstPassLastProc +
         pixelsForLastPassLastProc) * numBins;
     displs[nProcs-1] = displs[nProcs-1-1] + recvCounts[nProcs-1-1];
 
@@ -2684,27 +2761,27 @@ avtXRayFilter::CollectImages(int root, vtkDataArray *&image)
         // Reorganize the receive buffer in the correct order.
         //
         if (cellDataType == VTK_FLOAT)
-            image = vtkFloatArray::New();
+            collectedFragments = vtkFloatArray::New();
         else
-            image = vtkDoubleArray::New();
-        image->SetNumberOfTuples(numPixels * numBins);
-        avtDirectAccessor<T> imageA(image);
-        for (int i = 0; i < nImageFragments-1; i++)
+            collectedFragments = vtkDoubleArray::New();
+        collectedFragments->SetNumberOfTuples(numPixels * numBins);
+        avtDirectAccessor<T> collectedFragmentsA(collectedFragments);
+        for (int i = 0; i < nFragments-1; i++)
         {
             for (int j = 0; j < nProcs-1; j++)
             {
                 for (int k = 0; k < pixelsForFirstPassFirstProc*numBins; k++)
                 {
-                    imageA.SetTuple1(recvBuf[displs[j]]);
-                    imageA++;
+                    collectedFragmentsA.SetTuple1(recvBuf[displs[j]]);
+                    collectedFragmentsA++;
                     displs[j]++;
                 }
             }
             int j = nProcs - 1;
             for (int k = 0; k < pixelsForFirstPassLastProc*numBins; k++)
             {
-                imageA.SetTuple1(recvBuf[displs[j]]);
-                imageA++;
+                collectedFragmentsA.SetTuple1(recvBuf[displs[j]]);
+                collectedFragmentsA++;
                 displs[j]++;
             }
         }
@@ -2712,16 +2789,16 @@ avtXRayFilter::CollectImages(int root, vtkDataArray *&image)
         {
             for (int k = 0; k < pixelsForLastPassFirstProc*numBins; k++)
             {
-                imageA.SetTuple1(recvBuf[displs[j]]);
-                imageA++;
+                collectedFragmentsA.SetTuple1(recvBuf[displs[j]]);
+                collectedFragmentsA++;
                 displs[j]++;
             }
         }
         int j = nProcs - 1;
         for (int k = 0; k < pixelsForLastPassLastProc*numBins; k++)
         {
-            imageA.SetTuple1(recvBuf[displs[j]]);
-            imageA++;
+            collectedFragmentsA.SetTuple1(recvBuf[displs[j]]);
+            collectedFragmentsA++;
             displs[j]++;
         }
 
@@ -2729,10 +2806,10 @@ avtXRayFilter::CollectImages(int root, vtkDataArray *&image)
     }
     else
     {
-        image = NULL ;
+        collectedFragments = NULL ;
     }
 #else
-    image = NULL;
+    collectedFragments = NULL;
 #endif
 }
 
@@ -2949,37 +3026,39 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
 
 template <class Accessor>
 void
-FillImageArray_Impl(int iBin, int nB, int nIF, int *sizes, vtkDataArray **iF, vtkDataArray *&iA)
+MergeFragments_Impl(int iBin, int numBins, int nFragments, int *fragmentSizes,
+    vtkDataArray **fragments, vtkDataArray *&outputArray)
 {
-    Accessor ibuf(iA);
+    Accessor ibuf(outputArray);
     ibuf.InitTraversal();
-    for (int i = 0; i < nIF; ++i)
+    for (int i = 0; i < nFragments; ++i)
     {
-        Accessor currentImageFragment(iF[i]);
-        for (int j = 0; j < sizes[i]; ++j)
+        Accessor currentFragment(fragments[i]);
+        for (int j = 0; j < fragmentSizes[i]; ++j)
         {
-            ibuf.SetTuple1(currentImageFragment.GetTuple1(j*nB+iBin));
+            ibuf.SetTuple1(currentFragment.GetTuple1(j*numBins+iBin));
             ibuf++;
         }
     }
 }
 
 void
-avtXRayFilter::FillImageArray(int iBin,  vtkDataArray *&imageArray)
+avtXRayFilter::MergeFragments(int iBin, vtkDataArray **fragments,
+    vtkDataArray *&outputArray)
 {
     if (cellDataType == VTK_FLOAT)
     {
-        imageArray = vtkFloatArray::New();
-        imageArray->SetNumberOfTuples(imageSize[0]*imageSize[1]);
-        FillImageArray_Impl<avtDirectAccessor<float> >(iBin, numBins, 
-            nImageFragments, imageFragmentSizes, imageFragments, imageArray);
+        outputArray = vtkFloatArray::New();
+        outputArray->SetNumberOfTuples(imageSize[0]*imageSize[1]);
+        MergeFragments_Impl<avtDirectAccessor<float> >(iBin, numBins, 
+            nImageFragments, imageFragmentSizes, fragments, outputArray);
     }
     else // if (cellDataType == VTK_DOUBLE)
     {
-        imageArray = vtkDoubleArray::New();
-        imageArray->SetNumberOfTuples(imageSize[0]*imageSize[1]);
-        FillImageArray_Impl<avtDirectAccessor<double> >(iBin, numBins,
-            nImageFragments, imageFragmentSizes, imageFragments, imageArray);
+        outputArray = vtkDoubleArray::New();
+        outputArray->SetNumberOfTuples(imageSize[0]*imageSize[1]);
+        MergeFragments_Impl<avtDirectAccessor<double> >(iBin, numBins,
+            nImageFragments, imageFragmentSizes, fragments, outputArray);
     }
 }
 
