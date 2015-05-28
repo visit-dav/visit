@@ -479,28 +479,29 @@ SimEngine::ExportDatabase(const std::string &filename, const std::string &format
                           const stringVector &vars)
 {
     bool retval = false;
+
+    // Get the plugin id from the input format, which could be an id or a name.
+    std::string id, name;
+    for(int i = 0; i < GetNetMgr()->GetDatabasePluginManager()->GetNAllPlugins(); ++i)
+    {
+        std::string thisID(GetNetMgr()->GetDatabasePluginManager()->GetAllID(i));
+        if(thisID == format)
+            id = thisID;
+        if(GetNetMgr()->GetDatabasePluginManager()->GetPluginName(thisID) == format)
+            id = thisID;
+    }
+    if(id.empty())
+        return false;
+    name = GetNetMgr()->GetDatabasePluginManager()->GetPluginName(id);
+
+    std::string dName(FileFunctions::Dirname(filename));
+    std::string fName(FileFunctions::Basename(filename));
+    if(dName.empty() || dName == ".")
+        dName = FileFunctions::GetCurrentWorkingDirectory();
+
 #ifdef SIMV2_VIEWER_INTEGRATION
     if(viewerInitialized)
     {
-        // Get the plugin id from the input format, which could be an id or a name.
-        std::string id, name;
-        for(int i = 0; i < GetNetMgr()->GetDatabasePluginManager()->GetNAllPlugins(); ++i)
-        {
-            std::string thisID(GetNetMgr()->GetDatabasePluginManager()->GetAllID(i));
-            if(thisID == format)
-                id = thisID;
-            if(GetNetMgr()->GetDatabasePluginManager()->GetPluginName(thisID) == format)
-                id = thisID;
-        }
-        if(id.empty())
-            return false;
-        name = GetNetMgr()->GetDatabasePluginManager()->GetPluginName(id);
-
-        std::string dName(FileFunctions::Dirname(filename));
-        std::string fName(FileFunctions::Basename(filename));
-        if(dName.empty() || dName == ".")
-            dName = FileFunctions::GetCurrentWorkingDirectory();
-
         ExportDBAttributes *atts = GetViewerState()->GetExportDBAttributes();
         atts->SetAllTimes(false);
         atts->SetDb_type(name);
@@ -512,6 +513,24 @@ SimEngine::ExportDatabase(const std::string &filename, const std::string &format
 
         GetViewerMethods()->ExportDatabase();
         retval = true;
+    }
+    else
+    {
+#endif
+        // Send a message to the viewer indicating we want it to export.
+        char tmp[2048];
+        SNPRINTF(tmp, 2048, "ExportDatabase:%s:%s:%s:%s:",
+            name.c_str(), id.c_str(), dName.c_str(), fName.c_str());
+        std::string cmd(tmp);
+        for(size_t i = 0; i < vars.size(); ++i)
+        {
+            cmd.append(vars[i]);
+            if(i < vars.size()-1)
+                cmd.append(":");
+        }
+        SimulationInitiateCommand(cmd);
+        retval = true;
+#ifdef SIMV2_VIEWER_INTEGRATION
     }
 #endif
     return retval;
@@ -559,6 +578,15 @@ SimEngine::RestoreSession(const std::string &filename)
             retval = false;
         }
         ENDTRY
+    }
+    else
+    {
+#endif
+        std::string cmd("RestoreSession:");
+        cmd.append(filename);
+        SimulationInitiateCommand(cmd);
+        retval = true;
+#ifdef SIMV2_VIEWER_INTEGRATION
     }
 #endif
     return retval;
@@ -610,15 +638,15 @@ SimEngine::SaveWindow(const std::string &filename, int w, int h, int format)
         else
             fmt = SaveWindowAttributes::TIFF;
 
+        std::string dName(FileFunctions::Dirname(filename));
+        std::string fName(FileFunctions::Basename(filename));
+        if(dName.empty() || dName == ".")
+            dName = FileFunctions::GetCurrentWorkingDirectory();
+
 #ifdef SIMV2_VIEWER_INTEGRATION
         // Viewer based method.
         if(viewerInitialized)
         {
-            std::string dName(FileFunctions::Dirname(filename));
-            std::string fName(FileFunctions::Basename(filename));
-            if(dName.empty() || dName == ".")
-                dName = FileFunctions::GetCurrentWorkingDirectory();
-
             SaveWindowAttributes *swa = GetViewerState()->GetSaveWindowAttributes();
             swa->SetFileName(fName);
             swa->SetOutputToCurrentDirectory(false);
@@ -634,6 +662,18 @@ SimEngine::SaveWindow(const std::string &filename, int w, int h, int format)
             GetViewerMethods()->SaveWindow();
 
             retval = true;
+        }
+        else
+        {
+#endif
+            // Send a message to the viewer indicating we want it to save an image.
+            std::string f(SaveWindowAttributes::FileFormat_ToString(fmt));
+            char cmd[2048];
+            SNPRINTF(cmd, 2048, "SaveWindow:%s:%s:%d:%d:%s",
+                dName.c_str(), fName.c_str(), w, h, f.c_str());
+            SimulationInitiateCommand(cmd);
+            retval = true;
+#ifdef SIMV2_VIEWER_INTEGRATION
         }
 #endif
     }
@@ -696,6 +736,16 @@ SimEngine::AddPlot(const std::string &plotType, const std::string &var)
             GetViewerMethods()->AddPlot(plotIndex, var);
             retval = true;
         }
+        else
+        {
+#endif
+            // Send the viewer a message to add  plot.
+            char cmd[200];
+            SNPRINTF(cmd, 200, "AddPlot:%s:%s", plotType.c_str(), var.c_str());
+            SimulationInitiateCommand(cmd);
+            retval = true;
+#ifdef SIMV2_VIEWER_INTEGRATION
+        }
 #endif
     }
     CATCHALL
@@ -747,12 +797,12 @@ SimEngine::AddOperator(const std::string &operatorType, bool applyToAll)
     bool retval = false;
     TRY
     {
+        int operatorIndex = GetNetMgr()->GetOperatorPluginManager()->GetEnabledIndex(id);
+
 #ifdef SIMV2_VIEWER_INTEGRATION
         // Viewer based method.
         if(viewerInitialized)
         {
-            int operatorIndex = GetNetMgr()->GetOperatorPluginManager()->GetEnabledIndex(id);
-
             bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
             GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAll != 0);
 
@@ -761,6 +811,16 @@ SimEngine::AddOperator(const std::string &operatorType, bool applyToAll)
 
             GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
             retval = true;
+        }
+        else
+        {
+#endif
+            // Send the viewer a message to add an operator.
+            char cmd[200];
+            SNPRINTF(cmd, 200, "AddOperator:%s:%d", operatorType.c_str(), applyToAll?1:0);
+            SimulationInitiateCommand(cmd);
+            retval = true;
+#ifdef SIMV2_VIEWER_INTEGRATION
         }
 #endif
     }
@@ -807,6 +867,13 @@ SimEngine::DrawPlots()
             GetViewerMethods()->DrawPlots();
             retval = true;
         }
+        else
+        {
+#endif
+            SimulationInitiateCommand("DrawPlots");
+            retval = true;
+#ifdef SIMV2_VIEWER_INTEGRATION
+        }
 #endif
     }
     CATCHALL
@@ -850,6 +917,13 @@ SimEngine::DeleteActivePlots()
         {
             GetViewerMethods()->DeleteActivePlots();
             retval = true;
+        }
+        else
+        {
+#endif
+            SimulationInitiateCommand("DeleteActivePlots");
+            retval = true;
+#ifdef SIMV2_VIEWER_INTEGRATION
         }
 #endif
     }
@@ -902,6 +976,20 @@ SimEngine::SetActivePlots(const int *ids, int nids)
                 GetViewerMethods()->SetActivePlots(activePlotIds);
             }
             retval = true;
+        }
+        else
+        {
+#endif
+            std::string cmd("SetActivePlots");
+            char tmp[10];
+            for(int i = 0; i < nids; ++i)
+            {
+                SNPRINTF(tmp, 10, ":%d", ids[i]);
+                cmd.append(tmp);
+            }
+            SimulationInitiateCommand(cmd);
+            retval = true;
+#ifdef SIMV2_VIEWER_INTEGRATION
         }
 #endif
     }
@@ -1240,6 +1328,12 @@ bool SimEngine::SetPlotOptions(const std::string &fieldName,
                 }
             }
         }
+        else
+        {
+#endif
+            debug5 << "SimEngine::SetPlotOptions is just implemented for batch mode." << endl;
+#ifdef SIMV2_VIEWER_INTEGRATION
+        }
 #endif
     }
     CATCHALL
@@ -1345,6 +1439,12 @@ bool SimEngine::SetOperatorOptions(const std::string &fieldName,
                     }
                 }
             }
+        }
+        else
+        {
+#endif
+            debug5 << "SimEngine::SetOperatorOptions is just implemented for batch mode." << endl;
+#ifdef SIMV2_VIEWER_INTEGRATION
         }
 #endif
     }
