@@ -104,6 +104,9 @@
 //    I modified the query to also output the path length field when
 //    outputting in bof or bov format.
 //
+//    Eric Brugger, Wed May 27 13:19:12 PDT 2015
+//    I added an option to family output files.
+//
 // ****************************************************************************
 
 class QUERY_API avtXRayImageQuery : public avtDatasetQuery
@@ -134,7 +137,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetBackgroundIntensity(const double &intensity);
     void                      SetBackgroundIntensities(
                                   const doubleVector &intensities);
-    void                      SetDebugRay(int ray);
+    void                      SetDebugRay(const int &ray);
+    void                      SetFamilyFiles(const bool &flag);
     void                      SetOutputType(int type);
     void                      SetOutputType(const std::string &type);
 
@@ -144,6 +148,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     double                   *backgroundIntensities;
     int                       nBackgroundIntensities;
     int                       debugRay;
+    bool                      familyFiles;
+    static int                iFileFamily;
     int                       outputType;
     bool                      useSpecifiedUpVector;
     bool                      useOldView;
@@ -179,11 +185,11 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     virtual void              Execute(avtDataTree_p);
 
     template <typename T>
-    void                      WriteImage(int, int, T*);
+    void                      WriteImage(const char *, int, int, T*);
     template <typename T>
-    void                      WriteFloats(int, int, T*);
-    void                      WriteBOVHeader(const char *, int, int, int,
-                                  const char *);
+    void                      WriteFloats(const char *, int, int, T*);
+    void                      WriteBOVHeader(const char *, const char *,
+                                  int, int, int, const char *);
 
     void                      ConvertOldImagePropertiesToNew();
 };

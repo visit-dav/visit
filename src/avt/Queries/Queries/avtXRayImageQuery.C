@@ -66,6 +66,8 @@
 #include <string>
 #include <vector>
 
+int avtXRayImageQuery::iFileFamily = 0;
+
 // ****************************************************************************
 //  Method: avtXRayImageQuery::avtXRayImageQuery
 //
@@ -108,6 +110,9 @@
 //    Eric Brugger, Thu May 21 12:15:59 PDT 2015
 //    I added support for debugging a ray.
 //
+//    Eric Brugger, Wed May 27 14:37:36 PDT 2015
+//    I added an option to family output files.
+//
 // ****************************************************************************
 
 avtXRayImageQuery::avtXRayImageQuery():
@@ -119,6 +124,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     backgroundIntensities = NULL;
     nBackgroundIntensities = 0;
     debugRay = -1;
+    familyFiles = false;
     outputType = 2; // png
     useSpecifiedUpVector = true;
     useOldView = true;
@@ -223,6 +229,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //    I corrected a bug with the processing of image_pan, where the values
 //    were being interpreted as integers instead of doubles.
 //
+//    Eric Brugger, Wed May 27 14:37:36 PDT 2015
+//    I added an option to family output files.
+//
 // ****************************************************************************
 
 void
@@ -253,6 +262,9 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
 
     if (params.HasNumericEntry("debug_ray"))
         SetDebugRay(params.GetEntry("debug_ray")->AsInt());
+
+    if (params.HasNumericEntry("family_files"))
+        SetFamilyFiles(params.GetEntry("family_files")->ToBool());
 
     if (params.HasEntry("output_type"))
     {
@@ -653,9 +665,26 @@ avtXRayImageQuery::SetBackgroundIntensities(const doubleVector &intensities)
 // ****************************************************************************
 
 void
-avtXRayImageQuery::SetDebugRay(int ray)
+avtXRayImageQuery::SetDebugRay(const int &ray)
 {
     debugRay = ray;
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetFamilyFiles
+//
+//  Purpose:
+//    Set the family files flag.
+//
+//  Programmer: Eric Brugger
+//  Creation:   May 27, 2015
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetFamilyFiles(const bool &flag)
+{
+    familyFiles = flag;
 }
 
 // ****************************************************************************
@@ -796,6 +825,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    I modified the query to also output the path length field when
 //    outputting in bof or bov format.
 //
+//    Eric Brugger, Wed May 27 14:37:36 PDT 2015
+//    I added an option to family output files.
+//
 // ****************************************************************************
 
 void
@@ -889,11 +921,49 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             EXCEPTION1(VisItException, "There must be at least one bin.");
         }
 
-        int numBins = numLeaves / 2;
+        //
+        // Create the file base name.
+        //
+        const char *exts[6] = {"bmp", "jpeg", "png", "tif", "bof", "bov"};
+        char baseName[512];
+        bool keepTrying = true;
+        while (keepTrying)
+        {
+            keepTrying = false;
+            if (familyFiles)
+            {
+                //
+                // Create the file base name and increment the family number.
+                //
+                SNPRINTF(baseName, 512, "output%04d.", iFileFamily);
+                if (iFileFamily < 9999) iFileFamily++;
+
+                //
+                // Check if the first file created with the file base name
+                // exists. If it does and we aren't at the maximum, try
+                // the next file base name in the sequence.
+                //
+                char fileName[512];
+                SNPRINTF(fileName, 512, "%s00.%s", baseName, exts[outputType]);
+
+                ifstream ifile(fileName);
+                if (!ifile.fail() && iFileFamily < 9999)
+                {
+                    keepTrying = true;
+                }
+            }
+            else
+            {
+                SNPRINTF(baseName, 512, "output");
+            }
+        }
+
         //
         // Write out the intensity and path length. The path length is only
         // put out when the output format is bof or bov.
         //
+        int numBins = numLeaves / 2;
+
         vtkDataArray *intensity;
         vtkDataArray *pathLength;
         if (outputType >= 0 && outputType <=3)
@@ -902,13 +972,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 intensity= leaves[i]->GetPointData()->GetArray("Intensity");
                 if (intensity->GetDataType() == VTK_FLOAT)
-                    WriteImage(i, numPixels,
+                    WriteImage(baseName, i, numPixels,
                         (float*) intensity->GetVoidPointer(0));
                 else if (intensity->GetDataType() == VTK_DOUBLE)
-                    WriteImage(i, numPixels,
+                    WriteImage(baseName, i, numPixels,
                         (double*) intensity->GetVoidPointer(0));
                 else if (intensity->GetDataType() == VTK_INT)
-                    WriteImage(i, numPixels,
+                    WriteImage(baseName, i, numPixels,
                         (int*) intensity->GetVoidPointer(0));
             }
         }
@@ -920,23 +990,23 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
                 if (intensity->GetDataType() == VTK_FLOAT)
                 {
-                    WriteFloats(i, numPixels,
+                    WriteFloats(baseName, i, numPixels,
                         (float*)intensity->GetVoidPointer(0));
-                    WriteFloats(numBins+i, numPixels,
+                    WriteFloats(baseName, numBins+i, numPixels,
                         (float*)pathLength->GetVoidPointer(0));
                 }
                 else if (intensity->GetDataType() == VTK_DOUBLE)
                 {
-                    WriteFloats(i, numPixels,
+                    WriteFloats(baseName, i, numPixels,
                         (double*)intensity->GetVoidPointer(0));
-                    WriteFloats(numBins+i, numPixels,
+                    WriteFloats(baseName, numBins+i, numPixels,
                         (double*)pathLength->GetVoidPointer(0));
                 }
                 else if (intensity->GetDataType() == VTK_INT)
                 {
-                    WriteFloats(i, numPixels,
+                    WriteFloats(baseName, i, numPixels,
                         (int*)intensity->GetVoidPointer(0));
-                    WriteFloats(numBins+i, numPixels,
+                    WriteFloats(baseName, numBins+i, numPixels,
                         (int*)pathLength->GetVoidPointer(0));
                 }
             }
@@ -949,30 +1019,33 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
                 if (intensity->GetDataType() == VTK_FLOAT)
                 {
-                    WriteFloats(i, numPixels,
+                    WriteFloats(baseName, i, numPixels,
                         (float*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader("intensity", i, nx, ny, "FLOAT");
-                    WriteFloats(numBins+i, numPixels,
+                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "FLOAT");
+                    WriteFloats(baseName, numBins+i, numPixels,
                         (float*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader("path_length", numBins+i, nx, ny, "FLOAT");
+                    WriteBOVHeader(baseName, "path_length", numBins+i,
+                        nx, ny, "FLOAT");
                 }
                 else if (intensity->GetDataType() == VTK_DOUBLE)
                 {
-                    WriteFloats(i, numPixels,
+                    WriteFloats(baseName, i, numPixels,
                         (double*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader("intensity", i, nx, ny, "DOUBLE");
-                    WriteFloats(numBins+i, numPixels,
+                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "DOUBLE");
+                    WriteFloats(baseName, numBins+i, numPixels,
                         (double*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader("path_length", numBins+i, nx, ny, "FLOAT");
+                    WriteBOVHeader(baseName, "path_length", numBins+i,
+                        nx, ny, "FLOAT");
                 }
                 else if (intensity->GetDataType() == VTK_INT)
                 {
-                    WriteFloats(i, numPixels,
+                    WriteFloats(baseName, i, numPixels,
                         (int*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader("intensity", i, nx, ny, "INT");
-                    WriteFloats(numBins+i, numPixels,
+                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "INT");
+                    WriteFloats(baseName, numBins+i, numPixels,
                         (int*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader("path_length", numBins+i, nx, ny, "FLOAT");
+                    WriteBOVHeader(baseName, "path_length", numBins+i,
+                        nx, ny, "FLOAT");
                 }
             }
         }
@@ -983,22 +1056,29 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         if (outputType >=0 && outputType <= 5)
         {
             std::string msg = "";
-            const char *exts[6] = {"bmp", "jpeg", "png", "tif", "bof", "bov"};
             char buf[512];
     
-            if (numLeaves == 1)
+            if (numBins == 1 && outputType < 4)
+            {
                 SNPRINTF(buf, 512, "The x ray image query results were "
-                         "written to the file output00.%s\n",
+                         "written to the file %s00.%s\n", baseName,
                          exts[outputType]);
+            }
             else
                 if (outputType < 4)
+                {
                     SNPRINTF(buf, 512, "The x ray image query results were "
-                        "written to the files output00.%s - output%02d.%s\n",
-                        exts[outputType], numLeaves - 1, exts[outputType]);
+                        "written to the files %s00.%s - %s%02d.%s\n",
+                        baseName, exts[outputType], baseName, numBins - 1,
+                        exts[outputType]);
+                }
                 else
+                {
                     SNPRINTF(buf, 512, "The x ray image query results were "
-                        "written to the files output00.%s - output%02d.%s\n",
-                        exts[outputType], 2*numLeaves - 1, exts[outputType]);
+                        "written to the files %s00.%s - %s%02d.%s\n",
+                        baseName, exts[outputType], baseName, 2*numBins - 1,
+                        exts[outputType]);
+                }
             msg += buf;
 
             SetResultMessage(msg);
@@ -1033,11 +1113,15 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 //    I moved all the logic for doing the ray integration and creating the
 //    image in chunks to avtXRayFilter.
 //
+//    Eric Brugger, Wed May 27 14:37:36 PDT 2015
+//    I added an option to family output files.
+//
 // ****************************************************************************
 
 template <typename T>
 void
-avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
+avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
+    T *fbuf)
 {
     //
     // Determine the range of the data excluding values less than zero.
@@ -1079,7 +1163,7 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
     {
         vtkImageWriter *writer = vtkBMPWriter::New();
         char fileName[24];
-        sprintf(fileName, "output%02d.bmp", iImage);
+        sprintf(fileName, "%s%02d.bmp", baseName, iImage);
         writer->SetFileName(fileName);
         writer->SetInputData(image);
         writer->Write();
@@ -1089,7 +1173,7 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
     {
         vtkImageWriter *writer = vtkJPEGWriter::New();
         char fileName[24];
-        sprintf(fileName, "output%02d.jpg", iImage);
+        sprintf(fileName, "%s%02d.jpg", baseName, iImage);
         writer->SetFileName(fileName);
         writer->SetInputData(image);
         writer->Write();
@@ -1099,7 +1183,7 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
     {
         vtkImageWriter *writer = vtkPNGWriter::New();
         char fileName[24];
-        sprintf(fileName, "output%02d.png", iImage);
+        sprintf(fileName, "%s%02d.png", baseName, iImage);
         writer->SetFileName(fileName);
         writer->SetInputData(image);
         writer->Write();
@@ -1109,7 +1193,7 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
     {
         vtkImageWriter *writer = vtkTIFFWriter::New();
         char fileName[24];
-        sprintf(fileName, "output%02d.tif", iImage);
+        sprintf(fileName, "%s%02d.tif", baseName, iImage);
         writer->SetFileName(fileName);
         writer->SetInputData(image);
         writer->Write();
@@ -1131,14 +1215,18 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
 //    I moved all the logic for doing the ray integration and creating the
 //    image in chunks to avtXRayFilter.
 //
+//    Eric Brugger, Wed May 27 14:37:36 PDT 2015
+//    I added an option to family output files.
+//
 // ****************************************************************************
 
 template <typename T>
 void
-avtXRayImageQuery::WriteFloats(int iImage, int nPixels, T *fbuf)
+avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
+    T *fbuf)
 {
-    char fileName[24];
-    sprintf(fileName, "output%02d.bof", iImage);
+    char fileName[512];
+    sprintf(fileName, "%s%02d.bof", baseName, iImage);
     FILE *file = fopen(fileName, "w");
     fwrite(fbuf, sizeof(T), nPixels, file);
     fclose(file);
@@ -1158,17 +1246,20 @@ avtXRayImageQuery::WriteFloats(int iImage, int nPixels, T *fbuf)
 //    I modified the query to also output the path length field when
 //    outputting in bof or bov format.
 //
+//    Eric Brugger, Wed May 27 14:37:36 PDT 2015
+//    I added an option to family output files.
+//
 // ****************************************************************************
 
 void
-avtXRayImageQuery::WriteBOVHeader(const char *varName, int iBin,
-    int nx, int ny, const char *type)
+avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
+    int iBin, int nx, int ny, const char *type)
 {
     char fileName[24];
-    sprintf(fileName, "output%02d.bov", iBin);
+    sprintf(fileName, "%s%02d.bov", baseName, iBin);
     FILE *file = fopen(fileName, "w");
     fprintf(file, "TIME: 0\n");
-    fprintf(file, "DATA_FILE: output%02d.bof\n", iBin);
+    fprintf(file, "DATA_FILE: %s%02d.bof\n", baseName, iBin);
     fprintf(file, "DATA_SIZE: %d %d 1\n", nx, ny);
     fprintf(file, "DATA_FORMAT: %s\n", type);
     fprintf(file, "VARIABLE: %s\n", varName);

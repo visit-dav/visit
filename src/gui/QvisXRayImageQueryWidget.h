@@ -67,6 +67,9 @@ class MapNode;
 //   I updated the window to use the new view description and support the
 //   recently added background intensity parameter.
 //
+//    Eric Brugger, Wed May 27 17:27:31 PDT 2015
+//    I added an option to family output files.
+//
 // ****************************************************************************
 
 class GUI_API QvisXRayImageQueryWidget : public QWidget
@@ -97,6 +100,7 @@ private:
     QLineEdit       *imagePan;
     QLineEdit       *imageZoom;
     QCheckBox       *perspective;
+    QCheckBox       *family;
     QLineEdit       *imageSize;
 };
 

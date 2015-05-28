@@ -74,6 +74,9 @@
 //   I updated the window to use the new view description and support the
 //   recently added background intensity parameter.
 //
+//    Eric Brugger, Wed May 27 17:30:15 PDT 2015
+//    I added an option to family output files.
+//
 // ****************************************************************************
 
 QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
@@ -194,13 +197,20 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     perspective->setChecked(0);
     topLayout->addWidget(perspective, 12, 0, 1, 2);
 
+    //
+    // Family output files
+    //
+    family = new QCheckBox(tr("Family output files"));
+    family->setChecked(1);
+    topLayout->addWidget(family, 13, 0, 1, 2);
+
     // 
     // Image size
     // 
-    topLayout->addWidget(new QLabel(tr("Image Size")), 13, 0);
+    topLayout->addWidget(new QLabel(tr("Image Size")), 14, 0);
     imageSize = new QLineEdit();
     imageSize->setText("500 500");
-    topLayout->addWidget(imageSize, 13, 1);
+    topLayout->addWidget(imageSize, 14, 1);
 }
 
 // ****************************************************************************
@@ -427,6 +437,9 @@ QvisXRayImageQueryWidget::GetIntValues(int whichWidget, int *pt)
 //   I updated the window to use the new view description and support the
 //   recently added background intensity parameter.
 //
+//   Eric Brugger, Wed May 27 17:30:15 PDT 2015
+//   I added an option to family output files.
+//
 // ****************************************************************************
 bool
 QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
@@ -494,7 +507,8 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
         params["far_plane"] = farPlane;
         params["image_pan"] = imagePan;
         params["image_zoom"] = imageZoom;
-        params["perspective"] = (int)perspective->isChecked();;
+        params["perspective"] = (int)perspective->isChecked();
+        params["family_files"] = (int)family->isChecked();
         params["image_size"] = imageSize;
     }
     return noerrors; 
