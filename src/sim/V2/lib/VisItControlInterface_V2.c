@@ -232,6 +232,7 @@ static void        (*visit_slave_process_callback)(void) = NULL;
 static void        (*visit_slave_process_callback2)(void *) = NULL;
 static void         *visit_slave_process_callback2_data = NULL;
 static void         *visit_communicator = NULL;
+static int           visit_batch_mode = 0;
 
 /*******************************************************************************
  *******************************************************************************
@@ -1165,6 +1166,8 @@ static int CreateEngine(int batch)
                                       VISIT_ERROR);
                     return VISIT_ERROR;
                 }
+
+                visit_batch_mode = 1;
             }
             else
             {
@@ -3492,6 +3495,9 @@ int VisItSaveWindow(const char *filename, int w, int h, int format)
     {
         LIBSIM_MESSAGE("Calling visit_save_window");
         ret = (*callbacks->control.save_window)(engine, filename, w, h, format);
+        /* Synchronize in case we we're connected interactively. */
+        if(visit_batch_mode == 0 && visit_sync_enabled)
+            VisItSynchronize();
     }
     LIBSIM_API_LEAVE(VisItSaveWindow);
     return ret;
@@ -4233,9 +4239,12 @@ VisItExportDatabase(const char *filename, const char *format, visit_handle varNa
 
     LIBSIM_API_ENTER(VisItExportDatabase);
     /* Make sure the function exists before using it. */
-    if (engine && callbacks != NULL && callbacks->control.set_operator_options)
+    if (engine && callbacks != NULL && callbacks->control.exportdatabase)
     {
         retval = (*callbacks->control.exportdatabase)(engine, filename, format, varNames);
+        /* Synchronize in case we we're connected interactively. */
+        if(visit_batch_mode == 0 && visit_sync_enabled)
+            VisItSynchronize();
     }
     LIBSIM_API_LEAVE(VisItExportDatabase)
     return retval;
@@ -4261,7 +4270,7 @@ VisItRestoreSession(const char *filename)
 
     LIBSIM_API_ENTER(VisItExportDatabase);
     /* Make sure the function exists before using it. */
-    if (engine && callbacks != NULL && callbacks->control.set_operator_options)
+    if (engine && callbacks != NULL && callbacks->control.restoresession)
     {
         retval = (*callbacks->control.restoresession)(engine, filename);
     }

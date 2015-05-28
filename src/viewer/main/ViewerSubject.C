@@ -3260,10 +3260,10 @@ ViewerSubject::Export()
             node["files"] = JSONNode::JSONArray();
             node["dirs"] = JSONNode::JSONArray();
 
-            for(int i = 0; i < list->files.size(); ++i) {
+            for(size_t i = 0; i < list->files.size(); ++i) {
                 node["files"].Append("&quot;" + list->files[i].name + "&quot;" );
             }
-            for(int i = 0; i < list->dirs.size(); ++i) {
+            for(size_t i = 0; i < list->dirs.size(); ++i) {
                 node["dirs"].Append("&quot;" + list->dirs[i].name + "&quot;");
             }
 
@@ -5223,6 +5223,9 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
 //   Brad Whitlock, Sun Feb 27 21:12:17 PST 2011
 //   I added the SetUI command.
 //
+//   Brad Whitlock, Thu May 28 15:27:56 PDT 2015
+//   I added more commands that can come from simulations.
+//
 // ****************************************************************************
 
 void
@@ -5285,6 +5288,151 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
             GetViewerState()->GetSimulationUIValues()->SetSvalue(s[3]);
         GetViewerState()->GetSimulationUIValues()->SetEnabled(s[4] == "1");
         GetViewerState()->GetSimulationUIValues()->Notify();
+    }
+    else if(command.substr(0,10) == "SaveWindow")
+    {
+        stringVector s = SplitValues(command, ':');
+        // s[0] = SaveWindow
+        // s[1] = dName
+        // s[2] = fName
+        // s[3] = w
+        // s[4] = h
+        // s[5] = format
+        int ival = 0, w = 100, h = 100;
+        if(sscanf(s[3].c_str(), "%d", &ival) == 1)
+            w = (ival > 0) ? ival : w;
+        if(sscanf(s[4].c_str(), "%d", &ival) == 1)
+            h = (ival > 0) ? ival : h;
+        SaveWindowAttributes::FileFormat fmt = SaveWindowAttributes::PNG;
+        SaveWindowAttributes::FileFormat_FromString(s[5], fmt);
+
+        SaveWindowAttributes *swa = GetViewerState()->GetSaveWindowAttributes();
+        swa->SetFileName(s[2]);
+        swa->SetOutputToCurrentDirectory(false);
+        swa->SetOutputDirectory(s[1]);
+        swa->SetFamily(false);
+        swa->SetFormat(fmt);
+        swa->SetWidth(w);
+        swa->SetHeight(h);
+        swa->SetSaveTiled(false);
+        swa->SetScreenCapture(false);
+        swa->Notify();
+
+        GetViewerMethods()->SaveWindow();
+    }
+    else if(command.substr(0,14) == "ExportDatabase")
+    {
+        stringVector s = SplitValues(command, ':');
+        // s[0] = ExportDatabase
+        // s[1] = name
+        // s[2] = id
+        // s[3] = dName
+        // s[4] = fName
+        // s[5] = var0
+        // ...   more vars.
+
+        stringVector vars;
+        for(size_t i = 5; i < s.size(); ++i)
+            vars.push_back(s[i]);
+
+        ExportDBAttributes *atts = GetViewerState()->GetExportDBAttributes();
+        atts->SetAllTimes(false);
+        atts->SetDb_type(s[1]);
+        atts->SetDb_type_fullname(s[2]);
+        atts->SetDirname(s[3]);
+        atts->SetFilename(s[4]);
+        atts->SetVariables(vars);
+        atts->Notify();
+
+        GetViewerMethods()->ExportDatabase();
+    }
+    else if(command.substr(0,14) == "RestoreSession")
+    {
+        stringVector s = SplitValues(command, ':');
+        // s[0] = RestoreSession
+        // s[1] = filename
+        stringVector sources;
+        for(int i = 0; i < 10; ++i)
+            sources.push_back(db);
+
+        GetViewerMethods()->
+            ImportEntireStateWithDifferentSources(s[1], false, sources);
+    }
+    else if(command.substr(0,7) == "AddPlot")
+    {
+        stringVector s = SplitValues(command, ':');
+        // s[0] = AddPlot
+        // s[1] = plotType
+        // s[2] = var
+
+        // Get the plugin id from the input plotType, which could be an id or a name.
+        std::string id;
+        for(int i = 0; i < GetPlotPluginManager()->GetNEnabledPlugins(); ++i)
+        {
+            std::string thisID(GetPlotPluginManager()->GetEnabledID(i));
+            if(thisID == s[1])
+                id = thisID;
+            if(GetPlotPluginManager()->GetPluginName(thisID) == s[1])
+                id = thisID;
+        }
+        if(!id.empty())
+        {
+            int plotIndex = GetPlotPluginManager()->GetEnabledIndex(id);
+            GetViewerMethods()->AddPlot(plotIndex, s[2]);
+        }
+    }
+    else if(command.substr(0,11) == "AddOperator")
+    {
+        stringVector s = SplitValues(command, ':');
+        // s[0] = AddPlot
+        // s[1] = operatorType
+        // s[2] = applyToAll
+
+        // Get the plugin id from the input plotType, which could be an id or a name.
+        std::string id;
+        for(int i = 0; i < GetOperatorPluginManager()->GetNEnabledPlugins(); ++i)
+        {
+            std::string thisID(GetOperatorPluginManager()->GetEnabledID(i));
+            if(thisID == s[1])
+                id = thisID;
+            if(GetOperatorPluginManager()->GetPluginName(thisID) == s[1])
+                id = thisID;
+        }
+        if(!id.empty())
+        {
+            bool applyToAll = (s[2]=="1");
+
+            bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
+            GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAll);
+
+            int operatorIndex = GetOperatorPluginManager()->GetEnabledIndex(id);
+            GetViewerMethods()->AddOperator(operatorIndex);
+
+            GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
+        }
+    }
+    else if(command.substr(0,9) == "DrawPlots")
+    {
+        GetViewerMethods()->DrawPlots();
+    }
+    else if(command.substr(0,17) == "DeleteActivePlots")
+    {
+        GetViewerMethods()->DeleteActivePlots();
+    }
+    else if(command.substr(0,14) == "SetActivePlots")
+    {
+        stringVector s = SplitValues(command, ':');
+        // s[0] = SetActivePlots
+        // s[1] = activePlot0
+        // ... more active plots.
+        intVector activePlots;
+        for(size_t i = 1; i < s.size(); ++i)
+        {
+            int ival = atoi(s[i].c_str());
+            if(ival >= 0)
+                activePlots.push_back(ival);
+        }
+        GetViewerMethods()->SetActivePlots(activePlots);
     }
 }
 
