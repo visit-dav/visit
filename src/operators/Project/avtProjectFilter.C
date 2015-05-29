@@ -359,26 +359,26 @@ avtProjectFilter::ProjectPoint(double &x,double &y,double &z)
     {
       case ProjectAttributes::ZYCartesian:
         x = z;
-        y = y;
+        //y = y;
         z = 0;
         break;
 
       case ProjectAttributes::XZCartesian:
-        x = x;
+        //x = x;
         y = z;
         z = 0;
         break;
 
       case ProjectAttributes::XYCartesian:
-        x = x;
-        y = y;
+        //x = x;
+        //y = y;
         z = 0;
         break;
 
       case ProjectAttributes::XRCylindrical:
         {
             double r = sqrt(y*y + z*z);
-            x = x;
+            //x = x;
             y = r;
             z = 0;
         }
