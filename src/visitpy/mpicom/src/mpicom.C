@@ -504,7 +504,7 @@ mpicom_broadcast(PyObject *self, PyObject *args)
         snd_params[2] = snd_obj.BufferSize();
     }
 
-    err = MPI_Allreduce(&snd_params,&rcv_params,3,MPI_INT,
+    err = MPI_Allreduce(snd_params,rcv_params,3,MPI_INT,
                         MPI_MAX,MPI_COMM_MAIN);
     if(err != 0)
     {
