@@ -827,7 +827,6 @@ writematspec(DBfile *db)
     float   specmf[10000];
     DBoptlist      *optlist;
     MixInfo *mixinfo;
-    int i;
 
     dims[0] = mesh.zx;
     dims[1] = mesh.zy;
@@ -959,7 +958,7 @@ writematspec(DBfile *db)
 
 
     mixinfo = (MixInfo*) malloc(sizeof(MixInfo));    
-    for (i = 0; i < sizeof(matlist)/sizeof(matlist[0]); i++)
+    for (size_t i = 0; i < sizeof(matlist)/sizeof(matlist[0]); i++)
     {
         mixinfo->matlist[i] = matlist[i];
         mixinfo->mix_mat[i] = mix_mat[i];
