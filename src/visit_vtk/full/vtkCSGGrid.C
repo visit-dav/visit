@@ -2795,8 +2795,8 @@ vtkCSGGrid::ExtractRegionBounds(int specificZone, int &nRegionBounds,
                << regionBounds2[i*11+10] << endl;
     }
     zoneMap2 = new int[numBoundaries];
-    for (size_t i = 0; i < nRegionBounds; i++)
-        zoneMap2[(int)fabs(regionBounds2[i*11])] = (int)i;
+    for (int i = 0; i < nRegionBounds; i++)
+        zoneMap2[(int)fabs(regionBounds2[i*11])] = i;
 
     int nRegionBounds3 = 0;
     double *regionBounds3 = new double[nRegionBounds*10];
