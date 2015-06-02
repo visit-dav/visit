@@ -4849,13 +4849,15 @@ bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
 
     splitAxis = 0;
 
-    // Integer number of nodes processor - note subtract off one node
-    // because to join sections the "next" node is always added in. Thus
-    // by default the last node will be added in.
-    size_t numNodes = dims[splitAxis];
-    size_t numNodesPerProc = (numNodes-1) / PAR_Size();
-    size_t numProcsWithExtraNode = (numNodes-1) % PAR_Size();
+    // Number of cells along the splot axis. For zonal data, dims already is the number of cells.
+    // For nodal data, dims is the number of nodes and we need to substract one to obtain the number of cells.
+    size_t numCells = dims[splitAxis] - (isNodal ? 1 : 0);
+    // Adjust for stride
+    size_t numCell = (numCells + strides[splitAxis] - 1) / strides[splitAxis];
+    size_t numCellsPerProc = numCells / PAR_Size();
+    size_t numProcsWithExtraCell = numCells % PAR_Size();
 
+#if 0
     if( PAR_Rank() == 0 )
     {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -4863,46 +4865,36 @@ bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
         << "min = " << mins[splitAxis] << "  "
         << "max = " << maxs[splitAxis] << "  "
         << "strides = " << strides[splitAxis] << "  "
-        << "numNodes = " << numNodes << "  "
-        << "numNodesPerProc = " << numNodesPerProc << "  "
-        << "numProcsWithExtraNode = " << numProcsWithExtraNode
+        << "numCells = " << numCells << "  "
+        << "numCellsPerProc = " << numCellsPerProc << "  "
+        << "numProcsWithExtraCell = " << numProcsWithExtraCell
         << std::endl;
 
         for( int i=0; i<PAR_Size(); ++i )
         {
-            int min, max;
+            size_t minCell, maxCell;
 
             // To get all of the nodes adjust the count by one for those
             // processors that need an extra node.
-            if (i < numProcsWithExtraNode)
+            if (i < numProcsWithExtraCell)
             {
-                min = i * (numNodesPerProc + 1) * strides[splitAxis];
-                max = min + (numNodesPerProc + 1) * strides[splitAxis] +
-                // To get the complete mesh (i.e. the overlay between one
-                // section to the next) add one more node. But for zonal and
-                // point based meshes it is not necessary.
-                (isNodal ? 0 : -1);
-            }
+                minCell = i * (numCellsPerProc + 1) * strides[splitAxis];
+                maxCell = min + (numCellsPerProc + 1) * strides[splitAxis] - 1;
+           }
             else
             {
                 // Processors w/extra node plus processors without extra node.
-                min = (numProcsWithExtraNode * (numNodesPerProc + 1) +
-                        (i - numProcsWithExtraNode) * numNodesPerProc) *
-                strides[splitAxis];
-
-                max = min + (numNodesPerProc) * strides[splitAxis] +
-                // To get the complete mesh (i.e. the overlay between one
-                // section to the next) add one more node. But for zonal and
-                // point based meshes it is not necessary.
-                (isNodal ? 0 : -1);
+                minCell = (numProcsWithExtraCell * (numCellsPerProc + 1) +
+                        (i - numProcsWithExtraCell) * numNodesPerProc) * strides[splitAxis];
+                maxCell = min + (numNodesPerProc) * strides[splitAxis] - 1;
             }
 
             // Number of nodes plus one if the node topology is greater than one.
-            numNodes = (max-min) / strides[splitAxis] + 1;
+            size_t numNodes = (maxCell-minCell+1) / strides[splitAxis] + 1;
             if( i == 0 || (i && numNodes > 1) )
             VsLog::debugLog() << CLASSFUNCLINE << "  "
             << "Predicted bounds for processor " << i << "  "
-            << "min = " << min << "  max = " << max << "  "
+            << "minCell = " << minCell << "  maxCell = " << maxCell << "  "
             << "strides = " << strides[splitAxis] << "  "
             << "nodes = " << numNodes << std::endl;
             else
@@ -4910,39 +4902,44 @@ bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
             << "No work for processor " << i << std::endl;
         }
     }
+#endif
 
     // To get all of the nodes adjust the count by one for those
     // processors that need an extra node.
-    if (PAR_Rank() < numProcsWithExtraNode)
+    size_t minCell, maxCell;
+    if (PAR_Rank() < numProcsWithExtraCell)
     {
-        mins[splitAxis] = PAR_Rank() * (numNodesPerProc + 1) * strides[splitAxis];
-        maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc +1) * strides[splitAxis] +
-        // To get the complete mesh (i.e. the overlay between one
-        // section to the next) add one more node. But for zonal and
-        // point based meshes it is not necessary.
-        (isNodal ? 0 : -1);
+        minCell = PAR_Rank() * (numCellsPerProc + 1);
+        maxCell = minCell + (numCellsPerProc + 1) - 1;
     }
     else
     {
-        // Processors w/extra node plus processors without extra node.
-        mins[splitAxis] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
-                (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
-        strides[splitAxis];
-
-        maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc) * strides[splitAxis] +
-
-        (isNodal ? 0 : -1);
+        minCell = (numProcsWithExtraCell * (numCellsPerProc + 1) +
+                  (PAR_Rank() - numProcsWithExtraCell) * numCellsPerProc);
+        maxCell = minCell + numCellsPerProc - 1;
     }
+
+    // Adjust for strides
+    minCell = minCell * strides[splitAxis];
+    maxCell = maxCell * strides[splitAxis] + strides[splitAxis] - 1;
+
+    std::cout << PAR_Rank() << ": " << numCellsPerProc << " " << numProcsWithExtraCell << " " << minCell << " " << maxCell << std::endl;
+    mins[splitAxis] = minCell;
+    maxs[splitAxis] = maxCell + (isNodal ? 1 : 0);
 
     // Number of nodes plus one if the node topology is greater than
     // one.  Point data meshes or for zonal variable data are the
     // cases where one does need to adjust for nodes.
-    numNodes = (maxs[splitAxis]-mins[splitAxis]) / strides[splitAxis] + 1;
-
+    size_t numNodes = (maxCell - minCell + 1 + strides[splitAxis] - 1) / strides[splitAxis] + (isNodal ? 1 : 0);
     dims[splitAxis] = numNodes;
 
-    bool work;
-
+    std::cout << CLASSFUNCLINE << "  "
+     << "Actual bounds for processor " << PAR_Rank() << "  "
+     << "min = " << mins[splitAxis] << "  "
+     << "max = " << maxs[splitAxis] << "  "
+     << "strides = " << strides[splitAxis] << "  "
+     << "nodes = " << numNodes << std::endl;
+ 
     if( (PAR_Rank() == 0) || (PAR_Rank() && numNodes > 1) )
     {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -4965,7 +4962,13 @@ bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
     // If not on processor 0 and if the porcessor has only one node
     // skip it as it is slice which will have been drawn by the previous
     // processor.
-    return( (PAR_Rank() == 0) || (PAR_Rank() && numNodes > 1) );
+    bool hasWork;
+    if (isNodal)
+        hasWork = (numNodes > 1);
+    else
+        hasWork = (numNodes > 0);
+
+    return ( (PAR_Rank() == 0) || hasWork );
 
 #endif
     return false;
