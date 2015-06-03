@@ -75,7 +75,7 @@
     // If the data array is empty then try and get the node numbers so we can
     // label the node numbers using the original node numbers.
     //
-    vtkUnsignedIntArray *originalNodes = 0;
+    vtkIntArray *originalNodes = 0;
     if(data == 0 && atts.GetVarType() == LabelAttributes::LABEL_VT_VECTOR_VAR)
     {
         data = input->GetPointData()->GetVectors();
@@ -88,17 +88,22 @@
         {
             debug3 << "avtLabelRenderer could not find LabelFilterOriginalNodeNumbers" << endl;
         }
-        else if(!tmpNodes->IsA("vtkUnsignedIntArray"))
+        else if(!tmpNodes->IsA("vtkIntArray"))
         {
             debug3 << "avtLabelRenderer found LabelFilterOriginalNodeNumbers but it "
-                      "was not a vtkUnsignedIntArray. It was a " << tmpNodes->GetClassName() << endl;
+                      "was not a vtkIntArray. It was a " << tmpNodes->GetClassName() << endl;
         }
         else
         {
             debug3 << "avtLabelRenderer setting originalNodes=data." << endl;
-            originalNodes = (vtkUnsignedIntArray *)tmpNodes;
+            originalNodes = (vtkIntArray *)tmpNodes;
         }
     }
+
+   vtkIntArray *logIndices = vtkIntArray::SafeDownCast(
+        input->GetPointData()->GetArray("LabelFilterNodeLogicalIndices"));
+
+
 
     if(data != 0)
     {
@@ -278,6 +283,37 @@ debug3 << "Labelling nodes with 3d tensor data" << endl;
             free(formatStringMiddle);
             free(formatStringEnd);
             free(formatStringLast);
+        }
+    }
+    else if(logIndices != 0 &&
+          atts.GetLabelDisplayFormat() != LabelAttributes::Index)
+    {
+debug3 << "Labelling nodes with logical Indices: " << endl;
+        const unsigned int *intptr = (const unsigned int*)logIndices->GetVoidPointer(0);
+        int nc = logIndices->GetNumberOfComponents();
+        if (nc == 2)
+        {
+            for(vtkIdType id = 0; id < npts; id += skipIncrement)
+            {
+                BEGIN_LABEL
+                if (intptr[id*2+0] == -1)
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
+                else
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d", intptr[id*2+0], intptr[id*2+1]);
+                END_LABEL
+            }
+        }
+        else
+        {
+            for(vtkIdType id = 0; id < npts; id += skipIncrement)
+            {
+                BEGIN_LABEL
+                if (intptr[id*3+0] == -1)
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
+                else
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d,%d", intptr[id*3+0], intptr[id*3+1], intptr[id*3+2]);
+                END_LABEL
+            }
         }
     }
     else if(originalNodes != 0)

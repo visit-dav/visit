@@ -66,12 +66,18 @@
 // Creation:   Wed Jan 7 14:58:26 PST 2004
 //
 // Modifications:
+//    Kathleen Biagas, Wed Jun  3 10:28:07 PDT 2015
+//    Added mayBeLogical, cellOrigin, nodeOrigin, to aid in calculating
+//    logical indices.
 //
 // ****************************************************************************
 
 avtLabelFilter::avtLabelFilter()
 {
     labelVariable = 0;
+    mayBeLogical = false;
+    cellOrigin = 0;
+    nodeOrigin = 0;
 }
 
 
@@ -178,6 +184,12 @@ print_array_names(vtkDataSet *inDS)
 //    Eric Brugger, Tue Aug 19 10:33:45 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Wed Jun  3 10:31:28 PDT 2015
+//    Create logical indices here, where each block can be considered
+//    separately, otherwise if block dimensions vary, the indices will be
+//    incorrect.
+//    (Logic mostly copied from NodeLabels_body.C and CellLabels_body.C)
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -276,10 +288,10 @@ avtLabelFilter::ExecuteData(avtDataRepresentation *inDR)
                    << endl;
             // Throw out the domain numbers.
             int n = originalNodeNumbers->GetNumberOfTuples();
-            vtkUnsignedIntArray *newNodeNos = vtkUnsignedIntArray::New();
+            vtkIntArray *newNodeNos = vtkIntArray::New();
             newNodeNos->SetName("LabelFilterOriginalNodeNumbers");
             newNodeNos->SetNumberOfTuples(n);
-            unsigned int *dest = (unsigned int*)newNodeNos->GetVoidPointer(0);
+            int *dest = (int*)newNodeNos->GetVoidPointer(0);
             int *src = (int*)originalNodeNumbers->GetVoidPointer(0);
             ++src;
             for(int i = 0; i < n; ++i, src+=2)
@@ -295,6 +307,108 @@ avtLabelFilter::ExecuteData(avtDataRepresentation *inDR)
         }
     }
     visitTimer->StopTimer(stageTimer, "Creating LabelFilterOriginalNodeNumbers");
+
+
+    if(variableProbablyIsAMesh && needNodeArray)
+    {
+
+        vtkDataArray *sDims = inDS->GetFieldData()->
+            GetArray("avtOriginalStructuredDimensions");
+        if(mayBeLogical &&
+           sDims != 0 &&
+           sDims->IsA("vtkUnsignedIntArray") &&
+           sDims->GetNumberOfTuples() == 3)
+        {
+            stageTimer = visitTimer->StartTimer();
+debug3 << "LabelFilter: adding LabelFilterNodeLogicalIndices array" << endl;
+            //
+            // Figure out the first real index in x,y,z. This only matters if we
+            // have ghost zones and structured indices.
+            //
+            vtkDataArray *rDims = inDS->GetFieldData()->GetArray("avtRealDims");
+            unsigned int xbase = 0, ybase = 0, zbase = 0;
+            if(rDims != 0 &&
+               rDims->IsA("vtkIntArray") &&
+               rDims->GetNumberOfTuples() == 6)
+            {
+                const unsigned int *iptr = (const unsigned int *)rDims->GetVoidPointer(0);
+                xbase = iptr[0];
+                ybase = iptr[2];
+                zbase = iptr[4];
+            }
+            xbase -= nodeOrigin;
+            ybase -= nodeOrigin;
+            zbase -= nodeOrigin;
+
+
+            vtkIntArray *originalNodes = vtkIntArray::SafeDownCast(
+                outDS->GetPointData()->GetArray("LabelFilterOriginalNodeNumbers"));
+
+            int npts = outDS->GetNumberOfPoints();
+            //
+            // Add the node labels as structured indices.
+            //
+            const unsigned int *iptr = (const unsigned int *)sDims->GetVoidPointer(0);
+            int xdims = (int)iptr[0];
+            int ydims = (int)iptr[1];
+            int zdims = (int)iptr[2];
+
+            vtkIntArray *logicalIndices = vtkIntArray::New();
+            logicalIndices->SetNumberOfComponents(zdims == 1 ? 2 : 3);
+            logicalIndices->SetNumberOfTuples(npts);
+            logicalIndices->SetName("LabelFilterNodeLogicalIndices");
+            int *logI = (int*)logicalIndices->GetVoidPointer(0);
+
+            if(zdims == 1)
+            {
+                // 2D
+                for(vtkIdType id = 0; id < npts; ++id)
+                {
+                    int realNodeId = originalNodes->GetValue(id);
+                    if(realNodeId == -1)
+                    {
+                        logI[2*id+0] = -1;
+                        logI[2*id+1] = -1;
+                    }
+                    else
+                    {
+                        int y = (realNodeId / xdims) - ybase;
+                        int x = (realNodeId % xdims) - xbase;
+                        logI[2*id+0] = x;
+                        logI[2*id+1] = y;
+                    }
+                }
+            }
+            else
+            {
+                // 3D
+                int xydims = xdims * ydims;
+                for(vtkIdType id = 0; id < npts; ++id)
+                {
+                    int realNodeId = originalNodes->GetValue(id);
+                    if(realNodeId == -1)
+                    {
+                        logI[3*id+0] = -1;
+                        logI[3*id+1] = -1;
+                        logI[3*id+2] = -1;
+                    }
+                    else
+                    {
+                        int z = (realNodeId / xydims) - zbase;
+                        int offset = realNodeId % xydims;
+                        int y = (offset / xdims) - ybase;
+                        int x = (offset % xdims) - xbase;
+                        logI[3*id+0] = x;
+                        logI[3*id+1] = y;
+                        logI[3*id+2] = z;
+                    }
+                }
+            }
+            outDS->GetPointData()->AddArray(logicalIndices);
+            logicalIndices->Delete();
+            visitTimer->StopTimer(stageTimer, "Creating LabelFilterNodeLogicalIndices");
+        }
+    }
 
     //
     // If we have normals then quantize them so the float3 gets assigned to a
@@ -361,8 +475,80 @@ avtLabelFilter::ExecuteData(avtDataRepresentation *inDR)
         //
         outDS->GetCellData()->AddArray(cellCenters);
         cellCenters->Delete();
+        visitTimer->StopTimer(stageTimer, "Creating LabelFilterCellCenters");
+
+
+        // Create logical index array
+        vtkDataArray *sDims = inDS->GetFieldData()->
+            GetArray("avtOriginalStructuredDimensions");
+        if(mayBeLogical &&
+           sDims != 0 &&
+           sDims->IsA("vtkUnsignedIntArray") &&
+           sDims->GetNumberOfTuples() == 3)
+        {
+           visitTimer->StartTimer();
+debug3 << "LabelFilter: adding LabelFilterCellLogicalIndices array" << endl;
+            vtkIdType nCells = inDS->GetNumberOfCells();
+            vtkUnsignedIntArray *originalCells = vtkUnsignedIntArray::SafeDownCast(
+                outDS->GetCellData()->GetArray("LabelFilterOriginalCellNumbers"));
+            const unsigned int *iptr = (const unsigned int *)sDims->GetVoidPointer(0);
+            unsigned int xdims = iptr[0]-1;
+            unsigned int ydims = iptr[1]-1;
+            unsigned int zdims = iptr[2]-1;
+            unsigned int xbase = 0, ybase = 0, zbase = 0;
+            vtkDataArray *rDims = inDS->GetFieldData()->
+                GetArray("avtRealDims");
+            if(rDims != 0 &&
+               rDims->IsA("vtkIntArray") &&
+               rDims->GetNumberOfTuples() == 6)
+            {
+                const int *iptr2 = (const int *)rDims->GetVoidPointer(0);
+                xbase = iptr2[0];
+                ybase = iptr2[2];
+                zbase = iptr2[4];
+            }
+            xbase -= cellOrigin;
+            ybase -= cellOrigin;
+            zbase -= cellOrigin;
+
+
+            vtkUnsignedIntArray *logicalIndices = vtkUnsignedIntArray::New();
+            logicalIndices->SetNumberOfComponents(zdims == 0? 2 : 3);
+            logicalIndices->SetNumberOfTuples(nCells);
+            logicalIndices->SetName("LabelFilterCellLogicalIndices");
+
+            unsigned int *li = (unsigned int *)logicalIndices->GetVoidPointer(0);
+            if(zdims == 0)
+            {
+                for(vtkIdType id = 0; id < nCells; ++id)
+                {
+                    unsigned int realCellId = originalCells->GetValue(id);
+                    unsigned int y = (realCellId / xdims) - ybase;
+                    unsigned int x = (realCellId % xdims) - xbase;
+                    li[2*id+0] = x;
+                    li[2*id+1] = y;
+                }
+            }
+            else
+            {
+                unsigned int xydims = xdims * ydims;
+                for(vtkIdType id = 0; id < nCells; ++id)
+                {
+                    unsigned int realCellId = originalCells->GetValue(id);
+                    unsigned int z = (realCellId / xydims) - zbase;
+                    unsigned int offset = realCellId % xydims;
+                    unsigned int y = (offset / xdims) - ybase;
+                    unsigned int x = (offset % xdims) - xbase;
+                    li[3*id+0] = x;
+                    li[3*id+1] = y;
+                    li[3*id+2] = z;
+                }
+            }
+            outDS->GetCellData()->AddArray(logicalIndices);
+            logicalIndices->Delete();
+            visitTimer->StopTimer(stageTimer, "Creating LabelFilterCellLogicalIndices");
+        }
     }
-    visitTimer->StopTimer(stageTimer, "Creating LabelFilterCellCenters");
 
 #define CELL_CENTER_HACK
 #ifdef CELL_CENTER_HACK
