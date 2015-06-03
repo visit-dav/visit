@@ -407,6 +407,14 @@ main(int argc, char *argv[])
                 ShowWindow(console, SW_MINIMIZE);
 #endif
         }
+        else if(strcmp(argv[i], "-hide_window") == 0)
+        {
+#ifdef WIN32
+            HWND console = GetConsoleWindow();
+            if(console != NULL)
+                ShowWindow(console, SW_HIDE);
+#endif
+        }
         else
         {
             // Pass the array along to the visitmodule.
