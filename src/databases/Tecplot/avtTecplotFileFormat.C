@@ -621,6 +621,8 @@ avtTecplotFileFormat::ParseArraysBlock(int numNodes, int numElements)
 //    Added a couple "FE" variants that were missing.
 //    Added support for comments.
 //
+//    Mark C. Miller, Thu Jun  4 11:47:02 PDT 2015
+//    Added support for FELINESEG elem type
 // ****************************************************************************
 vtkUnstructuredGrid *
 avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
@@ -653,6 +655,12 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
         nelempts = 4;
         idtype = VTK_TETRA;
         topologicalDimension = MAX(topologicalDimension, 3);
+    }
+    else if (elemType == "LINESEG" || elemType == "FELINESEG")
+    {
+        nelempts = 2;
+        idtype = VTK_LINE;
+        topologicalDimension = MAX(topologicalDimension, 1);
     }
     else if (elemType == "POINT" || elemType == "FEPOINT" || elemType == "")
     {
@@ -750,6 +758,8 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
 //    Added support for copying connectivity from earlier ZONE instead
 //    of having explicit arrays on disk.
 //
+//    Mark C. Miller, Thu Jun  4 11:47:43 PDT 2015
+//    Adjusted logic for detecting curves defined on FELINESEG elem types
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
@@ -775,7 +785,7 @@ avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
     points->Delete();
 
     if ((topologicalDimension == 2 || topologicalDimension == 3) ||
-        (topologicalDimension == 0 && spatialDimension > 1))
+        (topologicalDimension <= 1 && spatialDimension > 1))
     {
         meshes.push_back(ugrid);
     }
@@ -815,6 +825,8 @@ avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
 //    Added support for copying connectivity from earlier ZONE instead
 //    of having explicit arrays on disk.
 //
+//    Mark C. Miller, Thu Jun  4 11:47:43 PDT 2015
+//    Adjusted logic for detecting curves defined on FELINESEG elem types
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
@@ -840,7 +852,7 @@ avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
     points->Delete();
 
     if ((topologicalDimension == 2 || topologicalDimension == 3) ||
-        (topologicalDimension == 0 && spatialDimension > 1))
+        (topologicalDimension <= 1 && spatialDimension > 1))
     {
         meshes.push_back(ugrid);
     }
@@ -877,6 +889,8 @@ avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
 //    Added support for cell-centered vars (through VARLOCATION).
 //    Renamed ParseNodes* to ParseArrays* to reflect this capability.
 //
+//    Mark C. Miller, Thu Jun  4 11:47:43 PDT 2015
+//    Adjusted logic for detecting curves defined on FELINESEG elem types
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
@@ -904,7 +918,7 @@ avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
     sgrid->SetDimensions(dims);
 
     if ((topologicalDimension == 2 || topologicalDimension == 3) ||
-        (topologicalDimension == 0 && spatialDimension > 1))
+        (topologicalDimension <= 1 && spatialDimension > 1))
     {
         meshes.push_back(sgrid);
     }
@@ -951,6 +965,8 @@ avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
 //    perfectly valid, but extra support may need to be added to VisIt
 //    proper to handle them correctly.
 //
+//    Mark C. Miller, Thu Jun  4 11:47:43 PDT 2015
+//    Adjusted logic for detecting curves defined on FELINESEG elem types
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
@@ -990,7 +1006,7 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
         sgrid->SetDimensions(dims);
 
         if ((topologicalDimension == 2 || topologicalDimension == 3) ||
-            (topologicalDimension == 0 && spatialDimension > 1))
+            (topologicalDimension <= 1 && spatialDimension > 1))
         {
             meshes.push_back(sgrid);
         }
@@ -1946,6 +1962,8 @@ avtMeshType avtTecplotFileFormat::DetermineAVTMeshType() const
 //    Jeremy Meredith, Thu May 19 10:46:22 EDT 2011
 //    Make point mesh variables on a separate namespace from the normal mesh.
 //
+//    Mark C. Miller, Thu Jun  4 11:47:43 PDT 2015
+//    Adjusted logic for detecting curves defined on FELINESEG elem types
 // ****************************************************************************
 
 void
@@ -1985,7 +2003,7 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     // and now do either curves or a real grid, depending....
     if ((topologicalDimension==2 || topologicalDimension==3) ||
-        (topologicalDimension==0 && spatialDimension > 1))
+        (topologicalDimension<=1 && spatialDimension > 1))
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = "mesh";
@@ -2095,6 +2113,8 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Make point mesh variables on a separate namespace from the normal mesh.
 //    Also, fixed a bug with point mesh Z coordinates.
 //
+//    Mark C. Miller, Thu Jun  4 11:47:43 PDT 2015
+//    Adjusted logic for detecting curves defined on FELINESEG elem types
 // ****************************************************************************
 
 vtkDataSet *
@@ -2140,7 +2160,7 @@ avtTecplotFileFormat::GetMesh(int domain, const char *meshname)
 
     // otherwise, what they get depends on the file contents
     if ((topologicalDimension == 2 || topologicalDimension == 3) ||
-        (topologicalDimension == 0 && spatialDimension > 1))
+        (topologicalDimension <= 1 && spatialDimension > 1))
     {
         meshes[domain]->Register(NULL);
         return meshes[domain];
