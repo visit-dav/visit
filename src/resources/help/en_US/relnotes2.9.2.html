@@ -38,7 +38,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The graphical user interface for the <i>XRay Image</i> query was updated to use the new view description and as well as support the background intensity parameter.</li>
   <li>The <i>XRay Image</i> query was enhanced to also output the path length field when outputting in rawfloat or bov format. The intensities will be in the files output00.bov - outputXX.bov and the path lengths will be in the files outputYY.bov - outputZZ.bov, where XX is nBins-1, YY is nBins and ZZ is 2*nBins-1.</li>
   <li>The <i>XRay Image</i> query was enhanced to support output file familying. When file familying is enabled the output files are named outputXXXX.YY.EXT, where XXXX is the family number, YY is the bin number, and EXT is the output file type extension. Furthermore, when file familying is enabled, the query will not overwrite existing files. When file familying is disabled, the output file outputYY.EXT will be overwritten each time the query is run, consistent with the previous behavior. File familying is controlled with the <i>family_files</i> setting to the query from the command line interface and with the <i>Family output files</i> setting in the graphical user interface. The default when using the command line interface is for file familying to be disabled and for file familying to be enabled when using the graphical user interface.</li>
-  <li></li>
+  <li>Added support for FELINESEG type in Tecplot plugin.</li>
 </ul>
 
 <a name="Dev_changes"></a>
