@@ -186,6 +186,7 @@ RemoveLastOperator()
 Test("matvf_10")
 
 
+DeleteAllPlots()
 CloseDatabase(silo_data_path("rect2d.silo"))
 
 OpenDatabase(silo_data_path("thinplane.silo"))
@@ -194,7 +195,6 @@ OpenDatabase(silo_data_path("thinplane.silo"))
 # tests for matvf w/ ghost zones
 
 # test standard
-DeleteAllPlots()
 DefineScalarExpression("mvf_2", "matvf(mat,2)")
 AddPlot("Pseudocolor", "mvf_2")
 atts = PseudocolorAttributes(1)
@@ -229,6 +229,7 @@ SetPlotOptions(atts)
 DrawPlots()
 Test("matvf_post_ghost_3")
 
+DeleteAllPlots()
 CloseDatabase(silo_data_path("thinplane.silo"))
 
 OpenDatabase(silo_data_path("bigsil.silo"))
@@ -237,11 +238,11 @@ OpenDatabase(silo_data_path("bigsil.silo"))
 # test for gradient w/ matvf, to check if post ghosts were correctly 
 # requested. 
 
-DeleteAllPlots()
 DefineScalarExpression("gate", "agrad(dist)[0] * matvf(mat,1)")
 AddPlot("Pseudocolor", "gate")
 DrawPlots()
 Test("matvf_post_ghost_4")
+DeleteAllPlots()
 
 
 Exit()
