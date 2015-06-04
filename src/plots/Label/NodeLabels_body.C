@@ -289,7 +289,7 @@ debug3 << "Labelling nodes with 3d tensor data" << endl;
           atts.GetLabelDisplayFormat() != LabelAttributes::Index)
     {
 debug3 << "Labelling nodes with logical Indices: " << endl;
-        const unsigned int *intptr = (const unsigned int*)logIndices->GetVoidPointer(0);
+        const int *intptr = (const int*)logIndices->GetVoidPointer(0);
         int nc = logIndices->GetNumberOfComponents();
         if (nc == 2)
         {
