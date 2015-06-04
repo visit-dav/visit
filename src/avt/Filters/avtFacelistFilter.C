@@ -424,7 +424,7 @@ avtFacelistFilter::FindFaces(avtDataRepresentation *in_dr,
 
     if (out_ds != NULL)
     {
-        out_dt = new avtDataTree(1, &out_ds, domain, label);
+        out_dt = new avtDataTree(out_ds, domain, label);
         out_ds->Delete();
     }
 
@@ -784,7 +784,7 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label,
         debug4 << "Facelist filter reduction for domain " << domain 
            << ": input has " << in_ds->GetNumberOfCells() << " cells, out has " 
            << out_ds->GetNumberOfCells() << endl;
-        out_dt = new avtDataTree(1, &out_ds, domain, label);
+        out_dt = new avtDataTree(out_ds, domain, label);
     }
 
     pd->Delete();

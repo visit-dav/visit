@@ -126,6 +126,10 @@ typedef void (*TraverseFunc)(avtDataRepresentation &, void *, bool &);
 //    Cameron Christensen, Thursday, May 29, 2014
 //    Added a couple of more constructors that take avtDataRepresentation.
 //
+//    Kathleen Biagas, Wed Jun  3 10:56:38 PDT 2015
+//    Added methods for constructing leaves, to aid in keeping the tree depth
+//    as shallow as possible.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataTree
@@ -189,6 +193,8 @@ class PIPELINE_API avtDataTree
     avtDataTree_p           *children;
     avtDataRepresentation   *dataRep; 
 
+    void                     ConstructLeaf(vtkDataSet *, int);
+    void                     ConstructLeaf(vtkDataSet *, int, std::string);
     void                     AddLeafToList(vtkDataSet**, int &); 
     void                     GetUniqueLabels(std::vector<std::string> &, std::set<std::string> &);
 };

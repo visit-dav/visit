@@ -92,6 +92,56 @@ avtDataTree::avtDataTree()
 }
 
 
+// ****************************************************************************
+//  Method: avtDataTree::ConstructLeaf
+//
+//  Purpose:
+//    Helper method for constructors, to create a leaf node.
+//
+//  Arguments:
+//     ds       The vtkDataSet that sets this avtDataTree up as a leaf.
+//     index    The index of the data set.
+//     s        The label for the data set.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   Jun 3, 2015
+//
+// ****************************************************************************
+
+void
+avtDataTree::ConstructLeaf(vtkDataSet *ds, int index, string s)
+{
+    nChildren = 0;
+    children  = NULL;
+    if (ds == NULL)
+        dataRep = NULL;
+    else
+        dataRep   = new avtDataRepresentation(ds, index, s);
+}
+
+
+// ****************************************************************************
+//  Method: avtDataTree::ConstructLeaf
+//
+//  Purpose:
+//    Helper method for constructors, to create a leaf node.
+//
+//  Arguments:
+//     ds       The vtkDataSet that sets this avtDataTree up as a leaf.
+//     index    The index of the data set.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   Jun 3, 2015
+//
+// ****************************************************************************
+
+void
+avtDataTree::ConstructLeaf(vtkDataSet *ds, int index)
+{
+    string l;
+    ConstructLeaf(ds, index, l);
+}
+
 
 // ****************************************************************************
 //  Method: avtDataTree constructor (leaf)
@@ -114,6 +164,9 @@ avtDataTree::avtDataTree()
 //    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001 
 //    Associate a label (emtpy) with the dataset.
 //
+//    Kathleen Biagas, Wed Jun  3 11:01:25 PDT 2015
+//    Call 'ConstructLeaf'.
+//
 // ****************************************************************************
 
 avtDataTree::avtDataTree(vtkDataSet *ds, int index)
@@ -122,10 +175,7 @@ avtDataTree::avtDataTree(vtkDataSet *ds, int index)
     {
         EXCEPTION0(NoInputException);
     }
-    nChildren = 0;
-    children  = NULL;
-    std::string l;
-    dataRep   = new avtDataRepresentation(ds, index, l);
+    ConstructLeaf(ds, index);
 }
 
 
@@ -140,6 +190,10 @@ avtDataTree::avtDataTree(vtkDataSet *ds, int index)
 //  Programmer: Kathleen Bonnell
 //  Creation:   September 19, 2001 
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Jun  3 11:01:25 PDT 2015
+//    Call 'ConstructLeaf'.
+//
 // ****************************************************************************
 
 avtDataTree::avtDataTree(vtkDataSet *ds, int index, string s)
@@ -148,9 +202,7 @@ avtDataTree::avtDataTree(vtkDataSet *ds, int index, string s)
     {
         EXCEPTION0(NoInputException);
     }
-    nChildren = 0;
-    children  = NULL;
-    dataRep   = new avtDataRepresentation(ds, index, s);
+    ConstructLeaf(ds, index, s);
 }
 
 
@@ -230,6 +282,9 @@ avtDataTree::avtDataTree(avtDataRepresentation &ds)
 //    Hank Childs, Tue Jun  5 08:59:06 PDT 2001
 //    Associate indices with the datasets.
 //
+//    Kathleen Biagas, Wed Jun  3 11:01:25 PDT 2015
+//    Call 'ConstructLeaf' if only 1 child.
+//
 // ****************************************************************************
 
 avtDataTree::avtDataTree(int n, vtkDataSet **ds, int *ind)
@@ -238,20 +293,28 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, int *ind)
     {
         EXCEPTION0(NoInputException);
     }
-    nChildren = n;
-    children = new avtDataTree_p [nChildren];
-    for (int i = 0; i < nChildren; i++)
+
+    if (n == 1)
     {
-        if (ds[i] != NULL) 
-        {
-            children[i] = new avtDataTree(ds[i], ind[i]);
-        }
-        else
-        {
-            children[i] = NULL;
-        }
+        ConstructLeaf(ds[0], ind[0]);
     }
-    dataRep = NULL;
+    else
+    {
+        nChildren = n;
+        children = new avtDataTree_p [nChildren];
+        for (int i = 0; i < nChildren; i++)
+        {
+            if (ds[i] != NULL) 
+            {
+                children[i] = new avtDataTree(ds[i], ind[i]);
+            }
+            else
+            {
+                children[i] = NULL;
+            }
+        }
+        dataRep = NULL;
+    }
 }
 
 
@@ -266,6 +329,10 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, int *ind)
 //  Programmer: Hank Childs
 //  Creation:   June 6, 2001
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Jun  3 11:01:25 PDT 2015
+//    Call 'ConstructLeaf' if only 1 child.
+//
 // ****************************************************************************
 
 avtDataTree::avtDataTree(int n, vtkDataSet **ds, vector<int> &ind)
@@ -274,20 +341,27 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, vector<int> &ind)
     {
         EXCEPTION0(NoInputException);
     }
-    nChildren = n;
-    children = new avtDataTree_p [nChildren];
-    for (int i = 0; i < nChildren; i++)
+    if (n == 1)
     {
-        if (ds[i] != NULL) 
-        {
-            children[i] = new avtDataTree(ds[i], ind[i]);
-        }
-        else
-        {
-            children[i] = NULL;
-        }
+        ConstructLeaf(ds[0], ind[0]);
     }
-    dataRep = NULL;
+    else
+    {
+        nChildren = n;
+        children = new avtDataTree_p [nChildren];
+        for (int i = 0; i < nChildren; i++)
+        {
+            if (ds[i] != NULL) 
+            {
+                children[i] = new avtDataTree(ds[i], ind[i]);
+            }
+            else
+            {
+                children[i] = NULL;
+            }
+        }
+        dataRep = NULL;
+    }
 }
 
 // ****************************************************************************
@@ -301,6 +375,10 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, vector<int> &ind)
 //  Programmer: Hank Childs
 //  Creation:   June 6, 2001
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Jun  3 11:01:25 PDT 2015
+//    Call 'ConstructLeaf' if only 1 child.
+//
 // ****************************************************************************
 
 avtDataTree::avtDataTree(int n, vtkDataSet **ds, int ind)
@@ -309,20 +387,27 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, int ind)
     {
         EXCEPTION0(NoInputException);
     }
-    nChildren = n;
-    children = new avtDataTree_p [nChildren];
-    for (int i = 0; i < nChildren; i++)
+    if (n == 1)
     {
-        if (ds[i] != NULL) 
-        {
-            children[i] = new avtDataTree(ds[i], ind);
-        }
-        else
-        {
-            children[i] = NULL;
-        }
+        ConstructLeaf(ds[0], ind);
     }
-    dataRep = NULL;
+    else
+    {
+        nChildren = n;
+        children = new avtDataTree_p [nChildren];
+        for (int i = 0; i < nChildren; i++)
+        {
+            if (ds[i] != NULL) 
+            {
+                children[i] = new avtDataTree(ds[i], ind);
+            }
+            else
+            {
+                children[i] = NULL;
+            }
+        }
+        dataRep = NULL;
+    }
 }
 
 
@@ -348,6 +433,9 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, int ind)
 //    large as n so we don't have memory problems if the labels array violates
 //    this method's assumptions.
 //
+//    Kathleen Biagas, Wed Jun  3 11:01:25 PDT 2015
+//    Call 'ConstructLeaf' if only 1 child.
+//
 // ****************************************************************************
 
 avtDataTree::avtDataTree(int n, vtkDataSet **ds, int ind, vector<string> &l)
@@ -363,20 +451,27 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, int ind, vector<string> &l)
     {
         EXCEPTION1(ImproperUseException, "The are fewer labels than expected!");
     }
-    nChildren = n;
-    children = new avtDataTree_p [nChildren];
-    for (int i = 0; i < nChildren; i++)
+    if (n == 1)
     {
-        if (ds[i] != NULL) 
-        {
-            children[i] = new avtDataTree(ds[i], ind, l[i]);
-        }
-        else
-        {
-            children[i] = NULL;
-        }
+        ConstructLeaf(ds[0], ind, l[0]);
     }
-    dataRep = NULL;
+    else
+    {
+        nChildren = n;
+        children = new avtDataTree_p [nChildren];
+        for (int i = 0; i < nChildren; i++)
+        {
+            if (ds[i] != NULL) 
+            {
+                children[i] = new avtDataTree(ds[i], ind, l[i]);
+            }
+            else
+            {
+                children[i] = NULL;
+            }
+        }
+        dataRep = NULL;
+    }
 }
 
 
@@ -392,6 +487,10 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, int ind, vector<string> &l)
 //  Programmer: Hank Childs
 //  Creation:   March 8, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Jun  3 11:01:25 PDT 2015
+//    Call 'ConstructLeaf' if only 1 child.
+//
 // ****************************************************************************
 
 avtDataTree::avtDataTree(int n, vtkDataSet **ds, int ind, string &l)
@@ -400,20 +499,27 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, int ind, string &l)
     {
         EXCEPTION0(NoInputException);
     }
-    nChildren = n;
-    children = new avtDataTree_p [nChildren];
-    for (int i = 0; i < nChildren; i++)
+    if (n == 1)
     {
-        if (ds[i] != NULL) 
-        {
-            children[i] = new avtDataTree(ds[i], ind, l);
-        }
-        else
-        {
-            children[i] = NULL;
-        }
+        ConstructLeaf(ds[0], ind, l);
     }
-    dataRep = NULL;
+    else
+    {
+        nChildren = n;
+        children = new avtDataTree_p [nChildren];
+        for (int i = 0; i < nChildren; i++)
+        {
+            if (ds[i] != NULL) 
+            {
+                children[i] = new avtDataTree(ds[i], ind, l);
+            }
+            else
+            {
+                children[i] = NULL;
+            }
+        }
+        dataRep = NULL;
+    }
 }
 
 
