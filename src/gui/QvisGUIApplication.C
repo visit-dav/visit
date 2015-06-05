@@ -1636,7 +1636,12 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   work around a Qt/Glib init problem in linux.
 //
 //   David Camp, Thu Aug  8 08:50:06 PDT 2013
-//   Added the restore from last session feature. 
+//   Added the restore from last session feature.
+//
+//   Kevin Griffin, Fri Jun 5 11:49:34 PDT 2015
+//   No longer starting CLI on existence of visitrc file.
+//   CLI is started on-demand when needed by the user
+//   (i.e. user selects Macro... menuitem) - see Bug #2264
 //
 // ****************************************************************************
 
@@ -1709,10 +1714,7 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(timeid, "stage 4 - Hiding splashscreen");
         break;
     case 5:
-        // If the visitrc file exists then make sure that we load the CLI.
-        if(QFile(GetSystemVisItRCFile().c_str()).exists() ||
-           QFile(GetUserVisItRCFile().c_str()).exists())
-            Interpret("");
+        // No longer starting the CLI on existence of visitrc - see Bug #2264ß
         visitTimer->StopTimer(timeid, "stage 5 - Check for visitrc file.");
         break;
     case 6:
@@ -3719,6 +3721,10 @@ QvisGUIApplication::WindowFactory(int i)
 //   Brad Whitlock, Wed Apr  9 10:24:27 PDT 2008
 //   Changed windowNames to a string list.
 //
+//   Kevin Griffin, Fri Jun 5 11:49:34 PDT 2015
+//   Added logic to start the CLI if the Macro window is visible or posted
+//   and the CLI is not running.
+//
 // ****************************************************************************
 
 void
@@ -3799,6 +3805,12 @@ QvisGUIApplication::CreateInitiallyVisibleWindows(DataNode *node)
                     //inherited interface don't need to show up, especially if
                     //it is embedded in another interface..
                     if(embeddedGUI) GetInitializedWindowPointer(i)->hide();
+                }
+                
+                // If the macro window is visible or posted start the CLI if not already running
+                if(WINDOW_MACRO == i)
+                {
+                    Interpret("");
                 }
             }
         }
@@ -8896,7 +8908,7 @@ void QvisGUIApplication::showInteractorWindow()      { GetInitializedWindowPoint
 void QvisGUIApplication::showSimulationWindow()      { GetInitializedWindowPointer(WINDOW_SIMULATION)->show(); }
 void QvisGUIApplication::showExportDBWindow()        { GetInitializedWindowPointer(WINDOW_EXPORT_DB)->show(); }
 void QvisGUIApplication::showMeshManagementWindow()  { GetInitializedWindowPointer(WINDOW_MESH_MANAGEMENT)->show(); }
-void QvisGUIApplication::showMacroWindow()           { GetInitializedWindowPointer(WINDOW_MACRO)->show(); }
+void QvisGUIApplication::showMacroWindow()           { Interpret(""); GetInitializedWindowPointer(WINDOW_MACRO)->show(); }
 void QvisGUIApplication::showSelectionsWindow()      { GetInitializedWindowPointer(WINDOW_SELECTIONS)->show(); }
 
 void
