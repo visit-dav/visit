@@ -303,6 +303,9 @@ static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
 //    Eric Brugger, Wed May 27 10:10:28 PDT 2015
 //    I modified the filter to also output the path length field.
 //
+//    Eric Brugger, Thu Jun  4 15:58:10 PDT 2015
+//    I added an option to enable outputting the ray bounds to a vtk file.
+//
 // ****************************************************************************
 
 avtXRayFilter::avtXRayFilter()
@@ -342,6 +345,7 @@ avtXRayFilter::avtXRayFilter()
     numBins = 1;
 
     debugRay = -1;
+    outputRayBounds = false;
 }
 
 
@@ -531,6 +535,23 @@ void
 avtXRayFilter::SetDebugRay(int ray)
 {
     debugRay = ray;
+}
+
+// ****************************************************************************
+//  Method: avtXRayFilter::SetOutputRayBounds
+//
+//  Purpose:
+//    Set the output ray bounds flag.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 4, 2015
+//
+// ****************************************************************************
+
+void
+avtXRayFilter::SetOutputRayBounds(bool flag)
+{
+    outputRayBounds = flag;
 }
 
 // ****************************************************************************
@@ -2180,6 +2201,10 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //  Programmer: Eric Brugger
 //  Creation:   December 28, 2010
 //
+//  Modifications:
+//    Eric Brugger, Thu Jun  4 15:58:10 PDT 2015
+//    I added an option to enable outputting the ray bounds to a vtk file.
+//
 // ****************************************************************************
 
 void
@@ -2242,6 +2267,65 @@ avtXRayFilter::CalculateLines(void)
     nearDy = (2. * nearHeight) / imageSize[1];
     farDx = (2. * farWidth)   / imageSize[0];
     farDy = (2. * farHeight)  / imageSize[1];
+
+    //
+    // If this is the first processor and the first group of lines
+    // then output the ray bounds if requested.
+    //
+    if (outputRayBounds && PAR_Rank() == 0 && lineOffset == 0)
+    {
+        double x[8], y[8], z[8];
+        double y2 = - (2. * imagePan[1] * imageZoom + 1) * nearHeight +
+                    nearDy / 2.;
+        double y3 = - (2. * imagePan[1] * imageZoom + 1) * farHeight +
+                    farDy / 2.;
+        int ii = 0;
+        for (int j = 0; j < 2; j++)
+        {
+            double x2 = - (2. * imagePan[0] * imageZoom + 1) * nearWidth +
+                        nearDx / 2.;
+            double x3 = - (2. * imagePan[0] * imageZoom + 1) * farWidth +
+                        farDx / 2.;
+            for (int i = 0; i < 2; i++)
+            {
+                x[ii] = nearOrigin[0] + x2 * viewSide[0] + y2 * viewUp[0];
+                y[ii] = nearOrigin[1] + x2 * viewSide[1] + y2 * viewUp[1];
+                z[ii] = nearOrigin[2] + x2 * viewSide[2] + y2 * viewUp[2];
+                ii++;
+                x[ii] = farOrigin[0]  + x3 * viewSide[0] + y3 * viewUp[0];
+                y[ii] = farOrigin[1]  + x3 * viewSide[1] + y3 * viewUp[1];
+                z[ii] = farOrigin[2]  + x3 * viewSide[2] + y3 * viewUp[2];
+                ii++;
+                x2 += (imageSize[0] - 1) * nearDx;
+                x3 += (imageSize[0] - 1) * farDx;
+            }
+            y2 += (imageSize[1] - 1) * nearDy;
+            y3 += (imageSize[1] - 1) * farDy;
+        }
+        FILE *f = fopen("ray_bounds.vtk", "w");
+        fprintf(f, "# vtk DataFile Version 3.0\n");
+        fprintf(f, "vtk output\n");
+        fprintf(f, "ASCII\n");
+        fprintf(f, "DATASET POLYDATA\n");
+        fprintf(f, "POINTS 8 float\n");
+        for (int i = 0; i < 8; i++)
+            fprintf(f, "%g %g %g\n", x[i], y[i], z[i]);
+        fprintf(f, "\n");
+        fprintf(f, "POLYGONS 12 36\n");
+            fprintf(f, "2 0 1\n");
+        fprintf(f, "2 2 3\n");
+        fprintf(f, "2 4 5\n");
+        fprintf(f, "2 6 7\n");
+        fprintf(f, "2 0 2\n");
+        fprintf(f, "2 2 6\n");
+        fprintf(f, "2 6 4\n");
+        fprintf(f, "2 4 0\n");
+        fprintf(f, "2 1 3\n");
+        fprintf(f, "2 3 7\n");
+        fprintf(f, "2 7 5\n");
+        fprintf(f, "2 5 1\n");
+        fclose(f);
+    }
 
     int jstart = lineOffset / imageSize[0];
     int jend = jstart + (linesForThisPass / imageSize[0]);

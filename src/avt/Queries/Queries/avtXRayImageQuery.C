@@ -232,6 +232,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
 //
+//    Eric Brugger, Thu Jun  4 16:11:47 PDT 2015
+//    I added an option to enable outputting the ray bounds to a vtk file.
+//
 // ****************************************************************************
 
 void
@@ -262,6 +265,9 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
 
     if (params.HasNumericEntry("debug_ray"))
         SetDebugRay(params.GetEntry("debug_ray")->AsInt());
+
+    if (params.HasNumericEntry("output_ray_bounds"))
+        SetOutputRayBounds(params.GetEntry("output_ray_bounds")->ToBool());
 
     if (params.HasNumericEntry("family_files"))
         SetFamilyFiles(params.GetEntry("family_files")->ToBool());
@@ -671,6 +677,23 @@ avtXRayImageQuery::SetDebugRay(const int &ray)
 }
 
 // ****************************************************************************
+//  Method: avtXRayImageQuery::SetOutputRayBounds
+//
+//  Purpose:
+//    Set the output ray bounds flag.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 4, 2015
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetOutputRayBounds(const bool &flag)
+{
+    outputRayBounds = flag;
+}
+
+// ****************************************************************************
 //  Method: avtXRayImageQuery::SetFamilyFiles
 //
 //  Purpose:
@@ -828,6 +851,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
 //
+//    Eric Brugger, Thu Jun  4 16:11:47 PDT 2015
+//    I added an option to enable outputting the ray bounds to a vtk file.
+//
 // ****************************************************************************
 
 void
@@ -887,6 +913,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     filt->SetBackgroundIntensities(backgroundIntensities,
         nBackgroundIntensities);
     filt->SetDebugRay(debugRay);
+    filt->SetOutputRayBounds(outputRayBounds);
     filt->SetVariableNames(absVarName, emisVarName);
     filt->SetInput(dob);
 
