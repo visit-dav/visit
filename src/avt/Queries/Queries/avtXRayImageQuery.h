@@ -107,6 +107,9 @@
 //    Eric Brugger, Wed May 27 13:19:12 PDT 2015
 //    I added an option to family output files.
 //
+//    Eric Brugger, Thu Jun  4 16:07:06 PDT 2015
+//    I added an option to enable outputting the ray bounds to a vtk file.
+//
 // ****************************************************************************
 
 class QUERY_API avtXRayImageQuery : public avtDatasetQuery
@@ -138,6 +141,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetBackgroundIntensities(
                                   const doubleVector &intensities);
     void                      SetDebugRay(const int &ray);
+    void                      SetOutputRayBounds(const bool &flag);
     void                      SetFamilyFiles(const bool &flag);
     void                      SetOutputType(int type);
     void                      SetOutputType(const std::string &type);
@@ -148,6 +152,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     double                   *backgroundIntensities;
     int                       nBackgroundIntensities;
     int                       debugRay;
+    bool                      outputRayBounds;
     bool                      familyFiles;
     static int                iFileFamily;
     int                       outputType;
