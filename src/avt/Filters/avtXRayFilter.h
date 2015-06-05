@@ -108,6 +108,9 @@
 //    Eric Brugger, Wed May 27 10:04:57 PDT 2015
 //    I modified the filter to also output the path length field.
 //
+//    Eric Brugger, Thu Jun  4 15:56:25 PDT 2015
+//    I added an option to enable outputting the ray bounds to a vtk file.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
@@ -142,6 +145,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     void                            SetBackgroundIntensity(double);
     void                            SetBackgroundIntensities(double *, int);
     void                            SetDebugRay(int);
+    void                            SetOutputRayBounds(bool);
 
   protected:
     std::string                     absVarName;
@@ -196,6 +200,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     int                             pixelsForLastPassLastProc;
 
     int                             debugRay;
+    bool                            outputRayBounds;
 
     virtual void                    Execute(void);
 
