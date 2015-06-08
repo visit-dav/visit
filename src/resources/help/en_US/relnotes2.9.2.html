@@ -25,7 +25,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Bugs fixed in version 2.9.2</font></b></p>
 <ul>
   <li>Libsim functions <i>VisItSaveWindow</i>, <i>VisItExportDatabase</i>, and newer functions for adding and managing plots were only functional in batch mode. This update fixes the affected functions so they are also functional when VisIt interactively connects to the simulation.</li>
-  <li>The Fortran bindings for Libsim has been corrected so the <i>visitsetupenv2</i> and <i>visitgetenv</i> functions are named appropriately.</li>
+  <li>The Fortran bindings for Libsim have been corrected so that the <i>visitsetupenv2</i> and <i>visitgetenv</i> functions are named appropriately.</li>
   <li>Some small memory leaks in Libsim's batch mode have been corrected.</li>
   <li>Plots which show polygonal data (such as Pseudocolor) were not showing the right data on the right cells for cell-centered fields for 2D datasets that contain line cells in addition to polygonal cells. </li>
   <li>The <i>image_pan</i> parameters to the <i>XRay Image</i> query are no longer truncated to integer values.</li>
@@ -35,19 +35,19 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 2.9.2</font></b></p>
 <ul>
-  <li>The graphical user interface for the <i>XRay Image</i> query was updated to use the new view description and as well as support the background intensity parameter.</li>
+  <li>The graphical user interface for the <i>XRay Image</i> query was updated to use the new view description as well as support the background intensity parameter.</li>
   <li>The <i>XRay Image</i> query was enhanced to also output the path length field when outputting in rawfloat or bov format. The intensities will be in the files output00.bov - outputXX.bov and the path lengths will be in the files outputYY.bov - outputZZ.bov, where XX is nBins-1, YY is nBins and ZZ is 2*nBins-1.</li>
-  <li>The <i>XRay Image</i> query was enhanced to support output file familying. When file familying is enabled the output files are named outputXXXX.YY.EXT, where XXXX is the family number, YY is the bin number, and EXT is the output file type extension. Furthermore, when file familying is enabled, the query will not overwrite existing files. When file familying is disabled, the output file outputYY.EXT will be overwritten each time the query is run, consistent with the previous behavior. File familying is controlled with the <i>family_files</i> setting to the query from the command line interface and with the <i>Family output files</i> setting in the graphical user interface. The default when using the command line interface is for file familying to be disabled and for file familying to be enabled when using the graphical user interface.</li>
-  <li>The <i>XRay Image</i> query was enhanced to support outputting the bounds of the ray bundle to a VTK file to aid in verification of the setup of the rays. The rays will be output to the file "ray_bounds.vtk". The setup can be verified by adding a Mesh plot of "mesh" from the file "ray_bounds.vtk" to the object to be ray traced. Outputting the bounds of the ray bundle is controlled with the <i>output_ray_bounds</i> setting to the query from the command line interface and with the <i>Output ray bounds</i> setting in the graphical user interface.</li>
+  <li>The <i>XRay Image</i> query was enhanced to support output file familying. When file familying is enabled the output files are named outputXXXX.YY.EXT, where XXXX is the family number, YY is the bin number, and EXT is the output file type extension. Furthermore, when file familying is enabled, the query will not overwrite existing files. When file familying is disabled, the output file outputYY.EXT will be overwritten each time the query is run, consistent with the previous behavior. File familying is controlled with the <i>family_files</i> setting to the query from the command line interface and with the <i>Family output files</i> setting in the graphical user interface. The default is for file familying to be disabled when using the command line interface and for file familying to be enabled when using the graphical user interface.</li>
+  <li>The <i>XRay Image</i> query was enhanced to support outputting the bounds of the ray bundle to a VTK file to aid in verification of the setup of the rays. The rays will be output to the file "ray_bounds.vtk". The setup can be verified by adding a Mesh plot of "mesh" from the file "ray_bounds.vtk" to the object to be xrayed. Outputting the bounds of the ray bundle is controlled with the <i>output_ray_bounds</i> setting to the query from the command line interface and with the <i>Output ray bounds</i> setting in the graphical user interface.</li>
   <li>Added support for FELINESEG type in Tecplot plugin.</li>
-  <li>The CLI no longer starts automatically on the existence of the visitrc file. The CLI will now start on-demand when the user selects the Macro... menuitem or the Macro window is posted or set to be visible on startup.</li>
+  <li>The command line interface no longer starts automatically when the file "visitrc" exists in the users ".visit" directory. The command line interface will now start on-demand when the user brings up the Macros window or the Macros window is posted or set to be visible on startup.</li>
   <li>The <i>Maintain view limits</i> setting on the <i>Advanced</i> tab in the View window is now also saved when saving settings, not just when saving a session.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.9.2</font></b></p>
 <ul>
-  <li>Added support for the command-line CUDA profiler (i.e. visit -nvprof engine_ser)</li>
+  <li>Support was added for using the CUDA profiler. The CUDA profiler is enabled with the "-nvprof" command line option, for example, to launch the serial engine with the CUDA profiler use "visit -nvprof engine_ser".</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
