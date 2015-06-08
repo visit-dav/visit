@@ -38,7 +38,7 @@ c     Add a 2D rect mesh
               err = visitmdsimaddmesh(md, mmd)
           endif
 
-c     Add a zonal variable on mesh2d.
+c     Add a nonal variable on mesh2d.
       if(visitmdvaralloc(vmd).eq.VISIT_OKAY) then
           err = visitmdvarsetname(vmd, "temperature", 11)
           err = visitmdvarsetmeshname(vmd, "mesh", 4)
@@ -222,7 +222,7 @@ c---------------------------------------------------------------------------
       character*8 name
       integer     handle, lname
       include "visitfortransimV2interface.inc"
-      visitgetcurve = VISIT_ERROR
+      visitgetcurve = VISIT_INVALID_HANDLE
       end
 
 c---------------------------------------------------------------------------
@@ -276,7 +276,18 @@ c---------------------------------------------------------------------------
       character*8 name
       integer     domain, lname
       include "visitfortransimV2interface.inc"
-      visitgetmaterial = VISIT_ERROR
+      visitgetmaterial = VISIT_INVALID_HANDLE
+      end
+
+c---------------------------------------------------------------------------
+c visitgetmixedvariable
+c---------------------------------------------------------------------------
+      integer function visitgetmixedvariable(handle, name, lname)
+      implicit none
+      character*8 name
+      integer     handle, lname
+      include "visitfortransimV2interface.inc"
+      visitgetmixedvariable = VISIT_INVALID_HANDLE
       end
 
 c-----------------------------------------------------------------
