@@ -8176,6 +8176,10 @@ ViewerWindow::GetCompactDomainsAutoThreshold() const
 //   Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
 //   I added a multi resolution display capability for 2d.
 //
+//   Eric Brugger, Fri Jun  5 15:48:51 PDT 2015
+//   I modified the viewer so that it also saves maintain view limits when
+//   saving settings, not just when saving a session.
+//
 // ****************************************************************************
 
 void
@@ -8203,10 +8207,10 @@ ViewerWindow::CreateNode(DataNode *parentNode,
     //
     // Add information specific to the ViewerWindow.
     //
+    windowNode->AddNode(new DataNode("maintainView", maintainView));
     if(detailed)
     {
         windowNode->AddNode(new DataNode("cameraView", cameraView));
-        windowNode->AddNode(new DataNode("maintainView", maintainView));
         windowNode->AddNode(new DataNode("viewExtentsType", avtExtentType_ToString(plotExtentsType)));
         windowNode->AddNode(new DataNode("viewIsLocked", viewIsLocked));
         windowNode->AddNode(new DataNode("timeLocked", timeLocked));
