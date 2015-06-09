@@ -1,4 +1,4 @@
-/*****************************************************************************
+/*****************************************************************************test
 *
 * Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
