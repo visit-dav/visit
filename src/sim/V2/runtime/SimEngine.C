@@ -171,7 +171,7 @@ SimEngine::SimEngine() : Engine()
 SimEngine::~SimEngine()
 {
 #ifdef SIMV2_VIEWER_INTEGRATION
-    if(!viewerInitialized)
+    if(viewerInitialized)
     {
         delete ViewerBase::GetPlotFactory();
         delete ViewerBase::GetOperatorFactory();
