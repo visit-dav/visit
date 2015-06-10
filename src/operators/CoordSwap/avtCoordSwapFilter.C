@@ -46,6 +46,7 @@
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkIntArray.h>
 
 
 static void SwapExtentsCallback(const double *, double *, void *);
@@ -154,6 +155,9 @@ avtCoordSwapFilter::Equivalent(const AttributeGroup *a)
 //
 //    Eric Brugger, Wed Jul 23 11:09:55 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
+//
+//    Kathleen Biagas, Thu Jun 4 18:15:22 MST 2015
+//    Make sure base_index gets swapped.
 //
 // ****************************************************************************
 
@@ -284,6 +288,40 @@ avtCoordSwapFilter::ExecuteData(avtDataRepresentation *in_dr)
         }
 
         rv = out_ps;
+    }
+
+    if (rv != NULL)
+    {
+        vtkIntArray *bi_array = vtkIntArray::SafeDownCast(
+            rv->GetFieldData()->GetArray("base_index"));
+        if (bi_array)
+        {
+            int orig_bi_vals[3]= {bi_array->GetValue(0), bi_array->GetValue(1),
+                                  bi_array->GetValue(2)};
+            // Need a new array here, so we don't affect things upstream.
+            vtkIntArray *new_bi = vtkIntArray::New();
+            new_bi->SetNumberOfComponents(1);
+            new_bi->SetNumberOfTuples(3);
+            new_bi->SetName("base_index");
+            for (int i = 0 ; i < 3 ; i++)
+            {
+                switch (new_coord[i])
+                {
+                case CoordSwapAttributes::Coord1:
+                    new_bi->SetValue(i, orig_bi_vals[0]);
+                    break;
+                case CoordSwapAttributes::Coord2:
+                    new_bi->SetValue(i, orig_bi_vals[1]);
+                    break;
+                case CoordSwapAttributes::Coord3:
+                    new_bi->SetValue(i, orig_bi_vals[2]);
+                    break;
+                }
+            }
+            rv->GetFieldData()->RemoveArray("base_index");
+            rv->GetFieldData()->AddArray(new_bi);
+            new_bi->Delete();
+        }
     }
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(rv,

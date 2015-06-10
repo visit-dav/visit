@@ -45,7 +45,10 @@
 #include <vtkCell.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkCharArray.h>
+#include <vtkDataSetReader.h>
 #include <vtkDataSetRemoveGhostCells.h>
+#include <vtkDataSetWriter.h>
 #include <vtkMaskPoints.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
@@ -59,10 +62,12 @@
 #include <vtkVisItUtility.h>
 
 #include <avtCallback.h>
+#include <avtDatasetExaminer.h>
 #include <avtLogicalSelection.h>
 #include <avtSILNamespace.h>
 #include <avtSILRestrictionTraverser.h>
 #include <avtOriginatingSource.h>
+#include <avtParallel.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -71,8 +76,14 @@
 #include <InvalidVariableException.h>
 #include <snprintf.h>
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 #include <string>
 #include <vector>
+using std::string;
+using std::vector;
 
 // ****************************************************************************
 //  Method: avtIndexSelectFilter constructor
@@ -102,9 +113,12 @@
 //    Kathleen Biagas, Wed Jan 11 13:58:31 PST 2012
 //    Turn on SingleCellPerVertex for vtkMaskPoints.
 //
+//    Kathleen Biagas, Tue Jun 9 09:31:15 MST 2015
+//    Added globalDims, lspace.
+//
 // ****************************************************************************
 
-avtIndexSelectFilter::avtIndexSelectFilter()
+avtIndexSelectFilter::avtIndexSelectFilter() : lspace()
 {
     curvilinearFilter = vtkVisItExtractGrid::New();
     rectilinearFilter = vtkVisItExtractRectilinearGrid::New();
@@ -117,6 +131,11 @@ avtIndexSelectFilter::avtIndexSelectFilter()
     amrLevel          = -1;
     amrMesh           = false;
     groupCategory = false;
+    for (int i = 0; i < 3; ++i)
+    {
+        globalDims[i] = INT_MAX;
+        globalDims[i+3] = -1;
+    }
 }
 
 
@@ -415,6 +434,9 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    I modified the routine to return a NULL in the case where it previously
 //    returned an avtDataRepresentation with a NULL vtkDataSet.
 //
+//    Kathleen Biagas, Tue Jun 9 09:34:17 MST 2015
+//    Move Replicate (wrap) to PostExecute, collect globalDims here instead.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -433,6 +455,8 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
     amrMesh = (GetInput()->GetInfo().GetAttributes().GetMeshType() == 
                 AVT_AMR_MESH);
 
+    vtkIntArray *bi_arr = vtkIntArray::SafeDownCast(
+        in_ds->GetFieldData()->GetArray("base_index"));
     //
     // If the selection this filter exists to create has already been handled,
     // then we can skip execution
@@ -482,14 +506,12 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
         // The indices should reflect the "base_index"'s, so dummy one up if
         // we don't have one.
         //
-        vtkDataArray *arr = in_ds->GetFieldData()->GetArray("base_index");
         int ind[3] = { 0, 0, 0 };
-        if (arr != NULL)
+        if (bi_arr != NULL)
         {
-            vtkIntArray *ar2 = (vtkIntArray *) arr;
-            ind[0] = ar2->GetValue(0);
-            ind[1] = ar2->GetValue(1);
-            ind[2] = ar2->GetValue(2);
+            ind[0] = bi_arr->GetValue(0);
+            ind[1] = bi_arr->GetValue(1);
+            ind[2] = bi_arr->GetValue(2);
         }
 
         int *amri = NULL;
@@ -604,13 +626,11 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
         int base[3] = { 0, 0, 0 };
         if (groupCategory)
         {
-            vtkDataArray *arr = in_ds->GetFieldData()->GetArray("base_index");
-            if (arr != NULL)
+            if (bi_arr != NULL)
             {
-                vtkIntArray *ar2 = (vtkIntArray *) arr;
-                base[0] += ar2->GetValue(0);
-                base[1] += ar2->GetValue(1);
-                base[2] += ar2->GetValue(2);
+                base[0] = bi_arr->GetValue(0);
+                base[1] = bi_arr->GetValue(1);
+                base[2] = bi_arr->GetValue(2);
             }
         }
         
@@ -714,18 +734,41 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
 
     successfullyExecuted = true;
 
-    bool wrap[3];
-    wrap[0] = atts.GetXWrap();
-    wrap[1] = atts.GetYWrap();
-    wrap[2] = atts.GetZWrap();
 
-    int dstype = in_ds->GetDataObjectType();
-
-    if( (wrap[0] || wrap[1] || wrap[2]) &&
+    if ((atts.GetXWrap() || atts.GetYWrap() || atts.GetZWrap()) &&
         topoDim > 0 &&
-        dstype != VTK_POLY_DATA && dstype != VTK_UNSTRUCTURED_GRID )
+       (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID ||
+        in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID))
     {
-        out_ds = Replicate( out_ds, wrap );
+        // In the multi-block case, this doesn't work if sil-selection
+        // has been applied, because only the currently plotted domains
+        // are used to calculate the maximums... is this okay?
+
+        int lo[3] = {0, 0, 0};
+        int hi[3] = {0, 0, 0};
+        int dims[3] = {0, 0, 0};
+        if (out_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+        {
+            vtkStructuredGrid::SafeDownCast(out_ds)->GetDimensions(dims);
+        }
+        else if (out_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            vtkRectilinearGrid::SafeDownCast(out_ds)->GetDimensions(dims);
+        }
+        if (bi_arr)
+        {
+            lo[0] = bi_arr->GetValue(0);
+            lo[1] = bi_arr->GetValue(1);
+            lo[2] = bi_arr->GetValue(2);
+        }
+        for (int i = 0; i < 3; ++i)
+        {
+            hi[i] = lo[i] + dims[i] -1;
+            if (lo[i] < globalDims[i])
+                globalDims[i] = lo[i];
+            if (hi[i] > globalDims[i+3])
+                globalDims[i+3] = hi[i];
+        }
     }
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
@@ -834,13 +877,13 @@ avtIndexSelectFilter::ModifyContract(avtContract_p spec)
         {
             // If we've got species info, we need to maintain that.
             // So see which species are on.
-            std::vector<int>  species;
-            std::vector<bool> setState;
+            vector<int>  species;
+            vector<bool> setState;
         
             int topset = silr->GetTopSet();
             avtSILSet_p pTopset = silr->GetSILSet(topset);
 
-            const std::vector<int> &mapsOut = pTopset->GetRealMapsOut();
+            const vector<int> &mapsOut = pTopset->GetRealMapsOut();
             avtSILCollection_p speciesColl = NULL;
             for (size_t i = 0 ; i < mapsOut.size() ; i++)
             {
@@ -1060,6 +1103,22 @@ avtIndexSelectFilter::PostExecute(void)
         GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(newdim);
       }
     }
+
+    if ( GetOutput()->GetInfo().GetAttributes().GetTopologicalDimension() > 0 &&
+        (atts.GetXWrap() || atts.GetYWrap() || atts.GetZWrap()))
+    {
+        Replicate();
+
+        avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+        outAtts.GetOriginalSpatialExtents()->Clear();
+        outAtts.GetDesiredSpatialExtents()->Clear();
+        outAtts.GetActualSpatialExtents()->Clear();
+
+        double bounds[6];
+        avtDataset_p ds = GetTypedOutput();
+        avtDatasetExaminer::GetSpatialExtents(ds, bounds);
+        outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
+    }
 }
 
 
@@ -1105,6 +1164,8 @@ avtIndexSelectFilter::ReleaseData(void)
     vtkPolyData *p = vtkPolyData::New();
     pointsFilter->SetOutput(p);
     p->Delete();
+
+    lspace.clear();
 }
 
 // ****************************************************************************
@@ -1265,6 +1326,33 @@ avtIndexSelectFilter::VerifyInput()
     ENDTRY
 }
 
+vtkDataArray *avtIndexSelectFilter::GetCoordinates( vtkRectilinearGrid *grid,
+                                                    unsigned int coor)
+{
+  if( coor == 0 )
+    return grid->GetXCoordinates();
+  else if( coor == 1 )
+    return grid->GetYCoordinates();
+  else if( coor == 2 )
+    return grid->GetZCoordinates();
+  else
+    return 0;
+}
+
+
+void avtIndexSelectFilter::SetCoordinates( vtkRectilinearGrid *grid,
+                                           vtkDataArray *coordinates,
+                                           unsigned int coor)
+{
+  if( coor == 0 )
+    grid->SetXCoordinates(coordinates);
+  else if( coor == 1 )
+    grid->SetYCoordinates(coordinates);
+  else if( coor == 2 )
+    grid->SetZCoordinates(coordinates);
+}
+
+
 // ****************************************************************************
 //  Method: avtIndexSelectFilter::Replicate
 //
@@ -1278,197 +1366,658 @@ avtIndexSelectFilter::VerifyInput()
 //    Kathleen Biagas, Tue Aug 21 16:14:59 MST 2012
 //    Preserve coordinate type.
 //
+//    Kathleen biagas, Tue June 9 09:36:27 MST 2015
+//    Changed signatu
+// ****************************************************************************
+
+void
+avtIndexSelectFilter::Replicate()
+{
+    avtDataset_p ds = GetTypedOutput();
+
+#ifdef PARALLEL
+    int gd[6];
+    MPI_Allreduce(&globalDims[0], &gd[0], 3, MPI_INT, MPI_MIN, VISIT_MPI_COMM);
+    MPI_Allreduce(&globalDims[3], &gd[3], 3, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    for (int i = 0; i < 6; ++i)
+        globalDims[i] = gd[i];
+#endif
+    int myRank = PAR_Rank();
+
+    lspace.clear();
+    int nblocks = 0;
+    vtkDataSet **blocks = ds->GetDataTree()->GetAllLeaves(nblocks);
+
+    vector<int> domainIds;
+    vector<string> labels;
+    ds->GetDataTree()->GetAllDomainIds(domainIds);
+    ds->GetDataTree()->GetAllLabels(labels);
+    bool wrap[3] = {atts.GetXWrap(), atts.GetYWrap(), atts.GetZWrap()};
+
+    bool haveNewOutput = false;
+
+    int dataObjectType = -1;
+
+    bool okay = true;
+    for (int n = 0; n < nblocks && okay; ++n)
+    {
+        vtkDataSet *ds = blocks[n]; 
+        dataObjectType = ds->GetDataObjectType();
+        int dims[3];
+        vtkIntArray *bi = vtkIntArray::SafeDownCast(
+                              ds->GetFieldData()->GetArray("base_index"));
+        if (!bi)
+        {
+            okay = false;
+            break;
+        }
+        int *mins = (int*)bi->GetVoidPointer(0);
+        int max[3];
+        if (dataObjectType == VTK_RECTILINEAR_GRID)
+        {
+            vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
+            rgrid->GetDimensions(dims);
+            bool doReplicate = false;
+            for (int i = 0; i < 3; ++i)
+            {
+                max[i] = mins[i]+dims[i] -1;
+                doReplicate |= (wrap[i] && max[i] == globalDims[i+3]);
+            }
+            if (doReplicate)
+            {
+                blocks[n] = Replicate(rgrid, wrap, dims);
+                haveNewOutput = true;
+            }
+        }
+        else if (dataObjectType == VTK_STRUCTURED_GRID)
+        {
+            vtkStructuredGrid::SafeDownCast(ds)->GetDimensions(dims);
+            avtIndexSelectFilter::LogicalSpaces ls;
+            for (int i = 0; i < 3; ++i)
+            {
+                max[i] = mins[i]+dims[i] -1;
+            }
+            ls.SetMins(mins);
+            ls.SetMaxs(max);
+            ls.rank = myRank;
+            ls.block =  domainIds[n];
+            lspace.push_back(ls);
+        }
+        else
+        {
+            okay = false;
+            break;
+        }
+
+    }
+#ifdef PARALLEL
+    okay = (bool) UnifyMaximumValue((int)okay);
+    dataObjectType = UnifyMaximumValue(dataObjectType);
+#endif
+    if (!okay)
+    {
+        lspace.clear();
+        return;
+    }
+
+    if (dataObjectType == VTK_STRUCTURED_GRID)
+    {
+#ifdef PARALLEL
+        int mpiNBTag = GetUniqueMessageTag();
+        int mpiDataTag = GetUniqueMessageTag();
+        vector<avtIndexSelectFilter::LogicalSpaces> maxSpaces;
+        vector<avtIndexSelectFilter::LogicalSpaces> minSpaces;
+        if (myRank == 0)
+        {
+            MPI_Status stat;
+            MPI_Status stat2;
+            for (int i = 1; i < PAR_Size(); ++i)
+            {
+                int nb;
+                MPI_Recv(&nb, 1, MPI_INT, MPI_ANY_SOURCE, mpiNBTag,
+                         VISIT_MPI_COMM, &stat);
+                for (int j = 0; j < nb; ++j)
+                {
+                    int data[8];
+                    MPI_Recv(data, 8, MPI_INT, stat.MPI_SOURCE,
+                             mpiDataTag, VISIT_MPI_COMM, &stat2);
+                    avtIndexSelectFilter::LogicalSpaces ls;
+                    ls.rank  = data[0];
+                    ls.block = data[1];
+                    ls.SetMins(&data[2]);
+                    ls.SetMaxs(&data[5]);
+                    lspace.push_back(ls);
+                }
+            }
+        } 
+        else
+        {
+            MPI_Send(&nblocks, 1, MPI_INT, 0, mpiNBTag, VISIT_MPI_COMM);
+            for (int i = 0; i < nblocks; ++i)
+            {
+                MPI_Send(&(lspace[i].rank), 8, MPI_INT, 0, mpiDataTag, 
+                           VISIT_MPI_COMM);
+            } 
+        } 
+        
+        Barrier();
+#endif
+
+        for (int i = 0; i < 3 && okay; ++i)
+        {
+            if(!wrap[i])
+                continue;
+
+        if (myRank == 0)
+        {
+            for (size_t j = 0; j < lspace.size(); ++j)
+            {
+                if (lspace[j].MatchesMaxAt(i, globalDims[i+3]))
+                {
+                    int findMin[3];
+                    int maxBlock = lspace[j].block;
+                    for (int k = 0; k < 3; ++k)
+                    {
+                        if (k == i)
+                            findMin[k] = globalDims[i];
+                        else
+                            findMin[k] = lspace[j].mins[k];
+                    }
+                    for (size_t k = 0; k < lspace.size(); ++k)
+                    {
+                        if (lspace[k].MatchesMins(findMin[0], findMin[1], findMin[2]))
+                        {
+#ifdef PARALLEL
+                            maxSpaces.push_back(lspace[j]);
+                            minSpaces.push_back(lspace[k]);
+#else
+                            int minBlock = lspace[k].block;
+                            blocks[maxBlock] = Replicate(i, blocks[minBlock],
+                                                         blocks[maxBlock]);
+                            haveNewOutput = true;
+#endif
+                            break;
+                        }
+                    }
+                }
+            }
+        } // PAR_Rank
+#ifdef PARALLEL
+        Barrier();
+        int numMatches = (int)maxSpaces.size();
+        BroadcastInt(numMatches);
+        maxSpaces.resize(numMatches);
+        minSpaces.resize(numMatches);
+        for (int j = 0; j < numMatches; ++j)
+        {
+            BroadcastIntArray(&(maxSpaces[j].rank), 8);
+            BroadcastIntArray(&(minSpaces[j].rank), 8);
+        }
+        for (int j = 0; j < maxSpaces.size(); ++j)
+        {
+            int mpiSizeTag = GetUniqueMessageTag();
+            int mpiDSTag = GetUniqueMessageTag();
+            size_t maxBlock = 0;
+            size_t minBlock = 0;
+            if (myRank == maxSpaces[j].rank && myRank == minSpaces[j].rank)
+            {
+                // Both min and max blocks reside on this processor
+                for (size_t k = 0; k < domainIds.size(); ++k)
+                {
+                    if (domainIds[k] == maxSpaces[j].block)
+                        maxBlock = k;
+                    if (domainIds[k] == minSpaces[j].block)
+                        minBlock = k;
+                }
+                blocks[maxBlock] = Replicate(i, 
+                    blocks[minBlock], 
+                    blocks[maxBlock]);
+                haveNewOutput = true;
+            }
+            else if (myRank == maxSpaces[j].rank)
+            {
+                // Need to recv the vtkDataSet from proc with min
+                for (size_t k = 0; k < domainIds.size(); ++k)
+                {
+                    if (domainIds[k] == maxSpaces[j].block)
+                        maxBlock = k;
+                }
+                MPI_Status stat;
+                int size;
+                vtkDataSetReader *reader = vtkDataSetReader::New();
+                reader->ReadFromInputStringOn();
+                MPI_Recv(&size, 1, MPI_INT, minSpaces[j].rank, mpiSizeTag,
+                         VISIT_MPI_COMM, &stat);
+                char *str = new char[size];
+                MPI_Recv(str, size, MPI_CHAR, minSpaces[j].rank, mpiDSTag,
+                          VISIT_MPI_COMM, &stat);
+                vtkCharArray *charArray = vtkCharArray::New();
+                charArray->SetArray((char*)str, size, 1);
+                reader->SetInputArray(charArray);
+                reader->Update();
+
+                // Do the replication
+                blocks[maxBlock] = Replicate(i, 
+                    reader->GetOutput(), 
+                    blocks[maxBlock]);
+                haveNewOutput = true;
+
+                // cleanup;
+                delete [] str;
+                reader->Delete();
+                charArray->Delete();
+              
+            }
+            else if (myRank == minSpaces[j].rank)
+            {
+                for (size_t k = 0; k < domainIds.size(); ++k)
+                {
+                    if (domainIds[k] == minSpaces[j].block)
+                        minBlock = k;
+                }
+                // Need to send the vtkDataSet to proc with max
+                vtkDataSetWriter *writer = vtkDataSetWriter::New();
+                writer->WriteToOutputStringOn();
+                writer->SetFileTypeToBinary();
+                writer->SetInputData(blocks[minBlock]);
+                writer->Write();
+                int size = writer->GetOutputStringLength();
+                char *str = writer->RegisterAndGetOutputString();
+                MPI_Send(&size, 1, MPI_INT, maxSpaces[j].rank, mpiSizeTag,
+                         VISIT_MPI_COMM);
+                MPI_Send(str, size, MPI_CHAR, maxSpaces[j].rank, mpiDSTag,
+                         VISIT_MPI_COMM);
+                delete [] str;
+                writer->Delete();
+            }
+        }
+#endif
+        } // wrap direction
+    }
+
+
+    if (haveNewOutput)
+    {
+        avtDataTree_p tree;
+        if (!labels.empty())
+        {
+            tree = new avtDataTree(nblocks, blocks, domainIds, labels);
+        }
+        else 
+        {
+            tree = new avtDataTree(nblocks, blocks, domainIds);
+        }
+        SetOutputDataTree(tree);
+    }
+
+}
+
+
+// ****************************************************************************
+//  Method: avtIndexSelectFilter::Replicate
+//
+//  Purpose:
+//    Replicates the first slice to the last slice for wrapping.
+//
+//  Arguments:
+//    wrap      The wrap direction (0->i, 1->j, 2->k).
+//    min_ds    The dataset with the minimum slice for the wrap direction.
+//    max_ds    The dataset with the maximum slice for the wrap direction.
+//
+//  Programmer: Hank Childs/Allen Sanderson
+//  Creation:   April 14, 2010
+//
+//  Modifications:
+//    Kathleen Biagas, Tue Aug 21 16:14:59 MST 2012
+//    Preserve coordinate type.
+//
+//    Kathleen biagas, Tue June 9 09:36:27 MST 2015
+//    Changed signature (to handle multi-block and parallel), this method
+//    now only handles vtkStructuredGrid.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtIndexSelectFilter::Replicate(vtkDataSet *in_ds, bool wrap[3] )
+avtIndexSelectFilter::Replicate(int wrap, vtkDataSet *min_ds,
+                                          vtkDataSet *max_ds)
 {
-   int   dims_in[3];
-   int   dims_out[3];
+    vtkStructuredGrid *min_sgrid = vtkStructuredGrid::SafeDownCast(min_ds);
+    vtkStructuredGrid *max_sgrid = vtkStructuredGrid::SafeDownCast(max_ds);
+    if (min_sgrid == NULL || max_sgrid == NULL)
+    {
+        debug3 << "IndexSelect::Replicate did not receive structured "
+               << "grid input." << endl;
+        return max_ds;
+    }
 
-   vtkDataSet *out_ds = in_ds;
+    int   dims_in[3] = {0,0,0};
+    int   dims_out[3] = {0,0,0};
 
-   // Instantiate the output and copy over the coordinates.
-   if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-   {
-     // Get the original dimensions.
-     vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) out_ds;
-     rgrid->GetDimensions(dims_in);
+    vtkDataSet *out_ds = max_ds;
 
-     // Do each dimension individually.
-     for( unsigned int d=0; d<3; ++d )
-     {
-       if( !wrap[d] )
-         continue;
+    // Learn about the input grid
+    max_sgrid->GetDimensions(dims_in);
 
-       unsigned int d0 = d;
-       unsigned int d1 = (d+1)%3;
-       unsigned int d2 = (d+2)%3;
+    dims_out[0] = dims_in[0];
+    dims_out[1] = dims_in[1];
+    dims_out[2] = dims_in[2];
+    dims_out[wrap]++;
 
-       // Learn about the input grid
-       int dims[3];
-       vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) out_ds;
-       rgrid->GetDimensions(dims);
-       dims_out[0] = dims[0] + (d==0 && wrap[0] ? 1 : 0);
-       dims_out[1] = dims[1] + (d==1 && wrap[1] ? 1 : 0);
-       dims_out[2] = dims[2] + (d==2 && wrap[2] ? 1 : 0);
+    vtkPoints *pts = max_sgrid->GetPoints();
+    vtkPoints *min_pts = vtkStructuredGrid::SafeDownCast(min_ds)->GetPoints();
+    vtkPoints *new_pts = vtkPoints::New(pts->GetDataType());
+    vtkStructuredGrid *out_sg = vtkStructuredGrid::New();
+    out_sg->SetDimensions(dims_out);
+    out_sg->SetPoints(new_pts);
+    new_pts->Delete();
+    new_pts->SetNumberOfPoints(dims_out[0]*dims_out[1]*dims_out[2]);
 
-       // Make a new coord with a new value at the end.
-       vtkDataArray *coor = GetCoordinates(rgrid, d0);
-       vtkDataArray *coor_new = coor->NewInstance();
-       coor_new->SetNumberOfTuples(dims_out[d0]);
-       for (int i=0; i<dims[d0]; ++i)
-           coor_new->SetTuple1(i, coor->GetTuple1(i));
+    // Copy the original points over.
+    for (int i=0; i<dims_out[0]; ++i)
+    {
+        int i0 = i % dims_in[0];
+    
+        for (int j=0; j<dims_out[1]; ++j)
+        {
+            int j0 = j % dims_in[1];
+     
+            for (int k=0; k<dims_out[2]; ++k)
+            {
+                int k0 = k % dims_in[2];
+                int idx_in  = k0*dims_in[1]*dims_in[0] + j0*dims_in[0] + i0;
+                int idx_out = k*dims_out[1]*dims_out[0] + j*dims_out[0] + i;
+                if (i < dims_in[0] && j < dims_in[1] && k < dims_in[2]) 
+                    new_pts->SetPoint(idx_out, pts->GetPoint(idx_in));
+                else
+                    new_pts->SetPoint(idx_out, min_pts->GetPoint(idx_in));
+            }
+        }
+    }
 
-       double lastVal = coor->GetTuple1(dims[d0]-1);
-       double prevVal = coor->GetTuple1(dims[d0]-2);
-       coor_new->SetTuple1(dims[d0], lastVal + (lastVal-prevVal));
+    if( out_ds != max_ds )
+        out_ds->Delete();
 
-       // Set up the output, including the coordinates
-       vtkRectilinearGrid *out_rg = vtkRectilinearGrid::New();
-       out_rg->SetDimensions(dims_out);
-       SetCoordinates(out_rg, coor_new, d0);
-       SetCoordinates(out_rg, GetCoordinates(rgrid, d1), d1);
-       SetCoordinates(out_rg, GetCoordinates(rgrid, d2), d2);
-       coor_new->Delete();
+    out_ds = out_sg;
 
-       if( out_ds != in_ds )
-         out_ds->Delete();
+    CopyData(max_ds, out_ds, dims_in, dims_out);
 
-       out_ds = out_rg;
-     }
-   }
-   else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
-   {
-     // Learn about the input grid
-     vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
-     sgrid->GetDimensions(dims_in);
-
-     dims_out[0] = dims_in[0] + (wrap[0] ? 1 : 0);
-     dims_out[1] = dims_in[1] + (wrap[1] ? 1 : 0);
-     dims_out[2] = dims_in[2] + (wrap[2] ? 1 : 0);
-
-     vtkPoints *pts = sgrid->GetPoints();
-     vtkPoints *new_pts = vtkPoints::New(pts->GetDataType());
-     vtkStructuredGrid *out_sg = vtkStructuredGrid::New();
-     out_sg->SetDimensions(dims_out);
-     out_sg->SetPoints(new_pts);
-     new_pts->Delete();
-     new_pts->SetNumberOfPoints(dims_out[0]*dims_out[1]*dims_out[2]);
-
-     // Copy the original points over.
-     for (int i=0; i<dims_out[0]; ++i)
-     {
-       int i0 = i % dims_in[0];
-       
-       for (int j=0; j<dims_out[1]; ++j)
-       {
-         int j0 = j % dims_in[1];
-         
-         for (int k=0; k<dims_out[2]; ++k)
-         {
-           int k0 = k % dims_in[2];
-           
-           int idx_in  = k0*dims_in[1]*dims_in[0] + j0*dims_in[0] + i0;
-           int idx_out = k*dims_out[1]*dims_out[0] + j*dims_out[0] + i;
-           
-           new_pts->SetPoint(idx_out, pts->GetPoint(idx_in));
-         }
-       }
-     }
-
-     if( out_ds != in_ds )
-       out_ds->Delete();
-
-     out_ds = out_sg;
-   }
-
-   // Should never get here but just in case.
-   else
-     return out_ds;
-
-   // Copy over the point data.
-   vtkPointData *inPD  =  in_ds->GetPointData();
-   vtkPointData *outPD = out_ds->GetPointData();
-   outPD->CopyAllocate(inPD, dims_out[0]*dims_out[1]*dims_out[2]);
-
-   for (int i1=0; i1<dims_out[0]; ++i1)
-   {
-     int i0 = i1 % dims_in[0];
-
-     for (int j1=0; j1<dims_out[1]; ++j1)
-     {
-       int j0 = j1 % dims_in[1];
-       
-       for (int k1=0; k1<dims_out[2]; ++k1)
-       {
-         int k0 = k1 % dims_in[2];
-         
-         int idx_in  = k0*dims_in[1]*dims_in[0] + j0*dims_in[0] + i0;
-         int idx_out = k1*dims_out[1]*dims_out[0] + j1*dims_out[0] + i1;
-
-         outPD->CopyData(inPD, idx_in, idx_out);
-       }
-     }
-   }
-
-   // Copy over the cell data.
-   int xdims = (dims_in[0]-1 < 1 ? 1 : dims_in[0]-1);
-   int ydims = (dims_in[1]-1 < 1 ? 1 : dims_in[1]-1);
-   int zdims = (dims_in[2]-1 < 1 ? 1 : dims_in[2]-1);
-
-   int xdims_out = (dims_out[0]-1 < 1 ? 1 : dims_out[0]-1);
-   int ydims_out = (dims_out[1]-1 < 1 ? 1 : dims_out[1]-1);
-   int zdims_out = (dims_out[2]-1 < 1 ? 1 : dims_out[2]-1);
-
-   vtkCellData *outCD = out_ds->GetCellData();
-   vtkCellData *inCD = in_ds->GetCellData();
-   outCD->CopyAllocate(inCD, xdims_out*ydims_out*zdims_out);
-
-   for (int i1=0; i1<xdims_out; ++i1)
-   {
-     int i0 = i1 % xdims;
-
-     for (int j1=0; j1<ydims_out; ++j1)
-     {
-       int j0 = j1 % ydims;
-
-       for (int k1=0; k1<zdims_out; ++k1)
-       {
-         int k0 = k1 % zdims;
-
-         int idx_in = k0*(ydims*xdims) + j0*xdims + i0;
-         int idx_out = k1*(ydims_out*xdims_out) + j1*xdims_out + i1;
-         outCD->CopyData(inCD, idx_in, idx_out);
-       }
-     }
-   }
-
-   return out_ds;
+    return out_ds;
 }
 
-vtkDataArray *avtIndexSelectFilter::GetCoordinates( vtkRectilinearGrid *grid,
-                                                    unsigned int coor)
+
+// ****************************************************************************
+//  Method: avtIndexSelectFilter::Replicate
+//
+//  Purpose:
+//    Replicates the first slice to the last slice for wrapping.
+//
+//  Arguments:
+//    rgrid     The input dataset.
+//    wrap      Whether or not to wrap in i,j,k.
+//    in_dims   The dimensions of the input grid.
+//
+//  Programmer: Hank Childs/Allen Sanderson
+//  Creation:   April 14, 2010
+//
+//  Modifications:
+//    Kathleen Biagas, Tue Aug 21 16:14:59 MST 2012
+//    Preserve coordinate type.
+//
+//    Kathleen biagas, Tue June 9 09:36:27 MST 2015
+//    Extracted from original method to only handle rectilinear grid, and
+//    simplified.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtIndexSelectFilter::Replicate(vtkRectilinearGrid *rgrid, bool wrap[3],
+    int dims_in[3])
 {
-  if( coor == 0 )
-    return grid->GetXCoordinates();
-  else if( coor == 1 )
-    return grid->GetYCoordinates();
-  else if( coor == 2 )
-    return grid->GetZCoordinates();
-  else
-    return 0;
-};
+    int dims_out[3];
+    vtkRectilinearGrid *out = rgrid->NewInstance();
+    out->DeepCopy(rgrid);
+    // Do each dimension individually.
+    for( unsigned int d=0; d<3; ++d )
+    {
+        if( !wrap[d] )
+            continue;
+
+        dims_out[0] = dims_in[0];
+        dims_out[1] = dims_in[1];
+        dims_out[2] = dims_in[2];
+        dims_out[d] += 1;
+        vtkDataArray *coor = GetCoordinates(out, d);
+
+        double lastVal = coor->GetTuple1(dims_in[d]-1);
+        double prevVal = coor->GetTuple1(dims_in[d]-2);
+        coor->InsertNextTuple1(lastVal + (lastVal-prevVal));
+
+        out->SetDimensions(dims_out);
+    }
+
+    CopyData(rgrid, out, dims_in, dims_out);
+
+    return out;
+}
 
 
-void avtIndexSelectFilter::SetCoordinates( vtkRectilinearGrid *grid,
-                                           vtkDataArray *coordinates,
-                                           unsigned int coor)
+// ****************************************************************************
+//  Method: avtIndexSelectFilter::CopyData
+//
+//  Purpose:
+//    Copies Point and Cell Data from input to output datasets, utilizing
+//    input and output structured dimensions.
+//
+//  Arguments:
+//    in_ds     The input dataset.
+//    out_ds    The output dataset.
+//    in_dims   Dimensions for input dataset.
+//    out_dims  Dimensions for output dataset.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   June 9, 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtIndexSelectFilter::CopyData(vtkDataSet *in_ds, vtkDataSet *out_ds, int dims_in[3], int dims_out[3])
 {
-  if( coor == 0 )
-    grid->SetXCoordinates(coordinates);
-  else if( coor == 1 )
-    grid->SetYCoordinates(coordinates);
-  else if( coor == 2 )
-    grid->SetZCoordinates(coordinates);
-};
+    // Copy over the point data.
+    vtkPointData *inPD  = in_ds->GetPointData();
+    vtkPointData *outPD = out_ds->GetPointData();
+    outPD->CopyAllocate(inPD, dims_out[0]*dims_out[1]*dims_out[2]);
+
+    for (int i1=0; i1<dims_out[0]; ++i1)
+    {
+        int i0 = i1 % dims_in[0];
+
+        for (int j1=0; j1<dims_out[1]; ++j1)
+        {
+            int j0 = j1 % dims_in[1];
+
+            for (int k1=0; k1<dims_out[2]; ++k1)
+            {
+                int k0 = k1 % dims_in[2];
+
+                int idx_in  = k0*dims_in[1]*dims_in[0] + j0*dims_in[0] + i0;
+                int idx_out = k1*dims_out[1]*dims_out[0] + j1*dims_out[0] + i1;
+
+                outPD->CopyData(inPD, idx_in, idx_out);
+            }
+        }
+    }
+
+    // Copy over the cell data.
+    int xdims = (dims_in[0]-1 < 1 ? 1 : dims_in[0]-1);
+    int ydims = (dims_in[1]-1 < 1 ? 1 : dims_in[1]-1);
+    int zdims = (dims_in[2]-1 < 1 ? 1 : dims_in[2]-1);
+
+    int xdims_out = (dims_out[0]-1 < 1 ? 1 : dims_out[0]-1);
+    int ydims_out = (dims_out[1]-1 < 1 ? 1 : dims_out[1]-1);
+    int zdims_out = (dims_out[2]-1 < 1 ? 1 : dims_out[2]-1);
+
+    vtkCellData *outCD = out_ds->GetCellData();
+    vtkCellData *inCD  = in_ds->GetCellData();
+    outCD->CopyAllocate(inCD, xdims_out*ydims_out*zdims_out);
+
+    for (int i1=0; i1<xdims_out; ++i1)
+    {
+        int i0 = i1 % xdims;
+
+        for (int j1=0; j1<ydims_out; ++j1)
+        {
+            int j0 = j1 % ydims;
+
+            for (int k1=0; k1<zdims_out; ++k1)
+            {
+                int k0 = k1 % zdims;
+
+                int idx_in = k0*(ydims*xdims) + j0*xdims + i0;
+                int idx_out = k1*(ydims_out*xdims_out) + j1*xdims_out + i1;
+                outCD->CopyData(inCD, idx_in, idx_out);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtIndexSelectFilter::LogicalSpaces constructor
+//
+//  Purpse:  Helper class for 'wrap' option.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 9, 2015
+//
+// ****************************************************************************
+
+avtIndexSelectFilter::LogicalSpaces::LogicalSpaces()
+{
+    mins[0] = mins[1] = mins[2] = -1;
+    maxs[0] = maxs[1] = maxs[2] = -1;
+}
+
+// ****************************************************************************
+//  Method: avtIndexSelectFilter::LogicalSpaces destructor
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 9, 2015
+//
+// ****************************************************************************
+
+avtIndexSelectFilter::LogicalSpaces::~LogicalSpaces()
+{
+}
+
+// ****************************************************************************
+//  Method: avtIndexSelectFilter::LogicalSpaces::SetMins
+//
+//  Purpose:
+//    Sets the minimum values.
+//
+//  Arguments:
+//    _min     The minimum values.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 9, 2015
+//
+// ****************************************************************************
+
+void
+avtIndexSelectFilter::LogicalSpaces::SetMins(int *_min)
+{
+    mins[0] = _min[0];
+    mins[1] = _min[1];
+    mins[2] = _min[2];
+}
+
+
+// ****************************************************************************
+//  Method: avtIndexSelectFilter::LogicalSpaces::SetMaxs
+//
+//  Purpose:
+//    Sets the maximum values.
+//
+//  Arguments:
+//    _max     The maximum values.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 9, 2015
+//
+// ****************************************************************************
+
+void
+avtIndexSelectFilter::LogicalSpaces::SetMaxs(int *_max)
+{
+    maxs[0] = _max[0];
+    maxs[1] = _max[1];
+    maxs[2] = _max[2];
+}
+
+// ****************************************************************************
+//  Method: avtIndexSelectFilter::LogicalSpaces::HasMinAt
+//
+//  Returns:
+//    True if the minimum value at index 'idx' matches the passed value.
+//
+//  Arguments:
+//    idx     The index.
+//    _min    The minimum value to be matched.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 9, 2015
+//
+// ****************************************************************************
+
+bool
+avtIndexSelectFilter::LogicalSpaces::HasMinAt(int idx, int _min)
+{
+    return idx < 3 && idx >= 0 && mins[idx] == _min;
+}
+
+// ****************************************************************************
+//  Method: avtIndexSelectFilter::LogicalSpaces::MatchesMin
+//
+//  Returns:
+//    True if the mins values matches passed values.
+//
+//  Arguments:
+//    i_min     The value to match at position 0.
+//    j_min     The value to match at position 1.
+//    k_min     The value to match at position 2.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 9, 2015
+//
+// ****************************************************************************
+
+bool
+avtIndexSelectFilter::LogicalSpaces::MatchesMins(int i_min, int j_min, int k_min)
+{
+    return mins[0] == i_min && mins[1] == j_min && mins[2] == k_min;
+}
+ 
+
+// ****************************************************************************
+//  Method: avtIndexSelectFilter::LogicalSpaces::HasMaxAt
+//
+//  Returns:
+//    True if the maximum value at index 'idx' matches the passed value.
+//
+//  Arguments:
+//    idx     The index.
+//    _max    The maximum value to be matched.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 9, 2015
+//
+// ****************************************************************************
+
+bool
+avtIndexSelectFilter::LogicalSpaces::MatchesMaxAt(int idx, int _max)
+{
+    return idx < 3 && idx >= 0 && maxs[idx] == _max;
+}
+

@@ -92,6 +92,9 @@ class vtkDataArray;
 //    Eric Brugger, Mon Jul 28 15:33:34 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Tue Jun 9 09:37:12 MST 2015
+//    Changes to 'Replicate', added helper class for 'wrap' option.
+//
 // ****************************************************************************
 
 class avtIndexSelectFilter : public avtPluginDataTreeIterator
@@ -134,7 +137,11 @@ class avtIndexSelectFilter : public avtPluginDataTreeIterator
     virtual avtContract_p       ModifyContract(avtContract_p);
     virtual bool                FilterUnderstandsTransformedRectMesh();
 
-    virtual vtkDataSet *Replicate(vtkDataSet *in_ds, bool wrap[3] );
+    virtual void        Replicate(void);
+    vtkDataSet         *Replicate(int wrap, vtkDataSet *min_ds,
+                                            vtkDataSet *max_ds);
+    vtkDataSet         *Replicate(vtkRectilinearGrid *rgrid, bool wrap[3],
+                                  int dims_in[3]);
 
     virtual vtkDataArray *GetCoordinates( vtkRectilinearGrid *grid,
                                           unsigned int coor);
@@ -142,6 +149,29 @@ class avtIndexSelectFilter : public avtPluginDataTreeIterator
     virtual void SetCoordinates( vtkRectilinearGrid *grid,
                                  vtkDataArray *coordinates,
                                  unsigned int coor);
+
+  private:
+    class LogicalSpaces
+    {
+        // helper class for 'wrap' option
+        public:
+            LogicalSpaces();
+            LogicalSpaces(int *mins);
+           ~LogicalSpaces();
+            void SetMins(int *);
+            void SetMaxs(int *);
+
+            bool HasMinAt(int idx, int _min);
+            bool MatchesMaxAt(int idx, int _max);
+            bool MatchesMins(int i_min, int j_min, int k_min);
+            int rank;
+            int block;
+            int mins[3];
+            int maxs[3];
+    };
+    int globalDims[6];
+    std::vector<LogicalSpaces> lspace;
+    void CopyData(vtkDataSet *, vtkDataSet *, int dims_in[3], int  dims_out[3]);
 };
 
 

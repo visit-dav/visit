@@ -735,6 +735,9 @@ avtBasicNETCDFReader::ReturnDimStartsAndCounts(int timeState, const intVector &d
 //   when it's a different length than the variable (y-axis values). In
 //   that case id values are used instead.
 //
+//   Kathleen Biagas, Thu Jun 4 18:18:42 MST 2015
+//   Create base_index FieldData array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -951,6 +954,15 @@ avtBasicNETCDFReader::GetMesh(int timeState, const char *var)
             coords[1]->Delete();
             rgrid->SetZCoordinates(coords[2]);
             coords[2]->Delete();
+
+            vtkIntArray *arr = vtkIntArray::New();
+            arr->SetNumberOfTuples(3);
+            arr->SetValue(0, dimStarts[0]);
+            arr->SetValue(1, dimStarts[1]);
+            arr->SetValue(2, (dimStarts.size() > 2 ? dimStarts[2] : 0));
+            arr->SetName("base_index");
+            rgrid->GetFieldData()->AddArray(arr);
+            arr->Delete();
 
             retval = rgrid;
         }

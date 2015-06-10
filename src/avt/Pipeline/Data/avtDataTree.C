@@ -290,6 +290,43 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, vector<int> &ind)
     dataRep = NULL;
 }
 
+
+// ****************************************************************************
+//  Method: avtDataTree constructor
+//
+//  Arguments:
+//    n       The number of children for this tree. 
+//    ds      The vtkDataSets that are this tree's leaves. 
+//    ind     The indices for each ds.
+//    lab     The labels for each ds.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   June 8, 2015
+//
+// ****************************************************************************
+
+avtDataTree::avtDataTree(int n, vtkDataSet **ds, vector<int> &ind, vector<string> &lab)
+{
+    if (ds == NULL || ind.size() != (size_t)n || n == 0 || lab.size() != ind.size())
+    {
+        EXCEPTION0(NoInputException);
+    }
+    nChildren = n;
+    children = new avtDataTree_p [nChildren];
+    for (int i = 0; i < nChildren; i++)
+    {
+        if (ds[i] != NULL) 
+        {
+            children[i] = new avtDataTree(ds[i], ind[i], lab[i]);
+        }
+        else
+        {
+            children[i] = NULL;
+        }
+    }
+    dataRep = NULL;
+}
+
 // ****************************************************************************
 //  Method: avtDataTree constructor
 //

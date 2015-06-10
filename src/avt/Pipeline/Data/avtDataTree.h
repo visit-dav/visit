@@ -138,6 +138,8 @@ class PIPELINE_API avtDataTree
                              avtDataTree(avtDataRepresentation *);
                              avtDataTree(int, vtkDataSet **, int *);
                              avtDataTree(int, vtkDataSet **,std::vector<int>&);
+                             avtDataTree(int, vtkDataSet **,std::vector<int>&,
+                                         std::vector<std::string>&);
                              avtDataTree(int, vtkDataSet **, int);
                              avtDataTree(int, vtkDataSet **, int,
                                          std::vector<std::string>&);
