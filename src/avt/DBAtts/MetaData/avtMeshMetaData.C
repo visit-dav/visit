@@ -1864,23 +1864,35 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     }
 
     Indent(out, indent);
-    out << "Disjoint elements " << (disjointElements ? "true" : "false") 
+    out << "Disjoint elements " << (disjointElements ? "Yes" : "No") 
         << std::endl;
 
-    Indent(out, indent);
-    out << "Contains ghost zones " << containsGhostZones << std::endl;
-
-    if (containsExteriorBoundaryGhosts)
+    if( containsGhostZones )
     {
+      Indent(out, indent);
+      if( containsGhostZones == AVT_HAS_GHOSTS )
+        out << "Contains ghost zones " << "Yes" << std::endl;
+
+      else if( containsGhostZones == AVT_CREATED_GHOSTS )
+        out << "Contains ghost zones " << "Created" << std::endl;
+      
+      else if( containsGhostZones == AVT_MAYBE_GHOSTS )
+        out << "Contains ghost zones " << "Maybe" << std::endl;
+
+      if (containsExteriorBoundaryGhosts)
+      {
         Indent(out, indent);
         out << "Contains ghost zones on the exterior boundary" << std::endl;
+      }
     }
 
     Indent(out, indent);
-    out << "Contains original cells " << containsOriginalCells << std::endl;
+    out << "Contains original cells " << (containsOriginalCells ? "Yes" : "No")
+        << std::endl;
 
     Indent(out, indent);
-    out << "Contains original nodes " << containsOriginalNodes << std::endl;
+    out << "Contains original nodes " << (containsOriginalNodes ? "Yes" : "No")
+        << std::endl;
 
     Indent(out, indent);
     out << "Units =  x: \"" << xUnits.c_str()
