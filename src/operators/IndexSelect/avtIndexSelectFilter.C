@@ -1425,7 +1425,7 @@ avtIndexSelectFilter::Replicate()
             }
             if (doReplicate)
             {
-                blocks[n] = Replicate(rgrid, wrap, dims);
+                blocks[n] = Replicate(rgrid, wrap, dims, max);
                 haveNewOutput = true;
             }
         }
@@ -1515,7 +1515,6 @@ avtIndexSelectFilter::Replicate()
                 if (lspace[j].MatchesMaxAt(i, globalDims[i+3]))
                 {
                     int findMin[3];
-                    int maxBlock = lspace[j].block;
                     for (int k = 0; k < 3; ++k)
                     {
                         if (k == i)
@@ -1525,12 +1524,13 @@ avtIndexSelectFilter::Replicate()
                     }
                     for (size_t k = 0; k < lspace.size(); ++k)
                     {
-                        if (lspace[k].MatchesMins(findMin[0], findMin[1], findMin[2]))
+                        if (lspace[k].MatchesMins(findMin))
                         {
 #ifdef PARALLEL
                             maxSpaces.push_back(lspace[j]);
                             minSpaces.push_back(lspace[k]);
 #else
+                            int maxBlock = lspace[j].block;
                             int minBlock = lspace[k].block;
                             blocks[maxBlock] = Replicate(i, blocks[minBlock],
                                                          blocks[maxBlock]);
@@ -1553,7 +1553,7 @@ avtIndexSelectFilter::Replicate()
             BroadcastIntArray(&(maxSpaces[j].rank), 8);
             BroadcastIntArray(&(minSpaces[j].rank), 8);
         }
-        for (int j = 0; j < maxSpaces.size(); ++j)
+        for (size_t j = 0; j < maxSpaces.size(); ++j)
         {
             int mpiSizeTag = GetUniqueMessageTag();
             int mpiDSTag = GetUniqueMessageTag();
@@ -1763,39 +1763,53 @@ avtIndexSelectFilter::Replicate(int wrap, vtkDataSet *min_ds,
 //    Kathleen Biagas, Tue Aug 21 16:14:59 MST 2012
 //    Preserve coordinate type.
 //
-//    Kathleen biagas, Tue June 9 09:36:27 MST 2015
-//    Extracted from original method to only handle rectilinear grid, and
-//    simplified.
+//    Kathleen Biagas, Tue June 9 09:36:27 MST 2015
+//    Extracted from original method to only handle rectilinear grid.
+//
+//    Kathleen Biagas, Wed June 10 10:45:43 MST 2015
+//    Fixed logic so that wrapping for a given direction doesn't happend
+//    if the input's max dims do not match the global max dims.
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtIndexSelectFilter::Replicate(vtkRectilinearGrid *rgrid, bool wrap[3],
-    int dims_in[3])
+    int dims_in[3], int max[3])
 {
-    int dims_out[3];
-    vtkRectilinearGrid *out = rgrid->NewInstance();
-    out->DeepCopy(rgrid);
+    vtkRectilinearGrid *out = rgrid;
+    bool haveCopied = false;
+    int dims_out[3] = {dims_in[0], dims_in[1], dims_in[2] };
+
     // Do each dimension individually.
     for( unsigned int d=0; d<3; ++d )
     {
         if( !wrap[d] )
             continue;
 
-        dims_out[0] = dims_in[0];
-        dims_out[1] = dims_in[1];
-        dims_out[2] = dims_in[2];
-        dims_out[d] += 1;
+        // does this dataset have the max dims?
+        if (max[d] != globalDims[d+3])
+            continue;
+
+        if (!haveCopied)
+        {
+            out = rgrid->NewInstance();
+            out->DeepCopy(rgrid);
+            haveCopied = true;
+        }
+        dims_out[d]++;
         vtkDataArray *coor = GetCoordinates(out, d);
 
         double lastVal = coor->GetTuple1(dims_in[d]-1);
         double prevVal = coor->GetTuple1(dims_in[d]-2);
         coor->InsertNextTuple1(lastVal + (lastVal-prevVal));
 
-        out->SetDimensions(dims_out);
     }
 
-    CopyData(rgrid, out, dims_in, dims_out);
+    if (haveCopied)
+    {
+        out->SetDimensions(dims_out);
+        CopyData(rgrid, out, dims_in, dims_out);
+    }
 
     return out;
 }
@@ -1994,9 +2008,9 @@ avtIndexSelectFilter::LogicalSpaces::HasMinAt(int idx, int _min)
 // ****************************************************************************
 
 bool
-avtIndexSelectFilter::LogicalSpaces::MatchesMins(int i_min, int j_min, int k_min)
+avtIndexSelectFilter::LogicalSpaces::MatchesMins(int _min[3])
 {
-    return mins[0] == i_min && mins[1] == j_min && mins[2] == k_min;
+    return mins[0] == _min[0] && mins[1] == _min[1] && mins[2] == _min[2];
 }
  
 

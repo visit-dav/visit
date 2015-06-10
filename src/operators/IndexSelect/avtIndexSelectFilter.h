@@ -141,7 +141,7 @@ class avtIndexSelectFilter : public avtPluginDataTreeIterator
     vtkDataSet         *Replicate(int wrap, vtkDataSet *min_ds,
                                             vtkDataSet *max_ds);
     vtkDataSet         *Replicate(vtkRectilinearGrid *rgrid, bool wrap[3],
-                                  int dims_in[3]);
+                                  int dims_in[3], int max[3]);
 
     virtual vtkDataArray *GetCoordinates( vtkRectilinearGrid *grid,
                                           unsigned int coor);
@@ -163,7 +163,7 @@ class avtIndexSelectFilter : public avtPluginDataTreeIterator
 
             bool HasMinAt(int idx, int _min);
             bool MatchesMaxAt(int idx, int _max);
-            bool MatchesMins(int i_min, int j_min, int k_min);
+            bool MatchesMins(int _min[3]);
             int rank;
             int block;
             int mins[3];
