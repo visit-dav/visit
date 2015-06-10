@@ -348,6 +348,9 @@ TransformSingleVector(avtCoordSystemConvert::VectorTransformMethod method,
 //    Kathleen Biagas, Tue Aug 21 16:53:09 MST 2012
 //    Preserve coordinate type.
 //
+//    Kathleen Biagas, Thu Jun 4 16:51:27 MST 2015
+//    Pass along FieldData.
+//
 // ****************************************************************************
 
 static vtkDataSet *
@@ -560,6 +563,7 @@ Transform(vtkDataSet *in_ds,
         cellCoordsNew->Delete();
     }
 
+    rv->GetFieldData()->PassData(in_ds->GetFieldData());
     pts->Delete();
     newPts->Delete();
 
