@@ -566,6 +566,11 @@ class JobSubmitter_sbatch(JobSubmitter):
                 mpicmd = mpicmd + ["-np", self.parallel.np]
             mpicmd = mpicmd + ["--ppn", str(ppn)] 
             mpicmd = mpicmd + self.VisItExecutable() + args
+        elif sublauncher == "ibrun":
+            mpicmd = ["ibrun"]
+            if self.parallel.sublaunchargs != None:
+                mpicmd = mpicmd + self.parallel.sublaunchargs
+            mpicmd = mpicmd + self.VisItExecutable() + args
         else:
             mpicmd = self.VisItExecutable() + args
 

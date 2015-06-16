@@ -1156,6 +1156,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("qsub/mpirun");
     launchMethod->addItem("qsub/srun");
     launchMethod->addItem("sbatch/aprun");
+    launchMethod->addItem("sbatch/ibrun");
     launchMethod->addItem("sbatch/mpiexec");
     launchMethod->addItem("sbatch/mpirun");
     connect(launchMethod, SIGNAL(activated(const QString &)),
