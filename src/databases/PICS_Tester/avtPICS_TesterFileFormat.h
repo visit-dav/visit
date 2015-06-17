@@ -117,7 +117,7 @@ class avtPICS_TesterFileFormat : public avtMTMDFileFormat
 
     FlowType flowType;
 
-    double global_bounds[3];
+    double global_extents[3];
 
     // Double gyre flow constants
     double dg_A;
