@@ -148,13 +148,13 @@ avtPICS_TesterFileFormat::ReadHeader(const char *filename)
         double magnitude;
         bool validScan = false;
         
-        global_bounds[0] = 1.0;
-        global_bounds[1] = 1.0;
+        global_extents[0] = 1.0;
+        global_extents[1] = 1.0;
 
         if (rank == 2)
-          global_bounds[2] = 0.0;
+          global_extents[2] = 0.0;
         else
-          global_bounds[2] = 1.0;
+          global_extents[2] = 1.0;
           
         if (rank == 3)
         {
@@ -230,9 +230,9 @@ avtPICS_TesterFileFormat::ReadHeader(const char *filename)
           else
             rank = 3;
               
-          global_bounds[0] = bx;
-          global_bounds[1] = by;
-          global_bounds[2] = bz;
+          global_extents[0] = bx;
+          global_extents[1] = by;
+          global_extents[2] = bz;
 
           if( simulationTime > 0 )
             endTime = startTime + simulationTime;
@@ -280,9 +280,9 @@ avtPICS_TesterFileFormat::ReadHeader(const char *filename)
           numCells[1].clear();
           numCells[2].clear();
 
-          global_bounds[0] = 2.0 * M_PI;
-          global_bounds[1] = 2.0 * M_PI;
-          global_bounds[2] = 2.0 * M_PI;
+          global_extents[0] = 2.0 * M_PI;
+          global_extents[1] = 2.0 * M_PI;
+          global_extents[2] = 2.0 * M_PI;
           
           times.push_back(0);       
           cycles.push_back(0);
@@ -323,9 +323,9 @@ avtPICS_TesterFileFormat::ReadHeader(const char *filename)
           numCells[1].clear();
           numCells[2].clear();
 
-          global_bounds[0] = 2.0 * M_PI;
-          global_bounds[1] = 2.0 * M_PI;
-          global_bounds[2] = 2.0 * M_PI;
+          global_extents[0] = 2.0 * M_PI;
+          global_extents[1] = 2.0 * M_PI;
+          global_extents[2] = 2.0 * M_PI;
           
           if( simulationTime > 0 )
             endTime = startTime + simulationTime;
@@ -410,39 +410,55 @@ avtPICS_TesterFileFormat::FreeUpResources(void)
 // ****************************************************************************
 
 void
-avtPICS_TesterFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
+avtPICS_TesterFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timestate)
 {
     std::string meshname = "mesh";
-    avtMeshType mt = AVT_RECTILINEAR_MESH;
+    avtMeshType meshtype = AVT_RECTILINEAR_MESH;
     if (! isRectilinear)
-        mt = AVT_UNSTRUCTURED_MESH;
+        meshtype = AVT_UNSTRUCTURED_MESH;
 
-    double bounds[6];
-    bounds[0] = 0;
-    bounds[1] = global_bounds[0];
-    bounds[2] = 0;
-    bounds[3] = global_bounds[1];
-    bounds[4] = 0;
-    bounds[5] = global_bounds[2];
+    double extents[6];
+    extents[0] = 0;
+    extents[1] = global_extents[0];
+    extents[2] = 0;
+    extents[3] = global_extents[1];
+    extents[4] = 0;
+    extents[5] = global_extents[2];
 
     int nblocks = 1;
 
     for( int i=0; i<rank; ++i )
-      nblocks *= numBlocks[i][timeState];
+      nblocks *= numBlocks[i][timestate];
 
     int block_origin = 0;
     int spatial_dimension = rank;
     int topological_dimension = rank;
 
-    int nnodes[3] = {numCells[0][timeState]+1,
-                     numCells[1][timeState]+1,
-                     numCells[2][timeState]+1};
+    int bounds[3] = {numCells[0][timestate]+1,
+                     numCells[1][timestate]+1,
+                     numCells[2][timestate]+1};
 
     if (rank == 2)
-      nnodes[2] = 1;
+      bounds[2] = 1;
 
-    AddMeshToMetaData(md, meshname, mt, bounds, nblocks, block_origin,
-                      spatial_dimension, topological_dimension, nnodes);
+    avtMeshMetaData *mesh = new avtMeshMetaData;
+    mesh->name = meshname;
+    mesh->meshType = meshtype;
+    mesh->numBlocks = nblocks;
+    mesh->blockOrigin = block_origin;
+    mesh->cellOrigin = 0;
+    mesh->spatialDimension = spatial_dimension;
+    mesh->topologicalDimension = topological_dimension;
+    mesh->blockTitle = "blocks";
+    mesh->blockPieceName = "block";
+    mesh->SetBounds(bounds);
+    mesh->hasLogicalBounds = true;
+    mesh->SetExtents(extents);
+    mesh->hasSpatialExtents = true;
+    mesh->containsGhostZones = AVT_NO_GHOSTS;
+
+    md->Add(mesh);
+
 
     std::string varname = "velocity";
     int vector_dim = spatial_dimension;
@@ -513,9 +529,9 @@ avtPICS_TesterFileFormat::GetMesh(int timestate, int domain, const char *meshnam
         EXCEPTION1(VisItException, "Invalid mesh requested!");
     }
 
-    double xSizePerBlock = global_bounds[0]/numBlocks[0][timestate];
-    double ySizePerBlock = global_bounds[1]/numBlocks[1][timestate];
-    double zSizePerBlock = global_bounds[2]/numBlocks[2][timestate];
+    double xSizePerBlock = global_extents[0]/numBlocks[0][timestate];
+    double ySizePerBlock = global_extents[1]/numBlocks[1][timestate];
+    double zSizePerBlock = global_extents[2]/numBlocks[2][timestate];
 
     int xOff = domain % numBlocks[0][timestate];
     int yOff = (domain/numBlocks[0][timestate]) % numBlocks[1][timestate];
@@ -577,9 +593,9 @@ avtPICS_TesterFileFormat::GetMesh(int timestate, int domain, const char *meshnam
             bounds->SetNumberOfComponents( 1 );
             bounds->SetNumberOfTuples( 3 );
 
-            bounds->SetTuple1(0, global_bounds[0] );
-            bounds->SetTuple1(1, global_bounds[1] );
-            bounds->SetTuple1(2, global_bounds[2] );
+            bounds->SetTuple1(0, global_extents[0] );
+            bounds->SetTuple1(1, global_extents[1] );
+            bounds->SetTuple1(2, global_extents[2] );
   
             rgrid->GetFieldData()->AddArray(bounds);
 
@@ -822,9 +838,9 @@ avtPICS_TesterFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
         int dimension = rank;
         avtIntervalTree *itree = new avtIntervalTree(nblocks, dimension);
 
-        double xSizePerBlock = global_bounds[0]/numBlocks[0][ts];
-        double ySizePerBlock = global_bounds[1]/numBlocks[1][ts];
-        double zSizePerBlock = global_bounds[2]/numBlocks[2][ts];
+        double xSizePerBlock = global_extents[0]/numBlocks[0][ts];
+        double ySizePerBlock = global_extents[1]/numBlocks[1][ts];
+        double zSizePerBlock = global_extents[2]/numBlocks[2][ts];
 
         for (int domain = 0 ; domain < nblocks ; domain++)
         {
