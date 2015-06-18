@@ -1487,7 +1487,7 @@ class AVTGeneratorPlugin : public PluginBase
             c << "" << Endl;
             c << "" << Endl;
             c << "// ****************************************************************************" << Endl;
-            c << "//  Method: avtEMSTDFileFormat::GetNTimesteps" << Endl;
+            c << "//  Method: avt"<<name<<"FileFormat::GetNTimesteps" << Endl;
             c << "//" << Endl;
             c << "//  Purpose:" << Endl;
             c << "//      Tells the rest of the code how many timesteps there are in this file." << Endl;
@@ -2134,7 +2134,7 @@ class AVTGeneratorPlugin : public PluginBase
             c << "" << Endl;
             c << "" << Endl;
             c << "// ****************************************************************************" << Endl;
-            c << "//  Method: avtEMSTDFileFormat::GetNTimesteps" << Endl;
+            c << "//  Method: avt"<<name<<"FileFormat::GetNTimesteps" << Endl;
             c << "//" << Endl;
             c << "//  Purpose:" << Endl;
             c << "//      Tells the rest of the code how many timesteps there are in this file." << Endl;
