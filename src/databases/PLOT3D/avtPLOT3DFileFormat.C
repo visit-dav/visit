@@ -46,6 +46,7 @@
 #include <string>
 
 #include <vtkDataArray.h>
+#include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkPLOT3DReader.h>
 
@@ -87,6 +88,9 @@ using std::string;
 //
 //    Kathleen Biagas, Thu Apr 23 10:38:31 PDT 2015
 //    Added haveSolutionFile.
+//
+//    Kathleen Biagas, Wed Jun 17 17:50:22 PDT 2015
+//    Turn on the reader's auto-detection
 //
 // ****************************************************************************
 
@@ -162,6 +166,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
     }
 
     reader = vtkPLOT3DReader::New();
+    reader->AutoDetectFormatOn();
 
     if (x_file)
         reader->SetXYZFileName(x_file);
@@ -290,6 +295,9 @@ avtPLOT3DFileFormat::~avtPLOT3DFileFormat()
 //    Kathleen Bonnell, Fri Dec 13 16:31:30 PST 2002
 //    Use NewInstance instead of MakeObject, to match vtk's new api.
 //
+//    Kathleen Biagas, Wed Jun 17 17:51:21 PDT 2015
+//    Change how output is retrieved from reader.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -309,9 +317,13 @@ avtPLOT3DFileFormat::GetMesh(int dom, const char *name)
     reader->SetScalarFunctionNumber(-1);
     reader->SetVectorFunctionNumber(-1);
     reader->Update();
-    vtkDataSet *rv = (vtkDataSet *) reader->GetOutput()->NewInstance();
-    if(rv != NULL)
-        rv->ShallowCopy(reader->GetOutput());
+    vtkDataSet *cb = reader->GetCurrentBlock();
+    vtkDataSet *rv = NULL;
+    if (cb != NULL)
+    {
+        rv = cb->NewInstance();
+        rv->ShallowCopy(cb);
+    }
 
     return rv;
 }
@@ -338,6 +350,11 @@ avtPLOT3DFileFormat::GetMesh(int dom, const char *name)
 //    Changed capitalization of var names, to match the vtk reader.
 //    Add VorticityMagnitude.
 //
+//    Kathleen Biagas, Wed Jun 17 15:38:30 PDT 2015
+//    Since we process one var at a time, make sure function numbers are reset.
+//    Change how output is retrieved from reader.
+//
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -345,6 +362,8 @@ avtPLOT3DFileFormat::GetVar(int dom, const char *name)
 {
     int var = -1;
     reader->SetVectorFunctionNumber(-1);
+    reader->SetScalarFunctionNumber(-1);
+    reader->RemoveAllFunctions();
     if (strcmp(name, "Density") == 0)
     {
         var = 100;
@@ -399,7 +418,7 @@ avtPLOT3DFileFormat::GetVar(int dom, const char *name)
     reader->SetGridNumber(dom);
     reader->Update();
 
-    vtkDataArray *dat = reader->GetOutput()->GetPointData()->GetArray(name);
+    vtkDataArray *dat = reader->GetCurrentBlock()->GetPointData()->GetArray(name);
     if (dat == NULL)
     {
         debug1 << "Internal error -- could not read variable: " << name << endl;
@@ -435,6 +454,10 @@ avtPLOT3DFileFormat::GetVar(int dom, const char *name)
 //    Changed capitalization of var names, to match the vtk reader.
 //    Add StrainRate.
 //
+//    Kathleen Biagas, Wed Jun 17 15:38:30 PDT 2015
+//    Since we process one var at a time, make sure function numbers are reset.
+//    Change how output is retrieved from reader.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -442,6 +465,8 @@ avtPLOT3DFileFormat::GetVectorVar(int dom, const char *name)
 {
     int var = -1;
     reader->SetScalarFunctionNumber(-1);
+    reader->SetVectorFunctionNumber(-1);
+    reader->RemoveAllFunctions();
     if (strcmp(name, "Velocity") == 0)
     {
         var = 200;
@@ -472,7 +497,7 @@ avtPLOT3DFileFormat::GetVectorVar(int dom, const char *name)
     reader->SetGridNumber(dom);
     reader->Update();
 
-    vtkDataArray *dat = reader->GetOutput()->GetPointData()->GetArray(name);
+    vtkDataArray *dat = reader->GetCurrentBlock()->GetPointData()->GetArray(name);
     if (dat == NULL)
     {
         debug1 << "Internal error -- could not read variable: " << name << "!" << endl;
