@@ -137,8 +137,8 @@ const char *QvisLineStyleWidget::style1[] = {
 "                                        ",
 "                                        "};
 
-char *QvisLineStyleWidget::augmentedData[23];
-char QvisLineStyleWidget::augmentedForeground[15];
+char *QvisLineStyleWidget::augmentedData[23] = {""};
+char QvisLineStyleWidget::augmentedForeground[15] = {'\0'};
 
 // ****************************************************************************
 // Method: QvisLineStyleWidget::QvisLineStyleWidget
@@ -177,7 +177,7 @@ QvisLineStyleWidget::QvisLineStyleWidget(int style, QWidget *parent) :
     QPixmap style1Pixmap;
     if(!QPixmapCache::find("visit_gui_linestyle1", style1Pixmap))
     {
-        AugmentPixmap(style1);
+        AugmentPixmap(style1, sizeof(style1)/sizeof(char*));
         QPixmap s1p((const char **)augmentedData);
         QPixmapCache::insert("visit_gui_linestyle1", s1p);
         style1Pixmap = s1p;
@@ -185,7 +185,7 @@ QvisLineStyleWidget::QvisLineStyleWidget(int style, QWidget *parent) :
     QPixmap style2Pixmap;
     if(!QPixmapCache::find("visit_gui_linestyle2", style2Pixmap))
     {
-        AugmentPixmap(style2);
+        AugmentPixmap(style2, sizeof(style2)/sizeof(char*));
         QPixmap s2p((const char **)augmentedData);
         QPixmapCache::insert("visit_gui_linestyle2", s2p);
         style2Pixmap = s2p;
@@ -193,7 +193,7 @@ QvisLineStyleWidget::QvisLineStyleWidget(int style, QWidget *parent) :
     QPixmap style3Pixmap;
     if(!QPixmapCache::find("visit_gui_linestyle3", style3Pixmap))
     {
-        AugmentPixmap(style3);
+        AugmentPixmap(style3, sizeof(style3)/sizeof(char*));
         QPixmap s3p((const char **)augmentedData);
         QPixmapCache::insert("visit_gui_linestyle3", s3p);
         style3Pixmap = s3p;
@@ -201,7 +201,7 @@ QvisLineStyleWidget::QvisLineStyleWidget(int style, QWidget *parent) :
     QPixmap style4Pixmap;
     if(!QPixmapCache::find("visit_gui_linestyle4", style4Pixmap))
     {
-        AugmentPixmap(style4);
+        AugmentPixmap(style4, sizeof(style4)/sizeof(char*));
         QPixmap s4p((const char **)augmentedData);
         QPixmapCache::insert("visit_gui_linestyle4", s4p);
         style4Pixmap = s4p;
@@ -339,9 +339,9 @@ QvisLineStyleWidget::GetLineStyle() const
 // ****************************************************************************
 
 void
-QvisLineStyleWidget::AugmentPixmap(const char *xpm[])
+QvisLineStyleWidget::AugmentPixmap(const char *xpm[], int n)
 {
-    for(int i = 0; i < 23; ++i)
+    for(int i = 0; i < n; ++i)
         augmentedData[i] = (char *)xpm[i];
 
     QColor foreground(palette().color(QPalette::Text));

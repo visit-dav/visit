@@ -77,7 +77,7 @@ signals:
 public slots:
     virtual void setEnabled(bool val);
 private:
-    void AugmentPixmap(const char *xpm[]);
+    void AugmentPixmap(const char *xpm[], int n);
 
     QComboBox         *lineStyleComboBox;
     static const char *style1[];
