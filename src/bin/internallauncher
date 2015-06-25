@@ -464,6 +464,8 @@ class JobSubmitter_salloc(JobSubmitter):
         parcmd = self.Executable()
         if self.parallel.partition != None:
             parcmd = parcmd + ["-p", self.parallel.partition]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["-A", self.parallel.bank]
         if self.parallel.time != None:
             parcmd = parcmd + ["-t", self.parallel.time]
         if self.parallel.nn != None:
