@@ -1015,6 +1015,8 @@ class Debugger(object):
 # Date:       Thu May 31 13:07:04 PDT 2012
 #
 # Modifications:
+#   Burlen Loring, Thu Jun 25 13:31:56 PDT 2015
+#   Added basic mpi support
 #
 ###############################################################################
 
@@ -1063,14 +1065,24 @@ class GDBDebugger(Debugger):
 
     def CreateCommand(self, args):
         launcherargs, visitargs = self.SeparateArguments(args)
-        if len(launcherargs) > 0:
-            self.launcher.error("GDB debugging is not compatible with running in parallel at present.")
-            return args
 
-        if self.CreateCommandFile(args):
-            args = self.Executable() + self.DebuggerArguments() + ["-q", "-x", self.filename]
-        else:
+        if not self.CreateCommandFile(visitargs):
             self.launcher.error("Could not create GDB command file: %s. Running VisIt normally." % self.filename)
+
+        # parallel launch
+        elif len(launcherargs) > 0:
+            self.launcher.warning("GDB debugging a parallel launch is experimental. YMMV.")
+
+            have_xterm = self.launcher.generalArgs.newconsole
+
+            args = launcherargs \
+                + (['xterm', '-geometry', '150x50', '-e'] if have_xterm else []) \
+                + self.Executable() + self.DebuggerArguments() + ["-q", "-x", self.filename]
+
+        # serial launch
+        else:
+            args = self.Executable() + self.DebuggerArguments() + ["-q", "-x", self.filename]
+
         return args
 
 ###############################################################################
