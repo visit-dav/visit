@@ -56,10 +56,14 @@
 #include <TimingsManager.h>
 
 typedef struct zfpixel {
+
+    zfpixel() : z(0.0f), r('\0'), g('\0'), b('\0') {}
+
     float         z;
     unsigned char r;
     unsigned char g;
     unsigned char b;
+
 } ZFPixel_t;
 
 // declare initialize static data members
@@ -169,7 +173,6 @@ avtWholeImageCompositerWithZ::InitializeMPIStuff(void)
    int                lengths[] = {  1,   1,   1,   1};
    MPI_Aint     displacements[] = {  0,   0,   0,   0};
    MPI_Datatype         types[] = {FLT, UCH, UCH, UCH};
-   int                      i, n = sizeof lengths / sizeof lengths[0];
    ZFPixel_t    onePixel;
 #undef UCH
 #undef FLT
@@ -179,11 +182,26 @@ avtWholeImageCompositerWithZ::InitializeMPIStuff(void)
    MPI_Address(&onePixel.r, &displacements[1]);
    MPI_Address(&onePixel.g, &displacements[2]);
    MPI_Address(&onePixel.b, &displacements[3]);
-   for (i = n-1; i >= 0; i--)
+
+   for (int i = 3; i >= 0; --i)
       displacements[i] -= displacements[0];
-   MPI_Type_struct(n, lengths, displacements, types,
+
+   MPI_Type_create_struct(4, lengths, displacements, types,
       &avtWholeImageCompositerWithZ::mpiTypeZFPixel);
+
+   // check that the datatype has the correct extent
+   MPI_Aint ext;
+   MPI_Type_extent(avtWholeImageCompositerWithZ::mpiTypeZFPixel, &ext);
+   if (ext != sizeof(onePixel))
+   {
+       MPI_Datatype tmp = avtWholeImageCompositerWithZ::mpiTypeZFPixel;
+       MPI_Type_create_resized(tmp, 0, sizeof(ZFPixel_t),
+           &avtWholeImageCompositerWithZ::mpiTypeZFPixel);
+       MPI_Type_free(&tmp);
+   }
+
    MPI_Type_commit(&avtWholeImageCompositerWithZ::mpiTypeZFPixel);
+
    MPI_Op_create((MPI_User_function *)MergeZFPixelBuffers, 1,
       &avtWholeImageCompositerWithZ::mpiOpMergeZFPixelBuffers);
 }
