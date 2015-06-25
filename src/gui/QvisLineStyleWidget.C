@@ -137,7 +137,7 @@ const char *QvisLineStyleWidget::style1[] = {
 "                                        ",
 "                                        "};
 
-char *QvisLineStyleWidget::augmentedData[23] = {""};
+char *QvisLineStyleWidget::augmentedData[23] = {NULL};
 char QvisLineStyleWidget::augmentedForeground[15] = {'\0'};
 
 // ****************************************************************************
