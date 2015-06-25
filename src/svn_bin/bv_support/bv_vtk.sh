@@ -63,13 +63,13 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-export VTK_FILE=${VTK_FILE:-"VTK-6.1.0.tar.gz"}
-export VTK_VERSION=${VTK_VERSION:-"6.1.0"}
-export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"6.1"}
+export VTK_FILE=${VTK_FILE:-"VTK-6.2.0.tar.gz"}
+export VTK_VERSION=${VTK_VERSION:-"6.2.0"}
+export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"6.2"}
 export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
-export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-6.1.0"}
+export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-6.2.0"}
 export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
-export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/6.1"}
+export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/6.2"}
 export VTK_MD5_CHECKSUM=""
 export VTK_SHA256_CHECKSUM=""
 }
@@ -416,14 +416,7 @@ EOF
 }
 
 function apply_vtk_patch
-{
-    if [[ ${VTK_VERSION} == 6.0.0 ]] ; then
-        apply_vtk_600_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-    
+{  
     # also apply objc flag patch to 6.1.0
     
     if [[ ${VTK_VERSION} == 6.1.0 ]] ; then
@@ -436,7 +429,14 @@ function apply_vtk_patch
             return 1
         fi
     fi
-    
+
+    if [[ ${VTK_VERSION} == 6.2.0 ]] ; then
+        apply_vtk_600_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
     return 0
 }
 
