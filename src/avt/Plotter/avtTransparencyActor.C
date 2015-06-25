@@ -74,6 +74,10 @@
 #include <BadIndexException.h>
 #include <TimingsManager.h>
 
+#ifdef PARALLEL
+#include "mpi.h"
+#endif
+
 using     std::vector;
 
 
@@ -779,6 +783,122 @@ avtTransparencyActor::RemoveFromRenderer(vtkRenderer *ren)
     ren->GetViewProps()->RemoveItem(myActor);
 }
 
+// ****************************************************************************
+//  Method: avtTransparencyActor::SyncProps
+//
+//  Purpose:
+//      Synchronize properties across MPI ranks. Ranks that
+//      initially have no data need to have rendering props
+//      synchronized after depth sort.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Thu Jun 25 12:34:39 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
+{
+    int rank = 0;
+    int size = 1;
+
+#ifdef PARALLEL
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+    MPI_Comm_size(VISIT_MPI_COMM, &size);
+#endif
+
+    // find the first rank that has valid props
+    // he will be the source of the props for
+    // the others
+    vector<unsigned char> have_source(size, 0);
+    have_source[rank] = source ? 1 : 0;
+
+#ifdef PARALLEL
+    MPI_Allgather(MPI_IN_PLACE, 1, MPI_BYTE,
+        &have_source[0], 1, MPI_BYTE, VISIT_MPI_COMM);
+#endif
+
+    int root = -1;
+    int n_have = 0;
+    for (int i = 0; i < size; ++i)
+    {
+        if (have_source[i])
+        {
+            // count the ranks with valid props. none or all
+            // are special cases
+            n_have += 1;
+
+            // first rank who has valid props will serialize
+            // and send
+            if (root < 0)
+                root = i;
+        }
+    }
+
+    // none have valid props, nothing to do.
+    if (n_have == 0)
+        return -1;
+
+    // serialize the props into a buffer
+    double buf[22] = {0.0};
+    if ((rank == root) || (n_have == size))
+    {
+        buf[0] = source->GetInterpolation();
+        buf[1] = source->GetRepresentation();
+        buf[2] = source->GetAmbient();
+        buf[3] = source->GetDiffuse();
+        buf[4] = source->GetSpecular();
+        buf[5] = source->GetSpecularPower();
+        double *c = source->GetAmbientColor();
+        buf[6] = c[0];
+        buf[7] = c[1];
+        buf[8] = c[2];
+        c = source->GetDiffuseColor();
+        buf[9] = c[0];
+        buf[10] = c[1];
+        buf[11] = c[2];
+        c = source->GetSpecularColor();
+        buf[12] = c[0];
+        buf[13] = c[1];
+        buf[14] = c[2];
+        buf[15] = source->GetEdgeVisibility();
+        buf[16] = source->GetLineWidth();
+        buf[17] = source->GetLineStipplePattern();
+        buf[18] = source->GetLineStippleRepeatFactor();
+        buf[19] = source->GetPointSize();
+        buf[20] = source->GetBackfaceCulling();
+        buf[21] = source->GetFrontfaceCulling();
+    }
+
+#ifdef PARALLEL
+    // if any processes don't have valid props send
+    if (n_have != size)
+        MPI_Bcast(buf, 22, MPI_DOUBLE, root, VISIT_MPI_COMM);
+#endif
+
+    // deserialize
+    dest->SetInterpolation(buf[0]);
+    dest->SetRepresentation(buf[1]);
+    // If we copy over lighting, odd things happen.  This is in the
+    // system as HYPer4112.
+    //dest->SetAmbient(buf[2]);
+    //dest->SetDiffuse(buf[3]);
+    dest->SetSpecular(buf[4]);
+    dest->SetSpecularPower(buf[5]);
+    dest->SetAmbientColor(&buf[6]);
+    dest->SetDiffuseColor(&buf[9]);
+    dest->SetSpecularColor(&buf[12]);
+    dest->SetEdgeVisibility(buf[15]);
+    dest->SetLineWidth(buf[16]);
+    dest->SetLineStipplePattern(buf[17]);
+    dest->SetLineStippleRepeatFactor(buf[18]);
+    dest->SetPointSize(buf[19]);
+    dest->SetBackfaceCulling(buf[20]);
+    dest->SetFrontfaceCulling(buf[21]);
+
+    return 0;
+}
 
 // ****************************************************************************
 //  Method: avtTransparency::SetUpActor
@@ -880,30 +1000,9 @@ avtTransparencyActor::SetUpActor(void)
         // those.  Note that this is confusing logic if there are actors with
         // different properties -- we will just be taking them for one of them.
         //
-        if (repActor != NULL)
-        {
-            vtkProperty *myProp  = myActor->GetProperty();
-            vtkProperty *repProp = repActor->GetProperty();
-            myProp->SetInterpolation(repProp->GetInterpolation());
-            myProp->SetRepresentation(repProp->GetRepresentation());
-            // If we copy over lighting, odd things happen.  This is in the
-            // system as HYPer4112.
-            //myProp->SetAmbient(repProp->GetAmbient());
-            //myProp->SetDiffuse(repProp->GetDiffuse());
-            myProp->SetSpecular(repProp->GetSpecular());
-            myProp->SetSpecularPower(repProp->GetSpecularPower());
-            myProp->SetAmbientColor(repProp->GetAmbientColor());
-            myProp->SetDiffuseColor(repProp->GetDiffuseColor());
-            myProp->SetSpecularColor(repProp->GetSpecularColor());
-            myProp->SetEdgeVisibility(repProp->GetEdgeVisibility());
-            myProp->SetLineWidth(repProp->GetLineWidth());
-            myProp->SetLineStipplePattern(repProp->GetLineStipplePattern());
-            myProp->SetLineStippleRepeatFactor(
-                                        repProp->GetLineStippleRepeatFactor());
-            myProp->SetPointSize(repProp->GetPointSize());
-            myProp->SetBackfaceCulling(repProp->GetBackfaceCulling());
-            myProp->SetFrontfaceCulling(repProp->GetFrontfaceCulling());
-        }
+        vtkProperty *dest  = myActor->GetProperty();
+        vtkProperty *source = repActor ? repActor->GetProperty() : NULL;
+        SyncProps(dest, source);
 
         //
         // Sort all the data from all six axis directions.  This will prevent

@@ -50,6 +50,7 @@
 #include <cstring>
 
 class     vtkActor;
+class     vtkProperty;
 class     vtkAppendPolyData;
 class     vtkAxisDepthSort;
 class     vtkCamera;
@@ -164,6 +165,10 @@ class PLOTTER_API avtTransparencyActor
     bool                             GetIs2Dimensional() const
                                                     { return is2Dimensional; };
     void                             SetIs2Dimensional(bool val);
+
+
+  protected:
+    int                              SyncProps(vtkProperty *dest, vtkProperty *source);
 
   protected:
     std::vector<std::vector <vtkDataSet *> >         datasets;
