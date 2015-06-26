@@ -48,6 +48,8 @@ vtkPLOT3DReader::vtkPLOT3DReader()
   this->SolutionOffsets = NULL;
   // parent class sets up scalar function 100 and vector 202 ALWAYS, but
   // we only want what user requests, so remove what parent set up.
+  this->SetScalarFunctionNumber(-1);
+  this->SetVectorFunctionNumber(-1);
   this->RemoveAllFunctions();
 } 
 
@@ -295,6 +297,7 @@ int vtkPLOT3DReader::RequestInformation(
       fclose(qFp);
       return 0;
       }
+    fclose(qFp);
     }
   return 1;
 }
@@ -346,7 +349,7 @@ int vtkPLOT3DReader::RequestData(
       {
       return 0;
       }
-    
+
     if ( this->ReadQHeader(qFp) != VTK_OK )
       {
       fclose(qFp);
@@ -449,7 +452,7 @@ int vtkPLOT3DReader::RequestData(
     {
       output->GetPointData()->GetArray("StagnationEnergy")->SetName("InternalEnergy");
     }
-    
+
     if (removeMomentum)
         output->GetPointData()->RemoveArray("Momentum");
     }
@@ -496,7 +499,7 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp, vtkStructuredGrid *output)
   fseek(xyzFp, offset, SEEK_SET);
 
   this->SkipByteCount(xyzFp);
-  int d = this->TwoDimensionalGeometry ? 2 : 3;
+  int d = this->Internal->NumberOfDimensions;
   if (this->ReadVector(xyzFp, this->NumberOfPoints, d, pointArray) == 0)
     {
     vtkErrorMacro("Encountered premature end-of-file while reading "
@@ -531,8 +534,8 @@ vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
       ;
       }
 
-    long nd = this->TwoDimensionalGeometry ? 2 : 3;
-    long bc = this->HasByteCount ? sizeof(int) : 0;
+    long nd = this->Internal->NumberOfDimensions;
+    long bc = this->Internal->HasByteCount ? sizeof(int) : 0;
 
     for (int j = i+1; j <= this->GridNumber; j++)
       {
@@ -597,9 +600,11 @@ vtkPLOT3DReader::ReadSolutionProperties(FILE *qFp)
     return VTK_ERROR;
     }
   this->SkipByteCount(qFp);
-
-  this->Properties = newProp;
-  this->Properties->Register(this);
+  //if (this->GridNumber == 0)
+    {
+    this->Properties = newProp;
+    this->Properties->Register(this);
+    }
   newProp->Delete();
   return VTK_OK;
 }
@@ -690,23 +695,15 @@ vtkPLOT3DReader::ComputeSolutionOffset(FILE *qFp)
       {
       // Number of scalars to  be read: 1 for density, 1 for energy and
       // NumDims for Momentum
-      int ns = 1  + 1  + (this->TwoDimensionalGeometry ? 2 : 3);
+      int ns = 1  + 1  + this->Internal->NumberOfDimensions;
       if (this->Internal->BinaryFile)
         {
-        long bc = this->HasByteCount ? sizeof(int) : 0;
-
-        if (this->DoublePrecision)
-          {
-          this->SolutionOffsets[j] = this->SolutionOffsets[0] +
-                               4 * sizeof(double) + 2*bc +
-                               ns * this->GridSizes[j-1]*sizeof(double) + 2*bc;
-          }
-        else
-          {
-          this->SolutionOffsets[j] = this->SolutionOffsets[0] +
-                               4 * sizeof(float) + 2*bc +
-                               ns * this->GridSizes[j-1]*sizeof(float) + 2*bc;
-          }
+        int n = 4;
+        long bc = this->Internal->HasByteCount ? sizeof(int) : 0;
+        int mult = this->Internal->Precision;
+        this->SolutionOffsets[j] = this->SolutionOffsets[j-1] +
+                             n * mult + 2*bc +
+                             ns * this->GridSizes[j-1]*mult + 2*bc;
         }
       else
         {

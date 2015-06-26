@@ -38,7 +38,7 @@
 
 #include <PLOT3DPluginInfo.h>
 #include <avtPLOT3DFileFormat.h>
-#include <avtSTMDFileFormatInterface.h>
+#include <avtMTMDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 #include <avtPLOT3DOptions.h>
 
@@ -55,7 +55,7 @@
 DatabaseType
 PLOT3DCommonPluginInfo::GetDatabaseType()
 {
-    return DB_TYPE_STMD;
+    return DB_TYPE_MTMD;
 }
 
 // ****************************************************************************
@@ -79,13 +79,15 @@ avtDatabase *
 PLOT3DCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
-    avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
-    for (int i = 0 ; i < nList ; i++)
+    // ignore any nBlocks past 1
+    int nTimestepGroups = nList / nBlock;
+    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
+    for (int i = 0 ; i < nTimestepGroups ; i++)
     {
-        ffl[i] = new avtPLOT3DFileFormat(list[i], readOptions);
+        ffl[i] = new avtPLOT3DFileFormat(list[i*nBlock], readOptions);
     }
-    avtSTMDFileFormatInterface *inter 
-           = new avtSTMDFileFormatInterface(ffl, nList);
+    avtMTMDFileFormatInterface *inter 
+           = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
     return new avtGenericDatabase(inter);
 }
 
