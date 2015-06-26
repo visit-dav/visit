@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="PLOT3D" type="database" label="PLOT3D" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
+  <Plugin name="PLOT3D" type="database" label="PLOT3D" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
       *.q
       *.x

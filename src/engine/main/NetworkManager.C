@@ -125,7 +125,6 @@
 #include <PlotPluginInfo.h>
 #include <StackTimer.h>
 #include <FileFunctions.h> // for ReadAndProcessDirectory
-#include <Utility.h>       // for WildcardStringMatch
 
 #include <vtkImageData.h>
 
@@ -178,7 +177,6 @@ static void BroadcastImage(avtImage_p &, bool, int);
 static bool IsBlankImage(avtImage_p img);
 static std::vector<int> BuildBlankImageVector(avtImage_p img);
 #endif
-static void FileMatchesPatternCB(void *, const std::string &, bool, bool, long);
 
 //
 // Static data members of the NetworkManager class.
@@ -703,6 +701,9 @@ NetworkManager::GetOpenDatabases() const
 //    Kathleen Biagas, Thu June 27 10:38:54 MST 2013
 //    If passed a virtual Database, expand it to the actual files.
 //
+//    Kathleen Biagas, Fri Jun 26 12:14:51 PDT 2015
+//    Moved FileMatchesPatternCB to FileFunctions.
+//
 // ****************************************************************************
 
 NetnodeDB *
@@ -820,10 +821,14 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
                 }
                 // look for files that match pattern
                 std::vector< std::string > fileNames;
-                void *cb_data[2];
+                int returnFullPath = 1;
+                void *cb_data[3];
                 cb_data[0] = (void *)&fileNames;
                 cb_data[1] =  (void *)&pattern;
-                FileFunctions::ReadAndProcessDirectory(path, FileMatchesPatternCB, (void*) cb_data, false);
+                cb_data[2] =  (void *)&returnFullPath;
+                FileFunctions::ReadAndProcessDirectory(path,
+                    FileFunctions::FileMatchesPatternCB, (void*) cb_data,
+                    false);
                 char **names = new char *[fileNames.size()];
                 for (size_t i = 0; i < fileNames.size(); ++i)
                 {
@@ -7049,35 +7054,3 @@ NetworkManager::GetQueryParameters(const std::string &qName)
     return avtQueryFactory::Instance()->GetDefaultInputParams(qName);
 }
 
-// ****************************************************************************
-//  Method: FileMatchesPatternCB
-//
-//  Purpose:
-//    This function is a callback to the method ReadAndProcessDirectory,
-//    located in Utility.h.  It is called for each file in a give directory.
-//    Once it receives a file, it feeds that file to NetworkManager which then
-//    determines if the filename matches the requested pattern.
-//
-//  Programmer: Kathleen Biagas
-//  Creation:   Jun 26, 2013
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-static void
-FileMatchesPatternCB(void *cbdata, const std::string &filename, bool isDir, bool canAccess, long size)
-{
-    if (!isDir)
-    {
-        void **arr = (void **)cbdata;
-        std::vector< std::string > *fl = (std::vector< std::string > *)arr[0];
-        std::string *pattern = (std::string*)arr[1];
-        std::string name(filename);
-        size_t index  = filename.rfind(VISIT_SLASH_CHAR);
-        if(index != std::string::npos)
-            name = name.substr(index+1);
-        if (WildcardStringMatch(*pattern, name))
-           fl->push_back(filename);
-    }
-}

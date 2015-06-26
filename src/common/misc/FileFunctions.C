@@ -36,6 +36,7 @@
 *
 *****************************************************************************/
 #include <FileFunctions.h>
+#include <Utility.h>
 
 #include <visitstream.h>
 #include <vectortypes.h>
@@ -1112,4 +1113,47 @@ FileFunctions::ComposeDatabaseName(const std::string &host,
         h = "localhost";
 
     return h + ":" + db;
+}
+
+// ****************************************************************************
+//  Method: FileMatchesPatternCB
+//
+//  Purpose:
+//    This function is a callback to the method ReadAndProcessDirectory,
+//    located in Utility.h.  It is called for each file in a given directory.
+//    Once it receives a file, it feeds that file to caller which then
+//    determines if the filename matches the requested pattern.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   Jun 26, 2013
+//
+//  Modifications:
+//    Kathleen Biagas, Fri Jun 26 12:13:39 PDT 2015
+//    Moved from NetworkManager, and added the 'returnFullpath' callback data
+//    item.
+//
+// ****************************************************************************
+
+
+void
+FileFunctions::FileMatchesPatternCB(void *cbdata, const std::string &filename, bool isDir, bool canAccess, long size)
+{
+    if (!isDir)
+    {
+        void **arr = (void **)cbdata;
+        std::vector< std::string > *fl = (std::vector< std::string > *)arr[0];
+        std::string *pattern = (std::string*)arr[1];
+        int *returnFullPath = (int*)arr[2];
+        std::string name(filename);
+        size_t index  = filename.rfind(VISIT_SLASH_CHAR);
+        if(index != std::string::npos)
+            name = name.substr(index+1);
+        if (WildcardStringMatch(*pattern, name))
+        {
+           if (*returnFullPath)
+               fl->push_back(filename);
+           else 
+               fl->push_back(name);
+        }
+    }
 }
