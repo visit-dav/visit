@@ -567,8 +567,13 @@ avtDatasetOnDemandFilter::GetLoadedDomains(std::vector<std::vector<int> > &domai
 //  Programmer: Hank Childs
 //  Creation:   March 1, 2008
 //
+//  Modifications:
+//
 //    Hank Childs, Thu Jun 12 16:12:04 PDT 2008
 //    Add support for where on-demand is not possible.
+//
+//    Hank Childs, Sun Jun 21 17:22:43 PDT 2015
+//    Don't request streaming if upstream filter has disabled it.
 //
 // ****************************************************************************
 
@@ -592,6 +597,7 @@ avtDatasetOnDemandFilter::ModifyContract(avtContract_p in_contract)
     // and always request ghost data.
     operatingOnDemand = 
             GetInput()->GetOriginatingSource()->CanDoStreaming(in_contract)
+         && (GetInput()->GetInfo().GetValidity().IsStreamingPossible() == true)
          && CheckOnDemandViability();
 
     avtContract_p out_contract = new avtContract(in_contract);
