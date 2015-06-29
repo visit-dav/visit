@@ -55,25 +55,14 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include "avtCommDSOnDemandICAlgorithm.h"
 #include "avtMasterSlaveICAlgorithm.h"
 #include "avtVariableCache.h"
-#include <math.h>
-#include <string.h>
 #include <visitstream.h>
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkInformation.h>
-#include <vtkLineSource.h>
-#include <vtkPlaneSource.h>
-#include <vtkPlane.h>
-#include <vtkPoints.h>
-#include <vtkPointData.h>
-#include <vtkPolyData.h>
-#include <vtkSphereSource.h>
-#include <vtkPointSource.h>
+
 #include <vtkVisItStreamLine.h>
-#include <vtkGlyph3D.h>
 
 #include <avtCallback.h>
 #include <avtCellLocatorClassic.h>
@@ -84,9 +73,8 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDataset.h>
-#include <avtDataTree.h>
 #include <avtDatasetExaminer.h>
-#include <avtExtents.h>
+
 #include <avtIVPVTKField.h>
 #include <avtIVPVTKFaceField.h>
 #include <avtIVPVTKEdgeField.h>
@@ -129,6 +117,8 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #endif
 
 #include <vector>
+#include <math.h>
+#include <string.h>
 
 #ifndef _WIN32
 #include <dirent.h>
@@ -1212,26 +1202,24 @@ avtPICSFilter::SetIntegrationDirection(int dir)
 bool
 avtPICSFilter::CheckOnDemandViability(void)
 {
+    bool val = false;
+
     // If we don't want on demand, don't provide it.
     if (method == PICS_PARALLEL_OVER_DOMAINS)
     {
-        if (DebugStream::Level1()) 
-        {
-            debug1 << "avtPICSFilter::CheckOnDemandViability(): = 0\n";
-        }
-        return false;
     }
     
-    bool val = false;
-    if (GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
+    else if (GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
     {
         avtIntervalTree *it = GetMetaData()->GetSpatialExtents(curTimeSlice);
-        val = (it == NULL ? val : true);
+        val = (it == NULL ? false : true);
     }
+
     if (DebugStream::Level1()) 
     {
-        debug1 << "avtPICSFilter::CheckOnDemandViability(): = " << val <<endl;
+        debug1 << "avtPICSFilter::CheckOnDemandViability(): = " << val << endl;
     }
+
     return val;
 }
 
