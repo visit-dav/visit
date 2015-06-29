@@ -119,6 +119,9 @@ class     avtWebpage;
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Sun Jun 21 15:29:01 PDT 2015
+//    Add a bool to disable the downstream modules from attempting streaming.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataValidity
@@ -188,6 +191,10 @@ class PIPELINE_API avtDataValidity
                                    { streaming = itd; };
     bool                     AreWeStreaming(void)
                                    { return streaming; };
+    void                     SetWhetherStreamingPossible(bool sp)
+                                   { streamingPossible = sp; };
+    bool                     IsStreamingPossible(void)
+                                   { return streamingPossible; };
 
     void                     SetPointsWereTransformed(bool pwt)
                                    { pointsWereTransformed = pwt; };
@@ -250,6 +257,7 @@ class PIPELINE_API avtDataValidity
     bool                     usingAllData;
     bool                     usingAllDomains;
     bool                     streaming;
+    bool                     streamingPossible;
     bool                     pointsWereTransformed;
     bool                     wireframeRenderingIsInappropriate;
     bool                     normalsAreInappropriate;

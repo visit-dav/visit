@@ -2069,6 +2069,11 @@ avtPICSFilter::ReleaseData(void)
 //  Programmer: Hank Childs
 //  Creation:   September 19, 2010
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Jun 21 17:20:58 PDT 2015
+//    Set streaming to be not possible downstream.
+//
 // ****************************************************************************
 
 void
@@ -2078,6 +2083,7 @@ avtPICSFilter::UpdateDataObjectInfo(void)
     avtDatasetOnDemandFilter::UpdateDataObjectInfo();
 
     GetOutput()->GetInfo().GetAttributes().SetDataIsReplicatedOnAllProcessors(true);
+    GetOutput()->GetInfo().GetValidity().SetWhetherStreamingPossible(false);
 }
 
 

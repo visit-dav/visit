@@ -115,6 +115,9 @@ avtDataValidity::~avtDataValidity()
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Sun Jun 21 15:29:01 PDT 2015
+//    Add a bool to disable streaming from downstream in the pipeline.
+
 // ****************************************************************************
 
 void
@@ -128,7 +131,8 @@ avtDataValidity::Reset(void)
     operationFailed                   = false;
     usingAllData                      = false;
     usingAllDomains                   = false;
-    streaming                       = false;
+    streaming                         = false;
+    streamingPossible                 = true;
     pointsWereTransformed             = false;
     wireframeRenderingIsInappropriate = false;
     normalsAreInappropriate           = false;
@@ -197,6 +201,9 @@ avtDataValidity::Reset(void)
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Sun Jun 21 15:29:01 PDT 2015
+//    Add a bool to disable streaming from downstream in the pipeline.
+
 // ****************************************************************************
 
 void
@@ -210,7 +217,8 @@ avtDataValidity::Copy(const avtDataValidity &di)
     operationFailed                   = di.operationFailed;
     usingAllData                      = di.usingAllData;
     usingAllDomains                   = di.usingAllDomains;
-    streaming                       = di.streaming;
+    streaming                         = di.streaming;
+    streamingPossible                 = di.streamingPossible;
     pointsWereTransformed             = di.pointsWereTransformed;
     wireframeRenderingIsInappropriate = di.wireframeRenderingIsInappropriate;
     normalsAreInappropriate           = di.normalsAreInappropriate;
@@ -279,6 +287,9 @@ avtDataValidity::Copy(const avtDataValidity &di)
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Sun Jun 21 15:29:01 PDT 2015
+//    Add a bool to disable streaming from downstream in the pipeline.
+//
 // ****************************************************************************
 
 void
@@ -293,7 +304,8 @@ avtDataValidity::Merge(const avtDataValidity &di)
                                && di.dataMetaDataPreserved;
     usingAllData             = usingAllData && di.usingAllData;
     usingAllDomains          = usingAllDomains && di.usingAllDomains;
-    streaming              = streaming && di.streaming;
+    streaming                = streaming && di.streaming;
+    streamingPossible        = streamingPossible && di.streamingPossible;
     pointsWereTransformed   = pointsWereTransformed || di.pointsWereTransformed;
     wireframeRenderingIsInappropriate = wireframeRenderingIsInappropriate ||
                                         di.wireframeRenderingIsInappropriate;
@@ -392,13 +404,16 @@ avtDataValidity::Merge(const avtDataValidity &di)
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Sun Jun 21 15:29:01 PDT 2015
+//    Add a bool to disable streaming from downstream in the pipeline.
+
 // ****************************************************************************
 
 void
 avtDataValidity::Write(avtDataObjectString &str,
                        const avtDataObjectWriter *wrtr)
 {
-    const int numVals = 19;
+    const int numVals = 20;
     int  vals[numVals];
 
     vals[0] = (zonesPreserved ? 1 : 0);
@@ -418,8 +433,9 @@ avtDataValidity::Write(avtDataObjectString &str,
     vals[14]= (disjointElements ? 1 : 0);
     vals[15]= (queryable ? 1 : 0);
     vals[16]= (hasEverOwnedAnyDomain ? 1 : 0);
-    vals[17]= (errorOccurred ? 1 : 0);
-    vals[18]= static_cast<int>(errorString.size());
+    vals[17] = (streamingPossible ? 1 : 0);
+    vals[18]= (errorOccurred ? 1 : 0);
+    vals[19]= static_cast<int>(errorString.size());
     wrtr->WriteInt(str, vals, numVals);
 
     str.Append((char *) errorString.c_str(), static_cast<int>(errorString.size()),
@@ -484,6 +500,9 @@ avtDataValidity::Write(avtDataObjectString &str,
 //    are streaming, not about whether we are doing dynamic load balancing.
 //    And the two are no longer synonymous.
 //
+//    Hank Childs, Sun Jun 21 15:29:01 PDT 2015
+//    Add a bool to disable streaming from downstream in the pipeline.
+
 // ****************************************************************************
 
 int
@@ -611,6 +630,12 @@ avtDataValidity::Read(char *input)
     input += sizeof(int); size += sizeof(int);
     SetHasEverOwnedAnyDomain((everOwned == 1 ? true : false));
 
+    // read is streaming
+    int sp;
+    memcpy(&sp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    SetWhetherStreamingPossible((sp == 1 ? true : false));
+
     int eo;
     memcpy(&eo, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
@@ -673,6 +698,8 @@ avtDataValidity::DebugDump(avtWebpage *webpage)
                             YesOrNo(usingAllDomains));
     webpage->AddTableEntry2("The pipeline execution is using streaming",
                             YesOrNo(streaming));
+    webpage->AddTableEntry2("Streaming is possible for this pipeline",
+                            YesOrNo(streamingPossible));
     webpage->AddTableEntry2("The points have been transformed",
                             YesOrNo(pointsWereTransformed));
     webpage->AddTableEntry2("Wireframe rendering would be inappropriate",
