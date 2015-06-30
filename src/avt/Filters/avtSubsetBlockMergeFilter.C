@@ -482,7 +482,7 @@ avtSubsetBlockMergeFilter::Send(map<int, vector<BlockIdDatasetPair> > &procDatas
                     
                     // Cleanup
                     serializer->Delete();
-                    delete sendData;
+                    delete [] sendData;
                     
                     debug5 << source << ": Sent " << dataSendCnt << " Bytes to " << dest << endl;
                 }

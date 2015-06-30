@@ -2476,7 +2476,7 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
     {
         for (it = list.begin() ; it != list.end() ; ++it)
         {
-            free(*it);
+            delete [] *it;
         }
     }
     else
