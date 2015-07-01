@@ -359,26 +359,6 @@ avtZeusMPFileFormat::GetTime(void)
 }
 
 // ****************************************************************************
-// Method: avtZeusMPFileFormat::ReturnsValidTime
-//
-// Purpose: 
-//   Indicates whether the dataset returns a valid time.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jan 13 12:17:29 PDT 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-avtZeusMPFileFormat::ReturnsValidTime() const
-{
-    debug4 << "avtZeusMPFileFormat::ReturnsValidTime: " << (haveFileTime?"true":"false") << endl;
-    return haveFileTime;
-}
-
-// ****************************************************************************
 // Method: avtZeusMPFileFormat::ActivateTimestep
 //
 // Purpose: 

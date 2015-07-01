@@ -91,15 +91,7 @@ public:
     //
     // If you know the cycle number, overload this function.
     // Otherwise, VisIt will make up a reasonable one for you.
-    virtual bool          ReturnsValidCycle() const
-    {
-        return true;
-    };
     virtual int           GetCycle(void);
-    virtual bool          ReturnsValidTime() const
-    {
-        return true;
-    };
     virtual double        GetTime(void);
 
     virtual const char   *GetType(void)

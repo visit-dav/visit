@@ -893,9 +893,7 @@ class AVTGeneratorPlugin : public PluginBase
             h << "    // file.  These should only be defined if the file format knows what the" << Endl;
             h << "    // time and/or cycle is." << Endl;
             h << "    //" << Endl;
-            h << "    // virtual bool      ReturnsValidCycle() const { return true; };" << Endl;
             h << "    // virtual int       GetCycle(void);" << Endl;
-            h << "    // virtual bool      ReturnsValidTime() const { return true; };" << Endl;
             h << "    // virtual double    GetTime(void);" << Endl;
             h << "    //" << Endl;
             h << "" << Endl;

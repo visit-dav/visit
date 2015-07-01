@@ -92,9 +92,7 @@ public:
 
     // Methods overrides for an STSD file format.
     virtual const char   *GetType();
-    virtual bool          ReturnsValidCycle() const { return true; }
     virtual int           GetCycle(void);
-    virtual bool          ReturnsValidTime() const { return true; }
     virtual double        GetTime(void);
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
     virtual vtkDataSet   *GetMesh(const char *var);

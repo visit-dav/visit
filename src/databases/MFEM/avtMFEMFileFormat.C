@@ -270,41 +270,6 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 }
 
 // ****************************************************************************
-//  Method: avtMFEMFileFormat::ReturnsValidCycle
-//
-//  Purpose:
-//      Returns if we have valid cycle metadata. For now this always 
-//      returns true. 
-//
-//  Programmer: Cyrus Harrison
-//  Creation:   Wed Oct 15 10:52:22 PDT 2014
-//
-// ****************************************************************************
-bool
-avtMFEMFileFormat::ReturnsValidCycle() const
-{
-    // VisIt doesn't support diff times / cycles for meshes
-    // we loop over all meshes to see if any have valid cycle info
-    if(root)
-    {
-        std::vector<std::string> dset_names;
-        root->DataSets(dset_names);
-        // enumerate datasets
-        bool not_found = true;
-        for(size_t i=0; i<dset_names.size() && not_found ;i++)
-        {
-            JSONRootDataSet &dset =  root->DataSet(dset_names[i]);
-            if(dset.HasCycle())
-            {
-                return true;
-            }
-        }
-    }
-    
-    return false;
-}
-
-// ****************************************************************************
 //  Method: avtMFEMFileFormat::GetCycle
 //
 //  Purpose:
@@ -336,42 +301,6 @@ avtMFEMFileFormat::GetCycle()
     }
     
     return avtFileFormat::INVALID_CYCLE;
-}
-
-
-// ****************************************************************************
-//  Method: avtMFEMFileFormat::ReturnsValidTime
-//
-//  Purpose:
-//      Returns if we have valid time metadata. For now this always 
-//      returns true. 
-//
-//  Programmer: Cyrus Harrison
-//  Creation:   Wed Oct 15 10:52:22 PDT 2014
-//
-// ****************************************************************************
-bool
-avtMFEMFileFormat::ReturnsValidTime() const
-{
-    // VisIt doesn't support diff times / cycles for meshes
-    // we loop over all meshes to see if any have valid time info
-    if(root)
-    {
-        std::vector<std::string> dset_names;
-        root->DataSets(dset_names);
-        // enumerate datasets
-        bool not_found = true;
-        for(size_t i=0; i<dset_names.size() && not_found ;i++)
-        {
-            JSONRootDataSet &dset =  root->DataSet(dset_names[i]);
-            if(dset.HasTime())
-            {
-                return true;
-            }
-        }
-    }
-    
-    return false;
 }
 
 

@@ -82,18 +82,10 @@ public:
                                         DestructorFunction &);
 
 
-    virtual bool      ReturnsValidCycle() const
-    {
-        return true;
-    };
     virtual int       GetCycle(void)
     {
         return preader_->GetCycle();
     }
-    virtual bool      ReturnsValidTime() const
-    {
-        return true;
-    };
     virtual double    GetTime(void)
     {
         return preader_->GetTime();

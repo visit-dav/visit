@@ -89,9 +89,7 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
-    virtual bool           ReturnsValidCycle() const;
     virtual int            GetCycle();
-    virtual bool           ReturnsValidTime() const;
     virtual double         GetTime();
 
     virtual void           ActivateTimestep(void);

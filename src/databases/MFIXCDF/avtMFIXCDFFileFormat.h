@@ -78,10 +78,6 @@ public:
     avtMFIXCDFFileFormat(const char *, DBOptionsAttributes *);
     virtual           ~avtMFIXCDFFileFormat();
 
-    virtual bool ReturnsValidTime() const
-    {
-        return true;
-    }
     virtual double GetTime(void);
 
     //

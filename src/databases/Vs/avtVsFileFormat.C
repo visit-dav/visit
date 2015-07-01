@@ -4580,37 +4580,6 @@ void avtVsFileFormat::setAxisLabels(avtMeshMetaData* mmd)
     << "Exiting normally." << std::endl;
 }
 
-// *****************************************************************************
-//  Method: avtVsFileFormat::ReturnsValidCycle
-//
-//  Purpose:
-//      How do you do the voododo that you do
-//
-//  Programmer: Marc Durant
-//  Creation:   June, 2010
-//
-//  Modifications:
-//
-
-bool avtVsFileFormat::ReturnsValidCycle()
-{
-    VsLog::debugLog() << CLASSFUNCLINE << "  "
-    << "entering" << std::endl;
-    LoadData();
-
-    if (registry->hasCycle())
-    {
-        VsLog::debugLog() << CLASSFUNCLINE << "  "
-        << "returning TRUE." << std::endl;
-        return true;
-    }
-    else
-    {
-        VsLog::debugLog() << CLASSFUNCLINE << "  "
-        << "returning FALSE." << std::endl;
-        return false;
-    }
-}
 
 // *****************************************************************************
 //  Method: avtVsFileFormat::GetCycle
@@ -4647,37 +4616,6 @@ int avtVsFileFormat::GetCycle()
     }
 }
 
-// *****************************************************************************
-//  Method: avtVsFileFormat::ReturnsValidTime
-//
-//  Purpose:
-//      How do you do the voododo that you do
-//
-//  Programmer: Marc Durant
-//  Creation:   June, 2010
-//
-//  Modifications:
-//
-
-bool avtVsFileFormat::ReturnsValidTime()
-{
-    VsLog::debugLog() << CLASSFUNCLINE << "  "
-    << "entering" << std::endl;
-    LoadData();
-
-    if (registry->hasTime())
-    {
-        VsLog::debugLog() << CLASSFUNCLINE << "  "
-        << "returning TRUE." <<std::endl;
-        return true;
-    }
-    else
-    {
-        VsLog::debugLog() << CLASSFUNCLINE << "  "
-        << "returning FALSE." <<std::endl;
-        return false;
-    }
-}
 
 // *****************************************************************************
 //  Method: avtVsFileFormat::GetTime

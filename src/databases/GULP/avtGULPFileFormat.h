@@ -68,7 +68,6 @@ class avtGULPFileFormat : public avtMTSDFileFormat
     virtual           ~avtGULPFileFormat() {;};
 
     virtual int       GetNTimesteps(void);
-    virtual bool      ReturnsValidTime() const { return true; };
     virtual void      GetTimes(std::vector<double> &t);
 
     virtual const char    *GetType(void)   { return "GULP"; };
