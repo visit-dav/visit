@@ -471,6 +471,10 @@ avtLine2DColleague::ShouldBeAddedToRenderer() const
 //    Brad Whitlock, Tue Jun 28 15:38:30 PST 2005
 //    I made it use updateArrows.
 //
+//    Kathleen Biagas, Tue Jun 30 17:30:43 PDT 2015
+//    Call update on allData, fixes bug where applying arrow causes line to
+//    disappear.
+//
 // ****************************************************************************
 
 void
@@ -533,6 +537,7 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     if(allData)
     {
         allData->AddInputData(lineData);
+        allData->Update();
         mapper->SetInputData(allData->GetOutput());
     }
     else mapper->SetInputData(lineData);
