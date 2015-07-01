@@ -77,7 +77,6 @@ public:
                            avtZeusMPFileFormat(const char *filename);
     virtual               ~avtZeusMPFileFormat();
 
-    virtual bool           ReturnsValidTime() const;
     virtual double         GetTime(void);
 
     virtual const char    *GetType(void)   { return "ZeusMP HDF"; };

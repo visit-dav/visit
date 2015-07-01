@@ -82,9 +82,7 @@ public:
     // file.  These should only be defined if the file format knows what the
     // time and/or cycle is.
     //
-    // virtual bool      ReturnsValidCycle() const { return true; };
     // virtual int       GetCycle(void);
-    // virtual bool      ReturnsValidTime() const { return true; };
     // virtual double    GetTime(void);
     //
 

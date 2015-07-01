@@ -111,7 +111,6 @@ class avtBOVFileFormat : public avtSTMDFileFormat
 
     virtual int                GetCycle(void) { ReadTOC(); return (cycleIsAccurate ? cycle : INVALID_CYCLE); };
     virtual double             GetTime(void) { ReadTOC(); return (timeIsAccurate ? dtime : INVALID_TIME); };
-    virtual bool               ReturnsValidCycle(void) { return haveReadTOC; };
     void                       ActivateTimestep(void);
 
   protected:

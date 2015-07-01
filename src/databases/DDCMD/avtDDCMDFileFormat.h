@@ -153,9 +153,7 @@ class avtDDCMDFileFormat : public avtSTMDFileFormat
     //                                     DestructorFunction &);
     //
 
-    virtual bool           ReturnsValidCycle() const { return true; };
     virtual int            GetCycle(void);
-    virtual bool           ReturnsValidTime() const { return true; };
     virtual double         GetTime(void);
 
     void                   ActivateTimestep(void);

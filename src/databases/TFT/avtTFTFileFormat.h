@@ -74,7 +74,6 @@ public:
     // file.  These should only be defined if the file format knows what the
     // time and/or cycle is.
     //
-    virtual bool           ReturnsValidTime() const;
     virtual double         GetTime(void);
 
     virtual const char    *GetType(void)   { return "TFT"; };

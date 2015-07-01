@@ -163,22 +163,10 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   
   protected:
   /**
-   * Determines if the associated file has a valid cycle number
-   * @return true if cycle is valid, otherwise false
-   */
-  virtual bool ReturnsValidCycle();
-
-  /**
    * Get the cycle for the associated file
    * @return the cycle, or INVALID_CYCLE if none is available
    */
   virtual int GetCycle();
-
-  /**
-   * Determines if the associated file has a valid time
-   * @return true if time is valid, otherwise false
-   */
-  virtual bool ReturnsValidTime();
 
   /**
    * Get the time for the associated file

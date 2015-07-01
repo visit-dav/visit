@@ -76,9 +76,7 @@ class avtRAGEFileFormat : public avtSTSDFileFormat
     //                                  void *args, DestructorFunction &);
     //
 
-    virtual bool      ReturnsValidCycle() const {return true;}
     virtual int       GetCycle() {Initialize(); return cycle;}
-    virtual bool      ReturnsValidTime() const {return true;}
     virtual double    GetTime() {Initialize(); return time;}
 
     virtual const char    *GetType() {return "RAGE";}
