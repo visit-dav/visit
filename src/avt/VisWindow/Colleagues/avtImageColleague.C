@@ -441,6 +441,10 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
 //   Add an error message if the file can't be read.  Add support for tilde's
 //   for home directories.
 //
+//   Kathleen Biagas, Wed Jul  1 12:15:00 PDT 2015
+//   No need to ExpandPath if filename is empty. This change prevents
+//   unnecessary warning message.
+//
 // ****************************************************************************
 
 bool
@@ -448,7 +452,8 @@ avtImageColleague::UpdateImage(std::string filename)
 {
     bool retval = true;
 
-    filename = FileFunctions::ExpandPath(filename);
+    if (!filename.empty())
+        filename = FileFunctions::ExpandPath(filename);
 
     // Get a reader for filename if possible.
     vtkImageReader2 *r =
