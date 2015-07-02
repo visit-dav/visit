@@ -553,7 +553,6 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("category", categoryName));
     }
 
-
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -1511,8 +1510,8 @@ ColorControlPointList::GetColors(unsigned char *rgb,
         c2_g++;
         c2_b++;
         c2_a++;
-        color_start_i = int(c1_pos[0] * float(ncolors));
-        color_end_i = int(c2_pos[0] * float(ncolors));
+        color_start_i = int(c1_pos[0] * float(ncolors - 1));
+        color_end_i = int(c2_pos[0] * float(ncolors - 1));
         color_range = color_end_i - color_start_i;
 
         if(color_range > 1)
