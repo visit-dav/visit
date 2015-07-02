@@ -820,6 +820,26 @@ int VisItSaveWindow(const char *filename, int width, int height, int format);
 int VisItSetMPICommunicator(void *mpicom);
 
 /******************************************************************************
+ * Function: VisItSetMPICommunicator_f
+ *
+ * Purpose: 
+ *   This function sets the communicator that VisIt should use for parallel 
+ *   operations from a Fortran handle. Note that you may want to temporarily
+ *   install a communicator for vis operations and then revert to the default
+ *   communicator for when VisIt needs to communicate commands to other
+ *   processes.
+ *
+ * Arguments:
+ *   mpicom : A pointer to the FORTRAN communicator that we should use.
+ * 
+ * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
+ *
+ * Note:      use VisItSetMPICommunicator to revert to its copy of MPI_COMM_WORLD.
+ *
+ * ****************************************************************************/
+int VisItSetMPICommunicator_f(int *mpicom);
+
+/******************************************************************************
  * Function: VisItInitializeRuntime
  *
  * Purpose: 
