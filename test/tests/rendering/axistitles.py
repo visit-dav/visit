@@ -19,6 +19,9 @@
 #    Kathleen Biagas, Thu Jul 11 08:36:38 PDT 2013
 #    Remove legacy style annotation settings.
 #
+#    Kathleen Biagas, Wed Jul  1 17:37:57 PDT 2015
+#    Added title color test to 2D.
+#
 # ----------------------------------------------------------------------------
 
 def SaveTestImage(name):
@@ -74,6 +77,16 @@ def Test2D():
     a.axes2D.yAxis.title.userUnits = 1
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_0_04")
+
+    # Test colors for title
+
+    a.axes2D.xAxis.title.font.useForegroundColor = 0
+    a.axes2D.xAxis.title.font.color =(255,0,0,255) 
+    a.axes2D.yAxis.title.font.useForegroundColor = 0
+    a.axes2D.yAxis.title.font.color =(255,0,255,255) 
+    SetAnnotationAttributes(a)
+    SaveTestImage("axistitles_0_05")
+
     DeleteAllPlots()
 
 
