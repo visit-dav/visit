@@ -143,6 +143,7 @@ typedef struct
     int   (*save_window)(void*,const char *, int, int, int);
     void  (*debug_logs)(int,const char *);
     int   (*set_mpicomm)(void *);
+    int   (*set_mpicomm_f)(int *);
 
     int   (*add_plot)(void *, const char *, const char *);
     int   (*add_operator)(void *, const char *, int);
@@ -233,6 +234,7 @@ static void        (*visit_slave_process_callback2)(void *) = NULL;
 static void         *visit_slave_process_callback2_data = NULL;
 static void         *visit_communicator = NULL;
 static int           visit_batch_mode = 0;
+static int          *visit_communicator_f = NULL;
 
 /*******************************************************************************
  *******************************************************************************
@@ -1154,6 +1156,15 @@ static int CreateEngine(int batch)
 #endif
             }
 
+            if(visit_communicator != NULL)
+            {
+                VisItSetMPICommunicator(visit_communicator);
+            }
+            else if(visit_communicator_f != NULL)
+            {
+                VisItSetMPICommunicator_f(visit_communicator_f);
+            }
+
             LIBSIM_MESSAGE_STRINGLIST("Calling visit_initialize: argv=",
                                       engine_argc, engine_argv);
             if(batch && callbacks->control.initialize_batch != NULL)
@@ -1896,6 +1907,7 @@ static int LoadVisItLibrary(void)
         CONTROL_DLSYM(save_window,                int,    (void*,const char *,int,int,int));
         CONTROL_DLSYM(debug_logs,                 void,   (int,const char *));
         CONTROL_DLSYM(set_mpicomm,                int,    (void *));
+        CONTROL_DLSYM(set_mpicomm_f,              int,    (int *));
 
         CONTROL_DLSYM_OPTIONAL(add_plot,             int,    (void *, const char *, const char *));
         CONTROL_DLSYM_OPTIONAL(add_operator,         int,    (void *, const char *, int));
@@ -3788,6 +3800,31 @@ VisItSetMPICommunicator(void *comm)
     if(engine && callbacks != NULL && callbacks->control.set_mpicomm != NULL)
         retval = (*callbacks->control.set_mpicomm)(comm);
     LIBSIM_API_LEAVE(VisItSetMPICommunicator);
+    return retval;
+}
+
+/******************************************************************************
+*
+* Name: VisItSetMPICommunicator_f
+*
+* Purpose: Let the Fortran user set the MPI communicator that VisIt will use.
+*
+* Programmer: William T. Jones
+* Date:       Fri Jul 12 18:13:24 EDT 2013
+*
+* Modifications:
+*
+******************************************************************************/
+
+int
+VisItSetMPICommunicator_f(int *comm)
+{
+    int retval = VISIT_OKAY;
+    LIBSIM_API_ENTER(VisItSetMPICommunicator_f);
+    visit_communicator_f = comm;
+    if(engine && callbacks != NULL && callbacks->control.set_mpicomm_f != NULL)
+        retval = (*callbacks->control.set_mpicomm_f)(comm);
+    LIBSIM_API_LEAVE(VisItSetMPICommunicator_f);
     return retval;
 }
 

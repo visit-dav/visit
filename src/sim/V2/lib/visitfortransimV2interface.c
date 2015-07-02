@@ -275,7 +275,7 @@ F_VISITSETMPICOMMUNICATOR(int *comm)
 {
     int ret = VISIT_ERROR;
     if(comm != NULL)
-        ret = VisItSetMPICommunicator((void *)comm);
+        ret = VisItSetMPICommunicator_f(comm);
     return ret;
 }
 

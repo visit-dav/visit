@@ -536,6 +536,39 @@ simv2_set_mpicomm(void *comm)
 #endif
 }
 
+// ****************************************************************************
+// Method: simv2_set_mpicomm_f
+//
+// Purpose:
+//   SimV2 runtime function that sets the MPI communicator from Fortran which
+//   uses an integer communicator handle.
+//
+// Arguments:
+//   comm : The Fortran MPI communicator handle (integer).
+//
+// Returns:    VISIT_OKAY, VISIT_ERROR
+//
+// Note:       
+//
+// Programmer: William T. Jones
+// Creation:   Wed Sep 4 10:27:03 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+simv2_set_mpicomm_f(int *comm)
+{
+#ifdef PARALLEL
+    MPI_Fint *commF = (MPI_Fint*)comm;
+    static MPI_Comm commC = MPI_Comm_f2c(*commF);
+    return PAR_SetComm((void*)&commC) ? VISIT_OKAY : VISIT_ERROR;
+#else
+    return VISIT_ERROR;
+#endif
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// THESE FUNCTIONS ARE MORE EXPERIMENTAL
 ///////////////////////////////////////////////////////////////////////////////
