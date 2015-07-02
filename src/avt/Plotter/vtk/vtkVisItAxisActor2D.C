@@ -508,6 +508,10 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   SetJustification methods on TextProperty to remove VTK warnings from our
 //   log files.
 //
+//   Kathleen Biagas, Wed Jul  1 17:29:16 PDT 2015
+//   Removed setting of title actor's Property from this->Property, prevented
+//   color from being set correctly.
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -555,7 +559,6 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
   // Initialize and get important info
   this->Axis->Initialize();
   this->AxisActor->SetProperty(this->GetProperty());
-  this->TitleActor->SetProperty(this->GetProperty());
   
   size = viewport->GetSize();
   
