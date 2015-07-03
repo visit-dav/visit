@@ -86,6 +86,92 @@
 #define SNPRINTF snprintf
 #endif
 
+/*******************************************************************************
+ * Simple dynamic string type
+ ******************************************************************************/
+typedef struct
+{
+    char   *str;
+    size_t size;
+    size_t buffer_size;
+    size_t allocation_increment;
+} visit_string;
+
+void
+visit_string_ctor(visit_string *obj, size_t incr)
+{
+    obj->str = NULL;
+    obj->size = 0;
+    obj->buffer_size = 0;
+    obj->allocation_increment = incr;
+}
+
+void
+visit_string_dtor(visit_string *obj)
+{
+    if(obj->str != NULL)
+        free(obj->str);
+    obj->str = NULL;
+    obj->size = 0;
+    obj->buffer_size = 0;
+}
+
+void
+visit_string_reserve(visit_string *obj, int len)
+{
+    if(obj->buffer_size < len)
+    {
+        obj->str = (char *)realloc(obj->str, len);
+        if(obj->str != NULL)   
+            obj->buffer_size = len;
+    }
+}
+
+int
+visit_string_append(visit_string *obj, const char *s, size_t len)
+{
+    size_t neededSize;
+
+    if(obj == NULL || s == NULL || len == 0)
+        return 0;
+
+    neededSize = obj->size + len + 1;
+
+    if(obj->buffer_size < neededSize)
+    {
+        /* Enlarge the buffer if needed. */
+        while(obj->buffer_size < neededSize)
+            obj->buffer_size += obj->allocation_increment;
+        obj->str = (char *)realloc(obj->str, obj->buffer_size);
+    }
+
+    /* Append the new string. */
+    memcpy(obj->str + obj->size, s, len);
+    obj->size += len;
+    obj->str[obj->size] = '\0';
+
+    return 1;
+}
+
+int
+visit_string_copy(visit_string *obj, const char *s)
+{
+    if(obj->str == s)
+        return 1;
+
+    obj->size = 0;
+    if(s == NULL)
+        return 1;
+
+    return visit_string_append(obj, s, strlen(s));
+}
+
+void
+visit_string_empty(visit_string *obj)
+{
+    obj->size = 0;
+}
+
 /* ****************************************************************************
  *  File:  VisItControlInterface.c
  *
@@ -122,6 +208,7 @@
 
 #define LIBSIM_MAX_STRING_SIZE      1024
 #define LIBSIM_MAX_STRING_LIST_SIZE 100
+#define LIBSIM_ENV_ALLOCATION_SIZE  10000
 
 static int BroadcastInt(int *value, int sender);
 
@@ -235,6 +322,7 @@ static void         *visit_slave_process_callback2_data = NULL;
 static void         *visit_communicator = NULL;
 static int           visit_batch_mode = 0;
 static int          *visit_communicator_f = NULL;
+static visit_string visit_env = {NULL, 0, 0, LIBSIM_ENV_ALLOCATION_SIZE};
 
 /*******************************************************************************
  *******************************************************************************
@@ -243,6 +331,7 @@ static int          *visit_communicator_f = NULL;
  *******************************************************************************
  *******************************************************************************
  ******************************************************************************/
+
 #ifdef _WIN32
 /*******************************************************************************
 * UTILITY FUNCTIONS
@@ -347,17 +436,17 @@ GetVisItDirectory(char *visitdir, int maxlen)
 *   Brad Whitlock, Fri Jul 25 12:11:16 PDT 2008
 *   Changed some types to remove warnings. Added trace information.
 *
+*   Brad Whitlock, Thu Jul  2 15:53:57 PDT 2015
+*   Change to use visit_string.
+*
 *******************************************************************************/
-#define ENV_BUF_SIZE 10000
 
-static int ReadEnvironmentFromCommand(const char *visitpath, char *output)
+static int ReadEnvironmentFromCommand(const char *visitpath, visit_string *output)
 {
    /* VisIt will tell us what variables to set. */
    /* (redirect stderr so it won't complain if it can't find visit) */
    ssize_t n;
-   size_t  lbuf;
-   char command[1024];
-   char *ptr;
+   char command[LIBSIM_MAX_STRING_SIZE], buf[LIBSIM_MAX_STRING_SIZE];
    FILE *file;
 
    LIBSIM_API_ENTER1(ReadEnvironmentFromCommand, "visitpath=%s", visitpath);
@@ -365,32 +454,75 @@ static int ReadEnvironmentFromCommand(const char *visitpath, char *output)
 #ifdef VISIT_COMPILER
 #define STR(s) STR2(s)
 #define STR2(s) #s
-   SNPRINTF(command, 1024, "%s -compiler %s %s -env -engine 2>/dev/null",
+   SNPRINTF(command, LIBSIM_MAX_STRING_SIZE, "%s -compiler %s %s -env -engine 2>/dev/null",
            visitpath, STR(VISIT_COMPILER), visit_options ? visit_options : "");
 #else
-   SNPRINTF(command, 1024, "%s %s -env -engine 2>/dev/null",
+   SNPRINTF(command, LIBSIM_MAX_STRING_SIZE, "%s %s -env -engine 2>/dev/null",
            visitpath, visit_options ? visit_options : "");
 #endif
 
    LIBSIM_MESSAGE1("command=%s", command);
 
    file = popen(command, "r");
-   ptr = output;
-   lbuf = ENV_BUF_SIZE;
-   while ((n = read(fileno(file), (void*)ptr, lbuf)) > 0)
+   visit_string_empty(output);
+   while ((n = read(fileno(file), (void*)buf, LIBSIM_MAX_STRING_SIZE)) > 0)
    {
-      ptr += n;
-      lbuf -= n;
+       visit_string_append(output, buf, (size_t)n);
    }
-   *ptr = '\0';
 
-   LIBSIM_MESSAGE1("Output=%s", output);
+   LIBSIM_MESSAGE1("Output=%s", output->str);
 
-   LIBSIM_API_LEAVE1(ReadEnvironmentFromCommand, "return %d", (int)(ptr-output));
-   return (ptr - output);
+   LIBSIM_API_LEAVE1(ReadEnvironmentFromCommand, "return %d", (int)output->size);
+   return output->size;
 }
 
 #endif
+
+/*******************************************************************************
+*
+* Name: GetEnvironment
+*
+* Purpose: Read the environment.
+*
+* Author: Brad Whitlock
+*
+* Modifications:
+*
+*******************************************************************************/
+
+static void
+GetEnvironment(visit_string *env)
+{
+#if !defined(VISIT_BLUE_GENE_Q)
+    int done = 0;
+
+    visit_string_empty(env);
+
+    /* Try the one specified in by the visit_dir command first */
+    if (visit_directory)
+    {
+        char path[LIBSIM_MAX_STRING_SIZE];
+        sprintf(path, "%s/bin/visit", visit_directory);
+        done = ReadEnvironmentFromCommand(path, env);
+    }
+
+    /* Try the one in their path next */
+    if (!done)
+    {
+        done = ReadEnvironmentFromCommand("visit", env);
+    }
+
+    /* If we still can't find it, try the one in /usr/gapps/visit */
+    if (!done)
+    {
+        done = ReadEnvironmentFromCommand("/usr/gapps/visit/bin/visit", env);
+    }
+
+    /* We didn't get good values, empty the environment string. */
+    if(!done)
+        visit_string_dtor(env);
+#endif
+}
 
 static void
 VisItMkdir(const char *dir, int permissions)
@@ -911,6 +1043,26 @@ BroadcastString(char *str, int len, int sender)
     }
 
     LIBSIM_API_LEAVE1(BroadcastString, "return %d", retval);
+    return retval;
+}
+
+static int
+BroadcastVisItString(visit_string *obj, int sender)
+{
+    LIBSIM_API_ENTER(BroadcastVisItString);
+
+    /* Send the length of the buffer (including null terminator).*/
+    int retval, len = obj->size + 1;
+    BroadcastInt(&len, sender);
+
+    /* If the destination string is not large enough, reserve sufficient space. */
+    visit_string_reserve(obj, len);
+
+    /* Broadcast the string contents. */
+    retval = BroadcastString(obj->str, len, sender);
+    obj->size = len-1;
+
+    LIBSIM_API_LEAVE1(BroadcastVisItString, "return %d", retval);
     return retval;
 }
 
@@ -2172,6 +2324,8 @@ void VisItSetOptions(char *o)
 * Author: Brad Whitlock, B Division, Lawrence Livermore National Laboratory
 *
 * Modifications:
+*   Brad Whitlock, Thu Jul  2 14:48:53 PDT 2015
+*   I moved code to a helper function. Return a copy of the environment.
 *
 *******************************************************************************/
 char *VisItGetEnvironment(void)
@@ -2181,45 +2335,12 @@ char *VisItGetEnvironment(void)
     LIBSIM_API_LEAVE1(VisItGetEnvironment, "return %s", "NULL");
     return NULL;
 #else
-    int done = 0;
-    char *new_env = NULL;
+    GetEnvironment(&visit_env);
 
-    LIBSIM_API_ENTER(VisItGetEnvironment);
-#if !defined(VISIT_BLUE_GENE_Q)
-    new_env = (char*)(malloc(ENV_BUF_SIZE));
-    memset(new_env, 0, ENV_BUF_SIZE * sizeof(char));
-
-    /* Try the one specified in by the visit_dir command first */
-    if (visit_directory)
-    {
-        char path[200];
-        sprintf(path, "%s/bin/visit", visit_directory);
-        done = ReadEnvironmentFromCommand(path, new_env);
-    }
-
-    /* Try the one in their path next */
-    if (!done)
-    {
-        done = ReadEnvironmentFromCommand("visit", new_env);
-    }
-
-    /* If we still can't find it, try the one in /usr/gapps/visit */
-    if (!done)
-    {
-        done = ReadEnvironmentFromCommand("/usr/gapps/visit/bin/visit", new_env);
-    }
-
-    /* We didn't get good values, arrange to return NULL. */
-    if(!done)
-    {
-        free(new_env);
-        new_env = NULL;
-    }
-#endif
     LIBSIM_API_LEAVE1(VisItGetEnvironment, "return %s", 
-                     (new_env ? new_env : "NULL"));
+                     (visit_env.str ? visit_env.str : "NULL"));
 
-    return new_env;
+    return visit_env.str ? strdup(visit_env.str) : NULL;
 #endif   
 }
 
@@ -2271,6 +2392,9 @@ int VisItSetupEnvironment(void)
 *  Brad Whitlock, Tue Apr 17 10:35:33 PDT 2012
 *  Add test for 2nd broadcast callback.
 *
+*  Brad Whitlock, Thu Jul  2 15:39:33 PDT 2015
+*  Changed how the environment gets read to support long environments.
+*
 *******************************************************************************/
 
 int VisItSetupEnvironment2(char *env)
@@ -2278,10 +2402,10 @@ int VisItSetupEnvironment2(char *env)
 #ifdef _WIN32
     WORD wVersionRequested;
     WSADATA wsaData;
-    char visitpath[1024], tmp[1024];
+    char visitpath[LIBSIM_MAX_STRING_SIZE], tmp[LIBSIM_MAX_STRING_SIZE];
 
     LIBSIM_API_ENTER(VisItSetupEnvironment2);
-    GetVisItDirectory(visitpath, 1024);
+    GetVisItDirectory(visitpath, LIBSIM_MAX_STRING_SIZE);
 
     /* Tell Windows that we want to get DLLs from this path. We DO need this
      * in order for dependent DLLs to be located.
@@ -2289,12 +2413,12 @@ int VisItSetupEnvironment2(char *env)
     SetDllDirectory(visitpath);
 
     /* Set the VisIt home dir. */
-    SNPRINTF(tmp, 1024, "VISITHOME=%s", visitpath);
+    SNPRINTF(tmp, LIBSIM_MAX_STRING_SIZE, "VISITHOME=%s", visitpath);
     LIBSIM_MESSAGE(tmp);
     putenv(tmp);
 
     /* Set the plugin dir. */
-    SNPRINTF(tmp, 1024, "VISITPLUGINDIR=%s", visitpath);
+    SNPRINTF(tmp, LIBSIM_MAX_STRING_SIZE, "VISITPLUGINDIR=%s", visitpath);
     LIBSIM_MESSAGE(tmp);
     putenv(tmp);
 
@@ -2302,20 +2426,13 @@ int VisItSetupEnvironment2(char *env)
     wVersionRequested = MAKEWORD(2,2);
     WSAStartup(wVersionRequested, &wsaData);
 #else
-   char *new_env = NULL;
    int done = 0, canBroadcast = 0, mustReadEnv = 1;
    char *ptr;
 
    LIBSIM_API_ENTER(VisItSetupEnvironment2);
 #if !defined(VISIT_BLUE_GENE_Q)
-   /* Make a copy of the input string. */
-   new_env = (char*)(malloc(ENV_BUF_SIZE));
-   memset(new_env, 0, ENV_BUF_SIZE * sizeof(char));
-   if(env != NULL)
-   {
-       strncpy(new_env, env, ENV_BUF_SIZE);
-       done = 1;
-   }
+   /* Make a copy of the input string & store into visit_env. */
+   done = visit_string_copy(&visit_env, env);
 
    /* Determine whether we can broadcast strings */
    canBroadcast = isParallel && 
@@ -2331,35 +2448,32 @@ int VisItSetupEnvironment2(char *env)
    /* Read the environment. */
    if(mustReadEnv)
    {
-       char *c = VisItGetEnvironment();
-       if(c != NULL)
-       {
-           free(new_env);
-           new_env = c;
+       GetEnvironment(&visit_env);
+       if(visit_env.size > 0)
            done = 1;
-       }
    }
 
    /* Use broadcast if we can. */
    if(canBroadcast)
    {
        /* Send the string to other processors */
-       BroadcastString(new_env, ENV_BUF_SIZE, 0);
+       BroadcastVisItString(&visit_env, 0);
+       LIBSIM_MESSAGE1("VisItSetupEnvironment2: After broadcast: %s\n", visit_env.str);
 
        /* We're done if the string was not empty. */
-       done = (new_env[0] != '\0');
+       done = (visit_env.str != NULL && visit_env.str[0] != '\0');
    }
 
    if (!done)
    {
        /* We're not using new_env for putenv so we can free it. */
-       free(new_env);
+       visit_string_dtor(&visit_env);
        LIBSIM_API_LEAVE1(VisItSetupEnvironment2, "return %d", FALSE);
        return FALSE;
    }
 
    /* Do a bunch of putenv calls; it should already be formatted correctly */
-   ptr = new_env;
+   ptr = visit_env.str;
    while (ptr[0]!='\0')
    {
       int i = 0;
@@ -2372,7 +2486,6 @@ int VisItSetupEnvironment2(char *env)
 
       ptr += i+1;
    }
-   /* free(new_env); <--- NO!  You are not supposed to free this memory! */
 #endif
 
 #endif
