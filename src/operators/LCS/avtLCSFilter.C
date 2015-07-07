@@ -95,6 +95,8 @@ avtLCSFilter::avtLCSFilter() : seedVelocity(0,0,0)
 {
     outVarRoot = std::string("operators/LCS/");
 
+    replicateData = false;
+
     //outVarName ="operators/LCS/mesh";
     //doPathlines();
     //SetPathlines(atts.GetPathlines(),
@@ -122,7 +124,7 @@ avtLCSFilter::avtLCSFilter() : seedVelocity(0,0,0)
     fsle_ds = 0;
 
     cgTensor = LCSAttributes::Right;
-    eigenComponent = LCSAttributes::Smallest;
+    eigenComponent = LCSAttributes::Largest;
 
     minSizeValue =  std::numeric_limits<double>::max();
     maxSizeValue = -std::numeric_limits<double>::max();
@@ -253,6 +255,7 @@ avtLCSFilter::SetAtts(const AttributeGroup *a)
     SetVelocitySource(atts.GetVelocitySource());
 
     SetIntegrationType(atts.GetIntegrationType());
+
     SetParallelizationAlgorithm(atts.GetParallelizationAlgorithmType(), 
                                 atts.GetMaxProcessCount(),
                                 atts.GetMaxDomainCacheSize(),
@@ -412,7 +415,12 @@ avtContract_p
 avtLCSFilter::ModifyContract(avtContract_p in_contract)
 {
     avtDataRequest_p in_dr = in_contract->GetDataRequest();
-    std::string var =  in_dr->GetOriginalVariable();
+    avtDataRequest_p out_dr = NULL;
+    std::string var = in_dr->GetOriginalVariable();
+
+    // This request is from an IC operator downstream. 
+    replicateData = in_contract->ReplicateSingleDomainOnAllProcessors();
+
 //    in_contract->SetReplicateSingleDomainOnAllProcessors(true);
 //    in_contract->SetOnDemandStreaming(false);
 //    in_contract->GetDataRequest();
@@ -424,11 +432,9 @@ avtLCSFilter::ModifyContract(avtContract_p in_contract)
 
         outVarName = justTheVar;
 
-        avtDataRequest_p out_dr = new avtDataRequest(in_dr, justTheVar.c_str());
+        out_dr = new avtDataRequest(in_dr, justTheVar.c_str());
         //out_dr->SetDesiredGhostDataType(GHOST_NODE_DATA);
         //out_dr->SetDesiredGhostDataType(GHOST_ZONE_DATA);
-
-        return avtPICSFilter::ModifyContract( new avtContract(in_contract,out_dr) );
     }
     else
     {
@@ -436,7 +442,14 @@ avtLCSFilter::ModifyContract(avtContract_p in_contract)
       outVarRoot = "";
     }
 
-    return avtPICSFilter::ModifyContract(in_contract);
+    avtContract_p out_contract;
+
+    if ( *out_dr )
+        out_contract = new avtContract(in_contract, out_dr);
+    else
+        out_contract = new avtContract(in_contract);
+
+    return avtPICSFilter::ModifyContract(out_contract);
 }
 
 
@@ -463,6 +476,10 @@ avtLCSFilter::UpdateDataObjectInfo(void)
     avtDataAttributes &out_dataatts = GetOutput()->GetInfo().GetAttributes();
 
     timeState = in_dataatts.GetTimeIndex();
+
+    // If there is an IC operator downstream the results will be
+    // replicated on all processors.
+    out_dataatts.SetDataIsReplicatedOnAllProcessors(replicateData);
 
     //the outvarname has been assigned and will be added.
     //outVarName = "velocity";
@@ -647,10 +664,6 @@ avtLCSFilter::Execute(void)
     if (!needsRecalculation && *dt != NULL)
     {
         debug1 << "LCS: using cached version" << std::endl;
-
-        if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
-            if (PAR_Rank() != 0)
-                dt = new avtDataTree();
 
         SetOutputDataTree(dt);
     }
@@ -901,7 +914,7 @@ avtLCSFilter::GetInitialLocationsFromRectilinearGrid()
 
                   seedPoints[numberOfSeeds++].set(point);
 
-                  // if( PID == tuple)
+                  // if( PID == tuple )
                   //   std::cerr << "Seed "
                   //          << point[0] << "  "  << point[1] << "  "  << point[2]
                   //          << "  " << std::endl;
@@ -988,13 +1001,13 @@ avtLCSFilter::CreateIntegralCurve(const avtIVPSolver* model,
       //                        attr, model, dir, t_start, p_start, v_start, ID));
       return
         (new avtLCSIC(numSteps, doDistance, maxDistance, doTime, t,
-                       model, dir, t_start, p_start, v_start, ID));
+                      model, dir, t_start, p_start, v_start, ID));
     }
     else
     {
       return
         (new avtLCSIC(maxSteps, doDistance, maxDistance, doTime, t,
-                       model, dir, t_start, p_start, v_start, ID));
+                      model, dir, t_start, p_start, v_start, ID));
     }
 }
 
@@ -1027,7 +1040,7 @@ avtLCSFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve*> &ics)
           NativeMeshSingleCalc(ics);
       else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
           RectilinearGridSingleCalc(ics);
-    }
+  }
 }
 
 
@@ -1458,6 +1471,14 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
                                        vtkDataArray *valArray,
                                        vtkDataArray *vecArray)
 {
+  double t0, t1, t2, sign, weight = atts.GetEigenWeight();
+
+    if( eigenComponent == LCSAttributes::PosShearVector ||
+        eigenComponent == LCSAttributes::PosLambdaShearVector )
+      sign = +1;
+    else
+      sign = -1;
+    
     size_t nTuples = valArray->GetNumberOfTuples();
 
     if( auxIdx == LCSAttributes::TwoDim )
@@ -1474,8 +1495,8 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
           ComputeLeftCauchyGreenTensor2D(input);
 
         // Sorted in decreasing order.
-        double eigenvals[2];
-        double *eigenvecs[2];
+        double eigenval, eigenvals[2];
+        double eigenvec[3], *eigenvecs[2];
 
         double outrow0[3];
         double outrow1[3];
@@ -1488,13 +1509,52 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
         {
           eigenvecs[0][2] = 0;
           valArray->SetTuple1(l, eigenvals[0]);
-          vecArray->SetTuple(l, eigenvecs[0]);
+          vecArray->SetTuple (l, eigenvecs[0]);
         }
-        else // if( eigenComponent == LCSAttributes::Smallest )
+        else if( eigenComponent == LCSAttributes::Smallest )
         {
           eigenvecs[1][2] = 0;
           valArray->SetTuple1(l, eigenvals[1]);
-          vecArray->SetTuple(l, eigenvecs[1]);
+          vecArray->SetTuple (l, eigenvecs[1]);
+        }
+        else if( eigenComponent == LCSAttributes::PosShearVector ||
+                 eigenComponent == LCSAttributes::NegShearVector )
+        {
+          t0 = sqrt( sqrt(eigenvals[0]) /
+                     (sqrt(eigenvals[0])+sqrt(eigenvals[1])) );
+
+          t1 = sqrt( sqrt(eigenvals[1]) /
+                     (sqrt(eigenvals[0])+sqrt(eigenvals[1])) );
+
+          // With the plus (minus) sign referring to the direction of
+          // maximal positive (negative) shear in the frame of [ξ1,
+          // ξ0].
+          eigenvec[0] = eigenvecs[1][0] * t1 + sign * eigenvecs[0][0] * t0;
+          eigenvec[1] = eigenvecs[1][1] * t1 + sign * eigenvecs[0][1] * t0;
+          eigenvec[2] = 0;
+
+          valArray->SetTuple1(l, eigenval);
+          vecArray->SetTuple (l, eigenvec);
+        }
+        else if( eigenComponent == LCSAttributes::PosLambdaShearVector ||
+                 eigenComponent == LCSAttributes::NegLambdaShearVector )
+        {
+//        double eigenval = eigenvals[1] * weight + eigenvals[0] * (1.0-weight);
+          double eigenval = weight * weight;
+
+          t0 = sqrt( (eigenvals[0]-eigenval) / (eigenvals[0]-eigenvals[1]) );
+          t1 = sqrt( (eigenval-eigenvals[1]) / (eigenvals[0]-eigenvals[1]) );
+          
+          // With the plus (minus) sign referring to the direction of
+          // maximal positive (negative) shear in the frame of [ξ1,
+          // ξ0].
+          eigenvec[0] = eigenvecs[1][0] * t0 + sign * eigenvecs[0][0] * t1;
+          eigenvec[1] = eigenvecs[1][1] * t0 + sign * eigenvecs[0][1] * t1;
+          
+          eigenvec[2] = 0;
+
+          valArray->SetTuple1(l, eigenval);
+          vecArray->SetTuple (l, eigenvec);
         }
       }
     }
@@ -1513,8 +1573,8 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
           ComputeLeftCauchyGreenTensor3D(input);
 
         // Sorted in decreasing order.
-        double eigenvals[3];
-        double *eigenvecs[3];
+        double eigenval,     eigenvals[3];
+        double eigenvec[3], *eigenvecs[3];
 
         double outrow0[3];
         double outrow1[3];
@@ -1541,23 +1601,48 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
           valArray->SetTuple1(l, eigenvals[1]);
           vecArray->SetTuple3(l, eigenvecs[0][1], eigenvecs[1][1], eigenvecs[2][1]);
         }
-        else // if( eigenComponent == LCSAttributes::Smallest )
+        else if( eigenComponent == LCSAttributes::Smallest )
         {
-          // // if( fabs(eigenvecs[2][2]) > fabs(eigenvecs[0][2]) && 
-          // //     fabs(eigenvecs[2][2]) > fabs(eigenvecs[1][2]) )
-          //   {
-          //     std::cerr << seedPoints[l*nAuxPts].x << "  " << seedPoints[l*nAuxPts].y << "  " << seedPoints[l*nAuxPts].z << "\n"
-          //            << eigenvals[0] << "  " << eigenvals[1] << "  " << eigenvals[2] << "\n"
-          //            <<  eigenvecs[0][0] << "  " << eigenvecs[1][0] << "  " << eigenvecs[2][0] << "\n"
-          //            <<  eigenvecs[0][1] << "  " << eigenvecs[1][1] << "  " << eigenvecs[2][1] << "\n"
-          //            <<  eigenvecs[0][2] << "  " << eigenvecs[1][2] << "  " << eigenvecs[2][2] << "\n"
-          //            << std::endl;
-
-          //   }
-
-
           valArray->SetTuple1(l, eigenvals[2]);
           vecArray->SetTuple3(l, eigenvecs[0][2], eigenvecs[1][2], eigenvecs[2][2]);
+        }
+        else if( eigenComponent == LCSAttributes::PosShearVector ||
+                 eigenComponent == LCSAttributes::NegShearVector )
+        {
+          t0 = sqrt( sqrt(eigenvals[0]) /
+                     (sqrt(eigenvals[0])+sqrt(eigenvals[2])) );
+
+          t2 = sqrt( sqrt(eigenvals[2]) /
+                     (sqrt(eigenvals[0])+sqrt(eigenvals[2])) );
+
+          // With the plus (minus) sign referring to the direction of
+          // maximal positive (negative) shear in the frame of [ξ2,
+          // ξ0].
+          eigenvec[0] = eigenvecs[0][2] * t0 + sign * eigenvecs[0][0] * t2;
+          eigenvec[1] = eigenvecs[1][2] * t0 + sign * eigenvecs[1][0] * t2;
+          eigenvec[2] = eigenvecs[2][2] * t0 + sign * eigenvecs[2][0] * t2;
+
+          valArray->SetTuple1(l, eigenval);
+          vecArray->SetTuple (l, eigenvec);
+        }
+        else if( eigenComponent == LCSAttributes::PosLambdaShearVector ||
+                 eigenComponent == LCSAttributes::NegLambdaShearVector )
+        {
+//        double eigenval = eigenvals[1] * weight + eigenvals[0] * (1.0-weight);
+          double eigenval = weight * weight;
+
+          t0 = sqrt( (eigenvals[0]-eigenval) / (eigenvals[0]-eigenvals[2]) );
+          t2 = sqrt( (eigenval-eigenvals[2]) / (eigenvals[0]-eigenvals[2]) );
+          
+          // With the plus (minus) sign referring to the direction of
+          // maximal positive (negative) shear in the frame of [ξ2,
+          // ξ0].
+          eigenvec[0] = eigenvecs[0][2] * t0 + sign * eigenvecs[0][0] * t2;
+          eigenvec[1] = eigenvecs[1][2] * t0 + sign * eigenvecs[1][0] * t2;
+          eigenvec[2] = eigenvecs[2][2] * t0 + sign * eigenvecs[2][0] * t2;
+
+          valArray->SetTuple1(l, eigenval);
+          vecArray->SetTuple(l, eigenvec);
         }
       }
     }
@@ -1808,8 +1893,7 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
           SNPRINTF(str, 4096,
                    "%s\n%d of your integral curves terminated before they reached "
                    "the maximum advection criteria.  This may be indicative of your "
-                   "time, distance, or size criteria being too large. If you want to disable "
-                   "this message, you can do this under the Advaced tab."
+                   "time, distance, or size criteria being too large."
                    "  Note that this message does not mean that an error has occurred; it simply "
                    "means that VisIt stopped advecting particles before they reached the maximum.\n",
                    str, numSize+numTime+numDistance);
@@ -1823,9 +1907,7 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         {
             SNPRINTF(str, 4096, 
                      "%s\n%d of your integral curves exited the domain. This will all likelihood, "
-                     "skew the results of any relative gradient based (Eigen value/vector) calculations."
-                     "If you want to disable this message, you can do this under "
-                     "the Advanced tab.\n", str, numBoundary);
+                     "skew the results of any relative gradient based (Eigen value/vector) calculations.\n", str, numBoundary);
         }
     }
 
@@ -1840,8 +1922,7 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                    "time or distance criteria being too large or of other attributes being "
                    "set incorrectly (example: your step size is too small).  If you are "
                    "confident in your settings and want the particles to advect farther, "
-                   "you should increase the maximum number of steps.  If you want to disable "
-                   "this message, you can do this under the Advaced tab."
+                   "you should increase the maximum number of steps."
                    "  Note that this message does not mean that an error has occurred; it simply "
                    "means that VisIt stopped advecting particles because it reached the maximum "
                    "number of steps. (That said, this case happens most often when other attributes "
@@ -1860,8 +1941,7 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                      "to the critical point location and terminate.  However, VisIt was not able "
                      "to do this for these particles due to numerical issues.  In all likelihood, "
                      "additional steps will _not_ help this problem and only cause execution to "
-                     "take longer.  If you want to disable this message, you can do this under "
-                     "the Advanced tab.\n", str, numCritPts);
+                     "take longer.\n", str, numCritPts);
         }
     }
 
@@ -1875,8 +1955,7 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                      "Often the step size becomes too small when appraoching a spatial "
                      "or temporal boundary. This especially happens when the step size matches "
                      "the temporal spacing. This condition is referred to as stepsize underflow and "
-                     "VisIt stops advecting in this case.  If you want to disable this message, "
-                     "you can do this under the Advanced tab.\n", str, numStepSize);
+                     "VisIt stops advecting in this case.\n", str, numStepSize);
         }
     }
 
@@ -1890,13 +1969,18 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                      "When one component of a velocity field varies quickly and another stays "
                      "relatively constant, then it is not possible to choose step sizes that "
                      "remain within tolerances.  This condition is referred to as stiffness and "
-                     "VisIt stops advecting in this case.  If you want to disable this message, "
-                     "you can do this under the Advanced tab.\n", str, numStiff);
+                     "VisIt stops advecting in this case.\n", str, numStiff);
         }
     }
 
     if( strlen( str ) )
-      avtCallback::IssueWarning(str);
+    {
+        SNPRINTF(str, 4096, 
+                 "%s\nIf you want to disable any of these messages, "
+                     "you can do so under the Advanced tab.\n", str);
+
+        avtCallback::IssueWarning(str);
+    }
 }
 
 
@@ -1929,8 +2013,10 @@ avtLCSFilter::CreateCacheString(void)
   // simple but most attributes can not be changed unless an option is
   // selected. As such, for the most part the brute force approach is
   // acceptable.
-  os << cycleCached << "  "
+  os << PAR_Rank() << "  "
+     << cycleCached << "  "
      << timeCached << "  "
+
      << atts.GetSourceType() << " "
      << resolution[0] << " "
      << resolution[1] << " "
@@ -1943,22 +2029,18 @@ avtLCSFilter::CreateCacheString(void)
      << endPosition[0] << " "
      << endPosition[1] << " "
      << endPosition[2] << " "
+
      << atts.GetAuxiliaryGrid() << " "
      << atts.GetAuxiliaryGridSpacing() << " "
      << atts.GetIntegrationDirection() << " "
-     << atts.GetMaxSteps() << " "
-     << atts.GetCauchyGreenTensor() << " "
-     << atts.GetOperationType() << " "
-     << atts.GetEigenComponent() << " "
-     << atts.GetOperatorType() << " "
-     << atts.GetClampLogValues() << " "
-     << atts.GetTerminationType() << " "
-     << atts.GetTerminateBySize() << " "
-     << atts.GetTermSize() << " "
-     << atts.GetTerminateByDistance() << " "
-     << atts.GetTermDistance() << " "
-     << atts.GetTerminateByTime() << " "
-     << atts.GetTermTime() << " "
+
+     << atts.GetFieldType() << " "
+     << atts.GetFieldConstant() << " "
+     << velocitySource[0] << " "
+     << velocitySource[1] << " "
+     << velocitySource[2] << " "
+
+     << atts.GetIntegrationType() << " "
      << atts.GetMaxStepLength() << " "
      << atts.GetLimitMaximumTimestep() << " "
      << atts.GetMaxTimeStep() << " "
@@ -1966,26 +2048,42 @@ avtLCSFilter::CreateCacheString(void)
      << atts.GetAbsTolSizeType() << " "
      << atts.GetAbsTolAbsolute() << " "
      << atts.GetAbsTolBBox() << " "
-     << atts.GetFieldType() << " "
-     << atts.GetFieldConstant() << " "
-     << velocitySource[0] << " "
-     << velocitySource[1] << " "
-     << velocitySource[2] << " "
+
+     << atts.GetOperationType() << " "
+     << atts.GetEigenComponent() << " "
+     << atts.GetEigenWeight() << " "
+     << atts.GetOperatorType() << " "
+     << atts.GetCauchyGreenTensor() << " "
+     << atts.GetClampLogValues() << " "
+
+     << atts.GetTerminationType() << " "
+     << atts.GetTerminateBySize() << " "
+     << atts.GetTermSize() << " "
+     << atts.GetTerminateByDistance() << " "
+     << atts.GetTermDistance() << " "
+     << atts.GetTerminateByTime() << " "
+     << atts.GetTermTime() << " "
+     << atts.GetMaxSteps() << " "
+
      << atts.GetThresholdLimit() << " "
      << atts.GetRadialLimit() << " "
      << atts.GetBoundaryLimit() << " "
      << atts.GetSeedLimit() << " "
-     << atts.GetIntegrationType() << " "
-     << atts.GetParallelizationAlgorithmType() << " "
-     << atts.GetMaxProcessCount() << " "
-     << atts.GetMaxDomainCacheSize() << " "
-     << atts.GetWorkGroupSize() << " "
+
      << atts.GetPathlines() << " "
      << atts.GetPathlinesOverrideStartingTimeFlag() << " "
      << atts.GetPathlinesOverrideStartingTime() << " "
      << atts.GetPathlinesCMFE() << " "
-     << atts.GetForceNodeCenteredData() << " "
+
+     << atts.GetParallelizationAlgorithmType() << " "
+     << atts.GetMaxProcessCount() << " "
+     << atts.GetMaxDomainCacheSize() << " "
+     << atts.GetWorkGroupSize() << " "
+
+     << atts.GetIssueAdvectionWarnings() << " "
+     << atts.GetIssueBoundaryWarnings() << " "
      << atts.GetIssueTerminationWarnings() << " "
+     << atts.GetIssueStepsizeWarnings() << " "
      << atts.GetIssueStiffnessWarnings() << " "
      << atts.GetIssueCriticalPointsWarnings() << " "
      << atts.GetCriticalPointThreshold() << " ";
@@ -2018,23 +2116,32 @@ avtLCSFilter::GetCachedDataSet()
     if (atts.GetSourceType() == LCSAttributes::NativeMesh)
     {
         rv = GetCachedNativeDataSet(GetInputDataTree());
+
         int looksOK = 1;
         if ((*rv == NULL) && (*(GetInputDataTree()) != NULL))
             looksOK = 0;
-        looksOK = UnifyMinimumValue(looksOK); // if any fails, we all fail
+
+        // Gather operation from all procs, if any fails, we all fail.
+        looksOK = UnifyMinimumValue(looksOK);
+
         if (looksOK == 0)
             rv = NULL;
     }
     else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
     {
         rv = GetCachedResampledDataSet();
+
         int looksOK = (*rv == NULL ? 0 : 1);
-        looksOK = UnifyMaximumValue(looksOK); // if one has it, we're all OK
+
+        // Gather operation from all procs, if any fails, we all fail.
+        looksOK = UnifyMaximumValue(looksOK);
+
         if (looksOK == 0)
             rv = NULL;
         else if ((looksOK == 1) && (*rv == NULL))
             rv = new avtDataTree();
     }
+
     return rv;
 }
 
@@ -2075,6 +2182,7 @@ avtLCSFilter::GetCachedNativeDataSet(avtDataTree_p inDT)
         vtkDataSet *rv = (vtkDataSet *)
           FetchArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                                   outVarName.c_str(), domain, -1, str.c_str());
+
         if (rv == NULL)
             return NULL;
         else
@@ -2086,14 +2194,23 @@ avtLCSFilter::GetCachedNativeDataSet(avtDataTree_p inDT)
     // and we need an output datatree for each
     //
     avtDataTree_p *outDT = new avtDataTree_p[nc];
+    int cc = 0;
     bool badOne = false;
     for (int j = 0; j < nc; j++)
     {
         if (inDT->ChildIsPresent(j))
         {
             outDT[j] = GetCachedNativeDataSet(inDT->GetChild(j));
+
             if (*(outDT[j]) == NULL)
+            {
                 badOne = true;
+                break;
+            }
+            else
+            {
+                ++cc;
+            }
         }
         else
         {
@@ -2102,9 +2219,13 @@ avtLCSFilter::GetCachedNativeDataSet(avtDataTree_p inDT)
     }
 
     avtDataTree_p rv = NULL;
-
-    if (!badOne) // if we don't have LCS for one domain, then just re-calc whole thing
+    
+    // if we don't have LCS for one domain, then just re-calc whole thing
+    if (cc && !badOne)
+    {
         rv = new avtDataTree(nc, outDT);
+    }
+
     delete [] outDT;
     return rv;
 }
@@ -2131,10 +2252,21 @@ avtLCSFilter::GetCachedResampledDataSet()
       FetchArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                               outVarName.c_str(), -1, -1, str.c_str());
 
-    if(rv != NULL)
+    if( rv )
     {
-        return new avtDataTree(rv, -1);
-    }
+      int dims[3];
+      rv->GetDimensions( dims );
+            
+      int extent[6];
+      rv->GetExtent( extent );
 
-    return NULL;
+      double bounds[6];
+      rv->GetBounds( bounds );
+    }
+    
+
+    if(rv != NULL)
+        return new avtDataTree(rv, 0);
+    else
+        return NULL;
 }

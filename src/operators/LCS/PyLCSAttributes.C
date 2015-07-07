@@ -258,7 +258,8 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           break;
     }
 
-    const char *eigenComponent_names = "Smallest, Intermediate, Largest, Combination";
+    const char *eigenComponent_names = "Smallest, Intermediate, Largest, PosShearVector, NegShearVector, "
+        "PosLambdaShearVector, NegLambdaShearVector";
     switch (atts->GetEigenComponent())
     {
       case LCSAttributes::Smallest:
@@ -273,8 +274,20 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%seigenComponent = %sLargest  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
-      case LCSAttributes::Combination:
-          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sCombination  # %s\n", prefix, prefix, eigenComponent_names);
+      case LCSAttributes::PosShearVector:
+          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sPosShearVector  # %s\n", prefix, prefix, eigenComponent_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::NegShearVector:
+          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sNegShearVector  # %s\n", prefix, prefix, eigenComponent_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::PosLambdaShearVector:
+          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sPosLambdaShearVector  # %s\n", prefix, prefix, eigenComponent_names);
+          str += tmpStr;
+          break;
+      case LCSAttributes::NegLambdaShearVector:
+          SNPRINTF(tmpStr, 1000, "%seigenComponent = %sNegLambdaShearVector  # %s\n", prefix, prefix, eigenComponent_names);
           str += tmpStr;
           break;
       default:
@@ -524,11 +537,6 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
     SNPRINTF(tmpStr, 1000, "%sboundaryLimit = %g\n", prefix, atts->GetBoundaryLimit());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sseedLimit = %d\n", prefix, atts->GetSeedLimit());
-    str += tmpStr;
-    if(atts->GetForceNodeCenteredData())
-        SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sforceNodeCenteredData = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIssueAdvectionWarnings())
         SNPRINTF(tmpStr, 1000, "%sissueAdvectionWarnings = 1\n", prefix);
@@ -1026,14 +1034,15 @@ LCSAttributes_SetEigenComponent(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the eigenComponent in the object.
-    if(ival >= 0 && ival < 4)
+    if(ival >= 0 && ival < 7)
         obj->data->SetEigenComponent(LCSAttributes::EigenComponent(ival));
     else
     {
         fprintf(stderr, "An invalid eigenComponent value was given. "
-                        "Valid values are in the range of [0,3]. "
+                        "Valid values are in the range of [0,6]. "
                         "You can also use the following names: "
-                        "Smallest, Intermediate, Largest, Combination.");
+                        "Smallest, Intermediate, Largest, PosShearVector, NegShearVector, "
+                        "PosLambdaShearVector, NegLambdaShearVector.");
         return NULL;
     }
 
@@ -1961,30 +1970,6 @@ LCSAttributes_GetSeedLimit(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LCSAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
-{
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the forceNodeCenteredData in the object.
-    obj->data->SetForceNodeCenteredData(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-LCSAttributes_GetForceNodeCenteredData(PyObject *self, PyObject *args)
-{
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetForceNodeCenteredData()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
 LCSAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)self;
@@ -2250,8 +2235,6 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
     {"GetBoundaryLimit", LCSAttributes_GetBoundaryLimit, METH_VARARGS},
     {"SetSeedLimit", LCSAttributes_SetSeedLimit, METH_VARARGS},
     {"GetSeedLimit", LCSAttributes_GetSeedLimit, METH_VARARGS},
-    {"SetForceNodeCenteredData", LCSAttributes_SetForceNodeCenteredData, METH_VARARGS},
-    {"GetForceNodeCenteredData", LCSAttributes_GetForceNodeCenteredData, METH_VARARGS},
     {"SetIssueAdvectionWarnings", LCSAttributes_SetIssueAdvectionWarnings, METH_VARARGS},
     {"GetIssueAdvectionWarnings", LCSAttributes_GetIssueAdvectionWarnings, METH_VARARGS},
     {"SetIssueBoundaryWarnings", LCSAttributes_SetIssueBoundaryWarnings, METH_VARARGS},
@@ -2373,8 +2356,14 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LCSAttributes::Intermediate));
     if(strcmp(name, "Largest") == 0)
         return PyInt_FromLong(long(LCSAttributes::Largest));
-    if(strcmp(name, "Combination") == 0)
-        return PyInt_FromLong(long(LCSAttributes::Combination));
+    if(strcmp(name, "PosShearVector") == 0)
+        return PyInt_FromLong(long(LCSAttributes::PosShearVector));
+    if(strcmp(name, "NegShearVector") == 0)
+        return PyInt_FromLong(long(LCSAttributes::NegShearVector));
+    if(strcmp(name, "PosLambdaShearVector") == 0)
+        return PyInt_FromLong(long(LCSAttributes::PosLambdaShearVector));
+    if(strcmp(name, "NegLambdaShearVector") == 0)
+        return PyInt_FromLong(long(LCSAttributes::NegLambdaShearVector));
 
     if(strcmp(name, "eigenWeight") == 0)
         return LCSAttributes_GetEigenWeight(self, NULL);
@@ -2503,8 +2492,6 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
         return LCSAttributes_GetBoundaryLimit(self, NULL);
     if(strcmp(name, "seedLimit") == 0)
         return LCSAttributes_GetSeedLimit(self, NULL);
-    if(strcmp(name, "forceNodeCenteredData") == 0)
-        return LCSAttributes_GetForceNodeCenteredData(self, NULL);
     if(strcmp(name, "issueAdvectionWarnings") == 0)
         return LCSAttributes_GetIssueAdvectionWarnings(self, NULL);
     if(strcmp(name, "issueBoundaryWarnings") == 0)
@@ -2627,8 +2614,6 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LCSAttributes_SetBoundaryLimit(self, tuple);
     else if(strcmp(name, "seedLimit") == 0)
         obj = LCSAttributes_SetSeedLimit(self, tuple);
-    else if(strcmp(name, "forceNodeCenteredData") == 0)
-        obj = LCSAttributes_SetForceNodeCenteredData(self, tuple);
     else if(strcmp(name, "issueAdvectionWarnings") == 0)
         obj = LCSAttributes_SetIssueAdvectionWarnings(self, tuple);
     else if(strcmp(name, "issueBoundaryWarnings") == 0)

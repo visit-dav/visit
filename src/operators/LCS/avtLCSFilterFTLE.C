@@ -74,6 +74,14 @@
 #include <vtkMatrix4x4.h>
 #include <vtkImageGaussianSmooth.h>
 
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#include <vtkDataSetReader.h>
+#include <vtkDataSetWriter.h>
+#include <vtkCharArray.h>
+#endif
+
 #include <iostream>
 #include <limits>
 #include <cmath>
@@ -120,9 +128,18 @@ void avtLCSFilter::NativeMeshSingleCalc(std::vector<avtIntegralCurve*> &ics)
     avtDataTree_p outTree =
       MultiBlockSingleCalc(GetInputDataTree(), ics, offset, minv, maxv);
 
+    // When data is replicated on all processors only the root
+    // processor needs to pass along the results to a plot. Except as
+    // noted below.
     if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
-        if (PAR_Rank() != 0)
-            outTree = new avtDataTree();
+      if (PAR_Rank() != 0)
+        // When running in parallel and if the LCS operator is sending
+        // its data to an IC operator then the resulting data must be
+        // replicated on all processors so that all seeds are
+        // advected. Otherwise only the root proc needs to have the
+        // resulting data so create a blank data tree.
+        if( !replicateData )
+          outTree = new avtDataTree();
 
     SetOutputDataTree(outTree);
 
@@ -248,6 +265,11 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
                                      int &offset, int domain,
                                      double &minv, double &maxv )
 {
+
+    if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+      std::cerr << __FUNCTION__ << "  " << PAR_Rank() << "  "
+                << "DataIsReplicatedOnAllProcessors " << std::endl;
+
     // Variable name and number of points.
     std::string var = outVarRoot + outVarName;
 
@@ -264,7 +286,7 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
       remapTimes[i] = 0;
     }
 
-    // ARS - This code does not nothing of use that I can see. The
+    // ARS - This code does nothing of use that I can see. The
     // remapPoints just need to be zeroed out.
 
     // if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
@@ -492,7 +514,46 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
       if( atts.GetOperationType() == LCSAttributes::EigenValue )
         ComputeEigenValues(jacobian, outputArray);
       else if( atts.GetOperationType() == LCSAttributes::EigenVector )
-        ComputeEigenVectors(jacobian, workingArray, outputArray);
+      {
+          ComputeEigenVectors(jacobian, workingArray, outputArray);
+          
+          bool clv = clampLogValues;
+          clampLogValues = false;
+
+          LCSAttributes::EigenComponent ec = eigenComponent;
+          
+          // Shrink lines - attracting
+          if( eigenComponent == LCSAttributes::Largest )
+          {
+            // Get the smallest eigen values to go with the largest
+            // eigen vectors.
+            eigenComponent = LCSAttributes::Smallest;
+            ComputeLyapunovExponent(jacobian, workingArray);
+            
+            // Get the locations of the minimal eigen values as seed
+            // points. Note for incompressible flow the minimal
+            // eigen value locations will be the same as the
+            // maximial locations.
+            GetSeedPoints( out_grid, false );
+          }
+          // Stretch lines - repelling
+          else //if( eigenComponent == LCSAttributes::Smallest )
+          {
+            // Get the largest eigen values to go with the smallest
+            // eigen vectors.
+            eigenComponent = LCSAttributes::Largest;
+            ComputeLyapunovExponent(jacobian, workingArray);
+            
+            // Get the locations of the maximal eigen values as seed
+            // points. Note for incompressible flow the maximal
+            // eigen value locatations will be the same as the
+            // minimial locations.
+            GetSeedPoints( out_grid, true );
+          }
+
+          clampLogValues = clv;
+          eigenComponent = ec;              
+      }
       else //if( atts.GetOperationType() == LCSAttributes::Lyapunov )
         ComputeLyapunovExponent(jacobian, outputArray);
 
@@ -612,11 +673,30 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     // Remove the working array.
     out_grid->GetPointData()->RemoveArray("workingArray");
 
-    //Store this dataset in Cache for next time.
-    std::string str = CreateCacheString();
-    StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
-                            outVarName.c_str(), domain, -1,
-                            str.c_str(), out_grid);
+
+    bool storeResult = true;
+
+    // When data is replicated on all processors only the root
+    // processor needs to pass along the results to a plot. Except as
+    // noted below.
+    if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+      if (PAR_Rank() != 0)
+        // When running in parallel and if the LCS operator is sending
+        // its data to an IC operator then the resulting data must be
+        // replicated on all processors so that all seeds are
+        // advected. Otherwise only the root proc needs to have the
+        // resulting data so do not store the results.
+        if( !replicateData )
+          storeResult = false;
+
+    if( storeResult )
+    {
+        //Store this dataset in Cache for next time.
+        std::string str = CreateCacheString();
+        StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
+                                outVarName.c_str(), domain, -1,
+                                str.c_str(), out_grid);
+    }
 
     // Calling function must free this.
     return out_grid;
@@ -651,13 +731,15 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
     //Send List of index into global array to rank 0
     //Send end positions into global array to rank 0
 
+    size_t nics = ics.size();
+
     //loop over all the integral curves and add it back to the
     //original list of seeds.
-    intVector indices(nTuples*nAuxPts);
-    doubleVector points(nTuples*nAuxPts*3);
-    doubleVector times(nTuples*nAuxPts);
+    intVector   indices(nics);
+    doubleVector  times(nics);
+    doubleVector points(nics*3);
 
-    for(size_t i=0, j=0; i<ics.size(); ++i, j+=3)
+    for(size_t i=0, j=0; i<nics; ++i, j+=3)
     {
         indices[i] = ics[i]->id;
         if( doTime )
@@ -717,37 +799,47 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 
     Barrier();
 
-    //root should now have index into global structure and all
-    //matching end positions.
-    if(PAR_Rank() != 0)
-    {
-        avtDataTree* dummy = new avtDataTree();
-        SetOutputDataTree(dummy);
-    }
-    else
+    // Dataset using all ICs.
+    vtkDataSet* ds = 0;
+
+    //min and max values over all datasets of the tree.
+    double minv =  std::numeric_limits<double>::max();
+    double maxv = -std::numeric_limits<double>::max();
+
+    // The root proc root should now have index info and all
+    // matching time and end positions.
+    if(PAR_Rank() == 0)
     {
         //rank 0
-
-        //update remapPoints with new value bounds from integral curves.
-        std::vector<double> remapTimes(nTuples*nAuxPts);
-        std::vector<avtVector> remapPoints(nTuples*nAuxPts);
-      
         int par_size = PAR_Size();
         size_t total = 0;
         for(int i = 0; i < par_size; ++i)
         {
-            if(index_counts[i]*3 == point_counts[i])
+            if( index_counts[i]   ==  time_counts[i] &&
+                index_counts[i]*3 == point_counts[i] )
             {
                 total += index_counts[i];
             }
             else
             {
                 EXCEPTION1(VisItException,
-                           "Index count does not the result count." );
+                           "Index count does not match the result count." );
             }
         }
 
-        for(size_t j = 0, k = 0; j < total; ++j, k += 3)
+        if( total != nTuples*nAuxPts )
+        {
+          EXCEPTION1(VisItException,
+                     "Total count does not match the tuple count." );
+        }
+
+        // Update remapPoints with new value bounds from integral
+        // curves.  This puts the data into the arrays based on the
+        // curve index.
+        std::vector<double> remapTimes(nTuples*nAuxPts);
+        std::vector<avtVector> remapPoints(nTuples*nAuxPts);
+      
+        for(size_t j = 0, k = 0; j < nTuples*nAuxPts; ++j, k += 3)
         {
             size_t index = all_indices[j];
 
@@ -766,7 +858,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
             }
         }
 
-        //now create a rectilinear grid.
+        // Now create a rectilinear grid.
         vtkRectilinearGrid* rect_grid = vtkRectilinearGrid::New();
 
         vtkDoubleArray* lxcoord = vtkDoubleArray::New();
@@ -997,10 +1089,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
           gradient->Delete();
         }
 
-        //min and max values over all datasets of the tree.
-        double minv =  std::numeric_limits<double>::max();
-        double maxv = -std::numeric_limits<double>::max();
-
         if( atts.GetOperationType() == LCSAttributes::EigenVector )
         {
           minv = 0;
@@ -1045,20 +1133,21 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         if (all_points)   delete [] all_points;
         if (point_counts) delete [] point_counts;
 
-        //store this dataset in Cache for next time.
+        // Store this dataset in Cache for next time.
         std::string str = CreateCacheString();
         StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                                 outVarName.c_str(), -1, -1,
                                 str.c_str(), rect_grid);
 
-        int index = 0;//what does index mean in this context?
-        avtDataTree* dt = new avtDataTree(rect_grid,index);
+        // Put the vtkDataset in the avtDataTree.
+        int index = 0; // What does index mean in this context?
+        avtDataTree* dt = new avtDataTree(rect_grid, index);
         int x = 0;
         dt->GetAllLeaves(x);
 
         SetOutputDataTree(dt);
 
-        //set atts.
+        // Set atts.
         avtDataAttributes &dataatts = GetOutput()->GetInfo().GetAttributes();
         avtExtents* e = dataatts.GetThisProcsActualDataExtents();
 
@@ -1070,7 +1159,139 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         range[4] = minv;
         range[5] = maxv;
         e->Set(range);
+
+        ds = rect_grid;
     }
+    
+    // When running in parallel and if the LCS operator is sending its
+    // data to an IC operator then the data must be replicated
+    // (broadcast) on all processors so that all seeds are advected.
+#ifdef PARALLEL
+    if( replicateData )
+    {
+      // std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
+      //                <<  PAR_Rank() << "  replicating data on all processors"
+      //                << std::endl;
+      
+      debug1 << "LCS: replicating data on all processors." << std::endl;
+
+      // Setup for MPI communication
+      int mpiMinTag = GetUniqueMessageTag();
+      int mpiMaxTag = GetUniqueMessageTag();
+      int mpiSizeTag = GetUniqueMessageTag();
+      int mpiDataTag = GetUniqueMessageTag();
+      
+      // The root processor has the vtkDataSet so broadcast that out
+      // to all other processors.
+      if (PAR_Rank() == 0)
+      {
+        // Use a vtkDataSetWriter to dump out the dataset as a string
+        // that will be broadcasted to the other processors.
+        vtkDataSetWriter *writer = vtkDataSetWriter::New();
+        writer->WriteToOutputStringOn();
+        writer->SetFileTypeToBinary();
+        
+        writer->SetInputData(ds);
+        writer->Write();
+
+        // Get the string and it's size.
+        int  size = writer->GetOutputStringLength();
+        char *tmpstr = writer->RegisterAndGetOutputString();
+
+        // Broadcast it out to all the other processors.
+        for (int i = 1; i < PAR_Size(); i++)
+        {
+            MPI_Send(&minv, 1, MPI_DOUBLE, i, mpiMinTag, VISIT_MPI_COMM);
+            MPI_Send(&maxv, 1, MPI_DOUBLE, i, mpiMaxTag, VISIT_MPI_COMM);
+
+            MPI_Send(&size, 1, MPI_INT, i, mpiSizeTag, VISIT_MPI_COMM);
+            MPI_Send(tmpstr, size, MPI_CHAR, i, mpiDataTag, VISIT_MPI_COMM);
+        }
+
+        delete [] tmpstr; // allocated by writer
+        writer->Delete(); 
+      }
+      else //if (PAR_Rank() != 0)
+      {
+        // Receive the broadcasted string that makes up the vtkDataSet.
+        MPI_Status stat;
+        MPI_Status stat2;
+        
+        double minv = std::numeric_limits<double>::max();
+        MPI_Recv(&minv, 1, MPI_DOUBLE, stat.MPI_SOURCE, mpiMinTag,
+                 VISIT_MPI_COMM, &stat2);
+
+        double maxv = -std::numeric_limits<double>::max();
+        MPI_Recv(&maxv, 1, MPI_DOUBLE, stat.MPI_SOURCE, mpiMaxTag,
+                 VISIT_MPI_COMM, &stat2);
+
+        // Get the string size and the string.
+        int size = 0;
+        MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiSizeTag,
+                 VISIT_MPI_COMM, &stat2);
+        char *tmpstr = new char[size];
+        MPI_Recv(tmpstr, size, MPI_CHAR, stat.MPI_SOURCE, mpiDataTag,
+                 VISIT_MPI_COMM, &stat2);
+
+        vtkCharArray *charArray = vtkCharArray::New();
+        charArray->SetArray((char*)tmpstr, size, 1);
+
+        // Use a vtkDataSetReader to read in the dataset as a string.
+        vtkDataSetReader *reader = vtkDataSetReader::New(); 
+        reader->ReadFromInputStringOn();
+        reader->SetInputArray(charArray);
+        reader->Update();
+
+        vtkRectilinearGrid* rect_grid =
+          (vtkRectilinearGrid *) reader->GetOutput();
+
+        // Store this dataset in Cache for next time.
+        std::string str = CreateCacheString();
+        StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
+                                outVarName.c_str(), -1, -1,
+                                str.c_str(), rect_grid);
+
+        // Put the vtkDataset in the avtDataTree.
+        int index = 0; // What does index mean in this context?
+        avtDataTree* dt = new avtDataTree(rect_grid, index);
+        int x = 0;
+        dt->GetAllLeaves(x);
+
+        SetOutputDataTree(dt);
+
+        // Set atts.
+        avtDataAttributes &dataatts = GetOutput()->GetInfo().GetAttributes();
+        avtExtents* e = dataatts.GetThisProcsActualDataExtents();
+
+        double range[6];
+        range[0] = minv;
+        range[1] = maxv;
+        range[2] = minv;
+        range[3] = maxv;
+        range[4] = minv;
+        range[5] = maxv;
+        e->Set(range);
+
+        delete [] tmpstr; // allocated above
+        reader->Delete(); 
+        charArray->Delete(); 
+      }
+    }
+
+    // Not replicating the data so send a blank tree to the other
+    // processors.
+    else if(PAR_Rank() != 0)
+    {
+        debug1 << "LCS: data is only on the root processor." << std::endl;
+
+        // std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
+        //        <<  PAR_Rank() << "  root processor only " << std::endl;
+      
+
+        avtDataTree* dt = new avtDataTree();
+        SetOutputDataTree(dt);
+    }
+#endif
 }
 
 
@@ -1089,51 +1310,51 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
 {
   bool getMin = !getMax;
 
-  double cx = (global_bounds[0]+global_bounds[1]) / 2.0;
-  double cy = (global_bounds[2]+global_bounds[3]) / 2.0;
-  double cz = (global_bounds[4]+global_bounds[5]) / 2.0;
+  // double cx = (global_bounds[0]+global_bounds[1]) / 2.0;
+  // double cy = (global_bounds[2]+global_bounds[3]) / 2.0;
+  // double cz = (global_bounds[4]+global_bounds[5]) / 2.0;
 
-  double x = global_bounds[0];
-  double y = global_bounds[2];
-  double z = global_bounds[4];
+  // double x = global_bounds[0];
+  // double y = global_bounds[2];
+  // double z = global_bounds[4];
   
-  double dx = ( (global_bounds[1] - global_bounds[0]) /
-                (double) (global_resolution[0]-1) );
+  // double dx = ( (global_bounds[1] - global_bounds[0]) /
+  //               (double) (global_resolution[0]-1) );
   
-  double dy = ( (global_bounds[3] - global_bounds[2]) /
-                (double) (global_resolution[1]-1) );
+  // double dy = ( (global_bounds[3] - global_bounds[2]) /
+  //               (double) (global_resolution[1]-1) );
   
-  double dz = ( (global_bounds[5] - global_bounds[4]) /
-                (double) (global_resolution[2]-1) );
+  // double dz = ( (global_bounds[5] - global_bounds[4]) /
+  //               (double) (global_resolution[2]-1) );
   
-  vtkImageData *image_ds = vtkImageData::New();
+  // vtkImageData *image_ds = vtkImageData::New();
 
-  image_ds->SetDimensions(global_resolution);
-  image_ds->SetOrigin(x,y,z);
-  image_ds->SetSpacing(dx,dy,dz);
-  image_ds->ShallowCopy( in_ds );
+  // image_ds->SetDimensions(global_resolution);
+  // image_ds->SetOrigin(x,y,z);
+  // image_ds->SetSpacing(dx,dy,dz);
+  // image_ds->ShallowCopy( in_ds );
 
-  // Extract a slice in the desired orientation
-  static double axialElements[16] = { 1, 0, 0, 0,
-                                      0, 1, 0, 0,
-                                      0, 0, 1, 0,
-                                      0, 0, 0, 1 };
+  // // Extract a slice in the desired orientation
+  // static double axialElements[16] = { 1, 0, 0, 0,
+  //                                     0, 1, 0, 0,
+  //                                     0, 0, 1, 0,
+  //                                     0, 0, 0, 1 };
   
-  // Set the slice orientation
-  vtkMatrix4x4 *resliceAxes = vtkMatrix4x4::New();
-  resliceAxes->DeepCopy(axialElements);
+  // // Set the slice orientation
+  // vtkMatrix4x4 *resliceAxes = vtkMatrix4x4::New();
+  // resliceAxes->DeepCopy(axialElements);
   
-  // Set the point through which to slice
-  resliceAxes->SetElement(0, 3, cx);
-  resliceAxes->SetElement(1, 3, cy);
-  resliceAxes->SetElement(2, 3, cz);
+  // // Set the point through which to slice
+  // resliceAxes->SetElement(0, 3, cx);
+  // resliceAxes->SetElement(1, 3, cy);
+  // resliceAxes->SetElement(2, 3, cz);
   
-  vtkImageReslice *reslice = vtkImageReslice::New();
-  reslice->SetInputData( image_ds );
-  reslice->SetOutputDimensionality(2);
-  reslice->SetResliceAxes(resliceAxes);
-  reslice->SetInterpolationModeToCubic();
-  reslice->Update();
+  // vtkImageReslice *reslice = vtkImageReslice::New();
+  // reslice->SetInputData( image_ds );
+  // reslice->SetOutputDimensionality(2);
+  // reslice->SetResliceAxes(resliceAxes);
+  // reslice->SetInterpolationModeToCubic();
+  // reslice->Update();
 
 //          vtkImageGaussianSmooth *smooth = vtkImageGaussianSmooth::New();
 //          smooth->SetInputData( reslice->GetOutput() );
@@ -1143,18 +1364,22 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
 //          smooth->SetRadiusFactors(2.5, 2.5, 0);
 //          smooth->Update();
 
-  vtkImageData *slice_ds = vtkImageData::New();
-  slice_ds->ShallowCopy(reslice->GetOutput());
+//   vtkImageData *slice_ds = vtkImageData::New();
+//   slice_ds->ShallowCopy(reslice->GetOutput());
 
-  resliceAxes->Delete();
-  reslice->Delete();
-//  smooth->Delete();
+//   resliceAxes->Delete();
+//   reslice->Delete();
+// //  smooth->Delete();
 
-  int dims[3];
-  slice_ds->SetOrigin(x,y,cz);
-  slice_ds->GetDimensions(dims);
-  slice_ds->GetOrigin(x,y,z);
-  slice_ds->GetSpacing(dx,dy,dz);
+//   int dims[3];
+//   slice_ds->SetOrigin(x,y,cz);
+//   slice_ds->GetDimensions(dims);
+//   slice_ds->GetOrigin(x,y,z);
+//   slice_ds->GetSpacing(dx,dy,dz);
+
+  std::cerr << "searching for seeds " << std::endl;
+
+  vtkDataSet *slice_ds = in_ds;
   
   vtkDoubleArray *tmpArray =
     (vtkDoubleArray *) slice_ds->GetPointData()->GetScalars();
@@ -1322,6 +1547,6 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
   
   seedPts->Delete();
 
-  slice_ds->Delete();
-  image_ds->Delete();
+  // slice_ds->Delete();
+  // image_ds->Delete();
 }

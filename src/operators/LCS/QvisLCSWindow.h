@@ -51,6 +51,7 @@ class QListWidgetItem;
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
+class QSlider;
 class QSpinBox;
 class QvisColorTableButton;
 class QvisColorButton;
@@ -140,7 +141,11 @@ class QvisLCSWindow : public QvisOperatorWindow
 
     void terminationTypeButtonGroupChanged(int);
     void clampLogValuesChanged(bool);
-    void eigenWeightProcessText();
+    void eigenWeightEditProcessText();
+
+    void eigenWeightSliderPressed();
+    void eigenWeightSliderReleased();
+    void eigenWeightSliderChanged(int val);
 
     void maxTimeProcessText();
     void maxDistanceProcessText();
@@ -218,8 +223,11 @@ class QvisLCSWindow : public QvisOperatorWindow
     QComboBox *eigenComponent;
     QComboBox *operatorType;
     QCheckBox *clampLogValues;
-    QLineEdit *eigenWeight;
+    QLineEdit *eigenWeightEdit;
+    QSlider   *eigenWeightSlider;
     QLabel    *eigenWeightLabel;
+
+    bool      sliderDragging;
 
     QButtonGroup *terminationTypeButtonGroup;
     QLineEdit *maxTime;

@@ -424,20 +424,21 @@ LCSAttributes::CauchyGreenTensor_FromString(const std::string &s, LCSAttributes:
 
 static const char *EigenComponent_strings[] = {
 "Smallest", "Intermediate", "Largest", 
-"Combination"};
+"PosShearVector", "NegShearVector", "PosLambdaShearVector", 
+"NegLambdaShearVector"};
 
 std::string
 LCSAttributes::EigenComponent_ToString(LCSAttributes::EigenComponent t)
 {
     int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
+    if(index < 0 || index >= 7) index = 0;
     return EigenComponent_strings[index];
 }
 
 std::string
 LCSAttributes::EigenComponent_ToString(int t)
 {
-    int index = (t < 0 || t >= 4) ? 0 : t;
+    int index = (t < 0 || t >= 7) ? 0 : t;
     return EigenComponent_strings[index];
 }
 
@@ -445,7 +446,7 @@ bool
 LCSAttributes::EigenComponent_FromString(const std::string &s, LCSAttributes::EigenComponent &val)
 {
     val = LCSAttributes::Smallest;
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 7; ++i)
     {
         if(s == EigenComponent_strings[i])
         {
@@ -603,8 +604,8 @@ void LCSAttributes::Init()
     maxSteps = 1000;
     operationType = Lyapunov;
     cauchyGreenTensor = Right;
-    eigenComponent = Smallest;
-    eigenWeight = 0;
+    eigenComponent = Largest;
+    eigenWeight = 1;
     operatorType = BaseValue;
     terminationType = Time;
     terminateBySize = false;
@@ -626,7 +627,7 @@ void LCSAttributes::Init()
     velocitySource[1] = 0;
     velocitySource[2] = 0;
     integrationType = DormandPrince;
-    clampLogValues = true;
+    clampLogValues = false;
     parallelizationAlgorithmType = VisItSelects;
     maxProcessCount = 10;
     maxDomainCacheSize = 3;
@@ -640,7 +641,6 @@ void LCSAttributes::Init()
     radialLimit = 0.1;
     boundaryLimit = 0.1;
     seedLimit = 10;
-    forceNodeCenteredData = false;
     issueAdvectionWarnings = true;
     issueBoundaryWarnings = true;
     issueTerminationWarnings = true;
@@ -728,7 +728,6 @@ void LCSAttributes::Copy(const LCSAttributes &obj)
     radialLimit = obj.radialLimit;
     boundaryLimit = obj.boundaryLimit;
     seedLimit = obj.seedLimit;
-    forceNodeCenteredData = obj.forceNodeCenteredData;
     issueAdvectionWarnings = obj.issueAdvectionWarnings;
     issueBoundaryWarnings = obj.issueBoundaryWarnings;
     issueTerminationWarnings = obj.issueTerminationWarnings;
@@ -960,7 +959,6 @@ LCSAttributes::operator == (const LCSAttributes &obj) const
             (radialLimit == obj.radialLimit) &&
             (boundaryLimit == obj.boundaryLimit) &&
             (seedLimit == obj.seedLimit) &&
-            (forceNodeCenteredData == obj.forceNodeCenteredData) &&
             (issueAdvectionWarnings == obj.issueAdvectionWarnings) &&
             (issueBoundaryWarnings == obj.issueBoundaryWarnings) &&
             (issueTerminationWarnings == obj.issueTerminationWarnings) &&
@@ -1172,7 +1170,6 @@ LCSAttributes::SelectAll()
     Select(ID_radialLimit,                       (void *)&radialLimit);
     Select(ID_boundaryLimit,                     (void *)&boundaryLimit);
     Select(ID_seedLimit,                         (void *)&seedLimit);
-    Select(ID_forceNodeCenteredData,             (void *)&forceNodeCenteredData);
     Select(ID_issueAdvectionWarnings,            (void *)&issueAdvectionWarnings);
     Select(ID_issueBoundaryWarnings,             (void *)&issueBoundaryWarnings);
     Select(ID_issueTerminationWarnings,          (void *)&issueTerminationWarnings);
@@ -1494,12 +1491,6 @@ LCSAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
         node->AddNode(new DataNode("seedLimit", seedLimit));
     }
 
-    if(completeSave || !FieldsEqual(ID_forceNodeCenteredData, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("forceNodeCenteredData", forceNodeCenteredData));
-    }
-
     if(completeSave || !FieldsEqual(ID_issueAdvectionWarnings, &defaultObject))
     {
         addToParent = true;
@@ -1706,7 +1697,7 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
+            if(ival >= 0 && ival < 7)
                 SetEigenComponent(EigenComponent(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1882,8 +1873,6 @@ LCSAttributes::SetFromNode(DataNode *parentNode)
         SetBoundaryLimit(node->AsDouble());
     if((node = searchNode->GetNode("seedLimit")) != 0)
         SetSeedLimit(node->AsInt());
-    if((node = searchNode->GetNode("forceNodeCenteredData")) != 0)
-        SetForceNodeCenteredData(node->AsBool());
     if((node = searchNode->GetNode("issueAdvectionWarnings")) != 0)
         SetIssueAdvectionWarnings(node->AsBool());
     if((node = searchNode->GetNode("issueBoundaryWarnings")) != 0)
@@ -2239,13 +2228,6 @@ LCSAttributes::SetSeedLimit(int seedLimit_)
 {
     seedLimit = seedLimit_;
     Select(ID_seedLimit, (void *)&seedLimit);
-}
-
-void
-LCSAttributes::SetForceNodeCenteredData(bool forceNodeCenteredData_)
-{
-    forceNodeCenteredData = forceNodeCenteredData_;
-    Select(ID_forceNodeCenteredData, (void *)&forceNodeCenteredData);
 }
 
 void
@@ -2608,12 +2590,6 @@ LCSAttributes::GetSeedLimit() const
 }
 
 bool
-LCSAttributes::GetForceNodeCenteredData() const
-{
-    return forceNodeCenteredData;
-}
-
-bool
 LCSAttributes::GetIssueAdvectionWarnings() const
 {
     return issueAdvectionWarnings;
@@ -2754,7 +2730,6 @@ LCSAttributes::GetFieldName(int index) const
     case ID_radialLimit:                       return "radialLimit";
     case ID_boundaryLimit:                     return "boundaryLimit";
     case ID_seedLimit:                         return "seedLimit";
-    case ID_forceNodeCenteredData:             return "forceNodeCenteredData";
     case ID_issueAdvectionWarnings:            return "issueAdvectionWarnings";
     case ID_issueBoundaryWarnings:             return "issueBoundaryWarnings";
     case ID_issueTerminationWarnings:          return "issueTerminationWarnings";
@@ -2833,7 +2808,6 @@ LCSAttributes::GetFieldType(int index) const
     case ID_radialLimit:                       return FieldType_double;
     case ID_boundaryLimit:                     return FieldType_double;
     case ID_seedLimit:                         return FieldType_int;
-    case ID_forceNodeCenteredData:             return FieldType_bool;
     case ID_issueAdvectionWarnings:            return FieldType_bool;
     case ID_issueBoundaryWarnings:             return FieldType_bool;
     case ID_issueTerminationWarnings:          return FieldType_bool;
@@ -2912,7 +2886,6 @@ LCSAttributes::GetFieldTypeName(int index) const
     case ID_radialLimit:                       return "double";
     case ID_boundaryLimit:                     return "double";
     case ID_seedLimit:                         return "int";
-    case ID_forceNodeCenteredData:             return "bool";
     case ID_issueAdvectionWarnings:            return "bool";
     case ID_issueBoundaryWarnings:             return "bool";
     case ID_issueTerminationWarnings:          return "bool";
@@ -3201,11 +3174,6 @@ LCSAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (seedLimit == obj.seedLimit);
         }
         break;
-    case ID_forceNodeCenteredData:
-        {  // new scope
-        retval = (forceNodeCenteredData == obj.forceNodeCenteredData);
-        }
-        break;
     case ID_issueAdvectionWarnings:
         {  // new scope
         retval = (issueAdvectionWarnings == obj.issueAdvectionWarnings);
@@ -3303,15 +3271,15 @@ LCSAttributes::ChangesRequireRecalculation(const LCSAttributes &obj) const
     //Check the general stuff first...
 
     if( sourceType != obj.sourceType ||
+
+        auxiliaryGrid != obj.auxiliaryGrid ||
+        auxiliaryGridSpacing != obj.auxiliaryGridSpacing ||
+
+        fieldType != obj.fieldType ||
+        fieldConstant != obj.fieldConstant ||
+
         integrationDirection != obj.integrationDirection ||
-        maxSteps != obj.maxSteps ||
-        terminationType != obj.terminationType ||
-        terminateBySize != obj.terminateBySize ||
-        termSize != obj.termSize ||
-        terminateByDistance != obj.terminateByDistance ||
-        termDistance != obj.termDistance ||
-        terminateByTime != obj.terminateByTime ||
-        termTime != obj.termTime ||
+        integrationType != obj.integrationType ||
         maxStepLength != obj.maxStepLength ||
         limitMaximumTimestep != obj.limitMaximumTimestep ||
         maxTimeStep != obj.maxTimeStep ||
@@ -3319,23 +3287,42 @@ LCSAttributes::ChangesRequireRecalculation(const LCSAttributes &obj) const
         absTolSizeType != obj.absTolSizeType ||
         absTolAbsolute != obj.absTolAbsolute ||
         absTolBBox != obj.absTolBBox ||
-        fieldType != obj.fieldType ||
-        fieldConstant != obj.fieldConstant ||
+
+        operationType != obj.operationType ||
+        eigenComponent != obj.eigenComponent ||
+        eigenWeight != obj.eigenWeight ||
+        operatorType != obj.operatorType ||
+        cauchyGreenTensor != obj.cauchyGreenTensor ||
+        clampLogValues != obj.clampLogValues ||
+
+        terminationType != obj.terminationType ||
+        terminateBySize != obj.terminateBySize ||
+        termSize != obj.termSize ||
+        terminateByDistance != obj.terminateByDistance ||
+        termDistance != obj.termDistance ||
+        terminateByTime != obj.terminateByTime ||
+        termTime != obj.termTime ||
+        maxSteps != obj.maxSteps ||
+
         thresholdLimit != obj.thresholdLimit ||
         radialLimit != obj.radialLimit ||
         boundaryLimit != obj.boundaryLimit ||
         seedLimit != obj.seedLimit ||
-        integrationType != obj.integrationType ||
-        parallelizationAlgorithmType != obj.parallelizationAlgorithmType ||
-        maxProcessCount != obj.maxProcessCount ||
-        maxDomainCacheSize != obj.maxDomainCacheSize ||
-        workGroupSize != obj.workGroupSize ||
+
         pathlines != obj.pathlines ||
         pathlinesOverrideStartingTimeFlag != obj.pathlinesOverrideStartingTimeFlag ||
         pathlinesOverrideStartingTime != obj.pathlinesOverrideStartingTime ||
         pathlinesCMFE != obj.pathlinesCMFE ||
-        forceNodeCenteredData != obj.forceNodeCenteredData ||
+
+        parallelizationAlgorithmType != obj.parallelizationAlgorithmType ||
+        maxProcessCount != obj.maxProcessCount ||
+        maxDomainCacheSize != obj.maxDomainCacheSize ||
+        workGroupSize != obj.workGroupSize ||
+
+        issueAdvectionWarnings != obj.issueAdvectionWarnings ||
+        issueBoundaryWarnings != obj.issueBoundaryWarnings ||
         issueTerminationWarnings != obj.issueTerminationWarnings ||
+        issueStepsizeWarnings != obj.issueStepsizeWarnings ||
         issueStiffnessWarnings != obj.issueStiffnessWarnings ||
         issueCriticalPointsWarnings != obj.issueCriticalPointsWarnings ||
         criticalPointThreshold != obj.criticalPointThreshold )
@@ -3356,24 +3343,16 @@ LCSAttributes::ChangesRequireRecalculation(const LCSAttributes &obj) const
     }
 
     //Check by source type.
-    if ((sourceType == RegularGrid) &&
-         POINT_DIFFERS(Resolution, obj.Resolution))
+    if (sourceType == RegularGrid)
     {
-        return true;
-    }
-
-    if ((sourceType == RegularGrid) &&
-         UseDataSetStart == Subset &&
-         POINT_DIFFERS(StartPosition, obj.StartPosition))
-    {
-        return true;
-    }
-
-    if ((sourceType == RegularGrid) &&
-         UseDataSetEnd == Subset &&
-         POINT_DIFFERS(EndPosition, obj.EndPosition))
-    {
-        return true;
+         if( (POINT_DIFFERS(Resolution, obj.Resolution)) ||
+             (UseDataSetStart == Subset &&
+              POINT_DIFFERS(StartPosition, obj.StartPosition)) ||
+             (UseDataSetEnd == Subset &&
+              POINT_DIFFERS(EndPosition, obj.EndPosition)) )
+        {
+            return true;
+        }
     }
 
     return false;

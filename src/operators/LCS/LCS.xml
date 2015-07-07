@@ -1,13 +1,22 @@
 <?xml version="1.0"?>
   <Plugin name="LCS" type="operator" label="LCS" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Integral Curves" createExpression="true" exprInType="vector" exprOutType="scalar,vector">
     <Attribute name="LCSAttributes" purpose="Attributes for LCS" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LCSAttributes.code">
+    <Files components="E">
+      avtLCSFilter.C
+      avtLCSFilterFTLE.C
+      avtLCSFilterFSLE.C
+    </Files>
+    <LDFLAGS>
+      ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
+    </LDFLAGS>
+    <LIBS>
+      vtkImagingGeneral
+    </LIBS>
     <LIBS components="ESer">
       avtivp_ser
-      vtkImagingGeneral
     </LIBS>
     <LIBS components="EPar">
       avtivp_par
-      vtkImagingGeneral
     </LIBS>
       <Enum name="SourceType">
         NativeMesh
@@ -57,7 +66,7 @@
       <Enum name="OperationType">
         IntegrationTime
         ArcLength
-        AverageDistanceFromSeed        
+        AverageDistanceFromSeed
         EigenValue
         EigenVector
         Lyapunov
@@ -70,7 +79,10 @@
         Smallest
         Intermediate
         Largest
-        Combination
+        PosShearVector
+        NegShearVector
+        PosLambdaShearVector
+        NegLambdaShearVector
       </Enum>
       <Enum name="OperatorType">
         BaseValue
@@ -116,7 +128,7 @@
         None
       </Field>
       <Field name="auxiliaryGridSpacing" label="Auxiliary grid sspacing" type="double" enabler="auxiliaryGrid:2D">
-        0.0001
+        0.000100
       </Field>
       <Field name="maxSteps" label="Maximum number of steps" type="int">
         1000
@@ -128,10 +140,10 @@
         Right
       </Field>
       <Field name="eigenComponent" label="Eigen component" type="enum" subtype="EigenComponent">
-        Smallest
+        Largest
       </Field>
       <Field name="eigenWeight" label="Weight" type="double" enabler="eigenComponent:Combination">
-        Smallest
+        1.000000
       </Field>
       <Field name="operatorType" label="Operator type" type="enum" subtype="OperatorType">
         BaseValue
@@ -193,7 +205,7 @@
         DormandPrince
       </Field>
       <Field name="clampLogValues" label="Clamp log values" type="bool">
-        true
+        false
       </Field>
       <Field name="parallelizationAlgorithmType" label="Parallelization algorithm type" type="enum" subtype="ParallelizationAlgorithmType">
         VisItSelects
@@ -217,26 +229,22 @@
         0.000000
       </Field>
       <Field name="pathlinesPeriod" label="Pathlines Period" type="double">
-        0.0
+        0.000000
       </Field>
       <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
         POS_CMFE
       </Field>
       <Field name="thresholdLimit" label="Threshold limit" type="double">
-        0.1
+        0.100000
       </Field>
       <Field name="radialLimit" label="Radial crop distance" type="double">
-        0.1
+        0.100000
       </Field>
       <Field name="boundaryLimit" label="Boundary crop distance" type="double">
-        0.1
+        0.100000
       </Field>
       <Field name="seedLimit" label="Maximum number of seeds" type="int">
         10
-      </Field>
-
-      <Field name="forceNodeCenteredData" label="forceNodeCenteredData" type="bool">
-        false
       </Field>
       <Field name="issueAdvectionWarnings" label="Issue warning when the advection stops before the limits" type="bool">
         true
@@ -259,7 +267,6 @@
       <Field name="criticalPointThreshold" label="criticalPointThreshold" type="double" enabler="issueCriticalPointsWarnings:true">
         0.001000
       </Field>
-
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">

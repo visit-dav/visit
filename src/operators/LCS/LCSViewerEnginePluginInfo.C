@@ -219,10 +219,12 @@ LCSViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 {
     LCSAttributes *atts_in = (LCSAttributes *)atts;
 
-    const char *typeString[3][3] = { { "Time", "Arc length",
-                                       "Ave. dist. from seed" },
-                                     { "Smallest", "Intermediate", "Largest" },
-                                     { "FTLE", "FDLE", "FSLE" } };
+    const char *typeString[3][7] =
+    { { "Time", "Arc length", "Ave. dist. from seed", "", "", "", "" },
+      { "Smallest", "Intermediate", "Largest",
+        "Pos. shear", "Neg. shear",
+        "Pos. linear shear", "Pos. combo shear" },
+      { "FTLE", "FDLE", "FSLE", "", "", "", "" } };
 
     const char *operatorString[4] = { "Base", "Gradient", "Jacobian", "Ratio" };
 
@@ -296,3 +298,4 @@ LCSViewerEnginePluginInfo::GetMenuName() const
 {
     return "LCS";
 }
+

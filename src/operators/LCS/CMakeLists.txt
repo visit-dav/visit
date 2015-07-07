@@ -105,10 +105,10 @@ SET(INSTALLTARGETS ILCSOperator)
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     QT_WRAP_CPP(GLCSOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GLCSOperator ${LIBG_SOURCES})
-    TARGET_LINK_LIBRARIES(GLCSOperator visitcommon gui )
+    TARGET_LINK_LIBRARIES(GLCSOperator visitcommon gui vtkImagingGeneral )
 
     ADD_LIBRARY(VLCSOperator ${LIBV_SOURCES})
-    TARGET_LINK_LIBRARIES(VLCSOperator visitcommon viewer )
+    TARGET_LINK_LIBRARIES(VLCSOperator visitcommon viewer vtkImagingGeneral )
     SET(INSTALLTARGETS ${INSTALLTARGETS} GLCSOperator VLCSOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -131,12 +131,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ELCSOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(ELCSOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser avtivp_ser vtkImagingGeneral )
+TARGET_LINK_LIBRARIES(ELCSOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser vtkImagingGeneral avtivp_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} ELCSOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ELCSOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ELCSOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par avtivp_par vtkImagingGeneral )
+    TARGET_LINK_LIBRARIES(ELCSOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par vtkImagingGeneral avtivp_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ELCSOperator_par)
 ENDIF(VISIT_PARALLEL)
 
