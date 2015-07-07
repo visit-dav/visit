@@ -417,6 +417,11 @@ avtIntegralCurveFilter::ModifyContract(avtContract_p in_contract)
 
     in_dr->SetUsesAllDomains(true);
 
+    // Upstream operators like the LCS operator are going to pick up
+    // this request. So that those operators that do a gather
+    // operation also do a scatter operator if needed.
+    in_contract->SetReplicateSingleDomainOnAllProcessors(true);
+
     if( strncmp(var.c_str(), "operators/IntegralCurve/",
                 strlen("operators/IntegralCurve/")) == 0)
     {
@@ -785,8 +790,6 @@ avtIntegralCurveFilter::PostExecute(void)
 void
 avtIntegralCurveFilter::Execute(void)
 {
-  // std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << std::endl;
-
     avtPICSFilter::Execute();
 
     std::vector<avtIntegralCurve *> ics;
@@ -1557,6 +1560,18 @@ avtIntegralCurveFilter::GetInitialLocations(void)
             (*it)[2] = 0.0f;
     }
 
+//  #ifdef PARALLEL
+//     int rank = PAR_Rank();
+
+//     std::cerr << __FILE__ << "  " << __FUNCTION__ << "  "
+//            << "Proc " << rank << " number of seeds " << seedPts.size()
+//            << std::endl;
+// #else
+//     std::cerr << __FILE__ << "  " << __FUNCTION__ << "  "
+//            << "Number of seeds " << seedPts.size()
+//            << std::endl;
+// #endif
+
     return seedPts;
 }
 
@@ -2164,17 +2179,14 @@ avtIntegralCurveFilter::GenerateSeedPointsFromSelection(std::vector<avtVector> &
 void
 avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(std::vector<avtVector> &pts)
 {
-      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
     std::vector<double> tmpListOfPoints = listOfPoints;
 
     // Use the listOfPoint for storage.
     listOfPoints.clear();
 
-      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
     // Get the seeds from the daa tree.
     GenerateSeedPointsFromFieldData( GetInputDataTree() );
 
-      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
     // Set the attributes.
     if ( listOfPoints.size() )
       atts.SetPointList( listOfPoints );
@@ -2220,22 +2232,18 @@ avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(std::vector<avtVector> &
 void
 avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(avtDataTree_p inDT)
 {
-      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
     if (*inDT == NULL)
         return;
 
-      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
     int nc = inDT->GetNChildren();
 
     if (nc < 0 && !inDT->HasData())
     {
-      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
         return;
     }
 
     if (nc == 0)
     {
-      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
         //
         // there is only one dataset to process
         //
@@ -2245,7 +2253,6 @@ avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(avtDataTree_p inDT)
     }
     else
     {
-      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
         //
         // there is more than one input dataset to process
         // and we need an output datatree for each
@@ -2278,7 +2285,6 @@ void
 avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(vtkDataSet *in_ds)
 {
   vtkFieldData *fieldData = in_ds->GetFieldData();
-      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
 
   if ( fieldData == 0 )
   {
@@ -2287,7 +2293,6 @@ avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(vtkDataSet *in_ds)
 
     return;
   }
-      // std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
 
   for( int i=0; i<fieldData->GetNumberOfArrays (); ++i )
   {  
@@ -2993,7 +2998,6 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     
     avtDataTree *dt = new avtDataTree(outPD, 0);
     SetOutputDataTree(dt);
-
 
 /*
     if (1)
