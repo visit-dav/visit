@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class LCSAttributes extends AttributeSubject implements Plugin
 {
-    private static int LCSAttributes_numAdditionalAtts = 55;
+    private static int LCSAttributes_numAdditionalAtts = 54;
 
     // Enum values
     public final static int SOURCETYPE_NATIVEMESH = 0;
@@ -112,7 +112,10 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     public final static int EIGENCOMPONENT_SMALLEST = 0;
     public final static int EIGENCOMPONENT_INTERMEDIATE = 1;
     public final static int EIGENCOMPONENT_LARGEST = 2;
-    public final static int EIGENCOMPONENT_COMBINATION = 3;
+    public final static int EIGENCOMPONENT_POSSHEARVECTOR = 3;
+    public final static int EIGENCOMPONENT_NEGSHEARVECTOR = 4;
+    public final static int EIGENCOMPONENT_POSLAMBDASHEARVECTOR = 5;
+    public final static int EIGENCOMPONENT_NEGLAMBDASHEARVECTOR = 6;
 
     public final static int OPERATORTYPE_BASEVALUE = 0;
     public final static int OPERATORTYPE_GRADIENT = 1;
@@ -150,8 +153,8 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         maxSteps = 1000;
         operationType = OPERATIONTYPE_LYAPUNOV;
         cauchyGreenTensor = CAUCHYGREENTENSOR_RIGHT;
-        eigenComponent = EIGENCOMPONENT_SMALLEST;
-        eigenWeight = 0;
+        eigenComponent = EIGENCOMPONENT_LARGEST;
+        eigenWeight = 1;
         operatorType = OPERATORTYPE_BASEVALUE;
         terminationType = TERMINATIONTYPE_TIME;
         terminateBySize = false;
@@ -174,7 +177,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         velocitySource[1] = 0;
         velocitySource[2] = 0;
         integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
-        clampLogValues = true;
+        clampLogValues = false;
         parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
         maxProcessCount = 10;
         maxDomainCacheSize = 3;
@@ -188,7 +191,6 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         radialLimit = 0.1;
         boundaryLimit = 0.1;
         seedLimit = 10;
-        forceNodeCenteredData = false;
         issueAdvectionWarnings = true;
         issueBoundaryWarnings = true;
         issueTerminationWarnings = true;
@@ -223,8 +225,8 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         maxSteps = 1000;
         operationType = OPERATIONTYPE_LYAPUNOV;
         cauchyGreenTensor = CAUCHYGREENTENSOR_RIGHT;
-        eigenComponent = EIGENCOMPONENT_SMALLEST;
-        eigenWeight = 0;
+        eigenComponent = EIGENCOMPONENT_LARGEST;
+        eigenWeight = 1;
         operatorType = OPERATORTYPE_BASEVALUE;
         terminationType = TERMINATIONTYPE_TIME;
         terminateBySize = false;
@@ -247,7 +249,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         velocitySource[1] = 0;
         velocitySource[2] = 0;
         integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
-        clampLogValues = true;
+        clampLogValues = false;
         parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
         maxProcessCount = 10;
         maxDomainCacheSize = 3;
@@ -261,7 +263,6 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         radialLimit = 0.1;
         boundaryLimit = 0.1;
         seedLimit = 10;
-        forceNodeCenteredData = false;
         issueAdvectionWarnings = true;
         issueBoundaryWarnings = true;
         issueTerminationWarnings = true;
@@ -340,7 +341,6 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         radialLimit = obj.radialLimit;
         boundaryLimit = obj.boundaryLimit;
         seedLimit = obj.seedLimit;
-        forceNodeCenteredData = obj.forceNodeCenteredData;
         issueAdvectionWarnings = obj.issueAdvectionWarnings;
         issueBoundaryWarnings = obj.issueBoundaryWarnings;
         issueTerminationWarnings = obj.issueTerminationWarnings;
@@ -434,7 +434,6 @@ public class LCSAttributes extends AttributeSubject implements Plugin
                 (radialLimit == obj.radialLimit) &&
                 (boundaryLimit == obj.boundaryLimit) &&
                 (seedLimit == obj.seedLimit) &&
-                (forceNodeCenteredData == obj.forceNodeCenteredData) &&
                 (issueAdvectionWarnings == obj.issueAdvectionWarnings) &&
                 (issueBoundaryWarnings == obj.issueBoundaryWarnings) &&
                 (issueTerminationWarnings == obj.issueTerminationWarnings) &&
@@ -770,52 +769,46 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         Select(46);
     }
 
-    public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
-    {
-        forceNodeCenteredData = forceNodeCenteredData_;
-        Select(47);
-    }
-
     public void SetIssueAdvectionWarnings(boolean issueAdvectionWarnings_)
     {
         issueAdvectionWarnings = issueAdvectionWarnings_;
-        Select(48);
+        Select(47);
     }
 
     public void SetIssueBoundaryWarnings(boolean issueBoundaryWarnings_)
     {
         issueBoundaryWarnings = issueBoundaryWarnings_;
-        Select(49);
+        Select(48);
     }
 
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(50);
+        Select(49);
     }
 
     public void SetIssueStepsizeWarnings(boolean issueStepsizeWarnings_)
     {
         issueStepsizeWarnings = issueStepsizeWarnings_;
-        Select(51);
+        Select(50);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(52);
+        Select(51);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(53);
+        Select(52);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(54);
+        Select(53);
     }
 
     // Property getting methods
@@ -866,7 +859,6 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     public double   GetRadialLimit() { return radialLimit; }
     public double   GetBoundaryLimit() { return boundaryLimit; }
     public int      GetSeedLimit() { return seedLimit; }
-    public boolean  GetForceNodeCenteredData() { return forceNodeCenteredData; }
     public boolean  GetIssueAdvectionWarnings() { return issueAdvectionWarnings; }
     public boolean  GetIssueBoundaryWarnings() { return issueBoundaryWarnings; }
     public boolean  GetIssueTerminationWarnings() { return issueTerminationWarnings; }
@@ -973,20 +965,18 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(46, buf))
             buf.WriteInt(seedLimit);
         if(WriteSelect(47, buf))
-            buf.WriteBool(forceNodeCenteredData);
-        if(WriteSelect(48, buf))
             buf.WriteBool(issueAdvectionWarnings);
-        if(WriteSelect(49, buf))
+        if(WriteSelect(48, buf))
             buf.WriteBool(issueBoundaryWarnings);
-        if(WriteSelect(50, buf))
+        if(WriteSelect(49, buf))
             buf.WriteBool(issueTerminationWarnings);
-        if(WriteSelect(51, buf))
+        if(WriteSelect(50, buf))
             buf.WriteBool(issueStepsizeWarnings);
-        if(WriteSelect(52, buf))
+        if(WriteSelect(51, buf))
             buf.WriteBool(issueStiffnessWarnings);
-        if(WriteSelect(53, buf))
+        if(WriteSelect(52, buf))
             buf.WriteBool(issueCriticalPointsWarnings);
-        if(WriteSelect(54, buf))
+        if(WriteSelect(53, buf))
             buf.WriteDouble(criticalPointThreshold);
     }
 
@@ -1136,27 +1126,24 @@ public class LCSAttributes extends AttributeSubject implements Plugin
             SetSeedLimit(buf.ReadInt());
             break;
         case 47:
-            SetForceNodeCenteredData(buf.ReadBool());
-            break;
-        case 48:
             SetIssueAdvectionWarnings(buf.ReadBool());
             break;
-        case 49:
+        case 48:
             SetIssueBoundaryWarnings(buf.ReadBool());
             break;
-        case 50:
+        case 49:
             SetIssueTerminationWarnings(buf.ReadBool());
             break;
-        case 51:
+        case 50:
             SetIssueStepsizeWarnings(buf.ReadBool());
             break;
-        case 52:
+        case 51:
             SetIssueStiffnessWarnings(buf.ReadBool());
             break;
-        case 53:
+        case 52:
             SetIssueCriticalPointsWarnings(buf.ReadBool());
             break;
-        case 54:
+        case 53:
             SetCriticalPointThreshold(buf.ReadDouble());
             break;
         }
@@ -1231,8 +1218,14 @@ public class LCSAttributes extends AttributeSubject implements Plugin
             str = str + "EIGENCOMPONENT_INTERMEDIATE";
         if(eigenComponent == EIGENCOMPONENT_LARGEST)
             str = str + "EIGENCOMPONENT_LARGEST";
-        if(eigenComponent == EIGENCOMPONENT_COMBINATION)
-            str = str + "EIGENCOMPONENT_COMBINATION";
+        if(eigenComponent == EIGENCOMPONENT_POSSHEARVECTOR)
+            str = str + "EIGENCOMPONENT_POSSHEARVECTOR";
+        if(eigenComponent == EIGENCOMPONENT_NEGSHEARVECTOR)
+            str = str + "EIGENCOMPONENT_NEGSHEARVECTOR";
+        if(eigenComponent == EIGENCOMPONENT_POSLAMBDASHEARVECTOR)
+            str = str + "EIGENCOMPONENT_POSLAMBDASHEARVECTOR";
+        if(eigenComponent == EIGENCOMPONENT_NEGLAMBDASHEARVECTOR)
+            str = str + "EIGENCOMPONENT_NEGLAMBDASHEARVECTOR";
         str = str + "\n";
         str = str + doubleToString("eigenWeight", eigenWeight, indent) + "\n";
         str = str + indent + "operatorType = ";
@@ -1327,7 +1320,6 @@ public class LCSAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("radialLimit", radialLimit, indent) + "\n";
         str = str + doubleToString("boundaryLimit", boundaryLimit, indent) + "\n";
         str = str + intToString("seedLimit", seedLimit, indent) + "\n";
-        str = str + boolToString("forceNodeCenteredData", forceNodeCenteredData, indent) + "\n";
         str = str + boolToString("issueAdvectionWarnings", issueAdvectionWarnings, indent) + "\n";
         str = str + boolToString("issueBoundaryWarnings", issueBoundaryWarnings, indent) + "\n";
         str = str + boolToString("issueTerminationWarnings", issueTerminationWarnings, indent) + "\n";
@@ -1387,7 +1379,6 @@ public class LCSAttributes extends AttributeSubject implements Plugin
     private double   radialLimit;
     private double   boundaryLimit;
     private int      seedLimit;
-    private boolean  forceNodeCenteredData;
     private boolean  issueAdvectionWarnings;
     private boolean  issueBoundaryWarnings;
     private boolean  issueTerminationWarnings;

@@ -623,13 +623,15 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
     //Send List of index into global array to rank 0
     //Send end positions into global array to rank 0
 
+    size_t nics = ics.size();
+
     //loop over all the intelgral curves and add it back to the
     //original list of seeds.
-    intVector indices(ics.size());
-    doubleVector points(ics.size()*3);
-    doubleVector times(ics.size());
+    intVector indices(nics);
+    doubleVector points(nics*3);
+    doubleVector times(nics);
 
-    for(size_t i=0, j=0; i<ics.size(); ++i, j+=3)
+    for(size_t i=0, j=0; i<nics; ++i, j+=3)
     {
         avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
 
@@ -768,6 +770,7 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
         // For each integral curve check it's mask value to see it
         // additional integration is required.
 
+        // ARS - FIX ME not parallelized!!!!!!!!
         for(size_t i=0; i<ics.size(); ++i)
         {
           avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
@@ -964,7 +967,7 @@ avtLCSFilter::CreateNativeMeshIterativeCalcOutput(std::vector<avtIntegralCurve*>
     CreateMultiBlockIterativeCalcOutput(GetInputDataTree(), GetDataTree(),
                                         ics, offset, minv, maxv, count);
 
-    int nTuples = (int)ics.size();
+    int nTuples = (int) ics.size();
 
     if( 1 || count <= nTuples/10 )
     {

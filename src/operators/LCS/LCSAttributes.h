@@ -132,7 +132,10 @@ public:
         Smallest,
         Intermediate,
         Largest,
-        Combination
+        PosShearVector,
+        NegShearVector,
+        PosLambdaShearVector,
+        NegLambdaShearVector
     };
     enum OperatorType
     {
@@ -229,7 +232,6 @@ public:
     void SetRadialLimit(double radialLimit_);
     void SetBoundaryLimit(double boundaryLimit_);
     void SetSeedLimit(int seedLimit_);
-    void SetForceNodeCenteredData(bool forceNodeCenteredData_);
     void SetIssueAdvectionWarnings(bool issueAdvectionWarnings_);
     void SetIssueBoundaryWarnings(bool issueBoundaryWarnings_);
     void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
@@ -290,7 +292,6 @@ public:
     double       GetRadialLimit() const;
     double       GetBoundaryLimit() const;
     int          GetSeedLimit() const;
-    bool         GetForceNodeCenteredData() const;
     bool         GetIssueAdvectionWarnings() const;
     bool         GetIssueBoundaryWarnings() const;
     bool         GetIssueTerminationWarnings() const;
@@ -433,7 +434,6 @@ public:
         ID_radialLimit,
         ID_boundaryLimit,
         ID_seedLimit,
-        ID_forceNodeCenteredData,
         ID_issueAdvectionWarnings,
         ID_issueBoundaryWarnings,
         ID_issueTerminationWarnings,
@@ -492,7 +492,6 @@ private:
     double radialLimit;
     double boundaryLimit;
     int    seedLimit;
-    bool   forceNodeCenteredData;
     bool   issueAdvectionWarnings;
     bool   issueBoundaryWarnings;
     bool   issueTerminationWarnings;
@@ -505,6 +504,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LCSATTRIBUTES_TMFS "iIiDiDiidiiiidiibdbdbddbddiddidDibiiiibbddidddibbbbbbbd"
+#define LCSATTRIBUTES_TMFS "iIiDiDiidiiiidiibdbdbddbddiddidDibiiiibbddidddibbbbbbd"
 
 #endif

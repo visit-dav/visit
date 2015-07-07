@@ -236,6 +236,8 @@ protected:
                                  criticalPointThreshold = speed; };
 
   protected:
+    bool replicateData;
+
     double timeCached;
     int    cycleCached;
 

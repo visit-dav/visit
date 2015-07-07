@@ -48,6 +48,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QSlider>
 #include <QSpinBox>
 #include <QPushButton>
 #include <QTabWidget>
@@ -466,8 +467,11 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     eigenComponent->addItem(tr("Smallest"));
     eigenComponent->addItem(tr("Intermediate (3D only)"));
     eigenComponent->addItem(tr("Largest"));
-    eigenComponent->addItem(tr("Combination"));
-    eigenComponent->setMaxCount(4);
+    eigenComponent->addItem(tr("Shear Pos."));
+    eigenComponent->addItem(tr("Shear Neg."));
+    eigenComponent->addItem(tr("Shear Pos. linear combination"));
+    eigenComponent->addItem(tr("Shear Neg. linear combination"));
+    eigenComponent->setMaxCount(7);
     connect(eigenComponent, SIGNAL(activated(int)),
             this, SLOT(eigenComponentChanged(int)));
     terminationLayout->addWidget(eigenComponent, 1, 1);
@@ -485,12 +489,26 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     terminationLayout->addWidget(clampLogValues, 1, 3);
 
     // Create the eigen weight text field.
-    eigenWeightLabel = new QLabel(tr("Weight"), central);
-    eigenWeightLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-    eigenWeight = new QLineEdit(terminationGroup);
-    connect(eigenWeight, SIGNAL(returnPressed()), this, SLOT(eigenWeightProcessText()));
-    terminationLayout->addWidget(eigenWeightLabel, 1, 2);
-    terminationLayout->addWidget(eigenWeight, 1, 3);
+//    eigenWeightLabel = new QLabel(tr("Weight"), central);
+//    eigenWeightLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    eigenWeightEdit = new QLineEdit(terminationGroup);
+    connect(eigenWeightEdit, SIGNAL(returnPressed()), this, SLOT(eigenWeightEditProcessText()));
+
+    eigenWeightSlider = new QSlider(Qt::Horizontal, central);
+    eigenWeightSlider->setRange(-100,+100);
+    eigenWeightSlider->setSingleStep(10);
+    eigenWeightSlider->setValue(0);
+
+    connect(eigenWeightSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(eigenWeightSliderChanged(int)));
+    connect(eigenWeightSlider, SIGNAL(sliderPressed()),
+            this, SLOT(eigenWeightSliderPressed()));
+    connect(eigenWeightSlider, SIGNAL(sliderReleased()),
+            this, SLOT(eigenWeightSliderReleased()));
+
+//    terminationLayout->addWidget(eigenWeightLabel,  2, 3);
+    terminationLayout->addWidget(eigenWeightEdit,   1, 2);
+    terminationLayout->addWidget(eigenWeightSlider, 1, 3);
 
 
     // Radio button termination type
@@ -840,6 +858,9 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 void
 QvisLCSWindow::UpdateWindow(bool doAll)
 {
+    bool bval;
+    int ival;
+
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -964,6 +985,9 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               terminationTypeButtonGroup->button(2)->show();
               cauchyGreenTensorLabel->show();
               cauchyGreenTensor->show();
+              eigenComponent->removeItem(6);
+              eigenComponent->removeItem(5);
+              eigenComponent->removeItem(4);
               eigenComponent->removeItem(3);
               eigenComponentLabel->show();
               eigenComponent->show();
@@ -975,8 +999,9 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               atts->SetTerminateByDistance( atts->GetTerminationType() == LCSAttributes::Distance);
               atts->SetTerminateBySize(     atts->GetTerminationType() == LCSAttributes::Size);
 
-              eigenWeightLabel->hide();
-              eigenWeight->hide();
+//              eigenWeightLabel->hide();
+              eigenWeightEdit->hide();
+              eigenWeightSlider->hide();
               operatorType->hide();
               clampLogValues->show();
 
@@ -992,18 +1017,48 @@ QvisLCSWindow::UpdateWindow(bool doAll)
               {
                 if( eigenComponent->itemText(3).isNull() ||
                     eigenComponent->itemText(3).isEmpty() )
-                  eigenComponent->addItem(tr("Combination"));
+                {
+                  eigenComponent->addItem(tr("Shear Pos."));
+                  eigenComponent->addItem(tr("Shear Neg."));
+                  eigenComponent->addItem(tr("Lambda Shear Pos."));
+                  eigenComponent->addItem(tr("Lambda Shear Neg."));
+                }
+                
+                bval = (atts->GetEigenComponent() ==
+                        LCSAttributes::PosLambdaShearVector ||
+                        atts->GetEigenComponent() ==
+                        LCSAttributes::NegLambdaShearVector);
+            
+                if( bval )
+                {
+//                  eigenWeightLabel->show();
+                    eigenWeightEdit->show();
+                    eigenWeightSlider->show();
+                }
+                else
+                {
+//                  eigenWeightLabel->hide();
+                    eigenWeightEdit->hide();
+                    eigenWeightSlider->hide();
+                }
 
-                eigenWeightLabel->show();
-                eigenWeight->show();
+//              eigenWeightLabel->setEnabled( bval );   
+                eigenWeightEdit->setEnabled( bval );
+                eigenWeightSlider->setEnabled( bval );
               }
               else
               {
                 if( !(eigenComponent->itemText(3).isNull()) &&
                     !(eigenComponent->itemText(3).isEmpty()) )
-                  eigenComponent->removeItem(3);
-                eigenWeightLabel->hide();
-                eigenWeight->hide();
+                  {
+                    eigenComponent->removeItem(6);
+                    eigenComponent->removeItem(5);
+                    eigenComponent->removeItem(4);
+                    eigenComponent->removeItem(3);
+                  }
+//                eigenWeightLabel->hide();
+                eigenWeightEdit->hide();
+                eigenWeightSlider->hide();
               }
 
               if( atts->GetOperationType() == LCSAttributes::EigenValue ||
@@ -1045,10 +1100,27 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             eigenComponent->setCurrentIndex(int(atts->GetEigenComponent()) );
             eigenComponent->blockSignals(false);
 
-            eigenWeightLabel->setEnabled( atts->GetEigenComponent() ==
-                                          LCSAttributes::Combination );
-            eigenWeight->setEnabled( atts->GetEigenComponent() ==
-                                     LCSAttributes::Combination );
+            bval = (atts->GetEigenComponent() ==
+                    LCSAttributes::PosLambdaShearVector ||
+                    atts->GetEigenComponent() ==
+                    LCSAttributes::NegLambdaShearVector);
+            
+            if( bval )
+            {
+//            eigenWeightLabel->show();
+              eigenWeightEdit->show();
+              eigenWeightSlider->show();
+            }
+            else
+            {
+//            eigenWeightLabel->hide();
+              eigenWeightEdit->hide();
+              eigenWeightSlider->hide();
+            }
+
+//          eigenWeightLabel->setEnabled( bval );   
+            eigenWeightEdit->setEnabled( bval );
+            eigenWeightSlider->setEnabled( bval );
             break;
 
         case LCSAttributes::ID_operatorType:
@@ -1064,7 +1136,14 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             break;
 
         case LCSAttributes::ID_eigenWeight:
-            eigenWeight->setText(DoubleToQString(atts->GetEigenWeight()));
+            eigenWeightEdit->setText(DoubleToQString(atts->GetEigenWeight()));
+
+            ival =
+              int(qMin(qMax(-100.0,1000.0*(atts->GetEigenWeight()-1.0)),100.0));
+
+            eigenWeightSlider->blockSignals(true);
+            eigenWeightSlider->setValue(ival);
+            eigenWeightSlider->blockSignals(false);
             break;
 
         case LCSAttributes::ID_clampLogValues:
@@ -1599,7 +1678,7 @@ QvisLCSWindow::GetCurrentValues(int which_widget)
     if(which_widget == LCSAttributes::ID_eigenWeight || doAll)
     {
         double val;
-        if(LineEditGetDouble(eigenWeight, val) && 0.0 <= val && val <= 1.0)
+        if(LineEditGetDouble(eigenWeightEdit, val) && 0.9 <= val && val <= 1.1)
             atts->SetEigenWeight(val);
         else
         {
@@ -2020,12 +2099,35 @@ QvisLCSWindow::operatorTypeChanged(int val)
 }   
 
 void
-QvisLCSWindow::eigenWeightProcessText()
+QvisLCSWindow::eigenWeightEditProcessText()
 {
     GetCurrentValues(LCSAttributes::ID_eigenWeight);
     Apply();
 }
 
+void
+QvisLCSWindow::eigenWeightSliderChanged(int val)
+{
+    atts->SetEigenWeight( 1.0 + (double) val/1000.0 );
+
+    eigenWeightEdit->setText(DoubleToQString( (double) 1.0 + val/1000.0 ) );
+
+    if (!sliderDragging)
+        Apply();
+}
+
+void
+QvisLCSWindow::eigenWeightSliderPressed()
+{
+    sliderDragging = true;
+}
+
+void
+QvisLCSWindow::eigenWeightSliderReleased()
+{
+    sliderDragging = false;
+    Apply();
+}
 
 void
 QvisLCSWindow::clampLogValuesChanged(bool val)

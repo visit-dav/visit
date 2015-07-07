@@ -131,6 +131,17 @@ LCSCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
             e2.SetDefinition(defn);
             el->AddExpressions(e2);
         }
+        {
+            Expression e2;
+            sprintf(name, "operators/LCS/%s", mmd->name.c_str());
+            e2.SetName(name);
+            e2.SetType(Expression::VectorMeshVar);
+            e2.SetFromOperator(true);
+            e2.SetOperatorName("LCS");
+            sprintf(defn, "cell_constant(<%s>, 0.)", mmd->name.c_str());
+            e2.SetDefinition(defn);
+            el->AddExpressions(e2);
+        }
     }
     const ExpressionList &oldEL = md->GetExprList();
     for (i = 0 ; i < oldEL.GetNumExpressions() ; i++)
@@ -145,6 +156,19 @@ LCSCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
                 sprintf(name, "operators/LCS/%s", e.GetName().c_str());
                 e2.SetName(name);
                 e2.SetType(Expression::ScalarMeshVar);
+                e2.SetFromOperator(true);
+                e2.SetOperatorName("LCS");
+                sprintf(defn, "cell_constant(<%s>, 0.)", e.GetName().c_str());
+                e2.SetDefinition(defn);
+                el->AddExpressions(e2);
+            }
+            {
+                if (e.GetFromOperator())
+                    continue; // weird ordering behavior otherwise
+                Expression e2;
+                sprintf(name, "operators/LCS/%s", e.GetName().c_str());
+                e2.SetName(name);
+                e2.SetType(Expression::VectorMeshVar);
                 e2.SetFromOperator(true);
                 e2.SetOperatorName("LCS");
                 sprintf(defn, "cell_constant(<%s>, 0.)", e.GetName().c_str());
