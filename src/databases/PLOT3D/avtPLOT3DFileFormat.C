@@ -423,6 +423,22 @@ avtPLOT3DFileFormat::GetMesh(int timestate, int domain, const char *name)
 }
 
 
+int
+ExtractNumber(const char *field)
+{
+    int d = -1;
+    string f(field);
+    size_t pos = f.find("#");
+    if (pos != std::string::npos)
+    {
+        f = f.substr(pos+1);
+        char tmp[100];
+        sscanf(field, "%d %s", &d, tmp);
+    }
+    return d;
+}
+
+
 // ****************************************************************************
 //  Method: avtPLOT3DFileFormat::GetVar
 //
@@ -458,6 +474,13 @@ avtPLOT3DFileFormat::GetVar(int timestate, int domain, const char *name)
     reader->SetVectorFunctionNumber(-1);
     reader->SetScalarFunctionNumber(-1);
     reader->RemoveAllFunctions();
+    // overflow field designations
+    reader->GammaRequestedOff();
+    reader->SetSpeciesNumber(-1);
+    reader->SetSpeciesRhoNumber(-1);
+    reader->SetTurbulenceNumber(-1);
+    bool overflowvar = false;
+
     if (strcmp(name, "Density") == 0)
     {
         var = 100;
@@ -502,8 +525,29 @@ avtPLOT3DFileFormat::GetVar(int timestate, int domain, const char *name)
     {
         var = 211;
     }
+    else if (strcmp(name, "Gamma") == 0)
+    {
+        reader->GammaRequestedOn();
+        overflowvar = true;
+    }
+    else if (strncmp(name, "Species", 7) == 0)
+    {
+        reader->SetSpeciesNumber(ExtractNumber(name));
+        overflowvar = true;
+    }
+    else if (strncmp(name, "Spec Dens", 9) == 0)
+    {
+        reader->SetSpeciesRhoNumber(ExtractNumber(name));
+        overflowvar = true;
+    }
+    else if (strncmp(name, "Turb", 4) == 0)
+    {
+        reader->SetTurbulenceNumber(ExtractNumber(name));
+        overflowvar = true;
+    }
 
-    if (var < 0)
+
+    if (var < 0 && !overflowvar)
     {
         EXCEPTION1(InvalidVariableException, name);
     }
@@ -755,6 +799,51 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             exp.SetDefinition(def);
             exp.SetType(Expression::Unknown);
             md->AddExpression(&exp);
+        }
+
+        // logic for overflow field names from vtkMultiblockPLOT3DReader:RequestData
+        if (reader->GetIsOverflow())
+        {
+            int nq = reader->GetOverflowNQ();
+            int nqc = reader->GetOverflowNQC();
+            if(nq >= 6)
+            {
+                avtScalarMetaData *sd = new avtScalarMetaData;
+                sd->name = "Gamma";
+                sd->meshName = "mesh";
+                sd->centering = AVT_NODECENT;
+                sd->hasDataExtents = false;
+                md->Add(sd);
+            }
+            char fieldname[100];
+            for (int i = 0; i <  nqc; ++i)
+            {
+                SNPRINTF(fieldname, 100, "Species Density #%d", i+i);
+                avtScalarMetaData *sd1 = new avtScalarMetaData;
+                sd1->name = fieldname;
+                sd1->meshName = "mesh";
+                sd1->centering = AVT_NODECENT;
+                sd1->hasDataExtents = false;
+                md->Add(sd1);
+
+                SNPRINTF(fieldname, 100, "Spec Dens #%d / rho", i+i);
+                avtScalarMetaData *sd2 = new avtScalarMetaData;
+                sd2->name = fieldname;
+                sd2->meshName = "mesh";
+                sd2->centering = AVT_NODECENT;
+                sd2->hasDataExtents = false;
+                md->Add(sd2);
+            }
+            for (int i = 0; i < nq - 6 - nqc; ++i)
+            {
+                SNPRINTF(fieldname, 100, "Turb Field Quant #%d", i+i);
+                avtScalarMetaData *sd = new avtScalarMetaData;
+                sd->name = fieldname;
+                sd->meshName = "mesh";
+                sd->centering = AVT_NODECENT;
+                sd->hasDataExtents = false;
+                md->Add(sd);
+            }
         }
 
     } // if haveSolutionFile

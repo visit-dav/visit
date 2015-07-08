@@ -55,6 +55,34 @@ public:
   vtkDataSet *GetCurrentBlock();
 
 
+  // overflow files only
+  // 
+
+  // Turn on/off Gamma
+  vtkSetMacro(GammaRequested, bool);
+  vtkGetMacro(GammaRequested, bool);
+  vtkBooleanMacro(GammaRequested, bool);
+
+  // Future:  May want to make these a list, so multiple
+  // overflow fields can be read at one time
+
+  // Number of Species Density field to read (1 origin)
+  vtkSetMacro(SpeciesNumber, int);
+  vtkGetMacro(SpeciesNumber, int);
+
+  // Number of Species Density / rho field to compute (1 origin)
+  vtkSetMacro(SpeciesRhoNumber, int);
+  vtkGetMacro(SpeciesRhoNumber, int);
+
+  // Number of Turbulence field to read (1 origin)
+  vtkSetMacro(TurbulenceNumber, int);
+  vtkGetMacro(TurbulenceNumber, int);
+
+  vtkGetMacro(IsOverflow, bool);
+  vtkGetMacro(OverflowNQ, int);
+  vtkGetMacro(OverflowNQC, int);
+
+
 protected:
   vtkPLOT3DReader();
   ~vtkPLOT3DReader();
@@ -100,6 +128,15 @@ private:
   vtkDataArray *Momentum;
   vtkDataArray *Energy;
   vtkDataArray *Properties;
+
+  bool IsOverflow;
+  int  OverflowNQ;
+  int  OverflowNQC;
+  int  NumProperties;
+  bool GammaRequested;
+  int  SpeciesNumber;
+  int  SpeciesRhoNumber;
+  int  TurbulenceNumber;
 };
 
 #endif
