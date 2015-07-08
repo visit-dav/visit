@@ -51,6 +51,16 @@ vtkPLOT3DReader::vtkPLOT3DReader()
   this->SetScalarFunctionNumber(-1);
   this->SetVectorFunctionNumber(-1);
   this->RemoveAllFunctions();
+
+  // overflow info
+  this->IsOverflow = false;
+  this->OverflowNQ = 0;
+  this->OverflowNQC = 0;
+  this->NumProperties = 4;
+  this->GammaRequested = false;
+  this->SpeciesNumber = 1;
+  this->SpeciesRhoNumber = 1;
+  this->TurbulenceNumber = 1;
 } 
 
 //----------------------------------------------------------------------------
@@ -187,7 +197,17 @@ int vtkPLOT3DReader::ReadQHeader(FILE* qFp)
     for (int i = 0; i < numGrid; ++i)
       this->SolutionOffsets[i] = -1;
 
-    this->SkipByteCount(qFp);
+    int bytes = this->SkipByteCount(qFp);
+
+  if (bytes > 0 &&
+      bytes == (numGrid*this->Internal->NumberOfDimensions+2)*4)
+    {
+     this->IsOverflow = true;
+    }
+  else
+    {
+    this->IsOverflow = false;
+    }
 
     for(int i = 0; i < numGrid; ++i)
       {
@@ -210,10 +230,26 @@ int vtkPLOT3DReader::ReadQHeader(FILE* qFp)
         return VTK_ERROR;
         }
       }
+    if (this->IsOverflow)
+      {
+      this->ReadIntBlock(qFp, 1, &this->OverflowNQ);
+      this->ReadIntBlock(qFp, 1, &this->OverflowNQC);
+      }
+    else 
+      {
+      this->OverflowNQ = 5;
+      this->OverflowNQC = 0;
       this->SkipByteCount(qFp);
-      // Get to the location of the fsmach
-      this->SkipByteCount(qFp);
-      this->SolutionOffsets[0] = ftell(qFp);
+      }
+    // Get to the location of the fsmach
+    this->SkipByteCount(qFp);
+    this->SolutionOffsets[0] = ftell(qFp);
+    if (this->IsOverflow)
+      {
+      int count = this->SkipByteCount(qFp);
+      this->NumProperties = (count-4)/this->Internal->Precision + 1;
+      fseek(qFp, this->SolutionOffsets[0], SEEK_SET);
+      }
     }
   return VTK_OK;
 }
@@ -586,10 +622,12 @@ vtkPLOT3DReader::ReadSolutionProperties(FILE *qFp)
   rewind(qFp);
   long offset = this->ComputeSolutionOffset(qFp);
   fseek (qFp, offset, SEEK_SET);
+  if(this->GridNumber == 0)
+    this->SkipByteCount(qFp);
 
   // read parameters
   vtkDataArray *newProp = this->NewFloatArray();
-  newProp->SetNumberOfTuples(4);
+  newProp->SetNumberOfTuples(this->NumProperties);
   newProp->SetName("Properties");
   if (this->ReadScalar(qFp, 4, newProp) == 0)
     {
@@ -599,12 +637,45 @@ vtkPLOT3DReader::ReadSolutionProperties(FILE *qFp)
     newProp->Delete();
     return VTK_ERROR;
     }
-  this->SkipByteCount(qFp);
-  //if (this->GridNumber == 0)
+
+  if (this->IsOverflow && this->NumProperties > 4)
     {
-    this->Properties = newProp;
-    this->Properties->Register(this);
+    // We create a dummy array to use with ReadScalar
+    vtkDataArray* dummyArray = newProp->NewInstance();
+    dummyArray->SetVoidArray(newProp->GetVoidPointer(4), 3, 1);
+
+    // Read GAMINF, BETA, TINF
+    if ( this->ReadScalar(qFp, 3, dummyArray) == 0)
+      {
+      vtkErrorMacro("Encountered premature end-of-file while reading "
+                    "the q file (or the file is corrupt).");
+      this->SetErrorCode(vtkErrorCode::PrematureEndOfFileError);
+      fclose(qFp);
+      newProp->Delete();
+      return 0;
+      }
+
+    // igam is an int
+    int igam;
+    this->ReadIntBlock(qFp, 1, &igam);
+    newProp->SetTuple1(7, igam);
+
+    dummyArray->SetVoidArray(newProp->GetVoidPointer(8), 3, 1);
+    // Read the rest of properties
+    if ( this->ReadScalar(qFp, this->NumProperties - 8, dummyArray) == 0)
+      {
+      vtkErrorMacro("Encountered premature end-of-file while reading "
+                    "the q file (or the file is corrupt).");
+      this->SetErrorCode(vtkErrorCode::PrematureEndOfFileError);
+      fclose(qFp);
+      newProp->Delete();
+      return 0;
+      }
+    dummyArray->Delete();
     }
+  this->SkipByteCount(qFp);
+  this->Properties = newProp;
+  this->Properties->Register(this);
   newProp->Delete();
   return VTK_OK;
 }
@@ -663,6 +734,90 @@ vtkPLOT3DReader::ReadSolution(FILE *qFp, vtkStructuredGrid *output)
     return VTK_ERROR;
     }
 
+  if (this->IsOverflow)
+    {
+    if(this->OverflowNQ >= 6) /// super new
+      {
+      vtkDataArray* gamma = this->NewFloatArray();
+      gamma->SetNumberOfComponents(1);
+      gamma->SetNumberOfTuples(numPts);
+      gamma->SetName("Gamma");
+      if (this->ReadScalar(qFp, numPts, gamma) == 0)
+        {
+        vtkErrorMacro("Encountered premature end-of-file while reading "
+                      "the q file for Gamma (or the file is corrupt).");
+        fclose(qFp);
+        gamma->Delete();
+        return 0;
+        }
+      if (this->GammaRequested)
+        output->GetPointData()->AddArray(gamma);
+      gamma->Delete();
+      } /// end of new
+
+      char res[100];
+      // Read species and turbulence variables for overflow q files
+      for(int j=0; j<this->OverflowNQC; j++)
+        {
+        vtkDataArray* spec = this->NewFloatArray();
+        spec->SetNumberOfComponents(1);
+        spec->SetNumberOfTuples(numPts);
+        int k = j+1;
+        sprintf(res, "Species Density #%d", k);
+        spec->SetName(res);
+        if (this->ReadScalar(qFp, numPts, spec) == 0)
+          {
+          vtkErrorMacro("Encountered premature end-of-file while reading "
+                        "the q file for Species Density " 
+                        "(or the file is corrupt).");
+          fclose(qFp);
+          spec->Delete();
+          return 0;
+          }
+        if (this->SpeciesNumber == k)
+            output->GetPointData()->AddArray(spec);
+        if (this->SpeciesRhoNumber == k)
+          {
+          float d, r;
+          sprintf(res, "Spec Dens #%d / rho", k);
+          vtkDataArray* rat = this->NewFloatArray();
+          rat->SetNumberOfComponents(1);
+          rat->SetNumberOfTuples(numPts);
+          rat->SetName(res);
+          for(int w=0; w<numPts; w++)
+            {
+            r = this->Density->GetComponent(w,0);
+            r = (r != 0.0 ? r : 1.0);
+            d = spec->GetComponent(w,0);
+            rat->SetTuple1(w, d/r);
+            }
+          output->GetPointData()->AddArray(rat);
+          rat->Delete();
+          }
+        spec->Delete();
+        }
+      for(int a=0; a<this->OverflowNQ-6-this->OverflowNQC; a++)
+        {
+        vtkDataArray* turb = this->NewFloatArray();
+        turb->SetNumberOfComponents(1);
+        turb->SetNumberOfTuples(numPts);
+        int k = a+1;
+        sprintf(res, "Turb Field Quant #%d", k);
+        turb->SetName(res);
+        if (this->ReadScalar(qFp, numPts, turb) == 0)
+          {
+          vtkErrorMacro("Encountered premature end-of-file while reading "
+                        "the q file (or the file is corrupt).");
+          fclose(qFp);
+          turb->Delete();
+          return 0;
+          }
+        if(this->TurbulenceNumber == k)
+          output->GetPointData()->AddArray(turb);
+        turb->Delete();
+        }
+    } // overflow
+
   this->Density = newDensity;
   this->Density->Register(this);
   newDensity->Delete();
@@ -696,9 +851,27 @@ vtkPLOT3DReader::ComputeSolutionOffset(FILE *qFp)
       // Number of scalars to  be read: 1 for density, 1 for energy and
       // NumDims for Momentum
       int ns = 1  + 1  + this->Internal->NumberOfDimensions;
+      if (this->IsOverflow)
+      {
+          // Add NumDims for gamma if nq >= 6
+          if (this->OverflowNQ >= 6)
+              ns += 1;
+          // Add Species density
+          ns += this->OverflowNQC; 
+          if ((this->OverflowNQ - 6 - this->OverflowNQC) > 0)
+            ns += this->OverflowNQ - 6 - this->OverflowNQC;
+      }
       if (this->Internal->BinaryFile)
         {
         int n = 4;
+        if (this->IsOverflow)
+          {
+          fseek(qFp, this->SolutionOffsets[0], SEEK_SET);
+          int count = this->SkipByteCount(qFp);
+          n = (count-4)/this->Internal->Precision + 1;
+          }
+        this->NumProperties = n;
+        rewind(qFp);
         long bc = this->Internal->HasByteCount ? sizeof(int) : 0;
         int mult = this->Internal->Precision;
         this->SolutionOffsets[j] = this->SolutionOffsets[j-1] +
