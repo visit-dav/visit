@@ -41,6 +41,7 @@
 #include <QvisImageAnnotationInterface.h>
 #include <QvisLegendAttributesInterface.h>
 #include <QvisLine2DInterface.h>
+#include <QvisLine3DInterface.h>
 #include <QvisText2DInterface.h>
 #include <QvisText3DInterface.h>
 #include <QvisTimeSliderInterface.h>
@@ -153,6 +154,9 @@ QvisAnnotationObjectInterfaceFactory::CreateInterface(
         break;
     case AnnotationObject::Line2D:
         retval = new QvisLine2DInterface(parent);
+        break;
+    case AnnotationObject::Line3D:
+        retval = new QvisLine3DInterface(parent);
         break;
     case AnnotationObject::Arrow2D:
         // Nothing yet

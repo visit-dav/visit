@@ -63,6 +63,9 @@
 #  Kathleen Biagas, Tue Feb 25 11:44:49 PST 2014
 #  Add visitpy/PyThresholdOpAttributes.
 #
+#  Kathleen Biagas, Mon Jul 13 18:48:19 PDT 2015
+#  Add common/PyLine3DObject.
+#
 #****************************************************************************/
 
 SET(COMMON_SOURCES
@@ -73,6 +76,7 @@ common/MethodDoc.C
 common/PyImageObject.C
 common/PyLegendAttributesObject.C
 common/PyLineObject.C
+common/PyLine3DObject.C
 common/PySILRestrictionBase.C
 common/PySILRestriction.C
 common/PyText2DObject.C

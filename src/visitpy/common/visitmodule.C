@@ -165,6 +165,7 @@
 #include <PyLegendAttributesObject.h>
 #include <PyLaunchProfile.h>
 #include <PyLineObject.h>
+#include <PyLine3DObject.h>
 #include <PyLightAttributes.h>
 #include <PyMachineProfile.h>
 #include <PyMaterialAttributes.h>
@@ -14360,6 +14361,9 @@ DeleteAnnotationObjectHelper(AnnotationObject *annot)
 //   Brad Whitlock, Mon Nov 12 16:00:45 PST 2007
 //   Added PyText3DObject.
 //
+//   Kathleen Biagas, Mon Jul 13 18:49:41 PDT 2015
+//   Added PyLine3DObject.
+//
 // ****************************************************************************
 
 PyObject *
@@ -14385,6 +14389,11 @@ CreateAnnotationWrapper(AnnotationObject *annot)
     {
         // Create a Line2D wrapper for the new annotation object.
         retval = PyLineObject_WrapPyObject(annot);
+    }
+    else if(annot->GetObjectType() == AnnotationObject::Line3D)
+    {
+        // Create a Line3D wrapper for the new annotation object.
+        retval = PyLine3DObject_WrapPyObject(annot);
     }
     else if(annot->GetObjectType() == AnnotationObject::Image)
     {
@@ -14462,8 +14471,10 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
         annotTypeIndex = 1;
     else if(strcmp(annotType, "Line2D") == 0)
         annotTypeIndex = 3;
+    else if(strcmp(annotType, "Line3D") == 0)
+        annotTypeIndex = 4;
     else if(strcmp(annotType, "Image") == 0)
-        annotTypeIndex = 7;
+        annotTypeIndex = 8;
     else if(strcmp(annotType, "LegendAttributes") == 0)
     {
         VisItErrorFunc("Legends are created by plots and the legend attributes "

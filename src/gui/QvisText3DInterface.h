@@ -44,6 +44,7 @@
 class QButtonGroup;
 class QComboBox;
 class QCheckBox;
+class QLabel;
 class QLineEdit;
 class QSpinBox;
 class QvisColorButton;
@@ -62,7 +63,9 @@ class QvisScreenPositionEdit;
 // Creation:   Thurs Nov 8 10:56:34 PDT 2007
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon Jul 13 13:01:18 PDT 2015
+//   Add textColorLabel.
+//
 // ****************************************************************************
 
 class GUI_API QvisText3DInterface : public QvisAnnotationObjectInterface
@@ -102,6 +105,7 @@ private:
     QSpinBox          *rotateZ;
     QSpinBox          *rotateX;
     QSpinBox          *rotateY;
+    QLabel            *textColorLabel;
     QvisColorButton   *textColorButton;
     QvisOpacitySlider *textColorOpacity;
     QCheckBox         *useForegroundColorCheckBox;

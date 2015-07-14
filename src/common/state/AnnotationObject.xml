@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
-  <Attribute name="AnnotationObject" purpose="This class defines a general set of attributes that are used to set the attributes for all annotation objects." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AnnotationObject.code">
+  <Attribute name="AnnotationObject" purpose="This class defines a general set of attributes that are used to set the attributes for all annotation objects." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AnnotationObject.code">
     <Enum name="AnnotationType">
       Text2D
       Text3D
       TimeSlider
       Line2D
+      Line3D
       Arrow2D
       Arrow3D
       Box
@@ -38,14 +39,14 @@
       0.000000
       0.000000
     </Field>
-    <Field name="textColor" label="Text color" type="color">
+    <Field name="textColor" label="Text color" type="color" length="4">
     </Field>
     <Field name="useForegroundForTextColor" label="Use foreground for text color" type="bool">
       true
     </Field>
-    <Field name="color1" label="Color 1" type="color">
+    <Field name="color1" label="Color 1" type="color" length="4">
     </Field>
-    <Field name="color2" label="Color 2" type="color">
+    <Field name="color2" label="Color 2" type="color" length="4">
     </Field>
     <Field name="text" label="Text" type="stringVector">
     </Field>

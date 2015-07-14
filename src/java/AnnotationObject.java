@@ -65,12 +65,13 @@ public class AnnotationObject extends AttributeSubject
     public final static int ANNOTATIONTYPE_TEXT3D = 1;
     public final static int ANNOTATIONTYPE_TIMESLIDER = 2;
     public final static int ANNOTATIONTYPE_LINE2D = 3;
-    public final static int ANNOTATIONTYPE_ARROW2D = 4;
-    public final static int ANNOTATIONTYPE_ARROW3D = 5;
-    public final static int ANNOTATIONTYPE_BOX = 6;
-    public final static int ANNOTATIONTYPE_IMAGE = 7;
-    public final static int ANNOTATIONTYPE_LEGENDATTRIBUTES = 8;
-    public final static int ANNOTATIONTYPE_MAXANNOTATIONTYPE = 9;
+    public final static int ANNOTATIONTYPE_LINE3D = 4;
+    public final static int ANNOTATIONTYPE_ARROW2D = 5;
+    public final static int ANNOTATIONTYPE_ARROW3D = 6;
+    public final static int ANNOTATIONTYPE_BOX = 7;
+    public final static int ANNOTATIONTYPE_IMAGE = 8;
+    public final static int ANNOTATIONTYPE_LEGENDATTRIBUTES = 9;
+    public final static int ANNOTATIONTYPE_MAXANNOTATIONTYPE = 10;
 
     public final static int FONTFAMILY_ARIAL = 0;
     public final static int FONTFAMILY_COURIER = 1;
@@ -600,6 +601,8 @@ public class AnnotationObject extends AttributeSubject
             str = str + "ANNOTATIONTYPE_TIMESLIDER";
         if(objectType == ANNOTATIONTYPE_LINE2D)
             str = str + "ANNOTATIONTYPE_LINE2D";
+        if(objectType == ANNOTATIONTYPE_LINE3D)
+            str = str + "ANNOTATIONTYPE_LINE3D";
         if(objectType == ANNOTATIONTYPE_ARROW2D)
             str = str + "ANNOTATIONTYPE_ARROW2D";
         if(objectType == ANNOTATIONTYPE_ARROW3D)

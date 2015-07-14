@@ -36,11 +36,11 @@
 *
 *****************************************************************************/
 
-#ifndef QVIS_TIME_SLIDER_INTERFACE_H
-#define QVIS_TIME_SLIDER_INTERFACE_H
+#ifndef QVIS_LINE3D_INTERFACE_H
+#define QVIS_LINE3D_INTERFACE_H
+
 #include <QvisAnnotationObjectInterface.h>
 
-// Forward declarations
 class QCheckBox;
 class QComboBox;
 class QLabel;
@@ -48,78 +48,60 @@ class QLineEdit;
 class QSpinBox;
 class QvisColorButton;
 class QvisOpacitySlider;
-class QvisScreenPositionEdit;
+class QvisLineWidthWidget;
+class QvisLineStyleWidget;
 
 // ****************************************************************************
-// Class: QvisTimeSliderInterface
+// Class: QvisLine3DInterface
 //
 // Purpose:
-//   This class lets you set attributes for a time slider annotation.
+//   This class lets you set attributes for a line annotation.
 //
 // Notes:      
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Oct 31 12:47:34 PDT 2003
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015
 //
 // Modifications:
-//   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005
-//   Added timeFormatLinEdit and timeFormatChanged slot.
-//
-//   Brad Whitlock, Fri Jul 18 16:20:40 PDT 2008
-//   Qt 4.
-//
-//   Kathleen Biagas, Mon Jul 13 13:01:18 PDT 2015
-//   Add textColorLabel.
 //
 // ****************************************************************************
 
-class GUI_API QvisTimeSliderInterface : public QvisAnnotationObjectInterface
+class GUI_API QvisLine3DInterface : public QvisAnnotationObjectInterface
 {
     Q_OBJECT
-public:
-    QvisTimeSliderInterface(QWidget *parent);
-    virtual ~QvisTimeSliderInterface();
 
-    virtual QString GetName() const { return "Time slider"; }
+public:
+    QvisLine3DInterface(QWidget *parent);
+    virtual ~QvisLine3DInterface();
+
+    virtual QString GetName() const { return "3D Line"; }
+    virtual QString GetMenuText(const AnnotationObject &) const;
 
     virtual void GetCurrentValues(int which);
+
 protected:
     virtual void UpdateControls();
+
 private slots:
-    void positionChanged(double, double);
+    void point1Changed();
+    void point2Changed();
     void widthChanged(int);
-    void heightChanged(int);
-    void labelChanged();
-    void timeFormatChanged();
-    void startColorChanged(const QColor &);
-    void startOpacityChanged(int);
-    void endColorChanged(const QColor &);
-    void endOpacityChanged(int);
-    void textColorChanged(const QColor &);
-    void textOpacityChanged(int);
+    void styleChanged(int);
+    void colorChanged(const QColor &);
+    void opacityChanged(int);
     void visibilityToggled(bool);
-    void roundedToggled(bool);
-    void shadedToggled(bool);
-    void timeDisplayChanged(int);
     void useForegroundColorToggled(bool);
+
 private:
-    QvisScreenPositionEdit *positionEdit;
-    QSpinBox               *widthSpinBox;
-    QSpinBox               *heightSpinBox;
-    QvisColorButton        *startColorButton;
-    QvisOpacitySlider      *startColorOpacity;
-    QvisColorButton        *endColorButton;
-    QvisOpacitySlider      *endColorOpacity;
-    QLabel                 *textColorLabel;
-    QvisColorButton        *textColorButton;
-    QvisOpacitySlider      *textColorOpacity;
+    QLineEdit              *point1Edit;
+    QLineEdit              *point2Edit;
+    QvisLineWidthWidget    *widthWidget;
+    QvisLineStyleWidget    *styleWidget;
     QCheckBox              *useForegroundColorCheckBox;
-    QLineEdit              *labelLineEdit;
-    QLineEdit              *timeFormatLineEdit;
-    QComboBox              *timeDisplayComboBox;
+    QLabel                 *colorLabel;
+    QvisColorButton        *colorButton;
+    QvisOpacitySlider      *opacitySlider;
     QCheckBox              *visibleCheckBox;
-    QCheckBox              *roundedCheckBox;
-    QCheckBox              *shadedCheckBox;
 };
 
 #endif

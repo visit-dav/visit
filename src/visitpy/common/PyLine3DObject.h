@@ -36,17 +36,19 @@
 *
 *****************************************************************************/
 
-#ifndef PY_LINEOBJECT_H
-#define PY_LINEOBJECT_H
+#ifndef PY_LINE3DOBJECT_H
+#define PY_LINE3DOBJECT_H
 #include <Python.h>
 #include <AnnotationObject.h>
+#include <visitpy_exports.h>
 
 //
 // Functions exposed to the VisIt module.
 //
-bool              PyLineObject_Check(PyObject *obj);
-AnnotationObject *PyLineObject_FromPyObject(PyObject *obj);
-PyObject         *PyLineObject_NewPyObject();
-PyObject         *PyLineObject_WrapPyObject(AnnotationObject *annot);
+bool VISITPY_API              PyLine3DObject_Check(PyObject *obj);
+VISITPY_API AnnotationObject *PyLine3DObject_FromPyObject(PyObject *obj);
+VISITPY_API PyObject         *PyLine3DObject_NewPyObject();
+VISITPY_API PyObject         *PyLine3DObject_WrapPyObject(AnnotationObject *attr);
 
 #endif
+

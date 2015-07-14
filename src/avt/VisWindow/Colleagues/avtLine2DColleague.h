@@ -64,6 +64,9 @@ class vtkPolyDataMapper2D;
 //   Brad Whitlock, Tue Jun 28 15:39:27 PST 2005
 //   Changed so it does not use a cone source.
 //
+//   Kathleen Biagas, Mon Jul 13 09:39:46 PDT 2015
+//   Add SetForegroundColor.
+//
 // ****************************************************************************
 
 class VISWINDOW_API avtLine2DColleague : public avtAnnotationColleague
@@ -83,6 +86,7 @@ public:
     virtual void GetOptions(AnnotationObject &annot);
 
     // Methods that are called in response to vis window events.
+    virtual void SetForegroundColor(double r, double g, double b);
     virtual void HasPlots(void);
     virtual void NoPlots(void);
 
@@ -100,6 +104,8 @@ protected:
     int                  endArrowStyle;
 
     bool                 addedToRenderer;
+    bool                 useForegroundForLineColor;
+    ColorAttribute       lineColor;
 
     bool ShouldBeAddedToRenderer() const;
     

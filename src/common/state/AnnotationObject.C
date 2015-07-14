@@ -45,22 +45,22 @@
 
 static const char *AnnotationType_strings[] = {
 "Text2D", "Text3D", "TimeSlider", 
-"Line2D", "Arrow2D", "Arrow3D", 
-"Box", "Image", "LegendAttributes", 
-"MaxAnnotationType"};
+"Line2D", "Line3D", "Arrow2D", 
+"Arrow3D", "Box", "Image", 
+"LegendAttributes", "MaxAnnotationType"};
 
 std::string
 AnnotationObject::AnnotationType_ToString(AnnotationObject::AnnotationType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 10) index = 0;
+    if(index < 0 || index >= 11) index = 0;
     return AnnotationType_strings[index];
 }
 
 std::string
 AnnotationObject::AnnotationType_ToString(int t)
 {
-    int index = (t < 0 || t >= 10) ? 0 : t;
+    int index = (t < 0 || t >= 11) ? 0 : t;
     return AnnotationType_strings[index];
 }
 
@@ -68,7 +68,7 @@ bool
 AnnotationObject::AnnotationType_FromString(const std::string &s, AnnotationObject::AnnotationType &val)
 {
     val = AnnotationObject::Text2D;
-    for(int i = 0; i < 10; ++i)
+    for(int i = 0; i < 11; ++i)
     {
         if(s == AnnotationType_strings[i])
         {

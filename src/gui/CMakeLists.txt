@@ -142,6 +142,7 @@ QvisLegendAttributesInterface.C
 QvisLightingWidget.C
 QvisLightingWindow.C
 QvisLine2DInterface.C
+QvisLine3DInterface.C
 QvisLineoutQueryWidget.C
 QvisLineStyleWidget.C
 QvisLineWidthWidget.C
@@ -342,6 +343,7 @@ QvisTimeQueryOptionsWidget.h
 QvisTimeSliderInterface.h
 QvisLegendAttributesInterface.h
 QvisLine2DInterface.h
+QvisLine3DInterface.h
 QvisText3DInterface.h
 QvisText2DInterface.h
 QvisTimeSliderControlWidget.h

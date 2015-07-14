@@ -36,90 +36,67 @@
 *
 *****************************************************************************/
 
-#ifndef QVIS_TIME_SLIDER_INTERFACE_H
-#define QVIS_TIME_SLIDER_INTERFACE_H
-#include <QvisAnnotationObjectInterface.h>
+#ifndef AVT_LINE3D_COLLEAGUE_H
+#define AVT_LINE3D_COLLEAGUE_H
 
-// Forward declarations
-class QCheckBox;
-class QComboBox;
-class QLabel;
-class QLineEdit;
-class QSpinBox;
-class QvisColorButton;
-class QvisOpacitySlider;
-class QvisScreenPositionEdit;
+#include <ColorAttribute.h>
+#include <avtAnnotationColleague.h>
+#include <viswindow_exports.h>
+
+class vtkActor;
+class vtkLineSource;
+class vtkPolyDataMapper;
 
 // ****************************************************************************
-// Class: QvisTimeSliderInterface
+// Class: avtLine3DColleague
 //
 // Purpose:
-//   This class lets you set attributes for a time slider annotation.
+//   This colleague is a 3D line that can be shown in the vis window.
 //
 // Notes:      
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Oct 31 12:47:34 PDT 2003
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015 
 //
 // Modifications:
-//   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005
-//   Added timeFormatLinEdit and timeFormatChanged slot.
-//
-//   Brad Whitlock, Fri Jul 18 16:20:40 PDT 2008
-//   Qt 4.
-//
-//   Kathleen Biagas, Mon Jul 13 13:01:18 PDT 2015
-//   Add textColorLabel.
 //
 // ****************************************************************************
 
-class GUI_API QvisTimeSliderInterface : public QvisAnnotationObjectInterface
+class VISWINDOW_API avtLine3DColleague : public avtAnnotationColleague
 {
-    Q_OBJECT
 public:
-    QvisTimeSliderInterface(QWidget *parent);
-    virtual ~QvisTimeSliderInterface();
+    avtLine3DColleague(VisWindowColleagueProxy &);
+    virtual ~avtLine3DColleague();
 
-    virtual QString GetName() const { return "Time slider"; }
+    virtual void AddToRenderer();
+    virtual void RemoveFromRenderer();
+    virtual void Hide();
 
-    virtual void GetCurrentValues(int which);
+    virtual std::string TypeName() const { return "Line3D"; }
+
+    // Methods to set and get the annotation's properties.
+    virtual void SetOptions(const AnnotationObject &annot);
+    virtual void GetOptions(AnnotationObject &annot);
+
+    // Methods that are called in response to vis window events.
+    virtual void SetForegroundColor(double r, double g, double b);
+    virtual void HasPlots(void);
+    virtual void NoPlots(void);
+
 protected:
-    virtual void UpdateControls();
-private slots:
-    void positionChanged(double, double);
-    void widthChanged(int);
-    void heightChanged(int);
-    void labelChanged();
-    void timeFormatChanged();
-    void startColorChanged(const QColor &);
-    void startOpacityChanged(int);
-    void endColorChanged(const QColor &);
-    void endOpacityChanged(int);
-    void textColorChanged(const QColor &);
-    void textOpacityChanged(int);
-    void visibilityToggled(bool);
-    void roundedToggled(bool);
-    void shadedToggled(bool);
-    void timeDisplayChanged(int);
-    void useForegroundColorToggled(bool);
-private:
-    QvisScreenPositionEdit *positionEdit;
-    QSpinBox               *widthSpinBox;
-    QSpinBox               *heightSpinBox;
-    QvisColorButton        *startColorButton;
-    QvisOpacitySlider      *startColorOpacity;
-    QvisColorButton        *endColorButton;
-    QvisOpacitySlider      *endColorOpacity;
-    QLabel                 *textColorLabel;
-    QvisColorButton        *textColorButton;
-    QvisOpacitySlider      *textColorOpacity;
-    QCheckBox              *useForegroundColorCheckBox;
-    QLineEdit              *labelLineEdit;
-    QLineEdit              *timeFormatLineEdit;
-    QComboBox              *timeDisplayComboBox;
-    QCheckBox              *visibleCheckBox;
-    QCheckBox              *roundedCheckBox;
-    QCheckBox              *shadedCheckBox;
+    vtkActor            *lineActor;
+    vtkPolyDataMapper   *lineMapper;
+    vtkLineSource       *lineSource;
+
+    bool                 addedToRenderer;
+    bool                 useForegroundForLineColor;
+    ColorAttribute       lineColor;
+
+    bool ShouldBeAddedToRenderer() const;
+
 };
 
+
 #endif
+
+
