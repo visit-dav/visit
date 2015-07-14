@@ -43,6 +43,9 @@
 #   Brad Whitlock, Fri May 17 11:12:55 PDT 2013
 #   Link with Objective C library on Mac.
 #
+#   Kathleen Biagas, Mon Jul 13 20:09:58 PDT 2015
+#   Add Colleagues/avtText3DColleague.C
+#
 #****************************************************************************/
 
 SET(COLLEAGUES_SOURCES
@@ -71,6 +74,7 @@ Colleagues/avtAnnotationColleague.C
 Colleagues/avtImageColleague.C
 Colleagues/avtLegendAttributesColleague.C
 Colleagues/avtLine2DColleague.C
+Colleagues/avtLine3DColleague.C
 Colleagues/avtText2DColleague.C
 Colleagues/avtText3DColleague.C
 Colleagues/avtTimeSliderColleague.C

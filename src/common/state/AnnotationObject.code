@@ -191,3 +191,4 @@ AnnotationObject::ProcessOldVersions(DataNode *parentNode,
     node->SetInt(0);  // default "Variable" type
     searchNode->AddNode(node);
 }
+

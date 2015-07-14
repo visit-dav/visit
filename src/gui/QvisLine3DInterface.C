@@ -36,13 +36,13 @@
 *
 *****************************************************************************/
 
-#include <QvisLine2DInterface.h>
+#include <QvisLine3DInterface.h>
 
 #include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
 #include <QLayout>
-#include <QToolTip>
+#include <QLineEdit>
 
 #include <AnnotationObject.h>
 
@@ -50,37 +50,25 @@
 #include <QvisLineWidthWidget.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisOpacitySlider.h>
-#include <QvisScreenPositionEdit.h>
 
 // ****************************************************************************
-// Method: QvisLine2DInterface::QvisLine2DInterface
+// Method: QvisLine3DInterface::QvisLine3DInterface
 //
 // Purpose: 
-//   Constructor for the QvisLine2DInterface class.
+//   Constructor for the QvisLine3DInterface class.
 //
 // Arguments:
 //   parent : This widget's parent widget.
 //   name   : The name of this widget.
 //
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:31:16 PDT 2004
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015
 //
 // Modifications:
-//   Brad Whitlock, Tue Jun 28 13:36:41 PST 2005
-//   Added code to make tool tips for the start, end coordinates.
-//
-//   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
-//   Support for internationalization.
-//
-//   Brad Whitlock, Mon Jul 21 10:39:10 PDT 2008
-//   Qt 4.
-//
-//   Kathleen Biagas, Mon Jul 13 13:03:45 PDT 2015
-//   Add useForegroundColor, colorlabel.
 //
 // ****************************************************************************
 
-QvisLine2DInterface::QvisLine2DInterface(QWidget *parent) :
+QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     QvisAnnotationObjectInterface(parent)
 {
     // Set the title of the group box.
@@ -91,25 +79,21 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent) :
     cLayout->setSpacing(10);
 
     int row = 0;
-    // Add controls for the start position
-    positionStartEdit = new QvisScreenPositionEdit(this);
-    connect(positionStartEdit, SIGNAL(screenPositionChanged(double, double)),
-            this, SLOT(positionStartChanged(double, double)));
+    // Add controls for point1
+    point1Edit = new QLineEdit(this);
+    connect(point1Edit, SIGNAL(returnPressed()),
+            this, SLOT(point1Changed()));
     QLabel *startLabel = new QLabel(tr("Start"), this);
-    QString startTip(tr("Start of line in screen coordinates [0,1]"));
-    startLabel->setToolTip(startTip);
-    cLayout->addWidget(positionStartEdit, row, 1, 1, 3);
+    cLayout->addWidget(point1Edit, row, 1, 1, 3);
     cLayout->addWidget(startLabel, row, 0);
     ++row;
 
-    // Add controls for the end position
-    positionEndEdit = new QvisScreenPositionEdit(this);
-    connect(positionEndEdit, SIGNAL(screenPositionChanged(double, double)),
-            this, SLOT(positionEndChanged(double, double)));
+    // Add controls for point2 
+    point2Edit = new QLineEdit(this);
+    connect(point2Edit, SIGNAL(returnPressed()),
+            this, SLOT(point2Changed()));
     QLabel *endLabel = new QLabel(tr("End"), this);
-    QString endTip(tr("End of line in screen coordinates [0,1]"));
-    endLabel->setToolTip(endTip);
-    cLayout->addWidget(positionEndEdit, row, 1, 1, 3);
+    cLayout->addWidget(point2Edit, row, 1, 1, 3);
     cLayout->addWidget(endLabel, row, 0);
     ++row;
    
@@ -152,30 +136,6 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent) :
     cLayout->addWidget(opacitySlider, row, 2, 1, 2);
     ++row;
 
-    // Beginning arrow control.
-    beginArrowComboBox = new QComboBox(this);
-    beginArrowComboBox->addItem(tr("None"));
-    beginArrowComboBox->addItem(tr("Line"));
-    beginArrowComboBox->addItem(tr("Solid"));
-    beginArrowComboBox->setEditable(false);
-    connect(beginArrowComboBox, SIGNAL(activated(int)),
-            this, SLOT(beginArrowChanged(int)));
-    cLayout->addWidget(beginArrowComboBox, row, 1, 1, 3);
-    cLayout->addWidget(new QLabel(tr("Begin arrow"), this), row, 0);
-    ++row;
-
-    // Beginning arrow control.
-    endArrowComboBox = new QComboBox(this);
-    endArrowComboBox->addItem(tr("None"));
-    endArrowComboBox->addItem(tr("Line"));
-    endArrowComboBox->addItem(tr("Solid"));
-    endArrowComboBox->setEditable(false);
-    connect(endArrowComboBox, SIGNAL(activated(int)),
-            this, SLOT(endArrowChanged(int)));
-    cLayout->addWidget(endArrowComboBox, row, 1, 1, 3);
-    cLayout->addWidget(new QLabel(tr("End arrow"), this), row, 0);
-    ++row;
-
     // Added a visibility toggle
     visibleCheckBox = new QCheckBox(tr("Visible"), this);
     connect(visibleCheckBox, SIGNAL(toggled(bool)),
@@ -183,24 +143,27 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent) :
     cLayout->addWidget(visibleCheckBox, row, 0);
 }
 
+
 // ****************************************************************************
-// Method: QvisLine2DInterface::~QvisLine2DInterface
+// Method: QvisLine3DInterface::~QvisLine3DInterface
 //
 // Purpose: 
-//   Destructor for the QvisLine2DInterface class.
+//   Destructor for the QvisLine3DInterface class.
 //
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:31:23 PDT 2004
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015
 //
 // Modifications:
 //   
 // ****************************************************************************
-QvisLine2DInterface::~QvisLine2DInterface()
+
+QvisLine3DInterface::~QvisLine3DInterface()
 {
 }
 
+
 // ****************************************************************************
-// Method: QvisLine2DInterface::GetMenuText
+// Method: QvisLine3DInterface::GetMenuText
 //
 // Purpose: 
 //   Returns the text to use in the annotation list box.
@@ -210,16 +173,15 @@ QvisLine2DInterface::~QvisLine2DInterface()
 //
 // Returns:    The text to use in the annotation list box.
 //
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:31:41 PDT 2004
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015
 //
 // Modifications:
-//   Brad Whitlock, Mon Jul 21 10:45:24 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
+
 QString
-QvisLine2DInterface::GetMenuText(const AnnotationObject &annot) const
+QvisLine3DInterface::GetMenuText(const AnnotationObject &annot) const
 {
     QString retval;
     if(annot.GetText().size() > 0)
@@ -230,34 +192,38 @@ QvisLine2DInterface::GetMenuText(const AnnotationObject &annot) const
     return retval;
 }
 
+
 // ****************************************************************************
-// Method: QvisLine2DInterface::UpdateControls
+// Method: QvisLine3DInterface::UpdateControls
 //
 // Purpose: 
 //   Updates the controls in the interface using the data in the Annotation
 //   object pointed to by the annot pointer.
 //
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:31:46 PDT 2004
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015
 //
 // Modifications:
-//   Brad Whitlock, Mon Jul 21 10:46:14 PDT 2008
-//   Qt 4.
-//
-//   Kathleen Biagas, Mon Jul 13 13:09:20 PDT 2015
-//   Add useForegroundcolor, colorLabel.
 //
 // ****************************************************************************
+
 void
-QvisLine2DInterface::UpdateControls()
+QvisLine3DInterface::UpdateControls()
 {
     // Set the start position.
-    positionStartEdit->setPosition(annot->GetPosition()[0],
-                                   annot->GetPosition()[1]);
+    QString pos;
+    pos.sprintf("%lg %lg %lg",
+        annot->GetPosition()[0],
+        annot->GetPosition()[1],
+        annot->GetPosition()[2]);
+    point1Edit->setText(pos);
     
     // Set the end position.
-    positionEndEdit->setPosition(annot->GetPosition2()[0],
-                                 annot->GetPosition2()[1]);
+    pos.sprintf("%lg %lg %lg",
+        annot->GetPosition2()[0],
+        annot->GetPosition2()[1],
+        annot->GetPosition2()[2]);
+    point2Edit->setText(pos);
 
     // Set the values for the width and style 
     widthWidget->blockSignals(true);
@@ -267,14 +233,6 @@ QvisLine2DInterface::UpdateControls()
     styleWidget->blockSignals(true);
     styleWidget->SetLineStyle(annot->GetIntAttribute2());
     styleWidget->blockSignals(false);
-
-    // Set the begin and end arrow styles.
-    beginArrowComboBox->blockSignals(true);
-    endArrowComboBox->blockSignals(true);
-    beginArrowComboBox->setCurrentIndex(annot->GetColor2().Green());
-    endArrowComboBox->setCurrentIndex(annot->GetColor2().Blue());
-    beginArrowComboBox->blockSignals(false);
-    endArrowComboBox->blockSignals(false);
 
     // Set the use foreground color check box.
     useForegroundColorCheckBox->blockSignals(true);
@@ -313,8 +271,9 @@ QvisLine2DInterface::UpdateControls()
     visibleCheckBox->blockSignals(false);
 }
 
+
 // ****************************************************************************
-// Method: QvisLine2DInterface::GetCurrentValues
+// Method: QvisLine3DInterface::GetCurrentValues
 //
 // Purpose: 
 //   Gets the current values for the text fields.
@@ -322,169 +281,124 @@ QvisLine2DInterface::UpdateControls()
 // Arguments:
 //   which_widget : The widget for which we're getting the values. -1 for all.
 //
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:32:04 PDT 2004
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015
 //
 // Modifications:
-//   Brad Whitlock, Mon Mar 6 11:08:06 PDT 2006
-//   I added code to make sure that the end points get recorded.
 //
 // ****************************************************************************
 
 void
-QvisLine2DInterface::GetCurrentValues(int which_widget)
+QvisLine3DInterface::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
 
     if(which_widget == 0 || doAll)
     {
-        // Get the new position
-        GetScreenPosition(positionStartEdit, tr("Start"));
+        double v[3];
+        if(LineEditGetDoubles(point1Edit, v, 3))
+            annot->SetPosition(v);
+        else
+        {
+            QString msg = tr("The start point must be specified as a 3D coordinate. "
+                             "Resetting to the last good value of %1.").
+                arg(DoublesToQString(annot->GetPosition(), 3));
+            Error(msg);
+            annot->SetPosition(annot->GetPosition());
+        }  
     }
-
     if(which_widget == 1 || doAll)
     {
-        // Get the new position
-        GetScreenPosition2(positionEndEdit, tr("End"));
+        double v[3];
+        if(LineEditGetDoubles(point2Edit, v, 3))
+            annot->SetPosition2(v);
+        else
+        {
+            QString msg = tr("The end point must be specified as a 3D coordinate. "
+                             "Resetting to the last good value of %1.").
+                arg(DoublesToQString(annot->GetPosition2(), 3));
+            Error(msg);
+            annot->SetPosition2(annot->GetPosition2());
+        }  
     }
-
 }
+
 
 //
 // Qt Slot functions
 //
 
 // ****************************************************************************
-// Method: QvisLine2DInterface::positionChanged
+// Method: QvisLine3DInterface::point1Changed
 //
 // Purpose: 
 //   This is a Qt slot function that is called when return is pressed in the 
-//   position line edit.
+//   point1 line edit.
 //
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:32:19 PDT 2004
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
 //   
 // ****************************************************************************
+
 void
-QvisLine2DInterface::positionStartChanged(double x, double y)
+QvisLine3DInterface::point1Changed()
 {
-    double pos[] = {x, y, 0.};
-    annot->SetPosition(pos);
-    SetUpdate(false);
+    GetCurrentValues(1);
     Apply();
 }
 
+
 // ****************************************************************************
-// Method: QvisLine2DInterface::positionChanged
+// Method: QvisLine3DInterface::point2Changed
 //
 // Purpose: 
 //   This is a Qt slot function that is called when return is pressed in the 
-//   position line edit.
+//   point2 line edit.
 //
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:32:25 PDT 2004
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015 
 //
 // Modifications:
 //   
 // ****************************************************************************
+
 void
-QvisLine2DInterface::positionEndChanged(double x, double y)
+QvisLine3DInterface::point2Changed()
 {
-    double pos[] = {x, y, 0.};
-    annot->SetPosition2(pos);
-    SetUpdate(false);
+    GetCurrentValues(2);
     Apply();
 }
 
-// ****************************************************************************
-// Method: QvisLine2DInterface::beginArrowChanged
-//
-// Purpose:
-//   Called when the begin arrow is changed.
-//
-// Arguments:
-//   i:    The type of arrow to use.
-//
-// Returns:
-//
-// Note:
-//
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:32:34 PDT 2004
-//
-// Modifications:
-//
-// ****************************************************************************
-void
-QvisLine2DInterface::beginArrowChanged(int i)
-{
-    ColorAttribute ca;
-    ca.SetRgb(annot->GetColor2().Red(),
-              i,
-              annot->GetColor2().Blue());
-    annot->SetColor2(ca);
-    SetUpdate(false);
-    Apply();
-}
 
 // ****************************************************************************
-// Method: QvisLine2DInterface::endArrowChanged
-//
-// Purpose:
-//   Called when the end arrow is changed.
-//
-// Arguments:
-//   i:    The type of arrow to use.
-//
-// Returns:
-//
-// Note:
-//
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:32:34 PDT 2004
-//
-// Modifications:
-//
-// ****************************************************************************
-void
-QvisLine2DInterface::endArrowChanged(int i)
-{
-    ColorAttribute ca;
-    ca.SetRgb(annot->GetColor2().Red(),
-              annot->GetColor2().Green(),
-              i);
-    annot->SetColor2(ca);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisLine2DInterface::widthChanged
+// Method: QvisLine3DInterface::widthChanged
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the value of the width
-//   spin box changes.
+//   widget changes.
 //
 // Arguments:
-//   w : The new width in percent.
+//   w : The new width.
 //
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:33:26 PDT 2004
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
 //   
 // ****************************************************************************
+
 void
-QvisLine2DInterface::widthChanged(int w)
+QvisLine3DInterface::widthChanged(int w)
 {
     annot->SetIntAttribute1(w);
     Apply();
 }
 
+
 // ****************************************************************************
-// Method: QvisLine2DInterface::styleChanged
+// Method: QvisLine3DInterface::styleChanged
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the value of the style
@@ -493,21 +407,23 @@ QvisLine2DInterface::widthChanged(int w)
 // Arguments:
 //   s : The new style.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
 //   
 // ****************************************************************************
+
 void
-QvisLine2DInterface::styleChanged(int s)
+QvisLine3DInterface::styleChanged(int s)
 {
     annot->SetIntAttribute2(s);
     Apply();
 }
 
+
 // ****************************************************************************
-// Method: QvisLine2DInterface::colorChanged
+// Method: QvisLine3DInterface::colorChanged
 //
 // Purpose: 
 //   This is a Qt slot function that is called when a new color is
@@ -516,14 +432,15 @@ QvisLine2DInterface::styleChanged(int s)
 // Arguments:
 //   c : The new start color.
 //
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:33:35 PDT 2004
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015 
 //
 // Modifications:
 //   
 // ****************************************************************************
+
 void
-QvisLine2DInterface::colorChanged(const QColor &c)
+QvisLine3DInterface::colorChanged(const QColor &c)
 {
     int a = annot->GetColor1().Alpha();
     ColorAttribute tc(c.red(), c.green(), c.blue(), a);
@@ -531,8 +448,9 @@ QvisLine2DInterface::colorChanged(const QColor &c)
     Apply();
 }
 
+
 // ****************************************************************************
-// Method: QvisLine2DInterface::opacityChanged
+// Method: QvisLine3DInterface::opacityChanged
 //
 // Purpose: 
 //   This is a Qt slot function that is called when a new opacity is
@@ -541,14 +459,15 @@ QvisLine2DInterface::colorChanged(const QColor &c)
 // Arguments:
 //   opacity : The new start opacity.
 //
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:33:47 PDT 2004
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015
 //
 // Modifications:
 //   
 // ****************************************************************************
+
 void
-QvisLine2DInterface::opacityChanged(int opacity)
+QvisLine3DInterface::opacityChanged(int opacity)
 {
     ColorAttribute tc(annot->GetColor1());
     tc.SetAlpha(opacity);
@@ -557,8 +476,9 @@ QvisLine2DInterface::opacityChanged(int opacity)
     Apply();
 }
 
+
 // ****************************************************************************
-// Method: QvisLine2DInterface::visibilityToggled
+// Method: QvisLine3DInterface::visibilityToggled
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the visibility toggle is
@@ -567,22 +487,24 @@ QvisLine2DInterface::opacityChanged(int opacity)
 // Arguments:
 //   val : The visibility flag.
 //
-// Programmer: John C. Anderson
-// Creation:   Fri Sep 03 09:34:03 PDT 2004
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015
 //
 // Modifications:
 //   
 // ****************************************************************************
+
 void
-QvisLine2DInterface::visibilityToggled(bool val)
+QvisLine3DInterface::visibilityToggled(bool val)
 {
     annot->SetVisible(val);
     SetUpdate(false);
     Apply();
 }
 
+
 // ****************************************************************************
-// Method: QvisLine2DInterface::useForegroundColorToggled
+// Method: QvisLine3DInterface::useForegroundColorToggled
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the useForegroundColor
@@ -599,7 +521,7 @@ QvisLine2DInterface::visibilityToggled(bool val)
 // ****************************************************************************
 
 void
-QvisLine2DInterface::useForegroundColorToggled(bool val)
+QvisLine3DInterface::useForegroundColorToggled(bool val)
 {
     annot->SetUseForegroundForTextColor(val);
     Apply();

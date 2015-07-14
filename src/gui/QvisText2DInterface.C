@@ -74,6 +74,10 @@
 //   Brad Whitlock, Fri Sep 16 16:13:15 PDT 2011
 //   Remove width.
 //
+//   Kathleen Biagas, Mon Jul 13 13:11:00 PDT 2015
+//   Place 'useForeground' checkbox before text color button, added
+//   textColorLabel so it can be disabled when the button is disabled.
+//
 // ****************************************************************************
 
 QvisText2DInterface::QvisText2DInterface(QWidget *parent) : 
@@ -111,23 +115,26 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent) :
     cLayout->addWidget(textLineEdit, 2, 1, 1, 3);
     cLayout->addWidget(new QLabel(tr("Text"), this), 2, 0);
 
-    // Add controls for the text color.
-    textColorButton = new QvisColorButton(this);
-    connect(textColorButton, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(textColorChanged(const QColor &)));
-    cLayout->addWidget(new QLabel(tr("Text color"), this),
-        3, 0, Qt::AlignLeft);
-    cLayout->addWidget(textColorButton, 3, 1);
-    textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this);
-    connect(textColorOpacity, SIGNAL(valueChanged(int)),
-            this, SLOT(textOpacityChanged(int)));
-    cLayout->addWidget(textColorOpacity, 3, 2, 1, 2);
-
     // Added a use foreground toggle
     useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this);
     connect(useForegroundColorCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(useForegroundColorToggled(bool)));
-    cLayout->addWidget(useForegroundColorCheckBox, 4, 0, 1, 4);
+    cLayout->addWidget(useForegroundColorCheckBox, 3, 0, 1, 4);
+
+    // Add controls for the text color.
+    textColorLabel = new QLabel(tr("Text color"), this);
+    cLayout->addWidget(textColorLabel, 4, 0, Qt::AlignLeft);
+
+    textColorButton = new QvisColorButton(this);
+    connect(textColorButton, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(textColorChanged(const QColor &)));
+    cLayout->addWidget(textColorButton, 4, 1);
+
+    textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this);
+    connect(textColorOpacity, SIGNAL(valueChanged(int)),
+            this, SLOT(textOpacityChanged(int)));
+    cLayout->addWidget(textColorOpacity, 4, 2, 1, 2);
+
 
     // Add controls to set the font family.
     fontFamilyComboBox = new QComboBox(this);
@@ -230,6 +237,9 @@ QvisText2DInterface::GetMenuText(const AnnotationObject &annot) const
 //   Brad Whitlock, Fri Sep 16 16:14:38 PDT 2011
 //   Use height.
 //
+//   Kathleen Biagas, Mon Jul 13 13:19:45 PDT 2015
+//   Enable/disable textColorLabel along with textColorButton.
+//
 // ****************************************************************************
 
 void
@@ -256,6 +266,7 @@ QvisText2DInterface::UpdateControls()
     {
         QColor tmp(255,255,255);
         textColorButton->setButtonColor(tmp);
+        textColorLabel->setEnabled(false);
         textColorButton->setEnabled(false);
         textColorOpacity->setGradientColor(tmp);
     }
@@ -265,6 +276,7 @@ QvisText2DInterface::UpdateControls()
                   annot->GetTextColor().Green(),
                   annot->GetTextColor().Blue());
         textColorButton->setButtonColor(tc);
+        textColorLabel->setEnabled(true);
         textColorButton->setEnabled(true);
         textColorOpacity->setGradientColor(tc);
     }

@@ -47,6 +47,7 @@
 #include <avtImageColleague.h>
 #include <avtLegendAttributesColleague.h>
 #include <avtLine2DColleague.h>
+#include <avtLine3DColleague.h>
 #include <avtText2DColleague.h>
 #include <avtText3DColleague.h>
 #include <avtTimeSliderColleague.h>
@@ -380,6 +381,9 @@ VisWinAnnotations::SetFrameAndState(int nFrames,
 //   Brad Whitlock, Mon Mar  2 15:33:25 PST 2009
 //   I added code to set the new annotation's time scale and offset.
 //
+//   Kathleen Biagas, Mon Jul 13 20:09:09 PDT 2015
+//   Added Line3D.
+//
 // ****************************************************************************
 
 bool
@@ -422,10 +426,13 @@ VisWinAnnotations::AddAnnotationObject(int annotType, const std::string &annotNa
     case 3: // Line 2D
         annot = new avtLine2DColleague(mediator);
         break;
-    case 7: // Image
+    case 4: // Line 3D
+        annot = new avtLine3DColleague(mediator);
+        break;
+    case 8: // Image
         annot = new avtImageColleague(mediator);
         break;
-    case 8: // LegendAttributes
+    case 9: // LegendAttributes
         annot = new avtLegendAttributesColleague(mediator);
         break;
     default:

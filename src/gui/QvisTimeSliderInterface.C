@@ -76,6 +76,10 @@
 //   Brad Whitlock, Fri Jul 18 16:21:08 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Mon Jul 13 13:11:00 PDT 2015
+//   Place 'useForeground' checkbox before text color button, added
+//   textColorLabel so it can be disabled when the button is disabled.
+//
 // ****************************************************************************
 
 QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent) :
@@ -153,23 +157,24 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent) :
             this, SLOT(endOpacityChanged(int)));
     cLayout->addWidget(endColorOpacity, 5, 2, 1, 2);
 
-    // Add controls for the text color.
-    textColorButton = new QvisColorButton(this);
-    connect(textColorButton, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(textColorChanged(const QColor &)));
-    cLayout->addWidget(new QLabel(tr("Text color"), this),
-        6, 0, Qt::AlignLeft);
-    cLayout->addWidget(textColorButton, 6, 1);
-    textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this);
-    connect(textColorOpacity, SIGNAL(valueChanged(int)),
-            this, SLOT(textOpacityChanged(int)));
-    cLayout->addWidget(textColorOpacity, 6, 2, 1, 2);
-
     // Added a use foreground toggle
     useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this);
     connect(useForegroundColorCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(useForegroundColorToggled(bool)));
-    cLayout->addWidget(useForegroundColorCheckBox, 7, 0, 1, 4);
+    cLayout->addWidget(useForegroundColorCheckBox, 6, 0, 1, 4);
+
+    // Add controls for the text color.
+    textColorLabel = new QLabel(tr("Text color"), this);
+    cLayout->addWidget(textColorLabel, 7, 0, Qt::AlignLeft);
+
+    textColorButton = new QvisColorButton(this);
+    connect(textColorButton, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(textColorChanged(const QColor &)));
+    cLayout->addWidget(textColorButton, 7, 1);
+    textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this);
+    connect(textColorOpacity, SIGNAL(valueChanged(int)),
+            this, SLOT(textOpacityChanged(int)));
+    cLayout->addWidget(textColorOpacity, 7, 2, 1, 2);
 
     // Add a time display combobox.
     timeDisplayComboBox = new QComboBox(this);
@@ -239,6 +244,9 @@ QvisTimeSliderInterface::~QvisTimeSliderInterface()
 //   Brad Whitlock, Thu Feb 24 16:35:05 PST 2005
 //   Changed internal implementation for time format.
 //
+//   Kathleen Biagas, Mon Jul 13 13:19:45 PDT 2015
+//   Enable/disable textColorLabel along with textColorButton.
+//
 // ****************************************************************************
 
 void
@@ -290,6 +298,7 @@ QvisTimeSliderInterface::UpdateControls()
         QColor tmp(255,255,255);
         textColorButton->setButtonColor(tmp);
         textColorButton->setEnabled(false);
+        textColorLabel->setEnabled(false);
         textColorOpacity->setGradientColor(tmp);
     }
     else
@@ -299,6 +308,7 @@ QvisTimeSliderInterface::UpdateControls()
                   annot->GetTextColor().Blue());
         textColorButton->setButtonColor(tc);
         textColorButton->setEnabled(true);
+        textColorLabel->setEnabled(true);
         textColorOpacity->setGradientColor(tc);
     }
     textColorOpacity->setValue(annot->GetTextColor().Alpha());

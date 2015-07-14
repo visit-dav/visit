@@ -56,6 +56,7 @@
 #include <vtkRenderer.h>
 
 #include <AnnotationObject.h>
+#include <LineAttributes.h>
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 
@@ -80,6 +81,9 @@
 //   Brad Whitlock, Tue Jun 28 15:32:03 PST 2005
 //   Removed the cone sources.
 //
+//   Kathleen Biagas, Mon Jul 13 09:41:56 PDT 2015
+//   Add useForegroundForLineColor.
+//
 // ****************************************************************************
 avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
     avtAnnotationColleague(m),
@@ -95,6 +99,7 @@ avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
     endArrowStyle(0)
 {
     addedToRenderer = false;
+    useForegroundForLineColor = true;
 
     // Create a float array which represents the points.
     vtkFloatArray* pcoords = vtkFloatArray::New();
@@ -160,7 +165,7 @@ avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
     // Set a default color.
     double fgColor[3];
     mediator.GetForegroundColor(fgColor);
-    actor->GetProperty()->SetColor(fgColor[0], fgColor[1], fgColor[2]);
+    SetForegroundColor(fgColor[0], fgColor[1], fgColor[2]);
 
     // Set default opacity.
     actor->GetProperty()->SetOpacity(1.);
@@ -490,13 +495,45 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     lineData->GetPoints()->SetPoint(0, p0[0], p0[1], 0.);
     lineData->GetPoints()->SetPoint(1, p1[0], p1[1], 0.);
 
-    actor->GetProperty()->SetLineWidth(annot.GetColor2().Red());
+    actor->GetProperty()->SetLineWidth(annot.GetIntAttribute1()+1);
+    actor->GetProperty()->SetLineStipplePattern(LineStyle2StipplePattern(Int2LineStyle(annot.GetIntAttribute2())));
 
-    ColorAttribute ca = annot.GetColor1();
-    actor->GetProperty()->SetColor(double(ca.Red()) / 255.,
-                                   double(ca.Green()) / 255.,
-                                   double(ca.Blue()) / 255.);
-    actor->GetProperty()->SetOpacity(double(ca.Alpha()) / 255.);
+
+    //
+    // The line color has changed or the useForegroundForTextColor flag
+    // has changed.
+    //
+    if(annot.GetUseForegroundForTextColor() != useForegroundForLineColor ||
+       annot.GetColor1() != lineColor)
+    {
+        // Record the line color that should be used when we're not using
+        // the foreground text color.
+        lineColor = annot.GetColor1();
+        useForegroundForLineColor = annot.GetUseForegroundForTextColor();
+
+        // Compute the line opacity.
+        double lc[4];
+        lc[3] = double(lineColor.Alpha()) / 255.;
+
+        // Set the line color using the foreground color or the line color.
+        if(useForegroundForLineColor)
+        {
+            // Get the foreground color.
+            double fgColor[3];
+            mediator.GetForegroundColor(fgColor);
+            actor->GetProperty()->SetColor(fgColor[0], fgColor[1], fgColor[2]);
+        }
+        else
+        {
+            // Compute the line color as double.
+            lc[0] = double(lineColor.Red()) / 255.;
+            lc[1] = double(lineColor.Green()) / 255.;
+            lc[2] = double(lineColor.Blue()) / 255.;
+            actor->GetProperty()->SetColor(lc[0], lc[1], lc[2]);
+        }
+
+        actor->GetProperty()->SetOpacity(double(lc[3]));
+    }
 
     beginArrowStyle = annot.GetColor2().Green();
     endArrowStyle = annot.GetColor2().Blue();
@@ -581,15 +618,12 @@ avtLine2DColleague::GetOptions(AnnotationObject &annot)
     annot.SetPosition(lineData->GetPoints()->GetPoint(0));
     annot.SetPosition2(lineData->GetPoints()->GetPoint(1));
 
-    double *currColor = actor->GetProperty()->GetColor();
-
+    annot.SetColor1(lineColor);
+    annot.SetUseForegroundForTextColor(useForegroundForLineColor);
+    annot.SetIntAttribute1(actor->GetProperty()->GetLineWidth()-1);
+    annot.SetIntAttribute2(LineStyle2Int(StipplePattern2LineStyle(actor->GetProperty()->GetLineStipplePattern())));
     ColorAttribute ca;
-    ca.SetRgba(int((float)currColor[0] * 255),
-               int((float)currColor[1] * 255),
-               int((float)currColor[2] * 255),
-               int((float)actor->GetProperty()->GetOpacity() * 255));
-    annot.SetColor1(ca);
-    ca.SetRgb((int) actor->GetProperty()->GetLineWidth(),
+    ca.SetRgb(0,
               beginArrowStyle,
               endArrowStyle);
     annot.SetColor2(ca);
@@ -632,3 +666,29 @@ avtLine2DColleague::NoPlots(void)
 {
     RemoveFromRenderer();
 }
+
+
+// ****************************************************************************
+// Method: avtLine2DColleague::SetForegroundColor
+//
+// Purpose: 
+//   This method is called when the vis window's foreground color changes.
+//
+// Arguments:
+//   r,g,b : The new foreground color.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   July 13, 2015 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtLine2DColleague::SetForegroundColor(double r, double g, double b)
+{
+    if(useForegroundForLineColor)
+        actor->GetProperty()->SetColor(r, g, b);
+}
+
+

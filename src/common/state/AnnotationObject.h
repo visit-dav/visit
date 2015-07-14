@@ -68,6 +68,7 @@ public:
         Text3D,
         TimeSlider,
         Line2D,
+        Line3D,
         Arrow2D,
         Arrow3D,
         Box,

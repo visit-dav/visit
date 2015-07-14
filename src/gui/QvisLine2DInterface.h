@@ -43,9 +43,11 @@
 
 class QCheckBox;
 class QComboBox;
-class QSpinBox;
+class QLabel;
 class QvisColorButton;
 class QvisOpacitySlider;
+class QvisLineWidthWidget;
+class QvisLineStyleWidget;
 class QvisScreenPositionEdit;
 
 // ****************************************************************************
@@ -60,7 +62,9 @@ class QvisScreenPositionEdit;
 // Creation:   Fri Oct 31 12:47:34 PDT 2003
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon Jul 13 13:01:18 PDT 2015
+//   Add useForegroundColor, colorLabel.
+//
 // ****************************************************************************
 
 class GUI_API QvisLine2DInterface : public QvisAnnotationObjectInterface
@@ -85,19 +89,24 @@ private slots:
     void beginArrowChanged(int);
     void endArrowChanged(int);
     void widthChanged(int);
+    void styleChanged(int);
     void colorChanged(const QColor &);
     void opacityChanged(int);
     void visibilityToggled(bool);
+    void useForegroundColorToggled(bool);
 
 private:
     QvisScreenPositionEdit *positionStartEdit;
     QvisScreenPositionEdit *positionEndEdit;
     QComboBox              *beginArrowComboBox;
     QComboBox              *endArrowComboBox;
-    QSpinBox               *widthSpinBox;
+    QvisLineWidthWidget    *widthWidget;
+    QvisLineStyleWidget    *styleWidget;
+    QLabel                 *colorLabel;
     QvisColorButton        *colorButton;
     QvisOpacitySlider      *opacitySlider;
     QCheckBox              *visibleCheckBox;
+    QCheckBox              *useForegroundColorCheckBox;
 };
 
 #endif
