@@ -44,8 +44,10 @@
 #include <viswindow_exports.h>
 
 class vtkActor;
+class vtkConeSource;
 class vtkLineSource;
 class vtkPolyDataMapper;
+class vtkTubeFilter;
 
 // ****************************************************************************
 // Class: avtLine3DColleague
@@ -59,6 +61,8 @@ class vtkPolyDataMapper;
 // Creation:   July 13, 2015 
 //
 // Modifications:
+//   Kathleen Biagas, Tue Jul 14 16:35:47 PDT 2015
+//   Add support for arrows and tube.
 //
 // ****************************************************************************
 
@@ -84,12 +88,24 @@ public:
     virtual void NoPlots(void);
 
 protected:
-    vtkActor            *lineActor;
-    vtkPolyDataMapper   *lineMapper;
     vtkLineSource       *lineSource;
+    vtkConeSource       *arrow1Source;
+    vtkConeSource       *arrow2Source;
+    vtkPolyDataMapper   *lineMapper;
+    vtkPolyDataMapper   *arrow1Mapper;
+    vtkPolyDataMapper   *arrow2Mapper;
+    vtkActor            *lineActor;
+    vtkActor            *arrow1Actor;
+    vtkActor            *arrow2Actor;
+    vtkTubeFilter       *tubeFilter;
 
     bool                 addedToRenderer;
     bool                 useForegroundForLineColor;
+    bool                 useArrow1;
+    bool                 useArrow2;
+    bool                 arrow1Added;
+    bool                 arrow2Added;
+    int                  lineType;
     ColorAttribute       lineColor;
 
     bool ShouldBeAddedToRenderer() const;

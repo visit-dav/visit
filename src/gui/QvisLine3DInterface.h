@@ -45,6 +45,7 @@ class QCheckBox;
 class QComboBox;
 class QLabel;
 class QLineEdit;
+class QRadioButton;
 class QSpinBox;
 class QvisColorButton;
 class QvisOpacitySlider;
@@ -63,6 +64,8 @@ class QvisLineStyleWidget;
 // Creation:   July 13, 2015
 //
 // Modifications:
+//   Kathleen Biagas, Tue Jul 14 16:39:07 PDT 2015
+//   Add support for arrow and tube style lines.
 //
 // ****************************************************************************
 
@@ -91,16 +94,45 @@ private slots:
     void opacityChanged(int);
     void visibilityToggled(bool);
     void useForegroundColorToggled(bool);
+    void beginArrowToggled(bool);
+    void endArrowToggled(bool);
+    void arrow1ResolutionChanged(int);
+    void arrow2ResolutionChanged(int);
+    void arrow1RadiusChanged();
+    void arrow2RadiusChanged();
+    void lineTypeChanged(int);
+    void tubeQualityChanged(int);
+    void tubeRadiusChanged();
+   
 
 private:
     QLineEdit              *point1Edit;
     QLineEdit              *point2Edit;
+    QComboBox              *lineType;
     QvisLineWidthWidget    *widthWidget;
+    QLabel                 *widthLabel;
     QvisLineStyleWidget    *styleWidget;
+    QLabel                 *styleLabel;
+    QComboBox              *tubeQuality;
+    QLabel                 *tubeQualLabel;
+    QLineEdit              *tubeRadius;
+    QLabel                 *tubeRadLabel;
     QCheckBox              *useForegroundColorCheckBox;
     QLabel                 *colorLabel;
     QvisColorButton        *colorButton;
     QvisOpacitySlider      *opacitySlider;
+
+    QCheckBox              *beginArrow;
+    QLabel                 *res1Label;
+    QSpinBox               *arrow1Resolution;
+    QLabel                 *rad1Label;
+    QLineEdit              *arrow1Radius;
+    QCheckBox              *endArrow;
+    QLabel                 *res2Label;
+    QSpinBox               *arrow2Resolution;
+    QLabel                 *rad2Label;
+    QLineEdit              *arrow2Radius;
+
     QCheckBox              *visibleCheckBox;
 };
 
