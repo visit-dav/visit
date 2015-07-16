@@ -168,6 +168,9 @@ NektarPPGeneralPluginInfo::GetDefaultFilePatterns() const
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.chk");
     defaultPatterns.push_back("*.fld");
+    defaultPatterns.push_back("*.xml");
+    defaultPatterns.push_back("*.rst");
+    defaultPatterns.push_back("*.bse");
 
     return defaultPatterns;
 }

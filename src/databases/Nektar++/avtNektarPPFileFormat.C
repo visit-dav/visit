@@ -67,9 +67,11 @@
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
 
+#include <avtCallback.h>
 #include <NonCompliantException.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
+#include <DebugStream.h>
 
 //#include <vtkNektar++.h>
 
@@ -99,13 +101,27 @@ using namespace Nektar;
 // ****************************************************************************
 
 avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttributes *readOpts)
-  : avtMTSDFileFormat(&filename, 1), refinedDataSet(0)
+  : avtMTSDFileFormat(&filename, 1),
+    m_refinement(0), m_ignoreCurvedElements(0), refinedDataSet(0)
 {
-  //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
+  //  std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
 
   vectorVarComponents[0] = std::string("u");
   vectorVarComponents[1] = std::string("v");
   vectorVarComponents[2] = std::string("w");
+
+  if (readOpts != NULL) {
+    for (int i=0; i<readOpts->GetNumberOfOptions(); ++i) {
+      if (readOpts->GetName(i) == "Mesh refinement")
+        m_refinement = readOpts->GetEnum("Mesh refinement");
+      else if (readOpts->GetName(i) == "Assume linear/planar elements")
+        m_ignoreCurvedElements =
+          readOpts->GetBool("Assume linear/planar elements");
+    }
+  }
+    
+  if( m_refinement < 0 )      m_refinement = 0;
+  else if( m_refinement > 10 ) m_refinement = 10;
 
   // if( NEKTAR_RT_U_FIELD == 0 )
   //   NEKTAR_RT_U_FIELD = new vtkInformationUnsignedLongKey( "U field", "Not used");
@@ -122,23 +138,57 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
   int cycle = GuessCycle( filename );
 
   //----------------------------------------------
-  // Get the mesh file name.
-  m_meshFile = std::string(filename);
-
-  int fdot = m_meshFile.find_last_of('.');
+  // Sort out the file name.
+  std::string::size_type fdot = std::string(filename).find_last_of('.');
+  std::string ending;
 
   if (fdot != std::string::npos)
   {
-    std::string ending = m_meshFile.substr(fdot);
+    ending = std::string(filename).substr(fdot);
 
-    // If a valid cycle and .chk or .fld exchange the cycle number and
-    // extension with .xml to get the mesh file name.
-    if (cycle != INVALID_CYCLE && ending == ".chk" )
+    // Passed only a mesh no fieldfile.
+    if ( ending == ".xml" )
     {
+      m_meshFile = std::string(filename);
+
+      // No cycle 
+      int cycle = 0;
+      m_cycles.push_back( cycle );
+
+      // No time 
+      double time = 0;
+      m_times.push_back( time );
+    }
+
+    // If a .fld file or .chk file with no valid cycle exchange the
+    // extension with .xml
+    else if( (ending == ".fld") || (ending == ".rst") || (ending == ".bse") ||
+             (ending == ".chk" && cycle == INVALID_CYCLE) )
+    {
+      m_fieldFile = std::string(filename);
+      m_meshFile  = std::string(filename);
+
+      // Remove the .fld or .chk extension and add the .xml extension
+      m_meshFile = m_meshFile.substr(0, fdot);
+      m_meshFile += std::string(".xml");
+
+      // No cycle 
+      int cycle = 0;
+      m_cycles.push_back( cycle );
+    }
+
+    // If a .chk file and valid cycle, exchange the cycle number and
+    // extension with .xml to get the mesh file name.
+    else if( ending == ".chk" && cycle != INVALID_CYCLE )
+    {
+      m_fieldFile = std::string(filename);
+      m_meshFile  = std::string(filename);
+
       // Remove the .chk extension.
       m_meshFile = m_meshFile.substr(0, fdot);
 
-      int funderscore = m_meshFile.find_last_of('_');
+      // Check for an underscore before the cycle number.
+      std::string::size_type funderscore = m_meshFile.find_last_of('_');
 
       if (funderscore != std::string::npos)
       {
@@ -156,8 +206,8 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
           m_meshFile += std::string(".xml");
         }
 
-        // This should never happen as that would mean a check file
-        // without a cycle number. BUt try to salvage something.
+        // This error should never happen as that would mean a check
+        // file without a cycle number. but try to salvage something.
         else
         {
           m_meshFile += std::string(".xml");
@@ -167,7 +217,7 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
         }
       }
 
-      // No underscore
+      // No underscore before the cycle value.
       else
       {
         ostringstream cycleStr;
@@ -193,24 +243,6 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
         }
       }
     }
-
-    // If no cycle and .chk or .fld exchange the extension with .xml
-    else if( ending == ".fld" )
-    {
-      // Remove the .fld extension and add the .xml extension
-      m_meshFile = m_meshFile.substr(0, fdot);
-      m_meshFile += std::string(".xml");
-
-      // No cycle 
-      int cycle = 0;
-      m_cycles.push_back( cycle );
-    }
-
-    // Only .chk and .fld fies should be passed to the database reader.
-    else
-    {
-      EXCEPTION1( InvalidFilesException, filename );
-    }
   }
   // No dot found thus no extension.
   else
@@ -225,48 +257,40 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
     EXCEPTION1( InvalidFilesException, m_meshFile );
   }
 
-  // Get the Nektar++ field file for the time slice and number of
-  // elements.
-  std::string fieldFile(filename);
-
-  LibUtilities::FieldMetaDataMap fieldMetaDataMap;
-
-  vector<LibUtilities::FieldDefinitionsSharedPtr> fieldDef;
-  vector<vector<NekDouble> > fieldData;
-  LibUtilities::Import(fieldFile,fieldDef,fieldData,fieldMetaDataMap);
-
-  double time;
-  LibUtilities::FieldMetaDataMap::iterator it;
-
-  it = fieldMetaDataMap.find("Time");
-  if( it != fieldMetaDataMap.end() )
-    std::stringstream( it->second ) >> time;
-  else
-    time = 0;
-
-  m_times.push_back( time );
-
-  if( fieldDef.size() )
+  // Get the Nektar++ field file for the time slice and the variables.
+  if( m_fieldFile.size() )
   {
-    //----------------------------------------------
-    // Get the field variable names from the first set of elements.
-    int nfields = fieldDef[0]->m_fields.size();
+    LibUtilities::FieldMetaDataMap fieldMetaDataMap;
 
-    for(int i = 0; i < nfields; ++i)
+    vector<LibUtilities::FieldDefinitionsSharedPtr> fieldDef;
+    vector<vector<NekDouble> > fieldData;
+    
+    LibUtilities::Import(m_fieldFile,fieldDef,fieldData,fieldMetaDataMap);
+    
+    double time;
+    LibUtilities::FieldMetaDataMap::iterator it;
+    
+    it = fieldMetaDataMap.find("Time");
+    if( it != fieldMetaDataMap.end() )
+      std::stringstream( it->second ) >> time;
+    else
+      time = 0;
+    
+    m_times.push_back( time );
+
+    if( fieldDef.size() )
     {
-      m_scalarVarNames.push_back( fieldDef[0]->m_fields[i] );
+      //----------------------------------------------
+      // Get the field variable names from the first set of elements.
+      int nfields = fieldDef[0]->m_fields.size();
+      
+      for(int i = 0; i < nfields; ++i)
+        m_scalarVarNames.push_back( fieldDef[0]->m_fields[i] );
     }
-
-    //----------------------------------------------
-    // The meshes can have mixed elements so get the total from each field.
-    m_nElements = 0;
-
-    for(int i = 0; i < fieldDef.size(); ++i)
-      m_nElements += fieldDef[i]->m_elementIDs.size();
-  }
-  else
-  {
-    EXCEPTION1( InvalidFilesException, filename );
+    else
+    {
+      EXCEPTION1( InvalidFilesException, filename );
+    }
   }
 }
 
@@ -285,7 +309,7 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
 int
 avtNektarPPFileFormat::GetNTimesteps(void)
 {
-  //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
+  //std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
 
     return (int) m_times.size();
 }
@@ -345,8 +369,6 @@ void avtNektarPPFileFormat::GetTimes(std::vector<double> &times)
 void
 avtNektarPPFileFormat::Initialize()
 {
-  //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
-
   if( refinedDataSet == NULL )
   {
     std::string xmlstr = GetNektarFileAsXMLString("");
@@ -389,7 +411,7 @@ avtNektarPPFileFormat::Initialize()
 void
 avtNektarPPFileFormat::FreeUpResources(void)
 {
-  //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
+  //std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
 
   if( refinedDataSet )
   {
@@ -413,7 +435,7 @@ avtNektarPPFileFormat::FreeUpResources(void)
 void
 avtNektarPPFileFormat::ActivateTimestep(int ts)
 {
-  //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
+  //std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
 
     //
     // Initialize the file if it has not been initialized.
@@ -437,8 +459,6 @@ avtNektarPPFileFormat::ActivateTimestep(int ts)
 void
 avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
-  //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
-
     md->SetDatabaseComment(std::string("Read using the Nektar++ reader") +
                            md->GetDatabaseComment());
 
@@ -448,6 +468,59 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       SpatialDomains::MeshGraph::Read(m_meshFile);
     //----------------------------------------------
 
+    m_nElements = graphShPt->GetExpansions().size();
+
+    // Check for curved elements.
+    int nCurvedEdges = graphShPt->GetCurvedEdges().size();
+    int nCurvedFaces = graphShPt->GetCurvedFaces().size();
+
+    if( !m_ignoreCurvedElements && (nCurvedEdges || nCurvedFaces) )
+    {
+      EXCEPTION2( NonCompliantException, "Nektar++ curved element check",
+                  "This database contains curved elements. VisIt's "
+                  "lookup assumes linear/planar elements. The integral "
+                  "curve results may not be accurate at the boundaries of "
+                  "of these elements. To ignore the boundaries select "
+                  "'Assume linear/planar elements' in the Nektar++ file "
+                  "open dialog's 'Set default open options'.");
+    }
+
+    int nElements;
+
+    // If refining based on the user input the refinement will be the
+    // same in all directions.
+    if( m_refinement )
+    {
+      nElements = m_nElements * (m_refinement+1) * (m_refinement+1);
+
+      if( graphShPt->GetMeshDimension() == 3 )
+        nElements *= (m_refinement+1);
+    }
+    // Auto refinement based on the number of modes.
+    else
+    {
+      nElements = 0;
+
+      SpatialDomains::ExpansionMap emap = graphShPt->GetExpansions();
+      SpatialDomains::ExpansionMapIter it;
+    
+      for (it = emap.begin(); it != emap.end(); ++it)
+      {
+        int n = 1;
+
+        // Get the modes in each direction - one less for the number
+        // of elements.
+        for (int i = 0; i < it->second->m_basisKeyVector.size(); ++i)
+        {
+          LibUtilities::BasisKey tmp1 = it->second->m_basisKeyVector[i];
+          
+          n *= (tmp1.GetNumModes() - 1);
+        }
+
+        nElements += n;
+      }
+    }
+
     // Add in the refined mesh.
     avtMeshMetaData *mmd;
     avtMeshType meshType = AVT_UNSTRUCTURED_MESH;
@@ -456,22 +529,19 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
     int block_origin = 0;
     int cell_origin = 0;
     int group_origin = 0;
-    int spatial_dimension = 3; //graphShPt->GetSpaceDimension();
+    int spatial_dimension = graphShPt->GetSpaceDimension();
     int topological_dimension = graphShPt->GetMeshDimension();
 
-    // Original mesh for the user to see.
+    // Refined mesh for the user to see.
     mmd = new avtMeshMetaData(meshName,
                               nblocks, block_origin,
                               cell_origin, group_origin,
                               spatial_dimension, topological_dimension,
                               meshType);
 
-    // Note: the number of elements is the original number of
-    // elements. It should be number of elements based on the
-    // refinement - but is not known at this time.
-    mmd->SetNumberCells( m_nElements );
+    mmd->SetNumberCells( nElements );
 
-    int bounds[3] = {m_nElements, 0, 0};
+    int bounds[3] = {nElements, 0, 0};
     mmd->SetBounds( bounds );
 
     // Get the Mesh extents
@@ -479,10 +549,11 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
                           DBL_MAX, -DBL_MAX, 
                           DBL_MAX, -DBL_MAX };
 
-    if( graphShPt->GetSpaceDimension() == 2 )
+    if( topological_dimension == 2 )
       extents[4] = extents[5] = 0;
 
     int nVerts = graphShPt->GetNvertices();
+
 
     for( int i=0; i<nVerts; ++i )
     {
@@ -495,7 +566,7 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       if( extents[2] > y ) extents[2] = y;
       if( extents[3] < y ) extents[3] = y;
 
-      if( graphShPt->GetSpaceDimension() == 3 )
+      if( spatial_dimension == 3 )
       {
         if( extents[4] > z ) extents[4] = z;
         if( extents[5] < z ) extents[5] = z;
@@ -506,7 +577,6 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
 
     md->Add(mmd);
 
-
     // Original mesh for the spectral element evaluation.
     mmd = new avtMeshMetaData(std::string("SE_") + meshName,
                               nblocks, block_origin,
@@ -514,6 +584,7 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
                               spatial_dimension, topological_dimension,
                               meshType);
 
+    bounds[0] = m_nElements;
     mmd->SetBounds( bounds );
     mmd->SetNumberCells( m_nElements );
     mmd->SetExtents( extents );
@@ -530,7 +601,8 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       
       md->Add(smd);
       
-      // Is the var is a potential coordinate for the velocity?
+      // Is the variable a potential coordinate (u,v,w) for the
+      // velocity vector?
       for(int j = 0; j < 3; ++j)
       {
         if( m_scalarVarNames[i] == vectorVarComponents[j] )
@@ -541,17 +613,18 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       }
     }
 
-    // If at least two values (u,v) or (uv,w) are found then
+    // If at least two values (u,v) or (u,v,w) are found then
     // create a velocity variable for the refined and spectral mesh.
     if( 2 <= vector_dim )
     {
       std::string varname, definition;
 
-      // The refined mesh velocity will be an expression.
+      // The refined mesh velocity will be an expression as the
+      // components are stored separately..
       if( vector_dim == 2 )
       {
         varname = std::string("velocity_uv");
-        definition = std::string("{u, v, 0}");
+        definition = std::string("{u, v}");
       }
       else //if( vector_dim == 3 )
       {
@@ -568,18 +641,10 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
       // Create a velocity var for the spectral evaluation prefix it
       // with SE_ to differentiate from the refined vector var
       // expression.
-      if( vector_dim == 2 )
-        varname = std::string("SE_velocity_uv");
-      else //if( vector_dim == 3 )
-        varname = std::string("SE_velocity_uvw");
-
-      // Note for the PICS code the vector must be 3D if only two
-      // components we will add the third and make it zero.
-      vector_dim = 3;
-      
-      avtCentering cent = AVT_NODECENT;
-      
-      AddVectorVarToMetaData(md, varname, std::string("SE_")+meshName,
+      avtCentering cent = AVT_NODECENT;      
+      AddVectorVarToMetaData(md,
+                             std::string("SE_")+varname,
+                             std::string("SE_")+meshName,
                              cent, vector_dim);
     }
 }
@@ -607,7 +672,7 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
 vtkDataSet *
 avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
 {
-  //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
+  //std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
   vtkUnstructuredGrid* ugrid = NULL;
 
   // Request for the refined mesh.  At this point the original
@@ -644,7 +709,7 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
       NekDouble x, y, z;
       graphShPt->GetVertex(i)->GetCoords(x, y, z);
 
-      if( graphShPt->GetSpaceDimension() == 2 )
+      if( graphShPt->GetMeshDimension() == 2 )
         z = 0;
 
       vtkPts->SetPoint (i, x, y, z);
@@ -655,7 +720,7 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
     ugrid->SetPoints( vtkPts );
     vtkPts->Delete();
 
-    // for a 2D mesh read in the trianagle and quad elements.
+    // for a 2D mesh read in the triangle and quad elements.
     if( graphShPt->GetMeshDimension() == 2 )
     {
       // Add in all of the triangle elements
@@ -849,7 +914,7 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
 vtkDataArray *
 avtNektarPPFileFormat::GetVar(int timestate, const char *varname)
 {
-  //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
+  //std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
 
   // At this point the original nektar++ field has been refined and
   // converted into a vtkDataArray so just grab the variable needed.
@@ -1144,22 +1209,23 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
 
 std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
 {
-  //std::cerr << __FUNCTION__ << "  " << filenames[0] << std::endl;
-
-  std::string fieldfile(filenames[0]);
+//  std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
 
   //----------------------------------------------
   // Create a dummy set of args to create a session.
-  int argc = 3;
+  int argc = (m_fieldFile.size() ? 3 : 2);
   char **argv;
 
   argv = (char **) malloc( sizeof(char*) * argc );
   argv[0] = (char *) malloc( sizeof(char) * 8 );
   argv[1] = (char *) malloc( sizeof(char) * m_meshFile.size()+1 );
-  argv[2] = (char *) malloc( sizeof(char) * fieldfile.size()+1 );
+  if( m_fieldFile.size() )
+    argv[2] = (char *) malloc( sizeof(char) * m_fieldFile.size()+1 );
+
   strcpy( argv[0], "VisIt" );
   strcpy( argv[1], m_meshFile.c_str() );
-  strcpy( argv[2], fieldfile.c_str() );
+  if( m_fieldFile.size() )
+    strcpy( argv[2], m_fieldFile.c_str() );
 
   int nExtraPoints;
   LibUtilities::SessionReaderSharedPtr vSession =
@@ -1177,230 +1243,361 @@ std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
   // Import field file.
   vector<LibUtilities::FieldDefinitionsSharedPtr> fielddef;
   vector<vector<NekDouble> > fielddata;
-  LibUtilities::Import(fieldfile,fielddef,fielddata);
+  if( m_fieldFile.size() )
+    LibUtilities::Import(m_fieldFile,fielddef,fielddata);
 
   // std::cerr << "nVerts = " << graphShPt->GetNvertices() << std::endl;
-
   // std::cerr << "nfields = " << fielddef[0]->m_fields.size() << std::endl;
-
-  // std::cerr << fielddata.size() << std::endl;
+  // std::cerr << "fielddata.size = " << fielddata.size() << std::endl;
 
   // for(int i = 0; i < fielddata.size(); ++i)
-  //   std::cerr << fielddata[i].size()<< std::endl;
+  //   std::cerr << i << "  " << fielddata[i].size()<< std::endl;
+
+  // There should be at least one piece of field data or with the mesh
+  // only assume one.
+  int nfields = (fielddef.size() ? fielddef[0]->m_fields.size() : 0);
+
+  Array<OneD, MultiRegions::ExpListSharedPtr> Exp( (nfields ? nfields : 1) );
 
   bool useFFT = false;
   bool dealiasing = false;
   //----------------------------------------------
 
   //----------------------------------------------
+
   // Set up Expansion information
-  for(int i = 0; i < fielddef.size(); ++i)
+  if( m_fieldFile.size() )
   {
-    vector<LibUtilities::PointsType> ptype;
-    for(int j = 0; j < 3; ++j)
+    for(int i = 0; i < fielddef.size(); ++i)
     {
-      ptype.push_back(LibUtilities::ePolyEvenlySpaced);
-    }
-    
-    fielddef[i]->m_pointsDef = true;
-    fielddef[i]->m_points    = ptype; 
-    
-    vector<unsigned int> porder;
-    if(fielddef[i]->m_numPointsDef == false)
-    {
-      for(int j = 0; j < fielddef[i]->m_numModes.size(); ++j)
+      vector<LibUtilities::PointsType> ptype;
+      for(int j = 0; j < 3; ++j)
       {
-        porder.push_back(fielddef[i]->m_numModes[j]+nExtraPoints);
+        ptype.push_back(LibUtilities::ePolyEvenlySpaced);
       }
       
-      fielddef[i]->m_numPointsDef = true;
-    }
-    else
-    {
-      for(int j = 0; j < fielddef[i]->m_numPoints.size(); ++j)
-      {
-        porder.push_back(fielddef[i]->m_numPoints[j]+nExtraPoints);
-      }
-    }
-
-    fielddef[i]->m_numPoints = porder;      
-  }
-
-  graphShPt->SetExpansions(fielddef);
-  //----------------------------------------------
-
-  //----------------------------------------------
-  // Define Expansion
-  int expdim  = graphShPt->GetMeshDimension();
-  int nfields = fielddef[0]->m_fields.size();
-
-  int fieldIndex = 0;
-
-  for(int i = 0; i < nfields; ++i)
-  {
-    if( var == std::string( fielddef[0]->m_fields[i]) )
-    {
-      fieldIndex = i;
-      break;
-    }
-  }
-
-  Array<OneD, MultiRegions::ExpListSharedPtr> Exp(nfields);
-    
-  switch(expdim)
-  {
-    case 1:
-    {
-      ASSERTL0(fielddef[0]->m_numHomogeneousDir <= 2,"NumHomogeneousDir is only set up for 1 or 2");
+      fielddef[i]->m_pointsDef = true;
+      fielddef[i]->m_points    = ptype; 
       
-      if(fielddef[0]->m_numHomogeneousDir == 1)
+      vector<unsigned int> porder;
+      if(fielddef[i]->m_numPointsDef == false)
       {
-        MultiRegions::ExpList2DHomogeneous1DSharedPtr Exp2DH1;
-        
-        // Define Homogeneous expansion
-        //int nplanes = fielddef[0]->m_numModes[1];
-        int nplanes; 
-        vSession->LoadParameter("HomModesZ",nplanes,fielddef[0]->m_numModes[1]);
-
-        // choose points to be at evenly spaced points at
-        const LibUtilities::PointsKey Pkey(nplanes+1,LibUtilities::ePolyEvenlySpaced);
-        const LibUtilities::BasisKey  Bkey(fielddef[0]->m_basis[1],nplanes,Pkey);
-        NekDouble ly = fielddef[0]->m_homogeneousLengths[0];
-        
-        Exp2DH1 = MemoryManager<MultiRegions::ExpList2DHomogeneous1D>::AllocateSharedPtr(vSession,Bkey,ly,useFFT,dealiasing,graphShPt);
-
-        for( int i= 1; i < nfields; ++i)
+        for(int j = 0; j < fielddef[i]->m_numModes.size(); ++j)
         {
-          Exp[i] = MemoryManager<MultiRegions::ExpList2DHomogeneous1D>::AllocateSharedPtr(*Exp2DH1);
+          int refinement = (m_refinement ?
+                            m_refinement+2 :
+                            fielddef[i]->m_numModes[j]+nExtraPoints);
+          
+          porder.push_back(refinement);
         }
-      }
-      else if(fielddef[0]->m_numHomogeneousDir == 2)
-      {
-        MultiRegions::ExpList3DHomogeneous2DSharedPtr Exp3DH2;
         
-        // Define Homogeneous expansion
-        //int nylines = fielddef[0]->m_numModes[1];
-        //int nzlines = fielddef[0]->m_numModes[2];
-                                        
-        int nylines;
-        int nzlines;
-        vSession->LoadParameter("HomModesY",nylines,fielddef[0]->m_numModes[1]);
-        vSession->LoadParameter("HomModesZ",nzlines,fielddef[0]->m_numModes[2]);
-                                        
-                                        
-        // choose points to be at evenly spaced points at
-        const LibUtilities::PointsKey PkeyY(nylines+1,LibUtilities::ePolyEvenlySpaced);
-        const LibUtilities::BasisKey  BkeyY(fielddef[0]->m_basis[1],nylines,PkeyY);
-                                        
-        const LibUtilities::PointsKey PkeyZ(nzlines+1,LibUtilities::ePolyEvenlySpaced);
-        const LibUtilities::BasisKey  BkeyZ(fielddef[0]->m_basis[2],nzlines,PkeyZ);
-                                        
-        NekDouble ly = fielddef[0]->m_homogeneousLengths[0];
-        NekDouble lz = fielddef[0]->m_homogeneousLengths[1];
-                                        
-        Exp3DH2 = MemoryManager<MultiRegions::ExpList3DHomogeneous2D>::AllocateSharedPtr(vSession,BkeyY,BkeyZ,ly,lz,useFFT,dealiasing,graphShPt);
-        Exp[0] = Exp3DH2;
-                                        
-        for(int i = 1; i < nfields; ++i)
-        {
-          Exp[i] = MemoryManager<MultiRegions::ExpList3DHomogeneous2D>::AllocateSharedPtr(*Exp3DH2);
-        }
+        fielddef[i]->m_numPointsDef = true;
       }
       else
       {
-        MultiRegions::ExpList1DSharedPtr Exp1D;
-        Exp1D = MemoryManager<MultiRegions::ExpList1D>
-          ::AllocateSharedPtr(vSession,graphShPt);
-        Exp[0] = Exp1D;
-        for(int i = 1; i < nfields; ++i)
+        for(int j = 0; j < fielddef[i]->m_numPoints.size(); ++j)
+        {
+          int refinement = (m_refinement ?
+                            m_refinement+2 :
+                            fielddef[i]->m_numPoints[j]+nExtraPoints);
+          
+          porder.push_back(fielddef[i]->m_numPoints[j]+nExtraPoints);
+        }
+      }
+      
+      fielddef[i]->m_numPoints = porder;      
+    }
+
+    graphShPt->SetExpansions(fielddef);
+
+
+    // NOT being used.
+    int fieldIndex = 0;
+
+    for(int i = 0; i < nfields; ++i)
+    {
+      if( var == std::string( fielddef[0]->m_fields[i]) )
+      {
+        fieldIndex = i;
+        break;
+      }
+    }
+
+    //----------------------------------------------
+
+    //----------------------------------------------
+    // Define the expansion for the field and mesh.
+    switch( graphShPt->GetMeshDimension() )
+    {
+      case 1:
+      {
+        if( fielddef[0]->m_numHomogeneousDir > 2 )
+          EXCEPTION2( NonCompliantException, "Nektar++ field expansion",
+                      "NumHomogeneousDir is only set up for 1 or 2");
+      
+        if(fielddef[0]->m_numHomogeneousDir == 1)
+        {
+          MultiRegions::ExpList2DHomogeneous1DSharedPtr Exp2DH1;
+          
+          // Define Homogeneous expansion
+          //int nplanes = fielddef[0]->m_numModes[1];
+          int nplanes;
+          vSession->LoadParameter("HomModesZ",nplanes,fielddef[0]->m_numModes[1]);
+
+          // choose points to be at evenly spaced points at
+          const LibUtilities::PointsKey Pkey(nplanes+1,LibUtilities::ePolyEvenlySpaced);
+          const LibUtilities::BasisKey  Bkey(fielddef[0]->m_basis[1],nplanes,Pkey);
+          NekDouble ly = fielddef[0]->m_homogeneousLengths[0];
+        
+          Exp2DH1 = MemoryManager<MultiRegions::ExpList2DHomogeneous1D>::AllocateSharedPtr(vSession,Bkey,ly,useFFT,dealiasing,graphShPt);
+
+          for( int i= 1; i < nfields; ++i)
+          {
+            Exp[i] = MemoryManager<MultiRegions::ExpList2DHomogeneous1D>::AllocateSharedPtr(*Exp2DH1);
+          }
+        }
+        else if(fielddef[0]->m_numHomogeneousDir == 2)
+        {
+          MultiRegions::ExpList3DHomogeneous2DSharedPtr Exp3DH2;
+        
+          // Define Homogeneous expansion
+          int nylines = fielddef[0]->m_numModes[1];
+          int nzlines = fielddef[0]->m_numModes[2];
+                                        
+          vSession->LoadParameter("HomModesY",nylines,fielddef[0]->m_numModes[1]);
+          vSession->LoadParameter("HomModesZ",nzlines,fielddef[0]->m_numModes[2]);                                                                                
+          // choose points to be at evenly spaced points at
+          const LibUtilities::PointsKey PkeyY(nylines+1,LibUtilities::ePolyEvenlySpaced);
+          const LibUtilities::BasisKey  BkeyY(fielddef[0]->m_basis[1],nylines,PkeyY);
+                                        
+          const LibUtilities::PointsKey PkeyZ(nzlines+1,LibUtilities::ePolyEvenlySpaced);
+          const LibUtilities::BasisKey  BkeyZ(fielddef[0]->m_basis[2],nzlines,PkeyZ);
+                                        
+          NekDouble ly = fielddef[0]->m_homogeneousLengths[0];
+          NekDouble lz = fielddef[0]->m_homogeneousLengths[1];
+                                        
+          Exp3DH2 = MemoryManager<MultiRegions::ExpList3DHomogeneous2D>::AllocateSharedPtr(vSession,BkeyY,BkeyZ,ly,lz,useFFT,dealiasing,graphShPt);
+          Exp[0] = Exp3DH2;
+                                        
+          for(int i = 1; i < nfields; ++i)
+          {
+            Exp[i] = MemoryManager<MultiRegions::ExpList3DHomogeneous2D>::AllocateSharedPtr(*Exp3DH2);
+           }
+        }
+        else
+        {
+          MultiRegions::ExpList1DSharedPtr Exp1D;
+          Exp1D = MemoryManager<MultiRegions::ExpList1D>
+            ::AllocateSharedPtr(vSession,graphShPt);
+          Exp[0] = Exp1D;
+          for(int i = 1; i < nfields; ++i)
           {
             Exp[i] = MemoryManager<MultiRegions::ExpList1D>
               ::AllocateSharedPtr(*Exp1D);
           }
+        }
+      }
+      break;
+      
+    case 2:
+    {
+      if( fielddef[0]->m_numHomogeneousDir > 1 )
+        EXCEPTION2( NonCompliantException, "Nektar++ field expansion",
+               "NumHomogeneousDir is only set up for 1");
+
+      if(fielddef[0]->m_numHomogeneousDir == 1)
+      {
+        MultiRegions::ExpList3DHomogeneous1DSharedPtr Exp3DH1;
+        
+        // Define Homogeneous expansion
+        //int nplanes = fielddef[0]->m_numModes[2];
+        
+        int nplanes; 
+        vSession->LoadParameter("HomModesZ",nplanes,fielddef[0]->m_numModes[2]);
+        
+        // choose points to be at evenly spaced points at
+        // nplanes + 1 points
+        const LibUtilities::PointsKey Pkey(nplanes+1,LibUtilities::ePolyEvenlySpaced);
+        const LibUtilities::BasisKey  Bkey(fielddef[0]->m_basis[2],nplanes,Pkey);
+        NekDouble lz = fielddef[0]->m_homogeneousLengths[0];
+
+        Exp3DH1 = MemoryManager<MultiRegions::ExpList3DHomogeneous1D>::AllocateSharedPtr(vSession,Bkey,lz,useFFT,dealiasing,graphShPt);
+        Exp[0] = Exp3DH1;
+
+        for(int i = 1; i < nfields; ++i)
+        {
+          Exp[i] = MemoryManager<MultiRegions::ExpList3DHomogeneous1D>::AllocateSharedPtr(*Exp3DH1);
+        }
+      }
+      else
+      {
+        MultiRegions::ExpList2DSharedPtr Exp2D;
+        Exp2D = MemoryManager<MultiRegions::ExpList2D>
+          ::AllocateSharedPtr(vSession,graphShPt);
+        Exp[0] =  Exp2D;
+        
+        for(int i = 1; i < nfields; ++i)
+        {
+          Exp[i] = MemoryManager<MultiRegions::ExpList2D>
+            ::AllocateSharedPtr(*Exp2D);
+        }
       }
     }
     break;
-
-  case 2:
-  {
-    ASSERTL0(fielddef[0]->m_numHomogeneousDir <= 1,"NumHomogeneousDir is only set up for 1");
-
-    if(fielddef[0]->m_numHomogeneousDir == 1)
-    {
-      MultiRegions::ExpList3DHomogeneous1DSharedPtr Exp3DH1;
-
-      // Define Homogeneous expansion
-      //int nplanes = fielddef[0]->m_numModes[2];
-                                        
-      int nplanes; 
-      vSession->LoadParameter("HomModesZ",nplanes,fielddef[0]->m_numModes[2]);
-
-      // choose points to be at evenly spaced points at
-      // nplanes + 1 points
-      const LibUtilities::PointsKey Pkey(nplanes+1,LibUtilities::ePolyEvenlySpaced);
-      const LibUtilities::BasisKey  Bkey(fielddef[0]->m_basis[2],nplanes,Pkey);
-      NekDouble lz = fielddef[0]->m_homogeneousLengths[0];
-
-      Exp3DH1 = MemoryManager<MultiRegions::ExpList3DHomogeneous1D>::AllocateSharedPtr(vSession,Bkey,lz,useFFT,dealiasing,graphShPt);
-      Exp[0] = Exp3DH1;
-
-      for(int i = 1; i < nfields; ++i)
-      {
-        Exp[i] = MemoryManager<MultiRegions::ExpList3DHomogeneous1D>::AllocateSharedPtr(*Exp3DH1);
-      }
-    }
-    else
-    {
-      MultiRegions::ExpList2DSharedPtr Exp2D;
-      Exp2D = MemoryManager<MultiRegions::ExpList2D>
-        ::AllocateSharedPtr(vSession,graphShPt);
-      Exp[0] =  Exp2D;
-
-      for(int i = 1; i < nfields; ++i)
-      {
-        Exp[i] = MemoryManager<MultiRegions::ExpList2D>
-          ::AllocateSharedPtr(*Exp2D);
-      }
-    }
-  }
-  break;
-
-  case 3:
-  {
-    MultiRegions::ExpList3DSharedPtr Exp3D;
-    Exp3D = MemoryManager<MultiRegions::ExpList3D>::AllocateSharedPtr(vSession,graphShPt);
-
-    Exp[0] =  Exp3D;
     
-    for(int i = 1; i < nfields; ++i)
+    case 3:
     {
-      Exp[i] = MemoryManager<MultiRegions::ExpList3D>
-        ::AllocateSharedPtr(*Exp3D);
+      MultiRegions::ExpList3DSharedPtr Exp3D;
+      Exp3D = MemoryManager<MultiRegions::ExpList3D>::
+        AllocateSharedPtr(vSession,graphShPt);
+      Exp[0] =  Exp3D;
+      
+      for(int i = 1; i < nfields; ++i)
+      {
+        Exp[i] = MemoryManager<MultiRegions::ExpList3D>
+          ::AllocateSharedPtr(*Exp3D);
+      }
     }
-  }
-  break;
-
-  default:
-    ASSERTL0(false,"Expansion dimension not recognised");
     break;
-  }
+    
+    default:
+      EXCEPTION2( NonCompliantException, "Nektar++ field expansion",
+                  "Expansion dimension not recognised");
+      break;
+    }
   
-  //----------------------------------------------
+    //----------------------------------------------
 
-  //----------------------------------------------
-  // Copy data from field file
-  for( int j= 0; j < nfields; ++j)
-  {
-    for(int i = 0; i < fielddata.size(); ++i)
-    {
-      Exp[j]->ExtractDataToCoeffs(fielddef [i],
-                                  fielddata[i],
-                                  fielddef [i]->m_fields[j],
-                                  Exp[j]->UpdateCoeffs());
-    }
+    //----------------------------------------------
+    // Copy data from field file
+    for( int j= 0; j < nfields; ++j)
+      {
+        for(int i = 0; i < fielddata.size(); ++i)
+          {
+            Exp[j]->ExtractDataToCoeffs(fielddef [i],
+                                        fielddata[i],
+                                        fielddef [i]->m_fields[j],
+                                        Exp[j]->UpdateCoeffs());
+          }
     
-    Exp[j]->BwdTrans(Exp[j]->GetCoeffs(),Exp[j]->UpdatePhys());
+        Exp[j]->BwdTrans(Exp[j]->GetCoeffs(),Exp[j]->UpdatePhys());
+      }
   }
+
+  else // mesh file only, no field data
+  {
+    SpatialDomains::ExpansionMap emap = graphShPt->GetExpansions();
+    SpatialDomains::ExpansionMapIter it;
+
+    for (it = emap.begin(); it != emap.end(); ++it)
+    {
+      for (int i = 0; i < it->second->m_basisKeyVector.size(); ++i)
+      {
+        LibUtilities::BasisKey  tmp1 = it->second->m_basisKeyVector[i];
+        LibUtilities::PointsKey tmp2 = tmp1.GetPointsKey();
+
+        int refinement = (m_refinement ? m_refinement+2 : tmp1.GetNumModes());
+
+        it->second->m_basisKeyVector[i] =
+          LibUtilities::BasisKey(tmp1.GetBasisType(), refinement,
+                                 LibUtilities::PointsKey(refinement,
+                                                         LibUtilities::ePolyEvenlySpaced));
+      }
+    }
+
+    // Define the expansion for the mesh
+    switch( graphShPt->GetMeshDimension() )
+    {
+      case 1:
+      {
+        if(vSession->DefinesSolverInfo("HOMOGENEOUS"))
+        {
+          std::string HomoStr = vSession->GetSolverInfo("HOMOGENEOUS");
+          MultiRegions::ExpList2DHomogeneous1DSharedPtr Exp2DH1;
+
+          if( HomoStr != "HOMOGENEOUS1D" && HomoStr != "Homogeneous1D" &&
+              HomoStr != "1D"            && HomoStr != "Homo1D" )
+            EXCEPTION2( NonCompliantException, "Nektar++ mesh expansion",
+                        "Only 3DH1D supported for XML output currently.");
+
+          int nplanes;
+          vSession->LoadParameter("HomModesZ", nplanes);
+
+          // choose points to be at evenly spaced points at nplanes + 1
+          // points
+          const LibUtilities::PointsKey Pkey(nplanes + 1,
+                                             LibUtilities::ePolyEvenlySpaced);
+          const LibUtilities::BasisKey  Bkey(LibUtilities::eFourier,
+                                             nplanes, Pkey);
+          NekDouble lz = vSession->GetParameter("LZ");
+
+          Exp2DH1 = MemoryManager<MultiRegions::ExpList2DHomogeneous1D>
+            ::AllocateSharedPtr(vSession, Bkey, lz, false, false, graphShPt);
+          Exp[0] = Exp2DH1;
+        }
+        else
+        {
+          MultiRegions::ExpList1DSharedPtr Exp1D;
+          Exp1D = MemoryManager<MultiRegions::ExpList1D>
+           ::AllocateSharedPtr(vSession,graphShPt);
+          Exp[0] = Exp1D;
+        }
+        
+        break;
+      }
+      case 2:
+      {
+        if(vSession->DefinesSolverInfo("HOMOGENEOUS"))
+        {
+          std::string HomoStr = vSession->GetSolverInfo("HOMOGENEOUS");
+          MultiRegions::ExpList3DHomogeneous1DSharedPtr Exp3DH1;
+
+          if( HomoStr != "HOMOGENEOUS1D" && HomoStr != "Homogeneous1D" &&
+              HomoStr != "1D"            && HomoStr != "Homo1D" )
+            EXCEPTION2( NonCompliantException, "Nektar++ mesh expansion",
+                        "Only 3DH1D supported for XML output currently.");
+
+          int nplanes;
+          vSession->LoadParameter("HomModesZ", nplanes);
+
+          // choose points to be at evenly spaced points at nplanes + 1
+          // points
+          const LibUtilities::PointsKey Pkey(nplanes + 1,
+                                             LibUtilities::ePolyEvenlySpaced);
+          const LibUtilities::BasisKey  Bkey(LibUtilities::eFourier, nplanes,
+                                             Pkey);
+          NekDouble lz = vSession->GetParameter("LZ");
+
+          Exp3DH1 = MemoryManager<MultiRegions::ExpList3DHomogeneous1D>
+            ::AllocateSharedPtr(vSession, Bkey, lz, false, false, graphShPt);
+          Exp[0] = Exp3DH1;
+        }
+        else
+        {
+          MultiRegions::ExpList2DSharedPtr Exp2D;
+          Exp2D = MemoryManager<MultiRegions::ExpList2D>
+            ::AllocateSharedPtr(vSession,graphShPt);
+          Exp[0] =  Exp2D;
+        }
+        break;
+      }
+      case 3:
+      {
+        MultiRegions::ExpList3DSharedPtr Exp3D;
+        Exp3D = MemoryManager<MultiRegions::ExpList3D>
+          ::AllocateSharedPtr(vSession,graphShPt);
+        Exp[0] =  Exp3D;
+        break;
+      }
+      default:
+      {
+        EXCEPTION2( NonCompliantException, "Nektar++ mesh expansion",
+                    "Expansion dimension not recognised");
+        break;
+      }
+    }
+  }
+
   //----------------------------------------------
 
   //----------------------------------------------
@@ -1416,7 +1613,7 @@ std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
     Exp[0]->WriteVtkPieceHeader(outstream,i);
 
     // For this expansion, write out each field.
-    for(int j = 0; j < Exp.num_elements(); ++j)
+    for(int j = 0; j < nfields; ++j)
     {
       Exp[j]->WriteVtkPieceData(outstream, i, fielddef[0]->m_fields[j]);
     }
@@ -1433,11 +1630,13 @@ std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
   // for(int i = 0; i < 3; ++i)
   //   nektar_field[i] = 0;
 
-  for(int i = 0; i < fielddata.size(); ++i)
+  for(int i = 0; i < 3; ++i)
   {
-    for(int j = 0; j < 3; ++j)
-      if( fielddef[0]->m_fields[i] == vectorVarComponents[j] )
-        nektar_field[j] = Exp[i];
+    for(int j = 0; j < nfields; ++j)
+    {
+      if( vectorVarComponents[i] == fielddef[0]->m_fields[j] )
+        nektar_field[i] = Exp[j];
+    }
   }
 
   outstream.flush();
