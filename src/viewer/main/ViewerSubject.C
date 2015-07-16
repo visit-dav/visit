@@ -2975,10 +2975,9 @@ void GetSerializedData(int windowIndex,
 
         if(len > 0){
             QByteArray data(result,(int)len);
-
             element.SetData(QString(data.toBase64()).toStdString());
             element.SetFormat(ViewerClientInformation::Image);
-            element.SetWindowId(vwin->GetWindowId()+1);
+            element.SetWindowId(windowIndex+1);//(vwin->GetWindowId()+1);
             elementList.push_back(element);
         }
         delete [] result;
@@ -3055,10 +3054,8 @@ ViewerSubject::ExportWindow()
     JSONNode node;
     node.Parse(GetViewerState()->GetViewerRPC()->GetStringArg1());
 
-
     intVector windowIds = node["plotIds"].AsIntVector();
     std::string format = node["format"].GetString();
-
 
     ViewerClientInformation* qatts = GetViewerState()->GetViewerClientInformation();
     ViewerClientInformation::OutputFormat of;
@@ -3089,7 +3086,7 @@ ViewerSubject::ExportWindow()
         return;
     }
 
-    ViewerClientConnection* client = clients[resultId];
+    ViewerClientConnection* client = clients[clientId];
     ViewerClientAttributes& clatts = client->GetViewerClientAttributes();
 
     // resolution and window
@@ -3212,12 +3209,31 @@ ViewerSubject::Export()
     JSONNode node;
     std::string str = GetViewerState()->GetViewerRPC()->GetStringArg1();
     int clientId = GetViewerState()->GetViewerRPC()->GetIntArg1();
-    std::cout << "EXPORT" << std::endl;
     replaceAll(str,"\\\\", "\\");
     replaceAll(str,"\\\"", "\"");
     node.Parse(str);
 
     std::string action = node["action"].GetString();
+    std::cout << "Export: " << action << std::endl;
+
+    //int clientId = GetViewerState()->GetViewerRPC()->GetIntArg1();
+
+    int resultId = -1;
+    /// Broadcast directly to client..
+    for(int i = 0; i < (int)clients.size(); ++i) {
+        ViewerClientAttributes& client = clients[i]->GetViewerClientAttributes();
+        if(client.GetId() == clientId) {
+            resultId = i;
+            break;
+        }
+    }
+
+    if(resultId < 0) {
+        std::cerr << "Export request for client that does not exist.." << std::endl;
+        return;
+    }
+
+    ViewerClientConnection* client = clients[resultId];
 
     if(action == "ExportWindows") {
         ExportWindow();
@@ -3286,12 +3302,8 @@ ViewerSubject::Export()
             type = (int)ViewerClientAttributes::Data;
         }
 
-        if(clientId >= 0 && clientId < (int)clients.size())
-        {
-            ViewerClientConnection* conn = clients[clientId];
-
-            intVector& activeWindows = conn->GetViewerClientAttributes().GetWindowIds();
-            intVector& typeWindows = conn->GetViewerClientAttributes().GetRenderingTypes();
+           intVector& activeWindows = client->GetViewerClientAttributes().GetWindowIds();
+            intVector& typeWindows = client->GetViewerClientAttributes().GetRenderingTypes();
             int index = -1;
             for(size_t i = 0; i < activeWindows.size(); ++i) {
                 if(activeWindows[i] == windowId) {
@@ -3299,18 +3311,16 @@ ViewerSubject::Export()
                     break;
                 }
             }
-            //std::cout << "registering new window for clientId " << activeWindows.size() << " "
-            //          << clientId << " " << index << "  " << " " << windowId << " " << type << std::endl;
+            //std::cerr << "registering new window for clientId " << activeWindows.size() << " " << clientId << " " << index << "  " << " " << windowId << " " << type << std::endl;
             if(index == -1) {
                 activeWindows.push_back(windowId);
                 typeWindows.push_back(type);
             }
-        }
 
         /// activeWindows are 1-based but internal windows are 0-based
         /// really confusing :)
-        BroadcastImage(windowId-1, false);
-        BroadcastData(windowId-1, clientId);
+        BroadcastImage(windowId, false);
+        BroadcastData(windowId, resultId);
     }
 
     if(action == "ColorTable") {
@@ -3411,7 +3421,7 @@ ViewerSubject::Export()
         win->ClearWindow(false);
         win->GetPlotList()->RealizePlots(false);
         BroadcastImage(windowId, false);
-        BroadcastData(windowId, clientId);
+        BroadcastData(windowId, resultId);
     }
 }
 
@@ -4202,9 +4212,11 @@ ViewerSubject::BroadcastImage(int windowId, bool inMotion)
         const intVector& typeWindows = clatts.GetRenderingTypes();
 
         for(size_t j = 0; j < activeWindows.size(); ++j) {
-            if(activeWindows[j] == windowId+1 &&
-              (ViewerClientAttributes::RenderType)typeWindows[j] == ViewerClientAttributes::Image) {
+            if(activeWindows[j] == windowId &&
+              (ViewerClientAttributes::RenderType)typeWindows[j] == ViewerClientAttributes::Image) 
+            {
                 activeClients.push_back(clients[i]);
+                break;
             }
         }
     }
@@ -4228,7 +4240,7 @@ ViewerSubject::BroadcastImage(int windowId, bool inMotion)
         if(geometryElementMap.count(dimensions) > 0) continue;
 
         //int timerId = visitTimer->StartTimer(true);
-        GetSerializedData(windowId,
+        GetSerializedData(windowId-1,
                           clatts.GetImageWidth(),
                           clatts.GetImageHeight(),
                           clatts.GetImageResolutionPcnt(),
@@ -6008,7 +6020,8 @@ ViewerSubject::HandleAnimation()
 
 void ViewerSubject::RenderEventCallback(int windowId, bool inMotion, void* data) {
     ViewerSubject* vs = (ViewerSubject*)data;
-    vs->BroadcastImage(windowId, inMotion);
+    ///this windowId is based on 0 index..
+    vs->BroadcastImage(windowId+1, inMotion);
 }
 
 #include <QVTKInteractor.h>
