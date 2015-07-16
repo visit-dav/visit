@@ -108,7 +108,11 @@ class avtNektarPPFileFormat : public avtMTSDFileFormat
     std::vector<int>    m_cycles;
     std::vector<double> m_times;
 
+    int m_refinement;
+    bool m_ignoreCurvedElements;
+
     std::string m_meshFile;
+    std::string m_fieldFile;
 
     std::string vectorVarComponents[3];
 

@@ -22,7 +22,7 @@
       vtkIOXML
     </LIBS>
     <FilePatterns>
-      *.chk *.fld
+      *.chk *.fld *.xml *.rst *.bse
     </FilePatterns>
     <Files components="M">
       avtNektarPPFileFormat.C
