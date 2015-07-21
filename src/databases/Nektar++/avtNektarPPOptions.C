@@ -44,8 +44,7 @@
 
 #include <DBOptionsAttributes.h>
 
-#include <string>
-
+using namespace NektarPPDBOptions;
 
 // ****************************************************************************
 //  Function: GetNektarPPReadOptions
@@ -68,7 +67,7 @@ GetNektarPPReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
 
-    rv->SetEnum("Mesh refinement", 0);
+    rv->SetEnum(NEKTARPP_MESH_REFINEMENT, 0);
     std::vector<std::string> refinement;
     refinement.push_back("auto");
     refinement.push_back("1");
@@ -81,9 +80,9 @@ GetNektarPPReadOptions(void)
     refinement.push_back("8");
     refinement.push_back("9");
     refinement.push_back("10");
-    rv->SetEnumStrings("Mesh refinement", refinement);
+    rv->SetEnumStrings(NEKTARPP_MESH_REFINEMENT, refinement);
 
-    rv->SetBool("Assume linear/planar elements", false);
+    rv->SetBool(NEKTARPP_ASSUME_PLANAR_ELEMENTS, true);
 
     return rv;
 }
