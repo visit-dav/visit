@@ -122,11 +122,13 @@ static inline bool LineIntersectsBox(double *, double, double, double,
 //    Hank Childs, Mon Sep 13 19:01:26 PDT 2010
 //    Initialize new data members for optimizing results.
 //
+//    Mark C. Miller, Tue Jul 21 12:00:18 PDT 2015
+//    Prevent eventual malloc for negative size when/if els<=0.
 // ****************************************************************************
 
 avtIntervalTree::avtIntervalTree(int els, int dims, bool rc)
 {
-    nElements    = els;
+    nElements    = els>0?els:1;
     nDims       = dims;
     hasBeenCalculated = false;
     requiresCommunication = rc;
