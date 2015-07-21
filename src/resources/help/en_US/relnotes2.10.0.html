@@ -61,7 +61,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The PLOT3D reader has been enhanced to <i>auto-detect</i> the format options normally specified by the <i>.vp3d meta file</i> or via <i>Read options.</i>Auto-detection works for most binary files, but not for ascii. It is always on, and if successful, will override the values specified in the <i>.vp3d meta file</i> or <i>Read options.</i>  If not successful, the reader will fallback to use the other settings.</li>
   <li>The PLOT3D reader now supports time-series solution files, specified in the form 'somefile*.q', (where '*' matches a number specifing the timestate) or 'somefile??3?.q'.  Use the '?' form to sub-select from the time series. The q filename in this form can be used in the <i>.vp3d meta file</i>, or via <i>Read Options.</i>  The '.q' extension is the default.</li>
   <li></li>
-  <li></li>
+  <li>The Nek5000 reader had an issue with #std 8 data files (double size data). The data dimensions would be read wrong. This has been fixed.</li>
 </ul>
 
 <a name="Plot_changes"></a>
