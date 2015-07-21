@@ -2742,6 +2742,11 @@ avtNek5000FileFormat::GetAuxiliaryData(const char *var,
 //    Renamed method as this is now an internal routine and not part associated
 //    with the virtual method GetAuxiliaryData.
 //    
+//    David Camp, Tue Jul 21 10:56:18 PDT 2015
+//    Changed the data size to match the type of NEK data; float or double.
+//    I checked with the NEK team and the meta data will always be float, so
+//    no need for meta data code to change. It is expecting float data.
+//    
 // ****************************************************************************
 
 avtIntervalTree *
@@ -2784,9 +2789,9 @@ avtNek5000FileFormat::GetBoundingBoxIntervalTree(int timestep)
     {
         long iFileSizeWithoutMetaData = 136 
                 + sizeof(int)*aBlocksPerFile[ii] 
-                + ((long)nFloatsPerDomain)*sizeof(float)*((long)aBlocksPerFile[ii]);
+                + ((long)nFloatsPerDomain)*iPrecision*((long)aBlocksPerFile[ii]);
 
-        long iMDSize = (nFloatsPerDomain * 2 * sizeof(float) * aBlocksPerFile[ii]) / 
+        long iMDSize = (nFloatsPerDomain * 2 * iPrecision * aBlocksPerFile[ii]) / 
                     (iBlockSize[0]*iBlockSize[1]*iBlockSize[2]);
 
         GetFileName(timestep, ii, blockfilename, (int)fileTemplate.size() + 64);
