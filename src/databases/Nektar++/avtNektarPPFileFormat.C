@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtNektarPPFileFormat.h>
+#include <avtNektarPPOptions.h>
 
 #include <string>
 #include <sys/stat.h>
@@ -70,6 +71,7 @@
 #include <avtCallback.h>
 #include <NonCompliantException.h>
 #include <InvalidFilesException.h>
+#include <FileDoesNotExistException.h>
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
 
@@ -84,6 +86,8 @@
 #include <MultiRegions/ExpList3DHomogeneous2D.h>
 
 #define ACCELERATE_FRAMEWORK_LINK_FLAGS 1
+
+using namespace NektarPPDBOptions;
 
 using namespace Nektar;
 
@@ -102,7 +106,7 @@ using namespace Nektar;
 
 avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttributes *readOpts)
   : avtMTSDFileFormat(&filename, 1),
-    m_refinement(0), m_ignoreCurvedElements(0), refinedDataSet(0)
+    m_refinement(0), m_ignoreCurvedElements(1), refinedDataSet(0)
 {
   //  std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
 
@@ -112,15 +116,15 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
 
   if (readOpts != NULL) {
     for (int i=0; i<readOpts->GetNumberOfOptions(); ++i) {
-      if (readOpts->GetName(i) == "Mesh refinement")
-        m_refinement = readOpts->GetEnum("Mesh refinement");
-      else if (readOpts->GetName(i) == "Assume linear/planar elements")
+      if (readOpts->GetName(i) == NEKTARPP_MESH_REFINEMENT)
+        m_refinement = readOpts->GetEnum(NEKTARPP_MESH_REFINEMENT);
+      else if (readOpts->GetName(i) == NEKTARPP_ASSUME_PLANAR_ELEMENTS)
         m_ignoreCurvedElements =
-          readOpts->GetBool("Assume linear/planar elements");
+          readOpts->GetBool(NEKTARPP_ASSUME_PLANAR_ELEMENTS);
     }
   }
-    
-  if( m_refinement < 0 )      m_refinement = 0;
+
+  if( m_refinement < 0 )       m_refinement = 0;
   else if( m_refinement > 10 ) m_refinement = 10;
 
   // if( NEKTAR_RT_U_FIELD == 0 )
@@ -189,6 +193,14 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
 
       // Check for an underscore before the cycle number.
       std::string::size_type funderscore = m_meshFile.find_last_of('_');
+      std::string::size_type fslash      = m_meshFile.find_last_of('/');
+
+      if (fslash == std::string::npos)
+        fslash = 0;
+
+      // If the underscore is before the slash ignore it.
+      if( funderscore < fslash )
+        funderscore = std::string::npos;
 
       if (funderscore != std::string::npos)
       {
@@ -254,7 +266,7 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
   struct stat buffer;
   if( stat( m_meshFile.c_str(), &buffer ) )
   {
-    EXCEPTION1( InvalidFilesException, m_meshFile );
+    EXCEPTION1( FileDoesNotExistException, m_meshFile.c_str() );
   }
 
   // Get the Nektar++ field file for the time slice and the variables.
@@ -476,8 +488,8 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
 
     if( !m_ignoreCurvedElements && (nCurvedEdges || nCurvedFaces) )
     {
-      EXCEPTION2( NonCompliantException, "Nektar++ curved element check",
-                  "This database contains curved elements. VisIt's "
+      avtCallback::IssueWarning(
+                  "This database contains curved elements. VisIt's element "
                   "lookup assumes linear/planar elements. The integral "
                   "curve results may not be accurate at the boundaries of "
                   "of these elements. To ignore the boundaries select "
