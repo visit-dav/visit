@@ -1321,6 +1321,9 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Feb 11 17:10:57 PST 2009
 //    Removed centering from curve meta data
+//
+//    Mark C. Miller, Wed Jul  8 18:29:43 PDT 2015
+//    Added a continue for data==NULL (possible for null returns from plugins) 
 // ****************************************************************************
 
 void
@@ -1491,6 +1494,11 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
           default:
             EXCEPTION1(InvalidVariableException, varName);
         }
+
+        // We can arrive here with dat == NULL when a plugin decides to
+        // return null for a variable that is missing on a given domain
+        // (a well-known case is Silo 'EMPTY' blocks)
+        if (!dat) continue;
            
         dat->SetName(varName);
         atts->AddArray(dat);
