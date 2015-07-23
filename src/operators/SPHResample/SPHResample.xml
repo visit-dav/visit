@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+  <Plugin name="SPHResample" type="operator" label="SPH Resample" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false">
+    <Attribute name="SPHResampleAttributes" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Field name="minX" label="Minimum X" type="float">
+        0.000000
+      </Field>
+      <Field name="maxX" label="Maximum X" type="float">
+        1.000000
+      </Field>
+      <Field name="xnum" label="X Grid Cells" type="int">
+        10
+      </Field>
+      <Field name="minY" label="Minimum Y" type="float">
+        0.000000
+      </Field>
+      <Field name="maxY" label="Maximum Y" type="float">
+        1.000000
+      </Field>
+      <Field name="ynum" label="Y Grid Cells" type="int">
+        10
+      </Field>
+      <Field name="minZ" label="Minimum Z" type="float">
+        0.000000
+      </Field>
+      <Field name="maxZ" label="Maximum Z" type="float">
+        1.000000
+      </Field>
+      <Field name="znum" label="Z Grid Cells" type="int">
+        10
+      </Field>
+      <Field name="tensorSupportVariable" label="Tensor Support" type="variablename" vartypes="01000001100">
+        H
+      </Field>
+      <Field name="weightVariable" label="Weight" type="variablename" vartypes="01000000000">
+        mass
+      </Field>
+      <Field name="RK" label="RK" type="bool">
+        false
+      </Field>
+    </Attribute>
+  </Plugin>
