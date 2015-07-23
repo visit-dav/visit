@@ -953,6 +953,33 @@ SumDoubleArray(double *inArray, double *outArray, int nArray)
 #endif
 }
 
+// ****************************************************************************
+// Function:  SumDoubleArrayInPlace
+//
+// Purpose:
+//   Allow the root proc (0) to reuse its input buffer to store the sum
+//   accross all procs. The input data is taken from inOutArray and then replaced
+//   by the output data. This method should ONLY be called by the root proc (0), all
+//   other procs should call SumDoubleArray.
+//
+// Arguments:
+//   inOutArray The root proc input data and also where the overall sum (output data)
+//               will be placed.
+//   nArray     The number of entries in inOutArray
+//
+// Programmer:  Kevin Griffin
+// Creation:    July 7, 2015
+//
+// ****************************************************************************
+
+
+void
+SumDoubleArrayInPlace(double *inOutArray, int nArray)
+{
+#ifdef PARALLEL
+    MPI_Reduce(MPI_IN_PLACE, inOutArray, nArray, MPI_DOUBLE, MPI_SUM, 0, VISIT_MPI_COMM);
+#endif
+}
 
 
 // ****************************************************************************

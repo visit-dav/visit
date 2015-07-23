@@ -68,6 +68,9 @@
 #   subdir before adding it.  Call VISIT_SELECTED_PLUGIN_ERROR macro if
 #   necessary.
 #
+#   Kevin Griffin, Wed July 22 18:00:10 PDT 2015
+#   Add SPH Resample Operator 
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
@@ -128,6 +131,7 @@ Revolve
 Slice
 Smooth
 SphereSlice
+SPHResample
 Stagger
 StatisticalTrends
 SurfaceNormal
