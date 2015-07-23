@@ -75,6 +75,8 @@
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
 
+#include <avtParallel.h>
+
 //#include <vtkNektar++.h>
 
 #include <MultiRegions/ExpList.h>
@@ -393,15 +395,19 @@ avtNektarPPFileFormat::Initialize()
     reader->SetInputString(xmlstr);
 #else
 
-    std::string filename("/tmp/visit_tmp.vtu");
+    std::ostringstream outfilename;
 
-    filename = m_fieldFile + ".vtu";
-    
-    ofstream outstream(filename.c_str());
+    std::string filename("/tmp/visit_tmp");
+
+//    std::string filename(m_fieldFile);
+
+    outfilename <<  filename << "_" << PAR_Rank() << ".vtu"; 
+
+    ofstream outstream(outfilename.str().c_str());
     outstream << xmlstr;
     outstream.close();
 
-    reader->SetFileName(filename.c_str());
+    reader->SetFileName(outfilename.str().c_str());
 #endif
 
     reader->Update();
