@@ -290,130 +290,116 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
         nvals  = nvals3;
 
     vtkDataArray *dv = data1->NewInstance();
-    if (twoDVector)
-    {
-        if (numinputs == 2)
-        {
-            if (data1->GetNumberOfComponents() == 1 &&
-                data2->GetNumberOfComponents() == 1)
-            {
-                //
-                // Standard vector case.
-                //
-                dv->SetNumberOfComponents(3);  // VTK doesn't like 2.
-                dv->SetNumberOfTuples(nvals);
 
-                for (vtkIdType i = 0 ; i < nvals ; i++)
-                {
-                    double val1 = data1->GetTuple1((nvals1>1 ? i : 0));
-                    double val2 = data2->GetTuple1((nvals2>1 ? i : 0));
-                    dv->SetTuple3(i, val1, val2, 0.);
-                }
-            }
-            else if ((data1->GetNumberOfComponents() == 3) &&
-                     (data2->GetNumberOfComponents() == 3))
+    if (numinputs == 2)
+    {
+        if (data1->GetNumberOfComponents() == 1 &&
+            data2->GetNumberOfComponents() == 1)
+        {
+            //
+            // Standard vector case.
+            //
+            dv->SetNumberOfComponents(3);  // VTK doesn't like 2.
+            dv->SetNumberOfTuples(nvals);
+
+            for (vtkIdType i = 0 ; i < nvals ; i++)
             {
-                //
-                // 2D tensor.
-                //
-                dv->SetNumberOfComponents(9); 
-                dv->SetNumberOfTuples(nvals);
-                
-                for (vtkIdType i = 0 ; i < nvals ; i++)
-                {
-                    double vals[9];
-                    vals[0] = data1->GetComponent((nvals1>1 ? i : 0), 0);
-                    vals[1] = data1->GetComponent((nvals2>1 ? i : 0), 1);
-                    vals[2] = 0.;
-                    vals[3] = data2->GetComponent((nvals1>1 ? i : 0), 0);
-                    vals[4] = data2->GetComponent((nvals2>1 ? i : 0), 1);
-                    vals[5] = 0.;
-                    vals[6] = 0.;
-                    vals[7] = 0.;
-                    vals[8] = 0.;
-                    dv->SetTuple(i, vals);
-                }
-            }
-            else
-            {
-                char str[1024];
-                sprintf(str, "Do not know how to assemble arrays of %d and "
-                             "%d into a vector or tensor.", 
-                              data1->GetNumberOfComponents(),
-                              data2->GetNumberOfComponents());
-                EXCEPTION2(ExpressionException, outputVariableName, str);
+                double val1 = data1->GetTuple1((nvals1>1 ? i : 0));
+                double val2 = data2->GetTuple1((nvals2>1 ? i : 0));
+                dv->SetTuple3(i, val1, val2, 0.);
             }
         }
-        else if (numinputs == 3)
+        else if ((data1->GetNumberOfComponents() == 3) &&
+                 (data2->GetNumberOfComponents() == 3))
         {
-            EXCEPTION2(ExpressionException, outputVariableName, 
-                       "I don't know how to compose "
-                       "3 variables to make a field for a 2D dataset. If you are by chance "
-                       "attempting to constuct an rgb color vector, try using the special "
-                       "expressions designed for this purpose, 'color' or 'color4', under "
-                       "Vector expressions submenu.");
- 
+            //
+            // 2D tensor.
+            //
+            dv->SetNumberOfComponents(9); 
+            dv->SetNumberOfTuples(nvals);
+                
+            for (vtkIdType i = 0 ; i < nvals ; i++)
+            {
+                double vals[9];
+                vals[0] = data1->GetComponent((nvals1>1 ? i : 0), 0);
+                vals[1] = data1->GetComponent((nvals2>1 ? i : 0), 1);
+                vals[2] = 0.;
+                vals[3] = data2->GetComponent((nvals1>1 ? i : 0), 0);
+                vals[4] = data2->GetComponent((nvals2>1 ? i : 0), 1);
+                vals[5] = 0.;
+                vals[6] = 0.;
+                vals[7] = 0.;
+                vals[8] = 0.;
+                dv->SetTuple(i, vals);
+            }
+        }
+        else
+        {
+            char str[1024];
+            sprintf(str, "Do not know how to assemble arrays of %d and "
+                    "%d into a vector or tensor.", 
+                    data1->GetNumberOfComponents(),
+                    data2->GetNumberOfComponents());
+            EXCEPTION2(ExpressionException, outputVariableName, str);
         }
     }
-    else
+    else if (numinputs == 3)
     {
-        if (numinputs == 3)
+        if (data1->GetNumberOfComponents() == 1 && 
+            data2->GetNumberOfComponents() == 1 && 
+            data3->GetNumberOfComponents() == 1)
         {
-            if (data1->GetNumberOfComponents() == 1 && 
-                data2->GetNumberOfComponents() == 1 && 
-                data3->GetNumberOfComponents() == 1)
-            {
-                //
-                // This is your everyday 3D vector combination.
-                //
-                dv->SetNumberOfComponents(3); 
-                dv->SetNumberOfTuples(nvals);
+            //
+            // This is your everyday 3D vector combination.
+            //
+            dv->SetNumberOfComponents(3); 
+            dv->SetNumberOfTuples(nvals);
                 
-                for (vtkIdType i = 0 ; i < nvals ; i++)
-                {
-                    double val1 = data1->GetTuple1((nvals1>1 ? i : 0));
-                    double val2 = data2->GetTuple1((nvals2>1 ? i : 0));
-                    double val3 = data3->GetTuple1((nvals3>1 ? i : 0));
-                    dv->SetTuple3(i, val1, val2, val3);
-                }
-            }
-            else if (data1->GetNumberOfComponents() == 3 &&
-                     data2->GetNumberOfComponents() == 3 &&
-                     data3->GetNumberOfComponents() == 3)
+            for (vtkIdType i = 0 ; i < nvals ; i++)
             {
-                //
-                // This is a 3D tensor.  Interpret it as:
-                // Data1 = XX, XY, XZ
-                // Data2 = YX, YY, YZ
-                // Data3 = ZX, ZY, ZZ
-                //
-                dv->SetNumberOfComponents(9); 
-                dv->SetNumberOfTuples(nvals);
-                
-                for (vtkIdType i = 0 ; i < nvals ; i++)
-                {
-                    double entry[9];
-                    data1->GetTuple((nvals1>1 ? i : 0), entry);
-                    data2->GetTuple((nvals2>1 ? i : 0), entry+3);
-                    data3->GetTuple((nvals3>1 ? i : 0), entry+6);
-                    dv->SetTuple(i, entry);
-                }
-            }
-            else
-            {
-                EXCEPTION2(ExpressionException, outputVariableName, 
-                           "The only interpretation "
-                           "VisIt can make of 3 variables for a 3D dataset is "
-                           "a vector or a tensor.  But these inputs don't have"
-                           " the right number of components to make either.");
+                double val1 = data1->GetTuple1((nvals1>1 ? i : 0));
+                double val2 = data2->GetTuple1((nvals2>1 ? i : 0));
+                double val3 = data3->GetTuple1((nvals3>1 ? i : 0));
+                dv->SetTuple3(i, val1, val2, val3);
             }
         }
-        else 
+        else if (data1->GetNumberOfComponents() == 3 &&
+                 data2->GetNumberOfComponents() == 3 &&
+                 data3->GetNumberOfComponents() == 3)
         {
-            EXCEPTION2(ExpressionException, outputVariableName, 
-                        "You must specify three vectors "
-                        "to compose a field for a 3D dataset.");
+            //
+            // This is a 3D tensor.  Interpret it as:
+            // Data1 = XX, XY, XZ
+            // Data2 = YX, YY, YZ
+            // Data3 = ZX, ZY, ZZ
+            //
+            dv->SetNumberOfComponents(9); 
+            dv->SetNumberOfTuples(nvals);
+                
+            for (vtkIdType i = 0 ; i < nvals ; i++)
+            {
+                double entry[9];
+                data1->GetTuple((nvals1>1 ? i : 0), entry);
+                data2->GetTuple((nvals2>1 ? i : 0), entry+3);
+                data3->GetTuple((nvals3>1 ? i : 0), entry+6);
+                dv->SetTuple(i, entry);
+            }
         }
+        else
+        {
+            char str[1024];
+            sprintf(str, "Do not know how to assemble arrays of %d and "
+                    "%d into a vector or tensor.", 
+                    data1->GetNumberOfComponents(),
+                    data2->GetNumberOfComponents());
+            EXCEPTION2(ExpressionException, outputVariableName, str);
+        }
+    }
+    else 
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "You must specify two inputs to compose"
+                   "a vector or a tensor.");
     }
 
     //If offset information existed on the input dataset, set it on the output
