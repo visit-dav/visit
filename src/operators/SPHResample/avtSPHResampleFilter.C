@@ -265,7 +265,11 @@ vector<int>
 makeIndex(const int ix,
           const int iy,
           const int iz) {
-    //REQUIRE(false);
+    vector<int> result(3);
+    result[0] = ix;
+    result[1] = iy;
+    result[2] = iz;
+    return result;
 }
 
 template<>
