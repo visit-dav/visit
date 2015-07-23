@@ -140,6 +140,7 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
   // If *.fld field data with a pointer to the mesh.
 
   int cycle = GuessCycle( filename );
+  double time = 0;
 
   //----------------------------------------------
   // Sort out the file name.
@@ -156,11 +157,11 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
       m_meshFile = std::string(filename);
 
       // No cycle 
-      int cycle = 0;
+      cycle = 0;
       m_cycles.push_back( cycle );
 
       // No time 
-      double time = 0;
+      time = 0;
       m_times.push_back( time );
     }
 
@@ -177,7 +178,7 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
       m_meshFile += std::string(".xml");
 
       // No cycle 
-      int cycle = 0;
+      cycle = 0;
       m_cycles.push_back( cycle );
     }
 
@@ -204,8 +205,7 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
 
       if (funderscore != std::string::npos)
       {
-        int cycle;
-        istringstream ( m_meshFile.substr(funderscore+1) ) >> cycle;
+        // istringstream ( m_meshFile.substr(funderscore+1) ) >> cycle;
 
         // Remove the cycle value.
         m_meshFile = m_meshFile.substr(0, funderscore);
@@ -224,7 +224,7 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
         {
           m_meshFile += std::string(".xml");
 
-          int cycle = 0;
+          cycle = 0;
           m_cycles.push_back( cycle );
         }
       }
@@ -392,11 +392,16 @@ avtNektarPPFileFormat::Initialize()
     reader->ReadFromInputStringOn();
     reader->SetInputString(xmlstr);
 #else
-    ofstream outstream("/tmp/visit_tmp.vtu");
+
+    std::string filename("/tmp/visit_tmp.vtu");
+
+    filename = m_fieldFile + ".vtu";
+    
+    ofstream outstream(filename.c_str());
     outstream << xmlstr;
     outstream.close();
 
-    reader->SetFileName("/tmp/visit_tmp.vtu");
+    reader->SetFileName(filename.c_str());
 #endif
 
     reader->Update();
@@ -564,13 +569,13 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
     if( topological_dimension == 2 )
       extents[4] = extents[5] = 0;
 
-    int nVerts = graphShPt->GetNvertices();
+    const SpatialDomains::PointGeomMap& ptIds = graphShPt->GetVertSet();
+    SpatialDomains::PointGeomMap::const_iterator ptIdsIt;
 
-
-    for( int i=0; i<nVerts; ++i )
+    for (ptIdsIt = ptIds.begin(); ptIdsIt != ptIds.end(); ++ptIdsIt)
     {
       NekDouble x, y, z;
-      graphShPt->GetVertex(i)->GetCoords(x, y, z);
+      ptIdsIt->second->GetCoords(x, y, z);
 
       if( extents[0] > x ) extents[0] = x;
       if( extents[1] < x ) extents[1] = x;
@@ -710,21 +715,31 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
 
     int nVerts = graphShPt->GetNvertices();
 
+    // Lookup for going between the Nektar++ id and the VTK id.
+    std::map< int, int > vertIdMap;
+    std::map< int, int >::iterator vertIdIt;
 
     // VTK structure for holding the mesh points. 
     vtkPoints *vtkPts = vtkPoints::New();
     vtkPts->SetDataTypeToDouble();
     vtkPts->SetNumberOfPoints( nVerts );
 
-    for( int i=0; i<nVerts; ++i )
+    const SpatialDomains::PointGeomMap& ptIds = graphShPt->GetVertSet();
+    SpatialDomains::PointGeomMap::const_iterator ptIdsIt;
+    int vtkId = 0;
+
+    for (ptIdsIt = ptIds.begin(); ptIdsIt != ptIds.end(); ++ptIdsIt, ++vtkId)
     {
       NekDouble x, y, z;
-      graphShPt->GetVertex(i)->GetCoords(x, y, z);
+      ptIdsIt->second->GetCoords(x, y, z);
 
       if( graphShPt->GetMeshDimension() == 2 )
         z = 0;
 
-      vtkPts->SetPoint (i, x, y, z);
+      vtkPts->SetPoint (vtkId, x, y, z);
+
+      // Lookup for going between the Nektar++ id and the VTK id.
+      vertIdMap.insert ( std::pair< int, int >( ptIdsIt->first, vtkId) );
     }
 
     // Add the points to the VTK grid.
@@ -745,8 +760,14 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
         SpatialDomains::TriGeomSharedPtr triGeom = triGeomMapIter->second;
         
         for( int i=0; i<triGeom->GetNumVerts(); ++i )
-          tri->GetPointIds()->SetId( i, triGeom->GetVertex(i)->GetVid() );
-        
+        {
+          // Get the VTK id from the Nektar++ id.
+          vertIdIt = vertIdMap.find( triGeom->GetVertex(i)->GetVid() );
+          vtkId = vertIdIt->second;
+
+          tri->GetPointIds()->SetId( i, vtkId );
+        }
+
         ugrid->InsertNextCell( tri->GetCellType(), tri->GetPointIds() );
         
         ++triGeomMapIter;
@@ -764,7 +785,13 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
         SpatialDomains::QuadGeomSharedPtr quadGeom = quadGeomMapIter->second;
         
         for( int i=0; i<quadGeom->GetNumVerts(); ++i )
-          quad->GetPointIds()->SetId( i, quadGeom->GetVertex(i)->GetVid() );
+        {
+          // Get the VTK id from the Nektar++ id.
+          vertIdIt = vertIdMap.find( quadGeom->GetVertex(i)->GetVid() );
+          vtkId = vertIdIt->second;
+
+          quad->GetPointIds()->SetId( i, vtkId );
+        }
         
         ugrid->InsertNextCell( quad->GetCellType(), quad->GetPointIds() );
         
@@ -787,7 +814,13 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
         SpatialDomains::TetGeomSharedPtr tetGeom = tetGeomMapIter->second;
         
         for( int i=0; i<tetGeom->GetNumVerts(); ++i )
-          tet->GetPointIds()->SetId( i, tetGeom->GetVertex(i)->GetVid() );
+        {
+          // Get the VTK id from the Nektar++ id.
+          vertIdIt = vertIdMap.find( tetGeom->GetVertex(i)->GetVid() );
+          vtkId = vertIdIt->second;
+
+          tet->GetPointIds()->SetId( i, vtkId );
+        }
         
         ugrid->InsertNextCell( tet->GetCellType(), tet->GetPointIds() );
         
@@ -806,7 +839,13 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
         SpatialDomains::PyrGeomSharedPtr pyramidGeom = pyramidGeomMapIter->second;
         
         for( int i=0; i<pyramidGeom->GetNumVerts(); ++i )
-          pyramid->GetPointIds()->SetId( i, pyramidGeom->GetVertex(i)->GetVid() );
+        {
+          // Get the VTK id from the Nektar++ id.
+          vertIdIt = vertIdMap.find( pyramidGeom->GetVertex(i)->GetVid() );
+          vtkId = vertIdIt->second;
+
+          pyramid->GetPointIds()->SetId( i, vtkId );
+        }
           
         ugrid->InsertNextCell( pyramid->GetCellType(), pyramid->GetPointIds() );
 
@@ -822,21 +861,23 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
         
       while( prismGeomMapIter != prismGeomMap.end() )
       {       
-        SpatialDomains::PrismGeomSharedPtr prismGeom = prismGeomMapIter->second;        
-        // for( int i=0; i<prismGeom->GetNumVerts(); ++i )
-        //   wedge->GetPointIds()->SetId( i, prismGeom->GetVertex(i)->GetVid() );
+        SpatialDomains::PrismGeomSharedPtr prismGeom = prismGeomMapIter->second;
 
-        // Nektar++ uses a prism whereas VTK uses a wedge which have
-        // a slightly different ordering. A prism would be decribed
-        // via a quad and two points. Whereas a wedge would be
-        // described via two triangles.
-        wedge->GetPointIds()->SetId( 0, prismGeom->GetVertex(0)->GetVid() );
-        wedge->GetPointIds()->SetId( 1, prismGeom->GetVertex(1)->GetVid() );
-        wedge->GetPointIds()->SetId( 2, prismGeom->GetVertex(4)->GetVid() );
-        wedge->GetPointIds()->SetId( 3, prismGeom->GetVertex(3)->GetVid() );
-        wedge->GetPointIds()->SetId( 4, prismGeom->GetVertex(2)->GetVid() );
-        wedge->GetPointIds()->SetId( 5, prismGeom->GetVertex(5)->GetVid() );
-        
+        // Nektar++ uses a prism whereas VTK uses a wedge that has a
+        // slightly different ordering. A prism would be decribed via
+        // a quad and two points. Whereas a wedge would be described
+        // via two triangles. So use an index to get the order correct.
+        const unsigned int index[6] = {0,1,4,3,2,5};
+
+        for( int i=0; i<prismGeom->GetNumVerts(); ++i )
+        {
+          // Get the VTK id from the Nektar++ id.
+          vertIdIt = vertIdMap.find( prismGeom->GetVertex(index[i])->GetVid() );
+          vtkId = vertIdIt->second;
+
+          wedge->GetPointIds()->SetId( i, vtkId );
+        }
+
         ugrid->InsertNextCell( wedge->GetCellType(), wedge->GetPointIds() );
         
         ++prismGeomMapIter;
@@ -854,7 +895,13 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
         SpatialDomains::HexGeomSharedPtr hexGeom = hexGeomMapIter->second;
         
         for( int i=0; i<8; ++i )
-          hex->GetPointIds()->SetId( i, hexGeom->GetVertex(i)->GetVid() );
+        {
+          // Get the VTK id from the Nektar++ id.
+          vertIdIt = vertIdMap.find( hexGeom->GetVertex(i)->GetVid() );
+          vtkId = vertIdIt->second;
+
+          hex->GetPointIds()->SetId( i, vtkId );
+        }
         
         ugrid->InsertNextCell( hex->GetCellType(), hex->GetPointIds() );
         
