@@ -83,6 +83,4 @@ SET_UP_THIRD_PARTY(NEKTAR++
     MultiRegions
     SolverUtils
     SpatialDomains
-    StdRegions
-    metis
-    tinyxml)
+    StdRegions)
