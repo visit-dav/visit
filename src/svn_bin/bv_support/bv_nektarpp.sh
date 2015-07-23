@@ -27,16 +27,16 @@ function bv_nektarpp_alt_nektarpp_dir
 
 function bv_nektarpp_depends_on
 {
-    depends_on="cmake boost"
+    depends_on="cmake boost zlib"
 
     if [[ "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "yes" ]]; then
         echo ""
-    else
-        if [[ "$DO_ZLIB" == "yes" ]] ; then
-           depends_on="$depends_on zlib"    
-        fi
+#    else
+#        if [[ "$DO_ZLIB" == "yes" ]] ; then
+#           depends_on="$depends_on zlib"    
+#        fi
 
-        echo $depends_on
+#        echo $depends_on
     fi
 }
 
