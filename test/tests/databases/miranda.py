@@ -19,21 +19,26 @@
 # ----------------------------------------------------------------------------
 import os, string
 
-
+# ====================================================================
 
 OpenDatabase(data_path("miranda_test_data/TG_vortex/plot.raw"))
-
 
 AddPlot("Pseudocolor","density")
 DrawPlots()
 Test("miranda_raw_reader1")
 
+# ====================================================================
+
 AddPlot("Mesh", "mesh")
 DrawPlots()
 Test("miranda_raw_reader2")
 
+# ====================================================================
+
 SetTimeSliderState(1)
 Test("miranda_raw_reader3")
+
+# ====================================================================
 
 SetTimeSliderState(2)
 DeleteAllPlots()
@@ -44,11 +49,15 @@ SetPlotOptions(vec)
 DrawPlots()
 Test("miranda_raw_reader4")
 
+# ====================================================================
+
 v=GetView3D()
 v.viewNormal=(-0.707107, -0.707107, 0)
 v.viewUp=(0, 0, 1)
 SetView3D(v)
 Test("miranda_raw_reader5")
+
+# ====================================================================
 
 DeleteAllPlots()
 ReplaceDatabase(data_path("miranda_test_data/jet_2d/plot_mat_t83.raw"))
@@ -58,6 +67,8 @@ SetTimeSliderState(0)
 AddPlot("Pseudocolor","density")
 DrawPlots()
 Test("miranda_raw_reader6")
+
+# ====================================================================
 
 SetTimeSliderState(1)
 DeleteAllPlots()
@@ -72,8 +83,12 @@ vv.windowCoords=(0.00640306, 0.00963122, 0.0128936, 0.0161598)
 SetView2D(vv)
 Test("miranda_raw_reader7")
 
+# ====================================================================
+
 SetTimeSliderState(2)
 Test("miranda_raw_reader8")
+
+# ====================================================================
 
 DeleteAllPlots()
 ReplaceDatabase(data_path("miranda_test_data/stem_2d/plot.mir"))
@@ -90,10 +105,51 @@ AddPlot("Pseudocolor","density")
 DrawPlots()
 Test("miranda_raw_reader9")
 
+# ====================================================================
+
 SetTimeSliderState(3)
 DrawPlots()
 Test("miranda_raw_reader10")
 
+# ====================================================================
 
+ReplaceDatabase(data_path("miranda_test_data/2015-05-06-RT_XeHe/plot.mir"))
+
+SetTimeSliderState(0)
+
+AddPlot("Pseudocolor","density")
+
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (-0.626786, -0.71511, 0.309445)
+View3DAtts.focus = (0, 0, 0)
+View3DAtts.viewUp = (-0.109109, 0.473773, 0.873861)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 11085.1
+View3DAtts.nearPlane = -22170.3
+View3DAtts.farPlane = 22170.3
+View3DAtts.imagePan = (0, 0)
+View3DAtts.imageZoom = 1
+View3DAtts.perspective = 1
+View3DAtts.eyeAngle = 2
+View3DAtts.centerOfRotationSet = 0
+View3DAtts.centerOfRotation = (0, 0, 0)
+View3DAtts.axis3DScaleFlag = 0
+View3DAtts.axis3DScales = (1, 1, 1)
+View3DAtts.shear = (0, 0, 1)
+View3DAtts.windowValid = 1
+SetView3D(View3DAtts)
+
+DrawPlots()
+
+Test("miranda_raw_reader11")
+
+# ====================================================================
+
+SetTimeSliderState(1)
+DrawPlots()
+
+Test("miranda_raw_reader12")
+
+# ====================================================================
 
 Exit()
