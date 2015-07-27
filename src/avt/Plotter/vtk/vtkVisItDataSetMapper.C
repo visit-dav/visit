@@ -24,6 +24,7 @@
 #include "vtkPolyDataMapper.h"
 #include "vtkRectilinearGridMapper.h"
 #include "vtkToolkits.h"
+#include "vtkScalarsToColors.h"
 
 #include <vtkPainterPolyDataMapper.h>
 #include <vtkChooserPainter.h>
