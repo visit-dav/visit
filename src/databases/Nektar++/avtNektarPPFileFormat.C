@@ -739,7 +739,7 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
       NekDouble x, y, z;
       ptIdsIt->second->GetCoords(x, y, z);
 
-      if( graphShPt->GetMeshDimension() == 2 )
+      if( graphShPt->GetSpaceDimension() == 2 )
         z = 0;
 
       vtkPts->SetPoint (vtkId, x, y, z);
