@@ -230,6 +230,9 @@ main(int argc, char *argv[])
     char* uifile = 0;
     const char* pyuiembedded_str = "-pyuiembedded"; //pass it along to client
 
+    bool sleep_mode = false;
+    std::string run_code = "";
+
 #ifdef WIN32
     char tmpArg[512];
 #endif
@@ -265,9 +268,11 @@ main(int argc, char *argv[])
         }
 #ifdef WIN32
         else if((strcmp(argv[i], "-s") == 0 && (i+1 < argc)) ||
-                (strcmp(argv[i], "-o") == 0 && (i+1 < argc)))
+                (strcmp(argv[i], "-o") == 0 && (i+1 < argc))
+                (strcmp(argv[i], "-runcode") == 0 && (i+1 < argc)))
         {
             bool runF = (strcmp(argv[i], "-s") == 0);
+            bool runO = (strcmp(argv[i], "-o") == 0);
             ++i;
             // append all parts of this arg back into one string
             if (BEGINSWITHQUOTE(argv[i]) && !ENDSWITHQUOTE(argv[i]))
@@ -300,10 +305,14 @@ main(int argc, char *argv[])
                 sprintf(runFile, "%s", tmpArg);
                 s_found = true;
             }
-            else
+            else if(runO)
             {
                 loadFile = new char [strlen(tmpArg)+1];
                 sprintf(loadFile, "%s", tmpArg);
+            }
+            else
+            {
+                run_code = tmpArg; 
             }
         }
 #else
@@ -319,10 +328,19 @@ main(int argc, char *argv[])
             loadFile = argv[i+1];
             ++i;
         }
+        else if(strcmp(argv[i], "-runcode") == 0 && (i+1 < argc))
+        {
+            run_code = argv[i+1];
+            ++i;
+        }
 #endif
         else if(strcmp(argv[i], "-verbose") == 0)
         {
             verbose = true;
+        }
+        else if(strcmp(argv[i], "-sleepmode") == 0)
+        {
+            sleep_mode = true;
         }
         else if(strcmp(argv[i], "-forceinteractivecli") == 0)
         {
@@ -455,6 +473,12 @@ main(int argc, char *argv[])
             std::cerr << "Warning: Cannot use pyside client and defer at the same time"
                       << std::endl;
             return (0);
+        }
+        if(run_code.length() > 0 && tmp == "-reverse_launch") {
+           run_code = ""; //don't execute scripts during reverse launches..
+        }
+        if(sleep_mode == true && tmp == "-reverse_launch") {
+           sleep_mode = false; //don't execute scripts during reverse launches..
         }
     }
 
@@ -652,8 +676,15 @@ main(int argc, char *argv[])
              delete [] runFile;
 #endif
         }
+        ///run the commandline script..
+        if(run_code.length() > 0) {
+            PyRun_SimpleString(run_code.c_str());
+        }
 
-        if(!scriptOnly)
+        if(sleep_mode == true) {
+            PyRun_SimpleString("import time\nwhile 1: time.sleep(5)");
+        }
+        else if(!scriptOnly)
         {
             PyObject *rl_module = PyImport_ImportModule("readline");
             if (rl_module == NULL)
