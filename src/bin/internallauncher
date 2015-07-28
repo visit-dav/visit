@@ -84,12 +84,15 @@ class JobSubmitter(object):
 #   By default it is set to 0, so it would need to be overridden in a custom
 #   launcher to be added.
 #
+#   David Camp, Mon Jul 27 13:10:15 PDT 2015
+#   Make adding of -ppn to mpirun dependent on "self.parallel.nn".
+#   Removed useppnmpirun.
+#
 ###############################################################################
 
 class JobSubmitter_mpirun(JobSubmitter):
     def __init__(self, launcher):
         super(JobSubmitter_mpirun,self).__init__(launcher)
-        self.useppnmpirun = 0
 
     def Executable(self):
         return ["mpirun"]
@@ -100,10 +103,8 @@ class JobSubmitter_mpirun(JobSubmitter):
             parcmd = parcmd + self.parallel.launchargs
         if self.parallel.np != None:
             parcmd = parcmd + ["-np", self.parallel.np]
-            nodes = self.parallel.nn
-            if self.useppnmpirun == 1 and nodes != None:
-                ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
-                parcmd = parcmd + ["-ppn", ppn]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-ppn", self.PPN()]
         if self.parallel.partition != None:
             parcmd = parcmd + ["-p", self.parallel.partition]
         if self.parallel.machinefile != None:
@@ -139,12 +140,15 @@ class JobSubmitter_mpirun(JobSubmitter):
 #   By default it is set to 0, so it would need to be overridden in a custom
 #   launcher to be added.
 #
+#   David Camp, Mon Jul 27 13:10:15 PDT 2015
+#   Make adding of -ppn to mpiexec dependent on "self.parallel.nn".
+#   Removed useppnmpiexec.
+#
 ################################################################################
 
 class JobSubmitter_mpiexec(JobSubmitter):
     def __init__(self, launcher):
         super(JobSubmitter_mpiexec,self).__init__(launcher)
-        self.useppnmpiexec = 0
 
     def Executable(self):
         # If we're running on MacOS X 10.7 or later, use our own mpich
@@ -163,10 +167,8 @@ class JobSubmitter_mpiexec(JobSubmitter):
             parcmd = parcmd + self.parallel.launchargs
         if self.parallel.np != None:
             parcmd = parcmd + ["-n", self.parallel.np]
-            nodes = self.parallel.nn
-            if self.useppnmpiexec == 1 and nodes != None:
-                ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
-                parcmd = parcmd + ["-ppn", ppn]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-ppn", self.PPN()]
         if self.parallel.partition != None:
             parcmd = parcmd + ["-p", self.parallel.partition]
         if self.parallel.machinefile != None:
@@ -191,6 +193,9 @@ class JobSubmitter_mpiexec(JobSubmitter):
 #   I added a fix from Jean Favre that corrected the setting of the -N option
 #   for aprun.
 #
+#   David Camp, Mon Jul 27 08:31:12 PDT 2015
+#   Make adding of -N to aprun dependent on "self.parallel.nn".
+#
 ###############################################################################
 
 class JobSubmitter_aprun(JobSubmitter):
@@ -206,7 +211,8 @@ class JobSubmitter_aprun(JobSubmitter):
             parcmd = parcmd + self.parallel.launchargs
         if self.parallel.np != None:
             parcmd = parcmd + ["-n", self.parallel.np]
-        parcmd = parcmd + ["-N", self.PPN()]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-N", self.PPN()]
         parcmd = parcmd + self.VisItExecutable()
         parcmd = parcmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
         parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
@@ -690,6 +696,10 @@ class JobSubmitter_yod(JobSubmitter):
 #   useppnmpirun being set to 1. By default they are set to 0, so they would
 #   need to be overridden in a custom launcher to be added.
 #
+#   David Camp, Mon Jul 27 13:10:15 PDT 2015
+#   Make adding of -ppn to mpirun and mpiexec dependent on "self.parallel.nn".
+#   Removed useppnmpiexec and useppnmpirun.
+#
 ###############################################################################
 
 class JobSubmitter_qsub(JobSubmitter):
@@ -698,8 +708,6 @@ class JobSubmitter_qsub(JobSubmitter):
         self.tfilename = ""
         self.useppn = 1
         self.usettc = 0
-        self.useppnmpiexec = 0
-        self.useppnmpirun = 0
 
     def Executable(self):
         plauncher,sublauncher = self.LauncherAndSubLauncher()
@@ -732,10 +740,8 @@ class JobSubmitter_qsub(JobSubmitter):
             mpicmd = mpicmd + self.parallel.sublaunchargs
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-n", self.parallel.np]
-            nodes = self.parallel.nn
-            if self.useppnmpiexec == 1 and nodes != None:
-                ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
-                mpicmd = mpicmd + ["-ppn", ppn]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-ppn", self.PPN()]
         if self.parallel.machinefile != None:
             mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
         mpicmd = mpicmd + self.VisItExecutable() + args
@@ -750,10 +756,8 @@ class JobSubmitter_qsub(JobSubmitter):
             mpicmd = mpicmd + self.parallel.sublaunchargs
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-np", self.parallel.np]
-            nodes = self.parallel.nn
-            if self.useppnmpirun == 1 and nodes != None:
-                ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
-                mpicmd = mpicmd + ["-ppn", ppn]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-ppn", self.PPN()]
         if self.parallel.machinefile != None:
             mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
         mpicmd = mpicmd + self.VisItExecutable()
@@ -782,7 +786,7 @@ class JobSubmitter_qsub(JobSubmitter):
             mpicmd = mpicmd + self.parallel.sublaunchargs
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-n", self.parallel.np]
-        if self.parallel.np != None and self.parallel.nn != None:
+        if self.parallel.nn != None:
             mpicmd = mpicmd + ["-N", self.PPN()]
         mpicmd = mpicmd + self.VisItExecutable() + args
         return mpicmd
