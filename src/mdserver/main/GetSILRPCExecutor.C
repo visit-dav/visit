@@ -122,8 +122,7 @@ GetSILRPCExecutor::Update(Subject *s)
     int t1 = visitTimer->StartTimer();
     GetSILRPC *rpc = (GetSILRPC *)s;
 
-    debug2 << "GetSILRPCExecutor::Update - file="<<rpc->GetFile().c_str()<<"\n";
-    debug2.flush();
+    debug2 << "GetSILRPCExecutor::Update - file="<<rpc->GetFile().c_str()<<"\n" << std::flush;
 
     TRY
     {

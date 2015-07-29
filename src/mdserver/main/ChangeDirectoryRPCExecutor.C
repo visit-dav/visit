@@ -107,7 +107,7 @@ ChangeDirectoryRPCExecutor::Update(Subject *s)
     ChangeDirectoryRPC *rpc = (ChangeDirectoryRPC *)s;
 #ifdef DEBUG
     debug2 << "ChangeDirectoryRPCExecutor::Update: dir="
-           << rpc->GetDirectory().c_str() << "\n"; debug2.flush();
+           << rpc->GetDirectory().c_str() << "\n" << std::flush;
 #endif
     // Either send a successful reply or send an error.
     if(parent->ChangeDirectory(rpc->GetDirectory()) == 0)

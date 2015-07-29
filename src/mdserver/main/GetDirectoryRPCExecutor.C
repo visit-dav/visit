@@ -108,7 +108,7 @@ GetDirectoryRPCExecutor::Update(Subject *s)
 {
      GetDirectoryRPC *rpc = (GetDirectoryRPC *)s;
 #ifdef DEBUG
-     debug2 << "GetDirectoryRPCExecutor::Update\n"; debug2.flush();
+     debug2 << "GetDirectoryRPCExecutor::Update\n" << std::flush;
 #endif
      GetDirectoryRPC::DirectoryName dir;
      dir.name = parent->GetCurrentWorkingDirectory();
