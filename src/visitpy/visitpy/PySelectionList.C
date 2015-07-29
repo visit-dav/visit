@@ -154,11 +154,11 @@ SelectionList_GetSelections(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSelections().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetSelections().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because selections is empty.");
+            SNPRINTF(msg, 400, "In SelectionList::GetSelections : The index %d is invalid because selections is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetSelections().size());
+            SNPRINTF(msg, 400, "In SelectionList::GetSelections : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSelections().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -191,8 +191,8 @@ SelectionList_AddSelections(PyObject *self, PyObject *args)
         return NULL;
     if(!PySelectionProperties_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddSelections method only accepts SelectionProperties objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The SelectionList::AddSelections method only accepts SelectionProperties objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -239,7 +239,9 @@ SelectionList_RemoveSelections(PyObject *self, PyObject *args)
     SelectionListObject *obj = (SelectionListObject *)self;
     if(index < 0 || index >= obj->data->GetNumSelections())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In SelectionList::RemoveSelections : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -269,11 +271,11 @@ SelectionList_GetSelectionSummary(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSelectionSummary().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetSelectionSummary().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because selectionSummary is empty.");
+            SNPRINTF(msg, 400, "In SelectionList::GetSelectionSummary : The index %d is invalid because selectionSummary is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetSelectionSummary().size());
+            SNPRINTF(msg, 400, "In SelectionList::GetSelectionSummary : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSelectionSummary().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -306,8 +308,8 @@ SelectionList_AddSelectionSummary(PyObject *self, PyObject *args)
         return NULL;
     if(!PySelectionSummary_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddSelectionSummary method only accepts SelectionSummary objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The SelectionList::AddSelectionSummary method only accepts SelectionSummary objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -354,7 +356,9 @@ SelectionList_RemoveSelectionSummary(PyObject *self, PyObject *args)
     SelectionListObject *obj = (SelectionListObject *)self;
     if(index < 0 || index >= obj->data->GetNumSelectionSummarys())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In SelectionList::RemoveSelectionSummary : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 

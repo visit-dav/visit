@@ -185,11 +185,11 @@ ColorTableAttributes_GetColorTables(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetColorTables().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetColorTables().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because colorTables is empty.");
+            SNPRINTF(msg, 400, "In ColorTableAttributes::GetColorTables : The index %d is invalid because colorTables is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetColorTables().size());
+            SNPRINTF(msg, 400, "In ColorTableAttributes::GetColorTables : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetColorTables().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -222,8 +222,8 @@ ColorTableAttributes_AddColorTables(PyObject *self, PyObject *args)
         return NULL;
     if(!PyColorControlPointList_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddColorTables method only accepts ColorControlPointList objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The ColorTableAttributes::AddColorTables method only accepts ColorControlPointList objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -270,7 +270,9 @@ ColorTableAttributes_RemoveColorTables(PyObject *self, PyObject *args)
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
     if(index < 0 || index >= obj->data->GetNumColorTables())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In ColorTableAttributes::RemoveColorTables : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 

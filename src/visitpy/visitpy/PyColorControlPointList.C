@@ -142,11 +142,11 @@ ColorControlPointList_GetControlPoints(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetControlPoints().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetControlPoints().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because controlPoints is empty.");
+            SNPRINTF(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid because controlPoints is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetControlPoints().size());
+            SNPRINTF(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetControlPoints().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -179,8 +179,8 @@ ColorControlPointList_AddControlPoints(PyObject *self, PyObject *args)
         return NULL;
     if(!PyColorControlPoint_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddControlPoints method only accepts ColorControlPoint objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The ColorControlPointList::AddControlPoints method only accepts ColorControlPoint objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -227,7 +227,9 @@ ColorControlPointList_RemoveControlPoints(PyObject *self, PyObject *args)
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
     if(index < 0 || index >= obj->data->GetNumControlPoints())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In ColorControlPointList::RemoveControlPoints : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 

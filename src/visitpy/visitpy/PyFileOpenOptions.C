@@ -273,11 +273,11 @@ FileOpenOptions_GetOpenOptions(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetOpenOptions().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetOpenOptions().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because openOptions is empty.");
+            SNPRINTF(msg, 400, "In FileOpenOptions::GetOpenOptions : The index %d is invalid because openOptions is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetOpenOptions().size());
+            SNPRINTF(msg, 400, "In FileOpenOptions::GetOpenOptions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetOpenOptions().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -310,8 +310,8 @@ FileOpenOptions_AddOpenOptions(PyObject *self, PyObject *args)
         return NULL;
     if(!PyDBOptionsAttributes_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddOpenOptions method only accepts DBOptionsAttributes objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The FileOpenOptions::AddOpenOptions method only accepts DBOptionsAttributes objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -358,7 +358,9 @@ FileOpenOptions_RemoveOpenOptions(PyObject *self, PyObject *args)
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
     if(index < 0 || index >= obj->data->GetNumOpenOptions())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In FileOpenOptions::RemoveOpenOptions : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 

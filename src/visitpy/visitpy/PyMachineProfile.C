@@ -719,11 +719,11 @@ MachineProfile_GetLaunchProfiles(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetLaunchProfiles().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetLaunchProfiles().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because launchProfiles is empty.");
+            SNPRINTF(msg, 400, "In MachineProfile::GetLaunchProfiles : The index %d is invalid because launchProfiles is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetLaunchProfiles().size());
+            SNPRINTF(msg, 400, "In MachineProfile::GetLaunchProfiles : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetLaunchProfiles().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -756,8 +756,8 @@ MachineProfile_AddLaunchProfiles(PyObject *self, PyObject *args)
         return NULL;
     if(!PyLaunchProfile_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddLaunchProfiles method only accepts LaunchProfile objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The MachineProfile::AddLaunchProfiles method only accepts LaunchProfile objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -804,7 +804,9 @@ MachineProfile_RemoveLaunchProfiles(PyObject *self, PyObject *args)
     MachineProfileObject *obj = (MachineProfileObject *)self;
     if(index < 0 || index >= obj->data->GetNumLaunchProfiles())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In MachineProfile::RemoveLaunchProfiles : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 

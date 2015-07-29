@@ -111,11 +111,11 @@ ExpressionList_GetExpressions(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetExpressions().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetExpressions().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because expressions is empty.");
+            SNPRINTF(msg, 400, "In ExpressionList::GetExpressions : The index %d is invalid because expressions is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetExpressions().size());
+            SNPRINTF(msg, 400, "In ExpressionList::GetExpressions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetExpressions().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -148,8 +148,8 @@ ExpressionList_AddExpressions(PyObject *self, PyObject *args)
         return NULL;
     if(!PyExpression_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddExpressions method only accepts Expression objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The ExpressionList::AddExpressions method only accepts Expression objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -196,7 +196,9 @@ ExpressionList_RemoveExpressions(PyObject *self, PyObject *args)
     ExpressionListObject *obj = (ExpressionListObject *)self;
     if(index < 0 || index >= obj->data->GetNumExpressions())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In ExpressionList::RemoveExpressions : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
