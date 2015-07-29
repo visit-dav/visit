@@ -382,8 +382,7 @@ void avtGGCMFileFormat::RegisterDataSelections(
     debug4 << "RegisterDataSelections(";
     if(sels.size() > 0) {
         for(i=0; i < sels.size()-1; ++i) {
-            debug4 << sels[i]->GetType() << ", ";
-            debug4.flush();
+            debug4 << sels[i]->GetType() << ", " << std::flush;
         }
         debug4 << sels[i]->GetType() << ")" << std::endl;
     } else {

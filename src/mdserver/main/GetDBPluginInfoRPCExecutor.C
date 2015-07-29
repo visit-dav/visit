@@ -107,8 +107,7 @@ GetDBPluginInfoRPCExecutor::Update(Subject *s)
 {
     GetDBPluginInfoRPC *rpc = (GetDBPluginInfoRPC *)s;
 
-    debug2 << "GetDBPluginInfoRPCExecutor::Update\n";
-    debug2.flush();
+    debug2 << "GetDBPluginInfoRPCExecutor::Update\n" << std::flush;
 
     TRY
     {

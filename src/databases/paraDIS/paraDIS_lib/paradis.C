@@ -48,11 +48,11 @@ void dbstream_printf(int level, const char *fmt, ...) {
   va_start(ap, fmt);
   vsnprintf(buf,4095,fmt,ap);
   va_end(ap);
-  if (level == 5)  { debug5 << buf; debug5.flush(); }
-  if (level == 4)  { debug4 << buf; debug4.flush(); }
-  if (level == 3)  { debug3 << buf; debug3.flush(); }
-  if (level == 2)  { debug2 << buf; debug2.flush(); }
-  if (level < 2)  { debug1 << buf; debug1.flush(); }
+  if (level == 5)  { debug5 << buf << std::flush; }
+  if (level == 4)  { debug4 << buf << std::flush; }
+  if (level == 3)  { debug3 << buf << std::flush; }
+  if (level == 2)  { debug2 << buf << std::flush; }
+  if (level < 2)  { debug1 << buf << std::flush; }
   if (level == 0)  cout << buf; 
   return; 
 }

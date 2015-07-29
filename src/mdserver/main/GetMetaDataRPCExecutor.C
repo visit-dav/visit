@@ -149,8 +149,7 @@ GetMetaDataRPCExecutor::Update(Subject *s)
 
     debug2 << "GetMetaDataRPCExecutor::Update - file="
            << rpc->GetFile().c_str() << " type="
-           << rpc->GetForcedFileType() << "\n";
-    debug2.flush();
+           << rpc->GetForcedFileType() << "\n" << std::flush;
 
     TRY
     {

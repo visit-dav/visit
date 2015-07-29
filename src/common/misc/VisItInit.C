@@ -54,6 +54,8 @@
 #endif
 #include <new>
 #include <cstring>
+#include <sstream>
+using std::ostringstream;
 
 #include <ConfigureInfo.h>
 #include <DebugStreamFull.h>
@@ -419,9 +421,11 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
     // Initialize the debug streams and also add the command line arguments
     // to the debug logs.
     DebugStreamFull::Initialize(progname, debuglevel, sigs, clobberVlogs, bufferDebug);
+    ostringstream oss;
     for(i = 0; i < argc; ++i)
-        debug1 << argv[i] << " ";
-    debug1 << endl;
+        oss << argv[i] << " ";
+    oss << endl;
+    debug1 << oss.str();
 
     TimingsManager::Initialize(progname);
     // In case TimingsManager was already initialized...

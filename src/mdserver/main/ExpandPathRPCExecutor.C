@@ -105,7 +105,7 @@ ExpandPathRPCExecutor::Update(Subject *s)
     ExpandPathRPC *rpc = (ExpandPathRPC *)s;
 #ifdef DEBUG
     debug2 << "ExpandPathRPCExecutor::Update: dir="
-           << rpc->GetPath().c_str() << "\n"; debug2.flush();
+           << rpc->GetPath().c_str() << "\n" << std::flush;
 #endif
     // Either send a successful reply or send an error.
     ExpandPathRPC::PathName path;
