@@ -331,7 +331,7 @@ size_t avtStateRecorderIntegralCurve::GetSampleStride() const
 
 #define TEST_AND_INCREMENT( f, n ) \
     if( historyMask & f )          \
-        stride += n;
+        { stride += n; }
 
     TEST_AND_INCREMENT( SAMPLE_TIME, 1 );
     TEST_AND_INCREMENT( SAMPLE_POSITION, 3 );
@@ -359,10 +359,12 @@ avtStateRecorderIntegralCurve::GetSampleIndex(const Attribute &attr) const
 
 #define TEST_AND_INCREMENT(f, n)   \
     if (historyMask & f)           \
+    {                              \
         if (f == attr)             \
-            return idx;            \
+            { return idx; }        \
         else                       \
-            idx += n;              \
+            { idx += n; }          \
+    }
 
     TEST_AND_INCREMENT(SAMPLE_TIME, 1);
     TEST_AND_INCREMENT(SAMPLE_POSITION, 3);
