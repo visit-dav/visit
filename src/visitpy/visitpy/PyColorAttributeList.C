@@ -111,11 +111,11 @@ ColorAttributeList_GetColors(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetColors().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetColors().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because colors is empty.");
+            SNPRINTF(msg, 400, "In ColorAttributeList::GetColors : The index %d is invalid because colors is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetColors().size());
+            SNPRINTF(msg, 400, "In ColorAttributeList::GetColors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetColors().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -148,8 +148,8 @@ ColorAttributeList_AddColors(PyObject *self, PyObject *args)
         return NULL;
     if(!PyColorAttribute_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddColors method only accepts ColorAttribute objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The ColorAttributeList::AddColors method only accepts ColorAttribute objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -196,7 +196,9 @@ ColorAttributeList_RemoveColors(PyObject *self, PyObject *args)
     ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
     if(index < 0 || index >= obj->data->GetNumColors())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In ColorAttributeList::RemoveColors : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 

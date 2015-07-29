@@ -111,11 +111,11 @@ GaussianControlPointList_GetControlPoints(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetControlPoints().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetControlPoints().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because controlPoints is empty.");
+            SNPRINTF(msg, 400, "In GaussianControlPointList::GetControlPoints : The index %d is invalid because controlPoints is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetControlPoints().size());
+            SNPRINTF(msg, 400, "In GaussianControlPointList::GetControlPoints : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetControlPoints().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -148,8 +148,8 @@ GaussianControlPointList_AddControlPoints(PyObject *self, PyObject *args)
         return NULL;
     if(!PyGaussianControlPoint_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddControlPoints method only accepts GaussianControlPoint objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The GaussianControlPointList::AddControlPoints method only accepts GaussianControlPoint objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -196,7 +196,9 @@ GaussianControlPointList_RemoveControlPoints(PyObject *self, PyObject *args)
     GaussianControlPointListObject *obj = (GaussianControlPointListObject *)self;
     if(index < 0 || index >= obj->data->GetNumControlPoints())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In GaussianControlPointList::RemoveControlPoints : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 

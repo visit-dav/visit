@@ -127,11 +127,11 @@ ViewerClientInformation_GetVars(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetVars().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetVars().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because vars is empty.");
+            SNPRINTF(msg, 400, "In ViewerClientInformation::GetVars : The index %d is invalid because vars is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetVars().size());
+            SNPRINTF(msg, 400, "In ViewerClientInformation::GetVars : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetVars().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -164,8 +164,8 @@ ViewerClientInformation_AddVars(PyObject *self, PyObject *args)
         return NULL;
     if(!PyViewerClientInformationElement_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddVars method only accepts ViewerClientInformationElement objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The ViewerClientInformation::AddVars method only accepts ViewerClientInformationElement objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -212,7 +212,9 @@ ViewerClientInformation_RemoveVars(PyObject *self, PyObject *args)
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
     if(index < 0 || index >= obj->data->GetNumVars())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In ViewerClientInformation::RemoveVars : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 

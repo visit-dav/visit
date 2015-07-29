@@ -161,11 +161,11 @@ SelectionSummary_GetVariables(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetVariables().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetVariables().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because variables is empty.");
+            SNPRINTF(msg, 400, "In SelectionSummary::GetVariables : The index %d is invalid because variables is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetVariables().size());
+            SNPRINTF(msg, 400, "In SelectionSummary::GetVariables : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetVariables().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -198,8 +198,8 @@ SelectionSummary_AddVariables(PyObject *self, PyObject *args)
         return NULL;
     if(!PySelectionVariableSummary_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddVariables method only accepts SelectionVariableSummary objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The SelectionSummary::AddVariables method only accepts SelectionVariableSummary objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -246,7 +246,9 @@ SelectionSummary_RemoveVariables(PyObject *self, PyObject *args)
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
     if(index < 0 || index >= obj->data->GetNumVariables())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In SelectionSummary::RemoveVariables : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 

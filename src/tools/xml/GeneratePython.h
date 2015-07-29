@@ -2139,11 +2139,11 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "        return NULL;" << Endl;
         c << "    if(index < 0 || (size_t)index >= obj->data->Get" << Name << "().size())" << Endl;
         c << "    {" << Endl;
-        c << "        char msg[200];" << Endl;
+        c << "        char msg[400] = {'\\0'};" << Endl;
         c << "        if(obj->data->Get" << Name << "().size() == 0)" << Endl;
-        c << "            SNPRINTF(msg, 200, \"The index is invalid because " << name << " is empty.\");" << Endl;
+        c << "            SNPRINTF(msg, 400, \"In " << className << "::Get" << Name << " : The index %d is invalid because " << name << " is empty.\", index);" << Endl;
         c << "        else" << Endl;
-        c << "            SNPRINTF(msg, 200, \"The index is invalid. Use index values in: [0, %ld).\", obj->data->Get" << Name << "().size());" << Endl;
+        c << "            SNPRINTF(msg, 400, \"In " << className << "::Get" << Name << " : The index %d is invalid. Use index values in: [0, %ld).\",  index, obj->data->Get" << Name << "().size());" << Endl;
         c << "        PyErr_SetString(PyExc_IndexError, msg);" << Endl;
         c << "        return NULL;" << Endl;
         c << "    }" << Endl;
@@ -2181,8 +2181,8 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "        return NULL;" << Endl;
         c << "    if(!Py" << attType << "_Check(element))" << Endl; 
         c << "    {" << Endl;
-        c << "        char msg[400];" << Endl;
-        c << "        SNPRINTF(msg, 400, \"The Add" << Name << " method only accepts " << attType << " objects.\");" << Endl;
+        c << "        char msg[400] = {'\\0'};" << Endl;
+        c << "        SNPRINTF(msg, 400, \"The " << className << "::Add" << Name << " method only accepts " << attType << " objects.\");" << Endl;
         c << "        PyErr_SetString(PyExc_TypeError, msg);" << Endl;
         c << "        return NULL;" << Endl;
         c << "    }" << Endl;
@@ -2246,7 +2246,9 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         else
             c << "    if(index < 0 || index >= obj->data->GetNum" << Name << plural << "())" << Endl;
         c << "    {" << Endl;
-        c << "        PyErr_SetString(PyExc_IndexError, \"Index out of range\");" << Endl;
+        c << "        char msg[400] = {'\\0'};" << Endl;
+        c << "        SNPRINTF(msg, 400, \"In " << className << "::Remove" << Name << " : Index %d is out of range\", index);" << Endl;
+        c << "        PyErr_SetString(PyExc_IndexError, msg);" << Endl;
         c << "        return NULL;" << Endl;
         c << "    }" << Endl;
         c << Endl;
