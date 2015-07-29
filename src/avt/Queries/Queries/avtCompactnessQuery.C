@@ -232,6 +232,9 @@ avtCompactnessQuery::PreExecute(void)
 //    Tom Fogal, Wed Jun 17 20:52:19 MDT 2009
 //    Throw the exception earlier, to ensure we don't deref an empty vector.
 //
+//    Burlen Loring, Wed Jul 29 12:48:26 PDT 2015
+//    use correct type (MPI_DOUBLE) for communication of x and yBounds
+//
 // ****************************************************************************
 
 void
@@ -280,8 +283,8 @@ avtCompactnessQuery::MidExecute(void)
             MPI_Bcast(&len, 1, MPI_INT, proc, VISIT_MPI_COMM);
             if(len > 0)
             {
-                MPI_Bcast(&xBound[0], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
-                MPI_Bcast(&yBound[0], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
+                MPI_Bcast(&xBound[0], len, MPI_DOUBLE, proc, VISIT_MPI_COMM);
+                MPI_Bcast(&yBound[0], len, MPI_DOUBLE, proc, VISIT_MPI_COMM);
             }
         }
         else
@@ -291,8 +294,8 @@ avtCompactnessQuery::MidExecute(void)
             MPI_Bcast(&len, 1, MPI_INT, proc, VISIT_MPI_COMM);
             if(len > 0)
             {
-                MPI_Bcast(&xBound[position], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
-                MPI_Bcast(&yBound[position], len, MPI_FLOAT, proc, VISIT_MPI_COMM);
+                MPI_Bcast(&xBound[position], len, MPI_DOUBLE, proc, VISIT_MPI_COMM);
+                MPI_Bcast(&yBound[position], len, MPI_DOUBLE, proc, VISIT_MPI_COMM);
             }
             position += len;
         }
