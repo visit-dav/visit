@@ -45,6 +45,9 @@
 #include <DebugStream.h>
 #include <VisItInit.h>
 
+// to skip source file and line
+#define except_debug1 if (!DebugStream::Level1()) ; else (DebugStream::Stream1())
+
 // ****************************************************************************
 //  Method:  VisItException constructor
 //
@@ -199,7 +202,7 @@ void
 VisItException::LogCatch(const char *exceptionName, const char *srcFile,
     int srcLine)
 {
-    debug1 << "catch(" << exceptionName << ") " << srcFile << ":" << srcLine << endl;
+    except_debug1 << "catch(" << exceptionName << ") " << srcFile << ":" << srcLine << endl;
 }
 
 #ifdef FAKE_EXCEPTIONS
@@ -416,7 +419,7 @@ exception_lookup(const char *name)
 
     if(retval < 0)
     {
-        debug1 << "exception_lookup: index < 0. This means that the fake "
+        except_debug1 << "exception_lookup: index < 0. This means that the fake "
                   "exception table contains errors! Exception name = "
                << name << endl;
         abort();
@@ -529,20 +532,20 @@ exception_compatible(const char *name)
 void
 exception_throw(int backup)
 {
-    EXPRINT(debug1 << "throw(" << exception_object->GetExceptionType() << ") at "
+    EXPRINT(except_debug1 << "throw(" << exception_object->GetExceptionType() << ") at "
                    << exception_object->GetFilename() << ":"
                    << exception_object->GetLine()
                    << ", backup = " << backup << endl;)
 
     if(jump_stack_top < backup)
     {
-        EXPRINT(debug1 << "There are no more TRY's on the exception stack! Aborting." << endl;)
+        EXPRINT(except_debug1 << "There are no more TRY's on the exception stack! Aborting." << endl;)
         abort();
     }
     else
     {
         jump_stack_top -= backup;
-        EXPRINT(debug1 << "exception_throw: Throwing exception "
+        EXPRINT(except_debug1 << "exception_throw: Throwing exception "
                        << exception_object->GetExceptionType()
                        << " by jumping to TRY[" << jump_stack_top << "]" << endl;)
         longjmp(jump_stack[jump_stack_top], jump_retval);
@@ -572,7 +575,7 @@ exception_delete(bool condition)
 {
     if(condition && exception_object != 0)
     {
-        EXPRINT(debug1 << "exception_delete()" << endl;)
+        EXPRINT(except_debug1 << "exception_delete()" << endl;)
         delete exception_object;
         exception_object = 0;
     }
