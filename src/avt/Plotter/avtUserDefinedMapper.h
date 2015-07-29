@@ -154,9 +154,8 @@ class PLOTTER_API vtkUserDefinedMapperBridge : public vtkDataSetMapper
                              vtkUserDefinedMapperBridge();
     virtual                 ~vtkUserDefinedMapperBridge();
 
-                             vtkUserDefinedMapperBridge(const
-                                               vtkUserDefinedMapperBridge&) {};
-    void                     operator=(const vtkUserDefinedMapperBridge&) {};
+                             vtkUserDefinedMapperBridge(const vtkUserDefinedMapperBridge&);
+    void                     operator=(const vtkUserDefinedMapperBridge&);
 
     avtCustomRenderer_p      ren;
 };

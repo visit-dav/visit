@@ -66,6 +66,7 @@
 // ****************************************************************************
 
 avtUserDefinedMapper::avtUserDefinedMapper(avtCustomRenderer_p r)
+    : avtMapper()
 {
     renderer = r;
 }
@@ -436,7 +437,7 @@ vtkUserDefinedMapperBridge::New(void)
 //
 // ****************************************************************************
 
-vtkUserDefinedMapperBridge::vtkUserDefinedMapperBridge()
+vtkUserDefinedMapperBridge::vtkUserDefinedMapperBridge() : vtkDataSetMapper()
 {
     ren = NULL;
 }
