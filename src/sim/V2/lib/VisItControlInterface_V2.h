@@ -671,11 +671,25 @@ void  VisItDisconnect(void);
  *
  * Returns:   1 if VisIt is connected; 0 otherwise.
  *
- * Note:      All processors must call this function.
+ * Note:      
  *
  * ****************************************************************************/
-
 int   VisItIsConnected(void);
+
+/******************************************************************************
+ * Function: VisItIsRuntimeLoaded
+ *
+ * Purpose: 
+ *   This function returns 1 if the VisIt runtime is loaded; 0 otherwise.
+ *
+ * Arguments: None
+ *
+ * Returns:   1 if VisIt runtime is loaded; 0 otherwise.
+ *
+ * Note:      
+ *
+ * ****************************************************************************/
+int   VisItIsRuntimeLoaded(void);
 
 /******************************************************************************
  * Function: VisItGetLastError
