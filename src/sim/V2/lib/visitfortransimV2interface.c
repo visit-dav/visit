@@ -1578,7 +1578,7 @@ extern int F_VISITGETDOMAINNESTING(const char *, int *);
  *****************************************************************************/
 
 /******************************************************************************
- * Function: VisItGetMetaData
+ * Function: VisItActivateTimestep
  *
  * Purpose:   Calls FORTRAN "visitactivatetimestep" to activate the time step.
  *
