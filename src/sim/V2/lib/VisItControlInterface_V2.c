@@ -3709,16 +3709,16 @@ void VisItCloseTraceFile(void)
 int VisItSet##F(FR (*cb) FA, void *cbdata) \
 { \
     int retval = VISIT_ERROR; \
-    LIBSIM_API_ENTER(VisIt##F);\
+    LIBSIM_API_ENTER(VisItSet##F);\
     if (engine && callbacks != NULL && callbacks->data.set_##F)\
     {\
-        LIBSIM_MESSAGE("Calling VisIt"#F);\
+        LIBSIM_MESSAGE("  Calling simv2_set_"#F);\
         (*callbacks->data.set_##F)(cb, cbdata);\
         retval = VISIT_OKAY; \
     }\
     else\
-        fprintf(stderr, "VisIt"#F" should not be called until VisIt connects to the simulation.\n");\
-    LIBSIM_API_LEAVE(VisIt##F); \
+        fprintf(stderr, "VisItSet"#F" should not be called until VisIt connects to the simulation.\n");\
+    LIBSIM_API_LEAVE(VisItSet##F); \
     return retval;\
 }
 
