@@ -288,6 +288,7 @@ static int         engineSocket = VISIT_INVALID_SOCKET;
 #endif
 
 static int         viewer_connected = 0;
+static int         libsim_runtime_loaded = 0;
 
 static int       (*BroadcastInt_internal)(int *value, int sender) = NULL;
 static int       (*BroadcastInt_internal2)(int *value, int sender, void *) = NULL;
@@ -331,6 +332,22 @@ static visit_string visit_env = {NULL, 0, 0, LIBSIM_ENV_ALLOCATION_SIZE};
  *******************************************************************************
  *******************************************************************************
  ******************************************************************************/
+
+static char es_buffer[100];
+static const char *es_VISIT_ERROR = "VISIT_ERROR";
+static const char *es_VISIT_OKAY = "VISIT_OKAY";
+
+static const char *
+ErrorToString(int err)
+{
+    if(err == VISIT_ERROR)
+        return es_VISIT_ERROR;
+    else if(err == VISIT_OKAY)
+        return es_VISIT_OKAY;
+    else
+        sprintf(es_buffer, "%d", err);
+    return es_buffer;
+}
 
 #ifdef _WIN32
 /*******************************************************************************
@@ -999,7 +1016,7 @@ BroadcastInt(int *value, int sender)
         LIBSIM_MESSAGE("BroadcastInt function not set.");
     }
 
-    LIBSIM_API_LEAVE1(BroadcastInt, "return %d", retval);
+    LIBSIM_API_LEAVE1(BroadcastInt, "return %s", ErrorToString(retval));
     return retval;
 }
 
@@ -1042,7 +1059,7 @@ BroadcastString(char *str, int len, int sender)
         LIBSIM_MESSAGE("BroadcastString function not set.");
     }
 
-    LIBSIM_API_LEAVE1(BroadcastString, "return %d", retval);
+    LIBSIM_API_LEAVE1(BroadcastString, "return %s", ErrorToString(retval));
     return retval;
 }
 
@@ -1062,7 +1079,7 @@ BroadcastVisItString(visit_string *obj, int sender)
     retval = BroadcastString(obj->str, len, sender);
     obj->size = len-1;
 
-    LIBSIM_API_LEAVE1(BroadcastVisItString, "return %d", retval);
+    LIBSIM_API_LEAVE1(BroadcastVisItString, "return %s", ErrorToString(retval));
     return retval;
 }
 
@@ -1254,7 +1271,7 @@ static int CreateEngine(int batch)
         if(engine == NULL)
         {
             /* get the engine */
-            LIBSIM_MESSAGE("Calling visit_engine");
+            LIBSIM_MESSAGE("  Calling simv2_get_engine");
             engine = (*callbacks->control.get_engine)();
             if (!engine)
             {
@@ -1317,16 +1334,16 @@ static int CreateEngine(int batch)
                 VisItSetMPICommunicator_f(visit_communicator_f);
             }
 
-            LIBSIM_MESSAGE_STRINGLIST("Calling visit_initialize: argv=",
-                                      engine_argc, engine_argv);
             if(batch && callbacks->control.initialize_batch != NULL)
             {
+                LIBSIM_MESSAGE_STRINGLIST("Calling simv2_initialize_batch: argv=",
+                                          engine_argc, engine_argv);
                 if (!(*callbacks->control.initialize_batch)(engine, engine_argc, engine_argv))
                 {
                     VisItDisconnect();
                     LIBSIM_API_LEAVE1(CreateEngine,
-                                      "visit_initialize_batch failed. return %d",
-                                      VISIT_ERROR);
+                                      "simv2_initialize_batch failed. return %s",
+                                      ErrorToString(VISIT_ERROR));
                     return VISIT_ERROR;
                 }
 
@@ -1334,19 +1351,21 @@ static int CreateEngine(int batch)
             }
             else
             {
+                LIBSIM_MESSAGE_STRINGLIST("Calling simv2_initialize: argv=",
+                                          engine_argc, engine_argv);
                 if (!(*callbacks->control.initialize)(engine, engine_argc, engine_argv))
                 {
                     VisItDisconnect();
                     LIBSIM_API_LEAVE1(CreateEngine,
-                                      "visit_initialize failed. return %d",
-                                      VISIT_ERROR);
+                                      "simv2_initialize failed. return %s",
+                                      ErrorToString(VISIT_ERROR));
                     return VISIT_ERROR;
                 }
             }
         }
     }
 
-    LIBSIM_API_LEAVE1(CreateEngine,"return %d", status);
+    LIBSIM_API_LEAVE1(CreateEngine,"return %s", ErrorToString(status));
     return status;
 }
 
@@ -1368,20 +1387,20 @@ static int ConnectToViewer(void)
 {
     LIBSIM_API_ENTER(ConnectToViewer);
 
-    LIBSIM_MESSAGE_STRINGLIST("Calling visit_connectviewer: argv",
+    LIBSIM_MESSAGE_STRINGLIST("Calling simv2_connect_viewer: argv",
                               engine_argc, engine_argv);
     if (!(*callbacks->control.connect_viewer)(engine, engine_argc, engine_argv))
     {
         VisItDisconnect();
         LIBSIM_API_LEAVE1(ConnectToViewer,
-                         "visit_connectviewer failed. return %d", 
-                         VISIT_ERROR);
+                         "simv2_connect_viewer failed. return %s", 
+                         ErrorToString(VISIT_ERROR));
         return VISIT_ERROR;
     }
 
     viewer_connected = 1;
 
-    LIBSIM_API_LEAVE1(ConnectToViewer,"return %d", VISIT_OKAY);
+    LIBSIM_API_LEAVE1(ConnectToViewer,"return %s", ErrorToString(VISIT_OKAY));
     return VISIT_OKAY;
 }
 
@@ -1408,7 +1427,7 @@ static int GetLocalhostName(void)
 
     LIBSIM_API_ENTER(GetLocalhostName);
 
-    LIBSIM_MESSAGE("Calling gethostname");
+    LIBSIM_MESSAGE("  Calling gethostname");
     if (gethostname(localhostStr, 256) == -1)
     {
         /* Couldn't get the hostname, it's probably invalid */
@@ -1418,7 +1437,7 @@ static int GetLocalhostName(void)
     }
     LIBSIM_MESSAGE1("gethostname returned %s\n", localhostStr);
 
-    LIBSIM_MESSAGE("Calling gethostbyname");
+    LIBSIM_MESSAGE("  Calling gethostbyname");
     localhostEnt = gethostbyname(localhostStr);
     if (localhostEnt == NULL)
     {
@@ -1507,7 +1526,7 @@ static int StartListening(void)
        return FALSE;
     }
 
-    LIBSIM_MESSAGE("Calling listen() on socket");
+    LIBSIM_MESSAGE("  Calling listen() on socket");
     err = listen(listenSocket, 5);
     if (err)
     {
@@ -1553,7 +1572,7 @@ static VISIT_SOCKET AcceptConnection(void)
 #endif
 #endif
         len = sizeof(struct sockaddr);
-        LIBSIM_MESSAGE("Calling accept()");
+        LIBSIM_MESSAGE("  Calling accept()");
         desc = accept(listenSocket, (struct sockaddr *)&listenSockAddr, &len);
     }
     while (desc == VISIT_INVALID_SOCKET
@@ -1943,6 +1962,8 @@ static void CloseVisItLibrary(void)
     dl_handle = NULL;
 #endif
 #endif
+
+    libsim_runtime_loaded = 0;
 }
 
 /*******************************************************************************
@@ -2114,6 +2135,8 @@ InitializeRuntime(int batch)
                           "CreateEngine failed. return %d", VISIT_ERROR);
         return VISIT_ERROR;
     }
+
+    libsim_runtime_loaded = 1;
 
     return VISIT_OKAY;
 }
@@ -3276,9 +3299,9 @@ int VisItAttemptToCompleteConnection(void)
     /* get the socket for listening from the viewer */
     if (parallelRank == 0)
     {
-        LIBSIM_MESSAGE("Calling visit_getdescriptor");
+        LIBSIM_MESSAGE("  Calling simv2_get_descriptor");
         engineSocket = callbacks->control.get_descriptor(engine);
-        LIBSIM_MESSAGE1("visit_getdescriptor returned %d", (int)engineSocket);
+        LIBSIM_MESSAGE1("simv2_get_descriptor returned %d", (int)engineSocket);
 #ifdef _WIN32
         /* Clear the value from VisItDetectInput so it can return a new value. */
         if(VisItDetectInput_return_value == 1)
@@ -3323,7 +3346,7 @@ int VisItAttemptToCompleteConnection(void)
 void VisItSetSlaveProcessCallback(void (*spic)(void))
 {
     LIBSIM_API_ENTER1(VisItSetSlaveProcessCallback, "spic=%p", (void*)spic);
-    LIBSIM_MESSAGE("Calling visit_set_slave_process_callback");
+    LIBSIM_MESSAGE("  Calling simv2_set_slave_process_callback");
     if(callbacks != NULL && callbacks->control.set_slave_process_callback)
     {
         visit_slave_process_callback = spic;
@@ -3358,7 +3381,7 @@ visit_slave_process_callback2_thunk(void)
 void VisItSetSlaveProcessCallback2(void (*spic)(void *), void *spicdata)
 {
     LIBSIM_API_ENTER1(VisItSetSlaveProcessCallback2, "spic=%p", (void*)spic);
-    LIBSIM_MESSAGE("Calling visit_set_slave_process_callback");
+    LIBSIM_MESSAGE("  Calling simv2_set_slave_process_callback");
     if(callbacks != NULL && callbacks->control.set_slave_process_callback)
     {
         visit_slave_process_callback = NULL;
@@ -3386,7 +3409,7 @@ void VisItSetCommandCallback(void (*scc)(const char*,const char*,void*),
     void *sccdata)
 {
     LIBSIM_API_ENTER1(VisItSetCommandCallback, "scc=%p", (void*)scc);
-    LIBSIM_MESSAGE("Calling visit_set_command_callback");
+    LIBSIM_MESSAGE("  Calling simv2_set_command_callback");
 
     visit_command_callback = scc;
     visit_command_callback_data = sccdata;
@@ -3424,7 +3447,7 @@ int VisItProcessEngineCommand(void)
     }
     else if (callbacks != NULL)
     {
-        LIBSIM_MESSAGE("Calling visit_processinput");
+        LIBSIM_MESSAGE("  Calling simv2_process_input");
 #ifdef _WIN32
         if(parallelRank == 0)
         {
@@ -3440,10 +3463,10 @@ int VisItProcessEngineCommand(void)
 #endif
         retval = ((*callbacks->control.process_input)(engine) == 1) ?
             VISIT_OKAY : VISIT_ERROR;
-        LIBSIM_MESSAGE1("visit_processinput returned: %d", retval);
+        LIBSIM_MESSAGE1("simv2_process_input returned: %d", retval);
     }
 
-    LIBSIM_API_LEAVE1(VisItProcessEngineCommand, "return %d", retval);
+    LIBSIM_API_LEAVE1(VisItProcessEngineCommand, "return %s", ErrorToString(retval));
     return retval;
 }
 
@@ -3466,7 +3489,7 @@ void VisItTimeStepChanged(void)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.time_step_changed)
     {
-        LIBSIM_MESSAGE("Calling visit_time_step_changed");
+        LIBSIM_MESSAGE("  Calling simv2_time_step_changed");
         (*callbacks->control.time_step_changed)(engine);
     }
     LIBSIM_API_LEAVE(VisItTimeStepChanged);
@@ -3492,7 +3515,7 @@ void VisItUpdatePlots(void)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
-        LIBSIM_MESSAGE("Calling visit_execute_command: UpdatePlots");
+        LIBSIM_MESSAGE("  Calling simv2_execute_command: UpdatePlots");
         (*callbacks->control.execute_command)(engine, "UpdatePlots");
 
         if(visit_sync_enabled)
@@ -3525,7 +3548,7 @@ void VisItExecuteCommand(const char *command)
         command != NULL)
     {
         char *cmd2 = NULL;
-        LIBSIM_MESSAGE("Calling visit_execute_command");
+        LIBSIM_MESSAGE("  Calling simv2_execute_command");
         cmd2 = (char *)malloc(strlen(command) + 1 + 10);
         if(cmd2 != NULL)
         {
@@ -3559,7 +3582,7 @@ void VisItExecuteCommand(const char *command)
 void VisItDisconnect(void)
 {
     LIBSIM_API_ENTER(VisItDisconnect);
-    LIBSIM_MESSAGE("Calling visit_disconnect");
+    LIBSIM_MESSAGE("  Calling simv2_disconnect");
     if(callbacks != NULL)
     {
         if(callbacks->control.disconnect)
@@ -3602,6 +3625,22 @@ int VisItIsConnected(void)
 
 /*******************************************************************************
 *
+* Name: VisItIsRuntimeLoaded
+*
+* Purpose: Returns whether the Libsim runtime is loaded.
+*
+* Author: Brad Whitlock
+*
+* Modifications:
+*
+*******************************************************************************/
+int VisItIsRuntimeLoaded(void)
+{
+    return libsim_runtime_loaded;
+}
+
+/*******************************************************************************
+*
 * Name: VisItSaveImage
 *
 * Purpose: Tell VisIt to save the active network as an image.
@@ -3618,13 +3657,13 @@ int VisItSaveWindow(const char *filename, int w, int h, int format)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.save_window)
     {
-        LIBSIM_MESSAGE("Calling visit_save_window");
+        LIBSIM_MESSAGE("  Calling simv2_save_window");
         ret = (*callbacks->control.save_window)(engine, filename, w, h, format);
         /* Synchronize in case we we're connected interactively. */
         if(visit_batch_mode == 0 && visit_sync_enabled)
             VisItSynchronize();
     }
-    LIBSIM_API_LEAVE(VisItSaveWindow);
+    LIBSIM_API_LEAVE1(VisItSaveWindow, "return %s", ErrorToString(ret));
     return ret;
 }
 
@@ -3911,8 +3950,11 @@ VisItSetMPICommunicator(void *comm)
     LIBSIM_API_ENTER(VisItSetMPICommunicator);
     visit_communicator = comm;
     if(engine && callbacks != NULL && callbacks->control.set_mpicomm != NULL)
+    {
+        LIBSIM_MESSAGE("  Calling simv2_set_mpicomm");
         retval = (*callbacks->control.set_mpicomm)(comm);
-    LIBSIM_API_LEAVE(VisItSetMPICommunicator);
+    }
+    LIBSIM_API_LEAVE1(VisItSetMPICommunicator, "return %s", ErrorToString(retval));
     return retval;
 }
 
@@ -3936,8 +3978,11 @@ VisItSetMPICommunicator_f(int *comm)
     LIBSIM_API_ENTER(VisItSetMPICommunicator_f);
     visit_communicator_f = comm;
     if(engine && callbacks != NULL && callbacks->control.set_mpicomm_f != NULL)
+    {
+        LIBSIM_MESSAGE("  Calling simv2_set_mpicomm_f");
         retval = (*callbacks->control.set_mpicomm_f)(comm);
-    LIBSIM_API_LEAVE(VisItSetMPICommunicator_f);
+    }
+    LIBSIM_API_LEAVE1(VisItSetMPICommunicator_f, "return %s", ErrorToString(retval));
     return retval;
 }
 
@@ -3957,7 +4002,11 @@ VisItSetMPICommunicator_f(int *comm)
 int
 VisItInitializeRuntime(void)
 {
-    return InitializeRuntime(1);
+    int retval = VISIT_ERROR;
+    LIBSIM_API_ENTER(VisItInitializeRuntime);
+    retval = InitializeRuntime(1);
+    LIBSIM_API_LEAVE1(VisItInitializeRuntime, "return %s", ErrorToString(retval));
+    return retval;
 }
 
 /******************************************************************************
@@ -4153,10 +4202,11 @@ VisItAddPlot(const char *plotType, const char *var)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.add_plot)
     {
+        LIBSIM_MESSAGE("  Calling simv2_add_plot");
         retval = (*callbacks->control.add_plot)(engine, plotType, var);
     }
 
-    LIBSIM_API_LEAVE(VisItAddPlot)
+    LIBSIM_API_LEAVE1(VisItAddPlot, "return %s", ErrorToString(retval))
     return retval;
 }
 
@@ -4190,9 +4240,10 @@ VisItAddOperator(const char *operatorType, int applyToAll)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.add_operator)
     {
+        LIBSIM_MESSAGE("  Calling simv2_add_operator");
         retval = (*callbacks->control.add_operator)(engine, operatorType, applyToAll);
     }
-    LIBSIM_API_LEAVE(VisItAddOperator)
+    LIBSIM_API_LEAVE1(VisItAddOperator, "return %s", ErrorToString(retval))
     return retval;
 }
 
@@ -4214,13 +4265,14 @@ VisItDrawPlots(void)
 {
     int retval = VISIT_ERROR;
 
-    LIBSIM_API_ENTER(VisItDrawPlot);
+    LIBSIM_API_ENTER(VisItDrawPlots);
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.draw_plots)
     {
+        LIBSIM_MESSAGE("  Calling simv2_draw_plots");
         retval = (*callbacks->control.draw_plots)(engine);
     }
-    LIBSIM_API_LEAVE(VisItDrawPlot)
+    LIBSIM_API_LEAVE1(VisItDrawPlots, "return %s", ErrorToString(retval))
     return retval;
 }
 
@@ -4246,9 +4298,10 @@ VisItDeleteActivePlots(void)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.delete_active_plots)
     {
+        LIBSIM_MESSAGE("  Calling simv2_delete_active_plots");
         retval = (*callbacks->control.delete_active_plots)(engine);
     }
-    LIBSIM_API_LEAVE(VisItDeleteActivePlots)
+    LIBSIM_API_LEAVE1(VisItDeleteActivePlots, "return %s", ErrorToString(retval))
     return retval;
 }
 
@@ -4274,9 +4327,10 @@ VisItSetActivePlots(const int *ids, int nids)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.set_active_plots)
     {
+        LIBSIM_MESSAGE("  Calling simv2_set_active_plots");
         retval = (*callbacks->control.set_active_plots)(engine, ids, nids);
     }
-    LIBSIM_API_LEAVE(VisItSetActivePlots)
+    LIBSIM_API_LEAVE1(VisItSetActivePlots, "return %s", ErrorToString(retval))
     return retval;
 }
 
@@ -4302,9 +4356,10 @@ PlotOpt(const char *fieldName, int fieldType, void *fieldVal, int fieldLen)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.set_plot_options)
     {
+        LIBSIM_MESSAGE("  Calling simv2_plot_options");
         retval = (*callbacks->control.set_plot_options)(engine, fieldName, fieldType, fieldVal, fieldLen);
     }
-    LIBSIM_API_LEAVE(VisItSetPlotOptions)
+    LIBSIM_API_LEAVE1(VisItSetPlotOptions, "return %s", ErrorToString(retval))
     return retval;
 }
 
@@ -4346,9 +4401,10 @@ OperatorOpt(const char *fieldName, int fieldType, void *fieldVal, int fieldLen)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.set_operator_options)
     {
+        LIBSIM_MESSAGE("  Calling simv2_operator_options");
         retval = (*callbacks->control.set_operator_options)(engine, fieldName, fieldType, fieldVal, fieldLen);
     }
-    LIBSIM_API_LEAVE(VisItSetOperatorOptions)
+    LIBSIM_API_LEAVE1(VisItSetOperatorOptions, "return %s", ErrorToString(retval))
     return retval;
 }
 
@@ -4391,12 +4447,13 @@ VisItExportDatabase(const char *filename, const char *format, visit_handle varNa
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.exportdatabase)
     {
+        LIBSIM_MESSAGE("  Calling simv2_exportdatabase");
         retval = (*callbacks->control.exportdatabase)(engine, filename, format, varNames);
         /* Synchronize in case we we're connected interactively. */
         if(visit_batch_mode == 0 && visit_sync_enabled)
             VisItSynchronize();
     }
-    LIBSIM_API_LEAVE(VisItExportDatabase)
+    LIBSIM_API_LEAVE1(VisItExportDatabase, "return %s", ErrorToString(retval))
     return retval;
 }
 
@@ -4418,12 +4475,13 @@ VisItRestoreSession(const char *filename)
 {
     int retval = VISIT_ERROR;
 
-    LIBSIM_API_ENTER(VisItExportDatabase);
+    LIBSIM_API_ENTER(VisItRestoreSession);
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.restoresession)
     {
+        LIBSIM_MESSAGE("  Calling simv2_restoresession");
         retval = (*callbacks->control.restoresession)(engine, filename);
     }
-    LIBSIM_API_LEAVE(VisItExportDatabase)
+    LIBSIM_API_LEAVE1(VisItRestoreSession, "return %s", ErrorToString(retval))
     return retval;
 }
