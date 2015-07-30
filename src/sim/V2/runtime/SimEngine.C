@@ -416,7 +416,8 @@ SimEngine::GetMetaDataForState(const std::string &/*filename*/, int /*timeState*
                                                     "SimV2_1.0");
     if(dbNode != NULL)
         md = dbNode->GetMetaData(timeState);
-    else
+
+    if(md == NULL)
     {
         debug1 << mName << "Could not get metadata for " << this->simsource << endl;
     }
@@ -433,7 +434,7 @@ SimEngine::GetSIL(const std::string &/*filename*/)
 const avtSIL *
 SimEngine::GetSILForState(const std::string &/*filename*/, int /*timeState*/)
 {
-    const char *mName = "SimEngine::GetMetaData: ";
+    const char *mName = "SimEngine::GetSILForState: ";
     const avtSIL *sil = NULL;
 
     OpenDatabase();
@@ -704,6 +705,9 @@ SimEngine::SaveWindow(const std::string &filename, int w, int h, int format)
 // Creation:   Thu Sep 18 17:26:58 PDT 2014
 //
 // Modifications:
+//    Brad Whitlock, Thu Jul 30 13:33:55 PDT 2015
+//    Execute AddPlot through the viewer plot list directly so we can better
+//    know whether the plot was successfully added.
 //
 // ****************************************************************************
 
@@ -731,10 +735,22 @@ SimEngine::AddPlot(const std::string &plotType, const std::string &var)
         if(viewerInitialized)
         {
             int plotIndex = GetNetMgr()->GetPlotPluginManager()->GetEnabledIndex(id);
+#if 1
+            // Go directly through the plot list so we can know if there was an error.
+            bool replacePlots = GetViewerState()->GetGlobalAttributes()->GetReplacePlots();
+            bool applyOperator = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
+            bool applySelection = GetViewerState()->GetGlobalAttributes()->GetApplySelection();
+            bool inheritSILRestriction = GetViewerState()->GetGlobalAttributes()->
+                                         GetNewPlotsInheritSILRestriction();
 
+            ViewerPlotList *pL = ViewerWindowManager::Instance()->GetActiveWindow()->GetPlotList();
+            retval = pL->AddPlot(plotIndex, var.c_str(), replacePlots, applyOperator,
+                        inheritSILRestriction, applySelection) >= 0;
+#else
 // cout << "Viewer-based AddPlot(" << plotIndex << "=" << id << ", " << var << ")" << endl;
             GetViewerMethods()->AddPlot(plotIndex, var);
             retval = true;
+#endif
         }
         else
         {
@@ -1036,10 +1052,14 @@ static bool
 SetAttributeSubjectValues(AttributeSubject *atts, 
     const std::string &name, int fieldType, void *fieldVal, int fieldLen)
 {
+    const char *mName = "SetAttributeSubjectValues: ";
     bool retval = true;
     int fIndex = atts->FieldNameToIndex(name);
     if(fIndex < 0 || fieldVal == NULL)
+    {
+        debug5 << mName << "Failed to look up field name: " << name << endl;
         return false;
+    }
     AttributeGroup::FieldType ft = atts->GetFieldType(fIndex);
 
     if(fieldType == VISIT_FIELDTYPE_CHAR)
@@ -1061,7 +1081,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_double)
             retval = atts->SetValue(name, (double)*val);
         else
+        {
+            debug5 << mName << "Could not set array or vector types from char: " << name << "=" << *val << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_UNSIGNED_CHAR)
     {
@@ -1082,7 +1105,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_double)
             retval = atts->SetValue(name, (double)*val);
         else
+        {
+            debug5 << mName << "Could not set array or vector types from unsigned char: " << name << "=" << *val << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_INT)
     {
@@ -1105,7 +1131,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_double)
             retval = atts->SetValue(name, (double)*val);
         else
+        {
+            debug5 << mName << "Could not set array or vector types from int: " << name << "=" << *val << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_LONG)
     {
@@ -1126,7 +1155,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_double)
             retval = atts->SetValue(name, (double)*val);
         else
+        {
+            debug5 << mName << "Could not set array or vector types from long: " << name << "=" << *val << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_FLOAT)
     {
@@ -1147,7 +1179,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_double)
             retval = atts->SetValue(name, (double)*val);
         else
+        {
+            debug5 << mName << "Could not set array or vector types from float: " << name << "=" << *val << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_DOUBLE)
     {
@@ -1169,7 +1204,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_float)
             retval = atts->SetValue(name, (float)*val);
         else
+        {
+            debug5 << mName << "Could not set array or vector types from double: " << name << "=" << *val << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_STRING)
     {
@@ -1178,6 +1216,7 @@ SetAttributeSubjectValues(AttributeSubject *atts,
     }
     else if(fieldLen <= 0)
     {
+        debug5 << mName << "Array or vector with fieldLen=" << fieldLen << endl;
         retval = false;
     }
     // Array and vector
@@ -1189,7 +1228,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_charVector)
             retval = atts->SetValue(name, makevector(val, fieldLen));
         else
+        {
+            debug5 << mName << "Could not set " << name << " using char array or vector." << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_UNSIGNED_CHAR_ARRAY)
     {
@@ -1199,7 +1241,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_ucharVector)
             retval = atts->SetValue(name, makevector(val, fieldLen));
         else
+        {
+            debug5 << mName << "Could not set " << name << " using unsigned char array or vector." << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_INT_ARRAY)
     {
@@ -1209,7 +1254,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_intVector)
             retval = atts->SetValue(name, makevector(val, fieldLen));
         else
+        {
+            debug5 << mName << "Could not set " << name << " using int array or vector." << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_LONG_ARRAY)
     {
@@ -1219,7 +1267,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_longVector)
             retval = atts->SetValue(name, makevector(val, fieldLen));
         else
+        {
+            debug5 << mName << "Could not set " << name << " using long array or vector." << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_FLOAT_ARRAY)
     {
@@ -1229,7 +1280,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_floatVector)
             retval = atts->SetValue(name, makevector(val, fieldLen));
         else
+        {
+            debug5 << mName << "Could not set " << name << " using float array or vector." << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_DOUBLE_ARRAY)
     {
@@ -1239,7 +1293,10 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_doubleVector)
             retval = atts->SetValue(name, makevector(val, fieldLen));
         else
+        {
+            debug5 << mName << "Could not set " << name << " using double array or vector." << endl;
             retval = false;
+        }
     }
     else if(fieldType == VISIT_FIELDTYPE_STRING_ARRAY)
     {
@@ -1253,10 +1310,16 @@ SetAttributeSubjectValues(AttributeSubject *atts,
         else if(ft == AttributeGroup::FieldType_stringVector)
             retval = atts->SetValue(name, s);
         else
-            retval = false;        
+        {
+            debug5 << mName << "Could not set " << name << " using string array or vector." << endl;
+            retval = false;
+        }
     }
     else
+    {
+        debug5 << mName << "Unsuppored field type." << endl;
         retval = false;
+    }
 
     return retval;
 }
