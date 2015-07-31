@@ -61,7 +61,7 @@ import java.util.Vector;
 
 public class IntegralCurveAttributes extends AttributeSubject implements Plugin
 {
-    private static int IntegralCurveAttributes_numAdditionalAtts = 68;
+    private static int IntegralCurveAttributes_numAdditionalAtts = 70;
 
     // Enum values
     public final static int SOURCETYPE_POINT = 0;
@@ -229,6 +229,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         randomSeed = 0;
         numberOfRandomSamples = 1;
         forceNodeCenteredData = false;
+        issueAdvectionWarnings = true;
+        issueBoundaryWarnings = true;
         issueTerminationWarnings = true;
         issueStepsizeWarnings = true;
         issueStiffnessWarnings = true;
@@ -342,6 +344,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         randomSeed = 0;
         numberOfRandomSamples = 1;
         forceNodeCenteredData = false;
+        issueAdvectionWarnings = true;
+        issueBoundaryWarnings = true;
         issueTerminationWarnings = true;
         issueStepsizeWarnings = true;
         issueStiffnessWarnings = true;
@@ -465,6 +469,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         randomSeed = obj.randomSeed;
         numberOfRandomSamples = obj.numberOfRandomSamples;
         forceNodeCenteredData = obj.forceNodeCenteredData;
+        issueAdvectionWarnings = obj.issueAdvectionWarnings;
+        issueBoundaryWarnings = obj.issueBoundaryWarnings;
         issueTerminationWarnings = obj.issueTerminationWarnings;
         issueStepsizeWarnings = obj.issueStepsizeWarnings;
         issueStiffnessWarnings = obj.issueStiffnessWarnings;
@@ -615,6 +621,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
                 (randomSeed == obj.randomSeed) &&
                 (numberOfRandomSamples == obj.numberOfRandomSamples) &&
                 (forceNodeCenteredData == obj.forceNodeCenteredData) &&
+                (issueAdvectionWarnings == obj.issueAdvectionWarnings) &&
+                (issueBoundaryWarnings == obj.issueBoundaryWarnings) &&
                 (issueTerminationWarnings == obj.issueTerminationWarnings) &&
                 (issueStepsizeWarnings == obj.issueStepsizeWarnings) &&
                 (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
@@ -1060,64 +1068,76 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         Select(57);
     }
 
+    public void SetIssueAdvectionWarnings(boolean issueAdvectionWarnings_)
+    {
+        issueAdvectionWarnings = issueAdvectionWarnings_;
+        Select(58);
+    }
+
+    public void SetIssueBoundaryWarnings(boolean issueBoundaryWarnings_)
+    {
+        issueBoundaryWarnings = issueBoundaryWarnings_;
+        Select(59);
+    }
+
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(58);
+        Select(60);
     }
 
     public void SetIssueStepsizeWarnings(boolean issueStepsizeWarnings_)
     {
         issueStepsizeWarnings = issueStepsizeWarnings_;
-        Select(59);
+        Select(61);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(60);
+        Select(62);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(61);
+        Select(63);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(62);
+        Select(64);
     }
 
     public void SetCorrelationDistanceAngTol(double correlationDistanceAngTol_)
     {
         correlationDistanceAngTol = correlationDistanceAngTol_;
-        Select(63);
+        Select(65);
     }
 
     public void SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_)
     {
         correlationDistanceMinDistAbsolute = correlationDistanceMinDistAbsolute_;
-        Select(64);
+        Select(66);
     }
 
     public void SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_)
     {
         correlationDistanceMinDistBBox = correlationDistanceMinDistBBox_;
-        Select(65);
+        Select(67);
     }
 
     public void SetCorrelationDistanceMinDistType(int correlationDistanceMinDistType_)
     {
         correlationDistanceMinDistType = correlationDistanceMinDistType_;
-        Select(66);
+        Select(68);
     }
 
     public void SetSelection(String selection_)
     {
         selection = selection_;
-        Select(67);
+        Select(69);
     }
 
     // Property getting methods
@@ -1179,6 +1199,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public int      GetRandomSeed() { return randomSeed; }
     public int      GetNumberOfRandomSamples() { return numberOfRandomSamples; }
     public boolean  GetForceNodeCenteredData() { return forceNodeCenteredData; }
+    public boolean  GetIssueAdvectionWarnings() { return issueAdvectionWarnings; }
+    public boolean  GetIssueBoundaryWarnings() { return issueBoundaryWarnings; }
     public boolean  GetIssueTerminationWarnings() { return issueTerminationWarnings; }
     public boolean  GetIssueStepsizeWarnings() { return issueStepsizeWarnings; }
     public boolean  GetIssueStiffnessWarnings() { return issueStiffnessWarnings; }
@@ -1310,24 +1332,28 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(57, buf))
             buf.WriteBool(forceNodeCenteredData);
         if(WriteSelect(58, buf))
-            buf.WriteBool(issueTerminationWarnings);
+            buf.WriteBool(issueAdvectionWarnings);
         if(WriteSelect(59, buf))
-            buf.WriteBool(issueStepsizeWarnings);
+            buf.WriteBool(issueBoundaryWarnings);
         if(WriteSelect(60, buf))
-            buf.WriteBool(issueStiffnessWarnings);
+            buf.WriteBool(issueTerminationWarnings);
         if(WriteSelect(61, buf))
-            buf.WriteBool(issueCriticalPointsWarnings);
+            buf.WriteBool(issueStepsizeWarnings);
         if(WriteSelect(62, buf))
-            buf.WriteDouble(criticalPointThreshold);
+            buf.WriteBool(issueStiffnessWarnings);
         if(WriteSelect(63, buf))
-            buf.WriteDouble(correlationDistanceAngTol);
+            buf.WriteBool(issueCriticalPointsWarnings);
         if(WriteSelect(64, buf))
-            buf.WriteDouble(correlationDistanceMinDistAbsolute);
+            buf.WriteDouble(criticalPointThreshold);
         if(WriteSelect(65, buf))
-            buf.WriteDouble(correlationDistanceMinDistBBox);
+            buf.WriteDouble(correlationDistanceAngTol);
         if(WriteSelect(66, buf))
-            buf.WriteInt(correlationDistanceMinDistType);
+            buf.WriteDouble(correlationDistanceMinDistAbsolute);
         if(WriteSelect(67, buf))
+            buf.WriteDouble(correlationDistanceMinDistBBox);
+        if(WriteSelect(68, buf))
+            buf.WriteInt(correlationDistanceMinDistType);
+        if(WriteSelect(69, buf))
             buf.WriteString(selection);
     }
 
@@ -1510,33 +1536,39 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             SetForceNodeCenteredData(buf.ReadBool());
             break;
         case 58:
-            SetIssueTerminationWarnings(buf.ReadBool());
+            SetIssueAdvectionWarnings(buf.ReadBool());
             break;
         case 59:
-            SetIssueStepsizeWarnings(buf.ReadBool());
+            SetIssueBoundaryWarnings(buf.ReadBool());
             break;
         case 60:
-            SetIssueStiffnessWarnings(buf.ReadBool());
+            SetIssueTerminationWarnings(buf.ReadBool());
             break;
         case 61:
-            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            SetIssueStepsizeWarnings(buf.ReadBool());
             break;
         case 62:
-            SetCriticalPointThreshold(buf.ReadDouble());
+            SetIssueStiffnessWarnings(buf.ReadBool());
             break;
         case 63:
-            SetCorrelationDistanceAngTol(buf.ReadDouble());
+            SetIssueCriticalPointsWarnings(buf.ReadBool());
             break;
         case 64:
-            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
+            SetCriticalPointThreshold(buf.ReadDouble());
             break;
         case 65:
-            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
+            SetCorrelationDistanceAngTol(buf.ReadDouble());
             break;
         case 66:
-            SetCorrelationDistanceMinDistType(buf.ReadInt());
+            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
             break;
         case 67:
+            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
+            break;
+        case 68:
+            SetCorrelationDistanceMinDistType(buf.ReadInt());
+            break;
+        case 69:
             SetSelection(buf.ReadString());
             break;
         }
@@ -1719,6 +1751,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         str = str + intToString("randomSeed", randomSeed, indent) + "\n";
         str = str + intToString("numberOfRandomSamples", numberOfRandomSamples, indent) + "\n";
         str = str + boolToString("forceNodeCenteredData", forceNodeCenteredData, indent) + "\n";
+        str = str + boolToString("issueAdvectionWarnings", issueAdvectionWarnings, indent) + "\n";
+        str = str + boolToString("issueBoundaryWarnings", issueBoundaryWarnings, indent) + "\n";
         str = str + boolToString("issueTerminationWarnings", issueTerminationWarnings, indent) + "\n";
         str = str + boolToString("issueStepsizeWarnings", issueStepsizeWarnings, indent) + "\n";
         str = str + boolToString("issueStiffnessWarnings", issueStiffnessWarnings, indent) + "\n";
@@ -1797,6 +1831,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     private int      randomSeed;
     private int      numberOfRandomSamples;
     private boolean  forceNodeCenteredData;
+    private boolean  issueAdvectionWarnings;
+    private boolean  issueBoundaryWarnings;
     private boolean  issueTerminationWarnings;
     private boolean  issueStepsizeWarnings;
     private boolean  issueStiffnessWarnings;

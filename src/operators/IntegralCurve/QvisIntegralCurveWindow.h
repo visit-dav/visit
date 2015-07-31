@@ -268,6 +268,8 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     void pathlinePeriodProcessText();
     void pathlineCMFEButtonGroupChanged(int val);
 
+    void issueWarningForAdvectionChanged(bool);
+    void issueWarningForBoundaryChanged(bool);
     void issueWarningForMaxStepsChanged(bool);
     void issueWarningForStepsizeChanged(bool);
     void issueWarningForStiffnessChanged(bool);
@@ -377,6 +379,8 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     QLineEdit *pathlinePeriod;
     QButtonGroup *pathlineCMFEButtonGroup;
 
+    QCheckBox *issueWarningForAdvection;
+    QCheckBox *issueWarningForBoundary;
     QCheckBox *issueWarningForMaxSteps;
     QCheckBox *issueWarningForStepsize;
     QCheckBox *issueWarningForStiffness;

@@ -227,6 +227,8 @@ avtIntegralCurveFilter::avtIntegralCurveFilter() : seedVelocity(0,0,0),
     sourceSelection = "";
 
     storeVelocitiesForLighting = false;
+    issueWarningForAdvection = true;
+    issueWarningForBoundary = true;
     issueWarningForMaxStepsTermination = true;
     issueWarningForStepsize = true;
     issueWarningForStiffness = true;
@@ -675,6 +677,8 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
                    atts.GetTerminateByTime(),
                    atts.GetTermTime());
 
+    IssueWarningForAdvection(atts.GetIssueAdvectionWarnings());
+    IssueWarningForBoundary(atts.GetIssueBoundaryWarnings());
     IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
     IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
     IssueWarningForStepsize(atts.GetIssueStepsizeWarnings());
@@ -843,6 +847,12 @@ avtIntegralCurveFilter::GenerateAttributeFields() const
     // need at least these three attributes
     unsigned int attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
 
+    // if( doTime )
+    //     attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
+
+    // if( doDistance )
+    //     attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
+
     if (storeVelocitiesForLighting)
         attr |= avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
 
@@ -948,7 +958,7 @@ avtIntegralCurveFilter::CreateIntegralCurve()
 {
     avtStreamlineIC *ic = new avtStreamlineIC();
     ic->SetMaxSteps( maxSteps );
-    ic->historyMask = GenerateAttributeFields();
+    ic->SetHistoryMask( GenerateAttributeFields() );
     return ic;
 }
 
@@ -984,25 +994,24 @@ avtIntegralCurveFilter::CreateIntegralCurve( const avtIVPSolver* model,
                                              long ID ) 
 {
     unsigned int attr = GenerateAttributeFields();
-    double t_end;
 
     if (doPathlines)
     {
         if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
-            t_end = seedTime0-maxTime;
+            absMaxTime = seedTime0-maxTime;
         else
-            t_end = seedTime0+maxTime;
+            absMaxTime = seedTime0+maxTime;
     }
     else
     {
         if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
-            t_end = -maxTime;
+            absMaxTime = -maxTime;
         else
-            t_end = maxTime;
+            absMaxTime = maxTime;
     }
 
     avtStreamlineIC *rv = 
-        new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, t_end,
+        new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, absMaxTime,
                             attr, model, dir, t_start, p_start, v_start, ID);
 
     return rv;
@@ -2387,6 +2396,9 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 {
     int numICs = (int)ics.size();
 
+    int numAdvection = 0;
+    int numBoundary = 0;
+
     int numEarlyTerminators = 0;
     int numStepSize = 0;
     int numStiff = 0;
@@ -2397,25 +2409,65 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         debug5 << "::ReportWarnings " << ics.size() << endl;
     }
 
-    //See how many pts, ics we have so we can preallocate everything.
-    for (int i = 0; i < numICs; i++)
+    // Loop through all the IC for warnings.
+    for (int i = 0; i < numICs; ++i)
     {
         avtStreamlineIC *ic = dynamic_cast<avtStreamlineIC*>(ics[i]);
+
+        bool badTime = (doTime && (fabs(ic->GetTime() - absMaxTime) > FLT_MIN));
+        bool badDistance = (doDistance && (ic->GetDistance() < maxDistance));
+
+        if( badTime )
+          std::cerr << ic->GetTime() << "  "
+                    << fabs(ic->GetTime() - absMaxTime) << std::endl;
 
         if (ic->CurrentVelocity().length() <= criticalPointThreshold)
             numCritPts++;
 
         if (ic->TerminatedBecauseOfMaxSteps())
-            numEarlyTerminators++;
+          ++numEarlyTerminators;
 
-        if (ic->status.StepSizeUnderflow())
-            numStepSize++;
+        if (ic->status.StepSizeUnderflow() && (badTime || badDistance))
+          ++numStepSize;
 
         if (ic->EncounteredNumericalProblems())
-            numStiff++;
+            ++numStiff;
+
+        if (ic->status.EncounteredSpatialBoundary() ||
+            ic->status.ExitedSpatialBoundary())
+          ++numBoundary;
+
+        if (badTime || badDistance)
+          ++numAdvection;
     }
 
     char str[4096] = "";
+
+    if (issueWarningForAdvection)
+    {
+        SumIntAcrossAllProcessors(numAdvection);
+
+        if (numAdvection)
+        {
+          SNPRINTF(str, 4096,
+                   "%s\n%d of your integral curves terminated before they reached "
+                   "the maximum advection criteria.  This may be indicative of your "
+                   "time or distance criteria being too large or the curve leaving the domain."
+                   "  Note that this message does not mean that an error has occurred; it simply "
+                   "means that VisIt stopped advecting particles before they reached the maximum.\n",
+                   str, numAdvection);
+        }
+    }
+
+    if ((doDistance || doTime) && issueWarningForBoundary)
+    {
+        SumIntAcrossAllProcessors(numBoundary);
+        if (numBoundary > 0)
+        {
+            SNPRINTF(str, 4096, 
+                     "%s\n%d of your integral curves exited the spatial domain.\n", str, numBoundary);
+        }
+    }
 
     if ((doDistance || doTime) && issueWarningForMaxStepsTermination)
     {
@@ -2482,8 +2534,8 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     if( strlen( str ) )
     {
         SNPRINTF(str, 4096, 
-                 "%s\nIf you want to disable any of these messages, "
-                     "you can do so under the Advanced tab.\n", str);
+                 "\n%s\nIf you want to disable any of these messages, "
+                 "you can do so under the Advanced tab.\n", str);
 
         avtCallback::IssueWarning(str);
     }
