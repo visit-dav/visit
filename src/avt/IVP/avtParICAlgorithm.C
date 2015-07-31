@@ -956,7 +956,17 @@ avtParICAlgorithm::DoSendICs(int dst, vector<avtIntegralCurve*> &ics)
 {
     if (dst == rank)
     {
-        EXCEPTION1(VisItException, "avtParICAlgorithm::DoSendICs() Sending ICs to yourself. Error.");
+        std::cerr << "Error in avtParICAlgorithm::DoSendICs() Sending ICs to yourself" << std::endl;
+
+        for (size_t i = 0; i < ics.size(); i++)
+          std::cerr << "Proc " << rank << "  "
+                    << "curve id  " << ics[i]->id << "  "
+                    << "location  " << ics[i]->CurrentLocation() << "  "
+                    << "status  " << ics[i]->status << "  "
+                    << std::endl;
+
+        // Removed exception as it will cause other MPI processed to hang.
+        // EXCEPTION1(VisItException, "avtParICAlgorithm::DoSendICs() Sending ICs to yourself. Error.");
     }
     
     if (ics.empty())
