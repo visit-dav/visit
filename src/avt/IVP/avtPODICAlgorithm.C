@@ -117,18 +117,16 @@ avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
     for (size_t i = 0; i < ics.size(); i++)
     {
         avtIntegralCurve *ic = ics[i];
-        
-        if (DomainLoaded(ic->blockList.front()))
-        {
-            ic->originatingRank = rank;
-            activeICs.push_back(ic);
-            
+
+        ic->originatingRank = rank;
+
 #ifdef USE_IC_STATE_TRACKING
-            ic->InitTrk();
+        ic->InitTrk();
 #endif
-        }
+        if (!ic->blockList.empty() && DomainLoaded(ic->blockList.front()))
+            activeICs.push_back(ic);
         else
-            delete ic;
+            inactiveICs.push_back(ic);
     }
 
     if (DebugStream::Level1())
@@ -200,7 +198,7 @@ avtPODICAlgorithm::RunAlgorithm()
             }
             while (ic->status.Integrateable() &&
                    DomainLoaded(ic->blockList.front()));
-            
+
             if (ic->status.EncounteredSpatialBoundary())
             {
                 if (!ic->blockList.empty() && DomainLoaded(ic->blockList.front()))
