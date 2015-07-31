@@ -73,18 +73,35 @@ public:
     avtLCSIC();
     virtual ~avtLCSIC();
 
-    virtual void    Serialize(MemStream::Mode mode, MemStream &buff, 
-                              avtIVPSolver *solver, SerializeFlags serializeFlags);
-    virtual bool    UseFixedTerminationTime(void) { return doTime; };
-    virtual double  FixedTerminationTime(void)    { return maxTime; };
-    virtual bool    UseFixedTerminationDistance(void) { return doDistance; };
-    virtual double  FixedTerminationDistance(void)    { return maxDistance; };
-
   protected:
     avtLCSIC( const avtLCSIC& );
     avtLCSIC& operator=( const avtLCSIC& );
     
   public:
+    virtual void  Finalize();
+    virtual void  Serialize(MemStream::Mode mode, MemStream &buff, 
+                            avtIVPSolver *solver, SerializeFlags serializeFlags);
+
+    virtual void  PrepareForSend(void)
+                           { _serializeFlags = (SerializeFlags)(_serializeFlags | avtIntegralCurve::SERIALIZE_INC_SEQ); };
+    virtual void      ResetAfterSend(void) { _serializeFlags = SERIALIZE_NO_OPT;}
+    virtual bool  SameCurve(avtIntegralCurve *ic);
+
+    virtual avtIntegralCurve* MergeIntegralCurveSequence(
+                              std::vector<avtIntegralCurve *> &v);
+    static bool IdSeqCompare(const avtIntegralCurve *slA,
+                             const avtIntegralCurve *slB);
+    static bool IdRevSeqCompare(const avtIntegralCurve *slA,
+                                const avtIntegralCurve *slB);
+    virtual bool LessThan(const avtIntegralCurve *ic) const;
+    virtual void PrepareForFinalCommunication(void)
+                     { _serializeFlags = avtIntegralCurve::SERIALIZE_STEPS; };
+
+    virtual bool    UseFixedTerminationTime(void) { return doTime; };
+    virtual double  FixedTerminationTime(void)    { return maxTime; };
+    virtual bool    UseFixedTerminationDistance(void) { return doDistance; };
+    virtual double  FixedTerminationDistance(void)    { return maxDistance; };
+
     virtual bool   CheckForTermination(avtIVPStep& step, avtIVPField *);
     virtual bool   TerminatedBecauseOfMaxSteps(void) 
                             { return terminatedBecauseOfMaxSteps; };
@@ -98,16 +115,18 @@ public:
     virtual double GetSummation0() { return summation0; }
     virtual double GetSummation1() { return summation1; }
 
-    virtual void     AnalyzeStep( avtIVPStep &step, avtIVPField *field, bool firstStep=false);
-  
-    bool LessThan(const avtIntegralCurve *ic) const;
-
-    avtIntegralCurve* MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v);
-
     avtVector GetStartPoint() { return p_start; }
     avtVector GetEndPoint() { return p_end; }
 
   protected:
+    virtual void   AnalyzeStep( avtIVPStep &step,
+                                avtIVPField *field,
+                                bool firstStep=false);
+
+  protected:
+    SerializeFlags   _serializeFlags;
+    long             sequenceCnt;
+
     unsigned int     maxSteps;
     unsigned int     numSteps;
     bool             doDistance;

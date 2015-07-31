@@ -135,6 +135,11 @@ public:
     avtStateRecorderIntegralCurve();
     virtual ~avtStateRecorderIntegralCurve();
 
+  protected:
+    avtStateRecorderIntegralCurve( const avtStateRecorderIntegralCurve& );
+    avtStateRecorderIntegralCurve& operator=( const avtStateRecorderIntegralCurve& );
+
+ public:
     virtual void  Finalize();
     virtual void  Serialize(MemStream::Mode mode, MemStream &buff, 
                             avtIVPSolver *solver, SerializeFlags serializeFlags);
@@ -158,40 +163,35 @@ public:
     
     virtual bool CheckForTermination(avtIVPStep &step, avtIVPField *) = 0;
 
-    virtual double GetTime();
-    virtual double GetDistance();
-    virtual avtVector GetEndPoint();
+    virtual void SetHistoryMask (unsigned int mask) { historyMask = mask; };
+
+    virtual double GetTime() { return time; };
+    virtual double GetDistance() { return distance; };
+    virtual avtVector GetEndPoint() { return ivp->GetCurrentY(); };
 
   protected:
-    avtStateRecorderIntegralCurve( const avtStateRecorderIntegralCurve& );
-    avtStateRecorderIntegralCurve& operator=( const avtStateRecorderIntegralCurve& );
-    
-    size_t    GetSampleStride() const;
-    size_t    GetSampleIndex(const Attribute &attr) const;
-
-  public:
-    SerializeFlags      _serializeFlags;
-    long                sequenceCnt;
-    unsigned int        historyMask;
-
-  protected:
-    double time;
-    double distance;
-
-    unsigned int variableIndex;
-
-    std::vector<double>  history;
-    static const double epsilon;
-
-    void RecordStep( const avtIVPField* field, 
-                     const avtIVPStep& step, 
-                     double t,
-                     bool firstStep);
-
     virtual void AnalyzeStep( avtIVPStep& step,
                               avtIVPField* field,
                               bool firstStep=false);
+
+    void RecordStep( const avtIVPField* field, 
+                     const avtIVPStep& step, 
+                     bool firstStep);
+
+    size_t    GetSampleStride() const;
+    size_t    GetSampleIndex(const Attribute &attr) const;
+
+  protected:
+    SerializeFlags       _serializeFlags;
+    long                 sequenceCnt;
+
+    double               time;
+    double               distance;
+
+    unsigned int         variableIndex;
+
+    std::vector<double>  history;
+    unsigned int         historyMask;
 };
 
 #endif 
-
