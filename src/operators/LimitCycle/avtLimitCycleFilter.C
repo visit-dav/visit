@@ -277,6 +277,11 @@ avtLimitCycleFilter::ModifyContract(avtContract_p in_contract)
 
     in_dr->SetUsesAllDomains(true);
 
+    // Upstream operators like the LCS operator are going to pick up
+    // this request. So that those operators that do a gather
+    // operation also do a scatter operator if needed.
+    in_contract->SetReplicateSingleDomainOnAllProcessors(true);
+
     if( strncmp(var.c_str(), "operators/LimitCycle/",
                 strlen("operators/LimitCycle/")) == 0)
     {
@@ -1202,7 +1207,7 @@ avtIntegralCurve *
 avtLimitCycleFilter::CreateIntegralCurve()
 {
     avtPoincareIC *ic = new avtPoincareIC();
-    ic->historyMask = GenerateAttributeFields();
+    ic->SetHistoryMask( GenerateAttributeFields() );
     return ic;
 }
 
