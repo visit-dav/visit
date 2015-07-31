@@ -1820,9 +1820,9 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     }
 
     // Loop through all the IC for warnings.
-    for (int i = 0; i < numICs; ++i)
+    if (doSize)
     {
-        if( doSize )
+        for (int i = 0; i < numICs; ++i)
         {
             avtStreamlineIC *ic = dynamic_cast<avtStreamlineIC*>(ics[i]);
 
@@ -1847,7 +1847,10 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
             if (badSize)
               ++numAdvection;         
         }
-        else
+    }
+    else // if (doTime || doDistance)
+    {
+        for (int i = 0; i < numICs; ++i)
         {
             avtLCSIC *ic = dynamic_cast<avtLCSIC*>(ics[i]);
 
