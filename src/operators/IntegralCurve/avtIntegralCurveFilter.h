@@ -165,6 +165,10 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
 
     void SetVelocitiesForLighting(bool v) { storeVelocitiesForLighting = v; };
 
+    void IssueWarningForAdvection(bool v) 
+                 { issueWarningForAdvection = v; };
+    void IssueWarningForBoundary(bool v) 
+                 { issueWarningForBoundary = v; };
     void IssueWarningForMaxStepsTermination(bool v) 
                  { issueWarningForMaxStepsTermination = v; };
     void IssueWarningForStepsize(bool v) 
@@ -248,6 +252,8 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     bool     doTime;
     double   maxTime;
 
+    double   absMaxTime;
+
     // Various starting locations for streamlines.
     std::vector<avtVector> pointList;
     avtVector points[2];
@@ -262,6 +268,8 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     std::string sourceSelection;
     bool      storeVelocitiesForLighting;
 
+    bool      issueWarningForAdvection;
+    bool      issueWarningForBoundary;
     bool      issueWarningForMaxStepsTermination;
     bool      issueWarningForStepsize;
     bool      issueWarningForStiffness;
