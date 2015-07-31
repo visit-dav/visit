@@ -266,7 +266,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
     {
         if( DebugStream::Level5() )
         {
-            debug5 << "avtIntegralCurve::Advance(): initial point is outside domain\n";
+            debug5 << "avtIntegralCurve::Advance(): "
+                   << "initial point is outside domain\n";
         }
         if (fieldRes == avtIVPField::OUTSIDE_SPATIAL ||
             fieldRes == avtIVPField::OUTSIDE_BOTH)
@@ -340,6 +341,11 @@ avtIntegralCurve::Advance(avtIVPField *field)
             AnalyzeStep(step, field, firstStep);
             firstStep = false;
 
+            // If the user termination criteria was reached exit the
+            // loop without any further checks.
+            if( status.TerminationMet() ) 
+                break;
+
             // Check if the new position is outside the domain
             // (or in the domain's ghost data); in this case
             // finish here and continue in the next domain.
@@ -350,7 +356,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
             {
                 if( DebugStream::Level5() )
                 {
-                    debug5 << "avtIntegralCurve::Advance(): step ended in ghost data\n";
+                    debug5 << "avtIntegralCurve::Advance(): "
+                           << "step ended in ghost data\n";
                 }
 
                 if (fieldRes == avtIVPField::OUTSIDE_SPATIAL ||
@@ -359,11 +366,12 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL ||
                     fieldRes == avtIVPField::OUTSIDE_BOTH)
                     status.SetAtTemporalBoundary();
+
                 break;
             }
 
             // Not out side the domain but hit a terminate criteria so
-            // bounce out.
+            // exit the loop.
             if (result == avtIVPSolver::TERMINATE)
             {
                 break;
@@ -518,17 +526,12 @@ avtIntegralCurve::Advance(avtIVPField *field)
     
     status.ClearInsideBlock();
 
-    if (DebugStream::Level5())
-    {
-        debug5 << "avtIntegralCurve::Advance(): done, "
-               << "numver of steps taken " << numStepsTaken << "  "
-               << "status: " << status << std::endl;
-    }
-
-    // if( 1000 < id && id < 1002 )
-    // std::cerr << "avtIntegralCurve::Advance(): done, "
-    //        << "numver of steps taken " << numStepsTaken << "  "
-    //        << "status: " << status << std::endl;
+    // if (DebugStream::Level5())
+    // {
+    //     debug5 << "avtIntegralCurve::Advance(): done, "
+    //            << "numver of steps taken " << numStepsTaken << "  "
+    //            << "status: " << status << std::endl;
+    // }
 
     return numStepsTaken;
 }
