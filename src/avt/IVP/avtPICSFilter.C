@@ -320,31 +320,17 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
     
     int timeStep = GetTimeStep(ic->CurrentTime());
 
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
-
     if (timeStep == -1)
     {
         ic->status.SetExitTemporalBoundary();
         return;
     }
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
 
     if (timeStep != curTimeSlice)
     {
         ic->status.SetAtTemporalBoundary();
         return;
     }
-
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
 
     avtVector pt = ic->CurrentLocation();
     double xyz0[3] = {pt.x, pt.y, pt.z};
@@ -374,27 +360,12 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
 
         if (skipBlk != NULL && curr == *skipBlk)
         {
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
-
             continue;
         }
         else if (BlockLoaded(curr))
         {
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
-
             if (ICInBlock(ic, curr))
             {
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
-
                 ic->blockList.clear();
                 ic->blockList.push_back(curr);
                 blockLoaded = true;
@@ -406,12 +377,6 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
             ic->blockList.push_back(curr);
         }
     }
-
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status << "  " << doms.size() << "  "
-              // << ic->blockList.size() << "  " << blockLoaded
-              // << std::endl;
 
     // No blocks, exited spatial boundary.
     if (ic->blockList.empty())
@@ -455,37 +420,21 @@ avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
     if (domain.domain == -1 || domain.timeStep == -1)
         return NULL;
 
-  // if( PRINT )
-  //   std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-  //          << pt
-  //          << std::endl;
-
     vtkDataSet *ds = NULL;
     if (OperatingOnDemand())
     {
-  // if( PRINT )
-  //   std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-  //          << pt
-  //          << std::endl;
+        if (DebugStream::Level1()) 
+        {
+            // debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<endl;
+        }
 
-        debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<endl;
         if (specifyPoint)
         {
-  // if( PRINT )
-  //   std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-  //          << pt
-  //          << std::endl;
-
             ds = avtDatasetOnDemandFilter::GetDataAroundPoint(pt.x, pt.y, pt.z,
                                                               domain.timeStep);
         }
         else
         {
-  // if( PRINT )
-  //   std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-  //          << pt
-  //          << std::endl;
-
             ds = avtDatasetOnDemandFilter::GetDomain(domain.domain,
                                                      domain.timeStep);
         }
@@ -511,21 +460,14 @@ avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
     }
     else
     {
-  // if( PRINT )
-  //   std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-  //          << pt
-  //          << std::endl;
-
         ds = dataSets[domain.domain];
     }
     
-  // if( PRINT )
-  //   std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-  //          << ds
-  //          << std::endl;
+    if (DebugStream::Level1()) 
+    {
+      // debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<" ds= "<<ds<<endl;
+    }
 
-    debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<" ds= "<<ds<<endl;
-    
     return ds;
 }
 
@@ -918,7 +860,10 @@ avtPICSFilter::BlockLoaded(BlockIDType &domain) const
     val = true;
 #endif
 
-    debug1<<"BlockLoaded("<<domain<<")= "<<val<<endl;
+    // if (DebugStream::Level1()) 
+    // {
+    //     debug1<<"BlockLoaded("<<domain<<")= "<<val<<endl;
+    // }
 
     return val;
 }
@@ -1937,9 +1882,9 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
     {
         bool dataIsReplicated = GetInput()->GetInfo().GetAttributes().
                                          DataIsReplicatedOnAllProcessors();
-        bool performCalculationsOverAllProcs = true;
-        if (dataIsReplicated)
-            performCalculationsOverAllProcs = false;
+        
+        bool performCalculationsOverAllProcs = dataIsReplicated ? false : true;
+
         GetTypedInput()->RenumberDomainIDs(performCalculationsOverAllProcs);
 
         TRY
@@ -2439,35 +2384,15 @@ avtPICSFilter::ICInBlock(const avtIntegralCurve *ic, const BlockIDType &block)
 {
     avtVector pt = ic->CurrentLocation();
 
-////      if( 1000 < ic->id && ic->id < 1002 )
-//    PRINT = true;
-    
     vtkDataSet *ds = GetDomain(block, pt);
-
-//    PRINT = false;
-
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
 
 
     if (ds == NULL || ds->GetNumberOfCells() == 0)
         return false;
 
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
-
-    //Rectilinear dataset.
+    // Rectilinear dataset.
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
-
         return ICInRectilinearBlock(ic, block, ds);
     }
 
@@ -2530,27 +2455,12 @@ avtPICSFilter::ICInRectilinearBlock(const avtIntegralCurve *ic,
     double bbox[6];
     avtVector pt = ic->CurrentLocation();
 
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
-
     intervalTree->GetElementExtents(block.domain, bbox);
     if (pt.x < bbox[0] || pt.x > bbox[1] || pt.y < bbox[2] || pt.y > bbox[3])
         return false;
     
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
-
     if (dataSpatialDimension == 3 && (pt.z < bbox[4] || pt.z > bbox[5]))
         return false;
-
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
 
     // If we're on a face, we want to avoid cases where the next step
     // will move the point outside the block.
@@ -2802,26 +2712,12 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
 {
     int numStepsTaken = 0;
     
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
-
     //If no blockList, see if we can set it.
     if (ic->blockList.empty())
         FindCandidateBlocks(ic);
 
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
-
     if (!ic->status.Integrateable())
         return numStepsTaken;
-
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << std::endl;
-
 
     bool haveBlock = false;
     BlockIDType blk;
@@ -2854,8 +2750,6 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
         else
             ic->status.SetAtSpatialBoundary();
 
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << std::endl;
         return numStepsTaken;
     }
 
@@ -2867,9 +2761,7 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
 
     if (!ic->status.Terminated())
         FindCandidateBlocks(ic, &blk);
-
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << std::endl;
+      
     return numStepsTaken;
 }
 
@@ -2950,7 +2842,6 @@ avtPICSFilter::GetLengthScale(void)
 void
 avtPICSFilter::PreExecute(void)
 {
-  // std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << std::endl;
     avtDatasetOnDemandFilter::PreExecute();
 
     double absTolToUse = absTol;
@@ -3000,7 +2891,6 @@ avtPICSFilter::PreExecute(void)
       solver->SetBaseTime( baseTime );
       solver->SetToCartesian( convertToCartesian );
     }
-  // std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << std::endl;
 }
 
 
@@ -3296,10 +3186,6 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
             FindCandidateBlocks(ic);
             curves.push_back(ic);
             seedPtIds.push_back(ic->id);
-//      if( 1000 < ic->id && ic->id < 1002 )
-//    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-              // << ic->status
-              // << std::endl;
         }
         else if (integrationDirection == VTK_INTEGRATE_BACKWARD)
         {
@@ -3405,6 +3291,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         if (md->GetTimes().size() == 1)
             doPathlines = false;
     }
+
     InitializeTimeInformation(in_contract->GetDataRequest()->GetTimestep());
 
     avtDataRequest_p out_dr = new avtDataRequest(in_contract->GetDataRequest());
