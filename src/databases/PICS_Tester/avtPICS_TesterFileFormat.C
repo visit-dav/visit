@@ -259,7 +259,11 @@ avtPICS_TesterFileFormat::ReadHeader(const char *filename)
          
             numCells[0].push_back(nx);
             numCells[1].push_back(ny);
-            numCells[2].push_back(nz);
+
+            if (rank == 2)
+              numCells[2].push_back(1);
+            else
+              numCells[2].push_back(nz);
           }
         }
         else
@@ -294,11 +298,7 @@ avtPICS_TesterFileFormat::ReadHeader(const char *filename)
             
           numBlocks[0].push_back(nb);
           numBlocks[1].push_back(nb);
-
-          if (rank == 2)
-            numBlocks[2].push_back(1);
-          else
-            numBlocks[2].push_back(nb);
+          numBlocks[2].push_back(nb);
          
           numCells[0].push_back(nx);
           numCells[1].push_back(ny);
@@ -580,7 +580,7 @@ avtPICS_TesterFileFormat::GetMesh(int timestate, int domain, const char *meshnam
                 z->SetTuple1(i, zSizePerBlock*zOff + i*zSizePerBlock/numCells[2][timestate]);
             rgrid->SetZCoordinates(z);
             z->Delete();
-        }
+        } //if (rank == 2)
         else
         {
             vtkDoubleArray *z = vtkDoubleArray::New();
