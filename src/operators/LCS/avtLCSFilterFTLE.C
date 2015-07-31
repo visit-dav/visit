@@ -70,9 +70,9 @@
 #include <vtkStructuredGrid.h>
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
-#include <vtkImageReslice.h>
-#include <vtkMatrix4x4.h>
-#include <vtkImageGaussianSmooth.h>
+//#include <vtkImageReslice.h>
+//#include <vtkMatrix4x4.h>
+//#include <vtkImageGaussianSmooth.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -369,7 +369,7 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
 
     //done with offset, increment it for the next call to this
     //function.
-    offset += nTuples;
+    offset += nTuples * nAuxPts;
 
     //create new instance from old.
     vtkDataSet* out_grid = in_ds->NewInstance();

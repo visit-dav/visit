@@ -266,6 +266,8 @@ protected:
     bool     doSize;
     double   maxSize;
 
+    double   absMaxTime;
+
     double   minSizeValue, maxSizeValue;
 
     bool     clampLogValues;
