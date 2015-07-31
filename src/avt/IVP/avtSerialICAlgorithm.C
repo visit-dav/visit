@@ -211,7 +211,19 @@ avtSerialICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
 #endif
     }
 
-    debug5 << "I have seeds: "<<i0<<" to "<<(i1-1)<<" of "<<nSeeds<<" seeds"<<endl;
+    if (DebugStream::Level5()) 
+    {
+      if( i0 < i1 )
+      {
+        debug5 << "Proc " << PAR_Rank() << " has seeds: "
+               << i0 << " to " << (i1-1) << " of " << nSeeds << " seeds"
+               << std::endl;
+      }
+      else
+      {
+        debug5 << "Proc " << PAR_Rank() << " has no seeds " << std::endl;
+      }
+    }
 }
 
 // ****************************************************************************
