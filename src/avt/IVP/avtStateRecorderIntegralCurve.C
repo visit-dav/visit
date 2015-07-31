@@ -255,7 +255,7 @@ avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step,
                                             avtIVPField* field,
                                             bool firstStep)
 {
-    if (history.size() == 0)
+    if (history.empty())
     {
         // Record the first position of the step.
         time = step.GetT0();
