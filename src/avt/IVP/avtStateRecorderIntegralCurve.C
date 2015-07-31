@@ -52,10 +52,7 @@
 #include <avtVector.h>
 #include <algorithm>
 
-const double avtStateRecorderIntegralCurve::epsilon =
-  100.0*(std::numeric_limits<float>::epsilon() *
-         std::numeric_limits<float>::epsilon());
-
+#include <avtParallel.h>
 
 // ****************************************************************************
 //  Method: avtStateRecorderIntegralCurve constructor
@@ -133,21 +130,6 @@ avtStateRecorderIntegralCurve::~avtStateRecorderIntegralCurve()
 {
 }
 
-void
-avtStateRecorderIntegralCurve::Finalize()
-{
-    if (historyMask & SAMPLE_DOM_VISIT)
-    {
-        size_t nSamp = GetNumberOfSamples();
-        if (nSamp > 0)
-        {
-            double val = GetSample(nSamp-1).numDomainsVisited;
-            for (size_t i = 0; i < nSamp; i++)
-                history[i*GetSampleStride() + GetSampleIndex(SAMPLE_DOM_VISIT)] = val;
-        }
-    }
-}
-
 // ****************************************************************************
 //  Method: avtStateRecorderIntegralCurve::RecordStep
 //
@@ -169,28 +151,12 @@ avtStateRecorderIntegralCurve::Finalize()
 
 void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
                                                const avtIVPStep& step,
-                                               double t,
                                                bool firstStep)
 {
-    avtVector p = step.GetP(t);
-
-    /*
-    //If the step is within tolerance of the previous step, just overwrite the last step
-    //with this step.
-    size_t nSamp = GetNumberOfSamples();
-    if (nSamp > 1)
-    {
-        Sample prevSamp = GetSample(nSamp-1);
-        if ((p-prevSamp.position).length2() < epsilon)
-        {
-            std::vector<double>::iterator m = history.begin() + (nSamp-1)*GetSampleStride();
-            history.erase(m, history.end());
-        }
-    }
-    */
+    avtVector p = step.GetP(time);
 
     if( historyMask & SAMPLE_TIME )
-        history.push_back( t );
+        history.push_back( time );
 
     if( historyMask & SAMPLE_POSITION )
     {
@@ -201,14 +167,14 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
         
     if( historyMask & SAMPLE_VELOCITY )
     {
-        avtVector v = step.GetV( t );
+        avtVector v = step.GetV( time );
         history.push_back( v.x );
         history.push_back( v.y );
         history.push_back( v.z );
     }
     
     if( historyMask & SAMPLE_VORTICITY )
-        history.push_back( field->ComputeVorticity( t, p ) );
+        history.push_back( field->ComputeVorticity( time, p ) );
         
     if( historyMask & SAMPLE_ARCLENGTH )
         history.push_back( distance );
@@ -236,25 +202,25 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
     }
         
     if( historyMask & SAMPLE_VARIABLE )
-        history.push_back( field->ComputeScalarVariable( variableIndex, t, p ) );
+        history.push_back( field->ComputeScalarVariable( variableIndex, time, p ) );
 
     if( historyMask & SAMPLE_SECONDARY0 )
-        history.push_back( field->ComputeScalarVariable( 0, t, p ) );
+        history.push_back( field->ComputeScalarVariable( 0, time, p ) );
         
     if( historyMask & SAMPLE_SECONDARY1 )
-        history.push_back( field->ComputeScalarVariable( 1, t, p ) );
+        history.push_back( field->ComputeScalarVariable( 1, time, p ) );
 
     if( historyMask & SAMPLE_SECONDARY2 )
-        history.push_back( field->ComputeScalarVariable( 2, t, p ) );
+        history.push_back( field->ComputeScalarVariable( 2, time, p ) );
 
     if( historyMask & SAMPLE_SECONDARY3 )
-        history.push_back( field->ComputeScalarVariable( 3, t, p ) );
+        history.push_back( field->ComputeScalarVariable( 3, time, p ) );
         
     if( historyMask & SAMPLE_SECONDARY4 )
-        history.push_back( field->ComputeScalarVariable( 4, t, p ) );
+        history.push_back( field->ComputeScalarVariable( 4, time, p ) );
 
     if( historyMask & SAMPLE_SECONDARY5 )
-        history.push_back( field->ComputeScalarVariable( 5, t, p ) );
+        history.push_back( field->ComputeScalarVariable( 5, time, p ) );
 }
 
 // ****************************************************************************
@@ -292,21 +258,22 @@ avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step,
     if (history.size() == 0)
     {
         // Record the first position of the step.
-        RecordStep( field, step, step.GetT0(), false );
+        time = step.GetT0();
+        RecordStep( field, step, false );
     }
 
     if (CheckForTermination(step, field))
         status.SetTerminationMet();
 
-    // These must be called after CheckForTermination, because 
+    // These must be called after CheckForTermination, because
     // CheckForTermination will modify the step if it goes beyond the
-    // termination criteria.  (Example: streamlines will split a step if it
-    // is terminating by distance.)
+    // termination criteria.  (Example: integral curve will split a
+    // step if it is terminating by distance.)
 
     time = step.GetT1();
     distance += step.GetLength();
 
-    RecordStep( field, step, step.GetT1(), firstStep );
+    RecordStep( field, step, firstStep );
 }
 
 // ****************************************************************************
@@ -390,7 +357,7 @@ avtStateRecorderIntegralCurve::GetSampleIndex(const Attribute &attr) const
 //  Method: avtStateRecorderIntegralCurve::GetSample()
 //
 //  Purpose:
-//      Returns a sample from the streamline.
+//      Returns a sample from the integral curve.
 //
 //  Programmer: Christoph Garth
 //  Creation:   July 14, 2010
@@ -504,10 +471,35 @@ size_t avtStateRecorderIntegralCurve::GetNumberOfSamples() const
 
 
 // ****************************************************************************
+//  Method: avtStateRecorderIntegralCurve::Finalize
+//
+//  Purpose:
+//      Finalize a curve after being sent to another processor.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 4, 2010
+//
+// ****************************************************************************
+void
+avtStateRecorderIntegralCurve::Finalize()
+{
+    if (historyMask & SAMPLE_DOM_VISIT)
+    {
+        size_t nSamp = GetNumberOfSamples();
+        if (nSamp > 0)
+        {
+            double val = GetSample(nSamp-1).numDomainsVisited;
+            for (size_t i = 0; i < nSamp; i++)
+                history[i*GetSampleStride() + GetSampleIndex(SAMPLE_DOM_VISIT)] = val;
+        }
+    }
+}
+
+// ****************************************************************************
 //  Method: avtStateRecorderIntegralCurve::Serialize
 //
 //  Purpose:
-//      Serializes a streamline so it can be sent to another processor.
+//      Serializes a curve so it can be sent to another processor.
 //
 //  Programmer: Hank Childs
 //  Creation:   June 4, 2010
@@ -534,6 +526,7 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
     // Have the base class serialize its part
     avtIntegralCurve::Serialize(mode, buff, solver, serializeFlags);
 
+    buff.io(mode, time);
     buff.io(mode, distance);
 
     buff.io(mode, historyMask);
@@ -572,8 +565,8 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
 //  Method: avtStateRecorderIntegralCurve::MergeIntegralCurveSequence
 //
 //  Purpose:
-//      Merge a vector of streamline sequences into a single streamline.
-//      This is destructive, extra streamlines are deleted.
+//      Merge a vector of curve sequences into a single curve.
+//      This is destructive, extra curves are deleted.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   September 24, 2009
@@ -581,7 +574,7 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
 //  Modifications:
 //
 //   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
-//   Sorting can be done independant of streamline direction. Changed streamline
+//   Sorting can be done independant of curve direction. Changed curve
 //   step from list to vector.
 //
 //   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
@@ -610,7 +603,7 @@ avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtIntegra
         assert( v[i] != NULL );
     }
 
-    // sort the streamlines by id and sequence number, in ascending order
+    // sort the curves by id and sequence number, in ascending order
     std::sort( v.begin(), v.end(), 
                avtStateRecorderIntegralCurve::IdSeqCompare );
 
@@ -627,7 +620,6 @@ avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtIntegra
     }
 
     //If use color by 'domains visited' we need to increment the pieces.
-    
     if (historyMask & SAMPLE_DOM_VISIT)
     {
         double lastVal = 0.0;
@@ -643,12 +635,13 @@ avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtIntegra
         }
     }
     
-        
-    // now curve pieces are in sorted order and we can simply merge the histories
+    // now curve pieces are in sorted order and simply merge the histories
     // in sequence order; we merge by appending to the first (v[0]'s) history
     v[0]->history.reserve( combinedHistorySize );
 
     // Need to get the ending setting transfered.
+    v[0]->time = v[vSize-1]->time;
+    v[0]->distance = v[vSize-1]->distance;
     v[0]->status = v[vSize-1]->status;
     v[0]->blockList = v[vSize-1]->blockList;
     avtIVPSolver *tmpSolver = v[0]->ivp;
@@ -689,7 +682,7 @@ avtStateRecorderIntegralCurve::LessThan(const avtIntegralCurve *ic) const
 //  Method: avtStateRecorderIntegralCurve::IdSeqCompare
 //
 //  Purpose:
-//      Sort streamlines by id, then sequence number.
+//      Sort curves by id, then sequence number.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   September 24, 2009
@@ -718,7 +711,7 @@ avtStateRecorderIntegralCurve::IdSeqCompare(const avtIntegralCurve *icA,
 //  Method: avtStateRecorderIntegralCurve::IdRevSeqCompare
 //
 //  Purpose:
-//      Sort streamlines by id, then reverse sequence number.
+//      Sort curves by id, then reverse sequence number.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   September 24, 2009
@@ -759,41 +752,4 @@ avtStateRecorderIntegralCurve::SameCurve(avtIntegralCurve *ic)
 {
     avtStateRecorderIntegralCurve *sic = (avtStateRecorderIntegralCurve *) ic;
     return (id == sic->id) && (sequenceCnt == sic->sequenceCnt);
-}
-
-
-
-// ****************************************************************************
-//  Method: avtStateRecorderIntegralCurve::Get
-//
-//  Purpose:
-//      Quick access to member values
-//
-//  Programmer: Allen Sanderson
-//  Creation:   September 8, 2013
-//
-// ****************************************************************************
-
-double avtStateRecorderIntegralCurve::GetTime()
-{
-  if( GetNumberOfSamples() )
-    return GetSample( GetNumberOfSamples() - 1 ).time;
-  else
-    return time;
-}
-
-double avtStateRecorderIntegralCurve::GetDistance()
-{
-  if( GetNumberOfSamples() )
-    return GetSample( GetNumberOfSamples() - 1 ).arclength;
-  else
-    return distance;
-}
-
-avtVector avtStateRecorderIntegralCurve::GetEndPoint()
-{
-  if( GetNumberOfSamples() )
-    return GetSample( GetNumberOfSamples() - 1 ).position;
-  else
-    return ivp->GetCurrentY();
 }
