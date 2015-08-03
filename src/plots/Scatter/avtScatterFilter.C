@@ -1576,6 +1576,14 @@ avtScatterFilter::ModifyContract(avtContract_p spec)
     else
         keepNodeZone = false;
 
+    // Admit more VTK types.
+    std::vector<int> dataTypes;
+    dataTypes.push_back(VTK_CHAR);
+    dataTypes.push_back(VTK_INT);
+    dataTypes.push_back(VTK_LONG);
+    dataTypes.push_back(VTK_FLOAT);
+    dataTypes.push_back(VTK_DOUBLE);
+    rv->GetDataRequest()->UpdateAdmissibleDataTypes(dataTypes);
 
     return rv;
 }

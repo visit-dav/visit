@@ -1041,9 +1041,7 @@ avtDataRepresentation::InitializeNullDatasets(void)
 
     initializedNullDatasets = true;
 
-#if defined(DEBUG_MEMORY_LEAKS)
     atexit(DeleteNullDatasets);
-#endif
 }
 
 // ****************************************************************************

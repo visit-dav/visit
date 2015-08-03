@@ -200,6 +200,18 @@ simv2_UnstructuredMesh_setCoords_helper(const char *fname,
     void *data[3] = {0,0,0};
     for(int i = 0; i < ndims; ++i)
     {
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(cHandles[i], &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Separate coordinate arrays must be must be composed of a single array.");
+            return VISIT_ERROR;
+        }
+
         if(simv2_VariableData_getData(cHandles[i], owner[i], dataType[i], nComps[i], 
             nTuples[i], data[i]) == VISIT_ERROR)
         {
@@ -275,25 +287,47 @@ simv2_UnstructuredMesh_setCoords(visit_handle h, visit_handle coords)
 {
     int retval = VISIT_ERROR;
 
-    // Get the coordinates
-    int owner, dataType, nComps, nTuples;
-    void *data = 0;
-    if(simv2_VariableData_getData(coords, owner, dataType, nComps, nTuples, 
-        data) == VISIT_ERROR)
+    // How many arrays make up the coordinates.
+    int nArr = 1;
+    if(simv2_VariableData_getNumArrays(coords, &nArr) == VISIT_ERROR)
     {
         return VISIT_ERROR;
     }
 
-    // Error checking.
-    if(nComps != 2 && nComps != 3)
+    // Get the coordinates
+    int owner, dataType, nComps, nTuples;
+    void *data = 0;
+    if(nArr == 1)
     {
-        VisItError("Interleaved coordinates must have 2 or 3 components");
-        return VISIT_ERROR;
+        if(simv2_VariableData_getData(coords, owner, dataType, nComps, nTuples, 
+           data) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        // Error checking.
+        if(nComps != 2 && nComps != 3)
+        {
+            VisItError("Interleaved coordinates must have 2 or 3 components");
+            return VISIT_ERROR;
+        }
+        if(dataType != VISIT_DATATYPE_FLOAT &&
+           dataType != VISIT_DATATYPE_DOUBLE)
+        {
+            VisItError("Coordinates must contain float or double data");
+            return VISIT_ERROR;
+        }
     }
-    if(dataType != VISIT_DATATYPE_FLOAT &&
-       dataType != VISIT_DATATYPE_DOUBLE)
+    else if(nArr == 2 || nArr == 3)
     {
-        VisItError("Coordinates must contain float or double data");
+        // NOTE: multi-array variables can expose more data types as double/float so
+        //       we don't need limit data types here.
+
+        nComps = nArr;
+    }
+    else
+    {
+        VisItError("Coordinates must contain 2 or 3 components.");
         return VISIT_ERROR;
     }
 
@@ -316,6 +350,19 @@ simv2_UnstructuredMesh_setCoords(visit_handle h, visit_handle coords)
 int
 simv2_UnstructuredMesh_setConnectivity(visit_handle h, int nzones, visit_handle conn)
 {
+    // How many arrays make up the connectivity.
+    int nArr = 1;
+    if(simv2_VariableData_getNumArrays(conn, &nArr) == VISIT_ERROR)
+    {
+        return VISIT_ERROR;
+    }
+
+    if(nArr != 1)
+    {
+        VisItError("The connectivity array must have 1 component.");
+        return VISIT_ERROR;
+    }
+
     // Get the connectivity
     int owner, dataType, nComps, nTuples;
     void *data = 0;
@@ -405,6 +452,19 @@ simv2_UnstructuredMesh_setGhostCells(visit_handle h, visit_handle gz)
     VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_setGhostCells");
     if(obj != NULL)
     {
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(gz, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Ghost cell arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
         // Get the ghost cell information
         int owner, dataType, nComps, nTuples;
         void *data = 0;
@@ -441,6 +501,19 @@ simv2_UnstructuredMesh_setGhostNodes(visit_handle h, visit_handle gn)
     VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_setGhostNodes");
     if(obj != NULL)
     {
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(gn, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Ghost node arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
         // Get the ghost node information
         int owner, dataType, nComps, nTuples;
         void *data = 0;
@@ -477,6 +550,19 @@ simv2_UnstructuredMesh_setGlobalCellIds(visit_handle h, visit_handle glz)
     VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_setGlobalCellIds");
     if(obj != NULL)
     {
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(glz, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Global cell id arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
         // Get the global cell id information
         int owner, dataType, nComps, nTuples;
         void *data = 0;
@@ -513,6 +599,19 @@ simv2_UnstructuredMesh_setGlobalNodeIds(visit_handle h, visit_handle gln)
     VisIt_UnstructuredMesh *obj = GetObject(h, "simv2_UnstructuredMesh_setGlobalNodeIds");
     if(obj != NULL)
     {
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(gln, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Global node id arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
         // Get the global node id information
         int owner, dataType, nComps, nTuples;
         void *data = 0;

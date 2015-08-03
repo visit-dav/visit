@@ -275,18 +275,28 @@ ConstructPolyDataHelper(vtkPointData *inPD, vtkCellData *inCD,
 //    Don't interoplate avtOriginalNodeNumbers, instead use the closest
 //    point to the slice point.
 //
+//    Brad Whitlock, Thu Jul 23 16:01:46 PDT 2015
+//    Support for non-standard memory layout.
+//
 // ****************************************************************************
 
 void
 vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
                                         vtkPolyData *output, vtkPoints *pts)
 {
-    if(pts->GetDataType() == VTK_FLOAT)
-        ConstructPolyDataHelper(inPD, inCD, output, this->pt_list, this->tris, pts->GetDataType(), vtkPointAccessor<float>(pts));
-    else if(pts->GetDataType() == VTK_FLOAT)
-        ConstructPolyDataHelper(inPD, inCD, output, this->pt_list, this->tris, pts->GetDataType(), vtkPointAccessor<double>(pts));
+    if(pts->GetData()->HasStandardMemoryLayout())
+    {
+        if(pts->GetDataType() == VTK_FLOAT)
+            ConstructPolyDataHelper(inPD, inCD, output, this->pt_list, this->tris, pts->GetDataType(), vtkPointAccessor<float>(pts));
+        else if(pts->GetDataType() == VTK_FLOAT)
+            ConstructPolyDataHelper(inPD, inCD, output, this->pt_list, this->tris, pts->GetDataType(), vtkPointAccessor<double>(pts));
+        else
+            ConstructPolyDataHelper(inPD, inCD, output, this->pt_list, this->tris, pts->GetDataType(), vtkGeneralPointAccessor(pts));
+    }
     else
+    {
         ConstructPolyDataHelper(inPD, inCD, output, this->pt_list, this->tris, pts->GetDataType(), vtkGeneralPointAccessor(pts));
+    }
 }
 
 // ****************************************************************************

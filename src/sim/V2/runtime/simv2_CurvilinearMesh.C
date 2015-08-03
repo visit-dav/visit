@@ -162,6 +162,19 @@ simv2_CurvilinearMesh_setCoords_helper(visit_handle h, visit_handle *cHandles,
     {
         nnodes *= dims[i];
 
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(cHandles[i], &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Coordinate arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
         if(simv2_VariableData_getData(cHandles[i], owner[i], dataType[i], nComps[i], 
             nTuples[i], data[i]) == VISIT_ERROR)
         {
@@ -241,6 +254,13 @@ static int
 simv2_CurvilinearMesh_setAllCoords_helper(visit_handle h, int ndims, int dims[3], 
     visit_handle coords, const char *fname)
 {
+    // How many arrays make up the variable.
+    int nArr = 1;
+    if(simv2_VariableData_getNumArrays(coords, &nArr) == VISIT_ERROR)
+    {
+        return VISIT_ERROR;
+    }
+
     // Get the coordinates
     char tmp[100];
     int owner, dataType, nComps, nTuples;
@@ -250,6 +270,9 @@ simv2_CurvilinearMesh_setAllCoords_helper(visit_handle h, int ndims, int dims[3]
     {
         return VISIT_ERROR;
     }
+
+    if(nArr > 1)
+        nComps = nArr;
 
     // Error checking.
     if(nComps != ndims)
@@ -365,6 +388,19 @@ simv2_CurvilinearMesh_setGhostCells(visit_handle h, visit_handle gz)
     VisIt_CurvilinearMesh *obj = GetObject(h, "simv2_CurvilinearMesh_setGhostCells");
     if(obj != NULL)
     {
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(gz, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Ghost cell arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
         // Get the ghost cell information
         int owner, dataType, nComps, nTuples;
         void *data = 0;
@@ -401,6 +437,19 @@ simv2_CurvilinearMesh_setGhostNodes(visit_handle h, visit_handle gn)
     VisIt_CurvilinearMesh *obj = GetObject(h, "simv2_CurvilinearMesh_setGhostNodes");
     if(obj != NULL)
     {
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(gn, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Ghost node arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
         // Get the ghost node information
         int owner, dataType, nComps, nTuples;
         void *data = 0;

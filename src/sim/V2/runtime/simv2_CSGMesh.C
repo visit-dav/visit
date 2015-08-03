@@ -162,12 +162,25 @@ simv2_CSGMesh_setRegions(visit_handle h, visit_handle typeflags,
     cHandles[2] = rightids;
 
     // Get the coordinates
-    int owner[3], dataType[3], nComps[3], nTuples[3];
+    int memory[3], owner[3], dataType[3], nComps[3], nTuples[3], offset[3], stride[3];
     void *data[3] = {0,0,0};
     for(int i = 0; i < 3; ++i)
     {
-        if(simv2_VariableData_getData(cHandles[i], owner[i], dataType[i], nComps[i], 
-            nTuples[i], data[i]) == VISIT_ERROR)
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(cHandles[i], &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Region arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
+        if(simv2_VariableData_getArrayData(cHandles[i], 0, memory[i], owner[i],
+           dataType[i], nComps[i], nTuples[i], offset[i], stride[i], data[i]) == VISIT_ERROR)
         {
             return VISIT_ERROR;
         }
@@ -187,6 +200,11 @@ simv2_CSGMesh_setRegions(visit_handle h, visit_handle typeflags,
         {
             VisItError("Region arrays must contain integer data");
             return VISIT_ERROR;
+        }
+        if(memory[i] != VISIT_MEMORY_CONTIGUOUS)
+        {
+            VisItError("Region arrays must be stored in contiguous memory locations.");
+            return VISIT_ERROR; 
         }
     }
 
@@ -219,10 +237,23 @@ simv2_CSGMesh_setZonelist(visit_handle h, visit_handle zonelist)
     VisIt_CSGMesh *obj = GetObject(h);
     if(obj != NULL)
     {
-        int owner, dataType, nComps, nTuples;
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(zonelist, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Zonelist array must have 1 component.");
+            return VISIT_ERROR;
+        }
+
+        int memory, owner, dataType, nComps, nTuples, offset, stride;
         void *data = NULL;
-        if(simv2_VariableData_getData(zonelist, owner, dataType, nComps, 
-            nTuples, data) == VISIT_ERROR)
+        if(simv2_VariableData_getArrayData(zonelist, 0, memory, owner, dataType, nComps, 
+            nTuples, offset, stride, data) == VISIT_ERROR)
         {
             return VISIT_ERROR;
         }
@@ -242,7 +273,11 @@ simv2_CSGMesh_setZonelist(visit_handle h, visit_handle zonelist)
             VisItError("Zonelist array must contain integer data");
             return VISIT_ERROR;
         }
-
+        if(memory != VISIT_MEMORY_CONTIGUOUS)
+        {
+            VisItError("Zonelist array must be stored in contiguous memory locations.");
+            return VISIT_ERROR; 
+        }
         obj->FreeZonelist();
         obj->zonelist = zonelist;
 
@@ -258,10 +293,23 @@ simv2_CSGMesh_setBoundaryTypes(visit_handle h, visit_handle boundaryTypes)
     VisIt_CSGMesh *obj = GetObject(h);
     if(obj != NULL)
     {
-        int owner, dataType, nComps, nTuples;
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(boundaryTypes, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("CSGMesh's boundary types array must have 1 component.");
+            return VISIT_ERROR;
+        }
+
+        int memory, owner, dataType, nComps, nTuples, offset, stride;
         void *data = NULL;
-        if(simv2_VariableData_getData(boundaryTypes, owner, dataType, nComps, 
-            nTuples, data) == VISIT_ERROR)
+        if(simv2_VariableData_getArrayData(boundaryTypes, 0, memory, owner, dataType, nComps, 
+            nTuples, offset, stride, data) == VISIT_ERROR)
         {
             return VISIT_ERROR;
         }
@@ -281,7 +329,11 @@ simv2_CSGMesh_setBoundaryTypes(visit_handle h, visit_handle boundaryTypes)
             VisItError("CSGMesh's boundary types array must contain integer data");
             return VISIT_ERROR;
         }
-
+        if(memory != VISIT_MEMORY_CONTIGUOUS)
+        {
+            VisItError("CSGMesh's boundary types array must be stored in contiguous memory locations.");
+            return VISIT_ERROR; 
+        }
         obj->FreeBoundaryTypes();
         obj->boundaryTypes = boundaryTypes;
 
@@ -297,10 +349,23 @@ simv2_CSGMesh_setBoundaryCoeffs(visit_handle h, visit_handle boundaryCoeffs)
     VisIt_CSGMesh *obj = GetObject(h);
     if(obj != NULL)
     {
-        int owner, dataType, nComps, nTuples;
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(boundaryCoeffs, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("CSGMesh's boundary Coeffs array must have 1 component.");
+            return VISIT_ERROR;
+        }
+
+        int memory, owner, dataType, nComps, nTuples, offset, stride;
         void *data = NULL;
-        if(simv2_VariableData_getData(boundaryCoeffs, owner, dataType, nComps, 
-            nTuples, data) == VISIT_ERROR)
+        if(simv2_VariableData_getArrayData(boundaryCoeffs, 0, memory, owner, dataType, nComps, 
+            nTuples, offset, stride, data) == VISIT_ERROR)
         {
             return VISIT_ERROR;
         }
@@ -321,7 +386,11 @@ simv2_CSGMesh_setBoundaryCoeffs(visit_handle h, visit_handle boundaryCoeffs)
             VisItError("CSGMesh's boundary Coeffs array must contain float or double data");
             return VISIT_ERROR;
         }
-
+        if(memory != VISIT_MEMORY_CONTIGUOUS)
+        {
+            VisItError("CSGMesh's boundary Coeffs array must be stored in contiguous memory locations.");
+            return VISIT_ERROR; 
+        }
         obj->FreeBoundaryCoeffs();
         obj->boundaryCoeffs = boundaryCoeffs;
 

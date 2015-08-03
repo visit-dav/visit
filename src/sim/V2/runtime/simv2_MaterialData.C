@@ -346,6 +346,20 @@ simv2_MaterialData_setMixedMaterials(visit_handle h,
     char tmp[100];
     for(int i = 0; i < 4; ++i)
     {
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(cHandles[i], &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            SNPRINTF(tmp, 100, "A %s array must have 1 component", names[i]);
+            VisItError(tmp);
+            return VISIT_ERROR;
+        }
+
         if(simv2_VariableData_getData(cHandles[i], owner[i], dataType[i],
             nComps[i], nTuples[i], data[i]) == VISIT_ERROR)
         {

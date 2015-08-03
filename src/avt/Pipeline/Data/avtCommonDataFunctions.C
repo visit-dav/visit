@@ -63,6 +63,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkSetGet.h>
 #include <vtkStructuredGrid.h>
 #include <vtkTemplateAliasMacro.h>
 #include <vtkTrivialProducer.h>
@@ -1374,56 +1375,93 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname,
 //    Added 'GetNodalScalarRangeViaCells' to be used when data is nodal
 //    and 'onlyConnectedNodes' is requested.
 //
+//    Brad Whitlock, Tue Jul 21 10:37:29 PDT 2015
+//    Add support for non-standard memory layout.
+//
 // ****************************************************************************
 
-template <class T> static bool
-GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts, 
-               bool checkFinite)
+template <typename T>
+class vtkDataArrayAccessor1
 {
-    T *buf_orig = buf;
-    T min = 0;
-    T max = 0;
+public:
+    vtkDataArrayAccessor1(vtkDataArray *arr, int comp = 0) :
+        array(arr), component(comp)
+    {
+    }
+    
+    ~vtkDataArrayAccessor1()
+    {
+    }
+
+    T operator[](vtkIdType index) const
+    {
+        return static_cast<T>(array->GetComponent(index, component));
+    }
+
+    vtkDataArray *array;
+    int           component;
+};
+
+// NOTE: I didn't do things exactly how I wanted because of problems with 
+//       vtkTemplateMacro and passing more substantial code blocks to it.
+//
+
+template <typename Array, typename Scalar>
+static bool
+GetScalarRangeTemplate(Array buf, Scalar &min, Scalar &max,
+    int n, unsigned char *ghosts, bool checkFinite)
+{
+    // Keep the minmax calculation in the Scalar precision.
     bool setOne = false;
-    for (int i = 0; i < n; i++, buf++)
+    for (int i = 0; i < n; i++)
     {
         if ((ghosts != NULL) && (ghosts[i] != '\0'))
             continue;
 
         if (checkFinite)
-            if (! visitIsFinite(*buf))
+            if (! visitIsFinite(buf[i]))
                 continue;
 
         if (!setOne)
         {
-            min = *buf;
-            max = *buf;
+            min = buf[i];
+            max = buf[i];
             setOne = true;
             continue;
         }
 
-        if (*buf < min)
+        if (buf[i] < min)
         {
-            min = *buf;
+            min = buf[i];
         }
         else
         {
-            if (*buf > max)
-                max = *buf;
+            if (buf[i] > max)
+                max = buf[i];
         }
     }
 
     if (setOne)
     {
         if (! visitIsFinite(min) || ! visitIsFinite(max))
-            return GetScalarRange(buf_orig, n, exts, ghosts, true);
-        else
-        {
-            exts[0] = (double) min;
-            exts[1] = (double) max;
-        }
+            return GetScalarRangeTemplate(buf, min, max, n, ghosts, true);
     }
 
     return setOne;
+}
+
+template <typename Scalar>
+inline bool GetScalarRange(Scalar* buf, double *exts, 
+    int n, unsigned char *ghosts, bool checkFinite)
+{
+    Scalar min, max;
+    bool retval = GetScalarRangeTemplate(buf, min, max, n, ghosts, checkFinite);
+    if(retval)
+    {
+        exts[0] = static_cast<double>(min);
+        exts[1] = static_cast<double>(max);
+    }
+    return retval;
 }
 
 // KSB:
@@ -1432,11 +1470,11 @@ GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts,
 // alternative is slower. (Step through points, if # cells a node is  connected to > 0,
 // consider the point). I think it is 'ds->GetPointCells' that is the slowdown.
 
-template <class T> static bool
-GetNodalScalarRangeViaCells(T *buf, int n, double *exts, bool checkFinite, vtkDataSet *ds)
+template <typename Array, typename Scalar>
+static bool
+GetNodalScalarRangeViaCellsTemplate(Array buf, Scalar &min, Scalar &max,
+    int n, bool checkFinite, vtkDataSet *ds)
 {
-    T min; 
-    T max;
     bool setOne = false;
     vtkIdType nCells = ds->GetNumberOfCells();
     vtkIdList *ptIds = vtkIdList::New();
@@ -1473,15 +1511,25 @@ GetNodalScalarRangeViaCells(T *buf, int n, double *exts, bool checkFinite, vtkDa
     if (setOne)
     {
         if (! visitIsFinite(min) || ! visitIsFinite(max))
-            return GetNodalScalarRangeViaCells(buf, n, exts, true, ds);
-        else
-        {
-            exts[0] = (double) min;
-            exts[1] = (double) max;
-        }
+            return GetNodalScalarRangeViaCellsTemplate(buf, min, max, n, true, ds);
     }
     ptIds->Delete();
     return setOne;
+}
+
+template <typename Scalar>
+inline bool
+GetNodalScalarRangeViaCells(Scalar *buf, double *exts,
+    int n, bool checkFinite, vtkDataSet *ds)
+{
+    Scalar min,max;
+    bool retval = GetNodalScalarRangeViaCellsTemplate(buf, min, max, n, checkFinite, ds);
+    if(retval)
+    {
+        exts[0] = static_cast<double>(min);
+        exts[1] = static_cast<double>(max);
+    }
+    return retval;
 }
 
 void
@@ -1515,24 +1563,50 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname,
 
     exts[0] = +DBL_MAX;
     exts[1] = -DBL_MAX;
-    
+
     bool checkForFiniteByDefault = false;
     if (!(connectedNodesOnly && nodalData))
     {
-        switch (da->GetDataType())
+        if(da->HasStandardMemoryLayout())
         {
-            vtkTemplateAliasMacro(GetScalarRange(
+            switch (da->GetDataType())
+            {
+            vtkTemplateMacro(GetScalarRange(
                 static_cast<VTK_TT*>(da->GetVoidPointer(0)),
-                nvals, exts, ghosts, checkForFiniteByDefault));
+                exts, nvals, ghosts, checkForFiniteByDefault));
+            }
+        }
+        else
+        {
+            double min(0.), max(0.);
+            if(GetScalarRangeTemplate(vtkDataArrayAccessor1<double>(da),
+                min, max, nvals, ghosts, checkForFiniteByDefault))
+            {
+                exts[0] = min;
+                exts[1] = max;
+            }
         }
     }
     else
     {
-        switch (da->GetDataType())
+        if(da->HasStandardMemoryLayout())
         {
-            vtkTemplateAliasMacro(GetNodalScalarRangeViaCells(
+            switch (da->GetDataType())
+            {
+            vtkTemplateMacro(GetNodalScalarRangeViaCells(
                 static_cast<VTK_TT*>(da->GetVoidPointer(0)),
-                nvals, exts, checkForFiniteByDefault, ds));
+                exts, nvals, checkForFiniteByDefault, ds));
+            }
+        }
+        else
+        {
+            double min(0.), max(0.);
+            if(GetNodalScalarRangeViaCellsTemplate(vtkDataArrayAccessor1<double>(da),
+                min, max, nvals, checkForFiniteByDefault, ds))
+            {
+                exts[0] = min;
+                exts[1] = max;
+            }
         }
     }
 }
@@ -1561,45 +1635,57 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Hank Childs, Fri Feb 24 14:53:01 PST 2012
 //    Don't set the min/max if there are no valid values.
 //
+//    Brad Whitlock, Tue Jul 21 10:37:29 PDT 2015
+//    Add support for non-standard memory layout.
+//
 // ****************************************************************************
 
-template <class T> static bool
-GetComponentRange(T *buf, int n, int c, int nc, double *exts, unsigned char *ghosts)
+template <typename Array, typename Scalar>
+static bool
+GetComponentRangeTemplate(Array buf, Scalar &min, Scalar &max,
+    int n, int c, int nc, unsigned char *ghosts)
 {
-    T min = 0;
-    T max = 0;
     bool setOne = false;
-    buf += c;
-    for (int i = c; i < n*nc; i+=nc, buf+=nc)
+    for (int i = c; i < n*nc; i+=nc)
     {
         if ((ghosts != NULL) && (ghosts[i] != '\0'))
             continue;
 
         if (!setOne)
         {
-            min = *buf;
-            max = *buf;
+            min = buf[i];
+            max = buf[i];
             setOne = true;
             continue;
         }
 
-        if (*buf < min)
+        if (buf[i] < min)
         {
-            min = *buf;
+            min = buf[i];
         }
         else
         {
-            if (*buf > max)
-                max = *buf;
+            if (buf[i] > max)
+                max = buf[i];
         }
-    }
-    if (setOne)
-    {
-        exts[0] = (double) min;
-        exts[1] = (double) max;
     }
 
     return setOne;
+}
+
+template <typename Scalar>
+bool
+GetComponentRange(Scalar *buf, double *exts,
+    int n, int c, int nc, unsigned char *ghosts)
+{
+    Scalar min, max;
+    bool retval = GetComponentRangeTemplate(buf, min, max, n,c,nc,ghosts);
+    if(retval)
+    {
+        exts[0] = static_cast<double>(min);
+        exts[1] = static_cast<double>(max);
+    }
+    return retval;
 }
 
 void
@@ -1635,12 +1721,26 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
         double *compexts = &(exts[2*comp]);
         compexts[0] = +DBL_MAX;
         compexts[1] = -DBL_MAX;
-    
-        switch (da->GetDataType())
+        if(da->HasStandardMemoryLayout())
         {
-          vtkTemplateAliasMacro(GetComponentRange(
-            static_cast<VTK_TT*>(da->GetVoidPointer(0)), 
-            ntuples, comp, ncomps, compexts, ghosts));
+            switch (da->GetDataType())
+            {
+            vtkTemplateAliasMacro(
+                GetComponentRange(
+                   static_cast<VTK_TT*>(da->GetVoidPointer(0)), 
+                   compexts, ntuples, comp, ncomps, ghosts)
+                );
+            }
+        }
+        else
+        {
+            double min(0),max(0);
+            if(GetComponentRangeTemplate(vtkDataArrayAccessor1<double>(da, comp),
+               min, max, ntuples, comp, ncomps, ghosts))
+            {
+                compexts[0] = static_cast<double>(min);
+                compexts[1] = static_cast<double>(max);
+            }
         }
     }
 }
@@ -1701,22 +1801,68 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
 //
 //    Mark C. Miller, Wed Oct  1 19:41:32 PDT 2014
 //    Add some casts to double precision to avoid FPE issues.
+//
+//    Brad Whitlock, Tue Jul 21 13:39:32 PDT 2015
+//    Added support for non-standard memory layouts.
+//
 // ****************************************************************************
 
-template <class T> static void
-GetMagnitudeRange(T *buf, int n, int ncomps, double *exts, 
+template <typename ScalarPtr>
+class TupleMagnitude
+{
+public:
+    TupleMagnitude(ScalarPtr s, int nc) : ptr(s), nComponents(nc)
+    {
+    }
+
+    inline double operator()(int tupleId) const
+    {
+        double mag = 0.0;
+        ScalarPtr tuple = this->ptr + tupleId * this->nComponents;
+        for (int j = 0; j < this->nComponents; j++)
+        {
+            double value = static_cast<double>(tuple[j]);
+            mag += (value * value);
+        }
+        return mag;
+    }
+private:
+    ScalarPtr ptr;
+    int       nComponents;
+};
+
+class TupleMagnitudeDataArray
+{
+public:
+    TupleMagnitudeDataArray(vtkDataArray *arr) : array(arr)
+    {
+    }
+
+    inline double operator()(int tupleId) const
+    {
+        double mag = 0.0;
+        for (int j = 0; j < array->GetNumberOfComponents(); j++)
+        {
+            double value = array->GetComponent(tupleId, j);
+            mag += (value * value);
+        }
+        return mag;
+    }
+private:
+    vtkDataArray *array;
+};
+
+template <typename MagFunctor>
+static void
+GetMagnitudeRange(MagFunctor func, int n, int ncomps, double *exts, 
                   unsigned char *ghosts, bool checkFinite)
 {
-    T *buf_orig = buf;
     for (int i = 0; i < n; i++)
     {
         if ((ghosts != NULL) && (ghosts[i] != '\0'))
             continue;
 
-        double mag = 0.0;
-        for (int j = 0; j < ncomps; j++, buf++)
-            mag += (double) *buf * (double) *buf;
-        
+        double mag = func(i);
 
         if (checkFinite)
             if (! visitIsFinite(mag))
@@ -1737,15 +1883,16 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts,
     {
         exts[0] = +DBL_MAX;
         exts[1] = 0;
-        return GetMagnitudeRange(buf_orig, n, ncomps, exts, ghosts, true);
+        return GetMagnitudeRange(func, n, ncomps, exts, ghosts, true);
     }
 
     exts[0] = exts[0]>0?sqrt(exts[0]):0;
     exts[1] = exts[1]>0?sqrt(exts[1]):0;
 }
 
-template <class T> static void
-GetNodalMagnitudeRangeViaCells(T *buf, int n, int ncomps, double *exts,
+template <typename MagFunctor>
+static void
+GetNodalMagnitudeRangeViaCells(MagFunctor func, int n, int ncomps, double *exts,
                   bool checkFinite, vtkDataSet *ds)
 {
     vtkIdType nCells = ds->GetNumberOfCells();
@@ -1757,9 +1904,7 @@ GetNodalMagnitudeRangeViaCells(T *buf, int n, int ncomps, double *exts,
         {
             vtkIdType id = ptIds->GetId(i);
 
-            double mag = 0.0;
-            for (int j = 0; j < ncomps; j++)
-                mag += buf[id+j] * buf[id+j];
+            double mag = func(id);
 
             if (checkFinite)
                 if (! visitIsFinite(mag))
@@ -1780,7 +1925,7 @@ GetNodalMagnitudeRangeViaCells(T *buf, int n, int ncomps, double *exts,
     {
         exts[0] = +DBL_MAX;
         exts[1] = 0;
-        return GetNodalMagnitudeRangeViaCells(buf, n, ncomps, exts, true, ds);
+        return GetNodalMagnitudeRangeViaCells(func, n, ncomps, exts, true, ds);
     }
 
     exts[0] = sqrt(exts[0]);
@@ -1824,20 +1969,38 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
     bool checkForFiniteByDefault = false;
     if (!(connectedNodesOnly && nodalData))
     {
-        switch (da->GetDataType())
+        if(da->HasStandardMemoryLayout())
         {
+            switch (da->GetDataType())
+            {
             vtkTemplateAliasMacro(GetMagnitudeRange(
-                static_cast<VTK_TT*>(da->GetVoidPointer(0)),
+                TupleMagnitude<VTK_TT*>(static_cast<VTK_TT*>(da->GetVoidPointer(0)), da->GetNumberOfComponents()),
                 nvals, ncomps, exts, ghosts, checkForFiniteByDefault));
+            }
+        }
+        else
+        {
+            GetMagnitudeRange(
+                TupleMagnitudeDataArray(da),
+                nvals, ncomps, exts, ghosts, checkForFiniteByDefault);
         }
     }
     else
     {
-        switch (da->GetDataType())
+        if(da->HasStandardMemoryLayout())
         {
+            switch (da->GetDataType())
+            {
             vtkTemplateAliasMacro(GetNodalMagnitudeRangeViaCells(
-                static_cast<VTK_TT*>(da->GetVoidPointer(0)),
+                TupleMagnitude<VTK_TT*>(static_cast<VTK_TT*>(da->GetVoidPointer(0)),da->GetNumberOfComponents()),
                 nvals, ncomps, exts, checkForFiniteByDefault, ds));
+            }
+        }
+        else
+        {
+            GetNodalMagnitudeRangeViaCells(
+                TupleMagnitudeDataArray(da),
+                nvals, ncomps, exts, checkForFiniteByDefault, ds);
         }
     }
 }
@@ -3502,14 +3665,16 @@ CInsertRectilinearTransformInfoIntoDataset(avtDataRepresentation &data,
 //  Creation:    February 15, 2007
 //
 //  Modifications:
-//
 //    Hank Childs, Thu Feb  3 14:50:54 CST 2011
 //    Use pointer arithmetic.  Looks to be ~4X faster.
 //
+//    Brad Whitlock, Tue Jul 21 13:01:47 PDT 2015
+//    Support non-standard memory layout.
+//
 // ****************************************************************************
 
-template <class T> static void
-PopulateHistogram(T *buf, int ntups, int nbins, double min, double max, VISIT_LONG_LONG *numVals)
+template <typename Array> static void
+PopulateHistogram(Array buf, int ntups, int nbins, double min, double max, VISIT_LONG_LONG *numVals)
 {
     double mult = nbins/(max-min);  // This is actually needed to help the compiler.  2X difference.
     for (int i = 0 ; i < ntups ; i++)
@@ -3521,7 +3686,6 @@ PopulateHistogram(T *buf, int ntups, int nbins, double min, double max, VISIT_LO
         numVals[idx]++;
     }
 }
-
 
 void
 CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
@@ -3559,11 +3723,20 @@ CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
     double max = cha->max;
     VISIT_LONG_LONG *numVals = &(cha->numVals[0]);
  
-    switch (arr->GetDataType())
+    if(arr->HasStandardMemoryLayout())
     {
+        switch (arr->GetDataType())
+        {
         vtkTemplateAliasMacro(PopulateHistogram( 
             static_cast<VTK_TT*>(arr->GetVoidPointer(0)), 
             ntups, nbins, min, max, numVals));
+        }
+    }
+    else
+    {
+        // Access via GetComponent
+        PopulateHistogram(vtkDataArrayAccessor1<double>(arr), 
+            ntups, nbins, min, max, numVals);
     }
 }
 

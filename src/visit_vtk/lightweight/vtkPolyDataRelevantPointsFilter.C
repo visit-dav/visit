@@ -81,6 +81,9 @@ vtkStandardNewMacro(vtkPolyDataRelevantPointsFilter);
 //    Eric Brugger, Wed Jan  9 13:15:08 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
+//    Brad Whitlock, Thu Jul 23 16:01:46 PDT 2015
+//    Support for non-standard memory layout.
+//
 // ****************************************************************************
 
 int vtkPolyDataRelevantPointsFilter::RequestData(
@@ -179,7 +182,17 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
     {
     outputPD->CopyAllocate(inputPD, numNewPts);
     }
-  if(inPts->GetDataType() == VTK_FLOAT)
+
+  int accessMethod = 0;
+  if(inPts->GetData()->HasStandardMemoryLayout())
+    {
+    if(inPts->GetDataType() == VTK_FLOAT)
+      accessMethod = 1;
+    else if(inPts->GetDataType() == VTK_DOUBLE)
+      accessMethod = 2;
+    }
+
+  if(accessMethod == 1)
     {
     const float *in_ptr = (const float *) inPts->GetVoidPointer(0);
     float *out_ptr = (float *) newPts->GetVoidPointer(0);
@@ -191,7 +204,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
       *out_ptr++ = src[2];
       }
     }
-  else if(inPts->GetDataType() == VTK_DOUBLE)
+  else if(accessMethod == 2)
     {
     const double *in_ptr = (const double *) inPts->GetVoidPointer(0);
     double *out_ptr = (double *) newPts->GetVoidPointer(0);

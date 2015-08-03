@@ -147,6 +147,19 @@ simv2_RectilinearMesh_setCoords_helper(visit_handle h, visit_handle *cHandles,
     void *data[3] = {0,0,0};
     for(int i = 0; i < ndims; ++i)
     {
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(cHandles[i], &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Coordinates must have 1 component.");
+            return VISIT_ERROR;
+        }
+
         if(simv2_VariableData_getData(cHandles[i], owner[i], dataType[i], nComps[i], 
             nTuples[i], data[i]) == VISIT_ERROR)
         {
@@ -300,6 +313,18 @@ simv2_RectilinearMesh_setGhostCells(visit_handle h, visit_handle gz)
     VisIt_RectilinearMesh *obj = GetObject(h, "simv2_RectilinearMesh_setGhostCells");
     if(obj != NULL)
     {
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(gz, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Ghost cell arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
         // Get the ghost cell information
         int owner, dataType, nComps, nTuples;
         void *data = 0;
@@ -336,6 +361,18 @@ simv2_RectilinearMesh_setGhostNodes(visit_handle h, visit_handle gn)
     VisIt_RectilinearMesh *obj = GetObject(h, "simv2_RectilinearMesh_setGhostNodes");
     if(obj != NULL)
     {
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(gn, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("Ghost node arrays must have 1 component.");
+            return VISIT_ERROR;
+        }
+
         // Get the ghost node information
         int owner, dataType, nComps, nTuples;
         void *data = 0;

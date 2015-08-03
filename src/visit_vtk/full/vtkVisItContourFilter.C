@@ -222,6 +222,9 @@ public:
 //    Moved code into StructuredCreateTriangles and instantiated for float
 //    and double. Move distance function into IsoDistanceFunction.
 //
+//    Brad Whitlock, Thu Jul 23 16:01:46 PDT 2015
+//    Support for non-standard memory layout.
+//
 // ****************************************************************************
 
 int
@@ -249,13 +252,22 @@ vtkVisItContourFilter::StructuredGridExecute(vtkDataSet *input,
     if (var == NULL)
         return 0;
 
-    if(var->GetDataType() == VTK_FLOAT)
+    int accessMethod = 0;
+    if(var->HasStandardMemoryLayout())
+    {
+        if(var->GetDataType() == VTK_FLOAT)
+            accessMethod = 1;
+        else if(var->GetDataType() == VTK_DOUBLE)
+            accessMethod = 2;
+    }
+
+    if(accessMethod == 1)
     {
         vtkStructuredCreateTriangles<float, IsoDistanceFunction<float> >(
             sfv, this->CellList, this->CellListSize, nCells,
             pt_dims, IsoDistanceFunction<float>(pt_dims, var, (float)this->Isovalue));
     }
-    else if(var->GetDataType() == VTK_DOUBLE)
+    else if(accessMethod == 2)
     {
         vtkStructuredCreateTriangles<double, IsoDistanceFunction<double> >(
             sfv, this->CellList, this->CellListSize, nCells,

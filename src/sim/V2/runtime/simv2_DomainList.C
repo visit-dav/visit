@@ -100,11 +100,24 @@ simv2_DomainList_setDomains(visit_handle h, int alldoms, visit_handle mydoms)
  
     if(mydoms != VISIT_INVALID_HANDLE)
     {
+        // How many arrays make up the variable.
+        int nArr = 1;
+        if(simv2_VariableData_getNumArrays(mydoms, &nArr) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
+
+        if(nArr != 1)
+        {
+            VisItError("DomainList must have 1 component.");
+            return VISIT_ERROR;
+        }
+
         // Get the domains
-        int owner, dataType, nComps, nTuples;
+        int memory, owner, dataType, nComps, nTuples, offset, stride;
         void *data = 0;
-        if(simv2_VariableData_getData(mydoms, owner, dataType, nComps, 
-           nTuples, data) == VISIT_ERROR)
+        if(simv2_VariableData_getArrayData(mydoms, 0, memory, owner, dataType, nComps, 
+           nTuples, offset, stride, data) == VISIT_ERROR)
         {
             return VISIT_ERROR;
         }
@@ -118,6 +131,11 @@ simv2_DomainList_setDomains(visit_handle h, int alldoms, visit_handle mydoms)
         if(dataType != VISIT_DATATYPE_INT)
         {
             VisItError("DomainList must contain int data");
+            return VISIT_ERROR;
+        }
+        if(memory != VISIT_MEMORY_CONTIGUOUS)
+        {
+            VisItError("DomainList must be stored in contiguous memory.");
             return VISIT_ERROR;
         }
     }

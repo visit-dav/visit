@@ -213,6 +213,9 @@ ADD_SIMV2_SIMULATION(aresamr aresamr.c)
 ADD_SIMV2_SIMULATION(amr amr.c)
 ADD_FORTRAN_SIMV2_SIMULATION(famr famr.f)
 
+ADD_SIMV2_SIMULATION(batch batch.c extract.c)
+ADD_PARALLEL_SIMV2_SIMULATION(batch_par batch.c extract.c)
+
 ADD_SIMV2_SIMULATION(csg csg.c)
 
 ADD_SIMV2_SIMULATION(curve curve.c)
@@ -309,6 +312,9 @@ ADD_SIMV2_SIMULATION(var var.c)
 
 ADD_SIMV2_SIMULATION(writeback writeback.c)
 ADD_PARALLEL_SIMV2_SIMULATION(writeback_par writeback.c)
+
+ADD_SIMV2_SIMULATION(zerocopy zerocopy.c extract.c)
+ADD_PARALLEL_SIMV2_SIMULATION(zerocopy_par zerocopy.c extract.c)
 
 # copy python examples to simulation examples build dir
 IF(VISIT_OUT_OF_SOURCE_BUILD)
