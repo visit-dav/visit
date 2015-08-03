@@ -741,7 +741,7 @@ class JobSubmitter_qsub(JobSubmitter):
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-n", self.parallel.np]
         if self.parallel.nn != None:
-            parcmd = parcmd + ["-ppn", self.PPN()]
+            mpicmd = mpicmd + ["-ppn", self.PPN()]
         if self.parallel.machinefile != None:
             mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
         mpicmd = mpicmd + self.VisItExecutable() + args
@@ -757,7 +757,7 @@ class JobSubmitter_qsub(JobSubmitter):
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-np", self.parallel.np]
         if self.parallel.nn != None:
-            parcmd = parcmd + ["-ppn", self.PPN()]
+            mpicmd = mpicmd + ["-ppn", self.PPN()]
         if self.parallel.machinefile != None:
             mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
         mpicmd = mpicmd + self.VisItExecutable()
