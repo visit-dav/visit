@@ -40,6 +40,58 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.10</font></b></p>
 <ul>
+  <li>Libsim's VisIt_VariableData object was extended so you can optionally supply it with multiple data arrays, each representing a separate component of data. This enhancement permits VisIt to accept non-contiguous simulation data without transcribing that data to a contiguous representation. This is a particularly useful feature for array-of-structure data structures and will reduce Libsim's memory overhead.
+Data arrays using the new <i>setArrayData</i> functions can have one or more components, which have their own base address and associated offset and stride. All of the previous <i>setData</i> functions continue to work and remain the preferred method for passing contiguous data to Libsim. The flexibility offered by the new <i>setDataArray</i> functions allows simulation data to be used directly (zero-copy) in situations that would previously have required a copy of the data.<br>
+<p><b>Structure of Arrays Example:</b><br>
+<font color="#6666dd"><code><pre>
+#define MAX_PART 100
+
+typedef struct
+{
+    double x,y,z;
+    double mass;
+} Particle;
+
+Particle P[MAX_PART];
+
+/* Expose Array of Structure x,y,z values as a single VariableData object. */
+visit_handle coordinates = VISIT_INVALID_HANDLE;
+VisIt_VariableData_alloc(&coordinates);
+VisIt_VariableData_setArrayDataD(coordinates, 0, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].x);
+VisIt_VariableData_setArrayDataD(coordinates, 1, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].y);
+VisIt_VariableData_setArrayDataD(coordinates, 2, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].z);
+
+/* Expose Array of Structures mass array as a single VariableData object. */
+visit_handle mass = VISIT_INVALID_HANDLE;
+VisIt_VariableData_alloc(&mass);
+VisIt_VariableData_setArrayDataD(mass, 0, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].mass);
+</pre></code></font>
+
+In addition, this new functionality can be used to create the desired interleaved view of coordinates that are stored in separate arrays.
+<br><br>
+<b>Interleaved Coordinates Example:</b><br>
+<font color="#6666dd"><code><pre>
+#define NX 100
+#define NY 100
+#define NZ 100
+int dims[] = {NX, NY, NZ};
+double x[NZ][NY][NX], y[NZ][NY][NX], z[NZ][NY][NX];
+
+/* Expose x,y,z values as a single VariableData object. */
+visit_handle coordinates = VISIT_INVALID_HANDLE;
+VisIt_VariableData_alloc(&coordinates);
+VisIt_VariableData_setArrayDataD(coordinates, 0, VISIT_OWNER_SIM, NX*NY*NZ, 0, sizeof(double), (void *)x);
+VisIt_VariableData_setArrayDataD(coordinates, 1, VISIT_OWNER_SIM, NX*NY*NZ, 0, sizeof(double), (void *)y);
+VisIt_VariableData_setArrayDataD(coordinates, 2, VISIT_OWNER_SIM, NX*NY*NZ, 0, sizeof(double), (void *)z);
+
+visit_handle mesh = VISIT_INVALID_HANDLE;
+VisIt_CurvilinearMesh_alloc(&mesh);
+VisIt_CurvilinearMesh_setCoords3(mesh, dims, coordinates);
+</pre></code></font>
+<br>
+Data passed via the new <i>setDataArray</i> functions are supported for mesh coordinates and variables. Certain other use such as specifying unstructured mesh connectivity are not currently permitted.
+   </p>
+  </li>
   <li>Libsim's Fortran bindings were enhanced so the <i>visitsetmpicommunicator</i> function passes an MPI communicator by its integer handle. Thank you to William T. Jones for this improvement.</li>
   <li></li>
   <li></li>

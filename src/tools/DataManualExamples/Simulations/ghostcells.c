@@ -410,6 +410,7 @@ quadmesh_2d_create_radial_wave(quadmesh *m, double time)
 void
 mess_up_ghost_coordinates(curvmesh_2d *m)
 {
+return;
     int i,j;
     for(j = 0; j < m->dims[1]-1-1; ++j)
         for(i = 0; i < m->dims[0]-1-1; ++i)
@@ -479,7 +480,11 @@ create_blanked_meshes(simulation_data *sim)
     /*Create some data*/
     sim->blankCurvMesh.data = (float *)malloc(ncells * sizeof(float));
     quadmesh_2d_create_radial_wave(&sim->blankCurvMesh, -sim->time);
+#if 0
+    /* This messes up the picture when we apply the inverse ghost zone operator
+       in the test suite. It makes sense. We messed up the coordinates. */
     mess_up_ghost_coordinates(&sim->blankCurvMesh);
+#endif
 
     ucdmesh_2d_create(&sim->blankUcdMesh, NX, NY, 0.f, 10.f, 0.f, 15.f);
     /* Blank out some cells in the lower left of the mesh.*/

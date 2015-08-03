@@ -64,10 +64,12 @@ visit_handle SimGetMesh(int, const char *, void *);
 visit_handle SimGetVariable(int, const char *, void *);
 visit_handle SimGetDomainList(const char *, void *);
 
+#ifdef DEFINE_EXPRESSIONS
 /* Expression names and definitions. */
 static const char *exprNames[] = {"nid", "zid", "xc", "yc", "zc", "radius"};
 static const char *exprDefinitions[] = {"nodeid(mesh)", "zoneid(mesh)",
 "coord(mesh)[0]", "coord(mesh)[1]", "coord(mesh)[2]", "sqrt(xc*xc+yc*yc+zc*zc)"};
+#endif
 
 /******************************************************************************
  * Simulation data and functions
@@ -140,7 +142,7 @@ simulation_data_dtor(simulation_data *sim)
 void 
 simulation_data_update(simulation_data *sim)
 {
-    float x,y,z,tx,ty,tz,offset;
+    float x,y,z,offset;
     int index, i,j,k, npts, ncells;
     npts = sim->dims[0]*sim->dims[1]*sim->dims[2];
     ncells = (sim->dims[0]-1)*(sim->dims[1]-1)*(sim->dims[2]-1);
@@ -164,7 +166,7 @@ simulation_data_update(simulation_data *sim)
         index = 0;
         for(k = 0; k < sim->dims[2]; ++k)
         {
-            tz = ((float)k) / ((float)(sim->dims[2] - 1));
+            float tz = ((float)k) / ((float)(sim->dims[2] - 1));
             z = (1.f-tz)*sim->extents[4] + tz*sim->extents[5];
             for(j = 0; j < sim->dims[1]; ++j)
             {
@@ -389,9 +391,9 @@ int SimBroadcastString(char *str, int len, int sender, void *cbdata)
 
 void SimSlaveProcessCallback(void *cbdata)
 {
+#ifdef PARALLEL
     simulation_data *sim = (simulation_data *)cbdata;
     int command = VISIT_COMMAND_PROCESS;
-#ifdef PARALLEL
     MPI_Bcast(&command, 1, MPI_INT, 0, sim->par_comm);
 #endif
 }
@@ -418,12 +420,11 @@ SimGetMetaData(void *cbdata)
     /* Create metadata. */
     if(VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
     {
-        int i;
         visit_handle mmd = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
-        visit_handle cmd = VISIT_INVALID_HANDLE;
+#ifdef DEFINE_EXPRESSIONS
         visit_handle emd = VISIT_INVALID_HANDLE;
-
+#endif
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, VISIT_SIMMODE_RUNNING);
         VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);
@@ -475,7 +476,7 @@ SimGetMetaData(void *cbdata)
             VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
             VisIt_SimulationMetaData_addVariable(md, vmd);
         }
-#if 0
+#ifdef DEFINE_EXPRESSIONS
         /* Add expressions for VisIt to calculate. */
         for(i = 0; i < 6; ++i)
         {

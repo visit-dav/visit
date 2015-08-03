@@ -70,7 +70,16 @@ using std::ostringstream;
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
+#include "SimV2GetMesh.h"
+#include "vtkComponentDataArray.h"
 
+//
+// Work around a problem with vtkDataWriter that prevents it from correctly writing
+// our vtkComponentDataArray-wrapped strided arrays. The vtkDataWriter contains
+// code that casts data arrays to concrete VTK-only types (bad assumption) so it 
+// can get direct access to contiguous array data (again, bad assumption). 
+//
+#define VTK_DATA_WRITER_WORKAROUND
 
 #include <simv2_CSGMesh.h>
 #include <simv2_CurvilinearMesh.h>
@@ -83,6 +92,32 @@ using std::ostringstream;
 
 static const char *AVT_GHOST_ZONES_ARRAY = "avtGhostZones";
 static const char *AVT_GHOST_NODES_ARRAY = "avtGhostNodes";
+
+int
+SimV2_GetVTKType(int simv2type)
+{
+    int ret = VTK_FLOAT;
+    switch(simv2type)
+    {
+    case VISIT_DATATYPE_CHAR:
+        ret = VTK_CHAR;
+        break;
+    case VISIT_DATATYPE_INT:
+        ret = VTK_INT;
+        break;
+    case VISIT_DATATYPE_LONG:
+        ret = VTK_LONG;
+        break;
+    case VISIT_DATATYPE_FLOAT:
+        ret = VTK_FLOAT;
+        break;
+    case VISIT_DATATYPE_DOUBLE:
+        ret = VTK_DOUBLE;
+        break;
+    }
+
+    return ret;
+}
 
 // ****************************************************************************
 //  Function:  GetQuadGhostZones
@@ -225,7 +260,32 @@ GetQuadGhostZones(int nnodes, int ndims,
 //   Brad Whitlock, Thu Sep 27 17:24:15 PDT 2012
 //   Add ghost zones such that they can have multiple designations.
 //
+//   Brad Whitlock, Mon Jun 29 13:40:08 PDT 2015
+//   Added strided access.
+//
 // ****************************************************************************
+
+template <typename Scalar>
+inline unsigned char
+GhostZoneValue(Scalar value)
+{
+    unsigned char gz = 0;
+
+    if(value & VISIT_GHOSTCELL_INTERIOR_BOUNDARY)
+        avtGhostData::AddGhostZoneType(gz, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+    if(value & VISIT_GHOSTCELL_EXTERIOR_BOUNDARY)
+        avtGhostData::AddGhostZoneType(gz, ZONE_EXTERIOR_TO_PROBLEM);
+    if(value & VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY)
+        avtGhostData::AddGhostZoneType(gz, ENHANCED_CONNECTIVITY_ZONE);
+    if(value & VISIT_GHOSTCELL_REDUCED_CONNECTIVITY)
+        avtGhostData::AddGhostZoneType(gz, REDUCED_CONNECTIVITY_ZONE);
+    if(value & VISIT_GHOSTCELL_BLANK)
+        avtGhostData::AddGhostZoneType(gz, ZONE_NOT_APPLICABLE_TO_PROBLEM);
+    if(value & VISIT_GHOSTCELL_REFINED_AMR_CELL)
+        avtGhostData::AddGhostZoneType(gz, REFINED_ZONE_IN_AMR_GRID);
+
+    return gz;
+}
 
 static bool
 AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
@@ -233,71 +293,61 @@ AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
     bool retval = false;
 
     // Get the ghost cell information
-    int owner, dataType, nComps, nTuples = 0;
+    int owner, dataType, nComps, nTuples = 0, memory, offset, stride;
     void *data = 0;
-    if(simv2_VariableData_getData(ghostCells, owner, dataType, nComps, nTuples, data))
+    if(simv2_VariableData_getArrayData(ghostCells, 0, memory, owner, dataType, 
+        nComps, nTuples, offset, stride, data))
     {
         vtkUnsignedCharArray *ghosts = vtkUnsignedCharArray::New();
         ghosts->SetNumberOfTuples(nTuples);
         ghosts->SetName(AVT_GHOST_ZONES_ARRAY);
         unsigned char *dest = (unsigned char *)ghosts->GetVoidPointer(0);
-        if(dataType == VISIT_DATATYPE_CHAR)
+        if(memory == VISIT_MEMORY_CONTIGUOUS)
         {
-            const unsigned char *src = (const unsigned char *)data;
-            const unsigned char *end = src + nTuples;
-            for( ; src < end; src++)
+            if(dataType == VISIT_DATATYPE_CHAR)
             {
-                unsigned char gz = 0;
+                const unsigned char *src = static_cast<const unsigned char *>(data);
+                const unsigned char *end = src + nTuples;
+                for( ; src < end; src++)
+                {
+                    *dest++ = GhostZoneValue(*src);
+                }
 
-                if(*src & VISIT_GHOSTCELL_INTERIOR_BOUNDARY)
-                    avtGhostData::AddGhostZoneType(gz, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-                if(*src & VISIT_GHOSTCELL_EXTERIOR_BOUNDARY)
-                    avtGhostData::AddGhostZoneType(gz, ZONE_EXTERIOR_TO_PROBLEM);
-                if(*src & VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY)
-                    avtGhostData::AddGhostZoneType(gz, ENHANCED_CONNECTIVITY_ZONE);
-                if(*src & VISIT_GHOSTCELL_REDUCED_CONNECTIVITY)
-                    avtGhostData::AddGhostZoneType(gz, REDUCED_CONNECTIVITY_ZONE);
-                if(*src & VISIT_GHOSTCELL_BLANK)
-                    avtGhostData::AddGhostZoneType(gz, ZONE_NOT_APPLICABLE_TO_PROBLEM);
-                if(*src & VISIT_GHOSTCELL_REFINED_AMR_CELL)
-                    avtGhostData::AddGhostZoneType(gz, REFINED_ZONE_IN_AMR_GRID);
-
-                *dest++ = gz;
+                ds->GetCellData()->AddArray(ghosts);
+                retval = true;
             }
-
-            ds->GetCellData()->AddArray(ghosts);
-            retval = true;
-        }
-        else if(dataType == VISIT_DATATYPE_INT)
-        {
-            const int *src = (const int *)data;
-            const int *end = src + nTuples;
-            for( ; src < end; src++)
+            else if(dataType == VISIT_DATATYPE_INT)
             {
-                unsigned char gz = 0;
+                const int *src = static_cast<const int *>(data);
+                const int *end = src + nTuples;
+                for( ; src < end; src++)
+                {
+                    *dest++ = GhostZoneValue(*src);
+                }
 
-                if(*src & VISIT_GHOSTCELL_INTERIOR_BOUNDARY)
-                    avtGhostData::AddGhostZoneType(gz, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-                if(*src & VISIT_GHOSTCELL_EXTERIOR_BOUNDARY)
-                    avtGhostData::AddGhostZoneType(gz, ZONE_EXTERIOR_TO_PROBLEM);
-                if(*src & VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY)
-                    avtGhostData::AddGhostZoneType(gz, ENHANCED_CONNECTIVITY_ZONE);
-                if(*src & VISIT_GHOSTCELL_REDUCED_CONNECTIVITY)
-                    avtGhostData::AddGhostZoneType(gz, REDUCED_CONNECTIVITY_ZONE);
-                if(*src & VISIT_GHOSTCELL_BLANK)
-                    avtGhostData::AddGhostZoneType(gz, ZONE_NOT_APPLICABLE_TO_PROBLEM);
-                if(*src & VISIT_GHOSTCELL_REFINED_AMR_CELL)
-                    avtGhostData::AddGhostZoneType(gz, REFINED_ZONE_IN_AMR_GRID);
-
-                *dest++ = gz;
+                ds->GetCellData()->AddArray(ghosts);
+                retval = true;
             }
-
-            ds->GetCellData()->AddArray(ghosts);
-            retval = true;
+            else
+            {
+                ghosts->Delete();
+            }
         }
         else
         {
-            ghosts->Delete();
+            int vtkType = SimV2_GetVTKType(dataType);
+            vtkComponentDataArray<int> *src = vtkComponentDataArray<int>::New();
+            src->SetNumberOfTuples(nTuples);
+            src->SetComponentData(0, vtkArrayComponentStride(data, offset, stride, vtkType, false));
+            for(vtkIdType i = 0; i < nTuples; ++i)
+            {
+                int value = static_cast<int>(src->GetTuple1(i));
+                *dest++ = GhostZoneValue(value);
+            }
+            src->Delete();
+
+            ds->GetCellData()->AddArray(ghosts);
+            retval = true;
         }
     }
 
@@ -323,6 +373,8 @@ AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
 // Creation:   Fri Jan 20 17:45:02 EDT 2012
 //
 // Modifications:
+//   Brad Whitlock, Mon Jun 29 13:40:08 PDT 2015
+//   Added strided access.
 //
 // ****************************************************************************
 
@@ -331,10 +383,11 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
 {
     bool retval = false;
 
-    // Get the ghost node information
-    int owner, dataType, nComps, nTuples = 0;
+    // Get the ghost cell information
+    int owner, dataType, nComps, nTuples = 0, memory, offset, stride;
     void *data = 0;
-    if(simv2_VariableData_getData(ghostNodes, owner, dataType, nComps, nTuples, data))
+    if(simv2_VariableData_getArrayData(ghostNodes, 0, memory, owner, dataType, 
+        nComps, nTuples, offset, stride, data))
     {
         unsigned char gnTypes[5] = {0,0,0,0,0};
         avtGhostData::AddGhostNodeType(gnTypes[VISIT_GHOSTNODE_INTERIOR_BOUNDARY],     DUPLICATED_NODE);
@@ -346,57 +399,542 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
         ghosts->SetNumberOfTuples(nTuples);
         ghosts->SetName(AVT_GHOST_NODES_ARRAY);
         unsigned char *dest = (unsigned char *)ghosts->GetVoidPointer(0);
-        if(dataType == VISIT_DATATYPE_CHAR)
+
+        if(memory == VISIT_MEMORY_CONTIGUOUS)
         {
-            const unsigned char *src = (const unsigned char *)data;
-            const unsigned char *end = src + nTuples;
-            while(src < end)
+            if(dataType == VISIT_DATATYPE_CHAR)
             {
-                if(*src <= VISIT_GHOSTNODE_FINE_SIDE)
+                const unsigned char *src = (const unsigned char *)data;
+                const unsigned char *end = src + nTuples;
+                for( ; src < end; src++)
                 {
-                    *dest++ = gnTypes[*src];
-                }
-                else
-                {
-                    ghosts->Delete();
-                    EXCEPTION1(ImproperUseException, "Invalid ghost node value");
+                    if(*src <= VISIT_GHOSTNODE_FINE_SIDE)
+                    {
+                        *dest++ = gnTypes[*src];
+                    }
+                    else
+                    {
+                        ghosts->Delete();
+                        EXCEPTION1(ImproperUseException, "Invalid ghost node value");
+                    }
                 }
 
-                src++;
+                ds->GetPointData()->AddArray(ghosts);
+                retval = true;
             }
-
-            ds->GetPointData()->AddArray(ghosts);
-            retval = true;
-        }
-        else if(dataType == VISIT_DATATYPE_INT)
-        {
-            const int *src = (const int *)data;
-            const int *end = src + nTuples;
-            while(src < end)
+            else if(dataType == VISIT_DATATYPE_INT)
             {
-                if(*src >= 0 && *src <= VISIT_GHOSTNODE_FINE_SIDE)
+                const int *src = (const int *)data;
+                const int *end = src + nTuples;
+                for( ; src < end; src++)
                 {
-                    *dest++ = gnTypes[*src];
-                }
-                else
-                {
-                    ghosts->Delete();
-                    EXCEPTION1(ImproperUseException, "Invalid ghost node value");
+                    if(*src >= 0 && *src <= VISIT_GHOSTNODE_FINE_SIDE)
+                    {
+                        *dest++ = gnTypes[*src];
+                    }
+                    else
+                    {
+                        ghosts->Delete();
+                        EXCEPTION1(ImproperUseException, "Invalid ghost node value");
+                    }
                 }
 
-                src++;
+                ds->GetPointData()->AddArray(ghosts);
+                retval = true;
             }
-
-            ds->GetPointData()->AddArray(ghosts);
-            retval = true;
+            else
+            {
+                ghosts->Delete();
+            }
         }
         else
         {
-            ghosts->Delete();
+            int vtkType = SimV2_GetVTKType(dataType);
+            vtkComponentDataArray<int> *src = vtkComponentDataArray<int>::New();
+            src->SetNumberOfTuples(nTuples);
+            src->SetComponentData(0, vtkArrayComponentStride(data, offset, stride, vtkType, false));
+            for(vtkIdType i = 0; i < nTuples; ++i)
+            {
+                int value = static_cast<int>(src->GetTuple1(i));
+                if(value >= 0 && value <= VISIT_GHOSTNODE_FINE_SIDE)
+                {
+                    *dest++ = gnTypes[value];
+                }
+                else
+                {
+                    ghosts->Delete();
+                    EXCEPTION1(ImproperUseException, "Invalid ghost node value");
+                }
+            }
+            src->Delete();
+
+            ds->GetPointData()->AddArray(ghosts);
+            retval = true;
         }
     }
 
     return retval;
+}
+
+// ****************************************************************************
+// Function: SimV2_Create_ComponentDataArray3_From_One_MultiArray
+//
+// Purpose:
+//   Create a vtkComponentData with 3 components from a single VariableData
+//   object that contains multiple arrays.
+//
+// Arguments:
+//   dims             : The number of dimensions
+//   c                : The handle to the variable data object.
+//
+// Returns:    A vtkComponentDataArray that wraps the data arrays.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 29 15:55:02 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+vtkComponentDataArray<float> *
+SimV2_Create_ComponentDataArray3_From_One_MultiArray(int ndims, visit_handle c)
+{
+    debug5 << "SimV2_Create_ComponentDataArray3_From_One_MultiArray" << endl;
+
+    // Zero copy - use separate components to build up a view of the components
+    vtkComponentDataArray<float> *position = vtkComponentDataArray<float>::New();
+    position->SetNumberOfComponents(3);
+
+    bool doNull = false;
+    for(int i = 0; i < ndims; ++i)
+    {
+        static char coordName[3] = {'x', 'y', 'z'};
+
+        // Get the information from the i'th data array component.
+        void *data = NULL;
+        int owner, dataType, nComps, nTuples, memory, offset, stride;
+        if(simv2_VariableData_getArrayData(c, i, memory, owner, dataType,
+           nComps, nTuples, offset, stride, data) == VISIT_ERROR)
+        {
+            position->Delete();
+            ostringstream oss;
+            oss << "Failed to get data for " << coordName[i];
+            EXCEPTION1(ImproperUseException, oss.str().c_str());
+        }
+
+        // Store the data array information into the data component.
+        if(i == 0)
+            position->SetNumberOfTuples(nTuples);
+        bool owns = owner == VISIT_OWNER_VISIT;
+
+        debug5 << "\tAdding component " << i << ": data=" << (void*)data
+               << ", offset=" << offset << ", stride=" << stride
+               << ", vtktype=" << SimV2_GetVTKType(dataType)
+               << ", owns=" << (owns?"true":"false") << endl;
+
+        position->SetComponentData(i, vtkArrayComponentStride(data, offset, stride, SimV2_GetVTKType(dataType), owns));
+        doNull |= owns;
+    }
+    // For 2D data, install an empty 3rd component.
+    if(ndims == 2)
+    {
+        debug5 << "\tAdding empty 3rd component." << endl;
+        position->SetComponentData(2, vtkArrayComponentStride(NULL, 0, 0, VTK_FLOAT, false));
+    }
+
+    // Give up our ownership. VTK will free the data.
+    if(doNull)
+        simv2_VariableData_nullData(c);
+
+    return position;
+}
+// ****************************************************************************
+// Function: SimV2_Create_ComponentDataArray3_From_Three_SingleArray
+//
+// Purpose:
+//   Create a vtkComponentData with 3 components from 3 VariableData
+//   objects that contains single arrays.
+//
+// Arguments:
+//   dims             : The number of dimensions
+//   x                : The handle to the x coordinate array.
+//   y                : The handle to the y coordinate array.
+//   z                : The handle to the z coordinate array.
+//
+// Returns:    A vtkComponentDataArray that wraps the data arrays.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 29 15:55:02 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static vtkComponentDataArray<float> *
+SimV2_Create_ComponentDataArray3_From_Three_SingleArray(int ndims, 
+    visit_handle x, visit_handle y, visit_handle z)
+{
+    debug5 << "SimV2_Create_ComponentDataArray3_From_Three_SingleArray" << endl;
+    vtkComponentDataArray<float> *position = vtkComponentDataArray<float>::New();
+    position->SetNumberOfComponents(3);
+    visit_handle cHandles[3] = {x, y, z};
+    for(int i = 0; i < ndims; ++i)
+    {
+        static char coordName[3] = {'x', 'y', 'z'};
+
+        // Get the information from the data array.
+        void *data = NULL;
+        int owner, dataType, nComps, nTuples, memory, offset, stride;
+        if(simv2_VariableData_getArrayData(cHandles[i], 0, memory, owner, dataType,
+           nComps, nTuples, offset, stride, data) == VISIT_ERROR)
+        {
+            position->Delete();
+            ostringstream oss;
+            oss << "Failed to get data for " << coordName[i];
+            EXCEPTION1(ImproperUseException, oss.str().c_str());
+        }
+
+        // Store the data array information into the data component.
+        if(i == 0)
+            position->SetNumberOfTuples(nTuples);
+        bool owns = owner == VISIT_OWNER_VISIT;
+
+        debug5 << "\tAdding component " << i << ": data=" << (void*)data
+               << ", offset=" << offset << ", stride=" << stride
+               << ", vtktype=" << SimV2_GetVTKType(dataType)
+               << ", owns=" << (owns?"true":"false") << endl;
+
+        position->SetComponentData(i, vtkArrayComponentStride(data, offset, stride, SimV2_GetVTKType(dataType), owns));
+        if(owns)
+        {
+            simv2_VariableData_nullData(cHandles[i]);
+        }
+    }
+    if(ndims == 2)
+    {
+        debug5 << "\tAdding empty 3rd component." << endl;
+        position->SetComponentData(2, vtkArrayComponentStride(NULL, 0, 0, VTK_FLOAT, false));
+    }
+#if 0
+    for(vtkIdType i = 0; i < position->GetNumberOfTuples(); ++i)
+    {
+        const double *pt = position->GetTuple(i);
+        cout << "pt[" << i << "] = " << pt[0] << ", " << pt[1] << ", " << pt[2] << endl;
+    }
+#endif
+    return position;
+}
+
+// ****************************************************************************
+// Function: SimV2_CreatePoints_From_ComponentDataArray3
+//
+// Purpose:
+//   Create a vtkPoints object from a component data array with 3 components.
+//
+// Arguments:
+//   dims             : The number of dimensions
+//   additionalPoints : The number of additional points we need to allocate.
+//   position         : The data array containing the points.
+//
+// Returns:    A vtkPoints object that contains the points.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 16 16:00:50 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static vtkPoints *
+SimV2_CreatePoints_From_ComponentDataArray3(bool forceCopy, int ndims, int additionalPoints,
+    vtkComponentDataArray<float> *position)
+{
+    vtkPoints *points = vtkPoints::New();
+
+    if(/*ndims == 2 || */ forceCopy || additionalPoints > 0)
+    {
+        debug5 << "SimV2_CreatePoints_From_ComponentDataArray3: copy points" << endl;
+
+        // We need to copy so copy the zero-copy form into a new vtkPoints.
+        vtkIdType nTuples = position->GetNumberOfTuples();
+        points->SetNumberOfPoints(nTuples + additionalPoints);
+        for(vtkIdType ptid = 0; ptid < nTuples; ++ptid)
+        {
+            const double *p = position->GetTuple(ptid);
+            points->SetPoint(ptid, p[0], p[1], p[2]);
+        }
+    }
+    else
+    {
+        debug5 << "SimV2_CreatePoints_From_ComponentDataArray3: zero copy" << endl;
+
+        // Zero-copy.
+        points->SetData(position);
+    }
+
+    // Delete the zero-copy view of the data.
+    position->Delete();
+
+    return points;
+}
+
+// ****************************************************************************
+// Function: SimV2_CreatePoints_Separate
+//
+// Purpose:
+//   Create a vtkPoints object from various VariableData objects.
+//
+// Arguments:
+//   dims             : The number of dimensions
+//   x                : The handle to the x coordinate array.
+//   y                : The handle to the y coordinate array.
+//   z                : The handle to the z coordinate array.
+//   additionalPoints : The number of additional points to create.
+//
+// Returns:    A vtkPoints object that contains the coordinates.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 25 11:14:01 PST 2010
+//
+// Modifications:
+//    Brad Whitlock, Mon Jun 29 15:55:02 PDT 2015
+//    I added support for strided memory.
+//
+// ****************************************************************************
+
+static vtkPoints *
+SimV2_CreatePoints_Separate(int ndims,
+    visit_handle x, visit_handle y, visit_handle z, int additionalPoints, bool forceCopy)
+{
+    debug5 << "SimV2_CreatePoints_Separate" << endl;
+    vtkComponentDataArray<float> *position = SimV2_Create_ComponentDataArray3_From_Three_SingleArray(ndims, x,y,z);
+    return SimV2_CreatePoints_From_ComponentDataArray3(forceCopy, 3, additionalPoints, position);
+}
+
+// ****************************************************************************
+// Function: SimV2_CreatePoints_Interleaved_SingleArray
+//
+// Purpose:
+//   Create a vtkPoints object from a single VariableData object that is made of
+//   a single array.
+//
+// Arguments:
+//   dims             : The number of dimensions
+//   c                : The handle to the coordinate array.
+//   additionalPoints : The number of additional points to create.
+//
+// Returns:    A vtkPoints object that contains the coordinates.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 29 15:55:02 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static vtkPoints *
+SimV2_CreatePoints_Interleaved_SingleArray(int ndims, visit_handle c, 
+    int additionalPoints, bool forceCopy)
+{
+    // Get information about the first array.
+    int owner, dataType, nComps, nTuples;
+    void *data = NULL;
+    int ierr = simv2_VariableData_getData(c, owner, dataType, nComps,
+                                          nTuples, data);
+    if (ierr == VISIT_ERROR)
+    {
+        EXCEPTION1(ImproperUseException,
+                   "Failed to get data for interleaved coordinates");
+    }
+
+    // validate the data type.
+    if (!simV2_ValidFloatDataType(dataType))
+    {
+        EXCEPTION1(ImproperUseException,
+                   "Coordinate array must be float or double.\n");
+    }
+
+    vtkPoints *points = vtkPoints::New();
+
+    // NOTE: The API prevents strided array access for this case. We can assume still
+    //       that the arrays here will be contiguous 1 array with 2-3 components.
+
+    if(ndims == 2)
+    {
+        debug5 << "SimV2_CreatePoints_Interleaved_SingleArray: copy 2d points to 3d points." << endl;
+
+        // make it 3d and copy
+        switch (dataType)
+        {
+        simV2FloatTemplateMacro(
+            points->SetDataType(simV2_TT::vtkEnum);
+            points->SetNumberOfPoints(nTuples+additionalPoints);
+            simV2_TT::cppType *pPts = static_cast<simV2_TT::cppType*>(points->GetVoidPointer(0));
+            simV2_TT::cppType *pData = static_cast<simV2_TT::cppType*>(data);
+            for(int i = 0; i < nTuples; ++i, pPts+=3, pData+=2)
+            {
+                pPts[0] = pData[0];
+                pPts[1] = pData[1];
+                pPts[2] = simV2_TT::cppType();
+            }
+            );
+        }
+    }
+    else if (forceCopy || additionalPoints > 0)
+    {
+        debug5 << "SimV2_CreatePoints_Interleaved_SingleArray: copy points to buffer with "
+               << additionalPoints << " extra elements." << endl;
+
+        // copy into vtk data array
+        switch (dataType)
+        {
+        simV2FloatTemplateMacro(
+            points->SetDataType(simV2_TT::vtkEnum);
+            points->SetNumberOfPoints(nTuples+additionalPoints);
+            memcpy(points->GetVoidPointer(0), data, 3*nTuples*sizeof(simV2_TT::cppType));
+            );
+        }
+    }
+    else
+    {
+        debug5 << "SimV2_CreatePoints_Interleaved_SingleArray: zero copy." << endl;
+
+        // Get the callback.
+        void (*callback)(void*) = NULL;
+        void *callbackData = NULL;
+        simv2_VariableData_getDeletionCallback(c, callback, callbackData);
+
+        // zero-copy, VTK uses the pointer rather than making
+        // a copy. this is inherently risky, especially for VISIT_OWNER_SIM
+        // with VISIT_OWNER_VISIT_EX the sim is expected to hold a
+        // reference until his callback is invoked by the vtk array delete
+        // event observer
+        switch (dataType)
+        {
+        simV2FloatTemplateMacro(
+            simV2_TT::vtkType *pts = simV2_TT::vtkType::New();
+            pts->SetNumberOfComponents(3);
+
+            if (owner == VISIT_OWNER_VISIT_EX && callback != NULL)
+            {
+                // we observe VTK data array's DeleteEvent and invoke the
+                // user provided callback in repsonse. it's the callbacks
+                // duty to free the memory.
+                pts->SetArray(static_cast<simV2_TT::cppType*>(data), 
+                              nTuples*3, 1);
+
+                simV2_DeleteEventObserver *observer = 
+                    simV2_DeleteEventObserver::New();
+                observer->Observe(pts, callback, callbackData);
+                // this is not a leak, the observer is Delete'd after it's
+                // invoked.
+            }
+            else
+            {
+                // VTK assumes ownership for VISIT_OWNER_VISIT. For
+                // VISIT_OWNER_SIM the sim must ensure that data persists
+                // while VTK is using it
+                pts->SetArray(static_cast<simV2_TT::cppType*>(data),
+                     nTuples*3, ((owner==VISIT_OWNER_VISIT)?0:1));
+            }
+            points->SetData(pts);
+            pts->Delete();
+        );
+        }
+        // give up our ownership, VTK will free the data
+        simv2_VariableData_nullData(c);
+    }
+
+    return points;
+}
+
+// ****************************************************************************
+// Function: SimV2_CreatePoints_Interleaved_MultiArray
+//
+// Purpose:
+//   Create a vtkPoints object from a single VariableData object that is made of
+//   multiple arrays.
+//
+// Arguments:
+//   dims             : The number of dimensions
+//   c                : The handle to the coordinate array.
+//   additionalPoints : The number of additional points to create.
+//   forceCopy        : A flag to force copying.
+//
+// Returns:    A vtkPoints object that contains the coordinates.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 29 15:55:02 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+static vtkPoints *
+SimV2_CreatePoints_Interleaved_MultiArray(int ndims, visit_handle c, int additionalPoints,
+    bool forceCopy)
+{
+    // NOTE: Here we have a separate array for each component. Each component may
+    //       have a different memory layout or storage type.
+    debug5 << "SimV2_CreatePoints_Interleaved_MultiArray" << endl;
+    vtkComponentDataArray<float> *position = SimV2_Create_ComponentDataArray3_From_One_MultiArray(ndims, c);
+    return SimV2_CreatePoints_From_ComponentDataArray3(forceCopy, ndims, additionalPoints, position);
+}
+
+// ****************************************************************************
+// Function: SimV2_CreatePoints_Interleaved
+//
+// Purpose:
+//   Create a vtkPoints object from various VariableData objects.
+//
+// Arguments:
+//   dims             : The number of dimensions
+//   c                : The handle to the coordinate array.
+//   additionalPoints : The number of additional points to create.
+//   forceCopy        : A flag to force copying.
+//
+// Returns:    A vtkPoints object that contains the coordinates.
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 25 11:14:01 PST 2010
+//
+// Modifications:
+//    Brad Whitlock, Mon Jun 29 15:55:02 PDT 2015
+//    I added support for strided memory.
+//
+// ****************************************************************************
+
+static vtkPoints *
+SimV2_CreatePoints_Interleaved(int ndims, visit_handle c, int additionalPoints, bool forceCopy)
+{
+    debug5 << "SimV2_CreatePoints_Interleaved" << endl;
+
+    vtkPoints *points = NULL;
+    int nArrs = 1;
+    if(simv2_VariableData_getNumArrays(c, &nArrs) == VISIT_ERROR)
+    {
+        EXCEPTION1(ImproperUseException,
+                   "Failed to get number of arrays for interleaved coordinates");
+    }
+
+    if(nArrs == 1)
+        points = SimV2_CreatePoints_Interleaved_SingleArray(ndims, c, additionalPoints, forceCopy);
+    else
+        points = SimV2_CreatePoints_Interleaved_MultiArray(ndims, c, additionalPoints, forceCopy);
+    return points;
 }
 
 // ****************************************************************************
@@ -413,6 +951,7 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
 //   z                : The handle to the z coordinate array.
 //   c                : The handle to the c coordinate array.
 //   additionalPoints : The number of additional points to create.
+//   forceCopy        : A flag to force copying.
 //
 // Returns:    A vtkPoints object that contains the coordinates.
 //
@@ -441,183 +980,15 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
 static vtkPoints *
 SimV2_CreatePoints(int ndims, int coordMode,
     visit_handle x, visit_handle y, visit_handle z, visit_handle c,
-    int additionalPoints)
+    int additionalPoints, bool forceCopy)
 {
+    debug5 << "SimV2_CreatePoints" << endl;
     vtkPoints *points = NULL;
 
     if(coordMode == VISIT_COORD_MODE_SEPARATE)
-    {
-        // get array's and properties, note: properties are guaranteed to
-        // be the same for all
-        visit_handle cHandles[3] = {x, y, z};
-        void *data[3] = {0,0,0};
-        int owner, dataType, nComps, nTuples;
-        for(int i = 0; i < ndims; ++i)
-        {
-            if(simv2_VariableData_getData(cHandles[i], owner, dataType,
-                nComps, nTuples, data[i]) == VISIT_ERROR)
-            {
-                char coordName[3] = {'x', 'y', 'z'};
-                ostringstream oss;
-                oss << "Failed to get data for " << coordName[i];
-                EXCEPTION1(ImproperUseException, oss.str().c_str());
-            }
-        }
-
-        // validate the data type.
-        if (!simV2_ValidFloatDataType(dataType))
-        {
-            EXCEPTION1(ImproperUseException,
-                "Coordinate arrays must be float or double.\n");
-        }
-
-        // Interleave the coordinate arrays as VTK requires.
-        points = vtkPoints::New();
-        if(ndims == 2)
-        {
-            switch (dataType)
-            {
-            simV2FloatTemplateMacro(
-                points->SetDataType(simV2_TT::vtkEnum);
-                points->SetNumberOfPoints(nTuples+additionalPoints);
-                simV2_TT::cppType *pPts = static_cast<simV2_TT::cppType*>(points->GetVoidPointer(0));
-
-                simV2_TT::cppType *pX = static_cast<simV2_TT::cppType*>(data[0]);
-                simV2_TT::cppType *pY = static_cast<simV2_TT::cppType*>(data[1]);
-
-                for(int i = 0; i < nTuples; ++i,pPts+=3)
-                {
-                    pPts[0] = pX[i];
-                    pPts[1] = pY[i];
-                    pPts[2] = simV2_TT::cppType();
-                }
-                );
-            }
-        }
-        else
-        {
-            switch (dataType)
-            {
-            simV2FloatTemplateMacro(
-                points->SetDataType(simV2_TT::vtkEnum);
-                points->SetNumberOfPoints(nTuples+additionalPoints);
-                simV2_TT::cppType *pPts = static_cast<simV2_TT::cppType*>(points->GetVoidPointer(0));
-
-                simV2_TT::cppType *pX = static_cast<simV2_TT::cppType*>(data[0]);
-                simV2_TT::cppType *pY = static_cast<simV2_TT::cppType*>(data[1]);
-                simV2_TT::cppType *pZ = static_cast<simV2_TT::cppType*>(data[2]);
-
-                for(int i = 0; i < nTuples; ++i,pPts+=3)
-                {
-                    pPts[0] = pX[i];
-                    pPts[1] = pY[i];
-                    pPts[2] = pZ[i];
-                }
-                );
-            }
-        }
-    }
-    else if(coordMode == VISIT_COORD_MODE_INTERLEAVED)
-    {
-        int owner, dataType, nComps, nTuples;
-        void *data = NULL;
-        void (*callback)(void*) = NULL;
-        void *callbackData = NULL;
-
-        int ierr = simv2_VariableData_getDataEx(c, owner, dataType, nComps,
-                                     nTuples, data, callback, callbackData);
-
-        if (ierr == VISIT_ERROR)
-        {
-            EXCEPTION1(ImproperUseException,
-                "Failed to get data for interleaved coordinates");
-            return NULL;
-        }
-
-        // validate the data type.
-        if (!simV2_ValidFloatDataType(dataType))
-        {
-            EXCEPTION1(ImproperUseException,
-                "Coordinate array must be float or double.\n");
-        }
-
-        points = vtkPoints::New();
-        if(ndims == 2)
-        {
-            // make it 3d and copy
-            switch (dataType)
-            {
-            simV2FloatTemplateMacro(
-                points->SetDataType(simV2_TT::vtkEnum);
-                points->SetNumberOfPoints(nTuples+additionalPoints);
-                simV2_TT::cppType *pPts = static_cast<simV2_TT::cppType*>(points->GetVoidPointer(0));
-                simV2_TT::cppType *pData = static_cast<simV2_TT::cppType*>(data);
-
-                for(int i = 0; i < nTuples; ++i, pPts+=3, pData+=2)
-                {
-                    pPts[0] = pData[0];
-                    pPts[1] = pData[1];
-                    pPts[2] = simV2_TT::cppType();
-                }
-                );
-            }
-        }
-        else if ( (additionalPoints > 0) || (owner == VISIT_OWNER_COPY) )
-        {
-            // copy into vtk data array
-            switch (dataType)
-            {
-            simV2FloatTemplateMacro(
-                points->SetDataType(simV2_TT::vtkEnum);
-                points->SetNumberOfPoints(nTuples+additionalPoints);
-                memcpy(points->GetVoidPointer(0), data, 3*nTuples*sizeof(simV2_TT::cppType));
-                );
-            }
-        }
-        else
-        {
-            // zero-copy, VTK uses the pointer rather than making
-            // a copy. this is inherently risky, especially for VISIT_OWNER_SIM
-            // with VISIT_OWNER_VISIT_EX the sim is expected to hold a
-            // reference until his callback is invoked by the vtk array delete
-            // event observer
-            switch (dataType)
-            {
-            simV2FloatTemplateMacro(
-                simV2_TT::vtkType *pts = simV2_TT::vtkType::New();
-                pts->SetNumberOfComponents(3);
-
-                if (owner == VISIT_OWNER_VISIT_EX)
-                {
-                    // we observe VTK data array's DeleteEvent and invoke the
-                    // user provided callback in repsonse. it's the callbacks
-                    // duty to free the memory.
-                    pts->SetArray(static_cast<simV2_TT::cppType*>(data), 
-                                  nTuples*3, 1);
-
-                    simV2_DeleteEventObserver *observer = 
-                        simV2_DeleteEventObserver::New();
-                    observer->Observe(pts, callback, callbackData);
-                    // this is not a leak, the observer is Delete'd after it's
-                    // invoked.
-                }
-                else
-                {
-                    // VTK assumes ownership for VISIT_OWNER_VISIT. For
-                    // VISIT_OWNER_SIM the sim must ensure that data persists
-                    // while VTK is using it
-                    pts->SetArray(static_cast<simV2_TT::cppType*>(data),
-                         nTuples*3, ((owner==VISIT_OWNER_VISIT)?0:1));
-
-                }
-                points->SetData(pts);
-                pts->Delete();
-                );
-            }
-            // give up our ownership, VTK will free the data
-            simv2_VariableData_nullData(c);
-        }
-    }
+        points = SimV2_CreatePoints_Separate(ndims, x, y, z, additionalPoints, forceCopy);
+    else
+        points = SimV2_CreatePoints_Interleaved(ndims, c, additionalPoints, forceCopy);
 
     return points;
 }
@@ -668,8 +1039,25 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
         return NULL;
     }
 
+    bool forceCopy = false;
+#ifdef VTK_DATA_WRITER_WORKAROUND
+    if(ndims == 2)
+    {
+        if(coordMode == VISIT_COORD_MODE_SEPARATE)
+            forceCopy = true;
+        else
+        {
+            int nArr = 0;
+            if(simv2_VariableData_getNumArrays(c, &nArr) == VISIT_OKAY)
+            {
+                 forceCopy = nArr > 1;
+            }
+        }
+    }
+#endif
+
     // Create the points.
-    vtkPoints *points = SimV2_CreatePoints(ndims, coordMode, x, y, z, c, 0);
+    vtkPoints *points = SimV2_CreatePoints(ndims, coordMode, x, y, z, c, 0, forceCopy);
 
     // Create the VTK objects and connect them up.
     vtkStructuredGrid *sgrid   = vtkStructuredGrid::New();
@@ -740,6 +1128,9 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
 //   Burlen Loring, Fri Feb 21 13:44:36 PST 2014
 //   * template refactor
 //
+//   Brad Whitlock, Mon Jun 29 17:06:23 PDT 2015
+//   Added support for strided memory.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -763,11 +1154,12 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
     // Obtain the coordinate data from the opaque objects.
     visit_handle cHandles[3] = {x, y, z};
     int owner[3]={0,0,0}, dataType[3]={0,0,0}, nComps[3]={1,1,1}, nTuples[3] = {0,0,1};
+    int memory[3]={0,0,0}, stride[3]={1,1,1}, offset[3] = {0,0,0};
     void *data[3] = {0,0,0};
     for(int i = 0; i < ndims; ++i)
     {
-        if(simv2_VariableData_getData(cHandles[i], owner[i],
-            dataType[i], nComps[i], nTuples[i], data[i]) == VISIT_ERROR)
+        if(simv2_VariableData_getArrayData(cHandles[i], 0, memory[i], owner[i],
+            dataType[i], nComps[i], nTuples[i], offset[i], stride[i], data[i]) == VISIT_ERROR)
         {
             EXCEPTION1(ImproperUseException,
                 "Could not obtain mesh data using the provided handle.\n");
@@ -794,6 +1186,7 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
     {
         switch (dataType[i])
         {
+#define COPYMACRO(index,srcval) dest[index] = srcval;
         simV2FloatTemplateMacro(
             coords[i] = simV2_TT::vtkType::New();
             if ((ndims == 2) && (i == 2))
@@ -805,10 +1198,12 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
             else
             {
                 coords[i]->SetNumberOfTuples(nTuples[i]);
-                memcpy(coords[i]->GetVoidPointer(0), data[i],
-                        nTuples[i]*sizeof(simV2_TT::cppType));
+                simV2_TT::cppType *dest = static_cast<simV2_TT::cppType *>(coords[i]->GetVoidPointer(0));
+                bool err = false;
+                simV2MemoryCopyMacro(COPYMACRO, memory[i], nTuples[i], offset[i], stride[i], simV2_TT::cppType, data[i], err);
             }
             );
+#undef COPYMACRO
         }
     }
 
@@ -1134,14 +1529,22 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, avtPolyhedralSplit **phSp
     //
     // Get the connectivity
     //
-    int connOwner = 0, connDataType=0, connNComps=0, connectivityLen=0;
+    int connMemory = 0, connOwner = 0, connDataType=0, connNComps=0, connectivityLen=0;
+    int connOffset = 0, connStride = 0;
     void *connData = 0;
-    if(simv2_VariableData_getData(conn, connOwner,
-       connDataType, connNComps, connectivityLen, connData) == VISIT_ERROR)
+    if(simv2_VariableData_getArrayData(conn, 0, connMemory, connOwner,
+       connDataType, connNComps, connectivityLen, connOffset, connStride, connData) == VISIT_ERROR)
     {
-         EXCEPTION1(ImproperUseException,
+        EXCEPTION1(ImproperUseException,
              "Could not obtain connectivity data using the provided handle.\n");
     }
+
+    if(connMemory == VISIT_MEMORY_STRIDED)
+    {
+        EXCEPTION1(ImproperUseException,
+             "Connectivity data must be contiguous in memory.\n");
+    }
+
     const int *connectivity = (const int *)connData;
 
     // Count the polyhedral cells so we can allocate more points
@@ -1149,11 +1552,29 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, avtPolyhedralSplit **phSp
     SimV2_UnstructuredMesh_Count_Cells(connectivity, connectivityLen, normalCellCount,
         polyhedralCellCount);
 
+    bool forceCopy = false;
+#ifdef VTK_DATA_WRITER_WORKAROUND
+    if(ndims == 2)
+    {
+        if(coordMode == VISIT_COORD_MODE_SEPARATE)
+            forceCopy = true;
+        else
+        {
+            int nArr = 0;
+            if(simv2_VariableData_getNumArrays(c, &nArr) == VISIT_OKAY)
+            {
+                 forceCopy = nArr > 1;
+            }
+        }
+    }
+#endif
+
     //
     // Create the points.
     //
     vtkPoints *points = SimV2_CreatePoints(ndims, coordMode, x, y, z, c,
-                                           polyhedralCellCount);
+                                           polyhedralCellCount,
+                                           forceCopy);
     int nRealPoints = points->GetNumberOfPoints() - polyhedralCellCount;
 
     //
@@ -1383,7 +1804,7 @@ SimV2_GetMesh_Point(visit_handle h)
     //
     // Create the points.
     //
-    vtkPoints *points = SimV2_CreatePoints(ndims, coordMode, x, y, z, c, 0);
+    vtkPoints *points = SimV2_CreatePoints(ndims, coordMode, x, y, z, c, 0, false);
 
     //
     // Add point cells

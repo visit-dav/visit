@@ -109,6 +109,10 @@ typedef enum {
 #define VISIT_OWNER_COPY                  2
 #define VISIT_OWNER_VISIT_EX              3
 
+/* Array memory layout */
+#define VISIT_MEMORY_CONTIGUOUS           0
+#define VISIT_MEMORY_STRIDED              1
+
 /* Cell Types */
 #define VISIT_CELL_BEAM                   0
 #define VISIT_CELL_TRI                    1

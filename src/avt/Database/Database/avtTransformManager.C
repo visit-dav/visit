@@ -292,6 +292,9 @@ static void ConvertToType(oT *obuf, const iT* ibuf, size_t n)
 //    Gunther H. Weber, Thu Nov  8 10:20:32 PST 2012
 //    Use size_t instead of int
 //
+//    Brad Whitlock, Thu Jul 23 16:01:46 PDT 2015
+//    Support for non-standard memory layout. Use vtkTemplateMacro.
+//
 // ****************************************************************************
 
 static vtkDataArray * 
@@ -309,9 +312,6 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
         newArr->SetNumberOfComponents(numComponents);
         newArr->SetNumberOfTuples(numTuples);
 
-        float *newBuf = (float*) newArr->GetVoidPointer(0);
-        void *oldBuf = oldArr->GetVoidPointer(0);
-
         debug1 << "avtTransformManager: Converting vktDataArray, ";
         if (oldArr->GetName() != NULL) 
         {
@@ -322,52 +322,22 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
                << DataArrayTypeName(oldArr) << "\" to \"float\"" << endl;
 
         size_t numValues = numTuples * numComponents;
-        switch (oldArr->GetDataType())
+        if(oldArr->HasStandardMemoryLayout())
         {
-            case VTK_CHAR:
-                ConvertToType(newBuf, (char*) oldBuf, numValues);
-                break;
-            case VTK_UNSIGNED_CHAR:
-                ConvertToType(newBuf, (unsigned char*) oldBuf, numValues);
-                break;
-            case VTK_SHORT:
-                ConvertToType(newBuf, (short*) oldBuf, numValues);
-                break;
-            case VTK_UNSIGNED_SHORT:
-                ConvertToType(newBuf, (unsigned short*) oldBuf, numValues);
-                break;
-            case VTK_INT:
-                ConvertToType(newBuf, (int*) oldBuf, numValues);
-                break;
-            case VTK_UNSIGNED_INT:
-                ConvertToType(newBuf, (unsigned int*) oldBuf, numValues);
-                break;
-            case VTK_LONG:
-                ConvertToType(newBuf, (long*) oldBuf, numValues);
-                break;
-            case VTK_LONG_LONG:
-                ConvertToType(newBuf, (long long*) oldBuf, numValues);
-                break;
-            case VTK_UNSIGNED_LONG:
-                ConvertToType(newBuf, (unsigned long*) oldBuf, numValues);
-                break;
-            case VTK_UNSIGNED_LONG_LONG:
-                ConvertToType(newBuf, (unsigned long long*) oldBuf, numValues);
-                break;
-            case VTK_DOUBLE:
-                ConvertToType(newBuf, (double*) oldBuf, numValues);
-                break;
-            case VTK_ID_TYPE:
-                ConvertToType(newBuf, (vtkIdType*) oldBuf, numValues);
-                break;
-            default:
-                {
-                   char msg[256];
-                    SNPRINTF(msg, sizeof(msg),
-                        "Cannot convert from type \"%s\" to float",
-                        DataArrayTypeName(oldArr));
-                    EXCEPTION1(ImproperUseException, msg);
-                }
+            float *newBuf = (float*) newArr->GetVoidPointer(0);
+            void *oldBuf = oldArr->GetVoidPointer(0);
+            switch (oldArr->GetDataType())
+            {
+            vtkTemplateMacro(
+                ConvertToType(newBuf, (VTK_TT *) oldBuf, numValues);
+            );
+            }
+        }
+        else
+        {
+            vtkIdType nTuples = oldArr->GetNumberOfTuples();
+            for (vtkIdType i = 0; i < nTuples; i++)
+                newArr->SetTuple(i, oldArr->GetTuple(i));
         }
     }
 

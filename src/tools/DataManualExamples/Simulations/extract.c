@@ -28,6 +28,38 @@ static int export_visit(const char *filebase, const char **extractvars)
     return retval;
 }
 
+int extract_slice_origin_normal(const char *filebase,
+                                const double *origin,
+                                const double *normal,
+                                const char **extractvars)
+{
+    int retval = -1;
+    if(filebase == NULL || origin == NULL || normal == NULL || extractvars == NULL)
+        return retval;
+
+    if(VisItAddPlot("Pseudocolor", extractvars[0]) == VISIT_OKAY)
+    {
+        if(VisItAddOperator("Slice", 0) == VISIT_OKAY)
+        {
+            VisItSetOperatorOptionsI("axisType", 3); /* arbitrary */
+            VisItSetOperatorOptionsI("originType", 0); /* point intercept */
+            VisItSetOperatorOptionsDv("originPoint", origin, 3);
+            VisItSetOperatorOptionsDv("normal", normal, 3);
+            VisItSetOperatorOptionsB("project2d", 0);
+
+
+            if(VisItDrawPlots() == VISIT_OKAY)
+            {
+                retval = export_visit(filebase, extractvars);
+            }
+        }
+
+        VisItDeleteActivePlots();
+    }
+
+    return retval;
+}
+
 int extract_slice_3v(const char *filebase, 
                      const double *v0, const double *v1, const double *v2,
                      const char **extractvars)
@@ -67,37 +99,6 @@ int extract_slice_3v(const char *filebase,
     return extract_slice_origin_normal(filebase, origin, normal, extractvars);
 }
 
-int extract_slice_origin_normal(const char *filebase,
-                                const double *origin,
-                                const double *normal,
-                                const char **extractvars)
-{
-    int retval = -1;
-    if(filebase == NULL || origin == NULL || normal == NULL || extractvars == NULL)
-        return retval;
-
-    if(VisItAddPlot("Pseudocolor", extractvars[0]) == VISIT_OKAY)
-    {
-        if(VisItAddOperator("Slice", 0) == VISIT_OKAY)
-        {
-            VisItSetOperatorOptionsI("originType", 0); // point intercept
-            VisItSetOperatorOptionsDv("originPoint", origin, 3);
-            VisItSetOperatorOptionsDv("normal", normal, 3);
-            VisItSetOperatorOptionsB("project2d", 0);
-
-
-            if(VisItDrawPlots() == VISIT_OKAY)
-            {
-                retval = export_visit(filebase, extractvars);
-            }
-        }
-
-        VisItDeleteActivePlots();
-    }
-
-    return retval;
-}
-
 int extract_slice(const char *filebase, int axis, double intercept, 
     const char **extractvars)
 {
@@ -109,9 +110,9 @@ int extract_slice(const char *filebase, int axis, double intercept,
     {
         if(VisItAddOperator("Slice", 0) == VISIT_OKAY)
         {
-            VisItSetOperatorOptionsI("originType", 1); // intercept
-            VisItSetOperatorOptionsD("originIntercept", intercept);
             VisItSetOperatorOptionsI("axisType", axis);
+            VisItSetOperatorOptionsI("originType", 1); /* intercept */
+            VisItSetOperatorOptionsD("originIntercept", intercept);
             VisItSetOperatorOptionsB("project2d", 0);
 
             if(VisItDrawPlots() == VISIT_OKAY)
@@ -136,7 +137,7 @@ int extract_iso(const char *filebase, const char *isovar,
 
     if(VisItAddPlot("Contour", isovar) == VISIT_OKAY)
     {
-        VisItSetPlotOptionsI("contourMethod", 1); // value
+        VisItSetPlotOptionsI("contourMethod", 1); /* value */
         VisItSetPlotOptionsDv("contourValue", isovalues, nisovalues);
         if(VisItDrawPlots() == VISIT_OKAY)
         {

@@ -145,6 +145,18 @@ simv2_SpeciesData_addSpeciesName(visit_handle h, visit_handle val)
 int
 simv2_SpeciesData_setSpecies(visit_handle h, visit_handle val)
 {
+    // How many arrays make up the variable.
+    int nArr = 1;
+    if(simv2_VariableData_getNumArrays(val, &nArr) == VISIT_ERROR)
+    {
+        return VISIT_ERROR;
+    }
+    if(nArr != 1)
+    {
+        VisItError("species must have 1 component.");
+        return VISIT_ERROR;
+    }
+
     int owner, dataType, nComps, nTuples;
     void *data = NULL;
     if(simv2_VariableData_getData(val, owner, dataType, nComps, nTuples, data) ==
@@ -171,6 +183,18 @@ simv2_SpeciesData_setSpecies(visit_handle h, visit_handle val)
 int
 simv2_SpeciesData_setSpeciesMF(visit_handle h, visit_handle val)
 {
+    // How many arrays make up the variable.
+    int nArr = 1;
+    if(simv2_VariableData_getNumArrays(val, &nArr) == VISIT_ERROR)
+    {
+        return VISIT_ERROR;
+    }
+    if(nArr != 1)
+    {
+        VisItError("speciesMF must have 1 component.");
+        return VISIT_ERROR;
+    }
+
     int owner, dataType, nComps, nTuples;
     void *data = NULL;
     if(simv2_VariableData_getData(val, owner, dataType, nComps, nTuples, data) ==
@@ -198,6 +222,18 @@ simv2_SpeciesData_setSpeciesMF(visit_handle h, visit_handle val)
 int
 simv2_SpeciesData_setMixedSpecies(visit_handle h, visit_handle val)
 {
+    // How many arrays make up the variable.
+    int nArr = 1;
+    if(simv2_VariableData_getNumArrays(val, &nArr) == VISIT_ERROR)
+    {
+        return VISIT_ERROR;
+    }
+    if(nArr != 1)
+    {
+        VisItError("mixedSpecies must have 1 component.");
+        return VISIT_ERROR;
+    }
+
     int owner, dataType, nComps, nTuples;
     void *data = NULL;
     if(simv2_VariableData_getData(val, owner, dataType, nComps, nTuples, data) ==

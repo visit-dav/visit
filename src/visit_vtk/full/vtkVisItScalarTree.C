@@ -82,6 +82,9 @@ vtkVisItScalarTree::Initialize()
 //   Brad Whitlock, Tue Mar 13 13:55:36 PDT 2012
 //   Added double implementation. Changed int to vtkIdType.
 //
+//   Brad Whitlock, Thu Jul 23 16:01:46 PDT 2015
+//   Support for non-standard memory layout.
+//
 // ***************************************************************************
 
 void
@@ -110,9 +113,6 @@ vtkVisItScalarTree::BuildTree()
         return;
     
     vtkDataArray *scalars = this->DataSet->GetPointData()->GetScalars();
-    float *fscalars = (float *)scalars->GetVoidPointer(0);
-    double *dscalars = (double *)scalars->GetVoidPointer(0);
-    int stype = scalars->GetDataType();
 
     //
     // Information for speeding up rectilinear and structured grids.
@@ -191,6 +191,15 @@ vtkVisItScalarTree::BuildTree()
         leaf.max = VTK_FLOAT_MIN;
     }
 
+    int accessMethod = 0;
+    if(scalars->HasStandardMemoryLayout())
+    {
+        if(scalars->GetDataType() == VTK_FLOAT)
+            accessMethod = 1;
+        else if(scalars->GetDataType() == VTK_DOUBLE)
+            accessMethod = 2;
+    }
+
     // Now find the min/max for each bucket.
     for (vtkIdType cellId = 0 ; cellId < this->nCells ; cellId++)
     {
@@ -239,8 +248,9 @@ vtkVisItScalarTree::BuildTree()
         }
             
         ScalarRange &leaf = this->tree[this->leafOffset + (cellId / this->bucketSize)];
-        if(stype == VTK_FLOAT)
+        if(accessMethod == 1)
         {
+            const float *fscalars = static_cast<const float *>(scalars->GetVoidPointer(0));
             for (vtkIdType p = 0; p < npts; ++p)
             {
                 double val = fscalars[pts[p]];
@@ -250,8 +260,9 @@ vtkVisItScalarTree::BuildTree()
                     leaf.max = val;
             }
         }
-        else if(stype == VTK_DOUBLE)
+        else if(accessMethod == 2)
         {
+            const double *dscalars = static_cast<const double *>(scalars->GetVoidPointer(0));
             for (vtkIdType p = 0; p < npts; ++p)
             {
                 double val = dscalars[pts[p]];

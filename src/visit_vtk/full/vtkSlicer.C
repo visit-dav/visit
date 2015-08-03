@@ -207,13 +207,13 @@ public:
     {
         vtkIdType ptId = (cellI + iOffset) + (cellJ + jOffset) * ptstrideY +
                          (cellK + kOffset) * ptstrideZ;
-        double *pt = pts->GetPoint(ptId);
+        const double *pt = pts->GetPoint(ptId);
         return pt[0]*Normal[0] + pt[1]*Normal[1] + pt[2]*Normal[2] - D;
     }
 
     inline double operator()(vtkIdType ptId) const
     {
-        double *pt = pts->GetPoint(ptId);
+        const double *pt = pts->GetPoint(ptId);
         return pt[0]*Normal[0] + pt[1]*Normal[1] + pt[2]*Normal[2] - D;
     }
 private:
@@ -241,6 +241,9 @@ private:
 //    Eric Brugger, Thu Jan 10 10:24:20 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
+//    Brad Whitlock, Thu Jul 23 16:01:46 PDT 2015
+//    Support for non-standard memory layout.
+//
 // ****************************************************************************
 
 void
@@ -266,14 +269,23 @@ vtkSlicer::StructuredGridExecute(void)
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
-    if(inPts->GetDataType() == VTK_FLOAT)
+    int accessMethod = 0;
+    if(inPts->GetData()->HasStandardMemoryLayout())
+    {
+        if(inPts->GetDataType() == VTK_FLOAT)
+            accessMethod = 1;
+        else if(inPts->GetDataType() == VTK_DOUBLE)
+            accessMethod = 2;
+    }
+
+    if(accessMethod == 1)
     {
         vtkStructuredCreateTriangles<float, SliceFunction<float> >(
             sfv, this->CellList, this->CellListSize, nCells,
             pt_dims, SliceFunction<float>(pt_dims, inPts, this->Origin, this->Normal)
         );
     }
-    else if(inPts->GetDataType() == VTK_DOUBLE)
+    else if(accessMethod == 2)
     {
         vtkStructuredCreateTriangles<double, SliceFunction<double> >(
             sfv, this->CellList, this->CellListSize, nCells,
@@ -412,6 +424,9 @@ private:
 //    Eric Brugger, Thu Jan 10 10:24:20 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
+//    Brad Whitlock, Thu Jul 23 16:01:46 PDT 2015
+//    Support for non-standard memory layout.
+//
 // ****************************************************************************
 
 void
@@ -439,7 +454,12 @@ vtkSlicer::RectilinearGridExecute(void)
     int tx = rg->GetXCoordinates()->GetDataType();
     int ty = rg->GetYCoordinates()->GetDataType();
     int tz = rg->GetZCoordinates()->GetDataType();
-    bool same = tx == ty && ty == tz;
+    bool smlx = rg->GetXCoordinates()->HasStandardMemoryLayout();
+    bool smly = rg->GetYCoordinates()->HasStandardMemoryLayout();
+    bool smlz = rg->GetZCoordinates()->HasStandardMemoryLayout();
+    bool sameTypes = tx == ty && ty == tz;
+    bool sameML = smlx == smly && smly == smlz;
+    bool same = sameTypes && sameML;
 
     if(same && tx == VTK_FLOAT)
     {
