@@ -79,6 +79,11 @@
 #endif
 #include <snprintf.h>
 
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#endif
+
 using std::string;
 using std::vector;
 using StringHelpers::Plural;
@@ -1191,13 +1196,26 @@ avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
 //    Brad Whitlock, Mon Sep  8 14:25:23 PDT 2014
 //    Moved code to FileFunctions.
 //
+//    Burlen Loring, Thu Jul 30 11:18:12 PDT 2015
+//    For parallel runs let one proc check perms and share
+//    the result to avoid mds scalability issues on lustre
+//
 // ****************************************************************************
 
 static void
 CheckPermissions(const char *filename)
 {
-    FileFunctions::PermissionsResult result = 
-        FileFunctions::CheckPermissions(filename);
+    int rank = 0;
+#ifdef PARALLEL
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+#endif
+    int result = FileFunctions::PERMISSION_RESULT_READABLE;
+    if (rank == 0)
+        result = FileFunctions::CheckPermissions(filename);
+#ifdef PARALLEL
+    MPI_Bcast(&result, 1, MPI_INT, 0, VISIT_MPI_COMM);
+#endif
+
     if (result == FileFunctions::PERMISSION_RESULT_NOFILE)
     {
         EXCEPTION1(FileDoesNotExistException, filename);
@@ -1207,4 +1225,3 @@ CheckPermissions(const char *filename)
         EXCEPTION1(BadPermissionException, filename);
     }
 }
-
