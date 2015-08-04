@@ -40,8 +40,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.10</font></b></p>
 <ul>
-  <li>Libsim's VisIt_VariableData object was extended so you can optionally supply it with multiple data arrays, each representing a separate component of data. This enhancement permits VisIt to accept non-contiguous simulation data without transcribing that data to a contiguous representation. This is a particularly useful feature for array-of-structure data structures and will reduce Libsim's memory overhead.
-Data arrays using the new <i>setArrayData</i> functions can have one or more components, which have their own base address and associated offset and stride. All of the previous <i>setData</i> functions continue to work and remain the preferred method for passing contiguous data to Libsim. The flexibility offered by the new <i>setDataArray</i> functions allows simulation data to be used directly (zero-copy) in situations that would previously have required a copy of the data.<br>
+  <li>Libsim's VisIt_VariableData object was extended so you can optionally supply it with multiple data arrays, each representing a separate component of data. This enhancement permits VisIt to accept non-contiguous simulation data without first converting that data to a contiguous representation. This is a particularly useful feature for array-of-structure data structures and will reduce Libsim's memory overhead.
+Data arrays using the new <i>setArrayData</i> functions can have one or more components, which have their own base address and associated offset and stride. All of the previous <i>setData</i> functions continue to work and remain the preferred method for passing contiguous data to Libsim. The flexibility offered by the new <i>setArrayData</i> functions allows simulation data to be used directly (zero-copy) in situations that would previously have required a copy of the data.<br>
 <p><b>Structure of Arrays Example:</b><br>
 <font color="#6666dd"><code><pre>
 #define MAX_PART 100
