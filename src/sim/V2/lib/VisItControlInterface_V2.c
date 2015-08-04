@@ -510,7 +510,8 @@ static int ReadEnvironmentFromCommand(const char *visitpath, visit_string *outpu
 static void
 GetEnvironment(visit_string *env)
 {
-#if !defined(VISIT_BLUE_GENE_Q)
+/* We don't call this function on BG/Q or Win32. */
+#if !defined(VISIT_BLUE_GENE_Q) && !defined(_WIN32)
     int done = 0;
 
     visit_string_empty(env);
