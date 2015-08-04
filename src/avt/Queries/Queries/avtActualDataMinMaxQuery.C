@@ -54,16 +54,16 @@
 //  Purpose:
 //      Construct an avtActualDataMinMaxQuery object.
 //
-//  Programmer:   Kathleen Bonnell 
+//  Programmer:   Kathleen Bonnell
 //  Creation:     February 10, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004
 //    Add min/max arguments, passed to parent class.
 //
-//    Kathleen Bonnell, Wed Apr 14 18:00:49 PDT 2004 
+//    Kathleen Bonnell, Wed Apr 14 18:00:49 PDT 2004
 //    Tell condense filter to bypass its heuristic and force execution of
-//    relevant points filter. 
+//    relevant points filter.
 //
 // ****************************************************************************
 
@@ -82,8 +82,8 @@ avtActualDataMinMaxQuery::avtActualDataMinMaxQuery(bool min, bool max)
 //  Purpose:
 //      Destruct an avtActualDataMinMaxQuery object.
 //
-//  Programmer:   Kathleen Bonnell 
-//  Creation:     February 10, 2040 
+//  Programmer:   Kathleen Bonnell
+//  Creation:     February 10, 2040
 //
 //  Modifications:
 //
@@ -103,10 +103,10 @@ avtActualDataMinMaxQuery::~avtActualDataMinMaxQuery()
 //  Method: avtActualDataMinMaxQuery::ApplyFilters
 //
 //  Purpose:
-//    Applies the condense filter to input and returns the filter's output. 
+//    Applies the condense filter to input and returns the filter's output.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   February 10, 2004 
+//  Creation:   February 10, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004
@@ -116,10 +116,10 @@ avtActualDataMinMaxQuery::~avtActualDataMinMaxQuery()
 //    Minimize work done by creating new SIL.
 //
 //    Kathleen Bonnell, Tue May  4 14:25:07 PDT 2004
-//    Set SILRestriction via member restriction, instead of SILUseSet. 
+//    Set SILRestriction via member restriction, instead of SILUseSet.
 //
-//    Kathleen Bonnell, Thu May  6 17:36:43 PDT 2004 
-//    Request OriginalCellsArray if zones have not been preserved. 
+//    Kathleen Bonnell, Thu May  6 17:36:43 PDT 2004
+//    Request OriginalCellsArray if zones have not been preserved.
 //
 //    Kathleen Biagas, Fri Feb 10 11:30:54 PST 2012
 //    ZonesPreserved may not be the same on all processor, so make sure if
@@ -138,7 +138,7 @@ avtActualDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
 
     if (!timeVarying && zonesPreserved)
     {
-        avtContract_p contract = 
+        avtContract_p contract =
             inData->GetOriginatingSource()->GetGeneralContract();
 
         avtDataset_p ds;
@@ -150,19 +150,19 @@ avtActualDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
         retObj->Update(contract);
         return retObj;
     }
-    else 
+    else
     {
         avtDataRequest_p oldSpec = inData->GetOriginatingSource()->
             GetGeneralContract()->GetDataRequest();
 
-        avtDataRequest_p newDS = new 
+        avtDataRequest_p newDS = new
             avtDataRequest(oldSpec, querySILR);
         newDS->SetTimestep(queryAtts.GetTimeStep());
 
         if (!zonesPreserved)
             newDS->TurnZoneNumbersOn();
 
-        avtContract_p contract = 
+        avtContract_p contract =
             new avtContract(newDS, queryAtts.GetPipeIndex());
 
         avtDataObject_p temp;

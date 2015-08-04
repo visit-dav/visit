@@ -46,6 +46,7 @@
 #include <snprintf.h>
 #include <string>
 #include <vector>
+#include <sstream>
 #include <float.h>
 
 #include <vtkCell.h>
@@ -72,7 +73,7 @@
 
 using std::vector;
 using std::string;
-
+using std::ostringstream;
 
 // ****************************************************************************
 //  Method: avtMinMaxQuery::avtMinMaxQuery
@@ -80,14 +81,14 @@ using std::string;
 //  Purpose:
 //      Construct an avtMinMaxQuery object.
 //
-//  Programmer:   Kathleen Bonnell 
+//  Programmer:   Kathleen Bonnell
 //  Creation:     October 27, 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004
 //    Added args, which control whether we do the Min or Max (or both).
 //
-//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004 
+//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004
 //    Init minInfo1/2, maxInfo1/2, nodeMsg1/2 and zoneMsg1/2.
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
@@ -96,25 +97,23 @@ using std::string;
 //    Kathleen Biagas, Mon Apr 21 14:39:15 PDT 2014
 //    Use DBL_Max for limits.
 //
+//    Burlen Loring, Mon Aug  3 14:13:11 PDT 2015
+//    Initialize all class members. fixes use of unitialized value
+//    in conditional.
+//
 // ****************************************************************************
 
-avtMinMaxQuery::avtMinMaxQuery(bool domin, bool domax)
+avtMinMaxQuery::avtMinMaxQuery(bool domin, bool domax) :
+    dimension(3), topoDim(2), blockOrigin(0), cellOrigin(0), nodeOrigin(0),
+    singleDomain(true), scalarCurve(false), nodeCentered(false), minMsg("invalid"),
+    maxMsg("invalid"), elementName("zone"), minInfo1(), minInfo2(), maxInfo1(), maxInfo2(),
+    nodeMsg1("(over all nodes, even those not incident to a zone on the mesh)"),
+    nodeMsg2("(over only those nodes incident to a zone on the mesh)"),
+    zoneMsg1("(using only per-zone quantities)"),
+    zoneMsg2("(using per-material zonal quantities)"),
+    doMin(domin), doMax(domax), src(NULL), invTransform(NULL)
+
 {
-    dimension = 3;
-    topoDim = 2;
-    blockOrigin = 0;
-    cellOrigin = 0;
-    nodeOrigin = 0;
-    invTransform = NULL;
-    singleDomain = true;
-    doMin = domin;
-    doMax = domax;
-
-    nodeMsg1 = "(over all nodes, even those not incident to a zone on the mesh)";
-    nodeMsg2 = "(over only those nodes incident to a zone on the mesh)";
-    zoneMsg1 = "(using only per-zone quantities)";
-    zoneMsg2 = "(using per-material zonal quantities)";
-
     minInfo1.Initialize(DBL_MAX, "Min");
     minInfo2.Initialize(DBL_MAX, "Min");
     maxInfo1.Initialize(-DBL_MAX, "Max");
@@ -127,8 +126,8 @@ avtMinMaxQuery::avtMinMaxQuery(bool domin, bool domax)
 //  Purpose:
 //      Destruct an avtMinMaxQuery object.
 //
-//  Programmer:   Kathleen Bonnell 
-//  Creation:     October 27, 2003 
+//  Programmer:   Kathleen Bonnell
+//  Creation:     October 27, 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004
@@ -153,8 +152,8 @@ avtMinMaxQuery::~avtMinMaxQuery()
 //    Verify a new input.  Overrides base class in order to allow vectors
 //    (topo dim == 0) to be queried.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    November 19, 2003 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    November 19, 2003
 //
 // ****************************************************************************
 
@@ -172,13 +171,13 @@ avtMinMaxQuery::VerifyInput()
 //
 //  Purpose:
 //    This is called before any of the domains are executed.
-//    Retrieves the correct spatial dimension, and resets certain values. 
+//    Retrieves the correct spatial dimension, and resets certain values.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   October 27, 2003
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004 
+//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004
 //    Init minInfo1/2, maxInfo1/2.
 //
 //    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
@@ -206,7 +205,7 @@ avtMinMaxQuery::PreExecute()
 
     minMsg = "No Information Found";
     maxMsg = "No Information Found";
-    elementName = "";
+    elementName = "zone";
 
     minInfo1.Initialize(DBL_MAX, "Min");
     minInfo2.Initialize(DBL_MAX, "Min");
@@ -226,7 +225,7 @@ avtMinMaxQuery::PreExecute()
 //    ds          The input dataset.
 //    dom         The domain number.
 //
-//  Programmer:   Kathleen Bonnell 
+//  Programmer:   Kathleen Bonnell
 //  Creation:     October 27, 2003
 //
 //  Modifications:
@@ -234,62 +233,65 @@ avtMinMaxQuery::PreExecute()
 //    Test for ghost zones. Changed min/max val check to <= or >= so that
 //    serial and parallel versions will always return the same results.
 //
-//    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004 
-//    Only check min/or max if they are set to be done. 
+//    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004
+//    Only check min/or max if they are set to be done.
 //
-//    Kathleen Bonnell, Thu May  6 17:36:43 PDT 2004 
+//    Kathleen Bonnell, Thu May  6 17:36:43 PDT 2004
 //    If working with OriginalData, or zones have been preserved, use the
 //    zone number found here, rather than querying the database for it.
 //
-//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004 
+//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004
 //    Reworked to store results in MinMaxInfo members.  Added ability
-//    to return multiple min/max results:  
+//    to return multiple min/max results:
 //        nodal:  connected geometry only, entire mesh
 //        zonal:  per-zone quantities, per-material zonal quantities.
-//    
-//    Kathleen Bonnell, Tue Jul 27 09:53:01 PDT 2004 
-//    Store the value per material, even if not mixed. 
 //
-//    Kathleen Bonnell, Thu Aug 26 10:22:00 PDT 2004 
-//    Changed min/max val check to <= or >= so that serial and parallel 
-//    versions will always return the same results. 
+//    Kathleen Bonnell, Tue Jul 27 09:53:01 PDT 2004
+//    Store the value per material, even if not mixed.
+//
+//    Kathleen Bonnell, Thu Aug 26 10:22:00 PDT 2004
+//    Changed min/max val check to <= or >= so that serial and parallel
+//    versions will always return the same results.
 //    (ThisProcessorHasMinimum/MaximumValue has changed).
 //
 //    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
 //    Rename ghost data array.
 //
-//    Kathleen Bonnell, Fri Jan  7 15:15:32 PST 2005 
-//    Fix memory leak -- delete cellIds. 
+//    Kathleen Bonnell, Fri Jan  7 15:15:32 PST 2005
+//    Fix memory leak -- delete cellIds.
 //
 //    Hank Childs, Thu Mar 10 11:53:28 PST 2005
 //    Fix memory leak.
 //
-//    Kathleen Bonnell, Wed Apr 27 08:29:52 PDT 2005 
-//    Modified ghost tests to account for ghost nodes. 
+//    Kathleen Bonnell, Wed Apr 27 08:29:52 PDT 2005
+//    Modified ghost tests to account for ghost nodes.
 //
 //    Hank Childs, Tue Aug 30 15:24:00 PDT 2005
 //    Fix memory leak.
 //
-//    Kathleen Bonnell, Mon Jul 31 08:19:38 PDT 2006 
-//    Curves now respresented as 1D RectilinearGrids. 
+//    Kathleen Bonnell, Mon Jul 31 08:19:38 PDT 2006
+//    Curves now respresented as 1D RectilinearGrids.
 //
 //    Cyrus Harrison, Wed Jan 30 14:07:03 PST 2008
 //    Added variable name to GetMixedVar call.
 //
 // ****************************************************************************
 
-void 
+void
 avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 {
     if (ds == NULL)
     {
+        debug2 << "No data to query on rank " << PAR_Rank() << endl;
         return;
     }
 
-    vtkUnsignedCharArray *ghostZones = 
+    vtkUnsignedCharArray *ghostZones =
            (vtkUnsignedCharArray*)ds->GetCellData()->GetArray("avtGhostZones");
-    vtkUnsignedCharArray *ghostNodes = 
+
+    vtkUnsignedCharArray *ghostNodes =
            (vtkUnsignedCharArray*)ds->GetPointData()->GetArray("avtGhostNodes");
+
     vtkDataArray *data = NULL;
     string var = queryAtts.GetVariables()[0];
     int varType = queryAtts.GetVarTypes()[0];
@@ -312,7 +314,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         nodeCentered = false;
         elementName = "zone";
     }
-    else if (varType == QueryAttributes::Curve) 
+    else if (varType == QueryAttributes::Curve)
     {
         data = ds->GetPointData()->GetScalars();
         nodeCentered = true;
@@ -328,11 +330,14 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         elementName = "node";
         scalarCurve = true;
     }
-    else 
+    else
     {
-        debug5 << "avtMinMaxQuery could not find a vtkDataArray"
+        ostringstream oss;
+        oss << "avtMinMaxQuery could not find a vtkDataArray"
                << " associated with var " << var.c_str() << endl;
-        return;    
+        SetResultMessage(oss.str());
+        debug1 << oss.str();
+        return;
     }
 
     double val;
@@ -346,11 +351,11 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     {
         avtMetaData *md = GetInput()->GetOriginatingSource()->GetMetaData();
         mv = md->GetMixedVar(var.c_str(),domain, ts);
-        
+
         if (mv != NULL)
         {
             mat = md->GetMaterial(domain, ts);
-        } 
+        }
     }
 
     stringVector matNames;
@@ -365,17 +370,17 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
             case QueryAttributes::Vector :
                 data->GetTuple(elNum, x);
                 val = sqrt(x[0]*x[0]+x[1]*x[1]+x[2]*x[2]);
-                break; 
+                break;
             case QueryAttributes::Tensor :
             case QueryAttributes::Symmetric_Tensor :
                 data->GetTuple(elNum, x9);
                 val = MajorEigenvalue(x9);
-                break; 
+                break;
             case QueryAttributes::Scalar :
             case QueryAttributes::Curve :
             default:
                 val = data->GetComponent(elNum, 0);
-                break; 
+                break;
         }
         bool ghost = false;
         if (nodeCentered)
@@ -386,18 +391,18 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 {
                     ghost = (ghostNodes->GetValue(elNum) > 0);
                 }
-                else 
+                else
                 {
                     ds->GetPointCells(elNum, ids);
-                    int numGhostCells = 0; 
+                    int numGhostCells = 0;
                     for (int i = 0; i < ids->GetNumberOfIds(); i++)
-                        numGhostCells += 
+                        numGhostCells +=
                           ghostZones->GetValue(ids->GetId(i)) > 0 ?  1 : 0;
                     ghost = numGhostCells == ids->GetNumberOfIds();
                 }
             }
- 
-            if (doMin && !ghost) 
+
+            if (doMin && !ghost)
             {
                 if (val < minInfo1.GetValue())
                 {
@@ -407,7 +412,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                     minInfo1.SetDomain(domain);
                 }
                 ds->GetPointCells(elNum, cellIds);
-                if (cellIds->GetNumberOfIds() > 0  && 
+                if (cellIds->GetNumberOfIds() > 0  &&
                     val < minInfo2.GetValue())
                 {
                     haveMin2 = true;
@@ -417,7 +422,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 }
                 cellIds->Reset();
             }
-            if (doMax && !ghost) 
+            if (doMax && !ghost)
             {
                 if (val > maxInfo1.GetValue())
                 {
@@ -427,7 +432,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                     maxInfo1.SetDomain(domain);
                 }
                 ds->GetPointCells(elNum, cellIds);
-                if (cellIds->GetNumberOfIds() > 0  && 
+                if (cellIds->GetNumberOfIds() > 0  &&
                     val > maxInfo2.GetValue())
                 {
                     haveMax2 = true;
@@ -446,17 +451,17 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 {
                     ghost = (ghostZones->GetValue(elNum) > 0);
                 }
-                else 
+                else
                 {
                     ds->GetCellPoints(elNum, ids);
-                    int numGhostNodes = 0; 
+                    int numGhostNodes = 0;
                     for (int i = 0; i < ids->GetNumberOfIds(); i++)
-                        numGhostNodes += 
+                        numGhostNodes +=
                           ghostNodes->GetValue(ids->GetId(i)) > 0 ?  1 : 0;
                     ghost = numGhostNodes > 0;
                 }
             }
- 
+
             if (!ghost && mat != NULL && elNum >= 0 && elNum < mat->GetNZones())
             {
                 matInfo = mat->ExtractCellMatInfo(elNum);
@@ -467,7 +472,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                     {
                         matValues.push_back(mv->GetBuffer()[matInfo[i].mix_index]);
                     }
-                    else 
+                    else
                     {
                         matValues.push_back(val);
                     }
@@ -498,7 +503,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
             }
             if (doMax && !ghost)
             {
-                if (val > maxInfo1.GetValue()) 
+                if (val > maxInfo1.GetValue())
                 {
                     haveMax1 = true;
                     maxInfo1.SetElementNum(elNum);
@@ -521,7 +526,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 matNames.clear();
             if (!matValues.empty())
                 matValues.clear();
-        } 
+        }
     }
     cellIds->Delete();
     ids->Delete();
@@ -529,21 +534,21 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     if (nodeCentered)
     {
         if (haveMin1)
-            FinalizeNodeCoord(ds, minInfo1); 
-   
+            FinalizeNodeCoord(ds, minInfo1);
+
         if (haveMin2)
-            FinalizeNodeCoord(ds, minInfo2); 
+            FinalizeNodeCoord(ds, minInfo2);
 
         if (haveMax1)
-            FinalizeNodeCoord(ds, maxInfo1); 
-   
+            FinalizeNodeCoord(ds, maxInfo1);
+
         if (haveMax2)
-            FinalizeNodeCoord(ds, maxInfo2); 
+            FinalizeNodeCoord(ds, maxInfo2);
     }
     else // zoneCentered
     {
-        vtkDataArray *origCells = 
-                     ds->GetCellData()->GetArray("avtOriginalCellNumbers"); 
+        vtkDataArray *origCells =
+                     ds->GetCellData()->GetArray("avtOriginalCellNumbers");
 
         if (haveMin1)
             FinalizeZoneCoord(ds, origCells, minInfo1, zonesPreserved);
@@ -564,12 +569,12 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 //  Method: avtMinMaxQuery::PostExecute
 //
 //  Purpose:
-//      The "PostExecute" method.  This calls a specialized PostExecute for 
+//      The "PostExecute" method.  This calls a specialized PostExecute for
 //      the time-varying and non-time-varying cases.
 //
 //  Programmer: Hank Childs
 //  Creation:   December 26, 2010
-// 
+//
 // ****************************************************************************
 
 void
@@ -594,7 +599,7 @@ avtMinMaxQuery::PostExecute(void)
 //
 //  Programmer: Hank Childs
 //  Creation:   December 26, 2010
-// 
+//
 //  Modifications:
 //    Brad Whitlock, Thu Mar 24 11:01:59 PDT 2011
 //    I changed the logic so resVals will use values that have been set.
@@ -635,7 +640,7 @@ avtMinMaxQuery::TimeVaryingPostExecute(void)
 //    gathered the info, to processor 0.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   October 27, 2003 
+//  Creation:   October 27, 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Dec 19 13:48:53 PST 2003
@@ -645,13 +650,13 @@ avtMinMaxQuery::TimeVaryingPostExecute(void)
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
-//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004 
+//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004
 //    Removed MPI calls, use methods from avtParallel instead.  Reworked as
-//    result values now stored in MinMaxInfo objects. 
+//    result values now stored in MinMaxInfo objects.
 //
-//    Cyrus Harrison, 
+//    Cyrus Harrison,
 //    Added use of MapNode to create structured XML query output.
-// 
+//
 //    Hank Childs, Sun Dec 26 12:13:19 PST 2010
 //    Renamed method to StandardPostExecute.
 //
@@ -664,15 +669,18 @@ avtMinMaxQuery::TimeVaryingPostExecute(void)
 //    Kathleen Biagas, Mon Apr 21 14:39:15 PDT 2014
 //    Use DBL_Max for limits.
 //
+//    Burlen Loring, Mon Aug  3 14:38:11 PDT 2015
+//    FindElement seach for node/zone id fails when an operator that changes
+//    the mesh(ie databinning) is used in the pipeline. However, min/max is
+//    computed correctly. test min/max values rather zone/node id when creating
+//    the query output allows min/max to be reported.
+//
 // ****************************************************************************
 
-void 
-avtMinMaxQuery::StandardPostExecute(void)
+void
+avtMinMaxQuery::StandardPostExecute()
 {
-    int hasMin1 = 0, hasMax1 = 0; 
-    int hasMin2 = 0, hasMax2 = 0; 
-
-    hasMin1 = (ThisProcessorHasMinimumValue(minInfo1.GetValue()) && 
+    bool hasMin1 = (ThisProcessorHasMinimumValue(minInfo1.GetValue()) &&
                minInfo1.GetValue() != DBL_MAX);
     if (hasMin1)
     {
@@ -680,7 +688,7 @@ avtMinMaxQuery::StandardPostExecute(void)
         FindElement(minInfo1);
     }
 
-    hasMax1 = (ThisProcessorHasMaximumValue(maxInfo1.GetValue()) && 
+    bool hasMax1 = (ThisProcessorHasMaximumValue(maxInfo1.GetValue()) &&
                maxInfo1.GetValue() != -DBL_MAX);
     if (hasMax1)
     {
@@ -688,7 +696,7 @@ avtMinMaxQuery::StandardPostExecute(void)
         FindElement(maxInfo1);
     }
 
-    hasMin2 = (ThisProcessorHasMinimumValue(minInfo2.GetValue()) && 
+    bool hasMin2 = (ThisProcessorHasMinimumValue(minInfo2.GetValue()) &&
                minInfo2.GetValue() != DBL_MAX);
     if (hasMin2)
     {
@@ -696,7 +704,7 @@ avtMinMaxQuery::StandardPostExecute(void)
         FindElement(minInfo2);
     }
 
-    hasMax2 = (ThisProcessorHasMaximumValue(maxInfo2.GetValue()) && 
+    bool hasMax2 = (ThisProcessorHasMaximumValue(maxInfo2.GetValue()) &&
                maxInfo2.GetValue() != -DBL_MAX);
     if (hasMax2)
     {
@@ -708,19 +716,14 @@ avtMinMaxQuery::StandardPostExecute(void)
     GetAttToRootProc(minInfo2, hasMin2);
     GetAttToRootProc(maxInfo1, hasMax1);
     GetAttToRootProc(maxInfo2, hasMax2);
+
     if (PAR_Rank() == 0)
     {
-        int nMin = 0, nMax = 0;
-        if (minInfo1.GetElementNum() != -1)
-            nMin++;
-        if ((minInfo2.GetElementNum() != -1) && 
-            (!minInfo1.EquivalentForOutput(minInfo2)))
-            nMin++;
-        if (maxInfo1.GetElementNum() != -1)
-            nMax++;
-        if ((maxInfo2.GetElementNum() != -1) && 
-            (!maxInfo1.EquivalentForOutput(maxInfo2)))
-            nMax++;
+        int nMin = (minInfo1.GetValue() != DBL_MAX ? 1 : 0)
+                + (minInfo2.GetValue() != DBL_MAX ? 1 : 0);
+
+        int nMax = (maxInfo1.GetValue() != -DBL_MAX ? 1 : 0)
+                + (maxInfo2.GetValue() != -DBL_MAX ? 1 : 0);
 
         nMin = (nMin == 0 ? nMin : (nMax > nMin ? nMax : nMin));
         nMax = (nMax == 0 ? nMax : (nMin > nMax ? nMin : nMax));
@@ -759,17 +762,17 @@ avtMinMaxQuery::StandardPostExecute(void)
 //  Method: avtMinMaxQuery::Preparation
 //
 //  Purpose:
-//    Preforms preparation tasks common to all derived types. 
+//    Preforms preparation tasks common to all derived types.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   February 10, 2004 
+//  Creation:   February 10, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Jun  1 15:26:10 PDT 2004
 //    avtDataAttributes now carries two transforms, use the InvTransform.
 //
-//    Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
-//    Allocate storage for invTransform. 
+//    Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004
+//    Allocate storage for invTransform.
 //
 // ****************************************************************************
 
@@ -785,7 +788,7 @@ avtMinMaxQuery::Preparation(avtDataObject_p inData)
     dataRequest->GetSIL().GetDomainList(dlist);
     if (dlist.size() == 1 && dataRequest->UsesAllDomains())
         singleDomain = true;
-    else 
+    else
         singleDomain = false;
 
     avtDataAttributes &inAtts = inData->GetInfo().GetAttributes();
@@ -793,7 +796,7 @@ avtMinMaxQuery::Preparation(avtDataObject_p inData)
     {
         invTransform = new avtMatrix(*(inAtts.GetInvTransform()));
     }
-    else 
+    else
     {
         invTransform = NULL;
     }
@@ -804,7 +807,7 @@ avtMinMaxQuery::Preparation(avtDataObject_p inData)
 //  Method: avtMinMaxQuery::GetNodeCoord
 //
 //  Purpose:
-//    Retrieves the coordinate for the specified node id. 
+//    Retrieves the coordinate for the specified node id.
 //
 //  Arguments:
 //    ds        The dataset from which to retrieve the coordinate.
@@ -812,7 +815,7 @@ avtMinMaxQuery::Preparation(avtDataObject_p inData)
 //    coord     A place to store the node's coordinates.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   October 28, 2003 
+//  Creation:   October 28, 2003
 //
 //  Modifications:
 //
@@ -837,7 +840,7 @@ avtMinMaxQuery::GetNodeCoord(vtkDataSet *ds, const int id, double coord[3])
 //    coord     A place to store the cell's coordinates.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   October 28, 2003 
+//  Creation:   October 28, 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Oct 20 17:10:21 PDT 2004
@@ -856,10 +859,10 @@ avtMinMaxQuery::GetCellCoord(vtkDataSet *ds, const int id, double coord[3])
 //  Method: avtMinMaxQuery::CreateResultMessage
 //
 //  Purpose:
-//    Concatenates the Min and Max messages.  
+//    Concatenates the Min and Max messages.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   October 28, 2003 
+//  Creation:   October 28, 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004
@@ -877,14 +880,14 @@ avtMinMaxQuery::CreateResultMessage(const int n)
         {
             if (n > 1)
                 msg += minMsg + "\n\n" + maxMsg + "\n\n";
-            else 
+            else
                 msg += minMsg + "\n"   + maxMsg + "\n\n";
 
         }
-        else 
+        else
             msg += minMsg + "\n\n";
     }
-    else 
+    else
     {
         msg += maxMsg + "\n\n";
     }
@@ -900,12 +903,12 @@ avtMinMaxQuery::CreateResultMessage(const int n)
 //
 //  Arguments:
 //    info      The MinMaxInfo to use in creating the string.
-//   
-//  Returns 
+//
+//  Returns
 //    A string formatted for output to user.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 1, 2004 
+//  Creation:   July 1, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri May 13 13:45:58 PDT 2005
@@ -919,7 +922,7 @@ avtMinMaxQuery::CreateResultMessage(const int n)
 //
 // ****************************************************************************
 
-string 
+string
 avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
 {
     string res = "";
@@ -929,12 +932,12 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
         elNum += nodeOrigin;
     else
         elNum += cellOrigin;
-  
+
     char buf[256];
     string floatFormat = queryAtts.GetFloatFormat();
-    
+
     SNPRINTF(buf,256,floatFormat.c_str(),info.GetValue());
- 
+
     res += buf;
     res += " (" + elementName;
     SNPRINTF(buf,256," %d ",elNum);
@@ -946,25 +949,25 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
     if (!singleDomain)
     {
         string domainName;
-        src->GetDomainName(queryAtts.GetVariables()[0], queryAtts.GetTimeStep(), 
+        src->GetDomainName(queryAtts.GetVariables()[0], queryAtts.GetTimeStep(),
                            info.GetDomain(), domainName);
-     
+
         if (domainName.size() > 0)
-        { 
+        {
             res += "in " + domainName + " " ;
         }
-        else 
-        { 
+        else
+        {
             SNPRINTF(buf,256,"in domain %d ",info.GetDomain()+blockOrigin);
             res += buf;
         }
     }
 
-    res +="at coord <"; 
+    res +="at coord <";
     string format ="";
     const double *c = info.GetCoord();
     if (queryAtts.GetVarTypes()[0] == QueryAttributes::Curve || scalarCurve)
-    { 
+    {
         SNPRINTF(buf,256,floatFormat.c_str(),c[0]);
         res += buf;
     }
@@ -1000,7 +1003,7 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
 //    vals      A place to store the values.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 1, 2004 
+//  Creation:   July 1, 2004
 //
 //  Modifications:
 //
@@ -1009,12 +1012,12 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
 void
 avtMinMaxQuery::CreateMessage(const int nMsg, const MinMaxInfo &info1,
                               const MinMaxInfo &info2, string &msg,
-                              doubleVector &vals) 
+                              doubleVector &vals)
 {
-    if (nMsg == 0) 
+    if (nMsg == 0)
         return;
 
-    string var = queryAtts.GetVariables()[0]; 
+    string var = queryAtts.GetVariables()[0];
 
     if (nMsg == 1)
     {
@@ -1022,19 +1025,19 @@ avtMinMaxQuery::CreateMessage(const int nMsg, const MinMaxInfo &info1,
         msg += InfoToString(info1);
         vals.push_back(info1.GetValue());
     }
-    else 
+    else
     {
         if (nodeCentered)
         {
             msg =  var + " -- " + info1.GetType() + " " + nodeMsg1;
             msg +=  "\n           = ";
             msg += InfoToString(info1);
-            msg =  msg + "\n" + var + " -- " + info2.GetType() + " " + nodeMsg2; 
+            msg =  msg + "\n" + var + " -- " + info2.GetType() + " " + nodeMsg2;
             msg +=  "\n           = ";
             msg += InfoToString(info2);
             vals.push_back(info1.GetValue());
         }
-        else 
+        else
         {
             msg =  var + " -- " + info1.GetType() + " " + zoneMsg1;
             msg +=  "\n           = ";
@@ -1055,16 +1058,16 @@ avtMinMaxQuery::CreateMessage(const int nMsg, const MinMaxInfo &info1,
 //    Determines the node coordinate for the passed info.
 //
 //  Arguments:
-//    info      The info that needs to be updated. 
+//    info      The info that needs to be updated.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 1, 2004 
+//  Creation:   July 1, 2004
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-void  
+void
 avtMinMaxQuery::FinalizeNodeCoord(vtkDataSet *ds, MinMaxInfo &info)
 {
     double *c = info.GetCoord();
@@ -1076,35 +1079,35 @@ avtMinMaxQuery::FinalizeNodeCoord(vtkDataSet *ds, MinMaxInfo &info)
     //
     if (!scalarCurve && !OriginalData())
         info.SetElementNum(-1);
-} 
+}
 
 
 // ****************************************************************************
 //  Method: avtMinMaxQuery::FinalizeZoneCoord
 //
 //  Purpose:
-//    Determines the zone coordinate, and resets the element number if 
-//    appropriate. 
-// 
-//  Arguments: 
+//    Determines the zone coordinate, and resets the element number if
+//    appropriate.
+//
+//  Arguments:
 //    oCells    An array containinng original cell numbers (may be NULL)
-//    info      The info that needs to be updated. 
+//    info      The info that needs to be updated.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 1, 2004 
+//  Creation:   July 1, 2004
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 void
-avtMinMaxQuery::FinalizeZoneCoord(vtkDataSet *ds, vtkDataArray *oCells, 
+avtMinMaxQuery::FinalizeZoneCoord(vtkDataSet *ds, vtkDataArray *oCells,
                                MinMaxInfo &info, bool zonesPreserved)
 {
     int comp = -1;
 
     if (oCells)
-        comp  = oCells->GetNumberOfComponents() -1;
+        comp  = oCells->GetNumberOfComponents() - 1;
 
     int elNum = info.GetElementNum();
     double *c = info.GetCoord();
@@ -1114,17 +1117,17 @@ avtMinMaxQuery::FinalizeZoneCoord(vtkDataSet *ds, vtkDataArray *oCells,
     {
         elNum =(int)oCells->GetComponent(elNum, comp);
     }
-    else 
+    else
     {
         //
         // Indicate that the db needs to supply the correct
         // cell number.
         //
-        if (!scalarCurve && !OriginalData() && !zonesPreserved) 
+        if (!scalarCurve && !OriginalData() && !zonesPreserved)
             elNum = -1;
     }
     info.SetElementNum(elNum);
-} 
+}
 
 
 // ****************************************************************************
@@ -1135,7 +1138,7 @@ avtMinMaxQuery::FinalizeZoneCoord(vtkDataSet *ds, vtkDataArray *oCells,
 //    the coord of MinMaxInfo.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 1, 2004 
+//  Creation:   July 1, 2004
 //
 //  Modifications:
 //
@@ -1149,9 +1152,9 @@ avtMinMaxQuery::FindElement(MinMaxInfo &info)
     {
         string var = queryAtts.GetVariables()[0];
         int ts = queryAtts.GetTimeStep();
-        double *c = info.GetCoord(); 
-        src->FindElementForPoint(var.c_str(), ts, info.GetDomain(), 
-                                 elementName.c_str(), c, elNum); 
+        double *c = info.GetCoord();
+        src->FindElementForPoint(var.c_str(), ts, info.GetDomain(),
+                                 elementName.c_str(), c, elNum);
         info.SetElementNum(elNum);
         info.SetCoord(c);
     }
@@ -1162,7 +1165,7 @@ avtMinMaxQuery::FindElement(MinMaxInfo &info)
 //  Method: avtMinMaxQuery::GetDefaultInputParams
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   July 26, 2011 
+//  Creation:   July 26, 2011
 //
 //  Modifications:
 //
