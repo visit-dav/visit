@@ -58,11 +58,11 @@ class vtkDataSet;
 //  Purpose:
 //      This is a data object query whose input is a dataset.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   September 12, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //    Made queryAtts a protected member so that derived types may have access
 //    to the atts used to perform the query.  Added private Execute method
 //    that operates on a data tree.  Added private members totalNodes and
@@ -76,28 +76,28 @@ class vtkDataSet;
 //    them. This was necessary so I could create the avtTwoPassDatasetQuery.
 //
 //    Kathleen Bonnell,  Fri Jul 11 16:17:12 PDT 2003
-//    Added value and Set/Get methods. Renamed Set/GetMessage to 
+//    Added value and Set/Get methods. Renamed Set/GetMessage to
 //    Set/GetResultMessage
-//    
-//    Kathleen Bonnell,  Wed Nov 12 18:18:19 PST 2003 
+//
+//    Kathleen Bonnell,  Wed Nov 12 18:18:19 PST 2003
 //    Made resValue a doubleVector.  Add more Get/Set methods so that queries
-//    that only return 1 value don't need to be updated. 
+//    that only return 1 value don't need to be updated.
 //
 //    Hank Childs, Thu Feb  5 17:11:06 PST 2004
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
-//    Kathleen Bonnell, Thu Apr  1 19:02:38 PST 2004 
+//    Kathleen Bonnell, Thu Apr  1 19:02:38 PST 2004
 //    Added method PerformQueryInTime.
 //
-//    Kathleen Bonnell, Fri Apr  2 08:51:17 PST 2004 
+//    Kathleen Bonnell, Fri Apr  2 08:51:17 PST 2004
 //    Changed args to PerformQueryInTime.
 //
-//    Kathleen Bonnell, Thu Jun 24 07:45:47 PDT 2004 
+//    Kathleen Bonnell, Thu Jun 24 07:45:47 PDT 2004
 //    Added intVector and string arguments to PerformQueryInTime.
 //
-//    Kathleen Bonnell, Mon Jan  3 15:12:19 PST 2005 
-//    Removed PerformQueryInTime. 
+//    Kathleen Bonnell, Mon Jan  3 15:12:19 PST 2005
+//    Removed PerformQueryInTime.
 //
 //    Cyrus Harrison, Tue Dec 18 08:16:10 PST 2007
 //    Added GetXmlResult(), SetXmlResult() and xmlResult.
@@ -107,7 +107,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class QUERY_API avtDatasetQuery : public avtDataObjectQuery, 
+class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
                                      public avtDatasetSink
 {
   public:
@@ -117,20 +117,20 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
 
     virtual void             PerformQuery(QueryAttributes *);
     virtual std::string      GetResultMessage(void) { return resMsg; };
-    virtual void             SetResultMessage(const std::string &m) 
-                                 { resMsg = m; }; 
+    virtual void             SetResultMessage(const std::string &m)
+                                 { resMsg = m; };
 
-    virtual double           GetResultValue(const int i = 0); 
+    virtual double           GetResultValue(const int i = 0);
     virtual void             SetResultValue(const double &d, const int i = 0);
 
     virtual doubleVector     GetResultValues(void) { return resValue; };
     virtual void             SetResultValues(const doubleVector &d)
                                  { resValue = d; };
-    
+
     virtual std::string      GetXmlResult(void) { return xmlResult; };
-    virtual void             SetXmlResult(const std::string &xml) 
-                                 { xmlResult= xml; }; 
-                                 
+    virtual void             SetXmlResult(const std::string &xml)
+                                 { xmlResult= xml; };
+
   protected:
 
     virtual void             PreExecute(void);
@@ -140,7 +140,7 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
     virtual avtDataObject_p  ApplyFilters(avtDataObject_p);
 
     virtual void             GetSecondaryVars( std::vector<std::string> &outVars );
-    
+
     QueryAttributes          queryAtts;
 
     int                      totalNodes;
@@ -153,7 +153,4 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
     std::string              xmlResult;
 };
 
-
 #endif
-
-

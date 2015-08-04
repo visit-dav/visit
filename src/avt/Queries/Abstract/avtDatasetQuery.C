@@ -50,24 +50,22 @@
 #include <BadIndexException.h>
 #include <DebugStream.h>
 
-
-
 // ****************************************************************************
 //  Method: avtDatasetQuery constructor
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 12, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 12, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //    Initialize new members currentNode, totalNodes.
 //
-//    Kathleen Bonnell, Fri Jul 11 16:19:32 PDT 2003 
-//    Initialize value. 
+//    Kathleen Bonnell, Fri Jul 11 16:19:32 PDT 2003
+//    Initialize value.
 //
 // ****************************************************************************
 
-avtDatasetQuery::avtDatasetQuery() : avtDatasetSink() 
+avtDatasetQuery::avtDatasetQuery() : avtDatasetSink()
 {
     currentNode = 0;
     totalNodes = 0;
@@ -98,30 +96,30 @@ avtDatasetQuery::~avtDatasetQuery()
 //  Method: avtDatasetQuery::PerformQuery
 //
 //  Purpose:
-//    Perform  the requested query. 
+//    Perform  the requested query.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 12, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 12, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //    Use recursive Execute on the input data tree.  Initialize queryAtts
 //    member from argument.  Move creation of artificial pipeline to
 //    the derived types that actually need one.
-//  
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
-//    Set queryAtts results value. 
-//    
+//
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
+//    Set queryAtts results value.
+//
 //    Hank Childs, Mon Feb 28 15:40:45 PST 2005
 //    Do not assume the tree is valid.  It is not with DLB.
 //
 //    Kathleen Bonnell, Tue Mar  1 11:20:15 PST 2005
 //    Test for empty data tree after ApplyFilters, and submit an error
-//    message. 
-//    
-//    Kathleen Bonnell, Thu Mar  3 16:38:16 PST 2005 
+//    message.
+//
+//    Kathleen Bonnell, Thu Mar  3 16:38:16 PST 2005
 //    Ensure all procs Execute, even if they have empty trees (a valid state
-//    when in parallel and more processors than domains.) 
+//    when in parallel and more processors than domains.)
 //
 //    Hank Childs, Fri Aug 25 17:47:21 PDT 2006
 //    Change error message with no data, as it is misleading.
@@ -143,7 +141,7 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
 {
     queryAtts = *qA;
 
-    Init(); 
+    Init();
 
     UpdateProgress(0, 0);
     //
@@ -152,23 +150,22 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     avtDataObject_p dob = ApplyFilters(GetInput());
 
     //
-    // Reset the input so that we have access to the data tree. 
+    // Reset the input so that we have access to the data tree.
     //
     SetTypedInput(dob);
 
     avtDataTree_p tree = GetInputDataTree();
     int validInputTree = 0;
-    
+    totalNodes = 0;
+
     if (*tree != NULL && !tree->IsEmpty())
     {
         validInputTree = 1;
         totalNodes = tree->GetNumberOfLeaves();
     }
-    else 
+    else
     {
-        validInputTree |= 0;
-        totalNodes = 0;
-        debug4 << "Query encountered EMPTY InputDataTree after ApplyFilters.  "
+        debug2 << "Query encountered EMPTY InputDataTree after ApplyFilters.  "
                << "This may be a valid state if running parallel and there "
                << "are more processors than domains." << endl;
     }
@@ -181,8 +178,8 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     }
     CATCH2(VisItException, e)
     {
-        debug1 << "Exception occurred in " << GetType() << endl;
-        debug1 << "Going to keep going to prevent a parallel hang." << endl;
+        debug1 << "Exception occurred in " << GetType() << endl
+             << "Going to keep going to prevent a parallel hang." << endl;
         queryAtts.SetResultsMessage(e.Message());
         hadError = true;
     }
@@ -197,18 +194,17 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
         if (validInputTree)
         {
             //
-            // Retrieve the query results and set the message in the atts. 
+            // Retrieve the query results and set the message in the atts.
             //
             queryAtts.SetResultsMessage(resMsg);
             queryAtts.SetResultsValue(resValue);
             queryAtts.SetXmlResult(xmlResult);
-            
         }
         else
         {
             queryAtts.SetResultsMessage("Query(" + queryAtts.GetName() + ")"
                     " was asked to execute on an empty data set.  The query "
-                    "produced the following message: " + resMsg); 
+                    "produced the following message: " + resMsg);
             queryAtts.SetResultsValue(resValue);
         }
     }
@@ -223,17 +219,17 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
 //
 //  Purpose:
 //    Recursive method to traverse an avtDataTree, calling Execute on the leaf
-//    nodes. 
+//    nodes.
 //
 //  Notes:
 //    Adapted from avtFilter.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 15, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 15, 2002
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed May 17 15:22:06 PDT 2006
-//    Remove call to SetSource(NULL) as it now removes information necessary 
+//    Remove call to SetSource(NULL) as it now removes information necessary
 //    for the dataset.
 //
 // ****************************************************************************
@@ -245,14 +241,14 @@ avtDatasetQuery::Execute(avtDataTree_p inDT)
     {
         return;
     }
- 
+
     int nc = inDT->GetNChildren();
- 
+
     if (nc <= 0 && !inDT->HasData())
     {
         return;
     }
- 
+
     if ( nc == 0 )
     {
         //
@@ -260,7 +256,7 @@ avtDatasetQuery::Execute(avtDataTree_p inDT)
         //
         vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
         int dom = inDT->GetDataRepresentation().GetDomain();
- 
+
         //
         // Setting the source to NULL for the input will break the
         // pipeline.
@@ -295,11 +291,11 @@ avtDatasetQuery::Execute(avtDataTree_p inDT)
 //  Method: avtDatasetQuery::PreExecute
 //
 //  Purpose:
-//    Method that allows derived types to perform necessary initialization 
-//    before Execute.  Stub so that derived types do not have to define. 
+//    Method that allows derived types to perform necessary initialization
+//    before Execute.  Stub so that derived types do not have to define.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 12, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 12, 2002
 //
 // ****************************************************************************
 
@@ -316,8 +312,8 @@ avtDatasetQuery::PreExecute()
 //    Method that allows derived types to perform necessary cleanup  after
 //    Excute.  Stub so that derived types do not have to define.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 12, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 12, 2002
 //
 // ****************************************************************************
 
@@ -333,18 +329,18 @@ avtDatasetQuery::PostExecute()
 //  Purpose:
 //    Allow derived types to apply any necessary avtFilters.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 12, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 12, 2002
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Mar 31 15:52:54 PST 2004
-//    Allow for time-varying case. 
+//    Allow for time-varying case.
 //
 //    Hank Childs, Fri Apr  9 16:25:40 PDT 2004
 //    Minimize work done by creating new SIL.
 //
-//    Kathleen Bonnell, Mon Jan  3 15:12:19 PST 2005 
-//    Modify timeVarying case. 
+//    Kathleen Bonnell, Mon Jan  3 15:12:19 PST 2005
+//    Modify timeVarying case.
 //
 //    David Bremer, Fri Jan  5 11:13:38 PST 2007
 //    Add secondary variables to the query, by querying a
@@ -364,16 +360,16 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
         CopyTo(rv, dob);
         return rv;
     }
-    else 
+    else
     {
         avtContract_p orig_contract = dob->GetOriginatingSource()->
             GetGeneralContract();
-        
+
         avtDataRequest_p oldSpec = orig_contract->GetDataRequest();
 
-        avtDataRequest_p newDS = new 
+        avtDataRequest_p newDS = new
             avtDataRequest(oldSpec, querySILR);
-            
+
         if (timeVarying)
         {
             newDS->SetTimestep(queryAtts.GetTimeStep());
@@ -383,8 +379,8 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
         {
             newDS->AddSecondaryVariable( secondaryVars[ii].c_str() );
         }
-        
-        avtContract_p contract = 
+
+        avtContract_p contract =
             new avtContract(newDS, queryAtts.GetPipeIndex());
 
         avtDataObject_p rv;
@@ -398,10 +394,10 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
 //  Method: avtDatasetQuery::SetResultValue
 //
 //  Purpose:
-//    Set the result value for the specified index. 
+//    Set the result value for the specified index.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 12, 2003 
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 12, 2003
 //
 // ****************************************************************************
 
@@ -419,10 +415,10 @@ avtDatasetQuery::SetResultValue(const double &d, const int i)
 //  Method: avtDatasetQuery::GetResultValue
 //
 //  Purpose:
-//    Return  the result value for the specified index. 
+//    Return  the result value for the specified index.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 12, 2003 
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 12, 2003
 //
 // ****************************************************************************
 
@@ -440,10 +436,10 @@ avtDatasetQuery::GetResultValue(const int i)
 //  Method: avtDatasetQuery::GetSecondaryVars
 //
 //  Purpose:
-//    Returns an array of secondary variables to be added to the query.  This 
+//    Returns an array of secondary variables to be added to the query.  This
 //    is a stub method to be overridden by derived classes.
 //
-//  Programmer: David Bremer 
+//  Programmer: David Bremer
 //  Creation:   January 4, 2007
 //
 // ****************************************************************************
@@ -453,6 +449,3 @@ avtDatasetQuery::GetSecondaryVars( std::vector<std::string> &outVars )
 {
     outVars.clear();
 }
-
-
-
