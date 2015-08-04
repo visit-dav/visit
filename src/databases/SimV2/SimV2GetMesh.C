@@ -1182,6 +1182,7 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
 
     // Populate the coordinates.
     vtkDataArray *coords[3] = {0,0,0};
+    bool coordError = false;
     for(int i = 0; i < 3; ++i)
     {
         switch (dataType[i])
@@ -1199,12 +1200,21 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
             {
                 coords[i]->SetNumberOfTuples(nTuples[i]);
                 simV2_TT::cppType *dest = static_cast<simV2_TT::cppType *>(coords[i]->GetVoidPointer(0));
-                bool err = false;
+                bool err = true;
                 simV2MemoryCopyMacro(COPYMACRO, memory[i], nTuples[i], offset[i], stride[i], simV2_TT::cppType, data[i], err);
+                coordError |= err;
             }
             );
 #undef COPYMACRO
         }
+    }
+
+    if(coordError)
+    {
+        for (int i=0; i<3; ++i) 
+            coords[i]->Delete();
+        EXCEPTION1(ImproperUseException,
+                   "Problem with coordinates.\n");
     }
 
     rgrid->SetXCoordinates(coords[0]);
