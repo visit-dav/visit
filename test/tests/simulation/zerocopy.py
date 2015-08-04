@@ -167,8 +167,8 @@ if connected:
 
     TestSection("Memory usage")
     TestMemoryUsage(memorySamples, "zerocopy02")
-    PlotMemoryCurve("simmem.curve", "zerocopy03")
-    WriteData("/Users/bjw/zerocopy.dat", memorySamples)
+#    PlotMemoryCurve("simmem.curve", "zerocopy03")
+#    WriteData("zerocopy.dat", memorySamples)
 
 # Close down the simulation.
 if started:        
