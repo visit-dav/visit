@@ -1840,8 +1840,7 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
             if (ic->EncounteredNumericalProblems())
               ++numStiff;
 
-            if (ic->status.EncounteredSpatialBoundary() ||
-                ic->status.ExitedSpatialBoundary())
+            if (ic->status.ExitedSpatialBoundary())
               ++numBoundary;
 
             if (badSize)
@@ -1869,8 +1868,7 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
             if (ic->EncounteredNumericalProblems())
               ++numStiff;
 
-            if (ic->status.EncounteredSpatialBoundary() ||
-                ic->status.ExitedSpatialBoundary())
+            if (ic->status.ExitedSpatialBoundary())
               ++numBoundary;
 
             if (badTime || badDistance)

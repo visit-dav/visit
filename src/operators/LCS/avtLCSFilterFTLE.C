@@ -1377,7 +1377,7 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
 //   slice_ds->GetOrigin(x,y,z);
 //   slice_ds->GetSpacing(dx,dy,dz);
 
-  std::cerr << "searching for seeds " << std::endl;
+  std::cerr << PAR_Rank() << " searching for seeds " << std::endl;
 
   vtkDataSet *slice_ds = in_ds;
   
@@ -1436,8 +1436,8 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
   else //if( getMin )
     threshold = minFTLE + (maxFTLE-minFTLE) * thresholdLimit;
 
-  std::cerr << "min/max " << minFTLE << "  " << maxFTLE << "  "
-            << "threshold  " << threshold << std::endl;
+  std::cerr  << PAR_Rank() << " min/max " << minFTLE << "  " << maxFTLE << "  "
+            << " threshold  " << threshold << std::endl;
 
   std::vector< std::pair< avtVector, double > > ptList;
 
@@ -1445,7 +1445,7 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
   {
     ftle = tmpArray->GetTuple1( l );
 
-    if( (getMin && ftle < threshold) || (getMax && threshold < ftle) )          
+    if( (getMin && ftle < threshold) || (getMax && threshold < ftle) )
     {
       double *gridPt = slice_ds->GetPoint( l );
       
@@ -1511,9 +1511,9 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
   }
   
   if( getMax )
-    std::cerr << "Have " << ptList.size() << " max seed points "<< std::endl;
+    std::cerr << PAR_Rank() << " Have " << ptList.size() << " max seed points "<< std::endl;
   else
-    std::cerr << "Have " << ptList.size() << " min seed points "<< std::endl;
+    std::cerr << PAR_Rank() << " Have " << ptList.size() << " min seed points "<< std::endl;
   
   if( ptList.size() > maxSeeds ) ptList.resize( maxSeeds );
 
@@ -1533,7 +1533,8 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
 
   for (int i = 0; i < ptList.size(); ++i)
   {
-    std::cerr << ptList[i].second << "     "
+    std::cerr << PAR_Rank() << "    "
+              << ptList[i].second << "     "
               << ptList[i].first.x << "  "
               << ptList[i].first.y << "  "
               << ptList[i].first.z << "  "
