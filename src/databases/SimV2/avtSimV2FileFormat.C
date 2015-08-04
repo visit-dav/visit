@@ -1322,7 +1322,7 @@ PackageGlobalIdArray(visit_handle global, const char *name)
         {
             // Zero copy.
             int saveArray = ((owner == VISIT_OWNER_SIM) ? 1 : 0);
-            a->SetArray(reinterpret_cast<int *>(data), nComponents*nTuples, saveArray);
+            a->SetArray(static_cast<int *>(data), nComponents*nTuples, saveArray);
         }
         else
         {
@@ -2683,6 +2683,8 @@ avtSimV2FileFormat::GetCurve(const char *name)
             simV2MemoryCopyMacro(COPYTOPARR, memory[i], nTuples[i], offset[i], stride[i], simV2_TT::cppType, data[i], err)
             );
         }
+        if(err)
+            debug5 << "Error with curve coordinates." << endl;
 #undef COPYTOPARR
     }
 
