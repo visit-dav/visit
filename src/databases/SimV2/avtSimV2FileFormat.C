@@ -2080,7 +2080,6 @@ SimV2_GetVar_Multiple(visit_handle hvar, const char *varname, int nArrs)
         int vtktype = SimV2_GetVTKType(dataType);
         da->SetComponentData(i, vtkArrayComponentStride(data, offset, stride, vtktype, owns));
     }
-    delete [] nTuples;
 
     for(int i = 1; i < nArrs; ++i)
     {
@@ -2092,6 +2091,7 @@ SimV2_GetVar_Multiple(visit_handle hvar, const char *varname, int nArrs)
             EXCEPTION1(InvalidVariableException, oss.str().c_str());
         }
     }
+    delete [] nTuples;
 
     array = da;
 
