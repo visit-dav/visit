@@ -2684,7 +2684,9 @@ avtSimV2FileFormat::GetCurve(const char *name)
             );
         }
         if(err)
+        {
             debug5 << "Error with curve coordinates." << endl;
+        }
 #undef COPYTOPARR
     }
 
