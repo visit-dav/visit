@@ -343,8 +343,8 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
             // If the user termination criteria was reached exit the
             // loop without any further checks.
-            if( status.TerminationMet() ) 
-                break;
+            // if( status.TerminationMet() ) 
+            //     break;
 
             // Check if the new position is outside the domain
             // (or in the domain's ghost data); in this case
@@ -363,6 +363,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 if (fieldRes == avtIVPField::OUTSIDE_SPATIAL ||
                     fieldRes == avtIVPField::OUTSIDE_BOTH)
                     status.SetAtSpatialBoundary();
+
                 if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL ||
                     fieldRes == avtIVPField::OUTSIDE_BOTH)
                     status.SetAtTemporalBoundary();

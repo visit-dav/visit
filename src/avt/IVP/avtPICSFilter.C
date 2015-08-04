@@ -999,8 +999,8 @@ avtPICSFilter::SetPathlines(bool pathlines,
     if (doPathlines && (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS))
     {
         EXCEPTION1(VisItException, "VisIt is not capable of doing pathlines "
-                     "calculations both forwards and backwards.  Please contact "
-                     "a developer if this capability is needed.");
+                   "calculations both forwards and backwards.  Please contact "
+                   "a developer if this capability is needed.");
     }
 }
 
@@ -2386,7 +2386,6 @@ avtPICSFilter::ICInBlock(const avtIntegralCurve *ic, const BlockIDType &block)
 
     vtkDataSet *ds = GetDomain(block, pt);
 
-
     if (ds == NULL || ds->GetNumberOfCells() == 0)
         return false;
 
@@ -2397,7 +2396,9 @@ avtPICSFilter::ICInBlock(const avtIntegralCurve *ic, const BlockIDType &block)
     }
 
     // check if we have a locator
-    std::map<BlockIDType,avtCellLocator_p>::iterator cli = domainToCellLocatorMap.find(block);
+    std::map<BlockIDType,avtCellLocator_p>::iterator cli =
+      domainToCellLocatorMap.find(block);
+
     if (cli != domainToCellLocatorMap.end() && specifyPoint)
     {
         double bbox[6];
@@ -2480,7 +2481,6 @@ avtPICSFilter::ICInRectilinearBlock(const avtIntegralCurve *ic,
 
         if (cell == -1)
             return false;
-        
         // Check if pt in a ghost cell.
         else if (ghosts->GetComponent(cell, 0) != 0)
             return false;
@@ -2737,7 +2737,9 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
             break;
         }
         else
+        {
             delete field;
+        }
     }
 
     if (!haveBlock)

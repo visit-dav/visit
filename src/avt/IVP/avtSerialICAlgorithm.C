@@ -319,8 +319,12 @@ avtSerialICAlgorithm::RunAlgorithm()
             while (ic->status.Integrateable() &&
                    DomainLoaded(ic->blockList.front()));
             
-            if (ic->status.EncounteredSpatialBoundary())
+            // If the user termination criteria was reached so terminate the IC.
+            if( ic->status.TerminationMet() )
+                terminatedICs.push_back(ic);
+            else if (ic->status.EncounteredSpatialBoundary())
                 inactiveICs.push_back(ic);
+            // Some other termination criteria was reached so terminate the IC.
             else
                 terminatedICs.push_back(ic);
 
