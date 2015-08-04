@@ -1023,7 +1023,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     connect(issueWarningForBoundary, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForBoundaryChanged(bool)));
     warningsGLayout->addWidget(issueWarningForBoundary, 1, 0);
-    QLabel *boundaryLabel = new QLabel(tr("Issue warning if the boundary is reached."), warningsGrp);
+    QLabel *boundaryLabel = new QLabel(tr("Issue warning if the spatial boundary is reached."), warningsGrp);
     warningsGLayout->addWidget(boundaryLabel, 1, 1, 1, 2);
 
     issueWarningForMaxSteps = new QCheckBox(central);
