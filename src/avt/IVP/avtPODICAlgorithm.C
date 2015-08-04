@@ -179,7 +179,8 @@ avtPODICAlgorithm::PreRunAlgorithm()
 void
 avtPODICAlgorithm::RunAlgorithm()
 {
-    debug1<<"avtPODICAlgorithm::RunAlgorithm() activeICs: "<<activeICs.size()<<" inactiveICs: "<<inactiveICs.size()<<endl;
+    debug1<<"avtPODICAlgorithm::RunAlgorithm() activeICs: "
+          <<activeICs.size()<<" inactiveICs: "<<inactiveICs.size()<<endl;
     
     int timer = visitTimer->StartTimer();
     
@@ -199,13 +200,18 @@ avtPODICAlgorithm::RunAlgorithm()
             while (ic->status.Integrateable() &&
                    DomainLoaded(ic->blockList.front()));
 
-            if (ic->status.EncounteredSpatialBoundary())
+            // If the user termination criteria was reached so terminate the IC.
+            if( ic->status.TerminationMet() )
+                terminatedICs.push_back(ic);
+            else if (ic->status.EncounteredSpatialBoundary())
             {
-                if (!ic->blockList.empty() && DomainLoaded(ic->blockList.front()))
+                if (!ic->blockList.empty() &&
+                    DomainLoaded(ic->blockList.front()))
                     activeICs.push_back(ic);
                 else
                     inactiveICs.push_back(ic);
             }
+            // Some other termination criteria was reached so terminate the IC.
             else
                 terminatedICs.push_back(ic);
             
