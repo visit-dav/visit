@@ -338,7 +338,7 @@ avtDataBinningFilter::Execute(void)
                 ds->GetCellData()->GetScalars()->SetName(varname.c_str());
             ds->GetCellData()->SetActiveScalars(varname.c_str());
             SetOutputDataTree(new avtDataTree(ds, -1));
-            double range[2] = { FLT_MAX, -FLT_MAX };
+            double range[2] = { DBL_MAX, -DBL_MAX };
             GetDataRange(ds, range, varname.c_str(), false);
             avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
             dataAtts.GetThisProcsOriginalDataExtents(varname.c_str())->Set(range);
@@ -355,7 +355,7 @@ avtDataBinningFilter::Execute(void)
     }
     else if (atts.GetOutputType() == DataBinningAttributes::OutputOnInputMesh)
     {
-        double range[2] = { FLT_MAX, -FLT_MAX };
+        double range[2] = { DBL_MAX, -DBL_MAX };
         bool hadError = false;
         avtDataTree_p tree = CreateArrayFromDataBinning(GetInputDataTree(), d, range, hadError);
         if (UnifyMaximumValue((int) hadError) > 0)
@@ -429,7 +429,7 @@ avtDataBinningFilter::CreateArrayFromDataBinning(avtDataTree_p tree,
             in_ds->GetPointData()->SetActiveScalars(varname.c_str());
         }
         res->Delete();
-        double range[2] = { FLT_MAX, -FLT_MAX };
+        double range[2] = { DBL_MAX, -DBL_MAX };
         GetDataRange(in_ds, range, varname.c_str(), false);
         extents[0] = (extents[0] > range[0] ? range[0] : extents[0]);
         extents[1] = (extents[1] < range[1] ? range[1] : extents[1]);
