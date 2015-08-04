@@ -1678,7 +1678,7 @@ bool
 GetComponentRange(Scalar *buf, double *exts,
     int n, int c, int nc, unsigned char *ghosts)
 {
-    Scalar min, max;
+    Scalar min = 0, max = 0;
     bool retval = GetComponentRangeTemplate(buf, min, max, n,c,nc,ghosts);
     if(retval)
     {
