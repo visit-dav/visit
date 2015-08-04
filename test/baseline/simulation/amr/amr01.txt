@@ -123,6 +123,16 @@ simInfo.GetGenericCommands(2).signal = ""
 simInfo.GetGenericCommands(2).text = ""
 simInfo.GetGenericCommands(2).uiType = ""
 simInfo.GetGenericCommands(2).value = ""
+simInfo.GetGenericCommands(3).name = "update"
+simInfo.GetGenericCommands(3).argumentType = simInfo.GetGenericCommands(3).CmdArgNone  # CmdArgNone, CmdArgInt, CmdArgFloat, CmdArgString
+simInfo.GetGenericCommands(3).className = ""
+simInfo.GetGenericCommands(3).enabled = 1
+simInfo.GetGenericCommands(3).parent = ""
+simInfo.GetGenericCommands(3).isOn = 1
+simInfo.GetGenericCommands(3).signal = ""
+simInfo.GetGenericCommands(3).text = ""
+simInfo.GetGenericCommands(3).uiType = ""
+simInfo.GetGenericCommands(3).value = ""
 simInfo.mode = simInfo.Stopped  # Unknown, Running, Stopped
 #customCommands does not contain any avtSimulationCommandSpecification objects.
 suggestedDefaultSILRestriction = ()
