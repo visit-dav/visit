@@ -268,7 +268,7 @@ main(int argc, char *argv[])
         }
 #ifdef WIN32
         else if((strcmp(argv[i], "-s") == 0 && (i+1 < argc)) ||
-                (strcmp(argv[i], "-o") == 0 && (i+1 < argc))
+                (strcmp(argv[i], "-o") == 0 && (i+1 < argc)) ||
                 (strcmp(argv[i], "-runcode") == 0 && (i+1 < argc)))
         {
             bool runF = (strcmp(argv[i], "-s") == 0);
