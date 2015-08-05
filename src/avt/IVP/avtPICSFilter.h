@@ -186,6 +186,8 @@ class IVP_API avtPICSFilter :
                                         const avtVector &v_start,
                                         long ID) = 0;
 
+    virtual bool                    GetAllSeedsSentToAllProcs() = 0;
+
     virtual std::vector<avtVector>  GetInitialLocations() = 0;
     virtual std::vector<avtVector>  GetInitialVelocities() = 0;
     virtual CommunicationPattern    GetCommunicationPattern() = 0;
@@ -293,9 +295,9 @@ class IVP_API avtPICSFilter :
     int                       OnFace(const avtIntegralCurve *ic, double *bbox);
     int                       GetNextCurveID(){ int id = MaxID; MaxID++; return id;}
     void                      CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
-                                                         std::vector<avtVector> &vels,
-                                                         std::vector<avtIntegralCurve *> &ics,
-                                                         std::vector<std::vector<int> > &ids);
+                                                            std::vector<avtVector> &vels,
+                                                            std::vector<avtIntegralCurve *> &ics,
+                                                            std::vector<std::vector<int> > &ids);
     void                      GetIntegralCurvesFromInitialSeeds(std::vector<avtIntegralCurve *> &ics);
     void                      AddSeedPoint(avtVector &pt,
                                            avtVector &vel,

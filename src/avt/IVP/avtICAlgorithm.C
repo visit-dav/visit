@@ -103,6 +103,7 @@ avtICAlgorithm::avtICAlgorithm( avtPICSFilter *f ) :
     globalDomainLoadedMax = 0;
     avgDomainLoaded = 0.f;
     globalAvgDomainLoaded = 0.f;
+    allSeedsSentToAllProcs = false;
 }
 
 // ****************************************************************************

@@ -178,28 +178,31 @@ avtSerialICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
     int i0 = 0, i1 = nSeeds;
 
  #ifdef PARALLEL
-    int rank = PAR_Rank();
-    int nProcs = PAR_Size();
+    if( allSeedsSentToAllProcs )
+    {
+        int rank = PAR_Rank();
+        int nProcs = PAR_Size();
 
-    int nSeedsPerProc = (nSeeds / nProcs);
-    int oneExtraUntil = (nSeeds % nProcs);
+        int nSeedsPerProc = (nSeeds / nProcs);
+        int oneExtraUntil = (nSeeds % nProcs);
     
-    if (rank < oneExtraUntil)
-    {
-        i0 = (rank)*(nSeedsPerProc+1);
-        i1 = (rank+1)*(nSeedsPerProc+1);
-    }
-    else
-    {
+        if (rank < oneExtraUntil)
+        {
+            i0 = (rank)*(nSeedsPerProc+1);
+            i1 = (rank+1)*(nSeedsPerProc+1);
+        }
+        else
+        {
         i0 = (rank)*(nSeedsPerProc) + oneExtraUntil;
-        i1 = (rank+1)*(nSeedsPerProc) + oneExtraUntil;
-    }
+            i1 = (rank+1)*(nSeedsPerProc) + oneExtraUntil;
+        }
     
-    //Delete the seeds I don't need.
-    for (int i = 0; i < i0; i++)
-        delete ics[i];
-    for (int i = i1; i < nSeeds; i++)
-        delete ics[i];
+        //Delete the seeds I don't need.
+        for (int i = 0; i < i0; i++)
+            delete ics[i];
+        for (int i = i1; i < nSeeds; i++)
+            delete ics[i];
+    }
 #endif
     
     for (int i = i0; i < i1; i++)
