@@ -790,14 +790,14 @@ void mainloop(simulation_data *sim)
     int blocking, visitstate = 0, err = 0;
 
     /* Register some ui actions */
-    VisItUI_clicked("STEP", ui_step_clicked, &sim);
-    VisItUI_clicked("HALT", ui_halt_clicked, &sim);
-    VisItUI_clicked("RUN", ui_run_clicked, &sim);
-    VisItUI_clicked("RESET", ui_reset_clicked, &sim);
-    VisItUI_valueChanged("LEVELS", ui_levels_changed, &sim);
-    VisItUI_valueChanged("REFINEMENTRATIO", ui_ratio_changed, &sim);
-    VisItUI_stateChanged("SAVEIMAGES", ui_saveimages_changed, &sim);
-    VisItUI_stateChanged("UPDATEPLOTS", ui_updateplots_changed, &sim);
+    VisItUI_clicked("STEP", ui_step_clicked, sim);
+    VisItUI_clicked("HALT", ui_halt_clicked, sim);
+    VisItUI_clicked("RUN", ui_run_clicked, sim);
+    VisItUI_clicked("RESET", ui_reset_clicked, sim);
+    VisItUI_valueChanged("LEVELS", ui_levels_changed, sim);
+    VisItUI_valueChanged("REFINEMENTRATIO", ui_ratio_changed, sim);
+    VisItUI_stateChanged("SAVEIMAGES", ui_saveimages_changed, sim);
+    VisItUI_stateChanged("UPDATEPLOTS", ui_updateplots_changed, sim);
 
     /* If we're not running by default then simulate once there's something
      * once VisIt connects.
