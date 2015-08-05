@@ -85,9 +85,11 @@ class avtLagrangianFilter : public avtPluginFilter,
     virtual void            CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &);
     virtual avtIntegralCurve* CreateIntegralCurve();
     virtual avtIntegralCurve* CreateIntegralCurve(const avtIVPSolver*, avtIntegralCurve::Direction, const double&, const avtVector&, const avtVector&, long int);
+    virtual bool              GetAllSeedsSentToAllProcs() { return true; };
+
     virtual std::vector<avtVector> GetInitialLocations();
     virtual std::vector<avtVector> GetInitialVelocities()
-                          { return std::vector<avtVector>(); };;
+                          { return std::vector<avtVector>(); };
     virtual CommunicationPattern GetCommunicationPattern() 
                           { return ReturnToOriginatingProcessor; };
 

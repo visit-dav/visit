@@ -100,6 +100,8 @@ class avtLCSFilter : public virtual avtPluginFilter,
                       const avtVector &v_start,
                       long ID); //id
 
+    virtual bool GetAllSeedsSentToAllProcs();
+
     /** Construct the initial locations to emanate integral curves */
     virtual std::vector<avtVector> GetInitialLocations();
     virtual std::vector<avtVector> GetInitialVelocities();

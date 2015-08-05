@@ -218,6 +218,7 @@ avtLCSFilter::SetAtts(const AttributeGroup *a)
     else if( auxIdx == LCSAttributes::None )
     {
       nDim = 3;
+
       nAuxPts = 1;
       auxSpacing = 0;
     }
@@ -1008,6 +1009,27 @@ avtLCSFilter::CreateIntegralCurve(const avtIVPSolver* model,
 
 
 // ****************************************************************************
+//  Method: avtLCSFilter::GetAllSeedsSentToAllProcs
+//
+//  Purpose:
+//      
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 5, 2015
+//
+// ****************************************************************************
+
+bool
+avtLCSFilter::GetAllSeedsSentToAllProcs(void)
+{
+  if (atts.GetSourceType() == LCSAttributes::NativeMesh)
+    return false;
+  else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
+    return true;
+}
+
+
+// ****************************************************************************
 //  Method: avtLCSFilter::CreateIntegralCurveOutput
 //
 //  Purpose:
@@ -1399,7 +1421,8 @@ void avtLCSFilter::ComputeEigenValues(vtkDataArray *jacobian[3],
 {
     size_t nTuples = valArray->GetNumberOfTuples();
 
-    if( auxIdx == LCSAttributes::TwoDim )
+    if( auxIdx == LCSAttributes::TwoDim ||
+        GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2 )
     {
       for(size_t l = 0; l < nTuples; ++l)
       {
@@ -1476,7 +1499,8 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
     
     size_t nTuples = valArray->GetNumberOfTuples();
 
-    if( auxIdx == LCSAttributes::TwoDim )
+    if( auxIdx == LCSAttributes::TwoDim ||
+        GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2 )
     {
       for(size_t l = 0; l < nTuples; ++l)
       {
@@ -1686,7 +1710,8 @@ void avtLCSFilter::ComputeLyapunovExponent(vtkDataArray *jacobian[3],
     else if( doDistance )
       denominator /= maxDistance;
 
-    if( auxIdx == LCSAttributes::TwoDim )
+    if( auxIdx == LCSAttributes::TwoDim ||
+        GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2 )
     {
       for(size_t l = 0; l < nTuples; ++l)
       {

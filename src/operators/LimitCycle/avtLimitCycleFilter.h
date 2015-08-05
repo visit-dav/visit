@@ -105,6 +105,8 @@ class avtLimitCycleFilter : public virtual avtPluginFilter,
                                         const avtVector &v_start,
                                         long ID);
 
+   virtual bool                  GetAllSeedsSentToAllProcs() { return true; };
+
     void SetTermination(int maxSteps, 
                         bool doDistance, double maxDistance, 
                         bool doTime, double maxTime);

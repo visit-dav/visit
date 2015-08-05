@@ -1267,12 +1267,14 @@ avtPICSFilter::Execute(void)
     if( restart != -1 )
     {
         RestoreICs(_ics, restart);
+        icAlgo->SetAllSeedsSentToAllProcs( true );
         icAlgo->RestoreInitialize(_ics, curTimeSlice);
     }
     else
     {
         GetIntegralCurvesFromInitialSeeds(_ics);
 
+        icAlgo->SetAllSeedsSentToAllProcs( GetAllSeedsSentToAllProcs() );
         icAlgo->Initialize(_ics);
     }
 

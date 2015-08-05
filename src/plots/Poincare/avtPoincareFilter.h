@@ -140,6 +140,8 @@ class avtPoincareFilter : public avtStreamlineFilter
                                                    const avtVector &v_start,
                                                    long ID );
 
+  virtual bool             GetAllSeedsSentToAllProcs() { return true; };
+
   virtual void drawPoints( avtDataTree *dt,
                            std::vector < avtVector > &nodes );
 

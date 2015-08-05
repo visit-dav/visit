@@ -148,9 +148,6 @@ class avtICAlgorithm
     std::string               terminatedICInfo() const;
     std::string               inactiveICInfo() const;
 
-    avtPICSFilter *picsFilter;
-    std::list<avtIntegralCurve *> terminatedICs, activeICs, inactiveICs;
-    int                       numDomains, numSeedPoints;
     virtual const char*       AlgoName() const = 0;
     
     //Helper accessor funcstions to the filter.
@@ -175,7 +172,12 @@ class avtICAlgorithm
     virtual void              SortIntegralCurves(std::list<avtIntegralCurve *> &);
     virtual void              SortIntegralCurves(std::vector<avtIntegralCurve *> &);
     void                      Sleep(long nanoSec=10) const;
+
+public:
+    virtual void              SetAllSeedsSentToAllProcs( bool flag )
+    { allSeedsSentToAllProcs = flag; };
     
+protected:
     //Statistics and timers.
     class ICStatistics
     {
@@ -216,11 +218,19 @@ class avtICAlgorithm
                                            const ICStatistics &s,
                                            bool total);
 
+    avtPICSFilter             *picsFilter;
+
     //Timers.
     ICStatistics              TotalTime, IOTime, IntegrateTime, SortTime,
                               ExtraTime;
     //Counters.
     ICStatistics              IntegrateCnt, IntegrateStepCnt, DomLoadCnt, DomPurgeCnt;
+
+    std::list<avtIntegralCurve *> terminatedICs, activeICs, inactiveICs;
+
+    // Flag if all seeds are sent to all process
+    bool                      allSeedsSentToAllProcs;
+    int                       numDomains, numSeedPoints;  
 
     //Special counters.
     int                       domainsUsed, totDomainsLoaded, domainLoadedMin, domainLoadedMax;

@@ -1569,18 +1569,6 @@ avtIntegralCurveFilter::GetInitialLocations(void)
             (*it)[2] = 0.0f;
     }
 
-//  #ifdef PARALLEL
-//     int rank = PAR_Rank();
-
-//     std::cerr << __FILE__ << "  " << __FUNCTION__ << "  "
-//            << "Proc " << rank << " number of seeds " << seedPts.size()
-//            << std::endl;
-// #else
-//     std::cerr << __FILE__ << "  " << __FUNCTION__ << "  "
-//            << "Number of seeds " << seedPts.size()
-//            << std::endl;
-// #endif
-
     return seedPts;
 }
 
@@ -2193,7 +2181,7 @@ avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(std::vector<avtVector> &
     // Use the listOfPoint for storage.
     listOfPoints.clear();
 
-    // Get the seeds from the daa tree.
+    // Get the seeds from the data tree.
     GenerateSeedPointsFromFieldData( GetInputDataTree() );
 
     // Set the attributes.
@@ -2210,6 +2198,49 @@ avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(std::vector<avtVector> &
       for (size_t i = 0 ; i < tmpListOfPoints.size() ; i++)
         if (listOfPoints[i] != tmpListOfPoints[i])
           needsRecalculation = true;
+
+#ifdef PARALLEL
+    needsRecalculation = UnifyMaximumValue( (int) needsRecalculation );
+
+    // Collect all the seed points on the root processor.
+    double* all_points = 0;
+    int *point_counts = 0;
+
+    CollectDoubleArraysOnRootProc(all_points, point_counts,
+                                  &listOfPoints.front(), (int)listOfPoints.size());
+
+    int total = 0;
+
+    // Get the total number of point coordinates
+    if(PAR_Rank() == 0)
+    {
+        int par_size = PAR_Size();
+
+        for(int i = 0; i < par_size; ++i)
+        {
+            total += point_counts[i];
+        }
+    }
+
+    // Broadcast the total to all processors.
+    BroadcastInt(total);
+
+    // Allocate space for the points on the other processors.
+    if(PAR_Rank() != 0)
+      all_points = new double[total];
+    
+    // Broadcast the point coordinates to all processors.
+    BroadcastDoubleArray(all_points, total);
+
+    // Stuff the coordinates into the listOFPoints on all processors.
+    listOfPoints.resize( total );
+
+    for( int i=0; i<total; ++i )
+      listOfPoints[i] = all_points[i];
+
+    if (all_points)   delete [] all_points;
+    if (point_counts) delete [] point_counts;
+#endif
 
     // Generate the points as seeds.
     GenerateSeedPointsFromPointList(pts);
@@ -2416,10 +2447,6 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 
         bool badTime = (doTime && (fabs(ic->GetTime() - absMaxTime) > FLT_MIN));
         bool badDistance = (doDistance && (ic->GetDistance() < maxDistance));
-
-        if( badTime )
-          std::cerr << ic->GetTime() << "  "
-                    << fabs(ic->GetTime() - absMaxTime) << std::endl;
 
         if (ic->CurrentVelocity().length() <= criticalPointThreshold)
             numCritPts++;
