@@ -152,7 +152,7 @@ avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
 
               // If the seed is on the processor, make a bid for it.
               // If the seed is not on the processor, set the bid to
-              // zero.
+              // -1.
 
               // While unlikely two processors may generate the same
               // bid so handle that case by trying again. POSSIBLE
@@ -160,17 +160,9 @@ avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
               do
               {
                 if( goodSeed )
-                {
-                  // Make sure the bid is not zero. POSSIBLE INFINITE
-                  // LOOP- though unlikely.
-                  do
-                  {
-                    bid = rand();
-                  }
-                  while( bid == 0 );
-                }
+                  bid = rand();
                 else
-                  bid = 0;
+                  bid = -1;
 
                 // Get the max bid from all the processors.
                 maxBid = UnifyMaximumValue( bid );
@@ -181,6 +173,7 @@ avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
               }
               while( count > 1 );
 
+              // The seed is good if the processor has the max bid.
               goodSeed = (bid == maxBid);
             }
 
