@@ -336,6 +336,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         oss << "avtMinMaxQuery could not find a vtkDataArray"
                << " associated with var " << var.c_str() << endl;
         SetResultMessage(oss.str());
+        ds->Print(oss);
         debug1 << oss.str();
         return;
     }
@@ -720,10 +721,10 @@ avtMinMaxQuery::StandardPostExecute()
     if (PAR_Rank() == 0)
     {
         int nMin = (minInfo1.GetValue() != DBL_MAX ? 1 : 0)
-                + (minInfo2.GetValue() != DBL_MAX ? 1 : 0);
+                + (((minInfo2.GetValue() != DBL_MAX) && (!minInfo1.EquivalentForOutput(minInfo2))) ? 1 : 0);
 
         int nMax = (maxInfo1.GetValue() != -DBL_MAX ? 1 : 0)
-                + (maxInfo2.GetValue() != -DBL_MAX ? 1 : 0);
+                + (((maxInfo2.GetValue() != -DBL_MAX) && (!maxInfo1.EquivalentForOutput(maxInfo2))) ? 1 : 0);
 
         nMin = (nMin == 0 ? nMin : (nMax > nMin ? nMax : nMin));
         nMax = (nMax == 0 ? nMax : (nMin > nMax ? nMin : nMax));
