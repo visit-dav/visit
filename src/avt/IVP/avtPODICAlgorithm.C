@@ -110,37 +110,133 @@ avtPODICAlgorithm::Initialize(vector<avtIntegralCurve *> &seeds)
 //
 // ****************************************************************************
 
+static bool icIDCompare(const avtIntegralCurve *icA, 
+                        const avtIntegralCurve *icB)
+{
+    return icA->id < icB->id;
+}
+
 void
 avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
 {
-    //Get the ICs that I own.
-    for (size_t i = 0; i < ics.size(); i++)
+    int nSeeds = ics.size();
+
+    // If the seeds are sent to all procs check to make sure seeds on
+    // domain boundaries do not get sent to mutliple processors.
+    if( allSeedsSentToAllProcs )
     {
-        avtIntegralCurve *ic = ics[i];
+        // Use a random number generator for the bidding - seed the
+        // generator differently usingthe processor rank.
+        srand( PAR_Rank() );
 
-        ic->originatingRank = rank;
+        // Sort the curves by their id so all processors are working on
+        // the same curve at the same time.
+        sort(ics.begin(), ics.end(), icIDCompare);
 
+        for (size_t i = 0; i < nSeeds; ++i)
+        {
+            avtIntegralCurve *ic = ics[i];
+
+            // The seed is good if in the domain
+            bool goodSeed =
+              (!ic->blockList.empty() && DomainLoaded(ic->blockList.front()));
+
+            // Check for a seed being on multiple processors. 
+            int count = (int) goodSeed;
+            SumIntAcrossAllProcessors( count );
+
+            // Check for the seed being on multiple processors.
+            if( count > 1 )
+            {
+              int bid, maxBid;
+
+              // If the seed is on the processor, make a bid for it.
+              // If the seed is not on the processor, set the bid to
+              // zero.
+
+              // While unlikely two processors may generate the same
+              // bid so handle that case by trying again. POSSIBLE
+              // INFINITE LOOP - though unlikely.
+              do
+              {
+                if( goodSeed )
+                {
+                  // Make sure the bid is not zero. POSSIBLE INFINITE
+                  // LOOP- though unlikely.
+                  do
+                  {
+                    bid = rand();
+                  }
+                  while( bid == 0 );
+                }
+                else
+                  bid = 0;
+
+                // Get the max bid from all the processors.
+                maxBid = UnifyMaximumValue( bid );
+
+                // Make sure only one processor has the max bid.
+                count = (bid == maxBid ? 1: 0);
+                SumIntAcrossAllProcessors( count );
+              }
+              while( count > 1 );
+
+              goodSeed = (bid == maxBid);
+            }
+
+            // If the seed is still good (i.e. won the bidding) or is
+            // on one processor add it to the active list, otherwise
+            // delete it.
+            if( goodSeed )
+            {
+                ic->originatingRank = rank;
+            
 #ifdef USE_IC_STATE_TRACKING
-        ic->InitTrk();
+                ic->InitTrk();
 #endif
-        if (!ic->blockList.empty() && DomainLoaded(ic->blockList.front()))
-            activeICs.push_back(ic);
-        else
-            inactiveICs.push_back(ic);
+                activeICs.push_back(ic);
+            }
+            else
+                delete ic;
+        }
+    }
+
+    // Seeds are sent just to this processor so make them active or inactive.
+    else //if( !allSeedsSentToAllProcs )
+    {
+        // Get the ICs that are on this processor.
+        for (size_t i = 0; i < nSeeds; ++i)
+        {
+            avtIntegralCurve *ic = ics[i];
+            
+            ic->originatingRank = rank;
+            
+#ifdef USE_IC_STATE_TRACKING
+            ic->InitTrk();
+#endif
+            if (!ic->blockList.empty() && DomainLoaded(ic->blockList.front()))
+                activeICs.push_back(ic);
+            else
+              inactiveICs.push_back(ic);
+        }
     }
 
     if (DebugStream::Level1())
     {
-        debug1<<"My ICcount= "<<activeICs.size()<<endl;
-        debug1<<"I own: [";
+        debug1 << "Proc " << PAR_Rank()
+               << "  active IC count= " << activeICs.size()
+               << "  inactive IC count= " << inactiveICs.size() << endl;
+        debug1 << "Proc " << PAR_Rank() <<  " domains: [ ";
+
         for (int i = 0; i < numDomains; i++)
         {
             BlockIDType d(i,0);
-            if (OwnDomain(d)) 
+            if (OwnDomain(d))
             {
-                debug1<<i<<" ";
+                debug1 << i << " ";
             }
         }
+
         debug1<<"]\n";
     }
 }
