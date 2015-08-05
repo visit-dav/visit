@@ -488,7 +488,7 @@ VisItInit::GetComponentName(void)
 //  Purpose: Return integer index of component name in list of all components
 //
 // ****************************************************************************
-const int
+int
 VisItInit::ComponentNameToID(const char *compName)
 {
     int n = sizeof(allComponentNames) / sizeof(allComponentNames[0]);
