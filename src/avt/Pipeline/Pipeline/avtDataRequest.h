@@ -101,8 +101,8 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Hank Childs, Wed Nov 28 13:14:31 PST 2001
 //    Add a hook to prevent processing ghost zones.
 //
-//    Kathleen Bonnell, Wed Dec 12 10:50:01 PST 2001 
-//    Added hook to retrieve and turn on/off 'needZones' flag. 
+//    Kathleen Bonnell, Wed Dec 12 10:50:01 PST 2001
+//    Added hook to retrieve and turn on/off 'needZones' flag.
 //
 //    Jeremy Meredith, Thu Mar 14 17:28:40 PST 2002
 //    Added needInternalSurfaces.
@@ -110,10 +110,10 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Hank Childs, Fri Jun  7 16:39:34 PDT 2002
 //    Added support routines for secondary variables.
 //
-//    Kathleen Bonnell, Wed Sep  4 14:43:43 PDT 2002  
-//    Removed 'needDomainlabels' and related methods. 
+//    Kathleen Bonnell, Wed Sep  4 14:43:43 PDT 2002
+//    Removed 'needDomainlabels' and related methods.
 //
-//    Hank Childs, Mon Sep 30 17:30:02 PDT 2002 
+//    Hank Childs, Mon Sep 30 17:30:02 PDT 2002
 //    Add needStructuredIndices.
 //
 //    Jeremy Meredith, Thu Oct 24 11:34:20 PDT 2002
@@ -135,10 +135,10 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
 //    Allow the setting of a "db" variable.
 //
-//    Kathleen Bonnell, Thu Apr 22 15:15:57 PDT 2004 
-//    Added method 'VariablesAreTheSame'. 
+//    Kathleen Bonnell, Thu Apr 22 15:15:57 PDT 2004
+//    Added method 'VariablesAreTheSame'.
 //
-//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004
 //    Added methods Set/GetMayRequireNodes.
 //
 //    Kathleen Bonnell, Mon Jun 28 08:05:38 PDT 2004
@@ -158,7 +158,7 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added methods to set/get admissibleDataTypes
-//    Added methods to set/get needNativePrecision 
+//    Added methods to set/get needNativePrecision
 //
 //    Hank Childs, Tue Aug 16 16:11:57 PDT 2005
 //    Added methods to simplify heavily mixed zones.
@@ -171,18 +171,18 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    needed when GeneralContracts are requested.
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//    Added members and methods for mesh discretization 
+//    Added members and methods for mesh discretization
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added flatness tolerance.
 //
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
-//    Moved implementation of SetDiscMode to .C file 
+//    Moved implementation of SetDiscMode to .C file
 //
 //    Hank Childs, Fri Jun 15 12:58:49 PDT 2007
 //    Added method DebugDump.
 //
-//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007
 //    Added method NeedAMRIndices and SetNeedAMRIndices.  The int represents
 //    level requested.
 //
@@ -217,20 +217,19 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //    Mark C. Miller, Fri Apr 13 10:41:35 PDT 2012
 //    I const qualified a couple of methods preventing use of this class
 //    in a const setting.
+//
+//    Burlen Loring, Wed Aug  5 12:05:27 PDT 2015
+//    Added SetVariable method.
 // ****************************************************************************
 
 class PIPELINE_API avtDataRequest
 {
   public:
-                                 avtDataRequest(const char *, int,
-                                                      avtSILRestriction_p);
+                                 avtDataRequest(const char *, int, avtSILRestriction_p);
                                  avtDataRequest(const char *, int, int);
-                                 avtDataRequest(avtDataRequest_p,
-                                                      avtSILRestriction_p);
-                                 avtDataRequest(avtDataRequest_p,
-                                                      int);
-                                 avtDataRequest(avtDataRequest_p,
-                                                      const char *);
+                                 avtDataRequest(avtDataRequest_p, avtSILRestriction_p);
+                                 avtDataRequest(avtDataRequest_p, int);
+                                 avtDataRequest(avtDataRequest_p, const char *);
                                  avtDataRequest(avtDataRequest_p);
     virtual                     ~avtDataRequest();
 
@@ -239,11 +238,12 @@ class PIPELINE_API avtDataRequest
 
     int                          GetTimestep(void) const { return timestep; };
     void                         SetTimestep(int t)     { timestep = t; };
+    void                         SetVariable(const char *v);
     const char                  *GetVariable(void) const { return variable; };
     avtSILSpecification         &GetSIL(void)          { return sil; };
     avtSILRestriction_p          GetRestriction(void);
 
-    const char                  *GetOriginalVariable(void) 
+    const char                  *GetOriginalVariable(void)
                                                        {return orig_variable;};
     void                         SetOriginalVariable(const char *);
     void                         AddSecondaryVariable(const char *);
@@ -256,18 +256,18 @@ class PIPELINE_API avtDataRequest
                                        { return secondaryVariables; };
     std::vector<CharStrRef>      GetSecondaryVariablesWithoutDuplicates(void);
 
-    bool                         MustDoMaterialInterfaceReconstruction(void) 
+    bool                         MustDoMaterialInterfaceReconstruction(void)
                                      { return mustDoMIR; };
-    void                         ForceMaterialInterfaceReconstructionOn(void) 
+    void                         ForceMaterialInterfaceReconstructionOn(void)
                                      { mustDoMIR = true; };
-    void                         ForceMaterialInterfaceReconstructionOff(void) 
+    void                         ForceMaterialInterfaceReconstructionOff(void)
                                      { mustDoMIR = false; };
 
-    bool                         NeedInternalSurfaces(void) 
+    bool                         NeedInternalSurfaces(void)
                                      { return needInternalSurfaces; };
-    void                         TurnInternalSurfacesOn(void) 
+    void                         TurnInternalSurfacesOn(void)
                                      { needInternalSurfaces = true; };
-    void                         TurnInternalSurfacesOff(void) 
+    void                         TurnInternalSurfacesOff(void)
                                      { needInternalSurfaces = false; };
 
     //
@@ -275,11 +275,11 @@ class PIPELINE_API avtDataRequest
     // (i.e the database).  So when this methods are called, it changes
     // the type of data that comes down the pipeline.
     //
-    bool                         GetBoundarySurfaceRepresentation(void) 
+    bool                         GetBoundarySurfaceRepresentation(void)
                                      { return getBoundarySurfaceRep; };
-    void                         TurnBoundarySurfaceRepresentationOn(void) 
+    void                         TurnBoundarySurfaceRepresentationOn(void)
                                      { getBoundarySurfaceRep = true; };
-    void                         TurnBoundarySurfaceRepresentationOff(void) 
+    void                         TurnBoundarySurfaceRepresentationOff(void)
                                      { getBoundarySurfaceRep = false; };
     bool                         GetSimplifiedNestingRepresentation(void)
                                      { return getSimplifiedNestingRep; };
@@ -303,42 +303,42 @@ class PIPELINE_API avtDataRequest
     void                         SetNeedAMRIndices(int v)
                                      { needAMRIndices = v; };
 
-    bool                         NeedZoneNumbers(void) 
+    bool                         NeedZoneNumbers(void)
                                      { return needZones; };
-    void                         TurnZoneNumbersOn(void) 
+    void                         TurnZoneNumbersOn(void)
                                      { needZones = true; };
-    void                         TurnZoneNumbersOff(void) 
+    void                         TurnZoneNumbersOff(void)
                                      { needZones = false; };
 
-    bool                         NeedNodeNumbers(void) 
+    bool                         NeedNodeNumbers(void)
                                      { return needNodes; };
-    void                         TurnNodeNumbersOn(void) 
+    void                         TurnNodeNumbersOn(void)
                                      { needNodes = true; };
-    void                         TurnNodeNumbersOff(void) 
+    void                         TurnNodeNumbersOff(void)
                                      { needNodes = false; };
 
-    bool                         NeedGlobalZoneNumbers(void) 
+    bool                         NeedGlobalZoneNumbers(void)
                                      { return needGlobalZones; };
-    void                         TurnGlobalZoneNumbersOn(void) 
+    void                         TurnGlobalZoneNumbersOn(void)
                                      { needGlobalZones = true; };
-    void                         TurnGlobalZoneNumbersOff(void) 
+    void                         TurnGlobalZoneNumbersOff(void)
                                      { needGlobalZones = false; };
 
-    bool                         NeedGlobalNodeNumbers(void) 
+    bool                         NeedGlobalNodeNumbers(void)
                                      { return needGlobalNodes; };
-    void                         TurnGlobalNodeNumbersOn(void) 
+    void                         TurnGlobalNodeNumbersOn(void)
                                      { needGlobalNodes = true; };
-    void                         TurnGlobalNodeNumbersOff(void) 
+    void                         TurnGlobalNodeNumbersOff(void)
                                      { needGlobalNodes = false; };
 
-    bool                         MayRequireZones(void) 
+    bool                         MayRequireZones(void)
                                      { return mayRequireZones; };
-    void                         SetMayRequireZones(bool val) 
+    void                         SetMayRequireZones(bool val)
                                      { mayRequireZones = val; };
 
-    bool                         MayRequireNodes(void) 
+    bool                         MayRequireNodes(void)
                                      { return mayRequireNodes; };
-    void                         SetMayRequireNodes(bool val) 
+    void                         SetMayRequireNodes(bool val)
                                      { mayRequireNodes = val; };
 
     bool                         MustMaintainOriginalConnectivity(void)
@@ -414,7 +414,7 @@ class PIPELINE_API avtDataRequest
     bool                         VariablesAreTheSame(const avtDataRequest &);
 
     int                          AddDataSelection(avtDataSelection *sel);
-                                 // Maybe this method could also be called 
+                                 // Maybe this method could also be called
                                  // "AddDataSelection", but I'm worried about
                                  // overloading/compile problems...
     int                          AddDataSelectionRefPtr(avtDataSelection_p sel);
@@ -453,7 +453,7 @@ class PIPELINE_API avtDataRequest
                                      { discBoundaryOnly = b; };
     bool                         DiscBoundaryOnly() const
                                      { return discBoundaryOnly; };
-    
+
     void                         SetPassNativeCSG(bool p)
                                      { passNativeCSG = p; };
     bool                         PassNativeCSG() const
@@ -463,7 +463,7 @@ class PIPELINE_API avtDataRequest
                                      { return transformVectorsDuringProject; }
     void                         SetTransformVectorsDuringProject(bool b)
                                      { transformVectorsDuringProject = b; }
-    
+
     bool                         NeedPostGhostMaterialInfo() const
                                      { return needPostGhostMaterialInfo; }
     void                         SetNeedPostGhostMaterialInfo(bool b)
@@ -554,7 +554,7 @@ class PIPELINE_API avtDataRequest
     bool                         usesAllDomains;
 
     //
-    // A place for each filter to add information regarding its selection 
+    // A place for each filter to add information regarding its selection
     //
     std::vector<avtDataSelection_p>  selList;
 
@@ -565,7 +565,4 @@ class PIPELINE_API avtDataRequest
                        avtDataRequest(const avtDataRequest &) {;};
 };
 
-
 #endif
-
-

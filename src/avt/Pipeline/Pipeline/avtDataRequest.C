@@ -1162,6 +1162,35 @@ avtDataRequest::SetOriginalVariable(const char *v)
 
 
 // ****************************************************************************
+//  Method: avtDataRequest::SetVariable
+//
+//  Purpose:
+//      Sets the variable
+//
+//  Programmer: Burlen Loring
+//  Creation:   Wed Aug  5 12:05:27 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDataRequest::SetVariable(const char *v)
+{
+    if (variable != NULL)
+    {
+        delete [] variable;
+        variable = NULL;
+    }
+    if (v != NULL)
+    {
+        variable = new char[strlen(v)+1];
+        strcpy(variable, v);
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtDataRequest::GetRestriction
 //
 //  Purpose:
@@ -2053,5 +2082,3 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
 
     webpage->EndTable();
 }
-
-
