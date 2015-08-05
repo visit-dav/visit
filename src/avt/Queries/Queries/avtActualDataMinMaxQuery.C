@@ -126,6 +126,10 @@ avtActualDataMinMaxQuery::~avtActualDataMinMaxQuery()
 //    any processor reports zones are not preserved, they all take that value
 //    so the same path through the code is used.
 //
+//    Burlen Loring, Wed Aug  5 12:34:55 PDT 2015
+//    Explicitly set the variable name in the data request. This is needed
+//    when operators are creating a new variable (eg. databinning)
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -158,6 +162,7 @@ avtActualDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
         avtDataRequest_p newDS = new
             avtDataRequest(oldSpec, querySILR);
         newDS->SetTimestep(queryAtts.GetTimeStep());
+        newDS->SetVariable(queryAtts.GetVariables()[0].c_str());
 
         if (!zonesPreserved)
             newDS->TurnZoneNumbersOn();
