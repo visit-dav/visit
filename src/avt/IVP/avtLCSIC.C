@@ -76,6 +76,7 @@ avtLCSIC::avtLCSIC(
     int ID) : avtIntegralCurve(model, dir, t_start_, p_start_, v_start_, ID)
 {
     sequenceCnt = 0;
+    _serializeFlags = SERIALIZE_NO_OPT;
 
     numSteps = 0;
     maxSteps = maxSteps_;
@@ -111,6 +112,7 @@ avtLCSIC::avtLCSIC(
 avtLCSIC::avtLCSIC() : avtIntegralCurve()
 {
     sequenceCnt = 0;
+    _serializeFlags = SERIALIZE_NO_OPT;
 
     numSteps = 0;
 
