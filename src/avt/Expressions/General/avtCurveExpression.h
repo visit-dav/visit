@@ -79,9 +79,9 @@ class EXPRESSION_API avtCurveExpression : public avtMacroExpressionFilter
     virtual void              ProcessArguments(ArgsExpr *args, 
                                                ExprPipelineState *state);
   private:
-    const int                 IsYFunc(const char *var) const;
-    const int                 IsXFunc(const char *var) const;
-    const bool                ValidFunctionName(const char *func);
+    int                       IsYFunc(const char *var) const;
+    int                       IsXFunc(const char *var) const;
+    bool                      ValidFunctionName(const char *func);
     int                       xvar;
     std::string               function;
 };

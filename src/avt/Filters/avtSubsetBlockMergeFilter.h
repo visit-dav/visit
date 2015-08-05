@@ -48,7 +48,7 @@
 #include <avtDatasetToDatasetFilter.h>
 
 
-struct BlockIdDatasetPair 
+struct BlockIdDatasetPair
 {
     std::string blockId;
     vtkDataSet *dataSet;
@@ -77,16 +77,16 @@ class AVTFILTERS_API avtSubsetBlockMergeFilter : public avtDatasetToDatasetFilte
 
     virtual const char      *GetType(void) { return "avtSubsetBlockMergeFilter"; };
     virtual const char      *GetDescription(void) { return "Merge all datasets of the same block into one dataset"; };
-    
+
 
   protected:
     virtual void            Execute();
     virtual void            PostExecute();
-    
+
   private:
     void                    AddDatasetToMap(std::map<int, std::vector<BlockIdDatasetPair> > &, vtkDataSet *, const std::string);
-    const int               GetIndexFromBlockId(const std::string, const std::vector<std::string> &) const;
-    const int               GetProcessorIdFromBlockId(const int) const;
+    int                     GetIndexFromBlockId(const std::string, const std::vector<std::string> &) const;
+    int                     GetProcessorIdFromBlockId(const int) const;
     avtDataTree_p           CreateOutputDataTree(std::map<std::string, vtkAppendPolyData *> &);
     void                    Send(std::map<int, std::vector<BlockIdDatasetPair> > &, const int);
     void                    Receive(std::map<std::string, vtkAppendPolyData *> &);

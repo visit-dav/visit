@@ -81,7 +81,7 @@ namespace VisItInit
     MISC_API void SetComponentName(const char *); 
     MISC_API const char * GetExecutableName(); 
     MISC_API const char * GetComponentName(); 
-    MISC_API const int ComponentNameToID(const char *);
+    MISC_API int ComponentNameToID(const char *);
     MISC_API const char * ComponentIDToName(const int);
     MISC_API bool  IsComponent(const char *);
     MISC_API void ComponentIssueError(const char *);
@@ -90,5 +90,3 @@ namespace VisItInit
 }
 
 #endif
-
-

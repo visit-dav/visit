@@ -116,57 +116,57 @@ avtSubsetBlockMergeFilter::Execute()
     // Map processor to list of datasets (blocks) that its responsible for
     map<int, vector<BlockIdDatasetPair> > procDatasetMap;
 #endif
-    
+
     avtDataTree_p inputTree = GetInputDataTree();
-    
+
     // Get the number of incoming datasets
     int numInDataSets;
     vtkDataSet **dataSets = inputTree->GetAllLeaves(numInDataSets);
-    
+
     // Get all of the labels
     vector<string> labels;
     vector<string> uniqueLabels;
     inputTree->GetAllLabels(labels);
     inputTree->GetAllUniqueLabels(uniqueLabels);
-    
+
     // Merge datasets for each block
     size_t outSize = uniqueLabels.size();
-    
+
     vtkDataSet **outDataSets = new vtkDataSet *[outSize];
     vtkAppendPolyData **appender = new vtkAppendPolyData *[outSize];
     vtkCleanPolyData **cleaner = new vtkCleanPolyData *[outSize];
-    
+
     for(size_t i=0; i<outSize; i++)
     {
         appender[i] = vtkAppendPolyData::New();
         cleaner[i] = vtkCleanPolyData::New();
     }
-    
+
     // :ASSUMPTION: Assuming that datasets are in the same order as labels
     for(size_t i=0; i<labels.size(); i++)
     {
         int index = GetIndexFromBlockId(labels[i], uniqueLabels);
         appender[index]->AddInputData(dynamic_cast<vtkPolyData *>(dataSets[i]));
     }
-    
+
     // Clean all merged data sets
     for(size_t i=0; i<outSize; i++)
     {
         cleaner[i]->SetInputConnection(appender[i]->GetOutputPort());
         cleaner[i]->Update();
         outDataSets[i] = cleaner[i]->GetOutput();
-        
+
         appender[i]->Delete();
-        
+
 #ifdef PARALLEL
         AddDatasetToMap(procDatasetMap, outDataSets[i], uniqueLabels[i]);
 #endif
     }
-    
+
 #ifdef PARALLEL
     map<string, vtkAppendPolyData *> blockAppenderMap;
     int myRank = PAR_Rank();
-    
+
     for(int rank=0; rank<PAR_Size(); rank++)
     {
         if(myRank == rank)
@@ -178,10 +178,10 @@ avtSubsetBlockMergeFilter::Execute()
             Receive(blockAppenderMap);
         }
     }
-    
+
     // Add Own Data if applicable
     map<int, vector<BlockIdDatasetPair> >::iterator iter = procDatasetMap.find(myRank);
-    
+
     if(iter != procDatasetMap.end())
     {
         for(size_t j=0; j<iter->second.size(); j++)
@@ -198,7 +198,7 @@ avtSubsetBlockMergeFilter::Execute()
             }
         }
     }
-    
+
     // Merge datasets from other processors then create output tree
     if(blockAppenderMap.size() > 0)
     {
@@ -209,7 +209,7 @@ avtSubsetBlockMergeFilter::Execute()
         avtDataTree_p dummy = new avtDataTree();
         SetOutputDataTree(dummy);
     }
-    
+
     // Clean Up
     for(map<string, vtkAppendPolyData *>::iterator iter = blockAppenderMap.begin(); iter != blockAppenderMap.end(); iter++)
     {
@@ -219,11 +219,11 @@ avtSubsetBlockMergeFilter::Execute()
     avtDataTree_p outDataTree = new avtDataTree(outSize, outDataSets, 0, uniqueLabels);
     SetOutputDataTree(outDataTree);
 #endif
-    
+
     // Clean Up
     delete [] appender;
     delete [] outDataSets;
-    
+
     for(size_t i=0; i<outSize; i++)
     {
         cleaner[i]->Delete();
@@ -257,32 +257,32 @@ avtSubsetBlockMergeFilter::CreateOutputDataTree(map<string, vtkAppendPolyData *>
     int numChildren = blockAppenderMap.size();
     vtkDataSet **outDataSets = new vtkDataSet *[numChildren];
     vtkCleanPolyData **cleaners = new vtkCleanPolyData *[numChildren];
-    
+
     int i=0;
     for(map<string, vtkAppendPolyData *>::iterator iter = blockAppenderMap.begin(); iter != blockAppenderMap.end(); iter++)
     {
         labels.push_back(iter->first);
-        
+
         cleaners[i] = vtkCleanPolyData::New();
         cleaners[i]->SetInputConnection(iter->second->GetOutputPort());
         cleaners[i]->Update();
-        
+
         outDataSets[i] = cleaners[i]->GetOutput();
-        
+
         ++i;
     }
-    
+
     avtDataTree_p tree = new avtDataTree(numChildren, outDataSets, 0, labels);
-    
+
     // Cleanup
     delete [] outDataSets;
-    
+
     for(int i=0; i<numChildren; i++)
     {
         cleaners[i]->Delete();
     }
     delete [] cleaners;
-    
+
     return tree;
 }
 
@@ -312,14 +312,14 @@ avtSubsetBlockMergeFilter::AddDatasetToMap(map<int, vector<BlockIdDatasetPair> >
     BlockIdDatasetPair sendData;
     sendData.blockId = blockId;
     sendData.dataSet = dataSet;
-    
+
     int processorId = GetProcessorIdFromBlockId(atoi(blockId.c_str()));
-    
+
     // Add sendData to map
     if(!procDatasetMap.empty())
     {
         map<int, vector<BlockIdDatasetPair> >::iterator iter = procDatasetMap.find(processorId);
-        
+
         if(iter != procDatasetMap.end())
         {
             iter->second.push_back(sendData);
@@ -367,41 +367,41 @@ avtSubsetBlockMergeFilter::Receive(map<string, vtkAppendPolyData *> &outMap)
     MPI_Status mpiStatus;
     char buffer[CHAR_BUFFER_SIZE];
     int myRank = PAR_Rank();
-    
+
     // First Get the number of datasets being sent to receiveProcessor
     int count;
     MPI_Recv(&count, 1, MPI_INT, MPI_ANY_SOURCE, SIZE_TAG, VISIT_MPI_COMM, &mpiStatus);
     debug5 << myRank << ": Dataset Count = " << count << endl;
-    
+
     if(count > 0)
     {
         int source = mpiStatus.MPI_SOURCE;
         debug5 << myRank << ": Source is: " << source << endl;
-        
+
         for(int i=0; i<count; i++)
         {
             // Get Block ID
             int blockId;
             MPI_Recv(&blockId, 1, MPI_INT, source, BLOCKID_TAG, VISIT_MPI_COMM, &mpiStatus);
-                    
+
             int blockIdLen = SNPRINTF(buffer, CHAR_BUFFER_SIZE, "%d", blockId);
             string blockIdStr = string(buffer, blockIdLen);
-            
+
             // Get Dataset
             int dataSize;
             MPI_Recv(&dataSize, 1, MPI_INT, source, SIZE_TAG, VISIT_MPI_COMM, &mpiStatus);
             debug5 << myRank << ": Data Size = " << dataSize << endl;
-                    
+
             char *recvBinary = new char[dataSize];
             MPI_Recv(recvBinary, dataSize, MPI_CHAR, source, DATA_TAG, VISIT_MPI_COMM, &mpiStatus);
-                    
+
             vtkCharArray *charArray = vtkCharArray::New();
             charArray->SetArray(recvBinary, dataSize, 1);
-                    
+
             vtkPolyDataReader *polyReader = vtkPolyDataReader::New();
             polyReader->SetReadFromInputString(1);
             polyReader->SetInputArray(charArray);
-            
+
             map<string, vtkAppendPolyData *>::iterator iter = outMap.find(blockIdStr);
             if(iter != outMap.end())
             {
@@ -415,7 +415,7 @@ avtSubsetBlockMergeFilter::Receive(map<string, vtkAppendPolyData *> &outMap)
                 appender->Update();
                 outMap[blockIdStr] = appender;
             }
-                    
+
             // Cleanup
             delete [] recvBinary;
             charArray->Delete();
@@ -454,40 +454,40 @@ avtSubsetBlockMergeFilter::Send(map<int, vector<BlockIdDatasetPair> > &procDatas
         {
             map<int, vector<BlockIdDatasetPair> >::iterator iter = procDatasetMap.find(dest);
             int count;
-            
+
             if(iter != procDatasetMap.end())
             {
                 vector<BlockIdDatasetPair> *sendDataList = &iter->second;
                 count = sendDataList->size();
                 MPI_Send(&count, 1, MPI_INT, dest, SIZE_TAG, VISIT_MPI_COMM);  // Send # of datasets
-                
+
                 for(int dataIdx=0; dataIdx<count; dataIdx++)
                 {
                     // Send Block ID
                     int blockId = atoi((*sendDataList)[dataIdx].blockId.c_str());
                     MPI_Send(&blockId, 1, MPI_INT, dest, BLOCKID_TAG, VISIT_MPI_COMM);
-                    
+
                     // Send Dataset
                     vtkDataSetWriter *serializer = vtkDataSetWriter::New();
                     serializer->SetInputData((*sendDataList)[dataIdx].dataSet);
                     serializer->SetWriteToOutputString(1);
                     serializer->SetFileTypeToBinary();
                     serializer->Write();
-                    
+
                     int dataSendCnt = serializer->GetOutputStringLength();
                     char *sendData = serializer->RegisterAndGetOutputString();
-                    
+
                     MPI_Send(&dataSendCnt, 1, MPI_INT, dest, SIZE_TAG, VISIT_MPI_COMM);
                     MPI_Send(sendData, dataSendCnt, MPI_CHAR, dest, DATA_TAG, VISIT_MPI_COMM);
-                    
+
                     // Cleanup
                     serializer->Delete();
                     delete [] sendData;
-                    
+
                     debug5 << source << ": Sent " << dataSendCnt << " Bytes to " << dest << endl;
                 }
-                
-                
+
+
             }
             else
             {
@@ -520,11 +520,11 @@ avtSubsetBlockMergeFilter::Send(map<int, vector<BlockIdDatasetPair> > &procDatas
 //
 //
 // ****************************************************************************
-const int
+int
 avtSubsetBlockMergeFilter::GetProcessorIdFromBlockId(const int blockId) const
 {
     int nprocs = PAR_Size();
-    
+
     if(blockId < nprocs)
     {
         return blockId;
@@ -545,9 +545,9 @@ avtSubsetBlockMergeFilter::GetProcessorIdFromBlockId(const int blockId) const
 //      blockId The block ID
 //      labels  The list of block IDs
 //
-//  Returns:    The array index used for a specific block or -1 if the block ID 
+//  Returns:    The array index used for a specific block or -1 if the block ID
 //              is not contained in the label list.
-//  
+//
 //
 //  Programmer: Kevin Griffin
 //  Creation:   October 10, 2014
@@ -556,7 +556,7 @@ avtSubsetBlockMergeFilter::GetProcessorIdFromBlockId(const int blockId) const
 //
 //
 // ****************************************************************************
-const int
+int
 avtSubsetBlockMergeFilter::GetIndexFromBlockId(const std::string blockId, const std::vector<std::string> &labels) const
 {
     for(size_t i=0; i<labels.size(); i++)
@@ -566,14 +566,14 @@ avtSubsetBlockMergeFilter::GetIndexFromBlockId(const std::string blockId, const 
             return i;
         }
     }
-    
+
     return -1;
 }
 
 // ****************************************************************************
 //  Method: avtSubsetBlockMergeFilter::PostExecute
 //
-//  Purpose:    Once the new avtDataTree is created with new labels, this 
+//  Purpose:    Once the new avtDataTree is created with new labels, this
 //              is needed so everything works correctly in parallel.
 //
 //
