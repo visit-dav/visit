@@ -1067,10 +1067,10 @@ BroadcastString(char *str, int len, int sender)
 static int
 BroadcastVisItString(visit_string *obj, int sender)
 {
+    int retval, len = obj->size + 1;
     LIBSIM_API_ENTER(BroadcastVisItString);
 
     /* Send the length of the buffer (including null terminator).*/
-    int retval, len = obj->size + 1;
     BroadcastInt(&len, sender);
 
     /* If the destination string is not large enough, reserve sufficient space. */
