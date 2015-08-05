@@ -171,6 +171,8 @@ class avtPoincareFilter : public virtual avtPluginFilter,
                                                    const avtVector &v_start,
                                                    long ID );
 
+    virtual bool             GetAllSeedsSentToAllProcs() { return true; };
+
     /** Construct the initial locations to emanate integral curves */
     virtual std::vector<avtVector> GetInitialLocations();
     virtual std::vector<avtVector> GetInitialVelocities();
