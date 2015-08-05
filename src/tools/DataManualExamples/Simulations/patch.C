@@ -47,12 +47,15 @@ patch_ctor(patch_t *patch)
 void
 patch_dtor(patch_t *patch)
 {
-    int i;
-    FREE(patch->data);
+    if(patch != NULL)
+    {
+        int i;
+        FREE(patch->data);
 
-    for(i = 0; i < patch->nsubpatches; ++i)
-        patch_dtor(&patch->subpatches[i]);
-    FREE(patch->subpatches);
+        for(i = 0; i < patch->nsubpatches; ++i)
+            patch_dtor(&patch->subpatches[i]);
+        FREE(patch->subpatches);
+    }
 }
 
 void

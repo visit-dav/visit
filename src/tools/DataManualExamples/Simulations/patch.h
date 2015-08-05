@@ -5,7 +5,7 @@
 
 #define ALLOC(N,T) (T *)calloc(N, sizeof(T))
 #define REALLOC(P,N,T) (T *)realloc(P, (N) * sizeof(T))
-#define FREE(P) if(P != NULL) free(P)
+#define FREE(P) if(P != NULL) {free(P); P = NULL; }
 
 typedef struct
 {
