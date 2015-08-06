@@ -136,6 +136,9 @@ private:
 
     void ViewerSendCMD ( int simIndex, QString cmd);
     QColor getColor(const QString &color) const;
+public slots:
+    virtual void showNormal();
+    virtual void showMinimized();
 private slots:
     void closeEngine();
     void interruptEngine();
