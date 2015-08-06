@@ -146,35 +146,25 @@ avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
             SumIntAcrossAllProcessors( count );
 
             // Check for the seed being on multiple processors.
-            if( count > 1 )
+            while( count > 1 )
             {
-              int bid, maxBid;
-
               // If the seed is on the processor, make a bid for it.
-              // If the seed is not on the processor, set the bid to
-              // -1.
+              // Otherwise set the bid to -1.
+              int bid = (goodSeed ? rand() : -1);
+              
+              // Get the max bid from all the processors.
+              int maxBid = UnifyMaximumValue( bid );
+              
+              // The seed is good if the processor has the max bid.
+              goodSeed = (bid == maxBid);
+              
+              // Check for a seed still being on multiple processors. 
+              count = (int) goodSeed;
+              SumIntAcrossAllProcessors( count );
 
               // While unlikely two processors may generate the same
               // bid so handle that case by trying again. POSSIBLE
               // INFINITE LOOP - though unlikely.
-              do
-              {
-                if( goodSeed )
-                  bid = rand();
-                else
-                  bid = -1;
-
-                // Get the max bid from all the processors.
-                maxBid = UnifyMaximumValue( bid );
-
-                // Make sure only one processor has the max bid.
-                count = (bid == maxBid ? 1: 0);
-                SumIntAcrossAllProcessors( count );
-              }
-              while( count > 1 );
-
-              // The seed is good if the processor has the max bid.
-              goodSeed = (bid == maxBid);
             }
 
             // If the seed is still good (i.e. won the bidding) or is
@@ -210,7 +200,7 @@ avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
             if (!ic->blockList.empty() && DomainLoaded(ic->blockList.front()))
                 activeICs.push_back(ic);
             else
-              inactiveICs.push_back(ic);
+                inactiveICs.push_back(ic);
         }
     }
 
@@ -287,6 +277,7 @@ avtPODICAlgorithm::RunAlgorithm()
                 AdvectParticle(ic);
             }
             while (ic->status.Integrateable() &&
+                   !ic->blockList.empty() &&
                    DomainLoaded(ic->blockList.front()));
 
             // If the user termination criteria was reached so terminate the IC.
@@ -353,7 +344,16 @@ avtPODICAlgorithm::HandleCommunication()
     list<avtIntegralCurve*> tmp;
     for (s = inactiveICs.begin(); s != inactiveICs.end(); s++)
     {
-        int domRank = DomainToRank((*s)->blockList.front());
+        // What to if the blocklist is empty ????????
+        // Send it to the next processor ?????
+        // Just do not send it back to the same processor.
+        int domRank;
+
+        if( (*s)->blockList.empty() )
+          domRank = (PAR_Rank() + 1) % PAR_Size();
+        else
+          domRank = DomainToRank((*s)->blockList.front());
+    
         icCounts[domRank]++;
             
         //Add to sending map.
