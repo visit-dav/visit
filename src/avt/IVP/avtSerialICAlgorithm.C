@@ -136,7 +136,8 @@ avtSerialICAlgorithm::RestoreInitialize(std::vector<avtIntegralCurve *> &ics, in
     {
         avtIntegralCurve *s = ics[i];
 
-        if (s->blockList.front().timeStep == curTimeSlice)
+        if (!s->blockList.empty() &&
+            s->blockList.front().timeStep == curTimeSlice)
         {
             s->status.ClearAtTemporalBoundary();
             SetDomain(s);
@@ -320,6 +321,7 @@ avtSerialICAlgorithm::RunAlgorithm()
                 AdvectParticle(ic);
             }
             while (ic->status.Integrateable() &&
+                   !ic->blockList.empty()
                    DomainLoaded(ic->blockList.front()));
             
             // If the user termination criteria was reached so terminate the IC.
