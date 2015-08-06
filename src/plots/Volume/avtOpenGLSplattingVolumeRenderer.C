@@ -335,6 +335,10 @@ DrawOneSplat(const avtVolumeRendererImplementation::RenderProperties &props,
 //    Allen Harvey, Brad Whitlock, Mon Jan 30 15:49:33 PST 2012
 //    Add support for rendering point meshes.
 //
+//    Brad Whitlock, Thu Aug  6 15:29:58 PDT 2015
+//    Push/pop enable and texture state to fix a bug where the settings could
+//    corrupt the Pseudocolor plot's renderer.
+//
 // ****************************************************************************
 
 void
@@ -342,6 +346,8 @@ avtOpenGLSplattingVolumeRenderer::Render(
     const avtVolumeRendererImplementation::RenderProperties &props,
     const avtVolumeRendererImplementation::VolumeData &volume)
 {
+    glPushAttrib(GL_ENABLE_BIT | GL_TEXTURE_BIT);
+
     // Create the texture for a gaussian splat
     const int GRIDSIZE=32;
     if (alphatex == NULL)
@@ -714,4 +720,7 @@ avtOpenGLSplattingVolumeRenderer::Render(
     
     camera->Delete();
     I->Delete();
+
+    glPopAttrib();
+
 }
