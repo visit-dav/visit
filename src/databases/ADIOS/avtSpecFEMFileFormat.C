@@ -343,7 +343,9 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
             if (vname != "betav_kl_crust_mantle")
                 continue;
             AddScalarVarToMetaData(md, vname, "reg1/mesh", AVT_NODECENT);
-            AddScalarVarToMetaData(md, vname, "reg1/LatLon_mesh", AVT_NODECENT);
+            char var[128];
+            sprintf(var, "LatLon/%s", vname.c_str());
+            AddScalarVarToMetaData(md, var, "reg1/LatLon_mesh", AVT_NODECENT);
         }
         else
         {
