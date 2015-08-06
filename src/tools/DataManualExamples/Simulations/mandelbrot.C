@@ -289,7 +289,7 @@ simulation_data_dtor(simulation_data *sim)
     sim->npatch_list = 0;
 }
 
-const char *cmd_names[] = {"halt", "step", "run", "update", "toggleupdates"};
+const char *cmd_names[] = {"halt", "step", "run", "update", "toggleupdates", "6", "7", "8", "9"};
 
 #ifdef PARALLEL
 /******************************************************************************

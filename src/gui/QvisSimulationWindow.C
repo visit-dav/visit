@@ -39,6 +39,7 @@
 #include <QvisSimulationWindow.h>
 
 #include <time.h>
+#include <algorithm>
 #include <string>
 
 #include <QCheckBox>
@@ -85,9 +86,6 @@
 
 using std::string;
 using std::vector;
-
-#define CUSTOM_BUTTON 5
-#define NUM_GENERIC_BUTTONS 6
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::QvisSimulationWindow
@@ -526,7 +524,7 @@ QvisSimulationWindow::CreateCommandUI()
         if(DynamicCommandsWin != NULL)
             delete DynamicCommandsWin;
         DynamicCommandsWin = NULL;
-        simCommands->setButtonEnabled(CUSTOM_BUTTON, false);
+        simCommands->setCustomButtonEnabled(false);
         return;
     }
     
@@ -544,7 +542,7 @@ QvisSimulationWindow::CreateCommandUI()
     // If creation failed then jump out 
     if (DynamicCommandsWin == NULL)
     {
-        simCommands->setButtonEnabled(CUSTOM_BUTTON, false);
+        simCommands->setCustomButtonEnabled(false);
         QString msg = tr("VisIt could not locate the simulation's "
                          "user interface creation file at: %1. The custom user "
                          "interface for this simulation will be unavailable.").
@@ -552,6 +550,8 @@ QvisSimulationWindow::CreateCommandUI()
         Error(msg);
         return;
     }
+
+    DynamicCommandsWin->setWindowTitle(simCombo->currentText());
 //qDebug("QvisSimulationWindow::CreateCommandUI: hooking up ui");
 
     // Hook up the widget and its children to the command connections
@@ -561,7 +561,7 @@ QvisSimulationWindow::CreateCommandUI()
   
     // enable custom command UI button
     debug5 << "enabling custom command button" << endl;
-    simCommands->setButtonEnabled(CUSTOM_BUTTON, true);
+    simCommands->setCustomButtonEnabled(true);
     debug5 << "successfully added simulation interface" << endl;
 }
 
@@ -1145,7 +1145,7 @@ QvisSimulationWindow::UpdateInformation()
     {
         // We did not find metadata for activeEngine so just clear the window
         simInfo->setEnabled(false);
-        for (int c=0; c<NUM_GENERIC_BUTTONS; c++)
+        for (int c=0; c<simCommands->numCommandButtons(); c++)
         {
             simCommands->setButtonEnabled(c, false);
         }
@@ -1225,11 +1225,14 @@ QvisSimulationWindow::UpdateInformation()
         }
 
         // Update command buttons
-        for (int c=0; c<NUM_GENERIC_BUTTONS; c++)
+        bool updateSize = false;
+        int nButtonsToUpdate = std::max(simCommands->numCommandButtons(),
+                                        md->GetSimInfo().GetNumGenericCommands());
+        for (int c=0; c < nButtonsToUpdate; c++)
         {
-            if (md->GetSimInfo().GetNumGenericCommands()<=c)
+            if (c >= md->GetSimInfo().GetNumGenericCommands())
             {
-                simCommands->setButtonEnabled(c, false);
+                updateSize |= simCommands->setButtonEnabled(c, false);
             }
             else
             {
@@ -1239,24 +1242,27 @@ QvisSimulationWindow::UpdateInformation()
                 if (t == avtSimulationCommandSpecification::CmdArgNone)
                 {
                     QString bName = QString(md->GetSimInfo().GetGenericCommands(c).GetName().c_str());
-                    simCommands->setButtonCommand(c, bName);
-                    simCommands->setButtonEnabled(c, (c != CUSTOM_BUTTON) ? e : true);
+                    updateSize |= simCommands->setButtonCommand(c, bName);
+                    simCommands->setButtonEnabled(c, e);
                 }
                 else
                 {
-                    simCommands->setButtonEnabled(c, false);
+                    updateSize |= simCommands->setButtonEnabled(c, false);
                 }
             }
+        }
+        if(updateSize)
+        {
+            simCommands->adjustSize();
         }
 
         // If we've not created a dynamic commands window already and we can get a
         // decent-looking UI filename, enabled the custom command button
         // so we can create a window when that button is clicked.
-        simCommands->setCustomButton(CUSTOM_BUTTON);
         if(DynamicCommandsWin == NULL)
         {
             QString fname(GetUIFile(activeEngine));
-            simCommands->setButtonEnabled(CUSTOM_BUTTON, !fname.isEmpty());
+            simCommands->setCustomButtonEnabled(!fname.isEmpty());
         }
 
         // update ui component information from the meta data
@@ -1324,13 +1330,15 @@ QvisSimulationWindow::UpdateCustomUI (const avtDatabaseMetaData *md)
 void
 QvisSimulationWindow::UpdateSimulationUI (const avtDatabaseMetaData *md)
 {
+#if 0
     int numCommands = md->GetSimInfo().GetNumGenericCommands();
     // loop thru all command updates and updates the matching UI component.
-    for (int c=NUM_GENERIC_BUTTONS; c<numCommands; c++)
+    for (int c=simCommands->numCommandButtons(); c<numCommands; c++)
     {
 //        UpdateUIComponent (this,&(md->GetSimInfo().GetGenericCommands(c)));
 //        SpecialWidgetUpdate (&(md->GetSimInfo().GetGenericCommands(c)));
     }
+#endif
 }
 
 #if 0
@@ -2063,4 +2071,20 @@ QvisSimulationWindow::getColor(const QString &color) const
     if(!newColor.isValid())
         newColor = QColor(Qt::black);
     return newColor;
+}
+
+void
+QvisSimulationWindow::showNormal()
+{
+    QvisPostableWindowObserver::showNormal();
+    if(DynamicCommandsWin != NULL)
+        DynamicCommandsWin->showNormal();
+}
+
+void
+QvisSimulationWindow::showMinimized()
+{
+    QvisPostableWindowObserver::showMinimized();
+    if(DynamicCommandsWin != NULL)
+        DynamicCommandsWin->showMinimized();
 }

@@ -43,15 +43,17 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QTextEdit>
 
-#define MAX_CMD_BUTTONS 6
+#define CMD_BUTTONS_PER_ROW 3
+
+#define MAX_CMD_BUTTONS 500
 
 QvisSimulationCommandWindow::QvisSimulationCommandWindow(
     const QString &caption, const QString &shortName, QvisNotepadArea *notepad) : 
     QvisPostableWindow(caption, shortName, notepad)
 {
-    commandButtonIndex = 5;
     commandGroup = 0;
     addLayoutStretch = false;
     CreateEntireWindow();
@@ -72,21 +74,45 @@ void
 QvisSimulationCommandWindow::CreateWindowContents()
 {
     // Create the group box and generic buttons.
-    QGroupBox *cmdGroup = new QGroupBox(tr("Commands"), central);
-    topLayout->addWidget(cmdGroup);
-    QGridLayout *buttonLayout2 = new QGridLayout(cmdGroup);
-    commandGroup = new QButtonGroup(cmdGroup);
+    commandGroupBox = new QGroupBox(tr("Commands"), central);
+    topLayout->addWidget(commandGroupBox);
+    QVBoxLayout *vLayout = new QVBoxLayout(commandGroupBox);
+
+    // Make the button to activate the custom GUI.
+    QWidget *h = new QWidget(commandGroupBox);
+    vLayout->addWidget(h);
+    QHBoxLayout *hLayout = new QHBoxLayout(h);
+    hLayout->setMargin(0);
+    activateCustomGUI = new QPushButton(tr("Activate Custom UI . . ."), h);
+    connect(activateCustomGUI, SIGNAL(clicked()),
+            this, SIGNAL(showCommandWindow()));
+    hLayout->addStretch(10);
+    hLayout->addWidget(activateCustomGUI);
+    hLayout->addStretch(10);
+    activateCustomGUI->setVisible(false);
+
+    // Make the generic command buttons.
+    commandButtonParent = new QWidget(commandGroupBox);
+
+    QScrollArea *sa = new QScrollArea(commandGroupBox);
+    vLayout->addWidget(sa);
+    vLayout->addSpacing(5);
+    sa->setWidget(commandButtonParent);
+    sa->setWidgetResizable(true);
+    sa->setMinimumHeight(150);
+    sa->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+    QVBoxLayout *vb = new QVBoxLayout(commandButtonParent);
+    vb->setMargin(0);
+    commandGroup = new QButtonGroup(commandButtonParent);
+    commandButtonLayout = new QGridLayout(0);
+    vb->addLayout(commandButtonLayout);
+    vb->addStretch(10);
+    commandButtonLayout->setMargin(0);
     connect(commandGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(handleCommandButton(int)));
-    for (int r=0; r<2; r++)
-    {
-        for (int c=0; c<3; c++)
-        {
-            cmdButtons[r*3+c] = new QPushButton("", cmdGroup);
-            buttonLayout2->addWidget(cmdButtons[r*3+c],r,c);
-            commandGroup->addButton(cmdButtons[r*3+c], r*3+c);
-        }
-    }
+    bool added = false;
+    EnsureButtonExists(5, added);
 
     // Create time controls.
     timeGroup = new QGroupBox(tr("Enable time ranging"), central);
@@ -118,32 +144,69 @@ QvisSimulationCommandWindow::CreateWindowContents()
     connect(stopCycle,SIGNAL(returnPressed()),this,SLOT(handleStop()));
 }
 
-void
+int
+QvisSimulationCommandWindow::numCommandButtons() const
+{
+    return (commandGroup == 0) ? 0 : commandGroup->buttons().count();
+}
+
+bool
 QvisSimulationCommandWindow::setButtonCommand(int index, const QString &cmd)
 {
-    if(index >= 0 && index < MAX_CMD_BUTTONS)
-        cmdButtons[index]->setText(cmd);
+    bool added = false;
+    if(EnsureButtonExists(index, added))
+        commandGroup->buttons().at(index)->setText(cmd);
+    return added;
 }
 
-void
+bool
 QvisSimulationCommandWindow::setButtonEnabled(int index, bool enabled)
 {
-    if(index >= 0 && index < MAX_CMD_BUTTONS)
+    bool added = false;
+    if(EnsureButtonExists(index, added))
     {
-        cmdButtons[index]->setEnabled(enabled);
+        QAbstractButton *b = commandGroup->buttons().at(index);
+        b->setEnabled(enabled);
         if(!enabled)
-            cmdButtons[index]->setText("");
+            b->setText("");
     }
+    return added;
+}
+
+bool
+QvisSimulationCommandWindow::EnsureButtonExists(int index, bool &added)
+{
+    added = false;
+    if(index < 0)
+        return false;
+    if(index > MAX_CMD_BUTTONS)
+        return false;
+
+    if(index >= numCommandButtons())
+    {
+        // We need to make more buttons.
+        int newIndex = numCommandButtons();
+        while(newIndex <= index)
+        {
+            int r = newIndex / CMD_BUTTONS_PER_ROW;
+            int c = newIndex % CMD_BUTTONS_PER_ROW;
+
+            QPushButton *b = new QPushButton("", commandButtonParent);
+            commandButtonLayout->addWidget(b, r + 1,c);
+            commandGroup->addButton(b, newIndex);
+
+            ++newIndex;
+            added = true;
+        }
+    }
+
+    return true;
 }
 
 void
-QvisSimulationCommandWindow::setCustomButton(int index)
+QvisSimulationCommandWindow::setCustomButtonEnabled(bool value)
 {
-    if(index >= 0 && index < MAX_CMD_BUTTONS)
-    {
-        commandButtonIndex = index;
-        cmdButtons[index]->setText(tr("Custom . . ."));
-    }
+    activateCustomGUI->setVisible(value);
 }
 
 void
@@ -163,10 +226,7 @@ QvisSimulationCommandWindow::setTimeValues(bool timeRanging,
 void
 QvisSimulationCommandWindow::handleCommandButton(int btn)
 {
-    if(btn == commandButtonIndex)
-        emit showCommandWindow();
-    else
-        emit executeButtonCommand(commandGroup->button(btn)->text());
+    emit executeButtonCommand(commandGroup->button(btn)->text());
 }
 
 void

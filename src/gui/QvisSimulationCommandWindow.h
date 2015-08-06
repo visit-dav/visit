@@ -40,6 +40,7 @@
 #include <QvisPostableWindow.h>
 
 class QButtonGroup;
+class QGridLayout;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
@@ -57,7 +58,9 @@ class QPushButton;
 // Creation:   Tue Jul  8 13:26:51 PDT 2008
 //
 // Modifications:
-//   
+//    Brad Whitlock, Wed Aug  5 17:25:48 PDT 2015
+//    Let the window have an arbitrary number of simulation command buttons.
+//
 // ****************************************************************************
 
 class QvisSimulationCommandWindow : public QvisPostableWindow
@@ -70,9 +73,10 @@ public:
     virtual ~QvisSimulationCommandWindow();
     virtual void CreateEntireWindow();
 
-    void setButtonCommand(int index, const QString &cmd);
-    void setButtonEnabled(int index, bool);
-    void setCustomButton(int index);
+    int  numCommandButtons() const;
+    bool setButtonCommand(int index, const QString &cmd);
+    bool setButtonEnabled(int index, bool);
+    void setCustomButtonEnabled(bool);
     void setTimeValues(bool timeRanging, 
                        const QString &start, 
                        const QString &stop,
@@ -96,6 +100,7 @@ private slots:
     void handleCommandButton(int);
 protected:
     virtual void CreateWindowContents();
+    bool EnsureButtonExists(int index, bool &added);
 private:
     QGroupBox          *timeGroup;
     QLineEdit          *startCycle;
@@ -105,9 +110,11 @@ private:
     QLabel             *stopLabel;
     QLabel             *stepLabel;
 
-    int                 commandButtonIndex;
+    QGroupBox          *commandGroupBox;
+    QWidget            *commandButtonParent;
     QButtonGroup       *commandGroup;
-    QPushButton        *cmdButtons[6];
+    QGridLayout        *commandButtonLayout;
+    QPushButton        *activateCustomGUI;
 };
 
 #endif
