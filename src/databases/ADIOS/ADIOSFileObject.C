@@ -563,8 +563,10 @@ ADIOSFileObject::ReadScalarData(ADIOS_VARINFO *avi, int ts, ADIOS_SELECTION *sel
 {
     Open();
     *arr = AllocateScalarArray(avi, sel);
+    /*
     cout<<"SEL: "<<sel<<" "<<sel->type<<" "<<sel->u.bb.ndim<<" s["<<sel->u.bb.start[0]<<" "<<sel->u.bb.start[1]<<"] c["<<sel->u.bb.count[0]<<" "<<sel->u.bb.count[1]<<"]"<<endl;
     cout<<"adios_schedule_read_byid "<<avi->varid<<" "<<ts<<endl;
+    */
     adios_schedule_read_byid(fp, sel, avi->varid, ts, 1, (*arr)->GetVoidPointer(0));
     int retval = adios_perform_reads(fp, 1);
     return true;
