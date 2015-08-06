@@ -168,6 +168,7 @@ avtSpecFEMFileFormat::avtSpecFEMFileFormat(const char *nm)
     //This needs to be put into the file.
     ngllx = nglly = ngllz = 5;
     //ngllx = nglly = ngllz = 1;
+    kernelFile = false;
 }
 
 // ****************************************************************************
@@ -331,18 +332,27 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
     bool allRegionsPresent = true;
     for (int i = 0; i < regions.size(); i++)
         allRegionsPresent &= regions[i];
-
+    
     //Add the variables
     map<string, ADIOS_VARINFO*>::const_iterator it;
     for (it = dataFile->variables.begin(); it != dataFile->variables.end(); it++)
     {
         string vname = GetVariable(it->first);
+        if (kernelFile)
+        {
+            if (vname != "betav_kl_crust_mantle")
+                continue;
+            AddScalarVarToMetaData(md, vname, "reg1/mesh", AVT_NODECENT);
+            AddScalarVarToMetaData(md, vname, "reg1/LatLon_mesh", AVT_NODECENT);
+        }
+        else
+        {
         //Add var only if all regions present.
         if (allRegionsPresent)
         {
             AddScalarVarToMetaData(md, vname, "mesh", AVT_NODECENT);
             AddScalarVarToMetaData(md, vname, "LatLon_mesh", AVT_NODECENT);
-
+            
             AddVectorVarToMetaData(md, "LatLonR_coords", "mesh", AVT_NODECENT, 3);
         }
         
@@ -357,10 +367,11 @@ avtSpecFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int time
                 sprintf(var2, "reg%d/LatLon/%s", i+1, vname.c_str());
                 AddScalarVarToMetaData(md, var, mesh, AVT_NODECENT);
                 AddScalarVarToMetaData(md, var2, mesh2, AVT_NODECENT);
-
+                    
                 sprintf(var, "reg%d/LatLonR_coords", i+1);
                 AddVectorVarToMetaData(md, var, mesh, AVT_NODECENT, 3);
             }
+        }
         }
     }
 }
@@ -955,7 +966,7 @@ avtSpecFEMFileFormat::GetVarRegion(std::string &nm, int ts, int dom)
     }
     for (int i = 0; i < N; i++)
         ptMask[i] = false;
-
+    
     string vname = nm+"/array";
     dataFile->ReadScalarData(vname, ts, dom, &arr);
     vtkFloatArray *var = vtkFloatArray::New();
@@ -1006,7 +1017,7 @@ avtSpecFEMFileFormat::GetVar(int ts, int domain, const char *varname)
     if ((i = vName.find("LatLon")) != string::npos)
         vName = vName.substr(0, i) + vName.substr((i+7), string::npos);
     
-    if (vName.find("reg") != string::npos)
+    if (vName.find("reg") != string::npos || kernelFile)
         return GetVarRegion(vName, ts, domain);
 
     //Determine how many total values.
@@ -1143,6 +1154,18 @@ avtSpecFEMFileFormat::Initialize()
     regions.resize(NUM_REGIONS, false);
 
     map<string, ADIOS_VARINFO*>::const_iterator it;
+
+    //See if it's a kernel file.
+    for (it = dataFile->variables.begin(); it != dataFile->variables.end(); it++)
+    {
+        if (it->first.find("betav_kl_crust_mantle") != string::npos)
+        {
+            kernelFile = true;
+            break;
+        }
+    }
+
+    //Find number of regions and numBlocks.
     numBlocks = 1;
     for (it = dataFile->variables.begin(); it != dataFile->variables.end(); it++)
     {
@@ -1265,6 +1288,9 @@ avtSpecFEMFileFormat::IsDataFile(ADIOSFileObject *f)
 int
 avtSpecFEMFileFormat::GetRegion(const string &str)
 {
+    if (kernelFile)
+        return 1;
+
     int region, n;
     char t1[128];
     
@@ -1291,13 +1317,16 @@ avtSpecFEMFileFormat::GetRegion(const string &str)
 string
 avtSpecFEMFileFormat::GetVariable(const string &str)
 {
-    char t1[128], t2[128], v[128];
-    string::size_type i0 = str.find("/");
+    string::size_type i0 = (kernelFile?0:i0 = str.find("/"));
     string::size_type i1 = str.rfind("/");
+    
     if (i0 == string::npos || i1 == string::npos)
         EXCEPTION1(ImproperUseException, "Invalid variable");
-
-    return str.substr(i0+1, i1-i0-1);
+    
+    if (kernelFile)
+        return str.substr(0, i1);
+    else
+        return str.substr(i0+1, i1-i0-1);
 }
 
 //****************************************************************************

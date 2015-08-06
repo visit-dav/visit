@@ -116,9 +116,10 @@ class avtSpecFEMFileFormat : public avtMTMDFileFormat
     //std::map<std::string, std::string> variables;
     std::vector<std::string> variables;
     std::vector<std::pair<std::string, int> > domainVarPaths;
+    bool kernelFile;
 
-    static int GetRegion(const std::string &str);
-    static std::string GetVariable(const std::string &str);
+    int GetRegion(const std::string &str);
+    std::string GetVariable(const std::string &str);
     static int NUM_REGIONS;
 };
 #endif
