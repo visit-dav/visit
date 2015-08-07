@@ -199,14 +199,13 @@ avtStreamlineIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
         }
     }
 
+    ++numSteps;
+
     if( !shouldTerminate && numSteps >= maxSteps )
     {
         terminatedBecauseOfMaxSteps = true;
         shouldTerminate = true;
     }
-
-    // Update other termination criteria.
-    numSteps += 1;
 
     return shouldTerminate;
 }
@@ -249,4 +248,25 @@ avtStreamlineIC::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, doTime);
     buff.io(mode, maxTime);
     buff.io(mode, terminatedBecauseOfMaxSteps);
+}
+
+
+// ****************************************************************************
+//  Method: avtStreamlineIC::MergeIntegralCurve
+//
+//  Purpose:
+//      Merge a values from one curve into another
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 4, 2015
+//
+// ****************************************************************************
+
+void
+avtStreamlineIC::MergeIntegralCurve(avtIntegralCurve *ic)
+{
+  avtStreamlineIC *sic = (avtStreamlineIC* ) ic;
+
+  numSteps = sic->numSteps;
+  terminatedBecauseOfMaxSteps = sic->terminatedBecauseOfMaxSteps;
 }

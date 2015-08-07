@@ -78,15 +78,49 @@ class avtLagrangianIC : public avtStateRecorderIntegralCurve
     
     virtual bool CheckForTermination(avtIVPStep &step, avtIVPField *field)
     {
-        numSteps++;
-        if (numSteps >= maxSteps)
-            return true;
-        return false;
+      bool shouldTerminate = false;
+
+      ++numSteps;
+
+      if( numSteps >= maxSteps )
+      {
+        terminatedBecauseOfMaxSteps = true;
+        shouldTerminate = true;
+      }
+      
+      return shouldTerminate;
     }
     
-    int maxSteps;
+    virtual void    SetMaxSteps( int ms ) { maxSteps = ms; }
+    virtual int     GetNumSteps() { return numSteps; }
+    virtual bool    TerminatedBecauseOfMaxSteps(void)
+                                 { return terminatedBecauseOfMaxSteps; };
+
+    virtual void  Serialize(MemStream::Mode mode,
+                            MemStream &buff, 
+                            avtIVPSolver *solver,
+                            SerializeFlags serializeFlags)
+    {
+      // Have the base class serialize its part
+      avtStateRecorderIntegralCurve::Serialize(mode, buff, solver, serializeFlags);
+
+      buff.io(mode, numSteps);
+      buff.io(mode, maxSteps);
+      buff.io(mode, terminatedBecauseOfMaxSteps);
+    }
+
+    virtual void  MergeIntegralCurve(avtIntegralCurve *ic)
+    {
+      avtLagrangianIC *lic = (avtLagrangianIC* ) ic;
+      
+      numSteps = lic->numSteps;
+      terminatedBecauseOfMaxSteps = lic->terminatedBecauseOfMaxSteps;
+    }
+
   private:
     int numSteps;
+    int maxSteps;
+    bool terminatedBecauseOfMaxSteps;
 };
 
 // ****************************************************************************
@@ -185,7 +219,7 @@ avtIntegralCurve *
 avtLagrangianFilter::CreateIntegralCurve()
 {
     avtLagrangianIC *ic = new avtLagrangianIC;
-    ic->maxSteps = atts.GetNumSteps();
+    ic->SetMaxSteps( atts.GetNumSteps() );
     return ic;
 }
 
@@ -238,7 +272,9 @@ avtLagrangianFilter::CreateIntegralCurve(const avtIVPSolver *model,
     
     avtLagrangianIC *ic = new avtLagrangianIC(mask, model, dir, t_start,
                                               p_start, v_start, ID);
-    ic->maxSteps = atts.GetNumSteps();
+
+    ic->SetMaxSteps( atts.GetNumSteps() );
+
     return ic;
 }
 

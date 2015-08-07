@@ -227,6 +227,12 @@
                                                the sign return distances" type="bool">
         false
       </Field>
+      <Field name="issueAdvectionWarnings" label="Issue warning when the advection stops before the limits" type="bool">
+        true
+      </Field>
+      <Field name="issueBoundaryWarnings" label="Issue warning when the advection stops at the boundary" type="bool">
+        true
+      </Field>
       <Field name="issueTerminationWarnings" label="Issue Warning When Termination Criteria Is Not Met" type="bool">
         true
       </Field>

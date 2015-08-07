@@ -234,11 +234,10 @@ avtLCSIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
         }
     }
 
+    ++numSteps;
+
     if( !shouldTerminate && numSteps >= maxSteps )
         shouldTerminate = true;
-
-    // Update other termination criteria.
-    ++numSteps;
 
     return shouldTerminate;
 }

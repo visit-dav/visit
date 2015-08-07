@@ -127,12 +127,14 @@ public:
     SerializeFlags   _serializeFlags;
     long             sequenceCnt;
 
-    unsigned int     maxSteps;
-    unsigned int     numSteps;
     bool             doDistance;
     double           maxDistance;
+
     bool             doTime;
     double           maxTime;
+
+    unsigned int     maxSteps;
+    unsigned int     numSteps;
     bool             terminatedBecauseOfMaxSteps;
 
     double           time;

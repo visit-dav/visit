@@ -634,19 +634,26 @@ avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtIntegra
                 v[i]->history[j*GetSampleStride() + GetSampleIndex(SAMPLE_DOM_VISIT)] = lastVal;
         }
     }
-    
-    // now curve pieces are in sorted order and simply merge the histories
-    // in sequence order; we merge by appending to the first (v[0]'s) history
-    v[0]->history.reserve( combinedHistorySize );
 
-    // Need to get the ending setting transfered.
-    v[0]->time = v[vSize-1]->time;
-    v[0]->distance = v[vSize-1]->distance;
-    v[0]->status = v[vSize-1]->status;
+    // Get the values from the last curve in the sequence and store
+    // them with the first curve.
+    
+    // Get the values from the child class
+    v[0]->MergeIntegralCurve( v[vSize-1] );
+
+    // Get the values from the base class
+    v[0]->time      = v[vSize-1]->time;
+    v[0]->distance  = v[vSize-1]->distance;
+    v[0]->status    = v[vSize-1]->status;
     v[0]->blockList = v[vSize-1]->blockList;
     avtIVPSolver *tmpSolver = v[0]->ivp;
-    v[0]->ivp = v[vSize-1]->ivp;
+    v[0]->ivp       = v[vSize-1]->ivp;
     v[vSize-1]->ivp = tmpSolver;
+
+    // The curve pieces are now in sorted order. Merge the histories
+    // from each curve in the sequence; merge by appending to the
+    // first curve's history. Finally delete the curve. 
+    v[0]->history.reserve( combinedHistorySize );
 
     for( size_t i=1; i < vSize; i++ )
     {
