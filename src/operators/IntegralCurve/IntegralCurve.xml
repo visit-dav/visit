@@ -286,9 +286,6 @@
       <Field name="numberOfRandomSamples" label="numberOfRandomSamples" type="int">
         1
       </Field>
-      <Field name="forceNodeCenteredData" label="forceNodeCenteredData" type="bool">
-        false
-      </Field>
       <Field name="issueAdvectionWarnings" label="Issue warning when the advection stops before the limits" type="bool">
         true
       </Field>

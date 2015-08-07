@@ -714,7 +714,6 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
 //
 //  Modifications:
 //
-//
 // ****************************************************************************
 
 void
@@ -846,12 +845,6 @@ avtIntegralCurveFilter::GenerateAttributeFields() const
 
     // need at least these three attributes
     unsigned int attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
-
-    // if( doTime )
-    //     attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
-
-    // if( doDistance )
-    //     attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
 
     if (storeVelocitiesForLighting)
         attr |= avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
@@ -3119,7 +3112,6 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 // Creation:    February 21, 2011
 //
 // ****************************************************************************
-
 
 float
 avtIntegralCurveFilter::ComputeCorrelationDistance(int idx,
