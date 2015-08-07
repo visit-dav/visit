@@ -207,6 +207,8 @@ public:
     void SetMaxIterations(int maxIterations_);
     void SetShowPartialResults(bool showPartialResults_);
     void SetShowReturnDistances(bool showReturnDistances_);
+    void SetIssueAdvectionWarnings(bool issueAdvectionWarnings_);
+    void SetIssueBoundaryWarnings(bool issueBoundaryWarnings_);
     void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
     void SetIssueStepsizeWarnings(bool issueStepsizeWarnings_);
     void SetIssueStiffnessWarnings(bool issueStiffnessWarnings_);
@@ -273,6 +275,8 @@ public:
     int               GetMaxIterations() const;
     bool              GetShowPartialResults() const;
     bool              GetShowReturnDistances() const;
+    bool              GetIssueAdvectionWarnings() const;
+    bool              GetIssueBoundaryWarnings() const;
     bool              GetIssueTerminationWarnings() const;
     bool              GetIssueStepsizeWarnings() const;
     bool              GetIssueStiffnessWarnings() const;
@@ -388,6 +392,8 @@ public:
         ID_maxIterations,
         ID_showPartialResults,
         ID_showReturnDistances,
+        ID_issueAdvectionWarnings,
+        ID_issueBoundaryWarnings,
         ID_issueTerminationWarnings,
         ID_issueStepsizeWarnings,
         ID_issueStiffnessWarnings,
@@ -449,6 +455,8 @@ private:
     int         maxIterations;
     bool        showPartialResults;
     bool        showReturnDistances;
+    bool        issueAdvectionWarnings;
+    bool        issueBoundaryWarnings;
     bool        issueTerminationWarnings;
     bool        issueStepsizeWarnings;
     bool        issueStiffnessWarnings;
@@ -463,6 +471,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LIMITCYCLEATTRIBUTES_TMFS "iDDDDDiiisiibdbddbddiddidDiiiiibbddidddbbiibdibbbbbbddddi"
+#define LIMITCYCLEATTRIBUTES_TMFS "iDDDDDiiisiibdbddbddiddidDiiiiibbddidddbbiibdibbbbbbbbddddi"
 
 #endif

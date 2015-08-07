@@ -154,6 +154,8 @@ avtLimitCycleFilter::avtLimitCycleFilter() : seedVelocity(0,0,0),
     sourceSelection = "";
 
     storeVelocitiesForLighting = false;
+    issueWarningForAdvection = true;
+    issueWarningForBoundary = true;
     issueWarningForMaxStepsTermination = true;
     issueWarningForStepsize = true;
     issueWarningForStiffness = true;
@@ -164,6 +166,8 @@ avtLimitCycleFilter::avtLimitCycleFilter() : seedVelocity(0,0,0),
     correlationDistanceDoBBox = false;
 
     intPlane = NULL;
+
+    allSeedsSentToAllProcs = true;
 }
 
 
@@ -477,6 +481,8 @@ avtLimitCycleFilter::SetAtts(const AttributeGroup *a)
                    atts.GetTerminateByTime(),
                    atts.GetTermTime());
 
+    IssueWarningForAdvection(atts.GetIssueAdvectionWarnings());
+    IssueWarningForBoundary(atts.GetIssueBoundaryWarnings());
     IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
     IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
     IssueWarningForStepsize(atts.GetIssueStepsizeWarnings());
@@ -517,6 +523,7 @@ void
 avtLimitCycleFilter::PreExecute(void)
 {
     SetActiveVariable(outVarName.c_str());
+    allSeedsSentToAllProcs = true;
     avtPICSFilter::PreExecute();
 }
 
@@ -587,6 +594,23 @@ avtLimitCycleFilter::ContinueExecute()
 
     // Determine the number of curves generated across all processors.
     int nics = ics.size();
+
+
+    std::cerr << PAR_Rank() << "  ncurves  " << nics << std::endl;
+
+    for(size_t i=0, j=0; i<nics; ++i, j+=3)
+    {
+        avtPoincareIC *ic = (avtPoincareIC *) ics[i];
+
+        size_t nSamples = ic->GetNumberOfSamples();
+
+        std::cerr << PAR_Rank() << "  curves  "
+                  << ic->id << "  " << nSamples << "  "
+                  << ic->GetNumIntersections() << "  "
+                  << ic->TerminatedBecauseOfMaxIntersections() << "  "
+                  << std::endl;
+    }
+
     
     //loop over all the integral curves and add it back to the
     //original list of seeds.
@@ -602,7 +626,7 @@ avtLimitCycleFilter::ContinueExecute()
     {
         avtPoincareIC *ic = (avtPoincareIC *) ics[i];
 
-        indices[i] = ics[i]->id;
+        indices[i] = ic->id;
 
         size_t nSamples = ic->GetNumberOfSamples();
 
@@ -751,9 +775,6 @@ avtLimitCycleFilter::ContinueExecute()
 
             returnDistances[index] = signVal * vec.length();
           }
-
-          // for (size_t i=0; i<50; ++i)
-            //std::cerr << i << "  " << returnDistances[i] << std::endl;
         }
         else
         {
@@ -805,11 +826,11 @@ avtLimitCycleFilter::ContinueExecute()
             // they maybe deleted because they can not be avected (scattered
             // to domains). So skip over them. However, one curve should
             // remain which will be valid with it's sibling.
-            //std::cerr << iteration << "   " << id0 << "  " << id1 << "  ";
+            std::cerr << iteration << "   " << id0 << "  " << id1 << "  ";
             
             if (id0 == -1 || id1 == -1)
             {
-              //std::cerr << "missing IC " << std::endl;
+              std::cerr << "missing IC " << std::endl;
               continue;
             }
             
@@ -828,7 +849,7 @@ avtLimitCycleFilter::ContinueExecute()
               // Calculate the vector between the first and last point.
               vec0 = sPt0 - ePt0;
               
-              //std::cerr << "v0 " << vec0.length() << "  ";
+              std::cerr << "v0 " << vec0.length() << "  ";
             }
             
             if( all_status[ index1 ] )
@@ -836,7 +857,7 @@ avtLimitCycleFilter::ContinueExecute()
               // Calculate the vector between the first and last point.
               vec1 = sPt1 - ePt1;
               
-              //std::cerr << "v1 " << vec1.length() << "  ";
+              std::cerr << "v1 " << vec1.length() << "  ";
             }
 
             // Check points that have intersected the Poincare plane
@@ -844,14 +865,14 @@ avtLimitCycleFilter::ContinueExecute()
             // Poincare plane are consitent.
             if( all_status[ index0 ] && all_status[ index1 ] )
             {
-              //std::cerr << "dot " << vec0.dot( vec1 ) << "  "
-                        // << "distance " << (sPt0 - sPt1).length() << "  ";
+              std::cerr << "dot " << vec0.dot( vec1 ) << "  "
+                        << "distance " << (sPt0 - sPt1).length() << "  ";
               
               // If the vectors are in the opposite direction then there is
               // a zero crossing.
               if( vec0.dot( vec1 ) < 0 )
               {
-                //std::cerr << " zero crossing found, ";
+                std::cerr << " zero crossing found, ";
                 
                 // If the vector length is really small then a cycle is
                 // close by.  This check is also used to prevent tangent
@@ -862,14 +883,14 @@ avtLimitCycleFilter::ContinueExecute()
                   // delete the other.
                   if( (sPt0 - sPt1).length() < tolerance )
                   {
-                    //std::cerr << " cycle found  ic0" << std::endl;
+                    std::cerr << " cycle found  ic0" << std::endl;
                     
                     ids_to_keep.push_back( id0 );
                     continue;
                   }
                   else
                   {
-                    //std::cerr << " nearing cycle, ";
+                    std::cerr << " nearing cycle, ";
                   }
                 }
               
@@ -884,7 +905,7 @@ avtLimitCycleFilter::ContinueExecute()
               // interval via the gui.
               else
               {
-                //std::cerr << " no zero crosing found" << std::endl;
+                std::cerr << " no zero crosing found" << std::endl;
               }
             }
 
@@ -892,7 +913,7 @@ avtLimitCycleFilter::ContinueExecute()
             // and was consistent directionally split the interval.
             else if( (all_status[ index0 ]) || (all_status[ index1 ]) )
             {
-              //std::cerr << "One curve does not have enough punctures ";
+              std::cerr << "One curve does not have enough punctures ";
               
               split = true;
             }
@@ -901,7 +922,7 @@ avtLimitCycleFilter::ContinueExecute()
             // there can not be a limit cycle in between. Delete the pair.
             else
             {
-              //std::cerr << "Neither curve has enough punctures " << std::endl;
+              std::cerr << "Neither curve has enough punctures " << std::endl;
             }
             
             if( split )
@@ -910,12 +931,18 @@ avtLimitCycleFilter::ContinueExecute()
               // for the crossing.
               if( iteration < maxIterations )
               {
+                std::cerr << " splitting into ";
+
                 std::vector< avtIntegralCurve * > new_ics;
                 
                 avtVector seed = (sPt0 + sPt1) * 0.5;
+
+                allSeedsSentToAllProcs = false;
                 
                 AddSeedPoint( seed, planeN, new_ics );
                 
+                std::cerr << 2*new_ics.size() << " pairs " << std::endl;
+
                 for( unsigned int j=0; j<new_ics.size(); ++j )
                 {
                   avtPoincareIC* seed_poincare_ic =
@@ -926,7 +953,6 @@ avtLimitCycleFilter::ContinueExecute()
                 }
                 
                 newSeeds = true;
-                //std::cerr << " splitting " << std::endl;
               }
               
               // Max out on the iteration but there is probably a limit
@@ -934,19 +960,19 @@ avtLimitCycleFilter::ContinueExecute()
               // crossing. So leave one or both curves.
               else
               {
-                //std::cerr << " max iterations " << std::endl;
+                std::cerr << " max iterations " << std::endl;
                 
                 if( all_status[index0] &&
                     (atts.GetShowPartialResults() || vec0.length() < tolerance) )
                 {
-                  //std::cerr << " ic0 ";
+                  std::cerr << " ic0 ";
                   ids_to_keep.push_back( id0 );
                 }
                 
                 if( all_status[index1] &&
                     (atts.GetShowPartialResults() || vec1.length() < tolerance) )
                 {
-                  //std::cerr << " ic1 ";
+                  std::cerr << " ic1 ";
                   ids_to_keep.push_back( id1 );
                 }
               }
@@ -1000,18 +1026,19 @@ avtLimitCycleFilter::ContinueExecute()
       BroadcastIntVector( ids_to_delete, PAR_Rank() );
       
       DeleteIntegralCurves( ids_to_delete );
+
     
-      // GetTerminatedIntegralCurves(ics);
+      GetTerminatedIntegralCurves(ics);
       
-      // nics = ics.size();
-      // SumIntAcrossAllProcessors(nics);
+      nics = ics.size();
+      SumIntAcrossAllProcessors(nics);
       
-      // if( PAR_Rank() == 0 )
-        //std::cerr << PAR_Rank() << "  "
-                  // << "Iteration  " << iteration << "  "
-                  // << "number of curves " << nics << "  "
-                  // << "number of pairs " << ICPairs.size() << "  "
-                  // << std::endl;
+      if( PAR_Rank() == 0 )
+        std::cerr << PAR_Rank() << "  "
+                  << "Iteration  " << iteration << "  "
+                  << "number of curves " << nics << "  "
+                  << "number of pairs " << ICPairs.size() << "  "
+                  << std::endl;
       
       ++iteration;
       
@@ -1042,6 +1069,24 @@ avtLimitCycleFilter::Execute(void)
     GetTerminatedIntegralCurves(ics);
 
     ReportWarnings( ics );
+}
+
+
+// ****************************************************************************
+//  Method: avtLimitCycleFilter::GetAllSeedsSentToAllProcs
+//
+//  Purpose:
+//      
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 5, 2015
+//
+// ****************************************************************************
+
+bool
+avtLimitCycleFilter::GetAllSeedsSentToAllProcs(void)
+{
+    return allSeedsSentToAllProcs;
 }
 
 
@@ -1178,8 +1223,8 @@ avtLimitCycleFilter::GenerateAttributeFields() const
 
 void
 avtLimitCycleFilter::SetTermination(int maxSteps_, bool doDistance_,
-                                       double maxDistance_,
-                                       bool doTime_, double maxTime_)
+                                    double maxDistance_,
+                                    bool doTime_, double maxTime_)
 {
     maxSteps = maxSteps_;
     doDistance = doDistance_;
@@ -1691,6 +1736,9 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 {
     int numICs = (int)ics.size();
 
+    int numAdvection = 0;
+    int numBoundary = 0;
+
     int numEarlyTerminators = 0;
     int numStepSize = 0;
     int numStiff = 0;
@@ -1706,20 +1754,55 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     {
         avtPoincareIC *ic = dynamic_cast<avtPoincareIC*>(ics[i]);
 
+        bool badTime = (doTime && (fabs(ic->GetTime() - absMaxTime) > FLT_MIN));
+        bool badDistance = (doDistance && (ic->GetDistance() < maxDistance));
+
         if (ic->CurrentVelocity().length() <= criticalPointThreshold)
             numCritPts++;
 
         if (ic->TerminatedBecauseOfMaxSteps())
             numEarlyTerminators++;
 
-        if (ic->status.StepSizeUnderflow())
+        if (ic->status.StepSizeUnderflow() && (badTime || badDistance))
             numStepSize++;
 
         if (ic->EncounteredNumericalProblems())
             numStiff++;
+
+        if (ic->status.ExitedSpatialBoundary())
+          ++numBoundary;
+
+        if (badTime || badDistance)
+          ++numAdvection;
     }
 
     char str[4096] = "";
+
+    if (issueWarningForAdvection)
+    {
+        SumIntAcrossAllProcessors(numAdvection);
+
+        if (numAdvection)
+        {
+          SNPRINTF(str, 4096,
+                   "%s\n%d of your integral curves terminated before they reached "
+                   "the maximum advection criteria.  This may be indicative of your "
+                   "time or distance criteria being too large or the curve leaving the domain."
+                   "  Note that this message does not mean that an error has occurred; it simply "
+                   "means that VisIt stopped advecting particles before they reached the maximum.\n",
+                   str, numAdvection);
+        }
+    }
+
+    if ((doDistance || doTime) && issueWarningForBoundary)
+    {
+        SumIntAcrossAllProcessors(numBoundary);
+        if (numBoundary > 0)
+        {
+            SNPRINTF(str, 4096, 
+                     "%s\n%d of your integral curves exited the spatial domain.\n", str, numBoundary);
+        }
+    }
 
     if ((doDistance || doTime) && issueWarningForMaxStepsTermination)
     {
@@ -1778,15 +1861,14 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
                      "When one component of a velocity field varies quickly and another stays "
                      "relatively constant, then it is not possible to choose step sizes that "
                      "remain within tolerances.  This condition is referred to as stiffness and "
-                     "VisIt stops advecting in this case.  If you want to disable this message, "
-                     "you can do this under the Advanced tab.\n", str,numStiff);
+                     "VisIt stops advecting in this case.\n", str,numStiff);
         }
     }
 
     if( strlen( str ) )
     {
         SNPRINTF(str, 4096, 
-                 "%s\nIf you want to disable any of these messages, "
+                 "\n%s\nIf you want to disable any of these messages, "
                      "you can do so under the Advanced tab.\n", str);
 
         avtCallback::IssueWarning(str);
@@ -1808,21 +1890,22 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 void
 avtLimitCycleFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &ics)
 {
-    if (ics.size() == 0)
-      return;
+    int numICs = 0, numPts = 0;
 
-    if(PAR_Rank() != 0 && atts.GetShowReturnDistances() )
-      return;
-
-    int numICs, numPts = 0;
-
-    // Create just the return distance curve.
-    if(PAR_Rank() == 0 && atts.GetShowReturnDistances() )
-      numICs = 1;
-
-    // Normal processing of the integral cures.
+    if( atts.GetShowReturnDistances() )
+    {
+      // Create just the return distance curve.
+      if(PAR_Rank() == 0 )
+        numICs = 1;
+    }
     else
+    {
+      // Normal processing of the integral cures.
       numICs = (int) ics.size();
+    }
+
+    if( numICs == 0 )
+      return;
 
     if (DebugStream::Level5())
     {
@@ -1893,6 +1976,8 @@ avtLimitCycleFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &
 
         for (size_t i = 0; i < returnDistances.size(); i++)
         {
+          std::cerr << i << "  " << returnDistances[i] << std::endl;
+
           line->GetPointIds()->SetId(i, pIdx);
           
           // Original seed point plus return distance; 

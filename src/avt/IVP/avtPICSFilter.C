@@ -3069,6 +3069,8 @@ avtPICSFilter::AddSeedPoint(avtVector &pt,
     vels.push_back( vel );
 
     CreateIntegralCurvesFromSeeds(pts, vels, ics, ids);
+
+    icAlgo->SetAllSeedsSentToAllProcs( GetAllSeedsSentToAllProcs() );
     icAlgo->AddIntegralCurves(ics);
 }
 

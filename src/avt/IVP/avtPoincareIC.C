@@ -186,15 +186,14 @@ avtPoincareIC::CheckForTermination(avtIVPStep& step, avtIVPField *)
       }
     }      
      
+    ++numSteps;
+
     // If max steps is zero ignore the test.
     if( !shouldTerminate && maxSteps && numSteps >= maxSteps )
     {
       terminatedBecauseOfMaxSteps = true;
       shouldTerminate = true;
     }
-
-    // Update other termination criteria.
-    numSteps += 1;
 
     return shouldTerminate;
 }
@@ -370,6 +369,14 @@ avtPoincareIC::Serialize(MemStream::Mode mode, MemStream &buff,
     // Have the base class serialize its part
     avtStateRecorderIntegralCurve::Serialize(mode, buff, solver, serializeFlags);
 
+    buff.io(mode, intersectPlanePt);
+    buff.io(mode, intersectPlaneNorm);
+
+    buff.io( mode, intersectPlaneEq[0]);
+    buff.io( mode, intersectPlaneEq[1]);
+    buff.io( mode, intersectPlaneEq[2]);
+    buff.io( mode, intersectPlaneEq[3]);
+
     buff.io(mode, numSteps);
     buff.io(mode, maxSteps);
     buff.io(mode, doTime);
@@ -378,4 +385,28 @@ avtPoincareIC::Serialize(MemStream::Mode mode, MemStream &buff,
     buff.io(mode, numIntersections);
     buff.io(mode, maxIntersections);
     buff.io(mode, terminatedBecauseOfMaxIntersections);
+}
+
+// ****************************************************************************
+//  Method: avtPoincareIC::MergeIntegralCurve
+//
+//  Purpose:
+//      Merge a values from one curve into another
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 4, 2015
+//
+// ****************************************************************************
+
+void
+avtPoincareIC::avtPoincareIC::MergeIntegralCurve(avtIntegralCurve *ic)
+{
+    avtPoincareIC *pic = (avtPoincareIC *) ic;
+
+    numSteps = pic->numSteps;
+    terminatedBecauseOfMaxSteps = pic->terminatedBecauseOfMaxSteps;
+
+    numIntersections = pic->numIntersections;
+    terminatedBecauseOfMaxIntersections =
+    pic->terminatedBecauseOfMaxIntersections;
 }

@@ -150,6 +150,9 @@ public:
 
     virtual avtIntegralCurve* MergeIntegralCurveSequence(
                               std::vector<avtIntegralCurve *> &v);
+
+    virtual void MergeIntegralCurve(avtIntegralCurve *) = 0;
+
     static bool IdSeqCompare(const avtIntegralCurve *slA,
                              const avtIntegralCurve *slB);
     static bool IdRevSeqCompare(const avtIntegralCurve *slA,

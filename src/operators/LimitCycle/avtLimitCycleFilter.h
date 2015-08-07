@@ -50,7 +50,6 @@
 
 #include <vtkPlane.h>
 
-
 /** included attributes for Limit Cycle */
 #include <LimitCycleAttributes.h>
 
@@ -105,7 +104,7 @@ class avtLimitCycleFilter : public virtual avtPluginFilter,
                                         const avtVector &v_start,
                                         long ID);
 
-   virtual bool                  GetAllSeedsSentToAllProcs() { return true; };
+    virtual bool                  GetAllSeedsSentToAllProcs();
 
     void SetTermination(int maxSteps, 
                         bool doDistance, double maxDistance, 
@@ -131,6 +130,10 @@ class avtLimitCycleFilter : public virtual avtPluginFilter,
 
     void SetVelocitiesForLighting(bool v) { storeVelocitiesForLighting = v; };
 
+    void IssueWarningForAdvection(bool v) 
+                 { issueWarningForAdvection = v; };
+    void IssueWarningForBoundary(bool v) 
+                 { issueWarningForBoundary = v; };
     void IssueWarningForMaxStepsTermination(bool v) 
                  { issueWarningForMaxStepsTermination = v; };
     void IssueWarningForStepsize(bool v) 
@@ -186,12 +189,12 @@ class avtLimitCycleFilter : public virtual avtPluginFilter,
     void SetIntersectionCriteria();
     avtVector GetIntersectingPoint( avtVector pt0, avtVector pt1 );
 
-
     std::string outVarName;
 
     LimitCycleAttributes atts;
     bool               needsRecalculation;
 
+    bool   allSeedsSentToAllProcs;
     int    sourceType;   
     int    dataValue;
 
@@ -207,6 +210,8 @@ class avtLimitCycleFilter : public virtual avtPluginFilter,
     bool     doTime;
     double   maxTime;
 
+    double   absMaxTime;
+
     // Various starting locations for streamlines.
     std::vector<avtVector> pointList;
     avtVector points[2];
@@ -221,6 +226,8 @@ class avtLimitCycleFilter : public virtual avtPluginFilter,
     std::string sourceSelection;
     bool      storeVelocitiesForLighting;
 
+    bool      issueWarningForAdvection;
+    bool      issueWarningForBoundary;
     bool      issueWarningForMaxStepsTermination;
     bool      issueWarningForStepsize;
     bool      issueWarningForStiffness;
@@ -239,5 +246,4 @@ class avtLimitCycleFilter : public virtual avtPluginFilter,
 
     std::string  SeedInfoString() const;
 };
-
 #endif

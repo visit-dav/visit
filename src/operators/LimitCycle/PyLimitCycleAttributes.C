@@ -491,6 +491,16 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%sshowReturnDistances = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetIssueAdvectionWarnings())
+        SNPRINTF(tmpStr, 1000, "%sissueAdvectionWarnings = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sissueAdvectionWarnings = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetIssueBoundaryWarnings())
+        SNPRINTF(tmpStr, 1000, "%sissueBoundaryWarnings = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sissueBoundaryWarnings = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetIssueTerminationWarnings())
         SNPRINTF(tmpStr, 1000, "%sissueTerminationWarnings = 1\n", prefix);
     else
@@ -1956,6 +1966,54 @@ LimitCycleAttributes_GetShowReturnDistances(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+LimitCycleAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
+{
+    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the issueAdvectionWarnings in the object.
+    obj->data->SetIssueAdvectionWarnings(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LimitCycleAttributes_GetIssueAdvectionWarnings(PyObject *self, PyObject *args)
+{
+    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetIssueAdvectionWarnings()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+LimitCycleAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
+{
+    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the issueBoundaryWarnings in the object.
+    obj->data->SetIssueBoundaryWarnings(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+LimitCycleAttributes_GetIssueBoundaryWarnings(PyObject *self, PyObject *args)
+{
+    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetIssueBoundaryWarnings()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 LimitCycleAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
@@ -2280,6 +2338,10 @@ PyMethodDef PyLimitCycleAttributes_methods[LIMITCYCLEATTRIBUTES_NMETH] = {
     {"GetShowPartialResults", LimitCycleAttributes_GetShowPartialResults, METH_VARARGS},
     {"SetShowReturnDistances", LimitCycleAttributes_SetShowReturnDistances, METH_VARARGS},
     {"GetShowReturnDistances", LimitCycleAttributes_GetShowReturnDistances, METH_VARARGS},
+    {"SetIssueAdvectionWarnings", LimitCycleAttributes_SetIssueAdvectionWarnings, METH_VARARGS},
+    {"GetIssueAdvectionWarnings", LimitCycleAttributes_GetIssueAdvectionWarnings, METH_VARARGS},
+    {"SetIssueBoundaryWarnings", LimitCycleAttributes_SetIssueBoundaryWarnings, METH_VARARGS},
+    {"GetIssueBoundaryWarnings", LimitCycleAttributes_GetIssueBoundaryWarnings, METH_VARARGS},
     {"SetIssueTerminationWarnings", LimitCycleAttributes_SetIssueTerminationWarnings, METH_VARARGS},
     {"GetIssueTerminationWarnings", LimitCycleAttributes_GetIssueTerminationWarnings, METH_VARARGS},
     {"SetIssueStepsizeWarnings", LimitCycleAttributes_SetIssueStepsizeWarnings, METH_VARARGS},
@@ -2510,6 +2572,10 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
         return LimitCycleAttributes_GetShowPartialResults(self, NULL);
     if(strcmp(name, "showReturnDistances") == 0)
         return LimitCycleAttributes_GetShowReturnDistances(self, NULL);
+    if(strcmp(name, "issueAdvectionWarnings") == 0)
+        return LimitCycleAttributes_GetIssueAdvectionWarnings(self, NULL);
+    if(strcmp(name, "issueBoundaryWarnings") == 0)
+        return LimitCycleAttributes_GetIssueBoundaryWarnings(self, NULL);
     if(strcmp(name, "issueTerminationWarnings") == 0)
         return LimitCycleAttributes_GetIssueTerminationWarnings(self, NULL);
     if(strcmp(name, "issueStepsizeWarnings") == 0)
@@ -2643,6 +2709,10 @@ PyLimitCycleAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LimitCycleAttributes_SetShowPartialResults(self, tuple);
     else if(strcmp(name, "showReturnDistances") == 0)
         obj = LimitCycleAttributes_SetShowReturnDistances(self, tuple);
+    else if(strcmp(name, "issueAdvectionWarnings") == 0)
+        obj = LimitCycleAttributes_SetIssueAdvectionWarnings(self, tuple);
+    else if(strcmp(name, "issueBoundaryWarnings") == 0)
+        obj = LimitCycleAttributes_SetIssueBoundaryWarnings(self, tuple);
     else if(strcmp(name, "issueTerminationWarnings") == 0)
         obj = LimitCycleAttributes_SetIssueTerminationWarnings(self, tuple);
     else if(strcmp(name, "issueStepsizeWarnings") == 0)
