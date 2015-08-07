@@ -532,7 +532,6 @@ void IntegralCurveAttributes::Init()
     randomSamples = false;
     randomSeed = 0;
     numberOfRandomSamples = 1;
-    forceNodeCenteredData = false;
     issueAdvectionWarnings = true;
     issueBoundaryWarnings = true;
     issueTerminationWarnings = true;
@@ -649,7 +648,6 @@ void IntegralCurveAttributes::Copy(const IntegralCurveAttributes &obj)
     randomSamples = obj.randomSamples;
     randomSeed = obj.randomSeed;
     numberOfRandomSamples = obj.numberOfRandomSamples;
-    forceNodeCenteredData = obj.forceNodeCenteredData;
     issueAdvectionWarnings = obj.issueAdvectionWarnings;
     issueBoundaryWarnings = obj.issueBoundaryWarnings;
     issueTerminationWarnings = obj.issueTerminationWarnings;
@@ -921,7 +919,6 @@ IntegralCurveAttributes::operator == (const IntegralCurveAttributes &obj) const
             (randomSamples == obj.randomSamples) &&
             (randomSeed == obj.randomSeed) &&
             (numberOfRandomSamples == obj.numberOfRandomSamples) &&
-            (forceNodeCenteredData == obj.forceNodeCenteredData) &&
             (issueAdvectionWarnings == obj.issueAdvectionWarnings) &&
             (issueBoundaryWarnings == obj.issueBoundaryWarnings) &&
             (issueTerminationWarnings == obj.issueTerminationWarnings) &&
@@ -1247,7 +1244,6 @@ IntegralCurveAttributes::SelectAll()
     Select(ID_randomSamples,                      (void *)&randomSamples);
     Select(ID_randomSeed,                         (void *)&randomSeed);
     Select(ID_numberOfRandomSamples,              (void *)&numberOfRandomSamples);
-    Select(ID_forceNodeCenteredData,              (void *)&forceNodeCenteredData);
     Select(ID_issueAdvectionWarnings,             (void *)&issueAdvectionWarnings);
     Select(ID_issueBoundaryWarnings,              (void *)&issueBoundaryWarnings);
     Select(ID_issueTerminationWarnings,           (void *)&issueTerminationWarnings);
@@ -1634,12 +1630,6 @@ IntegralCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
         node->AddNode(new DataNode("numberOfRandomSamples", numberOfRandomSamples));
     }
 
-    if(completeSave || !FieldsEqual(ID_forceNodeCenteredData, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("forceNodeCenteredData", forceNodeCenteredData));
-    }
-
     if(completeSave || !FieldsEqual(ID_issueAdvectionWarnings, &defaultObject))
     {
         addToParent = true;
@@ -2002,8 +1992,6 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
         SetRandomSeed(node->AsInt());
     if((node = searchNode->GetNode("numberOfRandomSamples")) != 0)
         SetNumberOfRandomSamples(node->AsInt());
-    if((node = searchNode->GetNode("forceNodeCenteredData")) != 0)
-        SetForceNodeCenteredData(node->AsBool());
     if((node = searchNode->GetNode("issueAdvectionWarnings")) != 0)
         SetIssueAdvectionWarnings(node->AsBool());
     if((node = searchNode->GetNode("issueBoundaryWarnings")) != 0)
@@ -2462,13 +2450,6 @@ IntegralCurveAttributes::SetNumberOfRandomSamples(int numberOfRandomSamples_)
 {
     numberOfRandomSamples = numberOfRandomSamples_;
     Select(ID_numberOfRandomSamples, (void *)&numberOfRandomSamples);
-}
-
-void
-IntegralCurveAttributes::SetForceNodeCenteredData(bool forceNodeCenteredData_)
-{
-    forceNodeCenteredData = forceNodeCenteredData_;
-    Select(ID_forceNodeCenteredData, (void *)&forceNodeCenteredData);
 }
 
 void
@@ -2974,12 +2955,6 @@ IntegralCurveAttributes::GetNumberOfRandomSamples() const
 }
 
 bool
-IntegralCurveAttributes::GetForceNodeCenteredData() const
-{
-    return forceNodeCenteredData;
-}
-
-bool
 IntegralCurveAttributes::GetIssueAdvectionWarnings() const
 {
     return issueAdvectionWarnings;
@@ -3220,7 +3195,6 @@ IntegralCurveAttributes::GetFieldName(int index) const
     case ID_randomSamples:                      return "randomSamples";
     case ID_randomSeed:                         return "randomSeed";
     case ID_numberOfRandomSamples:              return "numberOfRandomSamples";
-    case ID_forceNodeCenteredData:              return "forceNodeCenteredData";
     case ID_issueAdvectionWarnings:             return "issueAdvectionWarnings";
     case ID_issueBoundaryWarnings:              return "issueBoundaryWarnings";
     case ID_issueTerminationWarnings:           return "issueTerminationWarnings";
@@ -3314,7 +3288,6 @@ IntegralCurveAttributes::GetFieldType(int index) const
     case ID_randomSamples:                      return FieldType_bool;
     case ID_randomSeed:                         return FieldType_int;
     case ID_numberOfRandomSamples:              return FieldType_int;
-    case ID_forceNodeCenteredData:              return FieldType_bool;
     case ID_issueAdvectionWarnings:             return FieldType_bool;
     case ID_issueBoundaryWarnings:              return FieldType_bool;
     case ID_issueTerminationWarnings:           return FieldType_bool;
@@ -3408,7 +3381,6 @@ IntegralCurveAttributes::GetFieldTypeName(int index) const
     case ID_randomSamples:                      return "bool";
     case ID_randomSeed:                         return "int";
     case ID_numberOfRandomSamples:              return "int";
-    case ID_forceNodeCenteredData:              return "bool";
     case ID_issueAdvectionWarnings:             return "bool";
     case ID_issueBoundaryWarnings:              return "bool";
     case ID_issueTerminationWarnings:           return "bool";
@@ -3777,11 +3749,6 @@ IntegralCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
         retval = (numberOfRandomSamples == obj.numberOfRandomSamples);
         }
         break;
-    case ID_forceNodeCenteredData:
-        {  // new scope
-        retval = (forceNodeCenteredData == obj.forceNodeCenteredData);
-        }
-        break;
     case ID_issueAdvectionWarnings:
         {  // new scope
         retval = (issueAdvectionWarnings == obj.issueAdvectionWarnings);
@@ -3919,7 +3886,6 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         absTolAbsolute != obj.absTolAbsolute ||
         absTolBBox != obj.absTolBBox ||
         absTolSizeType != obj.absTolSizeType ||
-        forceNodeCenteredData != obj.forceNodeCenteredData ||
         cropBeginFlag != obj.cropBeginFlag ||
         cropBegin != obj.cropBegin ||
         cropEndFlag != obj.cropEndFlag ||
