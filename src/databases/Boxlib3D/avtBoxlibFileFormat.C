@@ -773,6 +773,9 @@ AVTBOXLIBFILEFORMAT::GetMesh(int patch, const char *mesh_name)
 //    Kathleen Bonnell, Thu Oct 16 14:29:35 PDT 2008
 //    Moved Broadcast of coordSys so that all procs can participate.
 //
+//    Gunther H. Weber, Wed Aug  5 17:42:31 PDT 2015
+//    Added support for "CartGrid" BoxLib Headers
+//
 // ****************************************************************************
 
 void
@@ -804,10 +807,16 @@ AVTBOXLIBFILEFORMAT::ReadHeader(void)
 
     int integer=0;
     char buf[1024];
+    bool isCartGrid = false;
     if (iDoReading)
     {
         // Read in version
         in.getline(buf, 1024);
+        if (strncmp(buf, "CartGrid", 8) == 0)
+        {
+            debug1 << "BoxLib file is of type CartGrid" << std::endl;
+            isCartGrid = true;
+        }
         // Read in nVars
         in >> integer;
 
@@ -950,6 +959,16 @@ AVTBOXLIBFILEFORMAT::ReadHeader(void)
         int tmp = (int) (deltaX[levI-1] / (deltaX[levI]*1.01));
         tmp += 1;
         refinement_ratio.push_back(tmp);
+    }
+
+    if (iDoReading && isCartGrid)
+    {
+        for (int level = 0; level < nLevels; ++ level)
+        {
+            EatUpWhiteSpace(in);
+            in.getline(buf, 1024);
+            debug5 << "Skipping line " << buf << " in CartGrid file." << std::endl;
+        }
     }
 
     // Read in coord system;
