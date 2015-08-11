@@ -94,7 +94,7 @@ class IVP_API avtIVPNektarPPField: public avtIVPVTKField
   Nektar::MultiRegions::ExpListSharedPtr nektar_field[3];
 
   // Lookup table for going from VTK elements to Nektar elements
-//  int *nektar_element_lookup;
+  int *nektar_element_lookup;
 };
 
 #endif
