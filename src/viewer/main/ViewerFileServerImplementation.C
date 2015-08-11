@@ -1389,7 +1389,7 @@ ViewerFileServerImplementation::StartServer(const std::string &host, const strin
             connectionHost = profile.GetGatewayHost();
         if(!CheckHostValidity(connectionHost))
         {
-            delete newServer;
+            // We'll catch this exception in this method and delete newServer then.
             EXCEPTION1(BadHostException, connectionHost);
         }
 
