@@ -144,14 +144,14 @@ avtIVPNektarPPField::avtIVPNektarPPField( vtkDataSet* dataset,
                 "Uninitialized option: Nektar++FieldPointers. (Please contact visit-developer mailing list to report)" );
   }
 
-  // nektar_element_lookup =
-  //   ((int *) fieldData->GetAbstractArray("Nektar++ElementLookup")->GetVoidPointer(0));
+  nektar_element_lookup =
+    ((int *) fieldData->GetAbstractArray("Nektar++ElementLookup")->GetVoidPointer(0));
 
-  // if( nektar_element_lookup == NULL )
-  // {
-  //   EXCEPTION1( InvalidVariableException,
-  //               "Uninitialized option: Nektar++ElementLookup. (Please contact visit-developer mailing list to report)" );
-  // }
+  if( nektar_element_lookup == NULL )
+  {
+    EXCEPTION1( InvalidVariableException,
+                "Uninitialized option: Nektar++ElementLookup. (Please contact visit-developer mailing list to report)" );
+  }
 }
 
 
@@ -202,18 +202,9 @@ avtIVPNektarPPField::operator()( const double &t,
       return OUTSIDE_SPATIAL;
 
     // Get the Nektar++ element id at this point. Assume the cell
-    // boundaries are liner and not curves thus the nektar element is
+    // boundaries are liner and not curved thus the nektar element is
     // the vtk element.
-    int nt_el = el, nt_numElements = nektar_field[0]->GetExpSize();
-
-    // for( int i=0, j=1; j<nt_numElements; ++i, ++j)
-    // {
-    //   if( nektar_element_lookup[i] <= el && el < nektar_element_lookup[i] )
-    //   {
-    //    nt_el = i;
-    //    break;
-    //   }
-    // }
+    int nt_el = nektar_element_lookup[el];
 
     // Set up the point in the Nektar++ format.
     Nektar::Array<OneD, NekDouble> coords(3);

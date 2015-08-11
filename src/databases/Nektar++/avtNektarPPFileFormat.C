@@ -110,8 +110,6 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
   : avtMTSDFileFormat(&filename, 1),
     m_refinement(0), m_ignoreCurvedElements(1), refinedDataSet(0)
 {
-  //  std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
-
   vectorVarComponents[0] = std::string("u");
   vectorVarComponents[1] = std::string("v");
   vectorVarComponents[2] = std::string("w");
@@ -323,8 +321,6 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
 int
 avtNektarPPFileFormat::GetNTimesteps(void)
 {
-  //std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
-
     return (int) m_times.size();
 }
 
@@ -434,8 +430,6 @@ avtNektarPPFileFormat::Initialize()
 void
 avtNektarPPFileFormat::FreeUpResources(void)
 {
-  //std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
-
   if( refinedDataSet )
   {
     refinedDataSet->Delete();
@@ -458,8 +452,6 @@ avtNektarPPFileFormat::FreeUpResources(void)
 void
 avtNektarPPFileFormat::ActivateTimestep(int ts)
 {
-  //std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
-
     //
     // Initialize the file if it has not been initialized.
     //
@@ -695,7 +687,6 @@ avtNektarPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int tim
 vtkDataSet *
 avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
 {
-  //std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
   vtkUnstructuredGrid* ugrid = NULL;
 
   // Request for the refined mesh.  At this point the original
@@ -753,6 +744,17 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
     ugrid->SetPoints( vtkPts );
     vtkPts->Delete();
 
+    // Pass a look up table between the Nektar++ and VTK element ids.
+    int numElements = graphShPt->GetExpansions().size();
+    
+    vtkIntArray *lu = vtkIntArray::New();
+    // Set the number of components before setting the number of tuples
+    // for proper memory allocation.
+    lu->SetNumberOfComponents( 1 );
+    lu->SetNumberOfTuples(numElements);
+    
+    lu->SetName("Nektar++ElementLookup");
+
     // for a 2D mesh read in the triangle and quad elements.
     if( graphShPt->GetMeshDimension() == 2 )
     {
@@ -774,8 +776,11 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
           tri->GetPointIds()->SetId( i, vtkId );
         }
 
-        ugrid->InsertNextCell( tri->GetCellType(), tri->GetPointIds() );
+        vtkId =
+          ugrid->InsertNextCell( tri->GetCellType(), tri->GetPointIds() );
         
+        lu->SetTuple1(vtkId, triGeom->GetGlobalID() );
+
         ++triGeomMapIter;
       }
         
@@ -799,8 +804,11 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
           quad->GetPointIds()->SetId( i, vtkId );
         }
         
-        ugrid->InsertNextCell( quad->GetCellType(), quad->GetPointIds() );
-        
+        vtkId =
+          ugrid->InsertNextCell( quad->GetCellType(), quad->GetPointIds() );
+
+        lu->SetTuple1(vtkId, quadGeom->GetGlobalID() );
+
         ++quadGeomMapIter;
       }
         
@@ -828,37 +836,43 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
           tet->GetPointIds()->SetId( i, vtkId );
         }
         
-        ugrid->InsertNextCell( tet->GetCellType(), tet->GetPointIds() );
-        
+        vtkId =
+          ugrid->InsertNextCell( tet->GetCellType(), tet->GetPointIds() );
+
+        lu->SetTuple1(vtkId, tetGeom->GetGlobalID() );
+                
         ++tetGeomMapIter;
       }
         
       tet->Delete();
 
-      // Add in all of the pyramid elements
-      vtkPyramid *pyramid = vtkPyramid::New();
-      SpatialDomains::PyrGeomMap pyramidGeomMap = graphShPt->GetAllPyrGeoms();
-      SpatialDomains::PyrGeomMapIter pyramidGeomMapIter = pyramidGeomMap.begin();
-      
-      while( pyramidGeomMapIter != pyramidGeomMap.end() )
+      // Add in all of the hex elements
+      vtkHexahedron *hex = vtkHexahedron::New();
+      SpatialDomains::HexGeomMap hexGeomMap = graphShPt->GetAllHexGeoms();
+      SpatialDomains::HexGeomMapIter hexGeomMapIter = hexGeomMap.begin();
+
+      while( hexGeomMapIter != hexGeomMap.end() )
       {       
-        SpatialDomains::PyrGeomSharedPtr pyramidGeom = pyramidGeomMapIter->second;
+        SpatialDomains::HexGeomSharedPtr hexGeom = hexGeomMapIter->second;
         
-        for( int i=0; i<pyramidGeom->GetNumVerts(); ++i )
+        for( int i=0; i<8; ++i )
         {
           // Get the VTK id from the Nektar++ id.
-          vertIdIt = vertIdMap.find( pyramidGeom->GetVertex(i)->GetVid() );
+          vertIdIt = vertIdMap.find( hexGeom->GetVertex(i)->GetVid() );
           vtkId = vertIdIt->second;
 
-          pyramid->GetPointIds()->SetId( i, vtkId );
+          hex->GetPointIds()->SetId( i, vtkId );
         }
-          
-        ugrid->InsertNextCell( pyramid->GetCellType(), pyramid->GetPointIds() );
 
-        ++pyramidGeomMapIter;
-      }
+        vtkId =
+          ugrid->InsertNextCell( hex->GetCellType(), hex->GetPointIds() );
         
-      pyramid->Delete();
+        lu->SetTuple1(vtkId, hexGeom->GetGlobalID() );
+
+        ++hexGeomMapIter;
+      }
+    
+      hex->Delete();
 
       // Add in all of the prism elements
       vtkWedge *wedge = vtkWedge::New();
@@ -884,37 +898,43 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
           wedge->GetPointIds()->SetId( i, vtkId );
         }
 
-        ugrid->InsertNextCell( wedge->GetCellType(), wedge->GetPointIds() );
+        vtkId =
+          ugrid->InsertNextCell( wedge->GetCellType(), wedge->GetPointIds() );
         
+        lu->SetTuple1(vtkId, prismGeom->GetGlobalID() );
+
         ++prismGeomMapIter;
       }
-        
+
       wedge->Delete();
 
-      // Add in all of the hex elements
-      vtkHexahedron *hex = vtkHexahedron::New();
-      SpatialDomains::HexGeomMap hexGeomMap = graphShPt->GetAllHexGeoms();
-      SpatialDomains::HexGeomMapIter hexGeomMapIter = hexGeomMap.begin();
-
-      while( hexGeomMapIter != hexGeomMap.end() )
+      // Add in all of the pyramid elements
+      vtkPyramid *pyramid = vtkPyramid::New();
+      SpatialDomains::PyrGeomMap pyramidGeomMap = graphShPt->GetAllPyrGeoms();
+      SpatialDomains::PyrGeomMapIter pyramidGeomMapIter = pyramidGeomMap.begin();
+      
+      while( pyramidGeomMapIter != pyramidGeomMap.end() )
       {       
-        SpatialDomains::HexGeomSharedPtr hexGeom = hexGeomMapIter->second;
+        SpatialDomains::PyrGeomSharedPtr pyramidGeom = pyramidGeomMapIter->second;
         
-        for( int i=0; i<8; ++i )
+        for( int i=0; i<pyramidGeom->GetNumVerts(); ++i )
         {
           // Get the VTK id from the Nektar++ id.
-          vertIdIt = vertIdMap.find( hexGeom->GetVertex(i)->GetVid() );
+          vertIdIt = vertIdMap.find( pyramidGeom->GetVertex(i)->GetVid() );
           vtkId = vertIdIt->second;
 
-          hex->GetPointIds()->SetId( i, vtkId );
+          pyramid->GetPointIds()->SetId( i, vtkId );
         }
-        
-        ugrid->InsertNextCell( hex->GetCellType(), hex->GetPointIds() );
-        
-        ++hexGeomMapIter;
+          
+        vtkId =
+          ugrid->InsertNextCell( pyramid->GetCellType(), pyramid->GetPointIds() );
+
+        lu->SetTuple1(vtkId, pyramidGeom->GetGlobalID() );
+
+        ++pyramidGeomMapIter;
       }
-    
-      hex->Delete();
+        
+      pyramid->Delete();
     }
 
     // Save the pointer to the nektar++ field data for use in the
@@ -937,20 +957,11 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
     }
 
     ugrid->GetFieldData()->AddArray(fp);
-    fp->Delete();
+    ugrid->GetFieldData()->AddArray(lu);
 
-    // At some point we might want to pass a look up table.
-//     int numElements = nektar_field[0]->GetExpSize();
-    
-//     vtkIntArray *lu = vtkIntArray::New();
-    // Set the number of components before setting the number of tuples
-    // for proper memory allocation.
-//     lu->SetNumberOfComponents( 1 );
-//     lu->SetNumberOfTuples(3);
-    
-//     lu->SetName("Nektar++ElementLookup");
-// //    grid->GetFieldData()->AddArray(lu);
-//     lu->Delete();
+    fp->Delete();
+    lu->Delete();
+
     ugrid->Register(NULL);
   }
 
@@ -979,8 +990,6 @@ avtNektarPPFileFormat::GetMesh(int timestate, const char *meshname)
 vtkDataArray *
 avtNektarPPFileFormat::GetVar(int timestate, const char *varname)
 {
-  //std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
-
   // At this point the original nektar++ field has been refined and
   // converted into a vtkDataArray so just grab the variable needed.
   vtkDataArray *dataArray =
@@ -1274,8 +1283,6 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
 
 std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
 {
-//  std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
-
   //----------------------------------------------
   // Create a dummy set of args to create a session.
   int argc = (m_fieldFile.size() ? 3 : 2);
