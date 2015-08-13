@@ -247,11 +247,7 @@ avtIVPLeapfrog::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
 void
 avtIVPLeapfrog::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
-    aiss.Accept(firstStep)
-        .Accept(tol)
-        .Accept(h)
-        .Accept(h_max)
-        .Accept(t)
-        .Accept(yCur)
-        .Accept(vCur);
+    avtIVPSolver::AcceptStateVisitor(aiss);
+
+    aiss.Accept(firstStep);
 }

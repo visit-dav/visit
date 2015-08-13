@@ -295,10 +295,5 @@ avtIVPRK4::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
 void
 avtIVPRK4::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
-    aiss.Accept(tol)
-        .Accept(h)
-        .Accept(h_max)
-        .Accept(t)
-        .Accept(yCur)
-        .Accept(vCur);
+    avtIVPSolver::AcceptStateVisitor(aiss);
 }

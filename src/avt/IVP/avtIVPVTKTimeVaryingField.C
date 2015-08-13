@@ -641,11 +641,6 @@ avtIVPVTKTimeVaryingField::IsInside( const double& time, const avtVector &pos ) 
             inside[1] = false;
     }
 
-    debug5 << inside[0] << "  " << inside[1] << "  "
-              << (time < t0) << "  " << (t1 <= time) << "  "
-              << t0 << "  " << time << "  " << t1 << "  "
-              << std::endl;
-
     if (inside[0] && inside[1])
         return OK;
     else if (!inside[0] && !inside[1])

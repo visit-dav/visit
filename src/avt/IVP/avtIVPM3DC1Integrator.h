@@ -76,7 +76,6 @@ class IVP_API avtIVPM3DC1Integrator: public avtIVPSolver
 
     virtual void    OnExitDomain();
 
-    virtual void   SetMaximumDegenerateIterations( const unsigned int& max );
     virtual void   SetTolerances(const double& reltol, const double& abstol);
 
     virtual avtIVPM3DC1Integrator* Clone() const
@@ -112,9 +111,6 @@ class IVP_API avtIVPM3DC1Integrator: public avtIVPSolver
                      int dflag, double *Bpout);
 
   private:
-    unsigned int max_degenerate_iterations;
-    unsigned int degenerate_iterations;
-    double stiffness_eps;
     avtVector ys[2];
 };
 

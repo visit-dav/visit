@@ -498,13 +498,10 @@ class IVP_API avtIVPSolver
     // state management
     virtual void    GetState(avtIVPState&);
     virtual void    PutState(const avtIVPState&);
-            
+
     virtual avtIVPSolver* Clone() const = 0;
 
 protected:
-
-    bool convertToCartesian;
-    bool convertToCylindrical;
 
     unsigned int order;
 
@@ -514,11 +511,14 @@ protected:
     double tol;
     double t;
 
+    Direction direction;
+
     double periodic_boundary_x, periodic_boundary_y, periodic_boundary_z;
     double period;
     double baseTime, maxTime;
 
-    Direction direction;
+    bool convertToCartesian;
+    bool convertToCylindrical;
 
 protected:
     inline virtual double GetLocalTime()
@@ -536,7 +536,7 @@ protected:
       return t_local;
     };
 
-    virtual void   AcceptStateVisitor(avtIVPStateHelper& sv) = 0;
+    virtual void   AcceptStateVisitor(avtIVPStateHelper& sv);
     virtual Result ConvertResult(const avtIVPField::Result &res) const;
 };
 

@@ -59,9 +59,9 @@ avtIVPSolver::avtIVPSolver() : convertToCartesian(false),
                                order(1),
                                yCur(avtVector()), vCur(avtVector()),
                                h(1e-5), h_max(1e-5), tol(1e-8), t(0.0),
-                               periodic_boundary_x(0),
-                               periodic_boundary_y(0),
-                               periodic_boundary_z(0),
+                               periodic_boundary_x(0.),
+                               periodic_boundary_y(0.),
+                               periodic_boundary_z(0.),
                                period(0), baseTime(0), maxTime(1),
                                direction(DIRECTION_BACKWARD)
 {
@@ -92,7 +92,7 @@ avtIVPSolver::GetCurrentY() const
 
     if( periodic_boundary_y > 0 )
     {
-      while(                pt.y < 0   ) pt.y += periodic_boundary_y;
+      while(                pt.y < 0    ) pt.y += periodic_boundary_y;
       while( periodic_boundary_y < pt.y ) pt.y -= periodic_boundary_y;
     }
 
@@ -594,6 +594,49 @@ avtIVPSolver::PutState(const avtIVPState& state)
     this->AcceptStateVisitor(aiss);
 }
 
+// ****************************************************************************
+//  Method: avtIVPSolver::AcceptStateVisitor
+//
+//  Purpose:
+//      Loads the state into the state helper.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 13, 2015
+//
+// ****************************************************************************
+
+void
+avtIVPSolver::AcceptStateVisitor(avtIVPStateHelper& aiss)
+{
+    aiss.Accept(order)
+        .Accept(yCur)
+        .Accept(vCur)
+        .Accept(h)
+        .Accept(h_max)
+        .Accept(tol)
+        .Accept(t)
+        .Accept(direction)
+        .Accept(periodic_boundary_x)
+        .Accept(periodic_boundary_y)
+        .Accept(periodic_boundary_z)
+        .Accept(period)
+        .Accept(baseTime)
+        .Accept(maxTime)
+        .Accept(convertToCartesian)
+        .Accept(convertToCylindrical);
+}
+
+// ****************************************************************************
+//  Method: avtIVPSolver::ConvertResult
+//
+//  Purpose:
+//      Converts the restult from the avtIVPField world to the
+//      avtIVPSolver world.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   June 13, 2012
+//
+// ****************************************************************************
 
 avtIVPSolver::Result
 avtIVPSolver::ConvertResult(const avtIVPField::Result &res) const
