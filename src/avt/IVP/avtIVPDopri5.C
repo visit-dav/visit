@@ -666,21 +666,18 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
 void
 avtIVPDopri5::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
+    avtIVPSolver::AcceptStateVisitor(aiss);
+
     aiss.Accept(reltol)
         .Accept(abstol)
-        .Accept(h)
-        .Accept(h_max)
         .Accept(h_init)
-        .Accept(t)
-        .Accept(facold)
-        .Accept(hlamb)
         .Accept(n_accepted)
         .Accept(n_rejected)
         .Accept(n_steps)
         .Accept(n_eval)
+        .Accept(facold)
+        .Accept(hlamb)
         .Accept(iasti)
         .Accept(nonsti)
-        .Accept(yCur)
-        .Accept(vCur)
         .Accept(k1);
 }

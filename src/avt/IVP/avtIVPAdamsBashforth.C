@@ -94,8 +94,6 @@ avtIVPAdamsBashforth::avtIVPAdamsBashforth()
     h = 1e-5;
     t = 0.0;
 
-    degenerate_iterations = 0;
-    stiffness_eps = tol / 1000.0;
     abCIndex = 0;
     abNSteps = 1;
 }
@@ -133,7 +131,6 @@ void
 avtIVPAdamsBashforth::SetTolerances(const double& relt, const double& abst)
 {
     tol = abst;
-    stiffness_eps = tol / 1000.0;
 }
 
 // ****************************************************************************
@@ -181,8 +178,6 @@ avtIVPAdamsBashforth::Reset(const double& t_start,
     yCur = y_start;
     vCur = v_start;
     h = h_max;
-
-    degenerate_iterations = 0;
 
     abCIndex = 0;
     abNSteps = 1;
@@ -366,16 +361,10 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
 void
 avtIVPAdamsBashforth::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
+    avtIVPSolver::AcceptStateVisitor(aiss);
+
     aiss.Accept(abCIndex)
         .Accept(abNSteps)
-        .Accept(tol)
-        .Accept(degenerate_iterations)
-        .Accept(stiffness_eps)
-        .Accept(h)
-        .Accept(h_max)
-        .Accept(t)
-        .Accept(yCur)
-        .Accept(vCur)
         .Accept(history[0])
         .Accept(history[1])
         .Accept(history[2])

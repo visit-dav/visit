@@ -126,7 +126,7 @@ avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
     if( allSeedsSentToAllProcs )
     {
         // Use a random number generator for the bidding - seed the
-        // generator differently usingthe processor rank.
+        // generator differently using the processor rank.
         srand( PAR_Rank() );
 
         // Sort the curves by their id so all processors are working on

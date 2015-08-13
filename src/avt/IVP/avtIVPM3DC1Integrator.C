@@ -73,9 +73,6 @@ avtIVPM3DC1Integrator::avtIVPM3DC1Integrator()
     tol = 1e-8;
     h = 1e-5;
     t = 0.0;
-
-    degenerate_iterations = 0;
-    stiffness_eps = tol / 1000.0;
 }
 
 // ****************************************************************************
@@ -89,24 +86,6 @@ avtIVPM3DC1Integrator::avtIVPM3DC1Integrator()
 
 avtIVPM3DC1Integrator::~avtIVPM3DC1Integrator()
 {
-}
-
-
-// ****************************************************************************
-//  Method: avtIVPM3DC1Integrator::SetMaximumDegenerateIterations
-//
-//  Purpose:
-//      Sets the maximum number of degenerate steps allowed
-//
-//  Creationist: Allen Sanderson
-//  Creation:   Octobert 24, 2009
-//
-// ****************************************************************************
-
-void
-avtIVPM3DC1Integrator::SetMaximumDegenerateIterations( const unsigned int& max )
-{
-    max_degenerate_iterations = max;
 }
 
 
@@ -125,7 +104,6 @@ void
 avtIVPM3DC1Integrator::SetTolerances(const double& relt, const double& abst)
 {
     tol = abst;
-    stiffness_eps = tol / 1000.0;
 }
 
 // ****************************************************************************
@@ -147,8 +125,6 @@ avtIVPM3DC1Integrator::Reset(const double& t_start,
     t = t_start;
     yCur = y_start;
     h = h_max;
-
-    degenerate_iterations = 0;
 }
 
 
@@ -645,15 +621,8 @@ avtIVPM3DC1Integrator::getBfield2(const avtIVPField* field,
 void
 avtIVPM3DC1Integrator::AcceptStateVisitor(avtIVPStateHelper& aiss)
 {
-    aiss.Accept(tol)
-        .Accept(degenerate_iterations)
-        .Accept(max_degenerate_iterations)
-        .Accept(stiffness_eps)
-        .Accept(h)
-        .Accept(h_max)
-        .Accept(t)
-        .Accept(yCur)
-        .Accept(vCur)
-        .Accept(ys[0])
+    avtIVPSolver::AcceptStateVisitor(aiss);
+
+    aiss.Accept(ys[0])
         .Accept(ys[1]);
 }
