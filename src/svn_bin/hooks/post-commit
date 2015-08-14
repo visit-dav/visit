@@ -41,8 +41,8 @@ function run_sh()
 
 #env -i ${REPOS}/hooks/ciabot_svn.py ${REPOS} ${REV} &
 
-# Tell the VisIt anonymous svn site to sync.
-wget -o /dev/null --timeout 20 http://50.56.174.237/trigger.php
+# Tell the VisIt anonymous svn site to sync. (throw the file away)
+wget -o /dev/null -O /dev/null --timeout 20 http://50.56.174.237/trigger.php
 
 # handle automatic installation of updated/new hooks. Should probably
 # remain first.
