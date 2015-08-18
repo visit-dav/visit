@@ -27,6 +27,9 @@
 #    Mesh name has been added to blocks.vtu test data, so add mesh plot
 #    to test is has been read correctly.
 #
+#    Kathleen Biagas, Tue Aug 18 14:00:16 PDT 2015
+#    Added a test for VTM files.
+#
 # ----------------------------------------------------------------------------
 
 def TestMaterials():
@@ -264,6 +267,43 @@ def TestMixedTopology():
     Test("vtk_36")
     DeleteAllPlots()
 
+def TestVTM():
+    TestSection("VTM files")
+    f = "files.vtm"
+    fN = data_path("vtk_xml_test_data/MultiBlock/%s"%f)
+    OpenDatabase(fN)
+    AddPlot("Subset", "Blocks")
+    DrawPlots()
+    ResetView()
+    Test("vtk_37")
+
+    mmd = GetMetaData(fN).GetMeshes(0)
+    s = f + ":    Groups: " + ", ".join(mmd.groupNames)
+    s = s + "     Blocks: " + ", ".join(mmd.blockNames) + "\n"
+
+    DeleteAllPlots()
+    CloseDatabase(fN)
+    
+    f = "files_grouped.vtm"
+    fN = data_path("vtk_xml_test_data/MultiBlock/%s"%f)
+    OpenDatabase(fN)
+    AddPlot("Subset", "Blocks")
+    DrawPlots()
+    ResetView()
+    Test("vtk_38")
+
+    ChangeActivePlotsVar("Groups")
+    DrawPlots()
+    ResetView()
+    Test("vtk_39")
+
+    mmd = GetMetaData(fN).GetMeshes(0)
+    s = s + f + ":    Groups: " + ", ".join(mmd.groupNames)
+    s = s + "    Blocks: " + ", ".join(mmd.blockNames) + "\n"
+    TestText("vtk_40", s)   
+    DeleteAllPlots()
+    CloseDatabase(fN)
+
 TestMaterials()
 TestXML()
 TestHigherOrder()
@@ -271,5 +311,6 @@ TestNBLOCKS()
 TestPVTU()
 TestPVTI()
 TestMixedTopology()
+TestVTM()
 
 Exit()

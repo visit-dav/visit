@@ -1,0 +1,2 @@
+files.vtm:    Groups:      Blocks: right_ball, left_ball, top, bottom
+files_grouped.vtm:    Groups: balls, walls    Blocks: right_ball, left_ball, top, bottom
