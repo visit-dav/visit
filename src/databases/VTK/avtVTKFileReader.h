@@ -110,6 +110,9 @@ class DBOptionsAttributes;
 //    Kathleen Biagas, Fri Feb  6 06:09:01 PST 2015
 //    Added vtk_meshname, to store MeshName provided in file (if present).
 //
+//    Kathleen Biagas, Thu Aug 13 17:25:03 PDT 2015
+//    Add support for groups and block names.
+//
 // ****************************************************************************
 
 class avtVTKFileReader
@@ -141,7 +144,15 @@ class avtVTKFileReader
 
     bool                  readInDataset;
 
-    int                   nblocks;
+    int                      ngroups;
+    std::string              groupPieceName;
+    std::vector<std::string> groupNames;
+
+    int                      nblocks;
+    std::string              blockPieceName;
+    std::vector<std::string> blockNames;
+    std::vector<int>         groupIds;
+
     char                **pieceFileNames;
     vtkDataSet          **pieceDatasets;
     int                 **pieceExtents;

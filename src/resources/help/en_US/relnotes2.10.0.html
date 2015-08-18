@@ -115,6 +115,7 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
   <li>The PLOT3D reader now supports time-series solution files, specified in the form 'somefile*.q', (where '*' matches a number specifing the timestate) or 'somefile??3?.q'.  Use the '?' form to sub-select from the time series. The q filename in this form can be used in the <i>.vp3d meta file</i>, or via <i>Read Options.</i>  The '.q' extension is the default.</li>
   <li></li>
   <li>The Nek5000 reader had an issue with #std 8 data files (double size data). The data dimensions would be read wrong. This has been fixed.</li>
+  <li>VisIt can now read <i>.vtm</i> VTK multiblock files.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -162,6 +163,7 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
   <li>2D axis titles have been fixed so that a color other than foreground color can be used.</li>
   <li>Libsim's internal buffer for retrieving the user's environment was fixed at 10Kb, which is not large enough to accommodate some users' environments. The environment retrieval code has been rewritten to handle arbitrary sizes.</li>
   <li>The splatting render mode in the Volume plot was corrected so it would no longer change graphics settings in a way that could corrupt the rendering of other plots such as Pseudocolor.</li>
+  <li>The VTK reader was serving up invalid time values for files that did not have time.</li>
 </ul>
 
 <a name="Build_Features"></a>
