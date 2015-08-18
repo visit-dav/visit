@@ -7,6 +7,7 @@
       *.vtr 
       *.vts
       *.vtu
+      *.vtm
       *.pvti
       *.pvtp
       *.pvtr 
@@ -18,6 +19,7 @@
       avtVTKFileReader.C
       avtVTKOptions.C
       vtkVisItXMLPDataReader.C
+      VTMParser.C
     </Files>
     <Files components="E">
       avtVTKFileFormat.C
@@ -25,6 +27,7 @@
       avtVTKOptions.C
       avtVTKWriter.C
       vtkVisItXMLPDataReader.C
+      VTMParser.C
     </Files>
     <LIBS>
       vtkIOXML

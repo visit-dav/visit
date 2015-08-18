@@ -67,6 +67,7 @@
 #include <vtkXMLStructuredGridReader.h>
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkVisItXMLPDataReader.h>
+#include <VTMParser.h>
 
 #include <snprintf.h>
 #include <DebugStream.h>
@@ -134,6 +135,9 @@ double avtVTKFileReader::INVALID_TIME = -DBL_MAX;
 //    I modified the reading of pvti, pvtr and pvts files to handle the case
 //    where the piece extent was a subset of the whole extent.
 //
+//    Kathleen Biagas, Thu Aug 13 17:29:21 PDT 2015
+//    Add support for groups and block names.
+//
 // ****************************************************************************
 
 avtVTKFileReader::avtVTKFileReader(const char *fname, DBOptionsAttributes *) :
@@ -199,6 +203,7 @@ avtVTKFileReader::avtVTKFileReader(const char *fname, DBOptionsAttributes *) :
 //
 //    Mark C. Miller, Wed Jul  2 17:27:35 PDT 2014
 //    Delete everything even VTK datasets read.
+//
 // ****************************************************************************
 void
 avtVTKFileReader::FreeUpResources(void)
@@ -319,6 +324,9 @@ avtVTKFileReader::GetNumberOfDomains()
 //    I modified the reading of pvti, pvtr and pvts files to handle the case
 //    where the piece extent was a subset of the whole extent.
 //
+//    Kathleen Biagas, Thu Aug 13 17:29:21 PDT 2015
+//    Add support for groups and block names, as read from 'vtm' file.
+//
 // ****************************************************************************
 
 void
@@ -334,6 +342,7 @@ avtVTKFileReader::ReadInFile(int _domain)
         xmlpReader->SetFileName(filename);
         xmlpReader->ReadXMLInformation();
 
+        ngroups = 1;
         nblocks = xmlpReader->GetNumberOfPieces();
         pieceFileNames = new char*[nblocks];
         for (int i = 0; i < nblocks; i++)
@@ -362,27 +371,62 @@ avtVTKFileReader::ReadInFile(int _domain)
 
         xmlpReader->Delete();
 
-        pieceDatasets = new vtkDataSet*[nblocks];
-        for (int i = 0; i < nblocks; i++)
-            pieceDatasets[i] = NULL;
-
         pieceExtension = fileExtension.substr(1,3);
+    }
+    else if (fileExtension == "vtm")
+    {
+        VTMParser *parser = new VTMParser;
+        parser->SetFileName(filename);
+        if (!parser->Parse())
+        {
+            string em = parser->GetErrorMessage();
+            delete parser;
+            EXCEPTION2(InvalidFilesException, filename, em);
+            return;
+        }
+
+        nblocks = parser->GetNumberOfBlocks();
+        ngroups = parser->GetNumberOfGroups();
+        if (ngroups > 1)
+        {
+            groupNames = parser->GetGroupNames();
+            groupPieceName = parser->GetGroupPieceName();
+            groupIds   = parser->GetGroupIds();
+        }
+
+        blockNames = parser->GetBlockNames();
+        blockPieceName = parser->GetBlockPieceName();
+
+        pieceFileNames = new char*[nblocks];
+        for (int i = 0; i < nblocks; i++)
+        {
+            string bn = parser->GetBlockFileName(i);
+            pieceFileNames[i] = new char[bn.size()+1];
+            strcpy(pieceFileNames[i], bn.c_str());
+        }
+        pieceExtension = parser->GetBlockExtension();
+        delete parser;
     }
     else
     {
         nblocks = 1;
+        ngroups = 1;
         pieceFileNames = new char*[nblocks];
-
         pieceFileNames[0] = new char[strlen(filename)+1];
         strcpy(pieceFileNames[0], filename);
-
-        pieceDatasets = new vtkDataSet*[nblocks];
-        pieceDatasets[0] = NULL;
-
-        pieceExtents = new int*[nblocks];
-        pieceExtents[0] = NULL;
-
         pieceExtension = fileExtension;
+    }
+
+
+    pieceDatasets = new vtkDataSet*[nblocks];
+    for (int i = 0; i < nblocks; i++)
+        pieceDatasets[i] = NULL;
+
+    if (pieceExtents == NULL)
+    {
+        pieceExtents = new int*[nblocks];
+        for (int i = 0; i < nblocks; i++)
+            pieceExtents[i] = NULL;
     }
 
     ReadInDataset(domain);
@@ -1146,6 +1190,9 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 //    Kathleen Biagas, Fri Feb  6 06:00:16 PST 2015
 //    Use 'MeshName' from file if provided (stored in vtk_meshname).
 //
+//    Kathleen Biagas, Thu Aug 13 17:29:21 PDT 2015
+//    Add support for groups and block names.
+//
 // ****************************************************************************
 
 void
@@ -1266,10 +1313,32 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->meshType = type;
     mesh->spatialDimension = spat;
     mesh->topologicalDimension = topo;
+    if (ngroups > 1)
+    {
+        mesh->numGroups = ngroups;
+        if (!groupNames.empty())
+            mesh->groupNames = groupNames; 
+        if (!groupPieceName.empty())
+        {
+            mesh->groupPieceName = groupPieceName;
+            mesh->groupTitle = groupPieceName + string("s");
+        }
+        mesh->groupIds = groupIds;
+    }
     mesh->numBlocks = nblocks;
     mesh->blockOrigin = 0;
     if (nblocks == 1)
         mesh->SetExtents(bounds);
+    else
+    {
+        if (!blockPieceName.empty())
+        {
+            mesh->blockPieceName = blockPieceName;
+            mesh->blockTitle = blockPieceName + string("s");
+        }
+        if (!blockNames.empty() && (int)blockNames.size() == nblocks)
+            mesh->blockNames = blockNames;
+    }
     if (dataset->GetFieldData()->GetArray("MeshCoordType") != NULL)
     {
         avtMeshCoordType mct = (avtMeshCoordType)

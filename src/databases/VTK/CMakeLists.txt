@@ -19,6 +19,7 @@ avtVTKFileFormat.C
 avtVTKFileReader.C
 avtVTKOptions.C
 vtkVisItXMLPDataReader.C
+VTMParser.C
 )
 
 SET(LIBE_SOURCES
@@ -29,6 +30,7 @@ avtVTKFileReader.C
 avtVTKOptions.C
 avtVTKWriter.C
 vtkVisItXMLPDataReader.C
+VTMParser.C
 )
 
 INCLUDE_DIRECTORIES(
