@@ -106,6 +106,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <InvalidDBTypeException.h>
+#include <ImproperUseException.h>
 
 // Map symbol names
 // Ugly hack, but fixes crash on Mac
@@ -270,7 +271,7 @@ AVTBOXLIBFILEFORMAT::AVTBOXLIBFILEFORMAT(const char *fname)
     timestepPath = t;
 
     initializedReader = false;
-    vf_names_for_materials = false;
+    varnames_for_materials = none;
     time = 0.;
     haveReadTimeAndCycle = false;
     nMaterials = 0;
@@ -436,6 +437,7 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
 
             if (val > nMaterials)
                 nMaterials = val;
+            varnames_for_materials = frac;
         }
     }
     if (nMaterials == 0)
@@ -449,7 +451,20 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
 
                 if (val > nMaterials)
                     nMaterials = val;
-                vf_names_for_materials = true;
+                varnames_for_materials = vf;
+            }
+        }
+    }
+    if (nMaterials == 0)
+    {
+        for (int i = 0; i < nVars; ++i)
+        {
+            if (varNames[i] == std::string("vfrac"))
+            {
+                varUsedElsewhere[i] = true;
+                nMaterials = 2;
+                varnames_for_materials = vfrac;
+                break;
             }
         }
     }
@@ -963,12 +978,9 @@ AVTBOXLIBFILEFORMAT::ReadHeader(void)
 
     if (iDoReading && isCartGrid)
     {
-        for (int level = 0; level < nLevels; ++ level)
-        {
-            EatUpWhiteSpace(in);
-            in.getline(buf, 1024);
-            debug5 << "Skipping line " << buf << " in CartGrid file." << std::endl;
-        }
+        EatUpWhiteSpace(in);
+        in.getline(buf, 1024);
+        debug5 << "Skipping line " << buf << " in CartGrid file." << std::endl;
     }
 
     // Read in coord system;
@@ -2112,14 +2124,31 @@ AVTBOXLIBFILEFORMAT::GetMaterial(const char *var, int patch,
     // Get the material fractions
     vector<vtkFloatArray *> floatArrays(nMaterials);
     vector<float *> mats(nMaterials);
-    for (i = 1; i <= nMaterials; ++i)
+    if (varnames_for_materials == none)
     {
-        if (vf_names_for_materials)
-            sprintf(str,"vf_%d", i);
-        else
-            sprintf(str,"frac%d", i);
-        floatArrays[i - 1] = (vtkFloatArray *)(GetVar(patch, str));
-        mats[i - 1] = floatArrays[i - 1]->GetPointer(0);
+        EXCEPTION1(ImproperUseException, "Trying to read materials from BoxLib file that does not have any");
+    }
+    else if (varnames_for_materials == vfrac)
+    {
+        floatArrays[0] = (vtkFloatArray*)(GetVar(patch, "vfrac"));
+        mats[0] = floatArrays[0]->GetPointer(0);
+        floatArrays[1] = vtkFloatArray::New();
+        floatArrays[1]->SetNumberOfTuples(floatArrays[0]->GetNumberOfTuples());
+        for (vtkIdType tuple = 0; tuple < floatArrays[1]->GetNumberOfTuples(); ++tuple)
+            floatArrays[1]->SetTuple1(tuple, 1.0 - floatArrays[0]->GetTuple1(tuple));
+        mats[1] = floatArrays[1]->GetPointer(0);
+    }
+    else
+    {
+        for (i = 1; i <= nMaterials; ++i)
+        {
+            if (varnames_for_materials == vf)
+                sprintf(str,"vf_%d", i);
+            else
+                sprintf(str,"frac%d", i);
+            floatArrays[i - 1] = (vtkFloatArray *)(GetVar(patch, str));
+            mats[i - 1] = floatArrays[i - 1]->GetPointer(0);
+        }
     }
 
     // Build the appropriate data structures
