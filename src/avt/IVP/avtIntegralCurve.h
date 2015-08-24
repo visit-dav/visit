@@ -368,6 +368,9 @@ class IVP_API avtIntegralCurve
     static bool       DomainCompare(const avtIntegralCurve *slA,
                                     const avtIntegralCurve *slB);
 
+    static bool       IDCompare(const avtIntegralCurve *slA,
+                                const avtIntegralCurve *slB);
+
     bool              EncounteredNumericalProblems() {return status.NumericalError();}
 
     virtual avtIntegralCurve* MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v) = 0;

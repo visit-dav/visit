@@ -3238,8 +3238,11 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 
 //    MaxID = pts.size();
 
-    // Sort them on domain.
-    std::sort(curves.begin(), curves.end(), avtIntegralCurve::DomainCompare);
+    //  For the serial algorithm with more than one domain sort the
+    //  curves based on the domain. If not sorted one could get into a
+    //  situation where the block cache is continually purged.
+    if (method == PICS_SERIAL)
+      std::sort(curves.begin(), curves.end(), avtIntegralCurve::DomainCompare);
 
     if (DebugStream::Level5())
     {
