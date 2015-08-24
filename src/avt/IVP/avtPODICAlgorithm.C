@@ -110,12 +110,6 @@ avtPODICAlgorithm::Initialize(vector<avtIntegralCurve *> &seeds)
 //
 // ****************************************************************************
 
-static bool icIDCompare(const avtIntegralCurve *icA, 
-                        const avtIntegralCurve *icB)
-{
-    return icA->id < icB->id;
-}
-
 void
 avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
 {
@@ -131,7 +125,7 @@ avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
 
         // Sort the curves by their id so all processors are working on
         // the same curve at the same time.
-        sort(ics.begin(), ics.end(), icIDCompare);
+        sort(ics.begin(), ics.end(), avtIntegralCurve::IDCompare);
 
         for (size_t i = 0; i < nSeeds; ++i)
         {

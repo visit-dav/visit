@@ -690,6 +690,23 @@ avtIntegralCurve::DomainCompare(const avtIntegralCurve *icA,
 
 
 // ****************************************************************************
+// Method:  avtIntegralCurve::IDCompare
+//
+//
+// Programmer:  Dave Pugmire
+// Creation:    August 30, 2011
+//
+// ****************************************************************************
+
+bool
+avtIntegralCurve::IDCompare(const avtIntegralCurve *icA,
+                            const avtIntegralCurve *icB)
+{  
+    return icA->id < icB->id;
+}
+
+
+// ****************************************************************************
 //  Method: avtIntegralCurve::LessThan
 //
 //  Purpose:
