@@ -146,6 +146,10 @@ avtEllipsoidSliceFilter::Equivalent(const AttributeGroup *a)
 //    Eric Brugger, Thu Jul 24 13:23:21 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eric Brugger, Tue Aug 25 10:09:02 PDT 2015
+//    Modified the routine to return NULL if the output data set had no
+//    geometry.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -191,13 +195,12 @@ avtEllipsoidSliceFilter::ExecuteData(avtDataRepresentation *in_dr)
 
     vtkDataSet *out_ds = cutter->GetOutput();
     
-    if (out_ds->GetNumberOfCells() == 0)
+    avtDataRepresentation *out_dr = NULL;
+    if (out_ds->GetNumberOfCells() > 0)
     {
-        out_ds = NULL;
+        out_dr = new avtDataRepresentation(out_ds,
+            in_dr->GetDomain(), in_dr->GetLabel());
     }
-
-    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
-        in_dr->GetDomain(), in_dr->GetLabel());
 
     quadric->Delete();
     cutter->Delete();

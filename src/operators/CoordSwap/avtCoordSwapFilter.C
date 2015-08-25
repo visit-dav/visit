@@ -159,6 +159,9 @@ avtCoordSwapFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Biagas, Thu Jun 4 18:15:22 MST 2015
 //    Make sure base_index gets swapped.
 //
+//    Eric Brugger, Tue Aug 25 10:20:24 PDT 2015
+//    Modified the routine to return NULL if the output data set was NULL.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -324,11 +327,13 @@ avtCoordSwapFilter::ExecuteData(avtDataRepresentation *in_dr)
         }
     }
 
-    avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
-        in_dr->GetDomain(), in_dr->GetLabel());
-
+    avtDataRepresentation *out_dr = NULL;
     if (rv != NULL)
+    {
+        out_dr = new avtDataRepresentation(rv,
+            in_dr->GetDomain(), in_dr->GetLabel());
         rv->Delete();
+    }
 
     return out_dr;
 }

@@ -141,6 +141,10 @@ avtSmoothPolyDataFilter::SetSmoothingLevel(int sl)
 //    Eric Brugger, Tue Jul 22 08:24:19 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eric Brugger, Tue Aug 25 10:28:27 PDT 2015
+//    Modified the routine to return NULL if the output data set had no
+//    geometry.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -202,14 +206,12 @@ avtSmoothPolyDataFilter::ExecuteData(avtDataRepresentation *inDR)
 
     smoothPolyData->Update();
 
-    vtkDataSet *outDS = NULL;
+    avtDataRepresentation *outDR = NULL;
     if (newDS->GetNumberOfCells() > 0)
     {
-        outDS = newDS;
+        outDR = new avtDataRepresentation(newDS,
+            inDR->GetDomain(), inDR->GetLabel());
     }
-
-    avtDataRepresentation *outDR = new avtDataRepresentation(outDS,
-        inDR->GetDomain(), inDR->GetLabel());
 
     newDS->Delete();
     smoothPolyData->Delete();

@@ -183,6 +183,9 @@ avtExtrudeFilter::Equivalent(const AttributeGroup *a)
 //    Eric Brugger, Thu Jul 24 13:32:08 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eric Brugger, Tue Aug 25 10:22:23 PDT 2015
+//    Modified the routine to return NULL if the output data set was NULL.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -215,11 +218,13 @@ avtExtrudeFilter::ExecuteData(avtDataRepresentation *in_dr)
         out_ds->GetCellData()->RemoveArray("avtOriginalCellNumbers");
     }
 
-    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
-        in_dr->GetDomain(), in_dr->GetLabel());
-
+    avtDataRepresentation *out_dr = NULL;
     if (out_ds != NULL)
+    {
+        out_dr = new avtDataRepresentation(out_ds,
+            in_dr->GetDomain(), in_dr->GetLabel());
         out_ds->Delete();
+    }
 
     return out_dr;
 }

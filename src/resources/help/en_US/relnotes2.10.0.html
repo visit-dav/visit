@@ -122,16 +122,16 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.10</font></b></p>
 <ul>
-  <li></li>
+  <li>A bug was fixed with the scatter plot, where VisIt would give an error if it generated any empty domains.</li>
   <li></li>
   <li></li>
   <li></li>
 </ul>
 
 <a name="Operator_changes"></a>
-<p><b><font size="4">Changes to VisIt's plots in version 2.10</font></b></p>
+<p><b><font size="4">Changes to VisIt's operators in version 2.10</font></b></p>
 <ul>
-  <li>A bug was fixed with the ThreeSlice operator where it would give an error if any of the domains being sliced resulted in no geometry.</li>
+  <li>A bug was fixed with several of the operators, where VisIt would give an error if the operator generated any empty domains. These include the CoordSwap, EllipsoidSlice, Extrude, Isovolume, SphereSlice and ThreeSlice operators.</li>
   <li></li>
   <li></li>
   <li></li>
@@ -174,6 +174,7 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
   <li>Libsim's internal buffer for retrieving the user's environment was fixed at 10Kb, which is not large enough to accommodate some users' environments. The environment retrieval code has been rewritten to handle arbitrary sizes.</li>
   <li>The splatting render mode in the Volume plot was corrected so it would no longer change graphics settings in a way that could corrupt the rendering of other plots such as Pseudocolor.</li>
   <li>The VTK reader was serving up invalid time values for files that did not have time.</li>
+  <li>A bug was fixed with the NamedSelection and SmoothPolyData filters, where VisIt would give an error if the filter generated any empty domains.</li>
 </ul>
 
 <a name="Build_Features"></a>

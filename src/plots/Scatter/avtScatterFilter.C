@@ -249,6 +249,9 @@ avtScatterFilter::PreExecute(void)
 //    Make 'PointMeshFromVariables' a templated method to support double
 //    precision.
 //
+//    Eric Brugger, Tue Aug 25 10:04:00 PDT 2015
+//    Modified the routine to return NULL if the output data set was NULL.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -425,11 +428,13 @@ avtScatterFilter::ExecuteData(avtDataRepresentation *inDR)
     }
     ENDTRY
 
-    avtDataRepresentation *outDR = new avtDataRepresentation(outDS,
-        inDR->GetDomain(), inDR->GetLabel());
-
+    avtDataRepresentation *outDR = NULL;
     if (outDS != NULL)
+    {
+        outDR = new avtDataRepresentation(outDS,
+            inDR->GetDomain(), inDR->GetLabel());
         outDS->Delete();
+    }
 
     return outDR;
 }
