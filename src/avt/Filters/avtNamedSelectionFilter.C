@@ -109,6 +109,9 @@ avtNamedSelectionFilter::~avtNamedSelectionFilter()
 //    Eric Brugger, Mon Jul 21 16:42:08 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eric Brugger, Tue Aug 25 10:32:57 PDT 2015
+//    Modified the routine to return NULL if the output data set was NULL.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -140,11 +143,13 @@ avtNamedSelectionFilter::ExecuteData(avtDataRepresentation *in_dr)
         out_ds = SelectedData(in_ds, ids);
     }
 
-    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
-        in_dr->GetDomain(), in_dr->GetLabel());
-
+    avtDataRepresentation *out_dr = NULL;
     if (out_ds != NULL)
+    {
+        out_dr = new avtDataRepresentation(out_ds,
+            in_dr->GetDomain(), in_dr->GetLabel());
         out_ds->Delete();
+    }
 
     return out_dr;
 }
