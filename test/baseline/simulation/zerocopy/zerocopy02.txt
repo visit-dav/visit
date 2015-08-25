@@ -1,1 +1,1 @@
-ERROR: Some methods used more memory than copying.
+OK: All methods use less memory than copying.
