@@ -176,6 +176,7 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
   <li>The VTK reader was serving up invalid time values for files that did not have time.</li>
   <li>A bug was fixed with the NamedSelection and SmoothPolyData filters, where VisIt would give an error if the filter generated any empty domains.</li>
   <li>Fixed a case where VisIt's Recenter expression could SEGV if it encountered some domains with zero points and/or zero cells</li>.
+  <li>The internal launcher now adds unknown arguments before the "-s script_name" argument and not between the script name and the script arguments.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
