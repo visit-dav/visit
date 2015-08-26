@@ -367,6 +367,13 @@
 #    Kathleen Biagas, Thu May  7 09:48:06 PDT 2015
 #    Fix second 'data' conditional to test for "$distributiondir"/data
 #
+#    Eric Brugger, Tue Aug 25 16:30:55 PDT 2015
+#    I replaced "LLNL open network (RZ only)", "LLNL open network (CZ only)"
+#    and "LLNL open network (CZ and RZ)" with "LLNL open network" in the
+#    list of profiles that the user selects from when a profile wasn't
+#    specified on the command line. The three options are still supported
+#    on the command line.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -761,24 +768,22 @@ while [ "$config" = "prompt" ]; do
    echo "   6)  AWE network"
    echo "   7)  Clemson University network"
    echo "   8)  ETH Zurich network"
-   echo "   9)  LLNL open network (CZ and RZ)"
-   echo "   10) LLNL open network (CZ only)"
-   echo "   11) LLNL open network (RZ only)"
-   echo "   12) LLNL closed network"
-   echo "   13) Lousiana State University network"
-   echo "   14) NCAR network"
-   echo "   15) NERSC network"
-   echo "   16) NICS at University of Tennessee at Knoxville"
-   echo "   17) ORNL network"
-   echo "   18) Princeton network"
-   echo "   19) Sandia network"
-   echo "   20) Sandia closed network"
-   echo "   21) Swiss National Supercomputing Center (CSCS) network"
-   echo "   22) TACC network"
-   echo "   23) U of Michigan Center for Advanced Computing network"
-   echo "   24) U of Utah Center for High Performance Computing network"
+   echo "   9)  LLNL open network"
+   echo "   10) LLNL closed network"
+   echo "   11) Lousiana State University network"
+   echo "   12) NCAR network"
+   echo "   13) NERSC network"
+   echo "   14) NICS at University of Tennessee at Knoxville"
+   echo "   15) ORNL network"
+   echo "   16) Princeton network"
+   echo "   17) Sandia network"
+   echo "   18) Sandia closed network"
+   echo "   19) Swiss National Supercomputing Center (CSCS) network"
+   echo "   20) TACC network"
+   echo "   21) U of Michigan Center for Advanced Computing network"
+   echo "   22) U of Utah Center for High Performance Computing network"
    echo ""
-   echo "Enter (1-24):"
+   echo "Enter (1-22):"
 
    read config
    case "$config" in
@@ -810,48 +815,42 @@ while [ "$config" = "prompt" ]; do
          config=llnl_open
          ;;
       10)
-         config=llnl_open_cz
-         ;;
-      11)
-         config=llnl_open_rz
-         ;;
-      12)
          config=llnl_closed
          ;;
-      13)
+      11)
          config=lsu
          ;;
-      14)
+      12)
          config=ncar
          ;;
-      15)
+      13)
          config=nersc
          ;;
-      16)
+      14)
          config=nics
          ;;
-      17)
+      15)
          config=ornl
          ;;
-      18)
+      16)
          config=princeton
          ;;
-      19)
+      17)
          config=sandia
          ;;
-      20)
+      18)
          config=sandia_closed
          ;;
-      21)
+      19)
          config=cscs
          ;;
-      22)
+      20)
          config=tacc
          ;;
-      23)
+      21)
          config=umich
          ;;
-      24)
+      22)
          config=utah
          ;;
       *)
