@@ -175,6 +175,7 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
   <li>The splatting render mode in the Volume plot was corrected so it would no longer change graphics settings in a way that could corrupt the rendering of other plots such as Pseudocolor.</li>
   <li>The VTK reader was serving up invalid time values for files that did not have time.</li>
   <li>A bug was fixed with the NamedSelection and SmoothPolyData filters, where VisIt would give an error if the filter generated any empty domains.</li>
+  <li>Fixed a case where VisIt's Recenter expression could SEGV if it encountered some domains with zero points and/or zero cells</li>.
 </ul>
 
 <a name="Build_Features"></a>
