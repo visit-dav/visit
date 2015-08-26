@@ -486,8 +486,12 @@ avtMTSDFileFormatInterface::GetFilename(int ts)
 //    Make use of argument for whether we should force reading of all
 //    cycles and times.
 //
-//   Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
-//   Added support for ensemble databases. (multiple time values)
+//    Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
+//    Added support for ensemble databases. (multiple time values)
+//
+//    Kathleen Biagas, Wed Aug 26 16:32:52 PDT 2015
+//    Correct order of arguments in calls to md->SetCycleIsAccurate and
+//    md->SetTimeIsAccurate.
 //
 // ****************************************************************************
 
@@ -581,7 +585,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                         cycles.push_back(0);
                     else
                         cycles.push_back(cycles[i-1]+1);
-                    md->SetCycleIsAccurate(i, false);
+                    md->SetCycleIsAccurate(false, i);
                 }
                 else
                     cycles.push_back(c);
@@ -642,7 +646,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                         times.push_back(0.);
                     else
                         times.push_back(times[i-1]+0.0);  // same time
-                    md->SetTimeIsAccurate(i, false);
+                    md->SetTimeIsAccurate(false, i);
                 }
             }
         }
