@@ -1329,6 +1329,11 @@ class DebugMallocDebugger(Debugger):
 #   Capture if -hw-accel is passed here so we can use it when we determine
 #   if we should enable mesa for the engine.
 #
+#   Eric Brugger, Wed Aug 26 12:25:27 PDT 2015
+#   I modified ProduceArguments so that unknown arguments get added before
+#   the "-s script_name" argument and not between the script name and the
+#   script arguments.
+#
 ###############################################################################
 
 class GeneralArguments(object):
@@ -1472,6 +1477,8 @@ class GeneralArguments(object):
             args = args + ["-nowin"]
             nowin_not_added = 0
 
+        args = args + self.arguments
+
         if self.scriptfile != None:
             if self.add_movie_args:
                 args = args + ["-scriptfile", self.scriptfile]
@@ -1492,7 +1499,7 @@ class GeneralArguments(object):
                 args = args + ["-nowin"]
             args = args + ["-s", os.path.join(self.launcher.visitscriptdir, "makemoviemain.py")]
 
-        args = args + self.arguments + self.scriptarguments
+        args = args + self.scriptarguments
 
         return args
 
