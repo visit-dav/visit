@@ -1023,8 +1023,21 @@ bool
 avtLCSFilter::GetAllSeedsSentToAllProcs(void)
 {
   if (atts.GetSourceType() == LCSAttributes::NativeMesh)
-    return false;
-  else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
+  {
+ #ifdef PARALLEL
+    if (method == PICS_SERIAL)
+      return true;
+    else if (method == PICS_PARALLEL_OVER_DOMAINS)
+      return false;
+    // else if (method == PICS_PARALLEL_COMM_DOMAINS)
+    //   return false;
+    // else if (method == PICS_PARALLEL_MASTER_SLAVE)
+    //   return false;
+#else
+    return true;
+#endif
+  }
+  //  else if (atts.GetSourceType() == LCSAttributes::RegularGrid)
     return true;
 }
 
@@ -1710,8 +1723,10 @@ void avtLCSFilter::ComputeLyapunovExponent(vtkDataArray *jacobian[3],
     {
       for(size_t l = 0; l < nTuples; ++l)
       {
-        // if( (doTime     && expArray->GetTuple1(l) < maxTime) ||
-        //     (doDistance && expArray->GetTuple1(l) < maxDistance) )
+        // if( (doTime &&
+        //      (fabs(expArray->GetTuple1(l) - absMaxTime) > FLT_MIN)) ||
+        //     (doDistance &&
+        //      (expArray->GetTuple1(l) < maxDistance)) )
         //   expArray->SetTuple1(l, 0);
         // else
         {
@@ -1748,8 +1763,10 @@ void avtLCSFilter::ComputeLyapunovExponent(vtkDataArray *jacobian[3],
     {
       for(size_t l = 0; l < nTuples; ++l)
       {
-        // if( (doTime     && expArray->GetTuple1(l) < maxTime) ||
-        //     (doDistance && expArray->GetTuple1(l) < maxDistance) )
+        // if( (doTime &&
+        //      (fabs(expArray->GetTuple1(l) - absMaxTime) > FLT_MIN)) ||
+        //     (doDistance &&
+        //      (expArray->GetTuple1(l) < maxDistance)) )
         //   expArray->SetTuple1(l, 0);
         // else
         {
@@ -2127,11 +2144,13 @@ avtDataTree_p
 avtLCSFilter::GetCachedDataSet()
 {
     avtDataTree_p rv = NULL;
+
     if (atts.GetSourceType() == LCSAttributes::NativeMesh)
     {
-        rv = GetCachedNativeDataSet(GetInputDataTree());
-
         int looksOK = 1;
+
+        rv = GetCachedNativeDataSet(GetInputDataTree());
+      
         if ((*rv == NULL) && (*(GetInputDataTree()) != NULL))
             looksOK = 0;
 
@@ -2193,6 +2212,7 @@ avtLCSFilter::GetCachedNativeDataSet(avtDataTree_p inDT)
         int domain = inDT->GetDataRepresentation().GetDomain();
         std::string label = inDT->GetDataRepresentation().GetLabel();
         std::string str = CreateCacheString();
+
         vtkDataSet *rv = (vtkDataSet *)
           FetchArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                                   outVarName.c_str(), domain, -1, str.c_str());
