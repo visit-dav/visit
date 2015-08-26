@@ -265,22 +265,19 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
                                      int &offset, int domain,
                                      double &minv, double &maxv )
 {
-
-    if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
-      std::cerr << __FUNCTION__ << "  " << PAR_Rank() << "  "
-                << "DataIsReplicatedOnAllProcessors " << std::endl;
-
     // Variable name and number of points.
     std::string var = outVarRoot + outVarName;
 
     int nTuples = in_ds->GetNumberOfPoints();
 
+    size_t nics = ics.size();
+
     // Storage for the points and times
     std::vector<avtVector> remapPoints(nTuples*nAuxPts);
-    std::vector<double>    remapTimes(nTuples*nAuxPts);
+    std::vector<double>    remapTimes (nTuples*nAuxPts);
 
-    // Zero out the points.
-    for(size_t i = 0; i < remapPoints.size(); ++i)
+    // Zero out the points and times.
+    for(size_t i = 0; i < nTuples*nAuxPts; ++i)
     {
       remapPoints[i] = avtVector(0,0,0);
       remapTimes[i] = 0;
@@ -295,9 +292,11 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     //     // a sum across all processors.  So we want remapPoints to have the
     //     // location of the particle on one processor, and zero on the rest.
     //     // Do that here.
+
     //     // Special care is needed for the case where the particle never
     //     // advected.  Then we need to put the initial location on just one
     //     // processor.  We do this on rank 0.
+
     //     std::vector<int> iHavePoint(nTuples*nAuxPts, 0);
     //     std::vector<int> anyoneHasPoint;
 
@@ -317,7 +316,7 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
 
     //     for (size_t i = 0; i < remapPoints.size(); ++i)
     //         if (PAR_Rank() == 0 && !anyoneHasPoint[i])
-    //             remapPoints[i] = seedPoints.at(offset + i);
+    //             remapPoints[i] = seedPoints[offset + i];
     //         else
     //             remapPoints[i] = zero;
     // }
@@ -325,59 +324,63 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     // {
     //   //copy the original seed points
     //   for(size_t i = 0; i < remapPoints.size(); ++i)
-    //     remapPoints[i] = seedPoints.at(offset + i);
+    //     remapPoints[i] = seedPoints[offset + i];
     // }
 
     // The processor has a partial set of the curves so some values in
     // remapPoint will be zero.
-    for(size_t i = 0; i < ics.size(); ++i)
+    for(size_t i = 0; i < nics; ++i)
     {
-        size_t index = ics[i]->id;
+        avtLCSIC* ic = (avtLCSIC*) ics[i];
+
+        size_t index = ic->id;
         size_t l = (index-offset);
 
-        if(l < remapPoints.size())
+        if(l < nTuples*nAuxPts)
         {
           if( atts.GetOperationType() == LCSAttributes::EigenValue ||
               atts.GetOperationType() == LCSAttributes::EigenVector ||
               atts.GetOperationType() == LCSAttributes::Lyapunov )
           {
             if( doTime )
-              remapTimes.at(l) = ((avtLCSIC*)ics[i])->GetTime();
+              remapTimes[l] = ic->GetTime();
             else if( doDistance )
-              remapTimes.at(l) = ((avtLCSIC*)ics[i])->GetDistance();
+              remapTimes[l] = ic->GetDistance();
 
-            remapPoints.at(l) = ((avtLCSIC*)ics[i])->GetEndPoint();
+            remapPoints[l] = ic->GetEndPoint();
           }
           else
           {
-            double ave = 0;
-
-            if( ((avtLCSIC*)ics[i])->GetNumSteps() )
-              remapPoints.at(l) =
-                avtVector( ((avtLCSIC*)ics[i])->GetTime(),
-                           ((avtLCSIC*)ics[i])->GetDistance(),
-                           (((avtLCSIC*)ics[i])->GetSummation0() /
-                            (double) ((avtLCSIC*)ics[i])->GetNumSteps()) );
+            if( ic->GetNumSteps() )
+              remapPoints[l] =
+                avtVector( ic->GetTime(),
+                           ic->GetDistance(),
+                           (ic->GetSummation0() /
+                            (double) ic->GetNumSteps()) );
             else
-              remapPoints.at(l) =
-                avtVector( ((avtLCSIC*)ics[i])->GetTime(),
-                           ((avtLCSIC*)ics[i])->GetDistance(),
+              remapPoints[l] =
+                avtVector( ic->GetTime(),
+                           ic->GetDistance(),
                            0 );
           }
         }
+        else
+        {
+          EXCEPTION1(VisItException,
+                     "More integral curves were generatated than "
+                     "grid points." );
+        }
     }
 
-    //done with offset, increment it for the next call to this
-    //function.
+    // Done with offset, increment it for the next call to this
+    // function.
     offset += nTuples * nAuxPts;
 
-    //create new instance from old.
+    // Create new instance from old.
     vtkDataSet* out_grid = in_ds->NewInstance();
     out_grid->ShallowCopy(in_ds);
 
-    //use static function in avtGradientExpression to calculate
-    //gradients.  since this function only does scalar, break our
-    //vectors into scalar components and calculate one at a time.
+    // Now create the output and working array
     vtkDoubleArray *outputArray = vtkDoubleArray::New();
     outputArray->SetName(var.c_str());
     if( atts.GetOperationType() == LCSAttributes::EigenVector )
@@ -394,13 +397,14 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     out_grid->GetPointData()->AddArray(workingArray);
     out_grid->GetPointData()->SetActiveScalars("workingArray");
 
+    // Calculate jacobian in parts (x,y,z).
     if( atts.GetOperationType() == LCSAttributes::EigenValue ||
         atts.GetOperationType() == LCSAttributes::EigenVector ||
         atts.GetOperationType() == LCSAttributes::Lyapunov )
     {
       // Save the times/distances so that points that do not fully
       // advect can be culled.
-      for(size_t j = 0; j < (size_t)nTuples; ++j)
+      for(size_t j = 0; j < (size_t) nTuples; ++j)
         outputArray->SetTuple1(j, remapTimes[j]);
 
       // remapTimes does not contain all of the values only the
@@ -422,9 +426,12 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
       // No auxiliary grid so use the values from the grid.
       if( auxIdx == LCSAttributes::None )
       {
+        // Use the static function in avtGradientExpression to calculate
+        // gradients. This function only works with scalar values, so do
+        // the vector cacluation on a component by component basis.
         for(int i = 0; i < 3; ++i)
         {
-          for(size_t j = 0; j < (size_t)nTuples; ++j)
+          for(size_t j = 0; j < (size_t) nTuples; ++j)
             workingArray->SetTuple1(j, remapPoints[j][i]);
 
           // remapPoints does not contain all of the values only the
@@ -569,7 +576,7 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     {
       int index = (atts.GetOperationType()-LCSAttributes::IntegrationTime);
 
-      for(size_t j = 0; j < (size_t)nTuples; ++j)
+      for(size_t j = 0; j < (size_t) nTuples; ++j)
         outputArray->SetTuple1(j, remapPoints[j][index]);
 
       // remapPoints does not contain all of the values only the ones
@@ -673,30 +680,11 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     // Remove the working array.
     out_grid->GetPointData()->RemoveArray("workingArray");
 
-
-    bool storeResult = true;
-
-    // When data is replicated on all processors only the root
-    // processor needs to pass along the results to a plot. Except as
-    // noted below.
-    if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
-      if (PAR_Rank() != 0)
-        // When running in parallel and if the LCS operator is sending
-        // its data to an IC operator then the resulting data must be
-        // replicated on all processors so that all seeds are
-        // advected. Otherwise only the root proc needs to have the
-        // resulting data so do not store the results.
-        if( !replicateData )
-          storeResult = false;
-
-    if( storeResult )
-    {
-        //Store this dataset in Cache for next time.
-        std::string str = CreateCacheString();
-        StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
-                                outVarName.c_str(), domain, -1,
-                                str.c_str(), out_grid);
-    }
+    //Store this dataset in Cache for next time.
+    std::string str = CreateCacheString();
+    StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
+                            outVarName.c_str(), domain, -1,
+                            str.c_str(), out_grid);
 
     // Calling function must free this.
     return out_grid;
@@ -741,24 +729,20 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 
     for(size_t i=0, j=0; i<nics; ++i, j+=3)
     {
-        indices[i] = ics[i]->id;
-        if( doTime )
-          times[i] = ((avtLCSIC*)ics[i])->GetTime();
-        else if( doDistance )
-          times[i] = ((avtLCSIC*)ics[i])->GetDistance();
+        avtLCSIC* ic = (avtLCSIC*) ics[i];
 
-        // if( ics[i]->id == 749 )
-        //   std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
-        //          << PAR_Rank() << " indice " << ics[i]->id
-        //          << "  time  " << ((avtLCSIC*)ics[i])->GetTime()
-        //          << "  status  " << ics[i]->status
-        //          << std::endl;
+        indices[i] = ic->id;
+
+        if( doTime )
+          times[i] = ic->GetTime();
+        else if( doDistance )
+          times[i] = ic->GetDistance();
 
         if( atts.GetOperationType() == LCSAttributes::EigenValue ||
             atts.GetOperationType() == LCSAttributes::EigenVector ||
             atts.GetOperationType() == LCSAttributes::Lyapunov )
         {
-          avtVector end_point = ((avtLCSIC*)ics[i])->GetEndPoint();
+          avtVector end_point = ic->GetEndPoint();
           
           points[j+0] = end_point[0];
           points[j+1] = end_point[1];
@@ -766,12 +750,11 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         }
         else
         {
-          points[j+0] = ((avtLCSIC*)ics[i])->GetTime();
-          points[j+1] = ((avtLCSIC*)ics[i])->GetDistance();
+          points[j+0] = ic->GetTime();
+          points[j+1] = ic->GetDistance();
 
-          if( ((avtLCSIC*)ics[i])->GetNumSteps() )
-            points[j+2] = (((avtLCSIC*)ics[i])->GetSummation0() /
-                           (double) ((avtLCSIC*)ics[i])->GetNumSteps());
+          if( ic->GetNumSteps() )
+            points[j+2] = (ic->GetSummation0() / (double) ic->GetNumSteps());
           else
             points[j+2] = 0;
         }
@@ -827,7 +810,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
             }
         }
 
-        if( total != nTuples*nAuxPts )
+        if( total > nTuples*nAuxPts )
         {
           EXCEPTION1(VisItException,
                      "Total count does not match the tuple count." );
@@ -835,11 +818,17 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 
         // Update remapPoints with new value bounds from integral
         // curves.  This puts the data into the arrays based on the
-        // curve index.
-        std::vector<double> remapTimes(nTuples*nAuxPts);
+        // curve's index.
         std::vector<avtVector> remapPoints(nTuples*nAuxPts);
+        std::vector<double>    remapTimes (nTuples*nAuxPts);
+
+        for(size_t i = 0; i < nTuples*nAuxPts; ++i)
+        {
+            remapPoints[i] = avtVector(0,0,0);
+            remapTimes[i] = 0;
+        }
       
-        for(size_t j = 0, k = 0; j < nTuples*nAuxPts; ++j, k += 3)
+        for(size_t j = 0, k = 0; j < total; ++j, k += 3)
         {
             size_t index = all_indices[j];
 
@@ -898,12 +887,12 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         rect_grid->SetYCoordinates(lycoord);
         rect_grid->SetZCoordinates(lzcoord);
 
-        //cleanup
+        // Cleanup
         lxcoord->Delete();
         lycoord->Delete();
         lzcoord->Delete();
 
-        //now create the output and working array
+        // Now create the output and working array
         vtkDoubleArray *outputArray = vtkDoubleArray::New();
         outputArray->SetName(var.c_str());
         if( atts.GetOperationType() == LCSAttributes::EigenVector )
@@ -920,11 +909,13 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         rect_grid->GetPointData()->AddArray(workingArray);
         rect_grid->GetPointData()->SetActiveScalars("workingArray");
     
-        //calculate jacobian in parts (x,y,z).
+        // Calculate jacobian in parts (x,y,z).
         if( atts.GetOperationType() == LCSAttributes::EigenValue ||
             atts.GetOperationType() == LCSAttributes::EigenVector ||
             atts.GetOperationType() == LCSAttributes::Lyapunov )
         {
+          // Save the times/distances so that points that do not fully
+          // advect can be culled.
           for (size_t l = 0; l < nTuples; l++)
             outputArray->SetTuple1(l, remapTimes[l]);
 
@@ -932,10 +923,13 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 
           if( auxIdx == LCSAttributes::None )
           {
+            // Use the static function in avtGradientExpression to calculate
+            // gradients. This function only works with scalar values, so do
+            // the vector cacluation on a component by component basis.
             for(int i = 0; i < 3; ++i)
             {
-              for (size_t l = 0; l < nTuples; l++)
-                workingArray->SetTuple1(l, remapPoints[l][i]);
+              for(size_t j = 0; j < (size_t) nTuples; ++j)
+                workingArray->SetTuple1(j, remapPoints[j][i]);
 
               jacobian[i] =
                 avtGradientExpression::CalculateGradient(rect_grid, var.c_str());
@@ -968,11 +962,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
                   else
                     dz = 0;
                   
-                  // if( PID == j )
-                  //   std::cerr << "Jacobian "
-                  //          << dx << "  "  << dy << "  "  << dz << "  "
-                  //          << std::endl;
-                    
                   jacobian[i]->SetTuple3(j, dx, dy, dz);
                 }
               }
@@ -1041,9 +1030,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         else if( atts.GetOperatorType() == LCSAttributes::BaseValue )
         {
           int index = (atts.GetOperationType()-LCSAttributes::IntegrationTime);
-
-          // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  " << index
-          //        << std::endl;
 
           for (size_t l = 0; l < nTuples; l++)
             outputArray->SetTuple1(l, remapPoints[l][index]);
@@ -1169,10 +1155,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 #ifdef PARALLEL
     if( replicateData )
     {
-      // std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-      //                <<  PAR_Rank() << "  replicating data on all processors"
-      //                << std::endl;
-      
       debug1 << "LCS: replicating data on all processors." << std::endl;
 
       // Setup for MPI communication
@@ -1283,10 +1265,6 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
     else if(PAR_Rank() != 0)
     {
         debug1 << "LCS: data is only on the root processor." << std::endl;
-
-        // std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-        //        <<  PAR_Rank() << "  root processor only " << std::endl;
-      
 
         avtDataTree* dt = new avtDataTree();
         SetOutputDataTree(dt);
