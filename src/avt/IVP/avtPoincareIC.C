@@ -399,7 +399,7 @@ avtPoincareIC::Serialize(MemStream::Mode mode, MemStream &buff,
 // ****************************************************************************
 
 void
-avtPoincareIC::avtPoincareIC::MergeIntegralCurve(avtIntegralCurve *ic)
+avtPoincareIC::MergeIntegralCurve(avtIntegralCurve *ic)
 {
     avtPoincareIC *pic = (avtPoincareIC *) ic;
 
