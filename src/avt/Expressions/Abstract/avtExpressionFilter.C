@@ -700,6 +700,8 @@ avtExpressionFilter::GetVariableDimension(void)
 //      Kathleen Biagas, Mon Jan 28 11:10:37 PST 2013
 //      Call Update on filter, not data object.
 //
+//      Mark C. Miller, Tue Aug 25 17:23:52 PDT 2015
+//      Guard against empty datasets (zero points and/or zero cells)
 // ****************************************************************************
 
 vtkDataArray *
@@ -728,10 +730,11 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
     vtkDataArray *outv = NULL;
     if (currCent == AVT_NODECENT)
     {
-        if (ds2->GetNumberOfPoints() != arr->GetNumberOfTuples())
+        if (ds2->GetNumberOfPoints() != arr->GetNumberOfTuples() ||
+            ds2->GetNumberOfPoints() < 1)
         {
             ds2->Delete();
-            if (arr->GetNumberOfTuples() == 1)
+            if (arr->GetNumberOfTuples() < 1)
             {
                 // okay, it's a singleton; no recentering necessary
                 arr->Register(NULL);
@@ -760,10 +763,11 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
     }
     else
     {
-        if (ds2->GetNumberOfCells() != arr->GetNumberOfTuples())
+        if (ds2->GetNumberOfCells() != arr->GetNumberOfTuples() ||
+            ds2->GetNumberOfCells() < 1)
         {
             ds2->Delete();
-            if (arr->GetNumberOfTuples() == 1)
+            if (arr->GetNumberOfTuples() < 1)
             {
                 // okay, it's a singleton; no recentering necessary
                 arr->Register(NULL);
