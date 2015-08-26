@@ -194,7 +194,7 @@ avtSerialICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
         }
         else
         {
-        i0 = (rank)*(nSeedsPerProc) + oneExtraUntil;
+            i0 = (rank)*(nSeedsPerProc) + oneExtraUntil;
             i1 = (rank+1)*(nSeedsPerProc) + oneExtraUntil;
         }
     
