@@ -207,6 +207,7 @@ typedef enum {
 #define VISIT_CSG_INTERSECT         2130968576 /* 0x7F040000 */
 #define VISIT_CSG_DIFF              2131034112 /* 0x7F050000 */
 #define VISIT_CSG_COMPLIMENT        2131099648 /* 0x7F060000 */
+/* XFORM and SWEEP are not yet implemented */
 #define VISIT_CSG_XFORM             2131165184 /* 0x7F070000 */
 #define VISIT_CSG_SWEEP             2131230720 /* 0x7F080000 */
 
