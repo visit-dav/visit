@@ -60,7 +60,7 @@ Particle P[MAX_PART];
 /* Expose Array of Structure x,y,z values as a single VariableData object. */
 visit_handle coordinates = VISIT_INVALID_HANDLE;
 VisIt_VariableData_alloc(&coordinates);
-VisIt_VariableData_setArrayDataD(coordinates, 0, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].x);
+VisIt_VariableData_setArrayDat/wikiaD(coordinates, 0, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].x);
 VisIt_VariableData_setArrayDataD(coordinates, 1, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].y);
 VisIt_VariableData_setArrayDataD(coordinates, 2, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].z);
 
@@ -113,9 +113,14 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.10</font></b></p>
 <ul>
-  <li>The PLOT3D reader has been enhanced to <i>auto-detect</i> the format options normally specified by the <i>.vp3d meta file</i> or via <i>Read options.</i>Auto-detection works for most binary files, but not for ascii. It is always on, and if successful, will override the values specified in the <i>.vp3d meta file</i> or <i>Read options.</i>  If not successful, the reader will fallback to use the other settings.</li>
-  <li>The PLOT3D reader now supports time-series solution files, specified in the form 'somefile*.q', (where '*' matches a number specifing the timestate) or 'somefile??3?.q'.  Use the '?' form to sub-select from the time series. The q filename in this form can be used in the <i>.vp3d meta file</i>, or via <i>Read Options.</i>  The '.q' extension is the default.</li>
-  <li></li>
+  <li>The PLOT3D reader has been enhanced in the following ways:
+  <ul>
+      <li><i>Auto-detect</i> the format options normally specified by the <i>.vp3d meta file</i> or via <i>Read options.</i>  Auto-detection works for most binary files, but not for ascii. It is always on, and if successful, will override the values specified in the <i>.vp3d meta file</i> or <i>Read options.</i>  If not successful, the reader will fallback to use the other settings.</li>
+      <li>Support time-series solution files, specified in the form 'somefile*.q', (where '*' matches a number specifing the timestate) or 'somefile??3?.q'.  Use the '?' form to sub-select from the time series. The q filename in this form can be used in the <i>.vp3d meta file</i>, or via <i>Read Options.</i>  The '.q' extension is the default. If you want VisIt to parse the time value from the filenames, turn off the new <i>"Solution Time field accurate"</i> read option.</li>
+      <li>Support non-record based Fortran binary files. <i>(Auto detection of options may fail).</i></li>
+      <li>Additional Read options were added for specifying Gas constants <i>R</i> and <i>Gamma</i> used in calculating functions like <i>Temperature, Pressure, Enthalpy and Entropy.</i> The defaults used are 1.0 and 1.4 respectively.</li>
+      <li>The <a href="http://visitusers.org/index.php?title=Plot3D">wiki</a> page was updated with the latest information for reading PLOT3D files.</li>
+  </ul> 
   <li>The Nek5000 reader had an issue with #std 8 data files (double size data). The data dimensions would be read wrong. This has been fixed.</li>
   <li>VisIt can now read <i>.vtm</i> VTK multiblock files.</li>
 </ul>

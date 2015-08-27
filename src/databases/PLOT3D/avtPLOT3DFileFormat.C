@@ -47,6 +47,8 @@
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPLOT3DReader.h>
 
@@ -99,6 +101,10 @@ using std::string;
 //    Add solutionFiles, times, haveReadMetaFile, haveProcessedQ, previousTS,
 //    xFileName, qFileName.
 //
+//    Kathleen Biagas, Thu Aug 27 12:33:56 PDT 2015
+//    Change 'times' to single 'time'.  Add solutionHasValidTime flag. Add
+//    Read option for non-record based fortran binaries (no byte count).
+//
 // ****************************************************************************
 
 avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
@@ -108,14 +114,15 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
        xFileName(),
        qFileName(),
        solutionRoot(),
-       solutionFiles(),
-       times()
+       solutionFiles()
 {
     bool guessedQFile = false;
     haveSolutionFile = false;
     haveReadMetaFile = false;
     haveProcessedQ = false;
     previousTS = -1;
+    solutionHasValidTime = true;
+    time = INVALID_TIME;
     if (strstr(fname, ".vp3d") != NULL)
     {
         visitMetaFile = fname;
@@ -173,8 +180,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
     }
 
     reader = vtkPLOT3DReader::New();
-    reader->AutoDetectFormatOn();
-
+    
     if (!xFileName.empty())
         reader->SetXYZFileName(xFileName.c_str());
     if (!qFileName.empty())
@@ -196,6 +202,9 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
                         break;
                 case 2: reader->BinaryFileOn();
                         reader->HasByteCountOn();
+                        break;
+                case 3: reader->BinaryFileOn();
+                        reader->HasByteCountOff();
                         break;
             }
         }
@@ -255,6 +264,20 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
                 }
             }
         }
+        if (readOpts->FindIndex("Solution Time field accurate") >= 0)
+        {
+            solutionHasValidTime = readOpts->GetBool("Solution Time field accurate");
+        }
+        if (readOpts->FindIndex("Gas constant R") >= 0)
+        {
+            double R = readOpts->GetDouble("Gas constant R");
+            reader->SetR(R);
+        }
+        if (readOpts->FindIndex("Gas constant Gamma") >= 0)
+        {
+            double gamma = readOpts->GetDouble("Gas constant Gamma");
+            reader->SetGamma(gamma);
+        }
     }
     else
     {
@@ -283,28 +306,28 @@ avtPLOT3DFileFormat::~avtPLOT3DFileFormat()
     reader->Delete();
     reader = NULL;
     solutionFiles.clear();
-    times.clear();
 }
 
 // ****************************************************************************
-//  Method: avtPLOT3DFileFormat::GetTimes
+//  Method: avtPLOT3DFileFormat::GetTime
 //
 //  Purpose:
-//      Returns all the time values for all timesteps.
+//      Returns all the time values for the requested timestep.
 //
 //  Programmer: Kathleen Biagas
 //  Creation:   June 26, 2015
 //
 // ****************************************************************************
 
-void
-avtPLOT3DFileFormat::GetTimes(vector<double> &gettimes)
+double
+avtPLOT3DFileFormat::GetTime(int ts)
 {
-    gettimes.insert(gettimes.begin(), times.begin(), times.end());
-    // have noticed that 'time' field from solution files can be bogus
-    // so if we didn't get the time from the names of a series of files,
-    // tell the metadata we don't trust them.
-    metadata->SetTimesAreAccurate(times.size() > 1);
+    if(solutionHasValidTime)
+        time = reader->GetTime();
+    else if ((int)solutionFiles.size() > 1 && 
+        ts >= 0 && ts < (int)solutionFiles.size())
+    time = ((double) GuessCycle(solutionFiles[ts].c_str()));
+    return time;
 }
 
 
@@ -322,28 +345,24 @@ avtPLOT3DFileFormat::GetTimes(vector<double> &gettimes)
 int
 avtPLOT3DFileFormat::GetNTimesteps()
 {
-    if (times.empty())
+    int nT = 1;
+    if (!visitMetaFile.empty() && !haveReadMetaFile)
     {
-        int nT = 1;
-        if (!visitMetaFile.empty() && !haveReadMetaFile)
+        if (!ReadVisItMetaFile())
         {
-            if (!ReadVisItMetaFile())
-            {
-                EXCEPTION2(InvalidFilesException, visitMetaFile.c_str(),
-                           "Could not parse the .vp3d meta file");
-            }
+            EXCEPTION2(InvalidFilesException, visitMetaFile.c_str(),
+                       "Could not parse the .vp3d meta file");
         }
-        if (!haveProcessedQ)
-        {
-            ProcessQForTimeSeries();
-        }
-        if (!solutionFiles.empty())
-        {
-            nT = solutionFiles.size();
-        }
-        return nT;
     }
-    return times.size();
+    if (!haveProcessedQ)
+    {
+        ProcessQForTimeSeries();
+    }
+    if (!solutionFiles.empty())
+    {
+        nT = (int)solutionFiles.size();
+    }
+    return nT;
 }
 
 
@@ -407,35 +426,23 @@ avtPLOT3DFileFormat::GetMesh(int timestate, int domain, const char *name)
         EXCEPTION1(InvalidVariableException, name);
     }
 
-    reader->SetGridNumber(domain);
-    reader->SetScalarFunctionNumber(-1);
-    reader->SetVectorFunctionNumber(-1);
-    reader->Update();
-    vtkDataSet *cb = reader->GetCurrentBlock();
     vtkDataSet *rv = NULL;
-    if (cb != NULL)
+    reader->SetGridNumber(domain);
+    if (reader->ReadGrid())
     {
-        rv = cb->NewInstance();
-        rv->ShallowCopy(cb);
+        vtkDataSet *cb = reader->GetOutput();
+        if (cb != NULL)
+        {
+            rv = cb->NewInstance();
+            rv->ShallowCopy(cb);
+        }
     }
-
+    else
+    {
+        debug3 << "avtPLOT3DFileFormat::GetMesh: Error retreiving Grid for"
+               << " timestate " << timestate << " domain " << domain << endl;
+    }
     return rv;
-}
-
-
-int
-ExtractNumber(const char *field)
-{
-    int d = -1;
-    string f(field);
-    size_t pos = f.find("#");
-    if (pos != std::string::npos)
-    {
-        f = f.substr(pos+1);
-        char tmp[100];
-        sscanf(field, "%d %s", &d, tmp);
-    }
-    return d;
 }
 
 
@@ -465,107 +472,42 @@ ExtractNumber(const char *field)
 //    Since we process one var at a time, make sure function numbers are reset.
 //    Change how output is retrieved from reader.
 //
+//    Kathleen Biagas, Thu Aug 27 13:16:20 PDT 2015
+//    Reader now processes var name to retrieve correct function.
+//    Memory allocation is handled here instead of reader.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtPLOT3DFileFormat::GetVar(int timestate, int domain, const char *name)
 {
-    int var = -1;
-    reader->SetVectorFunctionNumber(-1);
-    reader->SetScalarFunctionNumber(-1);
-    reader->RemoveAllFunctions();
-    // overflow field designations
-    reader->GammaRequestedOff();
-    reader->SetSpeciesNumber(-1);
-    reader->SetSpeciesRhoNumber(-1);
-    reader->SetTurbulenceNumber(-1);
-    bool overflowvar = false;
-
-    if (strcmp(name, "Density") == 0)
-    {
-        var = 100;
-    }
-    else if (strcmp(name, "Pressure") == 0)
-    {
-        var = 110;
-    }
-    else if (strcmp(name, "Temperature") == 0)
-    {
-        var = 120;
-    }
-    else if (strcmp(name, "Enthalpy") == 0)
-    {
-        var = 130;
-    }
-    else if (strcmp(name, "InternalEnergy") == 0)
-    {
-        var = 140;
-    }
-    else if (strcmp(name, "KineticEnergy") == 0)
-    {
-        var = 144;
-    }
-    else if (strcmp(name, "VelocityMagnitude") == 0)
-    {
-        var = 153;
-    }
-    else if (strcmp(name, "StagnationEnergy") == 0)
-    {
-        var = 163;
-    }
-    else if (strcmp(name, "Entropy") == 0)
-    {
-        var = 170;
-    }
-    else if (strcmp(name, "Swirl") == 0)
-    {
-        var = 184;
-    }
-    else if (strcmp(name, "VorticityMagnitude") == 0)
-    {
-        var = 211;
-    }
-    else if (strcmp(name, "Gamma") == 0)
-    {
-        reader->GammaRequestedOn();
-        overflowvar = true;
-    }
-    else if (strncmp(name, "Species", 7) == 0)
-    {
-        reader->SetSpeciesNumber(ExtractNumber(name));
-        overflowvar = true;
-    }
-    else if (strncmp(name, "Spec Dens", 9) == 0)
-    {
-        reader->SetSpeciesRhoNumber(ExtractNumber(name));
-        overflowvar = true;
-    }
-    else if (strncmp(name, "Turb", 4) == 0)
-    {
-        reader->SetTurbulenceNumber(ExtractNumber(name));
-        overflowvar = true;
-    }
-
-
-    if (var < 0 && !overflowvar)
-    {
-        EXCEPTION1(InvalidVariableException, name);
-    }
-
-    reader->SetScalarFunctionNumber(var);
     reader->SetGridNumber(domain);
-    reader->Update();
-
-    vtkDataArray *dat = reader->GetCurrentBlock()->GetPointData()->GetArray(name);
-    if (dat == NULL)
+    reader->ReadGrid();
+    int nPts = reader->GetNumberOfPoints();
+    vtkDataArray *rv = NULL;
+    int success;
+    if (reader->GetPrecision() == 4)
     {
-        debug1 << "Internal error -- could not read variable: " << name << endl;
-        EXCEPTION0(ImproperUseException);
+        rv  = vtkFloatArray::New();
+        rv->SetNumberOfTuples(nPts);
+        success = reader->GetFunction_float(name, (float*)rv->GetVoidPointer(0));
+    }
+    else
+    {
+        rv  = vtkDoubleArray::New();
+        rv->SetNumberOfTuples(nPts);
+        success = reader->GetFunction_double(name, (double*)rv->GetVoidPointer(0));
     }
 
-    vtkDataArray *rv = dat->NewInstance();
-    rv->DeepCopy(dat);
-    rv->SetName(name);
+    if (success == VTK_OK)
+    {
+        rv->Register(NULL);
+    }
+    else
+    {
+        rv->Delete();
+        rv = NULL;
+    }
 
     return rv;
 }
@@ -597,55 +539,44 @@ avtPLOT3DFileFormat::GetVar(int timestate, int domain, const char *name)
 //    Since we process one var at a time, make sure function numbers are reset.
 //    Change how output is retrieved from reader.
 //
+//    Kathleen Biagas, Thu Aug 27 13:16:20 PDT 2015
+//    Reader now processes var name to retrieve correct function.
+//    Memory allocation is handled here instead of reader.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtPLOT3DFileFormat::GetVectorVar(int timestate, int domain,const char *name)
 {
-    int var = -1;
-    reader->SetScalarFunctionNumber(-1);
-    reader->SetVectorFunctionNumber(-1);
-    reader->RemoveAllFunctions();
-    if (strcmp(name, "Velocity") == 0)
-    {
-        var = 200;
-    }
-    else if (strcmp(name, "Vorticity") == 0)
-    {
-        var = 201;
-    }
-    else if (strcmp(name, "Momentum") == 0)
-    {
-        var = 202;
-    }
-    else if (strcmp(name, "PressureGradient") == 0)
-    {
-        var = 210;
-    }
-    else if (strcmp(name, "StrainRate") == 0)
-    {
-        var = 212;
-    }
-
-    if (var < 0)
-    {
-        EXCEPTION1(InvalidVariableException, name);
-    }
-
-    reader->SetVectorFunctionNumber(var);
     reader->SetGridNumber(domain);
-    reader->Update();
-
-    vtkDataArray *dat = reader->GetCurrentBlock()->GetPointData()->GetArray(name);
-    if (dat == NULL)
+    reader->ReadGrid();
+    int nPts = reader->GetNumberOfPoints();
+    vtkDataArray *rv = NULL;
+    int success; 
+    if (reader->GetPrecision() == 4)
     {
-        debug1 << "Internal error -- could not read variable: " << name << "!" << endl;
-        EXCEPTION0(ImproperUseException);
+        rv  = vtkFloatArray::New();
+        rv->SetNumberOfComponents(3);
+        rv->SetNumberOfTuples(nPts);
+        success = reader->GetFunction_float(name, (float*)rv->GetVoidPointer(0));
+    }
+    else
+    {
+        rv  = vtkDoubleArray::New();
+        rv->SetNumberOfComponents(3);
+        rv->SetNumberOfTuples(nPts);
+        success = reader->GetFunction_double(name, (double*)rv->GetVoidPointer(0));
     }
 
-    vtkDataArray *rv = dat->NewInstance();
-    rv->DeepCopy(dat);
-    rv->SetName(name);
+    if (success == VTK_OK)
+    {
+        rv->Register(NULL);
+    }
+    else
+    {
+        rv->Delete();
+        rv = NULL;
+    }
 
     return rv;
 }
@@ -688,6 +619,10 @@ avtPLOT3DFileFormat::ActivateTimestep(int ts)
 //    Reading of the MetaFile is now internal to this class.
 //    vtk reader api changed.
 //
+//    Kathleen Biagas, Thu Aug 27 13:18:22 PDT 2015
+//    Removed 'Magnitude' vars, since VisIt automatically generates
+//    vector magnitude expressions.
+//
 // ****************************************************************************
 
 void
@@ -708,7 +643,7 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
 
     reader->SetGridNumber(0);
-    reader->UpdateInformation();
+    reader->RequestInformation();
     mesh->numBlocks = reader->GetNumberOfGrids();
     mesh->blockOrigin = 0;
 
@@ -738,11 +673,10 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     if(haveSolutionFile)
     {
-        const int NUM_SCALARS = 11;
+        const int NUM_SCALARS = 9;
         const char *scalar_names[NUM_SCALARS] = { "Density", "Pressure",
              "Temperature", "Enthalpy", "InternalEnergy", "KineticEnergy",
-             "VelocityMagnitude", "StagnationEnergy", "Entropy", "Swirl",
-             "VorticityMagnitude" };
+             "StagnationEnergy", "Entropy", "Swirl"};
 
         int i;
         for (i = 0; i < NUM_SCALARS; i++)
@@ -814,6 +748,28 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 sd->centering = AVT_NODECENT;
                 sd->hasDataExtents = false;
                 md->Add(sd);
+
+                // Quantities derived from Gamma
+                avtScalarMetaData *sd2 = new avtScalarMetaData;
+                sd2->name = "PressureCoefficient";
+                sd2->meshName = "mesh";
+                sd2->centering = AVT_NODECENT;
+                sd2->hasDataExtents = false;
+                md->Add(sd2);
+
+                avtScalarMetaData *sd3 = new avtScalarMetaData;
+                sd3->name = "MachNumber";
+                sd3->meshName = "mesh";
+                sd3->centering = AVT_NODECENT;
+                sd3->hasDataExtents = false;
+                md->Add(sd3);
+
+                avtScalarMetaData *sd4 = new avtScalarMetaData;
+                sd4->name = "SoundSpeed";
+                sd4->meshName = "mesh";
+                sd4->centering = AVT_NODECENT;
+                sd4->hasDataExtents = false;
+                md->Add(sd4);
             }
             char fieldname[100];
             for (int i = 0; i <  nqc; ++i)
@@ -916,6 +872,10 @@ MatchesSubstring(const char *c1, const char *c2)
 //    Kathleen Biagas, Thu Apr 23 10:40:03 PDT 2015
 //    Set haveSolutionFile.
 //
+//    Kathleen Biagas, Thu Aug 27 13:20:47 PDT 2015
+//    Add FORTRAN_BINARY_STREAM, to indicate non-record based fortran binary.
+//    Add SOLUTION_TIME_ACCURATE, and Gas constants R and Gamma.
+//
 // ****************************************************************************
 
 bool
@@ -994,6 +954,11 @@ avtPLOT3DFileFormat::ReadVisItMetaFile()
                 reader->BinaryFileOn();
                 reader->HasByteCountOn();
             }
+            else if (MatchesSubstring(infoLine,"FORTRAN_BINARY_STREAM"))
+            {
+                reader->BinaryFileOn();
+                reader->HasByteCountOff();
+            }
             else if (MatchesSubstring(infoLine,"BINARY"))
             {
                 reader->BinaryFileOn();
@@ -1014,6 +979,12 @@ avtPLOT3DFileFormat::ReadVisItMetaFile()
                 reader->SetXYZFileName(x_file);
                 xFileName = x_file;
             }
+            else if (MatchesSubstring(infoLine,"SOLUTION_TIME_ACCURATE"))
+            {
+                int t;
+                sscanf(infoLine + strlen("SOLUTION_TIME_ACCURATE"),"%d", &t);
+                solutionHasValidTime = (bool)t;
+            }
             else if (MatchesSubstring(infoLine,"SOLUTION"))
             {
                 char tmp[1024];
@@ -1026,6 +997,18 @@ avtPLOT3DFileFormat::ReadVisItMetaFile()
                 reader->SetQFileName(s_file);
                 haveSolutionFile = true;
                 qFileName = s_file;
+            }
+            else if (MatchesSubstring(infoLine,"R"))
+            {
+                double R;
+                sscanf(infoLine + strlen("R"),"%lg",&R);
+                reader->SetR(R);
+            }
+            else if (MatchesSubstring(infoLine,"GAMMA"))
+            {
+                double G;
+                sscanf(infoLine + strlen("GAMMA"),"%lg",&G);
+                reader->SetGamma(G);
             }
         }
         fclose(vp3dFp);
@@ -1087,17 +1070,6 @@ avtPLOT3DFileFormat::ProcessQForTimeSeries()
             std::sort(solutionFiles.begin(), solutionFiles.end());
         }
         visitTimer->StopTimer(t2, "avtPLOT3DFileFormat::ReadDirectory");
-        for (size_t i = 0;i < solutionFiles.size(); ++i)
-        {
-            times.push_back((double) GuessCycle(solutionFiles[i].c_str()));
-        }
-    }
-    if (times.empty())
-    {
-        reader->SetGridNumber(0);
-        reader->UpdateInformation();
-        if (reader->GetProperties() != 0)
-            times.push_back((double)reader->GetProperties()->GetTuple1(3));
     }
     haveProcessedQ = true;
     return haveTimeSeries;
@@ -1130,3 +1102,5 @@ avtPLOT3DFileFormat::SetTimeStep(int timeState)
     }
     previousTS = timeState;
 }
+
+

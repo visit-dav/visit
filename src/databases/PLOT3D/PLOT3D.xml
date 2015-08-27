@@ -17,6 +17,7 @@
       avtPLOT3DFileFormat.C
       avtPLOT3DOptions.C
       vtkPLOT3DReader.C
+      PLOT3DFunctions.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
