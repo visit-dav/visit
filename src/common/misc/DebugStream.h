@@ -70,9 +70,9 @@ namespace DebugStream
 }
 
 #define debug1 if (!DebugStream::Level1()) ; else (DebugStream::Stream1()) << __FILE__ << ":" << __LINE__ << " "
-#define debug2 if (!DebugStream::Level2()) ; else (DebugStream::Stream2()) << __FILE__ << ":" << __LINE__ << " "
-#define debug3 if (!DebugStream::Level3()) ; else (DebugStream::Stream3()) << __FILE__ << ":" << __LINE__ << " "
-#define debug4 if (!DebugStream::Level4()) ; else (DebugStream::Stream4()) << __FILE__ << ":" << __LINE__ << " "
-#define debug5 if (!DebugStream::Level5()) ; else (DebugStream::Stream5()) << __FILE__ << ":" << __LINE__ << " "
+#define debug2 if (!DebugStream::Level2()) ; else (DebugStream::Stream2())
+#define debug3 if (!DebugStream::Level3()) ; else (DebugStream::Stream3())
+#define debug4 if (!DebugStream::Level4()) ; else (DebugStream::Stream4())
+#define debug5 if (!DebugStream::Level5()) ; else (DebugStream::Stream5())
 
 #endif
