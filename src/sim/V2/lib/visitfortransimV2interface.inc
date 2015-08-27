@@ -326,6 +326,7 @@
       parameter (VISIT_CSG_DIFF                = 2131034112     )
       integer    VISIT_CSG_COMPLIMENT    
       parameter (VISIT_CSG_COMPLIMENT          = 2131099648     )
+!... VISIT_CSG_XFORM and VISIT_CSG_SWEEP are not yet implemented
       integer    VISIT_CSG_XFORM         
       parameter (VISIT_CSG_XFORM               = 2131165184     )
       integer    VISIT_CSG_SWEEP         

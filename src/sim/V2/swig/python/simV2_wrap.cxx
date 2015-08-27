@@ -12044,6 +12044,7 @@ SWIG_init(void) {
   SWIG_Python_SetConstant(d, "VISIT_CSG_INTERSECT",SWIG_From_int(static_cast< int >(2130968576)));
   SWIG_Python_SetConstant(d, "VISIT_CSG_DIFF",SWIG_From_int(static_cast< int >(2131034112)));
   SWIG_Python_SetConstant(d, "VISIT_CSG_COMPLIMENT",SWIG_From_int(static_cast< int >(2131099648)));
+  /* XFORM and SWEEP are not yet implemented */
   SWIG_Python_SetConstant(d, "VISIT_CSG_XFORM",SWIG_From_int(static_cast< int >(2131165184)));
   SWIG_Python_SetConstant(d, "VISIT_CSG_SWEEP",SWIG_From_int(static_cast< int >(2131230720)));
   SWIG_Python_SetConstant(d, "VISIT_IMAGEFORMAT_BMP",SWIG_From_int(static_cast< int >(0)));
