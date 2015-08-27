@@ -72,6 +72,27 @@ v.RotateAxis(0,65.0)
 SetView3D(v)
 Test("boxlib_04")
 
+DeleteAllPlots()
+CloseDatabase(data_path("boxlib_test_data/3D/plt_asgc05_0309/Header"))
+
+OpenDatabase(data_path("boxlib_test_data/3D/plt00000.cartgrid.body.small/Header"))
+
+AddPlot("Pseudocolor", "temperature")
+AddOperator("ThreeSlice")
+DrawPlots()
+ResetView()
+v = GetView3D()
+v.RotateAxis(1,45)
+v.RotateAxis(0,45)
+SetView3D(v)
+Test("boxlib_05")
+
+silr = SILRestriction()
+silr.TurnOnAll()
+silr.TurnOffSet(silr.SetsInCategory('materials')[1])
+SetPlotSILRestriction(silr)
+Test("boxlib_06")
+
 Exit()
 
 
