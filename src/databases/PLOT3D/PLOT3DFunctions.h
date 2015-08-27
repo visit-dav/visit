@@ -37,85 +37,125 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtPLOT3DFileFormat.h                           //
+//                     PLOT3DFunctions.h                                     //
 // ************************************************************************* //
 
-#ifndef AVT_PLOT3D_FILE_FORMAT_H
-#define AVT_PLOT3D_FILE_FORMAT_H
 
-#include <avtMTMDFileFormat.h>
-
-#include <vector>
-#include <string>
-
-
-class     DBOptionsAttributes;
-class     vtkPLOT3DReader;
-
+#ifndef PLOT3DFunctions_h
+#define PLOT3DFunctions_h
 
 // ****************************************************************************
-//  Class: avtPLOT3DFileFormat
+//  namespace: PLOT3DFunctions
 //
 //  Purpose:
-//      A file format reader for PLOT3D files.
-//
-//  Programmer: Hank Childs
-//  Creation:   May 3, 2002
-//
-//  Modifications:
-//    Kathleen Biagas, Thu Apr 23 10:36:09 PDT 2015
-//    Added 'haveSolutionFile' flag.
-//
-//    Kathleen Biagas, Fri Jun 26 10:24:26 PDT 2015
-//    Change this from type STMD to MTMD.
-//    Add solutionFiles, times, haveReadMetaFile, haveProcessedQ, previousTS.
-//
-//    Kathleen Biagas, Thu Aug 27 12:32:14 PDT 2015
-//    Use GetTime instead of GetTimes. Add solutionHasValidTime.
-//
+// Computes functions based on values from the PLOT3D solution file
+// 
 // ****************************************************************************
 
-class avtPLOT3DFileFormat : public avtMTMDFileFormat
+template <class DataType>
+class PLOT3DFunctions
 {
-  public:
-                          avtPLOT3DFileFormat(const char *, DBOptionsAttributes *);
-    virtual              ~avtPLOT3DFileFormat();
-    
-    virtual int            GetNTimesteps(void);
+public:
+    void ComputeTemperature(
+      int numPts,
+      DataType *temperature,
+      DataType *Density,
+      DataType *Momentum,
+      DataType *Energy,
+      double R, double Gamma);
 
-    virtual const char   *GetType(void) { return "PLOT3D File Format"; };
-    virtual void           FreeUpResources(void); 
+    void ComputePressure(
+      int numPts,
+      DataType *pressure,
+      DataType *Density,
+      DataType *Momentum,
+      DataType *Energy,
+      double Gamma);
 
-    virtual vtkDataSet    *GetMesh(int, int, const char *);
-    virtual vtkDataArray  *GetVar(int, int, const char *);
-    virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+    void ComputeEnthalpy(
+      int numPts,
+      DataType *enthalpy,
+      DataType *Density,
+      DataType *Momentum,
+      DataType *Energy,
+      double Gamma);
 
-    virtual void           ActivateTimestep(int ts);
-  protected:
-    vtkPLOT3DReader *reader;
-    std::string           visitMetaFile;
-    std::string           xFileName;
-    std::string           qFileName;
-    std::string           solutionRoot;
-    std::vector<std::string> solutionFiles;
-    bool                  haveSolutionFile;
-    bool                  haveReadMetaFile;
-    bool                  haveProcessedQ;
-    bool                  solutionHasValidTime;
-    int                   previousTS;
+    void ComputeKineticEnergy(
+      int numPts,
+      DataType *kineticEnergy,
+      DataType *Density,
+      DataType *Momentum);
 
+    void ComputeEntropy(
+      int numPts,
+      DataType *entropy,
+      DataType *Density,
+      DataType *Momentum,
+      DataType *Energy,
+      double R,
+      double Gamma);
 
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
-    virtual double        GetTime(int);
+    void ComputeSwirl(
+      int numPts,
+      DataType *swirl,
+      DataType *Density,
+      DataType *Momentum,
+      DataType *Vorticity);
 
+    void ComputeVelocity(
+      int numPts,
+      DataType *velocity,
+      DataType *Density,
+      DataType *Momentum);
 
-  private:
-    bool                  ReadVisItMetaFile(void);
-    bool                  ProcessQForTimeSeries(void);
-    void                  SetTimeStep(int timeState);
-    double                time;
+    void ComputeVorticity(
+      int numPts,
+      DataType *vorticity,
+      DataType *Points,
+      DataType *Velocity,
+      int *dims);
+
+    void ComputePressureGradient(
+      int numPts,
+      DataType *gradient,
+      DataType *Points,
+      DataType *Pressure,
+      int *dims);
+
+    void ComputePressureCoefficient(
+      int numPts,
+      DataType *pressure_coeff,
+      DataType *Density,
+      DataType *Momentum,
+      DataType *Energy,
+      DataType *Gamma,
+      DataType gi,
+      DataType fsm);
+
+    void ComputeMachNumber(
+      int numPts,
+      DataType *machnumber,
+      DataType *Density,
+      DataType *Momentum,
+      DataType *Energy,
+      DataType *Gamma);
+
+    void ComputeSoundSpeed(
+      int numPts,
+      DataType *soundspeed,
+      DataType *Density,
+      DataType *Momentum,
+      DataType *Energy,
+      DataType *Gamma);
+
+    void ComputeStrainRate(
+      int numPts,
+      DataType *strainRate,
+      DataType *Points,
+      DataType *Velocity,
+      int *dims);
+
 };
 
+
 #endif
-
-

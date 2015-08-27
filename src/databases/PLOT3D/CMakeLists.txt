@@ -17,7 +17,9 @@ PLOT3DMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtPLOT3DFileFormat.C
 avtPLOT3DOptions.C
+vtkPLOT3DReaderInternals.C
 vtkPLOT3DReader.C
+PLOT3DFunctions.C
 )
 
 SET(LIBE_SOURCES
@@ -25,7 +27,9 @@ PLOT3DEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtPLOT3DFileFormat.C
 avtPLOT3DOptions.C
+vtkPLOT3DReaderInternals.C
 vtkPLOT3DReader.C
+PLOT3DFunctions.C
 )
 
 INCLUDE_DIRECTORIES(
