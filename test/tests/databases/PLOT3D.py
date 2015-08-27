@@ -7,19 +7,24 @@
 #  Date:       Sep 5, 2014
 #
 #  Modifications:
+#    Kathleen Biagas, Wed Aug 26 09:21:15 PDT 2015
+#    Removed Magnitude scalars, no longer provided by reader since VisIt
+#    already automatically creates vector magnitude expressions.
+#    Added tests for time-series.
 #
 # ----------------------------------------------------------------------------
 
 
 def BasicTest(testName, testNum):
-    # These are all the data-provided scalars and vectors
+    # These are the scalars and vectors from the solution file
     scalars = ["Density", "InternalEnergy"]
     vectors = ["Momentum"]
 
     # These are all the reader-calculated scalars and vectors
-    computedScalars = ["Pressure", "Temperature", "Enthalpy", "VelocityMagnitude", 
-                     "StagnationEnergy", "Entropy", "Swirl", "VorticityMagnitude" ]
-    computedVectors = ["Velocity", "Vorticity", "PressureGradient", "StrainRate"]
+    computedScalars = ["Pressure", "Temperature", "Enthalpy",
+                       "StagnationEnergy", "Entropy", "Swirl" ]
+    computedVectors = ["Velocity", "Vorticity", "PressureGradient",
+                        "StrainRate"]
 
     AddPlot("Mesh", "mesh")
     AddPlot("Pseudocolor", scalars[0])
@@ -95,14 +100,83 @@ names = [["BluntFin", "blunt.vp3d", "blunt.x", "bluntfin", {}],
             "3D":1}]]
 
 
-TestSection("Open using MetaFile .vp3d")
-for f in names:
-    # test opening meta file
-    TestMetaOpen("%s/%s"%(f[0],f[1]), f[3], 1)
+def TestTimeSeries():
+    TestSection("Time Series with meta file")
+    SetCreateMeshQualityExpressions(0)
+    SetCreateTimeDerivativeExpressions(0)
+    SetCreateVectorMagnitudeExpressions(0)
+    #SetViewExtentsType("actual")
+    OpenDatabase(data_path("PLOT3D_test_data/BluntFin/blunt_timeseries.vp3d"))
+    md = GetMetaData(data_path("PLOT3D_test_data/BluntFin/blunt_timeseries.vp3d"))
+    TestText("plot3d_timeseries_1", str(md))
 
-TestSection("Open using gridfile and Open Options")
-for f in names:
-    # test opening grid file, possibly using OpenOptions
-    TestOpenOptions("%s/%s"%(f[0],f[2]), f[3], f[4], 2)
+    DefineScalarExpression("TD", "time(mesh) * Density")
+    AddPlot("Pseudocolor", "TD")
+    AddOperator("Isovolume")
+    isoAtts = IsovolumeAttributes()
+    isoAtts.lbound = 2000
+    SetOperatorOptions(isoAtts)
+    DrawPlots()
+
+    #v = GetView3D()
+    #v.viewNormal = (0, -1, 6.12323e-17)
+    #v.focus = (3.32801, -0.103006, 16.13)
+    #v.viewUp = (0, 6.12323e-17, 1)
+    #SetView3D(v)
+
+    #  step through time
+    for t in xrange(0, TimeSliderGetNStates(),2):
+        SetTimeSliderState(t)
+        Query("Time")
+        Test("plot3d_timeseries_1_%s" % GetQueryOutputValue())
+
+    DeleteAllPlots()
+
+    CloseDatabase(data_path("PLOT3D_test_data/BluntFin/blunt_timeseries.vp3d"))
+
+    TestSection("Time series via Read Options") 
+
+    # specify sub-selection of time slices.
+    opts = {"Solution (Q) File Name" : r"TimeSeries/blunt_??3?.q",
+            "Solution Time field accurate": 0}
+    SetDefaultFileOpenOptions("PLOT3D", opts)
+
+    OpenDatabase(data_path("PLOT3D_test_data/BluntFin/blunt.x"), 0, "PLOT3D_1.0")
+    md = GetMetaData(data_path("PLOT3D_test_data/BluntFin/blunt.x"))
+    TestText("plot3d_timeseries_2", str(md))
+
+    AddPlot("Pseudocolor", "TD")
+    AddOperator("Isovolume")
+    SetOperatorOptions(isoAtts)
+    DrawPlots()
+
+    #SetView3D(v)
+    
+    #  step through time
+    for t in xrange(0, TimeSliderGetNStates()):
+        SetTimeSliderState(t)
+        Query("Time")
+        Test("plot3d_timeseries_2_%s" % GetQueryOutputValue())
+
+    DeleteAllPlots()
+    CloseDatabase(data_path("PLOT3D_test_data/BluntFin/blunt.x"))
+
+def BasicTests():
+    TestSection("Open using MetaFile .vp3d")
+    for f in names:
+        # test opening meta file
+        TestMetaOpen("%s/%s"%(f[0],f[1]), f[3], 1)
+
+    TestSection("Open using gridfile and Open Options")
+    # save true defaults for resetting
+    opts = GetDefaultFileOpenOptions("PLOT3D")
+    for f in names:
+        # test opening grid file, possibly using OpenOptions
+        TestOpenOptions("%s/%s"%(f[0],f[2]), f[3], f[4], 2)
+    # reset to true defaults
+    SetDefaultFileOpenOptions("PLOT3D", opts)
+
+BasicTests()
+TestTimeSeries()
     
 Exit()
