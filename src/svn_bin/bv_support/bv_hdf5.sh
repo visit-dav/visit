@@ -49,14 +49,14 @@ function bv_hdf5_initialize_vars
 
 function bv_hdf5_info
 {
-export HDF5_VERSION=${HDF5_VERSION:-"1.8.7"}
+export HDF5_VERSION=${HDF5_VERSION:-"1.8.14"}
 export HDF5_FILE=${HDF5_FILE:-"hdf5-${HDF5_VERSION}.tar.gz"}
 export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION:-"1.8"}
 export HDF5_BUILD_DIR=${HDF5_BUILD_DIR:-"hdf5-${HDF5_VERSION}"}
 # Note: Versions of HDF5 1.6.5 and earlier DO NOT have last path component
 export HDF5_URL=${HDF5_URL:-"http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-${HDF5_VERSION}/src"}
-export HDF5_MD5_CHECKSUM="37711d4bcb72997e93d495f97c76c33a"
-export HDF5_SHA256_CHECKSUM=""
+export HDF5_MD5_CHECKSUM="a482686e733514a51cde12d6fe5c5d95"
+export HDF5_SHA256_CHECKSUM="1dbefeeef7f591897c632b2b090db96bb8d35ad035beaa36bc39cb2bc67e0639"
 }
 
 function bv_hdf5_print
