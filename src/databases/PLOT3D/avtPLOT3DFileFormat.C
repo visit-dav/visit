@@ -322,6 +322,9 @@ avtPLOT3DFileFormat::~avtPLOT3DFileFormat()
 double
 avtPLOT3DFileFormat::GetTime(int ts)
 {
+    if (solutionFiles.empty())
+       return INVALID_TIME;
+
     if(solutionHasValidTime)
         time = reader->GetTime();
     else if ((int)solutionFiles.size() > 1 && 
