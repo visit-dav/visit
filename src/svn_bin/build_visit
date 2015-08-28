@@ -85,7 +85,7 @@ export bv_PREFIX=$bv_PATH/bv_support/
 # Two new version to support older versions of VisIt
 # exec-version gets the older version of the script and runs it..
 export build_version=""
-export webroot="http://portal.nersc.gov/svn/visit/"
+export webroot="http://visit.ilight.com/svn/visit/"
 export webaddr="${webroot}/trunk/src/svn_bin/bv_support/"
 
 #state = "disabled", "enabled", "installed"
@@ -504,7 +504,7 @@ function bv_write_unified_file
     echo "export bv_PREFIX=\$bv_PATH/bv_support/" >> $OUTPUT_bv_FILE
 
     echo "export build_version=\"\"" >> $OUTPUT_bv_FILE
-    echo "export webroot=\"http://portal.nersc.gov/svn/visit/\"" >> $OUTPUT_bv_FILE
+    echo "export webroot=\"http://visit.ilight.com/svn/visit/\"" >> $OUTPUT_bv_FILE
     echo "export webaddr=\"\${webroot}/trunk/src/svn_bin/bv_support/\"" >> $OUTPUT_bv_FILE
 
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
