@@ -269,63 +269,68 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     std::string var = outVarRoot + outVarName;
 
     int nTuples = in_ds->GetNumberOfPoints();
-
     size_t nics = ics.size();
 
     // Storage for the points and times
     std::vector<avtVector> remapPoints(nTuples*nAuxPts);
     std::vector<double>    remapTimes (nTuples*nAuxPts);
 
-    // Zero out the points and times.
-    for(size_t i = 0; i < nTuples*nAuxPts; ++i)
+    // ARS - When the data is replicated on all processors the
+    // parallelization will be over all curves. As such, I am not sure
+    // that there will be a case where curve is deleted.
+    if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
     {
-      remapPoints[i] = avtVector(0,0,0);
-      remapTimes[i] = 0;
+        // The parallel synchronization for when data is replicated
+        // involves a sum across all processors.  remapPoints needs to
+        // have the finial position of the curve on one processor and
+        // zero on the rest.  Do that here.
+
+        // Special care is needed for the case where a curve has been
+        // deleted and never processed. To obtain the correct results
+        // the initial location and time needs to be on just one
+        // processor.  Do this on rank 0.
+
+        std::vector<int> iHavePoint(nTuples*nAuxPts, 0);
+        std::vector<int> anyoneHasPoint;
+
+        for (size_t i = 0; i < ics.size(); ++i)
+        {
+            size_t index = ics[i]->id;
+            size_t l = (index-offset);
+
+            if(l < remapPoints.size()) ///TODO: l >=0 is always true
+            {
+                iHavePoint[l] = 1;
+            }
+        }
+
+        UnifyMaximumValue(iHavePoint, anyoneHasPoint);  
+
+        for (size_t i = 0; i < remapPoints.size(); ++i)
+        {
+            // Copy the original seed points
+            if (PAR_Rank() == 0 && !anyoneHasPoint[i])
+            {
+                remapPoints[i] = seedPoints[offset + i];
+                remapTimes[i]  = seedTime0;
+            }
+            // Zero out the values for the summation.
+            else
+            {
+                remapPoints[i] = avtVector(0,0,0);
+                remapTimes[i]  = 0;
+            }
+        }
     }
-
-    // ARS - This code does nothing of use that I can see. The
-    // remapPoints just need to be zeroed out.
-
-    // if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
-    // {
-    //     // The parallel synchronization for when data is replicated involves
-    //     // a sum across all processors.  So we want remapPoints to have the
-    //     // location of the particle on one processor, and zero on the rest.
-    //     // Do that here.
-
-    //     // Special care is needed for the case where the particle never
-    //     // advected.  Then we need to put the initial location on just one
-    //     // processor.  We do this on rank 0.
-
-    //     std::vector<int> iHavePoint(nTuples*nAuxPts, 0);
-    //     std::vector<int> anyoneHasPoint;
-
-    //     for (size_t i = 0; i < ics.size(); ++i)
-    //     {
-    //         size_t index = ics[i]->id;
-    //         size_t l = (index-offset);
-
-    //         if(l < remapPoints.size()) ///TODO: l >=0 is always true
-    //         {
-    //             iHavePoint[l] = 1;
-    //         }
-    //     }
-
-    //     UnifyMaximumValue(iHavePoint, anyoneHasPoint);
-    //     avtVector zero(0,0,0);
-
-    //     for (size_t i = 0; i < remapPoints.size(); ++i)
-    //         if (PAR_Rank() == 0 && !anyoneHasPoint[i])
-    //             remapPoints[i] = seedPoints[offset + i];
-    //         else
-    //             remapPoints[i] = zero;
-    // }
-    // else
-    // {
-    //   //copy the original seed points
-    //   for(size_t i = 0; i < remapPoints.size(); ++i)
-    //     remapPoints[i] = seedPoints[offset + i];
-    // }
+    else
+    {
+      // Copy the original seed points
+      for(size_t i = 0; i < nTuples*nAuxPts; ++i)
+      {
+        remapPoints[i] = seedPoints[offset + i];
+        remapTimes[i]  = seedTime0;
+      }
+    }
 
     // The processor has a partial set of the curves so some values in
     // remapPoint will be zero.
@@ -366,9 +371,17 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
         }
         else
         {
-          EXCEPTION1(VisItException,
+          // When running serially all the curves will be together
+          // but only processs the ones that are part of this domain.
+          // As such, do not throw any exception. 
+
+          // When running parallely only the curves for this domain
+          // will be sent down so throw an exception.
+#ifdef PARALLEL
+          EXCEPTION1(VisItException, "avtLCSFilter::SingleBlockSingleCalc - "
                      "More integral curves were generatated than "
                      "grid points." );
+#endif
         }
     }
 
@@ -806,6 +819,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
             else
             {
                 EXCEPTION1(VisItException,
+                           "avtLCSFilter::RectilinearGridSingleCalc - "
                            "Index count does not match the result count." );
             }
         }
@@ -813,6 +827,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         if( total > nTuples*nAuxPts )
         {
           EXCEPTION1(VisItException,
+                     "avtLCSFilter::RectilinearGridSingleCalc - "
                      "Total count does not match the tuple count." );
         }
 
@@ -822,10 +837,12 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         std::vector<avtVector> remapPoints(nTuples*nAuxPts);
         std::vector<double>    remapTimes (nTuples*nAuxPts);
 
+        // Integral curves can be deleted (total != nTuples*nAuxPts).
+        // As such, set the point value and time to be the inital values.
         for(size_t i = 0; i < nTuples*nAuxPts; ++i)
         {
-            remapPoints[i] = avtVector(0,0,0);
-            remapTimes[i] = 0;
+            remapPoints[i] = seedPoints[i];
+            remapTimes[i] = seedTime0;
         }
       
         for(size_t j = 0, k = 0; j < total; ++j, k += 3)
@@ -842,6 +859,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
             else
             {
               EXCEPTION1(VisItException,
+                         "avtLCSFilter::RectilinearGridSingleCalc - "
                          "More integral curves were generatated than "
                          "grid points." );
             }
