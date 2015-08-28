@@ -47,8 +47,6 @@
 #include <iomanip>
 #include <VisItStreamUtil.h>
 
-using namespace std;
-
 static bool icDomainCompare(const avtIntegralCurve *icA, 
                             const avtIntegralCurve *icB)
 {
@@ -130,7 +128,7 @@ avtICAlgorithm::~avtICAlgorithm()
 void
 avtICAlgorithm::PostRunAlgorithm()
 {
-    list<avtIntegralCurve *>::const_iterator s;
+    std::list<avtIntegralCurve *>::const_iterator s;
     for (s=terminatedICs.begin(); s != terminatedICs.end(); ++s)
         (*s)->Finalize();
 }
@@ -271,7 +269,7 @@ avtICAlgorithm::AdvectParticle(avtIntegralCurve *s, vtkDataSet *ds, const BlockI
 // ****************************************************************************
 
 void
-avtICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
+avtICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 {
     numSeedPoints = seedPts.size();
 
@@ -328,7 +326,7 @@ avtICAlgorithm::PostExecute()
     {
         debug1<<"avtICAlgorithm::PostExecute()\n";
     }
-    vector<avtIntegralCurve *> v;
+    std::vector<avtIntegralCurve *> v;
     
     while (! terminatedICs.empty())
     {
@@ -375,10 +373,10 @@ avtICAlgorithm::PostExecute()
 // ****************************************************************************
 
 void
-avtICAlgorithm::SortIntegralCurves(list<avtIntegralCurve *> &ic)
+avtICAlgorithm::SortIntegralCurves(std::list<avtIntegralCurve *> &ic)
 {
     int timerHandle = visitTimer->StartTimer();
-    list<avtIntegralCurve*>::iterator s;
+    std::list<avtIntegralCurve*>::iterator s;
 
     //Set sortkey to -domain. (So that loaded domains sort first).
     for (s=ic.begin(); s != ic.end(); ++s)
@@ -427,10 +425,10 @@ avtICAlgorithm::SortIntegralCurves(list<avtIntegralCurve *> &ic)
 // ****************************************************************************
 
 void
-avtICAlgorithm::SortIntegralCurves(vector<avtIntegralCurve *> &ic)
+avtICAlgorithm::SortIntegralCurves(std::vector<avtIntegralCurve *> &ic)
 {
     int timerHandle = visitTimer->StartTimer();
-    vector<avtIntegralCurve*>::iterator s;
+    std::vector<avtIntegralCurve*>::iterator s;
 
     //Set sortkey to -domain. (So that loaded domains sort first).
     for (s=ic.begin(); s != ic.end(); ++s)
@@ -495,9 +493,9 @@ avtICAlgorithm::Sleep(long nanoSec) const
 // ****************************************************************************
 
 void
-avtICAlgorithm::GetTerminatedICs(vector<avtIntegralCurve *> &v)
+avtICAlgorithm::GetTerminatedICs(std::vector<avtIntegralCurve *> &v)
 {
-    list<avtIntegralCurve *>::const_iterator s;
+    std::list<avtIntegralCurve *>::const_iterator s;
     
     for (s=terminatedICs.begin(); s != terminatedICs.end(); ++s)
         v.push_back(*s);
@@ -530,8 +528,8 @@ avtICAlgorithm::GetTerminatedICs(vector<avtIntegralCurve *> &v)
 void
 avtICAlgorithm::DeleteIntegralCurves(std::vector<int> &icIDs)
 {
-    list<avtIntegralCurve *>::iterator s;
-    vector<int>::const_iterator i;
+    std::list<avtIntegralCurve *>::iterator s;
+    std::vector<int>::const_iterator i;
 
     for (i=icIDs.begin(); i != icIDs.end(); i++)
         for (s=terminatedICs.begin(); s != terminatedICs.end(); ++s)
@@ -916,7 +914,7 @@ avtICAlgorithm::ReportStatistics()
 // ****************************************************************************
 
 void
-avtICAlgorithm::ReportStatistics(ostream &os)
+avtICAlgorithm::ReportStatistics(std::ostream &os)
 {
     int nCPUs = 1;
 #ifdef PARALLEL
@@ -924,7 +922,7 @@ avtICAlgorithm::ReportStatistics(ostream &os)
 #endif
     os<<endl;
     os<<"ReportBegin: ***********************************************"<<endl;
-    string db = picsFilter->GetInput()->GetInfo().GetAttributes().GetFullDBName();
+    std::string db = picsFilter->GetInput()->GetInfo().GetAttributes().GetFullDBName();
     os<<"File= "<<db<<endl;
     os<<"Method= "<<AlgoName()<<" nCPUs= "<<nCPUs<<" nDom= "<<numDomains;
     os<<" nPts= "<<numSeedPoints<<endl;
@@ -1031,13 +1029,13 @@ avtICAlgorithm::ReportCounters(ostream &os, bool totals)
 //    Defend against FPE div by zero
 // ****************************************************************************
 void
-avtICAlgorithm::PrintTiming(ostream &os, 
+avtICAlgorithm::PrintTiming(std::ostream &os, 
                             const char *str, 
                             const ICStatistics &s,
                             const ICStatistics &t,
                             bool total)
 {
-    string strFmt = str;
+    std::string strFmt = str;
     strFmt.resize(10, ' ');
     os << (total ? "t_" : "l_");
     os<<strFmt<<" = ";
@@ -1089,12 +1087,12 @@ avtICAlgorithm::PrintTiming(ostream &os,
 //
 // ****************************************************************************
 void
-avtICAlgorithm::PrintCounter(ostream &os, 
+avtICAlgorithm::PrintCounter(std::ostream &os, 
                              const char *str, 
                              const ICStatistics &s,
                              bool total)
 {
-    string strFmt = str;
+    std::string strFmt = str;
     strFmt.resize(10, ' ');
     os << (total ? "t_" : "l_");
     os<<strFmt<<" = ";
@@ -1116,7 +1114,7 @@ avtICAlgorithm::PrintCounter(ostream &os,
         {
             char f[128];
             sprintf(f, "%s_histogram.txt", str);
-            ofstream hos;
+            std::ofstream hos;
             hos.open(f, ios::out);
             for (size_t i = 0; i < s.histogram.size(); i++)
                 hos<<s.histogram[i]<<endl;
@@ -1160,7 +1158,8 @@ avtICAlgorithm::PrintCounter(ostream &os,
 void
 avtICAlgorithm::UpdateICsDomain( int curTimeSlice )
 {
-    list<avtIntegralCurve *>::const_iterator it;
+    std::list<avtIntegralCurve *>::const_iterator it;
+
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
         if (!(*it)->blockList.empty())
@@ -1189,7 +1188,8 @@ bool
 avtICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
 {
     int cnt = 0;
-    list<avtIntegralCurve *>::const_iterator it;
+    std::list<avtIntegralCurve *>::const_iterator it;
+
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
         if ((*it)->status.EncounteredTemporalBoundary())
@@ -1220,7 +1220,8 @@ avtICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
 void
 avtICAlgorithm::ActivateICsForNextTimeStep()
 {
-    list<avtIntegralCurve *>::iterator it = terminatedICs.begin();
+    std::list<avtIntegralCurve *>::iterator it = terminatedICs.begin();
+
     while (it != terminatedICs.end())
     {
         avtIntegralCurve *ic = *it;
@@ -1280,12 +1281,13 @@ avtICAlgorithm::ResetIntegralCurvesForContinueExecute()
 //****************************************************************************
 
 
-string
+std::string
 avtICAlgorithm::activeICInfo() const
 {
     std::ostringstream str;
     str<<"[";
-    list<avtIntegralCurve *>::const_iterator it;
+    std::list<avtIntegralCurve *>::const_iterator it;
+
     for (it = activeICs.begin(); it != activeICs.end(); it++)
     {
         avtIntegralCurve *ic = *it;
@@ -1308,12 +1310,13 @@ avtICAlgorithm::activeICInfo() const
 //
 //****************************************************************************
 
-string
+std::string
 avtICAlgorithm::inactiveICInfo() const
 {
     std::ostringstream str;
     str<<"[";
-    list<avtIntegralCurve *>::const_iterator it;
+    std::list<avtIntegralCurve *>::const_iterator it;
+
     for (it = inactiveICs.begin(); it != inactiveICs.end(); it++)
     {
         avtIntegralCurve *ic = *it;
@@ -1336,12 +1339,13 @@ avtICAlgorithm::inactiveICInfo() const
 //
 //****************************************************************************
 
-string
+std::string
 avtICAlgorithm::terminatedICInfo() const
 {
     std::ostringstream str;
     str<<"[";
-    list<avtIntegralCurve *>::const_iterator it;
+    std::list<avtIntegralCurve *>::const_iterator it;
+
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
         avtIntegralCurve *ic = *it;
