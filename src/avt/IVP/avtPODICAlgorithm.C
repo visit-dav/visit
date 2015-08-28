@@ -113,10 +113,6 @@ avtPODICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
 {
     int nSeeds = ics.size();
 
-    std::cerr << "Proc " << PAR_Rank() << " has seeds: " << ics.size() << "  "
-              << (allSeedsSentToAllProcs ? "allSeedsSentToAllProcs" : "")
-              << std::endl;
-
     // If the seeds are sent to all procs check to make sure seeds on
     // domain boundaries do not get sent to mutliple processors.
     if( allSeedsSentToAllProcs )
