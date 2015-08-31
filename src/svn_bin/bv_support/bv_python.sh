@@ -119,10 +119,9 @@ export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
 export PYTHON_MD5_CHECKSUM="2cf641732ac23b18d139be077bd906cd"
 export PYTHON_SHA256_CHECKSUM=""
 
-export PILLOW_URL=${PILLOW_URL:-"https://pypi.python.org/packages/source/P/Pillow/"}
-export PILLOW_FILE=${PILLOW_FILE:-"Pillow-2.6.1.tar.gz"}
-export PILLOW_BUILD_DIR=${PILLOW_BUILD_DIR:-"Pillow-2.6.1"}
-
+export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
+export PIL_FILE=${PIL_FILE:-"Imaging-1.1.6.tar.gz"}
+export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.6"}
 
 export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-1.5.2.tar.gz"}
 export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
@@ -411,59 +410,65 @@ function build_python
 }
 
 
-# # *************************************************************************** #
-# # The PIL module's detection logic doesn't include /usr/lib64/                #
-# # On some systems zlib & libjpeg only exist in /usr/lib64, so we patch the    #
-# # module build script to add /usr/lib64.
-# # *************************************************************************** #
-# function apply_python_pil_patch
-# {
-#    info "Patching PIL: Add /usr/lib64/ to lib search path."
-#    patch -f -p0 << \EOF
-# diff -c Imaging-1.1.6.orig/setup.py Imaging-1.1.6/setup.py
-# *** Imaging-1.1.6.orig/setup.py Sun Dec  3 03:37:29 2006
-# --- Imaging-1.1.6/setup.py      Tue Dec 14 13:39:39 2010
-# ***************
-# *** 196,201 ****
-# --- 196,205 ----
-#           add_directory(library_dirs, "/usr/local/lib")
-#           add_directory(include_dirs, "/usr/local/include")
-#
-# +         add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
-# +         add_directory(library_dirs, "/usr/lib64")
-# +         add_directory(include_dirs, "/usr/include")
-# +
-#           add_directory(library_dirs, "/usr/lib")
-#           add_directory(include_dirs, "/usr/include")
-# EOF
-#    if [[ $? != 0 ]] ; then
-#       warn "Python PIL patch adding /usr/lib64/ to lib search path failed."
-#       return 1
-#    fi
-#
-#    return 0
-# }
+# *************************************************************************** #
+# The PIL module's detection logic doesn't include /usr/lib64/                #
+# On some systems zlib & libjpeg only exist in /usr/lib64, so we patch the    #
+# module build script to add /usr/lib64.
+# *************************************************************************** #
+function apply_python_pil_patch
+{
+   info "Patching PIL: Add /usr/lib64/ to lib search path."
+   patch -f -p0 << \EOF
+diff -c Imaging-1.1.6.orig/setup.py Imaging-1.1.6/setup.py
+*** Imaging-1.1.6.orig/setup.py Sun Dec  3 03:37:29 2006
+--- Imaging-1.1.6/setup.py      Tue Dec 14 13:39:39 2010
+***************
+*** 196,201 ****
+--- 196,205 ----
+          add_directory(library_dirs, "/usr/local/lib")
+          add_directory(include_dirs, "/usr/local/include")
+
++         add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
++         add_directory(library_dirs, "/usr/lib64")
++         add_directory(include_dirs, "/usr/include")
++
+          add_directory(library_dirs, "/usr/lib")
+          add_directory(include_dirs, "/usr/include")
+EOF
+   if [[ $? != 0 ]] ; then
+      warn "Python PIL patch adding /usr/lib64/ to lib search path failed."
+      return 1
+   fi
+
+   return 0
+}
 
 # *************************************************************************** #
-#                            Function 7.1, build_pillow                       #
+#                            Function 7.1, build_pil                          #
 # *************************************************************************** #
-function build_pillow
+function build_pil
 {
-    if ! test -f ${PILLOW_FILE} ; then
-        download_file ${PILLOW_FILE} \
-            "${PILLOW_URL}"
+    if ! test -f ${PIL_FILE} ; then
+        download_file ${PIL_FILE} \
+            "${PIL_URL}"
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${PILLOW_FILE}"
+            warn "Could not download ${PIL_FILE}"
             return 1
         fi
     fi
-    if ! test -d ${PILLOW_BUILD_DIR} ; then
-        info "Extracting Pillow ..."
+    if ! test -d ${PIL_BUILD_DIR} ; then
+        info "Extracting PIL ..."
         uncompress_untar ${PIL_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${PILLOW_FILE}"
+            warn "Could not extract ${PIL_FILE}"
             return 1
         fi
+    fi
+
+    # apply PIL patches
+    apply_python_pil_patch
+    if [[ $? != 0 ]] ; then
+            warn "Patch failed, but continuing."
     fi
 
     # NOTE:
@@ -477,23 +482,23 @@ function build_pillow
 
     PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $PIL_BUILD_DIR > /dev/null
-        info "Building Pillow ...\n" \
+        info "Building PIL ...\n" \
         "CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS}" \
         "  ${PYHOME}/bin/python ./setup.py build "
         CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} \
             ${PYHOME}/bin/python ./setup.py build 
-        info "Installing Pillow ..."
+        info "Installing PIL ..."
         ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
     popd > /dev/null
 
-    # Pillow installs into site-packages dir of Visit's Python.
+    # PIL installs into site-packages dir of Visit's Python.
     # Simply re-execute the python perms command.
     if [[ "$DO_GROUP" == "yes" ]] ; then
        chmod -R ug+w,a+rX "$VISITDIR/python"
        chgrp -R ${GROUP} "$VISITDIR/python"
     fi
 
-    info "Done with Pillow."
+    info "Done with PIL."
     return 0
 }
 
@@ -649,10 +654,10 @@ if [[ "$DO_PYTHON" == "yes" && "$USE_SYSTEM_PYTHON" == "no" ]] ; then
         fi
         info "Done building Python"
 
-        info "Building the Pillow Imaging Library"
-        build_pillow
+        info "Building the Python Imaging Library"
+        build_pil
         if [[ $? != 0 ]] ; then
-            warn "Pillow build failed."
+            warn "PIL build failed."
         fi
         info "Done building the Python Imaging Library"
 
