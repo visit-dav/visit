@@ -46,6 +46,7 @@
 #include <avtDatabaseWriter.h>
 
 #include <string>
+#include <vector>
 
 class DBOptionsAttributes;
 
@@ -76,6 +77,9 @@ class DBOptionsAttributes;
 //    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
 //    Added meshName.
 //
+//    Kathleen Biagas, Tue Sep  1 11:27:23 PDT 2015
+//    Add storage for fileNames, used when exporting multi-block XML.
+//
 // ****************************************************************************
 
 class
@@ -94,9 +98,9 @@ avtVTKWriter : public virtual avtDatabaseWriter
     double         time;
     int            cycle;
     bool           doBinary;
-    bool           doMultiBlock;
     bool           doXML;
     int            nblocks;
+    std::vector<std::string> fileNames;
 
     virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
