@@ -86,12 +86,14 @@ double avtVTKWriter::INVALID_TIME = -DBL_MAX;
 //    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
 //    Added meshName.
 //
+//    Kathleen Biagas, Tue Sep  1 11:27:23 PDT 2015
+//    Added fileNames.
+//
 // ****************************************************************************
 
-avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName()
+avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName(), fileNames()
 {
     doBinary = atts->GetBool("Binary format");
-    doMultiBlock = true;
     doXML = atts->GetBool("XML format");
     nblocks = 0;
 }
@@ -110,6 +112,10 @@ avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName()
 //    Jeremy Meredith, Tue Mar 27 15:10:21 EDT 2007
 //    Added nblocks to this function and save it so we don't have to 
 //    trust the meta data.
+//
+//    Kathleen Biagas, Tue Sep  1 11:27:23 PDT 2015
+//    Clear fileNames if necessary.
+//
 // ****************************************************************************
 
 void
@@ -117,6 +123,8 @@ avtVTKWriter::OpenFile(const string &stemname, int nb)
 {
     stem = stemname;
     nblocks = nb;
+    if (!fileNames.empty())
+        fileNames.clear();
 }
 
 
@@ -146,6 +154,10 @@ avtVTKWriter::OpenFile(const string &stemname, int nb)
 //    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
 //    Retrieve meshName.
 //
+//    Kathleen Biagas, Tue Sep  1 11:28:50 PDT 2015
+//    Don't write .visit file for multi-block XML.  Will write a .vtm file
+//    during CloseFile instead.
+//
 // ****************************************************************************
 
 void
@@ -153,8 +165,7 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
                            vector<string> &scalars, vector<string> &vectors,
                            vector<string> &materials)
 {
-    doMultiBlock = (nblocks > 1);
-    if (nblocks > 1 && PAR_Rank() == 0)
+    if (nblocks > 1 && PAR_Rank() == 0 && !doXML)
     {
         char filename[1024];
         sprintf(filename, "%s.visit", stem.c_str());
@@ -196,13 +207,16 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
 //    Use meshName if not empty.
 //
+//    Kathleen Biagas, Tue Sep  1 11:28:50 PDT 2015
+//    For multi-block xml, save chunk name in fileNames for later processing.
+//
 // ****************************************************************************
 
 void
 avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     char chunkname[1024];
-    if (doMultiBlock)
+    if (nblocks > 1)
         sprintf(chunkname, "%s.%d", stem.c_str(), chunk);
     else
         sprintf(chunkname, "%s", stem.c_str());
@@ -275,6 +289,8 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
         if (wrtr)
         {
+            if (nblocks > 1)
+                fileNames.push_back(chunkname);
             if(doBinary)
                 wrtr->SetDataModeToBinary();
             wrtr->SetInputData(ds);
@@ -291,17 +307,38 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //  Method: avtVTKWriter::CloseFile
 //
 //  Purpose:
-//      Closes the file.  This does nothing in this case.
+//      Closes the file.
 //
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Kathleen Biagas, Tue Sep  1 08:58:23 PDT 2015
+//    Create 'vtm' file for multi-block XML.
 //
 // ****************************************************************************
 
 void
 avtVTKWriter::CloseFile(void)
 {
-    // Just needed to meet interface.
+    if (doXML && nblocks > 1 && PAR_Rank() == 0)
+    {
+        char filename[1024];
+        sprintf(filename, "%s.vtm", stem.c_str());
+        ofstream ofile(filename);
+        ofile << "<?xml version=\"1.0\"?>" << endl;
+        ofile << "<VTKFile type=\"vtkMultiBlockDataSet\" version=\"1.0\">" << endl;
+        ofile << "  <vtkMultiBlockDataSet>"<< endl;
+        ofile << "    <Block index =\"0\">" << endl;
+        for (int i = 0 ; i < nblocks ; i++)
+        {
+            ofile << "      <DataSet index=\"" << i << "\" file=\"" 
+                  << fileNames[i] << "\"/>" << endl;
+        }
+        ofile << "    </Block>" << endl;
+        ofile << "  </vtkMultiBlockDataSet>"<< endl;
+        ofile << "</VTKFile>" << endl;
+    }
 }
 
 
