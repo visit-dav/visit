@@ -56,9 +56,12 @@
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
 
+#include <algorithm>
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
+
 
 using std::vector;
 using std::min;
