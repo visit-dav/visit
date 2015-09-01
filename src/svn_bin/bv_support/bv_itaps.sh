@@ -120,7 +120,7 @@ function bv_itaps_host_profile
 function bv_itaps_info
 {
 export ITAPS_VERSION=${ITAPS_VERSION:-"1.4"}
-export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION:-"4.6.0"}
+export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION:-"4.8.1"}
 export ITAPS_MOAB_FILE=${ITAPS_MOAB_FILE:-"moab-${ITAPS_MOAB_VERSION}.tar.gz"}
 export ITAPS_MOAB_URL=${ITAPS_MOAB_URL:-http://ftp.mcs.anl.gov/pub/fathom}
 export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR:-"moab-${ITAPS_MOAB_VERSION}"}
