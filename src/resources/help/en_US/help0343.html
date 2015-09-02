@@ -321,7 +321,7 @@ The following table lists built-in expressions that can be used to create more a
 <td>
 <p>Eigenvalue</p></td>
 <td>
-<p><b>eigenvalue(expr)</b></p><p></p><p>expr must evaluate to a 3x3 tensor. The eigenvalue expression returns the eigenvalues of a matrix as a scalar expression.</p><p></p><p><i>Example: scalars = eigenvalue(tensor)</i></p></td>
+<p><b>eigenvalue(expr)</b></p><p></p><p>expr must evaluate to a 3x3 tensor. The eigenvalue expression returns the eigenvalues of the 3x3 matrix argument as a vector valued expression where each eigenvalue is a component of the vector. Use the component index operator ('[]') to access individual eigenvalues.</p><p></p><p><i>Example: evals = eigenvalue(tensor), evals[0]</i></p></td>
 </tr>
 <tr>
 <td>
@@ -329,7 +329,7 @@ The following table lists built-in expressions that can be used to create more a
 <td>
 <p>Eigenvector</p></td>
 <td>
-<p><b>eigenvector(expr)</b></p><p></p><p>expr must evaluate to a 3x3 tensor. The eigenvector expression returns the eigenvectors of a matrix as a vector expression.</p><p></p><p><i>Example: vectors = eigenvector(tensor)</i></p></td>
+<p><b>eigenvector(expr)</b></p><p></p><p>expr must evaluate to a 3x3 tensor. The eigenvector expression returns the eigenvectors of the 3x3 matrix argument as a tensor (3x3 matrix) valued expression where each row in the tensor is one of the eigenvectors. Use the component index operator ('[]') to access individual eigenvectors.</p><p></p><p><i>Example: evecs = eigenvector(tensor), evecs[1]</i></p></td>
 </tr>
 <tr>
 <td>
