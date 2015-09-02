@@ -9255,6 +9255,10 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
 //
+//    Kathleen Biagas, Wed Sep  2 08:12:07 PDT 2015
+//    Check for 3D annotation objects (Text3D, Line3D), and don't skip
+//    if present in either thisRequest or lastRequest.
+//
 // ****************************************************************************
 
 bool
@@ -9323,11 +9327,28 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
  * of on the engine ... except for the SaveWindow case, which does not call
  * this function.
  *
-    if (thisRequest.annotObjs != lastRequest.annotObjs)
-    {
-        return false;
-    }
+ * However, we do want 3D text and 3D lines to be updated so if any are part of
+ * thisRequest or lastRequest don't skip.
  */
+
+    bool canSkipAnnots = true;
+    for (int i = 0; i < thisRequest.annotObjs.GetNumAnnotations() && canSkipAnnots; ++i)
+    {
+        AnnotationObject::AnnotationType atype =
+            thisRequest.annotObjs.GetAnnotation(i).GetObjectType();
+        canSkipAnnots = (atype == AnnotationObject::Text3D || 
+                         atype == AnnotationObject::Line3D) ? false :true;
+    }
+    for (int i = 0; i < lastRequest.annotObjs.GetNumAnnotations() && canSkipAnnots; ++i)
+    {
+        AnnotationObject::AnnotationType atype =
+            lastRequest.annotObjs.GetAnnotation(i).GetObjectType();
+        canSkipAnnots = (atype == AnnotationObject::Text3D || 
+                         atype == AnnotationObject::Line3D) ? false :true;
+    }
+    if (!canSkipAnnots)
+        return false;
+
 
     if (thisRequest.visCues != lastRequest.visCues)
         return false;

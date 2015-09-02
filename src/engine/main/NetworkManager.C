@@ -3259,6 +3259,9 @@ NetworkManager::UpdateVisualCues(int windowID)
 //    Added code to make sure that 3D text annotations are drawn when we
 //    want 3D annotations to be drawn.
 //
+//    Kathleen Biagas, Wed Sep  2 09:06:41 PDT 2015
+//    Added 3D Line annotations.
+//
 // ****************************************************************************
 
 void
@@ -3314,6 +3317,8 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
                   for(int aIndex = 0; aIndex < aolist.GetNumAnnotations(); ++aIndex)
                   {
                       if(aolist[aIndex].GetObjectType() == AnnotationObject::Text3D)
+                          aolist2.AddAnnotation(aolist[aIndex]);
+                      else if(aolist[aIndex].GetObjectType() == AnnotationObject::Line3D)
                           aolist2.AddAnnotation(aolist[aIndex]);
                   }
                   viswin->CreateAnnotationObjectsFromList(aolist2);
