@@ -1318,12 +1318,12 @@ avtPICSFilter::Execute(void)
         for (size_t i = 0; i < domainTimeIntervals.size(); i++)
         {
             icAlgo->Execute();
-                
+
             if (icAlgo->CheckNextTimeStepNeeded(curTimeSlice) &&
                 LoadNextTimeSlice())
             {
                 icAlgo->ActivateICsForNextTimeStep();
-                
+
                 if( rollover )
                   i = -1;
             }
