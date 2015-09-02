@@ -1516,7 +1516,7 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
                 owner = s->id % nProcs;
             else
                 owner = s->originatingRank;
-            
+
             //IC is mine.
             if (owner == rank)
             {
