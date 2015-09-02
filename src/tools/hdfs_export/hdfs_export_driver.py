@@ -7,7 +7,9 @@ from hdfs_export_utils import *
 #
 # Main driver program to export any data VisIt can read to hierarchy of
 # text files (key-value pairs) suitable for HDFS (Hadoop Filesystem) import.
-# Currently groups, material names, units and labels are not handled.
+# Currently groups, material names, material specific variable values,
+# units, labels and other miscellaneous metadata are not handled. CSG and
+# MFEM meshes get imported according to their default discretization params.
 #
 # Example command-line 
 #     env PYTHONPATH=<path-to-vtk-python-root> LD_LIBRARY_PATH=<path-to-vtk-lib> \
@@ -28,8 +30,7 @@ from hdfs_export_utils import *
 # names, however, that will cause a namespace collision during the export. You will
 # need to rename databases so that they do not match. Mesh entity keys (nodes, edges,
 # faces, volumes) are uniqued across users, databases, timestates, meshes and blocks
-# to enable Spark/Hadoop algorithms to operate on queries across any arbitrary
-# collection of databases.
+# to enable Spark/Hadoop algorithms to operate at arbitrary scope.
 #
 # Programmer: Mark C. Miller, August, 2015
 # Based heavily on original code written by Cyrus Harrison for JSON export
