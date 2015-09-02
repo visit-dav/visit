@@ -143,7 +143,14 @@ avtPODICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
             if( count == 0 )
             {
               if( PAR_Rank() == 0 )
+              {
+                ic->originatingRank = rank;
+            
+#ifdef USE_IC_STATE_TRACKING
+                ic->InitTrk();
+#endif
                 terminatedICs.push_back(ic);
+              }
               else
                 delete ic;
             }
@@ -265,12 +272,15 @@ avtPODICAlgorithm::PreRunAlgorithm()
 void
 avtPODICAlgorithm::RunAlgorithm()
 {
-    debug1<<"avtPODICAlgorithm::RunAlgorithm() activeICs: "
-          <<activeICs.size()<<" inactiveICs: "<<inactiveICs.size()<<endl;
+    debug1 << "avtPODICAlgorithm::RunAlgorithm() "
+           << "  active ICs " << activeICs.size()
+           << "  inactive ICs " << inactiveICs.size()
+           << "  terminated ICs " << terminatedICs.size() << std::endl;
     
     int timer = visitTimer->StartTimer();
     
     bool done = HandleCommunication();
+
     while (!done)
     {
         int cnt = 0;
