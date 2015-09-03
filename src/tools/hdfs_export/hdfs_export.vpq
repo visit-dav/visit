@@ -27,20 +27,25 @@ class CellExportQuery(SimplePythonQuery):
         nodals = [ v for v in var_arrays if v[1] == "nodal"]
         zonals = [ v for v in var_arrays if v[1] == "zonal"]
 
+        #
+        # Handle ghost information
+        #
         ghostNodes = ds_in.GetPointData().GetArray("avtGhostNodes")
         ghostZones =  ds_in.GetCellData().GetArray("avtGhostZones")
         if ghostZones and not ghostNodes:
             ghostNodes = vtk.vtkUnsignedCharArray()
             ghostNodes.SetNumberOfTuples(npoints)
+            # First, assume everything is ghost
             for i in xrange(npoints):
-                ghostNodes.SetTuple1(i,0)
+                ghostNodes.SetTuple1(i,1)
+            # For each non-ghost zone, make its nodes non-ghost too
             for i in xrange(ncells):
-                if not ghostZones.GetTuple1(i):
+                if ghostZones.GetTuple1(i):
                     continue
                 cell = ds_in.GetCell(i)
                 npts = cell.GetNumberOfPoints()
                 for j in xrange(npts):
-                    ghostNodes.SetTuple1(cell.GetPointId(j),1)
+                    ghostNodes.SetTuple1(cell.GetPointId(j),0)
 
         # do nodal coordinate data
         fname = "%s/coords.txt"%outpath
@@ -52,7 +57,9 @@ class CellExportQuery(SimplePythonQuery):
                 ghost = ghostNodes.GetTuple1(i) != 0
             f.write("%s,%d,%g,%g,%g\n"%(NodeIDKey(keybase,i,ghost), ghost,pt[0], pt[1], pt[2]))
         f.close()
+
         # should do nodal global node ids too
+
         # do other nodal variables
         for narr in nodals:
             fname = "%s/%s.txt"%(outpath,narr[0].replace("Scalar_Curves/","").replace('/','~'))
