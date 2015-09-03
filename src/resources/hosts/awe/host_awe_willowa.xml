@@ -21,7 +21,7 @@
         <Field name="bankSet" type="bool">false</Field>
         <Field name="bank" type="string"></Field>
         <Field name="timeLimitSet" type="bool">true</Field>
-        <Field name="timeLimit" type="string">12:00:00</Field>
+        <Field name="timeLimit" type="string">4:00:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
         <Field name="launchMethod" type="string">msub</Field>
         <Field name="forceStatic" type="bool">true</Field>
@@ -57,7 +57,7 @@
         <Field name="bankSet" type="bool">false</Field>
         <Field name="bank" type="string"></Field>
         <Field name="timeLimitSet" type="bool">true</Field>
-        <Field name="timeLimit" type="string">12:00:00</Field>
+        <Field name="timeLimit" type="string">4:00:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
         <Field name="launchMethod" type="string">msub</Field>
         <Field name="forceStatic" type="bool">true</Field>
@@ -99,7 +99,7 @@
         <Field name="forceStatic" type="bool">true</Field>
         <Field name="forceDynamic" type="bool">false</Field>
         <Field name="active" type="bool">false</Field>
-        <Field name="arguments" type="stringVector">"-np" "1" "-nn" "1" "-l" "msub" "-p" "viz" "-t" "12:00:00" </Field>
+        <Field name="arguments" type="stringVector">"-np" "1" "-nn" "1" "-l" "msub" "-p" "viz" "-t" "4:00:00" </Field>
         <Field name="parallel" type="bool">false</Field>
         <Field name="launchArgsSet" type="bool">false</Field>
         <Field name="launchArgs" type="string"></Field>
