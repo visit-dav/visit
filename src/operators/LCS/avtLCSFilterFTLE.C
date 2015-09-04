@@ -219,7 +219,7 @@ avtLCSFilter::MultiBlockSingleCalc( avtDataTree_p inDT,
       {
           if (inDT->ChildIsPresent(j))
             outDT[j] = MultiBlockSingleCalc( inDT->GetChild(j), ics, 
-                                                    offset, minv, maxv );
+                                             offset, minv, maxv );
           else
             outDT[j] = NULL;
       }
@@ -277,60 +277,70 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
 
     // ARS - When the data is replicated on all processors the
     // parallelization will be over all curves. As such, I am not sure
-    // that there will be a case where curve is deleted.
-    if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
-    {
-        // The parallel synchronization for when data is replicated
-        // involves a sum across all processors.  remapPoints needs to
-        // have the finial position of the curve on one processor and
-        // zero on the rest.  Do that here.
+    // that there will be a case where a curve is deleted.
+    // if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+    // {
+    //     // The parallel synchronization for when data is replicated
+    //     // involves a sum across all processors.  remapPoints needs to
+    //     // have the finial position of the curve on one processor and
+    //     // zero on the rest.  Do that here.
 
-        // Special care is needed for the case where a curve has been
-        // deleted and never processed. To obtain the correct results
-        // the initial location and time needs to be on just one
-        // processor.  Do this on rank 0.
+    //     // Special care is needed for the case where a curve has been
+    //     // deleted and never processed. To obtain the correct results
+    //     // the initial location and time needs to be on just one
+    //     // processor.  Do this on rank 0.
 
-        std::vector<int> iHavePoint(nTuples*nAuxPts, 0);
-        std::vector<int> anyoneHasPoint;
+    //     std::vector<int> iHavePoint(nTuples*nAuxPts, 0);
+    //     std::vector<int> anyoneHasPoint;
 
-        for (size_t i = 0; i < ics.size(); ++i)
-        {
-            size_t index = ics[i]->id;
-            size_t l = (index-offset);
+    //     for (size_t i = 0; i < ics.size(); ++i)
+    //     {
+    //         size_t index = ics[i]->id;
+    //         size_t l = (index-offset);
 
-            if(l < remapPoints.size()) ///TODO: l >=0 is always true
-            {
-                iHavePoint[l] = 1;
-            }
-        }
+    //         if(l < remapPoints.size()) ///TODO: l >=0 is always true
+    //         {
+    //             iHavePoint[l] = 1;
+    //         }
+    //     }
 
-        UnifyMaximumValue(iHavePoint, anyoneHasPoint);  
+    //     UnifyMaximumValue(iHavePoint, anyoneHasPoint);  
 
-        for (size_t i = 0; i < remapPoints.size(); ++i)
-        {
-            // Copy the original seed points
-            if (PAR_Rank() == 0 && !anyoneHasPoint[i])
-            {
-                remapPoints[i] = seedPoints[offset + i];
-                remapTimes[i]  = seedTime0;
-            }
-            // Zero out the values for the summation.
-            else
-            {
-                remapPoints[i] = avtVector(0,0,0);
-                remapTimes[i]  = 0;
-            }
-        }
-    }
-    else
-    {
-      // Copy the original seed points
-      for(size_t i = 0; i < nTuples*nAuxPts; ++i)
-      {
-        remapPoints[i] = seedPoints[offset + i];
-        remapTimes[i]  = seedTime0;
-      }
-    }
+    //     for (size_t i = 0; i < remapPoints.size(); ++i)
+    //     {
+    //         // Copy the original seed points
+    //         if (PAR_Rank() == 0 && !anyoneHasPoint[i])
+    //         {
+    //             remapPoints[i] = seedPoints[offset + i];
+    //             remapTimes[i]  = seedTime0;
+    //         }
+    //         // Zero out the values for the summation.
+    //         else
+    //         {
+    //             remapPoints[i] = avtVector(0,0,0);
+    //             remapTimes[i]  = 0;
+    //         }
+    //     }
+    // }
+    // else
+    // {
+    //   // Copy the original seed points
+    //   for(size_t i = 0; i < nTuples*nAuxPts; ++i)
+    //   {
+    //     remapPoints[i] = seedPoints[offset + i];
+    //     remapTimes[i]  = seedTime0;
+    //   }
+    // }
+
+    // ARS - no need to zero out the arrays as each value will be
+    // availble.
+
+    // Zero out the values for the summation.
+    // for(size_t i = 0; i < nTuples*nAuxPts; ++i)
+    // {
+    //  remapPoints[i] = avtVector(0,0,0);
+    //  remapTimes[i]  = 0;
+    // }
 
     // The processor has a partial set of the curves so some values in
     // remapPoint will be zero.
@@ -341,6 +351,9 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
         size_t index = ic->id;
         size_t l = (index-offset);
 
+        // When running, curves will be grouped together for this
+        // processor but only save the curves that are part of this
+        // domain. (i.e. do not throw anny exception)
         if(l < nTuples*nAuxPts)
         {
           if( atts.GetOperationType() == LCSAttributes::EigenValue ||
@@ -368,20 +381,6 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
                            ic->GetDistance(),
                            0 );
           }
-        }
-        else
-        {
-          // When running serially all the curves will be together
-          // but only processs the ones that are part of this domain.
-          // As such, do not throw any exception. 
-
-          // When running parallely only the curves for this domain
-          // will be sent down so throw an exception.
-#ifdef PARALLEL
-          EXCEPTION1(VisItException, "avtLCSFilter::SingleBlockSingleCalc - "
-                     "More integral curves were generatated than "
-                     "grid points." );
-#endif
         }
     }
 
@@ -795,8 +794,8 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 
     Barrier();
 
-    // Dataset using all ICs.
-    vtkDataSet* ds = 0;
+    // VTK Dataset using all ICs.
+    vtkRectilinearGrid* rect_grid = 0;
 
     //min and max values over all datasets of the tree.
     double minv =  std::numeric_limits<double>::max();
@@ -824,7 +823,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
             }
         }
 
-        if( total > nTuples*nAuxPts )
+        if( total != nTuples*nAuxPts )
         {
           EXCEPTION1(VisItException,
                      "avtLCSFilter::RectilinearGridSingleCalc - "
@@ -837,14 +836,28 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         std::vector<avtVector> remapPoints(nTuples*nAuxPts);
         std::vector<double>    remapTimes (nTuples*nAuxPts);
 
-        // Integral curves can be deleted (total != nTuples*nAuxPts).
-        // As such, set the point value and time to be the inital values.
-        for(size_t i = 0; i < nTuples*nAuxPts; ++i)
-        {
-            remapPoints[i] = seedPoints[i];
-            remapTimes[i] = seedTime0;
-        }
-      
+        // ARS - When the data is replicated on all processors the
+        // parallelization will be over all curves. As such, I am not sure
+        // that there will be a case where a curve is deleted.
+
+        // // Integral curves can be deleted (total != nTuples*nAuxPts).
+        // // As such, set the point value and time to be the inital values.
+        // for(size_t i = 0; i < nTuples*nAuxPts; ++i)
+        // {
+        //     remapPoints[i] = seedPoints[i];
+        //     remapTimes[i] = seedTime0;
+        // }
+
+        // ARS - no need to zero out the arrays as each value will be
+        // availble.
+
+        // Zero out the values for the summation.
+        // for(size_t i = 0; i < nTuples*nAuxPts; ++i)
+        // {
+        //      remapPoints[i] = avtVector(0,0,0);
+        //      remapTimes[i]  = 0;
+        // }
+
         for(size_t j = 0, k = 0; j < total; ++j, k += 3)
         {
             size_t index = all_indices[j];
@@ -866,7 +879,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         }
 
         // Now create a rectilinear grid.
-        vtkRectilinearGrid* rect_grid = vtkRectilinearGrid::New();
+        rect_grid = vtkRectilinearGrid::New();
 
         vtkDoubleArray* lxcoord = vtkDoubleArray::New();
         vtkDoubleArray* lycoord = vtkDoubleArray::New();
@@ -1163,14 +1176,13 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         range[4] = minv;
         range[5] = maxv;
         e->Set(range);
-
-        ds = rect_grid;
     }
-    
+
     // When running in parallel and if the LCS operator is sending its
     // data to an IC operator then the data must be replicated
     // (broadcast) on all processors so that all seeds are advected.
 #ifdef PARALLEL
+
     if( replicateData )
     {
       debug1 << "LCS: replicating data on all processors." << std::endl;
@@ -1191,15 +1203,15 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         writer->WriteToOutputStringOn();
         writer->SetFileTypeToBinary();
         
-        writer->SetInputData(ds);
+        writer->SetInputData(rect_grid);
         writer->Write();
 
         // Get the string and it's size.
         int  size = writer->GetOutputStringLength();
         char *tmpstr = writer->RegisterAndGetOutputString();
 
-        // Broadcast it out to all the other processors.
-        for (int i = 1; i < PAR_Size(); i++)
+        // Broadcast the dataset out to all the other processors.
+        for (int i = 1; i < PAR_Size(); ++i)
         {
             MPI_Send(&minv, 1, MPI_DOUBLE, i, mpiMinTag, VISIT_MPI_COMM);
             MPI_Send(&maxv, 1, MPI_DOUBLE, i, mpiMaxTag, VISIT_MPI_COMM);
@@ -1215,23 +1227,18 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
       {
         // Receive the broadcasted string that makes up the vtkDataSet.
         MPI_Status stat;
-        MPI_Status stat2;
-        
+
         double minv = std::numeric_limits<double>::max();
-        MPI_Recv(&minv, 1, MPI_DOUBLE, stat.MPI_SOURCE, mpiMinTag,
-                 VISIT_MPI_COMM, &stat2);
+        MPI_Recv(&minv, 1, MPI_DOUBLE, 0, mpiMinTag, VISIT_MPI_COMM, &stat);
 
         double maxv = -std::numeric_limits<double>::max();
-        MPI_Recv(&maxv, 1, MPI_DOUBLE, stat.MPI_SOURCE, mpiMaxTag,
-                 VISIT_MPI_COMM, &stat2);
+        MPI_Recv(&maxv, 1, MPI_DOUBLE, 0, mpiMaxTag, VISIT_MPI_COMM, &stat);
 
         // Get the string size and the string.
         int size = 0;
-        MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiSizeTag,
-                 VISIT_MPI_COMM, &stat2);
+        MPI_Recv(&size, 1, MPI_INT, 0, mpiSizeTag, VISIT_MPI_COMM, &stat);
         char *tmpstr = new char[size];
-        MPI_Recv(tmpstr, size, MPI_CHAR, stat.MPI_SOURCE, mpiDataTag,
-                 VISIT_MPI_COMM, &stat2);
+        MPI_Recv(tmpstr, size, MPI_CHAR, 0, mpiDataTag, VISIT_MPI_COMM, &stat);
 
         vtkCharArray *charArray = vtkCharArray::New();
         charArray->SetArray((char*)tmpstr, size, 1);
@@ -1242,8 +1249,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         reader->SetInputArray(charArray);
         reader->Update();
 
-        vtkRectilinearGrid* rect_grid =
-          (vtkRectilinearGrid *) reader->GetOutput();
+        rect_grid = (vtkRectilinearGrid *) reader->GetOutput();
 
         // Store this dataset in Cache for next time.
         std::string str = CreateCacheString();
