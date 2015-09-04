@@ -40,12 +40,13 @@ SetOperatorOptions(LCSAtts, 0)
 #DrawPlots()
 
 databases=["ftle_double_gyre_1_domain", "ftle_double_gyre_2_domains"]
+databases=["ftle_double_gyre_2_domains"]
 
 src_type=[LCSAtts.RegularGrid, LCSAtts.NativeMesh]
 src_type_str=["RegularGrid", "NativeMesh"]
 
 aux_grid=[LCSAtts.None, LCSAtts.TwoDim]
-aux_grid_str=["NoAuxGrid", "Two2DAuxGrid"]
+aux_grid_str=["NoAuxGrid", "2DAuxGrid"]
 
 
 for i in range(len(databases)):
@@ -87,7 +88,7 @@ DrawPlots()
 str="lcs_%s_%s_%s_Left" %(databases[i], src_type_str[j], aux_grid_str[k])
 Test(str)
 
-# FTLE with right eigen value
+# FTLE with eigen value
 LCSAtts.operationType = LCSAtts.EigenValue  # IntegrationTime, ArcLength, AverageDistanceFromSeed, EigenValue, EigenVector, Lyapunov
 LCSAtts.cauchyGreenTensor = LCSAtts.Right  # Left, Right
 LCSAtts.eigenComponent = LCSAtts.Largest  # Smallest, Intermediate, Largest, PosShearVector, NegShearVector, PosLambdaShearVector, NegLambdaShearVector
@@ -95,7 +96,6 @@ SetOperatorOptions(LCSAtts, 0)
 DrawPlots()
 str="lcs_%s_%s_%s_EigenValue" %(databases[i], src_type_str[j], aux_grid_str[k])
 Test(str)
-
 
 # FTLE with integral curve
 AddOperator("IntegralCurve")
@@ -117,9 +117,25 @@ LCSAtts.eigenComponent = LCSAtts.PosLambdaShearVector  # Smallest, Intermediate,
 LCSAtts.eigenWeight = 0.98
 SetOperatorOptions(LCSAtts, 0)
 
-DrawPlots()
-str="lcs_%s_%s_%s_IntegralCurve" %(databases[i], src_type_str[j], aux_grid_str[k])
-Test(str)
+for i in range(len(databases)):
+  db=data_path("pics_test_data/%s.pics") %(databases[i])
+  str="Testing database = %s" %(db)
+  TestSection(str)
+  OpenDatabase(db)
+  # Replace the database from before with this one as a new plot can
+  # not be opened within the loop when using runtest. This issue is a
+  # bug.
+  ReplaceDatabase(db)
+  #  DeleteAllPlots()
+  #  AddPlot("Pseudocolor", "operators/LCS/velocity")
+  for j in range(len(src_type)):
+     str="Testing sample source = %s" %(src_type_str[j])
+     TestSection(str)
+     LCSAtts.sourceType = src_type[j]  # NativeMesh, RegularGrid
+     SetOperatorOptions(LCSAtts, 0)
+     DrawPlots()
+     str="lcs_%s_%s_%s_IntegralCurve" %(databases[i], src_type_str[j], aux_grid_str[k])
+     Test(str)
 
 
 # FTLE with limit cycle
@@ -143,9 +159,25 @@ LimitCycleAtts.showPartialResults = 0
 LimitCycleAtts.showReturnDistances = 0
 SetOperatorOptions(LimitCycleAtts, 0)
 
-DrawPlots()
-str="lcs_%s_%s_%s_LimitCycle" %(databases[i], src_type_str[j], aux_grid_str[k])
-Test(str)
+for i in range(len(databases)):
+  db=data_path("pics_test_data/%s.pics") %(databases[i])
+  str="Testing database = %s" %(db)
+  TestSection(str)
+  OpenDatabase(db)
+  # Replace the database from before with this one as a new plot can
+  # not be opened within the loop when using runtest. This issue is a
+  # bug.
+  ReplaceDatabase(db)
+  #  DeleteAllPlots()
+  #  AddPlot("Pseudocolor", "operators/LCS/velocity")
+  for j in range(len(src_type)):
+     str="Testing sample source = %s" %(src_type_str[j])
+     TestSection(str)
+     LCSAtts.sourceType = src_type[j]  # NativeMesh, RegularGrid
+     SetOperatorOptions(LCSAtts, 0)
+     DrawPlots()
+     str="lcs_%s_%s_%s_LimitCycle" %(databases[i], src_type_str[j], aux_grid_str[k])
+     Test(str)
 
 
 Exit()
@@ -239,7 +271,7 @@ LCSAtts.operationType = LCSAtts.EigenValue  # IntegrationTime, ArcLength, Averag
 LCSAtts.cauchyGreenTensor = LCSAtts.Right  # Left, Right
 LCSAtts.eigenComponent = LCSAtts.Largest  # Smallest, Intermediate, Largest, PosShearVector, NegShearVector, PosLambdaShearVector, NegLambdaShearVector
 SetOperatorOptions(LCSAtts, 0)
-DrawPlots()
+#DrawPlots()
 str="lcs_%s_%s_%s_EigenValue" %(databases[i], src_type_str[j], aux_grid_str[k])
 swatts = SaveWindowAttributes()
 swatts.family = 0
@@ -269,13 +301,21 @@ LCSAtts.eigenComponent = LCSAtts.PosLambdaShearVector  # Smallest, Intermediate,
 LCSAtts.eigenWeight = 0.98
 SetOperatorOptions(LCSAtts, 0)
 
-DrawPlots()
-str="lcs_%s_%s_%s_IntegralCurve" %(databases[i], src_type_str[j], aux_grid_str[k])
-swatts = SaveWindowAttributes()
-swatts.family = 0
-swatts.fileName = "/Projects/tmp/lcs/ser/%s" %(str)
-SetSaveWindowAttributes(swatts)
-SaveWindow()
+for i in range(len(databases)):
+  db="/Projects/VisIt/trunk/build/data/pics_test_data/%s.pics" %(databases[i])
+  OpenDatabase(db)
+  ReplaceDatabase(db)
+  for j in range(len(src_type)):
+     str="Testing sample source = %s" %(src_type_str[j])
+     LCSAtts.sourceType = src_type[j]  # NativeMesh, RegularGrid
+     SetOperatorOptions(LCSAtts, 0)
+     DrawPlots()
+     str="lcs_%s_%s_%s_IntegralCurve" %(databases[i], src_type_str[j], aux_grid_str[k])
+     swatts = SaveWindowAttributes()
+     swatts.family = 0
+     swatts.fileName = "/Projects/tmp/lcs/ser/%s" %(str)
+     SetSaveWindowAttributes(swatts)
+     SaveWindow()
 
 
 # FTLE with limit cycle
@@ -299,10 +339,70 @@ LimitCycleAtts.showPartialResults = 0
 LimitCycleAtts.showReturnDistances = 0
 SetOperatorOptions(LimitCycleAtts, 0)
 
-DrawPlots()
-str="lcs_%s_%s_%s_LimitCycle" %(databases[i], src_type_str[j], aux_grid_str[k])
-swatts = SaveWindowAttributes()
-swatts.family = 0
-swatts.fileName = "/Projects/tmp/lcs/ser/%s" %(str)
-SetSaveWindowAttributes(swatts)
-SaveWindow()
+for i in range(len(databases)):
+  db="/Projects/VisIt/trunk/build/data/pics_test_data/%s.pics" %(databases[i])
+  OpenDatabase(db)
+  for j in range(len(src_type)):
+     str="Testing sample source = %s" %(src_type_str[j])
+     LCSAtts.sourceType = src_type[j]  # NativeMesh, RegularGrid
+     SetOperatorOptions(LCSAtts, 0)
+     DrawPlots()
+     str="lcs_%s_%s_%s_LimitCycle" %(databases[i], src_type_str[j], aux_grid_str[k])
+     swatts = SaveWindowAttributes()
+     swatts.family = 0
+     swatts.fileName = "/Projects/tmp/lcs/ser/%s" %(str)
+     SetSaveWindowAttributes(swatts)
+     SaveWindow()
+
+# 1 processor:
+
+#wo/aux grid
+
+# Native 1  -0.04343 - 1.066   190 zeros # Match
+# Rect   1  -0.04343 - 1.066   190 zeros #
+
+# Native 2  -0.04343 - 1.066   193 zeros # Match
+# Rect   2  -0.04343 - 1.174   190 zeros # Except along the domain boundaries
+
+# Errors in the domain boundary gradients 
+
+
+#w/aux grid
+
+# Native 1  0.004539 - 1.396   304 exited / 680 zeros # Match
+# Rect   1  0.004539 - 1.396   304 exited / 680 zeros # 
+
+# Native 2  0.004539 - 1.396   308 exited / 690 zeros # Match
+# Rect   2  0.004539 - 1.396   304 exited / 680 zeros #
+
+
+# 4 processors:
+
+#wo/aux grid
+
+# Native 1  -0.04343 - 1.066   190 zeros # Match
+# Rect   1  -0.04343 - 1.066   190 zeros #
+
+# Native 2  -0.04343 - 1.066   193 zeros # Match
+# Rect   2  -0.04343 - 1.174   190 zeros # Except along the domain boundaries
+
+#w/aux grid
+
+# Native 1  0.004539 - 1.396   304 exited / 680 zeros # Match
+# Rect   1  0.004539 - 1.396   304 exited / 680 zeros # 
+
+# Native 2  0.004539 - 1.396   308 exited / 690 zeros # Match
+# Rect   2  0.004539 - 1.396   304 exited / 680 zeros #
+
+
+
+
+# LCS->IC single   domain - native mesh      - serial   - okay
+# LCS->IC single   domain - rectilinear grid - serial   - okay
+# LCS->IC multiple domain - native mesh      - serial   - okay
+# LCS->IC multiple domain - rectilinear grid - serial   - failed zero velocity
+
+# LCS->IC single   domain - native mesh      - parallel - okay
+# LCS->IC single   domain - rectilinear grid - parallel - okay
+# LCS->IC multiple domain - native mesh      - parallel - okay
+# LCS->IC multiple domain - rectilinear grid - parallel - failed in avtPICSFilter::InitializeLocators (fixed but failed like serial)
