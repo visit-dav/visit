@@ -11,6 +11,26 @@
 
 #-vargs="-debug 5"
 
+# For testing using the CLI
+
+#def data_path( db_name ):
+#  db="/Projects/VisIt/trunk/build/data/%s" %(db_name)
+#  return db
+
+#def Test(case_name):
+#   swatts = SaveWindowAttributes()
+#   swatts.family = 0
+#   swatts.fileName = "/Projects/tmp/lcs/ser/%s" %(case_name)
+#   SetSaveWindowAttributes(swatts)
+#   SaveWindow()
+#   return
+
+#def TestSection(str):
+#   return   
+
+#def Exit():
+#   return   
+
 
 # Open the database here and add a plot as for some reason it fails
 # within a loop. It only happens with all-in-one plots with an operator
@@ -19,7 +39,6 @@ db=data_path("pics_test_data/ftle_double_gyre_1_domain.pics")
 OpenDatabase(db)
 AddPlot("Pseudocolor", "operators/LCS/velocity")
 AddOperator("LimitCycle")
-
 
 LCSAtts = LCSAttributes()
 LCSAtts.Resolution = (101, 51, 1)
@@ -89,146 +108,22 @@ for i in range(len(databases)):
      for k in range(len(aux_grid)):
         str="Testing auxiliary grid = %s" %(aux_grid_str[k])
         TestSection(str)
-        LCSAtts.auxiliaryGrid = aux_grid[k]  # None, TwoDim
-        SetOperatorOptions(LCSAtts, 0)
-        if (i==0) | (i==1 & j==1):
+        str="lcs_%s_%s_%s_IntegralCurve" %(databases[i], src_type_str[j], aux_grid_str[k])
+        if (i==0 | (i==1 & j==1)):
+           LCSAtts.auxiliaryGrid = aux_grid[k]  # TwoDim
+           SetOperatorOptions(LCSAtts, 0)
            DrawPlots()
-           str="lcs_%s_%s_%s_LimitCycle" %(databases[i], src_type_str[j], aux_grid_str[k])
            Test(str)
-
 
 Exit()
 
 
+# LCS->LC single   domain - native mesh      - serial   - okay
+# LCS->LC single   domain - rectilinear grid - serial   - okay
+# LCS->LC multiple domain - native mesh      - serial   - okay
+# LCS->LC multiple domain - rectilinear grid - serial   - failed zero velocity
 
-
-# Allen's CLI testing section that never gets executed
-
-db="/Projects/VisIt/trunk/build/data/pics_test_data/%s.pics" %(databases[i])
-OpenDatabase(db)
-AddPlot("Pseudocolor", "operators/LCS/velocity", 1, 0)
-AddOperator("LimitCycle")
-
-
-LCSAtts = LCSAttributes()
-LCSAtts.Resolution = (101, 51, 1)
-LCSAtts.integrationDirection = LCSAtts.Forward  # Forward, Backward, Both
-LCSAtts.auxiliaryGridSpacing = 0.005
-LCSAtts.maxSteps = 1000000
-LCSAtts.operationType = LCSAtts.EigenVector  # IntegrationTime, ArcLength, AverageDistanceFromSeed, EigenValue, EigenVector, Lyapunov
-LCSAtts.cauchyGreenTensor = LCSAtts.Right  # Left, Right
-LCSAtts.eigenComponent = LCSAtts.PosLambdaShearVector  # Smallest, Intermediate, Largest, PosShearVector, NegShearVector, PosLambdaShearVector, NegLambdaShearVector
-LCSAtts.eigenWeight = 0.98
-LCSAtts.operatorType = LCSAtts.BaseValue  # BaseValue, Gradient
-LCSAtts.terminationType = LCSAtts.Time  # Time, Distance, Size
-LCSAtts.terminateByTime = 1
-LCSAtts.termTime = 10
-LCSAtts.maxStepLength = 0.001
-LCSAtts.integrationType = LCSAtts.AdamsBashforth  # Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, M3DC12DIntegrator
-LCSAtts.parallelizationAlgorithmType = LCSAtts.ParallelStaticDomains  # LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects
-LCSAtts.pathlines = 1
-LCSAtts.pathlinesCMFE = LCSAtts.CONN_CMFE  # CONN_CMFE, POS_CMFE
-SetOperatorOptions(LCSAtts, 0)
-
-
-LimitCycleAtts = LimitCycleAttributes()
-LimitCycleAtts.sourceType = LimitCycleAtts.Line_  # Line_, Plane
-LimitCycleAtts.lineStart = (1.0564, 0.667238, 0)
-LimitCycleAtts.lineEnd = (1.51521, 0.553799, 0)
-LimitCycleAtts.sampleDensity0 = 500
-LimitCycleAtts.sampleDensity1 = 2
-LimitCycleAtts.dataValue = LimitCycleAtts.ArcLength  # Solid, SeedPointID, Speed, Vorticity, ArcLength, TimeAbsolute, TimeRelative, AverageDistanceFromSeed, CorrelationDistance, Difference, Variable
-LimitCycleAtts.integrationDirection = LimitCycleAtts.ForwardDirectionless  # Forward, Backward, Both, ForwardDirectionless, BackwardDirectionless, BothDirectionless
-LimitCycleAtts.maxSteps = 10000
-LimitCycleAtts.maxStepLength = 0.001
-LimitCycleAtts.integrationType = LimitCycleAtts.AdamsBashforth  # Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, M3DC12DIntegrator
-LimitCycleAtts.parallelizationAlgorithmType = LimitCycleAtts.ParallelStaticDomains  # LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects
-LimitCycleAtts.cycleTolerance = 1e-06
-LimitCycleAtts.maxIterations = 10
-LimitCycleAtts.showPartialResults = 0
-LimitCycleAtts.showReturnDistances = 0
-SetOperatorOptions(LimitCycleAtts, 0)
-
-
-databases=["ftle_double_gyre_1_domain", "ftle_double_gyre_2_domains"]
-
-src_type=[LCSAtts.RegularGrid, LCSAtts.NativeMesh]
-src_type_str=["RegularGrid", "NativeMesh"]
-
-aux_grid=[LCSAtts.TwoDim]
-aux_grid_str=["Two2DAuxGrid"]
-
-
-# FTLE with limit cycle
-for i in range(len(databases)):
-  db="/Projects/VisIt/trunk/build/data/pics_test_data/%s.pics" %(databases[i])
-  OpenDatabase(db)
-  ReplaceDatabase(db)
-  for j in range(len(src_type)):
-     str="Testing sample source = %s" %(src_type_str[j])
-     LCSAtts.sourceType = src_type[j]  # NativeMesh, RegularGrid
-     for k in range(len(aux_grid)):
-        str="Testing auxiliary grid = %s" %(aux_grid_str[k])
-        TestSection(str)
-        LCSAtts.auxiliaryGrid = aux_grid[k]  # TwoDim
-        SetOperatorOptions(LCSAtts, 0)
-        DrawPlots()
-        str="lcs_%s_%s_%s_LimitCycle" %(databases[i], src_type_str[j], aux_grid_str[k])
-        swatts = SaveWindowAttributes()
-        swatts.family = 0
-        swatts.fileName = "/Projects/tmp/lcs/ser/%s" %(str)
-        SetSaveWindowAttributes(swatts)
-        SaveWindow()
-
-# 1 processor:
-
-#wo/aux grid
-
-# Native 1  -0.04343 - 1.066   190 zeros # Match
-# Rect   1  -0.04343 - 1.066   190 zeros #
-
-# Native 2  -0.04343 - 1.066   193 zeros # Match
-# Rect   2  -0.04343 - 1.174   190 zeros # Except along the domain boundaries
-
-# Errors in the domain boundary gradients 
-
-
-#w/aux grid
-
-# Native 1  0.004539 - 1.396   304 exited / 680 zeros # Match
-# Rect   1  0.004539 - 1.396   304 exited / 680 zeros # 
-
-# Native 2  0.004539 - 1.396   308 exited / 690 zeros # Match
-# Rect   2  0.004539 - 1.396   304 exited / 680 zeros #
-
-
-# 4 processors:
-
-#wo/aux grid
-
-# Native 1  -0.04343 - 1.066   190 zeros # Match
-# Rect   1  -0.04343 - 1.066   190 zeros #
-
-# Native 2  -0.04343 - 1.066   193 zeros # Match
-# Rect   2  -0.04343 - 1.174   190 zeros # Except along the domain boundaries
-
-#w/aux grid
-
-# Native 1  0.004539 - 1.396   304 exited / 680 zeros # Match
-# Rect   1  0.004539 - 1.396   304 exited / 680 zeros # 
-
-# Native 2  0.004539 - 1.396   308 exited / 690 zeros # Match
-# Rect   2  0.004539 - 1.396   304 exited / 680 zeros #
-
-
-
-
-# LCS->IC single   domain - native mesh      - serial   - okay
-# LCS->IC single   domain - rectilinear grid - serial   - okay
-# LCS->IC multiple domain - native mesh      - serial   - okay
-# LCS->IC multiple domain - rectilinear grid - serial   - failed zero velocity
-
-# LCS->IC single   domain - native mesh      - parallel - okay
-# LCS->IC single   domain - rectilinear grid - parallel - okay
-# LCS->IC multiple domain - native mesh      - parallel - okay
-# LCS->IC multiple domain - rectilinear grid - parallel - failed in avtPICSFilter::InitializeLocators (fixed but failed like serial)
+# LCS->LC single   domain - native mesh      - parallel - okay
+# LCS->LC single   domain - rectilinear grid - parallel - okay
+# LCS->LC multiple domain - native mesh      - parallel - okay
+# LCS->LC multiple domain - rectilinear grid - parallel - failed in avtPICSFilter::InitializeLocators (fixed but failed like serial)
