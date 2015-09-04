@@ -223,18 +223,19 @@ avtPODICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
                << "  inactive ICs " << inactiveICs.size()
                << "  terminated ICs " << terminatedICs.size() << endl;
 
-        debug1 << "Proc " << PAR_Rank() <<  " domains: [ ";
+        std::ostringstream os;
 
         for (int i = 0; i < numDomains; i++)
         {
             BlockIDType d(i,0);
             if (OwnDomain(d))
             {
-                debug1 << i << " ";
+                os << i << " ";
             }
         }
 
-        debug1 << "]" << std::endl;
+        debug1 << "Proc " << PAR_Rank()
+               << "  domains: [ " << os.str() << " ]" << std::endl;
     }
 }
 
