@@ -108,7 +108,7 @@ for i in range(len(databases)):
      for k in range(len(aux_grid)):
         str="Testing auxiliary grid = %s" %(aux_grid_str[k])
         TestSection(str)
-        str="lcs_%s_%s_%s_IntegralCurve" %(databases[i], src_type_str[j], aux_grid_str[k])
+        str="lcs_%s_%s_%s_LimitCycle" %(databases[i], src_type_str[j], aux_grid_str[k])
         if (i==0 | (i==1 & j==1)):
            LCSAtts.auxiliaryGrid = aux_grid[k]  # TwoDim
            SetOperatorOptions(LCSAtts, 0)
