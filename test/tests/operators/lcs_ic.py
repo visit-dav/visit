@@ -25,9 +25,9 @@
 #   SaveWindow()
 #   return
 
-def TestSection(str):
-   str
-   return   
+#def TestSection(str):
+#   str
+#   return   
 
 #def Exit():
 #   return   
