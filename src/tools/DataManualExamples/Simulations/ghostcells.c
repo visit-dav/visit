@@ -411,6 +411,8 @@ void
 mess_up_ghost_coordinates(curvmesh_2d *m)
 {
 return;
+
+#if 0
     int i,j;
     for(j = 0; j < m->dims[1]-1-1; ++j)
         for(i = 0; i < m->dims[0]-1-1; ++i)
@@ -430,6 +432,7 @@ return;
                 }
             }
         }
+#endif
 }
 
 /******************************************************************************
