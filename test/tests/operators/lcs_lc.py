@@ -25,7 +25,8 @@
 #   SaveWindow()
 #   return
 
-#def TestSection(str):
+#def TestSection(tmpstr):
+#   tmpstr
 #   return   
 
 #def Exit():
@@ -92,8 +93,8 @@ TestSection("Basic FTLE function with limit cycle operator")
 
 for i in range(len(databases)):
   db=data_path("pics_test_data/%s.pics") %(databases[i])
-  str="Testing database = %s" %(db)
-  TestSection(str)
+  tmpstr="Testing database = %s" %(db)
+  TestSection(tmpstr)
   OpenDatabase(db)
   # Replace the database from before with this one as a new plot can
   # not be opened within the loop when using runtest. This issue is a
@@ -102,18 +103,18 @@ for i in range(len(databases)):
   #  DeleteAllPlots()
   #  AddPlot("Pseudocolor", "operators/LCS/velocity")
   for j in range(len(src_type)):
-     str="Testing sample source = %s" %(src_type_str[j])
-     TestSection(str)
+     tmpstr="Testing sample source = %s" %(src_type_str[j])
+     TestSection(tmpstr)
      LCSAtts.sourceType = src_type[j]  # NativeMesh, RegularGrid
      for k in range(len(aux_grid)):
-        str="Testing auxiliary grid = %s" %(aux_grid_str[k])
-        TestSection(str)
-        str="lcs_%s_%s_%s_LimitCycle" %(databases[i], src_type_str[j], aux_grid_str[k])
+        tmpstr="Testing auxiliary grid = %s" %(aux_grid_str[k])
+        TestSection(tmpstr)
+        tmpstr="lcs_%s_%s_%s_LimitCycle" %(databases[i], src_type_str[j], aux_grid_str[k])
         if (i==0 | (i==1 & j==1)):
            LCSAtts.auxiliaryGrid = aux_grid[k]  # TwoDim
            SetOperatorOptions(LCSAtts, 0)
            DrawPlots()
-           Test(str)
+           Test(tmpstr)
 
 Exit()
 
