@@ -43,12 +43,12 @@ for i in range(len(databases)):
   db=data_path("pics_test_data/%s.pics") %(databases[i])
   OpenDatabase(db)
   for j in range(len(algs)):
-     str="Varying time type with parallelization algorithm = %s" %(algs_strings[j])
-     TestSection(str)
+     tmpstr="Varying time type with parallelization algorithm = %s" %(algs_strings[j])
+     TestSection(tmpstr)
 
      for integrator_i in range(len(intg)) :
-       str="Varying integrator = %s (%d)" %(intg_strings[integrator_i], integrator_i)
-       TestSection(str)
+       tmpstr="Varying integrator = %s (%d)" %(intg_strings[integrator_i], integrator_i)
+       TestSection(tmpstr)
        
        for k in range(len(time_strings)):
          DeleteAllPlots()
@@ -103,7 +103,7 @@ for i in range(len(databases)):
          s.integrationType = intg[integrator_i]
          SetPlotOptions(s)
          DrawPlots()
-         str="pics_%s_%s_%s_%s" %(databases[i], algs_strings[j], intg_strings[integrator_i], time_strings[k])
-         Test(str)
+         tmpstr="pics_%s_%s_%s_%s" %(databases[i], algs_strings[j], intg_strings[integrator_i], time_strings[k])
+         Test(tmpstr)
 
 Exit()

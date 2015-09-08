@@ -25,7 +25,7 @@
 #   SaveWindow()
 #   return
 
-#def TestSection(str):
+#def TestSection(tmpstr):
 #   return
 
 #def Exit():
@@ -71,8 +71,8 @@ aux_grid_str=["NoAuxGrid", "2DAuxGrid"]
 TestSection("Basic FTLE function")
 for i in range(len(databases)):
   db=data_path("pics_test_data/%s.pics") %(databases[i])
-  str="Testing database = %s" %(db)
-  TestSection(str)
+  tmpstr="Testing database = %s" %(db)
+  TestSection(tmpstr)
   OpenDatabase(db)
   # Replace the database from before with this one as a new plot can
   # not be opened within the loop when using runtest. This issue is a
@@ -81,17 +81,17 @@ for i in range(len(databases)):
   #  DeleteAllPlots()
   #  AddPlot("Pseudocolor", "operators/LCS/velocity")
   for j in range(len(src_type)):
-     str="Testing sample source = %s" %(src_type_str[j])
-     TestSection(str)
+     tmpstr="Testing sample source = %s" %(src_type_str[j])
+     TestSection(tmpstr)
      LCSAtts.sourceType = src_type[j]  # NativeMesh, RegularGrid
      for k in range(len(aux_grid)):
-        str="Testing auxiliary grid = %s" %(aux_grid_str[k])
-        TestSection(str)
+        tmpstr="Testing auxiliary grid = %s" %(aux_grid_str[k])
+        TestSection(tmpstr)
         LCSAtts.auxiliaryGrid = aux_grid[k]  # None, TwoDim
         SetOperatorOptions(LCSAtts, 0)
         DrawPlots()
-        str="lcs_%s_%s_%s" %(databases[i], src_type_str[j], aux_grid_str[k])
-        Test(str)
+        tmpstr="lcs_%s_%s_%s" %(databases[i], src_type_str[j], aux_grid_str[k])
+        Test(tmpstr)
 
 
 
@@ -99,8 +99,8 @@ for i in range(len(databases)):
 LCSAtts.eigenComponent = LCSAtts.Smallest  # Smallest, Intermediate, Largest, PosShearVector, NegShearVector, PosLambdaShearVector, NegLambdaShearVector
 SetOperatorOptions(LCSAtts, 0)
 DrawPlots()
-str="lcs_%s_%s_%s_Smallest" %(databases[i], src_type_str[j], aux_grid_str[k])
-Test(str)
+tmpstr="lcs_%s_%s_%s_Smallest" %(databases[i], src_type_str[j], aux_grid_str[k])
+Test(tmpstr)
 
 
 
@@ -109,8 +109,8 @@ LCSAtts.cauchyGreenTensor = LCSAtts.Left  # Left, Right
 LCSAtts.eigenComponent = LCSAtts.Largest  # Smallest, Intermediate, Largest, PosShearVector, NegShearVector, PosLambdaShearVector, NegLambdaShearVector
 SetOperatorOptions(LCSAtts, 0)
 DrawPlots()
-str="lcs_%s_%s_%s_Left" %(databases[i], src_type_str[j], aux_grid_str[k])
-Test(str)
+tmpstr="lcs_%s_%s_%s_Left" %(databases[i], src_type_str[j], aux_grid_str[k])
+Test(tmpstr)
 
 
 
@@ -120,8 +120,8 @@ LCSAtts.cauchyGreenTensor = LCSAtts.Right  # Left, Right
 LCSAtts.eigenComponent = LCSAtts.Largest  # Smallest, Intermediate, Largest, PosShearVector, NegShearVector, PosLambdaShearVector, NegLambdaShearVector
 SetOperatorOptions(LCSAtts, 0)
 DrawPlots()
-str="lcs_%s_%s_%s_EigenValue" %(databases[i], src_type_str[j], aux_grid_str[k])
-Test(str)
+tmpstr="lcs_%s_%s_%s_EigenValue" %(databases[i], src_type_str[j], aux_grid_str[k])
+Test(tmpstr)
 
 
 Exit()
