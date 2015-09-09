@@ -18,12 +18,12 @@
 
 def ExprStrings():
     exprList = Expressions()
-    str = "Expressions:\n"
+    estr = "Expressions:\n"
     index = 1
     for expr in exprList:
-        str = str + "expression %d: %s = %s\n" % (index, expr[0], expr[1])
+        estr = estr + "expression %d: %s = %s\n" % (index, expr[0], expr[1])
         index = index + 1
-    return str
+    return estr
 
 TurnOnAllAnnotations()
 
