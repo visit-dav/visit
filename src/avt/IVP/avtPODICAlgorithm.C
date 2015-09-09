@@ -117,10 +117,6 @@ avtPODICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
     // domain boundaries do not get sent to mutliple processors.
     if( allSeedsSentToAllProcs )
     {
-        // Use a random number generator for the bidding - seed the
-        // generator differently using the processor rank.
-        srand( PAR_Rank() );
-
         // Sort the curves by their id so all processors are working on
         // the same curve at the same time.
         sort(ics.begin(), ics.end(), avtIntegralCurve::IDCompare);
@@ -154,33 +150,28 @@ avtPODICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
               else
                 delete ic;
             }
-            else 
+            else
             {
               // Check for the seed being on multiple processors.
-              while( count > 1 )
+              if( count > 1 )
               {
-                // If the seed is on the processor, make a bid for it.
-                // Otherwise set the bid to -1.
-                int bid = (goodSeed ? rand() : -1);
+                // If the seed belongs to the processor, pass its rank.
+                // The processor with the highest rank gets the seed.
+                
+                // Otherwise set the rank to -1 to exclude it.
+                int proc = (goodSeed ? PAR_Rank() : -1);
                 
                 // Get the max bid from all the processors.
-                int maxBid = UnifyMaximumValue( bid );
+                int maxProc = UnifyMaximumValue( proc );
                 
-                // The seed is good if the processor has the max bid.
-                goodSeed = (bid == maxBid);
-                
-                // Check for a seed still being on multiple processors. 
-                count = (int) goodSeed;
-                SumIntAcrossAllProcessors( count );
-                
-                // While unlikely two processors may generate the same
-                // bid so handle that case by trying again. POSSIBLE
-                // INFINITE LOOP - though unlikely.
+                // The seed is good only for the processor with the
+                // highest rank.
+                goodSeed = (proc == maxProc);
               }
 
-              // If the seed is still good (i.e. won the bidding) or is
-              // on one processor add it to the active list, otherwise
-              // delete it.
+              // If the seed is on one processor or is on the
+              // processor with the max rank add it to the active
+              // list, otherwise delete it.
               if( goodSeed )
               {
                 ic->originatingRank = rank;
