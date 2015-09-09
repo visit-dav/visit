@@ -75,11 +75,11 @@ DrawPlots()
 TimeSliderSetState(4)
 s = SILRestriction()
 if (s.UsesData(s.SetsInCategory("materials")[1])):
-   str="Material 1 got turned back on!  (incorrect)\n"
+   text="Material 1 got turned back on!  (incorrect)\n"
 else:
-   str="Material 1 was correctly left off.\n"
+   text="Material 1 was correctly left off.\n"
 
-TestText("sil6", str)
+TestText("sil6", text)
 Exit()
 
 

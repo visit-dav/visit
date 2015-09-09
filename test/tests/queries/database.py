@@ -174,8 +174,8 @@ def QueryMultiUcd3d():
     s = s + GetQueryOutputString()
     s = s + "\n"
     v = GetQueryOutputValue()
-    str = "Exts from vector are [%f-%f, %f-%f, %f-%f]\n" %(v[0], v[1], v[2], v[3], v[4], v[5])
-    s = s + str
+    estr = "Exts from vector are [%f-%f, %f-%f, %f-%f]\n" %(v[0], v[1], v[2], v[3], v[4], v[5])
+    s = s + estr
     Query("NumNodes")
     s = s + GetQueryOutputString()
     s = s + "\n"
