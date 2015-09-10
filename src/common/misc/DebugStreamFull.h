@@ -96,9 +96,10 @@ class MISC_API DebugStreamFull : public ostream
                   ~DebugStreamFull();
 
     bool           isenabled() const { return enabled; };
+    bool           isdecorated() const { return decorate; }
     void           open(const char *progname, bool, bool);
     void           close();
-    static void    Initialize(const char *, int, bool=true, bool=false, bool=false);
+    static void    Initialize(const char *, int, bool=true, bool=false, bool=false, bool=false);
   private:
     class DebugStreamBuf : public streambuf
     {
@@ -134,6 +135,8 @@ class MISC_API DebugStreamFull : public ostream
     int              level;
     // true if enabled
     bool             enabled;
+    // true if output should be decorated with __FILE__ and __LINE__
+    bool             decorate;
 };
 
 #endif
