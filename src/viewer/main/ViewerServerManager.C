@@ -274,11 +274,13 @@ ViewerServerManager::AddArguments(RemoteProxyBase *component,
     // Add arguments to the mdserver.
     if(GetViewerProperties()->GetDebugLevel() > 0)
     {
+        char const *bufferDebug = "b";
+        char const *decorateDebug = "d";
         char temp[10];
-        if (GetViewerProperties()->GetBufferDebug())
-            SNPRINTF(temp, 10, "%db", GetViewerProperties()->GetDebugLevel());
-        else
-            SNPRINTF(temp, 10, "%d", GetViewerProperties()->GetDebugLevel());
+        SNPRINTF(temp, 10, "%d%s%s",
+            GetViewerProperties()->GetDebugLevel(),
+            GetViewerProperties()->GetBufferDebug()?bufferDebug:"",
+            GetViewerProperties()->GetDecorateDebug()?decorateDebug:"");
         component->AddArgument("-debug");
         component->AddArgument(temp);
     }

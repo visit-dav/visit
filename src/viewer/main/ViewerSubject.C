@@ -2448,18 +2448,23 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         {
             int debugLevel = 1; 
             bool bufferDebug = false;
+            bool decorateDebug = false;
+
             if (i+1 < argc && isdigit(*(argv[i+1])))
                 debugLevel = atoi(argv[i+1]);
             else
                 cerr << "Warning: debug level not specified, assuming 1" << endl;
 
-            if (i+1 < argc && *(argv[i+1]+1) == 'b')
+            if (i+1 < argc && strchr(argv[i+1],'b'))
                bufferDebug = true;
+            if (i+1 < argc && strchr(argv[i+1],'d'))
+               decorateDebug = true;
 
             if (debugLevel > 0 && debugLevel < 6)
             {
                 GetViewerProperties()->SetDebugLevel(debugLevel);
                 GetViewerProperties()->SetBufferDebug(bufferDebug);
+                GetViewerProperties()->SetDecorateDebug(decorateDebug);
 
                 clientArguments.push_back(argv[i]);
                 clientArguments.push_back(argv[i+1]);

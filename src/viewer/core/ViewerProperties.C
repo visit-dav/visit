@@ -72,6 +72,7 @@ void ViewerProperties::Init()
     forceSSHTunneling = false;
     inExecute = false;
     inLaunch = false;
+    decorateDebug = false;
 
     ViewerProperties::SelectAll();
 }
@@ -117,6 +118,7 @@ void ViewerProperties::Copy(const ViewerProperties &obj)
     forceSSHTunneling = obj.forceSSHTunneling;
     inExecute = obj.inExecute;
     inLaunch = obj.inLaunch;
+    decorateDebug = obj.decorateDebug;
 
     ViewerProperties::SelectAll();
 }
@@ -297,7 +299,8 @@ ViewerProperties::operator == (const ViewerProperties &obj) const
             (bufferDebug == obj.bufferDebug) &&
             (forceSSHTunneling == obj.forceSSHTunneling) &&
             (inExecute == obj.inExecute) &&
-            (inLaunch == obj.inLaunch));
+            (inLaunch == obj.inLaunch) &&
+            (decorateDebug == obj.decorateDebug));
 }
 
 // ****************************************************************************
@@ -465,6 +468,7 @@ ViewerProperties::SelectAll()
     Select(ID_forceSSHTunneling,       (void *)&forceSSHTunneling);
     Select(ID_inExecute,               (void *)&inExecute);
     Select(ID_inLaunch,                (void *)&inLaunch);
+    Select(ID_decorateDebug,           (void *)&decorateDebug);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -637,6 +641,13 @@ ViewerProperties::SetInLaunch(bool inLaunch_)
 {
     inLaunch = inLaunch_;
     Select(ID_inLaunch, (void *)&inLaunch);
+}
+
+void
+ViewerProperties::SetDecorateDebug(bool decorateDebug_)
+{
+    decorateDebug = decorateDebug_;
+    Select(ID_decorateDebug, (void *)&decorateDebug);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -839,6 +850,12 @@ bool
 ViewerProperties::GetInLaunch() const
 {
     return inLaunch;
+}
+
+bool
+ViewerProperties::GetDecorateDebug() const
+{
+    return decorateDebug;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

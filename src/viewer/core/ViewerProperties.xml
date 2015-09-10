@@ -64,4 +64,7 @@
     <Field name="inLaunch" label="In Launch" type="bool">
        false
     </Field>
+    <Field name="decorateDebug" label="Decorate level 1 debug logs with __FILE__ and __LINE__" type="bool">
+       false
+    </Field>
   </Attribute>
