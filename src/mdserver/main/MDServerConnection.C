@@ -105,6 +105,8 @@
 #include <ParentProcess.h>
 #include <QuitRPC.h>
 #include <QuitRPCExecutor.h>
+#include <SaveSessionRPCExecutor.h>
+#include <RestoreSessionRPCExecutor.h>
 #include <SocketConnection.h>
 #include <TimingsManager.h>
 #include <Utility.h>
@@ -261,6 +263,9 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //    Brad Whitlock, Tue Jun 24 15:10:12 PDT 2008
 //    Pass in the MDServerApplication that owns this object.
 //
+//    David Camp, Thu Aug 27 09:25:33 PDT 2015
+//    Added new RPCs for remote save and load of session files.
+//
 // ****************************************************************************
 
 MDServerConnection::MDServerConnection(MDServerApplication *a, int *argc, 
@@ -358,6 +363,8 @@ MDServerConnection::MDServerConnection(MDServerApplication *a, int *argc,
     getDBPluginInfoRPCExecutor = new GetDBPluginInfoRPCExecutor(this, &mdstate->GetGetDBPluginInfoRPC());
     setMFileOpenOptionsRPCExecutor =
             new SetMFileOpenOptionsRPCExecutor(this, &mdstate->GetSetMFileOpenOptionsRPC());
+    saveSessionRPCExecutor = new SaveSessionRPCExecutor(this, &mdstate->GetGetSaveSessionRPC());
+    restoreSessionRPCExecutor = new RestoreSessionRPCExecutor(this, &mdstate->GetGetRestoreSessionRPC());
 
     // Indicate that the file list is not valid since we have not read
     // one yet.

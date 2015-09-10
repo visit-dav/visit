@@ -193,6 +193,9 @@ class SILAttributes;
 //    Brad Whitlock, Fri Aug 19 10:32:57 PDT 2011
 //    Expose ANY_STATE as a value that can be passed as a time state.
 //
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    Added Save and Restore Session file on remote host.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerFileServerImplementation : public ViewerServerManager
@@ -283,6 +286,13 @@ public:
                                          bool forgetPlugin);
     void                       CloseFile(const std::string &host,
                                          const std::string &database);
+
+    void                       SaveSession(const std::string &host, 
+                                           const std::string &filename,
+                                           const std::string &contents);
+    void                       RestoreSession(const std::string &host, 
+                                              const std::string &filename,
+                                              std::string &contents);
 
     bool                       IsDatabase(const std::string &fullname) const;
     stringVector               GetOpenDatabases() const;

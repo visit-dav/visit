@@ -1,5 +1,3 @@
-#ifndef QVIS_FILE_OPEN_DIALOG_H
-#define QVIS_FILE_OPEN_DIALOG_H
 /*****************************************************************************
 *
 * Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
@@ -37,79 +35,51 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <QvisFileOpenWindow.h>
+
+#ifndef _SAVESESSION_RPC_H_
+#define _SAVESESSION_RPC_H_
+#include <mdsrpc_exports.h>
+
+#include <VisItRPC.h>
+#include <string>
 
 // ****************************************************************************
-// Class: QvisFileOpenDialog
+// Class: SaveSessionRPC
 //
 // Purpose:
-//   This is a dialog version of the file open window.
+//   This RPC save session file on a remote file system.
 //
 // Notes:      
 //
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 15 13:28:12 PST 2006
+// Programmer: David Camp
+// Creation:   Tue Jul  7 07:56:12 PDT 2015
 //
 // Modifications:
-//   Brad Whitlock, Wed Apr  9 10:40:07 PDT 2008
-//   Made captions use QString.
-//
-//   Kathleen Bonnell, Fri May 13 14:20:19 PDT 2011
-//   Added getOpenFileNameWithFallbackPath, and added fallbackPath arg to
-//   delayedChangePath and getOpenFileNamEx.
-//
-//   David Camp, Thu Aug 27 09:40:00 PDT 2015
-//   Needed access to private functions for new Session dialog box.
 //
 // ****************************************************************************
 
-class QvisFileOpenDialog : public QvisFileOpenWindow
+class MDSERVER_RPC_API SaveSessionRPC : public BlockingRPC
 {
-    Q_OBJECT
 public:
-    static const int Accepted;
-    static const int Rejected;
+    SaveSessionRPC();
+    virtual ~SaveSessionRPC();
 
-    QvisFileOpenDialog(const QString &caption);
-    virtual ~QvisFileOpenDialog();
+    // Invokation method
+    void operator()(const std::string &_filename, const std::string &_contents);
 
-    // Blocking function to use the dialog to get a filename.
-    static QString getOpenFileName(const QString &initialFile, 
-                                   const QString &caption);
+    // Property selection methods
+    virtual void SelectAll();
 
-    static QString getOpenFileName(const QString &initialFile, 
-                                   const QString &filter,
-                                   const QString &caption);
-    static QString getOpenFileNameWithFallbackPath(const QString &initialFile, 
-                                   const QString &caption,
-                                   const QString &fallbackPath);
+    // Return name of object.
+    virtual const std::string TypeName() const;
 
-    int exec();
-    void setFilename(const QString &);
-    QString getFilename() const;
-signals:
-    void quitloop();
-private slots:
-    void accept();
-    void reject();
-    void changeThePath();
-    void userSelectedFile(const QString &s);
-protected:
-    void setResult(int);
-    int result() const;
-    void delayedChangePath(const QString &initialFile, const QString &fltr, const QString &fallbackPath);
-    void restoreHostPathFilter(const QString &host,
-                               const QString &path, const QString &filter);
-    QString getOpenFileNameEx(const QString &initialFile, const QString &filter,
-                              const QString &fallbacKPath = "");
-    void done(int r);
+    // Save session file to file system.
+    bool SaveSessionFile();
 
 private:
-    QString filename;
-    QString filter;
-    QString fallbackPath;
-    bool    in_loop;
-    int     _result;
+    std::string filename;
+    std::string sessionFile;
 };
 
 #endif
+

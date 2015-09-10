@@ -122,6 +122,7 @@
 #include <QvisFileInformationWindow.h>
 #include <QvisFileSelectionWindow.h>
 #include <QvisFileOpenWindow.h>
+#include <QvisSessionFileDialog.h>
 #include <QvisGlobalLineoutWindow.h>
 #include <QvisHelpWindow.h>
 #include <QvisHostProfileWindow.h>
@@ -1756,8 +1757,9 @@ QvisGUIApplication::FinalInitialization()
         }
 
         stringVector noFiles;
+        std::string host;
         // Load the initial session file.
-        RestoreSessionFile(sessionFile, noFiles);
+        RestoreSessionFile(sessionFile, noFiles, host);
         visitTimer->StopTimer(timeid, "stage 7 - RestoreSessionFile");
         }
         break;
@@ -2090,9 +2092,10 @@ QvisGUIApplication::Quit()
     // Save default restore session file.
     if(GetViewerState()->GetGlobalAttributes()->GetUserRestoreSessionFile())
     {
+        std::string host;
         QString restoreFile = GetUserVisItDirectory().c_str();
         restoreFile += "default_restore.session";
-        SaveSessionFile(restoreFile);
+        SaveSessionFile(restoreFile, host);
     }
 
     mainApp->quit();
@@ -3151,8 +3154,7 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(restoreSessionWithSources()), this, SLOT(RestoreSessionWithDifferentSources()));
     connect(mainWin, SIGNAL(saveSession()), this, SLOT(SaveSession()));
     connect(mainWin, SIGNAL(saveSessionAs()), this, SLOT(SaveSessionAs()));
-    connect(mainWin, SIGNAL(saveCrashRecoveryFile()), 
-           this, SLOT(SaveCrashRecoveryFile()));
+    connect(mainWin, SIGNAL(saveCrashRecoveryFile()), this, SLOT(SaveCrashRecoveryFile()));
     connect(mainWin, SIGNAL(updateVisIt()), this, SLOT(updateVisIt()));
 
     mainWin->ConnectMessageAttr(&message);
@@ -4498,6 +4500,9 @@ QvisGUIApplication::SetSessionNameInWindowTitle(const QString &filename)
 //   Brad Whitlock, Fri Mar  2 15:35:51 PST 2012
 //   Set the session name in the window title.
 //
+//   David Camp, Tue Aug  4 11:04:14 PDT 2015
+//   Added new ablitiy to save session files on remote host.
+//
 // ****************************************************************************
 
 void
@@ -4508,7 +4513,7 @@ QvisGUIApplication::SaveSession()
     else
     {
         ++sessionCount;
-        SaveSessionFile(sessionFile);
+        SaveSessionFile(sessionFile, sessionHost);
         UpdateSessionDir(sessionFile.toStdString());
 
         // Set the name of the session file that we saved.
@@ -4549,32 +4554,38 @@ QvisGUIApplication::SaveSession()
 //   Brad Whitlock, Fri Mar  2 15:35:51 PST 2012
 //   Set the session name in the window title.
 //
+//   David Camp, Tue Aug  4 11:04:14 PDT 2015
+//   Added new dialog to be able to save session files on remote host.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::SaveSessionAs()
 {
-    QString sessionExtension(".session");
-
     // Create the name of a VisIt session file to use.
     QString defaultFile;
-    defaultFile.sprintf("%svisit%04d", sessionDir.c_str(),
-                        sessionCount);
-    defaultFile += sessionExtension;
+    if(sessionHost.empty())
+        defaultFile.sprintf("%svisit%04d.session", sessionDir.c_str(), sessionCount);
+    else
+        defaultFile.sprintf("%s:%svisit%04d.session", sessionHost.c_str(), sessionDir.c_str(), sessionCount);
 
     // Get the name of the file that the user saved.
-    QString sFilter(tr("VisIt session") + QString(" (*") + sessionExtension + ")");
-    QString fileName = QFileDialog::getSaveFileName(mainWin,tr("Save Session File"), sessionDir.c_str(), sFilter);
+    QualifiedFilename qfilename;
+    QvisSessionFileDialog dlg("Save Session");
+    dlg.getFileName(QvisSessionFileDialog::SAVE_DLG, defaultFile, qfilename);
+
+    std::string filename = qfilename.PathAndFile();
 
     // If the user chose to save a file, tell the viewer to write its state
     // to that file.
-    if(!fileName.isNull())
+    if(!filename.empty())
     {
-        sessionFile = fileName;  // Save the name for saving later.
-
+        sessionFile = QString(filename.c_str());  // Save the name for saving later.
+        sessionHost = qfilename.host;
         ++sessionCount;
-        SaveSessionFile(fileName);
-        UpdateSessionDir(fileName.toStdString());
+
+        SaveSessionFile(sessionFile, qfilename.host);
+        UpdateSessionDir(filename);
 
         // Set the name of the session file that we saved.
         SetSessionNameInWindowTitle(sessionFile);
@@ -4597,10 +4608,13 @@ QvisGUIApplication::SaveSessionAs()
 //   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
 //   Use '.session' on windows, too. 
 //   
+//   David Camp, Tue Aug  4 11:04:14 PDT 2015
+//   Added new dialog to be able to save session files on remote host.
+//
 // ****************************************************************************
 
 QString
-QvisGUIApplication::SaveSessionFile(const QString &fileName)
+QvisGUIApplication::SaveSessionFile(const QString &fileName, const std::string &hostname)
 {
     QString sessionExtension(".session");
 
@@ -4610,12 +4624,23 @@ QvisGUIApplication::SaveSessionFile(const QString &fileName)
         sessionName += sessionExtension;
 
     // Tell the viewer to save a session file.
-    GetViewerMethods()->ExportEntireState(sessionName.toStdString());
+    GetViewerMethods()->ExportEntireState(sessionName.toStdString(), hostname);
 
     // Write the gui part of the session with a ".gui" extension.
     QString retval(sessionName);
     sessionName += ".gui";
-    WriteConfigFile(sessionName.toStdString().c_str());
+
+    if(hostname.empty() || hostname == "localhost")
+    {
+        WriteConfigFile(sessionName.toStdString().c_str());
+    }
+    else
+    {
+        // Create stream of session and send to mdserver to save on host.
+        std::ostringstream sessionGUI;
+        WriteConfigFile(sessionGUI);
+        fileServer->SaveSessionFile(hostname, sessionName.toStdString().c_str(), sessionGUI.str());
+    }
 
     return retval;
 }
@@ -4838,23 +4863,26 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
 //   Kathleen Bonnell, Fri Jun 18 15:15:11 MST 2010 
 //   Search for '.session' on windows. Keep .vses for loading older sessions.
 //   
+//   David Camp, Tue Aug  4 11:04:14 PDT 2015
+//   Added new ablitiy to load session files from a remote host.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::RestoreSession()
 {
+    QualifiedFilename qfilename;
+
     // Get the name of the session to load.
-    QString s(QFileDialog::getOpenFileName(mainWin,tr("Open VisIt Session File"),
-                                           sessionDir.c_str(),
-#if defined(_WIN32)
-              "VisIt session (*.session *.vses)"));
-#else
-              "VisIt session (*.session)"));
-#endif
+    QvisSessionFileDialog dlg(tr("Open VisIt Session File"));
+    dlg.getFileName(QvisSessionFileDialog::OPEN_DLG, "", qfilename);
+
+    QString s = qfilename.PathAndFile().c_str();
+    sessionHost = qfilename.host;
 
     // Restore the session.
     stringVector noSources;
-    RestoreSessionFile(s, noSources);
+    RestoreSessionFile(s, noSources, qfilename.host);
     if ( !s.isNull() )
     {
         UpdateSessionDir(s.toStdString());
@@ -4894,19 +4922,22 @@ QvisGUIApplication::RestoreSession()
 //   Kathleen Bonnell, Fri May 13 14:05:11 PDT 2011
 //   Set fallbackPath of srcChanger to sessionDir.
 //
+//   David Camp, Tue Aug  4 11:04:14 PDT 2015
+//   Added new ablitiy to load session files from a remote host.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::RestoreSessionWithDifferentSources()
 {
+    QualifiedFilename qfilename;
+
     // Get the name of the session to load.
-    QString s(QFileDialog::getOpenFileName(mainWin,tr("Open VisIt Session File"),
-                                           sessionDir.c_str(),
-#if defined(_WIN32)
-              "VisIt session (*.session *.vses)"));
-#else
-              "VisIt session (*.session)"));
-#endif
+    QvisSessionFileDialog dlg(tr("Open VisIt Session File"));
+    dlg.getFileName(QvisSessionFileDialog::OPEN_DLG, "", qfilename);
+
+    QString s = qfilename.PathAndFile().c_str();
+    sessionHost = qfilename.host;
 
     // If the user chose a valid filename then try to replace its sources.
     if(!s.isNull())
@@ -4931,7 +4962,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
                 // restore the session.
                 if(srcChanger->exec() == QDialog::Accepted)
                 {
-                    RestoreSessionFile(s, srcChanger->getSources());
+                    RestoreSessionFile(s, srcChanger->getSources(), qfilename.host);
                 }
 
                 delete srcChanger;
@@ -4946,7 +4977,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
                     "session with a newer version of VisIt.").arg(s);
                 Warning(warn);
                 stringVector noSources;
-                RestoreSessionFile(s, noSources);
+                RestoreSessionFile(s, noSources, qfilename.host);
             }
         }
         else
@@ -4954,7 +4985,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
             // We could not read the config file. Don't sweat it just yet.
             // Restore the session the normal way.
             stringVector noSources;
-            RestoreSessionFile(s, noSources);
+            RestoreSessionFile(s, noSources, qfilename.host);
         }
     }
 
@@ -5016,11 +5047,15 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
 //   Brad Whitlock, Fri Mar  2 15:31:41 PST 2012
 //   Add the name of the open session file in the main window's caption.
 //
+//   David Camp, Tue Aug  4 11:04:14 PDT 2015
+//   Added new ablitiy to load session files from a remote host.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::RestoreSessionFile(const QString &s,
-                                       const stringVector &sources)
+                                       const stringVector &sources,
+                                       const std::string &host)
 {
     // If the user chose a file, tell the viewer to import that session file.
     if(!s.isEmpty())
@@ -5033,7 +5068,20 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
         // Make the gui read in its part of the config.
         std::string guifilename(filename);
         guifilename += ".gui";
-        DataNode *node = ReadConfigFile(guifilename.c_str());
+        DataNode *node;
+        if(host.empty() || host == "localhost")
+        {
+            node = ReadConfigFile(guifilename.c_str());
+        }
+        else
+        {
+            std::istringstream sessionGUI;
+            std::string sessionGUIStr;
+
+            fileServer->RestoreSessionFile(host, guifilename, sessionGUIStr);
+            sessionGUI.str( sessionGUIStr );
+            node = ReadConfigFile(sessionGUI);
+        }
 
         // If the file could not be opened then try and prepend the
         // VisIt directory to it.
@@ -5052,6 +5100,38 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
         }
 #endif
 
+        ProcessSessionNode(node, filename, sources, host);
+
+        // Set the name of the session file that we loaded.
+        SetSessionNameInWindowTitle(sessionFile);
+
+        restoringSession = false;
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisGUIApplication::ProcessSessionNode
+//
+// Purpose: 
+//   Process the Session xml node.
+//
+// Arguments:
+//   s       : The name of the session file to restore.
+//   sources : The list of sources to use when restoring the session. If this
+//             is an empty vector then the session file loader will use the
+//             list of sources in the GUI part of the session file.
+//
+// Programmer: David Camp
+// Creation:   Mon Jul 20 02:21:50 PDT 2015
+//
+// Modifications:
+// ****************************************************************************
+
+void
+QvisGUIApplication::ProcessSessionNode(DataNode *node, const std::string &filename, 
+                                       const stringVector &sources, const std::string &hostname)
+{
         if(node)
         {
             ProcessConfigSettings(node, false);
@@ -5136,7 +5216,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
                         else
                         {
                             // If there are no plots, we still need to restore
-                            GetViewerMethods()->ImportEntireState(filename, false);
+                            GetViewerMethods()->ImportEntireState(filename, false, hostname);
                         }
                     }
                 }
@@ -5150,14 +5230,8 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
             // pass the inVisItDir flag as false because we don't want to have
             // the viewer prepend the .visit directory to the file since it's
             // already part of the filename.
-            GetViewerMethods()->ImportEntireState(filename, false);
+            GetViewerMethods()->ImportEntireState(filename, false, hostname);
         }
-
-        // Set the name of the session file that we loaded.
-        SetSessionNameInWindowTitle(sessionFile);
-
-        restoringSession = false;
-    }
 }
 
 // ****************************************************************************
@@ -5211,7 +5285,7 @@ QvisGUIApplication::sessionFileHelper_LoadSession(const QString &filename)
     // pass the inVisItDir flag as false because we don't want to have
     // the viewer prepend the .visit directory to the file since it's
     // already part of the filename.
-    GetViewerMethods()->ImportEntireState(filename.toStdString(), false);
+    GetViewerMethods()->ImportEntireState(filename.toStdString(), false, sessionHost);
 }
 
 // ****************************************************************************
@@ -5243,7 +5317,7 @@ QvisGUIApplication::sessionFileHelper_LoadSessionWithDifferentSources(
     // the viewer prepend the .visit directory to the file since it's
     // already part of the filename.
     GetViewerMethods()->ImportEntireStateWithDifferentSources(filename.toStdString(),
-        false, sources);
+        false, sources, sessionHost);
 }
 
 // ****************************************************************************
@@ -7540,7 +7614,8 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
         fileName += ".session";
 
         // Tell the viewer to save a session file.
-        GetViewerMethods()->ExportEntireState(fileName.toStdString());
+        std::string hostname;
+        GetViewerMethods()->ExportEntireState(fileName.toStdString(), hostname);
 
         // Write the gui part of the session with a ".gui" extension.
         QString gfileName(fileName + ".gui");
@@ -8529,7 +8604,10 @@ QvisGUIApplication::SaveMovieMain()
             // Save the current session.
             QString msg, sessionFile;
             if(movieAtts->GetMovieType() == MovieAttributes::Simple)
-                sessionFile = SaveSessionFile(sessionName);
+            {
+                std::string host;
+                sessionFile = SaveSessionFile(sessionName, host);
+            }
             bool errFlag = false;
 
             // Get the command line arguments.
@@ -8737,9 +8815,10 @@ QvisGUIApplication::RestoreCrashRecoveryFile()
         if(btn == QMessageBox::Yes)
         {
             stringVector files;
+            std::string host;
             debug1 << "Restoring a crash recovery file: "
                    << filename.toStdString() << endl;
-            RestoreSessionFile(filename, files);
+            RestoreSessionFile(filename, files, host);
 
             sessionFile = QString(""); // Make sure the session file name is
             // null as it was used for the recovery which forces a
@@ -8813,12 +8892,13 @@ QvisGUIApplication::RemoveCrashRecoveryFile(bool removeViewerFile) const
 void
 QvisGUIApplication::SaveCrashRecoveryFile()
 {
+    std::string blank;
     debug1 << "Saving crash recovery file: "
           << CrashRecoveryFile().toStdString() << endl;
     // we dont want to bug the user with info about the crash recovery
     // session being created, so suppress viewer messages.
     GetViewerMethods()->SetSuppressMessages(true);
-    SaveSessionFile(CrashRecoveryFile());
+    SaveSessionFile(CrashRecoveryFile(), blank);
     Synchronize(CLEAR_STATUS_TAG);
     GetViewerMethods()->SetSuppressMessages(false);
 }

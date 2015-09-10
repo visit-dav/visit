@@ -807,3 +807,52 @@ MDServerMethods::FileEntry::LessThan(const MDServerMethods::FileEntry &f1,
     else
         return (f1.name < f2.name);
 }
+
+// ****************************************************************************
+// Method: MDServerMethods::SaveSession
+//
+// Purpose:
+//   Save Session file.
+//
+// Arguments:
+//   filename : Session file name.
+//   contents : Contents of session file.
+//
+// Programmer: David Camp
+// Creation:   Thu Aug 27 09:25:33 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+MDServerMethods::SaveSession(const std::string &filename, 
+                             const std::string &contents)
+{
+    state->saveSessionRPC(filename, contents);
+}
+
+// ****************************************************************************
+// Method: MDServerMethods::RestoreSession
+//
+// Purpose:
+//   Restore Session file.
+//
+// Arguments:
+//   filename : Session file name.
+//   contents : Contents of session file.
+//
+// Programmer: David Camp
+// Creation:   Thu Aug 27 09:25:33 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+MDServerMethods::RestoreSession(const std::string &filename, 
+                                      std::string &contents)
+{
+    state->restoreSessionRPC(filename, contents);
+}
+

@@ -72,6 +72,10 @@
 //   Brad Whitlock, Mon Jul 14 11:38:44 PDT 2008
 //   Changed inheritance and moved some methods to base class.
 //
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    Added filename field if set to show. This is used by the Session dialog.
+//    Also a flag to hide some fields not needed by the Session dialog
+//
 // ****************************************************************************
 
 class GUI_API QvisFileOpenWindow : public QvisFileWindowBase
@@ -92,6 +96,10 @@ public:
     } UsageMode;
 
     void SetUsageMode(UsageMode m);
+
+    void SetHideFileFormat(bool value);
+    void SetShowFilename(bool value);
+
 signals:
     void selectedFile(const QString &);
     void selectCancelled();
@@ -114,6 +122,7 @@ private slots:
 
     void setDefaultOptionsForFormatButtonClicked();
     void fileFormatChanged(const QString&);
+    void filenameEditChanged(const QString &text);
 private:
     DBPluginInfoAttributes *dbplugins;
     UsageMode               usageMode;
@@ -124,6 +133,13 @@ private:
     QPushButton     *cancelButton;
     QComboBox       *fileFormatComboBox;
     QPushButton     *setDefaultOptionsForFormatButton;
+
+    // If true it will hide the fileFormatComboBox and setDefaultOptionsForFormatButton.
+    // Used for the session dialog to load and save session files.
+    bool             hideFileFormat;
+    // Flag to show or hide the filename. Used for save session file dialog.
+    bool             showFilename;
+    QLineEdit        *filenameEdit;
 };
 
 #endif

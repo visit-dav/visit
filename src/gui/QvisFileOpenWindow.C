@@ -100,6 +100,9 @@ QvisFileOpenWindow::QvisFileOpenWindow(const QString &winCaption) :
     QvisFileWindowBase(winCaption)
 {
     usageMode = OpenFiles;
+    hideFileFormat = false;
+
+    showFilename = false;
 }
 
 // ****************************************************************************
@@ -148,6 +151,29 @@ QvisFileOpenWindow::SetUsageMode(QvisFileOpenWindow::UsageMode m)
 }
 
 // ****************************************************************************
+// Method: QvisFileOpenWindow::SetHideFileFormat
+//
+// Purpose:
+//   Sets the flag to hide the data file gui options.
+//
+// Arguments:
+//   value : flag to show or hide data file gui options.
+//
+// Programmer: David Camp
+// Creation:   Thu Aug  6 09:05:15 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFileOpenWindow::SetHideFileFormat(bool value)
+{
+    hideFileFormat = value;
+}
+
+
+// ****************************************************************************
 // Method: QvisFileOpenWindow::CreateWindowContents
 //
 // Purpose: 
@@ -181,12 +207,32 @@ QvisFileOpenWindow::SetUsageMode(QvisFileOpenWindow::UsageMode m)
 //   Brad Whitlock, Fri Jan 11 15:56:08 PST 2013
 //   Pass central to the progress callback on newer Qt's.
 //
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    Added a filename field if showFilename is true. For Session dialog.
+//    Also hide files if Session dialog.
+//
 // ****************************************************************************
 
 void
 QvisFileOpenWindow::CreateWindowContents()
 {  
     CreateHostPathFilterControls();
+
+    if(showFilename)
+    {
+        QGridLayout *pathLayout = new QGridLayout();
+        topLayout->addLayout(pathLayout);
+        pathLayout->setSpacing(10);
+
+        // Create the filename
+        filenameEdit = new QLineEdit(central);
+        connect(filenameEdit, SIGNAL(returnPressed()), this, SLOT(okClicked()));
+        connect(filenameEdit, SIGNAL(textChanged(const QString &)), this, SLOT(filenameEditChanged(const QString &)));
+        QLabel *filenameLabel = new QLabel(tr("Filename"), central);
+        pathLayout->addWidget(filenameLabel, 3, 0, Qt::AlignRight);
+        pathLayout->addWidget(filenameEdit, 3, 1);
+    }
+
 
     // Add a grid layout for the file and directory lists.
     QSplitter *listSplitter = new QSplitter(central);
@@ -235,10 +281,12 @@ QvisFileOpenWindow::CreateWindowContents()
             this, SLOT(selectFileChanged()));
     fileList->installEventFilter(this);
     listSplitter->addWidget(fileWidget);
+
     // Create the file format combo box
     QHBoxLayout *fileFormatLayout = new QHBoxLayout();
     topLayout->addLayout(fileFormatLayout);
-    fileFormatLayout->addWidget(new QLabel(tr("Open file as type:")));
+    QLabel *openFileAsTypeLabel = new QLabel(tr("Open file as type:"));
+    fileFormatLayout->addWidget(openFileAsTypeLabel);
     fileFormatComboBox = new QComboBox(central);
     fileFormatLayout->addWidget(fileFormatComboBox, 10);
     setDefaultOptionsForFormatButton = new QPushButton(
@@ -250,6 +298,12 @@ QvisFileOpenWindow::CreateWindowContents()
             this, SLOT(fileFormatChanged(const QString&)));
     connect(setDefaultOptionsForFormatButton, SIGNAL(clicked()),
             this, SLOT(setDefaultOptionsForFormatButtonClicked()));
+    if(hideFileFormat)
+    {
+        openFileAsTypeLabel->hide();
+        fileFormatComboBox->hide();
+        setDefaultOptionsForFormatButton->hide();
+    }
 
     // create the lower button layout
     QHBoxLayout *buttonLayout = new QHBoxLayout();
@@ -495,26 +549,41 @@ QvisFileOpenWindow::ConnectSubjects(HostProfileList *hpl,
 //   Brad Whitlock, Mon Oct 11 16:26:08 PDT 2010
 //   Don't open the file if you're just selecting a filename.
 //
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    If showFilename is true, then we just want a single filename.
+//    Added for session dialog.
+//
 // ****************************************************************************
 
 void
 QvisFileOpenWindow::okClicked()
 {
-    // Add all the selected files to the intermediate file list.
     QualifiedFilename emitFile;
-    for (int i = 0; i < fileList->count(); ++i)
+
+    if( showFilename )
     {
-        if (!fileList->item(i)->isSelected())
-            continue;
+        emitFile.host = fileServer->GetHost();
+        emitFile.path = fileServer->GetPath();
+        emitFile.filename  = filenameEdit->text().toStdString();
+        emitFile.separator = fileServer->GetSeparator();
+    }
+    else
+    {
+        // Add all the selected files to the intermediate file list.
+        for (int i = 0; i < fileList->count(); ++i)
+        {
+            if (!fileList->item(i)->isSelected())
+                continue;
 
-        // Add the file to the list if it's not in it.
-        QualifiedFilename fn(DecodeQualifiedFilename(fileList->item(i)->
-            data(Qt::UserRole)));
-        AddFile(fn);
+            // Add the file to the list if it's not in it.
+            QualifiedFilename fn(DecodeQualifiedFilename(fileList->item(i)->
+                data(Qt::UserRole)));
+            AddFile(fn);
 
-        // Save the name of the first file.
-        if(emitFile.Empty())
-            emitFile = fn;
+            // Save the name of the first file.
+            if(emitFile.Empty())
+                emitFile = fn;
+        }
     }
 
     // If we selected a file, open it.
@@ -632,12 +701,20 @@ QvisFileOpenWindow::cancelClicked()
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    If showFilename is true, then set the filename field.
+//    Added for session dialog.
 //
 // ****************************************************************************
 
 void
 QvisFileOpenWindow::selectFileDblClick(QListWidgetItem *item) 
 {
+    if( showFilename )
+    {
+        filenameEdit->setText(fileList->currentItem()->text());
+    }
+
     // Make this do an Open action instead of a Select action
     okClicked();
 }
@@ -661,6 +738,10 @@ QvisFileOpenWindow::selectFileDblClick(QListWidgetItem *item)
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
 //
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    If showFilename is true, then set the filename field.
+//    Added for session dialog.
+//
 // ****************************************************************************
 void
 QvisFileOpenWindow::selectFileChanged(void)
@@ -668,10 +749,21 @@ QvisFileOpenWindow::selectFileChanged(void)
     // Count the number of selected files
     int count = 0;
     for(int i = 0; i < fileList->count(); ++i)
+    {
         if(fileList->item(i)->isSelected())
-            count++;
+        {
+            count = 1;
+            if(showFilename)
+            {
+                hideFileFormat = false;
+                filenameEdit->setText(fileList->currentItem()->text());
+                hideFileFormat = true;
+            }
+            break;
+        }
+    }
 
-    if (count >= 1)
+    if (count)
         okButton->setEnabled(true);
     else
         okButton->setEnabled(false);
@@ -880,3 +972,53 @@ QvisFileOpenWindow::eventFilter(QObject *o, QEvent *e)
     }
     return false;
 }
+
+// ****************************************************************************
+//  Method:  QvisFileOpenWindow::SetShowFilename
+//
+//  Purpose:
+//    Set flag to show filename field
+//
+//  Arguments:
+//    value     bool value true to show. Default is false
+//
+//  Programmer:  David Camp
+//  Creation:    Thu Aug 27 09:40:00 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFileOpenWindow::SetShowFilename(bool value)
+{
+    showFilename = value;
+}
+
+// ****************************************************************************
+//  Method:  QvisFileOpenWindow::filenameEditChanged
+//
+//  Purpose:
+//    Signal for the filename field if the user changes the text.
+//
+//  Arguments:
+//    text     new text in field.
+//
+//  Programmer:  David Camp
+//  Creation:    Thu Aug 27 09:40:00 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+QvisFileOpenWindow::filenameEditChanged(const QString &text)
+{
+    if(hideFileFormat)
+        fileList->clearSelection();
+    if(text.isEmpty())
+        okButton->setEnabled(false);
+    else
+        okButton->setEnabled(true);
+}
+

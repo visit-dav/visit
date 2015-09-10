@@ -64,6 +64,8 @@ class SILAttributes;
 
 //
 // Modifications:
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    Added Save and Restore Session functions, for remote host functionality.
 //
 // ****************************************************************************
 
@@ -157,6 +159,13 @@ public:
 
     virtual bool                       IsDatabase(const std::string &fullname) = 0;
     virtual stringVector               GetOpenDatabases() = 0;
+
+    virtual void                       SaveSession(const std::string &host,
+                                                   const std::string &filename,
+                                                   const std::string &sessionFile) = 0;
+    virtual void                       RestoreSession(const std::string &host,
+                                                      const std::string &filename,
+                                                      std::string &sessionFile) = 0;
 
 public:
     // *************************************************************************

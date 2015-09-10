@@ -1,5 +1,3 @@
-#ifndef QVIS_FILE_OPEN_DIALOG_H
-#define QVIS_FILE_OPEN_DIALOG_H
 /*****************************************************************************
 *
 * Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
@@ -37,79 +35,72 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <QvisFileOpenWindow.h>
+
+#include <RestoreSessionRPCExecutor.h>
+#include <MDServerConnection.h>
 
 // ****************************************************************************
-// Class: QvisFileOpenDialog
+// Method: RestoreSessionRPCExecutor::RestoreSessionRPCExecutor
 //
-// Purpose:
-//   This is a dialog version of the file open window.
+// Purpose: 
+//   Constructor for the RestoreSessionRPCExecutor class.
 //
-// Notes:      
+// Arguments:
+//   parent_ : A pointer to the object that created this RPC executor.
+//   s       : A pointer to the rpc that invokes this executor.
 //
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 15 13:28:12 PST 2006
+// Programmer: David Camp
+// Creation:   Tue Jul  7 07:56:12 PDT 2015
 //
 // Modifications:
-//   Brad Whitlock, Wed Apr  9 10:40:07 PDT 2008
-//   Made captions use QString.
+//   
+// ****************************************************************************
+
+RestoreSessionRPCExecutor::RestoreSessionRPCExecutor(
+    MDServerConnection *parent_, Subject *s) : Observer(s)
+{
+    parent = parent_;
+}
+
+// ****************************************************************************
+// Method: RestoreSessionRPCExecutor::~RestoreSessionRPCExecutor
 //
-//   Kathleen Bonnell, Fri May 13 14:20:19 PDT 2011
-//   Added getOpenFileNameWithFallbackPath, and added fallbackPath arg to
-//   delayedChangePath and getOpenFileNamEx.
+// Purpose: 
+//   Destructor for the RestoreSessionRPCExecutor class.
 //
-//   David Camp, Thu Aug 27 09:40:00 PDT 2015
-//   Needed access to private functions for new Session dialog box.
+// Programmer: David Camp
+// Creation:   Tue Jul  7 07:56:12 PDT 2015
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+RestoreSessionRPCExecutor::~RestoreSessionRPCExecutor()
+{
+}
+
+// ****************************************************************************
+// Method: RestoreSessionRPCExecutor::Update
+//
+// Purpose: 
+//   Restore session file on remote server.
+//
+// Arguments:
+//   s : A pointer to the RestoreSessionRPC that caused this method to be called.
+//
+// Programmer: David Camp
+// Creation:   Tue Jul  7 07:56:12 PDT 2015
+//
+// Modifications:
 //
 // ****************************************************************************
 
-class QvisFileOpenDialog : public QvisFileOpenWindow
+void
+RestoreSessionRPCExecutor::Update(Subject *s)
 {
-    Q_OBJECT
-public:
-    static const int Accepted;
-    static const int Rejected;
+    RestoreSessionRPC *rpc = (RestoreSessionRPC *)s;
 
-    QvisFileOpenDialog(const QString &caption);
-    virtual ~QvisFileOpenDialog();
+    // If RestoreSessionFile fails it will send an error message, so don't reply here.
+    rpc->RestoreSessionFile();
+}
 
-    // Blocking function to use the dialog to get a filename.
-    static QString getOpenFileName(const QString &initialFile, 
-                                   const QString &caption);
-
-    static QString getOpenFileName(const QString &initialFile, 
-                                   const QString &filter,
-                                   const QString &caption);
-    static QString getOpenFileNameWithFallbackPath(const QString &initialFile, 
-                                   const QString &caption,
-                                   const QString &fallbackPath);
-
-    int exec();
-    void setFilename(const QString &);
-    QString getFilename() const;
-signals:
-    void quitloop();
-private slots:
-    void accept();
-    void reject();
-    void changeThePath();
-    void userSelectedFile(const QString &s);
-protected:
-    void setResult(int);
-    int result() const;
-    void delayedChangePath(const QString &initialFile, const QString &fltr, const QString &fallbackPath);
-    void restoreHostPathFilter(const QString &host,
-                               const QString &path, const QString &filter);
-    QString getOpenFileNameEx(const QString &initialFile, const QString &filter,
-                              const QString &fallbacKPath = "");
-    void done(int r);
-
-private:
-    QString filename;
-    QString filter;
-    QString fallbackPath;
-    bool    in_loop;
-    int     _result;
-};
-
-#endif

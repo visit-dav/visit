@@ -5373,8 +5373,9 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         for(int i = 0; i < 10; ++i)
             sources.push_back(db);
 
+        std::string hostname;
         GetViewerMethods()->
-            ImportEntireStateWithDifferentSources(s[1], false, sources);
+            ImportEntireStateWithDifferentSources(s[1], false, sources, hostname);
     }
     else if(command.substr(0,7) == "AddPlot")
     {

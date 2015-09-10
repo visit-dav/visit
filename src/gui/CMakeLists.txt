@@ -116,6 +116,7 @@ QvisExpressionsWindow.C
 QvisFileInformationWindow.C
 QvisFileOpenDialog.C
 QvisFileOpenWindow.C
+QvisSessionFileDialog.C
 QvisFilePanel.C
 QvisFilePanelItem.C
 QvisFileSelectionWindow.C
