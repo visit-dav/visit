@@ -237,6 +237,10 @@ NewHandler(void)
 //    Tom Fogal, Wed Sep 28 13:40:21 MDT 2011
 //    Fix a UMR that valgrind complained about.
 //
+//    Mark C. Miller, Thu Sep 10 11:07:15 PDT 2015
+//    Added logic to manage decoration of level 1 debug logs with __FILE__
+//    and __LINE__; an extra 'd' in debug level arg will turn on these log
+//    decorations.
 // ****************************************************************************
 
 void
@@ -254,6 +258,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
     bool usePid = false;
 #endif
     bool bufferDebug = false;
+    bool decorateDebug1 = false;
     bool clobberVlogs = false;
     bool vtk_debug = false;
     bool enableTimings = false;
@@ -306,8 +311,10 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
                     cerr << "Warning: clamping debug level to 0\n";
                     debuglevel = 0;
                 }
-                if (i+1 < argc && *(argv[i+1]+1) == 'b')
+                if (i+1 < argc && strchr(argv[i+1],'b'))
                     bufferDebug = true;
+                if (i+1 < argc && strchr(argv[i+1],'d'))
+                    decorateDebug1 = true;
 
                 if(strip)
                 {
@@ -420,7 +427,8 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
 
     // Initialize the debug streams and also add the command line arguments
     // to the debug logs.
-    DebugStreamFull::Initialize(progname, debuglevel, sigs, clobberVlogs, bufferDebug);
+    DebugStreamFull::Initialize(progname, debuglevel, sigs, clobberVlogs,
+        bufferDebug, decorateDebug1);
     ostringstream oss;
     for(i = 0; i < argc; ++i)
         oss << argv[i] << " ";

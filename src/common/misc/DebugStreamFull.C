@@ -71,7 +71,17 @@ bool DebugStream::Level3() { return debug3_realobj.isenabled(); };
 bool DebugStream::Level4() { return debug4_realobj.isenabled(); };
 bool DebugStream::Level5() { return debug5_realobj.isenabled(); };
 
-ostream& DebugStream::Stream1() { return *((ostream*) &debug1_realobj); };
+ostream& DebugStream::Stream1(char const *__file__, int __line__)
+{
+    if (debug1_realobj.isdecorated() && __file__)
+    {
+        *((ostream*) &debug1_realobj) << __file__;
+        if (debug1_realobj.isdecorated() && __line__ > -1)
+            *((ostream*) &debug1_realobj) << ":" << __line__;
+        *((ostream*) &debug1_realobj) << " ";
+    }
+    return *((ostream*) &debug1_realobj);
+};
 ostream& DebugStream::Stream2() { return *((ostream*) &debug2_realobj); };
 ostream& DebugStream::Stream3() { return *((ostream*) &debug3_realobj); };
 ostream& DebugStream::Stream4() { return *((ostream*) &debug4_realobj); };
@@ -472,6 +482,7 @@ DebugStreamFull::DebugStreamFull(int level_) : ostream(new DebugStreamBuf)
     buf = (DebugStreamBuf*)(rdbuf());
     buf->SetLevel(level);
     enabled = false;
+    decorate = false;
 }
 
 
@@ -662,7 +673,7 @@ DebugStreamFull::close()
 
 void
 DebugStreamFull::Initialize(const char *progname, int debuglevel, bool sigs,
-    bool clobber, bool buffer_debug)
+    bool clobber, bool buffer_debug, bool _decorate)
 {
     switch (debuglevel)
     {
@@ -679,6 +690,7 @@ DebugStreamFull::Initialize(const char *progname, int debuglevel, bool sigs,
       default:
         break;
     }
+    debug1_realobj.decorate = _decorate;
 
     if (sigs)
     {
