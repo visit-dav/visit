@@ -47,6 +47,7 @@ class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
+class QSixCharLineEdit;
 class QPushButton;
 class QSlider;
 class SaveWindowAttributes;
@@ -101,6 +102,9 @@ class QvisOpacitySlider;
 //   Kathleen Biagas, Wed Jan  7 12:39:12 PST 2015
 //   Added dismissOnSave flag, dismissAndSaveButtonClicked slot.
 //
+//   Eric Brugger, Mon Aug 31 10:29:30 PDT 2015
+//   I overhauled the window.
+//
 // ****************************************************************************
 
 class GUI_API QvisSaveWindow : public QvisPostableWindowObserver
@@ -120,80 +124,91 @@ protected:
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
 
-    QWidget *StandardTab(QWidget *);
-    QWidget *AdvancedTab(QWidget *);
 protected slots:
-    void outputToCurrentDirectoryToggled(bool);
-    void processOutputDirectoryText();
     void processFilenameText();
     void familyToggled(bool);
-    void stereoToggled(bool);
+    void outputToCurrentDirectoryToggled(bool);
+    void processOutputDirectoryText();
+    void selectOutputDirectory();
     void fileFormatChanged(int);
-    void resConstraintToggled(bool);
+    void qualityChanged(int);
+    void progressiveToggled(bool);
+    void compressionTypeChanged(int);
+    void binaryToggled(bool);
+    void stereoToggled(bool);
+    void forceMergeToggled(bool);
+    void aspectRatioChanged(int);
     void processWidthText();
     void processHeightText();
-    void progressiveToggled(bool);
-    void binaryToggled(bool);
-    void qualityChanged(int);
     void screenCaptureToggled(bool);
-    void saveTiledToggled(bool);
-    void compressionTypeChanged(int);
-    void saveWindow();
-    void selectOutputDirectory();
-    void saveButtonClicked();
-    void saveAndDismissButtonClicked();
-    void forceMergeToggled(bool);
-    void advancedMultiWinSaveToggled(bool);
-    void processmwsWidthText();
-    void processmwsHeightText();
+    void multiWindowSaveToggled(bool);
+    void multiWindowSaveTypeToggled(bool);
     void mwsWindowComboBoxChanged(int);
+    void omitWindowCheckBoxToggled(bool);
     void processmwsIndWidthText();
     void processmwsIndHeightText();
     void processmwsPosXText();
     void processmwsPosYText();
     void mwsLayerComboBoxChanged(int);
-    void omitWindowCheckBoxToggled(bool);
     void imageTransparencyChanged(int);
+    void saveWindow();
+    void saveButtonClicked();
+    void saveAndDismissButtonClicked();
 
 private:
     int currentWindow;
     bool dismissOnSave;
 
+    enum MultiWindowSaveMode
+    {
+        Tiled,
+        Advanced
+    };
+    MultiWindowSaveMode  multiWindowSaveMode;
+    bool                 multiWindowSaveEnabled;
+    bool                 ignoreNextMultiWindowSaveChange;
+
+    QLineEdit           *filenameLineEdit;
+    QCheckBox           *familyCheckBox;
     QCheckBox           *outputToCurrentDirectoryCheckBox;
     QLabel              *outputDirectoryLabel;
     QLineEdit           *outputDirectoryLineEdit;
     QPushButton         *outputDirectorySelectButton;
-    QLineEdit           *filenameLineEdit;
-    QCheckBox           *familyCheckBox;
-    QCheckBox           *stereoCheckBox;
-    QCheckBox           *stereoCheckBox2;
     QComboBox           *fileFormatComboBox;
     QLabel              *qualityLabel;
     QSlider             *qualitySlider;
+    QCheckBox           *progressiveCheckBox;
     QLabel              *compressionTypeLabel;
     QComboBox           *compressionTypeComboBox;
-    QCheckBox           *progressiveCheckBox;
     QCheckBox           *binaryCheckBox;
-    QGroupBox           *resolutionBox;
-    QButtonGroup        *resConstraintButtonGroup;
-    QRadioButton        *noResButton;
-    QRadioButton        *oneToOneResButton;
-    QRadioButton        *screenResButton;
-    QLineEdit           *widthLineEdit;
-    QLineEdit           *heightLineEdit;
-    QCheckBox           *screenCaptureCheckBox;
-    QCheckBox           *saveTiledCheckBox;
+    QCheckBox           *stereoCheckBox;
     QCheckBox           *forceMergeCheckBox;
-    QCheckBox           *advancedMultiWinSaveCheckBox;
-    QLineEdit           *mwsWidthLineEdit;
-    QLineEdit           *mwsHeightLineEdit;
+    QGroupBox           *aspectAndResolutionBox;
+    QLabel              *aspectRatioLabel;
+    QComboBox           *aspectRatioComboBox;
+    QLabel              *widthLabel;
+    QSixCharLineEdit    *widthLineEdit;
+    QLabel              *heightLabel;
+    QSixCharLineEdit    *heightLineEdit;
+    QCheckBox           *screenCaptureCheckBox;
+    QGroupBox           *multiWindowSaveBox;
+    QButtonGroup        *multiWindowSaveTypeButtonGroup;
+    QRadioButton        *tiledButton;
+    QRadioButton        *advancedButton;
+    QLabel              *mwsWindowLabel;
     QComboBox           *mwsWindowComboBox;
-    QLineEdit           *mwsIndWidthLineEdit;
-    QLineEdit           *mwsIndHeightLineEdit;
-    QLineEdit           *mwsPosXLineEdit;
-    QLineEdit           *mwsPosYLineEdit;
-    QComboBox           *mwsLayerComboBox;
     QCheckBox           *omitWindowCheckBox;
+    QLabel              *mwsIndWidthLabel;
+    QSixCharLineEdit    *mwsIndWidthLineEdit;
+    QLabel              *mwsIndHeightLabel;
+    QSixCharLineEdit    *mwsIndHeightLineEdit;
+    QLabel              *mwsPosXLabel;
+    QSixCharLineEdit    *mwsPosXLineEdit;
+    QLabel              *mwsPosYLabel;
+    QSixCharLineEdit    *mwsPosYLineEdit;
+    QLabel              *mwsLayerLabel;
+    QComboBox           *mwsLayerComboBox;
+    QLabel              *imageTransparencyLabel;
     QvisOpacitySlider   *imageTransparency;
 
     SaveWindowAttributes  *saveWindowAtts;

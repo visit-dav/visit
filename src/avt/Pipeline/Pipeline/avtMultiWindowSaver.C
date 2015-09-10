@@ -131,6 +131,8 @@ avtMultiWindowSaver::AddImage(avtImage_p img, int id)
 // Creation:   July 20, 2010
 //
 // Modifications:
+//   Eric Brugger, Wed Sep  9 11:31:28 PDT 2015
+//   I enhanced the multi window save to initialize the background to white.
 //   
 // ****************************************************************************
 
@@ -145,6 +147,8 @@ avtMultiWindowSaver::CreateImage()
     newImage->SetDimensions(width, height, 1);
     newImage->AllocateScalars(VTK_UNSIGNED_CHAR, nColorComponents);
     unsigned char *out_ptr = (unsigned char *)newImage->GetScalarPointer();
+
+    memset(out_ptr, 255, width*height*nColorComponents);
 
     int nLayers = 16;
     for (int j = nLayers-1 ; j >= 0 ; j--)
