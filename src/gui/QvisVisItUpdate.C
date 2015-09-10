@@ -63,7 +63,7 @@
 
 #define CURRENT_VERSION VISIT_VERSION
 
-#define NERSC_RELEASE_HTML   "http://portal.nersc.gov/svn/visit/trunk/releases/"
+#define NERSC_RELEASE_HTML   "http://visit.ilight.com/svn/visit/trunk/releases/"
 
 #define LLNL                 "https://wci.llnl.gov/"
 #define LLNL_EXECUTABLE_HTML LLNL "codes/visit/executables.html"

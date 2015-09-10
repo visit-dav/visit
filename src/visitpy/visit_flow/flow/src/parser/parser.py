@@ -43,7 +43,7 @@
   ply (python lex & yacc) parser for a simple expression language.
   I used Mayam's visit_exprs.py as a starting point & adapted a subset
   of rules from VisIt's existing expression language parser:
-   http://portal.nersc.gov/svn/visit/trunk/src/common/expr/ExprGrammar.C
+   http://visit.ilight.com/svn/visit/trunk/src/common/expr/ExprGrammar.C
 
   I also used the following references:
    http://drdobbs.com/web-development/184405580

@@ -87,7 +87,7 @@ if ($verbose)
 #
 # Get the list of usernames who have made commits today
 #
-@users = `svn log -r {${date}T0000}:{${date}T2359} http://portal.nersc.gov/svn/visit/ | egrep '^r[0-9]+ ' | cut -d\\\| -f2 | sort | uniq`;
+@users = `svn log -r {${date}T0000}:{${date}T2359} http://visit.ilight.com/svn/visit/ | egrep '^r[0-9]+ ' | cut -d\\\| -f2 | sort | uniq`;
 foreach (@users) { s|^\s*(\S+)\s*\n$|$1|; }
 if ($verbose)
 {
@@ -97,7 +97,7 @@ if ($verbose)
 #
 # Get the latest nersc username mapping file
 #
-@mapper = `svn cat http://portal.nersc.gov/svn/visit/trunk/src/svn_bin/nersc_username_to_email > mapper`;
+@mapper = `svn cat http://visit.ilight.com/svn/visit/trunk/src/svn_bin/nersc_username_to_email > mapper`;
 
 #
 # Map the user names to email addresses, looking for errors

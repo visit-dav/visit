@@ -24,8 +24,8 @@ function create_trunk_tarballs
 
     # Check out the source+data from anonymous svn
     echo "Checkouts (src+data) started at: `date`"
-    svn co http://portal.nersc.gov/svn/visit/trunk/src > buildlog 2>&1
-    svn co http://portal.nersc.gov/svn/visit/trunk/data >> buildlog 2>&1
+    svn co http://visit.ilight.com/svn/visit/trunk/src > buildlog 2>&1
+    svn co http://visit.ilight.com/svn/visit/trunk/data >> buildlog 2>&1
     if test ! -e src; then
         return 1
     fi
