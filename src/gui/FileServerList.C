@@ -3594,3 +3594,64 @@ FileServerList::SetFilePlugin(const QualifiedFilename &filename,
 {
     filePlugins[filename.FullName()] = plugin;
 }
+
+// ****************************************************************************
+//  Method:  FileServerList::SaveSessionFile
+//
+//  Purpose:
+//    Save Session file.
+//
+//  Arguments:
+//    host     - host name.
+//    filename - Session file name to load.
+//    contents - contents to write in the session file.
+//
+//  Programmer:  David Camp
+//  Creation:    Thu Aug 27 09:40:00 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+FileServerList::SaveSessionFile(const std::string &host, const std::string &filename, const std::string &contents)
+{
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+    ServerMap::iterator info = servers.find(host);
+    if(info != servers.end())
+    {
+        info->second->server->GetMDServerMethods()->SaveSession(filename, contents);
+    }
+}
+
+// ****************************************************************************
+//  Method:  FileServerList::RestoreSessionFile
+//
+//  Purpose:
+//    Load Remote Session file.
+//
+//  Arguments:
+//    host     - host name.
+//    filename - Session file name to load.
+//    contents - location to write session file contents.
+//
+//  Programmer:  David Camp
+//  Creation:    Thu Aug 27 09:40:00 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+FileServerList::RestoreSessionFile(const std::string &host, const std::string &filename, std::string &contents)
+{
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+    ServerMap::iterator info = servers.find(host);
+    if(info != servers.end())
+    {
+        info->second->server->GetMDServerMethods()->RestoreSession(filename, contents);
+    }
+}
+

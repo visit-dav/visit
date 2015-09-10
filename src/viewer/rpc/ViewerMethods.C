@@ -3798,19 +3798,23 @@ ViewerMethods::WriteConfigFile()
 //
 // Arguments:
 //   filename : The name of the file used to write the state.
+//   hostname : Host name to export state too.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 9 11:58:00 PDT 2003
 //
 // Modifications:
+//   David Camp, Thu Jul 23 09:50:33 PDT 2015
+//   Added hostname so we can export the session file to a remote host.
 //   
 // ****************************************************************************
 
 void
-ViewerMethods::ExportEntireState(const std::string &filename)
+ViewerMethods::ExportEntireState(const std::string &filename, const std::string &hostname)
 {
     state->GetViewerRPC()->SetRPCType(ViewerRPC::ExportEntireStateRPC);
     state->GetViewerRPC()->SetVariable(filename);
+    state->GetViewerRPC()->SetStringArg1(hostname);
     state->GetViewerRPC()->Notify();
 }
 
@@ -3824,20 +3828,25 @@ ViewerMethods::ExportEntireState(const std::string &filename)
 // Arguments:
 //   filename   : The name of the file to read for the state.
 //   inVisItDir : Whether the session file is in the .visit directory.
+//   hostname   : Host name to import file from.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 9 11:58:23 PDT 2003
 //
 // Modifications:
+//   David Camp, Thu Jul 23 09:50:33 PDT 2015
+//   Added hostname so we can import the session file from a remote host.
 //   
 // ****************************************************************************
 
 void
-ViewerMethods::ImportEntireState(const std::string &filename, bool inVisItDir)
+ViewerMethods::ImportEntireState(const std::string &filename, bool inVisItDir, 
+                                 const std::string &hostname)
 {
     state->GetViewerRPC()->SetRPCType(ViewerRPC::ImportEntireStateRPC);
     state->GetViewerRPC()->SetVariable(filename);
     state->GetViewerRPC()->SetBoolFlag(inVisItDir);
+    state->GetViewerRPC()->SetStringArg1(hostname);
     state->GetViewerRPC()->Notify();
 }
 
@@ -3853,22 +3862,26 @@ ViewerMethods::ImportEntireState(const std::string &filename, bool inVisItDir)
 //   filename   : The name of the file to read for the state.
 //   inVisItDir : Whether the session file is in the .visit directory.
 //   sources    : The list of sources to use.
+//   hostname   : Host name to import file from.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 10 09:32:48 PDT 2006
 //
 // Modifications:
+//   David Camp, Thu Jul 23 09:50:33 PDT 2015
+//   Added hostname so we can import the session file from a remote host.
 //   
 // ****************************************************************************
 
 void
 ViewerMethods::ImportEntireStateWithDifferentSources(const std::string &filename, 
-    bool inVisItDir, const stringVector &sources)
+    bool inVisItDir, const stringVector &sources, const std::string &hostname)
 {
     state->GetViewerRPC()->SetRPCType(ViewerRPC::ImportEntireStateWithDifferentSourcesRPC);
     state->GetViewerRPC()->SetVariable(filename);
     state->GetViewerRPC()->SetBoolFlag(inVisItDir);
     state->GetViewerRPC()->SetProgramOptions(sources);
+    state->GetViewerRPC()->SetStringArg1(hostname);
     state->GetViewerRPC()->Notify();
 }
 

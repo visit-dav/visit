@@ -2571,3 +2571,68 @@ ViewerFileServerImplementation::BroadcastUpdatedFileOpenOptions()
             SetDefaultFileOpenOptions(*GetViewerState()->GetFileOpenOptions());
     }
 }
+
+// ****************************************************************************
+//  Method:  ViewerFileServerImplementation::SaveSession
+//
+//  Purpose:
+//     Save current session on host.
+//
+//  Arguments:
+//    host     - Host system to save file on.
+//    filename - Filename to save session file contents.
+//    contents - Contents for session file.
+//
+//  Programmer:  David Camp
+//  Creation:    Thu Aug 27 09:40:00 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerFileServerImplementation::SaveSession(const std::string &host,
+                                            const std::string &filename,
+                                            const std::string &contents)
+{
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+    ServerMap::iterator info = servers.find(host);
+    if(info != servers.end())
+    {
+        info->second->proxy->GetMDServerMethods()->SaveSession(filename, contents);
+    }
+}
+
+// ****************************************************************************
+//  Method:  ViewerFileServerImplementation::RestoreSession
+//
+//  Purpose:
+//     Restore session from host.
+//
+//  Arguments:
+//    host     - Host system to save file on.
+//    filename - Filename to save session file contents.
+//    contents - Contents from session file, which is load from host filename.
+//
+//  Programmer:  David Camp
+//  Creation:    Thu Aug 27 09:40:00 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerFileServerImplementation::RestoreSession(const std::string &host, 
+                                               const std::string &filename, 
+                                               std::string &contents)
+{
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+    ServerMap::iterator info = servers.find(host);
+    if(info != servers.end())
+    {
+        info->second->proxy->GetMDServerMethods()->RestoreSession(filename, contents);
+    }
+}
+

@@ -343,6 +343,10 @@ class SplashScreen;
 //    Brad Whitlock, Fri Aug  6 16:55:58 PDT 2010
 //    Added Selections window.
 //
+//    David Camp, Tue Aug  4 11:04:14 PDT 2015
+//    Added new ablitiy to save session files on remote host.
+//    This includes a new variable sessionHost.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -380,10 +384,14 @@ protected:
     void InitializeFileServer(DataNode *);
     void LoadFile(QualifiedFilename &f, bool addDefaultPlots);
     void LoadSessionFile();
+    void LoadSessionRemoteFile(const std::string& filename, const std::string& host, std::istringstream& sessionGUI);
     void MoveAndResizeMainWindow(int orientation);
     void ProcessArguments(int &argc, char **argv);
     virtual DataNode *ReadConfigFile(const char *filename);
     virtual DataNode *ReadConfigFile(std::istream& in);
+    void ProcessSessionNode(DataNode *node, const std::string &filename,
+                            const stringVector &sources, const std::string &hostname);
+
     void ProcessConfigSettings(DataNode *settings, bool systemConfig);
     void ProcessWindowConfigSettings(DataNode *settings);
     void SetOrientation(int orientation);
@@ -402,7 +410,7 @@ protected:
     void GetVirtualDatabaseDefinitions(StringStringVectorMap &defs);
 
     void SetSessionNameInWindowTitle(const QString &filename);
-    QString SaveSessionFile(const QString &s);
+    QString SaveSessionFile(const QString &s, const std::string &hostname);
 
     // Internal callbacks
     static void StartMDServer(const std::string &hostName,
@@ -414,7 +422,7 @@ protected:
     static void UpdateMetaDataAttributes(Subject *subj, void *data);
     static void ClientMethodCallback(Subject *subj, void *data);
 
-    void RestoreSessionFile(const QString &, const stringVector &);
+    void RestoreSessionFile(const QString &, const stringVector &, const std::string &);
     int  GetNumMovieFrames();
     void UpdateSessionDir( const std::string &sessionFileName );
 
@@ -617,6 +625,7 @@ protected:
     QString                      sessionFile;
     int                          sessionCount;
     std::string                  sessionDir;
+    std::string                  sessionHost;
 
     // Movie variables
     stringVector                 movieArguments;

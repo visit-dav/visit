@@ -157,6 +157,18 @@ ViewerFileServer::GetOpenDatabases()
 }
 
 void
+ViewerFileServer::SaveSession(const std::string &host, const std::string &filename, const std::string &sessionFile)
+{
+    IMPL()->SaveSession(host, filename, sessionFile);
+}
+
+void
+ViewerFileServer::RestoreSession(const std::string &host, const std::string &filename, std::string &sessionFile)
+{
+    IMPL()->RestoreSession(host, filename, sessionFile);
+}
+
+void
 ViewerFileServer::NoFaultStartServer(const std::string &host, const stringVector &args)
 {
     IMPL()->NoFaultStartServer(host, args);

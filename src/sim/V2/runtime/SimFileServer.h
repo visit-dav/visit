@@ -145,6 +145,12 @@ public:
 
     virtual bool                       IsDatabase(const std::string &fullname);
     virtual stringVector               GetOpenDatabases();
+    virtual void                       SaveSession(const std::string &host,
+                                                   const std::string &filename,
+                                                   const std::string &sessionFile);
+    virtual void                       RestoreSession(const std::string &host,
+                                                      const std::string &filename,
+                                                      std::string &sessionFile);
 
 public:
     // *************************************************************************

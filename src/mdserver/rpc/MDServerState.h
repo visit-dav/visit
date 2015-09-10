@@ -54,6 +54,8 @@
 #include <GetPluginErrorsRPC.h>
 #include <GetDBPluginInfoRPC.h>
 #include <SetMFileOpenOptionsRPC.h>
+#include <SaveSessionRPC.h>
+#include <RestoreSessionRPC.h>
 
 #include <maptypes.h>
 #include <vectortypes.h>
@@ -88,6 +90,8 @@ public:
     GetPluginErrorsRPC&         GetGetPluginErrorsRPC() { return getPluginErrorsRPC; }
     GetDBPluginInfoRPC&         GetGetDBPluginInfoRPC() { return getDBPluginInfoRPC; }
     SetMFileOpenOptionsRPC&     GetSetMFileOpenOptionsRPC() { return setMFileOpenOptionsRPC; }
+    SaveSessionRPC&             GetGetSaveSessionRPC() { return saveSessionRPC; }
+    RestoreSessionRPC&          GetGetRestoreSessionRPC() { return restoreSessionRPC; }
 
 private:
     GetDirectoryRPC            getDirectoryRPC;
@@ -103,6 +107,8 @@ private:
     GetPluginErrorsRPC         getPluginErrorsRPC;
     GetDBPluginInfoRPC         getDBPluginInfoRPC;
     SetMFileOpenOptionsRPC     setMFileOpenOptionsRPC;
+    SaveSessionRPC             saveSessionRPC;
+    RestoreSessionRPC          restoreSessionRPC;
 
     std::vector<VisItRPC*> objVector;
     friend class MDServerMethods;

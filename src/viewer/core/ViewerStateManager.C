@@ -584,6 +584,7 @@ ViewerStateManager::WriteConfigFile()
 //
 // Arguments:
 //   filename : The name of the session file to save.
+//   hostname : The host name to save the session file on.
 //
 // Returns:    
 //
@@ -593,14 +594,33 @@ ViewerStateManager::WriteConfigFile()
 // Creation:   Thu Aug 28 22:43:13 PDT 2014
 //
 // Modifications:
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    Added hostname to be able to save session on remote hosts.
 //
 // ****************************************************************************
 
 void
-ViewerStateManager::SaveSession(const std::string &filename)
+ViewerStateManager::SaveSession(const std::string &filename, const std::string &hostname)
 {
+    bool wroteSession;
+
     configMgr->SetWriteDetail(true);
-    bool wroteSession = configMgr->WriteConfigFile(filename.c_str());
+    if(hostname.empty() || hostname == "localhost")
+    {
+        wroteSession = configMgr->WriteConfigFile(filename.c_str());
+    }
+    else
+    {
+        std::ostringstream sessionViewer;
+
+        // Write current session to memory.
+        wroteSession = configMgr->WriteConfigFile(sessionViewer);
+        if(wroteSession)
+        {
+            // Write session stream to remote host.
+            GetViewerFileServer()->SaveSession(hostname, filename, sessionViewer.str());
+        }
+    }
     configMgr->SetWriteDetail(false);
 
     if(wroteSession)
@@ -741,17 +761,20 @@ ViewerStateManager::CreateNode(DataNode *parentNode, bool detailed)
 //   filename   : The name of the session file.
 //   inVisItDir : Whether the file is in the .visit directory.
 //   sources    : A list of sources to use to override the sources in the file.
+//   hostname   : Host name to load the session file from.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 22:49:28 PDT 2014
 //
 // Modifications:
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    Added hostname to be able to load session from remote hosts.
 //
 // ****************************************************************************
 
 void
 ViewerStateManager::RestoreSession(const std::string &filename, 
-    bool inVisItDir, const stringVector &sources)
+    bool inVisItDir, const stringVector &sources, const std::string &hostname)
 {
     // If we're importing a session, delete the localSettings in case the
     // DelayedProcessSettings method has not fired yet. This affects session
@@ -771,7 +794,22 @@ ViewerStateManager::RestoreSession(const std::string &filename,
     }
 
     // Read the config file.
-    DataNode *node = configMgr->ReadConfigFile(file2.c_str());
+    DataNode *node = NULL;
+    if(hostname.empty() || hostname == "localhost")
+    {
+        node = configMgr->ReadConfigFile(file2.c_str());
+    }
+    else
+    {
+        // Load a session file from the remote host.
+        std::istringstream sessionViewer;
+        std::string sessionViewerFile;
+
+        GetViewerFileServer()->RestoreSession(hostname, filename, sessionViewerFile);
+        sessionViewer.str(sessionViewerFile);
+
+        node = configMgr->ReadConfigFile(sessionViewer);
+    }
     if(node != NULL)
     {
         // Make the hooked up objects get their settings.

@@ -57,6 +57,8 @@ LoadPluginsRPC.C
 MDServerMethods.C
 MDServerState.C
 SetMFileOpenOptionsRPC.C
+SaveSessionRPC.C
+RestoreSessionRPC.C
 )
 
 INCLUDE_DIRECTORIES(

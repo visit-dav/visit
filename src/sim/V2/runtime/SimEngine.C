@@ -570,8 +570,9 @@ SimEngine::RestoreSession(const std::string &filename)
 
         TRY
         {
+            std::string hostname;
             GetViewerMethods()->
-                ImportEntireStateWithDifferentSources(filename, false, sources);
+                ImportEntireStateWithDifferentSources(filename, false, sources, hostname);
             retval = true;
         }
         CATCHALL

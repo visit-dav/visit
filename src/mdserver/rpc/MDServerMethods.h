@@ -124,6 +124,10 @@ public:
     const DBPluginInfoAttributes *GetDBPluginInfo(void);
     void                       SetDefaultFileOpenOptions(
                                                        const FileOpenOptions&);
+    void                       SaveSession(const std::string &filename,
+                                           const std::string &contents);
+    void                       RestoreSession(const std::string &filename,
+                                                    std::string &contents);
 
     std::string                GetPluginErrors();
 

@@ -179,6 +179,9 @@ class ViewerState;
 //   Kathleen Biagas, Mon Dec 22 10:19:45 PST 2014
 //   Add SetRemoveDuplicateNodes.
 //
+//   David Camp, Thu Aug 27 09:40:00 PDT 2015
+//   Added host name to the Export and Import of the state functions.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -414,11 +417,12 @@ public:
     void ResetMeshManagementAttributes();
 
     void WriteConfigFile();
-    void ExportEntireState(const std::string &filename);
-    void ImportEntireState(const std::string &filename, bool inVisItDir);
+    void ExportEntireState(const std::string &filename, const std::string &hostname);
+    void ImportEntireState(const std::string &filename, bool inVisItDir, const std::string &hostname);
     void ImportEntireStateWithDifferentSources(const std::string &filename,
                                                bool inVisItDir,
-                                               const stringVector &sources);
+                                               const stringVector &sources,
+                                               const std::string &hostname);
     void ReadHostProfilesFromDirectory(const std::string &dir, bool clear);
 
     void SetPlotSILRestriction();

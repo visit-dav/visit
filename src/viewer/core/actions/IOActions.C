@@ -289,13 +289,16 @@ ExportDBAction::Execute()
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    Added hostname to passed arguments.
 //   
 // ****************************************************************************
 
 void
 ExportEntireStateAction::Execute()
 {
-    GetViewerStateManager()->SaveSession(args.GetVariable());
+    GetViewerStateManager()->SaveSession(args.GetVariable(), 
+                                         args.GetStringArg1());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -310,6 +313,8 @@ ExportEntireStateAction::Execute()
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    Added hostname to argument list.
 //   
 // ****************************************************************************
 
@@ -319,7 +324,8 @@ ImportEntireStateAction::Execute()
     stringVector empty;
     GetViewerStateManager()->RestoreSession(args.GetVariable(),
                                             args.GetBoolFlag(),
-                                            empty);
+                                            empty,
+                                            args.GetStringArg1());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -334,6 +340,8 @@ ImportEntireStateAction::Execute()
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    Added hostname to argument list.
 //   
 // ****************************************************************************
 
@@ -342,7 +350,8 @@ ImportEntireStateWithDifferentSourcesAction::Execute()
 {
     GetViewerStateManager()->RestoreSession(args.GetVariable(),
                                             args.GetBoolFlag(),
-                                            args.GetProgramOptions());
+                                            args.GetProgramOptions(),
+                                            args.GetStringArg1());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

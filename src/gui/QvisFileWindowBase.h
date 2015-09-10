@@ -71,6 +71,9 @@ class QvisRecentPathRemovalWindow;
 //   Brad Whitlock, Fri Jan 11 15:50:56 PST 2013
 //   Remove setEnabled method.
 //
+//   David Camp, Thu Aug 27 09:40:00 PDT 2015
+//   Added a flag to hide fields for the session file dialog.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileWindowBase : public QvisDelayedWindowSimpleObserver
@@ -112,6 +115,9 @@ protected:
     void GetVirtualDatabaseDefinitions(StringStringVectorMap &);
 
     void CheckForNewStates();
+
+    void SetHideOptions(bool value);
+
 public slots:
     virtual void showMinimized();
     virtual void showNormal();
@@ -146,6 +152,10 @@ protected:
     QualifiedFilenameVector      intermediateFileList;
     StringStringVectorMap        currentVirtualDatabaseDefinitions;
     stringVector                 invalidHosts;
+
+    // Flag to hide the options, currentDirToggle, showDotFilesToggle, ... from
+    // showing. This is used in the save and load of session files.
+    bool                         hideOptions;
 };
 
 // Functions to encode QualifiedFilename into QVariant and back.

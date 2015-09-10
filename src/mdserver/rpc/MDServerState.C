@@ -34,6 +34,8 @@ MDServerState::MDServerState()
     objVector.push_back(&getPluginErrorsRPC);
     objVector.push_back(&getDBPluginInfoRPC);
     objVector.push_back(&setMFileOpenOptionsRPC);
+    objVector.push_back(&saveSessionRPC);
+    objVector.push_back(&restoreSessionRPC);
 }
 
 MDServerState::~MDServerState()

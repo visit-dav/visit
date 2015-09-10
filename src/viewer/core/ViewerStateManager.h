@@ -68,6 +68,9 @@ class MeshManagementAttributes;
 // Creation:   Thu Aug 28 22:59:16 PDT 2014
 //
 // Modifications:
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    Added hostname to the SaveSession and RestoreSession functions, to add
+//    the remote save and load functionality.
 //
 // ****************************************************************************
 
@@ -93,8 +96,9 @@ public:
     void WriteConfigFile();
 
     // For sessions.
-    void SaveSession(const std::string &filename);
-    void RestoreSession(const std::string &filename, bool inVisItDir, const stringVector &sources);
+    void SaveSession(const std::string &filename, const std::string &hostname);
+    void RestoreSession(const std::string &filename, bool inVisItDir, 
+                        const stringVector &sources, const std::string &hostname);
 
     // For user-defined host profiles
     void ReadHostProfiles();

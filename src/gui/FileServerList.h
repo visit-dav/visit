@@ -213,6 +213,9 @@ class MessageAttributes;
 //   Brad Whitlock, Mon Dec 13 10:37:33 PST 2010
 //   I added "Ex" versions of GetMetaData and GetSIL.
 //
+//    David Camp, Thu Aug 27 09:40:00 PDT 2015
+//    Added Save and Restore Session functions for remote hosts.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -271,6 +274,8 @@ public:
     void SetFilePlugin(const QualifiedFilename &filename, const std::string &plugin);
     void CreateGroupList(const std::string &filename,
                          const stringVector &groupList);
+    void SaveSessionFile(const std::string &host, const std::string &filename, const std::string &contents);
+    void RestoreSessionFile(const std::string &host, const std::string &filename, std::string &contents);
 
     const std::string &GetHost() const;
     const std::string &GetPath() const;

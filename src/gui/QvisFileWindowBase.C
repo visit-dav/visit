@@ -179,6 +179,8 @@ QvisFileWindowBase::QvisFileWindowBase(const QString &winCaption) :
     // Set the progress callback that we want to use while we
     // connect to the mdserver.
     fileServer->SetProgressCallback(ProgressCallback, (void *)this);
+
+    hideOptions = false;
 }
 
 // ****************************************************************************
@@ -425,11 +427,14 @@ QvisFileWindowBase::UpdateComboBox(QComboBox *cb, const stringVector &s,
 //   Brad Whitlock, Wed Sep 12 15:03:41 PDT 2012
 //   I added the showDotFiles toggle.
 //
+//   David Camp, Thu Aug 27 09:40:00 PDT 2015
+//   Added an option to hide field not needed by the Session dialog.
+//
 // ****************************************************************************
 
 void
 QvisFileWindowBase::CreateHostPathFilterControls()
-{   
+{
     //
     // Create the path, filter
     //
@@ -515,7 +520,8 @@ QvisFileWindowBase::CreateHostPathFilterControls()
     connect(fileGroupingComboBox, SIGNAL(activated(int)),
             this, SLOT(fileGroupingChanged(int)));
     toggleLayout->addStretch(5);
-    toggleLayout->addWidget(new QLabel(tr("File grouping"), central), 0, Qt::AlignRight);
+    QLabel *qFileGroupingLabel = new QLabel(tr("File grouping"), central);
+    toggleLayout->addWidget(qFileGroupingLabel, 0, Qt::AlignRight);
     toggleLayout->addWidget(fileGroupingComboBox, 0, Qt::AlignLeft);
     toggleLayout->addStretch(5);
 
@@ -531,6 +537,17 @@ QvisFileWindowBase::CreateHostPathFilterControls()
     connect(recentPathRemovalButton, SIGNAL(clicked()),
             recentPathsRemovalWindow, SLOT(show()));
     toggleLayout->addWidget(recentPathRemovalButton);
+
+    if(hideOptions)
+    {
+        sep1->hide();
+        sep2->hide();
+        currentDirToggle->hide();
+        showDotFilesToggle->hide();
+        fileGroupingComboBox->hide();
+        qFileGroupingLabel->hide();
+        recentPathRemovalButton->hide();
+    }
 }
 
 // ****************************************************************************
@@ -2107,3 +2124,29 @@ DecodeQualifiedFilename(const QVariant &v)
 
     return f;
 }
+
+// ****************************************************************************
+// Method: QvisFileWindowBase::SetHideOptions
+//
+// Purpose: 
+//   If true, will tell the window to hide fields not needed by the Session
+//   dialog.
+//
+// Arguments:
+//   value : true or false to show or hide fields.
+//
+// Returns:    
+//
+// Programmer: David Camp
+// Creation:   Thu Aug 27 09:40:00 PDT 2015
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFileWindowBase::SetHideOptions(bool value)
+{
+    hideOptions = value;
+}
+
