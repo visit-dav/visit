@@ -121,6 +121,7 @@ public:
     void SetForceSSHTunneling(bool forceSSHTunneling_);
     void SetInExecute(bool inExecute_);
     void SetInLaunch(bool inLaunch_);
+    void SetDecorateDebug(bool decorateDebug_);
 
     // Property getting methods
     bool               GetMasterProcess() const;
@@ -156,6 +157,7 @@ public:
     bool               GetForceSSHTunneling() const;
     bool               GetInExecute() const;
     bool               GetInLaunch() const;
+    bool               GetDecorateDebug() const;
 
 
     // IDs that can be used to identify fields in case statements
@@ -184,6 +186,7 @@ public:
         ID_forceSSHTunneling,
         ID_inExecute,
         ID_inLaunch,
+        ID_decorateDebug,
         ID__LAST
     };
 
@@ -212,11 +215,12 @@ private:
     bool         forceSSHTunneling;
     bool         inExecute;
     bool         inLaunch;
+    bool         decorateDebug;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEWERPROPERTIES_TMFS "bbssssibbbbssbbis*s*s*ibbbb"
+#define VIEWERPROPERTIES_TMFS "bbssssibbbbssbbis*s*s*ibbbbb"
 
 #endif
