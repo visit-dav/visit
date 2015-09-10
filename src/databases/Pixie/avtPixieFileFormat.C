@@ -602,7 +602,9 @@ avtPixieFileFormat::Initialize()
 // Creation:   Thu Dec 22 10:46:13 CET 2011
 //
 // Modifications:
-//
+//    Jean Favre, Wed Sep  9 14:11:03 CEST 2015
+//    Added a switch between PieceToExtent and PieceToExtentByPoints to
+//    correctly handle cell-based data ghosting
 // ****************************************************************************
 
 void
@@ -641,7 +643,10 @@ avtPixieFileFormat::PartitionDims()
         globalExtents[4] = 0;
         globalExtents[5] = it->second.dims[2] - 1;
         extTran->SetWholeExtent(globalExtents);
-        extTran->PieceToExtent();
+        if (it->second.hasCoords)
+            extTran->PieceToExtent();
+        else
+            extTran->PieceToExtentByPoints();
 // get each proc's extents including one ghost zone
         extTran->GetExtent(extents);
         it->second.start[0] = extents[0];
@@ -652,7 +657,10 @@ avtPixieFileFormat::PartitionDims()
         it->second.count[2] = extents[5] - extents[4] + 1;
 // redo without ghost to get the strict bounds
         extTran->SetGhostLevel(0);
-        extTran->PieceToExtent();
+        if (it->second.hasCoords)
+            extTran->PieceToExtent();
+        else
+            extTran->PieceToExtentByPoints();
         extTran->GetExtent(extents);
         it->second.start_no_ghost[0] = extents[0];
         it->second.start_no_ghost[1] = extents[2];
@@ -704,7 +712,10 @@ avtPixieFileFormat::PartitionDims()
         globalExtents[4] = 0;
         globalExtents[5] = it->second.dims[2] - 1;
         extTran->SetWholeExtent(globalExtents);
-        extTran->PieceToExtent();
+        if (it->second.hasCoords)
+            extTran->PieceToExtent();
+        else
+            extTran->PieceToExtentByPoints();;
 // get each proc's extents including one ghost zone
         extTran->GetExtent(extents);
         it->second.start[0] = extents[0];
@@ -715,7 +726,10 @@ avtPixieFileFormat::PartitionDims()
         it->second.count[2] = extents[5] - extents[4] + 1;
 // redo without ghost to get the strict bounds
         extTran->SetGhostLevel(0);
-        extTran->PieceToExtent();
+        if (it->second.hasCoords)
+            extTran->PieceToExtent();
+        else
+            extTran->PieceToExtentByPoints();
         extTran->GetExtent(extents);
         it->second.start_no_ghost[0] = extents[0];
         it->second.start_no_ghost[1] = extents[2];
@@ -2466,9 +2480,7 @@ avtPixieFileFormat::AddGhostCellInfo(const VarInfo &info, vtkDataSet *ds)
     else
 // the default is to always have zone-centered data and
 // grid dims were incremented by 1 in GetMesh
-// this fixes the size of the ghostCells array, but
-// marked cells are still wrong because I wrote this
-// for node-based variables and curvilinear meshes.
+// this fixes the size of the ghostCells array.
     {
         nx = info.count[2];
         ny = info.count[1];
