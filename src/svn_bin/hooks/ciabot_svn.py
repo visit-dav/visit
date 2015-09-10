@@ -99,7 +99,7 @@ class config:
     # and 'uri' attributes will be given to all <file> elements. This means
     # that in CIA's online message viewer, each file in the tree will link
     # directly to the file in your repository.
-    repositoryURI = "http://portal.nersc.gov/svn/visit/"
+    repositoryURI = "http://visit.ilight.com/svn/visit/"
 
     # If your repository is accessible over the web via a tool like ViewVC 
     # that allows viewing information about a full revision, put a format string

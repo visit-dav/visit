@@ -340,7 +340,7 @@ if [[ "$CXX_COMPILER" == "g++" ]] ; then
 fi
 
 
-export SVN_ANON_ROOT_PATH="http://portal.nersc.gov/svn/visit"
+export SVN_ANON_ROOT_PATH="http://visit.ilight.com/svn/visit"
 # Setup svn path: use SVN_NERSC_NAME if set
 if test -z "$SVN_NERSC_NAME" ; then
     export SVN_REPO_ROOT_PATH="svn+ssh://portal-auth.nersc.gov/project/projectdirs/visit/svn/visit"

@@ -54,7 +54,7 @@ export CMAKE_SHORT_VERSION=3.0
 export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
 export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
 export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
-export MESA_URL="http://portal.nersc.gov/svn/visit/trunk/third_party"
+export MESA_URL="http://visit.ilight.com/svn/visit/trunk/third_party"
 
 export ZLIB_FILE=${ZLIB_FILE:-"zlib-1.2.8.tar.gz"}
 export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.8"}
@@ -85,7 +85,7 @@ function configure_support_files
                 echo "Trying to fetch support files using: $choice"
 
                 #if choice successful then exit, else try next..
-                webaddr="http://portal.nersc.gov/svn/visit/trunk/src/svn_bin/bv_support/"
+                webaddr="http://visit.ilight.com/svn/visit/trunk/src/svn_bin/bv_support/"
                 tmp_choice=`which $choice`
 
                 if [ $? != 0 ]; then

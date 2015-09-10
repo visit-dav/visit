@@ -477,7 +477,7 @@ QvisHostProfileWindow::CreateRemoteProfilesGroup()
     gridLayout->addWidget(importButton, 0, 2, 1, 1);
 
     /// todo: use a configuration API to load remote url..
-    remoteUrl->addItem("http://portal.nersc.gov/svn/visit/trunk/src/resources/hosts/");
+    remoteUrl->addItem("http://visit.ilight.com/svn/visit/trunk/src/resources/hosts/");
     remoteUrl->setCurrentIndex(0);
 
     remoteTree = new QTreeWidget(currentGroup);
