@@ -1659,6 +1659,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Add a check for master process. If we use this code in situ then we don't
 //    want each rank writing a file.
 //
+//    Eric Brugger, Thu Sep 10 13:49:19 PDT 2015
+//    Modified the routine to take into account the save tiled and advanced
+//    multi window save settings when setting the image width and height.
+//
 // ****************************************************************************
 
 void
@@ -1844,16 +1848,36 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 
         TRY
         {
-            int w = GetViewerState()->GetSaveWindowAttributes()->GetWidth(), 
+            // Set the width and height.
+            int w, h;
+            if (GetViewerState()->GetSaveWindowAttributes()->GetSaveTiled())
+            {
+                w = GetViewerState()->GetSaveWindowAttributes()->GetWidth();
+                h = GetViewerState()->GetSaveWindowAttributes()->GetWidth();
+            }
+            else if (GetViewerState()->GetSaveWindowAttributes()->GetAdvancedMultiWindowSave())
+            {
+                w = GetViewerState()->GetSaveWindowAttributes()->GetWidth();
+                h = GetViewerState()->GetSaveWindowAttributes()->GetHeight();
+            }
+            else
+            {
+                w = GetViewerState()->GetSaveWindowAttributes()->GetWidth();
                 h = GetViewerState()->GetSaveWindowAttributes()->GetHeight();
 
-            if (GetViewerState()->GetSaveWindowAttributes()->GetResConstraint() == 
-                SaveWindowAttributes::ScreenProportions)
-            {
-                int winx, winy;
-                windows[iCurrWindow]->GetSize(winx, winy);
+                if (GetViewerState()->GetSaveWindowAttributes()->GetResConstraint() == 
+                    SaveWindowAttributes::ScreenProportions)
+                {
+                    int winx, winy;
+                    windows[iCurrWindow]->GetSize(winx, winy);
 
-                h = (int)((double)w * (double)winy / (double)winx);
+                    h = (int)((double)w * (double)winy / (double)winx);
+                }
+                else if (GetViewerState()->GetSaveWindowAttributes()->GetResConstraint() ==
+                    SaveWindowAttributes::EqualWidthHeight)
+                {
+                    h = w;
+                }
             }
 
             // if w or h are greated than the max window size, 

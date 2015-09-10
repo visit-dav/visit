@@ -47,6 +47,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 25, 2001
 //
+//  Modifications:
+//    Eric Brugger, Mon Aug 31 10:26:57 PDT 2015
+//    I added QSixCharLineEdit.
+//
 // ****************************************************************************
 class QNarrowLineEdit : public QLineEdit
 {
@@ -63,9 +67,29 @@ class QNarrowLineEdit : public QLineEdit
     {
         QSize size = QLineEdit::sizeHint();
         QFontMetrics fm(font());
-        int w = fm.width('x') * 4; // 4 characters
+        int w = fm.width('0') * 4; // 4 characters
         size.setWidth(w);
         return size;
     }
 };
 
+class QSixCharLineEdit : public QLineEdit
+{
+  public:
+    QSixCharLineEdit(QWidget *p)
+        : QLineEdit(p)
+    {
+    }
+    QSixCharLineEdit(const QString &s, QWidget *p)
+        : QLineEdit(s, p)
+    {
+    }
+    QSize sizeHint() const
+    {
+        QSize size = QLineEdit::sizeHint();
+        QFontMetrics fm(font());
+        int w = fm.width('0') * 6; // 6 characters
+        size.setWidth(w);
+        return size;
+    }
+};

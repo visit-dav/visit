@@ -107,7 +107,7 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
   <li>The 2D Line annotation interface was enhanced to allow the line color to be the same as the foreground color, and to provide a style setting.</li>
   <li>A 3D Line annotation object has been added.</li>
   <li>Session files can be saved and loaded from a remote host.</li>
-  <li></li>
+  <li>The <i>Set save options</i> window was overhauled. The <i>Standard Save</i> and <i>Advanced Multi-Window Save</i> tabs have been replaced with an <i>Aspect ratio and resolution</i> section and a <i>Multi-window save</i> section. The <i>Aspect ratio</i>, <i>Width</i>, <i>Height</i> and <i>Screen capture</i> controls have been moved into the <i>Aspect ratio and resolution</i> section. The tiled and advanced multi-window save controls have been moved into the <i>Multi-window save</i> section. The <i>Stereo</i> control has been moved into the <i>Format options</i> section.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -183,6 +183,7 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
   <li>A bug was fixed with the NamedSelection and SmoothPolyData filters, where VisIt would give an error if the filter generated any empty domains.</li>
   <li>Fixed a case where VisIt's Recenter expression could SEGV if it encountered some domains with zero points and/or zero cells</li>.
   <li>The internal launcher now adds unknown arguments before the "-s script_name" argument and not between the script name and the script arguments.</li>
+  <li>The advanced multi-window image save capability was modified to initialize the background to white.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
