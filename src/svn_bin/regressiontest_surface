@@ -61,6 +61,11 @@
 #   Eric Brugger, Thu Feb 12 08:17:18 PST 2015
 #   I modified the script to use cmake 3.0.2 to configure visit.
 #
+#   Eric Brugger, Fri Sep 11 14:05:18 PDT 2015
+#   I added the command line option "-branch", which takes a branch name.
+#   While I was at it I also modified the script to use 16 cores instead of
+#   12 since it is grabbing an entire node of surface, which has 16 cores.
+#
 
 
 #
@@ -141,9 +146,9 @@ do
             branch="trunk"
             shift
             ;;
-        -2.3RC)
-            branch="2.3RC"
-            shift
+        -branch)
+            branch=$2
+            shift 2
             ;;
         -serial)
             serial="true"
@@ -175,7 +180,7 @@ done
 if test "$branch" = "trunk" ; then
     workingDir="test_trunk"
 else
-    workingDir="test_rc"
+    workingDir="test_branch"
 fi
 
 #
@@ -227,13 +232,13 @@ if test "$branch" = "trunk" ; then
     fi
 else
     if test "$revision" = "latest" ; then
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/src > buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/data >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/test >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/src > buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/data >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/test >> buildlog 2>&1
     else
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/src -r $revision > buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/data -r $revision >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/test -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/src -r $revision > buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/data -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/test -r $revision >> buildlog 2>&1
     fi
 fi
 if test "$debug" = "true" ; then
@@ -269,7 +274,7 @@ fi
     -DVISIT_EAVL_DIR="/usr/gapps/visit/thirdparty_shared/2.9.0/eavl/4593630/linux-x86_64_gcc-4.4" \
     . >> ../buildlog 2>&1
 rm -rf ../make.out ../make.err
-/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make --output-sync=line -k -j 12 1>../make.out 2>../make.err
+/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make --output-sync=line -k -j 16 1>../make.out 2>../make.err
 if test $? -ne 0; then
     echo "Source build FAILED at: \`date\`" | mail -s "Source build FAILED" $userEmail
     exit 1
@@ -400,5 +405,5 @@ chmod 750 $testHost
 if test "$testHost" = "surface" ; then
     scp surface surface:surface_testit
     subTag=`date +%Y-%m-%d-%H:%M`
-    ssh surface "msub -l nodes=1:ppn=12 -l gres=ignore -l walltime=12:00:00 -o surface_testit_$subTag.out -q pbatch -A views -z ./surface_testit"
+    ssh surface "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=12:00:00 -o surface_testit_$subTag.out -q pbatch -A views -z ./surface_testit"
 fi
