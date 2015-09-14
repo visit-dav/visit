@@ -334,8 +334,10 @@ avtEulerianQuery::PostExecute(void)
  
     MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
     MPI_Comm_size(VISIT_MPI_COMM, &numProcs);
-    int mpiSizeTag = GetUniqueMessageTag();
-    int mpiDataTag = GetUniqueMessageTag();
+    int tags[2];
+    GetUniqueMessageTags(tags, 2);
+    int mpiSizeTag = tags[0];
+    int mpiDataTag = tags[1];
     if (myRank == 0)
     {
         for (i = 1; i < numProcs; i++)

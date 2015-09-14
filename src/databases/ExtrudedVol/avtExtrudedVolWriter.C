@@ -108,8 +108,9 @@ avtExtrudedVolWriter::OpenFile(const string &stemname, int numblocks)
 
 void
 avtExtrudedVolWriter::WriteHeaders(const avtDatabaseMetaData *md,
-                           vector<string> &scalars, vector<string> &vectors,
-                           vector<string> &materials)
+                           const vector<string> &scalars,
+                           const vector<string> &vectors,
+                           const vector<string> &materials)
 {
     if (timestep == 0)
     {

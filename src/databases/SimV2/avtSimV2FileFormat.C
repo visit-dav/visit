@@ -584,16 +584,7 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
 
                 // See if the mesh for this variable has a material so we can
                 // potentially restrict this variable to certain material regions.
-                const avtMaterialMetaData *mmd = NULL;
-                TRY
-                {
-                    std::string matObjectName = md->MaterialOnMesh(meshName);
-                    mmd = md->GetMaterial(matObjectName);
-                }
-                CATCHALL
-                {
-                }
-                ENDTRY
+                const avtMaterialMetaData *mmd = md->GetMaterialOnMesh(meshName);
 
                 // Create the appropriate metadata based on the variable type.
                 if(type == VISIT_VARTYPE_SCALAR)

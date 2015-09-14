@@ -505,7 +505,9 @@ avtOriginatingSource::BalanceLoad(avtContract_p contract)
     //
     if (contract->ShouldUseLoadBalancing())
     {
+        int t0 = visitTimer->StartTimer();
         InitPipeline(contract);
+        visitTimer->StopTimer(t0, "InitPipeline");
     }
     else if (contract->DoingOnDemandStreaming())
     {
@@ -531,7 +533,9 @@ avtOriginatingSource::BalanceLoad(avtContract_p contract)
     else if (loadBalanceFunction != NULL)
     {
         debug5 << "Using load balancer to reduce data." << endl;
+        int t0 = visitTimer->StartTimer();
         rv = loadBalanceFunction(loadBalanceFunctionArgs, contract);
+        visitTimer->StopTimer(t0, "Call loadBalanceFunction");
         dataReplicationOccurred =
                               contract->ReplicateSingleDomainOnAllProcessors();
     }

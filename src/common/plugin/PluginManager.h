@@ -213,6 +213,9 @@ class PLUGIN_API PluginManager
     std::vector<void*>                      loadedhandles;
     std::vector<std::string>                loadedids;
 
+    // Has the skip message been issued.
+    std::map<int,int>                       issuedMessage;
+
     // accumlated plugin initialization errors
     std::string                             pluginInitErrors;
 };

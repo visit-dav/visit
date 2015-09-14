@@ -223,6 +223,7 @@ f_visit_internal_InstallCallbacks(void)
 #define F_VISITSETACTIVEPLOTS       F77_ID(visitsetactiveplots_,visitsetactiveplots,VISITSETACTIVEPLOTS)
 #define F_VISITGETMEMORY            F77_ID(visitgetmemory_,visitgetmemory,VISITGETMEMORY)
 #define F_VISITEXPORTDATABASE       F77_ID(visitexportdatabase_,visitexportdatabase,VISITEXPORTDATABASE)
+#define F_VISITEXPORTDATABASEWITHOPTIONS       F77_ID(visitexportdatabasewithoptions_,visitexportdatabasewithoptions,VISITEXPORTDATABASEWITHOPTIONS)
 #define F_VISITRESTORESESSION       F77_ID(visitrestoresession_,visitrestoresession,VISITRESTORESESSION)
 
 /******************************************************************************
@@ -1126,14 +1127,48 @@ F_VISITGETMEMORY(double *m_size, double *m_rss)
 }
 
 /******************************************************************************
- * Function: F_VISITEXPORTDATABASE
+ * Function: F_VISITEXPORTDATABASEWITHOPTIONS
  *
- * Purpose:   Allows FORTRAN to setup the VisIt environment variables.
+ * Purpose:   Allows FORTRAN to export plots.
  *
  * Programmer: Brad Whitlock
  * Date:       Fri Sep 19 14:15:54 PDT 2014
  *
  * Modifications:
+ *   Brad Whitlock, Fri Aug 14 11:57:57 PDT 2015
+ *   Added options.
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITEXPORTDATABASEWITHOPTIONS(VISIT_F77STRING filename, int *lfilename,
+                                 VISIT_F77STRING format, int *lformat,
+                                 visit_handle *vars, visit_handle *options)
+{
+    FORTRAN retval;
+    char *f_filename = NULL, *f_format = NULL;
+
+    COPY_FORTRAN_STRING(f_filename, filename, lfilename);
+    COPY_FORTRAN_STRING(f_format, format, lformat);
+
+    retval = VisItExportDatabaseWithOptions(f_filename, f_format, *vars, *options);
+
+    FREE(f_filename);
+    FREE(f_format);
+    return retval;
+}
+
+/******************************************************************************
+ * Function: F_VISITEXPORTDATABASE
+ *
+ * Purpose:   Allows FORTRAN to export plots.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Fri Sep 19 14:15:54 PDT 2014
+ *
+ * Modifications:
+ *   Brad Whitlock, Fri Aug 14 11:57:57 PDT 2015
+ *   Added options.
  *
  *****************************************************************************/
 
@@ -1142,17 +1177,8 @@ F_VISITEXPORTDATABASE(VISIT_F77STRING filename, int *lfilename,
                       VISIT_F77STRING format, int *lformat,
                       visit_handle *vars)
 {
-    FORTRAN retval;
-    char *f_filename = NULL, *f_format = NULL;
-
-    COPY_FORTRAN_STRING(f_filename, filename, lfilename);
-    COPY_FORTRAN_STRING(f_format, format, lformat);
-
-    retval = VisItExportDatabase(f_filename, f_format, *vars);
-
-    FREE(f_filename);
-    FREE(f_format);
-    return retval;
+    int no_options = VISIT_INVALID_HANDLE;
+    return F_VISITEXPORTDATABASEWITHOPTIONS(filename, lfilename, format, lformat, vars, &no_options);
 }
 
 /******************************************************************************

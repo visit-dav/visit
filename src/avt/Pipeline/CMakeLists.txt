@@ -148,6 +148,7 @@ Pipeline/avtNamedSelectionManager.C
 Pipeline/avtNullDataReader.C
 Pipeline/avtNullDataWriter.C
 Pipeline/avtParallel.C
+Pipeline/avtParallelContext.C
 Pipeline/avtWebpage.C
 Pipeline/avtExecutionManager.C
 Pipeline/ThreadPool.C

@@ -495,8 +495,9 @@ avtSiloWriter::OpenFile(const string &stemname, int nb)
 
 void
 avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
-                            vector<string> &scalars, vector<string> &vectors,
-                            vector<string> &materials)
+                            const vector<string> &scalars,
+                            const vector<string> &vectors,
+                            const vector<string> &materials)
 {
     const avtMeshMetaData *mmd = md->GetMesh(0);
     meshname = mmd->name;
@@ -1125,16 +1126,36 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
 void
 avtSiloWriter::CloseFile(void)
 {
-    size_t i;
- 
-    const avtMeshMetaData *mmd = headerDbMd->GetMesh(0);
-
     // free the optlist
     if (optlist != 0)
     {
         DBFreeOptlist(optlist);
         optlist = 0;
     }
+}
+
+// ****************************************************************************
+//  Method: avtSiloWriter::WriteRootFile
+//
+//  Purpose:
+//      Write a root file for the various domains
+//
+//  Programmer: Hank Childs
+//  Creation:   September 11, 2003
+//
+//  Modifcations:
+//    Brad Whitlock, Tue Aug 18 02:37:54 PDT 2015
+//    I moved most of the code from CloseFile to here. This method will be
+//    allowed to do collective communication on the entire set of MPI ranks.
+//
+// ****************************************************************************
+
+void
+avtSiloWriter::WriteRootFile()
+{
+    size_t i;
+ 
+    const avtMeshMetaData *mmd = headerDbMd->GetMesh(0);
 
     if (nblocks == 1)
     {
@@ -1145,10 +1166,10 @@ avtSiloWriter::CloseFile(void)
     int *globalMeshtypes = NULL;
     int *globalNMesh = NULL;
 
-    CollectIntArraysOnRootProc(globalMeshtypes, globalNMesh,
-                               meshtypes, nmeshes);
+    writeContext.CollectIntArraysOnRootProc(globalMeshtypes, globalNMesh,
+                                            meshtypes, nmeshes);
 
-    if (PAR_Rank() == 0)
+    if (writeContext.Rank() == 0)
     {
         char filename[1024];
         string fname = dir + stem;

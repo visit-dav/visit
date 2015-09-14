@@ -242,7 +242,7 @@ typedef struct
     int   (*set_operator_options)(void *, const char *, int, void *, int);
 
 
-    int   (*exportdatabase)(void *, const char *, const char *, visit_handle);
+    int   (*exportdatabase_with_options)(void *, const char *, const char *, visit_handle, visit_handle);
     int   (*restoresession)(void *, const char *);
 } control_callback_t;
 
@@ -999,7 +999,7 @@ BroadcastInt(int *value, int sender)
 {
     int retval = 0;
 
-    if(sender==0)
+    if(sender==parallelRank)
     {
         LIBSIM_API_ENTER2(BroadcastInt, "value=%d, sender=%d", *value, sender);
     }
@@ -1041,7 +1041,7 @@ BroadcastString(char *str, int len, int sender)
 {
     int retval = 0;
 
-    if(sender==0)
+    if(sender==parallelRank)
     {
         LIBSIM_API_ENTER3(BroadcastString, "str=%s, len=%d, sender=%d",
                           str, len, sender);
@@ -1611,6 +1611,11 @@ static VISIT_SOCKET AcceptConnection(void)
 *   HOME environment variable if it exists and then we back up to the old 
 *   method.
 *
+*   Brad Whitlock, Wed Aug 12 16:46:44 PDT 2015
+*   On BG/Q, getpwuid doesn't work reliably so we avoid calling it and return
+*   NULL instead. The BG/Q job will not have HOME set unless the batch scheduler
+*   set it. On cobalt, the user must pass --env HOME=$HOME to qsub.
+*    
 *******************************************************************************/
 static const char *GetHomeDirectory(void)
 {
@@ -1648,13 +1653,15 @@ static const char *GetHomeDirectory(void)
 
     LIBSIM_API_ENTER(GetHomeDirectory);
     home = getenv("HOME");
+#if !defined(VISIT_BLUE_GENE_Q)
     if(home == NULL)
     {
         struct passwd *users_passwd_entry = NULL;
         users_passwd_entry = getpwuid(getuid());
         home = users_passwd_entry->pw_dir;
     }
-    LIBSIM_API_LEAVE1(GetHomeDirectory, "homedir=%s", home);
+#endif
+    LIBSIM_API_LEAVE1(GetHomeDirectory, "homedir=%s", (home!=NULL) ? home : "NULL");
 
     return home;
 #endif
@@ -1672,27 +1679,37 @@ static const char *GetHomeDirectory(void)
 *   Brad Whitlock, Fri Jul 25 14:56:47 PDT 2008
 *   Trace information.
 *
+*   Brad Whitlock, Wed Aug 12 16:49:48 PDT 2015
+*   Work around unset home directory.
+*
 *******************************************************************************/
-static void EnsureSimulationDirectoryExists(void)
+static int EnsureSimulationDirectoryExists(void)
 {
+    int retval = 0;
     char str[1024];
+    const char *home = NULL;
     LIBSIM_API_ENTER(EnsureSimulationDirectoryExists);
 
+    if((home = GetHomeDirectory()) != NULL)
+    {
 #ifdef _WIN32
-    SNPRINTF(str, 1024, "%s/Simulations", GetHomeDirectory());
-    VisItMkdir(str, 7*64 + 7*8 + 7);
-    LIBSIM_MESSAGE1("mkdir %s", str);
+        SNPRINTF(str, 1024, "%s/Simulations", home);
+        VisItMkdir(str, 7*64 + 7*8 + 7);
+        LIBSIM_MESSAGE1("mkdir %s", str);
 #else
-    SNPRINTF(str, 1024, "%s/.visit", GetHomeDirectory());
-    VisItMkdir(str, 7*64 + 7*8 + 7);
-    LIBSIM_MESSAGE1("mkdir %s", str);
+        SNPRINTF(str, 1024, "%s/.visit", home);
+        VisItMkdir(str, 7*64 + 7*8 + 7);
+        LIBSIM_MESSAGE1("mkdir %s", str);
 
-    SNPRINTF(str, 1024, "%s/.visit/simulations", GetHomeDirectory());
-    VisItMkdir(str, 7*64 + 7*8 + 7);
-    LIBSIM_MESSAGE1("mkdir %s", str);
+        SNPRINTF(str, 1024, "%s/.visit/simulations", home);
+        VisItMkdir(str, 7*64 + 7*8 + 7);
+        LIBSIM_MESSAGE1("mkdir %s", str);
 #endif
+        retval = 1;
+    }
 
     LIBSIM_API_LEAVE(EnsureSimulationDirectoryExists);
+    return retval;
 }
 
 /*******************************************************************************
@@ -2092,7 +2109,7 @@ static int LoadVisItLibrary(void)
         CONTROL_DLSYM_OPTIONAL(set_operator_options, int,    (void *, const char *, int, void *, int));
 
         CONTROL_DLSYM_OPTIONAL(initialize_batch,     int,    (void *, int, char **));
-        CONTROL_DLSYM_OPTIONAL(exportdatabase,       int,    (void *, const char *, const char *, visit_handle));
+        CONTROL_DLSYM_OPTIONAL(exportdatabase_with_options, int, (void *, const char *, const char *, visit_handle, visit_handle));
         CONTROL_DLSYM_OPTIONAL(restoresession,       int,    (void *, const char *));
 
         /* Get the data functions from the library. */
@@ -2472,6 +2489,7 @@ int VisItSetupEnvironment2(char *env)
    /* Read the environment. */
    if(mustReadEnv)
    {
+       done = 0;
        GetEnvironment(&visit_env);
        if(visit_env.size > 0)
            done = 1;
@@ -2498,7 +2516,7 @@ int VisItSetupEnvironment2(char *env)
 
    /* Do a bunch of putenv calls; it should already be formatted correctly */
    ptr = visit_env.str;
-   while (ptr[0]!='\0')
+   while (ptr != NULL && ptr[0]!='\0')
    {
       int i = 0;
       while (ptr[i]!='\n')
@@ -2562,14 +2580,21 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
 
     if ( !absoluteFilename )
     {
-        EnsureSimulationDirectoryExists();
-        SNPRINTF(simulationFileName, MAX_SIMULATION_FILENAME, 
+        if(EnsureSimulationDirectoryExists())
+        {
+            SNPRINTF(simulationFileName, MAX_SIMULATION_FILENAME, 
 #ifdef _WIN32
-                 "%s/Simulations/%012d.%s.sim2",
+                "%s/Simulations/%012d.%s.sim2",
 #else
-                 "%s/.visit/simulations/%012d.%s.sim2",
+                "%s/.visit/simulations/%012d.%s.sim2",
 #endif
-                 GetHomeDirectory(), (int)time(NULL), name);
+                GetHomeDirectory(), (int)time(NULL), name);
+        }
+        else
+        {
+            SNPRINTF(simulationFileName, MAX_SIMULATION_FILENAME, 
+                "%012d.%s.sim2", (int)time(NULL), name);
+        }
     }
     else
     {
@@ -4428,7 +4453,7 @@ int VisItSetOperatorOptionsSv(const char *name,const char **v,int L){ return Ope
 
 /******************************************************************************
 *
-* Name: VisItExportDatabase
+* Name: VisItExportDatabase / VisItExportDatabaseWithOptions
 *
 * Purpose: Export the current plots to a database file.
 *
@@ -4440,22 +4465,29 @@ int VisItSetOperatorOptionsSv(const char *name,const char **v,int L){ return Ope
 ******************************************************************************/
 
 int
-VisItExportDatabase(const char *filename, const char *format, visit_handle varNames)
+VisItExportDatabaseWithOptions(const char *filename, const char *format, 
+    visit_handle varNames, visit_handle options)
 {
     int retval = VISIT_ERROR;
 
-    LIBSIM_API_ENTER(VisItExportDatabase);
+    LIBSIM_API_ENTER(VisItExportDatabaseWithOptions);
     /* Make sure the function exists before using it. */
-    if (engine && callbacks != NULL && callbacks->control.exportdatabase)
+    if (engine && callbacks != NULL && callbacks->control.exportdatabase_with_options)
     {
-        LIBSIM_MESSAGE("  Calling simv2_exportdatabase");
-        retval = (*callbacks->control.exportdatabase)(engine, filename, format, varNames);
+        LIBSIM_MESSAGE("  Calling simv2_exportdatabase_with_options");
+        retval = (*callbacks->control.exportdatabase_with_options)(engine, filename, format, varNames, options);
         /* Synchronize in case we we're connected interactively. */
         if(visit_batch_mode == 0 && visit_sync_enabled)
             VisItSynchronize();
     }
-    LIBSIM_API_LEAVE1(VisItExportDatabase, "return %s", ErrorToString(retval))
+    LIBSIM_API_LEAVE1(VisItExportDatabaseWithOptions, "return %s", ErrorToString(retval))
     return retval;
+}
+
+int
+VisItExportDatabase(const char *filename, const char *format, visit_handle varNames)
+{
+    return VisItExportDatabaseWithOptions(filename, format, varNames, VISIT_INVALID_HANDLE);
 }
 
 /******************************************************************************

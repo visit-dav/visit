@@ -212,6 +212,9 @@ class ENGINE_MAIN_API LoadBalancer
     static bool                       allowDynamic;
     static LoadBalanceScheme          scheme;
 
+    static int                        lastDomDoneMsg;
+    static int                        newDomToDoMsg;
+
     int                               rank;
     int                               nProcs;
 

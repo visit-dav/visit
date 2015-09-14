@@ -59,6 +59,7 @@
 #include <VisItException.h>
 #include <DebugStream.h>
 #include <AbortException.h>
+#include <StackTimer.h>
 #ifdef PARALLEL
 #include <mpi.h>
 #include <avtParallel.h>
@@ -91,6 +92,8 @@ void                   *LoadBalancer::progressCallbackArgs = NULL;
 bool                    LoadBalancer::allowDynamic = false;
 LoadBalanceScheme       LoadBalancer::scheme       =
                                        LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER;
+int                     LoadBalancer::lastDomDoneMsg = -1;
+int                     LoadBalancer::newDomToDoMsg  = -1;
 
 // ****************************************************************************
 //  Method:  LoadBalancer::AllowDynamic
@@ -635,6 +638,7 @@ avtDataRequest_p
 LoadBalancer::Reduce(avtContract_p input)
 {
     avtDataRequest_p data = input->GetDataRequest();
+    StackTimer t0("LoadBalancer::Reduce");
 
     //
     // It is difficult for the load balancer to communicate with the originating
@@ -646,6 +650,12 @@ LoadBalancer::Reduce(avtContract_p input)
     //
 
 #ifdef PARALLEL
+    // set up MPI message tags
+    if(lastDomDoneMsg == -1)
+        lastDomDoneMsg = GetUniqueStaticMessageTag();
+    if(newDomToDoMsg == -1)
+        newDomToDoMsg = GetUniqueStaticMessageTag();
+
     // only used in parallel
     bool dataReplicationRequested = input->ReplicateSingleDomainOnAllProcessors();
 #endif
@@ -703,15 +713,10 @@ LoadBalancer::Reduce(avtContract_p input)
     }
 
 #ifdef PARALLEL
-
     avtSILRestriction_p orig_silr   = data->GetRestriction();
     avtSILRestriction_p silr        = new avtSILRestriction(orig_silr);
     avtDataRequest_p new_data = new avtDataRequest(data, silr);
     avtSILRestrictionTraverser trav(silr);
-
-    // set up MPI message tags
-    static int lastDomDoneMsg = GetUniqueMessageTag();
-    static int newDomToDoMsg = GetUniqueMessageTag();
 
     // Make sure that we have domain to file mapping available.
     LBInfo &lbInfo(pipelineInfo[input->GetPipelineIndex()]);
@@ -720,6 +725,8 @@ LoadBalancer::Reduce(avtContract_p input)
 
     if (scheme == LOAD_BALANCE_STREAM)
     {
+        StackTimer mTimer("LOAD_BALANCE_STREAM");
+
         if (pipelineInfo[input->GetPipelineIndex()].current < 0)
         {
             pipelineInfo[input->GetPipelineIndex()].current = 0;
@@ -768,6 +775,8 @@ LoadBalancer::Reduce(avtContract_p input)
     // Can we do dynamic load balancing?
     else if (! CheckDynamicLoadBalancing(input))
     {
+        StackTimer mTimer("Non-DLB load balancing scheme");
+
         //
         // We probably want to do something more sophisticated in the future 
         // (like walking through a SIL).  For now, just use the "chunks"
@@ -885,6 +894,8 @@ LoadBalancer::Reduce(avtContract_p input)
     }
     else
     {
+        StackTimer mTimer("DLB load balancing");
+
         // disable progress updates from the filters this time around
         avtDataObjectSource::RegisterProgressCallback(NULL,NULL);
 
@@ -1158,7 +1169,8 @@ LoadBalancer::AddDatabase(const string &db, avtDatabase *db_ptr, int timeState)
 bool
 LoadBalancer::GetIOInformation(const string &db, int time, const string &meshname)
 {
-    const char *mName = "LoadBalancer::GetIOInformation: ";
+    const char *mName = "LoadBalancer::GetIOInformation";
+    StackTimer t0(mName);
 
     // Get the cached database pointer.
     bool retval = false;
@@ -1171,7 +1183,7 @@ LoadBalancer::GetIOInformation(const string &db, int time, const string &meshnam
     // Certain formats will use the mesh name to return a new domain to file
     // mapping. This comes up mainly in simulations that provide different
     // multimeshes.
-    debug4 << mName << "Calling plugin's GetIOInformation: time=" << time
+    debug4 << mName << ": Calling plugin's GetIOInformation: time=" << time
            << ", meshname=" << meshname << endl;
     avtIOInformation io;
     retval = it->second->GetIOInformation(time, meshname, io);
@@ -1179,7 +1191,7 @@ LoadBalancer::GetIOInformation(const string &db, int time, const string &meshnam
 
     // Populate the domain to file map.
     ioMap[db].fileMap.resize(io.GetNDomains());
-    debug4 << mName << "db=" << db.c_str() << endl;
+    debug4 << mName << ": db=" << db.c_str() << endl;
     debug4 << "    iohints=[";
     const HintList &hints = io.GetHints();
     for (size_t i=0; i<hints.size(); i++)

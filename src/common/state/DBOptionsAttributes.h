@@ -187,6 +187,7 @@ public:
     std::string GetName(int) const;
     void SetObsolete(const std::string &name);
     bool IsObsolete(const std::string &name) const;
+    bool Merge(const DBOptionsAttributes &obj);
 
     // IDs that can be used to identify fields in case statements
     enum {

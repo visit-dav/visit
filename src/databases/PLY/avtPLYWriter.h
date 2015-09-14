@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtPLYWriter.h                              //
+//                             avtPLYWriter.h                                //
 // ************************************************************************* //
 
 #ifndef AVT_PLY_WRITER_H
@@ -64,6 +64,9 @@ class vtkScalarsToColors;
 //   Dave Pugmire, Fri Apr 26 12:33:39 EDT 2013
 //   Add color table options.
 //
+//   Brad Whitlock, Tue Sep  8 17:03:17 PDT 2015
+//   Rely on base class for geometry aggregation.
+//
 // ****************************************************************************
 
 class
@@ -78,24 +81,21 @@ avtPLYWriter : public avtDatabaseWriter
 
     virtual void   OpenFile(const std::string &, int nb);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
-                                std::vector<std::string> &, 
-                                std::vector<std::string> &,
-                                std::vector<std::string> &);
+                                const std::vector<std::string> &, 
+                                const std::vector<std::string> &,
+                                const std::vector<std::string> &);
     virtual void   WriteChunk(vtkDataSet *, int);
     virtual void   CloseFile(void);
+
+    virtual bool          CreateTrianglePolyData() const;
+    virtual CombineMode   GetCombineMode(const std::string &plotName) const;
 
   private:
     vtkScalarsToColors * GetColorTable();
     
-    std::vector<vtkPolyData *> polydatas;
     bool                       doBinary, doColor;
     std::string                colorTable;
     double                     colorTableMin, colorTableMax;
-
-#ifdef PARALLEL
-    void SendPolyDataToRank0();
-#endif
-
 };
 
 

@@ -56,7 +56,7 @@
 #include <vtkXMLUnstructuredGridWriter.h>
 
 #include <avtDatabaseMetaData.h>
-#include <avtParallel.h>
+#include <avtParallelContext.h>
 
 #include <DBOptionsAttributes.h>
 
@@ -154,30 +154,14 @@ avtVTKWriter::OpenFile(const string &stemname, int nb)
 //    Kathleen Biagas, Wed Feb 25 13:25:07 PST 2015
 //    Retrieve meshName.
 //
-//    Kathleen Biagas, Tue Sep  1 11:28:50 PDT 2015
-//    Don't write .visit file for multi-block XML.  Will write a .vtm file
-//    during CloseFile instead.
-//
 // ****************************************************************************
 
 void
 avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
-                           vector<string> &scalars, vector<string> &vectors,
-                           vector<string> &materials)
+                           const vector<string> &scalars,
+                           const vector<string> &vectors,
+                           const vector<string> &materials)
 {
-    if (nblocks > 1 && PAR_Rank() == 0 && !doXML)
-    {
-        char filename[1024];
-        sprintf(filename, "%s.visit", stem.c_str());
-        ofstream ofile(filename);
-        ofile << "!NBLOCKS " << nblocks << endl;
-        for (int i = 0 ; i < nblocks ; i++)
-        {
-            char chunkname[1024];
-            sprintf(chunkname, "%s.%d.vtk", stem.c_str(), i);
-            ofile << chunkname << endl;
-        }
-    }
     meshName = GetMeshName(md);
     time     = GetTime();
     cycle    = GetCycle();
@@ -316,29 +300,67 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //    Kathleen Biagas, Tue Sep  1 08:58:23 PDT 2015
 //    Create 'vtm' file for multi-block XML.
 //
+//  Modifications:
+//
 // ****************************************************************************
 
 void
 avtVTKWriter::CloseFile(void)
 {
-    if (doXML && nblocks > 1 && PAR_Rank() == 0)
-    {
-        char filename[1024];
-        sprintf(filename, "%s.vtm", stem.c_str());
-        ofstream ofile(filename);
-        ofile << "<?xml version=\"1.0\"?>" << endl;
-        ofile << "<VTKFile type=\"vtkMultiBlockDataSet\" version=\"1.0\">" << endl;
-        ofile << "  <vtkMultiBlockDataSet>"<< endl;
-        ofile << "    <Block index =\"0\">" << endl;
-        for (int i = 0 ; i < nblocks ; i++)
-        {
-            ofile << "      <DataSet index=\"" << i << "\" file=\"" 
-                  << fileNames[i] << "\"/>" << endl;
-        }
-        ofile << "    </Block>" << endl;
-        ofile << "  </vtkMultiBlockDataSet>"<< endl;
-        ofile << "</VTKFile>" << endl;
-    }
 }
 
+// ****************************************************************************
+//  Method: avtVTKWriter::WriteRootFile
+//
+//  Purpose:
+//      Writes a root file.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   
+//
+//  Modifications:
+//    Kathleen Biagas, Tue Sep  1 08:58:23 PDT 2015
+//    Create 'vtm' file for multi-block XML.
+//
+// ****************************************************************************
 
+void
+avtVTKWriter::WriteRootFile()
+{
+    if (nblocks > 1 && writeContext.Rank() == 0)
+    {
+        char filename[1024];
+        if(doXML)
+        {
+            if(writeContext.GroupSize() > 1)
+                SNPRINTF(filename, 1024, "%s.%d.vtm", stem.c_str(), writeContext.GroupRank());
+            else
+                SNPRINTF(filename, 1024, "%s.vtm", stem.c_str());
+            ofstream ofile(filename);
+            ofile << "<?xml version=\"1.0\"?>" << endl;
+            ofile << "<VTKFile type=\"vtkMultiBlockDataSet\" version=\"1.0\">" << endl;
+            ofile << "  <vtkMultiBlockDataSet>"<< endl;
+            ofile << "    <Block index =\"0\">" << endl;
+            for (int i = 0 ; i < nblocks ; i++)
+            {
+                ofile << "      <DataSet index=\"" << i << "\" file=\"" 
+                      << fileNames[i] << "\"/>" << endl;
+            }
+            ofile << "    </Block>" << endl;
+            ofile << "  </vtkMultiBlockDataSet>"<< endl;
+            ofile << "</VTKFile>" << endl;
+        }
+        else
+        {
+            sprintf(filename, "%s.visit", stem.c_str());
+            ofstream ofile(filename);
+            ofile << "!NBLOCKS " << nblocks << endl;
+            for (int i = 0 ; i < nblocks ; i++)
+            {
+                char chunkname[1024];
+                SNPRINTF(chunkname, 1024, "%s.%d.vtk", stem.c_str(), i);
+                ofile << chunkname << endl;
+            }
+        }
+    }
+}

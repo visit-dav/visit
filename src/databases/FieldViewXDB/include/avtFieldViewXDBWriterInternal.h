@@ -1,5 +1,5 @@
 /*****************************************************************************
-* Copyright (c) 2014 Intelligent Light. All rights reserved.
+* Copyright (c) 2015 Intelligent Light. All rights reserved.
 * Work partially supported by DOE Grant SC0007548.
 * FieldView XDB Export is provided expressly for use within VisIt.
 * All other uses are strictly forbidden.
@@ -15,6 +15,7 @@
 #include <avtContract.h>
 
 class vtkDataSet;
+class avtParallelContext;
 
 // ****************************************************************************
 //  Class: avtFieldViewXDBWriterInternal
@@ -32,7 +33,7 @@ class vtkDataSet;
 class VXDB_API avtFieldViewXDBWriterInternal
 {
 public:
-    avtFieldViewXDBWriterInternal(int rank);
+    avtFieldViewXDBWriterInternal();
     ~avtFieldViewXDBWriterInternal();
 
     static std::string GetCopyright();
@@ -45,16 +46,18 @@ public:
     static int CombineAll;        // Combine all geometry from all ranks onto rank 0 and
                                   // get a single polydata object.
 
+    void          SetWriteContext(avtParallelContext &ctx);
     void          CheckCompatibility(avtDataObject_p input, const std::string &plotName);
     void          OpenFile(avtDataObject_p input, 
                            const std::string &filename, int nb);
     void          WriteHeaders(avtDataObject_p input,
                                const avtDatabaseMetaData *,
-                               std::vector<std::string> &, 
-                               std::vector<std::string> &,
-                               std::vector<std::string> &);
+                               const std::vector<std::string> &, 
+                               const std::vector<std::string> &,
+                               const std::vector<std::string> &);
     void          BeginPlot(avtDataObject_p input, const std::string &plotName);
-    void          WriteChunk(avtDataObject_p input, vtkDataSet *, int);
+    void          WriteChunk(avtDataObject_p input, vtkDataSet *, int,
+                             int, const std::string &);
     void          CloseFile(avtDataObject_p input);
 
     int           GetCombineMode(avtDataObject_p input, const std::string &plotName) const;

@@ -41,6 +41,9 @@
 #   Brad Whitlock, Fri May 17 13:43:48 PDT 2013
 #   Define LIBSIM_SOURCES.
 #
+#   Brad Whitlock, Fri Aug 14 12:28:12 PDT 2015
+#   Add VisIt_OptionList.
+#
 #****************************************************************************/
 
 # We define this value here so we can use it in multiple CMakeLists.txt under
@@ -63,6 +66,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_MaterialData.c
 ${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_MaterialMetaData.c
 ${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_MeshMetaData.c
 ${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_NameList.c
+${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_OptionList.c
 ${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_PointMesh.c
 ${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_RectilinearMesh.c
 ${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_SimulationMetaData.c

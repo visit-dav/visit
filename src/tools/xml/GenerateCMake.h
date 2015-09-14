@@ -502,7 +502,7 @@ class CMakeGeneratorPlugin : public Plugin
     {
         bool useFortran = false;
 
-        out << "PROJECT(" << name<< ")" << endl;
+        out << "PROJECT(" << name<< "_plot)" << endl;
         out << endl;
         if (using_dev)
         {
@@ -766,7 +766,7 @@ class CMakeGeneratorPlugin : public Plugin
     {
         bool useFortran = false;
 
-        out << "PROJECT(" << name<< ")" << endl;
+        out << "PROJECT(" << name<< "_operator)" << endl;
         out << endl;
         if (using_dev)
         {
@@ -998,7 +998,7 @@ class CMakeGeneratorPlugin : public Plugin
     {
         bool useFortran = false;
 
-        out << "PROJECT("<<name<<")" << endl;
+        out << "PROJECT("<<name<<"_database)" << endl;
         out << endl;
         if (using_dev)
         {

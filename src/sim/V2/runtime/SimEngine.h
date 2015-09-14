@@ -46,6 +46,8 @@
 
 class Subject;
 class ObserverToCallback;
+class DBOptionsAttributes;
+class PluginManager;
 
 // ****************************************************************************
 // Class: SimEngine
@@ -74,7 +76,9 @@ public:
 
     virtual void SimulationInitiateCommand(const std::string &command);
 
-    void InitializeViewer();
+    void InitializeViewer(const std::vector<std::string> &plotPlugins,
+                          const std::vector<std::string> &operatorPlugins,
+                          bool noconfig);
 
     bool  OpenDatabase();
     const avtDatabaseMetaData *GetMetaData(const std::string &filename);
@@ -84,7 +88,8 @@ public:
 
     // Viewer-ey methods.
     bool ExportDatabase(const std::string &filename, const std::string &format,
-                        const stringVector &vars);
+                        const stringVector &vars,
+                        const DBOptionsAttributes &);
 
     bool RestoreSession(const std::string &filename);
     bool SaveWindow(const std::string &filename, int w, int h, int format);
@@ -104,10 +109,13 @@ private:
     static void CommandNotificationCallback(void *cbdata, int timeout);
     static void HandleViewerRPCCallback(Subject *, void *cbdata);
 
-    void HeavyInitialization();
-    void LoadPlotPlugins();
-    void LoadOperatorPlugins();
+    void HeavyInitialization(const std::vector<std::string> &plotPlugins,
+                             const std::vector<std::string> &operatorPlugins);
+    void LoadPlotPlugins(const std::vector<std::string> &idsOrNames);
+    void LoadOperatorPlugins(const std::vector<std::string> &idsOrNames);
     void AddInitialWindows();
+    void RestrictPlugins(PluginManager *mgr,
+                         const std::vector<std::string> &idsOrNames);
 #endif
 
 private:

@@ -51,6 +51,8 @@
 #include <VisIt_SpeciesMetaData.h>
 #include <VisIt_VariableMetaData.h>
 
+#include <VisIt_OptionList.h>
+
 /* Data */
 #include <VisIt_CSGMesh.h>
 #include <VisIt_CurveData.h>

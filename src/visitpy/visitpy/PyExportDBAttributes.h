@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXPORTDBATTRIBUTES_NMETH 16
+#define EXPORTDBATTRIBUTES_NMETH 20
 void VISITPY_API           PyExportDBAttributes_StartUp(ExportDBAttributes *subj, void *data);
 void VISITPY_API           PyExportDBAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyExportDBAttributes_GetMethodTable(int *nMethods);

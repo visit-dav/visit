@@ -41,6 +41,7 @@
 #include <VisItInterfaceTypes_V2P.h>
 
 #include <DebugStream.h>
+#include <DBOptionsAttributes.h>
 #include <SimEngine.h>
 #include <NetworkManager.h>
 #include <LostConnectionException.h>
@@ -50,6 +51,7 @@
 #include <avtParallel.h>
 #endif
 #include <AttributeGroup.h>
+#include <StackTimer.h>
 #include <TimingsManager.h>
 #include <VisItException.h>
 
@@ -63,13 +65,15 @@
 #include <visitstream.h>
 #include <map>
 #include <vector>
+#include <cstring>
 
 #include <vtkVisItUtility.h>
 #include <avtDatabaseFactory.h>
 #include <avtFileDescriptorManager.h>
+#include <StringHelpers.h>
 
 #include <simv2_NameList.h>
-
+#include <simv2_OptionList.h>
 
 extern void DataCallbacksCleanup(void);
 
@@ -139,6 +143,9 @@ void *simv2_get_engine()
 // Creation:   Wed Sep 17 18:39:01 PDT 2014
 //
 // Modifications:
+//    Brad Whitlock, Mon Aug 17 17:15:56 PDT 2015
+//    Parse the command line options to allow plot and operator plugins to be
+//    restricted.
 //
 // ****************************************************************************
 
@@ -151,7 +158,31 @@ static int simv2_initialize_helper(void *e, int argc, char *argv[], bool batch)
         engine->Initialize(&argc, &argv, false);
         engine->InitializeCompute();
         if(batch)
-            engine->InitializeViewer();
+        {
+            // See if we're restricting the plugins.
+            bool noconfig = false;
+            std::vector<std::string> plotPlugins, operatorPlugins;
+            for(int i = 0; i < argc; ++i)
+            {
+                if(strcmp(argv[i], "-plotplugins") == 0 && (i+1) < argc)
+                {
+                    plotPlugins = StringHelpers::split(std::string(argv[i+1]), ',');
+                    ++i;
+                }
+                else if(strcmp(argv[i], "-operatorplugins") == 0 && (i+1) < argc)
+                {
+                    operatorPlugins = StringHelpers::split(std::string(argv[i+1]), ',');
+                    ++i;
+                }
+                else if(strcmp(argv[i], "-noconfig") == 0)
+                {
+                    noconfig = true;
+                    ++i;
+                }
+            }
+
+            engine->InitializeViewer(plotPlugins, operatorPlugins, noconfig);
+        }
         LoadBalancer::SetScheme(LOAD_BALANCE_RESTRICTED);
     }
     CATCHALL
@@ -321,6 +352,7 @@ void simv2_time_step_changed(void *e)
     SimEngine *engine = (SimEngine*)(e);
     TRY
     {
+        StackTimer t0("VisItTimestepChanged");
         engine->SimulationTimeStepChanged();
     }
     CATCHALL
@@ -356,6 +388,7 @@ void simv2_execute_command(void *e, const char *command)
     {
         if(command != NULL)
         {
+            StackTimer t0("VisItExecuteCommand");
             SimEngine *engine = (SimEngine*)(e);       
             engine->SimulationInitiateCommand(command);
         }
@@ -600,6 +633,7 @@ simv2_set_mpicomm_f(int *comm)
 int
 simv2_save_window(void *e, const char *filename, int w, int h, int format)
 {
+    StackTimer t0("VisItSaveWindow");
     SimEngine *engine = (SimEngine*)(e);
     return engine->SaveWindow(filename, w, h, format) ?
            VISIT_OKAY : VISIT_ERROR;
@@ -630,6 +664,7 @@ simv2_save_window(void *e, const char *filename, int w, int h, int format)
 int
 simv2_add_plot(void *e, const char *plotType, const char *var)
 {
+    StackTimer t0("VisItAddPlot");
     SimEngine *engine = (SimEngine*)(e); 
     return engine->AddPlot(plotType, var) ? VISIT_OKAY : VISIT_ERROR;
 }
@@ -659,6 +694,7 @@ simv2_add_plot(void *e, const char *plotType, const char *var)
 int
 simv2_add_operator(void *e, const char *operatorType, int applyToAll)
 {
+    StackTimer t0("VisItAddOperator");
     SimEngine *engine = (SimEngine*)(e); 
     return engine->AddOperator(operatorType, applyToAll) ? VISIT_OKAY : VISIT_ERROR;
 }
@@ -687,6 +723,7 @@ int
 simv2_draw_plots(void *e)
 {
     SimEngine *engine = (SimEngine*)(e);
+    StackTimer t0("VisItDrawPlots");
     return engine->DrawPlots() ? VISIT_OKAY : VISIT_ERROR;
 }
 
@@ -714,6 +751,7 @@ int
 simv2_delete_active_plots(void *e)
 {
     SimEngine *engine = (SimEngine*)(e);
+    StackTimer t0("VisItDeleteActivePlots");
     return engine->DeleteActivePlots() ? VISIT_OKAY : VISIT_ERROR;
 }
 
@@ -743,6 +781,7 @@ int
 simv2_set_active_plots(void *e, const int *ids, int nids)
 {
     SimEngine *engine = (SimEngine*)(e);
+    StackTimer t0("VisItSetActivePlots");
     return engine->SetActivePlots(ids, nids) ? VISIT_OKAY : VISIT_ERROR;
 }
 
@@ -775,6 +814,7 @@ simv2_set_plot_options(void *e, const char *fieldName,
     int fieldType, void *fieldVal, int fieldLen)
 {
     SimEngine *engine = (SimEngine*)(e);
+    StackTimer t0("VisItSetPlotOptions");
     return engine->SetPlotOptions(fieldName, fieldType, fieldVal, fieldLen) ? VISIT_OKAY : VISIT_ERROR;
 }
 
@@ -807,6 +847,7 @@ simv2_set_operator_options(void *e,
     const char *fieldName, int fieldType, void *fieldVal, int fieldLen)
 {
     SimEngine *engine = (SimEngine*)(e);
+    StackTimer t0("VisItSetOperatorOptions");
     return engine->SetOperatorOptions(fieldName, fieldType, fieldVal, fieldLen) ? VISIT_OKAY : VISIT_ERROR;
 }
 
@@ -817,10 +858,13 @@ simv2_set_operator_options(void *e,
 //   SimV2 runtime function called when we want to execute a command.
 //
 // Arguments:
-//   e : The engine pointer.
-//   command : A command string.
-//
-// Returns:    
+//   e        : The engine pointer.
+//   filename : The filename to export.
+//   format   : The export format.
+//   names    : The list of variables to export.
+//   options  : The optional options to use when exporting.
+//   
+// Returns:    VISIT_OKAY on success; VISIT_ERROR on failure.
 //
 // Note:       EXPERIMENTAL
 //
@@ -832,9 +876,11 @@ simv2_set_operator_options(void *e,
 // ****************************************************************************
 
 int
-simv2_exportdatabase(void *e, const char *filename, const char *format, 
-    visit_handle names)
+simv2_exportdatabase_with_options(void *e, const char *filename, const char *format, 
+    visit_handle names, visit_handle options)
 {
+    StackTimer t0("VisItExportDatabase");
+
     int status = VISIT_ERROR;
     stringVector varNames;
     int n;
@@ -858,11 +904,64 @@ simv2_exportdatabase(void *e, const char *filename, const char *format,
         varNames.push_back("default");
     }
 
+    // Turn the option list into a DBOptionsAttributes.
+    DBOptionsAttributes opt;
+    if(options != VISIT_INVALID_HANDLE)
+    {
+        int nvalues = 0;
+        if(simv2_OptionList_getNumValues(options, &nvalues) == VISIT_OKAY &&
+           nvalues > 0)
+        {
+            for(int i = 0; i < nvalues; ++i)
+            {
+                char *name = NULL;
+                int type;
+                if(simv2_OptionList_getName(options, i, &name) == VISIT_OKAY &&
+                   simv2_OptionList_getType(options, i, &type) == VISIT_OKAY)
+                {
+                    void *pvalue = NULL;
+                    if(simv2_OptionList_getValue(options, i, &pvalue) == VISIT_OKAY)
+                    {
+                        switch(type)
+                        {
+                        case VISIT_DATATYPE_CHAR:
+                            opt.SetBool(name, *((unsigned char *)pvalue) != 0);
+                            break;
+                        case VISIT_DATATYPE_INT:
+                            opt.SetInt(name, *((int *)pvalue));
+                            break;
+                        case VISIT_DATATYPE_FLOAT:
+                            opt.SetFloat(name, *((float *)pvalue));
+                            break;
+                        case VISIT_DATATYPE_DOUBLE:
+                            opt.SetDouble(name, *((double *)pvalue));
+                            break;
+                        case VISIT_DATATYPE_STRING:
+                            opt.SetString(name, std::string((const char *)pvalue));
+                            break;
+                        }
+                    }
+                }
+                
+                if(name != NULL)
+                    free(name);
+            }
+        }
+    }
+
     SimEngine *engine = (SimEngine*)e;
-    if(engine->ExportDatabase(filename, format, varNames))
+    if(engine->ExportDatabase(filename, format, varNames, opt))
         status = VISIT_OKAY;
 
     return status;
+}
+
+// Left in for compatibility
+int
+simv2_exportdatabase(void *e, const char *filename, const char *format, 
+    visit_handle names, visit_handle options)
+{
+    return simv2_exportdatabase_with_options(e, filename, format, names, VISIT_INVALID_HANDLE);
 }
 
 // ****************************************************************************
@@ -889,6 +988,8 @@ simv2_exportdatabase(void *e, const char *filename, const char *format,
 int
 simv2_restoresession(void *e, const char *filename)
 {
+    StackTimer t0("VisItRestoreSession");
+
     SimEngine *engine = (SimEngine*)e;
     return engine->RestoreSession(filename) ? VISIT_OKAY : VISIT_ERROR;
 }

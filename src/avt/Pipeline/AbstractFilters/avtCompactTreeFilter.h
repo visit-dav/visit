@@ -47,6 +47,7 @@
 
 #include <avtDatasetToDatasetFilter.h>
 
+class avtParallelContext;
 
 // ****************************************************************************
 //  Class: avtCompactTreeFilter
@@ -90,6 +91,9 @@
 //    return a data tree.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Brad Whitlock, Thu Aug  6 14:49:34 PDT 2015
+//    Use avtParallelContext.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
@@ -123,7 +127,8 @@ class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
     void                  SetCompactDomainsMode(CompactDomainsMode mode, int threshold=-1)
                               { compactDomainMode = mode; compactDomainThreshold = threshold; }
 
-    static avtDataTree_p  Execute(avtDataObject_p    input, 
+    static avtDataTree_p  Execute(avtParallelContext &context,
+                                  avtDataObject_p    input, 
                                   bool               executionDependsOnDLB,
                                   bool               parallelMerge,
                                   bool               skipCompact,

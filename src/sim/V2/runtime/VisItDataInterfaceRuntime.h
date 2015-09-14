@@ -126,6 +126,7 @@ SIMV2_API int simv2_invoke_WriteVariable(const char *, const char *, int, visit_
 #define VISIT_SPECIESMETADATA        106
 #define VISIT_NAMELIST               107
 #define VISIT_COMMANDMETADATA        108
+#define VISIT_OPTIONLIST             109
 
 
 SIMV2_API int simv2_ObjectType(visit_handle h);

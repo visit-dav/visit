@@ -1,5 +1,5 @@
 /*****************************************************************************
-* Copyright (c) 2014 Intelligent Light. All rights reserved.
+* Copyright (c) 2015 Intelligent Light. All rights reserved.
 * Work partially supported by DOE Grant SC0007548.
 * FieldView XDB Export is provided expressly for use within VisIt.
 * All other uses are strictly forbidden.
@@ -7,9 +7,7 @@
 #include <avtFieldViewXDBWriter.h>
 #include <avtFieldViewXDBWriterInternal.h>
 
-#ifdef PARALLEL
-#include <avtParallel.h>
-#endif
+#include <avtParallelContext.h>
 
 // ****************************************************************************
 // Method: avtFieldViewXDBWriter constructor
@@ -23,11 +21,7 @@
 
 avtFieldViewXDBWriter::avtFieldViewXDBWriter() : avtDatabaseWriter()
 {
-    int rank = 0;
-#ifdef PARALLEL
-    rank = PAR_Rank();
-#endif
-    impl = new avtFieldViewXDBWriterInternal(rank);
+    impl = new avtFieldViewXDBWriterInternal();
 }
 
 // ****************************************************************************
@@ -260,12 +254,18 @@ avtFieldViewXDBWriter::CanHandleMaterials(void)
 // Creation:   Tue Jan 14 17:29:14 PST 2014
 //
 // Modifications:
+//   Brad Whitlock, Mon Aug 10 14:53:25 PDT 2015
+//   Pass the parallel context.
 //
 // ****************************************************************************
 
 void
 avtFieldViewXDBWriter::OpenFile(const std::string &fn, int numblocks)
 {
+    // Get the current parallel context to use for writing. Pass it to the
+    // implementation.
+    impl->SetWriteContext(GetWriteContext());
+
     impl->OpenFile(GetInput(), fn, numblocks);
 }
 
@@ -292,9 +292,9 @@ avtFieldViewXDBWriter::OpenFile(const std::string &fn, int numblocks)
 
 void
 avtFieldViewXDBWriter::WriteHeaders(const avtDatabaseMetaData *md,
-                           std::vector<std::string> &scalars, 
-                           std::vector<std::string> &vectors,
-                           std::vector<std::string> &materials)
+                           const std::vector<std::string> &scalars, 
+                           const std::vector<std::string> &vectors,
+                           const std::vector<std::string> &materials)
 {
     impl->WriteHeaders(GetInput(), md, scalars, vectors, materials);
 }
@@ -333,6 +333,8 @@ avtFieldViewXDBWriter::BeginPlot(const std::string &pn)
 // Arguments:
 //   ds    : The dataset that we're writing out for this chunk of the export.
 //   chunk : The number of the chunk we're writing.
+//   domainId : The domain id of the chunk.
+//   label : The label of the chunk.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jan 14 17:29:14 PST 2014
@@ -342,9 +344,16 @@ avtFieldViewXDBWriter::BeginPlot(const std::string &pn)
 // ****************************************************************************
 
 void
-avtFieldViewXDBWriter::WriteChunk(vtkDataSet *ds, int chunk)
+avtFieldViewXDBWriter::WriteChunk(vtkDataSet *ds, int chunk, int domainId, 
+    const std::string &label)
 {
-    impl->WriteChunk(GetInput(), ds, chunk);
+    impl->WriteChunk(GetInput(), ds, chunk, domainId, label);
+}
+
+void
+avtFieldViewXDBWriter::WriteChunk(vtkDataSet *, int)
+{
+    // do nothing. This method is not called.
 }
 
 // ****************************************************************************

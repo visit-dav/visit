@@ -149,11 +149,12 @@ avtSiloWriter : public virtual avtDatabaseWriter
 
     virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
-                                std::vector<std::string> &, 
-                                std::vector<std::string> &,
-                                std::vector<std::string> &);
+                                const std::vector<std::string> &, 
+                                const std::vector<std::string> &,
+                                const std::vector<std::string> &);
     virtual void   WriteChunk(vtkDataSet *, int);
     virtual void   CloseFile(void);
+    virtual void   WriteRootFile();
 
     void           ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *,
                                       int *);

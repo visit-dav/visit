@@ -75,11 +75,14 @@ avtRAWWriter : public virtual avtDatabaseWriter
 
     virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
-                                std::vector<std::string> &, 
-                                std::vector<std::string> &,
-                                std::vector<std::string> &);
+                                const std::vector<std::string> &, 
+                                const std::vector<std::string> &,
+                                const std::vector<std::string> &);
     virtual void   WriteChunk(vtkDataSet *, int);
     virtual void   CloseFile(void);
+
+    virtual bool          CreateTrianglePolyData() const;
+    virtual CombineMode   GetCombineMode(const std::string &plotName) const;
 
     virtual bool   SupportsTargetChunks(void) { return false; };
     virtual bool   SupportsTargetZones(void) { return false; };

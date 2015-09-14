@@ -102,6 +102,7 @@ typedef enum {
 #define VISIT_DATATYPE_FLOAT              2
 #define VISIT_DATATYPE_DOUBLE             3
 #define VISIT_DATATYPE_LONG               4
+#define VISIT_DATATYPE_STRING             10
 
 /* Array Owner */
 #define VISIT_OWNER_SIM                   0
@@ -219,6 +220,10 @@ typedef enum {
 #define VISIT_IMAGEFORMAT_PPM    4
 #define VISIT_IMAGEFORMAT_RGB    5
 #define VISIT_IMAGEFORMAT_TIFF   6
+
+/* Export option keys */
+#define VISIT_EXPORT_WRITE_USING_GROUPS "EXPORT_WRITE_USING_GROUPS"
+#define VISIT_EXPORT_GROUP_SIZE         "EXPORT_GROUP_SIZE"
 
 #ifdef __cplusplus
 }

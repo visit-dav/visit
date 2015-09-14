@@ -49,6 +49,7 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QSlider;
+class QSpinBox;
 class QvisVariableButton;
 class ExportDBAttributes;
 class DBPluginInfoAttributes;
@@ -90,6 +91,9 @@ class PlotList;
 //   Brad Whitlock, Thu Jul 24 13:55:34 EDT 2014
 //   Added check box for doing all time steps.
 //
+//   Brad Whitlock, Mon Aug 10 17:16:32 PDT 2015
+//   Add support for grouping.
+//
 // ****************************************************************************
 
 class GUI_API QvisExportDBWindow : public QvisPostableWindowSimpleObserver
@@ -126,6 +130,8 @@ protected slots:
     void selectOutputDirectory();
     void delimiterChanged(int);
     void allTimesToggled(bool);
+    void coordinateGroupsToggled(bool);
+    void groupSizeChanged(int);
 private:
     DBPluginInfoAttributes *dbPluginInfoAtts;
     ExportDBAttributes     *exportDBAtts;
@@ -143,6 +149,9 @@ private:
     QvisVariableButton  *varsButton;
     QLineEdit           *varsLineEdit;
     QCheckBox           *allTimes;
+    QCheckBox           *coordinateGroups;
+    QLabel              *groupSizeLabel;
+    QSpinBox            *groupSize;
 };
 
 #endif

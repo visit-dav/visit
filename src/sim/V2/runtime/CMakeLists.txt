@@ -74,6 +74,7 @@ simv2_MaterialData.C
 simv2_MaterialMetaData.C
 simv2_MeshMetaData.C
 simv2_NameList.C
+simv2_OptionList.C
 simv2_PointMesh.C
 simv2_RectilinearMesh.C
 simv2_SimulationMetaData.C

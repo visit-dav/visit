@@ -41,6 +41,10 @@
 #include <ColorControlPointList.h>
 #include <ColorControlPoint.h>
 #include <ColorTableManager.h>
+#ifdef PARALLEL
+#include <avtParallelContext.h>
+#endif
+#include <DebugStream.h>
 
 //
 // Static data that describes the eight default color tables.
@@ -1064,7 +1068,9 @@ avtColorTables::ExportColorTable(const std::string &ctName,
 // Creation:   Thu Jul 3 18:30:07 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 17 15:15:18 PDT 2015
+//   Only read the color table on rank 0 and broadcast.
+//
 // ****************************************************************************
 
 void
@@ -1074,7 +1080,22 @@ avtColorTables::ImportColorTables()
     // Create a color table manager to import the color tables and store
     // them in the ctAtts.
     //
-    ColorTableManager importer;
-    importer.ImportColorTables(ctAtts);
+#ifdef PARALLEL
+    avtParallelContext par;
+    if(par.Rank() == 0)
+    {
+        debug5 << "Reading color tables and sending..." << endl;
+#endif
+        ColorTableManager importer;
+        importer.ImportColorTables(ctAtts);
+#ifdef PARALLEL
+        par.BroadcastAttributes(*ctAtts);
+    }
+    else
+    {
+        debug5 << "Receiving color tables..." << endl;
+        par.BroadcastAttributes(*ctAtts);
+    }
+#endif
 }
 

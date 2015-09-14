@@ -500,6 +500,12 @@
       external visitexportdatabase
       integer  visitexportdatabase
 
+! visitexportdatabasewithoptions(string filename, int lfilename,
+!                     string format, int lformat,
+!                     visit_handle vars, visit_handle options)
+      external visitexportdatabasewithoptions
+      integer  visitexportdatabasewithoptions
+
 ! visitrestoresession(string filename, int lfilename)
       external visitrestoresession
       integer  visitrestoresession
@@ -1008,6 +1014,60 @@
       external visitnamelistgetname
       integer  visitnamelistgetname
 
+! VisIt_OptionList functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitoptionlistalloc(visit_handle obj)
+      external visitoptionlistalloc
+      integer  visitoptionlistalloc
+
+! visitoptionlistfree(visit_handle obj)
+      external visitoptionlistfree
+      integer  visitoptionlistfree
+
+! visitoptionlistsetvaluei(visit_handle obj, string name, int lname, int value)
+      external visitoptionlistsetvaluei
+      integer  visitoptionlistsetvaluei
+
+! visitoptionlistsetvaluef(visit_handle obj, string name, int lname, float value)
+      external visitoptionlistsetvaluef
+      integer  visitoptionlistsetvaluef
+
+! visitoptionlistsetvalued(visit_handle obj, string name, int lname, double value)
+      external visitoptionlistsetvalued
+      integer  visitoptionlistsetvalued
+
+! visitoptionlistsetvalues(visit_handle obj, string name, int lname, string value, int lvalue)
+      external visitoptionlistsetvalues
+      integer  visitoptionlistsetvalues
+
+! visitoptionlistgetnumvalues(visit_handle obj, int nv)
+      external visitoptionlistgetnumvalues
+      integer  visitoptionlistgetnumvalues
+
+! visitoptionlistgettype(visit_handle obj, int index, int type)
+      external visitoptionlistgettype
+      integer  visitoptionlistgettype
+
+! visitoptionlistgetname(visit_handle obj, int index, string name, int lname)
+      external visitoptionlistgetname
+      integer  visitoptionlistgetname
+
+! visitoptionlistgetvaluei(visit_handle obj, string name, int lname, int value)
+      external visitoptionlistgetvaluei
+      integer  visitoptionlistgetvaluei
+
+! visitoptionlistgetvaluef(visit_handle obj, string name, int lname, float value)
+      external visitoptionlistgetvaluef
+      integer  visitoptionlistgetvaluef
+
+! visitoptionlistgetvalued(visit_handle obj, string name, int lname, double value)
+      external visitoptionlistgetvalued
+      integer  visitoptionlistgetvalued
+
+! visitoptionlistgetvalues(visit_handle obj, string name, int lname, string value, int lvalue)
+      external visitoptionlistgetvalues
+      integer  visitoptionlistgetvalues
 
 ! VisIt_SimulationMetaData functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

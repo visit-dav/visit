@@ -678,7 +678,7 @@ int main(int argc, char *argv[])
          {
              if (vars.size())
              {
-                 wrtr->Write("", filename, md, vars);
+                 wrtr->Write("", filename, md, vars, false);
              }
              else
              {

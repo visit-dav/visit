@@ -911,7 +911,38 @@ int VisItGetMemory(double *m_size, double *m_rss);
  *            Call this function on all processors.
  *
  * ****************************************************************************/
-int VisItExportDatabase(const char *filename, const char *format, visit_handle variables);
+int VisItExportDatabase(const char *filename, const char *format, 
+                        visit_handle variables);
+
+/******************************************************************************
+ * Function: VisItExportDatabaseWithOptions
+ *
+ * Purpose: 
+ *   Export the active plots to database files.
+ *
+ * Arguments:
+ *   filename : The name of the file to save. If it does not have a path then
+ *              the current working directory will be where files are saved.
+ *              File format writers are free to append their own file extensions
+ *              to this name.
+ *   format   : The name of a database plugin for the export. This can be either
+ *              the plugin name or id (e.g. "Silo" or "Silo_1.0").
+ *   variables: A name list containing the names of the variables to be exported.
+ *              If an empty list or VISIT_INVALID_HANDLE are passed then the
+ *              "default" variables will be exported.
+ *   options  : A handle to an optional optionlist object (contaisn key/value 
+ *              pairs) or VISIT_INVALID_HANDLE if no options are to be passed.
+ *
+ * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
+ *
+ * Note:      The active plots in the plot list are exported just like in
+ *            typical export usage from VisIt.
+ *
+ *            Call this function on all processors.
+ *
+ * ****************************************************************************/
+int VisItExportDatabaseWithOptions(const char *filename, const char *format, 
+                                   visit_handle variables, visit_handle options);
 
 /******************************************************************************
  * Function: VisItRestoreSession
