@@ -1,0 +1,16 @@
+The binary_VTK.0.vtk file is binary.
+
+!NBLOCKS 13
+ ./binary_VTK.0.vtk
+ ./binary_VTK.1.vtk
+ ./binary_VTK.2.vtk
+ ./binary_VTK.3.vtk
+ ./binary_VTK.4.vtk
+ ./binary_VTK.5.vtk
+ ./binary_VTK.6.vtk
+ ./binary_VTK.7.vtk
+ ./binary_VTK.8.vtk
+ ./binary_VTK.9.vtk
+ ./binary_VTK.10.vtk
+ ./binary_VTK.11.vtk
+ ./binary_VTK.12.vtk
