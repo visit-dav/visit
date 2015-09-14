@@ -2442,13 +2442,13 @@ avtParallelContext::BroadcastAttributes(AttributeGroup &atts)
 
         // Send the serialized contents to other ranks.
         MPI_Bcast(&size, 1, MPI_INT, 0, this->GetCommunicator());
-        MPI_Bcast(sbuf, size, MPI_CHAR, 0, this->GetCommunicator());
+        MPI_Bcast(sbuf, size, MPI_UNSIGNED_CHAR, 0, this->GetCommunicator());
     }
     else
     {
         MPI_Bcast(&size, 1, MPI_INT, 0, this->GetCommunicator());
         sbuf = new unsigned char[size];
-        MPI_Bcast(sbuf, size, MPI_CHAR, 0, this->GetCommunicator());
+        MPI_Bcast(sbuf, size, MPI_UNSIGNED_CHAR, 0, this->GetCommunicator());
 
         deq.Append(sbuf, size);
         atts.Read(deq);
