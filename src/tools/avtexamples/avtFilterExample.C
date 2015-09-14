@@ -167,7 +167,7 @@ main(int argc, char *argv[])
     vector<string> vars;
     vars.push_back("d");
     wrtr->SetInput(output3);
-    wrtr->Write("", "output", md, vars);
+    wrtr->Write("", "output", md, vars, false);
 
     //
     // Clean up and exit.

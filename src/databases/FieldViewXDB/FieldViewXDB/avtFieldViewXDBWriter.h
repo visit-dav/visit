@@ -1,5 +1,5 @@
 /*****************************************************************************
-* Copyright (c) 2014 Intelligent Light. All rights reserved.
+* Copyright (c) 2015 Intelligent Light. All rights reserved.
 * Work partially supported by DOE Grant SC0007548.
 * FieldView XDB Export is provided expressly for use within VisIt.
 * All other uses are strictly forbidden.
@@ -36,10 +36,11 @@ protected:
     virtual void          CheckCompatibility(const std::string &plotName);
     virtual void          OpenFile(const std::string &filename, int nb);
     virtual void          WriteHeaders(const avtDatabaseMetaData *,
-                                       std::vector<std::string> &, 
-                                       std::vector<std::string> &,
-                                       std::vector<std::string> &);
+                                       const std::vector<std::string> &, 
+                                       const std::vector<std::string> &,
+                                       const std::vector<std::string> &);
     virtual void          BeginPlot(const std::string &plotName);
+    virtual void          WriteChunk(vtkDataSet *, int, int, const std::string &);
     virtual void          WriteChunk(vtkDataSet *, int);
     virtual void          CloseFile(void);
 

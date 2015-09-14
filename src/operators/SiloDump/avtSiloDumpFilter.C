@@ -695,11 +695,13 @@ avtSiloDumpFilter::PostExecute()
     int size;
     MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     MPI_Comm_size(VISIT_MPI_COMM, &size);
-    int mpiDomListSizeTag = GetUniqueMessageTag();
-    int mpiDomListTag     = GetUniqueMessageTag();
-    int mpiVarListSizeTag = GetUniqueMessageTag();
-    int mpiVarNameSizeTag = GetUniqueMessageTag();
-    int mpiVarNameTag     = GetUniqueMessageTag();
+    int tags[5];
+    GetUniqueMessageTags(tags, 5);
+    int mpiDomListSizeTag = tags[0];
+    int mpiDomListTag     = tags[1];
+    int mpiVarListSizeTag = tags[2];
+    int mpiVarNameSizeTag = tags[3];
+    int mpiVarNameTag     = tags[4];
 
     if (rank!=0)
     {

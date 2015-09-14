@@ -117,7 +117,7 @@ PluginManager::PluginManager(const string &mgr) : pluginDirs(), openPlugin(),
     managerName(mgr), loadOnDemand(false), 
     ids(), names(), versions(), libfiles(), enabled(),
     allindexmap(), loadedindexmap(), loadedhandles(), loadedids(),
-    pluginInitErrors()
+    issuedMessage(), pluginInitErrors()
 {
     pluginError = new char[MAX_PLUGINERROR];
 }
@@ -1017,6 +1017,10 @@ PluginManager::LoadSinglePluginNow(const std::string& id)
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
+//    Brad Whitlock, Thu Aug 20 22:21:19 PDT 2015
+//    Prevent the issued message from being written over and over.
+//
 // ****************************************************************************
 
 bool
@@ -1032,9 +1036,13 @@ PluginManager::LoadSinglePlugin(int index)
 
     if (PluginLoaded(ids[index]))
     {
-        debug1 << "Skipping already loaded "<<managerName.c_str()<<" plugin "
-               << names[index].c_str() << " version " << versions[index].c_str()
-               << endl;
+        if(issuedMessage.count(index) == 0)
+        {
+            debug1 << "Skipping already loaded "<<managerName.c_str()<<" plugin "
+                   << names[index].c_str() << " version " << versions[index].c_str()
+                   << endl;
+            issuedMessage[index] = 1;
+        }
         return false;
     }
 

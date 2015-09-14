@@ -48,6 +48,9 @@
 #   Kathleen Biagas, Thu Nov  7 07:57:14 PST 2013
 #   Add VisItControlInterface_V2_plotting.h to files being installed.
 #
+#   Brad Whitlock, Fri Aug 14 12:28:12 PDT 2015
+#   Add VisIt_OptionList.
+#    
 #****************************************************************************/
 
 # See ../CMakeLists.txt for LIBSIM_SOURCES
@@ -99,6 +102,7 @@ VisIt_MaterialData.h
 VisIt_MaterialMetaData.h
 VisIt_MeshMetaData.h
 VisIt_NameList.h
+VisIt_OptionList.h
 VisIt_PointMesh.h
 VisIt_RectilinearMesh.h
 VisIt_SimulationMetaData.h

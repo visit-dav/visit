@@ -94,14 +94,31 @@ avtTecplotWriter::~avtTecplotWriter()
 //    Jeremy Meredith, Tue Mar 27 17:03:47 EDT 2007
 //    Added numblocks (currently ignored) to the OpenFile interface.
 //
+//    Brad Whitlock, Tue Sep  8 16:39:12 PDT 2015
+//    Support write groups.
+//
 // ****************************************************************************
 
 void
 avtTecplotWriter::OpenFile(const string &stemname, int)
 {
     stem = stemname;
-    string filename = stemname+".tec";
-    file.open(filename.c_str());
+    string filename;
+    if(writeContext.GroupSize() > 1)
+    {
+        char ext[20];
+        SNPRINTF(ext, 20, ".%d.tec", writeContext.GroupRank());
+        filename = stemname + ext;
+    }
+    else
+        filename = stemname+".tec";
+
+    // Open the file in append mode if we're not on rank 0.
+    if(writeContext.Rank() == 0)
+        file.open(filename.c_str());
+    else
+        file.open(filename.c_str(), std::ios_base::app);
+
     if (!file)
     {
         EXCEPTION1(ImproperUseException, "Could not open file for writing.");
@@ -122,12 +139,12 @@ avtTecplotWriter::OpenFile(const string &stemname, int)
 
 void
 avtTecplotWriter::WriteHeaders(const avtDatabaseMetaData *md,
-                               vector<string> &scalars,
-                               vector<string> &vectors,
-                               vector<string> &materials)
+                               const vector<string> &scalars,
+                               const vector<string> &vectors,
+                               const vector<string> &materials)
 {
-     const avtMeshMetaData *mmd = md->GetMesh(0); (void) mmd;
 #if 0
+    const avtMeshMetaData *mmd = md->GetMesh(0);
     if (mmd->topologicalDimension != 3)
     {
         EXCEPTION1(ImproperUseException, "The Tecplot writer only supports "
@@ -142,10 +159,17 @@ avtTecplotWriter::WriteHeaders(const avtDatabaseMetaData *md,
     if(!ReallyHasMaterials())
         materialList.clear();
 
-    file << "TITLE = \"" << md->GetDatabaseName().c_str() << ": "
-         << md->GetDatabaseComment().c_str() <<"\"" << endl;
-
-    variablesWritten = false;
+    if(writeContext.Rank() == 0)
+    {
+        file << "TITLE = \"" << md->GetDatabaseName().c_str() << ": "
+             << md->GetDatabaseComment().c_str() <<"\"" << endl;
+        variablesWritten = false;
+    }
+    else
+    {
+        // We don't want other ranks to write the variable list.
+        variablesWritten = true;
+    }
 
     // Write all of the floats from this point in scientific notation.
     file << std::scientific;
@@ -178,7 +202,10 @@ ReallyHasMaterialsEx(avtDataTree_p node)
     {
         for(int i = 0; i < node->GetNChildren(); ++i)
         {
-            if(!ReallyHasMaterialsEx(node->GetChild(i)))
+            avtDataTree_p n2 = node->GetChild(i);
+            if(*n2 == NULL)
+                return false;
+            if(!ReallyHasMaterialsEx(n2))
                 return false;
         }
     }
@@ -197,52 +224,6 @@ avtTecplotWriter::ReallyHasMaterials()
 {
     return ReallyHasMaterialsEx(GetInputDataTree());
 }
-
-// ****************************************************************************
-// Method: avtTecplotWriter::WriteVariables
-//
-// Purpose: 
-//   Write the names of the variables.
-//
-// Arguments:
-//   coordvars : The names of the coordinate variables.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Sep  2 11:14:40 PDT 2009
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtTecplotWriter::WriteVariables(const vector<string> &coordvars)
-{
-    if(!variablesWritten)
-    {
-        file << "VARIABLES = ";
-        for(size_t i = 0; i < coordvars.size(); ++i)
-        {
-            file << "\"" << coordvars[i] << "\"";
-            if(i < coordvars.size()-1 || (variableList.size()+materialList.size()) > 0)
-                file << ", ";
-        }
-
-        for(size_t i = 0; i < variableList.size(); ++i)
-        {
-            file << "\"" << variableList[i] << "\"";
-            if (i < variableList.size()-1 || (materialList.size() > 0))
-                file << ", ";
-        }
-
-        if(materialList.size() > 0)
-            file << "\"" << materialList[0] << "\"";
-
-        file << endl;
-
-        variablesWritten = true;
-    }
-}
-
 
 // ****************************************************************************
 //  Method: avtTecplotWriter::WriteChunk
@@ -307,6 +288,76 @@ avtTecplotWriter::CloseFile(void)
 }
 
 // ****************************************************************************
+// Method: avtTecplotWriter::SequentialOutput
+//
+// Purpose:
+//   Tell the writer whether the format needs MPI-rank sequential access to
+//   write the output file.
+//
+// Returns:    True because we want to have each domain append to the existing
+//             file that was created by its write group leader.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar  5 15:45:09 PST 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtTecplotWriter::SequentialOutput() const
+{
+    return true;
+}
+
+// ****************************************************************************
+// Method: avtTecplotWriter::WriteVariables
+//
+// Purpose: 
+//   Write the names of the variables.
+//
+// Arguments:
+//   coordvars : The names of the coordinate variables.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep  2 11:14:40 PDT 2009
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtTecplotWriter::WriteVariables(const vector<string> &coordvars)
+{
+    if(!variablesWritten)
+    {
+        file << "VARIABLES = ";
+        for(size_t i = 0; i < coordvars.size(); ++i)
+        {
+            file << "\"" << coordvars[i] << "\"";
+            if(i < coordvars.size()-1 || (variableList.size()+materialList.size()) > 0)
+                file << ", ";
+        }
+
+        for(size_t i = 0; i < variableList.size(); ++i)
+        {
+            file << "\"" << variableList[i] << "\"";
+            if (i < variableList.size()-1 || (materialList.size() > 0))
+                file << ", ";
+        }
+
+        if(materialList.size() > 0)
+            file << "\"" << materialList[0] << "\"";
+
+        file << endl;
+
+        variablesWritten = true;
+    }
+}
+
+// ****************************************************************************
 // Method: avtTecplotWriter::WriteCurvilinearMesh
 //
 // Purpose: 
@@ -355,13 +406,13 @@ avtTecplotWriter::WriteCurvilinearMesh(vtkStructuredGrid *sg, int chunk)
 
     int npts = sg->GetNumberOfPoints();
     vtkPoints *vtk_pts = sg->GetPoints();
-    float *vtk_ptr = (float *) vtk_pts->GetVoidPointer(0);
+    vtkDataArray *arr = vtk_pts->GetData();
     for (int d = 0; d < ((dims[2]>1) ? 3 : 2); d++)
     {
         for (int i=0; i<npts; i++)
         {
             file.width(FLOAT_COLUMN_WIDTH);
-            file << vtk_ptr[3*i + d];
+            file << arr->GetComponent(i, d);
             if ((i+1)%10==0 || i==npts-1)
                 file <<"\n";
             else
@@ -884,13 +935,12 @@ avtTecplotWriter::WriteDataArrays(vtkDataSet *ds1)
                            string("Couldn't find array ")+variableList[v]+".");
         }
         int ncomps = arr->GetNumberOfComponents();
-        float *ptr = (float *) arr->GetVoidPointer(0);
         if (ncomps == 1)
         {
             for (int i=0; i<npts; i++)
             {
                 file.width(FLOAT_COLUMN_WIDTH);
-                file << ptr[i];
+                file << arr->GetTuple1(i);
                 if ((i+1)%10==0 || i==npts-1)
                     file <<"\n";
                 else
@@ -947,16 +997,13 @@ void
 avtTecplotWriter::WritePoints(vtkPoints *pts, int dim)
 { 
     int npts = pts->GetNumberOfPoints();
-
+    vtkDataArray *arr = pts->GetData();
     for (int d = 0; d < dim; d++)
     {
-        float *vtk_ptr = (float *) pts->GetVoidPointer(0);
-        vtk_ptr += d;
-
-        for (int i=0; i<npts; i++, vtk_ptr += 3)
+        for (int i=0; i<npts; i++)
         {
             file.width(FLOAT_COLUMN_WIDTH);
-            file << *vtk_ptr;
+            file << arr->GetComponent(i, d);
             if ((i+1)%10==0 || i==npts-1)
                 file <<"\n";
             else

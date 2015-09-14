@@ -106,6 +106,13 @@ PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    if(atts->GetWriteUsingGroups())
+        SNPRINTF(tmpStr, 1000, "%swriteUsingGroups = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%swriteUsingGroups = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sgroupSize = %d\n", prefix, atts->GetGroupSize());
+    str += tmpStr;
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "opts.";
@@ -293,6 +300,54 @@ ExportDBAttributes_GetVariables(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+ExportDBAttributes_SetWriteUsingGroups(PyObject *self, PyObject *args)
+{
+    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the writeUsingGroups in the object.
+    obj->data->SetWriteUsingGroups(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExportDBAttributes_GetWriteUsingGroups(PyObject *self, PyObject *args)
+{
+    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetWriteUsingGroups()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+ExportDBAttributes_SetGroupSize(PyObject *self, PyObject *args)
+{
+    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the groupSize in the object.
+    obj->data->SetGroupSize((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExportDBAttributes_GetGroupSize(PyObject *self, PyObject *args)
+{
+    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetGroupSize()));
+    return retval;
+}
+
+/*static*/ PyObject *
 ExportDBAttributes_SetOpts(PyObject *self, PyObject *args)
 {
     ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
@@ -344,6 +399,10 @@ PyMethodDef PyExportDBAttributes_methods[EXPORTDBATTRIBUTES_NMETH] = {
     {"GetDirname", ExportDBAttributes_GetDirname, METH_VARARGS},
     {"SetVariables", ExportDBAttributes_SetVariables, METH_VARARGS},
     {"GetVariables", ExportDBAttributes_GetVariables, METH_VARARGS},
+    {"SetWriteUsingGroups", ExportDBAttributes_SetWriteUsingGroups, METH_VARARGS},
+    {"GetWriteUsingGroups", ExportDBAttributes_GetWriteUsingGroups, METH_VARARGS},
+    {"SetGroupSize", ExportDBAttributes_SetGroupSize, METH_VARARGS},
+    {"GetGroupSize", ExportDBAttributes_GetGroupSize, METH_VARARGS},
     {"SetOpts", ExportDBAttributes_SetOpts, METH_VARARGS},
     {"GetOpts", ExportDBAttributes_GetOpts, METH_VARARGS},
     {NULL, NULL}
@@ -386,6 +445,10 @@ PyExportDBAttributes_getattr(PyObject *self, char *name)
         return ExportDBAttributes_GetDirname(self, NULL);
     if(strcmp(name, "variables") == 0)
         return ExportDBAttributes_GetVariables(self, NULL);
+    if(strcmp(name, "writeUsingGroups") == 0)
+        return ExportDBAttributes_GetWriteUsingGroups(self, NULL);
+    if(strcmp(name, "groupSize") == 0)
+        return ExportDBAttributes_GetGroupSize(self, NULL);
     if(strcmp(name, "opts") == 0)
         return ExportDBAttributes_GetOpts(self, NULL);
 
@@ -414,6 +477,10 @@ PyExportDBAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ExportDBAttributes_SetDirname(self, tuple);
     else if(strcmp(name, "variables") == 0)
         obj = ExportDBAttributes_SetVariables(self, tuple);
+    else if(strcmp(name, "writeUsingGroups") == 0)
+        obj = ExportDBAttributes_SetWriteUsingGroups(self, tuple);
+    else if(strcmp(name, "groupSize") == 0)
+        obj = ExportDBAttributes_SetGroupSize(self, tuple);
     else if(strcmp(name, "opts") == 0)
         obj = ExportDBAttributes_SetOpts(self, tuple);
 

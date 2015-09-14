@@ -54,9 +54,9 @@
 #ifdef PARALLEL
     #include <mpi.h>
 
-    const int SIZE_TAG = GetUniqueMessageTag();
-    const int BLOCKID_TAG = GetUniqueMessageTag();
-    const int DATA_TAG = GetUniqueMessageTag();
+    const int SIZE_TAG = GetUniqueStaticMessageTag();
+    const int BLOCKID_TAG = GetUniqueStaticMessageTag();
+    const int DATA_TAG = GetUniqueStaticMessageTag();
 #endif
 
 using std::string;

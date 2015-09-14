@@ -54,7 +54,7 @@
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
-#include <avtParallel.h>
+#include <avtParallelContext.h>
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
@@ -131,8 +131,9 @@ avtXmdvWriter::OpenFile(const string &stemname, int nb)
 
 void
 avtXmdvWriter::WriteHeaders(const avtDatabaseMetaData *md,
-                           vector<string> &s, vector<string> &v,
-                           vector<string> &materials)
+                            const vector<string> &s,
+                            const vector<string> &v,
+                            const vector<string> &materials)
 {
     scalars = s;
     vectors = v;
@@ -184,19 +185,6 @@ avtXmdvWriter::WriteHeaders(const avtDatabaseMetaData *md,
 
     if (nblocks > 1)
     {
-        if (PAR_UIProcess())
-        {
-            char filename[1024];
-            sprintf(filename, "%s.visit", stem.c_str());
-            ofstream ofile(filename);
-            ofile << "!NBLOCKS " << nblocks << endl;
-            for (int i = 0 ; i < nblocks ; i++)
-            {
-                char chunkname[1024];
-                sprintf(chunkname, "%s.%03d.okc", stem.c_str(), i);
-                ofile << chunkname << endl;
-            }
-        }
         onlyOneBlock = false;
     }
     else
@@ -416,4 +404,20 @@ avtXmdvWriter::CloseFile(void)
     // CLOSE FILES
 }
 
-
+void
+avtXmdvWriter::WriteRootFile()
+{
+    if (nblocks > 1 && writeContext.Rank() == 0)
+    {
+        char filename[1024];
+        sprintf(filename, "%s.visit", stem.c_str());
+        ofstream ofile(filename);
+        ofile << "!NBLOCKS " << nblocks << endl;
+        for (int i = 0 ; i < nblocks ; i++)
+        {
+            char chunkname[1024];
+            sprintf(chunkname, "%s.%03d.okc", stem.c_str(), i);
+            ofile << chunkname << endl;
+        }
+    }
+}

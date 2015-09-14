@@ -102,7 +102,7 @@ avtRAWWriter::~avtRAWWriter()
 //  Method: avtRAWWriter::OpenFile
 //
 //  Purpose:
-//      Does no actual work.  Just records the stem name for the files.
+//      Open the file for output.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   September 28, 2007
@@ -115,13 +115,19 @@ void
 avtRAWWriter::OpenFile(const std::string &stemname, int nb)
 {
 #ifndef MDSERVER
-    char filename[1024];
-    SNPRINTF(filename, 1024, "%s.raw", stemname.c_str());
-    file = fopen(filename, "wt");
-    if(file == 0)
+    if(writeContext.Rank() == 0)
     {
-        EXCEPTION1(InvalidDBTypeException, 
-                   "The RAW writer could not open the output file.");
+        char filename[1024];
+        if(writeContext.GroupSize() > 1)
+            SNPRINTF(filename, 1024, "%s.%d.raw", stemname.c_str(), writeContext.GroupRank());
+        else
+            SNPRINTF(filename, 1024, "%s.raw", stemname.c_str());
+        file = fopen(filename, "wt");
+        if(file == 0)
+        {
+            EXCEPTION1(InvalidDBTypeException, 
+                       "The RAW writer could not open the output file.");
+        }
     }
     nDomains = nb;
 #endif
@@ -142,8 +148,9 @@ avtRAWWriter::OpenFile(const std::string &stemname, int nb)
 
 void
 avtRAWWriter::WriteHeaders(const avtDatabaseMetaData *md,
-                           std::vector<std::string> &scalars, std::vector<std::string> &vectors,
-                           std::vector<std::string> &materials)
+                           const std::vector<std::string> &scalars,
+                           const std::vector<std::string> &vectors,
+                           const std::vector<std::string> &materials)
 {
 #ifndef MDSERVER
     bool warn = (scalars.size() > 0) || (vectors.size() > 0) || (materials.size() > 0);
@@ -278,6 +285,44 @@ avtRAWWriter::CloseFile(void)
         file = 0;
     }
 #endif
+}
+
+// ****************************************************************************
+// Method: avtRAWWriter::CreateTrianglePolyData
+//
+// Purpose:
+//   Tell VisIt's export that we'll want triangles.
+//
+// Returns:    True
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep  8 17:00:23 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtRAWWriter::CreateTrianglePolyData() const
+{
+    return true;
+}
+
+// ****************************************************************************
+//  Method: avtRAWWriter::GetCombineMode
+//
+//  Purpose:
+//     Provides a hint to the export mechanism to tell it how to combine data.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Sep  8 15:36:45 PDT 2015
+//
+// ****************************************************************************
+
+avtDatabaseWriter::CombineMode
+avtRAWWriter::GetCombineMode(const std::string &) const
+{
+    return CombineAll;
 }
 
 

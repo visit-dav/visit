@@ -183,6 +183,10 @@ def VisItIsConnected():
   return _simV2.VisItIsConnected()
 VisItIsConnected = _simV2.VisItIsConnected
 
+def VisItIsRuntimeLoaded():
+  return _simV2.VisItIsRuntimeLoaded()
+VisItIsRuntimeLoaded = _simV2.VisItIsRuntimeLoaded
+
 def VisItGetLastError():
   return _simV2.VisItGetLastError()
 VisItGetLastError = _simV2.VisItGetLastError
@@ -231,6 +235,10 @@ def VisItSetMPICommunicator(*args):
   return _simV2.VisItSetMPICommunicator(*args)
 VisItSetMPICommunicator = _simV2.VisItSetMPICommunicator
 
+def VisItSetMPICommunicator_f(*args):
+  return _simV2.VisItSetMPICommunicator_f(*args)
+VisItSetMPICommunicator_f = _simV2.VisItSetMPICommunicator_f
+
 def VisItInitializeRuntime():
   return _simV2.VisItInitializeRuntime()
 VisItInitializeRuntime = _simV2.VisItInitializeRuntime
@@ -242,6 +250,10 @@ VisItGetMemory = _simV2.VisItGetMemory
 def VisItExportDatabase(*args):
   return _simV2.VisItExportDatabase(*args)
 VisItExportDatabase = _simV2.VisItExportDatabase
+
+def VisItExportDatabaseWithOptions(*args):
+  return _simV2.VisItExportDatabaseWithOptions(*args)
+VisItExportDatabaseWithOptions = _simV2.VisItExportDatabaseWithOptions
 
 def VisItRestoreSession(*args):
   return _simV2.VisItRestoreSession(*args)
@@ -362,10 +374,13 @@ VISIT_DATATYPE_INT = _simV2.VISIT_DATATYPE_INT
 VISIT_DATATYPE_FLOAT = _simV2.VISIT_DATATYPE_FLOAT
 VISIT_DATATYPE_DOUBLE = _simV2.VISIT_DATATYPE_DOUBLE
 VISIT_DATATYPE_LONG = _simV2.VISIT_DATATYPE_LONG
+VISIT_DATATYPE_STRING = _simV2.VISIT_DATATYPE_STRING
 VISIT_OWNER_SIM = _simV2.VISIT_OWNER_SIM
 VISIT_OWNER_VISIT = _simV2.VISIT_OWNER_VISIT
 VISIT_OWNER_COPY = _simV2.VISIT_OWNER_COPY
 VISIT_OWNER_VISIT_EX = _simV2.VISIT_OWNER_VISIT_EX
+VISIT_MEMORY_CONTIGUOUS = _simV2.VISIT_MEMORY_CONTIGUOUS
+VISIT_MEMORY_STRIDED = _simV2.VISIT_MEMORY_STRIDED
 VISIT_CELL_BEAM = _simV2.VISIT_CELL_BEAM
 VISIT_CELL_TRI = _simV2.VISIT_CELL_TRI
 VISIT_CELL_QUAD = _simV2.VISIT_CELL_QUAD
@@ -439,6 +454,8 @@ VISIT_IMAGEFORMAT_POVRAY = _simV2.VISIT_IMAGEFORMAT_POVRAY
 VISIT_IMAGEFORMAT_PPM = _simV2.VISIT_IMAGEFORMAT_PPM
 VISIT_IMAGEFORMAT_RGB = _simV2.VISIT_IMAGEFORMAT_RGB
 VISIT_IMAGEFORMAT_TIFF = _simV2.VISIT_IMAGEFORMAT_TIFF
+VISIT_EXPORT_WRITE_USING_GROUPS = _simV2.VISIT_EXPORT_WRITE_USING_GROUPS
+VISIT_EXPORT_GROUP_SIZE = _simV2.VISIT_EXPORT_GROUP_SIZE
 
 def VisIt_CommandMetaData_free(*args):
   return _simV2.VisIt_CommandMetaData_free(*args)
@@ -536,6 +553,10 @@ def VisIt_CurvilinearMesh_setGhostCells(*args):
   return _simV2.VisIt_CurvilinearMesh_setGhostCells(*args)
 VisIt_CurvilinearMesh_setGhostCells = _simV2.VisIt_CurvilinearMesh_setGhostCells
 
+def VisIt_CurvilinearMesh_setGhostNodes(*args):
+  return _simV2.VisIt_CurvilinearMesh_setGhostNodes(*args)
+VisIt_CurvilinearMesh_setGhostNodes = _simV2.VisIt_CurvilinearMesh_setGhostNodes
+
 def VisIt_DomainBoundaries_free(*args):
   return _simV2.VisIt_DomainBoundaries_free(*args)
 VisIt_DomainBoundaries_free = _simV2.VisIt_DomainBoundaries_free
@@ -555,6 +576,18 @@ VisIt_DomainBoundaries_set_rectIndices = _simV2.VisIt_DomainBoundaries_set_rectI
 def VisIt_DomainBoundaries_set_amrIndices(*args):
   return _simV2.VisIt_DomainBoundaries_set_amrIndices(*args)
 VisIt_DomainBoundaries_set_amrIndices = _simV2.VisIt_DomainBoundaries_set_amrIndices
+
+def VisIt_DomainBoundaries_set_extents(*args):
+  return _simV2.VisIt_DomainBoundaries_set_extents(*args)
+VisIt_DomainBoundaries_set_extents = _simV2.VisIt_DomainBoundaries_set_extents
+
+def VisIt_DomainBoundaries_add_neighbor(*args):
+  return _simV2.VisIt_DomainBoundaries_add_neighbor(*args)
+VisIt_DomainBoundaries_add_neighbor = _simV2.VisIt_DomainBoundaries_add_neighbor
+
+def VisIt_DomainBoundaries_finish(*args):
+  return _simV2.VisIt_DomainBoundaries_finish(*args)
+VisIt_DomainBoundaries_finish = _simV2.VisIt_DomainBoundaries_finish
 
 def VisIt_DomainList_free(*args):
   return _simV2.VisIt_DomainList_free(*args)
@@ -736,6 +769,30 @@ def VisIt_NameList_addName(*args):
   return _simV2.VisIt_NameList_addName(*args)
 VisIt_NameList_addName = _simV2.VisIt_NameList_addName
 
+def VisIt_OptionList_alloc(*args):
+  return _simV2.VisIt_OptionList_alloc(*args)
+VisIt_OptionList_alloc = _simV2.VisIt_OptionList_alloc
+
+def VisIt_OptionList_free(*args):
+  return _simV2.VisIt_OptionList_free(*args)
+VisIt_OptionList_free = _simV2.VisIt_OptionList_free
+
+def VisIt_OptionList_setValueI(*args):
+  return _simV2.VisIt_OptionList_setValueI(*args)
+VisIt_OptionList_setValueI = _simV2.VisIt_OptionList_setValueI
+
+def VisIt_OptionList_setValueF(*args):
+  return _simV2.VisIt_OptionList_setValueF(*args)
+VisIt_OptionList_setValueF = _simV2.VisIt_OptionList_setValueF
+
+def VisIt_OptionList_setValueD(*args):
+  return _simV2.VisIt_OptionList_setValueD(*args)
+VisIt_OptionList_setValueD = _simV2.VisIt_OptionList_setValueD
+
+def VisIt_OptionList_setValueS(*args):
+  return _simV2.VisIt_OptionList_setValueS(*args)
+VisIt_OptionList_setValueS = _simV2.VisIt_OptionList_setValueS
+
 def VisIt_PointMesh_free(*args):
   return _simV2.VisIt_PointMesh_free(*args)
 VisIt_PointMesh_free = _simV2.VisIt_PointMesh_free
@@ -775,6 +832,10 @@ VisIt_RectilinearMesh_setBaseIndex = _simV2.VisIt_RectilinearMesh_setBaseIndex
 def VisIt_RectilinearMesh_setGhostCells(*args):
   return _simV2.VisIt_RectilinearMesh_setGhostCells(*args)
 VisIt_RectilinearMesh_setGhostCells = _simV2.VisIt_RectilinearMesh_setGhostCells
+
+def VisIt_RectilinearMesh_setGhostNodes(*args):
+  return _simV2.VisIt_RectilinearMesh_setGhostNodes(*args)
+VisIt_RectilinearMesh_setGhostNodes = _simV2.VisIt_RectilinearMesh_setGhostNodes
 
 def VisIt_SimulationMetaData_free(*args):
   return _simV2.VisIt_SimulationMetaData_free(*args)
@@ -888,9 +949,25 @@ def VisIt_UnstructuredMesh_setGhostCells(*args):
   return _simV2.VisIt_UnstructuredMesh_setGhostCells(*args)
 VisIt_UnstructuredMesh_setGhostCells = _simV2.VisIt_UnstructuredMesh_setGhostCells
 
+def VisIt_UnstructuredMesh_setGhostNodes(*args):
+  return _simV2.VisIt_UnstructuredMesh_setGhostNodes(*args)
+VisIt_UnstructuredMesh_setGhostNodes = _simV2.VisIt_UnstructuredMesh_setGhostNodes
+
+def VisIt_UnstructuredMesh_setGlobalCellIds(*args):
+  return _simV2.VisIt_UnstructuredMesh_setGlobalCellIds(*args)
+VisIt_UnstructuredMesh_setGlobalCellIds = _simV2.VisIt_UnstructuredMesh_setGlobalCellIds
+
+def VisIt_UnstructuredMesh_setGlobalNodeIds(*args):
+  return _simV2.VisIt_UnstructuredMesh_setGlobalNodeIds(*args)
+VisIt_UnstructuredMesh_setGlobalNodeIds = _simV2.VisIt_UnstructuredMesh_setGlobalNodeIds
+
 def VisIt_VariableData_free(*args):
   return _simV2.VisIt_VariableData_free(*args)
 VisIt_VariableData_free = _simV2.VisIt_VariableData_free
+
+def VisIt_VariableData_setDataL(*args):
+  return _simV2.VisIt_VariableData_setDataL(*args)
+VisIt_VariableData_setDataL = _simV2.VisIt_VariableData_setDataL
 
 def VisIt_VariableMetaData_free(*args):
   return _simV2.VisIt_VariableMetaData_free(*args)
@@ -920,9 +997,17 @@ def VisIt_VariableMetaData_setTreatAsASCII(*args):
   return _simV2.VisIt_VariableMetaData_setTreatAsASCII(*args)
 VisIt_VariableMetaData_setTreatAsASCII = _simV2.VisIt_VariableMetaData_setTreatAsASCII
 
+def VisIt_VariableMetaData_setHideFromGUI(*args):
+  return _simV2.VisIt_VariableMetaData_setHideFromGUI(*args)
+VisIt_VariableMetaData_setHideFromGUI = _simV2.VisIt_VariableMetaData_setHideFromGUI
+
 def VisIt_VariableMetaData_setNumComponents(*args):
   return _simV2.VisIt_VariableMetaData_setNumComponents(*args)
 VisIt_VariableMetaData_setNumComponents = _simV2.VisIt_VariableMetaData_setNumComponents
+
+def VisIt_VariableMetaData_addMaterialName(*args):
+  return _simV2.VisIt_VariableMetaData_addMaterialName(*args)
+VisIt_VariableMetaData_addMaterialName = _simV2.VisIt_VariableMetaData_addMaterialName
 
 
 def VisItGetSockets(*args):

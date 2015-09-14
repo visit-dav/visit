@@ -72,4 +72,6 @@
     </Function>
     <Function name="IsObsolete" user="true" member="true">
     </Function>
+    <Function name="Merge" user="true" member="true">
+    </Function>
   </Attribute>

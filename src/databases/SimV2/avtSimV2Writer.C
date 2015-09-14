@@ -161,9 +161,9 @@ avtSimV2Writer::OpenFile(const std::string &objName, int nb)
 
 void
 avtSimV2Writer::WriteHeaders(const avtDatabaseMetaData *md,
-    std::vector<std::string> &scalars,
-    std::vector<std::string> &vectors,
-    std::vector<std::string> &)
+    const std::vector<std::string> &scalars,
+    const std::vector<std::string> &vectors,
+    const std::vector<std::string> &)
 {
     debug1 << "avtSimV2Writer::WriteHeaders(...)\n";
     varList = scalars;

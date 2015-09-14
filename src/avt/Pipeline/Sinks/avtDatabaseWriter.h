@@ -44,6 +44,7 @@
 #define AVT_DATABASE_WRITER_H
 
 #include <avtTerminatingDatasetSink.h>
+#include <avtParallelContext.h>
 
 #include <string>
 #include <vector>
@@ -104,6 +105,9 @@ class vtkPolyData;
 //    methods to let this class perform polydata aggregation.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Brad Whitlock, Thu Aug  6 16:47:50 PDT 2015
+//    Added support for writing using groups of MPI ranks.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
@@ -126,12 +130,19 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
                        avtDatabaseWriter();
     virtual           ~avtDatabaseWriter();
    
-    void               Write(const std::string &, const avtDatabaseMetaData *);
+    void               Write(const std::string &filename,
+                             const avtDatabaseMetaData *md);
     void               Write(const std::string &plotName,
                              const std::string &filename,
                              const avtDatabaseMetaData *md,
                              std::vector<std::string> &vars,
-                             bool allVars = true);
+                             bool allVars);
+    void               Write(const std::string &plotName,
+                             const std::string &filename,
+                             const avtDatabaseMetaData *md,
+                             std::vector<std::string> &vars,
+                             bool allVars,
+                             bool writeUsingGroups, int groupSize);
 
     void               SetShouldAlwaysDoMIR(bool s)
                              { shouldAlwaysDoMIR = s; };
@@ -148,6 +159,8 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
     void               SetVariableList(std::vector<std::string> &);
     void               SetContractToUse(avtContract_p ps);
 
+    void               SetWriteContext(avtParallelContext &);
+    avtParallelContext &GetWriteContext();
   protected:
     bool               shouldAlwaysDoMIR;
     bool               shouldNeverDoMIR;
@@ -161,19 +174,23 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
     int                nTargetChunks;
     VISIT_LONG_LONG    targetTotalZones;
 
-    avtContract_p savedContract;
+    avtContract_p      savedContract;
+    avtParallelContext writeContext;
 
     virtual bool       CanHandleMaterials(void) { return false; };
 
     virtual void       CheckCompatibility(const std::string &);
     virtual void       OpenFile(const std::string &, int) = 0;
     virtual void       WriteHeaders(const avtDatabaseMetaData *, 
-                           std::vector<std::string>&,std::vector<std::string>&,
-                           std::vector<std::string> &) = 0;
+                                    const std::vector<std::string>&scalars,
+                                    const std::vector<std::string>&vectors,
+                                    const std::vector<std::string>&materials) = 0;
     virtual void       BeginPlot(const std::string &);
-    virtual void       WriteChunk(vtkDataSet *, int) = 0;
+    virtual void       WriteChunk(vtkDataSet *, int, int, const std::string &);
+    virtual void       WriteChunk(vtkDataSet *, int) = 0; // DEPRECATED VERSION
     virtual void       EndPlot(const std::string &);
     virtual void       CloseFile(void) = 0;
+    virtual void       WriteRootFile();
 
     virtual bool       SupportsTargetChunks(void) { return false; };
     virtual bool       SupportsTargetZones(void) { return false; };
@@ -182,6 +199,7 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
     virtual CombineMode GetCombineMode(const std::string &plotName) const;
     virtual bool        CreateTrianglePolyData() const;
     virtual bool        CreateNormals() const;
+    virtual bool        SequentialOutput() const;
 
     std::string         GetMeshName(const avtDatabaseMetaData *md) const;
     double              GetTime() const;
@@ -213,10 +231,22 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
                                       const std::vector<std::string> &mats,
                                       bool &changed);
 
-    vtkPolyData               *CreateSinglePolyData(avtDataTree_p rootnode);
+    vtkPolyData               *CreateSinglePolyData(avtParallelContext &context,
+                                                    avtDataTree_p rootnode);
     std::vector<vtkPolyData *> ConvertDatasetsIntoPolyData(vtkDataSet **ds, int nds);
     vtkPolyData               *CombinePolyData(const std::vector<vtkPolyData *> &pds);
-    std::vector<vtkPolyData *> SendPolyDataToRank0(const std::vector<vtkPolyData *> &pds);
+    std::vector<vtkPolyData *> SendPolyDataToRank0(avtParallelContext &context,
+                                                   const std::vector<vtkPolyData *> &pds);
+    void                GroupWrite(const std::string &plotName,
+                                   const std::string &filename,
+                                   const avtDatabaseMetaData *md,
+                                   const std::vector<std::string> &scalarList,
+                                   const std::vector<std::string> &vectorList,
+                                   const std::vector<std::string> &materialList,
+                                   int numTotalChunks, int startIndex,
+                                   int tag, bool writeUsingGroups, int groupSize);
+    void                WaitForTurn(int tag, int &nWritten);
+    void                GrantTurn(int tag, int &nWritten);
 };
 
 

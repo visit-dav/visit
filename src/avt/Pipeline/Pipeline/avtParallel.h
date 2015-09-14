@@ -56,17 +56,20 @@ class AttributeGroup;
 PIPELINE_API extern void *VISIT_MPI_COMM_PTR;
 #endif
 
-PIPELINE_API void    Barrier(void);
-PIPELINE_API bool    Collect(float *, int);
-PIPELINE_API bool    Collect(double *, int);
-PIPELINE_API bool    Collect(int *, int);
 PIPELINE_API void    PAR_Exit(void);
 PIPELINE_API void    PAR_Init(int &argc, char **&argv);
 PIPELINE_API int     PAR_Rank(void);
 PIPELINE_API int     PAR_Size(void);
 PIPELINE_API bool    PAR_UIProcess(void);
 PIPELINE_API void    PAR_WaitForDebugger(void);
-PIPELINE_API bool    PAR_SetComm(void *);     
+PIPELINE_API bool    PAR_SetComm(void *);
+PIPELINE_API void    PullInMPI_IOSymbols();
+
+// NOTE: Think about deprecating these in favor of avtParallelContext.
+PIPELINE_API void    Barrier(void);
+PIPELINE_API bool    Collect(float *, int);
+PIPELINE_API bool    Collect(double *, int);
+PIPELINE_API bool    Collect(int *, int);
 PIPELINE_API void    SumIntAcrossAllProcessors(int&);
 PIPELINE_API void    SumLongAcrossAllProcessors(long&);
 PIPELINE_API void    SumFloatAcrossAllProcessors(float&);
@@ -111,6 +114,7 @@ PIPELINE_API void    CollectIntArraysOnRootProc(int *&, int *&, int *, int);
 PIPELINE_API void    CollectDoubleArraysOnRootProc(double *&, int *&, double *, int);
 
 PIPELINE_API int     GetUniqueMessageTag();
+PIPELINE_API void    GetUniqueMessageTags(int *tags, int ntags);
 PIPELINE_API int     GetUniqueStaticMessageTag();
 
 PIPELINE_API void    GetAttToRootProc(AttributeGroup &, int);
@@ -121,5 +125,4 @@ PIPELINE_API void    WaitSome(std::vector<int> &reqs, std::vector<int> &done, st
 PIPELINE_API void    TestSome(std::vector<int> &reqs, std::vector<int> &done, std::vector<int> &status );
 PIPELINE_API void    CancelRequest(void *req);
 
-PIPELINE_API void    PullInMPI_IOSymbols();
 #endif

@@ -1188,10 +1188,12 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
       debug1 << "LCS: replicating data on all processors." << std::endl;
 
       // Setup for MPI communication
-      int mpiMinTag = GetUniqueMessageTag();
-      int mpiMaxTag = GetUniqueMessageTag();
-      int mpiSizeTag = GetUniqueMessageTag();
-      int mpiDataTag = GetUniqueMessageTag();
+      int tags[4];
+      GetUniqueMessageTags(tags, 4);
+      int mpiMinTag  = tags[0];
+      int mpiMaxTag  = tags[1];
+      int mpiSizeTag = tags[2];
+      int mpiDataTag = tags[3];
       
       // The root processor has the vtkDataSet so broadcast that out
       // to all other processors.

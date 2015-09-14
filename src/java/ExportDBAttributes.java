@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class ExportDBAttributes extends AttributeSubject
 {
-    private static int ExportDBAttributes_numAdditionalAtts = 7;
+    private static int ExportDBAttributes_numAdditionalAtts = 9;
 
     public ExportDBAttributes()
     {
@@ -69,6 +69,8 @@ public class ExportDBAttributes extends AttributeSubject
         filename = new String("visit_ex_db");
         dirname = new String(".");
         variables = new Vector();
+        writeUsingGroups = false;
+        groupSize = 48;
         opts = new DBOptionsAttributes();
     }
 
@@ -82,6 +84,8 @@ public class ExportDBAttributes extends AttributeSubject
         filename = new String("visit_ex_db");
         dirname = new String(".");
         variables = new Vector();
+        writeUsingGroups = false;
+        groupSize = 48;
         opts = new DBOptionsAttributes();
     }
 
@@ -100,6 +104,8 @@ public class ExportDBAttributes extends AttributeSubject
         for(i = 0; i < obj.variables.size(); ++i)
             variables.addElement(new String((String)obj.variables.elementAt(i)));
 
+        writeUsingGroups = obj.writeUsingGroups;
+        groupSize = obj.groupSize;
         opts = new DBOptionsAttributes(obj.opts);
 
         SelectAll();
@@ -135,6 +141,8 @@ public class ExportDBAttributes extends AttributeSubject
                 (filename.equals(obj.filename)) &&
                 (dirname.equals(obj.dirname)) &&
                 variables_equal &&
+                (writeUsingGroups == obj.writeUsingGroups) &&
+                (groupSize == obj.groupSize) &&
                 (opts.equals(obj.opts)));
     }
 
@@ -175,10 +183,22 @@ public class ExportDBAttributes extends AttributeSubject
         Select(5);
     }
 
+    public void SetWriteUsingGroups(boolean writeUsingGroups_)
+    {
+        writeUsingGroups = writeUsingGroups_;
+        Select(6);
+    }
+
+    public void SetGroupSize(int groupSize_)
+    {
+        groupSize = groupSize_;
+        Select(7);
+    }
+
     public void SetOpts(DBOptionsAttributes opts_)
     {
         opts = opts_;
-        Select(6);
+        Select(8);
     }
 
     // Property getting methods
@@ -188,6 +208,8 @@ public class ExportDBAttributes extends AttributeSubject
     public String              GetFilename() { return filename; }
     public String              GetDirname() { return dirname; }
     public Vector              GetVariables() { return variables; }
+    public boolean             GetWriteUsingGroups() { return writeUsingGroups; }
+    public int                 GetGroupSize() { return groupSize; }
     public DBOptionsAttributes GetOpts() { return opts; }
 
     // Write and read methods.
@@ -206,6 +228,10 @@ public class ExportDBAttributes extends AttributeSubject
         if(WriteSelect(5, buf))
             buf.WriteStringVector(variables);
         if(WriteSelect(6, buf))
+            buf.WriteBool(writeUsingGroups);
+        if(WriteSelect(7, buf))
+            buf.WriteInt(groupSize);
+        if(WriteSelect(8, buf))
             opts.Write(buf);
     }
 
@@ -232,8 +258,14 @@ public class ExportDBAttributes extends AttributeSubject
             SetVariables(buf.ReadStringVector());
             break;
         case 6:
+            SetWriteUsingGroups(buf.ReadBool());
+            break;
+        case 7:
+            SetGroupSize(buf.ReadInt());
+            break;
+        case 8:
             opts.Read(buf);
-            Select(6);
+            Select(8);
             break;
         }
     }
@@ -247,6 +279,8 @@ public class ExportDBAttributes extends AttributeSubject
         str = str + stringToString("filename", filename, indent) + "\n";
         str = str + stringToString("dirname", dirname, indent) + "\n";
         str = str + stringVectorToString("variables", variables, indent) + "\n";
+        str = str + boolToString("writeUsingGroups", writeUsingGroups, indent) + "\n";
+        str = str + intToString("groupSize", groupSize, indent) + "\n";
         str = str + indent + "opts = {\n" + opts.toString(indent + "    ") + indent + "}\n";
         return str;
     }
@@ -259,6 +293,8 @@ public class ExportDBAttributes extends AttributeSubject
     private String              filename;
     private String              dirname;
     private Vector              variables; // vector of String objects
+    private boolean             writeUsingGroups;
+    private int                 groupSize;
     private DBOptionsAttributes opts;
 }
 

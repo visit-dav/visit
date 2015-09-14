@@ -336,10 +336,12 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
 
    MPI_Comm_size(VISIT_MPI_COMM, &commSize);
    MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
-   int mpiResultLenTag = GetUniqueMessageTag();
-   int mpiResultStrTag = GetUniqueMessageTag();
-   int mpiSwapLenTag   = GetUniqueMessageTag();
-   int mpiSwapStrTag   = GetUniqueMessageTag();
+   int tags[4];
+   GetUniqueMessageTags(tags, 4);
+   int mpiResultLenTag = tags[0];
+   int mpiResultStrTag = tags[1];
+   int mpiSwapLenTag   = tags[2];
+   int mpiSwapStrTag   = tags[3];
    groupSize = 1;
 
    // walk up the communication tree, swapping and merging infos

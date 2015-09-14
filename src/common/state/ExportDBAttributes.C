@@ -59,6 +59,8 @@ void ExportDBAttributes::Init()
     allTimes = false;
     filename = "visit_ex_db";
     dirname = ".";
+    writeUsingGroups = false;
+    groupSize = 48;
 
     ExportDBAttributes::SelectAll();
 }
@@ -86,6 +88,8 @@ void ExportDBAttributes::Copy(const ExportDBAttributes &obj)
     filename = obj.filename;
     dirname = obj.dirname;
     variables = obj.variables;
+    writeUsingGroups = obj.writeUsingGroups;
+    groupSize = obj.groupSize;
     opts = obj.opts;
 
     ExportDBAttributes::SelectAll();
@@ -250,6 +254,8 @@ ExportDBAttributes::operator == (const ExportDBAttributes &obj) const
             (filename == obj.filename) &&
             (dirname == obj.dirname) &&
             (variables == obj.variables) &&
+            (writeUsingGroups == obj.writeUsingGroups) &&
+            (groupSize == obj.groupSize) &&
             (opts == obj.opts));
 }
 
@@ -400,6 +406,8 @@ ExportDBAttributes::SelectAll()
     Select(ID_filename,         (void *)&filename);
     Select(ID_dirname,          (void *)&dirname);
     Select(ID_variables,        (void *)&variables);
+    Select(ID_writeUsingGroups, (void *)&writeUsingGroups);
+    Select(ID_groupSize,        (void *)&groupSize);
     Select(ID_opts,             (void *)&opts);
 }
 
@@ -469,6 +477,18 @@ ExportDBAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("variables", variables));
     }
 
+    if(completeSave || !FieldsEqual(ID_writeUsingGroups, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("writeUsingGroups", writeUsingGroups));
+    }
+
+    if(completeSave || !FieldsEqual(ID_groupSize, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("groupSize", groupSize));
+    }
+
     if(completeSave || !FieldsEqual(ID_opts, &defaultObject))
     {
         DataNode *optsNode = new DataNode("opts");
@@ -529,6 +549,10 @@ ExportDBAttributes::SetFromNode(DataNode *parentNode)
         SetDirname(node->AsString());
     if((node = searchNode->GetNode("variables")) != 0)
         SetVariables(node->AsStringVector());
+    if((node = searchNode->GetNode("writeUsingGroups")) != 0)
+        SetWriteUsingGroups(node->AsBool());
+    if((node = searchNode->GetNode("groupSize")) != 0)
+        SetGroupSize(node->AsInt());
     if((node = searchNode->GetNode("opts")) != 0)
         opts.SetFromNode(node);
 }
@@ -577,6 +601,20 @@ ExportDBAttributes::SetVariables(const stringVector &variables_)
 {
     variables = variables_;
     Select(ID_variables, (void *)&variables);
+}
+
+void
+ExportDBAttributes::SetWriteUsingGroups(bool writeUsingGroups_)
+{
+    writeUsingGroups = writeUsingGroups_;
+    Select(ID_writeUsingGroups, (void *)&writeUsingGroups);
+}
+
+void
+ExportDBAttributes::SetGroupSize(int groupSize_)
+{
+    groupSize = groupSize_;
+    Select(ID_groupSize, (void *)&groupSize);
 }
 
 void
@@ -654,6 +692,18 @@ stringVector &
 ExportDBAttributes::GetVariables()
 {
     return variables;
+}
+
+bool
+ExportDBAttributes::GetWriteUsingGroups() const
+{
+    return writeUsingGroups;
+}
+
+int
+ExportDBAttributes::GetGroupSize() const
+{
+    return groupSize;
 }
 
 const DBOptionsAttributes &
@@ -738,6 +788,8 @@ ExportDBAttributes::GetFieldName(int index) const
     case ID_filename:         return "filename";
     case ID_dirname:          return "dirname";
     case ID_variables:        return "variables";
+    case ID_writeUsingGroups: return "writeUsingGroups";
+    case ID_groupSize:        return "groupSize";
     case ID_opts:             return "opts";
     default:  return "invalid index";
     }
@@ -769,6 +821,8 @@ ExportDBAttributes::GetFieldType(int index) const
     case ID_filename:         return FieldType_string;
     case ID_dirname:          return FieldType_string;
     case ID_variables:        return FieldType_stringVector;
+    case ID_writeUsingGroups: return FieldType_bool;
+    case ID_groupSize:        return FieldType_int;
     case ID_opts:             return FieldType_att;
     default:  return FieldType_unknown;
     }
@@ -800,6 +854,8 @@ ExportDBAttributes::GetFieldTypeName(int index) const
     case ID_filename:         return "string";
     case ID_dirname:          return "string";
     case ID_variables:        return "stringVector";
+    case ID_writeUsingGroups: return "bool";
+    case ID_groupSize:        return "int";
     case ID_opts:             return "att";
     default:  return "invalid index";
     }
@@ -855,6 +911,16 @@ ExportDBAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_variables:
         {  // new scope
         retval = (variables == obj.variables);
+        }
+        break;
+    case ID_writeUsingGroups:
+        {  // new scope
+        retval = (writeUsingGroups == obj.writeUsingGroups);
+        }
+        break;
+    case ID_groupSize:
+        {  // new scope
+        retval = (groupSize == obj.groupSize);
         }
         break;
     case ID_opts:

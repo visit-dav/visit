@@ -5244,6 +5244,9 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
 //   Brad Whitlock, Thu May 28 15:27:56 PDT 2015
 //   I added more commands that can come from simulations.
 //
+//   Brad Whitlock, Fri Aug 14 11:56:26 PDT 2015
+//   I added some arguments to export.
+// 
 // ****************************************************************************
 
 void
@@ -5346,11 +5349,13 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         // s[2] = id
         // s[3] = dName
         // s[4] = fName
-        // s[5] = var0
+        // s[5] = writeUsingGroups (int)
+        // s[6] = groupSize (int)
+        // s[7] = var0
         // ...   more vars.
 
         stringVector vars;
-        for(size_t i = 5; i < s.size(); ++i)
+        for(size_t i = 7; i < s.size(); ++i)
             vars.push_back(s[i]);
 
         ExportDBAttributes *atts = GetViewerState()->GetExportDBAttributes();
@@ -5359,6 +5364,8 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         atts->SetDb_type_fullname(s[2]);
         atts->SetDirname(s[3]);
         atts->SetFilename(s[4]);
+        atts->SetWriteUsingGroups(atoi(s[5].c_str()) > 0);
+        atts->SetGroupSize(atoi(s[6].c_str()));
         atts->SetVariables(vars);
         atts->Notify();
 

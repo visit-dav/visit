@@ -60,10 +60,7 @@
 #include <DBOptionsAttributes.h>
 
 #include <DebugStream.h>
-#include <avtParallel.h>
-#ifdef PARALLEL
-  #include <mpi.h>
-#endif
+#include <avtParallelContext.h>
 
 using     std::string;
 using     std::vector;
@@ -81,8 +78,7 @@ using     std::vector;
 //
 // ****************************************************************************
 
-avtSTLWriter::avtSTLWriter(DBOptionsAttributes *atts) : avtDatabaseWriter(), 
-    polydatas()
+avtSTLWriter::avtSTLWriter(DBOptionsAttributes *atts) : avtDatabaseWriter()
 {
     doBinary = atts->GetBool("Binary format");
 }
@@ -102,9 +98,7 @@ void
 avtSTLWriter::OpenFile(const string &stemname, int numblocks)
 {
     stem = stemname;
-    polydatas.clear(); // just in case.
 }
-
 
 // ****************************************************************************
 //  Method: avtSTLWriter::WriteHeaders
@@ -119,12 +113,12 @@ avtSTLWriter::OpenFile(const string &stemname, int numblocks)
 
 void
 avtSTLWriter::WriteHeaders(const avtDatabaseMetaData *md,
-                           vector<string> &scalars, vector<string> &vectors,
-                           vector<string> &materials)
+                           const vector<string> &scalars,
+                           const vector<string> &vectors,
+                           const vector<string> &materials)
 {
     // WRITE OUT HEADER INFO
 }
-
 
 // ****************************************************************************
 //  Method: avtSTLWriter::WriteChunk
@@ -140,130 +134,34 @@ avtSTLWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Save the polydata so we can combine it all into one dataset. We do any
 //    conversion to polydata and then to triangles before saving the polydata.
 //
+//    Brad Whitlock, Tue Sep  8 17:04:07 PDT 2015
+//    Rely on base class for geometry consolidation. This method will only
+//    be called on group leaders.
+//
 // ****************************************************************************
 
 void
 avtSTLWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
-    vtkPolyData *pd = vtkPolyData::SafeDownCast(ds);
-    vtkTriangleFilter *tri = vtkTriangleFilter::New();
-    if(pd == NULL)
+    std::string filename;
+    if(writeContext.GroupSize() > 1)
     {
-        vtkGeometryFilter *geom = vtkGeometryFilter::New();
-        geom->SetInputData(ds);
-
-        tri->SetInputConnection(geom->GetOutputPort());        
-        tri->Update();
-        pd = tri->GetOutput();
-        pd->Register(NULL);
-        geom->Delete();
+        char ext[20];
+        SNPRINTF(ext, 20, ".%d.stl", writeContext.GroupRank());
+        filename = stem + ext;
     }
     else
-    {
-        tri->SetInputData(pd);        
-        tri->Update();
-        pd = tri->GetOutput();
-        pd->Register(NULL);
-    }
+        filename = stem + ".stl";
 
-    tri->Delete();
+    vtkSTLWriter *writer = vtkSTLWriter::New();   
+    writer->SetFileName(filename.c_str());
+    if(doBinary)
+        writer->SetFileTypeToBinary();
 
-    polydatas.push_back(pd);
+    writer->SetInputData(ds);
+    writer->Update();
+    writer->Delete();
 }
-
-
-//****************************************************************************
-// Method:  avtSTLWriter::SendPolyDataToRank0
-//
-// Purpose:
-//   Move all the data to rank0
-//
-// Programmer:  Dave Pugmire
-// Creation:    April 15, 2013
-//
-// Modifications:
-//
-//****************************************************************************
-
-#ifdef PARALLEL
-void
-avtSTLWriter::SendPolyDataToRank0()
-{
-    int *inA = new int[PAR_Size()], *outA = new int[PAR_Size()];
-    for (int i = 0; i < PAR_Size(); i++)
-        inA[i] = outA[i] = 0;
-
-    if (PAR_Rank() != 0)
-    {
-        vtkPolyDataWriter *writer = NULL;
-        int len = 0;
-        
-        if (polydatas.size() == 0)
-            len = 0;
-        else
-        {
-            writer = vtkPolyDataWriter::New();
-            writer->WriteToOutputStringOn();
-            writer->SetFileTypeToBinary();
-            if (polydatas.size() == 1)
-                writer->SetInputData(polydatas[0]);
-            else
-            {
-                vtkAppendPolyData *f = vtkAppendPolyData::New();
-                for(size_t i = 0; i < polydatas.size(); ++i)
-                    f->AddInputData(polydatas[i]);
-                
-                writer->SetInputConnection(f->GetOutputPort());
-            }
-            
-            writer->Write();
-            len = writer->GetOutputStringLength();
-            for(size_t i = 0; i < polydatas.size(); ++i)
-                polydatas[i]->Delete();
-            polydatas.clear();
-        }
-        
-        inA[PAR_Rank()] = len;
-        MPI_Reduce(inA, outA, PAR_Size(), MPI_INT, MPI_SUM, 0, VISIT_MPI_COMM);
-        if (len > 0)
-        {
-            char *data = writer->GetOutputString();
-            MPI_Send(data, len, MPI_CHAR, 0, 0, VISIT_MPI_COMM);
-            writer->Delete();
-        }
-    }
-    else
-    {
-        MPI_Reduce(inA, outA, PAR_Size(), MPI_INT, MPI_SUM, 0, VISIT_MPI_COMM);
-        for (int i = 1; i < PAR_Size(); i++)
-        {
-            if (outA[i] > 0)
-            {
-                char *data = new char[outA[i]];
-                MPI_Status stat;
-                MPI_Recv(data, outA[i], MPI_CHAR, i, 0, VISIT_MPI_COMM, &stat);
-
-                vtkPolyDataReader *rdr = vtkPolyDataReader::New();
-                rdr->ReadFromInputStringOn();
-                vtkCharArray *charArray = vtkCharArray::New();
-                charArray->SetArray(data, outA[i], 1);
-                rdr->SetInputArray(charArray);
-                rdr->Update();
-                vtkPolyData *pd = rdr->GetOutput();
-                pd->Register(NULL);
-                polydatas.push_back(pd);
-
-                delete [] data;
-                rdr->Delete();
-                charArray->Delete();
-            }
-        }
-    }
-
-    delete [] inA;
-    delete [] outA;
-}
-#endif
 
 // ****************************************************************************
 //  Method: avtSTLWriter::CloseFile
@@ -275,53 +173,50 @@ avtSTLWriter::SendPolyDataToRank0()
 //  Creation:   Fri Jan 27 14:13:01 PST 2012
 //
 //  Modifications:
-//    Brad Whitlock, Fri Jan 27 10:00:47 PST 2012
-//    Combine all of the polydata here and write it out.
-//
-//   Dave Pugmire, Tue Apr 16 16:48:33 EDT 2013
-//   Support for exporting file in parallel
-// 
+//  
 // ****************************************************************************
 
 void
 avtSTLWriter::CloseFile(void)
 {
-#ifdef PARALLEL
-    SendPolyDataToRank0();
-    if (PAR_Rank() != 0)
-        return;
-#endif
+}
 
-    std::string filename(stem + ".stl");
-    vtkSTLWriter *writer = vtkSTLWriter::New();
-    
-    writer->SetFileName(filename.c_str());
-    if(doBinary)
-        writer->SetFileTypeToBinary();
+// ****************************************************************************
+// Method: avtSTLWriter::CreateTrianglePolyData
+//
+// Purpose:
+//   Tell VisIt's export that we'll want triangles.
+//
+// Returns:    True
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep  8 17:00:23 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
 
-    if(polydatas.size() == 1)
-    {
-        writer->SetInputData(polydatas[0]);
-        writer->Update();
-    }
-    else if(polydatas.size() > 1)
-    {
-        vtkAppendPolyData *f = vtkAppendPolyData::New();
-        for(size_t i = 0; i < polydatas.size(); ++i)
-            f->AddInputData(polydatas[i]);
+bool
+avtSTLWriter::CreateTrianglePolyData() const
+{
+    return true;
+}
 
-        writer->SetInputConnection(f->GetOutputPort());
-        writer->Update();
+// ****************************************************************************
+//  Method: avtTecplotWriter::GetCombineMode
+//
+//  Purpose:
+//     Provides a hint to the export mechanism to tell it how to combine data.
+//
+//  Note: We combine geometry because STL tools will want 1 file.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Sep  8 15:36:45 PDT 2015
+//
+// ****************************************************************************
 
-        f->Delete();
-    }
-    else
-    {
-        debug4 << "avtSTLWriter::CloseFile: No data to write" << endl;
-    }
-
-    for(size_t i = 0; i < polydatas.size(); ++i)
-        polydatas[i]->Delete();
-
-    writer->Delete();
+avtDatabaseWriter::CombineMode
+avtSTLWriter::GetCombineMode(const std::string &) const
+{
+    return CombineAll;
 }

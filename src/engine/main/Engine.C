@@ -2964,8 +2964,10 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
 #ifdef PARALLEL
 
     static const bool polysOnly = true;
-    int mpiSwapLenTag   = GetUniqueMessageTag();
-    int mpiSwapStrTag   = GetUniqueMessageTag();
+    int tags[2];
+    GetUniqueMessageTags(tags, 2);
+    int mpiSwapLenTag = tags[0];
+    int mpiSwapStrTag = tags[1];
 
     //
     // When respond with null is true, this routine still has an obligation

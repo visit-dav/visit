@@ -4578,6 +4578,9 @@ NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &
 //    down in the writer.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Brad Whitlock, Thu Aug  6 17:00:03 PDT 2015
+//    Add support for writing using groups of ranks.
+//    
 // ****************************************************************************
 
 void
@@ -4675,7 +4678,10 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
             vars.clear();
         }
 
-        wrtr->Write(plotName, qualFilename, db->GetMetaData(time), vars, doAll);
+        wrtr->Write(plotName, qualFilename, 
+            db->GetMetaData(time), vars, doAll,
+            atts.GetWriteUsingGroups(), atts.GetGroupSize());
+
         delete wrtr;
     }
     CATCH2(VisItException, e)

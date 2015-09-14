@@ -758,7 +758,13 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
     int rank;
     MPI_Comm_rank(VISIT_MPI_COMM, &rank);
 
-    int mpiMsgTag = GetUniqueMessageTag();
+    int tags[5];
+    GetUniqueMessageTags(tags, 5);
+    int mpiMsgTag        = tags[0];
+    int mpiBndDataTag    = tags[1];
+    int mpiBndMixMatTag  = tags[2];
+    int mpiBndMixZoneTag = tags[3];
+    int mpiBndMixNextTag = tags[4];
 
     for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
     {
@@ -785,11 +791,6 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
             }
         }
     }
-
-    int mpiBndDataTag    = GetUniqueMessageTag();
-    int mpiBndMixMatTag  = GetUniqueMessageTag();
-    int mpiBndMixZoneTag = GetUniqueMessageTag();
-    int mpiBndMixNextTag = GetUniqueMessageTag();
 
     for (size_t d1 = 0; d1 < sdb->boundary.size(); d1++)
     {

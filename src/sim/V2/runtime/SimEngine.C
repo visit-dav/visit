@@ -38,9 +38,10 @@
 #include <SimEngine.h>
 
 #include <ObserverToCallback.h>
-
+#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <DatabasePluginManager.h>
+#include <DatabasePluginInfo.h>
 #include <SimPlotPluginManager.h>
 #include <SimOperatorPluginManager.h>
 #include <PlotPluginInfo.h>
@@ -48,6 +49,7 @@
 #include <NetworkManager.h>
 #include <Netnodes.h>
 #include <avtDatabaseFactory.h>
+#include <StackTimer.h>
 #include <TimingsManager.h>
 #include <FileFunctions.h>
 
@@ -83,6 +85,7 @@
 #include <SimOperatorPluginManager.h>
 
 #include <avtParallel.h>
+#include <cstring>
 
 // ****************************************************************************
 // Class: SimViewerFactory
@@ -194,7 +197,9 @@ SimEngine::~SimEngine()
 //   Initializes the viewer.
 //
 // Arguments:
-//   
+//   plotPlugins     : The list of plot plugins we wanted loaded.
+//   operatorPlugins : The list of operator plugins we want loaded.
+//   noconfig        : Whether we're running in -noconfig mode.
 //
 // Returns:    
 //
@@ -209,8 +214,11 @@ SimEngine::~SimEngine()
 // ****************************************************************************
 
 void
-SimEngine::InitializeViewer()
+SimEngine::InitializeViewer(const std::vector<std::string> &plotPlugins,
+                            const std::vector<std::string> &operatorPlugins,
+                            bool noconfig)
 {
+    StackTimer t0("SimEngine::InitializeViewer");
 #ifdef SIMV2_VIEWER_INTEGRATION
     if(!viewerInitialized)
     {
@@ -224,6 +232,7 @@ SimEngine::InitializeViewer()
         SetViewerFactory(new SimViewerFactory(this));
 
         GetViewerProperties()->SetNowin(true);
+        GetViewerProperties()->SetNoConfig(noconfig);
         GetViewerProperties()->SetMasterProcess(PAR_UIProcess());
         GetViewerStateManager()->CreateState();
 
@@ -239,7 +248,7 @@ SimEngine::InitializeViewer()
         GetViewerStateManager()->ConnectDefaultState();
 
         // Finish initialization.
-        HeavyInitialization();
+        HeavyInitialization(plotPlugins, operatorPlugins);
 
         // Force scalable rendering.
         GetViewerState()->GetRenderingAttributes()->
@@ -369,6 +378,8 @@ SimEngine::SimulationInitiateCommand(const std::string &command)
 bool
 SimEngine::OpenDatabase()
 {
+    StackTimer t0("SimEngine::OpenDatabase");
+
     std::string format("SimV2_1.0");
     GetNetMgr()->GetDatabasePluginManager()->PluginAvailable(format);
    
@@ -472,12 +483,15 @@ SimEngine::GetSILForState(const std::string &/*filename*/, int /*timeState*/)
 // Creation:   Thu Sep 18 11:29:09 PDT 2014
 //
 // Modifications:
+//    Brad Whitlock, Fri Aug 14 11:51:02 PDT 2015
+//    Added support for an option list and for setting the write group size.
+//    Make sure the requested plugin is loaded.
 //
 // ****************************************************************************
 
 bool
 SimEngine::ExportDatabase(const std::string &filename, const std::string &format,
-                          const stringVector &vars)
+                          const stringVector &vars, const DBOptionsAttributes &opt)
 {
     bool retval = false;
 
@@ -495,10 +509,54 @@ SimEngine::ExportDatabase(const std::string &filename, const std::string &format
         return false;
     name = GetNetMgr()->GetDatabasePluginManager()->GetPluginName(id);
 
+    // Make sure the plugin is loaded.
+    GetNetMgr()->GetDatabasePluginManager()->LoadSinglePluginNow(id);
+
     std::string dName(FileFunctions::Dirname(filename));
     std::string fName(FileFunctions::Basename(filename));
     if(dName.empty() || dName == ".")
         dName = FileFunctions::GetCurrentWorkingDirectory();
+
+    // Get some values for the export from the option list.
+    int writeUsingGroups = 0;
+    int groupSize = PAR_Size();
+    TRY
+    {
+        if(opt.FindIndex("EXPORT_WRITE_USING_GROUPS") != -1)
+            writeUsingGroups = opt.GetInt("EXPORT_WRITE_USING_GROUPS");
+        if(opt.FindIndex("EXPORT_GROUP_SIZE") != -1)
+            groupSize = opt.GetInt("EXPORT_GROUP_SIZE");
+    }
+    CATCHALL
+    {
+    }
+    ENDTRY
+
+    // The database options we'll put into the export.
+    DBOptionsAttributes exportOptions;
+
+    // Get the plugin's default write attributes and store them in exportOptions.
+    EngineDatabasePluginInfo *info = GetNetMgr()->GetDatabasePluginManager()->
+        GetEnginePluginInfo(id);
+    if (info != NULL)
+    {
+        DBOptionsAttributes *writeOptions = info->GetWriteOptions();
+        if(writeOptions != NULL)
+        {
+            exportOptions = *writeOptions;
+            delete writeOptions;
+        }
+    }
+    else
+    {
+        debug5 << "Could not get write options for " << id << endl;
+    }
+
+    // Merge the user-specified options into the exportOptions. Values that
+    // have the same keys as the options already there will override the
+    // default options.
+    exportOptions.Merge(opt);
+    debug5 << "exportOptions = " << exportOptions << endl;
 
 #ifdef SIMV2_VIEWER_INTEGRATION
     if(viewerInitialized)
@@ -510,6 +568,9 @@ SimEngine::ExportDatabase(const std::string &filename, const std::string &format
         atts->SetDirname(dName);
         atts->SetFilename(fName);
         atts->SetVariables(vars);
+        atts->SetWriteUsingGroups(writeUsingGroups > 0);
+        atts->SetGroupSize(groupSize);
+        atts->SetOpts(exportOptions);
         atts->Notify();
 
         GetViewerMethods()->ExportDatabase();
@@ -520,8 +581,9 @@ SimEngine::ExportDatabase(const std::string &filename, const std::string &format
 #endif
         // Send a message to the viewer indicating we want it to export.
         char tmp[2048];
-        SNPRINTF(tmp, 2048, "ExportDatabase:%s:%s:%s:%s:",
-            name.c_str(), id.c_str(), dName.c_str(), fName.c_str());
+        SNPRINTF(tmp, 2048, "ExportDatabase:%s:%s:%s:%s:%d:%d:",
+            name.c_str(), id.c_str(), dName.c_str(), fName.c_str(),
+            writeUsingGroups, groupSize);
         std::string cmd(tmp);
         for(size_t i = 0; i < vars.size(); ++i)
         {
@@ -715,6 +777,8 @@ SimEngine::SaveWindow(const std::string &filename, int w, int h, int format)
 bool
 SimEngine::AddPlot(const std::string &plotType, const std::string &var)
 {
+    StackTimer t0("SimEngine::AddPlot");
+
     // Get the plugin id from the input plotType, which could be an id or a name.
     std::string id;
     for(int i = 0; i < GetNetMgr()->GetPlotPluginManager()->GetNEnabledPlugins(); ++i)
@@ -1533,7 +1597,8 @@ bool SimEngine::SetOperatorOptions(const std::string &fieldName,
 //   Sets up several of the viewer systems.
 //
 // Arguments:
-//   
+//   plotPlugins     : The list of plot plugins that we want to load.
+//   operatorPlugins : The list of operator plugins that we want to load.
 //
 // Returns:    
 //
@@ -1547,12 +1612,13 @@ bool SimEngine::SetOperatorOptions(const std::string &fieldName,
 // ****************************************************************************
 
 void
-SimEngine::HeavyInitialization()
+SimEngine::HeavyInitialization(const std::vector<std::string> &plotPlugins,
+    const std::vector<std::string> &operatorPlugins)
 {
     // The viewer likes to have its plugins loaded... I'd like to not have to
     // do this...
-    LoadPlotPlugins();
-    LoadOperatorPlugins();
+    LoadPlotPlugins(plotPlugins);
+    LoadOperatorPlugins(operatorPlugins);
 
     ViewerQueryManager::Instance()->InitializeQueryList();
 
@@ -1562,6 +1628,76 @@ SimEngine::HeavyInitialization()
 
     // Process settings. This also does stuff like read in external color tables.
     GetViewerStateManager()->ProcessSettings();
+}
+
+// ****************************************************************************
+// Method: SimEngine::RestrictPlugins
+//
+// Purpose:
+//   Restrict the plugins that we'll load to a specific list to speed startup.
+//
+//
+// Arguments:
+//   mgr : A plugin manager.
+//   ids : The list of ids or names of the plugins that we want to keep on.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 17 17:04:50 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+SimEngine::RestrictPlugins(PluginManager *mgr,
+    const std::vector<std::string> &idsOrNames)
+{
+    // If we passed a 1-element vector with "None" then let's disable all plugins.
+    bool none = idsOrNames.size() == 1 && 
+                (strcasecmp(idsOrNames[0].c_str(), "None") == 0);
+
+    if(none)
+    {
+        // Disable all plugins.
+        for(int i =0; i < mgr->GetNAllPlugins(); ++i) 
+        {
+            std::string thisId = mgr->GetAllID(i);
+            mgr->DisablePlugin(thisId);
+        }
+    }
+    else if(!idsOrNames.empty())
+    {
+        // Make the list of plugins we want to enable.
+        std::vector<std::string> ids;
+        for(size_t i = 0; i < idsOrNames.size(); ++i)
+        {
+            std::string id;
+            for(int j =0; j < mgr->GetNAllPlugins(); ++j) 
+            {
+                std::string thisId = mgr->GetAllID(j);
+                if(idsOrNames[i] == thisId)
+                    ids.push_back(thisId);
+                // or, do we have a matching name?
+                else if(idsOrNames[i] == mgr->GetPluginName(thisId))
+                    ids.push_back(thisId);
+            }
+        }
+
+        // Disable all plugins.
+        for(int i =0; i < mgr->GetNAllPlugins(); ++i) 
+        {
+            std::string thisId = mgr->GetAllID(i);
+            mgr->DisablePlugin(thisId);
+        }
+
+        // Re-enable the plugins that we do want to load.
+        for(size_t i = 0; i < ids.size(); ++i)
+            mgr->EnablePlugin(ids[i]);
+    }
 }
 
 // ****************************************************************************
@@ -1580,7 +1716,7 @@ SimEngine::HeavyInitialization()
 // ****************************************************************************
 
 void
-SimEngine::LoadPlotPlugins()
+SimEngine::LoadPlotPlugins(const std::vector<std::string> &plotPlugins)
 {
     int total  = visitTimer->StartTimer();
     int timeid = visitTimer->StartTimer();
@@ -1590,6 +1726,8 @@ SimEngine::LoadPlotPlugins()
     //
     TRY
     {
+        RestrictPlugins(GetPlotPluginManager(), plotPlugins);
+
         GetPlotPluginManager()->LoadPluginsNow();
     }
     CATCH2(VisItException, e)
@@ -1631,7 +1769,7 @@ SimEngine::LoadPlotPlugins()
 // ****************************************************************************
 
 void
-SimEngine::LoadOperatorPlugins()
+SimEngine::LoadOperatorPlugins(const std::vector<std::string> &operatorPlugins)
 {
     int total = visitTimer->StartTimer();
     int timeid = visitTimer->StartTimer();
@@ -1641,6 +1779,8 @@ SimEngine::LoadOperatorPlugins()
     //
     TRY
     {
+        RestrictPlugins(GetOperatorPluginManager(), operatorPlugins);
+
         GetOperatorPluginManager()->LoadPluginsNow();
     }
     CATCH2(VisItException, e)
@@ -1689,6 +1829,8 @@ SimEngine::LoadOperatorPlugins()
 void
 SimEngine::AddInitialWindows()
 {
+    StackTimer t0("SimEngine::AddInitialWindows");
+
     // Make sure the viewer properties have good values for windows and decorations.
     if (GetViewerProperties()->GetWindowBorders().empty())
     {
@@ -1778,6 +1920,10 @@ SimEngine::HandleViewerRPCCallback(Subject *, void *)
 {
     if(GetViewerState()->GetViewerRPC()->GetRPCType() != ViewerRPC::CloseRPC)
     {
+        std::string name = ViewerRPC::ViewerRPCType_ToString(
+            GetViewerState()->GetViewerRPC()->GetRPCType());
+        StackTimer t0(name);
+
         ViewerWindowManager::Instance()->GetActiveWindow()->GetActionManager()->
             HandleAction(*GetViewerState()->GetViewerRPC());
     }

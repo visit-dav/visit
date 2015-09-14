@@ -196,9 +196,12 @@ void avtCurveConstructorFilter::Execute()
 
     MPI_Comm_size(VISIT_MPI_COMM, &numProcs);
     MPI_Comm_rank(VISIT_MPI_COMM, &myRank);
-    int mpiNdsTag = GetUniqueMessageTag();
-    int mpiSizeTag = GetUniqueMessageTag();
-    int mpiDataTag = GetUniqueMessageTag();
+
+    int tags[3];
+    GetUniqueMessageTags(tags, 3);
+    int mpiNdsTag  = tags[0];
+    int mpiSizeTag = tags[1];
+    int mpiDataTag = tags[2];
 
     if (myRank == 0)
     {

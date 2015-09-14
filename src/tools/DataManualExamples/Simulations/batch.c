@@ -82,10 +82,14 @@ typedef struct
 #endif
     int      par_rank;
     int      par_size;
+    int      maxcycles;
     int      cycle;
     double   time;
+    char     format[30];
+    int      domains[3];
     int      dims[3];
     float    extents[6];
+    int      groupSize;
     float   *x;
     float   *y;
     float   *z;
@@ -97,8 +101,13 @@ simulation_data_ctor(simulation_data *sim)
 {
     sim->par_rank = 0;
     sim->par_size = 1;
+    sim->maxcycles = 1000000;
     sim->cycle = 0;
     sim->time = 0.;
+    strcpy(sim->format, "FieldViewXDB_1.0");
+    sim->domains[0] = 1;
+    sim->domains[1] = 1;
+    sim->domains[2] = 1;
     sim->dims[0] = 50;
     sim->dims[1] = 50;
     sim->dims[2] = 50;
@@ -108,6 +117,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->extents[3] = 10.f;
     sim->extents[4] = 0.f;
     sim->extents[5] = 10.f;
+    sim->groupSize = -1;
     sim->x = NULL;
     sim->y = NULL;
     sim->z = NULL;
@@ -139,11 +149,20 @@ simulation_data_dtor(simulation_data *sim)
     }
 }
 
+void
+simulation_data_domainIJK(simulation_data *sim, int *idom, int *jdom, int *kdom)
+{
+    int NXY = sim->domains[0]*sim->domains[1];
+    *kdom = sim->par_rank / (NXY);
+    *jdom = (sim->par_rank % NXY) / sim->domains[0];
+    *idom = (sim->par_rank % NXY) % sim->domains[0];
+}
+
 void 
 simulation_data_update(simulation_data *sim)
 {
-    float x,y,z,offset;
-    int index, i,j,k, npts, ncells;
+    float x,y,z,offset[3];
+    int index, i,j,k, npts, ncells, idom, jdom, kdom;
     npts = sim->dims[0]*sim->dims[1]*sim->dims[2];
     ncells = (sim->dims[0]-1)*(sim->dims[1]-1)*(sim->dims[2]-1);
 
@@ -161,8 +180,12 @@ simulation_data_update(simulation_data *sim)
         sim->z = (float *)malloc(sizeof(float) * npts);
         sim->q = (float *)malloc(sizeof(float) * ncells);
 
+        simulation_data_domainIJK(sim, &idom, &jdom, &kdom);
+
         /* Init coordinates. */
-        offset = (sim->extents[1] - sim->extents[0]) * sim->par_rank;
+        offset[0] = (sim->extents[1] - sim->extents[0]) * idom;
+        offset[1] = (sim->extents[3] - sim->extents[2]) * jdom;
+        offset[2] = (sim->extents[5] - sim->extents[4]) * kdom;
         index = 0;
         for(k = 0; k < sim->dims[2]; ++k)
         {
@@ -176,9 +199,9 @@ simulation_data_update(simulation_data *sim)
                 {
                     float tx = ((float)i) / ((float)(sim->dims[0] - 1));
                     x = (1.f-tx)*sim->extents[0] + tx*sim->extents[1];
-                    sim->x[index] = x + offset;
-                    sim->y[index] = y;
-                    sim->z[index] = z;
+                    sim->x[index] = x + offset[0];
+                    sim->y[index] = y + offset[1];
+                    sim->z[index] = z + offset[2];
                     ++index;
                 }
             }
@@ -220,12 +243,16 @@ simulation_data_update(simulation_data *sim)
 
 void mainloop_batch(simulation_data *sim)
 {
+    int err;
     char filebase[100];
-    const char *extractvars[] = {"q", "xc", "radius", NULL};
+    const char *extractvars[] = {"q", "xc", "radius", "dom", NULL};
     double origin[] = {5., 5., 5.}, normal[] = {0., 0.707, 0.707};
-    double isos[] = {0.2, 0.5, 0.8};
+    double isos[] = {5., 11., 18.};
     double v0[] = {1.,1.,1.}, v1[] = {5., 1.5, 7.}, v2[] = {8., 2., 5.};
-    
+#ifdef PARALLEL
+    double init0, init1;
+    init0 = MPI_Wtime();
+#endif
     /* Explicitly load VisIt runtime functions and install callbacks. */
     VisItInitializeRuntime();
     VisItSetSlaveProcessCallback2(SimSlaveProcessCallback, (void*)sim);
@@ -233,8 +260,15 @@ void mainloop_batch(simulation_data *sim)
     VisItSetGetMesh(SimGetMesh, (void*)sim);
     VisItSetGetVariable(SimGetVariable, (void*)sim);
     VisItSetGetDomainList(SimGetDomainList, (void*)sim);
+#ifdef PARALLEL
+    init1 = MPI_Wtime();
+    if(sim->par_rank == 0)
+    {
+        printf("Initialization time: %lg\n", init1 - init0);
+    }
+#endif
 
-    while(1)
+    while(sim->cycle < sim->maxcycles)
     {  
         /* Update the simulation data for this iteration.*/     
         simulation_data_update(sim);
@@ -242,24 +276,51 @@ void mainloop_batch(simulation_data *sim)
         /* Tell VisIt that some metadata changed.*/
         VisItTimeStepChanged();
 
+        /* Set some extract options. */
+        extract_set_options(sim->format, (sim->groupSize > 0)?1:0, sim->groupSize);
+
         /* Make some extracts. */
         sprintf(filebase, "slice3v_%04d", sim->cycle);
-        extract_slice_3v(filebase, v0, v1, v2, extractvars);
+        err = extract_slice_3v(filebase, v0, v1, v2, extractvars);
+        if(sim->par_rank == 0)
+        {
+            printf("slice3v export returned %s\n", extract_err(err));
+        }
 
         sprintf(filebase, "sliceON_%04d", sim->cycle);
-        extract_slice_origin_normal(filebase, origin, normal, extractvars);
+        err = extract_slice_origin_normal(filebase, origin, normal, extractvars);
+        if(sim->par_rank == 0)
+        {
+            printf("sliceON export returned %s\n", extract_err(err));
+        }
 
         sprintf(filebase, "sliceX_%04d", sim->cycle);
-        extract_slice(filebase, 0, 0.5, extractvars);
+        err = extract_slice(filebase, 0, 0.5, extractvars);
+        if(sim->par_rank == 0)
+        {
+            printf("sliceX export returned %s\n", extract_err(err));
+        }
 
         sprintf(filebase, "sliceY_%04d", sim->cycle);
-        extract_slice(filebase, 1, 2.5, extractvars);
+        err = extract_slice(filebase, 1, 2.5, extractvars);
+        if(sim->par_rank == 0)
+        {
+            printf("slice export returned %s\n", extract_err(err));
+        }
 
         sprintf(filebase, "sliceZ_%04d", sim->cycle);
-        extract_slice(filebase, 2, 5., extractvars);
+        err = extract_slice(filebase, 2, 5., extractvars);
+        if(sim->par_rank == 0)
+        {
+            printf("sliceZ export returned %s\n", extract_err(err));
+        }
 
         sprintf(filebase, "iso_%04d", sim->cycle);
-        extract_iso(filebase, "q", isos, 3, extractvars);
+        err = extract_iso(filebase, "radius", isos, 3, extractvars);
+        if(sim->par_rank == 0)
+        {
+            printf("iso export returned %s\n", extract_err(err));
+        }
 
         ++sim->cycle;
         sim->time += (M_PI / 10.);
@@ -284,7 +345,7 @@ void mainloop_batch(simulation_data *sim)
 int main(int argc, char **argv)
 {
     int i;
-    char *env = NULL;
+    char tracefile[1000], options[1000], *opt, *env = NULL;
     simulation_data sim;
     simulation_data_ctor(&sim);
 
@@ -300,24 +361,33 @@ int main(int argc, char **argv)
     MPI_Comm_size (sim.par_comm, &sim.par_size);
 #endif
 
+#if 1
+    /* Let's restrict the plugins that we load in batch. */
+    strcpy(options, "-plotplugins Contour,Mesh,Pseudocolor -operatorplugins Slice,Isosurface,Threshold -noconfig");
+    opt = options + strlen(options);
+#else
+    opt = options;
+    opt[0] = '\0';
+#endif
+
     /* Check for command line arguments. */
     for(i = 1; i < argc; ++i)
     {
         if((i+1) < argc)
         {
-            if(strcmp(argv[i], "-nx") == 0)
+            if(strcmp(argv[i], "-dims") == 0)
             {
-                sscanf(argv[i+1], "%d", &sim.dims[0]);
+                sscanf(argv[i+1], "%d,%d,%d", &sim.dims[0], &sim.dims[1], &sim.dims[2]);
                 i++;
             }
-            else if(strcmp(argv[i], "-ny") == 0)
+            else if(strcmp(argv[i], "-domains") == 0)
             {
-                sscanf(argv[i+1], "%d", &sim.dims[1]);
+                sscanf(argv[i+1], "%d,%d,%d", &sim.domains[0], &sim.domains[1], &sim.domains[2]);
                 i++;
             }
-            else if(strcmp(argv[i], "-nz") == 0)
+            else if(strcmp(argv[i], "-maxcycles") == 0)
             {
-                sscanf(argv[i+1], "%d", &sim.dims[2]);
+                sscanf(argv[i+1], "%d", &sim.maxcycles);
                 i++;
             }
             else if(strcmp(argv[i], "-dir") == 0)
@@ -326,8 +396,49 @@ int main(int argc, char **argv)
                 VisItSetDirectory(argv[i+1]);
                 i++;
             }
+            else if(strcmp(argv[i], "-groupsize") == 0)
+            {
+                sim.groupSize = atoi(argv[i+1]);
+                i++;
+            }
+            else if(strcmp(argv[i], "-trace") == 0)
+            {
+                sprintf(tracefile, "%s.%d.log", argv[i+1], sim.par_rank);
+                VisItOpenTraceFile(tracefile);
+                i++;
+            }
+            else if(strcmp(argv[i], "-format") == 0)
+            {
+                strncpy(sim.format, argv[i+1], 30);
+                i++;
+            }
+            else
+            {
+                if(strlen(options) > 0)
+                    opt = strcat(opt, " ");
+                opt = strcat(opt, argv[i]);
+            }
+        }
+        else
+        {
+            if(strlen(options) > 0)
+                opt = strcat(opt, " ");
+            opt = strcat(opt, argv[i]);
         }
     }
+
+    if(sim.domains[0]*sim.domains[1]*sim.domains[2] != sim.par_size)
+    {
+        if(sim.par_rank == 0)
+            fprintf(stderr, "The number of domains must match the number of ranks.\n");
+#ifdef PARALLEL
+        MPI_Finalize();
+#endif
+        return -1;
+    }
+
+    if(strlen(options) > 0)
+        VisItSetOptions(options);
 
 #ifdef PARALLEL
     /* Install callback functions for global communication. */
@@ -437,7 +548,7 @@ SimGetMetaData(void *cbdata)
             VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_CURVILINEAR);
             VisIt_MeshMetaData_setTopologicalDimension(mmd, 3);
             VisIt_MeshMetaData_setSpatialDimension(mmd, 3);
-            VisIt_MeshMetaData_setNumDomains(mmd, sim->par_size);
+            VisIt_MeshMetaData_setNumDomains(mmd, sim->domains[0]*sim->domains[1]*sim->domains[2]);
             VisIt_MeshMetaData_setDomainTitle(mmd, "Domains");
             VisIt_MeshMetaData_setDomainPieceName(mmd, "domain");
             VisIt_MeshMetaData_setNumGroups(mmd, 0);
@@ -471,6 +582,14 @@ SimGetMetaData(void *cbdata)
         if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
         {
             VisIt_VariableMetaData_setName(vmd, "radius");
+            VisIt_VariableMetaData_setMeshName(vmd, "mesh");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "dom");
             VisIt_VariableMetaData_setMeshName(vmd, "mesh");
             VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
             VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
@@ -577,6 +696,18 @@ SimGetVariable(int domain, const char *name, void *cbdata)
                               sim->z[index]*sim->z[index]);
         VisIt_VariableData_setDataD(h, VISIT_OWNER_VISIT, 1,
             npts, rad);
+    }
+    else if(strcmp(name, "dom") == 0)
+    {
+        int index;
+        float *dom = NULL;
+        VisIt_VariableData_alloc(&h);
+        /* On the fly data generation. We donate the array to VisIt. */
+        dom = (float *)malloc(npts * sizeof(int));
+        for(index = 0; index < npts; ++index)
+            dom[index] = domain;
+        VisIt_VariableData_setDataF(h, VISIT_OWNER_VISIT, 1,
+            npts, dom);
     }
     return h;
 }

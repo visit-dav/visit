@@ -1463,8 +1463,10 @@ avtIndexSelectFilter::Replicate()
     if (dataObjectType == VTK_STRUCTURED_GRID)
     {
 #ifdef PARALLEL
-        int mpiNBTag = GetUniqueMessageTag();
-        int mpiDataTag = GetUniqueMessageTag();
+        int tags[2];
+        GetUniqueMessageTags(tags, 2);
+        int mpiNBTag   = tags[0];
+        int mpiDataTag = tags[1];
         vector<avtIndexSelectFilter::LogicalSpaces> maxSpaces;
         vector<avtIndexSelectFilter::LogicalSpaces> minSpaces;
         if (myRank == 0)
@@ -1555,8 +1557,10 @@ avtIndexSelectFilter::Replicate()
         }
         for (size_t j = 0; j < maxSpaces.size(); ++j)
         {
-            int mpiSizeTag = GetUniqueMessageTag();
-            int mpiDSTag = GetUniqueMessageTag();
+            int tags[2];
+            GetUniqueMessageTags(tags, 2);
+            int mpiSizeTag = tags[0];
+            int mpiDSTag   = tags[1];
             size_t maxBlock = 0;
             size_t minBlock = 0;
             if (myRank == maxSpaces[j].rank && myRank == minSpaces[j].rank)

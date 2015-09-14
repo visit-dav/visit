@@ -1591,13 +1591,15 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
     int rank = 0;
 #ifdef PARALLEL
     MPI_Comm_rank(VISIT_MPI_COMM, &rank);
-    int mpiNPtsTag = GetUniqueMessageTag();
-    int mpiGainedPointsTag = GetUniqueMessageTag();
-    int mpiOriginalIdsTag = GetUniqueMessageTag();
-    int mpiNumGivenCellsTag = GetUniqueMessageTag();
-    int mpiCellTypesTag = GetUniqueMessageTag();
-    int mpiNumPointsPerCellTag = GetUniqueMessageTag();
-    int mpiCellPointIdsTag = GetUniqueMessageTag();
+    int tags[7];
+    GetUniqueMessageTags(tags, 7);
+    int mpiNPtsTag             = tags[0];
+    int mpiGainedPointsTag     = tags[1];
+    int mpiOriginalIdsTag      = tags[2];
+    int mpiNumGivenCellsTag    = tags[3];
+    int mpiCellTypesTag        = tags[4];
+    int mpiNumPointsPerCellTag = tags[5];
+    int mpiCellPointIdsTag     = tags[6];
 #endif
 
     gainedPoints = new T**[nTotalDomains];
@@ -1926,8 +1928,10 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
     int rank = 0;
 #ifdef PARALLEL
     MPI_Comm_rank(VISIT_MPI_COMM, &rank);
-    int mpiNDataTag = GetUniqueMessageTag();
-    int mpiGainedValsTag = GetUniqueMessageTag();
+    int tags[2];
+    GetUniqueMessageTags(tags, 2);
+    int mpiNDataTag      = tags[0];
+    int mpiGainedValsTag = tags[1];
 #endif
 
     vals      = new float**[nTotalDomains];
@@ -2198,10 +2202,12 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
     int rank = 0;
 #ifdef PARALLEL
     MPI_Comm_rank(VISIT_MPI_COMM, &rank);
-    int mpiNDataTag = GetUniqueMessageTag();
-    int mpiGainedMatlistTag = GetUniqueMessageTag();
-    int mpiGainedMixmatTag = GetUniqueMessageTag();
-    int mpiGainedMixvfTag = GetUniqueMessageTag();
+    int tags[4];
+    GetUniqueMessageTags(tags, 4);
+    int mpiNDataTag         = tags[0];
+    int mpiGainedMatlistTag = tags[1];
+    int mpiGainedMixmatTag  = tags[2];
+    int mpiGainedMixvfTag   = tags[3];
 #endif
 
     gainedMatlist = new int**[nTotalDomains];
@@ -2534,8 +2540,10 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
     int rank = 0;
 #ifdef PARALLEL
     MPI_Comm_rank(VISIT_MPI_COMM, &rank);
-    int mpiNumTuplesTag = GetUniqueMessageTag();
-    int mpiTupleDataTag = GetUniqueMessageTag();
+    int tags[2];
+    GetUniqueMessageTags(tags, 2);
+    int mpiNumTuplesTag = tags[0];
+    int mpiTupleDataTag = tags[1];
 #endif
 
     int nComponents = 0;

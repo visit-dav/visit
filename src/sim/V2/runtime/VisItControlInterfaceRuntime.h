@@ -95,6 +95,7 @@ SIMV2_API int     simv2_set_plot_options(void *, const char *, int, void *, int)
 SIMV2_API int     simv2_set_operator_options(void *, const char *, int, void *, int);
 
 SIMV2_API int     simv2_exportdatabase(void *, const char *, const char *, visit_handle);
+SIMV2_API int     simv2_exportdatabase_with_options(void *, const char *, const char *, visit_handle, visit_handle);
 SIMV2_API int     simv2_restoresession(void *, const char *);
 
 #ifdef __cplusplus

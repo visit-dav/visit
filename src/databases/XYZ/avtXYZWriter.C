@@ -37,18 +37,19 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtXYZWriter.C                             //
+//                              avtXYZWriter.C                               //
 // ************************************************************************* //
 
 #include <avtXYZWriter.h>
-
-#include <vector>
 
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
 #include <vtkCellArray.h>
 #include <AtomicProperties.h>
 #include <avtDatabaseMetaData.h>
+
+#include <fstream>
+#include <vector>
 
 using namespace std;
 
@@ -80,8 +81,6 @@ void
 avtXYZWriter::OpenFile(const string &stemname, int numblocks)
 {
     stem = stemname;
-    string file = stem + ".xyz";
-    out.open(file.c_str());
 }
 
 
@@ -99,8 +98,9 @@ avtXYZWriter::OpenFile(const string &stemname, int numblocks)
 
 void
 avtXYZWriter::WriteHeaders(const avtDatabaseMetaData *md,
-                           vector<string> &scalars, vector<string> &vectors,
-                           vector<string> &materials)
+                           const vector<string> &scalars,
+                           const vector<string> &vectors,
+                           const vector<string> &materials)
 {
     // nothing to do; we're just going to write everything to a single
     // XYZ fle (as if each chunk was a timestep), so the headers are
@@ -132,6 +132,19 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if (natoms == 0)
         return;
 
+    std::string filename;
+    if(writeContext.GroupSize() > 1)
+    {
+        char ext[20];
+        SNPRINTF(ext, 20, ".%d.xyz", writeContext.GroupRank());
+        filename = stem + ext;
+    }
+    else
+        filename = stem + ".xyz";
+
+    std::ofstream  out;
+    out.open(filename.c_str());
+
     // Collect up the data arrays, and find the atomic number one
 #define MAX_XYZ_VARS 6
     int nvars = 0;
@@ -152,7 +165,6 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
             arrays[nvars++] = arr;
         }
     }
-
 
     // Write out the atoms.
     out << "  "<< natoms << endl;
@@ -177,8 +189,9 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
             out << arrays[j]->GetTuple1((vtkIdType)a) << "\t";
         out << endl;
     }
-}
 
+    out.close();
+}
 
 // ****************************************************************************
 //  Method: avtXYZWriter::CloseFile
@@ -194,5 +207,22 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
 void
 avtXYZWriter::CloseFile(void)
 {
-    out.close();
 }
+
+// ****************************************************************************
+//  Method: avtXYZWriter::GetCombineMode
+//
+//  Purpose:
+//     Provides a hint to the export mechanism to tell it how to combine data.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Sep  8 15:36:45 PDT 2015
+//
+// ****************************************************************************
+
+avtDatabaseWriter::CombineMode
+avtXYZWriter::GetCombineMode(const std::string &) const
+{
+    return CombineAll;
+}
+

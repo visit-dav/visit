@@ -30,8 +30,9 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden -DVIZSCHEM
 # Get these via CC -v
 VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS "-I/opt/cray/mpt/7.1.1/gni/mpich2-gnu/49/include" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/opt/cray/mpt/7.1.1/gni/mpich2-gnu/49/include" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/7.1.1/gni/mpich2-gnu/49/lib -L/opt/cray/pmi/5.0.6-1.0000.10439.140.2.ari/lib64 -L/opt/cray/alps/5.2.1-2.0502.9041.11.6.ari/lib64" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/cray/mpt/7.1.1/gni/mpich2-gnu/49/lib;/opt/cray/pmi/5.0.6-1.0000.10439.140.2.ari/lib64;/opt/cray/alps/5.2.1-2.0502.9041.11.6.ari/lib64" TYPE STRING)
+#VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/7.1.1/gni/mpich2-gnu/49/lib -L/opt/cray/pmi/5.0.6-1.0000.10439.140.2.ari/lib64 -L/opt/cray/alps/5.2.1-2.0502.9041.11.6.ari/lib64" TYPE STRING)
+#VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/cray/mpt/7.1.1/gni/mpich2-gnu/49/lib;/opt/cray/pmi/5.0.6-1.0000.10439.140.2.ari/lib64;/opt/cray/alps/5.2.1-2.0502.9041.11.6.ari/lib64" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/7.1.1/gni/mpich2-gnu/49/lib -L/opt/cray/pmi/5.0.6-1.0000.10439.140.2.ari/lib64 -L/opt/cray/alps/5.2.1-2.0502.9041.11.6.ari/lib64 -Wl,-rpath,/opt/cray/mpt/7.1.1/gni/mpich2-gnu/49/lib -Wl,-rpath,/opt/cray/pmi/5.0.6-1.0000.10439.140.2.ari/lib64 -Wl,-rpath,/opt/cray/alps/5.2.1-2.0502.9041.11.6.ari/lib64" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich pmi alpslli alpsutil pthread rt)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 VISIT_OPTION_DEFAULT(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE ON)

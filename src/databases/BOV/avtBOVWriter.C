@@ -112,8 +112,9 @@ avtBOVWriter::OpenFile(const string &stemname, int nb)
 
 void
 avtBOVWriter::WriteHeaders(const avtDatabaseMetaData *md,
-                           vector<string> &scalars, vector<string> &vectors,
-                           vector<string> &materials)
+                           const vector<string> &scalars,
+                           const vector<string> &vectors,
+                           const vector<string> &materials)
 {
     if (shouldChangeTotalZones || shouldChangeChunks)
     {

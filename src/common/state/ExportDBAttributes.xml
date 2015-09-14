@@ -15,6 +15,12 @@
     </Field>
     <Field name="variables" label="variables" type="stringVector">
     </Field>
+    <Field name="writeUsingGroups" label="Write using Groups" type="bool">
+      false
+    </Field>
+    <Field name="groupSize" label="Group size" type="int">
+      48
+    </Field>
     <Field name="opts" label="opts" type="att" subtype="DBOptionsAttributes">
     </Field>
   </Attribute>

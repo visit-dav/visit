@@ -43,8 +43,43 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.10</font></b></p>
 <ul>
+  <li>A new <i>VisItExportDatabaseWithOptions()</i> function was added to Libsim. The function is like <i>VisItExportDatabase()</i> except that it takes a 4th argument that lets the simulation pass an option list. An option list is a set of key/value pairs that lets the simulation provide write options for the selected writer plug-in.
+<p><b>Example:</b><br>
+<font color="#6666dd"><code><pre>
+/* Write binary VTK data. */
+VisIt_OptionList_alloc(&opts);
+VisIt_OptionList_setValueB(opts, "Binary format", 1);
+VisItExportDatabaseWithOptions(filebase, "VTK_1.0", vars, opts);
+</pre></code></font></p>
+ </p>
+ </li>
+
+  <li><p>VisIt's export mechanism has been enhanced with support for <i>"Write Groups"</i>. When writing out data on HPC systems independent file writes often provides the best performance up to around a few thousand MPI ranks. After that, file system limitations begin to emerge and it makes sense to coordinate access to the parallel file system to get overall faster performance. Write groups are an optional feature provided in the <b>Export</b> window that enable VisIt to partition its MPI ranks into smaller groups of user-specified size. The MPI ranks within each group then coordinate their access to the file system. This can reduce contention and improve overall performance. On systems such as NERSC's edison machine, partitioning a VisIt job into groups of 48-96 processors can greatly improve export performance. The optimal size of the write group depends on the size of the VisIt job and the amount of data being written.</p>
+<p>
+Some file format plug-ins can tell VisIt that they want geometry from various MPI ranks aggregated on rank 0 so a single file can be written. At scale, writing aggregating geometry to a single MPI rank is extremely costly and VisIt risks running out of memory. For formats that aggregate data, write groups improve scalability by aggregating data onto the leader rank of each write group, which then writes out the data to the file format. This will result in more files but exports will be faster.
+</p>
+<p>The write group functionality is available by passing an option list to Libsim's <i>VisItExportDatabaseWithOptions()</i> function.<br>
+<p><b>Example:</b><br>
+<font color="#6666dd"><code><pre>
+visit_handle vars = VISIT_INVALID_HANDLE, opts = VISIT_INVALID_HANDLE;
+VisIt_NameList_alloc(&vars);
+VisIt_NameList_addName(vars, "pressure");
+
+/* Construct write groups of 48 processors. */
+VisIt_OptionList_alloc(&opts);
+VisIt_OptionList_setValueI(opts, VISIT_EXPORT_WRITE_USING_GROUPS, 1);
+VisIt_OptionList_setValueI(opts, VISIT_EXPORT_GROUP_SIZE, 48);
+
+VisItExportDatabaseWithOptions(filebase, exportFormat, vars, opts);
+
+VisIt_NameList_free(vars);
+VisIt_OptionList_free(opts);
+</pre></code></font></p>
+ </li>
+
   <li>Libsim's VisIt_VariableData object was extended so you can optionally supply it with multiple data arrays, each representing a separate component of data. This enhancement permits VisIt to accept non-contiguous simulation data without first converting that data to a contiguous representation. This is a particularly useful feature for array-of-structure data structures and will reduce Libsim's memory overhead.
 Data arrays using the new <i>setArrayData</i> functions can have one or more components, which have their own base address and associated offset and stride. All of the previous <i>setData</i> functions continue to work and remain the preferred method for passing contiguous data to Libsim. The flexibility offered by the new <i>setArrayData</i> functions allows simulation data to be used directly (zero-copy) in situations that would previously have required a copy of the data.<br>
+
 <p><b>Structure of Arrays Example:</b><br>
 <font color="#6666dd"><code><pre>
 #define MAX_PART 100
@@ -96,9 +131,13 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
    </p>
   </li>
   <li>Libsim's Fortran bindings were enhanced so the <i>visitsetmpicommunicator</i> function passes an MPI communicator by its integer handle. Thank you to William T. Jones for this improvement.</li>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>Libsim's runtime library was improved so when it is used in batch mode, it loads color tables broadcast from rank 0 to lessen the demands on the file system. This reduces Libsim initialization time.</li>
+  <li>Libsim's runtime library was enhanced so it can be initialized with a set of user-specified plot and operator plugins. Restricting the number of plot and operator plugins is useful in batch mode and it can dramatically improve initialization time. Plugins are specified using <i>-plotplugins</i> and <i>-operatorplugins</i> command line arguments passed to the <i>VisItSetOptions()</i> function. Each argument takes a comma-separated list of plugin names or id's.<br>
+<p><b>Example:</b><br>
+<font color="#6666dd"><code><pre>
+VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice,Threshold");
+</pre></code></font></p>
+  </li>
 </ul>
 
 <a name="GUI_Changes"></a>
@@ -124,6 +163,9 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
   <li>The Nek5000 reader had an issue with #std 8 data files (double size data). The data dimensions would be read wrong. This has been fixed.</li>
   <li>VisIt can now read <i>.vtm</i> VTK multiblock files.  Exporting multi-block data as VTK XML format will now write out <i>.vtm</i> files instead of <i>.visit</i> for grouping the indidividual blocks.</li>
   <li>The Pixie plugin now supports ghost zones (thanks to Jean Favre).</li>
+  <li>VisIt can more reliably export data to Tecplot format in parallel.</li>
+  <li>VisIt can export XYZ format data in parallel.</li>
+  <li>VisIt's Tecplot reader can now export datasets that use other than single floating point precision.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -179,9 +221,10 @@ Data passed via the new <i>setDataArray</i> functions are supported for mesh coo
   <li>2D axis titles have been fixed so that a color other than foreground color can be used.</li>
   <li>Libsim's internal buffer for retrieving the user's environment was fixed at 10Kb, which is not large enough to accommodate some users' environments. The environment retrieval code has been rewritten to handle arbitrary sizes.</li>
   <li>The splatting render mode in the Volume plot was corrected so it would no longer change graphics settings in a way that could corrupt the rendering of other plots such as Pseudocolor.</li>
+  <li>Calling the Libsim function <i>VisItExportDatabase()</i> from a batch-only simulation would silently fail to export files for file format writers that provided database options (e.g. the VTK writer and Silo writers). This fix ensures that those file formats work for export from batch simulations.</li>
   <li>The VTK reader was serving up invalid time values for files that did not have time.</li>
   <li>A bug was fixed with the NamedSelection and SmoothPolyData filters, where VisIt would give an error if the filter generated any empty domains.</li>
-  <li>Fixed a case where VisIt's Recenter expression could SEGV if it encountered some domains with zero points and/or zero cells</li>.
+  <li>Fixed a case where VisIt's Recenter expression could SEGV if it encountered some domains with zero points and/or zero cells.</li>
   <li>The internal launcher now adds unknown arguments before the "-s script_name" argument and not between the script name and the script arguments.</li>
   <li>The advanced multi-window image save capability was modified to initialize the background to white.</li>
 </ul>
