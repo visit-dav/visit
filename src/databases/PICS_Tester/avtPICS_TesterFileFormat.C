@@ -51,14 +51,49 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkFieldData.h>
 
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
+#include <avtStructuredDomainBoundaries.h>
+#include <avtVariableCache.h>
+
+#include <avtParallel.h>
 
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
+
+// ****************************************************************************
+//  Method: PrintVec
+//
+//  Purpose:
+//      Convenience function.  Print a vector. 
+//
+//  Programmer: Dave Bremer
+//  Creation:   Fri Jun 13 15:54:11 PDT 2008
+//
+// ****************************************************************************
+template <class T>
+std::string Vec2String(std::string name, T *vec, int numelems) {
+  std::string s = name + " = [" ;
+  int elem = 0;
+  char buf[32];
+  
+  while (elem < numelems ) {
+    float value = vec[elem];
+    SNPRINTF(buf,31,"%f",value); 
+    s += buf ;
+    if (elem == numelems - 1) {
+      s+= "]"; 
+    } else {
+      s+= ", "; 
+    }
+    elem ++; 
+  }
+  return s;
+} 
 
 
 // ****************************************************************************
@@ -481,6 +516,52 @@ avtPICS_TesterFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int 
 
     md->SetTemporalExtents(times[0], times[times.size()-1]);
     md->SetHasTemporalExtents(true);
+
+    // Find logical domain boundaries
+    if (!avtDatabase::OnlyServeUpMetaData() && nblocks > 1)
+    {
+        avtRectilinearDomainBoundaries *rdb =
+          new avtRectilinearDomainBoundaries(true);
+
+        rdb->SetNumDomains(nblocks);
+        int bbox[6];
+
+        for (int domain = 0; domain < (size_t)nblocks ; ++domain)
+        {
+            int xOff = domain % numBlocks[0][timestate];
+            int yOff = (domain/numBlocks[0][timestate]) % numBlocks[1][timestate];
+            int zOff = domain/(numBlocks[0][timestate]*numBlocks[1][timestate]);
+
+            bbox[0] = (xOff    ) * numCells[0][timestate];
+            bbox[1] = (xOff + 1) * numCells[0][timestate];
+
+            bbox[2] = (yOff    ) * numCells[1][timestate];
+            bbox[3] = (yOff + 1) * numCells[1][timestate];
+
+            // VisIt expects the 2d case to have flat logical z extent (0,0).
+            if(rank == 2)
+            {
+                bbox[4] = 0;
+                bbox[5] = 0;
+            }
+            else // if(rank == 3)
+            {
+              bbox[4] = (zOff    ) * numCells[2][timestate];
+              bbox[5] = (zOff + 1) * numCells[2][timestate];
+            }
+
+            rdb->SetIndicesForRectGrid(domain, bbox);
+        }
+
+        rdb->CalculateBoundaries();
+
+        void_ref_ptr vr =
+          void_ref_ptr(rdb, avtRectilinearDomainBoundaries::Destruct);
+
+        cache->CacheVoidRef("any_mesh",
+                            AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                            timestate, -1, vr);
+    }
 }
 
 
@@ -898,7 +979,7 @@ avtPICS_TesterFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
             if (! isRectilinear)
             {
                 int i;
-                double b[6] = { 10, -10, 10, -10, 10, -10 };
+                double b[6] = { 1.0e6, -.10e6, 1.0e6, -1.0e6, 1.0e6, -1.0e6 };
 
                 if (rank == 2)
                    b[4] = b[5] = 0.0;
