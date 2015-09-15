@@ -383,6 +383,10 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
         ic->status.SetExitSpatialBoundary();
     else if (!blockLoaded)
         ic->status.SetAtSpatialBoundary();
+
+    // std::cerr << PAR_Rank() << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
+    //        << ic->id << "  " << ic->status << "  " << blockLoaded
+    //        << std::endl;
 }
 
 // ****************************************************************************
@@ -425,7 +429,7 @@ avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
     {
         if (DebugStream::Level1()) 
         {
-            // debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<endl;
+            // debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<std::endl;
         }
 
         if (specifyPoint)
@@ -465,7 +469,7 @@ avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
     
     if (DebugStream::Level1()) 
     {
-      // debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<" ds= "<<ds<<endl;
+      // debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<" ds= "<<ds<<std::endl;
     }
 
     return ds;
@@ -686,7 +690,7 @@ avtPICSFilter::LoadNextTimeSlice()
 
     if (DebugStream::Level5()) 
     {
-        debug5<<"LoadNextTimeSlice() "<<curTimeSlice<<" tsMax= "<<domainTimeIntervals.size()<<endl;
+        debug5<<"LoadNextTimeSlice() "<<curTimeSlice<<" tsMax= "<<domainTimeIntervals.size()<<std::endl;
     }
     avtContract_p new_contract;
     if (OperatingOnDemand())
@@ -862,7 +866,7 @@ avtPICSFilter::BlockLoaded(BlockIDType &domain) const
 
     // if (DebugStream::Level1()) 
     // {
-    //     debug1<<"BlockLoaded("<<domain<<")= "<<val<<endl;
+    //     debug1<<"BlockLoaded("<<domain<<")= "<<val<<std::endl;
     // }
 
     return val;
@@ -1031,7 +1035,7 @@ avtPICSFilter::SetParallelizationAlgorithm(int algo,
                                            int domCache,
                                            int workGrpSz)
 {
-    method = algo;
+    selectedAlgo = algo;
     maxCount = maxCnt;
     cacheQLen = domCache;
     workGroupSz = workGrpSz;
@@ -1149,8 +1153,15 @@ avtPICSFilter::CheckOnDemandViability(void)
 {
     bool val = false;
 
+    bool dataIsReplicated = GetInput()->GetInfo().GetAttributes().
+      DataIsReplicatedOnAllProcessors();
+
+    if( dataIsReplicated )
+    {
+    }
+
     // If we don't want on demand, don't provide it.
-    if (method == PICS_PARALLEL_OVER_DOMAINS)
+    else if (selectedAlgo == PICS_PARALLEL_OVER_DOMAINS)
     {
     }
     
@@ -1160,9 +1171,12 @@ avtPICSFilter::CheckOnDemandViability(void)
         val = (it == NULL ? false : true);
     }
 
+    // std::cerr << "avtPICSFilter::CheckOnDemandViability(): = " << val << std::endl;
+
+
     if (DebugStream::Level1()) 
     {
-        debug1 << "avtPICSFilter::CheckOnDemandViability(): = " << val << endl;
+        debug1 << "avtPICSFilter::CheckOnDemandViability(): = " << val << std::endl;
     }
 
     return val;
@@ -1233,7 +1247,7 @@ avtPICSFilter::Execute(void)
         avtCallback::IssueWarning("There was no data to advect over.");
         if (DebugStream::Level1()) 
         {
-            debug1 << "No data for PICS filter.  Bailing out early." << endl;
+            debug1 << "No data for PICS filter.  Bailing out early." << std::endl;
         }
         return;
     }
@@ -1241,14 +1255,14 @@ avtPICSFilter::Execute(void)
     SetMaxQueueLength(cacheQLen);
 
 #ifdef PARALLEL
-    if (method == PICS_SERIAL)
+    if (selectedAlgo == PICS_SERIAL)
         icAlgo = new avtSerialICAlgorithm(this);
-    else if (method == PICS_PARALLEL_OVER_DOMAINS)
+    else if (selectedAlgo == PICS_PARALLEL_OVER_DOMAINS)
         icAlgo = new avtPODICAlgorithm(this, maxCount);
     /*
-    else if (method == PICS_PARALLEL_COMM_DOMAINS)
+    else if (selectedAlgo == PICS_PARALLEL_COMM_DOMAINS)
         icAlgo = new avtCommDSOnDemandICAlgorithm(this, cacheQLen);
-    else if (method == PICS_PARALLEL_MASTER_SLAVE)
+    else if (selectedAlgo == PICS_PARALLEL_MASTER_SLAVE)
     {
         icAlgo = avtMasterSlaveICAlgorithm::Create(this,
                                                    maxCount,
@@ -1561,7 +1575,7 @@ avtPICSFilter::Initialize()
             SumIntArrayAcrossAllProcessors(&myDoms[0], &domainToRank[0], numDomains);
             if (DebugStream::Level5()) 
             {
-                debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<endl;
+                debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<std::endl;
             }
         }
         else
@@ -1577,53 +1591,73 @@ avtPICSFilter::Initialize()
     }
 
 #ifdef PARALLEL
-    // If not operating on demand, the method *has* to be parallel
+    // If not operating on demand, the algorithm *has* to be parallel
     // static domains.
-    int actualMethod = method;
-    if (actualMethod == PICS_VISIT_SELECTS)
-        actualMethod = PICS_SERIAL; // "SERIAL" means parallelize over
-                                          // seeds.
+    int actualAlgo = selectedAlgo;
+
+    if (actualAlgo == PICS_VISIT_SELECTS)
+        actualAlgo = PICS_SERIAL; // "SERIAL" means parallelize over
+                                  // seeds.
     
+    bool dataIsReplicated = GetInput()->GetInfo().GetAttributes().
+      DataIsReplicatedOnAllProcessors();
+
+    // std::cerr << PAR_Rank() << "  dataIsReplicated  " << dataIsReplicated
+    //        << "  numDomains  " << numDomains << std::endl;
+ 
     if ( ! OperatingOnDemand() )
     {
+        actualAlgo = PICS_PARALLEL_OVER_DOMAINS;
+
+        // std::cerr << "Not operating on demand, using parallel static domains instead." << std::endl;
+
         if (DebugStream::Level1()) 
         {
-            debug1 << "Not operating on demand, using parallel static domains instead." << endl;
+            debug1 << "Not operating on demand, using parallel static domains instead." << std::endl;
         }
-        actualMethod = PICS_PARALLEL_OVER_DOMAINS;
     }
 
     // Parallel and one domains, use the serial algorithm.
     if (numDomains == 1)
     {
+        actualAlgo = PICS_SERIAL;
+
+        // std::cerr << "Forcing load-on-demand because there is only one domain." << std::endl;
+
         if (DebugStream::Level1()) 
         {
-            debug1 << "Forcing load-on-demand because there is only one domain." << endl;
+            debug1 << "Forcing load-on-demand because there is only one domain." << std::endl;
         }
-        actualMethod = PICS_SERIAL;
     }
 
-    if ((method != PICS_VISIT_SELECTS) && (method != actualMethod))
+    if ((selectedAlgo != PICS_VISIT_SELECTS) && (selectedAlgo != actualAlgo))
     {
         char str[1024];
         SNPRINTF(str, 1024,
-                 "Warning: the selected algorithm \"%s\" could not be used, "
+                 "\nWarning: the selected algorithm \"%s\" could not be used, "
                  "instead the following algorithm was used \"%s\".\n",
-                 AlgorithmToString(method), AlgorithmToString(actualMethod));
+                 AlgorithmToString(selectedAlgo), AlgorithmToString(actualAlgo));
         avtCallback::IssueWarning(str);
     }
-    method = actualMethod;
+
+    // std::cerr << "selected " << AlgorithmToString(selectedAlgo) << "  "
+    //        << "actual " << AlgorithmToString(actualAlgo) << std::endl;
+
+    selectedAlgo = actualAlgo;
 #else
+    // std::cerr << "selected " << AlgorithmToString(selectedAlgo) << "  "
+    //        << "actual " << AlgorithmToString(PICS_SERIAL) << std::endl;
+
     // for serial, it's all load on demand.
-    method = PICS_SERIAL;
+    selectedAlgo = PICS_SERIAL;
 #endif
 
     if (DebugStream::Level5())
     {
-        debug5<< "method: " << method << endl;
+        debug5<< "Algorithm: " << selectedAlgo << std::endl;
         debug5<< "Domain/Data setup:\n";
         for (int i = 0; i < numDomains; i++)
-            debug5<<i<<": rank= "<< domainToRank[i]<<" ds= "<<dataSets[i]<<endl;
+            debug5<<i<<": rank= "<< domainToRank[i]<<" ds= "<<dataSets[i]<<std::endl;
     }
 
     // Some methods need random number generator.
@@ -1769,7 +1803,7 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
         }
         if (DebugStream::Level5()) 
         {
-            debug5<<"]"<<endl;
+            debug5<<"]"<<std::endl;
         }
         
         // Check if we have a restart.
@@ -1826,7 +1860,7 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
             if (DebugStream::Level5()) 
             {
                 debug5 << "Pathlines - Did not find starting interval for "
-                       << "seedTime0: " << seedTime0 << endl;
+                       << "seedTime0: " << seedTime0 << std::endl;
             }
             EXCEPTION1(VisItException, "Invalid pathline starting time value.");
         }
@@ -1839,7 +1873,18 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
 }
 
 
-void 
+// ****************************************************************************
+//  Method: avtPICSFilter::UpdateIntervalTree
+//
+//  Purpose:
+//      Creates a new interval tree.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 9, 2012
+//
+// ****************************************************************************
+
+void
 avtPICSFilter::UpdateIntervalTree(int timeSlice)
 {
     if (OperatingOnDemand())
@@ -1847,7 +1892,8 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
         // Get/Compute the interval tree.
         avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents(timeSlice);
 
-        // TODO: The code below can be simplified. Move duplicate code out side of the if statement.
+        // TODO: The code below can be simplified. Move duplicate code
+        // out side of the if statement.
         if (GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition())
         {
             // We are going to assume that the format that operates on
@@ -1859,7 +1905,7 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
             {
                 debug1 << "Pathlines - This file format reader does dynamic "
                        << "decomposition. Assuming it can handle hints about "
-                       << "what data to read." << endl;
+                       << "what data to read." << std::endl;
             }
             specifyPoint = true;
 
@@ -1880,7 +1926,7 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
             intervalTree = new avtIntervalTree(it_tmp);
         }
     }
-    else 
+    else
     {
         bool dataIsReplicated = GetInput()->GetInfo().GetAttributes().
                                          DataIsReplicatedOnAllProcessors();
@@ -1899,6 +1945,12 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
 
             intervalTree = GetTypedInput()->CalculateSpatialIntervalTree(
                                            performCalculationsOverAllProcs);
+
+            // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
+            //        << "dataIsReplicated  " << dataIsReplicated << "  "
+            //        << "nleaves " << intervalTree->GetNLeaves() << "  "
+            //        << std::endl;
+
         }
         CATCH(VisItException)
         {
@@ -1939,6 +1991,13 @@ avtPICSFilter::InitializeLocators(void)
 {
     if (doPathlines || OperatingOnDemand() || specifyPoint)
         return;  // maybe this makes sense; haven't thought about it
+
+    debug1 << "avtPICSFilter::InitializeLocators " << std::endl;
+
+    // avtDataAttributes  &in_dataatts =  GetInput()->GetInfo().GetAttributes();
+
+    // if( in_dataatts.DataIsReplicatedOnAllProcessors() )
+    //   return;
 
     int t1 = visitTimer->StartTimer();
     for (int i = 0 ; i < numDomains ; i++)
@@ -2634,7 +2693,7 @@ avtPICSFilter::ComputeDomainToRankMapping()
             SumIntArrayAcrossAllProcessors(&myDoms[0], &domainToRank[0], numDomains);
             if (DebugStream::Level5()) 
             {
-                debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<endl;
+                debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<std::endl;
             }
         }
         else
@@ -2645,7 +2704,7 @@ avtPICSFilter::ComputeDomainToRankMapping()
     if (DebugStream::Level5())
     {
         for (int i = 0; i < numDomains; i++)
-            debug5<<"dom: "<<i<<": rank= "<<domainToRank[i]<<" ds= "<<dataSets[i] << endl;
+            debug5<<"dom: "<<i<<": rank= "<<domainToRank[i]<<" ds= "<<dataSets[i] << std::endl;
     }
 }
 
@@ -3145,10 +3204,10 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 {
     if (DebugStream::Level5())
     {
-        debug5<<"number of IC to generate: "<<pts.size()<<endl;
+        debug5<<"number of IC to generate: "<<pts.size()<<std::endl;
         for (size_t i = 0; i < pts.size(); i++)
         {
-            debug5 << "point: " << pts[i] << endl;
+            debug5 << "point: " << pts[i] << std::endl;
         }
     }
 
@@ -3241,18 +3300,18 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
     //  For the serial algorithm with more than one domain sort the
     //  curves based on the domain. If not sorted one could get into a
     //  situation where the block cache is continually purged.
-    if (method == PICS_SERIAL)
+    if (selectedAlgo == PICS_SERIAL)
       std::sort(curves.begin(), curves.end(), avtIntegralCurve::DomainCompare);
 
     if (DebugStream::Level5())
     {
-        debug5<<"curves.size(): "<<curves.size()<<endl;
+        debug5<<"curves.size(): "<<curves.size()<<std::endl;
         for (size_t i = 0; i < curves.size(); i++)
         {
             avtIntegralCurve *ic = curves[i];
             avtVector loc = ic->CurrentLocation();
             debug5<<"Create seed: id= "<<ic->id<<", dom= "<<ic->blockList
-                  <<", loc= " << loc <<endl;
+                  <<", loc= " << loc <<std::endl;
         }
     }
 }
@@ -3574,7 +3633,7 @@ avtPICSFilter::CacheLocators(void)
 #ifdef PARALLEL
     if (OperatingOnDemand())
         return false;
-    if (method == PICS_PARALLEL_OVER_DOMAINS)
+    if (selectedAlgo == PICS_PARALLEL_OVER_DOMAINS)
         return true;
 
     return false;

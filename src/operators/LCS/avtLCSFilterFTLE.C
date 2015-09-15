@@ -1185,6 +1185,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
 
     if( replicateData )
     {
+      // std::cerr << "LCS: replicating data on all processors." << std::endl;
       debug1 << "LCS: replicating data on all processors." << std::endl;
 
       // Setup for MPI communication
@@ -1554,4 +1555,71 @@ avtLCSFilter::GetSeedPoints( vtkDataSet *in_ds, bool getMax )
 
   // slice_ds->Delete();
   // image_ds->Delete();
+}
+
+
+
+// ****************************************************************************
+//  Method: avtLCSFilter::MultiBlockDataTree
+//
+//  Purpose:
+//      Computes the FTLE and similar values that are neighbor
+//      independent for the whole data set, using the final particle
+//      locations, at the blocks native mesh resolution.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtLCSFilter::MultiBlockDataTree( avtDataTree_p inDT )
+{
+    if (*inDT == NULL)
+        return 0;
+
+    int nc = inDT->GetNChildren();
+
+    if (nc < 0 && !inDT->HasData())
+    {
+        return 0;
+    }
+
+    if (nc == 0)
+    {
+        //
+        // there is only one dataset to process
+        //
+        int dom = inDT->GetDataRepresentation().GetDomain();
+        std::string label = inDT->GetDataRepresentation().GetLabel();
+
+        std::string str = CreateCacheString();
+        vtkRectilinearGrid *rect_grid = (vtkRectilinearGrid *)
+          FetchArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
+                                  outVarName.c_str(), -1, -1, str.c_str());
+
+        avtDataTree_p rv = new avtDataTree(rect_grid, dom, label);
+
+        std::cerr << rect_grid << "  " << dom << "  " << label << std::endl;
+
+        return rv;
+    }
+    else
+    {
+      //
+      // there is more than one input dataset to process
+      // and we need an output datatree for each
+      //
+      avtDataTree_p *outDT = new avtDataTree_p[nc];
+      for (int j = 0; j < nc; j++)
+      {
+          if (inDT->ChildIsPresent(j))
+            outDT[j] = MultiBlockDataTree( inDT->GetChild(j) );
+          else
+            outDT[j] = NULL;
+      }
+      avtDataTree_p rv = new avtDataTree(nc, outDT);
+      delete [] outDT;
+      return rv;
+    }
 }
