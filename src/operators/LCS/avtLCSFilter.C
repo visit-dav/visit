@@ -58,7 +58,6 @@
 #include <avtCallback.h>
 
 #include <avtOriginatingSource.h>
-#include <avtGradientExpression.h>
 #include <vtkVisItScalarTree.h>
 
 #include <VisItException.h>
@@ -475,8 +474,11 @@ avtLCSFilter::UpdateDataObjectInfo(void)
 
     timeState = in_dataatts.GetTimeIndex();
 
-    // If there is an IC operator downstream the results will be
+    // If there is an IC operator downstream the results may be
     // replicated on all processors.
+
+    // std::cerr << "replicateData  "  << replicateData << std::endl;
+
     out_dataatts.SetDataIsReplicatedOnAllProcessors(replicateData);
 
     //the outvarname has been assigned and will be added.
@@ -676,6 +678,25 @@ avtLCSFilter::Execute(void)
       
       ReportWarnings( ics );
     }
+
+#ifdef PARALLEL
+    if (selectedAlgo == PICS_PARALLEL_OVER_DOMAINS && 
+        atts.GetSourceType() == LCSAttributes::NativeMesh &&
+        auxIdx == LCSAttributes::None )
+      {
+        char str[1028];
+
+        SNPRINTF(str, 1028,
+                 "\n\nWhen using the native mesh with mutliple domains "
+                 "and no auxilliary grid it is currently not possible "
+                 "to compute the gradients across domain boundaries. "
+                 "For the best results utilize an auzilliary grid." );
+
+        avtCallback::IssueWarning(str);
+      }
+#endif
+
+
 }
 
 // ****************************************************************************
@@ -1025,13 +1046,13 @@ avtLCSFilter::GetAllSeedsSentToAllProcs(void)
   if (atts.GetSourceType() == LCSAttributes::NativeMesh)
   {
  #ifdef PARALLEL
-    if (method == PICS_SERIAL)
+    if (selectedAlgo == PICS_SERIAL)
       return true;
-    else if (method == PICS_PARALLEL_OVER_DOMAINS)
+    else if (selectedAlgo == PICS_PARALLEL_OVER_DOMAINS)
       return false;
-    // else if (method == PICS_PARALLEL_COMM_DOMAINS)
+    // else if (selectedAlgo == PICS_PARALLEL_COMM_DOMAINS)
     //   return false;
-    // else if (method == PICS_PARALLEL_MASTER_SLAVE)
+    // else if (selectedAlgo == PICS_PARALLEL_MASTER_SLAVE)
     //   return false;
 #else
     return true;
@@ -1069,7 +1090,18 @@ avtLCSFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve*> &ics)
       if (atts.GetSourceType() == LCSAttributes::NativeMesh)
           NativeMeshSingleCalc(ics);
       else //if (atts.GetSourceType() == LCSAttributes::RegularGrid)
+      {
           RectilinearGridSingleCalc(ics);
+
+          // if( GetInputDataTree()->GetNChildren() )
+          // {
+          //   std::cerr << "Creating new data tree " << std::endl;
+            
+          //   avtDataTree_p outTree = MultiBlockDataTree( GetInputDataTree() );
+            
+          //   SetOutputDataTree(outTree);
+          // }
+      }
   }
 }
 

@@ -271,7 +271,7 @@ class IVP_API avtPICSFilter :
 
     // Timings helpers.
     int                       MaxID;
-    int                       method;
+    int                       selectedAlgo;
     int                       maxCount, workGroupSz;
     double                    InitialIOTime;
     int                       InitialDomLoads;
