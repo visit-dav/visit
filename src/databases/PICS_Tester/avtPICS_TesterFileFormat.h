@@ -81,8 +81,7 @@ class avtPICS_TesterFileFormat : public avtMTMDFileFormat
     // Otherwise, VisIt will make up some reasonable ones for you.
     //
     // virtual void        GetCycles(std::vector<int> &);
-    virtual void        GetTimes(std::vector<double> &t) { t = times; };
-    //
+    virtual void           GetTimes(std::vector<double> &t) { t = times; };
 
     virtual int            GetNTimesteps(void);
 
