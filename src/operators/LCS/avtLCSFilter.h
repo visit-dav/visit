@@ -145,6 +145,8 @@ protected:
     void RectilinearGridSingleCalc( std::vector<avtIntegralCurve*> &ics );
     void NativeMeshSingleCalc( std::vector<avtIntegralCurve*> &ics );
 
+    avtDataTree_p MultiBlockDataTree( avtDataTree_p inDT );
+
     avtDataTree_p MultiBlockSingleCalc( avtDataTree_p,
                                         std::vector<avtIntegralCurve*> &,
                                         int &, double &, double & );
