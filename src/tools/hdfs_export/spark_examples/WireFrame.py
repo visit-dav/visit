@@ -1,4 +1,5 @@
 import sys
+import os
 from pyspark import SparkContext
 from pyspark import SparkConf
 
@@ -110,6 +111,9 @@ def AsciiKeyCmp(keyA, keyB):
 # Can improve performance later
 #
 def addEdge(edgeList, nodeKey0, nodeKey1, isGhost):
+#    idx0 = AsciiKeyToIndex(nodeKey0)
+#    idx1 = AsciiKeyToIndex(nodeKey1)
+#    if idx0 < idx1:
     if AsciiKeyCmp(nodeKey0, nodeKey1) < 0:
         edgeList.append(("%s%s"%(nodeKey0,nodeKey1),isGhost))
     else:
@@ -239,7 +243,7 @@ if __name__ == "__main__":
   #
   wireEdges = sc.textFile("file:/home/training/vdbroot.silo/miller86/%s/%s/%s/*/topology.txt.bz2"%\
      (sys.argv[1],sys.argv[2],sys.argv[3]))\
-     .flatMap(lambda line: zoneEdges(line), True)\
+     .flatMap(lambda line: zoneEdges(line))\
      .reduceByKey(lambda a,b: True)\
      .filter(lambda pair: not pair[1])
 
@@ -275,11 +279,11 @@ if __name__ == "__main__":
   # for now, we'll just write external files from the master to cwd
   #
   print "WireFrame yielded %d edges and %d nodes"%(len(collectedEdges),len(collectedCoords))
-  f = open("WireFrame_coords_%s.txt"%sys.argv[3],"w")
+  f = os.popen("bzip2 > WireFrame_%s_coords.txt.bz2"%sys.argv[3],"w")
   for c in collectedCoords:
       f.write("%s,0,%g,%g,%g\n"%(c[0],c[1][0],c[1][1],c[1][2]))
   f.close()
-  f = open("WireFrame_topology_%s.txt"%sys.argv[3],"w")
+  f = os.popen("bzip2 > WireFrame_%s_topology.txt.bz2"%sys.argv[3],"w")
   keyBase = AsciiKeyToIndex(sys.argv[4])
   keyBase /= 8
   keyBase += 1
