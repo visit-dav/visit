@@ -1574,11 +1574,10 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
         else if( eigenComponent == LCSAttributes::PosShearVector ||
                  eigenComponent == LCSAttributes::NegShearVector )
         {
-          t0 = sqrt( sqrt(eigenvals[0]) /
-                     (sqrt(eigenvals[0])+sqrt(eigenvals[1])) );
+          eigenval = sqrt(eigenvals[0]) + sqrt(eigenvals[1]);
 
-          t1 = sqrt( sqrt(eigenvals[1]) /
-                     (sqrt(eigenvals[0])+sqrt(eigenvals[1])) );
+          t0 = sqrt( sqrt(eigenvals[0]) / eigenval );
+          t1 = sqrt( sqrt(eigenvals[1]) / eigenval );
 
           // With the plus (minus) sign referring to the direction of
           // maximal positive (negative) shear in the frame of [ξ1,ξ0].
