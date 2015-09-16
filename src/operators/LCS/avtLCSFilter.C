@@ -885,9 +885,6 @@ avtLCSFilter::GetInitialLocationsFromRectilinearGrid()
                                        { 0.,-1., 0.}, { 0., 1., 0.},
                                        { 0., 0.,-1.}, { 0., 0., 1.} } };
 
-    size_t tuple = 0, nTuples =
-      global_resolution[0] * global_resolution[1] * global_resolution[2];
-
     //compute total number of seeds that will be generated.
     size_t numberOfSeeds = 0;
     size_t totalNumberOfSeeds = nAuxPts *
@@ -932,14 +929,7 @@ avtLCSFilter::GetInitialLocationsFromRectilinearGrid()
                     point[l] = base[l] + auxSpacing * offset[auxIdx][a][l];
 
                   seedPoints[numberOfSeeds++].set(point);
-
-                  // if( PID == tuple )
-                  //   std::cerr << "Seed "
-                  //          << point[0] << "  "  << point[1] << "  "  << point[2]
-                  //          << "  " << std::endl;
                 }
-
-                ++tuple;
             }
         }
     }
@@ -1602,8 +1592,8 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
         else if( eigenComponent == LCSAttributes::PosLambdaShearVector ||
                  eigenComponent == LCSAttributes::NegLambdaShearVector )
         {
-//        double eigenval = eigenvals[1] * weight + eigenvals[0] * (1.0-weight);
-          double eigenval = weight * weight;
+          eigenval = weight * weight;
+//        eigenval = eigenvals[1] * weight + eigenvals[0] * (1.0-weight);
 
           t0 = sqrt( (eigenvals[0]-eigenval) / (eigenvals[0]-eigenvals[1]) );
           t1 = sqrt( (eigenval-eigenvals[1]) / (eigenvals[0]-eigenvals[1]) );
@@ -1670,11 +1660,10 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
         else if( eigenComponent == LCSAttributes::PosShearVector ||
                  eigenComponent == LCSAttributes::NegShearVector )
         {
-          t0 = sqrt( sqrt(eigenvals[0]) /
-                     (sqrt(eigenvals[0])+sqrt(eigenvals[2])) );
+          eigenval = sqrt(eigenvals[0]) + sqrt(eigenvals[2]);
 
-          t2 = sqrt( sqrt(eigenvals[2]) /
-                     (sqrt(eigenvals[0])+sqrt(eigenvals[2])) );
+          t0 = sqrt( sqrt(eigenvals[0]) / eigenval );
+          t2 = sqrt( sqrt(eigenvals[2]) / eigenval );
 
           // With the plus (minus) sign referring to the direction of
           // maximal positive (negative) shear in the frame of [ξ2,ξ0].
@@ -1688,8 +1677,8 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
         else if( eigenComponent == LCSAttributes::PosLambdaShearVector ||
                  eigenComponent == LCSAttributes::NegLambdaShearVector )
         {
-//        double eigenval = eigenvals[1] * weight + eigenvals[0] * (1.0-weight);
-          double eigenval = weight * weight;
+          eigenval = weight * weight;
+//        eigenval = eigenvals[1] * weight + eigenvals[0] * (1.0-weight);
 
           t0 = sqrt( (eigenvals[0]-eigenval) / (eigenvals[0]-eigenvals[2]) );
           t2 = sqrt( (eigenval-eigenvals[2]) / (eigenvals[0]-eigenvals[2]) );
@@ -1807,34 +1796,14 @@ void avtLCSFilter::ComputeLyapunovExponent(vtkDataArray *jacobian[3],
           input[1] = jacobian[1]->GetTuple3(l);
           input[2] = jacobian[2]->GetTuple3(l);
 
-          // if( PID == l )
-          //   std::cerr << "jacobian " << std::endl
-          //          << input[0][0] << "  "  << input[0][1] << "  "  << input[0][2] << "  " << std::endl
-          //          << input[1][0] << "  "  << input[1][1] << "  "  << input[1][2] << "  " << std::endl
-          //          << input[2][0] << "  "  << input[2][1] << "  "  << input[2][2] << "  " << std::endl
-          //          << std::endl;
-
-
           if( cgTensor == LCSAttributes::Right ) 
             ComputeRightCauchyGreenTensor3D(input);
           else //if( cgTensor == LCSAttributes::Left ) 
             ComputeLeftCauchyGreenTensor3D(input);
 
-          // if( PID == l )
-          //   std::cerr << "CG tensor " << std::endl
-          //          << input[0][0] << "  "  << input[0][1] << "  "  << input[0][2] << "  " << std::endl
-          //          << input[1][0] << "  "  << input[1][1] << "  "  << input[1][2] << "  " << std::endl
-          //          << input[2][0] << "  "  << input[2][1] << "  "  << input[2][2] << "  " << std::endl
-          //          << std::endl;
-
           // Get the eigen values.
           double eigenvals[3];
           Jacobi3D( input, eigenvals );
-
-          // if( PID == l )
-          //   std::cerr << "eigenvals " << std::endl
-          //          << eigenvals[0] << "  "  << eigenvals[1] << "  "  << eigenvals[2] << "  "
-          //          << std::endl;
 
           double lambda = baseValue;
 
