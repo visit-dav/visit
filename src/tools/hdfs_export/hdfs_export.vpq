@@ -1,4 +1,5 @@
 from hdfs_export_utils import *
+import os
 
 class CellExportQuery(SimplePythonQuery):
     def __init__(self):
@@ -48,8 +49,8 @@ class CellExportQuery(SimplePythonQuery):
                     ghostNodes.SetTuple1(cell.GetPointId(j),0)
 
         # do nodal coordinate data
-        fname = "%s/coords.txt"%outpath
-        f = open(fname,"w")
+        fname = "%s/coords.txt.bz2"%outpath
+        f = os.popen("bzip2 --best > %s"%fname,"w")
         for i in xrange(npoints):
             pt = ds_in.GetPoint(i)
             ghost = False
@@ -62,8 +63,8 @@ class CellExportQuery(SimplePythonQuery):
 
         # do other nodal variables
         for narr in nodals:
-            fname = "%s/%s.txt"%(outpath,narr[0].replace("Scalar_Curves/","").replace('/','~'))
-            f = open(fname,"w")
+            fname = "%s/%s.txt.bz2"%(outpath,narr[0].replace("Scalar_Curves/","").replace('/','~'))
+            f = os.popen("bzip2 --best > %s"%fname,"w")
             for i in xrange(npoints):
                 ghost = False
                 if ghostNodes:
@@ -76,8 +77,8 @@ class CellExportQuery(SimplePythonQuery):
             return
 
         # do zonal connectivity data
-        fname = "%s/topology.txt"%outpath
-        f = open(fname,"w")
+        fname = "%s/topology.txt.bz2"%outpath
+        f = os.popen("bzip2 --best > %s"%fname,"w")
         for i in xrange(ncells):
             cell = ds_in.GetCell(i)
             npts = cell.GetNumberOfPoints()
@@ -89,15 +90,15 @@ class CellExportQuery(SimplePythonQuery):
             for j in xrange(npts):
                 ghost = False
                 if ghostNodes:
-                    ghost = ghostNodes.GetTuple1(i) != 0
+                    ghost = ghostNodes.GetTuple1(cell.GetPointId(j)) != 0
                 linebuf += ",%s"%NodeIDKey(keybase,cell.GetPointId(j),ghost)
             f.write("%s\n"%linebuf)
         f.close()
 
         # do other zonal variables
         for zarr in zonals:
-            fname = "%s/%s.txt"%(outpath,zarr[0].replace("Scalar_Curves/","").replace('/','~'))
-            f = open(fname,"w")
+            fname = "%s/%s.txt.bz2"%(outpath,zarr[0].replace("Scalar_Curves/","").replace('/','~'))
+            f = os.popen("bzip2 --best > %s"%fname,"w")
             for i in xrange(ncells):
                 type = ds_in.GetCell(i).GetCellType()
                 ghost = False
@@ -109,8 +110,8 @@ class CellExportQuery(SimplePythonQuery):
         # do materials, if any
         matarr = ds_in.GetCellData().GetArray("materials")
         if matarr:
-            fname = "%s/materials.txt"%outpath
-            f = open(fname,"w")
+            fname = "%s/materials.txt.bz2"%outpath
+            f = os.popen("bzip2 --best > %s"%fname,"w")
             nmats = matarr.GetNumberOfComponents()
             for i in xrange(ncells):
                 ghost = False

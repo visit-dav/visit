@@ -29,6 +29,9 @@ KeyConfig = {
 KeyDigits = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ%#"
 outClasses =   [               "users",               "dbs",                "states",                "meshes",                "blocks"]
 outKeyDigits = [KeyConfig["max_users"], KeyConfig["max_dbs"], KeyConfig["max_states"], KeyConfig["max_meshes"], KeyConfig["max_blocks"]]
+KeyTable = [-1 for i in range(256)]
+for i in range(len(KeyDigits)):
+    KeyTable[ord(KeyDigits[i])] = i
 
 def IndexToAsciiKey(keybase, idx, max_chars):
     negate = False
@@ -72,6 +75,29 @@ def AsciiKeyToIndex(key, keybase=None):
     if addone:
         result = -result
     return result-kb
+
+#
+# Compare two keys without resorting to computing their
+# Python integer equivs because this is faster
+#
+def AsciiKeyCmp(keyA, keyB):
+    keyA = keyA.lstrip('0')
+    keyB = keyB.lstrip('0')
+    lenA = len(keyA)
+    lenB = len(keyB)
+    if lenA != lenB:
+        if lenA < lenB:
+            return -1
+        else:
+            return 1
+    for i in range(lenA):
+        if keyA[i] != keyB[i]:
+            diff = KeyTable[ord(keyA[i])] - KeyTable[ord(keyB[i])]
+            if diff > 0:
+                return 1
+            else:
+                return -1
+    return 0
 
 # The word 'zone' or 'cell' is ambiguous as it can mean
 # a point in a 0D mesh, an edge in a 1D mesh, a (polygonal)
