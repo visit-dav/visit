@@ -26,7 +26,41 @@ VTK_PYRAMID        = 14
 # Logic necessary to decode mesh entity keys produced by hdfs_export utils
 #
 KeyDigits = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ%#"
+KeyTable = [-1 for i in range(256)]
+for i in range(len(KeyDigits)):
+    KeyTable[ord(KeyDigits[i])] = i
 
+#
+# Convert mesh element index to key
+#
+def IndexToAsciiKey(keybase, idx, max_chars):
+    negate = False
+    if idx < 0:
+        negate = True
+        idx = -idx
+    nchars = 0  
+    result = ""
+    while True:
+        if (idx < 64):
+            result = KeyDigits[idx] + result
+            nchars += 1
+            while nchars < max_chars:
+                result = '0' + result
+                nchars += 1
+            break
+        s = idx % 64
+        result = KeyDigits[s] + result
+        nchars += 1
+        if nchars == max_chars:
+            return None
+        idx = idx / 64
+    if negate:
+        result = '-' + result
+    return keybase + result
+
+#
+# Convert mesh element key to Python int index
+#
 def AsciiKeyToIndex(key, keybase=None):
     if key is None:
         return 0
@@ -46,6 +80,29 @@ def AsciiKeyToIndex(key, keybase=None):
     return int(result-kb)
 
 #
+# Compare two keys without resorting to computing their
+# Python integer equivs because this is faster
+#
+def AsciiKeyCmp(keyA, keyB):
+    keyA = keyA.lstrip('0')
+    keyB = keyB.lstrip('0')
+    lenA = len(keyA)
+    lenB = len(keyB)
+    if lenA != lenB:
+        if lenA < lenB:
+            return -1
+        else:
+            return 1
+    for i in range(lenA):
+        if keyA[i] != keyB[i]:
+            diff = KeyTable[ord(keyA[i])] - KeyTable[ord(keyB[i])]
+            if diff > 0:
+                return 1
+            else:
+                return -1
+    return 0
+
+#
 # Always add edges to list such that edge is identified by
 # lowest index node first. Note: cost to compute all these
 # indices makes this slow. And, we're re-computing a node's
@@ -53,9 +110,7 @@ def AsciiKeyToIndex(key, keybase=None):
 # Can improve performance later
 #
 def addEdge(edgeList, nodeKey0, nodeKey1, isGhost):
-    idx0 = AsciiKeyToIndex(nodeKey0)
-    idx1 = AsciiKeyToIndex(nodeKey1)
-    if idx0 < idx1:
+    if AsciiKeyCmp(nodeKey0, nodeKey1) < 0:
         edgeList.append(("%s%s"%(nodeKey0,nodeKey1),isGhost))
     else:
         edgeList.append(("%s%s"%(nodeKey1,nodeKey0),isGhost))
@@ -157,8 +212,8 @@ def PartitionByBlockKeyField(key):
     return AsciiKeyToIndex(key[8:12])
 
 if __name__ == "__main__":
-  if len(sys.argv) != 4:
-    print >> sys.stderr, "Usage: WireFrame <dbfile> <time-spec> <mesh>"
+  if len(sys.argv) != 5:
+    print >> sys.stderr, "Usage: WireFrame <dbfile> <time-spec> <mesh> <keyBase>"
     exit(-1)
 
   sc = SparkContext()
@@ -208,13 +263,13 @@ if __name__ == "__main__":
 
   #
   # The wire-frame object should be small enough to bring back to the
-  # master. So, collect them into lists on the master
+  # master. So, collect them into their Python list equivs on the master
   #
   collectedEdges = wireEdges.collect()
   collectedCoords = wireCoords.collect()
 
   #
-  # Finally, write text files conforming to same structure as HDFS
+  # Finally, master writes text files conforming to same structure as HDFS
   # export files for the coords and the edges (topology).
   # We really should 'insert' this data into the HDFS database but
   # for now, we'll just write external files from the master to cwd
@@ -225,7 +280,12 @@ if __name__ == "__main__":
       f.write("%s,0,%g,%g,%g\n"%(c[0],c[1][0],c[1][1],c[1][2]))
   f.close()
   f = open("WireFrame_topology_%s.txt"%sys.argv[3],"w")
+  keyBase = AsciiKeyToIndex(sys.argv[4])
+  keyBase /= 8
+  keyBase += 1
+  i = 0
   for e in collectedEdges:
       # key,ghost,type,count,nodeKeys
-      f.write("%s,0,3,2,%s,%s\n"%("edgeKey",e[0][0:18],e[0][18:]))
+      f.write("%s,0,3,2,%s,%s\n"%(IndexToAsciiKey("",(keyBase+i)*8+1,len(sys.argv[4])),e[0][0:18],e[0][18:]))
+      i += 1
   f.close()
