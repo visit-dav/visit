@@ -128,7 +128,7 @@ avtVTK_STSDFileFormat::GetTime(void)
 // ****************************************************************************
 
 int
-avtVTK_STSDFileFormat::GetCycleFromFilename(const char *f)
+avtVTK_STSDFileFormat::GetCycleFromFilename(const char *f) const
 {
     cycleFromFilename = GuessCycle(f);
     return cycleFromFilename;
@@ -260,7 +260,7 @@ avtVTK_STMDFileFormat::GetTime(void)
 // ****************************************************************************
 
 int
-avtVTK_STMDFileFormat::GetCycleFromFilename(const char *f)
+avtVTK_STMDFileFormat::GetCycleFromFilename(const char *f) const
 {
     cycleFromFilename = GuessCycle(f);
     return cycleFromFilename;

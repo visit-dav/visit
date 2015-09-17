@@ -73,7 +73,7 @@ public:
     virtual const char    *GetType(void);
     virtual void           FreeUpResources(void); 
 
-    int                    GetCycleFromFilename(const char *f);
+    virtual int            GetCycleFromFilename(const char *f) const;
     virtual int            GetCycle(void);
     virtual double         GetTime(void);
 
@@ -89,7 +89,7 @@ public:
 protected:
     avtVTKFileReader *reader;
 
-    int cycleFromFilename;
+    mutable int cycleFromFilename;
 };
 
 #include <avtSTMDFileFormat.h>
@@ -118,7 +118,7 @@ public:
     virtual const char    *GetType(void);
     virtual void           FreeUpResources(void); 
 
-    int                    GetCycleFromFilename(const char *f);
+    virtual int            GetCycleFromFilename(const char *f) const;
     virtual int            GetCycle(void);
     virtual double         GetTime(void);
 
@@ -134,7 +134,7 @@ public:
 protected:
     avtVTKFileReader *reader;
 
-    int cycleFromFilename;
+    mutable int cycleFromFilename;
 };
 
 
