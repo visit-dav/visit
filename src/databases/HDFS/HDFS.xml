@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Plugin name="HDFS" type="database" label="HDFS" version="1.0" dbtype="STSD">
+    <FilePatterns>
+        *.txt.bz2
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
