@@ -228,6 +228,7 @@ QvisFileOpenWindow::CreateWindowContents()
         filenameEdit = new QLineEdit(central);
         connect(filenameEdit, SIGNAL(returnPressed()), this, SLOT(okClicked()));
         connect(filenameEdit, SIGNAL(textChanged(const QString &)), this, SLOT(filenameEditChanged(const QString &)));
+        filenameEdit->setFocus();
         QLabel *filenameLabel = new QLabel(tr("Filename"), central);
         pathLayout->addWidget(filenameLabel, 3, 0, Qt::AlignRight);
         pathLayout->addWidget(filenameEdit, 3, 1);
