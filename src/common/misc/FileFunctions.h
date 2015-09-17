@@ -100,8 +100,8 @@ std::string MISC_API ExpandPath(const std::string &path,
 std::string MISC_API FilteredPath(const std::string &path);
 
 // Filename manipulation
-const char  MISC_API *Basename(const char *path);
-std::string MISC_API  Basename(const std::string &path);
+const char  MISC_API *Basename(const char *path, const char *suffix=0);
+std::string MISC_API  Basename(const std::string &path, const std::string &suffix="");
 const char  MISC_API *Dirname(const char *path);
 std::string MISC_API  Dirname(const std::string &path);
 const char  MISC_API *Absname(const char *cwd_context, 
