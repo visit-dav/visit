@@ -568,9 +568,12 @@ FileFunctions::FilteredPath(const std::string &path)
 //    When searching the string, look for either type of slash char, but still
 //    use the sys-dependent VISIT_SLASH_STRING when setting in the empty buf.
 //
+//    Mark C. Miller, Tue Sep 15 20:18:22 PDT 2015
+//    Added arg and logic to support an optional suffix string just like
+//    Unix basename command.
 // ****************************************************************************
-static const char *
-basename(const char *path, int& start)
+static char const *
+basename(char const *path, int& start, char const *suffix=0)
 {
    start = 0;
 
@@ -618,26 +621,36 @@ basename(const char *path, int& start)
        i++;
        start = i;
 
-       // build the return string
+       // build the candidate return string
        int k;
        for (k = 0; k < j - i + 1; k++)
            StaticStringBuf[k] = path[i+k];
        StaticStringBuf[k] = '\0';
+
+       // Handle optional suffix but only if its not equal to
+       // remaining string (as per man pages for dirname)
+       if (suffix)
+       {
+           int n = strlen(suffix);
+           if (n < k && !strncmp(&StaticStringBuf[k-n],suffix,n))
+               StaticStringBuf[k-n] = '\0';
+       }
+
        return StaticStringBuf;
    }
 }
 
-const char *
-FileFunctions::Basename(const char *path)
+char const *
+FileFunctions::Basename(char const *path, char const *suffix)
 {
    int dummy1;
-   return basename(path, dummy1);
+   return basename(path, dummy1, suffix);
 }
 
 std::string
-FileFunctions::Basename(const std::string &path)
+FileFunctions::Basename(const std::string &path, const std::string &suffix)
 {
-    return Basename(path.c_str());
+    return Basename(path.c_str(), suffix.c_str());
 }
 
 // ****************************************************************************

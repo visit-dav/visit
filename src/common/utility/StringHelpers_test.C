@@ -248,6 +248,20 @@ int main(int argc, char **argv)
     //
     // Test Basename and Dirname
     //
+#define CHECK_BASENAME_WITH_SUFFIX(path,suffix,expected)              \
+    {                                                                 \
+        string _path = slash_swap_for_os(path);                       \
+        string _suffix = slash_swap_for_os(suffix);                   \
+        string _expected = slash_swap_for_os(expected);               \
+        if (string(Basename(_path,_suffix)) != string(_expected))     \
+        {                                                             \
+            cerr << "Basename(" << _path << "," << _suffix << ") = \""\
+                 << Basename(_path,_suffix) << "\", expected \""      \
+                 << _expected << "\"" << endl;                        \
+            pathname_errors++;                                        \
+        }                                                             \
+    }
+        
 #define CHECK_PATHNAMES(path,dir,base)                                \
     {                                                                 \
         string _path = slash_swap_for_os(path);                       \
@@ -268,6 +282,12 @@ int main(int argc, char **argv)
     }
 
     int pathname_errors = 0;
+
+    CHECK_BASENAME_WITH_SUFFIX("/foo/bar/gorfo.txt",  ".txt",      "gorfo");
+    CHECK_BASENAME_WITH_SUFFIX("../../gorfo.txt.zip", ".txt.zip",  "gorfo");
+    CHECK_BASENAME_WITH_SUFFIX("/foo/bar/gorfo.txt",  "gorfo.txt", "gorfo.txt");
+    CHECK_BASENAME_WITH_SUFFIX("/foo/bar/gorfo.txt",  "",          "gorfo.txt");
+
 #ifdef WIN32
     CHECK_PATHNAMES("C:/usr/lib",    "C:/usr",        "lib");
     CHECK_PATHNAMES("D:/usr/",       "D:/",           "usr");
