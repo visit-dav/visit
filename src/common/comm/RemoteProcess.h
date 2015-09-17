@@ -143,6 +143,17 @@ class Connection;
 //    Brad Whitlock, Wed Jun 13 11:12:25 PDT 2012
 //    I added KillProcess.
 //
+//    Eric Brugger, Wed Sep 16 16:25:41 PDT 2015
+//    I corrected a bug where setting up of the connections might hang.
+//    This was caused by the connections not being formed in the same order
+//    between the two processes, which resulted in the read and write
+//    connections being mismatched between the local and remote processes,
+//    resulting in hangs. This only appeared to happen going from Windows
+//    to linux with ssh forwarding over a gateway. To solve the issue I
+//    added code that wrote the index of the creation on the local side
+//    over each connection so that the order could be duplicated on the
+//    remote side.
+//
 // ****************************************************************************
 
 class COMM_API RemoteProcess
@@ -194,6 +205,7 @@ private:
     int  SingleThreadedAcceptSocket();
     int  MultiThreadedAcceptSocket();
     void CloseListenSocket();
+    void OrderConnections();
     void ExchangeTypeRepresentations();
     char **CreateSplitCommandLine(const stringVector &args, int &argc) const;
     void DestroySplitCommandLine(char **args, int argc) const;

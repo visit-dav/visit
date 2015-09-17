@@ -91,6 +91,17 @@ class Connection;
 //   I made Connect return bool as to whether any connections were created
 //   since it is possible to call Connect and not create any connections.
 //
+//   Eric Brugger, Wed Sep 16 16:52:52 PDT 2015
+//   I corrected a bug where setting up of the connections might hang.
+//   This was caused by the connections not being formed in the same order
+//   between the two processes, which resulted in the read and write
+//   connections being mismatched between the local and remote processes,
+//   resulting in hangs. This only appeared to happen going from Windows
+//   to linux with ssh forwarding over a gateway. To solve the issue I
+//   added code that wrote the index of the creation on the local side
+//   over each connection so that the order could be duplicated on the
+//   remote side.
+//
 // ****************************************************************************
 
 class COMM_API ParentProcess
@@ -108,6 +119,7 @@ public:
     void         SetVersion(const std::string &ver);
     const std::string &GetLocalUserName();
 private:
+    void OrderConnections();
     void ExchangeTypeRepresentations(int failCode=0);
     int  GetClientSocketDescriptor(int port);
     void GetHostInfo();

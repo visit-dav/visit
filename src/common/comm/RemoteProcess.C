@@ -1497,6 +1497,17 @@ RemoteProcess::StartMakingConnection(const std::string &remoteHost,
 //   Brad Whitlock, Tue Oct 14 15:59:18 PDT 2014
 //   Added code to enable fixed buffer socket mode.
 //
+//   Eric Brugger, Wed Sep 16 16:43:54 PDT 2015
+//   I corrected a bug where setting up of the connections might hang.
+//   This was caused by the connections not being formed in the same order
+//   between the two processes, which resulted in the read and write
+//   connections being mismatched between the local and remote processes,
+//   resulting in hangs. This only appeared to happen going from Windows
+//   to linux with ssh forwarding over a gateway. To solve the issue I
+//   added code that wrote the index of the creation on the local side
+//   over each connection so that the order could be duplicated on the
+//   remote side.
+//
 // ****************************************************************************
 
 void
@@ -1563,9 +1574,13 @@ RemoteProcess::FinishMakingConnection(int numRead, int numWrite)
         }
 
         //
-        // Now that the sockets are open, exchange type representation info
-        // and set that info in the socket connections.
+        // Now that the sockets are open, order the connections and
+        // exchange type representation info and set that info in the
+        // socket connections.
         //
+        debug5 << mName << "Ordering the connections." << endl;
+        OrderConnections();
+
         debug5 << mName << "Exchanging type representations" << endl;
         ExchangeTypeRepresentations();
     }
@@ -1583,6 +1598,46 @@ RemoteProcess::FinishMakingConnection(int numRead, int numWrite)
     debug5 << mName << "Call the progress callback(2)" << endl;
     CallProgressCallback(2);
     CloseListenSocket();
+}
+
+// ****************************************************************************
+// Method: RemoteProcess::OrderConnections
+//
+// Purpose: 
+//   Sends the index of the creation of the connection to each connection
+//   to be read on the remote side to match up the read and write connections
+//   properly.
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Sep 16 16:43:54 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+RemoteProcess::OrderConnections()
+{
+    unsigned char buf[4];
+    buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 0;
+
+    int iSocket = 0;
+    for (int i = 0; i < nReadConnections; i++)
+    {
+        debug5 << "Sending " << iSocket << " to readConnection[" 
+               << i << "]" << endl;
+        buf[3] = iSocket;
+        readConnections[i]->DirectWrite(buf, 4);
+        iSocket++;
+    }
+    for (int i = 0; i < nWriteConnections; i++)
+    {
+        debug5 << "Sending " << iSocket << " to writeConnection["
+               << i << "]" << endl;
+        buf[3] = iSocket;
+        writeConnections[i]->DirectWrite(buf, 4);
+        iSocket++;
+    }
 }
 
 // ****************************************************************************
