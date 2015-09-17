@@ -270,6 +270,17 @@ ParentProcess::SetVersion(const std::string &ver)
 //    Brad Whitlock, Tue Apr 14 15:13:07 PDT 2009
 //    I made it return true if any connections were created.
 //
+//    Eric Brugger, Wed Sep 16 16:54:01 PDT 2015
+//    I corrected a bug where setting up of the connections might hang.
+//    This was caused by the connections not being formed in the same order
+//    between the two processes, which resulted in the read and write
+//    connections being mismatched between the local and remote processes,
+//    resulting in hangs. This only appeared to happen going from Windows
+//    to linux with ssh forwarding over a gateway. To solve the issue I
+//    added code that wrote the index of the creation on the local side
+//    over each connection so that the order could be duplicated on the
+//    remote side.
+//
 // ****************************************************************************
 
 bool
@@ -421,9 +432,13 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
         else
         {
             //
-            // Now that the sockets are open, exchange type representation info
-            // and set that info in the socket connections.
+            // Now that the sockets are open, order the connections and
+            // exchange type representation info and set that info in the
+            // socket connections.
             //
+            debug5 << mName << "Ordering the connections." << endl;
+            OrderConnections();
+
             debug5 << mName << "Exchanging type representations." << endl;
             ExchangeTypeRepresentations(failCode);
             createdConnections = true;
@@ -432,6 +447,71 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
 
     debug5 << mName << "done" << endl;
     return createdConnections;
+}
+
+// ****************************************************************************
+// Method: ParentProcess::OrderConnections
+//
+// Purpose: 
+//   Reads the index of the creation of the connection from each connection
+//   to match up the read and write connections properly.
+//
+// Notes:
+//   This differs from RemoteProcess's code in that the read/write are
+//   reversed.
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Sep 16 16:54:01 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ParentProcess::OrderConnections()
+{
+    unsigned char buf[4];
+    buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 0;
+
+    int nConnections = nWriteConnections + nReadConnections;
+    Connection **connections = new Connection*[nConnections];
+
+    //
+    // Order the connections by the index sent over the connection.
+    //
+    for (int i = 0; i < nWriteConnections; i++)
+    {
+        writeConnections[i]->DirectRead(buf, 4);
+        debug5 << "Read " << int(buf[3]) << " from writeConnections["
+               << i << "]" << endl;
+        if (buf[3] < nConnections)
+            connections[buf[3]] = writeConnections[i];
+    }
+    for (int i = 0; i < nReadConnections; i++)
+    {
+        readConnections[i]->DirectRead(buf, 4);
+        debug5 << "Read " << int(buf[3]) << " from readConnections["
+               << i << "]" << endl;
+        if (buf[3] < nConnections)
+            connections[buf[3]] = readConnections[i];
+    }
+
+    //
+    // Assign the read and write connections ordered by the indexes.
+    //
+    int iConnection = 0;
+    for (int i = 0; i < nWriteConnections; i++)
+    {
+        writeConnections[i] = connections[iConnection];
+        iConnection++;
+    }
+    for (int i = 0; i < nReadConnections; i++)
+    {
+        readConnections[i] = connections[iConnection];
+        iConnection++;
+    }
+
+    delete [] connections;
 }
 
 // ****************************************************************************
