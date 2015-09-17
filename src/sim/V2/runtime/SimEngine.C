@@ -1658,7 +1658,11 @@ SimEngine::RestrictPlugins(PluginManager *mgr,
 {
     // If we passed a 1-element vector with "None" then let's disable all plugins.
     bool none = idsOrNames.size() == 1 && 
+#if defined(_WIN32)
+                (stricmp(idsOrNames[0].c_str(), "None") == 0);
+#else
                 (strcasecmp(idsOrNames[0].c_str(), "None") == 0);
+#endif
 
     if(none)
     {
