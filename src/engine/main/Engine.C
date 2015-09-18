@@ -1679,6 +1679,9 @@ Engine::PAR_EventLoop()
 //    Brad Whitlock, Tue Nov  3 10:58:23 PST 2009
 //    I changed the messaging style so libsim works again.
 //
+//    Kevin Griffin, Thu Sep 17 17:00:22 PDT 2015
+//    Changed buf type from char * to unsigned char *
+//
 // ****************************************************************************
 
 void
@@ -1694,11 +1697,11 @@ Engine::PAR_ProcessInput()
         MPIXfer::VisIt_MPI_Bcast((void *)&msgLength, 1, MPI_INT,
                                  0, VISIT_MPI_COMM);
 
-        char *buf = new char[msgLength];
+        unsigned char *buf = new unsigned char[msgLength];
         MPI_Bcast((void *)buf, msgLength, MPI_UNSIGNED_CHAR,
                   0, VISIT_MPI_COMM);
 
-        par_conn.Append((unsigned char *)buf, msgLength);
+        par_conn.Append(buf, msgLength);
         delete [] buf;
 
         xfer->Process();
