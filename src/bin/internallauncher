@@ -1381,6 +1381,9 @@ class GeneralArguments(object):
         elif args[i] == "-movie":
             self.exe_name = "cli"
             self.add_movie_args = 1
+            for j in range(i+1, len(args)):
+                self.scriptarguments = self.scriptarguments + [args[j]]
+            n = len(args) - i
         elif args[i] == "-s":
             self.scriptfile = args[i+1]
             for j in range(i+2, len(args)):
@@ -1480,10 +1483,7 @@ class GeneralArguments(object):
         args = args + self.arguments
 
         if self.scriptfile != None:
-            if self.add_movie_args:
-                args = args + ["-scriptfile", self.scriptfile]
-            else:
-                args = args + ["-s", self.scriptfile]
+            args = args + ["-s", self.scriptfile]
 
         if self.diffmode > 0:
             d = ["-s", os.path.join(self.launcher.visitscriptdir, "visitdiff.py"), "-vdiff"]
