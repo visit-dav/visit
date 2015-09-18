@@ -161,9 +161,10 @@ avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     AddMeshToMetaData(md, "mesh", AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 3);
 
+#ifdef PARALLEL
 PopulateDatabaseMetaData_done:
     ;
-#ifdef PARALLEL
+
     // broadcast metadata
 #endif
 }
@@ -188,6 +189,10 @@ PopulateDatabaseMetaData_done:
 vtkDataSet *
 avtHDFSFileFormat::GetMesh(const char *meshname)
 {
+#if defined(_WIN32)
+    // Figure out bzcat via popen doesn't appear portable.
+    return NULL;
+#else
     // open the coords.txt.bz2 file and read it
     char key[32];
     double c[3];
@@ -249,6 +254,7 @@ avtHDFSFileFormat::GetMesh(const char *meshname)
     ghostZones->Delete();
 
     return ugrid;
+#endif
 }
 
 // ****************************************************************************
