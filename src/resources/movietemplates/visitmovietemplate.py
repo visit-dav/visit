@@ -387,9 +387,9 @@ def RotateSequence_changeview(i, cb_data):
 
 class VisItMovieTemplate(object):
     # error class that we use to throw exceptions.
-    class error(object):
+    class error(BaseException):
         def __init__(self, msg):
-            super(error,self).__init__()
+            super(VisItMovieTemplate.error,self).__init__()
             self.message = msg
 
     ###########################################################################
@@ -1848,6 +1848,7 @@ class VisItMovieTemplate(object):
 
     def SetupVisualization(self):
         self.Debug(1,"Calling VisItMovieTemplate.SetupVisualization()")
+        self.SetupVisualizationFromSession()
 
     ###########################################################################
     # Method: HandleScriptingSequence
