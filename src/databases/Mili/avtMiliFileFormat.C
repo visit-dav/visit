@@ -1000,6 +1000,10 @@ avtMiliFileFormat::DecodeMultiLevelVarname(const string &inname, string &decoded
 //    Hank Childs, Wed Aug 18 16:17:52 PDT 2004
 //    Add some special handling for single domain families.
 //
+//    Eric Brugger, Mon Sep 21 11:01:46 PDT 2015
+//    The reader now returns the cycles and times in the meta data and 
+//    marks them as accurate so that they are used where needed.
+//
 // ****************************************************************************
 
 void
@@ -1087,6 +1091,12 @@ avtMiliFileFormat::OpenDB(int dom)
                 {
                     times.push_back(ttimes[i]);
                 }
+            }
+
+            cycles.clear();
+            for (int i = 0 ; i < ntimesteps ; i++)
+            {
+                cycles.push_back(i);
             }
         }
     }
@@ -2076,18 +2086,17 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
 //  Programmer:  Hank Childs
 //  Creation:    April 11, 2003
 //
+//  Modifications:
+//    Eric Brugger, Mon Sep 21 11:01:46 PDT 2015
+//    The reader now returns the cycles and times in the meta data and 
+//    marks them as accurate so that they are used where needed.
+//
 // ****************************************************************************
 
 void
-avtMiliFileFormat::GetCycles(vector<int> &cycles)
+avtMiliFileFormat::GetCycles(vector<int> &out_cycles)
 {
-    int nTimesteps = GetNTimesteps();
-
-    cycles.resize(nTimesteps);
-    for (int i = 0 ; i < nTimesteps ; i++)
-    {
-        cycles[i] = i;
-    }
+    out_cycles = cycles;
 }
 
 
@@ -2190,6 +2199,11 @@ avtMiliFileFormat::GetNTimesteps()
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Eric Brugger, Mon Sep 21 11:01:46 PDT 2015
+//    The reader now returns the cycles and times in the meta data and 
+//    marks them as accurate so that they are used where needed.
+//
 // ****************************************************************************
 
 void
@@ -2384,6 +2398,14 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     // By calling OpenDB for domain 0, it will populate the times.
     //
     OpenDB(0);
+
+    //
+    // Set the cycle and time information.
+    //
+    md->SetCyclesAreAccurate(true);
+    md->SetCycles(cycles);
+    md->SetTimesAreAccurate(true);
+    md->SetTimes(times);
 
     vector<string> dirs;
     dirs.push_back("");
