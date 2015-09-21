@@ -103,6 +103,11 @@ class vtkFloatArray;
 //
 //    Mark C. Miller, Wed Jan  4 16:51:34 PST 2006
 //    Added IssueWarning private method and warn_map data member
+//
+//    Eric Brugger, Mon Sep 21 10:54:40 PDT 2015
+//    The reader now returns the cycles and times in the meta data and 
+//    marks them as accurate so that they are used where needed.
+//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -141,6 +146,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     int                   ndomains;
     int                   nmeshes;
     bool                  setTimesteps;
+    std::vector<int>      cycles;
     std::vector<double>   times;
 
     std::map<int, int>    warn_map;
