@@ -736,38 +736,14 @@ avtPICSFilter::LoadNextTimeSlice()
     GetTypedInput()->SetActiveVariable(velocityName.c_str());
 
     UpdateIntervalTree(curTimeSlice);
+
     if (intervalTree == NULL)
         return false;
 
-    if (! OperatingOnDemand())
-    {
-        GetAllDatasetsArgs ds_list;
-        bool dummy = false;
-        GetInputDataTree()->Traverse(CGetAllDatasets, (void*)&ds_list, dummy);
+    numDomains = intervalTree->GetNLeaves();
 
-        // Release all the old dataSets.
-        for (size_t i = 0; i < dataSets.size(); i++)
-        {
-            if(dataSets[i])
-            {
-                dataSets[i]->UnRegister(NULL);
-                dataSets[i] = NULL;
-            }
-        }
-
-        // Load the dataSets map with the new datasets for the next time step.
-        numDomains = intervalTree->GetNLeaves();
-        dataSets.resize(numDomains, NULL);
-        for (size_t i = 0; i < ds_list.domains.size(); i++)
-        {
-            vtkDataSet *ds = ds_list.datasets[i];
-            ds->Register(NULL);
-            dataSets[ ds_list.domains[i] ] = ds;
-        }
-    }
-
-    // Need to update the domain to rank mapping because the
-    // domain numbers have changed.
+    // Need to update the domain to rank and dataset mapping because
+    // the domain numbers have changed.
     ComputeDomainToRankMapping();
 
     // The mesh may have changed and the ICs need to update their
@@ -1121,6 +1097,133 @@ avtPICSFilter::SetIntegrationDirection(int dir)
 
 
 // ****************************************************************************
+//  Function: AlgorithmToString
+//
+//  Purpose:
+//      Gets the name of an algorithm
+//
+//  Programmer: Hank Childs
+//  Creation:   September 29, 2010
+//
+//  Modifications:
+//
+//    David Camp, Thu Jul 17 12:55:02 PDT 2014
+//    Changed the names of the parallel algorithms to match the GUI.
+//
+// ****************************************************************************
+
+const char *
+AlgorithmToString(int algo)
+{
+    if (algo == PICS_PARALLEL_OVER_DOMAINS)
+    {
+        static const char *s = "Parallelize over domains";
+        return s;
+    }
+    if (algo == PICS_PARALLEL_COMM_DOMAINS)
+    {
+        static const char *s = "Communicate domains";
+        return s;
+    }
+    if (algo == PICS_PARALLEL_MASTER_SLAVE)
+    {
+        static const char *s = "Parallelize over curves and domains";
+        return s;
+    }
+    if (algo == PICS_SERIAL)
+    {
+        static const char *s = "Parallelize over curves";
+        return s;
+    }
+    if (algo == PICS_VISIT_SELECTS)
+    {
+        static const char *s = "VisIt Selects Best Algo";
+        return s;
+    }
+
+    static const char *s = "Unknown Algorithm";
+    return s;
+}
+
+
+// ****************************************************************************
+// Method: avtPICSFilter::SetICAlgorithm
+//
+// Purpose: 
+//   Sets the IC algorithm based on user selection and the data found.
+//
+// Programmer: Allen Sanderson
+// Creation:   22 Sept 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtPICSFilter::SetICAlgorithm()
+{
+    int actualAlgo = selectedAlgo;
+
+#ifdef PARALLEL
+
+    // With multiple domains the filter will not operate on demand, as
+    // such the algorithm *has* to be parallel static domains.
+    if (numDomains > 1)
+    {
+        actualAlgo = PICS_PARALLEL_OVER_DOMAINS;
+
+        // std::cerr << "Multiple domains, not operating on demand, using parallel static domains instead." << std::endl;
+
+        if (DebugStream::Level1()) 
+        {
+            debug1 << "Multiple domains, not operating on demand, using parallel static domains instead." << std::endl;
+        }
+    }
+
+    // Parallel and one domains, use the serial algorithm which will
+    // parallelize over curves.
+    else if (numDomains == 1 || actualAlgo == PICS_VISIT_SELECTS)
+    {
+        actualAlgo = PICS_SERIAL;
+
+        // std::cerr << "Forcing load-on-demand because there is only one domain." << std::endl;
+
+        if (DebugStream::Level1()) 
+        {
+            debug1 << "Forcing load-on-demand because there is only one domain." << std::endl;
+        }
+    }
+
+    if ((selectedAlgo != PICS_VISIT_SELECTS) && (selectedAlgo != actualAlgo))
+    {
+        char str[1024];
+        SNPRINTF(str, 1024,
+                 "\nWarning: the selected algorithm \"%s\" could not be used, "
+                 "instead the following algorithm was used \"%s\".\n",
+                 AlgorithmToString(selectedAlgo), AlgorithmToString(actualAlgo));
+        avtCallback::IssueWarning(str);
+    }
+
+#else
+    // In serial, it's all load on demand.
+    actualAlgo = PICS_SERIAL;
+#endif
+
+    if (DebugStream::Level4())
+    {
+    // std::cerr << "selected " << AlgorithmToString(selectedAlgo) << "  "
+    //        << "actual " << AlgorithmToString(actualAlgo) << std::endl;
+
+        debug4 << "selected " << AlgorithmToString(selectedAlgo) << "  "
+               << "actual " << AlgorithmToString(actualAlgo) << std::endl;
+
+    }
+
+    selectedAlgo = actualAlgo;
+}
+
+
+// ****************************************************************************
 //  Method: avtPICSFilter::CheckOnDemandViability
 //
 //  Purpose:
@@ -1240,8 +1343,6 @@ avtPICSFilter::CheckOnDemandViability(void)
 void
 avtPICSFilter::Execute(void)
 {
-    Initialize();
-
     if (emptyDataset)
     {
         avtCallback::IssueWarning("There was no data to advect over.");
@@ -1365,303 +1466,6 @@ avtPICSFilter::Execute(void)
                 break;
         }
     }
-}
-
-
-// ****************************************************************************
-//  Function: AlgorithmToString
-//
-//  Purpose:
-//      Gets the name of an algorithm
-//
-//  Programmer: Hank Childs
-//  Creation:   September 29, 2010
-//
-//  Modifications:
-//
-//    David Camp, Thu Jul 17 12:55:02 PDT 2014
-//    Changed the names of the parallel algorithms to match the GUI.
-//
-// ****************************************************************************
-
-const char *
-AlgorithmToString(int algo)
-{
-    if (algo == PICS_PARALLEL_OVER_DOMAINS)
-    {
-        static const char *s = "Parallelize over domains";
-        return s;
-    }
-    if (algo == PICS_PARALLEL_COMM_DOMAINS)
-    {
-        static const char *s = "Communicate domains";
-        return s;
-    }
-    if (algo == PICS_PARALLEL_MASTER_SLAVE)
-    {
-        static const char *s = "Parallelize over curves and domains";
-        return s;
-    }
-    if (algo == PICS_SERIAL)
-    {
-        static const char *s = "Parallelize over curves";
-        return s;
-    }
-    if (algo == PICS_VISIT_SELECTS)
-    {
-        static const char *s = "VisIt Selects Best Algo";
-        return s;
-    }
-
-    static const char *s = "Unknown Algorithm";
-    return s;
-}
-
-
-// ****************************************************************************
-//  Method: avtPICSFilter::Initialize
-//
-//  Modifications:
-//
-//   Hank Childs, Mon Jul 21 13:09:13 PDT 2008
-//   Remove the "area code" from the initialization so it will compile on
-//   my box.
-//
-//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
-//   Add dataSpatialDimension
-//
-//   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
-//   Add statusMsgSz.
-//
-//   Hank Childs, Tue Jan 20 13:06:33 CST 2009
-//   Add support for file formats that do their own domain decomposition.
-//
-//   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
-//   Initialize the initial domain load count and timer.
-//
-//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//   Generalized domain to include domain/time. Pathine cleanup.
-//
-//   Hank Childs, Mon Mar 23 11:02:55 CDT 2009
-//   Add handling for the case where we load data on demand using point
-//   selections.
-//
-//   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
-//   Set seedTimeStep0 from input time value.
-//
-//   Dave Pugmire, Thu Apr  2 10:59:42 EDT 2009
-//   Properly bound seedTime0 search.
-//
-//   Gunther H. Weber, Fri Apr  3 16:01:48 PDT 2009
-//   Initialize seedTimeStep0 even when integral curves are computed
-//   otherwise seed points get created for the wrong time step. 
-//
-//   Gunther H. Weber, Mon Apr  6 19:19:31 PDT 2009
-//   Initialize seedTime0 for integral curve mode. 
-//
-//   Hank Childs, Fri Apr 10 23:31:22 CDT 2009
-//   Put if statements in front of debug's.  The generation of strings to
-//   output to debug was doubling the total integration time.
-//
-//   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
-//   Changed interface to DebugStream to obtain current debug level.
-//   
-//   Hank Childs, Thu Feb 18 13:01:31 PST 2010
-//   Only set seedTime0 to the simulation time for pathlines and not 
-//   streamlines.
-//
-//   Dave Pugmire, Mon Jun 14 14:16:57 EDT 2010
-//   Allow serial algorithm to be run in parallel on single domain datasets.
-//
-//   Hank Childs, Thu Sep  2 10:50:05 PDT 2010
-//   Deal with case where domain IDs are not unique.
-//
-//   Hank Childs, Sun Sep 19 11:04:32 PDT 2010
-//   Parallel support for case where domain IDs are not unique.
-//
-//   Hank Childs, Wed Sep 29 19:25:06 PDT 2010
-//   Add support for the "VisIt Selects" algorithm.
-//
-//   Hank Childs, Thu Oct 21 08:54:51 PDT 2010
-//   Detect when we have an empty data set and issue a warning (not crash).
-//
-//   Dave Pugmire, Mon Feb  7 13:45:54 EST 2011
-//   Ensure spatial meta data is ok. If not, recompute.
-//
-// ****************************************************************************
-
-void
-avtPICSFilter::Initialize()
-{
-    // Need to make sure we have the right active variable for pathlines.
-    std::string velocityName, meshName;
-    avtDataRequest_p dr = lastContract->GetDataRequest();
-    GetPathlineVelocityMeshVariables(dr, velocityName, meshName);
-    GetTypedInput()->SetActiveVariable(velocityName.c_str());
-
-    emptyDataset = false;
-    dataSpatialDimension = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
-
-    // Get/Compute the interval tree.
-    avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents( curTimeSlice );
-
-    bool dontUseIntervalTree = false;
-    if (GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition() ||
-        !GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
-    {
-        // The reader returns an interval tree with one domain (for everything).
-        // This is not what we want.  So forget about this one, as we will be 
-        // better off calculating one.
-        dontUseIntervalTree = true;
-    }
-
-    if (it_tmp == NULL || dontUseIntervalTree)
-    {
-        UpdateIntervalTree(curTimeSlice);
-        if( intervalTree == NULL )
-            return;
-    }
-    else
-    {
-        // Make a copy so it doesn't get deleted out from underneath us.
-        intervalTree = new avtIntervalTree(it_tmp);
-    }
-
-    //Set domain/ds info.
-    numDomains = intervalTree->GetNLeaves();
-    domainToRank.resize(numDomains,0);
-    dataSets.resize(numDomains,NULL);
-
-#ifdef PARALLEL
-    int rank = PAR_Rank();
-    int nProcs = PAR_Size();
-#endif
-    
-    // Assign domains to processors, if needed.
-    // For load on demand, just give some reasonable default 
-    // domainToRank mapping for now.
-    if (OperatingOnDemand())
-    {
-#ifdef PARALLEL
-        int amountPer = numDomains / nProcs;
-        int oneExtraUntil = numDomains % nProcs;
-        int lastDomain = 0;
-    
-        for (int p = 0; p < nProcs; p++)
-        {
-            int extra = (p < oneExtraUntil ? 1 : 0);
-            int num = amountPer + extra;
-            for (int i = 0; i < num; i++)
-                domainToRank[lastDomain+i] = p;
-            lastDomain += num;
-        }
-#endif
-    }
-    else
-    {
-        // See what I have.
-        GetAllDatasetsArgs ds_list;
-        bool dummy = false;
-        GetInputDataTree()->Traverse(CGetAllDatasets, (void*)&ds_list, dummy);
-
-        // Set and communicate all the domains.
-#ifdef PARALLEL
-        if (numDomains > 1)
-        {
-            std::vector<int> myDoms;
-            myDoms.resize(numDomains, 0);
-            for (size_t i = 0; i < ds_list.domains.size(); i++)
-                myDoms[ ds_list.domains[i] ] = rank;
-            SumIntArrayAcrossAllProcessors(&myDoms[0], &domainToRank[0], numDomains);
-            if (DebugStream::Level5()) 
-            {
-                debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<std::endl;
-            }
-        }
-        else
-            domainToRank[0] = rank;
-#endif
-        for (size_t i = 0; i < ds_list.domains.size(); i++)
-        {
-            vtkDataSet *ds = ds_list.datasets[i];
-            ds->Register(NULL);
-            dataSets[ ds_list.domains[i] ] = ds;
-        }
-        InitialDomLoads = (int)ds_list.domains.size();
-    }
-
-#ifdef PARALLEL
-    // If not operating on demand, the algorithm *has* to be parallel
-    // static domains.
-    int actualAlgo = selectedAlgo;
-
-    if (actualAlgo == PICS_VISIT_SELECTS)
-        actualAlgo = PICS_SERIAL; // "SERIAL" means parallelize over
-                                  // seeds.
-    
-    bool dataIsReplicated = GetInput()->GetInfo().GetAttributes().
-      DataIsReplicatedOnAllProcessors();
-
-    // std::cerr << PAR_Rank() << "  dataIsReplicated  " << dataIsReplicated
-    //        << "  numDomains  " << numDomains << std::endl;
- 
-    if ( ! OperatingOnDemand() )
-    {
-        actualAlgo = PICS_PARALLEL_OVER_DOMAINS;
-
-        // std::cerr << "Not operating on demand, using parallel static domains instead." << std::endl;
-
-        if (DebugStream::Level1()) 
-        {
-            debug1 << "Not operating on demand, using parallel static domains instead." << std::endl;
-        }
-    }
-
-    // Parallel and one domains, use the serial algorithm.
-    if (numDomains == 1)
-    {
-        actualAlgo = PICS_SERIAL;
-
-        // std::cerr << "Forcing load-on-demand because there is only one domain." << std::endl;
-
-        if (DebugStream::Level1()) 
-        {
-            debug1 << "Forcing load-on-demand because there is only one domain." << std::endl;
-        }
-    }
-
-    if ((selectedAlgo != PICS_VISIT_SELECTS) && (selectedAlgo != actualAlgo))
-    {
-        char str[1024];
-        SNPRINTF(str, 1024,
-                 "\nWarning: the selected algorithm \"%s\" could not be used, "
-                 "instead the following algorithm was used \"%s\".\n",
-                 AlgorithmToString(selectedAlgo), AlgorithmToString(actualAlgo));
-        avtCallback::IssueWarning(str);
-    }
-
-    // std::cerr << "selected " << AlgorithmToString(selectedAlgo) << "  "
-    //        << "actual " << AlgorithmToString(actualAlgo) << std::endl;
-
-    selectedAlgo = actualAlgo;
-#else
-    // std::cerr << "selected " << AlgorithmToString(selectedAlgo) << "  "
-    //        << "actual " << AlgorithmToString(PICS_SERIAL) << std::endl;
-
-    // for serial, it's all load on demand.
-    selectedAlgo = PICS_SERIAL;
-#endif
-
-    if (DebugStream::Level5())
-    {
-        debug5<< "Algorithm: " << selectedAlgo << std::endl;
-        debug5<< "Domain/Data setup:\n";
-        for (int i = 0; i < numDomains; i++)
-            debug5<<i<<": rank= "<< domainToRank[i]<<" ds= "<<dataSets[i]<<std::endl;
-    }
-
-    // Some methods need random number generator.
-    srand(2776724);
 }
 
 
@@ -1870,6 +1674,56 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
         seedTime0 = 0.0;
         seedTimeStep0 = activeTimeStep;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtPICSFilter::InitializeIntervalTree
+//
+//  Purpose:
+//      Creates a new interval tree.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 9, 2012
+//
+// ****************************************************************************
+
+void
+avtPICSFilter::InitializeIntervalTree()
+{
+    // Get/Compute the interval tree.
+    avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents( curTimeSlice );
+
+    bool dontUseIntervalTree = false;
+    if (GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition() ||
+        !GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
+    {
+        // The reader returns an interval tree with one domain (for everything).
+        // This is not what we want.  So forget about this one, as we will be 
+        // better off calculating one.
+        dontUseIntervalTree = true;
+    }
+
+    if (it_tmp == NULL || dontUseIntervalTree)
+    {
+        UpdateIntervalTree(curTimeSlice);
+    }
+    else
+    {
+        // Make a copy so it doesn't get deleted out from underneath us.
+        intervalTree = new avtIntervalTree(it_tmp);
+    }
+
+    // Set domain and dataset info.
+    if( intervalTree )
+      numDomains = intervalTree->GetNLeaves();
+    else
+    {
+      EXCEPTION1(ImproperUseException, "No initial interval tree");
+      numDomains  = 0;
+    }
+
+    std::cerr << "Number of domains " << numDomains << std::endl;
 }
 
 
@@ -2650,17 +2504,16 @@ avtPICSFilter::OwnDomain(BlockIDType &domain)
 void
 avtPICSFilter::ComputeDomainToRankMapping()
 {
-#ifdef PARALLEL
-    int rank = PAR_Rank();
-    int nProcs = PAR_Size();
-#endif
-
+    // Create a list that maps the domain id to a processor rank (id).
     domainToRank.resize(numDomains, 0);
     
-    // Compute a balanced layout of domains to ranks.
+    // Assign domains to processors, if needed.  For load on demand,
+    // compute a balanced layout of domains to ranks.
     if (OperatingOnDemand())
     {
 #ifdef PARALLEL
+        int nProcs = PAR_Size();
+
         int amountPer = numDomains / nProcs;
         int oneExtraUntil = numDomains % nProcs;
         int lastDomain = 0;
@@ -2675,36 +2528,75 @@ avtPICSFilter::ComputeDomainToRankMapping()
         }
 #endif
     }
-    else
+    else //if (!OperatingOnDemand())
     {
         // See what I have.
         GetAllDatasetsArgs ds_list;
         bool dummy = false;
         GetInputDataTree()->Traverse(CGetAllDatasets, (void*)&ds_list, dummy);
 
+
+        std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
+                  <<  ds_list.domains.size() << std::endl;
+
         // Set and communicate all the domains.
 #ifdef PARALLEL
+        int rank = PAR_Rank();
+
         if (numDomains > 1)
         {
             std::vector<int> myDoms;
             myDoms.resize(numDomains, 0);
+
+            // Set the domains locaetd on this processor.
             for (size_t i = 0; i < ds_list.domains.size(); i++)
                 myDoms[ ds_list.domains[i] ] = rank;
-            SumIntArrayAcrossAllProcessors(&myDoms[0], &domainToRank[0], numDomains);
+
+            SumIntArrayAcrossAllProcessors(&myDoms[0], &domainToRank[0],
+                                           numDomains);
             if (DebugStream::Level5()) 
             {
-                debug5<<"numdomains= "<<numDomains<<" myDoms[0]= "<<myDoms[0]<<std::endl;
+                debug5 << "numdomains= " << numDomains
+                       << " myDoms[0]= " << myDoms[0] << std::endl;
             }
         }
         else
             domainToRank[0] = rank;
 #endif
+
+        // Release all the old dataSets.
+        for (size_t i = 0; i < dataSets.size(); i++)
+        {
+            if(dataSets[i])
+            {
+                dataSets[i]->UnRegister(NULL);
+                dataSets[i] = NULL;
+            }
+        }
+
+        // Load the dataSets map with the new datasets for the next time step.
+        // Set domain and dataset info.
+        dataSets.resize(numDomains,NULL);
+
+        // For each domain get a pointer to the dataset associated
+        // with it.
+        for (size_t i = 0; i < ds_list.domains.size(); i++)
+        {
+            vtkDataSet *ds = ds_list.datasets[i];
+            ds->Register(NULL);
+            dataSets[ ds_list.domains[i] ] = ds;
+        }
+
+        InitialDomLoads = (int) ds_list.domains.size();
     }
 
     if (DebugStream::Level5())
     {
+        debug5<< "Domain/Data setup:" << std::endl;
+
         for (int i = 0; i < numDomains; i++)
-            debug5<<"dom: "<<i<<": rank= "<<domainToRank[i]<<" ds= "<<dataSets[i] << std::endl;
+            debug5 << "domain: " << i << ": rank= " << domainToRank[i]
+                   << " ds= " << dataSets[i] << std::endl;
     }
 }
 
@@ -2720,12 +2612,11 @@ avtPICSFilter::ComputeDomainToRankMapping()
 int
 avtPICSFilter::DomainToRank(BlockIDType &domain)
 {
-    if (domain.domain < 0 || (size_t)domain.domain >= domainToRank.size())
+    if (domain.domain < 0 || (size_t) domain.domain >= domainToRank.size())
         EXCEPTION1(ImproperUseException, "Domain out of range.");
 
     return domainToRank[domain.domain];
 }
-
 
 // ****************************************************************************
 //  Method: avtPICSFilter::AdvectParticle
@@ -2907,6 +2798,22 @@ avtPICSFilter::PreExecute(void)
 {
     avtDatasetOnDemandFilter::PreExecute();
 
+    // Some methods need random number generator.
+    srand(time(0));
+    srandom(time(0));
+
+    emptyDataset = false;
+
+    dataSpatialDimension =
+      GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+
+    // Need to make sure we have the right active variable for pathlines.
+    std::string velocityName, meshName;
+    avtDataRequest_p dr = lastContract->GetDataRequest();
+    GetPathlineVelocityMeshVariables(dr, velocityName, meshName);
+    GetTypedInput()->SetActiveVariable(velocityName.c_str());
+
+
     double absTolToUse = absTol;
     if (absTolIsFraction)
     {
@@ -2954,6 +2861,8 @@ avtPICSFilter::PreExecute(void)
       solver->SetBaseTime( baseTime );
       solver->SetToCartesian( convertToCartesian );
     }
+
+    ComputeDomainToRankMapping();
 }
 
 
@@ -3518,6 +3427,13 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
     }
 
     lastContract = out_contract;
+
+    // Figure out here which IC algorithm is going to be used which in
+    // turn affects the CheckOnDemandViability which is called in the
+    // parent class, avtDatasetOnDemandFilter.
+    InitializeIntervalTree();
+
+    SetICAlgorithm();
 
     return avtDatasetOnDemandFilter::ModifyContract(out_contract);
 }
