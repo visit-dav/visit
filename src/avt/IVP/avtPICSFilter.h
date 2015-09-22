@@ -318,7 +318,6 @@ class IVP_API avtPICSFilter :
     int                       DomainToRank(BlockIDType &domain);
     void                      ComputeDomainToRankMapping();
     bool                      OwnDomain(BlockIDType &domain);
-    void                      Initialize();
     void                      InitializeTimeInformation(int);
     void                      ComputeRankList(const std::vector<int> &domList,
                                               std::vector<int> &ranks,
@@ -330,6 +329,9 @@ class IVP_API avtPICSFilter :
     void                      ClearDomainToCellLocatorMap();
     virtual avtIVPField      *GetFieldForDomain(const BlockIDType&, vtkDataSet*);
 
+    void                      SetICAlgorithm();
+
+    void                      InitializeIntervalTree();
     void                      UpdateIntervalTree(int timeSlice);
 
     // Use this to be able to save the ICs for restart.
