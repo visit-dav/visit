@@ -605,6 +605,16 @@ function build_vtk
     if test "${OPSYS}" = "Darwin" ; then
         vopts="${vopts} -DVTK_USE_COCOA:BOOL=ON"
         vopts="${vopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${vtk_inst_path}/lib"
+        if test "${MACOSX_DEPLOYMENT_TARGET}" = "10.10"; then
+            # If building on 10.10 (Yosemite) check if we are building with Xcode 7 ...
+            XCODE_VER=$(xcodebuild -version | head -n 1 | awk '{print $2}')
+            if test ${XCODE_VER%.*} == 7; then
+                # Workaround for Xcode 7 not having a 10.10 SDK: Prevent CMake from linking to 10.11 SDK
+                # by using Frameworks installed in root directory.
+                echo "Xcode 7 on MacOS 10.10 detected: Enabling CMake workaround"
+                vopts="${vopts} -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=\"\" -DCMAKE_OSX_SYSROOT:STRING=/"
+            fi
+        fi
     fi
 
     # allow VisIt to override any of vtk's classes
