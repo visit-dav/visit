@@ -4135,10 +4135,12 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 void
 avtStructuredDomainBoundaries::GetExtents(int domain, int e[6])
 {
-    if ((size_t)domain >= wholeBoundary.size())
-        EXCEPTION1(VisItException,
-                   "avtStructuredDomainBoundaries: "
-                   "targeted domain more than number of domains");
+    int ntotaldomains = wholeBoundary.size();
+  
+    if (domain < 0 || ntotaldomains <= domain)
+    {
+        EXCEPTION2(BadIndexException, domain, ntotaldomains);
+    }
 
     e[0] = wholeBoundary[domain].oldnextents[0];
     e[1] = wholeBoundary[domain].oldnextents[1];
@@ -4165,9 +4167,9 @@ void
 avtStructuredDomainBoundaries::GetNeighborPresence(int domain, bool *b,
                                                   std::vector<int> &allDomains)
 {
-    int   ntotaldomains = wholeBoundary.size();
+    int ntotaldomains = wholeBoundary.size();
 
-    if (domain < 0 || domain >= ntotaldomains)
+    if (domain < 0 || ntotaldomains <= domain)
     {
         EXCEPTION2(BadIndexException, domain, ntotaldomains);
     }
@@ -4188,6 +4190,7 @@ avtStructuredDomainBoundaries::GetNeighborPresence(int domain, bool *b,
         for (size_t j = 0 ; j < allDomains.size() ; j++)
              if (allDomains[j] == neighbor)
                  foundIt = true;
+
         if (!foundIt)
             continue;
 
@@ -4215,10 +4218,12 @@ avtStructuredDomainBoundaries::GetNeighborPresence(int domain, bool *b,
 vector<Neighbor> 
 avtStructuredDomainBoundaries::GetNeighbors(int domain)
 {
-  int ntotaldomains = wholeBoundary.size();
-  if (domain < 0 || domain >= ntotaldomains)
-  {
-    EXCEPTION2(BadIndexException, domain, ntotaldomains);
-  }
-  return wholeBoundary[domain].neighbors;
+    int ntotaldomains = wholeBoundary.size();
+  
+    if (domain < 0 || ntotaldomains <= domain)
+    {
+        EXCEPTION2(BadIndexException, domain, ntotaldomains);
+    }
+
+    return wholeBoundary[domain].neighbors;
 }
