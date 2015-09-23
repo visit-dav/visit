@@ -117,8 +117,7 @@ QvisSessionFileDialog::getFileName(DLG_TYPE type,
     SetUsageMode(QvisFileOpenDialog::SelectFilename);
     SetHideFileFormat(true);
     SetHideOptions(true);
-    if(type == SAVE_DLG)
-        SetShowFilename(true);
+    SetShowFilename(true);
     qfilename = getOpenFileNameEx(initialFile, fltr);
 
     if(!qfilename.isEmpty())
