@@ -4875,7 +4875,7 @@ QvisGUIApplication::RestoreSession()
 
     // Get the name of the session to load.
     QvisSessionFileDialog dlg(tr("Open VisIt Session File"));
-    dlg.getFileName(QvisSessionFileDialog::OPEN_DLG, "", qfilename);
+    dlg.getFileName(QvisSessionFileDialog::OPEN_DLG, sessionDir.c_str(), qfilename);
 
     QString s = qfilename.PathAndFile().c_str();
     sessionHost = qfilename.host;

@@ -99,7 +99,7 @@ public:
 
     void SetHideFileFormat(bool value);
     void SetShowFilename(bool value);
-
+    void SetFilename(const QString &);
 signals:
     void selectedFile(const QString &);
     void selectCancelled();
