@@ -2800,7 +2800,6 @@ avtPICSFilter::PreExecute(void)
 
     // Some methods need random number generator.
     srand(time(0));
-    srandom(time(0));
 
     emptyDataset = false;
 
