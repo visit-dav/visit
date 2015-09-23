@@ -1164,15 +1164,24 @@ avtPICSFilter::SetICAlgorithm()
 {
     int actualAlgo = selectedAlgo;
 
-#ifdef PARALLEL
+    std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
+    if (*dbp == NULL)
+      EXCEPTION1(InvalidFilesException, db.c_str());
+    avtDatabaseMetaData *md = dbp->GetMetaData(0);
 
+    std::string velocityName, meshName;
+    avtDataRequest_p dr = lastContract->GetDataRequest();
+    GetPathlineVelocityMeshVariables(dr, velocityName, meshName);
+
+    numDomains = md->GetNDomains( velocityName );
+
+#ifdef PARALLEL
     // With multiple domains the filter will not operate on demand, as
     // such the algorithm *has* to be parallel static domains.
     if (numDomains > 1)
     {
         actualAlgo = PICS_PARALLEL_OVER_DOMAINS;
-
-        // std::cerr << "Multiple domains, not operating on demand, using parallel static domains instead." << std::endl;
 
         if (DebugStream::Level1()) 
         {
@@ -1185,8 +1194,6 @@ avtPICSFilter::SetICAlgorithm()
     else if (numDomains == 1 || actualAlgo == PICS_VISIT_SELECTS)
     {
         actualAlgo = PICS_SERIAL;
-
-        // std::cerr << "Forcing load-on-demand because there is only one domain." << std::endl;
 
         if (DebugStream::Level1()) 
         {
@@ -1211,9 +1218,6 @@ avtPICSFilter::SetICAlgorithm()
 
     if (DebugStream::Level4())
     {
-    // std::cerr << "selected " << AlgorithmToString(selectedAlgo) << "  "
-    //        << "actual " << AlgorithmToString(actualAlgo) << std::endl;
-
         debug4 << "selected " << AlgorithmToString(selectedAlgo) << "  "
                << "actual " << AlgorithmToString(actualAlgo) << std::endl;
 
@@ -1273,9 +1277,6 @@ avtPICSFilter::CheckOnDemandViability(void)
         avtIntervalTree *it = GetMetaData()->GetSpatialExtents(curTimeSlice);
         val = (it == NULL ? false : true);
     }
-
-    // std::cerr << "avtPICSFilter::CheckOnDemandViability(): = " << val << std::endl;
-
 
     if (DebugStream::Level1()) 
     {
@@ -1382,6 +1383,7 @@ avtPICSFilter::Execute(void)
     if( restart != -1 )
     {
         RestoreICs(_ics, restart);
+
         icAlgo->SetAllSeedsSentToAllProcs( true );
         icAlgo->RestoreInitialize(_ics, curTimeSlice);
     }
@@ -1720,10 +1722,7 @@ avtPICSFilter::InitializeIntervalTree()
     else
     {
       EXCEPTION1(ImproperUseException, "No initial interval tree");
-      numDomains  = 0;
     }
-
-    std::cerr << "Number of domains " << numDomains << std::endl;
 }
 
 
@@ -1777,6 +1776,7 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
             // OnDemand processing in the method CheckOnDemandViability.
             if (intervalTree)
                 delete intervalTree;
+
             intervalTree = new avtIntervalTree(it_tmp);
         }
     }
@@ -2535,9 +2535,8 @@ avtPICSFilter::ComputeDomainToRankMapping()
         bool dummy = false;
         GetInputDataTree()->Traverse(CGetAllDatasets, (void*)&ds_list, dummy);
 
-
-        std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
-                  <<  ds_list.domains.size() << std::endl;
+        // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
+        //           <<  ds_list.domains.size() << std::endl;
 
         // Set and communicate all the domains.
 #ifdef PARALLEL
@@ -2800,7 +2799,6 @@ avtPICSFilter::PreExecute(void)
 
     // Some methods need random number generator.
     srand(time(0));
-    srandom(time(0));
 
     emptyDataset = false;
 
@@ -2861,6 +2859,8 @@ avtPICSFilter::PreExecute(void)
       solver->SetBaseTime( baseTime );
       solver->SetToCartesian( convertToCartesian );
     }
+
+    InitializeIntervalTree();
 
     ComputeDomainToRankMapping();
 }
@@ -3428,11 +3428,10 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
 
     lastContract = out_contract;
 
-    // Figure out here which IC algorithm is going to be used which in
-    // turn affects the CheckOnDemandViability which is called in the
-    // parent class, avtDatasetOnDemandFilter.
-    InitializeIntervalTree();
-
+    // Set which IC algorithm is going to be used. selectedAlgo. Which
+    // in turn affects the CheckOnDemandViability return
+    // value. CheckOnDemandViability is called in the parent class,
+    // avtDatasetOnDemandFilter::ModifyContract.
     SetICAlgorithm();
 
     return avtDatasetOnDemandFilter::ModifyContract(out_contract);
