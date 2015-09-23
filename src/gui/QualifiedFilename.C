@@ -40,7 +40,6 @@
 #include <visit-config.h>
 #include <Utility.h>
 #include <algorithm>
-#include <FileFunctions.h>
 
 // ****************************************************************************
 // Method: QualifiedFilename::QualifiedFilename
@@ -337,17 +336,41 @@ QualifiedFilename::DetermineSeparator(const std::string &p) const
 //   Made the index variable an int so it works properly when there is no
 //   host or path in the filename.
 //
-//   David Camp, Mon Sep 21 10:07:01 PDT 2015
-//   Turn out this function did not handle the Windows file path, did not 
-//   handle the drive letter. There is a function that handles splitting the 
-//   file and host name that does work on Windows, so I am just using it.
-//   
 // ****************************************************************************
 
 void
 QualifiedFilename::SetFromString(const std::string &str)
 {
-    FileFunctions::SplitHostDatabase(str, host, filename);
+    std::string::size_type index;
+
+    // Look for the hostname in the string.
+    if((index = str.find(":")) != std::string::npos)
+        host = str.substr(0, index);
+    else
+    {
+        // The filename was not a qualified filename, assume it
+        // is on localhost.
+        host = std::string("localhost");
+    }
+
+    // Try and determine the separator to use in the filename.
+    separator = DetermineSeparator(str);
+    const char s[2] = {separator, '\0'};
+    std::string separator_str(s);
+
+    // Look for the last slash in the path if there is one.
+    std::string pathAndFile(str.substr(index + 1));
+    if((index = pathAndFile.rfind(separator_str)) != std::string::npos)
+    {
+        path = pathAndFile.substr(0, index);
+        filename = pathAndFile.substr(index + 1);
+    }
+    else
+    {
+        // There was no path in the string.
+        path = std::string("");
+        filename = pathAndFile;
+    }
 }
 
 // ****************************************************************************
