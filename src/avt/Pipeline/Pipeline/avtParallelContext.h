@@ -164,11 +164,14 @@ public:
     void    BroadcastLongLong(VISIT_LONG_LONG &i);
     void    BroadcastIntArray(int *array, int nArray);
     void    BroadcastIntVector(std::vector<int>&, int myrank);
+    void    BroadcastIntVectorFromAny(std::vector<int> &, int, int);
     void    BroadcastBool(bool &b);
     void    BroadcastBoolVector(std::vector<bool> &b, int myrank);
     void    BroadcastDouble(double &i);
     void    BroadcastDoubleArray(double *array, int nArray);
+    void    BroadcastDoubleArrayFromAny(double *, int, int);
     void    BroadcastDoubleVector(std::vector<double>&, int myrank);
+    void    BroadcastDoubleVectorFromAny(std::vector<double> &, int, int);
     void    BroadcastString(std::string &s, int myrank);
     void    BroadcastStringVector(std::vector<std::string>&,
                                            int myrank);
