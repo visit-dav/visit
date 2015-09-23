@@ -1,8 +1,8 @@
 #/usr/gapps/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake
 ##
-## ./build_visit2_9_0 generated host.cmake
-## created: Wed Feb 18 16:49:03 PST 2015
-## system: Linux surface86 2.6.32-431.29.2.2chaos.ch5.2.x86_64 #1 SMP Thu Dec 18 17:47:12 PST 2014 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_10_0 generated host.cmake
+## created: Wed Sep 23 11:32:54 PDT 2015
+## system: Linux surface43 2.6.32-504.16.2.1chaos.ch5.3.x86_64 #1 SMP Mon Apr 27 16:24:20 PDT 2015 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
@@ -182,9 +182,9 @@ VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/13.1.1-patch/${VISITARCH})
 ##
 ## Nektar++
 ##
-##SETUP_APP_VERSION(NEKTAR++ 4.0.1)
-##VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR ${VISITHOME}/nektar++/${NEKTAR++_VERSION}/${VISITARCH})
-##VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP /usr/lib z TYPE STRING)
+SETUP_APP_VERSION(NEKTAR++ 4.1.0)
+VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR ${VISITHOME}/nektar++/${NEKTAR++_VERSION}/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP /usr/lib z TYPE STRING)
 
 ##
 ## PySide
