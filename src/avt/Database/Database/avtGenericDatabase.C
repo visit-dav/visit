@@ -4932,6 +4932,14 @@ avtGenericDatabase::CanDoStreaming(avtDataRequest_p dataspec)
     ActivateTimestep(dataspec->GetTimestep());
 
     //
+    // If the plugin is doing domain decomposition, then we can't do
+    // streaming.
+    //
+    avtDatabaseMetaData *md = GetMetaData(dataspec->GetTimestep());
+    if (md->GetFormatCanDoDomainDecomposition())
+        return false;
+
+    //
     // If the plugin is doing collective communication, then we can't do
     // streaming.
     //
