@@ -172,6 +172,14 @@ QvisFileOpenWindow::SetHideFileFormat(bool value)
     hideFileFormat = value;
 }
 
+void
+QvisFileOpenWindow::SetFilename(const QString &f)
+{
+    if(showFilename)
+    {
+        filenameEdit->setText(f);
+    }
+}
 
 // ****************************************************************************
 // Method: QvisFileOpenWindow::CreateWindowContents
@@ -217,23 +225,6 @@ void
 QvisFileOpenWindow::CreateWindowContents()
 {  
     CreateHostPathFilterControls();
-
-    if(showFilename)
-    {
-        QGridLayout *pathLayout = new QGridLayout();
-        topLayout->addLayout(pathLayout);
-        pathLayout->setSpacing(10);
-
-        // Create the filename
-        filenameEdit = new QLineEdit(central);
-        connect(filenameEdit, SIGNAL(returnPressed()), this, SLOT(okClicked()));
-        connect(filenameEdit, SIGNAL(textChanged(const QString &)), this, SLOT(filenameEditChanged(const QString &)));
-        filenameEdit->setFocus();
-        QLabel *filenameLabel = new QLabel(tr("Filename"), central);
-        pathLayout->addWidget(filenameLabel, 3, 0, Qt::AlignRight);
-        pathLayout->addWidget(filenameEdit, 3, 1);
-    }
-
 
     // Add a grid layout for the file and directory lists.
     QSplitter *listSplitter = new QSplitter(central);
@@ -304,6 +295,22 @@ QvisFileOpenWindow::CreateWindowContents()
         openFileAsTypeLabel->hide();
         fileFormatComboBox->hide();
         setDefaultOptionsForFormatButton->hide();
+    }
+
+    if(showFilename)
+    {
+        QGridLayout *pathLayout = new QGridLayout();
+        topLayout->addLayout(pathLayout);
+        pathLayout->setSpacing(10);
+
+        // Create the filename
+        filenameEdit = new QLineEdit(central);
+        connect(filenameEdit, SIGNAL(returnPressed()), this, SLOT(okClicked()));
+        connect(filenameEdit, SIGNAL(textChanged(const QString &)), this, SLOT(filenameEditChanged(const QString &)));
+        filenameEdit->setFocus();
+        QLabel *filenameLabel = new QLabel(tr("Filename"), central);
+        pathLayout->addWidget(filenameLabel, 3, 0, Qt::AlignRight);
+        pathLayout->addWidget(filenameEdit, 3, 1);
     }
 
     // create the lower button layout
