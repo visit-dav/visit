@@ -98,11 +98,14 @@ PIPELINE_API void    BroadcastInt(int &i);
 PIPELINE_API void    BroadcastLongLong(VISIT_LONG_LONG &i);
 PIPELINE_API void    BroadcastIntArray(int *array, int nArray);
 PIPELINE_API void    BroadcastIntVector(std::vector<int>&, int myrank);
+PIPELINE_API void    BroadcastIntVectorFromAny(std::vector<int> &, int, int);
 PIPELINE_API void    BroadcastBool(bool &b);
 PIPELINE_API void    BroadcastBoolVector(std::vector<bool> &b, int myrank);
 PIPELINE_API void    BroadcastDouble(double &i);
 PIPELINE_API void    BroadcastDoubleArray(double *array, int nArray);
+PIPELINE_API void    BroadcastDoubleArrayFromAny(double *, int, int);
 PIPELINE_API void    BroadcastDoubleVector(std::vector<double>&, int myrank);
+PIPELINE_API void    BroadcastDoubleVectorFromAny(std::vector<double> &, int, int);
 PIPELINE_API void    BroadcastString(std::string &s, int myrank);
 PIPELINE_API void    BroadcastStringVector(std::vector<std::string>&,
                                            int myrank);

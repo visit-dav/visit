@@ -1649,6 +1649,48 @@ void avtParallelContext::BroadcastIntVector(std::vector<int> &vi, int myrank)
 }
 
 // ****************************************************************************
+//  Function:  BroadcastIntVectorFromAny
+//
+//  Purpose:
+//    Broadcast a vector<int> from processor root to all other processors
+//
+//  Arguments:
+//    vi         the vector<int>
+//    myrank     the rank of this process
+//    root       the rank of the broadcast root
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    Mon Aug 3 15:03:38 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+void avtParallelContext::BroadcastIntVectorFromAny(std::vector<int> &vi, int myrank, int root)
+{
+#ifndef PARALLEL
+    (void)vi;
+    (void)myrank;
+    (void)root;
+#else
+    int len;
+    if (myrank==root)
+        len = vi.size();
+    MPI_Bcast(&len, 1, MPI_INT, root, this->GetCommunicator());
+    if (myrank!=root)
+        vi.resize(len);
+    
+    if(len == 0)
+    {
+        debug1 << "Don't know how to broadcast empty vector!  "
+        << "Bailing out early." << std::endl;
+        return;
+    }
+    
+    MPI_Bcast(&vi[0], len, MPI_INT, root, this->GetCommunicator());
+#endif
+}
+
+// ****************************************************************************
 //  Function:  avtParallelContext::BroadcastBool
 //
 //  Purpose: Broadcast a bool from processor 0 to all other processors
@@ -1777,6 +1819,36 @@ void avtParallelContext::BroadcastDoubleArray(double *array, int nArray)
 }
 
 // ****************************************************************************
+//  Function:  BroadcastDoubleArrayFromAny
+//
+//  Purpose:
+//    Broadcast a vector<double> from processor root to all other processors
+//
+//  Arguments:
+//    array      The array to send (or receive on non-root).
+//    nArray     The number of values to send/receive.
+//    myrank     the rank of this process
+//    root       the rank of the broadcast root
+//
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    Mon Aug 3 15:03:38 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+void avtParallelContext::BroadcastDoubleArrayFromAny(double *array, int nArray, int root)
+{
+#ifndef PARALLEL
+    (void)array;
+    (void)nArray;
+    (void)root;
+#else
+    MPI_Bcast(array, nArray, MPI_DOUBLE, root, this->GetCommunicator());
+#endif
+}
+
+// ****************************************************************************
 //  Function:  avtParallelContext::BroadcastDoubleVector
 //
 //  Purpose:
@@ -1820,6 +1892,48 @@ void avtParallelContext::BroadcastDoubleVector(std::vector<double> &vi, int myra
     }
 
     MPI_Bcast(&vi[0], len, MPI_DOUBLE, 0, this->GetCommunicator());
+#endif
+}
+
+// ****************************************************************************
+//  Function:  BroadcastDoubleVectorFromAny
+//
+//  Purpose:
+//    Broadcast a vector<double> from processor root to all other processors
+//
+//  Arguments:
+//    vi         the vector<int>
+//    myrank     the rank of this process
+//    root       the rank of the broadcast root
+//
+//  Programmer:  Kevin Griffin
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+void avtParallelContext::BroadcastDoubleVectorFromAny(std::vector<double> &vi, int myrank, int root)
+{
+#ifndef PARALLEL
+    (void)vi;
+    (void)myrank;
+    (void)root;
+#else
+    int len;
+    if (myrank==root)
+        len = vi.size();
+    MPI_Bcast(&len, 1, MPI_INT, root, this->GetCommunicator());
+    if (myrank!=root)
+        vi.resize(len);
+    
+    if(len == 0)
+    {
+        debug1 << "Don't know how to broadcast empty vector!  "
+        << "Bailing out early." << std::endl;
+        return;
+    }
+    
+    MPI_Bcast(&vi[0], len, MPI_DOUBLE, root, this->GetCommunicator());
 #endif
 }
 

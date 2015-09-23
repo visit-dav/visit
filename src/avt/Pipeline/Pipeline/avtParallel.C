@@ -1069,6 +1069,28 @@ void BroadcastIntVector(std::vector<int> &vi, int myrank)
 }
 
 // ****************************************************************************
+//  Function:  BroadcastIntVectorFromAny
+//
+//  Purpose:
+//    Broadcast a vector<int> from processor root to all other processors
+//
+//  Arguments:
+//    vi         the vector<int>
+//    myrank     the rank of this process
+//    root       the rank of the broadcast root
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    Mon Aug 3 15:03:38 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+void BroadcastIntVectorFromAny(std::vector<int> &vi, int myrank, int root)
+{
+    globalContext.BroadcastIntVectorFromAny(vi, myrank, root);
+}
+
+// ****************************************************************************
 //  Function:  BroadcastBool
 //
 //  Purpose: Broadcast a bool from processor 0 to all other processors
@@ -1155,6 +1177,30 @@ void BroadcastDoubleArray(double *array, int nArray)
 }
 
 // ****************************************************************************
+//  Function:  BroadcastDoubleArrayFromAny
+//
+//  Purpose:
+//    Broadcast a vector<double> from processor root to all other processors
+//
+//  Arguments:
+//    array      The array to send (or receive on non-root).
+//    nArray     The number of values to send/receive.
+//    myrank     the rank of this process
+//    root       the rank of the broadcast root
+//
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    Mon Aug 3 15:03:38 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+void BroadcastDoubleArrayFromAny(double *array, int nArray, int root)
+{
+    globalContext.BroadcastDoubleArrayFromAny(array, nArray, root);
+}
+
+// ****************************************************************************
 //  Function:  BroadcastDoubleVector
 //
 //  Purpose:
@@ -1179,6 +1225,28 @@ void BroadcastDoubleArray(double *array, int nArray)
 void BroadcastDoubleVector(std::vector<double> &vi, int myrank)
 {
     globalContext.BroadcastDoubleVector(vi, myrank);
+}
+
+// ****************************************************************************
+//  Function:  BroadcastDoubleVectorFromAny
+//
+//  Purpose:
+//    Broadcast a vector<double> from processor root to all other processors
+//
+//  Arguments:
+//    vi         the vector<int>
+//    myrank     the rank of this process
+//    root       the rank of the broadcast root
+//
+//  Programmer:  Kevin Griffin
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+void BroadcastDoubleVectorFromAny(std::vector<double> &vi, int myrank, int root)
+{
+    globalContext.BroadcastDoubleVectorFromAny(vi, myrank, root);
 }
 
 // ****************************************************************************
