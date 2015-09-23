@@ -95,7 +95,7 @@ Particle P[MAX_PART];
 /* Expose Array of Structure x,y,z values as a single VariableData object. */
 visit_handle coordinates = VISIT_INVALID_HANDLE;
 VisIt_VariableData_alloc(&coordinates);
-VisIt_VariableData_setArrayDat/wikiaD(coordinates, 0, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].x);
+VisIt_VariableData_setArrayDataD(coordinates, 0, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].x);
 VisIt_VariableData_setArrayDataD(coordinates, 1, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].y);
 VisIt_VariableData_setArrayDataD(coordinates, 2, VISIT_OWNER_SIM, MAX_PART, 0, sizeof(Particle), (void *)&P[0].z);
 
