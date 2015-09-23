@@ -345,7 +345,17 @@ QualifiedFilename::SetFromString(const std::string &str)
 
     // Look for the hostname in the string.
     if((index = str.find(":")) != std::string::npos)
-        host = str.substr(0, index);
+    {
+        std::string::size_type drive = str.find(":\\");
+        if(drive != std::string::npos && drive == index)
+        {
+            // The colon was just from a Windows drive; not a host.
+            host = std::string("localhost");
+            index = std::string::npos;
+        }
+        else
+            host = str.substr(0, index);
+    }
     else
     {
         // The filename was not a qualified filename, assume it
