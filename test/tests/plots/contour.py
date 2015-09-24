@@ -12,6 +12,8 @@
 #  Date:       October 15, 2014
 #
 #  Modifications:
+#    Brad Whitlock, Wed Sep 23 17:06:37 PDT 2015
+#    Add a test for bad contour values to make sure the plot can handle it.
 #
 # ----------------------------------------------------------------------------
 
@@ -157,8 +159,26 @@ def TestMultiColor():
         Test("contour_multicolor_%02d"%testNum)
         testNum = testNum + 1
     DeleteAllPlots()
-    
+
+def TestBadValue():
+    OpenDatabase(silo_data_path("noise.silo"))
+    AddPlot("Contour", "hardyglobal")
+    ContourAtts = ContourAttributes()
+    ContourAtts.contourValue = (0)
+    ContourAtts.contourMethod = ContourAtts.Value  # Level, Value, Percent
+    ContourAtts.minFlag = 0
+    ContourAtts.maxFlag = 0
+    SetPlotOptions(ContourAtts)
+    DrawPlots()
+
+    # Test that the plot is not in the error state and that we have an engine. (i.e. the engine did not crash)
+    pl = GetPlotList()
+    txt = "Plot Completed: " + str(pl.GetPlots(0).stateType == pl.GetPlots(0).Completed) + "\n"
+    txt = txt + "Number of compute engines: " + str(len(GetEngineList())) + "\n"
+    TestText("contour_bad_value", txt)
 
 ExerciseAtts()
 TestMultiColor()
+TestBadValue()
+
 Exit()
