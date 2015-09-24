@@ -1,14 +1,16 @@
-#/Users/allen/Projects/VisIt/Thirdparty/visit/cmake/3.0.2/i386-apple-darwin12_gcc/bin/cmake
+#/Projects/VisIt/Thirdparty/visit/cmake/3.0.2/i386-apple-darwin12_gcc/bin/cmake
 ##
 ## ../trunk//src/svn_bin/build_visit generated host.cmake
 ## created: Wed Jan 21 21:06:14 MST 2015
 ## system: Darwin lautertun.sci.utah.edu 12.5.0 Darwin Kernel Version 12.5.0: Sun Sep 29 13:33:47 PDT 2013; root:xnu-2050.48.12~1/RELEASE_X86_64 x86_64
 ## by: allen
 
+##SET(CMAKE_BUILD_TYPE Debug CACHE STRING "")
+
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /Users/allen/Projects/VisIt/Thirdparty/visit)
+SET(VISITHOME /Projects/VisIt/Thirdparty/visit)
 SET(VISITARCH i386-apple-darwin12_gcc)
 
 ## Compiler flags.
@@ -34,6 +36,11 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ## VisIt paraDIS Option.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARADIS ON TYPE BOOL)
+
+##
+## VisIt build all database plugins
+##
+VISIT_OPTION_DEFAULT(VISIT_BUILD_ALL_PLUGINS ON TYPE BOOL)
 
 ##############################################################
 ##
@@ -126,7 +133,7 @@ VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR ${VISITHOME}/zlib/1.2.7/${VISITARCH})
 ##
 ## HDF5
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.7/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.14/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/zlib/1.2.7/${VISITARCH}/lib z TYPE STRING)
 
 ##
@@ -165,7 +172,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_D
 ##
 ## Nektar++
 ##
-SETUP_APP_VERSION(NEKTAR++ 4.0.1)
+SETUP_APP_VERSION(NEKTAR++ 4.1.0)
 VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR ${VISITHOME}/nektar++/${NEKTAR++_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP ${VISITHOME}/zlib/1.2.7/${VISITARCH}/lib z TYPE STRING)
 
@@ -215,5 +222,3 @@ VISIT_OPTION_DEFAULT(VISIT_INSTALL_THIRD_PARTY ON TYPE BOOL)
 ##
 SET(VISIT_CREATE_APPBUNDLE_PACKAGE TRUE)
 VISIT_OPTION_DEFAULT(VISIT_CREATE_APPBUNDLE_PACKAGE ON TYPE BOOL)
-
-
