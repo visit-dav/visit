@@ -827,7 +827,7 @@ avtDataTree::operator=(const avtDataTree *rhs)
             for (int i = 0; i < nChildren; i++)
                children[i] = rhs->children[i];
         } 
-        else
+        else if(rhs->dataRep != NULL)
         {
             dataRep = new avtDataRepresentation(*(rhs->dataRep)); 
         } 
