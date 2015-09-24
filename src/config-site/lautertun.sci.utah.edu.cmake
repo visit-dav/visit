@@ -5,6 +5,8 @@
 ## system: Darwin lautertun.sci.utah.edu 12.5.0 Darwin Kernel Version 12.5.0: Sun Sep 29 13:33:47 PDT 2013; root:xnu-2050.48.12~1/RELEASE_X86_64 x86_64
 ## by: allen
 
+##SET(CMAKE_BUILD_TYPE Debug CACHE STRING "")
+
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
@@ -34,6 +36,11 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ## VisIt paraDIS Option.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARADIS ON TYPE BOOL)
+
+##
+## VisIt build all database plugins
+##
+VISIT_OPTION_DEFAULT(VISIT_BUILD_ALL_PLUGINS ON TYPE BOOL)
 
 ##############################################################
 ##
@@ -165,7 +172,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_D
 ##
 ## Nektar++
 ##
-SETUP_APP_VERSION(NEKTAR++ 4.0.1)
+SETUP_APP_VERSION(NEKTAR++ 4.1.0)
 VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR ${VISITHOME}/nektar++/${NEKTAR++_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP ${VISITHOME}/zlib/1.2.7/${VISITARCH}/lib z TYPE STRING)
 
