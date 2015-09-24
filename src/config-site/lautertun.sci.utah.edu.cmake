@@ -1,4 +1,4 @@
-#/Users/allen/Projects/VisIt/Thirdparty/visit/cmake/3.0.2/i386-apple-darwin12_gcc/bin/cmake
+#/Projects/VisIt/Thirdparty/visit/cmake/3.0.2/i386-apple-darwin12_gcc/bin/cmake
 ##
 ## ../trunk//src/svn_bin/build_visit generated host.cmake
 ## created: Wed Jan 21 21:06:14 MST 2015
@@ -10,7 +10,7 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /Users/allen/Projects/VisIt/Thirdparty/visit)
+SET(VISITHOME /Projects/VisIt/Thirdparty/visit)
 SET(VISITARCH i386-apple-darwin12_gcc)
 
 ## Compiler flags.
@@ -133,7 +133,7 @@ VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR ${VISITHOME}/zlib/1.2.7/${VISITARCH})
 ##
 ## HDF5
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.7/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.14/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/zlib/1.2.7/${VISITARCH}/lib z TYPE STRING)
 
 ##
@@ -222,5 +222,3 @@ VISIT_OPTION_DEFAULT(VISIT_INSTALL_THIRD_PARTY ON TYPE BOOL)
 ##
 SET(VISIT_CREATE_APPBUNDLE_PACKAGE TRUE)
 VISIT_OPTION_DEFAULT(VISIT_CREATE_APPBUNDLE_PACKAGE ON TYPE BOOL)
-
-
