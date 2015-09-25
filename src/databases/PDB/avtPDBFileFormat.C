@@ -44,7 +44,6 @@
 #include <PDBFileObject.h>
 
 #include <PF3DFileFormat.h>
-#include <PP_Z_STSD_FileFormat.h>
 #include <PP_Z_MTSD_FileFormat.h>
 #include <LEOSFileFormat.h>
 #include <JMFileFormat.h>
@@ -77,6 +76,11 @@
 //   Brad Whitlock, Thu Apr 30 15:48:08 PDT 2009
 //   I added support for Jose's file format.
 //
+//   Mark C. Miller, Fri Sep 25 15:17:54 PDT 2015
+//   Removed PP_Z_STSD as it was a special case of more general PP_Z_MTSD
+//   especially since the changes Jeremy made to support catenating multile MT
+//   databases into a coherent time series using 'timestep groups'. Tested
+//   this with a series of 5 single step MTSD files and it works fine.
 // ****************************************************************************
 
 avtFileFormatInterface *
@@ -110,13 +114,6 @@ PDB_CreateFileFormatInterface(const char * const *list, int nList, int nBlock,
             {
                 debug4 << "Testing if file contains PF3D data" << endl;
                 ffi = PF3DFileFormat::CreateInterface(pdb, list, nList, nBlock);
-            }
-
-            // Check to see if it is a PPZ STSD file..
-            if(ffi == 0)
-            {
-                debug4 << "Testing if file contains Flash ST data" << endl;
-                ffi = PP_Z_STSD_FileFormat::CreateInterface(pdb, list, nList, nBlock);
             }
 
             // Check to see if it is a PPZ Collected MTSD file.
