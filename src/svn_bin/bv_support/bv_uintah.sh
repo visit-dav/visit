@@ -234,8 +234,7 @@ function build_uintah
     if [[ "$FC_COMPILER" == "no" ]] ; then
 
         warn "Uintah may require fortran to be enabled. It does not appear that the --fortran "
-        warn "agrument was set. If Uintah fails to build try adding the --fortra
-	n argument"
+        warn "agrument was set. If Uintah fails to build try adding the --fortran argument"
         FORTRANARGS="--without-fortran"
         #return 1
 
