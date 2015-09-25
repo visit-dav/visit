@@ -53,21 +53,21 @@ def test0():
     ExportDatabase(e)
 
     DeleteAllPlots()
-    CloseDatabase(silo_data_path("globe.silo"))
+#    CloseDatabase(silo_data_path("globe.silo"))
 
     OpenDatabase("test_ex_db.vtk")
     AddPlot("Pseudocolor", "t")
     DrawPlots()
     Test("export_db_01")
     DeleteAllPlots()
-    CloseDatabase("test_ex_db.vtk")
+#    CloseDatabase("test_ex_db.vtk")
 
     OpenDatabase("test_ex_db2.silo")
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     Test("export_db_02")
     DeleteAllPlots()
-    CloseDatabase("test_ex_db2.silo")
+#    CloseDatabase("test_ex_db2.silo")
 
     OpenDatabase(silo_data_path("wave.visit"))
     DefineScalarExpression("cmfe", "conn_cmfe(coord(<%s:quadmesh>)[1], quadmesh)" % cmfe_silo_data_path("wave0020.silo"))
@@ -90,8 +90,8 @@ def test0():
     DrawPlots()
     Test("export_db_04")
     DeleteAllPlots()
-    CloseDatabase("test_ex_db3.vtk")
-    CloseDatabase(silo_data_path("wave.visit"))
+#    CloseDatabase("test_ex_db3.vtk")
+#    CloseDatabase(silo_data_path("wave.visit"))
 
 def VTK_check_binary(filename):
     f = open(filename, "rt")
@@ -173,7 +173,7 @@ def test1():
     SetView3D(v)
     SetAnnotationAttributes(a)
     Test("export_db_1_02")
-    CloseDatabase("binary_VTK.visit")
+#    CloseDatabase("binary_VTK.visit")
     DeleteWindow()
 
     # Test exporting some surfaces in other formats and plotting the results.
@@ -217,12 +217,12 @@ def test1():
         Test(formats[f][2])
         # Clean up window 2
         DeleteAllPlots()
-        CloseDatabase(formats[f][1])
+    #    CloseDatabase(formats[f][1])
         DeleteWindow()
 
     # Clean up window 1
     DeleteAllPlots()
-    CloseDatabase(maindb)
+#    CloseDatabase(maindb)
     cleanup_files()
 
 def test2(writeGroupSize):
@@ -319,14 +319,14 @@ def test2(writeGroupSize):
 
         # Clean up window 2
         DeleteAllPlots()
-        for db in opendbs:
-            CloseDatabase(db)
+#        for db in opendbs:
+#            CloseDatabase(db)
         DeleteWindow()
 
     # Clean up window 1
     DeleteAllPlots()
     cleanup_files()
-    CloseDatabase(maindb)
+#    CloseDatabase(maindb)
 
 def test3():
     TestSection("Test Tecplot multiblock export.")
@@ -391,12 +391,12 @@ def test3():
 
     # Clean up window 2
     DeleteAllPlots()
-    CloseDatabase("rectTecplot.tec")
+#    CloseDatabase("rectTecplot.tec")
     DeleteWindow()
 
     # Back to window 1
     DeleteAllPlots()
-    CloseDatabase(maindb)
+#    CloseDatabase(maindb)
 
 def main():
     test0()
