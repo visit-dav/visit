@@ -271,7 +271,7 @@ fi
     -DCMAKE_CXX_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
     -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
     -DCMAKE_MAKE_PROGRAM:FILEPATH="/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make" \
-    -DVISIT_EAVL_DIR="/usr/gapps/visit/thirdparty_shared/2.9.0/eavl/4593630/linux-x86_64_gcc-4.4" \
+    -DVISIT_EAVL_DIR="/usr/gapps/visit/thirdparty_shared/2.10.0/eavl/4593630/linux-x86_64_gcc-4.4" \
     . >> ../buildlog 2>&1
 rm -rf ../make.out ../make.err
 /usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make --output-sync=line -k -j 16 1>../make.out 2>../make.err
