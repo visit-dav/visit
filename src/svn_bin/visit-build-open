@@ -137,6 +137,9 @@
 #   Kathleen Biagas, Thu May  7 09:33:43 PDT 2015
 #   Added build for vulcan (copied from rzuseq).
 #
+#   Eric Brugger, Fri Sep 25 09:04:35 PDT 2015
+#   I removed sidious.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -178,7 +181,6 @@ esac
 # Parse the execute line, providing default values for error checking.
 #
 kickit=true
-sidious=false
 ubuntu1104_64=false
 ubuntu1404_64=false
 aztec=true
@@ -200,7 +202,6 @@ do
    case $1 in
       -none)
          kickit=false
-         sidious=false
          ubuntu1104_64=false
          ubuntu1404_64=false
          aztec=false
@@ -215,14 +216,6 @@ do
          ;;
       +kickit)
          kickit=true
-         shift
-         ;;
-      -sidious)
-         sidious=false
-         shift
-         ;;
-      +sidious)
-         sidious=true
          shift
          ;;
       -ubuntu1104_64)
@@ -304,7 +297,6 @@ then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
    echo "    kickit (B-Div, Linux, x86_64),"
-   echo "    sidious(B-Div, Linux, x86_64),"
    echo "    ubuntu1104_64(B-Div, Linux, x86_64),"
    echo "    ubuntu1404_64(B-Div, Linux, x86_64),"
    echo "    aztec (LC, Linux, x86_64),"
@@ -345,13 +337,31 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make -j 4 >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
 echo "        build of visit on kickit"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -rf $dist
+gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
+cd $dist/src
+/usr/gapps/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_MESA_DIR="/usr/gapps/visit/thirdparty_shared/2.10.0/mesa/7.10.2/linux-x86_64_gcc-4.4" >> ../../buildlog 2>&1
+make -j 4 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
+cd ../..
+echo ""                                       >> resultlog 2>&1
+echo "        build of visit on kickit"       >> resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
@@ -376,60 +386,6 @@ then
 fi
 
 #
-# Build on sidious.
-#
-rm -f sidious
-cat <<EOF > sidious
-#!/bin/sh
-if test ! -e /tmp/$user ; then
-   mkdir /tmp/$user
-fi
-if test ! -e /tmp/$user/sidious ; then
-   mkdir /tmp/$user/sidious
-fi
-rm -rf /tmp/$user/sidious/visitbuild
-mkdir /tmp/$user/sidious/visitbuild
-mv sidious_$dist.tar.gz /tmp/$user/sidious/visitbuild/$dist.tar.gz
-cd /tmp/$user/sidious/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-cd config-site
-mv sidious.llnl.gov.cmake sidious.llnl.gov.parallel.cmake
-mv sidious.llnl.gov.serial.cmake sidious.llnl.gov.cmake
-cd ..
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make -j 4 >> ../../buildlog 2>&1
-make -j 4 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on sidious"      > resultlog 2>&1
-echo "       ---------------------------"     >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $sidious = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on sidious"
-      scp sidious sidious:sidious_buildit
-      scp $dist.tar.gz sidious:sidious_$dist.tar.gz
-      ssh sidious "chmod 750 sidious_buildit;./sidious_buildit" &
-   fi
-fi
-
-#
 # Build on ubuntu1104_64.
 #
 rm -f ubuntu1104_64
@@ -446,8 +402,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/home/visit/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.5/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 2 >> ../../buildlog 2>&1
+/home/visit/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.5/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -493,8 +448,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/home/visit/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 2 >> ../../buildlog 2>&1
+/home/visit/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -544,8 +498,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make -j 6 >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -596,8 +549,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make -j 6 >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -660,7 +612,7 @@ mkdir visit\${ver2}.linux-ppc64
 bgqinstdir=\`pwd\`/visit\${ver2}.linux-ppc64
 # Build for compute node, engine-only version
 cd compute_build
-/usr/gapps/visit/thirdparty_static/2.9.0/cmake/3.0.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/rzuseqlac2-compute.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_static/2.10.0/cmake/3.0.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/rzuseqlac2-compute.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
 sh svn_bin/filter_link_commands_BGQ.sh >> ../../buildlog 2>&1
 make install >> ../../buildlog 2>&1
 cd ..
@@ -668,7 +620,7 @@ cd ..
 mv .data data
 # Build for login node, server-components-only version
 cd login_build
-/usr/gapps/visit/thirdparty_static/2.9.0/cmake/3.0.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/rzuseqlac2-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_static/2.10.0/cmake/3.0.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/rzuseqlac2-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
 make install >> ../../buildlog 2>&1
 cd ..
 # Now, tar up the common install directory.
@@ -718,7 +670,6 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 /project/projectdirs/visit/visit_3rdparty/carver_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 4 >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -772,8 +723,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/projects/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
-make -j 2 >> ../../buildlog 2>&1
+/projects/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
 make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -837,7 +787,7 @@ mkdir visit\${ver2}.linux-ppc64
 bgqinstdir=\`pwd\`/visit\${ver2}.linux-ppc64
 # Build for compute node, engine-only version
 cd compute_build
-/usr/gapps/visit/thirdparty_static/2.9.0/cmake/3.0.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-compute.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_static/2.10.0/cmake/3.0.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-compute.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
 sh svn_bin/filter_link_commands_BGQ.sh >> ../../buildlog 2>&1
 make install >> ../../buildlog 2>&1
 cd ..
@@ -845,7 +795,7 @@ cd ..
 mv .data data
 # Build for login node, server-components-only version
 cd login_build
-/usr/gapps/visit/thirdparty_static/2.9.0/cmake/3.0.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_static/2.10.0/cmake/3.0.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
 make install >> ../../buildlog 2>&1
 cd ..
 # Now, tar up the common install directory.
@@ -879,5 +829,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104_64 ubuntu1404_64 aztec rzzeus rzuseq carver glory vulcan
+   rm -f kickit ubuntu1104_64 ubuntu1404_64 aztec rzzeus rzuseq carver glory vulcan
 fi
