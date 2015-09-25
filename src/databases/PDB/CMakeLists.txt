@@ -22,7 +22,6 @@ PDBFileObject.C
 PDBReader.C
 PF3DFileFormat.C
 PP_ZFileReader.C
-PP_Z_STSD_FileFormat.C
 PP_Z_MTSD_FileFormat.C
 LEOSFileReader.C
 LEOSFileFormat.C
@@ -40,7 +39,6 @@ PDBFileObject.C
 PDBReader.C
 PF3DFileFormat.C
 PP_ZFileReader.C
-PP_Z_STSD_FileFormat.C
 PP_Z_MTSD_FileFormat.C
 LEOSFileReader.C
 LEOSFileFormat.C
