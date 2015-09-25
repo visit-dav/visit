@@ -53,20 +53,23 @@ def test0():
     ExportDatabase(e)
 
     DeleteAllPlots()
+    CloseDatabase(silo_data_path("globe.silo"))
+
     OpenDatabase("test_ex_db.vtk")
     AddPlot("Pseudocolor", "t")
     DrawPlots()
     Test("export_db_01")
-
     DeleteAllPlots()
+    CloseDatabase("test_ex_db.vtk")
+
     OpenDatabase("test_ex_db2.silo")
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     Test("export_db_02")
-
     DeleteAllPlots()
-    OpenDatabase(silo_data_path("wave.visit"))
+    CloseDatabase("test_ex_db2.silo")
 
+    OpenDatabase(silo_data_path("wave.visit"))
     DefineScalarExpression("cmfe", "conn_cmfe(coord(<%s:quadmesh>)[1], quadmesh)" % cmfe_silo_data_path("wave0020.silo"))
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
@@ -87,6 +90,8 @@ def test0():
     DrawPlots()
     Test("export_db_04")
     DeleteAllPlots()
+    CloseDatabase("test_ex_db3.vtk")
+    CloseDatabase(silo_data_path("wave.visit"))
 
 def VTK_check_binary(filename):
     f = open(filename, "rt")
@@ -95,13 +100,6 @@ def VTK_check_binary(filename):
         line = f.readline()
     b = "BINARY" == line[0:6]
     return b
-
-def TestExportedData(datafile, testname, setupCB):
-    AddWindow()
-    OpenDatabase(datafile)
-    setupCB()
-    Test(testname)
-    DeleteWindow()
 
 def cleanup_files():
     exts = ("*.ply", "*.raw", "*.stl", "*.silo", "*.tec", "*.okc", "*.visit", "*.xyz", "*.obj")
@@ -115,7 +113,8 @@ def cleanup_files():
 
 def test1():
     TestSection("Test export of some surfaces.")
-    OpenDatabase(silo_data_path("multi_rect3d.silo"))
+    maindb = silo_data_path("multi_rect3d.silo")
+    OpenDatabase(maindb)
     DefineScalarExpression("rad", "magnitude(coords(mesh1))")
     AddPlot("Pseudocolor", "u")
     AddOperator("Isosurface")
@@ -174,6 +173,7 @@ def test1():
     SetView3D(v)
     SetAnnotationAttributes(a)
     Test("export_db_1_02")
+    CloseDatabase("binary_VTK.visit")
     DeleteWindow()
 
     # Test exporting some surfaces in other formats and plotting the results.
@@ -193,6 +193,8 @@ def test1():
         e.db_type_fullname = f + "_1.0"
         e.filename = formats[f][0]
         ExportDatabase(e)
+
+        # Add the exported data in window 2.
         AddWindow()
         if OpenDatabase(formats[f][1]):
             md = GetMetaData(formats[f][1])
@@ -213,13 +215,20 @@ def test1():
         SetView3D(v)
         SetAnnotationAttributes(a)
         Test(formats[f][2])
+        # Clean up window 2
+        DeleteAllPlots()
+        CloseDatabase(formats[f][1])
         DeleteWindow()
+
+    # Clean up window 1
     DeleteAllPlots()
+    CloseDatabase(maindb)
     cleanup_files()
 
 def test2(writeGroupSize):
     TestSection("Test export with write groups (parallel).")
-    OpenDatabase(silo_data_path("multi_rect3d.silo"))
+    maindb = silo_data_path("multi_rect3d.silo")
+    OpenDatabase(maindb)
     DefineScalarExpression("rad", "magnitude(coords(mesh1))")
     AddPlot("Pseudocolor", "u")
     AddOperator("Isosurface")
@@ -274,9 +283,12 @@ def test2(writeGroupSize):
         e.writeUsingGroups = 1
         e.groupSize = writeGroupSize
         ExportDatabase(e)
+
+        # Add the exported database in window 2.
         AddWindow()
         pattern = formats[f][1]
         filelist=""
+        opendbs = []
         if pattern[0] == '*':
             # Read all of the filenames
             files = sorted(os.listdir("."))
@@ -285,11 +297,13 @@ def test2(writeGroupSize):
                 if datafile[-len(ext):] == ext:
                     OpenDatabase(datafile)
                     AddPlot(formats[f][3], formats[f][4])
+                    opendbs = opendbs + [datafile]
                     filelist = filelist + datafile + "\n"
         else:
             if OpenDatabase(formats[f][1]):
                 md = GetMetaData(formats[f][1])
                 AddPlot(formats[f][3], formats[f][4])
+                opendbs = opendbs + [formats[f][1]]
                 filelist = filelist + formats[f][1] + "\n"
             else:
                 filelist = "ERROR: " + string.join(os.listdir("."), "\n")
@@ -302,13 +316,22 @@ def test2(writeGroupSize):
         SetAnnotationAttributes(a)
         Test(formats[f][2])
         TestText(formats[f][2] + "fn", filelist)
+
+        # Clean up window 2
+        DeleteAllPlots()
+        for db in opendbs:
+            CloseDatabase(db)
         DeleteWindow()
+
+    # Clean up window 1
     DeleteAllPlots()
     cleanup_files()
+    CloseDatabase(maindb)
 
 def test3():
     TestSection("Test Tecplot multiblock export.")
-    OpenDatabase(silo_data_path("multi_rect3d.silo"))
+    maindb = silo_data_path("multi_rect3d.silo")
+    OpenDatabase(maindb)
     DefineScalarExpression("rad", "magnitude(coords(mesh))")
     AddPlot("Pseudocolor", "u")
     DrawPlots()
@@ -342,6 +365,8 @@ def test3():
     e.writeUsingGroups = 0
     e.variables = ("default", "v", "rad")
     ExportDatabase(e)
+
+    # Add the exported database in window 2
     AddWindow()
     OpenDatabase("rectTecplot.tec")
     AddPlot("Pseudocolor", "u")
@@ -364,8 +389,14 @@ def test3():
     DrawPlots()
     Test("export_db_3_04")
 
-    DeleteWindow()
+    # Clean up window 2
     DeleteAllPlots()
+    CloseDatabase("rectTecplot.tec")
+    DeleteWindow()
+
+    # Back to window 1
+    DeleteAllPlots()
+    CloseDatabase(maindb)
 
 def main():
     test0()
