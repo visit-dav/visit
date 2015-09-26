@@ -229,7 +229,7 @@ class MRUCacheBase {
       // cached values indexed by keys
       // (we use two maps so we can return an iterator to cache)
       std::map<kT,vT>  cache;
-      std::map<kT,int> age;
+      std::map<kT,size_t> age;
 };
 
 // The MRUCache class
@@ -344,7 +344,7 @@ void MRUCacheBase<kT,vT,dM,nS>::remove(const kT& key)
    deleteit(k->second);
 
    // erase slots from the cache
-   typename std::map<kT,int>::iterator j = age.find(key);
+   typename std::map<kT,size_t>::iterator j = age.find(key);
    cache.erase(k);
    age.erase(j);
 }
@@ -438,7 +438,7 @@ const vT& MRUCacheBase<kT,vT,dM,nS>::operator[](const kT& key) const
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
 const vT& MRUCacheBase<kT,vT,dM,nS>::mru(void) const
 {
-   typename std::map<kT,int>::iterator i = age.begin();
+   typename std::map<kT,size_t>::iterator i = age.begin();
    kT mruKey               = i->first;
    int newest              = i->second; 
 
@@ -496,7 +496,7 @@ size_t MRUCacheBase<kT,vT,dM,nS>::numslots(size_t newNumSlots)
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
 kT MRUCacheBase<kT,vT,dM,nS>::oldest(void)
 {
-   typename std::map<kT,int>::iterator i = age.begin();
+   typename std::map<kT,size_t>::iterator i = age.begin();
    kT retval               = i->first;
    int oldestAge           = i->second; 
 
