@@ -1237,6 +1237,9 @@ class MakeMovie(object):
     #   Change the movie formats to all use PNG as the input format when
     #   ffmpeg is present and PPM otherwise (for use with mpeg2encode).
     #
+    #   Kathleen Biagas, Tue Sep 29 15:52:44 MST 2015
+    #   On Windows, only fail if format NOT compatible.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -1288,7 +1291,7 @@ class MakeMovie(object):
                                     validFormat = k
 
                         if validFormat != "":
-                            if sys.platform == "win32" and self.formatInfo[validFormat][self.FMT_WINDOWSCOMPATIBLE]:
+                            if sys.platform == "win32" and not self.formatInfo[validFormat][self.FMT_WINDOWSCOMPATIBLE]:
                                 print "Error! ", format, " is not supported on Windows."
                                 sys.exit(-1)
                             else:
