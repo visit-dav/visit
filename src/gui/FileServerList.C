@@ -2022,6 +2022,32 @@ FileServerList::SetProgressCallback(bool (*cb)(void *, int), void *data)
 }
 
 // ****************************************************************************
+// Method: FileServerList::GetProgressCallback
+//
+// Purpose: 
+//   Gets the progress callback that is called while we launch a new mdserver.
+//   This was added so the QvisFileOpenDialog could get and set this data
+//   for the data open window.
+//
+// Arguments:
+//   cb   : The address of the callback function.
+//   data : Callback data.
+//
+// Programmer: David Camp
+// Creation:   Mon Sep 28 10:48:39 PDT 2015
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::GetProgressCallback(bool (*cb)(void *, int), void *data)
+{
+    cb = progressCallback;
+    data = progressCallbackData;
+}
+
+// ****************************************************************************
 // Method: FileServerList::GetFilteredFileList
 //
 // Purpose: 

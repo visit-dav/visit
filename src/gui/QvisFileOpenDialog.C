@@ -199,6 +199,10 @@ QvisFileOpenDialog::getOpenFileNameEx(const QString &initialFile,
     std::string oldpath(fileServer->GetPath());
     std::string oldfilter(fileServer->GetFilter());
 
+    bool           (*progressCallback)(void *, int);
+    void            *progressCallbackData;
+    fileServer->GetProgressCallback(progressCallback, progressCallbackData);
+
     // Set up a delayed order to change the path.
     delayedChangePath(initialFile, fltr, fallbackPath);
 
@@ -209,6 +213,7 @@ QvisFileOpenDialog::getOpenFileNameEx(const QString &initialFile,
     // Try and restore the host,path,filter into the file server.
     TRY
     {
+        fileServer->SetProgressCallback(progressCallback, progressCallbackData);
         fileServer->SetHost(oldhost);
         fileServer->SetPath(oldpath);
         fileServer->SetFilter(oldfilter);
