@@ -11,15 +11,19 @@
 #  Date:       Fri Sep 18 17:29:49 PDT 2015
 #
 #  Modifications:
+#     Kathleen Biagas, Tue Sep 29 15:47:21 MST 2015
+#     Use TestEnv.params["visit_bin"] for correct path to visit executable
+#     on all platforms.  Use raw string for database path when writing to
+#     fb_wave.py.
 #
 # ----------------------------------------------------------------------------
 import os, string, subprocess, visit_utils
 
 def GenerateMovie(movieArgs):
     if TestEnv.params["parallel"]:
-        args = [os.path.join(os.getenv("VISITHOME"), "bin", "visit"), "-movie", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + movieArgs
+        args = [TestEnv.params["visit_bin"], "-movie", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + movieArgs
     else:
-        args = [os.path.join(os.getenv("VISITHOME"), "bin", "visit"), "-movie"] + movieArgs
+        args = [TestEnv.params["visit_bin"], "-movie"] + movieArgs
     p = subprocess.check_output(args)
     return p
 
@@ -87,7 +91,7 @@ def test012():
     # Set up a movie script.
     f = open("fb_wave.py", "wt")
     f.write("print \"MOVIE SCRIPT EXECUTING\"\n")
-    f.write("OpenDatabase(\"%s\")\n" % silo_data_path("wave*.silo database"))
+    f.write("OpenDatabase(r\"%s\")\n" % silo_data_path("wave*.silo database"))
     f.write("AddPlot(\"FilledBoundary\", \"Material\")\n")
     f.write("DrawPlots()\n")
     f.write("v = GetView3D()\n")
