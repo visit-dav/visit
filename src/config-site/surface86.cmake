@@ -30,8 +30,10 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/local/tools/mvapich2-gnu/include TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/local/tools/mvapich2-gnu/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_FORTRAN_FLAGS -I/usr/local/tools/mvapich2-gnu/include TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/local/tools/mvapich2-gnu/lib -Wl,-rpath=/usr/local/tools/mvapich2-gnu/lib" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl pmi)
+VISIT_OPTION_DEFAULT(VISIT_MPI_FORTRAN_LIBS    fmpich mpich mpl pmi)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/local/tools/mvapich2-gnu/lib")
 
 ##

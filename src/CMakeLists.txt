@@ -1519,18 +1519,22 @@ IF(VISIT_PARALLEL)
             ENDIF(VISIT_MPI_CXX_FLAGS)
 
             IF(VISIT_MPI_FORTRAN_FLAGS)
-                SET(VISIT_PARALLEL_FORTRANFLAGS "${VPFLAGS} ${VISIT_MPI_FORTRAN_FLAGS}"
+                SET(VISIT_PARALLEL_FORTRAN_FLAGS "${VPFLAGS} ${VISIT_MPI_FORTRAN_FLAGS}"
                     CACHE STRING "Parallel Fortran flags")
             ELSE(VISIT_MPI_FORTRAN_FLAGS)
-                SET(VISIT_PARALLEL_FORTRANFLAGS  "${VPFLAGS}"
+                SET(VISIT_PARALLEL_FORTRAN_FLAGS  "${VPFLAGS}"
                     CACHE STRING "Parallel flags for Fortran")
             ENDIF(VISIT_MPI_FORTRAN_FLAGS)
 
             IF(VISIT_MPI_LD_FLAGS)
                 SET(VISIT_PARALLEL_LINKER_FLAGS "${VISIT_MPI_LD_FLAGS}"
                     CACHE STRING "Parallel LDFLAGS")
+                SET(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS "${VISIT_MPI_LD_FLAGS}"
+                    CACHE STRING "Parallel LDFLAGS")
             ELSE(VISIT_MPI_LD_FLAGS)
                 SET(VISIT_PARALLEL_LINKER_FLAGS ""
+                    CACHE STRING "Parallel LDFLAGS")
+                SET(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS ""
                     CACHE STRING "Parallel LDFLAGS")
             ENDIF(VISIT_MPI_LD_FLAGS)
         ELSE(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)

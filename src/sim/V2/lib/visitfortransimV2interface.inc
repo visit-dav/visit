@@ -1025,6 +1025,10 @@
       external visitoptionlistfree
       integer  visitoptionlistfree
 
+! visitoptionlistsetvalueb(visit_handle obj, string name, int lname, int value)
+      external visitoptionlistsetvalueb
+      integer  visitoptionlistsetvalueb
+
 ! visitoptionlistsetvaluei(visit_handle obj, string name, int lname, int value)
       external visitoptionlistsetvaluei
       integer  visitoptionlistsetvaluei
