@@ -830,9 +830,6 @@ QvisExportDBWindow::fileFormatChanged(int)
 // Creation:   May 25, 2005
 //
 // Modifications:
-//   Brad Whitlock, Thu Mar 20 14:04:35 PDT 2014
-//   Show license text.
-//   Work partially supported by DOE Grant SC0007548.
 //
 // ****************************************************************************
 
@@ -840,29 +837,6 @@ void
 QvisExportDBWindow::exportDB()
 {
     Apply();
-
-    // See if we can get a license string for the plugin.
-    QString license;
-    int ntypes = dbPluginInfoAtts->GetTypes().size();
-    for (int i = 0 ; i < ntypes ; i++)
-    {
-        if (dbPluginInfoAtts->GetTypes()[i] == exportDBAtts->GetDb_type())
-        {
-            license = QString(dbPluginInfoAtts->GetLicense()[i].c_str());
-            break;
-        }
-    }
-    // If we have a non-empty license string that we have not shown before,
-    // show the license.
-    if(!license.isEmpty())
-    {
-        QString dbType(exportDBAtts->GetDb_type().c_str());
-        if(licenseShown.indexOf(dbType) == -1)
-        {
-            QMessageBox::information(this, tr("%1 License").arg(dbType), license);
-            licenseShown.append(dbType);
-        }
-    }
 
     if(isVisible() && !posted())
         hide();
@@ -889,12 +863,42 @@ QvisExportDBWindow::exportDB()
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Thu Mar 20 14:04:35 PDT 2014
+//   Show license text.
+//   Work partially supported by DOE Grant SC0007548.
+//
+//   Brad Whitlock, Mon Sep 28 17:48:50 PDT 2015
+//   Notify export attributes to make sure the viewer has the user-set options.
+//
 // ****************************************************************************
 
 void
 QvisExportDBWindow::exportButtonClicked()
 {
     apply();
+
+    // See if we can get a license string for the plugin.
+    QString license;
+    int ntypes = dbPluginInfoAtts->GetTypes().size();
+    for (int i = 0 ; i < ntypes ; i++)
+    {
+        if (dbPluginInfoAtts->GetTypes()[i] == exportDBAtts->GetDb_type())
+        {
+            license = QString(dbPluginInfoAtts->GetLicense()[i].c_str());
+            break;
+        }
+    }
+    // If we have a non-empty license string that we have not shown before,
+    // show the license.
+    if(!license.isEmpty())
+    {
+        QString dbType(exportDBAtts->GetDb_type().c_str());
+        if(licenseShown.indexOf(dbType) == -1)
+        {
+            QMessageBox::information(this, tr("%1 License").arg(dbType), license);
+            licenseShown.append(dbType);
+        }
+    }
 
     int result = QDialog::Accepted;
     if (exportDBAtts->GetOpts().GetNumberOfOptions() > 0)
@@ -909,6 +913,9 @@ QvisExportDBWindow::exportButtonClicked()
     }
     if (result == QDialog::Accepted)
     {
+        // Make sure the new write options get sent to the viewer.
+        exportDBAtts->Notify();
+
         exportDB();
     }
     else
