@@ -54,6 +54,8 @@
 #define VISIT_COMMAND_SUCCESS 1
 #define VISIT_COMMAND_FAILURE 2
 
+#define TEST_FIELDVIEW_XDB_OPTIONS
+
 void read_input_deck(void) { }
 /* Data Access Function prototypes */
 visit_handle SimGetMetaData(void *);
@@ -176,14 +178,36 @@ void simulate_one_timestep(simulation_data *sim)
         visit_handle vars = VISIT_INVALID_HANDLE;
         VisIt_NameList_alloc(&vars);
         VisIt_NameList_addName(vars, "default");
-        
+#ifdef TEST_FIELDVIEW_XDB_OPTIONS
+        /* Add another export variable. */
+        VisIt_NameList_addName(vars, "mesh2d/nodeid");
+
+        {
+            /* Create an option list that tells the FieldView XDB export to
+             * strip "mesh" from variable names like "mesh/var".
+             */
+            visit_handle options = VISIT_INVALID_HANDLE;
+            VisIt_OptionList_alloc(&options);
+            VisIt_OptionList_setValueB(options, "Strip mesh name prefix", 1);
+
+            sprintf(filename, "updateplots_export%04d", sim->saveCounter);
+            if(VisItExportDatabaseWithOptions(filename, "FieldViewXDB_1.0", 
+                                              vars, options) &&
+               sim->par_rank == 0)
+            {
+                 printf("Exported %s\n", filename);
+            }
+
+            VisIt_OptionList_free(options);
+        }
+#else
         sprintf(filename, "updateplots_export%04d", sim->saveCounter);
         if(VisItExportDatabase(filename, "FieldViewXDB_1.0", vars) &&
            sim->par_rank == 0)
         {
             printf("Exported %s\n", filename);
         }
-
+#endif
         VisIt_NameList_free(vars);
 
         exportedFile = 1;
@@ -694,6 +718,19 @@ SimGetMetaData(void *cbdata)
             VisIt_SimulationMetaData_addVariable(md, vmd);
         }
 
+#ifdef TEST_FIELDVIEW_XDB_OPTIONS
+        /* Add a variable. */
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "mesh2d/nodeid");
+            VisIt_VariableMetaData_setMeshName(vmd, "mesh2d");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
+
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+#endif
+
         /* Add a curve variable. */
         if(VisIt_CurveMetaData_alloc(&cmd) == VISIT_OKAY)
         {
@@ -838,6 +875,21 @@ SimGetVariable(int domain, const char *name, void *cbdata)
         VisIt_VariableData_setDataD(h, VISIT_OWNER_VISIT, 1,
             nTuples, rmesh_zonal);
     }
+#ifdef TEST_FIELDVIEW_XDB_OPTIONS
+    else if(strcmp(name, "mesh2d/nodeid") == 0)
+    {
+        float *nodeid = NULL;
+        int i, nTuples;
+        nTuples = rmesh_dims[0] * rmesh_dims[1];
+
+        nodeid = (float*)malloc(sizeof(float) * nTuples);
+        VisIt_VariableData_alloc(&h);
+        for(i = 0; i < nTuples; ++i)
+            nodeid[i] = i;
+        VisIt_VariableData_setDataF(h, VISIT_OWNER_VISIT, 1,
+            nTuples, nodeid);
+    }
+#endif
 
     return h;
 }

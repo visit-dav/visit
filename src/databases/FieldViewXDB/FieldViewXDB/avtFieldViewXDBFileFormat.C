@@ -1,5 +1,5 @@
 /*****************************************************************************
-* Copyright (c) 2014 Intelligent Light. All rights reserved.
+* Copyright (c) 2015 Intelligent Light. All rights reserved.
 * Work partially supported by DOE Grant SC0007548.
 * FieldView XDB Export is provided expressly for use within VisIt.
 * All other uses are strictly forbidden.
@@ -15,7 +15,8 @@
 //
 // ****************************************************************************
 
-avtFieldViewXDBFileFormat::avtFieldViewXDBFileFormat(const char *filename)
+avtFieldViewXDBFileFormat::avtFieldViewXDBFileFormat(const char *filename,
+    DBOptionsAttributes *)
     : avtMTMDFileFormat(filename)
 {
     // INITIALIZE DATA MEMBERS

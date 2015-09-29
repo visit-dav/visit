@@ -183,7 +183,7 @@ int VisIt_OptionList_getValueS(visit_handle h, const char *name, char **value)
 /* maxlen 012345678901234567890123456789                                      */
 #define F_VISITOPTIONLISTALLOC              F77_ID(visitoptionlistalloc_,visitoptionlistalloc,VISITOPTIONLISTALLOC)
 #define F_VISITOPTIONLISTFREE               F77_ID(visitoptionlistfree_,visitoptionlistfree,VISITOPTIONLISTFREE)
-#define F_VISITOPTIONLISTSETVALUEC          F77_ID(visitoptionlistsetvaluec_,visitoptionlistsetvaluec, VISITOPTIONLISTSETVALUEC)
+#define F_VISITOPTIONLISTSETVALUEB          F77_ID(visitoptionlistsetvalueb_,visitoptionlistsetvalueb, VISITOPTIONLISTSETVALUEB)
 #define F_VISITOPTIONLISTSETVALUEI          F77_ID(visitoptionlistsetvaluei_,visitoptionlistsetvaluei, VISITOPTIONLISTSETVALUEI)
 #define F_VISITOPTIONLISTSETVALUEL          F77_ID(visitoptionlistsetvaluel_,visitoptionlistsetvaluel, VISITOPTIONLISTSETVALUEL)
 #define F_VISITOPTIONLISTSETVALUEF          F77_ID(visitoptionlistsetvaluef_,visitoptionlistsetvaluef, VISITOPTIONLISTSETVALUEF)
@@ -211,6 +211,17 @@ int
 F_VISITOPTIONLISTFREE(visit_handle *h)
 {
     return VisIt_OptionList_free(*h);
+}
+
+int
+F_VISITOPTIONLISTSETVALUEB(visit_handle *h, const char *name, int *lname, int *value)
+{
+    char *f_name = NULL;
+    int retval;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisIt_OptionList_setValueB(*h, f_name, *value);
+    FREE(f_name);
+    return retval;
 }
 
 int

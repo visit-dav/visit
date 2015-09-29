@@ -16,12 +16,14 @@
 // Creation:   Tue Jan 14 17:29:14 PST 2014
 //
 // Modifications:
+//   Brad Whitlock, Mon Sep 28 16:17:42 PDT 2015
+//   I added write options.
 //
 // ****************************************************************************
 
-avtFieldViewXDBWriter::avtFieldViewXDBWriter() : avtDatabaseWriter()
+avtFieldViewXDBWriter::avtFieldViewXDBWriter(DBOptionsAttributes *opts) : avtDatabaseWriter()
 {
-    impl = new avtFieldViewXDBWriterInternal();
+    impl = new avtFieldViewXDBWriterInternal(opts);
 }
 
 // ****************************************************************************
