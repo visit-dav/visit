@@ -186,15 +186,15 @@ ccc   RECTMESH common block
       integer NX, NY
       parameter (NX = 50)
       parameter (NY = 50)
-      real rmx(NX), rmy(NY), zonal(NX-1,NY-1)
+      real rmx(NX), rmy(NY), zonal(NX-1,NY-1), nodeid(NX,NY)
       integer rmdims(3), rmndims
-      common /RECTMESH/ rmdims, rmndims, rmx, rmy, zonal
+      common /RECTMESH/ rmdims, rmndims, rmx, rmy, zonal, nodeid
       save /RECTMESH/
 c Rectilinear mesh data
       data rmndims /2/
       data rmdims /NX, NY, 1/
 ccc   Local vars
-      integer err, vars
+      integer err, vars, options
       character (len=80) fn
 
 c Simulate one time step
@@ -221,14 +221,21 @@ c         Tell VisIt to update its plots
           if(simExport.eq.1) then
               err = visitnamelistalloc(vars)
               err = visitnamelistaddname(vars, "default", 7)
+              err = visitnamelistaddname(vars, "mesh2d/nodeid", 13)
+
+              err = visitoptionlistalloc(options)
+              err = visitoptionlistsetvalueb("Strip mesh name prefix",
+     .              22, 1);
+
               write (fn, 60), simcycle
 60            format("updateplots_export", I4.4 )
-              err=visitexportdatabase(fn,22,
-     .            "FieldViewXDB_1.0",16,vars)
+              err=visitexportdatabasewithoptions(fn,22,
+     .            "FieldViewXDB_1.0",16,vars,options)
               if(err.eq.VISIT_OKAY) then
                   write (6,*) 'Exported ', fn
               endif
               err = visitnamelistfree(vars)
+              err = visitoptionlistfree(options)
           endif
       endif
       end
@@ -349,6 +356,15 @@ c     Add a zonal variable on mesh2d
           err = visitmdsimaddvariable(md, vmd)
       endif
 
+c     Add a nodal variable on mesh2d
+      if(visitmdvaralloc(vmd).eq.VISIT_OKAY) then
+          err = visitmdvarsetname(vmd, "mesh2d/nodeid", 13)
+          err = visitmdvarsetmeshname(vmd, "mesh2d", 6)
+          err = visitmdvarsetcentering(vmd, VISIT_VARCENTERING_ZONE)
+          err = visitmdvarsettype(vmd, VISIT_VARTYPE_SCALAR)
+          err = visitmdsimaddvariable(md, vmd)
+      endif
+
 c     Add a curve variable
       if(visitmdcurvealloc(cmd).eq.VISIT_OKAY) then
           err = visitmdcurvesetname(cmd, "sine", 4)
@@ -390,9 +406,9 @@ ccc   RECTMESH common block (shared with simulate_one_timestep)
       integer NX, NY
       parameter (NX = 50)
       parameter (NY = 50)
-      real rmx(NX), rmy(NY), zonal(NX-1,NY-1)
+      real rmx(NX), rmy(NY), zonal(NX-1,NY-1), nodeid(NX,NY)
       integer rmdims(3), rmndims
-      common /RECTMESH/ rmdims, rmndims, rmx, rmy, zonal
+      common /RECTMESH/ rmdims, rmndims, rmx, rmy, zonal, nodeid
 ccc   local variables
       integer I, J, h, x, y, err
 
@@ -435,11 +451,11 @@ ccc   RECTMESH common block
       integer NX, NY
       parameter (NX = 50)
       parameter (NY = 50)
-      real rmx(NX), rmy(NY), zonal(NX-1,NY-1)
+      real rmx(NX), rmy(NY), zonal(NX-1,NY-1), nodeid(NX,NY)
       integer rmdims(3), rmndims
-      common /RECTMESH/ rmdims, rmndims, rmx, rmy, zonal
+      common /RECTMESH/ rmdims, rmndims, rmx, rmy, zonal, nodeid
 ccc   local vars
-      integer h, I, J, err
+      integer h, I, J, index, err
       real angle, xpos, ypos, cellX, cellY, dX, dY, tx, ty
 
       h = VISIT_INVALID_HANDLE
@@ -464,6 +480,17 @@ c         Calculate a zonal variable that depends on the simulation time.
               err = visitvardatasetf(h,VISIT_OWNER_SIM,1,
      .            (NX-1)*(NY-1),zonal)
           endif
+      elseif(visitstrcmp(name, lname, "mesh2d/nodeid", 13).eq.0) then
+          index = 0
+          do 5110 J=1,NY
+              do 5100 I=1,NX
+                  nodeid(I,J) = index
+                  index = index + 1
+5100          continue
+5110      continue
+          if(visitvardataalloc(h).eq.VISIT_OKAY) then
+              err = visitvardatasetf(h,VISIT_OWNER_SIM,1,
+     .              NX*NY,nodeid)
       endif
 
       visitgetvariable = h

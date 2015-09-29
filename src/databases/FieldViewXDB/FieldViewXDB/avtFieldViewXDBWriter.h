@@ -12,6 +12,7 @@
 #include <vector>
 
 class avtFieldViewXDBWriterInternal;
+class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtFieldViewXDBWriter
@@ -29,7 +30,7 @@ class avtFieldViewXDBWriterInternal;
 class avtFieldViewXDBWriter : public avtDatabaseWriter
 {
 public:
-                          avtFieldViewXDBWriter();
+                          avtFieldViewXDBWriter(DBOptionsAttributes *opts);
     virtual              ~avtFieldViewXDBWriter();
 
 protected:

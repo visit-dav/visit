@@ -49,6 +49,7 @@
 #include <NetworkManager.h>
 #include <Netnodes.h>
 #include <avtDatabaseFactory.h>
+#include <SingleAttributeConfigManager.h>
 #include <StackTimer.h>
 #include <TimingsManager.h>
 #include <FileFunctions.h>
@@ -86,6 +87,7 @@
 
 #include <avtParallel.h>
 #include <cstring>
+#include <sstream>
 
 // ****************************************************************************
 // Class: SimViewerFactory
@@ -558,40 +560,38 @@ SimEngine::ExportDatabase(const std::string &filename, const std::string &format
     exportOptions.Merge(opt);
     debug5 << "exportOptions = " << exportOptions << endl;
 
+    // Fill in the export db attributes.
+    ExportDBAttributes atts;
+    atts.SetAllTimes(false);
+    atts.SetDb_type(name);
+    atts.SetDb_type_fullname(id);
+    atts.SetDirname(dName);
+    atts.SetFilename(fName);
+    atts.SetVariables(vars);
+    atts.SetWriteUsingGroups(writeUsingGroups > 0);
+    atts.SetGroupSize(groupSize);
+    atts.SetOpts(exportOptions);
+
 #ifdef SIMV2_VIEWER_INTEGRATION
     if(viewerInitialized)
     {
-        ExportDBAttributes *atts = GetViewerState()->GetExportDBAttributes();
-        atts->SetAllTimes(false);
-        atts->SetDb_type(name);
-        atts->SetDb_type_fullname(id);
-        atts->SetDirname(dName);
-        atts->SetFilename(fName);
-        atts->SetVariables(vars);
-        atts->SetWriteUsingGroups(writeUsingGroups > 0);
-        atts->SetGroupSize(groupSize);
-        atts->SetOpts(exportOptions);
-        atts->Notify();
-
+        // Set the export db attributes into the state and export the database.
+        ExportDBAttributes *eAtts = GetViewerState()->GetExportDBAttributes();
+        *eAtts = atts;
+        eAtts->Notify();
         GetViewerMethods()->ExportDatabase();
         retval = true;
     }
     else
     {
 #endif
-        // Send a message to the viewer indicating we want it to export.
-        char tmp[2048];
-        SNPRINTF(tmp, 2048, "ExportDatabase:%s:%s:%s:%s:%d:%d:",
-            name.c_str(), id.c_str(), dName.c_str(), fName.c_str(),
-            writeUsingGroups, groupSize);
-        std::string cmd(tmp);
-        for(size_t i = 0; i < vars.size(); ++i)
-        {
-            cmd.append(vars[i]);
-            if(i < vars.size()-1)
-                cmd.append(":");
-        }
-        SimulationInitiateCommand(cmd);
+        // Serialize the export db attributes using the XML form so we can 
+        // send them to the viewer as a string command.
+        std::stringstream cmd;
+        cmd << "ExportDatabase:";
+        SingleAttributeConfigManager mgr(&atts);
+        mgr.Export(cmd);
+        SimulationInitiateCommand(cmd.str());
         retval = true;
 #ifdef SIMV2_VIEWER_INTEGRATION
     }

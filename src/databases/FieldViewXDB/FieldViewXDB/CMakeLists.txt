@@ -15,12 +15,14 @@ FieldViewXDBPluginInfo.C
 SET(LIBM_SOURCES
 FieldViewXDBMDServerPluginInfo.C
 ${COMMON_SOURCES}
+avtFieldViewXDBOptions.C
 avtFieldViewXDBFileFormat.C
 )
 
 SET(LIBE_SOURCES
 FieldViewXDBEnginePluginInfo.C
 ${COMMON_SOURCES}
+avtFieldViewXDBOptions.C
 avtFieldViewXDBFileFormat.C
 avtFieldViewXDBWriter.C
 )
