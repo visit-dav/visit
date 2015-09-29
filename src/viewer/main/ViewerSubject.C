@@ -195,6 +195,7 @@ static int nConfigArgs = 1;
 #endif
 
 #include <algorithm>
+#include <sstream>
 
 #include <visit-config.h>
 #ifdef HAVE_OSMESA
@@ -5246,7 +5247,11 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
 //
 //   Brad Whitlock, Fri Aug 14 11:56:26 PDT 2015
 //   I added some arguments to export.
-// 
+//
+//   Brad Whitlock, Tue Sep 29 11:06:58 PDT 2015
+//   Get the entire ExportDBAttributes from the simulation so we get the export
+//   options too.
+//
 // ****************************************************************************
 
 void
@@ -5343,33 +5348,20 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
     }
     else if(command.substr(0,14) == "ExportDatabase")
     {
-        stringVector s = SplitValues(command, ':');
-        // s[0] = ExportDatabase
-        // s[1] = name
-        // s[2] = id
-        // s[3] = dName
-        // s[4] = fName
-        // s[5] = writeUsingGroups (int)
-        // s[6] = groupSize (int)
-        // s[7] = var0
-        // ...   more vars.
-
-        stringVector vars;
-        for(size_t i = 7; i < s.size(); ++i)
-            vars.push_back(s[i]);
-
+        // The message is formatted like: ExportDatabase:XML
+        std::stringstream xml(command.substr(15));
         ExportDBAttributes *atts = GetViewerState()->GetExportDBAttributes();
-        atts->SetAllTimes(false);
-        atts->SetDb_type(s[1]);
-        atts->SetDb_type_fullname(s[2]);
-        atts->SetDirname(s[3]);
-        atts->SetFilename(s[4]);
-        atts->SetWriteUsingGroups(atoi(s[5].c_str()) > 0);
-        atts->SetGroupSize(atoi(s[6].c_str()));
-        atts->SetVariables(vars);
-        atts->Notify();
-
-        GetViewerMethods()->ExportDatabase();
+        SingleAttributeConfigManager mgr(atts);
+        if(mgr.Import(xml))
+        {
+            atts->Notify();
+            GetViewerMethods()->ExportDatabase();
+        }
+        else
+        {
+            debug5 << "Export failed because the ExportDBAttributes could not "
+                      "be read from simulation." << endl;
+        }
     }
     else if(command.substr(0,14) == "RestoreSession")
     {

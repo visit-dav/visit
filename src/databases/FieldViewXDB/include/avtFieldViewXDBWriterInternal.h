@@ -14,6 +14,7 @@
 #include <avtDataObject.h>
 #include <avtContract.h>
 
+class DBOptionsAttributes;
 class vtkDataSet;
 class avtParallelContext;
 
@@ -33,7 +34,7 @@ class avtParallelContext;
 class VXDB_API avtFieldViewXDBWriterInternal
 {
 public:
-    avtFieldViewXDBWriterInternal();
+    avtFieldViewXDBWriterInternal(DBOptionsAttributes *opts);
     ~avtFieldViewXDBWriterInternal();
 
     static std::string GetCopyright();
