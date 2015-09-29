@@ -284,6 +284,9 @@ static bool EndsWith(const char *s, const char *suffix)
  *   Kathleen Biagas, Wed Dec 19 17:35:21 MST 2012
  *   Return '0' instead of '1' when only printing environment.
  *
+ *   Kathleen Biagas, Tue Sep 29 15:51:12 MST 2015
+ *   Add movie args before any others when running -movie.
+ *
  *****************************************************************************/
 
 int
@@ -658,6 +661,13 @@ VisItLauncherMain(int argc, char *argv[])
         command.push_back(program);
     }
 
+    if(addMovieArguments)
+    {
+        command.push_back("-s");
+        command.push_back(quote + visitpath + string("\\makemoviemain.py") + quote);
+        command.push_back("-nowin");
+    }
+
     for(size_t i = 0; i < componentArgs.size(); ++i)
     {
         if((componentArgs[i] == "-host") && !noloopback)
@@ -689,12 +699,6 @@ VisItLauncherMain(int argc, char *argv[])
             eArgs.append(engineArgs[i]);
         }
         command.push_back(eArgs);
-    }
-    if(addMovieArguments)
-    {
-        command.push_back("-s");
-        command.push_back(quote + visitpath + string("\\makemoviemain.py") + quote);
-        command.push_back("-nowin");
     }
 
     //
