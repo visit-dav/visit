@@ -449,8 +449,8 @@ FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
             # We then must delete the .tar file
             ADD_CUSTOM_COMMAND(
                 OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
-                COMMAND ${SEVEN_ZIP_EXE} x ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
-                COMMAND ${SEVEN_ZIP_EXE} x ${DATASET_TARGET}.tar
+                COMMAND ${SEVEN_ZIP_EXE} x -y ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
+                COMMAND ${SEVEN_ZIP_EXE} x -y ${DATASET_TARGET}.tar
                 COMMAND del ${DATASET_TARGET}.tar
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 )
