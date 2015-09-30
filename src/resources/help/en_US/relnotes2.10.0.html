@@ -229,6 +229,7 @@ VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice
   <li>Fixed a case where VisIt's Recenter expression could SEGV if it encountered some domains with zero points and/or zero cells.</li>
   <li>The internal launcher now adds unknown arguments before the "-s script_name" argument and not between the script name and the script arguments.</li>
   <li>The advanced multi-window image save capability was modified to initialize the background to white.</li>
+  <li>Interactive connections to simulations are unable to save images via VisItSaveWindow() because the simulation was always passing a server output directory and interactive saves are currently done client-side. The code was modified so the simulation may opt to output to the current directory and that will save files client-side where VisIt was invoked.</li>
 </ul>
 
 <a name="Configuration_changes"></a>

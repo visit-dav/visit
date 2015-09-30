@@ -5332,9 +5332,21 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         SaveWindowAttributes::FileFormat fmt = SaveWindowAttributes::PNG;
         SaveWindowAttributes::FileFormat_FromString(s[5], fmt);
 
+        debug5 << "SaveWindow" << endl;
+        debug5 << "\toutputDirectory = " << s[1] << endl;
+        debug5 << "\tfilename = " << s[2] << endl;
+        debug5 << "\twidth = " << w << endl;
+        debug5 << "\theight = " << h << endl;
+        debug5 << "\tformat = " << s[5] << endl;
+
+        // Output to the current directory if the simulation did not
+        // specify a directory. This at least lets it work client-side
+        // when the simulation just passes filenames.
+        bool outputCurrentDirectory = (s[1].empty() || s[1] == ".");
+
         SaveWindowAttributes *swa = GetViewerState()->GetSaveWindowAttributes();
         swa->SetFileName(s[2]);
-        swa->SetOutputToCurrentDirectory(false);
+        swa->SetOutputToCurrentDirectory(outputCurrentDirectory);
         swa->SetOutputDirectory(s[1]);
         swa->SetFamily(false);
         swa->SetFormat(fmt);
