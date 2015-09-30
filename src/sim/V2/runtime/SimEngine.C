@@ -676,6 +676,11 @@ SimEngine::RestoreSession(const std::string &filename)
 // Creation:   Thu Sep 18 16:42:38 PDT 2014
 //
 // Modifications:
+//   Brad Whitlock, Wed Sep 30 12:12:48 PDT 2015
+//   Don't get the current working directory. Instead, pass a basically empty
+//   working directory and set the "output to current directory" flag accordingly.
+//   This lets simulations save client-side for interactive connections when
+//   they do not specify an output path.
 //
 // ****************************************************************************
 
@@ -704,8 +709,7 @@ SimEngine::SaveWindow(const std::string &filename, int w, int h, int format)
 
         std::string dName(FileFunctions::Dirname(filename));
         std::string fName(FileFunctions::Basename(filename));
-        if(dName.empty() || dName == ".")
-            dName = FileFunctions::GetCurrentWorkingDirectory();
+        bool outputCurrentDirectory = (dName.empty() || dName == ".");
 
 #ifdef SIMV2_VIEWER_INTEGRATION
         // Viewer based method.
@@ -713,7 +717,7 @@ SimEngine::SaveWindow(const std::string &filename, int w, int h, int format)
         {
             SaveWindowAttributes *swa = GetViewerState()->GetSaveWindowAttributes();
             swa->SetFileName(fName);
-            swa->SetOutputToCurrentDirectory(false);
+            swa->SetOutputToCurrentDirectory(outputCurrentDirectory);
             swa->SetOutputDirectory(dName);
             swa->SetFamily(false);
             swa->SetFormat(fmt);
@@ -735,6 +739,14 @@ SimEngine::SaveWindow(const std::string &filename, int w, int h, int format)
             char cmd[2048];
             SNPRINTF(cmd, 2048, "SaveWindow:%s:%s:%d:%d:%s",
                 dName.c_str(), fName.c_str(), w, h, f.c_str());
+
+            debug5 << "SaveWindow" << endl;
+            debug5 << "\toutputDirectory = " << dName << endl;
+            debug5 << "\tfilename = " << fName << endl;
+            debug5 << "\twidth = " << w << endl;
+            debug5 << "\theight = " << h << endl;
+            debug5 << "\tformat = " << f << endl;
+
             SimulationInitiateCommand(cmd);
             retval = true;
 #ifdef SIMV2_VIEWER_INTEGRATION
