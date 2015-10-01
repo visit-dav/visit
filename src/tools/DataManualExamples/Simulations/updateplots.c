@@ -54,7 +54,7 @@
 #define VISIT_COMMAND_SUCCESS 1
 #define VISIT_COMMAND_FAILURE 2
 
-#define TEST_FIELDVIEW_XDB_OPTIONS
+/*#define TEST_FIELDVIEW_XDB_OPTIONS*/
 
 void read_input_deck(void) { }
 /* Data Access Function prototypes */
