@@ -103,7 +103,7 @@ protected:
     int                     nDim;
     float                   RKcorrections;
     
-    std::vector<int> latticeIndexList;
+    std::map<int,int> latticeIndexMap;
     
     virtual void Execute();
     
@@ -120,10 +120,10 @@ protected:
     
     // Return the gradient value for a given normalized distance or position.
     template <int Dim> double kernelGradValue(double etaMagnitude, double Hdet);
-    int GetIndexFromLatticeIndex(const int);
     
 private:
     void GetLocalMinMaxIndex(const int[], int &, int &, const int, const int);
+    int GetIndexFromLatticeIndex(const int);
     
 };
 

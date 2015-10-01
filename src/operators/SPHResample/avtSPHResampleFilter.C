@@ -621,15 +621,30 @@ outerProduct(vector<double>& v1, vector<double>& v2) {
     return M;
 }
 
+// ****************************************************************************
+//  Method:      avtSPHResampleFilter::GetIndexFromLatticeIndex
+//
+//  Purpose:
+//      Return the local index corresponding to the lattice 1D index.
+//
+//  Arguments:
+//      latticeIndex    The lattice index to convert to a local index
+//
+//  Returns:
+//      The local index corresponding to the lattice index or -1 if there is no
+//      corresponding local index.
+//
+//  Programmer: Kevin Griffin
+//  Creation:   Tue Aug 25 18:01:32 PDT 2015
+//
+// ****************************************************************************
 int
 avtSPHResampleFilter::GetIndexFromLatticeIndex(const int latticeIndex)
 {
-    if(latticeIndex >= 0) {
-        for(int i=0; i<latticeIndexList.size(); i++){
-            if(latticeIndexList[i] == latticeIndex) {
-                return i;
-            }
-        }
+    std::map<int,int>::iterator itr = latticeIndexMap.find(latticeIndex);
+    
+    if(itr != latticeIndexMap.end()) {
+        return itr->second;
     }
     
     return -1;
@@ -781,13 +796,14 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
         
         if (Dim==3)
         {
-            debug5 << npart << " particles to " << n[0] << "x" << n[1] << "x" << n[2] << " cells" << endl;
+            debug5 << "P" << PAR_Rank() << ": " << npart << " particles to " << n[0] << "x" << n[1] << "x" << n[2] << " cells" << endl;
         }
         else
         {
-            debug5 << npart << " particles to " << n[0] << "x" << n[1] << " cells" << endl;
+            debug5 << "P" << PAR_Rank() << ": " << npart << " particles to " << n[0] << "x" << n[1] << " cells" << endl;
         }
         
+//        cout << "P" << PAR_Rank() << ": started iterate over particles" << endl;
         for(int i=0; i<npart;++i)   // Loop through all the points in the merged dataset
         {
             tensorStruct* Hi = CreateTensorStruct<Dim>(input_support, i);
@@ -825,7 +841,8 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
                 int idx = GetIndexFromLatticeIndex(j);
                 
                 if(idx == -1) {
-                    latticeIndexList.push_back(j);
+                    idx = latticeIndexMap.size();
+                    latticeIndexMap[j] = idx;
                     
                     m0.push_back(0.0);
                     m1.push_back(vector<double>(Dim,0.0));
@@ -836,8 +853,6 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
                     B.push_back(vector<double>(Dim,0.0));
                     
                     scalarValues.push_back(0.0);
-                    
-                    idx = latticeIndexList.size() - 1;
                 }
                 
                 // Contribution of the SPH point to this position.
@@ -875,8 +890,10 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
             
             delete Hi;
         }
+//        cout << "P" << PAR_Rank() << ": ended iterate over particles" << endl;
         
 #ifdef PARALLEL
+//        Barrier();
         int myRank = PAR_Rank();
         
         vector<int> i_latticeIndexList;
@@ -889,34 +906,24 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
         vector<vector<double> > m_m1(m1.begin(), m1.end());
         vector<tensorStruct> m_m2(m2.begin(), m2.end());
         
+//        cout << "P" << myRank << " Started Parallel Section 1" << endl;
+        
         for(int root=0; root<PAR_Size(); root++) {
-            // Send the list of lattice indices this processor has
             if(myRank == root) {
-                BroadcastIntVectorFromAny(latticeIndexList, root, root);
-            } else {
-                BroadcastIntVectorFromAny(i_latticeIndexList, myRank, root);
-            }
-            
-            // Send m0
-            if(myRank == root) {
-                BroadcastDoubleVectorFromAny(m_m0, root, root);
-            } else {
-                BroadcastDoubleVectorFromAny(i_m0, myRank, root);
+                int ntot = latticeIndexMap.size();
                 
-                for(int i=0; i<i_latticeIndexList.size(); i++) {
-                    int index = GetIndexFromLatticeIndex(i_latticeIndexList[i]);
-                    
-                    if(index != -1) {
-                        m0[index] += i_m0[i];
-                    }
+                // Send the list of lattice indices this processor has
+                vector<int> latticeIndexList(ntot);
+                for(std::map<int,int>::iterator itr=latticeIndexMap.begin(); itr!=latticeIndexMap.end(); itr++) {
+                    latticeIndexList[itr->second] = itr->first;
                 }
                 
-                i_m0.erase(i_m0.begin(), i_m0.end());
-            }
-            
-            // Send m1
-            if(myRank == root) {
-                int ntot = latticeIndexList.size();
+                BroadcastIntVectorFromAny(latticeIndexList, root, root);
+                
+                // Send m0
+                BroadcastDoubleVectorFromAny(m_m0, root, root);
+                
+                // Send m1
                 double *m1DblArray = new double[Dim*ntot];
                 
                 for(int i=0; i<ntot; i++) {
@@ -928,11 +935,21 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
                 BroadcastDoubleArrayFromAny(m1DblArray, ntot*Dim, root);
                 
                 delete [] m1DblArray;
-            } else {
-                int ntot = i_latticeIndexList.size();
-                double *temp_m1 = new double[Dim*ntot];
-                BroadcastDoubleArrayFromAny(temp_m1, ntot*Dim, root);
                 
+                // Send m2
+                BroadcastDoubleArrayFromAny(&m_m2[0].xx, ntot*9, root);
+            } else {
+                // Receive the list of lattice indices this processor has
+                BroadcastIntVectorFromAny(i_latticeIndexList, myRank, root);
+                int ntot = i_latticeIndexList.size();
+                
+                // Receive m0
+                BroadcastDoubleVectorFromAny(i_m0, myRank, root);
+                
+                // Receive m1
+                double *temp_m1 = new double[Dim*ntot];
+                i_m1.resize(ntot);
+                BroadcastDoubleArrayFromAny(temp_m1, ntot*Dim, root);
                 
                 for(int i=0; i<ntot; i++) {
                     vector<double> m1Val;
@@ -941,92 +958,42 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
                         m1Val.push_back(temp_m1[i*Dim+j]);
                     }
                     
-                    i_m1.push_back(m1Val);
+                    i_m1[i] = m1Val;
                 }
                 
                 delete [] temp_m1;
                 
+                // Receive m2
+                i_m2.resize(9*ntot);
+                BroadcastDoubleArrayFromAny(&i_m2[0].xx, ntot*9, root);
+                
+                // Update values
                 for(int i=0; i<ntot; i++) {
                     int index = GetIndexFromLatticeIndex(i_latticeIndexList[i]);
                     
                     if(index != -1) {
+                        m0[index] += i_m0[i];
                         m1[index] = vectorSum<Dim>(m1[index],i_m1[i]);
-                    }
-                }
-                
-                i_m1.erase(i_m1.begin(), i_m1.end());
-            }
-            
-            // Send m2
-            if(myRank == root) {
-                int ntot = latticeIndexList.size();
-                double *m2DblArray = new double[9*ntot];
-                
-                for(int i=0; i<ntot; i++) {
-                    int offset = i*9;
-                    m2DblArray[offset] = m_m2[i].xx;
-                    m2DblArray[offset+1] = m_m2[i].xy;
-                    m2DblArray[offset+2] = m_m2[i].xz;
-                    
-                    m2DblArray[offset+3] = m_m2[i].yx;
-                    m2DblArray[offset+4] = m_m2[i].yy;
-                    m2DblArray[offset+5] = m_m2[i].yz;
-                    
-                    m2DblArray[offset+6] = m_m2[i].zx;
-                    m2DblArray[offset+7] = m_m2[i].zy;
-                    m2DblArray[offset+8] = m_m2[i].zz;
-                }
-                
-                BroadcastDoubleArrayFromAny(m2DblArray, ntot*9, root);
-                
-                delete [] m2DblArray;
-            } else {
-                int ntot = i_latticeIndexList.size();
-                double *temp_m2 = new double[ntot*9];
-                BroadcastDoubleArrayFromAny(temp_m2, ntot*9, root);
-                
-                
-                for(int i=0; i<ntot; i++) {
-                    tensorStruct ts;
-                    int offset = i*9;
-                    
-                    ts.xx = temp_m2[offset];
-                    ts.xy = temp_m2[offset+1];
-                    ts.xz = temp_m2[offset+2];
-                    
-                    ts.yx = temp_m2[offset+3];
-                    ts.yy = temp_m2[offset+4];
-                    ts.yz = temp_m2[offset+5];
-                    
-                    ts.zx = temp_m2[offset+6];
-                    ts.zy = temp_m2[offset+7];
-                    ts.zz = temp_m2[offset+8];
-                    
-                    i_m2.push_back(ts);
-                }
-                
-                delete [] temp_m2;
-                
-                for(int i=0; i<ntot; i++) {
-                    int index = GetIndexFromLatticeIndex(i_latticeIndexList[i]);
-                    
-                    if(index != -1) {
                         m2[index] = tensorSum<Dim>(m2[index],i_m2[i]);
                     }
                 }
-                
-                i_m2.erase(i_m2.begin(), i_m2.end());
             }
         }
         
         i_latticeIndexList.erase(i_latticeIndexList.begin(), i_latticeIndexList.end());
         
+        i_m0.erase(i_m0.begin(), i_m0.end());
+        i_m2.erase(i_m2.begin(), i_m2.end());
+        i_m1.erase(i_m1.begin(), i_m1.end());
+        
         m_m0.erase(m_m0.begin(), m_m0.end());
         m_m1.erase(m_m1.begin(), m_m1.end());
         m_m2.erase(m_m2.begin(), m_m2.end());
+        
+//        cout << "P" << myRank << " Ended Parallel Section 1" << endl;
 #endif
         // compute A & B on the lattice points
-        for(int i=0; i<latticeIndexList.size();++i)
+        for(int i=0; i<latticeIndexMap.size();++i)
         {
             double m2det            = determinant<Dim>(m2[i]);
             //double m2det = 0;
@@ -1118,7 +1085,7 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
 #ifdef PARALLEL
         int myRank = PAR_Rank();
         
-        latticeIndexList.push_back(0);
+        vector<int> latticeIndexList(1, 0);
         scalarValues = vector<double>(1, 0.0);
         
         vector<double> m0(1, 0.0);  // moments of data points
@@ -1129,36 +1096,29 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
         vector<double> i_m0;
         
         for(int root=0; root<PAR_Size(); root++) {
-            // Send the list of lattice indices this processor has
             if(myRank == root) {
+                // Send lattice indices
                 BroadcastIntVectorFromAny(latticeIndexList, root, root);
-            } else {
-                BroadcastIntVectorFromAny(i_latticeIndexList, myRank, root);
-            }
-            
-            // Send m0
-            if(myRank == root) {
+                // Send m0
                 BroadcastDoubleVectorFromAny(m0, root, root);
+                // Send m1
+                BroadcastDoubleArrayFromAny(&m1[0], Dim, root);
+                // Send m2
+                BroadcastDoubleArrayFromAny(&m2[0], 9, root);
             } else {
+                // Receive lattice indices
+                BroadcastIntVectorFromAny(i_latticeIndexList, myRank, root);
+                
+                int ntot = i_latticeIndexList.size();
+                
+                // Receive m0
                 BroadcastDoubleVectorFromAny(i_m0, myRank, root);
                 i_m0.erase(i_m0.begin(), i_m0.end());
-            }
-            
-            // Send m1
-            if(myRank == root) {
-                BroadcastDoubleArrayFromAny(&m1[0], Dim, root);
-            } else {
-                int ntot = i_latticeIndexList.size();
+                // Receive m1
                 double *temp_m1 = new double[Dim*ntot];
                 BroadcastDoubleArrayFromAny(temp_m1, Dim*ntot, root);
                 delete [] temp_m1;
-            }
-            
-            // Send m2
-            if(myRank == root) {
-                BroadcastDoubleArrayFromAny(&m2[0], 9, root);
-            } else {
-                int ntot = i_latticeIndexList.size();
+                // Receive m2
                 double *temp_m2 = new double[ntot*9];
                 BroadcastDoubleArrayFromAny(temp_m2, ntot*9, root);
                 delete [] temp_m2;
@@ -1256,6 +1216,7 @@ avtSPHResampleFilter::Execute()
 //    cout << "l_ntot = " << l_ntot << endl;
     
 #ifdef PARALLEL
+//    cout << "P" << myRank << " Started Parallel Section 2" << endl;
     // This processors original scalar values
     vector<double> m_vectorofScalars(vectorofScalars.begin(), vectorofScalars.end());
     
@@ -1271,6 +1232,10 @@ avtSPHResampleFilter::Execute()
     for(int root=0; root<PAR_Size(); root++) {
         // Send the list of lattice indices
         if(myRank == root) {
+            vector<int> latticeIndexList(latticeIndexMap.size());
+            for(std::map<int,int>::iterator itr=latticeIndexMap.begin(); itr!=latticeIndexMap.end(); itr++) {
+                latticeIndexList[itr->second] = itr->first;
+            }
             BroadcastIntVectorFromAny(latticeIndexList, root, root);
         } else {
             BroadcastIntVectorFromAny(i_latticeIndexList, myRank, root);
@@ -1283,10 +1248,10 @@ avtSPHResampleFilter::Execute()
             if(myRank < parSize) {
                 GetLocalMinMaxIndex(l_dims, minIndex, maxIndex, nDim, parSize);
                 
-                for(unsigned int i=0; i<latticeIndexList.size(); i++) {
-                    if(latticeIndexList[i] >= minIndex && latticeIndexList[i] < maxIndex) {
-                        int localIndex = latticeIndexList[i] - minIndex;
-                        vectorofScalars[localIndex] += m_vectorofScalars[i];
+                for(std::map<int,int>::iterator itr=latticeIndexMap.begin(); itr!=latticeIndexMap.end(); itr++) {
+                    if(itr->first >= minIndex && itr->first < maxIndex) {
+                        int localIndex = itr->first - minIndex;
+                        vectorofScalars[localIndex] += m_vectorofScalars[itr->second];
                     }
                 }
             }
@@ -1311,6 +1276,7 @@ avtSPHResampleFilter::Execute()
     
     i_latticeIndexList.erase(i_latticeIndexList.begin(), i_latticeIndexList.end());
     i_vectorofScalars.erase(i_vectorofScalars.begin(), i_vectorofScalars.end());
+//    cout << "P" << myRank << " Ended Parallel Section 2" << endl;
     
 #else
     // For a single processor need to put scalars in the correct position
@@ -1319,8 +1285,8 @@ avtSPHResampleFilter::Execute()
     vectorofScalars.erase(vectorofScalars.begin(), vectorofScalars.end());
     vectorofScalars.resize(l_ntot, 0.0);
     
-    for(unsigned int i=0; i<latticeIndexList.size(); i++) {
-        vectorofScalars[latticeIndexList[i]] = m_vectorofScalars[i];
+    for(std::map<int,int>::iterator itr=latticeIndexMap.begin(); itr!=latticeIndexMap.end(); itr++) {
+        vectorofScalars[itr->first] = m_vectorofScalars[itr->second];
     }
     
 #endif
