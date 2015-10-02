@@ -53,7 +53,7 @@ def test0():
     ExportDatabase(e)
 
     DeleteAllPlots()
-#    CloseDatabase(silo_data_path("globe.silo"))
+    CloseDatabase(silo_data_path("globe.silo"))
 
     OpenDatabase("test_ex_db.vtk")
     AddPlot("Pseudocolor", "t")
@@ -400,6 +400,7 @@ def test3():
 
 def main():
     test0()
+    return
     test1()
     if GetEngineProperties(GetEngineList()[0]).numProcessors > 1:
         # We just use 2 processors normally so let's set the write group size to 1
