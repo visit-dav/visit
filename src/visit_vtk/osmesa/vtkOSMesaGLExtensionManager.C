@@ -118,209 +118,10 @@ int LoadAsARBExtension(const char *name,
 }
 
 vtkOSMesaGLExtensionManager::vtkOSMesaGLExtensionManager()
-{
-  this->OwnRenderWindow = 0;
-  this->RenderWindow = NULL;
-  this->ExtensionsString = NULL;
-
-  this->Modified();
-}
+{}
 
 vtkOSMesaGLExtensionManager::~vtkOSMesaGLExtensionManager()
-{
-  this->SetRenderWindow(NULL);
-  delete [] this->ExtensionsString;
-  this->ExtensionsString = 0;
-}
-
-void vtkOSMesaGLExtensionManager::PrintSelf(ostream &os, vtkIndent indent)
-{
-  this->Superclass::PrintSelf(os, indent);
-
-  os << indent << "RenderWindow: (" << this->RenderWindow << ")" << endl;
-  os << indent << "BuildTime: " << this->BuildTime << endl;
-  os << indent << "ExtensionsString: "
-     << (this->ExtensionsString ? this->ExtensionsString : "(NULL)") << endl;
-}
-
-vtkRenderWindow* vtkOSMesaGLExtensionManager::GetRenderWindow()
-{
-  return this->RenderWindow;
-}
-
-void vtkOSMesaGLExtensionManager::SetRenderWindow(vtkRenderWindow *renwin)
-{
-  if (renwin == this->RenderWindow)
-    {
-    return;
-    }
-
-  if (this->OwnRenderWindow && this->RenderWindow)
-    {
-    this->RenderWindow->UnRegister(this);
-    this->RenderWindow = 0;
-    }
-
-  vtkDebugMacro("Setting RenderWindow to " << renwin);
-  this->OwnRenderWindow = 0;
-  this->RenderWindow = renwin;
-  this->Modified();
-}
-
-void vtkOSMesaGLExtensionManager::Update()
-{
-  if (this->BuildTime > this->MTime)
-    {
-    return;
-    }
-
-  vtkDebugMacro("Update");
-
-  delete[] this->ExtensionsString;
-  this->ExtensionsString = 0;
-
-  this->ReadOpenGLExtensions();
-
-  this->BuildTime.Modified();
-}
-
-int vtkOSMesaGLExtensionManager::ExtensionSupported(const char *name)
-{
-  this->Update();
-  //
-  // Don't allow the blend_func_separate extension, since it causes
-  // slight differences (1 pixel) in many pseudocolor plots that can't
-  // be explained (w mesa 7.10.2).
-  if (strcmp(name, "GL_EXT_blend_func_separate") == 0)
-    return 0;
-
-  const char *p = this->ExtensionsString;
-  size_t NameLen = strlen(name);
-  int result = 0;
-
-  while (true)
-    {
-    size_t n;
-    while (*p == ' ') p++;
-    if (*p == '\0')
-      {
-      result = 0;
-      break;
-      }
-    n = strcspn(p, " ");
-    if ((NameLen == n) && (strncmp(name, p, n) == 0))
-      {
-      result = 1;
-      break;
-      }
-    p += n;
-    }
-
-  const char *gl_renderer =
-    reinterpret_cast<const char *>(glGetString(GL_RENDERER));
-
-  const char *gl_version=
-    reinterpret_cast<const char *>(glGetString(GL_VERSION));
-
-  const char *gl_vendor=
-    reinterpret_cast<const char *>(glGetString(GL_VENDOR));
-
-  // Woraround for a nVidia bug in indirect/remote rendering mode (ssh -X)
-  // The version returns is not the one actually supported.
-  // For example, the version returns is greater or equal to 2.1
-  // but where PBO (which are core in 2.1) are not actually supported.
-  // In this case, force the version to be 1.1 (minimal). Anything above
-  // will be requested only through extensions.
-  // See ParaView bug
-  if (result && !this->RenderWindow->IsDirect())
-    {
-    if (result && strncmp(name, "GL_VERSION_", 11) == 0)
-      {
-      // whatever is the OpenGL version, return false.
-      // (nobody asks for GL_VERSION_1_1)
-      result = 0;
-      }
-    }
-
-  // Workaround for a bug on Mac PowerPC G5 with nVidia GeForce FX 5200
-  // Mac OS 10.3.9 and driver 1.5 NVIDIA-1.3.42. It reports it supports
-  // OpenGL>=1.4 but querying for glPointParameteri and glPointParameteriv
-  // return null pointers. So it does not actually supports fully OpenGL 1.4.
-  // It will make this method return false with "GL_VERSION_1_4" and true
-  // with "GL_VERSION_1_5".
-  if (result && strcmp(name, "GL_VERSION_1_4") == 0)
-    {
-    result = this->GetProcAddress("glPointParameteri")!=0 &&
-      this->GetProcAddress("glPointParameteriv")!=0;
-    }
-
-  // Workaround for a bug on renderer string="Quadro4 900 XGL/AGP/SSE2"
-  // version string="1.5.8 NVIDIA 96.43.01" or "1.5.6 NVIDIA 87.56"
-  // The driver reports it supports 1.5 but the 1.4 core promoted extension
-  // GL_EXT_blend_func_separate is implemented in software (poor performance).
-  // All the NV2x chipsets are probably affected. NV2x chipsets are used
-  // in GeForce4 and Quadro4.
-  // It will make this method return false with "GL_VERSION_1_4" and true
-  // with "GL_VERSION_1_5".
-  if (result && strcmp(name, "GL_VERSION_1_4") == 0)
-    {
-    result = strstr(gl_renderer,"Quadro4")==0 &&
-      strstr(gl_renderer,"GeForce4") == 0;
-    }
-
-  // Workaround for a bug on renderer string="ATI Radeon X1600 OpenGL Engine"
-  // version string="2.0 ATI-1.4.58" vendor string="ATI Technologies Inc."
-  // It happens on a Apple iMac Intel Core Duo (early 2006) with Mac OS X
-  // 10.4.11 (Tiger) and an ATI Radeon X1600 128MB.
-  // The driver reports it supports 2.0 (where GL_ARB_texture_non_power_of_two
-  // extension has been promoted to core) and that it supports extension
-  // GL_ARB_texture_non_power_of_two. Reality is that non power of two
-  // textures just don't work in this OS/driver/card.
-  // It will make this method returns false with "GL_VERSION_2_0" and true
-  // with "GL_VERSION_2_1".
-  // It will make this method returns false with
-  // "GL_ARB_texture_non_power_of_two".
-  if (result && strcmp(name, "GL_VERSION_2_0") == 0)
-    {
-    result=!(strcmp(gl_renderer,"ATI Radeon X1600 OpenGL Engine")==0 &&
-             strcmp(gl_version,"2.0 ATI-1.4.58")==0 &&
-             strcmp(gl_vendor,"ATI Technologies Inc.")==0);
-    }
-  if (result && strcmp(name, "GL_ARB_texture_non_power_of_two") == 0)
-    {
-    result=!(strcmp(gl_renderer,"ATI Radeon X1600 OpenGL Engine")==0 &&
-             strcmp(gl_version,"2.0 ATI-1.4.58")==0 &&
-             strcmp(gl_vendor,"ATI Technologies Inc.")==0);
-    }
-
-  // Workaround for a bug in Mesa 7.7 with separate specular color. The
-  // GL_EXT_separate_specular_color extension does not work properly with
-  // Mesa prior to version 7.10. If the user is requesting the separate
-  // specular color extension and the renderer is mesa and the mesa version
-  // is less than 7.10 we report that the platform does not support it.
-  if (result && strcmp(name, "GL_EXT_separate_specular_color") == 0)
-    {
-    if (const char *mesa_version = strstr(gl_version, "Mesa"))
-      {
-      int mesa_major = 0;
-      int mesa_minor = 0;
-      int mesa_patch = 0;
-      if (sscanf(mesa_version,
-                "Mesa %d.%d.%d",
-                &mesa_major,
-                &mesa_minor,
-                &mesa_patch) >= 2)
-        {
-        if (mesa_major < 7 || (mesa_major == 7 && mesa_minor < 10))
-          {
-          result = 0;
-          }
-        }
-      }
-    }
-
-  return result;
-}
+{}
 
 vtkOSMesaGLExtensionManagerFunctionPointer
 vtkOSMesaGLExtensionManager::GetProcAddress(const char *fname)
@@ -358,67 +159,6 @@ vtkOSMesaGLExtensionManager::GetProcAddress(const char *fname)
       OSMesaGetProcAddress(fname));
 }
 
-void vtkOSMesaGLExtensionManager::LoadExtension(const char *name)
-{
-  if (!this->ExtensionSupported(name))
-    {
-    vtkWarningMacro("Attempting to load " << name
-                    << ", which is not supported.");
-    }
-
-  int success = this->SafeLoadExtension(name);
-
-  if (!success)
-    {
-    vtkErrorMacro("Extension " << name << " could not be loaded.");
-    }
-}
-
-int vtkOSMesaGLExtensionManager::LoadSupportedExtension(const char *name)
-{
-  int supported = this->ExtensionSupported(name);
-  int loaded = supported ? this->SafeLoadExtension(name) : 0;
-
-  vtkDebugMacro(
-    << "vtkOSMesaGLExtensionManager::LoadSupportedExtension" << endl
-    << "  name: " << name << endl
-    << "  supported: " << supported << endl
-    << "  loaded: " << loaded << endl
-    );
-
-  return supported && loaded;
-}
-
-void vtkOSMesaGLExtensionManager::LoadCorePromotedExtension(const char *name)
-{
-  if (!this->ExtensionSupported(name))
-    {
-    vtkWarningMacro("Attempting to load " << name
-                    << ", which is not supported.");
-    }
-  int success = vtkgl::LoadCorePromotedExtension(name, this);
-
-  if (!success)
-    {
-    vtkErrorMacro("Extension " << name << " could not be loaded.");
-    }
-}
-
-void vtkOSMesaGLExtensionManager::LoadAsARBExtension(const char *name)
-{
-  if (!this->ExtensionSupported(name))
-    {
-    vtkWarningMacro("Attempting to load " << name
-                    << ", which is not supported.");
-    }
-  int success = vtkgl::LoadAsARBExtension(name, this);
-
-  if (!success)
-    {
-    vtkErrorMacro("Extension " << name << " could not be loaded.");
-    }
-}
-
 void vtkOSMesaGLExtensionManager::ReadOpenGLExtensions()
 {
   vtkDebugMacro("ReadOpenGLExtensions");
@@ -431,9 +171,10 @@ void vtkOSMesaGLExtensionManager::ReadOpenGLExtensions()
 
 #else //!VTK_NO_EXTENSION_LOADING
 
-  if (this->RenderWindow)
+  vtkRenderWindow *rwin = this->GetRenderWindow();
+  if (rwin)
     {
-    if (!this->RenderWindow->IsA("vtkOpenGLRenderWindow"))
+    if (!rwin->IsA("vtkOpenGLRenderWindow"))
       {
       // If the render window is not OpenGL, then it obviously has no
       // extensions.
@@ -442,14 +183,14 @@ void vtkOSMesaGLExtensionManager::ReadOpenGLExtensions()
       this->ExtensionsString[0] = '\0';
       return;
       }
-    this->RenderWindow->MakeCurrent();
-    if (!this->RenderWindow->IsCurrent())
+    rwin->MakeCurrent();
+    if (!rwin->IsCurrent())
       {
       // Really should create a method in the render window to create
       // the graphics context instead of forcing a full render.
-      this->RenderWindow->Render();
+      rwin->Render();
       }
-    if (!this->RenderWindow->IsCurrent())
+    if (!rwin->IsCurrent())
       {
       // this case happens with a headless Mac: a mac with a graphics card
       // with no monitor attached to it, connected to it with "Screen Sharing"
@@ -473,7 +214,7 @@ void vtkOSMesaGLExtensionManager::ReadOpenGLExtensions()
     gl_extensions = "";
     }
 
-  if (!this->RenderWindow && (gl_extensions[0] == '\0'))
+  if (!rwin && (gl_extensions[0] == '\0'))
     {
     vtkDebugMacro("No window active?  Attaching default render window.");
     vtkRenderWindow *renwin = vtkRenderWindow::New();
@@ -558,131 +299,6 @@ void vtkOSMesaGLExtensionManager::ReadOpenGLExtensions()
   strcpy(this->ExtensionsString, extensions_string.c_str());
 
 #endif //!VTK_NO_EXTENSION_LOADING
-}
-
-// ----------------------------------------------------------------------------
-// Description:
-// Wrap around the generated vtkgl::LoadExtension to deal with OpenGL 1.2
-// and its optional part GL_ARB_imaging. Also functions like glBlendEquation()
-// or glBlendColor are optional in OpenGL 1.2 or 1.3 and provided by the
-// GL_ARB_imaging but there are core features in OpenGL 1.4.
-int vtkOSMesaGLExtensionManager::SafeLoadExtension(const char *name)
-{
-/// TODO:
-/// ISSUE: We can't call vtkgl::LoadExtension b/c it is local to vtkRenderWindowOpenGL (not exported)
-/// For now, that prevents us from actually using extensions in the Mesa case.
-///
-
-    
-  if (strcmp(name, "GL_VERSION_1_2") == 0)
-    {
-    vtkgl::DrawRangeElements = reinterpret_cast<vtkgl::PFNGLDRAWRANGEELEMENTSPROC>(this->GetProcAddress("glDrawRangeElements"));
-    vtkgl::TexImage3D = reinterpret_cast<vtkgl::PFNGLTEXIMAGE3DPROC>(this->GetProcAddress("glTexImage3D"));
-    vtkgl::TexSubImage3D = reinterpret_cast<vtkgl::PFNGLTEXSUBIMAGE3DPROC>(this->GetProcAddress("glTexSubImage3D"));
-    vtkgl::CopyTexSubImage3D = reinterpret_cast<vtkgl::PFNGLCOPYTEXSUBIMAGE3DPROC>(this->GetProcAddress("glCopyTexSubImage3D"));
-
-    // rely on the generated function for most of the OpenGL 1.2 functions.
-    int success = vtkgl::LoadExtension(name, this);
-    success = success && vtkgl::LoadExtension("GL_VERSION_1_2_DEPRECATED", this);
-
-    return success && (vtkgl::DrawRangeElements != NULL) && (vtkgl::TexImage3D != NULL) && (vtkgl::TexSubImage3D != NULL) && (vtkgl::CopyTexSubImage3D != NULL);
-    }
-  if (strcmp(name, "GL_ARB_imaging") == 0)
-    {
-    vtkgl::BlendColor = reinterpret_cast<vtkgl::PFNGLBLENDCOLORPROC>(this->GetProcAddress("glBlendColor"));
-    vtkgl::BlendEquation = reinterpret_cast<vtkgl::PFNGLBLENDEQUATIONPROC>(this->GetProcAddress("glBlendEquation"));
-    vtkgl::ColorTable = reinterpret_cast<vtkgl::PFNGLCOLORTABLEPROC>(this->GetProcAddress("glColorTable"));
-    vtkgl::ColorTableParameterfv = reinterpret_cast<vtkgl::PFNGLCOLORTABLEPARAMETERFVPROC>(this->GetProcAddress("glColorTableParameterfv"));
-    vtkgl::ColorTableParameteriv = reinterpret_cast<vtkgl::PFNGLCOLORTABLEPARAMETERIVPROC>(this->GetProcAddress("glColorTableParameteriv"));
-    vtkgl::CopyColorTable = reinterpret_cast<vtkgl::PFNGLCOPYCOLORTABLEPROC>(this->GetProcAddress("glCopyColorTable"));
-    vtkgl::GetColorTable = reinterpret_cast<vtkgl::PFNGLGETCOLORTABLEPROC>(this->GetProcAddress("glGetColorTable"));
-    vtkgl::GetColorTableParameterfv = reinterpret_cast<vtkgl::PFNGLGETCOLORTABLEPARAMETERFVPROC>(this->GetProcAddress("glGetColorTableParameterfv"));
-    vtkgl::GetColorTableParameteriv = reinterpret_cast<vtkgl::PFNGLGETCOLORTABLEPARAMETERIVPROC>(this->GetProcAddress("glGetColorTableParameteriv"));
-    vtkgl::ColorSubTable = reinterpret_cast<vtkgl::PFNGLCOLORSUBTABLEPROC>(this->GetProcAddress("glColorSubTable"));
-    vtkgl::CopyColorSubTable = reinterpret_cast<vtkgl::PFNGLCOPYCOLORSUBTABLEPROC>(this->GetProcAddress("glCopyColorSubTable"));
-    vtkgl::ConvolutionFilter1D = reinterpret_cast<vtkgl::PFNGLCONVOLUTIONFILTER1DPROC>(this->GetProcAddress("glConvolutionFilter1D"));
-    vtkgl::ConvolutionFilter2D = reinterpret_cast<vtkgl::PFNGLCONVOLUTIONFILTER2DPROC>(this->GetProcAddress("glConvolutionFilter2D"));
-    vtkgl::ConvolutionParameterf = reinterpret_cast<vtkgl::PFNGLCONVOLUTIONPARAMETERFPROC>(this->GetProcAddress("glConvolutionParameterf"));
-    vtkgl::ConvolutionParameterfv = reinterpret_cast<vtkgl::PFNGLCONVOLUTIONPARAMETERFVPROC>(this->GetProcAddress("glConvolutionParameterfv"));
-    vtkgl::ConvolutionParameteri = reinterpret_cast<vtkgl::PFNGLCONVOLUTIONPARAMETERIPROC>(this->GetProcAddress("glConvolutionParameteri"));
-    vtkgl::ConvolutionParameteriv = reinterpret_cast<vtkgl::PFNGLCONVOLUTIONPARAMETERIVPROC>(this->GetProcAddress("glConvolutionParameteriv"));
-    vtkgl::CopyConvolutionFilter1D = reinterpret_cast<vtkgl::PFNGLCOPYCONVOLUTIONFILTER1DPROC>(this->GetProcAddress("glCopyConvolutionFilter1D"));
-    vtkgl::CopyConvolutionFilter2D = reinterpret_cast<vtkgl::PFNGLCOPYCONVOLUTIONFILTER2DPROC>(this->GetProcAddress("glCopyConvolutionFilter2D"));
-    vtkgl::GetConvolutionFilter = reinterpret_cast<vtkgl::PFNGLGETCONVOLUTIONFILTERPROC>(this->GetProcAddress("glGetConvolutionFilter"));
-    vtkgl::GetConvolutionParameterfv = reinterpret_cast<vtkgl::PFNGLGETCONVOLUTIONPARAMETERFVPROC>(this->GetProcAddress("glGetConvolutionParameterfv"));
-    vtkgl::GetConvolutionParameteriv = reinterpret_cast<vtkgl::PFNGLGETCONVOLUTIONPARAMETERIVPROC>(this->GetProcAddress("glGetConvolutionParameteriv"));
-    vtkgl::GetSeparableFilter = reinterpret_cast<vtkgl::PFNGLGETSEPARABLEFILTERPROC>(this->GetProcAddress("glGetSeparableFilter"));
-    vtkgl::SeparableFilter2D = reinterpret_cast<vtkgl::PFNGLSEPARABLEFILTER2DPROC>(this->GetProcAddress("glSeparableFilter2D"));
-    vtkgl::GetHistogram = reinterpret_cast<vtkgl::PFNGLGETHISTOGRAMPROC>(this->GetProcAddress("glGetHistogram"));
-    vtkgl::GetHistogramParameterfv = reinterpret_cast<vtkgl::PFNGLGETHISTOGRAMPARAMETERFVPROC>(this->GetProcAddress("glGetHistogramParameterfv"));
-    vtkgl::GetHistogramParameteriv = reinterpret_cast<vtkgl::PFNGLGETHISTOGRAMPARAMETERIVPROC>(this->GetProcAddress("glGetHistogramParameteriv"));
-    vtkgl::GetMinmax = reinterpret_cast<vtkgl::PFNGLGETMINMAXPROC>(this->GetProcAddress("glGetMinmax"));
-    vtkgl::GetMinmaxParameterfv = reinterpret_cast<vtkgl::PFNGLGETMINMAXPARAMETERFVPROC>(this->GetProcAddress("glGetMinmaxParameterfv"));
-    vtkgl::GetMinmaxParameteriv = reinterpret_cast<vtkgl::PFNGLGETMINMAXPARAMETERIVPROC>(this->GetProcAddress("glGetMinmaxParameteriv"));
-    vtkgl::Histogram = reinterpret_cast<vtkgl::PFNGLHISTOGRAMPROC>(this->GetProcAddress("glHistogram"));
-    vtkgl::Minmax = reinterpret_cast<vtkgl::PFNGLMINMAXPROC>(this->GetProcAddress("glMinmax"));
-    vtkgl::ResetHistogram = reinterpret_cast<vtkgl::PFNGLRESETHISTOGRAMPROC>(this->GetProcAddress("glResetHistogram"));
-    vtkgl::ResetMinmax = reinterpret_cast<vtkgl::PFNGLRESETMINMAXPROC>(this->GetProcAddress("glResetMinmax"));
-    return (vtkgl::BlendColor != NULL) && (vtkgl::BlendEquation != NULL) && (vtkgl::ColorTable != NULL) && (vtkgl::ColorTableParameterfv != NULL) && (vtkgl::ColorTableParameteriv != NULL) && (vtkgl::CopyColorTable != NULL) && (vtkgl::GetColorTable != NULL) && (vtkgl::GetColorTableParameterfv != NULL) && (vtkgl::GetColorTableParameteriv != NULL) && (vtkgl::ColorSubTable != NULL) && (vtkgl::CopyColorSubTable != NULL) && (vtkgl::ConvolutionFilter1D != NULL) && (vtkgl::ConvolutionFilter2D != NULL) && (vtkgl::ConvolutionParameterf != NULL) && (vtkgl::ConvolutionParameterfv != NULL) && (vtkgl::ConvolutionParameteri != NULL) && (vtkgl::ConvolutionParameteriv != NULL) && (vtkgl::CopyConvolutionFilter1D != NULL) && (vtkgl::CopyConvolutionFilter2D != NULL) && (vtkgl::GetConvolutionFilter != NULL) && (vtkgl::GetConvolutionParameterfv != NULL) && (vtkgl::GetConvolutionParameteriv != NULL) && (vtkgl::GetSeparableFilter != NULL) && (vtkgl::SeparableFilter2D != NULL) && (vtkgl::GetHistogram != NULL) && (vtkgl::GetHistogramParameterfv != NULL) && (vtkgl::GetHistogramParameteriv != NULL) && (vtkgl::GetMinmax != NULL) && (vtkgl::GetMinmaxParameterfv != NULL) && (vtkgl::GetMinmaxParameteriv != NULL) && (vtkgl::Histogram != NULL) && (vtkgl::Minmax != NULL) && (vtkgl::ResetHistogram != NULL) && (vtkgl::ResetMinmax != NULL);
-    }
-
-  if (strcmp(name, "GL_VERSION_1_3") == 0)
-    {
-    int success = vtkgl::LoadExtension(name, this);
-    return success && vtkgl::LoadExtension("GL_VERSION_1_3_DEPRECATED", this);
-    }
-
-  if (strcmp(name, "GL_ARB_fragment_program") == 0)
-    {
-    // fragment_program is loaded as part of vertex_program
-    int success = vtkgl::LoadExtension("GL_ARB_vertex_program", this);
-    return success && vtkgl::LoadExtension(name, this);
-    }
-
-  if (strcmp(name, "GL_VERSION_1_4") == 0)
-    {
-    // rely on the generated function for most of the OpenGL 1.4 functions.
-    int success = vtkgl::LoadExtension(name, this);
-    success = success && vtkgl::LoadExtension("GL_VERSION_1_4_DEPRECATED", this);
-
-    // The following functions that used to be optional in OpenGL 1.2 and 1.3
-    // and only available through GL_ARB_imaging are now core features in
-    // OpenGL 1.4.
-    // See Appendix G.3 Changes to the imaging Subset.
-    vtkgl::BlendColor = reinterpret_cast<vtkgl::PFNGLBLENDCOLORPROC>(this->GetProcAddress("glBlendColor"));
-    vtkgl::BlendEquation = reinterpret_cast<vtkgl::PFNGLBLENDEQUATIONPROC>(this->GetProcAddress("glBlendEquation"));
-    return success && (vtkgl::BlendColor != NULL) && (vtkgl::BlendEquation != NULL);
-    }
-  if (strcmp(name, "GL_VERSION_1_5") == 0)
-    {
-    int success = vtkgl::LoadExtension(name, this);
-    return success && vtkgl::LoadExtension("GL_VERSION_1_5_DEPRECATED", this);
-    }
-  if (strcmp(name, "GL_VERSION_2_0") == 0)
-    {
-    int success = vtkgl::LoadExtension(name, this);
-    return success && vtkgl::LoadExtension("GL_VERSION_2_0_DEPRECATED", this);
-    }
-  if (strcmp(name, "GL_VERSION_2_1") == 0)
-    {
-    int success = vtkgl::LoadExtension(name, this);
-    return success && vtkgl::LoadExtension("GL_VERSION_2_1_DEPRECATED", this);
-    }
-  if (strcmp(name, "GL_VERSION_3_0") == 0)
-    {
-    int success = vtkgl::LoadExtension(name, this);
-    return success && vtkgl::LoadExtension("GL_VERSION_3_0_DEPRECATED", this);
-    }
-   if (strcmp(name, "GL_ARB_framebuffer_object") == 0)
-    {
-    int success = vtkgl::LoadExtension(name, this);
-    return success &&
-      vtkgl::LoadExtension("GL_ARB_framebuffer_object_DEPRECATED", this);
-    }
-
-  // For all other cases, rely on the generated function.
-  int result = vtkgl::LoadExtension(name, this);
-  return result;
 }
 
 #ifndef VISIT_STATIC
