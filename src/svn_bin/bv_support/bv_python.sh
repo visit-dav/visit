@@ -129,9 +129,9 @@ export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
 export PYREQUESTS_FILE=${PYREQUESTS_FILE:-"requests-2.5.1.tar.gz"}
 export PYREQUESTS_BUILD_DIR=${PYREQUESTS_BUILD_DIR:-"requests-2.5.1"}
 
-export SEEDME_FILE=${SEEDME_FILE:-"seedme-seedme-python-client-0a365da9c861.tar.gz"}
-export SEEDME_BUILD_DIR=${SEEDME_BUILD_DIR:-"seedme-seedme-python-client-0a365da9c861"}
-
+export SEEDME_URL=${SEEDME_URL:-"https://seedme.org/sites/seedme.org/files/downloads/clients/"}
+export SEEDME_FILE=${SEEDME_FILE:-"seedme-python-client-v1.1.0.zip"}
+export SEEDME_BUILD_DIR=${SEEDME_BUILD_DIR:-"seedme-python-client-v1.1.0"}
 
 }
 
@@ -594,7 +594,7 @@ function build_seedme
         info "Extracting seedme python module ..."
         uncompress_untar ${SEEDME_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${SEEDME_BUILD_DIR}"
+            warn "Could not extract ${SEEDME_FILE}"
             return 1
         fi
     fi
@@ -677,7 +677,7 @@ if [[ "$DO_PYTHON" == "yes" && "$USE_SYSTEM_PYTHON" == "no" ]] ; then
         if [[ $? != 0 ]] ; then
             warn "seedme python module build failed."
         fi
-        info "Done building the requests seedme python module."
+        info "Done building the seedme python module."
 
     fi
 fi
