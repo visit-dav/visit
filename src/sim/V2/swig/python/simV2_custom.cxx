@@ -36,6 +36,9 @@
 *
 *****************************************************************************/
 #include "simV2_custom.h"
+// must do this in all translation units to prevent multiple numpy c-api
+// method tables
+#define NO_IMPORT_ARRAY
 #include <simV2_python_config.h>
 #include <VisItControlInterface_V2.h>
 #include <VisIt_VariableData.h>
@@ -1054,19 +1057,6 @@ int getData(
 }
 
 /******************************************************************************/
-void initialize()
-{
-#if defined(SIMV2_USE_NUMPY)
-    static bool initialized = false;
-    if (!initialized)
-    {
-        import_array();
-        initialized = true;
-    }
-#endif
-}
-
-/******************************************************************************/
 void pyarray_destructor(void *object)
 {
 #if defined(SIMV2_NUMPY_DEBUG)
@@ -1106,7 +1096,6 @@ int pylibsim_VisIt_VariableData_setDataAsD(
           int nTuples,
           PyObject *seq)
 {
-    pylibsim::initialize();
     double *data = NULL;
     if (pylibsim::getData<double>(owner, nComps, nTuples, seq, data))
     {
@@ -1124,7 +1113,6 @@ int pylibsim_VisIt_VariableData_setDataAsF(
           int nTuples,
           PyObject *seq)
 {
-    pylibsim::initialize();
     float *data = NULL;
     if (pylibsim::getData<float>(owner, nComps, nTuples, seq, data))
     {
@@ -1142,7 +1130,6 @@ int pylibsim_VisIt_VariableData_setDataAsI(
           int nTuples,
           PyObject *seq)
 {
-    pylibsim::initialize();
     int *data = NULL;
     if (pylibsim::getData<int>(owner, nComps, nTuples, seq, data))
     {
@@ -1160,7 +1147,6 @@ int pylibsim_VisIt_VariableData_setDataAsC(
           int nTuples,
           PyObject *seq)
 {
-    pylibsim::initialize();
     char *data = NULL;
     if (pylibsim::getData<char>(owner, nComps, nTuples, seq, data))
     {

@@ -1250,12 +1250,12 @@ extern "C"
 int VisIt_VariableData_alloc(visit_handle*);
 int VisIt_VariableData_free(visit_handle);
 
-/* Pass data (contiguous version) */
-int VisIt_VariableData_setDataC(visit_handle obj, int owner, int nComps, int nTuples, char *);
-int VisIt_VariableData_setDataI(visit_handle obj, int owner, int nComps, int nTuples, int *);
-int VisIt_VariableData_setDataL(visit_handle obj, int owner, int nComps, int nTuples, long *);
-int VisIt_VariableData_setDataF(visit_handle obj, int owner, int nComps, int nTuples, float *);
-int VisIt_VariableData_setDataD(visit_handle obj, int owner, int nComps, int nTuples, double *);
+/* these are handled in simV2_python.
+int VisIt_VariableData_setDataC(visit_handle obj, int owner, int nComps, int nTuples, PyObject *dataarray);
+int VisIt_VariableData_setDataI(visit_handle obj, int owner, int nComps, int nTuples, PyObject *dataarray);
+int VisIt_VariableData_setDataF(visit_handle obj, int owner, int nComps, int nTuples, PyObject *dataarray);
+int VisIt_VariableData_setDataD(visit_handle obj, int owner, int nComps, int nTuples, PyObject *dataarray);
+*/
 
 #ifdef __cplusplus
 }
