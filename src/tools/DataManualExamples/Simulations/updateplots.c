@@ -79,10 +79,13 @@ typedef struct
     int      par_rank;
     int      par_size;
     int      cycle;
+    int      max_cycles;
     double   time;
     int      runMode;
     int      done;
     int      savingFiles;
+    int      width;
+    int      height;
     int      saveCounter;
     int      batch;
     int      export;
@@ -97,10 +100,13 @@ simulation_data_ctor(simulation_data *sim)
     sim->par_rank = 0;
     sim->par_size = 1;
     sim->cycle = 0;
+    sim->max_cycles = -1;
     sim->time = 0.;
     sim->runMode = SIM_STOPPED;
     sim->done = 0;
     sim->savingFiles = 0;
+    sim->width = 800;
+    sim->height = 800;
     sim->saveCounter = 0;
     sim->batch = 0;
     sim->export = 0;
@@ -161,8 +167,8 @@ void simulate_one_timestep(simulation_data *sim)
     if(sim->savingFiles)
     {
         char filename[100];
-        sprintf(filename, "updateplots%04d.jpg", sim->saveCounter);
-        if(VisItSaveWindow(filename, 800, 800, VISIT_IMAGEFORMAT_JPEG) == VISIT_OKAY)
+        sprintf(filename, "updateplots%04d.png", sim->saveCounter);
+        if(VisItSaveWindow(filename, sim->width, sim->height, VISIT_IMAGEFORMAT_PNG) == VISIT_OKAY)
         {
             savedFile = 1;
             if(sim->par_rank == 0)
@@ -436,8 +442,21 @@ void mainloop_batch(simulation_data *sim)
     sim->savingFiles = 1;
 
     /* Iterate over time. */
-    while(!sim->done)
-        simulate_one_timestep(sim);
+    if(sim->max_cycles != -1)
+    {
+        int ids[] = {0,1,2,3,4,5,6,7,8,9}, nids = 10;
+
+        while(sim->cycle < sim->max_cycles)
+            simulate_one_timestep(sim);
+
+        VisItSetActivePlots(ids, nids);
+        VisItDeleteActivePlots();
+    }
+    else
+    {
+        while(!sim->done)
+            simulate_one_timestep(sim);
+    }
 }
 
 /******************************************************************************
@@ -584,6 +603,21 @@ int main(int argc, char **argv)
         {
             sim.sessionfile = strdup(argv[i+1]);
             ++i;
+        }
+        else if(strcmp(argv[i], "-maxcycles") == 0)
+        {
+            sscanf(argv[i+1], "%d", &sim.max_cycles);
+            i++;
+        }
+        else if(strcmp(argv[i], "-width") == 0)
+        {
+            sscanf(argv[i+1], "%d", &sim.width);
+            i++;
+        }
+        else if(strcmp(argv[i], "-height") == 0)
+        {
+            sscanf(argv[i+1], "%d", &sim.height);
+            i++;
         }
     }
 
