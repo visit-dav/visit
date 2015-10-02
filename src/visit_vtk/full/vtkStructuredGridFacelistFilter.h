@@ -64,13 +64,15 @@ public:
 protected:
   vtkStructuredGridFacelistFilter() {};
   ~vtkStructuredGridFacelistFilter() {};
-  vtkStructuredGridFacelistFilter(const vtkStructuredGridFacelistFilter&) {};
-  void operator=(const vtkStructuredGridFacelistFilter&) {};
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
                           vtkInformationVector *);
   virtual int FillInputPortInformation(int port, vtkInformation *info);
+
+private:
+  vtkStructuredGridFacelistFilter(const vtkStructuredGridFacelistFilter&); // not implemented
+  void operator=(const vtkStructuredGridFacelistFilter&); // not implemented
 };
 
 #endif
