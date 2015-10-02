@@ -926,6 +926,11 @@ def rsync_post(src_dir,rsync_dest):
 #   Kathleen Biagas, Thu Feb  6 14:08:00 PST 2014
 #   Only do ctest logging if ctest is enabled.
 #
+#   Burlen Loring, Fri Oct  2 09:56:26 PDT 2015
+#   Make ctest output for each subtest. Moved the timer code
+#   into the ctest module so that I could track time spent
+#   in the sub test.
+#
 # ----------------------------------------------------------------------------
 def main(opts,tests):
     """
@@ -948,6 +953,8 @@ def main(opts,tests):
     prepare_result_dirs(opts["result_dir"])
     ststamp = timestamp(sep=":")
     stime   = time.time()
+    if opts["ctest"]:
+        ctestInitTestTimer()
     Log("[Starting test suite run @ %s]" % ststamp)
     html_index = HTMLIndex(opts["result_dir"])
     html_index.write_header(opts["modes"],ststamp)
@@ -961,9 +968,6 @@ def main(opts,tests):
     json_index.finalize(etstamp,rtime)
     nskip   = len([ r.skip()  for r in results if r.skip() == True])
     Log("[Test suite run complete @ %s (wall time = %s)]" % (etstamp,rtime))
-    if opts['ctest']:
-        Log(ctestReportWallTime(etime-stime))
-        Log(ctestReportCPUTime(etime-stime))
     if nskip > 0:
         Log("-- %d files due to skip list." % nskip)
     if not error:

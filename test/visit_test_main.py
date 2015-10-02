@@ -683,6 +683,10 @@ def HTMLAssertTestResult(case_name,status,assert_check,result,details):
 #
 #   Burlen Loring, Tue May 27 11:44:04 PDT 2014
 #   Report threshold error
+#
+#   Burlen Loring, Fri Oct  2 09:13:04 PDT 2015
+#   report image error, cpu and walltime. for every test
+#
 # ----------------------------------------------------------------------------
 def LogImageTestResult(case_name,
                        diffState,modeSpecific,
@@ -692,6 +696,8 @@ def LogImageTestResult(case_name,
     Log the result of an image based test.
     """
     # write data to the log file if there is one
+    if TestEnv.params["ctest"]:
+        Log(ctestReportDiff(thrErr))
     details = ""
     if diffState == 'None':
         status = "passed"
@@ -714,6 +720,10 @@ def LogImageTestResult(case_name,
     msg = "    Test case '%s' %s" % (case_name,status.upper())
     if details !="":
         msg += ": " + details
+    if TestEnv.params["ctest"]:
+        testTime = ctestGetElapsedTime()
+        Log(ctestReportWallTime(testTime))
+        Log(ctestReportCPUTime(testTime))
     Log(msg)
     JSONImageTestResult(case_name, status,
                         diffState,modeSpecific,
@@ -1970,6 +1980,9 @@ def TestParallelSimulation(sim, sim2, np):
 #    Changed the parallel job launching logic to use srun on surface instead
 #    of edge.
 #
+#    Burlen Loring, Fri Oct  2 12:31:12 PDT 2015
+#    Added gdb support for serial
+#
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1):
@@ -1982,6 +1995,7 @@ class Simulation(object):
         self.extraargs = []
         self.np = np
         self.valgrind = False
+        self.gdb = False
 
     def enablevalgrind(self):
         self.valgrind = True
@@ -2028,6 +2042,9 @@ class Simulation(object):
                 logfile = GenFileNames("valgrind", ".txt")[0]
                 args = ["env", "GLIBCXX_FORCE_NEW=1", "valgrind", "--tool=memcheck", "--leak-check=full", "--log-file="+logfile] + args
 
+            if self.gdb:
+                args = ["xterm", "-geometry", "150x50", "-e", "gdb", "--args"] + args
+
         s="Running: "
         for a in args:
             s = s + a + " "
@@ -2044,7 +2061,7 @@ class Simulation(object):
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE,
                                       close_fds=False)
-           
+
         return self.p != None
 
     def addargument(self, arg):
@@ -2082,6 +2099,7 @@ class Simulation(object):
         Disconnect from the simulation.
         """
         self.connected = False
+        DeleteAllPlots()
         CloseDatabase(self.sim2)
         CloseComputeEngine(self.host, self.sim2)
         return 1
@@ -2094,7 +2112,9 @@ class Simulation(object):
         if not sys.platform.startswith("win") and self.connected:
             # Be nice about it.
             self.p.stdin.write("quit\n")
-            self.p.communicate()
+            (o,e) = self.p.communicate()
+            #sys.stderr.write('sim stdout = %s\n'%(o))
+            #sys.stderr.write('sim stderr = %s\n'%(e))
             self.p.wait()
         else:
             # Force the sim to terminate.
@@ -2117,7 +2137,7 @@ class Simulation(object):
         ret = 0
         if self.connected:
             ret = SendSimulationCommand(self.host, self.sim2, cmd)
-   
+
     def metadata(self):
         md = None
         if self.connected:
@@ -2148,7 +2168,7 @@ def TestSimStartAndConnect(testname, sim):
         else:
             txt = txt + "Simulation \"%s\" did not start." % exe
     else:
-        txt = "Simulation executable \"%s\" does not exist.\n" % exe    
+        txt = "Simulation executable \"%s\" does not exist.\n" % exe
     TestText(testname, txt)
     return started,connected
 
@@ -2211,7 +2231,7 @@ class SimulationMemoryRecorder(object):
         self.WriteFile()
 
     def WriteFile(self):
-        f = open(self.filename, "wt")            
+        f = open(self.filename, "wt")
         for k in self.samples.keys():
             f.write("#pid_%s\n" % str(k))
             for i in range(len(self.samples[k])):
