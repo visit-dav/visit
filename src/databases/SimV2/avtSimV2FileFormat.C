@@ -1441,10 +1441,10 @@ vtkDataSet *
 avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
 {
 #ifdef MDSERVER
+    (void)domain;
     (void)meshname;
     return NULL;
 #else
-
     if (curveMeshes.count(meshname))
     {
         return GetCurve(meshname);
@@ -1558,12 +1558,16 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
 //   Brad Whitlock, Mon Jul 20 16:58:17 PDT 2015
 //   I removed the copy case since that's handled differently now.
 //
+//   Burlen Loring, Sat Sep 12 15:32:21 PDT 2015
+//   I added an error report if VISIT_OWNER_EX is used without a
+//   callback
+//
 // ****************************************************************************
 
 template <class ARR, class T>
 void
 StoreVariableData(ARR *array, T *src, int nComponents, int nTuples,
-   int owner, void(*callback)(void*), void *callbackData)
+    const char *varname, int owner, void(*callback)(void*), void *callbackData)
 {
     if (nComponents == 2)
     {
@@ -1589,6 +1593,14 @@ StoreVariableData(ARR *array, T *src, int nComponents, int nTuples,
         {
             debug5 << "StoreVariableData: zero copy with supplied deletion callback." << endl;
 
+            if (!callback)
+            {
+                ostringstream oss;
+                oss << "Attempt to use VISIT_OWNER_VISIT_EX without a callback"
+                    << " for variable " << (varname ? varname : "unnamed");
+                EXCEPTION1(ImproperUseException, oss.str().c_str());
+             }
+
             // zero-copy
             // we observe VTK data array's DeleteEvent and invoke the user
             // provided callback in repsonse. it's the callbacks duty to free
@@ -1598,7 +1610,6 @@ StoreVariableData(ARR *array, T *src, int nComponents, int nTuples,
             simV2_DeleteEventObserver *observer = simV2_DeleteEventObserver::New();
             observer->Observe(array, callback, callbackData);
             // this is not a leak, the observer is Delete'd after it's invoked.
-
         }
         else
         if ((owner == VISIT_OWNER_VISIT) || (owner == VISIT_OWNER_SIM))
@@ -1976,7 +1987,7 @@ SimV2_GetVar_Single(visit_handle hvar, const char *varname)
         // Get the callback.
         void (*callback)(void*) = NULL;
         void *callbackData = NULL;
-        err = simv2_VariableData_getDeletionCallback(hvar, callback, callbackData);
+        simv2_VariableData_getDeletionCallback(hvar, callback, callbackData);
 
         // Zero-copy, single component, use VTK data array types.
         switch (dataType)
@@ -1984,7 +1995,7 @@ SimV2_GetVar_Single(visit_handle hvar, const char *varname)
         simV2TemplateMacro(
             simV2_TT::vtkType *da = simV2_TT::vtkType::New();
             StoreVariableData(da, static_cast<simV2_TT::cppType*>(data),
-                nComponents, nTuples, owner, callback, callbackData);
+                nComponents, nTuples, varname, owner, callback, callbackData);
             array = da;
         );
         }
@@ -2921,6 +2932,8 @@ avtSimV2FileFormat::PopulateIOInformation(const std::string &meshname,
     simv2_FreeObject(h);
     return true;
 #else
+    (void)meshname;
+    (void)ioInfo;
     return false;
 #endif
 }
