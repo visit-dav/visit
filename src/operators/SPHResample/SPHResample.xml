@@ -34,7 +34,10 @@
       <Field name="weightVariable" label="Weight" type="variablename" vartypes="01000000000">
         mass
       </Field>
-      <Field name="RK" label="RK" type="bool">
+      <Field name="RK" label="Enable First Order (more accurate) Corrective Kernel Interpolations" type="bool">
+        false
+      </Field>
+      <Field name="memScale" label="Enable Memory Scaling" type="bool">
         false
       </Field>
     </Attribute>

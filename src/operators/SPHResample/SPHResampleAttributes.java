@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class SPHResampleAttributes extends AttributeSubject implements Plugin
 {
-    private static int SPHResampleAttributes_numAdditionalAtts = 12;
+    private static int SPHResampleAttributes_numAdditionalAtts = 13;
 
     public SPHResampleAttributes()
     {
@@ -77,6 +77,7 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
         tensorSupportVariable = new String("H");
         weightVariable = new String("mass");
         RK = false;
+        memScale = false;
     }
 
     public SPHResampleAttributes(int nMoreFields)
@@ -95,6 +96,7 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
         tensorSupportVariable = new String("H");
         weightVariable = new String("mass");
         RK = false;
+        memScale = false;
     }
 
     public SPHResampleAttributes(SPHResampleAttributes obj)
@@ -113,6 +115,7 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
         tensorSupportVariable = new String(obj.tensorSupportVariable);
         weightVariable = new String(obj.weightVariable);
         RK = obj.RK;
+        memScale = obj.memScale;
 
         SelectAll();
     }
@@ -141,7 +144,8 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
                 (znum == obj.znum) &&
                 (tensorSupportVariable.equals(obj.tensorSupportVariable)) &&
                 (weightVariable.equals(obj.weightVariable)) &&
-                (RK == obj.RK));
+                (RK == obj.RK) &&
+                (memScale == obj.memScale));
     }
 
     public String GetName() { return "SPHResample"; }
@@ -220,6 +224,12 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
         Select(11);
     }
 
+    public void SetMemScale(boolean memScale_)
+    {
+        memScale = memScale_;
+        Select(12);
+    }
+
     // Property getting methods
     public float   GetMinX() { return minX; }
     public float   GetMaxX() { return maxX; }
@@ -233,6 +243,7 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
     public String  GetTensorSupportVariable() { return tensorSupportVariable; }
     public String  GetWeightVariable() { return weightVariable; }
     public boolean GetRK() { return RK; }
+    public boolean GetMemScale() { return memScale; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -261,6 +272,8 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
             buf.WriteString(weightVariable);
         if(WriteSelect(11, buf))
             buf.WriteBool(RK);
+        if(WriteSelect(12, buf))
+            buf.WriteBool(memScale);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -303,6 +316,9 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
         case 11:
             SetRK(buf.ReadBool());
             break;
+        case 12:
+            SetMemScale(buf.ReadBool());
+            break;
         }
     }
 
@@ -321,6 +337,7 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
         str = str + stringToString("tensorSupportVariable", tensorSupportVariable, indent) + "\n";
         str = str + stringToString("weightVariable", weightVariable, indent) + "\n";
         str = str + boolToString("RK", RK, indent) + "\n";
+        str = str + boolToString("memScale", memScale, indent) + "\n";
         return str;
     }
 
@@ -338,5 +355,6 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
     private String  tensorSupportVariable;
     private String  weightVariable;
     private boolean RK;
+    private boolean memScale;
 }
 
