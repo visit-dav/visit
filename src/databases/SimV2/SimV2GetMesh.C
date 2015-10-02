@@ -549,6 +549,7 @@ SimV2_Create_ComponentDataArray3_From_One_MultiArray(int ndims, visit_handle c)
 
     return position;
 }
+
 // ****************************************************************************
 // Function: SimV2_Create_ComponentDataArray3_From_Three_SingleArray
 //
@@ -570,6 +571,9 @@ SimV2_Create_ComponentDataArray3_From_One_MultiArray(int ndims, visit_handle c)
 // Creation:   Mon Jun 29 15:55:02 PDT 2015
 //
 // Modifications:
+//
+//  Burlen Loring, Sat Sep 12 15:54:59 PDT 2015
+//  Add support for ref-counted zero-copy (ie VISIT_OWNER_EX)
 //
 // ****************************************************************************
 
@@ -600,18 +604,46 @@ SimV2_Create_ComponentDataArray3_From_Three_SingleArray(int ndims,
         // Store the data array information into the data component.
         if(i == 0)
             position->SetNumberOfTuples(nTuples);
-        bool owns = owner == VISIT_OWNER_VISIT;
+        bool visit_owns = owner == VISIT_OWNER_VISIT;
 
         debug5 << "\tAdding component " << i << ": data=" << (void*)data
                << ", offset=" << offset << ", stride=" << stride
                << ", vtktype=" << SimV2_GetVTKType(dataType)
-               << ", owns=" << (owns?"true":"false") << endl;
+               << ", owns=" << (visit_owns?"true":"false") << endl;
 
-        position->SetComponentData(i, vtkArrayComponentStride(data, offset, stride, SimV2_GetVTKType(dataType), owns));
-        if(owns)
+        position->SetComponentData(i, vtkArrayComponentStride(
+            data, offset, stride, SimV2_GetVTKType(dataType), visit_owns));
+
+        if (visit_owns)
         {
+            // takes ownership
             simv2_VariableData_nullData(cHandles[i]);
         }
+        else
+        if (owner == VISIT_OWNER_VISIT_EX)
+        {
+            // zero copy from a ref counted array
+            void (*callback)(void*) = NULL;
+            void *callbackData = NULL;
+            simv2_VariableData_getDeletionCallback(cHandles[i], callback, callbackData);
+
+            if (!callback)
+            {
+                ostringstream oss;
+                oss << "Attempt to use VISIT_OWNER_VISIT_EX without a callback"
+                    << " for " << coordName[i] << " coordinates in point mesh";
+                EXCEPTION1(ImproperUseException, oss.str().c_str());
+            }
+
+            simV2_DeleteEventObserver *observer = simV2_DeleteEventObserver::New();
+            observer->Observe(position, callback, callbackData);
+            // this is not a leak, the observer is Delete'd after it's
+            // invoked.
+
+            // takes ownership
+            simv2_VariableData_nullData(cHandles[i]);
+        }
+
     }
     if(ndims == 2)
     {
@@ -654,6 +686,8 @@ static vtkPoints *
 SimV2_CreatePoints_From_ComponentDataArray3(bool forceCopy, int ndims, int additionalPoints,
     vtkComponentDataArray<float> *position)
 {
+    (void)ndims;
+
     vtkPoints *points = vtkPoints::New();
 
     if(/*ndims == 2 || */ forceCopy || additionalPoints > 0)
@@ -808,11 +842,6 @@ SimV2_CreatePoints_Interleaved_SingleArray(int ndims, visit_handle c,
     {
         debug5 << "SimV2_CreatePoints_Interleaved_SingleArray: zero copy." << endl;
 
-        // Get the callback.
-        void (*callback)(void*) = NULL;
-        void *callbackData = NULL;
-        simv2_VariableData_getDeletionCallback(c, callback, callbackData);
-
         // zero-copy, VTK uses the pointer rather than making
         // a copy. this is inherently risky, especially for VISIT_OWNER_SIM
         // with VISIT_OWNER_VISIT_EX the sim is expected to hold a
@@ -824,16 +853,26 @@ SimV2_CreatePoints_Interleaved_SingleArray(int ndims, visit_handle c,
             simV2_TT::vtkType *pts = simV2_TT::vtkType::New();
             pts->SetNumberOfComponents(3);
 
-            if (owner == VISIT_OWNER_VISIT_EX && callback != NULL)
+            if (owner == VISIT_OWNER_VISIT_EX)
             {
+                void (*callback)(void*) = NULL;
+                void *callbackData = NULL;
+                simv2_VariableData_getDeletionCallback(c, callback, callbackData);
+
+                if (!callback)
+                {
+                    ostringstream oss;
+                    oss << "Attempt to use VISIT_OWNER_VISIT_EX without a callback"
+                        << " for interleaved coordinates in a point based mesh";
+                    EXCEPTION1(ImproperUseException, oss.str().c_str());
+                 }
+
                 // we observe VTK data array's DeleteEvent and invoke the
                 // user provided callback in repsonse. it's the callbacks
                 // duty to free the memory.
-                pts->SetArray(static_cast<simV2_TT::cppType*>(data), 
-                              nTuples*3, 1);
+                pts->SetArray(static_cast<simV2_TT::cppType*>(data), nTuples*3, 1);
 
-                simV2_DeleteEventObserver *observer = 
-                    simV2_DeleteEventObserver::New();
+                simV2_DeleteEventObserver *observer = simV2_DeleteEventObserver::New();
                 observer->Observe(pts, callback, callbackData);
                 // this is not a leak, the observer is Delete'd after it's
                 // invoked.
