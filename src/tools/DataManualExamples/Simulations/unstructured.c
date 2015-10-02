@@ -160,6 +160,9 @@ void simulate_one_timestep(simulation_data *sim)
  *
  * Modifications:
  *
+ *  Burlen Loring, Fri Oct  2 15:55:05 PDT 2015
+ *  Call visit disconnect so that objects don't get leaked.
+ *
  *****************************************************************************/
 
 void mainloop(void)
@@ -195,10 +198,9 @@ void mainloop(void)
             /* VisIt is trying to connect to sim. */
             if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
-                sim.runMode = SIM_STOPPED;
                 fprintf(stderr, "VisIt connected\n");
+                sim.runMode = SIM_STOPPED;
                 VisItSetCommandCallback(ControlCommandCallback, (void*)&sim);
-
                 VisItSetGetMetaData(SimGetMetaData, (void*)&sim);
                 VisItSetGetMesh(SimGetMesh, (void*)&sim);
             }
@@ -210,6 +212,7 @@ void mainloop(void)
             /* VisIt wants to tell the engine something. */
             if(VisItProcessEngineCommand() == VISIT_ERROR)
             {
+                fprintf(stderr, "VisIt error, disconnecting\n");
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();
                 /* Start running again if VisIt closes. */
@@ -229,6 +232,7 @@ void mainloop(void)
     } while(!sim.done && err == 0);
 
     /* Clean up */
+    VisItDisconnect();
     simulation_data_dtor(&sim);
 }
 
@@ -332,21 +336,74 @@ SimGetMetaData(void *cbdata)
     return md;
 }
 
-/* Global variables. */
-double umx[] = {0.,2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,1.,2.,4.,4.};
-double umy[] = {0.,0.,0.,0.,2.,2.,2.,2.,4.,4.,4.,4.,6.,0.,0.,0.};
-double umz[] = {2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,0.,1.,4.,2.,0.};
-/* Connectivity */
-int connectivity[] = {
-    VISIT_CELL_HEX,   0,1,2,3,4,5,6,7,    /* hex,     zone 1 */
-    VISIT_CELL_HEX,   4,5,6,7,8,9,10,11,  /* hex,     zone 2 */
-    VISIT_CELL_PYR,   8,9,10,11,12,       /* pyramid, zone 3 */
-    VISIT_CELL_WEDGE, 1,14,5,2,15,6,      /* wedge,   zone 4 */
-    VISIT_CELL_TET,   1,14,13,5           /* tet,     zone 5 */
-};
-int lconnectivity = sizeof(connectivity) / sizeof(int);
-int umnnodes = 16;
-int umnzones = 5;
+
+/******************************************************************************
+ *
+ * Purpose: Generate data for mesh. This exercises the coordinated memory
+ *   management feature of libsim. the get'ers malloc coords, and cells.
+ *   VisIt uses the callback to free them.
+ *
+ * Programmer: Burlen Loring
+ * Date:       Fri Sep 25 12:49:22 PDT 2015
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+void deleter(void *p)
+{
+    fprintf(stderr, "deleter frees %p\n", p);
+    free(p);
+}
+
+void getCoords(double **x, double **y, double **z, int *npts)
+{
+    double umx[] = {0.,2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,1.,2.,4.,4.};
+    double umy[] = {0.,0.,0.,0.,2.,2.,2.,2.,4.,4.,4.,4.,6.,0.,0.,0.};
+    double umz[] = {2.,2.,0.,0.,2.,2.,0.,0.,2.,2.,0.,0.,1.,4.,2.,0.};
+
+    size_t n = sizeof(umx);
+    *x = (double*)malloc(n);
+    memcpy(*x, umx, n);
+
+    *y = (double*)malloc(n);
+    memcpy(*y, umy, n);
+
+    *z = (double*)malloc(n);
+    memcpy(*z, umz, n);
+
+    *npts = sizeof(umx)/sizeof(double);
+
+    fprintf(stderr, "getCoords mallocs %p %p %p\n", *x, *y, *z);
+}
+
+void getCells(int **cells, int *calen, int *ncells)
+{
+    int connectivity[] = {
+        VISIT_CELL_HEX,   0,1,2,3,4,5,6,7,    /* hex,     zone 1 */
+        VISIT_CELL_HEX,   4,5,6,7,8,9,10,11,  /* hex,     zone 2 */
+        VISIT_CELL_PYR,   8,9,10,11,12,       /* pyramid, zone 3 */
+        VISIT_CELL_WEDGE, 1,14,5,2,15,6,      /* wedge,   zone 4 */
+        VISIT_CELL_TET,   1,14,13,5           /* tet,     zone 5 */
+    };
+
+    size_t n = sizeof(connectivity);
+    *cells = (int*)malloc(n);
+    memcpy(*cells, connectivity, n);
+
+    *calen = sizeof(connectivity)/sizeof(int);
+
+    *ncells = 5;
+
+
+    fprintf(stderr, "getCells mallocs %p\n", *cells);
+}
+
+int getNumPoints()
+{ return 16; }
+
+int getNumCells()
+{ return 5; }
 
 /******************************************************************************
  *
@@ -356,6 +413,9 @@ int umnzones = 5;
  * Date:       Fri Feb  6 14:29:36 PST 2009
  *
  * Modifications:
+ *
+ *  Burlen Loring, Fri Sep 25 13:18:18 PDT 2015
+ *  Exercise the coordinated memory management path
  *
  *****************************************************************************/
 
@@ -370,19 +430,40 @@ SimGetMesh(int domain, const char *name, void *cbdata)
         {
             visit_handle x,y,z,conn;
 
+            /* points */
             VisIt_VariableData_alloc(&x);
             VisIt_VariableData_alloc(&y);
             VisIt_VariableData_alloc(&z);
-            VisIt_VariableData_setDataD(x, VISIT_OWNER_SIM, 1, umnnodes, umx);
-            VisIt_VariableData_setDataD(y, VISIT_OWNER_SIM, 1, umnnodes, umy);
-            VisIt_VariableData_setDataD(z, VISIT_OWNER_SIM, 1, umnnodes, umz);
 
+            int npts = 0;
+            double *px = NULL;
+            double *py = NULL;
+            double *pz = NULL;
+
+            getCoords(&px, &py, &pz, &npts);
+
+            VisIt_VariableData_setDataEx(x, VISIT_OWNER_VISIT_EX,
+                VISIT_DATATYPE_DOUBLE, 1, npts, px, deleter, px);
+
+            VisIt_VariableData_setDataEx(y, VISIT_OWNER_VISIT_EX,
+                VISIT_DATATYPE_DOUBLE, 1, npts, py, deleter, py);
+
+            VisIt_VariableData_setDataEx(z, VISIT_OWNER_VISIT_EX,
+                VISIT_DATATYPE_DOUBLE, 1, npts, pz, deleter, pz);
+
+            /* cells */
             VisIt_VariableData_alloc(&conn);
-            VisIt_VariableData_setDataI(conn, VISIT_OWNER_SIM, 1, 
-                lconnectivity, connectivity);
+
+            int *cells = NULL;
+            int calen = 0;
+            int ncells = 0;
+            getCells(&cells, &calen, &ncells);
+
+            VisIt_VariableData_setDataEx(conn, VISIT_OWNER_VISIT_EX,
+                VISIT_DATATYPE_INT,  1, calen, cells, deleter, cells);
 
             VisIt_UnstructuredMesh_setCoordsXYZ(h, x, y, z);
-            VisIt_UnstructuredMesh_setConnectivity(h, umnzones, conn);
+            VisIt_UnstructuredMesh_setConnectivity(h, ncells, conn);
         }
     }
 
