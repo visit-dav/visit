@@ -276,8 +276,10 @@ function uncompress_untar
         COMPRESSTYPE="targzip"
     elif [[ $(echo $1 | egrep "\.tar.gz$" ) != "" ]] ; then
         COMPRESSTYPE="targzip"
+    elif [[ $(echo $1 | egrep "\.zip$" ) != "" ]] ; then
+        COMPRESSTYPE="zip"
     else
-        warn "unsupported uncompression method"
+        warn "unsupported decompression method"
         return 1
     fi
     TARVERSION=$($TAR --version >/dev/null 2>&1)
@@ -285,7 +287,14 @@ function uncompress_untar
         case $COMPRESSTYPE in
             gzip|targzip) $TAR zxf $1;;
             bzip) $TAR jxf $1;;
+            zip) unzip $1;;
         esac
+        
+        if [[ $? != 0 ]]; then
+            warn "error decompressing $1"
+            return 1
+        fi
+
     else
         case $COMPRESSTYPE in
             gzip) 
@@ -300,7 +309,15 @@ function uncompress_untar
                bunzip2 $1
                $TAR xf ${1%.bz2}
                ;;
+            zip)
+               unzip $1
+               ;;
         esac
+        
+        if [[ $? != 0 ]]; then
+            warn "error decompressing $1"
+            return 1
+        fi
     fi
 }
 
