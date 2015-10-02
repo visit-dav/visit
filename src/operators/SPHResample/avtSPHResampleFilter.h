@@ -113,7 +113,8 @@ protected:
     template <int Dim> tensorStruct  *CreateTensorStruct(vtkDataArray* const, const int);
     
     
-    template <int Dim> void Sample(std::vector<double>& scalarValues);
+    template <int Dim> void Sample(std::vector<double>&);
+    template <int Dim> void SampleNMS(std::vector<double>&);
     
     // Return the kernel weight for a given normalized distance or position.
     template <int Dim> double kernelValue(double etaMagnitude, double Hdet);
@@ -124,6 +125,7 @@ protected:
 private:
     void GetLocalMinMaxIndex(const int[], int &, int &, const int, const int);
     int GetIndexFromLatticeIndex(const int);
+    void ExecuteNMS();
     
 };
 
