@@ -82,4 +82,6 @@ for testindex in xrange(10):
         DeleteAllPlots()
         CloseDatabase(filename)
 
+sim.endsim()
+
 Exit()
