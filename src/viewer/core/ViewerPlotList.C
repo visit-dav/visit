@@ -3760,27 +3760,27 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    Brad Whitlock, Fri Aug 13 15:13:31 PDT 2010
 //    Added code to modify named selections.
 //
+//    Brad Whitlock, Fri Oct  2 12:34:09 PDT 2015
+//    Delete plot dependencies before deleting the plots because they may cause
+//    immediate updates that will malfunction if the plots don't exist. This
+//    can happen with batch in situ. Separating the dependency deletion from
+//    the plot deletion is safer.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::DeleteActivePlots(bool doUpdates)
 {
     //
-    // Loop over the list deleting any active plots.  As it traverses
-    // the list it compresses out the deleted plots in place by copying
-    // any non-active plots into their new position.
+    // Delete plot dependencies and record which plots need to be removed.
+    // In certain situations (batch in situ), these may initiate immediate 
+    // updates that rely on the plots still existing.
     //
-    int       nPlotsNew;
-
-    nPlotsNew = 0;
     int nDeletedLegends = 0;
+    intVector remove;
     for (int i = 0; i < nPlots; i++)
     {
-        //
-        // If the plot is active or there is only one plot, delete the plot.
-        // Otherwise copy it down the list.
-        //
-        if (plots[i].active == true || nPlots == 1)
+        if (plots[i].active == true)
         {
             // If the plot provides legend, remove its annotation object from the list.
             if(plots[i].plot->ProvidesLegend())
@@ -3796,13 +3796,27 @@ ViewerPlotList::DeleteActivePlots(bool doUpdates)
 
             // Tell the query that this plot is being deleted. 
             ViewerQueryManager::Instance()->Delete(plots[i].plot);
-            delete plots[i].plot;
+
+            // Record that we need to remove this plot.
+            remove.push_back(i);
         }
-        else
-        {
-            plots[nPlotsNew] = plots[i];
-            nPlotsNew++;
-        }
+    }
+
+    // Delete the plots that were active.
+    for (size_t i = 0; i < remove.size(); i++)
+    {
+        delete plots[remove[i]].plot;
+        plots[remove[i]].plot = NULL;
+        plots[remove[i]].realized = false;
+        plots[remove[i]].active = false;
+    }
+
+    // Now, remove the empty slots from the plot list.
+    int nPlotsNew = 0;
+    for (int i = 0; i < nPlots; i++)
+    {
+        if(plots[i].plot != NULL)
+            plots[nPlotsNew++] = plots[i];
     }
     nPlots = nPlotsNew;
 
