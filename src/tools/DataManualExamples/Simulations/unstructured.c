@@ -339,7 +339,13 @@ SimGetMetaData(void *cbdata)
 
 /******************************************************************************
  *
- * Purpose: Generate data for mesh. This exercises the coordinated memory
+ * Functions:
+ *  deleter -- callback that delete's memory alloced in the sim
+ *  getCoords -- sim function that allocates and generates a point set
+ *  getCells -- sim function that allocates and generates cells
+ *
+ * Purpose:
+ *   Generate data for mesh. This exercises the coordinated memory
  *   management feature of libsim. the get'ers malloc coords, and cells.
  *   VisIt uses the callback to free them.
  *
@@ -347,6 +353,9 @@ SimGetMetaData(void *cbdata)
  * Date:       Fri Sep 25 12:49:22 PDT 2015
  *
  * Modifications:
+ *
+ *   Burlen Loring, Sat Oct  3 09:49:34 PDT 2015
+ *   remove a couple of unused functions.
  *
  *****************************************************************************/
 
@@ -386,8 +395,8 @@ void getCells(int **cells, int *calen, int *ncells)
         VISIT_CELL_WEDGE, 1,14,5,2,15,6,      /* wedge,   zone 4 */
         VISIT_CELL_TET,   1,14,13,5           /* tet,     zone 5 */
     };
-
     size_t n = sizeof(connectivity);
+
     *cells = (int*)malloc(n);
     memcpy(*cells, connectivity, n);
 
@@ -395,15 +404,8 @@ void getCells(int **cells, int *calen, int *ncells)
 
     *ncells = 5;
 
-
     fprintf(stderr, "getCells mallocs %p\n", *cells);
 }
-
-int getNumPoints()
-{ return 16; }
-
-int getNumCells()
-{ return 5; }
 
 /******************************************************************************
  *
@@ -416,6 +418,10 @@ int getNumCells()
  *
  *  Burlen Loring, Fri Sep 25 13:18:18 PDT 2015
  *  Exercise the coordinated memory management path
+ *
+ *  Burlen Loring, Sat Oct  3 09:41:12 PDT 2015
+ *  Fix build issue on windows. Declare vars at the top
+ *  of scope.
  *
  *****************************************************************************/
 
@@ -430,15 +436,19 @@ SimGetMesh(int domain, const char *name, void *cbdata)
         {
             visit_handle x,y,z,conn;
 
-            /* points */
-            VisIt_VariableData_alloc(&x);
-            VisIt_VariableData_alloc(&y);
-            VisIt_VariableData_alloc(&z);
-
             int npts = 0;
             double *px = NULL;
             double *py = NULL;
             double *pz = NULL;
+
+            int *cells = NULL;
+            int calen = 0;
+            int ncells = 0;
+
+            /* points */
+            VisIt_VariableData_alloc(&x);
+            VisIt_VariableData_alloc(&y);
+            VisIt_VariableData_alloc(&z);
 
             getCoords(&px, &py, &pz, &npts);
 
@@ -454,9 +464,6 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             /* cells */
             VisIt_VariableData_alloc(&conn);
 
-            int *cells = NULL;
-            int calen = 0;
-            int ncells = 0;
             getCells(&cells, &calen, &ncells);
 
             VisIt_VariableData_setDataEx(conn, VISIT_OWNER_VISIT_EX,
