@@ -312,6 +312,9 @@ typedef struct {
 //   Brad Whitlock, Thu Jun 19 10:47:28 PDT 2014
 //   I changed how getting IO information works. 
 //
+//   Burlen Loring, Tue Sep 29 13:20:29 PDT 2015
+//   Clean up a couple of warnings.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -339,7 +342,7 @@ class DATABASE_API avtDatabase
                                     bool treatAllDBsAsTimeVarying = false);
     int                         GetMostRecentTimestep() const;
 
-    virtual void                ActivateTimestep(int stateIndex) {;}; 
+    virtual void                ActivateTimestep(int) {;}; 
 
     virtual avtVariableCache   *GetCache(void) { return NULL; };
     virtual void                ClearCache(void);
@@ -364,11 +367,11 @@ class DATABASE_API avtDatabase
                                     { return false; } ;
     virtual bool                QueryCoords(const std::string &, const int, 
                                     const int, const int, double[3], const bool,
-                                    const bool, const char *mn = NULL)
+                                    const bool, const char * = NULL)
                                     { return false; } ;
 
-    virtual void                GetDomainName(const std::string &, const int ts,
-                                    const int dom, std::string &) {;};
+    virtual void                GetDomainName(const std::string &, const int,
+                                    const int, std::string &) {;};
 
     static bool                 GetFileListFromTextFile(const char *,
                                                         char **&, int &, int * =0);
@@ -442,9 +445,9 @@ class DATABASE_API avtDatabase
     virtual void                PopulateSIL(avtSIL *, int=0,
                                     bool treatAllDBsAsTimeVarying = false) = 0;
 
-    virtual bool                PopulateIOInformation(int stateIndex,
-                                                      const std::string &meshname,
-                                                      avtIOInformation& ioInfo) { return false;}
+    virtual bool                PopulateIOInformation(int,
+                                                      const std::string &,
+                                                      avtIOInformation&) { return false;}
 
     void                        PopulateDataObjectInformation(avtDataObject_p&,
                                                   const char *,

@@ -295,12 +295,17 @@ avtSTMDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
 //  Programmer: Hank Childs
 //  Creation:   December 20, 2011
 //
+//  Modifications:
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 std::string
 avtSTMDFileFormatInterface::CreateCacheNameIncludingSelections(std::string var, 
                                                                int ts, int dom)
 {
+    (void)dom;
     return timesteps[ts]->CreateCacheNameIncludingSelections(var);
 }
 
