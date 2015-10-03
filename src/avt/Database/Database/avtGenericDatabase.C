@@ -2141,12 +2141,18 @@ avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
 //  Programmer: Hank Childs
 //  Creation:   September 17, 2002
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtGenericDatabase::GetSpeciesVariable(const char *specname, int ts,
                                   int domain, const char *material, int nzones)
 {
+    (void)material;
     int i;
 
     vtkFloatArray *allOnes = vtkFloatArray::New();
@@ -2234,6 +2240,9 @@ avtGenericDatabase::GetSpeciesVariable(const char *specname, int ts,
 //    Hank Childs, Tue Dec 20 11:51:30 PST 2011
 //    Add support for caching with selections.
 //
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2241,6 +2250,8 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataRequest_p dataRequest)
 {
+    (void)dataRequest;
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2358,6 +2369,9 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
 //    Hank Childs, Tue Dec 20 11:51:30 PST 2011
 //    Add support for caching with selections.
 //
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2365,6 +2379,7 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataRequest_p dataRequest)
 {
+    (void)dataRequest;
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2469,6 +2484,9 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
 //    Hank Childs, Tue Dec 20 11:51:30 PST 2011
 //    Add support for caching with selections.
 //
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2476,6 +2494,7 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataRequest_p dataRequest)
 {
+    (void)dataRequest;
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2580,6 +2599,9 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
 //    Hank Childs, Tue Dec 20 11:51:30 PST 2011
 //    Add support for caching with selections.
 //
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2587,6 +2609,7 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
                                                int domain,const char *material,
                                            const avtDataRequest_p dataRequest)
 {
+    (void)dataRequest;
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2685,6 +2708,9 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 //    Hank Childs, Tue Dec 20 11:51:30 PST 2011
 //    Add support for caching with selections.
 //
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2692,6 +2718,7 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
                                      const char *material,
                                      const avtDataRequest_p dataRequest)
 {
+    (void)dataRequest;
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -3136,6 +3163,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //
 // Modifications:
 //
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 bool
@@ -3143,7 +3173,9 @@ avtGenericDatabase::CachingRecommended(vtkDataArray *arr) const
 {
     bool retval = true;
 
-#ifdef VISIT_BLUE_GENE_Q
+#ifndef VISIT_BLUE_GENE_Q
+    (void)arr;
+#else
     // We need to be more frugal with what we cache. Let's limit the cache size
     // to some percentage of the total memory size for this process.
     unsigned long nBytes = cache.EstimateSize(arr, true);
@@ -3185,6 +3217,9 @@ avtGenericDatabase::CachingRecommended(vtkDataArray *arr) const
 //
 // Modifications:
 //
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 bool
@@ -3192,7 +3227,9 @@ avtGenericDatabase::CachingRecommended(vtkDataSet *ds) const
 {
     bool retval = true;
 
-#ifdef VISIT_BLUE_GENE_Q
+#ifndef VISIT_BLUE_GENE_Q
+    (void)ds;
+#else
     // We need to be more frugal with what we cache. Let's limit the cache size
     // to some percentage of the total memory size for this process.
     unsigned long nBytes = cache.EstimateSize(ds);
@@ -5699,6 +5736,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //    Changed all calls from Exchange*Vector (* = Float, Double, etc) to
 //    ExchangeVector.
 //
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 bool
@@ -5707,6 +5747,9 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src,
                       intVector &allDomains, bool canDoCollectiveCommunication)
 {
+#ifndef PARALLEL
+    (void)canDoCollectiveCommunication;
+#endif
     int portion1 = visitTimer->StartTimer();
 
     size_t  i;
@@ -7333,6 +7376,11 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
 //  Programmer: Hank Childs
 //  Creation:   February 10, 2008
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a couple of warnings
+//
 // ****************************************************************************
 
 bool
@@ -7340,6 +7388,9 @@ avtGenericDatabase::CommunicateGhostZonesWhileStreaming(
                       avtDatasetCollection &ds, intVector &doms,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
+    (void)doms;
+    (void)spec;
+    (void)src;
     avtStreamingGhostGenerator *sgg = GetStreamingGhostGenerator();
     vtkDataSet *input  = ds.GetDataset(0, 0);
     vtkDataSet *output = sgg->StreamDataset(input);
@@ -7376,6 +7427,10 @@ avtGenericDatabase::CommunicateGhostZonesWhileStreaming(
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 bool
@@ -7383,6 +7438,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
                       avtDatasetCollection &ds, intVector &doms,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
+    (void)src;
     size_t   i, j;
 
     int ts = spec->GetTimestep();
@@ -7662,6 +7718,9 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
 //
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 bool
@@ -7669,6 +7728,9 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
    intVector &doms, intVector &allDoms, avtDataRequest_p &spec,
    bool canDoCollectiveCommunication)
 {
+#ifndef PARALLEL
+    (void)canDoCollectiveCommunication;
+#endif
     bool rv = false;
 
     int ts = spec->GetTimestep();

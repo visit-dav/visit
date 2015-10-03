@@ -134,6 +134,9 @@ class     avtVariableCache;
 //    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
 //    Pass mesh name to PopulateIOInformation.
 //
+//    Burlen Loring, Tue Sep 29 13:39:15 PDT 2015
+//    Clean up some warnings
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -177,7 +180,7 @@ class DATABASE_API avtFileFormat
 
     virtual void          RegisterDataSelections(
                               const std::vector<avtDataSelection_p>&,
-                              std::vector<bool> *wasApplied) {;};
+                              std::vector<bool> *) {;};
 
     void                  SetResultMustBeProducedOnlyOnThisProcessor(bool b)
                             { resultMustBeProducedOnlyOnThisProcessor = b; };

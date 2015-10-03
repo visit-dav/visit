@@ -111,6 +111,9 @@ class     avtIOInformation;
 //    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
 //    Pass mesh name to PopulateIOInformation.
 //
+//    Burlen Loring, Tue Sep 29 13:43:26 PDT 2015
+//    Clean up a couple of warnings.
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTSDFileFormat : public avtFileFormat
@@ -134,11 +137,11 @@ class DATABASE_API avtMTSDFileFormat : public avtFileFormat
     virtual vtkDataArray  *GetVar(int, const char *) = 0;
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
-    virtual void           ActivateTimestep(int ts)
+    virtual void           ActivateTimestep(int)
                                { avtFileFormat::ActivateTimestep(); };
-    virtual bool           PopulateIOInformation(int ts, const std::string &meshname,
-                                                 avtIOInformation& ioInfo) { return false; }
-    virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md, int ts = 0);
+    virtual bool           PopulateIOInformation(int, const std::string &,
+                                                 avtIOInformation&) { return false; }
+    virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md, int = 0);
 
     void                   SetReadAllCyclesAndTimes(bool b) 
                                              { readAllCyclesAndTimes = b; };
