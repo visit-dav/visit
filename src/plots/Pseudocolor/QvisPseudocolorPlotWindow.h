@@ -231,6 +231,7 @@ private:
 
     QvisPointControl      *pointControl;
 
+    QLabel                *lineTypeLabel;
     QComboBox             *lineType;
 
     QLabel                *lineStyleLabel;
@@ -254,6 +255,7 @@ private:
     // QLineEdit *ribbonWidth;
     // QComboBox *ribbonSizeType;
 
+    QLabel    *endPointTypeLabel;
     QComboBox *endPointType;
     QLabel    *endPointStyleLabel;
     QComboBox *endPointStyle;
@@ -263,10 +265,11 @@ private:
     QLabel    *endPointRatioLabel;
     QLineEdit *endPointRatio;
 
-    QButtonGroup          *smoothingLevelButtons;
+    QLabel                *renderLabel;
     QCheckBox             *renderSurfaces;
     QCheckBox             *renderWireframe;
     QCheckBox             *renderPoints;
+    QButtonGroup          *smoothingLevelButtons;
 
     QCheckBox             *legendToggle;
     QCheckBox             *lightingToggle;
