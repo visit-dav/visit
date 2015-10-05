@@ -65,6 +65,9 @@
 #   Kathleen Biagas, Dec 22, 2014
 #   Add ability to turn off building of avt examples.
 #
+#   Eric Brugger, Thu Oct  1 08:34:37 PDT 2015
+#   Add add_visit_searchpath.
+#
 #****************************************************************************/
 
 MACRO(VISIT_TOOLS_ADD_FOLDER type)
@@ -83,10 +86,13 @@ IF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
     ADD_SUBDIRECTORY(convert)
 ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
     # We always want these to be built
+    IF(SILO_FOUND AND NOT WIN32)
+        ADD_SUBDIRECTORY(add_visit_searchpath)
+    ENDIF(SILO_FOUND AND NOT WIN32)
     ADD_SUBDIRECTORY(annotations)
-    if(VISIT_BUILD_AVTEXAMPLES)
-    ADD_SUBDIRECTORY(avtexamples)
-    endif()
+    IF(VISIT_BUILD_AVTEXAMPLES)
+        ADD_SUBDIRECTORY(avtexamples)
+    ENDIF(VISIT_BUILD_AVTEXAMPLES)
     ADD_SUBDIRECTORY(convert)
     ADD_SUBDIRECTORY(embedviewer)
     ADD_SUBDIRECTORY(imagetools)
@@ -103,7 +109,7 @@ ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
     ENDIF(SILO_FOUND)
     ADD_SUBDIRECTORY(protocol)
     IF(WIN32 OR UNIX)
-       ADD_SUBDIRECTORY(qtssh)
+        ADD_SUBDIRECTORY(qtssh)
     ENDIF(WIN32 OR UNIX)
     IF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
         ADD_SUBDIRECTORY(dataserver)

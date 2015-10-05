@@ -167,6 +167,7 @@ VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice
   <li>VisIt can export XYZ format data in parallel.</li>
   <li>VisIt's Tecplot reader can now export datasets that use other than single floating point precision.</li>
   <li>The Mili reader now returns the time information so that it can be displayed in the database legend, the time slider, and queries over time.</li>
+  <li><p>A bug was corrected in the Silo reader that caused "_meshtv_searchpath" to be ignored. Support for reading "_visit_searchpath" as a synonym for "_meshtv_searchpath" was also added since that name is much more appropriate for VisIt. The utility <i>add_visit_searchpath</i> was added that adds a "_visit_searchpath" to the root directory of a Silo file. The usage for the utility is:</p><p><pre>add_visit_searchpath filename [searchpath]</pre></p><p>where filename is the name of the Silo file to add the search path to and searchpath is the search path to add. If no search path is specified it will add an empty search path, causing VisIt to only look for variables at the root level of the Silo file.</p></li>
 </ul>
 
 <a name="Plot_changes"></a>
