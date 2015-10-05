@@ -339,6 +339,12 @@ DrawOneSplat(const avtVolumeRendererImplementation::RenderProperties &props,
 //    Push/pop enable and texture state to fix a bug where the settings could
 //    corrupt the Pseudocolor plot's renderer.
 //
+//    Burlen Loring, Sun Oct  4 23:28:40 PDT 2015
+//    Make sure we set the blend mode, VTK may use a different
+//    mode depending on what extensions are available. also
+//    save/store blending state using pus/pop attrib. I fixed a
+//    couple of warnings.
+//
 // ****************************************************************************
 
 void
@@ -346,7 +352,8 @@ avtOpenGLSplattingVolumeRenderer::Render(
     const avtVolumeRendererImplementation::RenderProperties &props,
     const avtVolumeRendererImplementation::VolumeData &volume)
 {
-    glPushAttrib(GL_ENABLE_BIT | GL_TEXTURE_BIT);
+    glPushAttrib(GL_COLOR_BUFFER_BIT|GL_TEXTURE_BIT|
+        GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT);
 
     // Create the texture for a gaussian splat
     const int GRIDSIZE=32;
@@ -371,7 +378,7 @@ avtOpenGLSplattingVolumeRenderer::Render(
                      GRIDSIZE,GRIDSIZE,0, GL_ALPHA, GL_FLOAT, alphatex);
     }
 
-    // Determine whether we should treat the data as a rectilinear grid or 
+    // Determine whether we should treat the data as a rectilinear grid or
     // as an unstructured grid.
     vtkRectilinearGrid *grid = NULL;
     if(volume.grid->GetDataObjectType() == VTK_RECTILINEAR_GRID)
@@ -386,7 +393,7 @@ avtOpenGLSplattingVolumeRenderer::Render(
     // get attribute parameters
     unsigned char rgba[256*4];
     props.atts.GetTransferFunction(rgba);
-    
+
     // Set up OpenGL parameters
     glDisable(GL_LIGHTING);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -395,9 +402,8 @@ avtOpenGLSplattingVolumeRenderer::Render(
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, alphatexId);
     glEnable(GL_TEXTURE_2D);
-    bool alreadyBlending = glIsEnabled(GL_BLEND);
-    if (!alreadyBlending)
-        glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
 
     // set up parameters
     vtkCamera *camera = vtkCamera::New();
@@ -427,9 +433,9 @@ avtOpenGLSplattingVolumeRenderer::Render(
         size = sqrt( (p0[0]-p1[0])*(p0[0]-p1[0]) + (p0[1]-p1[1])*(p0[1]-p1[1]) + (p0[2]-p1[2])*(p0[2]-p1[2]) );
     }
 
-    float viewdir[4] = {0,0,1, 0};
-    float V1[4] = {0,size*1.8,0};
-    float V2[4] = {size*1.8,0,0};
+    float viewdir[4] = {0.0f,0.0f,1.0f, 0.0f};
+    float V1[4] = {0.0f,static_cast<float>(size)*1.8f,0.0f};
+    float V2[4] = {static_cast<float>(size)*1.8f,0.0f,0.0f};
     I->MultiplyPoint(viewdir, viewdir);
     I->MultiplyPoint(V1,V1);
     I->MultiplyPoint(V2,V2);
@@ -513,7 +519,7 @@ avtOpenGLSplattingVolumeRenderer::Render(
         imax = (svx<0) ? -1 : dims[0];
         jmax = (svy<0) ? -1 : dims[1];
         kmax = (svz<0) ? -1 : dims[2];
-    
+
         if (avx>=avy && avx>=avz)
         {
             c1    = &i;
@@ -608,7 +614,7 @@ avtOpenGLSplattingVolumeRenderer::Render(
         {
             // skipping the opacity correction for now
             /* ** HRC, 11/19/01, if this code ever becomes uncommented, it must
-               ** be modified to address separate opacity and color variables. 
+               ** be modified to address separate opacity and color variables.
             float dist;
             if (dir==1)
                 dist = fabs(data->x[i]-data->x[i-svx]);
@@ -711,16 +717,8 @@ avtOpenGLSplattingVolumeRenderer::Render(
             pd->Delete();
     }  //Done Splatting
 
-    glDepthMask(true);
-
-    glDisable(GL_TEXTURE_2D);
-    if (!alreadyBlending)
-        glDisable(GL_BLEND);
-    glEnable(GL_LIGHTING);
-    
     camera->Delete();
     I->Delete();
 
     glPopAttrib();
-
 }

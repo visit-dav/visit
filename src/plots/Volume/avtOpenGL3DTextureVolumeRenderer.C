@@ -203,6 +203,11 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    Hank Childs, Wed Oct 12 05:45:27 PDT 2011
 //    Increase the number of possible slices to 1000.
 //
+//    Burlen Loring, Sun Oct  4 23:28:40 PDT 2015
+//    Make sure we set the blend mode, VTK may use a different
+//    mode depending on what extensions are available. also
+//    save/store gl state using pus/pop attrib.
+//
 // ****************************************************************************
 
 void
@@ -226,12 +231,16 @@ avtOpenGL3DTextureVolumeRenderer::Render(
         return;
     }
 
+    // save state of what we will modify
+    glPushAttrib(GL_COLOR_BUFFER_BIT|GL_TEXTURE_BIT|
+        GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT);
+
     // Get the transfer function
     int ncolors=256;
     int nopacities=256;
     unsigned char rgba[256*4];
     props.atts.GetTransferFunction(rgba);
-    
+
     // Get the dimensions
     int dims[3];
     vtkRectilinearGrid *grid = (vtkRectilinearGrid *)volume.grid;
@@ -241,7 +250,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(
     int ny=dims[1];
     int nz=dims[2];
 
-    // Find the smallest power of two in each dimension 
+    // Find the smallest power of two in each dimension
     // that will accomodate this data set
     int newnx = MAX(int(pow(2.0,1+int(log(double(nx-1))/log(2.0)))),1);
     int newny = MAX(int(pow(2.0,1+int(log(double(ny-1))/log(2.0)))),1);
@@ -302,7 +311,6 @@ avtOpenGL3DTextureVolumeRenderer::Render(
     // If we want to transform the light so it is attached to the camera:
     //I->MultiplyPoint(light, light);
 
-
     //
     // Create the 3D texture if we need to
     //
@@ -354,7 +362,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(
                         props.atts.GetOpacityAttenuation()/256.;
                     opacity = MAX(0,MIN(1,opacity));
 
-                    // drop transparent splats 
+                    // drop transparent splats
                     //if (opacity < .0001)
                     //    continue;
 
@@ -420,7 +428,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(
                         // No shading ata ll
                         brightness=1;
                     }
-                
+
                     // Determine the actual color and opacity now
                     int colorindex = int(ncolors * v);
                     if (colorindex < 0)
@@ -447,7 +455,6 @@ avtOpenGL3DTextureVolumeRenderer::Render(
         glGenTextures(1, (GLuint*)&volumetexId);
         glBindTexture(GL_TEXTURE_3D, volumetexId);
 
-
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
                      0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
     }
@@ -465,10 +472,10 @@ avtOpenGL3DTextureVolumeRenderer::Render(
     glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glEnable(GL_TEXTURE_3D);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    bool alreadyBlending = glIsEnabled(GL_BLEND);
-    if (!alreadyBlending)
-        glEnable(GL_BLEND);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glEnable(GL_BLEND);
     glDepthMask(false);
 
     // Set up camera parameters
@@ -545,7 +552,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(
     float dz = bbox.z[pt0] - bbox.z[ptn];
     float dist = sqrt(dx*dx + dy*dy + dz*dz);
 
-    // Do the actual contouring 
+    // Do the actual contouring
     glBegin(GL_TRIANGLES);
     glColor4f(1.,1.,1.,1.);
     int ns = props.atts.GetNum3DSlices();
@@ -572,12 +579,9 @@ avtOpenGL3DTextureVolumeRenderer::Render(
     }
     glEnd();
 
-    // Set some GL parameters back to their expected values and free memory
-    glDepthMask(true);
-    glDisable(GL_TEXTURE_3D);
-    if (!alreadyBlending)
-        glDisable(GL_BLEND);
-    glEnable(GL_LIGHTING);
+    // Set some GL parameters back to their expected values
+    // and free memory
+    glPopAttrib();
 
     camera->Delete();
 }

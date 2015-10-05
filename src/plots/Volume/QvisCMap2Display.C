@@ -21,8 +21,6 @@
 //   This is a subclass of TextureRenderer that renders its cmap2 widgets into
 //   a texture that it then uses to texture a rectangle.
 //
-// Notes:      
-//
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 7 14:52:53 PST 2007
 //
@@ -31,12 +29,15 @@
 //   I changed the draw method so it does not do anything if there are no
 //   widgets to draw. This seems to fix a problem with drawing the empty widget.
 //
+//   Burlen Loring, Sun Oct  4 23:54:02 PDT 2015
+//   Save/restore blend function state
+//
 // ****************************************************************************
 
 class WidgetRenderer : public SLIVR::TextureRenderer
 {
 public:
-    WidgetRenderer(std::vector<SLIVR::ColorMap2*> &cmap2, int tex_mem) : 
+    WidgetRenderer(std::vector<SLIVR::ColorMap2*> &cmap2, int tex_mem) :
         SLIVR::TextureRenderer(0, 0, cmap2, tex_mem)
     {
     }
@@ -53,6 +54,8 @@ public:
 
     void draw()
     {
+        glPushAttrib(GL_COLOR_BUFFER_BIT|GL_ENABLE_BIT);
+
         // Find the number of widgets
         size_t nWidgets = 0;
         for(size_t c = 0; c < cmap2_.size(); ++c)
@@ -91,6 +94,8 @@ public:
             for(size_t w = 0; w < widgets.size(); ++w)
                  widgets[w]->draw();
         }
+
+        glPopAttrib();
     }
 };
 

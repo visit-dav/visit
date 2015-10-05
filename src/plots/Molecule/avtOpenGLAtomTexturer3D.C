@@ -159,12 +159,18 @@ TextureModeData::~TextureModeData()
 // Creation:   Mon Mar 27 17:18:28 PST 2006
 //
 // Modifications:
-//   
+//
+//   Burlen Loring, Sun Oct  4 23:37:20 PDT 2015
+//   Save restore blend func separate state
+//
 // ****************************************************************************
 
 bool
 TextureModeData::BeginSphereTexturing()
 {
+    glPushAttrib(GL_COLOR_BUFFER_BIT|GL_TEXTURE_BIT|
+        GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT);
+
     // Create the rextures
     if(!sphereTexturesDataCreated)
     {
@@ -189,16 +195,7 @@ TextureModeData::BeginSphereTexturing()
         sphereTexturesLoaded = true;
     }
 
-
-    //
-    // Get whether GL_BLEND is enabled.
-    //
-    glGetIntegerv(GL_BLEND, &isBlendEnabled);
-    if(isBlendEnabled == 0)
-        glEnable(GL_BLEND);
-
-    glGetIntegerv(GL_BLEND_SRC, &blendFunc0);
-    glGetIntegerv(GL_BLEND_DST, &blendFunc1);
+    // set the blend mode
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     //
@@ -208,23 +205,9 @@ TextureModeData::BeginSphereTexturing()
     glGetIntegerv(GL_DEPTH_TEST, &dt);
     if(dt == 1)
     {
-        // Get the current alpha test function
-        glGetIntegerv(GL_ALPHA_TEST, &isAlphaTestEnabled);
-        if(isAlphaTestEnabled)
-        {
-            glGetIntegerv(GL_ALPHA_TEST_FUNC, &alphaTestFunc);
-            glGetFloatv(GL_ALPHA_TEST_REF, &alphaTestRef);
-        }
-        else
-            glEnable(GL_ALPHA_TEST);
-
-        // Set the alpha testing mode and function.
+        glEnable(GL_ALPHA_TEST);
         glAlphaFunc(GL_GREATER, 0.7);
-
-        needAlphaTest = 1;
     }
-    else
-        needAlphaTest = 0;
 
     //
     // Turn on the texture
@@ -246,40 +229,30 @@ TextureModeData::BeginSphereTexturing()
 // Creation:   Mon Mar 27 17:19:08 PST 2006
 //
 // Modifications:
-//   
+//
+//   Burlen Loring, Sun Oct  4 23:37:20 PDT 2015
+//   Save restore blend func separate state
+//
 // ****************************************************************************
 
 void
 TextureModeData::EndSphereTexturing()
 {
-    if(needAlphaTest)
-    {
-        if(isAlphaTestEnabled)
-            glAlphaFunc(alphaTestFunc, alphaTestRef);
-        else
-            glDisable(GL_ALPHA_TEST);
-    }
-
-    if(isBlendEnabled == 0)
-        glDisable(GL_BLEND);
-
-    // Restore the old blend function.
-    glBlendFunc(blendFunc0, blendFunc1);
-
     glDisable(GL_TEXTURE_2D);
+    glPopAttrib();
 }
 
 // ****************************************************************************
 // Method: TextureModeData::MakeTextures
 //
-// Purpose: 
+// Purpose:
 //   Makes a sphere texture that we'll apply to imposter quads.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 27 17:19:31 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
