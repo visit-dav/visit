@@ -188,26 +188,6 @@ class VTKRENDERINGOPENGL_EXPORT vtkOSMesaGLExtensionManager : public vtkOpenGLEx
 public:
   vtkTypeMacro(vtkOSMesaGLExtensionManager, vtkObject);
   static vtkOSMesaGLExtensionManager *New();
-  void PrintSelf(ostream &os, vtkIndent indent);
-
-  // Description:
-  // Set/Get the render window to query extensions on.  If set to null,
-  // justs queries the current render window.
-  vtkRenderWindow* GetRenderWindow();
-  virtual void SetRenderWindow(vtkRenderWindow *renwin);
-
-  // Description:
-  // Updates the extensions string.
-  virtual void Update();
-
-  // Description:
-  // Returns a string listing all available extensions.  Call Update first
-  // to validate this string.
-  vtkGetStringMacro(ExtensionsString);
-
-  // Description:
-  // Returns true if the extension is supported, false otherwise.
-  virtual int ExtensionSupported(const char *name);
 
 //BTX
   // Description:
@@ -217,120 +197,16 @@ public:
     const char *fname);
 //ETX
 
-  // Description:
-  // Loads all the functions associated with the given extension into the
-  // appropriate static members of vtkgl. This method emits a warning if the
-  // requested extension is not supported. It emits an error if the extension
-  // does not load successfully.
-  virtual void LoadExtension(const char *name);
-
-  // Description:
-  // Returns true if the extension is supported and loaded successfully,
-  // false otherwise. This method will "fail silently/gracefully" if the
-  // extension is not supported or does not load properly. It emits neither
-  // warnings nor errors. It is up to the caller to determine if the
-  // extension loaded properly by paying attention to the return value.
-  virtual int LoadSupportedExtension(const char *name);
-
-
-  // Description:
-  // Loads all the functions associated with the given core-promoted extension
-  // into the appropriate static members of vtkgl associated with the OpenGL
-  // version that promoted the extension as a core feature. This method emits a
-  // warning if the requested extension is not supported. It emits an error if
-  // the extension does not load successfully.
-  //
-  // For instance, extension GL_ARB_multitexture was promoted as a core
-  // feature into OpenGL 1.3. An implementation that uses this
-  // feature has to (IN THIS ORDER), check if OpenGL 1.3 is supported
-  // with ExtensionSupported("GL_VERSION_1_3"), if true, load the extension
-  // with LoadExtension("GL_VERSION_1_3"). If false, test for the extension
-  // with ExtensionSupported("GL_ARB_multitexture"),if true load the extension
-  // with this method LoadCorePromotedExtension("GL_ARB_multitexture").
-  // If any of those loading stage succeeded, use vtgl::ActiveTexture() in
-  // any case, NOT vtgl::ActiveTextureARB().
-  // This method avoids the use of if statements everywhere in implementations
-  // using core-promoted extensions.
-  // Without this method, the implementation code should look like:
-  // \code
-  // int opengl_1_3=extensions->ExtensionSupported("GL_VERSION_1_3");
-  // if(opengl_1_3)
-  // {
-  //   extensions->LoadExtension("GL_VERSION_1_3");
-  // }
-  // else
-  // {
-  //  if(extensions->ExtensionSupported("GL_ARB_multitexture"))
-  //  {
-  //   extensions->LoadCorePromotedExtension("GL_ARB_multitexture");
-  //  }
-  //  else
-  //  {
-  //   vtkErrorMacro("Required multitexture feature is not supported!");
-  //  }
-  // }
-  // ...
-  // if(opengl_1_3)
-  // {
-  //  vtkgl::ActiveTexture(vtkgl::TEXTURE0)
-  // }
-  // else
-  // {
-  //  vtkgl::ActiveTextureARB(vtkgl::TEXTURE0_ARB)
-  // }
-  // \endcode
-  // Thanks to this method, the code looks like:
-  // \code
-  // int opengl_1_3=extensions->ExtensionSupported("GL_VERSION_1_3");
-  // if(opengl_1_3)
-  // {
-  //   extensions->LoadExtension("GL_VERSION_1_3");
-  // }
-  // else
-  // {
-  //  if(extensions->ExtensionSupported("GL_ARB_multitexture"))
-  //  {
-  //   extensions->LoadCorePromotedExtension("GL_ARB_multitexture");
-  //  }
-  //  else
-  //  {
-  //   vtkErrorMacro("Required multitexture feature is not supported!");
-  //  }
-  // }
-  // ...
-  // vtkgl::ActiveTexture(vtkgl::TEXTURE0);
-  // \endcode
-  virtual void LoadCorePromotedExtension(const char *name);
-
-  // Description:
-  // Similar to LoadCorePromotedExtension().
-  // It loads an EXT extension into the pointers of its ARB equivalent.
-  virtual void LoadAsARBExtension(const char *name);
 //BTX
 protected:
   vtkOSMesaGLExtensionManager();
   virtual ~vtkOSMesaGLExtensionManager();
 
-
-  int OwnRenderWindow;
-  char *ExtensionsString;
-
-  vtkTimeStamp BuildTime;
-
   virtual void ReadOpenGLExtensions();
-
-  // Description:
-  // Wrap around the generated vtkgl::LoadExtension to deal with OpenGL 1.2
-  // and its optional part GL_ARB_imaging. Also functions like
-  // glBlendEquation() or glBlendColor() are optional in OpenGL 1.2 or 1.3 and
-  // provided by the GL_ARB_imaging but there are core features in OpenGL 1.4.
-  virtual int SafeLoadExtension(const char *name);
 
 private:
   vtkOSMesaGLExtensionManager(const vtkOSMesaGLExtensionManager&); // Not implemented
   void operator=(const vtkOSMesaGLExtensionManager&); // Not implemented
-
-  vtkWeakPointer<vtkRenderWindow> RenderWindow;
 //ETX
 };
 
