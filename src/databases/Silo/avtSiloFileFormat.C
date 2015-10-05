@@ -1462,7 +1462,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
 // ****************************************************************************
 //  Programmer: Mark C. Miller (re-factored here from ReadDir()
+//
 //  Created: Wed Jun 17 10:42:42 PDT 2009
+//
 //  Modifications:
 //    Mark C. Miller, Thu Jun 18 20:55:49 PDT 2009
 //    Removed DBtoc* arg.
@@ -1478,6 +1480,11 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Reverted previous change. Moved init of 'metadataIsTimeVarying'
 //    out of this function & into CheckForTimeVaryingMetadata().
 //
+//    Eric Brugger, Wed Sep 30 13:47:14 PDT 2015
+//    I corrected a bug that caused "_meshtv_searchpath" to be ignored.
+//    I also added "_visit_searchpath" as a synonym for "_meshtv_searchpath"
+//    since "_visit_searchpath" is much more appropriate for VisIt.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
@@ -1490,7 +1497,6 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
         // The dbfile will probably change, so read in the meshtv_defvars and
         // meshtv_searchpath while we can.
         //
-        char *searchpath_str = *searchpath_strp;
         if (strcmp(dirname, topDir.c_str()) == 0)
         {
             codeNameGuess = GuessCodeNameFromTopLevelVars(dbfile);
@@ -1575,13 +1581,30 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                 }
             }
 
-            if (DBInqVarExists(dbfile, "_meshtv_searchpath"))
+            bool hadVisitSearchpath = false;
+            if (DBInqVarExists(dbfile, "_visit_searchpath"))
+            {
+                int    lsearchpath = DBGetVarLength(dbfile, "_visit_searchpath");
+                if (lsearchpath > 0)
+                {
+                    char *searchpath_str = new char[lsearchpath+1];
+                    DBReadVar(dbfile, "_visit_searchpath", searchpath_str);
+                    searchpath_str[lsearchpath] = '\0';
+                    *searchpath_strp = searchpath_str;
+                }
+                hadVisitSearchpath = true;
+            }
+
+            if (!hadVisitSearchpath &&
+                DBInqVarExists(dbfile, "_meshtv_searchpath"))
             {
                 int    lsearchpath = DBGetVarLength(dbfile, "_meshtv_searchpath");
                 if (lsearchpath > 0)
                 {
-                    searchpath_str = new char[lsearchpath+1];
+                    char *searchpath_str = new char[lsearchpath+1];
                     DBReadVar(dbfile, "_meshtv_searchpath", searchpath_str);
+                    searchpath_str[lsearchpath] = '\0';
+                    *searchpath_strp = searchpath_str;
                 }
             }
 
@@ -4328,6 +4351,12 @@ avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
 //
 //    Mark C. Miller, Wed Aug 19 11:21:37 PDT 2009
 //    Reformatted with TOC_ENTRY macros to reduce size.
+//
+//    Eric Brugger, Wed Sep 30 13:47:14 PDT 2015
+//    I corrected a bug that caused "_meshtv_searchpath" to be ignored.
+//    I also added "_visit_searchpath" as a synonym for "_meshtv_searchpath"
+//    since "_visit_searchpath" is much more appropriate for VisIt.
+//
 // ****************************************************************************
 #define COPY_TOC_ENTRY(NM)                        \
     int      n ## NM = toc->n ## NM;                    \
@@ -4446,7 +4475,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         //
         // Create the new list of directories.
         //
-        dir_names = new char*[ndir];
+        dir_names = new char*[max_ndir];
         ndir = 0;
         int searchpath_strlen = strlen(searchpath_str);
         for (i = 0; i < searchpath_strlen; i++)
@@ -4468,6 +4497,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         }
           
         delete [] searchpath_str;
+        searchpath_str = NULL;
     }
 
     //

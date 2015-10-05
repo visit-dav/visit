@@ -47,6 +47,9 @@ import os, string, sys, subprocess
 #   list are added at the beginning of the list instead of the end of the
 #   list so that argument passing for scripts works properly.
 #
+#   Eric Brugger, Thu Oct  1 12:14:26 PDT 2015
+#   I added add_visit_searchpath.
+#
 ###############################################################################
 
 # -----------------------------------------------------------------------------
@@ -143,6 +146,7 @@ forceversion_set = 0
 visitargs        = []
 
 programs = (
+"-add_visit_searchpath",
 "-convert",
 "-makemili",
 "-mpeg2encode",
