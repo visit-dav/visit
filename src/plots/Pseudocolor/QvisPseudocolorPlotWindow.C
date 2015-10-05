@@ -403,7 +403,8 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     opacityType->addItem(tr("Fully opaque"),0);
     opacityType->addItem(tr("Constant"),2);
     opacityType->addItem(tr("Ramp"),3);
-    opacityType->addItem(tr("Variable range"),4);
+    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
+    // opacityType->addItem(tr("Variable range"),4);
     connect(opacityType, SIGNAL(activated(int)),
             this, SLOT(opacityTypeChanged(int)));
     colorLayout->addWidget(new QLabel(tr("Opacity"), central), gRow,0);
@@ -548,7 +549,8 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     // Create the lineSyle widget.
 
     // Line
-    lineLayout->addWidget(new QLabel(tr("Line type"), central), 0, 0, Qt::AlignRight);
+    lineTypeLabel = new QLabel(tr("Line type"), central);
+    lineLayout->addWidget(lineTypeLabel, 0, 0, Qt::AlignRight);
 
     lineType = new QComboBox(central);
     lineType->addItem(tr("Lines"), 0);
@@ -557,6 +559,9 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     connect(lineType, SIGNAL(activated(int)), this, SLOT(lineTypeChanged(int)));
     lineLayout->addWidget(lineType, 0, 1);
 
+    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
+    lineTypeLabel->hide();
+    lineType->hide();
 
     // Line style / width
     lineStyleLabel = new QLabel(tr("Line style"), central);
@@ -577,7 +582,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     lineLayout->addWidget(lineWidth, 1, 3);
 
 
-    //--tube/ribbon
+    // Tube/ribbon
     tubeDisplayDensityLabel = new QLabel(tr("Display density"), central);
     lineLayout->addWidget(tubeDisplayDensityLabel, 1, 3, Qt::AlignRight);
 
@@ -602,7 +607,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     connect(tubeRadiusSizeType, SIGNAL(activated(int)), this, SLOT(tubeRadiusSizeTypeChanged(int)));
     lineLayout->addWidget(tubeRadiusSizeType, 1, 2);
 
-    //Tube vary radius.
+    // Tube vary radius.
     tubeRadiusVary = new QCheckBox(tr("Vary radius"), central);
     connect(tubeRadiusVary, SIGNAL(toggled(bool)), this, SLOT(tubeRadiusVaryChanged(bool)));
     lineLayout->addWidget(tubeRadiusVary, 2, 0);
@@ -643,8 +648,8 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     lineLayout->addWidget(splitter, 3, 0, 1, 5);
 
 
-
-    lineLayout->addWidget(new QLabel(tr("Show end points"), central), 4, 0);
+    endPointTypeLabel = new QLabel(tr("Show end points"), central);
+    lineLayout->addWidget(endPointTypeLabel, 4, 0);
 
     endPointType = new QComboBox(central);
     endPointType->addItem(tr("None"), 0);
@@ -654,6 +659,9 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     connect(endPointType, SIGNAL(activated(int)), this, SLOT(endPointTypeChanged(int)));
     lineLayout->addWidget(endPointType, 4, 1);
 
+    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
+    endPointTypeLabel->hide();
+    endPointType->hide();
 
     endPointStyleLabel = new QLabel(tr("Style"), central);
     lineLayout->addWidget(endPointStyleLabel, 5, 0, Qt::AlignRight);
@@ -724,7 +732,8 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 
 
     // Create the rendering style options
-    renderingLayout->addWidget(new QLabel(tr("Draw objects as"), central), 0,0);
+    renderLabel = new QLabel(tr("Draw objects as"), central);
+    renderingLayout->addWidget(renderLabel, 0,0);
 
     // Create the rendering buttons
     renderSurfaces = new QCheckBox(tr("Surfaces"), central);
@@ -741,6 +750,12 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     renderingLayout->addWidget( renderPoints, 0,3);
     connect(renderPoints, SIGNAL(toggled(bool)),
             this, SLOT(renderPointsChanged(bool)));
+
+    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
+    renderLabel->hide();
+    renderSurfaces->hide();
+    renderWireframe->hide();
+    renderPoints->hide();
 
     // Create the smoothing options
     renderingLayout->addWidget(new QLabel(tr("Smoothing"), central), 1,0);
