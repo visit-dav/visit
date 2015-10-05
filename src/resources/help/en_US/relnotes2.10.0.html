@@ -22,11 +22,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Operator_changes">Changes to operators</a></li>
-  <li><a href="#Expression_changes">Changes to expressions</a></li>
-  <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Configuration_changes">Configuration changes</a></li>
-  <li><a href="#Build_Features">Changes to build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
 
@@ -34,10 +31,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">General features added in version 2.10</font></b></p>
 <ul>
   <li>VisIt's Simulation window was enhanced so it can display up to 500 simulation commands.</li>
-  <li>VisIt was enhanced to launch parallel jobs using sbatch/ibrun.</li>
-  <li>Added a new SPH Resample operator</li>
-  <li></li>
-  <li></li>
+  <li>VisIt was enhanced to enable launching parallel jobs using sbatch/ibrun.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -54,7 +48,7 @@ VisItExportDatabaseWithOptions(filebase, "VTK_1.0", vars, opts);
  </p>
  </li>
 
-  <li><p>VisIt's export mechanism has been enhanced with support for <i>"Write Groups"</i>. When writing out data on HPC systems independent file writes often provides the best performance up to around a few thousand MPI ranks. After that, file system limitations begin to emerge and it makes sense to coordinate access to the parallel file system to get overall faster performance. Write groups are an optional feature provided in the <b>Export</b> window that enable VisIt to partition its MPI ranks into smaller groups of user-specified size. The MPI ranks within each group then coordinate their access to the file system. This can reduce contention and improve overall performance. On systems such as NERSC's edison machine, partitioning a VisIt job into groups of 48-96 processors can greatly improve export performance. The optimal size of the write group depends on the size of the VisIt job and the amount of data being written.</p>
+  <li><p>VisIt's export mechanism has been enhanced with support for <i>"Write Groups"</i>. When writing out data on HPC systems, independent file writes often provide the best performance up to around a few thousand MPI ranks. After that, file system limitations begin to emerge and it makes sense to coordinate access to the parallel file system to get overall faster performance. Write groups are an optional feature provided in the <b>Export</b> window that enable VisIt to partition its MPI ranks into smaller groups of user-specified size. The MPI ranks within each group then coordinate their access to the file system. This can reduce contention and improve overall performance. On systems such as NERSC's edison machine, partitioning a VisIt job into groups of 48-96 processors can greatly improve export performance. The optimal size of the write group depends on the size of the VisIt job and the amount of data being written.</p>
 <p>
 Some file format plug-ins can tell VisIt that they want geometry from various MPI ranks aggregated on rank 0 so a single file can be written. At scale, writing aggregating geometry to a single MPI rank is extremely costly and VisIt risks running out of memory. For formats that aggregate data, write groups improve scalability by aggregating data onto the leader rank of each write group, which then writes out the data to the file format. This will result in more files but exports will be faster.
 </p>
@@ -77,7 +71,7 @@ VisIt_OptionList_free(opts);
 </pre></code></font></p>
  </li>
 
-  <li>Libsim's VisIt_VariableData object was extended so you can optionally supply it with multiple data arrays, each representing a separate component of data. This enhancement permits VisIt to accept non-contiguous simulation data without first converting that data to a contiguous representation. This is a particularly useful feature for array-of-structure data structures and will reduce Libsim's memory overhead.
+  <li>Libsim's <i>VisIt_VariableData</i> object was extended so you can optionally supply it with multiple data arrays, each representing a separate component of data. This enhancement permits VisIt to accept non-contiguous simulation data without first converting that data to a contiguous representation. This is a particularly useful feature for array-of-structure data structures and will reduce Libsim's memory overhead.
 Data arrays using the new <i>setArrayData</i> functions can have one or more components, which have their own base address and associated offset and stride. All of the previous <i>setData</i> functions continue to work and remain the preferred method for passing contiguous data to Libsim. The flexibility offered by the new <i>setArrayData</i> functions allows simulation data to be used directly (zero-copy) in situations that would previously have required a copy of the data.<br>
 
 <p><b>Structure of Arrays Example:</b><br>
@@ -162,57 +156,25 @@ VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice
   </ul> 
   <li>The Nek5000 reader had an issue with #std 8 data files (double size data). The data dimensions would be read wrong. This has been fixed.</li>
   <li>VisIt can now read <i>.vtm</i> VTK multiblock files.  Exporting multi-block data as VTK XML format will now write out <i>.vtm</i> files instead of <i>.visit</i> for grouping the indidividual blocks.</li>
-  <li>The Pixie plugin now supports ghost zones (thanks to Jean Favre).</li>
+  <li>The Pixie reader now supports ghost zones (thanks to Jean Favre).</li>
   <li>VisIt can more reliably export data to Tecplot format in parallel.</li>
   <li>VisIt can export XYZ format data in parallel.</li>
   <li>VisIt's Tecplot reader can now export datasets that use other than single floating point precision.</li>
   <li>The Mili reader now returns the time information so that it can be displayed in the database legend, the time slider, and queries over time.</li>
-  <li><p>A bug was corrected in the Silo reader that caused "_meshtv_searchpath" to be ignored. Support for reading "_visit_searchpath" as a synonym for "_meshtv_searchpath" was also added since that name is much more appropriate for VisIt. The utility <i>add_visit_searchpath</i> was added that adds a "_visit_searchpath" to the root directory of a Silo file. The usage for the utility is:</p><p><pre>add_visit_searchpath filename [searchpath]</pre></p><p>where filename is the name of the Silo file to add the search path to and searchpath is the search path to add. If no search path is specified it will add an empty search path, causing VisIt to only look for variables at the root level of the Silo file.</p></li>
+  <li>A bug was corrected in the Silo reader that caused "_meshtv_searchpath" to be ignored. Support for reading "_visit_searchpath" as a synonym for "_meshtv_searchpath" was also added since that name is much more appropriate for VisIt. The utility <i>add_visit_searchpath</i> was added that adds a "_visit_searchpath" to the root directory of a Silo file. The usage for the utility is:<p><pre>add_visit_searchpath filename [searchpath]</pre></p><p>where filename is the name of the Silo file to add the search path to and searchpath is the search path to add. If no search path is specified it will add an empty search path, causing VisIt to only look for variables at the root level of the Silo file.</p></li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.10</font></b></p>
 <ul>
   <li>A bug was fixed with the scatter plot, where VisIt would give an error if it generated any empty domains.</li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 2.10</font></b></p>
 <ul>
   <li>A bug was fixed with several of the operators, where VisIt would give an error if the operator generated any empty domains. These include the CoordSwap, EllipsoidSlice, Extrude, Isovolume, SphereSlice and ThreeSlice operators.</li>
-  <li></li>
-  <li></li>
-  <li></li>
-</ul>
-
-<a name="Expression_changes"></a>
-<p><b><font size="4">Changes to VisIt's expression language in version 2.10</font></b></p>
-<ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-</ul>
-
-<a name="Query_changes"></a>
-<p><b><font size="4">Changes to VisIt's picks and queries in version 2.10</font></b></p>
-<ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-</ul>
-
-<a name="PICS_changes"></a>
-<p><b><font size="4">Changes to VisIt's PICS version in 2.10.0</font></b></p>
-<ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>Added a new SPH Resample operator.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -230,7 +192,7 @@ VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice
   <li>Fixed a case where VisIt's Recenter expression could SEGV if it encountered some domains with zero points and/or zero cells.</li>
   <li>The internal launcher now adds unknown arguments before the "-s script_name" argument and not between the script name and the script arguments.</li>
   <li>The advanced multi-window image save capability was modified to initialize the background to white.</li>
-  <li>Interactive connections to simulations are unable to save images via VisItSaveWindow() because the simulation was always passing a server output directory and interactive saves are currently done client-side. The code was modified so the simulation may opt to output to the current directory and that will save files client-side where VisIt was invoked.</li>
+  <li>Interactive connections to simulations are unable to save images via <i>VisItSaveWindow()</i> because the simulation was always passing a server output directory and interactive saves are currently done client-side. The code was modified so the simulation may opt to output to the current directory and that will save files client-side where VisIt was invoked.</li>
   <li>Deleting multiple plots using Libsim's <i>VisItDeleteActivePlots()</i> function would crash when used in batch mode.</li>
 </ul>
 
@@ -238,27 +200,12 @@ VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice
 <p><b><font size="4">Configuration changes in version 2.10</font></b></p>
 <ul>
 <li>The LLNL RZ and CZ only host profile options were removed from visit-install since it is confusing to users and is only useful when installing VisIt on the LLNL RZ and CZ networks, which is only done by developers. The LLNL RZ only host profile option was removed from the Windows installer since that is also confusing to users and isn't useful to anyone.</li>
-<li></li>
-<li></li>
-<li></li>
-</ul>
-
-<a name="Build_Features"></a>
-<p><b><font size="4">Build features added in version 2.10</font></b></p>
-<ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.10</font></b></p>
 <ul>
   <li>Adding a 'd' character to the argument to the -debug command-line option (e.g. -debug 3d) will cause level 1 debug logs, and only level 1 debug logs, to be decorated with __FILE__ and __LINE__.</li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
