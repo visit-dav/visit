@@ -2221,30 +2221,27 @@ bool avtParallelContext::GetListToRootProc(std::vector<std::string> &vars, int t
 
 template <class T>
 static void
-CollectArraysOnRootProc(T *&receiveBuf, int *&receiveCounts,
-    T *sendBuf, int sendCount
+CollectArraysOnRank(int rank, int nProc, T *&receiveBuf, int *&receiveCounts,
+    T *sendBuf, int sendCount,
 #ifdef PARALLEL
-    , MPI_Datatype dataType
-    , MPI_Comm communicator
+    MPI_Datatype dataType,
+    MPI_Comm communicator,
 #endif
-    )
+    int root)
 {
 #ifdef PARALLEL
-    int rank = PAR_Rank();
-    int nProc = PAR_Size();
-
     // Determine the receive counts.
     receiveCounts = NULL;
-    if (rank == 0)
+    if (rank == root)
     {
         receiveCounts = new int[nProc];
     }
     MPI_Gather(&sendCount, 1, MPI_INT, receiveCounts, 1, MPI_INT,
-               0, communicator);
+               root, communicator);
 
     // Determine the processor offsets.
     int *procOffset = NULL;
-    if (rank == 0)
+    if (rank == root)
     {
         procOffset = new int[nProc];
         procOffset[0] = 0;
@@ -2254,7 +2251,7 @@ CollectArraysOnRootProc(T *&receiveBuf, int *&receiveCounts,
 
     // Allocate the receive buffer.
     receiveBuf = NULL;
-    if (rank == 0)
+    if (rank == root)
     {
         // Determine the size of the receive buffer.
         int nReceiveBuf = 0;
@@ -2266,9 +2263,9 @@ CollectArraysOnRootProc(T *&receiveBuf, int *&receiveCounts,
     }
 
     MPI_Gatherv(sendBuf, sendCount, dataType, receiveBuf,
-                receiveCounts, procOffset, dataType, 0, communicator);
+                receiveCounts, procOffset, dataType, root, communicator);
 
-    if (rank == 0)
+    if (rank == root)
     {
         delete [] procOffset;
     }
@@ -2283,25 +2280,36 @@ CollectArraysOnRootProc(T *&receiveBuf, int *&receiveCounts,
 }
 
 void
+avtParallelContext::CollectIntArraysOnRank(int *&receiveBuf, int *&receiveCounts,
+    int *sendBuf, int sendCount, int root)
+{
+    CollectArraysOnRank<int>(Rank(), Size(), receiveBuf, receiveCounts, sendBuf, sendCount,
+#ifdef PARALLEL
+                             MPI_INT, this->GetCommunicator(),
+#endif
+                             root);
+}
+
+void
 avtParallelContext::CollectIntArraysOnRootProc(int *&receiveBuf, int *&receiveCounts,
     int *sendBuf, int sendCount)
 {
-    CollectArraysOnRootProc<int>(receiveBuf, receiveCounts, sendBuf, sendCount
+    CollectArraysOnRank<int>(Rank(), Size(), receiveBuf, receiveCounts, sendBuf, sendCount,
 #ifdef PARALLEL
-                                 , MPI_INT, this->GetCommunicator()
+                             MPI_INT, this->GetCommunicator(),
 #endif
-                                );
+                             0);
 }
 
 void
 avtParallelContext::CollectDoubleArraysOnRootProc(double *&receiveBuf, int *&receiveCounts,
     double *sendBuf, int sendCount)
 {
-    CollectArraysOnRootProc<double>(receiveBuf, receiveCounts, sendBuf, sendCount
+    CollectArraysOnRank<double>(Rank(), Size(), receiveBuf, receiveCounts, sendBuf, sendCount,
 #ifdef PARALLEL
-                                    , MPI_DOUBLE, this->GetCommunicator()
+                                MPI_DOUBLE, this->GetCommunicator(),
 #endif
-                                   );
+                                0);
 }
 
 // ****************************************************************************
