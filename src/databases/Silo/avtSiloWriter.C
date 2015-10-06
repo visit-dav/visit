@@ -491,6 +491,9 @@ avtSiloWriter::OpenFile(const string &stemname, int nb)
 //    I modified the writer to handle the case where the meshes in a
 //    multimesh or multivar were not all of the same type.
 //
+//    Brad Whitlock, Tue Oct  6 14:33:41 PDT 2015
+//    Use the right mesh name.
+//
 // ****************************************************************************
 
 void
@@ -499,10 +502,9 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
                             const vector<string> &vectors,
                             const vector<string> &materials)
 {
-    const avtMeshMetaData *mmd = md->GetMesh(0);
-    meshname = mmd->name;
+    meshname = GetMeshName(md);
     matname = (materials.size() > 0 ? materials[0] : "");
-
+    
     // store args away for eventual use in CloseFile
     headerDbMd      = md;
     headerScalars   = scalars;
@@ -1152,7 +1154,7 @@ avtSiloWriter::CloseFile(void)
 //    I changed the code so it will write the root file on a rank that has 
 //    output data before. This prevents a crash when writing the root file 
 //    when using write groups and rank 0 in the global communicator did not
-//    output any data.
+//    output any data. Use the write mesh name.
 //
 // ****************************************************************************
 
@@ -1194,7 +1196,7 @@ avtSiloWriter::WriteRootFile()
             dbfile = DBCreate(filename, 0, DB_LOCAL, 
                          "Silo file written by VisIt", driver);
 
-        const avtMeshMetaData *mmd = headerDbMd->GetMesh(0);
+        const avtMeshMetaData *mmd = headerDbMd->GetMesh(meshname);
         ConstructMultimesh(dbfile, mmd, globalMeshtypes);
         for (i = 0 ; i < headerScalars.size() ; i++)
             ConstructMultivar(dbfile, headerScalars[i], mmd, globalMeshtypes);
