@@ -195,6 +195,7 @@ VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice
   <li>The advanced multi-window image save capability was modified to initialize the background to white.</li>
   <li>Interactive connections to simulations are unable to save images via <i>VisItSaveWindow()</i> because the simulation was always passing a server output directory and interactive saves are currently done client-side. The code was modified so the simulation may opt to output to the current directory and that will save files client-side where VisIt was invoked.</li>
   <li>Deleting multiple plots using Libsim's <i>VisItDeleteActivePlots()</i> function would crash when used in batch mode.</li>
+  <li>Silo export on a file that contained more than one mesh can produce output that contains the wrong mesh name.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
