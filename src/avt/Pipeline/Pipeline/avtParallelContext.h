@@ -181,6 +181,7 @@ public:
 
     bool    GetListToRootProc(std::vector<std::string> &, int);
 
+    void    CollectIntArraysOnRank(int *&, int *&, int *, int, int root);
     void    CollectIntArraysOnRootProc(int *&, int *&, int *, int);
     void    CollectDoubleArraysOnRootProc(double *&, int *&, double *, int);
 

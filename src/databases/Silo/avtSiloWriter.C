@@ -1148,33 +1148,44 @@ avtSiloWriter::CloseFile(void)
 //    I moved most of the code from CloseFile to here. This method will be
 //    allowed to do collective communication on the entire set of MPI ranks.
 //
+//    Brad Whitlock, Tue Oct  6 12:52:59 PDT 2015
+//    I changed the code so it will write the root file on a rank that has 
+//    output data before. This prevents a crash when writing the root file 
+//    when using write groups and rank 0 in the global communicator did not
+//    output any data.
+//
 // ****************************************************************************
 
 void
 avtSiloWriter::WriteRootFile()
 {
-    size_t i;
- 
-    const avtMeshMetaData *mmd = headerDbMd->GetMesh(0);
-
-    if (nblocks == 1)
-    {
+    int writerRank = 0;
+#ifdef PARALLEL
+    // NOTE: When we have write groups, the rank 0 process does not necessarily
+    //       have the metadata needed to write data. In that case, let's figure
+    //       out a different rank to write the root file.
+    //
+    //       Take the maximum rank with data.
+    writerRank = (headerDbMd == NULL) ? -1 : writeContext.Rank();
+    writerRank = writeContext.UnifyMaximumValue(writerRank);
+    if(writerRank == -1)
         return;
-    }
+#endif
 
     // Determine the meshtypes of the all the meshes.
     int *globalMeshtypes = NULL;
     int *globalNMesh = NULL;
+    writeContext.CollectIntArraysOnRank(globalMeshtypes, globalNMesh,
+                                        meshtypes, nmeshes, writerRank);
 
-    writeContext.CollectIntArraysOnRootProc(globalMeshtypes, globalNMesh,
-                                            meshtypes, nmeshes);
-
-    if (writeContext.Rank() == 0)
+    if (writeContext.Rank() == writerRank && nblocks > 1)
     {
+        debug5 << "Writing Silo root file on rank " << writerRank << endl;
+
+        size_t i;
         char filename[1024];
         string fname = dir + stem;
         sprintf(filename, "%s.silo", fname.c_str());
-
 
         DBfile *dbfile;
         if (singleFile)
@@ -1183,6 +1194,7 @@ avtSiloWriter::WriteRootFile()
             dbfile = DBCreate(filename, 0, DB_LOCAL, 
                          "Silo file written by VisIt", driver);
 
+        const avtMeshMetaData *mmd = headerDbMd->GetMesh(0);
         ConstructMultimesh(dbfile, mmd, globalMeshtypes);
         for (i = 0 ; i < headerScalars.size() ; i++)
             ConstructMultivar(dbfile, headerScalars[i], mmd, globalMeshtypes);
