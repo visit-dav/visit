@@ -3,7 +3,7 @@
   <title><![CDATA[What's New in VisIt]]></title>
   <IM>LLNL-WEB-672560</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[June 15, 2015]]></lastchanged>
+  <lastchanged><![CDATA[October 12, 2015]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,21 +22,19 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>June, 2015 - VisIt 2.9.2 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.9.2, which can be <a href="simulation/computer-codes/visit/downloads">downloaded from this site</a>, is primarily a bug-fix release that resolves over a dozen important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.9.2">VisIt 2.9.2 Release Notes</a>.</p>
-<h2>May, 2015 - VisIt 2.9.1 released</h2>
-<p>VisIt 2.9.1 is primarily a bug-fix release that resolves twenty important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.9.1">VisIt 2.9.1 Release Notes</a>.</p>
-<h2>March, 2015 - VisIt 2.9 released</h2>
-<p>VisIt 2.9 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.9.0">VisIt 2.9 Release Notes</a>.</p>
-<h4>1.  VisIt was ported to the BlueGene/Q platform.</h4>
-<p>The <i>build_visit_BGQ</i> script can be used to build a statically linked version of VisIt's server components for use on BlueGene/Q.</p>
-<h4>2.  A number of enhancements were made to Libsim to better support batch oriented in situ visualization.</h4>
+<h2>October, 2015 - VisIt 2.10 released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.10, which can be <a href="simulation/computer-codes/visit/downloads">downloaded from this site</a>, contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.10.0">VisIt 2.10 Release Notes</a>.</p>
+<h4>1.  Many enhancements were made to Libsim to support batch visualization and analysis.</h4>
 <ul>
-<li>Libsim was enhanced so it provides a <i>VisItRestoreSession()</i> function which can be used to set up visualizations for a simulation that is run in batch mode. VisIt can be run normally to connect interactively to the simulation to set up plots and save a session file. The session file that gets created can be used to set up plots for subsequent batch-only simulation runs. Once plots have been set up via <i>VisItRestoreSession()</i>, the <i>VisItSaveWindow()</i> function can be used to save images.</li>
-<li>Libsim was enhanced so it provides a <i>VisItExportDatabase()</i> function which can be used to export the active plots in a simulation that is run in batch mode. This function enables users to automatically export processed geometry from libsim.</li>
+<li>A new <i>VisItExportDatabaseWithOptions()</i> function was added to Libsim that lets you specify options to the writer.</li>
+<li>VisIt's export mechanism was enhanced to support "Write Groups", which will enable higher write performance to parallel file systems when using thousands of tasks.</li>
+<li>Libsim's <i>VisIt_VariableData</i> was extended so you can optionally supply it with multiple data arrays, permitting zero-copying of data in situations where it wasn't possible before.</li>
+<li>Many more Libsim enhancements.</li>
 </ul>
-<h4>3.  VisIt was integrated with <a href="https://www.seedme.org/">SeedMe.org</a>.</h4>
-<p>It is now possible to easily share your visualizations results via the SeedMe python module, which is now included in VisIt's CLI. See the <a href="http://visitusers.org/index.php?title=Seedme">Seedme examples wiki page</a> on visitusers.org, the <a href="https://www.seedme.org/documentation/programmatic-python-usage"> SeedMe programatic guide</a> and the <a href="https://www.seedme.org/cli-guide">SeedMe command line guide</a> for examples.</p>
+<h4>2.  Many of the database readers were enhanced.</h4>
+<p>Many enhancements and bug fixes were made to the PLOT3D, Nek5000, VTK, Pixie, Mili and Silo readers for reading data. Enhancements were also made to the Tecplot and XYZ readers for exporting data.</p>
+<h4>3.  The <i>Set save options</i> window was overhauled.</h4>
+<p>The options for setting standard save options and advanced multi-window save options have been re-organized into a much simpler interface and a number of bugs in the window have been corrected.</p>
 
 [Go to <a href="simulation/computer-codes/visit/releases">Archive of Releases</a>]
 
