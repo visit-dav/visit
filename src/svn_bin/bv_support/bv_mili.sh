@@ -23,12 +23,12 @@ echo ""
 
 function bv_mili_info
 {
-export MILI_FILE=${MILI_FILE:-"Mili-13.1.1-patch.tar.gz"}
-export MILI_VERSION=${MILI_VERSION:-"13.1.1-patch"}
-export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"13.1.1-patch"}
+export MILI_FILE=${MILI_FILE:-"mili_15_1.tar.gz"}
+export MILI_VERSION=${MILI_VERSION:-"15.1"}
+export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"15.1"}
 export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
-export MILI_MD5_CHECKSUM=""
-export MILI_SHA256_CHECKSUM=""
+export MILI_MD5_CHECKSUM="115c6aaf742f151aea6c644d719ee067"
+export MILI_SHA256_CHECKSUM="564c50b003aded7ec33977f8192fbf6ec2f5dc22a41c9551a8fa492c484031bf"
 }
 
 function bv_mili_print
@@ -290,7 +290,7 @@ function build_mili
             warn "Mili build failed.  Giving up"
             return 1
         fi
-    elif [[ ${MILI_VERSION} == 13.1.1-patch ]] ; then
+    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 ]] ; then
         cd MILI-*-*
         make opt fortran=false
     fi
@@ -309,7 +309,7 @@ function build_mili
         cp mili.h mili_enum.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
         cp mili.h mili_enum.h misc.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    elif [[ ${MILI_VERSION} == 13.1.1-patch ]] ; then
+    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 ]] ; then
         cp src/{mili.h,mili_enum.h,misc.h}  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     fi
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
@@ -326,7 +326,7 @@ function build_mili
         fi
         cp libmili.$SO_EXT "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     else
-        if [[ ${MILI_VERSION} != 13.1.1-patch ]] ; then
+        if [[ ${MILI_VERSION} != 13.1.1-patch && ${MILI_VERSION} != 15.1 ]] ; then
             ar -rc libmili.a *.o 
             if [[ $? != 0 ]] ; then
               warn "Mili install failed.  Giving up"
