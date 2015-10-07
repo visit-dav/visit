@@ -170,12 +170,17 @@
 
         <!-- optional libraries -->
         <optional>
+            <lib name="boost"/>
             <lib name="szip"/>
             <lib name="netcdf"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
+            <lib name="mpich"/>
             <lib name="pyqt"/>
             <lib name="uintah"/>
+            <lib name="damaris"/>
+            <lib name="xercesc"/>
+            <lib name="xsd"/>
         </optional>
 
         <!-- thirdparty flag -->
@@ -189,10 +194,15 @@
         </group>
 
         <group name="optional" comment="All optional libraries">
+            <lib name="boost"/>
             <lib name="hdf5"/>
             <lib name="netcdf"/>
+            <lib name="mpich"/>
             <lib name="szip"/>
             <lib name="uintah"/>
+            <lib name="damaris"/>
+            <lib name="xercesc"/>
+            <lib name="xsd"/>
         </group>
 
 

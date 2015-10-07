@@ -386,6 +386,9 @@
 #    Kathleen Biagas, Tue Apr 14 14:56:12 MST 2015
 #    Added find_file for MS HPC Scheduler.
 #
+#    Matthieu Dorier  via Cyrus Harrison, Thu Aug 20 09:07:08 PDT 2015
+#    Added Damaris support.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -777,6 +780,7 @@ VISIT_3RDPARTY_VAR(CCMIO_DIR     "Path containing the CCMIO library's include an
 VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
 VISIT_3RDPARTY_VAR(CGNS_DIR      "Path containing the CGNS library's include and lib")
 VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
+VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
 VISIT_3RDPARTY_VAR(EAVL_DIR      "Path containing the eavl library's include and lib")
 VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the Fastbit library's include and lib")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
@@ -802,6 +806,8 @@ VISIT_3RDPARTY_VAR(UINTAH_DIR    "Path containing the Uintah library's include a
 VISIT_3RDPARTY_VAR(VISUS_DIR     "Path containing the Visus library's include and lib")
 VISIT_3RDPARTY_VAR(XDMF_DIR      "Path containing the Xdmf library's include and lib")
 VISIT_3RDPARTY_DEP(XDMF_LIBDEP   "Xdmf library dependencies")
+VISIT_3RDPARTY_VAR(XERCESC_DIR   "Path containing the Xerces-C library's include and lib")
+VISIT_3RDPARTY_VAR(XSD_DIR       "Path containing the XSD library's include and lib")
 VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include and lib")
 VISIT_3RDPARTY_VAR(MANTA_DIR     "Path containing the Manta library's include and lib")
 VISIT_3RDPARTY_VAR(ZLIB_DIR      "Path containing the zlib library's include and lib")
@@ -1037,6 +1043,10 @@ IF(NEKTAR++_FOUND)
     SET(HAVE_LIBNEKTAR++ 1)
 ENDIF(NEKTAR++_FOUND)
 
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItDamaris.cmake)
+IF(DAMARIS_FOUND)
+    SET(HAVE_DAMARIS 1)
+ENDIF(DAMARIS_FOUND)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItBoost.cmake)
 IF(BOOST_FOUND)
