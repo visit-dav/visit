@@ -323,6 +323,7 @@ public:
     void SetStartServerCallback(ConnectCallback *cb, void *data);
     void SetConnectCallback(ConnectCallback *cb, void *data);
     void SetProgressCallback(bool (*cb)(void *, int), void *data);
+    void GetProgressCallback(bool (*cb)(void *, int), void *data);
 
     // Used to poke metadata into here if the mdserver has incomplete metadata
     void SetOpenFileMetaData(const avtDatabaseMetaData*, int timeState);
