@@ -145,10 +145,22 @@ function build_boost
               iostreams thread date_time filesystem \
               system program_options regex"
 
-        build_libs="$build_libs --with-libraries=\"iostreams,thread,date_time,filesystem,system,program_options,regex\" "
+        build_libs="iostreams,thread,date_time,filesystem,system,program_options,regex"
+    fi
+
+    if [[ "$DO_DAMARIS" == "yes" ]] ; then
+        libs="$libs \
+              date_time system filesystem"
+        if [[ "$build_libs" != ""  ]] ; then
+          build_libs="$build_libs,date_time,system,filesystem"
+        else
+          build_libs="date_time,system,filesystem"
+        fi
     fi
 
     if [[ "$build_libs" != ""  ]] ; then
+
+        build_libs=" --with-libraries=\"$build_libs\" "
 
         info "Configuring BOOST . . . $build_libs"
 
