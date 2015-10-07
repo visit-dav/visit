@@ -311,7 +311,7 @@ then
    if [ $test = no ]
    then
       cp /home/visit/ubuntu1104_64/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-ubuntu11.tar.gz
-      cp /home/visit/ubuntu1104_64/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-ubuntu11-wmesa.tar.gz
+      cp /home/visit/ubuntu1104_64/visitbuild/visit$ver2.linux-x86_64-wmesa.tar.gz visit$ver2.linux-x86_64-ubuntu11-wmesa.tar.gz
       scp ubuntu1104_64 ubuntu1104_64_install
       chmod 750 ubuntu1104_64_install;./ubuntu1104_64_install
    fi
@@ -345,6 +345,7 @@ then
    if [ $test = no ]
    then
       cp /home/visit/ubuntu1404_64/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-ubuntu14.tar.gz
+      cp /home/visit/ubuntu1404_64/visitbuild/visit$ver2.linux-x86_64-wmesa.tar.gz visit$ver2.linux-x86_64-ubuntu14-wmesa.tar.gz
       scp ubuntu1404_64 ubuntu1404_64_install
       chmod 750 ubuntu1404_64_install;./ubuntu1404_64_install
    fi
