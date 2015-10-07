@@ -353,9 +353,10 @@ avtVTKWriter::WriteRootFile()
                 {
                     MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, sizeTag,
                              writeContext.GetCommunicator(), &stat2);
-                    char *str = new char[size];
+                    char *str = new char[size+1];
                     MPI_Recv(str, size, MPI_CHAR, stat.MPI_SOURCE, dataTag,
                              writeContext.GetCommunicator(), &stat2);
+                    str[size] = '\0';
                     fileNames.push_back(str);
                     delete [] str;
                 }
