@@ -322,11 +322,59 @@ avtVTKWriter::CloseFile(void)
 //    Kathleen Biagas, Tue Sep  1 08:58:23 PDT 2015
 //    Create 'vtm' file for multi-block XML.
 //
+//    Kathleen Biagas, Wed Oct  7 08:32:53 PDT 2015
+//    Collect fileNames from all processors to proc 0 before writing .vtm file.
+//
 // ****************************************************************************
-
+//
 void
 avtVTKWriter::WriteRootFile()
 {
+#ifdef PARALLEL
+    if (nblocks > 1 && doXML)
+    {
+        int tags[3];
+        writeContext.GetUniqueMessageTags(tags, 3);
+        int nFNTag  = tags[0];
+        int sizeTag = tags[1];
+        int dataTag = tags[2];
+
+
+        if (writeContext.Rank() == 0)
+        {
+            for (int i = 1; i < writeContext.Size(); ++i)
+            {
+                MPI_Status stat;
+                MPI_Status stat2;
+                int nfn = 0, size = 0;
+                MPI_Recv(&nfn, 1, MPI_INT, MPI_ANY_SOURCE, nFNTag,
+                         writeContext.GetCommunicator(), &stat);
+                for (int j = 0; j < nfn; ++j)
+                {
+                    MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, sizeTag,
+                             writeContext.GetCommunicator(), &stat2);
+                    char *str = new char[size];
+                    MPI_Recv(str, size, MPI_CHAR, stat.MPI_SOURCE, dataTag,
+                             writeContext.GetCommunicator(), &stat2);
+                    fileNames.push_back(str);
+                    delete [] str;
+                }
+            }
+        }
+        else
+        {
+            int nfn = (int)fileNames.size();
+            MPI_Send(&nfn, 1, MPI_INT, 0, nFNTag, writeContext.GetCommunicator());
+            for (int i = 0; i < nfn; ++i)
+            {
+                int len = (int)fileNames[i].length();
+                MPI_Send(&len, 1, MPI_INT, 0, sizeTag, writeContext.GetCommunicator());
+                char *str = const_cast<char*>(fileNames[i].c_str());
+                MPI_Send(str, len, MPI_CHAR, 0, dataTag, writeContext.GetCommunicator());
+            }
+        }
+    }
+#endif
     if (nblocks > 1 && writeContext.Rank() == 0)
     {
         char filename[1024];
