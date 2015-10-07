@@ -426,7 +426,7 @@ make -j 3 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
 cd ../..
 echo ""                                       >> resultlog 2>&1
-echo "     build of visit on ubuntu1104_64"    > resultlog 2>&1
+echo "     build of visit on ubuntu1104_64"   >> resultlog 2>&1
 echo "    ---------------------------------"  >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
@@ -468,11 +468,30 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 /home/visit/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 2 package >> ../../buildlog 2>&1
+make -j 3 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
 echo "     build of visit on ubuntu1404_64"    > resultlog 2>&1
+echo "    ---------------------------------"  >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -rf $dist
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+/home/visit/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.8/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_MESA_DIR="/home/visit/visit/thirdparty_shared/2.10.0/mesa/7.10.2/linux-x86_64_gcc-4.8" >> ../../buildlog 2>&1
+make -j 3 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
+cd ../..
+echo ""                                       >> resultlog 2>&1
+echo "     build of visit on ubuntu1404_64"   >> resultlog 2>&1
 echo "    ---------------------------------"  >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
