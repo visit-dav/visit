@@ -1,14 +1,14 @@
-#/home/visit/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.8/bin/cmake
+#/home/visit/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.8/bin/cmake
 ##
-## ./build_visit2_9_0 generated host.cmake
-## created: Mon Feb 23 17:34:47 PST 2015
+## ./build_visit2_10_0 generated host.cmake
+## created: Tue Oct  6 07:32:32 PDT 2015
 ## system: Linux ubuntu1404-64.sqalab-vmware.box 3.13.0-43-generic #72-Ubuntu SMP Mon Dec 8 19:35:06 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux
 ## by: visit
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /home/visit/visit/thirdparty_shared/2.9.0)
+SET(VISITHOME /home/visit/visit/thirdparty_shared/2.10.0)
 SET(VISITARCH linux-x86_64_gcc-4.8)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE)
 
@@ -94,7 +94,7 @@ VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 ##
 ## HDF5
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.7/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.14/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib/x86_64-linux-gnu z TYPE STRING)
 
 ##
