@@ -24,6 +24,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Operator_changes">Changes to operators</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Configuration_changes">Configuration changes</a></li>
+  <li><a href="#Build_changes">Changes to build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
 
@@ -202,6 +203,14 @@ VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice
 <p><b><font size="4">Configuration changes in version 2.10</font></b></p>
 <ul>
 <li>The LLNL RZ and CZ only host profile options were removed from visit-install since it is confusing to users and is only useful when installing VisIt on the LLNL RZ and CZ networks, which is only done by developers. The LLNL RZ only host profile option was removed from the Windows installer since that is also confusing to users and isn't useful to anyone.</li>
+</ul>
+
+<a name="Build_changes"></a>
+<p><b><font size="4">Build changes in version 2.10</font></b></p>
+<ul>
+  <li>The SeedMe python client was updated to version 1.1.0.</li>
+  <li>Experimental support for the Damaris I/O middleware layer (http://damaris.gforge.inria.fr/) was added to build_visit. Due to the use of XSD, Damaris support is GPL only. 
+      You can use the following build_visit flags to create a build that includes Damaris: --gpl --cmake --mpich --python --boost --vtk --qt --xsd --xercesc --damaris</li>
 </ul>
 
 <a name="Dev_changes"></a>
