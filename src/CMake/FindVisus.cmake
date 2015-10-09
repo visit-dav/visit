@@ -62,8 +62,8 @@ IF(NOT VISUS_DIR )
     SET(VISUS_DIR ${VISIT_VISUS_DIR})
 ENDIF()
 
-FIND_PATH(VISUS_INCLUDE_DIR  visuscpp    libs 
-                                         ${VISUS_DIR}/include)
+#FIND_PATH(VISUS_INCLUDE_DIR  visuscpp    libs  ${VISUS_DIR}/include)
+SET(VISUS_INCLUDE_DIR ${VISUS_DIR}/include ${VISUS_DIR}/include/visuscpp)
 
 IF (VISUS_INCLUDE_DIR)
 
@@ -80,21 +80,8 @@ IF (VISUS_INCLUDE_DIR)
    ENDIF()
 
 
-   FIND_PATH(VISUS_GLEW_INCLUDE_DIR   glew.h 
-                                ${VISUS_INCLUDE_DIR}/libs/glew/GL
-   )
+   FIND_LIBRARY(VISUS_LIB    Visus            ${VISUS_DIR}/lib)
 
-   FIND_PATH(VISUS_TinyXML_INCLUDE_DIR tinyxml.h 
-                                ${VISUS_INCLUDE_DIR}/libs/tinyxml
-   )
-
-   FIND_LIBRARY(VISUS_KERNEL_LIB    visuskernel            ${VISUS_DIR}/lib)
-   FIND_LIBRARY(VISUS_IDX_LIB       visusidx               ${VISUS_DIR}/lib)
-   FIND_LIBRARY(VISUS_DB_LIB        visusdb                ${VISUS_DIR}/lib)
-   FIND_LIBRARY(VISUS_DATAFLOW_LIB  visusdataflow          ${VISUS_DIR}/lib)
-   #FIND_LIBRARY(VISUS_APPKIT_LIB    visusappkit            ${VISUS_DIR}/lib)
-   FIND_LIBRARY(VISUS_SCENEGRAPH_LIB    visusscenegraph            ${VISUS_DIR}/lib)
-   FIND_LIBRARY(VISUS_GUI_LIB       visusgui               ${VISUS_DIR}/lib)
    IF (VISUS_JUCE)
     FIND_LIBRARY(VISUS_GUI_IMPL_LIB Juce                   ${VISUS_DIR}/lib NO_DEFAULT_PATH)
    ENDIF()
@@ -105,28 +92,20 @@ IF (VISUS_INCLUDE_DIR)
    ENDIF()
    FIND_LIBRARY(VISUS_FREEIMAGE_LIB FreeImage              ${VISUS_DIR}/lib NO_DEFAULT_PATH)
    FIND_LIBRARY(VISUS_XML_LIB       tinyxml                ${VISUS_DIR}/lib NO_DEFAULT_PATH)
-   FIND_LIBRARY(VISUS_LIBZ_LIB      libz                   ${VISUS_DIR}/lib NO_DEFAULT_PATH)
-   FIND_LIBRARY(VISUS_GLEW_LIB      glew                   ${VISUS_DIR}/lib NO_DEFAULT_PATH)
+   FIND_LIBRARY(VISUS_LIBZ_LIB      zlib                   ${VISUS_DIR}/lib NO_DEFAULT_PATH)
    FIND_LIBRARY(VISUS_SSL_LIB       ssl                    ${VISUS_DIR}/lib NO_DEFAULT_PATH)
-   FIND_LIBRARY(VISUS_CRYPTO_LIB    crypto                 ${VISUS_DIR}/lib NO_DEFAULT_PATH)
+   FIND_LIBRARY(VISUS_CRYPTO_LIB    libcrypto                 ${VISUS_DIR}/lib NO_DEFAULT_PATH)
 
-   SET(VISUS_CORE_LIBRARIES 
-   #       ${VISUS_APPKIT_LIB}
-       ${VISUS_SCENEGRAPH_LIB}
-       ${VISUS_IDX_LIB}
-       ${VISUS_GUI_LIB}
-       ${VISUS_DATAFLOW_LIB}
-       ${VISUS_DB_LIB}
-       ${VISUS_KERNEL_LIB}
+   SET(VISUS_CORE_LIBRARIES
+        ${VISUS_LIB}
    )
 
-   SET(VISUS_ADDL_LIBRARIES 
+   SET(VISUS_ADDL_LIBRARIES
        ${VISUS_GUI_IMPL_LIB}
        ${VISUS_CURL_LIB}
        ${VISUS_FREEIMAGE_LIB}
        ${VISUS_XML_LIB}
        ${VISUS_LIBZ_LIB}
-       ${VISUS_GLEW_LIB}
        ${VISUS_SSL_LIB}
        ${VISUS_CRYPTO_LIB}
    )
@@ -169,7 +148,7 @@ IF (VISUS_INCLUDE_DIR)
    ELSEIF (APPLE)
      SET(VISUS_APPLE 1)
      SET(VISUS_OSX 1)
-     ADD_DEFINITIONS(-DVISUS_APPLE=1 -DVISUS_OSX=1)  
+     ADD_DEFINITIONS(-DVISUS_APPLE=1 -DVISUS_OSX=1)
 
      # On apple we need a bunch of other frameworks
      FIND_LIBRARY(COREMIDI_FRAMEWORK CoreMidi)
