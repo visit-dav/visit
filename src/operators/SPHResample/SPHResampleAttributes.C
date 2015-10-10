@@ -65,7 +65,7 @@ void SPHResampleAttributes::Init()
     minZ = 0;
     maxZ = 1;
     znum = 10;
-    RK = false;
+    RK = true;
     memScale = false;
 
     SPHResampleAttributes::SelectAll();
