@@ -35,7 +35,7 @@
         mass
       </Field>
       <Field name="RK" label="Enable First Order (more accurate) Corrective Kernel Interpolations" type="bool">
-        false
+        true
       </Field>
       <Field name="memScale" label="Enable Memory Scaling" type="bool">
         false

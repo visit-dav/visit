@@ -76,7 +76,7 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
         znum = 10;
         tensorSupportVariable = new String("H");
         weightVariable = new String("mass");
-        RK = false;
+        RK = true;
         memScale = false;
     }
 
@@ -95,7 +95,7 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
         znum = 10;
         tensorSupportVariable = new String("H");
         weightVariable = new String("mass");
-        RK = false;
+        RK = true;
         memScale = false;
     }
 
