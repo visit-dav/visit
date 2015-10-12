@@ -663,6 +663,53 @@ class FloatArray : public virtual Field
 
 
 //
+// ------------------------------- FloatVector -------------------------------
+//
+class FloatVector : public virtual Field
+{
+  public:
+    std::vector<float> val;
+  public:
+    FloatVector(const QString &n, const QString &l) : Field("floatVector",n,l) { }
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "floatVector";
+    }
+    virtual void ClearValues()
+    {
+        val.clear();
+    }
+    virtual void SetValue(const QString &s, int = 0)
+    {
+        // can't use toFloat -- some versions of Qt disallow exponents beyond
+        // single precision range.
+        //val.push_back(s.toFloat());
+        val.push_back(atof(s.toStdString().c_str()));
+        valueSet = true;
+    }
+    virtual void Print(QTextStream &out)
+    {
+        Field::Print(out);
+        if (valueSet)
+        {
+            out << "            value: ";
+            for (size_t i=0; i<val.size(); i++)
+                out << val[i] << "  ";
+            out << endl;
+        }
+    }
+    virtual std::vector<QString> GetValueAsText()
+    {
+        std::vector<QString> retval;
+        if (valueSet)
+            for (size_t i=0; i<val.size(); i++)
+                retval.push_back(QString().sprintf("%f", val[i]));
+        return retval;
+    }
+};
+
+
+//
 // ---------------------------------- Double ----------------------------------
 //
 class Double : public virtual Field
@@ -1806,6 +1853,7 @@ class FieldFactory
         else if (type == "bool")         f = new Bool(name,label);
         else if (type == "float")        f = new Float(name,label);
         else if (type == "floatArray")   f = new FloatArray(length,name,label);
+        else if (type == "floatVector")  f = new FloatVector(name,label);
         else if (type == "double")       f = new Double(name,label);
         else if (type == "doubleArray")  f = new DoubleArray(length,name,label);
         else if (type == "doubleVector") f = new DoubleVector(name,label);

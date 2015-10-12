@@ -603,6 +603,69 @@ class JavaGeneratorFloatArray : public virtual FloatArray , public virtual JavaG
     }
 };
 
+//
+// ------------------------------- FloatVector -------------------------------
+//
+class JavaGeneratorFloatVector : public virtual FloatVector , public virtual JavaGeneratorField
+{
+  public:
+    JavaGeneratorFloatVector(const QString &n, const QString &l)
+        : Field("floatVector",n,l), FloatVector(n,l), JavaGeneratorField("floatVector",n,l) { }
+
+    virtual void AddImports(UniqueStringList &sl) 
+    { 
+        sl.AddString("import java.lang.Float;\n");
+        sl.AddString("import java.util.Vector;\n");
+    }
+
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "Vector";
+    }
+
+    virtual void WriteSourceAttribute(QTextStream &h, int w)
+    {
+        h << "    private " << GetCPPNameW(w) << " " << name << "; // vector of Float objects" << endl;
+    }
+
+    virtual void WriteSourceSetDefault(QTextStream &c)
+    {
+        c << "    " << name << " = new Vector();" << endl;
+        for (size_t i = 0; i < val.size(); ++i)
+            c << "        " << name << ".addElement(new Float(" << val[i] << "));" << endl;
+    }
+
+    virtual void WriteSourceCopyCode(QTextStream &c)
+    {
+        c << "        " << name << " = new Vector(obj." << name << ".size());" << endl;
+        c << "        for(i = 0; i < obj." << name << ".size(); ++i)" << endl;
+        c << "        {" << endl;
+        c << "            Float dv = (Float)obj." << name << ".elementAt(i);" << endl;
+        c << "            " << name << ".addElement(new Float(dv.floatValue()));" << endl;
+        c << "        }" << endl;
+        c << endl;
+    }
+
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
+    {
+        c << indent << "    buf.WriteFloatVector(" << name << ");" << endl;
+    }
+
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
+    {
+        c << indent << "Set" << Name << "(buf.ReadFloatVector());" << endl;
+        return true;
+    }
+    virtual void WriteToString(QTextStream &c, const QString &indent)
+    {
+        c << indent << "str = str + floatVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
+    }
+    virtual QString GetVectorStorageName() const
+    {
+        return "Float";
+    }
+};
+
 
 //
 // ---------------------------------- Double ----------------------------------
@@ -1675,6 +1738,7 @@ class JavaFieldFactory
         else if (type == "bool")         f = new JavaGeneratorBool(name,label);
         else if (type == "float")        f = new JavaGeneratorFloat(name,label);
         else if (type == "floatArray")   f = new JavaGeneratorFloatArray(length,name,label);
+        else if (type == "floatVector")  f = new JavaGeneratorFloatVector(name,label);
         else if (type == "double")       f = new JavaGeneratorDouble(name,label);
         else if (type == "doubleArray")  f = new JavaGeneratorDoubleArray(length,name,label);
         else if (type == "doubleVector") f = new JavaGeneratorDoubleVector(name,label);

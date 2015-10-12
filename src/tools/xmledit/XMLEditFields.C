@@ -588,6 +588,7 @@ XMLEditFields::UpdateTypeList()
     type->addItem("bool");
     type->addItem("float");
     type->addItem("floatArray");
+    type->addItem("floatVector");
     type->addItem("double");
     type->addItem("doubleArray");
     type->addItem("doubleVector");

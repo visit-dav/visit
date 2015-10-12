@@ -780,6 +780,107 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
     }
 };
 
+//
+// ------------------------------- FloatVector -------------------------------
+//
+class AttsGeneratorFloatVector : public virtual FloatVector , public virtual PythonGeneratorField
+{
+  public:
+    AttsGeneratorFloatVector(const QString &n, const QString &l)
+        : Field("floatVector",n,l), FloatVector(n,l), PythonGeneratorField("floatVector",n,l) { }
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
+    {
+        c << "    floatVector  &vec = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << Endl;
+        c << "    PyObject     *tuple;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    if(PyTuple_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(PyTuple_Size(tuple));" << Endl;
+        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
+        c << "            if(PyFloat_Check(item))" << Endl;
+        c << "                vec[i] = float(PyFloat_AS_DOUBLE(item));" << Endl;
+        c << "            else if(PyInt_Check(item))" << Endl;
+        c << "                vec[i] = float(PyInt_AS_LONG(item));" << Endl;
+        c << "            else if(PyLong_Check(item))" << Endl;
+        c << "                vec[i] = float(PyLong_AsDouble(item));" << Endl;
+        c << "            else" << Endl;
+        c << "                vec[i] = 0.f;" << Endl;
+        c << "        }" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyFloat_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        vec[0] = float(PyFloat_AS_DOUBLE(tuple));" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyInt_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        vec[0] = float(PyInt_AS_LONG(tuple));" << Endl;
+        c << "    }" << Endl;
+        c << "    else if(PyLong_Check(tuple))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        vec[0] = float(PyLong_AsDouble(tuple));" << Endl;
+        c << "    }" << Endl;
+        c << "    else" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    // Mark the "<<name<<" in the object as modified." << Endl;
+        if(accessType == Field::AccessPublic)
+            c << "    obj->data->SelectAll();" << Endl;
+        else
+            c << "    obj->data->Select"<<Name<<"();" << Endl;
+    }
+
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
+    {
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
+        c << "    const floatVector &" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c <<MethodNameGet()<<"()";
+        c << ";" << Endl;
+        c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << Endl;
+        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << Endl;
+        c << "        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(" << name << "[i]));" << Endl;
+    }
+
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
+    {
+        c << "    {   const floatVector &" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            SNPRINTF(tmpStr, 1000, \"%f\", " << name << "[i]);" << Endl;
+        c << "            str += tmpStr;" << Endl;
+        c << "            if(i < " << name << ".size() - 1)" << Endl;
+        c << "            {" << Endl;
+        c << "                SNPRINTF(tmpStr, 1000, \", \");" << Endl;
+        c << "                str += tmpStr;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        SNPRINTF(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "    }" << Endl;
+    }
+};
+
 
 //
 // ---------------------------------- Double ----------------------------------
@@ -2737,6 +2838,7 @@ class PythonFieldFactory
         else if (type == "bool")         f = new AttsGeneratorBool(name,label);
         else if (type == "float")        f = new AttsGeneratorFloat(name,label);
         else if (type == "floatArray")   f = new AttsGeneratorFloatArray(length,name,label);
+        else if (type == "floatVector")  f = new AttsGeneratorFloatVector(name,label);
         else if (type == "double")       f = new AttsGeneratorDouble(name,label);
         else if (type == "doubleArray")  f = new AttsGeneratorDoubleArray(length,name,label);
         else if (type == "doubleVector") f = new AttsGeneratorDoubleVector(name,label);
