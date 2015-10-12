@@ -1030,6 +1030,19 @@ GUIBase::FloatsToQString(const float *vals, int nvals, int precision)
     return s;
 }
 
+QString
+GUIBase::FloatsToQString(const floatVector &vals, int precision)
+{
+    QString s;
+    for(size_t i = 0; i < vals.size(); ++i)
+    {
+        s += QString().setNum(vals[i], 'g', precision);
+        if(i < vals.size()-1)
+            s += " ";
+    }
+    return s;
+}
+
 // ****************************************************************************
 // Method: GUIBase::FloatToQString
 //
@@ -1264,6 +1277,12 @@ GUIBase::LineEditGetDouble(QLineEdit *lineEdit, double &val)
 
 bool
 GUIBase::LineEditGetFloats(QLineEdit *lineEdit, float *vals, int maxVals)
+{
+    return QStringToFloats(lineEdit->displayText().trimmed(), vals, maxVals);
+}
+
+bool
+GUIBase::LineEditGetFloats(QLineEdit *lineEdit, floatVector &vals, int maxVals)
 {
     return QStringToFloats(lineEdit->displayText().trimmed(), vals, maxVals);
 }
@@ -1507,6 +1526,28 @@ GUIBase::QStringToFloats(const QString &str, float *vals, int maxVals)
                 vals[i] = s[i].toFloat(&okay);
             else
                 vals[i] = 0.;
+        }
+        retval = okay;
+    }
+
+    return retval;
+}
+
+bool
+GUIBase::QStringToFloats(const QString &str, floatVector &vals, int maxVals)
+{
+    bool retval = false;
+
+    if(!str.isEmpty())
+    {
+        bool okay = true;
+        QStringList s = str.split(" ", QString::SkipEmptyParts);
+        for(int i = 0; i < s.size() && okay; ++i)
+        {
+            if(maxVals == -1 || i < maxVals)
+                vals.push_back(s[i].toFloat(&okay));
+            else
+                vals.push_back(0.);
         }
         retval = okay;
     }

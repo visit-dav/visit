@@ -648,6 +648,10 @@ AttributeGroup::EqualTo(const AttributeGroup *atts) const
             if (!(EqualVal<float>::EqualArray(addr1,addr2,length)))
                return false;
             break;
+          case FieldType_floatVector:
+            if (!(EqualVal<double>::EqualVector(addr1,addr2)))
+               return false;
+            break;
           case FieldType_double:
             if (!(EqualVal<double>::EqualScalar(addr1,addr2)))
                return false;

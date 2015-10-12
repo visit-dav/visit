@@ -571,6 +571,59 @@ class WindowGeneratorFloatArray : public virtual FloatArray , public virtual Win
 
 
 //
+// -------------------------------- FloatVector ------------------------------
+//
+class WindowGeneratorFloatVector : public virtual FloatVector , public virtual WindowGeneratorField
+{
+  public:
+    WindowGeneratorFloatVector(const QString &n, const QString &l)
+        : Field("floatVector",n,l), FloatVector(n,l), WindowGeneratorField("floatVector",n,l) { }
+    virtual void               writeHeaderCallback(QTextStream &h)
+    {
+        h << "    void "<<name<<"ProcessText();" << endl;
+    }
+    virtual void               writeHeaderData(QTextStream &h)
+    {
+        h << "    QLineEdit *"<<name<<";" << endl;
+    }
+    virtual void               writeSourceCreate(QTextStream &c)
+    {
+        writeSourceCreateLabel(c);
+        c << "    "<<name<<" = new QLineEdit(central);" << endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+    }
+    virtual bool               providesSourceGetCurrent() const { return true; }
+    virtual void               writeSourceGetCurrent(QTextStream &c)
+    {
+        c << "        floatVector val;"<<endl;
+        c << "        if(LineEditGetFloats("<<name<<", val))" <<endl;
+        c << "            atts->Set"<<Name<<"(val);" << endl;
+        c << "        else" << endl;
+        c << "        {" << endl;
+        QString msgLabel = (label.length()>0) ? label : name;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
+        c << "                FloatsToQString(atts->Get"<<Name<<"()));" << endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
+        c << "        }" << endl;
+    }
+    virtual void               writeSourceUpdateWindow(QTextStream &c)
+    {
+        c << "            "<<name<<"->setText(FloatsToQString(atts->Get"<<Name<<"()));" << endl;
+    }
+    virtual void               writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
+    {
+        c << "void" << endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << endl;
+        c << "{" << endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
+        c << "    Apply();" << endl;
+        c << "}" << endl;
+    }
+};
+
+//
 // ---------------------------------- Double ----------------------------------
 //
 class WindowGeneratorDouble : public virtual Double , public virtual WindowGeneratorField
@@ -826,6 +879,61 @@ class WindowGeneratorStringVector : public virtual StringVector , public virtual
   public:
     WindowGeneratorStringVector(const QString &n, const QString &l)
         : Field("stringVector",n,l), StringVector(n,l), WindowGeneratorField("stringVector",n,l) { }
+    virtual void            writeHeaderCallback(QTextStream &h)
+    {
+        h << "    void "<<name<<"ProcessText();" << endl;
+    }
+    virtual void            writeHeaderData(QTextStream &h)
+    {
+        h << "    QLineEdit *"<<name<<";" << endl;
+    }
+    virtual void            writeSourceCreate(QTextStream &c)
+    {
+        writeSourceCreateLabel(c);
+        c << "    "<<name<<" = new QLineEdit(central);" << endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+    }
+    virtual bool            providesSourceGetCurrent() const { return true; }
+    virtual void            writeSourceGetCurrent(QTextStream &c)
+    {
+        c << "        QString temp = "<<name<<"->displayText();" << endl;
+        c << "        if(!temp.isEmpty())" << endl;
+        c << "        {" << endl;
+        c << "            QStringList s = temp.split(\" \", QString::SkipEmptyParts);" << endl;
+        c << "            stringVector sv;" << endl;
+        c << "            for(int i = 0; i < s.size(); ++i)" << endl;
+        c << "                sv.push_back(s[i].toStdString());" << endl;
+        c << "            atts->Set"<<Name<<"(sv);" << endl;
+        c << "        }" << endl;
+        c << "        else" << endl;
+        c << "        {" << endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
+        c << "        }" << endl;
+    }
+    virtual void            writeSourceUpdateWindow(QTextStream &c)
+    {
+        c << "            {" << endl;
+        c << "            QString stmp;" << endl;
+        c << "            for(size_t idx = 0; idx < atts->Get"<<Name<<"().size(); ++idx)" << endl;
+        c << "            {" << endl;
+        c << "                stmp.append(QString(atts->Get"<<Name<<"()[idx].c_str()));" << endl;
+        c << "                if(idx < atts->Get"<<Name<<"().size()-1)" << endl;
+        c << "                    stmp.append(\" \");" << endl;
+        c << "            }" << endl;
+        c << "            "<<name<<"->setText(stmp);" << endl;
+        c << "            }" << endl;
+    }
+    virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
+    {
+        c << "void" << endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << endl;
+        c << "{" << endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
+        c << "    Apply();" << endl;
+        c << "}" << endl;
+    }
 };
 
 
@@ -1345,6 +1453,7 @@ class WindowFieldFactory
         else if (type == "bool")         f = new WindowGeneratorBool(name,label);
         else if (type == "float")        f = new WindowGeneratorFloat(name,label);
         else if (type == "floatArray")   f = new WindowGeneratorFloatArray(length,name,label);
+        else if (type == "floatVector")  f = new WindowGeneratorFloatVector(name,label);
         else if (type == "double")       f = new WindowGeneratorDouble(name,label);
         else if (type == "doubleArray")  f = new WindowGeneratorDoubleArray(length,name,label);
         else if (type == "doubleVector") f = new WindowGeneratorDoubleVector(name,label);

@@ -128,6 +128,7 @@ public:
     
     // Helpers for converting between values and qstrings
     static QString FloatsToQString(const float *, int, int precision=7);
+    static QString FloatsToQString(const floatVector &, int precision=7);
     static QString FloatToQString(float, int precision=7);
     static QString DoublesToQString(const double *, int, int precision=16);
     static QString DoublesToQString(const doubleVector &, int precision=16);
@@ -137,6 +138,7 @@ public:
     static QString IntToQString(int);
 
     static bool    QStringToFloats(const QString &str, float *vals, int maxVals);
+    static bool    QStringToFloats(const QString &str, floatVector &vals, int maxVals=-1);
     static bool    QStringToDoubles(const QString &str, double *vals, int maxVals);
     static bool    QStringToDoubles(const QString &str, doubleVector &vals, int maxVal=-1);
     static bool    QStringToInts(const QString &str, int *vals, int maxVals);
@@ -145,6 +147,7 @@ public:
     static bool    LineEditGetDoubles(QLineEdit *lineEdit, double *vals, int maxVals);
     static bool    LineEditGetDoubles(QLineEdit *lineEdit, doubleVector &vals, int maxVals=-1);
     static bool    LineEditGetFloats(QLineEdit *lineEdit, float *vals, int maxVals);
+    static bool    LineEditGetFloats(QLineEdit *lineEdit, floatVector &vals, int maxVals=-1);
     static bool    LineEditGetInts(QLineEdit *lineEdit, int *vals, int maxVals);
     static bool    LineEditGetInts(QLineEdit *lineEdit, intVector &vals, int maxVals=-1);
 
