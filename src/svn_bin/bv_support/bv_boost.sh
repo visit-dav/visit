@@ -142,10 +142,10 @@ function build_boost
 
     if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
 	libs="$libs \
-              iostreams thread date_time filesystem \
-              system program_options regex"
+              chrono iostreams thread date_time filesystem \
+              system program_options regex timer"
 
-        build_libs="iostreams,thread,date_time,filesystem,system,program_options,regex"
+        build_libs="chrono,iostreams,thread,date_time,filesystem,system,program_options,regex,timer"
     fi
 
     if [[ "$DO_DAMARIS" == "yes" ]] ; then

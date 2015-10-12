@@ -44,12 +44,14 @@ SET(BOOST_LIBS NO_LIBS)
 
 IF(NEKTAR++_FOUND)
   SET(BOOST_LIBS
+   boost_chrono
    boost_iostreams
    boost_thread
    boost_date_time
    boost_filesystem
    boost_regex
    boost_system
+   boost_timer
    boost_program_options)
 ENDIF()
 
