@@ -1442,6 +1442,9 @@ void loadMiliFile(char *filename, MiliInfo &mi)
 //    Akira Haddox, Mon Aug 18 15:19:21 PDT 2003
 //    Added -dynapart option.
 //
+//    Eric Brugger, Fri Oct  9 16:32:26 PDT 2015
+//    Added code to ignore -forceversion.
+//
 // ***************************************************************************
 
 int main(int argc, char* argv[])
@@ -1467,13 +1470,15 @@ int main(int argc, char* argv[])
         {
             createMode = true;
         }
-
-        if (!strcmp(argv[argi], "-v") || !strcmp(argv[argi], "-verbose"))
+        else if (!strcmp(argv[argi], "-v") || !strcmp(argv[argi], "-verbose"))
         {
             verboseMode = true;
         }
-
-        if (!strcmp(argv[argi], "-dynapart"))
+        else if (!strcmp(argv[argi], "-forceversion"))
+        {
+            ++argi;
+        }
+        else if (!strcmp(argv[argi], "-dynapart"))
         {
             // Check the next argument for bad usage.
             if (argi + 1 >= argc || argv[argi + 1] == NULL
