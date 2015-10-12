@@ -197,6 +197,7 @@ VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice
   <li>Interactive connections to simulations are unable to save images via <i>VisItSaveWindow()</i> because the simulation was always passing a server output directory and interactive saves are currently done client-side. The code was modified so the simulation may opt to output to the current directory and that will save files client-side where VisIt was invoked.</li>
   <li>Deleting multiple plots using Libsim's <i>VisItDeleteActivePlots()</i> function would crash when used in batch mode.</li>
   <li>Silo export on a file that contained more than one mesh can produce output that contains the wrong mesh name.</li>
+  <li>Makemili now works once again. Starting with VisIt 2.9, the VisIt launch script adds "-forceversion version_number" to the front of the command line options for all the tools that it runs. In the case of makemili, this resulted in it interpreting the version number as the name of the file to process. Now it will interpret the "-forceversion" option and properly gets the name of the file to process.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
