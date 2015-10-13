@@ -1795,7 +1795,7 @@ printf("\n");
             VisIt_DomainList_setDomains(h, ndoms, hdl);
         }
     }
-    else if(strcmp(name, "mesh") == 0)
+    else if(strcmp(name, "mesh") == 0 || strcmp(name, "tetmesh") == 0)
     {
         if(VisIt_DomainList_alloc(&h) != VISIT_ERROR)
         {
