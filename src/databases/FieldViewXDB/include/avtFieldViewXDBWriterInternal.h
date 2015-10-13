@@ -60,6 +60,7 @@ public:
     void          WriteChunk(avtDataObject_p input, vtkDataSet *, int,
                              int, const std::string &);
     void          CloseFile(avtDataObject_p input);
+    void          WriteRootFile();
 
     int           GetCombineMode(avtDataObject_p input, const std::string &plotName) const;
     bool          CreateNormals(avtDataObject_p input) const;
