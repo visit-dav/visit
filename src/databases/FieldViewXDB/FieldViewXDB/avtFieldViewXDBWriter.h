@@ -44,6 +44,7 @@ protected:
     virtual void          WriteChunk(vtkDataSet *, int, int, const std::string &);
     virtual void          WriteChunk(vtkDataSet *, int);
     virtual void          CloseFile(void);
+    virtual void          WriteRootFile();
 
     virtual CombineMode   GetCombineMode(const std::string &plotName) const;
     virtual bool          CreateNormals() const;
