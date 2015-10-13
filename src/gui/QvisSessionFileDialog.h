@@ -38,6 +38,7 @@
 *
 *****************************************************************************/
 #include <QvisFileOpenDialog.h>
+#include <string>
 
 // ****************************************************************************
 // Class: QvisSessionFileDialog
@@ -52,6 +53,9 @@
 // Creation:   Tue Aug  4 11:04:14 PDT 2015
 //
 // Modifications:
+//   Kathleen Biagas, Tue Oct 13 09:21:01 PDT 2015
+//   Add storage for original filter, grouping settings retrieved from 
+//   file server.
 //
 // ****************************************************************************
 
@@ -68,6 +72,10 @@ public:
                      const QString &initialFile, 
                      QualifiedFilename &filename);
 
+private:
+    std::string origFilter;
+    bool autoFileGrouping;
+    bool smartFileGrouping;
 };
 
 #endif
