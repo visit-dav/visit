@@ -376,3 +376,10 @@ avtFieldViewXDBWriter::CloseFile(void)
 {
     impl->CloseFile(GetInput());
 }
+
+void
+avtFieldViewXDBWriter::WriteRootFile()
+{
+    impl->SetWriteContext(writeContext);
+    impl->WriteRootFile();
+}

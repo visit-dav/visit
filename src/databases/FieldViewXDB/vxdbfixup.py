@@ -55,7 +55,11 @@ MPILibs = (\
 "libpmpich.dylib",
 "libmpich.dylib",
 "libopa.dylib",
-"libmpl.dylib"
+"libmpl.dylib",
+"libpmpich.10.dylib",
+"libmpich.10.dylib",
+"libopa.1.dylib",
+"libmpl.1.dylib"
 )
 
 def joinlib(a, b):
