@@ -365,7 +365,7 @@
 #    Removed host profile for edge.
 #
 #    Kathleen Biagas, Thu May  7 09:48:06 PDT 2015
-#    Fix second 'data' conditional to test for "$distributiondir"/data
+#    Fix second 'data' conditional to test for "$distributiondir"/data.
 #
 #    Eric Brugger, Tue Aug 25 16:30:55 PDT 2015
 #    I replaced "LLNL open network (RZ only)", "LLNL open network (CZ only)"
@@ -373,6 +373,12 @@
 #    list of profiles that the user selects from when a profile wasn't
 #    specified on the command line. The three options are still supported
 #    on the command line.
+#
+#    Eric Brugger, Wed Oct 14 16:06:52 PDT 2015
+#    I changed the second 'data' conditional to test for ../data. The
+#    previous change to "$distributiondir"/data didn't work because the
+#    script is in the directory $distributiondir/$version at that point
+#    and $distributiondir is not an absolute path.
 #
 #-----------------------------------------------------------------------
 
@@ -1004,7 +1010,7 @@ for f in `echo $platformPath | tr "/" " "`; do
 done
 # Copy the files
 find . -print | cpio -pmud "$dir"/$version+
-if [ -e "$distributiondir"/data ]; then
+if [ -e ../data ]; then
     cd ../data
     find . -print | cpio -pmud "$dir"/data
 fi
