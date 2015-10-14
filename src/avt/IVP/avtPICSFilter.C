@@ -2591,11 +2591,19 @@ avtPICSFilter::ComputeDomainToRankMapping()
 
     if (DebugStream::Level5())
     {
-        debug5<< "Domain/Data setup:" << std::endl;
-
+        debug5 << "Domain/Data setup:" << std::endl;
+        debug5 << "numDomains = " << numDomains 
+               << ", domainToRank.size()=" << domainToRank.size()
+               << ", dataSets.size()=" << dataSets.size() << endl;
         for (int i = 0; i < numDomains; i++)
-            debug5 << "domain: " << i << ": rank= " << domainToRank[i]
-                   << " ds= " << dataSets[i] << std::endl;
+        {
+            debug5 << "domain: " << i << ": rank= " << domainToRank[i];
+            if(!OperatingOnDemand())
+            {
+                debug5 << " ds= " << dataSets[i];
+            }
+            debug5 << std::endl;
+        }
     }
 }
 
