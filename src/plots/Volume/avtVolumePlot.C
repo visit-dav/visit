@@ -576,6 +576,12 @@ bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth)
 //
 //  Modifications:
 //
+//    Burlen Loring, Mon Oct  5 06:42:17 PDT 2015
+//    Catch the exception that can occur when using
+//    an operator that produces a variable that doesn't
+//    exist in the database.
+//
+// ****************************************************************************
 
 bool DataMustBeResampled(avtDataObject_p input)
 {
@@ -584,7 +590,14 @@ bool DataMustBeResampled(avtDataObject_p input)
     //      likely other cases.
 
     int width,height,depth;
-    return GetLogicalBounds(input,width,height,depth);
+    try
+    {
+        return GetLogicalBounds(input,width,height,depth);
+    }
+    catch(...)
+    {
+        return false;
+    }
 }
 
 // ****************************************************************************
