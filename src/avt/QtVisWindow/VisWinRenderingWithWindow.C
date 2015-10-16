@@ -41,11 +41,14 @@
 // ************************************************************************* //
 
 #include <VisWinRenderingWithWindow.h>
+#include <DebugStream.h>
 
 #include <vtkQtRenderWindow.h>
 #include <vtkRenderWindow.h>
 #include <vtkRubberBandMapper2D.h>
 #include <vtkDashedXorGridMapper2D.h>
+#include <vtkOpenGLRenderWindow.h>
+#include <vtkOpenGLExtensionManager.h>
 
 #if defined(Q_WS_X11) || defined(Q_OS_LINUX)
 // We only need WindowMetrics here if we're on X11.
@@ -132,6 +135,9 @@ VisWinRenderingWithWindow::~VisWinRenderingWithWindow()
 //    Force render on all platforms to make sure background is cleared at
 //    startup.
 //
+//    Burlen Loring, Thu Oct  8 12:44:58 PDT 2015
+//    Report some capabilities in the debug log.
+//
 // ****************************************************************************
 
 void
@@ -149,6 +155,13 @@ VisWinRenderingWithWindow::RealizeRenderWindow(void)
 
     renWin->GetRenderWindow()->Render();
 
+    debug2 << "render window is a vtkQtRenderWindow" << endl;
+    vtkOpenGLRenderWindow *glrw = dynamic_cast<vtkOpenGLRenderWindow*>(renWin->GetRenderWindow());
+    if (!glrw) return;
+    vtkOpenGLExtensionManager *em = glrw->GetExtensionManager();
+    debug2 << "GLVendor = " << em->GetDriverGLVendor() << endl
+        << "GLVersion = " << em->GetDriverGLVersion() << endl
+        << "GLRenderer = " << em->GetDriverGLRenderer() << endl;
 }
 
 // ****************************************************************************

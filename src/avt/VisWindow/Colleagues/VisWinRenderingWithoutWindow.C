@@ -45,10 +45,13 @@
 #include <Environment.h>
 #include <avtCallback.h>
 #include <visit-config.h>
+#include <DebugStream.h>
 
 #include <vtkMapper.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkOpenGLRenderWindow.h>
+#include <vtkOpenGLExtensionManager.h>
 
 #define DS_NOT_CHECKED    0
 #define DS_NOT_AVAILABLE  1
@@ -87,6 +90,7 @@ VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
     // Mesa that we are getting, but we don't care.
     //
     renWin = vtkRenderWindow::New();
+
     renWin->OffScreenRenderingOn();
     InitializeRenderWindow(renWin);
 
@@ -215,35 +219,46 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 //   Brad Whitlock, Wed Mar 13 16:07:35 PDT 2013
 //   Don't directly call Render.
 //
+//   Burlen Loring, Thu Oct  8 13:41:39 PDT 2015
+//   log vtk/open gl capabilities, fix indentation
+//
 // ****************************************************************************
 
 void
 VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
 {
-  // We'd like to do something lighter weight, but this seems to be the only
-  // way to *force* VTK to initialize in all cases.  The good news is that this
-  // method is typically called before we've got data in the RW, so it
-  // shouldn't be as heavy as it looks at first glance.
+    // We'd like to do something lighter weight, but this seems to be the only
+    // way to *force* VTK to initialize in all cases.  The good news is that this
+    // method is typically called before we've got data in the RW, so it
+    // shouldn't be as heavy as it looks at first glance.
 
-  //
-  // SetSize doesn't work as expected with vtkCocoaRenderWindow in 
-  // an offscreen setting.
-  // B/c of this we are forced to create a large window, the size of 
-  // which bounds our offscreen rendering.
-  //
-  if(std::string(renWin->GetClassName()) == "vtkCocoaRenderWindow")
-  {
-      //TODO: we may want to query to find the largest valid size
-      // OSX limits windows to 10Kx10K, however OpenGL contexts
-      // are limited further.
-      renWin->SetSize(4096,4096);
-      renWin->SetPosition(-10000,-10000);
-  }
-  else
-  {
-      renWin->SetSize(300,300);
-  }
-  RenderRenderWindow();
+    //
+    // SetSize doesn't work as expected with vtkCocoaRenderWindow in
+    // an offscreen setting.
+    // B/c of this we are forced to create a large window, the size of
+    // which bounds our offscreen rendering.
+    //
+    if(std::string(renWin->GetClassName()) == "vtkCocoaRenderWindow")
+    {
+        //TODO: we may want to query to find the largest valid size
+        // OSX limits windows to 10Kx10K, however OpenGL contexts
+        // are limited further.
+        renWin->SetSize(4096,4096);
+        renWin->SetPosition(-10000,-10000);
+    }
+    else
+    {
+        renWin->SetSize(300,300);
+    }
+    RenderRenderWindow();
+
+    debug2 << "render window is a " << renWin->GetClassName() << endl;
+    vtkOpenGLRenderWindow *glrw = dynamic_cast<vtkOpenGLRenderWindow*>(renWin);
+    if (!glrw) return;
+    vtkOpenGLExtensionManager *em = glrw->GetExtensionManager();
+    debug2 << "GLVendor = " << em->GetDriverGLVendor() << endl
+        << "GLVersion = " << em->GetDriverGLVersion() << endl
+        << "GLRenderer = " << em->GetDriverGLRenderer() << endl;
 }
 
 // ****************************************************************************
