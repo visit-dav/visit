@@ -1024,6 +1024,9 @@ class Debugger(object):
 #   Burlen Loring, Thu Jun 25 13:31:56 PDT 2015
 #   Added basic mpi support
 #
+#   Burlen Loring, Thu Oct  8 16:10:51 PDT 2015
+#   remove warning message now that it's been tested for a while
+#
 ###############################################################################
 
 class GDBDebugger(Debugger):
@@ -1077,8 +1080,6 @@ class GDBDebugger(Debugger):
 
         # parallel launch
         elif len(launcherargs) > 0:
-            self.launcher.warning("GDB debugging a parallel launch is experimental. YMMV.")
-
             have_xterm = self.launcher.generalArgs.newconsole
 
             args = launcherargs \
@@ -1211,6 +1212,9 @@ class CudaDebugger(Debugger):
 #
 # Modifications:
 #
+#   Burlen Loring, Thu Oct  8 14:28:39 PDT 2015
+#   refine valgrind options
+#
 ###############################################################################
 
 class ValgrindDebugger(Debugger):
@@ -1228,9 +1232,57 @@ class ValgrindDebugger(Debugger):
             SETENV("GLIBCXX_FORCE_NEW", "1")
 
         launcherargs, visitargs = self.SeparateArguments(args)
+
+        have_xterm = self.launcher.generalArgs.newconsole
+        xterm_args = (['xterm', '-geometry', '150x50', '-e'] if have_xterm else [])
+
+        vgargs = self.DebuggerArguments()
+
+        if len(vgargs) == 0:
+            vgargs = ["--tool=memcheck", "--error-limit=no", "--num-callers=50", \
+                    "--db-attach=no", "--leak-check=full", "--track-origins=yes", \
+                    "--show-reachable=yes"] #, "--vgdb=full", "--vgdb-error=0"]
+            if not have_xterm:
+                # if you're not in an xterm then you probably want to send the output
+                # to a file.
+                vgargs.append("--log-file=vg_%s_%%p.log"%(visitargs[0].split('/')[-1]))
+
+        if len(launcherargs) > 0:
+            # parallel launch
+            args = launcherargs + xterm_args \
+                + self.Executable() + vgargs + visitargs
+        else:
+            # serial launch
+            args = xterm_args + self.Executable() + vgargs + visitargs
+
+        return args
+
+###############################################################################
+# Class: CallgrindDebugger
+#
+# Purpose:    Launch a VisIt component under valgrind.
+#
+# Programmer: Burlen Loring
+# Date:       Wed Aug 19 09:34:26 PDT 2015
+#
+# Modifications:
+#
+###############################################################################
+
+class CallgrindDebugger(Debugger):
+    def __init__(self, launcher):
+        super(CallgrindDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["valgrind"]
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
         vgargs = self.DebuggerArguments()
         if len(vgargs) == 0:
-            vgargs = ["--tool=memcheck", "--error-limit=no", "--num-callers=50"]
+            # here is an example of how you profile a specific method:
+            # "--collect-atstart=no", "--toggle-collect=NetworkManager::RenderInternal*",
+            vgargs = ["--tool=callgrind"]
         return launcherargs + self.Executable() + vgargs + visitargs
 
 ###############################################################################
@@ -2729,11 +2781,15 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Kevin Griffin, Wed May 20 18:33:04 PDT 2015
     #   Added nvprof.
     #
+    #   Burlen Loring, Wed Aug 19 09:48:07 PDT 2015
+    #   Added callgrind
+    #
     ############################################################################
     def Debuggers(self):
         return ["gdb",
                 "totalview",
                 "valgrind",
+                "callgrind",
                 "strace",
                 "apitrace",
                 "debug-malloc",
@@ -2771,6 +2827,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return TotalviewDebugger(self)
         elif debugger == "valgrind":
             return ValgrindDebugger(self)
+        elif debugger == "callgrind":
+            return CallgrindDebugger(self)
         elif debugger == "strace":
             return StraceDebugger(self)
         elif debugger == "apitrace":
