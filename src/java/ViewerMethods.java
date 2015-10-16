@@ -2383,54 +2383,66 @@ public class ViewerMethods
      * as all information needed to recreate the plots in all visualization windows in
      * future VisIt sessions.
      *
-     * @param filename The name of the local file to which the session information will be saved.
+     * @param filename The name of the local file to which the session
+     * information will be saved.
+     * @param hostname The name of the host where the session file will live
      * @return true on success; false otherwise.
      */
-    public boolean ExportEntireState(String filename)
+    public boolean ExportEntireState(String filename, String hostname)
     {
         GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_EXPORTENTIRESTATERPC);
         GetViewerState().GetViewerRPC().SetVariable(filename);
+        GetViewerState().GetViewerRPC().SetStringArg1(hostname);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();
     }
 
     /**
-     * Restores a session file, which causes VisIt to delete all plots and recreate the
-     * plots described in the session file.
+     * Restores a session file, which causes VisIt to delete all plots and
+     * recreate the plots described in the session file.
      *
-     * @param filename The name of the local file from which the session information will be loaded.
-     * @param inVisItDir true if the session file exists in ~/.visit/; otherwise false and the
-     *                   filename must contain the entire path to the session file.
+     * @param filename The name of the local file from which the session
+     * information will be loaded.
+     * @param inVisItDir true if the session file exists in ~/.visit/;
+     * otherwise false and the filename must contain the entire path to the
+     * session file.
+     * @param hostname The name of the host where the session lives
      * @return true on success; false otherwise.
      */
-    public boolean ImportEntireState(String filename, boolean inVisItDir)
+    public boolean ImportEntireState(String filename, boolean inVisItDir, String hostname)
     {
         GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_IMPORTENTIRESTATERPC);
         GetViewerState().GetViewerRPC().SetVariable(filename);
         GetViewerState().GetViewerRPC().SetBoolFlag(inVisItDir);
+        GetViewerState().GetViewerRPC().SetStringArg1(hostname);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();
     }
 
     /**
-     * Restores a session file, which causes VisIt to delete all plots and recreate the
-     * plots described in the session file but different databases will be used instead
-     * of the databases saved in the session file.
+     * Restores a session file, which causes VisIt to delete all plots and
+     * recreate the plots described in the session file but different databases
+     * will be used instead of the databases saved in the session file.
      *
-     * @param filename The name of the local file from which the session information will be loaded.
-     * @param inVisItDir true if the session file exists in ~/.visit/; otherwise false and the
-     *                   filename must contain the entire path to the session file.
-     * @param sources A vector of String objects containing the names of the databases that will
-     *                be used to restore the session. The vector must contain the same number of
-     *                sources as the session file for the session to be restored properly.
+     * @param filename The name of the local file from which the session
+     * information will be loaded.
+     * @param inVisItDir true if the session file exists in ~/.visit/;
+     * otherwise false and the filename must contain the entire path to the
+     * session file.
+     * @param sources A vector of String objects containing the names of the
+     * databases that will be used to restore the session. The vector must
+     * contain the same number of sources as the session file for the session
+     * to be restored properly.
+     * @param hostname The name of the host where the session lives
      * @return true on success; false otherwise.
      */
-    public boolean ImportEntireStateWithDifferentSources(String filename, boolean inVisItDir, Vector sources)
+    public boolean ImportEntireStateWithDifferentSources(String filename, boolean inVisItDir, Vector sources, String hostname)
     {
         GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_IMPORTENTIRESTATEWITHDIFFERENTSOURCESRPC);
         GetViewerState().GetViewerRPC().SetVariable(filename);
         GetViewerState().GetViewerRPC().SetBoolFlag(inVisItDir);
         GetViewerState().GetViewerRPC().SetProgramOptions(sources);
+        GetViewerState().GetViewerRPC().SetStringArg1(hostname);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();
     }
