@@ -533,6 +533,10 @@ MinMaxOp(void *ibuf, void *iobuf, int *len, MPI_Datatype *)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to d->communicator
+//
+//    Burlen Loring, Sun Sep 27 16:05:36 PDT 2015
+//    Fix a memory leak.
+//
 // ****************************************************************************
 
 /* ARGSUSED */
@@ -544,8 +548,7 @@ avtParallelContext::UnifyMinMax(double *buff, int size, int altsize)
     (void)size;
     (void)altsize;
 #else
-    int  i;
-    double *rbuff;
+    double *rbuff = NULL;
 
     // if it hasn't been created yet, create the min/max MPI reduction operator
     if (PrivateData::AVT_MPI_MINMAX == MPI_OP_NULL)
@@ -581,9 +584,9 @@ avtParallelContext::UnifyMinMax(double *buff, int size, int altsize)
         // we're going to be reducing a buffer that is larger than size
         // so populate it with appropriate default values
         double *tbuff = new double[altsize];
-        for (i = 0; i < size; i++)
+        for (int i = 0; i < size; ++i)
             tbuff[i] = buff[i];
-        for (i = size; i < altsize; i += 2)
+        for (int i = size; i < altsize; i += 2)
         {
             tbuff[i  ] = +DBL_MAX;
             tbuff[i+1] = -DBL_MAX;
@@ -591,6 +594,7 @@ avtParallelContext::UnifyMinMax(double *buff, int size, int altsize)
 
         MPI_Allreduce(tbuff, rbuff, altsize, MPI_DOUBLE, PrivateData::AVT_MPI_MINMAX, this->GetCommunicator());
 
+        delete [] tbuff;
     }
     else
     {
@@ -598,7 +602,7 @@ avtParallelContext::UnifyMinMax(double *buff, int size, int altsize)
     }
 
     // put the reduced results back into buff
-    for (i = 0; i < size ; i++)
+    for (int i = 0; i < size ; ++i)
         buff[i] = rbuff[i];
 
     delete [] rbuff;
