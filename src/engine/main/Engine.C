@@ -35,7 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-    
+
 #include <Engine.h>
 #include <EngineState.h>
 #include <Executors.h>
@@ -209,6 +209,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //   ssh command to the gateway machine instead of to the ssh command to
 //   the remote machine.
 //
+//   Burlen Loring, Fri Sep 25 12:01:11 PDT 2015
+//   Cleanup some warnings
+//
 // ****************************************************************************
 
 class ViewerRemoteProcess : public RemoteProcess
@@ -227,6 +230,9 @@ protected:
     virtual void Launch(const std::string &rHost, bool createAsThoughLocal,
                         const stringVector &commandLine)
     {
+        (void)rHost;
+        (void)createAsThoughLocal;
+
         const char *mName = "ViewerRemoteProcess::Launch: ";
 
         // Convert the remote process arguments into arguments that the viewer
@@ -764,6 +770,9 @@ public:
 //   Brad Whitlock, Wed Oct 22 11:46:24 PDT 2014
 //   Skip plugin broadcasters for parallel when we build statically.
 //
+//   Burlen Loring, Thu Oct  8 14:41:11 PDT 2015
+//   fix leak of NetworkManager
+//
 // ****************************************************************************
 
 void
@@ -793,7 +802,7 @@ Engine::InitializeCompute()
     {
         std::ostringstream s;
         s << mName << "Setting up " << this->nDisplays << " GPUs for HW rendering";
-        if (DebugStream::Level3()) 
+        if (DebugStream::Level3())
         {
             debug1 << mName << "Setting up X displays for " << this->nDisplays << " GPUs."
                << "  Using X arguments: '" << this->X_Args << "'" << std::endl;
@@ -806,6 +815,7 @@ Engine::InitializeCompute()
     // Create the network manager.  Note that this must be done *after* the
     // code to set the display and decide if we are using Mesa.
     //
+    delete netmgr;
 #if defined(PARALLEL) && defined(HAVE_ICET)
     if(this->useIceT)
     {
@@ -1092,11 +1102,17 @@ Engine::CreatePluginManagers()
 //    Cameron Christensen, Tuesday, June 10, 2014
 //    Added SetBackendTypeRPC.
 //
+//    Burlen Loring, Fri Sep 25 12:01:11 PDT 2015
+//    Cleanup some warnings
+//
 // ****************************************************************************
 
 void
 Engine::SetUpViewerInterface(int *argc, char **argv[])
 {
+    (void)argc;
+    (void)argv;
+
     StackTimer setupTimer("Setting up viewer interface");
     const char *exMsg = "SetUpViewerInterface must be called after ConnectViewer";
 
@@ -1373,11 +1389,17 @@ Engine::ExtractViewerArguments(int *argc, char **argv[])
 //    Brad Whitlock, Tue Jun  5 17:20:36 PDT 2012
 //    Pass default machine profile to Open.
 //
+//    Burlen Loring, Fri Sep 25 12:01:11 PDT 2015
+//    Cleanup some warnings
+//
 // ****************************************************************************
 
 bool
 Engine::ReverseLaunchViewer(int *argc, char **argv[])
 {
+    (void)argc;
+    (void)argv;
+
     // If we're reverse launching and we're the UI process then we can 
     // launch the viewer.
     viewer = new ViewerRemoteProcess(GetVisItLauncher());
@@ -2327,11 +2349,16 @@ Engine::ProcessCommandLine(int argc, char **argv)
 //   Dave Pugmire, Wed Apr 18 09:05:40 EDT 2012
 //   Add alarmEnabled flag. Setting alarm(0) is not disabling the alarm.
 //
+//    Burlen Loring, Fri Sep 25 12:01:11 PDT 2015
+//    Cleanup some warnings
+//
 // ****************************************************************************
 
 void
 Engine::AlarmHandler(int signal)
 {
+    (void)signal;
+
     Engine *e = Engine::GetEngine();
     if (!e->alarmEnabled)
         return;
@@ -3281,11 +3308,16 @@ Engine::SendKeepAliveReply()
 //    Brad Whitlock, Fri Sep 28 11:17:24 PDT 2012
 //    Return early when the viewer is not connected.
 //
+//    Burlen Loring, Thu Oct  8 20:18:42 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 bool
 Engine::EngineAbortCallbackParallel(void *data, bool informSlaves)
 {
+    (void)informSlaves;
+
     // If the viewer is not connected, return.
     if(data == NULL)
         return false;
