@@ -65,6 +65,9 @@ import java.net.UnknownHostException;
 //   Brad Whitlock, Thu Mar 20 10:46:56 PDT 2003
 //   I made it use port 5600.
 //
+//   Kathleen Biagas, Thu Oct 15 18:00:21 PDT 2015
+//   Added 'OrderConnections' to match Remote/Parent process.
+//
 // ****************************************************************************
 
 class Connection
@@ -108,7 +111,7 @@ class Connection
             readConnection.setTcpNoDelay(true);
             writeConnection.setTcpNoDelay(true);
             socketsCreated = true;
-
+            success = OrderConnections();
             success = ExchangeTypeRepresentations();
         }
         catch(SocketException s)
@@ -145,6 +148,17 @@ class Connection
 
         serverSocketCreated = false;
         socketsCreated = false;   
+    }
+
+    private boolean OrderConnections() throws IOException
+    {
+        System.out.println("Connection::OrderConnections");
+        boolean retval = true;
+        byte[] buf = new byte[4];
+        DirectWriteHelper(readConnection.getOutputStream(), buf);
+        buf[3] = 1;
+        DirectWriteHelper(writeConnection.getOutputStream(), buf);
+        return retval;
     }
 
     private boolean ExchangeTypeRepresentations() throws IOException
