@@ -115,6 +115,7 @@ CALLBACK_ACTION(DatabaseMetaData,         avtDatabaseMetaData,      PyavtDatabas
 static void \
 default_handler_##Obj(Subject *subj, void *data) \
 { \
+    (void)subj; \
     CallbackManager::CallbackHandlerData *cbData = (CallbackManager::CallbackHandlerData *)data; \
     if(cbData->pycb != 0) \
     { \
