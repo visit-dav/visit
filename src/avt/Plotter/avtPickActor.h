@@ -78,6 +78,9 @@ class vtkGlyphSource2D;
 //    Brad Whitlock, Fri Aug 27 10:54:33 PDT 2010
 //    I added GetPickDesignator.
 //
+//    Burlen Loring, Thu Oct  8 10:36:25 PDT 2015
+//    fix a compliler warning
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPickActor
@@ -96,7 +99,7 @@ class PLOTTER_API avtPickActor
     const double *     GetAttachmentPoint() { return attach; };
     const double *     GetLetterPosition(void); 
     void               SetMode3D(const bool);
-    const bool         GetMode3D(void) const { return mode3D; };
+    bool               GetMode3D(void) const { return mode3D; };
     void               SetScale(double);
     void               SetDesignator(const std::string &l);
     std::string        GetDesignator() const;
