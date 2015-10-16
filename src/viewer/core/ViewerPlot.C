@@ -5944,9 +5944,12 @@ ViewerPlot::GetEngineKey() const
 //    Kathleen Biagas, Wed Feb 29 14:08:13 MST 2012
 //    Wrapped in a Try-catch block.
 //
+//    Burlen Loring, Wed Aug 26 14:05:24 PDT 2015
+//    fix a compiler warning
+//
 // ****************************************************************************
 
-const avtCentering
+avtCentering
 ViewerPlot::GetVariableCentering() const
 {
     avtCentering retval = AVT_UNKNOWN_CENT; 

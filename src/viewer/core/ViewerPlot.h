@@ -306,6 +306,9 @@ class avtToolInterface;
 //    Kathleen Biagas, Wed Feb 29 07:46:10 MST 2012
 //    Added GetExtraInfoForPick.
 //
+//    Burlen Loring, Wed Aug 26 14:04:16 PDT 2015
+//    clean up a compiler warning
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerPlot : public ViewerBase
@@ -359,7 +362,7 @@ public:
     void SetVariableDescription(const std::string &);
     void UpdateVariableDescription( bool resest = false );
     const std::string &GetVariableDescription() const;
-    const avtCentering GetVariableCentering() const;
+    avtCentering GetVariableCentering() const;
     const std::string &GetMeshName() const;
     const std::string &GetPlotDescription() const;
     void SetPlotDescription(const std::string &);

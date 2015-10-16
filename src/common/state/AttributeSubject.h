@@ -70,6 +70,9 @@
 //   Added virtual method TypeName so that derived classes can have their
 //   names printed in log files. 
 //
+//   Burlen Loring, Thu Sep 24 11:35:22 PDT 2015
+//   I removed a compiler warning.
+//
 // ****************************************************************************
 
 class STATE_API AttributeSubject : public AttributeGroup, public Subject
@@ -81,7 +84,7 @@ public:
     virtual const std::string TypeName() const; 
     virtual void Notify();
     virtual AttributeSubject *CreateCompatible(const std::string &) const;
-    virtual AttributeSubject *NewInstance(bool copy) const { return 0; };
+    virtual AttributeSubject *NewInstance(bool) const { return 0; };
 
     virtual bool VarChangeRequiresReset(void) { return false; };
 };

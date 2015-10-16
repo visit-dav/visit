@@ -112,6 +112,9 @@ class     avtTransparencyActor;
 //    Brad Whitlock, Wed Aug 22 11:27:17 PDT 2007
 //    Added reduced detail methods.
 //
+//    Burlen Loring, Mon Sep 28 08:54:40 PDT 2015
+//    Clean up two warnings
+//
 // ****************************************************************************
 
 class PLOTTER_API avtDrawable
@@ -137,8 +140,8 @@ class PLOTTER_API avtDrawable
     virtual void               TurnLightingOff(void) = 0;
     virtual void               SetAmbientCoefficient(const double) = 0;
 
-    virtual void               SetSurfaceRepresentation(int rep) {;};
-    virtual void               SetImmediateModeRendering(bool val) {;};
+    virtual void               SetSurfaceRepresentation(int) {;};
+    virtual void               SetImmediateModeRendering(bool) {;};
 
     virtual void               SetSpecularProperties(bool,double,double,
                                                      const ColorAttribute&) {;}

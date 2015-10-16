@@ -134,6 +134,9 @@ class ExpressionList;
 //    Brad Whitlock, Wed Sep 17 12:22:21 PDT 2014
 //    Added common base class for viewer/engine plugins.
 //
+//    Burlen Loring, Thu Oct  8 14:31:15 PDT 2015
+//    clean up a few compiler warnings
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
@@ -153,7 +156,7 @@ class PLUGIN_API CommonOperatorPluginInfo : public virtual GeneralOperatorPlugin
     virtual AttributeSubject *AllocAttributes() = 0;
     virtual void CopyAttributes(AttributeSubject *to,
                                 AttributeSubject *from) = 0;
-    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *md) {return NULL;}
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *) {return NULL;}
     virtual bool GetUserSelectable() const { return true; }
     virtual int GetVariableTypes() const { return 0; }
     virtual int GetVariableMask() const { return ~0; }
@@ -166,8 +169,8 @@ class PLUGIN_API GUIOperatorPluginInfo : public virtual CommonOperatorPluginInfo
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad) = 0;
-    virtual QvisWizard *CreatePluginWizard(AttributeSubject *attr,
-        QWidget *parent, const char *name =0)
+    virtual QvisWizard *CreatePluginWizard(AttributeSubject *,
+        QWidget *, const char * = 0)
     {
         return 0;
     }
@@ -182,19 +185,16 @@ class PLUGIN_API ViewerEngineOperatorPluginInfo : public virtual CommonOperatorP
     virtual void SetClientAtts(AttributeSubject *atts) = 0;
     virtual void GetClientAtts(AttributeSubject *atts) = 0;
     virtual void GetClientAtts(AttributeSubject *atts,
-                               const bool activeOperator,
-                               const bool applyToAll)
-    {
-      GetClientAtts(atts);
-    };
+                               const bool, const bool)
+    { GetClientAtts(atts); };
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const avtPlotMetaData &plot,
                                         const bool fromDefault) = 0;
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
                                     const avtPlotMetaData &plot) = 0;
-    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
-                                                  const avtPlotMetaData &plot)
+    virtual std::string GetOperatorVarDescription(AttributeSubject *,
+                                                  const avtPlotMetaData &)
                                                   { return std::string(); }
     virtual const char *GetMenuName() const = 0;
 
@@ -221,7 +221,7 @@ class PLUGIN_API ScriptingOperatorPluginInfo : public virtual CommonOperatorPlug
     virtual void InitializePlugin(AttributeSubject *subj, void *data) = 0;
     virtual void *GetMethodTable(int *nMethods) = 0;
     virtual char *GetLogString() = 0;
-    virtual bool TypesMatch(void *pyobject) { return false; }
+    virtual bool TypesMatch(void *) { return false; }
     virtual void SetDefaults(const AttributeSubject *) = 0;
 };
 

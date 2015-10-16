@@ -581,10 +581,13 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
 //    Tom Fogal, Tue Sep 27 14:07:30 MDT 2011
 //    Ensure static vtk memory gets cleaned up.
 //
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 void
-CBreakVTKPipelineConnections(avtDataRepresentation &data, void *arg, bool &)
+CBreakVTKPipelineConnections(avtDataRepresentation &data, void *, bool &)
 {
     if (!data.Valid())
     {
@@ -2049,6 +2052,9 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Added 'GetNodalMajorEigenalueRangeViaCells' to be used when data is nodal
 //    and 'onlyConnectedNodes' is requested.
 //
+//    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
+//    clean up a warning
+//
 // ****************************************************************************
 
 template <class T> static double
@@ -2106,6 +2112,7 @@ template <class T> static void
 GetNodalMajorEigenvalueRangeViaCells(T *ptr, int n, int ncomps, double *exts, 
                   vtkDataSet *ds)
 {
+    (void)n;
     vtkIdType nCells = ds->GetNumberOfCells();
     vtkIdList *ptIds = vtkIdList::New();
     for (vtkIdType cellId = 0; cellId < nCells; ++cellId)
