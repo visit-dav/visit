@@ -146,6 +146,9 @@ class ViewerPlot;
 //    Kathleen Bonnell, Mon Mar  2 16:25:53 PST 2009
 //    Added PermitsCurveViewScaling, Permits2DViewScaling.
 //
+//    Burlen Loring, Thu Oct  8 14:34:36 PDT 2015
+//    fix a couple of compiler warnings
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
@@ -174,9 +177,9 @@ class PLUGIN_API GUIPlotPluginInfo : public virtual CommonPlotPluginInfo
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad) = 0;
-    virtual QvisWizard *CreatePluginWizard(AttributeSubject *attr, QWidget *parent,
-        const std::string &varName, const avtDatabaseMetaData *md,
-        const ExpressionList *expList)
+    virtual QvisWizard *CreatePluginWizard(AttributeSubject *, QWidget *,
+        const std::string &, const avtDatabaseMetaData *,
+        const ExpressionList *)
     {
         return 0;
     }
@@ -199,10 +202,10 @@ public:
 
     virtual void InitializePlotAtts(AttributeSubject *atts,
                                     const avtPlotMetaData &) = 0;
-    virtual void ReInitializePlotAtts(AttributeSubject *atts, 
+    virtual void ReInitializePlotAtts(AttributeSubject *, 
                                       const avtPlotMetaData &) { ; }
 
-    virtual void ResetPlotAtts(AttributeSubject *atts,
+    virtual void ResetPlotAtts(AttributeSubject *,
                                const avtPlotMetaData &) { ; }
 
     virtual const char *GetMenuName() const = 0;
@@ -214,12 +217,12 @@ public:
     virtual const char **XPMIconData() const { return 0; }
 
     virtual void *AlternateDisplayCreate(ViewerPlot *) { return 0; }
-    virtual void AlternateDisplayDestroy(void *dpy) {; }
-    virtual void AlternateDisplayClear(void *dpy) {; }
-    virtual void AlternateDisplayHide(void *dpy) {; }
-    virtual void AlternateDisplayShow(void *dpy) {; }
-    virtual void AlternateDisplayIconify(void *dpy) {; }
-    virtual void AlternateDisplayDeIconify(void *dpy) {; }
+    virtual void AlternateDisplayDestroy(void *) {; }
+    virtual void AlternateDisplayClear(void *) {; }
+    virtual void AlternateDisplayHide(void *) {; }
+    virtual void AlternateDisplayShow(void *) {; }
+    virtual void AlternateDisplayIconify(void *) {; }
+    virtual void AlternateDisplayDeIconify(void *) {; }
 };
 
 class PLUGIN_API EnginePlotPluginInfo : public virtual ViewerEnginePlotPluginInfo

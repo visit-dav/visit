@@ -138,6 +138,9 @@ class avtExpressionEvaluatorFilter;
 //    Add GetNFilters, since that will get the number of stages more accurate
 //    for queries over time.
 //
+//    Burlen Loring, Thu Oct  8 12:46:02 PDT 2015
+//    Fix a couple of warnings
+//
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -161,8 +164,8 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     void                            SetPickAtts(const PickAttributes *pa);
     void                            SetPickAttsForTimeQuery(const PickAttributes *pa);
     const PickAttributes *          GetPickAtts(void);
-    virtual void                    SetTransform(const avtMatrix *m){};
-    virtual void                    SetInvTransform(const avtMatrix *m){};
+    virtual void                    SetTransform(const avtMatrix *){};
+    virtual void                    SetInvTransform(const avtMatrix *){};
     void                            SetNeedTransform(const bool b)
                                         { needTransform = b; };
     void                            SetSkippedLocate(const bool s)
