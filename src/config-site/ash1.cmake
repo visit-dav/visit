@@ -1,14 +1,14 @@
-#/uufs/ash.peaks/sys/pkg/VisIt/BuildDirs/VisIt/thirdparty/visit/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake
+#/uufs/ash.peaks/sys/pkg/VisIt/BuildDirs/VisIt/Thirdparty/visit/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake
 ##
-## ../2.9RC/src/svn_bin/build_visit generated host.cmake
-## created: Sat Mar 21 14:17:48 MDT 2015
-## system: Linux ash1 2.6.32-431.29.2.el6.x86_64 #1 SMP Sun Jul 27 15:55:46 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux
+## ../trunk/src/svn_bin/build_visit generated host.cmake
+## created: Fri Oct 16 16:59:14 MDT 2015
+## system: Linux ash2 2.6.32-504.30.3.el6.x86_64 #1 SMP Wed Jul 15 10:13:09 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux
 ## by: u0059283
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /uufs/ash.peaks/sys/pkg/VisIt/BuildDirs/VisIt/thirdparty/visit)
+SET(VISITHOME /uufs/ash.peaks/sys/pkg/VisIt/BuildDirs/VisIt/Thirdparty/visit)
 SET(VISITARCH linux-x86_64_gcc-4.4)
 
 ## Compiler flags.
@@ -23,7 +23,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /uufs/ash.peaks/sys/pkg/mvapich2/1.9/bin/mpic++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /uufs/chpc.utah.edu/sys/installdir/mvapich2/2.1/bin/mpicc TYPE FILEPATH)
 
 ##
 ## VisIt Thread Option
@@ -99,7 +99,7 @@ VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR ${VISITHOME}/zlib/1.2.7/${VISITARCH})
 ##
 ## HDF5
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.7/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.14/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/zlib/1.2.7/${VISITARCH}/lib z TYPE STRING)
 
 ##
@@ -143,9 +143,9 @@ VISIT_OPTION_DEFAULT(VISIT_MANTA_DIR ${VISITHOME}/manta/2540/${VISITARCH})
 ##
 ## Nektar++
 ##
-#SETUP_APP_VERSION(NEKTAR++ 4.0.1)
-#VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR ${VISITHOME}/nektar++/${NEKTAR++_VERSION}/${VISITARCH})
-#VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP ${VISITHOME}/zlib/1.2.7/${VISITARCH}/lib z TYPE STRING)
+SETUP_APP_VERSION(NEKTAR++ 4.1.0)
+VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR ${VISITHOME}/nektar++/${NEKTAR++_VERSION}/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP ${VISITHOME}/zlib/1.2.7/${VISITARCH}/lib z TYPE STRING)
 
 ##
 ## PySide
@@ -166,7 +166,7 @@ VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/1.6.0/${VISITARCH})
 ##
 ## VISUS 
 ##
-VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR ${VISITHOME}/visus/ad09cb8/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR ${VISITHOME}/visus/5f5fd6c/${VISITARCH})
 
 ##
 ## Xdmf
