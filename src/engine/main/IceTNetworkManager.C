@@ -598,8 +598,13 @@ IceTNetworkManager::RenderGeometry()
 //    Burlen Loring, Thu Oct  8 16:02:32 PDT 2015
 //    fix a warning.
 //
+//    Burlen Loring, Sat Oct 17 07:54:42 PDT 2015
+//    temporarily remove the unused methods because they are creating
+//    compiler warnings.
+//
 // ****************************************************************************
-avtImage_p
+
+/*avtImage_p
 IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
 {
     (void) windowID;
@@ -616,8 +621,8 @@ IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
 
         viswin->ScreenRender(
             renderState.viewportedMode,
-            /*need z=*/true, /*opaque on=*/false,
-            /*translucent on=*/true, /*disable bg=*/false,
+            /need z=/true, /opaque on=/false,
+            /translucent on=/true, /disable bg=/false,
             input);
 
         // Restore the background mode for next time
@@ -628,7 +633,7 @@ IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
     // In this implementation, the user should never use the return value --
     // read it back from IceT instead!
     return NULL;
-}
+}*/
 
 // ****************************************************************************
 //  Method: Readback

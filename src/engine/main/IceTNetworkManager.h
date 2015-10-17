@@ -80,6 +80,10 @@ class Engine;
 //    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
 //    sync up with network manager(base class) order compositing refactor
 //
+//    Burlen Loring, Sat Oct 17 07:57:42 PDT 2015
+//    temporarily remove the unused methods because they are
+//    creating compiler warnings.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
@@ -101,9 +105,9 @@ class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
     virtual
     avtImage_p         RenderGeometry();
 
-    virtual
+    /*virtual
     avtImage_p         RenderTranslucent(int windowID,
-                                         const avtImage_p& input);
+                           const avtImage_p& input);*/
 
     virtual avtImage_p Readback(VisWindow * const, bool) const;
 
