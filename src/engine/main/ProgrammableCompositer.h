@@ -2206,8 +2206,6 @@ void Insert(avtImage_p img, T *r, T *g, T *b, T *a, float *z,
 
     img->SetImage(avtImageRepresentation(im, NULL, 0));
     im->Delete();
-
-    return img;
 }
 
 // ----------------------------------------------------------------------------
