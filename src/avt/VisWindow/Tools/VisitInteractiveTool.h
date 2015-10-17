@@ -93,6 +93,9 @@ typedef std::vector<HotPoint> HotPointVector;
 //   Jeremy Meredith, Wed May 19 11:00:51 EDT 2010
 //   Added support for 3D axis scaling.
 //
+//   Burlen Loring, Thu Oct  8 13:45:14 PDT 2015
+//   Fix a compiler warning
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractiveTool
@@ -114,7 +117,7 @@ class VISWINDOW_API VisitInteractiveTool
     virtual void          Start3DMode() {; };
     virtual void          Stop3DMode() {; };
     virtual void          NoPlots() {; };
-    virtual void          UpdatePlotList(std::vector<avtActor_p> &list) { }
+    virtual void          UpdatePlotList(std::vector<avtActor_p> &) { }
 
     virtual void          SetBackgroundColor(double, double, double) {; };
     virtual void          SetForegroundColor(double, double, double) {; };

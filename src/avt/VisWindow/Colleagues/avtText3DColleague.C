@@ -259,6 +259,29 @@ avtText3DColleague::RemoveFromRenderer()
 }
 
 // ****************************************************************************
+// Method: avtText3DColleague:SetVisibility
+//
+// Purpose: 
+//   Sets visibility of the tool. Use this if you need to temporarily
+//   take the tool out of the scene during transparent rendering.
+//
+// Programmer: Burlen Loring 
+// Creation:   Mon Sep 28 16:06:19 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtText3DColleague::SetVisibility(int val)
+{
+    if (GetActive() && GetVisible())
+    {
+        info->textActor->SetVisibility(val);
+    }
+}
+
+// ****************************************************************************
 // Method: avtText3DColleague::Hide
 //
 // Purpose: 

@@ -476,6 +476,15 @@ class ViewerPlotList;
 //    Brad Whitlock, Thu Aug 21 15:03:05 PDT 2014
 //    Factor out the GUI stuff.
 //
+//    Burlen Loring, Thu Aug 13 08:38:52 PDT 2015
+//    Added options for depth peeling
+//
+//    Burlen Loring, Sun Sep  6 08:44:26 PDT 2015
+//    Added option for ordered composting
+//
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -675,6 +684,22 @@ public:
     // Rendering options.
     void SetAntialiasing(bool enabled);
     bool GetAntialiasing() const;
+    void SetOrderComposite(bool enabled);
+    bool GetOrderComposite() const;
+    void   SetDepthCompositeThreads(size_t n);
+    size_t GetDepthCompositeThreads() const;
+    void   SetAlphaCompositeThreads(size_t n);
+    size_t GetAlphaCompositeThreads() const;
+    void   SetDepthCompositeBlocking(size_t n);
+    size_t GetDepthCompositeBlocking() const;
+    void   SetAlphaCompositeBlocking(size_t n);
+    size_t GetAlphaCompositeBlocking() const;
+    void SetDepthPeeling(bool enabled);
+    bool GetDepthPeeling() const;
+    void SetOcclusionRatio(double val);
+    double GetOcclusionRatio() const;
+    void SetNumberOfPeels(int n);
+    int GetNumberOfPeels() const;
     void SetMultiresolutionMode(bool enabled);
     bool GetMultiresolutionMode() const;
     void SetMultiresolutionCellSize(double size);
@@ -688,7 +713,7 @@ public:
     void SetSurfaceRepresentation(int rep);
     int  GetSurfaceRepresentation() const;
     int  GetNumPrimitives() const;
-    int  GetNumberOfCells(bool polysOnly = false) const; 
+    long long GetNumberOfCells(bool polysOnly = false) const;
     void SetNotifyForEachRender(bool val);
     bool GetNotifyForEachRender() const;
     bool GetScalableRendering() const;

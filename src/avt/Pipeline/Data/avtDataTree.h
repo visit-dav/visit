@@ -130,6 +130,9 @@ typedef void (*TraverseFunc)(avtDataRepresentation &, void *, bool &);
 //    Added methods for constructing leaves, to aid in keeping the tree depth
 //    as shallow as possible.
 //
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataTree
@@ -152,7 +155,7 @@ class PIPELINE_API avtDataTree
                              avtDataTree(int, avtDataRepresentation **);
                              avtDataTree(avtDataTree_p, bool dontCopyData = false );
                              avtDataTree(int, avtDataTree_p *);
-   
+
     virtual                 ~avtDataTree();
 
     avtDataTree             &operator=(const avtDataTree&);
@@ -160,7 +163,7 @@ class PIPELINE_API avtDataTree
 
     avtDataTree_p            GetChild(int);
     avtDataRepresentation   &GetDataRepresentation(void); 
-    int                      GetNumberOfCells(int topoDim, bool polysOnly) const;
+    long long                GetNumberOfCells(int topoDim, bool polysOnly) const;
 
     vtkDataSet              *GetSingleLeaf(void);
     std::string              GetDatasetAsString();
@@ -200,6 +203,5 @@ class PIPELINE_API avtDataTree
     void                     AddLeafToList(vtkDataSet**, int &); 
     void                     GetUniqueLabels(std::vector<std::string> &, std::set<std::string> &);
 };
-
 
 #endif

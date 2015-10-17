@@ -140,6 +140,31 @@ VisitPointTool::~VisitPointTool()
 }
 
 // ****************************************************************************
+// Method: VistPointTool::SetVisibility
+//
+// Purpose: 
+//   Sets visibility of the tool. Use this if you need to temporarily
+//   take the tool out of the scene during transparent rendering.
+//
+// Programmer: Burlen Loring 
+// Creation:   Mon Sep 28 16:06:19 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisitPointTool::SetVisibility(int val)
+{
+    if (IsEnabled())
+    {
+        guideActor->SetVisibility(val);
+        sphereActor->SetVisibility(val);
+        pointTextActor->SetVisibility(val);
+    }
+}
+
+// ****************************************************************************
 // Method: VisitPointTool::Enable
 //
 // Purpose: 

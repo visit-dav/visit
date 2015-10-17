@@ -914,14 +914,17 @@ avtDataTree::GetDataRepresentation()
 //    Mark C. Miller, Wed Nov  5 09:48:13 PST 2003
 //    Added optional argument to count polygons only
 //
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
-int
+long long
 avtDataTree::GetNumberOfCells(int topoDim, bool polysOnly) const
 {
     if (nChildren > 0)
     {
-        int sum = 0;
+        long long sum = 0;
         for (int i = 0; i < nChildren; i++)
         {
             if (*children[i] != NULL)
@@ -933,7 +936,6 @@ avtDataTree::GetNumberOfCells(int topoDim, bool polysOnly) const
     {
         return dataRep->GetNumberOfCells(topoDim, polysOnly);
     }
-
     return 0;
 }
 

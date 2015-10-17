@@ -220,6 +220,21 @@ class VisWindowColleagueProxy;
 //    Brad Whitlock, Wed Mar 13 16:08:08 PDT 2013
 //    Add RenderRenderWindow.
 //
+//    Burlen Loring, Mon Aug 24 15:41:51 PDT 2015
+//    Add support for capturing alpha channel. added
+//    templated readback api so that data can be read
+//    directly into the required type eliminating a
+//    memcpy. added set/get methods for enabling alpha
+//    channel, for configuring and enabling depth peeling
+//    and configuring and enabling the alpha blending
+//    compositer.
+//
+//    Burlen Loring, Mon Aug 31 07:51:29 PDT 2015
+//    Add option to disable background in ScreenRender.
+//
+//    Burlen Loring, Thu Oct  8 13:33:11 PDT 2015
+//    fix a couple of compiler warnings
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -258,13 +273,24 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     void                     GetCaptureRegion(int& r0, int& c0, int& w, int& h,
                                  bool doViewportOnly);
+
     void                     ScreenRender(bool doViewportOnly = false,
                                           bool doCanvasZBufferToo = false,
                                           bool doOpaque = true,
                                           bool doTranslucent = true,
+                                          bool disableBackground = false,
                                           avtImage_p input = NULL);
+
     avtImage_p               ScreenReadback(bool doViewportOnly,
-                                            bool doCanvasZBufferToo);
+                                            bool readZ,
+                                            bool readAlpha);
+
+    template <typename T>
+    void                     ScreenReadback(T *&r, T *&g, T *&b,
+                                            T *&a, float *&z, int &w, int &h,
+                                            bool doViewportOnly, bool readZ,
+                                            bool readAlpha);
+
     avtImage_p               PostProcessScreenCapture(avtImage_p capturedImage,
                                  bool doViewportOnly, bool keepZBuffer);
 
@@ -291,8 +317,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     virtual void             SetResizeEvent(void(*callback)(void *), void *) = 0;
     virtual void             SetCloseCallback(void(*callback)(void *), void *) = 0;
-    virtual void             SetHideCallback(void(*callback)(void *), void *) {};
-    virtual void             SetShowCallback(void(*callback)(void *), void *) {};
+    virtual void             SetHideCallback(void(*)(void *), void *) {};
+    virtual void             SetShowCallback(void(*)(void *), void *) {};
     double                    ComputeVectorTextScaleFactor(const double *pos, const double *vp = NULL);
 
     void                     SetRenderInfoCallback(void(*callback)(void *), void *);
@@ -326,6 +352,32 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     virtual void             SetColorTexturingFlag(bool);
     bool                     GetColorTexturingFlag() const;
 
+    void                     EnableAlphaChannel();
+    void                     DisableAlphaChannel();
+
+    void                     SetOrderComposite(bool v) { orderComposite = v; }
+    bool                     GetOrderComposite() const { return orderComposite; }
+    void                     SetDepthCompositeThreads(size_t n) { depthCompositeThreads = n; }
+    size_t                   GetDepthCompositeThreads() const { return depthCompositeThreads; }
+    void                     SetAlphaCompositeThreads(size_t n) { alphaCompositeThreads = n; }
+    size_t                   GetAlphaCompositeThreads() const { return alphaCompositeThreads; }
+    void                     SetDepthCompositeBlocking(size_t n) { depthCompositeBlocking = n; }
+    size_t                   GetDepthCompositeBlocking() const { return depthCompositeBlocking; }
+    void                     SetAlphaCompositeBlocking(size_t n) { alphaCompositeBlocking = n; }
+    size_t                   GetAlphaCompositeBlocking() const { return alphaCompositeBlocking; }
+
+    void                     EnableDepthPeeling();
+    void                     DisableDepthPeeling();
+
+    void                     SetDepthPeeling(bool v) { depthPeeling = v; }
+    bool                     GetDepthPeeling() const { return depthPeeling; }
+
+    void                     SetNumberOfPeels(int n) { numberOfPeels = n; }
+    int                      GetNumberOfPeels() const { return numberOfPeels; }
+
+    void                     SetOcclusionRatio(double n) { occlusionRatio = n; }
+    double                   GetOcclusionRatio() const { return occlusionRatio; }
+
     int                      GetNumPrimitives() const;
     void                     SetNotifyForEachRender(bool val)
                                  { notifyForEachRender = val; };
@@ -336,7 +388,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                  { stereoEnabled = true; };
     static bool              GetStereoEnabled()
                                  { return stereoEnabled; }
-
     int                      GetScalableThreshold() const;
     bool                     SetScalableRendering(bool mode);
     bool                     GetScalableRendering() const
@@ -362,12 +413,14 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     virtual vtkPolyDataMapper2D *CreateXorGridMapper() { return 0; }
 
 
-    void                          InvokeRenderCallback();
+    void                     InvokeRenderCallback();
 
-    void UpdateMouseActions(std::string action,
-                            double start_dx, double start_dy,
-                            double end_dx, double end_dy,
-                            bool ctrl, bool shift);
+    void                    UpdateMouseActions(
+                                std::string action,
+                                double start_dx, double start_dy,
+                                double end_dx, double end_dy,
+                                bool ctrl, bool shift);
+
   protected:
     vtkRenderer                  *canvas;
     vtkRenderer                  *background;
@@ -384,6 +437,16 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     double                        specularPower;
     ColorAttribute                specularColor;
     bool                          colorTexturingFlag;
+    bool                          orderComposite;
+    size_t                        depthCompositeThreads;
+    size_t                        depthCompositeBlocking;
+    size_t                        alphaCompositeThreads;
+    size_t                        alphaCompositeBlocking;
+    bool                          depthPeeling;
+    double                        occlusionRatio;
+    int                           numberOfPeels;
+    int                           multiSamples;
+
     void(*renderInfo)(void *);
     void                         *renderInfoData;
     void                          (*renderEvent)(void *,bool);
@@ -423,8 +486,90 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     virtual void                  RenderRenderWindow(void);
 
 private:
-    void                          SetRenderUpdate(bool _setRenderUpdate) { setRenderUpdate = _setRenderUpdate; }
-    bool                          GetRenderUpdate() { return setRenderUpdate; }
-
+    void                     SetRenderUpdate(bool _setRenderUpdate)
+                             { setRenderUpdate = _setRenderUpdate; }
+    bool                     GetRenderUpdate() const
+                             { return setRenderUpdate; }
 };
+
+#include <cstdlib>
+#ifndef HAVE_ALIGNED_ALLOC
+#define aligned_alloc(_a, _n) \
+    malloc(_n)
+#endif
+
+#include <vtkRenderWindow.h>
+
+// ****************************************************************************
+//  Method: VisWinRendering::ScreenReadback
+//
+//  Purpose:
+//      Reads back an image from our render window returning
+//      the individual r,g,b and optionally a and the
+//      z-buffer. Caller needs to free the r,g,b,a arrays
+//      and delete [] the z-buffer. The point of this method
+//      is three fold, to read back in the desired precision
+//      (either uchar or float) , by splitting into rgba components
+//      compositing calculations are vectoroized by the compiler,
+//      and finally z-buffer read back is zero copy.
+//
+//  Returns:    The image on the screen.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Tue Aug 25 09:12:10 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+inline
+void ReadPixels(unsigned char *&rgba, vtkRenderWindow *rwin,
+    int x0, int y0, int x1, int y1)
+{ rgba = rwin->GetRGBACharPixelData(x0, y0, x1, y1, 1/*front*/); }
+
+inline
+void ReadPixels(float *&rgba, vtkRenderWindow *rwin,
+    int x0, int y0, int x1, int y1)
+{ rgba = rwin->GetRGBAPixelData(x0, y0, x1, y1, 1/*ront*/); }
+
+template <typename T>
+T *AllocAndCopyChannel(T *rgba, size_t n, int cid)
+{
+    T *c = static_cast<T*>(aligned_alloc(VISIT_MEM_ALIGN, n*sizeof(T)));
+    T *prgba = rgba + cid;
+    for (size_t i = 0; i < n; ++i)
+        c[i] = prgba[4*i];
+    return c;
+}
+
+template <typename T>
+void
+VisWinRendering::ScreenReadback(
+    T *&r, T *&g, T *&b, T *&a, float *&z, int &w, int &h,
+    bool doViewportOnly, bool readZ, bool readAlpha)
+{
+    // Set region origin/size to be captured
+    int r0, c0;
+    GetCaptureRegion(r0, c0, w, h, doViewportOnly);
+
+    // Read the pixels from the window and copy them over.
+    vtkRenderWindow *renWin = GetRenderWindow();
+
+    T *rgba = NULL;
+    ReadPixels(rgba, renWin, c0, r0, c0 + w-1, r0 + h-1);
+
+    size_t npix = w*h;
+
+    r = AllocAndCopyChannel(rgba, npix, 0);
+    g = AllocAndCopyChannel(rgba, npix, 1);
+    b = AllocAndCopyChannel(rgba, npix, 2);
+    if (readAlpha)
+        a = AllocAndCopyChannel(rgba, npix, 3);
+
+    delete [] rgba;
+
+    if (readZ)
+        z = renWin->GetZbufferData(c0, r0, c0 + w-1, r0 + h-1);
+}
+
 #endif

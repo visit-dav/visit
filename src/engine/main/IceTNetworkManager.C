@@ -309,11 +309,16 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    causing a hang when not all ranks are writing debugging logs. It did not
 //    provide much information anyway.
 //
+//    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
+//    sync up with network manager(base class) order compositing refactor
+//
 // ****************************************************************************
 
 avtDataObject_p
-IceTNetworkManager::Render(bool checkThreshold, intVector networkIds, bool getZBuffer,
-                           int annotMode, int windowID, bool leftEye)
+IceTNetworkManager::Render(
+    bool checkThreshold, intVector networkIds,
+    bool getZBuffer, int annotMode, int windowID,
+    bool leftEye)
 {
     int t0 = visitTimer->StartTimer();
     DataNetwork *origWorkingNet = workingNet;
@@ -329,14 +334,16 @@ IceTNetworkManager::Render(bool checkThreshold, intVector networkIds, bool getZB
     TRY
     {
         this->StartTimer();
-        this->RenderSetup(networkIds, getZBuffer, annotMode, windowID, leftEye);
+
+        RenderSetup(windowID, networkIds, getZBuffer,
+            annotMode, leftEye, checkThreshold);
 
         bool plotDoingTransparencyOutsideTransparencyActor = false;
         for(size_t i = 0 ; i < networkIds.size() ; i++)
         {
             workingNet = NULL;
             UseNetwork(networkIds[i]);
-            if(this->workingNet->GetPlot()->ManagesOwnTransparency()) 
+            if(this->workingNet->GetPlot()->ManagesOwnTransparency())
             {
                 plotDoingTransparencyOutsideTransparencyActor = true;
             }
@@ -349,139 +356,126 @@ IceTNetworkManager::Render(bool checkThreshold, intVector networkIds, bool getZB
         avtTransparencyActor* trans = viswin->GetTransparencyActor();
         bool transparenciesExist = trans->TransparenciesExist()
                            ||  plotDoingTransparencyOutsideTransparencyActor;
-        if(transparenciesExist || this->MemoMultipass(viswin))
+        if (transparenciesExist)
         {
             debug2 << "Encountered transparency: falling back to old "
                       "SR / compositing routines." << std::endl;
-            CATCH_RETURN2(1, NetworkManager::Render(checkThreshold, networkIds,
-                                                    getZBuffer, annotMode,
-                                                    windowID, leftEye));
-        }
 
-        bool needZB = !imageBasedPlots.empty() ||
-                      this->Shadowing(windowID)  ||
-                      this->DepthCueing(windowID);
-
-        // Confusingly, we need to set the input to be *opposite* of what VisIt
-        // wants.  This is due to (IMHO) poor naming in the IceT case; on the
-        // input side:
-        //     ICET_DEPTH_BUFFER_BIT set:     do Z-testing
-        //     ICET_DEPTH_BUFFER_BIT not set: do Z-based compositing.
-        // On the output side:
-        //     ICET_DEPTH_BUFFER_BIT set:     readback of Z buffer is allowed
-        //     ICET_DEPTH_BUFFER_BIT not set: readback of Z does not work.
-        // In VisIt's case, we calculated a `need Z buffer' predicate based
-        // around the idea that we need the Z buffer to do Z-compositing.
-        // However, IceT \emph{always} needs the Z buffer internally -- the
-        // flag only differentiates between `compositing' methodologies
-        // (painter-style or `over' operator) on input.
-        GLenum inputs = ICET_COLOR_BUFFER_BIT;
-        GLenum outputs = ICET_COLOR_BUFFER_BIT;
-        // Scratch all that, I guess.  That might be the correct way to go
-        // about things in the long run, but IceT only gives us back half an
-        // image if we don't set the depth buffer bit.  The compositing is a
-        // bit wrong, but there's not much else we can do..
-        // Consider removing the `hack' if a workaround is found.
-        if(/*hack*/true/*hack*/ || !this->MemoMultipass(viswin))
-        {
-            inputs |= ICET_DEPTH_BUFFER_BIT;
-        }
-        if(needZB)
-        {
-            outputs |= ICET_DEPTH_BUFFER_BIT;
-        }
-        ICET(icetInputOutputBuffers(inputs, outputs));
-
-        // If there is a backdrop image, we need to tell IceT so that it can
-        // composite correctly.
-        if(viswin->GetBackgroundMode() != AnnotationAttributes::Solid)
-        {
-            ICET(icetEnable(ICET_CORRECT_COLORED_BACKGROUND));
+            retval = NetworkManager::RenderInternal();
         }
         else
         {
-            ICET(icetDisable(ICET_CORRECT_COLORED_BACKGROUND));
-        }
+            bool needZB = !imageBasedPlots.empty() ||
+                          renderState.shadowMap  ||
+                          renderState.depthCues;
 
-        // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
-        // the misfortune of oscillating switching of modes around the
-        // threshold)
-        long scalableThreshold = GetScalableThreshold(windowID);
-        if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
-        {
-            this->RenderCleanup(windowID);
-            avtDataObject_p dobj = NULL;
-            CATCH_RETURN2(1, dobj);
-        }
+            // Confusingly, we need to set the input to be *opposite* of what VisIt
+            // wants.  This is due to (IMHO) poor naming in the IceT case; on the
+            // input side:
+            //     ICET_DEPTH_BUFFER_BIT set:     do Z-testing
+            //     ICET_DEPTH_BUFFER_BIT not set: do Z-based compositing.
+            // On the output side:
+            //     ICET_DEPTH_BUFFER_BIT set:     readback of Z buffer is allowed
+            //     ICET_DEPTH_BUFFER_BIT not set: readback of Z does not work.
+            // In VisIt's case, we calculated a `need Z buffer' predicate based
+            // around the idea that we need the Z buffer to do Z-compositing.
+            // However, IceT \emph{always} needs the Z buffer internally -- the
+            // flag only differentiates between `compositing' methodologies
+            // (painter-style or `over' operator) on input.
+            GLenum inputs = ICET_COLOR_BUFFER_BIT;
+            GLenum outputs = ICET_COLOR_BUFFER_BIT;
+            // Scratch all that, I guess.  That might be the correct way to go
+            // about things in the long run, but IceT only gives us back half an
+            // image if we don't set the depth buffer bit.  The compositing is a
+            // bit wrong, but there's not much else we can do..
+            // Consider removing the `hack' if a workaround is found.
+            if (/*hack*/true/*hack*/) // || !this->MemoMultipass(viswin))
+            {
+                inputs |= ICET_DEPTH_BUFFER_BIT;
+            }
+            if(needZB)
+            {
+                outputs |= ICET_DEPTH_BUFFER_BIT;
+            }
+            ICET(icetInputOutputBuffers(inputs, outputs));
 
-        debug5 << "Rendering " << viswin->GetNumPrimitives()
-               << " primitives." << endl;
+            // If there is a backdrop image, we need to tell IceT so that it can
+            // composite correctly.
+            if(viswin->GetBackgroundMode() != AnnotationAttributes::Solid)
+            {
+                ICET(icetEnable(ICET_CORRECT_COLORED_BACKGROUND));
+            }
+            else
+            {
+                ICET(icetDisable(ICET_CORRECT_COLORED_BACKGROUND));
+            }
 
-        int width, height, width_start, height_start;
-        // This basically gets the width and the height.
-        // The distinction is for 2D rendering, where we only want the
-        // width and the height of the viewport.
-        viswin->GetCaptureRegion(width_start, height_start, width, height,
-                                 this->r_mgmt.viewportedMode);
-        
-        this->TileLayout(width, height);
+            if (renderState.renderOnViewer)
+            {
+                RenderCleanup();
+                avtDataObject_p dobj = NULL;
+                CATCH_RETURN2(1, dobj);
+            }
 
-        CallInitializeProgressCallback(this->RenderingStages(windowID));
+            debug5 << "Rendering " << viswin->GetNumPrimitives()
+                   << " primitives." << endl;
 
-        // IceT mode is different from the standard network manager; we don't
-        // need to create any compositor or anything: it's all done under the
-        // hood.
-        // Whether or not to do multipass rendering (opaque first, translucent
-        // second) is all handled in the callback; from our perspective, we
-        // just say draw, read back the image, and post-process it.
+            int width, height, width_start, height_start;
+            // This basically gets the width and the height.
+            // The distinction is for 2D rendering, where we only want the
+            // width and the height of the viewport.
+            viswin->GetCaptureRegion(width_start, height_start, width, height,
+                                     renderState.viewportedMode);
 
-        // IceT sometimes omits large parts of Curve plots when using the
-        // REDUCE strategy. Use a different compositing strategy for Curve
-        // plots to avoid the problem.
-        if(viswin->GetWindowMode() == WINMODE_CURVE)
-            ICET(icetStrategy(ICET_STRATEGY_VTREE));
-        else
-            ICET(icetStrategy(ICET_STRATEGY_REDUCE));
+            this->TileLayout(width, height);
 
-        ICET(icetDrawFunc(render));
-        ICET(icetDrawFrame());
+            CallInitializeProgressCallback(this->RenderingStages());
 
-        // Now that we're done rendering, we need to post process the image.
-        debug3 << "IceTNM: Starting readback." << std::endl;
-        avtDataObject_p dob;
-        {
+            // IceT mode is different from the standard network manager; we don't
+            // need to create any compositor or anything: it's all done under the
+            // hood.
+            // Whether or not to do multipass rendering (opaque first, translucent
+            // second) is all handled in the callback; from our perspective, we
+            // just say draw, read back the image, and post-process it.
+
+            // IceT sometimes omits large parts of Curve plots when using the
+            // REDUCE strategy. Use a different compositing strategy for Curve
+            // plots to avoid the problem.
+            if(viswin->GetWindowMode() == WINMODE_CURVE)
+                ICET(icetStrategy(ICET_STRATEGY_VTREE));
+            else
+                ICET(icetStrategy(ICET_STRATEGY_REDUCE));
+
+            ICET(icetDrawFunc(render));
+            ICET(icetDrawFrame());
+
+            // Now that we're done rendering, we need to post process the image.
+            debug3 << "IceTNM: Starting readback." << std::endl;
             avtImage_p img = this->Readback(viswin, needZB);
-            CopyTo(dob, img);
+
+            // Now its essentially back to the same behavior as our parent:
+            //  shadows
+            //  depth cueing
+            //  post processing
+
+            if (renderState.shadowMap)
+                this->RenderShadows(img);
+
+            if (renderState.depthCues)
+                this->RenderDepthCues(img);
+
+            // If the engine is doing more than just 3D annotations,
+            // post-process the composited image.
+            RenderPostProcess(img);
+
+            CopyTo(retval, img);
         }
 
-        // Now its essentially back to the same behavior as our parent:
-        //  shadows
-        //  depth cueing
-        //  post processing
-        //  creating a D.Obj.writer out of all this
-
-        if (this->Shadowing(windowID))
-        {
-            this->RenderShadows(windowID, dob);
-        }
-
-        if (this->DepthCueing(windowID))
-        {
-            this->RenderDepthCues(windowID, dob);
-        }
-
-        //
-        // If the engine is doing more than just 3D annotations,
-        // post-process the composited image.
-        //
-        this->RenderPostProcess(imageBasedPlots, dob, windowID);
-
-        retval = dob;
-
-        this->RenderCleanup(windowID);
+        RenderCleanup();
     }
     CATCHALL
     {
+        RenderCleanup();
         RETHROW;
     }
     ENDTRY
@@ -516,31 +510,38 @@ IceTNetworkManager::Render(bool checkThreshold, intVector networkIds, bool getZB
 //    Tom Fogal, Wed May 18 11:59:50 MDT 2011
 //    Save images in debug mode.
 //
+//    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
+//    sync up with network manager(base class) order compositing refactor
+//
 // ****************************************************************************
 
 void
 IceTNetworkManager::RealRender()
 {
-    avtImage_p dob = this->RenderGeometry();
-    if(avtDebugDumpOptions::DumpEnabled())
-    {
-        this->DumpImage(dob, "icet-render-geom");
-    }
+    avtImage_p im = this->RenderGeometry();
 
-    VisWindow *viswin =
-        this->viswinMap.find(this->r_mgmt.windowID)->second.viswin;
-    if(this->MemoMultipass(viswin))
+    if(avtDebugDumpOptions::DumpEnabled())
+        this->DumpImage(im, "icet-render-geom");
+
+    //  Burlen Loring, Tue Sep  1 14:32:54 PDT 2015
+    //  note, opaque rendering needs to be z-buffer composited in one (or more
+    //  eg shadow map etc) pass, then translucent rendering needs to be alpha
+    //  composited in a final and completely distinct pass. ie moved out of
+    //  this method.
+    /*
+    VisWindow *viswin = renderState.window;
+
+    if (this->MemoMultipass(viswin))
     {
         avtDataObject_p trans_dob;
-        // why doesn't RenderTranslucent return an avtImage_p??
-        trans_dob = this->RenderTranslucent(this->r_mgmt.windowID, dob);
-        CopyTo(dob, trans_dob);
+        trans_dob = this->RenderTranslucent(renderState.windowID, im);
+        CopyTo(im, trans_dob);
     }
+    */
 
     if(avtDebugDumpOptions::DumpEnabled())
-    {
-        this->DumpImage(dob, "icet-render-translucent");
-    }
+        this->DumpImage(im, "icet-render-translucent");
+
     this->renderings++;
 }
 
@@ -561,17 +562,18 @@ IceTNetworkManager::RealRender()
 //    Tom Fogal, Mon Jul 28 14:57:01 EDT 2008
 //    Need to return NULL in the single-pass case!
 //
+//    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
+//    sync up with network manager(base class) order compositing refactor
+//
 // ****************************************************************************
 avtImage_p
 IceTNetworkManager::RenderGeometry()
 {
-    VisWindow *viswin = viswinMap.find(this->r_mgmt.windowID)->second.viswin;
-    if(this->MemoMultipass(viswin))
-    {
+    if (renderState.transparencyInPass2)
         return NetworkManager::RenderGeometry();
-    }
+
     CallProgressCallback("IceTNetworkManager", "Render geometry", 0, 1);
-        viswin->ScreenRender(this->r_mgmt.viewportedMode, true);
+    renderState.window->ScreenRender(renderState.viewportedMode, true);
     CallProgressCallback("IceTNetworkManager", "Render geometry", 0, 1);
     return NULL;
 }
@@ -590,39 +592,41 @@ IceTNetworkManager::RenderGeometry()
 //
 //  Modifications:
 //
+//    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
+//    sync up with network manager(base class) order compositing refactor
+//
+//    Burlen Loring, Thu Oct  8 16:02:32 PDT 2015
+//    fix a warning.
+//
 // ****************************************************************************
-avtDataObject_p
+avtImage_p
 IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
 {
-    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
+    (void) windowID;
+
     CallProgressCallback("IceTNetworkManager", "Transparent rendering", 0, 1);
+    VisWindow *viswin = renderState.window;
     {
         StackTimer second_pass("Second-pass screen capture for SR");
 
-        //
         // We have to disable any gradient background before
         // rendering, as those will overwrite the first pass
-        //
         AnnotationAttributes::BackgroundMode bm = viswin->GetBackgroundMode();
         viswin->SetBackgroundMode(AnnotationAttributes::Solid);
 
         viswin->ScreenRender(
-            this->r_mgmt.viewportedMode,
-            true,   // Z buffer
-            false,  // opaque geometry
-            true,   // translucent geometry
-            input   // image to composite with
-        );
+            renderState.viewportedMode,
+            /*need z=*/true, /*opaque on=*/false,
+            /*translucent on=*/true, /*disable bg=*/false,
+            input);
 
         // Restore the background mode for next time
         viswin->SetBackgroundMode(bm);
     }
     CallProgressCallback("IceTNetworkManager", "Transparent rendering", 1, 1);
 
-    //
     // In this implementation, the user should never use the return value --
     // read it back from IceT instead!
-    //
     return NULL;
 }
 
@@ -664,6 +668,9 @@ IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
 //    Hank Childs, Fri Feb  6 15:47:17 CST 2009
 //    Fix memory leak.
 //
+//    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
+//    sync up with network manager(base class) order compositing refactor
+//
 // ****************************************************************************
 avtImage_p
 IceTNetworkManager::Readback(VisWindow * const viswin,
@@ -678,7 +685,7 @@ IceTNetworkManager::Readback(VisWindow * const viswin,
     // The distinction is for 2D rendering, where we only want the
     // width and the height of the viewport.
     viswin->GetCaptureRegion(width_start, height_start, width, height,
-                             this->r_mgmt.viewportedMode);
+                             renderState.viewportedMode);
 
     GLubyte *pixels = NULL;
     GLuint *depth = NULL;
@@ -776,23 +783,26 @@ IceTNetworkManager::Readback(VisWindow * const viswin,
 //    Tom Fogal, Fri May 29 20:37:59 MDT 2009
 //    Remove an unused variable.
 //
+//    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
+//    sync up with network manager(base class) order compositing refactor
+//
 // ****************************************************************************
 void
-IceTNetworkManager::StopTimer(int windowID)
+IceTNetworkManager::StopTimer()
 {
     char msg[1024];
-    VisWindow *viswin = this->viswinMap.find(windowID)->second.viswin;
+    VisWindow *viswin = renderState.window;
     int rows,cols, width_start, height_start;
     // This basically gets the width and the height.
     // The distinction is for 2D rendering, where we only want the
     // width and the height of the viewport.
     viswin->GetCaptureRegion(width_start, height_start, rows,cols,
-                             this->r_mgmt.viewportedMode);
+                             renderState.viewportedMode);
 
-    SNPRINTF(msg, 1023, "IceTNM::Render %ld cells %d pixels",
-             GetTotalGlobalCellCounts(windowID), rows*cols);
-    visitTimer->StopTimer(this->r_mgmt.timer, msg);
-    this->r_mgmt.timer = -1;
+    SNPRINTF(msg, 1023, "IceTNM::Render %lld cells %d pixels",
+             renderState.cellCountTotal, rows*cols);
+    visitTimer->StopTimer(renderState.timer, msg);
+    renderState.timer = -1;
 }
 
 // ****************************************************************************

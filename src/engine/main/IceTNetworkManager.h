@@ -77,6 +77,9 @@ class Engine;
 //    Tom Fogal, Wed May 18 13:08:40 MDT 2011
 //    Add new state for the number of renderings we've seen.
 //
+//    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
+//    sync up with network manager(base class) order compositing refactor
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
@@ -95,12 +98,16 @@ class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
 
  protected:
 
-    virtual avtImage_p RenderGeometry();
-    virtual avtDataObject_p
-                       RenderTranslucent(int windowID,
+    virtual
+    avtImage_p         RenderGeometry();
+
+    virtual
+    avtImage_p         RenderTranslucent(int windowID,
                                          const avtImage_p& input);
+
     virtual avtImage_p Readback(VisWindow * const, bool) const;
-    virtual void       StopTimer(int windowID);
+
+    virtual void       StopTimer();
     virtual void       FormatDebugImage(char*, size_t, const char*) const;
 
  private:

@@ -95,13 +95,18 @@ avtCellList::avtCellList(int nv)
 //  Programmer: Hank Childs
 //  Creation:   January 27, 2001
 //
+//  Modifications:
+//
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 avtCellList::~avtCellList()
 {
     if (celllist != NULL)
     {
-        for (int i = 0 ; i < celllistI ; i++)
+        for (long long i = 0 ; i < celllistI ; ++i)
         {
             if (celllist[i] != NULL)
             {
@@ -291,6 +296,11 @@ avtCellList::Store(const avtPoint &pt, int minx, int maxx, int miny,
 //  Programmer: Hank Childs
 //  Creation:   January 27, 2001
 //
+//  Modifications:
+//
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 void
@@ -308,7 +318,7 @@ avtCellList::Store(char *cell, int minx, int maxx, int miny, int maxy,int size)
     {
         celllistN *= 2;
         avtSerializedCell **newlist = new avtSerializedCell*[celllistN];
-        for (int i = 0 ; i < celllistI ; i++)
+        for (long long i = 0 ; i < celllistI ; ++i)
         {
             newlist[i] = celllist[i];
         }
@@ -349,7 +359,7 @@ avtCellList::Store(char *cell, int minx, int maxx, int miny, int maxy,int size)
 // ****************************************************************************
 
 char *
-avtCellList::Serialize(const double (*pts)[3], 
+avtCellList::Serialize(const double (*pts)[3],
                        const double (*var)[AVT_VARIABLE_LIMIT], int nvals)
 {
     int numPoints    = 3;
@@ -423,12 +433,14 @@ avtCellList::SerializePoint(const double *bbox, const double *var)
 //    Hank Childs, Wed Jan 25 07:15:38 PST 2006
 //    Add support for points.
 //
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 char *
 avtCellList::ConstructMessages(avtImagePartition *part, char **msgs, int *lens)
 {
-    int  i, j;
     int  numPartitions = part->GetNumPartitions();
 
     int storageForCoord = 3;
@@ -439,12 +451,12 @@ avtCellList::ConstructMessages(avtImagePartition *part, char **msgs, int *lens)
     //
     // Set up memory to put our messages into.
     //
-    for (i = 0 ; i < numPartitions ; i++)
+    for (long long i = 0 ; i < numPartitions ; ++i)
     {
         lens[i] = 0;
     }
     int *partitions = new int[numPartitions];
-    for (i = 0 ; i < celllistI ; i++)
+    for (long long i = 0 ; i < celllistI ; ++i)
     {
         //
         // PartitionList will make a list of the partitions that this cell
@@ -458,14 +470,14 @@ avtCellList::ConstructMessages(avtImagePartition *part, char **msgs, int *lens)
             size += bytesPerNode*celllist[i]->size;
         else
             size += bytesForCellThatIsAPt;
-        for (j = 0 ; j < numParts ; j++)
+        for (int j = 0 ; j < numParts ; j++)
         {
             lens[partitions[j]] += size;
         }
     }
     char *rv = CreateMessageStrings(msgs, lens, numPartitions);
     char **msgstemp = new char*[numPartitions];
-    for (i = 0 ; i < numPartitions ; i++)
+    for (long long i = 0 ; i < numPartitions ; ++i)
     {
         msgstemp[i] = msgs[i];
     }
@@ -473,12 +485,12 @@ avtCellList::ConstructMessages(avtImagePartition *part, char **msgs, int *lens)
     //
     // Go through our cell list and add each cell to the appropriate message.
     //
-    for (i = 0 ; i < celllistI ; i++)
+    for (long long i = 0 ; i < celllistI ; ++i)
     {
         int numParts = part->PartitionList(celllist[i]->minx,celllist[i]->maxx,
                                            celllist[i]->miny,celllist[i]->maxy,
                                            partitions);
-        for (j = 0 ; j < numParts ; j++)
+        for (int j = 0 ; j < numParts ; j++)
         {
             int p = partitions[j];
             InlineCopy(msgstemp[p], (char *)&(celllist[i]->size), sizeof(int));
@@ -692,12 +704,17 @@ avtCellList::UnserializePoint(double *bbox, double *var, const char *&str)
 //  Programmer:    Hank Childs
 //  Creation:      January 1, 2002
 //
+//  Modifications:
+//
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 void
 avtCellList::EstimateNumberOfSamplesPerScanline(int *samples)
 {
-    for (int i = 0 ; i < celllistI ; i++)
+    for (long long i = 0 ; i < celllistI ; i++)
     {
         const avtSerializedCell *cell = celllist[i];
 

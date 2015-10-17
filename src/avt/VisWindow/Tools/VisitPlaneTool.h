@@ -89,6 +89,9 @@ class vtkTextActor;
 //   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //
+//   Burlen Loring, Mon Sep 28 16:04:23 PDT 2015
+//   Added API for setting tool visibility
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitPlaneTool : public VisitInteractiveTool
@@ -116,6 +119,8 @@ class VISWINDOW_API VisitPlaneTool : public VisitInteractiveTool
     virtual void TurnLightingOff();
     virtual void ReAddToWindow();
     virtual void Set3DAxisScalingFactors(bool, const double[3]);
+
+    virtual void SetVisibility(int);
 
   protected:
     // Callback functions for the tool's hot points.

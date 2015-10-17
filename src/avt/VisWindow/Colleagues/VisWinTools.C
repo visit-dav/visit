@@ -67,18 +67,21 @@
 //   actor that is added to the foreground renderer to show the locations of
 //   all of the hotpoints in the enabled tools.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 3 11:38:36 PDT 2001
 //
 // Modifications:
-//   Kathleen Bonnell, Thu Dec 12 15:12:36 PST 2002 
-//   Use RenderOverlay instead of RenderOpaqueGeometry, to match new VTK API. 
-//   
+//   Kathleen Bonnell, Thu Dec 12 15:12:36 PST 2002
+//   Use RenderOverlay instead of RenderOpaqueGeometry, to match new VTK API.
+//
 //   Kathleen Biagas, Thu Apr 17 16:01:40 PDT 2014
 //   Fix interface to match vtk-6 requirements and prevent error messages in
 //   log files.
+//
+//   Burlen Loring, Thu Oct  8 10:33:44 PDT 2015
+//   fix a couple of warnings
 //
 // ****************************************************************************
 
@@ -93,7 +96,7 @@ public:
 
     // Description:
     // Draw the actor as per the vtkProp superclass' API.
-    virtual int RenderOpaqueGeometry(vtkViewport *viewport) { return 0; }
+    virtual int RenderOpaqueGeometry(vtkViewport *) { return 0; }
     virtual int RenderTranslucentPolygonalGeometry(vtkViewport *) { return 0; }
     virtual int HasTranslucentPolygonalGeometry() { return 0; }
     virtual int RenderOverlay(vtkViewport *); 
@@ -104,8 +107,9 @@ public:
 protected:
     vtkHighlightActor2D();
     virtual ~vtkHighlightActor2D();
-    vtkHighlightActor2D(const vtkHighlightActor2D &) {};
-    void operator=(const vtkHighlightActor2D &) {};
+
+    vtkHighlightActor2D(const vtkHighlightActor2D &);
+    void operator=(const vtkHighlightActor2D &);
 
     void RegenerateHighlight();
 
@@ -559,6 +563,41 @@ int
 VisWinTools::GetNumTools() const
 {
     return numTools;
+}
+
+// ****************************************************************************
+// Method: VisWinTools::SetVisibility
+//
+// Purpose: 
+//   Sets visibility of all the tools.
+//
+// Programmer: Burlen Loring 
+// Creation:   Mon Sep 28 16:06:19 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinTools::SetVisibility(int val)
+{
+    if (boxTool)
+        boxTool->SetVisibility(val);
+
+    if (lineTool)
+        lineTool->SetVisibility(val);
+
+    if (planeTool)
+        planeTool->SetVisibility(val);
+
+    if (pointTool)
+        pointTool->SetVisibility(val);
+
+    if (sphereTool)
+        sphereTool->SetVisibility(val);
+
+    if (axisRestrictionTool)
+        axisRestrictionTool->SetVisibility(val);
 }
 
 // ****************************************************************************

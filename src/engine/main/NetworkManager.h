@@ -73,11 +73,26 @@ class MeshManagementAttributes;
 class SelectionProperties;
 class VisWindow;
 class avtDataBinning;
-class avtWholeImageCompositer;
+template <typename T>
+class ProgrammableCompositer;
 
-
-typedef struct _EngineVisWinInfo
+struct EngineVisWinInfo
 {
+    EngineVisWinInfo() :
+        windowAttributes(),
+        annotationAttributes(),
+        annotationObjectList(),
+        visualCuesNeedUpdate(false),
+        visualCueList(),
+        extentTypeString(),
+        changedCtName(),
+        frameAndState(),
+        viswin(NULL),
+        plotsCurrentlyInWindow(0),
+        imageBasedPlots(0),
+        markedForDeletion(false)
+        {}
+
     WindowAttributes            windowAttributes;
     AnnotationAttributes        annotationAttributes;
     AnnotationObjectList        annotationObjectList;
@@ -90,7 +105,7 @@ typedef struct _EngineVisWinInfo
     std::vector<int>            plotsCurrentlyInWindow;
     std::vector<avtPlot_p>      imageBasedPlots;
     bool                        markedForDeletion;
-} EngineVisWinInfo;
+};
 
 typedef void   (*InitializeProgressCallback)(void *, int);
 typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
@@ -323,7 +338,7 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //
 //    Tom Fogal, Mon Jun  9 09:34:09 EDT 2008
 //    Added methods to start splitting up Render().  This works by adding some
-//    additional state to the object, via the render_state struct.
+//    additional state to the object, via the RenderState struct.
 //
 //    Tom Fogal, Tue Jun 10 15:50:19 EDT 2008
 //    More of the above; `RenderCleanup' today.
@@ -436,28 +451,18 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Brad Whitlock, Thu Dec  6 10:52:47 PST 2012
 //    Change global cell count variables from int to long.
 //
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    add constructors to renderState and VisWinInfo classes
+//    so these objects get initialized before use. various
+//    api updates for order compositing refactor
+//
+//    Burlen Loring, Mon Sep  7 05:48:16 PDT 2015
+//    Use long long for cell counts/number of cells everywhere
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API NetworkManager : public EngineBase
 {
-    typedef std::map<std::string, stringVector> StringVectorMap;
-    struct render_state {
-        DataNetwork *origWorkingNet;    /* saves this->workingNet */
-        array_ref_ptr<long> cellCounts; /* # of cells, per network */
-        int stereoType;                 /* for push/popping stereo rendering */
-        int timer;                      /* overall render time */
-        int annotMode;
-        int windowID;                  /* window we're rendering. */
-        bool getZBuffer;               /* should we readback Z too? */
-        bool handledAnnotations;       /* annotations already done? */
-        bool mpass_saved;              /* is multipass rendering memoized? */
-        bool handledCues;
-        bool needToSetUpWindowContents;
-        bool viewportedMode;
-        bool needZBufferToCompositeEvenIn2D;
-        bool checkThreshold;           ///< skip SR geometry threshold check?
-    };
-
  public:
                   NetworkManager(void);
     virtual      ~NetworkManager(void);
@@ -496,8 +501,8 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     void          AddFilter(const std::string&,
                             const AttributeGroup* = NULL,
                             const unsigned int ninputs = 1);
-    void          MakePlot(const std::string &plotName, 
-                           const std::string &pluginID, 
+    void          MakePlot(const std::string &plotName,
+                           const std::string &pluginID,
                            const AttributeGroup*,
                            const std::vector<double> &);
     int           EndNetwork(int windowID);
@@ -507,8 +512,8 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     avtPlot_p     GetPlot(void);
     int           GetCurrentNetworkId(void) const;
     int           GetCurrentWindowId(void) const;
-    long          GetTotalGlobalCellCounts(int winID) const;
-    void          SetGlobalCellCount(int netId, long cellCount);
+    long long     GetTotalGlobalCellCounts(int winID) const;
+    void          SetGlobalCellCount(int netId, long long cellCount);
     int           GetScalableThreshold(int winId) const;
     int           GetCompactDomainsThreshold(int winId) const;
     bool          GetShouldUseCompression(int winId) const;
@@ -521,6 +526,7 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
                                       const double*,
                                       const std::string&,
                                       int);
+
     void          SetAnnotationAttributes(const AnnotationAttributes&,
                                           const AnnotationObjectList&,
                                           const VisualCueList&, 
@@ -532,12 +538,15 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
 
     bool          HasNonMeshPlots(const intVector plotids);
     bool          NeedZBufferToCompositeEvenIn2D(const intVector plotids);
+
     avtDataObjectWriter_p GetOutput(bool respondWithNullData,
                                     bool calledForRender,
                                     float *cellCountMultiplier);
+
     virtual avtDataObject_p Render(bool checkThreshold, intVector networkIds, 
                                    bool getZBuffer, int annotMode,
                                    int windowID, bool leftEye);
+
     avtDataObjectWriter_p CreateNullDataWriter() const;
 
     void          StartPickMode(const bool);
@@ -572,73 +581,153 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     bool               ValidNetworkId(int id) const;
     void               ExportSingleDatabase(int, const ExportDBAttributes &);
 
-    virtual avtImage_p RenderGeometry();
-    void               RenderSetup(intVector& networkIds, bool getZBuffer,
-                                   int annotMode, int windowID, bool leftEye);
-    void               RenderCleanup(int windowID);
-    size_t             RenderingStages(int windowID);
-    void               RenderShadows(int windowID,
-                                     avtDataObject_p& input_as_dob) const;
-    void               RenderDepthCues(int windowID,
-                                       avtDataObject_p& input_as_dob) const;
-    void               RenderPostProcess(std::vector<avtPlot_p>& image_plots,
-                                         avtDataObject_p& input_as_dob,
-                                         int windowID) const;
-    bool               MemoMultipass(VisWindow *viswin);
-    void               ForgetMultipass();
-    virtual avtDataObject_p
-                       RenderTranslucent(int windowID,
-                                         const avtImage_p& input);
-    bool               Shadowing(int windowID) const;
-    bool               DepthCueing(int windowID) const;
+    avtDataObject_p    RenderInternal();
+
+    void               RenderSetup(int windowId, intVector& networkIds, bool getZBuffer,
+                                   int annotMode, bool leftEye, bool checkSRThreshold);
+    virtual
+    avtImage_p         RenderGeometry();
+
+    void               RenderShadows(avtImage_p& input) const;
+    void               RenderDepthCues(avtImage_p& input) const;
+
+    virtual
+    avtImage_p         RenderTranslucent(avtImage_p& input);
+
+    void               RenderPostProcess(avtImage_p& input);
+
+    void               RenderCleanup();
+
+    size_t             RenderingStages();
+
     virtual void       StartTimer();
-    virtual void       StopTimer(int windowID);
+    virtual void       StopTimer();
+
     void               DumpImage(avtDataObject_p img, const char* prefix) const;
     void               DumpImage(const avtImage_p, const char *fmt) const;
+
     virtual void       FormatDebugImage(char*, size_t, const char*) const;
 
     static double      RenderBalance(int numTrianglesIHave);
     static void        CallInitializeProgressCallback(int);
     static void        CallProgressCallback(const char *, const char*,
                                             int, int);
+
+    int                GetScalableThreshold(const RenderingAttributes &renderAtts) const;
+
+ private:
+    struct RenderState
+    {
+        RenderState() :
+            origWorkingNet(NULL),
+            windowID(0),
+            window(NULL),
+            windowInfo(NULL),
+            needToSetUpWindowContents(false),
+            cellCounts(),
+            cellCountTotal(0),
+            haveCells(),
+            onlyRootHasCells(false),
+            renderOnViewer(false),
+            stereoType(0),
+            timer(0),
+            annotMode(0),
+            threeD(true),
+            twoD(false),
+            gradientBg(false),
+            getZBuffer(true),
+            zBufferComposite(true),
+            allReducePass1(false),
+            allReducePass2(false),
+            handledAnnotations(false),
+            handledCues(false),
+            transparency(false),
+            transparencyInPass1(false),
+            transparencyInPass2(false),
+            orderComposite(false),
+            compositeOrder(),
+            viewportedMode(false),
+            needZBufferToCompositeEvenIn2D(false),
+            shadowMap(false),
+            depthCues(false),
+            imageBasedPlots(false)
+            {}
+
+        DataNetwork *origWorkingNet;     // saves this->workingNet
+        int windowID;                    // id of window we're rendering.
+        VisWindow *window;               // window we are rendering
+        EngineVisWinInfo *windowInfo;    // info struct of window we are rendering
+        bool needToSetUpWindowContents;
+        std::vector<long long> cellCounts; // total num of cells per plot * plot sr multiplier
+        long long cellCountTotal;        // total number of cells rendered
+        std::vector<int> haveCells;      // true if this rank has any cells
+        bool onlyRootHasCells;           // true if rank 0 is the only one with data
+        bool renderOnViewer;             // below the scalabale renderiung threshold?
+        int stereoType;                  // for push/popping stereo rendering
+        int timer;                       // overall render time
+        int annotMode;
+        bool threeD;                     // window modes
+        bool twoD;
+        bool gradientBg;                 // background mode is gradient
+        bool getZBuffer;                 // should we readback Z too?
+        bool zBufferComposite;           // opaque composite operation (because 2d may/may not need it)
+        bool allReducePass1;             // ensure all ranks have the composited image
+        bool allReducePass2;             // ensure all ranks have the composited image
+        bool handledAnnotations;         // annotations already done?
+        bool handledCues;                //
+        bool transparency;               // some trasnparent geometry will be rendered
+        bool transparencyInPass1;        // handle both opaque and translucent in one pass (serial)
+        bool transparencyInPass2;        // split opaque and translucent into two passes (parallel)
+        bool orderComposite;             // can we use ordered alpha compositing?
+        std::vector<int> compositeOrder; // order for alpha compositing
+        bool viewportedMode;
+        bool needZBufferToCompositeEvenIn2D;
+        bool shadowMap;                  // will use a shadow map pass
+        bool depthCues;                  // will use a depth que pass
+        bool imageBasedPlots;            // has image based plots
+    };
+    friend ostream &operator<<(ostream &os, const RenderState &rs);
+
  protected:
 
     DataNetwork                      *workingNet;
     std::map<int, EngineVisWinInfo>   viswinMap;
-    struct render_state               r_mgmt;
+    RenderState                       renderState;
 
  private:
-
-    void            UpdateVisualCues(int winID);
+    void            UpdateVisualCues();
     void            NewVisWindow(int winID);
     bool            PlotsNeedUpdating(const intVector &plots,
                                       const intVector &plotsInWindow) const;
+
     bool            ViewerExecute(const VisWindow * const viswin,
                                   const intVector &plots,
                                   const WindowAttributes &windowAttributes);
-    bool            MultipassRendering(VisWindow *viswin) const;
-    void            SetUpWindowContents(int windowID, const intVector &plotIds,
+
+    void            SetUpWindowContents(const intVector &plotIds,
                                         bool forceViewerExecute);
 
-    static avtWholeImageCompositer *MakeCompositer(bool threeD,
-                                                   bool gradientBG,
-                                                   bool needZ, bool multipass,
-                                                   bool shadows,
-                                                   bool depthCueing,
-                                                   bool image_plots,
-                                                   bool compositeZEvenWith2D);
-    static void                     SetCompositerBackground(
-                                        avtWholeImageCompositer * const,
-                                        const VisWindow * const);
+    void            SetWindowAttributes(EngineVisWinInfo &viswinInfo,
+                        const WindowAttributes &atts, const std::string& extstr,
+                        const double *vexts, const std::string& ctName);
+
+    void            SetAnnotationAttributes(EngineVisWinInfo &viswinInfo,
+                        const AnnotationAttributes &atts,
+                        const AnnotationObjectList &aolist,
+                        const VisualCueList &visCues, const int *fns,
+                        int annotMode);
+
     // The plugin managers
     DatabasePluginManager      *databasePlugins;
     OperatorPluginManager      *operatorPlugins;
     PlotPluginManager          *plotPlugins;
 
     std::vector<DataNetwork*>   networkCache;
-    std::vector<long>           globalCellCounts;
+    std::vector<long long>      globalCellCounts;
     std::deque<DataNetwork*>    networkMRU;
     std::vector<NetnodeDB*>     databaseCache;
+
+    typedef std::map<std::string, stringVector> StringVectorMap;
     StringVectorMap             virtualDatabases;
 
     std::vector<Netnode*>       workingNetnodeList;
@@ -652,6 +741,11 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
 
     std::vector<avtDataBinning *>  dataBinnings;
     std::vector<std::string>       dataBinningNames;
+
+    bool                        initialized;
+
+    ProgrammableCompositer<unsigned char> *zcomp;
+    ProgrammableCompositer<float> *acomp;
 
     static InitializeProgressCallback
                                 initializeProgressCallback;

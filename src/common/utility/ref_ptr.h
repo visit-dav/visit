@@ -79,6 +79,11 @@
 //    David Camp, Tue Mar 12 13:19:37 PDT 2013
 //    Made the code thread safe. Changed the int to be an atomic type.
 //
+//    Burlen Loring, Fri Sep  4 08:30:24 PDT 2015
+//    added bool cast to better match normal pointer behavior and
+//    to follow the convention used in other common shared pointer
+//    implementations
+//
 // ****************************************************************************
 
 template <class T>
@@ -102,6 +107,7 @@ class ref_ptr
         RemoveReference();
         AddReference(p_, NULL);
     }
+    operator bool() { return p != NULL; }
  private:
     T                 *p;
     VISIT_ATOMIC_TYPE *n;

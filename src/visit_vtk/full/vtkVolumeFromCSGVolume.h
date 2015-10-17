@@ -76,9 +76,13 @@ class vtkUnstructuredGrid;
 //  Creation:   July 23, 2012
 //
 //  Modifications:
+//
 //    Eric Brugger, Thu Apr  3 08:30:17 PDT 2014
 //    I converted the class to use vtkCSGFixedLengthBitField instead of
 //    FixedLengthBitField.
+//
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to vtkIdType
 //
 // ****************************************************************************
 
@@ -152,7 +156,7 @@ class VISIT_VTK_API vtkVolumeFromCSGVolume : public vtkVolumeFromVolume
 
 
     void                    InitTraversal();
-    int                     GetNumberOfCells() const;
+    vtkIdType               GetNumberOfCells() const;
     void                    NextCell();
     const vtkIdType        *GetCell();
     vtkCSGFixedLengthBitField GetTag();

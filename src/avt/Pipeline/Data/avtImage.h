@@ -77,6 +77,12 @@
 //    Mark C. Miller, Wed Mar 31 21:10:56 PST 2004
 //    Added GetSize method
 //
+//    Burlen Loring, Wed Aug 26 09:09:11 PDT 2015
+//    Make SetImage public
+//
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImage : public avtDataObject
@@ -94,28 +100,23 @@ class PIPELINE_API avtImage : public avtDataObject
     virtual                  ~avtImage();
 
     virtual const char       *GetType(void)  { return "avtImage"; };
-    virtual int               GetNumberOfCells(bool polysOnly = false) const;
+    virtual long long         GetNumberOfCells(bool polysOnly = false) const;
     virtual avtDataObject    *Instance(void);
     virtual avtDataObjectWriter
                              *InstantiateWriter(void);
     virtual void              ReleaseData(void);
     avtImageRepresentation   &GetImage(void);
+    void                      SetImage(const avtImageRepresentation &);
     virtual void              GetSize(int *width, int *height) const;
     virtual float             GetCompressionRatio() const
                                   {return image.GetCompressionRatio(); };
-
   protected:
     avtImageRepresentation    image;
 
-    void                      SetImage(const avtImageRepresentation &);
 
     virtual void              DerivedCopy(avtDataObject *);
 };
 
-
 typedef ref_ptr<avtImage>  avtImage_p;
 
-
 #endif
-
-

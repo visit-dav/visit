@@ -205,6 +205,32 @@ VisitLineTool::InitializePoints()
 }
 
 // ****************************************************************************
+// Method: VistLineTool::SetVisibility
+//
+// Purpose: 
+//   Sets visibility of the tool. Use this if you need to temporarily
+//   take the tool out of the scene during transparent rendering.
+//
+// Programmer: Burlen Loring 
+// Creation:   Mon Sep 28 16:06:19 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisitLineTool::SetVisibility(int val)
+{
+    if (IsEnabled())
+    {
+        lineActor->SetVisibility(val);
+        guideActor->SetVisibility(val);
+        pointTextActor[0]->SetVisibility(val);
+        pointTextActor[1]->SetVisibility(val);
+    }
+}
+
+// ****************************************************************************
 // Method: VisitLineTool::Enable
 //
 // Purpose: 

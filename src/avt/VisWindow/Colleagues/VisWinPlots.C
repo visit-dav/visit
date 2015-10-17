@@ -62,6 +62,7 @@
 #include <avtLegend.h>
 #include <avtTransparencyActor.h>
 #include <avtOriginatingSource.h>
+#include <avtParallel.h>
 
 #include <BadPlotException.h>
 #include <DebugStream.h>
@@ -992,12 +993,11 @@ VisWinPlots::Stop3DMode(void)
     extRenderedImagesActor->RemoveFromRenderer(mediator.GetCanvas());
 }
 
-
 // ****************************************************************************
 //  Method: VisWinPlots::UpdateView
 //
 //  Purpose:
-//      Shifts the wireframe actors towards the camera to avoid z-buffer 
+//      Shifts the wireframe actors towards the camera to avoid z-buffer
 //      errors.
 //
 //  Programmer: Hank Childs
@@ -1011,7 +1011,7 @@ VisWinPlots::Stop3DMode(void)
 //    Hank Childs, Sun Jul  7 12:55:05 PDT 2002
 //    Add support for transparency.
 //
-//    Kathleen Bonnell, Tue Jul 23 15:01:55 PDT 2002   
+//    Kathleen Bonnell, Tue Jul 23 15:01:55 PDT 2002
 //    Added call to UpdateScaleFactor.
 //
 //    Mark C. Miller, Thu Dec 19 11:38:05 PST 2002
@@ -1025,6 +1025,10 @@ VisWinPlots::Stop3DMode(void)
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Passed cam to extRenderedImagesActor to support stereo SR mode
 //
+//    Burlen Loring, Fri Aug 14 11:33:43 PDT 2015
+//    configure window for the sorting algorithm. in parallel it's
+//    handled by the NetworkManager in serial happens here.
+//
 // ****************************************************************************
 
 void
@@ -1032,18 +1036,32 @@ VisWinPlots::UpdateView()
 {
     vtkCamera *cam = mediator.GetCanvas()->GetActiveCamera();
 
-    //
     // Tell the transparency actor what the current view is -- this will help
     // with its sorting algorithms.
-    //
+
+#ifndef PARALLEL
+    // when using scalable rendering the NetworkManager determines
+    // the type of parallel sorting that is required. in the viewer
+    // we need to handle it.
+    VisWindow *viswin = mediator;
+    viswin->DisableDepthPeeling();
+    avtTransparencyActor* tact = viswin->GetTransparencyActor();
+    if (tact->TransparenciesExist())
+    {
+        int sortOp = avtTransparencyActor::SORT_NONE;
+        if (viswin->GetDepthPeeling())
+            viswin->EnableDepthPeeling();
+        else
+            sortOp |= avtTransparencyActor::SORT_DEPTH;
+        tact->SetSortOp(sortOp);
+    }
+#endif
     transparencyActor->PrepareForRender(cam);
     extRenderedImagesActor->PrepareForRender(cam);
 
-    //
     // Pull the wireframe actors a little closer to the camera to make sure
     // there are no z-buffer errors.  Note that canvas issues are hidden
     // by GetCanvas routine.
-    //
     double distance = 0.003;
     double pos[3], foc[3];
     double imageZoom;
@@ -2028,6 +2046,25 @@ avtTransparencyActor *
 VisWinPlots::GetTransparencyActor()
 {
     return transparencyActor;
+}
+
+// ****************************************************************************
+//  Method: VisWinPlots::GetCamera
+//
+//  Purpose:
+//      Expose the camera to visit's rendering control layers
+//
+//  Programmer: Burlen Loring
+//  Creation:   Tue Aug 18 11:25:24 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkCamera *
+VisWinPlots::GetCamera()
+{
+    return mediator.GetCanvas()->GetActiveCamera();
 }
 
 // ****************************************************************************

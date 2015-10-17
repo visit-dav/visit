@@ -119,6 +119,22 @@ class     ColorAttribute;
 //    Hank Childs, Wed Feb 17 18:19:53 CST 2010
 //    Add support for changes in specular lighting.
 //
+//    Burlen Loring, Fri Aug 14 11:33:43 PDT 2015
+//    Added method to determine if a compositing order for
+//    transparent geometry can be found and to compute it.
+//    Added a method to set a flag to skip camera sort.
+//
+//    Burlen Loring, Wed Aug 19 13:41:17 PDT 2015
+//    Factored some code into functions, added enum for
+//    constructing sort operations mask which tells the
+//    actor which type of sort to do. track actor mtime
+//    so we can skip update. added filter for local
+//    geometry sort that is used with ordered compositing.
+//    make SetUpActor public.
+//
+//    Burlen Loring, Wed Aug 19 13:45:22 PDT 2015
+//    Added method for controling use of display lists.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtTransparencyActor
@@ -166,9 +182,21 @@ class PLOTTER_API avtTransparencyActor
                                                     { return is2Dimensional; };
     void                             SetIs2Dimensional(bool val);
 
+    enum                             {SORT_NONE=0x00, SORT_DEPTH=0x01, SORT_DISTRIBUTE=0x02};
+    void                             SetSortOp(int op){ sortOp = op; }
+    int                              GetSortOp() const { return sortOp; }
+
+    virtual bool                     ComputeCompositingOrder(vtkCamera *cam, std::vector<int> &order);
+
+    void                             SetImmediateMode(bool m);
+
+    void                             SetUpActor();
 
   protected:
+    void                             SyncProps();
     int                              SyncProps(vtkProperty *dest, vtkProperty *source);
+    bool                             CameraChanged(vtkCamera *cam);
+    vtkPolyData*                     GetAxisSortOutput(vtkCamera *cam);
 
   protected:
     std::vector<std::vector <vtkDataSet *> >         datasets;
@@ -183,14 +211,16 @@ class PLOTTER_API avtTransparencyActor
     std::vector<bool>                                visibility;
     std::vector<bool>                                lastExecutionActorList;
     bool                                             inputModified;
+    unsigned long long                               actorMTime;
 
     vtkAppendPolyData                               *appender;
-    vtkParallelImageSpaceRedistributor              *parallelFilter;
+    vtkParallelImageSpaceRedistributor              *distribute;
     vtkActor                                        *myActor;
     vtkPolyDataMapper                               *myMapper;
 
     vtkAxisDepthSort                                *axisSort;
-    vtkDepthSortPolyData                            *perfectSort;
+    vtkDepthSortPolyData                            *distributeDepthSort;
+    vtkDepthSortPolyData                            *depthSort;
     bool                                             usePerfectSort;
     bool                                             is2Dimensional;
     vtkMatrix4x4                                    *lastCamera;
@@ -199,7 +229,8 @@ class PLOTTER_API avtTransparencyActor
     bool                                             transparenciesExist;
     bool                                             cachedTransparencies;
 
-    void                                             SetUpActor(void);
+    int                                              sortOp;
+
     void                                             PrepareDataset(size_t, size_t);
     void                                             DetermineTransparencies();
 };

@@ -234,6 +234,33 @@ VisitPlaneTool::~VisitPlaneTool()
 }
 
 // ****************************************************************************
+// Method: VistPlaneTool::SetVisibility
+//
+// Purpose: 
+//   Sets visibility of the tool. Use this if you need to temporarily
+//   take the tool out of the scene during transparent rendering.
+//
+// Programmer: Burlen Loring 
+// Creation:   Mon Sep 28 16:06:19 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisitPlaneTool::SetVisibility(int val)
+{
+    if (IsEnabled())
+    {
+        planeActor->SetVisibility(val);
+        vectorActor->SetVisibility(val);
+        outlineActor->SetVisibility(val);
+        normalTextActor->SetVisibility(val);
+        originTextActor->SetVisibility(val);
+    }
+}
+
+// ****************************************************************************
 // Method: VisitPlaneTool::Enable
 //
 // Purpose: 

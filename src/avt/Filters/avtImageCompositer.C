@@ -47,6 +47,8 @@
 #include <avtImageCompositer.h>
 #include <avtParallel.h>
 #include <ImproperUseException.h>
+#include <sstream>
+using std::ostringstream;
 
 // ****************************************************************************
 //  Method: avtImageCompositer constructor
@@ -118,17 +120,31 @@ void avtImageCompositer::GetOutputImageSize(int *numRows, int *numCols) const
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   February 18, 2003 
+//
+//  Modifications:
+//
+//      Burlen Loring, Thu Oct  8 10:47:58 PDT 2015
+//      Report some information in the error message about what
+//      the problem is.
+//
 // ****************************************************************************
 void avtImageCompositer::AddImageInput(avtImage_p image,
                                       int rowOffset, int colOffset)
 {
-   avtImageRepresentation& imageRep = image->GetImage();
-   int imageRows, imageCols;
-   imageRep.GetSize(&imageRows, &imageCols);
-   if ((imageRows + rowOffset > outRows) || (imageCols + colOffset > outCols))
-      EXCEPTION0(ImproperUseException);
-   imageRep.SetOrigin(rowOffset, colOffset);
-   inputImages.push_back(image);
+    avtImageRepresentation& imageRep = image->GetImage();
+    int imageRows, imageCols;
+    imageRep.GetSize(&imageRows, &imageCols);
+    if ((imageRows + rowOffset > outRows) || (imageCols + colOffset > outCols))
+    {
+        ostringstream oss;
+        oss << "Bounds error in avtImageCompositer::AddImageInput "
+            << "imageRows = " << imageRows << " rowOffset = " << rowOffset
+            << " outRows = " << outRows << " imageCols = " << imageCols
+            << " colOffset = " << colOffset << " outCols = " <<  outCols;
+        EXCEPTION1(ImproperUseException, oss.str().c_str());
+    }
+    imageRep.SetOrigin(rowOffset, colOffset);
+    inputImages.push_back(image);
 }
 
 // ****************************************************************************

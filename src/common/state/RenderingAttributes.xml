@@ -19,11 +19,35 @@
     <Field name="antialiasing" label="antialiasing" type="bool">
       false
     </Field>
+    <Field name="orderComposite" label="Order Composite" type="bool">
+      true
+    </Field>
+    <Field name="depthCompositeThreads" label="Depth Compositer Threads" type="int">
+      2
+    </Field>
+    <Field name="depthCompositeBlocking" label="Depth Compositer Blocking" type="int">
+      65536
+    </Field>
+    <Field name="alphaCompositeThreads" label="Alpha Compositer Threads" type="int">
+      2
+    </Field>
+    <Field name="alphaCompositeBlocking" label="Alpha Compositer Blocking" type="int">
+      65536
+    </Field>
+    <Field name="depthPeeling" label="Depth Peeling" type="bool">
+      false
+    </Field>
+    <Field name="occlusionRatio" label="occlusion ratio" type="double">
+      0.000000
+    </Field>
+    <Field name="numberOfPeels" label="number of peels" type="int">
+      16
+    </Field>
     <Field name="multiresolutionMode" label="multiresolutionMode" type="bool">
       false
     </Field>
     <Field name="multiresolutionCellSize" label="multiresolutionCellSize" type="float">
-      0.002
+      0.002000
     </Field>
     <Field name="geometryRepresentation" label="geometryRepresentation" type="enum" subtype="GeometryRepresentation">
       Surfaces

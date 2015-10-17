@@ -99,6 +99,9 @@ typedef struct
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCellList
@@ -118,7 +121,7 @@ class PIPELINE_API avtCellList
     char                    *ConstructMessages(avtImagePartition *, char **,
                                                int *);
     void                     EstimateNumberOfSamplesPerScanline(int *);
-    int                      GetNumberOfCells(void) const { return celllistI; };
+    long long                GetNumberOfCells(void) const { return celllistI; };
 
     void                     Restrict(int, int, int, int);
 
@@ -126,8 +129,8 @@ class PIPELINE_API avtCellList
 
   protected:
     avtSerializedCell      **celllist;
-    int                      celllistI;
-    int                      celllistN;
+    long long                celllistI;
+    long long                celllistN;
     int                      nVars;
 
     bool                     useRestriction;

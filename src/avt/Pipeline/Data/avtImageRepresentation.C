@@ -40,6 +40,7 @@
 //                        avtImageRepresentation.C                           //
 // ************************************************************************* //
 #include <vtkCharArray.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkFloatArray.h>
 #include <vtkImageData.h>
 #include <vtkPointData.h>
@@ -53,12 +54,96 @@
 #include <ImproperUseException.h>
 
 
+// ****************************************************************************
+//  Function: CreateStringFromVTKInput
 //
-// Function Prototypes
+//  Purpose:
+//      Creates a string from a vtk input.
 //
+//  Arguments:
+//      img     The image.
+//      str     The string the image is written on.
+//      len     The length of string.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 13, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Jan 22 15:57:19 PST 2004
+//    Remove image clip because it has a dependence on vtkImaging library.
+//
+// ****************************************************************************
 
-void   CreateStringFromInput(vtkImageData *, float *, unsigned char *&, int &);
-void   CreateStringFromVTKInput(vtkImageData *, unsigned char *&, int &);
+static
+void
+CreateStringFromVTKInput(vtkImageData *img, unsigned char *&str, int &len)
+{
+    //
+    // Keep Update from propagating.
+    //
+    vtkImageData *tmp = vtkImageData::New();
+    tmp->ShallowCopy(img);
+
+    vtkStructuredPointsWriter *writer = vtkStructuredPointsWriter::New();
+    writer->SetFileTypeToBinary();
+    writer->WriteToOutputStringOn();
+    writer->SetInputData(tmp);
+    writer->SetFileTypeToBinary();
+    writer->Write();
+
+    len = writer->GetOutputStringLength();
+    str = (unsigned char *) writer->RegisterAndGetOutputString();
+
+    writer->Delete();
+    tmp->Delete();
+}
+
+// ****************************************************************************
+//  Function: CreateStringFromInput
+//
+//  Purpose:
+//      Creates a string from the input (a vtk image and a zbuffer).
+//
+//  Arguments:
+//      img      The VTK image.
+//      zbuffer  The zbuffer.
+//      str      A string that contains img and zbuffer.
+//      len      The length of str.
+//
+//  Programmer:  Hank Childs
+//  Creation:    February 13, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Sat Jan  5 11:32:03 PST 2002
+//    Clean up memory leak.
+//
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    use a vtk data array to store the z-buffer.
+//
+// ****************************************************************************
+
+static
+void
+CreateStringFromInput(vtkImageData *img, vtkFloatArray *zbuf, unsigned char *&str,
+                      int &len)
+{
+    // make a shallow copy for if we need to attach zbuffer data
+    vtkImageData *tmp  = vtkImageData::New();
+    tmp->ShallowCopy(img);
+
+    // add the zbuffer as point data if we have one
+    if (zbuf)
+       tmp->GetPointData()->AddArray(zbuf);
+
+    CreateStringFromVTKInput(tmp, str, len);
+
+    tmp->Delete();
+}
+
+
+
 
 
 // ****************************************************************************
@@ -87,10 +172,34 @@ avtImageRepresentation::avtImageRepresentation(vtkImageData *d)
 {
     Initialize();
 
-    asVTK        = d;
-    if (asVTK != NULL)
-    {
+    asVTK = d;
+
+    if (asVTK)
         asVTK->Register(NULL);
+}
+
+// ****************************************************************************
+//  Method: avtImageRepresentation constructor
+//
+//  Programmer: Burlen Loring
+//  Creation:  Thu Sep  3 13:00:33 PDT 2015
+//
+// ****************************************************************************
+
+avtImageRepresentation::avtImageRepresentation(
+    vtkImageData *im, vtkFloatArray *z)
+{
+    Initialize();
+
+    asVTK = im;
+    if (asVTK)
+        asVTK->Register(NULL);
+
+    zbuffer = z;
+    if (zbuffer)
+    {
+        zbuffer->SetName("zbuffer");
+        zbuffer->Register(NULL);
     }
 }
 
@@ -111,33 +220,33 @@ avtImageRepresentation::avtImageRepresentation(vtkImageData *d)
 //    Hank Childs, Mon Feb  6 14:59:43 PST 2006
 //    Allow the z-buffer to be directly acquired instead of copied.
 //
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    use a vtk data array to store the z-buffer.
+//
 // ****************************************************************************
 
-avtImageRepresentation::avtImageRepresentation(vtkImageData *d, float *z, 
-                                               bool iNowOwn)
+avtImageRepresentation::avtImageRepresentation(vtkImageData *d, float *z,
+                                               bool take)
 {
     Initialize();
-    int width = 0;
-    int height = 0;
 
-    asVTK        = d;
-    if (asVTK != NULL)
-    {
-        asVTK->Register(NULL);
-        width  = asVTK->GetDimensions()[0];
-        height = asVTK->GetDimensions()[1];
-    }
+    asVTK = d;
 
-    if (z != NULL)
+    if (!asVTK)
+        return;
+
+    asVTK->Register(NULL);
+
+    if (z)
     {
-       if (iNowOwn)
-           zbuffer = z;
+        zbuffer = vtkFloatArray::New();
+        zbuffer->SetName("zbuffer");
+        const int *dims = asVTK->GetDimensions();
+        int npix = dims[0]*dims[1];
+       if (take)
+           zbuffer->SetArray(z, npix, 0, vtkDataArrayTemplate<float>::VTK_DATA_ARRAY_DELETE);
        else
-       {
-           zbuffer      = new float[width * height];
-           memcpy(zbuffer, z, sizeof(float) * width * height);
-       }
-       zbufferRef   = new int(1);
+           memcpy(zbuffer->WritePointer(0, npix), z, npix*sizeof(float));
     }
 }
 
@@ -170,10 +279,16 @@ avtImageRepresentation::avtImageRepresentation(char *d, int dl)
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2000
 //
+//  Modifications:
+//
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    initialize the object before copying.
+//
 // ****************************************************************************
 
 avtImageRepresentation::avtImageRepresentation(const avtImageRepresentation &r)
 {
+    Initialize();
     Copy(r);
 }
 
@@ -224,6 +339,11 @@ avtImageRepresentation::ReleaseData(void)
 //
 //    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
 //    Added compression data members
+//
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    use a vtk data array to store the z-buffer.
+//
+//
 // ****************************************************************************
 
 void
@@ -231,12 +351,12 @@ avtImageRepresentation::Initialize(void)
 {
     asVTK        = NULL;
     zbuffer      = NULL;
-    zbufferRef   = NULL;
     asChar       = NULL;
     asCharLength = 0;
     asCharRef    = NULL;
     rowOrigin    = 0;
     colOrigin    = 0;
+
     compressionRatio = -1.0;
     timeToCompress   = -1.0;
     timeToDecompress = -1.0;
@@ -252,39 +372,113 @@ avtImageRepresentation::Initialize(void)
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2001
 //
+//  Modifications:
+//
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    use a vtk data array to store the z-buffer.
+//
 // ****************************************************************************
 
 void
 avtImageRepresentation::Copy(const avtImageRepresentation &r)
 {
-    Initialize();
+    if (&r == this)
+        return;
 
-    if (r.asVTK)
-    {
-        asVTK  = r.asVTK;
+    ReleaseData();
+
+    asVTK = r.asVTK;
+    if (asVTK)
         asVTK->Register(NULL);
-    }
-    if (r.zbuffer)
+
+    zbuffer = r.zbuffer;
+    if (zbuffer)
+        zbuffer->Register(NULL);
+
+    asChar = r.asChar;
+    if (asChar)
     {
-        zbuffer    = r.zbuffer;
-        zbufferRef = r.zbufferRef;
-        (*zbufferRef)++;
-    }
-    if (r.asChar)
-    {
-        asChar       = r.asChar;
-        asCharLength = r.asCharLength; 
+        asCharLength = r.asCharLength;
         asCharRef    = r.asCharRef;
         (*asCharRef)++;
     }
 
     rowOrigin = r.rowOrigin;
     colOrigin = r.colOrigin;
+
     compressionRatio = r.compressionRatio;
     timeToCompress = r.timeToCompress;
     timeToDecompress = r.timeToDecompress;
 }
 
+// ****************************************************************************
+//  Method: avtImageRepresentation::SetZBuffer
+//
+//  Purpose:
+//     Sets the z-buffer from the object passed in.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Tue Sep  1 07:28:09 PDT 2015
+//
+// ****************************************************************************
+
+void
+avtImageRepresentation::SetZBufferVTK(vtkFloatArray *z)
+{
+    if (z == zbuffer)
+        return;
+
+    if (zbuffer)
+        zbuffer->Delete();
+
+    zbuffer = z;
+
+    if (zbuffer)
+    {
+        zbuffer->Register(NULL);
+        zbuffer->SetName("zbuffer");
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtImageRepresentation::SetImageVTK
+//
+//  Purpose
+//     Set the image
+//
+//  Programmer: Burlen Loring
+//  Creation:   Tue Sep  1 07:28:09 PDT 2015
+//
+// ****************************************************************************
+
+void
+avtImageRepresentation::SetImageVTK(vtkImageData *im)
+{
+    if (im == asVTK)
+        return;
+
+    if (asVTK)
+        asVTK->Delete();
+
+    asVTK = im;
+    if (asVTK)
+        asVTK->Register(NULL);
+
+    if (asChar)
+    {
+        (*asCharRef)--;
+        if (! *asCharRef)
+        {
+            delete [] asChar;
+            delete asCharRef;
+        }
+    }
+
+    asChar = NULL;
+    asCharRef = NULL;
+    asCharLength = 0;
+}
 
 // ****************************************************************************
 //  Method: avtImageRepresentation::DestructSelf
@@ -295,27 +489,22 @@ avtImageRepresentation::Copy(const avtImageRepresentation &r)
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2001
 //
+//  Modifications:
+//
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    use a vtk data array to store the z-buffer.
+//
 // ****************************************************************************
 
 void
 avtImageRepresentation::DestructSelf(void)
 {
     if (asVTK)
-    {
         asVTK->Delete();
-        asVTK = NULL;
-    }
+
     if (zbuffer)
-    {
-        (*zbufferRef)--;
-        if (*zbufferRef <= 0)
-        {
-            delete [] zbuffer;
-            delete zbufferRef;
-        }
-        zbuffer    = NULL;
-        zbufferRef = NULL;
-    }
+        zbuffer->Delete();
+
     if (asChar)
     {
         (*asCharRef)--;
@@ -324,9 +513,9 @@ avtImageRepresentation::DestructSelf(void)
             delete [] asChar;
             delete asCharRef;
         }
-        asChar = NULL;
-        asCharRef = NULL;
     }
+
+    Initialize();
 }
 
 
@@ -347,14 +536,15 @@ avtImageRepresentation::DestructSelf(void)
 //    Hank Childs, Tue Dec 18 10:25:09 PST 2007
 //    Remove const qualification of return type.
 //
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    let copy handle freeing the existing data
+//
 // ****************************************************************************
 
 avtImageRepresentation &
 avtImageRepresentation::operator=(const avtImageRepresentation &rhs)
 {
-    DestructSelf();
     Copy(rhs);
-
     return *this;
 }
 
@@ -476,6 +666,11 @@ avtImageRepresentation::GetImageString(int &length, bool compress)
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2000
 //
+//  Modifications:
+//
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    use a vtk data array to store the z-buffer.
+//
 // ****************************************************************************
 
 vtkImageData *
@@ -488,12 +683,7 @@ avtImageRepresentation::GetImageVTK(void)
             EXCEPTION0(NoInputException);
         }
         GetImageFromString(asChar, asCharLength, asVTK, zbuffer);
-        if (zbuffer != NULL)
-        {
-            zbufferRef = new int(1);
-        }
     }
-
     return asVTK;
 }
 
@@ -509,33 +699,51 @@ avtImageRepresentation::GetImageVTK(void)
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2001
 //
+//  Modifications:
+//
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    use a vtk data array to store the z-buffer.
+//    call GetImageVTK to marshal if necessary
+//
 // ****************************************************************************
 
 float *
 avtImageRepresentation::GetZBuffer(void)
 {
-    //
     // Not all images have z-buffers.  If we have a VTK image and no z-buffer
     // then there is no z-buffer.  If we don't have the VTK image, we should
     // parse out the image and potentially the z-buffer from the marshall
     // string.
-    //
-    if (asVTK == NULL)
-    {
-        if (asChar == NULL)
-        {
-            EXCEPTION0(NoInputException);
-        }
-
-        GetImageFromString(asChar, asCharLength, asVTK, zbuffer);
-        if (zbuffer != NULL)
-        {
-            zbufferRef = new int(1);
-        }
-    }
-
-    return zbuffer;
+    GetImageVTK();
+    if (zbuffer)
+        return zbuffer->GetPointer(0);
+    return NULL;
 }
+
+// ****************************************************************************
+//  Method: avtImageRepresentation::GetZBufferVTK
+//
+//  Purpose:
+//      Gets the z-buffer of the image.
+//
+//  Returns:    The z-buffer for the image, if it exists.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Fri Sep  4 11:52:29 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkFloatArray *
+avtImageRepresentation::GetZBufferVTK()
+{
+    GetImageVTK(); // for marshalling from string
+    if (zbuffer)
+        return zbuffer;
+    return NULL;
+}
+
 
 // ****************************************************************************
 //  Method: avtImageRepresentation::GetRGBBuffer
@@ -548,26 +756,60 @@ avtImageRepresentation::GetZBuffer(void)
 //  Programmer: Mark C. Miller 
 //  Creation:   04Mar03 
 //
+//  Modifications:
+//
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    use a vtk data array to store the z-buffer.
+//
 // ****************************************************************************
 unsigned char *
 avtImageRepresentation::GetRGBBuffer(void)
 {
-    if (asVTK == NULL)
-    {
-        if (asChar == NULL)
-        {
-            EXCEPTION0(NoInputException);
-        }
-
-        GetImageFromString(asChar, asCharLength, asVTK, zbuffer);
-        if (zbuffer != NULL)
-        {
-            zbufferRef = new int(1);
-        }
-    }
-
+    GetImageVTK(); // for marshalling from string
     return (unsigned char *)asVTK->GetScalarPointer(0, 0, 0);
 }
+
+// ****************************************************************************
+//  Method: avtImageRepresentation::GetRGBBuffer
+//
+//  Purpose:
+//      Gets the rgb-buffer of the image.
+//
+//  Returns:    The rgb-buffer for the image, if it exists.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Fri Sep  4 12:53:18 PDT 2015
+//
+// ****************************************************************************
+vtkUnsignedCharArray *
+avtImageRepresentation::GetRGBBufferVTK()
+{
+    GetImageVTK(); // for marshalling from string
+    return dynamic_cast<vtkUnsignedCharArray*>(
+        asVTK->GetPointData()->GetArray("ImageScalars"));
+}
+
+// ****************************************************************************
+//  Method: avtImageRepresentation::GetNumberOfColorChannels
+//
+//  Purpose:
+//      Gets then number of color channels, 3 for rgb
+//      and 4 for rgba
+//
+//  Programmer: Burlen Loring
+//  Creation:   Fri Sep  4 11:49:33 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+int
+avtImageRepresentation::GetNumberOfColorChannels()
+{
+    GetImageVTK(); // for marshalling from string
+    return
+    asVTK->GetPointData()->GetArray("ImageScalars")->GetNumberOfComponents();
+}
+
 
 // ****************************************************************************
 //  Method: avtImageRepresentation::NewImage
@@ -585,122 +827,25 @@ avtImageRepresentation::GetRGBBuffer(void)
 //  Programmer:  Hank Childs
 //  Creation:    January 25, 2001
 //
+//  Modifications:
+//
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    use a vtk data array to store the z-buffer.
+//    make the number of color channels a parameter so that
+//    we can also store rgba images
+//
 // ****************************************************************************
 
 vtkImageData *
-avtImageRepresentation::NewImage(int width, int height)
+avtImageRepresentation::NewImage(int width, int height, int nchan)
 {
     vtkImageData *image = vtkImageData::New();
     image->SetExtent(0, width-1, 0, height-1, 0, 0);
     image->SetSpacing(1., 1., 1.);
     image->SetOrigin(0., 0., 0.);
-    image->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
-
+    image->AllocateScalars(VTK_UNSIGNED_CHAR, nchan);
     return image;
 }
-
-
-// ****************************************************************************
-//  Function: CreateStringFromInput
-//
-//  Purpose:
-//      Creates a string from the input (a vtk image and a zbuffer).
-//
-//  Arguments:
-//      img      The VTK image.
-//      zbuffer  The zbuffer.
-//      str      A string that contains img and zbuffer.
-//      len      The length of str.
-//
-//  Programmer:  Hank Childs
-//  Creation:    February 13, 2001
-//
-//  Modifications:
-//
-//    Hank Childs, Sat Jan  5 11:32:03 PST 2002
-//    Clean up memory leak.
-//
-// ****************************************************************************
-
-void
-CreateStringFromInput(vtkImageData *img, float *zbuffer, unsigned char *&str,
-                      int &len)
-{
-    // make a shallow copy for if we need to attach zbuffer data
-    vtkImageData *tmp  = vtkImageData::New();
-    tmp->ShallowCopy(img);
-
-    //
-    // Figure out what the width and height should be before we start altering
-    // the image (the image should not be altered, but you never know with VTK)
-    //
-    int dims[3];
-    tmp->GetDimensions(dims);
-    int width  = dims[0];
-    int height = dims[1];
-
-    // add the zbuffer as point data if we have one
-    if (zbuffer)
-    {
-       vtkFloatArray *zArray = vtkFloatArray::New();
-       zArray->SetNumberOfComponents(1);
-       int iOwnIt = 1;  // 1 means we own it -- you don't delete it.
-       zArray->SetArray(zbuffer, width * height, iOwnIt);
-       zArray->SetName("zbuffer");
-       tmp->GetPointData()->AddArray(zArray);
-       zArray->Delete();
-    }
-
-    CreateStringFromVTKInput(tmp, str, len);
-
-    tmp->Delete();
-}
-
-
-// ****************************************************************************
-//  Function: CreateStringFromVTKInput
-//
-//  Purpose:
-//      Creates a string from a vtk input.
-//
-//  Arguments:
-//      img     The image.
-//      str     The string the image is written on.
-//      len     The length of string.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 13, 2001
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Jan 22 15:57:19 PST 2004
-//    Remove image clip because it has a dependence on vtkImaging library.
-//
-// ****************************************************************************
-
-void
-CreateStringFromVTKInput(vtkImageData *img, unsigned char *&str, int &len)
-{
-    //
-    // Keep Update from propagating.
-    //
-    vtkImageData *tmp = vtkImageData::New();
-    tmp->ShallowCopy(img);
-
-    vtkStructuredPointsWriter *writer = vtkStructuredPointsWriter::New();
-    writer->SetFileTypeToBinary();
-    writer->WriteToOutputStringOn();
-    writer->SetInputData(tmp);
-    writer->SetFileTypeToBinary();
-    writer->Write();
-
-    len = writer->GetOutputStringLength();
-    str = (unsigned char *) writer->RegisterAndGetOutputString();
-
-    writer->Delete();
-    tmp->Delete();
-}
-
 
 
 // ****************************************************************************
@@ -736,10 +881,14 @@ CreateStringFromVTKInput(vtkImageData *img, unsigned char *&str, int &len)
 //    Kathleen Biagas, Fri Jan 25 16:40:41 PST 2013
 //    Call update on reader, not data object.
 //
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    use a vtk data array to store the z-buffer.
+//
 // ****************************************************************************
 
-void avtImageRepresentation::GetImageFromString(unsigned char *str,
-        int strLength, vtkImageData *&img, float *&zbuffer)
+void
+avtImageRepresentation::GetImageFromString(unsigned char *str,
+        int strLength, vtkImageData *&img, vtkFloatArray *&zbuf)
 {
 
     int strLengthNew = 0;
@@ -765,27 +914,28 @@ void avtImageRepresentation::GetImageFromString(unsigned char *str,
     reader->SetReadFromInputString(1);
     reader->SetInputArray(charArray);
     reader->Update();
+
+    if (img)
+        img->Delete();
+
     img = reader->GetOutput();
     img->SetScalarType(VTK_UNSIGNED_CHAR, img->GetInformation());
     img->Register(NULL);
-    //  calling SetSource sets' PipelineInformation to NULL, and then
-    //  vtkImageData no longer knows its scalar data type, and who knows
-    //  what else.
-    //img->SetSource(NULL);
+
     reader->Delete();
     charArray->Delete();
 
     // If there is a "zbuffer" point data array, then get it too
-    vtkDataArray *zArray = img->GetPointData()->GetArray("zbuffer");
-    if (zArray)
-    {
-       int size = zArray->GetSize();
-       zbuffer = new float[size];
-       memcpy(zbuffer, zArray->GetVoidPointer(0), size * sizeof(float));
-       zbufferRef   = new int(1);
+    if (zbuf)
+        zbuf->Delete();
 
-       // remove the zbuffer data from the vtkImageData object 
-       img->GetPointData()->RemoveArray("zbuffer");
+    zbuf = dynamic_cast<vtkFloatArray*>(
+        img->GetPointData()->GetArray("zbuffer"));
+
+    if (zbuf)
+    {
+        zbuf->Register(NULL);
+        img->GetPointData()->RemoveArray("zbuffer");
     }
 }
 
@@ -796,6 +946,11 @@ void avtImageRepresentation::GetImageFromString(unsigned char *str,
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   25Feb03 
+//
+//  Modifications:
+//
+//    Burlen Loring, Fri Sep  4 12:48:47 PDT 2015
+//    Use GetImageVTK to do marshalling
 //
 // ****************************************************************************
 
@@ -811,16 +966,7 @@ avtImageRepresentation::GetSize(int *_rowSize, int *_colSize)
    // the size. So, we wind up doing problem sized work to satisfy
    // the query. Nonetheless, its a good assumption the client actually
    // wants some that data sometime in the future anyway.
-
-    if (asVTK == NULL)
-    {
-        if (asChar == NULL)
-        {
-            EXCEPTION0(NoInputException);
-        }
-
-        GetImageFromString(asChar, asCharLength, asVTK, zbuffer);
-    }
+    GetImageVTK();
 
     int *imageDims = asVTK->GetDimensions();
     *_rowSize = imageDims[1]; // #rows is y-size
@@ -870,9 +1016,12 @@ avtImageRepresentation::GetSize(int *_rowSize, int *_colSize) const
 //    Mark C. Miller, Wed Nov  5 09:48:13 PST 2003
 //    Added option to count polygons only
 //
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
-int
+long long
 avtImageRepresentation::GetNumberOfCells(bool polysOnly) const
 {
     if (asVTK == NULL)
@@ -900,6 +1049,11 @@ avtImageRepresentation::GetNumberOfCells(bool polysOnly) const
 //  Programmer: Mark C. Miller 
 //  Creation:   November 15, 2005 
 //
+//  Modification:
+//
+//    Burlen Loring, Fri Sep  4 12:49:59 PDT 2015
+//    initialize the return to fix an error reported by valgrind
+//
 // ****************************************************************************
 
 float
@@ -910,7 +1064,7 @@ avtImageRepresentation::GetCompressionRatio() const
 
     if (asChar != NULL)
     {
-        float ratioc;
+        float ratioc = 1.0f;
         CGetCompressionInfoFromDataString(asChar, asCharLength,
             0, &ratioc);
         return ratioc;
@@ -927,6 +1081,11 @@ avtImageRepresentation::GetCompressionRatio() const
 //  Programmer: Mark C. Miller 
 //  Creation:   November 15, 2005 
 //
+//  Modification:
+//
+//    Burlen Loring, Fri Sep  4 12:49:59 PDT 2015
+//    initialize the return to fix an error reported by valgrind
+//
 // ****************************************************************************
 
 float
@@ -937,7 +1096,7 @@ avtImageRepresentation::GetTimeToCompress() const
 
     if (asChar != NULL)
     {
-        float timec;
+        float timec = 0.0f;
         CGetCompressionInfoFromDataString(asChar, asCharLength,
             &timec, 0);
         return timec;

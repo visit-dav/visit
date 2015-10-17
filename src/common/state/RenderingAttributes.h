@@ -118,6 +118,14 @@ public:
 
     // Property setting methods
     void SetAntialiasing(bool antialiasing_);
+    void SetOrderComposite(bool orderComposite_);
+    void SetDepthCompositeThreads(int depthCompositeThreads_);
+    void SetDepthCompositeBlocking(int depthCompositeBlocking_);
+    void SetAlphaCompositeThreads(int alphaCompositeThreads_);
+    void SetAlphaCompositeBlocking(int alphaCompositeBlocking_);
+    void SetDepthPeeling(bool depthPeeling_);
+    void SetOcclusionRatio(double occlusionRatio_);
+    void SetNumberOfPeels(int numberOfPeels_);
     void SetMultiresolutionMode(bool multiresolutionMode_);
     void SetMultiresolutionCellSize(float multiresolutionCellSize_);
     void SetGeometryRepresentation(GeometryRepresentation geometryRepresentation_);
@@ -144,6 +152,14 @@ public:
 
     // Property getting methods
     bool                 GetAntialiasing() const;
+    bool                 GetOrderComposite() const;
+    int                  GetDepthCompositeThreads() const;
+    int                  GetDepthCompositeBlocking() const;
+    int                  GetAlphaCompositeThreads() const;
+    int                  GetAlphaCompositeBlocking() const;
+    bool                 GetDepthPeeling() const;
+    double               GetOcclusionRatio() const;
+    int                  GetNumberOfPeels() const;
     bool                 GetMultiresolutionMode() const;
     float                GetMultiresolutionCellSize() const;
     GeometryRepresentation GetGeometryRepresentation() const;
@@ -205,6 +221,14 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_antialiasing = 0,
+        ID_orderComposite,
+        ID_depthCompositeThreads,
+        ID_depthCompositeBlocking,
+        ID_alphaCompositeThreads,
+        ID_alphaCompositeBlocking,
+        ID_depthPeeling,
+        ID_occlusionRatio,
+        ID_numberOfPeels,
         ID_multiresolutionMode,
         ID_multiresolutionCellSize,
         ID_geometryRepresentation,
@@ -233,6 +257,14 @@ public:
 
 private:
     bool           antialiasing;
+    bool           orderComposite;
+    int            depthCompositeThreads;
+    int            depthCompositeBlocking;
+    int            alphaCompositeThreads;
+    int            alphaCompositeBlocking;
+    bool           depthPeeling;
+    double         occlusionRatio;
+    int            numberOfPeels;
     bool           multiresolutionMode;
     float          multiresolutionCellSize;
     int            geometryRepresentation;
@@ -261,6 +293,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "bbfiibibiibffabdbbDDibii"
+#define RENDERINGATTRIBUTES_TMFS "bbiiiibdibfiibibiibffabdbbDDibii"
 
 #endif

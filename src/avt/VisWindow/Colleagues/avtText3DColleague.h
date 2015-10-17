@@ -90,6 +90,9 @@ public:
     virtual void HasPlots(void);
     virtual void NoPlots(void);
     virtual void UpdatePlotList(std::vector<avtActor_p> &lst);
+
+    virtual void SetVisibility(int);
+
 protected:
     bool ShouldBeAddedToRenderer() const;
     void SetText(const char *text);

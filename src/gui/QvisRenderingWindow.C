@@ -141,14 +141,14 @@ QvisRenderingWindow::~QvisRenderingWindow()
 // ****************************************************************************
 // Method: QvisRenderingWindow::CreateBasicPage
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets on the basic page.
 //
 // Arguments:
 //
 // Returns:    The basic page widget.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 12:10:45 PDT 2008
@@ -156,6 +156,12 @@ QvisRenderingWindow::~QvisRenderingWindow()
 // Modifications:
 //   Eric Brugger, Tue Oct 25 12:32:40 PDT 2011
 //   Add a multi resolution display capability for AMR data.
+//
+//   Burlen Loring, Wed Aug 12 15:57:34 PDT 2015
+//   Added options for depth peeling
+//
+//   Burlen Loring, Sun Sep  6 14:07:04 PDT 2015
+//   Added option for odered compositing
 //
 // ****************************************************************************
 
@@ -174,6 +180,140 @@ QvisRenderingWindow::CreateBasicPage()
             this, SLOT(antialiasingToggled(bool)));
     basicLayout->addWidget(antialiasingToggle, row, 0, 1, 3);
     row++;
+
+    // create the order compositing widgets
+    compositeLabel = new QLabel(tr("Compositer Settings"), basicOptions);
+    basicLayout->addWidget(compositeLabel, row, 0, 1, 3);
+    row++;
+
+    orderedComposite = new QCheckBox(tr("Ordered Compositing"), basicOptions);
+    orderedComposite->setCheckState(Qt::Checked);
+    orderedComposite->setToolTip(
+        tr("Enable ordered compositing. For block stuctured domain\n"
+           "decomposition ordered compositing eliminates the need\n"
+           "for a global parallel camera order geometry sort when\n"
+           "rendering translucent geometry. When combined with depth\n"
+           "peeling all geometry sorting is eliminated\n"));
+    connect(orderedComposite, SIGNAL(toggled(bool)),
+            this, SLOT(updateOrderedComposite()));
+    basicLayout->addWidget(orderedComposite, row, 2);
+    row++;
+
+    // create the depth and alpha compositing widgets
+    depthCompositeThreadsLabel = new QLabel(tr("Depth Compositer Threads"), basicOptions);
+    depthCompositeThreadsLabel->setToolTip(
+        tr("Sets the number of threads that process communication streams\n"
+           "during depth compositing.\n"));
+    basicLayout->addWidget(depthCompositeThreadsLabel, row, 2);
+    depthCompositeThreads = new QLineEdit("2", basicOptions);
+    QIntValidator *iv0 = new QIntValidator(0,8);
+    depthCompositeThreads->setValidator(iv0);
+    connect(depthCompositeThreads, SIGNAL(textChanged(const QString &)),
+            this, SLOT(updateDepthCompositeThreads(void)));
+    basicLayout->addWidget(depthCompositeThreads, row, 3);
+    row++;
+
+    depthCompositeBlockingLabel = new QLabel(tr("Depth Compositer Blocking"), basicOptions);
+    depthCompositeBlockingLabel->setToolTip(
+        tr("Sets the block size used for streaming communication\n"
+           "during depth compositing. Images are split into blocks\n"
+           "of this size and streamed out. Incomning streams are\n"
+           "processed in the background using compositing threads\n"));
+    basicLayout->addWidget(depthCompositeBlockingLabel, row, 2);
+    depthCompositeBlocking = new QLineEdit("65536", basicOptions);
+    QIntValidator *iv1 = new QIntValidator(4096,0x3fffffff);
+    depthCompositeBlocking->setValidator(iv1);
+    connect(depthCompositeBlocking, SIGNAL(textChanged(const QString &)),
+            this, SLOT(updateDepthCompositeBlocking(void)));
+    basicLayout->addWidget(depthCompositeBlocking, row, 3);
+    row++;
+
+    alphaCompositeThreadsLabel = new QLabel(tr("Alpha Compositer Threads"), basicOptions);
+    alphaCompositeThreadsLabel->setToolTip(
+        tr("Sets the number of threads that process communication streams\n"
+           "during alpha compositing.\n"));
+    basicLayout->addWidget(alphaCompositeThreadsLabel, row, 2);
+    alphaCompositeThreads = new QLineEdit("2", basicOptions);
+    QIntValidator *iv2 = new QIntValidator(0,8);
+    alphaCompositeThreads->setValidator(iv2);
+    connect(alphaCompositeThreads, SIGNAL(textChanged(const QString &)),
+            this, SLOT(updateAlphaCompositeThreads(void)));
+    basicLayout->addWidget(alphaCompositeThreads, row, 3);
+    row++;
+
+    alphaCompositeBlockingLabel = new QLabel(tr("Alpha Compositer Blocking"), basicOptions);
+    alphaCompositeBlockingLabel->setToolTip(
+        tr("Sets the block size used for streaming communication\n"
+           "during alpha compositing. Images are split into blocks\n"
+           "of this size and streamed out. Incomning streams are\n"
+           "processed in the background using compositing threads\n"));
+    basicLayout->addWidget(alphaCompositeBlockingLabel, row, 2);
+    alphaCompositeBlocking = new QLineEdit("65536", basicOptions);
+    QIntValidator *iv3 = new QIntValidator(4096,0x3fffffff);
+    alphaCompositeBlocking->setValidator(iv3);
+    connect(alphaCompositeBlocking, SIGNAL(textChanged(const QString &)),
+            this, SLOT(updateAlphaCompositeBlocking(void)));
+    basicLayout->addWidget(alphaCompositeBlocking, row, 3);
+    row++;
+
+    // Create the depthPeeling widgets.
+    depthPeeling = new QCheckBox(tr("Depth Peeling"), basicOptions);
+    depthPeeling->setCheckState(Qt::Unchecked);
+    depthPeeling->setToolTip(
+        tr("Enable depth peeling for order independent rendering of\n"
+           "transparent geometry. When not using depth peeling a camera\n"
+           "order sort is used. If you have a GPU this is usualy a win\n"
+           "with OSMesa it will depend on the version and build options\n"
+           "with VisIt's current Mesa 7.10 it is *very* slow.\n"));
+    connect(depthPeeling, SIGNAL(toggled(bool)),
+            this, SLOT(updateDepthPeeling(void)));
+    basicLayout->addWidget(depthPeeling, row, 0, 1, 3);
+    row++;
+
+    occlusionRatioLabel = new QLabel(tr("Occlusion ratio"), basicOptions);
+    occlusionRatioLabel->setToolTip(
+        tr("When greater than zero early terminations is enabled and\n"
+           "the algorithm will stop doing peels when fewer than this\n"
+           "fraction of pixels changed in the last peel. Thus one sacrifices\n"
+           "accuracy for speed. When set to zero the maximum number of peels\n"
+           "will be made which, when enough peels are requested, ensures a\n"
+           "correct result."));
+    occlusionRatioLabel->setEnabled(false);
+    basicLayout->addWidget(occlusionRatioLabel, row, 2);
+    occlusionRatio = new QLineEdit("0.01", basicOptions);
+    QDoubleValidator *dv0 = new QDoubleValidator(0.0, 0.5, 4, 0);
+    occlusionRatio->setValidator(dv0);
+    occlusionRatio->setEnabled(false);
+    connect(occlusionRatio, SIGNAL(textChanged(const QString &)),
+            this, SLOT(updateDepthPeeling(void)));
+    basicLayout->addWidget(occlusionRatio, row, 3);
+    row++;
+
+    numberOfPeelsLabel = new QLabel(tr("Max number of Peels"), basicOptions);
+    numberOfPeelsLabel->setToolTip(
+        tr("Sets the maximum number of peels to use. Each peel renders the\n"
+           "next nearest surface for a given fragment. You may need to\n"
+           "increase the number of peels for very complex scenes."));
+    numberOfPeelsLabel->setEnabled(false);
+    basicLayout->addWidget(numberOfPeelsLabel, row, 2);
+    numberOfPeels = new QLineEdit("32", basicOptions);
+    QIntValidator *iv4 = new QIntValidator(1,1000);
+    numberOfPeels->setValidator(iv4);
+    numberOfPeels->setEnabled(false);
+    connect(numberOfPeels, SIGNAL(textChanged(const QString &)),
+            this, SLOT(updateDepthPeeling(void)));
+    basicLayout->addWidget(numberOfPeels, row, 3);
+    row++;
+
+    connect(depthPeeling, SIGNAL(toggled(bool)),
+            occlusionRatioLabel, SLOT(setEnabled(bool)));
+    connect(depthPeeling, SIGNAL(toggled(bool)),
+            occlusionRatio, SLOT(setEnabled(bool)));
+
+    connect(depthPeeling, SIGNAL(toggled(bool)),
+            numberOfPeelsLabel, SLOT(setEnabled(bool)));
+    connect(depthPeeling, SIGNAL(toggled(bool)),
+            numberOfPeels, SLOT(setEnabled(bool)));
 
     // Create the multi resolution widgets.
     multiresolutionModeToggle = new QCheckBox(tr("Multi resolution for 2d AMR data"), basicOptions);
@@ -1220,6 +1360,134 @@ void
 QvisRenderingWindow::antialiasingToggled(bool val)
 {
     renderAtts->SetAntialiasing(val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::updateDepthPeeling
+//
+// Purpose:
+//   Update the rendering attributes
+//
+// Programmer: Burlen Loring
+// Creation:   Sun Sep  6 08:42:01 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::updateDepthPeeling()
+{
+    renderAtts->SetDepthPeeling(depthPeeling->isChecked());
+    renderAtts->SetOcclusionRatio(occlusionRatio->text().toDouble());
+    renderAtts->SetNumberOfPeels(numberOfPeels->text().toInt());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::updateOrderedComposite
+//
+// Purpose:
+//   Update the rendering attributes
+//
+// Programmer: Burlen Loring
+// Creation:   Sun Sep  6 08:42:01 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::updateOrderedComposite()
+{
+    renderAtts->SetOrderComposite(orderedComposite->isChecked());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::depthCompositeThreads
+//
+// Purpose:
+//   Update the rendering attributes
+//
+// Programmer: Burlen Loring
+// Creation:  Tue Sep 29 11:52:04 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::updateDepthCompositeThreads()
+{
+    renderAtts->SetDepthCompositeThreads(depthCompositeThreads->text().toInt());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::alphaCompositeThreads
+//
+// Purpose:
+//   Update the rendering attributes
+//
+// Programmer: Burlen Loring
+// Creation:  Tue Sep 29 11:52:04 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::updateAlphaCompositeThreads()
+{
+    renderAtts->SetAlphaCompositeThreads(alphaCompositeThreads->text().toInt());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::depthCompositeBlocking
+//
+// Purpose:
+//   Update the rendering attributes
+//
+// Programmer: Burlen Loring
+// Creation:  Tue Sep 29 11:52:04 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::updateDepthCompositeBlocking()
+{
+    renderAtts->SetDepthCompositeBlocking(depthCompositeBlocking->text().toInt());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::alphaCompositeBlocking
+//
+// Purpose:
+//   Update the rendering attributes
+//
+// Programmer: Burlen Loring
+// Creation:  Tue Sep 29 11:52:04 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::updateAlphaCompositeBlocking()
+{
+    renderAtts->SetAlphaCompositeBlocking(alphaCompositeBlocking->text().toInt());
     SetUpdate(false);
     Apply();
 }

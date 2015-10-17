@@ -180,6 +180,14 @@ RenderingAttributes::TriStateMode_FromString(const std::string &s, RenderingAttr
 void RenderingAttributes::Init()
 {
     antialiasing = false;
+    orderComposite = true;
+    depthCompositeThreads = 2;
+    depthCompositeBlocking = 65536;
+    alphaCompositeThreads = 2;
+    alphaCompositeBlocking = 65536;
+    depthPeeling = false;
+    occlusionRatio = 0;
+    numberOfPeels = 16;
     multiresolutionMode = false;
     multiresolutionCellSize = 0.002;
     geometryRepresentation = Surfaces;
@@ -228,6 +236,14 @@ void RenderingAttributes::Init()
 void RenderingAttributes::Copy(const RenderingAttributes &obj)
 {
     antialiasing = obj.antialiasing;
+    orderComposite = obj.orderComposite;
+    depthCompositeThreads = obj.depthCompositeThreads;
+    depthCompositeBlocking = obj.depthCompositeBlocking;
+    alphaCompositeThreads = obj.alphaCompositeThreads;
+    alphaCompositeBlocking = obj.alphaCompositeBlocking;
+    depthPeeling = obj.depthPeeling;
+    occlusionRatio = obj.occlusionRatio;
+    numberOfPeels = obj.numberOfPeels;
     multiresolutionMode = obj.multiresolutionMode;
     multiresolutionCellSize = obj.multiresolutionCellSize;
     geometryRepresentation = obj.geometryRepresentation;
@@ -427,6 +443,14 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
 
     // Create the return value
     return ((antialiasing == obj.antialiasing) &&
+            (orderComposite == obj.orderComposite) &&
+            (depthCompositeThreads == obj.depthCompositeThreads) &&
+            (depthCompositeBlocking == obj.depthCompositeBlocking) &&
+            (alphaCompositeThreads == obj.alphaCompositeThreads) &&
+            (alphaCompositeBlocking == obj.alphaCompositeBlocking) &&
+            (depthPeeling == obj.depthPeeling) &&
+            (occlusionRatio == obj.occlusionRatio) &&
+            (numberOfPeels == obj.numberOfPeels) &&
             (multiresolutionMode == obj.multiresolutionMode) &&
             (multiresolutionCellSize == obj.multiresolutionCellSize) &&
             (geometryRepresentation == obj.geometryRepresentation) &&
@@ -594,6 +618,14 @@ void
 RenderingAttributes::SelectAll()
 {
     Select(ID_antialiasing,                 (void *)&antialiasing);
+    Select(ID_orderComposite,               (void *)&orderComposite);
+    Select(ID_depthCompositeThreads,        (void *)&depthCompositeThreads);
+    Select(ID_depthCompositeBlocking,       (void *)&depthCompositeBlocking);
+    Select(ID_alphaCompositeThreads,        (void *)&alphaCompositeThreads);
+    Select(ID_alphaCompositeBlocking,       (void *)&alphaCompositeBlocking);
+    Select(ID_depthPeeling,                 (void *)&depthPeeling);
+    Select(ID_occlusionRatio,               (void *)&occlusionRatio);
+    Select(ID_numberOfPeels,                (void *)&numberOfPeels);
     Select(ID_multiresolutionMode,          (void *)&multiresolutionMode);
     Select(ID_multiresolutionCellSize,      (void *)&multiresolutionCellSize);
     Select(ID_geometryRepresentation,       (void *)&geometryRepresentation);
@@ -653,6 +685,54 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("antialiasing", antialiasing));
+    }
+
+    if(completeSave || !FieldsEqual(ID_orderComposite, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("orderComposite", orderComposite));
+    }
+
+    if(completeSave || !FieldsEqual(ID_depthCompositeThreads, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("depthCompositeThreads", depthCompositeThreads));
+    }
+
+    if(completeSave || !FieldsEqual(ID_depthCompositeBlocking, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("depthCompositeBlocking", depthCompositeBlocking));
+    }
+
+    if(completeSave || !FieldsEqual(ID_alphaCompositeThreads, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("alphaCompositeThreads", alphaCompositeThreads));
+    }
+
+    if(completeSave || !FieldsEqual(ID_alphaCompositeBlocking, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("alphaCompositeBlocking", alphaCompositeBlocking));
+    }
+
+    if(completeSave || !FieldsEqual(ID_depthPeeling, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("depthPeeling", depthPeeling));
+    }
+
+    if(completeSave || !FieldsEqual(ID_occlusionRatio, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("occlusionRatio", occlusionRatio));
+    }
+
+    if(completeSave || !FieldsEqual(ID_numberOfPeels, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("numberOfPeels", numberOfPeels));
     }
 
     if(completeSave || !FieldsEqual(ID_multiresolutionMode, &defaultObject))
@@ -833,6 +913,22 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("antialiasing")) != 0)
         SetAntialiasing(node->AsBool());
+    if((node = searchNode->GetNode("orderComposite")) != 0)
+        SetOrderComposite(node->AsBool());
+    if((node = searchNode->GetNode("depthCompositeThreads")) != 0)
+        SetDepthCompositeThreads(node->AsInt());
+    if((node = searchNode->GetNode("depthCompositeBlocking")) != 0)
+        SetDepthCompositeBlocking(node->AsInt());
+    if((node = searchNode->GetNode("alphaCompositeThreads")) != 0)
+        SetAlphaCompositeThreads(node->AsInt());
+    if((node = searchNode->GetNode("alphaCompositeBlocking")) != 0)
+        SetAlphaCompositeBlocking(node->AsInt());
+    if((node = searchNode->GetNode("depthPeeling")) != 0)
+        SetDepthPeeling(node->AsBool());
+    if((node = searchNode->GetNode("occlusionRatio")) != 0)
+        SetOcclusionRatio(node->AsDouble());
+    if((node = searchNode->GetNode("numberOfPeels")) != 0)
+        SetNumberOfPeels(node->AsInt());
     if((node = searchNode->GetNode("multiresolutionMode")) != 0)
         SetMultiresolutionMode(node->AsBool());
     if((node = searchNode->GetNode("multiresolutionCellSize")) != 0)
@@ -974,6 +1070,62 @@ RenderingAttributes::SetAntialiasing(bool antialiasing_)
 {
     antialiasing = antialiasing_;
     Select(ID_antialiasing, (void *)&antialiasing);
+}
+
+void
+RenderingAttributes::SetOrderComposite(bool orderComposite_)
+{
+    orderComposite = orderComposite_;
+    Select(ID_orderComposite, (void *)&orderComposite);
+}
+
+void
+RenderingAttributes::SetDepthCompositeThreads(int depthCompositeThreads_)
+{
+    depthCompositeThreads = depthCompositeThreads_;
+    Select(ID_depthCompositeThreads, (void *)&depthCompositeThreads);
+}
+
+void
+RenderingAttributes::SetDepthCompositeBlocking(int depthCompositeBlocking_)
+{
+    depthCompositeBlocking = depthCompositeBlocking_;
+    Select(ID_depthCompositeBlocking, (void *)&depthCompositeBlocking);
+}
+
+void
+RenderingAttributes::SetAlphaCompositeThreads(int alphaCompositeThreads_)
+{
+    alphaCompositeThreads = alphaCompositeThreads_;
+    Select(ID_alphaCompositeThreads, (void *)&alphaCompositeThreads);
+}
+
+void
+RenderingAttributes::SetAlphaCompositeBlocking(int alphaCompositeBlocking_)
+{
+    alphaCompositeBlocking = alphaCompositeBlocking_;
+    Select(ID_alphaCompositeBlocking, (void *)&alphaCompositeBlocking);
+}
+
+void
+RenderingAttributes::SetDepthPeeling(bool depthPeeling_)
+{
+    depthPeeling = depthPeeling_;
+    Select(ID_depthPeeling, (void *)&depthPeeling);
+}
+
+void
+RenderingAttributes::SetOcclusionRatio(double occlusionRatio_)
+{
+    occlusionRatio = occlusionRatio_;
+    Select(ID_occlusionRatio, (void *)&occlusionRatio);
+}
+
+void
+RenderingAttributes::SetNumberOfPeels(int numberOfPeels_)
+{
+    numberOfPeels = numberOfPeels_;
+    Select(ID_numberOfPeels, (void *)&numberOfPeels);
 }
 
 void
@@ -1149,6 +1301,54 @@ bool
 RenderingAttributes::GetAntialiasing() const
 {
     return antialiasing;
+}
+
+bool
+RenderingAttributes::GetOrderComposite() const
+{
+    return orderComposite;
+}
+
+int
+RenderingAttributes::GetDepthCompositeThreads() const
+{
+    return depthCompositeThreads;
+}
+
+int
+RenderingAttributes::GetDepthCompositeBlocking() const
+{
+    return depthCompositeBlocking;
+}
+
+int
+RenderingAttributes::GetAlphaCompositeThreads() const
+{
+    return alphaCompositeThreads;
+}
+
+int
+RenderingAttributes::GetAlphaCompositeBlocking() const
+{
+    return alphaCompositeBlocking;
+}
+
+bool
+RenderingAttributes::GetDepthPeeling() const
+{
+    return depthPeeling;
+}
+
+double
+RenderingAttributes::GetOcclusionRatio() const
+{
+    return occlusionRatio;
+}
+
+int
+RenderingAttributes::GetNumberOfPeels() const
+{
+    return numberOfPeels;
 }
 
 bool
@@ -1354,6 +1554,14 @@ RenderingAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return "antialiasing";
+    case ID_orderComposite:               return "orderComposite";
+    case ID_depthCompositeThreads:        return "depthCompositeThreads";
+    case ID_depthCompositeBlocking:       return "depthCompositeBlocking";
+    case ID_alphaCompositeThreads:        return "alphaCompositeThreads";
+    case ID_alphaCompositeBlocking:       return "alphaCompositeBlocking";
+    case ID_depthPeeling:                 return "depthPeeling";
+    case ID_occlusionRatio:               return "occlusionRatio";
+    case ID_numberOfPeels:                return "numberOfPeels";
     case ID_multiresolutionMode:          return "multiresolutionMode";
     case ID_multiresolutionCellSize:      return "multiresolutionCellSize";
     case ID_geometryRepresentation:       return "geometryRepresentation";
@@ -1402,6 +1610,14 @@ RenderingAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return FieldType_bool;
+    case ID_orderComposite:               return FieldType_bool;
+    case ID_depthCompositeThreads:        return FieldType_int;
+    case ID_depthCompositeBlocking:       return FieldType_int;
+    case ID_alphaCompositeThreads:        return FieldType_int;
+    case ID_alphaCompositeBlocking:       return FieldType_int;
+    case ID_depthPeeling:                 return FieldType_bool;
+    case ID_occlusionRatio:               return FieldType_double;
+    case ID_numberOfPeels:                return FieldType_int;
     case ID_multiresolutionMode:          return FieldType_bool;
     case ID_multiresolutionCellSize:      return FieldType_float;
     case ID_geometryRepresentation:       return FieldType_enum;
@@ -1450,6 +1666,14 @@ RenderingAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return "bool";
+    case ID_orderComposite:               return "bool";
+    case ID_depthCompositeThreads:        return "int";
+    case ID_depthCompositeBlocking:       return "int";
+    case ID_alphaCompositeThreads:        return "int";
+    case ID_alphaCompositeBlocking:       return "int";
+    case ID_depthPeeling:                 return "bool";
+    case ID_occlusionRatio:               return "double";
+    case ID_numberOfPeels:                return "int";
     case ID_multiresolutionMode:          return "bool";
     case ID_multiresolutionCellSize:      return "float";
     case ID_geometryRepresentation:       return "enum";
@@ -1502,6 +1726,46 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_antialiasing:
         {  // new scope
         retval = (antialiasing == obj.antialiasing);
+        }
+        break;
+    case ID_orderComposite:
+        {  // new scope
+        retval = (orderComposite == obj.orderComposite);
+        }
+        break;
+    case ID_depthCompositeThreads:
+        {  // new scope
+        retval = (depthCompositeThreads == obj.depthCompositeThreads);
+        }
+        break;
+    case ID_depthCompositeBlocking:
+        {  // new scope
+        retval = (depthCompositeBlocking == obj.depthCompositeBlocking);
+        }
+        break;
+    case ID_alphaCompositeThreads:
+        {  // new scope
+        retval = (alphaCompositeThreads == obj.alphaCompositeThreads);
+        }
+        break;
+    case ID_alphaCompositeBlocking:
+        {  // new scope
+        retval = (alphaCompositeBlocking == obj.alphaCompositeBlocking);
+        }
+        break;
+    case ID_depthPeeling:
+        {  // new scope
+        retval = (depthPeeling == obj.depthPeeling);
+        }
+        break;
+    case ID_occlusionRatio:
+        {  // new scope
+        retval = (occlusionRatio == obj.occlusionRatio);
+        }
+        break;
+    case ID_numberOfPeels:
+        {  // new scope
+        retval = (numberOfPeels == obj.numberOfPeels);
         }
         break;
     case ID_multiresolutionMode:

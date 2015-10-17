@@ -2316,6 +2316,12 @@ ViewerWindow::InvertBackgroundColor()
 //   Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
 //   I added a multi resolution display capability for 2d.
 //
+//   Burlen Loring, Thu Aug 13 08:38:52 PDT 2015
+//   Added options for depth peeling
+//
+//   Burlen Loring, Sun Sep  6 08:44:26 PDT 2015
+//   Added option for ordered composting
+//
 // ****************************************************************************
 
 void
@@ -2325,6 +2331,14 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     // Copy the rendering attributes.
     //
     SetAntialiasing(source->GetAntialiasing());
+    SetOrderComposite(source->GetOrderComposite());
+    SetDepthCompositeThreads(source->GetDepthCompositeThreads());
+    SetAlphaCompositeThreads(source->GetAlphaCompositeThreads());
+    SetDepthCompositeBlocking(source->GetDepthCompositeBlocking());
+    SetAlphaCompositeBlocking(source->GetAlphaCompositeBlocking());
+    SetDepthPeeling(source->GetDepthPeeling());
+    SetOcclusionRatio(source->GetOcclusionRatio());
+    SetNumberOfPeels(source->GetNumberOfPeels());
     SetMultiresolutionMode(source->GetMultiresolutionMode());
     SetMultiresolutionCellSize(source->GetMultiresolutionCellSize());
     SetStereoRendering(source->GetStereo(), source->GetStereoType());
@@ -6310,6 +6324,17 @@ ViewerWindow::GetWindowAttributes() const
 
     renderAtts.SetAntialiasing(GetAntialiasing());
 
+    renderAtts.SetOrderComposite(GetOrderComposite());
+
+    renderAtts.SetDepthCompositeThreads(GetDepthCompositeThreads());
+    renderAtts.SetAlphaCompositeThreads(GetAlphaCompositeThreads());
+    renderAtts.SetDepthCompositeBlocking(GetDepthCompositeBlocking());
+    renderAtts.SetAlphaCompositeBlocking(GetAlphaCompositeBlocking());
+
+    renderAtts.SetDepthPeeling(GetDepthPeeling());
+    renderAtts.SetOcclusionRatio(GetOcclusionRatio());
+    renderAtts.SetNumberOfPeels(GetNumberOfPeels());
+
     renderAtts.SetMultiresolutionMode(GetMultiresolutionMode());
     renderAtts.SetMultiresolutionCellSize(GetMultiresolutionCellSize());
 
@@ -7052,6 +7077,196 @@ ViewerWindow::GetAntialiasing() const
     return visWindow->GetAntialiasing();
 }
 
+
+// ****************************************************************************
+// Method: ViewerWindow::Set/GetOrderComposite
+//
+// Purpose:
+//   Expose ordered compositing
+//
+// Programmer: Burlen Loring
+// Creation:   Thu Aug 13 08:48:03 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+void ViewerWindow::SetOrderComposite(bool enabled)
+{
+    visWindow->SetOrderComposite(enabled);
+}
+
+bool ViewerWindow::GetOrderComposite() const
+{
+    return visWindow->GetOrderComposite();
+}
+
+
+// ****************************************************************************
+// Method: ViewerWindow::Set/GetDepthCompositeThreads
+//
+// Purpose:
+//    set the number of compositing threads
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void ViewerWindow::SetDepthCompositeThreads(size_t val)
+{
+    visWindow->SetDepthCompositeThreads(val);
+}
+
+size_t ViewerWindow::GetDepthCompositeThreads() const
+{
+    return visWindow->GetDepthCompositeThreads();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::Set/GetAlphaCompositeThreads
+//
+// Purpose:
+//    set the number of compositing threads
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void ViewerWindow::SetAlphaCompositeThreads(size_t val)
+{
+    visWindow->SetAlphaCompositeThreads(val);
+}
+
+size_t ViewerWindow::GetAlphaCompositeThreads() const
+{
+    return visWindow->GetAlphaCompositeThreads();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::Set/GetDepthCompositeBlocking
+//
+// Purpose:
+//    set the number of compositing threads
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void ViewerWindow::SetDepthCompositeBlocking(size_t val)
+{
+    visWindow->SetDepthCompositeBlocking(val);
+}
+
+size_t ViewerWindow::GetDepthCompositeBlocking() const
+{
+    return visWindow->GetDepthCompositeBlocking();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::Set/GetAlphaCompositeBlocking
+//
+// Purpose:
+//    set the number of compositing threads
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void ViewerWindow::SetAlphaCompositeBlocking(size_t val)
+{
+    visWindow->SetAlphaCompositeBlocking(val);
+}
+
+size_t ViewerWindow::GetAlphaCompositeBlocking() const
+{
+    return visWindow->GetAlphaCompositeBlocking();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::Set/GetDepthPeeling
+//
+// Purpose:
+//   Expose depth peeling related settings
+//
+// Programmer: Burlen Loring
+// Creation:   Thu Aug 13 08:48:03 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+void ViewerWindow::SetDepthPeeling(bool enabled)
+{
+    visWindow->SetDepthPeeling(enabled);
+}
+
+bool ViewerWindow::GetDepthPeeling() const
+{
+    return visWindow->GetDepthPeeling();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetOcclusionRatio
+//
+// Purpose:
+//   Expose depth peeling related settings
+//
+// Programmer: Burlen Loring
+// Creation:   Thu Aug 13 08:48:03 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+void ViewerWindow::SetOcclusionRatio(double val)
+{
+    visWindow->SetOcclusionRatio(val);
+}
+
+double ViewerWindow::GetOcclusionRatio() const
+{
+    return visWindow->GetOcclusionRatio();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::Set/GetNumberOfPeels
+//
+// Purpose:
+//   Expose depth peeling related settings
+//
+// Programmer: Burlen Loring
+// Creation:   Thu Aug 13 08:48:03 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+void ViewerWindow::SetNumberOfPeels(int n)
+{
+    visWindow->SetNumberOfPeels(n);
+}
+
+int ViewerWindow::GetNumberOfPeels() const
+{
+    return visWindow->GetNumberOfPeels();
+}
+
 // ****************************************************************************
 // Method: ViewerWindow::SetMultiresolutionMode
 //
@@ -7651,9 +7866,14 @@ ViewerWindow::GetNumPrimitives() const
 // Programmer: Mark C. Miller 
 // Creation:   Tue May 11 09:45:30 PDT 2004 
 //
+// Modifications:
+//
+//  Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//  Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
-int
+long long
 ViewerWindow::GetNumberOfCells(bool polysOnly) const
 {
     return GetPlotList()->GetNumberOfCells(polysOnly);
@@ -8180,6 +8400,12 @@ ViewerWindow::GetCompactDomainsAutoThreshold() const
 //   I modified the viewer so that it also saves maintain view limits when
 //   saving settings, not just when saving a session.
 //
+//   Burlen Loring, Thu Aug 13 08:38:52 PDT 2015
+//   Added options for depth peeling
+//
+//   Burlen Loring, Sun Sep  6 08:44:26 PDT 2015
+//   Added option for ordered composting
+//
 // ****************************************************************************
 
 void
@@ -8265,6 +8491,10 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("stereoRendering", GetStereo()));
         windowNode->AddNode(new DataNode("stereoType", GetStereoType()));
         windowNode->AddNode(new DataNode("antialiasing", GetAntialiasing()));
+        windowNode->AddNode(new DataNode("orderComposite", GetOrderComposite()));
+        windowNode->AddNode(new DataNode("depthPeeling", GetDepthPeeling()));
+        windowNode->AddNode(new DataNode("occlusionRatio", GetOcclusionRatio()));
+        windowNode->AddNode(new DataNode("numberOfPeels", GetNumberOfPeels()));
         windowNode->AddNode(new DataNode("multiresolutionMode", GetMultiresolutionMode()));
         windowNode->AddNode(new DataNode("multiresolutionCellSize", GetMultiresolutionCellSize()));
         windowNode->AddNode(new DataNode("specularFlag", GetSpecularFlag()));
@@ -8615,6 +8845,14 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         SetStereoRendering(node->AsBool(), stereoType);
     if((node = windowNode->GetNode("antialiasing")) != 0)
         SetAntialiasing(node->AsBool());
+    if((node = windowNode->GetNode("orderComposite")) != 0)
+        SetOrderComposite(node->AsBool());
+    if((node = windowNode->GetNode("depthPeeling")) != 0)
+        SetDepthPeeling(node->AsBool());
+    if((node = windowNode->GetNode("occlusionRatio")) != 0)
+        SetOcclusionRatio(node->AsDouble());
+    if((node = windowNode->GetNode("numberOfPeels")) != 0)
+        SetNumberOfPeels(node->AsInt());
     if((node = windowNode->GetNode("multiresolutionMode")) != 0)
         SetMultiresolutionMode(node->AsBool());
     if((node = windowNode->GetNode("multiresolutionCellSize")) != 0)
@@ -10370,6 +10608,7 @@ void ViewerWindow::SetRenderEventCallback(void (*cb)(int,bool,void*),void *cbdat
 }
 
 void ViewerWindow::RenderEventCallback(void *data, bool inMotion) {
+
     int index = *((int*)data);
 
     //viewerSubject->BroadcastImage(index,inMotion);

@@ -48,6 +48,8 @@
 #include <avtTiledImageCompositor.h>
 #include <vtkImageData.h>
 #include <ImproperUseException.h>
+#include <vector>
+using std::vector;
 
 #ifdef PARALLEL
 // ****************************************************************************
@@ -60,18 +62,25 @@
 //    compositing.
 //
 //  NOTE:  THIS CODE IS DUPLICATED IN vtkParallelImageSpaceRedistributor.C
+//  TODO -- put this code in 1 place
+//  TODO -- what happens there are more ranks than the image is tall??
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    September  1, 2004
 //
+//  Modifications:
+//
+//    Burlen Loring,  Thu Oct  8 10:50:10 PDT 2015
+//    use array to store the extent
+//
 // ****************************************************************************
-static void AreaOwned(int rank, int size, int w, int h,
-                      int &x1,int &y1, int &x2,int &y2)
+static
+void AreaOwned(int rank, int nranks, int w, int h, int *ext)
 {
-    x1 = 0;
-    x2 = w;
-    y1 = (h*rank)/size;
-    y2 = ((h*(rank+1))/size);
+    ext[0] = 0;
+    ext[1] = w - 1;
+    ext[2] = (h*rank)/nranks;
+    ext[3] = ((h*(rank+1))/nranks) - 1;
 }
 #endif
 
@@ -83,12 +92,14 @@ static void AreaOwned(int rank, int size, int w, int h,
 //
 //  Modifications:
 //
+//    Burlen Loring, Thu Oct  8 10:49:35 PDT 2015
+//    Use an initializer list
+//
 // ****************************************************************************
 
 avtTiledImageCompositor::avtTiledImageCompositor()
-{
-   chunkSize = 1000000;
-}
+    : chunkSize(1000000), bcastResult(false)
+{}
 
 
 // ****************************************************************************
@@ -120,14 +131,23 @@ avtTiledImageCompositor::~avtTiledImageCompositor()
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Burlen Loring, Fri Sep 11 01:15:02 PDT 2015
+//    Eliminated communication of tile sizes as these can
+//    be computed locally. Added the ability to broadcast
+//    the result to all ranks.
+//
 // ****************************************************************************
+
+int getNumPixels(int *ext)
+{ return (ext[1] - ext[0] + 1)*(ext[3] - ext[2] + 1); }
 
 void
 avtTiledImageCompositor::Execute(void)
 {
 #ifdef PARALLEL
     int rank = PAR_Rank();
-    int size = PAR_Size();
+    int nranks = PAR_Size();
 
     if (inputImages.size() != 1)
     {
@@ -135,63 +155,54 @@ avtTiledImageCompositor::Execute(void)
                    "only a single input image per processor.");
     }
 
-    // Get the whole image size
+    // Get the whole image nranks
     int width, height;
     inputImages[0]->GetImage().GetSize(&height, &width);
 
-    // Figure out how much of the screen I own
-    int x1,y1,x2,y2;
-    AreaOwned(rank, size, width, height, x1,y1,x2,y2);
-    int mywidth  = x2 - x1;
-    int myheight = y2 - y1;
-
-    unsigned char *inrgb = inputImages[0]->GetImage().GetRGBBuffer();
+    // get the tile extents
+    vector<int> offs(nranks, 0);
+    vector<int> sizes(nranks, 0);
+    vector<int> tile(4*nranks, 0);
+    for (int i = 0, q = 0; i < nranks; ++i)
+    {
+        AreaOwned(i, nranks, width, height, &tile[4*i]);
+        int n = 3*getNumPixels(&tile[4*i]);
+        sizes[i] = n;
+        offs[i] = q;
+        q += n;
+    }
 
     // Create an output image if we are the root process
     vtkImageData *outputImageData = NULL;
     unsigned char *outrgb = NULL;
-    if (rank == mpiRoot)
+    if (bcastResult || (rank == mpiRoot))
     {
         outputImageData = avtImageRepresentation::NewImage(width, height);
         outrgb = (unsigned char *)outputImageData->GetScalarPointer(0,0,0);
     }
 
-    // Determine how many pixels need to be sent by each process
-    // Note -- count is for each RGB component separately (thus the "*3")
-    int pixelSize = mywidth * myheight * 3;
-    int *pixelSizes = (rank == mpiRoot) ? new int[size] : NULL;
-    MPI_Gather(&pixelSize, 1, MPI_INT,  pixelSizes, 1, MPI_INT,
-               mpiRoot, VISIT_MPI_COMM);
+    // get the input
+    unsigned char *inrgb = inputImages[0]->GetImage().GetRGBBuffer();
 
-    // Count 'em up
-    // ... okay, so there's probably no point ....
-
-    // Gather the pixels
-    int *displacements = NULL;
-    if (rank == mpiRoot)
+    if (bcastResult)
     {
-        displacements = new int[size];
-        displacements[0] = 0;
-        for (int i=1; i<size; i++)
-        {
-            displacements[i] = displacements[i-1] + pixelSizes[i-1];
-        }
+        MPI_Allgatherv(inrgb + offs[rank], sizes[rank] , MPI_UNSIGNED_CHAR,
+            outrgb, &sizes[0], &offs[0], MPI_UNSIGNED_CHAR, VISIT_MPI_COMM);
     }
-    // NOTE: assumes all pixels are contiguous in memory!
-    MPI_Gatherv(&inrgb[3*(width*y1+x1)], pixelSize, MPI_UNSIGNED_CHAR,
-                outrgb, pixelSizes, displacements, MPI_UNSIGNED_CHAR,
-                mpiRoot, VISIT_MPI_COMM);
-
+    else
+    {
+        MPI_Gatherv(inrgb + offs[rank], sizes[rank] , MPI_UNSIGNED_CHAR,
+            outrgb, &sizes[0], &offs[0], MPI_UNSIGNED_CHAR, mpiRoot,
+            VISIT_MPI_COMM);
+    }
 
     // Set the output
     avtImageRepresentation theOutput(outputImageData);
     SetOutputImage(theOutput);
 
-    // Free the memory (yes, it is safe not to check for NULL in C++)
+    // Free the memory
     if (outputImageData != NULL)
         outputImageData->Delete();
-    delete[] pixelSizes;
-    delete[] displacements;
 #else
     SetOutputImage(inputImages[0]->GetImage());
 #endif

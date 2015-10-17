@@ -77,6 +77,12 @@ const char * const AVT_NULL_DATASET_MSG
 //    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
 //    Added method SetWriterShouldMergeParallelStreams and assoc. data member 
 //
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
+//    Burlen Loring, Wed Oct  7 13:56:05 PDT 2015
+//    fix a couple of warnings
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNullData : public avtDataObject
@@ -89,7 +95,7 @@ class PIPELINE_API avtNullData : public avtDataObject
     virtual                  ~avtNullData();
 
     virtual const char       *GetType(void)  { return typeStr.c_str(); };
-    virtual int               GetNumberOfCells(bool polysOnly = false) const { return 0;};
+    virtual long long         GetNumberOfCells(bool = false) const { return 0;};
     virtual void              SetType(char *_typeStr )  { typeStr = _typeStr; };
     void                      SetWriterShouldMergeParallelStreams()
                                   { writerShouldMergeParallelStreams = true; };
@@ -98,7 +104,7 @@ class PIPELINE_API avtNullData : public avtDataObject
 
   protected:
     virtual void              DerivedCopy(avtDataObject *) {;};
-    virtual void              DerivedMerge(avtDataObject *dob) {;};
+    virtual void              DerivedMerge(avtDataObject *) {;};
 
   private:
      std::string              typeStr;

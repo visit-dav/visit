@@ -650,6 +650,13 @@ VisWindow::AddColleague(VisWinColleague *col)
 //  Programmer: Hank Childs
 //  Creation:   May 4, 2000
 //
+//  Modifications:
+//
+//      Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//      Move iterator construction out of the loop, use pre-increment
+//      rather than post increment in the loop to avoid a temporary
+//      copy being constructed.
+//
 // ****************************************************************************
 
 void
@@ -659,8 +666,9 @@ VisWindow::SetBackgroundColor(double br, double bg, double bb)
     background[1] = bg;
     background[2] = bb;
 
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->SetBackgroundColor(br, bg, bb);
     }
@@ -687,6 +695,11 @@ VisWindow::SetBackgroundColor(double br, double bg, double bb)
 // Creation:   Wed Aug 29 15:14:07 PST 2001
 //
 // Modifications:
+//
+//      Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//      Move iterator construction out of the loop, use pre-increment
+//      rather than post increment in the loop to avoid a temporary
+//      copy being constructed.
 //   
 // ****************************************************************************
 
@@ -704,8 +717,9 @@ VisWindow::SetGradientBackgroundColors(int gradStyle,
     gradientBackgroundStyle = gradStyle;
 
     // Set the state of the colleagues.
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->SetGradientBackgroundColors(gradientBackgroundStyle,
              gradientBackground[0][0],
@@ -743,50 +757,12 @@ VisWindow::SetBackgroundMode(enum AnnotationAttributes::BackgroundMode mode)
 {
     backgroundMode = mode;
 
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->SetBackgroundMode(backgroundMode);
     }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetBackgroundMode
-//
-// Purpose: 
-//   Returns the background mode for the VisWindow.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Aug 29 15:31:11 PST 2001
-//
-// Modifications:
-//
-//   Tom Fogal, Fri Jul 18 18:30:08 EDT 2008
-//   Change return value to be an enum.
-//   
-// ****************************************************************************
-
-enum AnnotationAttributes::BackgroundMode
-VisWindow::GetBackgroundMode() const
-{
-    return backgroundMode;
-}
-
-// ****************************************************************************
-//  Method: VisWindow::GetBackgroundColor
-//
-//  Purpose:
-//      Gets the background color.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Aug 27, 2001
-//
-// ****************************************************************************
-
-const double *
-VisWindow::GetBackgroundColor() const
-{
-    return (const double *)background;
 }
 
 // ****************************************************************************
@@ -803,6 +779,13 @@ VisWindow::GetBackgroundColor() const
 //  Programmer: Hank Childs
 //  Creation:   May 12, 2000
 //
+//  Modifications:
+//
+//      Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//      Move iterator construction out of the loop, use pre-increment
+//      rather than post increment in the loop to avoid a temporary
+//      copy being constructed.
+//
 // ****************************************************************************
 
 void
@@ -812,28 +795,12 @@ VisWindow::SetForegroundColor(double fr, double fg, double fb)
     foreground[1] = fg;
     foreground[2] = fb;
 
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->SetForegroundColor(fr, fg, fb);
     }
-}
-
-// ****************************************************************************
-//  Method: VisWindow::GetForegroundColor
-//
-//  Purpose:
-//      Gets the foreground color.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Aug 27, 2001
-//
-// ****************************************************************************
-
-const double *
-VisWindow::GetForegroundColor() const
-{
-    return (const double *)foreground;
 }
 
 // ****************************************************************************
@@ -884,6 +851,13 @@ VisWindow::InvertBackgroundColor()
 //  Programmer: Brad Whitlock
 //  Creation:   Wed Nov 14 15:39:34 PST 2007
 //
+//  Modifications:
+//
+//      Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//      Move iterator construction out of the loop, use pre-increment
+//      rather than post increment in the loop to avoid a temporary
+//      copy being constructed.
+//
 // ****************************************************************************
 
 void
@@ -893,28 +867,12 @@ VisWindow::SetBackgroundImage(const std::string &imgFile, int nx, int ny)
     backgroundNX = nx;
     backgroundNY = ny;
 
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->SetBackgroundImage(backgroundImage, backgroundNX, backgroundNY);
     }
-}
-
-// ****************************************************************************
-//  Method: VisWindow::GetBackgroundImage
-//
-//  Purpose:
-//      Gets the background image.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Wed Nov 14 15:39:34 PST 2007
-//
-// ****************************************************************************
-
-const std::string &
-VisWindow::GetBackgroundImage() const
-{
-    return backgroundImage;
 }
 
 // ****************************************************************************
@@ -932,6 +890,13 @@ VisWindow::GetBackgroundImage() const
 //  Programmer: Hank Childs
 //  Creation:   May 4, 2000
 //
+//  Modifications:
+//
+//      Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//      Move iterator construction out of the loop, use pre-increment
+//      rather than post increment in the loop to avoid a temporary
+//      copy being constructed.
+//
 // ****************************************************************************
 
 void
@@ -946,8 +911,9 @@ VisWindow::SetViewport(double vl, double vb, double vr, double vt)
     viewportBottom = (vb < 0. ? 0. : (vb > 1. ? 1. : vb));
     viewportTop    = (vt < 0. ? 0. : (vt > 1. ? 1. : vt));
     
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->SetViewport(vl, vb, vr, vt);
     }
@@ -966,13 +932,21 @@ VisWindow::SetViewport(double vl, double vb, double vr, double vt)
 //  Programmer: Hank Childs
 //  Creation:   March 12, 2002
 //
+//  Modifications:
+//
+//      Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//      Move iterator construction out of the loop, use pre-increment
+//      rather than post increment in the loop to avoid a temporary
+//      copy being constructed.
+//
 // ****************************************************************************
 
 void
 VisWindow::UpdatePlotList(vector<avtActor_p> &lst)
 {
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->UpdatePlotList(lst);
     }
@@ -1128,6 +1102,12 @@ VisWindow::ChangeMode(WINDOW_MODE newMode)
 //    Eric Brugger, Fri Aug 17 09:42:17 PDT 2001
 //    I added code to update the view.
 //
+//
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
@@ -1139,8 +1119,9 @@ VisWindow::Start2DMode(void)
     //
     UpdateView();
 
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->Start2DMode();
     }
@@ -1163,13 +1144,19 @@ VisWindow::Start2DMode(void)
 //    Kathleen Bonnell, Thu Oct 28 17:37:40 PDT 2004 
 //    Moved 'UpdateView' to after the colleagues have started 3D mode. 
 //
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
 VisWindow::Start3DMode(void)
 {
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->Start3DMode();
     }
@@ -1190,6 +1177,13 @@ VisWindow::Start3DMode(void)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 10, 2002
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
@@ -1201,8 +1195,9 @@ VisWindow::StartCurveMode(void)
     //
     UpdateView();
 
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->StartCurveMode();
     }
@@ -1218,6 +1213,13 @@ VisWindow::StartCurveMode(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   January 28, 2008
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
@@ -1229,8 +1231,9 @@ VisWindow::StartAxisArrayMode(void)
     //
     UpdateView();
 
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->StartAxisArrayMode();
     }
@@ -1251,6 +1254,11 @@ VisWindow::StartAxisArrayMode(void)
 //    I added the ability to display the parallel axes either horizontally
 //    or vertically.
 //
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
@@ -1270,8 +1278,9 @@ VisWindow::StartParallelAxesMode(void)
     else
         parallelAxes->SetAxisOrientation(VisWinParallelAxes::Vertical);
 
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->StartParallelAxesMode();
     }
@@ -1287,13 +1296,21 @@ VisWindow::StartParallelAxesMode(void)
 //  Programmer: Hank Childs
 //  Creation:   May 19, 2000
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
 VisWindow::Stop2DMode(void)
 {
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->Stop2DMode();
     }
@@ -1309,13 +1326,21 @@ VisWindow::Stop2DMode(void)
 //  Programmer: Hank Childs
 //  Creation:   May 19, 2000
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
 VisWindow::Stop3DMode(void)
 {
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->Stop3DMode();
     }
@@ -1330,13 +1355,21 @@ VisWindow::Stop3DMode(void)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 10, 2002
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
 VisWindow::StopCurveMode(void)
 {
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->StopCurveMode();
     }
@@ -1351,13 +1384,21 @@ VisWindow::StopCurveMode(void)
 //  Programmer: Jeremy Meredith 
 //  Creation:   January 28, 2008
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
 VisWindow::StopAxisArrayMode(void)
 {
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->StopAxisArrayMode();
     }
@@ -1372,13 +1413,21 @@ VisWindow::StopAxisArrayMode(void)
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
 VisWindow::StopParallelAxesMode(void)
 {
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->StopParallelAxesMode();
     }
@@ -1393,14 +1442,22 @@ VisWindow::StopParallelAxesMode(void)
 //  Programmer: Hank Childs
 //  Creation:   July 6, 2000
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
 VisWindow::EnableUpdates(void)
 {
     updatesEnabled = true;
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->EnableUpdates();
     }
@@ -1416,14 +1473,22 @@ VisWindow::EnableUpdates(void)
 //  Programmer: Hank Childs
 //  Creation:   July 6, 2000
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Sep 11 10:23:52 PDT 2015
+//    Move iterator construction out of the loop, use pre-increment
+//    rather than post increment in the loop to avoid a temporary
+//    copy being constructed.
+//
 // ****************************************************************************
 
 void
 VisWindow::DisableUpdates(void)
 {
     updatesEnabled = false;
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    std::vector<VisWinColleague*>::iterator it = colleagues.begin();
+    std::vector<VisWinColleague*>::iterator end = colleagues.end();
+    for (; it != end; ++it)
     {
         (*it)->DisableUpdates();
     }
@@ -2046,6 +2111,7 @@ VisWindow::Realize(void)
     rendering->Realize();
 }
 
+
 // ****************************************************************************
 //  Method: VisWindow::ScreenRender
 //
@@ -2057,15 +2123,62 @@ VisWindow::Realize(void)
 //
 //  Modifications:
 //
+//   Burlen Loring, Tue Sep  1 19:39:17 PDT 2015
+//   Add option to disable the background
+//
+//   Burlen Loring, Mon Sep 28 16:04:23 PDT 2015
+//   remove non-distributed geometry, such as axes, during order
+//   compositing.
+//
 // ****************************************************************************
+
 void
-VisWindow::ScreenRender(bool doViewportOnly, bool doZBufferToo,
-                        bool doOpaque, bool doTranslucent,
-                        avtImage_p input)
+VisWindow::ScreenRender(
+    bool doViewportOnly, bool doZBufferToo, bool doOpaque,
+    bool doTranslucent, bool disableBackground, avtImage_p input)
 {
-    rendering->ScreenRender(doViewportOnly, doZBufferToo,
-                            doOpaque, doTranslucent, input);
+    if (disableBackground)
+    {
+        // remove non-distributed geometry from the render
+        axes3D->SetVisibility(0);
+        tools->SetVisibility(0);
+        annotations->SetVisibility(0);
+    }
+
+    rendering->ScreenRender(
+        doViewportOnly, doZBufferToo, doOpaque,
+        doTranslucent, disableBackground, input);
+
+    if (disableBackground)
+    {
+        // restore non-distributed geometry
+        axes3D->SetVisibility(1);
+        tools->SetVisibility(1);
+        annotations->SetVisibility(1);
+    }
 }
+
+// ****************************************************************************
+//  Method: VisWindow::ScreenReadBack
+//
+//  Purpose:
+//      Reads the last render into an avt object
+//
+//  Programmer: Burlen Loring
+//  Creation:   Wed Aug 26 10:02:57 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtImage_p
+VisWindow::ScreenReadBack(bool doViewportOnly, bool doZBufferToo,
+                        bool captureAlpha)
+{
+    return rendering->ScreenReadback(
+        doViewportOnly, doZBufferToo, captureAlpha);
+}
+
 
 // ****************************************************************************
 //  Method: VisWindow::ScreenCapture
@@ -2097,16 +2210,26 @@ VisWindow::ScreenRender(bool doViewportOnly, bool doZBufferToo,
 //    Implement Capture in terms of Render and Readback.
 //    Corrected the out of date `Purpose' comment.
 //
+//    Burlen Loring, Mon Aug 24 15:41:51 PDT 2015
+//    Add support for capturing alpha channel
+//
+//    Burlen Loring, Mon Aug 31 15:46:57 PDT 2015
+//    Added flag to disable background. this is needed for alpha-blend
+//    compositing
+//
 // ****************************************************************************
 
 avtImage_p
 VisWindow::ScreenCapture(bool doViewportOnly, bool doZBufferToo,
-                         bool doOpaque, bool doTranslucent,
-                         avtImage_p input)
+                         bool doOpaque, bool doTranslucent, bool captureAlpha,
+                         bool disableBackground, avtImage_p input)
 {
-    rendering->ScreenRender(doViewportOnly, doZBufferToo,
-                            doOpaque, doTranslucent, input);
-    return rendering->ScreenReadback(doViewportOnly, doZBufferToo);
+    rendering->ScreenRender(
+        doViewportOnly, doZBufferToo, doOpaque, doTranslucent,
+        disableBackground, input);
+
+    return rendering->ScreenReadback(
+        doViewportOnly, doZBufferToo, captureAlpha);
 }
 
 // ****************************************************************************
@@ -5677,6 +5800,255 @@ VisWindow::SetRenderEventCallback(void (*cb)(void *, bool), void *data)
 }
 
 // ****************************************************************************
+// Method: VisWindow::Enable/DisableAlphaChannel
+//
+// Purpose:
+//    this enables disables alpha channel right now for this
+//    render pass
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Thu Aug 27 12:28:38 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+ void VisWindow::EnableAlphaChannel()
+ {
+     rendering->EnableAlphaChannel();
+ }
+
+ void VisWindow::DisableAlphaChannel()
+ {
+     rendering->DisableAlphaChannel();
+ }
+
+// ****************************************************************************
+// Method: VisWindow::Enable/DisableDepthPeeling
+//
+// Purpose:
+//    this enables disables depth peeling right now for this
+//    render pass
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+ void VisWindow::EnableDepthPeeling()
+ {
+     rendering->EnableDepthPeeling();
+ }
+
+ void VisWindow::DisableDepthPeeling()
+ {
+     rendering->DisableDepthPeeling();
+ }
+
+// ****************************************************************************
+// Method: VisWindow::Set/GetDepthPeeling
+//
+// Purpose:
+//    this enables depth peeling generally
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+void VisWindow::SetDepthPeeling(bool val)
+{
+    rendering->SetDepthPeeling(val);
+}
+
+bool VisWindow::GetDepthPeeling() const
+{
+    return rendering->GetDepthPeeling();
+}
+
+// ****************************************************************************
+// Method: VisWindow::Set/GetOcclusionRatio
+//
+// Purpose:
+//    Forwards depth peeling settings to the renderer
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+void VisWindow::SetOcclusionRatio(double val)
+{
+    rendering->SetOcclusionRatio(val);
+}
+
+double VisWindow::GetOcclusionRatio() const
+{
+    return rendering->GetOcclusionRatio();
+}
+
+// ****************************************************************************
+// Method: VisWindow::Set/GetNumberOfPeels
+//
+// Purpose:
+//    Forwards depth peeling settings to the renderer
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void VisWindow::SetNumberOfPeels(int val)
+{
+    rendering->SetNumberOfPeels(val);
+}
+
+int VisWindow::GetNumberOfPeels() const
+{
+    return rendering->GetNumberOfPeels();
+}
+
+// ****************************************************************************
+// Method: VisWindow::Set/GetOrderComposite
+//
+// Purpose:
+//    this enables depth peeling generally
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void VisWindow::SetOrderComposite(bool val)
+{
+    rendering->SetOrderComposite(val);
+}
+
+bool VisWindow::GetOrderComposite() const
+{
+    return rendering->GetOrderComposite();
+}
+
+
+// ****************************************************************************
+// Method: VisWindow::Set/GetDepthCompositeThreads
+//
+// Purpose:
+//    set the number of compositing threads
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void VisWindow::SetDepthCompositeThreads(size_t val)
+{
+    rendering->SetDepthCompositeThreads(val);
+}
+
+size_t VisWindow::GetDepthCompositeThreads() const
+{
+    return rendering->GetDepthCompositeThreads();
+}
+
+// ****************************************************************************
+// Method: VisWindow::Set/GetAlphaCompositeThreads
+//
+// Purpose:
+//    set the number of compositing threads
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void VisWindow::SetAlphaCompositeThreads(size_t val)
+{
+    rendering->SetAlphaCompositeThreads(val);
+}
+
+size_t VisWindow::GetAlphaCompositeThreads() const
+{
+    return rendering->GetAlphaCompositeThreads();
+}
+
+// ****************************************************************************
+// Method: VisWindow::Set/GetDepthCompositeBlocking
+//
+// Purpose:
+//    set the number of compositing threads
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void VisWindow::SetDepthCompositeBlocking(size_t val)
+{
+    rendering->SetDepthCompositeBlocking(val);
+}
+
+size_t VisWindow::GetDepthCompositeBlocking() const
+{
+    return rendering->GetDepthCompositeBlocking();
+}
+
+// ****************************************************************************
+// Method: VisWindow::Set/GetAlphaCompositeBlocking
+//
+// Purpose:
+//    set the number of compositing threads
+//
+// Arguments:
+//
+// Programmer: Burlen Loring
+// Creation:   Wed Aug 12 12:30:41 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void VisWindow::SetAlphaCompositeBlocking(size_t val)
+{
+    rendering->SetAlphaCompositeBlocking(val);
+}
+
+size_t VisWindow::GetAlphaCompositeBlocking() const
+{
+    return rendering->GetAlphaCompositeBlocking();
+}
+
+// ****************************************************************************
 // Method: VisWindow::SetAntialiasing
 //
 // Purpose: 
@@ -6651,6 +7023,24 @@ avtTransparencyActor *
 VisWindow::GetTransparencyActor()
 {
     return plots->GetTransparencyActor();
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetCamaera
+//
+// Purpose:
+//
+// Programmer: Tom Fogal
+// Creation:   May 25, 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+//
+vtkCamera *
+VisWindow::GetCamera()
+{
+    return plots->GetCamera();
 }
 
 

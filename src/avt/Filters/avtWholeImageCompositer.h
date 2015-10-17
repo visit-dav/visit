@@ -76,55 +76,53 @@
 //    Tom Fogal, Fri Oct 24 20:04:04 MDT 2008
 //    Add GetAllProcessorsNeedResult method.
 //
+//    Burlen Loring, Mon Aug 24 16:07:26 PDT 2015
+//    Initialize all meber vars via initializer list
+//
+//    Burlen Loring, Mon Aug 31 14:00:48 PDT 2015
+//    Added method for setting background color from double[3]
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtWholeImageCompositer : public avtImageCompositer
 {
    public:
-                              avtWholeImageCompositer() {
-                                  chunkSize = 1000000;
-                                  bg_r = 255; bg_g = 255; bg_b = 255; };
+                              avtWholeImageCompositer() :
+                                allReduce(false), chunkSize(1000000),
+                                bg_r(255), bg_g(255), bg_b(255) {}
 
       virtual                ~avtWholeImageCompositer() {};
 
-      void                    SetChunkSize(const int chunkSize);
-      int                     GetChunkSize() const;
+      void                    SetChunkSize(const int _chunkSize)
+                              { chunkSize = _chunkSize; }
+
+      int                     GetChunkSize() const
+                              { return chunkSize; }
+
+      void                    SetBackground(const double *rgb)
+                              { bg_r = rgb[0]*255.0;
+                                bg_g = rgb[1]*255.0;
+                                bg_b = rgb[2]*255.0; }
+
       void                    SetBackground(unsigned char r,
                                             unsigned char g,
-                                            unsigned char b);
-      void                    SetAllProcessorsNeedResult(bool);
-      bool                    GetAllProcessorsNeedResult() const;
+                                            unsigned char b)
+                              { bg_r = r; bg_g = g; bg_b = b; }
+
+      void                    SetAllProcessorsNeedResult(bool all)
+                              { allReduce = all; }
+
+      bool                    GetAllProcessorsNeedResult() const
+                              { return allReduce; }
 
       virtual void            Execute() = 0;
 
    protected:
-
       bool                    allReduce;
       int                     chunkSize;
       unsigned char           bg_r;
       unsigned char           bg_g;
       unsigned char           bg_b;
-
 };
-
-inline void avtWholeImageCompositer::SetChunkSize(const int _chunkSize)
-{ chunkSize = _chunkSize; }
-
-inline int avtWholeImageCompositer::GetChunkSize() const
-{ return chunkSize; }
-
-inline void avtWholeImageCompositer::SetBackground(unsigned char r,
-                                                   unsigned char g,
-                                                   unsigned char b)
-{ bg_r = r; bg_g = g; bg_b = b; }
-
-inline void avtWholeImageCompositer::SetAllProcessorsNeedResult(bool all)
-{
-    allReduce = all;
-}
-inline bool avtWholeImageCompositer::GetAllProcessorsNeedResult() const
-{
-    return allReduce;
-}
 
 #endif
