@@ -56,6 +56,7 @@ class vtkActor;
 class vtkOutlineSource;
 class vtkPolyDataMapper;
 class vtkScalarBarActor;
+class vtkCamera;
 
 class avtExternallyRenderedImagesActor;
 class avtTransparencyActor;
@@ -197,6 +198,9 @@ class avtTransparencyActor;
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Account for 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Burlen Loring, Tue Aug 18 11:25:24 PDT 2015
+//    Added api to retreive the camera.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -265,6 +269,7 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
 
     bool                          TransparenciesExist(void);
     avtTransparencyActor*         GetTransparencyActor();
+    vtkCamera*                    GetCamera();
 
     void                          SuspendOpaqueGeometry(void);
     void                          SuspendTranslucentGeometry(void);
@@ -300,7 +305,4 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     void                          UpdateScaleFactor(void);
 };
 
-
 #endif
-
-

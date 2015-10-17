@@ -160,7 +160,9 @@
 /* Define if you have the prototype for strtof in the <stdlib.h>. */
 #cmakedefine HAVE_STRTOF_PROTOTYPE
 
-
+/* defined for aligned_alloc function, a malloc substitute in cstdlib  */
+#cmakedefine HAVE_ALIGNED_ALLOC
+#define VISIT_MEM_ALIGN 64
 
 /*******************************************************************************
  * Package information
@@ -311,3 +313,9 @@
 
 /* Define a uniform socket buffer size that we can use in various places. */
 #define VISIT_SOCKET_BUFFER_SIZE 1024
+
+/* define control to intentionally leak things or not. my profiling shows it
+   saves on the order of 0.001 sec to undefine this. leaving it undefined
+   for now in case there's some issue with it when using a remote server.
+#define DEBUG_MEMORY_LEAKS
+*/

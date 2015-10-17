@@ -81,6 +81,9 @@ class  avtWebpage;
 //     Hank Childs, Thu Jun 21 11:19:02 PDT 2007
 //     Add DebugDump.
 //
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 class PIPELINE_API  avtSamplePoints : public avtDataObject
@@ -96,7 +99,7 @@ class PIPELINE_API  avtSamplePoints : public avtDataObject
                                                    { return static_cast<int>(varnames.size()); };
     const std::string          &GetVariableName(int);
     int                         GetVariableSize(int);
-    virtual int                 GetNumberOfCells(bool polysOnly = false) const
+    virtual long long           GetNumberOfCells(bool = false) const
                                    { return celllist->GetNumberOfCells(); };
     void                        SetVolume(int, int, int);
     avtVolume                  *GetVolume(void)  { return volume; };

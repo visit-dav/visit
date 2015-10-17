@@ -3203,6 +3203,15 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Eric Brugger, Fri Oct 28 10:07:28 PDT 2011
 //    Add a multi resolution display capability for AMR data.
 //
+//    Burlen Loring, Thu Aug 13 08:38:52 PDT 2015
+//    Added options for depth peeling
+//
+//    Burlen Loring, Sun Sep  6 08:44:26 PDT 2015
+//    Added option to disable ordered composting
+//
+//    Burlen Loring, Tue Sep 29 14:25:19 PDT 2015
+//    Added options for compositer threading.
+//
 // ****************************************************************************
 
 void
@@ -3214,94 +3223,124 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         bool updatesEnabled = windows[index]->UpdatesEnabled();
         windows[index]->DisableUpdates();
 
-        if (windows[index]->GetAntialiasing() != GetViewerState()->GetRenderingAttributes()->GetAntialiasing())
-            windows[index]->SetAntialiasing(GetViewerState()->GetRenderingAttributes()->GetAntialiasing());
+        const RenderingAttributes *ratts = GetViewerState()->GetRenderingAttributes();
 
-        if (windows[index]->GetMultiresolutionMode() != GetViewerState()->GetRenderingAttributes()->GetMultiresolutionMode())
-            windows[index]->SetMultiresolutionMode(GetViewerState()->GetRenderingAttributes()->GetMultiresolutionMode());
+        if (windows[index]->GetAntialiasing() != ratts->GetAntialiasing())
+            windows[index]->SetAntialiasing(ratts->GetAntialiasing());
+
+        if (windows[index]->GetOrderComposite() != ratts->GetOrderComposite())
+            windows[index]->SetOrderComposite(ratts->GetOrderComposite());
+
+        if (windows[index]->GetDepthCompositeThreads() !=
+            static_cast<size_t>( ratts->GetDepthCompositeThreads()))
+            windows[index]->SetDepthCompositeThreads(ratts->GetDepthCompositeThreads());
+
+        if (windows[index]->GetAlphaCompositeThreads() !=
+            static_cast<size_t>(ratts->GetAlphaCompositeThreads()))
+            windows[index]->SetAlphaCompositeThreads(ratts->GetAlphaCompositeThreads());
+
+        if (windows[index]->GetDepthCompositeBlocking() !=
+            static_cast<size_t>(ratts->GetDepthCompositeBlocking()))
+            windows[index]->SetDepthCompositeBlocking(ratts->GetDepthCompositeBlocking());
+
+        if (windows[index]->GetAlphaCompositeBlocking() !=
+            static_cast<size_t>( ratts->GetAlphaCompositeBlocking()))
+            windows[index]->SetAlphaCompositeBlocking(ratts->GetAlphaCompositeBlocking());
+
+        if (windows[index]->GetDepthPeeling() != ratts->GetDepthPeeling())
+            windows[index]->SetDepthPeeling(ratts->GetDepthPeeling());
+
+        if (windows[index]->GetOcclusionRatio() != ratts->GetOcclusionRatio())
+            windows[index]->SetOcclusionRatio(ratts->GetOcclusionRatio());
+
+        if (windows[index]->GetNumberOfPeels() != ratts->GetNumberOfPeels())
+            windows[index]->SetNumberOfPeels(ratts->GetNumberOfPeels());
+
+        if (windows[index]->GetMultiresolutionMode() != ratts->GetMultiresolutionMode())
+            windows[index]->SetMultiresolutionMode(ratts->GetMultiresolutionMode());
 
         if (windows[index]->GetMultiresolutionCellSize() !=
-            GetViewerState()->GetRenderingAttributes()->GetMultiresolutionCellSize())
+            ratts->GetMultiresolutionCellSize())
             windows[index]->SetMultiresolutionCellSize(
-            GetViewerState()->GetRenderingAttributes()->GetMultiresolutionCellSize());
+            ratts->GetMultiresolutionCellSize());
 
         if (windows[index]->GetSurfaceRepresentation() !=
-            (int) GetViewerState()->GetRenderingAttributes()->GetGeometryRepresentation())
+            (int) ratts->GetGeometryRepresentation())
             windows[index]->SetSurfaceRepresentation((int)
-            GetViewerState()->GetRenderingAttributes()->GetGeometryRepresentation());
+            ratts->GetGeometryRepresentation());
 
         if (windows[index]->GetDisplayListMode() != 
-            GetViewerState()->GetRenderingAttributes()->GetDisplayListMode())
-            windows[index]->SetDisplayListMode(GetViewerState()->GetRenderingAttributes()->GetDisplayListMode());
+            ratts->GetDisplayListMode())
+            windows[index]->SetDisplayListMode(ratts->GetDisplayListMode());
 
-        if ((windows[index]->GetStereo() != GetViewerState()->GetRenderingAttributes()->GetStereoRendering()) ||
-            (windows[index]->GetStereoType() != (int) GetViewerState()->GetRenderingAttributes()->GetStereoType()))
-            windows[index]->SetStereoRendering(GetViewerState()->GetRenderingAttributes()->GetStereoRendering(),
-                (int)GetViewerState()->GetRenderingAttributes()->GetStereoType());
+        if ((windows[index]->GetStereo() != ratts->GetStereoRendering()) ||
+            (windows[index]->GetStereoType() != (int) ratts->GetStereoType()))
+            windows[index]->SetStereoRendering(ratts->GetStereoRendering(),
+                (int)ratts->GetStereoType());
 
         if (windows[index]->GetNotifyForEachRender() != 
-            GetViewerState()->GetRenderingAttributes()->GetNotifyForEachRender())
-            windows[index]->SetNotifyForEachRender(GetViewerState()->GetRenderingAttributes()->GetNotifyForEachRender());
+            ratts->GetNotifyForEachRender())
+            windows[index]->SetNotifyForEachRender(ratts->GetNotifyForEachRender());
 
         if (windows[index]->GetScalableAutoThreshold() !=
-            GetViewerState()->GetRenderingAttributes()->GetScalableAutoThreshold())
-            windows[index]->SetScalableAutoThreshold(GetViewerState()->GetRenderingAttributes()->GetScalableAutoThreshold());
+            ratts->GetScalableAutoThreshold())
+            windows[index]->SetScalableAutoThreshold(ratts->GetScalableAutoThreshold());
 
         if (windows[index]->GetScalableActivationMode() !=
-            GetViewerState()->GetRenderingAttributes()->GetScalableActivationMode())
-            windows[index]->SetScalableActivationMode(GetViewerState()->GetRenderingAttributes()->GetScalableActivationMode());
+            ratts->GetScalableActivationMode())
+            windows[index]->SetScalableActivationMode(ratts->GetScalableActivationMode());
         
         if (windows[index]->GetCompactDomainsActivationMode() !=
-            GetViewerState()->GetRenderingAttributes()->GetCompactDomainsActivationMode())
-            windows[index]->SetCompactDomainsActivationMode(GetViewerState()->GetRenderingAttributes()->GetCompactDomainsActivationMode());
+            ratts->GetCompactDomainsActivationMode())
+            windows[index]->SetCompactDomainsActivationMode(ratts->GetCompactDomainsActivationMode());
         if (windows[index]->GetCompactDomainsAutoThreshold() !=
-            GetViewerState()->GetRenderingAttributes()->GetCompactDomainsAutoThreshold())
-            windows[index]->SetCompactDomainsAutoThreshold(GetViewerState()->GetRenderingAttributes()->GetCompactDomainsAutoThreshold());
+            ratts->GetCompactDomainsAutoThreshold())
+            windows[index]->SetCompactDomainsAutoThreshold(ratts->GetCompactDomainsAutoThreshold());
 
         if (windows[index]->GetCompressionActivationMode() !=
-            GetViewerState()->GetRenderingAttributes()->GetCompressionActivationMode())
-            windows[index]->SetCompressionActivationMode(GetViewerState()->GetRenderingAttributes()->GetCompressionActivationMode());
+            ratts->GetCompressionActivationMode())
+            windows[index]->SetCompressionActivationMode(ratts->GetCompressionActivationMode());
 
-        if (windows[index]->GetSpecularFlag()  != GetViewerState()->GetRenderingAttributes()->GetSpecularFlag() ||
-            windows[index]->GetSpecularCoeff() != GetViewerState()->GetRenderingAttributes()->GetSpecularCoeff() ||
-            windows[index]->GetSpecularPower() != GetViewerState()->GetRenderingAttributes()->GetSpecularPower() ||
-            windows[index]->GetSpecularColor() != GetViewerState()->GetRenderingAttributes()->GetSpecularColor())
+        if (windows[index]->GetSpecularFlag()  != ratts->GetSpecularFlag() ||
+            windows[index]->GetSpecularCoeff() != ratts->GetSpecularCoeff() ||
+            windows[index]->GetSpecularPower() != ratts->GetSpecularPower() ||
+            windows[index]->GetSpecularColor() != ratts->GetSpecularColor())
         {
-            windows[index]->SetSpecularProperties(GetViewerState()->GetRenderingAttributes()->GetSpecularFlag(),
-                                                 GetViewerState()->GetRenderingAttributes()->GetSpecularCoeff(),
-                                                 GetViewerState()->GetRenderingAttributes()->GetSpecularPower(),
-                                                 GetViewerState()->GetRenderingAttributes()->GetSpecularColor());
+            windows[index]->SetSpecularProperties(ratts->GetSpecularFlag(),
+                                                 ratts->GetSpecularCoeff(),
+                                                 ratts->GetSpecularPower(),
+                                                 ratts->GetSpecularColor());
         }
 
-        if (windows[index]->GetDoShading() != GetViewerState()->GetRenderingAttributes()->GetDoShadowing() ||
+        if (windows[index]->GetDoShading() != ratts->GetDoShadowing() ||
             windows[index]->GetShadingStrength() != 
-                                              GetViewerState()->GetRenderingAttributes()->GetShadowStrength())
+                                              ratts->GetShadowStrength())
         {
-            windows[index]->SetShadingProperties(GetViewerState()->GetRenderingAttributes()->GetDoShadowing(),
-                                                 GetViewerState()->GetRenderingAttributes()->GetShadowStrength());
+            windows[index]->SetShadingProperties(ratts->GetDoShadowing(),
+                                                 ratts->GetShadowStrength());
         }
 
-        if (windows[index]->GetDoDepthCueing() != GetViewerState()->GetRenderingAttributes()->GetDoDepthCueing() ||
-            windows[index]->GetDepthCueingAutomatic() != GetViewerState()->GetRenderingAttributes()->GetDepthCueingAutomatic() ||
-            windows[index]->GetStartCuePoint()[0] != GetViewerState()->GetRenderingAttributes()->GetStartCuePoint()[0] ||
-            windows[index]->GetStartCuePoint()[1] != GetViewerState()->GetRenderingAttributes()->GetStartCuePoint()[1] ||
-            windows[index]->GetStartCuePoint()[2] != GetViewerState()->GetRenderingAttributes()->GetStartCuePoint()[2] ||
-            windows[index]->GetEndCuePoint()[0] != GetViewerState()->GetRenderingAttributes()->GetEndCuePoint()[0] ||
-            windows[index]->GetEndCuePoint()[1] != GetViewerState()->GetRenderingAttributes()->GetEndCuePoint()[1] ||
-            windows[index]->GetEndCuePoint()[2] != GetViewerState()->GetRenderingAttributes()->GetEndCuePoint()[2])
+        if (windows[index]->GetDoDepthCueing() != ratts->GetDoDepthCueing() ||
+            windows[index]->GetDepthCueingAutomatic() != ratts->GetDepthCueingAutomatic() ||
+            windows[index]->GetStartCuePoint()[0] != ratts->GetStartCuePoint()[0] ||
+            windows[index]->GetStartCuePoint()[1] != ratts->GetStartCuePoint()[1] ||
+            windows[index]->GetStartCuePoint()[2] != ratts->GetStartCuePoint()[2] ||
+            windows[index]->GetEndCuePoint()[0] != ratts->GetEndCuePoint()[0] ||
+            windows[index]->GetEndCuePoint()[1] != ratts->GetEndCuePoint()[1] ||
+            windows[index]->GetEndCuePoint()[2] != ratts->GetEndCuePoint()[2])
         {
             windows[index]->SetDepthCueingProperties(
-                                               GetViewerState()->GetRenderingAttributes()->GetDoDepthCueing(),
-                                               GetViewerState()->GetRenderingAttributes()->GetDepthCueingAutomatic(),
-                                               GetViewerState()->GetRenderingAttributes()->GetStartCuePoint(),
-                                               GetViewerState()->GetRenderingAttributes()->GetEndCuePoint());
+                                               ratts->GetDoDepthCueing(),
+                                               ratts->GetDepthCueingAutomatic(),
+                                               ratts->GetStartCuePoint(),
+                                               ratts->GetEndCuePoint());
         }
 
         if (windows[index]->GetColorTexturingFlag() != 
-            GetViewerState()->GetRenderingAttributes()->GetColorTexturingFlag())
+            ratts->GetColorTexturingFlag())
         {
             windows[index]->SetColorTexturingFlag(
-                GetViewerState()->GetRenderingAttributes()->GetColorTexturingFlag());
+                ratts->GetColorTexturingFlag());
         }
 
         // If the updatesEnabled flag was true before we temporarily disabled

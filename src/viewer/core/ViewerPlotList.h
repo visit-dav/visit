@@ -322,6 +322,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Eric Brugger, Fri Oct 28 09:52:40 PDT 2011
 //    Add a multi resolution display capability for AMR data.
 //
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 
@@ -384,7 +387,7 @@ public:
                  bool applySelections = false, DataNode *attributesNode = 0,
                  int embeddedPlotId = -1);
 
-    int GetNumberOfCells(bool polysOnly = false) const;
+    long long GetNumberOfCells(bool polysOnly = false) const;
 
     // 
     // Keyframing methods

@@ -73,7 +73,7 @@ class PIPELINE_API avtDO_REPL_STRING : public avtDataObject
 
     virtual const char       *GetType(void)  { return "avtDO_REPL_STRING"; };
     virtual avtDataObject    *Instance(void);
-    virtual int               GetNumberOfCells(bool) const;
+    virtual long long         GetNumberOfCells(bool) const;
 
     /* You will need to implement this if you want your data object to be 
      * passed from the server to the client.

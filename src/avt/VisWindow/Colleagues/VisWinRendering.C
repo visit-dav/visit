@@ -44,6 +44,8 @@
 
 #include <vtkCullerCollection.h>
 #include <vtkImageData.h>
+#include <vtkPointData.h>
+#include <vtkFloatArray.h>
 #include <vtkMapper.h>
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>
@@ -67,6 +69,10 @@
 
 #include <vtkCallbackCommand.h>
 #include <vtkSmartPointer.h>
+
+#include <limits>
+using std::numeric_limits;
+
 static void RemoveCullers(vtkRenderer *);
 
 bool VisWinRendering::stereoEnabled = false;
@@ -136,60 +142,57 @@ bool VisWinRendering::stereoEnabled = false;
 //    Added colorTexturingFlag.
 //
 //   Dave Pugmire, Tue Aug 24 11:28:02 EDT 2010
-//   Added compact domains mode.   
+//   Added compact domains mode.
+//
+//   Burlen Loring, Thu Aug 13 10:07:59 PDT 2015
+//   Added depth peeling support
+//
+//   Burlen Loring, Wed Aug 26 12:12:00 PDT 2015
+//   Fix use of unitialized member variable
+//
+//   Burlen Loring, Sun Sep  6 09:03:17 PDT 2015
+//   Added option to disable ordered compositing
 //
 // ****************************************************************************
 
-VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) 
-    : VisWinColleague(p)
+VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
+    VisWinColleague(p), background(NULL), foreground(NULL), needsUpdate(false),
+    realized(false), antialiasing(false), stereo(false), stereoType(2),
+    displayListMode(2), surfaceRepresentation(0), specularFlag(false),
+    specularCoeff(0.6), specularPower(10.0),
+    specularColor(ColorAttribute(255,255,255,255)), colorTexturingFlag(true),
+    orderComposite(true), depthCompositeThreads(2), depthCompositeBlocking(65536),
+    alphaCompositeThreads(2), alphaCompositeBlocking(65536), depthPeeling(false),
+    occlusionRatio(0.01), numberOfPeels(32), multiSamples(8), renderInfo(NULL),
+    renderInfoData(NULL), renderEvent(NULL), renderEventData(NULL),
+    notifyForEachRender(false), inMotion(false),
+    minRenderTime(numeric_limits<double>::max()),
+    maxRenderTime(-numeric_limits<double>::max()), summedRenderTime(0.0),
+    nRenders(0.0), curRenderTimes(), // stereoEnabled(false),
+    scalableRendering(false),
+    scalableActivationMode(RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD),
+    scalableAutoThreshold(RenderingAttributes::DEFAULT_SCALABLE_ACTIVATION_MODE),
+    compactDomainsActivationMode(RenderingAttributes::DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE),
+    compactDomainsAutoThreshold(RenderingAttributes:: DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD),
+    setRenderUpdate(true)
 {
-    needsUpdate                    = false;
-    realized                       = false;
-    antialiasing                   = false;
-    nRenders                       = 0;
-    summedRenderTime               = 0.;
-    maxRenderTime                  = 0.;
-    minRenderTime                  = 1.e6;
-    curRenderTimes[0]              = 0.0;
-    curRenderTimes[1]              = 0.0;
-    curRenderTimes[2]              = 0.0;
-    stereo                         = false;
-    stereoType                     = 2;
-    displayListMode                = 2;  // Auto
-    surfaceRepresentation          = 0;
-    specularFlag                   = false;
-    specularCoeff                  = .6;
-    specularPower                  = 10.0;
-    specularColor                  = ColorAttribute(255,255,255,255);
-    colorTexturingFlag             = true;
-    renderInfo                     = 0;
-    renderInfoData                 = 0;
-    renderEvent                    = 0;
-    renderEventData                = 0;
-    notifyForEachRender            = false;
-    inMotion                       = false;
-    scalableRendering              = false;
-    scalableAutoThreshold          = RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD;
-    scalableActivationMode         = RenderingAttributes::DEFAULT_SCALABLE_ACTIVATION_MODE;
-    compactDomainsAutoThreshold = RenderingAttributes:: DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD;
-    compactDomainsActivationMode   = RenderingAttributes::DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE;
-
-
-    canvas       = vtkRenderer::New();
+    canvas = vtkRenderer::New();
     canvas->SetInteractive(1);
     canvas->SetLayer(1);
 
-    background   = vtkRenderer::New();
+    background = vtkRenderer::New();
     background->SetInteractive(0);
     background->SetLayer(0);
 
-    foreground   = vtkRenderer::New();
+    foreground = vtkRenderer::New();
     foreground->SetInteractive(0);
     foreground->SetLayer(2);
 
     RemoveCullers(canvas);
     RemoveCullers(background);
     RemoveCullers(foreground);
+
+    curRenderTimes[0] = curRenderTimes[1] = curRenderTimes[2] = 0.0;
 }
 
 
@@ -249,9 +252,14 @@ VisWinRendering::~VisWinRendering()
 //    Tom Fogal, Tue Dec 15 10:53:21 MST 2009
 //    Remove GLEW initialization from here, move it elsewhere.
 //
+//    Burlen Loring, Thu Oct  8 10:38:18 PDT 2015
+//    fix a compiler warning
+//
 // ****************************************************************************
 
-static void renderEventCallback(vtkObject*, unsigned long, void* clientdata, void* calldata) {
+static void renderEventCallback(vtkObject*, unsigned long, void* clientdata, void* calldata)
+{
+    (void)calldata;
     VisWinRendering* renWin = (VisWinRendering*)clientdata;
     renWin->InvokeRenderCallback();
 }
@@ -433,6 +441,110 @@ VisWinRendering::SetBackgroundColor(double br, double bg, double bb)
     foreground->SetBackground(br, bg, bb);
 }
 
+// ****************************************************************************
+//  Method: VisWinRendering::EnabledDepthPeeling
+//
+//  Purpose:
+//      Enables VTK's depth peeling for order independent rendering of
+//      transparent geometry for the next render
+//
+//  Arguments:
+//
+//  Programmer: Burlen Loring
+//  Creation:   Wed Aug 12 11:49:37 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinRendering::EnableDepthPeeling()
+{
+    vtkRenderWindow *rwin = GetRenderWindow();
+
+    // save window settings
+    multiSamples = rwin->GetMultiSamples();
+
+    // configure window
+    rwin->SetAlphaBitPlanes(1);
+    rwin->SetMultiSamples(0);
+
+    // configure renderer
+    canvas->SetUseDepthPeeling(true);
+    canvas->SetMaximumNumberOfPeels(numberOfPeels);
+    canvas->SetOcclusionRatio(occlusionRatio);
+}
+
+// ****************************************************************************
+//  Method: VisWinRendering::DisableDepthPeeling
+//
+//  Purpose:
+//      Disables VTK's depth peeling for order independent rendering of
+//      transparent geometry
+//
+//  Arguments:
+//
+//  Programmer: Burlen Loring
+//  Creation:   Wed Aug 12 11:49:37 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+VisWinRendering::DisableDepthPeeling()
+{
+    // restore window settings
+    vtkRenderWindow *rwin = GetRenderWindow();
+    rwin->SetAlphaBitPlanes(0);
+    rwin->SetMultiSamples(multiSamples);
+
+    // configure renderer
+    canvas->SetUseDepthPeeling(false);
+}
+
+// ****************************************************************************
+//  Method: VisWinRendering::EnabledAlphaChannel
+//
+//  Purpose:
+//      Enables VTK's depth peeling for order independent rendering of
+//      transparent geometry for the next render
+//
+//  Arguments:
+//
+//  Programmer: Burlen Loring
+//  Creation:   Wed Aug 12 11:49:37 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+VisWinRendering::EnableAlphaChannel()
+{
+    vtkRenderWindow *rwin = GetRenderWindow();
+    rwin->SetAlphaBitPlanes(1);
+}
+
+// ****************************************************************************
+//  Method: VisWinRendering::DisableAlphaChannel
+//
+//  Purpose:
+//      Disables VTK's depth peeling for order independent rendering of
+//      transparent geometry
+//
+//  Arguments:
+//
+//  Programmer: Burlen Loring
+//  Creation:   Wed Aug 12 11:49:37 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+VisWinRendering::DisableAlphaChannel()
+{
+    vtkRenderWindow *rwin = GetRenderWindow();
+    rwin->SetAlphaBitPlanes(0);
+}
 
 // ****************************************************************************
 //  Method: VisWinRendering::Start2DMode
@@ -1003,6 +1115,7 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
     }
 }
 
+
 // ****************************************************************************
 //  Method: VisWinRendering::ScreenRender
 //
@@ -1055,107 +1168,119 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //    Brad Whitlock, Wed Jun 10 12:26:48 PDT 2009
 //    Don't use mgl functions unless we have mangled mesa.
 //
+//    Burlen Loring, Fri Aug 28 13:41:29 PDT 2015
+//    Clear the alpha channel, it might be needed for ordered
+//    compositing.
+//
+//    Burlen Loring, Mon Aug 31 07:20:57 PDT 2015
+//    add a flag to disable uploading the background rendering
+//    because it will interfere with ordered compositing. background
+//    is handled by the blending compositer. support upload of
+//    both rgb and rgba images.
+//
+//    Burlen Loring, Mon Aug 31 07:33:52 PDT 2015
+//    move throw to the end of the method so that the window is not
+//    left in a bad state when an exception occurs.
+//
+//    Burlen Loring, Fri Sep 11 04:16:19 PDT 2015
+//    Disable writes to the depth buffer during upload of
+//    pass 1 composited image. clear the alpha channel
+//    of the pass 1 image. these are needed for ordered
+//    compositing.
+//
 // ****************************************************************************
+
 
 void
 VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
                               bool doOpaque, bool doTranslucent,
-                              avtImage_p input)
+                              bool disableBackground, avtImage_p input)
 {
-    SetRenderUpdate(false);
-    int t1 = visitTimer->StartTimer();
-    bool second_pass = (*input != NULL);
+    avtCallback::ClearRenderingExceptions();
 
     vtkRenderWindow *renWin = GetRenderWindow();
 
+    // If we want zbuffer for the canvas, we need to take care that
+    // the canvas is rendered last. To achieve this, we temporarily
+    // remove the foreground renderer.
     if (doCanvasZBufferToo)
-    {
-        //
-        // If we want zbuffer for the canvas, we need to take care that
-        // the canvas is rendered last. To achieve this, we temporarily
-        // remove the foreground renderer. 
-        //
         renWin->RemoveRenderer(foreground);
-    }
 
     // hide the appropriate geometry here
     if(!doOpaque)
         mediator.SuspendOpaqueGeometry();
+
     if(!doTranslucent)
         mediator.SuspendTranslucentGeometry();
 
-    //
     // Set region origin/size to be captured
-    //
     int r0, c0, w, h;
     GetCaptureRegion(r0, c0, w, h, doViewportOnly);
-    
-    // if we already finished the first pass, 
-    // then we should load the existing data from the input image
-    if (second_pass)
+
+    // render
+    if (input)
     {
-        float         *zbuf = input->GetImage().GetZBuffer();
-        unsigned char *rgbbuf = input->GetImage().GetRGBBuffer();
+        // given an image to upload. we are in the second render pass
+        // for translucent geometry
+        if (disableBackground)
+        {
+            // note: clear color must be 0,0,0,0 is set by caller using
+            // visit's api because caller also must set the background
+            // mode to solid using visit's api
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+        else
+        {
+            // while uploading we need to disable depth write.
+            glDepthMask(GL_FALSE);
 
-        // Okay, this is a horrible, horrible, ugly hack, and I know it.
-        // For now, it's perfectly safe -- there's just no good way to 
-        // get the VTK render window to draw both the pixel and Z buffer
-        // data.  Unless I override vtkRenderWindow, vtkOpenGLRenderWindow,
-        // vtkXOpenGLRenderWindow, vtkWin32OpenGLRenderWindow,
-        // vtkMesaRenderWindow, vtkXMesaRenderWindow, and so on....
-        glDepthMask(GL_FALSE);
-        renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf,renWin->GetDoubleBuffer());
-        glDepthMask(GL_TRUE);
+            // upload the composited image from pass 1 opaque geometry
+            // render
+            unsigned char *rgbbuf = input->GetImage().GetRGBBuffer();
+            int nchan = input->GetImage().GetNumberOfColorChannels();
 
+            if (nchan == 3)
+                renWin->SetPixelData(r0,c0,w-1,h-1,rgbbuf, 1);
+            else
+                renWin->SetRGBACharPixelData(r0,c0,w-1,h-1, rgbbuf, 1);
+
+            glDepthMask(GL_TRUE);
+        }
+
+        // upload the compositied depth buffer from opaque render in
+        // pass 1
+        float *zbuf = input->GetImage().GetZBufferVTKDirect()->GetPointer(0);
         glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
         renWin->SetZbufferData(r0,c0,w-1,h-1,zbuf);
         glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-    }
 
-    //
-    // Make sure that the window is up-to-date.
-    //
-    avtCallback::ClearRenderingExceptions();
-    int t2 = visitTimer->StartTimer();
-    if (second_pass)
-    {
-        // We can't erase the rgb/z data we just worked
-        // so hard to put there a second ago!
+        // disable erase, we would lose uploaded depth/color buffer
         renWin->EraseOff();
         RenderRenderWindow();
         renWin->EraseOn();
     }
     else
     {
-        // Okay, this is either the first pass or the only pass, 
-        // so we better darn well allow erasing before drawing.
+        // not given any image to upload. just render.
         RenderRenderWindow();
     }
-    visitTimer->StopTimer(t2, "Time for actual vtkRenderWindow::Render()");
 
-    std::string errorMsg = avtCallback::GetRenderingException();
-    if (errorMsg != "")
-    {
-        SetRenderUpdate(true);
-        EXCEPTION1(VisItException, errorMsg.c_str());
-    }
-
-    //
     // If we removed the foreground layers to get the canvas' zbuffer,
     // put it back before we leave
-    //
     if (doCanvasZBufferToo)
-    {
        renWin->AddRenderer(foreground);
-    }
 
     // return geometry from hidden status
     if(!doOpaque)
         mediator.ResumeOpaqueGeometry();
     if(!doTranslucent)
         mediator.ResumeTranslucentGeometry();
-    visitTimer->StopTimer(t1, "Time spent in VisWinRendering::ScreenRender");
-    SetRenderUpdate(true);
+
+    std::string errorMsg = avtCallback::GetRenderingException();
+    if (!errorMsg.empty())
+    {
+        EXCEPTION1(VisItException, errorMsg.c_str());
+    }
 }
 
 // ****************************************************************************
@@ -1212,76 +1337,81 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
 //    Hank Childs, Sun Feb 14 16:21:03 CST 2010
 //    Put in explicit timing for Z-buffer readback.
 //
+//    Burlen Loring, Mon Aug 24 14:35:50 PDT 2015
+//    Add support for capturing the alpha channel. when alpha channel is
+//    requested we can skip a memcpy. zero copy z-buffer. move disable update
+//    request up the stack so that render/readback sequences can occur safely
+//    without udpates.
+//
 // ****************************************************************************
 
 avtImage_p
-VisWinRendering::ScreenReadback(bool doViewportOnly, bool doCanvasZBufferToo)
+VisWinRendering::ScreenReadback(
+    bool doViewportOnly, bool readZ, bool readAlpha)
 {
-    //
     // Set region origin/size to be captured
-    //
     int r0, c0, w, h;
     GetCaptureRegion(r0, c0, w, h, doViewportOnly);
+
     vtkRenderWindow *renWin = GetRenderWindow();
-    float *zb = NULL;
-    bool extRequestMode = false;
-    
-    if (doCanvasZBufferToo)
+    vtkFloatArray *zbuffer = NULL;
+    if (readZ)
     {
         // get zbuffer data for the canvas
-        int t5 = visitTimer->StartTimer();
-        zb = renWin->GetZbufferData(c0,r0,c0+w-1,r0+h-1);
-        visitTimer->StopTimer(t5, "Reading back zbuffer");
-
-        // temporarily disable external render requests
-        extRequestMode = mediator.DisableExternalRenderRequests();
+        float *zb = renWin->GetZbufferData(c0,r0,c0+w-1,r0+h-1);
+        zbuffer = vtkFloatArray::New();
+        zbuffer->SetArray(zb, /*keep=*/0, /*use delete []=*/1);
     }
 
-    //
-    // Read the pixels from the window and copy them over.  Sadly, it wasn't
-    // very easy to avoid copying the buffer.
-    //
-    const int readFrontBuffer = 1;
-    int t1 = visitTimer->StartTimer();
-    int t3 = visitTimer->StartTimer();
-    unsigned char *pixels = renWin->GetRGBACharPixelData(c0,r0,c0+w-1,r0+h-1,readFrontBuffer);
-    visitTimer->StopTimer(t3, "Getting RGBA from Mesa/OpenGL");
-    
-    vtkImageData *image = avtImageRepresentation::NewImage(w, h);
-    unsigned char *img_pix = (unsigned char *)image->GetScalarPointer(0, 0, 0);
+    // Read the pixels from the window and copy them over.
+    unsigned char *pixels =
+        renWin->GetRGBACharPixelData(c0,r0,c0+w-1,r0+h-1,/*front=*/1);
 
     const int numPix = w*h;
-    int t2 = visitTimer->StartTimer();
-    for (int i = 0 ; i < numPix ; i++)
-    {
-        *img_pix++ = *pixels++;
-        *img_pix++ = *pixels++;
-        *img_pix++ = *pixels++;
-        pixels++; // Alpha
-    }
-    visitTimer->StopTimer(t2, "Copying RGBA to RGB");
-    pixels -= 4*w*h;
-    delete [] pixels;
-    visitTimer->StopTimer(t1, "Total RGB readback time");
 
-    //
-    // Force some updates so we can let screenCaptureSource be destructed.
-    // The img->Update forces the window to render, so we explicitly 
-    // disable external render requests
-    //
-    avtSourceFromImage screenCaptureSource(image, zb);
-    avtImage_p img = screenCaptureSource.GetTypedOutput();
-    img->Update(screenCaptureSource.GetGeneralContract());
-    img->SetSource(NULL);
-    delete [] zb;
+    vtkImageData *image = NULL;
+    if (readAlpha)
+    {
+        // keeping the alpha channel and we can do zero copy
+        vtkUnsignedCharArray *is = vtkUnsignedCharArray::New();
+        is->SetNumberOfComponents(4);
+        is->SetName("ImageScalars");
+        is->SetArray(pixels, 4*numPix, /*keep=*/0, /*use delete []=*/1);
+
+        image = vtkImageData::New();
+        image->SetDimensions(w,h,1);
+        image->GetPointData()->SetScalars(is);
+
+        is->Delete();
+    }
+    else
+    {
+        // in this case we need to make a copy and strip out
+        // the alpha channel
+        image = avtImageRepresentation::NewImage(w, h);
+
+        unsigned char *img_pix
+            = (unsigned char *)image->GetScalarPointer(0, 0, 0);
+
+        for (int j = 0; j < 3; ++j)
+        {
+            unsigned char *po = img_pix + j;
+            unsigned char *pi = pixels + j;
+            for (int i = 0; i < numPix; ++i)
+                po[3*i] = pi[4*i];
+        }
+
+        delete [] pixels;
+    }
+
+    avtImage_p output = new avtImage(NULL);
+    output->SetImage(avtImageRepresentation(image, zbuffer));
+
     image->Delete();
+    if (zbuffer)
+        zbuffer->Delete();
 
-    if(doCanvasZBufferToo)
-    {
-        if (extRequestMode)
-            mediator.EnableExternalRenderRequests();
-    }
-    return img;
+    return output;
 }
 
 // ****************************************************************************
@@ -1309,71 +1439,75 @@ VisWinRendering::ScreenReadback(bool doViewportOnly, bool doCanvasZBufferToo)
 //    Brad Whitlock, Tue Sep 27 16:03:21 PDT 2011
 //    Removed extra call to set pixel data.
 //
+//    Burlen Loring, Tue Sep 15 10:42:31 PDT 2015
+//    Eliminate a memcpy by reading directly into the output
+//    image buffer.
+//
 // ****************************************************************************
 
 avtImage_p
-VisWinRendering::PostProcessScreenCapture(avtImage_p capturedImage,
+VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     bool doViewportOnly, bool keepZBuffer)
 {
-    unsigned char *pixels;
-
-    int useFrontBuffer = 1;
-    vtkRenderWindow *renWin = GetRenderWindow();
-
     // compute size of region we'll be writing back to the frame buffer
     int r0, c0, w, h;
     GetCaptureRegion(r0, c0, w, h, doViewportOnly);
 
     // confirm image passed in is the correct size
     int iw, ih;
-    capturedImage->GetSize(&iw, &ih);
+    input->GetSize(&iw, &ih);
     if ((iw != w) || (ih != h))
     {
-        debug1 << "Error condition in screen capture save window" << endl;
-        debug1 << "Captured image is " << iw << "x" << ih << endl;
-        debug1 << "But we believe it should be " << w << "x" << h << endl;
+        debug1 << "Error condition in screen capture save window" << endl
+            << "Captured image is " << iw << "x" << ih << endl
+            << "But we believe it should be " << w << "x" << h << endl;
         EXCEPTION1(ImproperUseException, "size of image passed for "
             "PostProcessScreenCapture does not match vtkRenderWindow size");
     }
 
-    // set pixel data
-    pixels = capturedImage->GetImage().GetRGBBuffer();
-    renWin->SetPixelData(c0, r0, c0+w-1, r0+h-1, pixels, useFrontBuffer);
-
     // temporarily remove canvas and background renderers
+    vtkRenderWindow *renWin = GetRenderWindow();
     renWin->RemoveRenderer(canvas);
     renWin->RemoveRenderer(background);
+
+    // set pixel data
+    unsigned char *pixels = input->GetImage().GetRGBBuffer();
+
+    renWin->SetPixelData(c0, r0, c0+w-1, r0+h-1, pixels, /*front=*/1);
 
     // render (foreground layer only)
     RenderRenderWindow();
 
-    // capture the whole image now 
+    // capture the whole image now
     GetCaptureRegion(r0, c0, w, h, false);
-    pixels = renWin->GetPixelData(c0,r0,c0+w-1,r0+h-1, useFrontBuffer);
+
+    size_t npix = w*h;
+
+    vtkUnsignedCharArray *pix = vtkUnsignedCharArray::New();
+    pix->SetNumberOfComponents(3);
+    pix->SetNumberOfTuples(npix);
+    pix->SetName("ImageScalars");
+
+    renWin->GetPixelData(c0,r0,c0+w-1,r0+h-1, /*front=*/1, pix);
+
+    // construct the output image
+    vtkImageData *im = vtkImageData::New();
+    im->SetDimensions(w, h, 1);
+    im->GetPointData()->SetScalars(pix);
+    pix->Delete();
+
+    avtImage_p output = new avtImage(NULL);
+
+    output->SetImage(avtImageRepresentation(im,
+            keepZBuffer ? input->GetImage().GetZBufferVTK() : 0));
+
+    im->Delete();
 
     // add canvas and background renderers back in
     renWin->AddRenderer(background);
     renWin->AddRenderer(canvas);
 
-    // return new image
-    vtkImageData *image = avtImageRepresentation::NewImage(w, h);
-    unsigned char *img_pix = (unsigned char *)image->GetScalarPointer(0, 0, 0);
-
-    memcpy(img_pix, pixels, 3*w*h);
-    delete [] pixels;
-
-    //
-    // Force some updates so we can let screenCaptureSource be destructed.
-    // The img->Update forces the window to render, so we explicitly
-    // disable external render requests
-    //
-    avtSourceFromImage screenCaptureSource(image, keepZBuffer ? capturedImage->GetImage().GetZBuffer() : 0);
-    avtImage_p img = screenCaptureSource.GetTypedOutput();
-    img->Update(screenCaptureSource.GetGeneralContract());
-    img->SetSource(NULL);
-    image->Delete();
-
-    return img;
+    return output;
 }
 
 // ****************************************************************************

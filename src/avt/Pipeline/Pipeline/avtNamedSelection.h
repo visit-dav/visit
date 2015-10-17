@@ -94,6 +94,9 @@ class PairCompare {
 //    Support for location named selections. Added GetMatchingLocations,
 //    GetMatchingIds, GetIDArray, CheckValid, changed signature for Append.
 //
+//    Burlen Loring, Mon Sep  7 06:02:27 PDT 2015
+//    Use long long for size
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNamedSelection
@@ -113,7 +116,7 @@ class PIPELINE_API avtNamedSelection
 
     virtual void        Read(const std::string &) = 0;
     virtual void        Write(const std::string &) = 0;
-    virtual int         GetSize(void) = 0;
+    virtual long long   GetSize(void) = 0;
     virtual SELECTION_TYPE  GetType(void) = 0;
 
     virtual avtContract_p ModifyContract(avtContract_p c0) const = 0;
@@ -155,7 +158,7 @@ class PIPELINE_API avtZoneIdNamedSelection : public avtNamedSelection
     
     virtual void  Read(const std::string &);
     virtual void  Write(const std::string &);
-    virtual int   GetSize(void) { return (int)zoneId.size(); };
+    virtual long long GetSize(void) { return static_cast<long long>(zoneId.size()); };
     virtual SELECTION_TYPE  GetType(void) { return ZONE_ID; };
 
     virtual avtContract_p ModifyContract(avtContract_p c0) const;
@@ -185,7 +188,7 @@ class PIPELINE_API avtFloatingPointIdNamedSelection : public avtNamedSelection
     
     virtual void  Read(const std::string &);
     virtual void  Write(const std::string &);
-    virtual int   GetSize(void) { return (int)ids.size(); };
+    virtual long long GetSize(void) { return static_cast<long long>(ids.size()); }
     virtual SELECTION_TYPE    GetType(void) { return FLOAT_ID; };    
 
     virtual avtContract_p ModifyContract(avtContract_p c0) const;
@@ -211,7 +214,7 @@ class PIPELINE_API avtLocationsNamedSelection : public avtNamedSelection
     
     virtual void  Read(const std::string &);
     virtual void  Write(const std::string &);
-    virtual int   GetSize(void) { return (int)locations.size(); };
+    virtual long long GetSize(void) { return static_cast<long long>(locations.size()); };
     virtual SELECTION_TYPE    GetType(void) { return LOCATIONS; };
 
     virtual avtContract_p ModifyContract(avtContract_p c0) const;

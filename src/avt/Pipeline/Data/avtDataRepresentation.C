@@ -552,26 +552,31 @@ avtDataRepresentation::Valid(void)
 //
 //  Modifications:
 //
-//  Mark C. Miller, Wed Nov  5 09:48:13 PST 2003
-//  Added option to count polygons only
+//    Mark C. Miller, Wed Nov  5 09:48:13 PST 2003
+//    Added option to count polygons only
 //
 //    Cameron Christensen, Thursday, May 22, 2014
 //    Added support for EAVL.
 //
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
-int
+long long
 avtDataRepresentation::GetNumberOfCells(int topoDim, bool polysOnly) const
 {
    if (asVTK == NULL && asEAVL == NULL)
    {
        if (asChar == NULL)
+       {
            EXCEPTION0(NoInputException);
+       }
        return -1;
    }
    else
    {
-      int numCells = 0;
+      long long numCells = 0;
 
 #ifdef HAVE_LIBEAVL
       if (dataRepType == DATA_REP_TYPE_EAVL)
@@ -588,18 +593,17 @@ avtDataRepresentation::GetNumberOfCells(int topoDim, bool polysOnly) const
           if (polysOnly)
           {
               if (topoDim < 3)
-                  numCells = (int) asVTK->GetNumberOfCells();
+                  numCells = asVTK->GetNumberOfCells();
               else
                   numCells = 0;
           }
           else
           {
-              numCells = (int) asVTK->GetNumberOfCells();
+              numCells = asVTK->GetNumberOfCells();
           }
       }
-      
-      return numCells;
 
+      return numCells;
    }
 }
 

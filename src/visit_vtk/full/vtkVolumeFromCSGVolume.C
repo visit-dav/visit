@@ -275,13 +275,16 @@ vtkVolumeFromCSGVolume::InitTraversal()
 //  Creation:   July 23, 2012
 //
 //  Modifications:
-//    
+//
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to vtkIdType
+//
 // ****************************************************************************
 
-int
+vtkIdType
 vtkVolumeFromCSGVolume::GetNumberOfCells() const
 {
-    int nCells = 0;
+    vtkIdType nCells = 0;
     for (int i = 0; i < nshapes; i++)
         nCells += shapeCnt[i];
     return nCells;

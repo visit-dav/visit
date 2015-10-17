@@ -168,6 +168,33 @@ VisitSphereTool::~VisitSphereTool()
 }
 
 // ****************************************************************************
+// Method: VistSphereTool::SetVisibility
+//
+// Purpose: 
+//   Sets visibility of the tool. Use this if you need to temporarily
+//   take the tool out of the scene during transparent rendering.
+//
+// Programmer: Burlen Loring 
+// Creation:   Mon Sep 28 16:06:19 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisitSphereTool::SetVisibility(int val)
+{
+    if (IsEnabled())
+    {
+        sphereActor->SetVisibility(val);
+        originTextActor->SetVisibility(val);
+        radiusTextActor[0]->SetVisibility(val);
+        radiusTextActor[1]->SetVisibility(val);
+        radiusTextActor[2]->SetVisibility(val);
+    }
+}
+
+// ****************************************************************************
 // Method: VisitSphereTool::Enable
 //
 // Purpose: 

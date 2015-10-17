@@ -71,6 +71,9 @@ class vtkTextActor;
 //    Jeremy Meredith, Fri Feb 15 13:21:20 EST 2008
 //    Added axis names to the axis restriction tool.
 //
+//    Burlen Loring, Mon Sep 28 16:04:23 PDT 2015
+//    Added API for setting tool visibility
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitAxisRestrictionTool : public VisitInteractiveTool
@@ -96,6 +99,8 @@ class VISWINDOW_API VisitAxisRestrictionTool : public VisitInteractiveTool
     virtual void UpdatePlotList(std::vector<avtActor_p> &list);
     virtual void FullFrameOn(const double, const int);
     virtual void FullFrameOff();
+
+    virtual void SetVisibility(int);
 
   protected:
     // Callback functions for the tool's hot points.

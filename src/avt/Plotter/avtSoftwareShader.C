@@ -603,6 +603,9 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
 //    Applied a fix that corrected an indexing error in the setting of start
 //    and end that was provided by Jean Favre.
 //
+//    Burlen Loring, Thu Oct  8 11:52:26 PDT 2015
+//    make cue color array passed in const
+//
 // ****************************************************************************
 void
 avtSoftwareShader::AddDepthCueing(avtImage_p current_image,
@@ -610,7 +613,7 @@ avtSoftwareShader::AddDepthCueing(avtImage_p current_image,
                                   bool autoExtents,
                                   const double start_[3],
                                   const double end_[3],
-                                  unsigned char cuecolor[3])
+                                  const unsigned char cuecolor[3])
 {
     double start[3] = {start_[0],start_[1],start_[2]};
     double end[3]   = {end_[0],  end_[1],  end_[2]};

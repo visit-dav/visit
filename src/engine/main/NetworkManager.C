@@ -114,7 +114,7 @@
 #include <avtQueryFactory.h>
 #include <avtMultiresFilter.h>
 #include <CompactSILRestrictionAttributes.h>
-#include <VisWinRendering.h> // for SetStereoEnabled
+#include <VisWinRendering.h>
 #include <VisWindow.h>
 #include <VisWindowTypes.h>
 #include <ParsingExprList.h>
@@ -124,7 +124,11 @@
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
 #include <StackTimer.h>
-#include <FileFunctions.h> // for ReadAndProcessDirectory
+#include <FileFunctions.h>
+//#define ProgrammableCompositerDEBUG
+//#define NetworkManagerDEBUG
+//#define NetworkManagerTIME
+#include <ProgrammableCompositer.h>
 
 #include <vtkImageData.h>
 
@@ -140,12 +144,73 @@
 #include <functional>
 #include <map>
 #include <string>
+#include <sstream>
 #include <vector>
 #ifdef _WIN32
 #include <functional>
 #include <direct.h>  // for _getcwd, _chdir
 #else
 #include <unistd.h>
+#ifdef NetworkManagerTIME
+#include <sys/time.h>
+static
+double elapsed(timeval &tv0, timeval &tv1)
+{
+    return tv1.tv_sec - tv0.tv_sec + (tv1.tv_usec - tv0.tv_usec)/1e6;
+}
+#endif
+#endif
+using std::vector;
+using std::ostringstream;
+
+// ****************************************************************************
+// operator<<
+//
+// Programmer: Burlen Loring
+// Creation: Wed Sep  9 08:38:26 PDT 2015
+//
+// Purpose:
+//    dumps render state for debugging.
+//
+// Modifications:
+//
+// ****************************************************************************
+#if defined NetworkManagerDEBUG || defined NetworkManagerTIME
+ostream &operator<<(ostream &os, const NetworkManager::RenderState &rs)
+{
+    os  << "origWorkingNet = " << rs.origWorkingNet << endl
+        << "windowID = " << rs.windowID << endl
+        << "window = " << rs.window << endl
+        << "windowInfo = " << &rs.windowInfo << endl
+        << "needToSetUpWindowContents = " << rs.needToSetUpWindowContents << endl
+        << "cellCounts = " << rs.cellCounts << endl
+        << "cellCountTotal = " <<  rs.cellCountTotal << endl
+        << "haveCells = " << rs.haveCells << endl
+        << "renderOnViewer = " << rs.renderOnViewer << endl
+        << "stereoType = " << rs.stereoType << endl
+        << "timer = " << rs.timer << endl
+        << "annotMode = " << rs.annotMode << endl
+        << "threeD = " << rs.threeD << endl
+        << "twoD = " << rs.twoD << endl
+        << "gradientBg = " << rs.gradientBg << endl
+        << "getZBuffer = " << rs.getZBuffer << endl
+        << "zBufferComposite = " << rs.zBufferComposite << endl
+        << "allReducePass1 = " << rs.allReducePass1 << endl
+        << "allReducePass2 = " << rs.allReducePass2 << endl
+        << "handledAnnotations = " << rs.handledAnnotations << endl
+        << "handledCues = " << rs.handledCues << endl
+        << "transparency = " << rs.transparency << endl
+        << "transparencyInPass1 = " << rs.transparencyInPass1 << endl
+        << "transparencyInPass2 = " << rs.transparencyInPass2 << endl
+        << "orderComposite = " << rs.orderComposite << endl
+        << "compositeOrder = " << rs.compositeOrder << endl
+        << "viewportedMode = " << rs.viewportedMode << endl
+        << "needZBufferToCompositeEvenIn2D = " << rs.needZBufferToCompositeEvenIn2D << endl
+        << "shadowMap = " << rs.shadowMap << endl
+        << "depthCues = " << rs.depthCues << endl
+        << "imageBasedPlots = " << rs.imageBasedPlots << endl;
+    return os;
+}
 #endif
 
 // Programmer: Brad Whitlock, Wed Jan 18 11:38:42 PST 2012
@@ -155,7 +220,7 @@
 // avtMissingData array to the pipeline, if called for. The second stage,
 // which comes later, removes the elements that have missing data if needed.
 // This 2 stage approach is needed to make sure that pick works since it
-// ensures that the mesh connectivity for the data cached by EEF will not 
+// ensures that the mesh connectivity for the data cached by EEF will not
 // change based on the list of variables that are requested.
 //
 // If you do not define the TWO_STAGE_MISSING_DATA_FILTERING macro then
@@ -171,12 +236,6 @@
 static ref_ptr<avtDatabase> GetDatabase(void *, const std::string &,
                                         int, const char *);
 static avtDataBinning *GetDataBinningCallbackBridge(void *arg, const char *name);
-static bool OnlyRootNodeHasData(avtImage_p &);
-static void BroadcastImage(avtImage_p &, bool, int);
-#ifdef PARALLEL
-static bool IsBlankImage(avtImage_p img);
-static std::vector<int> BuildBlankImageVector(avtImage_p img);
-#endif
 
 //
 // Static data members of the NetworkManager class.
@@ -185,7 +244,6 @@ InitializeProgressCallback NetworkManager::initializeProgressCallback = NULL;
 void                      *NetworkManager::initializeProgressCallbackArgs=NULL;
 ProgressCallback           NetworkManager::progressCallback = NULL;
 void                      *NetworkManager::progressCallbackArgs = NULL;
-
 
 
 // ****************************************************************************
@@ -242,6 +300,9 @@ void                      *NetworkManager::progressCallbackArgs = NULL;
 //    Hank Childs, Sat Aug 21 14:35:47 PDT 2010
 //    Rename DDF to DataBinning.
 //
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    cache the compositers to avoid repeated thread create/join overhead
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : EngineBase(), virtualDatabases()
 {
@@ -253,13 +314,24 @@ NetworkManager::NetworkManager(void) : EngineBase(), virtualDatabases()
     uniqueNetworkId = 0;
 
     avtCallback::RegisterGetDatabaseCallback(GetDatabase, this);
-    avtApplyDataBinningExpression::RegisterGetDataBinningCallback(GetDataBinningCallbackBridge, this);
+
+    avtApplyDataBinningExpression::RegisterGetDataBinningCallback(
+        GetDataBinningCallbackBridge, this);
+
     avtExpressionEvaluatorFilter::RegisterGetDataBinningCallback(
-                                                  GetDataBinningCallbackBridge, this);
+        GetDataBinningCallbackBridge, this);
 
     databasePlugins = NULL;
     operatorPlugins = NULL;
     plotPlugins = NULL;
+
+    initialized = true;
+
+    zcomp = new ProgrammableCompositer<unsigned char>;
+    zcomp->SetThreadPoolSize(2);
+
+    acomp = new ProgrammableCompositer<float>;
+    acomp->SetThreadPoolSize(2);
 }
 
 // ****************************************************************************
@@ -289,11 +361,14 @@ NetworkManager::NetworkManager(void) : EngineBase(), virtualDatabases()
 //    Rename DDF to DataBinning.
 //
 //    David Camp, Thu Jan 13 11:15:00 PST 2011
-//    Added the call to DeleteInstance of the avtColorTables. 
+//    Added the call to DeleteInstance of the avtColorTables.
 //    Help debug memory leaks.
 //
 //    Brad Whitlock, Thu Oct  4 11:45:14 PDT 2012
 //    Change how networks are deleted.
+//
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    delete cached compositers
 //
 // ****************************************************************************
 
@@ -307,6 +382,9 @@ NetworkManager::~NetworkManager(void)
     delete plotPlugins;
 
     avtColorTables::Instance()->DeleteInstance();
+
+    delete zcomp;
+    delete acomp;
 }
 
 // ****************************************************************************
@@ -383,7 +461,7 @@ NetworkManager::SetOperatorPluginManager(OperatorPluginManager *mgr)
 // ****************************************************************************
 // Method: NetworkManager::GetDatabasePluginManager
 //
-// Purpose: 
+// Purpose:
 //   Return the database plugin manager.
 //
 // Returns:    the database plugin manager.
@@ -392,7 +470,7 @@ NetworkManager::SetOperatorPluginManager(OperatorPluginManager *mgr)
 // Creation:   Tue Jun 24 15:25:41 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 DatabasePluginManager *
@@ -404,7 +482,7 @@ NetworkManager::GetDatabasePluginManager() const
 // ****************************************************************************
 // Method: NetworkManager::GetOperatorPluginManager
 //
-// Purpose: 
+// Purpose:
 //   Return the operator plugin manager.
 //
 // Returns:    the operator plugin manager.
@@ -413,7 +491,7 @@ NetworkManager::GetDatabasePluginManager() const
 // Creation:   Tue Jun 24 15:26:07 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 OperatorPluginManager *
@@ -425,7 +503,7 @@ NetworkManager::GetOperatorPluginManager() const
 // ****************************************************************************
 // Method: NetworkManager::GetPlotPluginManager
 //
-// Purpose: 
+// Purpose:
 //   Return the plot plugin manager.
 //
 // Returns:    the plot plugin manager.
@@ -434,7 +512,7 @@ NetworkManager::GetOperatorPluginManager() const
 // Creation:   Tue Jun 24 15:26:28 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 PlotPluginManager *
@@ -491,34 +569,35 @@ NetworkManager::GetPlotPluginManager() const
 //    Brad Whitlock, Wed Sep  7 13:31:27 PDT 2011
 //    Tell the NSM to clear its cache.
 //
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    eliminate temporaries and function call in loops condition
+//
 // ****************************************************************************
 
 void
 NetworkManager::ClearAllNetworks(void)
 {
-    debug3 << "NetworkManager::ClearAllNetworks(void)" << endl;
-
-    for (size_t i = 0; i < networkCache.size(); i++)
+    size_t nNets = networkCache.size();
+    for (size_t i = 0; i < nNets; ++i)
     {
-        if (networkCache[i] != NULL)
-            delete networkCache[i];
+        delete networkCache[i];
         networkCache[i] = NULL;
     }
 
-    for (size_t i = 0; i < databaseCache.size(); i++)
+    size_t nDbs = databaseCache.size();
+    for (size_t i = 0; i < nDbs; ++i)
     {
-        if (databaseCache[i] != NULL)
-            delete databaseCache[i];
+        delete databaseCache[i];
         databaseCache[i] = NULL;
     }
 
-    for (size_t i = 0 ; i < globalCellCounts.size() ; i++)
-    {
+    size_t nPlots = globalCellCounts.size();
+    for (size_t i = 0; i < nPlots; ++i)
         globalCellCounts[i] = -1;
-    }
 
-    std::map<int, EngineVisWinInfo>::iterator it;
-    for (it = viswinMap.begin(); it != viswinMap.end(); it++)
+    std::map<int, EngineVisWinInfo>::iterator it = viswinMap.begin();
+    std::map<int, EngineVisWinInfo>::iterator end = viswinMap.end();
+    for (; it != end; ++it)
     {
         it->second.viswin->ClearPlots();
         it->second.plotsCurrentlyInWindow.clear();
@@ -557,41 +636,32 @@ NetworkManager::ClearAllNetworks(void)
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Modified for viswinMap object
 //
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    move function call out of loop condition, and simplify logic
+//
 // ****************************************************************************
 void
 NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 {
-    debug3 << "NetworkManager::ClearNetworksWithDatabase()" << endl;
-
-    //
     // Clear out the networks before the databases.  This is because if we
     // delete the databases first, the networks will have dangling pointers.
-    //
-    for (size_t i = 0; i < networkCache.size(); i++)
+    size_t nNets = networkCache.size();
+    for (size_t i = 0; i < nNets; ++i)
     {
-        if (networkCache[i] != NULL)
-        {
-            NetnodeDB *ndb = networkCache[i]->GetNetDB();
-            if (ndb != NULL)
-            {
-                if (ndb->GetFilename() == db)
-                {
-                    DoneWithNetwork(i);
-                }
-            }
-        }
+        NetnodeDB *ndb;
+        if (networkCache[i] && (ndb = networkCache[i]->GetNetDB()) &&
+            (ndb->GetFilename() == db))
+            DoneWithNetwork(i);
     }
 
     // Remove the database from the cache and delete it.
-    for (size_t i = 0; i < databaseCache.size(); i++)
+    size_t nDbs = databaseCache.size();
+    for (size_t i = 0; i < nDbs; ++i)
     {
-        if (databaseCache[i] != NULL)
+        if (databaseCache[i] && (databaseCache[i]->GetFilename() == db))
         {
-            if (databaseCache[i]->GetFilename() == db)
-            {
-                delete databaseCache[i];
-                databaseCache[i] = NULL;
-            }
+            delete databaseCache[i];
+            databaseCache[i] = NULL;
         }
     }
 }
@@ -604,12 +674,15 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //
 // Returns:    A string vector of database names.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 15 10:33:01 PDT 2014
 //
 // Modifications:
+//
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    move function call out of loop condition.
 //
 // ****************************************************************************
 
@@ -617,9 +690,10 @@ stringVector
 NetworkManager::GetOpenDatabases() const
 {
     stringVector dbs;
-    for (size_t i = 0; i < databaseCache.size(); i++)
+    size_t nDbs = databaseCache.size();
+    for (size_t i = 0; i < nDbs; ++i)
     {
-        if (databaseCache[i] != NULL)
+        if (databaseCache[i])
             dbs.push_back(databaseCache[i]->GetFilename());
     }
     return dbs;
@@ -647,7 +721,7 @@ NetworkManager::GetOpenDatabases() const
 //    when we use fake exceptions.
 //
 //    Mark C. Miller Thu Oct  9 10:59:27 PDT 2003
-//    I modified to force GetMetaData and GetSIL if they're invariant 
+//    I modified to force GetMetaData and GetSIL if they're invariant
 //
 //    Hank Childs, Tue Nov  4 14:19:05 PST 2003
 //    Checked in work-around (HACK) to avoid apparent compiler bug on AIX.
@@ -678,7 +752,7 @@ NetworkManager::GetOpenDatabases() const
 //    and there is really no explanation for why we were doing it.
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//    Changed interface to lb->AddDatabase 
+//    Changed interface to lb->AddDatabase
 //
 //    Hank Childs, Thu Jan 11 16:10:12 PST 2007
 //    Added argument to DatabaseFactory calls.
@@ -708,18 +782,18 @@ NetworkManager::GetOpenDatabases() const
 
 NetnodeDB *
 NetworkManager::GetDBFromCache(const std::string &filename, int time,
-    const char *format, bool treatAllDBsAsTimeVarying, 
+    const char *format, bool treatAllDBsAsTimeVarying,
     bool fileMayHaveUnloadedPlugin, bool ignoreExtents)
 {
     // If we don't have a load balancer, we're dead.
     if (loadBalancer == NULL)
     {
-        debug1 << "Internal error: A load balancer was never registered." 
+        debug1 << "Internal error: A load balancer was never registered."
                << endl;
         EXCEPTION0(ImproperUseException);
     }
 
-    // Find a matching database 
+    // Find a matching database
     NetnodeDB* cachedDB = NULL;
     for (size_t i = 0; i < databaseCache.size(); i++)
     {
@@ -786,7 +860,7 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 #if defined(_WIN32)
                 _getcwd(tmpcwd, 1023);
 #else
-                char* res = getcwd(tmpcwd, 1023); 
+                char* res = getcwd(tmpcwd, 1023);
                 if(res == NULL)
                 {
                     debug1 << "failed to get current working directory"
@@ -841,7 +915,7 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 #if defined(_WIN32)
                     _chdir(oldPath.c_str());
 #else
-                    int res = chdir(oldPath.c_str()); 
+                    int res = chdir(oldPath.c_str());
                     if(res == -1)
                     {
                         debug1 << "failed to change the current working directory"
@@ -849,7 +923,7 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
                     }
 #endif
                 }
-            
+
                 db = avtDatabaseFactory::FileList(
                     GetDatabasePluginManager(),
                     names,
@@ -860,7 +934,7 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 
                 for (size_t i = 0; i < fileNames.size(); ++i)
                     delete [] names[i];
-                delete [] names; 
+                delete [] names;
             }
             else
             {
@@ -869,7 +943,7 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
                     &filename_c,
                     1,
                     time,
-                    plugins, 
+                    plugins,
                     format);
             }
         }
@@ -900,7 +974,7 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 
         netDB->SetDBInfo(filename, "", time);
         loadBalancer->AddDatabase(filename, db, time);
-      
+
         // The code here should be:
         // CATCH_RETURN2(1, netDB);
         //
@@ -928,11 +1002,11 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
         // the comment in VisItException.h should be removed.
         //
 #ifdef FAKE_EXCEPTIONS
-           exception_delete(exception_caught); 
-           jump_stack_top -= (1); 
+           exception_delete(exception_caught);
+           jump_stack_top -= (1);
            debug5 << "This debug statement (from the NetworkManager) is "
                   << "being issued to get around a compiler bug." << endl;
-           return (netDB); 
+           return (netDB);
 #else
            return netDB;
 #endif
@@ -949,21 +1023,21 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
 // ****************************************************************************
 // Method: NetworkManager::StartNetwork
 //
-// Purpose: 
+// Purpose:
 //   Simple StartNetwork routine, passing the most common defaults to the
 //   more complex version of the routine.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Nov 10 16:34:18 PST 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -992,7 +1066,7 @@ NetworkManager::StartNetwork(const std::string &format,
 
     // Construct the silr for the variable.
     NetnodeDB *netDB = GetDBFromCache(filename, time, defaultFormat,
-                                      treatAllDBsAsTimeVarying, 
+                                      treatAllDBsAsTimeVarying,
                                       fileMayHaveUnloadedPlugin,
                                       ignoreExtents);
     if(netDB != NULL)
@@ -1023,7 +1097,7 @@ NetworkManager::StartNetwork(const std::string &format,
 //  Modifications:
 //
 //    Jeremy Meredith, Thu Nov  2 14:07:34 PST 2000
-//    Changed the file initialization.  Apparently substr() may not portably 
+//    Changed the file initialization.  Apparently substr() may not portably
 //    be a const method of strings....
 //
 //    Hank Childs, Tue Jun 12 20:01:55 PDT 2001
@@ -1111,7 +1185,7 @@ NetworkManager::StartNetwork(const std::string &format,
 //    Added a new isovolume algorithm, with adjustable VF cutoff.
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//    Added mesh management attributes 
+//    Added mesh management attributes
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added setting of flatness tolerance to data spec for CSG stuff
@@ -1127,7 +1201,7 @@ NetworkManager::StartNetwork(const std::string &format,
 //    Added treatAllDBsAsTimeVarying to GetSIL call.
 //
 //    Hank Childs, Fri Feb  1 15:48:01 PST 2008
-//    Add new Boolean argument to GetDBFromCache. 
+//    Add new Boolean argument to GetDBFromCache.
 //
 //    Mark C. Miller, Tue Jun 10 22:36:25 PDT 2008
 //    Added support for ignoring bad extents from dbs.
@@ -1145,8 +1219,8 @@ NetworkManager::StartNetwork(const std::string &format,
 //    I added named selection creation here instead of at the end of the pipeline.
 //
 //    Brad Whitlock, Thu Sep  1 11:07:55 PDT 2011
-//    Stash the selection name into the data request in case we need it 
-//    when creating other pipelines based on this one. For instance, the 
+//    Stash the selection name into the data request in case we need it
+//    when creating other pipelines based on this one. For instance, the
 //    avtExecuteThenTimeLoopFilter creates its own pipeline from the original
 //    source so we need the selection name there to apply it.
 //
@@ -1191,7 +1265,7 @@ NetworkManager::StartNetwork(const std::string &format,
     workingNet = new DataNetwork;
     bool fileMayHaveUnloadedPlugin = false;
     NetnodeDB *netDB = GetDBFromCache(filename, time, defaultFormat,
-                                      treatAllDBsAsTimeVarying, 
+                                      treatAllDBsAsTimeVarying,
                                       fileMayHaveUnloadedPlugin,
                                       ignoreExtents);
     workingNet->SetNetDB(netDB);
@@ -1366,7 +1440,7 @@ NetworkManager::StartNetwork(const std::string &format,
 // ****************************************************************************
 // Method: NetworkManager::DefineDB
 //
-// Purpose: 
+// Purpose:
 //   Defines a new database with the specified name and list of files.
 //
 // Arguments:
@@ -1374,7 +1448,7 @@ NetworkManager::StartNetwork(const std::string &format,
 //    files    : The list of files that make up the database.
 //    time     : The timestep that we want to examine.
 //    format   : The file format type of the DB.
-//   
+//
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 25 13:41:08 PST 2003
 //
@@ -1407,7 +1481,7 @@ NetworkManager::StartNetwork(const std::string &format,
 //   Tell the database what its full name is.
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//   Changed interface to lb->AddDatabase 
+//   Changed interface to lb->AddDatabase
 //
 //   Hank Childs, Thu Jan 11 16:10:12 PST 2007
 //   Added argument to DatabaseFactory calls.
@@ -1538,7 +1612,7 @@ NetworkManager::DefineDB(const std::string &dbName, const std::string &dbPath,
         // If we want to open the file at a later timestep, get the
         // metadata and the SIL so that it contains the right data.
         if ((time > 0) ||
-            (!db->MetaDataIsInvariant()) || 
+            (!db->MetaDataIsInvariant()) ||
             (!db->SILIsInvariant()))
         {
             debug2 << "NetworkManager::DefineDB: We were instructed to define "
@@ -1565,7 +1639,7 @@ NetworkManager::DefineDB(const std::string &dbName, const std::string &dbPath,
                << endl;
         RETHROW;
     }
-    ENDTRY 
+    ENDTRY
 }
 
 // ****************************************************************************
@@ -1676,10 +1750,13 @@ NetworkManager::AddFilter(const std::string &filtertype,
 //    Brad Whitlock, Tue Jun 24 16:09:19 PDT 2008
 //    Changed how the plot plugin manager is accessed.
 //
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    Add support for depth peeling and ordered compositing
+//
 // ****************************************************************************
 
 void
-NetworkManager::MakePlot(const std::string &plotName, const std::string &pluginID, 
+NetworkManager::MakePlot(const std::string &plotName, const std::string &pluginID,
     const AttributeGroup *atts, const std::vector<double> &dataExtents)
 {
     if (workingNet == NULL)
@@ -1707,10 +1784,8 @@ NetworkManager::MakePlot(const std::string &plotName, const std::string &pluginI
 
     // Check, whether plot wants to place a filter at the beginning of
     // the pipeline
-    if (avtFilter *f = p->GetFilterForTopOfPipeline()) 
+    if (avtFilter *f = p->GetFilterForTopOfPipeline())
     {
-        debug4 << "NetworkManager::MakePlot(): Inserting filter on top of "
-               << "pipeline." << endl;
         NetnodeFilter *filt = new NetnodeFilter(f, "InsertedPlotFilter");
         //f->GetOutput()->SetTransientStatus(true);
 
@@ -1726,8 +1801,6 @@ NetworkManager::MakePlot(const std::string &plotName, const std::string &pluginI
             workingNetnodeList.push_back(filt);
             workingNet->AddNode(filt);
         }
-        debug4 << "NetworkManager::MakePlot(): Added filter after expression "
-               << "evaluator." << endl;
     }
 
     p->SetDataExtents(dataExtents);
@@ -1735,9 +1808,6 @@ NetworkManager::MakePlot(const std::string &plotName, const std::string &pluginI
     workingNet->GetPlot()->SetAtts(atts);
     workingNet->SetPlottype(pluginID);
     workingNet->SetPlotName(plotName);
-
-    debug4 << "NetworkManager::MakePlot(): Leaving NetworkManager::MakePlot()." 
-           << endl;
 }
 
 // ****************************************************************************
@@ -1770,6 +1840,11 @@ NetworkManager::MakePlot(const std::string &plotName, const std::string &pluginI
 //
 //    Brad Whitlock, Mon Aug 22 10:39:12 PDT 2011
 //    Changed how named selections are finally set up.
+//
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    use std::map::count rather than std::map::find if you need
+//    to check if something is in the map. it's faster because find
+//    has to construct an iterator.
 //
 // ****************************************************************************
 
@@ -1821,7 +1896,7 @@ NetworkManager::EndNetwork(int windowID)
     // If this plot this network is associated with is in a window we haven't
     // seen before, make a new VisWindow for it
     //
-    if (viswinMap.find(windowID) == viswinMap.end())
+    if (!viswinMap.count(windowID))
         NewVisWindow(windowID);
 
     return workingNet->GetNetID();
@@ -1855,7 +1930,7 @@ NetworkManager::CancelNetwork(void)
 //
 // Returns:    True if the network is valid; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Sep 23 12:01:08 PDT 2014
@@ -1914,7 +1989,7 @@ NetworkManager::UseNetwork(int id)
 {
     if (workingNet)
     {
-        debug1 << "Internal error: UseNetwork called with an open network" 
+        debug1 << "Internal error: UseNetwork called with an open network"
                << endl;
         EXCEPTION0(ImproperUseException);
     }
@@ -1931,7 +2006,7 @@ NetworkManager::UseNetwork(int id)
                 << "  (presumably because a database was re-opened)." << endl;
         EXCEPTION0(ImproperUseException);
     }
- 
+
     workingNet = networkCache[id];
     NetnodeDB *db = workingNet->GetNetDB();
     int time = workingNet->GetTime();
@@ -1954,9 +2029,9 @@ NetworkManager::UseNetwork(int id)
 //  Method: NetworkManager::GetPlot
 //
 //  Purpose:
-//      Gets the plot for the current working network 
+//      Gets the plot for the current working network
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   November 19, 2002
 //
 // ****************************************************************************
@@ -2004,7 +2079,7 @@ NetworkManager::GetCurrentNetworkId(void) const
 //      Gets the window id of the current network.
 //
 //  Programmer: Mark C. Miller
-//  Creation:   January 4, 2005 
+//  Creation:   January 4, 2005
 //
 // ****************************************************************************
 int
@@ -2035,14 +2110,17 @@ NetworkManager::GetCurrentWindowId(void) const
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Modified to compute counts for networks in only the specified window
 //
+//    Burlen Loring, Mon Sep  7 05:41:30 PDT 2015
+//    use long long for cell count
+//
 // ****************************************************************************
 
-long
+long long
 NetworkManager::GetTotalGlobalCellCounts(int winID) const
 {
-    long sum = 0;
-
-    for (size_t i = 0; i < networkCache.size(); i++)
+    long long sum = 0;
+    size_t nNets= networkCache.size();
+    for (size_t i = 0; i < nNets; ++i)
     {
         if (networkCache[i] == NULL ||
             networkCache[i]->GetWinID() != winID)
@@ -2058,29 +2136,31 @@ NetworkManager::GetTotalGlobalCellCounts(int winID) const
     return sum;
 }
 
+
 // ****************************************************************************
 //  Method: NetworkManager::SetGlobalCellCount
 //
 //  Purpose:
-//      Sets the global (over all processors) cell count for the given network 
+//      Sets the global (over all processors) cell count for the given network
 //
 //  Programmer: Mark C. Miller
-//  Creation:   May 24, 2004 
+//  Creation:   May 24, 2004
 //
 // ****************************************************************************
+
 void
-NetworkManager::SetGlobalCellCount(int netId, long cellCount)
+NetworkManager::SetGlobalCellCount(int netId, long long cellCount)
 {
    globalCellCounts[netId] = cellCount;
-   debug5 << "Setting cell count for network " << netId << " to " << cellCount << endl;
 }
+
 
 // ****************************************************************************
 //  Method: NetworkManager::GetScalableThreshold
 //
 //  Purpose: Get the effective scalable threshold
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   May 11, 2004
 //
 //  Modifications:
@@ -2091,35 +2171,60 @@ NetworkManager::SetGlobalCellCount(int netId, long cellCount)
 //    Brad Whitlock, Fri Feb 15 15:30:31 PST 2008
 //    Test value of iterator.
 //
+//    Burlen Loring, Wed Sep  2 09:19:51 PDT 2015
+//    Factor implementation into a private method that
+//    doesn't need to search for the current window/do error
+//    checking etc when used correctly (ie from within
+//    the class)
+//
 // ****************************************************************************
 int
 NetworkManager::GetScalableThreshold(int windowID) const
 {
-    int scalableAutoThreshold = RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD;
-    RenderingAttributes::TriStateMode scalableActivationMode = 
-       (RenderingAttributes::TriStateMode)RenderingAttributes::DEFAULT_SCALABLE_ACTIVATION_MODE;
-
-    // since we're in a const method, we can't use the [] operator to index
-    // into the map directly becuase that operator will modify the map if the
-    // key is new
     std::map<int, EngineVisWinInfo>::const_iterator it;
     it = viswinMap.find(windowID);
-    if(it != viswinMap.end())
+    if(it == viswinMap.end())
     {
-        const EngineVisWinInfo &viswinInfo = it->second;
-        const WindowAttributes &windowAttributes = viswinInfo.windowAttributes; 
+        // requested window doesn't currently exist
+        int scalableAutoThreshold
+            = RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD;
 
-        scalableAutoThreshold =
-            windowAttributes.GetRenderAtts().GetScalableAutoThreshold();
-        scalableActivationMode = 
-            windowAttributes.GetRenderAtts().GetScalableActivationMode();
-    }
+        RenderingAttributes::TriStateMode
+        scalableActivationMode
+            = static_cast<RenderingAttributes::TriStateMode>(
+               RenderingAttributes::DEFAULT_SCALABLE_ACTIVATION_MODE);
 
-    int t = RenderingAttributes::GetEffectiveScalableThreshold(
+        return  RenderingAttributes::GetEffectiveScalableThreshold(
                                     scalableActivationMode,
                                     scalableAutoThreshold);
+    }
+    return
+        GetScalableThreshold(it->second.windowAttributes.GetRenderAtts());
+}
 
-    return t;
+// ****************************************************************************
+//  Method: NetworkManager::GetScalableThreshold
+//
+//  Purpose: Get the effective scalable threshold
+//
+//  Programmer: Burlen Loring
+//  Creation:   Wed Sep  2 09:13:12 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+NetworkManager::GetScalableThreshold(const RenderingAttributes &renderAtts) const
+{
+    int scalableAutoThreshold = renderAtts.GetScalableAutoThreshold();
+
+    RenderingAttributes::TriStateMode
+    scalableActivationMode = renderAtts.GetScalableActivationMode();
+
+    return RenderingAttributes::GetEffectiveScalableThreshold(
+                                    scalableActivationMode,
+                                    scalableAutoThreshold);
 }
 
 
@@ -2127,7 +2232,7 @@ NetworkManager::GetScalableThreshold(int windowID) const
 // Method:  NetworkManager::GetCompactDomainsThreshold
 //
 // Purpose: Get/Set compact domains options.
-//   
+//
 //
 // Programmer:  Dave Pugmire
 // Creation:    August 24, 2010
@@ -2138,7 +2243,7 @@ int
 NetworkManager::GetCompactDomainsThreshold(int windowId) const
 {
     int compactDomainsAutoThreshold = RenderingAttributes::DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD;
-    RenderingAttributes::TriStateMode compactDomainsActivationMode = 
+    RenderingAttributes::TriStateMode compactDomainsActivationMode =
        (RenderingAttributes::TriStateMode)RenderingAttributes::DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE;
 
     // since we're in a const method, we can't use the [] operator to index
@@ -2149,15 +2254,15 @@ NetworkManager::GetCompactDomainsThreshold(int windowId) const
     if(it != viswinMap.end())
     {
         const EngineVisWinInfo &viswinInfo = it->second;
-        const WindowAttributes &windowAttributes = viswinInfo.windowAttributes; 
+        const WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
 
-        compactDomainsAutoThreshold = 
+        compactDomainsAutoThreshold =
             windowAttributes.GetRenderAtts().GetCompactDomainsAutoThreshold();
-        compactDomainsActivationMode = 
+        compactDomainsActivationMode =
             windowAttributes.GetRenderAtts().GetCompactDomainsActivationMode();
     }
 
-    
+
     int t = RenderingAttributes::GetEffectiveCompactDomainsThreshold(compactDomainsActivationMode,
                                                                      compactDomainsAutoThreshold);
     return t;
@@ -2166,10 +2271,10 @@ NetworkManager::GetCompactDomainsThreshold(int windowId) const
 // ****************************************************************************
 //  Method: NetworkManager::GetShouldUseCompression
 //
-//  Purpose: Determine if we should use compression 
+//  Purpose: Determine if we should use compression
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   November 3, 2005 
+//  Programmer: Mark C. Miller
+//  Creation:   November 3, 2005
 //
 //  Modifications:
 //
@@ -2188,9 +2293,9 @@ NetworkManager::GetShouldUseCompression(int windowID) const
     std::map<int, EngineVisWinInfo>::const_iterator it;
     it = viswinMap.find(windowID);
     const EngineVisWinInfo &viswinInfo = it->second;
-    const WindowAttributes &windowAttributes = viswinInfo.windowAttributes; 
+    const WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
 
-    compressionActivationMode = 
+    compressionActivationMode =
         windowAttributes.GetRenderAtts().GetCompressionActivationMode();
 
     return compressionActivationMode != RenderingAttributes::Never;
@@ -2200,7 +2305,7 @@ NetworkManager::GetShouldUseCompression(int windowID) const
 //  Method: NetworkManager::DoneWithNetwork
 //
 //  Purpose:
-//      Indicates that we are done with a network -- we can clean up memory, 
+//      Indicates that we are done with a network -- we can clean up memory,
 //      etc.
 //
 //  Programmer: Hank Childs
@@ -2216,7 +2321,7 @@ NetworkManager::GetShouldUseCompression(int windowID) const
 //    clear it out of the window before cleaning up the network.
 //
 //    Mark C. Miller, Wed Sep  8 17:06:25 PDT 2004
-//    Moved the code to clear the vis window and plots currently in the 
+//    Moved the code to clear the vis window and plots currently in the
 //    vis window to inside the test for non-NULL networkCache
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
@@ -2224,6 +2329,9 @@ NetworkManager::GetShouldUseCompression(int windowID) const
 //
 //    Hank Childs, Thu Mar  2 10:06:33 PST 2006
 //    Clear out image based plots.
+//
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    move function call out of loop condition
 //
 // ****************************************************************************
 
@@ -2243,15 +2351,15 @@ NetworkManager::DoneWithNetwork(int id)
         viswinMap[thisNetworksWinID].plotsCurrentlyInWindow.clear();
         viswinMap[thisNetworksWinID].imageBasedPlots.clear();
 
-        //
         // Delete the associated VisWindow if this is the last plot that
         // references it
-        //
         bool otherNetsUseThisWindow = false;
-        for (int i = 0; i < (int)networkCache.size(); i++)
+        int nNets = static_cast<int>(networkCache.size());
+        for (int i = 0; i < nNets; ++i)
         {
             if (i == id)
                 continue;
+
             if (networkCache[i] && (thisNetworksWinID ==
                                     networkCache[i]->GetWinID()))
             {
@@ -2264,21 +2372,20 @@ NetworkManager::DoneWithNetwork(int id)
         networkCache[id] = NULL;
         globalCellCounts[id] = -1;
 
-        // mark this VisWindow for deletion 
-        if (!otherNetsUseThisWindow && thisNetworksWinID) // never delete window 0
+        // mark this VisWindow for deletion, but never delete window 0
+        if (!otherNetsUseThisWindow && thisNetworksWinID)
         {
-            debug1 << "Marking VisWindow for Deletion id=" << thisNetworksWinID << endl;
+            debug2 << "Marking VisWindow for Deletion id=" << thisNetworksWinID << endl;
+            // TODO -- why not just delete it here??
             viswinMap[thisNetworksWinID].markedForDeletion = true;
         }
 
     }
     else
     {
-        debug1 << "Warning: DoneWithNetwork called on previously cleared "
-               << "network." << endl;
+        debug1 << "Warning: DoneWithNetwork called on previously "
+            "cleared network." << endl;
     }
-
-
 }
 
 // ****************************************************************************
@@ -2356,8 +2463,8 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    Hank Childs, Wed Mar  7 11:33:51 PST 2001
 //    Timestep now an argument to the database instead of set as a global.
 //
-//    Kathleen Bonnell, Tue May  1 16:57:02 PDT 2001 
-//    Added try-catch block so that exceptions could be rethrown. 
+//    Kathleen Bonnell, Tue May  1 16:57:02 PDT 2001
+//    Added try-catch block so that exceptions could be rethrown.
 //
 //    Hank Childs, Tue Jun 12 14:55:38 PDT 2001
 //    Incorporate data specifications.
@@ -2373,7 +2480,7 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    Added sending of window attributes into plot->Execute.
 //
 //    Kathleen Bonnell, Tue Nov 20 12:35:54 PST 2001
-//    Set flag in dataRequest based on value of requireOriginalCells. 
+//    Set flag in dataRequest based on value of requireOriginalCells.
 //
 //    Hank Childs, Tue Jun 18 16:49:01 PDT 2002
 //    Set MayRequireZones before Executing.
@@ -2392,8 +2499,8 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    Removed MPI_Allreduce. Moved code to check for scalable threshold being
 //    exceeded to Engine::WriteData
 //
-//    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004 
-//    Set MayRequireNodes. 
+//    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004
+//    Set MayRequireNodes.
 //
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Added cellCountMultiplier arg and call to get and set it
@@ -2411,12 +2518,17 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    clean up a compiler warning. documemt use of INT_MAX
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
 NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
     float *cellCountMultiplier)
 {
+    (void)calledForRender;
 
     // Is the network complete?
     if (*(workingNet->GetPlot()) == NULL)
@@ -2434,9 +2546,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
         avtDataObject_p output = workingNet->GetOutput();
 
         workingNet->GetContract()->GetDataRequest()->
-            SetMayRequireZones(requireOriginalCells); 
+            SetMayRequireZones(requireOriginalCells);
         workingNet->GetContract()->GetDataRequest()->
-            SetMayRequireNodes(requireOriginalNodes); 
+            SetMayRequireNodes(requireOriginalNodes);
         if (inQueryMode)
             workingNet->GetContract()->NoStreaming();
 
@@ -2444,7 +2556,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
                                           workingNet->GetContract(),
                                           &windowAttributes);
 
-        // get the SR multiplier
+        // get the SR multiplier. note: the default for image based plots
+        // (ie volume rendering) is INT_MAX. for other plots the default
+        // is 1.0.
         *cellCountMultiplier =
             workingNet->GetPlot()->GetCellCountMultiplierForSRThreshold();
 
@@ -2456,7 +2570,7 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
            CopyTo(origDataset, writerInput);
 
            // make a copy of the dataset without the data
-           avtDataset_p dummyDataset = new avtDataset(origDataset, true); 
+           avtDataset_p dummyDataset = new avtDataset(origDataset, true);
            avtDataObject_p dummyDob;
            CopyTo(dummyDob, dummyDataset);
            writer = dummyDob->InstantiateWriter();
@@ -2488,10 +2602,10 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 // ****************************************************************************
 //  Method: NetworkManager::HasNonMeshPlots
 //
-//  Purpose: Scan the plot list to see if any plots in it are NOT mesh plots 
+//  Purpose: Scan the plot list to see if any plots in it are NOT mesh plots
 //
-//  Programmer:  Mark C. Miller 
-//  Creation:    May 12, 2005 
+//  Programmer:  Mark C. Miller
+//  Creation:    May 12, 2005
 //
 //  Modifications:
 //
@@ -2522,7 +2636,7 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 // ****************************************************************************
 //  Method: NetworkManager::NeedZBufferToCompositeEvenIn2D
 //
-//  Purpose: 
+//  Purpose:
 //      Determines if we need ZBuffer information, even in 2D mode.  This is
 //      necessary because some plots (read: streamline) use their own custom
 //      data decompositions.  And if there is a second plot (read: pseudocolor)
@@ -2569,15 +2683,15 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //
 //  Purpose: do a software scalable render
 //
-//  Programmer:  Mark C. Miller 
-//  Creation:    08Apr03 
+//  Programmer:  Mark C. Miller
+//  Creation:    08Apr03
 //
 //  Modifications:
 //
 //    Mark C. Miller, Thu Apr  1 11:06:09 PST 2004
 //    Removed call to AdjustWindowAttributes
 //    Added use of viewported screen capture
-//    
+//
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Added call to local GetScalableThreshold method
 //
@@ -2721,193 +2835,118 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    Adjust for new debug image dumping interface.
 //
 //    Brad Whitlock, Wed Oct 29 09:57:16 PDT 2014
-//    Don't call RenderBalance. It was doing collective communication and 
+//    Don't call RenderBalance. It was doing collective communication and
 //    causing a hang when not all ranks are writing debugging logs. It did not
 //    provide much information anyway.
+//
+//    Burlen Loring, Tue Aug 18 13:30:14 PDT 2015
+//    Added option to do depth peeling for transparent geometry
+//
+//    Burlen Loring, Thu Sep  3 10:24:42 PDT 2015
+//    Factored into internal method that can be called from IceTNetworkManager
+//    to eliminate duplicated setup work when this class is called as a fallback
+//    ie currently for translucent rendering.
 //
 // ****************************************************************************
 
 avtDataObject_p
-NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
+NetworkManager::Render(
+    bool checkThreshold, intVector plotIds, bool getZBuffer,
     int annotMode, int windowID, bool leftEye)
 {
+#ifdef NetworkManagerTIME
+    struct timeval tv0,tv1;
+    gettimeofday(&tv0, 0);
+#endif
+
     DataNetwork *origWorkingNet = workingNet;
-    avtDataObject_p retval;
-
-    EngineVisWinInfo &viswinInfo = viswinMap[windowID];
-    viswinInfo.markedForDeletion = false;
-    VisWindow *viswin = viswinInfo.viswin;
-    std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
-
-    bool dump_renders = avtDebugDumpOptions::DumpEnabled();
+    avtDataObject_p output;
 
     TRY
     {
-        avtDataObjectWriter_p writer;
-        this->StartTimer(); /* stopped in RenderCleanup */
+        RenderSetup(windowID, plotIds, getZBuffer,
+            annotMode, leftEye, checkThreshold);
 
-        int t1 = visitTimer->StartTimer();
-        this->r_mgmt.checkThreshold = checkThreshold;
-        this->RenderSetup(plotIds, getZBuffer, annotMode, windowID, leftEye);
-        visitTimer->StopTimer(t1, "Render setup");
-
-        // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
-        // the misfortune of oscillating switching of modes around the
-        // threshold)
-        long scalableThreshold = GetScalableThreshold(windowID);
-        if (checkThreshold && GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
+        if (renderState.renderOnViewer)
         {
-            this->RenderCleanup(windowID);
-            CATCH_RETURN2(1, retval);
+            debug2 << "below scalable rendering threshold" << endl;
+            RenderCleanup();
+            CATCH_RETURN2(1, output);
         }
 
-        debug5 << "Rendering " << viswin->GetNumPrimitives()
-               << " primitives." << endl;
-
-        CallInitializeProgressCallback(this->RenderingStages(windowID));
-
-        // render the image and capture it. Relies upon explicit render
-        int t3 = visitTimer->StartTimer();
-
-        // ************************************************************
-        // FIRST PASS - Opaque only
-        // ************************************************************
-
-        avtImage_p theImage = NetworkManager::RenderGeometry();
-
-        CallProgressCallback("NetworkManager", "Compositing", 0, 1);
-
-        visitTimer->StopTimer(t3, "Screen capture for SR");
-
-        if (dump_renders)
-            DumpImage(theImage, "before_OpaqueComposite");
-
-        int t1A = visitTimer->StartTimer();
-        avtWholeImageCompositer *imageCompositer;
-        imageCompositer = MakeCompositer(
-                 viswin->GetWindowMode() == WINMODE_3D,
-                 viswin->GetBackgroundMode() == AnnotationAttributes::Gradient,
-                 getZBuffer,
-                 this->MemoMultipass(viswin),
-                 this->Shadowing(windowID),
-                 this->DepthCueing(windowID),
-                 !imageBasedPlots.empty(),
-                 this->r_mgmt.needZBufferToCompositeEvenIn2D
-        );
-
-        SetCompositerBackground(imageCompositer, viswin);
-
-        //
-        // Set up the input image size and add it to compositer's input
-        //
-        int imageRows, imageCols;
-        theImage->GetSize(&imageCols, &imageRows);
-        imageCompositer->SetOutputImageSize(imageRows, imageCols);
-        imageCompositer->AddImageInput(theImage, 0, 0);
-        visitTimer->StopTimer(t1A, "Setting up background image");
-
-        // Dump the composited image when debugging.
-        if (dump_renders)
-            DumpImage(theImage, "after_OpaqueComposite");
-        //
-        // Parallel composite (via 1 stage `pipeline')
-        //
-        avtDataObject_p compositedImageAsDataObject;
-
-        // Some plots / DBs simply don't support decomposition.  In that case,
-        // we don't want to do image composition because only the root node
-        // will have any data.  If the plot utilizes transparency, we'll fade
-        // process 0's (correct) image by compositing, because process 0 will
-        // have the right image and everybody else will have a plain white BG.
-        if(OnlyRootNodeHasData(theImage))
-        {
-            int t1B = visitTimer->StartTimer();
-            debug3 << "Data are not decomposed.  Skipping opaque composite."
-                   << std::endl;
-            // Sometimes the other processors need the image too, e.g. in
-            // multipass rendering, or when image effects are enabled.
-            // Essentially any point later in this method with a data
-            // dependency on theImage.
-            if(imageCompositer->GetAllProcessorsNeedResult())
-            {
-                const int src_node = 0;
-                BroadcastImage(theImage,
-                               imageCompositer->GetShouldOutputZBuffer(),
-                               src_node);
-            }
-            CopyTo(compositedImageAsDataObject, theImage);
-            visitTimer->StopTimer(t1B, "Broadcasting image");
-        }
-        else
-        {
-            int t1B = visitTimer->StartTimer();
-            imageCompositer->Execute();
-            visitTimer->StopTimer(t1B, "Image compositer execute");
-            compositedImageAsDataObject = imageCompositer->GetOutput();
-        }
-
-        CallProgressCallback("NetworkManager", "Compositing", 1, 1);
-
-        // ************************************************************
-        // SECOND PASS - Translucent only
-        // ************************************************************
-
-        if (this->MemoMultipass(viswin))
-        {
-            int t1C = visitTimer->StartTimer();
-            avtImage_p tmp_img;
-            CopyTo(tmp_img, compositedImageAsDataObject);
-
-            compositedImageAsDataObject =
-                NetworkManager::RenderTranslucent(windowID, tmp_img);
-            visitTimer->StopTimer(t1C, "Translucent rendering");
-        }
-
-        //
-        // Do shadows if appropriate.
-        //
-        if (this->Shadowing(windowID))
-        {
-            int t1D = visitTimer->StartTimer();
-            this->RenderShadows(windowID, compositedImageAsDataObject);
-            visitTimer->StopTimer(t1D, "Adding shadows");
-        }
-
-        //
-        // Do depth cueing if appropriate.
-        //
-        if (this->DepthCueing(windowID))
-        {
-            int t1E = visitTimer->StartTimer();
-            this->RenderDepthCues(windowID, compositedImageAsDataObject);
-            visitTimer->StopTimer(t1E, "Adding depth cues");
-        }
-
-        //
-        // If the engine is doing more than just 3D annotations,
-        // post-process the composited image.
-        //
-        int t1F = visitTimer->StartTimer();
-        this->RenderPostProcess(imageBasedPlots, compositedImageAsDataObject,
-                                windowID);
-        visitTimer->StopTimer(t1F, "Render postprocessing step (often volume rendering)");
-
-        retval = compositedImageAsDataObject;
-        if (dump_renders)
-            DumpImage(retval, "after_AllComposites");
-        delete imageCompositer;
-        
-        this->RenderCleanup(windowID);
+        output = RenderInternal();
+        RenderCleanup();
     }
     CATCHALL
     {
-        // rethrow
+        RenderCleanup();
         RETHROW;
     }
     ENDTRY
 
     workingNet = origWorkingNet;
-    return retval;
+
+#ifdef NetworkManagerTIME
+    gettimeofday(&tv1, 0);
+    if (PAR_Rank() == 0)
+        cerr << "NetworkManager::Render " << elapsed(tv0, tv1) << endl;
+#endif
+    return output;
+}
+
+// ****************************************************************************
+//  Method: NetworkManager::RenderInternal
+//
+//  Purpose: do the actual rendering and compositing work. this was
+//          originally lumped together with setup/tear down. I factored
+//          it out so that the setup/tear down was not done twice when
+//          IceTNetworkManager called it.
+//
+//  Programmer:  Burlen Loring
+//  Creation:    Thu Sep  3 10:26:48 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+//
+avtDataObject_p
+NetworkManager::RenderInternal()
+{
+    CallInitializeProgressCallback(RenderingStages());
+
+    // ************************************************************
+    // pass 1a : opaque (and translucent geometry if serial)
+    // ************************************************************
+    avtImage_p pass = NetworkManager::RenderGeometry();
+
+    // ************************************************************
+    // pass 1b : shadow mapping
+    // ************************************************************
+    if (renderState.shadowMap)
+        NetworkManager::RenderShadows(pass);
+
+    // ************************************************************
+    // pass 1c : depth cues
+    // ************************************************************
+    if (renderState.depthCues)
+        NetworkManager::RenderDepthCues(pass);
+
+
+    // ************************************************************
+    // pass 2 : translucent geometry if parallel
+    // ************************************************************
+    if (renderState.transparencyInPass2)
+        pass = NetworkManager::RenderTranslucent(pass);
+
+    // ************************************************************
+    // pass 3 : 2d overlays
+    // ************************************************************
+    RenderPostProcess(pass);
+
+    avtDataObject_p output;
+    CopyTo(output, pass);
+
+    return output;
 }
 
 // ****************************************************************************
@@ -2985,7 +3024,14 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
 //    Eric Brugger, Fri Oct 28 10:45:26 PDT 2011
 //    Add a multi resolution display capability for AMR data.
 //
+//    Burlen Loring, Thu Aug 13 08:38:52 PDT 2015
+//    Added options for depth peeling
+//
+//    Burlen Loring, Sun Sep  6 08:44:26 PDT 2015
+//    Added option for ordered composting
+//
 // ****************************************************************************
+
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
                                     const std::string& extstr,
@@ -2998,6 +3044,15 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     viswinInfo.markedForDeletion = false;
+
+    SetWindowAttributes(viswinInfo, atts, extstr, vexts, ctName);
+}
+
+void
+NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
+    const WindowAttributes &atts, const std::string& extstr,
+    const double *vexts, const std::string& ctName)
+{
     VisWindow *viswin = viswinInfo.viswin;
     WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
     std::string &extentTypeString = viswinInfo.extentTypeString;
@@ -3010,7 +3065,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
         bool extsAreDifferent = false;
         static double curexts[6];
         viswin->GetBounds(curexts);
-        for (int i = 0; i < 6; i ++)
+        for (int i = 0; i < 6; ++i)
         {
             if (curexts[i] != (double) vexts[i])
             {
@@ -3072,39 +3127,32 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     viewAxisArray.SetFromViewAxisArrayAttributes(&viewAxisArrayAtts);
     viswin->SetViewAxisArray(viewAxisArray);
 
-    //
     // Set the color tables
-    //
     avtColorTables::Instance()->SetColorTables(atts.GetColorTables());
 
-    //
     // Set the lights.
-    //
     const LightList& lights = atts.GetLights();
     viswin->SetLightList(&lights);
 
+    const RenderingAttributes &renderAtts = atts.GetRenderAtts();
+
     // Set the specular properties.
-    viswin->SetSpecularProperties(atts.GetRenderAtts().GetSpecularFlag(),
-                                  atts.GetRenderAtts().GetSpecularCoeff(),
-                                  atts.GetRenderAtts().GetSpecularPower(),
-                                  atts.GetRenderAtts().GetSpecularColor());
+    viswin->SetSpecularProperties(renderAtts.GetSpecularFlag(),
+                                  renderAtts.GetSpecularCoeff(),
+                                  renderAtts.GetSpecularPower(),
+                                  renderAtts.GetSpecularColor());
 
     // Set the color texturing flag.
-    viswin->SetColorTexturingFlag(atts.GetRenderAtts().GetColorTexturingFlag());
+    viswin->SetColorTexturingFlag(renderAtts.GetColorTexturingFlag());
 
-    //
     // Set the background/foreground colors
-    //
-    viswin->SetBackgroundColor(atts.GetBackground()[0]/255.0,
-                               atts.GetBackground()[1]/255.0,
-                               atts.GetBackground()[2]/255.0);
-    viswin->SetForegroundColor(atts.GetForeground()[0]/255.0,
-                               atts.GetForeground()[1]/255.0,
-                               atts.GetForeground()[2]/255.0);
+    const unsigned char *bg = atts.GetBackground();
+    viswin->SetBackgroundColor(bg[0]/255.0, bg[1]/255.0, bg[2]/255.0);
 
-    //
+    const unsigned char *fg = atts.GetForeground();
+    viswin->SetForegroundColor(fg[0]/255.0, fg[1]/255.0, fg[2]/255.0);
+
     // Set the background mode and gradient colors if necessary
-    //
     // Yes, these are WindowAttributes, but this particular attribute should
     // match the annotation attribute values; it is hard to make the types
     // agree as the classes are autogenerated.
@@ -3114,40 +3162,76 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     viswin->SetBackgroundMode(bgMode);
     if (bgMode == AnnotationAttributes::Gradient)
     {
-       viswin->SetGradientBackgroundColors(atts.GetGradientBackgroundStyle(),
-           atts.GetGradBG1()[0],
-           atts.GetGradBG1()[1],
-           atts.GetGradBG1()[2],
-           atts.GetGradBG2()[0],
-           atts.GetGradBG2()[1],
-           atts.GetGradBG2()[2]);
+        const double *gbg1 = atts.GetGradBG1();
+        const double *gbg2 = atts.GetGradBG2();
+        viswin->SetGradientBackgroundColors(atts.GetGradientBackgroundStyle(),
+           gbg1[0], gbg1[1], gbg1[2], gbg2[0], gbg2[1], gbg2[2]);
     }
     else if(bgm >= AnnotationAttributes::Image)
     {
-       viswin->SetBackgroundImage(atts.GetBackgroundImage(), 
+       viswin->SetBackgroundImage(atts.GetBackgroundImage(),
            atts.GetImageRepeatX(), atts.GetImageRepeatY());
     }
 
-    if (viswin->GetAntialiasing() != atts.GetRenderAtts().GetAntialiasing())
-       viswin->SetAntialiasing(atts.GetRenderAtts().GetAntialiasing());
-    if (viswin->GetMultiresolutionMode() != atts.GetRenderAtts().GetMultiresolutionMode())
-       viswin->SetMultiresolutionMode(atts.GetRenderAtts().GetMultiresolutionMode());
-    if (viswin->GetMultiresolutionCellSize() != atts.GetRenderAtts().GetMultiresolutionCellSize())
-       viswin->SetMultiresolutionCellSize(atts.GetRenderAtts().GetMultiresolutionCellSize());
-    if (viswin->GetSurfaceRepresentation() != atts.GetRenderAtts().GetGeometryRepresentation())
-       viswin->SetSurfaceRepresentation(atts.GetRenderAtts().GetGeometryRepresentation());
-    viswin->SetDisplayListMode(0);  // never
+    if (viswin->GetAntialiasing() != renderAtts.GetAntialiasing())
+        viswin->SetAntialiasing(renderAtts.GetAntialiasing());
+
+    if (viswin->GetOrderComposite() != renderAtts.GetOrderComposite())
+        viswin->SetOrderComposite(renderAtts.GetOrderComposite());
+
+    if (viswin->GetDepthCompositeThreads() !=
+        static_cast<size_t>(renderAtts.GetDepthCompositeThreads()))
+        viswin->SetDepthCompositeThreads(renderAtts.GetDepthCompositeThreads());
+
+    if (viswin->GetAlphaCompositeThreads() !=
+        static_cast<size_t>(renderAtts.GetAlphaCompositeThreads()))
+        viswin->SetAlphaCompositeThreads(renderAtts.GetAlphaCompositeThreads());
+
+    if (viswin->GetDepthCompositeBlocking() !=
+        static_cast<size_t>(renderAtts.GetDepthCompositeBlocking()))
+        viswin->SetDepthCompositeBlocking(renderAtts.GetDepthCompositeBlocking());
+
+    if (viswin->GetAlphaCompositeBlocking() !=
+        static_cast<size_t>(renderAtts.GetAlphaCompositeBlocking()))
+        viswin->SetAlphaCompositeBlocking(renderAtts.GetAlphaCompositeBlocking());
+
+    if (viswin->GetDepthPeeling() != renderAtts.GetDepthPeeling())
+        viswin->SetDepthPeeling(renderAtts.GetDepthPeeling());
+
+    if (viswin->GetOcclusionRatio() != renderAtts.GetOcclusionRatio())
+        viswin->SetOcclusionRatio(renderAtts.GetOcclusionRatio());
+
+    if (viswin->GetNumberOfPeels() != renderAtts.GetNumberOfPeels())
+        viswin->SetNumberOfPeels(renderAtts.GetNumberOfPeels());
+
+    if (viswin->GetMultiresolutionMode() != renderAtts.GetMultiresolutionMode())
+        viswin->SetMultiresolutionMode(renderAtts.GetMultiresolutionMode());
+
+    if (viswin->GetMultiresolutionCellSize() != renderAtts.GetMultiresolutionCellSize())
+        viswin->SetMultiresolutionCellSize(renderAtts.GetMultiresolutionCellSize());
+
+    if (viswin->GetSurfaceRepresentation() != renderAtts.GetGeometryRepresentation())
+        viswin->SetSurfaceRepresentation(renderAtts.GetGeometryRepresentation());
+
+    // TODO -- why??
+    viswin->SetDisplayListMode(1);  // never
 
     // handle stereo rendering settings
-    if (viswin->GetStereo() != atts.GetRenderAtts().GetStereoRendering() ||
-        viswin->GetStereoType() != atts.GetRenderAtts().GetStereoType())
-        viswin->SetStereoRendering(atts.GetRenderAtts().GetStereoRendering(),
-                                   atts.GetRenderAtts().GetStereoType());
+    int stereo = renderAtts.GetStereoRendering();
+    int stereoType = renderAtts.GetStereoType();
+    if ((viswin->GetStereo() != stereo) || (viswin->GetStereoType() != stereoType))
+        viswin->SetStereoRendering(stereo, stereoType);
+
+    // update compositer thread pool size and blocking parameters
+    zcomp->SetThreadPoolSize(renderAtts.GetDepthCompositeThreads());
+    zcomp->SetBlocking(renderAtts.GetDepthCompositeBlocking());
+
+    acomp->SetThreadPoolSize(renderAtts.GetAlphaCompositeThreads());
+    acomp->SetBlocking(renderAtts.GetAlphaCompositeBlocking());
 
     windowAttributes = atts;
     extentTypeString = extstr;
-    changedCtName    = ctName;
-
+    changedCtName = ctName;
 }
 
 // ****************************************************************************
@@ -3159,8 +3243,8 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //    cues is influenced by the presence of plots. Again, only processor 0
 //    does any of this work.
 //
-//  Programmer:  Mark C. Miller 
-//  Creation:    Tuesday, Janurary 18, 2005 
+//  Programmer:  Mark C. Miller
+//  Creation:    Tuesday, Janurary 18, 2005
 //
 //  Modifications:
 //
@@ -3170,46 +3254,40 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //    Brad Whitlock, Tue Mar 13 11:36:55 PDT 2007
 //    Updated due to code generation changes.
 //
+//    Burlen Loring, Wed Sep  2 14:00:58 PDT 2015
+//    Make use of render state.
+//
 // ****************************************************************************
 
 void
-NetworkManager::UpdateVisualCues(int windowID)
+NetworkManager::UpdateVisualCues()
 {
-    if (viswinMap.find(windowID) == viswinMap.end())
-    {
-        char tmpStr[256];
-        SNPRINTF(tmpStr, sizeof(tmpStr), "Attempt to render on invalid window id=%d", windowID);
-        EXCEPTION1(ImproperUseException, tmpStr);
-    }
-
-    EngineVisWinInfo &viswinInfo = viswinMap[windowID];
-    viswinInfo.markedForDeletion = false;
-    VisWindow *viswin = viswinInfo.viswin;
-    bool &visualCuesNeedUpdate = viswinInfo.visualCuesNeedUpdate;
-    VisualCueList &visualCueList = viswinInfo.visualCueList;
-
-    if (visualCuesNeedUpdate == false)
+    bool &needUpdate = renderState.windowInfo->visualCuesNeedUpdate;
+    if (needUpdate == false)
         return;
 
-    viswin->ClearPickPoints();
-    viswin->ClearRefLines();
-    for (int i = 0; i < visualCueList.GetNumCues(); i++)
+    renderState.window->ClearPickPoints();
+    renderState.window->ClearRefLines();
+
+    VisualCueList &visualCueList = renderState.windowInfo->visualCueList;
+    int nCues =  visualCueList.GetNumCues();
+    for (int i = 0; i < nCues; ++i)
     {
         const VisualCueInfo& cue = visualCueList.GetCues(i);
         switch (cue.GetCueType())
         {
             case VisualCueInfo::PickPoint:
-                viswin->QueryIsValid(&cue, NULL);
+                renderState.window->QueryIsValid(&cue, NULL);
                 break;
             case VisualCueInfo::RefLine:
-                viswin->QueryIsValid(NULL, &cue);
+                renderState.window->QueryIsValid(NULL, &cue);
                 break;
             default:
                 break;
         }
     }
 
-    visualCuesNeedUpdate = false;
+    needUpdate = false;
 }
 
 // ****************************************************************************
@@ -3222,8 +3300,8 @@ NetworkManager::UpdateVisualCues(int windowID)
 //    in non-screen-capture mode, then the engine has to render all annotations.
 //    Regardless, only processor 0 does annotation rendering work.
 //
-//  Programmer:  Mark C. Miller 
-//  Creation:    15Jul03 
+//  Programmer:  Mark C. Miller
+//  Creation:    15Jul03
 //
 //  Modifications:
 //    Mark C. Miller, Mon Mar 29 14:36:46 PST 2004
@@ -3262,6 +3340,11 @@ NetworkManager::UpdateVisualCues(int windowID)
 //    Kathleen Biagas, Wed Sep  2 09:06:41 PDT 2015
 //    Added 3D Line annotations.
 //
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    factor work into private method used during rendering which can
+//    use some previously cached values rather than recompute them.
+//    I also fixed the indentation.
+//
 // ****************************************************************************
 
 void
@@ -3274,77 +3357,78 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     viswinInfo.markedForDeletion = false;
-    VisWindow *viswin = viswinInfo.viswin;
+
+    SetAnnotationAttributes(viswinInfo, atts, aolist, visCues, fns, annotMode);
+}
+
+void
+NetworkManager::SetAnnotationAttributes(EngineVisWinInfo &viswinInfo,
+     const AnnotationAttributes &atts, const AnnotationObjectList &aolist,
+     const VisualCueList &visCues, const int *fns, int annotMode)
+{
     AnnotationAttributes &annotationAttributes = viswinInfo.annotationAttributes;
     AnnotationObjectList &annotationObjectList = viswinInfo.annotationObjectList;
+
     bool &visualCuesNeedUpdate = viswinInfo.visualCuesNeedUpdate;
     VisualCueList &visualCueList = viswinInfo.visualCueList;
     int *const &frameAndState = viswinInfo.frameAndState;
 
-    int i;
+    if (PAR_Rank() == 0)
+    {
+        // copy the attributes and disable all non-3D attributes
+        AnnotationAttributes newAtts = atts;
 
-#ifdef PARALLEL
-   if (PAR_Rank() == 0)
-#endif
-   {
-      // copy the attributes and disable all non-3D attributes 
-      AnnotationAttributes newAtts = atts;
+        VisWindow *viswin = viswinInfo.viswin;
+        switch (annotMode)
+        {
+            case 0: // no annotations
+                newAtts.SetUserInfoFlag(false);
+                newAtts.SetDatabaseInfoFlag(false);
+                newAtts.SetLegendInfoFlag(false);
+                newAtts.GetAxes3D().SetTriadFlag(false);
+                newAtts.GetAxes3D().SetBboxFlag(false);
+                newAtts.GetAxes3D().SetVisible(false);
+                newAtts.GetAxes2D().SetVisible(false);
+                viswin->DeleteAllAnnotationObjects();
+                break;
 
-      switch (annotMode)
-      {
-          case 0: // no annotations
+            case 1: // 3D annotations only
+                newAtts.SetUserInfoFlag(false);
+                newAtts.SetDatabaseInfoFlag(false);
+                newAtts.SetLegendInfoFlag(false);
+                newAtts.GetAxes3D().SetTriadFlag(false);
+                newAtts.GetAxes2D().SetVisible(false);
+                viswin->DeleteAllAnnotationObjects();
+                { // Add back in the 3D annotation objects.
+                AnnotationObjectList aolist2;
+                for(int aIndex = 0; aIndex < aolist.GetNumAnnotations(); ++aIndex)
+                {
+                    if(aolist[aIndex].GetObjectType() == AnnotationObject::Text3D)
+                        aolist2.AddAnnotation(aolist[aIndex]);
+                    else if(aolist[aIndex].GetObjectType() == AnnotationObject::Line3D)
+                        aolist2.AddAnnotation(aolist[aIndex]);
+                }
+                viswin->CreateAnnotationObjectsFromList(aolist2);
+                }
+                break;
 
-              newAtts.SetUserInfoFlag(false);
-              newAtts.SetDatabaseInfoFlag(false);
-              newAtts.SetLegendInfoFlag(false);
-              newAtts.GetAxes3D().SetTriadFlag(false);
-              newAtts.GetAxes3D().SetBboxFlag(false);
-              newAtts.GetAxes3D().SetVisible(false);
-              newAtts.GetAxes2D().SetVisible(false);
-              viswin->DeleteAllAnnotationObjects();
-              break;
-
-          case 1: // 3D annotations only
-
-              newAtts.SetUserInfoFlag(false);
-              newAtts.SetDatabaseInfoFlag(false);
-              newAtts.SetLegendInfoFlag(false);
-              newAtts.GetAxes3D().SetTriadFlag(false);
-              newAtts.GetAxes2D().SetVisible(false);
-              viswin->DeleteAllAnnotationObjects();
-              { // Add back in the 3D annotation objects.
-                  AnnotationObjectList aolist2;
-                  for(int aIndex = 0; aIndex < aolist.GetNumAnnotations(); ++aIndex)
-                  {
-                      if(aolist[aIndex].GetObjectType() == AnnotationObject::Text3D)
-                          aolist2.AddAnnotation(aolist[aIndex]);
-                      else if(aolist[aIndex].GetObjectType() == AnnotationObject::Line3D)
-                          aolist2.AddAnnotation(aolist[aIndex]);
-                  }
-                  viswin->CreateAnnotationObjectsFromList(aolist2);
-              }
-              break;
-
-          case 2: // all annotations
-
-              viswin->DeleteAllAnnotationObjects();
-              viswin->CreateAnnotationObjectsFromList(aolist);
-              viswin->SetFrameAndState(fns[0],
+            case 2: // all annotations
+                viswin->DeleteAllAnnotationObjects();
+                viswin->CreateAnnotationObjectsFromList(aolist);
+                viswin->SetFrameAndState(fns[0],
                                        fns[1],fns[2],fns[3],
                                        fns[4],fns[5],fns[6]);
-              break;
+                break;
 
-          default:
+            default:
+                { EXCEPTION0(ImproperUseException); }
+                break;
+        }
 
-              EXCEPTION0(ImproperUseException);
-              break;
-      }
-
-      viswin->SetAnnotationAtts(&newAtts);
-
+        viswin->SetAnnotationAtts(&newAtts);
    }
 
-   // defer processing of visual cues until rendering time 
+   // defer processing of visual cues until rendering time
    if (visCues != visualCueList)
    {
        visualCuesNeedUpdate = true;
@@ -3353,9 +3437,8 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 
    annotationAttributes = atts;
    annotationObjectList = aolist;
-   for (i = 0; i < 7; i++)
+   for (int i = 0; i < 7; ++i)
        frameAndState[i] = fns[i];
-
 }
 
 // ****************************************************************************
@@ -3363,9 +3446,9 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 //
 //  Purpose:
 //    Set the zone numbers flag in data specification so that original cell
-//    numbers are propagated through the pipeline.  
+//    numbers are propagated through the pipeline.
 //
-//  Programmer:  Kathleen Bonnell 
+//  Programmer:  Kathleen Bonnell
 //  Creation:    November 19, 2001
 //
 //  Modifications:
@@ -3381,7 +3464,7 @@ NetworkManager::StartPickMode(const bool forZones)
 {
     if (forZones)
         requireOriginalCells = true;
-    else 
+    else
         requireOriginalNodes = true;
     inQueryMode = true;
 }
@@ -3393,7 +3476,7 @@ NetworkManager::StartPickMode(const bool forZones)
 //    Set the zone numbers flag in data specification so that original cell
 //    numbers will no longer be propagated through the pipeline.
 //
-//  Programmer:  Kathleen Bonnell 
+//  Programmer:  Kathleen Bonnell
 //  Creation:    November 19, 2001
 //
 //  Modifications:
@@ -3456,84 +3539,84 @@ NetworkManager::StopQueryMode(void)
 //    id         The network to use.
 //    pa         The pick attributes.
 //
-//  Programmer:  Kathleen Bonnell 
+//  Programmer:  Kathleen Bonnell
 //  Creation:    November 20, 2001
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //    Use LocateCellQuery and PickQuery, instead of Query call to database.
 //    This allows correct distribution of work in parallel.
 //
-//    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003   
-//    Make call to LocateCellQuery unconditional.  Put all code in 
-//    one try-catch block. 
-//    
-//    Kathleen Bonnell, Wed Jun 25 13:45:04 PDT 2003  
-//    Reflect new pickAtts naming convention:  ZoneNumber is now ElementNumber. 
+//    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003
+//    Make call to LocateCellQuery unconditional.  Put all code in
+//    one try-catch block.
 //
-//    Kathleen Bonnell, Fri Oct 10 10:44:52 PDT 2003 
+//    Kathleen Bonnell, Wed Jun 25 13:45:04 PDT 2003
+//    Reflect new pickAtts naming convention:  ZoneNumber is now ElementNumber.
+//
+//    Kathleen Bonnell, Fri Oct 10 10:44:52 PDT 2003
 //    Set ElementType in QueryAtts, SetNodePoint in PickAtts from QueryAtts.
 //
-//    Kathleen Bonnell, Wed Nov  5 17:04:53 PST 2003 
+//    Kathleen Bonnell, Wed Nov  5 17:04:53 PST 2003
 //    avtLocateCellQuery now uses PickAtts internally instead of QueryAtts.
 //    QueryAtts are created only to fulfill the api requirements of the
 //    PerformQuery method.
 //
-//    Kathleen Bonnell, Tue Dec  2 18:08:34 PST 2003 
-//    Don't use avtLocateCellQuery if domain and element are already provided. 
+//    Kathleen Bonnell, Tue Dec  2 18:08:34 PST 2003
+//    Don't use avtLocateCellQuery if domain and element are already provided.
 //
-//    Kathleen Bonnell, Tue Dec  2 17:36:44 PST 2003 
+//    Kathleen Bonnell, Tue Dec  2 17:36:44 PST 2003
 //    Use a special query if the pick type is Curve.
-//    
+//
 //    Hank Childs, Mon Jan  5 16:39:06 PST 2004
 //    Make sure the network hasn't already been cleared.
 //
-//    Kathleen Bonnell, Mon Mar  8 08:01:48 PST 2004 
-//    Send the SILRestriction's UseSet to PickQuery if it is available. 
+//    Kathleen Bonnell, Mon Mar  8 08:01:48 PST 2004
+//    Send the SILRestriction's UseSet to PickQuery if it is available.
 //    Also send the Transform.
 //
-//    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004 
+//    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004
 //    Send the SILRestriction to PickQuery (insted of UseSet).
 //    If LocateCellQuery fails, set error condition in PickAtts.
 //
-//    Kathleen Bonnell, Wed May  5 13:07:12 PDT 2004 
+//    Kathleen Bonnell, Wed May  5 13:07:12 PDT 2004
 //    Moved error-setting code to PickQuery, as it causes problems in parallel.
 //
 //    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004
-//    Add support for new pick classes. 
+//    Add support for new pick classes.
 //
-//    Kathleen Bonnell, Thu Aug 26 11:18:47 PDT 2004 
-//    Skip LocateQuery if picking on 2d boundary or contour plots. 
+//    Kathleen Bonnell, Thu Aug 26 11:18:47 PDT 2004
+//    Skip LocateQuery if picking on 2d boundary or contour plots.
 //
-//    Kathleen Bonnell, Mon Aug 30 17:51:56 PDT 2004 
+//    Kathleen Bonnell, Mon Aug 30 17:51:56 PDT 2004
 //    Send SkipLocate flag to pick query.
 //
-//    Kathleen Bonnell, Thu Oct  7 10:29:36 PDT 2004 
-//    Added timing code for each PerformQuery. 
+//    Kathleen Bonnell, Thu Oct  7 10:29:36 PDT 2004
+//    Added timing code for each PerformQuery.
 //
-//    Kathleen Bonnell, Thu Oct 21 15:55:46 PDT 2004 
-//    Added support for picking on glyphed data. 
+//    Kathleen Bonnell, Thu Oct 21 15:55:46 PDT 2004
+//    Added support for picking on glyphed data.
 //
-//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004 
-//    Enusure that GlyphPick is sending the correct domain to Pick query. 
+//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
+//    Enusure that GlyphPick is sending the correct domain to Pick query.
 //
 //    Kathleen Bonnell, Thu Nov  4 15:18:15 PST 2004
 //    Allow the 'PickQuery' portion to be skipped completely if no
-//    intersection was found. 
+//    intersection was found.
 //
-//    Kathleen Bonnell, Tue Nov  9 10:42:51 PST 2004 
-//    Rework parallel code for GlyphPicking. 
+//    Kathleen Bonnell, Tue Nov  9 10:42:51 PST 2004
+//    Rework parallel code for GlyphPicking.
 //
-//    Kathleen Bonnell, Thu Dec  2 12:50:41 PST 2004 
+//    Kathleen Bonnell, Thu Dec  2 12:50:41 PST 2004
 //    Make skipLocate dependent upon NeedBoundarySurfaces instead of
 //    TopologicalDimension, because during SR mode the DataAtts may get
-//    overwritten with incorrect values. 
+//    overwritten with incorrect values.
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Modified to use specific window id
 //
-//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
-//    Set pickatts matSelected flag from info in avtDataAttributes. 
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005
+//    Set pickatts matSelected flag from info in avtDataAttributes.
 //
 //    Hank Childs, Sun Mar  6 11:02:21 PST 2005
 //    Added even more obscure way of determining if plot used boundary
@@ -3543,35 +3626,35 @@ NetworkManager::StopQueryMode(void)
 //
 //    Kathleen Bonnell, Wed May 11 17:14:03 PDT 2005
 //    Use EEF output instead of DB output for input to Pick Query. Added
-//    UnifyMaximumValue call to ensure all processors know if they should 
+//    UnifyMaximumValue call to ensure all processors know if they should
 //    perform an ActualCoords query.
 //
-//    Kathleen Bonnell, Tue Jun 28 10:57:39 PDT 2005 
+//    Kathleen Bonnell, Tue Jun 28 10:57:39 PDT 2005
 //    Re-add test for topological dimension of 1 to skipLocate test. Retrieve
 //    ghost type from queryInputAtts and set in PickAtts.
 //
-//    Kathleen Bonnell, Wed Nov 16 11:15:06 PST 2005 
+//    Kathleen Bonnell, Wed Nov 16 11:15:06 PST 2005
 //    Ensure that Pick's input has the same DataAttributes as the plot
 //    being picked.
 //
 //    Kathleen Bonnell, Thu Nov 17 13:39:42 PST 2005
-//    Back-out yesterdays changes, did not work well.  
+//    Back-out yesterdays changes, did not work well.
 //    Remove skipLocate test of pipeline-DataSpec-NeedBoundarySurfaces, and
 //    dataatts-topodim and dataatts-spat dim.  Those values unreliable
 //    depending on which plots follow the picked-plot in the pipeline. Instead
-//    retrieve the 'linesData' flag from PickAtts to determine skipLocate. 
+//    retrieve the 'linesData' flag from PickAtts to determine skipLocate.
 //
 //    Kathleen Bonnell, Tue Jan  3 15:06:23 PST 2006
 //    Set an error message in PickAttributes if GlyphPick fails.
 //
 //    Kathleen Bonnell, Wed Jun 14 16:41:03 PDT 2006
-//    Send silr and pipeline Index (via QueryAtts) to LocateQuery. 
+//    Send silr and pipeline Index (via QueryAtts) to LocateQuery.
 //
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added bool for leftEye to Render calls.
 //
-//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
-//    Fix memory leak associated with silr->MakeAttributes(). 
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007
+//    Fix memory leak associated with silr->MakeAttributes().
 //
 //    Hank Childs, Fri Feb 15 13:19:51 PST 2008
 //    Add else statement to make Klocwork happy.  Also make sure we don't
@@ -3585,7 +3668,7 @@ NetworkManager::StopQueryMode(void)
 //    net node list.
 //
 // ****************************************************************************
- 
+
 void
 NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 {
@@ -3609,7 +3692,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
         EXCEPTION0(ImproperUseException);
     }
 
-    avtDataObject_p queryInput = 
+    avtDataObject_p queryInput =
         networkCache[id]->GetPlot()->GetIntermediateDataObject();
 
     if (*queryInput == NULL)
@@ -3636,17 +3719,17 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             Render(true, pids, false, 0, winId, true);
         }
         int d = -1, e = -1;
-        double t = +FLT_MAX; 
+        double t = +FLT_MAX;
         bool fc = false;
         networkCache[id]->GetActor(NULL)->MakePickable();
         //
-        // Retrieve the necessary information from the renderer on the 
-        // VisWindow. 
+        // Retrieve the necessary information from the renderer on the
+        // VisWindow.
         //
         VisWindow *viswin = viswinMap[winId].viswin;
         viswin->GlyphPick(pa->GetRayPoint1(), pa->GetRayPoint2(), d, e, fc, t, false);
         //
-        // Make sure all processors are on the same page. 
+        // Make sure all processors are on the same page.
         //
         intVector domElFC;
         intVector odomElFC;
@@ -3656,7 +3739,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             odomElFC.push_back(e);
             odomElFC.push_back(int(fc));
         }
-        else 
+        else
         {
             odomElFC.push_back(-1);
             odomElFC.push_back(-1);
@@ -3672,7 +3755,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             pa->SetCellPoint(dummyPt);
             if (domElFC[2])
                 pa->SetPickType(PickAttributes::DomainZone);
-            else 
+            else
                 pa->SetPickType(PickAttributes::DomainNode);
         }
         else
@@ -3680,7 +3763,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             debug5 << "VisWin GlyphPick failed" << endl;
             networkCache[id]->GetActor(NULL)->MakeUnPickable();
             pa->SetError(true);
-            pa->SetErrorMessage("Pick could not find a valid intersection."); 
+            pa->SetErrorMessage("Pick could not find a valid intersection.");
             return;
         }
     }
@@ -3722,13 +3805,13 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     lQ->SetPickAtts(pa);
                     if (*silr != NULL)
                     {
-                        const SILRestrictionAttributes *silAtts = 
+                        const SILRestrictionAttributes *silAtts =
                              silr->MakeAttributes();
                         lQ->SetSILRestriction(silAtts);
                         delete silAtts;
                     }
                     int queryTimer = visitTimer->StartTimer();
-                    lQ->PerformQuery(&qa); 
+                    lQ->PerformQuery(&qa);
                     visitTimer->StopTimer(queryTimer, lQ->GetType());
                     *pa = *(lQ->GetPickAtts());
                     delete lQ;
@@ -3745,13 +3828,13 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     lQ->SetPickAtts(pa);
                     if (*silr != NULL)
                     {
-                        const SILRestrictionAttributes *silAtts = 
+                        const SILRestrictionAttributes *silAtts =
                              silr->MakeAttributes();
                         lQ->SetSILRestriction(silAtts);
                         delete silAtts;
                     }
                     int queryTimer = visitTimer->StartTimer();
-                    lQ->PerformQuery(&qa); 
+                    lQ->PerformQuery(&qa);
                     visitTimer->StopTimer(queryTimer, lQ->GetType());
                     *pa = *(lQ->GetPickAtts());
                     delete lQ;
@@ -3785,10 +3868,10 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                 {
                     pQ->SetTransform(queryInputAtts.GetTransform());
                 }
-            
+
                 if (*silr != NULL)
                 {
-                    const SILRestrictionAttributes *silAtts = 
+                    const SILRestrictionAttributes *silAtts =
                              silr->MakeAttributes();
                     pQ->SetSILRestriction(silAtts);
                     delete silAtts;
@@ -3799,14 +3882,14 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                 pQ->SetPickAtts(pa);
                 pQ->SetSkippedLocate(skipLocate);
                 int queryTimer = visitTimer->StartTimer();
-                pQ->PerformQuery(&qa); 
+                pQ->PerformQuery(&qa);
                 visitTimer->StopTimer(queryTimer, pQ->GetType());
                 *pa = *(pQ->GetPickAtts());
             }
             else
             {
                 pa->SetError(true);
-                pa->SetErrorMessage("Chosen pick did not intersect surface."); 
+                pa->SetErrorMessage("Chosen pick did not intersect surface.");
             }
 
             delete pQ;
@@ -3833,13 +3916,13 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                 }
             }
         }
-        else 
+        else
         {
             cpQ = new avtCurvePickQuery;
             cpQ->SetInput(queryInput);
             cpQ->SetPickAtts(pa);
             int queryTimer = visitTimer->StartTimer();
-            cpQ->PerformQuery(&qa); 
+            cpQ->PerformQuery(&qa);
             visitTimer->StopTimer(queryTimer, cpQ->GetType());
             *pa = *(cpQ->GetPickAtts());
             delete cpQ;
@@ -3868,36 +3951,36 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 //  Method:  Network::Query
 //
 //  Purpose:
-//    Performs a query on the database. 
+//    Performs a query on the database.
 //
 //  Arguments:
 //    id         The network to use.
-//    queryname  The name of the query to perform. 
+//    queryname  The name of the query to perform.
 //
 //  Programmer:  Kathleen Bonnell
 //  Creation:    September 16, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002   
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //    Removed unnecessary debug, cerr statements.  Added Exception if
 //    query input could not be retrieved.
 //
-//    Kathleen Bonnell, Mon Nov 18 09:42:12 PST 2002 
-//    Add Eulerian query. 
-//    
+//    Kathleen Bonnell, Mon Nov 18 09:42:12 PST 2002
+//    Add Eulerian query.
+//
 //    Hank Childs, Tue Mar 18 21:36:26 PST 2003
 //    Added Total Revolved Surface Area query.
 //
 //    Jeremy Meredith, Sat Apr 12 11:31:04 PDT 2003
 //    Added compactness queries.
 //
-//    Kathleen Bonnell, Wed Jul 23 15:34:11 PDT 2003 
-//    Add Variable query. 
+//    Kathleen Bonnell, Wed Jul 23 15:34:11 PDT 2003
+//    Add Variable query.
 //
 //    Hank Childs, Thu Oct  2 09:47:48 PDT 2003
 //    Allow queries to involve multiple networks.  Add L2Norm query, more.
 //
-//    Kathleen Bonnell, Wed Oct 29 16:06:23 PST 2003 
+//    Kathleen Bonnell, Wed Oct 29 16:06:23 PST 2003
 //    Add PlotMinMax query.
 //
 //    Hank Childs, Mon Jan  5 16:39:06 PST 2004
@@ -3906,30 +3989,30 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 //    Hank Childs, Tue Feb  3 17:07:25 PST 2004
 //    Added variable summation query.
 //
-//    Kathleen Bonnell, Tue Feb  3 17:43:12 PST 2004 
-//    Renamed PlotMinMax query to simply MinMaxQuery. 
+//    Kathleen Bonnell, Tue Feb  3 17:43:12 PST 2004
+//    Renamed PlotMinMax query to simply MinMaxQuery.
 //
-//    Kathleen Bonnell, Fri Feb 20 08:48:50 PST 2004 
-//    Added NumNodes and NumZones. 
+//    Kathleen Bonnell, Fri Feb 20 08:48:50 PST 2004
+//    Added NumNodes and NumZones.
 //
-//    Kathleen Bonnell, Fri Feb 20 16:56:32 PST 2004 
+//    Kathleen Bonnell, Fri Feb 20 16:56:32 PST 2004
 //    Set QueryAtts' PipeIndex so that original data queries can be
-//    load balanced. 
+//    load balanced.
 //
-//    Kathleen Bonnell, Tue Mar 23 18:00:29 PST 2004 
-//    Delay setting of PipeIndex until the networkIds have been verified. 
+//    Kathleen Bonnell, Tue Mar 23 18:00:29 PST 2004
+//    Delay setting of PipeIndex until the networkIds have been verified.
 //
-//    Kathleen Bonnell, Tue Mar 30 15:11:07 PST 2004 
-//    Moved instantiation of individual queries to avtQueryFactory. 
+//    Kathleen Bonnell, Tue Mar 30 15:11:07 PST 2004
+//    Moved instantiation of individual queries to avtQueryFactory.
 //    Retrieve current SIL and send to query.
 //
-//    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004 
+//    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004
 //    Send the SILRestriction to query (insted of UseSet).
 //
-//    Kathleen Bonnell, Thu Oct  7 10:29:36 PDT 2004 
-//    Added timing code for each PerformQuery. 
+//    Kathleen Bonnell, Thu Oct  7 10:29:36 PDT 2004
+//    Added timing code for each PerformQuery.
 //
-//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007
 //    Fix memory leak associated with silr->MakeAttributes().
 //
 //    Hank Childs, Fri Feb 15 13:13:21 PST 2008
@@ -3937,6 +4020,10 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
+//
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    report the details of exceptions
+//
 // ****************************************************************************
 
 void
@@ -3948,30 +4035,29 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
         int id = ids[i];
         if (!ValidNetworkId(id))
         {
-            EXCEPTION0(ImproperUseException);
+            EXCEPTION1(ImproperUseException, "Invalid network id");
         }
-     
+
         if (networkCache[id] == NULL)
         {
-            debug1 << "Asked to query a network that has already been cleared."
-                   << endl;
-            EXCEPTION0(ImproperUseException);
+            EXCEPTION1(ImproperUseException,
+                "Asked to query a network that has already been cleared.");
         }
 
         if (id != networkCache[id]->GetNetID())
         {
-            debug1 << "Internal error: network at position[" << id << "] "
+            ostringstream oss;
+            oss << "Internal error: network at position[" << id << "] "
                    << "does not have same id (" << networkCache[id]->GetNetID()
-                   << ")" << endl;
-            EXCEPTION0(ImproperUseException);
+                   << ")";
+            EXCEPTION1(ImproperUseException, oss.str().c_str());
         }
 
-        avtDataObject_p queryInput = 
+        avtDataObject_p queryInput =
             networkCache[id]->GetPlot()->GetIntermediateDataObject();
 
         if (*queryInput == NULL)
         {
-            debug1 << "Could not retrieve query input." << endl;
             EXCEPTION0(NoInputException);
         }
         queryInputs.push_back(queryInput);
@@ -3980,7 +4066,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
     qa->SetPipeIndex(networkCache[ids[0]]->GetContract()->GetPipelineIndex());
     std::string queryName = qa->GetName();
     avtDataObjectQuery *query = NULL;
-    avtDataObject_p queryInput; 
+    avtDataObject_p queryInput;
 
     TRY
     {
@@ -3992,7 +4078,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
             //
             // For now, multiple input queries need to be instantiated here.
             //
-            if (queryName == "L2Norm Between Curves") 
+            if (queryName == "L2Norm Between Curves")
 
             {
                 avtL2NormBetweenCurvesQuery *q = new avtL2NormBetweenCurvesQuery();
@@ -4000,7 +4086,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
                 q->SetNthInput(queryInputs[1], 1);
                 query = q;
             }
-            else if (queryName == "Area Between Curves") 
+            else if (queryName == "Area Between Curves")
             {
                 avtAreaBetweenCurvesQuery *q = new avtAreaBetweenCurvesQuery();
                 q->SetNthInput(queryInputs[0], 0);
@@ -4011,11 +4097,11 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 
         if (query != NULL)
         {
-            avtSILRestriction_p silr = 
+            avtSILRestriction_p silr =
                networkCache[ids[0]]->GetDataSpec()->GetRestriction();
             if (*silr != NULL)
             {
-                const SILRestrictionAttributes *silAtts = 
+                const SILRestrictionAttributes *silAtts =
                              silr->MakeAttributes();
                 query->SetSILRestriction(silAtts);
                 delete silAtts;
@@ -4029,7 +4115,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
             //
             if (!query->OriginalData())
                 queryInput = queryInputs[0];
-            else 
+            else
                 queryInput = networkCache[ids[0]]->GetNetDB()->GetOutput();
 
             query->SetInput(queryInput);
@@ -4043,8 +4129,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
     }
     CATCHALL
     {
-        if (query != NULL)
-            delete query;
+        delete query;
         RETHROW;
     }
     ENDTRY
@@ -4093,7 +4178,7 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
         {
             EXCEPTION0(ImproperUseException);
         }
- 
+
         if (networkCache[id] == NULL)
         {
             debug1 << mName << "Asked to construct a named selection from a network "
@@ -4379,7 +4464,7 @@ NetworkManager::ConstructDataBinning(int id, ConstructDataBinningAttributes *att
     {
         EXCEPTION0(ImproperUseException);
     }
- 
+
     if (networkCache[id] == NULL)
     {
         debug1 << "Asked to construct a DataBinning from a network that has already "
@@ -4395,7 +4480,7 @@ NetworkManager::ConstructDataBinning(int id, ConstructDataBinningAttributes *att
         EXCEPTION0(ImproperUseException);
     }
 
-    avtDataObject_p dob = 
+    avtDataObject_p dob =
         networkCache[id]->GetPlot()->GetIntermediateDataObject();
 
     if (*dob == NULL)
@@ -4580,7 +4665,7 @@ NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &
 //
 //    Brad Whitlock, Thu Aug  6 17:00:03 PDT 2015
 //    Add support for writing using groups of ranks.
-//    
+//
 // ****************************************************************************
 
 void
@@ -4593,7 +4678,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
            " closed or crashed.  Try \"ReOpen\"ing the file and exporting "
            "again.");
     }
- 
+
     if (networkCache[id] == NULL)
     {
         debug1 << "Asked to export a DB from a network that has already "
@@ -4609,7 +4694,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
         EXCEPTION0(ImproperUseException);
     }
 
-    avtDataObject_p dob = 
+    avtDataObject_p dob =
         networkCache[id]->GetPlot()->GetIntermediateDataObject();
 
     if (*dob == NULL)
@@ -4626,7 +4711,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
     if (!GetDatabasePluginManager()->PluginAvailable(db_type))
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Unable to load plugin \"%s\" for exporting.", 
+        SNPRINTF(msg, 1024, "Unable to load plugin \"%s\" for exporting.",
                  db_type.c_str());
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -4635,7 +4720,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
     if (info == NULL)
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Unable to get plugin info for \"%s\".", 
+        SNPRINTF(msg, 1024, "Unable to get plugin info for \"%s\".",
                  db_type.c_str());
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -4646,7 +4731,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
     if (wrtr == NULL)
     {
         char msg[1024];
-        SNPRINTF(msg, 1024, "Unable to locate writer for \"%s\".", 
+        SNPRINTF(msg, 1024, "Unable to locate writer for \"%s\".",
                  db_type.c_str());
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -4657,7 +4742,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
         int time = networkCache[id]->GetTime();
         ref_ptr<avtDatabase> db = networkCache[id]->GetNetDB()->GetDatabase();
 
-        // Set the contract to use for the export. Give the plot a chance to 
+        // Set the contract to use for the export. Give the plot a chance to
         // enhance the contract as would be the case in a normal execute.
         avtContract_p c = networkCache[id]->GetContract();
         c = networkCache[id]->GetPlot()->ModifyContract(c);
@@ -4678,7 +4763,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
             vars.clear();
         }
 
-        wrtr->Write(plotName, qualFilename, 
+        wrtr->Write(plotName, qualFilename,
             db->GetMetaData(time), vars, doAll,
             atts.GetWriteUsingGroups(), atts.GetGroupSize());
 
@@ -4694,15 +4779,15 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
 
 
 // ****************************************************************************
-//  Function:  RenderBalance 
+//  Function:  RenderBalance
 //
 //  Purpose: compute rendering balance of worst case (e.g. max triangle count
 //           over average triangle count. Valid result computed only at root.
 //
 //  Argument: number of triangles on calling processor
 //
-//  Programmer:  Mark C. Miller 
-//  Creation:    24May03 
+//  Programmer:  Mark C. Miller
+//  Creation:    24May03
 //
 //  Modifications:
 //
@@ -4717,42 +4802,51 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
 //    Changed from an internal method to a class method, so children can use
 //    it.
 //
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    I fixed the code indentation and cleaned up a warning.
+//
 // ****************************************************************************
 double
 NetworkManager::RenderBalance(int numTrianglesIHave)
 {
    double balance = 1.0;
+#ifndef PARALLEL
+    (void)numTrianglesIHave;
+#else
+    int rank, size, *triCounts = NULL;
 
-#ifdef PARALLEL
-   int rank, size, *triCounts = NULL;
+    balance = -1.0;
+    rank = PAR_Rank();
+    size = PAR_Size();
+    if (rank == 0)
+       triCounts = new int [size];
+    MPI_Gather(&numTrianglesIHave, 1, MPI_INT, triCounts, 1, MPI_INT, 0,
+               VISIT_MPI_COMM);
+    if (rank == 0)
+    {
+        int i, maxTriangles, minTriangles, totTriangles, avgTriangles;
+        minTriangles = triCounts[0];
+        maxTriangles = minTriangles;
+        totTriangles = 0;
+        for (i = 0; i < size; i++)
+        {
+            if (triCounts[i] < minTriangles)
+                minTriangles = triCounts[i];
 
-   balance = -1.0;
-   rank = PAR_Rank();
-   size = PAR_Size();
-   if (rank == 0)
-      triCounts = new int [size]; 
-   MPI_Gather(&numTrianglesIHave, 1, MPI_INT, triCounts, 1, MPI_INT, 0,
-              VISIT_MPI_COMM);
-   if (rank == 0)
-   {  int i, maxTriangles, minTriangles, totTriangles, avgTriangles;
-      minTriangles = triCounts[0];
-      maxTriangles = minTriangles;
-      totTriangles = 0;
-      for (i = 0; i < size; i++)
-      {
-         if (triCounts[i] < minTriangles)
-            minTriangles = triCounts[i];
-         if (triCounts[i] > maxTriangles)
-            maxTriangles = triCounts[i];
-         totTriangles += triCounts[i];
-      }
-      avgTriangles = totTriangles / size;
-      if (avgTriangles > 0)
-         balance = (double) maxTriangles / (double) avgTriangles;
-      delete [] triCounts;
-   }
+            if (triCounts[i] > maxTriangles)
+                maxTriangles = triCounts[i];
+
+            totTriangles += triCounts[i];
+        }
+
+        avgTriangles = totTriangles / size;
+
+        if (avgTriangles > 0)
+            balance = (double) maxTriangles / (double) avgTriangles;
+
+        delete [] triCounts;
+    }
 #endif
-
    return balance;
 }
 
@@ -4761,7 +4855,7 @@ NetworkManager::RenderBalance(int numTrianglesIHave)
 //  Method:  Network::CloneNetwork
 //
 //  Purpose:
-//    Creates a clone of an existing network. 
+//    Creates a clone of an existing network.
 //
 //  Arguments:
 //    id         The network to clone.
@@ -4800,9 +4894,9 @@ NetworkManager::CloneNetwork(const int id)
 
     if (id != networkCache[id]->GetNetID())
     {
-        
-        debug1 << "Internal error: network at position[" << id 
-               << "] does not have same id (" 
+
+        debug1 << "Internal error: network at position[" << id
+               << "] does not have same id ("
                << networkCache[id]->GetNetID() << ")" << endl;
         EXCEPTION0(ImproperUseException);
     }
@@ -4820,10 +4914,10 @@ NetworkManager::CloneNetwork(const int id)
 //  Method:  Network::AddQueryOverTimeFilter
 //
 //  Purpose:
-//    Adds a QueryOverTimeFilter node to the network. 
+//    Adds a QueryOverTimeFilter node to the network.
 //
 //  Arguments:
-//    qA         The atts that control the filter. 
+//    qA         The atts that control the filter.
 //    clonedFromId  The Id of the nework from which this time-query network
 //                  was cloned.
 //
@@ -4836,21 +4930,21 @@ NetworkManager::CloneNetwork(const int id)
 //    input.
 //
 //    Kathleen Bonnell, Tue Apr 27 13:41:32 PDT 2004
-//    Pass the cloned network's pipeline index to query atts. 
+//    Pass the cloned network's pipeline index to query atts.
 //
-//    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004 
+//    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004
 //    Send the SILRestriction to QueryOverTime filter (insted of UseSet).
 //
 //    Kathleen Bonnell, Wed May 11 17:14:03 PDT 2005
 //    Use EEF output instead of DB output for input to filters.
 //
-//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007
 //    Fix memory leak associated with silr->MakeAttributes(), add support for
 //    "Locate and Pick Zone/Node" queries.
 //
-//    Kathleen Bonnell, Tue Jul  8 14:25:25 PDT 2008 
+//    Kathleen Bonnell, Tue Jul  8 14:25:25 PDT 2008
 //    Change the DataRequest variable if the var being queried is different
-//    than what is in the cloned pipeline. 
+//    than what is in the cloned pipeline.
 //
 //    Brad Whitlock, Tue Jan 10 14:40:49 PST 2012
 //    Use the expression node without assuming where it exists in the working
@@ -4882,7 +4976,7 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     {
         input = workingNet->GetExpressionNode()->GetOutput();
     }
-    else 
+    else
     {
         input = networkCache[clonedFromId]->GetPlot()->
                 GetIntermediateDataObject();
@@ -4890,36 +4984,36 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     qA->GetQueryAtts().SetPipeIndex(networkCache[clonedFromId]->
         GetContract()->GetPipelineIndex());
 
-    if (strcmp(workingNet->GetDataSpec()->GetVariable(), 
+    if (strcmp(workingNet->GetDataSpec()->GetVariable(),
                qA->GetQueryAtts().GetVariables()[0].c_str()) != 0)
     {
-        avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(), 
+        avtDataRequest_p dr = new avtDataRequest(workingNet->GetDataSpec(),
             qA->GetQueryAtts().GetVariables()[0].c_str());
-   
+
         workingNet->SetDataSpec(dr);
     }
 
-    //    
-    // Pass down the current SILRestriction (via UseSet) in case the query 
+    //
+    // Pass down the current SILRestriction (via UseSet) in case the query
     // needs to make use of this information.
-    //    
+    //
     avtSILRestriction_p silr = workingNet->GetDataSpec()->GetRestriction();
-   
-    // 
+
+    //
     //  Create a transition node so that the new filter will receive
     //  the correct input.
-    // 
+    //
     NetnodeTransition *trans = new NetnodeTransition(input);
     Netnode *n = workingNetnodeList.back();
     workingNetnodeList.pop_back();
     trans->GetInputNodes().push_back(n);
-    
+
     workingNet->AddNode(trans);
 
-    // 
-    // Put a QueryOverTimeFilter right after the transition to handle 
-    // the query. 
-    // 
+    //
+    // Put a QueryOverTimeFilter right after the transition to handle
+    // the query.
+    //
     avtQueryOverTimeFilter *qf = new avtQueryOverTimeFilter(qA);
     if (*silr != NULL)
     {
@@ -4929,7 +5023,7 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     }
     NetnodeFilter *qfilt = new NetnodeFilter(qf, "QueryOverTime");
     qfilt->GetInputNodes().push_back(trans);
-    
+
     workingNetnodeList.push_back(qfilt);
     workingNet->AddNode(qfilt);
 }
@@ -4939,8 +5033,8 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 //
 //  Purpose: Adds a new VisWindow object and initializes its annotations
 //
-//  Programmer:  Mark C. Miller 
-//  Creation:    January 5, 2005 
+//  Programmer:  Mark C. Miller
+//  Creation:    January 5, 2005
 //
 //  Modifications:
 //
@@ -4973,12 +5067,12 @@ NetworkManager::NewVisWindow(int winID)
     }
     for (size_t i = 0; i < idsToDelete.size(); i++)
     {
-        debug1 << "Deleting VisWindow for id=" << idsToDelete[i] << endl;
+        debug2 << "Deleting VisWindow for id=" << idsToDelete[i] << endl;
         delete viswinMap[idsToDelete[i]].viswin;
         viswinMap.erase(idsToDelete[i]);
     }
 
-    debug1 << "Creating new VisWindow for id=" << winID << endl;
+    debug2 << "Creating new VisWindow for id=" << winID << endl;
 
     TRY
     {
@@ -5082,7 +5176,7 @@ NetworkManager::CallInitializeProgressCallback(int nstages)
 // ****************************************************************************
 
 void
-NetworkManager::CallProgressCallback(const char *module, const char *msg, 
+NetworkManager::CallProgressCallback(const char *module, const char *msg,
                                      int amt, int total)
 {
     if (progressCallback != NULL)
@@ -5132,10 +5226,13 @@ void
 NetworkManager::DumpImage(avtDataObject_p img, const char *fmt)
 const
 {
+    // Burlen Loring, Sat Aug 29 09:20:30 PDT 2015
+    // when I tried to use this in parallel there was an
+    // MPI error in the engine event loop, a bcast is unmatched.
     char tmpName[256];
     avtFileWriter *fileWriter = new avtFileWriter();
 
-    this->FormatDebugImage(tmpName, 256, fmt);
+    FormatDebugImage(tmpName, 256, fmt);
 
     std::string dump_image = avtDebugDumpOptions::GetDumpDirectory() + tmpName +
                         ".png";
@@ -5225,7 +5322,7 @@ GetDatabase(void *nm, const std::string &filename, int time,const char *format)
 {
     NetworkManager *nm2 = (NetworkManager *) nm;
     bool treatAllDBsAsTimeVarying = false;
-    // This database is being requested by an AVT filter (likely a CMFE 
+    // This database is being requested by an AVT filter (likely a CMFE
     // expression), so we have no idea if the right plugin has been loaded.
     bool fileMayHaveUnloadedPlugin = true;
     bool ignoreExtents = false;
@@ -5261,69 +5358,125 @@ GetDataBinningCallbackBridge(void *arg, const char *name)
 
 #ifdef PARALLEL
 // ****************************************************************************
-//  Function: IsBlankImage
+//  Function: HaveData
 //
 //  Purpose:
-//    Scans the image to see if it is blank.
+//    Scans the image to see if it is a uniform color. if it is
+//    not then we have data. This is a simplified and more robust
+//    (handles alpha  channel and non-white background) version of
+//    a function IsBlank by Tom Fogal on October 22, 2008
 //
-//  Programmer: Tom Fogal
-//  Creation:   October 22, 2008
+//  Programmer: Burlen Loring
+//  Creation:   Fri Sep 11 02:22:01 PDT 2015
+//
+//  Modification:
 //
 // ****************************************************************************
-static bool
-IsBlankImage(avtImage_p img)
+
+static
+int HaveData(vtkUnsignedCharArray *rgba)
 {
-    int w,h;
-    unsigned char *rgb = static_cast<unsigned char *>
-        (img->GetImage().GetImageVTK()->GetScalarPointer());
-    img->GetSize(&w, &h);
-
-    const int n_pixels = w * h;
-    const int n_components =
-        img->GetImage().GetImageVTK()->GetNumberOfScalarComponents();
-    unsigned char * const last = rgb + (n_pixels * n_components);
-
-    // Can we find a pixel which isn't white (i.e. 0xFF)?  If we search every
-    // pixel (...) and can't find a non-white pixel, it must be a blank image.
-    unsigned char *idx = std::find_if(rgb, last,
-                                      std::bind2nd(
-                                          std::not_equal_to<unsigned char>(),
-                                          0xFF)
-                                     );
-    return idx == last;
-}
-// ****************************************************************************
-//  Function: BuildBlankImageVector
-//
-//  Purpose:
-//    Determines if the local image is blank, and builds a vector of that
-//    property within the MPI job.
-//
-//  Programmer: Tom Fogal
-//  Creation:   October 20, 2008
-//
-// ****************************************************************************
-static std::vector<int>
-BuildBlankImageVector(avtImage_p img)
-{
-    std::vector<int> data;
-    int *rcv = new int[PAR_Size()];
-    int local = IsBlankImage(img);
-    const int dest_node = 0;
-    const int src_node = 0;
-
-    MPI_Gather(&local, 1, MPI_INT, rcv, 1, MPI_INT, dest_node, VISIT_MPI_COMM);
-    MPI_Bcast(rcv, PAR_Size(), MPI_INT, src_node, VISIT_MPI_COMM);
-
-    data.reserve(PAR_Size());
-    for(size_t i = 0 ; i < (size_t)PAR_Size(); ++i)
+    // rather than assume a background color, or
+    // pass one in, test that all the pixels have the
+    // same color/alpha value.
+    size_t nt = rgba->GetNumberOfTuples();
+    int nc = rgba->GetNumberOfComponents();
+    unsigned char *prgba = rgba->GetPointer(0);
+    for (int j = 0; j < nc; ++j)
     {
-        data.push_back(rcv[i]);
+        unsigned char *p = prgba + j;
+        unsigned char bg = p[0];
+        for (size_t i = 1; i < nt; ++i)
+            if (p[i*nc] != bg)
+                return 1;
     }
-
-    delete []rcv;
-    return data;
+    return 0;
 }
+
+// ****************************************************************************
+//  Function: HaveData
+//
+//  Purpose:
+//    Templated overload for images that have been split into
+//    color channel arrays. See the VTK array overload for
+//    details.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Fri Sep 11 02:22:01 PDT 2015
+//
+//  Modification:
+//
+// ****************************************************************************
+
+bool nequal(float a, float b)
+{ return fabs(a - b) > 1e-5f; } // ok range is 0 to 1
+
+bool nequal(unsigned char a, unsigned char b)
+{ return a != b; }
+
+template <typename T>
+int HaveData(T *r, T *g, T *b, T *a, size_t n)
+{
+    // rather than assume a background color, or
+    // pass one in, test that all the pixels have the
+    // same color/alpha value.
+    T *rgba[4] = {r, g, b, a};
+    for (int j = 0; j < 4; ++j)
+    {
+        T *c = rgba[j];
+        if (c)
+        {
+            T bg = c[0];
+            for (size_t i = 1; i < n; ++i)
+                if (nequal(c[i], bg))
+                    return 1;
+        }
+    }
+    return 0;
+}
+
+// ****************************************************************************
+//  Function: HaveData
+//
+//  Purpose:
+//    Scans the image to see if it has uniform depth value
+//
+//  Programmer: Burlen Loring
+//  Creation:   Fri Sep 11 02:22:01 PDT 2015
+//
+//  Modification:
+//
+// ****************************************************************************
+
+template <typename T>
+int HaveData(T *z, size_t n)
+{
+    T bg = z[0];
+    for (size_t i = 1; i < n; ++i)
+        if (nequal(z[i], bg))
+            return 1;
+    return 0;
+}
+
+// ****************************************************************************
+//  Function: HaveData
+//
+//  Purpose:
+//    Scans the image to see if it has uniform depth value
+//
+//  Programmer: Burlen Loring
+//  Creation:   Fri Sep 11 02:22:01 PDT 2015
+//
+//  Modification:
+//
+// ****************************************************************************
+
+static
+int HaveData(vtkFloatArray *z)
+{
+    return z ? HaveData(z->GetPointer(0), z->GetNumberOfTuples()) : 0;
+}
+
 #endif
 
 
@@ -5336,34 +5489,103 @@ BuildBlankImageVector(avtImage_p img)
 //    communication will figure out which nodes have image data.  Thus,
 //    this method MUST be called synchronously!
 //
+//    Some plots / DBs simply don't support decomposition.  In that case,
+//    we don't want to do image composition because only the root node
+//    will have any data.  If the plot utilizes transparency, we'll fade
+//    process 0's (correct) image by compositing, because process 0 will
+//    have the right image and everybody else will have a plain white BG.
+//
 //  Programmer: Tom Fogal
 //  Creation:   October 17, 2008
 //
 //  Modifications:
 //
 //    Hank Childs, Wed Nov 19 15:53:15 PST 2008
-//    Test was implemented to return true if *any* data had no data, which is 
+//    Test was implemented to return true if *any* data had no data, which is
 //    not what we wanted.
+//
+//    Burlen Loring, Fri Sep 11 03:14:46 PDT 2015
+//    handle non-white backgrounds, handle alpha channel, simplify
+//    the logic. do less communication, use reduction rather then
+//    all gathering a comm size vector.
+//
+//    Burlen Loring, Wed Sep 23 13:53:45 PDT 2015
+//    If there are no rgb colors in the image and a depth buffer is present
+//    use that
 //
 // ****************************************************************************
 
-static bool
+static int
 OnlyRootNodeHasData(avtImage_p &img)
 {
 #ifndef PARALLEL
-    return true;
+    (void)img;
+    return 1;
 #else
-    std::vector<int> data = BuildBlankImageVector(img);
+    // look for the color buffer first, if not then look
+    // for the depth buffer
+    vtkImageData *im = img->GetImage().GetImageVTKDirect();
+    vtkUnsignedCharArray *color = im ? dynamic_cast<vtkUnsignedCharArray*>(
+        im->GetPointData()->GetArray("ImageScalars")) : NULL;
 
-    // Starting from the 2nd element in the list, search for an element which
-    // is greater than 0.  If we find one, than somebody else has data; we
-    // don't really care who it is.
-    bool onlyRootNodeHasData = true;
-    for (unsigned int i = 1 ; i < data.size() ; i++)
-         if (data[i] == 0)
-            onlyRootNodeHasData = false;
+    vtkFloatArray *depth = !color ? img->GetImage().GetZBufferVTKDirect() : NULL;
 
-    return onlyRootNodeHasData;
+    // if the root has data but no one else does
+    // then on the root after the reduce b1 == b2 == 1.
+    int b1 = HaveData(color) || HaveData(depth);
+    int b2 = 0;
+    MPI_Reduce(&b1, &b2, 1, MPI_INT, MPI_SUM, 0, VISIT_MPI_COMM);
+    int rank;
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+    if (rank == 0)
+        b2 = ((b1 == 1) && (b2 == 1)) ? 1 : 0;
+    MPI_Bcast(&b2, 1, MPI_INT, 0, VISIT_MPI_COMM);
+    return b2;
+#endif
+}
+
+// ****************************************************************************
+//  Function: OnlyRootNodeHasData
+//
+//  Purpose:
+//    Templated version for images that have been split into channels
+//    see avtImage version for explanation of purpose.
+//
+//  Programmer: Burlen LOring
+//  Creation:   , Fri Sep 11 10:46:13 PDT 2015
+//
+//  Modifications:
+//
+//    Burlen Loring, Wed Sep 23 13:53:45 PDT 2015
+//    If there are no rgb colors in the image and a depth buffer is present
+//    use that
+//
+// ****************************************************************************
+
+template <typename T>
+int
+OnlyRootNodeHasData(T *r, T *g, T *b, T *a, float *z, size_t n)
+{
+#ifndef PARALLEL
+    (void)r;
+    (void)g;
+    (void)b;
+    (void)a;
+    (void)n;
+    (void)z;
+    return 1;
+#else
+    // if the root has data but no one else does
+    // then on the root after the reduce b1 == b2 == 1.
+    int b1 = r ? HaveData(r, g, b, a, n) : HaveData(z, n);
+    int b2 = 0;
+    MPI_Reduce(&b1, &b2, 1, MPI_INT, MPI_SUM, 0, VISIT_MPI_COMM);
+    int rank;
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+    if (rank == 0)
+        b2 = ((b1 == 1) && (b2 == 1)) ? 1 : 0;
+    MPI_Bcast(&b2, 1, MPI_INT, 0, VISIT_MPI_COMM);
+    return b2;
 #endif
 }
 
@@ -5387,150 +5609,84 @@ OnlyRootNodeHasData(avtImage_p &img)
 //    Hank Childs, Thu Jan  8 15:23:44 CST 2009
 //    Fix memory leak.
 //
+//    Burlen Loring, Fri Sep  4 12:28:14 PDT 2015
+//    handle 4 channel images. eliminate an unecessary memcpy
+//    by recv'ing directly into arrays used by output image.
+//
+//    Burlen Loring, Fri Sep 11 11:19:35 PDT 2015
+//    Pass in width and height so that receiving ranks can
+//    construct an image
+//
+//    Burlen Loring, Wed Sep 23 13:22:30 PDT 2015
+//    Skip sending RGBA values for ordered compositing, only
+//    depth buffer is needed.
+//
 // ****************************************************************************
+
 static void
-BroadcastImage(avtImage_p &img, bool send_zbuf, int root)
+BroadcastImage(avtImage_p &img, int w, int h, bool hasAlpha,
+    bool sendColor, bool sendDepth)
 {
-#ifdef PARALLEL
-    int w,h;
-    img->GetSize(&w, &h);
-    unsigned char *data;
-    float *zb = NULL;
+#ifndef PARALLEL
+    (void)img;
+    (void)w;
+    (void)h;
+    (void)hasAlpha;
+    (void)sendColor;
+    (void)sendDepth;
+#else
+    const int npix = w*h;
+    const int nchan = hasAlpha ? 4 : 3;
 
-    const int n_pixels = w * h;
-    const int n_components =
-        img->GetImage().GetImageVTK()->GetNumberOfScalarComponents();
-    const size_t img_size = n_pixels * n_components;
+    vtkImageData *im = NULL;
+    vtkFloatArray *depth = NULL;
+    vtkUnsignedCharArray *color = NULL;
 
-    if(PAR_Rank() == root)
+    if (PAR_Rank() == 0)
     {
-        data = img->GetImage().GetRGBBuffer();
-        if(send_zbuf)
-        {
-            zb = img->GetImage().GetZBuffer();
-        }
+        im = img->GetImage().GetImageVTKDirect();
+        color = sendColor ?  (im ? dynamic_cast<vtkUnsignedCharArray*>(
+                im->GetPointData()->GetArray("ImageScalars")) : NULL) : NULL;
+        depth = sendDepth ? img->GetImage().GetZBufferVTKDirect() : NULL;
     }
     else
     {
-        debug4 << "Creating buffer for new " << w << "x" << h << " image."
-               << std::endl;
-        data = new unsigned char [img_size];
-        zb = new float[w*h];
+        // create the recv buffers and pass them into
+        // the output image.
+        im = vtkImageData::New();
+        im->SetDimensions(w, h, 1);
+        img->GetImage().SetImageVTK(im);
+        im->Delete();
+
+        if (sendColor)
+        {
+            color = vtkUnsignedCharArray::New();
+            color->SetName("ImageScalars");
+            color->SetNumberOfComponents(nchan);
+            color->SetNumberOfTuples(npix);
+
+            im->GetPointData()->SetScalars(color);
+            color->Delete();
+        }
+
+        if (sendDepth)
+        {
+            depth = vtkFloatArray::New();
+            depth->SetName("depth");
+            depth->SetNumberOfTuples(npix);
+
+            img->GetImage().SetZBufferVTK(depth);
+            depth->Delete();
+        }
     }
 
-    debug5 << "Synching color buffers from process " << root << std::endl;
-    MPI_Bcast(data, img_size, MPI_BYTE, root, VISIT_MPI_COMM);
-    if(send_zbuf)
-    {
-        debug5 << "Synching depth buffers to processors from "
-               << root << std::endl;
-        MPI_Bcast(zb, w*h, MPI_FLOAT, root, VISIT_MPI_COMM);
-    }
-    if(PAR_Rank() != root)
-    {
-        vtkImageData *image = avtImageRepresentation::NewImage(w,h);
-        {
-            void *img_data = image->GetScalarPointer();
-            memcpy(img_data, data, img_size);
-        }
-        avtSourceFromImage conv(image, zb);
-        img = conv.GetTypedOutput();
-        img->Update(conv.GetGeneralContract());
-        img->SetSource(NULL);
-        image->Delete();
-        delete [] zb;
-        delete [] data;
-    }
+    size_t img_size = npix * nchan;
+    if (sendColor)
+        MPI_Bcast(color->GetPointer(0), img_size, MPI_BYTE, 0, VISIT_MPI_COMM);
+
+    if (sendDepth)
+        MPI_Bcast(depth->GetPointer(0), npix, MPI_FLOAT, 0, VISIT_MPI_COMM);
 #endif
-}
-
-// ****************************************************************************
-//  Function: SetCompositerBackground
-//
-//  Purpose: Sets the default background for an image compositer based on the
-//           background used in a VisWindow.
-//
-//  Programmer: Tom Fogal
-//  Creation:   June 16, 2008
-//
-//  Modifications:
-//
-//    Mark C. Miller, Tue Mar 30 10:58:01 PST 2004
-//    Added code to set image compositor's background color
-//
-// ****************************************************************************
-
-void
-NetworkManager::SetCompositerBackground(
-                    avtWholeImageCompositer * const compositer,
-                    const VisWindow * const viswin)
-{
-    const double * const fbg = viswin->GetBackgroundColor();
-    unsigned char bg_r = (unsigned char) ((float)fbg[0] * 255.f);
-    unsigned char bg_g = (unsigned char) ((float)fbg[1] * 255.f);
-    unsigned char bg_b = (unsigned char) ((float)fbg[2] * 255.f);
-
-    compositer->SetBackground(bg_r, bg_g, bg_b);
-}
-
-// ****************************************************************************
-//  Function: MakeCompositer
-//
-//  Purpose: Encodes the logic for creating the appropriate kind of image
-//           compositer, based on characteristics of the VisWindow / rendering
-//           request.
-//
-//  Programmer: Tom Fogal
-//  Creation:   June 16, 2008
-//
-//  Modifications:
-//
-//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
-//    Added code to push color table name to plots
-//    Added code to use correct whole image compositor based upon window mode
-//
-//    Tom Fogal, Thu Jun 26 12:12:52 EDT 2008
-//    I had messed up the ZBuffer logic when converting this to a function.
-//    This prevented the compositer from knowing if it should output a Z buffer
-//    in some cases, causing the compositer to blend with the background image
-//    instead of overwriting it.
-//
-//    Hank Childs, Wed Aug 13 10:20:52 PDT 2008
-//    Added argument needZBufferToCompositeEvenIn2D.
-//
-// ****************************************************************************
-
-avtWholeImageCompositer *
-NetworkManager::MakeCompositer(bool threeD, bool gradientBG, bool needZ, bool multipass,
-                               bool shadows, bool depth_cueing, bool image_plots,
-                               bool needZBufferToCompositeEvenIn2D)
-{
-    avtWholeImageCompositer *compositer;
-    // Even if it's not a 3D render, we'll need Z if there is a gradient
-    // background.
-    if(threeD || gradientBG || needZBufferToCompositeEvenIn2D)
-    {
-        compositer = new avtWholeImageCompositerWithZ();
-    }
-    else
-    {
-        compositer = new avtWholeImageCompositerNoZ();
-    }
-
-    compositer->SetShouldOutputZBuffer(multipass);
-
-    // If it *is* 3D though, we need Z in many more cases.
-    if(threeD)
-    {
-        debug3 << "Compositer outputting Z buffer." << std::endl;
-        compositer->SetShouldOutputZBuffer(
-            needZ || multipass || shadows || depth_cueing || image_plots
-        );
-    }
-    compositer->SetAllProcessorsNeedResult(
-                    multipass || shadows || depth_cueing || image_plots
-                );
-    return compositer;
 }
 
 // ****************************************************************************
@@ -5543,7 +5699,7 @@ NetworkManager::MakeCompositer(bool threeD, bool gradientBG, bool needZ, bool mu
 //    winId      The window Id to use.
 //    pa         PickAttributes to set/get info about the pick.
 //
-//  Programmer:  Kathleen Bonnell 
+//  Programmer:  Kathleen Bonnell
 //  Creation:    March 2, 2006
 //
 //  Modifications:
@@ -5577,7 +5733,7 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
         if (ids[i] != networkCache[ids[i]]->GetNetID())
         {
              debug1 << "Internal error: network at position[" << ids[i] << "] "
-                    << "does not have same id (" 
+                    << "does not have same id ("
                     << networkCache[ids[i]]->GetNetID() << ")" << endl;
              continue;
         }
@@ -5593,7 +5749,7 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
     {
         Render(true, validIds, false, 0, winId, true);
     }
-    int x, y; 
+    int x, y;
     double isect[3];
     x = (int)pa->GetRayPoint1()[0];
     y = (int)pa->GetRayPoint1()[1];
@@ -5616,7 +5772,7 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
         GetDoubleArrayToRootProc(isect, 3, iHaveTheData);
     }
 
-    // 
+    //
     // Have processor 0 put the information into the pick attributes.
     //
     if (rank == 0 && validPick)
@@ -5631,8 +5787,8 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
 //
 //  Purpose: Setup stereo rendering mode
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   August 9, 2006 
+//  Programmer: Mark C. Miller
+//  Creation:   August 9, 2006
 //
 // ****************************************************************************
 
@@ -5671,8 +5827,8 @@ NetworkManager::PlotsNeedUpdating(const intVector &plots,
     if(plotsInWindow.size() < plots.size())
     {
         EXCEPTION1(ImproperUseException, "Differing number of current and "
-                   "window plots.  This probably means there is a bug in "
-                   "NM::SetUpWindowContents.");
+                   "window plots. This probably means there is a bug in "
+                   "SetUpWindowContents.");
     }
 
     for(size_t p = 0; p < plots.size(); ++p)
@@ -5700,9 +5856,14 @@ NetworkManager::PlotsNeedUpdating(const intVector &plots,
 //
 //  Modifications:
 //
-//    Kathleen Bonnell, Tue Sep 25 10:38:27 PDT 2007 
+//    Kathleen Bonnell, Tue Sep 25 10:38:27 PDT 2007
 //    Retrieve scaling modes from 2d and curve view atts and set them in the
-//    plot before it executes so the plot will be created with correct scaling. 
+//    plot before it executes so the plot will be created with correct scaling.
+//
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    Use const references rather than make a copy of attribute objects.
+//    Use a switch statement rather than an if if else. pull function calls
+//    out of loop conditions.
 //
 // ****************************************************************************
 
@@ -5711,11 +5872,12 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
                               const intVector &plots,
                               const WindowAttributes &windowAttributes)
 {
-    DataNetwork *wm = this->workingNet;
+    DataNetwork *net = workingNet;
     bool retval = false;
 
-    ViewCurveAttributes vca = windowAttributes.GetViewCurve();
-    View2DAttributes v2a = windowAttributes.GetView2D();
+    const ViewCurveAttributes &vca = windowAttributes.GetViewCurve();
+    const View2DAttributes &v2a = windowAttributes.GetView2D();
+
     ScaleMode ds = (ScaleMode)vca.GetDomainScale();
     ScaleMode rs = (ScaleMode)vca.GetRangeScale();
     ScaleMode xs = (ScaleMode)v2a.GetXScale();
@@ -5723,32 +5885,30 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 
     // Scan through all the plots looking for a scaling mode which forces an
     // update.
-    // TODO: Is ScaleModeRequiresUpdate const/read-only?  If so, we can
-    // exit early, returning true instead of setting retval.
-    for(size_t p = 0; p < plots.size(); ++p)
+    int mode = viswin->GetWindowMode();
+    size_t nPlots = plots.size();
+    for(size_t p = 0; (p < nPlots) && !retval; ++p)
     {
-        if(viswin->GetWindowMode() == WINMODE_2D)
+        switch (mode)
         {
-            this->workingNet = NULL;
+        case WINMODE_2D:
+            workingNet = NULL;
             UseNetwork(plots[p]);
-            if(this->workingNet->GetPlot()->
+            if (workingNet->GetPlot()->
                ScaleModeRequiresUpdate(WINMODE_2D, xs, ys))
-            {
                 retval = true;
-            }
-        }
-        else if(viswin->GetWindowMode() == WINMODE_CURVE)
-        {
-            this->workingNet = NULL;
+            break;
+
+        case WINMODE_CURVE:
+            workingNet = NULL;
             UseNetwork(plots[p]);
-            if(this->workingNet->GetPlot()->
+            if (workingNet->GetPlot()->
                ScaleModeRequiresUpdate(WINMODE_CURVE, ds, rs))
-            {
                 retval = true;
-            }
+            break;
         }
     }
-    this->workingNet = wm;
+    workingNet = net;
     return retval;
 }
 
@@ -5824,47 +5984,45 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 //    Brad Whitlock, Thu Dec  6 10:02:35 PST 2012
 //    Use long instead of int in the SR cell count calculation.
 //
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    use const ref to instead of making a copy of attributes.
+//    make use of cached render state where we can. store accurate
+//    per process cell counts returned by plots. this can be used to skip
+//    compositing when only rank 0 has cells. document use of INT_MAX.
+//
 // ****************************************************************************
 
 void
-NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
+NetworkManager::SetUpWindowContents(const intVector &plotIds,
                                     bool forceViewerExecute)
 {
-    EngineVisWinInfo &viswinInfo = viswinMap.find(windowID)->second;
-    WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
-    std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
-    VisWindow *viswin = viswinInfo.viswin;
+    EngineVisWinInfo *viswinInfo = renderState.windowInfo;
+    VisWindow *viswin = renderState.window;
 
     // Doesn't make sense to use this unless we need to set the contents up
-    if(!this->r_mgmt.needToSetUpWindowContents)
+    if(!renderState.needToSetUpWindowContents)
     {
         EXCEPTION1(ImproperUseException, "Window contents already setup.");
     }
 
-    StackTimer setup("Setting up window contents");
-    TimedCodeBlock("Clearing plots out of vis window",
-        viswin->ClearPlots();
-        imageBasedPlots.clear();
-    );
+    viswin->ClearPlots();
+    viswinInfo->imageBasedPlots.clear();
 
-    //
     // If we're doing all annotations on the engine then we need to add
-    // the annotations to the window before we add plots so the 
-    // annotations that depend on the plot list being updated in order 
+    // the annotations to the window before we add plots so the
+    // annotations that depend on the plot list being updated in order
     // to change their text with respect to time can update.
     //
-    // However: visual cues (i.e. reflines) need to be added after the 
+    // However: visual cues (i.e. reflines) need to be added after the
     // plots are added.
-    //
-    if(this->r_mgmt.annotMode == 2)
+    if(renderState.annotMode == 2)
     {
-        SetAnnotationAttributes(viswinInfo.annotationAttributes,
-                                viswinInfo.annotationObjectList,
-                                viswinInfo.visualCueList,
-                                viswinInfo.frameAndState,
-                                windowID,
-                                this->r_mgmt.annotMode);
-        this->r_mgmt.handledAnnotations = true;
+        SetAnnotationAttributes(*viswinInfo,
+            viswinInfo->annotationAttributes, viswinInfo->annotationObjectList,
+            viswinInfo->visualCueList, viswinInfo->frameAndState,
+            renderState.annotMode);
+
+        renderState.handledAnnotations = true;
     }
 
     // see if there are any non-mesh plots in the list
@@ -5873,62 +6031,51 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
     bool hasNonMeshPlots = HasNonMeshPlots(plotIds);
 
     // see if we need the z-buffer to composite correctly in 2D.
-    this->r_mgmt.needZBufferToCompositeEvenIn2D = 
-                              NeedZBufferToCompositeEvenIn2D(plotIds);
+    renderState.needZBufferToCompositeEvenIn2D =
+        NeedZBufferToCompositeEvenIn2D(plotIds);
 
     // Fullframe scale.
-    double FFScale[] = {1., 1., 1.};
-    bool setFFScale = false;
-    bool useFFScale = false;
-    bool determinedFFScale = false;
-
-    for (size_t i = 0; i < plotIds.size(); i++)
+    bool determinedWindowMode = false;
+    size_t nPlotIds = plotIds.size();
+    vector<float> cellCountMultiplier(nPlotIds, 1.0f);
+    for (size_t i = 0; i < nPlotIds; i++)
     {
-        StackTimer one_plot("Setting up one plot");
-        avtDataObjectWriter_p tmpWriter;
-        avtDataObject_p dob;
         // get the network output as we would normally
-        this->workingNet = NULL;
+        workingNet = NULL;
         UseNetwork(plotIds[i]);
-        float cellCountMultiplier;
 
         DataNetwork *workingNetSaved = workingNet;
 
-        {
-            StackTimer t_merge("Merging data info in parallel");
-            tmpWriter = GetOutput(false, true, &cellCountMultiplier);
-            dob = tmpWriter->GetInput();
+        avtDataObjectWriter_p tmpWriter =
+            GetOutput(false, true, &cellCountMultiplier[i]);
 
-            // merge polygon info output across processors 
-            dob->GetInfo().ParallelMerge(tmpWriter);
+        avtDataObject_p dob = tmpWriter->GetInput();
+
+        // merge polygon info output across processors
+        dob->GetInfo().ParallelMerge(tmpWriter);
+
+        avtPlot_p plot = workingNetSaved->GetPlot();
+
+        if (hasNonMeshPlots && (strcmp(plot->GetName(), "MeshPlot") == 0))
+        {
+           const AttributeSubject *meshAtts =
+                plot->SetOpaqueMeshIsAppropriate(false);
+           if (meshAtts)
+               plot->SetAtts(meshAtts);
         }
 
-        if(hasNonMeshPlots &&
-           std::string(workingNetSaved->GetPlot()->GetName()) == "MeshPlot")
-        {
-           const AttributeSubject *meshAtts = workingNetSaved->
-                 GetPlot()->SetOpaqueMeshIsAppropriate(false);
-           if (meshAtts != 0)
-               workingNetSaved->GetPlot()->SetAtts(meshAtts);
-        }
+        const ViewCurveAttributes &vca = viswinInfo->windowAttributes.GetViewCurve();
+        const View2DAttributes &v2a = viswinInfo->windowAttributes.GetView2D();
 
-        {
-            ViewCurveAttributes vca = windowAttributes.GetViewCurve();
-            View2DAttributes v2a = windowAttributes.GetView2D();
-            ScaleMode ds = (ScaleMode)vca.GetDomainScale();
-            ScaleMode rs = (ScaleMode)vca.GetRangeScale();
-            ScaleMode xs = (ScaleMode)v2a.GetXScale();
-            ScaleMode ys = (ScaleMode)v2a.GetYScale();
+        ScaleMode ds = (ScaleMode)vca.GetDomainScale();
+        ScaleMode rs = (ScaleMode)vca.GetRangeScale();
+        ScaleMode xs = (ScaleMode)v2a.GetXScale();
+        ScaleMode ys = (ScaleMode)v2a.GetYScale();
 
-            workingNetSaved->GetPlot()->SetScaleMode(ds,rs,WINMODE_CURVE);
-            workingNetSaved->GetPlot()->SetScaleMode(xs,ys,WINMODE_2D);
-        }
+        plot->SetScaleMode(ds, rs, WINMODE_CURVE);
+        plot->SetScaleMode(xs, ys, WINMODE_2D);
 
-        avtActor_p anActor;
-        TimedCodeBlock("Calling GetActor for DOB",
-            anActor = workingNetSaved->GetActor(dob,
-                                                forceViewerExecute);
-        );
+        avtActor_p anActor = workingNetSaved->GetActor(dob, forceViewerExecute);
 
         // Make sure that the actor's name is set to the plot's name so
         // the legend annotation objects in the annotation object list
@@ -5936,92 +6083,116 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
         anActor->SetActorName(workingNetSaved->GetPlotName().c_str());
 
         // record cell counts including and not including polys
-        if (cellCountMultiplier > INT_MAX/2.)
-        {
-            this->r_mgmt.cellCounts[i] = INT_MAX;
-            this->r_mgmt.cellCounts[i+plotIds.size()] = INT_MAX;
-        }
-        else
-        {
-            this->r_mgmt.cellCounts[i] =
-            (long) (anActor->GetDataObject()->GetNumberOfCells(false) *
-                                             cellCountMultiplier);
-            this->r_mgmt.cellCounts[i+plotIds.size()] =
-                     (long)anActor->GetDataObject()->GetNumberOfCells(true);
-        }
+        // notes: 1) INT_MAX is the default value returned by "image based"
+        // plots such as volume rendering other plots default to 1.0.
+        // 2) when the bool on the get number of cells call is false it
+        // means get the true number of cells, otherwise it gets the
+        // number of cells where dataset topodim is < 3.
+        // 3) second cell count (topodim < 3) is not currently used for
+        // anything. so I'm removing it.
+        //
+        // num cells as reported by VTK
+        renderState.cellCounts[i] =
+            anActor->GetDataObject()->GetNumberOfCells(false);
 
-        TimedCodeBlock("Adding plot to the vis window",
-            viswin->AddPlot(anActor);
-            avtPlot_p plot = workingNetSaved->GetPlot();
-            if (plot->PlotIsImageBased()) 
-            {
-                imageBasedPlots.push_back(plot);
-            }
-        );
+        viswin->AddPlot(anActor);
+
+        if (plot->PlotIsImageBased())
+            viswinInfo->imageBasedPlots.push_back(plot);
 
         // Now that a plot has been added to the viswindow, we know
-        // if the window is 2D or curve.
-        if(!determinedFFScale)
+        // if the window is 3D or 2D or curve.
+        double FFScale[3] = {1.0, 1.0, 1.0};
+        if (!determinedWindowMode)
         {
-            determinedFFScale = true;
-            setFFScale = viswin->GetWindowMode() == WINMODE_2D ||
-                         viswin->GetWindowMode() == WINMODE_CURVE ||
-                         viswin->GetWindowMode() == WINMODE_AXISARRAY;
-            useFFScale = viswin->GetFullFrameMode();
-            if(setFFScale)
+            // window mode
+            renderState.threeD = viswin->GetWindowMode() == WINMODE_3D;
+
+            renderState.twoD =
+                (viswin->GetWindowMode() == WINMODE_2D) ||
+                (viswin->GetWindowMode() == WINMODE_CURVE) ||
+                (viswin->GetWindowMode() == WINMODE_AXISARRAY);
+
+            determinedWindowMode = true;
+
+            // full frame scaling
+            if (renderState.twoD)
             {
                 int fft = 0;
-                double ffs = 1.;
+                double ffs = 1.0;
                 viswin->GetScaleFactorAndType(ffs, fft);
-                if(fft == 0)
-                    FFScale[0] = ffs;
-                else if(fft == 1)
-                    FFScale[1] = ffs;
+                switch (fft)
+                {
+                    case 0: FFScale[0] = ffs; break;
+                    case 1: FFScale[1] = ffs; break;
+                }
             }
         }
 
         // If we need to set the fullframe scale, set it now.
-        if(setFFScale)
-        {
-            workingNetSaved->GetPlot()->GetMapper()->
-                SetFullFrameScaling(useFFScale, FFScale);
-        }
-    } /* end foreach plot */
-
-    if (this->r_mgmt.annotMode == 2)
-    {
-        UpdateVisualCues(windowID);
-        this->r_mgmt.handledCues = true;
+        if (renderState.twoD)
+            plot->GetMapper()->SetFullFrameScaling(
+                viswin->GetFullFrameMode(), FFScale);
     }
 
-    //
-    // Update any cell counts for the associated networks.
-    // This involves global communication. Since we're going to
-    // get sync'd up for the composite below, this
-    // additional MPI_Allreduce is not so bad.
-    // While we're at it, we'll issue any warning message for
-    // plots with no data, too.
-    //
+    if (renderState.annotMode == 2)
+    {
+        UpdateVisualCues();
+        renderState.handledCues = true;
+    }
+
+    // see which ranks have data and thus will contribute to
+    // compositing. ranks without data can be excluded to reduce
+    // overhead.
+    int rank = PAR_Rank();
+    int nranks = PAR_Size();
+    renderState.haveCells.resize(nranks, 0);
+    for (size_t i = 0; i < nPlotIds; ++i)
+    {
+        // do any plots on this rank have cells??
+        if (renderState.cellCounts[i] != 0)
+            renderState.haveCells[rank] = 1;
+    }
 #ifdef PARALLEL
-    long *reducedCounts = new long[2 * plotIds.size()];
-    MPI_Allreduce(*(this->r_mgmt.cellCounts), reducedCounts, 2 * plotIds.size(),
-                  MPI_LONG, MPI_SUM, VISIT_MPI_COMM);
-    for (size_t i = 0; i < 2 * plotIds.size(); i++)
-    {
-        if (this->r_mgmt.cellCounts[i] != INT_MAX) // accounts for overflow
-        {
-            this->r_mgmt.cellCounts[i] = reducedCounts[i];
-        }
-    }
-    delete [] reducedCounts;
+    // share the result
+    MPI_Allgather(MPI_IN_PLACE, 0, MPI_INT,
+        &renderState.haveCells[0], 1, MPI_INT,
+        VISIT_MPI_COMM);
+
+    // tally up local cell count for each plot into a global
+    // per-plot count
+    MPI_Allreduce(MPI_IN_PLACE, &renderState.cellCounts[0],
+        nPlotIds, MPI_LONG_LONG, MPI_SUM, VISIT_MPI_COMM);
 #endif
 
-    // update the global cell counts for each network
-    for (size_t i = 0; i < plotIds.size(); i++)
+    // check for cases when data is gathered to rank 0. when
+    // only rank 0 has data we can skip compositing
+    renderState.onlyRootHasCells = true;
+    for (int i = 1; (i < nranks) && renderState.onlyRootHasCells; ++i)
+        if (renderState.haveCells[i])
+            renderState.onlyRootHasCells = false;
+
+    renderState.cellCountTotal = 0;
+    for (size_t i = 0; i < nPlotIds; ++i)
     {
-        SetGlobalCellCount(plotIds[i], this->r_mgmt.cellCounts[i]);
+        // TODO -- don't use INT_MAX
+        // notes: 1) INT_MAX appears in engine-viewer communication logic
+        // to work around the below. 2) global cell count as computed in
+        // other places in the engine includes the cell count multiplier.
+        // 3) the default cellCountMultiplier for image based plots
+        // (ray cast volume rendering) is INT_MAX. for other plots it is
+        // 1.0f.
+        globalCellCounts[plotIds[i]] =
+            (cellCountMultiplier[i] > static_cast<float>(INT_MAX/2)) ? INT_MAX :
+                renderState.cellCounts[i]*cellCountMultiplier[i];
+
+        renderState.cellCountTotal =
+                ((globalCellCounts[plotIds[i]] == INT_MAX) ||
+                (renderState.cellCountTotal == INT_MAX)) ? INT_MAX :
+                    renderState.cellCountTotal + globalCellCounts[plotIds[i]];
     }
 }
+
 
 // ****************************************************************************
 //  Method: RenderSetup
@@ -6055,7 +6226,7 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //
 //    Brad Whitlock, Tue May 30 14:01:56 PST 2006
 //    Added code to set up annotations before adding plots in some cases so
-//    annotations that depend on plots being added in order to update 
+//    annotations that depend on plots being added in order to update
 //    themselves get the opportunity to do so.
 //
 //    Tom Fogal, Thu Jun 12 15:10:03 EDT 2008
@@ -6096,19 +6267,20 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
 //    Tom Fogal, Tue Jul 21 19:27:49 MDT 2009
 //    Account for skipping the SR check.
 //
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    refactor to so that all of the internal configuration is done
+//    from/in this method. added ordered compositing support.
+//
 // ****************************************************************************
 
 void
-NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
-                            int annotMode, int windowID, bool leftEye)
+NetworkManager::RenderSetup(int windowID, intVector& plotIds, bool getZBuffer,
+                            int annotMode, bool leftEye, bool checkSRThreshold)
 {
-    this->r_mgmt.origWorkingNet = workingNet;
+    renderState.origWorkingNet = workingNet;
+    renderState.windowID = windowID;
 
-    this->r_mgmt.annotMode = annotMode;
-    this->r_mgmt.getZBuffer = getZBuffer;
-    this->r_mgmt.windowID = windowID;
-
-    if(viswinMap.find(windowID) == viswinMap.end())
+    if(!viswinMap.count(windowID))
     {
         char invalid[256];
         SNPRINTF(invalid, sizeof(invalid),
@@ -6119,168 +6291,204 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
     EngineVisWinInfo &viswinInfo = viswinMap.find(windowID)->second;
     viswinInfo.markedForDeletion = false;
     std::string &changedCtName = viswinInfo.changedCtName;
-    WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
-    std::vector<int>& plotsCurrentlyInWindow =
-        viswinInfo.plotsCurrentlyInWindow;
+    std::vector<int>& plotsCurrentlyInWindow = viswinInfo.plotsCurrentlyInWindow;
+    RenderingAttributes &renderAtts = viswinInfo.windowAttributes.GetRenderAtts();
+
     VisWindow *viswin = viswinInfo.viswin;
 
-    { // Make sure transparency gets recalculated.
-        debug5 << "Invalidating transparency cache." << std::endl;
-        avtTransparencyActor* trans = viswin->GetTransparencyActor();
-        trans->InvalidateTransparencyCache();
-    }
+    renderState.window = viswin;
+    renderState.windowInfo = &viswinInfo;
+    renderState.renderOnViewer = false;
+    renderState.annotMode = annotMode;
 
-    this->r_mgmt.needToSetUpWindowContents = false;
-    this->r_mgmt.cellCounts = new long[2 * plotIds.size()];
-    this->r_mgmt.handledAnnotations = false;
-    this->r_mgmt.handledCues = false;
-    this->r_mgmt.stereoType = -1;
-    bool forceViewerExecute = false;
-    this->ForgetMultipass();
+    renderState.needToSetUpWindowContents = false;
 
-    ViewCurveAttributes vca = windowAttributes.GetViewCurve();
-    View2DAttributes v2a = windowAttributes.GetView2D();
+    size_t nPlots = plotIds.size();
+    renderState.cellCounts.resize(nPlots, 0);
+    renderState.handledAnnotations = false;
+    renderState.handledCues = false;
+    renderState.stereoType = -1;
 
     // Explicitly specify left / right eye, for stereo rendering.
     if(viswin->GetStereo())
     {
-        this->r_mgmt.stereoType = viswin->GetStereoType();
+        renderState.stereoType = viswin->GetStereoType();
         viswin->SetStereoRendering(true, leftEye ? 4 :5);
     }
 
     // put all plots objects into the VisWindow
     viswin->SetScalableRendering(false);
 
-    //
     // Determine if the plots currently in the window are the same as those
     // we were asked to render.
-    //
-    if(plotIds.size() != plotsCurrentlyInWindow.size())
+    bool forceViewerExecute = false;
+    if (plotIds.size() != plotsCurrentlyInWindow.size())
     {
-        this->r_mgmt.needToSetUpWindowContents = true;
+        renderState.needToSetUpWindowContents = true;
     }
     else
     {
-        forceViewerExecute = this->ViewerExecute(viswin, plotIds,
-                                                 windowAttributes);
-        this->r_mgmt.needToSetUpWindowContents =
-            this->PlotsNeedUpdating(plotIds, plotsCurrentlyInWindow) ||
+        forceViewerExecute =
+            ViewerExecute(viswin, plotIds, viswinInfo.windowAttributes);
+
+        renderState.needToSetUpWindowContents =
+            PlotsNeedUpdating(plotIds, plotsCurrentlyInWindow) ||
             forceViewerExecute;
     }
 
-    if(this->r_mgmt.needToSetUpWindowContents)
+    // set up the window contents
+    if(renderState.needToSetUpWindowContents)
     {
-        int t1 = visitTimer->StartTimer();
-        this->SetUpWindowContents(windowID, plotIds, forceViewerExecute);
-        visitTimer->StopTimer(t1, "Setting up window contents");
+        SetUpWindowContents(plotIds, forceViewerExecute);
         plotsCurrentlyInWindow = plotIds;
     }
 
-    // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
-    // the misfortune of oscillating switching of modes around the threshold)
-    long scalableThreshold = GetScalableThreshold(windowID);
-    if (this->r_mgmt.checkThreshold &&
-        GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
+    if (checkSRThreshold)
     {
-        // We need to give a null result back to the component which
-        // requested the render, but we can't do that here because our
-        // caller is controlling the render process.  We'll just bail out
-        // early, and require our caller to duplicate our check.
-        return;
+        // scalable threshold test (the 0.5 is to add some hysteresus to avoid
+        // the misfortune of oscillating switching of modes around the threshold)
+        long scalableThreshold = GetScalableThreshold(renderAtts);
+        if (renderState.cellCountTotal < 0.5*scalableThreshold)
+        {
+            renderState.renderOnViewer = true;
+            return;
+        }
     }
 
-    if (this->r_mgmt.needToSetUpWindowContents)
+    // issue warning messages for plots with no data
+    if ((renderState.needToSetUpWindowContents) && (PAR_Rank() == 0))
     {
         // determine any networks with no data
         std::vector<int> networksWithNoData;
-
-        for (size_t i = 0; i < plotIds.size(); i++)
+        for (size_t i = 0; i < nPlots; ++i)
         {
-            if (this->r_mgmt.cellCounts[i] == 0)
-                networksWithNoData.push_back((int)i);
+            // INT_MAX is a code used by ray cast volume plot to force
+            // scalable rendering. this plot reports 0 cells and handles
+            // rendering/compositing internally. would like not to use INT_MAX
+            // for this. see note's in TODO below.
+            if ((renderState.cellCounts[i] == 0) && (globalCellCounts[plotIds[i]] < INT_MAX))
+                networksWithNoData.push_back(static_cast<int>(i));
         }
-        // issue warning messages for plots with no data
-        if (networksWithNoData.size() > 0)
+        size_t nWithout = networksWithNoData.size();
+        if (nWithout)
         {
-            std::string msg = "The plot(s) with id(s) = ";
-            for (size_t i = 0; i < networksWithNoData.size(); i++)
-            {
-                char tmpStr[32];
-                SNPRINTF(tmpStr, sizeof(tmpStr), "%d", networksWithNoData[i]);
-                msg += tmpStr;
-                if (i < networksWithNoData.size() - 1)
-                    msg += ", ";
-            }
-            msg += " yielded no data";
-#ifdef PARALLEL
-            if (PAR_Rank() == 0)
-#endif
-            {
-                avtCallback::IssueWarning(msg.c_str());
-            }
+            ostringstream oss;
+            oss << "The plot(s) with id(s) = " << networksWithNoData[0];
+            for (size_t i = 1; i < nWithout; ++i)
+                oss << ", " << networksWithNoData[i];
+            oss << " yielded no data";
+            avtCallback::IssueWarning(oss.str().c_str());
         }
     }
 
-    //
+    // farce transparency actor recalulate it's transparency
+    avtTransparencyActor* tact = viswin->GetTransparencyActor();
+    tact->InvalidateTransparencyCache();
+
+    // check if the render is over the screen size or the view port
+    renderState.viewportedMode =
+        (renderState.annotMode != 1) || renderState.twoD;
+
+    // do special affects
+    renderState.shadowMap = renderState.threeD && renderAtts.GetDoShadowing();
+    renderState.depthCues = renderState.threeD && renderAtts.GetDoDepthCueing();
+
     // Update plot's bg/fg colors. Ignored by avtPlot objects if colors
     // are unchanged
-    //
-    {
-        double bg[4] = {1.,0.,0.,0.};
-        double fg[4] = {0.,0.,1.,0.};
-        AnnotationAttributes &annotationAttributes =
-            viswinInfo.annotationAttributes;
+    double bg[4] = {1.,0.,0.,0.};
+    double fg[4] = {0.,0.,1.,0.};
+    AnnotationAttributes &annotationAttributes =
+        viswinInfo.annotationAttributes;
 
-        annotationAttributes.GetForegroundColor().GetRgba(fg);
-        annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
-        for (size_t i = 0; i < plotIds.size(); i++)
-        {
-            workingNet = NULL;
-            UseNetwork(plotIds[i]);
-            workingNet->GetPlot()->SetBackgroundColor(bg);
-            workingNet->GetPlot()->SetForegroundColor(fg);
-            if (changedCtName != "")
-                workingNet->GetPlot()->SetColorTable(changedCtName.c_str());
-            workingNet = NULL;
-        }
+    annotationAttributes.GetForegroundColor().GetRgba(fg);
+    annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
+    for (size_t i = 0; i < plotIds.size(); i++)
+    {
+        workingNet = NULL;
+        UseNetwork(plotIds[i]);
+        workingNet->GetPlot()->SetBackgroundColor(bg);
+        workingNet->GetPlot()->SetForegroundColor(fg);
+        if (changedCtName != "")
+            workingNet->GetPlot()->SetColorTable(changedCtName.c_str());
+        workingNet = NULL;
     }
 
-    //
     // Add annotations if necessary
-    //
-    if (!this->r_mgmt.handledAnnotations)
+    if (!renderState.handledAnnotations)
     {
-        SetAnnotationAttributes(viswinInfo.annotationAttributes,
-                                viswinInfo.annotationObjectList,
-                                viswinInfo.visualCueList,
-                                viswinInfo.frameAndState,
-                                windowID, this->r_mgmt.annotMode);
-        this->r_mgmt.handledAnnotations = true;
-    }
-    if (!this->r_mgmt.handledCues)
-    {
-        UpdateVisualCues(windowID);
-        this->r_mgmt.handledCues = true;
+        SetAnnotationAttributes(viswinInfo,
+            viswinInfo.annotationAttributes, viswinInfo.annotationObjectList,
+            viswinInfo.visualCueList, viswinInfo.frameAndState,
+            renderState.annotMode);
+
+        renderState.handledAnnotations = true;
     }
 
-    std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
+    if (!renderState.handledCues)
+    {
+        UpdateVisualCues();
+        renderState.handledCues = true;
+    }
+
+    // update transparency related settings
+    renderState.transparency = viswin->TransparenciesExist();
+
+    bool parallel = PAR_Size() > 1;
+    renderState.transparencyInPass1 = !parallel && renderState.transparency;
+
+    renderState.transparencyInPass2 = parallel &&
+        renderState.threeD && renderState.transparency;
+
+    // any special volume rendering
+    renderState.imageBasedPlots = !viswinInfo.imageBasedPlots.empty();
+
+    // will need to read back z-buffer
+    renderState.getZBuffer = renderState.transparencyInPass2 ||
+        (renderState.threeD && (getZBuffer || renderState.shadowMap ||
+         renderState.depthCues || renderState.imageBasedPlots));
+
+    // note : z even in 2d is determined in SetUpWindowContents
+    renderState.gradientBg =
+        viswin->GetBackgroundMode() == AnnotationAttributes::Gradient;
+
+    renderState.zBufferComposite = renderState.threeD ||
+        renderState.gradientBg || renderState.needZBufferToCompositeEvenIn2D;
+
+    // see if we can do ordered compositing
+    renderState.orderComposite = false;
+    if (renderState.transparencyInPass2)
+    {
+        // update the transparency actor's appender so that bounds
+        // which we need to get from it's output are valid
+        tact->SetUpActor();
+
+        renderState.orderComposite = viswin->GetOrderComposite() &&
+                tact->ComputeCompositingOrder(viswin->GetCamera(),
+                    renderState.compositeOrder);
+    }
+
+    // do all procs need the composited image
+    renderState.allReducePass1 =
+        (renderState.transparencyInPass2 && !renderState.orderComposite)
+        || renderState.shadowMap || renderState.depthCues
+        || renderState.imageBasedPlots;
+
+     renderState.allReducePass2 = false;
+
     // Two imageBasedPlots don't do the right thing currently, so put up a
     // warning about it.
-    if (this->MemoMultipass(viswin) && imageBasedPlots.size() > 0)
+    std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
+    if (renderState.transparencyInPass2 && renderState.imageBasedPlots)
     {
         static bool warnTransparentAndIBPs = false;
         if (!warnTransparentAndIBPs)
         {
             // This message is based on how it can occur in VisIt right now.
             // It may need to be generalized in the future.
-            const char msg[512] =
-                        "VisIt does not support the "
-                        "rendering of transparent "
-                        "geometry with ray-traced volume plots.  "
-                        "The volume plots are not being "
-                        "rendered.  (This message will only "
-                        "be issued once per session.)";
-            avtCallback::IssueWarning(msg);
+            avtCallback::IssueWarning(
+                "VisIt does not support the rendering of transparent "
+                "geometry with ray-traced volume plots.  The volume plots are not being "
+                "rendered.  (This message will only be issued once per session.)");
             warnTransparentAndIBPs = false;
         }
         imageBasedPlots.clear();
@@ -6294,12 +6502,10 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
         {
             // This message is based on how it can occur in VisIt right now.
             // It may need to be generalized in the future.
-            const char msg[256] =
-                        "VisIt does not support multiple ray-traced volume "
-                        "renderings.  Only the first volume plot "
-                        " will be rendered.  (This message will only "
-                        "be issued once per session.)";
-            avtCallback::IssueWarning(msg);
+            avtCallback::IssueWarning(
+                "VisIt does not support multiple ray-traced volume renderings. "
+                "Only the first volume plot will be rendered.  (This message will only "
+                "be issued once per session.)");
             issuedWarning = false;
         }
         std::vector<avtPlot_p> imageBasedPlots_tmp;
@@ -6307,20 +6513,10 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
         imageBasedPlots = imageBasedPlots_tmp;
     }
 
-    this->r_mgmt.viewportedMode =
-        (this->r_mgmt.annotMode != 1) ||
-        (viswin->GetWindowMode() == WINMODE_2D) ||
-        (viswin->GetWindowMode() == WINMODE_CURVE) ||
-        (viswin->GetWindowMode() == WINMODE_AXISARRAY);
-
-    { // Force transparency calculation early here, to ensure it gets cached.
-        debug5 << "Forcing early calculation of transparency..." << std::endl;
-        avtTransparencyActor* trans = viswin->GetTransparencyActor();
-        bool t = trans->TransparenciesExist();
-        debug3 << "Early transparency calculation says there "
-               << (t ? "is some" : "is no")
-               << " transparent geometry." << std::endl;
-    }
+#ifdef NetworkManagerDEBUG
+    cerr << "NetworkManager::RenderSetup" << endl
+        << renderState << endl << endl;
+#endif
 }
 
 // ****************************************************************************
@@ -6347,32 +6543,17 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
 //    Tom Fogal, Tue Jul 21 19:25:39 MDT 2009
 //    Account for skipping the SR check.
 //
+//    Burlen Loring, Tue Sep  1 15:04:14 PDT 2015
+//    no longer need to initialize render state in here
+//
 // ****************************************************************************
 
 void
-NetworkManager::RenderCleanup(int windowID)
+NetworkManager::RenderCleanup()
 {
-    EngineVisWinInfo &viswinInfo = viswinMap[windowID];
-    VisWindow *viswin = viswinInfo.viswin;
-
-    this->StopTimer(windowID);
-
     // return viswindow to its true stereo mode
-    if(this->r_mgmt.stereoType != -1)
-    {
-        viswin->SetStereoRendering(true, this->r_mgmt.stereoType);
-    }
-
-    // Ensure render state values get default/invalid values.
-    this->r_mgmt.origWorkingNet = NULL;
-    this->r_mgmt.annotMode = 0;
-    this->r_mgmt.windowID = -1;
-    this->r_mgmt.getZBuffer = false;
-    this->r_mgmt.handledAnnotations = false;
-    this->r_mgmt.handledCues = false;
-    this->r_mgmt.needToSetUpWindowContents = false;
-    this->r_mgmt.viewportedMode = false;
-    this->r_mgmt.checkThreshold = false;
+    if(renderState.stereoType != -1)
+        renderState.window->SetStereoRendering(true, renderState.stereoType);
 }
 
 // ****************************************************************************
@@ -6427,40 +6608,32 @@ NetworkManager::CreateNullDataWriter() const
 //    Tom Fogal, Fri Jul 18 15:19:42 EDT 2008
 //    Use Shadowing/DepthCueing methods.
 //
+//    Burlen Loring, Tue Sep  1 14:58:34 PDT 2015
+//    Make use of renderState for viswin etc. fix misuse of post increment
+//    operator
+//
 // ****************************************************************************
 
 size_t
-NetworkManager::RenderingStages(int windowID)
+NetworkManager::RenderingStages()
 {
-    EngineVisWinInfo& viswinInfo = viswinMap.find(windowID)->second;
-    const WindowAttributes& winAtts = viswinInfo.windowAttributes;
-    const std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
-    VisWindow *viswin = viswinInfo.viswin;
-
-    bool two_pass_mode = false;
-
-    // Multipass rendering might be relevant, if we're doing a 3D rendering.
-    if(viswin->GetWindowMode() == WINMODE_3D)
-    {
-#ifdef PARALLEL
-        two_pass_mode = viswin->TransparenciesExist();
-        two_pass_mode = UnifyMaximumValue(two_pass_mode);
-#endif
-    }
+    const std::vector<avtPlot_p>& imageBasedPlots
+        = renderState.windowInfo->imageBasedPlots;
 
     // There is always one stage for rendering and two for composition.
     size_t stages = 3;
 
-    stages += (this->Shadowing(windowID) ? 2 : 0);
-    stages += (this->DepthCueing(windowID) ? 1 : 0);
-    stages += (two_pass_mode ? 1 : 0);
+    stages += (renderState.shadowMap ? 2 : 0);
+    stages += (renderState.depthCues ? 1 : 0);
+    stages += (renderState.transparencyInPass2 ? 1 : 0);
 
     std::vector<avtPlot_p>::const_iterator iter;
     for(iter = imageBasedPlots.begin();
         iter != imageBasedPlots.end();
-        iter++)
+        ++iter)
     {
-        stages += (*(*iter))->GetNumberOfStagesForImageBasedPlot(winAtts);
+        stages += (*(*iter))->GetNumberOfStagesForImageBasedPlot(
+            renderState.windowInfo->windowAttributes);
     }
 
     return stages;
@@ -6479,134 +6652,232 @@ NetworkManager::RenderingStages(int windowID)
 //  Programmer: Tom Fogal
 //  Creation:   June 13, 2008
 //
+//  Modifications:
+//
+//    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
+//    I refactored this method to add support for depth peeling and
+//    ordered compositing.
+//
 // ****************************************************************************
 
 avtImage_p
 NetworkManager::RenderGeometry()
 {
-    VisWindow *viswin = viswinMap.find(this->r_mgmt.windowID)->second.viswin;
+#ifdef NetworkManagerTIME
+    struct timeval tv0,tv1;
+    gettimeofday(&tv0, 0);
+#endif
 
-    CallProgressCallback("NetworkManager", "Render geometry", 0, 1);
-    avtImage_p geometry;
-    if (this->MemoMultipass(viswin))
+    // render the image and capture it. Relies upon explicit render
+    CallProgressCallback("NetworkManager", "render pass 1", 0, 1);
+
+    VisWindow *viswin = renderState.window;
+
+    if (renderState.transparencyInPass1)
     {
-        geometry = viswin->ScreenCapture(this->r_mgmt.viewportedMode,
-                                         true,true,false);
+        // if we are using depth peeling we can skip the
+        // local camera order geometry sort
+        avtTransparencyActor* tact = viswin->GetTransparencyActor();
+        int sortOp = avtTransparencyActor::SORT_NONE;
+        if (viswin->GetDepthPeeling())
+            viswin->EnableDepthPeeling();
+        else
+            sortOp |= avtTransparencyActor::SORT_DEPTH;
+        tact->SetSortOp(sortOp);
+    }
+
+    avtImage_p output;
+    if (PAR_Size() < 2)
+    {
+        // don't bother with the compositing code if not in parallel
+        viswin->ScreenRender(renderState.viewportedMode,
+            /*disbale fg=*/true, /*opaque on=*/true,
+            /*translucent on=*/renderState.transparencyInPass1,
+            /*disable bg=*/false, /*input image=*/NULL);
+
+        output = viswin->ScreenReadBack(renderState.viewportedMode,
+            /*read z=*/renderState.getZBuffer, /*read a=*/false);
+
+        CallProgressCallback("NetworkManager", "render pass 1", 1, 1);
+        CallProgressCallback("NetworkManager", "composite pass 1", 0, 1);
+    }
+    else
+    if (renderState.zBufferComposite)
+    {
+        // do z-buffer composite
+
+        // TODO -- in theory we could skip render and readback when
+        // this rank doesn't have geometry, but in practice it's not
+        // working. a very odd segv with a bad stack occurs if any ranks
+        // skip render/readback
+        unsigned char *ri = NULL, *gi = NULL, *bi = NULL, *ai = NULL;
+        float *zi = NULL;
+        int w = 0, h = 0;
+        int rank = PAR_Rank();
+        //if (!renderState.haveCells[rank])
+        //{
+            // configure for ordered composite. 1) enable alpha channel
+            // 2) use solid bg 3) set clear color to 0 0 0 0
+            double bgColor[3];
+            AnnotationAttributes::BackgroundMode bgMode;
+            if (renderState.orderComposite)
+            {
+                viswin->EnableAlphaChannel();
+
+                bgMode = viswin->GetBackgroundMode();
+                viswin->SetBackgroundMode(AnnotationAttributes::Solid);
+
+                memcpy(bgColor, viswin->GetBackgroundColor(), 3*sizeof(double));
+                viswin->SetBackgroundColor(0.0, 0.0, 0.0);
+            }
+
+            viswin->ScreenRender(renderState.viewportedMode,
+                /*canvas z=*/true, /*opaque on=*/true,
+                /*translucent on=*/false, /*no bg=*/false,
+                /*input image=*/NULL);
+
+            viswin->ScreenReadBack(ri,gi,bi,ai,zi, w,h,
+                renderState.viewportedMode, /*read z=*/true,
+                /*read a=*/renderState.orderComposite);
+
+#ifdef ProgrammableCompositerDEBUG
+            writeVTK("geom_in.vtk", ri,gi,bi,ai,zi,w,h);
+#endif
+            if (renderState.orderComposite)
+            {
+                viswin->DisableAlphaChannel();
+                viswin->SetBackgroundMode(bgMode);
+                viswin->SetBackgroundColor(bgColor[0], bgColor[1], bgColor[2]);
+            }
+        //}
+
+        CallProgressCallback("NetworkManager", "render pass 1", 1, 1);
+        CallProgressCallback("NetworkManager", "composite pass 1", 0, 1);
+
+        // some plots/databases do not do a domain decomposition or
+        // gather the data to a single node. in those cases we could
+        // skip compositing.
+        if (renderState.onlyRootHasCells || OnlyRootNodeHasData(ri, gi, bi, ai, zi, w*h))
+        {
+#ifdef NetworkManagerDEBUG
+            debug2 << "skipped compositing because only root has data" << endl;
+#endif
+            output = new avtImage(NULL);
+
+            if (rank == 0)
+                Merge(output, ri,gi,bi,ai, zi, w,h, true);
+            else
+                Free(ri,gi,bi,ai, zi);
+
+            if (renderState.allReducePass1 || renderState.orderComposite)
+                BroadcastImage(output, w, h, renderState.orderComposite,
+                    renderState.allReducePass1, renderState.getZBuffer);
+        }
+        else
+        {
+            // make the list of ranks that need to composite
+            // because they have local geometry. if a rank is not
+            // in this list then it will do no compositing work.
+            // rank 0 always receives the result, whether or not
+            // it is in the list.
+            int nranks = PAR_Size();
+            vector<int> ranksToComp;
+            for (int i = 0; i < nranks; ++i)
+                if (renderState.haveCells[i])
+                    ranksToComp.push_back(i);
+
+            // composite and redistribute the result (if needed)
+            zcomp->Initialize(w,h);
+            zcomp->SetInput(ri,gi,bi,ai, zi, true);
+            zcomp->SetOrder(ranksToComp);
+            zcomp->SetBroadcastColor(renderState.allReducePass1);
+            zcomp->SetBroadcastDepth(renderState.allReducePass1
+                || renderState.orderComposite || renderState.getZBuffer);
+            zcomp->Execute();
+
+            unsigned char *ro = NULL, *go = NULL, *bo = NULL, *ao = NULL;
+            float *zo = NULL;
+
+            zcomp->GetOutput(ro,go,bo,ao, zo, true);
+
+            if ((rank == 0) || renderState.allReducePass1 || renderState.orderComposite)
+            {
+                output = new avtImage(NULL);
+                Merge(output, ro,go,bo,ao, zo, w,h, true);
+#ifdef ProgrammableCompositerDEBUG
+                writeVTK("geom_out.vtk", ro,go,bo,ao,zo,w,h);
+#endif
+            }
+
+            zcomp->Clear();
+        }
     }
     else
     {
-        geometry = viswin->ScreenCapture(this->r_mgmt.viewportedMode,true);
-    }
+        // do visit's non-z-buffer composite
+        viswin->ScreenRender(renderState.viewportedMode,
+            /*disbale fg=*/true, /*opaque on=*/true,
+            /*translucent on=*/renderState.transparencyInPass1,
+            /*disable bg=*/false, /*input image=*/NULL);
 
-    CallProgressCallback("NetworkManager", "Render geometry", 1, 1);
-    return geometry;
-}
+        output = viswin->ScreenReadBack(renderState.viewportedMode,
+            /*read z=*/false, /*read a=*/false);
 
-// ****************************************************************************
-//  Method: MultipassRendering
-//
-//  Purpose: Predicate which determines whether or not we should do render in
-//           two passes -- once for opaque and then again for translucent
-//           geometry.
-//
-//  Arguments:
-//    viswin    window to query
-//
-//  Programmer: Tom Fogal
-//  Creation:   June 13, 2008
-//
-//  Modifications:
-//
-//    Tom Fogal, Sat Jun 14 15:01:09 EDT 2008
-//    Removed const qualification from argument, as our dependencies aren't
-//    const-correct.
-//
-//    Tom Fogal, Wed Jul 30 13:31:25 EDT 2008
-//    Add a timer; mostly so post processing scripts can determine whether or
-//    not we had transparent geometry.
-//
-// ****************************************************************************
+        CallProgressCallback("NetworkManager", "render pass 1", 1, 1);
+        CallProgressCallback("NetworkManager", "composite pass 1", 0, 1);
 
-bool
-NetworkManager::MultipassRendering(VisWindow *viswin) const
-{
-    bool multipass = false;
-    int mpass = visitTimer->StartTimer();
-
-#ifdef PARALLEL
-    // If we're not doing 3D rendering in this window, then we'll never need
-    // multipass rendering.
-    if(viswin->GetWindowMode() == WINMODE_3D)
-    {
-        multipass = viswin->TransparenciesExist();
-        multipass = UnifyMaximumValue(multipass);
-    }
+        // some plots/databases do not do a domain decomposition or
+        // gather the data to a single node. in those cases we could
+        // skip compositing
+        if (renderState.onlyRootHasCells || OnlyRootNodeHasData(output))
+        {
+#ifdef NetworkManagerDEBUG
+            debug2 << "skipped compositing because only root has data" << endl;
 #endif
-
-    const std::string status = (multipass) ? "enabled" : "disabled";
-    debug5 << "Multipass rendering is " << status << std::endl;
-
-    char msg[64];
-    SNPRINTF(msg, 64, "Checking multipass rendering (%s)", status.c_str());
-    visitTimer->StopTimer(mpass, msg);
-    return multipass;
-}
-
-// ****************************************************************************
-//  Method: MemoMultipass
-//
-//  Purpose: Memoizes MultipassRendering
-//
-//  Arguments:
-//    viswin    window to query
-//
-//  Programmer: Tom Fogal
-//  Creation:   August 2, 2008
-//
-// ****************************************************************************
-bool
-NetworkManager::MemoMultipass(VisWindow *viswin)
-{
-    static bool multipass;
-    static VisWindow *last_viswin = NULL;
-    if(!this->r_mgmt.mpass_saved ||
-       last_viswin != viswin)
-    {
-        multipass = this->MultipassRendering(viswin);
-        last_viswin = viswin;
-        this->r_mgmt.mpass_saved = true;
+            if (renderState.allReducePass1)
+            {
+                int w, h;
+                output->GetSize(&h, &w);
+                BroadcastImage(output, w, h, false, true, false);
+            }
+        }
+        else
+        {
+            // need to do compositing,
+            avtWholeImageCompositer *compositer;
+            compositer = new avtWholeImageCompositerNoZ();
+            compositer->SetShouldOutputZBuffer(renderState.getZBuffer);
+            compositer->SetAllProcessorsNeedResult(renderState.allReducePass1);
+            compositer->SetBackground(viswin->GetBackgroundColor());
+            int imageRows, imageCols;
+            output->GetSize(&imageCols, &imageRows);
+            compositer->SetOutputImageSize(imageRows, imageCols);
+            compositer->AddImageInput(output, 0, 0);
+            compositer->Execute();
+            output = compositer->GetTypedOutput();
+            delete compositer;
+        }
     }
-    return multipass;
-}
 
-// ****************************************************************************
-//  Method: ForgetMultipass
-//
-//  Purpose: Forces the next call of MemoMultipass to recompute the result.
-//
-//  Programmer: Tom Fogal
-//  Creation:   August 2, 2008
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu Aug  7 07:52:55 PDT 2008
-//    Changed return from bool to void.
-//
-// ****************************************************************************
+    CallProgressCallback("NetworkManager", "composite pass 1", 1, 1);
 
-void
-NetworkManager::ForgetMultipass()
-{
-    this->r_mgmt.mpass_saved = false;
+#ifdef NetworkManagerTIME
+    gettimeofday(&tv1, 0);
+    if (PAR_Rank() == 0)
+        cerr << "NetworkManager::RenderGeometry " << elapsed(tv0, tv1) << endl;
+#endif
+    return output;
 }
 
 // ****************************************************************************
 //  Method: RenderTranslucent
 //
 //  Purpose: Renders the translucent parts of a scene, and composites it within
-//           an existing rendering.
+//           an existing rendering. in serial (nranks < 2) transparency is
+//           handled in pass 1(ie RenderGeometry). This method is only invoked
+//           in parallel.
 //
 //  Arguments:
-//    windowID  window we should render into
 //    input     An existing image which translucent geometry should be
 //              composited with.
 //
@@ -6622,112 +6893,189 @@ NetworkManager::ForgetMultipass()
 //    Tom Fogal, Wed Jun 18 16:00:05 EDT 2008
 //    Made the input image a constant reference.
 //
+//    Burlen Loring, Wed Sep  2 11:06:19 PDT 2015
+//    refactored for depth peeling and ordered compositing
+//
 // ****************************************************************************
 
-avtDataObject_p
-NetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
+avtImage_p
+NetworkManager::RenderTranslucent(avtImage_p& input)
 {
-    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
-    avtImage_p translucent;
-    CallProgressCallback("NetworkManager", "Transparent rendering", 0, 1);
+#ifdef NetworkManagerTIME
+    struct timeval tv0,tv1;
+    gettimeofday(&tv0, 0);
+#endif
+    CallProgressCallback("NetworkManager", "render pass 2", 0, 1);
 
+    VisWindow *viswin = renderState.window;
+
+    // if we have a compositing order we can skip global
+    // parallel geometry sort
+    int sortOp = avtTransparencyActor::SORT_NONE;
+    if (!renderState.orderComposite)
+        sortOp |= avtTransparencyActor::SORT_DISTRIBUTE;
+
+    // if we are using depth peeling we can skip the
+    // local camera order geometry sort
+    if (viswin->GetDepthPeeling())
+        viswin->EnableDepthPeeling();
+    else
+        sortOp |= avtTransparencyActor::SORT_DEPTH;
+
+    avtTransparencyActor* tact = viswin->GetTransparencyActor();
+    tact->SetSortOp(sortOp);
+
+    // disbale background
+    AnnotationAttributes::BackgroundMode bgMode
+        = viswin->GetBackgroundMode();
+    viswin->SetBackgroundMode(AnnotationAttributes::Solid);
+
+    int rank = PAR_Rank();
+
+    avtImage_p output;
+    // in parallel do either ordered compositing or gather
+    // the set of disjoint image tiles after global geometry
+    // sort that occured in the transparecny actor.
+    if (renderState.orderComposite)
     {
-        StackTimer second_pass("Second-pass screen capture for SR");
+        viswin->EnableAlphaChannel();
 
-        //
-        // We have to disable any gradient background before
-        // rendering, as those will overwrite the first pass
-        //
-        AnnotationAttributes::BackgroundMode bm = viswin->GetBackgroundMode();
-        viswin->SetBackgroundMode(AnnotationAttributes::Solid);
+        double bgColor[3];
+        memcpy(bgColor, viswin->GetBackgroundColor(), 3*sizeof(double));
+        viswin->SetBackgroundColor(0.0, 0.0, 0.0);
 
-        //
-        // Do the screen capture
-        //
-        translucent = viswin->ScreenCapture(
-                                    this->r_mgmt.viewportedMode,
-                                    true,   // Z buffer
-                                    false,  // opaque geometry
-                                    true,   // translucent geometry
-                                    input   // image to composite with
-                              );
+        viswin->ScreenRender(
+            /*mode=*/renderState.viewportedMode,
+            /*canvas z=*/true, /*opaque on=*/false,
+            /*translucent on=*/true, /*no bg=*/true,
+            /*pass 1=*/input);
 
-        // Restore the background mode for next time
-        viswin->SetBackgroundMode(bm);
+        float *ri = NULL, *gi = NULL, *bi = NULL, *ai = NULL, *zi = NULL;
+        int w = 0, h = 0;
+        viswin->ScreenReadBack(
+            ri,gi,bi,ai,zi, w,h,
+            /*mode=*/renderState.viewportedMode,
+            /*read z=*/false, /*read a=*/true);
+
+#ifdef ProgrammableCompositerDEBUG
+        writeVTK("trans_in.vtk", ri,gi,bi,ai,zi,w,h);
+#endif
+        viswin->DisableAlphaChannel();
+
+        viswin->SetBackgroundMode(bgMode);
+        viswin->SetBackgroundColor(bgColor[0], bgColor[1], bgColor[2]);
+
+        CallProgressCallback("NetworkManager", "render pass 2", 1, 1);
+        CallProgressCallback("NetworkManager", "composite pass 2", 0, 1);
+
+        acomp->Initialize(w,h);
+        acomp->SetOrder(renderState.compositeOrder);
+        acomp->SetInput(ri,gi,bi,ai, zi, true);
+        acomp->SetBroadcastColor(renderState.allReducePass2);
+        acomp->SetBroadcastDepth(renderState.allReducePass2);
+
+        // only rank 0 needs the background
+        if (rank == 0)
+        {
+            float *rb = NULL, *gb = NULL, *bb = NULL, *ab = NULL, *zb = NULL;
+            Split(rb,gb,bb,ab, zb, w,h, 3, input);
+            acomp->SetBackground(rb,gb,bb,zb,true);
+
+            if (bgMode == AnnotationAttributes::Solid)
+            {
+                acomp->ApplyBackgroundColor(bgColor);
+            }
+            else
+            {
+               viswin->ScreenRender(
+                  /*mode=*/renderState.viewportedMode,
+                  /*canvas z=*/true, /*opaque on=*/false,
+                  /*translucent on=*/false, /*no bg=*/false,
+                  /*pass 1=*/NULL);
+
+                float *rbi = NULL, *gbi = NULL, *bbi = NULL, *abi = NULL, *zbi = NULL;
+                int w = 0, h = 0;
+                viswin->ScreenReadBack(
+                    rbi,gbi,bbi,abi,zbi, w,h,
+                    /*mode=*/renderState.viewportedMode,
+                    /*read z=*/false, /*read a=*/false);
+
+#ifdef ProgrammableCompositerDEBUG
+                writeVTK("bg_in.vtk", rbi,gbi,bbi,abi,zbi,w,h);
+#endif
+                acomp->ApplyBackgroundImage(rbi, gbi, bbi);
+            }
+        }
+
+        acomp->Execute();
+
+        // only rank 0 has output
+        if ((rank == 0) || renderState.allReducePass2)
+        {
+            float *ro = NULL, *go = NULL, *bo = NULL, *ao = NULL, *zo = NULL;
+            acomp->GetOutput(ro,go,bo,ao, zo, true);
+
+            output = new avtImage(NULL);
+            Merge(output, ro,go,bo,ao, zo, w,h, true);
+
+            output->GetImage().SetZBufferVTK(input->GetImage().GetZBufferVTK());
+        }
+
+        acomp->Clear();
+    }
+    else
+    {
+        // render the translucent geometry
+        viswin->ScreenRender(
+            /*mode=*/renderState.viewportedMode,
+            /*canvas z=*/true, /*opaque on=*/false,
+            /*translucent on=*/true, /*no bg=*/false,
+            /*pass 1=*/input);
+
+        // gather disjoint tiles to rank 0
+        avtImage_p rgb = viswin->ScreenReadBack(
+            renderState.viewportedMode,
+            /*z=*/false, /*a=*/false);
+
+#ifdef ProgrammableCompositerDEBUG
+        writeVTK("transtic_in.vtk", rgb->GetImage());
+#endif
+        CallProgressCallback("NetworkManager", "render pass 2", 1, 1);
+        CallProgressCallback("NetworkManager", "composite pass 2", 0, 1);
+
+        int w = 0, h = 0;
+        rgb->GetSize(&h, &w); // h,w is intentional.
+
+        avtTiledImageCompositor *comp = new avtTiledImageCompositor;
+        comp->SetAllProcessorsNeedResult(renderState.allReducePass2);
+        comp->SetOutputImageSize(w, h);
+        comp->AddImageInput(rgb, 0, 0);
+        comp->Execute();
+        output = comp->GetTypedOutput();
+
+        if ((rank == 0) || renderState.allReducePass2)
+            output->GetImage().SetZBufferVTK(input->GetImage().GetZBufferVTK());
+
+        delete comp;
     }
 
-    avtTiledImageCompositor compositor;
+    // restore stuff
+    if (viswin->GetDepthPeeling())
+        viswin->DisableDepthPeeling();
+    viswin->SetBackgroundMode(bgMode);
 
-    //
-    // Set up the input image size and add it to compositer's input
-    //
-    int imageCols, imageRows;
-    translucent->GetSize(&imageCols, &imageRows);
-    compositor.SetOutputImageSize(imageRows, imageCols);
-    compositor.AddImageInput(translucent, 0, 0);
+    CallProgressCallback("NetworkManager", "composite pass 2", 0, 1);
 
-    //
-    // Do the parallel composite using a 1 stage pipeline
-    //
-    avtDataObject_p compositedImageAsDOB;
-    TimedCodeBlock("tiled image compositor execute",
-        compositor.Execute();
-        compositedImageAsDOB = compositor.GetOutput();
-    );
-    CallProgressCallback("NetworkManager", "Transparent rendering", 1, 1);
+#ifdef NetworkManagerTIME
+    gettimeofday(&tv1, 0);
+    if (PAR_Rank() == 0)
+        cerr << "NetworkManager::RenderTranslucent "
+            << renderState.orderComposite << " " << elapsed(tv0, tv1) << endl;
+#endif
 
-    return compositedImageAsDOB;
+    return output;
 }
 
-// ****************************************************************************
-//  Method: Shadowing
-//
-//  Purpose: Determines if we should render shadows.
-//
-//  Arguments:
-//    windowID -- identifier which tells us which window we're rendering in.
-//
-//  Programmer: Tom Fogal
-//  Creation:   July 18, 2008
-//
-// ****************************************************************************
-bool
-NetworkManager::Shadowing(int windowID) const
-{
-    const EngineVisWinInfo &vwInfo = this->viswinMap.find(windowID)->second;
-    const VisWindow *viswin = vwInfo.viswin;
-    // shadows don't make sense if we're not doing a 3D render.
-    if(viswin->GetWindowMode() != WINMODE_3D)
-    {
-        return false;
-    }
-    return vwInfo.windowAttributes.GetRenderAtts().GetDoShadowing();
-}
-
-// ****************************************************************************
-//  Method: DepthCueing
-//
-//  Purpose: Determines if we should add depth cueing, post-render.
-//
-//  Arguments:
-//    windowID -- identifier which tells us which window we're rendering in.
-//
-//  Programmer: Tom Fogal
-//  Creation:   July 18, 2008
-//
-// ****************************************************************************
-bool
-NetworkManager::DepthCueing(int windowID) const
-{
-    const EngineVisWinInfo &vwInfo = this->viswinMap.find(windowID)->second;
-    const VisWindow *viswin = vwInfo.viswin;
-    // shadows don't make sense if we're not doing a 3D render.
-    if(viswin->GetWindowMode() != WINMODE_3D)
-    {
-        return false;
-    }
-    return vwInfo.windowAttributes.GetRenderAtts().GetDoDepthCueing();
-}
 
 // ****************************************************************************
 //  Method: StartTimer
@@ -6744,7 +7092,7 @@ NetworkManager::DepthCueing(int windowID) const
 void
 NetworkManager::StartTimer()
 {
-    this->r_mgmt.timer = visitTimer->StartTimer();
+    renderState.timer = visitTimer->StartTimer();
 }
 
 // ****************************************************************************
@@ -6761,17 +7109,17 @@ NetworkManager::StartTimer()
 //
 // ****************************************************************************
 void
-NetworkManager::StopTimer(int windowID)
+NetworkManager::StopTimer()
 {
     char msg[1024];
-    const VisWindow *viswin = this->viswinMap.find(windowID)->second.viswin;
+    const VisWindow *viswin = renderState.window;
     int rows,cols;
     viswin->GetSize(rows, cols);
 
-    SNPRINTF(msg, 1023, "NM::Render %ld cells %d pixels",
-             GetTotalGlobalCellCounts(windowID), rows*cols);
-    visitTimer->StopTimer(this->r_mgmt.timer, msg);
-    this->r_mgmt.timer = -1;
+    SNPRINTF(msg, 1023, "NM::Render %lld cells %d pixels",
+             renderState.cellCountTotal, rows*cols);
+    visitTimer->StopTimer(renderState.timer, msg);
+    renderState.timer = -1;
 }
 
 // ****************************************************************************
@@ -6805,20 +7153,22 @@ NetworkManager::StopTimer(int windowID)
 //    Tom Fogal, Wed Jun 18 16:01:06 EDT 2008
 //    Made the input image a reference.
 //
+//    Burlen Loring, Tue Sep  1 14:40:31 PDT 2015
+//    Make use of renderState for active viswin.
+//
 // ****************************************************************************
 
 void
-NetworkManager::RenderShadows(int windowID,
-                              avtDataObject_p& input_as_dob) const
+NetworkManager::RenderShadows(avtImage_p& input) const
 {
-    VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
-
     CallProgressCallback("NetworkManager", "Creating shadows",0,1);
-    avtView3D cur_view = viswin->GetView3D();
+
+    VisWindow *viswin = renderState.window;
 
     //
     // Figure out which direction the light is pointing.
     //
+    avtView3D cur_view = viswin->GetView3D();
     const LightList *light_list = viswin->GetLightList();
     const LightAttributes &la = light_list->GetLight0();
     double light_dir[3];
@@ -6830,8 +7180,6 @@ NetworkManager::RenderShadows(int windowID,
         //
         // Get the image attributes
         //
-        avtImage_p compositedImage;
-        CopyTo(compositedImage, input_as_dob);
 
         int width, height;
         viswin->GetSize(width, height);
@@ -6843,7 +7191,7 @@ NetworkManager::RenderShadows(int windowID,
         int light_height = (height > 2048) ? 4096 : height*2;
         avtView3D light_view;
         light_view = avtSoftwareShader::FindLightView(
-                            compositedImage, cur_view, light_dir,
+                            input, cur_view, light_dir,
                             double(light_width)/double(light_height)
                      );
         //
@@ -6852,7 +7200,7 @@ NetworkManager::RenderShadows(int windowID,
         viswin->SetSize(light_width,light_height);
         viswin->SetView3D(light_view);
         avtImage_p myLightImage = viswin->ScreenCapture(
-                                    this->r_mgmt.viewportedMode,true
+                                  /*viewport=*/renderState.viewportedMode, /*z=*/true
                                   );
 
         viswin->SetSize(width,height);
@@ -6872,23 +7220,17 @@ NetworkManager::RenderShadows(int windowID,
         avtImage_p lightImage = wic->GetTypedOutput();
         viswin->SetView3D(cur_view);
 
-#ifdef PARALLEL
         if (PAR_Rank() == 0)
-#endif
         {
-            WindowAttributes winAtts =
-                viswinMap.find(windowID)->second.windowAttributes;
-            double shadow_strength =
-                winAtts.GetRenderAtts().GetShadowStrength();
-            CallProgressCallback("NetworkManager",
-                                 "Synch'ing up shadows", 0, 1);
-            avtSoftwareShader::AddShadows(lightImage,
-                                          compositedImage,
-                                          light_view,
-                                          cur_view,
-                                          shadow_strength);
-            CallProgressCallback("NetworkManager",
-                                 "Synch'ing up shadows", 1, 1);
+            CallProgressCallback("NetworkManager", "Synch'ing up shadows", 0, 1);
+
+            double shadow_strength = renderState.windowInfo->
+                windowAttributes.GetRenderAtts().GetShadowStrength();
+
+            avtSoftwareShader::AddShadows(lightImage, input, light_view,
+                                          cur_view, shadow_strength);
+
+            CallProgressCallback("NetworkManager", "Synch'ing up shadows", 1, 1);
         }
         delete wic;
     }
@@ -6915,44 +7257,31 @@ NetworkManager::RenderShadows(int windowID,
 //    Jeremy Meredith, Fri Apr 30 14:23:19 EDT 2010
 //    Added automatic mode.
 //
+//    Burlen Loring, Tue Sep  1 14:40:31 PDT 2015
+//    Make use of renderState for active viswin. use const ref to rather
+//    than copy of attributes.
+//
 // ****************************************************************************
 
 void
-NetworkManager::RenderDepthCues(int windowID,
-                                avtDataObject_p& input_as_dob) const
+NetworkManager::RenderDepthCues(avtImage_p& input) const
 {
-    const VisWindow * const viswin = viswinMap.find(windowID)->second.viswin;
-
     CallProgressCallback("NetworkManager", "Applying depth cueing", 0,1);
-    const avtView3D &cur_view = viswin->GetView3D();
-
-    //
-    // Get the image attributes
-    //
-    avtImage_p compositedImage;
-    CopyTo(compositedImage, input_as_dob);
-
-    int width, height;
-    viswin->GetSize(width, height);
-
-#ifdef PARALLEL
     if (PAR_Rank() == 0)
-#endif
     {
-        const WindowAttributes & winAtts =
-            viswinMap.find(windowID)->second.windowAttributes;
-        const AnnotationAttributes annotationAttributes =
-            viswinMap.find(windowID)->second.annotationAttributes;
-        const double *start = winAtts.GetRenderAtts().GetStartCuePoint();
-        const double *end   = winAtts.GetRenderAtts().GetEndCuePoint();
-        bool automode       = winAtts.GetRenderAtts().GetDepthCueingAutomatic();
-        unsigned char color[] =
-            {annotationAttributes.GetBackgroundColor().Red(),
-             annotationAttributes.GetBackgroundColor().Green(),
-             annotationAttributes.GetBackgroundColor().Blue()};
-        avtSoftwareShader::AddDepthCueing(compositedImage, cur_view,
-                                          automode,
-                                          start, end, color);
+        const RenderingAttributes &renderAtts =
+             renderState.windowInfo->windowAttributes.GetRenderAtts();
+
+        const AnnotationAttributes &annoAtts =
+             renderState.windowInfo->annotationAttributes;
+
+        avtSoftwareShader::AddDepthCueing(
+             input,
+             renderState.window->GetView3D(),
+             renderAtts.GetDepthCueingAutomatic(),
+             renderAtts.GetStartCuePoint(),
+             renderAtts.GetEndCuePoint(),
+             annoAtts.GetBackgroundColor().GetColor());
     }
     CallProgressCallback("NetworkManager", "Applying depth cueing", 1,1);
 }
@@ -6993,52 +7322,26 @@ NetworkManager::RenderDepthCues(int windowID,
 //    Hank Childs, Fri Nov 14 09:32:54 PST 2008
 //    Add a bunch of timings statements.
 //
+//    Burlne Loring, Tue Sep 15 10:18:12 PDT 2015
+//    fix segv on ranks without result.
+//
 // ****************************************************************************
 
 void
-NetworkManager::RenderPostProcess(std::vector<avtPlot_p>& image_plots,
-                                  avtDataObject_p& input_as_dob,
-                                  int windowID) const
+NetworkManager::RenderPostProcess(avtImage_p &input)
 {
-    const WindowAttributes & windowAttributes =
-        viswinMap.find(windowID)->second.windowAttributes;
-
-    if(!image_plots.empty())
+    if (renderState.imageBasedPlots)
     {
-        avtImage_p compositedImage;
-        CopyTo(compositedImage, input_as_dob);
-
-        for(std::vector<avtPlot_p>::iterator plot = image_plots.begin();
-            plot != image_plots.end();
-            ++plot)
-        {
-            int t1 = visitTimer->StartTimer();
-            avtImage_p newImage = (*plot)->ImageExecute(compositedImage,
-                                                        windowAttributes);
-            visitTimer->StopTimer(t1, 
-                         "Image Execute method (often volume rendering)");
-            compositedImage = newImage;
-        }
-        CopyTo(input_as_dob, compositedImage);
+        std::vector<avtPlot_p>::iterator it = renderState.windowInfo->imageBasedPlots.begin();
+        std::vector<avtPlot_p>::iterator end = renderState.windowInfo->imageBasedPlots.end();
+        for(; it != end; ++it)
+            input = (*it)->ImageExecute(input, renderState.windowInfo->windowAttributes);
     }
 
-#ifdef PARALLEL
-    if ((this->r_mgmt.annotMode==2) &&
-        ((PAR_Rank() == 0) || this->r_mgmt.getZBuffer))
-#else
-    if (this->r_mgmt.annotMode==2)
-#endif
+    if ((renderState.annotMode == 2) && (PAR_Rank() == 0))
     {
-        int t2 = visitTimer->StartTimer();
-        VisWindow *viswin = viswinMap.find(windowID)->second.viswin;
-        avtImage_p compositedImage;
-        CopyTo(compositedImage, input_as_dob);
-        avtImage_p postProcessedImage =
-            viswin->PostProcessScreenCapture(compositedImage,
-                                             this->r_mgmt.viewportedMode,
-                                             this->r_mgmt.getZBuffer);
-        CopyTo(input_as_dob, postProcessedImage);
-        visitTimer->StopTimer(t2, "VisWindow::PostProcessScreenCapture");
+        input = renderState.window->PostProcessScreenCapture(
+            input, renderState.viewportedMode, renderState.getZBuffer);
     }
 }
 
@@ -7051,17 +7354,16 @@ NetworkManager::RenderPostProcess(std::vector<avtPlot_p>& image_plots,
 //    qName     The name of the query.
 //
 //  Returns:    The default parameters in string format.
-//          
-//  Programmer: Kathleen Biagas 
+//
+//  Programmer: Kathleen Biagas
 //  Creation:   July 15, 2011
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-std::string 
+std::string
 NetworkManager::GetQueryParameters(const std::string &qName)
 {
     return avtQueryFactory::Instance()->GetDefaultInputParams(qName);
 }
-

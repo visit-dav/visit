@@ -389,6 +389,9 @@
 #    Matthieu Dorier  via Cyrus Harrison, Thu Aug 20 09:07:08 PDT 2015
 #    Added Damaris support.
 #
+#    Burlen Loring, Thu Oct  8 10:45:36 PDT 2015
+#    Added define for aligned_alloc in visit-config.h
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -1959,6 +1962,7 @@ CHECK_FUNCTION_EXISTS(memmove HAVE_MEMMOVE)
 CHECK_FUNCTION_EXISTS(div HAVE_DIV)
 CHECK_FUNCTION_EXISTS(setenv HAVE_SETENV)
 CHECK_FUNCTION_EXISTS(strtof HAVE_STRTOF)
+CHECK_FUNCTION_EXISTS(aligned_alloc HAVE_ALIGNED_ALLOC)
 CHECK_STRTOF_PROTOTYPE(HAVE_STRTOF_PROTOTYPE)
 CHECK_FTIME_PROTOTYPE(HAVE_FTIME_PROTOTYPE)
 CHECK_ISFINITE_EXISTS(HAVE_ISFINITE)
@@ -1971,6 +1975,8 @@ IF(NOT VISIT_DISABLE_SELECT)
         CHECK_FUNCTION_EXISTS(select HAVE_SELECT)
     ENDIF(WIN32)
 ENDIF(NOT VISIT_DISABLE_SELECT)
+
+
 
 # Set the rendering size limit to 16384 so that we are not unnecessarily
 # constraining the user. There is no way to set this properly since this

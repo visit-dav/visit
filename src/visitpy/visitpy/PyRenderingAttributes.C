@@ -82,6 +82,28 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     else
         SNPRINTF(tmpStr, 1000, "%santialiasing = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetOrderComposite())
+        SNPRINTF(tmpStr, 1000, "%sorderComposite = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sorderComposite = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sdepthCompositeThreads = %d\n", prefix, atts->GetDepthCompositeThreads());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sdepthCompositeBlocking = %d\n", prefix, atts->GetDepthCompositeBlocking());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%salphaCompositeThreads = %d\n", prefix, atts->GetAlphaCompositeThreads());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%salphaCompositeBlocking = %d\n", prefix, atts->GetAlphaCompositeBlocking());
+    str += tmpStr;
+    if(atts->GetDepthPeeling())
+        SNPRINTF(tmpStr, 1000, "%sdepthPeeling = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sdepthPeeling = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%socclusionRatio = %g\n", prefix, atts->GetOcclusionRatio());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%snumberOfPeels = %d\n", prefix, atts->GetNumberOfPeels());
+    str += tmpStr;
     if(atts->GetMultiresolutionMode())
         SNPRINTF(tmpStr, 1000, "%smultiresolutionMode = 1\n", prefix);
     else
@@ -320,6 +342,198 @@ RenderingAttributes_GetAntialiasing(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAntialiasing()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetOrderComposite(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the orderComposite in the object.
+    obj->data->SetOrderComposite(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetOrderComposite(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOrderComposite()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetDepthCompositeThreads(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the depthCompositeThreads in the object.
+    obj->data->SetDepthCompositeThreads((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetDepthCompositeThreads(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDepthCompositeThreads()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetDepthCompositeBlocking(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the depthCompositeBlocking in the object.
+    obj->data->SetDepthCompositeBlocking((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetDepthCompositeBlocking(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDepthCompositeBlocking()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAlphaCompositeThreads(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the alphaCompositeThreads in the object.
+    obj->data->SetAlphaCompositeThreads((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAlphaCompositeThreads(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAlphaCompositeThreads()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetAlphaCompositeBlocking(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the alphaCompositeBlocking in the object.
+    obj->data->SetAlphaCompositeBlocking((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetAlphaCompositeBlocking(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAlphaCompositeBlocking()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetDepthPeeling(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the depthPeeling in the object.
+    obj->data->SetDepthPeeling(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetDepthPeeling(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetDepthPeeling()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetOcclusionRatio(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the occlusionRatio in the object.
+    obj->data->SetOcclusionRatio(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetOcclusionRatio(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOcclusionRatio());
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetNumberOfPeels(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the numberOfPeels in the object.
+    obj->data->SetNumberOfPeels((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetNumberOfPeels(PyObject *self, PyObject *args)
+{
+    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetNumberOfPeels()));
     return retval;
 }
 
@@ -1048,6 +1262,22 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"Notify", RenderingAttributes_Notify, METH_VARARGS},
     {"SetAntialiasing", RenderingAttributes_SetAntialiasing, METH_VARARGS},
     {"GetAntialiasing", RenderingAttributes_GetAntialiasing, METH_VARARGS},
+    {"SetOrderComposite", RenderingAttributes_SetOrderComposite, METH_VARARGS},
+    {"GetOrderComposite", RenderingAttributes_GetOrderComposite, METH_VARARGS},
+    {"SetDepthCompositeThreads", RenderingAttributes_SetDepthCompositeThreads, METH_VARARGS},
+    {"GetDepthCompositeThreads", RenderingAttributes_GetDepthCompositeThreads, METH_VARARGS},
+    {"SetDepthCompositeBlocking", RenderingAttributes_SetDepthCompositeBlocking, METH_VARARGS},
+    {"GetDepthCompositeBlocking", RenderingAttributes_GetDepthCompositeBlocking, METH_VARARGS},
+    {"SetAlphaCompositeThreads", RenderingAttributes_SetAlphaCompositeThreads, METH_VARARGS},
+    {"GetAlphaCompositeThreads", RenderingAttributes_GetAlphaCompositeThreads, METH_VARARGS},
+    {"SetAlphaCompositeBlocking", RenderingAttributes_SetAlphaCompositeBlocking, METH_VARARGS},
+    {"GetAlphaCompositeBlocking", RenderingAttributes_GetAlphaCompositeBlocking, METH_VARARGS},
+    {"SetDepthPeeling", RenderingAttributes_SetDepthPeeling, METH_VARARGS},
+    {"GetDepthPeeling", RenderingAttributes_GetDepthPeeling, METH_VARARGS},
+    {"SetOcclusionRatio", RenderingAttributes_SetOcclusionRatio, METH_VARARGS},
+    {"GetOcclusionRatio", RenderingAttributes_GetOcclusionRatio, METH_VARARGS},
+    {"SetNumberOfPeels", RenderingAttributes_SetNumberOfPeels, METH_VARARGS},
+    {"GetNumberOfPeels", RenderingAttributes_GetNumberOfPeels, METH_VARARGS},
     {"SetMultiresolutionMode", RenderingAttributes_SetMultiresolutionMode, METH_VARARGS},
     {"GetMultiresolutionMode", RenderingAttributes_GetMultiresolutionMode, METH_VARARGS},
     {"SetMultiresolutionCellSize", RenderingAttributes_SetMultiresolutionCellSize, METH_VARARGS},
@@ -1124,6 +1354,22 @@ PyRenderingAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "antialiasing") == 0)
         return RenderingAttributes_GetAntialiasing(self, NULL);
+    if(strcmp(name, "orderComposite") == 0)
+        return RenderingAttributes_GetOrderComposite(self, NULL);
+    if(strcmp(name, "depthCompositeThreads") == 0)
+        return RenderingAttributes_GetDepthCompositeThreads(self, NULL);
+    if(strcmp(name, "depthCompositeBlocking") == 0)
+        return RenderingAttributes_GetDepthCompositeBlocking(self, NULL);
+    if(strcmp(name, "alphaCompositeThreads") == 0)
+        return RenderingAttributes_GetAlphaCompositeThreads(self, NULL);
+    if(strcmp(name, "alphaCompositeBlocking") == 0)
+        return RenderingAttributes_GetAlphaCompositeBlocking(self, NULL);
+    if(strcmp(name, "depthPeeling") == 0)
+        return RenderingAttributes_GetDepthPeeling(self, NULL);
+    if(strcmp(name, "occlusionRatio") == 0)
+        return RenderingAttributes_GetOcclusionRatio(self, NULL);
+    if(strcmp(name, "numberOfPeels") == 0)
+        return RenderingAttributes_GetNumberOfPeels(self, NULL);
     if(strcmp(name, "multiresolutionMode") == 0)
         return RenderingAttributes_GetMultiresolutionMode(self, NULL);
     if(strcmp(name, "multiresolutionCellSize") == 0)
@@ -1230,6 +1476,22 @@ PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "antialiasing") == 0)
         obj = RenderingAttributes_SetAntialiasing(self, tuple);
+    else if(strcmp(name, "orderComposite") == 0)
+        obj = RenderingAttributes_SetOrderComposite(self, tuple);
+    else if(strcmp(name, "depthCompositeThreads") == 0)
+        obj = RenderingAttributes_SetDepthCompositeThreads(self, tuple);
+    else if(strcmp(name, "depthCompositeBlocking") == 0)
+        obj = RenderingAttributes_SetDepthCompositeBlocking(self, tuple);
+    else if(strcmp(name, "alphaCompositeThreads") == 0)
+        obj = RenderingAttributes_SetAlphaCompositeThreads(self, tuple);
+    else if(strcmp(name, "alphaCompositeBlocking") == 0)
+        obj = RenderingAttributes_SetAlphaCompositeBlocking(self, tuple);
+    else if(strcmp(name, "depthPeeling") == 0)
+        obj = RenderingAttributes_SetDepthPeeling(self, tuple);
+    else if(strcmp(name, "occlusionRatio") == 0)
+        obj = RenderingAttributes_SetOcclusionRatio(self, tuple);
+    else if(strcmp(name, "numberOfPeels") == 0)
+        obj = RenderingAttributes_SetNumberOfPeels(self, tuple);
     else if(strcmp(name, "multiresolutionMode") == 0)
         obj = RenderingAttributes_SetMultiresolutionMode(self, tuple);
     else if(strcmp(name, "multiresolutionCellSize") == 0)

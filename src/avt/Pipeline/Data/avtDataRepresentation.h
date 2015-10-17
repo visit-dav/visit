@@ -125,6 +125,9 @@ typedef enum
 //    I modified the EAVL version of the avtDataRepresentation constructor
 //    to also have domain and label arguments.
 //
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRepresentation
@@ -138,6 +141,7 @@ class PIPELINE_API avtDataRepresentation
                         avtDataRepresentation(char *, int, int, std::string,
                                               CharStrRef &, DataSetType);
                         avtDataRepresentation(const avtDataRepresentation &);
+
     virtual            ~avtDataRepresentation();
 
     avtDataRepresentation    &operator=(const avtDataRepresentation &);
@@ -147,7 +151,7 @@ class PIPELINE_API avtDataRepresentation
     vtkDataSet         *GetDataVTK(void);
     unsigned char      *GetDataString(int &, DataSetType &);
     unsigned char      *GetCompressedDataString(int &, DataSetType &);
-    int                 GetNumberOfCells(int topoDim, bool polysOnly) const;
+    long long           GetNumberOfCells(int topoDim, bool polysOnly) const;
 
     float               GetCompressionRatio() const;
     float               GetTimeToCompress() const;
@@ -189,10 +193,6 @@ class PIPELINE_API avtDataRepresentation
  private:
     vtkDataSet*         EAVLToVTK(eavlDataSet *data);
     eavlDataSet*        VTKToEAVL(vtkDataSet *data);
-
 };
 
-
 #endif
-
-

@@ -44,6 +44,8 @@
 
 #include <float.h>
 #include <cstring>
+#include <limits>
+#include <algorithm>
 
 #include <avtParallel.h>
 #include <vtkActor.h>
@@ -72,13 +74,418 @@
 
 #include <DebugStream.h>
 #include <BadIndexException.h>
+#include <ImproperUseException.h>
 #include <TimingsManager.h>
 
 #ifdef PARALLEL
 #include "mpi.h"
 #endif
 
-using     std::vector;
+using std::vector;
+using std::numeric_limits;
+
+// ****************************************************************************
+//  Class: Bounds
+//
+//  Purpose:
+//      internal helper class that encapsulate bounds and various
+//      common manipulations
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+class Bounds
+{
+public:
+    Bounds();
+    Bounds(double *p, int i);
+    Bounds(double lx, double hx, double ly, double hy, double lz, double hz, int i);
+    Bounds(const Bounds &o);
+    ~Bounds();
+
+    Bounds &operator=(const Bounds &o);
+
+    bool IsEmpty() const
+    { return (bds[1] < bds[0]) || (bds[3] < bds[2])
+      || (bds[5] < bds[4]); }
+
+    operator bool() const
+    { return !IsEmpty(); }
+
+    static
+    void MakeEmpty(double *b);
+
+    bool IntersectionIsEmpty(const Bounds &o) const;
+
+    double *GetBounds(){ return bds; }
+    const double *GetBounds() const { return bds; }
+    void GetBounds(double *b) const;
+    void SetBounds(double *p, bool take);
+
+    Bounds &ShrinkByEpsInPlace();
+
+    void SetId(int i){ id = i; }
+    int GetId() const { return id; }
+
+    void UpdateCentroidDistance(const double *udir, const double *cam);
+    double GetCentroidDistance() const { return dist; }
+
+private:
+    friend bool greater(const Bounds &l, const Bounds &r);
+    friend ostream &operator<<(ostream &os, const Bounds &b);
+
+private:
+    double *bds; // ptr to 6 doubles xlo xhi ylo yhi zlo zhi
+    double dist; // distance to the centroid along some direction
+    int id; // process id of the owner
+    bool own; // flag indicates if we need ot delete the array
+};
+
+// ****************************************************************************
+//  helper functions for Bounds
+//      greater -- predicate used to sort the bounds
+//      operator<< -- used to print bounds, vectors of bounds,
+//          and vectors of doubles
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool greater(const Bounds &l, const Bounds &r)
+{ return l.dist > r.dist; }
+
+#ifdef avtTransparencyActorDEBUG
+ostream &operator<<(ostream &os, const Bounds &b)
+{
+    os << "id=" << b.id << " dist=" << b.dist << " bds=" << " ["
+        << b.bds[0] << ", " << b.bds[1] << b.bds[2] << ", " << b.bds[3]
+        << b.bds[4] << ", " << b.bds[5] << "]";
+    return os;
+}
+
+ostream &operator<<(ostream &os, const vector<Bounds> &vb)
+{
+    size_t n = vb.size();
+    for (size_t i = 0; i < n; ++i)
+        os << vb[i] << endl;
+    return os;
+}
+
+template <typename T>
+ostream &operator<<(ostream &os, const vector<T> &vb)
+{
+    size_t n = vb.size();
+    if (n)
+    {
+        os << vb[0];
+        for (size_t i = 1; i < n; ++i)
+            os << ", " << vb[i];
+    }
+    return os;
+}
+#endif
+
+// ****************************************************************************
+//  Method Bounds::Bounds
+//
+//  Purpose:
+//      constructor
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+Bounds::Bounds() :
+  bds(static_cast<double*>(malloc(6*sizeof(double)))),
+  dist(numeric_limits<double>::max()), id(0), own(true)
+{
+    MakeEmpty(bds);
+}
+
+// ****************************************************************************
+//  Method Bounds::~Bounds
+//
+//  Purpose:
+//      destructor
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+Bounds::~Bounds()
+{
+    if (own)
+        free(bds);
+}
+
+// ****************************************************************************
+//  Method Bounds::Bounds
+//
+//  Purpose:
+//      zero copy construct from exsiting data
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+Bounds::Bounds(double *p, int i) :
+  bds(p), dist(numeric_limits<double>::max()), id(i), own(false)
+{}
+
+// ****************************************************************************
+//  Method Bounds::Bounds
+//
+//  Purpose:
+//      construct, allocate and copy the data
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+Bounds::Bounds(double lx, double hx, double ly,
+    double hy, double lz, double hz, int i) :
+  bds(static_cast<double*>(malloc(6*sizeof(double)))),
+  dist(numeric_limits<double>::max()), id(i), own(true)
+{
+    bds[0] = lx; bds[1] = hx;
+    bds[2] = ly; bds[3] = hy;
+    bds[4] = lz; bds[5] = hz;
+}
+
+// ****************************************************************************
+//  Method Bounds::Bounds
+//
+//  Purpose:
+//      copy constructor, a deep copy is made
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+Bounds::Bounds(const Bounds &o) :
+  bds(static_cast<double*>(malloc(6*sizeof(double)))),
+  dist(o.dist), id(o.id), own(true)
+{
+    memcpy(bds, o.bds, 6*sizeof(double));
+}
+
+// ****************************************************************************
+//  Method Bounds::operator=
+//
+//  Purpose:
+//      assignment operator
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+Bounds &Bounds::operator=(const Bounds &o)
+{
+    if (this == &o)
+        return *this;
+    SetBounds(o.bds, true);
+    id = o.id;
+    dist = o.dist;
+    return *this;
+}
+
+// ****************************************************************************
+//  Method Bounds::IntersectionIsEmpty
+//
+//  Purpose:
+//      test to determine if this bounds overlaps the other one
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool Bounds::IntersectionIsEmpty(const Bounds &o) const
+{
+    if (IsEmpty() || o.IsEmpty())
+        return true;
+
+    double lo = bds[0] > o.bds[0] ? bds[0] : o.bds[0];
+    double hi = bds[1] < o.bds[1] ? bds[1] : o.bds[1];
+    if (lo > hi)
+        return true;
+
+    lo = bds[2] > o.bds[2] ? bds[2] : o.bds[2];
+    hi = bds[3] < o.bds[3] ? bds[3] : o.bds[3];
+    if (lo > hi)
+        return true;
+
+    lo = bds[4] > o.bds[4] ? bds[4] : o.bds[4];
+    hi = bds[5] < o.bds[5] ? bds[5] : o.bds[5];
+    if (lo > hi)
+        return true;
+
+    return false;
+}
+
+// ****************************************************************************
+//  Method Bounds::MakeEmpty
+//
+//  Purpose:
+//      initializes the bounds
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void Bounds::MakeEmpty(double *b)
+{
+    b[0] =  numeric_limits<double>::max();
+    b[1] = -numeric_limits<double>::max();
+    b[2] =  numeric_limits<double>::max();
+    b[3] = -numeric_limits<double>::max();
+    b[4] =  numeric_limits<double>::max();
+    b[5] = -numeric_limits<double>::max();
+}
+
+// ****************************************************************************
+//  Method Bounds::GetBounds
+//
+//  Purpose:
+//      copy the data into the proivided array
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void Bounds::GetBounds(double *p) const
+{
+    memcpy(p, bds, 6*sizeof(double));
+}
+
+// ****************************************************************************
+//  Method Bounds::SetBounds
+//
+//  Purpose:
+//      shallow/deep copy6 the data from the provided array
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void Bounds::SetBounds(double *p, bool deep)
+{
+    if (deep)
+    {
+        if (!bds || !own)
+            bds = static_cast<double*>(malloc(6*sizeof(double)));
+        memcpy(bds, p, 6*sizeof(double));
+        own = true;
+    }
+    else
+    {
+        if (own)
+            free(bds);
+        bds = p;
+        own = false;
+    }
+}
+
+// ****************************************************************************
+//  Method Bounds::ShrinkByEpsInPlace
+//
+//  Purpose:
+//      shrinks this bounds by a very small amount. eps is the value
+//      of the least significant bit that we care about. machine
+//      eps is in bit position 53 for double. we will use bit position 10
+//      to avoid rounding issues and it's precise enough.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+Bounds &Bounds::ShrinkByEpsInPlace()
+{
+    double prec = 10.0;
+    double ulpx = pow(2.0, log2(bds[1] - bds[0]) - prec);
+    bds[0] += ulpx;
+    bds[1] -= ulpx;
+
+    double ulpy = pow(2.0, log2(bds[3] - bds[2]) - prec);
+    bds[2] += ulpy;
+    bds[3] -= ulpy;
+
+    double ulpz = pow(2.0, log2(bds[5] - bds[4]) - prec);
+    bds[4] += ulpz;
+    bds[5] -= ulpz;
+
+    return *this;
+}
+
+// ****************************************************************************
+//  Method Bounds::UpdateCentroidDistance
+//
+//  Purpose:
+//      Compute the distance to the centroid of the bounds in a
+//      given direction. bounds can be sorted by this distance.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Mon Aug 17 15:35:23 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void Bounds::UpdateCentroidDistance(const double *udir, const double *cam)
+{
+    if (!IsEmpty())
+    {
+        double cen[3] = {
+            cam[0] - (bds[0] + bds[1])/2.0,
+            cam[1] - (bds[2] + bds[3])/2.0,
+            cam[2] - (bds[4] + bds[5])/2.0
+            };
+
+        dist = udir[0]*cen[0] + udir[1]*cen[1] + udir[2]*cen[2];
+    }
+}
+
+
+
+
 
 
 // ****************************************************************************
@@ -118,27 +525,40 @@ using     std::vector;
 //    Tom Fogal, Sun May 24 21:31:20 MDT 2009
 //    Initialize transparenciesExist && cachedTransparencies.
 //
+//    Burlen Loring, Fri Aug 14 11:53:08 PDT 2015
+//    Addded skip sort flag
+//
+//    Burlen Loring, Wed Aug 19 14:00:39 PDT 2015
+//    Added new sort pipelines in support of ordered compositing
+//    and depth peeling
+//
 // ****************************************************************************
 
 avtTransparencyActor::avtTransparencyActor() :
+    inputModified(true),
+    actorMTime(0),
+    appender(NULL),
+    distribute(NULL),
+    myActor(NULL),
+    myMapper(NULL),
+    axisSort(NULL),
+    distributeDepthSort(NULL),
+    depthSort(NULL),
+    usePerfectSort(true),
+    is2Dimensional(false),
+    lastCamera(NULL),
+    renderingSuspended(false),
     transparenciesExist(false),
-    cachedTransparencies(false)
+    cachedTransparencies(false),
+    sortOp(SORT_NONE)
 {
     appender = vtkAppendPolyData::New();
     myMapper = vtkPolyDataMapper::New();
-    myMapper->ImmediateModeRenderingOn();
-    myActor  = vtkActor::New();
-    myActor->SetMapper(myMapper);
-    
-    parallelFilter = vtkParallelImageSpaceRedistributor::New();
-    parallelFilter->SetRankAndSize(PAR_Rank(), PAR_Size());
-#ifdef PARALLEL
-    parallelFilter->SetCommunicator(VISIT_MPI_COMM);
-#endif
 
-    //
+    myActor = vtkActor::New();
+    myActor->SetMapper(myMapper);
+
     // Tell the mapper that we are going to set up an RGBA field ourselves.
-    //
     myMapper->SetColorModeToDefault();
     myMapper->ColorByArrayComponent("Colors", 0);
     myMapper->SetScalarModeToUsePointFieldData();
@@ -146,25 +566,25 @@ avtTransparencyActor::avtTransparencyActor() :
     axisSort = vtkAxisDepthSort::New();
     axisSort->SetInputConnection(appender->GetOutputPort());
 
-    perfectSort = vtkDepthSortPolyData::New();
-    perfectSort->SetDepthSortModeToBoundsCenter();
+    depthSort = vtkDepthSortPolyData::New();
+    depthSort->SetDepthSortModeToBoundsCenter();
+    depthSort->SetInputConnection(appender->GetOutputPort());
 
-    if (PAR_Size() > 1)
-    {
-        parallelFilter->SetInputConnection(appender->GetOutputPort());
-        perfectSort->SetInputConnection(parallelFilter->GetOutputPort());
-    }
-    else
-    {
-        perfectSort->SetInputConnection(appender->GetOutputPort());
-    }
+#ifdef PARALLEL
+    distribute = vtkParallelImageSpaceRedistributor::New();
+    distribute->SetRankAndSize(PAR_Rank(), PAR_Size());
+    distribute->SetCommunicator(VISIT_MPI_COMM);
+    distribute->SetInputConnection(appender->GetOutputPort());
 
-    usePerfectSort = true;
+    distributeDepthSort = vtkDepthSortPolyData::New();
+    distributeDepthSort->SetDepthSortModeToBoundsCenter();
+    distributeDepthSort->SetInputConnection(distribute->GetOutputPort());
+#endif
+
     lastCamera = vtkMatrix4x4::New();
 
-    inputModified = true;
-    renderingSuspended = false;
-    is2Dimensional = false;
+    // use display lists
+    SetImmediateMode(false);
 }
 
 
@@ -189,42 +609,16 @@ avtTransparencyActor::avtTransparencyActor() :
 
 avtTransparencyActor::~avtTransparencyActor()
 {
-    if (appender != NULL)
-    {
-        appender->Delete();
-        appender = NULL;
-    }
-    if (myActor != NULL)
-    {
-        myActor->Delete();
-        myActor = NULL;
-    }
-    if (myMapper != NULL)
-    {
-        myMapper->Delete();
-        myMapper = NULL;
-    }
-    if (axisSort != NULL)
-    {
-        axisSort->Delete();
-        axisSort = NULL;
-    }
-    if (perfectSort != NULL)
-    {
-        perfectSort->Delete();
-        perfectSort = NULL;
-    }
-    if (lastCamera != NULL)
-    {
-        lastCamera->Delete();
-        lastCamera = NULL;
-    }
-
-    if(parallelFilter != NULL)
-    {
-        parallelFilter->Delete();
-        parallelFilter = NULL;
-    }
+    appender->Delete();
+    myActor->Delete();
+    myMapper->Delete();
+    axisSort->Delete();
+    depthSort->Delete();
+#ifdef PARALLEL
+    distribute->Delete();
+    distributeDepthSort->Delete();
+#endif
+    lastCamera->Delete();
 }
 
 
@@ -322,6 +716,7 @@ avtTransparencyActor::AddInput(vector<vtkDataSet *> &d,
                           vector<vtkDataSetMapper *> &m, vector<vtkActor *> &a)
 {
     int index = (int)datasets.size();
+
     datasets.push_back(d);
     mappers.push_back(m);
     actors.push_back(a);
@@ -331,9 +726,7 @@ avtTransparencyActor::AddInput(vector<vtkDataSet *> &d,
     size_t size = d.size();
     vector<vtkPolyData *> pd;
     for (size_t i = 0 ; i < size ; ++i)
-    {
         pd.push_back(NULL);
-    }
     preparedDataset.push_back(pd);
 
     inputModified = true;
@@ -448,7 +841,7 @@ avtTransparencyActor::RemoveInput(int ind)
 void
 avtTransparencyActor::TurnOffInput(int ind)
 {
-    if (ind < 0 || (size_t)ind >= useActor.size())
+    if ((ind < 0) || ((size_t)ind >= useActor.size()))
     {
         EXCEPTION2(BadIndexException, ind, (int)useActor.size());
     }
@@ -558,6 +951,120 @@ avtTransparencyActor::VisibilityOn(void)
 }
 
 
+
+// ****************************************************************************
+//  Method: avtTransparencyActor::ComputeCompositingOrder
+//
+//  Purpose:
+//      Check if a compositing order can be determined. If so compute
+//      the order of the ranks to correctly render translucent geometry
+//      without doing a global parallel camera order sort. The ordering
+//      is returned in a vector where ranks are sorterd furthest to
+//      nearest from the camera. My approach verifies that each rank's
+//      data is disjoint. If that is the case then the order can be
+//      computed. This works for both structured and unstructured data.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Fri Aug 14 11:58:17 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool avtTransparencyActor::ComputeCompositingOrder(
+    vtkCamera *cam, std::vector<int> &order)
+{
+#ifdef avtTransparencyActorDEBUG
+    debug2 << "avtTransparencyActor::ComputeCompositingOrder" << endl;
+#endif
+    int rank = 0;
+    int nranks = 1;
+#ifdef PARALLEL
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+    MPI_Comm_size(VISIT_MPI_COMM, &nranks);
+#endif
+
+    // handle the serial case. you have the order but
+    // it doesn't really matter as no compositing is
+    // needed
+    if (nranks < 2)
+        return true;
+
+    // the bounds of the data I have
+    vector<double> buf(6*nranks, 0.0);
+    appender->Update();
+    vtkPolyData *data = appender->GetOutput();
+    if (data->GetNumberOfCells())
+        data->GetBounds(&buf[6*rank]);
+    else
+        Bounds::MakeEmpty(&buf[6*rank]);
+
+    // share it with all other ranks
+#ifdef PARALLEL
+    MPI_Allgather(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
+        &buf[0], 6, MPI_DOUBLE, VISIT_MPI_COMM);
+#endif
+
+    // get the camera position and view direction
+    double pos[3];
+    cam->GetPosition(pos);
+
+    double foc[3];
+    cam->GetFocalPoint(foc);
+
+    double dir[3] = {pos[0] - foc[0], pos[1] - foc[1], pos[2] - foc[2]};
+    double len = sqrt(dir[0]*dir[0]+dir[1]*dir[1]+dir[2]*dir[2]);
+    dir[0] /= len;
+    dir[1] /= len;
+    dir[2] /= len;
+
+    // compute the distance from the camera to/ bounds centroid
+    // projected onto the view vector. drop empty bounds now,
+    // we don't need those ranks to participate in compositing.
+    vector<Bounds> bounds;
+    bounds.reserve(nranks);
+    for (int i = 0; i < nranks; ++i)
+    {
+        Bounds b(&buf[6*i], i);
+        if (b.IsEmpty())
+            continue; // drop it
+        b.UpdateCentroidDistance(dir, pos);
+        b.ShrinkByEpsInPlace();
+        bounds.push_back(b);
+    }
+#ifdef avtTransparencyActorDEBUG
+    debug2 << "bounds = {" << bounds << "}" << endl;
+#endif
+
+    // do any of the non-empty bounds intersect? if
+    // not then we can compute the ordering.
+    size_t nbounds = bounds.size();
+    for (size_t j = 0; j < nbounds; ++j)
+    {
+        for (size_t i = 0; i < j; ++i)
+        {
+            if (!bounds[j].IntersectionIsEmpty(bounds[i]))
+                return false;
+        }
+    }
+
+    // sort the bounds according to distance from camera along
+    // view dir. the first process in the list is the one
+    // farthest away (ie descending order) and will be the root
+    // of the ordered compositing tree.
+    std::sort(bounds.begin(), bounds.end(), greater);
+
+    // return the sorted ranks
+    order.resize(nbounds);
+    for (size_t i = 0; i < nbounds; ++i)
+        order[i] =  bounds[i].GetId();
+
+#ifdef avtTransparencyActorDEBUG
+    debug2 << "order = {" << order << "}" << endl;
+#endif
+
+    return true;
+}
+
 // ****************************************************************************
 //  Method: avtTransparencyActor::PrepareForRender
 //
@@ -590,127 +1097,214 @@ avtTransparencyActor::VisibilityOn(void)
 //    Jeremy Meredith, Thu Oct 21 15:05:29 PDT 2004
 //    Use PAR_Size instead of an ifdef so we don't have to build a parallel
 //    library.  Disable axis sort in parallel because it's only slowing us
-//    down (never use it).  
+//    down (never use it).
 //
 //    Hank Childs, Thu Mar  8 13:08:34 PST 2007
 //    Make sure that the transparent geometry gets turned off when we render
 //    something 2D.
-//    
+//
+//    Burlen Loring, Wed Aug 19 13:53:08 PDT 2015
+//    Refactor some of the control logic. Added new sorting modes and
+//    a mask to select amongs them. This enables us to use depth peeling
+//    and/or ordered compositing mode.
+//
 // ****************************************************************************
 
 void
 avtTransparencyActor::PrepareForRender(vtkCamera *cam)
 {
+#ifdef avtTransparencyActorDEBUG
+    debug2 << "avtTransparencyActor::PrepareForRender" << endl;
+#endif
     // if this is a 2D plot, we don't need to sort anything
     if (is2Dimensional)
     {
         if (!TransparenciesExist())
-        {
             myActor->SetVisibility(0);
-        }
         return;
     }
 
-    //
-    // Determine if our poly-data input is up-to-date.
-    //
-    bool needToRecalculate = inputModified;
-    if (useActor.size() != lastExecutionActorList.size())
+    SetUpActor();
+
+    // If we don't have anything to render, don't have our actor draw.
+    if (!TransparenciesExist() || renderingSuspended)
     {
-        needToRecalculate = true;
+        myActor->SetVisibility(0);
     }
     else
     {
-        for (size_t i = 0 ; i < useActor.size() ; i++)
+        myActor->SetVisibility(1);
+
+        // do the selcted sort operation and pass the data into
+        // the mapper. 
+        if (sortOp == SORT_NONE)
         {
-            if (useActor[i] != lastExecutionActorList[i])
+#ifdef avtTransparencyActorDEBUG
+            debug2 << "skipping geometry sort" << endl;
+#endif
+            appender->Update();
+            myMapper->SetInputData(appender->GetOutput());
+        }
+#ifdef PARALLEL
+        else if ((sortOp & SORT_DISTRIBUTE) && (sortOp & SORT_DEPTH))
+        {
+#ifdef avtTransparencyActorDEBUG
+            debug2 << "redistributed data followed by camera order sort" << endl;
+#endif
+            distributeDepthSort->SetCamera(cam);
+            distributeDepthSort->Update();
+            myMapper->SetInputData(distributeDepthSort->GetOutput());
+        }
+        else if (sortOp & SORT_DISTRIBUTE)
+        {
+#ifdef avtTransparencyActorDEBUG
+            debug2 << "redistributed data" << endl;
+#endif
+            distribute->Update();
+            myMapper->SetInputData(distribute->GetOutput());
+        }
+#endif
+        else if (sortOp & SORT_DEPTH)
+        {
+            if (usePerfectSort)
             {
-                needToRecalculate = true;
+#ifdef avtTransparencyActorDEBUG
+                debug2 << "local camera order sort" << endl;
+#endif                
+                depthSort->SetCamera(cam);
+                depthSort->Update();
+                myMapper->SetInputData(depthSort->GetOutput());
+            }
+            else
+            {
+#ifdef avtTransparencyActorDEBUG
+                debug2 << "local axis order sort" << endl;
+#endif
+                axisSort->Update();
+                if (CameraChanged(cam))
+                    myMapper->SetInputData(GetAxisSortOutput(cam));
             }
         }
-    }
-
-    // If parallel transparency is enabled, we should recalculate the
-    // ordering each time to ensure that each processor handles its
-    // correct group of data.
-    if (PAR_Size() > 1)
-        needToRecalculate = true;
-
-    //
-    // The routine to set up our actual big actor is *long* -- push it off to
-    // a subroutine.
-    //
-    if (needToRecalculate)
-    {
-        SetUpActor();
-    }
-
-    // If we are in parallel, then an axis sort won't help us because it
-    // cannot also sort across processors, so we always need a perfect sort.
-    if (PAR_Size() > 1 || usePerfectSort)
-    {
-        perfectSort->SetCamera(cam);
-        perfectSort->Update();
-        myMapper->SetInputData(perfectSort->GetOutput());
-        vtkMatrix4x4 *mat = cam->GetViewTransformMatrix();
-        lastCamera->DeepCopy(mat);
-    }
-    else
-    {
-        vtkMatrix4x4 *mat = cam->GetViewTransformMatrix();
-        bool equal = true;
-        for (int i = 0 ; i < 16 ; i++)
+        else
         {
-            if (mat->Element[i/4][i%4] != lastCamera->Element[i/4][i%4])
-            {
-               equal = false;
-               break;
-            }
-        }
-
-        if (!equal)
-        {
-            //
-            // Based on what the direction of project is, set up the best 
-            // sorting.
-            //
-            double proj[3];
-            cam->GetDirectionOfProjection(proj);
-            int biggest = 0;
-            if (fabs(proj[biggest]) < fabs(proj[1]))
-                biggest = 1;
-            if (fabs(proj[biggest]) < fabs(proj[2]))
-                biggest = 2;
-            biggest += 1;
-            if (proj[biggest-1] < 0.)
-            {
-                biggest *= -1;
-            }
-            switch (biggest)
-            {
-              case -3:
-                myMapper->SetInputData(axisSort->GetMinusZOutput());
-                break;
-              case -2:
-                myMapper->SetInputData(axisSort->GetMinusYOutput());
-                break;
-              case -1:
-                myMapper->SetInputData(axisSort->GetMinusXOutput());
-                break;
-              case 1:
-                myMapper->SetInputData(axisSort->GetPlusXOutput());
-                break;
-              case 2:
-                myMapper->SetInputData(axisSort->GetPlusYOutput());
-                break;
-              case 3:
-                myMapper->SetInputData(axisSort->GetPlusZOutput());
-                break;
-            }
+            EXCEPTION1(ImproperUseException, "invalid sortOp!");
         }
     }
 }
 
+// ****************************************************************************
+//  Method: avtTransparencyActor::SetImmediateMode
+//
+//  Purpose:
+//      enable/disable display lists
+//
+//  Programmer: Burlen Loring
+//  Creation: Wed Aug 19 13:50:52 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtTransparencyActor::SetImmediateMode(bool m)
+{
+    if (m)
+        myMapper->ImmediateModeRenderingOn();
+    else
+        myMapper->ImmediateModeRenderingOff();
+}
+
+// ****************************************************************************
+//  Method: avtTransparencyActor::CameraChanged
+//
+//  Purpose:
+//      Return true if the camera matrix has changed
+//
+//  Programmer: Hank Childs
+//  Creation:   July 7, 2002
+//
+//  Modifications:
+//
+//      Burlen Loring, Wed Aug 19 13:38:39 PDT 2015
+//      I factored this into its own function
+//
+// ****************************************************************************
+
+bool
+avtTransparencyActor::CameraChanged(vtkCamera *cam)
+{
+    vtkMatrix4x4 *mat = cam->GetViewTransformMatrix();
+    bool equal = true;
+    for (int i = 0 ; i < 16 ; i++)
+    {
+        if (mat->Element[i/4][i%4] != lastCamera->Element[i/4][i%4])
+        {
+           equal = false;
+           vtkMatrix4x4 *mat = cam->GetViewTransformMatrix();
+           lastCamera->DeepCopy(mat);
+           break;
+        }
+    }
+    return equal;
+}
+
+// ****************************************************************************
+//  Method: avtTransparencyActor::GetAxisSortOutput
+//
+//  Purpose:
+//      Get the correct output for the given camera orientation
+//
+//  Programmer: Hank Childs
+//  Creation:   July 7, 2002
+//
+//  Modifications:
+//
+//      Burlen Loring, Wed Aug 19 13:38:39 PDT 2015
+//      I factored this into its own function
+//
+// ****************************************************************************
+
+vtkPolyData *
+avtTransparencyActor::GetAxisSortOutput(vtkCamera *cam)
+{
+    // Based on what the direction of project is, set up the best
+    // sorting.
+    double proj[3];
+    cam->GetDirectionOfProjection(proj);
+    int biggest = 0;
+    if (fabs(proj[biggest]) < fabs(proj[1]))
+        biggest = 1;
+    if (fabs(proj[biggest]) < fabs(proj[2]))
+        biggest = 2;
+    biggest += 1;
+    if (proj[biggest-1] < 0.)
+    {
+        biggest *= -1;
+    }
+    switch (biggest)
+    {
+      case -3:
+        return axisSort->GetMinusZOutput();
+        break;
+      case -2:
+        return axisSort->GetMinusYOutput();
+        break;
+      case -1:
+        return axisSort->GetMinusXOutput();
+        break;
+      case 1:
+        return axisSort->GetPlusXOutput();
+        break;
+      case 2:
+        return axisSort->GetPlusYOutput();
+        break;
+      case 3:
+        return axisSort->GetPlusZOutput();
+        break;
+    }
+    debug1 << "failed to determine which axis sort output to use!" << endl;
+    return NULL;
+}
 
 // ****************************************************************************
 //  Method: avtTransparencyActor::AddToRenderer
@@ -731,14 +1325,20 @@ avtTransparencyActor::PrepareForRender(vtkCamera *cam)
 //    Jeremy Meredith, Thu Oct 21 15:08:16 PDT 2004
 //    Use PAR_Size instead of an ifdef.
 //
+//    Burlen Loring, Wed Aug 19 13:16:09 PDT 2015
+//    Go back to the ifdef to simplify logic elsewhere.
+//    distributed sorting won't be requested if there's only
+//    1 rank now.
+//
 // ****************************************************************************
 
 void
 avtTransparencyActor::AddToRenderer(vtkRenderer *ren)
 {
     ren->AddActor(myActor);
-    if (PAR_Size() > 1)
-        parallelFilter->SetRenderer(ren);
+#ifdef PARALLEL
+    distribute->SetRenderer(ren);
+#endif
 }
 
 
@@ -791,6 +1391,57 @@ avtTransparencyActor::RemoveFromRenderer(vtkRenderer *ren)
 //      initially have no data need to have rendering props
 //      synchronized after depth sort.
 //
+//      This calls a worker method that does the communication
+//      after first determining the representative source
+//      from the list of input data.
+//
+//      This methods only needs to be called for the global
+//      parallel redistribution of data. it has to be called
+//      by all ranks.
+//
+//  Programmer: Burlen Loring
+//  Creation:  Tue Sep  8 13:58:01 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void avtTransparencyActor::SyncProps()
+{
+    // the (local) representative actor, the one we take the props
+    // from and apply to the appended dataset, is the the one from
+    // the last non-empty input.
+    vtkActor *repActor = NULL;
+    size_t numActors = datasets.size();
+    for (size_t i = 0 ; i < numActors ; ++i)
+    {
+        if (useActor[i] && visibility[i] == true)
+        {
+            size_t numParts = datasets[i].size();
+            for (size_t j = 0; j < numParts; ++j)
+            {
+                if (preparedDataset[i][j])
+                    repActor = actors[i][j];
+            }
+        }
+    }
+    if (TransparenciesExist() && !renderingSuspended)
+    {
+        vtkProperty *dest  = myActor->GetProperty();
+        vtkProperty *source = repActor ? repActor->GetProperty() : NULL;
+        SyncProps(dest, source);
+    }
+}
+
+// ****************************************************************************
+//  Method: avtTransparencyActor::SyncProps
+//
+//  Purpose:
+//      Synchronize properties across MPI ranks. Ranks that
+//      initially have no data need to have rendering props
+//      synchronized after depth sort because they then will
+//      have data to render.
+//
 //  Programmer: Burlen Loring
 //  Creation:   Thu Jun 25 12:34:39 PDT 2015
 //
@@ -800,6 +1451,9 @@ avtTransparencyActor::RemoveFromRenderer(vtkRenderer *ren)
 
 int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
 {
+#ifdef avtTransparencyActorDEBUG
+    debug2 << "avtTransparencyActor::SyncProps " << dest << " " << source << endl;
+#endif
     int rank = 0;
     int size = 1;
 
@@ -807,6 +1461,24 @@ int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
     MPI_Comm_rank(VISIT_MPI_COMM, &rank);
     MPI_Comm_size(VISIT_MPI_COMM, &size);
 #endif
+
+    // skip a bunch of communication of props haven't changed
+    unsigned long long curMTime = source ? source->GetMTime() : 0;
+#ifdef PARALLEL
+    MPI_Allreduce(MPI_IN_PLACE, &curMTime, 1, MPI_UNSIGNED_LONG_LONG,
+        MPI_MAX, VISIT_MPI_COMM);
+#endif
+#ifdef avtTransparencyActorDEBUG
+    debug2 << "a mtime = " << actorMTime << " cur mtime = " << curMTime << endl;
+#endif
+    if (actorMTime && (curMTime <= actorMTime))
+    {
+#ifdef avtTransparencyActorDEBUG
+        debug2 << "skiped sync!" << endl;
+#endif
+        return 0;
+    }
+    actorMTime = curMTime;
 
     // find the first rank that has valid props
     // he will be the source of the props for
@@ -930,104 +1602,89 @@ int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
 //    the suspension of transparent rendering for two-pass mode.
 //
 //    Kathleen Bonnell, Wed May 17 15:08:39 PDT 2006
-//    Ensure that appender has non-NULL input (can have empty input, not NULL).
+//    Ensure that appender has non-NULL input (can have isempty input, not NULL).
 //
 //    Tom Fogal, Thu Aug 14 14:14:54 EDT 2008
 //    Match size types.
+//
+//    Burlen Loring, Wed Aug 19 13:19:05 PDT 2015
+//    Move the sorting actions back into PrepareForRender so that
+//    they are all in one spot.
+//
+//    Burlen Loring, Tue Sep  8 13:06:25 PDT 2015
+//    Don't recalculate unecessarily in parallel. specifically remove the
+//    PAR_Size > 1 condition while keeping the appender update.
 //
 // ****************************************************************************
 
 void
 avtTransparencyActor::SetUpActor(void)
 {
-    appender->RemoveAllInputs();
-    size_t numActors = datasets.size();
-    vtkActor *repActor = NULL;
-    bool addedInput = false;
-    for (size_t i = 0 ; i < numActors ; i++)
+#ifdef avtTransparencyActorDEBUG
+    debug2 << "avtTransparencyActor::SetUpActor" << endl;
+#endif
+
+    // Determine if our poly-data input is up-to-date.
+    bool needToRecalculate = inputModified
+        || (useActor.size() != lastExecutionActorList.size())
+        || (actorMTime == 0);
+
+    size_t n = useActor.size();
+    for (size_t i = 0; (i < n) && !needToRecalculate; ++i)
     {
-        if (useActor[i] && visibility[i] == true)
+        if (useActor[i] != lastExecutionActorList[i])
+            needToRecalculate = true;
+    }
+
+    if (needToRecalculate)
+    {
+        // Maintain our internal state for next time.
+        lastExecutionActorList = useActor;
+
+        appender->RemoveAllInputs();
+        size_t numActors = datasets.size();
+        //vtkActor *repActor = NULL;
+        bool addedInput = false;
+        for (size_t i = 0 ; i < numActors ; ++i)
         {
-            size_t numParts = datasets[i].size();
-            for (size_t j = 0 ; j < numParts ; j++)
+            if (useActor[i] && visibility[i] == true)
             {
-                PrepareDataset(i, j);
-                if (preparedDataset[i][j] != NULL)
+                size_t numParts = datasets[i].size();
+                for (size_t j = 0 ; j < numParts ; j++)
                 {
-                    addedInput = true;
-                    appender->AddInputData(preparedDataset[i][j]);
-                    repActor = actors[i][j];
+                    PrepareDataset(i, j);
+                    if (preparedDataset[i][j] != NULL)
+                    {
+                        addedInput = true;
+                        appender->AddInputData(preparedDataset[i][j]);
+                    }
                 }
             }
         }
-    }
+    
+        //  VTK pipeline requires filters to have non-null inputs.
+        if (!addedInput)
+        {
+            vtkPolyData *pd = vtkPolyData::New();
+            appender->AddInputData(pd);
+            pd->Delete();
+        }
 
-    // 
-    //  VTK pipeline now requires its filters to have non-null inputs.
-    // 
-    if (!addedInput)
-    {
-        // use empty input? 
-        vtkPolyData *pd = vtkPolyData::New();
-        appender->AddInputData(pd);
-        pd->Delete();
+        if (actorMTime == 0)
+            SyncProps();
     }
+#ifdef avtTransparencyActorDEBUG
+    else
+    {
+        debug2 << "using cached setup!" << endl;
+    }
+#endif
 
     // Force the appender to update; this is needed in parallel SR mode
     // because all processors need to re-execute the pipeline, and if
     // not all processors have data then they might not re-execute.
     // See VisIt00005467.
     appender->Modified();
-
-    //
-    // If we don't have anything to render, don't have our actor draw.
-    //
-    if (!TransparenciesExist())
-    {
-        myActor->SetVisibility(0);
-    }
-    else
-    {
-        //
-        // Just because we have geometry doesn't mean we will be
-        // rendering it, because in two-pass parallel SR mode we
-        // must disable transparent geometry for the first pass.
-        //
-        myActor->SetVisibility(renderingSuspended ? 0 : 1);
-
-        //
-        // If their actor has some special properties set up, try to preserve
-        // those.  Note that this is confusing logic if there are actors with
-        // different properties -- we will just be taking them for one of them.
-        //
-        vtkProperty *dest  = myActor->GetProperty();
-        vtkProperty *source = repActor ? repActor->GetProperty() : NULL;
-        SyncProps(dest, source);
-
-        //
-        // Sort all the data from all six axis directions.  This will prevent
-        // pauses as we cross between our view directions.  Note that if we
-        // are in parallel, then we must be doing SR mode transparency and
-        // and Axis sort doesn't do us any good since it sorts only within
-        // a processor.
-        //
-        if (PAR_Size() > 1)
-        {
-            debug4 << "Skipping axis sorting because we are in parallel.\n";
-        }
-        else
-        {
-            int sorting = visitTimer->StartTimer();
-            axisSort->Update();
-            visitTimer->StopTimer(sorting,"Sorting triangles for transparency");
-            visitTimer->DumpTimings();
-        }
-    }
-
-    //
-    // Maintain our internal state for next time.
-    //
-    lastExecutionActorList = useActor;
 }
 
 
@@ -1035,8 +1692,9 @@ avtTransparencyActor::SetUpActor(void)
 //  Method: avtTransparencyActor::PrepareDataset
 //
 //  Purpose:
-//      This routine will take a dataset and map colors onto it.  This will
-//      allow it to be merged later.
+//      This routine will take a dataset potentially convert to polydata
+//      compute normals and map colors onto it.  This will allow it to be
+//      merged later.
 //
 //  Arguments:
 //      input       The input index.
@@ -1082,11 +1740,18 @@ avtTransparencyActor::SetUpActor(void)
 //    Only create filters if needed.  Break upstream vtk pipeline by setting
 //    in_ds source to NULL. (Fixes crash/no data for rgrids on Windows).
 //
+//    Burlen Loring, Sat Sep 12 08:55:19 PDT 2015
+//    Eliminate an unessary memcpy of scalar colors. Fix leak of vtk transform
+//
 // ****************************************************************************
 
 void
 avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
 {
+#ifdef avtTransparencyActorDEBUG
+    debug2 << "avtTransparencyActor::PrepareDataset" << endl;
+#endif
+
     inputModified = false;
 
     vtkDataSet       *in_ds  = datasets[input][subinput];
@@ -1114,6 +1779,9 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
         // Our last preparation of this dataset is still good.  No need to redo
         // the same work twice.
         //
+#ifdef avtTransparencyActorDEBUG
+        debug2 << "preparation of this dataset is still good!" << endl;
+#endif
         return;
     }
 
@@ -1126,7 +1794,7 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
         preparedDataset[input][subinput]->Delete();
         preparedDataset[input][subinput] = NULL;
     }
-        
+
     //
     // If this actor is fully opaque, then we are not needed.
     //
@@ -1158,8 +1826,8 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
     vtkGeometryFilter *gf = NULL;
     vtkDataSetRemoveGhostCells *ghost_filter = NULL;
     vtkVisItPolyDataNormals *normals = NULL;
-    vtkTransformFilter *xform_filter = NULL; 
-    vtkTransform *xform = vtkTransform::New();
+    vtkTransformFilter *xform_filter = NULL;
+    vtkTransform *xform = NULL;
     vtkPolyData *pd = NULL;
 
     // break upstream vtk pipeline
@@ -1225,10 +1893,8 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
     vtkPolyData *prepDS = vtkPolyData::New();
     if (mapper->GetScalarVisibility() == 0)
     {
-        //
         // The color and the opacity of the whole actor will be applied to
         // every triangle of this poly data.
-        //
         prepDS->CopyStructure(pd);
         int npts = prepDS->GetNumberOfPoints();
         vtkUnsignedCharArray *colors = vtkUnsignedCharArray::New();
@@ -1238,12 +1904,12 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
         double *color   = actor->GetProperty()->GetColor();
         double  opacity = actor->GetProperty()->GetOpacity();
         unsigned char rgba[4];
-        rgba[0] = (unsigned char) ((float)color[0] * 255);
-        rgba[1] = (unsigned char) ((float)color[1] * 255);
-        rgba[2] = (unsigned char) ((float)color[2] * 255);
-        rgba[3] = (unsigned char) ((float)opacity * 255);
-        unsigned char *ptr = (unsigned char *) colors->GetVoidPointer(0);
-        for (int i = 0 ; i < npts ; i++)
+        rgba[0] = (unsigned char) (color[0] * 255.0);
+        rgba[1] = (unsigned char) (color[1] * 255.0);
+        rgba[2] = (unsigned char) (color[2] * 255.0);
+        rgba[3] = (unsigned char) (opacity * 255.0);
+        unsigned char *ptr = colors->GetPointer(0);
+        for (int i = 0 ; i < npts ; ++i)
         {
             ptr[4*i]   = rgba[0];
             ptr[4*i+1] = rgba[1];
@@ -1255,58 +1921,43 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
         if (pd->GetPointData()->GetNormals() != NULL)
         {
             prepDS->GetPointData()->SetNormals(
-                                             pd->GetPointData()->GetNormals());
+                pd->GetPointData()->GetNormals());
         }
     }
     else
     {
-        if (pd->GetPointData()->GetScalars() != NULL)
+        if (pd->GetPointData()->GetScalars())
         {
-            //
             // Prepare our own buffer to store the colors in.
-            //
             prepDS->CopyStructure(pd);
-            int npts = prepDS->GetNumberOfPoints();
-            vtkUnsignedCharArray *colors = vtkUnsignedCharArray::New();
-            colors->SetNumberOfComponents(4);
-            colors->SetNumberOfTuples(npts);
-            colors->SetName("Colors");
-            unsigned char *ptr = (unsigned char *) colors->GetVoidPointer(0);
 
             // Disable interpolate scalars
             int interpolateScalars = mapper->GetInterpolateScalarsBeforeMapping();
-            if(interpolateScalars > 0)
+            if (interpolateScalars > 0)
                 mapper->InterpolateScalarsBeforeMappingOff();
 
-            //
             // Now let the mapper create the buffer of unsigned chars that it
             // would have created if we were to let it do the actual mapping.
-            //
+            // note: VTK no longer uses this api internally. and there is some
+            // logic (based on OpenGL features) in vtk that would make this
+            // incorrect with translucent geometry. in practice it doesn't occur.
+            // but the divergence from what we are doing compared to what VTK is
+            // doing is something to be aware of.
             double opacity = actor->GetProperty()->GetOpacity();
-            vtkUnsignedCharArray *mappedColors = mapper->MapScalars(opacity);
-            unsigned char *buff = 
-              (unsigned char *) mappedColors->GetVoidPointer(0);
+            vtkUnsignedCharArray *colors = mapper->MapScalars(opacity);
 
-            //
-            // Now copy over the buffer and store it back with the dataset.
-            //
-            for (int i = 0 ; i < 4*npts ; i++)
-            {
-                ptr[i] = buff[i];
-            }
+            colors->SetName("Colors");
             prepDS->GetPointData()->AddArray(colors);
-            colors->Delete();
-            if (pd->GetPointData()->GetNormals() != NULL)
-            {
+
+            if (pd->GetPointData()->GetNormals())
                 prepDS->GetPointData()->SetNormals(
-                                             pd->GetPointData()->GetNormals());
-            }
+                    pd->GetPointData()->GetNormals());
 
             // Restore interpolate scalars
             if(interpolateScalars > 0)
                 mapper->InterpolateScalarsBeforeMappingOn();
         }
-        else if (pd->GetCellData()->GetScalars() != NULL)
+        else if (pd->GetCellData()->GetScalars())
         {
             //
             // This is a sad state -- we have decided that the poly data will
@@ -1342,7 +1993,7 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
                     myCellPts[j] = count;
                     count++;
                 }
-                
+
                 prepDS->InsertNextCell(pd->GetCellType(i), npts, myCellPts);
             }
 
@@ -1503,7 +2154,7 @@ avtTransparencyActor::SetSpecularProperties(bool flag,double coeff,double power,
 //  Purpose:
 //    Returns true if this actor is active (appender has inputs).
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   December 3, 2003
 //
 //  Modifications:
@@ -1511,15 +2162,24 @@ avtTransparencyActor::SetSpecularProperties(bool flag,double coeff,double power,
 //    Tom Fogal, Mon May 25 14:04:56 MDT 2009
 //    Changed interface; this method checks the memo'd cache.
 //
+//    Burlen Loring, Sat Sep 12 08:55:19 PDT 2015
+//    SyncProps here so that we only sync once per frame
+//
 // ****************************************************************************
+
 bool
 avtTransparencyActor::TransparenciesExist()
 {
     if(!cachedTransparencies)
     {
-        debug3 << "Unknown if transparencies exist; recalculating "
-               << "(this requires global communication)." << std::endl;
         DetermineTransparencies();
+
+        // since we are already doing ommunication here, and this only
+        // occurs once per frame, this is as good a place as any to ensure
+        // that the props are in sync TODO -- this is needed when some ranks
+        // don't have data, there should be a way to pass down the props
+        // and eliminate the communication.
+        SyncProps();
     }
 
     return transparenciesExist;
@@ -1550,6 +2210,9 @@ avtTransparencyActor::TransparenciesExist()
 void
 avtTransparencyActor::DetermineTransparencies()
 {
+#ifdef avtTransparencyActorDEBUG
+    debug2 << "avtTransparencyActor::DetermineTransparencies" << endl;
+#endif
     transparenciesExist = false;
     size_t numActors = datasets.size();
     for (size_t i = 0 ; i < numActors && !transparenciesExist; i++)
@@ -1589,21 +2252,30 @@ avtTransparencyActor::DetermineTransparencies()
 //  Programmer: Mark C. Miller 
 //  Creation:   January 20, 2005
 //
+//  Modifications:
+//
+//    Burlen Loring, Fri Oct 16 12:20:18 PDT 2015
+//    Don't use pre increment on stl iterators, move function calls out of
+//    for.
+//
 // ****************************************************************************
 
 bool
 avtTransparencyActor::TransparenciesMightExist() const
 {
-    std::map<int,double>::const_iterator it;
+    std::map<int,double>::const_iterator it = inputsOpacities.begin();
+    std::map<int,double>::const_iterator end = inputsOpacities.end();
+
     bool has_transparency = false;
-    for (it = inputsOpacities.begin(); it != inputsOpacities.end(); it++)
+    for (; it != end; ++it)
     {
-        if (it->second > 0.0 && it->second < 1.0)
+        if ((it->second > 0.0) && (it->second < 1.0))
         {
             has_transparency = true;
             break;
         }
     }
+
     return has_transparency;
 }
 
@@ -1637,7 +2309,7 @@ avtTransparencyActor::SetIs2Dimensional(bool val)
             // because one processor decides to re-execute despite having
             // no inputs.  Let's just force what we think should be
             // happening anyway, and force all processors to re-execute
-            // so they all go through the parallelFilter.  This is similar
+            // so they all go through the distribute.  This is similar
             // to VisIt00005467.
             appender->Modified();
         }

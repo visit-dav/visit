@@ -73,6 +73,7 @@
 
 class vtkCallbackCommand;
 class vtkRenderer;
+class vtkCamera;
 
 class AnnotationObjectList;
 class VisWinAnnotations;
@@ -443,6 +444,26 @@ class VisitInteractor;
 //    SetMultiresolutionCellSize and GetMultiresolutionCellSize to support
 //    adding a multi resolution display capability for AMR data.
 //
+//
+//    Burlen Loring, Wed Aug 12 12:30:41 PDT 2015
+//    Add support for depth peeling.
+//
+//    Burlen Loring, Mon Aug 24 15:38:05 PDT 2015
+//    Support for ordered compositing. added method to get the
+//    camera. Add support for capturing alpha channel. Add template
+//    methods to capture image in desired type to eliminate a
+//    memcpy
+//
+//    Burlen Loring, Mon Aug 31 07:54:50 PDT 2015
+//    Added flag to disable background render
+//
+//    Burlen Loring, Wed Sep  2 09:58:07 PDT 2015
+//    move simple get'ers into the header so they can be inlined
+//
+//    Burlen Loring, Tue Sep 29 14:16:34 PDT 2015
+//    Added set/get methods for compositer thread and blocking
+//    params
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -461,18 +482,42 @@ public:
     void                 UnsetBounds(void);
 
     void                 Realize(void);
+
     void                 ScreenRender(bool doViewportOnly = false,
                                       bool doZBufferToo = false,
                                       bool doOpaque = true,
                                       bool doTranslucent = true,
+                                      bool disableBackground = false,
                                       avtImage_p input = NULL);
+
+    avtImage_p           ScreenReadBack(bool doViewportOnly = false,
+                             bool doZBufferToo = false, bool captureAlpha = false);
+
+    template <typename T>
+    void                 ScreenReadBack(T *&r, T *&g, T *&b,
+                             T *&a, float *&z, int &w, int &h,
+                             bool doViewportOnly, bool doZBufferToo,
+                             bool captureAlpha);
+
     avtImage_p           ScreenCapture(bool doViewportOnly = false,
                                        bool doZBufferToo = false,
                                        bool doOpaque = true,
                                        bool doTranslucent = true,
+                                       bool captureAlpha = false,
+                                       bool disableBackground = false,
                                        avtImage_p input = NULL);
+
+    template <typename T>
+    void                 ScreenCapture(T *&r, T *&g, T *&b,
+                             T *&a, float *&z, int &w, int &h,
+                             bool doViewportOnly, bool doZBufferToo,
+                             bool doOpaque, bool doTranslucent,
+                             bool captureAlpha, bool disableBackground,
+                             avtImage_p input);
+
     avtImage_p           PostProcessScreenCapture(avtImage_p capturedImage,
                                        bool doViewportOnly, bool keepZBuffer);
+
     avtDataset_p         GetAllDatasets(void);
 
     void                 SetSize(int, int);
@@ -517,18 +562,22 @@ public:
     TOOLUPDATE_MODE      GetToolUpdateMode() const;
 
     void                 SetBackgroundColor(double, double, double);
-    const double *       GetBackgroundColor() const;
+    const double *       GetBackgroundColor() const { return background; }
+
     void                 SetGradientBackgroundColors(int,double,double,double,
                                                      double,double,double);
     void                 SetBackgroundMode(
                                     enum AnnotationAttributes::BackgroundMode);
+
     enum AnnotationAttributes::BackgroundMode
-                         GetBackgroundMode() const;
+                         GetBackgroundMode() const { return backgroundMode; }
+
     void                 SetForegroundColor(double, double, double);
-    const double *       GetForegroundColor() const;
+    const double *       GetForegroundColor() const { return foreground; }
+
     void                 InvertBackgroundColor();
     void                 SetBackgroundImage(const std::string &,int,int);
-    const std::string   &GetBackgroundImage() const;
+    const std::string   &GetBackgroundImage() const { return backgroundImage; }
     void                 SetViewport(double, double, double, double);
 
     void                 SetTitle(const char *);
@@ -635,6 +684,26 @@ public:
     void                 SetRenderEventCallback(void (*cb)(void *, bool), void *data);
     void                 SetAntialiasing(bool enabled);
     bool                 GetAntialiasing() const;
+    void                 SetOrderComposite(bool enabled);
+    bool                 GetOrderComposite() const;
+    void                 SetDepthCompositeThreads(size_t n);
+    size_t               GetDepthCompositeThreads() const;
+    void                 SetAlphaCompositeThreads(size_t n);
+    size_t               GetAlphaCompositeThreads() const;
+    void                 SetDepthCompositeBlocking(size_t n);
+    size_t               GetDepthCompositeBlocking() const;
+    void                 SetAlphaCompositeBlocking(size_t n);
+    size_t               GetAlphaCompositeBlocking() const;
+    void                 EnableAlphaChannel();
+    void                 DisableAlphaChannel();
+    void                 EnableDepthPeeling();
+    void                 DisableDepthPeeling();
+    void                 SetDepthPeeling(bool enabled);
+    void                 SetOcclusionRatio(double val);
+    void                 SetNumberOfPeels(int n);
+    bool                 GetDepthPeeling() const;
+    double               GetOcclusionRatio() const;
+    int                  GetNumberOfPeels() const;
     void                 SetMultiresolutionMode(bool enabled);
     bool                 GetMultiresolutionMode() const;
     void                 SetMultiresolutionCellSize(double size);
@@ -684,11 +753,13 @@ public:
 
     bool                 TransparenciesExist(void);
     avtTransparencyActor* GetTransparencyActor();
+    vtkCamera*           GetCamera();
 
     void                 GlyphPick(const double*, const double*, int&, int&, 
                                    bool&, const bool = false);
     void                 GlyphPick(const double*, const double*, int&, int&, 
                                    bool&, double &, const bool = false);
+
 
 
     virtual void UpdateMouseActions(std::string action,
@@ -834,5 +905,63 @@ protected:
                              int w, int h, const double *color);
 };
 
+#include <VisWinRendering.h>
+
+// ****************************************************************************
+//  Method: VisWindow::ScreenCapture
+//
+//  Purpose:
+//      Forces a render to the underlying renderer.  Reads back the data and
+//      stuffs it into an in-memory image. this overload reads the front buffer
+//      into a float image and splits the image into its channels.
+//
+//  Returns:    The image from the screen capture, in r,g,b,a w,h arguments.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Tue Aug 25 08:58:35 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+template <typename T>
+void
+VisWindow::ScreenCapture(T *&r, T *&g, T *&b, T *&a, float *&z,
+                         int &w, int &h, bool doViewportOnly, bool doZBufferToo,
+                         bool doOpaque, bool doTranslucent, bool captureAlpha,
+                         bool disableBackground, avtImage_p input)
+{
+    rendering->ScreenRender(
+        doViewportOnly, doZBufferToo, doOpaque, doTranslucent,
+        disableBackground, input);
+
+    rendering->ScreenReadback(r, g, b, a, z, w, h,
+        doViewportOnly, doZBufferToo, captureAlpha);
+}
+
+// ****************************************************************************
+//  Method: VisWindow::ScreenReadBack
+//
+//  Purpose:
+//      Reads the last render into image component arrays. the arrays
+//      are allocated internally and thus caller need to free them
+//      when finished.
+//
+//  Programmer: Burlen Loring
+//  Creation:   Wed Aug 26 10:02:57 PDT 2015
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+template <typename T>
+void
+VisWindow::ScreenReadBack(T *&r, T *&g, T *&b, T *&a, float *&z,
+                         int &w, int &h, bool doViewportOnly,
+                         bool readZBuffer, bool readAlpha)
+{
+    rendering->ScreenReadback(r, g, b, a, z, w, h,
+        doViewportOnly, readZBuffer, readAlpha);
+}
 
 #endif

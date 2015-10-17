@@ -119,6 +119,15 @@ class QLineEdit;
 //   Eric Brugger, Tue Oct 25 12:29:09 PDT 2011
 //   Add a multi resolution display capability for AMR data.
 //
+//   Burlen Loring, Thu Aug 13 08:38:52 PDT 2015
+//   Added options for depth peeling
+//
+//   Burlen Loring, Sun Sep  6 08:44:26 PDT 2015
+//   Added option for ordered composting
+//
+//   Burlen Loring, Tue Sep 29 11:49:41 PDT 2015
+//   Added option to set the compositer thread pool size
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -146,6 +155,12 @@ protected:
     void UpdateWindowSensitivity();
 private slots:
     void antialiasingToggled(bool);
+    void updateOrderedComposite();
+    void updateDepthCompositeThreads();
+    void updateDepthCompositeBlocking();
+    void updateAlphaCompositeThreads();
+    void updateAlphaCompositeBlocking();
+    void updateDepthPeeling();
     void multiresolutionModeToggled(bool);
     void processMultiresolutionSmallestCellText();
     void processMultiresolutionSmallestCellText(const QString &);
@@ -179,6 +194,21 @@ private:
 
     // Basic controls
     QCheckBox         *antialiasingToggle;
+    QCheckBox         *orderedComposite;
+    QLabel            *compositeLabel;
+    QLabel            *depthCompositeThreadsLabel;
+    QLineEdit         *depthCompositeThreads;
+    QLabel            *alphaCompositeThreadsLabel;
+    QLineEdit         *alphaCompositeThreads;
+    QLabel            *depthCompositeBlockingLabel;
+    QLineEdit         *depthCompositeBlocking;
+    QLabel            *alphaCompositeBlockingLabel;
+    QLineEdit         *alphaCompositeBlocking;
+    QCheckBox         *depthPeeling;
+    QLabel            *occlusionRatioLabel;
+    QLineEdit         *occlusionRatio;
+    QLabel            *numberOfPeelsLabel;
+    QLineEdit         *numberOfPeels;
     QCheckBox         *multiresolutionModeToggle;
     QLabel            *multiresolutionSmallestCellLabel;
     QLineEdit         *multiresolutionSmallestCellLineEdit;

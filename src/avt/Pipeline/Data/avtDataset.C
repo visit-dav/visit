@@ -192,7 +192,7 @@ avtDataset::~avtDataset()
 // 
 // ****************************************************************************
 
-int
+long long
 avtDataset::GetNumberOfCells(bool polysOnly) const
 {
    int topoDim = -1;

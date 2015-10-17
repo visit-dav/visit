@@ -45,7 +45,9 @@
 #include <pipeline_exports.h>
 
 
-class  vtkImageData;
+class vtkImageData;
+class vtkFloatArray;
+class vtkUnsignedCharArray;
 
 
 // ****************************************************************************
@@ -86,6 +88,22 @@ class  vtkImageData;
 //    Remove const return type of assignment operator, to prevent the compiler
 //    from defining a second assignment operator for the non-const case.
 //
+//    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
+//    use a vtk data array to store the z-buffer. this greatly
+//    simplifies zero copy data transfer as the ref-count and data
+//    are contained in a single object. Add a method to set rgb and z-buffer
+//    Add support for RGBA images. Add a method to get internals
+//    as VTK arrays to facilitate zero-copy data transfers.
+//
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
+//    Burlen Loring, Wed Sep 23 15:29:14 PDT 2015
+//    Added an geters for image and z buffer. these bypass marshall
+//    from string. the marshal code throws if the image and string
+//    are both null. this api is for cases when we know we don't need
+//    to worry about marshalling.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImageRepresentation
@@ -93,6 +111,7 @@ class PIPELINE_API avtImageRepresentation
   public:
                          avtImageRepresentation();
                          avtImageRepresentation(vtkImageData *);
+                         avtImageRepresentation(vtkImageData *, vtkFloatArray *);
                          avtImageRepresentation(vtkImageData *, float *, bool = false);
                          avtImageRepresentation(char *, int);
                          avtImageRepresentation(const avtImageRepresentation &);
@@ -102,17 +121,25 @@ class PIPELINE_API avtImageRepresentation
 
     void                 GetSize(int *rowSize, int *colSize) const;
 
+    vtkImageData        *GetImageVTKDirect(){ return asVTK; }
+    vtkFloatArray       *GetZBufferVTKDirect(){ return zbuffer; }     
+
     // these aren't const, because they might call GetImageFromString
-    vtkImageData        *GetImageVTK(void);
-    float               *GetZBuffer(void);
+    void                 SetImageVTK(vtkImageData *src);
+    vtkImageData        *GetImageVTK();
+    void                 SetZBufferVTK(vtkFloatArray *z);
+    vtkFloatArray       *GetZBufferVTK();
+    float               *GetZBuffer();
+    int                  GetNumberOfColorChannels();
     unsigned char       *GetRGBBuffer(void);
+    vtkUnsignedCharArray *GetRGBBufferVTK();
     unsigned char       *GetImageString(int &);
     unsigned char       *GetCompressedImageString(int &);
     void                 GetSize(int *rowSize, int *colSize);
 
     void                 SetOrigin(const int rowOrigin, const int colOrigin);
     void                 GetOrigin(int *rowOrigin, int *colOrigin) const;
-    virtual int          GetNumberOfCells(bool polysOnly = false) const; 
+    virtual long long    GetNumberOfCells(bool polysOnly = false) const;
 
     float                GetCompressionRatio() const;
     float                GetTimeToCompress() const;
@@ -121,12 +148,11 @@ class PIPELINE_API avtImageRepresentation
     bool                 Valid(void);
     void                 ReleaseData(void);
 
-    static vtkImageData *NewImage(int, int);
+    static vtkImageData *NewImage(int w, int h, int chan = 3);
 
   protected:
     vtkImageData        *asVTK;
-    float               *zbuffer;
-    int                 *zbufferRef;
+    vtkFloatArray       *zbuffer;
     unsigned char       *asChar;
     int                  asCharLength;
     int                 *asCharRef;
@@ -143,9 +169,11 @@ class PIPELINE_API avtImageRepresentation
     void                 Initialize(void);
 
   private:
-    void                 GetImageFromString(unsigned char *, int,
-                            vtkImageData *&, float *&);
     unsigned char       *GetImageString(int &, bool);
+
+    void                 GetImageFromString(unsigned char *str,
+                            int strLength, vtkImageData *&img,
+                            vtkFloatArray *&zbuf);
 };
 
 inline
@@ -164,4 +192,3 @@ void avtImageRepresentation::GetOrigin(int *_rowOrigin, int *_colOrigin) const
 }
 
 #endif
-

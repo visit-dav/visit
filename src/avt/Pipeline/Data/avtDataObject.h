@@ -90,6 +90,9 @@ class     avtWebpage;
 //    Hank Childs, Mon Feb  2 09:26:16 PST 2009
 //    Added data member for the contract from a previous execution.
 //
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObject
@@ -107,7 +110,7 @@ class PIPELINE_API avtDataObject
 
     avtDataObjectInformation        &GetInfo(void) { return info; };
     const avtDataObjectInformation  &GetInfo(void) const { return info; };
-    virtual int                      GetNumberOfCells(bool polysOnly = false)
+    virtual long long                GetNumberOfCells(bool polysOnly = false)
                                                                      const = 0;
 
     virtual const char              *GetType(void) = 0;

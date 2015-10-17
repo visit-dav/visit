@@ -145,7 +145,8 @@ class   avtWebpage;
 //    Dave Pugmire, Mon Mar 26 13:50:09 EDT 2012
 //    Add avtExtremeValueAnalysisFilter
 //
-
+//    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
+//    Changed the return type of GetNumberOfCells to long long
 //
 // ****************************************************************************
 
@@ -183,7 +184,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     virtual                 ~avtDataset();
 
     virtual const char      *GetType(void)  { return "avtDataset"; };
-    virtual int              GetNumberOfCells(bool polysOnly = false) const;
+    virtual long long        GetNumberOfCells(bool polysOnly = false) const;
     virtual void             ReleaseData(void);
 
     virtual avtDataObject   *Instance(void);

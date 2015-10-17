@@ -232,6 +232,38 @@ VisitBoxTool::~VisitBoxTool()
 }
 
 // ****************************************************************************
+// Method: VistBoxTool::SetVisibility
+//
+// Purpose: 
+//   Sets visibility of the tool. Use this if you need to temporarily
+//   take the tool out of the scene during transparent rendering.
+//
+// Programmer: Burlen Loring 
+// Creation:   Mon Sep 28 16:06:19 PDT 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisitBoxTool::SetVisibility(int val)
+{
+    if (IsEnabled())
+    {
+        boxActor->SetVisibility(val);
+
+        for (int i = 0; i < 3; ++i)
+            outlineActor[i]->SetVisibility(val);
+    
+        for (int i = 0; i < 4; ++i)
+            outlineTextActor[i]->SetVisibility(val);
+    
+        for (int i = 0; i < NUM_TEXT_ACTORS; ++i)
+            labelTextActor[i]->SetVisibility(val);
+    }
+}
+
+// ****************************************************************************
 // Method: VisitBoxTool::Enable
 //
 // Purpose: 

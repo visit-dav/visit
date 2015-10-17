@@ -61,6 +61,12 @@ class AnnotationObject;
 //   Brad Whitlock, Mon Mar  2 14:19:55 PST 2009
 //   I added SetTimeScaleAndOffset.
 //
+//   Burlen Loring, Mon Sep 28 16:04:23 PDT 2015
+//   Added API for setting visibility
+//
+//   Burlen Loring, Thu Oct  8 13:43:48 PDT 2015
+//   Fix a couple of compiler warnings
+//
 // ****************************************************************************
 
 class VISWINDOW_API avtAnnotationColleague : protected VisWinColleague
@@ -88,14 +94,14 @@ public:
     virtual void GetOptions(AnnotationObject &annot) = 0;
 
     // Legend methods.
-    virtual bool ManageLayout(avtLegend_p legend) const { return false; }
-    virtual void CustomizeLegend(avtLegend_p legend) { };
+    virtual bool ManageLayout(avtLegend_p) const { return false; }
+    virtual void CustomizeLegend(avtLegend_p) { };
 
     // Methods that are called in response to vis window events. These
     // method can be overridden to let the annotation decide what to do when
     // these vis window events happen.
-    virtual void SetBackgroundColor(double r, double g, double b) { };
-    virtual void SetForegroundColor(double r, double g, double b) { };
+    virtual void SetBackgroundColor(double, double, double) { };
+    virtual void SetForegroundColor(double, double, double) { };
     virtual void Start2DMode(void) { };
     virtual void Start3DMode(void) { };
     virtual void StartCurveMode(void) { };
@@ -107,10 +113,12 @@ public:
     virtual void MotionBegin(void) { };
     virtual void MotionEnd(void) { };
     virtual void UpdateView(void) { };
-    virtual void UpdatePlotList(std::vector<avtActor_p> &p) { };
+    virtual void UpdatePlotList(std::vector<avtActor_p> &) { };
     virtual void SetFrameAndState(int, int, int, int, int, int, int) { };
 
     virtual void SetTimeScaleAndOffset(double,double) { };
+
+    virtual void SetVisibility(int) {}
 
 private:
     std::string name;
