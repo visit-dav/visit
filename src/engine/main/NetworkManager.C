@@ -6658,6 +6658,9 @@ NetworkManager::RenderingStages()
 //    I refactored this method to add support for depth peeling and
 //    ordered compositing.
 //
+//    Burlen Loring, Sat Oct 17 08:23:57 PDT 2015
+//    fix a compiler warning
+//
 // ****************************************************************************
 
 avtImage_p
@@ -6718,8 +6721,8 @@ NetworkManager::RenderGeometry()
         //{
             // configure for ordered composite. 1) enable alpha channel
             // 2) use solid bg 3) set clear color to 0 0 0 0
-            double bgColor[3];
-            AnnotationAttributes::BackgroundMode bgMode;
+            double bgColor[3] = {0.0};
+            AnnotationAttributes::BackgroundMode bgMode = AnnotationAttributes::Solid;
             if (renderState.orderComposite)
             {
                 viswin->EnableAlphaChannel();
