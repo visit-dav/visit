@@ -5406,9 +5406,14 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
                 id = thisID;
         }
         if(!id.empty())
-        {
+        { 
+            bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
+            GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
+
             int plotIndex = GetPlotPluginManager()->GetEnabledIndex(id);
             GetViewerMethods()->AddPlot(plotIndex, s[2]);
+
+            GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
         }
     }
     else if(command.substr(0,11) == "AddOperator")
