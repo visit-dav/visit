@@ -701,7 +701,7 @@ simv2_add_operator(void *e, const char *operatorType, int applyToAll)
 {
     StackTimer t0("VisItAddOperator");
     SimEngine *engine = (SimEngine*)(e); 
-    return engine->AddOperator(operatorType, applyToAll) ? VISIT_OKAY : VISIT_ERROR;
+    return engine->AddOperator(operatorType, applyToAll!=0) ? VISIT_OKAY : VISIT_ERROR;
 }
 
 // ****************************************************************************
