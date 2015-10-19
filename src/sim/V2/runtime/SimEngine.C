@@ -812,10 +812,10 @@ SimEngine::AddPlot(const std::string &plotType, const std::string &var)
         if(viewerInitialized)
         {
             int plotIndex = GetNetMgr()->GetPlotPluginManager()->GetEnabledIndex(id);
-#if 1
+
             // Go directly through the plot list so we can know if there was an error.
             bool replacePlots = GetViewerState()->GetGlobalAttributes()->GetReplacePlots();
-            bool applyOperator = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
+            bool applyOperator = false;
             bool applySelection = GetViewerState()->GetGlobalAttributes()->GetApplySelection();
             bool inheritSILRestriction = GetViewerState()->GetGlobalAttributes()->
                                          GetNewPlotsInheritSILRestriction();
@@ -823,11 +823,6 @@ SimEngine::AddPlot(const std::string &plotType, const std::string &var)
             ViewerPlotList *pL = ViewerWindowManager::Instance()->GetActiveWindow()->GetPlotList();
             retval = pL->AddPlot(plotIndex, var.c_str(), replacePlots, applyOperator,
                         inheritSILRestriction, applySelection) >= 0;
-#else
-// cout << "Viewer-based AddPlot(" << plotIndex << "=" << id << ", " << var << ")" << endl;
-            GetViewerMethods()->AddPlot(plotIndex, var);
-            retval = true;
-#endif
         }
         else
         {
@@ -897,7 +892,7 @@ SimEngine::AddOperator(const std::string &operatorType, bool applyToAll)
         if(viewerInitialized)
         {
             bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
-            GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAll != 0);
+            GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAll);
 
 // cout << "Viewer-based AddOperator(" << operatorIndex << "=" << id << ", " << var << ")" << endl;
             GetViewerMethods()->AddOperator(operatorIndex);
