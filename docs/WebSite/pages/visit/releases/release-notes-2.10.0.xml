@@ -36,6 +36,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Operator_changes">Changes to operators</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Configuration_changes">Configuration changes</a></li>
+  <li><a href="#Build_changes">Changes to build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
 
@@ -174,6 +175,7 @@ VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice
   <li>VisIt's Tecplot reader can now export datasets that use other than single floating point precision.</li>
   <li>The Mili reader now returns the time information so that it can be displayed in the database legend, the time slider, and queries over time.</li>
   <li>A bug was corrected in the Silo reader that caused "_meshtv_searchpath" to be ignored. Support for reading "_visit_searchpath" as a synonym for "_meshtv_searchpath" was also added since that name is much more appropriate for VisIt. The utility <i>add_visit_searchpath</i> was added that adds a "_visit_searchpath" to the root directory of a Silo file. The usage for the utility is:<p><pre>add_visit_searchpath filename [searchpath]</pre></p><p>where filename is the name of the Silo file to add the search path to and searchpath is the search path to add. If no search path is specified it will add an empty search path, causing VisIt to only look for variables at the root level of the Silo file.</p></li>
+  <li>The Mili library used by the Mili plugin was updated to Version 15.1</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -185,8 +187,11 @@ VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 2.10</font></b></p>
 <ul>
+  <li>The LCS operator has been overhauled. It now allows for calculation of both the eigen values and eigen vectors. When eigen vectors are calculated the results may be passed down to plots such as the Vector plot and operators such as the LimitCycle operator. The vectors passed down stream can be the calculated eigen vectors or a shear vector (i.e. a combination of the eigen vectors). Other additions include the ability to use an auxiliary grid when calculating the Cauchy-Green Tensor. Numerous bug fixes have been done to improve the results when spurious integral curves are encountered.</li>
+  <li>The LimitCycle operator has been added. It is designed to find limit cycle flow fields. The operator works by using a line to define a series of evenly spaced seed points along the line that are then advected. The advection stops when the integral curve intersects the line (or a predetermined stopping criteria). A zero crossing is then searched for in adjacent pairs of integral curves. The zero crossing is present by the dot product of the vectors formed by the starting and intersecting points from each integral curve. The zero crossing is found via a bisection method that adds a new seed point between the original points. The number of iterations can be set as well as the tolerance for finding the zero crossing. As this operator is part of the PICS code other parameters are similar to other PICS operators. Currently only a line may be defined.</li>
+  <li>Many new features have been added to the PICS operators as well as fixing many bugs with them. All the PICS operators now allow for advecting in directionless fields. This new feature allows one to use directionless fields such as those associated with eigen vectors. In addition, bug fixes for boundary checks and cell lookup have been done. Bug fixes for advecting in multiple domain data sets in parallel have also been done.</li>
   <li>A bug was fixed with several of the operators, where VisIt would give an error if the operator generated any empty domains. These include the CoordSwap, EllipsoidSlice, Extrude, Isovolume, SphereSlice and ThreeSlice operators.</li>
-  <li>Added a new SPH Resample operator.</li>
+  <li>The SPH Resample operator has been added.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -206,12 +211,23 @@ VisItSetOptions("-plotplugins Mesh,Pseudocolor -operatorplugins Isosurface,Slice
   <li>The advanced multi-window image save capability was modified to initialize the background to white.</li>
   <li>Interactive connections to simulations are unable to save images via <i>VisItSaveWindow()</i> because the simulation was always passing a server output directory and interactive saves are currently done client-side. The code was modified so the simulation may opt to output to the current directory and that will save files client-side where VisIt was invoked.</li>
   <li>Deleting multiple plots using Libsim's <i>VisItDeleteActivePlots()</i> function would crash when used in batch mode.</li>
+  <li>Silo export on a file that contained more than one mesh can produce output that contains the wrong mesh name.</li>
+  <li>Makemili now works once again. Starting with VisIt 2.9, the VisIt launch script adds "-forceversion version_number" to the front of the command line options for all the tools that it runs. In the case of makemili, this resulted in it interpreting the version number as the name of the file to process. Now it will interpret the "-forceversion" option and properly gets the name of the file to process.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
 <p><b><font size="4">Configuration changes in version 2.10</font></b></p>
 <ul>
 <li>The LLNL RZ and CZ only host profile options were removed from visit-install since it is confusing to users and is only useful when installing VisIt on the LLNL RZ and CZ networks, which is only done by developers. The LLNL RZ only host profile option was removed from the Windows installer since that is also confusing to users and isn't useful to anyone.</li>
+<li>The "parallel pshort" launch profile was removed from the Zin host profile since the pshort queue was removed.</li>
+</ul>
+
+<a name="Build_changes"></a>
+<p><b><font size="4">Build changes in version 2.10</font></b></p>
+<ul>
+  <li>The SeedMe python client was updated to version 1.1.0.</li>
+  <li>Experimental support for the Damaris I/O middleware layer (http://damaris.gforge.inria.fr/) was added to build_visit. Due to the use of XSD, Damaris support is GPL only. 
+      You can use the following build_visit flags to create a build that includes Damaris: --gpl --cmake --mpich --python --boost --vtk --qt --xsd --xercesc --damaris</li>
 </ul>
 
 <a name="Dev_changes"></a>
