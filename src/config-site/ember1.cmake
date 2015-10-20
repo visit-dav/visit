@@ -1,7 +1,7 @@
 #/uufs/ember.arches/sys/pkg/VisIt/BuildDirs/VisIt/Thirdparty/visit/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake
 ##
 ## ../trunk/src/svn_bin/build_visit generated host.cmake
-## created: Tue Oct 20 12:19:14 MDT 2015
+## created: Tue Oct 20 12:50:13 MDT 2015
 ## system: Linux ember2 2.6.32-504.30.3.el6.x86_64 #1 SMP Wed Jul 15 10:13:09 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux
 ## by: u0059283
 
@@ -134,6 +134,11 @@ VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
 ##
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
+
+##
+## MANTA
+##
+VISIT_OPTION_DEFAULT(VISIT_MANTA_DIR ${VISITHOME}/manta/2540/${VISITARCH})
 
 ##
 ## Nektar++
