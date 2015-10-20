@@ -20,7 +20,7 @@ CASE: prun -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l prun -np 8 -nn 1 -p pbatch -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-prun -n 8 -N 1 -p pbatch valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+prun -n 8 -N 1 -p pbatch valgrind --tool=memcheck --error-limit=no --num-callers=50 --db-attach=no --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: prun -strace engine_par
