@@ -40,7 +40,7 @@ Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-aprun -n 8 -N 8 -arg1 -arg2 valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+aprun -n 8 -N 8 -arg1 -arg2 valgrind --tool=memcheck --error-limit=no --num-callers=50 --db-attach=no --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
