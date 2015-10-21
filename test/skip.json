@@ -33,6 +33,7 @@
                     {"category":"unit","file":"utility.py","platform":"win"},
                     {"category":"plots","file":"pics.py","platform":"win"},
                     {"category":"plots","file":"pathlines.py","platform":"win"},
+                    {"category":"hybrid","file":"movie.py","platform":"win"},
                     {"category":"operators" ,"file": "lcs_ic.py","cases":["lcs_ftle_double_gyre_2_domains_RegularGrid_2DAuxGrid_IntegralCurve"]},
                     {"category":"operators" ,"file": "lcs_lc.py","cases":["lcs_ftle_double_gyre_2_domains_RegularGrid_2DAuxGrid_LimitCycle"]},
                     {"category":"operators" ,"file": "lcs.py","platform":"win"},
