@@ -687,6 +687,11 @@ def HTMLAssertTestResult(case_name,status,assert_check,result,details):
 #   Burlen Loring, Fri Oct  2 09:13:04 PDT 2015
 #   report image error, cpu and walltime. for every test
 #
+#   Burlen Loring, Wed Oct 21 15:41:57 PDT 2015
+#   * fix double reporting of image error
+#   * added an option to display the current, baseline and diff in
+#     a popup window during the test
+#
 # ----------------------------------------------------------------------------
 def LogImageTestResult(case_name,
                        diffState,modeSpecific,
@@ -710,8 +715,9 @@ def LogImageTestResult(case_name,
         details = "#pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f, threrr=%3.3f" \
                     % (tPixs, pPixs, dPixs, dpix, davg, thrErr)
         if TestEnv.params["ctest"]:
-            Log(ctestReportDiff(thrErr))
             Log(ctestReportDiffImages(cur,diff,base))
+        if TestEnv.params["display_failed"]:
+            os.system("montage -background '#555555' -geometry +16+16 -label 'current\\n%%f' %s -label 'baseline\\n%%f' %s -label 'diff\\n%%f' %s del.png && display del.png"%(cur, base, diff))
     elif diffState == 'Skipped':
         status = "skipped"
     else:
