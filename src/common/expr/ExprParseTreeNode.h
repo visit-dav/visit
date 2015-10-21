@@ -51,9 +51,6 @@
 
 #include <ParseTreeNode.h>
 
-class Identifier;
-class Token;
-
 // ****************************************************************************
 //  Class:  ExprParseTreeNode
 //
