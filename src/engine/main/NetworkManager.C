@@ -645,8 +645,8 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 {
     // Clear out the networks before the databases.  This is because if we
     // delete the databases first, the networks will have dangling pointers.
-    size_t nNets = networkCache.size();
-    for (size_t i = 0; i < nNets; ++i)
+    int nNets = static_cast<int>(networkCache.size());
+    for (int i = 0; i < nNets; ++i)
     {
         NetnodeDB *ndb;
         if (networkCache[i] && (ndb = networkCache[i]->GetNetDB()) &&
@@ -3217,7 +3217,7 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
     viswin->SetDisplayListMode(1);  // never
 
     // handle stereo rendering settings
-    int stereo = renderAtts.GetStereoRendering();
+    bool stereo = renderAtts.GetStereoRendering();
     int stereoType = renderAtts.GetStereoType();
     if ((viswin->GetStereo() != stereo) || (viswin->GetStereoType() != stereoType))
         viswin->SetStereoRendering(stereo, stereoType);
@@ -4771,6 +4771,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
     }
     CATCH2(VisItException, e)
     {
+        (void)e;
         delete wrtr;
         RETHROW;
     }
@@ -6614,14 +6615,14 @@ NetworkManager::CreateNullDataWriter() const
 //
 // ****************************************************************************
 
-size_t
+int
 NetworkManager::RenderingStages()
 {
     const std::vector<avtPlot_p>& imageBasedPlots
         = renderState.windowInfo->imageBasedPlots;
 
     // There is always one stage for rendering and two for composition.
-    size_t stages = 3;
+    int stages = 3;
 
     stages += (renderState.shadowMap ? 2 : 0);
     stages += (renderState.depthCues ? 1 : 0);

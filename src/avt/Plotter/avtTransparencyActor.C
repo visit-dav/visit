@@ -46,6 +46,7 @@
 #include <cstring>
 #include <limits>
 #include <algorithm>
+#include <cmath>
 
 #include <avtParallel.h>
 #include <vtkActor.h>
@@ -83,6 +84,12 @@
 
 using std::vector;
 using std::numeric_limits;
+
+#ifdef _MSC_VER
+template <typename num_t>
+num_t log2(num_t num)
+{ return log(num)/log(num_t(2)); }
+#endif
 
 // ****************************************************************************
 //  Class: Bounds

@@ -48,7 +48,10 @@
 #include <cstdlib>
 #include <avtImage.h>
 
-#ifndef _MSC_VER
+#ifdef _MSC_VER
+#define __restrict__ __restrict
+#pragma warning(disable : 4351)
+#else
 #define THREADED_COMPOSITER
 #endif
 #ifdef THREADED_COMPOSITER
@@ -115,7 +118,7 @@ class CompositerThreadManager;
 // ****************************************************************************
 
 template <typename T>
-class AVTFILTERS_API ProgrammableCompositer
+class ProgrammableCompositer
 {
 public:
          ProgrammableCompositer();
@@ -151,7 +154,7 @@ public:
 
     void ApplyBackgroundImage(const unsigned char *argba);
 
-    void SetBlockSize(int s){ blocking = s; }
+    void SetBlockSize(size_t s){ blocking = s; }
 
     void SetBroadcastColor(bool abcast)
          { bcastrgba = abcast; }
@@ -183,7 +186,7 @@ private:
     T                       bgrgba[4];  // background color
     int                     w;          // input,output,bg image size
     int                     h;
-    int                     blocking;   // communication is made in chunks of this size
+    size_t                  blocking;   // communication is made in chunks of this size
     bool                    ownin;      // if set free input image
     bool                    ownout;     // if set free output image
     bool                    ownbg;      // if set free background image
@@ -237,9 +240,9 @@ typedef std::pair<int,int> RankPair;
 typedef std::vector<RankPair> Iteration;
 typedef std::vector<Iteration> Program;
 
-AVTFILTERS_API void printProgram(Program &prog);
-AVTFILTERS_API Program makeProgram(const RankOrdering &o);
-AVTFILTERS_API std::ostream &operator<<(std::ostream &os, const RankPair &p);
+void printProgram(Program &prog);
+Program makeProgram(const RankOrdering &o);
+std::ostream &operator<<(std::ostream &os, const RankPair &p);
 
 // --------------------------------------------------------------------------
 template <typename T>

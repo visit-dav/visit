@@ -598,7 +598,7 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
 
     void               RenderCleanup();
 
-    size_t             RenderingStages();
+    int                RenderingStages();
 
     virtual void       StartTimer();
     virtual void       StopTimer();
