@@ -2130,6 +2130,11 @@ VisWindow::Realize(void)
 //   remove non-distributed geometry, such as axes, during order
 //   compositing.
 //
+//   Burlen Loring, Wed Oct 21 15:06:58 PDT 2015
+//   do not alter axes visibility, note, not doing this for others
+//   for now because previously they hadn't made use of vtk actor
+//   visibility so actors were always visibible
+//
 // ****************************************************************************
 
 void
@@ -2137,10 +2142,12 @@ VisWindow::ScreenRender(
     bool doViewportOnly, bool doZBufferToo, bool doOpaque,
     bool doTranslucent, bool disableBackground, avtImage_p input)
 {
+    int axesVis = axes3D->GetVisibility();
     if (disableBackground)
     {
         // remove non-distributed geometry from the render
-        axes3D->SetVisibility(0);
+        if (axesVis)
+            axes3D->SetVisibility(0);
         tools->SetVisibility(0);
         annotations->SetVisibility(0);
     }
@@ -2152,7 +2159,8 @@ VisWindow::ScreenRender(
     if (disableBackground)
     {
         // restore non-distributed geometry
-        axes3D->SetVisibility(1);
+        if (axesVis)
+            axes3D->SetVisibility(1);
         tools->SetVisibility(1);
         annotations->SetVisibility(1);
     }
