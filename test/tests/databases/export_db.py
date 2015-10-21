@@ -223,7 +223,8 @@ def test1():
     # Clean up window 1
     DeleteAllPlots()
 #    CloseDatabase(maindb)
-    cleanup_files()
+    if not platform.system() == "Windows":
+        cleanup_files()
 
 def test2(writeGroupSize):
     TestSection("Test export with write groups (parallel).")
