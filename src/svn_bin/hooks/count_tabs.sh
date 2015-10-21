@@ -100,7 +100,7 @@ while read fline; do
     # Filter out other cases HandleCommonSkipCases doesn't catch
     #
     case $fname in
-        *.in|*.rc|*.html|*.doc|*.odt|*.odm|*.nib|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln|*.cmake|*.tcl|*/windowsbuild/*)
+        *.in|*.rc|*.html|*.doc|*.odt|*.odm|*.nib|*/third_party_builtin/*|*/common/icons/*|*.vcproj|*.sln|*.cmake|*.tcl|*/windowsbuild/*|*/win32_baseline/*)
             continue
             ;;
         */src/configure|*/src/aclocal.m4|*/bin/db_mktmpl)
