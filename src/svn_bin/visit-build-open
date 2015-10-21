@@ -188,7 +188,7 @@ rzzeus=true
 rzuseq=false
 carver=true
 glory=false
-vulcan=false
+vulcan=true
 
 dist=undefined
 
