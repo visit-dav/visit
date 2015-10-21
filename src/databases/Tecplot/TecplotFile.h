@@ -689,7 +689,9 @@ int TecplotNumBytesForType(TecplotDataType dt);
 // Creation:   Thu Jun 12 11:22:42 PDT 2008
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Wed Oct 21, 2015
+//   Use long long for offsets, so large files can be read on Windows.
+//
 // ****************************************************************************
 
 class TecplotVariable
@@ -698,8 +700,8 @@ public:
     TecplotVariable();
     virtual ~TecplotVariable();
 
-    long            dataOffset;
-    long            dataSize;
+    long long            dataOffset;
+    long long            dataSize;
 
     TecplotDataType dataType;
     int             isPassive;
@@ -751,6 +753,8 @@ private:
 // Creation:   Thu Jun 12 11:24:14 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Wed Oct 21, 2015
+//   Use long long for offsets, so large files can be read on Windows.
 //   
 // ****************************************************************************
 
@@ -765,8 +769,8 @@ public:
     virtual bool Read(FILE *f, const TecplotZone &, const TecplotDataRecord *);
     virtual bool Write(FILE *f);    
 
-    long connectivityOffset;
-    long connectivitySize;
+    long long connectivityOffset;
+    long long connectivitySize;
 };
 
 // ****************************************************************************
@@ -782,6 +786,8 @@ public:
 // Creation:   Thu Jun 12 11:24:14 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Wed Oct 21, 2015
+//   Use long long for offsets, so large files can be read on Windows.
 //   
 // ****************************************************************************
 
@@ -796,13 +802,13 @@ public:
     virtual bool Read(FILE *f, const TecplotZone &, const TecplotDataRecord *);
     virtual bool Write(FILE *f);   
 
-    long zoneConnectivitySize;
-    long raw1to1FaceNeighborSize;
-    long faceNeighborConnectionSize;
+    long long zoneConnectivitySize;
+    long long raw1to1FaceNeighborSize;
+    long long faceNeighborConnectionSize;
 
-    long zoneConnectivityOffset;
-    long raw1to1FaceNeighborOffset;
-    long faceNeighborConnectionOffset;
+    long long zoneConnectivityOffset;
+    long long raw1to1FaceNeighborOffset;
+    long long faceNeighborConnectionOffset;
 };
 
 // ****************************************************************************
@@ -847,6 +853,8 @@ public:
 // Creation:   Thu Jun 12 11:25:57 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Wed Oct 21, 2015
+//   Use long long for offsets, so large files can be read on Windows.
 //   
 // ****************************************************************************
 
@@ -862,8 +870,8 @@ public:
     virtual bool Write(FILE *f);
 
     // In-memory-only data
-    long                         dataOffset;
-    long                         connectivityOffset;
+    long long                         dataOffset;
+    long long                         connectivityOffset;
 
     // Data from file
     std::vector<TecplotVariable> variables;
@@ -891,6 +899,9 @@ private:
 // Modifications:
 //   Kathleen Bonnell, Thu Jun 26 10:29:17 PDT 2008
 //   Changed return type of DisableReadingDataInformation from bool to void.
+//   
+//   Kathleen Biagas, Wed Oct 21, 2015
+//   Use long long for offsets, so large files can be read on Windows.
 //   
 // ****************************************************************************
 
@@ -931,7 +942,7 @@ public:
     bool ReadFEConnectivity(int zoneId, int **conn);
 
 protected:
-    bool ReadData(long dataOffset, long dataSize, TecplotDataType dataType,
+    bool ReadData(long long dataOffset, long long dataSize, TecplotDataType dataType,
                   int dataPacking, int nnodes, void *ptr);
     void EnsureUniqueZoneNames();
 

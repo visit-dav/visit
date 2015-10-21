@@ -67,6 +67,15 @@
 #define TECPLOT_VERSION_7X(v) (v >= TECPLOT_71 && v <= 79)
 #define TECPLOT_VERSION_104GE(v) (v >= TECPLOT_104)
 
+#ifdef WIN32
+#define FSEEK _fseeki64
+#define FTELL _ftelli64
+#else
+#define FSEEK fseek
+#define FTELL ftell
+#endif
+
+
 // ****************************************************************************
 // Method: tecplot_reverse_endian32
 //
@@ -81,11 +90,13 @@
 // Creation:   Thu Jun 12 11:31:56 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Wed Oct 21, 2015
+//   Use long long for offsets, so large files can be read on Windows.
 //   
 // ****************************************************************************
 
 static void
-tecplot_reverse_endian32(void *ptr, long dataSize)
+tecplot_reverse_endian32(void *ptr, long long dataSize)
 {
     char *cptr = (char*)ptr;
     char *end = cptr + dataSize;
@@ -117,11 +128,13 @@ tecplot_reverse_endian32(void *ptr, long dataSize)
 // Creation:   Thu Jun 12 11:31:56 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Wed Oct 21, 2015
+//   Use long long for offsets, so large files can be read on Windows.
 //   
 // ****************************************************************************
 
 static void
-tecplot_reverse_endian64(void *ptr, long dataSize)
+tecplot_reverse_endian64(void *ptr, long long dataSize)
 {
     char *cptr = (char*)ptr;
     char *end = cptr + dataSize;
@@ -155,11 +168,13 @@ tecplot_reverse_endian64(void *ptr, long dataSize)
 // Creation:   Thu Jun 12 11:31:56 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Wed Oct 21, 2015
+//   Use long long for offsets, so large files can be read on Windows.
 //   
 // ****************************************************************************
 
 static void
-tecplot_reverse_endian16(void *ptr, long dataSize)
+tecplot_reverse_endian16(void *ptr, long long dataSize)
 {
     char *cptr = (char*)ptr;
     char *end = cptr + dataSize;
@@ -1853,28 +1868,28 @@ TecplotFEConnectivity::Read(FILE *f, const TecplotZone &zone,
     // Calculate the sizes and offsets
     if(data->zoneNumberForConnectivity == -1)
     {
-        zoneConnectivityOffset = ftell(f);
+        zoneConnectivityOffset = FTELL(f);
         zoneConnectivitySize = zone.GetNumElements() * 
                                TecplotNumNodesForZoneType(zone.zoneType) * 4;
-        fseek(f, zoneConnectivitySize, SEEK_CUR);
+        FSEEK(f, zoneConnectivitySize, SEEK_CUR);
     }
 
     if(data->zoneNumberForConnectivity == -1 &&
        zone.rawLocalFaceNeighbors > 0)
     {
-        raw1to1FaceNeighborOffset = ftell(f);
+        raw1to1FaceNeighborOffset = FTELL(f);
         raw1to1FaceNeighborSize = zone.GetNumElements() *
                                   TecplotNumFacesForZoneType(zone.zoneType) * 4;
-        fseek(f, raw1to1FaceNeighborSize, SEEK_CUR);
+        FSEEK(f, raw1to1FaceNeighborSize, SEEK_CUR);
     }
 
     if(data->zoneNumberForConnectivity == -1 &&
        zone.numUserDefinedNeighborConnections != 0)
     {
-        faceNeighborConnectionOffset = ftell(f);
+        faceNeighborConnectionOffset = FTELL(f);
         faceNeighborConnectionSize = zone.numUserDefinedNeighborConnections *
                                      TecplotNumNodesForZoneType(zone.zoneType) * 4;
-        fseek(f, faceNeighborConnectionSize, SEEK_CUR);
+        FSEEK(f, faceNeighborConnectionSize, SEEK_CUR);
     }
 
     return true;
@@ -2034,7 +2049,7 @@ TecplotDataRecord::Read(FILE *f, const TecplotZone &zone)
         }
     }
 
-    dataOffset = ftell(f);
+    dataOffset = FTELL(f);
     debug4 << "Data offset after reading min/max pairs: "  << dataOffset << endl;
 
     // Now that we've read the main part of the variables, calculate offsets to
@@ -2042,9 +2057,9 @@ TecplotDataRecord::Read(FILE *f, const TecplotZone &zone)
     debug4 << "Zone = " << zone << endl;
     debug4 << "num nodes = " << zone.GetNumNodes() << endl;
     CalculateOffsets(zone);
-    fseek(f, connectivityOffset, SEEK_SET);
-    debug4 << "start of connectivity: " <<  ftell(f)
-           << " (0x" << std::hex << ftell(f) << ")" << endl;
+    FSEEK(f, connectivityOffset, SEEK_SET);
+    debug4 << "start of connectivity: " <<  FTELL(f)
+           << " (0x" << std::hex << FTELL(f) << ")" << endl;
 
     // Read the connectivity
     if(zone.zoneType == ORDERED)
@@ -2055,8 +2070,8 @@ TecplotDataRecord::Read(FILE *f, const TecplotZone &zone)
     else
         connectivity = new TecplotPolyConnectivity;
     connectivity->Read(f, zone, this);
-    debug4 << "after reading connectivity, offset=" << std::dec << ftell(f)
-           << " (0x" << std::hex << ftell(f) << ")"
+    debug4 << "after reading connectivity, offset=" << std::dec << FTELL(f)
+           << " (0x" << std::hex << FTELL(f) << ")"
            << std::dec << endl;
 
     return true;
@@ -2161,6 +2176,10 @@ operator << (ostream &os, const TecplotDataRecord &obj)
 //       * slowest moving index are not included.
 //       */
 //   Thus, I created a numItems variable
+//
+//   Kathleen Biagas, Wed Oct 21, 2015
+//   Use long long for offsets, so large files can be read on Windows.
+//
 // ****************************************************************************
 
 void
@@ -2172,8 +2191,8 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
     {
         // Point data packing. Each variable value is stored one after the next
         // in a record format.
-        long recordSize = 0;
-        long offset = 0;
+        long long recordSize = 0;
+        long long offset = 0;
         for(size_t i = 0; i < variables.size(); ++i)
         {
             if (variables[i].zoneShareNumber >= 0)
@@ -2226,7 +2245,7 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
     {
         int numNodes = zone.GetNumNodes();
         int centering, numItems;
-        long offset = 0;
+        long long offset = 0;
         for(size_t i = 0; i < variables.size(); ++i)
         {
             if (variables[i].zoneShareNumber >= 0)
@@ -2561,7 +2580,7 @@ TecplotFile::Read(FILE *f)
 #if 1 // for now
                 while(recordType != 299.f && !feof(f))
                 {
-                    debug4 << "z=" << i << "/" << zones.size() << ", Error reading recordType: " << recordType << " offset=" << ftell(f) << endl;
+                    debug4 << "z=" << i << "/" << zones.size() << ", Error reading recordType: " << recordType << " offset=" << FTELL(f) << endl;
                     recordType = ReadFloat(f);
                 }
                 if(feof(f))
@@ -2732,28 +2751,30 @@ TecplotFile::EnsureUniqueZoneNames()
 // Creation:   Thu Jun 12 11:42:17 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Wed Oct 21, 2015
+//   Use long long for offsets, so large files can be read on Windows.
 //   
 // ****************************************************************************
 
 bool
-TecplotFile::ReadData(long dataOffset, long dataSize, TecplotDataType dataType, 
+TecplotFile::ReadData(long long dataOffset, long long dataSize, TecplotDataType dataType, 
     int dataPacking, int nnodes, void *ptr)
 {
     bool retval = false;
     if((tec = fopen(fileName.c_str(), "rb")) != 0)
     {
-        fseek(tec, dataOffset, SEEK_SET);
+        FSEEK(tec, dataOffset, SEEK_SET);
 
         if(dataPacking == 1)
         {
             // Read the part of the record that we care about.
             int nBytes = TecplotNumBytesForType(dataType);
             char *cptr = (char *)ptr;
-            long skip = dataSize - nBytes;
+            long long skip = dataSize - nBytes;
             for(int i = 0; i < nnodes; ++i)
             {
                 size_t res = fread(cptr, 1, nBytes, tec); (void) res;
-                fseek(tec, skip, SEEK_CUR);
+                FSEEK(tec, skip, SEEK_CUR);
                 cptr += nBytes;
             }
         }
@@ -2871,6 +2892,8 @@ TecplotFile::ReadVariable(int zoneId, const std::string &varName, void *ptr)
 // Creation:   Thu Jun 12 11:45:57 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Wed Oct 21, 2015
+//   Use long long for offsets, so large files can be read on Windows.
 //   
 // ****************************************************************************
 
@@ -2889,7 +2912,7 @@ TecplotFile::ReadVariableAsFloat(int zoneId, const std::string &varName, float *
             retval = ReadVariable(zoneId, varName, ptr);
         else
         {
-            long dataSize;
+            long long dataSize;
             unsigned int N = (unsigned int)zones[zoneId].GetNumNodes();
             if(zones[zoneId].dataPacking == 1)
                 dataSize = N * TecplotNumBytesForType(var.dataType);
