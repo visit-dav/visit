@@ -59,7 +59,7 @@ class vtkOutlineSource;
 //      This is a concrete colleague for the mediator VisWindow.  It places
 //      a 3D axes around the bounding box for the plots.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   June 28, 2001
 //
 //  Modifications:
@@ -67,14 +67,14 @@ class vtkOutlineSource;
 //    Kathleen Bonnell, Fri Aug  3 14:55:59 PDT 2001
 //    Changed from using a 2d cube axes actor to using a 3d version.
 //
-//    Kathleen Bonnell, Tue Oct 30 10:30:10 PST 2001 
+//    Kathleen Bonnell, Tue Oct 30 10:30:10 PST 2001
 //    Moved AdjustValues, AdjustRange and related members to the
 //    more appropriate location of vtkVisItCubeAxesActor
 //
-//    Kathleen Bonnell, Wed May 28 15:52:32 PDT 2003   
-//    Added method 'ReAddToWindow'. 
-//    
-//    Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//    Kathleen Bonnell, Wed May 28 15:52:32 PDT 2003
+//    Added method 'ReAddToWindow'.
+//
+//    Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003
 //    Added method 'SetLabelScaling'.
 //
 //    Brad Whitlock, Thu Jul 28 10:10:40 PDT 2005
@@ -82,7 +82,7 @@ class vtkOutlineSource;
 //
 //    Brad Whitlock, Tue Mar 25 16:27:40 PDT 2008
 //    Added methods for line width, font, font size.
-// 
+//
 //    Eric Brugger, Wed Oct 15 13:05:33 PDT 2008
 //    Added SetAutoSetTicks, SetMajorTickMinimum, SetMajorTickMaximum,
 //    SetMajorTickSpacing and SetMinorTickSpacing.
@@ -95,6 +95,9 @@ class vtkOutlineSource;
 //
 //    Hank Childs, Mon May 23 13:26:09 PDT 2011
 //    Add method for overriding bounding box location.
+//
+//    Burlen Loring, Wed Oct 21 15:23:16 PDT 2015
+//    I added a get method to query actor visibility.
 //
 // ****************************************************************************
 
@@ -130,6 +133,7 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
     void                      SetYGridVisibility(int);
     void                      SetZGridVisibility(int);
     void                      SetVisibility(int);
+    int                       GetVisibility(){ return visibility; }
     void                      SetAutoSetTicks(int);
     void                      SetMajorTickMinimum(double, double, double);
     void                      SetMajorTickMaximum(double, double, double);
@@ -149,11 +153,11 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
 
     void                      SetLineWidth(int);
     void                      SetTitleTextAttributes(
-                                  const VisWinTextAttributes &xAxis, 
+                                  const VisWinTextAttributes &xAxis,
                                   const VisWinTextAttributes &yAxis,
                                   const VisWinTextAttributes &zAxis);
     void                      SetLabelTextAttributes(
-                                  const VisWinTextAttributes &xAxis, 
+                                  const VisWinTextAttributes &xAxis,
                                   const VisWinTextAttributes &yAxis,
                                   const VisWinTextAttributes &zAxis);
 
