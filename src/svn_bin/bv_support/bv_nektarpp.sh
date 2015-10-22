@@ -31,12 +31,12 @@ function bv_nektarpp_depends_on
 
     if [[ "$USE_SYSTEM_NEKTAR_PLUS_PLUS" == "yes" ]]; then
         echo ""
-#    else
-#        if [[ "$DO_ZLIB" == "yes" ]] ; then
-#           depends_on="$depends_on zlib"    
-#        fi
+    else
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+           depends_on="$depends_on zlib"    
+        fi
 
-#        echo $depends_on
+        echo $depends_on
     fi
 }
 
