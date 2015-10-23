@@ -60,6 +60,13 @@
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
 #   Removed VISIT_MSVC_VERSION from windows handling.
 #
+#   Kevin Griffin, Fri Oct 23 15:55:28 PDT 2015
+#   For OSX not all the directories in QT_INCLUDES satisfied the match 
+#   "/include/Qt" and/or weren't directories. Used the QT_HEADERS_DIR
+#   variable that listed all of the directories correctly. Also, for OSX, 
+#   added the lib*.a files in the QT_LIBRARY_DIR directory to 
+#   VISIT_INSTALLED_VERSION_ARCHIVES.
+#
 #****************************************************************************/
 
 #
@@ -104,7 +111,6 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
       MESSAGE(FATAL_ERROR "Qt4 is required to build VisIt.")
     ENDIF(NOT QT_FOUND)
   ELSE (USE_CMAKE_FIND)
-    # MESSAGE("QT_DIR = ${QT_DIR}")
     SET(QT_INCLUDE_DIR ${QT_DIR}/include)
     SET(QT_LIBRARY_DIR ${QT_DIR}/lib
         CACHE PATH "Qt library dir" FORCE )
@@ -194,6 +200,33 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
     ENDFOREACH(QTLIB)
 
     # Add install targets for Qt headers too
+  IF(APPLE)
+    file(GLOB QT_INCLUDES "${QT_HEADERS_DIR}/Qt*")
+    FOREACH(H ${QT_INCLUDES})
+        INSTALL(DIRECTORY ${H}
+                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt/include
+                FILE_PERMISSIONS OWNER_WRITE OWNER_READ
+                                   GROUP_WRITE GROUP_READ
+                                   WORLD_READ
+                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                        GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                        WORLD_READ WORLD_EXECUTE
+                PATTERN ".svn" EXCLUDE
+        )
+    ENDFOREACH(H)
+
+    # Add Qt archives (lib*.a)
+    file(GLOB QT_ARCHIVES "${QT_LIBRARY_DIR}/*.a")
+    FOREACH(T ${QT_ARCHIVES})
+        INSTALL(FILES ${T}
+            DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                WORLD_READ             WORLD_EXECUTE
+            CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
+        )
+    ENDFOREACH(T)
+  ELSE(APPLE)
     FOREACH(H ${QT_INCLUDES})
         IF(${H} MATCHES "/include/Qt")
         INSTALL(DIRECTORY ${H}
@@ -208,6 +241,7 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
         )
         ENDIF(${H} MATCHES "/include/Qt")
     ENDFOREACH(H)
+  ENDIF(APPLE)
 
     # Install moc, too
     IF(NOT WIN32)
