@@ -90,7 +90,7 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 
 
 ELSE(VISIT_STATIC)
-#/Users/bjw/Development/thirdparty_shared/2.9.0/cmake/3.0.2/i386-apple-darwin12_gcc-4.2/bin/cmake
+#/Users/bjw/Development/thirdparty_shared/2.10.0/cmake/3.0.2/i386-apple-darwin12_gcc-4.2/bin/cmake
 ##
 ## ./build_visit generated host.cmake
 ## created: Fri Jan 23 11:00:20 PST 2015
@@ -100,7 +100,7 @@ ELSE(VISIT_STATIC)
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /Users/bjw/Development/thirdparty_shared/2.9.0)
+SET(VISITHOME /Users/bjw/Development/thirdparty_shared/2.10.0)
 SET(VISITARCH i386-apple-darwin12_gcc-4.2)
 
 ## Compiler flags.
@@ -184,7 +184,7 @@ VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 ##
 ## HDF5
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.7/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.14/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib z TYPE STRING)
 
 ##
@@ -219,7 +219,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_D
 ##
 ## MFEM 
 ##
-VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/3.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/3.0.1/${VISITARCH})
 
 ##
 ## PySide
