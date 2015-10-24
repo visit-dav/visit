@@ -200,6 +200,335 @@ EOF
     return 0;
 }
 
+function apply_hdf5_1814_static_patch
+{
+    info "Patching hdf5 for static build"
+    patch -p0 << \EOF
+*** src/H5PL.c.orig	2015-10-23 11:51:35.000000000 -0700
+--- src/H5PL.c	2015-10-23 11:56:48.000000000 -0700
+***************
+*** 159,165 ****
+      char        *preload_path;
+  
+      FUNC_ENTER_STATIC_NOERR
+! 
+      /* Retrieve pathnames from HDF5_PLUGIN_PRELOAD if the user sets it
+       * to tell the library to load plugin libraries without search.
+       */
+--- 159,165 ----
+      char        *preload_path;
+  
+      FUNC_ENTER_STATIC_NOERR
+! #ifdef H5_SUPPORT_DYNAMIC_LOADING
+      /* Retrieve pathnames from HDF5_PLUGIN_PRELOAD if the user sets it
+       * to tell the library to load plugin libraries without search.
+       */
+***************
+*** 168,174 ****
+          if(!HDstrcmp(preload_path, H5PL_NO_PLUGIN))
+              H5PL_no_plugin_g = TRUE;
+      } /* end if */
+! 
+      FUNC_LEAVE_NOAPI(SUCCEED)
+  } /* end H5PL__init_interface() */
+  
+--- 168,174 ----
+          if(!HDstrcmp(preload_path, H5PL_NO_PLUGIN))
+              H5PL_no_plugin_g = TRUE;
+      } /* end if */
+! #endif
+      FUNC_LEAVE_NOAPI(SUCCEED)
+  } /* end H5PL__init_interface() */
+  
+***************
+*** 193,201 ****
+      htri_t ret_value;
+  
+      FUNC_ENTER_NOAPI(FAIL)
+! 
+      ret_value = (htri_t)H5PL_no_plugin_g;
+! 
+  done:
+      FUNC_LEAVE_NOAPI(ret_value)
+  } /* end H5PL_no_plugin() */
+--- 193,201 ----
+      htri_t ret_value;
+  
+      FUNC_ENTER_NOAPI(FAIL)
+! #ifdef H5_SUPPORT_DYNAMIC_LOADING
+      ret_value = (htri_t)H5PL_no_plugin_g;
+! #endif
+  done:
+      FUNC_LEAVE_NOAPI(ret_value)
+  } /* end H5PL_no_plugin() */
+***************
+*** 224,230 ****
+      int  i = 0;
+      
+      FUNC_ENTER_NOAPI_NOINIT_NOERR
+! 
+      if(H5_interface_initialize_g) {
+          size_t u;       /* Local index variable */
+  
+--- 224,230 ----
+      int  i = 0;
+      
+      FUNC_ENTER_NOAPI_NOINIT_NOERR
+! #ifdef H5_SUPPORT_DYNAMIC_LOADING
+      if(H5_interface_initialize_g) {
+          size_t u;       /* Local index variable */
+  
+***************
+*** 246,252 ****
+  	H5_interface_initialize_g = 0;
+          i = 1;
+      } /* end if */
+! 
+      FUNC_LEAVE_NOAPI(i)
+  } /* end H5PL_term_interface() */
+  
+--- 246,252 ----
+  	H5_interface_initialize_g = 0;
+          i = 1;
+      } /* end if */
+! #endif
+      FUNC_LEAVE_NOAPI(i)
+  } /* end H5PL_term_interface() */
+  
+***************
+*** 273,279 ****
+      const void  *ret_value = NULL;
+  
+      FUNC_ENTER_NOAPI(NULL)
+! 
+      /* Check for "no plugins" indicated" */
+      if(H5PL_no_plugin_g)
+          HGOTO_ERROR(H5E_PLUGIN, H5E_CANTLOAD, NULL, "required dynamically loaded plugin filter '%d' is not available", id)
+--- 273,279 ----
+      const void  *ret_value = NULL;
+  
+      FUNC_ENTER_NOAPI(NULL)
+! #ifdef H5_SUPPORT_DYNAMIC_LOADING
+      /* Check for "no plugins" indicated" */
+      if(H5PL_no_plugin_g)
+          HGOTO_ERROR(H5E_PLUGIN, H5E_CANTLOAD, NULL, "required dynamically loaded plugin filter '%d' is not available", id)
+***************
+*** 308,314 ****
+      /* Check if we found the plugin */
+      if(found)
+          ret_value = plugin_info;
+! 
+  done:
+      FUNC_LEAVE_NOAPI(ret_value)
+  } /* end H5PL_load() */
+--- 308,314 ----
+      /* Check if we found the plugin */
+      if(found)
+          ret_value = plugin_info;
+! #endif
+  done:
+      FUNC_LEAVE_NOAPI(ret_value)
+  } /* end H5PL_load() */
+***************
+*** 335,341 ****
+      herr_t      ret_value = SUCCEED;    /* Return value */
+  
+      FUNC_ENTER_STATIC
+! 
+      /* Retrieve paths from HDF5_PLUGIN_PATH if the user sets it
+       * or from the default paths if it isn't set.
+       */
+--- 335,341 ----
+      herr_t      ret_value = SUCCEED;    /* Return value */
+  
+      FUNC_ENTER_STATIC
+! #ifdef H5_SUPPORT_DYNAMIC_LOADING
+      /* Retrieve paths from HDF5_PLUGIN_PATH if the user sets it
+       * or from the default paths if it isn't set.
+       */
+***************
+*** 360,366 ****
+      } /* end while */
+  
+      H5PL_path_found_g = TRUE;
+! 
+  done:
+      if(dl_path)
+          dl_path = (char *)H5MM_xfree(dl_path);
+--- 360,366 ----
+      } /* end while */
+  
+      H5PL_path_found_g = TRUE;
+! #endif
+  done:
+      if(dl_path)
+          dl_path = (char *)H5MM_xfree(dl_path);
+***************
+*** 396,402 ****
+      htri_t         ret_value = FALSE;
+  
+      FUNC_ENTER_STATIC
+! 
+      /* Open the directory */  
+      if(!(dirp = HDopendir(dir)))
+          HGOTO_ERROR(H5E_PLUGIN, H5E_OPENERROR, FAIL, "can't open directory")
+--- 396,402 ----
+      htri_t         ret_value = FALSE;
+  
+      FUNC_ENTER_STATIC
+! #ifdef H5_SUPPORT_DYNAMIC_LOADING
+      /* Open the directory */  
+      if(!(dirp = HDopendir(dir)))
+          HGOTO_ERROR(H5E_PLUGIN, H5E_OPENERROR, FAIL, "can't open directory")
+***************
+*** 438,444 ****
+                  pathname = (char *)H5MM_xfree(pathname);
+          } /* end if */
+      } /* end while */
+! 
+  done:
+      if(dirp) 
+          if(HDclosedir(dirp) < 0)
+--- 438,444 ----
+                  pathname = (char *)H5MM_xfree(pathname);
+          } /* end if */
+      } /* end while */
+! #endif
+  done:
+      if(dirp) 
+          if(HDclosedir(dirp) < 0)
+***************
+*** 459,465 ****
+      htri_t          ret_value = FALSE;
+  
+      FUNC_ENTER_STATIC
+! 
+      /* Specify a file mask. *.* = We want everything! */
+      sprintf(service, "%s\\*.dll", dir);
+      if((hFind = FindFirstFile(service, &fdFile)) == INVALID_HANDLE_VALUE)
+--- 459,465 ----
+      htri_t          ret_value = FALSE;
+  
+      FUNC_ENTER_STATIC
+! #ifdef H5_SUPPORT_DYNAMIC_LOADING
+      /* Specify a file mask. *.* = We want everything! */
+      sprintf(service, "%s\\*.dll", dir);
+      if((hFind = FindFirstFile(service, &fdFile)) == INVALID_HANDLE_VALUE)
+***************
+*** 494,500 ****
+                  pathname = (char *)H5MM_xfree(pathname);
+          } /* end if */
+      } while(FindNextFile(hFind, &fdFile)); /* Find the next file. */
+! 
+  done:
+      if(hFind) 
+          FindClose(hFind);
+--- 494,500 ----
+                  pathname = (char *)H5MM_xfree(pathname);
+          } /* end if */
+      } while(FindNextFile(hFind, &fdFile)); /* Find the next file. */
+! #endif
+  done:
+      if(hFind) 
+          FindClose(hFind);
+***************
+*** 529,535 ****
+      htri_t         ret_value = FALSE;
+  
+      FUNC_ENTER_STATIC
+! 
+      /* There are different reasons why a library can't be open, e.g. wrong architecture.
+       * simply continue if we can't open it.
+       */
+--- 529,535 ----
+      htri_t         ret_value = FALSE;
+  
+      FUNC_ENTER_STATIC
+! #ifdef H5_SUPPORT_DYNAMIC_LOADING
+      /* There are different reasons why a library can't be open, e.g. wrong architecture.
+       * simply continue if we can't open it.
+       */
+***************
+*** 588,594 ****
+                      HGOTO_ERROR(H5E_PLUGIN, H5E_CLOSEERROR, FAIL, "can't close dynamic library")
+          } /* end if */
+      } /* end else */
+! 
+  done:
+      FUNC_LEAVE_NOAPI(ret_value)
+  } /* end H5PL__open() */
+--- 588,594 ----
+                      HGOTO_ERROR(H5E_PLUGIN, H5E_CLOSEERROR, FAIL, "can't close dynamic library")
+          } /* end if */
+      } /* end else */
+! #endif
+  done:
+      FUNC_LEAVE_NOAPI(ret_value)
+  } /* end H5PL__open() */
+***************
+*** 615,621 ****
+      htri_t         ret_value = FALSE;
+  
+      FUNC_ENTER_STATIC
+! 
+      /* Search in the table of already opened dynamic libraries */
+      if(H5PL_table_used_g > 0) {
+          size_t         i;
+--- 615,621 ----
+      htri_t         ret_value = FALSE;
+  
+      FUNC_ENTER_STATIC
+! #ifdef H5_SUPPORT_DYNAMIC_LOADING
+      /* Search in the table of already opened dynamic libraries */
+      if(H5PL_table_used_g > 0) {
+          size_t         i;
+***************
+*** 636,642 ****
+              } /* end if */
+          } /* end for */
+      } /* end if */
+! 
+  done:
+      FUNC_LEAVE_NOAPI(ret_value)
+  } /* end H5PL__search_table() */
+--- 636,642 ----
+              } /* end if */
+          } /* end for */
+      } /* end if */
+! #endif
+  done:
+      FUNC_LEAVE_NOAPI(ret_value)
+  } /* end H5PL__search_table() */
+***************
+*** 658,666 ****
+  H5PL__close(H5PL_HANDLE handle)
+  {
+      FUNC_ENTER_STATIC_NOERR
+! 
+      H5PL_CLOSE_LIB(handle);
+!    
+      FUNC_LEAVE_NOAPI(SUCCEED)
+  } /* end H5PL__close() */
+  #endif /*H5_VMS*/
+--- 658,666 ----
+  H5PL__close(H5PL_HANDLE handle)
+  {
+      FUNC_ENTER_STATIC_NOERR
+! #ifdef H5_SUPPORT_DYNAMIC_LOADING
+      H5PL_CLOSE_LIB(handle);
+! #endif
+      FUNC_LEAVE_NOAPI(SUCCEED)
+  } /* end H5PL__close() */
+  #endif /*H5_VMS*/
+EOF
+    if [[ $? != 0 ]] ; then
+      warn "HDF5 static patch failed."
+      return 1
+    fi
+
+    return 0;
+}
+
 function apply_hdf5_patch
 {
     if [[ "${HDF5_VERSION}" == 1.8.7 ]] ; then
@@ -218,6 +547,16 @@ function apply_hdf5_patch
             apply_hdf5_187_188_patch
             if [[ $? != 0 ]]; then
                 return 1
+            fi
+        else
+            # Latest HDF5.
+
+            # Apply a patch for static if we build statically.
+            if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+                apply_hdf5_1814_static_patch
+                if [[ $? != 0 ]]; then
+                    return 1
+                fi
             fi
         fi
     fi

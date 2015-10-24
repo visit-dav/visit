@@ -94,15 +94,15 @@ function vulcan_build
     ln -s svn_bin/build_visit .
     ln -s svn_bin/bv_support .
 
-    # Create a version of build_visit_BGQ that replaces its "2.9.0" version string
+    # Create a version of build_visit_BGQ that replaces its "2.10.0" version string
     # with the current version string.
-#FIXME:    sed svn_bin/build_visit_BGQ "s/VISIT_VERSION=\"2.9.0\"/VISIT_VERSION=\"$visitVer\"/g" > build_visit_BGQ
+#FIXME:    sed svn_bin/build_visit_BGQ "s/VISIT_VERSION=\"2.10.0\"/VISIT_VERSION=\"$visitVer\"/g" > build_visit_BGQ
     cp svn_bin/build_visit_BGQ .
     chmod 700 build_visit_BGQ
 
     # Run the build_visit_BGQ script to build the code in the local tarball.
     echo "Running build_visit_BGQ"
-    #./build_visit_BGQ --thirdparty-path /g/g17/whitlocb/build/thirdparty_static/2.9.0 --makeflags -j2
+    #./build_visit_BGQ --thirdparty-path /g/g17/whitlocb/build/thirdparty_static/2.10.0 --makeflags -j2
     ./build_visit_BGQ --thirdparty-path /usr/gapps/visit/thirdparty_static/$visitVer --makeflags -j2
 
     # If a binary distribution was produced, copy it to the destDir.
