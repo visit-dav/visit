@@ -152,27 +152,6 @@ diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
 !     RAN_LIB="\$(STRIP) -x"
     fi
   fi
-  
-***************
-*** 2490,2495 ****
---- 2490,2496 ----
-  if test "${with_zlib+set}" = set; then
-    withval="$with_zlib"
-    withzlib=$withval
-+   ZLIBLIB=$withval
-  else
-    withzlib="no"
-  fi
-***************
-*** 2499,2504 ****
---- 2500,2506 ----
-    else
-      H5NEEDZLIB=1
-      if test -z "$withzlib" || test "$withzlib" = "yes"; then
-+       ZLIBLIB=""
-        zlibdir=""
-        echo "$ac_t""yes" 1>&6
-        ac_safe=`echo "zlib.h" | sed 'y%./+-%__p_%'` 
 
 EOF
    if [[ $? != 0 ]] ; then
@@ -222,6 +201,7 @@ function apply_cgns_321_patch
    if [[ "$OPSYS" == "Darwin" ]] ; then
        info "Applying OS X patch . . ."
        apply_cgns_321_darwin_patch
+       apply_cgns_321_zlib_patch
    else 
        info "Applying patch . . ."
        apply_cgns_321_zlib_patch
@@ -291,38 +271,45 @@ function build_cgns
     info "Configuring CGNS . . ."
     cd $CGNS_BUILD_DIR || error "Can't cd to CGNS build dir."
     info "Invoking command to configure CGNS"
-#    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
-#            cf_build_type=""
-#        else
-#            cf_build_type="--enable-shared=all"
-#    fi
+    LIBEXT=""
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        cf_build_type=""
+        LIBEXT="a"
+    else
+        cf_build_type="--enable-shared=all"
+        if [[ "$OPSYS" == "Darwin" ]] ; then
+            LIBEXT="dylib"
+        else
+            LIBEXT="so"
+        fi
+    fi
     # optionally add HDF5 and szip to the configure.
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
             if [[ "$OPSYS" == "Darwin" ]] ; then
-               H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.dylib"
+               H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.$LIBEXT"
             else
-               H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.so"
+               H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.$LIBEXT"
             fi
         fi
         if [[ "$DO_ZLIB" == "yes" ]] ; then
             if [[ "$OPSYS" == "Darwin" ]] ; then
-               H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.dylib"
+               H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.$LIBEXT"
             else
-               H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.so"
+               H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.$LIBEXT"
             fi
         fi
     fi
     if [[ "$OPSYS" == "Darwin" ]] ; then
        info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-       ./configure --enable-64bit --enable-shared=all $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
+       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
 
        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       ./configure --enable-64bit --enable-shared=all $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
+       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
     else
        info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
