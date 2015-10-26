@@ -430,7 +430,6 @@ MM5
 MatrixMarket
 Miranda
 NASTRAN
-Nek3D
 Nek5000
 OVERFLOW
 OpenFOAM

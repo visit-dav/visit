@@ -1557,6 +1557,44 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         nvars++;
     }
 
+    vtkFieldData *fd = dataset->GetFieldData();
+    for (i = 0 ; i < fd->GetNumberOfArrays() ; i++)
+    {
+cerr << "found Field data array with name: "<< fd->GetArrayName(i) << endl;
+        string arrName(fd->GetArrayName(i));
+        if (arrName == "TIME" || arrName == "CYCLE")
+            continue;
+        if (arrName.substr(0,3) == string("avt"))
+            continue;
+
+        if (fd->GetArray(arrName.c_str())->GetNumberOfTuples == 1)
+        {
+        Expression exp;
+        char tmp[1024];
+        sprintf(tmp, "cell_constant_%s", arrName.c_str());
+        exp.SetName(tmp);
+        sprintf(tmp, "cell_constant(%s, %g)", mesh->name.c_str(), fd->GetArray(arrName.c_str())->GetTuple1(0));
+        exp.SetDefinition(tmp);
+        exp.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&exp);
+
+        Expression exp2;
+        sprintf(tmp, "node_constant_%s", arrName.c_str());
+        exp2.SetName(tmp);
+        sprintf(tmp, "node_constant(%s, %g)", mesh->name.c_str(), fd->GetArray(arrName.c_str())->GetTuple1(0));
+        exp2.SetDefinition(tmp);
+        exp2.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&exp2);
+
+        Expression exp3;
+        exp3.SetName(arrName);
+        sprintf(tmp, "%g", fd->GetArray(arrName.c_str())->GetTuple1(0));
+        exp3.SetDefinition(tmp);
+        exp3.SetType(Expression::Unknown);
+        md->AddExpression(&exp3);
+        }
+    }
+
     // Don't hang on to all the data we've read. We might not even need it
     // if we're in mdserver or of on non-zero mpi-rank.
     FreeUpResources();
