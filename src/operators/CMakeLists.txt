@@ -122,7 +122,6 @@ PDF
 PersistentParticles
 #ProgrammableOp
 Project
-RectilinearProject2D
 Reflect
 Replicate
 Resample
