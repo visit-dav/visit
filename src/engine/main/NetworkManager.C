@@ -5991,6 +5991,9 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 //    per process cell counts returned by plots. this can be used to skip
 //    compositing when only rank 0 has cells. document use of INT_MAX.
 //
+//    Burlen Loring, Mon Oct 26 10:43:34 PDT 2015
+//    make sure ffscale gets applied to all plots in 2d mode.
+//
 // ****************************************************************************
 
 void
@@ -6036,6 +6039,7 @@ NetworkManager::SetUpWindowContents(const intVector &plotIds,
         NeedZBufferToCompositeEvenIn2D(plotIds);
 
     // Fullframe scale.
+    double FFScale[3] = {1.0, 1.0, 1.0};
     bool determinedWindowMode = false;
     size_t nPlotIds = plotIds.size();
     vector<float> cellCountMultiplier(nPlotIds, 1.0f);
@@ -6103,7 +6107,6 @@ NetworkManager::SetUpWindowContents(const intVector &plotIds,
 
         // Now that a plot has been added to the viswindow, we know
         // if the window is 3D or 2D or curve.
-        double FFScale[3] = {1.0, 1.0, 1.0};
         if (!determinedWindowMode)
         {
             // window mode
@@ -6119,14 +6122,10 @@ NetworkManager::SetUpWindowContents(const intVector &plotIds,
             // full frame scaling
             if (renderState.twoD)
             {
-                int fft = 0;
-                double ffs = 1.0;
-                viswin->GetScaleFactorAndType(ffs, fft);
-                switch (fft)
-                {
-                    case 0: FFScale[0] = ffs; break;
-                    case 1: FFScale[1] = ffs; break;
-                }
+                int axis = 0;
+                double scale = 1.0;
+                viswin->GetScaleFactorAndType(scale, axis);
+                FFScale[axis] = scale;
             }
         }
 
