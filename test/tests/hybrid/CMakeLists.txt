@@ -37,7 +37,7 @@
 #*****************************************************************************
 
 SET(PY_TESTS clonecopy curve_anim curve_expressions defvar_anim
-    expr_cmfe image_proc time_cmfe time_deriv_cmfe)
+    expr_cmfe image_proc lambda2 qcrit time_cmfe time_deriv_cmfe)
 
 PY_3RDPARTY_TEST(PY_TESTS NETCDF missingdata)
 

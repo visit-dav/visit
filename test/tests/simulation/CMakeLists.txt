@@ -42,6 +42,7 @@ SET(PY_TESTS
     csg
     curve
     domainbounds
+    domainlist
     ghostcells
     globalids
     interleave
@@ -58,7 +59,8 @@ SET(PY_TESTS
     ucdcurve
     unstructured
     updateplots
-    var)
+    var
+    zerocopy)
 
 SET(TEST_EXTRA_ARGS)
 IF (NOT HAVE_OSMESA)
