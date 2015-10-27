@@ -217,6 +217,7 @@ LaunchService::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
     int  portargument       = -1;
     int  hostargument       = -1;
     int  bufferSize         = -1;
+    std::string sbHost;
     for (size_t i=0; i<launchArgs.size(); i++)
     {
         if (i<launchArgs.size()-1 && launchArgs[i] == "-port")
@@ -231,6 +232,10 @@ LaunchService::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
         else if (launchArgs[i] == "-fixed-buffer-sockets")
         {
             bufferSize = SocketConnection::FIXED_BUFFER_SIZE;
+        }
+        else if((i+1)<launchArgs.size() && launchArgs[i] == "-socket-bridge-host")
+        {
+            sbHost = launchArgs[i+1];
         }
     }
 
@@ -254,9 +259,14 @@ LaunchService::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
                << " to tunneled port localhost/" << oldlocalport << endl;
 
         // replace the host with my host name
-        char hostname[1024];
-        gethostname(hostname,1024);
-        launchArgs[hostargument] = hostname;
+        if(sbHost.empty())
+        {
+            char hostname[1024];
+            gethostname(hostname,1024);
+            launchArgs[hostargument] = hostname;
+        }
+        else
+            launchArgs[hostargument] = sbHost;
 
         // replace the launch argument port number
         char newportstr[10];
