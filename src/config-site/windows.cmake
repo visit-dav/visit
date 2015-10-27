@@ -43,6 +43,12 @@ OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS." ON)
 ##############################################################
 
 ##
+## BOOST
+##
+VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost_minimal_headers/1.57.0)
+
+
+##
 ## VTK
 ##
 IF(VISIT_QT5)
