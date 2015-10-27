@@ -42,7 +42,7 @@ SET(PY_TESTS
     truecolor)
 
 PY_3RDPARTY_TEST(PY_TESTS SILO
-    contour curve mesh multicolor parcoords ray_trace scatter
+    contour curve mesh multicolor parcoords pseudocolor ray_trace scatter
     singlecolor sl_integration sl_termination streamline_geom
     streamlines surface tensor vector volumePlot)
 

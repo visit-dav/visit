@@ -40,9 +40,9 @@ SET(PY_TESTS)
 
 PY_3RDPARTY_TEST(PY_TESTS SILO
     annotation axistitles bigdata colortexture compositing
-    evalcubic legends lighting offscreensave renderpoints
-    saveformats scalable2 scalable shadows specular text2d
-    timeslider transparency tuvok viewChange view volume)
+    evalcubic image legends lighting line2d line3d offscreensave
+    renderpoints saveformats scalable2 scalable shadows specular text2d
+    text3d timeslider transparency tuvok viewChange view volume)
 
 SET(TEST_EXTRA_ARGS)
 IF (NOT HAVE_OSMESA)
