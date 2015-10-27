@@ -421,35 +421,41 @@ F_VISITSETUPENV2(VISIT_F77STRING env, int *lenv)
 FORTRAN
 F_VISITGETENV(VISIT_F77STRING env, int *lenv)
 {
-    char *src = VisItGetEnvironment();
-
     if(*lenv <= 0)
     {
         *lenv = 0;
         return VISIT_ERROR;
     }
-    else if(src != NULL)
-    {
-        /* We have lenv which is the size of the destination buffer. 
-           We have len which is the length of the string. */
-        size_t len, sz;
-        len = strlen(src);
-
-        /* Fill the output buffer with NULL characters */
-        memset(env, 0, *lenv);
-
-        /* Copy the amount of string that will fit into the output buffer
-          (leaving 1 element for a NULL terminator).*/
-        sz = FMINLENGTH(len, *lenv-1);
-        if(sz > 0)
-            memcpy(env, src, sz);
-
-        /* Return the length of the string in lenv */
-        *lenv = (int)sz;
-    }
     else
     {
-        *lenv = 0;
+        char *src = VisItGetEnvironment();
+        if(src != NULL)
+        {
+            /* We have lenv which is the size of the destination buffer. 
+               We have len which is the length of the string. */
+            size_t len, sz;
+            len = strlen(src);
+
+            /* Fill the output buffer with NULL characters */
+            memset(env, 0, *lenv);
+
+            /* Copy the amount of string that will fit into the output buffer
+              (leaving 1 element for a NULL terminator).*/
+            sz = FMINLENGTH(len, *lenv-1);
+            if(sz > 0)
+                memcpy(env, src, sz);
+
+            /* Return the length of the string in lenv */
+            *lenv = (int)sz;
+
+            /* VisItGetEnvironment returns a strdup'd copy of the 
+               environment now. Free it.*/
+            free(src);
+        }
+        else
+        {
+            *lenv = 0;
+        }
     }
 
     return VISIT_OKAY;
