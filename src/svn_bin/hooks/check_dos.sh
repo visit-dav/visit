@@ -102,7 +102,7 @@ while read fline; do
         */tools/qtssh/*|*/tools/qtssh/windows/*)
             continue
             ;;
-        *windowsbuild/*)
+        *windowsbuild/* | *test/win32_baseline/*)
             continue
             ;;
         *.bat)
