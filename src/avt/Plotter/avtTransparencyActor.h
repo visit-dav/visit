@@ -56,7 +56,7 @@ class     vtkAxisDepthSort;
 class     vtkCamera;
 class     vtkDataSet;
 class     vtkDataSetMapper;
-class     vtkDepthSortPolyData;
+class     vtkDepthSortPolyData2;
 class     vtkMatrix4x4;
 class     vtkPolyData;
 class     vtkPolyDataMapper;
@@ -219,8 +219,8 @@ class PLOTTER_API avtTransparencyActor
     vtkPolyDataMapper                               *myMapper;
 
     vtkAxisDepthSort                                *axisSort;
-    vtkDepthSortPolyData                            *distributeDepthSort;
-    vtkDepthSortPolyData                            *depthSort;
+    vtkDepthSortPolyData2                           *distributeDepthSort;
+    vtkDepthSortPolyData2                           *depthSort;
     bool                                             usePerfectSort;
     bool                                             is2Dimensional;
     vtkMatrix4x4                                    *lastCamera;
