@@ -57,7 +57,7 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
 #include <vtkDataSetRemoveGhostCells.h>
-#include <vtkDepthSortPolyData.h>
+#include <vtkDepthSortPolyData2.h>
 #include <vtkDoubleArray.h>
 #include <vtkGeometryFilter.h>
 #include <vtkMatrix4x4.h>
@@ -573,7 +573,7 @@ avtTransparencyActor::avtTransparencyActor() :
     axisSort = vtkAxisDepthSort::New();
     axisSort->SetInputConnection(appender->GetOutputPort());
 
-    depthSort = vtkDepthSortPolyData::New();
+    depthSort = vtkDepthSortPolyData2::New();
     depthSort->SetDepthSortModeToBoundsCenter();
     depthSort->SetInputConnection(appender->GetOutputPort());
 
@@ -583,7 +583,7 @@ avtTransparencyActor::avtTransparencyActor() :
     distribute->SetCommunicator(VISIT_MPI_COMM);
     distribute->SetInputConnection(appender->GetOutputPort());
 
-    distributeDepthSort = vtkDepthSortPolyData::New();
+    distributeDepthSort = vtkDepthSortPolyData2::New();
     distributeDepthSort->SetDepthSortModeToBoundsCenter();
     distributeDepthSort->SetInputConnection(distribute->GetOutputPort());
 #endif

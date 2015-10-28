@@ -37,13 +37,16 @@
 # Modifications:
 #   Cyrus Harrison, Tue Mar  9 08:28:53 PST 2010
 #   Define __USE_ISOC99 if we are using the boost interval lib to make sure
-#   a rounding scheme is available. 
+#   a rounding scheme is available.
 #
 #   Eric Brugger, Wed Jul 25 08:30:40 PDT 2012
 #   I added the classes vtkMultiSplitter and vtkVolumeFromCSGVolume.
 #
-#    Kathleen Biagas, Wed Aug  8 08:15:26 PDT 2012
-#    Removed vtkDisjointCubesFacelistFilter.
+#   Kathleen Biagas, Wed Aug  8 08:15:26 PDT 2012
+#   Removed vtkDisjointCubesFacelistFilter.
+#
+#   Burlen Loring, Sun Oct 18 00:47:57 PDT 2015
+#   Added vtkDepthSortPolyData2
 #
 #****************************************************************************/
 
@@ -55,6 +58,7 @@ vtkCSGCell.C
 vtkCSGGrid.C
 vtkConnectedTubeFilter.C
 vtkDataSetRemoveGhostCells.C
+vtkDepthSortPolyData2.C
 vtkLineoutFilter.C
 vtkLinesFromOriginalCells.C
 vtkMultiSplitter.C
