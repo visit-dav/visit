@@ -57,14 +57,12 @@
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 32 bit<br />
-          Visual Studio 2012<br />
-          <i>(Has issues loading lots of database plugins on some systems. Limit the number of database plugins if VisIt hangs on startup.)</i></td>
+          Visual Studio 2012</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.10.0/visit2.10.0.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 64 bit<br />
-          Visual Studio 2012<br />
-          <i>(Has issues loading lots of database plugins on some systems. Limit the number of database plugins if VisIt hangs on startup.)</i></td>
+          Visual Studio 2012</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.10.0/visit2.10.0_x64.exe">Download</a></td>
         </tr>
         <tr>
@@ -134,14 +132,12 @@
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 32 bit<br />
-          Visual Studio 2012<br />
-          <i>(Has issues loading lots of database plugins on some systems. Limit the number of database plugins if VisIt hangs on startup.)</i></td>
+          Visual Studio 2012</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.2/visit2.9.2.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 64 bit<br />
-          Visual Studio 2012<br />
-          <i>(Has issues loading lots of database plugins on some systems. Limit the number of database plugins if VisIt hangs on startup.)</i></td>
+          Visual Studio 2012</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.2/visit2.9.2_x64.exe">Download</a></td>
         </tr>
         <tr>
@@ -199,14 +195,12 @@
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 32 bit<br />
-          Visual Studio 2012<br />
-          <i>(Has issues loading lots of database plugins on some systems. Limit the number of database plugins if VisIt hangs on startup.)</i></td>
+          Visual Studio 2012</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.1/visit2.9.1.exe">Download</a></td>
         </tr>
         <tr>
           <td>Windows (Vista / 7 / 8) 64 bit<br />
-          Visual Studio 2012<br />
-          <i>(Has issues loading lots of database plugins on some systems. Limit the number of database plugins if VisIt hangs on startup.)</i></td>
+          Visual Studio 2012</td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.9.1/visit2.9.1_x64.exe">Download</a></td>
         </tr>
         <tr>
