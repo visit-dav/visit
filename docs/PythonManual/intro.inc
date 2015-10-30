@@ -89,7 +89,7 @@ If you do not install the visit.so module as a Python site package, you can tell
 
 \begin{verbatim}
 import sys
-sys.path.append("/path/to/visit/<version>/<architecture>/lib")
+sys.path.append("/path/to/visit/<version>/<architecture>/lib/site-packages")
 \end{verbatim}
 
 Here is how to import all functions into the global Python namespace:
