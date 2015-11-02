@@ -177,29 +177,69 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
 
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
 
-    std::string pointVar = plotAtts.GetPointSizeVar();
+    int topoDim = data.GetTopologicalDimension();
+
+    std::string pointVar   = plotAtts.GetPointSizeVar();
+    std::string radiusVar    = plotAtts.GetTubeRadiusVar();
+    std::string opacityVar = plotAtts.GetOpacityVariable();
+
     avtDataRequest_p dataRequest = new avtDataRequest(
                                        contract->GetDataRequest());
 
     primaryVar = dataRequest->GetVariable();
 
+    // ARS - FIX ME - Why AddSecondaryVariable here and not in
+    // avtPseudocolorPlot::EnhanceSpecification
+
     //
     // Find out if we need to add a secondary variable.
     //
-    if (plotAtts.GetPointSizeVarEnabled() && 
+    if( (topoDim == 0 || (topoDim > 0 && plotAtts.GetRenderPoints())) &&
+        plotAtts.GetPointType() != PseudocolorAttributes::Point &&
+        plotAtts.GetPointType() != PseudocolorAttributes::Sphere &&
+        plotAtts.GetPointSizeVarEnabled() && 
         pointVar != "default" &&
         pointVar != "\0" &&
         pointVar != primaryVar &&
         !dataRequest->HasSecondaryVariable(pointVar.c_str()))
     {
         rv->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
+        rv->SetCalculateVariableExtents(pointVar, true);
     }
 
+    if( (topoDim == 1 || (topoDim > 1 && plotAtts.GetRenderWireframe())) &&
+        plotAtts.GetLineType() == PseudocolorAttributes::Tube && 
+        plotAtts.GetTubeRadiusVarEnabled() &&
+        radiusVar != "default" &&
+        radiusVar != "\0" &&
+        radiusVar != primaryVar &&
+        !dataRequest->HasSecondaryVariable(radiusVar.c_str()))
+    {
+        rv->GetDataRequest()->AddSecondaryVariable(radiusVar.c_str());
+        rv->SetCalculateVariableExtents(radiusVar, true);
+    }
+
+    if (plotAtts.GetOpacityType() == PseudocolorAttributes::VariableRange &&
+        opacityVar != "default" &&
+        opacityVar != "\0" &&
+        opacityVar != primaryVar &&
+        !dataRequest->HasSecondaryVariable(opacityVar.c_str()))
+    {
+        rv->GetDataRequest()->AddSecondaryVariable(opacityVar.c_str());
+        rv->SetCalculateVariableExtents(opacityVar, true);
+    }
+
+    // Note the line type so that upstream operators can obtain the
+    // needed data for displaying ribbons or tubes.
+    std::string key =
+      rv->SetAttribute( &plotAtts, PseudocolorAttributes::ID_lineType,
+                        PseudocolorAttributes::LineType_ToString(plotAtts.GetLineType()) );
 
     if (contract->GetDataRequest()->MayRequireZones() ||
         contract->GetDataRequest()->MayRequireNodes())
     {
         keepNodeZone = true;
+
         if (data.ValidActiveVariable())
         {
             if (data.GetCentering() == AVT_NODECENT)

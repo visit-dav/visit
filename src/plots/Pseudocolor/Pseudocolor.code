@@ -78,11 +78,11 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             obj.pointSizeVar != "\0") ||
 
                            (obj.lineType == Tube &&
-                            obj.varyTubeRadius &&
-                            varyTubeRadiusVariable != obj.varyTubeRadiusVariable &&
-                            obj.varyTubeRadiusVariable != "default" && 
-                            obj.varyTubeRadiusVariable != "" &&
-                            obj.varyTubeRadiusVariable != "\0") ||
+                            obj.tubeRadiusVarEnabled &&
+                            tubeRadiusVar != obj.tubeRadiusVar &&
+                            obj.tubeRadiusVar != "default" && 
+                            obj.tubeRadiusVar != "" &&
+                            obj.tubeRadiusVar != "\0") ||
 
                            (obj.opacityType == VariableRange &&
                             opacityVariable != obj.opacityVariable &&
@@ -286,4 +286,3 @@ PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
       }
     }
 }
-

@@ -149,7 +149,7 @@ public:
     void SelectColorTableName();
     void SelectOpacityVariable();
     void SelectPointSizeVar();
-    void SelectVaryTubeRadiusVariable();
+    void SelectTubeRadiusVar();
 
     // Property setting methods
     void SetScaling(Scaling scaling_);
@@ -181,9 +181,9 @@ public:
     void SetTubeRadiusSizeType(SizeType tubeRadiusSizeType_);
     void SetTubeRadiusAbsolute(double tubeRadiusAbsolute_);
     void SetTubeRadiusBBox(double tubeRadiusBBox_);
-    void SetVaryTubeRadius(bool varyTubeRadius_);
-    void SetVaryTubeRadiusVariable(const std::string &varyTubeRadiusVariable_);
-    void SetVaryTubeRadiusFactor(double varyTubeRadiusFactor_);
+    void SetTubeRadiusVarEnabled(bool tubeRadiusVarEnabled_);
+    void SetTubeRadiusVar(const std::string &tubeRadiusVar_);
+    void SetTubeRadiusVarFactor(double tubeRadiusVarFactor_);
     void SetEndPointType(EndPointType endPointType_);
     void SetEndPointStyle(EndPointStyle endPointStyle_);
     void SetEndPointRadiusSizeType(SizeType endPointRadiusSizeType_);
@@ -230,10 +230,10 @@ public:
     SizeType          GetTubeRadiusSizeType() const;
     double            GetTubeRadiusAbsolute() const;
     double            GetTubeRadiusBBox() const;
-    bool              GetVaryTubeRadius() const;
-    const std::string &GetVaryTubeRadiusVariable() const;
-          std::string &GetVaryTubeRadiusVariable();
-    double            GetVaryTubeRadiusFactor() const;
+    bool              GetTubeRadiusVarEnabled() const;
+    const std::string &GetTubeRadiusVar() const;
+          std::string &GetTubeRadiusVar();
+    double            GetTubeRadiusVarFactor() const;
     EndPointType      GetEndPointType() const;
     EndPointStyle     GetEndPointStyle() const;
     SizeType          GetEndPointRadiusSizeType() const;
@@ -340,9 +340,9 @@ public:
         ID_tubeRadiusSizeType,
         ID_tubeRadiusAbsolute,
         ID_tubeRadiusBBox,
-        ID_varyTubeRadius,
-        ID_varyTubeRadiusVariable,
-        ID_varyTubeRadiusFactor,
+        ID_tubeRadiusVarEnabled,
+        ID_tubeRadiusVar,
+        ID_tubeRadiusVarFactor,
         ID_endPointType,
         ID_endPointStyle,
         ID_endPointRadiusSizeType,
@@ -388,9 +388,9 @@ private:
     int         tubeRadiusSizeType;
     double      tubeRadiusAbsolute;
     double      tubeRadiusBBox;
-    bool        varyTubeRadius;
-    std::string varyTubeRadiusVariable;
-    double      varyTubeRadiusFactor;
+    bool        tubeRadiusVarEnabled;
+    std::string tubeRadiusVar;
+    double      tubeRadiusVarFactor;
     int         endPointType;
     int         endPointStyle;
     int         endPointRadiusSizeType;
