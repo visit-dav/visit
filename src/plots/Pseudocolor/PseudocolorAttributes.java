@@ -137,9 +137,9 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         tubeRadiusSizeType = SIZETYPE_FRACTIONOFBBOX;
         tubeRadiusAbsolute = 0.125;
         tubeRadiusBBox = 0.005;
-        varyTubeRadius = false;
-        varyTubeRadiusVariable = new String("");
-        varyTubeRadiusFactor = 10;
+        tubeRadiusVarEnabled = false;
+        tubeRadiusVar = new String("");
+        tubeRadiusVarFactor = 10;
         endPointType = ENDPOINTTYPE_NONE;
         endPointStyle = ENDPOINTSTYLE_SPHERES;
         endPointRadiusSizeType = SIZETYPE_FRACTIONOFBBOX;
@@ -187,9 +187,9 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         tubeRadiusSizeType = SIZETYPE_FRACTIONOFBBOX;
         tubeRadiusAbsolute = 0.125;
         tubeRadiusBBox = 0.005;
-        varyTubeRadius = false;
-        varyTubeRadiusVariable = new String("");
-        varyTubeRadiusFactor = 10;
+        tubeRadiusVarEnabled = false;
+        tubeRadiusVar = new String("");
+        tubeRadiusVarFactor = 10;
         endPointType = ENDPOINTTYPE_NONE;
         endPointStyle = ENDPOINTSTYLE_SPHERES;
         endPointRadiusSizeType = SIZETYPE_FRACTIONOFBBOX;
@@ -237,9 +237,9 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         tubeRadiusSizeType = obj.tubeRadiusSizeType;
         tubeRadiusAbsolute = obj.tubeRadiusAbsolute;
         tubeRadiusBBox = obj.tubeRadiusBBox;
-        varyTubeRadius = obj.varyTubeRadius;
-        varyTubeRadiusVariable = new String(obj.varyTubeRadiusVariable);
-        varyTubeRadiusFactor = obj.varyTubeRadiusFactor;
+        tubeRadiusVarEnabled = obj.tubeRadiusVarEnabled;
+        tubeRadiusVar = new String(obj.tubeRadiusVar);
+        tubeRadiusVarFactor = obj.tubeRadiusVarFactor;
         endPointType = obj.endPointType;
         endPointStyle = obj.endPointStyle;
         endPointRadiusSizeType = obj.endPointRadiusSizeType;
@@ -298,9 +298,9 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
                 (tubeRadiusSizeType == obj.tubeRadiusSizeType) &&
                 (tubeRadiusAbsolute == obj.tubeRadiusAbsolute) &&
                 (tubeRadiusBBox == obj.tubeRadiusBBox) &&
-                (varyTubeRadius == obj.varyTubeRadius) &&
-                (varyTubeRadiusVariable.equals(obj.varyTubeRadiusVariable)) &&
-                (varyTubeRadiusFactor == obj.varyTubeRadiusFactor) &&
+                (tubeRadiusVarEnabled == obj.tubeRadiusVarEnabled) &&
+                (tubeRadiusVar.equals(obj.tubeRadiusVar)) &&
+                (tubeRadiusVarFactor == obj.tubeRadiusVarFactor) &&
                 (endPointType == obj.endPointType) &&
                 (endPointStyle == obj.endPointStyle) &&
                 (endPointRadiusSizeType == obj.endPointRadiusSizeType) &&
@@ -493,21 +493,21 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         Select(28);
     }
 
-    public void SetVaryTubeRadius(boolean varyTubeRadius_)
+    public void SetTubeRadiusVarEnabled(boolean tubeRadiusVarEnabled_)
     {
-        varyTubeRadius = varyTubeRadius_;
+        tubeRadiusVarEnabled = tubeRadiusVarEnabled_;
         Select(29);
     }
 
-    public void SetVaryTubeRadiusVariable(String varyTubeRadiusVariable_)
+    public void SetTubeRadiusVar(String tubeRadiusVar_)
     {
-        varyTubeRadiusVariable = varyTubeRadiusVariable_;
+        tubeRadiusVar = tubeRadiusVar_;
         Select(30);
     }
 
-    public void SetVaryTubeRadiusFactor(double varyTubeRadiusFactor_)
+    public void SetTubeRadiusVarFactor(double tubeRadiusVarFactor_)
     {
-        varyTubeRadiusFactor = varyTubeRadiusFactor_;
+        tubeRadiusVarFactor = tubeRadiusVarFactor_;
         Select(31);
     }
 
@@ -613,9 +613,9 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     public int     GetTubeRadiusSizeType() { return tubeRadiusSizeType; }
     public double  GetTubeRadiusAbsolute() { return tubeRadiusAbsolute; }
     public double  GetTubeRadiusBBox() { return tubeRadiusBBox; }
-    public boolean GetVaryTubeRadius() { return varyTubeRadius; }
-    public String  GetVaryTubeRadiusVariable() { return varyTubeRadiusVariable; }
-    public double  GetVaryTubeRadiusFactor() { return varyTubeRadiusFactor; }
+    public boolean GetTubeRadiusVarEnabled() { return tubeRadiusVarEnabled; }
+    public String  GetTubeRadiusVar() { return tubeRadiusVar; }
+    public double  GetTubeRadiusVarFactor() { return tubeRadiusVarFactor; }
     public int     GetEndPointType() { return endPointType; }
     public int     GetEndPointStyle() { return endPointStyle; }
     public int     GetEndPointRadiusSizeType() { return endPointRadiusSizeType; }
@@ -691,11 +691,11 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(28, buf))
             buf.WriteDouble(tubeRadiusBBox);
         if(WriteSelect(29, buf))
-            buf.WriteBool(varyTubeRadius);
+            buf.WriteBool(tubeRadiusVarEnabled);
         if(WriteSelect(30, buf))
-            buf.WriteString(varyTubeRadiusVariable);
+            buf.WriteString(tubeRadiusVar);
         if(WriteSelect(31, buf))
-            buf.WriteDouble(varyTubeRadiusFactor);
+            buf.WriteDouble(tubeRadiusVarFactor);
         if(WriteSelect(32, buf))
             buf.WriteInt(endPointType);
         if(WriteSelect(33, buf))
@@ -814,13 +814,13 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
             SetTubeRadiusBBox(buf.ReadDouble());
             break;
         case 29:
-            SetVaryTubeRadius(buf.ReadBool());
+            SetTubeRadiusVarEnabled(buf.ReadBool());
             break;
         case 30:
-            SetVaryTubeRadiusVariable(buf.ReadString());
+            SetTubeRadiusVar(buf.ReadString());
             break;
         case 31:
-            SetVaryTubeRadiusFactor(buf.ReadDouble());
+            SetTubeRadiusVarFactor(buf.ReadDouble());
             break;
         case 32:
             SetEndPointType(buf.ReadInt());
@@ -952,9 +952,9 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + doubleToString("tubeRadiusAbsolute", tubeRadiusAbsolute, indent) + "\n";
         str = str + doubleToString("tubeRadiusBBox", tubeRadiusBBox, indent) + "\n";
-        str = str + boolToString("varyTubeRadius", varyTubeRadius, indent) + "\n";
-        str = str + stringToString("varyTubeRadiusVariable", varyTubeRadiusVariable, indent) + "\n";
-        str = str + doubleToString("varyTubeRadiusFactor", varyTubeRadiusFactor, indent) + "\n";
+        str = str + boolToString("tubeRadiusVarEnabled", tubeRadiusVarEnabled, indent) + "\n";
+        str = str + stringToString("tubeRadiusVar", tubeRadiusVar, indent) + "\n";
+        str = str + doubleToString("tubeRadiusVarFactor", tubeRadiusVarFactor, indent) + "\n";
         str = str + indent + "endPointType = ";
         if(endPointType == ENDPOINTTYPE_NONE)
             str = str + "ENDPOINTTYPE_NONE";
@@ -1020,9 +1020,9 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     private int     tubeRadiusSizeType;
     private double  tubeRadiusAbsolute;
     private double  tubeRadiusBBox;
-    private boolean varyTubeRadius;
-    private String  varyTubeRadiusVariable;
-    private double  varyTubeRadiusFactor;
+    private boolean tubeRadiusVarEnabled;
+    private String  tubeRadiusVar;
+    private double  tubeRadiusVarFactor;
     private int     endPointType;
     private int     endPointStyle;
     private int     endPointRadiusSizeType;

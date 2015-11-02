@@ -293,14 +293,14 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%stubeRadiusBBox = %g\n", prefix, atts->GetTubeRadiusBBox());
     str += tmpStr;
-    if(atts->GetVaryTubeRadius())
-        SNPRINTF(tmpStr, 1000, "%svaryTubeRadius = 1\n", prefix);
+    if(atts->GetTubeRadiusVarEnabled())
+        SNPRINTF(tmpStr, 1000, "%stubeRadiusVarEnabled = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%svaryTubeRadius = 0\n", prefix);
+        SNPRINTF(tmpStr, 1000, "%stubeRadiusVarEnabled = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svaryTubeRadiusVariable = \"%s\"\n", prefix, atts->GetVaryTubeRadiusVariable().c_str());
+    SNPRINTF(tmpStr, 1000, "%stubeRadiusVar = \"%s\"\n", prefix, atts->GetTubeRadiusVar().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%svaryTubeRadiusFactor = %g\n", prefix, atts->GetVaryTubeRadiusFactor());
+    SNPRINTF(tmpStr, 1000, "%stubeRadiusVarFactor = %g\n", prefix, atts->GetTubeRadiusVarFactor());
     str += tmpStr;
     const char *endPointType_names = "None, Tails, Heads, Both";
     switch (atts->GetEndPointType())
@@ -1162,7 +1162,7 @@ PseudocolorAttributes_GetTubeRadiusBBox(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PseudocolorAttributes_SetVaryTubeRadius(PyObject *self, PyObject *args)
+PseudocolorAttributes_SetTubeRadiusVarEnabled(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
 
@@ -1170,23 +1170,23 @@ PseudocolorAttributes_SetVaryTubeRadius(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the varyTubeRadius in the object.
-    obj->data->SetVaryTubeRadius(ival != 0);
+    // Set the tubeRadiusVarEnabled in the object.
+    obj->data->SetTubeRadiusVarEnabled(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PseudocolorAttributes_GetVaryTubeRadius(PyObject *self, PyObject *args)
+PseudocolorAttributes_GetTubeRadiusVarEnabled(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetVaryTubeRadius()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetTubeRadiusVarEnabled()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-PseudocolorAttributes_SetVaryTubeRadiusVariable(PyObject *self, PyObject *args)
+PseudocolorAttributes_SetTubeRadiusVar(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
 
@@ -1194,23 +1194,23 @@ PseudocolorAttributes_SetVaryTubeRadiusVariable(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "s", &str))
         return NULL;
 
-    // Set the varyTubeRadiusVariable in the object.
-    obj->data->SetVaryTubeRadiusVariable(std::string(str));
+    // Set the tubeRadiusVar in the object.
+    obj->data->SetTubeRadiusVar(std::string(str));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PseudocolorAttributes_GetVaryTubeRadiusVariable(PyObject *self, PyObject *args)
+PseudocolorAttributes_GetTubeRadiusVar(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetVaryTubeRadiusVariable().c_str());
+    PyObject *retval = PyString_FromString(obj->data->GetTubeRadiusVar().c_str());
     return retval;
 }
 
 /*static*/ PyObject *
-PseudocolorAttributes_SetVaryTubeRadiusFactor(PyObject *self, PyObject *args)
+PseudocolorAttributes_SetTubeRadiusVarFactor(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
 
@@ -1218,18 +1218,18 @@ PseudocolorAttributes_SetVaryTubeRadiusFactor(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the varyTubeRadiusFactor in the object.
-    obj->data->SetVaryTubeRadiusFactor(dval);
+    // Set the tubeRadiusVarFactor in the object.
+    obj->data->SetTubeRadiusVarFactor(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PseudocolorAttributes_GetVaryTubeRadiusFactor(PyObject *self, PyObject *args)
+PseudocolorAttributes_GetTubeRadiusVarFactor(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetVaryTubeRadiusFactor());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTubeRadiusVarFactor());
     return retval;
 }
 
@@ -1610,12 +1610,12 @@ PyMethodDef PyPseudocolorAttributes_methods[PSEUDOCOLORATTRIBUTES_NMETH] = {
     {"GetTubeRadiusAbsolute", PseudocolorAttributes_GetTubeRadiusAbsolute, METH_VARARGS},
     {"SetTubeRadiusBBox", PseudocolorAttributes_SetTubeRadiusBBox, METH_VARARGS},
     {"GetTubeRadiusBBox", PseudocolorAttributes_GetTubeRadiusBBox, METH_VARARGS},
-    {"SetVaryTubeRadius", PseudocolorAttributes_SetVaryTubeRadius, METH_VARARGS},
-    {"GetVaryTubeRadius", PseudocolorAttributes_GetVaryTubeRadius, METH_VARARGS},
-    {"SetVaryTubeRadiusVariable", PseudocolorAttributes_SetVaryTubeRadiusVariable, METH_VARARGS},
-    {"GetVaryTubeRadiusVariable", PseudocolorAttributes_GetVaryTubeRadiusVariable, METH_VARARGS},
-    {"SetVaryTubeRadiusFactor", PseudocolorAttributes_SetVaryTubeRadiusFactor, METH_VARARGS},
-    {"GetVaryTubeRadiusFactor", PseudocolorAttributes_GetVaryTubeRadiusFactor, METH_VARARGS},
+    {"SetTubeRadiusVarEnabled", PseudocolorAttributes_SetTubeRadiusVarEnabled, METH_VARARGS},
+    {"GetTubeRadiusVarEnabled", PseudocolorAttributes_GetTubeRadiusVarEnabled, METH_VARARGS},
+    {"SetTubeRadiusVar", PseudocolorAttributes_SetTubeRadiusVar, METH_VARARGS},
+    {"GetTubeRadiusVar", PseudocolorAttributes_GetTubeRadiusVar, METH_VARARGS},
+    {"SetTubeRadiusVarFactor", PseudocolorAttributes_SetTubeRadiusVarFactor, METH_VARARGS},
+    {"GetTubeRadiusVarFactor", PseudocolorAttributes_GetTubeRadiusVarFactor, METH_VARARGS},
     {"SetEndPointType", PseudocolorAttributes_SetEndPointType, METH_VARARGS},
     {"GetEndPointType", PseudocolorAttributes_GetEndPointType, METH_VARARGS},
     {"SetEndPointStyle", PseudocolorAttributes_SetEndPointStyle, METH_VARARGS},
@@ -1794,12 +1794,12 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         return PseudocolorAttributes_GetTubeRadiusAbsolute(self, NULL);
     if(strcmp(name, "tubeRadiusBBox") == 0)
         return PseudocolorAttributes_GetTubeRadiusBBox(self, NULL);
-    if(strcmp(name, "varyTubeRadius") == 0)
-        return PseudocolorAttributes_GetVaryTubeRadius(self, NULL);
-    if(strcmp(name, "varyTubeRadiusVariable") == 0)
-        return PseudocolorAttributes_GetVaryTubeRadiusVariable(self, NULL);
-    if(strcmp(name, "varyTubeRadiusFactor") == 0)
-        return PseudocolorAttributes_GetVaryTubeRadiusFactor(self, NULL);
+    if(strcmp(name, "tubeRadiusVarEnabled") == 0)
+        return PseudocolorAttributes_GetTubeRadiusVarEnabled(self, NULL);
+    if(strcmp(name, "tubeRadiusVar") == 0)
+        return PseudocolorAttributes_GetTubeRadiusVar(self, NULL);
+    if(strcmp(name, "tubeRadiusVarFactor") == 0)
+        return PseudocolorAttributes_GetTubeRadiusVarFactor(self, NULL);
     if(strcmp(name, "endPointType") == 0)
         return PseudocolorAttributes_GetEndPointType(self, NULL);
     if(strcmp(name, "None") == 0)
@@ -1922,12 +1922,12 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PseudocolorAttributes_SetTubeRadiusAbsolute(self, tuple);
     else if(strcmp(name, "tubeRadiusBBox") == 0)
         obj = PseudocolorAttributes_SetTubeRadiusBBox(self, tuple);
-    else if(strcmp(name, "varyTubeRadius") == 0)
-        obj = PseudocolorAttributes_SetVaryTubeRadius(self, tuple);
-    else if(strcmp(name, "varyTubeRadiusVariable") == 0)
-        obj = PseudocolorAttributes_SetVaryTubeRadiusVariable(self, tuple);
-    else if(strcmp(name, "varyTubeRadiusFactor") == 0)
-        obj = PseudocolorAttributes_SetVaryTubeRadiusFactor(self, tuple);
+    else if(strcmp(name, "tubeRadiusVarEnabled") == 0)
+        obj = PseudocolorAttributes_SetTubeRadiusVarEnabled(self, tuple);
+    else if(strcmp(name, "tubeRadiusVar") == 0)
+        obj = PseudocolorAttributes_SetTubeRadiusVar(self, tuple);
+    else if(strcmp(name, "tubeRadiusVarFactor") == 0)
+        obj = PseudocolorAttributes_SetTubeRadiusVarFactor(self, tuple);
     else if(strcmp(name, "endPointType") == 0)
         obj = PseudocolorAttributes_SetEndPointType(self, tuple);
     else if(strcmp(name, "endPointStyle") == 0)

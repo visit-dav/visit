@@ -116,7 +116,7 @@
       <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
         false
       </Field>
-      <Field name="pointSizeVar" label="Point size by var" type="variablename" vartypes="01000000000">
+      <Field name="pointSizeVar" label="Point size variable" type="variablename" vartypes="01000000000">
         default
       </Field>
       <Field name="pointSizePixels" label="Point size pixels" type="int">
@@ -143,12 +143,12 @@
       <Field name="tubeRadiusBBox" label="Radius (BBox Fraction)" type="double" enabler="tubeRadiusSizeType:FractionOfBBox">
         0.005000
       </Field>
-      <Field name="varyTubeRadius" label="varyTubeRadius" type="bool">
+      <Field name="tubeRadiusVarEnabled" label="Tube Radius by var enabled" type="bool">
         false
       </Field>
-      <Field name="varyTubeRadiusVariable" label="varyTubeRadiusVariable" type="string">
+      <Field name="tubeRadiusVar" label="Tube radius variable" type="string">
       </Field>
-      <Field name="varyTubeRadiusFactor" label="varyTubeRadiusFactor" type="double">
+      <Field name="tubeRadiusVarFactor" label="Tube radius variable factor" type="double">
         10.000000
       </Field>
       <Field name="endPointType" label="End point type" type="enum" subtype="EndPointType">

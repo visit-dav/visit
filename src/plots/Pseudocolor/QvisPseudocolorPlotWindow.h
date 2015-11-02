@@ -178,9 +178,9 @@ private slots:
     void tubeDisplayDensityChanged(int val);
     void tubeRadiusSizeTypeChanged(int v);
     void tubeRadiusProcessText();
-    void tubeRadiusVaryChanged(bool val);
-    void tubeRadiusVaryVariableChanged(const QString &var);
-    void tubeRadiusVaryFactorProcessText();
+    void tubeRadiusVarToggled(bool val);
+    void tubeRadiusVarChanged(const QString &var);
+    void tubeRadiusVarFactorProcessText();
 
     void endPointTypeChanged(int newType);
     void endPointStyleChanged(int newStyle);
@@ -246,11 +246,11 @@ private:
     QLineEdit          *tubeRadius;
     QComboBox          *tubeRadiusSizeType;
 
-    QCheckBox          *tubeRadiusVary;
-    QLabel             *tubeRadiusVaryVariableLabel;
-    QvisVariableButton *tubeRadiusVaryVariable;
-    QLabel             *tubeRadiusVaryFactorLabel;
-    QLineEdit          *tubeRadiusVaryFactorEdit;
+    QCheckBox          *tubeRadiusVarEnabled;
+    QLabel             *tubeRadiusVarLabel;
+    QvisVariableButton *tubeRadiusVar;
+    QLabel             *tubeRadiusVarFactorLabel;
+    QLineEdit          *tubeRadiusVarFactorEdit;
   
     // QLineEdit *ribbonWidth;
     // QComboBox *ribbonSizeType;

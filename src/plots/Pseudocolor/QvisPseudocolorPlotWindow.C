@@ -607,25 +607,25 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     connect(tubeRadiusSizeType, SIGNAL(activated(int)), this, SLOT(tubeRadiusSizeTypeChanged(int)));
     lineLayout->addWidget(tubeRadiusSizeType, 1, 2);
 
-    // Tube vary radius.
-    tubeRadiusVary = new QCheckBox(tr("Vary radius"), central);
-    connect(tubeRadiusVary, SIGNAL(toggled(bool)), this, SLOT(tubeRadiusVaryChanged(bool)));
-    lineLayout->addWidget(tubeRadiusVary, 2, 0);
+    // Tube variable radius.
+    tubeRadiusVarEnabled = new QCheckBox(tr("Variable radius"), central);
+    connect(tubeRadiusVarEnabled, SIGNAL(toggled(bool)), this, SLOT(tubeRadiusVarToggled(bool)));
+    lineLayout->addWidget(tubeRadiusVarEnabled, 2, 0);
     
-    tubeRadiusVaryVariableLabel = new QLabel(tr("Variable"), central);
-    lineLayout->addWidget(tubeRadiusVaryVariableLabel, 2, 1, Qt::AlignRight);
-    tubeRadiusVaryVariable = new QvisVariableButton(true, true, true,
+    tubeRadiusVarLabel = new QLabel(tr("Variable"), central);
+    lineLayout->addWidget(tubeRadiusVarLabel, 2, 1, Qt::AlignRight);
+    tubeRadiusVar = new QvisVariableButton(true, true, true,
                                                     QvisVariableButton::Scalars, central);
-    connect(tubeRadiusVaryVariable, SIGNAL(activated(const QString &)),
-            this, SLOT(tubeRadiusVaryVariableChanged(const QString&)));
-    lineLayout->addWidget(tubeRadiusVaryVariable, 2, 2);
+    connect(tubeRadiusVar, SIGNAL(activated(const QString &)),
+            this, SLOT(tubeRadiusVarChanged(const QString&)));
+    lineLayout->addWidget(tubeRadiusVar, 2, 2);
 
-    tubeRadiusVaryFactorLabel = new QLabel(tr("Factor"), central);
-    lineLayout->addWidget(tubeRadiusVaryFactorLabel, 2, 3, Qt::AlignRight);
-    tubeRadiusVaryFactorEdit = new QLineEdit(central);
-    connect(tubeRadiusVaryFactorEdit, SIGNAL(returnPressed()),
-            this, SLOT(tubeRadiusVaryFactorProcessText()));
-    lineLayout->addWidget(tubeRadiusVaryFactorEdit, 2, 4);
+    tubeRadiusVarFactorLabel = new QLabel(tr("Factor"), central);
+    lineLayout->addWidget(tubeRadiusVarFactorLabel, 2, 3, Qt::AlignRight);
+    tubeRadiusVarFactorEdit = new QLineEdit(central);
+    connect(tubeRadiusVarFactorEdit, SIGNAL(returnPressed()),
+            this, SLOT(tubeRadiusVarFactorProcessText()));
+    lineLayout->addWidget(tubeRadiusVarFactorEdit, 2, 4);
 
 
     // ribbonWidth = new QLineEdit(displayGrp);
@@ -646,7 +646,6 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     QFrame *splitter = new QFrame(central);
     splitter->setFrameStyle(QFrame::HLine + QFrame::Raised);
     lineLayout->addWidget(splitter, 3, 0, 1, 5);
-
 
     endPointTypeLabel = new QLabel(tr("Show end points"), central);
     lineLayout->addWidget(endPointTypeLabel, 4, 0);
@@ -1125,11 +1124,11 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
               tubeRadius->show();
               tubeRadiusSizeType->show();
               
-              tubeRadiusVary->show();
-              tubeRadiusVaryVariableLabel->show();
-              tubeRadiusVaryVariable->show();
-              tubeRadiusVaryFactorLabel->show();
-              tubeRadiusVaryFactorEdit->show();
+              tubeRadiusVar->show();
+              tubeRadiusVarLabel->show();
+              tubeRadiusVar->show();
+              tubeRadiusVarFactorLabel->show();
+              tubeRadiusVarFactorEdit->show();
             }
             else
             {
@@ -1139,11 +1138,11 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
               tubeRadius->hide();
               tubeRadiusSizeType->hide();
               
-              tubeRadiusVary->hide();
-              tubeRadiusVaryVariableLabel->hide();
-              tubeRadiusVaryVariable->hide();
-              tubeRadiusVaryFactorLabel->hide();
-              tubeRadiusVaryFactorEdit->hide();
+              tubeRadiusVar->hide();
+              tubeRadiusVarLabel->hide();
+              tubeRadiusVar->hide();
+              tubeRadiusVarFactorLabel->hide();
+              tubeRadiusVarFactorEdit->hide();
             }
 
             break;
@@ -1193,26 +1192,26 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             }
             break;
 
-        case PseudocolorAttributes::ID_varyTubeRadius:
-            tubeRadiusVary->blockSignals(true);
+        case PseudocolorAttributes::ID_tubeRadiusVarEnabled:
+            tubeRadiusVar->blockSignals(true);
 
-            tubeRadiusVary->setChecked( pcAtts->GetVaryTubeRadius() );
-            tubeRadiusVaryVariableLabel->setEnabled( pcAtts->GetVaryTubeRadius() );
-            tubeRadiusVaryVariable->setEnabled( pcAtts->GetVaryTubeRadius() );
-            tubeRadiusVaryFactorLabel->setEnabled( pcAtts->GetVaryTubeRadius() );
-            tubeRadiusVaryFactorEdit->setEnabled( pcAtts->GetVaryTubeRadius() );              
-            tubeRadiusVary->blockSignals(false);
+            tubeRadiusVarEnabled->setChecked( pcAtts->GetTubeRadiusVarEnabled() );
+            tubeRadiusVarLabel->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
+            tubeRadiusVar->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
+            tubeRadiusVarFactorLabel->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
+            tubeRadiusVarFactorEdit->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
+            tubeRadiusVar->blockSignals(false);
 
-        case PseudocolorAttributes::ID_varyTubeRadiusVariable:
-            tubeRadiusVaryVariable->blockSignals(true);
-            tubeRadiusVaryVariable->setText(pcAtts->GetVaryTubeRadiusVariable().c_str());
-            tubeRadiusVaryVariable->blockSignals(false);
+        case PseudocolorAttributes::ID_tubeRadiusVar:
+            tubeRadiusVar->blockSignals(true);
+            tubeRadiusVar->setText(pcAtts->GetTubeRadiusVar().c_str());
+            tubeRadiusVar->blockSignals(false);
             break;
 
-        case PseudocolorAttributes::ID_varyTubeRadiusFactor:
-            tubeRadiusVaryFactorEdit->blockSignals(true);
-            tubeRadiusVaryFactorEdit->setText(DoubleToQString(pcAtts->GetVaryTubeRadiusFactor()));
-            tubeRadiusVaryFactorEdit->blockSignals(false);
+        case PseudocolorAttributes::ID_tubeRadiusVarFactor:
+            tubeRadiusVarFactorEdit->blockSignals(true);
+            tubeRadiusVarFactorEdit->setText(DoubleToQString(pcAtts->GetTubeRadiusVarFactor()));
+            tubeRadiusVarFactorEdit->blockSignals(false);
             break;
 
             // endpoints
@@ -1491,27 +1490,27 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // tube radius vary factor
-    if (which_widget == PseudocolorAttributes::ID_varyTubeRadiusFactor || doAll)
+    // tube radius variable factor
+    if (which_widget == PseudocolorAttributes::ID_tubeRadiusVarFactor || doAll)
     {
         double val;
-        bool res = LineEditGetDouble(tubeRadiusVaryFactorEdit, val);
+        bool res = LineEditGetDouble(tubeRadiusVarFactorEdit, val);
         if (res)
         {
             if (val >= 1.0)
-                pcAtts->SetVaryTubeRadiusFactor(val);
+                pcAtts->SetTubeRadiusVarFactor(val);
             else
             {
-                ResettingError(tr("Tube vary radius factor must be >= 1.0"),
-                               DoubleToQString(pcAtts->GetVaryTubeRadiusFactor()));
-                pcAtts->SetVaryTubeRadiusFactor(pcAtts->GetVaryTubeRadiusFactor());
+                ResettingError(tr("Tube variable radius factor must be >= 1.0"),
+                               DoubleToQString(pcAtts->GetTubeRadiusVarFactor()));
+                pcAtts->SetTubeRadiusVarFactor(pcAtts->GetTubeRadiusVarFactor());
             }
         }
         else
         {
-            ResettingError(tr("Tube vary radius factor"),
-                DoubleToQString(pcAtts->GetVaryTubeRadiusFactor()));
-            pcAtts->SetVaryTubeRadiusFactor(pcAtts->GetVaryTubeRadiusFactor());
+            ResettingError(tr("Tube variable radius factor"),
+                DoubleToQString(pcAtts->GetTubeRadiusVarFactor()));
+            pcAtts->SetTubeRadiusVarFactor(pcAtts->GetTubeRadiusVarFactor());
         }
     }
 
@@ -2009,23 +2008,23 @@ QvisPseudocolorPlotWindow::tubeRadiusSizeTypeChanged(int v)
 }
 
 void
-QvisPseudocolorPlotWindow::tubeRadiusVaryChanged(bool val)
+QvisPseudocolorPlotWindow::tubeRadiusVarToggled(bool val)
 {
-    pcAtts->SetVaryTubeRadius( val );
+    pcAtts->SetTubeRadiusVarEnabled( val );
     Apply();
 }
 
 void
-QvisPseudocolorPlotWindow::tubeRadiusVaryVariableChanged(const QString &var)
+QvisPseudocolorPlotWindow::tubeRadiusVarChanged(const QString &var)
 {
-    pcAtts->SetVaryTubeRadiusVariable(var.toStdString());
+    pcAtts->SetTubeRadiusVar(var.toStdString());
     Apply();
 }
 
 void
-QvisPseudocolorPlotWindow::tubeRadiusVaryFactorProcessText()
+QvisPseudocolorPlotWindow::tubeRadiusVarFactorProcessText()
 {
-    GetCurrentValues(PseudocolorAttributes::ID_varyTubeRadiusFactor);
+    GetCurrentValues(PseudocolorAttributes::ID_tubeRadiusVarFactor);
     Apply();
 }
 

@@ -422,8 +422,8 @@ void PseudocolorAttributes::Init()
     tubeRadiusSizeType = FractionOfBBox;
     tubeRadiusAbsolute = 0.125;
     tubeRadiusBBox = 0.005;
-    varyTubeRadius = false;
-    varyTubeRadiusFactor = 10;
+    tubeRadiusVarEnabled = false;
+    tubeRadiusVarFactor = 10;
     endPointType = None;
     endPointStyle = Spheres;
     endPointRadiusSizeType = FractionOfBBox;
@@ -486,9 +486,9 @@ void PseudocolorAttributes::Copy(const PseudocolorAttributes &obj)
     tubeRadiusSizeType = obj.tubeRadiusSizeType;
     tubeRadiusAbsolute = obj.tubeRadiusAbsolute;
     tubeRadiusBBox = obj.tubeRadiusBBox;
-    varyTubeRadius = obj.varyTubeRadius;
-    varyTubeRadiusVariable = obj.varyTubeRadiusVariable;
-    varyTubeRadiusFactor = obj.varyTubeRadiusFactor;
+    tubeRadiusVarEnabled = obj.tubeRadiusVarEnabled;
+    tubeRadiusVar = obj.tubeRadiusVar;
+    tubeRadiusVarFactor = obj.tubeRadiusVarFactor;
     endPointType = obj.endPointType;
     endPointStyle = obj.endPointStyle;
     endPointRadiusSizeType = obj.endPointRadiusSizeType;
@@ -689,9 +689,9 @@ PseudocolorAttributes::operator == (const PseudocolorAttributes &obj) const
             (tubeRadiusSizeType == obj.tubeRadiusSizeType) &&
             (tubeRadiusAbsolute == obj.tubeRadiusAbsolute) &&
             (tubeRadiusBBox == obj.tubeRadiusBBox) &&
-            (varyTubeRadius == obj.varyTubeRadius) &&
-            (varyTubeRadiusVariable == obj.varyTubeRadiusVariable) &&
-            (varyTubeRadiusFactor == obj.varyTubeRadiusFactor) &&
+            (tubeRadiusVarEnabled == obj.tubeRadiusVarEnabled) &&
+            (tubeRadiusVar == obj.tubeRadiusVar) &&
+            (tubeRadiusVarFactor == obj.tubeRadiusVarFactor) &&
             (endPointType == obj.endPointType) &&
             (endPointStyle == obj.endPointStyle) &&
             (endPointRadiusSizeType == obj.endPointRadiusSizeType) &&
@@ -876,9 +876,9 @@ PseudocolorAttributes::SelectAll()
     Select(ID_tubeRadiusSizeType,     (void *)&tubeRadiusSizeType);
     Select(ID_tubeRadiusAbsolute,     (void *)&tubeRadiusAbsolute);
     Select(ID_tubeRadiusBBox,         (void *)&tubeRadiusBBox);
-    Select(ID_varyTubeRadius,         (void *)&varyTubeRadius);
-    Select(ID_varyTubeRadiusVariable, (void *)&varyTubeRadiusVariable);
-    Select(ID_varyTubeRadiusFactor,   (void *)&varyTubeRadiusFactor);
+    Select(ID_tubeRadiusVarEnabled,   (void *)&tubeRadiusVarEnabled);
+    Select(ID_tubeRadiusVar,          (void *)&tubeRadiusVar);
+    Select(ID_tubeRadiusVarFactor,    (void *)&tubeRadiusVarFactor);
     Select(ID_endPointType,           (void *)&endPointType);
     Select(ID_endPointStyle,          (void *)&endPointStyle);
     Select(ID_endPointRadiusSizeType, (void *)&endPointRadiusSizeType);
@@ -1097,22 +1097,22 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("tubeRadiusBBox", tubeRadiusBBox));
     }
 
-    if(completeSave || !FieldsEqual(ID_varyTubeRadius, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tubeRadiusVarEnabled, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("varyTubeRadius", varyTubeRadius));
+        node->AddNode(new DataNode("tubeRadiusVarEnabled", tubeRadiusVarEnabled));
     }
 
-    if(completeSave || !FieldsEqual(ID_varyTubeRadiusVariable, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tubeRadiusVar, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("varyTubeRadiusVariable", varyTubeRadiusVariable));
+        node->AddNode(new DataNode("tubeRadiusVar", tubeRadiusVar));
     }
 
-    if(completeSave || !FieldsEqual(ID_varyTubeRadiusFactor, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tubeRadiusVarFactor, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("varyTubeRadiusFactor", varyTubeRadiusFactor));
+        node->AddNode(new DataNode("tubeRadiusVarFactor", tubeRadiusVarFactor));
     }
 
     if(completeSave || !FieldsEqual(ID_endPointType, &defaultObject))
@@ -1379,12 +1379,12 @@ PseudocolorAttributes::SetFromNode(DataNode *parentNode)
         SetTubeRadiusAbsolute(node->AsDouble());
     if((node = searchNode->GetNode("tubeRadiusBBox")) != 0)
         SetTubeRadiusBBox(node->AsDouble());
-    if((node = searchNode->GetNode("varyTubeRadius")) != 0)
-        SetVaryTubeRadius(node->AsBool());
-    if((node = searchNode->GetNode("varyTubeRadiusVariable")) != 0)
-        SetVaryTubeRadiusVariable(node->AsString());
-    if((node = searchNode->GetNode("varyTubeRadiusFactor")) != 0)
-        SetVaryTubeRadiusFactor(node->AsDouble());
+    if((node = searchNode->GetNode("tubeRadiusVarEnabled")) != 0)
+        SetTubeRadiusVarEnabled(node->AsBool());
+    if((node = searchNode->GetNode("tubeRadiusVar")) != 0)
+        SetTubeRadiusVar(node->AsString());
+    if((node = searchNode->GetNode("tubeRadiusVarFactor")) != 0)
+        SetTubeRadiusVarFactor(node->AsDouble());
     if((node = searchNode->GetNode("endPointType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1661,24 +1661,24 @@ PseudocolorAttributes::SetTubeRadiusBBox(double tubeRadiusBBox_)
 }
 
 void
-PseudocolorAttributes::SetVaryTubeRadius(bool varyTubeRadius_)
+PseudocolorAttributes::SetTubeRadiusVarEnabled(bool tubeRadiusVarEnabled_)
 {
-    varyTubeRadius = varyTubeRadius_;
-    Select(ID_varyTubeRadius, (void *)&varyTubeRadius);
+    tubeRadiusVarEnabled = tubeRadiusVarEnabled_;
+    Select(ID_tubeRadiusVarEnabled, (void *)&tubeRadiusVarEnabled);
 }
 
 void
-PseudocolorAttributes::SetVaryTubeRadiusVariable(const std::string &varyTubeRadiusVariable_)
+PseudocolorAttributes::SetTubeRadiusVar(const std::string &tubeRadiusVar_)
 {
-    varyTubeRadiusVariable = varyTubeRadiusVariable_;
-    Select(ID_varyTubeRadiusVariable, (void *)&varyTubeRadiusVariable);
+    tubeRadiusVar = tubeRadiusVar_;
+    Select(ID_tubeRadiusVar, (void *)&tubeRadiusVar);
 }
 
 void
-PseudocolorAttributes::SetVaryTubeRadiusFactor(double varyTubeRadiusFactor_)
+PseudocolorAttributes::SetTubeRadiusVarFactor(double tubeRadiusVarFactor_)
 {
-    varyTubeRadiusFactor = varyTubeRadiusFactor_;
-    Select(ID_varyTubeRadiusFactor, (void *)&varyTubeRadiusFactor);
+    tubeRadiusVarFactor = tubeRadiusVarFactor_;
+    Select(ID_tubeRadiusVarFactor, (void *)&tubeRadiusVarFactor);
 }
 
 void
@@ -1962,27 +1962,27 @@ PseudocolorAttributes::GetTubeRadiusBBox() const
 }
 
 bool
-PseudocolorAttributes::GetVaryTubeRadius() const
+PseudocolorAttributes::GetTubeRadiusVarEnabled() const
 {
-    return varyTubeRadius;
+    return tubeRadiusVarEnabled;
 }
 
 const std::string &
-PseudocolorAttributes::GetVaryTubeRadiusVariable() const
+PseudocolorAttributes::GetTubeRadiusVar() const
 {
-    return varyTubeRadiusVariable;
+    return tubeRadiusVar;
 }
 
 std::string &
-PseudocolorAttributes::GetVaryTubeRadiusVariable()
+PseudocolorAttributes::GetTubeRadiusVar()
 {
-    return varyTubeRadiusVariable;
+    return tubeRadiusVar;
 }
 
 double
-PseudocolorAttributes::GetVaryTubeRadiusFactor() const
+PseudocolorAttributes::GetTubeRadiusVarFactor() const
 {
-    return varyTubeRadiusFactor;
+    return tubeRadiusVarFactor;
 }
 
 PseudocolorAttributes::EndPointType
@@ -2080,9 +2080,9 @@ PseudocolorAttributes::SelectPointSizeVar()
 }
 
 void
-PseudocolorAttributes::SelectVaryTubeRadiusVariable()
+PseudocolorAttributes::SelectTubeRadiusVar()
 {
-    Select(ID_varyTubeRadiusVariable, (void *)&varyTubeRadiusVariable);
+    Select(ID_tubeRadiusVar, (void *)&tubeRadiusVar);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2138,9 +2138,9 @@ PseudocolorAttributes::GetFieldName(int index) const
     case ID_tubeRadiusSizeType:     return "tubeRadiusSizeType";
     case ID_tubeRadiusAbsolute:     return "tubeRadiusAbsolute";
     case ID_tubeRadiusBBox:         return "tubeRadiusBBox";
-    case ID_varyTubeRadius:         return "varyTubeRadius";
-    case ID_varyTubeRadiusVariable: return "varyTubeRadiusVariable";
-    case ID_varyTubeRadiusFactor:   return "varyTubeRadiusFactor";
+    case ID_tubeRadiusVarEnabled:   return "tubeRadiusVarEnabled";
+    case ID_tubeRadiusVar:          return "tubeRadiusVar";
+    case ID_tubeRadiusVarFactor:    return "tubeRadiusVarFactor";
     case ID_endPointType:           return "endPointType";
     case ID_endPointStyle:          return "endPointStyle";
     case ID_endPointRadiusSizeType: return "endPointRadiusSizeType";
@@ -2206,9 +2206,9 @@ PseudocolorAttributes::GetFieldType(int index) const
     case ID_tubeRadiusSizeType:     return FieldType_enum;
     case ID_tubeRadiusAbsolute:     return FieldType_double;
     case ID_tubeRadiusBBox:         return FieldType_double;
-    case ID_varyTubeRadius:         return FieldType_bool;
-    case ID_varyTubeRadiusVariable: return FieldType_string;
-    case ID_varyTubeRadiusFactor:   return FieldType_double;
+    case ID_tubeRadiusVarEnabled:   return FieldType_bool;
+    case ID_tubeRadiusVar:          return FieldType_string;
+    case ID_tubeRadiusVarFactor:    return FieldType_double;
     case ID_endPointType:           return FieldType_enum;
     case ID_endPointStyle:          return FieldType_enum;
     case ID_endPointRadiusSizeType: return FieldType_enum;
@@ -2274,9 +2274,9 @@ PseudocolorAttributes::GetFieldTypeName(int index) const
     case ID_tubeRadiusSizeType:     return "enum";
     case ID_tubeRadiusAbsolute:     return "double";
     case ID_tubeRadiusBBox:         return "double";
-    case ID_varyTubeRadius:         return "bool";
-    case ID_varyTubeRadiusVariable: return "string";
-    case ID_varyTubeRadiusFactor:   return "double";
+    case ID_tubeRadiusVarEnabled:   return "bool";
+    case ID_tubeRadiusVar:          return "string";
+    case ID_tubeRadiusVarFactor:    return "double";
     case ID_endPointType:           return "enum";
     case ID_endPointStyle:          return "enum";
     case ID_endPointRadiusSizeType: return "enum";
@@ -2460,19 +2460,19 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (tubeRadiusBBox == obj.tubeRadiusBBox);
         }
         break;
-    case ID_varyTubeRadius:
+    case ID_tubeRadiusVarEnabled:
         {  // new scope
-        retval = (varyTubeRadius == obj.varyTubeRadius);
+        retval = (tubeRadiusVarEnabled == obj.tubeRadiusVarEnabled);
         }
         break;
-    case ID_varyTubeRadiusVariable:
+    case ID_tubeRadiusVar:
         {  // new scope
-        retval = (varyTubeRadiusVariable == obj.varyTubeRadiusVariable);
+        retval = (tubeRadiusVar == obj.tubeRadiusVar);
         }
         break;
-    case ID_varyTubeRadiusFactor:
+    case ID_tubeRadiusVarFactor:
         {  // new scope
-        retval = (varyTubeRadiusFactor == obj.varyTubeRadiusFactor);
+        retval = (tubeRadiusVarFactor == obj.tubeRadiusVarFactor);
         }
         break;
     case ID_endPointType:
@@ -2584,11 +2584,11 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             obj.pointSizeVar != "\0") ||
 
                            (obj.lineType == Tube &&
-                            obj.varyTubeRadius &&
-                            varyTubeRadiusVariable != obj.varyTubeRadiusVariable &&
-                            obj.varyTubeRadiusVariable != "default" && 
-                            obj.varyTubeRadiusVariable != "" &&
-                            obj.varyTubeRadiusVariable != "\0") ||
+                            obj.tubeRadiusVarEnabled &&
+                            tubeRadiusVar != obj.tubeRadiusVar &&
+                            obj.tubeRadiusVar != "default" && 
+                            obj.tubeRadiusVar != "" &&
+                            obj.tubeRadiusVar != "\0") ||
 
                            (obj.opacityType == VariableRange &&
                             opacityVariable != obj.opacityVariable &&
