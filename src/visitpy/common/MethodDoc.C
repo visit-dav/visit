@@ -2739,15 +2739,15 @@ const char *visit_GetEngineList_doc =
 ;
 
 const char *visit_GetEngineProperties_doc = 
-"GetEngineList\n"
+"GetEngineProperties\n"
 "-Returns an engine properties object.\n"
 "\n"
 "\n"
 "Synopsis:\n"
 "\n"
-"GetEngineList()            -> EngineProperties\n"
-"GetEngineList(engine)      -> EngineProperties\n"
-"GetEngineList(engine, sim) -> EngineProperties\n"
+"GetEngineProperties()            -> EngineProperties\n"
+"GetEngineProperties(engine)      -> EngineProperties\n"
+"GetEngineProperties(engine, sim) -> EngineProperties\n"
 "\n"
 "\n"
 "Returns: EngineProperties\n"
