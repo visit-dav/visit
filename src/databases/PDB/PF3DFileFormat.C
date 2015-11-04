@@ -121,10 +121,9 @@ void
 print_multi_dim_array(ostream &os, const char *name, const T *data, int ndims,
     const int *dims, bool doCommas)
 {
-    os << name << "[" << dims[0] << "][" << dims[1] << "][" << dims[2] << "] = {";
-    //int ct = 0; (void) ct;
     if(ndims == 1)
     {
+        os << name << "[" << dims[0] << "] = {";
         for(int i = 0; i < dims[0]; ++i)
         {
             os << data[i];
@@ -134,7 +133,7 @@ print_multi_dim_array(ostream &os, const char *name, const T *data, int ndims,
     }
     else if(ndims == 2)
     {
-        os << endl;
+        os << name << "[" << dims[0] << "][" << dims[1] << "] = {" << endl;
         const T *ptr = data;
         for(int i = 0; i < dims[1]; ++i)
         {
@@ -150,7 +149,8 @@ print_multi_dim_array(ostream &os, const char *name, const T *data, int ndims,
     }
     else if(ndims == 3)
     {
-        os << endl;
+        os << name << "[" << dims[0] << "][" << dims[1] << "][" << dims[2];
+        os << "] = {" << endl;
         const T *ptr = data;
         for(int i = 0; i < dims[2]; ++i)
         {
@@ -258,6 +258,10 @@ PF3DFileFormat::CreateInterface(PDBFileObject *pdb, const char *const *filenames
 //   Brad Whitlock, Fri Sep 19 14:41:23 PST 2003
 //   Added the initialized flag.
 //   
+//   Eric Brugger, Tue Nov  3 16:30:48 PST 2015
+//   Modified the reader to report the time and cycle as INVALID_TIME and
+//   INVALID_CYCLE until the file is read.
+//
 // ****************************************************************************
 
 PF3DFileFormat::PF3DFileFormat(const char *filename) : PDBReader(filename),
@@ -265,7 +269,7 @@ PF3DFileFormat::PF3DFileFormat(const char *filename) : PDBReader(filename),
     glob_units(), apply_exp(), databaseComment()
 {
     initialized = false;
-    cycle = 0;
+    cycle = avtFileFormat::INVALID_CYCLE;
     nx = ny = nz = 0;
     lenx = leny = lenz = 1.;
     compression = false;
@@ -476,6 +480,9 @@ PF3DFileFormat::ReadVariableInformation()
 //   necessarily contain the cycle number.  The new code extracts it from
 //   the last digit sequence in the filename.
 //   
+//   Eric Brugger, Fri Oct 30 08:44:02 PDT 2015
+//   Added support for reading multi level files.
+//   
 // ****************************************************************************
 
 void
@@ -535,6 +542,13 @@ PF3DFileFormat::Initialize()
         READ_VALUE(GetInteger, key, use_bowcomp);
         compression = ((use_bow == 1) && (use_bowcomp == 1));
 
+        // See if have multi level files.
+        int num_sub_dirs = 0, nhostgroup_leaders = 0;
+        key = "num_sub_dirs";
+        READ_VALUE(GetInteger, key, num_sub_dirs);
+        key = "nhostgroup_leaders";
+        READ_VALUE(GetInteger, key, nhostgroup_leaders);
+
         // Get the database comment from the file.
         char *dbComment = 0;
         if(pdb->GetString("tcomment_c", &dbComment))
@@ -545,7 +559,7 @@ PF3DFileFormat::Initialize()
 
         // Read the master structure from the file so we know a little more
         // about the file.
-        if(!master.Read(pdb))
+        if(!master.Read(pdb, cycle, num_sub_dirs, nhostgroup_leaders))
         {
             EXCEPTION0(VisItException);
         }
@@ -2350,10 +2364,15 @@ PF3DFileFormat::MasterInformation::GetNDomains() const
 //   Mark C. Miller, Mon Jun 21 12:28:13 PDT 2010
 //   Reverted Brad's fix (above). Now, lite_pdb.h header file should get
 //   PDB Lite's structures correct via new cmake tests in FindSilo.cmake.
+//
+//   Eric Brugger, Fri Oct 30 08:44:02 PDT 2015
+//   Added support for reading multi level files.
+//   
 // ****************************************************************************
 
 bool
-PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
+PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb, int cycle,
+    int num_sub_dirs, int nhostgroup_leaders)
 {
     const char *mName = "PF3DFileFormat::MasterInformation::Read:";
     bool retval = false;
@@ -2616,6 +2635,246 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
     }
 
     //
+    // If we are processing a mutlilevel file, read the sub files and
+    // fix some arrays and return.
+    //
+    if (num_sub_dirs && nhostgroup_leaders)
+    {
+        //
+        // Allocate storage for the new versions of domloc, xyzloc,
+        // dom_prefix and viz_nam.
+        //
+        int ndom = nDomains;
+
+        long *domloc_new = new long[6*ndom*sizeof(long)];
+
+        double *xyzloc_new = new double[6*ndom*sizeof(double)];
+
+        int dom_prefix_len = 15;
+        int maxdom = 999999;
+        while (ndom > maxdom)
+        {
+            dom_prefix_len++;
+            maxdom = 10*maxdom+9;
+        }
+        char *dom_prefix_new = new char[dom_prefix_len*ndom];
+
+        int viz_nams_len = 42;
+        char *viz_nams_new = new char[viz_nams_len*2*ndom];
+
+        //
+        // Read the sub master files.
+        //
+        for (int iChunk = 0; iChunk < num_sub_dirs; ++iChunk)
+        {
+            //
+            // Find the last dot, the file name, and the start of the vs.
+            // Assumes filename is /path/to/file/"basename"vs"cycle".pdb.
+            //
+            const char *filename = pdb->GetName().c_str();
+            int iDot = pdb->GetName().length()-1;
+            while (iDot >= 0 && filename[iDot] != '.')
+                iDot--;
+            int iFile = iDot;
+            while (iFile >= 0 && filename[iFile] != '/')
+                iFile--;
+            iFile++;
+            int iVS = iDot-1;
+            while (iVS >= 0 && isdigit(filename[iVS]))
+                iVS--;
+            iVS--;
+
+            //
+            // Create the subfilename. This consists of the file path,
+            // "vs%d/", the basename, and "g%05d.pdb"
+            // We assume a maximum of 5 digits of cycle number.
+            //
+            int subfilename_length = iFile + strlen("vs00000/") + 
+                (iDot-iFile) + strlen("g00000.pdb") + 1;
+            char *subfilename = new char[subfilename_length];
+
+            // Create the directory path.
+            strncpy(subfilename, filename, iFile);
+            subfilename[iFile] = '\0';
+            sprintf(&subfilename[iFile], "vs%d/", cycle);
+
+            // Add the base filename.
+            int iEnd = strlen(subfilename);
+            strncpy(&subfilename[iEnd], &filename[iFile], iDot-iFile);
+            iEnd += iDot - iFile;
+
+            // Add the chunk number and extension.
+            sprintf(&subfilename[iEnd], "g%05d.pdb", iChunk);
+
+            // Open the file.
+            PDBFileObject *file = new PDBFileObject(subfilename);
+
+            //
+            // Read grp_members since this provides the mapping from 
+            // file to domain.
+            //
+            TypeEnum dataType = NO_TYPE;
+            int nTotalElements = 0;
+            int *dims = 0;
+            int nDims = 0;
+            void *data = 0;
+            data = file->ReadValues("grp_members", &dataType,
+                                    &nTotalElements,
+                                    &dims, &nDims, 0);
+            int ngrp_members = dims[0] * dims[1];
+            long *grp_members = (long *)data;
+
+            //
+            // Do domloc.
+            //
+            data = file->ReadValues("domloc", &dataType,
+                                    &nTotalElements,
+                                    &dims, &nDims, 0);
+            short *domloc = (short *)data;
+            for (int id = 0; id < ngrp_members; ++id)
+            {
+                long src = id*6L;
+                long dst = grp_members[id]*6L;
+                domloc_new[dst] =   domloc[src];
+                domloc_new[dst+1] = domloc[src+1];
+                domloc_new[dst+2] = domloc[src+2];
+                domloc_new[dst+3] = domloc[src+3];
+                domloc_new[dst+4] = domloc[src+4];
+                domloc_new[dst+5] = domloc[src+5];
+            }
+
+            //
+            // Do xyzloc. We need domloc from this file and xyzloc from
+            // the master file. xyzloc is assumed to be 6 values.
+            //
+            const MemberData *xyzloc_master = FindMember("xyzloc");
+            if (xyzloc_master == NULL)
+                EXCEPTION0(VisItException);
+
+            double xyzbase[6];
+            memcpy(xyzbase, xyzloc_master->data, 6*sizeof(double));
+            for (int id = 0; id < ngrp_members; ++id)
+            {
+                long src = id*6L;
+                long dst = grp_members[id]*6L;
+                xyzloc_new[dst] =   xyzbase[0]*domloc[src];
+                xyzloc_new[dst+1] = xyzbase[1]*domloc[src+1];
+                xyzloc_new[dst+2] = xyzbase[2]*domloc[src+2];
+                xyzloc_new[dst+3] = xyzbase[3]*domloc[src+3];
+                xyzloc_new[dst+4] = xyzbase[4]*domloc[src+4];
+                xyzloc_new[dst+5] = xyzbase[5]*domloc[src+5];
+            }
+
+            pdb_free_void_mem((void*)domloc, dataType);
+
+            //
+            // Do dom_prefix.
+            //
+            char *domnam = new char[dom_prefix_len];
+            for (int id = 0; id < ngrp_members; ++id)
+            {
+                long src = iChunk * ngrp_members + id;
+                long dst = grp_members[id];
+                sprintf(domnam, "/domain%d/", dst);
+                strncpy(dom_prefix_new+dst*dom_prefix_len, domnam,
+                        dom_prefix_len);
+            }
+            delete [] domnam;
+
+            //
+            // Do viz_nams.
+            //
+            char *vizdir = new char[viz_nams_len];
+            char *vizfile = new char[viz_nams_len];
+            int nfiles_per_dir = ngrp_members / num_sub_dirs;
+            char *basename = new char[iVS-iFile+1];
+            strncpy(basename, &filename[iFile], iVS-iFile);
+            basename[iVS-iFile] = '\0';
+            for (int id = 0; id < ngrp_members; ++id)
+            {
+                long nd = grp_members[id]*2*viz_nams_len;
+
+                // The first value is the directory.
+                sprintf(vizdir, "/viz/vs%d/chunk%d", cycle, iChunk);
+                strncpy(viz_nams_new+nd, vizdir, viz_nams_len);
+
+                // The second value is the filename.
+                long ifile = iChunk * nfiles_per_dir + id / nhostgroup_leaders;
+                sprintf(vizfile, "%sp%dvs%d.pdb", basename, ifile, cycle);
+                strncpy(viz_nams_new+nd+viz_nams_len, vizfile, viz_nams_len);
+            }
+            delete [] vizdir;
+            delete [] vizfile;
+            delete [] basename;
+
+            pdb_free_void_mem((void*)grp_members, dataType);
+
+            delete file;
+            delete [] subfilename;
+        }
+
+        //
+        // Replace domloc.
+        //
+        MemberData *member = new MemberData;
+        member->name = "domloc";
+        member->dataType = LONGARRAY_TYPE;
+        member->ndims = 2;
+        member->dims[0] = 6;
+        member->dims[1] = ndom;
+        member->data = (void *) domloc_new;
+        members.push_back(member);
+
+        //
+        // Replace xyzloc.
+        //
+        MemberData *xyzloc_master = FindMember("xyzloc");
+        xyzloc_master->ndims = 2;
+        xyzloc_master->dims[0] = 6;
+        xyzloc_master->dims[1] = ndom;
+        pdb_free_void_mem(xyzloc_master->data, xyzloc_master->dataType);
+        xyzloc_master->data = (void *) xyzloc_new;
+
+        //
+        // Replace dom_prefix.
+        //
+        MemberData *dom_prefix_master = FindMember("dom_prefix");
+        dom_prefix_master->ndims = 2;
+        dom_prefix_master->dims[0] = dom_prefix_len;
+        dom_prefix_master->dims[1] = ndom;
+        pdb_free_void_mem(dom_prefix_master->data, dom_prefix_master->dataType);
+        dom_prefix_master->data = dom_prefix_new;
+
+        //
+        // Replace viz_nams.
+        //
+        MemberData *viz_nams_master = FindMember("viz_nams");
+        if (viz_nams_master == NULL)
+        {
+            MemberData *member = new MemberData;
+            member->name = "viz_nams";
+            member->dataType = CHARARRAY_TYPE;
+            member->ndims = 3;
+            member->dims[0] = viz_nams_len;
+            member->dims[1] = 2;
+            member->dims[2] = ndom;
+            member->data = (void *) viz_nams_new;
+            members.push_back(member);
+        }
+        else
+        {
+            viz_nams_master->ndims = 3;
+            viz_nams_master->dims[0] = viz_nams_len;
+            viz_nams_master->dims[1] = 2;
+            viz_nams_master->dims[2] = ndom;
+            pdb_free_void_mem(viz_nams_master->data, viz_nams_master->dataType);
+            viz_nams_master->data = (void *) viz_nams_new;
+        }
+
+        return retval;
+    }
+
+    //
     // Newer pf3d viz dumps require that some arrays be computed from
     // other data in the file. "Fix" the arrays now so that the member
     // information is in "canonical form" before returning from this function.
@@ -2699,6 +2958,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
                     sprintf(domnam, "/domain%d/", j);
                     strncpy(prefix+j*len, domnam, len);
                 }
+                delete [] domnam;
                 char *old = (char *) members[i]->data;
                 members[i]->data = prefix;
                 pdb_free_void_mem((void *)old, members[i]->dataType);
@@ -2785,10 +3045,12 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
 // Creation:   Fri Dec 2 13:29:59 PST 2005
 //
 // Modifications:
+//   Eric Brugger, Fri Oct 30 08:44:02 PDT 2015
+//   Added support for reading multi level files.
 //   
 // ****************************************************************************
 
-const PF3DFileFormat::MasterInformation::MemberData *
+PF3DFileFormat::MasterInformation::MemberData *
 PF3DFileFormat::MasterInformation::FindMember(const std::string &name) const
 {
     for(size_t i = 0; i < members.size(); ++i)
@@ -2839,7 +3101,7 @@ PF3DFileFormat::MasterInformation::operator << (ostream &os)
 double
 PF3DFileFormat::MasterInformation::Get_tnowps() const
 {
-    double val = 0.f;
+    double val = avtFileFormat::INVALID_TIME;
     const MemberData *m = FindMember("tnowps");
     if(m != 0)
         val = *((double *)(m->data));
