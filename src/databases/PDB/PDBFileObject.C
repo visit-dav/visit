@@ -80,6 +80,8 @@ void free_mem(T *ptr)
 // Creation:   Thu Jun 26 13:43:33 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Tue Oct 13 19:31:16 PDT 2015
+//   Added support for short.
 //   
 // ****************************************************************************
 
@@ -87,6 +89,7 @@ void
 pdb_free_void_mem(void *ptr, TypeEnum t)
 {
     char   *cptr = (char *)  ptr;
+    short  *sptr = (short *) ptr;
     int    *iptr = (int *)   ptr;
     float  *fptr = (float *) ptr;
     double *dptr = (double *)ptr;
@@ -97,6 +100,10 @@ pdb_free_void_mem(void *ptr, TypeEnum t)
     case CHAR_TYPE:
     case CHARARRAY_TYPE:
         delete [] cptr;
+        break;
+    case SHORT_TYPE:
+    case SHORTARRAY_TYPE:
+        delete [] sptr;
         break;
     case INTEGER_TYPE:
     case INTEGERARRAY_TYPE:
@@ -355,6 +362,9 @@ PDBFileObject::filePointer()
 //   Brad Whitlock, Fri Mar 5 11:01:43 PDT 2004
 //   Fixed for Windows compiler.
 //
+//   Eric Brugger, Tue Oct 13 19:31:16 PDT 2015
+//   Added support for short.
+//
 // ****************************************************************************
 
 void *
@@ -380,6 +390,10 @@ PDBFileObject::ReadValues(const char *name, TypeEnum *t, int *nTotalElements,
             case CHAR_TYPE:
             case CHARARRAY_TYPE:
                 retval = (void *)new char[nels];
+                break;
+            case SHORT_TYPE:
+            case SHORTARRAY_TYPE:
+                retval = (void *)new short[nels];
                 break;
             case INTEGER_TYPE:
             case INTEGERARRAY_TYPE:
@@ -640,6 +654,9 @@ PDBFileObject::GetDoubleArray(const char *name, double **d, int *nvals)
 //   I made it use GetIntegerArray when there is an array of integers
 //   instead of just one integer to prevent us from clobbering memory.
 //
+//   Eric Brugger, Tue Oct 13 19:31:16 PDT 2015
+//   Added support for short.
+//
 // ****************************************************************************
 
 bool
@@ -671,6 +688,13 @@ PDBFileObject::GetInteger(const char *name, int *val)
                     delete [] vals;
                     retval = true;
                 }
+            }
+            else if(strcmp(PD_entry_type(ep), "short") == 0)
+            {
+                short tmp;
+                retval = (PD_read(pdb, (char *)name, (void *)&tmp) ==  TRUE);
+                if(retval)
+                    *val = (short)tmp;
             }
             else if(strcmp(PD_entry_type(ep), "long") == 0)
             {
@@ -792,6 +816,9 @@ PDBFileObject::SymbolExists(const char *name)
 //   Brad Whitlock, Tue Jun 22 11:32:48 PDT 2004
 //   I made "string" be a synonym for "char".
 //
+//   Eric Brugger, Tue Oct 13 19:31:16 PDT 2015
+//   Added support for short.
+//
 // ****************************************************************************
 
 bool
@@ -875,14 +902,15 @@ PDBFileObject::SymbolExists(const char *name, TypeEnum *t,
 
             //
             // Take the storage type along with the length to determine the real
-            // type that we want to report. Also allocate memory for the
-            // variable.
+            // type that we want to report.
             //
             if (t)
             {
                 if(strcmp(PD_entry_type(ep), "char") == 0 ||
                    strcmp(PD_entry_type(ep), "string") == 0)
                     *t = (length > 1) ? CHARARRAY_TYPE : CHAR_TYPE;
+                else if(strcmp(PD_entry_type(ep), "short") == 0)
+                    *t = (length > 1) ? SHORTARRAY_TYPE : SHORT_TYPE;
                 else if(strcmp(PD_entry_type(ep), "int") == 0 ||
                         strcmp(PD_entry_type(ep), "integer") == 0)
                     *t = (length > 1) ? INTEGERARRAY_TYPE : INTEGER_TYPE;

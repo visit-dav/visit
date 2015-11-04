@@ -29,14 +29,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A potential memory overwrite was fixed in the Fortran <i>visitgetenv</i> function in Libsim.</li>
   <li>Fixed the bug with the missing QT4 include and archive files after doing a 'make install'</li>
   <li>Re-enable Adaptive csg capability for Windows, which was inadvertently disabled for previous release.</li>
-  <li></li>
+  <li>Fixed a bug with the PF3D reader where the time and cycle were reported as zero for all the time states accessed after the initial time state accessed.</li>
 </ul>
 
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 2.10.1</font></b></p>
 <ul>
   <li>VisIt now permits the <i>-socket-bridge-host</i> command line argument to override the host name passed to compute engines when VCL starts a socket bridge. This is useful for login nodes that are attached to multiple network interfaces such as on BlueGene/Q where compute nodes may need to attach to the socket bridge host (typically the LAC node) using an alias.</li>
-  <li></li>
+  <li>The PF3D reader was enhanced so that it now reads the new multi level file format.</li>
   <li></li>
   <li></li>
 </ul>
