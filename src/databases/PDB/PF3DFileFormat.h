@@ -68,6 +68,9 @@ class vtkDataArray;
 //   Brad Whitlock, Thu Jun 22 16:43:21 PST 2006
 //   Added support for PF3D files that contain more than 1 domain per file.
 //
+//   Eric Brugger, Fri Oct 30 08:42:17 PDT 2015
+//   Added support for reading multi level files.
+//
 // ****************************************************************************
 
 class PF3DFileFormat : public PDBReader, public avtSTMDFileFormat
@@ -127,7 +130,8 @@ protected:
     public:
         MasterInformation();
         virtual ~MasterInformation();
-        bool Read(PDBFileObject *pdb);
+        bool Read(PDBFileObject *pdb, int cycle, int num_sub_dirs,
+                  int nhostgroup_leaders);
         int  GetNDomains() const;
 
         //
@@ -148,7 +152,7 @@ protected:
 
         ostream &operator << (ostream &os);
     private:
-        const MemberData *FindMember(const std::string &name) const;
+        MemberData   *FindMember(const std::string &name) const;
 
 
         int              nDomains;
