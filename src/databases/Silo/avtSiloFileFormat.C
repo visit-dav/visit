@@ -14256,6 +14256,8 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //    I corrected a memory error where a buffer used to hold material names
 //    was underallocated. This resulted in crashes in some instances.
 //
+//    Mark C. Miller, Fri Nov  6 09:13:22 PST 2015
+//    Avert segv on deref of material_names in block level mat object.
 // ****************************************************************************
 
 avtMaterial *
@@ -14315,7 +14317,7 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char 
         {
             matnames[i] = buffer + (256+max_dlen)*i;
             int matno = silomat->matnos[i];
-            const char *matname = silomat->matnames[i];
+            const char *matname = silomat->matnames ? silomat->matnames[i] : 0;
             if (mm&&mm->matnos)
                 matno = mm->matnos[i];
             if (mm&&mm->material_names)
