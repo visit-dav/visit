@@ -147,13 +147,14 @@ FOREACH(LIB ${R_LIB})
 ENDFOREACH(LIB in ${MESA_LIB})
 
 
-IF (NOT WIN32)
+IF(VISIT_PYTHON_DIR)
+  IF (NOT WIN32)
     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
                             ${CMAKE_CURRENT_BINARY_DIR}/python)
     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
                             ${VISIT_PYTHON_DIR}
                             ${CMAKE_CURRENT_BINARY_DIR}/python)
-ELSE (NOT WIN32)
+  ELSE (NOT WIN32)
 
     # because you don't need to choose your configuration up-front
     # on windows, make this a custom target so they are copied to the
@@ -165,7 +166,8 @@ ELSE (NOT WIN32)
             ${VISIT_LIBRARY_DIR}/python/Lib
             COMMENT "Copying ${VISIT_PYTHON_DIR}/Lib/ ${VISIT_LIBRARY_DIR}/python/Lib"
             )
-ENDIF (NOT WIN32)
+  ENDIF (NOT WIN32)
+ENDIF()
 
 # prepare site-packages
 IF(VISIT_PYTHON_FILTERS OR (VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE))

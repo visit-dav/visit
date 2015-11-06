@@ -1358,11 +1358,11 @@ function build_hostconf
         echo "## BG/Q-specific settings" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "SET(CMAKE_CROSSCOMPILING    ON)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_USE_X            OFF)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_USE_GLEW         OFF)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_SLIVR            OFF)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_DISABLE_SELECT   ON)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_USE_NOSPIN_BCAST OFF)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_USE_X            OFF TYPE BOOL)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_USE_GLEW         OFF TYPE BOOL)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_SLIVR            OFF TYPE BOOL)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_DISABLE_SELECT   ON  TYPE BOOL)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_USE_NOSPIN_BCAST OFF TYPE BOOL)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR       \${VISITHOME}/mesa/$MESA_VERSION/\${VISITARCH})" >> $HOSTCONF
         echo "ADD_DEFINITIONS(-DVISIT_BLUE_GENE_Q)" >> $HOSTCONF
         echo >> $HOSTCONF
@@ -1388,7 +1388,6 @@ function build_hostconf
                 echo "" >> $HOSTCONF
                 echo "## (inserted by build_visit for BG/Q. Configuration as of 10/15/2014.)" >> $HOSTCONF
                 echo "SET(BLUEGENEQ /bgsys/drivers/V1R2M0/ppc64)" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)" >> $HOSTCONF
                 echo "VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS \"-I\${BLUEGENEQ} -I\${BLUEGENEQ}/comm/sys/include -I\${BLUEGENEQ}/spi/include -I\${BLUEGENEQ}/spi/include/kernel/cnk -I\${BLUEGENEQ}/comm/xl/include\" TYPE STRING)" >> $HOSTCONF
                 echo "VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   \"-I\${BLUEGENEQ} -I\${BLUEGENEQ}/comm/sys/include -I\${BLUEGENEQ}/spi/include -I\${BLUEGENEQ}/spi/include/kernel/cnk -I\${BLUEGENEQ}/comm/xl/include\" TYPE STRING)" >> $HOSTCONF
                 echo "VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  \"-L\${BLUEGENEQ}/spi/lib -L\${BLUEGENEQ}/comm/sys/lib -L\${BLUEGENEQ}/spi/lib -L\${BLUEGENEQ}/comm/xl/lib -R/opt/ibmcmp/lib64/bg/bglib64\" TYPE STRING)" >> $HOSTCONF
