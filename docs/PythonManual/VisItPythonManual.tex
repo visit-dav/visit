@@ -29,7 +29,7 @@
 \hrule
 \includegraphics[width=4.8in]{images/teaser}\\[0.5cm]
 \hrule
-\textsc{\LARGE Version 2.5.2}\\[0.5cm]
+\textsc{\LARGE Version 2.10.0}\\[0.5cm]
 \hrule
 
 \date{}
@@ -2557,10 +2557,18 @@ TurnDomainsOff(d)
 
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
-\verb!GetEngineList() -> tuple of strings!\\ [-3mm]
+\verb!GetEngineList() -> tuple of strings!\\ 
+\verb!GetEngineList(flag) -> tuple of tuples of strings!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{lp{9cm}}
+\verb!flag (optional)! & If flag is a non$-$zero integer then the function returns a tuple of tupleswith information about simulations. \\
+\end{tabular} \\[-2mm]
+
 
 \noindent {\it Returns:} \\ 
-\hangindent=\parindent GetEngineList returns a tuple of strings that contain the names of the computers on which compute engines are running. \\[-3mm] 
+\hangindent=\parindent GetEngineList returns a tuple of strings that contain the names of the computers on which compute engines are running. If flag is a non$-$zero integer argument then the function returns a tuple of tuples where each tuple is of length 2. Element 0 contains the names of the computers where the engines are running. Element 1 contains the names of the simulations being run. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
 \hangindent=\parindent The GetEngineList function returns a tuple of strings containing the names of the computers on which compute engines are running. This function can be useful if engines are going to be closed and opened explicitly in the Python script. The contents of the tuple can be used to help determine which compute engines should be closed or they can be used to determine if a compute engine was successfully launched. \\[-3mm] 
@@ -2575,6 +2583,39 @@ DrawPlots()
 for name in GetEngineList():
 print "VisIt has a compute engine running on %s" % name
 CloseComputeEngine(GetEngineList()[1])
+\end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{GetEngineProperties}
+\noindent {\bf GetEngineProperties}: returns an engine properties object.\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!GetEngineProperties()            -> EngineProperties!\\ 
+\verb!GetEngineProperties(engine)      -> EngineProperties!\\ 
+\verb!GetEngineProperties(engine, sim) -> EngineProperties!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{lp{9cm}}
+\verb!engine (optional)! & When engine is passed and it matches one of the computer names returnedfrom GetEngineList() then the EngineProperties object for that engine isreturned. \\
+\verb!sim (optional)! & When both engine and sim arguments are passed, then the EnginePropertiesobject for the simulation is returned. \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent The EngineProperties object for the specified compute engine/sim. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent GetEngineProperties returns an EngineProperties object containing the properties for the specified compute engine/sim. The EngineProperties let you discover information such as number of processors, etc for a compute engine/sim. \\[-3mm] 
+
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}% visit -cli
+db = "/usr/gapps/visit/data/globe.silo"
+OpenDatabase(db)
+props = GetEngineProperties(GetEngineList()[0])
 \end{verbatim}
 \newpage
 
@@ -3068,7 +3109,7 @@ SetPickAttributes(p)
 OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
 AddPlot("Pseudocolor", "d")
 DrawPlots()
-ZonePick((0.4, 0.6), ("default", "u", "v"))
+ZonePick(coord=(0.4, 0.6, 0), vars=("default", "u", "v"))
 s = GetPickOutput()
 print s
 o = GetPickOutputObject()
@@ -3097,7 +3138,7 @@ print o
 OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
 AddPlot("Pseudocolor", "d")
 DrawPlots()
-ZonePick((0.4, 0.6), ("default", "u", "v"))
+ZonePick(coord=(0.4, 0.6, 0), vars=("default", "u", "v"))
 s = GetPickOutput()
 print s
 o = GetPickOutputObject()
@@ -4132,6 +4173,14 @@ ListPlots()
 \verb!LoadAttribute(filename, object)!\\ 
 \verb!SaveAttribute(filename, object)!\\ [-3mm]
 
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{lp{9cm}}
+\verb!filename! & The name of the XML file to load the attribute from or save the attributeto. \\
+\verb!object! & The object to load or save. \\
+\end{tabular} \\[-2mm]
+
+
 \noindent {\it Returns:} \\ 
 \hangindent=\parindent success or failure \\[-3mm] 
 
@@ -4535,22 +4584,28 @@ MoveWindow(1, 100, 100)
 
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
-\verb!NodePick(point) -> integer!\\ 
-\verb!NodePick(point, variables) -> integer!\\ 
-\verb!NodePick(sx, sy) -> integer!\\ 
-\verb!NodePick(sx, sy, variables) -> integer!\\ [-3mm]
+\verb!NodePick(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!point! & A tuple of values that describe the coordinate of where we want to performthe nodal pick. \\
-\verb!variables! & An optional tuple of strings containing the names of the variables forwhich we want information. The tuple can contain the name "default" ifyou want information for the plotted variable. \\
-\verb!sx! & A screen X location (in pixels) offset from the left side of thevisualization window. \\
-\verb!sy! & A screen Y location (in pixels) offset from the bottom of thevisualization window. \\
+\verb!coord! & A tuple of doubles containing the spatial coordinate (x, y, z). \\
+\verb!x! & An integer containing the screen X location (in pixels) offset from theleft side of the visualization window. \\
+\verb!y! & An integer containing the screen Y location (in pixels) offset from thebottom of the visualization window. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
+\verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
+\verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
 \noindent {\it Returns:} \\ 
+\hangindent=\parindent NodePick returns a python dictionary of the pick results, unless do\_time is specified, then a time curve is created in a new window. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
 \hangindent=\parindent The NodePick function prints pick information for the node closest to the specified point. The point can be specified as a 2D or 3D point in world space or it can be specified as a pixel location in screen space. If the point is specified as a pixel location then VisIt finds the node closest to a ray that is projected into the mesh. Once the nodal pick has been calculated, you can use the GetPickOutput function to retrieve the printed pick output as a string which can be used for other purposes. \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
@@ -4559,9 +4614,9 @@ OpenDatabase("/usr/gapps/visit/data/noise.silo")
 AddPlot("Pseudocolor", "hgslice")
 DrawPlots()
 # Perform node pick in screen space
-NodePick(300,300)
+pick_out = NodePick(x=200,y=200)
 # Perform node pick in world space.
-NodePick((-5.0, 5.0))
+pick_out = NodePick(coord=(-5.0, 5.0, 0))
 \end{verbatim}
 \newpage
 
@@ -4831,22 +4886,28 @@ OverlayDatabase("riptide:/usr/gapps/visit/data/curv3d.silo")
 
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
-\verb!ZonePick(point) -> integer!\\ 
-\verb!ZonePick(point, variables) -> integer!\\ 
-\verb!ZonePick(sx, sy) -> integer!\\ 
-\verb!ZonePick(sx, sy, variables) -> integer!\\ [-3mm]
+\verb!ZonePick(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!point! & A tuple of values that describe the coordinate of where we want to performthe zonal pick. \\
-\verb!variables! & An optional tuple of strings containing the names of the variables forwhich we want information. The tuple can contain the name "default" ifyou want information for the plotted variable. \\
-\verb!sx! & A screen X location (in pixels) offset from the left side of thevisualization window. \\
-\verb!sy! & A screen Y location (in pixels) offset from the bottom of thevisualization window. \\
+\verb!coord! & A tuple of doubles containing the spatial coordinate (x, y, z). \\
+\verb!x! & An integer containing the screen X location (in pixels) offset from theleft side of the visualization window. \\
+\verb!y! & An integer containing the screen Y location (in pixels) offset from thebottom of the visualization window. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
+\verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
+\verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
 \noindent {\it Returns:} \\ 
+\hangindent=\parindent ZonePick returns a python dictionary of the pick results, unless do\_time is specified, then a time curve is created in a new window. If the picked variable is node centered, the variable values are grouped according to incident node ids. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
 \hangindent=\parindent The ZonePick function prints pick information for the cell (a.k.a zone) that contains the specified point. The point can be specified as a 2D or 3D point in world space or it can be specified as a pixel location in screen space. If the point is specified as a pixel location then VisIt finds the zone that contains the intersection of a cell and a ray that is projected into the mesh. Once the zonal pick has been calculated, you can use the GetPickOutput function to retrieve the printed pick output as a string which can be used for other purposes. \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
@@ -4855,9 +4916,9 @@ OpenDatabase("/usr/gapps/visit/data/noise.silo")
 AddPlot("Pseudocolor", "hgslice")
 DrawPlots()
 # Perform zone pick in screen space
-ZonePick(300,300)
+pick_out = ZonePick(x=200,y=200)
 # Perform zone pick in world space.
-ZonePick((-5.0, 5.0))
+pick_out = ZonePick(coord = (-5.0, 5.0, 0))
 \end{verbatim}
 \newpage
 
@@ -4867,32 +4928,42 @@ ZonePick((-5.0, 5.0))
 \noindent {\bf PickByGlobalNode}: performs pick operation for a specific node using a global node id.\\[-3mm]
 
 \noindent {\it Synopsis:} \\ 
-\hangindent=\parindent 
-\verb!PickByGlobalNode(node) -> integer!\\ 
-\verb!PickByGlobalNode(node, variables) -> integer!\\ [-3mm]
+\hangindent=\parindent
+\verb!PickByGlobalNode(namedarg1=arg1, namedarg2=arg2,\ ! \\ 
+\verb!     ...) -> dictionary!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!node! & Integer index of the global node for which we want pick information. \\
-\verb!variables! & A tuple of strings containing the names of the variables for which we wantpick information. \\
+\verb!element! & An integer with the global node id. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
+\verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
+\verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
 \noindent {\it Returns:} \\ 
-\hangindent=\parindent PickByGlobalNode returns 1 on success and 0 on failure. \\[-3mm] 
+\hangindent=\parindent PickByGlobalNode returns a python dictionary of pick results. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
 \hangindent=\parindent The PickByGlobalNode function tells VisIt to perform pick using a specific global node index for the entire problem. Some meshes are broken up into smaller "domains" and then these smaller domains can employ a global indexing scheme to make it appear as though the mesh was still one large mesh. Not all meshes that have been decomposed into domains provide sufficient information to allow global node indexing. You can use the GetPickOutput function to retrieve a string containing the pick information once you've called PickByGlobalNode. \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
 \begin{verbatim}% visit -cli
-OpenDatabase("/usr/gapps/visit/data/multi_curv2d.silo")
-AddPlot("Pseudocolor", "d")
+OpenDatabase("/usr/gapps/visit/data/global_node.silo")
+AddPlot("Pseudocolor", "dist")
 DrawPlots()
-# Pick on node 200 in the first domain.
-PickByGlobalNode(200)
-print "Last pick = ", GetPickOutput()
+# Pick on global node 236827
+pick_out = PickByGlobalNode(element=246827)
+# examine output
+print 'value of dist at global node 246827: %g' % pick_out['dist']
+print 'local domain/node: %d/%d' % (pick_out['domain_id'], pick_out['node_id'])
+# get last pick output as string
+print 'Last pick = ', GetPickOutput()
 \end{verbatim}
 \newpage
 
@@ -4902,32 +4973,41 @@ print "Last pick = ", GetPickOutput()
 \noindent {\bf PickByGlobalZone}: performs pick operation for a specific cell using a global cell id.\\[-3mm]
 
 \noindent {\it Synopsis:} \\ 
-\hangindent=\parindent 
-\verb!PickByGlobalZone(id) -> integer!\\ 
-\verb!PickByGlobalZone(id, variables) -> integer!\\ [-3mm]
+\hangindent=\parindent
+\verb!PickByGlobalZone(namedarg1=arg1, namedarg2=arg2,\ ! \\ 
+\verb!     ...) -> dictionary!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!id! & Integer index of the global cell for which we want pick information. \\
-\verb!variables! & A tuple of strings containing the names of the variables for which we wantpick information. \\
+\verb!element! & An integer with the global zone id. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
+\verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
+\verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
 \noindent {\it Returns:} \\ 
-\hangindent=\parindent PickByGlobalZone returns 1 on success and 0 on failure. \\[-3mm] 
+\hangindent=\parindent PickByGlobalZone returns a python dictionary of pick results. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
 \hangindent=\parindent The PickByGlobalZone function tells VisIt to perform pick using a specific global cell index for the entire problem. Some meshes are broken up into smaller "domains" and then these smaller domains can employ a global indexing scheme to make it appear as though the mesh was still one large mesh. Not all meshes that have been decomposed into domains provide sufficient information to allow global cell indexing. You can use the GetPickOutput function to retrieve a string containing the pick information once you've called PickByGlobalZone. \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
-\begin{verbatim}% visit -cli
-OpenDatabase("/usr/gapps/visit/data/multi_curv2d.silo")
-AddPlot("Pseudocolor", "d")
+\begin{verbatim}OpenDatabase("/usr/gapps/visit/data/global_node.silo")
+AddPlot("Pseudocolor", "p")
 DrawPlots()
-# Pick on cell 200 in the first domain.
-PickByGlobalZone(200)
-print "Last pick = ", GetPickOutput()
+# Pick on global zone 237394
+pick_out = PickByGlobalZone(element=237394)
+# examine output
+print 'value of p at global zone 237394: %g' % pick_out['p']
+print 'local domain/zone: %d/%d' % (pick_out['domain_id'], pick_out['zone_id'])
+# get last pick output as string
+print 'Last pick = ', GetPickOutput()
 \end{verbatim}
 \newpage
 
@@ -4938,22 +5018,25 @@ print "Last pick = ", GetPickOutput()
 
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
-\verb!PickByNode(node) -> integer!\\ 
-\verb!PickByNode(node, variables) -> integer!\\ 
-\verb!PickByNode(node, domain) -> integer!\\ 
-\verb!PickByNode(node, domain, variables) -> integer!\\ [-3mm]
+\verb!PickByNode(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!node! & Integer index of the node for which we want pick information. \\
-\verb!domain! & An integer representing the index of the domain that contains the node forwhich we want pick information. Note that if the first domain is"domain1" then the first valid index is 1. \\
-\verb!variables! & A tuple of strings containing the names of the variables for which we wantpick information. \\
+\verb!domain! & An integer with the domain id. \\
+\verb!element! & An integer with the node id. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
+\verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
+\verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
 \noindent {\it Returns:} \\ 
-\hangindent=\parindent PickByNode returns 1 on success and 0 on failure. \\[-3mm] 
+\hangindent=\parindent PickByNode returns a python dictionary of the pick results, unless do\_time is specified, then a time curve is created in a new window. If the picked variable is zone centered, the variable values are grouped according to incident zone ids. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
 \hangindent=\parindent The PickByNode function tells VisIt to perform pick using a specific node index in a given domain. Other pick by node variants first determine the node that is closest to some user$-$specified 3D point but the PickByNode functions cuts out this step and allows you to directly pick on the node of your choice. You can use the GetPickOutput function to retrieve a string containing the pick information once you've called PickByNode. \\[-3mm] 
@@ -4961,15 +5044,19 @@ print "Last pick = ", GetPickOutput()
 \noindent {\it Example:}\\[-6mm]
 \begin{verbatim}% visit -cli
 OpenDatabase("/usr/gapps/visit/data/multi_curv2d.silo")
-AddPlot("Pseudocolor", "d")
+AddPlot("Pseudocolor", "u")
 DrawPlots()
 # Pick on node 200 in the first domain.
-PickByNode(200)
-# Pick on node 200 in the second domain.
-PickByNode(200, 2)
+pick_out = PickByNode(element=200, domain=1)
+# examine output
+print 'value of u at node 200: %g' % pick_out['u']
 # Pick on node 100 in domain 5 and return information for two additional
 variables.
-PickByNode(100, 5, ("default", "u", "v"))
+pick_out = PickByNode(domain=5, element=100, vars=("u", "v", "d"))
+# examine output
+print 'incident zones for node 100: ', pick_out['incident_zones']
+print 'value of d at incident zone %d: %g' % (pick_out['incident_zones'][0], pick_out['d'][str(pick_out['incident_zones'][0])])
+# print results formatted as string
 print "Last pick = ", GetPickOutput()
 \end{verbatim}
 \newpage
@@ -4981,22 +5068,25 @@ print "Last pick = ", GetPickOutput()
 
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
-\verb!PickByZone(cell) -> integer!\\ 
-\verb!PickByZone(cell, variables) -> integer!\\ 
-\verb!PickByZone(cell, domain) -> integer!\\ 
-\verb!PickByZone(cell, domain, variables) -> integer!\\ [-3mm]
+\verb!PickByZone(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!cell! & Integer index of the cell for which we want pick information. \\
-\verb!domain! & An integer representing the index of the domain that contains the cell forwhich we want pick information. Note that if the first domain is"domain1" then the first valid index is 1. \\
-\verb!variables! & A tuple of strings containing the names of the variables for which we wantpick information. \\
+\verb!domain! & An integer with the domain id. \\
+\verb!element! & An integer with the zone id. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
+\verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
+\verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
 \noindent {\it Returns:} \\ 
-\hangindent=\parindent PickByZone returns 1 on success and 0 on failure. \\[-3mm] 
+\hangindent=\parindent PickByZone returns a python dictionary of the pick results, unless do\_time is specified, then a time curve is created in a new window. If the picked variable is node centered, the variable values are grouped according to incident node ids. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
 \hangindent=\parindent The PickByZone function tells VisIt to perform pick using a specific cell index in a given domain. Other pick by zone variants first determine the cell that contains some user$-$specified 3D point but the PickByZone functions cuts out this step and allows you to directly pick on the cell of your choice. You can use the GetPickOutput function to retrieve a string containing the pick information once you've called PickByZone. \\[-3mm] 
@@ -5006,13 +5096,17 @@ print "Last pick = ", GetPickOutput()
 OpenDatabase("/usr/gapps/visit/data/multi_curv2d.silo")
 AddPlot("Pseudocolor", "d")
 DrawPlots()
-# Pick on cell 200 in the first domain.
-PickByZone(200)
 # Pick on cell 200 in the second domain.
-PickByZone(200, 2)
+pick_out = PickByZone(element=200, domain=2)
+# examine output
+print 'value of d at zone 200: %g' % pick_out['d']
 # Pick on cell 100 in domain 5 and return information for two additional
 variables.
-PickByZone(100, 5, ("default", "u", "v"))
+pick_out = PickByZone(element=100, domain=5, vars=("d", "u", "v"))
+# examine output
+print 'incident nodes for zone 100: ', pick_out['incident_nodes']
+print 'values of u at incident zone %d: %g' % (pick_out['incident_nodes'][0], pick_out['u'][str(pick_out['incident_zones'][0])])
+# print results formatted as string
 print "Last pick = ", GetPickOutput()
 \end{verbatim}
 \newpage
@@ -5046,22 +5140,28 @@ print "The %s plot plugin is loaded." % plugin
 
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
-\verb!NodePick(point) -> integer!\\ 
-\verb!NodePick(point, variables) -> integer!\\ 
-\verb!NodePick(sx, sy) -> integer!\\ 
-\verb!NodePick(sx, sy, variables) -> integer!\\ [-3mm]
+\verb!NodePick(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!point! & A tuple of values that describe the coordinate of where we want to performthe nodal pick. \\
-\verb!variables! & An optional tuple of strings containing the names of the variables forwhich we want information. The tuple can contain the name "default" ifyou want information for the plotted variable. \\
-\verb!sx! & A screen X location (in pixels) offset from the left side of thevisualization window. \\
-\verb!sy! & A screen Y location (in pixels) offset from the bottom of thevisualization window. \\
+\verb!coord! & A tuple of doubles containing the spatial coordinate (x, y, z). \\
+\verb!x! & An integer containing the screen X location (in pixels) offset from theleft side of the visualization window. \\
+\verb!y! & An integer containing the screen Y location (in pixels) offset from thebottom of the visualization window. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
+\verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
+\verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
 \noindent {\it Returns:} \\ 
+\hangindent=\parindent NodePick returns a python dictionary of the pick results, unless do\_time is specified, then a time curve is created in a new window. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
 \hangindent=\parindent The NodePick function prints pick information for the node closest to the specified point. The point can be specified as a 2D or 3D point in world space or it can be specified as a pixel location in screen space. If the point is specified as a pixel location then VisIt finds the node closest to a ray that is projected into the mesh. Once the nodal pick has been calculated, you can use the GetPickOutput function to retrieve the printed pick output as a string which can be used for other purposes. \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
@@ -5070,9 +5170,9 @@ OpenDatabase("/usr/gapps/visit/data/noise.silo")
 AddPlot("Pseudocolor", "hgslice")
 DrawPlots()
 # Perform node pick in screen space
-NodePick(300,300)
+pick_out = NodePick(x=200,y=200)
 # Perform node pick in world space.
-NodePick((-5.0, 5.0))
+pick_out = NodePick(coord=(-5.0, 5.0, 0))
 \end{verbatim}
 \newpage
 
@@ -5229,9 +5329,16 @@ QueryOverTime("Volume", start_time=5, end_time=250, stride=5)
 
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
-\verb!Query(name) -> integer!\\ 
-\verb!Query(name, dict) -> integer!\\ 
-\verb!Query(name, namedarg1=arg1,namedarg2=arg2, ...) -> integer!\\ [-3mm]
+\verb!Query(name) -> string!\\ 
+\verb!Query(name, dict) -> string!\\ 
+\verb!Query(name, namedarg1=arg1,namedarg2=arg2, ...) -> string!\\ 
+\verb!Query(name) -> double, tuple of double!\\ 
+\verb!Query(name, dict) -> double, tuple of double!\\
+\verb!Query(name, namedarg1=arg1,namedarg2=arg2, ...) -> double,\ ! \\ 
+\verb!     tuple of double!\\ 
+\verb!Query(name) -> dictionary!\\ 
+\verb!Query(name, dict) -> dictionary!\\ 
+\verb!Query(name, namedarg1=arg1,namedarg2=arg2, ...) -> dictionary!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
@@ -5243,7 +5350,7 @@ QueryOverTime("Volume", start_time=5, end_time=250, stride=5)
 
 
 \noindent {\it Returns:} \\ 
-\hangindent=\parindent The Query function returns 1 on success and 0 on failure. \\[-3mm] 
+\hangindent=\parindent The Query function returns either a String (default), Value(s), or Object. The return type can be customized via calls to SetQueryOutputToXXX(), where 'XXX' is 'String', 'Value', or 'Object'. For more information on these return types, see 'GetQueryOutput'. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
 \hangindent=\parindent The Query function is used to execute any of VisIt's predefined queries. The list of queries can be found in theVisIt User's Manual in the Quantitative Analysis chapter. You can get also get a list of queries using 'Queries' function. Since queries can take a wide array of arguments, the Query function takes  either a python dictorary or a list of named arguments specific to the  given query.  To obtain the possible options for a given query, use the  GetQueryParameters(name) function.  If the query accepts additional  arguments beyond its name, this function will return a python dictionary containing the needed variables and their default values.  This can be modified and passed back to the Query method, or named arguments can be used instead. \\[-3mm] 
@@ -5336,6 +5443,34 @@ ReOpenDatabase("edge:/usr/gapps/visit/data/wave*.silo database")
 for state in range(last, TimeSliderGetNStates()):
 SetTimeSliderState(state)
 SaveWindow()
+\end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{ReadHostProfilesFromDirectory}
+\noindent {\bf ReadHostProfilesFromDirectory}: reads host profiles from a specified directory.\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!ReadHostProfilesFromDirectory(directory, clear) -> integer!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{lp{9cm}}
+\verb!directory! & The name of the directory that contains the host profile XML files. \\
+\verb!clear! & A flag indicating whether the host profile list should cleared first. \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent The ReadHostProfilesFromDirectory function returns an integer value of 1 for success and 0 for failure. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent The ReadHostProfilesFromDirectory provides a way to tell VisIt to load host  profiles from the XML files in a specified directory. This is needed because the machine profile for host profiles contains client/server options that  sometimes cannot be specified via the VisIt command line. \\[-3mm] 
+
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}ReadHostProfilesFromDirectory("/usr/gapps/visit/2.8.2/linux-x86_64/resources/hosts/llnl", 1)
 \end{verbatim}
 \newpage
 
@@ -5952,6 +6087,14 @@ SaveWindow()
 \verb!LoadAttribute(filename, object)!\\ 
 \verb!SaveAttribute(filename, object)!\\ [-3mm]
 
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{lp{9cm}}
+\verb!filename! & The name of the XML file to load the attribute from or save the attributeto. \\
+\verb!object! & The object to load or save. \\
+\end{tabular} \\[-2mm]
+
+
 \noindent {\it Returns:} \\ 
 \hangindent=\parindent success or failure \\[-3mm] 
 
@@ -6489,7 +6632,7 @@ SetCreateTimeDerivativeExpressions(0) # turn this feature off
 \hangindent=\parindent The SetCreateVectorMagnitudeExpressions function returns 1 on success and 0 on failure. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
-\hangindent=\parindent The SetCreateVectorMagnitudeExpressions function sets a boolean in the  global attributes indicating whether or not vector magnitude expressions  should be automatically created. The default behavior is for the  expressions to be created, which may slow down VisIt's performance  if there is an extraordinary large number of vector variables.  Turning this  feature off tells VisIt to skip automatic creation of the vecotr magnitude expressions.  expressions. \\[-3mm] 
+\hangindent=\parindent The SetCreateVectorMagnitudeExpressions function sets a boolean in the  global attributes indicating whether or not vector magnitude expressions  should be automatically created. The default behavior is for the  expressions to be created, which may slow down VisIt's performance  if there is an extraordinary large number of vector variables.  Turning this  feature off tells VisIt to skip automatic creation of the vector magnitude expressions.  expressions. \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
 \begin{verbatim}% visit -cli
@@ -6835,13 +6978,13 @@ DrawPlots()
 \begin{verbatim}OpenDatabase("/usr/gapps/visit/data/noise.silo")
 AddPlot("Pseudocolor", "hgslice")
 DrawPlots()
-ZonePick((-5,5))
+ZonePick(coord=(-5,5,0))
 p = GetPickAttributes()
 p.showTimeStep = 0
 p.showMeshName = 0
 p.showZoneId = 0
 SetPickAttributes(p)
-ZonePick((0,5))
+ZonePick(coord=(0,5,0))
 \end{verbatim}
 \newpage
 
@@ -7214,13 +7357,13 @@ DrawPlots()
 \begin{verbatim}OpenDatabase("/usr/gapps/visit/data/noise.silo")
 AddPlot("Pseudocolor", "hgslice")
 DrawPlots()
-ZonePick((-5,5))
+ZonePick(coord=(-5,5,0))
 p = GetPickAttributes()
 p.showTimeStep = 0
 p.showMeshName = 0
 p.showZoneId = 0
 SetPickAttributes(p)
-ZonePick((0,5))
+ZonePick(coord=(0,5,0))
 \end{verbatim}
 \newpage
 
@@ -7528,6 +7671,40 @@ DrawPlots()
 
 
 \phantomsection
+\addcontentsline{toc}{subsection}{SetPrecisionType}
+\noindent {\bf SetPrecisionType}: sets the floating-point precision used by VisIt's pipeline.\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!SetPrecisionType(typeAsInt)!\\ 
+\verb!SetPrecisionType(typeAsString)!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{ll}
+\verb!typeAsInt! & Precision type specified as an integer. \\
+\verb!! & 0 = float \\
+\verb!! & 1 = native \\
+\verb!! & 2 = double \\
+\verb!typeAsString! &  \\
+\verb!  Options:! & "float""native""double" \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent The SetPrecisionType function does not return a value. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent The SetPrecisionType function sets the floating point pecision used by VisIt's pipeline.  The function accepts a single argument either an integer or string representing the precision desired. 0 = "float", 1 = "native", 2 = "double" \\[-3mm] 
+
+\noindent {\it Examples:}\\[-6mm]
+\begin{verbatim}SetPrecisionType("double")
+SetPrecisionType(2)
+\end{verbatim}
+\newpage
+
+
+\phantomsection
 \addcontentsline{toc}{subsection}{SetPreferredFileFormats}
 \noindent {\bf SetPreferredFileFormats}: sets the list of preferred file format IDs.\\[-3mm]
 
@@ -7628,6 +7805,93 @@ Query("MinMax")
 
 
 \phantomsection
+\addcontentsline{toc}{subsection}{SetQueryOutputToObject}
+\noindent {\bf SetQueryOutputToObject}: sets the query return type to 'Object' (python dictionary).\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!SetQueryOutputToObject()!\\ [-3mm]
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent SetQueryOutputToObject does not return a value. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent SetQueryOutputToObject changes the return type of future Queries to the 'object' or Python dictionary form. This is the same object that would be returned by calling 'GetQueryOutputObject()' after a Query call. All other output modes are still available after the Query call  (eg GetQueryOutputValue(),GetQueryOutputObject(), GetQueryOutputString()). \\[-3mm] 
+
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}% visit -cli
+OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+# Set query output type.
+SetQueryOutputToObject()
+query_output = Query("MinMax")
+print query_output
+{'min': 0.02357020415365696, 'max': 0.9489759802818298, 'max_element_num': 1170, 'min_coord': (0.4833333343267441, 0.4833333343267441), 'max_coord': (0.01666666753590107, 1.3166666626930237), 'max_domain': 0, 'min_element_num': 434, 'min_domain': 0}
+\end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{SetQueryOutputToString}
+\noindent {\bf SetQueryOutputToString}: sets the query return type to 'String' form.\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!SetQueryOutputToString()!\\ [-3mm]
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent SetQueryOutputToString does not return a value. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent SetQueryOutputToString changes the return type of future Queries to the 'string' form. This is the same as what would be returned by calling 'GetQueryOutputString' after a Query call. All other output modes are still available after the Query call (eg GetQueryOutputValue(), GetQueryOutputObject(), GetQueryOutputString()). \\[-3mm] 
+
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}% visit -cli
+OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+# Set query output type.
+SetQueryOutputToString()
+query_output = Query("MinMax")
+print query_output
+'
+d -- Min = 0.0235702 (zone 434 at coord <0.483333, 0.483333>)
+d -- Max = 0.948976 (zone 1170 at coord <0.0166667, 1.31667>)
+'
+\end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{SetQueryOutputToValue}
+\noindent {\bf SetQueryOutputToValue}: sets the query return type to 'Value' form.\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!SetQueryOutputToValue()!\\ [-3mm]
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent SetQueryOutputToValue does not return a value. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent SetQueryOutputToValue changes the return type of future Queries to the 'value' form. This is the same as what would be returned by calling 'GetQueryOutputValue()' after a Query call. All other output modes are still available after the Query call (eg GetQueryOutputValue(), GetQueryOutputObject(), GetQueryOutputString()). \\[-3mm] 
+
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}% visit -cli
+OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+# Set query output type.
+SetQueryOutputToValue()
+query_output = Query("MinMax")
+print query_output
+(0.02357020415365696, 0.9489759802818298)
+\end{verbatim}
+\newpage
+
+
+\phantomsection
 \addcontentsline{toc}{subsection}{SetQueryOverTimeAttributes}
 \noindent {\bf SetQueryOverTimeAttributes}: changes the settings that VisIt uses for queries over time.\\[-3mm]
 
@@ -7666,6 +7930,35 @@ qot.endTimeFlag,qot.endTime = 1, GetDatabaseNStates() / 2
 SetQueryOverTimeAttributes(qot)
 QueryOverTime("Min")
 ResetView()
+\end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{SetRemoveDuplicateNodes}
+\noindent {\bf SetRemoveDuplicateNodes}: sets global attribute boolean to automatically remove duplicate nodes from\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!SetRemoveDuplicateNodes(val) -> integer!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{lp{9cm}}
+\verb!val! & Either a zero (false) or non$-$zero (true) integer value to indicate if duplicate nodes in fully disconnected unstructured grids should be  automatically removed by visit. \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent The SetRemoveDuplicateNodes function returns 1 on success and 0 on failure. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent The SetRemoveDuplicateNodes function sets a boolean in the  global attributes indicating whether or not duplicate nodes in fully disconnected unstructured grids should be automatically removed. The default behavior is for the original grid to be left as read, which  may slow down VisIt's performance for extraordinary large meshes.  Turning this feature off tells VisIt to remove the duplicate nodes after  the mesh is read, but before further processing in VisIt. \\[-3mm] 
+
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}% visit -cli
+SetRemoveDuplicateNodes(1) # turn this feature on
+SetRemoveDuplicateNodes(0) # turn this feature off
 \end{verbatim}
 \newpage
 
@@ -9082,6 +9375,13 @@ WriteConfig()
 \end{verbatim}
 \newpage
 
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}    f = open('script.py', 'wt')
+    WriteScript(f)
+    f.close()
+\end{verbatim}
+\newpage
+
 
 \phantomsection
 \addcontentsline{toc}{subsection}{ZonePick}
@@ -9089,22 +9389,28 @@ WriteConfig()
 
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
-\verb!ZonePick(point) -> integer!\\ 
-\verb!ZonePick(point, variables) -> integer!\\ 
-\verb!ZonePick(sx, sy) -> integer!\\ 
-\verb!ZonePick(sx, sy, variables) -> integer!\\ [-3mm]
+\verb!ZonePick(namedarg1=arg1, namedarg2=arg2, ...) -> dictionary!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!point! & A tuple of values that describe the coordinate of where we want to performthe zonal pick. \\
-\verb!variables! & An optional tuple of strings containing the names of the variables forwhich we want information. The tuple can contain the name "default" ifyou want information for the plotted variable. \\
-\verb!sx! & A screen X location (in pixels) offset from the left side of thevisualization window. \\
-\verb!sy! & A screen Y location (in pixels) offset from the bottom of thevisualization window. \\
+\verb!coord! & A tuple of doubles containing the spatial coordinate (x, y, z). \\
+\verb!x! & An integer containing the screen X location (in pixels) offset from theleft side of the visualization window. \\
+\verb!y! & An integer containing the screen Y location (in pixels) offset from thebottom of the visualization window. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
+\verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
+\verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
 \noindent {\it Returns:} \\ 
+\hangindent=\parindent ZonePick returns a python dictionary of the pick results, unless do\_time is specified, then a time curve is created in a new window. If the picked variable is node centered, the variable values are grouped according to incident node ids. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
 \hangindent=\parindent The ZonePick function prints pick information for the cell (a.k.a zone) that contains the specified point. The point can be specified as a 2D or 3D point in world space or it can be specified as a pixel location in screen space. If the point is specified as a pixel location then VisIt finds the zone that contains the intersection of a cell and a ray that is projected into the mesh. Once the zonal pick has been calculated, you can use the GetPickOutput function to retrieve the printed pick output as a string which can be used for other purposes. \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
@@ -9113,15 +9419,41 @@ OpenDatabase("/usr/gapps/visit/data/noise.silo")
 AddPlot("Pseudocolor", "hgslice")
 DrawPlots()
 # Perform zone pick in screen space
-ZonePick(300,300)
+pick_out = ZonePick(x=200,y=200)
 # Perform zone pick in world space.
-ZonePick((-5.0, 5.0))
+pick_out = ZonePick(coord = (-5.0, 5.0, 0))
 \end{verbatim}
 \newpage
 
 \newpage
 \chapter{Attribute References}
 \input{attributes_preamble.inc}
+
+\phantomsection
+\addcontentsline{toc}{subsection}{AMRStitchCell}
+\noindent {\bf AMRStitchCell}: {\it AMRStitchCellAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... AMRStitchCell attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+CreateCellsOfType  &  DualGridAndStitchCells   \\
+ & {\it  DualGridAndStitchCells} \\
+ & {\it  DualGrid} \\
+ & {\it  StitchCells} \\
+\end{longtable}
+
+\newpage
 
 \phantomsection
 \addcontentsline{toc}{subsection}{Animation}
@@ -9549,6 +9881,9 @@ pointType  &  Point   \\
  & {\it  Box} \\
  & {\it  Axis} \\
  & {\it  Icosahedron} \\
+ & {\it  Octahedron} \\
+ & {\it  Tetrahedron} \\
+ & {\it  SphereGeometry} \\
  & {\it  Point} \\
  & {\it  Sphere} \\
 pointSizeVarEnabled  &  0 \\
@@ -9608,6 +9943,42 @@ miny  &  0 \\
 maxy  &  1 \\
 minz  &  0 \\
 maxz  &  1 \\
+inverse  &  0 \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{CartographicProjection}
+\noindent {\bf CartographicProjection}: {\it CartographicProjectionAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... CartographicProjection attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+projectionID  &  aitoff   \\
+ & {\it  aitoff} \\
+ & {\it  eck4} \\
+ & {\it  eqdc} \\
+ & {\it  hammer} \\
+ & {\it  laea} \\
+ & {\it  lcc} \\
+ & {\it  merc} \\
+ & {\it  mill} \\
+ & {\it  moll} \\
+ & {\it  ortho} \\
+ & {\it  wink2} \\
+centralMeridian  &  0 \\
 \end{longtable}
 
 \newpage
@@ -9846,7 +10217,7 @@ defaultPalette.smoothing  &  defaultPalette.None   \\
  & {\it  CubicSpline} \\
 defaultPalette.equalSpacingFlag  &  1 \\
 defaultPalette.discreteFlag  &  1 \\
-defaultPalette.externalFlag  &  0 \\
+defaultPalette.categoryName  &  "Standard" \\
 changedColors  &  () \\
 colorType  &  ColorByMultipleColors   \\
  & {\it  ColorBySingleColor} \\
@@ -10016,6 +10387,20 @@ lineTimeCueColor  &  (0, 0, 0, 255) \\
 lineTimeCueWidth  &  0 \\
 doCropTimeCue  &  0 \\
 timeForTimeCue  &  0 \\
+fillMode  &  NoFill   \\
+ & {\it  NoFill} \\
+ & {\it  Solid} \\
+ & {\it  HorizontalGradient} \\
+ & {\it  VerticalGradient} \\
+fillColor1  &  (255, 0, 0, 255) \\
+fillColor2  &  (255, 100, 100, 255) \\
+polarToCartesian  &  0 \\
+polarCoordinateOrder  &  R\_Theta   \\
+ & {\it  R\_Theta} \\
+ & {\it  Theta\_R} \\
+angleUnits  &  Radians   \\
+ & {\it  Radians} \\
+ & {\it  Degrees} \\
 \end{longtable}
 
 \newpage
@@ -10041,6 +10426,7 @@ timeForTimeCue  &  0 \\
 point1  &  (0, 0, 0) \\
 point2  &  (1, 0, 0) \\
 radius  &  1 \\
+inverse  &  0 \\
 \end{longtable}
 
 \newpage
@@ -10112,6 +10498,10 @@ reductionOperator  &  Average   \\
  & {\it  PDF} \\
 varForReduction  &  "default" \\
 emptyVal  &  0 \\
+outputType  &  OutputOnBins   \\
+ & {\it  OutputOnBins} \\
+ & {\it  OutputOnInputMesh} \\
+removeEmptyValFromCurve  &  1 \\
 \end{longtable}
 
 \newpage
@@ -10250,6 +10640,31 @@ variable  &  "default" \\
 \newpage
 
 \phantomsection
+\addcontentsline{toc}{subsection}{EllipsoidSlice}
+\noindent {\bf EllipsoidSlice}: {\it EllipsoidSliceAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... EllipsoidSlice attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+origin  &  (0, 0, 0) \\
+radii  &  (1, 1, 1) \\
+rotationAngle  &  (0, 0, 0) \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
 \addcontentsline{toc}{subsection}{ExportDB}
 \noindent {\bf ExportDB}: {\it ExportDBAttributes() }\\[-3mm]
 
@@ -10267,11 +10682,16 @@ variable  &  "default" \\
 \hline
 \endlastfoot
 
+allTimes  &  0 \\
 db\_type  &  "" \\
+db\_type\_fullname  &  "" \\
 filename  &  "visit\_ex\_db" \\
 dirname  &  "." \\
 variables  &  () \\
+writeUsingGroups  &  0 \\
+groupSize  &  48 \\
 opts.types  &  () \\
+opts.help  &  "" \\
 \end{longtable}
 
 \newpage
@@ -10350,43 +10770,6 @@ dummy  &  0 \\
 \newpage
 
 \phantomsection
-\addcontentsline{toc}{subsection}{FTLE}
-\noindent {\bf FTLE}: {\it FTLEAttributes() }\\[-3mm]
-
-\begin{longtable}{ll}
-{\bf Attribute} & {\bf Default/Allowed values} \\
-\hline \hline
-\endfirsthead
-\multicolumn{2}{l}{{\it ... FTLE attributes continued}} \\
-{\bf Attribute} & {\bf Default/Allowed values} \\
-\hline \hline
-\endhead
-\hline
-\multicolumn{2}{l}{{\it Continued on next page...}} \\
-\endfoot
-\hline
-\endlastfoot
-
-integrationTime  &  1 \\
-regionType  &  RegularGrid   \\
- & {\it  NativeResolutionOfMesh} \\
- & {\it  RegularGrid} \\
-Resolution  &  (10, 10, 10) \\
-UseDataSetStart  &  1 \\
-StartPosition  &  (0, 0, 0) \\
-UseDataSetEnd  &  1 \\
-EndPosition  &  (1, 1, 1) \\
-direction  &  Forward   \\
- & {\it  Forward} \\
- & {\it  Backward} \\
-flowType  &  Unsteady   \\
- & {\it  Unsteady} \\
- & {\it  Steady} \\
-\end{longtable}
-
-\newpage
-
-\phantomsection
 \addcontentsline{toc}{subsection}{FilledBoundary}
 \noindent {\bf FilledBoundary}: {\it FilledBoundaryAttributes() }\\[-3mm]
 
@@ -10436,6 +10819,9 @@ pointType  &  Point   \\
  & {\it  Box} \\
  & {\it  Axis} \\
  & {\it  Icosahedron} \\
+ & {\it  Octahedron} \\
+ & {\it  Tetrahedron} \\
+ & {\it  SphereGeometry} \\
  & {\it  Point} \\
  & {\it  Sphere} \\
 pointSizeVarEnabled  &  0 \\
@@ -10526,6 +10912,8 @@ iconifiedFlag  &  0 \\
 autoUpdateFlag  &  0 \\
 replacePlots  &  0 \\
 applyOperator  &  1 \\
+applySelection  &  1 \\
+applyWindow  &  0 \\
 executing  &  0 \\
 windowLayout  &  1 \\
 makeDefaultConfirm  &  1 \\
@@ -10539,9 +10927,19 @@ createVectorMagnitudeExpressions  &  1 \\
 newPlotsInheritSILRestriction  &  1 \\
 userDirForSessionFiles  &  0 \\
 saveCrashRecoveryFile  &  1 \\
-applySelection  &  1 \\
 ignoreExtentsFromDbs  &  0 \\
 expandNewPlots  &  0 \\
+userRestoreSessionFile  &  0 \\
+precisionType  &  Native   \\
+ & {\it  Float} \\
+ & {\it  Native} \\
+ & {\it  Double} \\
+backendType  &  VTK   \\
+ & {\it  VTK} \\
+ & {\it  DAX} \\
+ & {\it  EAVL} \\
+ & {\it  PISTON} \\
+removeDuplicateNodes  &  0 \\
 \end{longtable}
 
 \newpage
@@ -10601,6 +10999,8 @@ binScale  &  Linear   \\
  & {\it  Linear} \\
  & {\it  Log} \\
  & {\it  SquareRoot} \\
+normalizeHistogram  &  0 \\
+computeAsCDF  &  0 \\
 \end{longtable}
 
 \newpage
@@ -10649,6 +11049,152 @@ zWrap  &  0 \\
 useWholeCollection  &  1 \\
 categoryName  &  "Whole" \\
 subsetName  &  "Whole" \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{IntegralCurve}
+\noindent {\bf IntegralCurve}: {\it IntegralCurveAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... IntegralCurve attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+sourceType  &  Point   \\
+ & {\it  Point} \\
+ & {\it  PointList} \\
+ & {\it  Line\_} \\
+ & {\it  Circle} \\
+ & {\it  Plane} \\
+ & {\it  Sphere} \\
+ & {\it  Box} \\
+ & {\it  Selection} \\
+ & {\it  FieldData} \\
+pointSource  &  (0, 0, 0) \\
+lineStart  &  (0, 0, 0) \\
+lineEnd  &  (1, 0, 0) \\
+planeOrigin  &  (0, 0, 0) \\
+planeNormal  &  (0, 0, 1) \\
+planeUpAxis  &  (0, 1, 0) \\
+radius  &  1 \\
+sphereOrigin  &  (0, 0, 0) \\
+boxExtents  &  (0, 1, 0, 1, 0, 1) \\
+useWholeBox  &  1 \\
+pointList  &  (0, 0, 0, 1, 0, 0, 0, 1, 0) \\
+fieldData  &  () \\
+sampleDensity0  &  2 \\
+sampleDensity1  &  2 \\
+sampleDensity2  &  2 \\
+dataValue  &  TimeAbsolute   \\
+ & {\it  Solid} \\
+ & {\it  SeedPointID} \\
+ & {\it  Speed} \\
+ & {\it  Vorticity} \\
+ & {\it  ArcLength} \\
+ & {\it  TimeAbsolute} \\
+ & {\it  TimeRelative} \\
+ & {\it  AverageDistanceFromSeed} \\
+ & {\it  CorrelationDistance} \\
+ & {\it  Difference} \\
+ & {\it  Variable} \\
+dataVariable  &  "" \\
+integrationDirection  &  Forward   \\
+ & {\it  Forward} \\
+ & {\it  Backward} \\
+ & {\it  Both} \\
+ & {\it  ForwardDirectionless} \\
+ & {\it  BackwardDirectionless} \\
+ & {\it  BothDirectionless} \\
+maxSteps  &  1000 \\
+terminateByDistance  &  0 \\
+termDistance  &  10 \\
+terminateByTime  &  0 \\
+termTime  &  10 \\
+maxStepLength  &  0.1 \\
+limitMaximumTimestep  &  0 \\
+maxTimeStep  &  0.1 \\
+relTol  &  0.0001 \\
+absTolSizeType  &  FractionOfBBox   \\
+ & {\it  Absolute} \\
+ & {\it  FractionOfBBox} \\
+absTolAbsolute  &  1e$-$06 \\
+absTolBBox  &  1e$-$06 \\
+fieldType  &  Default   \\
+ & {\it  Default} \\
+ & {\it  FlashField} \\
+ & {\it  M3DC12DField} \\
+ & {\it  M3DC13DField} \\
+ & {\it  Nek5000Field} \\
+ & {\it  NektarPPField} \\
+ & {\it  NIMRODField} \\
+fieldConstant  &  1 \\
+velocitySource  &  (0, 0, 0) \\
+integrationType  &  DormandPrince   \\
+ & {\it  Euler} \\
+ & {\it  Leapfrog} \\
+ & {\it  DormandPrince} \\
+ & {\it  AdamsBashforth} \\
+ & {\it  RK4} \\
+ & {\it  M3DC12DIntegrator} \\
+parallelizationAlgorithmType  &  VisItSelects   \\
+ & {\it  LoadOnDemand} \\
+ & {\it  ParallelStaticDomains} \\
+ & {\it  MasterSlave} \\
+ & {\it  VisItSelects} \\
+maxProcessCount  &  10 \\
+maxDomainCacheSize  &  3 \\
+workGroupSize  &  32 \\
+pathlines  &  0 \\
+pathlinesOverrideStartingTimeFlag  &  0 \\
+pathlinesOverrideStartingTime  &  0 \\
+pathlinesPeriod  &  0 \\
+pathlinesCMFE  &  POS\_CMFE   \\
+ & {\it  CONN\_CMFE} \\
+ & {\it  POS\_CMFE} \\
+displayGeometry  &  Lines   \\
+ & {\it  Lines} \\
+ & {\it  Tubes} \\
+ & {\it  Ribbons} \\
+cropBeginFlag  &  0 \\
+cropBegin  &  0 \\
+cropEndFlag  &  0 \\
+cropEnd  &  0 \\
+cropValue  &  Time   \\
+ & {\it  Distance} \\
+ & {\it  Time} \\
+ & {\it  StepNumber} \\
+sampleDistance0  &  10 \\
+sampleDistance1  &  10 \\
+sampleDistance2  &  10 \\
+fillInterior  &  1 \\
+randomSamples  &  0 \\
+randomSeed  &  0 \\
+numberOfRandomSamples  &  1 \\
+issueAdvectionWarnings  &  1 \\
+issueBoundaryWarnings  &  1 \\
+issueTerminationWarnings  &  1 \\
+issueStepsizeWarnings  &  1 \\
+issueStiffnessWarnings  &  1 \\
+issueCriticalPointsWarnings  &  1 \\
+criticalPointThreshold  &  0.001 \\
+correlationDistanceAngTol  &  5 \\
+correlationDistanceMinDistAbsolute  &  1 \\
+correlationDistanceMinDistBBox  &  0.005 \\
+correlationDistanceMinDistType  &  FractionOfBBox   \\
+ & {\it  Absolute} \\
+ & {\it  FractionOfBBox} \\
+selection  &  "" \\
 \end{longtable}
 
 \newpage
@@ -10765,6 +11311,135 @@ variable  &  "default" \\
 enabled  &  0 \\
 nFrames  &  1 \\
 nFramesWasUserSet  &  0 \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{LCS}
+\noindent {\bf LCS}: {\it LCSAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... LCS attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+sourceType  &  NativeMesh   \\
+ & {\it  NativeMesh} \\
+ & {\it  RegularGrid} \\
+Resolution  &  (10, 10, 10) \\
+UseDataSetStart  &  Full   \\
+ & {\it  Full} \\
+ & {\it  Subset} \\
+StartPosition  &  (0, 0, 0) \\
+UseDataSetEnd  &  Full   \\
+ & {\it  Full} \\
+ & {\it  Subset} \\
+EndPosition  &  (1, 1, 1) \\
+integrationDirection  &  Forward   \\
+ & {\it  Forward} \\
+ & {\it  Backward} \\
+ & {\it  Both} \\
+auxiliaryGrid  &  None   \\
+ & {\it  None} \\
+ & {\it  TwoDim} \\
+ & {\it  ThreeDim} \\
+auxiliaryGridSpacing  &  0.0001 \\
+maxSteps  &  1000 \\
+operationType  &  Lyapunov   \\
+ & {\it  IntegrationTime} \\
+ & {\it  ArcLength} \\
+ & {\it  AverageDistanceFromSeed} \\
+ & {\it  EigenValue} \\
+ & {\it  EigenVector} \\
+ & {\it  Lyapunov} \\
+cauchyGreenTensor  &  Right   \\
+ & {\it  Left} \\
+ & {\it  Right} \\
+eigenComponent  &  Largest   \\
+ & {\it  Smallest} \\
+ & {\it  Intermediate} \\
+ & {\it  Largest} \\
+ & {\it  PosShearVector} \\
+ & {\it  NegShearVector} \\
+ & {\it  PosLambdaShearVector} \\
+ & {\it  NegLambdaShearVector} \\
+eigenWeight  &  1 \\
+operatorType  &  BaseValue   \\
+ & {\it  BaseValue} \\
+ & {\it  Gradient} \\
+terminationType  &  Time   \\
+ & {\it  Time} \\
+ & {\it  Distance} \\
+ & {\it  Size} \\
+terminateBySize  &  0 \\
+termSize  &  10 \\
+terminateByDistance  &  0 \\
+termDistance  &  10 \\
+terminateByTime  &  0 \\
+termTime  &  10 \\
+maxStepLength  &  0.1 \\
+limitMaximumTimestep  &  0 \\
+maxTimeStep  &  0.1 \\
+relTol  &  0.0001 \\
+absTolSizeType  &  FractionOfBBox   \\
+ & {\it  Absolute} \\
+ & {\it  FractionOfBBox} \\
+absTolAbsolute  &  1e$-$06 \\
+absTolBBox  &  1e$-$06 \\
+fieldType  &  Default   \\
+ & {\it  Default} \\
+ & {\it  FlashField} \\
+ & {\it  M3DC12DField} \\
+ & {\it  M3DC13DField} \\
+ & {\it  Nek5000Field} \\
+ & {\it  NektarPPField} \\
+ & {\it  NIMRODField} \\
+fieldConstant  &  1 \\
+velocitySource  &  (0, 0, 0) \\
+integrationType  &  DormandPrince   \\
+ & {\it  Euler} \\
+ & {\it  Leapfrog} \\
+ & {\it  DormandPrince} \\
+ & {\it  AdamsBashforth} \\
+ & {\it  RK4} \\
+ & {\it  M3DC12DIntegrator} \\
+clampLogValues  &  0 \\
+parallelizationAlgorithmType  &  VisItSelects   \\
+ & {\it  LoadOnDemand} \\
+ & {\it  ParallelStaticDomains} \\
+ & {\it  MasterSlave} \\
+ & {\it  VisItSelects} \\
+maxProcessCount  &  10 \\
+maxDomainCacheSize  &  3 \\
+workGroupSize  &  32 \\
+pathlines  &  0 \\
+pathlinesOverrideStartingTimeFlag  &  0 \\
+pathlinesOverrideStartingTime  &  0 \\
+pathlinesPeriod  &  0 \\
+pathlinesCMFE  &  POS\_CMFE   \\
+ & {\it  CONN\_CMFE} \\
+ & {\it  POS\_CMFE} \\
+thresholdLimit  &  0.1 \\
+radialLimit  &  0.1 \\
+boundaryLimit  &  0.1 \\
+seedLimit  &  10 \\
+issueAdvectionWarnings  &  1 \\
+issueBoundaryWarnings  &  1 \\
+issueTerminationWarnings  &  1 \\
+issueStepsizeWarnings  &  1 \\
+issueStiffnessWarnings  &  1 \\
+issueCriticalPointsWarnings  &  1 \\
+criticalPointThreshold  &  0.001 \\
 \end{longtable}
 
 \newpage
@@ -10893,6 +11568,129 @@ brightness  &  1 \\
 \newpage
 
 \phantomsection
+\addcontentsline{toc}{subsection}{LimitCycle}
+\noindent {\bf LimitCycle}: {\it LimitCycleAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... LimitCycle attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+sourceType  &  Line\_   \\
+ & {\it  Line\_} \\
+ & {\it  Plane} \\
+lineStart  &  (0, 0, 0) \\
+lineEnd  &  (1, 0, 0) \\
+planeOrigin  &  (0, 0, 0) \\
+planeNormal  &  (0, 0, 1) \\
+planeUpAxis  &  (0, 1, 0) \\
+sampleDensity0  &  2 \\
+sampleDensity1  &  2 \\
+dataValue  &  TimeAbsolute   \\
+ & {\it  Solid} \\
+ & {\it  SeedPointID} \\
+ & {\it  Speed} \\
+ & {\it  Vorticity} \\
+ & {\it  ArcLength} \\
+ & {\it  TimeAbsolute} \\
+ & {\it  TimeRelative} \\
+ & {\it  AverageDistanceFromSeed} \\
+ & {\it  CorrelationDistance} \\
+ & {\it  Difference} \\
+ & {\it  Variable} \\
+dataVariable  &  "" \\
+integrationDirection  &  Forward   \\
+ & {\it  Forward} \\
+ & {\it  Backward} \\
+ & {\it  Both} \\
+ & {\it  ForwardDirectionless} \\
+ & {\it  BackwardDirectionless} \\
+ & {\it  BothDirectionless} \\
+maxSteps  &  1000 \\
+terminateByDistance  &  0 \\
+termDistance  &  10 \\
+terminateByTime  &  0 \\
+termTime  &  10 \\
+maxStepLength  &  0.1 \\
+limitMaximumTimestep  &  0 \\
+maxTimeStep  &  0.1 \\
+relTol  &  0.0001 \\
+absTolSizeType  &  FractionOfBBox   \\
+ & {\it  Absolute} \\
+ & {\it  FractionOfBBox} \\
+absTolAbsolute  &  1e$-$06 \\
+absTolBBox  &  1e$-$06 \\
+fieldType  &  Default   \\
+ & {\it  Default} \\
+ & {\it  FlashField} \\
+ & {\it  M3DC12DField} \\
+ & {\it  M3DC13DField} \\
+ & {\it  Nek5000Field} \\
+ & {\it  NektarPPField} \\
+ & {\it  NIMRODField} \\
+fieldConstant  &  1 \\
+velocitySource  &  (0, 0, 0) \\
+integrationType  &  DormandPrince   \\
+ & {\it  Euler} \\
+ & {\it  Leapfrog} \\
+ & {\it  DormandPrince} \\
+ & {\it  AdamsBashforth} \\
+ & {\it  RK4} \\
+ & {\it  M3DC12DIntegrator} \\
+parallelizationAlgorithmType  &  VisItSelects   \\
+ & {\it  LoadOnDemand} \\
+ & {\it  ParallelStaticDomains} \\
+ & {\it  MasterSlave} \\
+ & {\it  VisItSelects} \\
+maxProcessCount  &  10 \\
+maxDomainCacheSize  &  3 \\
+workGroupSize  &  32 \\
+pathlines  &  0 \\
+pathlinesOverrideStartingTimeFlag  &  0 \\
+pathlinesOverrideStartingTime  &  0 \\
+pathlinesPeriod  &  0 \\
+pathlinesCMFE  &  POS\_CMFE   \\
+ & {\it  CONN\_CMFE} \\
+ & {\it  POS\_CMFE} \\
+sampleDistance0  &  10 \\
+sampleDistance1  &  10 \\
+sampleDistance2  &  10 \\
+fillInterior  &  1 \\
+randomSamples  &  0 \\
+randomSeed  &  0 \\
+numberOfRandomSamples  &  1 \\
+forceNodeCenteredData  &  0 \\
+cycleTolerance  &  1e$-$06 \\
+maxIterations  &  10 \\
+showPartialResults  &  1 \\
+showReturnDistances  &  0 \\
+issueAdvectionWarnings  &  1 \\
+issueBoundaryWarnings  &  1 \\
+issueTerminationWarnings  &  1 \\
+issueStepsizeWarnings  &  1 \\
+issueStiffnessWarnings  &  1 \\
+issueCriticalPointsWarnings  &  1 \\
+criticalPointThreshold  &  0.001 \\
+correlationDistanceAngTol  &  5 \\
+correlationDistanceMinDistAbsolute  &  1 \\
+correlationDistanceMinDistBBox  &  0.005 \\
+correlationDistanceMinDistType  &  FractionOfBBox   \\
+ & {\it  Absolute} \\
+ & {\it  FractionOfBBox} \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
 \addcontentsline{toc}{subsection}{Lineout}
 \noindent {\bf Lineout}: {\it LineoutAttributes() }\\[-3mm]
 
@@ -10986,8 +11784,6 @@ lineStyle  &  SOLID   \\
  & {\it  DOTDASH} \\
 lineWidth  &  0 \\
 meshColor  &  (0, 0, 0, 255) \\
-outlineOnlyFlag  &  0 \\
-errorTolerance  &  0.01 \\
 meshColorSource  &  Foreground   \\
  & {\it  Foreground} \\
  & {\it  MeshCustom} \\
@@ -11010,6 +11806,9 @@ pointType  &  Point   \\
  & {\it  Box} \\
  & {\it  Axis} \\
  & {\it  Icosahedron} \\
+ & {\it  Octahedron} \\
+ & {\it  Tetrahedron} \\
+ & {\it  SphereGeometry} \\
  & {\it  Point} \\
  & {\it  Sphere} \\
 showInternal  &  0 \\
@@ -11086,7 +11885,7 @@ colorBonds  &  ColorByAtom   \\
  & {\it  ColorByAtom} \\
  & {\it  SingleColor} \\
 bondSingleColor  &  (128, 128, 128, 255) \\
-radiusVariable  &  "Default" \\
+radiusVariable  &  "default" \\
 radiusScaleFactor  &  1 \\
 radiusFixed  &  0.3 \\
 atomSphereQuality  &  Medium   \\
@@ -11203,7 +12002,7 @@ defaultPalette.smoothing  &  defaultPalette.None   \\
  & {\it  CubicSpline} \\
 defaultPalette.equalSpacingFlag  &  1 \\
 defaultPalette.discreteFlag  &  1 \\
-defaultPalette.externalFlag  &  0 \\
+defaultPalette.categoryName  &  "Standard" \\
 changedColors  &  () \\
 colorType  &  ColorByMultipleColors   \\
  & {\it  ColorBySingleColor} \\
@@ -11235,6 +12034,8 @@ yAxisTitleFormat  &  "\%g" \\
 useYAxisTickSpacing  &  0 \\
 yAxisTickSpacing  &  1 \\
 displayMarkers  &  1 \\
+markerScale  &  1 \\
+markerLineWidth  &  0 \\
 markerVariable  &  "default" \\
 displayIds  &  0 \\
 idVariable  &  "default" \\
@@ -11298,6 +12099,7 @@ requestedLayer  &  0 \\
 seedType  &  SeedCell   \\
  & {\it  SeedCell} \\
  & {\it  SeedNode} \\
+honorOriginalMesh  &  1 \\
 \end{longtable}
 
 \newpage
@@ -11403,6 +12205,13 @@ opacityType  &  Explicit   \\
 opacity  &  1 \\
 minPunctures  &  50 \\
 maxPunctures  &  500 \\
+puncturePlotType  &  Single   \\
+ & {\it  Single} \\
+ & {\it  Double} \\
+maxSteps  &  1000 \\
+terminateByTime  &  0 \\
+termTime  &  10 \\
+puncturePeriodTolerance  &  0.01 \\
 puncturePlane  &  Poloidal   \\
  & {\it  Poloidal} \\
  & {\it  Toroidal} \\
@@ -11416,10 +12225,13 @@ lineEnd  &  (1, 0, 0) \\
 pointDensity  &  1 \\
 fieldType  &  Default   \\
  & {\it  Default} \\
+ & {\it  FlashField} \\
  & {\it  M3DC12DField} \\
  & {\it  M3DC13DField} \\
+ & {\it  Nek5000Field} \\
+ & {\it  NektarPPField} \\
  & {\it  NIMRODField} \\
- & {\it  FlashField} \\
+forceNodeCenteredData  &  0 \\
 fieldConstant  &  1 \\
 velocitySource  &  (0, 0, 0) \\
 integrationType  &  AdamsBashforth   \\
@@ -11427,7 +12239,7 @@ integrationType  &  AdamsBashforth   \\
  & {\it  Leapfrog} \\
  & {\it  DormandPrince} \\
  & {\it  AdamsBashforth} \\
- & {\it  Reserved\_4} \\
+ & {\it  RK4} \\
  & {\it  M3DC12DIntegrator} \\
 coordinateSystem  &  Cartesian   \\
  & {\it  Cartesian} \\
@@ -11484,43 +12296,42 @@ dataValue  &  SafetyFactorQ   \\
  & {\it  WindingGroupOrder} \\
  & {\it  WindingPointOrder} \\
  & {\it  WindingPointOrderModulo} \\
+showRationalSurfaces  &  0 \\
+RationalSurfaceMaxIterations  &  2 \\
 showOPoints  &  0 \\
 OPointMaxIterations  &  2 \\
 showXPoints  &  0 \\
 XPointMaxIterations  &  2 \\
 performOLineAnalysis  &  0 \\
-OLineToroidalWinding  &  0 \\
+OLineToroidalWinding  &  1 \\
 OLineAxisFileName  &  "" \\
 showChaotic  &  0 \\
 showIslands  &  0 \\
-verboseFlag  &  1 \\
+SummaryFlag  &  1 \\
+verboseFlag  &  0 \\
 show1DPlots  &  0 \\
 showLines  &  1 \\
-lineWidth  &  0 \\
-lineStyle  &  SOLID   \\
- & {\it  SOLID} \\
- & {\it  DASH} \\
- & {\it  DOT} \\
- & {\it  DOTDASH} \\
 showPoints  &  0 \\
-pointSize  &  1 \\
-pointSizePixels  &  1 \\
-pointType  &  Point   \\
- & {\it  Box} \\
- & {\it  Axis} \\
- & {\it  Icosahedron} \\
- & {\it  Point} \\
- & {\it  Sphere} \\
-legendFlag  &  1 \\
-lightingFlag  &  1 \\
-streamlineAlgorithmType  &  LoadOnDemand   \\
+parallelizationAlgorithmType  &  VisItSelects   \\
  & {\it  LoadOnDemand} \\
  & {\it  ParallelStaticDomains} \\
  & {\it  MasterSlave} \\
-maxStreamlineProcessCount  &  10 \\
+ & {\it  VisItSelects} \\
+maxProcessCount  &  10 \\
 maxDomainCacheSize  &  3 \\
 workGroupSize  &  32 \\
-forceNodeCenteredData  &  0 \\
+pathlines  &  0 \\
+pathlinesOverrideStartingTimeFlag  &  0 \\
+pathlinesOverrideStartingTime  &  0 \\
+pathlinesPeriod  &  0 \\
+pathlinesCMFE  &  POS\_CMFE   \\
+ & {\it  CONN\_CMFE} \\
+ & {\it  POS\_CMFE} \\
+issueTerminationWarnings  &  1 \\
+issueStepsizeWarnings  &  1 \\
+issueStiffnessWarnings  &  1 \\
+issueCriticalPointsWarnings  &  1 \\
+criticalPointThreshold  &  0.001 \\
 \end{longtable}
 
 \newpage
@@ -11579,6 +12390,7 @@ pids  &  () \\
 ppids  &  () \\
 hosts  &  () \\
 isParallel  &  0 \\
+memory  &  () \\
 \end{longtable}
 
 \newpage
@@ -11635,47 +12447,121 @@ vectorTransformMethod  &  AsDirection   \\
 \hline
 \endlastfoot
 
-legendFlag  &  1 \\
-lightingFlag  &  1 \\
-minFlag  &  0 \\
-maxFlag  &  0 \\
-centering  &  Natural   \\
- & {\it  Natural} \\
- & {\it  Nodal} \\
- & {\it  Zonal} \\
 scaling  &  Linear   \\
  & {\it  Linear} \\
  & {\it  Log} \\
  & {\it  Skew} \\
+skewFactor  &  1 \\
 limitsMode  &  OriginalData   \\
  & {\it  OriginalData} \\
  & {\it  CurrentPlot} \\
+minFlag  &  0 \\
 min  &  0 \\
+maxFlag  &  0 \\
 max  &  1 \\
+centering  &  Natural   \\
+ & {\it  Natural} \\
+ & {\it  Nodal} \\
+ & {\it  Zonal} \\
+colorTableName  &  "hot" \\
+invertColorTable  &  0 \\
+opacityType  &  FullyOpaque   \\
+ & {\it  ColorTable} \\
+ & {\it  FullyOpaque} \\
+ & {\it  Constant} \\
+ & {\it  Ramp} \\
+ & {\it  VariableRange} \\
+opacityVariable  &  "" \\
+opacity  &  1 \\
+opacityVarMin  &  0 \\
+opacityVarMax  &  1 \\
+opacityVarMinFlag  &  0 \\
+opacityVarMaxFlag  &  0 \\
 pointSize  &  0.05 \\
 pointType  &  Point   \\
  & {\it  Box} \\
  & {\it  Axis} \\
  & {\it  Icosahedron} \\
+ & {\it  Octahedron} \\
+ & {\it  Tetrahedron} \\
+ & {\it  SphereGeometry} \\
  & {\it  Point} \\
  & {\it  Sphere} \\
-skewFactor  &  1 \\
-opacity  &  1 \\
-colorTableName  &  "hot" \\
-invertColorTable  &  0 \\
-smoothingLevel  &  0 \\
 pointSizeVarEnabled  &  0 \\
 pointSizeVar  &  "default" \\
 pointSizePixels  &  2 \\
+lineType  &  Line   \\
+ & {\it  Line} \\
+ & {\it  Tube} \\
+ & {\it  Ribbon} \\
 lineStyle  &  SOLID   \\
  & {\it  SOLID} \\
  & {\it  DASH} \\
  & {\it  DOT} \\
  & {\it  DOTDASH} \\
 lineWidth  &  0 \\
-opacityType  &  Explicit   \\
- & {\it  Explicit} \\
- & {\it  ColorTable} \\
+tubeDisplayDensity  &  10 \\
+tubeRadiusSizeType  &  FractionOfBBox   \\
+ & {\it  Absolute} \\
+ & {\it  FractionOfBBox} \\
+tubeRadiusAbsolute  &  0.125 \\
+tubeRadiusBBox  &  0.005 \\
+varyTubeRadius  &  0 \\
+varyTubeRadiusVariable  &  "" \\
+varyTubeRadiusFactor  &  10 \\
+endPointType  &  None   \\
+ & {\it  None} \\
+ & {\it  Tails} \\
+ & {\it  Heads} \\
+ & {\it  Both} \\
+endPointStyle  &  Spheres   \\
+ & {\it  Spheres} \\
+ & {\it  Cones} \\
+endPointRadiusSizeType  &  FractionOfBBox   \\
+ & {\it  Absolute} \\
+ & {\it  FractionOfBBox} \\
+endPointRadiusAbsolute  &  1 \\
+endPointRadiusBBox  &  0.005 \\
+endPointRatio  &  2 \\
+renderSurfaces  &  1 \\
+renderWireframe  &  0 \\
+renderPoints  &  0 \\
+smoothingLevel  &  0 \\
+legendFlag  &  1 \\
+lightingFlag  &  1 \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{RadialResample}
+\noindent {\bf RadialResample}: {\it RadialResampleAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... RadialResample attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+isFast  &  0 \\
+minTheta  &  0 \\
+maxTheta  &  90 \\
+deltaTheta  &  5 \\
+radius  &  0.5 \\
+deltaRadius  &  0.05 \\
+center  &  (0.5, 0.5, 0.5) \\
+is3D  &  1 \\
+minAzimuth  &  0 \\
+maxAzimuth  &  180 \\
+deltaAzimuth  &  5 \\
 \end{longtable}
 
 \newpage
@@ -11890,6 +12776,41 @@ steps  &  30 \\
 \newpage
 
 \phantomsection
+\addcontentsline{toc}{subsection}{SPHResample}
+\noindent {\bf SPHResample}: {\it SPHResampleAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... SPHResample attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+minX  &  0 \\
+maxX  &  1 \\
+xnum  &  10 \\
+minY  &  0 \\
+maxY  &  1 \\
+ynum  &  10 \\
+minZ  &  0 \\
+maxZ  &  1 \\
+znum  &  10 \\
+tensorSupportVariable  &  "H" \\
+weightVariable  &  "mass" \\
+RK  &  1 \\
+memScale  &  0 \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
 \addcontentsline{toc}{subsection}{SaveWindow}
 \noindent {\bf SaveWindow}: {\it SaveWindowAttributes() }\\[-3mm]
 
@@ -12037,6 +12958,9 @@ pointType  &  Point   \\
  & {\it  Box} \\
  & {\it  Axis} \\
  & {\it  Icosahedron} \\
+ & {\it  Octahedron} \\
+ & {\it  Tetrahedron} \\
+ & {\it  SphereGeometry} \\
  & {\it  Point} \\
  & {\it  Sphere} \\
 scaleCube  &  1 \\
@@ -12219,6 +13143,51 @@ offsetZ  &  0 \\
 \newpage
 
 \phantomsection
+\addcontentsline{toc}{subsection}{StatisticalTrends}
+\noindent {\bf StatisticalTrends}: {\it StatisticalTrendsAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... StatisticalTrends attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+startIndex  &  0 \\
+stopIndex  &  1 \\
+stride  &  1 \\
+startTrendType  &  Absolute   \\
+ & {\it  Absolute} \\
+ & {\it  Relative} \\
+stopTrendType  &  Absolute   \\
+ & {\it  Absolute} \\
+ & {\it  Relative} \\
+statisticType  &  Mean   \\
+ & {\it  Sum} \\
+ & {\it  Mean} \\
+ & {\it  Variance} \\
+ & {\it  StandardDeviation} \\
+ & {\it  Slope} \\
+ & {\it  Residuals} \\
+trendAxis  &  Step   \\
+ & {\it  Step} \\
+ & {\it  Time} \\
+ & {\it  Cycle} \\
+variableSource  &  Default   \\
+ & {\it  Default} \\
+ & {\it  OperatorExpression} \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
 \addcontentsline{toc}{subsection}{Streamline}
 \noindent {\bf Streamline}: {\it StreamlineAttributes() }\\[-3mm]
 
@@ -12268,11 +13237,12 @@ coloringMethod  &  ColorByTime   \\
  & {\it  ColorBySeedPointID} \\
  & {\it  ColorByVariable} \\
  & {\it  ColorByCorrelationDistance} \\
+ & {\it  ColorByNumberDomainsVisited} \\
 colorTableName  &  "Default" \\
 singleColor  &  (0, 0, 0, 255) \\
 legendFlag  &  1 \\
 lightingFlag  &  1 \\
-streamlineDirection  &  Forward   \\
+integrationDirection  &  Forward   \\
  & {\it  Forward} \\
  & {\it  Backward} \\
  & {\it  Both} \\
@@ -12292,10 +13262,11 @@ absTolAbsolute  &  1e$-$06 \\
 absTolBBox  &  1e$-$06 \\
 fieldType  &  Default   \\
  & {\it  Default} \\
+ & {\it  FlashField} \\
  & {\it  M3DC12DField} \\
  & {\it  M3DC13DField} \\
+ & {\it  Nek5000Field} \\
  & {\it  NIMRODField} \\
- & {\it  FlashField} \\
 fieldConstant  &  1 \\
 velocitySource  &  (0, 0, 0) \\
 integrationType  &  DormandPrince   \\
@@ -12305,17 +13276,18 @@ integrationType  &  DormandPrince   \\
  & {\it  AdamsBashforth} \\
  & {\it  RK4} \\
  & {\it  M3DC12DIntegrator} \\
-streamlineAlgorithmType  &  VisItSelects   \\
+parallelizationAlgorithmType  &  VisItSelects   \\
  & {\it  LoadOnDemand} \\
  & {\it  ParallelStaticDomains} \\
  & {\it  MasterSlave} \\
  & {\it  VisItSelects} \\
-maxStreamlineProcessCount  &  10 \\
+maxProcessCount  &  10 \\
 maxDomainCacheSize  &  3 \\
 workGroupSize  &  32 \\
 pathlines  &  0 \\
 pathlinesOverrideStartingTimeFlag  &  0 \\
 pathlinesOverrideStartingTime  &  0 \\
+pathlinesPeriod  &  0 \\
 pathlinesCMFE  &  POS\_CMFE   \\
  & {\it  CONN\_CMFE} \\
  & {\it  POS\_CMFE} \\
@@ -12464,6 +13436,9 @@ pointType  &  Point   \\
  & {\it  Box} \\
  & {\it  Axis} \\
  & {\it  Icosahedron} \\
+ & {\it  Octahedron} \\
+ & {\it  Tetrahedron} \\
+ & {\it  SphereGeometry} \\
  & {\it  Point} \\
  & {\it  Sphere} \\
 pointSizeVarEnabled  &  0 \\
@@ -12632,6 +13607,7 @@ outputCoordSys  &  Spherical   \\
  & {\it  Cartesian} \\
  & {\it  Cylindrical} \\
  & {\it  Spherical} \\
+continuousPhi  &  0 \\
 m00  &  1 \\
 m01  &  0 \\
 m02  &  0 \\
@@ -12791,7 +13767,9 @@ limitsMode  &  OriginalData   \\
  & {\it  CurrentPlot} \\
 min  &  0 \\
 max  &  1 \\
-lineStem  &  1 \\
+lineStem  &  Line   \\
+ & {\it  Cylinder} \\
+ & {\it  Line} \\
 geometryQuality  &  Fast   \\
  & {\it  Fast} \\
  & {\it  High} \\
@@ -12910,6 +13888,7 @@ centerOfRotation  &  (0, 0, 0) \\
 axis3DScaleFlag  &  0 \\
 axis3DScales  &  (1, 1, 1) \\
 shear  &  (0, 0, 1) \\
+windowValid  &  0 \\
 \end{longtable}
 
 \newpage
@@ -13006,7 +13985,7 @@ colorControlPoints.smoothing  &  colorControlPoints.Linear   \\
  & {\it  CubicSpline} \\
 colorControlPoints.equalSpacingFlag  &  0 \\
 colorControlPoints.discreteFlag  &  0 \\
-colorControlPoints.externalFlag  &  0 \\
+colorControlPoints.categoryName  &  "" \\
 opacityAttenuation  &  1 \\
 opacityMode  &  FreeformMode   \\
  & {\it  FreeformMode} \\
@@ -13034,6 +14013,7 @@ rendererType  &  Splatting   \\
  & {\it  RayCasting} \\
  & {\it  RayCastingIntegration} \\
  & {\it  SLIVR} \\
+ & {\it  RayCastingSLIVR} \\
  & {\it  Tuvok} \\
 gradientType  &  SobelOperator   \\
  & {\it  CenteredDifferences} \\
@@ -13050,6 +14030,7 @@ limitsMode  &  OriginalData   \\
 sampling  &  Rasterization   \\
  & {\it  KernelBased} \\
  & {\it  Rasterization} \\
+ & {\it  Trilinear} \\
 rendererSamples  &  3 \\
  & {\it transferFunction2DWidgets does not contain any TransferFunctionWidget objects.} \\
 transferFunctionDim  &  1 \\
@@ -13064,6 +14045,7 @@ lowGradientLightingReduction  &  Lower   \\
  & {\it  Highest} \\
 lowGradientLightingClampFlag  &  0 \\
 lowGradientLightingClampValue  &  1 \\
+materialProperties  &  (0.4, 0.75, 0, 15) \\
 \end{longtable}
 
 \newpage
@@ -13084,8 +14066,10 @@ lowGradientLightingClampValue  &  1 \\
 \hline
 \endlastfoot
 
+AMRStitchCellAttributes & 1 \\
 ActivateDatabaseRPC & 1 \\
 AddAnnotationObjectRPC & 2 \\
+AddEmbeddedPlotRPC & 1 \\
 AddInitializedOperatorRPC & 1 \\
 AddOperatorRPC & 2 \\
 AddPlotRPC & 2 \\
@@ -13101,6 +14085,7 @@ ApplyNamedSelectionRPC & 1 \\
 BoundaryAttributes & 1 \\
 BoundaryOpAttributes & 1 \\
 BoxAttributes & 1 \\
+CartographicProjectionAttributes & 1 \\
 ChangeActivePlotsVarRPC & 1 \\
 CheckForNewStatesRPC & 1 \\
 ChooseCenterOfRotationRPC & 2 \\
@@ -13134,6 +14119,8 @@ CreateDatabaseCorrelationRPC & 4 \\
 CreateNamedSelectionRPC & 1 \\
 CurveAttributes & 1 \\
 CylinderAttributes & 1 \\
+DDTConnectRPC & 1 \\
+DDTFocusRPC & 1 \\
 DataBinningAttributes & 1 \\
 DatabaseMetaData & 1 \\
 DeIconifyAllWindowsRPC & 0 \\
@@ -13154,17 +14141,18 @@ DrawPlotsRPC & 1 \\
 DualMeshAttributes & 1 \\
 EdgeAttributes & 1 \\
 ElevateAttributes & 1 \\
+EllipsoidSliceAttributes & 1 \\
 EnableToolRPC & 2 \\
 EnableToolbarRPC & 2 \\
 ExportColorTableRPC & 1 \\
 ExportDBAttributes & 1 \\
 ExportDBRPC & 0 \\
 ExportEntireStateRPC & 1 \\
+ExportRPC & 1 \\
 ExpressionList & 1 \\
 ExternalSurfaceAttributes & 1 \\
 ExtrudeAttributes & 1 \\
 FFTAttributes & 1 \\
-FTLEAttributes & 1 \\
 FileOpenOptions & 1 \\
 FilledBoundaryAttributes & 1 \\
 FluxAttributes & 1 \\
@@ -13183,14 +14171,17 @@ ImportEntireStateRPC & 2 \\
 ImportEntireStateWithDifferentSourcesRPC & 3 \\
 IndexSelectAttributes & 1 \\
 InitializeNamedSelectionVariablesRPC & 1 \\
+IntegralCurveAttributes & 1 \\
 InteractorAttributes & 1 \\
 InverseGhostZoneAttributes & 1 \\
 InvertBackgroundRPC & 0 \\
 IsosurfaceAttributes & 1 \\
 IsovolumeAttributes & 1 \\
 KeyframeAttributes & 1 \\
+LCSAttributes & 1 \\
 LabelAttributes & 1 \\
 LagrangianAttributes & 1 \\
+LimitCycleAttributes & 1 \\
 LineoutAttributes & 1 \\
 LoadNamedSelectionRPC & 1 \\
 LowerActiveAnnotationObjectsRPC & 0 \\
@@ -13220,6 +14211,7 @@ OverlayDatabaseRPC & 1 \\
 ParallelCoordinatesAttributes & 1 \\
 PersistentParticlesAttributes & 1 \\
 PickAttributes & 1 \\
+PlotDDTVispointVariablesRPC & 1 \\
 PlotList & 1 \\
 PoincareAttributes & 1 \\
 PrintWindowRPC & 0 \\
@@ -13232,12 +14224,15 @@ PseudocolorAttributes & 1 \\
 QueryAttributes & 1 \\
 QueryOverTimeAttributes & 1 \\
 QueryRPC & 1 \\
+RadialResampleAttributes & 1 \\
 RaiseActiveAnnotationObjectsRPC & 0 \\
 ReOpenDatabaseRPC & 2 \\
+ReadHostProfilesFromDirectoryRPC & 1 \\
 RecenterViewRPC & 0 \\
 RedoViewRPC & 0 \\
 RedrawRPC & 0 \\
 ReflectAttributes & 1 \\
+ReleaseToDDTRPC & 1 \\
 RemoveAllOperatorsRPC & 0 \\
 RemoveLastOperatorRPC & 0 \\
 RemoveOperatorRPC & 1 \\
@@ -13262,6 +14257,7 @@ ResetQueryOverTimeAttributesRPC & 0 \\
 ResetViewRPC & 0 \\
 ResizeWindowRPC & 3 \\
 RevolveAttributes & 1 \\
+SPHResampleAttributes & 1 \\
 SaveNamedSelectionRPC & 1 \\
 SaveViewRPC & 0 \\
 SaveWindowAttributes & 1 \\
@@ -13275,6 +14271,7 @@ SetAnimationAttributesRPC & 0 \\
 SetAnnotationAttributesRPC & 0 \\
 SetAnnotationObjectOptionsRPC & 0 \\
 SetAppearanceRPC & 0 \\
+SetBackendTypeRPC & 1 \\
 SetCenterOfRotationRPC & 1 \\
 SetCreateMeshQualityExpressionsRPC & 1 \\
 SetCreateTimeDerivativeExpressionsRPC & 1 \\
@@ -13307,8 +14304,10 @@ SetPlotOptionsRPC & 1 \\
 SetPlotOrderToFirstRPC & 1 \\
 SetPlotOrderToLastRPC & 1 \\
 SetPlotSILRestrictionRPC & 0 \\
+SetPrecisionTypeRPC & 1 \\
 SetQueryFloatFormatRPC & 1 \\
 SetQueryOverTimeAttributesRPC & 0 \\
+SetRemoveDuplicateNodesRPC & 1 \\
 SetRenderingAttributesRPC & 0 \\
 SetStateLoggingRPC & 0 \\
 SetSuppressMessagesRPC & 1 \\
@@ -13334,6 +14333,7 @@ SmoothOperatorAttributes & 1 \\
 SphereSliceAttributes & 1 \\
 SpreadsheetAttributes & 1 \\
 StaggerAttributes & 1 \\
+StatisticalTrendsAttributes & 1 \\
 StreamlineAttributes & 1 \\
 SubsetAttributes & 1 \\
 SuppressQueryOutputRPC & 1 \\
