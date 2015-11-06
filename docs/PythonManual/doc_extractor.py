@@ -42,9 +42,18 @@
 #  Jakob van Bethlehem, Nov 2010, May 2011
 #
 #  Modifications:
-#
 #   Hank Childs, Wed Sep 12 07:00:44 PDT 2012
-#   Updated for changes since V2.5.  Primary change is that all functions are available before Launch.
+#   Updated for changes since V2.5. Primary change is that all functions are
+#   available before Launch.
+#
+#   Eric Brugger, Fri Nov  6 08:55:50 PST 2015
+#   I changed a reference of "Version()" to "visit.Version()" so that it
+#   would execute. I modified it so that it prints out a warning message
+#   when it encounters a function without a short description instead of
+#   crashing. I modified it to ignore the functions string and sys. I
+#   modified it to no longer output warnings when it encounters "namedarg1"
+#   and "namedarg2". I modified the script to point a private installation
+#   of visit 2.10 with updated documentation.
 #
 
 # debugging needed?
@@ -143,8 +152,9 @@ def finish_block(block, func_args, funcname):
 
   if block == 'Arguments':
     for k in func_args.keys():
-      if not func_args[k]: # check the arguments:
-        print >> sys.stderr, "** Warning: argument",k,"of function",funcname,"was not documented."
+      if k != "namedarg1" and k != "namedarg2":
+        if not func_args[k]: # check the arguments:
+          print >> sys.stderr, "** Warning: argument",k,"of function",funcname,"was not documented."
     #
     return
   #
@@ -457,14 +467,17 @@ def print_file_list(funclist):
     # The first line should hold the short description - do away with silly "s and -s and
     # print a header for the new function:
     short = fulldoc[1]
-    if short[0]=='"':
-      print >> sys.stderr, "Got \" for ",func
-      short = short[1:]
-    if short[-1]=='"':
-      print >> sys.stderr, "Got \" for ",func
-      short = short[:-2]
-    #
-    print >> output_fh, func_header(func, short[1:]) # don't print the ugly '-'
+    if len(short):
+      if short[0]=='"':
+        print >> sys.stderr, "Got \" for ",func
+        short = short[1:]
+      if short[-1]=='"':
+        print >> sys.stderr, "Got \" for ",func
+        short = short[:-2]
+      #
+      print >> output_fh, func_header(func, short[1:]) # don't print the ugly '-'
+    else:
+      print >> sys.stderr, "** Warning: missing short description  for '" + func + "'"
 
     # We will try to extract function arguments as well as we can, in order
     # to compare against the list given in the documentation:
@@ -762,7 +775,7 @@ system_funcs.extend(['system_funcs', 'func'])
 ### SET UP SCRIPT SO IT CAN RUN ON YOUR MACHINE.  THIS WILL CHANGE FROM PLATFORM TO PLATFORM
 ### AND RELEASE TO RELEASE
 ###
-sys.path.insert(0, "Applications/VisIt.app/Contents/Resources/2.5.2/darwin-i386/lib/site-packages")
+sys.path.insert(0, "/scratch/brugger1/kickit/visit/2.10.0/linux-x86_64/lib/site-packages")
 
 #from visit import *
 import visit
@@ -770,13 +783,17 @@ visit.AddArgument("-nowin")
 visit.AddArgument("-noconfig")
 # next Launch() VisIt in order to extract other functions:
 visit.Launch()
-print >> sys.stderr, "**\n**  Running VisIt", Version(), "\n**"
+print >> sys.stderr, "**\n**  Running VisIt", visit.Version(), "\n**"
 
 for func in dir(visit):
   # Deprecated
   if (func == "ConstructDDFAttributes"):
      continue
   if (func == "ConstructDDF"):
+     continue
+  if (func == "string"):
+     continue
+  if (func == "sys"):
      continue
   if (func[:2] == "__"):  # __doc__, __file__, etc.
      continue
