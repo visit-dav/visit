@@ -150,7 +150,7 @@ visit.AddArgument("-nowin") # Add the -nowin argument to the viewer.
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!operator! & This is a string containing the name of the operator to be applied. \\
-\verb!all! & This is an optional integer argument that applies the operator to allplots if the value of the argument is not zero. \\
+\verb!all! & This is an optional integer argument that applies the operator to all plots if the value of the argument is not zero. \\
 \end{tabular} \\[-2mm]
 
 
@@ -187,8 +187,8 @@ DrawPlots()
 \begin{tabular}{lp{9cm}}
 \verb!plotType! & This is a string containing the name of a valid plot plugin type. \\
 \verb!variableName ! & This is a string containing a valid variable name for the open database. \\
-\verb!inheritSIL! & This is an integer flag indicating whether the plot should inherit theactive plot's SIL restriction. \\
-\verb!applyOperators! & This is an integer flag indicating whether the operators from the activeplot should be applied to the new plot. \\
+\verb!inheritSIL! & This is an integer flag indicating whether the plot should inherit the active plot's SIL restriction. \\
+\verb!applyOperators! & This is an integer flag indicating whether the operators from the active plot should be applied to the new plot. \\
 \end{tabular} \\[-2mm]
 
 
@@ -241,8 +241,8 @@ visit.AddWindow() # Create window #3
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!name! & The name argument must be a string object containing the name of thedatabase correlation to be altered. \\
-\verb!databases! & The databases argument must be a tuple or list of strings containing thefully qualified database names to be used in the database correlation. \\
+\verb!name! & The name argument must be a string object containing the name of the database correlation to be altered. \\
+\verb!databases! & The databases argument must be a tuple or list of strings containing the fully qualified database names to be used in the database correlation. \\
 \verb!method! & The method argument must be an integer in the range [0,3]. \\
 \end{tabular} \\[-2mm]
 
@@ -290,7 +290,7 @@ AlterDatabaseCorrelation("Correlation01", dbs, 3)
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!name! & The name of a named selection.  (This should have been previously createdwith a CreateNamedSelection call.) \\
+\verb!name! & The name of a named selection.  (This should have been previously created with a CreateNamedSelection call.) \\
 \end{tabular} \\[-2mm]
 
 
@@ -362,7 +362,7 @@ ChangeActivePlotsVar("v")
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!name! & The name argument must be a string that contains the name of a databasethat has been opened previously. \\
+\verb!name! & The name argument must be a string that contains the name of a database that has been opened previously. \\
 \end{tabular} \\[-2mm]
 
 
@@ -848,7 +848,7 @@ SetPlotOptions(p)
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!i! & An object of type ConstructDataBinningAttributes.  This object specifies the optionsfor constructing a data binning. \\
+\verb!i! & An object of type ConstructDataBinningAttributes. This object specifies the options for constructing a data binning. \\
 \end{tabular} \\[-2mm]
 
 
@@ -856,7 +856,7 @@ SetPlotOptions(p)
 \hangindent=\parindent Returns 1 on success, 0 on failure. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
-\hangindent=\parindent The ConstructDataBinning function creates a data binning function for the active  plot.  Data Binnings place data from a data set into bins and reduce that data.   They are used to either be incorporated with expressions to make new derived quantities  or to be directly visualized. \\[-3mm] 
+\hangindent=\parindent The ConstructDataBinning function creates a data binning function for the active plot. Data Binnings place data from a data set into bins and reduce that data. They are used to either be incorporated with expressions to make new derived quantities or to be directly visualized. \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
 \begin{verbatim}% visit -cli
@@ -1110,8 +1110,8 @@ slider.endColor = (255,255,0,255)
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!name! & String object containing the name of the database correlation to becreated. \\
-\verb!databases! & Tuple or list of string objects containing the names of the databases toinvolve in the database correlation. \\
+\verb!name! & String object containing the name of the database correlation to be created. \\
+\verb!databases! & Tuple or list of string objects containing the names of the databases to involve in the database correlation. \\
 \verb!method! & An integer in the range [0,3] that determines the correlation method. \\
 \end{tabular} \\[-2mm]
 
@@ -1172,7 +1172,7 @@ SetTimeSliderState(i)
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!name! & The name of a named selection. \\
-\verb!properties! & This optional argument lets you pass a SelectionProperties object containingthe properties that will be used to create the named selection. When thisargument is omitted, the named selection will always be associated withthe active plot. You can use this argument to set up more complex namedselections that may be associated with plots or databases. \\
+\verb!properties! & This optional argument lets you pass a SelectionProperties object containing the properties that will be used to create the named selection. When this argument is omitted, the named selection will always be associated with the active plot. You can use this argument to set up more complex named selections that may be associated with plots or databases. \\
 \end{tabular} \\[-2mm]
 
 
@@ -1417,10 +1417,10 @@ DrawPlots()
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!name! & The name of the variable to be created. \\
-\verb!args! & A tuple (or list) of strings providing the variable names of thearguments to the Python Expression. \\
+\verb!args! & A tuple (or list) of strings providing the variable names of the arguments to the Python Expression. \\
 \verb!source! & A string containing the source code for a Python Expression Filter . \\
 \verb!file! & A string containing the path to a Python Expression Filter script file. \\
-\verb!type! & An optional string defining the output type of the expression.Default type: 'scalar'Avalaible types: 'scalar','vector','tensor','array','curve'Note: Use only one of the 'source' or 'file' arguments.If both are used the 'source' argument overrides 'file'. \\
+\verb!type! & An optional string defining the output type of the expression. Default type: 'scalar' Avalaible types: 'scalar','vector','tensor','array','curve' Note: Use only one of the 'source' or 'file' arguments. If both are used the 'source' argument overrides 'file'. \\
 \end{tabular} \\[-2mm]
 
 
@@ -1787,8 +1787,8 @@ CreateNamedSelection("els_above_y")
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!plotIndex! & A zero$-$based integer value corresponding to a plot's index in the plotlist. \\
-\verb!frame! & A zero$-$based integer value corresponding to a database keyframe at aparticular animation frame. \\
+\verb!plotIndex! & A zero$-$based integer value corresponding to a plot's index in the plot list. \\
+\verb!frame! & A zero$-$based integer value corresponding to a database keyframe at a particular animation frame. \\
 \end{tabular} \\[-2mm]
 
 
@@ -1830,8 +1830,8 @@ ListPlots()
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!plotIndex! & A zero$-$based integer value corresponding to a plot's index in the plotlist. \\
-\verb!frame! & A zero$-$based integer value corresponding to a plot keyframe at aparticular animation frame. \\
+\verb!plotIndex! & A zero$-$based integer value corresponding to a plot's index in the plot list. \\
+\verb!frame! & A zero$-$based integer value corresponding to a plot keyframe at a particular animation frame. \\
 \end{tabular} \\[-2mm]
 
 
@@ -1883,7 +1883,7 @@ SetTimeSliderState(10)
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!frame! & A zero$-$based integer value corresponding to a view keyframe at aparticular animation frame. \\
+\verb!frame! & A zero$-$based integer value corresponding to a view keyframe at a particular animation frame. \\
 \end{tabular} \\[-2mm]
 
 
@@ -1959,7 +1959,7 @@ DeleteWindow() # Deletes the new window.
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!opIndex! & A zero$-$based integer corresponding to the operator that should be demoted. \\
-\verb!applyAll! & An integer flag that causes all plots in the plot list to be affected whenit is non$-$zero. \\
+\verb!applyAll! & An integer flag that causes all plots in the plot list to be affected when it is non$-$zero. \\
 \end{tabular} \\[-2mm]
 
 
@@ -2055,7 +2055,7 @@ DrawPlots() # Draw the new pseudocolor plot.
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!toolIndex! & This is an integer that corresponds to an interactive tool. (Plane tool = 0, Line tool = 1, Plane tool = 2, Box tool = 3, Sphere tool = 4, Axis Restriction tool = 5) \\
+\verb!toolIndex! & This is an integer that corresponds to an interactive tool. (Plane tool = 0, Line tool = 1, Plane tool = 2, Box tool = 3,  Sphere tool = 4, Axis Restriction tool = 5) \\
 \verb!activeFlag! & A value of 1 enables the tool while a value of 0 disables the tool. \\
 \end{tabular} \\[-2mm]
 
@@ -2123,8 +2123,8 @@ ExecuteMacro('Setup My Plots')
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!e! & An object of type ExportDBAttributes.  This object specifies the optionsfor exporting the database. \\
-\verb!o (optional)! & A dictionary containing a key/value mapping to set options needed by thedatabase exporter.  The default values can be obtained in the appropriateformat using GetExportOptions('plugin'). \\
+\verb!e! & An object of type ExportDBAttributes.  This object specifies the options for exporting the database. \\
+\verb!o (optional)! & A dictionary containing a key/value mapping to set options needed by the database exporter.  The default values can be obtained in the appropriate format using GetExportOptions('plugin'). \\
 \end{tabular} \\[-2mm]
 
 
@@ -2399,7 +2399,7 @@ names
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!callbackName! & The name of a callback function. This name is a member of the tuple returnedby GetCallbackNames(). \\
+\verb!callbackName! & The name of a callback function. This name is a member of the tuple returned by GetCallbackNames(). \\
 \end{tabular} \\[-2mm]
 
 
@@ -2474,7 +2474,7 @@ print "Number of time states: %d" % GetDatabaseNStates()
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!level! & A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level, which should be used to produce little output while a value of 5 should produce a lot of debug output. \\
+\verb!level! & A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicate whether the output should be buffered. A value of '1' is a low debug level , which should be used to produce little output while a value of 5 should  produce a lot of debug output. \\
 \end{tabular} \\[-2mm]
 
 
@@ -2563,7 +2563,7 @@ TurnDomainsOff(d)
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!flag (optional)! & If flag is a non$-$zero integer then the function returns a tuple of tupleswith information about simulations. \\
+\verb!flag (optional)! & If flag is a non$-$zero integer then the function returns a tuple of tuples with information about simulations. \\
 \end{tabular} \\[-2mm]
 
 
@@ -2600,8 +2600,8 @@ CloseComputeEngine(GetEngineList()[1])
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!engine (optional)! & When engine is passed and it matches one of the computer names returnedfrom GetEngineList() then the EngineProperties object for that engine isreturned. \\
-\verb!sim (optional)! & When both engine and sim arguments are passed, then the EnginePropertiesobject for the simulation is returned. \\
+\verb!engine (optional)! & When engine is passed and it matches one of the computer names returned from GetEngineList() then the EngineProperties object for that engine is returned. \\
+\verb!sim (optional)! & When both engine and sim arguments are passed, then the EngineProperties object for the simulation is returned. \\
 \end{tabular} \\[-2mm]
 
 
@@ -2758,7 +2758,7 @@ print "VisIt Error: %s" % GetLastError()
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!index! & A zero$-$based integer index into the light list. Index can be in the range[0,7]. \\
+\verb!index! & A zero$-$based integer index into the light list. Index can be in the range [0,7]. \\
 \end{tabular} \\[-2mm]
 
 
@@ -3876,7 +3876,7 @@ DrawPlots()
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!allWindows! & An optional integer value that tells VisIt to hide the toolbars for allwindows when it is non$-$zero. \\
+\verb!allWindows! & An optional integer value that tells VisIt to hide the toolbars for all windows when it is non$-$zero. \\
 \end{tabular} \\[-2mm]
 
 
@@ -4063,7 +4063,7 @@ visit.Launch()
 \begin{tabular}{lp{9cm}}
 \verb!start! & A 2 or 3 item tuple containing the coordinates of the starting point. \\
 \verb!end! & A 2 or 3 item tuple containing the coordinates of the end point. \\
-\verb!variables! & A tuple of strings containing the names of the variables for whichlineouts should be created. \\
+\verb!variables! & A tuple of strings containing the names of the variables for which lineouts should be created. \\
 \verb!samples! & An integer value containing the number of sample points along the lineout. \\
 \end{tabular} \\[-2mm]
 
@@ -4176,7 +4176,7 @@ ListPlots()
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!filename! & The name of the XML file to load the attribute from or save the attributeto. \\
+\verb!filename! & The name of the XML file to load the attribute from or save the attribute to. \\
 \verb!object! & The object to load or save. \\
 \end{tabular} \\[-2mm]
 
@@ -4590,15 +4590,15 @@ MoveWindow(1, 100, 100)
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!coord! & A tuple of doubles containing the spatial coordinate (x, y, z). \\
-\verb!x! & An integer containing the screen X location (in pixels) offset from theleft side of the visualization window. \\
-\verb!y! & An integer containing the screen Y location (in pixels) offset from thebottom of the visualization window. \\
-\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
-\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!x! & An integer containing the screen X location (in pixels) offset from the left side of the visualization window. \\
+\verb!y! & An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results. (default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick, 0 (default) $-$$>$ do not do a time pick. \\
 \verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
 \verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
 \verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
-\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
-\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$ used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis or with multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
@@ -4748,8 +4748,8 @@ DrawPlots()
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!databaseName! & A string containing the name of the database to open. \\
-\verb!timeIndex! & This is an optional integer argument indicating the time index at which toopen the database. If it is not specified, a time index of zero is assumed. \\
-\verb!dbPluginIndex! & An optional string containing the name of the plugin to use. Note that thisstring must also include the plugin's version number (with few exceptions,almost all plugins' version numbers are 1.0). Note also that you mustcapitalize the spelling identically to what the plugin'sGeneralPluginInfo::GetName() method returns. For example, "XYZ\_1.0"is the string you would use for the XYZ plugin. \\
+\verb!timeIndex! & This is an optional integer argument indicating the time index at which to open the database. If it is not specified, a time index of zero is assumed. \\
+\verb!dbPluginIndex! & An optional string containing the name of the plugin to use. Note that this string must also include the plugin's version number (with few exceptions, almost all plugins' version numbers are 1.0). Note also that you must capitalize the spelling identically to what the plugin's GeneralPluginInfo::GetName() method returns. For example, "XYZ\_1.0" is the string you would use for the XYZ plugin. \\
 \end{tabular} \\[-2mm]
 
 
@@ -4784,7 +4784,7 @@ OpenDatabase("mcr:/usr/gapps/visit/data/multi_ucd3d.silo",0,"Silo_1.0")
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!host! & The optional host argument determines the host on which the metadataserver is to be launched. If this argument is not provided, "localhost"is assumed. \\
+\verb!host! & The optional host argument determines the host on which the metadata server is to be launched. If this argument is not provided, "localhost" is assumed. \\
 \verb!args! & A tuple of strings containing command line flags for the metadata server. \\
 \verb!Alternative arguments:! & MachineProfile object to load with OpenMDServer call \\
 \end{tabular} \\[-2mm]
@@ -4800,10 +4800,10 @@ OpenDatabase("mcr:/usr/gapps/visit/data/multi_ucd3d.silo",0,"Silo_1.0")
 \hline
 \verb!Argument! & Description \\
 \hline \hline
-\verb!-debug #! & The $-$debug argument allows you to specify a debug level in therange [1,5] that VisIt uses to write debug logs to disk. \\
-\verb!-dir visitdir! & The $-$dir argument allows you to specify where VisIt islocated on a remote computer. This allows you to successfully connect to a remote computer in the absence of host profiles. It also allows you to debug VisIt in distributed mode. \\
-\verb!-fallback_format <format>! & The $-$fallback\_format argument allows you to specify thedatabase plugin that will be used to open files if allother guessing failed. This is useful when the filesthat you want to open do not have file extensions. \\
-\verb!-assume_format <format>! & The $-$assume\_format argument allows you to specify thedatabase plugin that will be used FIRST when attemptingto open files. This is useful when the files that you want to open have a file extension which may matchmultiple file format readers. \\
+\verb!-debug #! & The $-$debug argument allows you to specify a debug level in the range [1,5] that VisIt uses to write debug logs to disk. \\
+\verb!-dir visitdir! & The $-$dir argument allows you to specify where VisIt is located on a remote computer. This allows you to successfully  connect to a remote computer in the absence of host profiles.  It also allows you to debug VisIt in distributed mode. \\
+\verb!-fallback_format <format>! & The $-$fallback\_format argument allows you to specify the database plugin that will be used to open files if all other guessing failed. This is useful when the files that you want to open do not have file extensions. \\
+\verb!-assume_format <format>! & The $-$assume\_format argument allows you to specify the database plugin that will be used FIRST when attempting to open files. This is useful when the files that you  want to open have a file extension which may match multiple file format readers. \\
 \hline
 \end{tabular} \\[-2mm]
 \\[-3mm] 
@@ -4892,15 +4892,15 @@ OverlayDatabase("riptide:/usr/gapps/visit/data/curv3d.silo")
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!coord! & A tuple of doubles containing the spatial coordinate (x, y, z). \\
-\verb!x! & An integer containing the screen X location (in pixels) offset from theleft side of the visualization window. \\
-\verb!y! & An integer containing the screen Y location (in pixels) offset from thebottom of the visualization window. \\
-\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
-\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!x! & An integer containing the screen X location (in pixels) offset from the left side of the visualization window. \\
+\verb!y! & An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results. (default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick, 0 (default) $-$$>$ do not do a time pick. \\
 \verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
 \verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
 \verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
-\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
-\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$ used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis or with multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
@@ -4936,13 +4936,13 @@ pick_out = ZonePick(coord = (-5.0, 5.0, 0))
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!element! & An integer with the global node id. \\
-\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
-\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results. (default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick, 0 (default) $-$$>$ do not do a time pick. \\
 \verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
 \verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
 \verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
-\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
-\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$ used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis or with multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
@@ -4981,13 +4981,13 @@ print 'Last pick = ', GetPickOutput()
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!element! & An integer with the global zone id. \\
-\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
-\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results. (default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick, 0 (default) $-$$>$ do not do a time pick. \\
 \verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
 \verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
 \verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
-\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
-\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$ used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis or with multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5025,13 +5025,13 @@ print 'Last pick = ', GetPickOutput()
 \begin{tabular}{lp{9cm}}
 \verb!domain! & An integer with the domain id. \\
 \verb!element! & An integer with the node id. \\
-\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
-\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results. (default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick, 0 (default) $-$$>$ do not do a time pick. \\
 \verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
 \verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
 \verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
-\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
-\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$ used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis or with multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5075,13 +5075,13 @@ print "Last pick = ", GetPickOutput()
 \begin{tabular}{lp{9cm}}
 \verb!domain! & An integer with the domain id. \\
 \verb!element! & An integer with the zone id. \\
-\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
-\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results. (default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick, 0 (default) $-$$>$ do not do a time pick. \\
 \verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
 \verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
 \verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
-\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
-\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$ used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis or with multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5146,15 +5146,15 @@ print "The %s plot plugin is loaded." % plugin
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!coord! & A tuple of doubles containing the spatial coordinate (x, y, z). \\
-\verb!x! & An integer containing the screen X location (in pixels) offset from theleft side of the visualization window. \\
-\verb!y! & An integer containing the screen Y location (in pixels) offset from thebottom of the visualization window. \\
-\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
-\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!x! & An integer containing the screen X location (in pixels) offset from the left side of the visualization window. \\
+\verb!y! & An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results. (default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick, 0 (default) $-$$>$ do not do a time pick. \\
 \verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
 \verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
 \verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
-\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
-\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$ used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis or with multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5215,7 +5215,7 @@ PrintWindow()
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!opIndex! & A zero$-$based integer corresponding to the operator that should be promoted. \\
-\verb!applyAll! & An integer flag that causes all plots in the plot list to be affected whenit is non$-$zero. \\
+\verb!applyAll! & An integer flag that causes all plots in the plot list to be affected when it is non$-$zero. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5259,7 +5259,7 @@ DrawPlots()
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!source! & A string containing the source code for a Python Query Filter . \\
-\verb!file! & A string containing the path to a Python Query Filter script file.Note: Use only one of the 'source' or 'file' arguments.If both are used the 'source' argument overrides 'file'. \\
+\verb!file! & A string containing the path to a Python Query Filter script file. Note: Use only one of the 'source' or 'file' arguments. If both are used the 'source' argument overrides 'file'. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5638,8 +5638,8 @@ RegisterMacro('Setup My Plots', SetupMyPlots)
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!all! & An optional integer argument that tells the function to ignore theactive plots and use all plots in the plot list if the value of theargument is non$-$zero. \\
-\verb!index! & The zero$-$based integer index into a plot's operator list that specifieswhich operator is to be deleted. \\
+\verb!all! & An optional integer argument that tells the function to ignore the active plots and use all plots in the plot list if the value of the argument is non$-$zero. \\
+\verb!index! & The zero$-$based integer index into a plot's operator list that specifies which operator is to be deleted. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5680,8 +5680,8 @@ RemoveAllOperators() # Remove the rest of the operators
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!all! & An optional integer argument that tells the function to ignore theactive plots and use all plots in the plot list if the value of theargument is non$-$zero. \\
-\verb!index! & The zero$-$based integer index into a plot's operator list that specifieswhich operator is to be deleted. \\
+\verb!all! & An optional integer argument that tells the function to ignore the active plots and use all plots in the plot list if the value of the argument is non$-$zero. \\
+\verb!index! & The zero$-$based integer index into a plot's operator list that specifies which operator is to be deleted. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5743,8 +5743,8 @@ RemoveAllOperators() # Remove the rest of the operators
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!all! & An optional integer argument that tells the function to ignore theactive plots and use all plots in the plot list if the value of theargument is non$-$zero. \\
-\verb!index! & The zero$-$based integer index into a plot's operator list that specifieswhich operator is to be deleted. \\
+\verb!all! & An optional integer argument that tells the function to ignore the active plots and use all plots in the plot list if the value of the argument is non$-$zero. \\
+\verb!index! & The zero$-$based integer index into a plot's operator list that specifies which operator is to be deleted. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5810,7 +5810,7 @@ RemoveAllOperators() # Remove the rest of the operators
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!databaseName! & A string containing the name of the new database. \\
-\verb!timeState! & A zero$-$based integer containing the time state that should be made activeonce the database has been replaced. \\
+\verb!timeState! & A zero$-$based integer containing the time state that should be made active once the database has been replaced. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5864,7 +5864,7 @@ ReplaceDatabase("/usr/gapps/visit/data/wave.visit", 17)
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!operatorType! & A string containing the name of a valid operator type. \\
-\verb!all! & An optional integer argument that tells the function to reset the operatoroptions for all plots regardless of whether or not they are active. \\
+\verb!all! & An optional integer argument that tells the function to reset the operator options for all plots regardless of whether or not they are active. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6020,7 +6020,7 @@ ResizeWindow(1, 300, 600)
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!filename! & The name of the session file to restore. \\
-\verb!visitDir! & An integer flag that indicates whether the filename to be restored islocated in the user's VisIt directory. If the flag is set to 1 then thesession file is assumed to be located in the user's VisIt directoryotherwise the filename must contain an absolute path.tuple of stringsA tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of stringssimply contains the new names for each of the sources, in order. \\
+\verb!visitDir! & An integer flag that indicates whether the filename to be restored is located in the user's VisIt directory. If the flag is set to 1 then the session file is assumed to be located in the user's VisIt directory otherwise the filename must contain an absolute path. tuple of strings A tuple of strings representing the maping from sources as specified in the original session file to new sources. Sources in the original session file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6056,7 +6056,7 @@ SaveWindow()
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!filename! & The name of the session file to restore. \\
-\verb!visitDir! & An integer flag that indicates whether the filename to be restored islocated in the user's VisIt directory. If the flag is set to 1 then thesession file is assumed to be located in the user's VisIt directoryotherwise the filename must contain an absolute path.tuple of stringsA tuple of strings representing the maping from sources as specifiedin the original session file to new sources. Sources in the originalsession file are numbered starting from 0. So, this tuple of stringssimply contains the new names for each of the sources, in order. \\
+\verb!visitDir! & An integer flag that indicates whether the filename to be restored is located in the user's VisIt directory. If the flag is set to 1 then the session file is assumed to be located in the user's VisIt directory otherwise the filename must contain an absolute path. tuple of strings A tuple of strings representing the maping from sources as specified in the original session file to new sources. Sources in the original session file are numbered starting from 0. So, this tuple of strings simply contains the new names for each of the sources, in order. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6090,7 +6090,7 @@ SaveWindow()
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!filename! & The name of the XML file to load the attribute from or save the attributeto. \\
+\verb!filename! & The name of the XML file to load the attribute from or save the attribute to. \\
 \verb!object! & The object to load or save. \\
 \end{tabular} \\[-2mm]
 
@@ -6160,7 +6160,7 @@ SaveNamedSelection("els_above_at_time_0")
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!filename! & The filename argument is the filename that is used to save the sessionfile. The filename is relative to the current working directory. \\
+\verb!filename! & The filename argument is the filename that is used to save the session file. The filename is relative to the current working directory. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6267,7 +6267,7 @@ print "name = %s" % name
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!name! & The name of the color table to use for the active color table. The namemust be present in the tuple returned by the ColorTableNames function. \\
+\verb!name! & The name of the color table to use for the active color table. The name must be present in the tuple returned by the ColorTableNames function. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6299,7 +6299,7 @@ SetActiveDiscreteColorTable("levels")
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!name! & The name of the color table to use for the active color table. The namemust be present in the tuple returned by the ColorTableNames function. \\
+\verb!name! & The name of the color table to use for the active color table. The name must be present in the tuple returned by the ColorTableNames function. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6405,7 +6405,7 @@ for state in list(range(TimeSliderGetNStates())) + [0]:
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!windowIndex! & An integer window index starting at 1. \\
-\verb!raiseWindow! & This is an optional integer argument that raises and activates the window ifset to 1. If omitted, the default behavior is to raise and activate the window. \\
+\verb!raiseWindow! & This is an optional integer argument that raises and activates the window if set to 1. If omitted, the default behavior is to raise and activate the window. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6566,7 +6566,7 @@ SetCenterOfRotation(-4.755280, 6.545080, 5.877850)
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!val! & Either a zero (false) or non$-$zero (true) integer value to indicate ifMesh Quality expressions should be automatically created when a database is opened. \\
+\verb!val! & Either a zero (false) or non$-$zero (true) integer value to indicate if Mesh Quality expressions should be automatically created when a  database is opened. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6595,7 +6595,7 @@ SetCreateMeshQualityExpressions(0) # turn this feature off
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!val! & Either a zero (false) or non$-$zero (true) integer value to indicate ifTime Derivative expressions should be automatically created when a database is opened. \\
+\verb!val! & Either a zero (false) or non$-$zero (true) integer value to indicate if Time Derivative expressions should be automatically created when a  database is opened. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6624,7 +6624,7 @@ SetCreateTimeDerivativeExpressions(0) # turn this feature off
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!val! & Either a zero (false) or non$-$zero (true) integer value to indicate ifVector magnitude expressions should be automatically created when a database is opened. \\
+\verb!val! & Either a zero (false) or non$-$zero (true) integer value to indicate if Vector magnitude expressions should be automatically created when a  database is opened. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6653,8 +6653,8 @@ SetCreateVectorMagnitudeExpressions(0) # turn this feature off
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!method! & An integer that tells VisIt what default method to use when automaticallycreating a database correlation. The value must be in the range [0,3]. \\
-\verb!whenToCreate! & An integer that tells VisIt when to automatically create databasecorrelations. \\
+\verb!method! & An integer that tells VisIt what default method to use when automatically creating a database correlation. The value must be in the range [0,3]. \\
+\verb!whenToCreate! & An integer that tells VisIt when to automatically create database correlations. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6682,7 +6682,7 @@ SetCreateVectorMagnitudeExpressions(0) # turn this feature off
 \hline \hline
 \verb!0! & Always create database correlation \\
 \verb!1! & Never create database correlation \\
-\verb!2! & Create database correlation only if the new time$-$varying database hasthe same length as another time$-$varying database already being used in aplot. \\
+\verb!2! & Create database correlation only if the new time$-$varying database has the same length as another time$-$varying database already being used in a plot. \\
 \hline
 \end{tabular} \\[-2mm]
 \\[-3mm] 
@@ -6719,7 +6719,7 @@ SetTimeSliderState(5)
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!level! & A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level, which should be used to produce little output while a value of 5 should produce a lot of debug output. \\
+\verb!level! & A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicate whether the output should be buffered. A value of '1' is a low debug level , which should be used to produce little output while a value of 5 should  produce a lot of debug output. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6818,7 +6818,7 @@ OpenDatabase("CHGCAR")
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!atts! & An InteractorAttributes object that contains the new interactor attributesthat you want to use. \\
+\verb!atts! & An InteractorAttributes object that contains the new interactor attributes that you want to use. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6925,8 +6925,8 @@ DrawPlots()
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!atts! & Any type of operator attributes object. \\
-\verb!operatorIndex! & An optional zero$-$based integer that serves as an index into the activeplot's operator list. Use this argument if you want to set the operatorattributes for a plot that has multiple instances of the same type ofoperator. For example, if the active plot had a Transform operatorfollowed by a Slice operator followed by another Transform operator andyou wanted to adjust the attributes of the second Transform operator,you would pass an operatorIndex value of 2. \\
-\verb!all! & An optional integer argument that tells the function to apply the operatorattributes to all plots containing the specified operator if the value ofthe argument is non$-$zero. \\
+\verb!operatorIndex! & An optional zero$-$based integer that serves as an index into the active plot's operator list. Use this argument if you want to set the operator attributes for a plot that has multiple instances of the same type of operator. For example, if the active plot had a Transform operator followed by a Slice operator followed by another Transform operator and you wanted to adjust the attributes of the second Transform operator, you would pass an operatorIndex value of 2. \\
+\verb!all! & An optional integer argument that tells the function to apply the operator attributes to all plots containing the specified operator if the value of the argument is non$-$zero. \\
 \end{tabular} \\[-2mm]
 
 
@@ -7075,7 +7075,7 @@ Lineout((-5,-8), (-3.5, 8))
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!atts! & An InteractorAttributes object that contains the new interactor attributesthat you want to use. \\
+\verb!atts! & An InteractorAttributes object that contains the new interactor attributes that you want to use. \\
 \end{tabular} \\[-2mm]
 
 
@@ -7106,7 +7106,7 @@ SetInteractorAttributes(ia)
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!kfAtts! & A KeyframeAttributes object that contains the new keyframing attributes touse. \\
+\verb!kfAtts! & A KeyframeAttributes object that contains the new keyframing attributes to use. \\
 \end{tabular} \\[-2mm]
 
 
@@ -7137,8 +7137,8 @@ SetKeyframeAttributes(k)
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!index! & A zero$-$based integer index into the light list. Index can be in the range[0,7]. \\
-\verb!light! & A LightAttributes object containing the properties to use for thespecified light. \\
+\verb!index! & A zero$-$based integer index into the light list. Index can be in the range [0,7]. \\
+\verb!light! & A LightAttributes object containing the properties to use for the specified light. \\
 \end{tabular} \\[-2mm]
 
 
@@ -7304,8 +7304,8 @@ DrawPlots()
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!atts! & Any type of operator attributes object. \\
-\verb!operatorIndex! & An optional zero$-$based integer that serves as an index into the activeplot's operator list. Use this argument if you want to set the operatorattributes for a plot that has multiple instances of the same type ofoperator. For example, if the active plot had a Transform operatorfollowed by a Slice operator followed by another Transform operator andyou wanted to adjust the attributes of the second Transform operator,you would pass an operatorIndex value of 2. \\
-\verb!all! & An optional integer argument that tells the function to apply the operatorattributes to all plots containing the specified operator if the value ofthe argument is non$-$zero. \\
+\verb!operatorIndex! & An optional zero$-$based integer that serves as an index into the active plot's operator list. Use this argument if you want to set the operator attributes for a plot that has multiple instances of the same type of operator. For example, if the active plot had a Transform operator followed by a Slice operator followed by another Transform operator and you wanted to adjust the attributes of the second Transform operator, you would pass an operatorIndex value of 2. \\
+\verb!all! & An optional integer argument that tells the function to apply the operator attributes to all plots containing the specified operator if the value of the argument is non$-$zero. \\
 \end{tabular} \\[-2mm]
 
 
@@ -7407,8 +7407,8 @@ for state in range(TimeSliderGetNStates()):
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!index! & A zero$-$based integer index that is the plot's location in the plot list. \\
-\verb!frame! & A zero$-$baed integer index representing the animation frame for which we'regoing to add a database keyframe. \\
-\verb!state! & A zero$-$based integer index representating the database time state thatwe're going to use at the specified animation frame. \\
+\verb!frame! & A zero$-$baed integer index representing the animation frame for which we're going to add a database keyframe. \\
+\verb!state! & A zero$-$based integer index representating the database time state that we're going to use at the specified animation frame. \\
 \end{tabular} \\[-2mm]
 
 
@@ -7451,7 +7451,7 @@ for state in range(TimeSliderGetNStates()):
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!index! & The index of the plot within the plot list. \\
-\verb!description! & A new description that will be shown in the plot list so the plot canbe identified readily. \\
+\verb!description! & A new description that will be shown in the plot list so the plot can be identified readily. \\
 \end{tabular} \\[-2mm]
 
 
@@ -7478,7 +7478,7 @@ for state in range(TimeSliderGetNStates()):
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!val! & An optional flag indicating whether the plot should follow the time slider.The default behavior is for the plot to follow the time slider. \\
+\verb!val! & An optional flag indicating whether the plot should follow the time slider. The default behavior is for the plot to follow the time slider. \\
 \end{tabular} \\[-2mm]
 
 
@@ -7506,8 +7506,8 @@ for state in range(TimeSliderGetNStates()):
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!index! & A zero$-$based integer representing an index into the plot list. \\
-\verb!start! & A zero$-$based integer representing the animation frame where the plot firstappears in the visualization. \\
-\verb!end! & A zero$-$based integer representing the animation frame where the plotdisappears from the visualization. \\
+\verb!start! & A zero$-$based integer representing the animation frame where the plot first appears in the visualization. \\
+\verb!end! & A zero$-$based integer representing the animation frame where the plot disappears from the visualization. \\
 \end{tabular} \\[-2mm]
 
 
@@ -7648,7 +7648,7 @@ SetPlotOrderToLast(0)
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!silr! & A SIL restriction object. \\
-\verb!all! & An optional argument that tells the function if the SIL restriction shouldbe applied to all plots in the plot list. \\
+\verb!all! & An optional argument that tells the function if the SIL restriction should be applied to all plots in the plot list. \\
 \end{tabular} \\[-2mm]
 
 
@@ -7687,7 +7687,7 @@ DrawPlots()
 \verb!! & 1 = native \\
 \verb!! & 2 = double \\
 \verb!typeAsString! &  \\
-\verb!  Options:! & "float""native""double" \\
+\verb!  Options:! & "float" "native" "double" \\
 \end{tabular} \\[-2mm]
 
 
@@ -7904,7 +7904,7 @@ print query_output
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!atts! & A QueryOverTimeAttributes object containing the new settings to use forqueries over time. \\
+\verb!atts! & A QueryOverTimeAttributes object containing the new settings to use for queries over time. \\
 \end{tabular} \\[-2mm]
 
 
@@ -7953,7 +7953,7 @@ ResetView()
 \hangindent=\parindent The SetRemoveDuplicateNodes function returns 1 on success and 0 on failure. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
-\hangindent=\parindent The SetRemoveDuplicateNodes function sets a boolean in the  global attributes indicating whether or not duplicate nodes in fully disconnected unstructured grids should be automatically removed. The default behavior is for the original grid to be left as read, which  may slow down VisIt's performance for extraordinary large meshes.  Turning this feature off tells VisIt to remove the duplicate nodes after  the mesh is read, but before further processing in VisIt. \\[-3mm] 
+\hangindent=\parindent The SetRemoveDuplicateNodes function sets a boolean in the  global attributes indicating whether or not duplicate nodes in fully disconnected unstructured grids should be automatically removed. The default behavior is for the original grid to be left as read, which may slow down VisIt's performance for extraordinary large meshes. Turning this feature off tells VisIt to remove the duplicate nodes after the mesh is read, but before further processing in VisIt. \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
 \begin{verbatim}% visit -cli
@@ -7974,7 +7974,7 @@ SetRemoveDuplicateNodes(0) # turn this feature off
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!atts! & A RenderingAttributes object that contains the rendering attributes thatwe want to make VisIt use. \\
+\verb!atts! & A RenderingAttributes object that contains the rendering attributes that we want to make VisIt use. \\
 \end{tabular} \\[-2mm]
 
 
@@ -8095,7 +8095,7 @@ SetTimeSliderState(state)
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!val! & Either a zero (false) or non$-$zero (true) integer value to indicate ifall databases should be treated as time varying (true) or not (false). \\
+\verb!val! & Either a zero (false) or non$-$zero (true) integer value to indicate if all databases should be treated as time varying (true) or not (false). \\
 \end{tabular} \\[-2mm]
 
 
@@ -8124,7 +8124,7 @@ SetTreatAllDBsAsTimeVarying(0) # turn this feature off
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!val! & Either a zero (false) or non$-$zero (true) integer value to indicate ifVisIt read cycle/time information for all timestates when opening a database. \\
+\verb!val! & Either a zero (false) or non$-$zero (true) integer value to indicate if VisIt read cycle/time information for all timestates when opening a database. \\
 \end{tabular} \\[-2mm]
 
 
@@ -8504,7 +8504,7 @@ SetWindowLayout(8) # switch to 2x4 layout
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!mode! & A string containing the new mode: 'navigate', 'zoom', 'lineout', 'pick','zone pick', 'node pick', 'spreadsheet pick'. \\
+\verb!mode! & A string containing the new mode: 'navigate', 'zoom', 'lineout', 'pick', 'zone pick', 'node pick', 'spreadsheet pick'. \\
 \end{tabular} \\[-2mm]
 
 
@@ -8560,7 +8560,7 @@ visit.ShowAllWindows()
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
-\verb!allWindows! & An integer value that tells VisIt to show the toolbars for all windowswhen it is non$-$zero. \\
+\verb!allWindows! & An integer value that tells VisIt to show the toolbars for all windows when it is non$-$zero. \\
 \end{tabular} \\[-2mm]
 
 
@@ -9306,7 +9306,7 @@ UndoView()
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!name! & The name of the selection to update. \\
-\verb!properties! & An optional SelectionProperties object that contains the selectionproperties to use when reevaluating the selection. \\
+\verb!properties! & An optional SelectionProperties object that contains the selection properties to use when reevaluating the selection. \\
 \end{tabular} \\[-2mm]
 
 
@@ -9395,15 +9395,15 @@ WriteConfig()
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!coord! & A tuple of doubles containing the spatial coordinate (x, y, z). \\
-\verb!x! & An integer containing the screen X location (in pixels) offset from theleft side of the visualization window. \\
-\verb!y! & An integer containing the screen Y location (in pixels) offset from thebottom of the visualization window. \\
-\verb!vars (optional)! & A tuple of strings with the variable names for which to return results.(default: currently plotted variable) \\
-\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick,0 (default) $-$$>$ do not do a time pick. \\
+\verb!x! & An integer containing the screen X location (in pixels) offset from the left side of the visualization window. \\
+\verb!y! & An integer containing the screen Y location (in pixels) offset from the bottom of the visualization window. \\
+\verb!vars (optional)! & A tuple of strings with the variable names for which to return results. (default: currently plotted variable) \\
+\verb!do_time (optional)! & An integer indicating whether to do a time pick. 1 $-$$>$ do a time pick, 0 (default) $-$$>$ do not do a time pick. \\
 \verb!start_time (optional)! & An integer with the starting frame index (default: 0). \\
 \verb!end_time (optional)! & An integer with the ending frame index (default: num\_timestates $-$ 1). \\
 \verb!stride (optional)! & An integer with the stride for advancing in time (default: 1). \\
-\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$used picked element (default), 1$-$$>$ used picked coordinate. \\
-\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis orwith multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
+\verb!preserve_coord (optional)! & An integer indicating whether to pick an element or a coordinate. 0 $-$$>$ used picked element (default), 1$-$$>$ used picked coordinate. \\
+\verb!curve_plot_type (optional)! & An integer indicating whether the output should be on a single axis or with multiple axes. 0 $-$$>$ single Y axis (default), 1 $-$$>$ multiple Y Axes. \\
 \end{tabular} \\[-2mm]
 
 

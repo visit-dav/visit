@@ -55,6 +55,10 @@
 #   and "namedarg2". I modified the script to point a private installation
 #   of visit 2.10 with updated documentation.
 #
+#   Eric Brugger, Fri Nov  6 11:04:26 PST 2015
+#   I modified the script to add a space between continuation lines in
+#   argument descriptions.
+#
 
 # debugging needed?
 #import pdb
@@ -303,6 +307,8 @@ class Table:
       self.rows.append([cols[0], cols[-1]])
       self.cur_row += 1
     elif cols[-1]:
+      if self.rows[self.cur_row][1]:
+        self.rows[self.cur_row][1] += " "
       self.rows[self.cur_row][1] += cols[-1]
     else:
       raise SystemExit("Found strange number of columns in Table.new_row")
