@@ -2779,6 +2779,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                         char cwd[512];
                         DBGetDir(dbfile, cwd);
                         meshname = FileFunctions::Absname(cwd,mv->mmesh_name,"/");
+                        meshname.erase(meshname.begin());
                         debug5 << "Variable \"" << multivar_names[i] 
                                << "\" indicates it is defined on mesh \""
                                << meshname.c_str() << "\"" << endl;
@@ -3879,6 +3880,7 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                     char cwd[512];
                     DBGetDir(dbfile, cwd);
                     meshname = FileFunctions::Absname(cwd,mm->mmesh_name,"/");
+                    meshname.erase(meshname.begin());
                     debug5 << "Material \"" << multimat_names[i]
                            << "\" indicates it is defined on mesh \""
                            << meshname.c_str() << "\"" << endl;
