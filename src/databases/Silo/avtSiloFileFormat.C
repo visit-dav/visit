@@ -2707,6 +2707,10 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
 //    I corrected a bug where a NULL pointer would be de-referenced causing
 //    a crash if a multivar was completely empty.
 //
+//    Mark C. Miller, Mon Nov  9 17:14:21 PST 2015
+//    Adjusted setting of associated meshname from objects 'mmesh_name' member
+//    to use absolute path name instead of just whatever the Silo file had
+//    stored.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
@@ -2772,7 +2776,9 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                 {
                     if (mv->mmesh_name != 0)
                     {
-                        meshname = mv->mmesh_name;
+                        char cwd[512];
+                        DBGetDir(dbfile, cwd);
+                        meshname = FileFunctions::Absname(cwd,mv->mmesh_name,"/");
                         debug5 << "Variable \"" << multivar_names[i] 
                                << "\" indicates it is defined on mesh \""
                                << meshname.c_str() << "\"" << endl;
@@ -3703,6 +3709,10 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
 //    Improve way multimat and mat info are inspected to create material names.
 //    Avoid using using a dummy DBMaterial struct and pointer stealing.
 //
+//    Mark C. Miller, Mon Nov  9 17:14:21 PST 2015
+//    Adjusted setting of associated meshname from object's 'mmesh_name' member
+//    to use absolute path name instead of just whatever the Silo file had
+//    stored.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
@@ -3866,7 +3876,9 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
 
                 if (mm->mmesh_name != 0)
                 {
-                    meshname = mm->mmesh_name;
+                    char cwd[512];
+                    DBGetDir(dbfile, cwd);
+                    meshname = FileFunctions::Absname(cwd,mm->mmesh_name,"/");
                     debug5 << "Material \"" << multimat_names[i]
                            << "\" indicates it is defined on mesh \""
                            << meshname.c_str() << "\"" << endl;
