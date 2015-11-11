@@ -12,9 +12,9 @@ PREFIXARCH=linux-ppc64-BGQ
 PREFIX="$PWD/$PREFIXARCH"
 
 BG_CC=bgxlc_r
-BG_C_OPT_FLAGS=""
-BG_CXX_OPT_FLAGS=""
+BG_C_OPT_FLAGS="-qarch=qp -qtune=qp"
 BG_CXX=bgxlC_r
+BG_CXX_OPT_FLAGS="-qarch=qp -qtune=qp"
 
 # Compiler used for Mesa.
 BG_GNU_CC=powerpc64-bgq-linux-gcc
@@ -23,10 +23,10 @@ BG_GNU_CXX=powerpc64-bgq-linux-g++
 BG_MPI_GNU_CC=mpicc # not used
 BG_MPI_GNU_CXX=mpicxx
 
-BG_MPI_CC=mpixlc
-BG_MPI_C_OPT_FLAGS=""
-BG_MPI_CXX_OPT_FLAGS=""
-BG_MPI_CXX=mpixlC
+BG_MPI_CC=mpixlc_r
+BG_MPI_C_OPT_FLAGS="-qarch=qp -qtune=qp"
+BG_MPI_CXX=mpixlcxx_r
+BG_MPI_CXX_OPT_FLAGS="-qarch=qp -qtune=qp"
 
 BUILD_MODE="Release"
 CC=gcc
@@ -414,7 +414,7 @@ function build_cmake
 
     MAKEARGS=""
     if test -n "$MAKE_OPT_FLAGS" ; then
-        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+        MAKEARGS="--makeflags \"$MAKE_OPT_FLAGS\""
     fi
     CFLAGSARGS=""
     if test -n "$C_OPT_FLAGS" ; then
@@ -426,7 +426,8 @@ function build_cmake
     fi
 
     banner "Building CMake"
-    env BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
+    (export BUILD_VISIT_BGQ="yes"
+     eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
         --console --static --no-visit $SVN $TARBALL\
         --no-thirdparty --cmake\
@@ -436,9 +437,9 @@ function build_cmake
         --build-mode $BUILD_MODE \
         --thirdparty-path $THIRD_PARTY_PATH \
         --installation-build-dir "${INSTALLATION_BUILD_DIR}" \
-        --cc $CC $CFLAGSARGS \
-        --cxx $CXX $CXXFLAGSARGS $MAKEARGS \
-        --group $GROUP || error "Cannot build cmake for login node."
+        --cc $CC $CFLAGSARGS  \
+        --cxx $CXX $CXXFLAGSARGS  $MAKEARGS \
+        --group $GROUP || error "Cannot build cmake for login node.")
 
    # Create a symlink to make a "BGQ" version of the login node cmake.
    STARTDIR=`pwd`
@@ -462,20 +463,20 @@ function build_zlib_BGQ
 {
     MAKEARGS=""
     if test -n "$MAKE_OPT_FLAGS" ; then
-        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+        MAKEARGS="--makeflags \"$MAKE_OPT_FLAGS\""
     fi
     CFLAGSARGS=""
     if test -n "$BG_C_OPT_FLAGS" ; then
-        CFLAGSARGS="--cflag $BG_C_OPT_FLAGS"
+        CFLAGSARGS="--cflag \"${BG_C_OPT_FLAGS}\""
     fi
     CXXFLAGSARGS=""
     if test -n "$BG_CXX_OPT_FLAGS" ; then
-        CXXFLAGSARGS="--cxxflag $BG_CXX_OPT_FLAGS"
+        CXXFLAGSARGS="--cxxflag \"${BG_CXX_OPT_FLAGS}\""
     fi
 
     # Build some packages that require GNU compilers.
     banner "Building zlib (Compute Node)"
-    $bv_PATH/build_visit \
+    (eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
         --console --static --no-visit $SVN $TARBALL --engine-only \
         --log-file compute_node.txt \
@@ -487,7 +488,7 @@ function build_zlib_BGQ
         --cc $BG_CC $CFLAGSARGS \
         --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
         --no-thirdparty --zlib \
-        --group $GROUP
+        --group $GROUP)
     if [[ $? != 0 ]] ; then
         warn "ZLIB build failed.  Giving up"
         return 1
@@ -513,15 +514,15 @@ function build_vtk_BGQ
 
     MAKEARGS=""
     if test -n "$MAKE_OPT_FLAGS" ; then
-        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+        MAKEARGS="--makeflags \"$MAKE_OPT_FLAGS\""
     fi
     CFLAGSARGS=""
     if test -n "$BG_C_OPT_FLAGS" ; then
-        CFLAGSARGS="--cflags $BG_C_OPT_FLAGS"
+        CFLAGSARGS="--cflags \"$BG_C_OPT_FLAGS\""
     fi
     CXXFLAGSARGS=""
     if test -n "$BG_CXX_OPT_FLAGS" ; then
-        CXXFLAGSARGS="--cxxflags $BG_CXX_OPT_FLAGS"
+        CXXFLAGSARGS="--cxxflags \"$BG_CXX_OPT_FLAGS\""
     fi
 
     # Form extra arguments that we'll pass to cmake for VTK.
@@ -550,7 +551,10 @@ function build_vtk_BGQ
 
     # Call build_visit.
     banner "Building VTK (Compute Node)"
-    env VTK_EXTRA_OPTIONS="${vopts}" C_COMPILER=$BG_CC BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
+    (export VTK_EXTRA_OPTIONS="${vopts}"
+     export C_COMPILER=$BG_CC
+     export BUILD_VISIT_BGQ="yes"
+     eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
         --console --static --no-visit $SVN $TARBALL --engine-only \
         --no-thirdparty --cmake --vtk \
@@ -561,7 +565,7 @@ function build_vtk_BGQ
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
         --cc $BG_CC $CFLAGSARGS \
         --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
-        --group $GROUP
+        --group $GROUP)
 
     rm -rf $VTK_SRC_DIR
     rm -rf $VTK_BUILD_DIR
@@ -573,21 +577,23 @@ function build_icet_BGQ
 {
     MAKEARGS=""
     if test -n "$MAKE_OPT_FLAGS" ; then
-        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+        MAKEARGS="--makeflags \"$MAKE_OPT_FLAGS\""
     fi
     CFLAGSARGS=""
     if test -n "$BG_C_OPT_FLAGS" ; then
-        CFLAGSARGS="--cflag $BG_C_OPT_FLAGS"
+        CFLAGSARGS="--cflag \"$BG_C_OPT_FLAGS\""
     fi
     CXXFLAGSARGS=""
     if test -n "$BG_CXX_OPT_FLAGS" ; then
-        CXXFLAGSARGS="--cxxflag $BG_CXX_OPT_FLAGS"
+        CXXFLAGSARGS="--cxxflag \"$BG_CXX_OPT_FLAGS\""
     fi
 
     # Call build_visit just to build Ice-T. Use the gnu compilers to build
     # it but use the XL/MPI compilers to detect MPI.
     banner "Building Ice-T (Compute Node)"
-    env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC $bv_PATH/build_visit \
+    (export PAR_COMPILER=$BG_MPI_CC
+     export C_COMPILER=$BG_CC
+     eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
         --console --static --no-visit $SVN $TARBALL --engine-only \
         --no-thirdparty --cmake --icet \
@@ -599,7 +605,7 @@ function build_icet_BGQ
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
         --cc $BG_GNU_CC $CFLAGSARGS \
         --cxx $BG_GNU_CXX $CXXFLAGSARGS $MAKEARGS \
-        --group $GROUP
+        --group $GROUP)
 
     rm -rf ${INSTALLATION_BUILD_DIR}_BGQ/IceT-1-0-0
 
@@ -648,20 +654,22 @@ function build_for_compute_node
 
     MAKEARGS=""
     if test -n "$MAKE_OPT_FLAGS" ; then
-        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+        MAKEARGS="--makeflags \"$MAKE_OPT_FLAGS\""
     fi
     CFLAGSARGS=""
     if test -n "$BG_C_OPT_FLAGS" ; then
-        CFLAGSARGS="--cflag $BG_C_OPT_FLAGS"
+        CFLAGSARGS="--cflag \"$BG_C_OPT_FLAGS\""
     fi
     CXXFLAGSARGS=""
     if test -n "$BG_CXX_OPT_FLAGS" ; then
-        CXXFLAGSARGS="--cxxflag $BG_CXX_OPT_FLAGS"
+        CXXFLAGSARGS="--cxxflag \"$BG_CXX_OPT_FLAGS\""
     fi
 
     # Build some packages that require GNU compilers.
     banner "Building I/O libraries (Compute Node)"
-    env SILO_EXTRA_OPTIONS="--disable-browser --disable-hzip --disable-fpzip" BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
+    (export SILO_EXTRA_OPTIONS="--disable-browser --disable-hzip --disable-fpzip"
+     export BUILD_VISIT_BGQ="yes"
+     eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
         --console --static --no-visit $SVN $TARBALL --engine-only \
         --log-file compute_node.txt \
@@ -673,7 +681,7 @@ function build_for_compute_node
         --cc $BG_GNU_CC $CFLAGSARGS \
         --cxx $BG_GNU_CXX $CXXFLAGSARGS $MAKEARGS \
         --no-thirdparty --zlib $IO_PACKAGES \
-        --group $GROUP
+        --group $GROUP)
     if [[ $? != 0 ]] ; then
         warn "3rd party I/O build failed.  Giving up"
         return 1
@@ -686,8 +694,17 @@ function build_for_compute_node
     #       as our GL library. This way, we use the VTK rendering classes since
     #       they are working better than the VisIt Mesa-based ones.
     #
+    
+    DBPLUGINSARGS=""
+    if test -n "${VISIT_SELECTED_DATABASE_PLUGINS}" ; then
+        DBPLUGINSARGS="--database-plugins \"${VISIT_SELECTED_DATABASE_PLUGINS}\""
+    fi
+
     banner "Building VisIt (Compute Node)"
-    env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
+    (export PAR_COMPILER=$BG_MPI_CC
+     export C_COMPILER=$BG_CC
+     export BUILD_VISIT_BGQ="yes"
+     eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
         --console --static $NO_VISIT $SVN $TARBALL --engine-only\
         --log-file compute_node.txt \
@@ -698,13 +715,35 @@ function build_for_compute_node
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
         --cc $BG_CC $CFLAGSARGS \
         --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
-        --no-thirdparty --no-boost --zlib $IO_PACKAGES \
+        --no-thirdparty --boost --zlib $IO_PACKAGES \
         --parallel --cmake --icet \
         --group $GROUP \
-        --database-plugins $VISIT_SELECTED_DATABASE_PLUGINS
+          ${DBPLUGINSARGS})
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
         return 1
+    fi
+
+    # If we built VisIt then move the libsim lib directory because otherwise
+    # we'll clobber it with the login node version later.
+    if test "$NO_VISIT" = "" ; then
+        LIBSIM_BGQ=""
+        if test -d $PREFIX/${VISIT_VERSION}/linux-ppc64/libsim/V2/lib ; then
+            LIBSIM_BGQ=$PREFIX/${VISIT_VERSION}/linux-ppc64/libsim/V2/libBGQ
+            mv $PREFIX/${VISIT_VERSION}/linux-ppc64/libsim/V2/lib  ${LIBSIM_BGQ}
+        fi
+        if test -d $PREFIX/${VISIT_VERSION}b/linux-ppc64/libsim/V2/lib ; then
+            LIBSIM_BGQ=$PREFIX/${VISIT_VERSION}b/linux-ppc64/libsim/V2/libBGQ
+            mv $PREFIX/${VISIT_VERSION}b/linux-ppc64/libsim/V2/lib ${LIBSIM_BGQ}
+        fi
+        # copy static libs, which are dependencies for the static libsimV2 libs
+        if [ ! -z "${LIBSIM_BGQ}" ]; then
+            cp builds_static_BGQ/src/lib/libsimV2runtime_par.a    ${LIBSIM_BGQ}
+            cp builds_static_BGQ/src/lib/libengine_par.a          ${LIBSIM_BGQ}
+            cp builds_static_BGQ/src/lib/libsimV2_static_par.a    ${LIBSIM_BGQ}
+            cp builds_static_BGQ/src/lib/libcognomen.a            ${LIBSIM_BGQ}
+            cp builds_static_BGQ/src/lib/libvisit_vtk.a           ${LIBSIM_BGQ}
+        fi
     fi
 
     return 0
@@ -716,7 +755,7 @@ function build_for_login_node
 
     MAKEARGS=""
     if test -n "$MAKE_OPT_FLAGS" ; then
-        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+        MAKEARGS="--makeflags \"$MAKE_OPT_FLAGS\""
     fi
 
     CFLAGSARGS=""
@@ -727,12 +766,16 @@ function build_for_login_node
     if test -n "$CXX_OPT_FLAGS" ; then
         CXXFLAGSARGS="--cxxflag \"$CXX_OPT_FLAGS\""
     fi
+    DBPLUGINSFLAGSARGS=""
+    if test -n "$VISIT_SELECTED_DATABASE_PLUGINS" ; then
+        DBPLUGINSFLAGSARGS="--database-plugins \"$VISIT_SELECTED_DATABASE_PLUGINS\""
+    fi    
 
     # Build cmake, python, VTK. We pass BUILD_VISIT_BGQ in the environment so
     # VTK will be configured using a script. This works around a glitch in
     # identifying the compiler.
     banner "Building Dependencies (Login Node)"
-    $bv_PATH/build_visit \
+    (eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
         --console --static --no-visit $SVN $TARBALL --server-components-only \
         --log-file login_node.txt \
@@ -744,7 +787,7 @@ function build_for_login_node
         --cc $CC $CFLAGSARGS \
         --cxx $CXX $CXXFLAGSARGS $MAKEARGS \
         --no-thirdparty --cmake --vtk --python \
-        --group $GROUP
+        --group $GROUP)
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
         return 1
@@ -753,7 +796,7 @@ function build_for_login_node
     # Do another build_visit pass with no BUILD_VISIT_BGQ since we don't want what
     # it would do to the resulting config-site file.
     banner "Building VisIt (Login Node)"
-    $bv_PATH/build_visit \
+    (eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
         --console --static $NO_VISIT $SVN $TARBALL --server-components-only \
         --log-file login_node.txt \
@@ -764,23 +807,12 @@ function build_for_login_node
         --installation-build-dir $INSTALLATION_BUILD_DIR \
         --cc $CC $CFLAGSARGS \
         --cxx $CXX $CXXFLAGSARGS $MAKEARGS \
-        --no-thirdparty --no-boost --cmake --vtk $IO_PACKAGES --python \
+        --no-thirdparty --boost --cmake --vtk $IO_PACKAGES --python \
         --group $GROUP \
-        --database-plugins $VISIT_SELECTED_DATABASE_PLUGINS
+        ${DBPLUGINSFLAGSARGS})
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
         return 1
-    fi
-
-    # If we built VisIt then move the libsim lib directory because otherwise 
-    # we'll clobber it with the login node version later.
-    if test "$NO_VISIT" = "" ; then
-        if test -d $PREFIX/${VISIT_VERSION}/linux-ppc64/libsim/V2/lib ; then
-            mv $PREFIX/${VISIT_VERSION}/linux-ppc64/libsim/V2/lib $PREFIX/${VISIT_VERSION}/linux-ppc64/libsim/V2/libBGQ
-        fi
-        if test -d $PREFIX/${VISIT_VERSION}b/linux-ppc64/libsim/V2/lib ; then
-            mv $PREFIX/${VISIT_VERSION}b/linux-ppc64/libsim/V2/lib $PREFIX/${VISIT_VERSION}b/linux-ppc64/libsim/V2/libBGQ
-        fi
     fi
 
     return 0
@@ -923,8 +955,8 @@ function main
                 bggnucc) BG_GNU_CC="${arg}";;
                 bggnucxx) BG_GNU_CXX="${arg}";;
 
-                append-bgmpicflags) BG_C_OPT_FLAGS="${BG_MPI_C_OPT_FLAGS} ${arg}";;
-                append-bgmpicxxflags) BG_CXX_OPT_FLAGS="${BG_MPI_CXX_OPT_FLAGS} ${arg}";;
+                append-bgmpicflags) BG_MPI_C_OPT_FLAGS="${BG_MPI_C_OPT_FLAGS} ${arg}";;
+                append-bgmpicxxflags) BG_MPI_CXX_OPT_FLAGS="${BG_MPI_CXX_OPT_FLAGS} ${arg}";;
                 bgmpicflags) BG_MPI_C_OPT_FLAGS="${arg}";;
                 bgmpicxxflags) BG_MPI_CXX_OPT_FLAGS="${arg}";;
                 bgmpicc) BG_MPI_CC="${arg}";;
