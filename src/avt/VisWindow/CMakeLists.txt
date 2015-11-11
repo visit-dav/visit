@@ -100,12 +100,14 @@ ELSE (NOT WIN32)
     IF(MESA_FOUND)
         SET_SOURCE_FILES_PROPERTIES(
             Colleagues/VisWinRendering.C
+            Colleagues/VisWinRenderingWithoutWindow.C
             PROPERTIES
             COMPILE_FLAGS "-I${MESA_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
         )
     ELSE()
         SET_SOURCE_FILES_PROPERTIES(
             Colleagues/VisWinRendering.C
+            Colleagues/VisWinRenderingWithoutWindow.C
             PROPERTIES
             COMPILE_FLAGS "-I${GLEW_INCLUDE_DIR}"
         )
