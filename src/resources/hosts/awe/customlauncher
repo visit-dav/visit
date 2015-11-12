@@ -2,7 +2,7 @@
 # Class: JobSubmitter_sbatch_AWE
 #
 # Purpose:    Custom "sbatch" job submitter for AWE
-# 
+#
 # Programmer: Brad Whitlock
 # Date:       Tue Jan 15 15:29:23 GMT 2013
 #
@@ -19,7 +19,7 @@ class JobSubmitter_sbatch_AWE(JobSubmitter_sbatch):
         ppn = "8"
         if self.parallel.nn != None:
             ppn = int(math.ceil(float(self.parallel.np) / float(self.parallel.nn)))
-            
+
     def TFileLoadModules(self, tfile):
         tfile.write("#SBATCH -J visit # Job Name\n")
         tfile.write("ulimit -l unlimited\n")
@@ -28,54 +28,76 @@ class JobSubmitter_sbatch_AWE(JobSubmitter_sbatch):
         tfile.write("export I_MPI_PLATFORM=auto\n")
         tfile.write("module load slurm intel/11.1\n")
         tfile.write("module load intelmpi/4.0.3-intel\n")
-        
+
 ###############################################################################
 # Class: JobSubmitter_mpirun_AWE
 #
 # Purpose:    Custom "mpirun" job submitter for AWE
-# 
+#
 # Programmer: Satheesh Maheswaran, Paul Selby
 # Date:       Tue Jan 15 15:29:23 GMT 2013
 #
 ###############################################################################
- 
+
 class JobSubmitter_mpirun_AWE(JobSubmitter_mpirun):
     def __init__(self, launcher):
         super(JobSubmitter_mpirun_AWE, self).__init__(launcher)
 
     def Executable(self):
         return ["mpirun.awe"]
-        
+
 ###############################################################################
 # Class: JobSubmitter_qsub_AWE
 #
 # Purpose:    Custom "qsub" job submitter for AWE
-# 
+#
 # Programmer: Satheesh Maheswaran, Paul Selby
 # Date:       Tue Jan 15 15:29:23 GMT 2013
 #
-###############################################################################  
-     
+# Modifications:
+#   Jim Eliot, Tue Aug 26 16:30:37 GMT 2014
+#   Added support for Spruce.
+#   Tweak to error message.
+#
+#   Paul Selby, Thu Sep 11 11:18:22 BST 2014
+#   Fixed bug in error message for ppn > ncores
+#
+#   Paul Selby, Tue Sep 23 10:37:51 BST 2014
+#   Added I_MPI_ADJUST_ALLTOALLV for Sprig/Spruce to fix hang with transparent
+#   plots and scalable rendering. Using Intel MPI 4.1.3 also fixes
+#
+#   Jim Eliot, Wed Sep 24 10:01:54 BST 2014
+#   Changed Sprig and Spruce Intel MPI module to version 4.1.3.
+#   Removed I_MPI_ADJUST_ALLTOALLV as not required with Intel MPI 4.1.3.
+#
+#   Paul Selby, Thu 22 Oct 13:47:15 BST 2015
+#   Removed ChileanPine as has been decommissioned
+#
+###############################################################################
+
 class JobSubmitter_qsub_AWE(JobSubmitter_qsub):
     def __init__(self, launcher):
         super(JobSubmitter_qsub_AWE, self).__init__(launcher)
 
-        ncores = 16
-
+        self.plauncher, self.sublauncher = self.LauncherAndSubLauncher()
+        ncores = self.launcher.GetNumCores()
         # Not 100% this should be in init method
         if self.parallel.nn == None:
           self.parallel.nn = int(math.ceil(float(self.parallel.np) / ncores))
 
         # Check ppn is in range
         ppn = int(self.PPN())
-        
+
         if ppn > ncores:
-            exit("Error: engine configured with %s on %s nodes (%sx)\n"
-                 "Error: Number of procs must be no more than %sx number of nodes." %
+            exit("customlauncher -- Error: engine configured with %s on %s nodes (%sx)\n"
+                 "customlauncher -- Error: Number of procs must be no more than %sx number of nodes." %
                  (self.parallel.np, self.parallel.nn, ppn, ncores), 1)
 
     def mpirun(self):
-        return ["mpirun.awe"]
+        if self.sublauncher == "aprun":
+            return ["aprun"]
+        else:
+            return ["mpirun.awe"]
 
     def TFileLoadModules(self, tfile):
 
@@ -95,17 +117,58 @@ class JobSubmitter_qsub_AWE(JobSubmitter_qsub):
             tfile.write("#MSUB -j oe    # Joing stderr/stdout together\n")
             tfile.write(". %s/init/bash\n" %GETENV("MODULESHOME"))
             tfile.write("module purge\n")
-            tfile.write("module load intel/12.1\n")
-            tfile.write("module load intelmpi/4.0.3-intel\n")
+            tfile.write("module load intel/13.1\n")
+            tfile.write("module load intelmpi/4.1.3-intel\n")
+        elif self.launcher.IsRunningOnSprig():
+            tfile.write("#MSUB -E       # Export MOAB environment variables\n")
+            tfile.write("#MSUB -N visit # Job Name\n")
+            tfile.write("#MSUB -A visit # Code name for accounting\n")
+            tfile.write(". %s/init/bash\n" %GETENV("MODULESHOME"))
+            tfile.write("module purge\n")
+            tfile.write("module load gcc/4.8.2\n")
+            tfile.write("module load intelmpi/4.1.3-gcc\n")
+        elif self.launcher.IsRunningOnSpruce():
+            tfile.write("#MSUB -E       # Export MOAB environment variables\n")
+            tfile.write("#MSUB -N visit # Job Name\n")
+            tfile.write("#MSUB -A visit # Code name for accounting\n")
+            tfile.write(". %s/init/bash\n" %GETENV("MODULESHOME"))
+            tfile.write("module purge\n")
+            tfile.write("module load gcc/4.8.2\n")
+            tfile.write("module load intelmpi/4.1.3-gcc\n")
         return
-        
+
 ###############################################################################
 # Class: AWELauncher
 #
 # Purpose:    Custom launcher for AWE
-# 
+#
 # Programmer: Satheesh Maheswaran, Paul Selby
 # Date:       Tue Jan 15 15:29:23 GMT 2013
+#
+# Modifications:
+#   Paul Selby, Wed Feb 12 10:56:11 GMT 2014
+#   Added workaround to identify Sprig compute nodes
+#   (needed if cli launched on compute node - i.e. batch VisIt)
+#
+#   Jim Eliot, Tue Aug 26 16:30:37 GMT 2014
+#   Added support for Spruce.
+#   Modifications to IsRunningOnSprig() to avoid false positive on Spruce.
+#   Tweak to error message.
+#
+#   Paul Selby, Thu Sep 11 11:18:22 BST 2014
+#   Sets ncores to 16 if running on Spruce viz partition. Fixes job being held
+#   if ppn > 16
+#
+#   Paul Selby, Thu 26 Mar 14:38:36 GMT 2015
+#   Set MOABHOMEDIR and added msub to path on Willow. Fixes issue first seen
+#   on WillowB when MOAB hostkeys activated
+#
+#   Paul Selby, Thu 17 Sep 13:39:29 BST 2015
+#   Changed expected self.domainname for Sprig & Spruce due to change to fully
+#   qualified domain name following upgrade - fixes visitbatch
+#
+#   Paul Selby, Thu 22 Oct 13:47:15 BST 2015
+#   Removed ChileanPine as has been decommissioned
 #
 ###############################################################################
 
@@ -113,50 +176,119 @@ class AWELauncher(MainLauncher):
     def __init__(self):
         super(AWELauncher, self).__init__()
 
+    def username(self):
+        # Override username as os.getlogin() returns root on Willow/Blackthorn
+        # when running visitbatch (throws error on Ivy/Spruce)
+        return GETENV("USER")
+
     def IsRunningOnWillow(self):
         return self.sectorname() in ("willowa", "willowb")
 
     def IsRunningOnBlackthorn(self):
         return self.sectorname() in ("blackthorn")
-    
+
     def IsRunningOnIvy(self):
         return self.sectorname() in ("ivy")
 
     def IsRunningOnBonsai(self):
         return self.sectorname() in ("bonsaia", "bonsaib")
 
+    def IsRunningOnSprig(self):
+        # Compute nodes are r[0-1]i[0-1]n[0-9]* => get this with batch VisIt
+        # Domain name check works on compute nodes.
+        return self.sectorname() in ("sprig") or self.domainname() in ("sprig.hpcs.awe.co.uk")
+
+    def IsRunningOnSpruce(self):
+        # Compute nodes are r[0-1]i[0-1]n[0-9]* => get this with batch VisIt
+        # Domain name check works on compute nodes.
+        return self.sectorname() in ("sprucea", "spruceb") or self.domainname() in ("sprucea.hpcs.awe.co.uk", "spruceb.hpcs.awe.co.uk")
+
     def IsRunningOnWorkstation(self):
         return GETENV("HPC_CLUSTER") == "LINUX_WORKSTATION"
-        
+
+    def GetNumCores(self):
+        if self.IsRunningOnSprig():
+            self.ncores = 20
+        elif self.IsRunningOnSpruce():
+            # viz nodes have 16 cores
+            if self.parallelArgs.partition == "viz":
+                self.ncores = 16
+            else:
+                # visitbatch will run in parallel or serial queue
+                self.ncores = 20
+        else:
+            self.ncores = 16
+        return self.ncores
+
+    #Check to see if VisIt is starting on Login node, it's not allowed on ALL platforms
+    def IsVisItAllowed(self):
+
+        if not (self.IsRunningOnWorkstation() or self.IsRunningOnIvy() or self.IsRunningOnBonsai()):
+            if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
+                msg = "###################################################\n"
+                msg += "Do not run the VisIt GUI here\n"
+                msg += "Run it on your local workstation (preferred/best performance)\n"
+                msg += "###################################################\n"
+                exit(msg,0)
+
     def Customize(self):
-    
+
         ld_paths = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
         paths = self.splitpaths(GETENV("PATH"))
-        
+
+        # Check to see if VisIt is allowed to start on login node
+        self.IsVisItAllowed()
+
         if self.IsRunningOnWillow():
-            if GETENV("MODULESHOME") == "" :
-                SETENV("MODULESHOME", "/awe/Modules")
-                
-        elif self.IsRunningOnBlackthorn() :
             if GETENV("MODULESHOME") == "" :
                 SETENV("MODULESHOME", "/awe/Modules")
             if GETENV("MOABHOMEDIR") == "" :
                 SETENV("MOABHOMEDIR", "/opt/moab/home")
-                
             paths += ["/opt/moab/current/bin"]
+
+        elif self.IsRunningOnBlackthorn() :
+            if GETENV("MODULESHOME") == "" :
+                SETENV("MODULESHOME", "/awe/opt/Modules")
+            if GETENV("MOABHOMEDIR") == "" :
+                SETENV("MOABHOMEDIR", "/awe/opt/moab/home")
+            paths += ["/awe/opt/moab/current/bin"]
+
         elif self.IsRunningOnIvy():
             if GETENV("MODULESHOME") == "" :
                 SETENV("MODULESHOME", "/usr/share/modules")
-                
+
             paths += ["/awe/slurm/bin"]
         elif self.IsRunningOnBonsai():
             paths += ["/opt/sgi/mpt/mpt-2.05/bin"]
             ld_paths += ["/opt/sgi/mpt/mpt-2.05/lib"]
+
+        elif self.IsRunningOnSprig():
+            if GETENV("MODULESHOME") == "" :
+                SETENV("MODULESHOME", "/awe/opt/Modules")
+            if GETENV("MOABHOMEDIR") == "" :
+                SETENV("MOABHOMEDIR", "/awe/opt/moab/home")
+            paths += ["/opt/moab/current/bin"]
+
+        elif self.IsRunningOnSpruce():
+            if GETENV("MODULESHOME") == "" :
+                SETENV("MODULESHOME", "/awe/opt/Modules")
+            if GETENV("MOABHOMEDIR") == "" :
+                SETENV("MOABHOMEDIR", "/awe/opt/moab/home")
+            paths += ["/awe/opt/moab/current/bin"]
+
         elif self.IsRunningOnWorkstation():
+            #Unset PYTHONHOME/PYTHONPATH - when using intelmpi-4.0.0 there appears to be a
+            #conflict as to which python is loaded. VisIt-2.7.0 uses Python-2.7.5.
+            #The system python on workstation is 2.6. The mpirun.awe calls mpiexec
+            #which is written in Python and there appears to be some mismatch issues going on
+            #However non-experienced on Ivy! (Ivy uses a different version of intelmpi)
+            UNSETENV("PYTHONHOME")
+            UNSETENV("PYTHONPATH")
             paths += ["/awe/intel/impi/4.0.0/intel64/bin"]
+            ld_paths += ["/awe/intel/Compiler/11.1/current/lib/intel64"]
         else:
-            exit("Error: Unknown platform\n")
-            
+            exit("customlauncher -- Error: Unknown platform\n", 1)
+
         SETENV("PATH", self.joinpaths(paths))
         SETENV("LD_LIBRARY_PATH", self.joinpaths(ld_paths))
 
