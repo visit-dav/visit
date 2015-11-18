@@ -2370,6 +2370,10 @@ avtDatabase::NumStagesForFetch(avtDataRequest_p)
 //
 //    Mark C. Miller, Wed Jan  8 18:16:00 PST 2014
 //    Added support for !NBLOCKS declaration in the file
+//
+//    Jim Eliot, Wed 18 Nov 11:30:58 GMT 2015
+//    Fixed bug (2461) with reading DOS formatted files which uses '\'r
+//    newline character
 // ****************************************************************************
 
 bool
@@ -2408,7 +2412,12 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
             debug1 << "Got a failure with string \"" << str_auto << "\"" << endl;
             continue;
         }
+
         size_t str_auto_len = strlen(str_auto);
+
+        if (str_auto_len > 0 && str_auto[str_auto_len-1] == '\r')
+            str_auto[--str_auto_len] = '\0';
+
         for (int i = 0; i < (int) str_auto_len; i++)
         {
             if (!isprint(str_auto[i]))
@@ -2419,9 +2428,6 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
             }
             if (failed) continue;
         }
-            
-        if (str_auto_len > 0 && str_auto[str_auto_len-1] == '\r')
-            str_auto[str_auto_len-1] = '\0';
 
         if (str_auto[0] != '\0' && str_auto[0] != '#')
         {
