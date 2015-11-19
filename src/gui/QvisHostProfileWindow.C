@@ -1159,6 +1159,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("sbatch/ibrun");
     launchMethod->addItem("sbatch/mpiexec");
     launchMethod->addItem("sbatch/mpirun");
+    launchMethod->addItem("sbatch/srun");
     connect(launchMethod, SIGNAL(activated(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
     launchCheckBox = new QCheckBox(tr("Parallel launch method"), currentGroup);
