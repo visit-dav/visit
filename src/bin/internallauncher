@@ -18,6 +18,10 @@ import time
 #   I modified the script so that all the arguments are passed to subsequent
 #   components before the "-s script_file" argument.
 #
+#   David Camp, Mon Oct 26 10:13:49 PDT 2015
+#   I added a function to return the correct argument for the process per node
+#   flag for Open MPI and MPICH.
+#
 ###############################################################################
 
 class JobSubmitter(object):
@@ -65,6 +69,19 @@ class JobSubmitter(object):
     def PPN(self):
         return str(int(math.ceil(float(self.parallel.np) / float(self.parallel.nn))))
 
+    # Open MPI and MPICH have different arguments for the process per node flag.
+    # This function trys to decide with flag to use. It defaults to MPICH.
+    def PPNArgument(self):
+        p = subprocess.Popen(["mpirun", "--version"], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        output = p.communicate()
+        new = ' '.join(output)
+        if new.find("Open MPI") == -1:
+            # MPICH
+            return "-ppn"
+        else:
+            # Open MPI
+            return "-npernode"
+
     def CreateCommand(self, args, debugger):
         parcmd = self.Executable()
         parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
@@ -88,6 +105,10 @@ class JobSubmitter(object):
 #   Make adding of -ppn to mpirun dependent on "self.parallel.nn".
 #   Removed useppnmpirun.
 #
+#   David Camp, Mon Oct 26 10:13:49 PDT 2015
+#   Call the new PPNArgument function to get the correct MPI argument for 
+#   the "process per node" flag.
+#
 ###############################################################################
 
 class JobSubmitter_mpirun(JobSubmitter):
@@ -104,7 +125,7 @@ class JobSubmitter_mpirun(JobSubmitter):
         if self.parallel.np != None:
             parcmd = parcmd + ["-np", self.parallel.np]
         if self.parallel.nn != None:
-            parcmd = parcmd + ["-ppn", self.PPN()]
+            parcmd = parcmd + [self.PPNArgument(), self.PPN()]
         if self.parallel.partition != None:
             parcmd = parcmd + ["-p", self.parallel.partition]
         if self.parallel.machinefile != None:
@@ -144,6 +165,10 @@ class JobSubmitter_mpirun(JobSubmitter):
 #   Make adding of -ppn to mpiexec dependent on "self.parallel.nn".
 #   Removed useppnmpiexec.
 #
+#   David Camp, Mon Oct 26 10:13:49 PDT 2015
+#   Call the new PPNArgument function to get the correct MPI argument for 
+#   the "process per node" flag.
+#
 ################################################################################
 
 class JobSubmitter_mpiexec(JobSubmitter):
@@ -168,7 +193,7 @@ class JobSubmitter_mpiexec(JobSubmitter):
         if self.parallel.np != None:
             parcmd = parcmd + ["-n", self.parallel.np]
         if self.parallel.nn != None:
-            parcmd = parcmd + ["-ppn", self.PPN()]
+            parcmd = parcmd + [self.PPNArgument(), self.PPN()]
         if self.parallel.partition != None:
             parcmd = parcmd + ["-p", self.parallel.partition]
         if self.parallel.machinefile != None:
@@ -510,6 +535,10 @@ class JobSubmitter_salloc(JobSubmitter):
 #   I added a fix from Jean Favre that corrected the setting of the -N option
 #   for aprun.
 #
+#   David Camp, Thu Oct  1 11:37:53 PDT 2015
+#   Update sbatch to be more like qsub to support new NERSC system, Cori.
+#   Also added the srun mpi launcher option.
+#
 ###############################################################################
 
 class JobSubmitter_sbatch(JobSubmitter):
@@ -519,8 +548,10 @@ class JobSubmitter_sbatch(JobSubmitter):
     def Executable(self):
         return ["sbatch"]
 
-    def PPNArguments(self, ppn):
-        return ["--npernode", ppn, "numa_wrapper", "--ppn", ppn]
+    def CreateFilename(self):
+        tdate = time.asctime()[11:19]
+        tuser = self.launcher.username()
+        return os.path.join("/tmp", "visit.%s.%s" % (tuser, tdate))
 
     def HandledHardwareArguments(self):
         return 1
@@ -528,57 +559,140 @@ class JobSubmitter_sbatch(JobSubmitter):
     def TFileLoadModules(self, tfile):
         return
 
-    def CreateFilename(self):
-        tdate = time.asctime()[11:19]
-        tuser = self.launcher.username()
-        return os.path.join("/tmp", "visit.%s.%s" % (tuser, tdate))
+    def TFileSetup(self, tfile):
+        tfile.write("cd %s\n" % os.path.abspath(os.curdir))
+        tfile.write("ulimit -c 0\n")
+        #tfile.write("# Submitted on host %s\n" % self.launcher.hostname())
+        #for v in ("LIBPATH", "LD_LIBRARY_PATH", "VISITHOME", "VISITARCHHOME", "VISITPLUGINDIR"):
+        #    tfile.write('echo "%s=$%s"\n' % (v,v))
+
+    def Writable(self, d):
+        return self.launcher.writepermission(d)
+
+    def HandleCWDPermissions(self):
+        args = []
+        if not self.Writable(os.path.abspath(os.curdir)):
+            msg = """
+The directory you started VisIt in does not have write permission.
+Using /dev/null for the batch job standard error and standard
+output streams.
+"""
+            self.launcher.warning(msg)
+            args = args + ["-e", "/dev/null", "-o", "/dev/null"]
+        return args
+
+    def AddEnvironment(self):
+        env = "--export="
+        env = env + "HOME=" + GETENV("HOME")
+        env = env + ",LIBPATH=" + GETENV("LIBPATH")
+        env = env + ",LD_LIBRARY_PATH=" + GETENV("LD_LIBRARY_PATH")
+        env = env + ",VISITHOME=" + GETENV("VISITHOME")
+        env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
+        env = env + ",VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        return [env]
+
+    def mpiexec(self):
+        return ["mpiexec"]
+
+    def mpiexec_args(self, args):
+        mpicmd = self.mpiexec()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + [self.PPNArgument(), self.PPN()]
+        if self.parallel.machinefile != None:
+            mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def aprun(self):
+        return ["aprun"]
+
+    def aprun_args(self, args):
+        mpicmd = self.aprun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + ["-N", self.PPN()]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def mpirun(self):
+        return ["mpirun"]
+
+    def mpirun_args(self, args):
+        mpicmd = self.mpirun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-np", self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + [self.PPNArgument(), self.PPN()]
+        if self.parallel.machinefile != None:
+            mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def ibrun(self):
+        return ["ibrun"]
+
+    def ibrun_args(self, args):
+        mpicmd = self.ibrun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
+
+    def srun(self):
+        return ["srun"]
+
+    def srun_args(self, args):
+        mpicmd = self.srun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["--ntasks=%s" % self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + ["--nodes=%s" % self.parallel.nn]
+            mpicmd = mpicmd + ["--tasks-per-node=%s" % self.PPN()]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        return mpicmd
 
     def CreateCommand(self, args, debugger):
         parcmd = self.Executable()
+        parcmd = parcmd + self.HandleCWDPermissions()
+        parcmd = parcmd + self.AddEnvironment()
         if self.parallel.launchargs != None:
-           parcmd = parcmd + self.parallel.launchargs
+            parcmd = parcmd + self.parallel.launchargs
         if self.parallel.partition != None:
-           parcmd = parcmd + ["--partition=%s" % self.parallel.partition]
+            parcmd = parcmd + ["--partition=%s" % self.parallel.partition]
         if self.parallel.bank != None:
-           parcmd = parcmd + ["--account=%s" % self.parallel.bank]
+            parcmd = parcmd + ["--account=%s" % self.parallel.bank]
         if self.parallel.time != None:
-           parcmd = parcmd + ["--time=%s" % self.parallel.time]
-        if self.parallel.nn != None:
-           parcmd = parcmd + ["--nodes=%s" % self.parallel.nn]
+            parcmd = parcmd + ["--time=%s" % self.parallel.time]
         if self.parallel.np != None:
-           parcmd = parcmd + ["--ntasks=%s" % self.parallel.np]
+            parcmd = parcmd + ["--ntasks=%s" % self.parallel.np]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["--nodes=%s" % self.parallel.nn]
+            parcmd = parcmd + ["--tasks-per-node=%s" % self.PPN()]
         if self.parallel.name != None:
             parcmd = parcmd + ["--job-name=%s" % self.parallel.name]
-        ppn = "8"
-        if self.parallel.nn != None:
-            ppn = self.PPN()
 
         sbatch,sublauncher = self.LauncherAndSubLauncher()
-        if sublauncher == "mpiexec":
-            mpicmd = ["mpiexec"]
-            if self.parallel.sublaunchargs != None:
-                mpicmd = mpicmd + self.parallel.sublaunchargs
-            mpicmd = mpicmd + self.PPNArguments(ppn)
-            mpicmd = mpicmd + self.VisItExecutable() + args
+        if sublauncher == "srun":
+            mpicmd = self.srun_args(args)
+        elif sublauncher == "mpiexec":
+            mpicmd = self.mpiexec_args(args)
         elif sublauncher == "aprun":
-            mpicmd = ["aprun", "-n", self.parallel.np]
-            mpicmd = mpicmd + ["-N", self.PPN()]
-            if self.parallel.sublaunchargs != None:
-                mpicmd = mpicmd + self.parallel.sublaunchargs
-            mpicmd = mpicmd + self.VisItExecutable() + args
+            mpicmd = self.aprun_args(args)
         elif sublauncher == "mpirun":
-            mpicmd = ["mpirun"]
-            if self.parallel.sublaunchargs != None:
-                mpicmd = mpicmd + self.parallel.sublaunchargs
-            if self.parallel.np != None:
-                mpicmd = mpicmd + ["-np", self.parallel.np]
-            mpicmd = mpicmd + ["--ppn", str(ppn)] 
-            mpicmd = mpicmd + self.VisItExecutable() + args
+            mpicmd = self.mpirun_args(args)
         elif sublauncher == "ibrun":
-            mpicmd = ["ibrun"]
-            if self.parallel.sublaunchargs != None:
-                mpicmd = mpicmd + self.parallel.sublaunchargs
-            mpicmd = mpicmd + self.VisItExecutable() + args
+            mpicmd = self.ibrun_args(args)
         else:
             mpicmd = self.VisItExecutable() + args
 
@@ -590,8 +704,8 @@ class JobSubmitter_sbatch(JobSubmitter):
             tfile = open(tfilename, "wt")
             tfile.write("#!/bin/sh\n")
             self.TFileLoadModules(tfile)
-            tfile.write("cd %s\n" % os.path.abspath(os.curdir))
-            tfile.write("ulimit -c 0\n")
+            self.TFileSetup(tfile)
+
             if self.parallel.hw_precmd != None:
                 tfile.write(self.parallel.hw_precmd + "\n")
             if self.parallel.sublaunchprecmd != None:
@@ -601,7 +715,9 @@ class JobSubmitter_sbatch(JobSubmitter):
                 tfile.write(string.join(self.parallel.sublaunchpostcmd, " ") + "\n")
             if self.parallel.hw_postcmd != None:
                 tfile.write(self.parallel.hw_postcmd + "\n")
+
             tfile.close()
+            os.chmod(tfilename, 0775)
         except (OSError, IOError):
             exit("Could not create script file to launch %s job." % self.parallel.launcher, 0)
 
@@ -700,6 +816,10 @@ class JobSubmitter_yod(JobSubmitter):
 #   Make adding of -ppn to mpirun and mpiexec dependent on "self.parallel.nn".
 #   Removed useppnmpiexec and useppnmpirun.
 #
+#   David Camp, Mon Oct 26 10:13:49 PDT 2015
+#   Call the new PPNArgument function to get the correct MPI argument for 
+#   the "process per node" flag.
+#
 ###############################################################################
 
 class JobSubmitter_qsub(JobSubmitter):
@@ -741,7 +861,7 @@ class JobSubmitter_qsub(JobSubmitter):
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-n", self.parallel.np]
         if self.parallel.nn != None:
-            mpicmd = mpicmd + ["-ppn", self.PPN()]
+            mpicmd = mpicmd + [self.PPNArgument(), self.PPN()]
         if self.parallel.machinefile != None:
             mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
         mpicmd = mpicmd + self.VisItExecutable() + args
@@ -757,7 +877,7 @@ class JobSubmitter_qsub(JobSubmitter):
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-np", self.parallel.np]
         if self.parallel.nn != None:
-            mpicmd = mpicmd + ["-ppn", self.PPN()]
+            mpicmd = mpicmd + [self.PPNArgument(), self.PPN()]
         if self.parallel.machinefile != None:
             mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
         mpicmd = mpicmd + self.VisItExecutable()
@@ -774,6 +894,9 @@ class JobSubmitter_qsub(JobSubmitter):
             mpicmd = mpicmd + self.parallel.sublaunchargs
         if self.parallel.np != None:
             mpicmd = mpicmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + ["--nodes=%s" % self.parallel.nn]
+            mpicmd = mpicmd + ["--tasks-per-node=%s" % self.PPN()]
         mpicmd = mpicmd + self.VisItExecutable() + args
         return mpicmd
 
@@ -1424,6 +1547,8 @@ class GeneralArguments(object):
         self.threads = 0
         self.hw_accel = False
         self.osmesa   = False
+        self.hosttoip = False
+
     def ParseArguments(self, i, args):
         if i >= len(args):
             return 0
@@ -1513,7 +1638,6 @@ class GeneralArguments(object):
             self.osmesa = True
         return n
 
-
     def ProduceArguments(self, parallel):
         args = []
         if self.dv:
@@ -1554,6 +1678,16 @@ class GeneralArguments(object):
         args = args + self.scriptarguments
 
         return args
+
+    def GetIPAddress(self, hostname):
+        if not self.hosttoip:
+            return hostname
+        try:
+            IP = socket.gethostbyname(hostname)
+        except socket.gaierror, err:
+            print "cannot resolve hostname: ", hostname, err
+            IP = hostname
+        return IP
 
     def ConnectionArguments(self, parallel):
         # Localhost override to loopback.  The default behavior is that we
@@ -1612,9 +1746,9 @@ name.""", 1)
 
         if self.noloopback or self.sshtunneling or self.guesshost or self.host != None:
             if remotehost_set:
-                args = args + ["-host", remotehost]
+                args = args + ["-host", self.GetIPAddress(remotehost)]
             elif self.host != None:
-                args = args + ["-host", self.host]
+                args = args + ["-host", self.GetIPAddress(self.host)]
 
         if self.port != None:
             args = args + ["-port", self.port]
@@ -1862,6 +1996,7 @@ class MainLauncher(object):
         self.clientPrograms = ("gui", "cli", "viewer")
         self.componentNames = ("gui", "cli", "viewer", "mdserver", "vcl", "engine_ser", "engine_par", "xmledit")
         self.xterm = ["xterm"]
+        self.hosttoip = False
 
     def username(self):
         try:
@@ -1980,6 +2115,8 @@ class MainLauncher(object):
         self.visitver = visitver
         self.visitpluginver = visitpluginver
         self.generalArgs = GeneralArguments(self)
+        if self.hosttoip:
+            self.generalArgs.hosttoip = True
         self.parallelArgs = ParallelArguments()
         self.debugArgs = DebugArguments(self)
         self.os = self.uname("-s")
