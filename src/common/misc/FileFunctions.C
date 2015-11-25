@@ -71,13 +71,21 @@ static char StaticStringBuf[STATIC_BUF_SIZE];
 // Programmer: Mark C. Miller
 // Creation:   March 23, 2006
 //
+// Modifications:
+//   Kathleen Biagas, Wed Nov 24 16:25:13 MST 2015
+//   Use _stat64 if running 64 bit windows version.
+//
 // ****************************************************************************
 
 int
 FileFunctions::VisItStat(const std::string &filename, VisItStat_t *buf)
 {
 #if defined(_WIN32)
+  #if defined(_WIN64)
+    return _stat64(filename.c_str(), buf);
+  #else
    return _stat(filename.c_str(), buf);
+  #endif
 #else
 
 #if SIZEOF_OFF64_T > 4
@@ -98,13 +106,21 @@ FileFunctions::VisItStat(const std::string &filename, VisItStat_t *buf)
 // Programmer: Mark C. Miller 
 // Creation:   March 23, 2006 
 //
+// Modifications:
+//   Kathleen Biagas, Wed Nov 24 16:25:13 MST 2015
+//   Use _fstat64 if running 64 bit windows version.
+//
 // ****************************************************************************
 
 int
 FileFunctions::VisItFstat(int fd, VisItStat_t *buf)
 {
 #if defined(_WIN32)
-   return _fstat(fd, buf);
+  #if defined(_WIN64)
+    return _fstat64(fd, buf);
+  #else
+    return _fstat(fd, buf);
+  #endif
 #else
 
 #if SIZEOF_OFF64_T > 4

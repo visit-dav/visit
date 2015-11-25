@@ -63,12 +63,11 @@
 #include <avtParallel.h>
 #include <avtCallback.h>
 #include <avtDatasetExaminer.h>
+#include <FileFunctions.h>
 
 #include <avtPoincareIC.h>
 
 #include <utility>
-
-#include <sys/stat.h>
 
 #include "FieldlineAnalyzerLib.h"
 
@@ -1011,6 +1010,9 @@ avtPoincareFilter::GetIntegralCurvePoints(std::vector<avtIntegralCurve *> &ics)
 //    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //    Add ability to restart fieldline integration.
 //
+//    Kathleen Biagas, Wed Nov 24 16:05:27 MST 2015
+//    Use VisItStat.
+//
 // ****************************************************************************
 
 void
@@ -1018,10 +1020,10 @@ avtPoincareFilter::Execute()
 {
     if( performOLineAnalysis )
     {
-        struct stat fileAtt;
+        FileFunctions::VisItStat_t fileAtt;
 
         //Use the stat function to get the file information
-        if (stat(OLineAxisFileName.c_str(), &fileAtt) != 0)
+        if (FileFunctions::VisItStat(OLineAxisFileName.c_str(), &fileAtt) != 0)
         {
           std::string msg("Trying to perform O-line analysis but the O-line axis file is not valid.");
 
