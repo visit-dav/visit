@@ -50,6 +50,10 @@
 //    Added FileMatchesPatternCB, a callback that can be used with
 //    ReadAndProcessDirectory. (Moved from NetworkManager).
 //
+//    Kathleen Biagas, Wed Nov 24 16:26:11 MST 2015
+//    Use _stat64 for VisItStat_t and __int64 for VisItOff_t if running a
+//    64 bit version on windows.
+//
 // ****************************************************************************
 
 namespace FileFunctions
@@ -61,22 +65,25 @@ typedef void (ProcessDirectoryCallback)(void *, const std::string &, bool,
                                         bool, long);
 
 #if defined(_WIN32)
-  typedef struct _stat VisItStat_t;
-  typedef off_t VisItOff_t;
+  #if defined(_WIN64)
+    typedef struct _stat64 VisItStat_t;
+    typedef __int64 VisItOff_t;
+  #else
+    typedef struct _stat VisItStat_t;
+    typedef off_t VisItOff_t;
+  #endif
   typedef unsigned short mode_t;
   #ifndef S_ISDIR
     #define S_ISDIR(m) (((m) &S_IFMT) == S_IFDIR)
   #endif
 #else
-
-#if SIZEOF_OFF64_T > 4
-typedef struct stat64 VisItStat_t;
-typedef off64_t VisItOff_t;
-#else
-typedef struct stat VisItStat_t;
-typedef off_t VisItOff_t;
-#endif
-
+  #if SIZEOF_OFF64_T > 4
+    typedef struct stat64 VisItStat_t;
+    typedef off64_t VisItOff_t;
+  #else
+    typedef struct stat VisItStat_t;
+    typedef off_t VisItOff_t;
+  #endif
 #endif
 
 typedef enum

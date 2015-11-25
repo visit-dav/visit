@@ -151,8 +151,8 @@ avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     
 #if 0
     int mode = -1;
-    struct stat stat_buf;
-    stat(this->filename, &stat_buf);
+    FileFunctions::VisItStat_t stat_buf;
+    FileFunctions::VisItStat(this->filename, &stat_buf);
     if (stat_buf.st_mode & S_IFDIR)
         mode = 0;
     else if (stat_buf.st_mode & S_IFREG)

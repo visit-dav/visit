@@ -1,15 +1,22 @@
 
 #include <string>
-#include <sys/stat.h> 
-
+#include <FileFunctions.h>
 #include "H5Index.h"
 
 using     std::string;
 
+// ****************************************************************************
+//
+//  Modifications:
+//    Kathleen Biagas, Wed Nov 24 16:34:51 MST 2015
+//    Use VisItStat.
+//
+// ****************************************************************************
+
 static bool fileExists(const string &file)
 { 
-  struct stat stFileInfo; 
-  return (stat(file.c_str(),&stFileInfo) == 0);
+  FileFunctions::VisItStat_t stFileInfo; 
+  return (FileFunctions::VisItStat(file.c_str(),&stFileInfo) == 0);
 }
 
 string H5Index::indexFilename(const string &file)
