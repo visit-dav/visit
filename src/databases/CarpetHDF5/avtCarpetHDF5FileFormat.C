@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtCarpetHDF5FileFormat.C                           //
+//                       avtCarpetHDF5FileFormat.C                           //
 // ************************************************************************* //
 
 #include <avtCarpetHDF5FileFormat.h>
@@ -55,7 +55,6 @@
 
 // POSIX specific!
 #include <sys/types.h>
-#include <sys/stat.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -79,6 +78,7 @@
 #include <avtIntervalTree.h>
 
 #include <Expression.h>
+#include <FileFunctions.h>
 
 #include <InvalidVariableException.h>
 
@@ -1231,13 +1231,20 @@ static herr_t H5iter(hid_t group_id, const char *member_name, void *operator_dat
 
 
 
+// ****************************************************************************
+//
+//  Modifications:
+//    Kathleen Biagas, Wed Nov 24 16:31:27 MST 2015
+//    Use VisItStat.
+// 
+// ****************************************************************************
 
 void avtCarpetHDF5FileFormat::file_t::openfile(const char* fname)
 {
-   struct stat s;
+   FileFunctions::VisItStat_t s;
 
    file = H5Fopen(fname, H5F_ACC_RDONLY, H5P_DEFAULT);
-   if (stat(filename.c_str(), &s) == 0) {
+   if (FileFunctions::VisItStat(filename.c_str(), &s) == 0) {
      mtime = s.st_mtime;
    } else {
      mtime = 0;
@@ -1246,7 +1253,7 @@ void avtCarpetHDF5FileFormat::file_t::openfile(const char* fname)
    // get hierarchy datasetnames contained only in this file
    if (haveIndex(fname)) {
      hid_t index_file = H5Fopen(indexFilename(fname).c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-     if (stat(indexFilename(fname).c_str(), &s) == 0) {
+     if (FileFunctions::VisItStat(indexFilename(fname).c_str(), &s) == 0) {
        idx_mtime = s.st_mtime;
      } else {
        idx_mtime = 0;
@@ -1264,15 +1271,23 @@ void avtCarpetHDF5FileFormat::file_t::openfile(const char* fname)
    H5garbage_collect();
 }
 
+// ****************************************************************************
+//
+//  Modifications:
+//    Kathleen Biagas, Wed Nov 24 16:31:27 MST 2015
+//    Use VisItStat.
+// 
+// ****************************************************************************
+
 bool avtCarpetHDF5FileFormat::file_t::file_changed_on_disk()
 {
-    struct stat s;
+    FileFunctions::VisItStat_t s;
 
-    if (stat(filename.c_str(), &s) != 0 || s.st_mtime > mtime) {
+    if (FileFunctions::VisItStat(filename.c_str(), &s) != 0 || s.st_mtime > mtime) {
       return true;
     }
     if (haveIndex(filename) &&
-        (stat(indexFilename(filename).c_str(), &s) != 0 || s.st_mtime > idx_mtime)) {
+        (FileFunctions::VisItStat(indexFilename(filename).c_str(), &s) != 0 || s.st_mtime > idx_mtime)) {
       return true;
     }
 
