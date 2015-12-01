@@ -4,13 +4,13 @@ CASE: sbatch/mpiexec
 INPUT: visit -engine -norun engine_par -l sbatch/mpiexec -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600
 
 RESULTS:
-sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib:/opt/cudatoolkit-6.0/lib64:/usr/lib64/nvidia,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-mpiexec -arg1 -arg2 --npernode 8 numa_wrapper --ppn 8 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+mpiexec -arg1 -arg2 -n 8 -ppn 8 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -19,13 +19,13 @@ CASE: sbatch/mpiexec -totalview engine_par
 INPUT: visit -engine -norun engine_par -l sbatch/mpiexec -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600 -totalview engine_par
 
 RESULTS:
-sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib:/opt/cudatoolkit-6.0/lib64:/usr/lib64/nvidia,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-totalview mpiexec -a -dograb -arg1 -arg2 --npernode 8 numa_wrapper --ppn 8 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+totalview mpiexec -a -dograb -arg1 -arg2 -n 8 -ppn 8 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -34,13 +34,13 @@ CASE: sbatch/mpiexec -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l sbatch/mpiexec -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib:/opt/cudatoolkit-6.0/lib64:/usr/lib64/nvidia,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-mpiexec -arg1 -arg2 --npernode 8 numa_wrapper --ppn 8 valgrind --tool=memcheck --error-limit=no --num-callers=50 --db-attach=no --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+mpiexec -arg1 -arg2 -n 8 -ppn 8 valgrind --tool=memcheck --error-limit=no --num-callers=50 --db-attach=no --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -49,12 +49,12 @@ CASE: sbatch/mpiexec -strace engine_par
 INPUT: visit -engine -norun engine_par -l sbatch/mpiexec -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600 -strace engine_par
 
 RESULTS:
-sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib:/opt/cudatoolkit-6.0/lib64:/usr/lib64/nvidia,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-mpiexec -arg1 -arg2 --npernode 8 numa_wrapper --ppn 8 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+mpiexec -arg1 -arg2 -n 8 -ppn 8 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
