@@ -5,17 +5,17 @@
       *.x
       *.vp3d
     </FilePatterns>
-    <LIBS>
-      vtkIOGeometry
-    </LIBS>
     <Files components="M">
       avtPLOT3DFileFormat.C
       avtPLOT3DOptions.C
+      vtkPLOT3DReaderInternals.C
       vtkPLOT3DReader.C
+      PLOT3DFunctions.C
     </Files>
     <Files components="E">
       avtPLOT3DFileFormat.C
       avtPLOT3DOptions.C
+      vtkPLOT3DReaderInternals.C
       vtkPLOT3DReader.C
       PLOT3DFunctions.C
     </Files>
