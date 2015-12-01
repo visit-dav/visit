@@ -27,7 +27,7 @@ def GetMostRecentSIMFile():
     files.sort()
     simFiles = []
     for f in files:
-        if f[-5:] == ".sim1":
+        if f[-5:] == ".sim2":
             simFiles = simFiles + [f]
     os.chdir(cwd)
     return simpath + "/" + simFiles[-1]
@@ -61,8 +61,8 @@ DrawPlots()
 
 # Write the clipped data back to the simulation as a mesh called "OBJ".
 e = ExportDBAttributes()
-e.db_type = "SimV1Writer"
-e.variables = ()
+e.db_type = "SimV2"
+e.variables = ("default",)
 e.filename = "OBJ"
 ExportDatabase(e)
 
