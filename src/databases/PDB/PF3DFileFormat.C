@@ -2786,7 +2786,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb, int cycle,
             //
             char *vizdir = new char[viz_nams_len];
             char *vizfile = new char[viz_nams_len];
-            int nfiles_per_dir = ngrp_members / num_sub_dirs;
+            int nfiles_per_dir = Get_num_grp_size();
             char *basename = new char[iVS-iFile+1];
             strncpy(basename, &filename[iFile], iVS-iFile);
             basename[iVS-iFile] = '\0';
