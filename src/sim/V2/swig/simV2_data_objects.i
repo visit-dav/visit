@@ -1018,6 +1018,7 @@ int VisIt_SimulationMetaData_addExpression(visit_handle h, visit_handle obj);
 int VisIt_SimulationMetaData_addSpecies(visit_handle h, visit_handle obj);
 int VisIt_SimulationMetaData_addGenericCommand(visit_handle h, visit_handle obj);
 int VisIt_SimulationMetaData_addCustomCommand(visit_handle h, visit_handle obj);
+int VisIt_SimulationMetaData_addMessage(visit_handle h, visit_handle obj);
 
 #ifdef __cplusplus
 }

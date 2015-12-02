@@ -11966,6 +11966,37 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisIt_SimulationMetaData_addMessage(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  visit_handle arg2 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_SimulationMetaData_addMessage",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_SimulationMetaData_addMessage" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_SimulationMetaData_addMessage" "', argument " "2"" of type '" "visit_handle""'");
+  } 
+  arg2 = static_cast< visit_handle >(val2);
+  result = (int)VisIt_SimulationMetaData_addMessage(arg1,arg2);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VisIt_SpeciesData_alloc__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   visit_handle *arg1 = (visit_handle *) 0 ;
@@ -13585,6 +13616,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VisIt_SimulationMetaData_addSpecies", _wrap_VisIt_SimulationMetaData_addSpecies, METH_VARARGS, NULL},
 	 { (char *)"VisIt_SimulationMetaData_addGenericCommand", _wrap_VisIt_SimulationMetaData_addGenericCommand, METH_VARARGS, NULL},
 	 { (char *)"VisIt_SimulationMetaData_addCustomCommand", _wrap_VisIt_SimulationMetaData_addCustomCommand, METH_VARARGS, NULL},
+	 { (char *)"VisIt_SimulationMetaData_addMessage", _wrap_VisIt_SimulationMetaData_addMessage, METH_VARARGS, NULL},
 	 { (char *)"VisIt_SpeciesData_alloc", _wrap_VisIt_SpeciesData_alloc, METH_VARARGS, NULL},
 	 { (char *)"VisIt_SpeciesData_free", _wrap_VisIt_SpeciesData_free, METH_VARARGS, NULL},
 	 { (char *)"VisIt_SpeciesData_addSpeciesName", _wrap_VisIt_SpeciesData_addSpeciesName, METH_VARARGS, NULL},
