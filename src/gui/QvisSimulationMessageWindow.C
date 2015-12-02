@@ -66,6 +66,11 @@ QvisSimulationMessageWindow::CreateWindowContents()
     messages = new QTextEdit(central);
     messages->setReadOnly(true);
     topLayout->addWidget(messages);
+
+    QPushButton *clearButton = new QPushButton(tr("Clear"), central);
+    connect(clearButton, SIGNAL(clicked()), this, SLOT(clear()));
+    clearButton->setEnabled(true);
+    topLayout->addWidget(clearButton, 1, 0);
 }
 
 //

@@ -994,6 +994,33 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
                 uiValues->GetEnabled());
         }
     }
+
+    if(uiValues->GetName() == "SIMULATION_STATUS")
+    {
+        QString message = QString(uiValues->GetSvalue().c_str());
+        QString error = QString("<span style=\"color:#000000;\">%1</span>").arg(message);
+        simMessages->addMessage(error);
+    }
+
+    if(uiValues->GetName() == "SIMULATION_STATUS_WARNING")
+    {
+        QString message = QString(uiValues->GetSvalue().c_str());
+        QString warning = QString("<span style=\" color:#aaaa00;\">%1</span>").arg(message);
+        simMessages->addMessage(warning);
+    }
+
+    if(uiValues->GetName() == "SIMULATION_STATUS_ERROR")
+    {
+        QString message = QString(uiValues->GetSvalue().c_str());
+        QString error = QString("<span style=\" color:#aa0000;\">%1</span>").arg(message);
+        simMessages->addMessage(error);
+    }
+
+    if(uiValues->GetName() == "SIMULATION_STATUS_CLEAR")
+    {
+        simMessages->clear();
+    }
+
 }
 
 // ****************************************************************************
@@ -1223,6 +1250,10 @@ QvisSimulationWindow::UpdateInformation()
             simulationMode->setText(tr("Stopped"));
             break;
         }
+
+        // Update the message window
+        QString message = QString(md->GetSimInfo().GetMessage().c_str());
+        simMessages->addMessage(message);
 
         // Update command buttons
         bool updateSize = false;
