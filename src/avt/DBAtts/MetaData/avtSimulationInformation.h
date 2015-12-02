@@ -101,6 +101,7 @@ public:
     void SelectOtherValues();
     void SelectGenericCommands();
     void SelectCustomCommands();
+    void SelectMessage();
 
     // Property setting methods
     void SetHost(const std::string &host_);
@@ -109,6 +110,7 @@ public:
     void SetOtherNames(const stringVector &otherNames_);
     void SetOtherValues(const stringVector &otherValues_);
     void SetMode(RunMode mode_);
+    void SetMessage(const std::string &message_);
 
     // Property getting methods
     const std::string  &GetHost() const;
@@ -125,6 +127,8 @@ public:
     RunMode            GetMode() const;
     const AttributeGroupVector &GetCustomCommands() const;
           AttributeGroupVector &GetCustomCommands();
+    const std::string  &GetMessage() const;
+          std::string  &GetMessage();
 
 
     // Attributegroup convenience methods
@@ -166,6 +170,7 @@ public:
         ID_genericCommands,
         ID_mode,
         ID_customCommands,
+        ID_message,
         ID__LAST
     };
 
@@ -180,11 +185,12 @@ private:
     AttributeGroupVector genericCommands;
     int                  mode;
     AttributeGroupVector customCommands;
+    std::string          message;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTSIMULATIONINFORMATION_TMFS "siss*s*a*ia*"
+#define AVTSIMULATIONINFORMATION_TMFS "siss*s*a*ia*s"
 
 #endif

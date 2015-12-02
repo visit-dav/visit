@@ -157,6 +157,7 @@ void avtSimulationInformation::Copy(const avtSimulationInformation &obj)
         customCommands.push_back(newavtSimulationCommandSpecification);
     }
 
+    message = obj.message;
 
     avtSimulationInformation::SelectAll();
 }
@@ -346,7 +347,8 @@ avtSimulationInformation::operator == (const avtSimulationInformation &obj) cons
             (otherValues == obj.otherValues) &&
             genericCommands_equal &&
             (mode == obj.mode) &&
-            customCommands_equal);
+            customCommands_equal &&
+            (message == obj.message));
 }
 
 // ****************************************************************************
@@ -498,6 +500,7 @@ avtSimulationInformation::SelectAll()
     Select(ID_genericCommands, (void *)&genericCommands);
     Select(ID_mode,            (void *)&mode);
     Select(ID_customCommands,  (void *)&customCommands);
+    Select(ID_message,         (void *)&message);
 }
 
 // ****************************************************************************
@@ -576,6 +579,13 @@ avtSimulationInformation::SetMode(avtSimulationInformation::RunMode mode_)
 {
     mode = mode_;
     Select(ID_mode, (void *)&mode);
+}
+
+void
+avtSimulationInformation::SetMessage(const std::string &message_)
+{
+    message = message_;
+    Select(ID_message, (void *)&message);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -666,6 +676,18 @@ avtSimulationInformation::GetCustomCommands()
     return customCommands;
 }
 
+const std::string &
+avtSimulationInformation::GetMessage() const
+{
+    return message;
+}
+
+std::string &
+avtSimulationInformation::GetMessage()
+{
+    return message;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -704,6 +726,12 @@ void
 avtSimulationInformation::SelectCustomCommands()
 {
     Select(ID_customCommands, (void *)&customCommands);
+}
+
+void
+avtSimulationInformation::SelectMessage()
+{
+    Select(ID_message, (void *)&message);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1044,6 +1072,7 @@ avtSimulationInformation::GetFieldName(int index) const
     case ID_genericCommands: return "genericCommands";
     case ID_mode:            return "mode";
     case ID_customCommands:  return "customCommands";
+    case ID_message:         return "message";
     default:  return "invalid index";
     }
 }
@@ -1076,6 +1105,7 @@ avtSimulationInformation::GetFieldType(int index) const
     case ID_genericCommands: return FieldType_attVector;
     case ID_mode:            return FieldType_enum;
     case ID_customCommands:  return FieldType_attVector;
+    case ID_message:         return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -1108,6 +1138,7 @@ avtSimulationInformation::GetFieldTypeName(int index) const
     case ID_genericCommands: return "attVector";
     case ID_mode:            return "enum";
     case ID_customCommands:  return "attVector";
+    case ID_message:         return "string";
     default:  return "invalid index";
     }
 }
@@ -1190,6 +1221,11 @@ avtSimulationInformation::FieldsEqual(int index_, const AttributeGroup *rhs) con
         }
 
         retval = customCommands_equal;
+        }
+        break;
+    case ID_message:
+        {  // new scope
+        retval = (message == obj.message);
         }
         break;
     default: retval = false;

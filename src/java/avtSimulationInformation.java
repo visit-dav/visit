@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class avtSimulationInformation extends AttributeSubject
 {
-    private static int avtSimulationInformation_numAdditionalAtts = 8;
+    private static int avtSimulationInformation_numAdditionalAtts = 9;
 
     // Enum values
     public final static int RUNMODE_UNKNOWN = 0;
@@ -77,6 +77,7 @@ public class avtSimulationInformation extends AttributeSubject
         genericCommands = new Vector();
         mode = RUNMODE_UNKNOWN;
         customCommands = new Vector();
+        message = new String("");
     }
 
     public avtSimulationInformation(int nMoreFields)
@@ -91,6 +92,7 @@ public class avtSimulationInformation extends AttributeSubject
         genericCommands = new Vector();
         mode = RUNMODE_UNKNOWN;
         customCommands = new Vector();
+        message = new String("");
     }
 
     public avtSimulationInformation(avtSimulationInformation obj)
@@ -127,6 +129,7 @@ public class avtSimulationInformation extends AttributeSubject
             customCommands.addElement(new avtSimulationCommandSpecification(oldObj));
         }
 
+        message = new String(obj.message);
 
         SelectAll();
     }
@@ -189,7 +192,8 @@ public class avtSimulationInformation extends AttributeSubject
                 otherValues_equal &&
                 genericCommands_equal &&
                 (mode == obj.mode) &&
-                customCommands_equal);
+                customCommands_equal &&
+                (message.equals(obj.message)));
     }
 
     // Property setting methods
@@ -229,6 +233,12 @@ public class avtSimulationInformation extends AttributeSubject
         Select(6);
     }
 
+    public void SetMessage(String message_)
+    {
+        message = message_;
+        Select(8);
+    }
+
     // Property getting methods
     public String GetHost() { return host; }
     public int    GetPort() { return port; }
@@ -238,6 +248,7 @@ public class avtSimulationInformation extends AttributeSubject
     public Vector GetGenericCommands() { return genericCommands; }
     public int    GetMode() { return mode; }
     public Vector GetCustomCommands() { return customCommands; }
+    public String GetMessage() { return message; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -272,6 +283,8 @@ public class avtSimulationInformation extends AttributeSubject
                 tmp.Write(buf);
             }
         }
+        if(WriteSelect(8, buf))
+            buf.WriteString(message);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -322,6 +335,9 @@ public class avtSimulationInformation extends AttributeSubject
             }
             Select(7);
             break;
+        case 8:
+            SetMessage(buf.ReadString());
+            break;
         }
     }
 
@@ -361,6 +377,7 @@ public class avtSimulationInformation extends AttributeSubject
             str = str + "\n";
         }
         str = str + "}\n";
+        str = str + stringToString("message", message, indent) + "\n";
         return str;
     }
 
@@ -439,5 +456,6 @@ public class avtSimulationInformation extends AttributeSubject
     private Vector genericCommands; // vector of avtSimulationCommandSpecification objects
     private int    mode;
     private Vector customCommands; // vector of avtSimulationCommandSpecification objects
+    private String message;
 }
 
