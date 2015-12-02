@@ -2209,7 +2209,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Editor</source>
-        <translation>Éditeur</translation>
+        <translation>Editeur</translation>
     </message>
     <message>
         <source>Number of colors</source>
@@ -3686,11 +3686,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Standard Editor</source>
-        <translation>Éditeur standard</translation>
+        <translation>Editeur standard</translation>
     </message>
     <message>
         <source>Python Expression Editor</source>
-        <translation>Éditeur d&apos;expression Python</translation>
+        <translation>Editeur d&apos;expression Python</translation>
     </message>
     <message>
         <source>unnamed%1</source>
@@ -6717,7 +6717,7 @@ par opérateur d&apos;alignement</translation>
     <name>QvisInterpreter</name>
     <message>
         <source>You told VisIt to execute an empty body of code so VisIt did nothing.</source>
-        <translation>Sommets avec parité impaire ont six côtés </translation>
+        <translation>Vous avez dit à VisIt d&apos;exécuter un code vide donc VisIt n&apos;a rien fait.</translation>
     </message>
 </context>
 <context>
@@ -7009,83 +7009,87 @@ par opérateur d&apos;alignement</translation>
     </message>
     <message>
         <source>Operation type</source>
-        <translation type="unfinished"></translation>
+        <translation>Type d&apos;opération</translation>
     </message>
     <message>
         <source>Lyapunov Exponent</source>
-        <translation type="unfinished"></translation>
+        <translation>Exposant Lyapunov</translation>
     </message>
     <message>
         <source>Integration time</source>
-        <translation type="unfinished"></translation>
+        <translation>Temps d&apos;intégration</translation>
     </message>
     <message>
         <source>Arc length</source>
-        <translation type="unfinished"></translation>
+        <translation>Taille de l&apos;arc</translation>
     </message>
     <message>
         <source>Average distance from seed</source>
-        <translation type="unfinished"></translation>
+        <translation>Distance moyenne du but</translation>
     </message>
     <message>
         <source>Base value</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeur de base</translation>
     </message>
     <message>
         <source>Gradient</source>
-        <translation type="unfinished"></translation>
+        <translation>Gradient</translation>
     </message>
     <message>
         <source>Clamp exponent values</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeurs des exposants agrafés </translation>
     </message>
     <message>
         <source>Limit maximum advection time i.e. FTLE</source>
-        <translation type="unfinished"></translation>
+        <translation>Limiter le temps d&apos;avection maxi du FTLE</translation>
     </message>
     <message>
         <source>Limit maximum advection distance i.e. FLLE</source>
-        <translation type="unfinished"></translation>
+        <translation>Limiter la distance d&apos;avection maxi du FTLE</translation>
     </message>
     <message>
         <source>Limit maximum size i.e. FSLE</source>
-        <translation type="unfinished"></translation>
+        <translation>Limite maxi de taille i.e. FSLE</translation>
     </message>
     <message>
         <source>Limit maximum advection time</source>
-        <translation type="unfinished"></translation>
+        <translation>Limiter le temps d&apos;avection maximal</translation>
     </message>
     <message>
         <source>Limit maximum advection distance</source>
-        <translation type="unfinished"></translation>
+        <translation>Limiter la distance d&apos;avection maximale</translation>
     </message>
     <message>
         <source>Maximum number of steps</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre maxi de pas</translation>
     </message>
     <message>
         <source>Streamlines vs Pathlines</source>
-        <translation type="unfinished"></translation>
+        <translation>Rationaliser vs chemin</translation>
     </message>
     <message>
         <source>Streamline
     Compute trajectories in an (instantaneous) snapshot of the vector field.
     Uses and loads vector data from only the current time slice.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ligne de courant
+    Calculer les trajectoires (immédiatement) dans un instantané du champ de vecteur.
+    Utiliser et charger les données du vecteur, seulement de l&apos;actuel tranche de temps.</translation>
     </message>
     <message>
         <source>Pathline    
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ligne de fluide
+    Calculer les trajectoires dans un instantané du champ de vecteur.
+    Utiliser et charger les données du vecteur, seulement de l&apos;actuel tranche de temps.</translation>
     </message>
     <message>
         <source>Pathlines Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Options des trajectoires</translation>
     </message>
     <message>
         <source>Override Starting Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler le temps de départ</translation>
     </message>
     <message>
         <source>Time</source>
@@ -7093,492 +7097,492 @@ par opérateur d&apos;alignement</translation>
     </message>
     <message>
         <source>How to perform interpolation over time</source>
-        <translation type="unfinished"></translation>
+        <translation>Comment effectuer une interpolation sur le temps</translation>
     </message>
     <message>
         <source>Mesh is static over time (fast, but special purpose)</source>
-        <translation type="unfinished"></translation>
+        <translation>Maillage statique sur le temps(rapide, mais pour les effets spéciaux)</translation>
     </message>
     <message>
         <source>Mesh changes over time (slow, but robust)</source>
-        <translation type="unfinished"></translation>
+        <translation>Maillage change sur le temps(lent, mais robuste)</translation>
     </message>
     <message>
         <source>Parallel integration options</source>
-        <translation type="unfinished"></translation>
+        <translation>Options d&apos;intégrations parallèles</translation>
     </message>
     <message>
         <source>Parallelization</source>
-        <translation type="unfinished"></translation>
+        <translation>Parallèlisation</translation>
     </message>
     <message>
         <source>Parallelize over curves</source>
-        <translation type="unfinished"></translation>
+        <translation>Parallèliser sur les courbes</translation>
     </message>
     <message>
         <source>Parallelize over domains</source>
-        <translation type="unfinished"></translation>
+        <translation>Parallèliser sur les domaines</translation>
     </message>
     <message>
         <source>Parallelize over curves and domains</source>
-        <translation type="unfinished"></translation>
+        <translation>Parallèliser sur les courbes et les domaines</translation>
     </message>
     <message>
         <source>Have VisIt select the best algorithm</source>
-        <translation type="unfinished"></translation>
+        <translation>Comment Visit sélectionne le meilleur algorithme</translation>
     </message>
     <message>
         <source>Communication threshold</source>
-        <translation type="unfinished"></translation>
+        <translation>Seuil de communication</translation>
     </message>
     <message>
         <source>Domain cache size</source>
-        <translation type="unfinished"></translation>
+        <translation>Taille du cache de domaine</translation>
     </message>
     <message>
         <source>Work group size</source>
-        <translation type="unfinished"></translation>
+        <translation>Taille du groupe de travail</translation>
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="unfinished"></translation>
+        <translation>Alertes</translation>
     </message>
     <message>
         <source>Issue warning when the maximum number of steps is reached.</source>
-        <translation type="unfinished"></translation>
+        <translation>Lancer une alerte lorsque le nombre maximum d&apos;étapes est atteint.</translation>
     </message>
     <message>
         <source>Issue warning when stiffness is detected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Lancer une alerte lorsque la raideur est détecté.</translation>
     </message>
     <message>
         <source>(Stiffness refers to one vector component being so much </source>
-        <translation type="unfinished"></translation>
+        <translation>(Raideur se réfère à un composant de vecteur qui est tellement</translation>
     </message>
     <message>
         <source>larger than another that tolerances can&apos;t be met.)</source>
-        <translation type="unfinished"></translation>
+        <translation>plus large q&apos;un autre que la tolérance ne peut être satisfaite  </translation>
     </message>
     <message>
         <source>Issue warning when a curve doesn&apos;t terminate at a critical point.</source>
-        <translation type="unfinished"></translation>
+        <translation>Lancer une alerte lorsqu&apos;une courbe ne se termine pas au point critique.</translation>
     </message>
     <message>
         <source>(I.e. the curve circles around the critical point without stopping.)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Par ex. la courbe tourne autour du point critique sans s&apos;arrêter)</translation>
     </message>
     <message>
         <source>Speed cutoff for critical points</source>
-        <translation type="unfinished"></translation>
+        <translation>Coupure rapide aux points critiques</translation>
     </message>
     <message>
         <source>StartPosition</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>EndPosition</source>
-        <translation type="unfinished"></translation>
+        <translation>Position finale</translation>
     </message>
     <message>
         <source>field constant</source>
-        <translation type="unfinished"></translation>
+        <translation>Champs constant</translation>
     </message>
     <message>
         <source>step length</source>
-        <translation type="unfinished"></translation>
+        <translation>Longueur du pas</translation>
     </message>
     <message>
         <source>maxsteps</source>
-        <translation type="unfinished"></translation>
+        <translation>Etapes max</translation>
     </message>
     <message>
         <source>maxtime</source>
-        <translation type="unfinished"></translation>
+        <translation>Time max</translation>
     </message>
     <message>
         <source>maxdistance</source>
-        <translation type="unfinished"></translation>
+        <translation>Distance max</translation>
     </message>
     <message>
         <source>maxsize</source>
-        <translation type="unfinished"></translation>
+        <translation>Taille max</translation>
     </message>
     <message>
         <source>Pathlines Override Starting Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Trajectoire annule le temps de départ</translation>
     </message>
     <message>
         <source>relative tolerance</source>
-        <translation type="unfinished"></translation>
+        <translation>tolérance relative</translation>
     </message>
     <message>
         <source>absolute tolerance</source>
-        <translation type="unfinished"></translation>
+        <translation>Tolérance absolue</translation>
     </message>
     <message>
         <source>velocity source</source>
-        <translation type="unfinished"></translation>
+        <translation>Source de vélocité</translation>
     </message>
 </context>
 <context>
     <name>QvisLabelPlotWindow</name>
     <message>
         <source>Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélection</translation>
     </message>
     <message>
         <source>Show nodes</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher les noeuds</translation>
     </message>
     <message>
         <source>Show cells</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher les cellules</translation>
     </message>
     <message>
         <source>Restrict number of labels to</source>
-        <translation type="unfinished"></translation>
+        <translation>Restreindre le nombre de libellé à</translation>
     </message>
     <message>
         <source>Front</source>
-        <translation type="unfinished"></translation>
+        <translation>Front</translation>
     </message>
     <message>
         <source>Back</source>
-        <translation type="unfinished"></translation>
+        <translation>Précédent</translation>
     </message>
     <message>
         <source>Front or Back</source>
-        <translation type="unfinished"></translation>
+        <translation>devant ou derrière</translation>
     </message>
     <message>
         <source>Draw labels that face</source>
-        <translation type="unfinished"></translation>
+        <translation>Dessiner les étiquettes de devant</translation>
     </message>
     <message>
         <source>Auto</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto</translation>
     </message>
     <message>
         <source>Always</source>
-        <translation type="unfinished"></translation>
+        <translation>Toujours</translation>
     </message>
     <message>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>Jamais</translation>
     </message>
     <message>
         <source>Depth test mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode de test approfondi</translation>
     </message>
     <message>
         <source>Formatting</source>
-        <translation type="unfinished"></translation>
+        <translation>Formater</translation>
     </message>
     <message>
         <source>Natural</source>
-        <translation type="unfinished"></translation>
+        <translation>Naturel</translation>
     </message>
     <message>
         <source>Logical index</source>
-        <translation type="unfinished"></translation>
+        <translation>Indice logique</translation>
     </message>
     <message>
         <source>Index</source>
-        <translation type="unfinished"></translation>
+        <translation>Indice</translation>
     </message>
     <message>
         <source>Label display format</source>
-        <translation type="unfinished"></translation>
+        <translation>Format d&apos;affichage des étiquettes</translation>
     </message>
     <message>
         <source>Specify label color</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir la couleur de l&apos;étiquette</translation>
     </message>
     <message>
         <source>Specify node label color</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir la couleur du noeud</translation>
     </message>
     <message>
         <source>Label height</source>
-        <translation type="unfinished"></translation>
+        <translation>Hauteur de l&apos;étiquette</translation>
     </message>
     <message>
         <source>Node label height</source>
-        <translation type="unfinished"></translation>
+        <translation>Hauteur de l&apos;étiquette de noeud</translation>
     </message>
     <message>
         <source>Center</source>
-        <translation type="unfinished"></translation>
+        <translation>Centre</translation>
     </message>
     <message>
         <source>Left</source>
-        <translation type="unfinished"></translation>
+        <translation>A gauche</translation>
     </message>
     <message>
         <source>Right</source>
-        <translation type="unfinished"></translation>
+        <translation>A droite</translation>
     </message>
     <message>
         <source>Horizontal justification</source>
-        <translation type="unfinished"></translation>
+        <translation>Justification horizontal</translation>
     </message>
     <message>
         <source>Top</source>
-        <translation type="unfinished"></translation>
+        <translation>Haut</translation>
     </message>
     <message>
         <source>Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>Bas</translation>
     </message>
     <message>
         <source>Vertical justification</source>
-        <translation type="unfinished"></translation>
+        <translation>Justification verticale</translation>
     </message>
     <message>
         <source>Format template</source>
-        <translation type="unfinished"></translation>
+        <translation>Modèle de format</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="unfinished"></translation>
+        <translation>Légende</translation>
     </message>
     <message>
         <source>Specify cell label color</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir la couleur de l&apos;étiquette de la cellule</translation>
     </message>
     <message>
         <source>Cell label height</source>
-        <translation type="unfinished"></translation>
+        <translation>Hauteur de l&apos;étiquette de cellule</translation>
     </message>
     <message>
         <source>Must enter a printf-style template that would be valid for a single floating point number.</source>
-        <translation type="unfinished"></translation>
+        <translation>Entrer un modèle printf qui sera valable pour un seul nombre à virgule flottante.</translation>
     </message>
     <message>
         <source>The template produces values that are too long.  36 character limit.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le modèle produit des valeurs qui sont trop longues. 36 caractères maximum.</translation>
     </message>
     <message>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Divers</translation>
     </message>
     <message>
         <source>number of labels</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre d&apos;étiquettes</translation>
     </message>
     <message>
         <source>text height</source>
-        <translation type="unfinished"></translation>
+        <translation>Hauteur du texte</translation>
     </message>
 </context>
 <context>
     <name>QvisLagrangianWindow</name>
     <message>
         <source>Seed Point</source>
-        <translation type="unfinished"></translation>
+        <translation>Point de dispersion</translation>
     </message>
     <message>
         <source>Number of steps</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de pas</translation>
     </message>
     <message>
         <source>X Axis Sample</source>
-        <translation type="unfinished"></translation>
+        <translation>Exemple X</translation>
     </message>
     <message>
         <source>Step</source>
-        <translation type="unfinished"></translation>
+        <translation>Pas</translation>
     </message>
     <message>
         <source>Time</source>
-        <translation type="unfinished">Temps</translation>
+        <translation>Temps</translation>
     </message>
     <message>
         <source>ArcLength</source>
-        <translation type="unfinished"></translation>
+        <translation>Taille de l&apos;arc</translation>
     </message>
     <message>
         <source>Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Vitesse</translation>
     </message>
     <message>
         <source>Vorticity</source>
-        <translation type="unfinished"></translation>
+        <translation>Vorticité</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable</translation>
     </message>
     <message>
         <source>Y Axis Sample</source>
-        <translation type="unfinished"></translation>
+        <translation>Exemple Y </translation>
     </message>
 </context>
 <context>
     <name>QvisLegendAttributesInterface</name>
     <message>
         <source>Let VisIt manage legend position</source>
-        <translation type="unfinished"></translation>
+        <translation>Visit gère la position de la légende</translation>
     </message>
     <message>
         <source>Legend position</source>
-        <translation type="unfinished"></translation>
+        <translation>Position de la légende</translation>
     </message>
     <message>
         <source>X-scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Échelle X</translation>
     </message>
     <message>
         <source>Y-scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Échelle Y</translation>
     </message>
     <message>
         <source>Bounding box</source>
-        <translation type="unfinished"></translation>
+        <translation>Cadre</translation>
     </message>
     <message>
         <source>Draw title</source>
-        <translation type="unfinished"></translation>
+        <translation>Tracer le titre</translation>
     </message>
     <message>
         <source>Text color</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur du texte</translation>
     </message>
     <message>
         <source>Use foreground color</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur d&apos;avant plan</translation>
     </message>
     <message>
         <source>Number format</source>
-        <translation type="unfinished"></translation>
+        <translation>Format de nombre</translation>
     </message>
     <message>
         <source>Font height</source>
-        <translation type="unfinished"></translation>
+        <translation>Hauteur de la police</translation>
     </message>
     <message>
         <source>Font family</source>
-        <translation type="unfinished"></translation>
+        <translation>Famille de police</translation>
     </message>
     <message>
         <source>Bold</source>
-        <translation type="unfinished"></translation>
+        <translation>Gras</translation>
     </message>
     <message>
         <source>Italic</source>
-        <translation type="unfinished"></translation>
+        <translation>Italique</translation>
     </message>
     <message>
         <source>Shadow</source>
-        <translation type="unfinished"></translation>
+        <translation>Ombre</translation>
     </message>
     <message>
         <source>Lower left</source>
-        <translation type="unfinished"></translation>
+        <translation>Inférieur gauche</translation>
     </message>
     <message>
         <source>The format string for the legend was not used because it does not contain a &apos;%&apos; character.</source>
-        <translation type="unfinished"></translation>
+        <translation>La chaîne de format de la légende n&apos;a pas été utilisé parce qu&apos;elle ne contient pas un caractère &apos;%&apos;.</translation>
     </message>
     <message>
         <source>The format string for the legend was not used because it contains multiple &apos;%&apos; characters.</source>
-        <translation type="unfinished"></translation>
+        <translation>La chaîne de format de la légende n&apos;a pas été utilisé parce qu&apos;elle ne contient pas un caractère &apos;%&apos;.</translation>
     </message>
     <message>
         <source>Vertical, Text on Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Vertical, texte à droite</translation>
     </message>
     <message>
         <source>Vertical, Text on Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Vertical, texte à gauche</translation>
     </message>
     <message>
         <source>Horizontal, Text on Top</source>
-        <translation type="unfinished"></translation>
+        <translation>Horizontal, texte en haut</translation>
     </message>
     <message>
         <source>Horizontal, Text on Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>Horizontal, texte en bas</translation>
     </message>
     <message>
         <source>Orientation</source>
-        <translation type="unfinished"></translation>
+        <translation>Orientation</translation>
     </message>
     <message>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Position</translation>
     </message>
     <message>
         <source>Let VisIt determine tick labels</source>
-        <translation type="unfinished"></translation>
+        <translation>Visit gère la position de l&apos;étiquette</translation>
     </message>
     <message>
         <source>Num ticks</source>
-        <translation type="unfinished"></translation>
+        <translation>Marque num</translation>
     </message>
     <message>
         <source>Inclusive of min and max</source>
-        <translation type="unfinished"></translation>
+        <translation>Inclus min et max</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Values</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeurs</translation>
     </message>
     <message>
         <source>Labels</source>
-        <translation type="unfinished"></translation>
+        <translation>Étiquettes</translation>
     </message>
     <message>
         <source>Values and Labels</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeurs et étiquettes</translation>
     </message>
     <message>
         <source>Draw: </source>
-        <translation type="unfinished"></translation>
+        <translation>Tracer :</translation>
     </message>
     <message>
         <source>Specify tick values and labels</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeurs et étiquettes spécifiés</translation>
     </message>
     <message>
         <source>Add tick value</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeur de marque ajoutée</translation>
     </message>
     <message>
         <source>Delete selected value</source>
-        <translation type="unfinished"></translation>
+        <translation>Effacer la valeur sélectionnée</translation>
     </message>
     <message>
         <source>Tick Marks</source>
-        <translation type="unfinished"></translation>
+        <translation>Marques</translation>
     </message>
     <message>
         <source>Draw min/max</source>
-        <translation type="unfinished"></translation>
+        <translation>Tracer min/max</translation>
     </message>
     <message>
         <source>Arial</source>
-        <translation type="unfinished"></translation>
+        <translation>Arial</translation>
     </message>
     <message>
         <source>Courier</source>
-        <translation type="unfinished"></translation>
+        <translation>Courier</translation>
     </message>
     <message>
         <source>Times</source>
-        <translation type="unfinished">Temps</translation>
+        <translation>Times</translation>
     </message>
     <message>
         <source>Appearance</source>
-        <translation type="unfinished"></translation>
+        <translation>Apparence</translation>
     </message>
     <message>
         <source>Computed values</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeur calculée</translation>
     </message>
 </context>
 <context>
@@ -7589,7 +7593,7 @@ par opérateur d&apos;alignement</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation>Édition</translation>
+        <translation>Edition</translation>
     </message>
     <message>
         <source>Preview</source>
@@ -7644,150 +7648,150 @@ par opérateur d&apos;alignement</translation>
     <name>QvisLine2DInterface</name>
     <message>
         <source>Start of line in screen coordinates [0,1]</source>
-        <translation type="unfinished"></translation>
+        <translation>Début de ligne en coordonnées d&apos;écran [0,1]</translation>
     </message>
     <message>
         <source>End of line in screen coordinates [0,1]</source>
-        <translation type="unfinished"></translation>
+        <translation>Fin de ligne en coordonnées d&apos;écran [0,1]</translation>
     </message>
     <message>
         <source>Width</source>
-        <translation type="unfinished"></translation>
+        <translation>Largeur</translation>
     </message>
     <message>
         <source>Line color</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur de ligne</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Ligne</translation>
     </message>
     <message>
         <source>Solid</source>
-        <translation type="unfinished"></translation>
+        <translation>Plein</translation>
     </message>
     <message>
         <source>Visible</source>
-        <translation type="unfinished"></translation>
+        <translation>Visible</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Début</translation>
     </message>
     <message>
         <source>End</source>
-        <translation type="unfinished"></translation>
+        <translation>Fin</translation>
     </message>
     <message>
         <source>Begin arrow</source>
-        <translation type="unfinished"></translation>
+        <translation>Flèche de départ</translation>
     </message>
     <message>
         <source>End arrow</source>
-        <translation type="unfinished"></translation>
+        <translation>Flèche de fin</translation>
     </message>
 </context>
 <context>
     <name>QvisLineSamplerWindow</name>
     <message>
         <source>Cartesian</source>
-        <translation type="unfinished"></translation>
+        <translation>Cartésien</translation>
     </message>
     <message>
         <source>Array configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuration de table</translation>
     </message>
     <message>
         <source>List</source>
-        <translation type="unfinished"></translation>
+        <translation>Liste</translation>
     </message>
     <message>
         <source>Number of arrays</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de tables</translation>
     </message>
     <message>
         <source>Number of channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de canaux</translation>
     </message>
     <message>
         <source>Parallel</source>
-        <translation type="unfinished"></translation>
+        <translation>Parallèle</translation>
     </message>
     <message>
         <source>Divergent</source>
-        <translation type="unfinished"></translation>
+        <translation>Divergent</translation>
     </message>
     <message>
         <source>Grid</source>
-        <translation type="unfinished"></translation>
+        <translation>Grille</translation>
     </message>
     <message>
         <source>Parallel/Grid: Offset between channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Parallèle / Grille : Décalage entre les canaux</translation>
     </message>
     <message>
         <source>Grid: Number of rows</source>
-        <translation type="unfinished"></translation>
+        <translation>Grille : Nombre de lignes</translation>
     </message>
     <message>
         <source>Grid: Offset between rows</source>
-        <translation type="unfinished"></translation>
+        <translation>Grille : décalage entre les lignes</translation>
     </message>
     <message>
         <source>Array origin</source>
-        <translation type="unfinished"></translation>
+        <translation>Origine du tableau</translation>
     </message>
     <message>
         <source>Array axis direction</source>
-        <translation type="unfinished"></translation>
+        <translation>Direction de table d&apos;axe</translation>
     </message>
     <message>
         <source>R</source>
-        <translation type="unfinished"></translation>
+        <translation>R</translation>
     </message>
     <message>
         <source>Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Z</translation>
     </message>
     <message>
         <source>View dimension</source>
-        <translation type="unfinished"></translation>
+        <translation>Dimension vue</translation>
     </message>
     <message>
         <source>One</source>
-        <translation type="unfinished"></translation>
+        <translation>Un</translation>
     </message>
     <message>
         <source>Two</source>
-        <translation type="unfinished"></translation>
+        <translation>Deux</translation>
     </message>
     <message>
         <source>Three</source>
-        <translation type="unfinished"></translation>
+        <translation>Trois</translation>
     </message>
     <message>
         <source>1D plot height scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Échelle de hauteur du graphique 1D</translation>
     </message>
     <message>
         <source>1D plot channel offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Décalage du canal du graphique 1D</translation>
     </message>
     <message>
         <source>1D plot array offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Décalage du tableau du graphique 1D</translation>
     </message>
     <message>
         <source>Point</source>
-        <translation type="unfinished"></translation>
+        <translation>Point</translation>
     </message>
     <message>
         <source>Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Ligne</translation>
     </message>
     <message>
         <source>Cylinder</source>
@@ -7799,95 +7803,95 @@ par opérateur d&apos;alignement</translation>
     </message>
     <message>
         <source>Cylinder radius</source>
-        <translation type="unfinished"></translation>
+        <translation>Rayon du cylindre </translation>
     </message>
     <message>
         <source>TopHat</source>
-        <translation type="unfinished"></translation>
+        <translation>TopHat</translation>
     </message>
     <message>
         <source>Gaussian</source>
-        <translation type="unfinished"></translation>
+        <translation>Gaussien</translation>
     </message>
     <message>
         <source>Standard deviation</source>
-        <translation type="unfinished"></translation>
+        <translation>Déviaton standard</translation>
     </message>
     <message>
         <source>Linear sample distance</source>
-        <translation type="unfinished"></translation>
+        <translation>Distance d&apos;échantillon linéaire</translation>
     </message>
     <message>
         <source>Time sampling</source>
-        <translation type="unfinished"></translation>
+        <translation>Temps d&apos;échantillonage</translation>
     </message>
     <message>
         <source>Start time step</source>
-        <translation type="unfinished"></translation>
+        <translation>Début des étapes de temps</translation>
     </message>
     <message>
         <source>Stop time step</source>
-        <translation type="unfinished"></translation>
+        <translation>Fin des étapes de temps</translation>
     </message>
     <message>
         <source>Stride</source>
-        <translation type="unfinished"></translation>
+        <translation>Arpent</translation>
     </message>
     <message>
         <source>Add Channel</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter canal</translation>
     </message>
     <message>
         <source>Delete Channel</source>
-        <translation type="unfinished"></translation>
+        <translation>Effacer canal</translation>
     </message>
     <message>
         <source>Delete All Channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Effacer tous les canaux</translation>
     </message>
     <message>
         <source>Main</source>
-        <translation type="unfinished"></translation>
+        <translation>Principal</translation>
     </message>
     <message>
         <source>Mesh geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Géométrie du maillage</translation>
     </message>
     <message>
         <source>Cylindrical (R,Phi,Z)</source>
-        <translation type="unfinished"></translation>
+        <translation>Cylindrique (R,Phi,Z)</translation>
     </message>
     <message>
         <source>Toroidal</source>
-        <translation type="unfinished"></translation>
+        <translation>Toroïde</translation>
     </message>
     <message>
         <source>Geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Géométrie</translation>
     </message>
     <message>
         <source>Manual List</source>
-        <translation type="unfinished"></translation>
+        <translation>Liste manuelle</translation>
     </message>
     <message>
         <source>Boundary</source>
-        <translation type="unfinished">Frontière</translation>
+        <translation>Limite</translation>
     </message>
     <message>
         <source>Data File</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier de données</translation>
     </message>
     <message>
         <source>Wall File</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier de fond</translation>
     </message>
     <message>
         <source>Read wall configuration file</source>
-        <translation type="unfinished"></translation>
+        <translation>Lire fichier de configuration du fond</translation>
     </message>
     <message>
         <source>Coordinate layout R, Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Coordonner la mise en page R, Z </translation>
     </message>
     <message>
         <source>Set the instance when applying to multiple 
@@ -7897,195 +7901,201 @@ to A for the first, and B for the second. These
 settings will allow the attributes to be
 propagated to plots in other windows when
 using the &quot;Apply to all windows&quot; option.</source>
-        <translation type="unfinished"></translation>
+        <translation>Régle l&apos;instance lors de l&apos;application à de multiples
+parcelles dans une seule fenêtre. C&apos;est à dire. si vous
+comparer les différents prélèvements, définissez l&apos;instance
+ A pour le premier, et B pour le second. Ces
+paramètres permettent aux attributs d&apos;être
+propagés à des parcelles dans d&apos;autres fenêtres lorsqu&apos;on
+utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translation>
     </message>
     <message>
         <source>Instance</source>
-        <translation type="unfinished"></translation>
+        <translation>Instance</translation>
     </message>
     <message>
         <source>A</source>
-        <translation type="unfinished"></translation>
+        <translation>A</translation>
     </message>
     <message>
         <source>B</source>
-        <translation type="unfinished"></translation>
+        <translation>B</translation>
     </message>
     <message>
         <source>C</source>
-        <translation type="unfinished"></translation>
+        <translation>C</translation>
     </message>
     <message>
         <source>D</source>
-        <translation type="unfinished"></translation>
+        <translation>D</translation>
     </message>
     <message>
         <source>E</source>
-        <translation type="unfinished"></translation>
+        <translation>E</translation>
     </message>
     <message>
         <source>Toroidal angle between arrays</source>
-        <translation type="unfinished"></translation>
+        <translation>Angle toroïde entre les tables</translation>
     </message>
     <message>
         <source>Number of divergent channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de canaux divergents</translation>
     </message>
     <message>
         <source>Relative angle between channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Angle relatif entre les canaux</translation>
     </message>
     <message>
         <source>Number of parallel channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de canaux parallèles</translation>
     </message>
     <message>
         <source>Offset between channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Décalage entre canaux</translation>
     </message>
     <message>
         <source>Number of channels per column</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de canaux par colonne</translation>
     </message>
     <message>
         <source>Number of rows</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de lignes</translation>
     </message>
     <message>
         <source>Offset between rows</source>
-        <translation type="unfinished"></translation>
+        <translation>Décalage entre les lignes</translation>
     </message>
     <message>
         <source>Array origin (R,Z)</source>
-        <translation type="unfinished"></translation>
+        <translation>Origine du tableau (R,Z)</translation>
     </message>
     <message>
         <source>Poloidal angle</source>
-        <translation type="unfinished"></translation>
+        <translation>Angle poloïdale</translation>
     </message>
     <message>
         <source>Poloidal plane R-tilt</source>
-        <translation type="unfinished"></translation>
+        <translation>Pente R du plan poloïdale</translation>
     </message>
     <message>
         <source>Poloidal plane Z-tilt</source>
-        <translation type="unfinished"></translation>
+        <translation>Pente Z du plan poloïdale</translation>
     </message>
     <message>
         <source>Toroidal angle</source>
-        <translation type="unfinished"></translation>
+        <translation>Angle Toroïdale</translation>
     </message>
     <message>
         <source>Flip toroidal angle</source>
-        <translation type="unfinished"></translation>
+        <translation>Angle Toroïdale basculé </translation>
     </message>
     <message>
         <source> R, Z, Phi, and Poloidal Angle</source>
-        <translation type="unfinished"></translation>
+        <translation> R, Z, Phi et angle poloroïdale</translation>
     </message>
     <message>
         <source>Read channel configuration file</source>
-        <translation type="unfinished"></translation>
+        <translation>Lire fichier de configuration du canal</translation>
     </message>
     <message>
         <source>Sampling</source>
-        <translation type="unfinished"></translation>
+        <translation>Exemple</translation>
     </message>
     <message>
         <source>Channel geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Géométrie du canal</translation>
     </message>
     <message>
         <source>Sample volume</source>
-        <translation type="unfinished"></translation>
+        <translation>Volume d&apos;échantillonage</translation>
     </message>
     <message>
         <source>Cylinder sample profile</source>
-        <translation type="unfinished"></translation>
+        <translation>Orofil de l&apos;échantillon cylindrique</translation>
     </message>
     <message>
         <source>Integration</source>
-        <translation type="unfinished"></translation>
+        <translation>Intégration</translation>
     </message>
     <message>
         <source>Channel</source>
-        <translation type="unfinished"></translation>
+        <translation>Canal</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Integrate along the channel</source>
-        <translation type="unfinished"></translation>
+        <translation>Intégrerle long du canal </translation>
     </message>
     <message>
         <source>Sample toroidally as time</source>
-        <translation type="unfinished"></translation>
+        <translation>Echantillon toroïdale du temps</translation>
     </message>
     <message>
         <source>Integrate toroidally</source>
-        <translation type="unfinished"></translation>
+        <translation>Intégrer toroïdalement</translation>
     </message>
     <message>
         <source>Toroidal angle sampling</source>
-        <translation type="unfinished"></translation>
+        <translation>Echantillon d&apos;angle toroïdale</translation>
     </message>
     <message>
         <source>Sample</source>
-        <translation type="unfinished"></translation>
+        <translation>Exemple</translation>
     </message>
     <message>
         <source>Absolute</source>
-        <translation type="unfinished"></translation>
+        <translation>Absolue</translation>
     </message>
     <message>
         <source>Relative</source>
-        <translation type="unfinished"></translation>
+        <translation>Relatif</translation>
     </message>
     <message>
         <source>Toroidal sample angle</source>
-        <translation type="unfinished"></translation>
+        <translation>Angle toroïdale d&apos;échantillon</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Début</translation>
     </message>
     <message>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>Stop</translation>
     </message>
     <message>
         <source>Current Time Step</source>
-        <translation type="unfinished"></translation>
+        <translation>Etapes de temps actuelles</translation>
     </message>
     <message>
         <source>Multiple Time Steps</source>
-        <translation type="unfinished"></translation>
+        <translation>Etapes de temps multiples</translation>
     </message>
     <message>
         <source>Time step</source>
-        <translation type="unfinished"></translation>
+        <translation>Pas de temps</translation>
     </message>
     <message>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>Vue</translation>
     </message>
     <message>
         <source>Do not apply to all</source>
-        <translation type="unfinished"></translation>
+        <translation>Ne pas appliquer à tout</translation>
     </message>
     <message>
         <source>1D plot viewing parameters</source>
-        <translation type="unfinished"></translation>
+        <translation>Paramètre d&apos;affichage du graphique 1D</translation>
     </message>
     <message>
         <source>Display time using</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher le temps utilisé</translation>
     </message>
     <message>
         <source>Step</source>
-        <translation type="unfinished"></translation>
+        <translation>Pas</translation>
     </message>
     <message>
         <source>Time</source>
@@ -8093,207 +8103,207 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>Cycle</source>
-        <translation type="unfinished"></translation>
+        <translation>Cycle</translation>
     </message>
     <message>
         <source>Misc viewing parameters</source>
-        <translation type="unfinished"></translation>
+        <translation>Paramètre d&apos;affichage divers</translation>
     </message>
     <message>
         <source>View geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Voir la géométrie </translation>
     </message>
     <message>
         <source>Points</source>
-        <translation type="unfinished"></translation>
+        <translation>Points</translation>
     </message>
     <message>
         <source>Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Lignes</translation>
     </message>
     <message>
         <source>Surfaces</source>
-        <translation type="unfinished"></translation>
+        <translation>Surfaces</translation>
     </message>
     <message>
         <source>Divergent: Angle between channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Divergent : Angle entre les canaux</translation>
     </message>
     <message>
         <source>Toroidal start angle</source>
-        <translation type="unfinished"></translation>
+        <translation>Angle Toroïdal de début</translation>
     </message>
     <message>
         <source>Toroidal stop angle</source>
-        <translation type="unfinished"></translation>
+        <translation>Angle Toroïdal de fin</translation>
     </message>
     <message>
         <source>Toroidal sampling angle</source>
-        <translation type="unfinished"></translation>
+        <translation>Echantillon d&apos;angle toroïdal</translation>
     </message>
     <message>
         <source>Number of channel list arrays</source>
-        <translation type="unfinished"></translation>
+        <translation>Tables de listage du nombre de canaux</translation>
     </message>
     <message>
         <source>Open channel configuration file</source>
-        <translation type="unfinished"></translation>
+        <translation>Ouvrir le fichier de configuration du canal</translation>
     </message>
     <message>
         <source>Open wall configuration file</source>
-        <translation type="unfinished"></translation>
+        <translation>Ouvrir le fichier de configuration du fond</translation>
     </message>
     <message>
         <source>Coordinate layout X, Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Coordonner la mise en page X, Z </translation>
     </message>
     <message>
         <source>Y distance between arrays</source>
-        <translation type="unfinished"></translation>
+        <translation>Distance Y entre les tables</translation>
     </message>
     <message>
         <source>Array origin (X,Y,Z)</source>
-        <translation type="unfinished"></translation>
+        <translation>Origine du tableau (Z,Y,Z)</translation>
     </message>
     <message>
         <source>X</source>
-        <translation type="unfinished"></translation>
+        <translation>X</translation>
     </message>
     <message>
         <source>Y axis rotation</source>
-        <translation type="unfinished"></translation>
+        <translation>Rotation axe Y </translation>
     </message>
     <message>
         <source>Y plane X-tilt</source>
-        <translation type="unfinished"></translation>
+        <translation>Plan Y inclinaison X</translation>
     </message>
     <message>
         <source>Y plane Z-tilt</source>
-        <translation type="unfinished"></translation>
+        <translation>Plan Y inclinaison Z</translation>
     </message>
     <message>
         <source>Y axis offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Décaler axe Y </translation>
     </message>
     <message>
         <source> X, Y, Z, and Y Rotation</source>
-        <translation type="unfinished"></translation>
+        <translation>Rotation X,Y,Z et Y </translation>
     </message>
     <message>
         <source>Y axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Ordonnées</translation>
     </message>
     <message>
         <source>Sample Y axis as time</source>
-        <translation type="unfinished"></translation>
+        <translation>Axe Y de l&apos;échantillonde temps</translation>
     </message>
     <message>
         <source>Y axis sampling</source>
-        <translation type="unfinished"></translation>
+        <translation>Ordonnées de l&apos;échantillonnage </translation>
     </message>
     <message>
         <source>Y sample distance</source>
-        <translation type="unfinished"></translation>
+        <translation>Distance d&apos;échantillon Y</translation>
     </message>
     <message>
         <source>Array origin (R,Phi,Z)</source>
-        <translation type="unfinished"></translation>
+        <translation>Origine du tableau (R,phi,Z)</translation>
     </message>
 </context>
 <context>
     <name>QvisLineStyleWidget</name>
     <message>
         <source>solid</source>
-        <translation type="unfinished"></translation>
+        <translation>Plein</translation>
     </message>
     <message>
         <source>dash</source>
-        <translation type="unfinished"></translation>
+        <translation>Tiret</translation>
     </message>
     <message>
         <source>dotted</source>
-        <translation type="unfinished"></translation>
+        <translation>Pointé</translation>
     </message>
     <message>
         <source>dash/dot</source>
-        <translation type="unfinished"></translation>
+        <translation>Tiret/point</translation>
     </message>
 </context>
 <context>
     <name>QvisLineSurfaceWindow</name>
     <message>
         <source>Index of first time slice</source>
-        <translation type="unfinished"></translation>
+        <translation>Indice du début de l&apos;interval de temps</translation>
     </message>
     <message>
         <source>Index of last time slice</source>
-        <translation type="unfinished"></translation>
+        <translation>Indice de la fin de l&apos;interval de temps</translation>
     </message>
     <message>
         <source>Stride through time slices</source>
-        <translation type="unfinished"></translation>
+        <translation>Intervals de temps par pas important</translation>
     </message>
     <message>
         <source>Point 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Point 1</translation>
     </message>
     <message>
         <source>Point 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Point 2</translation>
     </message>
 </context>
 <context>
     <name>QvisLineoutQueryWidget</name>
     <message>
         <source>Start point</source>
-        <translation type="unfinished"></translation>
+        <translation>Début</translation>
     </message>
     <message>
         <source>End point</source>
-        <translation type="unfinished"></translation>
+        <translation>Fin</translation>
     </message>
     <message>
         <source>Use Sampling</source>
-        <translation type="unfinished"></translation>
+        <translation>Echantillon</translation>
     </message>
     <message>
         <source>Sample Points </source>
-        <translation type="unfinished"></translation>
+        <translation>Points d&apos;échantillon</translation>
     </message>
 </context>
 <context>
     <name>QvisLineoutWindow</name>
     <message>
         <source>Point 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Point 1</translation>
     </message>
     <message>
         <source>Point 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Point 2</translation>
     </message>
     <message>
         <source>Interactive</source>
-        <translation type="unfinished"></translation>
+        <translation>Interactif</translation>
     </message>
     <message>
         <source>Override Global Lineout Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler la configuration globale</translation>
     </message>
     <message>
         <source>Use Sampling</source>
-        <translation type="unfinished"></translation>
+        <translation>Echantillon</translation>
     </message>
     <message>
         <source>Samples</source>
-        <translation type="unfinished"></translation>
+        <translation>Exemples</translation>
     </message>
     <message>
         <source>Refline Labels</source>
-        <translation type="unfinished"></translation>
+        <translation>Etiquettez de référence</translation>
     </message>
     <message>
         <source>Number of Sample Points </source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de points d&apos;échantillon</translation>
     </message>
 </context>
 <context>
@@ -8311,7 +8321,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>Select &amp;file . . .</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner &amp;fichier.</translation>
     </message>
     <message>
         <source>Open file . . .</source>
@@ -8319,7 +8329,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>Advanced file options</source>
-        <translation type="unfinished">Fichier choix évolué</translation>
+        <translation>Options de fichier avancée</translation>
     </message>
     <message>
         <source>ReOpen file</source>
@@ -8607,7 +8617,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <source>About . . .</source>
-        <translation>À propos . . .</translation>
+        <translation>A propos . . .</translation>
     </message>
     <message>
         <source>Copyright . . .</source>
@@ -8710,671 +8720,671 @@ using the &quot;Apply to all windows&quot; option.</source>
     <name>QvisMaterialWindow</name>
     <message>
         <source>Algorithm:</source>
-        <translation type="unfinished"></translation>
+        <translation>Algorithme :</translation>
     </message>
     <message>
         <source>Isovolume (special-purpose)</source>
-        <translation type="unfinished"></translation>
+        <translation>Volume iso (Effets spéciaux)</translation>
     </message>
     <message>
         <source>Force interface reconstruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Forcer la reconstruction de l&apos;interface</translation>
     </message>
     <message>
         <source>Clean zones only</source>
-        <translation type="unfinished"></translation>
+        <translation>Zones propres seules</translation>
     </message>
     <message>
         <source>Simplify heavily mixed zones</source>
-        <translation type="unfinished"></translation>
+        <translation>Simplifier les zones mélangées</translation>
     </message>
     <message>
         <source>Maximum materials per zone</source>
-        <translation type="unfinished"></translation>
+        <translation>Maximum matériau par zone</translation>
     </message>
     <message>
         <source>Volume Fraction for Isovolume</source>
-        <translation type="unfinished"></translation>
+        <translation>Fraction du volume pour volumes-iso</translation>
     </message>
     <message>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.</source>
-        <translation type="unfinished"></translation>
+        <translation>Remarque : Ces paramètress&apos;appliquent uniquement aux nouvelles courbes. Pour les appliquer à des courbes actuelles, réouvrir le fichier.</translation>
     </message>
     <message>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.  VisIt will NOT issue this message any further times for this session, but keep in mind that you must re-open each time you change the material attributes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Remarque : Ces paramètres s&apos;appliquent uniquement aux nouveaux graphiques. Pour les appliquer à des graphiques actuels, réouvrir le fichier. Visite ne devrait pas émettre ce message de nouveau dans cette session, mais gardez à l&apos;esprit que vous devez le réouvrir chaque fois que vous changez les attributs matériels.</translation>
     </message>
     <message>
         <source>Max mats per zone must be at least 1.Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Max tapis par zone doit être au moins 1.Remis à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The value of isoVolumeFraction was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>La valeur de fraction du volume-iso était invalide. Réinitialisation de la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>Equi-T (obsolete)</source>
-        <translation type="unfinished"></translation>
+        <translation>Equi-T (obsolète)</translation>
     </message>
     <message>
         <source>Equi-Z (default, supports iteration)</source>
-        <translation type="unfinished"></translation>
+        <translation>Equi-Z (Support iteration par défaut)</translation>
     </message>
     <message>
         <source>PLIC (accurate/discontinuous)</source>
-        <translation type="unfinished"></translation>
+        <translation>PLIC (exacte / discontinu)</translation>
     </message>
     <message>
         <source>Discrete (accurate/10X memory footprint/rect. only)</source>
-        <translation type="unfinished"></translation>
+        <translation>Discret (exacte / 10X pied de page mémoire / rect. seul)</translation>
     </message>
     <message>
         <source>Enable interface smoothing (Equi-* only)</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer l&apos;interface lissage (équi-* uniquement)</translation>
     </message>
     <message>
         <source>Force full connectivity (Equi-T only)</source>
-        <translation type="unfinished"></translation>
+        <translation>Force la connectivité entière (Equi-T uniquement)</translation>
     </message>
     <message>
         <source>Enable iteration (Equi-Z, Isovolume only)</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer l&apos;itération (équi-Z,volume-iso uniquement)</translation>
     </message>
     <message>
         <source>Number of iterations</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre d&apos;itérations</translation>
     </message>
     <message>
         <source>Convergence rate (&gt;0)</source>
-        <translation type="unfinished"></translation>
+        <translation>Taux de convergence (&gt;0)</translation>
     </message>
     <message>
         <source>Annealing time (seconds) (Discrete only)</source>
-        <translation type="unfinished"></translation>
+        <translation>Temps de recuit (secondes) (Discret uniquement)</translation>
     </message>
     <message>
         <source>The value of numIterations was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Les valeurs de numitérations ne sont pas bonnes, remise des dernières bonnes valeurs de %1.</translation>
     </message>
     <message>
         <source>The value of iterationDamping was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Les valeurs d&apos;itération d&apos;amortissement ne sont pas bonnes, remise des dernières bonnes valeurs de %1.</translation>
     </message>
     <message>
         <source>The value of annealingTime was invalid. Resetting to the last good value of %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Les valeurs du temps de recuit ne sont pas bonnes, remise des dernières bonnes valeurs de %1.</translation>
     </message>
 </context>
 <context>
     <name>QvisMergeWindow</name>
     <message>
         <source>Merge across all processors?</source>
-        <translation type="unfinished"></translation>
+        <translation>Fusionner avec tous les processeurs ?</translation>
     </message>
     <message>
         <source>Maximum distance between points that should be merged</source>
-        <translation type="unfinished"></translation>
+        <translation>Distance maximale entre les points qui devraient être fusionnés</translation>
     </message>
 </context>
 <context>
     <name>QvisMeshManagementWindow</name>
     <message>
         <source>CSG Meshing</source>
-        <translation type="unfinished"></translation>
+        <translation>CSG maillage</translation>
     </message>
     <message>
         <source>Don&apos;t discretize. Pass native CSG down pipeline</source>
-        <translation type="unfinished"></translation>
+        <translation>Ne pas discrétiser. Natif CSG passé en pipeline </translation>
     </message>
     <message>
         <source>Discretize boundary only</source>
-        <translation type="unfinished"></translation>
+        <translation>Discrétiser les limites uniquement</translation>
     </message>
     <message>
         <source>Discretization Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode de discrétisation</translation>
     </message>
     <message>
         <source>Uniform</source>
-        <translation type="unfinished"></translation>
+        <translation>Uniforme</translation>
     </message>
     <message>
         <source>Adaptive</source>
-        <translation type="unfinished"></translation>
+        <translation>Adaptif</translation>
     </message>
     <message>
         <source>Smallest Zone (% bbox diag)</source>
-        <translation type="unfinished"></translation>
+        <translation>Plus petite zone (% bbox diag)</translation>
     </message>
     <message>
         <source>Flat Enough (recip. curvature)</source>
-        <translation type="unfinished"></translation>
+        <translation>Assez plat (recip. Courbure)</translation>
     </message>
     <message>
         <source>Adaptive not available. Missing boost interval template library. Overriding to Uniform.</source>
-        <translation type="unfinished"></translation>
+        <translation>Adaptif pas disponible. Les bibliothèque de modèles d&apos;intervalle boost manquantes. Redéfinition uniforme.</translation>
     </message>
     <message>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.</source>
-        <translation type="unfinished"></translation>
+        <translation>Remarque : Ces paramètres s&apos;appliquent uniquement aux nouvelles courbes. Pour les appliquer à des courbes actuelles, réouvrir le fichier.</translation>
     </message>
     <message>
         <source>Multi-pass</source>
-        <translation type="unfinished"></translation>
+        <translation>Multi-passe</translation>
     </message>
 </context>
 <context>
     <name>QvisMeshPlotWindow</name>
     <message>
         <source>Line style</source>
-        <translation type="unfinished"></translation>
+        <translation>Style de ligne</translation>
     </message>
     <message>
         <source>Line width</source>
-        <translation type="unfinished"></translation>
+        <translation>Épaisseur</translation>
     </message>
     <message>
         <source>Mesh color</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur du maillage</translation>
     </message>
     <message>
         <source>Opaque color</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur opaque</translation>
     </message>
     <message>
         <source>Opaque mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode opaque</translation>
     </message>
     <message>
         <source>Auto</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto</translation>
     </message>
     <message>
         <source>On</source>
-        <translation type="unfinished"></translation>
+        <translation>Marche</translation>
     </message>
     <message>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Arrêt</translation>
     </message>
     <message>
         <source>Outline only</source>
-        <translation type="unfinished"></translation>
+        <translation>Contour seulement</translation>
     </message>
     <message>
         <source>Tolerance</source>
-        <translation type="unfinished"></translation>
+        <translation>Tolérance</translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="unfinished"></translation>
+        <translation>Légende</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Fast</source>
-        <translation type="unfinished"></translation>
+        <translation>Rapide</translation>
     </message>
     <message>
         <source>High</source>
-        <translation type="unfinished"></translation>
+        <translation>Haut</translation>
     </message>
     <message>
         <source>Zone</source>
-        <translation type="unfinished"></translation>
+        <translation>Zone</translation>
     </message>
     <message>
         <source>Show internal zones</source>
-        <translation type="unfinished"></translation>
+        <translation>Afficher les zones internes</translation>
     </message>
     <message>
         <source>Color</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur</translation>
     </message>
     <message>
         <source>Foreground</source>
-        <translation type="unfinished"></translation>
+        <translation>Avant plan</translation>
     </message>
     <message>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation>Personnaliser</translation>
     </message>
     <message>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Fond</translation>
     </message>
     <message>
         <source>Opacity</source>
-        <translation type="unfinished"></translation>
+        <translation>Opacité</translation>
     </message>
     <message>
         <source>Point / Line Style</source>
-        <translation type="unfinished"></translation>
+        <translation>Point/ligne de style</translation>
     </message>
     <message>
         <source>Geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Géométrie</translation>
     </message>
     <message>
         <source>Smoothing</source>
-        <translation type="unfinished"></translation>
+        <translation>Lisser</translation>
     </message>
     <message>
         <source>Misc</source>
-        <translation type="unfinished"></translation>
+        <translation>Divers</translation>
     </message>
     <message>
         <source>error tolerance</source>
-        <translation type="unfinished"></translation>
+        <translation>Tolérance</translation>
     </message>
 </context>
 <context>
     <name>QvisMessageWindow</name>
     <message>
         <source>Message</source>
-        <translation type="unfinished"></translation>
+        <translation>Message</translation>
     </message>
     <message>
         <source>Dismiss</source>
-        <translation type="unfinished"></translation>
+        <translation>Fermer</translation>
     </message>
     <message>
         <source>Error!</source>
-        <translation type="unfinished"></translation>
+        <translation>Erreur !</translation>
     </message>
     <message>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Alertes</translation>
     </message>
     <message>
         <source>Information</source>
-        <translation type="unfinished"></translation>
+        <translation>Information</translation>
     </message>
     <message>
         <source>Shortly thereafter, the following occured...</source>
-        <translation type="unfinished"></translation>
+        <translation>Peu de temps après, voici ce qui eut lieu ...</translation>
     </message>
 </context>
 <context>
     <name>QvisMetricThresholdWindow</name>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Aspect Ratio</source>
-        <translation type="unfinished"></translation>
+        <translation>Rapport/Aspect</translation>
     </message>
     <message>
         <source>Aspect Gamma</source>
-        <translation type="unfinished"></translation>
+        <translation>Gamma/Aspect</translation>
     </message>
     <message>
         <source>Skew</source>
-        <translation type="unfinished"></translation>
+        <translation>Inclinaison</translation>
     </message>
     <message>
         <source>Taper</source>
-        <translation type="unfinished"></translation>
+        <translation>Fuseau</translation>
     </message>
     <message>
         <source>Volume</source>
-        <translation type="unfinished">Rendu volumique </translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <source>Stretch</source>
-        <translation type="unfinished"></translation>
+        <translation>Etendue</translation>
     </message>
     <message>
         <source>Diagonal</source>
-        <translation type="unfinished"></translation>
+        <translation>Diagonale</translation>
     </message>
     <message>
         <source>Dimension</source>
-        <translation type="unfinished"></translation>
+        <translation>Dimension</translation>
     </message>
     <message>
         <source>Oddy</source>
-        <translation type="unfinished"></translation>
+        <translation>Etrange</translation>
     </message>
     <message>
         <source>Condition</source>
-        <translation type="unfinished"></translation>
+        <translation>Condition</translation>
     </message>
     <message>
         <source>Jacobian</source>
-        <translation type="unfinished"></translation>
+        <translation>Jacobien</translation>
     </message>
     <message>
         <source>Scaled Jacobian</source>
-        <translation type="unfinished"></translation>
+        <translation>Echelle Jacobienne</translation>
     </message>
     <message>
         <source>Shear</source>
-        <translation type="unfinished"></translation>
+        <translation>Ras</translation>
     </message>
     <message>
         <source>Shape</source>
-        <translation type="unfinished"></translation>
+        <translation>Forme</translation>
     </message>
     <message>
         <source>Relative Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Taille relative</translation>
     </message>
     <message>
         <source>Shape and Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Forme et taille</translation>
     </message>
     <message>
         <source>Area</source>
-        <translation type="unfinished"></translation>
+        <translation>Aire</translation>
     </message>
     <message>
         <source>Warpage</source>
-        <translation type="unfinished"></translation>
+        <translation>Gauchi</translation>
     </message>
     <message>
         <source>Smallest Angle</source>
-        <translation type="unfinished"></translation>
+        <translation>Plus petit angle</translation>
     </message>
     <message>
         <source>Largest Angle</source>
-        <translation type="unfinished"></translation>
+        <translation>Plus grand angle</translation>
     </message>
     <message>
         <source>Hexahedron</source>
-        <translation type="unfinished"></translation>
+        <translation>Hexahedron</translation>
     </message>
     <message>
         <source>hex_lower</source>
-        <translation type="unfinished"></translation>
+        <translation>hex_bas</translation>
     </message>
     <message>
         <source>hex_upper</source>
-        <translation type="unfinished"></translation>
+        <translation>hex_haut</translation>
     </message>
     <message>
         <source>Tetrahedron</source>
-        <translation type="unfinished"></translation>
+        <translation>Tetrahedron</translation>
     </message>
     <message>
         <source>tet_lower</source>
-        <translation type="unfinished"></translation>
+        <translation>tet_bas</translation>
     </message>
     <message>
         <source>tet_upper</source>
-        <translation type="unfinished"></translation>
+        <translation>tet_haut</translation>
     </message>
     <message>
         <source>Wedge</source>
-        <translation type="unfinished"></translation>
+        <translation>Coin</translation>
     </message>
     <message>
         <source>wed_lower</source>
-        <translation type="unfinished"></translation>
+        <translation>Coin_bas</translation>
     </message>
     <message>
         <source>wed_upper</source>
-        <translation type="unfinished"></translation>
+        <translation>Coin_haut</translation>
     </message>
     <message>
         <source>Pyramid</source>
-        <translation type="unfinished"></translation>
+        <translation>Pyramide</translation>
     </message>
     <message>
         <source>pyr_lower</source>
-        <translation type="unfinished"></translation>
+        <translation>pyr_bas</translation>
     </message>
     <message>
         <source>pyr_upper</source>
-        <translation type="unfinished"></translation>
+        <translation>pyr_haut</translation>
     </message>
     <message>
         <source>Triangle</source>
-        <translation type="unfinished"></translation>
+        <translation>Triangle</translation>
     </message>
     <message>
         <source>tri_lower</source>
-        <translation type="unfinished"></translation>
+        <translation>tri_bas</translation>
     </message>
     <message>
         <source>tri_upper</source>
-        <translation type="unfinished"></translation>
+        <translation>tri_haut</translation>
     </message>
     <message>
         <source>Quad</source>
-        <translation type="unfinished"></translation>
+        <translation>Quad</translation>
     </message>
     <message>
         <source>quad_lower</source>
-        <translation type="unfinished"></translation>
+        <translation>quad_bas</translation>
     </message>
     <message>
         <source>quad_upper</source>
-        <translation type="unfinished"></translation>
+        <translation>quad_haut</translation>
     </message>
     <message>
         <source>preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Prédéfini</translation>
     </message>
 </context>
 <context>
     <name>QvisModelBasedClusteringWindow</name>
     <message>
         <source>Number of clusters</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de clusters</translation>
     </message>
     <message>
         <source>Clustering Method</source>
-        <translation type="unfinished"></translation>
+        <translation>Méthode de cluster</translation>
     </message>
     <message>
         <source>EM</source>
-        <translation type="unfinished"></translation>
+        <translation>EM</translation>
     </message>
     <message>
         <source>ACEM</source>
-        <translation type="unfinished"></translation>
+        <translation>ACEM</translation>
     </message>
     <message>
         <source>APECM</source>
-        <translation type="unfinished"></translation>
+        <translation>APECM</translation>
     </message>
     <message>
         <source>APECMA</source>
-        <translation type="unfinished"></translation>
+        <translation>APECMA</translation>
     </message>
     <message>
         <source>K_MEANS</source>
-        <translation type="unfinished"></translation>
+        <translation>K_moyen</translation>
     </message>
     <message>
         <source>Threshold</source>
-        <translation type="unfinished"></translation>
+        <translation>Seuil</translation>
     </message>
     <message>
         <source>Percentile</source>
-        <translation type="unfinished"></translation>
+        <translation>Pourcentage(s)</translation>
     </message>
     <message>
         <source>Variable 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable 2</translation>
     </message>
     <message>
         <source>Variable 3</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable 3</translation>
     </message>
 </context>
 <context>
     <name>QvisModelFitWindow</name>
     <message>
         <source>Models</source>
-        <translation type="unfinished"></translation>
+        <translation>Modèles</translation>
     </message>
     <message>
         <source>Add Model</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter un modèle</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Select Input Space:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner l&apos;espace d&apos;entrée :</translation>
     </message>
     <message>
         <source>Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable</translation>
     </message>
     <message>
         <source>0-1</source>
-        <translation type="unfinished"></translation>
+        <translation>0-1</translation>
     </message>
     <message>
         <source>log</source>
-        <translation type="unfinished"></translation>
+        <translation>Logarithmique</translation>
     </message>
     <message>
         <source>Probability</source>
-        <translation type="unfinished"></translation>
+        <translation>Probabilité</translation>
     </message>
     <message>
         <source>Select Calculation Space:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner l&apos;espace de calcul :</translation>
     </message>
     <message>
         <source>Distance Selections:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélections de distance :</translation>
     </message>
     <message>
         <source>Euclidean</source>
-        <translation type="unfinished"></translation>
+        <translation>Euclidien</translation>
     </message>
     <message>
         <source>Manhattan</source>
-        <translation type="unfinished"></translation>
+        <translation>Manhattan</translation>
     </message>
     <message>
         <source>Maximum</source>
-        <translation type="unfinished"></translation>
+        <translation>Maximum</translation>
     </message>
     <message>
         <source>Define Models</source>
-        <translation type="unfinished"></translation>
+        <translation>Modèles définis</translation>
     </message>
     <message>
         <source>Add Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable ajoutée</translation>
     </message>
     <message>
         <source>Add Point</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajouter un point</translation>
     </message>
     <message>
         <source>Delete Variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable effacée</translation>
     </message>
     <message>
         <source>Delete Point</source>
-        <translation type="unfinished"></translation>
+        <translation>Effacer le point</translation>
     </message>
     <message>
         <source>-</source>
-        <translation type="unfinished"></translation>
+        <translation>-</translation>
     </message>
 </context>
 <context>
     <name>QvisMoleculePlotWindow</name>
     <message>
         <source>Atoms</source>
-        <translation type="unfinished"></translation>
+        <translation>Atomes</translation>
     </message>
     <message>
         <source>Draw atoms as</source>
-        <translation type="unfinished"></translation>
+        <translation>Tracer les atomes</translation>
     </message>
     <message>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Spheres</source>
-        <translation type="unfinished"></translation>
+        <translation>Sphères</translation>
     </message>
     <message>
         <source>Sphere imposters</source>
-        <translation type="unfinished"></translation>
+        <translation>Pseudo sphère</translation>
     </message>
     <message>
         <source>Atom sphere quality</source>
-        <translation type="unfinished"></translation>
+        <translation>Atome qualité de la sphère</translation>
     </message>
     <message>
         <source>Low</source>
-        <translation type="unfinished"></translation>
+        <translation>Lent</translation>
     </message>
     <message>
         <source>Medium</source>
-        <translation type="unfinished"></translation>
+        <translation>Moyen</translation>
     </message>
     <message>
         <source>High</source>
-        <translation type="unfinished"></translation>
+        <translation>Haut</translation>
     </message>
     <message>
         <source>Super</source>
-        <translation type="unfinished"></translation>
+        <translation>Super</translation>
     </message>
     <message>
         <source>Radius based on</source>
-        <translation type="unfinished"></translation>
+        <translation>Rayon basé sur</translation>
     </message>
     <message>
         <source>Fixed value</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeur fixée</translation>
     </message>
     <message>
         <source>Covalent radius</source>
-        <translation type="unfinished"></translation>
+        <translation>Rayon covalent</translation>
     </message>
     <message>
         <source>Atomic radius</source>
-        <translation type="unfinished"></translation>
+        <translation>rayon atomique</translation>
     </message>
     <message>
         <source>Scalar variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable scalaire</translation>
     </message>
     <message>
         <source>Variable for atom radius</source>
-        <translation type="unfinished"></translation>
+        <translation>Variable du rayon atomique</translation>
     </message>
     <message>
         <source>Atom radius scale factor</source>
-        <translation type="unfinished"></translation>
+        <translation>Facteur d&apos;échelle du rayon atomique</translation>
     </message>
     <message>
         <source>Fixed atom radius</source>
-        <translation type="unfinished"></translation>
+        <translation>Rayon atomique fixé</translation>
     </message>
     <message>
         <source>Bonds</source>
-        <translation type="unfinished"></translation>
+        <translation>Liens</translation>
     </message>
     <message>
         <source>Draw bonds as</source>
-        <translation type="unfinished"></translation>
+        <translation>Tracer les liens comme</translation>
     </message>
     <message>
         <source>Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Lignes</translation>
     </message>
     <message>
         <source>Cylinders</source>
-        <translation type="unfinished"></translation>
+        <translation>Cylindres</translation>
     </message>
     <message>
         <source>Bond cylinder quality</source>
@@ -10537,7 +10547,7 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>PlotAtts</source>
-        <translation>Éditer tracés</translation>
+        <translation>Editer tracés</translation>
     </message>
     <message>
         <source>Operator Attributes</source>
@@ -10545,7 +10555,7 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>OpAtts</source>
-        <translation>Éditer filtres</translation>
+        <translation type="unfinished">Editer filtres</translation>
     </message>
     <message>
         <source>Variables</source>
@@ -12483,7 +12493,7 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <source>&amp;Template</source>
-        <translation type="unfinished"></translation>
+        <translation>Gabari&amp;T</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -12615,7 +12625,7 @@ same window.</source>
     </message>
     <message>
         <source>Dismiss</source>
-        <translation type="unfinished"></translation>
+        <translation>Fermer</translation>
     </message>
     <message>
         <source>Variables</source>
@@ -13341,15 +13351,15 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Movie templates allow you to create complex movies. What would you like to do?</source>
-        <translation type="unfinished"></translation>
+        <translation>Les modèles de films vous permettent de créer des films complexes. Qu&apos;aimeriez vous faire?</translation>
     </message>
     <message>
         <source>Choose template</source>
-        <translation type="unfinished"></translation>
+        <translation>Modèle de sélection</translation>
     </message>
     <message>
         <source>Choose a movie template.</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir un modèle de film</translation>
     </message>
     <message>
         <source>Update sources</source>
@@ -13357,7 +13367,7 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Make sure that the sources used in this template are up to date. You can change the sources here to make a movie using a template that was created with other data.</source>
-        <translation type="unfinished"></translation>
+        <translation>Assurez-vous que les sources utilisées dans ce modèle sont à jour. Vous pouvez modifier les sources ici pour faire un film en utilisant un modèle qui a été créé avec d&apos;autres données.</translation>
     </message>
     <message>
         <source>Viewports</source>
@@ -13365,7 +13375,7 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Change the movie template&apos;s viewports. Viewports are regions of the final movie image to which VisIt&apos;s visualization windows can be mapped.</source>
-        <translation type="unfinished"></translation>
+        <translation>Changer les fenêtres du modèle de film. Les fenêtres sont des régions de l&apos;image finale du film à partirdes quelles les fenêtres de visualisation de visite peuvent être cartographiés.</translation>
     </message>
     <message>
         <source>Sequences</source>
@@ -13373,7 +13383,7 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Create new sequences of frames and map them to movie template viewports.</source>
-        <translation type="unfinished"></translation>
+        <translation>Créer de nouvelles séquences d&apos;images et les faire correspondre à des fenêtres de modèle de film.</translation>
     </message>
     <message>
         <source>Save new template</source>
@@ -13381,7 +13391,7 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Save this movie as a new template?</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauver ce film comme nouveau modèle ?</translation>
     </message>
     <message>
         <source>Save new template as</source>
@@ -13389,7 +13399,7 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Enter the information that will be saved with your template.</source>
-        <translation type="unfinished"></translation>
+        <translation>Entrez les informations qui seront enregistrées avec votre modèle.</translation>
     </message>
     <message>
         <source>Settings check</source>
@@ -13445,7 +13455,7 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>VisIt could not save the new movie template&apos;s Python script.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visit ne peut pas sauver le script Python du nouveau modèle de film.</translation>
     </message>
     <message>
         <source>Use my previous movie settings</source>
@@ -13457,19 +13467,19 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>New template movie</source>
-        <translation type="unfinished"></translation>
+        <translation>Nouveau modèle de film</translation>
     </message>
     <message>
         <source>Use existing template</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser un modèle existant</translation>
     </message>
     <message>
         <source>Edit existing template</source>
-        <translation type="unfinished"></translation>
+        <translation>Editer un modèle existant</translation>
     </message>
     <message>
         <source>Create new template</source>
-        <translation type="unfinished"></translation>
+        <translation>Créer un noveau modèle </translation>
     </message>
     <message>
         <source>No preview</source>
@@ -13557,11 +13567,11 @@ atoms at unit cell boundaries.</source>
     </message>
     <message>
         <source>Template filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom de fichier modèle</translation>
     </message>
     <message>
         <source>Choose template filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisir le nom du modèle</translation>
     </message>
     <message>
         <source>Choose preview image filename</source>
@@ -13796,7 +13806,7 @@ atoms at unit cell boundaries.</source>
     <name>QvisSaveWindow</name>
     <message>
         <source>Output files to current directory</source>
-        <translation>Enregistrer les fichiers dans le répertoire courant</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Output directory</source>
@@ -20048,7 +20058,7 @@ in Controls-&gt;View-&gt;Advanced</source>
     <name>XMLEditCodeGeneratorWindow</name>
     <message>
         <source>Dismiss</source>
-        <translation type="unfinished"></translation>
+        <translation>Fermer</translation>
     </message>
 </context>
 <context>
