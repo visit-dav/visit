@@ -23,4 +23,6 @@
     </Field>
     <Field name="customCommands" label="customCommands" type="attVector" subtype="avtSimulationCommandSpecification">
     </Field>
+    <Field name="message" label="message" type="string">
+    </Field>
   </Attribute>
