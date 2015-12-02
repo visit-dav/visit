@@ -60,6 +60,7 @@ SIMV2_API int simv2_SimulationMetaData_addExpression(visit_handle h, visit_handl
 SIMV2_API int simv2_SimulationMetaData_addSpecies(visit_handle h, visit_handle obj);
 SIMV2_API int simv2_SimulationMetaData_addGenericCommand(visit_handle h, visit_handle obj);
 SIMV2_API int simv2_SimulationMetaData_addCustomCommand(visit_handle h, visit_handle obj);
+SIMV2_API int simv2_SimulationMetaData_addMessage(visit_handle h, visit_handle obj);
 
 #ifdef __cplusplus
 }
@@ -86,5 +87,8 @@ SIMV2_API int simv2_SimulationMetaData_getNumGenericCommands(visit_handle h, int
 SIMV2_API int simv2_SimulationMetaData_getGenericCommand(visit_handle h, int i, visit_handle &obj);
 SIMV2_API int simv2_SimulationMetaData_getNumCustomCommands(visit_handle h, int &n);
 SIMV2_API int simv2_SimulationMetaData_getCustomCommand(visit_handle h, int i, visit_handle &obj);
+
+SIMV2_API int simv2_SimulationMetaData_getNumMessages(visit_handle h, int &n);
+SIMV2_API int simv2_SimulationMetaData_getMessage(visit_handle h, int i, visit_handle &obj);
 
 #endif

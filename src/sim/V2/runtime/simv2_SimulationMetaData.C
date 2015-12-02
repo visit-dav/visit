@@ -51,6 +51,7 @@
 #include "simv2_ExpressionMetaData.h"
 #include "simv2_SpeciesMetaData.h"
 #include "simv2_CommandMetaData.h"
+#include "simv2_MessageMetaData.h"
 
 struct VisIt_SimulationMetaData : public VisIt_ObjectBase
 {
@@ -70,6 +71,8 @@ struct VisIt_SimulationMetaData : public VisIt_ObjectBase
 
     std::vector<visit_handle> genericCommands;
     std::vector<visit_handle> customCommands;
+
+    std::vector<visit_handle> messages;
 };
 
 VisIt_SimulationMetaData::VisIt_SimulationMetaData() : 
@@ -77,7 +80,7 @@ VisIt_SimulationMetaData::VisIt_SimulationMetaData() :
     simulationMode(0), 
     cycle(0), time(0.),
     meshes(), variables(), materials(), curves(), expressions(), species(),
-    genericCommands(), customCommands()
+    genericCommands(), customCommands(), messages()
 {
 }
 
@@ -101,6 +104,9 @@ VisIt_SimulationMetaData::~VisIt_SimulationMetaData()
         simv2_FreeObject(genericCommands[i]);
     for(i = 0; i < customCommands.size(); ++i)
         simv2_FreeObject(customCommands[i]);
+
+    for(i = 0; i < messages.size(); ++i)
+        simv2_FreeObject(messages[i]);
 }
 
 static VisIt_SimulationMetaData *
@@ -213,6 +219,7 @@ ADD_METADATA(simv2_SimulationMetaData_addExpression, VISIT_EXPRESSIONMETADATA, "
 ADD_METADATA(simv2_SimulationMetaData_addSpecies, VISIT_SPECIESMETADATA, "SpeciesMetaData", species)
 ADD_METADATA(simv2_SimulationMetaData_addGenericCommand, VISIT_COMMANDMETADATA, "CommandMetaData", genericCommands)
 ADD_METADATA(simv2_SimulationMetaData_addCustomCommand, VISIT_COMMANDMETADATA, "CommandMetaData", customCommands)
+ADD_METADATA(simv2_SimulationMetaData_addMessage, VISIT_MESSAGEMETADATA, "MessageMetaData", messages)
 
 
 // C++ code that exists in the runtime that we can use in the SimV2 reader
@@ -270,6 +277,7 @@ GET_METADATA_ITEM(simv2_SimulationMetaData_getNumExpressions, simv2_SimulationMe
 GET_METADATA_ITEM(simv2_SimulationMetaData_getNumSpecies, simv2_SimulationMetaData_getSpecies, species)
 GET_METADATA_ITEM(simv2_SimulationMetaData_getNumGenericCommands, simv2_SimulationMetaData_getGenericCommand, genericCommands)
 GET_METADATA_ITEM(simv2_SimulationMetaData_getNumCustomCommands, simv2_SimulationMetaData_getCustomCommand, customCommands)
+GET_METADATA_ITEM(simv2_SimulationMetaData_getNumMessages, simv2_SimulationMetaData_getMessage, messages)
 
 int
 simv2_SimulationMetaData_check(visit_handle h)
@@ -375,6 +383,11 @@ simv2_SimulationMetaData_check(visit_handle h)
         for(i = 0; i < obj->customCommands.size(); ++i)
         {
             if(simv2_CommandMetaData_check(obj->customCommands[i]) == VISIT_ERROR)
+                retval = VISIT_ERROR;
+        }
+        for(i = 0; i < obj->messages.size(); ++i)
+        {
+            if(simv2_MessageMetaData_check(obj->messages[i]) == VISIT_ERROR)
                 retval = VISIT_ERROR;
         }
     }

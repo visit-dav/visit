@@ -1183,6 +1183,10 @@ def VisIt_SimulationMetaData_addCustomCommand(h, obj):
     return _simV2.VisIt_SimulationMetaData_addCustomCommand(h, obj)
 VisIt_SimulationMetaData_addCustomCommand = _simV2.VisIt_SimulationMetaData_addCustomCommand
 
+def VisIt_SimulationMetaData_addMessage(h, obj):
+    return _simV2.VisIt_SimulationMetaData_addMessage(h, obj)
+VisIt_SimulationMetaData_addMessage = _simV2.VisIt_SimulationMetaData_addMessage
+
 def VisIt_SpeciesData_alloc(*args):
     return _simV2.VisIt_SpeciesData_alloc(*args)
 VisIt_SpeciesData_alloc = _simV2.VisIt_SpeciesData_alloc

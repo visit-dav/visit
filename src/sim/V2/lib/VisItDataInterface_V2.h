@@ -47,6 +47,7 @@
 #include <VisIt_NameList.h>
 #include <VisIt_MaterialMetaData.h>
 #include <VisIt_MeshMetaData.h>
+#include <VisIt_MessageMetaData.h>
 #include <VisIt_SimulationMetaData.h>
 #include <VisIt_SpeciesMetaData.h>
 #include <VisIt_VariableMetaData.h>
