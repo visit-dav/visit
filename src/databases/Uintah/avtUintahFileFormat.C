@@ -157,6 +157,8 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
 #error  "UINTAH_UDA2VIS_LIB has not been defined"
 #endif
 
+  setenv("THREAD_NO_CATCH_SIGNALS", "True", 1);
+
   // First try to open the library without any paths - assumes the
   // user has the Uintah library parth in their *_LIBRARY_PATH.
   libHandle = dlopen(lib_name, dlopen_mode);
@@ -228,32 +230,34 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
 
       // if( libHandle )
       //        std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
-    }
 
-    // Try a relative installed path
-    if (!libHandle)
-    {
-      char *lib = (char *) malloc( strlen(pathname) + strlen(lib_name) + 24 );
+      // Try a relative installed path
+      if (!libHandle)
+      {
+        char *lib = (char *) malloc( strlen(pathname) + strlen(lib_name) + 24 );
+        
+        sprintf( lib, "%s/../../lib/uintah/%s", pathname, lib_name );
 
-      sprintf( lib, "%s/../../lib/uintah/%s", pathname, lib_name );
-
-      libHandle = dlopen(lib, dlopen_mode);
+        libHandle = dlopen(lib, dlopen_mode);
+        
+        // if( libHandle )
+        //        std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
+      }
       
-      // if( libHandle )
-      //        std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
-    }
+      // Try a relative installed path
+      if (!libHandle)
+      {
+        char *lib = (char *) malloc( strlen(pathname) + strlen(lib_name) + 16 );
+        
+        sprintf( lib, "%s/../../lib/%s", pathname, lib_name );
+        
+        libHandle = dlopen(lib, dlopen_mode);
+        
+        // if( libHandle )
+        //        std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
+      }
 
-    // Try a relative installed path
-    if (!libHandle)
-    {
-      char *lib = (char *) malloc( strlen(pathname) + strlen(lib_name) + 16 );
-
-      sprintf( lib, "%s/../../lib/%s", pathname, lib_name );
-
-      libHandle = dlopen(lib, dlopen_mode);
-      
-      // if( libHandle )
-      //        std::cerr << __LINE__ << " Uintah lib " << lib << std::endl;
+      free( pathname );
     }
   }
 
@@ -355,6 +359,13 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
   if((error = dlerror()) != NULL) {
     EXCEPTION1(InvalidDBTypeException, "The function getGridData could not be located in the library!!!");
   }
+
+#if (1 <= UINTAH_MAJOR_VERSION && 7 <= UINTAH_MINOR_VERSION )
+  variableExists = (bool (*)(DataArchive*, std::string)) dlsym(libHandle, "variableExists");
+  if((error = dlerror()) != NULL) {
+    EXCEPTION1(InvalidDBTypeException, "The function variableExists could not be located in the library!!!");
+  }
+#endif
 
   getParticleData = (ParticleDataRaw* (*)(DataArchive*, GridP*, int, int, std::string, int, int)) dlsym(libHandle, "getParticleData");
   if((error = dlerror()) != NULL) {
@@ -576,7 +587,6 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   int totalPatches = 0;
   for (int i = 0; i < numLevels; i++)
     totalPatches +=  stepInfo->levelInfo[i].patchInfo.size();
-  //debug5 << "avtUintahFileFormat::ReadMetaData: Levels: " << numLevels << " Patches: " << totalPatches << endl;
 
   vector<int> groupIds(totalPatches);
   vector<string> pieceNames(totalPatches);
@@ -885,7 +895,7 @@ avtUintahFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
 // ****************************************************************************
 void
 avtUintahFileFormat::GetLevelAndLocalPatchNumber(int global_patch, 
-                                                        int &level, int &local_patch)
+                                                 int &level, int &local_patch)
 {
   int num_levels = stepInfo->levelInfo.size();
   int num_patches = 0;
@@ -932,15 +942,24 @@ int avtUintahFileFormat::GetGlobalDomainNumber(int level, int local_patch) {
 //      within a refinement level, not across refinement levels.
 //  
 //
-// NOTE: The cache variable for the mesh MUST be called "any_mesh", which is a problem when
-// there are multiple meshes or one of them is actually named "any_mesh" (see
-// https://visitbugs.ornl.gov/issues/52). Thus, for each mesh we keep around our own cache
-// variable and if this function finds it then it just uses it again instead of recomputing it.
+// NOTE: The cache variable for the mesh MUST be called "any_mesh",
+// which is a problem when there are multiple meshes or one of them is
+// actually named "any_mesh" (see
+// https://visitbugs.ornl.gov/issues/52). Thus, for each mesh we keep
+// around our own cache variable and if this function finds it then it
+// just uses it again instead of recomputing it.
 //
 // ****************************************************************************
 void
 avtUintahFileFormat::CalculateDomainNesting(int timestate, const std::string &meshname)
 {
+//#warning "FIX ME - IS THIS CODE VALID ??????"
+
+#ifdef MDSERVER
+
+    return;
+
+#else
   //lookup mesh in our cache and if it's not there, compute it
   if (*this->mesh_domains[meshname]==NULL || forceMeshReload == true)
   {
@@ -1088,6 +1107,7 @@ avtUintahFileFormat::CalculateDomainNesting(int timestate, const std::string &me
                             timestate, -1);
   if (*vrTmp == NULL || *vrTmp != *this->mesh_domains[meshname])
     throw InvalidFilesException("uda domain mesh not registered");
+#endif
 }
 
 
@@ -1303,7 +1323,11 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
       //debug5<<"\t(*getParticleData)...\n";
       //todo: this returns an array of doubles. Need to return expected datatype to avoid unnecessary conversion.
-      pd = (*getParticleData)(archive, grid, level, local_patch, "p.particleID", matlNo, timestate);
+
+#if (1 <= UINTAH_MAJOR_VERSION && 7 <= UINTAH_MINOR_VERSION )
+      if( variableExists(archive, "p.particleID") )
+#endif
+        pd = (*getParticleData)(archive, grid, level, local_patch, "p.particleID", matlNo, timestate);
 
       //debug5 << "got particle data: "<<pd<<"\n";
       if (pd)
