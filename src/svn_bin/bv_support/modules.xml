@@ -40,6 +40,7 @@
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="tcmalloc"/>
+            <lib name="vtkm"/>
             <lib name="xdmf"/>
             <lib name="zlib"/>
         </optional>
