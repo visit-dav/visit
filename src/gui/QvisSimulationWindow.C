@@ -1561,7 +1561,7 @@ QvisSimulationWindow::UpdateStatusEntry(const QString &key,
 
 void
 QvisSimulationWindow::AddMetaDataEntry(const QString &key, 
-    const avtDatabaseMetaData &md)
+                                       const avtDatabaseMetaData &md)
 {
     // If the entry is in the map, return.
     if (metadataMap.contains(key))
@@ -1625,7 +1625,7 @@ QvisSimulationWindow::RemoveMetaDataEntry(const QString &key)
 
 void
 QvisSimulationWindow::UpdateMetaDataEntry(const QString &key, 
-    const avtDatabaseMetaData &md)
+                                          const avtDatabaseMetaData &md)
 {
     // If the sender is in the meta data map, copy the MD into the map entry.
     // If the sender is not in the map, add it.
