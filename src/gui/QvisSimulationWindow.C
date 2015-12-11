@@ -1858,6 +1858,33 @@ QvisSimulationWindow::executePushButtonCommand(const QString &btncmd)
     string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
 
+    if( btncmd == QString("Abort") ||
+        btncmd == QString("abort") ||
+        btncmd == QString("Terminate") ||
+        btncmd == QString("terminate") )
+    {
+      // Create a prompt for the user.
+      QString msg;
+      if (sim == "")
+      {
+        msg = tr("Really %1 the simulation on host \"%2\"?\n\n")
+          .arg(btncmd)
+          .arg(host.c_str());
+      }
+      else
+      {
+        msg = tr("Really %1 the simulation \"%2\" on host \"%3\"?\n\n")
+          .arg(btncmd)
+          .arg(sim.c_str())
+          .arg(host.c_str());
+      }
+
+      // Ask the user if they really want to execute this command.
+      if (QMessageBox::warning(this, "VisIt", msg, QMessageBox::Ok | QMessageBox::Cancel)
+          == QMessageBox::Cancel)
+        return;
+    }
+
     QString cmd(btncmd);
     QString args(QString("clicked();%1;QPushButton;Simulations;NONE").arg(cmd));
     GetViewerMethods()->SendSimulationCommand(host, sim, btncmd.toStdString(), args.toStdString());
