@@ -101,6 +101,7 @@ VisIt_ExpressionMetaData.h
 VisIt_MaterialData.h
 VisIt_MaterialMetaData.h
 VisIt_MeshMetaData.h
+VisIt_MessageMetaData.h
 VisIt_NameList.h
 VisIt_OptionList.h
 VisIt_PointMesh.h

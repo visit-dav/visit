@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+  <Attribute name="MessageMetaData" purpose="" persistent="false" keyframe="false" exportAPI="" exportInclude="" codefile="MessageMetaData.code">
+    <Field name="name" label="name" type="string">
+    </Field>
+    <Function name="simv2_MessageMetaData_check" user="true" member="true">
+    </Function>
+  </Attribute>

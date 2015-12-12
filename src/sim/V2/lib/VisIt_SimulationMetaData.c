@@ -136,6 +136,14 @@ VisIt_SimulationMetaData_addCustomCommand(visit_handle h, visit_handle obj)
                     (h,obj));
 }
 
+int
+VisIt_SimulationMetaData_addMessage(visit_handle h, visit_handle obj)
+{
+    VISIT_DYNAMIC_EXECUTE(SimulationMetaData_addMessage,
+                    int, (visit_handle,visit_handle), 
+                    (h,obj));
+}
+
 
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
@@ -151,6 +159,7 @@ VisIt_SimulationMetaData_addCustomCommand(visit_handle h, visit_handle obj)
 #define F_VISITMDSIMADDSPECIES         F77_ID(visitmdsimaddspecies_,visitmdsimaddspecies,VISITMDSIMADDSPECIES)
 #define F_VISITMDSIMADDGENERICCOMMAND  F77_ID(visitmdsimaddgenericcommand_,visitmdsimaddgenericcommand,VISITMDSIMADDGENERICCOMMAND)
 #define F_VISITMDSIMADDCUSTOMCOMMAND   F77_ID(visitmdsimaddcustomcommand_,visitmdsimaddcustomcommand,VISITMDSIMADDCUSTOMCOMMAND)
+#define F_VISITMDSIMADDMESSAGE         F77_ID(visitmdsimaddmessage_,visitmdsimaddmessage,VISITMDSIMADDMESSAGE)
 
 int
 F_VISITMDSIMALLOC(visit_handle *h)
@@ -224,5 +233,10 @@ F_VISITMDSIMADDCUSTOMCOMMAND(visit_handle *h, visit_handle *md)
     return VisIt_SimulationMetaData_addCustomCommand(*h, *md);
 }
 
+int
+F_VISITMDSIMADDMESSAGE(visit_handle *h, visit_handle *md)
+{
+    return VisIt_SimulationMetaData_addMessage(*h, *md);
+}
 
 

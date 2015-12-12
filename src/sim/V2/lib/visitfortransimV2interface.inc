@@ -1124,6 +1124,10 @@
       external visitmdsimaddcustomcommand
       integer  visitmdsimaddcustomcommand
 
+! visitmdsimaddmessage(visit_handle h, visit_handle md)
+      external visitmdsimaddmessage
+      integer  visitmdsimaddmessage
+
 
 ! VisIt_SpeciesMetaData functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
