@@ -4161,6 +4161,22 @@ VisItUI_valueChanged(const char *name, void (*cb)(int,void*), void *cbdata)
 }
 
 int
+VisItUI_textChanged(const char *name, void (*cb)(char*,void*), void *cbdata)
+{
+    int retval = VISIT_ERROR;
+    sim_ui_element *e = NULL;
+    LIBSIM_API_ENTER(VisItUI_textChanged);
+    if((e = sim_ui_get(name)) != NULL)
+    {
+        e->slot_textChanged = cb;
+        e->slot_textChanged_data = cbdata;
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_textChanged);
+    return retval;
+}
+
+int
 VisItUI_setValueI(const char *name, int value, int enabled)
 {
     int retval = VISIT_ERROR;
