@@ -1327,6 +1327,7 @@ int VisItSetWriteVariable(int (*cb)(const char *, const char *, int, visit_handl
 int VisItUI_clicked(const char *name, void (*cb)(void*), void *cbdata2);
 int VisItUI_stateChanged(const char *name, void (*cb)(int,void*), void *cbdata2);
 int VisItUI_valueChanged(const char *name, void (*cb)(int,void*), void *cbdata2);
+int VisItUI_textChanged(const char *name, void (*cb)(char *,void*), void *cbdata2);
 
 int VisItUI_setValueI(const char *name, int value, int enabled);
 int VisItUI_setValueS(const char *name, const char *value, int enabled);

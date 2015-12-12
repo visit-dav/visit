@@ -392,5 +392,5 @@ void SimCommandSlots::TextChangedHandler(const QString &newText)
     }
     else
         debug5 << "unknown signaler" << endl;
-    SendCMD("textChanged(QString)", ui, newText);
+    SendCMD("textChanged(char *)", ui, newText);
 }

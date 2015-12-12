@@ -524,13 +524,24 @@ GetEnvironment(visit_string *env)
         done = ReadEnvironmentFromCommand(path, env);
     }
 
+    /* Try the one in their VISIT_HOME environment var next */
+    if (!done)
+    {
+      if(getenv("VISIT_HOME") != NULL)
+      {
+        char path[LIBSIM_MAX_STRING_SIZE];
+        sprintf(path, "%s/bin/visit", getenv("VISIT_HOME"));
+        done = ReadEnvironmentFromCommand(path, env);
+      }
+    }
+
     /* Try the one in their path next */
     if (!done)
     {
         done = ReadEnvironmentFromCommand("visit", env);
     }
 
-    /* If we still can't find it, try the one in /usr/gapps/visit */
+    /* If we still can't find it, try the LLNL path /usr/gapps/visit */
     if (!done)
     {
         done = ReadEnvironmentFromCommand("/usr/gapps/visit/bin/visit", env);
@@ -1821,8 +1832,8 @@ static int LoadVisItLibrary_Windows(void)
     {
         WCHAR msg[1024];
         va_list *va = 0;
-LIBSIM_MESSAGE1("Error: %d", GetLastError());
-LIBSIM_MESSAGE1("Error: %x", GetLastError());
+        LIBSIM_MESSAGE1("Error: %d", GetLastError());
+        LIBSIM_MESSAGE1("Error: %x", GetLastError());
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError(), 0,
                       msg, 1024, va);
         wprintf(L"Formatted message: %s\n", msg);
@@ -4146,6 +4157,22 @@ VisItUI_valueChanged(const char *name, void (*cb)(int,void*), void *cbdata)
         retval = VISIT_OKAY;
     }
     LIBSIM_API_LEAVE(VisItUI_valueChanged);
+    return retval;
+}
+
+int
+VisItUI_textChanged(const char *name, void (*cb)(char*,void*), void *cbdata)
+{
+    int retval = VISIT_ERROR;
+    sim_ui_element *e = NULL;
+    LIBSIM_API_ENTER(VisItUI_textChanged);
+    if((e = sim_ui_get(name)) != NULL)
+    {
+        e->slot_textChanged = cb;
+        e->slot_textChanged_data = cbdata;
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_textChanged);
     return retval;
 }
 

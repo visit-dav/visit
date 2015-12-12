@@ -79,6 +79,7 @@ int pylibsim_invoke_i_F_pcc_pv(const char*,void*);
 int pylibsim_invoke_i_F_pcc_i_i_h_h_pv(const char*,int,int,visit_handle,visit_handle,void*);
 int pylibsim_invoke_i_F_pcc_pcc_i_h_h_pv(const char *, const char *, int, visit_handle, visit_handle, void *);
 void pylibsim_invoke_v_F_i_pv(int,void*);
+void pylibsim_invoke_v_F_pc_pv(char*,void*);
 void pylibsim_invoke_v_F_pv(void *);
 
 // for passing data

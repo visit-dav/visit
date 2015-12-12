@@ -330,37 +330,23 @@ void VisItFinalize() { pylibsim_VisItFinalize(); }
  * arrays. intercept calls passing data arrays into
  * VisIt to do so.
  */
-%typemap(in) double *dataarray { $1 = (double *)$input; }
-%typemap(in) float *dataarray { $1 = (float *)$input; }
-%typemap(in) int *dataarray { $1 = (int *)$input; }
-%typemap(in) char *dataarray { $1 = (char *)$input; }
-
-%rename(VisIt_VariableData_setDataC) pylibsim_VisIt_VariableData_setDataC;
-%rename(VisIt_VariableData_setDataI) pylibsim_VisIt_VariableData_setDataI;
-%rename(VisIt_VariableData_setDataF) pylibsim_VisIt_VariableData_setDataF;
-%rename(VisIt_VariableData_setDataD) pylibsim_VisIt_VariableData_setDataD;
-
+%typemap(in) PyObject *dataarray { $1 = (PyObject *)$input; }
+%rename(VisIt_VariableData_setDataC) pylibsim_VisIt_VariableData_setDataAsC;
+%rename(VisIt_VariableData_setDataI) pylibsim_VisIt_VariableData_setDataAsI;
+%rename(VisIt_VariableData_setDataF) pylibsim_VisIt_VariableData_setDataAsF;
+%rename(VisIt_VariableData_setDataD) pylibsim_VisIt_VariableData_setDataAsD;
 %inline %{
+int pylibsim_VisIt_VariableData_setDataAsC(
+          visit_handle obj, int owner, int nComps, int nTuples, PyObject *seq);
 
-int pylibsim_VisIt_VariableData_setDataC(visit_handle obj, int owner, int nComps, int nTuples, char *dataarray)
-{
-    return pylibsim_VisIt_VariableData_setDataAsC(obj, owner, nComps, nTuples, (PyObject*)dataarray);
-}
+int pylibsim_VisIt_VariableData_setDataAsI(
+          visit_handle obj, int owner, int nComps, int nTuples, PyObject *seq);
 
-int pylibsim_VisIt_VariableData_setDataI(visit_handle obj, int owner, int nComps, int nTuples, int *dataarray)
-{
-    return pylibsim_VisIt_VariableData_setDataAsI(obj, owner, nComps, nTuples, (PyObject*)dataarray);
-}
+int pylibsim_VisIt_VariableData_setDataAsF(
+          visit_handle obj, int owner, int nComps, int nTuples, PyObject *seq);
 
-int pylibsim_VisIt_VariableData_setDataF(visit_handle obj, int owner, int nComps, int nTuples, float *dataarray)
-{
-    return pylibsim_VisIt_VariableData_setDataAsF(obj, owner, nComps, nTuples, (PyObject*)dataarray);
-}
-
-int pylibsim_VisIt_VariableData_setDataD(visit_handle obj, int owner, int nComps, int nTuples, double *dataarray)
-{
-    return pylibsim_VisIt_VariableData_setDataAsD(obj, owner, nComps, nTuples, (PyObject*)dataarray);
-}
+int pylibsim_VisIt_VariableData_setDataAsD(
+          visit_handle obj, int owner, int nComps, int nTuples, PyObject *seq);
 %}
 
 /* This renaming injects some error handling code that forces VisItProcessEngineCommand

@@ -36,6 +36,9 @@
 *
 *****************************************************************************/
 #include "simV2_custom.h"
+// must do this in all translation units to prevent multiple numpy c-api
+// method tables
+#define NO_IMPORT_ARRAY
 #include <simV2_python_config.h>
 #include <VisItControlInterface_V2.h>
 #include <VisIt_VariableData.h>
@@ -660,6 +663,36 @@ void pylibsim_invoke_v_F_i_pv(int arg0, void *cbdata)
     }
 }
 
+/******************************************************************************
+ * used by: UI_textChanged
+ ******************************************************************************/
+void pylibsim_invoke_v_F_pc_pv(char *arg0, void *cbdata)
+{
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    if (callback)
+    {
+        PyObject *tuple = PyTuple_New(1);
+
+        PyTuple_SET_ITEM(tuple, 0, PyString_FromString(arg0));
+
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 1, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
+
+        Py_DECREF(tuple);
+
+        if(ret != NULL)
+        {
+            Py_DECREF(ret);
+        }
+    }
+}
+
 namespace pylibsim {
 
 #if defined(SIMV2_USE_NUMPY)
@@ -1054,19 +1087,6 @@ int getData(
 }
 
 /******************************************************************************/
-void initialize()
-{
-#if defined(SIMV2_USE_NUMPY)
-    static bool initialized = false;
-    if (!initialized)
-    {
-        import_array();
-        initialized = true;
-    }
-#endif
-}
-
-/******************************************************************************/
 void pyarray_destructor(void *object)
 {
 #if defined(SIMV2_NUMPY_DEBUG)
@@ -1106,7 +1126,6 @@ int pylibsim_VisIt_VariableData_setDataAsD(
           int nTuples,
           PyObject *seq)
 {
-    pylibsim::initialize();
     double *data = NULL;
     if (pylibsim::getData<double>(owner, nComps, nTuples, seq, data))
     {
@@ -1124,7 +1143,6 @@ int pylibsim_VisIt_VariableData_setDataAsF(
           int nTuples,
           PyObject *seq)
 {
-    pylibsim::initialize();
     float *data = NULL;
     if (pylibsim::getData<float>(owner, nComps, nTuples, seq, data))
     {
@@ -1142,7 +1160,6 @@ int pylibsim_VisIt_VariableData_setDataAsI(
           int nTuples,
           PyObject *seq)
 {
-    pylibsim::initialize();
     int *data = NULL;
     if (pylibsim::getData<int>(owner, nComps, nTuples, seq, data))
     {
@@ -1160,7 +1177,6 @@ int pylibsim_VisIt_VariableData_setDataAsC(
           int nTuples,
           PyObject *seq)
 {
-    pylibsim::initialize();
     char *data = NULL;
     if (pylibsim::getData<char>(owner, nComps, nTuples, seq, data))
     {

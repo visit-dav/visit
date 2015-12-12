@@ -282,8 +282,8 @@ QvisSimulationWindow::CreateWindowContents()
     // Create the strip chart manager and post it to the notepad.
     int simindex = simCombo->currentIndex();
     int index = simulationToEngineListMap[simindex];
-    stripCharts = new QvisStripChartMgr(0, GetViewerProxy(), engines, index, notepadAux);
-    stripCharts->post();
+    // stripCharts = new QvisStripChartMgr(0, GetViewerProxy(), engines, index, notepadAux);
+    // stripCharts->post();
 
     // Make sure we show the commands page.
     notepadAux->showPage(simCommands);
@@ -464,7 +464,7 @@ ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
                     cc, SLOT(ActivatedHandler(int)));
         }
 
-        if (mo->indexOfSignal("textChanged(const QString&)") != -1)
+        if (mo->indexOfSignal("textChanged(QString)") != -1)
         {
             QObject::connect(ui, SIGNAL(textChanged(const QString &)),
                     cc, SLOT(TextChangedHandler(const QString&)));
@@ -491,7 +491,7 @@ ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
 // Method: void QvisSimulationWindow::CreateCommandUI
 //
 // Purpose:
-//   Updates the ui components in the Costom UI popup. It check for matches
+//   Updates the ui components in the Custom UI popup. It check for matches
 //   between ui updates sent from the simulations to ui components in the
 //   custom ui popup. If it finds a match it update the ui component.
 //
@@ -989,10 +989,42 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
         if(DynamicCommandsWin != 0)
         {
             UpdateUIComponent(DynamicCommandsWin, 
-                uiValues->GetName().c_str(),
-                uiValues->GetSvalue().c_str(), 
-                uiValues->GetEnabled());
+                              uiValues->GetName().c_str(),
+                              uiValues->GetSvalue().c_str(), 
+                              uiValues->GetEnabled());
         }
+    }
+
+    if(uiValues->GetName() == "SIMULATION_MODE")
+    {
+        QString mode = QString(uiValues->GetSvalue().c_str());
+        simulationMode->setText(mode);
+    }
+
+    if(uiValues->GetName() == "SIMULATION_STATUS")
+    {
+        QString message = QString(uiValues->GetSvalue().c_str());
+        QString error = QString("<span style=\"color:#000000;\">%1</span>").arg(message);
+        simMessages->addMessage(error);
+    }
+
+    if(uiValues->GetName() == "SIMULATION_STATUS_WARNING")
+    {
+        QString message = QString(uiValues->GetSvalue().c_str());
+        QString warning = QString("<span style=\" color:#aaaa00;\">%1</span>").arg(message);
+        simMessages->addMessage(warning);
+    }
+
+    if(uiValues->GetName() == "SIMULATION_STATUS_ERROR")
+    {
+        QString message = QString(uiValues->GetSvalue().c_str());
+        QString error = QString("<span style=\" color:#aa0000;\">%1</span>").arg(message);
+        simMessages->addMessage(error);
+    }
+
+    if(uiValues->GetName() == "SIMULATION_STATUS_CLEAR")
+    {
+        simMessages->clear();
     }
 }
 
@@ -1224,6 +1256,10 @@ QvisSimulationWindow::UpdateInformation()
             break;
         }
 
+        // Update the message window
+        QString message = QString(md->GetSimInfo().GetMessage().c_str());
+        simMessages->addMessage(message);
+
         // Update command buttons
         bool updateSize = false;
         int nButtonsToUpdate = std::max(simCommands->numCommandButtons(),
@@ -1428,7 +1464,8 @@ QvisSimulationWindow::SpecialWidgetUpdate (const avtSimulationCommandSpecificati
 // ****************************************************************************
 
 void
-QvisSimulationWindow::AddStatusEntry(const QString &key, const StatusAttributes &s)
+QvisSimulationWindow::AddStatusEntry(const QString &key,
+                                     const StatusAttributes &s)
 {
     // If the entry is in the map, return.
     if (statusMap.contains(key))
@@ -1490,7 +1527,8 @@ QvisSimulationWindow::RemoveStatusEntry(const QString &key)
 // ****************************************************************************
 
 void
-QvisSimulationWindow::UpdateStatusEntry(const QString &key, const StatusAttributes &s)
+QvisSimulationWindow::UpdateStatusEntry(const QString &key,
+                                        const StatusAttributes &s)
 {
     // If the sender is in the status map, copy the status into the map entry.
     // If the sender is not in the map, add it.
@@ -1523,7 +1561,7 @@ QvisSimulationWindow::UpdateStatusEntry(const QString &key, const StatusAttribut
 
 void
 QvisSimulationWindow::AddMetaDataEntry(const QString &key, 
-    const avtDatabaseMetaData &md)
+                                       const avtDatabaseMetaData &md)
 {
     // If the entry is in the map, return.
     if (metadataMap.contains(key))
@@ -1587,7 +1625,7 @@ QvisSimulationWindow::RemoveMetaDataEntry(const QString &key)
 
 void
 QvisSimulationWindow::UpdateMetaDataEntry(const QString &key, 
-    const avtDatabaseMetaData &md)
+                                          const avtDatabaseMetaData &md)
 {
     // If the sender is in the meta data map, copy the MD into the map entry.
     // If the sender is not in the map, add it.
@@ -1792,7 +1830,7 @@ void QvisSimulationWindow::showCommandWindow()
 }
 
 // ****************************************************************************
-// Method: QvisSimulationWindow::showCommandWindow
+// Method: QvisSimulationWindow::executePushButtonCommand
 //
 // Purpose:
 //   This method is called when the subjects that the window observes are
@@ -1819,6 +1857,33 @@ QvisSimulationWindow::executePushButtonCommand(const QString &btncmd)
     int index = simulationToEngineListMap[simindex];
     string host = engines->GetEngineName()[index];
     string sim  = engines->GetSimulationName()[index];
+
+    if( btncmd == QString("Abort") ||
+        btncmd == QString("abort") ||
+        btncmd == QString("Terminate") ||
+        btncmd == QString("terminate") )
+    {
+      // Create a prompt for the user.
+      QString msg;
+      if (sim == "")
+      {
+        msg = tr("Really %1 the simulation on host \"%2\"?\n\n")
+          .arg(btncmd)
+          .arg(host.c_str());
+      }
+      else
+      {
+        msg = tr("Really %1 the simulation \"%2\" on host \"%3\"?\n\n")
+          .arg(btncmd)
+          .arg(sim.c_str())
+          .arg(host.c_str());
+      }
+
+      // Ask the user if they really want to execute this command.
+      if (QMessageBox::warning(this, "VisIt", msg, QMessageBox::Ok | QMessageBox::Cancel)
+          == QMessageBox::Cancel)
+        return;
+    }
 
     QString cmd(btncmd);
     QString args(QString("clicked();%1;QPushButton;Simulations;NONE").arg(cmd));

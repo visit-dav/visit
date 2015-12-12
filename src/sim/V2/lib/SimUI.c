@@ -86,6 +86,14 @@ sim_ui_handle(const char *name, char *args)
             ++handled;
         }
 
+        if(strcmp(signalName, "textChanged(char *)") == 0 &&
+           ui->slot_textChanged != NULL)
+        {
+            char *text = value;
+            (*ui->slot_textChanged)(text, ui->slot_textChanged_data);
+            ++handled;
+        }
+
         if(strcmp(signalName, "stateChanged(int)") == 0 &&
            ui->slot_stateChanged != NULL)
         {
