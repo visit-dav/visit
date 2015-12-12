@@ -5841,6 +5841,46 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisItUI_textChanged(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  void (*arg2)(char *,void *) = (void (*)(char *,void *)) 0 ;
+  void *arg3 = (void *) 0 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  simV2_PyObject callback2 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:VisItUI_textChanged",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_textChanged" "', argument " "1"" of type '" "char const *""'");
+  }
+  arg1 = reinterpret_cast< char * >(buf1);
+  {
+    if (assignCallback(callback2, obj1)) {
+      return NULL; 
+    }
+    arg2 = pylibsim_invoke_v_F_pc_pv;
+  }
+  {
+    simV2_CallbackData *package = newCallbackData(callback2, obj2);
+    arg3 = static_cast<void*>(package);
+  }
+  result = (int)VisItUI_textChanged((char const *)arg1,arg2,arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VisItUI_setValueI(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   char *arg1 = (char *) 0 ;
@@ -13377,6 +13417,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VisItUI_clicked", _wrap_VisItUI_clicked, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_stateChanged", _wrap_VisItUI_stateChanged, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_valueChanged", _wrap_VisItUI_valueChanged, METH_VARARGS, NULL},
+	 { (char *)"VisItUI_textChanged", _wrap_VisItUI_textChanged, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_setValueI", _wrap_VisItUI_setValueI, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_setValueS", _wrap_VisItUI_setValueS, METH_VARARGS, NULL},
 	 { (char *)"VISIT_INVALID_HANDLE_swigconstant", VISIT_INVALID_HANDLE_swigconstant, METH_VARARGS, NULL},

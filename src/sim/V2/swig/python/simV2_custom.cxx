@@ -663,6 +663,36 @@ void pylibsim_invoke_v_F_i_pv(int arg0, void *cbdata)
     }
 }
 
+/******************************************************************************
+ * used by: UI_textChanged
+ ******************************************************************************/
+void pylibsim_invoke_v_F_pc_pv(char *arg0, void *cbdata)
+{
+    /* a callback and its data */
+    simV2_CallbackData *cbpair = static_cast<simV2_CallbackData*>(cbdata);
+    simV2_PyObject &callback = cbpair->first;
+    simV2_PyObject &data = cbpair->second;
+
+    if (callback)
+    {
+        PyObject *tuple = PyTuple_New(1);
+
+        PyTuple_SET_ITEM(tuple, 0, PyString_FromString(arg0));
+
+        Py_INCREF(data); // SET_ITEM steals a ref
+        PyTuple_SET_ITEM(tuple, 1, data);
+
+        PyObject *ret = PyObject_Call(callback, tuple, NULL);
+
+        Py_DECREF(tuple);
+
+        if(ret != NULL)
+        {
+            Py_DECREF(ret);
+        }
+    }
+}
+
 namespace pylibsim {
 
 #if defined(SIMV2_USE_NUMPY)

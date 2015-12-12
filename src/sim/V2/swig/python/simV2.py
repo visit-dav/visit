@@ -363,6 +363,10 @@ def VisItUI_valueChanged(name, cb, cbdata2):
     return _simV2.VisItUI_valueChanged(name, cb, cbdata2)
 VisItUI_valueChanged = _simV2.VisItUI_valueChanged
 
+def VisItUI_textChanged(name, cb, cbdata2):
+    return _simV2.VisItUI_textChanged(name, cb, cbdata2)
+VisItUI_textChanged = _simV2.VisItUI_textChanged
+
 def VisItUI_setValueI(name, value, enabled):
     return _simV2.VisItUI_setValueI(name, value, enabled)
 VisItUI_setValueI = _simV2.VisItUI_setValueI
