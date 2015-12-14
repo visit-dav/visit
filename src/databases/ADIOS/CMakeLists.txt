@@ -21,6 +21,7 @@ avtXGCFileFormat.C
 avtSpecFEMFileFormat.C
 avtADIOSSchemaFileFormat.C
 avtLAMMPSFileFormat.C
+avtPIConGPUFileFormat.C
 ADIOSFileObject.C
 )
 
@@ -33,6 +34,7 @@ avtXGCFileFormat.C
 avtSpecFEMFileFormat.C
 avtADIOSSchemaFileFormat.C
 avtLAMMPSFileFormat.C
+avtPIConGPUFileFormat.C
 ADIOSFileObject.C
 )
 

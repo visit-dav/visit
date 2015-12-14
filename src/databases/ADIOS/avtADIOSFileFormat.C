@@ -49,8 +49,10 @@
 #include "avtXGCFileFormat.h"
 //#include "avtPixieFileFormat.h"
 #include "avtSpecFEMFileFormat.h"
+#include "avtPIConGPUFileFormat.h"
 #include "avtADIOSSchemaFileFormat.h"
-#include "avtLAMMPSFileFormat.h"
+//#include "avtLAMMPSFileFormat.h"
+//#include "avtStagingFileFormat.h"
 
 // ****************************************************************************
 // Method: ADIOS_CreateFileFormatInterface
@@ -87,7 +89,7 @@ avtFileFormatInterface *
 ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 {
     avtFileFormatInterface *ffi = NULL;
-    enum Flavor {XGC, PIXIE, SPECFEM, SCHEMA, BASIC, LAMMPS, FAIL};
+    enum Flavor {XGC, PIXIE, SPECFEM, SCHEMA, BASIC, LAMMPS, STAGING, PICONGPU, FAIL};
     
     Flavor flavor = FAIL;
     if (list != NULL || nList > 0)
@@ -95,6 +97,14 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
         // Determine the type of reader that we want to use.
         TRY
         {
+            /*
+            if (avtStagingFileFormat::Identify(list[0]))
+            {
+                debug5<<"Database is avtStagingFileFormat"<<endl;
+                cout<<"Database is avtStagingFileFormat"<<endl;
+                flavor = STAGING;
+            }
+            */
             if (avtXGCFileFormat::Identify(list[0]))
             {
                 debug5<<"Database is avtXGCFileFormat"<<endl;
@@ -112,16 +122,23 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
                 debug5<<"Database is avtSpecFEMFileFormat"<<endl;
                 flavor = SPECFEM;
             }
+            else if (avtPIConGPUFileFormat::Identify(list[0]))
+            {
+                debug5<<"Database is avtPIConGPUFileFormat"<<endl;
+                flavor = PICONGPU;
+            }
             else if (avtADIOSSchemaFileFormat::Identify(list[0]))
             {
                 debug5<<"Database is avtADIOSSchemaFileFormat"<<endl;
                 flavor = SCHEMA;
             }
+            /*
             else if (avtLAMMPSFileFormat::Identify(list[0]))
             {
                 debug5<<"Database is avtLAMMPSFileFormat"<<endl;
                 flavor = LAMMPS;
             }
+            */
             else if (avtADIOSBasicFileFormat::Identify(list[0]))
             {
                 debug5<<"Database is avtADIOSBasicFileFormat"<<endl;
@@ -133,7 +150,7 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
             RETHROW;
         }
         ENDTRY
-
+        
         switch(flavor)
         {
 
@@ -148,16 +165,25 @@ ADIOS_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
           case SPECFEM:
             ffi = avtSpecFEMFileFormat::CreateInterface(list, nList, nBlock);
             break;
+          case PICONGPU:
+            ffi = avtPIConGPUFileFormat::CreateInterface(list, nList, nBlock);
+            break;
           case SCHEMA:
             ffi = avtADIOSSchemaFileFormat::CreateInterface(list, nList, nBlock);
             break;
+            /*
           case LAMMPS:
             ffi = avtLAMMPSFileFormat::CreateInterface(list, nList, nBlock);
             break;
+            */
+            /*
+          case STAGING:
+            ffi = avtStagingFileFormat::CreateInterface(list, nList, nBlock);
+            break;
+            */
           case BASIC:
             ffi = avtADIOSBasicFileFormat::CreateInterface(list, nList, nBlock);
             break;
-            
           default:
             return NULL;
         }

@@ -106,6 +106,7 @@ class avtSpecFEMFileFormat : public avtMTMDFileFormat
     void             AddRegionMesh(int ts, int dom, int region, vtkDataSet *ds,
                                    bool xyzMesh, int ptOffset=0);
     vtkDataSet *     GetHotSpotsMesh(bool xyzMesh);
+    vtkDataSet *     GetVolcanoMesh(bool xyzMesh);
     vtkDataSet *     GetContinents(bool xyzMesh);
     vtkDataSet *     GetPlates(bool xyzMesh);
     vtkDataSet *     LatLonClip(vtkDataSet *ds);
