@@ -204,6 +204,10 @@ avtPrecisionTypeToString(avtPrecisionType v)
 //  Programmer: Cameron Christensen
 //  Creation:   June 10, 2014
 //
+//  Modifications:
+//    Eric Brugger, Thu Dec 10 11:14:07 PST 2015
+//    I added support for VTKm.
+//
 // ****************************************************************************
 
 std::string
@@ -213,12 +217,10 @@ avtBackendTypeToString(avtBackendType v)
     {
       case AVT_BACKEND_VTK:
         return "VTK";
-      case AVT_BACKEND_DAX:
-        return "DAX";
       case AVT_BACKEND_EAVL:
         return "EAVL";
-      case AVT_BACKEND_PISTON:
-        return "PISTON";
+      case AVT_BACKEND_VTKM:
+        return "VTKm";
       default:
         break;
     }

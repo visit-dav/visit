@@ -62,6 +62,9 @@
 /* Define if you have the R library. */
 #cmakedefine HAVE_LIB_R
 
+/* Define if you have the VTKm library. */
+#cmakedefine HAVE_LIBVTKM
+
 /* Define if you have the X11 library */
 #cmakedefine HAVE_LIBX11
 

@@ -160,6 +160,9 @@
 //    Kathleen Biagas, Thu Nov  6 11:21:13 PST 2014
 //    Added support for DEFINES tag.
 //
+//    Eric Brugger, Thu Dec 10 11:07:56 PST 2015
+//    I added support for VTKm.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -474,6 +477,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "${QT_QTCORE_INCLUDE_DIR}" << endl;
         out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
         out << "${EAVL_INCLUDE_DIR} " << endl;
+        out << "${VTKM_INCLUDE_DIR} " << endl;
         out << "${VTK_INCLUDE_DIRS} " << endl;
         out << "${PYINCLUDES}" << endl;
         if(extraIncludes.size() > 0)
@@ -648,6 +652,7 @@ class CMakeGeneratorPlugin : public Plugin
         linkDirs.push_back("${QT_LIBRARY_DIR}");
         linkDirs.push_back("${GLEW_LIBRARY_DIR}");
         linkDirs.push_back("${EAVL_LIBRARY_DIR}");
+        linkDirs.push_back("${VTKM_LIBRARY_DIR}");
         linkDirs.push_back("${VTK_LIBRARY_DIRS}");
         // Extract extra link directories from LDFLAGS if they have ${},$(),-L
         for (size_t i=0; i<ldflags.size(); i++)
@@ -892,6 +897,7 @@ class CMakeGeneratorPlugin : public Plugin
         linkDirs.push_back("${QT_LIBRARY_DIR}");
         linkDirs.push_back("${GLEW_LIBRARY_DIR}");
         linkDirs.push_back("${EAVL_LIBRARY_DIR}");
+        linkDirs.push_back("${VTKM_LIBRARY_DIR}");
         linkDirs.push_back("${VTK_LIBRARY_DIRS}");
         for (size_t i=0; i<ldflags.size(); i++)
         {
@@ -1127,6 +1133,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << VisItIncludeDir() << "/visit_vtk/full" << endl;
         out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
         out << "${EAVL_INCLUDE_DIR} " << endl;
+        out << "${VTKM_INCLUDE_DIR} " << endl;
         out << "${VTK_INCLUDE_DIRS} " << endl;
         out << ")" << endl;
         out << endl;
@@ -1196,6 +1203,7 @@ class CMakeGeneratorPlugin : public Plugin
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
         linkDirs.push_back("${EAVL_LIBRARY_DIR}");
+        linkDirs.push_back("${VTKM_LIBRARY_DIR}");
         linkDirs.push_back("${VTK_LIBRARY_DIRS}");
         for (size_t i=0; i<ldflags.size(); i++)
         {

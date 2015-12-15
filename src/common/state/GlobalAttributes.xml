@@ -7,9 +7,8 @@
     </Enum>
     <Enum name="BackendType">
       VTK
-      DAX
       EAVL
-      PISTON
+      VTKM
     </Enum>
     <Field name="sources" label="Sources" type="stringVector">
     </Field>

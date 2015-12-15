@@ -236,23 +236,19 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
           break;
     }
 
-    const char *backendType_names = "VTK, DAX, EAVL, PISTON";
+    const char *backendType_names = "VTK, EAVL, VTKM";
     switch (atts->GetBackendType())
     {
       case GlobalAttributes::VTK:
           SNPRINTF(tmpStr, 1000, "%sbackendType = %sVTK  # %s\n", prefix, prefix, backendType_names);
           str += tmpStr;
           break;
-      case GlobalAttributes::DAX:
-          SNPRINTF(tmpStr, 1000, "%sbackendType = %sDAX  # %s\n", prefix, prefix, backendType_names);
-          str += tmpStr;
-          break;
       case GlobalAttributes::EAVL:
           SNPRINTF(tmpStr, 1000, "%sbackendType = %sEAVL  # %s\n", prefix, prefix, backendType_names);
           str += tmpStr;
           break;
-      case GlobalAttributes::PISTON:
-          SNPRINTF(tmpStr, 1000, "%sbackendType = %sPISTON  # %s\n", prefix, prefix, backendType_names);
+      case GlobalAttributes::VTKM:
+          SNPRINTF(tmpStr, 1000, "%sbackendType = %sVTKM  # %s\n", prefix, prefix, backendType_names);
           str += tmpStr;
           break;
       default:
@@ -983,14 +979,14 @@ GlobalAttributes_SetBackendType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the backendType in the object.
-    if(ival >= 0 && ival < 4)
+    if(ival >= 0 && ival < 3)
         obj->data->SetBackendType(GlobalAttributes::BackendType(ival));
     else
     {
         fprintf(stderr, "An invalid backendType value was given. "
-                        "Valid values are in the range of [0,3]. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "VTK, DAX, EAVL, PISTON.");
+                        "VTK, EAVL, VTKM.");
         return NULL;
     }
 
@@ -1181,12 +1177,10 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
         return GlobalAttributes_GetBackendType(self, NULL);
     if(strcmp(name, "VTK") == 0)
         return PyInt_FromLong(long(GlobalAttributes::VTK));
-    if(strcmp(name, "DAX") == 0)
-        return PyInt_FromLong(long(GlobalAttributes::DAX));
     if(strcmp(name, "EAVL") == 0)
         return PyInt_FromLong(long(GlobalAttributes::EAVL));
-    if(strcmp(name, "PISTON") == 0)
-        return PyInt_FromLong(long(GlobalAttributes::PISTON));
+    if(strcmp(name, "VTKM") == 0)
+        return PyInt_FromLong(long(GlobalAttributes::VTKM));
 
     if(strcmp(name, "removeDuplicateNodes") == 0)
         return GlobalAttributes_GetRemoveDuplicateNodes(self, NULL);

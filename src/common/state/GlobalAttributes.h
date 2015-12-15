@@ -70,9 +70,8 @@ public:
     enum BackendType
     {
         VTK,
-        DAX,
         EAVL,
-        PISTON
+        VTKM
     };
 
     // These constructors are for objects of this class
