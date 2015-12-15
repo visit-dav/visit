@@ -82,21 +82,21 @@ GlobalAttributes::PrecisionType_FromString(const std::string &s, GlobalAttribute
 //
 
 static const char *BackendType_strings[] = {
-"VTK", "DAX", "EAVL", 
-"PISTON"};
+"VTK", "EAVL", "VTKM"
+};
 
 std::string
 GlobalAttributes::BackendType_ToString(GlobalAttributes::BackendType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return BackendType_strings[index];
 }
 
 std::string
 GlobalAttributes::BackendType_ToString(int t)
 {
-    int index = (t < 0 || t >= 4) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return BackendType_strings[index];
 }
 
@@ -104,7 +104,7 @@ bool
 GlobalAttributes::BackendType_FromString(const std::string &s, GlobalAttributes::BackendType &val)
 {
     val = GlobalAttributes::VTK;
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if(s == BackendType_strings[i])
         {
@@ -980,9 +980,7 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         }
     }
     if((node = searchNode->GetNode("removeDuplicateNodes")) != 0)
-    {
         SetRemoveDuplicateNodes(node->AsBool());
-    }
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods

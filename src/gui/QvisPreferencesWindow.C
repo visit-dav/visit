@@ -210,6 +210,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Kathleen Biagas, Mon Dec 22 10:46:10 PST 2014
 //   Added a preference for automatically removing duplicate nodes.
 //
+//   Eric Brugger, Thu Dec 10 11:15:48 PST 2015
+//   I added support for the VTKm backend type.
+//
 // ****************************************************************************
 
 void
@@ -282,7 +285,7 @@ QvisPreferencesWindow::CreateWindowContents()
     precisionType->addButton(inc,2);
     precLayout->addWidget(inc);
 
-#ifdef HAVE_LIBEAVL
+#if defined(HAVE_LIBEAVL) || defined(HAVE_LIBVTKM)
     //
     // Create radio button controls to change the backend.
     //
@@ -297,7 +300,14 @@ QvisPreferencesWindow::CreateWindowContents()
     QRadioButton *b0 = new QRadioButton(tr("VTK"), backendGroup);
     backendType->addButton(b0,0);
     backendLayout->addWidget(b0);
-    QRadioButton *b2 = new QRadioButton(tr("EAVL"), backendGroup);
+#endif
+#if defined(HAVE_LIBEAVL)
+    QRadioButton *b1 = new QRadioButton(tr("EAVL"), backendGroup);
+    backendType->addButton(b1,1);
+    backendLayout->addWidget(b1);
+#endif
+#if defined(HAVE_LIBVTKM)
+    QRadioButton *b2 = new QRadioButton(tr("VTKm"), backendGroup);
     backendType->addButton(b2,2);
     backendLayout->addWidget(b2);
 #endif
