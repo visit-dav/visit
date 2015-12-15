@@ -109,12 +109,12 @@ function bv_vtkm_dry_run
 #
 # *************************************************************************** #
 
-function apply_vtkm_763de94_pVTKMatch
+function apply_vtkm_763de94_patch_1
 {
     patch -p0 << \EOF
 diff -c vtkm/exec/cuda/internal/CMakeLists.txt.orig vtkm/exec/cuda/internal/CMakeLists.txt
-*** vtkm/exec/cuda/internal/CMakeLists.txt.orig	Tue Dec  8 08:46:26 2015
---- vtkm/exec/cuda/internal/CMakeLists.txt	Tue Dec  8 08:05:58 2015
+*** vtkm/exec/cuda/internal/CMakeLists.txt.orig
+--- vtkm/exec/cuda/internal/CMakeLists.txt
 ***************
 *** 23,28 ****
 --- 23,29 ----
@@ -127,7 +127,79 @@ diff -c vtkm/exec/cuda/internal/CMakeLists.txt.orig vtkm/exec/cuda/internal/CMak
   #-----------------------------------------------------------------------------
 EOF
     if [[ $? != 0 ]] ; then
-      warn "vtkm patch failed."
+      warn "vtkm patch 1 failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+function apply_vtkm_763de94_patch_2
+{
+    patch -p0 << \EOF
+diff -c vtkm/internal/Configure.h.in.orig vtkm/internal/Configure.h.in
+--- vtkm/internal/Configure.h.in.orig
++++ vtkm/internal/Configure.h.in
+@@ -137,12 +137,22 @@
+ #define VTK_M_THIRDPARTY_CLANG_WARNING_PRAGMAS
+ #endif
+
++// Older versions of GCC don't support the push/pop pragmas. Right now we are
++// not checking for GCC 3 or earlier. I'm not sure we have a use case for that.
++#if defined(VTKM_GCC) && (__GNUC__ == 4 && __GNUC_MINOR__ < 6)
++#define VTK_M_THIRDPARTY_WARNINGS_PUSH
++#define VTK_M_THRIDPARTY_WARNINGS_POP
++#else
++#define VTK_M_THIRDPARTY_WARNINGS_PUSH _Pragma("GCC diagnostic push")
++#define VTK_M_THRIDPARTY_WARNINGS_POP  _Pragma("GCC diagnostic pop")
++#endif
++
+ #define VTKM_THIRDPARTY_PRE_INCLUDE \
+-  _Pragma("GCC diagnostic push") \
++  VTK_M_THIRDPARTY_WARNINGS_PUSH \
+   VTK_M_THIRDPARTY_GCC_WARNING_PRAGMAS \
+   VTK_M_THIRDPARTY_CLANG_WARNING_PRAGMAS
+ #define VTKM_THIRDPARTY_POST_INCLUDE \
+-  _Pragma("GCC diagnostic pop")
++  VTK_M_THRIDPARTY_WARNINGS_POP
+
+ #else
+ #define VTKM_THIRDPARTY_PRE_INCLUDE
+EOF
+    if [[ $? != 0 ]] ; then
+      warn "vtkm patch 2 failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+function apply_vtkm_763de94_patch_3
+{
+    patch -p0 << \EOF
+diff -c vtkm/ListTag.h.orig vtkm/ListTag.h
+*** vtkm/ListTag.h.orig
+--- vtkm/ListTag.h
+***************
+*** 49,55 ****
+  ///
+  #define VTKM_IS_LIST_TAG(tag) \
+    VTKM_STATIC_ASSERT_MSG( \
+!     ::vtkm::internal::ListTagCheck<tag>::Valid, \
+      "Provided type is not a valid VTK-m list tag.")
+  
+  namespace detail {
+--- 49,55 ----
+  ///
+  #define VTKM_IS_LIST_TAG(tag) \
+    VTKM_STATIC_ASSERT_MSG( \
+!     (::vtkm::internal::ListTagCheck<tag>::Valid), \
+      "Provided type is not a valid VTK-m list tag.")
+  
+  namespace detail {
+EOF
+    if [[ $? != 0 ]] ; then
+      warn "vtkm patch 3 failed."
       return 1
     fi
 
@@ -139,7 +211,17 @@ function apply_vtkm_patch
     info "Patching vtkm . . ."
 
     if [[ "${VTKM_VERSION}" == "763de94" ]] ; then
-        apply_vtkm_763de94_patch
+        apply_vtkm_763de94_patch_1
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtkm_763de94_patch_2
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtkm_763de94_patch_3
         if [[ $? != 0 ]] ; then
             return 1
         fi
