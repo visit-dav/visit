@@ -1900,6 +1900,9 @@ RemoteProcess::CreatePortNumbers(int *local, int *remote, int *gateway, int nPor
 //   on Windows since qtssh requires it on Windows and will prompt for it if
 //   it doesn't have it.
 //
+//   Kathleen Biagas, Wed Dec 16 13:34:01 MST 2015
+//   Don't enclose the command in quotes if it already is quoted.
+//
 // ****************************************************************************
 
 void
@@ -1928,7 +1931,7 @@ RemoteProcess::CreateSSHCommandLine(stringVector &args, const MachineProfile &pr
     // name in quotes. This is mostly so the ssh program runs correctly
     //  on Windows when VisIt is installed into a path containing spaces.
     std::string &sshcmd = ssh[0];
-    if(sshcmd.find(" ") != std::string::npos)
+    if(sshcmd[0] != '\"' && sshcmd.find(" ") != std::string::npos)
     {
         std::string q("\"");
         sshcmd = (q + sshcmd + q);

@@ -696,6 +696,11 @@ QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
 //   Brad Whitlock, Wed Aug 15 13:58:14 PDT 2012
 //   I added ssh command.
 //
+//    Kathleen Biagas, Wed Dec 16 11:07:43 MST 2015
+//    Replace slot 'sshCommandChanged' with 'sshCommandRetPressed', so that
+//    sshCommand is only processed once editing has finished.  Will be
+//    triggered by 'returnPressed'/'editingFinished' signals from the widget.
+//
 // ****************************************************************************
 
 QWidget *
@@ -860,8 +865,10 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
 
     sshCommand = new QLineEdit(connectionGroup);
     sshCommandCheckBox = new QCheckBox(tr("SSH command"), connectionGroup);
-    connect(sshCommand, SIGNAL(textChanged(const QString &)),
-            this, SLOT(sshCommandChanged(const QString &)));
+    connect(sshCommand, SIGNAL(returnPressed()),
+            this, SLOT(sshCommandRetPressed()));
+    connect(sshCommand, SIGNAL(editingFinished()),
+            this, SLOT(sshCommandRetPressed()));
     connect(sshCommandCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleSSHCommand(bool)));
     cLayout->addWidget(sshCommandCheckBox, cRow, 0, 1, 2);
@@ -2362,6 +2369,10 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //   David Camp, Mon Aug  4 10:46:09 PDT 2014
 //   Added the threads option.
 //
+//   Kathleen Biagas, Wed Dec 16 11:07:43 MST 2015
+//   Ensure quoted sshCommand is preserved, split args on ' ' only after the
+//   end of the quoted command.
+//
 // ****************************************************************************
 
 bool
@@ -2724,11 +2735,32 @@ QvisHostProfileWindow::GetCurrentValues()
         temp = sshCommand->text();
 
         stringVector newCommand;
-        QStringList cmd(temp.split(' '));
-        for(int i = 0; i < cmd.size(); ++i)
-            newCommand.push_back(cmd[i].toStdString());
-        if (currentMachine->GetSshCommand() != newCommand)
-            needNotify = true;
+        if (temp.startsWith('\"'))
+        {
+            if (temp.endsWith('\"'))
+            {
+                newCommand.push_back(temp.toStdString());
+            }
+            else
+            {
+                // split into command and args.
+                int pos = temp.indexOf("\"", 1);
+                QString cmd(temp.left(pos+1));
+                newCommand.push_back(cmd.toStdString());
+                QString args(temp.right(temp.size()-pos-2));
+                QStringList arglist(args.split(' '));
+                for(int i = 0; i < arglist.size(); ++i)
+                    newCommand.push_back(arglist[i].toStdString());
+            }
+        }
+        else
+        {
+            QStringList cmd(temp.split(' '));
+            for(int i = 0; i < cmd.size(); ++i)
+                newCommand.push_back(cmd[i].toStdString());
+            if (currentMachine->GetSshCommand() != newCommand)
+                needNotify = true;
+        }
 
         currentMachine->SetSshCommand(newCommand);
     }
@@ -4043,32 +4075,56 @@ QvisHostProfileWindow::toggleSSHCommand(bool state)
 }
 
 // ****************************************************************************
-//  Method:  QvisHostProfileWindow::sshCommandChanged
+//  Method:  QvisHostProfileWindow::sshCommandRetPressed
 //
 //  Purpose:
 //    Change the remote ssh command for all profiles with the
 //    same remote host name based on a changed widget value.
 //
 //  Arguments:
-//    command : The string indicating the ssh command.
 //
 //  Programmer:  Brad Whitlock
 //  Creation:    Wed Aug 15 14:16:42 PDT 2012
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Dec 16 11:07:43 MST 2015
+//    Changed name to sshCommandRetPressed, removed arg.
+//    Ensure quoted command is preserved, split args on ' ' only after the
+//    end of the quoted command.
 //
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::sshCommandChanged(const QString &s)
+QvisHostProfileWindow::sshCommandRetPressed()
 {
     if (currentMachine == NULL)
         return;
 
+    QString s(sshCommand->text());
     stringVector newCommand;
-    QStringList cmd(s.split(' '));
-    for(int i = 0; i < cmd.size(); ++i)
-        newCommand.push_back(cmd[i].toStdString());
+    // preserve surrounding quotes if present
+    if (s.startsWith('\"'))
+    {
+        if (s.endsWith('\"'))
+            newCommand.push_back(s.toStdString());
+        else
+        {
+            // split into command and args.
+            int pos = s.indexOf("\"", 1);
+            QString cmd(s.left(pos+1));
+            newCommand.push_back(cmd.toStdString());
+            QString args(s.right(s.size()-pos-2));
+            QStringList arglist(args.split(' '));
+            for(int i = 0; i < arglist.size(); ++i)
+                newCommand.push_back(arglist[i].toStdString());
+        }
+    }
+    else
+    {
+        QStringList cmd(s.split(' '));
+        for(int i = 0; i < cmd.size(); ++i)
+            newCommand.push_back(cmd[i].toStdString());
+    }
 
     currentMachine->SetSshCommand(newCommand);
 }
