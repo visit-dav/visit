@@ -103,6 +103,7 @@ using std::ostringstream;
 #include <simv2_ExpressionMetaData.h>
 #include <simv2_MaterialMetaData.h>
 #include <simv2_MeshMetaData.h>
+#include <simv2_MessageMetaData.h>
 #include <simv2_NameList.h>
 #include <simv2_SimulationMetaData.h>
 #include <simv2_SpeciesMetaData.h>
@@ -1011,6 +1012,44 @@ CommandMetaDataToCommandSpec(visit_handle h, avtSimulationCommandSpecification &
         scs.SetArgumentType(avtSimulationCommandSpecification::CmdArgNone);
         free(name);
     }
+
+    int enabled = 1;
+
+    if(simv2_CommandMetaData_getEnabled(h, &enabled) == VISIT_OKAY)
+    {
+        scs.SetEnabled(enabled);
+    }
+}
+
+
+// ****************************************************************************
+// Method: MessageMetaDataToString
+//
+// Purpose:
+//   Populates string from MessageMetaData.
+//
+// Arguments:
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar  9 13:46:29 PST 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+MessageMetaDataToString(visit_handle h, std::string &str)
+{
+    char *name = NULL;
+    if(simv2_MessageMetaData_getName(h, &name) == VISIT_OKAY)
+    {
+        str = std::string(name);
+        free(name);
+    }
 }
 #endif
 
@@ -1266,6 +1305,25 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
         }
     }
+
+
+    //
+    // Add simulation messages.
+    //
+    int numMessages = 0;
+    simv2_SimulationMetaData_getNumMessages(h, numMessages);
+
+    for (int i=0; i < numMessages; i++)
+    {
+        visit_handle cHandle = VISIT_INVALID_HANDLE;
+        if(simv2_SimulationMetaData_getMessage(h, i, cHandle) == VISIT_OKAY)
+        {
+            std::string message;
+            MessageMetaDataToString(cHandle, message);
+            md->GetSimInfo().SetMessage(message);
+        }
+    }
+
 
     if (DebugStream::Level4())
     {

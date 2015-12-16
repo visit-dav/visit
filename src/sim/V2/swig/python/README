@@ -1,4 +1,10 @@
-Regenerating bindings
+First, need to generate a list of functions to wrap
+======================
+cd sim/V2/swig
+rm simV2_data_objects.i
+sh filter.sh 
+
+Run swig to make the new wrappers and regenerating bindings
 ======================
 cd ..
 swig -c++ -python -I../lib simV2.i
@@ -8,3 +14,18 @@ cd python
 Running
 ========
 ~/Development/thirdparty_shared/python/2.6.4/i386-apple-darwin10_gcc-4.2/bin/python2.6 updateplots.py
+
+
+
+NOTES: 
+
+On 15 Dec 2015 Allen Sanderson updated:
+
+       sim/V2/swig/python/simV2.py
+       sim/V2/swig/python/simV2_wrap.cxx
+
+using:
+
+SWIG Version 3.0.7
+Compiled with g++ [x86_64-apple-darwin12.6.0]
+Configured options: +pcre

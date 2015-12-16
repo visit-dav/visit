@@ -127,6 +127,8 @@ public:
         return mVisIt_CommandMetaData_alloc(h); }
     int CommandMetaData_setName(visit_handle h,const char *name) {
         return mVisIt_CommandMetaData_setName(h,name); }
+    int CommandMetaData_setEnable(visit_handle h,const int) {
+        return mVisIt_CommandMetaData_setEnable(h,enable); }
 
     int MeshMetaData_alloc(visit_handle *h) {
         return mVisIt_MeshMetaData_alloc(h); }
