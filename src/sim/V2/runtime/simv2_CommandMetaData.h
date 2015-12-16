@@ -50,6 +50,8 @@ SIMV2_API int simv2_CommandMetaData_alloc(visit_handle *obj);
 SIMV2_API int simv2_CommandMetaData_free(visit_handle obj);
 SIMV2_API int simv2_CommandMetaData_setName(visit_handle h, const char *);
 SIMV2_API int simv2_CommandMetaData_getName(visit_handle h, char **);
+SIMV2_API int simv2_CommandMetaData_setEnabled(visit_handle h, int);
+SIMV2_API int simv2_CommandMetaData_getEnabled(visit_handle h, int*);
 
 #ifdef __cplusplus
 };

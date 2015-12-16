@@ -161,6 +161,8 @@ PyavtSimulationInformation_ToString(const avtSimulationInformation *atts, const 
         if(index == 0)
             str += "#customCommands does not contain any avtSimulationCommandSpecification objects.\n";
     }
+    SNPRINTF(tmpStr, 1000, "%smessage = \"%s\"\n", prefix, atts->GetMessage().c_str());
+    str += tmpStr;
     return str;
 }
 
@@ -352,11 +354,11 @@ avtSimulationInformation_GetGenericCommands(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetGenericCommands().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetGenericCommands().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because genericCommands is empty.");
+            SNPRINTF(msg, 400, "In avtSimulationInformation::GetGenericCommands : The index %d is invalid because genericCommands is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetGenericCommands().size());
+            SNPRINTF(msg, 400, "In avtSimulationInformation::GetGenericCommands : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetGenericCommands().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -389,8 +391,8 @@ avtSimulationInformation_AddGenericCommands(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtSimulationCommandSpecification_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddGenericCommands method only accepts avtSimulationCommandSpecification objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtSimulationInformation::AddGenericCommands method only accepts avtSimulationCommandSpecification objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -437,7 +439,9 @@ avtSimulationInformation_RemoveGenericCommands(PyObject *self, PyObject *args)
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
     if(index < 0 || index >= obj->data->GetNumGenericCommands())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtSimulationInformation::RemoveGenericCommands : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -500,11 +504,11 @@ avtSimulationInformation_GetCustomCommands(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetCustomCommands().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetCustomCommands().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because customCommands is empty.");
+            SNPRINTF(msg, 400, "In avtSimulationInformation::GetCustomCommands : The index %d is invalid because customCommands is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetCustomCommands().size());
+            SNPRINTF(msg, 400, "In avtSimulationInformation::GetCustomCommands : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetCustomCommands().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -537,8 +541,8 @@ avtSimulationInformation_AddCustomCommands(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtSimulationCommandSpecification_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddCustomCommands method only accepts avtSimulationCommandSpecification objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtSimulationInformation::AddCustomCommands method only accepts avtSimulationCommandSpecification objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -585,7 +589,9 @@ avtSimulationInformation_RemoveCustomCommands(PyObject *self, PyObject *args)
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
     if(index < 0 || index >= obj->data->GetNumCustomCommands())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtSimulationInformation::RemoveCustomCommands : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -604,6 +610,30 @@ avtSimulationInformation_ClearCustomCommands(PyObject *self, PyObject *args)
     }
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+/*static*/ PyObject *
+avtSimulationInformation_SetMessage(PyObject *self, PyObject *args)
+{
+    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the message in the object.
+    obj->data->SetMessage(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtSimulationInformation_GetMessage(PyObject *self, PyObject *args)
+{
+    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetMessage().c_str());
+    return retval;
 }
 
 
@@ -632,6 +662,8 @@ PyMethodDef PyavtSimulationInformation_methods[AVTSIMULATIONINFORMATION_NMETH] =
     {"AddCustomCommands", avtSimulationInformation_AddCustomCommands, METH_VARARGS},
     {"RemoveCustomCommands", avtSimulationInformation_RemoveCustomCommands, METH_VARARGS},
     {"ClearCustomCommands", avtSimulationInformation_ClearCustomCommands, METH_VARARGS},
+    {"SetMessage", avtSimulationInformation_SetMessage, METH_VARARGS},
+    {"GetMessage", avtSimulationInformation_GetMessage, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -683,6 +715,8 @@ PyavtSimulationInformation_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "customCommands") == 0)
         return avtSimulationInformation_GetCustomCommands(self, NULL);
+    if(strcmp(name, "message") == 0)
+        return avtSimulationInformation_GetMessage(self, NULL);
 
     return Py_FindMethod(PyavtSimulationInformation_methods, self, name);
 }
@@ -709,6 +743,8 @@ PyavtSimulationInformation_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtSimulationInformation_SetOtherValues(self, tuple);
     else if(strcmp(name, "mode") == 0)
         obj = avtSimulationInformation_SetMode(self, tuple);
+    else if(strcmp(name, "message") == 0)
+        obj = avtSimulationInformation_SetMessage(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

@@ -81,6 +81,7 @@ LibsimLibrary::LibsimLibrary(const char* lib) :
     
     mVisIt_CommandMetaData_alloc = (int (*)(visit_handle*)) mLibsim.symbol("VisIt_CommandMetaData_alloc");
     mVisIt_CommandMetaData_setName = (int (*)(visit_handle,const char*)) mLibsim.symbol("VisIt_CommandMetaData_setName");
+    mVisIt_CommandMetaData_setEnable = (int (*)(visit_handle,const int)) mLibsim.symbol("VisIt_CommandMetaData_setEnable");
 
     mDomainList_setDomains = (int (*)(visit_handle,int,visit_handle)) mLibsim.symbol("VisIt_DomainList_setDomains");
     mVariableData_setDataI = (int (*)(visit_handle,int,int,int,int*)) mLibsim.symbol("VisIt_VariableData_setDataI");

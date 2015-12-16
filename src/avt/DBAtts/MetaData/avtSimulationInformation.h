@@ -65,9 +65,9 @@ class DBATTS_API avtSimulationInformation : public AttributeSubject
 public:
     enum RunMode
     {
-        Unknown,
-        Running,
-        Stopped
+        Unknown = 0,
+        Running = 1,
+        Stopped = 2
     };
 
     // These constructors are for objects of this class

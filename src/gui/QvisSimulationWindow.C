@@ -54,6 +54,7 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QMetaMethod>
 #include <QMetaObject>
 #include <QProgressBar>
 #include <QPushButton>
@@ -63,6 +64,8 @@
 #include <QSpinBox>
 #include <QSplitter>
 #include <QTextEdit>
+#include <QTableWidget>
+#include <QTableWidgetItem>
 #include <QTreeWidget>
 
 #include <DebugStream.h>
@@ -265,6 +268,7 @@ QvisSimulationWindow::CreateWindowContents()
             this, SLOT(executePushButtonCommand(const QString &)));
     connect(simCommands, SIGNAL(showCommandWindow()),
             this, SLOT(showCommandWindow()));
+
     connect(simCommands, SIGNAL(executeStart(const QString &)),
             this, SLOT(executeStartCommand(const QString &)));
     connect(simCommands, SIGNAL(executeStop(const QString &)),
@@ -424,6 +428,21 @@ ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
                 qDebug("    %d: ctor:   %s", m, mm.signature());
         }
 #endif
+
+#if 0    
+        // Useful for getting slot signature
+        for(int m = 0; m < mo->methodCount(); ++m)
+        {
+            QMetaMethod mm = mo->method(m);
+
+            if(mm.methodType() == QMetaMethod::Signal)
+            {
+              std::cerr << ui->objectName().toStdString() << "  "
+                        << mm.signature() << std::endl;
+            }
+        }
+#endif
+
         if (mo->indexOfSignal("clicked()") != -1)
         {
 //qDebug("connect %s clicked()\n", ui->objectName().toStdString().c_str());
@@ -441,45 +460,45 @@ ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
         if (mo->indexOfSignal("valueChanged(const QDate&)") != -1)
         {
             QObject::connect(ui, SIGNAL(valueChanged(const QDate&)),
-                    cc, SLOT(ValueChangedHandler(const QDate &)));
+                             cc, SLOT(ValueChangedHandler(const QDate &)));
         }
 
         if (mo->indexOfSignal("valueChanged(const QTime&)") != -1)
         {
             QObject::connect(ui, SIGNAL(valueChanged(const QTime&)),
-                    cc, SLOT(ValueChangedHandler(const QTime &)));
+                             cc, SLOT(ValueChangedHandler(const QTime &)));
+        }
+
+        if (mo->indexOfSignal("itemChanged(QTableWidgetItem)") != -1)
+        {
+            QObject::connect(ui, SIGNAL(itemChanged(const QTableWidgetItem &item)),
+                             cc, SLOT(ItemChangedHandler(const QTableWidgetItem &)));
         }
 
         if (mo->indexOfSignal("stateChanged(int)") != -1)
         {
 //qDebug("connect %s stateChanged(int)\n", ui->objectName().toStdString().c_str());
             QObject::connect(ui, SIGNAL(stateChanged(int)),
-                    cc, SLOT(StateChangedHandler(int)));
+                             cc, SLOT(StateChangedHandler(int)));
         }
 
         if (mo->indexOfSignal("activated(int)") != -1)
         {
 //qDebug("connect %s activated(int)\n", ui->objectName().toStdString().c_str());
             QObject::connect(ui, SIGNAL(activated(int)),
-                    cc, SLOT(ActivatedHandler(int)));
+                             cc, SLOT(ActivatedHandler(int)));
         }
 
         if (mo->indexOfSignal("textChanged(QString)") != -1)
         {
             QObject::connect(ui, SIGNAL(textChanged(const QString &)),
-                    cc, SLOT(TextChangedHandler(const QString&)));
+                             cc, SLOT(TextChangedHandler(const QString&)));
         }
 
-        if (mo->indexOfSignal("currentChanged(int,int)") != -1)
+        if (mo->indexOfSignal("cellChanged(int,int)") != -1)
         {
-            QObject::connect(ui, SIGNAL(currentChanged(int, int)),
-                    cc, SLOT(CurrentChangedHandler(int, int)));       
-        }
-
-        if (mo->indexOfSignal("valueChanged(int,int)") != -1)
-        {
-            QObject::connect(ui, SIGNAL(valueChanged(int, int)),
-                    cc, SLOT(ValueChangedHandler(int, int)));
+            QObject::connect(ui, SIGNAL(cellChanged(int, int)),
+                             cc, SLOT(CellChangedHandler(int, int)));
         }
 
         // We've hooked up signals for this object, now do its children.
@@ -658,12 +677,14 @@ QvisSimulationWindow::UpdateUIComponent (QWidget *window,
 #endif
 
 void
-QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name, const QString &value, bool e)
+QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
+                                        const QString &value, bool e)
 {
     QObject *ui  = window->findChild<QWidget *>(name);
     if (ui)
     {
-        debug5 << "Looking up component = " << name.toStdString().c_str() << endl;
+        debug5 << "Looking up component = "
+               << name.toStdString().c_str() << endl;
 
         // Block signals so updating the user interface does not cause a
         // command to go back to the simulation.
@@ -681,7 +702,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name, co
 
         if (ui->inherits( "QLineEdit"))
         {
-            debug5 << "found button " << name.toStdString() << " text = "
+            debug5 << "found line edit " << name.toStdString() << " text = "
                    << value.toStdString() << endl;
             ((QLineEdit*)ui)->setText(value );
         }
@@ -763,6 +784,40 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name, co
             debug5 << "found QCheckBox " << name.toStdString()
                    << " value = " << value.toStdString() << endl;
             ((QCheckBox*)ui)->setChecked(value=="1");
+        }
+
+        if (ui->inherits("QTableWidget"))
+        {
+            ((QWidget *)ui)->setEnabled(true);
+
+            char var[128];
+            char val[128];
+            int row, column;
+
+            sscanf (value.toStdString().c_str(),"%d | %d | %s",
+                    &row, &column, val);
+
+            debug5 << "found QTableWidget " << name.toStdString()
+                   << " row = " << row << " column = " << column 
+                   << std::endl;
+
+            QTableWidgetItem *newItem =
+              new QTableWidgetItem(tr("%1").arg(val));
+
+            if( e )
+              newItem->setFlags( Qt::ItemIsSelectable |
+                                 Qt::ItemIsEditable |
+                                 Qt::ItemIsEnabled );
+            else
+              newItem->setFlags(Qt::NoItemFlags);
+
+            if( ((QTableWidget*)ui)->rowCount() < row )
+              ((QTableWidget*)ui)->setRowCount(row+1);
+
+            if( ((QTableWidget*)ui)->columnCount() < column )
+              ((QTableWidget*)ui)->setColumnCount(column+1);
+
+            ((QTableWidget*)ui)->setItem(row, column, newItem);
         }
 
         // Unblock signals.
@@ -1272,12 +1327,20 @@ QvisSimulationWindow::UpdateInformation()
             }
             else
             {
-                avtSimulationCommandSpecification::CommandArgumentType t;
-                t = md->GetSimInfo().GetGenericCommands(c).GetArgumentType();
-                bool e = md->GetSimInfo().GetGenericCommands(c).GetEnabled();
+                avtSimulationCommandSpecification cmd = 
+                  md->GetSimInfo().GetGenericCommands(c);
+
+                avtSimulationCommandSpecification::CommandArgumentType t =
+                  cmd.GetArgumentType();
+
                 if (t == avtSimulationCommandSpecification::CmdArgNone)
                 {
-                    QString bName = QString(md->GetSimInfo().GetGenericCommands(c).GetName().c_str());
+                    QString bName = QString(cmd.GetName().c_str());
+                    bool e = cmd.GetEnabled();
+
+                    // std::cerr << cmd.GetName() << "  " << cmd.GetEnabled()
+                    //        << std::endl;
+
                     updateSize |= simCommands->setButtonCommand(c, bName);
                     simCommands->setButtonEnabled(c, e);
                 }
@@ -1292,9 +1355,10 @@ QvisSimulationWindow::UpdateInformation()
             simCommands->adjustSize();
         }
 
-        // If we've not created a dynamic commands window already and we can get a
-        // decent-looking UI filename, enabled the custom command button
-        // so we can create a window when that button is clicked.
+        // If we've not created a dynamic commands window already and
+        // we can get a decent-looking UI filename, enabled the custom
+        // command button so we can create a window when that button
+        // is clicked.
         if(DynamicCommandsWin == NULL)
         {
             QString fname(GetUIFile(activeEngine));

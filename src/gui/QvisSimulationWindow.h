@@ -176,8 +176,8 @@ private:
     QvisUiLoader       *uiLoader;
     QMap<int,int>      simulationToEngineListMap;
     QvisStripChartMgr  *stripCharts;
-    QvisSimulationMessageWindow *simMessages;
-    QvisSimulationCommandWindow *simCommands;
+    QvisSimulationCommandWindow  *simCommands;
+    QvisSimulationMessageWindow  *simMessages;
 };
 
 #endif
