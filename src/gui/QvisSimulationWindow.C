@@ -284,8 +284,8 @@ QvisSimulationWindow::CreateWindowContents()
     simMessages->post();
 
     // Create the strip chart manager and post it to the notepad.
-    int simindex = simCombo->currentIndex();
-    int index = simulationToEngineListMap[simindex];
+    // int simindex = simCombo->currentIndex();
+    // int index = simulationToEngineListMap[simindex];
     // stripCharts = new QvisStripChartMgr(0, GetViewerProxy(), engines, index, notepadAux);
     // stripCharts->post();
 
@@ -790,7 +790,6 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
         {
             ((QWidget *)ui)->setEnabled(true);
 
-            char var[128];
             char val[128];
             int row, column;
 
