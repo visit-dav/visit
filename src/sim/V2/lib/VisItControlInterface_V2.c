@@ -4177,6 +4177,22 @@ VisItUI_textChanged(const char *name, void (*cb)(char*,void*), void *cbdata)
 }
 
 int
+VisItUI_cellChanged(const char *name, void (*cb)(char*,void*), void *cbdata)
+{
+    int retval = VISIT_ERROR;
+    sim_ui_element *e = NULL;
+    LIBSIM_API_ENTER(VisItUI_cellChanged);
+    if((e = sim_ui_get(name)) != NULL)
+    {
+        e->slot_cellChanged = cb;
+        e->slot_cellChanged_data = cbdata;
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_cellChanged);
+    return retval;
+}
+
+int
 VisItUI_setValueI(const char *name, int value, int enabled)
 {
     int retval = VISIT_ERROR;
@@ -4186,7 +4202,25 @@ VisItUI_setValueI(const char *name, int value, int enabled)
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         char cmd[500];
-        sprintf(cmd, "SetUI:i:%s:%d:%d", name, value, enabled?1:0);
+        sprintf(cmd, "SetUI:s:%s:%d:%d", name, value, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_setValueI)
+    return retval;
+}
+
+int
+VisItUI_setValueD(const char *name, double value, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setValueI);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        char cmd[500];
+        sprintf(cmd, "SetUI:s:%s:%lf:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
     }
@@ -4209,6 +4243,67 @@ VisItUI_setValueS(const char *name, const char *value, int enabled)
         retval = VISIT_OKAY;
     }
     LIBSIM_API_LEAVE(VisItUI_setValueS)
+    return retval;
+}
+
+
+int
+VisItUI_setTableValueI(const char *name,
+                       int row, int column, int value, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setTableValueI);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        char cmd[500];
+        sprintf(cmd, "SetUI:s:%s:%d | %d | %d :%d",
+                name, row, column, value, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_setTableValueI)
+    return retval;
+}
+
+int
+VisItUI_setTableValueD(const char *name,
+                       int row, int column, double value, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setTableValueI);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        char cmd[500];
+        sprintf(cmd, "SetUI:s:%s:%d | %d | %lf :%d",
+                name, row, column, value, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_setTableValueI)
+    return retval;
+}
+
+int
+VisItUI_setTableValueS(const char *name,
+                       int row, int column, const char *value, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setTableValueS);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        char cmd[500];
+        sprintf(cmd, "SetUI:s:%s:%d | %d | %s :%d",
+                name, row, column, value, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_setTableValueS)
     return retval;
 }
 

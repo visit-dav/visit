@@ -18,6 +18,9 @@ typedef struct
     void (*slot_stateChanged)(int, void *);
     void *slot_stateChanged_data;
 
+    void (*slot_cellChanged)(char*, void *);
+    void *slot_cellChanged_data;
+
 } sim_ui_element;
 
 int             sim_ui_handle(const char *name, char *args);

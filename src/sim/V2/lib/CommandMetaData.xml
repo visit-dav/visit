@@ -2,6 +2,8 @@
   <Attribute name="CommandMetaData" purpose="" persistent="false" keyframe="false" exportAPI="" exportInclude="" codefile="CommandMetaData.code">
     <Field name="name" label="name" type="string">
     </Field>
+    <Field name="enabled" label="enabled" type="int">
+    </Field>
     <Function name="simv2_CommandMetaData_check" user="true" member="true">
     </Function>
   </Attribute>

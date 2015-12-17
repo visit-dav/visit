@@ -56,6 +56,7 @@ LibsimLibrary::LibsimLibrary(const char* lib) :
     mVisIt_SimulationMetaData_setCycleTime = (int (*)(visit_handle,int,double)) mLibsim.symbol("VisIt_SimulationMetaData_setCycleTime");
     mVisIt_SimulationMetaData_addGenericCommand = (int (*)(visit_handle,visit_handle)) mLibsim.symbol("VisIt_SimulationMetaData_addGenericCommand");
     mVisIt_SimulationMetaData_addMesh = (int (*)(visit_handle,visit_handle)) mLibsim.symbol("VisIt_SimulationMetaData_addMesh");
+    mVisIt_SimulationMetaData_addMessage = (int (*)(visit_handle,visit_handle)) mLibsim.symbol("VisIt_SimulationMetaData_addMessage");
     mVisIt_SimulationMetaData_addVariable = (int (*)(visit_handle,visit_handle)) mLibsim.symbol("VisIt_SimulationMetaData_addVariable");
     
     mVisIt_MeshMetaData_alloc = (int (*)(visit_handle*)) mLibsim.symbol("VisIt_MeshMetaData_alloc");
@@ -80,6 +81,7 @@ LibsimLibrary::LibsimLibrary(const char* lib) :
     
     mVisIt_CommandMetaData_alloc = (int (*)(visit_handle*)) mLibsim.symbol("VisIt_CommandMetaData_alloc");
     mVisIt_CommandMetaData_setName = (int (*)(visit_handle,const char*)) mLibsim.symbol("VisIt_CommandMetaData_setName");
+    mVisIt_CommandMetaData_setEnable = (int (*)(visit_handle,const int)) mLibsim.symbol("VisIt_CommandMetaData_setEnable");
 
     mDomainList_setDomains = (int (*)(visit_handle,int,visit_handle)) mLibsim.symbol("VisIt_DomainList_setDomains");
     mVariableData_setDataI = (int (*)(visit_handle,int,int,int,int*)) mLibsim.symbol("VisIt_VariableData_setDataI");

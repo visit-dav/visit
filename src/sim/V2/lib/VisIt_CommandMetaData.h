@@ -47,6 +47,8 @@ int VisIt_CommandMetaData_alloc(visit_handle *obj);
 int VisIt_CommandMetaData_free(visit_handle obj);
 int VisIt_CommandMetaData_setName(visit_handle h, const char *);
 int VisIt_CommandMetaData_getName(visit_handle h, char **);
+int VisIt_CommandMetaData_setEnabled(visit_handle h, int);
+int VisIt_CommandMetaData_getEnabled(visit_handle h, int*);
 
 #ifdef __cplusplus
 }

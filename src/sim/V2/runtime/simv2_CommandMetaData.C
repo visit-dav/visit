@@ -50,11 +50,13 @@ struct VisIt_CommandMetaData : public VisIt_ObjectBase
     virtual ~VisIt_CommandMetaData();
 
     std::string name;
+    int         enabled;
 };
 
 VisIt_CommandMetaData::VisIt_CommandMetaData() : VisIt_ObjectBase(VISIT_COMMANDMETADATA)
 {
     name = "";
+    enabled = 1;
 }
 
 VisIt_CommandMetaData::~VisIt_CommandMetaData()
@@ -64,13 +66,13 @@ VisIt_CommandMetaData::~VisIt_CommandMetaData()
 static VisIt_CommandMetaData *
 GetObject(visit_handle h, const char *fname)
 {
-    char tmp[100];
+    char tmp[150];
     VisIt_CommandMetaData *obj = (VisIt_CommandMetaData *)VisItGetPointer(h);
     if(obj != NULL)
     {
         if(obj->objectType() != VISIT_COMMANDMETADATA)
         {
-            SNPRINTF(tmp, 100, "%s: The provided handle does not point to "
+            SNPRINTF(tmp, 150, "%s: The provided handle does not point to "
                 "a CommandMetaData object.", fname);
             VisItError(tmp);
             obj = NULL;
@@ -78,7 +80,7 @@ GetObject(visit_handle h, const char *fname)
     }
     else
     {
-        SNPRINTF(tmp, 100, "%s: An invalid handle was provided.", fname);
+        SNPRINTF(tmp, 150, "%s: An invalid handle was provided.", fname);
         VisItError(tmp);
     }
 
@@ -146,6 +148,39 @@ simv2_CommandMetaData_getName(visit_handle h, char **val)
     }
     else
         *val = NULL;
+    return retval;
+}
+
+int
+simv2_CommandMetaData_setEnabled(visit_handle h, int val)
+{
+    int retval = VISIT_ERROR;
+    VisIt_CommandMetaData *obj = GetObject(h, "simv2_CommandMetaData_setEnabled");
+    if(obj != NULL)
+    {
+        obj->enabled = val;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_CommandMetaData_getEnabled(visit_handle h, int *val)
+{
+    int retval = VISIT_ERROR;
+    if(val == NULL)
+    {
+        VisItError("simv2_CommandMetaData_getEnabled: Invalid address.");
+        return VISIT_ERROR;
+    }
+    VisIt_CommandMetaData *obj = GetObject(h, "simv2_CommandMetaData_getEnabled");
+    if(obj != NULL)
+    {
+        *val = obj->enabled;
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = 0;
     return retval;
 }
 

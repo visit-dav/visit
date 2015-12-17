@@ -7,6 +7,11 @@
 #include "simv2_TypeTraits.hxx"
 #include <stdio.h>
 #include <map>
+#include <sstream>
+#include <utility>
+using std::ostringstream;
+using std::map;
+using std::pair;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,24 +32,20 @@ public:
     void *data;
 };
 
-VisIt_ArrayData::VisIt_ArrayData()
-{
-    memory = VISIT_MEMORY_CONTIGUOUS;
-    owner = VISIT_OWNER_VISIT;
-    dataType = VISIT_DATATYPE_FLOAT;
-    nTuples = 0;
-    offset = 0;
-    stride = 0;
-    data = NULL;
-}
+VisIt_ArrayData::VisIt_ArrayData() :
+    memory(VISIT_MEMORY_CONTIGUOUS), owner(VISIT_OWNER_VISIT),
+    dataType(VISIT_DATATYPE_FLOAT), nComponents(1), nTuples(0),
+    offset(0), stride(0), data(NULL)
+{}
 
 VisIt_ArrayData::~VisIt_ArrayData()
 {
-    if ((owner == VISIT_OWNER_VISIT) && (data != NULL))
-    {
+    if (owner == VISIT_OWNER_VISIT)
         free(data);
-    }
 }
+
+typedef std::map<int, VisIt_ArrayData*> ArrayDataMap;
+typedef ArrayDataMap::iterator ArrayDataMapIt;
 
 template <typename Scalar>
 void *
@@ -52,7 +53,7 @@ CopyStridedData(unsigned char *base, int nTuples, int offset, int &stride)
 {
     size_t sz = nTuples * sizeof(Scalar);
     Scalar *newData = (Scalar *)malloc(sz);
-    if(newData != NULL)
+    if (newData)
     {
         for(int i = 0; i < nTuples; ++i)
         {
@@ -65,7 +66,7 @@ CopyStridedData(unsigned char *base, int nTuples, int offset, int &stride)
     }
     return (void*)newData;
 }
-                
+
 int
 VisIt_ArrayData::CopyData()
 {
@@ -73,16 +74,16 @@ VisIt_ArrayData::CopyData()
     void *realData = data;
     int realOffset = offset;
     int realStride = stride;
-    if(owner == VISIT_OWNER_COPY)
+    if (owner == VISIT_OWNER_COPY)
     {
-        if(memory == VISIT_MEMORY_CONTIGUOUS)
+        if (memory == VISIT_MEMORY_CONTIGUOUS)
         {
             switch (dataType)
             {
             simV2TemplateMacro(
                 size_t sz = nComponents*nTuples*sizeof(simV2_TT::cppType);
                 realData = malloc(sz);
-                if(realData != NULL)
+                if (realData)
                 {
                     memcpy(realData, data, sz);
                     realOwner = VISIT_OWNER_VISIT;
@@ -120,7 +121,7 @@ VisIt_ArrayData::CopyData()
                 break;
             }
 
-            if(newData != NULL)
+            if (newData)
             {
                 realOwner = VISIT_OWNER_VISIT;
                 realOffset = 0;
@@ -155,54 +156,49 @@ public:
     VisIt_ArrayData *GetArray(int comp);
     int              GetNumberOfArrays() { return (int)arrays.size(); }
 
-    std::map<int, VisIt_ArrayData *> arrays;
+    ArrayDataMap arrays;
     void (*callback)(void *);
     void *callbackData;
 };
 
-VisIt_VariableData::VisIt_VariableData() : VisIt_ObjectBase(VISIT_VARIABLE_DATA),
-    arrays()
-{
-    callback = NULL;
-    callbackData = NULL;
-}
+VisIt_VariableData::VisIt_VariableData() :
+    VisIt_ObjectBase(VISIT_VARIABLE_DATA), arrays(), callback(NULL),
+    callbackData(NULL)
+{}
 
 VisIt_VariableData::~VisIt_VariableData()
 {
-    // This gets installed on VTK when the data are served. We call it here in 
-    // case the data were *not* given to VTK. If they were given to VTK then the SimV2
-    // reader will have nulled out the callback.
-    if(callback != NULL)
+    // This gets installed on VTK when the data are served. We call it here in
+    // case the data were *not* given to VTK. If they were given to VTK then
+    // the SimV2 reader will have nulled out the callback.
+    if (callback)
         (*callback)(callbackData);
 
-    std::map<int, VisIt_ArrayData *>::iterator it = arrays.begin();
-    for( ; it != arrays.end(); ++it)
-    {
+    ArrayDataMapIt it = arrays.begin();
+    ArrayDataMapIt end = arrays.end();
+    for(; it != end; ++it)
         delete it->second;
-    }
+
     arrays.clear();
 }
 
 void
 VisIt_VariableData::SetArray(int arrId, VisIt_ArrayData *arr)
 {
-    std::map<int, VisIt_ArrayData *>::iterator it = arrays.find(arrId);
-    if(it != arrays.end())
-    {
-        delete it->second;
-        it->second = arr;
-    }
-    else
-    {
-        arrays[arrId] = arr;
-    }
+    pair<ArrayDataMapIt, bool> ins =
+        arrays.insert(ArrayDataMap::value_type(arrId, arr));
+
+    if (!ins.second)
+        delete ins.first->second;
+
+    ins.first->second = arr;
 }
 
 VisIt_ArrayData *
 VisIt_VariableData::GetArray(int comp)
 {
-    std::map<int, VisIt_ArrayData *>::iterator it = arrays.find(comp);
-    if(it != arrays.end())
+    ArrayDataMapIt it = arrays.find(comp);
+    if (it != arrays.end())
         return it->second;
     return NULL;
 }
@@ -212,9 +208,9 @@ GetVariableDataObject(visit_handle h, const char *fname)
 {
     char tmp[100];
     VisIt_VariableData *obj = (VisIt_VariableData *)VisItGetPointer(h);
-    if(obj != NULL)
+    if (obj)
     {
-        if(obj->objectType() != VISIT_VARIABLE_DATA)
+        if (obj->objectType() != VISIT_VARIABLE_DATA)
         {
             SNPRINTF(tmp, 100, "%s: The provided handle does not point to a "
                 "VariableData object.", fname);
@@ -233,36 +229,37 @@ GetVariableDataObject(visit_handle h, const char *fname)
 }
 
 static int
-simv2_VariableData_setArrayData_internal(visit_handle h, 
+simv2_VariableData_setArrayData_internal(visit_handle h,
     int arrIndex, int memory,
     int owner, int dataType,
     int nComps, int nTuples, int offset, int stride, void *data)
 
 {
-    if(arrIndex < 0)
+    if (arrIndex < 0)
     {
         VisItError("The array index must be greater than or equal to 0.");
         return VISIT_ERROR;
     }
 
-    if(memory != VISIT_MEMORY_CONTIGUOUS &&
-       memory != VISIT_MEMORY_STRIDED)
+    if ((memory != VISIT_MEMORY_CONTIGUOUS) &&
+       (memory != VISIT_MEMORY_STRIDED))
     {
-        VisItError("The memory type must be either VISIT_MEMORY_CONTIGUOUS or VISIT_MEMORY_STRIDED.");
+        VisItError("The memory type must be either "
+            "VISIT_MEMORY_CONTIGUOUS or VISIT_MEMORY_STRIDED.");
         return VISIT_ERROR;
     }
 
-    if(owner != VISIT_OWNER_SIM &&
-       owner != VISIT_OWNER_VISIT &&
-       owner != VISIT_OWNER_VISIT_EX &&
-       owner != VISIT_OWNER_COPY)
+    if ((owner != VISIT_OWNER_SIM) &&
+       (owner != VISIT_OWNER_VISIT) &&
+       (owner != VISIT_OWNER_VISIT_EX) &&
+       (owner != VISIT_OWNER_COPY))
     {
         VisItError("VariableData's owner must be set to VISIT_OWNER_SIM"
             ", VISIT_OWNER_VISIT, VISIT_OWNER_VISIT_EX, or VISIT_OWNER_COPY.");
         return VISIT_ERROR;
     }
 
-    if(!simV2_ValidDataType(dataType))
+    if (!simV2_ValidDataType(dataType))
     {
         VisItError("VariableData's data type must be set to one of: "
             "VISIT_DATATYPE_CHAR, VISIT_DATATYPE_INT, VISIT_DATATYPE_FLOAT, "
@@ -270,27 +267,28 @@ simv2_VariableData_setArrayData_internal(visit_handle h,
         return VISIT_ERROR;
     }
 
-    if(nComps <= 0)
+    if (nComps <= 0)
     {
         VisItError("VariableData's number of components must be greater than 0.");
         return VISIT_ERROR;
     }
 
-    if(nTuples <= 0)
+    if (nTuples <= 0)
     {
         VisItError("VariableData's number of tuples must be greater than 0.");
         return VISIT_ERROR;
     }
 
-    if(data == NULL)
+    if (!data)
     {
         VisItError("VariableData's component data must not be NULL.");
         return VISIT_ERROR;
     }
 
     int retval = VISIT_ERROR;
-    VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_setArrayData_internal");
-    if(obj != NULL)
+    VisIt_VariableData *obj =
+        GetVariableDataObject(h, "simv2_VariableData_setArrayData_internal");
+    if (obj)
     {
         VisIt_ArrayData *arr = new VisIt_ArrayData;
         arr->memory = memory;
@@ -326,7 +324,7 @@ simv2_VariableData_free(visit_handle h)
 {
     VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_free");
     int retval = VISIT_ERROR;
-    if(obj != NULL)
+    if (obj)
     {
         delete obj;
         VisItFreePointer(h);
@@ -364,7 +362,7 @@ simv2_VariableData_setData(visit_handle h, int owner, int dataType, int nComps,
     default:
         break;
     }
-    return simv2_VariableData_setArrayData_internal(h, arrIndex, memory, 
+    return simv2_VariableData_setArrayData_internal(h, arrIndex, memory,
                owner, dataType, nComps, nTuples, offset, stride, data);
 }
 
@@ -375,7 +373,7 @@ simv2_VariableData_setDataEx(visit_handle h, int owner, int dataType, int nComps
 
     if (owner == VISIT_OWNER_VISIT_EX)
     {
-        if (callback == NULL)
+        if (!callback)
         {
             VisItError("VISIT_OWNER_VISIT_EX specified "
                        "but a callback was not provided.");
@@ -383,9 +381,12 @@ simv2_VariableData_setDataEx(visit_handle h, int owner, int dataType, int nComps
         }
 
         VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_setDataEx");
-        if(obj == NULL)
+        if (!obj)
         {
-            VisItError("Failed to locate the object from the given handle.");
+            ostringstream oss;
+            oss << "Error: " << __FILE__ << ":" << __LINE__<< endl
+                << "Failed to locate the object from the given handle." << endl;
+            VisItError(oss.str().c_str());
             return VISIT_ERROR;
         }
 
@@ -402,7 +403,11 @@ simv2_VariableData_setArrayData(visit_handle h, int arrIndex, int owner, int dat
     int memory = VISIT_MEMORY_STRIDED;
     int nComps = 1;
 
-    if(owner == VISIT_OWNER_VISIT_EX)
+    // TODO -- enable zero copy for ref counted arrays etc. when you pass to
+    // VTK you need to create a delete event observer to dec the ref count and
+    // zero out libsim's array and delete callback before destructing libsim
+    // object.
+    if (owner == VISIT_OWNER_VISIT_EX)
     {
         VisItError("VISIT_OWNER_VISIT_EX is not allowed on array components.");
         return VISIT_ERROR;
@@ -413,19 +418,22 @@ simv2_VariableData_setArrayData(visit_handle h, int arrIndex, int owner, int dat
 }
 
 int
-simv2_VariableData_setDeletionCallback(visit_handle h, 
+simv2_VariableData_setDeletionCallback(visit_handle h,
     void(*callback)(void*), void *callbackData)
 {
     int retval = VISIT_ERROR;
     VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_setDeletionCallback");
-    if(obj == NULL)
+    if (obj)
     {
         obj->callback = callback;
         obj->callbackData = callbackData;
     }
     else
     {
-        VisItError("Failed to locate the object from the given handle.");
+        ostringstream oss;
+        oss << "Error: " << __FILE__ << ":" << __LINE__<< endl
+            << "Failed to locate the object from the given handle." << endl;
+        VisItError(oss.str().c_str());
     }
 
     return retval;
@@ -434,7 +442,7 @@ simv2_VariableData_setDeletionCallback(visit_handle h,
 /* Get functions */
 
 /**
- This function is callable from the public API via the _getData and _getDataX 
+ This function is callable from the public API via the _getData and _getDataX
  functions. The function is likely not used much.
  */
 int
@@ -444,11 +452,11 @@ simv2_VariableData_getData2(visit_handle h, int *owner, int *dataType, int *nCom
     int arrIndex = 0;
     int memory = VISIT_MEMORY_CONTIGUOUS;
     int stride = 0, offset = 0;
-    int retval = simv2_VariableData_getArrayData(h, arrIndex, memory, 
-                                                 *owner, *dataType, *nComps, *nTuples, 
+    int retval = simv2_VariableData_getArrayData(h, arrIndex, memory,
+                                                 *owner, *dataType, *nComps, *nTuples,
                                                  offset, stride, *data);
 #if 0
-    if(memory == VISIT_MEMORY_STRIDED)
+    if (memory == VISIT_MEMORY_STRIDED)
     {
         VisItWarning("simv2_VariableData_getData2 does not return all "
                      "information about arrays that have strided memory access. "
@@ -462,7 +470,7 @@ simv2_VariableData_getData2(visit_handle h, int *owner, int *dataType, int *nCom
  * C++ code callable from the SimV2 plugin and within the runtime
  ******************************************************************************/
 
-int simv2_VariableData_getArrayData(visit_handle h, 
+int simv2_VariableData_getArrayData(visit_handle h,
                                     int arrIndex, int &memory,
                                     int &owner,   int &dataType,
                                     int &nComps,  int &nTuples,
@@ -471,12 +479,12 @@ int simv2_VariableData_getArrayData(visit_handle h,
 {
     int retval = VISIT_ERROR;
     VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_getArrayData");
-    if(obj != NULL)
+    if (obj)
     {
         VisIt_ArrayData *arr = obj->GetArray(arrIndex);
-        if(arr != NULL)
-        { 
-            if(arr->data == NULL)
+        if (arr)
+        {
+            if (!arr->data)
             {
                 VisItError("The data array does not contain any data");
                 return VISIT_ERROR;
@@ -496,7 +504,10 @@ int simv2_VariableData_getArrayData(visit_handle h,
     }
     else
     {
-        VisItError("Failed to locate the object from the given handle.");
+        ostringstream oss;
+        oss << "Error: " << __FILE__ << ":" << __LINE__<< endl
+            << "Failed to locate the object from the given handle." << endl;
+        VisItError(oss.str().c_str());
     }
     return retval;
 }
@@ -513,7 +524,7 @@ simv2_VariableData_getDeletionCallback(visit_handle h, void (*&callback)(void*),
 {
     int retval = VISIT_ERROR;
     VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_getDeletionCallback");
-    if(obj != NULL)
+    if (obj)
     {
         callback = obj->callback;
         callbackData = obj->callbackData;
@@ -522,7 +533,10 @@ simv2_VariableData_getDeletionCallback(visit_handle h, void (*&callback)(void*),
     }
     else
     {
-        VisItError("Failed to locate the object from the given handle.");
+        ostringstream oss;
+        oss << "Error: " << __FILE__ << ":" << __LINE__<< endl
+            << "Failed to locate the object from the given handle." << endl;
+        VisItError(oss.str().c_str());
     }
     return retval;
 }
@@ -533,14 +547,17 @@ simv2_VariableData_getNumArrays(visit_handle h, int *nArrays)
     int retval = VISIT_ERROR;
     *nArrays = 0;
     VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_getNumArrays");
-    if(obj != NULL)
+    if (obj)
     {
         *nArrays = obj->GetNumberOfArrays();
         retval = VISIT_OKAY;
     }
     else
     {
-        VisItError("Failed to locate the object from the given handle.");
+        ostringstream oss;
+        oss << "Error: " << __FILE__ << ":" << __LINE__<< endl
+            << "Failed to locate the object from the given handle." << endl;
+        VisItError(oss.str().c_str());
     }
     return retval;
 }
@@ -550,13 +567,13 @@ simv2_VariableData_nullData(visit_handle h)
 {
     int retval = VISIT_ERROR;
     VisIt_VariableData *obj = GetVariableDataObject(h, "simv2_VariableData_nullData");
-    if(obj != NULL)
+    if (obj)
     {
         // NULL out the storage for all of the arrays because we stole them.
         for(int i = 0; i < obj->GetNumberOfArrays(); ++i)
         {
             VisIt_ArrayData *arr = obj->GetArray(i);
-            if(arr != NULL)
+            if (arr)
             {
                 arr->data = NULL;
                 arr->nTuples = 0;

@@ -143,9 +143,13 @@ void *simv2_get_engine()
 // Creation:   Wed Sep 17 18:39:01 PDT 2014
 //
 // Modifications:
+//
 //    Brad Whitlock, Mon Aug 17 17:15:56 PDT 2015
 //    Parse the command line options to allow plot and operator plugins to be
 //    restricted.
+//
+//    Burlen Loring, Fri Oct  2 15:18:03 PDT 2015
+//    Don't need to check the permissions on the .sim2 file.
 //
 // ****************************************************************************
 
@@ -195,6 +199,7 @@ static int simv2_initialize_helper(void *e, int argc, char *argv[], bool batch)
 
 int simv2_initialize(void *e, int argc, char *argv[])
 {
+    avtDatabaseFactory::SetCheckFilePermissions(false);
     return simv2_initialize_helper(e, argc, argv, false);
 }
 

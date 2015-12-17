@@ -82,8 +82,7 @@ public slots:
     void ValueChangedHandler(const QDate &theDate);
     void ActivatedHandler(int);
     void StateChangedHandler(int);
-    void CurrentChangedHandler(int, int);
-    void ValueChangedHandler(int, int);
+    void CellChangedHandler(int, int);
     int  SendCMD(QString sig, const  QObject *ui,QString value);
 
 private:

@@ -266,46 +266,10 @@ void SimCommandSlots::StateChangedHandler(int OnOff)
 }
 
 // ****************************************************************************
-// Method: SimCommandSlots::CurrentChangedHandler
+// Method: SimCommandSlots::CellChangedHandler
 //
 // Purpose:
-//   This is the CurrentChangedHandler signal handler function. It is generated
-//   when the users changes a text value inside a text custom UI widget.
-//
-// Programmer: Shelly Prevost
-// Creation:   Jan 6, 2006
-//
-// Modifications:
-//   Brad Whitlock, Tue Jul  8 11:28:04 PDT 2008
-//   Qt 4.
-//
-// ****************************************************************************
-
-void SimCommandSlots::CurrentChangedHandler(int row, int col)
-{
-    const QObject *ui = sender();
-    debug5 << "inside CurrentChangedHandler signal" << endl;
-    QString tvalue;
-    if (ui)
-    {
-        debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
-        tvalue = ((QTableWidget *)ui)->item(row, col)->text();
-        debug5 << "New Value row,col,text = " << row << ", " << col << ", "
-               << tvalue.toStdString() << endl;
-    }
-    else
-        debug5 << "unknown signaler" << endl;
-    QString value = QString::number(row) + ";" + QString::number(col) + ";" + tvalue;
-    SendCMD("currentChanged(int,int)", ui, value);
-}
-
-
-// ****************************************************************************
-// Method: SimCommandSlots::ValueChangedHandler
-//
-// Purpose:
-//   This is the CurrentChangedHandler signal handler function. It is generated
+//   This is the CellChangedHandler signal handler function. It is generated
 //   when the users changes a text value inside a text custom UI widget.
 //
 // Programmer: Shelly Prevost
@@ -317,10 +281,10 @@ void SimCommandSlots::CurrentChangedHandler(int row, int col)
 //
 // ****************************************************************************
 
-void SimCommandSlots::ValueChangedHandler(int row, int col)
+void SimCommandSlots::CellChangedHandler(int row, int col)
 {
     const QObject *ui = sender();
-    debug5 << "inside ValueChangedHandler signal" << endl;
+    debug5 << "inside CellChangedHandler signal" << endl;
     QString tvalue;
     if (ui)
     {
@@ -332,8 +296,11 @@ void SimCommandSlots::ValueChangedHandler(int row, int col)
     }
     else
         debug5 << "unknown signaler" << endl;
-    QString value = QString::number(row) + ";" + QString::number(col) + ";" + tvalue;
-    SendCMD("valueChanged(int,int)", ui, value);
+
+    QString value =
+      QString::number(row) + " | " + QString::number(col) + " | " + tvalue;
+
+    SendCMD("cellChanged(int,int)", ui, value);
 }
 
 // ****************************************************************************
@@ -353,7 +320,7 @@ void SimCommandSlots::ValueChangedHandler(int row, int col)
 void SimCommandSlots::ActivatedHandler(int index)
 {
     const QObject *ui = sender();
-    debug5 << "inside ValueChangedHandler signal" << endl;
+    debug5 << "inside ActivateHandler signal" << endl;
     if (ui)
     {
         debug5 << "signal sender is type " << ui->metaObject()->className() << " named "

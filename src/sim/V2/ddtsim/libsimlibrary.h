@@ -118,6 +118,8 @@ public:
         return mVisIt_SimulationMetaData_addGenericCommand(h,c); }
     int SimulationMetaData_addMesh(visit_handle h,visit_handle m) {
         return mVisIt_SimulationMetaData_addMesh(h,m); }
+    int SimulationMetaData_addMessage(visit_handle h,visit_handle c) {
+        return mVisIt_SimulationMetaData_addMessage(h,c); }
     int SimulationMetaData_addVariable(visit_handle h,visit_handle v) {
         return mVisIt_SimulationMetaData_addVariable(h,v); }
 
@@ -125,6 +127,8 @@ public:
         return mVisIt_CommandMetaData_alloc(h); }
     int CommandMetaData_setName(visit_handle h,const char *name) {
         return mVisIt_CommandMetaData_setName(h,name); }
+    int CommandMetaData_setEnable(visit_handle h,const int) {
+        return mVisIt_CommandMetaData_setEnable(h,enable); }
 
     int MeshMetaData_alloc(visit_handle *h) {
         return mVisIt_MeshMetaData_alloc(h); }
@@ -226,6 +230,7 @@ public:
     int SimulationMetaData_setCycleTime(visit_handle h,int cycle,double time) { return VisIt_SimulationMetaData_setCycleTime(h,cycle,time); }
     int SimulationMetaData_addGenericCommand(visit_handle h,visit_handle c)   { return VisIt_SimulationMetaData_addGenericCommand(h,c); }
     int SimulationMetaData_addMesh(visit_handle h,visit_handle m)             { return VisIt_SimulationMetaData_addMesh(h,m); }
+    int SimulationMetaData_addMessage(visit_handle h,visit_handle c)   { return VisIt_SimulationMetaData_addMessage(h,c); }
     int SimulationMetaData_addVariable(visit_handle h,visit_handle v)         { return VisIt_SimulationMetaData_addVariable(h,v); }
     int CommandMetaData_alloc(visit_handle *h)                                { return VisIt_CommandMetaData_alloc(h); }
     int CommandMetaData_setName(visit_handle h,const char *name)              { return VisIt_CommandMetaData_setName(h,name); }
@@ -279,6 +284,7 @@ private:
     int (*mVisIt_SimulationMetaData_setCycleTime)(visit_handle,int,double);
     int (*mVisIt_SimulationMetaData_addGenericCommand)(visit_handle,visit_handle);
     int (*mVisIt_SimulationMetaData_addMesh)(visit_handle,visit_handle);
+    int (*mVisIt_SimulationMetaData_addMessage)(visit_handle,visit_handle);
     int (*mVisIt_SimulationMetaData_addVariable)(visit_handle,visit_handle);
     
     int (*mVisIt_MeshMetaData_alloc)(visit_handle*);
