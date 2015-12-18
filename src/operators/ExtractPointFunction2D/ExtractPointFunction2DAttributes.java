@@ -41,6 +41,8 @@ package llnl.visit.operators;
 import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
+import java.lang.Integer;
+import java.util.Vector;
 
 // ****************************************************************************
 // Class: ExtractPointFunction2DAttributes
@@ -65,24 +67,36 @@ public class ExtractPointFunction2DAttributes extends AttributeSubject implement
     {
         super(ExtractPointFunction2DAttributes_numAdditionalAtts);
 
-        I = 0;
-        J = 0;
+        I = new Vector();
+        J = new Vector();
     }
 
     public ExtractPointFunction2DAttributes(int nMoreFields)
     {
         super(ExtractPointFunction2DAttributes_numAdditionalAtts + nMoreFields);
 
-        I = 0;
-        J = 0;
+        I = new Vector();
+        J = new Vector();
     }
 
     public ExtractPointFunction2DAttributes(ExtractPointFunction2DAttributes obj)
     {
         super(ExtractPointFunction2DAttributes_numAdditionalAtts);
 
-        I = obj.I;
-        J = obj.J;
+        int i;
+
+        I = new Vector();
+        for(i = 0; i < obj.I.size(); ++i)
+        {
+            Integer iv = (Integer)obj.I.elementAt(i);
+            I.addElement(new Integer(iv.intValue()));
+        }
+        J = new Vector();
+        for(i = 0; i < obj.J.size(); ++i)
+        {
+            Integer iv = (Integer)obj.J.elementAt(i);
+            J.addElement(new Integer(iv.intValue()));
+        }
 
         SelectAll();
     }
@@ -99,38 +113,58 @@ public class ExtractPointFunction2DAttributes extends AttributeSubject implement
 
     public boolean equals(ExtractPointFunction2DAttributes obj)
     {
+        int i;
+
+        // Compare the elements in the I vector.
+        boolean I_equal = (obj.I.size() == I.size());
+        for(i = 0; (i < I.size()) && I_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer I1 = (Integer)I.elementAt(i);
+            Integer I2 = (Integer)obj.I.elementAt(i);
+            I_equal = I1.equals(I2);
+        }
+        // Compare the elements in the J vector.
+        boolean J_equal = (obj.J.size() == J.size());
+        for(i = 0; (i < J.size()) && J_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer J1 = (Integer)J.elementAt(i);
+            Integer J2 = (Integer)obj.J.elementAt(i);
+            J_equal = J1.equals(J2);
+        }
         // Create the return value
-        return ((I == obj.I) &&
-                (J == obj.J));
+        return (I_equal &&
+                J_equal);
     }
 
     public String GetName() { return "ExtractPointFunction2D"; }
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
-    public void SetI(int I_)
+    public void SetI(Vector I_)
     {
         I = I_;
         Select(0);
     }
 
-    public void SetJ(int J_)
+    public void SetJ(Vector J_)
     {
         J = J_;
         Select(1);
     }
 
     // Property getting methods
-    public int GetI() { return I; }
-    public int GetJ() { return J; }
+    public Vector GetI() { return I; }
+    public Vector GetJ() { return J; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteInt(I);
+            buf.WriteIntVector(I);
         if(WriteSelect(1, buf))
-            buf.WriteInt(J);
+            buf.WriteIntVector(J);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -138,10 +172,10 @@ public class ExtractPointFunction2DAttributes extends AttributeSubject implement
         switch(index)
         {
         case 0:
-            SetI(buf.ReadInt());
+            SetI(buf.ReadIntVector());
             break;
         case 1:
-            SetJ(buf.ReadInt());
+            SetJ(buf.ReadIntVector());
             break;
         }
     }
@@ -149,14 +183,14 @@ public class ExtractPointFunction2DAttributes extends AttributeSubject implement
     public String toString(String indent)
     {
         String str = new String();
-        str = str + intToString("I", I, indent) + "\n";
-        str = str + intToString("J", J, indent) + "\n";
+        str = str + intVectorToString("I", I, indent) + "\n";
+        str = str + intVectorToString("J", J, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private int I;
-    private int J;
+    private Vector I; // vector of Integer objects
+    private Vector J; // vector of Integer objects
 }
 

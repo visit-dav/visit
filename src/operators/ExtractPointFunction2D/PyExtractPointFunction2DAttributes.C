@@ -76,10 +76,38 @@ PyExtractPointFunction2DAttributes_ToString(const ExtractPointFunction2DAttribut
     std::string str;
     char tmpStr[1000];
 
-    SNPRINTF(tmpStr, 1000, "%sI = %d\n", prefix, atts->GetI());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sJ = %d\n", prefix, atts->GetJ());
-    str += tmpStr;
+    {   const intVector &I = atts->GetI();
+        SNPRINTF(tmpStr, 1000, "%sI = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < I.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", I[i]);
+            str += tmpStr;
+            if(i < I.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &J = atts->GetJ();
+        SNPRINTF(tmpStr, 1000, "%sJ = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < J.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", J[i]);
+            str += tmpStr;
+            if(i < J.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -97,12 +125,47 @@ ExtractPointFunction2DAttributes_SetI(PyObject *self, PyObject *args)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
+    intVector  &vec = obj->data->GetI();
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
         return NULL;
 
-    // Set the I in the object.
-    obj->data->SetI((int)ival);
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the I in the object as modified.
+    obj->data->SelectI();
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -112,7 +175,11 @@ ExtractPointFunction2DAttributes_SetI(PyObject *self, PyObject *args)
 ExtractPointFunction2DAttributes_GetI(PyObject *self, PyObject *args)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetI()));
+    // Allocate a tuple the with enough entries to hold the I.
+    const intVector &I = obj->data->GetI();
+    PyObject *retval = PyTuple_New(I.size());
+    for(size_t i = 0; i < I.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(I[i])));
     return retval;
 }
 
@@ -121,12 +188,47 @@ ExtractPointFunction2DAttributes_SetJ(PyObject *self, PyObject *args)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
+    intVector  &vec = obj->data->GetJ();
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
         return NULL;
 
-    // Set the J in the object.
-    obj->data->SetJ((int)ival);
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the J in the object as modified.
+    obj->data->SelectJ();
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -136,7 +238,11 @@ ExtractPointFunction2DAttributes_SetJ(PyObject *self, PyObject *args)
 ExtractPointFunction2DAttributes_GetJ(PyObject *self, PyObject *args)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetJ()));
+    // Allocate a tuple the with enough entries to hold the J.
+    const intVector &J = obj->data->GetJ();
+    PyObject *retval = PyTuple_New(J.size());
+    for(size_t i = 0; i < J.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(J[i])));
     return retval;
 }
 

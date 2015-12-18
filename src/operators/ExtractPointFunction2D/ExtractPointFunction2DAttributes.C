@@ -56,8 +56,6 @@
 
 void ExtractPointFunction2DAttributes::Init()
 {
-    I = 0;
-    J = 0;
 
     ExtractPointFunction2DAttributes::SelectAll();
 }
@@ -466,9 +464,9 @@ ExtractPointFunction2DAttributes::SetFromNode(DataNode *parentNode)
 
     DataNode *node;
     if((node = searchNode->GetNode("I")) != 0)
-        SetI(node->AsInt());
+        SetI(node->AsIntVector());
     if((node = searchNode->GetNode("J")) != 0)
-        SetJ(node->AsInt());
+        SetJ(node->AsIntVector());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -476,14 +474,14 @@ ExtractPointFunction2DAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-ExtractPointFunction2DAttributes::SetI(int I_)
+ExtractPointFunction2DAttributes::SetI(const intVector &I_)
 {
     I = I_;
     Select(ID_I, (void *)&I);
 }
 
 void
-ExtractPointFunction2DAttributes::SetJ(int J_)
+ExtractPointFunction2DAttributes::SetJ(const intVector &J_)
 {
     J = J_;
     Select(ID_J, (void *)&J);
@@ -493,16 +491,44 @@ ExtractPointFunction2DAttributes::SetJ(int J_)
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
-int
+const intVector &
 ExtractPointFunction2DAttributes::GetI() const
 {
     return I;
 }
 
-int
+intVector &
+ExtractPointFunction2DAttributes::GetI()
+{
+    return I;
+}
+
+const intVector &
 ExtractPointFunction2DAttributes::GetJ() const
 {
     return J;
+}
+
+intVector &
+ExtractPointFunction2DAttributes::GetJ()
+{
+    return J;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Select property methods
+///////////////////////////////////////////////////////////////////////////////
+
+void
+ExtractPointFunction2DAttributes::SelectI()
+{
+    Select(ID_I, (void *)&I);
+}
+
+void
+ExtractPointFunction2DAttributes::SelectJ()
+{
+    Select(ID_J, (void *)&J);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -555,8 +581,8 @@ ExtractPointFunction2DAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_I: return FieldType_int;
-    case ID_J: return FieldType_int;
+    case ID_I: return FieldType_intVector;
+    case ID_J: return FieldType_intVector;
     default:  return FieldType_unknown;
     }
 }
@@ -581,8 +607,8 @@ ExtractPointFunction2DAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_I: return "int";
-    case ID_J: return "int";
+    case ID_I: return "intVector";
+    case ID_J: return "intVector";
     default:  return "invalid index";
     }
 }

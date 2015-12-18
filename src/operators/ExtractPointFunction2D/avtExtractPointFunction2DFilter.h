@@ -66,32 +66,34 @@
 class avtExtractPointFunction2DFilter : public avtPluginDataTreeIterator
 {
   public:
-                         avtExtractPointFunction2DFilter();
-    virtual             ~avtExtractPointFunction2DFilter();
+                                     avtExtractPointFunction2DFilter();
+    virtual                         ~avtExtractPointFunction2DFilter();
 
-    static avtFilter    *Create();
+    static avtFilter                *Create();
 
-    virtual const char  *GetType(void)  { return "avtExtractPointFunction2DFilter"; };
-    virtual const char  *GetDescription(void)
-                             { return "Extract Point Function 2D"; };
+    virtual const char              *GetType(void)
+                                         { return "avtExtractPointFunction2DFilter"; };
+    virtual const char              *GetDescription(void)
+                                         { return "Extract Point Function 2D"; };
 
-    virtual void         SetAtts(const AttributeGroup*);
-    virtual bool         Equivalent(const AttributeGroup*);
+    virtual void                     SetAtts(const AttributeGroup*);
+    virtual bool                     Equivalent(const AttributeGroup*);
 
-    virtual avtContract_p   ModifyContract(avtContract_p);
-    virtual void            UpdateDataObjectInfo(void);
+    virtual avtContract_p            ModifyContract(avtContract_p);
+    virtual void                     UpdateDataObjectInfo(void);
   protected:
-    ExtractPointFunction2DAttributes   atts;
-    std::string        outVarName;
+    ExtractPointFunction2DAttributes atts;
+    std::string                      outVarName;
 
-    virtual void          PreExecute(void);
-    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
-    virtual void          PostExecute(void);
+    virtual void                     PreExecute(void);
+    virtual void                     Execute(void);
+    virtual avtDataRepresentation   *ExecuteData(avtDataRepresentation *in_dr)
+                                         { return in_dr; } // NOT CALLED: OVERRIDE BY Execute()
+    virtual void                     PostExecute(void);
 
   private:
-    double spatialExtents[6];
-    double range[2];
+    double                           spatialExtents[6];
+    double                           range[2];
 };
-
 
 #endif
