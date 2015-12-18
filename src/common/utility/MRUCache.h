@@ -439,8 +439,8 @@ template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
 const vT& MRUCacheBase<kT,vT,dM,nS>::mru(void) const
 {
    typename std::map<kT,size_t>::iterator i = age.begin();
-   kT mruKey               = i->first;
-   int newest              = i->second; 
+   kT mruKey     = i->first;
+   size_t newest = i->second; 
 
    for (i = age.begin(); i != age.end(); i++)
    {
@@ -497,8 +497,8 @@ template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
 kT MRUCacheBase<kT,vT,dM,nS>::oldest(void)
 {
    typename std::map<kT,size_t>::iterator i = age.begin();
-   kT retval         = i->first;
-   size_t oldestAge  = i->second; 
+   kT retval        = i->first;
+   size_t oldestAge = i->second; 
 
    for (i = age.begin(); i != age.end(); i++)
    {
