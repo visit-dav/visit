@@ -690,19 +690,19 @@ ImageBuffer<im_t>::ImageBuffer(im_t ar, im_t ag, im_t ab, im_t aa, size_t an)
     size_t nbytes = sizeof(im_t)*size;
 
     r = static_cast<im_t*>(aligned_alloc(alignment, nbytes));
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
         r[i] = ar;
 
     g = static_cast<im_t*>(aligned_alloc(alignment, nbytes));
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
         g[i] = ag;
 
     b = static_cast<im_t*>(aligned_alloc(alignment, nbytes));
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
         b[i] = ab;
 
     a = static_cast<im_t*>(aligned_alloc(alignment, nbytes));
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
         a[i] = aa;
 }
 
@@ -1537,7 +1537,7 @@ ProgrammableCompositer<T>::SetBackground(
     // background is always opaque.
     size_t n = w*h;
     ab = static_cast<T*>(aligned_alloc(alignment, n*sizeof(T)));
-    for (int i = 0; i < n; ++i)
+    for (size_t i = 0; i < n; ++i)
         ab[i] = color_tt<T>::max();
 
     ownbg = aown;
