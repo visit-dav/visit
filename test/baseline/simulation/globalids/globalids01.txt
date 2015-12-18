@@ -318,6 +318,7 @@ simInfo.GetGenericCommands(2).uiType = ""
 simInfo.GetGenericCommands(2).value = ""
 simInfo.mode = simInfo.Stopped  # Unknown, Running, Stopped
 #customCommands does not contain any avtSimulationCommandSpecification objects.
+simInfo.message = ""
 suggestedDefaultSILRestriction = ()
 replacementMask = -65
 
