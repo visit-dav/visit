@@ -176,10 +176,10 @@ QvisExtractPointFunction2DWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case ExtractPointFunction2DAttributes::ID_I:
-            I->setText(IntToQString(atts->GetI()));
+            I->setText(IntsToQString(atts->GetI()));
             break;
           case ExtractPointFunction2DAttributes::ID_J:
-            J->setText(IntToQString(atts->GetJ()));
+            J->setText(IntsToQString(atts->GetJ()));
             break;
         }
     }
@@ -209,13 +209,13 @@ QvisExtractPointFunction2DWindow::GetCurrentValues(int which_widget)
     // Do I
     if(which_widget == ExtractPointFunction2DAttributes::ID_I || doAll)
     {
-        int val;
-        if(LineEditGetInt(I, val))
+        intVector val;
+        if(LineEditGetInts(I, val))
             atts->SetI(val);
         else
         {
             ResettingError(tr("I"),
-                IntToQString(atts->GetI()));
+                IntsToQString(atts->GetI()));
             atts->SetI(atts->GetI());
         }
     }
@@ -223,13 +223,13 @@ QvisExtractPointFunction2DWindow::GetCurrentValues(int which_widget)
     // Do J
     if(which_widget == ExtractPointFunction2DAttributes::ID_J || doAll)
     {
-        int val;
-        if(LineEditGetInt(J, val))
+        intVector val;
+        if(LineEditGetInts(J, val))
             atts->SetJ(val);
         else
         {
             ResettingError(tr("J"),
-                IntToQString(atts->GetJ()));
+                IntsToQString(atts->GetJ()));
             atts->SetJ(atts->GetJ());
         }
     }
