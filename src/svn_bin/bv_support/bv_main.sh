@@ -79,8 +79,12 @@ if [[ "$OPSYS" == "Darwin" ]]; then
       export MACOSX_DEPLOYMENT_TARGET=10.10
       export C_COMPILER=${C_COMPILER:-"clang"}
       export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+   elif [[ ${VER%%.*} == 15 ]] ; then
+      export MACOSX_DEPLOYMENT_TARGET=10.11
+      export C_COMPILER=${C_COMPILER:-"clang"}
+      export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
    else
-      export MACOSX_DEPLOYMENT_TARGET=10.10
+      export MACOSX_DEPLOYMENT_TARGET=10.11
       export C_COMPILER=${C_COMPILER:-"clang"}
       export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
    fi
