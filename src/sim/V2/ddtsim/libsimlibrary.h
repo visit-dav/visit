@@ -127,7 +127,7 @@ public:
         return mVisIt_CommandMetaData_alloc(h); }
     int CommandMetaData_setName(visit_handle h,const char *name) {
         return mVisIt_CommandMetaData_setName(h,name); }
-    int CommandMetaData_setEnable(visit_handle h,const int) {
+    int CommandMetaData_setEnable(visit_handle h,const int enable) {
         return mVisIt_CommandMetaData_setEnable(h,enable); }
 
     int MeshMetaData_alloc(visit_handle *h) {
@@ -302,6 +302,7 @@ private:
     
     int (*mVisIt_CommandMetaData_alloc)(visit_handle*);
     int (*mVisIt_CommandMetaData_setName)(visit_handle,const char*);
+    int (*mVisIt_CommandMetaData_setEnable)(visit_handle,const int);
     
     int (*mVisIt_VariableMetaData_alloc)(visit_handle*);
     int (*mVisIt_VariableMetaData_setName)(visit_handle,const char*);
