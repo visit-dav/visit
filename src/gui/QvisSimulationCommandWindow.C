@@ -160,14 +160,14 @@ QvisSimulationCommandWindow::setButtonCommand(int index, const QString &cmd)
 }
 
 bool
-QvisSimulationCommandWindow::setButtonEnabled(int index, bool enabled)
+QvisSimulationCommandWindow::setButtonEnabled(int index, bool enabled, bool clearText)
 {
     bool added = false;
     if(EnsureButtonExists(index, added))
     {
         QAbstractButton *b = commandGroup->buttons().at(index);
         b->setEnabled(enabled);
-        if(!enabled)
+        if(!enabled && clearText)
             b->setText("");
     }
     return added;
