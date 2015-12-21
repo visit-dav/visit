@@ -75,7 +75,7 @@ public:
 
     int  numCommandButtons() const;
     bool setButtonCommand(int index, const QString &cmd);
-    bool setButtonEnabled(int index, bool);
+    bool setButtonEnabled(int index, bool enabled, bool clearText);
     void setCustomButtonEnabled(bool);
     void setTimeValues(bool timeRanging, 
                        const QString &start, 
