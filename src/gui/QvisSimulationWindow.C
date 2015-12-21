@@ -810,10 +810,10 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             else
               newItem->setFlags(Qt::NoItemFlags);
 
-            if( ((QTableWidget*)ui)->rowCount() < row )
+            if( ((QTableWidget*)ui)->rowCount() <= row )
               ((QTableWidget*)ui)->setRowCount(row+1);
 
-            if( ((QTableWidget*)ui)->columnCount() < column )
+            if( ((QTableWidget*)ui)->columnCount() <= column )
               ((QTableWidget*)ui)->setColumnCount(column+1);
 
             ((QTableWidget*)ui)->setItem(row, column, newItem);
@@ -1049,6 +1049,42 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
         }
     }
 
+    if(uiValues->GetName() == "ENABLE_BUTTON")
+    {
+        // Use activeEngine to get the metadata
+        SimulationMetaDataMap::Iterator pos;
+        
+        if ((pos = metadataMap.find(activeEngine)) != metadataMap.end())
+        {
+            const avtDatabaseMetaData *md = pos.value();
+            
+            // Loop through all of the buttons to find the one being
+            // enabled/disabled.
+            int nButtons = simCommands->numCommandButtons();
+        
+            for (int c=0; c<nButtons; c++)
+            {
+                avtSimulationCommandSpecification cmd = 
+                  md->GetSimInfo().GetGenericCommands(c);
+                
+                avtSimulationCommandSpecification::CommandArgumentType t =
+                  cmd.GetArgumentType();
+                
+                if (t == avtSimulationCommandSpecification::CmdArgNone)
+                {
+                    QString bName = QString(cmd.GetName().c_str());
+                    
+                    if( bName == QString(uiValues->GetSvalue().c_str() ) )
+                    {
+                        bool enabled = uiValues->GetEnabled();
+
+                        simCommands->setButtonEnabled(c, enabled, false);
+                    }
+                }
+            }
+        }
+    }
+
     if(uiValues->GetName() == "SIMULATION_MODE")
     {
         QString mode = QString(uiValues->GetSvalue().c_str());
@@ -1233,7 +1269,7 @@ QvisSimulationWindow::UpdateInformation()
         simInfo->setEnabled(false);
         for (int c=0; c<simCommands->numCommandButtons(); c++)
         {
-            simCommands->setButtonEnabled(c, false);
+            simCommands->setButtonEnabled(c, false, true);
         }
     }
     else
@@ -1322,7 +1358,7 @@ QvisSimulationWindow::UpdateInformation()
         {
             if (c >= md->GetSimInfo().GetNumGenericCommands())
             {
-                updateSize |= simCommands->setButtonEnabled(c, false);
+                updateSize |= simCommands->setButtonEnabled(c, false, true);
             }
             else
             {
@@ -1341,11 +1377,11 @@ QvisSimulationWindow::UpdateInformation()
                     //        << std::endl;
 
                     updateSize |= simCommands->setButtonCommand(c, bName);
-                    simCommands->setButtonEnabled(c, e);
+                    simCommands->setButtonEnabled(c, e, false);
                 }
                 else
                 {
-                    updateSize |= simCommands->setButtonEnabled(c, false);
+                    updateSize |= simCommands->setButtonEnabled(c, false, true);
                 }
             }
         }
