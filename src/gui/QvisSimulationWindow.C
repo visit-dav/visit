@@ -680,7 +680,8 @@ void
 QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
                                         const QString &value, bool e)
 {
-    QObject *ui  = window->findChild<QWidget *>(name);
+    QObject *ui = window->findChild<QWidget *>(name);
+
     if (ui)
     {
         debug5 << "Looking up component = "
@@ -1049,7 +1050,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
         }
     }
 
-    if(uiValues->GetName() == "ENABLE_BUTTON")
+    if(uiValues->GetName() == "SIMULATION_ENABLE_BUTTON")
     {
         // Use activeEngine to get the metadata
         SimulationMetaDataMap::Iterator pos;
@@ -1085,34 +1086,44 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
         }
     }
 
-    if(uiValues->GetName() == "SIMULATION_MODE")
+    else if(uiValues->GetName() == "SIMULATION_MESSAGE_BOX")
+    {
+        QString msg = QString(uiValues->GetSvalue().c_str());
+
+        // Post the message to the user.
+        if (QMessageBox::warning(this, "VisIt", msg, QMessageBox::Ok )
+          == QMessageBox::Ok)
+            return;
+    }
+
+    else if(uiValues->GetName() == "SIMULATION_MODE")
     {
         QString mode = QString(uiValues->GetSvalue().c_str());
         simulationMode->setText(mode);
     }
 
-    if(uiValues->GetName() == "SIMULATION_STATUS")
+    else if(uiValues->GetName() == "SIMULATION_MESSAGE")
     {
         QString message = QString(uiValues->GetSvalue().c_str());
         QString error = QString("<span style=\"color:#000000;\">%1</span>").arg(message);
         simMessages->addMessage(error);
     }
 
-    if(uiValues->GetName() == "SIMULATION_STATUS_WARNING")
+    else if(uiValues->GetName() == "SIMULATION_MESSAGE_WARNING")
     {
         QString message = QString(uiValues->GetSvalue().c_str());
         QString warning = QString("<span style=\" color:#aaaa00;\">%1</span>").arg(message);
         simMessages->addMessage(warning);
     }
 
-    if(uiValues->GetName() == "SIMULATION_STATUS_ERROR")
+    else if(uiValues->GetName() == "SIMULATION_MESSAGE_ERROR")
     {
         QString message = QString(uiValues->GetSvalue().c_str());
         QString error = QString("<span style=\" color:#aa0000;\">%1</span>").arg(message);
         simMessages->addMessage(error);
     }
 
-    if(uiValues->GetName() == "SIMULATION_STATUS_CLEAR")
+    else if(uiValues->GetName() == "SIMULATION_MESSAGE_CLEAR")
     {
         simMessages->clear();
     }
@@ -1294,6 +1305,8 @@ QvisSimulationWindow::UpdateInformation()
                                    QStringList(tr("Host")) +
                                    QStringList(md->GetSimInfo().GetHost().c_str()));
 
+        item->type(); // No-op to avoid a warning.
+
         // Simulation name
         int lastSlashPos = QString(sim.c_str()).lastIndexOf('/');
         QString newsim = QString(sim.substr(lastSlashPos+1).c_str());
@@ -1318,8 +1331,8 @@ QvisSimulationWindow::UpdateInformation()
         // Num processors
         tmp1.sprintf("%d", np);
         item = new QTreeWidgetItem(simInfo, 
-            QStringList(tr("Num Processors")) + 
-            QStringList(tmp1));
+                                   QStringList(tr("Num Processors")) + 
+                                   QStringList(tmp1));
 
         // Other values from the .sim2 file
         const vector<string> &names  = md->GetSimInfo().GetOtherNames();
@@ -1327,8 +1340,8 @@ QvisSimulationWindow::UpdateInformation()
         for (size_t i=0; i<names.size(); i++)
         {
             item = new QTreeWidgetItem(simInfo,
-                QStringList(names[i].c_str()) + 
-                QStringList(values[i].c_str()));
+                                       QStringList(names[i].c_str()) + 
+                                       QStringList(values[i].c_str()));
         }
 
         // Status
