@@ -73,6 +73,31 @@ def process_encoded_text(val):
     res += val[prev:]
     return res
 
+class Annotations(object):
+    @classmethod
+    def create(cls,params):
+        itype = params.type.lower()
+        if itype == "text":
+            return Text(params)
+        elif itype == "image":
+            return Image(params)
+        elif itype == "line":
+            return Line(params)
+        elif itype == "arrow":
+            return Arrow(params)
+        elif itype == "rect":
+            return Rect(params)
+        elif itype == "circle":
+            return Circle(params)
+        elif itype == "ellipse":
+            return Ellipse(params)
+        elif itype == "textbox":
+            return TextBox(params)
+        elif itype == "multiprogressbar":
+            return MultiProgressBar(params)
+        else:
+            return None
+
 
 class CanvasItem(object):
     def __init__(self,params,defaults=None):
