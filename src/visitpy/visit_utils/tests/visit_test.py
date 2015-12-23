@@ -54,6 +54,8 @@ def visit_test(fn):
     def run_fn(*args):
         if "visit" in sys.modules.keys():
             return fn(*args)
+        else:
+            print "[VisIt module not found, skipping test that requires VisIt]"
         return None
     return run_fn
 
@@ -66,6 +68,8 @@ def pyside_test(fn):
     def run_fn(*args):
         if "PySide.QtCore" in sys.modules.keys():
             return fn(*args)
+        else:
+            print "[PySide not found, skipping test that requires PySide]"
         return None
     return run_fn
 

@@ -58,7 +58,7 @@ except:
     pass
 
 
-db_dir = pjoin(os.path.split(__file__)[0],"_data")
+db_dir = pjoin(os.path.dirname(__file__),"_data")
 db = pjoin(db_dir,"multi_rect2d.silo")
 vpq_file = pjoin(db_dir,"visit_min.vpq")
 
@@ -85,9 +85,9 @@ class TestQuery(unittest.TestCase):
         visit.SetOperatorOptions(iatts)
         visit.DrawPlots()
         res_v = query("Min",use_actual_data=True)
-        self.assertTrue( (res_v - 0.3778594434261322) < 1e-5 )
+        self.assertTrue( abs(res_v - 0.3778594434261322) < 1e-5 )
         res_v = query("Min",use_actual_data=False)
-        self.assertTrue( (res_v - 0.02357020415365696) < 1e-5 )
+        self.assertTrue( abs(res_v - 0.02357020415365696) < 1e-5 )
     @visit_test
     def test_query_03_py_query(self):
         res_a = python_query(file=vpq_file,msg_lvl=4)

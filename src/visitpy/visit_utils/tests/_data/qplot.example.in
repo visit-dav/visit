@@ -1,0 +1,69 @@
+
+curves = [PropertyTree() for i in xrange(1)]
+curves[0].file = "$SOURCE_FILE"
+curves[0].index = 0
+
+scene = PropertyTree()
+scene.size = (1000,400)
+scene.view = (-10,30,5,25)
+scene.bg_color = (0,0,0,255)
+scene.fg_color = (255,255,255,255)
+scene.right_margin = 5
+
+scene.axes.x_ticks=5
+scene.axes.y_ticks=3
+scene.tick_width = 1
+
+scene.grid.x_bins = 9
+scene.grid.y_bins = 5
+
+scene.labels.x_title="Distance (µin)"
+scene.labels.y_title="Monkeys (ft/\\0x03bcs)"
+scene.labels.x_labels=5
+scene.labels.y_labels=3
+scene.labels.x_labels_offset=2
+scene.labels.y_labels_offset=2
+scene.labels.labels_font.name="Lucida Grande"
+scene.labels.labels_font.size=15
+scene.labels.labels_font.bold=True
+scene.labels.titles_font.name="Lucida Grande"
+scene.labels.titles_font.size=20
+scene.labels.titles_font.bold=True
+
+
+scene.plots       = [PropertyTree() for i in xrange(5) ]
+
+scene.plots[0].type="area"
+scene.plots[0].curve = curves[0]
+scene.plots[0].color = (255,153,0,128)
+scene.plots[0].start_x = 7
+scene.plots[0].stop_index = 1
+
+scene.plots[1].type="line"
+scene.plots[1].curve = curves[0]
+scene.plots[1].color = (255,153,0,255)
+
+scene.plots[2].type="tracer_dot"
+scene.plots[2].curve = curves[0]
+scene.plots[2].color = (255,152,0,200)
+scene.plots[2].tracer_x = 16
+
+scene.plots[3].type="tracer_line"
+scene.plots[3].curve = curves[0]
+scene.plots[3].color = (255,153,0,200)
+scene.plots[3].tracer_x = 16
+
+scene.plots[4].type="tracer_line"
+scene.plots[4].curve = curves[0]
+scene.plots[4].color = (255,153,0,200)
+scene.plots[4].tracer_x = 16
+scene.plots[4].tracer_orientation = 2
+
+
+scene.annotations = [PropertyTree() for i in xrange(1) ]
+
+scene.annotations[0].type="text"
+scene.annotations[0].txt="Here"
+scene.annotations[0].x=200
+scene.annotations[0].y=200
+
