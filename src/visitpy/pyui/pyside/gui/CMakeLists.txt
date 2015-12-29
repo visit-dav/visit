@@ -103,8 +103,16 @@ ENDIF(WIN32)
 #
 IF(MESA_FOUND)
     set(pyside_gui_link_libs ${pyside_gui_link_libs} ${MESA_LIB})
-    LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${MESA_LIBRARY_DIR} ${EAVL_LIBRARY_DIR})
+    LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${MESA_LIBRARY_DIR})
 ENDIF(MESA_FOUND)
+
+#
+# If we enable eval, it will appear in the link line, so add ${EAVL_LIBRARY_DIR}
+#
+IF(EAVL_FOUND)
+    LINK_DIRECTORIES(${EAVL_LIBRARY_DIR})
+ENDIF()
+
 
 PYSIDE_ADD_MODULE(pyside_gui
                   site-packages/visit
