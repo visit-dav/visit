@@ -326,3 +326,25 @@ avtRecenterExpression::GetVariableDimension(void)
     int ncomp = atts.GetVariableDimension(varname);
     return ncomp;
 }
+
+// ****************************************************************************
+//  Method: avtRecenterExpression::ModifyContract
+//
+//  Purpose:
+//      Request ghost zones.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Wed Apr 17 13:45:02 PDT 2013
+//
+// ****************************************************************************
+
+avtContract_p
+avtRecenterExpression::ModifyContract(avtContract_p in_spec)
+{
+    avtContract_p spec2 =
+                   avtSingleInputExpressionFilter::ModifyContract(in_spec);
+    spec2->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    return spec2;
+}
+
+
