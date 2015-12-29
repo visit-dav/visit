@@ -92,6 +92,7 @@
 #include <avtSourceFromDatabase.h>
 #include <avtStreamingGhostGenerator.h>
 #include <avtStructuredDomainBoundaries.h>
+#include <avtLocalStructuredDomainBoundaries.h>
 #include <avtStructuredDomainNesting.h>
 #include <avtTransformManager.h>
 #include <avtTypes.h>
@@ -5949,10 +5950,13 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
 //
 //    Cyrus Harrison, Mon Apr 20 14:47:50 PDT 2009
 //    I used Eric's workaround from CommunicateGhostZonesFromDomainBoundaries
-//    to make sure we check the confirmity of the proper domain. When a file
+//    to make sure we check the conformity of the proper domain. When a file
 //    reader does its own on the fly decomposition, the domain get labeled
 //    0 on every processor - the appropriate domain id is this processor's
 //    MPI rank.
+//
+//    Cyrus Harrison, Tue Dec 22 15:29:39 PST 2015
+//    Added support for local (per-domain) domain boundary descriptions.
 //
 // ****************************************************************************
 
@@ -5961,6 +5965,7 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
                                 intVector &doms, avtDataRequest_p spec,
                                 bool confirmInputMeshHasRightSize)
 {
+
     //
     // Try getting the domain boundary information.  If we don't have it for
     // *any* timestep, try getting it for *this* timestep (it can change with
@@ -5974,11 +5979,35 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
                               AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
                               spec->GetTimestep(), -1);
 
+
+    avtDomainBoundaries *dbi = (avtDomainBoundaries*)*vr;
+    if (dbi == NULL)
+    {
+        debug1  << "avtGenericDatabase::GetDomainBoundaryInformation Cached "
+                << "global domain boundary info not found, checking for local info."
+                << endl;
+        // If we didn't find a DBI in the cache, try to generate a global
+        // dbi object from local info
+        dbi = GetLocalDomainBoundaryInformation(ds,
+                                                doms,
+                                                spec,
+                                                confirmInputMeshHasRightSize);
+
+        if(dbi)
+        {
+            debug1 << "avtGenericDatabase::GetDomainBoundaryInformation: Global for local success" <<endl;
+            // do not cache b/c we don't have a good way of invalidating
+            // the dbis if the set of domains involved changes. 
+        }else
+        {
+            debug1 << "avtGenericDatabase::GetDomainBoundaryInformation: No local info." <<endl;
+        }
+    }
+
     //
     // If we couldn't find DBI, then we are done, so return.
     //
-    avtDomainBoundaries *dbi = (avtDomainBoundaries*)*vr;
-    if (dbi == NULL)
+    if(dbi == NULL)
         return NULL;
 
     int ts = spec->GetTimestep();
@@ -6031,6 +6060,64 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
 
     return dbi;
 }
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetLocalDomainBoundaryInformation
+//
+//  Purpose:
+//    Tries to fetch local dbi info, and combine it to create a global picture
+//    for ghost zone comm.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Thu Apr 19 16:11:12 PDT 2012
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+avtDomainBoundaries *
+avtGenericDatabase::GetLocalDomainBoundaryInformation(avtDatasetCollection &ds,
+                                                      intVector &doms,
+                                                      avtDataRequest_p spec,
+                                                      bool confirmInputMeshHasRightSize)
+{
+    
+    
+    int t_fetch_loc_dbi = visitTimer->StartTimer();
+    
+    VoidRefList local_dbis;
+    GetAuxiliaryData(spec,
+                     local_dbis,
+                     AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                     NULL);
+
+    int nlocal = local_dbis.nList;
+    vector<avtLocalStructuredDomainBoundaryList*> local_lsts;
+    avtLocalStructuredDomainBoundaryList *lst = NULL;
+
+    for(int i = 0; i < nlocal; i++)
+    {
+        lst = (avtLocalStructuredDomainBoundaryList*)*(local_dbis.list[i]);
+        // guard against NULL
+        if(lst != NULL)
+        {
+            local_lsts.push_back(lst);
+        }
+    }
+    
+    visitTimer->StopTimer(t_fetch_loc_dbi,
+                          "avtGenericDatabase: Fetch local domain boundary info");
+    
+    int t_gen_global = visitTimer->StartTimer();
+    // this will return null if there are no local lists.
+    avtDomainBoundaries *res  = avtLocalStructuredDomainBoundaryList::GlobalGenerate(local_lsts);
+    visitTimer->StopTimer(t_gen_global,
+                         "avtGenericDatabase: Generate global domain boundaries from local info");
+    
+    return res;
+}
+
 
 
 // ****************************************************************************

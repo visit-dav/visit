@@ -180,6 +180,9 @@ struct Boundary
 //    information (like a change in zone ID) to determine when a segment
 //    of mix data has ended.
 //
+//    Cyrus Harrison, Wed Dec 23 14:31:34 PST 2015
+//    Added FindMatchIndex, which allows us to find the proper "match" values.
+//
 // ****************************************************************************
 template<class T>
 class BoundaryHelperFunctions
@@ -205,6 +208,7 @@ class BoundaryHelperFunctions
     void   SetNewRectilinearBoundaryData(int, T***, T*, T*, T*);
     void   FakeNonexistentBoundaryData(int, T*, bool, int=1);
     void   FreeBoundaryData(T***);
+    int    FindMatchIndex(int src_domain, int nei_domain);
 };
 
 // ****************************************************************************
