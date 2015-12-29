@@ -62,4 +62,18 @@ if(NOT VISIT_QT_SKIP_INSTALL)
           GROUP_WRITE GROUP_READ GROUP_EXECUTE
           WORLD_READ WORLD_EXECUTE
   )
+
+  if(WIN32)
+    # qwindows.dll
+    if(EXISTS ${VISIT_QT_DIR}/plugins/platforms/qwindows.dll)
+      install(FILES ${VISIT_QT_DIR}/plugins/platforms/qwindows.dll
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/platforms
+              PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+              GROUP_WRITE GROUP_READ GROUP_EXECUTE
+              WORLD_READ WORLD_EXECUTE
+      )
+    else()
+        message(ERROR "QT installation is missing platforms/qwindows.dll")
+    endif()
+  endif()
 endif()
