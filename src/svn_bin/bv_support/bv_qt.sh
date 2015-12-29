@@ -217,9 +217,8 @@ QT_LIC_MSG="During the build process this script will build Qt and confirm\
             that you accept Trolltech's license for the Qt Open Source\
             Edition. Please respond \"yes\" to accept (in advance) either\
             the Lesser GNU General Public License (LGPL) version 2.1 or \
-            the GNU General Public License (GPL) version 3. Visit\
-            http://trolltech.com/products/appdev/licensing to view these\
-            licenses."
+            the GNU General Public License (GPL) version 3. Visit \
+            http://www.qt.io/qt-licensing-terms to view these licenses."
 
 QT_CONFIRM_MSG="VisIt requires Qt: Please respond with \"yes\" to accept\
                 Qt licensing under the terms of the Lesser GNU General \
