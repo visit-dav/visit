@@ -56,6 +56,7 @@
 #include <vector>
 
 #include <avtSiloMBObjectCache.h>
+#include <avtLocalStructuredDomainBoundaries.h>
 
 class     vtkUnstructuredGrid;
 
@@ -288,6 +289,9 @@ typedef struct _GroupInfo
 //    regions, so this is a significant saving. CSG meshes with thousands
 //    of regions were exhausting memory in the previous scheme.
 //
+//    Cyrus Harrison, Tue Dec 22 15:29:39 PST 2015
+//    Added methods to support local domain boundary info.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -475,6 +479,9 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     avtIntervalTree      *GetSpatialExtents(const char *);
     avtIntervalTree      *GetDataExtents(const char *);
+
+    avtLocalStructuredDomainBoundaryList *
+                          GetLocalDomainBoundaryInfo(int, const char *);
 
     void                  GetQuadGhostZones(DBquadmesh *, vtkDataSet *);
     void                  VerifyQuadmesh(DBquadmesh *, const char *);

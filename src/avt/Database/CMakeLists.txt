@@ -36,6 +36,9 @@
 #
 # Modifications:
 #
+#  Cyrus Harrison, Thu Apr 19 16:07:11 PDT 2012
+#  Added Ghost/avtLocalStructuredDomainBoundaries.C
+#
 #****************************************************************************/
 
 SET(DATABASE_SOURCES
@@ -73,6 +76,7 @@ Ghost/avtDomainBoundaries.C
 Ghost/avtIsenburgSGG.C
 Ghost/avtStreamingGhostGenerator.C
 Ghost/avtStructuredDomainBoundaries.C
+Ghost/avtLocalStructuredDomainBoundaries.C
 Ghost/avtUnstructuredDomainBoundaries.C
 Ghost/avtNekDomainBoundaries.C
 Ghost/avtStructuredDomainNesting.C

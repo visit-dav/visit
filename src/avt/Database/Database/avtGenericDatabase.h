@@ -352,6 +352,9 @@ class     vtkUnstructuredGrid;
 //    Brad Whitlock, Wed Oct 29 17:53:51 PDT 2014
 //    Added CachingRecommended methods.
 //
+//    Cyrus Harrison, Tue Dec 22 15:29:39 PST 2015
+//    Added methods supporting local domain boundary info.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -502,6 +505,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                       avtDatasetCollection &, intVector &, 
                                       avtDataRequest_p,
                                       bool confirmInputMeshHasRightSize = true);
+    avtDomainBoundaries       *GetLocalDomainBoundaryInformation(avtDatasetCollection &,
+                                                                 intVector &,
+                                                                 avtDataRequest_p,
+                                                                 bool confirmInputMeshHasRightSize=true);
     avtStreamingGhostGenerator *GetStreamingGhostGenerator(void);
     bool                       CommunicateGhosts(avtGhostDataType,
                                     avtDatasetCollection &, intVector &,

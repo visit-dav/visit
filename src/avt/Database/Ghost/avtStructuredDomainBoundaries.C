@@ -180,6 +180,7 @@ avtStructuredDomainBoundaries::CreateCurrentDomainBoundaryInformation(
                 boundary[i].DeleteNeighbor(wbi.neighbors[j].domain, boundary);
         }
     }
+
     visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::CurrentDBI");
 }
 
@@ -242,6 +243,9 @@ BoundaryHelperFunctions<T>::InitializeBoundaryData()
 //    Add support for asymmetric relationships (which occur at coarse/fine
 //    AMR boundaries).
 //
+//    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
+//    When match index == -1, find match index instead of using a stored index.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -269,8 +273,14 @@ BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
         bnddata[d1][n] = t;
 
         int mi = n1->match;
+        // local dbi's case doesn't use an explicit match index
+        if(mi == -1)
+        {
+            // find the match index ourselves
+            mi = FindMatchIndex(d1,d2);
+        }
+
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
-                
         int *n2extents = (isPointData ? n2->nextents : n2->zextents);
         int bndindex = 0;
         for (int k=n2extents[4]; k<=n2extents[5]; k++)
@@ -322,6 +332,9 @@ BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
 //    way, use the "match", which is already pre-computed by the client for
 //    this purpose.
 //
+//    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
+//    When match index == -1, find match index instead of using a stored index.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -342,9 +355,19 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
         bnddata[d1][n] = new T[n1->npts*3];
 
         int d2 = n1->domain;
+
         int mi = n1->match;
+        // local dbi's case doesn't use an explicit match index
+        if(mi == -1)
+        {
+            // find the match index ourselves
+            mi = FindMatchIndex(d1,d2);
+        }
+
+        // get the other neis list
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
-                
+
+
         int *n2extents = n2->nextents;
         int bndindex = 0;
         for (int k=n2extents[4]; k<=n2extents[5]; k++)
@@ -495,6 +518,42 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
             }
         }
     }
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::FindMatchIndex
+//
+//  Purpose:
+//    Finds the match index of the neighbor for a given source domain.
+//
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Apr 18 11:02:25 PDT 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+template <class T>
+int
+BoundaryHelperFunctions<T>::FindMatchIndex(int src_domain,
+                                           int nei_domain)
+{
+
+    int res_match = -1;
+    Neighbor *n = NULL;
+    for(int i=0;n == NULL && i < sdb->boundary[nei_domain].neighbors.size();i++)
+    {
+        Neighbor *n_test = &(sdb->boundary[nei_domain].neighbors[i]);
+        if(n_test->domain == src_domain)
+        {
+            n = n_test;
+            res_match = i;
+        }
+    }
+    if (res_match == -1)
+            EXCEPTION1(VisItException,"Bad Neighbor Index");
+
+    return res_match;
 }
 
 // ****************************************************************************
@@ -1128,6 +1187,9 @@ avtStructuredDomainBoundaries::SetExistence(int      d1,
 //    Add support for asymmetric relationships (which occur at coarse/fine
 //    AMR boundaries).
 //
+//    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
+//    When match index == -1, find match index instead of using a stored index.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1150,6 +1212,13 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
         }
 
         int mi = n1->match;
+        // local dbi's case doesn't use an explicit match index
+        if(mi == -1)
+        {
+            // find the match index ourselves
+            mi = FindMatchIndex(d1,d2);
+        }
+
         T *data = bnddata[d2][mi];
         if (!data)
             EXCEPTION1(VisItException,"Null array");
@@ -1201,6 +1270,9 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
 //    way, use the "match", which is already pre-computed by the client for
 //    this purpose.
 //
+//    Cyrus Harrison, Tue Dec 22 15:39:48 PST 2015
+//    When match index == -1, find match index instead of using a stored index.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1217,7 +1289,14 @@ BoundaryHelperFunctions<T>::SetNewRectilinearBoundaryData(int d1,
     {
         Neighbor *n1 = &bi->neighbors[n];
         int d2 = n1->domain;
+
         int mi = n1->match;
+        // local dbi's case doesn't use an explicit match index
+        if(mi == -1)
+        {
+            // find the match index ourselves
+            mi = FindMatchIndex(d1,d2);
+        }
 
         T *data = coord[d2][mi];
         if (!data)
@@ -2215,7 +2294,7 @@ avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
     for (size_t d = 0; d < vectors.size(); d++)
     {
         // Create the new VTK objects
-        out[d] = vtkFloatArray::New(); 
+        out[d] = vtkFloatArray::New();
         out[d]->SetNumberOfComponents(nComp); 
         out[d]->SetName(vectors[d]->GetName());
         if (isPointData)

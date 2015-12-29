@@ -124,6 +124,7 @@
 #include <string>
 #include <vector>
 
+
 using std::map;
 using std::set;
 using std::string;
@@ -5015,6 +5016,7 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile,
 #endif
        GetConnectivityAndGroupInformationFromFile(dbfile, ndomains, nneighbors,
                           extents, lneighbors, neighbors, numGroups, groupIds);
+
 #ifdef PARALLEL
     }
 
@@ -5363,7 +5365,6 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
     {
         useLocalDomainBoundries = true;
     }
-
 
     DBReadVar(dbfile, "NumDomains", &ndomains);
     if (needConnectivityInfo)
@@ -6782,6 +6783,9 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
 //    same CSG mesh was cached. Typically there is one CSG mesh with many
 //    regions, so this is a significant saving. CSG meshes with thousands
 //    of regions were exhausting memory in the previous scheme.
+//
+//    Cyrus Harrison, Wed Dec 23 14:31:34 PST 2015
+//    Support for packed local domain boundary info.
 //
 // ****************************************************************************
 
@@ -13466,6 +13470,12 @@ avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
         rv = (void *) GetDataExtents(var);
         df = avtIntervalTree::Destruct;
     }
+    else if (strcmp(type, AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION) == 0)
+    {
+        debug1  << "GetAuxiliaryData Local::AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION"  <<endl;
+        rv = GetLocalDomainBoundaryInfo(domain,var);
+        df = avtLocalStructuredDomainBoundaryList::Destruct;
+    }
 
     //
     // Note -- although the Silo file format can get mixed variables, it does
@@ -13804,6 +13814,7 @@ avtSiloFileFormat::AllocAndDetermineMeshnameForUcdmesh(int dom, const char *mesh
     return meshname;
 }
 
+
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetExternalFacelist
 //
@@ -13873,6 +13884,7 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
     return rv;
 }
 
+
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetGlobalNodeIds
 //
@@ -13880,7 +13892,7 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //      Gets the global node ids from the Silo file
 //
 //  Programmer: Mark C. Miller
-//  Creation:   August 4, 2004 
+//  Creation:   August 4, 2004
 //
 //  Modifications:
 //    Mark C. Miller, Thu Oct 14 15:18:31 PDT 2004
@@ -13956,6 +13968,90 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
     delete [] meshname;
 
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetLocalDomainBoundaryInfo
+//
+//  Purpose:
+//      Constructs a neighbor list from a scalable format convention.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:  Tue Apr 17 13:00:29 PDT 2012
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+
+avtLocalStructuredDomainBoundaryList *
+avtSiloFileFormat::GetLocalDomainBoundaryInfo(int domain, const char *var)
+{
+    debug5 << "Reading in domain " << domain << ", local boundary info for "
+           << var << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    string mmesh_name = metadata->MeshForVar(var);
+
+    debug5 << "Reading in domain " << domain
+           << ", local boundary info for " << var
+           << " mesh name = : " << mmesh_name << endl;
+
+    // now get the multimesh
+
+    int type;
+    DBfile *dbfile = GetFile(tocIndex);
+    string directory_mesh;
+    DBmultimesh *mm;
+    DBfile *domain_file = dbfile;
+
+    GetMeshHelper(domain, mmesh_name.c_str(), &mm, &type, &domain_file, directory_mesh);
+
+    int numdecomp_pack = 0;
+
+    string mesh_dir_parent(FileFunctions::Dirname(directory_mesh.c_str()));
+    ostringstream oss;
+    oss << mesh_dir_parent << "/" << "NumDecomp_pack";
+    if(!DBInqVarExists(domain_file,oss.str().c_str()))
+    {
+        debug5 << "Skipping read of local domain boundaries: "
+               << oss.str().c_str() << " does not exist."  <<endl;
+        return NULL;
+    }
+    DBReadVar(domain_file,oss.str().c_str(),&numdecomp_pack);
+    int *decomp = new int[numdecomp_pack];
+    oss.str("");
+    oss << mesh_dir_parent << "/" << "Decomp_pack";
+    if(!DBInqVarExists(domain_file,oss.str().c_str()))
+    {
+        debug5 << "Skipping read of local domain boundaries: "
+               << oss.str().c_str() << " does not exist." <<endl;
+        return NULL;
+    }
+    DBReadVar(domain_file,oss.str().c_str(),decomp);
+
+    //
+    // extract the packed info into a avtLocalStructuredDomainBoundaryList
+    //
+
+    int *dc_ptr = decomp;
+    int lid     = *dc_ptr++;
+    int nbnd    = *dc_ptr++;
+    avtLocalStructuredDomainBoundaryList *res =
+                    new avtLocalStructuredDomainBoundaryList(domain,dc_ptr);
+    dc_ptr+=6;
+    for (int i=0; i < nbnd; i++)
+    {
+        res->AddNeighbor(dc_ptr[0],   // nei id
+                         dc_ptr[1],   // match
+                         &dc_ptr[2],  // orient
+                         &dc_ptr[5]); // extents
+        dc_ptr += 11;
+    }
+
+    //res->Print(cout);
+    return res;
 }
 
 // ****************************************************************************
@@ -14665,6 +14761,10 @@ avtSiloFileFormat::PopulateIOInformation(const std::string &meshname, avtIOInfor
 //    mesh name. Note that the mesh name is not currently used but the intent
 //    is to allow different ioInfo for different multi-meshes.
 //
+//    Cyrus Harrison, Mon Dec 21 11:35:05 PST 2015
+//    Remove n^2 algorithm when constructing map from filenames to domain id 
+//    lists. 
+//
 // ****************************************************************************
 
 bool
@@ -14738,31 +14838,44 @@ avtSiloFileFormat::PopulateIOInformationEx(const std::string &meshname, avtIOInf
             return false;
         }
 
-        vector<string> filenames;
+        //
+        // ioInfo needs a vector from each file's index, to a vector with a 
+        // list of domain ids it contains. 
+        // the groups vector holds this info.
         vector<vector<int> > groups;
+        
+        // use a map to avoid previous n^2 lookup implementation 
+        map<string,int> filename_index_map;
+
+        /// we know we need an entry for each domain, so init groups to the proper size
+        groups.resize(mm->nblocks);
+        
+        // loop over all domains and find which file (and file index) the domain is 
+        // associated with 
         for (i = 0 ; i < mm->nblocks ; i++)
         {
             string filename;
             string location;
             DetermineFilenameAndDirectory(mm_ent->GenerateName(i).c_str(),
                                           "", filename, location);
-            int index = -1;
-            for (j = 0 ; j < (int)filenames.size() ; j++)
+
+            // check if we have already seen this filename
+            int fname_index = -1;
+            map<string,int>::const_iterator itr = filename_index_map.find(filename);
+            if (itr != filename_index_map.end())
             {
-                if (filename == filenames[j])
-                {
-                    index = j;
-                    break;
-                }
+                // if found, use the index
+                fname_index = itr->second;
             }
-            if (index == -1)
+            else
             {
-                filenames.push_back(string(filename));
-                vector<int> newvector_placeholder;
-                groups.push_back(newvector_placeholder);
-                index = (int)filenames.size()-1;
+                // if not, assign it a new index
+                fname_index = filename_index_map.size();
+                filename_index_map[filename] = fname_index;
             }
-            groups[index].push_back(i);
+
+            /// add this domain id to the list of ids for the found filename
+            groups[fname_index].push_back(i);
         }
 
         ioInfo.SetNDomains(mm->nblocks);
