@@ -68,10 +68,18 @@ if(NOT VISIT_QT_SKIP_INSTALL)
     if(EXISTS ${VISIT_QT_DIR}/plugins/platforms/qwindows.dll)
       install(FILES ${VISIT_QT_DIR}/plugins/platforms/qwindows.dll
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/platforms
-              PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-              GROUP_WRITE GROUP_READ GROUP_EXECUTE
-              WORLD_READ WORLD_EXECUTE
+              PERMISSIONS OWNER_READ OWNER_WRITE
+                          GROUP_READ GROUP_WRITE
+                          WORLD_READ
       )
+      foreach(CFG ${CMAKE_CONFIGURATION_TYPES})
+          file(COPY ${VISIT_QT_DIR}/plugins/platforms/qwindows.dll
+               DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CFG}/platforms/
+               FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                GROUP_READ GROUP_WRITE
+                                WORLD_READ
+          )
+      endforeach()
     else()
         message(ERROR "QT installation is missing platforms/qwindows.dll")
     endif()
