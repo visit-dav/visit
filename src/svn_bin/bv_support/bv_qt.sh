@@ -90,7 +90,7 @@ function bv_qt_qt5
     info "enabling Qt5.."
     bv_qt_enable
 
-    QT_VERSION="5.2.1"
+    QT_VERSION="5.5.1"
     QT_FILE="qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"
     QT_BUILD_DIR="${QT_FILE%.tar*}"
     QT_BIN_DIR="${QT_BUILD_DIR}/bin"
@@ -129,7 +129,9 @@ function bv_qt_info
 # if we are on osx 10.8 or later, we need to use 4.8.6   
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.8" ||
-              "${MACOSX_DEPLOYMENT_TARGET}" == "10.9" ]]; then
+              "${MACOSX_DEPLOYMENT_TARGET}" == "10.9" ||
+              "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
+              "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
             export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.8.6.tar.gz"}
             export QT_VERSION=${QT_VERSION:-"4.8.6"}
             export QT_MD5_CHECKSUM="2edbe4d6c2eff33ef91732602f3518eb"
@@ -258,8 +260,61 @@ return 0
 
 function apply_qt_patch
 {
+   if [[ ${QT_VERSION} == 4.8.6 ]] ; then
+      if [[ "$OPSYS" == "Darwin" ]]; then
+         if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
+               "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
+            apply_qt_486_osx1011_patch 
+         fi
+      fi
+   fi
+
    return 0
 }
+
+
+function apply_qt_486_osx1011_patch
+{
+# fix for OS X 10.11 
+    info "Patching qt 4.8.6 for OS X 10.10 or 10.11"
+    patch -p0 << \EOF
+
+diff -c src/gui/painting/qpaintengine_mac.cpp.orig src/gui/painting/qpaintengine_mac.cpp
+*** src/gui/painting/qpaintengine_mac.cpp.orig	2014-04-10 12:37:12.000000000 -0600
+--- src/gui/painting/qpaintengine_mac.cpp	2016-01-05 15:43:29.000000000 -0700
+***************
+*** 340,352 ****
+      }
+  
+      // Get the color space from the display profile.
+!     CGColorSpaceRef colorSpace = 0;
+!     CMProfileRef displayProfile = 0;
+!     CMError err = CMGetProfileByAVID((CMDisplayIDType)displayID, &displayProfile);
+!     if (err == noErr) {
+!         colorSpace = CGColorSpaceCreateWithPlatformColorSpace(displayProfile);
+!         CMCloseProfile(displayProfile);
+!     }
+  
+      // Fallback: use generic DeviceRGB
+      if (colorSpace == 0)
+--- 340,346 ----
+      }
+  
+      // Get the color space from the display profile.
+!     CGColorSpaceRef colorSpace = CGDisplayCopyColorSpace(displayID);
+  
+      // Fallback: use generic DeviceRGB
+      if (colorSpace == 0)
+
+EOF
+    if [[ $? != 0 ]] ; then
+      warn "qt 4.8.6 patch failed."
+      return 1
+    fi
+
+    return 0;
+}
+
 
 function build_qt
 {
@@ -280,6 +335,7 @@ function build_qt
     # Apply patches
     #
     info "Patching qt . . ."
+    cd $QT_BUILD_DIR || error "Can't cd to Qt build dir."
     apply_qt_patch
     if [[ $? != 0 ]] ; then
        if [[ $untarred_qt == 1 ]] ; then
@@ -292,8 +348,6 @@ function build_qt
                "failing harmlessly on a second application."
        fi
     fi
-
-    cd $QT_BUILD_DIR || error "Can't cd to Qt build dir."
 
     #
     # Platform specific configuration
@@ -399,7 +453,22 @@ function build_qt
         qt_flags="${qt_flags} -nomake examples"
         qt_flags="${qt_flags} -nomake tests"
         qt_flags="${qt_flags} -no-qml-debug"
-        qt_flags="${qt_flags} -no-javascript-jit"
+
+	ADD_JAVASCRIPT="yes"
+        if [[ ${QT_VERSION} == 5.5.1 ]] ; then
+           if [[ "$OPSYS" == "Darwin" ]]; then
+              if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
+                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
+		  ADD_JAVASCRIPT="no"
+              fi
+	   fi
+	fi
+
+        if [[ "$ADD_JAVASCRIPT" == "yes" ]] ; then
+           qt_flags="${qt_flags} -no-javascript-jit"
+        fi
+
+
         if [[ "$OPSYS" == "Linux" ]] ; then
             qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"
         fi
@@ -531,4 +600,3 @@ if [[ "$DO_QT" == "yes"  && "$USE_SYSTEM_QT" == "no" && "$DO_SERVER_COMPONENTS_O
    fi
 fi
 }
-
