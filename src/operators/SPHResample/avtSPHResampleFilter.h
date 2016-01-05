@@ -48,7 +48,7 @@
 #include <SPHResampleAttributes.h>
 #include <avtPluginDatasetToDatasetFilter.h>
 
-class vtkDataSet;
+class vtkRectilinearGrid;
 
 struct tensorStruct{
     tensorStruct(){
@@ -99,6 +99,7 @@ protected:
     std::string             supportVarName;
     std::string             weightVarName;
     
+    bool                    cellCentered;
     bool                    keepNodeZone;
     int                     nDim;
     float                   RKcorrections;
@@ -107,8 +108,8 @@ protected:
     
     virtual void Execute();
     
-    vtkDataSet                      *CreateOutputGrid();
-    vtkDataSet                      *CreateLocalOutputGrid(const double, const double, const double,
+    vtkRectilinearGrid                      *CreateOutputGrid();
+    vtkRectilinearGrid                      *CreateLocalOutputGrid(const double, const double, const double,
                                                            const double, const double, const double, int[]);
     template <int Dim> tensorStruct  *CreateTensorStruct(vtkDataArray* const, const int);
     
