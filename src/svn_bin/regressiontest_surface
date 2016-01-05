@@ -137,7 +137,7 @@ serial="false"
 testHost="surface"
 testDir="/nfs/tmp2/"
 post="true"
-nerscHost="hopper.nersc.gov"
+nerscHost="edison.nersc.gov"
 
 for abc
 do
