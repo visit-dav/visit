@@ -454,21 +454,6 @@ function build_qt
         qt_flags="${qt_flags} -nomake tests"
         qt_flags="${qt_flags} -no-qml-debug"
 
-	ADD_JAVASCRIPT="yes"
-        if [[ ${QT_VERSION} == 5.5.1 ]] ; then
-           if [[ "$OPSYS" == "Darwin" ]]; then
-              if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
-                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
-		  ADD_JAVASCRIPT="no"
-              fi
-	   fi
-	fi
-
-        if [[ "$ADD_JAVASCRIPT" == "yes" ]] ; then
-           qt_flags="${qt_flags} -no-javascript-jit"
-        fi
-
-
         if [[ "$OPSYS" == "Linux" ]] ; then
             qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"
         fi
