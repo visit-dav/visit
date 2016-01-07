@@ -33,6 +33,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug preventing the reading of DOS-formatted .visit files on Linux</li>
   <li>Fixed bug whereby setting 'ssh command' would not work correctly on Windows.  If path to ssh contains spaces, the full path and command need to be surrounded in double-quotes, eg <i>"C:\Program Files (x86)\Putty\plink.exe"</i>.  If manually adding this to an .xml host profile, The quotes and path-separators should be escaped: <i>"\"C:\\Program Files (x86)\\Putty\\plink.exe\""</i></li>
   <li>Fixed bug opening large (> 4gb) silo files on Windows.</li>
+  <li>Fixed the tensorVectorMult bug in the SPH Resample Operator found by Cody Raskin.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -40,7 +41,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>VisIt now permits the <i>-socket-bridge-host</i> command line argument to override the host name passed to compute engines when VCL starts a socket bridge. This is useful for login nodes that are attached to multiple network interfaces such as on BlueGene/Q where compute nodes may need to attach to the socket bridge host (typically the LAC node) using an alias.</li>
   <li>The PF3D reader was enhanced so that it now reads the new multi level file format.</li>
-  <li></li>
+  <li>The SPH Resample Operator now supports zone-centered data</li>
   <li></li>
 </ul>
 
