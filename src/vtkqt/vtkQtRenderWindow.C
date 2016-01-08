@@ -56,13 +56,26 @@ public:
         showEventCallback = NULL;
         showEventCallbackData = NULL;
 
+        QGLFormat glFormat;
+
+        glFormat.setStereo(stereo);
+        glFormat.setDepth(true);
+
+        // WIth Qt5 there seesm to be an issue with asking for an
+        // alpha channel (at least for OS X). However, not asking for
+        // the channel seems to be benign.
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+        glFormat.setAlpha(true);
+#else
+        glFormat.setAlpha(false);
+#endif
         // Create the VTK widget and force our custom render window into it.
-        if(stereo)
-            gl = new QVTKWidget2(QGLFormat(QGL::DepthBuffer | QGL::AlphaChannel | QGL::StereoBuffers), w);
-        else
-            gl = new QVTKWidget2(QGLFormat(QGL::DepthBuffer | QGL::AlphaChannel), w);
+        gl = new QVTKWidget2(glFormat, w);
+
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
         if (!gl->format().alpha())
             qWarning("Could not get alpha channel; results will be suboptimal");
+#endif
     }
 
     virtual ~vtkQtRenderWindowPrivate()
