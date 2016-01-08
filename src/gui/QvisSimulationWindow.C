@@ -692,8 +692,15 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
         ui->blockSignals(true);
 
         if (ui->inherits("QWidget"))
+        {
             ((QWidget *)ui)->setEnabled(e);
 
+            if( value == QString("HIDE_WIDGET") )
+              ((QWidget *)ui)->hide();
+            else
+              ((QWidget *)ui)->show();
+        }
+        
         if (ui->inherits("QLabel"))
         {
             debug5 << "found label " << name.toStdString() << " text = "
