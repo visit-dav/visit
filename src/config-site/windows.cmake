@@ -35,6 +35,7 @@ SET(VISITHOME ${VISIT_WINDOWS_DIR}/${VISIT_MSVC_VERSION})
 
 # Create the NSIS installer package (override default from root CMakeLists.txt
 OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS." ON)
+VISIT_OPTION_DEFAULT(VISIT_QT5 true TYPE BOOL)
 
 ##############################################################
 ##
@@ -52,11 +53,7 @@ VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR ${VISITHOME}/boost_minimal_headers/1.57.0)
 ## VTK
 ##
 IF(VISIT_QT5)
-  if(VISIT_QT551)
-      VISIT_OPTION_DEFAULT(VISIT_VTK_DIR  ${VISITHOME}/vtk-qt551/${VTK_VERSION})
-  else()
-      VISIT_OPTION_DEFAULT(VISIT_VTK_DIR  ${VISITHOME}/vtk-qt5/${VTK_VERSION})
-  endif()
+  VISIT_OPTION_DEFAULT(VISIT_VTK_DIR  ${VISITHOME}/vtk-qt5/${VTK_VERSION})
 ELSE()
   VISIT_OPTION_DEFAULT(VISIT_VTK_DIR  ${VISITHOME}/vtk/${VTK_VERSION})
 ENDIF()
@@ -65,13 +62,7 @@ ENDIF()
 ## QT
 ##
 if (VISIT_QT5)
-  if (VISIT_QT551)
   VISIT_OPTION_DEFAULT(VISIT_QT_DIR     ${VISITHOME}/Qt/5.5.1)
-  VISIT_OPTION_DEFAULT(VISIT_QT_BIN     ${VISITHOME}/Qt/5.5.1/bin)
-  else()
-  VISIT_OPTION_DEFAULT(VISIT_QT_DIR     ${VISITHOME}/Qt/5.2.1)
-  VISIT_OPTION_DEFAULT(VISIT_QT_BIN     ${VISITHOME}/Qt/5.2.1/bin)
-  endif()
 else()
   if(MSVC12)
       SET(VISIT_QT_VERSION "4.8.6")
@@ -86,12 +77,18 @@ endif()
 ##
 ## PYTHON
 ##
+if(VISIT_QT5)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.11)
+else()
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.9)
+endif()
 
 ##
 ## PYSIDE
 ##
+if(NOT VISIT_QT5)
 VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/PySide/1.2.2)
+endif()
 
 ##############################################################
 ##
@@ -254,11 +251,7 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP
 ## XDMF
 ##
 if(VISIT_QT5)
-  if  (VISIT_QT551)
-      VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf-vtk-qt551/2.1.1)
-  else()
-      VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf-vtk-qt5/2.1.1)
-  endif()
+  VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf-vtk-qt5/2.1.1)
 else()
   VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1)
 endif()
