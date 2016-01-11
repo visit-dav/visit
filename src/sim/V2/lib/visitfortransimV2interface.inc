@@ -176,6 +176,35 @@
       parameter   (VISIT_CELL_POINT                  = 7)
       integer      VISIT_CELL_POLYHEDRON
       parameter   (VISIT_CELL_POLYHEDRON             = 8)
+      integer      VISIT_CELL_QUADRATIC_EDGE
+      parameter   (VISIT_CELL_QUADRATIC_EDGE         = 20)
+      integer      VISIT_CELL_QUADRATIC_TRI
+      parameter   (VISIT_CELL_QUADRATIC_TRI          = 21)
+      integer      VISIT_CELL_QUADRATIC_QUAD
+      parameter   (VISIT_CELL_QUADRATIC_QUAD         = 22)
+      integer      VISIT_CELL_QUADRATIC_TET
+      parameter   (VISIT_CELL_QUADRATIC_TET          = 23)
+      integer      VISIT_CELL_QUADRATIC_PYRAMID
+      parameter   (VISIT_CELL_QUADRATIC_PYRAMID      = 24)
+      integer      VISIT_CELL_QUADRATIC_WEDGE
+      parameter   (VISIT_CELL_QUADRATIC_WEDGE        = 25)
+      integer      VISIT_CELL_QUADRATIC_HEX
+      parameter   (VISIT_CELL_QUADRATIC_HEX          = 26)
+      integer      VISIT_CELL_BIQUAD_TRI
+      parameter   (VISIT_CELL_BIQUAD_TRI             = 27)
+      integer      VISIT_CELL_BIQUAD_QUAD
+      parameter   (VISIT_CELL_BIQUAD_QUAD            = 28)
+      integer      VISIT_CELL_TRIQUAD_HEX
+      parameter   (VISIT_CELL_TRIQUAD_HEX            = 29)
+      integer      VISIT_CELL_QUAD_LIN_QUAD
+      parameter   (VISIT_CELL_QUAD_LIN_QUAD          = 30)
+      integer      VISIT_CELL_QUAD_LIN_WEDGE
+      parameter   (VISIT_CELL_QUAD_LIN_WEDGE         = 31)
+      integer      VISIT_CELL_BIQUAD_QUAD_WEDGE
+      parameter   (VISIT_CELL_BIQUAD_QUAD_WEDGE      = 32)
+      integer      VISIT_CELL_BIQUAD_QUAD_HEX
+      parameter   (VISIT_CELL_BIQUAD_QUAD_HEX        = 33)
+
 
 !... Coordinate modes 
       integer      VISIT_COORD_MODE_SEPARATE
