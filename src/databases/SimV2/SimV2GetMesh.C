@@ -43,6 +43,7 @@ using std::ostringstream;
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkCellType.h>
 #include <vtkFieldData.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
@@ -117,6 +118,42 @@ SimV2_GetVTKType(int simv2type)
     }
 
     return ret;
+}
+
+static void InitializeCellNumPoints(int *celltype_npts)
+{
+    celltype_npts[VISIT_CELL_BEAM]  = 2;
+    celltype_npts[VISIT_CELL_TRI]   = 3;
+    celltype_npts[VISIT_CELL_QUAD]  = 4;
+    celltype_npts[VISIT_CELL_TET]   = 4;
+    celltype_npts[VISIT_CELL_PYR]   = 5;
+    celltype_npts[VISIT_CELL_WEDGE] = 6;
+    celltype_npts[VISIT_CELL_HEX]   = 8;
+    celltype_npts[VISIT_CELL_POINT] = 1;
+
+    celltype_npts[VISIT_CELL_POLYHEDRON] = 0; // handled specially
+
+    celltype_npts[VISIT_CELL_QUADRATIC_EDGE] = 3;
+    celltype_npts[VISIT_CELL_QUADRATIC_TRI]  = 6;
+    celltype_npts[VISIT_CELL_QUADRATIC_QUAD] = 8;
+    celltype_npts[VISIT_CELL_QUADRATIC_TET] = 10;
+    celltype_npts[VISIT_CELL_QUADRATIC_HEX] = 20;
+    celltype_npts[VISIT_CELL_QUADRATIC_WEDGE] = 15;
+    celltype_npts[VISIT_CELL_QUADRATIC_PYR] = 13;
+    celltype_npts[VISIT_CELL_BIQUADRATIC_TRI] = 7;
+    celltype_npts[VISIT_CELL_BIQUADRATIC_QUAD] = 9;
+    celltype_npts[VISIT_CELL_TRIQUADRATIC_HEX] = 26;
+    celltype_npts[VISIT_CELL_QUADRATIC_LINEAR_QUAD] = 6;
+    celltype_npts[VISIT_CELL_QUADRATIC_LINEAR_WEDGE] = 12;
+    celltype_npts[VISIT_CELL_BIQUADRATIC_QUADRATIC_WEDGE] = 18;
+    celltype_npts[VISIT_CELL_BIQUADRATIC_QUADRATIC_HEX] = 24;
+}
+
+static bool
+ValidCellType(int celltype)
+{
+    return (celltype >= VISIT_CELL_BEAM && celltype <= VISIT_CELL_POLYHEDRON) ||
+           (celltype >= VISIT_CELL_QUADRATIC_EDGE && celltype <= VISIT_CELL_BIQUADRATIC_QUADRATIC_HEX);
 }
 
 // ****************************************************************************
@@ -1322,14 +1359,8 @@ static void
 SimV2_UnstructuredMesh_Count_Cells(const int *connectivity, int connectivityLen,
     int &normalCellCount, int &polyCount)
 {
-    int celltype_npts[10];
-    celltype_npts[VISIT_CELL_BEAM]  = 2;
-    celltype_npts[VISIT_CELL_TRI]   = 3;
-    celltype_npts[VISIT_CELL_QUAD]  = 4;
-    celltype_npts[VISIT_CELL_TET]   = 4;
-    celltype_npts[VISIT_CELL_PYR]   = 5;
-    celltype_npts[VISIT_CELL_WEDGE] = 6;
-    celltype_npts[VISIT_CELL_HEX]   = 8;
+    int celltype_npts[40];
+    InitializeCellNumPoints(celltype_npts);
 
     polyCount = 0;
     normalCellCount = 0;
@@ -1349,7 +1380,7 @@ SimV2_UnstructuredMesh_Count_Cells(const int *connectivity, int connectivityLen,
             }
             polyCount++;
         }
-        else if(celltype >= VISIT_CELL_BEAM && celltype <= VISIT_CELL_POLYHEDRON)
+        else if(ValidCellType(celltype))
         {
             cell += celltype_npts[celltype];
             normalCellCount++;
@@ -1554,6 +1585,9 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
 //   William T. Jones, Fri Jan 20 17:55:27 EDT 2012
 //   I added support for ghost nodes from an array.
 //
+//   Brad Whitlock, Fri Jan  8 15:17:10 PST 2016
+//   Add some quadratic cell types.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1629,16 +1663,10 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, avtPolyhedralSplit **phSp
     //
     // Create the cells.
     //
-    int celltype_npts[10];
-    celltype_npts[VISIT_CELL_BEAM]  = 2;
-    celltype_npts[VISIT_CELL_TRI]   = 3;
-    celltype_npts[VISIT_CELL_QUAD]  = 4;
-    celltype_npts[VISIT_CELL_TET]   = 4;
-    celltype_npts[VISIT_CELL_PYR]   = 5;
-    celltype_npts[VISIT_CELL_WEDGE] = 6;
-    celltype_npts[VISIT_CELL_HEX]   = 8;
+    int celltype_npts[40];
+    InitializeCellNumPoints(celltype_npts);
 
-    int celltype_idtype[10];
+    int celltype_idtype[40];
     celltype_idtype[VISIT_CELL_BEAM]  = VTK_LINE;
     celltype_idtype[VISIT_CELL_TRI]   = VTK_TRIANGLE;
     celltype_idtype[VISIT_CELL_QUAD]  = VTK_QUAD;
@@ -1646,6 +1674,22 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, avtPolyhedralSplit **phSp
     celltype_idtype[VISIT_CELL_PYR]   = VTK_PYRAMID;
     celltype_idtype[VISIT_CELL_WEDGE] = VTK_WEDGE;
     celltype_idtype[VISIT_CELL_HEX]   = VTK_HEXAHEDRON;
+    celltype_idtype[VISIT_CELL_POINT] = VTK_VERTEX;
+    celltype_idtype[VISIT_CELL_QUADRATIC_EDGE]          = VTK_QUADRATIC_EDGE;
+    celltype_idtype[VISIT_CELL_QUADRATIC_TRI]           = VTK_QUADRATIC_TRIANGLE;
+    celltype_idtype[VISIT_CELL_QUADRATIC_QUAD]          = VTK_QUADRATIC_QUAD;
+    celltype_idtype[VISIT_CELL_QUADRATIC_TET]           = VTK_QUADRATIC_TETRA;
+    celltype_idtype[VISIT_CELL_QUADRATIC_HEX]           = VTK_QUADRATIC_HEXAHEDRON;
+    celltype_idtype[VISIT_CELL_QUADRATIC_WEDGE]         = VTK_QUADRATIC_WEDGE;
+    celltype_idtype[VISIT_CELL_QUADRATIC_PYR]           = VTK_QUADRATIC_PYRAMID;
+    celltype_idtype[VISIT_CELL_BIQUADRATIC_TRI]         = VTK_BIQUADRATIC_TRIANGLE;
+    celltype_idtype[VISIT_CELL_BIQUADRATIC_QUAD]        = VTK_BIQUADRATIC_QUAD;
+    celltype_idtype[VISIT_CELL_TRIQUADRATIC_HEX]        = VTK_TRIQUADRATIC_HEXAHEDRON;
+    celltype_idtype[VISIT_CELL_QUADRATIC_LINEAR_QUAD]   = VTK_QUADRATIC_LINEAR_QUAD;
+    celltype_idtype[VISIT_CELL_QUADRATIC_LINEAR_WEDGE]  = VTK_QUADRATIC_LINEAR_WEDGE;
+    celltype_idtype[VISIT_CELL_BIQUADRATIC_QUADRATIC_WEDGE] = VTK_BIQUADRATIC_QUADRATIC_WEDGE;
+    celltype_idtype[VISIT_CELL_BIQUADRATIC_QUADRATIC_HEX]   = VTK_BIQUADRATIC_QUADRATIC_HEXAHEDRON;
+
 
     vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New();
     ugrid->SetPoints(points);
@@ -1678,7 +1722,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, avtPolyhedralSplit **phSp
             polyhedralSplit->AppendCellSplits(numCells, nsplits);
             phIndex++;
         }
-        else if(celltype >= VISIT_CELL_BEAM && celltype <= VISIT_CELL_HEX)
+        else if(ValidCellType(celltype))
         {
             // Add a normal cell
             int vtktype = celltype_idtype[celltype];

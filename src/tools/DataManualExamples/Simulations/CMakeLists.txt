@@ -230,6 +230,8 @@ ADD_PARALLEL_SIMV2_SIMULATION(ghostcells_par ghostcells.c)
 ADD_SIMV2_SIMULATION(globalids globalids.c)
 ADD_PARALLEL_SIMV2_SIMULATION(globalids_par globalids.c)
 
+ADD_SIMV2_SIMULATION(higherorder higherorder.c)
+
 ADD_SIMV2_SIMULATION(interleave interleave.c)
 
 ADD_SIMV2_SIMULATION(life life.c)
