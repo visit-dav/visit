@@ -69,7 +69,12 @@ public:
 #else
         glFormat.setAlpha(false);
 #endif
-        // Create the VTK widget and force our custom render window into it.
+        // Create the VTK widget and force our custom render window
+        // into it.
+
+        // NOTE: vtkQtRenderWindow via the call to setCentralWidget()
+        // takes ownership of the gl widget pointer and deletes it at
+        // the appropriate time.
         gl = new QVTKWidget2(glFormat, w);
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
@@ -103,6 +108,9 @@ vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMain
     setAnimated(false);
 
     setWindowFlags(f);
+    // With the call to setCentralWidget() vtkQtRenderWindow takes
+    // ownership of the gl widget pointer and deletes it at the
+    // appropriate time.
     setCentralWidget(d->gl);
 }
 
@@ -114,6 +122,9 @@ vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFla
     setAnimated(false);
 
     setWindowFlags(f);
+    // With the call to setCentralWidget() vtkQtRenderWindow takes
+    // ownership of the gl widget pointer and deletes it at the
+    // appropriate time.
     setCentralWidget(d->gl);
 }
 
