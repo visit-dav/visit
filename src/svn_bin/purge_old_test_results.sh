@@ -10,7 +10,7 @@
 #    - no results older than 3 years
 #
 
-root=/project/projectdirs/visit/www
+root=/project/projectdirs/visit/www/tests
 
 #
 # Function to find dirs in a given range, count them
