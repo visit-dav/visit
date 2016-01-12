@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Untar the html
-tar zxmf html.tar.gz -C /project/projectdirs/visit/www
+tar zxmf html.tar.gz -C /project/projectdirs/visit/www/tests
 
 cd /project/projectdirs/visit/www
 
@@ -21,7 +21,7 @@ echo "   <td><b>Mode</b></td>" >> index.html
 echo "   <td><b>Result</b></td>" >> index.html
 echo "</tr>" >> index.html
 
-ls -1t /project/projectdirs/visit/www/*/*/index.html | while read testLine; do
+ls -1t /project/projectdirs/visit/www/tests/*/*/index.html | while read testLine; do
 
     theMode=`echo $testLine | cut -d'/' -f7`
     theRelDir=`echo $testLine | cut -d'/' -f6-`
