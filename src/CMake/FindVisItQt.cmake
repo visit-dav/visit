@@ -1,7 +1,7 @@
-IF(NOT DEFINED VISIT_QT5)
-    INCLUDE(CMake/FindVisItQt4.cmake)
-ELSE()
+IF(VISIT_QT5)
     INCLUDE(CMake/FindVisItQt5.cmake)
+ELSE()
+    INCLUDE(CMake/FindVisItQt4.cmake)
 ENDIF()
 
 
