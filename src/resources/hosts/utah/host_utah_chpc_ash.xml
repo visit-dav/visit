@@ -3,7 +3,7 @@
     <Field name="hostNickname" type="string">"Utah CHPC Ash"</Field>
     <Field name="host" type="string">ash.chpc.utah.edu</Field>
     <Field name="userName" type="string"></Field>
-    <Field name="hostAliases" type="string"></Field>
+    <Field name="hostAliases" type="string">"ash#.chpc.utah.edu ash#.wasatch.peaks"</Field>
     <Field name="directory" type="string">/uufs/ash.peaks/sys/pkg/VisIt/Install/gcc</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
@@ -22,14 +22,14 @@
         <Field name="numProcessors" type="int">12</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="numNodes" type="int">1</Field>
-        <Field name="partitionSet" type="bool">false</Field>
-        <Field name="partition" type="string"></Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">"smithp-ash"</Field>
         <Field name="bankSet" type="bool">true</Field>
         <Field name="bank" type="string">smithp-ash</Field>
         <Field name="timeLimitSet" type="bool">true</Field>
         <Field name="timeLimit" type="string">04:00:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
-        <Field name="launchMethod" type="string">qsub/mpirun</Field>
+        <Field name="launchMethod" type="string">sbatch/mpirun</Field>
         <Field name="forceStatic" type="bool">true</Field>
         <Field name="forceDynamic" type="bool">false</Field>
         <Field name="active" type="bool">false</Field>
