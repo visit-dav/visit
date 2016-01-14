@@ -51,17 +51,7 @@
 #endif
 
 #ifdef HAVE_LIBVTKM
-#include <vtkm/cont/DataSet.h>
-
-class vtkmDataSet
-{
-  public:
-              vtkmDataSet() {};
-    virtual  ~vtkmDataSet() {};
-
-  private:
-    vtkm::cont::DataSet ds;
-}
+#include <vtkmDataSet.h>
 #endif
 
 #include <vtkCellData.h>
@@ -1023,6 +1013,9 @@ avtDataRepresentation::GetDataEAVL(void)
 //    Cameron Christensen, Thursday, May 22, 2014
 //    Added support for EAVL.
 //
+//    Eric Brugger, Thu Jan 14 10:48:40 PST 2016
+//    Added support for VTKm.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1042,6 +1035,13 @@ avtDataRepresentation::GetDataVTK(void)
         {
             //try to convert from EAVL dataset
             asVTK = EAVLToVTK(asEAVL);
+        }
+#endif
+#ifdef HAVE_LIBVTKM
+        else
+        {
+            //try to convert from VTKm dataset
+            asVTK = VTKmToVTK(asVTKm);
         }
 #endif
 
@@ -1904,13 +1904,13 @@ avtDataRepresentation::VTKmToVTK(vtkmDataSet *data)
     {
         int timerhandle = visitTimer->StartTimer();
 
-        // ret = ConvertVTKmToVTK(data);
+        ret = ConvertVTKmToVTK(data);
         if (ret == NULL)
         {
             EXCEPTION0(InvalidConversionException);
         }
 
-        visitTimer->StopTimer(timerhandle, "avtDataRepresentation::EAVLToVTK");
+        visitTimer->StopTimer(timerhandle, "avtDataRepresentation::VTKmToVTK");
     }
     return ret;
 }
@@ -1941,7 +1941,7 @@ avtDataRepresentation::VTKToVTKm(vtkDataSet *data)
     {
         int timerhandle = visitTimer->StartTimer();
 
-        // ret = ConvertVTKToVTKm(data);
+        ret = ConvertVTKToVTKm(data);
         if (ret == NULL)
         {
             EXCEPTION0(InvalidConversionException);

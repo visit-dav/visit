@@ -46,6 +46,29 @@
 #include <float.h>
 #include <vector>
 
+#ifdef HAVE_LIBEAVL
+
+#include <eavlDataSet.h>
+#include <eavlTimer.h>
+#include <eavlExecutor.h>
+#include <eavlIsosurfaceFilter.h>
+#include <eavlCellToNodeRecenterMutator.h>
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
+#ifdef VISIT_OMP
+#include <omp.h>
+#endif
+
+#endif
+
+#ifdef HAVE_LIBVTKM
+#include <vtkmContourFilter.h>
+#include <vtkmDataSet.h>
+#endif
+
 #include <vtkCellData.h>
 #include <vtkVisItCellDataToPointData.h>
 #include <vtkDataSet.h>
@@ -68,24 +91,6 @@
 #include <InvalidLimitsException.h>
 #include <NoDefaultVariableException.h>
 #include <TimingsManager.h>
-
-#ifdef HAVE_LIBEAVL
-
-#include <eavlDataSet.h>
-#include <eavlTimer.h>
-#include <eavlExecutor.h>
-#include <eavlIsosurfaceFilter.h>
-#include <eavlCellToNodeRecenterMutator.h>
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-#ifdef VISIT_OMP
-#include <omp.h>
-#endif
-
-#endif
 
 using std::vector;
 using std::string;
@@ -525,6 +530,8 @@ avtContourFilter::PreExecute(void)
 //  Creation:   June 10, 2014
 //
 //  Modifications:
+//    Eric Brugger, Thu Jan 14 08:48:41 PST 2016
+//    I modified the class to work VTKM.
 //
 // ****************************************************************************
 
@@ -541,6 +548,11 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         avtCallback::GetBackendType() == GlobalAttributes::EAVL)
     {
         outDT = this->ExecuteDataTree_EAVL(in_dr);
+    }
+    else if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
+        avtCallback::GetBackendType() == GlobalAttributes::VTKM)
+    {
+        outDT = this->ExecuteDataTree_VTKM(in_dr);
     }
     else
     {
@@ -737,7 +749,6 @@ avtContourFilter::ExecuteDataTree_EAVL(avtDataRepresentation *in_dr)
     visitTimer->StopTimer(timerHandle, "avtContourFilter::ExecuteDataTree_EAVL");
 
     return outtree;
-
 #endif
 }
 
@@ -1064,6 +1075,81 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
     #endif // VISIT_THREADS
 
     return outDT;
+}
+
+
+// ****************************************************************************
+//  Method: avtContourFilter::ExecuteDataTree_VTKM
+//
+//  Purpose:
+//      Sends the specified input and output through the VTKM contour filter.
+//
+//  Arguments:
+//      in_dr      The input data representation.
+//
+//  Returns:       The output data tree.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Thu Jan 14 08:48:41 PST 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
+{
+#ifndef HAVE_LIBVTKM
+    return NULL;
+#else
+    //
+    // Get the VTKM data set, the domain number, and the label.
+    //
+    vtkmDataSet *in_ds = in_dr->GetDataVTKm();
+    int domain = in_dr->GetDomain();
+    std::string label = in_dr->GetLabel();
+
+    int timerHandle = visitTimer->StartTimer();
+
+    if (!in_ds)
+    {
+        return NULL;
+    }
+
+    if (isoValues.empty())
+    {
+        debug3 << "No levels to calculate! " << endl;
+        GetOutput()->GetInfo().GetValidity().InvalidateOperation();
+        return NULL;
+    }
+
+    //execute once per isovalue
+    avtDataRepresentation **output = new avtDataRepresentation*[isoValues.size()];
+    for (int i=0; i<isoValues.size(); i++)
+    {
+        vtkmDataSet *isoOut = new vtkmDataSet;
+
+        vtkmContourFilter(in_ds->ds, isoOut->ds, isoValues[i]);
+
+        if (shouldCreateLabels)
+        {   
+            output[i] = new avtDataRepresentation(isoOut,
+                domain, isoLabels[i]);
+        }
+        else
+        {   
+            output[i] = new avtDataRepresentation(isoOut,
+                domain, label);
+        }
+    }
+
+    //create the output data tree
+    avtDataTree_p outtree = new avtDataTree(isoValues.size(), output);
+
+    visitTimer->StopTimer(timerHandle, "avtContourFilter::ExecuteDataTree_VTKM");
+
+    return outtree;
+#endif
 }
 
 
