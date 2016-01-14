@@ -581,7 +581,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *in_ds,
 
       int ms = ic->GetMaxSteps();
 
-      if( ms < (unsigned int)maxSteps )
+      if( ms < maxSteps )
       {
         ic->SetMaxSteps(ms+1);
         ic->status.ClearTerminationMet();
@@ -589,7 +589,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *in_ds,
 
       // Check to see if all exponents have been found.
       if( exponents->GetTuple1(l) == std::numeric_limits<double>::min() &&
-          ic->GetMaxSteps() < (unsigned int)maxSteps )
+          ms < maxSteps )
         haveAllExponents = false;
     }
     
@@ -777,7 +777,7 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
 
           int ms = ic->GetMaxSteps();
 
-          if( ms < (unsigned int)maxSteps )
+          if( ms < maxSteps )
           {
             ic->SetMaxSteps(ms+1);
             ic->status.ClearTerminationMet();
@@ -787,7 +787,7 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
 
           // Check to see if all exponents have been found.
           if( exponents->GetTuple1(l) == std::numeric_limits<double>::min() &&
-              ic->GetMaxSteps() < (unsigned int)maxSteps )
+              ms < maxSteps )
             haveAllExponents = false;
         }
 
