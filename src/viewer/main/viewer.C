@@ -153,8 +153,12 @@ Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QS
 //    Andreas Kloeckner, I modified it to use strdup().
 //
 //    Cyrus Harrison, Fri Oct 11 15:40:29 PDT 2013
-//    Clear any static lib paths (QCoreApplication::libraryPaths) to avoid conflicts with
-//    loading qt after a make install or make package
+//    Clear any static lib paths (QCoreApplication::libraryPaths) to avoid
+//    conflicts with loading qt after a make install or make package
+//
+//    Kathleen Biagas, Thu Jan 14 12:30:29 PST 2016
+//    If running on linux in nowin mode, with qt 5, add -platform minimal
+//    to the QApplication arguments.
 //
 // ****************************************************************************
 
@@ -189,6 +193,7 @@ ViewerMain(int argc, char *argv[])
         bool reverseLaunch = false;
         for(int i = 1; i < argc && !reverseLaunch; ++i)
             reverseLaunch |= (strcmp(argv[i], "-connectengine") == 0);
+        
         if(!reverseLaunch)
             viewer.Connect(&argc, &argv);
 
@@ -201,7 +206,23 @@ ViewerMain(int argc, char *argv[])
         //
         // Create the QApplication. This sets the qApp pointer.
         //
-        char **argv2 = new char *[argc + 5];
+        bool add_platform_arg = false;
+
+        int nExtraArgs = 5;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+// Instead of being exclusionary, should the check insted be
+// #if defined(Q_OS_LINUX) ??
+#if !defined(_WIN32) && !defined(Q_OS_MAC)
+        if (viewer.GetNowinMode())
+        {
+            // really only need this if X11 not running, but how to test?
+            add_platform_arg = true;
+            nExtraArgs += 2;
+        }
+#endif
+#endif
+        
+        char **argv2 = new char *[argc + nExtraArgs];
         int real_argc = 0;
         for(int i = 0; i < argc; ++i)
         {
@@ -215,7 +236,12 @@ ViewerMain(int argc, char *argv[])
         argv2[real_argc+1] = (char*)viewer.State()->GetAppearanceAttributes()->GetFontName().c_str();
         argv2[real_argc+2] = (char*)"-name";
         argv2[real_argc+3] = (char*)"visit-viewer";
-        argv2[real_argc+4] = NULL;
+        if (add_platform_arg)
+        {
+            argv2[real_argc+4] = (char*)"-platform";
+            argv2[real_argc+5] = (char*)"minimal";
+        }
+        argv2[real_argc+nExtraArgs-1] = NULL;
 
         debug1 << "Viewer using font: " << argv2[real_argc+1] << endl;
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
@@ -223,7 +249,7 @@ ViewerMain(int argc, char *argv[])
 #else
         qInstallMessageHandler(Viewer_LogQtMessages);
 #endif
-        int argc2 = real_argc + 2;
+        int argc2 = real_argc + nExtraArgs;
         QApplication *mainApp = new QApplication(argc2, argv2, !viewer.GetNowinMode());
 
         //

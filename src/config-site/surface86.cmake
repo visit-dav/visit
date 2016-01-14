@@ -13,8 +13,7 @@ SET(VISITHOMEQT5 /usr/gapps/visit/thirdparty_shared/2.11.0)
 SET(VISITARCH linux-x86_64_gcc-4.4)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
-# turn off qt 5 till test-suite crash can be fixed
-#VISIT_OPTION_DEFAULT(VISIT_QT5 TRUE TYPE BOOL)
+VISIT_OPTION_DEFAULT(VISIT_QT5 TRUE TYPE BOOL)
 
 ## Compiler flags.
 ##
