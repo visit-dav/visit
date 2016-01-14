@@ -99,6 +99,9 @@
 //    Cameron Christensen, Tuesday, June 10, 2014
 //    Modified the class to work with EAVL.
 //
+//    Eric Brugger, Thu Jan 14 08:46:42 PST 2016
+//    Modified the class to work with VTKM.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
@@ -144,6 +147,7 @@ class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
  private:
     avtDataTree_p      ExecuteDataTree_EAVL(avtDataRepresentation *);
     avtDataTree_p      ExecuteDataTree_VTK(avtDataRepresentation *);
+    avtDataTree_p      ExecuteDataTree_VTKM(avtDataRepresentation *);
 
 };
 

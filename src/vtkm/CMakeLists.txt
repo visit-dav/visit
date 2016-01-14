@@ -38,33 +38,23 @@
 #
 #****************************************************************************/
 
-# Use the VTKM_DIR hint from the config-site .cmake file 
+INCLUDE_DIRECTORIES(
+${CMAKE_CURRENT_SOURCE_DIR}
+${VTKM_INCLUDE_DIR}
+${VTK_INCLUDE_DIRS}
+)
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Add link directories
+LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
 
-SET_UP_THIRD_PARTY(VTKM lib include NO_LIBS)
+IF(VTKm_Cuda_FOUND)
+  SET(VTKM_CUDA_SOURCES
+  vtkmContourFilter.cu
+  vtkmDataSet.cu
+  )
 
-IF ("${VTKM_FOUND}")
-   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${VTKM_INCLUDE_DIR})
-   find_package(VTKm)
-
-   # Add cuda. I shouldn't have to be doing FindCUDA, but I don't get
-   # CUDA_ADD_LIBRARY without it.
-   INCLUDE(UseVTKmCUDA)
-   INCLUDE(FindCUDA)
-
-   # This is a hack so that code that depends on VTKm_Cuda_FOUND works.
-   SET(VTKm_Cuda_FOUND ON)
-
-   IF (VTKm_Cuda_FOUND)
-     SET(VTKM_INCLUDE_DIR "${VTKM_INCLUDE_DIR};${CUDA_INCLUDE_DIRS}"     CACHE STRING "VTKm include" FORCE)
-     SET(VTKM_LIB "vtkm ${CUDA_CUDART_LIBRARY}"                          CACHE STRING "VTKm library" FORCE)
-   ENDIF()
-
-   # Add TBB
-   INCLUDE(UseVTKmTBB)
-
-   IF (VTKM_ENABLE_TBB)
-   ENDIF()
-ENDIF()
+  CUDA_ADD_LIBRARY(vtkm ${VTKM_CUDA_SOURCES})
+  TARGET_LINK_LIBRARIES(vtkm ${CUDA_CUDART_LIBRARY})
+  VISIT_INSTALL_TARGETS(vtkm)
+ENDIF(VTKm_Cuda_FOUND)
 

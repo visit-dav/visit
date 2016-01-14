@@ -395,6 +395,9 @@
 #    Eric Brugger, Wed Dec  9 12:05:18 PST 2015
 #    Added support for VTKm.
 #
+#    Eric Brugger, Thu Jan 14 08:43:03 PST 2016
+#    Added vtkm directory that builds vtkm library.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -999,7 +1002,7 @@ ENDMACRO(VISIT_INSTALL_TARGETS)
 IF(VISIT_HEADERS_SKIP_INSTALL)
     MESSAGE(STATUS "Skipping VisIt headers installation")
 ELSE(VISIT_HEADERS_SKIP_INSTALL)
-    INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin viewer visit_vtk visitpy vtkqt winutil
+    INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin viewer visit_vtk visitpy vtkm vtkqt winutil
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/visit
         FILE_PERMISSIONS OWNER_READ OWNER_WRITE
                          GROUP_READ GROUP_WRITE
@@ -2227,6 +2230,7 @@ ENDFUNCTION(CREATE_PLUGIN_DEPENDENCIES)
 ADD_SUBDIRECTORY(third_party_builtin)
 ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(visit_vtk)
+ADD_SUBDIRECTORY(vtkm)
 ADD_SUBDIRECTORY(avt)
 
 IF(NOT VISIT_DBIO_ONLY)
