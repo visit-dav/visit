@@ -46,17 +46,13 @@ SET_UP_THIRD_PARTY(VTKM lib include NO_LIBS)
 
 IF ("${VTKM_FOUND}")
    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${VTKM_INCLUDE_DIR})
+   set(BOOST_INCLUDEDIR ${VISIT_BOOST_DIR}/include)
    find_package(VTKm)
 
-   # Add cuda. I shouldn't have to be doing FindCUDA, but I don't get
-   # CUDA_ADD_LIBRARY without it.
+   # Add cuda.
    INCLUDE(UseVTKmCUDA)
-   INCLUDE(FindCUDA)
 
-   # This is a hack so that code that depends on VTKm_Cuda_FOUND works.
-   SET(VTKm_Cuda_FOUND ON)
-
-   IF (VTKm_Cuda_FOUND)
+   IF (VTKm_CUDA_FOUND)
      SET(VTKM_INCLUDE_DIR "${VTKM_INCLUDE_DIR};${CUDA_INCLUDE_DIRS}"     CACHE STRING "VTKm include" FORCE)
      SET(VTKM_LIB "vtkm ${CUDA_CUDART_LIBRARY}"                          CACHE STRING "VTKm library" FORCE)
    ENDIF()
