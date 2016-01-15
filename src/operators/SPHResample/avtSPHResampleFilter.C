@@ -811,20 +811,15 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
         vector<tensorStruct> m2(ntot);
         vector<double> A;   // correction terms
         vector<vector<double> > B;  // correction terms
-        /*
-         vector<double> gradm0;
-         vector<tensorStruct> gradm1(ntot);
-         vector<tensorStruct> gradm2(ntot);
-         */
-        scalarValues = vector<double>();
+        
+        scalarValues.resize(ntot, 0.0);
+        m0.resize(ntot, 0.0);
+        A.resize(ntot, 0.0);
+        
         for(int k=0;k<ntot;++k)
         {
-            scalarValues.push_back(0.0);
-            m0.push_back(0.0);
             m1.push_back(vector<double>(Dim,0.0));
-            A.push_back(0.0);
             B.push_back(vector<double>(Dim,0.0));
-            //gradm0.push_back(0.0);
         }
         
         vtkDataArray *input_var     = dset->GetPointData()->GetArray(varname.c_str());
@@ -1103,7 +1098,7 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
     else
     {           // For processors without any datasets
 #ifdef PARALLEL
-        scalarValues = vector<double>(ntot, 0.0);
+        scalarValues.resize(ntot, 0.0);
         vector<double> m0(ntot, 0.0);  // moments of data points
         vector<double> m1(Dim*ntot, 0.0); // data points?
         vector<double> m2(ntot*9, 0.0);
@@ -1508,7 +1503,7 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
         int myRank = PAR_Rank();
         
         vector<int> latticeIndexList(1, 0);
-        scalarValues = vector<double>(1, 0.0);
+        scalarValues.resize(1, 0.0);
         
         vector<double> m0(1, 0.0);  // moments of data points
         vector<double> m1(Dim, 0.0); // data points?
@@ -2225,6 +2220,9 @@ avtSPHResampleFilter::UpdateDataObjectInfo(void)
         GetDataExtents(range, resampleVarName.c_str());
         outAtts.GetDesiredDataExtents()->Set(range);
     }
+    
+    outAtts.RemoveVariable(supportVarName);
+    outAtts.RemoveVariable(weightVarName);
     
     char params[200];
     SNPRINTF(params, 200, "nx=%d ny=%d nz=%d", atts.GetXnum(), atts.GetYnum(), (spatialDim == 3 ? atts.GetZnum() : 0));
