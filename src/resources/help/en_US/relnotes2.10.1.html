@@ -34,6 +34,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed bug whereby setting 'ssh command' would not work correctly on Windows.  If path to ssh contains spaces, the full path and command need to be surrounded in double-quotes, eg <i>"C:\Program Files (x86)\Putty\plink.exe"</i>.  If manually adding this to an .xml host profile, The quotes and path-separators should be escaped: <i>"\"C:\\Program Files (x86)\\Putty\\plink.exe\""</i></li>
   <li>Fixed bug opening large (> 4gb) silo files on Windows.</li>
   <li>Fixed the tensorVectorMult bug in the SPH Resample Operator found by Cody Raskin.</li>
+  <li>Fixed the contract and data info issues that prevented the SPH Resample Operator from working with the Volume Plot.</li>
 </ul>
 
 <a name="Enhancements"></a>
