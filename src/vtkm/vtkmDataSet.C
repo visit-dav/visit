@@ -53,6 +53,7 @@
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
 typedef VTKM_DEFAULT_DEVICE_ADAPTER_TAG DeviceAdapter;
@@ -83,9 +84,9 @@ ConvertVTKToVTKm(vtkDataSet *data)
         //
         ret = new vtkmDataSet;
 
+        // Add the structured cell set.
         const vtkm::Id3 vdims(dims[0], dims[1], dims[2]);
 
-        // Add the structured cell set.
         vtkm::cont::CellSetStructured<3> cs("cells");
         cs.SetPointDimensions(vdims);
         ret->ds.AddCellSet(cs);
@@ -101,34 +102,71 @@ ConvertVTKToVTKm(vtkDataSet *data)
             coordinates(vdims, origin, spacing);
         ret->ds.AddCoordinateSystem(
             vtkm::cont::CoordinateSystem("coordinates", 1, coordinates));
-
-        // Add the fields.
-        int nArrays = data->GetPointData()->GetNumberOfArrays();
-        for (int i = 0; i < nArrays; ++i)
-        {
-            vtkDataArray *array = data->GetPointData()->GetArray(i);
-
-            if (array->GetNumberOfComponents() == 1 &&
-                array->GetDataType() == VTK_FLOAT)
-            {
-                vtkIdType nVals = array->GetNumberOfTuples();
-                float *vals =
-                    vtkFloatArray::SafeDownCast(array)->GetPointer(0);
-
-                vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
-                fieldArray.Allocate(nVals);
-
-                for (vtkm::Id j = 0; j < nVals; ++j)
-                    fieldArray.GetPortalControl().Set(j, vals[j]);
-
-                ret->ds.AddField(
-                    vtkm::cont::Field(array->GetName(), 1,
-                    vtkm::cont::Field::ASSOC_POINTS, fieldArray));
-            }
-        }
     }
     else if (data->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
+        //
+        // Get VTK data.
+        //
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) data;
+        vtkIdType nPoints = sgrid->GetNumberOfPoints();
+        vtkPoints *points = sgrid->GetPoints();
+        float *pts = static_cast<float*>(points->GetVoidPointer(0));
+
+        int dims[3];
+        sgrid->GetDimensions(dims);
+
+        //
+        // Create the VTKm data set.
+        //
+        ret = new vtkmDataSet;
+
+        // Add the structured cell set.
+        const vtkm::Id3 vdims(dims[0], dims[1], dims[2]);
+
+        vtkm::cont::CellSetStructured<3> cs("cells");
+        cs.SetPointDimensions(vdims);
+        ret->ds.AddCellSet(cs);
+
+        // Add the coordinate system.
+        vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > coordinates;
+        coordinates.Allocate(nPoints);
+
+        for (vtkm::Id i = 0; i < nPoints; ++i)
+        {
+            vtkm::Vec<vtkm::Float32,3> point(pts[i*3], pts[i*3+1], pts[i*3+2]);
+            coordinates.GetPortalControl().Set(i, point);
+        }
+
+        ret->ds.AddCoordinateSystem(
+            vtkm::cont::CoordinateSystem("coordinates", 1, coordinates));
+    }
+
+    //
+    // Add the fields.
+    //
+    int nArrays = data->GetPointData()->GetNumberOfArrays();
+    for (int i = 0; i < nArrays; ++i)
+    {
+        vtkDataArray *array = data->GetPointData()->GetArray(i);
+
+        if (array->GetNumberOfComponents() == 1 &&
+            array->GetDataType() == VTK_FLOAT)
+        {
+            vtkIdType nVals = array->GetNumberOfTuples();
+            float *vals =
+                vtkFloatArray::SafeDownCast(array)->GetPointer(0);
+
+            vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
+            fieldArray.Allocate(nVals);
+
+            for (vtkm::Id j = 0; j < nVals; ++j)
+                fieldArray.GetPortalControl().Set(j, vals[j]);
+
+            ret->ds.AddField(
+                vtkm::cont::Field(array->GetName(), 1,
+                vtkm::cont::Field::ASSOC_POINTS, fieldArray));
+        }
     }
 
     return ret;
