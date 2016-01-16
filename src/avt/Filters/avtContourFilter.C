@@ -1116,6 +1116,9 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
         return NULL;
     }
 
+    std::string contourVar(activeVariable != NULL ? activeVariable
+                                                  : pipelineVariable);
+
     if (isoValues.empty())
     {
         debug3 << "No levels to calculate! " << endl;
@@ -1129,7 +1132,7 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
     {
         vtkmDataSet *isoOut = new vtkmDataSet;
 
-        vtkmContourFilter(in_ds->ds, isoOut->ds, isoValues[i]);
+        vtkmContourFilter(in_ds->ds, isoOut->ds, contourVar, isoValues[i]);
 
         if (shouldCreateLabels)
         {   
