@@ -44,6 +44,6 @@
 #include <vtkm/cont/DataSet.h>
 
 VTKM_API int vtkmContourFilter(vtkm::cont::DataSet &input,
-    vtkm::cont::DataSet &output, float isoValue);
+    vtkm::cont::DataSet &output, const std::string &contourVar, float isoValue);
 
 #endif

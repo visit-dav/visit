@@ -213,6 +213,33 @@ ConvertVTKmToVTK(vtkmDataSet *data)
          ugrid->InsertNextCell(VTK_TRIANGLE, 3, ids);
     }
 
+    //
+    // Add the fields.
+    //
+    int nFields = data->ds.GetNumberOfFields();
+    for (int i = 0; i < nFields; ++i)
+    {
+        vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
+        data->ds.GetField(i).GetData().CastToArrayHandle(fieldArray);
+        vtkm::Id numValues = fieldArray.GetNumberOfValues();
+        const char *fieldName = data->ds.GetField(i).GetName().c_str();
+
+        vtkFloatArray *outArray = vtkFloatArray::New();
+        outArray->SetName(fieldName);
+        outArray->SetNumberOfTuples(numValues);
+
+        for (vtkm::Id j = 0; j < numValues; ++j)
+        {
+            float val = fieldArray.GetPortalConstControl().Get(j);
+            outArray->SetTuple1(j, val);
+        }
+
+        ugrid->GetPointData()->AddArray(outArray);
+        ugrid->GetPointData()->SetActiveScalars(fieldName);
+        ugrid->GetPointData()->CopyFieldOn(fieldName);
+        outArray->Delete();
+    }
+
     ret = ugrid;
 
     return ret;

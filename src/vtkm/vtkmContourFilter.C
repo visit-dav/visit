@@ -52,8 +52,8 @@
 typedef VTKM_DEFAULT_DEVICE_ADAPTER_TAG DeviceAdapter;
 
 int
-vtkmContourFilter(vtkm::cont::DataSet &input,
-    vtkm::cont::DataSet &output, float isoValue)
+vtkmContourFilter(vtkm::cont::DataSet &input, vtkm::cont::DataSet &output,
+    const std::string &contourVar, float isoValue)
 {
     //
     // If we don't have any fields return.
@@ -71,7 +71,7 @@ vtkmContourFilter(vtkm::cont::DataSet &input,
     typedef vtkm::cont::CellSetStructured<3> CellSet;
 
     vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
-    input.GetField(0).GetData().CastToArrayHandle(fieldArray);
+    input.GetField(contourVar).GetData().CastToArrayHandle(fieldArray);
 
     vtkm::worklet::MarchingCubes<vtkm::Float32, DeviceAdapter> *isosurfaceFilter;
     vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > verticesArray, normalsArray;
@@ -85,18 +85,17 @@ vtkmContourFilter(vtkm::cont::DataSet &input,
                           verticesArray,
                           normalsArray);
 
-    vtkm::cont::ArrayHandle<vtkm::Float32> *scalarArrays = NULL;
-    int nScalars = input.GetNumberOfFields() - 1;
-    if (nScalars > 0)
-    {
+    int nScalars = input.GetNumberOfFields();
+    vtkm::cont::ArrayHandle<vtkm::Float32> *scalarArrays = 
         scalarArrays = new vtkm::cont::ArrayHandle<vtkm::Float32>[nScalars];
-        for (int i = 0; i < nScalars; i++)
-        {
-            vtkm::cont::ArrayHandle<vtkm::Float32> field2Array;
-            input.GetField(i+1).GetData().CastToArrayHandle(field2Array);
 
-            isosurfaceFilter->MapFieldOntoIsosurface(field2Array, scalarArrays[i]);
-        }
+    for (int i = 0; i < nScalars; ++i)
+    {
+        vtkm::cont::ArrayHandle<vtkm::Float32> field2Array;
+        input.GetField(i).GetData().CastToArrayHandle(field2Array);
+
+        isosurfaceFilter->MapFieldOntoIsosurface(field2Array,
+            scalarArrays[i]);
     }
 
     //
@@ -125,12 +124,11 @@ vtkmContourFilter(vtkm::cont::DataSet &input,
     cs.Fill(connectivity);
     output.AddCellSet(cs);
 
-    for (int i = 0; i < nScalars; i++)
+    for (int i = 0; i < nScalars; ++i)
     {
         output.AddField(
             vtkm::cont::Field(input.GetField(i).GetName(), 1,
             vtkm::cont::Field::ASSOC_POINTS, scalarArrays[i]));
-
     }
 
     return 0;
