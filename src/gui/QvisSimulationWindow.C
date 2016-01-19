@@ -805,7 +805,8 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
                     &row, &column, val);
 
             debug5 << "found QTableWidget " << name.toStdString()
-                   << " row = " << row << " column = " << column 
+                   << " row = " << row << " column = " << column
+                   << " with value = " << val
                    << std::endl;
 
             QTableWidgetItem *newItem =
