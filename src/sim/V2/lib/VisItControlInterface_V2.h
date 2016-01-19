@@ -1338,6 +1338,8 @@ int VisItUI_setTableValueI(const char *name,
                            int row, int col, int value, int enabled);
 int VisItUI_setTableValueD(const char *name,
                            int row, int col, double value, int enabled);
+int VisItUI_setTableValueV(const char *name,
+                           int row, int col, double x, double y, double z, int enabled);
 int VisItUI_setTableValueS(const char *name,
                            int row, int col, const char *value, int enabled);
 
