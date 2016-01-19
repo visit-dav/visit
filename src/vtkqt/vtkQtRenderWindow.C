@@ -56,13 +56,31 @@ public:
         showEventCallback = NULL;
         showEventCallbackData = NULL;
 
-        // Create the VTK widget and force our custom render window into it.
-        if(stereo)
-            gl = new QVTKWidget2(QGLFormat(QGL::DepthBuffer | QGL::AlphaChannel | QGL::StereoBuffers), w);
-        else
-            gl = new QVTKWidget2(QGLFormat(QGL::DepthBuffer | QGL::AlphaChannel), w);
+        QGLFormat glFormat;
+
+        glFormat.setStereo(stereo);
+        glFormat.setDepth(true);
+
+        // WIth Qt5 there seesm to be an issue with asking for an
+        // alpha channel (at least for OS X). However, not asking for
+        // the channel seems to be benign.
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+        glFormat.setAlpha(true);
+#else
+        glFormat.setAlpha(false);
+#endif
+        // Create the VTK widget and force our custom render window
+        // into it.
+
+        // NOTE: vtkQtRenderWindow via the call to setCentralWidget()
+        // takes ownership of the gl widget pointer and deletes it at
+        // the appropriate time.
+        gl = new QVTKWidget2(glFormat, w);
+
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
         if (!gl->format().alpha())
             qWarning("Could not get alpha channel; results will be suboptimal");
+#endif
     }
 
     virtual ~vtkQtRenderWindowPrivate()
@@ -90,6 +108,9 @@ vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMain
     setAnimated(false);
 
     setWindowFlags(f);
+    // With the call to setCentralWidget() vtkQtRenderWindow takes
+    // ownership of the gl widget pointer and deletes it at the
+    // appropriate time.
     setCentralWidget(d->gl);
 }
 
@@ -101,6 +122,9 @@ vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFla
     setAnimated(false);
 
     setWindowFlags(f);
+    // With the call to setCentralWidget() vtkQtRenderWindow takes
+    // ownership of the gl widget pointer and deletes it at the
+    // appropriate time.
     setCentralWidget(d->gl);
 }
 
