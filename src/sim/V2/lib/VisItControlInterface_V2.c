@@ -4288,6 +4288,26 @@ VisItUI_setTableValueD(const char *name,
 }
 
 int
+VisItUI_setTableValueV(const char *name,
+                       int row, int column, double x, double y, double z, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setTableValueV);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        char cmd[500];
+        sprintf(cmd, "SetUI:s:%s:%d | %d | %lf,%lf,%lf :%d",
+                name, row, column, x, y, z, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+    }
+    LIBSIM_API_LEAVE(VisItUI_setTableValueV)
+    return retval;
+}
+
+int
 VisItUI_setTableValueS(const char *name,
                        int row, int column, const char *value, int enabled)
 {
@@ -4306,7 +4326,7 @@ VisItUI_setTableValueS(const char *name,
     LIBSIM_API_LEAVE(VisItUI_setTableValueS)
     return retval;
 }
-
+ 
 /***************************************************************************
 
                         EXPERIMENTAL PLOTTING CODE
