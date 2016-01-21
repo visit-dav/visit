@@ -23,7 +23,7 @@ echo "</tr>" >> index.html
 
 ls -1t /project/projectdirs/visit/www/tests/*/*/index.html | while read testLine; do
 
-    theMode=`echo $testLine | cut -d'/' -f7`
+    theMode=`echo $testLine | cut -d'/' -f8`
     theRelDir=`echo $testLine | cut -d'/' -f6-`
     theRelDir="./${theRelDir}"
     theTimeStamp=`ls -l --time-style=+"%A_%b_%d_%I:%M%p" $testLine | tr -s ' ' | cut -d' ' -f6`
