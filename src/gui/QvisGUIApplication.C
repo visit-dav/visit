@@ -55,6 +55,7 @@
 #include <QSocketNotifier>
 #include <QStatusBar>
 #include <QStyle>
+#include <QStyleFactory>
 #include <QTranslator>
 
 #if defined(Q_WS_MACX) || defined(Q_OS_MAC)
@@ -2219,6 +2220,9 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Wed Oct  6 12:20:28 PDT 2010
 //    Detect whether the user wants -viewer_geometry.
 //
+//    Kathleen Biagas, Fri Jan 22 14:14:56 PST 2016
+//    Use QStyleFactory to determine list of available styles.
+//
 // ****************************************************************************
 
 void
@@ -2469,23 +2473,19 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                      << endl;
                 continue;
             }
-            std::string style(argv[i + 1]);
-            if(
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
-               style == "macintosh" ||
-#endif
-#if defined(Q_WS_WIN) || defined(Q_OS_WIN)
-               style == "windowsxp" ||
-               style == "windowsvista" ||
-#endif
-               style == "windows" || 
-               style == "motif" || 
-               style == "cde" ||
-               style == "plastique" || 
-               style == "cleanlooks"
-               )
+            QStringList availableStyles = QStyleFactory::keys();
+            QString style(argv[i+1]);
+            if (availableStyles.contains(style, Qt::CaseInsensitive))
             {
                 applicationStyle = argv[i + 1];
+            }
+            else
+            {
+                cerr << "Invalid style: " << style.toStdString() << endl;
+                cerr << "Available styles are: ";
+                for (int i = 0; i < availableStyles.size(); ++i)
+                    cerr << availableStyles.at(i).toStdString() << " ";
+                cerr << endl;
             }
             ++i;
         }

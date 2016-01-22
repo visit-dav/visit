@@ -78,6 +78,9 @@ class QvisDialogLineEdit;
 //   Cyrus Harrison, Mon Nov 24 11:57:42 PST 2008
 //   Support for default system appearance.
 //
+//   Kathleen Biagas, Fri Jan 22 14:11:18 PST 2016
+//   Add styleNames.
+//
 // ****************************************************************************
 
 class GUI_API QvisAppearanceWindow : public QvisPostableWindowObserver
@@ -120,6 +123,7 @@ private:
     QLabel             *orientationLabel;
     QvisDialogLineEdit *fontName;
     QLabel             *fontLabel;
+    QStringList         styleNames;
 };
 
 #endif
