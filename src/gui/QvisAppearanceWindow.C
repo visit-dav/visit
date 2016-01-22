@@ -44,37 +44,13 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QStyleFactory>
 
 #include <QvisColorButton.h>
 #include <QvisDialogLineEdit.h>
 #include <AppearanceAttributes.h>
 #include <ViewerProxy.h>
 
-//
-// Tables of available styles.
-//
-static const char *styleNamesInMenu[] = {
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
-"Macintosh",
-#endif
-#if defined(Q_WS_WIN) || defined(Q_OS_WIN)
-"Windows XP", "Windows Vista",
-#endif
-"Windows", "Motif", "CDE", "Plastique", "CleanLooks"
-};
-
-static const char *styleNames[] = {
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
-"macintosh",
-#endif
-#if defined(Q_WS_WIN) || defined(Q_OS_WIN)
-"windowsxp", "windowsvista",
-#endif
-"windows", "motif", "cde", "plastique", "cleanlooks"
-};
-
-// Determine the number of styles.
-static const int numStyleNames = sizeof(styleNamesInMenu) / sizeof(const char *);
 
 // ****************************************************************************
 // Method: QvisAppearanceWindow::QvisAppearanceWindow
@@ -89,6 +65,9 @@ static const int numStyleNames = sizeof(styleNamesInMenu) / sizeof(const char *)
 //   Brad Whitlock, Wed Apr  9 11:10:51 PDT 2008
 //   QString for caption, shortName.
 //
+//   Kathleen Biagas, Fri Jan 22 14:12:09 PST 2016
+//   Retrieve style names from QStyleFactory.
+//
 // ****************************************************************************
 
 QvisAppearanceWindow::QvisAppearanceWindow(AppearanceAttributes *subj,
@@ -96,7 +75,7 @@ QvisAppearanceWindow::QvisAppearanceWindow(AppearanceAttributes *subj,
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
                                QvisPostableWindowObserver::ApplyButton)
 {
-    // nothing here
+    styleNames = QStyleFactory::keys();
 }
 
 // ****************************************************************************
@@ -145,6 +124,9 @@ QvisAppearanceWindow::~QvisAppearanceWindow()
 //   Cyrus Harrison, Mon Nov 24 11:57:42 PST 2008
 //   Support for default system appearance.
 //
+//   Kathleen Biagas, Fri Jan 22 14:12:31 PST 2016
+//   styleNames now stored as a QStringList.
+//
 // ****************************************************************************
 
 void
@@ -186,8 +168,8 @@ QvisAppearanceWindow::CreateWindowContents()
     
     // Create the style combo box.
     styleComboBox = new QComboBox(central);
-    for(int i = 0; i < numStyleNames; ++i)
-        styleComboBox->addItem(styleNamesInMenu[i]);
+    for(int i = 0; i < styleNames.size(); ++i)
+        styleComboBox->addItem(styleNames.at(i));
     connect(styleComboBox, SIGNAL(activated(int)),
             this, SLOT(styleChanged(int)));
     mainLayout->addWidget(styleComboBox, row, 1);
@@ -258,6 +240,9 @@ QvisAppearanceWindow::CreateWindowContents()
 //   Make the window reflect the state object when we're using the
 //   system defaults.
 //
+//   Kathleen Biagas, Fri Jan 22 14:12:31 PST 2016
+//   styleNames now stored as a QStringList.
+//
 // ****************************************************************************
 
 void
@@ -326,9 +311,9 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
                 styleName = atts->GetDefaultStyle();
             else
                 styleName = atts->GetStyle();
-            for(j = 0; j < numStyleNames; ++j)
+            for(j = 0; j < styleNames.size(); ++j)
             {
-                if(styleName == styleNames[j])
+                if(styleName == styleNames.at(j).toStdString())
                 {
                     styleComboBox->blockSignals(true);
                     styleComboBox->setCurrentIndex(j);
@@ -615,13 +600,16 @@ QvisAppearanceWindow::foregroundChanged(const QColor &fg)
 //   Brad Whitlock, Fri Aug 15 13:11:13 PST 2003
 //   I made it use a table lookup.
 //
+//   Kathleen Biagas, Fri Jan 22 14:12:31 PST 2016
+//   styleNames now stored as a QStringList.
+//
 // ****************************************************************************
 
 void
 QvisAppearanceWindow::styleChanged(int index)
 {
     AppearanceAttributes *atts = (AppearanceAttributes *)subject;
-    atts->SetStyle(styleNames[index]);
+    atts->SetStyle(styleNames.at(index).toStdString());
     SetUpdate(false);
     Apply();
 }

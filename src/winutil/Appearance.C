@@ -62,6 +62,11 @@
 //   I changed the function so we pass in the application and the appearance
 //   attributes that we want to populate.
 //
+//   Kathleen Biagas, Fri Jan 22 14:06:33 PST 2016
+//   We are using styles directly from Qt' Style factory, so no need to 
+//   compare against our list of styles, simply remove 'Q' from the beginning
+//   and 'Style' from the end of the style name.
+// 
 // ****************************************************************************
 
 void
@@ -72,23 +77,8 @@ GetAppearance(QApplication *a, AppearanceAttributes *aa)
     // get system default style
     QStyle *style = a->style();
     QString style_class(style->metaObject()->className());
-    std::string styleName = "windows";
-    if(style_class == "QWindowsStyle")
-        styleName = "windows";
-    else if(style_class == "QWindowsVistaStyle")
-        styleName = "windowsvista";
-    else if(style_class == "QWindowsXPStyle")
-        styleName = "windowsxp";
-    else if(style_class == "QMotifStyle")
-        styleName = "motif";
-    else if(style_class == "QCleanlooksStyle")
-        styleName = "cleanlooks";
-    else if(style_class == "QPlastiqueStyle")
-        styleName = "plastique";
-    else if(style_class == "QCDEStyle")
-        styleName = "cde";
-    else if(style_class == "QMacStyle")
-        styleName = "macintosh";
+
+    std::string styleName = style_class.toStdString().substr(1, style_class.length()-6);
     
     debug1 << mName << "Default System Style is: " << styleName << endl;
     aa->SetDefaultStyle(styleName);

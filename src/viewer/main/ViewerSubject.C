@@ -164,6 +164,7 @@
 
 #include <QApplication>
 #include <QSocketNotifier>
+#include <QStyleFactory>
 #include <QvisColorTableButton.h>
 #include <QvisNoDefaultColorTableButton.h>
 
@@ -2369,6 +2370,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //    Eric Brugger, Fri May 10 14:44:11 PDT 2013
 //    I removed support for mangled mesa.
 //
+//    Kathleen Biagas, Fri Jan 22 14:09:28 PST 2016
+//    Use QStyleFactory for list of possible styles.
+//
 // ****************************************************************************
 
 void
@@ -2541,26 +2545,24 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
                      << endl;
                 continue;
             }
-            if (
-#ifdef QT_WS_MACX
-                strcmp(argv[i + 1], "macintosh") == 0 ||
-#endif
-#ifdef QT_WS_WIN
-                strcmp(argv[i + 1], "windowsxp") == 0 ||
-                strcmp(argv[i + 1], "windowsvista") == 0 ||
-#endif
-                strcmp(argv[i + 1], "windows") == 0 ||
-                strcmp(argv[i + 1], "motif") == 0 ||
-                strcmp(argv[i + 1], "cde") == 0 ||
-                strcmp(argv[i + 1], "plastique") == 0 ||
-                strcmp(argv[i + 1], "cleanlooks") == 0
-               )
+            QStringList availableStyles = QStyleFactory::keys();
+            QString style(argv[i+1]);
+            if (availableStyles.contains(style, Qt::CaseInsensitive))
             {
                 clientArguments.push_back(argv[i]);
                 clientArguments.push_back(argv[i+1]);
 
                 GetViewerState()->GetAppearanceAttributes()->SetStyle(argv[i+1]);
             }
+            else
+            {
+                cerr << "Invalid style: " << style.toStdString() << endl;
+                cerr << "Available styles are: ";
+                for (int i = 0; i < availableStyles.size(); ++i)
+                    cerr << availableStyles.at(i).toStdString() << " ";
+                cerr << endl;
+            }
+
             ++i;
         }
         else if (strcmp(argv[i], "-font") == 0)

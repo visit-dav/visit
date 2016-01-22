@@ -1044,7 +1044,7 @@ AppearanceAttributes::InitializeStyle()
 #elif defined(__APPLE__)
     style = "macintosh";
 #else
-    style = "motif";
+    style = "gtk";
 #endif
 }
 
