@@ -850,6 +850,8 @@ avtADIOSSchemaFileFormat::NumberOfVertices(ADIOS_CELL_TYPE &ct)
         return 4;
     else if (ct == ADIOS_CELL_PYR)
         return 5;
+    else
+      return 0;
 }
 
 //****************************************************************************
@@ -884,4 +886,6 @@ avtADIOSSchemaFileFormat::GetCellType(ADIOS_CELL_TYPE &ct)
         return VTK_TETRA;
     else if (ct == ADIOS_CELL_PYR)
         return VTK_PYRAMID;
+    else
+      return 0;
 }

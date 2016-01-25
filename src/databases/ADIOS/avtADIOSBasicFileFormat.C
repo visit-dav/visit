@@ -349,6 +349,8 @@ avtADIOSBasicFileFormat::GetMesh(int timestate, int domain, const char *meshname
             grid->Register(NULL);
         return grid;
     }
+    else
+      return NULL;
 }
 
 
