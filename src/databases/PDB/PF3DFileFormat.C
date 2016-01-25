@@ -2775,7 +2775,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb, int cycle,
             {
                 long src = iChunk * ngrp_members + id;
                 long dst = grp_members[id];
-                sprintf(domnam, "/domain%d/", dst);
+                sprintf(domnam, "/domain%ld/", dst);
                 strncpy(dom_prefix_new+dst*dom_prefix_len, domnam,
                         dom_prefix_len);
             }
@@ -2800,7 +2800,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb, int cycle,
 
                 // The second value is the filename.
                 long ifile = iChunk * nfiles_per_dir + id / nhostgroup_leaders;
-                sprintf(vizfile, "%sp%dvs%d.pdb", basename, ifile, cycle);
+                sprintf(vizfile, "%sp%ldvs%d.pdb", basename, ifile, cycle);
                 strncpy(viz_nams_new+nd+viz_nams_len, vizfile, viz_nams_len);
             }
             delete [] vizdir;
