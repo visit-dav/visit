@@ -68,7 +68,6 @@ vtkmContourFilter(vtkm::cont::DataSet &input, vtkm::cont::DataSet &output,
     //
     typedef vtkm::cont::internal::DeviceAdapterTraits<DeviceAdapter>
                                                         DeviceAdapterTraits;
-    typedef vtkm::cont::CellSetStructured<3> CellSet;
 
     vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
     input.GetField(contourVar).GetData().CastToArrayHandle(fieldArray);
@@ -78,12 +77,26 @@ vtkmContourFilter(vtkm::cont::DataSet &input, vtkm::cont::DataSet &output,
 
     isosurfaceFilter = new vtkm::worklet::MarchingCubes<vtkm::Float32, DeviceAdapter>();
 
-    isosurfaceFilter->Run(isoValue,
-                          input.GetCellSet().CastTo(CellSet()),
-                          input.GetCoordinateSystem(),
-                          fieldArray,
-                          verticesArray,
-                          normalsArray);
+    if (input.GetCellSet().IsType(vtkm::cont::CellSetStructured<3>()))
+    {
+        typedef vtkm::cont::CellSetStructured<3> CellSet;
+        isosurfaceFilter->Run(isoValue,
+                              input.GetCellSet().CastTo(CellSet()),
+                              input.GetCoordinateSystem(),
+                              fieldArray,
+                              verticesArray,
+                              normalsArray);
+    }
+    else
+    {
+        typedef vtkm::cont::CellSetExplicit<> CellSet;
+        isosurfaceFilter->Run(isoValue,
+                              input.GetCellSet().CastTo(CellSet()),
+                              input.GetCoordinateSystem(),
+                              fieldArray,
+                              verticesArray,
+                              normalsArray);
+    }
 
     int nScalars = input.GetNumberOfFields();
     vtkm::cont::ArrayHandle<vtkm::Float32> *scalarArrays = 
