@@ -1,0 +1,31 @@
+###############################################################################
+# Class: UtahLauncher
+#
+# Purpose:    Custom launcher for Utah
+#
+# Programmer: Allen Sanderson
+# Date:       Tues Jan 27 2016
+#
+# Modifications:
+#
+###############################################################################
+
+class UtahLauncher(MainLauncher):
+    def __init__(self):
+        super(UtahLauncher, self).__init__()
+
+    def TFileLoadModules(self, tfile):
+        msg = """
+NOTE: Using a specific MPI implementation (mvapich2) 
+which release versions of VisIt are known to be 
+compiled against.  If you are a *developer*, it's 
+very likely I've chosen the wrong MPI 
+implementation; you might have to hack 
+internallauncher to load the module you need."""
+        print msg
+        tfile.write("eval $(modulecmd sh purge)\n")
+        tfile.write("eval $(modulecmd sh load gcc libxml2 mvapich2)\n")
+
+# Launcher creation function
+def createlauncher():
+    return UtahLauncher()
