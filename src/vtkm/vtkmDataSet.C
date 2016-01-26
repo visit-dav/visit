@@ -50,6 +50,7 @@
 #include <vtkCellType.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -151,7 +152,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
         vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) data;
         vtkIdType nPoints = ugrid->GetNumberOfPoints();
         vtkPoints *points = ugrid->GetPoints();
-        float *pts = static_cast<float*>(points->GetVoidPointer(0));
 
         vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
         vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
@@ -174,29 +174,54 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
         connectivity.Allocate(nConnectivity - nCells);
         nIndices.Allocate(nCells);
+        shapes.Allocate(nCells);
 
         vtkm::cont::ArrayHandle<vtkm::Id>::PortalControl
             connectivityPortal = connectivity.GetPortalControl();
         vtkm::cont::ArrayHandle<vtkm::IdComponent>::PortalControl
             nIndicesPortal = nIndices.GetPortalControl();
-        for (vtkm::Id i = 0, connInd = 0; i < nCells; ++i)
+        vtkm::cont::ArrayHandle<vtkm::UInt8>::PortalControl shapesPortal =
+            shapes.GetPortalControl();
+        vtkm::Id nCellsActual = 0, connInd = 0;
+        for (vtkm::Id i = 0; i < nCells; ++i)
         {
             vtkm::IdComponent nInds = static_cast<vtkm::IdComponent>(*nl++);
-            nIndicesPortal.Set(i, nInds);
-            for (vtkm::IdComponent j = 0; j < nInds; ++j, ++connInd)
+            switch (*ct)
             {
-                connectivityPortal.Set(connInd, static_cast<vtkm::Id>(*nl++));
+#if 0
+              case vtkm::CELL_SHAPE_VERTEX:
+              case vtkm::CELL_SHAPE_LINE:
+              case vtkm::CELL_SHAPE_TRIANGLE:
+              case vtkm::CELL_SHAPE_QUAD:
+              case vtkm::CELL_SHAPE_TETRA:
+#endif
+              case vtkm::CELL_SHAPE_HEXAHEDRON:
+#if 0
+              case vtkm::CELL_SHAPE_WEDGE:
+              case vtkm::CELL_SHAPE_PYRAMID:
+#endif
+                nIndicesPortal.Set(nCellsActual, nInds);
+                for (vtkm::IdComponent j = 0; j < nInds; ++j, ++connInd)
+                {
+                    connectivityPortal.Set(connInd, static_cast<vtkm::Id>(*nl++));
+                }
+                shapesPortal.Set(nCellsActual, static_cast<vtkm::UInt8>(*ct++));
+                nCellsActual++;
+                break;
+              default:
+                // Unsupported type, skipping.
+                ct++;
+                nl += static_cast<vtkIdType>(nInds);
+                break;
             }
         }
 
-        shapes.Allocate(nCells);
-
-        vtkm::cont::ArrayHandle<vtkm::UInt8>::PortalControl shapesPortal =
-            shapes.GetPortalControl();
-        for (vtkm::Id i = 0; i < nCells; ++i)
+        // If we skipped any cells adjust the cell set array lengths.
+        if (nCellsActual < nCells)
         {
-            // shapesPortal.Set(i, static_cast<vtkm::UInt8>(*ct++));
-            shapesPortal.Set(i, static_cast<vtkm::UInt8>(vtkm::CELL_SHAPE_HEXAHEDRON));
+            connectivity.Shrink(connInd);
+            nIndices.Shrink(nCellsActual);
+            shapes.Shrink(nCellsActual);
         }
 
         vtkm::cont::CellSetExplicit<> cs(0, "cells");
@@ -204,17 +229,36 @@ ConvertVTKToVTKm(vtkDataSet *data)
         ret->ds.AddCellSet(cs);
 
         // Add the coordinate system.
-        vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > coordinates;
-        coordinates.Allocate(nPoints);
-
-        for (vtkm::Id i = 0; i < nPoints; ++i)
+        if (points->GetDataType() == VTK_FLOAT)
         {
-            vtkm::Vec<vtkm::Float32,3> point(pts[i*3], pts[i*3+1], pts[i*3+2]);
-            coordinates.GetPortalControl().Set(i, point);
-        }
+            float *pts = static_cast<float*>(points->GetVoidPointer(0));
+            vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > coordinates;
+            coordinates.Allocate(nPoints);
 
-        ret->ds.AddCoordinateSystem(
-            vtkm::cont::CoordinateSystem("coordinates", 1, coordinates));
+            for (vtkm::Id i = 0; i < nPoints; ++i)
+            {
+                vtkm::Vec<vtkm::Float32,3> point(pts[i*3], pts[i*3+1], pts[i*3+2]);
+                coordinates.GetPortalControl().Set(i, point);
+            }
+
+            ret->ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates", 1, coordinates));
+        }
+        else
+        {
+            double *pts = static_cast<double*>(points->GetVoidPointer(0));
+            vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > coordinates;
+            coordinates.Allocate(nPoints);
+
+            for (vtkm::Id i = 0; i < nPoints; ++i)
+            {
+                vtkm::Vec<vtkm::Float64,3> point(pts[i*3], pts[i*3+1], pts[i*3+2]);
+                coordinates.GetPortalControl().Set(i, point);
+            }
+
+            ret->ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates", 1, coordinates));
+        }
     }
 
     //
@@ -233,6 +277,23 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 vtkFloatArray::SafeDownCast(array)->GetPointer(0);
 
             vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
+            fieldArray.Allocate(nVals);
+
+            for (vtkm::Id j = 0; j < nVals; ++j)
+                fieldArray.GetPortalControl().Set(j, vals[j]);
+
+            ret->ds.AddField(
+                vtkm::cont::Field(array->GetName(), 1,
+                vtkm::cont::Field::ASSOC_POINTS, fieldArray));
+        }
+        else if (array->GetNumberOfComponents() == 1 &&
+            array->GetDataType() == VTK_DOUBLE)
+        {
+            vtkIdType nVals = array->GetNumberOfTuples();
+            double *vals =
+                vtkDoubleArray::SafeDownCast(array)->GetPointer(0);
+
+            vtkm::cont::ArrayHandle<vtkm::Float64> fieldArray;
             fieldArray.Allocate(nVals);
 
             for (vtkm::Id j = 0; j < nVals; ++j)
