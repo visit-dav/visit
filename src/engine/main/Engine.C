@@ -362,6 +362,9 @@ protected:
 //    Brad Whitlock, Fri Sep 28 09:21:38 PDT 2012
 //    Change intitialization to member-order. NULL out more member pointers.
 //
+//    Kevin Griffin, Tue Jan 26 17:45:52 PST 2016
+//    Enable IceT by default.
+//
 // ****************************************************************************
 
 Engine::Engine() : EngineBase(), viewerArgs(), destinationFormat(), rpcExecutors()
@@ -408,7 +411,7 @@ Engine::Engine() : EngineBase(), viewerArgs(), destinationFormat(), rpcExecutors
     procAtts = NULL;
 
 #if defined(PARALLEL) && defined(HAVE_ICET)
-    useIceT = false; //true;
+    useIceT = true;
 #else
     useIceT = false;
 #endif
