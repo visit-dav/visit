@@ -11,10 +11,11 @@
 ###############################################################################
 
 class UtahLauncher(MainLauncher):
+
     def __init__(self):
         super(UtahLauncher, self).__init__()
 
-    def TFileLoadModules(self, tfile):
+    def Customize(self):
         msg = """
 NOTE: Using a specific MPI implementation (mvapich2) 
 which release versions of VisIt are known to be 
@@ -23,8 +24,10 @@ very likely I've chosen the wrong MPI
 implementation; you might have to hack 
 internallauncher to load the module you need."""
         print msg
-        tfile.write("eval $(modulecmd sh purge)\n")
-        tfile.write("eval $(modulecmd sh load gcc libxml2 mvapich2)\n")
+#       modulecmd = 'eval `$LMOD_CMD csh  !*` ; eval `$LMOD_SETTARG_CMD -s csh`'
+#       lmod = "/uufs/chpc.utah.edu/sys/installdir/lmod/lmod/libexec/lmod"
+        os.system("/uufs/chpc.utah.edu/sys/installdir/lmod/lmod/libexec/lmod purge > /dev/null 2>&1")
+        os.system("/uufs/chpc.utah.edu/sys/installdir/lmod/lmod/libexec/lmod gcc libxml2 mvapich > /dev/null 2>&1")
 
 # Launcher creation function
 def createlauncher():
