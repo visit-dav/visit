@@ -1190,3 +1190,22 @@ avtM3DFileFormat::CalcPlaneAngularSpacing()
 
     delete [] vals;
 }
+
+// ****************************************************************************
+//  Method: avtM3DFileFormat::GetTimes()
+//
+//  Purpose:
+//      Return the simulation time for each timestep.
+//
+//  Arguments:
+//
+//  Programmer: David Camp
+//  Creation:   Thu Jan 28 09:13:21 PST 2016
+//
+// ****************************************************************************
+void
+avtM3DFileFormat::GetTimes(vector<double> &outTimes)
+{
+    outTimes = m_timeSteps;
+}
+

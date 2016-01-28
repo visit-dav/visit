@@ -134,9 +134,7 @@ class avtM3DFileFormat : public avtMTMDFileFormat
     // Otherwise, VisIt will make up some reasonable ones for you.
     //
     // virtual void        GetCycles(std::vector<int> &);
-    // virtual void        GetTimes(std::vector<double> &);
-    //
-
+    virtual void           GetTimes(std::vector<double> &);
     virtual int            GetNTimesteps(void);
 
     virtual const char    *GetType(void)   { return "M3D"; };
@@ -163,7 +161,7 @@ class avtM3DFileFormat : public avtMTMDFileFormat
         std::string m_filename;
         std::string m_XPClassStr, m_Plane3DString, m_Plane2DString, m_FullString;
         std::vector<hid_t> m_coordIDs;
-        std::vector<float> m_timeSteps;
+        std::vector<double> m_timeSteps;
         std::vector<CellInfo*> m_cellInfo;
         std::vector<VarInfo*> m_scalarVarNames, m_vectorVarNames, m_tensorVarNames;
         std::vector<VarInfo*> m_scalarVars, m_vectorVars, m_tensorVars;
