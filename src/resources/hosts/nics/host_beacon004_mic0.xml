@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="hostNickname" type="string">beacon004-mic0</Field>
+    <Field name="host" type="string">beacon004-mic0</Field>
+    <Field name="userName" type="string">notset</Field>
+    <Field name="hostAliases" type="string"></Field>
+    <Field name="directory" type="string">/tmp/pbstmp.38181.beacon-mgmt1.nics.utk.edu/visit2_9_0b.linux-x86_64</Field>
+    <Field name="shareOneBatchJob" type="bool">false</Field>
+    <Field name="sshPortSpecified" type="bool">false</Field>
+    <Field name="sshPort" type="int">22</Field>
+    <Field name="sshCommandSpecified" type="bool">true</Field>
+    <Field name="sshCommand" type="stringVector">"micssh" "-i" "/tmp/pbstmp.38181.beacon-mgmt1.nics.utk.edu/.micssh/micssh-id_rsa"</Field>
+    <Field name="useGateway" type="bool">false</Field>
+    <Field name="gatewayHost" type="string"></Field>
+    <Field name="clientHostDetermination" type="string">MachineName</Field>
+    <Field name="manualClientHostName" type="string"></Field>
+    <Field name="tunnelSSH" type="bool">false</Field>
+    <Field name="maximumNodesValid" type="bool">false</Field>
+    <Field name="maximumNodes" type="int">1</Field>
+    <Field name="maximumProcessorsValid" type="bool">false</Field>
+    <Field name="maximumProcessors" type="int">1</Field>
+    <Field name="activeProfile" type="int">-1</Field>
+</Object>

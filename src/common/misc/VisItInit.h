@@ -47,6 +47,7 @@
 
 
 typedef void  (*ErrorFunction)(void *, const char *);
+typedef int   (*ThreadIDFunction)(void *);
 
 
 // ****************************************************************************
@@ -71,6 +72,10 @@ typedef void  (*ErrorFunction)(void *, const char *);
 //    Jeremy Meredith, Wed May 25 13:24:24 PDT 2005
 //    Added ability to disable custom signal handlers.
 //
+//    Hank Childs, Sat Jul  4 14:38:17 PDT 2015
+//    Add support for getting number of threads / thread ID.
+//    Also remove const that causes compiler warnings.
+//    
 // ****************************************************************************
 
 namespace VisItInit
@@ -87,6 +92,11 @@ namespace VisItInit
     MISC_API void ComponentIssueError(const char *);
     MISC_API void ComponentRegisterErrorFunction(ErrorFunction, void *);
     const char *const CatchAllMeshName = "for active plot";
+
+    MISC_API int  GetNumberOfThreads();
+    MISC_API void SetNumberOfThreads(int);
+    MISC_API int  GetMyThreadID();
+    MISC_API void RegisterThreadIDFunction(ThreadIDFunction, void *);
 }
 
 #endif

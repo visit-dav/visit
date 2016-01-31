@@ -53,6 +53,8 @@ class ThreadPool
             return( numberThreads );
         }
 
+        int  GetPthreadID();
+
     private:
         ThreadPool() {}
         ThreadPool( const ThreadPool &obj ) {}
@@ -74,6 +76,7 @@ class ThreadPool
 
         // state.
         pthread_t           *threads;
+        pthread_t           mainThread;
         int                 currentQueueSize;
         ThreadPoolWork      *queueHead;
         ThreadPoolWork      *queueTail;
@@ -83,6 +86,9 @@ class ThreadPool
         // Used with the queueEmpty condition to know if all work is done.
 // TODO: make a bitset class that can handle any number of threads
         std::bitset<64>     threadWorking;
+        std::bitset<64>     threadWorking2;
+        std::bitset<64>     threadWorking3;
+        std::bitset<64>     threadWorking4;
 
         // synchronization.
         pthread_mutex_t     queueLock;

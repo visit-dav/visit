@@ -87,6 +87,9 @@ static ErrorFunction errorFunction = NULL;
 static void *errorFunctionArgs = NULL;
 static bool initializeCalled = false;
 static bool finalizeCalled = false;
+static ThreadIDFunction threadIDFunction = NULL;
+static void *threadIDFunctionArgs = NULL;
+static int numThreads = 1;
 
 // ****************************************************************************
 //  Function: striparg
@@ -262,6 +265,7 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
     bool clobberVlogs = false;
     bool vtk_debug = false;
     bool enableTimings = false;
+    int threadDebugLogs=1;
     for (i=1; i<argc; i++)
     {
         if (strcmp("-debug_engine_rank", argv[i]) == 0)
@@ -326,6 +330,13 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
                     ++i;
                 }
             }
+        }
+        else if (strcmp("-thread-debug", argv[i]) == 0)
+        {
+            if(i+1 < argc && isdigit(*(argv[i+1]))) 
+                threadDebugLogs = atoi(argv[i+1]);
+            else 
+                cerr << "Warning: number of threaded debug logs not specified, assuming 1\n";
         }
         else if (strcmp("-debug-processor-stride", argv[i]) == 0)
         {
@@ -427,8 +438,8 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
 
     // Initialize the debug streams and also add the command line arguments
     // to the debug logs.
-    DebugStreamFull::Initialize(progname, debuglevel, sigs, clobberVlogs,
-        bufferDebug, decorateDebug1);
+    DebugStreamFull::Initialize(progname, debuglevel, threadDebugLogs, sigs, 
+        clobberVlogs, bufferDebug, decorateDebug1);
     ostringstream oss;
     for(i = 0; i < argc; ++i)
         oss << argv[i] << " ";
@@ -690,4 +701,89 @@ RemovePrependedDirs(const char *path, char *name)
     {
         strcpy(name, path + lastSlash);
     }
+}
+
+
+// ****************************************************************************
+//  Function: VisItInit::GetNumberOfThreads
+// 
+//  Purpose:
+//      Gets the number of threads for this component.  (This is currently 
+//      always 1, except for when the engine is running with threads.  This
+//      function helps modules like DebugStream and TimingsManager deal with
+//      the possibility of threading.)
+//
+//  Programmer: Hank Childs
+//  Creation:   July 4, 2015
+//  
+// ****************************************************************************
+
+int
+VisItInit::GetNumberOfThreads()
+{
+    return numThreads;
+}
+
+
+// ****************************************************************************
+//  Function: VisItInit::SetNumberOfThreads
+// 
+//  Purpose:
+//      Sets the number of threads for this component.  (This is currently 
+//      always 1, except for when the engine is running with threads.  This
+//      function helps modules like DebugStream and TimingsManager deal with
+//      the possibility of threading.  It is only anticipated that this function
+//      is called on the engine.)
+//
+//  Programmer: Hank Childs
+//  Creation:   July 4, 2015
+//  
+// ****************************************************************************
+
+void
+VisItInit::SetNumberOfThreads(int nt)
+{
+    numThreads = nt;
+}
+
+
+// ****************************************************************************
+//  Function: VisItInit::RegisterThreadIDFunction
+// 
+//  Purpose:
+//      Sets a function that can get the thread ID.  This is currently only
+//      expected to be called on the engine, when running with threading.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 4, 2015
+//  
+// ****************************************************************************
+
+void
+VisItInit::RegisterThreadIDFunction(ThreadIDFunction f, void *a)
+{
+    threadIDFunction     = f;
+    threadIDFunctionArgs = a;
+}
+
+
+// ****************************************************************************
+//  Function: VisItInit::GetMyThreadID
+// 
+//  Purpose:
+//      Gets the current thread's ID.  Returns 0 if not running in a threaded
+//      mode.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 4, 2015
+//  
+// ****************************************************************************
+
+int
+VisItInit::GetMyThreadID(void)
+{
+    if (threadIDFunction != NULL)
+        return threadIDFunction(threadIDFunctionArgs);
+
+    return 0;
 }
