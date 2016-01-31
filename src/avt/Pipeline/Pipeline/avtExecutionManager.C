@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <DebugStream.h>
+#include <VisItInit.h>
 #include "avtExecutionManager.h"
 
 
@@ -64,20 +65,37 @@ void avtExecutionManager::SetNumberOfThreads( int nt )
         // Failed to create threads, we need to exit.
         // TODO: I think we need to throw an error.
     }
+    else
+    {
+        VisItInit::SetNumberOfThreads(numThreads);
+    }
 }
  
 void avtExecutionManager::ScheduleWork( void (*workerThreadFunction)(void *), void *cbdata )
 {
-    tPool->AddWork( workerThreadFunction, cbdata );
+    if (tPool == NULL)
+    {
+        workerThreadFunction(cbdata);
+    }
+    else
+    {
+        tPool->AddWork( workerThreadFunction, cbdata );
+    }
 }
  
 void avtExecutionManager::FinishWork()
 {
+    if (tPool == NULL)
+        return;
+
     tPool->JoinNoExit();
 }
  
 MUTEX * avtExecutionManager::FindMutex( const MUTEX_ID id )
 {
+    if (tPool == NULL)
+        return NULL;
+
     std::map<MUTEX_ID, MUTEX *>::iterator it;
     MUTEX *lock;
 
@@ -104,6 +122,9 @@ MUTEX * avtExecutionManager::FindMutex( const MUTEX_ID id )
 
 MUTEX * avtExecutionManager::RemoveMutex( const MUTEX_ID id )
 {
+    if (tPool == NULL)
+        return NULL;
+
     std::map<MUTEX_ID, MUTEX *>::iterator it;
     MUTEX *lock;
 
@@ -124,21 +145,33 @@ MUTEX * avtExecutionManager::RemoveMutex( const MUTEX_ID id )
 
 void avtExecutionManager::MutexLock( const MUTEX_ID stringID )
 {
+    if (tPool == NULL)
+        return;
+
     MutexLock( FindMutex(stringID) );
 }
 
 void avtExecutionManager::MutexUnlock( const MUTEX_ID stringID )
 {
+    if (tPool == NULL)
+        return;
+
     MutexUnlock( FindMutex(stringID) );
 }
 
 void avtExecutionManager::MutexDestroy( const MUTEX_ID stringID )
 {
+    if (tPool == NULL)
+        return;
+
     MutexDestroy( RemoveMutex(stringID) );
 }
  
 void avtExecutionManager::MutexInit( MUTEX *lock )
 {
+    if (tPool == NULL)
+        return;
+
     int rtn;
     if( (rtn = pthread_mutex_init(lock, NULL)) )
     {
@@ -148,6 +181,9 @@ void avtExecutionManager::MutexInit( MUTEX *lock )
 
 void avtExecutionManager::MutexDestroy( MUTEX *lock, bool delMutex )
 {
+    if (tPool == NULL)
+        return;
+
     int rtn;
     if( (rtn = pthread_mutex_destroy(lock)) )
     {
@@ -159,6 +195,9 @@ void avtExecutionManager::MutexDestroy( MUTEX *lock, bool delMutex )
 
 void avtExecutionManager::MutexLock( MUTEX *lock )
 {
+    if (tPool == NULL)
+        return;
+
     int rtn;
     if( (rtn = pthread_mutex_lock(lock)) )
     {
@@ -168,6 +207,9 @@ void avtExecutionManager::MutexLock( MUTEX *lock )
 
 void avtExecutionManager::MutexUnlock( MUTEX *lock )
 {
+    if (tPool == NULL)
+        return;
+
     int rtn;
     if( (rtn = pthread_mutex_unlock(lock)) )
     {
@@ -177,6 +219,9 @@ void avtExecutionManager::MutexUnlock( MUTEX *lock )
 
 void avtExecutionManager::CondInit( COND *cond )
 {
+    if (tPool == NULL)
+        return;
+
     int rtn;
     if( (rtn = pthread_cond_init(cond, NULL)) )
     {
@@ -186,6 +231,9 @@ void avtExecutionManager::CondInit( COND *cond )
 
 void avtExecutionManager::CondDestroy( COND *cond )
 {
+    if (tPool == NULL)
+        return;
+
     int rtn;
     if( (rtn = pthread_cond_destroy(cond)) )
     {
@@ -195,6 +243,9 @@ void avtExecutionManager::CondDestroy( COND *cond )
 
 void avtExecutionManager::CondSignal( COND *cond )
 {
+    if (tPool == NULL)
+        return;
+
     int rtn;
     if( (rtn = pthread_cond_signal(cond)) )
     {
@@ -204,6 +255,9 @@ void avtExecutionManager::CondSignal( COND *cond )
 
 void avtExecutionManager::CondWait( COND *cond, MUTEX *lock )
 {
+    if (tPool == NULL)
+        return;
+
     int rtn;
     if( (rtn = pthread_cond_wait(cond, lock)) )
     {

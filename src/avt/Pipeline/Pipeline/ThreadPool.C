@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include "ThreadPool.h"
 #include <DebugStream.h>
+#include <VisItInit.h>
 
 void *ThreadPoolThread( void * );
 
@@ -18,6 +19,27 @@ struct ThreadInfo
     ThreadPool *tpool;
     int id;
 };
+
+int
+GetPthreadIDCallback(void *a)
+{
+    ThreadPool *tp = (ThreadPool *) a;
+    return tp->GetPthreadID();
+}
+
+int
+ThreadPool::GetPthreadID()
+{
+    pthread_t my_id = pthread_self();
+    if (my_id == mainThread)
+        return 0;
+    for (int i = 0 ; i < numberThreads ; i++)
+    {
+        if (threads[i] == my_id)
+            return i;
+    }
+    return -1; // ?? ... and don't issue debug statement, since we would get infinite recursion
+}
 
 /***********************************************************************
     return:
@@ -36,6 +58,7 @@ ThreadPool * ThreadPool::Create( int numWorkerThreads, int maxQueueSize, int doN
     }
 
     // Initialize the fields.
+    tpool->mainThread         = pthread_self();
     tpool->numberThreads      = numWorkerThreads;
     tpool->maxQueueSize       = maxQueueSize;
     tpool->doNotBlockWhenFull = doNotBlockWhenFull;
@@ -88,6 +111,8 @@ ThreadPool * ThreadPool::Create( int numWorkerThreads, int maxQueueSize, int doN
             return( NULL );
         }
     }
+
+    VisItInit::RegisterThreadIDFunction(GetPthreadIDCallback, tpool);
 
     return( tpool );
 }
@@ -319,7 +344,7 @@ int ThreadPool::JoinNoExit()
         return( 1 );
     }
 
-    while( currentQueueSize || threadWorking.to_ulong() )
+    while( currentQueueSize || threadWorking.to_ulong() || threadWorking2.to_ulong() || threadWorking3.to_ulong() || threadWorking4.to_ulong())
     {
         if( (rtn = pthread_cond_wait(&queueEmpty, &queueLock)) != 0 )
         {
@@ -356,7 +381,13 @@ void *ThreadPoolThread( void *arg )
 #ifndef TURN_OFF_THREAD_SET_AFFINITY
     cpu_set_t cpuset;
     CPU_ZERO( &cpuset );
+#ifdef __KNC__
+    int numCores = sysconf( _SC_NPROCESSORS_ONLN );
+    CPU_SET(((tI->id-1)*4)%numCores + ((tI->id-1)*4)/numCores + 1, &cpuset);
+#else
     CPU_SET( (tI->id - 1), &cpuset );
+#endif
+
     if( (rtn = pthread_setaffinity_np( pthread_self(), sizeof(cpu_set_t), &cpuset )) != 0 )
     {
         debug1 << "ThreadPoolThread pthread_setaffinity_np: " << strerror(rtn) << endl;
@@ -376,8 +407,15 @@ void *ThreadPoolThread( void *arg )
         while( (tpool->currentQueueSize == 0) && (! tpool->shutdown) )
         {
             // Check if we should send the empty queue message.
-            tpool->threadWorking[tI->id] = 0;
-            if( tpool->threadWorking.to_ulong() == 0 )
+           if( tI->id < 64) 
+               tpool->threadWorking[tI->id] = 0;
+           else if( tI->id <128) 
+               tpool->threadWorking2[tI->id-64] = 0;
+           else if( tI->id < 192) 
+               tpool->threadWorking3[tI->id-128] = 0;
+           else if( tI->id < 256) 
+               tpool->threadWorking4[tI->id-192] = 0;
+            if( tpool->threadWorking.to_ulong() == 0 && tpool->threadWorking2.to_ulong() == 0 && tpool->threadWorking3.to_ulong() == 0 && tpool->threadWorking3.to_ulong() == 0 )
             {
                 if( (rtn = pthread_cond_signal(&(tpool->queueEmpty))) != 0 )
                 {
@@ -415,7 +453,14 @@ void *ThreadPoolThread( void *arg )
             tpool->queueHead = my_workp->next;
 
         // Set that this thread is working.
-        tpool->threadWorking[tI->id] = 1;
+        if( tI->id < 64) 
+            tpool->threadWorking[tI->id] = 1;
+        else if( tI->id <128) 
+            tpool->threadWorking2[tI->id-64] = 1;
+        else if( tI->id < 192) 
+            tpool->threadWorking3[tI->id-128] = 1;        
+        else if( tI->id < 256) 
+            tpool->threadWorking4[tI->id-192] = 1;
 
         // Handle waiting add_work threads.
         if( (!tpool->doNotBlockWhenFull) && (tpool->currentQueueSize == (tpool->maxQueueSize - 1)) )
