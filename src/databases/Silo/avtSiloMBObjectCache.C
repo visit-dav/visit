@@ -66,15 +66,21 @@ using namespace std;
 //
 //    Mark C. Miller, Wed Mar 13 23:03:57 PDT 2013
 //    If objpath is non-null but "", still pass null to DBMakeNamescheme.
+//
+//    Mark C. Miller, Tue Feb  2 15:19:09 PST 2016
+//    Handle empty list too.
 // ****************************************************************************
 
 avtSiloMBNameGenerator::avtSiloMBNameGenerator
 (DBfile *dbfile, char const *objpath, int nblocks,
- char **names_lst, // standard use case
- const char *file_ns, const char *block_ns) // nameschem use case
+ char const * const *names_lst, // standard use case
+ const char *file_ns, const char *block_ns,
+ int empty_cnt, int const *empty_lst) // nameschem use case
  : nblocks(nblocks), namesLst(names_lst),
    fileNS(0), fileVals(0),
-   blockNS(0), blockVals(0)
+   blockNS(0), blockVals(0),
+   emptyCnt(empty_cnt), emptyLst(empty_lst)
+   
 {
     // if we have an empty object, we
     if(nblocks == 0)
@@ -127,6 +133,8 @@ avtSiloMBNameGenerator::~avtSiloMBNameGenerator()
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Feb  2 15:19:09 PST 2016
+//    Handle empty list too.
 // ****************************************************************************
 
 string
@@ -141,6 +149,24 @@ avtSiloMBNameGenerator::Name(int idx) const
     // check for simple case
     if(namesLst != 0)
         return string(namesLst[idx]);
+
+    if (emptyLst)
+    {
+        register int bot = 0;
+        register int top = emptyCnt - 1;
+        register int mid;
+        while (bot <= top)
+        {
+            mid = (bot + top) >> 1;
+
+            if (idx > emptyLst[mid])
+                bot = mid + 1;
+            else if (idx < emptyLst[mid])
+                top = mid - 1;
+            else
+                return "EMPTY";
+        }
+    }
 
     // namescheme case
     if(fileNS !=0)
@@ -171,6 +197,8 @@ avtSiloMBNameGenerator::Name(int idx) const
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Feb  2 15:19:09 PST 2016
+//    Handle empty list too.
 // ****************************************************************************
 
 avtSiloMBObjectCacheEntry::avtSiloMBObjectCacheEntry(DBfile *dbfile,
@@ -178,12 +206,15 @@ avtSiloMBObjectCacheEntry::avtSiloMBObjectCacheEntry(DBfile *dbfile,
                                                      int     nblocks,
                                                      char  **mesh_names,
                                                      const char   *file_ns,
-                                                     const char   *block_ns)
+                                                     const char   *block_ns,
+                                                     int empty_cnt,
+                                                     int *empty_list)
 : nameGen(NULL)
 {
     nameGen = new avtSiloMBNameGenerator(dbfile,objpath,nblocks,
                                          mesh_names,
-                                         file_ns,block_ns);
+                                         file_ns,block_ns,
+                                         empty_cnt, empty_list);
 }
 
 
@@ -478,6 +509,8 @@ avtSiloMBObjectCache::CombinePath(const char *path, const char *name)
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Feb  2 15:19:09 PST 2016
+//    Handle empty list too.
 // ****************************************************************************
 avtSiloMultiMeshCacheEntry::avtSiloMultiMeshCacheEntry(DBfile *dbfile,
                                                        char const *objpath,
@@ -487,7 +520,9 @@ avtSiloMultiMeshCacheEntry::avtSiloMultiMeshCacheEntry(DBfile *dbfile,
                             mm->nblocks,
                             mm->meshnames,
                             mm->file_ns,
-                            mm->block_ns),
+                            mm->block_ns,
+                            mm->empty_cnt,
+                            mm->empty_list),
   obj(mm)
 {
 }
@@ -547,6 +582,8 @@ avtSiloMultiMeshCacheEntry::MeshType(int idx) const
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Feb  2 15:19:09 PST 2016
+//    Handle empty list too.
 // ****************************************************************************
 avtSiloMultiVarCacheEntry::avtSiloMultiVarCacheEntry(DBfile *dbfile,
                                                      char const *objpath,
@@ -556,7 +593,9 @@ avtSiloMultiVarCacheEntry::avtSiloMultiVarCacheEntry(DBfile *dbfile,
                             mv->nvars,
                             mv->varnames,
                             mv->file_ns,
-                            mv->block_ns),
+                            mv->block_ns,
+                            mv->empty_cnt,
+                            mv->empty_list),
   obj(mv)
 {
 }
@@ -618,6 +657,8 @@ avtSiloMultiVarCacheEntry::VarType(int idx) const
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Feb  2 15:19:09 PST 2016
+//    Handle empty list too.
 // ****************************************************************************
 avtSiloMultiMatCacheEntry::avtSiloMultiMatCacheEntry(DBfile *dbfile,
                                                      char const *objpath,
@@ -627,7 +668,9 @@ avtSiloMultiMatCacheEntry::avtSiloMultiMatCacheEntry(DBfile *dbfile,
                             mm->nmats,
                             mm->matnames,
                             mm->file_ns,
-                            mm->block_ns),
+                            mm->block_ns,
+                            mm->empty_cnt,
+                            mm->empty_list),
   obj(mm)
 {
 }
@@ -662,6 +705,8 @@ avtSiloMultiMatCacheEntry::~avtSiloMultiMatCacheEntry()
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Feb  2 15:19:09 PST 2016
+//    Handle empty list too.
 // ****************************************************************************
 avtSiloMultiSpecCacheEntry::avtSiloMultiSpecCacheEntry(DBfile *dbfile,
                                                        char const *objpath,
@@ -671,7 +716,9 @@ avtSiloMultiSpecCacheEntry::avtSiloMultiSpecCacheEntry(DBfile *dbfile,
                             ms->nspec,
                             ms->specnames,
                             ms->file_ns,
-                            ms->block_ns),
+                            ms->block_ns,
+                            ms->empty_cnt,
+                            ms->empty_list),
   obj(ms)
 {
 }
