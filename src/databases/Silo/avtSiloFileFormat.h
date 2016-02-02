@@ -289,9 +289,9 @@ typedef struct _GroupInfo
 //    regions, so this is a significant saving. CSG meshes with thousands
 //    of regions were exhausting memory in the previous scheme.
 //
-//    Cyrus Harrison, Tue Dec 22 15:29:39 PST 2015
-//    Added methods to support local domain boundary info.
-//
+//    Mark C. Miller, Tue Feb  2 14:48:25 PST 2016
+//    Added firstAllEmptyMultimesh and emptyObjectList to handle cases where
+//    a multi-mesh consists of all empty blocks.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -361,6 +361,9 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     avtSiloMBObjectCache multivarCache;
     avtSiloMBObjectCache multimatCache;
     avtSiloMBObjectCache multispecCache;
+
+    std::string                          firstAllEmptyMultimesh;
+    std::map<std::string, bool>          emptyObjectsList;
 
     std::map<std::string, std::string>   multivarToMultimeshMap;
 
