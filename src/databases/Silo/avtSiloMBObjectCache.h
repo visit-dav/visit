@@ -61,6 +61,8 @@
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Feb  2 15:19:09 PST 2016
+//    Handle empty list too.
 // ****************************************************************************
 
 
@@ -70,9 +72,11 @@ public:
                  avtSiloMBNameGenerator(DBfile      *dbfile,
                                         char const *objpath,
                                         int          nblocks,
-                                        char       **names_lst,
+                                        char const * const *names_lst,
                                         const char  *file_ns,
-                                        const char  *block_ns);
+                                        const char  *block_ns,
+                                        int          empty_cnt,
+                                        int const   *empty_lst);
 
     virtual     ~avtSiloMBNameGenerator();
     std::string  Name(int idx) const;
@@ -80,11 +84,13 @@ public:
 
 private:
       int             nblocks;
-      char          **namesLst;
+      char const * const *namesLst;
       DBnamescheme   *fileNS;
       int            *fileVals;
       DBnamescheme   *blockNS;
       int            *blockVals;
+      int             emptyCnt;
+      int const      *emptyLst;
 };
 
 
@@ -99,6 +105,8 @@ private:
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Feb  2 15:19:09 PST 2016
+//    Handle empty list too.
 // ****************************************************************************
 
 class avtSiloMBObjectCacheEntry
@@ -109,7 +117,9 @@ public:
                                                        int     nblocks,
                                                        char  **names_lst,
                                                        const char *file_ns,
-                                                       const char *block_ns);
+                                                       const char *block_ns,
+                                                       int empty_cnt,
+                                                       int *empty_list);
     virtual                ~avtSiloMBObjectCacheEntry();
 
     int                     NumberOfBlocks() const
