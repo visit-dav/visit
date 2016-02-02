@@ -697,7 +697,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 
             if( value == QString("HIDE_WIDGET") )
               ((QWidget *)ui)->hide();
-            else
+            else //if( value == QString("SHOW_WIDGET") )
               ((QWidget *)ui)->show();
         }
         
@@ -796,7 +796,9 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 
         if (ui->inherits("QTableWidget"))
         {
-            ((QWidget *)ui)->setEnabled(true);
+            QTableWidget* tWidget = ((QTableWidget*)ui);
+
+            tWidget->setEnabled(true);
 
             char val[128];
             int row, column;
@@ -809,23 +811,55 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
                    << " with value = " << val
                    << std::endl;
 
-            QTableWidgetItem *newItem =
-              new QTableWidgetItem(tr("%1").arg(val));
-
-            if( e )
-              newItem->setFlags( Qt::ItemIsSelectable |
-                                 Qt::ItemIsEditable |
-                                 Qt::ItemIsEnabled );
+            if( strcmp(val,"CLEAR_TABLE") == 0)
+            {
+              while( tWidget->rowCount() )
+                tWidget->removeRow( tWidget->rowCount() - 1);
+              while( tWidget->columnCount() )
+                tWidget->removeColumn( tWidget->columnCount() - 1);
+            }                                 
+            else if( strcmp(val,"REMOVE_ROW") == 0 &&
+                     row < tWidget->rowCount() )
+            {
+              tWidget->removeRow( row );
+            }                                 
+            else if( strcmp(val,"REMOVE_COLUMN") == 0 &&
+                     column < tWidget->columnCount() )
+            {
+              tWidget->removeColumn( column );
+            }                                 
             else
-              newItem->setFlags(Qt::NoItemFlags);
+            {
+              QTableWidgetItem *item = tWidget->item(row, column);
+              
+              // See if the item has already been created.
+              if( item )
+              {
+                // Update the text
+                item->setText(tr("%1").arg(val));
+              }
+              else
+              {
+                // Create a new item and make sure there is room for it.
+                item = new QTableWidgetItem(tr("%1").arg(val));
+                
+                if( tWidget->rowCount() <= row )
+                  tWidget->setRowCount(row+1);
+                
+                if( tWidget->columnCount() <= column )
+                  tWidget->setColumnCount(column+1);
+                
+                tWidget->setItem(row, column, item);
+              }
 
-            if( ((QTableWidget*)ui)->rowCount() <= row )
-              ((QTableWidget*)ui)->setRowCount(row+1);
-
-            if( ((QTableWidget*)ui)->columnCount() <= column )
-              ((QTableWidget*)ui)->setColumnCount(column+1);
-
-            ((QTableWidget*)ui)->setItem(row, column, newItem);
+              // Is the item editable?
+              if( e )
+                item->setFlags( Qt::ItemIsSelectable |
+                                Qt::ItemIsEditable |
+                                Qt::ItemIsEnabled );
+              else
+                item->setFlags(Qt::NoItemFlags);
+            }
         }
 
         // Unblock signals.
