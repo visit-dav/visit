@@ -400,7 +400,7 @@
 #
 #****************************************************************************/
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
 
 IF (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -1888,7 +1888,7 @@ ENDIF(WIN32)
 
 # manually check for socklen_t as CHECK_SYMBOL_EXISTS
 # doesn't appear to work on linux (at least)
-IF ("HAVE_SOCKLEN_T" MATCHES "^HAVE_SOCKLEN_T$")
+IF (HAVE_SOCKLEN_T MATCHES "^HAVE_SOCKLEN_T$")
     MESSAGE(STATUS "Check for socklen_t")
     TRY_COMPILE(HAVE_SOCKLEN_T
         ${CMAKE_CURRENT_BINARY_DIR}
@@ -1902,7 +1902,7 @@ IF ("HAVE_SOCKLEN_T" MATCHES "^HAVE_SOCKLEN_T$")
         SET(HAVE_SOCKLEN_T 0 CACHE INTERNAL "support for socklen_t")
         MESSAGE(STATUS "Check for socklen_t - not found")
     ENDIF (HAVE_SOCKLEN_T)
-ENDIF ("HAVE_SOCKLEN_T" MATCHES "^HAVE_SOCKLEN_T$")
+ENDIF ()
 
 # Check for setbuf being a public member in fstream. We could test via
 # TRY_COMPILE in CMake 2.6.2. I think this is only false on the Suns, which
@@ -1916,7 +1916,7 @@ IF(NOT WIN32)
 ENDIF(NOT WIN32)
 
 FUNCTION(CHECK_ISFINITE_EXISTS VAR)
-  IF("${VAR}" MATCHES "^${VAR}$")
+  IF(${VAR} MATCHES "^${VAR}$")
     MESSAGE(STATUS "Check for isfinite")
     TRY_COMPILE(tmpVar
             ${CMAKE_CURRENT_BINARY_DIR}
@@ -1933,11 +1933,11 @@ FUNCTION(CHECK_ISFINITE_EXISTS VAR)
             MESSAGE(STATUS "Check for isfinite - ${outvar}")
         ENDIF (NOT WIN32)
     ENDIF(tmpVar)
-  ENDIF("${VAR}" MATCHES "^${VAR}$")
+  ENDIF()
 ENDFUNCTION(CHECK_ISFINITE_EXISTS)
 
 FUNCTION(CHECK_STRTOF_PROTOTYPE VAR)
-  IF("${VAR}" MATCHES "^${VAR}$")
+  IF(${VAR} MATCHES "^${VAR}$")
     MESSAGE(STATUS "Check for strtof prototype")
     TRY_COMPILE(tmpVar
             ${CMAKE_CURRENT_BINARY_DIR}
@@ -1950,11 +1950,11 @@ FUNCTION(CHECK_STRTOF_PROTOTYPE VAR)
         SET(${VAR} 0 CACHE INTERNAL "strtof prototype")
         MESSAGE(STATUS "Check for strtof prototype - not found")
     ENDIF(tmpVar)
-  ENDIF("${VAR}" MATCHES "^${VAR}$")
+  ENDIF()
 ENDFUNCTION(CHECK_STRTOF_PROTOTYPE)
 
 FUNCTION(CHECK_FTIME_PROTOTYPE VAR)
-  IF("${VAR}" MATCHES "^${VAR}$")
+  IF(${VAR} MATCHES "^${VAR}$")
     MESSAGE(STATUS "Check for ftime prototype")
     TRY_COMPILE(tmpVar
             ${CMAKE_CURRENT_BINARY_DIR}
@@ -1967,7 +1967,7 @@ FUNCTION(CHECK_FTIME_PROTOTYPE VAR)
         SET(${VAR} 0 CACHE INTERNAL "ftime prototype")
         MESSAGE(STATUS "Check for ftime prototype - not found")
     ENDIF(tmpVar)
-  ENDIF("${VAR}" MATCHES "^${VAR}$")
+  ENDIF()
 ENDFUNCTION(CHECK_FTIME_PROTOTYPE)
 
 # Check for some functions
@@ -2097,7 +2097,8 @@ ENDIF(NOT WIN32)
 
 # Fix some third-party include paths that are different on windows than unix.
 IF(UNIX)
-   SET(python_include_relative_path "/python/include/python@PYTHON_VERSION@")
+   #SET(python_include_relative_path "/python/include/python@PYTHON_VERSION@")
+   SET(python_include_relative_path "/python/include/python${PYTHON_VERSION}")
    SET(exodusii_include_relative_path "/exodusii/inc")
    SET(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 ELSE(UNIX)
