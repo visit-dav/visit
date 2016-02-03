@@ -55,7 +55,7 @@ set(QT_CORE_LIBRARY ${Qt5Core_LIBRARIES})
 if(NOT VISIT_QT_SKIP_INSTALL)
   # moc
   get_target_property(moc_location Qt5::moc LOCATION)
-  MESSAGE("moc location: ${moc_location}")
+  MESSAGE(STATUS "moc location: ${moc_location}")
   install(PROGRAMS ${moc_location}
           DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
           PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
