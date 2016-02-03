@@ -815,8 +815,6 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             {
               while( tWidget->rowCount() )
                 tWidget->removeRow( tWidget->rowCount() - 1);
-              while( tWidget->columnCount() )
-                tWidget->removeColumn( tWidget->columnCount() - 1);
             }                                 
             else if( strcmp(val,"REMOVE_ROW") == 0 &&
                      row < tWidget->rowCount() )
