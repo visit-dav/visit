@@ -450,9 +450,14 @@ ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
                     cc, SLOT(ClickedHandler()));
         }
 
+        if (mo->indexOfSignal("toggled(bool)") != -1)
+        {
+            QObject::connect(ui, SIGNAL(toggled(bool)),
+                             cc, SLOT(ToggledHandler(bool)));
+        }
+
         if (mo->indexOfSignal("valueChanged(int)") != -1)
         {
-//qDebug("connect %s valueChanged(int)\n", ui->objectName().toStdString().c_str());
             QObject::connect(ui, SIGNAL(valueChanged(int)),
                              cc, SLOT(ValueChangedHandler(int)));
         }
@@ -499,6 +504,12 @@ ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
         {
             QObject::connect(ui, SIGNAL(cellChanged(int, int)),
                              cc, SLOT(CellChangedHandler(int, int)));
+        }
+
+        if (mo->indexOfSignal("currentIndexChanged(int)") != -1)
+        {
+            QObject::connect(ui, SIGNAL(currentIndexChanged(int)),
+                             cc, SLOT(CurrentIndexChangedHandler(int)));
         }
 
         // We've hooked up signals for this object, now do its children.
@@ -703,22 +714,22 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
         
         if (ui->inherits("QLabel"))
         {
-            debug5 << "found label " << name.toStdString() << " text = "
-                   << value.toStdString() << endl;
+            debug5 << "found QLabel " << name.toStdString()
+                   << " text = " << value.toStdString() << endl;
             ((QLabel*)ui)->setText(value);
         }
 
         if (ui->inherits( "QLineEdit"))
         {
-            debug5 << "found line edit " << name.toStdString() << " text = "
-                   << value.toStdString() << endl;
+            debug5 << "found QLineEdit " << name.toStdString()
+                   << " text = " << value.toStdString() << endl;
             ((QLineEdit*)ui)->setText(value );
         }
 
         if (ui->inherits("QRadioButton"))
         {
-            debug5 << "found button " << name.toStdString() << " text = "
-                   << value.toStdString() << endl;
+            debug5 << "found QRadioButton " << name.toStdString()
+                   << " text = " << value.toStdString() << endl;
             ((QRadioButton*)ui)->setChecked(value=="1");
         }
 
@@ -731,22 +742,22 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 
         if (ui->inherits("QSpinBox"))
         {
-            debug5 << "found QSpinBox " << name.toStdString() << " value = "
-                   << value.toStdString() << endl;
+            debug5 << "found QSpinBox " << name.toStdString()
+                   << " value = " << value.toStdString() << endl;
             ((QSpinBox*)ui)->setValue(value.toInt());
         }
  
         if (ui->inherits("QDial"))
         {
-            debug5 << "found QDial " << name.toStdString() << " value = "
-                   << value.toStdString() << endl;
+            debug5 << "found QDial " << name.toStdString()
+                   << " value = " << value.toStdString() << endl;
             ((QDial*)ui)->setValue(value.toInt());
         }
 
         if (ui->inherits("QSlider"))
         {
-            debug5 << "found QSlider " << name.toStdString() << " value = "
-                   << value.toStdString() << endl;
+            debug5 << "found QSlider " << name.toStdString()
+                   << " value = " << value.toStdString() << endl;
             ((QSlider*)ui)->setValue(value.toInt());
         }
 
@@ -755,13 +766,6 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             debug5 << "found QTextEdit " << name.toStdString()
                    << " text = " << value.toStdString() << endl;
             ((QTextEdit*)ui)->setText(value);
-        }
-
-        if ( ui->inherits ( "QLineEdit"))
-        {
-            debug5 << "found QTextEdit " << name.toStdString()
-                   << " text = " << value.toStdString() << endl;
-            ((QLineEdit*)ui)->setText(value);
         }
 
         if ( ui->inherits ( "QLCDNumber"))
@@ -792,6 +796,20 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             debug5 << "found QCheckBox " << name.toStdString()
                    << " value = " << value.toStdString() << endl;
             ((QCheckBox*)ui)->setChecked(value=="1");
+        }
+
+        if (ui->inherits("QGroupBox"))
+        {
+            debug5 << "found QGroupBox " << name.toStdString()
+                   << " value = " << value.toStdString() << endl;
+            ((QGroupBox*)ui)->setChecked(value=="1");
+        }
+
+        if (ui->inherits("QComboBox"))
+        {
+            debug5 << "found QComboBox " << name.toStdString()
+                   << " value = " << value.toInt() << endl;
+            ((QComboBox*)ui)->setCurrentIndex(value.toInt());
         }
 
         if (ui->inherits("QTableWidget"))
@@ -1425,9 +1443,6 @@ QvisSimulationWindow::UpdateInformation()
                 {
                     QString bName = QString(cmd.GetName().c_str());
                     bool e = cmd.GetEnabled();
-
-                    // std::cerr << cmd.GetName() << "  " << cmd.GetEnabled()
-                    //        << std::endl;
 
                     updateSize |= simCommands->setButtonCommand(c, bName);
                     simCommands->setButtonEnabled(c, e, false);
