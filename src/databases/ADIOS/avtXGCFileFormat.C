@@ -83,9 +83,10 @@ avtXGCFileFormat::Identify(const char *fname)
 {
     string str(fname);
     if (str.find("xgc.3d") != string::npos)
-    {
         return true;
-    }
+    else if (str.find("xgc.particle") != string::npos)
+        return true;
+    
     return false;
 }
 
@@ -191,6 +192,9 @@ avtXGCFileFormat::avtXGCFileFormat(const char *nm)
     numNodes = 0;
     numTris = 0;
     numPhi = 0;
+    
+    string str(nm);
+    haveParticles = (str.find("xgc.particle") != string::npos);
 }
 
 // ****************************************************************************
@@ -290,6 +294,36 @@ avtXGCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
     Initialize();
     md->SetFormatCanDoDomainDecomposition(false);
 
+    //Particles
+    if (haveParticles)
+    {
+        int numBlocks = 1;
+        
+        map<string, ADIOS_VARINFO*>::const_iterator it;
+        for (it = file->variables.begin(); it != file->variables.end(); it++)
+        {
+            if (it->first.find("iphase") != string::npos)
+            {
+                ADIOS_VARINFO *avi = it->second;
+                numBlocks = avi->sum_nblocks;
+                break;
+            }
+        }
+        
+        avtMeshMetaData *mesh = new avtMeshMetaData;
+        mesh->name = "particles";
+        mesh->meshType = AVT_POINT_MESH;
+        mesh->numBlocks = numBlocks;
+        mesh->blockOrigin = 0;
+        mesh->spatialDimension = 3;
+        mesh->topologicalDimension = 3;
+        mesh->blockTitle = "blocks";
+        mesh->blockPieceName = "block";
+        mesh->hasSpatialExtents = false;
+        md->Add(mesh);
+        return;
+    }
+
     //Mesh.
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "mesh";
@@ -371,6 +405,8 @@ avtXGCFileFormat::GetMesh(int timestate, int domain, const char *meshname)
         return GetSepMesh();
     if (!strcmp(meshname, "mesh2D"))
         return GetMesh2D(timestate, domain);
+    if (!strcmp(meshname, "particles"))
+        return GetParticleMesh(timestate, domain);
 
     vtkDataArray *buff = NULL;
     meshFile->ReadScalarData("/coordinates/values", timestate, &buff);
@@ -440,6 +476,51 @@ avtXGCFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     }
     conn->Delete();
     nextNode->Delete();
+    return grid;
+}
+
+vtkDataSet *
+avtXGCFileFormat::GetParticleMesh(int ts, int domain)
+{
+    vtkDataArray *buff = NULL;
+    file->ReadScalarData("iphase", ts, domain, &buff);
+    int nPts = buff->GetNumberOfTuples() / 9;
+    if (nPts == 0)
+    {
+        if (buff)
+            buff->Delete();
+        return NULL;
+    }
+    
+    vtkPoints *pts = vtkPoints::New();
+    pts->SetNumberOfPoints(nPts);
+    vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
+    grid->SetPoints(pts);
+
+    double pt[3];
+    for (int i = 0; i < nPts; i++)
+    {
+        double r = buff->GetTuple1(i*9 +0);
+        double z = buff->GetTuple1(i*9 +1);
+        double p = buff->GetTuple1(i*9 +2);
+
+        double X = r*cos(p);
+        double Y = r*sin(p);
+        double Z = z;
+
+        pt[0] = X;
+        pt[1] = Z;
+        pt[2] = -Y;
+        pts->SetPoint(i, pt);
+        //cout<<i<<": ["<<pt[0]<<" "<<pt[1]<<" "<<pt[2]<<"]"<<endl;
+
+        vtkIdType id = i;
+        grid->InsertNextCell(VTK_VERTEX, 1, &id);
+    }
+
+    pts->Delete();
+    buff->Delete();
+
     return grid;
 }
 

@@ -106,11 +106,12 @@ class avtXGCFileFormat : public avtMTMDFileFormat
   protected:
     ADIOSFileObject *file, *meshFile, *diagFile;
     std::string sepFileName;
-    bool initialized, haveSepMesh;
+    bool initialized, haveSepMesh, haveParticles;
     int numNodes, numTris, numPhi;
 
 
     void                   Initialize();
+    vtkDataSet            *GetParticleMesh(int, int);
     vtkDataArray          *GetTurbulence(int ts, int dom);
     vtkDataArray          *GetSep();
     vtkDataArray          *GetPsi();
