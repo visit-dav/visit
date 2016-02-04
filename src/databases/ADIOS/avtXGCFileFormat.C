@@ -503,10 +503,7 @@ avtXGCFileFormat::GetParticleMesh(int ts, int domain)
         double r = buff->GetTuple1(i*9 +0);
         double z = buff->GetTuple1(i*9 +1);
         double p = buff->GetTuple1(i*9 +2);
-
-        double X = r*cos(p);
-        double Y = r*sin(p);
-        double Z = z;
+        double X = r*cos(p), Y = r*sin(p), Z = z;
 
         pt[0] = X;
         pt[1] = Z;
