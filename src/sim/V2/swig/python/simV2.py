@@ -351,13 +351,37 @@ def VisItUI_textChanged(name, cb, cbdata2):
     return _simV2.VisItUI_textChanged(name, cb, cbdata2)
 VisItUI_textChanged = _simV2.VisItUI_textChanged
 
+def VisItUI_cellChanged(name, cb, cbdata2):
+    return _simV2.VisItUI_cellChanged(name, cb, cbdata2)
+VisItUI_cellChanged = _simV2.VisItUI_cellChanged
+
 def VisItUI_setValueI(name, value, enabled):
     return _simV2.VisItUI_setValueI(name, value, enabled)
 VisItUI_setValueI = _simV2.VisItUI_setValueI
 
+def VisItUI_setValueD(name, value, enabled):
+    return _simV2.VisItUI_setValueD(name, value, enabled)
+VisItUI_setValueD = _simV2.VisItUI_setValueD
+
 def VisItUI_setValueS(name, value, enabled):
     return _simV2.VisItUI_setValueS(name, value, enabled)
 VisItUI_setValueS = _simV2.VisItUI_setValueS
+
+def VisItUI_setTableValueI(name, row, col, value, enabled):
+    return _simV2.VisItUI_setTableValueI(name, row, col, value, enabled)
+VisItUI_setTableValueI = _simV2.VisItUI_setTableValueI
+
+def VisItUI_setTableValueD(name, row, col, value, enabled):
+    return _simV2.VisItUI_setTableValueD(name, row, col, value, enabled)
+VisItUI_setTableValueD = _simV2.VisItUI_setTableValueD
+
+def VisItUI_setTableValueV(name, row, col, x, y, z, enabled):
+    return _simV2.VisItUI_setTableValueV(name, row, col, x, y, z, enabled)
+VisItUI_setTableValueV = _simV2.VisItUI_setTableValueV
+
+def VisItUI_setTableValueS(name, row, col, value, enabled):
+    return _simV2.VisItUI_setTableValueS(name, row, col, value, enabled)
+VisItUI_setTableValueS = _simV2.VisItUI_setTableValueS
 
 _simV2.VISIT_INVALID_HANDLE_swigconstant(_simV2)
 VISIT_INVALID_HANDLE = _simV2.VISIT_INVALID_HANDLE
@@ -514,6 +538,48 @@ VISIT_CELL_POINT = _simV2.VISIT_CELL_POINT
 
 _simV2.VISIT_CELL_POLYHEDRON_swigconstant(_simV2)
 VISIT_CELL_POLYHEDRON = _simV2.VISIT_CELL_POLYHEDRON
+
+_simV2.VISIT_CELL_QUADRATIC_EDGE_swigconstant(_simV2)
+VISIT_CELL_QUADRATIC_EDGE = _simV2.VISIT_CELL_QUADRATIC_EDGE
+
+_simV2.VISIT_CELL_QUADRATIC_TRI_swigconstant(_simV2)
+VISIT_CELL_QUADRATIC_TRI = _simV2.VISIT_CELL_QUADRATIC_TRI
+
+_simV2.VISIT_CELL_QUADRATIC_QUAD_swigconstant(_simV2)
+VISIT_CELL_QUADRATIC_QUAD = _simV2.VISIT_CELL_QUADRATIC_QUAD
+
+_simV2.VISIT_CELL_QUADRATIC_TET_swigconstant(_simV2)
+VISIT_CELL_QUADRATIC_TET = _simV2.VISIT_CELL_QUADRATIC_TET
+
+_simV2.VISIT_CELL_QUADRATIC_PYR_swigconstant(_simV2)
+VISIT_CELL_QUADRATIC_PYR = _simV2.VISIT_CELL_QUADRATIC_PYR
+
+_simV2.VISIT_CELL_QUADRATIC_WEDGE_swigconstant(_simV2)
+VISIT_CELL_QUADRATIC_WEDGE = _simV2.VISIT_CELL_QUADRATIC_WEDGE
+
+_simV2.VISIT_CELL_QUADRATIC_HEX_swigconstant(_simV2)
+VISIT_CELL_QUADRATIC_HEX = _simV2.VISIT_CELL_QUADRATIC_HEX
+
+_simV2.VISIT_CELL_BIQUADRATIC_TRI_swigconstant(_simV2)
+VISIT_CELL_BIQUADRATIC_TRI = _simV2.VISIT_CELL_BIQUADRATIC_TRI
+
+_simV2.VISIT_CELL_BIQUADRATIC_QUAD_swigconstant(_simV2)
+VISIT_CELL_BIQUADRATIC_QUAD = _simV2.VISIT_CELL_BIQUADRATIC_QUAD
+
+_simV2.VISIT_CELL_TRIQUADRATIC_HEX_swigconstant(_simV2)
+VISIT_CELL_TRIQUADRATIC_HEX = _simV2.VISIT_CELL_TRIQUADRATIC_HEX
+
+_simV2.VISIT_CELL_QUADRATIC_LINEAR_QUAD_swigconstant(_simV2)
+VISIT_CELL_QUADRATIC_LINEAR_QUAD = _simV2.VISIT_CELL_QUADRATIC_LINEAR_QUAD
+
+_simV2.VISIT_CELL_QUADRATIC_LINEAR_WEDGE_swigconstant(_simV2)
+VISIT_CELL_QUADRATIC_LINEAR_WEDGE = _simV2.VISIT_CELL_QUADRATIC_LINEAR_WEDGE
+
+_simV2.VISIT_CELL_BIQUADRATIC_QUADRATIC_WEDGE_swigconstant(_simV2)
+VISIT_CELL_BIQUADRATIC_QUADRATIC_WEDGE = _simV2.VISIT_CELL_BIQUADRATIC_QUADRATIC_WEDGE
+
+_simV2.VISIT_CELL_BIQUADRATIC_QUADRATIC_HEX_swigconstant(_simV2)
+VISIT_CELL_BIQUADRATIC_QUADRATIC_HEX = _simV2.VISIT_CELL_BIQUADRATIC_QUADRATIC_HEX
 
 _simV2.VISIT_COORD_MODE_SEPARATE_swigconstant(_simV2)
 VISIT_COORD_MODE_SEPARATE = _simV2.VISIT_COORD_MODE_SEPARATE
