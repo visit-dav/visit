@@ -406,11 +406,13 @@ ELSE(NOT WIN32)
    # limitations in cmake's untar, even winzip's command line, so
    # try 7-zip if available.
    # 
+   set(progx86 "PROGRAMFILES(X86)") 
    FIND_PROGRAM(SEVEN_ZIP_EXE 7z "${VISIT_SEVEN_ZIP_DIR}" 
                                  "$ENV{PROGRAMFILES}/7-Zip" 
-                                 "$ENV{PROGRAMFILES(X86)}/7-Zip"
+                                 "$ENV{progx86}/7-Zip"
                                  "$ENV{PROGRAM6432}/7-Zip")
 
+   unset(progx86)
    IF ("${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
        MESSAGE(WARNING "7-Zip not found, .tar.gz data files will not be extracted.")
    ENDIF ("${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
