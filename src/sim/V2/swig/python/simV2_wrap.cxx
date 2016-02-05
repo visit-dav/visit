@@ -5908,7 +5908,6 @@ SWIGINTERN PyObject *_wrap_VisItUI_textChanged(PyObject *SWIGUNUSEDPARM(self), P
   int res1 ;
   char *buf1 = 0 ;
   int alloc1 = 0 ;
-  simV2_PyObject callback2 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
@@ -5931,6 +5930,45 @@ SWIGINTERN PyObject *_wrap_VisItUI_textChanged(PyObject *SWIGUNUSEDPARM(self), P
     arg3 = static_cast<void*>(package);
   }
   result = (int)VisItUI_textChanged((char const *)arg1,arg2,arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisItUI_cellChanged(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  void (*arg2)(char *,void *) = (void (*)(char *,void *)) 0 ;
+  void *arg3 = (void *) 0 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:VisItUI_cellChanged",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_cellChanged" "', argument " "1"" of type '" "char const *""'");
+  }
+  arg1 = reinterpret_cast< char * >(buf1);
+  {
+    int res = SWIG_ConvertFunctionPtr(obj1, (void**)(&arg2), SWIGTYPE_p_f_p_char_p_void__void);
+    if (!SWIG_IsOK(res)) {
+      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "VisItUI_cellChanged" "', argument " "2"" of type '" "void (*)(char *,void *)""'"); 
+    }
+  }
+  {
+    simV2_CallbackData *package = newCallbackData(callback2, obj2);
+    arg3 = static_cast<void*>(package);
+  }
+  result = (int)VisItUI_cellChanged((char const *)arg1,arg2,arg3);
   resultobj = SWIG_From_int(static_cast< int >(result));
   if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
   return resultobj;
@@ -5983,6 +6021,49 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisItUI_setValueD(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  double arg2 ;
+  int arg3 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:VisItUI_setValueD",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_setValueD" "', argument " "1"" of type '" "char const *""'");
+  }
+  arg1 = reinterpret_cast< char * >(buf1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisItUI_setValueD" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisItUI_setValueD" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  result = (int)VisItUI_setValueD((char const *)arg1,arg2,arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VisItUI_setValueS(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   char *arg1 = (char *) 0 ;
@@ -6025,6 +6106,271 @@ SWIGINTERN PyObject *_wrap_VisItUI_setValueS(PyObject *SWIGUNUSEDPARM(self), PyO
 fail:
   if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
   if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisItUI_setTableValueI(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:VisItUI_setTableValueI",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_setTableValueI" "', argument " "1"" of type '" "char const *""'");
+  }
+  arg1 = reinterpret_cast< char * >(buf1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisItUI_setTableValueI" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisItUI_setTableValueI" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VisItUI_setTableValueI" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "VisItUI_setTableValueI" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  result = (int)VisItUI_setTableValueI((char const *)arg1,arg2,arg3,arg4,arg5);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisItUI_setTableValueD(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  double arg4 ;
+  int arg5 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:VisItUI_setTableValueD",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_setTableValueD" "', argument " "1"" of type '" "char const *""'");
+  }
+  arg1 = reinterpret_cast< char * >(buf1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisItUI_setTableValueD" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisItUI_setTableValueD" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_double(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VisItUI_setTableValueD" "', argument " "4"" of type '" "double""'");
+  } 
+  arg4 = static_cast< double >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "VisItUI_setTableValueD" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  result = (int)VisItUI_setTableValueD((char const *)arg1,arg2,arg3,arg4,arg5);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisItUI_setTableValueV(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  double arg4 ;
+  double arg5 ;
+  double arg6 ;
+  int arg7 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  double val5 ;
+  int ecode5 = 0 ;
+  double val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOO:VisItUI_setTableValueV",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_setTableValueV" "', argument " "1"" of type '" "char const *""'");
+  }
+  arg1 = reinterpret_cast< char * >(buf1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisItUI_setTableValueV" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisItUI_setTableValueV" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_double(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VisItUI_setTableValueV" "', argument " "4"" of type '" "double""'");
+  } 
+  arg4 = static_cast< double >(val4);
+  ecode5 = SWIG_AsVal_double(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "VisItUI_setTableValueV" "', argument " "5"" of type '" "double""'");
+  } 
+  arg5 = static_cast< double >(val5);
+  ecode6 = SWIG_AsVal_double(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "VisItUI_setTableValueV" "', argument " "6"" of type '" "double""'");
+  } 
+  arg6 = static_cast< double >(val6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "VisItUI_setTableValueV" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  result = (int)VisItUI_setTableValueV((char const *)arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisItUI_setTableValueS(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  char *arg4 = (char *) 0 ;
+  int arg5 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int res4 ;
+  char *buf4 = 0 ;
+  int alloc4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:VisItUI_setTableValueS",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_setTableValueS" "', argument " "1"" of type '" "char const *""'");
+  }
+  arg1 = reinterpret_cast< char * >(buf1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisItUI_setTableValueS" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisItUI_setTableValueS" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  res4 = SWIG_AsCharPtrAndSize(obj3, &buf4, NULL, &alloc4);
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "VisItUI_setTableValueS" "', argument " "4"" of type '" "char const *""'");
+  }
+  arg4 = reinterpret_cast< char * >(buf4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "VisItUI_setTableValueS" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  result = (int)VisItUI_setTableValueS((char const *)arg1,arg2,arg3,(char const *)arg4,arg5);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
   return NULL;
 }
 
@@ -6597,6 +6943,160 @@ SWIGINTERN PyObject *VISIT_CELL_POLYHEDRON_swigconstant(PyObject *SWIGUNUSEDPARM
   d = PyModule_GetDict(module);
   if (!d) return NULL;
   SWIG_Python_SetConstant(d, "VISIT_CELL_POLYHEDRON",SWIG_From_int(static_cast< int >(8)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_QUADRATIC_EDGE_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_QUADRATIC_EDGE",SWIG_From_int(static_cast< int >(20)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_QUADRATIC_TRI_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_QUADRATIC_TRI",SWIG_From_int(static_cast< int >(21)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_QUADRATIC_QUAD_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_QUADRATIC_QUAD",SWIG_From_int(static_cast< int >(22)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_QUADRATIC_TET_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_QUADRATIC_TET",SWIG_From_int(static_cast< int >(23)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_QUADRATIC_PYR_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_QUADRATIC_PYR",SWIG_From_int(static_cast< int >(24)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_QUADRATIC_WEDGE_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_QUADRATIC_WEDGE",SWIG_From_int(static_cast< int >(25)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_QUADRATIC_HEX_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_QUADRATIC_HEX",SWIG_From_int(static_cast< int >(26)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_BIQUADRATIC_TRI_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_BIQUADRATIC_TRI",SWIG_From_int(static_cast< int >(27)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_BIQUADRATIC_QUAD_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_BIQUADRATIC_QUAD",SWIG_From_int(static_cast< int >(28)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_TRIQUADRATIC_HEX_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_TRIQUADRATIC_HEX",SWIG_From_int(static_cast< int >(29)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_QUADRATIC_LINEAR_QUAD_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_QUADRATIC_LINEAR_QUAD",SWIG_From_int(static_cast< int >(30)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_QUADRATIC_LINEAR_WEDGE_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_QUADRATIC_LINEAR_WEDGE",SWIG_From_int(static_cast< int >(31)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_BIQUADRATIC_QUADRATIC_WEDGE_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_BIQUADRATIC_QUADRATIC_WEDGE",SWIG_From_int(static_cast< int >(32)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_CELL_BIQUADRATIC_QUADRATIC_HEX_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_CELL_BIQUADRATIC_QUADRATIC_HEX",SWIG_From_int(static_cast< int >(33)));
   return SWIG_Py_Void();
 }
 
@@ -14731,8 +15231,14 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VisItUI_stateChanged", _wrap_VisItUI_stateChanged, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_valueChanged", _wrap_VisItUI_valueChanged, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_textChanged", _wrap_VisItUI_textChanged, METH_VARARGS, NULL},
+	 { (char *)"VisItUI_cellChanged", _wrap_VisItUI_cellChanged, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_setValueI", _wrap_VisItUI_setValueI, METH_VARARGS, NULL},
+	 { (char *)"VisItUI_setValueD", _wrap_VisItUI_setValueD, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_setValueS", _wrap_VisItUI_setValueS, METH_VARARGS, NULL},
+	 { (char *)"VisItUI_setTableValueI", _wrap_VisItUI_setTableValueI, METH_VARARGS, NULL},
+	 { (char *)"VisItUI_setTableValueD", _wrap_VisItUI_setTableValueD, METH_VARARGS, NULL},
+	 { (char *)"VisItUI_setTableValueV", _wrap_VisItUI_setTableValueV, METH_VARARGS, NULL},
+	 { (char *)"VisItUI_setTableValueS", _wrap_VisItUI_setTableValueS, METH_VARARGS, NULL},
 	 { (char *)"VISIT_INVALID_HANDLE_swigconstant", VISIT_INVALID_HANDLE_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_ERROR_swigconstant", VISIT_ERROR_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_OKAY_swigconstant", VISIT_OKAY_swigconstant, METH_VARARGS, NULL},
@@ -14785,6 +15291,20 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VISIT_CELL_HEX_swigconstant", VISIT_CELL_HEX_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_CELL_POINT_swigconstant", VISIT_CELL_POINT_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_CELL_POLYHEDRON_swigconstant", VISIT_CELL_POLYHEDRON_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_QUADRATIC_EDGE_swigconstant", VISIT_CELL_QUADRATIC_EDGE_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_QUADRATIC_TRI_swigconstant", VISIT_CELL_QUADRATIC_TRI_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_QUADRATIC_QUAD_swigconstant", VISIT_CELL_QUADRATIC_QUAD_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_QUADRATIC_TET_swigconstant", VISIT_CELL_QUADRATIC_TET_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_QUADRATIC_PYR_swigconstant", VISIT_CELL_QUADRATIC_PYR_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_QUADRATIC_WEDGE_swigconstant", VISIT_CELL_QUADRATIC_WEDGE_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_QUADRATIC_HEX_swigconstant", VISIT_CELL_QUADRATIC_HEX_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_BIQUADRATIC_TRI_swigconstant", VISIT_CELL_BIQUADRATIC_TRI_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_BIQUADRATIC_QUAD_swigconstant", VISIT_CELL_BIQUADRATIC_QUAD_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_TRIQUADRATIC_HEX_swigconstant", VISIT_CELL_TRIQUADRATIC_HEX_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_QUADRATIC_LINEAR_QUAD_swigconstant", VISIT_CELL_QUADRATIC_LINEAR_QUAD_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_QUADRATIC_LINEAR_WEDGE_swigconstant", VISIT_CELL_QUADRATIC_LINEAR_WEDGE_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_BIQUADRATIC_QUADRATIC_WEDGE_swigconstant", VISIT_CELL_BIQUADRATIC_QUADRATIC_WEDGE_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_CELL_BIQUADRATIC_QUADRATIC_HEX_swigconstant", VISIT_CELL_BIQUADRATIC_QUADRATIC_HEX_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_COORD_MODE_SEPARATE_swigconstant", VISIT_COORD_MODE_SEPARATE_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_COORD_MODE_INTERLEAVED_swigconstant", VISIT_COORD_MODE_INTERLEAVED_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_GHOSTCELL_REAL_swigconstant", VISIT_GHOSTCELL_REAL_swigconstant, METH_VARARGS, NULL},
