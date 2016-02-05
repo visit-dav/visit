@@ -3,6 +3,7 @@
     <Field name="name" label="name" type="string">
     </Field>
     <Field name="enabled" label="enabled" type="int">
+      1
     </Field>
     <Function name="simv2_CommandMetaData_check" user="true" member="true">
     </Function>
