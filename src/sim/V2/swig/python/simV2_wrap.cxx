@@ -5908,6 +5908,7 @@ SWIGINTERN PyObject *_wrap_VisItUI_textChanged(PyObject *SWIGUNUSEDPARM(self), P
   int res1 ;
   char *buf1 = 0 ;
   int alloc1 = 0 ;
+  simV2_PyObject callback2 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
@@ -5947,6 +5948,7 @@ SWIGINTERN PyObject *_wrap_VisItUI_cellChanged(PyObject *SWIGUNUSEDPARM(self), P
   int res1 ;
   char *buf1 = 0 ;
   int alloc1 = 0 ;
+  simV2_PyObject callback2 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
