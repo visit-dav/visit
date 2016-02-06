@@ -82,6 +82,11 @@ public:
                        const QString &stop,
                        const QString &step);
 
+    void setTimeRanging(bool timeRanging);
+    void setTimeStart(const QString &start);
+    void setTimeStep(const QString &step);
+    void setTimeStop(const QString &stop);
+
 signals:
     void executeButtonCommand(const QString &cmd);
     void showCommandWindow();
