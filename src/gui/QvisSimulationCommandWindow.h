@@ -99,9 +99,9 @@ public slots:
     void unpost();
 private slots:
     void handleTimeRanging(bool);
-    void handleStart();
-    void handleStop();
-    void handleStep();
+    void handleStart(const QString&);
+    void handleStop(const QString&);
+    void handleStep(const QString&);
     void handleCommandButton(int);
 protected:
     virtual void CreateWindowContents();
