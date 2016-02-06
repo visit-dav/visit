@@ -1144,6 +1144,22 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
         }
     }
 
+    else if(uiValues->GetName() == "SIMULATION_TIME_LIMITS_ENABLED")
+    {
+        simCommands->setTimeRanging( uiValues->GetSvalue() == "1" );
+    }
+    else if(uiValues->GetName() == "SIMULATION_TIME_START_CYCLE")
+    {
+        simCommands->setTimeStart( QString(uiValues->GetSvalue().c_str()) );
+    }
+    else if(uiValues->GetName() == "SIMULATION_TIME_STEP_CYCLE")
+    {
+        simCommands->setTimeStep( QString(uiValues->GetSvalue().c_str()) );
+    }
+    else if(uiValues->GetName() == "SIMULATION_TIME_STOP_CYCLE")
+    {
+        simCommands->setTimeStop( QString(uiValues->GetSvalue().c_str()) );
+    }
     else if(uiValues->GetName() == "SIMULATION_MESSAGE_BOX")
     {
         QString msg = QString(uiValues->GetSvalue().c_str());
