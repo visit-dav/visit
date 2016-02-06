@@ -129,7 +129,8 @@ QvisSimulationCommandWindow::CreateWindowContents()
     startCycle->setText(tr("0"));
     timeLayout->addWidget(startLabel,0,0);
     timeLayout->addWidget(startCycle,0,1);
-    connect(startCycle,SIGNAL(returnPressed()),this,SLOT(handleStart()));
+    connect(startCycle,SIGNAL(textChanged(const QString &)),
+            this,SLOT(handleStart(const QString&)));
 
     stepCycle = new QLineEdit(timeGroup);
     stepLabel = new QLabel(timeGroup);
@@ -137,7 +138,8 @@ QvisSimulationCommandWindow::CreateWindowContents()
     stepCycle->setText(tr("1"));
     timeLayout->addWidget(stepLabel,0,2);
     timeLayout->addWidget(stepCycle,0,3);
-    connect(stepCycle,SIGNAL(returnPressed()),this,SLOT(handleStep()));
+    connect(stepCycle,SIGNAL(textChanged(const QString &)),
+            this,SLOT(handleStep(const QString&)));
     
     stopCycle = new QLineEdit(timeGroup);
     stopLabel = new QLabel(timeGroup);
@@ -145,7 +147,8 @@ QvisSimulationCommandWindow::CreateWindowContents()
     stopCycle->setText(tr("0"));
     timeLayout->addWidget(stopLabel,0,4);
     timeLayout->addWidget(stopCycle,0,5);
-    connect(stopCycle,SIGNAL(returnPressed()),this,SLOT(handleStop()));
+    connect(stopCycle,SIGNAL(textChanged(const QString &)),
+            this,SLOT(handleStop(const QString&)));
 }
 
 int
@@ -266,7 +269,7 @@ QvisSimulationCommandWindow::handleTimeRanging(bool b)
 }
 
 void
-QvisSimulationCommandWindow::handleStart()
+QvisSimulationCommandWindow::handleStart(const QString &text)
 {
     QString value(startCycle->text().trimmed());
     if(!value.isEmpty())
@@ -274,7 +277,7 @@ QvisSimulationCommandWindow::handleStart()
 }
 
 void
-QvisSimulationCommandWindow::handleStop()
+QvisSimulationCommandWindow::handleStop(const QString &text)
 {
     QString value(stopCycle->text().trimmed());
     if(!value.isEmpty())
@@ -282,7 +285,7 @@ QvisSimulationCommandWindow::handleStop()
 }
 
 void
-QvisSimulationCommandWindow::handleStep()
+QvisSimulationCommandWindow::handleStep(const QString &text)
 {
     QString value(stepCycle->text().trimmed());
     if(!value.isEmpty())
