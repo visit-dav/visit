@@ -57,8 +57,6 @@
 #include <QSplitter>
 #include <QTextEdit>
 
-using std::string;
-
 // ****************************************************************************
 // Method: VisItSimStripChart::QvisStripChartMgr
 //
@@ -329,6 +327,52 @@ QvisStripChartMgr::isStripChartTabLabel( QString name )
 }
 
 // ****************************************************************************
+// Method: VisItSimStripChart::reset
+//
+// Purpose: 
+//   This is a pass through method that call the function with the
+//   same name in the strip chat tab widget.
+//
+// Arguments:
+//   tabName    :  name of the strip chart this label should be applied to.
+//
+// Programmer: Shelly Prevost
+// Creation:   Wed Sep 26 16:16:23 PDT 2007
+//
+// Modifications:
+//  
+//   
+// ****************************************************************************
+void
+QvisStripChartMgr::reset( QString tabName )
+{
+    int tabIndex = stripChartTabWidget->nameToTabIndex(tabName);
+    stripChartTabWidget->reset(tabIndex);
+    updateCurrentTabData();
+}
+
+// ****************************************************************************
+// Method: VisItSimStripChart::reset()
+//
+// Purpose: 
+//   This is a pass through method that call the function with the
+//   same name in the strip chat tab widget.
+//
+// Programmer: Shelly Prevost
+// Creation:   Wed Sep 26 16:16:23 PDT 2007
+//
+// Modifications:
+//  
+//   
+// ****************************************************************************
+void
+QvisStripChartMgr::reset()
+{
+    stripChartTabWidget->reset();
+    updateCurrentTabData();
+}
+
+// ****************************************************************************
 // Method: VisItSimStripChart::zoomIn
 //
 // Purpose: 
@@ -369,11 +413,11 @@ QvisStripChartMgr::zoomOut()
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::reset()
+// Method: VisItSimStripChart::focus
 //
 // Purpose: 
 //   This is a pass through method that call the function with the
-//   same name in the strip chat tab widget and update the Mgr widgets
+//   same name in the strip chat tab widget.
 //
 // Programmer: Shelly Prevost
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
@@ -383,10 +427,9 @@ QvisStripChartMgr::zoomOut()
 //   
 // ****************************************************************************
 void
-QvisStripChartMgr::reset()
+QvisStripChartMgr::focus()
 {
-    stripChartTabWidget->reset();
-    updateCurrentTabData();
+    stripChartTabWidget->focus();
 }
 
 // ****************************************************************************
@@ -397,7 +440,7 @@ QvisStripChartMgr::reset()
 //   the matching strip chart.
 //
 // Arguments:
-//   tabName    :  name of the strip chart this lable should be applied to.
+//   tabName    :  name of the strip chart this label should be applied to.
 //   newLabel   :  the tab label for the strip chart.
 //
 // Programmer: Shelly Prevost
@@ -411,27 +454,8 @@ void
 QvisStripChartMgr::setTabLabel(QString tabName, QString newLabel )
 {
     int tabIndex = stripChartTabWidget->nameToTabIndex(tabName);
-    stripChartTabWidget->setTabLabel(tabIndex,newLabel );
-}
 
-// ****************************************************************************
-// Method: VisItSimStripChart::focus()
-//
-// Purpose: 
-//   This is a pass through method that call the function with the
-//   same name in the strip chat tab widget.
-//
-// Programmer: Shelly Prevost
-// Creation:   Wed Sep 26 16:16:23 PDT 2007
-//
-// Modifications:
-//  
-//   
-// ****************************************************************************
-void 
-QvisStripChartMgr::focus()
-{
-    stripChartTabWidget->focus();
+    stripChartTabWidget->setTabLabel(tabIndex,newLabel );
 }
 
 // ****************************************************************************
@@ -542,7 +566,7 @@ void QvisStripChartMgr::setEnable( QString name, bool enable )
 //   
 // ****************************************************************************
 bool 
-QvisStripChartMgr::addDataPoint ( QString name,double x, double y)
+QvisStripChartMgr::addDataPoint( QString name, double x, double y )
 {
     bool outOfBound = stripChartTabWidget->addDataPoint(name,x,y);
     updateCurrentTabData();
@@ -588,9 +612,9 @@ QvisStripChartMgr::update(QString name)
 //   
 // ****************************************************************************
 void 
-QvisStripChartMgr::getMinMaxData( QString name, double &minY, double &maxY)
+QvisStripChartMgr::getMinMaxData( QString name, double &minY, double &maxY )
 {
-    stripChartTabWidget->getMinMaxData( name,minY, maxY);
+    stripChartTabWidget->getMinMaxData( name, minY, maxY );
 }
 
 void 
@@ -873,8 +897,8 @@ int QvisStripChartMgr::sendCMD(QString sig, const QObject *ui, QString value)
     // check that there is at least one engine
     const stringVector &s = engines->GetEngineName();
     if ( s.size() < 1) return 0;
-    string host = engines->GetEngineName()[simIndex];
-    string sim  = engines->GetSimulationName()[simIndex];
+    std::string host = engines->GetEngineName()[simIndex];
+    std::string sim  = engines->GetSimulationName()[simIndex];
 
     QString cmd = sig + ";" + ui->objectName() + ";" + ui->metaObject()->className() + ";" +
                   ui->parent()->objectName() + ";" + value;
@@ -908,8 +932,8 @@ int QvisStripChartMgr::sendCMD(QString cmd)
     // check that there is at least one engine
     const stringVector &s = engines->GetEngineName();
     if ( s.size() < 1) return 0;
-    string host = engines->GetEngineName()[simIndex];
-    string sim  = engines->GetSimulationName()[simIndex];
+    std::string host = engines->GetEngineName()[simIndex];
+    std::string sim  = engines->GetSimulationName()[simIndex];
     viewer->GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString());
     return 0;
 }
