@@ -89,9 +89,9 @@ public:
     bool  isStripChartTabLabel( QString name );
     
     void setEnable( QString name, bool enable );
-    bool getEnable(QString name);
+    bool getEnable( QString name);
 
-    bool addDataPoint ( QString name,double x, double y);
+    bool addDataPoint( QString name, double x, double y );
     void update(QString name);
     void getMinMaxData( QString name, double &minY, double &maxY);
     void enableOutOfBandLimits(QString name, bool enabled);
@@ -107,6 +107,7 @@ public:
 
     virtual void CreateEntireWindow();
 public slots:
+    void reset(QString tabName );
     void reset();
     void zoomIn();
     void zoomOut();

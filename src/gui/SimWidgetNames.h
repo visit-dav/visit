@@ -54,16 +54,16 @@
 *****************************************************************************/
 
 #define MESSAGE_WIDGET_NAME "MessageViewerTextEdit"
+#define STRIP_CHART_0_WIDGET_NAME "StripChart_0"
 #define STRIP_CHART_1_WIDGET_NAME "StripChart_1"
 #define STRIP_CHART_2_WIDGET_NAME "StripChart_2"
 #define STRIP_CHART_3_WIDGET_NAME "StripChart_3"
 #define STRIP_CHART_4_WIDGET_NAME "StripChart_4"
-#define STRIP_CHART_5_WIDGET_NAME "StripChart_5"
+#define STRIP_CHART_0_TAB_NAME  "StripChart_0_Tab"
 #define STRIP_CHART_1_TAB_NAME  "StripChart_1_Tab"
 #define STRIP_CHART_2_TAB_NAME  "StripChart_2_Tab"
 #define STRIP_CHART_3_TAB_NAME  "StripChart_3_Tab"
 #define STRIP_CHART_4_TAB_NAME  "StripChart_4_Tab"
-#define STRIP_CHART_5_TAB_NAME  "StripChart_5_Tab"
 #define STRIP_MAX_WIDGET_NAME     "MaxEdit"
 #define STRIP_MIN_WIDGET_NAME     "MinEdit"
 #define STRIP_CUR_WIDGET_NAME     "CurEdit"

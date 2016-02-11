@@ -284,10 +284,10 @@ QvisSimulationWindow::CreateWindowContents()
     simMessages->post();
 
     // Create the strip chart manager and post it to the notepad.
-    // int simindex = simCombo->currentIndex();
-    // int index = simulationToEngineListMap[simindex];
-    // stripCharts = new QvisStripChartMgr(0, GetViewerProxy(), engines, index, notepadAux);
-    // stripCharts->post();
+    int simindex = simCombo->currentIndex();
+    int index = simulationToEngineListMap[simindex];
+    stripCharts = new QvisStripChartMgr(0, GetViewerProxy(), engines, index, notepadAux);
+    stripCharts->post();
 
     // Make sure we show the commands page.
     notepadAux->showPage(simCommands);
@@ -1201,6 +1201,95 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
     {
         simMessages->clear();
     }
+
+    else if(uiValues->GetName() == "STRIP_CHART_RESET")
+    {
+      int index = atoi( uiValues->GetSvalue().c_str() );
+
+      switch( index )
+      {
+      case 0:
+        stripCharts->setTabLabel(STRIP_CHART_0_TAB_NAME,
+                                 STRIP_CHART_0_WIDGET_NAME );
+        stripCharts->reset( STRIP_CHART_0_TAB_NAME );
+        break;
+      case 1:
+        stripCharts->setTabLabel(STRIP_CHART_1_TAB_NAME,
+                                 STRIP_CHART_1_WIDGET_NAME );
+        stripCharts->reset( STRIP_CHART_1_TAB_NAME );
+        break;
+      case 2:
+        stripCharts->setTabLabel(STRIP_CHART_2_TAB_NAME,
+                                 STRIP_CHART_2_WIDGET_NAME );
+        stripCharts->reset( STRIP_CHART_2_TAB_NAME );
+        break;
+      case 3:
+        stripCharts->setTabLabel(STRIP_CHART_3_TAB_NAME,
+                                 STRIP_CHART_3_WIDGET_NAME );
+        stripCharts->reset( STRIP_CHART_3_TAB_NAME );
+        break;
+      case 4:
+        stripCharts->setTabLabel(STRIP_CHART_4_TAB_NAME,
+                                 STRIP_CHART_4_WIDGET_NAME );
+        stripCharts->reset( STRIP_CHART_4_TAB_NAME );
+        break;
+      }
+    }
+
+    else if(uiValues->GetName() == "STRIP_CHART_SET_NAME")
+    {
+      int index;
+      char name[128];
+      
+      sscanf (uiValues->GetSvalue().c_str(),"%d | %s", &index, name);
+
+      switch( index )
+      {
+      case 0:
+        stripCharts->setTabLabel(STRIP_CHART_0_TAB_NAME, name );
+        stripCharts->reset( STRIP_CHART_0_TAB_NAME );
+        break;
+      case 1:
+        stripCharts->setTabLabel(STRIP_CHART_1_TAB_NAME, name );
+        stripCharts->reset( STRIP_CHART_1_TAB_NAME );
+        break;
+      case 2:
+        stripCharts->setTabLabel(STRIP_CHART_2_TAB_NAME, name );
+        stripCharts->reset( STRIP_CHART_2_TAB_NAME );
+        break;
+      case 3:
+        stripCharts->setTabLabel(STRIP_CHART_3_TAB_NAME, name );
+        stripCharts->reset( STRIP_CHART_3_TAB_NAME );
+        break;
+      case 4:
+        stripCharts->setTabLabel(STRIP_CHART_4_TAB_NAME, name );
+        stripCharts->reset( STRIP_CHART_4_TAB_NAME );
+        break;
+      }
+    }
+
+    else if(uiValues->GetName() == "STRIP_CHART_ADD_POINT")
+    {
+      char name[128];
+      double x, y;
+      
+      sscanf (uiValues->GetSvalue().c_str(), "%s | %lf | %lf", name, &x, &y);
+
+      double maxY;
+      double minY;
+      stripCharts->setEnable(name, uiValues->GetEnabled());
+      bool outOfBounds = stripCharts->addDataPoint(name, x, y);
+      stripCharts->update(name);
+      stripCharts->getMinMaxData(name, minY, maxY);
+      
+      if( outOfBounds )
+      {
+        QString warning;
+        warning.sprintf( "ALERT;%s;Data;OutOfBounds;", name);
+        int simIndex = simCombo->currentIndex();
+        ViewerSendCMD( simIndex, warning );
+      }
+    }
 }
 
 // ****************************************************************************
@@ -1485,8 +1574,8 @@ QvisSimulationWindow::UpdateInformation()
         }
 
         // update ui component information from the meta data
-//        UpdateCustomUI(md);
-        UpdateSimulationUI(md);
+        // UpdateCustomUI(md);
+        // UpdateSimulationUI(md);
         simInfo->setEnabled(true);
     }
 }
@@ -1546,10 +1635,10 @@ QvisSimulationWindow::UpdateCustomUI (const avtDatabaseMetaData *md)
 //
 // ****************************************************************************
 
+#if 0
 void
 QvisSimulationWindow::UpdateSimulationUI (const avtDatabaseMetaData *md)
 {
-#if 0
     int numCommands = md->GetSimInfo().GetNumGenericCommands();
     // loop thru all command updates and updates the matching UI component.
     for (int c=simCommands->numCommandButtons(); c<numCommands; c++)
@@ -1557,8 +1646,8 @@ QvisSimulationWindow::UpdateSimulationUI (const avtDatabaseMetaData *md)
 //        UpdateUIComponent (this,&(md->GetSimInfo().GetGenericCommands(c)));
 //        SpecialWidgetUpdate (&(md->GetSimInfo().GetGenericCommands(c)));
     }
-#endif
 }
+#endif
 
 #if 0
 // ****************************************************************************
@@ -1591,7 +1680,8 @@ QvisSimulationWindow::SpecialWidgetUpdate (const avtSimulationCommandSpecificati
     QObject *ui = NULL;
     ui  = findChild<QObject *>(cmd->GetName().c_str());  
     if ( stripCharts->isStripChartWidget(cmd->GetName().c_str()))
-    {    double maxY;
+    {
+         double maxY;
          double minY;
          const QString dataX(cmd->GetText().c_str());
          const QString dataY(cmd->GetValue().c_str());
@@ -1610,8 +1700,8 @@ QvisSimulationWindow::SpecialWidgetUpdate (const avtSimulationCommandSpecificati
     }
     if ( stripCharts->isStripChartTabLabel(cmd->GetName().c_str()))
     {    
-        QString tabName(cmd->GetName().c_str());
-        QString tabLabel( cmd->GetText().c_str());
+        QString tabName( cmd->GetName().c_str() );
+        QString tabLabel( cmd->GetText().c_str() );
         stripCharts->setTabLabel(tabName, tabLabel);
     }
 
