@@ -82,16 +82,18 @@
 QvisStripChartTabWidget::QvisStripChartTabWidget(QWidget *parent, QObject *mgr, int winX, int winY)
     : QTabWidget(parent)
 {
-    // initialize vector array with strip chart data. This keeps all the associated data
-    // together. It also make sure that the number of strip chart widgets is consistant.
+    // initialize vector array with strip chart data. This keeps all
+    // the associated data together. It also make sure that the number
+    // of strip chart widgets is consistant.
     SC_Info.resize(maxStripCharts);
-    SC_Info[0] = SC_NamesTabsIndex ( STRIP_CHART_1_WIDGET_NAME,STRIP_CHART_1_TAB_NAME,0);
-    SC_Info[1] = SC_NamesTabsIndex ( STRIP_CHART_2_WIDGET_NAME,STRIP_CHART_2_TAB_NAME,1);
-    SC_Info[2] = SC_NamesTabsIndex ( STRIP_CHART_3_WIDGET_NAME,STRIP_CHART_3_TAB_NAME,2);
-    SC_Info[3] = SC_NamesTabsIndex ( STRIP_CHART_4_WIDGET_NAME,STRIP_CHART_4_TAB_NAME,3);
-    SC_Info[4] = SC_NamesTabsIndex ( STRIP_CHART_5_WIDGET_NAME,STRIP_CHART_5_TAB_NAME,4);
+    SC_Info[0] = SC_NamesTabsIndex ( STRIP_CHART_0_WIDGET_NAME,STRIP_CHART_0_TAB_NAME,0);
+    SC_Info[1] = SC_NamesTabsIndex ( STRIP_CHART_1_WIDGET_NAME,STRIP_CHART_1_TAB_NAME,1);
+    SC_Info[2] = SC_NamesTabsIndex ( STRIP_CHART_2_WIDGET_NAME,STRIP_CHART_2_TAB_NAME,2);
+    SC_Info[3] = SC_NamesTabsIndex ( STRIP_CHART_3_WIDGET_NAME,STRIP_CHART_3_TAB_NAME,3);
+    SC_Info[4] = SC_NamesTabsIndex ( STRIP_CHART_4_WIDGET_NAME,STRIP_CHART_4_TAB_NAME,4);
+
     // create the strip charts
-    for (int i =0; i< SC_Info.size(); i++) 
+    for (int i=0; i<SC_Info.size(); i++) 
     {
         stripCharts[SC_Info[i].getIndex()] = new VisItSimStripChart(this,winX,winY);
         QScrollArea *sc = new QScrollArea(this);
@@ -723,6 +725,44 @@ QvisStripChartTabWidget::getEnableOutOfBandLimits()
 }
 
 // ****************************************************************************
+// Method: VisItSimStripChart::reset
+//
+// Purpose: 
+//    Pass through method to call the reset method for the specific 
+//    strip chart. 
+//
+// Programmer: Shelly Prevost
+// Creation:   Mon Oct 15 14:27:29 PDT 2007
+//
+// Modifications:
+//  
+//   
+// **************************************************************************** 
+void QvisStripChartTabWidget::reset( const int index )
+{
+    stripCharts[index]->reset();
+}
+
+// ****************************************************************************
+// Method: VisItSimStripChart::reset()
+//
+// Purpose: 
+//    Pass through method to call the reset method for the current 
+//    strip chart. 
+//
+// Programmer: Shelly Prevost
+// Creation:   Mon Oct 15 14:27:29 PDT 2007
+//
+// Modifications:
+//  
+//   
+// **************************************************************************** 
+void QvisStripChartTabWidget::reset()
+{
+    stripCharts[currentStripChart]->reset();
+}
+
+// ****************************************************************************
 // Method: VisItSimStripChart::zoomIn
 //
 // Purpose: 
@@ -739,25 +779,7 @@ QvisStripChartTabWidget::getEnableOutOfBandLimits()
 void QvisStripChartTabWidget::zoomIn()
 {
     stripCharts[currentStripChart]->zoomIn();
-}
-
-// ****************************************************************************
-// Method: VisItSimStripChart::reset
-//
-// Purpose: 
-//    Pass through method to call the reset method for the current 
-//    strip chart. 
-//
-// Programmer: Shelly Prevost
-// Creation:   Mon Oct 15 14:27:29 PDT 2007
-//
-// Modifications:
-//  
-//   
-// **************************************************************************** 
-void QvisStripChartTabWidget::reset()
-{
-    stripCharts[currentStripChart]->reset();
+    stripCharts[currentStripChart]->update();
 }
 
 // ****************************************************************************
@@ -777,6 +799,7 @@ void QvisStripChartTabWidget::reset()
 void QvisStripChartTabWidget::zoomOut()
 {
     stripCharts[currentStripChart]->zoomOut();
+    stripCharts[currentStripChart]->update();
 }
 
 // ****************************************************************************

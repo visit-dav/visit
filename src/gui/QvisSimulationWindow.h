@@ -131,7 +131,8 @@ private:
     QString GetUIFileDirectory() const;
     QString GetUIFile(const QString &key) const;
     void CreateCommandUI();
-    void UpdateSimulationUI(const avtDatabaseMetaData *md);
+    // void UpdateSimulationUI(const avtDatabaseMetaData *md);
+    // void UpdateCustomUI (const avtDatabaseMetaData *md);
     void UpdateUIComponent(QWidget *window, const QString &name, const QString &value, bool e);
 
     void ViewerSendCMD ( int simIndex, QString cmd);
