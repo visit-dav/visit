@@ -35,6 +35,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed bug opening large (> 4gb) silo files on Windows.</li>
   <li>Fixed the tensorVectorMult bug in the SPH Resample Operator found by Cody Raskin.</li>
   <li>Fixed the contract and data info issues that prevented the SPH Resample Operator from working with the Volume Plot.</li>
+  <li>Fixed a problem where _meshtv_searchpath variable in Silo files was being ignored.</li>
+  <li>Fixed a problem where an all white-space _meshtv_searchpath variable in the root of a Silo file would
+      prevent objects in subdirs from populating the menus.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -44,6 +47,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The PF3D reader was enhanced so that it now reads the new multi level file format.</li>
   <li>The SPH Resample Operator now supports zone-centered data</li>
   <li>VTK's higher order elements are now exposed via Libsim.</li>
+  <li>The Silo plugin now supports all-empty multi-block objects.</li>
+  <li>The Silo plugin now supports _visit_searchpath variable and it takes precedence over _meshtv_searchpath when both exist.</li>
 </ul>
 
 <a name="Dev_changes"></a>
