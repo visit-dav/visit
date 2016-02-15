@@ -713,6 +713,11 @@ avtPICSFilter::LoadNextTimeSlice()
         // time slice.  But the next time slice may have a different 
         // number of domains.  So we need to go to the database and get
         // the correct domain list.
+
+        // ARS - the assumption that one can go back to the database
+        // is not correct as it is possible for an upstream operator
+        // to modify the nmber of domains. This information should
+        // come from the upstream operator.
         std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
         ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
         if (*dbp == NULL)
@@ -1162,9 +1167,14 @@ AlgorithmToString(int algo)
 void
 avtPICSFilter::SetICAlgorithm()
 {
+    // ARS - When SetICAlgorithm is called via ModifyContract the
+    // needed attributes such as the DataIsReplicatedOnAllProcessors
+    // has been set by the upstream operator. 
+    avtDataAttributes &in_dataatts = GetInput()->GetInfo().GetAttributes();
+
     int actualAlgo = selectedAlgo;
 
-    std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+    std::string db = in_dataatts.GetFullDBName();
     ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
     if (*dbp == NULL)
       EXCEPTION1(InvalidFilesException, db.c_str());
@@ -1174,12 +1184,27 @@ avtPICSFilter::SetICAlgorithm()
     avtDataRequest_p dr = lastContract->GetDataRequest();
     GetPathlineVelocityMeshVariables(dr, velocityName, meshName);
 
+    // ARS - This value be should be based on the input data not the
+    // metadata.
     numDomains = md->GetNDomains( velocityName );
 
+// HANK:
+//  Proposed algorithm:
+//    if (data is replicated) // and the PICS is setting that field correctly,
+//       --> SERIAL
+//    else
+//       if (metadata is invalid) // and the PICS is declaring invalid when it creates single block output
+//          --> PARALLELIZE_OVER_DOMAIN
+//       else 
+//          --> get num domains from MD and do logic as you currently have it
+
 #ifdef PARALLEL
+    if( in_dataatts.DataIsReplicatedOnAllProcessors() )
+        actualAlgo = PICS_SERIAL;
+
     // With multiple domains the filter will not operate on demand, as
     // such the algorithm *has* to be parallel static domains.
-    if (numDomains > 1)
+    else if (numDomains > 1)
     {
         actualAlgo = PICS_PARALLEL_OVER_DOMAINS;
 
@@ -1694,11 +1719,15 @@ void
 avtPICSFilter::InitializeIntervalTree()
 {
     // Get/Compute the interval tree.
+
+    // ARS - This should be based on the input data not the meta data.
     avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents( curTimeSlice );
 
     bool dontUseIntervalTree = false;
-    if (GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition() ||
-        !GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
+    if( GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors()  ||
+        GetInput()->GetInfo().GetAttributes().GetDynamicDomainDecomposition() ||
+        !GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved() )
+        
     {
         // The reader returns an interval tree with one domain (for everything).
         // This is not what we want.  So forget about this one, as we will be 
@@ -1799,12 +1828,6 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
 
             intervalTree = GetTypedInput()->CalculateSpatialIntervalTree(
                                            performCalculationsOverAllProcs);
-
-            // std::cerr << __FUNCTION__ << "  " << __LINE__ << "  "
-            //        << "dataIsReplicated  " << dataIsReplicated << "  "
-            //        << "nleaves " << intervalTree->GetNLeaves() << "  "
-            //        << std::endl;
-
         }
         CATCH(VisItException)
         {
@@ -1845,13 +1868,6 @@ avtPICSFilter::InitializeLocators(void)
 {
     if (doPathlines || OperatingOnDemand() || specifyPoint)
         return;  // maybe this makes sense; haven't thought about it
-
-    debug1 << "avtPICSFilter::InitializeLocators " << std::endl;
-
-    // avtDataAttributes  &in_dataatts =  GetInput()->GetInfo().GetAttributes();
-
-    // if( in_dataatts.DataIsReplicatedOnAllProcessors() )
-    //   return;
 
     int t1 = visitTimer->StartTimer();
     for (int i = 0 ; i < numDomains ; i++)
@@ -1930,7 +1946,8 @@ avtPICSFilter::UpdateDataObjectInfo(void)
     avtDatasetToDatasetFilter::UpdateDataObjectInfo();
     avtDatasetOnDemandFilter::UpdateDataObjectInfo();
 
-    GetOutput()->GetInfo().GetAttributes().SetDataIsReplicatedOnAllProcessors(true);
+// HANK: this should be true if it is true, and false when it is false
+//    GetOutput()->GetInfo().GetAttributes().SetDataIsReplicatedOnAllProcessors(true);
     GetOutput()->GetInfo().GetValidity().SetWhetherStreamingPossible(false);
 }
 
@@ -3436,8 +3453,8 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
 
     lastContract = out_contract;
 
-    // Set which IC algorithm is going to be used. selectedAlgo. Which
-    // in turn affects the CheckOnDemandViability return
+    // Set which IC algorithm is going to be used which in turn
+    // affects the CheckOnDemandViability return
     // value. CheckOnDemandViability is called in the parent class,
     // avtDatasetOnDemandFilter::ModifyContract.
     SetICAlgorithm();
