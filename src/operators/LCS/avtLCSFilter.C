@@ -415,7 +415,7 @@ avtLCSFilter::ModifyContract(avtContract_p in_contract)
     avtDataRequest_p out_dr = NULL;
     std::string var = in_dr->GetOriginalVariable();
 
-    // This request is from an IC operator downstream. 
+    // This request is from an IC operator downstream.
     replicateData = in_contract->ReplicateSingleDomainOnAllProcessors();
 
 //    in_contract->SetReplicateSingleDomainOnAllProcessors(true);
@@ -472,14 +472,11 @@ avtLCSFilter::UpdateDataObjectInfo(void)
     avtDataAttributes  &in_dataatts =  GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &out_dataatts = GetOutput()->GetInfo().GetAttributes();
 
-    timeState = in_dataatts.GetTimeIndex();
-
-    // If there is an IC operator downstream the results may be
-    // replicated on all processors.
-
-    // std::cerr << "replicateData  "  << replicateData << std::endl;
-
-    out_dataatts.SetDataIsReplicatedOnAllProcessors(replicateData);
+    if( atts.GetSourceType() == LCSAttributes::RegularGrid )
+    {
+        out_dataatts.SetDataIsReplicatedOnAllProcessors(true);
+        out_dataatts.SetDynamicDomainDecomposition(false);
+    }
 
     //the outvarname has been assigned and will be added.
     //outVarName = "velocity";
@@ -687,10 +684,10 @@ avtLCSFilter::Execute(void)
         char str[1028];
 
         SNPRINTF(str, 1028,
-                 "\n\nWhen using the native mesh with mutliple domains "
-                 "and no auxilliary grid it is currently not possible "
-                 "to compute the gradients across domain boundaries. "
-                 "For the best results utilize an auzilliary grid." );
+                 "\n\nWhen utilizing a native mesh with mutliple domains "
+                 "and no auxiliary grid it is not possible to compute "
+                 "gradients across domain boundaries. For the best results "
+                 "utilize an auxiliary grid or ghost cells." );
 
         avtCallback::IssueWarning(str);
       }
