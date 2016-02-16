@@ -1,35 +1,4 @@
 ###############################################################################
-# Class: JobSubmitter_sbatch_AWE
-#
-# Purpose:    Custom "sbatch" job submitter for AWE
-#
-# Programmer: Brad Whitlock
-# Date:       Tue Jan 15 15:29:23 GMT 2013
-#
-# Modifications:
-#
-# Satheesh Maheswaran, Paul Selby, Wed May 15 11:13:02 BST 2013
-# Modified sbatch job submitter to work on AWE platforms
-#
-###############################################################################
-
-class JobSubmitter_sbatch_AWE(JobSubmitter_sbatch):
-    def __init__(self, launcher):
-        super(JobSubmitter_sbatch_AWE, self).__init__(launcher)
-        ppn = "8"
-        if self.parallel.nn != None:
-            ppn = int(math.ceil(float(self.parallel.np) / float(self.parallel.nn)))
-
-    def TFileLoadModules(self, tfile):
-        tfile.write("#SBATCH -J visit # Job Name\n")
-        tfile.write("ulimit -l unlimited\n")
-        tfile.write(". %s/init/bash\n" %GETENV("MODULESHOME"))
-        tfile.write("module purge\n")
-        tfile.write("export I_MPI_PLATFORM=auto\n")
-        tfile.write("module load slurm intel/11.1\n")
-        tfile.write("module load intelmpi/4.0.3-intel\n")
-
-###############################################################################
 # Class: JobSubmitter_mpirun_AWE
 #
 # Purpose:    Custom "mpirun" job submitter for AWE
@@ -73,6 +42,9 @@ class JobSubmitter_mpirun_AWE(JobSubmitter_mpirun):
 #   Paul Selby, Thu 22 Oct 13:47:15 BST 2015
 #   Removed ChileanPine as has been decommissioned
 #
+#   Paul Selby, Tue 16 Feb 11:53:46 GMT 2016
+#   Removed Willow
+#
 ###############################################################################
 
 class JobSubmitter_qsub_AWE(JobSubmitter_qsub):
@@ -101,16 +73,7 @@ class JobSubmitter_qsub_AWE(JobSubmitter_qsub):
 
     def TFileLoadModules(self, tfile):
 
-        if self.launcher.IsRunningOnWillow():
-            tfile.write("#MSUB -E       # Export MOAB environment variables\n")
-            tfile.write("#MSUB -N visit # Job Name\n")
-            tfile.write("#MSUB -A visit # Code name for accounting\n")
-            tfile.write("#MSUB -j oe    # Joing stderr/stdout together\n")
-            tfile.write(". %s/init/bash\n" %GETENV("MODULESHOME"))
-            tfile.write("module purge\n")
-            tfile.write("module load intel/12.1\n")
-            tfile.write("module load bullxmpi/1.1.11-intel\n")
-        elif self.launcher.IsRunningOnBlackthorn():
+        if self.launcher.IsRunningOnBlackthorn():
             tfile.write("#MSUB -E       # Export MOAB environment variables\n")
             tfile.write("#MSUB -N visit # Job Name\n")
             tfile.write("#MSUB -A visit # Code name for accounting\n")
@@ -170,6 +133,10 @@ class JobSubmitter_qsub_AWE(JobSubmitter_qsub):
 #   Paul Selby, Thu 22 Oct 13:47:15 BST 2015
 #   Removed ChileanPine as has been decommissioned
 #
+#   Paul Selby, Tue 16 Feb 11:53:46 GMT 2016
+#   Removed Ivy (including JobSubmitter_sbatch_AWE) & Willow
+#   Updated MOAB location for Spruce & Sprig
+#
 ###############################################################################
 
 class AWELauncher(MainLauncher):
@@ -181,14 +148,8 @@ class AWELauncher(MainLauncher):
         # when running visitbatch (throws error on Ivy/Spruce)
         return GETENV("USER")
 
-    def IsRunningOnWillow(self):
-        return self.sectorname() in ("willowa", "willowb")
-
     def IsRunningOnBlackthorn(self):
         return self.sectorname() in ("blackthorn")
-
-    def IsRunningOnIvy(self):
-        return self.sectorname() in ("ivy")
 
     def IsRunningOnBonsai(self):
         return self.sectorname() in ("bonsaia", "bonsaib")
@@ -223,7 +184,7 @@ class AWELauncher(MainLauncher):
     #Check to see if VisIt is starting on Login node, it's not allowed on ALL platforms
     def IsVisItAllowed(self):
 
-        if not (self.IsRunningOnWorkstation() or self.IsRunningOnIvy() or self.IsRunningOnBonsai()):
+        if not (self.IsRunningOnWorkstation() or self.IsRunningOnBonsai()):
             if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
                 msg = "###################################################\n"
                 msg += "Do not run the VisIt GUI here\n"
@@ -239,25 +200,13 @@ class AWELauncher(MainLauncher):
         # Check to see if VisIt is allowed to start on login node
         self.IsVisItAllowed()
 
-        if self.IsRunningOnWillow():
-            if GETENV("MODULESHOME") == "" :
-                SETENV("MODULESHOME", "/awe/Modules")
-            if GETENV("MOABHOMEDIR") == "" :
-                SETENV("MOABHOMEDIR", "/opt/moab/home")
-            paths += ["/opt/moab/current/bin"]
-
-        elif self.IsRunningOnBlackthorn() :
+        if self.IsRunningOnBlackthorn():
             if GETENV("MODULESHOME") == "" :
                 SETENV("MODULESHOME", "/awe/opt/Modules")
             if GETENV("MOABHOMEDIR") == "" :
                 SETENV("MOABHOMEDIR", "/awe/opt/moab/home")
             paths += ["/awe/opt/moab/current/bin"]
 
-        elif self.IsRunningOnIvy():
-            if GETENV("MODULESHOME") == "" :
-                SETENV("MODULESHOME", "/usr/share/modules")
-
-            paths += ["/awe/slurm/bin"]
         elif self.IsRunningOnBonsai():
             paths += ["/opt/sgi/mpt/mpt-2.05/bin"]
             ld_paths += ["/opt/sgi/mpt/mpt-2.05/lib"]
@@ -266,15 +215,15 @@ class AWELauncher(MainLauncher):
             if GETENV("MODULESHOME") == "" :
                 SETENV("MODULESHOME", "/awe/opt/Modules")
             if GETENV("MOABHOMEDIR") == "" :
-                SETENV("MOABHOMEDIR", "/awe/opt/moab/home")
+                SETENV("MOABHOMEDIR", "/opt/moab/home")
             paths += ["/opt/moab/current/bin"]
 
         elif self.IsRunningOnSpruce():
             if GETENV("MODULESHOME") == "" :
                 SETENV("MODULESHOME", "/awe/opt/Modules")
             if GETENV("MOABHOMEDIR") == "" :
-                SETENV("MOABHOMEDIR", "/awe/opt/moab/home")
-            paths += ["/awe/opt/moab/current/bin"]
+                SETENV("MOABHOMEDIR", "/opt/moab/home")
+            paths += ["/opt/moab/current/bin"]
 
         elif self.IsRunningOnWorkstation():
             #Unset PYTHONHOME/PYTHONPATH - when using intelmpi-4.0.0 there appears to be a
@@ -295,10 +244,8 @@ class AWELauncher(MainLauncher):
     def JobSubmitterFactory(self, launch):
         if launch[:4] == 'msub':
             return JobSubmitter_qsub_AWE(self)
-        elif launch[:6] == 'sbatch':
-            return JobSubmitter_sbatch_AWE(self)
         elif launch[:6] == 'mpirun':
-            if self.IsRunningOnBonsai() or self.IsRunningOnIvy() :
+            if self.IsRunningOnBonsai():
                 return JobSubmitter_mpirun(self)
             else:
                 return JobSubmitter_mpirun_AWE(self)
