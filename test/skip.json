@@ -47,8 +47,8 @@
                     {"category":"simulation","file":"ucdcurve.py","platform":"win"},
                     {"category":"simulation","file":"updateplots.py","platform":"win"},
                     {"category":"simulation","file":"zerocopy.py","platform":"win"},
-                    {"category":"simulation","file":"life.py","cases":["life03"]}
-                    {"category":"simulation","file":"zerocopy.py","cases":["itaps_14","zerocopy_02"]},
+                    {"category":"simulation","file":"life.py","cases":["life03"]},
+                    {"category":"simulation","file":"zerocopy.py","cases":["itaps_14","zerocopy_02"]}
                   ]},
  {"mode":"parallel","tests":[
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
