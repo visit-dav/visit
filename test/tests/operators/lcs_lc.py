@@ -27,7 +27,7 @@
 
 #def TestSection(tmpstr):
 #   tmpstr
-#   return   
+#   return
 
 #def Exit():
 #   return   
@@ -110,11 +110,10 @@ for i in range(len(databases)):
         tmpstr="Testing auxiliary grid = %s" %(aux_grid_str[k])
         TestSection(tmpstr)
         tmpstr="lcs_%s_%s_%s_LimitCycle" %(databases[i], src_type_str[j], aux_grid_str[k])
-        if (i==0 | (i==1 & j==1)):
-           LCSAtts.auxiliaryGrid = aux_grid[k]  # TwoDim
-           SetOperatorOptions(LCSAtts, 0)
-           DrawPlots()
-           Test(tmpstr)
+        LCSAtts.auxiliaryGrid = aux_grid[k]  # TwoDim
+        SetOperatorOptions(LCSAtts, 0)
+        DrawPlots()
+        Test(tmpstr)
 
 Exit()
 
