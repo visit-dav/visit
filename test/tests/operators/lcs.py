@@ -135,7 +135,7 @@ Exit()
 # Rect   1  -0.04343 - 1.066   190 zeros #
 
 # Native 2  -0.04343 - 1.066   193 zeros # Match
-# Rect   2  -0.04343 - 1.174   190 zeros # Except along the domain boundaries
+# Rect   2  -0.04343 - 1.233   190 zeros # Match with ghost cells but for a few cells.
 
 # Errors in the domain boundary gradients 
 
@@ -157,7 +157,7 @@ Exit()
 # Rect   1  -0.04343 - 1.066   190 zeros #
 
 # Native 2  -0.04343 - 1.066   193 zeros # Match
-# Rect   2  -0.04343 - 1.174   190 zeros # Except along the domain boundaries
+# Rect   2  -0.04343 - 1.233   190 zeros # Match with ghost cells but for a few cells.
 
 #w/aux grid
 
