@@ -2193,46 +2193,52 @@ avtIntegralCurveFilter::GenerateSeedPointsFromFieldData(std::vector<avtVector> &
           needsRecalculation = true;
 
 #ifdef PARALLEL
-    needsRecalculation = UnifyMaximumValue( (int) needsRecalculation );
+    bool dataIsReplicated = GetInput()->GetInfo().GetAttributes().
+      DataIsReplicatedOnAllProcessors();
 
-    // Collect all the seed points on the root processor.
-    double* all_points = 0;
-    int *point_counts = 0;
-
-    CollectDoubleArraysOnRootProc(all_points, point_counts,
-                                  &listOfPoints.front(), (int)listOfPoints.size());
-
-    int total = 0;
-
-    // Get the total number of point coordinates
-    if(PAR_Rank() == 0)
+    if( !dataIsReplicated )
     {
+      needsRecalculation = UnifyMaximumValue( (int) needsRecalculation );
+
+      // Collect all the seed points on the root processor.
+      double* all_points = 0;
+      int *point_counts = 0;
+      
+      CollectDoubleArraysOnRootProc(all_points, point_counts,
+                                    &listOfPoints.front(), (int)listOfPoints.size());
+      
+      int total = 0;
+      
+      // Get the total number of point coordinates
+      if(PAR_Rank() == 0)
+      {
         int par_size = PAR_Size();
 
         for(int i = 0; i < par_size; ++i)
         {
             total += point_counts[i];
         }
+      }
+
+      // Broadcast the total to all processors.
+      BroadcastInt(total);
+      
+      // Allocate space for the points on the other processors.
+      if(PAR_Rank() != 0)
+        all_points = new double[total];
+      
+      // Broadcast the point coordinates to all processors.
+      BroadcastDoubleArray(all_points, total);
+      
+      // Stuff the coordinates into the listOFPoints on all processors.
+      listOfPoints.resize( total );
+
+      for( int i=0; i<total; ++i )
+        listOfPoints[i] = all_points[i];
+      
+      if (all_points)   delete [] all_points;
+      if (point_counts) delete [] point_counts;
     }
-
-    // Broadcast the total to all processors.
-    BroadcastInt(total);
-
-    // Allocate space for the points on the other processors.
-    if(PAR_Rank() != 0)
-      all_points = new double[total];
-    
-    // Broadcast the point coordinates to all processors.
-    BroadcastDoubleArray(all_points, total);
-
-    // Stuff the coordinates into the listOFPoints on all processors.
-    listOfPoints.resize( total );
-
-    for( int i=0; i<total; ++i )
-      listOfPoints[i] = all_points[i];
-
-    if (all_points)   delete [] all_points;
-    if (point_counts) delete [] point_counts;
 #endif
 
     // Generate the points as seeds.
