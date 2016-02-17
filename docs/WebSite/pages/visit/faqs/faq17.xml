@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt FAQs]]></title>
+  <IM>LLNL-WEB-677918</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
+  <lastchanged><![CDATA[October 20, 2015]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -21,12 +22,15 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>17. How do I build VisIt on my Windows computer?</h2>
-<p> You need two things in order to build VisIt on a Windows computer. First of all, you must have  Microsoft Visual Studio .Net 2003 or 2005. Compilers from other vendors might work to build the VisIt source code but the VisIt source distribution for Windows only provides project files for the two afore-mentioned compilers. The last thing you need in order to build VisIt on Windows is the <a href="simulation/computer-codes/visit/source">VisIt source distribution for Windows</a>. The Windows source distribution contains additional pre-compiled libraries that will ease the process of building VisIt on your Windows computer. See <a href="http://www.visitusers.org/index.php?title=Using_CMake_with_VisIt_on_Windows">this guide to building VisIt on Windows</a> for more information.</p>
-
-<p> The VisIt source distribution for Windows contains all of VisIt's source code and prebuilt versions of most of VisIt's support libraries so it is not required that you download and build all of those libraries unless you want to customize them. Download and install the source distribution for Windows and read the VisItBuildInstructionsOnWindows.doc file in the VisIt development directoryfor more information on building VisIt for Windows.</p>
-
-
+<h2>17. I have trouble installing VisIt on my MacOS X computer. Why?</h2>
+<p> You need to download two files to successfully download VisIt on any UNIX computer, including MacOS X. On MacOS X in particular, some Web browsers can corrupt the VisIt binary distribution, which is the file that you download that ends in <em>&quot;.tar.gz&quot;</em>. Be sure that your web browser downloaded the binary distribution properly by checking the <a href="http://visit.ilight.com/svn/visit/trunk/releases/2.7.1/visit_md5_checksums" target="_blank">checksums</a>. You may also have to manually change the visit-install script so that it has execute permission. Once you've completed those steps, the most common cause of errors during installation on MacOS X is the visit-install script's inability to gracefully handle installation paths that contain spaces. Many of the MacOS X installation paths such as /Applications can have a volume label prepended to them. Volume labels often contain spaces. If you are having trouble installing VisIt on MacOS X, the easiest way to make sure that the installation succeeds is to install to your home directory. Assuming that you have correctly downloaded to the two requisite files, you can usually follow these steps to install VisIt.</p>
+<ol>
+  <li>cd ~</li>
+  <li>chmod 700 visit-install</li>
+  <li>mkdir visit</li>
+  <li>./visit-install 1.5 darwin ./visit</li>
+  <li>mv ./visit /Applications</li>
+</ol>
 
 </div>
 </div>	

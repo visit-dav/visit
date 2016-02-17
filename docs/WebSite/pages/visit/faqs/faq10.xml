@@ -21,8 +21,9 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>10. How do I access data on a remote machine?</h2>
-<p> First, VisIt must be installed on the remote machine. Then, in order to access data on remote machines, simply type in the name of the remote machine in the <strong>Host</strong> field in the <strong>File Selection</strong>  window in the VisIt graphical user interface and include <strong>visit</strong> in your search path on the remote machine. For more information, read the Distributed Mode portion of the Remote Visualization section in the <a href="content/assets/docs/simulation/computer-codes/visit/VisItUsersManual1.5.pdf"> <em>VisIt Users Manual</em></a>.</p>
+<h2>10. How do I run VisIt in parallel?</h2>
+<p>VisIt is a distributed, component-based, visualization tool. The engine component, which performs file input and output as well as the data processing operations, can be run in serial or parallel. In order to run the engine in parallel, you must set up a host profile that specifies how the engine is launched in parallel. For more information, read the Host Profiles portion of the Remote Visualization section in the <a href="content/assets/docs/simulation/computer-codes/visit/VisItUsersManual1.5.pdf"><em>VisIt Users Manual</em></a>.</p>
+<p>Also note that the VisIt binary distributions will most likely not work for running in parallel on your particular computer system. The most common reason is that the MPI version used to compile VisIt binaries is not compatible with your MPI and parallel launching mechanism. This is solved if you recompile VisIt from source on your computer. We have developed a script called <a href="simulation/computer-codes/visit/source" title="Build VisIt Script">build_visit</a> that automates much of this process for Linux and AIX platforms. </p>
 
 </div>
 </div>	

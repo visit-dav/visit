@@ -21,8 +21,11 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>26. Why is VisIt running slowly on my Linux system with an ATI graphics card?</h2>
-<p> The default rendering performance of VisIt running on some ATI cards on Linux systems has been found to approximate that of software rendering. One solution we have found to this problem is to switch the rendering mode to always use display lists, which restores the rendering performance to what you would expect from hardware accelerated rendering. To change the rendering mode to use display lists, change the <strong>Use display lists</strong> mode to <strong>Always</strong> on the <strong>Rendering options window</strong> and press the <strong>Apply</strong> button. The <strong>Rendering options window</strong> can be brought up by selecting <strong>Rendering...</strong> from the <strong>Options</strong> pull down menu at the top of the main control panel. To make the change permanent, press the <strong>Dismiss</strong> button and save the settings by selecting <strong>Save Settings</strong> from the <strong>Options</strong> pull down menu. </p>
+<h2>26. Why do I get a runtime error when I use my custom plugin with a binary version of VisIt from your site?</h2>
+<p>If you install a binary from our website, you may be downloading a version of VisIt that uses a different C++ compiler from what may be installed on your system. Our binary distributions will often run just fine on such systems but once you create your own plugin using a C++ compiler that differs from the compiler used to build VisIt, you may experience problems. If you are running into this problem, you will often see runtime error messages similar to:</p>
+<p><em>*** glibc detected *** free(): invalid pointer: 0x095de9b8 ***<br />
+SIGABRT</em></p>
+<p>If you notice any runtime errors related to glibc because you're using a custom-built plugin with our binary distirbutions then you probably have a runtime library incompatibility. The best way to resolve this situation is to build VisIt on your platform using our build_visit script since it will automatically build VisIt. Once you've rebuilt VisIt using your C++ compiler, you should regenerate your plugin's Makefile using the your new VisIt's xml2makefile program. Once you have done that, rebuild your plugin to make it build against your new, natively built version of VisIt. </p>
 
 </div>
 </div>	

@@ -21,8 +21,33 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>23. What is new in the latest version of VisIt?</h2>
-<p>Each version of VisIt contains on average 60 enhancements or bug-fixes. The first time that you run a new version of VisIt, the release notes for that version will be prominently displayed in the Help window. The release notes describe the enhancements and bug-fixes made in each version of the tool. After you have read the release notes for the new version of VisIt, they will not be automatically displayed again but you can view them at any time using VisIt's <strong>Help window</strong>. </p>
+<h2>23. Which compilers can be used to build VisIt? </h2>
+<p>The following compilers can be used to build VisIt on the listed platforms, though this is not an exhaustive list and newer versions of these compilers often work. In general, any g++ 4.x series compiler will build VisIt just fine. Earlier versions of g++ will also usually work. </p>
+<table class="table table-striped" border="0" align="center" cellpadding="3" cellspacing="1">
+  <tbody>
+    <tr>
+      <th width="15%">Platform </th>
+      <th width="65%">Compiler</th>
+    </tr>
+    <tr>
+      <td>AIX 5.3</td>
+      <td>xlC </td>
+    </tr>
+    <tr>
+      <td>Linux</td>
+      <td>g++ 4.0 or later</td>
+    </tr>
+    <tr>
+      <td>Windows XP,Vista,7</td>
+      <td>Microsoft Visual Studio .Net 2003, or .Net 2005 (Visual Studio 2010 support coming)</td>
+    </tr>
+    <tr>
+      <td>MacOS X 10.4-10.6</td>
+      <td>g++ 4.0 or later</td>
+    </tr>
+  </tbody>
+</table>
+
 
 </div>
 </div>	

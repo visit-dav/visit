@@ -21,8 +21,8 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>22. How often is a new version of VisIt released?</h2>
-<p>The VisIt development team usually releases a new version of VisIt every 3 months. Each VisIt release contains on average 60 enhancements or bug-fixes, improving the functionality and the quality of the tool. Check the VisIt Web site often for updates. You can also join the VisIt User's mailing list if you want to know when VisIt is updated. You can also subscribe to the VisIt project on <a href="http://freshmeat.net/projects/visit/" title="Freshmeat" target="_blank">Freshmeat.net</a> if you want to be informed when a new version of VisIt becomes available. Finally, you can use the &quot;VisIt update&quot; feature in VisIt's help menu to automatically determine if an update for your platform is available. &quot;VisIt update&quot; can in many cases even download and install the new version of VisIt. </p>
+<h2>22. What is new in the latest version of VisIt?</h2>
+<p>Each version of VisIt contains on average 60 enhancements or bug-fixes. The first time that you run a new version of VisIt, the release notes for that version will be prominently displayed in the Help window. The release notes describe the enhancements and bug-fixes made in each version of the tool. After you have read the release notes for the new version of VisIt, they will not be automatically displayed again but you can view them at any time using VisIt's <strong>Help window</strong>. </p>
 
 </div>
 </div>	

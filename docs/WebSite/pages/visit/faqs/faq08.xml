@@ -21,30 +21,8 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>8. Why is VisIt running slowly when I am running VisIt on a machine that I logged into using SSH?</h2>
-<p> When you log into a remote system with ssh, all X Windows traffic is encrypted on the remote system and decrypted on your local system. This seriously degrades the interactivity of VisIt. There are two methods to solve this problem: (1) use xhost, or (2) use xauth. Xhost is the less secure of the two methods, so we recommend that you use the method based on xauth.</p>
-<h3> Using xauth</h3>
-<p> In a local window on your desktop, type: </p>
-<ul>
-  <li class="nobullet">
-  <p><strong>xauth extract mycookie your_display_name:0.0 <br />
-    scp mycookie remote_machine_name:mycookie</strong> </p>
-</li>
-</ul>
-<p>On the remote machine type, type: <strong>setenv DISPLAY your_display_name:0.0 xauth merge mycookie</strong> </p>
-<p> The your_display_name and remote_machine_name should be the completely qualified machine name (e.g., <strong>myhost.llnl.gov</strong> instead of just <strong>myhost</strong>.)</p>
-<p> The xauth merge command adds information to the .Xauthority file in your home directory on the remote machine. The .Xauthority file can get large if you keep merging into it. For performance efficiency, you should periodically remove the file. The xauth merge command will create a new file if .Xauthority doesn't already exist.</p>
-<h3> Using xhost</h3>
-<p> In a local window on your desktop, type: </p>
-<ul>
-  <li class="nobullet">
-  <p><strong> xhost remote_machine_name</strong></p>
-</li>
-</ul>
-<p> On the remote machine, type: </p>
-<ul>
-  <li class="nobullet"><strong> setenv DISPLAY your_display_name:0.0</strong></li>
-</ul>
+<h2>8. I run VisIt and everything looks okay except no output is ever displayed in the visualization window. What is wrong?</h2>
+<p> This problem has arisen on Sun Blade and Linux systems and usually means that the X Server on your desktop machine does not have OpenGL support. To determine if this is the problem, type <strong>xdpyinfo</strong> on a window local to your desktop. Near the top of the resulting output is a section describing the server extensions on your system. On a Sun Blade system, you should see one named GLX. On Linux systems you should see extensions named <strong>GLX</strong>, <strong>NV-GLX</strong>, and <strong>NVIDIA-GLX</strong>. If these extensions are missing, your system administrator will have to install them for you.</p>
 
 </div>
 </div>	
