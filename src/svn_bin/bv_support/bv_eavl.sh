@@ -15,7 +15,7 @@ ON_EAVL="on"
 
 function bv_eavl_disable
 {
-DOEAVL_="no"
+DO_EAVL="no"
 ON_EAVL="off"
 }
 
