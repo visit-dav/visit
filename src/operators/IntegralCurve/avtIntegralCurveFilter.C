@@ -70,6 +70,7 @@
 std::string avtIntegralCurveFilter::colorVarArrayName = "colorVar";
 std::string avtIntegralCurveFilter::thetaArrayName = "theta";
 std::string avtIntegralCurveFilter::tangentsArrayName = "tangents";
+std::string avtIntegralCurveFilter::normalsArrayName = "normals";
 
 
 // ****************************************************************************
@@ -323,29 +324,26 @@ avtIntegralCurveFilter::ExamineContract(avtContract_p in_contract)
 
     std::string key( "PseudocolorAttributes::lineType" );
     std::string lineTypeString("");
-    std::string varyTubeRadiusVariable("");
+    std::string tubeRadiusVar("");
 
     if( in_contract->GetAttribute( key ) )
       lineTypeString = in_contract->GetAttribute( key )->AsString();
     else
       lineTypeString = std::string("");
 
-    if( lineTypeString == "Tube" )
+    if( lineTypeString == "Tube" || lineTypeString == "Ribbon" )
     {
+      if( lineTypeString == "Tube" )
         displayGeometry = IntegralCurveAttributes::Tubes;
-
-        key = std::string( "PseudocolorAttributes::varyTubeRadiusVariable" );
-
-        if( in_contract->GetAttribute( key ) )
-          varyTubeRadiusVariable = in_contract->GetAttribute( key )->AsString();
-        else
-          varyTubeRadiusVariable = std::string("");
-
-    }
-
-    else if( lineTypeString == "Ribbon" )
-    {
+      else if( lineTypeString == "Ribbon" )
         displayGeometry = IntegralCurveAttributes::Ribbons;
+      
+      key = std::string( "PseudocolorAttributes::tubeRadiusVar" );
+      
+      if( in_contract->GetAttribute( key ) )
+        tubeRadiusVar = in_contract->GetAttribute( key )->AsString();
+      else
+        tubeRadiusVar = std::string("");
     }
 
     // Data from all secondary variables need to be added in.
@@ -358,8 +356,8 @@ avtIntegralCurveFilter::ExamineContract(avtContract_p in_contract)
     {
       secondaryVariables[i] = std::string( *(secondaryVars[i]) );
 
-      if( ! varyTubeRadiusVariable.empty() &&
-          varyTubeRadiusVariable == secondaryVariables[i] )
+      if( ! tubeRadiusVar.empty() &&
+          tubeRadiusVar == secondaryVariables[i] )
       {
         tubeVariableIndex = i;
       }
@@ -504,9 +502,8 @@ avtIntegralCurveFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 
-    // ARS - FIXME  - FIXME  - FIXME 
-    // if(displayGeometry == IntegralCurveAttributes::Lines)
-    //     GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
+    if(displayGeometry == IntegralCurveAttributes::Lines)
+      GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
 
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();
@@ -825,7 +822,7 @@ avtPICSFilter::CommunicationPattern
 avtIntegralCurveFilter::GetCommunicationPattern()
 {
   // ARS - FIXME  - FIXME  - FIXME  - FIXME  - FIXME 
-    // if (! scaleTubeRadiusVariable.empty())
+    // if (!tubeRadiusVar.empty())
     //     return avtPICSFilter::ReturnToOriginatingProcessor;
     
     return avtPICSFilter::RestoreSequenceAssembleUniformly;
@@ -896,6 +893,9 @@ avtIntegralCurveFilter::GenerateAttributeFields() const
             break;
         }
     }
+
+    if( displayGeometry == IntegralCurveAttributes::Ribbons )
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_VORTICITY;
 
     return attr;
 }
@@ -2648,6 +2648,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     vtkDoubleArray *scalars  = vtkDoubleArray::New();
     vtkDoubleArray *tangents = vtkDoubleArray::New();
     vtkDoubleArray *thetas   = NULL;
+    vtkDoubleArray *normals = NULL;
 
     std::vector< vtkDoubleArray * > secondarys;
     secondarys.resize(secondaryVariables.size());
@@ -2674,7 +2675,13 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         thetas = vtkDoubleArray::New();
         thetas->Allocate(numPts);
         thetas->SetName(thetaArrayName.c_str());
-        pd->GetPointData()->AddArray(thetas);
+        // pd->GetPointData()->AddArray(thetas);
+
+        normals = vtkDoubleArray::New();
+        normals->SetNumberOfComponents(3);
+        normals->SetNumberOfTuples(numPts);
+        normals->SetName(normalsArrayName.c_str());
+        pd->GetPointData()->SetNormals(normals);
     }
 
     // secondary scalars
@@ -2833,7 +2840,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         vtkPolyLine *line = vtkPolyLine::New();
         line->GetPointIds()->SetNumberOfIds(totalSamples);
 
-        float theta = 0.0, lastTime = 0.0;
+        double theta = 0.0, lastTime = 0.0;
 
         avtStateRecorderIntegralCurve::Sample s, s0 = ic->GetSample(0);
 
@@ -2878,7 +2885,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             points->InsertPoint(pIdx,
                                 s.position.x, s.position.y, s.position.z);
 
-            float speed = s.velocity.length();
+            double speed = s.velocity.length();
 
             if (speed > 0)
                 s.velocity *= 1.0f/speed;
@@ -2937,7 +2944,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             // theta scalars
             if(displayGeometry == IntegralCurveAttributes::Ribbons)
             {
-                float scaledVort = s.vorticity * (lastTime-s.time);
+                double scaledVort = s.vorticity * (lastTime-s.time);
                 theta += scaledVort;
                 thetas->InsertTuple1(pIdx, theta);
                 lastTime = s.time;
@@ -3039,13 +3046,58 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         lines->InsertNextCell(line);
         line->Delete();
     }
-    
+
+    if(displayGeometry == IntegralCurveAttributes::Ribbons)
+    {
+      vtkPolyLine::GenerateSlidingNormals(points, lines, normals);
+
+      // Now, rotate the normals according to the vorticity..
+      // double normal[3], local1[3], local2[3],length,costheta,
+      // sintheta;
+      double theta, normal[3], tan[3], biNormal[3], p0[3], p1[3];
+      
+      numPts = pd->GetPointData()->GetNumberOfTuples();
+      
+      for( int i=0; i<numPts; ++i)
+      {
+        thetas->GetTuple(i, &theta);    
+        points->GetPoint(i, p0);
+        
+        if (i < numPts-1)
+        {
+          points->GetPoint(i+1, p1);
+        }
+        else
+        {
+          points->GetPoint(i-1, p0);
+          points->GetPoint(i, p1);
+        }
+
+        for( int j=0; j<3; ++j )
+          tan[j] = p1[j]-p0[j];
+        
+        normals->GetTuple(i, normal);
+        vtkMath::Normalize(tan);
+        vtkMath::Normalize(normal);
+        
+        vtkMath::Cross(normal, tan, biNormal);
+        double cosTheta = cos(theta);
+        double sinTheta = sin(theta);
+
+        for( int j=0; j<3; ++j )
+          normal[j] = cosTheta*normal[j] + sinTheta*biNormal[j];
+        
+        normals->SetTuple(i,normal);
+      }
+      
+      thetas->Delete();
+      normals->Delete();
+    }
+
     points->Delete();
     lines->Delete();
     scalars->Delete();
     tangents->Delete();
-    if(displayGeometry == IntegralCurveAttributes::Ribbons)
-        thetas->Delete();
 
     for( unsigned int i=0; i<secondaryVariables.size(); ++i )
          secondarys[i]->Delete();
