@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[VisIt FAQs]]></title>
-  <IM>LLNL-WEB-677918</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[October 20, 2015]]></lastchanged>
+  <lastchanged><![CDATA[March 21, 2013]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,15 +21,8 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>18. I have trouble installing VisIt on my MacOS X computer. Why?</h2>
-<p> You need to download two files to successfully download VisIt on any UNIX computer, including MacOS X. On MacOS X in particular, some Web browsers can corrupt the VisIt binary distribution, which is the file that you download that ends in <em>&quot;.tar.gz&quot;</em>. Be sure that your web browser downloaded the binary distribution properly by checking the <a href="http://visit.ilight.com/svn/visit/trunk/releases/2.7.1/visit_md5_checksums" target="_blank">checksums</a>. You may also have to manually change the visit-install script so that it has execute permission. Once you've completed those steps, the most common cause of errors during installation on MacOS X is the visit-install script's inability to gracefully handle installation paths that contain spaces. Many of the MacOS X installation paths such as /Applications can have a volume label prepended to them. Volume labels often contain spaces. If you are having trouble installing VisIt on MacOS X, the easiest way to make sure that the installation succeeds is to install to your home directory. Assuming that you have correctly downloaded to the two requisite files, you can usually follow these steps to install VisIt.</p>
-<ol>
-  <li>cd ~</li>
-  <li>chmod 700 visit-install</li>
-  <li>mkdir visit</li>
-  <li>./visit-install 1.5 darwin ./visit</li>
-  <li>mv ./visit /Applications</li>
-</ol>
+<h2>18. Why does VisIt only make it 12% into startup on my Windows computer?</h2>
+<p>We believe that this happens if you double-click on the VisIt icon on the Windows desktop due to the VisIt start up directory being set to VisIt's data directory in the desktop shortcut. The VisIt installation program for Windows has been changed as of version 1.5 so that the start up directory is set to the directory in which VisIt was installed. This allows Windows to more easily find VisIt's dynamic-link libraries when trying to launch the viewer component. You can work around the problem by using the VisIt menu option in the start menu, by running VisIt from the Windows command prompt, or by editing the properties for the desktop shortcut so the start up directory for VisIt matches the location where VisIt was installed. If you try these solutions and the problem persists then it is possible that your computer has misconfigured network options or there is another program interfering with VisIt's launch (e.g. firewall, virus checker).</p>
 
 </div>
 </div>	

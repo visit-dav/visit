@@ -21,33 +21,12 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>24. Which compilers can be used to build VisIt? </h2>
-<p>The following compilers can be used to build VisIt on the listed platforms, though this is not an exhaustive list and newer versions of these compilers often work. In general, any g++ 4.x series compiler will build VisIt just fine. Earlier versions of g++ will also usually work. </p>
-<table class="table table-striped" border="0" align="center" cellpadding="3" cellspacing="1">
-  <tbody>
-    <tr>
-      <th width="15%">Platform </th>
-      <th width="65%">Compiler</th>
-    </tr>
-    <tr>
-      <td>AIX 5.3</td>
-      <td>xlC </td>
-    </tr>
-    <tr>
-      <td>Linux</td>
-      <td>g++ 4.0 or later</td>
-    </tr>
-    <tr>
-      <td>Windows XP,Vista,7</td>
-      <td>Microsoft Visual Studio .Net 2003, or .Net 2005 (Visual Studio 2010 support coming)</td>
-    </tr>
-    <tr>
-      <td>MacOS X 10.4-10.6</td>
-      <td>g++ 4.0 or later</td>
-    </tr>
-  </tbody>
-</table>
-
+<h2>24. Which license does VisIt use?</h2>
+<p>VisIt is released under the BSD license, which you can view on <a href="simulation/computer-codes/visit/license" title="VisIt's BSD license" target="_blank">VisIt's license</a> page. </p>
+<H2>
+  <CENTER>
+  </CENTER>
+</H2>
 
 </div>
 </div>	

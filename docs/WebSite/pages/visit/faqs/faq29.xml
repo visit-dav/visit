@@ -21,8 +21,9 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>29. How do I get my NETCDF data into VisIt?</h2>
-<p> Like HDF5, NETCDF is just an array storage file format so the same problems tend to occur when you want to get NETCDF data into VisIt. However, VisIt's NETCDF reader will attempt to open NETCDF data with a variety of different readers that look for various simulation code conventions (CF support not implemented) and in the event that the file was not written using any discernable convention then a back up basic reader is used. The basic NETCDF reader exposes all of the arrays in the NETCDF file as data that can be plotted on rectilinear meshes corresponding to the size of each array. The common complaint is that the data looks okay but the mesh is not scaled accordingly. If this happens to you then VisIt is using its basic NETCDF reader, which does not support any conventions. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="simulation/computer-codes/visit/manuals" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
+<h2>29. When I run VisIt on my Linux machine, I get a black screen. When I try displaying to it from a remote machine, though, everything works fine. Other OpenGL applications also seem to work, even when run locally. What is wrong?</h2>
+<p> Under Linux, hardware-accelerated rendering can become a complicated problem because many hardware vendors have their own drivers which can conflict with the direct rendering infrastructure in XFree86.  We have had some success simply removing references to DRI in the XF86Config file.  For example, remove the line in the "Module" section of the file that reads:</p>
+<p> Load "dri"</p>
 
 </div>
 </div>	

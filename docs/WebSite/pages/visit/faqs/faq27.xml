@@ -21,11 +21,8 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>27. Why do I get a runtime error when I use my custom plugin with a binary version of VisIt from your site?</h2>
-<p>If you install a binary from our website, you may be downloading a version of VisIt that uses a different C++ compiler from what may be installed on your system. Our binary distributions will often run just fine on such systems but once you create your own plugin using a C++ compiler that differs from the compiler used to build VisIt, you may experience problems. If you are running into this problem, you will often see runtime error messages similar to:</p>
-<p><em>*** glibc detected *** free(): invalid pointer: 0x095de9b8 ***<br />
-SIGABRT</em></p>
-<p>If you notice any runtime errors related to glibc because you're using a custom-built plugin with our binary distirbutions then you probably have a runtime library incompatibility. The best way to resolve this situation is to build VisIt on your platform using our build_visit script since it will automatically build VisIt. Once you've rebuilt VisIt using your C++ compiler, you should regenerate your plugin's Makefile using the your new VisIt's xml2makefile program. Once you have done that, rebuild your plugin to make it build against your new, natively built version of VisIt. </p>
+<h2>27. How do I get my HDF5 data into VisIt?</h2>
+<p> HDF5 is an array storage file format that supports a wide variety of data types and VisIt reads a lot of file formats from codes that use HDF5 as a storage layer. Unfortunately, VisIt cannot provide a plugin that can read all HDF5-based files because of the various conventions that codes invent when they store their files. VisIt's HDF5-enabled plugins are programmed to know about the conventions used to map array data from the file into meaningful constructs such as meshes with data. If you need to import HDF5 data into VisIt then you might be achieve satisfactory results if you choose <em>File-&gt;Open As...</em> and then open the file using the Pixie reader, which is VisIt's most generic HDF5 reader. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="simulation/computer-codes/visit/manuals" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
 
 </div>
 </div>	

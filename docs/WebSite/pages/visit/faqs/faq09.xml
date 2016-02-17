@@ -21,8 +21,8 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>9. I run VisIt and everything looks okay except no output is ever displayed in the visualization window. What is wrong?</h2>
-<p> This problem has arisen on Sun Blade and Linux systems and usually means that the X Server on your desktop machine does not have OpenGL support. To determine if this is the problem, type <strong>xdpyinfo</strong> on a window local to your desktop. Near the top of the resulting output is a section describing the server extensions on your system. On a Sun Blade system, you should see one named GLX. On Linux systems you should see extensions named <strong>GLX</strong>, <strong>NV-GLX</strong>, and <strong>NVIDIA-GLX</strong>. If these extensions are missing, your system administrator will have to install them for you.</p>
+<h2>9. How do I access data on a remote machine?</h2>
+<p> First, VisIt must be installed on the remote machine. Then, in order to access data on remote machines, simply type in the name of the remote machine in the <strong>Host</strong> field in the <strong>File Selection</strong>  window in the VisIt graphical user interface and include <strong>visit</strong> in your search path on the remote machine. For more information, read the Distributed Mode portion of the Remote Visualization section in the <a href="content/assets/docs/simulation/computer-codes/visit/VisItUsersManual1.5.pdf"> <em>VisIt Users Manual</em></a>.</p>
 
 </div>
 </div>	

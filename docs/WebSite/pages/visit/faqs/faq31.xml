@@ -21,8 +21,17 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>31. When I downloaded the Windows installation and ran it, I got an error message saying "publisher cannot be verified. Are you sure you want to continue?" What is wrong?</h2>
-<p>There is nothing wrong and you may safely proceed with the installation.</p>
+<h2>31. Which libraries should I enable in <tt>build_visit</tt>?</h2>
+<p>In general: <i>as few as you can.</i></p>
+
+<p>An overwhelming majority of the libraries that one can enable via <tt>build_visit</tt> are used for a single purpose: supporting a file reader ("database") to allow reading data of that type. If you don't select a particular library in <tt>build_visit</tt>, the only drawback is that you won't be able to use VisIt to read data files which were written using that library.</p>
+
+<p>VisIt supports many file formats which are used across numerous scientific disciplines. As a user in one or two of those scientific disciplines, it's likely that you'll only use a few of those databases in your daily visualization needs, and unheard of that you would need all of them. To put things in perspective: VisIt supports upwards of a hundred different file formats. Many of those formats are only applicable to a specific group within a scientific domain.</p>
+
+<p>Finally, while we make every effort to streamline the <tt>build_visit</tt> process, there are simply too many platforms and too many third party libraries to do exhaustive testing. By only enabling what you need, you're less likely to encounter build failures in <tt>build_visit</tt>&#8212;it can't fail to build if you don't try to
+build it!</p>
+
+<p><b>A good rule of thumb is:</B> if you haven't heard of a library, you don't need to enable it.</>
 
 </div>
 </div>	

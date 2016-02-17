@@ -21,9 +21,8 @@
 	<li class="active"><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
-<h2>30. When I run VisIt on my Linux machine, I get a black screen. When I try displaying to it from a remote machine, though, everything works fine. Other OpenGL applications also seem to work, even when run locally. What is wrong?</h2>
-<p> Under Linux, hardware-accelerated rendering can become a complicated problem because many hardware vendors have their own drivers which can conflict with the direct rendering infrastructure in XFree86.  We have had some success simply removing references to DRI in the XF86Config file.  For example, remove the line in the "Module" section of the file that reads:</p>
-<p> Load "dri"</p>
+<h2>30. When I downloaded the Windows installation and ran it, I got an error message saying "publisher cannot be verified. Are you sure you want to continue?" What is wrong?</h2>
+<p>There is nothing wrong and you may safely proceed with the installation.</p>
 
 </div>
 </div>	
