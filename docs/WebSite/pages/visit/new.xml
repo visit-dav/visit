@@ -3,7 +3,7 @@
   <title><![CDATA[What's New in VisIt]]></title>
   <IM>LLNL-WEB-677918</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[October 20, 2015]]></lastchanged>
+  <lastchanged><![CDATA[February 23, 2016]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,8 +22,10 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
+<h2>February, 2016 - VisIt 2.10.1 released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.10.1, which can be <a href="simulation/computer-codes/visit/downloads">downloaded from this site</a>, is primarily a bug-fix release that resolves about twenty important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.10.1">VisIt 2.10.1 Release Notes</a>.</p>
 <h2>October, 2015 - VisIt 2.10 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.10, which can be <a href="simulation/computer-codes/visit/downloads">downloaded from this site</a>, contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.10.0">VisIt 2.10 Release Notes</a>.</p>
+<p>VisIt 2.10 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.10.0">VisIt 2.10 Release Notes</a>.</p>
 <h4>1.  Many enhancements were made to Libsim to support batch visualization and analysis.</h4>
 <ul>
 <li>A new <i>VisItExportDatabaseWithOptions()</i> function was added to Libsim that lets you specify options to the writer.</li>
