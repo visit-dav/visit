@@ -403,8 +403,12 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     opacityType->addItem(tr("Fully opaque"),0);
     opacityType->addItem(tr("Constant"),2);
     opacityType->addItem(tr("Ramp"),3);
-    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
+    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME
+    // This functionality was possible with the deprecated Streamline
+    // plot but it is currently not possible using the vtkMapper and
+    // avtActor.
     // opacityType->addItem(tr("Variable range"),4);
+    
     connect(opacityType, SIGNAL(activated(int)),
             this, SLOT(opacityTypeChanged(int)));
     colorLayout->addWidget(new QLabel(tr("Opacity"), central), gRow,0);
@@ -560,8 +564,8 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     lineLayout->addWidget(lineType, 0, 1);
 
     // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
-    lineTypeLabel->hide();
-    lineType->hide();
+    // lineTypeLabel->hide();
+    // lineType->hide();
 
     // Line style / width
     lineStyleLabel = new QLabel(tr("Line style"), central);
@@ -1116,14 +1120,25 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
               lineWidth->hide();
             }
 
-            if( pcAtts->GetLineType() == PseudocolorAttributes::Tube )
+            if( pcAtts->GetLineType() == PseudocolorAttributes::Tube ||
+                pcAtts->GetLineType() == PseudocolorAttributes::Ribbon )
             {
-              tubeDisplayDensityLabel->show();
-              tubeDisplayDensity->show();
+              if( pcAtts->GetLineType() == PseudocolorAttributes::Tube )
+              {
+                  tubeDisplayDensityLabel->show();
+                  tubeDisplayDensity->show();
+              }
+              else if( pcAtts->GetLineType() == PseudocolorAttributes::Ribbon )
+              {
+                  tubeDisplayDensityLabel->hide();
+                  tubeDisplayDensity->hide();
+              }
+              
               tubeRadiusLabel->show();
               tubeRadius->show();
               tubeRadiusSizeType->show();
               
+              tubeRadiusVarEnabled->show();
               tubeRadiusVar->show();
               tubeRadiusVarLabel->show();
               tubeRadiusVar->show();
@@ -1138,6 +1153,7 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
               tubeRadius->hide();
               tubeRadiusSizeType->hide();
               
+              tubeRadiusVarEnabled->hide();
               tubeRadiusVar->hide();
               tubeRadiusVarLabel->hide();
               tubeRadiusVar->hide();

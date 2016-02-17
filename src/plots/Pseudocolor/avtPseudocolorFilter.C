@@ -180,7 +180,7 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
     int topoDim = data.GetTopologicalDimension();
 
     std::string pointVar   = plotAtts.GetPointSizeVar();
-    std::string radiusVar    = plotAtts.GetTubeRadiusVar();
+    std::string radiusVar  = plotAtts.GetTubeRadiusVar();
     std::string opacityVar = plotAtts.GetOpacityVariable();
 
     avtDataRequest_p dataRequest = new avtDataRequest(
@@ -208,7 +208,8 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
     }
 
     if( (topoDim == 1 || (topoDim > 1 && plotAtts.GetRenderWireframe())) &&
-        plotAtts.GetLineType() == PseudocolorAttributes::Tube && 
+        (plotAtts.GetLineType() == PseudocolorAttributes::Tube || 
+         plotAtts.GetLineType() == PseudocolorAttributes::Ribbon) && 
         plotAtts.GetTubeRadiusVarEnabled() &&
         radiusVar != "default" &&
         radiusVar != "\0" &&
@@ -217,6 +218,10 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
     {
         rv->GetDataRequest()->AddSecondaryVariable(radiusVar.c_str());
         rv->SetCalculateVariableExtents(radiusVar, true);
+
+        std::string key =
+          rv->SetAttribute( &plotAtts, PseudocolorAttributes::ID_tubeRadiusVar,
+                            radiusVar );
     }
 
     if (plotAtts.GetOpacityType() == PseudocolorAttributes::VariableRange &&

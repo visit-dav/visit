@@ -174,8 +174,8 @@ public:
     void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
     void SetPointSizeVar(const std::string &pointSizeVar_);
     void SetPointSizePixels(int pointSizePixels_);
-    void SetLineType(LineType lineType_);
     void SetLineStyle(int lineStyle_);
+    void SetLineType(LineType lineType_);
     void SetLineWidth(int lineWidth_);
     void SetTubeDisplayDensity(int tubeDisplayDensity_);
     void SetTubeRadiusSizeType(SizeType tubeRadiusSizeType_);
@@ -223,8 +223,8 @@ public:
     const std::string &GetPointSizeVar() const;
           std::string &GetPointSizeVar();
     int               GetPointSizePixels() const;
-    LineType          GetLineType() const;
     int               GetLineStyle() const;
+    LineType          GetLineType() const;
     int               GetLineWidth() const;
     int               GetTubeDisplayDensity() const;
     SizeType          GetTubeRadiusSizeType() const;
@@ -333,8 +333,8 @@ public:
         ID_pointSizeVarEnabled,
         ID_pointSizeVar,
         ID_pointSizePixels,
-        ID_lineType,
         ID_lineStyle,
+        ID_lineType,
         ID_lineWidth,
         ID_tubeDisplayDensity,
         ID_tubeRadiusSizeType,
@@ -381,8 +381,8 @@ private:
     bool        pointSizeVarEnabled;
     std::string pointSizeVar;
     int         pointSizePixels;
-    int         lineType;
     int         lineStyle;
+    int         lineType;
     int         lineWidth;
     int         tubeDisplayDensity;
     int         tubeRadiusSizeType;
