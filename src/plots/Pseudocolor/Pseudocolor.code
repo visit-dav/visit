@@ -90,8 +90,20 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             obj.opacityVariable != "" &&
                             obj.opacityVariable != "\0");
 
+
+    bool geometryChange =  (lineType             != obj.lineType ||
+                            tubeRadiusSizeType   != obj.tubeRadiusSizeType ||
+                            tubeRadiusAbsolute   != obj.tubeRadiusAbsolute ||
+                            tubeRadiusBBox       != obj.tubeRadiusBBox ||
+                            tubeRadiusVarEnabled != obj.tubeRadiusVarEnabled ||
+                            tubeRadiusVar        != obj.tubeRadiusVar ||
+                            tubeRadiusVarFactor  != obj.tubeRadiusVarFactor ||
+                            tubeDisplayDensity   != obj.tubeDisplayDensity);
+
+                           
     return (centering != obj.centering ||
             needSecondaryVar ||
+            geometryChange ||
             smoothingLevel != obj.smoothingLevel ||
 //            renderSurfaces != obj.renderSurfaces ||
 //            renderWireframe != obj.renderWireframe ||

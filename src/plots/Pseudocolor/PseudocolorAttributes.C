@@ -415,8 +415,8 @@ void PseudocolorAttributes::Init()
     pointType = Point;
     pointSizeVarEnabled = false;
     pointSizePixels = 2;
-    lineType = Line;
     lineStyle = 0;
+    lineType = Line;
     lineWidth = 0;
     tubeDisplayDensity = 10;
     tubeRadiusSizeType = FractionOfBBox;
@@ -479,8 +479,8 @@ void PseudocolorAttributes::Copy(const PseudocolorAttributes &obj)
     pointSizeVarEnabled = obj.pointSizeVarEnabled;
     pointSizeVar = obj.pointSizeVar;
     pointSizePixels = obj.pointSizePixels;
-    lineType = obj.lineType;
     lineStyle = obj.lineStyle;
+    lineType = obj.lineType;
     lineWidth = obj.lineWidth;
     tubeDisplayDensity = obj.tubeDisplayDensity;
     tubeRadiusSizeType = obj.tubeRadiusSizeType;
@@ -682,8 +682,8 @@ PseudocolorAttributes::operator == (const PseudocolorAttributes &obj) const
             (pointSizeVarEnabled == obj.pointSizeVarEnabled) &&
             (pointSizeVar == obj.pointSizeVar) &&
             (pointSizePixels == obj.pointSizePixels) &&
-            (lineType == obj.lineType) &&
             (lineStyle == obj.lineStyle) &&
+            (lineType == obj.lineType) &&
             (lineWidth == obj.lineWidth) &&
             (tubeDisplayDensity == obj.tubeDisplayDensity) &&
             (tubeRadiusSizeType == obj.tubeRadiusSizeType) &&
@@ -869,8 +869,8 @@ PseudocolorAttributes::SelectAll()
     Select(ID_pointSizeVarEnabled,    (void *)&pointSizeVarEnabled);
     Select(ID_pointSizeVar,           (void *)&pointSizeVar);
     Select(ID_pointSizePixels,        (void *)&pointSizePixels);
-    Select(ID_lineType,               (void *)&lineType);
     Select(ID_lineStyle,              (void *)&lineStyle);
+    Select(ID_lineType,               (void *)&lineType);
     Select(ID_lineWidth,              (void *)&lineWidth);
     Select(ID_tubeDisplayDensity,     (void *)&tubeDisplayDensity);
     Select(ID_tubeRadiusSizeType,     (void *)&tubeRadiusSizeType);
@@ -1055,16 +1055,16 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("pointSizePixels", pointSizePixels));
     }
 
-    if(completeSave || !FieldsEqual(ID_lineType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineType", LineType_ToString(lineType)));
-    }
-
     if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lineStyle", lineStyle));
+    }
+
+    if(completeSave || !FieldsEqual(ID_lineType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineType", LineType_ToString(lineType)));
     }
 
     if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
@@ -1337,6 +1337,8 @@ PseudocolorAttributes::SetFromNode(DataNode *parentNode)
         SetPointSizeVar(node->AsString());
     if((node = searchNode->GetNode("pointSizePixels")) != 0)
         SetPointSizePixels(node->AsInt());
+    if((node = searchNode->GetNode("lineStyle")) != 0)
+        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1353,8 +1355,6 @@ PseudocolorAttributes::SetFromNode(DataNode *parentNode)
                 SetLineType(value);
         }
     }
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("tubeDisplayDensity")) != 0)
@@ -1612,17 +1612,17 @@ PseudocolorAttributes::SetPointSizePixels(int pointSizePixels_)
 }
 
 void
-PseudocolorAttributes::SetLineType(PseudocolorAttributes::LineType lineType_)
-{
-    lineType = lineType_;
-    Select(ID_lineType, (void *)&lineType);
-}
-
-void
 PseudocolorAttributes::SetLineStyle(int lineStyle_)
 {
     lineStyle = lineStyle_;
     Select(ID_lineStyle, (void *)&lineStyle);
+}
+
+void
+PseudocolorAttributes::SetLineType(PseudocolorAttributes::LineType lineType_)
+{
+    lineType = lineType_;
+    Select(ID_lineType, (void *)&lineType);
 }
 
 void
@@ -1919,16 +1919,16 @@ PseudocolorAttributes::GetPointSizePixels() const
     return pointSizePixels;
 }
 
-PseudocolorAttributes::LineType
-PseudocolorAttributes::GetLineType() const
-{
-    return LineType(lineType);
-}
-
 int
 PseudocolorAttributes::GetLineStyle() const
 {
     return lineStyle;
+}
+
+PseudocolorAttributes::LineType
+PseudocolorAttributes::GetLineType() const
+{
+    return LineType(lineType);
 }
 
 int
@@ -2131,8 +2131,8 @@ PseudocolorAttributes::GetFieldName(int index) const
     case ID_pointSizeVarEnabled:    return "pointSizeVarEnabled";
     case ID_pointSizeVar:           return "pointSizeVar";
     case ID_pointSizePixels:        return "pointSizePixels";
-    case ID_lineType:               return "lineType";
     case ID_lineStyle:              return "lineStyle";
+    case ID_lineType:               return "lineType";
     case ID_lineWidth:              return "lineWidth";
     case ID_tubeDisplayDensity:     return "tubeDisplayDensity";
     case ID_tubeRadiusSizeType:     return "tubeRadiusSizeType";
@@ -2199,8 +2199,8 @@ PseudocolorAttributes::GetFieldType(int index) const
     case ID_pointSizeVarEnabled:    return FieldType_bool;
     case ID_pointSizeVar:           return FieldType_variablename;
     case ID_pointSizePixels:        return FieldType_int;
-    case ID_lineType:               return FieldType_enum;
     case ID_lineStyle:              return FieldType_linestyle;
+    case ID_lineType:               return FieldType_enum;
     case ID_lineWidth:              return FieldType_linewidth;
     case ID_tubeDisplayDensity:     return FieldType_int;
     case ID_tubeRadiusSizeType:     return FieldType_enum;
@@ -2267,8 +2267,8 @@ PseudocolorAttributes::GetFieldTypeName(int index) const
     case ID_pointSizeVarEnabled:    return "bool";
     case ID_pointSizeVar:           return "variablename";
     case ID_pointSizePixels:        return "int";
-    case ID_lineType:               return "enum";
     case ID_lineStyle:              return "linestyle";
+    case ID_lineType:               return "enum";
     case ID_lineWidth:              return "linewidth";
     case ID_tubeDisplayDensity:     return "int";
     case ID_tubeRadiusSizeType:     return "enum";
@@ -2425,14 +2425,14 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (pointSizePixels == obj.pointSizePixels);
         }
         break;
-    case ID_lineType:
-        {  // new scope
-        retval = (lineType == obj.lineType);
-        }
-        break;
     case ID_lineStyle:
         {  // new scope
         retval = (lineStyle == obj.lineStyle);
+        }
+        break;
+    case ID_lineType:
+        {  // new scope
+        retval = (lineType == obj.lineType);
         }
         break;
     case ID_lineWidth:
@@ -2596,8 +2596,20 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             obj.opacityVariable != "" &&
                             obj.opacityVariable != "\0");
 
+
+    bool geometryChange =  (lineType             != obj.lineType ||
+                            tubeRadiusSizeType   != obj.tubeRadiusSizeType ||
+                            tubeRadiusAbsolute   != obj.tubeRadiusAbsolute ||
+                            tubeRadiusBBox       != obj.tubeRadiusBBox ||
+                            tubeRadiusVarEnabled != obj.tubeRadiusVarEnabled ||
+                            tubeRadiusVar        != obj.tubeRadiusVar ||
+                            tubeRadiusVarFactor  != obj.tubeRadiusVarFactor ||
+                            tubeDisplayDensity   != obj.tubeDisplayDensity);
+
+                           
     return (centering != obj.centering ||
             needSecondaryVar ||
+            geometryChange ||
             smoothingLevel != obj.smoothingLevel ||
 //            renderSurfaces != obj.renderSurfaces ||
 //            renderWireframe != obj.renderWireframe ||

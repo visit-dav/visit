@@ -53,6 +53,8 @@ class     avtPseudocolorFilter;
 class     avtShiftCenteringFilter;
 class     avtVariablePointGlyphMapper;
 class     avtVariableLegend;
+class     avtPolylineToRibbonFilter;
+class     avtPolylineToTubeFilter;
 class     avtStaggeringFilter;
 
 // ****************************************************************************
@@ -168,6 +170,8 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     avtLegend_p                 varLegendRefPtr;
     PseudocolorAttributes       atts;
     avtPseudocolorFilter       *pcfilter;
+    avtPolylineToRibbonFilter  *polylineToRibbonFilter;
+    avtPolylineToTubeFilter    *polylineToTubeFilter;
     avtStaggeringFilter        *staggeringFilter;
     avtShiftCenteringFilter    *filter;
     bool                        colorsInitialized;
@@ -178,7 +182,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     virtual avtMapper          *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
-//  virtual avtContract_p       EnhanceSpecification(avtContract_p);
+    virtual avtContract_p       EnhanceSpecification(avtContract_p);
     virtual void                CustomizeBehavior(void);
     virtual int                 GetSmoothingLevel();
 
@@ -189,6 +193,31 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
 private:
     void                        SetLegendRanges(void);
     void                        SetPointGlyphSize();
+
+    double GetBBoxSize( double *bbox )
+    {
+        double vol = 1;
+        int    numDims = 0;
+        if (bbox[1] > bbox[0])
+        {
+            vol *= (bbox[1]-bbox[0]);
+            numDims++;
+        }
+        if (bbox[3] > bbox[2])
+        {
+            vol *= (bbox[3]-bbox[2]);
+            numDims++;
+        }
+        if (bbox[5] > bbox[4])
+        {
+            vol *= (bbox[5]-bbox[4]);
+            numDims++;
+        }
+
+        double length = pow(vol, 1.0/numDims);
+        return length;
+    }
+
 };
 
 

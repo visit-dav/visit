@@ -47,8 +47,10 @@
 #include <avtColorTables.h>
 #include <avtExtents.h>
 #include <avtLookupTable.h>
-#include <avtStaggeringFilter.h>
+#include <avtPolylineToRibbonFilter.h>
+#include <avtPolylineToTubeFilter.h>
 #include <avtPseudocolorFilter.h>
+#include <avtStaggeringFilter.h>
 #include <avtShiftCenteringFilter.h>
 #include <avtVariableLegend.h>
 #include <avtVariablePointGlyphMapper.h>
@@ -116,6 +118,8 @@ avtPseudocolorPlot::avtPseudocolorPlot()
     filter = NULL;
     pcfilter = NULL;
     staggeringFilter = NULL;
+    polylineToRibbonFilter = NULL;
+    polylineToTubeFilter = NULL;
     colorTableIsFullyOpaque = true;
 
     //
@@ -162,6 +166,18 @@ avtPseudocolorPlot::~avtPseudocolorPlot()
     {
         delete staggeringFilter;
         staggeringFilter = NULL;
+    }
+
+    if (polylineToTubeFilter != NULL)
+    {
+        delete polylineToTubeFilter;
+        polylineToTubeFilter = NULL;
+    }
+
+    if (polylineToRibbonFilter != NULL)
+    {
+        delete polylineToRibbonFilter;
+        polylineToRibbonFilter = NULL;
     }
 
     if (pcfilter != NULL)
@@ -287,16 +303,19 @@ avtPseudocolorPlot::GetMapper(void)
 avtDataObject_p
 avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 {
-    avtDataObject_p dob = input; 
+    avtDataObject_p dob = input;
 
+    // Staggering Filter
     if (staggeringFilter != NULL) {
       delete staggeringFilter;
       staggeringFilter = NULL;
     }
+
     staggeringFilter = new avtStaggeringFilter();
     staggeringFilter->SetInput(dob);
     dob = staggeringFilter->GetOutput();
-  
+
+    
     if (input->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         if (pcfilter != NULL)
@@ -353,7 +372,7 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 avtDataObject_p
 avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
-    avtDataObject_p dob = input; 
+    avtDataObject_p dob = input;
     topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
 
     if ((atts.GetCentering() == PseudocolorAttributes::Nodal) ||
@@ -376,9 +395,65 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
         filter->SetInput(dob);
         dob = filter->GetOutput();
     }
+
+    // PolylineToTube Filter
+    if (polylineToTubeFilter != NULL) {
+      delete polylineToTubeFilter;
+      polylineToTubeFilter = NULL;
+    }
+
+    if( atts.GetLineType() == PseudocolorAttributes::Tube )
+    {
+      double bbox[6] = {0.,1.,0.,1.,0.,1.};
+      dob->GetInfo().GetAttributes().GetOriginalSpatialExtents()->CopyTo(bbox);
+
+      polylineToTubeFilter = new avtPolylineToTubeFilter();
+      polylineToTubeFilter->displayDensity = atts.GetTubeDisplayDensity();
+          
+      polylineToTubeFilter->radiusSizeType = atts.GetTubeRadiusSizeType();
+      polylineToTubeFilter->radiusAbsolute = atts.GetTubeRadiusAbsolute();
+      polylineToTubeFilter->radiusBBox     = atts.GetTubeRadiusBBox();
+      polylineToTubeFilter->boundingBoxSize = GetBBoxSize( bbox );
+      
+      polylineToTubeFilter->radiusVarEnabled = atts.GetTubeRadiusVarEnabled();
+      polylineToTubeFilter->radiusVar        = atts.GetTubeRadiusVar();
+      polylineToTubeFilter->radiusVarFactor  = atts.GetTubeRadiusVarFactor();
+      
+      polylineToTubeFilter->SetInput(dob);
+      
+      dob = polylineToTubeFilter->GetOutput();
+    }
+    
+    // PolylineToRibbon Filter
+    if (polylineToRibbonFilter != NULL) {
+      delete polylineToRibbonFilter;
+      polylineToRibbonFilter = NULL;
+    }
+
+    if( atts.GetLineType() == PseudocolorAttributes::Ribbon )
+    {
+      double bbox[6] = {0.,1.,0.,1.,0.,1.};
+      dob->GetInfo().GetAttributes().GetOriginalSpatialExtents()->CopyTo(bbox);
+
+      polylineToRibbonFilter = new avtPolylineToRibbonFilter();
+      polylineToRibbonFilter->displayDensity = atts.GetTubeDisplayDensity();
+          
+      polylineToRibbonFilter->widthSizeType = atts.GetTubeRadiusSizeType();
+      polylineToRibbonFilter->widthAbsolute = atts.GetTubeRadiusAbsolute();
+      polylineToRibbonFilter->widthBBox     = atts.GetTubeRadiusBBox();
+      polylineToRibbonFilter->boundingBoxSize = GetBBoxSize( bbox );
+      
+      polylineToRibbonFilter->widthVarEnabled = atts.GetTubeRadiusVarEnabled();
+      polylineToRibbonFilter->widthVar        = atts.GetTubeRadiusVar();
+      polylineToRibbonFilter->widthVarFactor  = atts.GetTubeRadiusVarFactor();
+      
+      polylineToRibbonFilter->SetInput(dob);
+      
+      dob = polylineToRibbonFilter->GetOutput();
+    }
+
     return dob;
 }
-
 
 // ****************************************************************************
 //  Method: avtPseudocolorPlot::CustomizeBehavior
@@ -591,7 +666,10 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
     glyphMapper->SetScale(atts.GetPointSize());
 
-    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
+    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME
+    // This functionality was possible with the deprecated Streamline
+    // plot but it is currently not possible using the vtkMapper and
+    // avtActor.
     if( atts.GetOpacityType() == PseudocolorAttributes::VariableRange &&
         atts.GetOpacityVariable() != "" &&
         atts.GetOpacityVariable() != "\0")
@@ -614,28 +692,6 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     else 
     {
 //        glyphMapper->OpacityScalingOff();
-    }
-
-    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
-    if( //(topoDim == 1 || (topoDim > 1 && atts.GetRenderWireframe())) &&
-        atts.GetLineType() == PseudocolorAttributes::Tube && 
-        atts.GetTubeRadiusVarEnabled() == true  &&
-        atts.GetTubeRadiusVar() != "" &&
-        atts.GetTubeRadiusVar() != "\0" )
-    {
-        if (atts.GetTubeRadiusVar() == "default")
-        { 
-//            if (varname != NULL)
-//                glyphMapper->ScaleTubesByVar(varname);
-        } 
-        else
-        { 
-//            glyphMapper->ScaleTubesByVar(atts.GetTubeRadiusVar());
-        } 
-    }
-    else 
-    {
-//        glyphMapper->TubeScalingOff();
     }
 
     if( //(topoDim == 0 || (topoDim > 0 && atts.GetRenderPoints())) &&
@@ -1189,13 +1245,24 @@ void
 avtPseudocolorPlot::ReleaseData(void)
 {
     avtSurfaceDataPlot::ReleaseData();
+
     if (staggeringFilter != NULL) {
         staggeringFilter->ReleaseData();
     }
+
+    if (polylineToTubeFilter != NULL) {
+        polylineToTubeFilter->ReleaseData();
+    }
+
+    if (polylineToRibbonFilter != NULL) {
+        polylineToRibbonFilter->ReleaseData();
+    }
+
     if (filter != NULL)
     {
         filter->ReleaseData();
     }
+
     if (pcfilter != NULL)
     {
         pcfilter->ReleaseData();
@@ -1237,15 +1304,105 @@ avtPseudocolorPlot::GetSmoothingLevel()
 //
 // ****************************************************************************
 
-// avtContract_p
-// avtPseudocolorPlot::EnhanceSpecification(avtContract_p spec)
-// {
-//     avtContract_p rv = spec;
+avtContract_p
+avtPseudocolorPlot::EnhanceSpecification(avtContract_p contract)
+{
+    avtContract_p rv = contract;
 
-//     bool needNewContract = true;
+    avtDataAttributes &dataAtts = behavior->GetInfo().GetAttributes();
 
-//     return rv;
-// }
+    int topoDim = dataAtts.GetTopologicalDimension();
+
+    std::string pointVar   = atts.GetPointSizeVar();
+    std::string radiusVar  = atts.GetTubeRadiusVar();
+    std::string opacityVar = atts.GetOpacityVariable();
+
+    avtDataRequest_p dataRequest = new avtDataRequest(
+                                       contract->GetDataRequest());
+
+    std::string primaryVar = dataRequest->GetVariable();
+
+    //
+    // Find out if we need to add a secondary variable.
+    //
+    if( (topoDim == 0 || (topoDim > 0 && atts.GetRenderPoints())) &&
+        atts.GetPointType() != PseudocolorAttributes::Point &&
+        atts.GetPointType() != PseudocolorAttributes::Sphere &&
+        atts.GetPointSizeVarEnabled() && 
+        pointVar != "default" &&
+        pointVar != "\0" &&
+        pointVar != primaryVar &&
+        !dataRequest->HasSecondaryVariable(pointVar.c_str()))
+    {
+        rv->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
+        rv->SetCalculateVariableExtents(pointVar, true);
+    }
+
+    if( //(topoDim == 1 || (topoDim > 1 && atts.GetRenderWireframe())) &&
+        (atts.GetLineType() == PseudocolorAttributes::Tube || 
+         atts.GetLineType() == PseudocolorAttributes::Ribbon) && 
+        atts.GetTubeRadiusVarEnabled() &&
+        radiusVar != "default" &&
+        radiusVar != "\0" &&
+        radiusVar != primaryVar &&
+        !dataRequest->HasSecondaryVariable(radiusVar.c_str()))
+    {
+        rv->GetDataRequest()->AddSecondaryVariable(radiusVar.c_str());
+        rv->SetCalculateVariableExtents(radiusVar, true);
+
+        std::string key =
+          rv->SetAttribute( &atts, PseudocolorAttributes::ID_tubeRadiusVar,
+                            radiusVar );
+    }
+
+    if (atts.GetOpacityType() == PseudocolorAttributes::VariableRange &&
+        opacityVar != "default" &&
+        opacityVar != "\0" &&
+        opacityVar != primaryVar &&
+        !dataRequest->HasSecondaryVariable(opacityVar.c_str()))
+    {
+        rv->GetDataRequest()->AddSecondaryVariable(opacityVar.c_str());
+        rv->SetCalculateVariableExtents(opacityVar, true);
+    }
+
+    // Note the line type so that upstream operators can obtain the
+    // needed data for displaying ribbons or tubes.
+    std::string key =
+      rv->SetAttribute( &atts, PseudocolorAttributes::ID_lineType,
+                        PseudocolorAttributes::LineType_ToString(atts.GetLineType()) );
+
+    if (contract->GetDataRequest()->MayRequireZones() ||
+        contract->GetDataRequest()->MayRequireNodes())
+    {
+        // keepNodeZone = true;
+
+        if (dataAtts.ValidActiveVariable())
+        {
+            if (dataAtts.GetCentering() == AVT_NODECENT)
+            {
+                rv->GetDataRequest()->TurnNodeNumbersOn();
+            }
+            else if (dataAtts.GetCentering() == AVT_ZONECENT)
+            {
+                rv->GetDataRequest()->TurnZoneNumbersOn();
+            }
+        }
+        else 
+        {
+            // canot determine variable centering, so turn on both
+            // node numbers and zone numbers.
+            rv->GetDataRequest()->TurnNodeNumbersOn();
+            rv->GetDataRequest()->TurnZoneNumbersOn();
+        }
+    }
+    else
+    {
+        // keepNodeZone = false;
+    }
+
+    return rv;
+}
+
 
 // ****************************************************************************
 //  Method: avtPlot::SetCellCountMultiplierForSRThreshold
