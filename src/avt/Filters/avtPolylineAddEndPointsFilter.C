@@ -149,11 +149,14 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
     if( varyRadius && radiusVar != "" && radiusVar != "\0" )
     {
       if (radiusVar != "default" && radiusVar != activeScalars->GetName() )
-          activeRadius = inDS->GetPointData()->GetArray( radiusVar.c_str() );
+        activeRadius = inDS->GetPointData()->GetArray( radiusVar.c_str() );
       else
         activeRadius = activeScalars;
 
-      activeRadius->GetRange( range );
+      activeRadius->GetRange( range, 0 );
+
+      if( (range[1] - range[0]) == 0.0 )
+        range[1] = range[0] + 1.0;
 
       scale = (radiusFactor-1) / (range[1]-range[0]);
     }
@@ -199,7 +202,8 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
           if( varyRadius && radiusVar != "" && radiusVar != "\0" )
           {
             scaledRadius *=
-              ((activeScalars->GetTuple1( ptIndexs[tip] ) - range[0]) * scale + 1.0);
+              (1.0 + (activeRadius->GetComponent( ptIndexs[tip], 0 ) -
+                      range[0]) * scale);
           }
 
           if( style == Spheres )
@@ -260,7 +264,7 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
             else
               outPD->GetPointData()->AddArray(scalars);
               
-            double scalar = array->GetTuple1( ptIndexs[tip] );
+            double scalar = array->GetComponent( ptIndexs[tip], 0 );
         
             for( int k=0; k<npts; ++k )
               scalars->InsertTuple1(k, scalar);
