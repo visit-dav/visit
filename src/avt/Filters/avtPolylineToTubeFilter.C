@@ -128,7 +128,7 @@ avtPolylineToTubeFilter::ExecuteData(avtDataRepresentation *inDR)
     tubeFilter->SetNumberOfSides( numberOfSides );
     tubeFilter->SetCapping( 1 );
     tubeFilter->ReleaseDataFlagOn();
-    
+
     if( varyRadius && radiusVar != "" && radiusVar != "\0" )
     {
       if (radiusVar != "default")

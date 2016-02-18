@@ -239,21 +239,37 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
           }
           
           int npts = outPD->GetPoints()->GetNumberOfPoints();
-          
-          vtkDoubleArray *scalars = vtkDoubleArray::New();
-          scalars->Allocate(npts);
-          scalars->SetName(activeScalars->GetName());
-          outPD->GetPointData()->SetScalars(scalars);
-          outPD->GetPointData()->SetActiveScalars(scalars->GetName());
-          
-          double scalar = activeScalars->GetTuple1( ptIndexs[tip] );
+
+          // Copy over all of the point data from the lines to the
+          // cones so the append filter will append correctly.
+          int nArrays = inDS->GetPointData()->GetNumberOfArrays();
+
+          for( int j=0; j<nArrays; ++j )
+          {
+            vtkDataArray *array = inDS->GetPointData()->GetArray(j);
+
+            vtkDoubleArray *scalars = vtkDoubleArray::New();
+            scalars->Allocate(npts);
+            scalars->SetName(array->GetName());
+
+            if( array->GetName() == activeScalars->GetName() )
+            {
+              outPD->GetPointData()->SetScalars(scalars);
+              outPD->GetPointData()->SetActiveScalars(scalars->GetName());
+            }
+            else
+              outPD->GetPointData()->AddArray(scalars);
+              
+            double scalar = array->GetTuple1( ptIndexs[tip] );
         
-          for( int j=0; j<npts; ++j )
-            scalars->InsertTuple1(j, scalar);
-          
+            for( int k=0; k<npts; ++k )
+              scalars->InsertTuple1(k, scalar);
+
+            scalars->Delete();
+          }
+
           append->AddInputData( outPD );
           
-          scalars->Delete();
           outPD->Delete();
         }
       }
