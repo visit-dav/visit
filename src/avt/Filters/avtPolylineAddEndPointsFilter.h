@@ -37,40 +37,61 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtPolylineToTubeFilter.h                       //
+//                           avtPolylineAddEndPointsFilter.h                 //
 // ************************************************************************* //
 
-#ifndef AVT_POLYLINE_TO_TUBE_FILTER_H
-#define AVT_POLYLINE_TO_TUBE_FILTER_H
+#ifndef AVT_POLYLINE_ADD_END_POINTS_FILTER_H
+#define AVT_POLYLINE_ADD_END_POINTS_FILTER_H
 
 #include <filters_exports.h>
 
 #include <avtDataTreeIterator.h>
 
 // ****************************************************************************
-//  Class: avtPolylineToTubeFilter
+//  Class: avtPolylineAddEndPointsFilter
 //
 //  Purpose:
-//    Creates a tube from a polyline
+//    Connects individual line cells into a polyline cell.
 //
-//  Programmer: Allen Sanderson
-//  Creation:   Feb 12 2016
+//  Programmer: Brad Whitlock
+//  Creation:   Thu Aug 27 11:50:35 PDT 2009
+//
+//  Modifications:
+//    Eric Brugger, Mon Jul 21 13:51:03 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtPolylineToTubeFilter : virtual public avtDataTreeIterator
+class AVTFILTERS_API avtPolylineAddEndPointsFilter : virtual public avtDataTreeIterator
 {
   public:
-                             avtPolylineToTubeFilter();
-    virtual                 ~avtPolylineToTubeFilter();
+    enum EndPointType
+    {
+        None,
+        Heads,
+        Tails,
+        Both
+    };
+    enum EndPointStyle
+    {
+        Spheres,
+        Cones
+    };
+    
+                             avtPolylineAddEndPointsFilter();
+    virtual                 ~avtPolylineAddEndPointsFilter();
 
-    virtual const char      *GetType(void) { return "avtPolylineToTubeFilter"; };
+    virtual const char      *GetType(void) { return "avtPolylineAddEndPointsFilter"; };
     virtual const char      *GetDescription(void)
-                                 { return "Converts polylines into tubes"; };
+                                 { return "Add end points to polylines"; };
 
-    int numberOfSides;
-              
+    int type;
+    int style;
+    int resolution;
+
     double radius;
+    double ratio;
+
     bool varyRadius;
     std::string radiusVar;
     double radiusFactor;

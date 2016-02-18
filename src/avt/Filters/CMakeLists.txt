@@ -98,6 +98,7 @@ avtMissingDataFilter.C
 avtMultiresFilter.C
 avtNamedSelectionFilter.C
 avtPointToGlyphFilter.C
+avtPolylineAddEndPointsFilter.C
 avtPolylineToRibbonFilter.C
 avtPolylineToTubeFilter.C
 avtRayCompositer.C

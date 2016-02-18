@@ -42,21 +42,11 @@
 
 #include <avtPolylineToTubeFilter.h>
 
-#include <vtkCellArray.h>
-#include <vtkCellData.h>
-#include <vtkPointData.h>
-#include <vtkDataSet.h>
-#include <vtkPolyData.h>
 #include <vtkTubeFilter.h>
 #include <vtkAppendPolyData.h>
-#include <avtDataset.h>
-
-#include <DebugStream.h>
-#include <VisItException.h>
-#include <TimingsManager.h>
-
-#include <set>
-#include <deque>
+#include <vtkDataSet.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
 
 // ****************************************************************************
 //  Method: avtPolylineToTubeFilter constructor
@@ -65,8 +55,8 @@
 //      Defines the constructor.  Note: this should not be inlined in the
 //      header because it causes problems for certain compilers.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Aug 27 11:53:59 PDT 2009
+//  Programmer: Allen Sanderson
+//  Creation:   Feb 12 2016
 //
 // ****************************************************************************
 
@@ -81,8 +71,8 @@ avtPolylineToTubeFilter::avtPolylineToTubeFilter() : avtDataTreeIterator()
 //      Defines the destructor.  Note: this should not be inlined in the header
 //      because it causes problems for certain compilers.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Aug 27 11:53:59 PDT 2009
+//  Programmer: Allen Sanderson
+//  Creation:   Feb 12 2016
 //
 // ****************************************************************************
 
@@ -94,7 +84,7 @@ avtPolylineToTubeFilter::~avtPolylineToTubeFilter()
 //  Method: avtPolylineToTubeFilter::ExecuteData
 //
 //  Purpose:
-//      Groups connected line cells into polyline cells.
+//    Creates a tube from a polyline
 //
 //  Arguments:
 //      inDR       The input data representation.
@@ -103,17 +93,8 @@ avtPolylineToTubeFilter::~avtPolylineToTubeFilter()
 //
 //  Note: The cell data copying is untested.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Aug 27 11:53:59 PDT 2009
-//
-//  Modifications:
-//
-//    Tom Fogal, Mon Apr 26 17:27:44 MDT 2010
-//    Break out of a loop to prevent incrementing a singular iterator.
-//    Use `empty' instead of 'size'.
-//
-//    Eric Brugger, Mon Jul 21 13:51:51 PDT 2014
-//    Modified the class to work with avtDataRepresentation.
+//  Programmer: Allen Sanderson
+//  Creation:   Feb 12 2016
 //
 // ****************************************************************************
 
@@ -141,73 +122,60 @@ avtPolylineToTubeFilter::ExecuteData(avtDataRepresentation *inDR)
 
     vtkPolyData *data = vtkPolyData::SafeDownCast( inDS );
 
-    double radius;
-
-    if( radiusSizeType == 0 )
-      radius = radiusAbsolute;
-    else
-      radius = radiusBBox * boundingBoxSize;
-    
-
     vtkTubeFilter *tubeFilter = vtkTubeFilter::New();
 
     tubeFilter->SetRadius( radius );
-    tubeFilter->SetNumberOfSides( displayDensity );
+    tubeFilter->SetNumberOfSides( numberOfSides );
     tubeFilter->SetCapping( 1 );
     tubeFilter->ReleaseDataFlagOn();
     
-    if( radiusVarEnabled && radiusVar != "" && radiusVar != "\0" )
+    if( varyRadius && radiusVar != "" && radiusVar != "\0" )
     {
       if (radiusVar != "default")
         data->GetPointData()->SetActiveScalars( radiusVar.c_str() );
         
       tubeFilter->SetVaryRadiusToVaryRadiusByScalar();
-      tubeFilter->SetRadiusFactor( radiusVarFactor );
+      tubeFilter->SetRadiusFactor( radiusFactor );
     }
 
-    // If we need to trim either end, create a new trimmed polyline
-    // and run the tube on this geometry.
-    // if( atts.GetDisplayBeginFlag() || atts.GetDisplayEndFlag())
-    // {
-    //     vtkCellArray *lines = data->GetLines();
-    //     vtkIdType *segments = lines->GetPointer();
-    
-    //     vtkIdType *segptr = segments;
-    //     vtkAppendPolyData *append = vtkAppendPolyData::New();
-        
-    //     for (int i=0; i<data->GetNumberOfLines(); ++i)
-    //     {
-    //         vtkPolyData *pd = MakeNewPolyline(data, segptr);
-
-    //         if (pd != NULL)
-    //         {
-    //             append->AddInputData(pd);
-    //             pd->Delete();
-    //         }
-    //     }
-    //     tubeFilter->SetInputConnection(append->GetOutputPort());
-    //     append->Delete();
-    // }
-    // else
-      tubeFilter->SetInputData(data);
+    tubeFilter->SetInputData(data);
 
     // Create the tube polydata.
     tubeFilter->Update();
 
-    vtkDataSet *outDS = tubeFilter->GetOutput();
+    // Append the original data and tube polydata
+    vtkAppendPolyData *append = vtkAppendPolyData::New();
+
+    append->AddInputData( data );
+    append->AddInputData( tubeFilter->GetOutput() );
+    
+    tubeFilter->Delete();
+
+    // Update.
+    append->Update();
+    vtkPolyData *outPD = append->GetOutput();
+    outPD->Register(NULL);
+    append->Delete();
+    
+    // Now go through all of the cells and remove the lines.
+    int nCells = outPD->GetNumberOfCells();
+
+    for( int i=0; i<nCells; ++i )
+      if( outPD->GetCellType( i ) == VTK_POLY_LINE )
+        outPD->DeleteCell( i );
+
+    outPD->RemoveDeletedCells();
 
     // Restore the active scalars.
     if( activeScalars )
     {
       data->GetPointData()->SetActiveScalars(activeScalars->GetName());
-      outDS->GetPointData()->SetActiveScalars(activeScalars->GetName());
+      outPD->GetPointData()->SetActiveScalars(activeScalars->GetName());
     }
-    
+
     // Crearte the output data rep.
     avtDataRepresentation *outDR =
-      new avtDataRepresentation( outDS, inDR->GetDomain(), inDR->GetLabel() );
-
-    tubeFilter->Delete();
+      new avtDataRepresentation( outPD, inDR->GetDomain(), inDR->GetLabel() );
 
     return outDR;
 }
@@ -219,10 +187,8 @@ avtPolylineToTubeFilter::ExecuteData(avtDataRepresentation *inDR)
 //  Purpose:
 //      Indicate that this invalidates the zone numberings.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Sep  3 11:45:19 PDT 2009
-//
-//  Modifications:
+//  Programmer: Allen Sanderson
+//  Creation:   Feb 12 2016
 //
 // ****************************************************************************
 

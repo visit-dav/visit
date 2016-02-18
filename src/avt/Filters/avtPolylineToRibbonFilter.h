@@ -51,14 +51,10 @@
 //  Class: avtPolylineToRibbonFilter
 //
 //  Purpose:
-//    Connects individual line cells into a polyline cell.
+//    Creates a ribbon from a polyline
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Aug 27 11:50:35 PDT 2009
-//
-//  Modifications:
-//    Eric Brugger, Mon Jul 21 13:51:03 PDT 2014
-//    Modified the class to work with avtDataRepresentation.
+//  Programmer: Allen Sanderson
+//  Creation:   Feb 12 2016
 //
 // ****************************************************************************
 
@@ -70,22 +66,16 @@ class AVTFILTERS_API avtPolylineToRibbonFilter : virtual public avtDataTreeItera
 
     virtual const char      *GetType(void) { return "avtPolylineToRibbonFilter"; };
     virtual const char      *GetDescription(void)
-                                 { return "Grouping lines into polylines"; };
+                                 { return "Converts polylines into ribbons"; };
 
-    int displayDensity;
-              
-    int widthSizeType;
-    double widthAbsolute;
-    double widthBBox;
-    double boundingBoxSize;
-
-    bool widthVarEnabled;
+    double width;
+    bool varyWidth;
     std::string widthVar;
-    double widthVarFactor;
+    double widthFactor;
               
   protected:
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
-    virtual void             UpdateDataObjectInfo(void);
+    virtual void                   UpdateDataObjectInfo(void);
 };
 
 #endif
