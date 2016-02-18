@@ -45,8 +45,8 @@
       </Enum>
       <Enum name="EndPointType">
         None
-        Tails
         Heads
+        Tails
         Both
       </Enum>
       <Enum name="EndPointStyle">
@@ -131,7 +131,7 @@
       <Field name="lineWidth" label="lineWidth" type="linewidth">
         0
       </Field>
-      <Field name="tubeDisplayDensity" label="tubeDisplayDensity" type="int">
+      <Field name="tubeResolution" label="tubeResolution" type="int">
         10
       </Field>
       <Field name="tubeRadiusSizeType" label="tubeRadiusSizeType" type="enum" subtype="SizeType">
@@ -148,7 +148,7 @@
       </Field>
       <Field name="tubeRadiusVar" label="Tube radius variable" type="string">
       </Field>
-      <Field name="tubeRadiusVarFactor" label="Tube radius variable factor" type="double">
+      <Field name="tubeRadiusVarRatio" label="Tube radius variable ration" type="double">
         10.000000
       </Field>
       <Field name="endPointType" label="End point type" type="enum" subtype="EndPointType">
@@ -161,13 +161,24 @@
         FractionOfBBox
       </Field>
       <Field name="endPointRadiusAbsolute" label="endPointRadiusAbsolute" type="double" enabler="endPointRadiusSizeType:Absolute">
-        1.000000
+        0.125000
       </Field>
       <Field name="endPointRadiusBBox" label="Radius (BBox Fraction)" type="double" enabler="endPointRadiusSizeType:FractionOfBBox">
-        0.005000
+        0.05000
       </Field>
-      <Field name="endPointRatio" label="endPointRatio" type="double">
-        2.000000
+      <Field name="endPointResolution" label="End point resolution" type="int">
+        10
+      </Field>
+      <Field name="endPointRatio" label="End point ratio" type="double">
+        5.000000
+      </Field>
+      <Field name="endPointRadiusVarEnabled" label="End point radius by var enabled" type="bool">
+        false
+      </Field>
+      <Field name="endPointRadiusVar" label="End point radius variable" type="string">
+      </Field>
+      <Field name="endPointRadiusVarRatio" label="End point radius variable ration" type="double">
+        10.000000
       </Field>
       <Field name="renderSurfaces" label="Render surfaces" type="int">
         1

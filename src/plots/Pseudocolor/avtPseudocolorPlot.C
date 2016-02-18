@@ -47,6 +47,7 @@
 #include <avtColorTables.h>
 #include <avtExtents.h>
 #include <avtLookupTable.h>
+#include <avtPolylineAddEndPointsFilter.h>
 #include <avtPolylineToRibbonFilter.h>
 #include <avtPolylineToTubeFilter.h>
 #include <avtPseudocolorFilter.h>
@@ -118,6 +119,7 @@ avtPseudocolorPlot::avtPseudocolorPlot()
     filter = NULL;
     pcfilter = NULL;
     staggeringFilter = NULL;
+    polylineAddEndPointsFilter = NULL;
     polylineToRibbonFilter = NULL;
     polylineToTubeFilter = NULL;
     colorTableIsFullyOpaque = true;
@@ -178,6 +180,12 @@ avtPseudocolorPlot::~avtPseudocolorPlot()
     {
         delete polylineToRibbonFilter;
         polylineToRibbonFilter = NULL;
+    }
+
+    if (polylineAddEndPointsFilter != NULL)
+    {
+        delete polylineAddEndPointsFilter;
+        polylineAddEndPointsFilter = NULL;
     }
 
     if (pcfilter != NULL)
@@ -295,7 +303,7 @@ avtPseudocolorPlot::GetMapper(void)
 //    Added pcfilter->SetPlotAtts. 
 //
 //    Cyrus Harrison, Fri Mar  7 11:37:07 PST 2008
-//    Moved recentering code to the ApplyRenderingTransormation so centering
+//    Moved recentering code to the ApplyRenderingTransformation so centering
 //    will not alter query results. (Resolving '8511)
 //
 // ****************************************************************************
@@ -315,24 +323,23 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
     staggeringFilter->SetInput(dob);
     dob = staggeringFilter->GetOutput();
 
-    
-    if (input->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+
+    // Always call the avtPseudocolorFilter
+    if (pcfilter != NULL)
     {
-        if (pcfilter != NULL)
-        {
-            delete pcfilter;
-        }
-        pcfilter = new avtPseudocolorFilter();
-        pcfilter->SetInput(dob);
-        pcfilter->SetPlotAtts(&atts);
-        dob = pcfilter->GetOutput();
+      delete pcfilter;
     }
+
+    pcfilter = new avtPseudocolorFilter();
+    pcfilter->SetInput(dob);
+    pcfilter->SetPlotAtts(&atts);
+    dob = pcfilter->GetOutput();
 
     return dob;
 }
 
 // ****************************************************************************
-//  Method: avtPseudocolorPlot::ApplyRenderingTransormation
+//  Method: avtPseudocolorPlot::ApplyRenderingTransformation
 //
 //  Purpose:
 //      Applies the rendering transformation associated with a pseudo color 
@@ -373,6 +380,7 @@ avtDataObject_p
 avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     avtDataObject_p dob = input;
+    
     topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
 
     if ((atts.GetCentering() == PseudocolorAttributes::Nodal) ||
@@ -387,13 +395,50 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
         {
             delete filter;
         }
+
         PseudocolorAttributes::Centering c = atts.GetCentering();
+
         if (c == PseudocolorAttributes::Nodal)
             filter = new avtShiftCenteringFilter(AVT_NODECENT);
         if (c == PseudocolorAttributes::Zonal)
             filter = new avtShiftCenteringFilter(AVT_ZONECENT);
+
         filter->SetInput(dob);
         dob = filter->GetOutput();
+    }
+
+    // PolylineAddEndPoints Filter
+    if (polylineAddEndPointsFilter != NULL) {
+      delete polylineAddEndPointsFilter;
+      polylineAddEndPointsFilter = NULL;
+    }
+
+    if( atts.GetEndPointType() != PseudocolorAttributes::None )
+    {
+      double bbox[6] = {0.,1.,0.,1.,0.,1.};
+      dob->GetInfo().GetAttributes().GetOriginalSpatialExtents()->CopyTo(bbox);
+
+      polylineAddEndPointsFilter = new avtPolylineAddEndPointsFilter();
+
+      if( atts.GetEndPointRadiusSizeType() == PseudocolorAttributes::Absolute )
+        polylineAddEndPointsFilter->radius = atts.GetEndPointRadiusAbsolute();
+      else
+        polylineAddEndPointsFilter->radius =
+          atts.GetEndPointRadiusBBox() * GetBBoxSize( bbox );
+    
+      polylineAddEndPointsFilter->type         = atts.GetEndPointType();
+      polylineAddEndPointsFilter->style        = atts.GetEndPointStyle();
+      polylineAddEndPointsFilter->ratio        = atts.GetEndPointRatio();
+
+      polylineAddEndPointsFilter->varyRadius   = atts.GetEndPointRadiusVarEnabled();
+      polylineAddEndPointsFilter->radiusVar    = atts.GetEndPointRadiusVar();
+      polylineAddEndPointsFilter->radiusFactor = atts.GetEndPointRadiusVarRatio();
+
+      polylineAddEndPointsFilter->resolution   = atts.GetEndPointResolution();
+
+      polylineAddEndPointsFilter->SetInput(dob);
+      
+      dob = polylineAddEndPointsFilter->GetOutput();
     }
 
     // PolylineToTube Filter
@@ -408,17 +453,18 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
       dob->GetInfo().GetAttributes().GetOriginalSpatialExtents()->CopyTo(bbox);
 
       polylineToTubeFilter = new avtPolylineToTubeFilter();
-      polylineToTubeFilter->displayDensity = atts.GetTubeDisplayDensity();
+
+      if( atts.GetTubeRadiusSizeType() == PseudocolorAttributes::Absolute )
+        polylineToTubeFilter->radius = atts.GetTubeRadiusAbsolute();
+      else
+        polylineToTubeFilter->radius =
+          atts.GetTubeRadiusBBox() * GetBBoxSize( bbox );
+      
+      polylineToTubeFilter->varyRadius   = atts.GetTubeRadiusVarEnabled();
+      polylineToTubeFilter->radiusVar    = atts.GetTubeRadiusVar();
+      polylineToTubeFilter->radiusFactor = atts.GetTubeRadiusVarRatio();
+      polylineToTubeFilter->numberOfSides = atts.GetTubeResolution();
           
-      polylineToTubeFilter->radiusSizeType = atts.GetTubeRadiusSizeType();
-      polylineToTubeFilter->radiusAbsolute = atts.GetTubeRadiusAbsolute();
-      polylineToTubeFilter->radiusBBox     = atts.GetTubeRadiusBBox();
-      polylineToTubeFilter->boundingBoxSize = GetBBoxSize( bbox );
-      
-      polylineToTubeFilter->radiusVarEnabled = atts.GetTubeRadiusVarEnabled();
-      polylineToTubeFilter->radiusVar        = atts.GetTubeRadiusVar();
-      polylineToTubeFilter->radiusVarFactor  = atts.GetTubeRadiusVarFactor();
-      
       polylineToTubeFilter->SetInput(dob);
       
       dob = polylineToTubeFilter->GetOutput();
@@ -436,16 +482,16 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
       dob->GetInfo().GetAttributes().GetOriginalSpatialExtents()->CopyTo(bbox);
 
       polylineToRibbonFilter = new avtPolylineToRibbonFilter();
-      polylineToRibbonFilter->displayDensity = atts.GetTubeDisplayDensity();
-          
-      polylineToRibbonFilter->widthSizeType = atts.GetTubeRadiusSizeType();
-      polylineToRibbonFilter->widthAbsolute = atts.GetTubeRadiusAbsolute();
-      polylineToRibbonFilter->widthBBox     = atts.GetTubeRadiusBBox();
-      polylineToRibbonFilter->boundingBoxSize = GetBBoxSize( bbox );
-      
-      polylineToRibbonFilter->widthVarEnabled = atts.GetTubeRadiusVarEnabled();
-      polylineToRibbonFilter->widthVar        = atts.GetTubeRadiusVar();
-      polylineToRibbonFilter->widthVarFactor  = atts.GetTubeRadiusVarFactor();
+
+      if( atts.GetTubeRadiusSizeType() == PseudocolorAttributes::Absolute )
+        polylineToRibbonFilter->width = atts.GetTubeRadiusAbsolute();
+      else
+        polylineToRibbonFilter->width =
+          atts.GetTubeRadiusBBox() * GetBBoxSize( bbox );
+    
+      polylineToRibbonFilter->varyWidth   = atts.GetTubeRadiusVarEnabled();
+      polylineToRibbonFilter->widthVar    = atts.GetTubeRadiusVar();
+      polylineToRibbonFilter->widthFactor = atts.GetTubeRadiusVarRatio();
       
       polylineToRibbonFilter->SetInput(dob);
       
@@ -1258,6 +1304,10 @@ avtPseudocolorPlot::ReleaseData(void)
         polylineToRibbonFilter->ReleaseData();
     }
 
+    if (polylineAddEndPointsFilter != NULL) {
+        polylineAddEndPointsFilter->ReleaseData();
+    }
+
     if (filter != NULL)
     {
         filter->ReleaseData();
@@ -1304,104 +1354,13 @@ avtPseudocolorPlot::GetSmoothingLevel()
 //
 // ****************************************************************************
 
-avtContract_p
-avtPseudocolorPlot::EnhanceSpecification(avtContract_p contract)
-{
-    avtContract_p rv = contract;
-
-    avtDataAttributes &dataAtts = behavior->GetInfo().GetAttributes();
-
-    int topoDim = dataAtts.GetTopologicalDimension();
-
-    std::string pointVar   = atts.GetPointSizeVar();
-    std::string radiusVar  = atts.GetTubeRadiusVar();
-    std::string opacityVar = atts.GetOpacityVariable();
-
-    avtDataRequest_p dataRequest = new avtDataRequest(
-                                       contract->GetDataRequest());
-
-    std::string primaryVar = dataRequest->GetVariable();
-
-    //
-    // Find out if we need to add a secondary variable.
-    //
-    if( (topoDim == 0 || (topoDim > 0 && atts.GetRenderPoints())) &&
-        atts.GetPointType() != PseudocolorAttributes::Point &&
-        atts.GetPointType() != PseudocolorAttributes::Sphere &&
-        atts.GetPointSizeVarEnabled() && 
-        pointVar != "default" &&
-        pointVar != "\0" &&
-        pointVar != primaryVar &&
-        !dataRequest->HasSecondaryVariable(pointVar.c_str()))
-    {
-        rv->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
-        rv->SetCalculateVariableExtents(pointVar, true);
-    }
-
-    if( //(topoDim == 1 || (topoDim > 1 && atts.GetRenderWireframe())) &&
-        (atts.GetLineType() == PseudocolorAttributes::Tube || 
-         atts.GetLineType() == PseudocolorAttributes::Ribbon) && 
-        atts.GetTubeRadiusVarEnabled() &&
-        radiusVar != "default" &&
-        radiusVar != "\0" &&
-        radiusVar != primaryVar &&
-        !dataRequest->HasSecondaryVariable(radiusVar.c_str()))
-    {
-        rv->GetDataRequest()->AddSecondaryVariable(radiusVar.c_str());
-        rv->SetCalculateVariableExtents(radiusVar, true);
-
-        std::string key =
-          rv->SetAttribute( &atts, PseudocolorAttributes::ID_tubeRadiusVar,
-                            radiusVar );
-    }
-
-    if (atts.GetOpacityType() == PseudocolorAttributes::VariableRange &&
-        opacityVar != "default" &&
-        opacityVar != "\0" &&
-        opacityVar != primaryVar &&
-        !dataRequest->HasSecondaryVariable(opacityVar.c_str()))
-    {
-        rv->GetDataRequest()->AddSecondaryVariable(opacityVar.c_str());
-        rv->SetCalculateVariableExtents(opacityVar, true);
-    }
-
-    // Note the line type so that upstream operators can obtain the
-    // needed data for displaying ribbons or tubes.
-    std::string key =
-      rv->SetAttribute( &atts, PseudocolorAttributes::ID_lineType,
-                        PseudocolorAttributes::LineType_ToString(atts.GetLineType()) );
-
-    if (contract->GetDataRequest()->MayRequireZones() ||
-        contract->GetDataRequest()->MayRequireNodes())
-    {
-        // keepNodeZone = true;
-
-        if (dataAtts.ValidActiveVariable())
-        {
-            if (dataAtts.GetCentering() == AVT_NODECENT)
-            {
-                rv->GetDataRequest()->TurnNodeNumbersOn();
-            }
-            else if (dataAtts.GetCentering() == AVT_ZONECENT)
-            {
-                rv->GetDataRequest()->TurnZoneNumbersOn();
-            }
-        }
-        else 
-        {
-            // canot determine variable centering, so turn on both
-            // node numbers and zone numbers.
-            rv->GetDataRequest()->TurnNodeNumbersOn();
-            rv->GetDataRequest()->TurnZoneNumbersOn();
-        }
-    }
-    else
-    {
-        // keepNodeZone = false;
-    }
-
-    return rv;
-}
+// avtContract_p
+// avtPseudocolorPlot::EnhanceSpecification(avtContract_p contract)
+// {
+//     avtContract_p rv = contract;
+//
+//     return rv;
+// }
 
 
 // ****************************************************************************

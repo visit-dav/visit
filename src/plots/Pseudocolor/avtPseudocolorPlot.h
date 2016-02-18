@@ -53,6 +53,7 @@ class     avtPseudocolorFilter;
 class     avtShiftCenteringFilter;
 class     avtVariablePointGlyphMapper;
 class     avtVariableLegend;
+class     avtPolylineAddEndPointsFilter;
 class     avtPolylineToRibbonFilter;
 class     avtPolylineToTubeFilter;
 class     avtStaggeringFilter;
@@ -170,6 +171,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     avtLegend_p                 varLegendRefPtr;
     PseudocolorAttributes       atts;
     avtPseudocolorFilter       *pcfilter;
+    avtPolylineAddEndPointsFilter *polylineAddEndPointsFilter;
     avtPolylineToRibbonFilter  *polylineToRibbonFilter;
     avtPolylineToTubeFilter    *polylineToTubeFilter;
     avtStaggeringFilter        *staggeringFilter;
@@ -182,7 +184,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     virtual avtMapper          *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
-    virtual avtContract_p       EnhanceSpecification(avtContract_p);
+    // virtual avtContract_p       EnhanceSpecification(avtContract_p);
     virtual void                CustomizeBehavior(void);
     virtual int                 GetSmoothingLevel();
 
@@ -220,7 +222,4 @@ private:
 
 };
 
-
 #endif
-
-
