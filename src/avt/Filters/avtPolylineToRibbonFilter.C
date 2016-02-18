@@ -42,21 +42,11 @@
 
 #include <avtPolylineToRibbonFilter.h>
 
-#include <vtkCellArray.h>
-#include <vtkCellData.h>
-#include <vtkPointData.h>
-#include <vtkDataSet.h>
-#include <vtkPolyData.h>
 #include <vtkRibbonFilter.h>
 #include <vtkAppendPolyData.h>
-#include <avtDataset.h>
-
-#include <DebugStream.h>
-#include <VisItException.h>
-#include <TimingsManager.h>
-
-#include <set>
-#include <deque>
+#include <vtkDataSet.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
 
 // ****************************************************************************
 //  Method: avtPolylineToRibbonFilter constructor
@@ -65,8 +55,8 @@
 //      Defines the constructor.  Note: this should not be inlined in the
 //      header because it causes problems for certain compilers.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Aug 27 11:53:59 PDT 2009
+//  Programmer: Allen Sanderson
+//  Creation:   Feb 12 2016
 //
 // ****************************************************************************
 
@@ -81,8 +71,8 @@ avtPolylineToRibbonFilter::avtPolylineToRibbonFilter() : avtDataTreeIterator()
 //      Defines the destructor.  Note: this should not be inlined in the header
 //      because it causes problems for certain compilers.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Aug 27 11:53:59 PDT 2009
+//  Programmer: Allen Sanderson
+//  Creation:   Feb 12 2016
 //
 // ****************************************************************************
 
@@ -94,26 +84,15 @@ avtPolylineToRibbonFilter::~avtPolylineToRibbonFilter()
 //  Method: avtPolylineToRibbonFilter::ExecuteData
 //
 //  Purpose:
-//      Groups connected line cells into polyline cells.
+//    Creates a ribbon from a polyline
 //
 //  Arguments:
 //      inDR       The input data representation.
 //
 //  Returns:       The output data representation.
 //
-//  Note: The cell data copying is untested.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Aug 27 11:53:59 PDT 2009
-//
-//  Modifications:
-//
-//    Tom Fogal, Mon Apr 26 17:27:44 MDT 2010
-//    Break out of a loop to prevent incrementing a singular iterator.
-//    Use `empty' instead of 'size'.
-//
-//    Eric Brugger, Mon Jul 21 13:51:51 PDT 2014
-//    Modified the class to work with avtDataRepresentation.
+//  Programmer: Allen Sanderson
+//  Creation:   Feb 12 2016
 //
 // ****************************************************************************
 
@@ -141,73 +120,57 @@ avtPolylineToRibbonFilter::ExecuteData(avtDataRepresentation *inDR)
 
     vtkPolyData *data = vtkPolyData::SafeDownCast( inDS );
 
-    double width;
-
-    if( widthSizeType == 0 )
-      width = widthAbsolute;
-    else
-      width = widthBBox * boundingBoxSize;
-    
-
     vtkRibbonFilter *ribbonFilter = vtkRibbonFilter::New();
 
     ribbonFilter->SetWidth( width );
     ribbonFilter->ReleaseDataFlagOn();
-    
-    if( widthVarEnabled && widthVar != "" && widthVar != "\0" )
+    ribbonFilter->SetVaryWidth( varyWidth );
+    ribbonFilter->ReleaseDataFlagOn();
+
+    if( varyWidth && widthVar != "" && widthVar != "\0" )
     {
       if (widthVar != "default")
         data->GetPointData()->SetActiveScalars( widthVar.c_str() );
-        
-      ribbonFilter->SetVaryWidth( true );
-      ribbonFilter->SetWidthFactor( widthVarFactor );
     }
-    else
-      ribbonFilter->SetVaryWidth( false );
 
-    // If we need to trim either end, create a new trimmed polyline
-    // and run the ribbon on this geometry.
-    // if( atts.GetDisplayBeginFlag() || atts.GetDisplayEndFlag())
-    // {
-    //     vtkCellArray *lines = data->GetLines();
-    //     vtkIdType *segments = lines->GetPointer();
-    
-    //     vtkIdType *segptr = segments;
-    //     vtkAppendPolyData *append = vtkAppendPolyData::New();
-        
-    //     for (int i=0; i<data->GetNumberOfLines(); ++i)
-    //     {
-    //         vtkPolyData *pd = MakeNewPolyline(data, segptr);
-
-    //         if (pd != NULL)
-    //         {
-    //             append->AddInputData(pd);
-    //             pd->Delete();
-    //         }
-    //     }
-    //     ribbonFilter->SetInputConnection(append->GetOutputPort());
-    //     append->Delete();
-    // }
-    // else
-      ribbonFilter->SetInputData(data);
+    ribbonFilter->SetInputData(data);
 
     // Create the ribbon polydata.
     ribbonFilter->Update();
 
-    vtkDataSet *outDS = ribbonFilter->GetOutput();
+    // Append the original data and ribbon polydata
+    vtkAppendPolyData *append = vtkAppendPolyData::New();
+
+    append->AddInputData( data );
+    append->AddInputData( ribbonFilter->GetOutput() );
+    
+    ribbonFilter->Delete();
+
+    // Update.
+    append->Update();
+    vtkPolyData *outPD = append->GetOutput();
+    outPD->Register(NULL);
+    append->Delete();
+    
+    // Now go through all of the cells and remove the lines.
+    int nCells = outPD->GetNumberOfCells();
+
+    for( int i=0; i<nCells; ++i )
+      if( outPD->GetCellType( i ) == VTK_POLY_LINE )
+        outPD->DeleteCell( i );
+
+    outPD->RemoveDeletedCells();
 
     // Restore the active scalars.
     if( activeScalars )
     {
       data->GetPointData()->SetActiveScalars(activeScalars->GetName());
-      outDS->GetPointData()->SetActiveScalars(activeScalars->GetName());
+      outPD->GetPointData()->SetActiveScalars(activeScalars->GetName());
     }
-    
+
     // Crearte the output data rep.
     avtDataRepresentation *outDR =
-      new avtDataRepresentation( outDS, inDR->GetDomain(), inDR->GetLabel() );
-
-    ribbonFilter->Delete();
+      new avtDataRepresentation( outPD, inDR->GetDomain(), inDR->GetLabel() );
 
     return outDR;
 }
@@ -219,10 +182,8 @@ avtPolylineToRibbonFilter::ExecuteData(avtDataRepresentation *inDR)
 //  Purpose:
 //      Indicate that this invalidates the zone numberings.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Sep  3 11:45:19 PDT 2009
-//
-//  Modifications:
+//  Programmer: Allen Sanderson
+//  Creation:   Feb 12 2016
 //
 // ****************************************************************************
 
