@@ -175,18 +175,23 @@ private slots:
     void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
 
-    void tubeDisplayDensityChanged(int val);
     void tubeRadiusSizeTypeChanged(int v);
     void tubeRadiusProcessText();
     void tubeRadiusVarToggled(bool val);
     void tubeRadiusVarChanged(const QString &var);
-    void tubeRadiusVarFactorProcessText();
+    void tubeRadiusVarRatioProcessText();
+    void tubeResolutionChanged(int val);
 
     void endPointTypeChanged(int newType);
     void endPointStyleChanged(int newStyle);
     void endPointRadiusSizeTypeChanged(int v);
+  
     void endPointRadiusProcessText();
     void endPointRatioProcessText();
+    void endPointRadiusVarToggled(bool val);
+    void endPointRadiusVarChanged(const QString &var);
+    void endPointRadiusVarRatioProcessText();
+    void endPointResolutionChanged(int val);
 
     void smoothingLevelChanged(int index);
     void renderSurfacesChanged(bool);
@@ -240,8 +245,6 @@ private:
     QvisLineWidthWidget   *lineWidth;
 
 
-    QLabel             *tubeDisplayDensityLabel;
-    QSpinBox           *tubeDisplayDensity;
     QLabel             *tubeRadiusLabel;
     QLineEdit          *tubeRadius;
     QComboBox          *tubeRadiusSizeType;
@@ -249,21 +252,31 @@ private:
     QCheckBox          *tubeRadiusVarEnabled;
     QLabel             *tubeRadiusVarLabel;
     QvisVariableButton *tubeRadiusVar;
-    QLabel             *tubeRadiusVarFactorLabel;
-    QLineEdit          *tubeRadiusVarFactorEdit;
-  
-    // QLineEdit *ribbonWidth;
-    // QComboBox *ribbonSizeType;
+    QLabel             *tubeRadiusVarRatioLabel;
+    QLineEdit          *tubeRadiusVarRatio;
+
+    QLabel             *tubeResolutionLabel;
+    QSpinBox           *tubeResolution;
 
     QLabel    *endPointTypeLabel;
     QComboBox *endPointType;
     QLabel    *endPointStyleLabel;
     QComboBox *endPointStyle;
+
     QLabel    *endPointRadiusLabel;
     QLineEdit *endPointRadius;
     QComboBox *endPointRadiusSizeType;
     QLabel    *endPointRatioLabel;
     QLineEdit *endPointRatio;
+
+    QCheckBox          *endPointRadiusVarEnabled;
+    QLabel             *endPointRadiusVarLabel;
+    QvisVariableButton *endPointRadiusVar;
+    QLabel             *endPointRadiusVarRatioLabel;
+    QLineEdit          *endPointRadiusVarRatio;
+
+    QLabel   *endPointResolutionLabel;
+    QSpinBox *endPointResolution;
 
     QLabel                *renderLabel;
     QCheckBox             *renderSurfaces;

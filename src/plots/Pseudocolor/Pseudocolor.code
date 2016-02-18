@@ -72,20 +72,27 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
    bool needSecondaryVar = (obj.pointType != Point &&
                             obj.pointType != Sphere &&
                             obj.pointSizeVarEnabled &&
-                            pointSizeVar != obj.pointSizeVar &&
+                            obj.pointSizeVar != pointSizeVar &&
                             obj.pointSizeVar != "default" && 
                             obj.pointSizeVar != "" &&
                             obj.pointSizeVar != "\0") ||
 
                            (obj.lineType == Tube &&
                             obj.tubeRadiusVarEnabled &&
-                            tubeRadiusVar != obj.tubeRadiusVar &&
+                            obj.tubeRadiusVar != tubeRadiusVar &&
                             obj.tubeRadiusVar != "default" && 
                             obj.tubeRadiusVar != "" &&
                             obj.tubeRadiusVar != "\0") ||
 
+                           (obj.endPointType != None &&
+                            obj.endPointRadiusVarEnabled &&
+                            obj.endPointRadiusVar != endPointRadiusVar &&
+                            obj.endPointRadiusVar != "default" && 
+                            obj.endPointRadiusVar != "" &&
+                            obj.endPointRadiusVar != "\0") ||
+
                            (obj.opacityType == VariableRange &&
-                            opacityVariable != obj.opacityVariable &&
+                            obj.opacityVariable != opacityVariable &&
                             obj.opacityVariable != "default" && 
                             obj.opacityVariable != "" &&
                             obj.opacityVariable != "\0");
@@ -97,8 +104,19 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             tubeRadiusBBox       != obj.tubeRadiusBBox ||
                             tubeRadiusVarEnabled != obj.tubeRadiusVarEnabled ||
                             tubeRadiusVar        != obj.tubeRadiusVar ||
-                            tubeRadiusVarFactor  != obj.tubeRadiusVarFactor ||
-                            tubeDisplayDensity   != obj.tubeDisplayDensity);
+                            tubeRadiusVarRatio   != obj.tubeRadiusVarRatio ||
+                            tubeResolution       != obj.tubeResolution ||
+
+                            endPointType             != obj.endPointType ||
+                            endPointStyle            != obj.endPointStyle ||
+                            endPointRadiusAbsolute   != obj.endPointRadiusAbsolute ||
+                            endPointRadiusBBox       != obj.endPointRadiusBBox ||
+                            endPointRatio            != obj.endPointRatio ||
+                            endPointRadiusVarEnabled != obj.endPointRadiusVarEnabled ||
+                            endPointRadiusVar        != obj.endPointRadiusVar ||
+                            endPointRadiusVarRatio   != obj.endPointRadiusVarRatio ||
+                            endPointResolution       != obj.endPointResolution ||
+                            0 );
 
                            
     return (centering != obj.centering ||

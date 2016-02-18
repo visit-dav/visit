@@ -106,8 +106,8 @@ public:
     enum EndPointType
     {
         None,
-        Tails,
         Heads,
+        Tails,
         Both
     };
     enum EndPointStyle
@@ -150,6 +150,7 @@ public:
     void SelectOpacityVariable();
     void SelectPointSizeVar();
     void SelectTubeRadiusVar();
+    void SelectEndPointRadiusVar();
 
     // Property setting methods
     void SetScaling(Scaling scaling_);
@@ -177,19 +178,23 @@ public:
     void SetLineStyle(int lineStyle_);
     void SetLineType(LineType lineType_);
     void SetLineWidth(int lineWidth_);
-    void SetTubeDisplayDensity(int tubeDisplayDensity_);
+    void SetTubeResolution(int tubeResolution_);
     void SetTubeRadiusSizeType(SizeType tubeRadiusSizeType_);
     void SetTubeRadiusAbsolute(double tubeRadiusAbsolute_);
     void SetTubeRadiusBBox(double tubeRadiusBBox_);
     void SetTubeRadiusVarEnabled(bool tubeRadiusVarEnabled_);
     void SetTubeRadiusVar(const std::string &tubeRadiusVar_);
-    void SetTubeRadiusVarFactor(double tubeRadiusVarFactor_);
+    void SetTubeRadiusVarRatio(double tubeRadiusVarRatio_);
     void SetEndPointType(EndPointType endPointType_);
     void SetEndPointStyle(EndPointStyle endPointStyle_);
     void SetEndPointRadiusSizeType(SizeType endPointRadiusSizeType_);
     void SetEndPointRadiusAbsolute(double endPointRadiusAbsolute_);
     void SetEndPointRadiusBBox(double endPointRadiusBBox_);
+    void SetEndPointResolution(int endPointResolution_);
     void SetEndPointRatio(double endPointRatio_);
+    void SetEndPointRadiusVarEnabled(bool endPointRadiusVarEnabled_);
+    void SetEndPointRadiusVar(const std::string &endPointRadiusVar_);
+    void SetEndPointRadiusVarRatio(double endPointRadiusVarRatio_);
     void SetRenderSurfaces(int renderSurfaces_);
     void SetRenderWireframe(int renderWireframe_);
     void SetRenderPoints(int renderPoints_);
@@ -226,20 +231,25 @@ public:
     int               GetLineStyle() const;
     LineType          GetLineType() const;
     int               GetLineWidth() const;
-    int               GetTubeDisplayDensity() const;
+    int               GetTubeResolution() const;
     SizeType          GetTubeRadiusSizeType() const;
     double            GetTubeRadiusAbsolute() const;
     double            GetTubeRadiusBBox() const;
     bool              GetTubeRadiusVarEnabled() const;
     const std::string &GetTubeRadiusVar() const;
           std::string &GetTubeRadiusVar();
-    double            GetTubeRadiusVarFactor() const;
+    double            GetTubeRadiusVarRatio() const;
     EndPointType      GetEndPointType() const;
     EndPointStyle     GetEndPointStyle() const;
     SizeType          GetEndPointRadiusSizeType() const;
     double            GetEndPointRadiusAbsolute() const;
     double            GetEndPointRadiusBBox() const;
+    int               GetEndPointResolution() const;
     double            GetEndPointRatio() const;
+    bool              GetEndPointRadiusVarEnabled() const;
+    const std::string &GetEndPointRadiusVar() const;
+          std::string &GetEndPointRadiusVar();
+    double            GetEndPointRadiusVarRatio() const;
     int               GetRenderSurfaces() const;
     int               GetRenderWireframe() const;
     int               GetRenderPoints() const;
@@ -336,19 +346,23 @@ public:
         ID_lineStyle,
         ID_lineType,
         ID_lineWidth,
-        ID_tubeDisplayDensity,
+        ID_tubeResolution,
         ID_tubeRadiusSizeType,
         ID_tubeRadiusAbsolute,
         ID_tubeRadiusBBox,
         ID_tubeRadiusVarEnabled,
         ID_tubeRadiusVar,
-        ID_tubeRadiusVarFactor,
+        ID_tubeRadiusVarRatio,
         ID_endPointType,
         ID_endPointStyle,
         ID_endPointRadiusSizeType,
         ID_endPointRadiusAbsolute,
         ID_endPointRadiusBBox,
+        ID_endPointResolution,
         ID_endPointRatio,
+        ID_endPointRadiusVarEnabled,
+        ID_endPointRadiusVar,
+        ID_endPointRadiusVarRatio,
         ID_renderSurfaces,
         ID_renderWireframe,
         ID_renderPoints,
@@ -384,19 +398,23 @@ private:
     int         lineStyle;
     int         lineType;
     int         lineWidth;
-    int         tubeDisplayDensity;
+    int         tubeResolution;
     int         tubeRadiusSizeType;
     double      tubeRadiusAbsolute;
     double      tubeRadiusBBox;
     bool        tubeRadiusVarEnabled;
     std::string tubeRadiusVar;
-    double      tubeRadiusVarFactor;
+    double      tubeRadiusVarRatio;
     int         endPointType;
     int         endPointStyle;
     int         endPointRadiusSizeType;
     double      endPointRadiusAbsolute;
     double      endPointRadiusBBox;
+    int         endPointResolution;
     double      endPointRatio;
+    bool        endPointRadiusVarEnabled;
+    std::string endPointRadiusVar;
+    double      endPointRadiusVarRatio;
     int         renderSurfaces;
     int         renderWireframe;
     int         renderPoints;
@@ -408,6 +426,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PSEUDOCOLORATTRIBUTES_TMFS "idibdbdisbisdddbbdibsiiiiiiddbsdiiidddiiiibb"
+#define PSEUDOCOLORATTRIBUTES_TMFS "idibdbdisbisdddbbdibsiiiiiiddbsdiiiddidbsdiiiibb"
 
 #endif

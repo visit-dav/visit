@@ -587,15 +587,6 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 
 
     // Tube/ribbon
-    tubeDisplayDensityLabel = new QLabel(tr("Display density"), central);
-    lineLayout->addWidget(tubeDisplayDensityLabel, 1, 3, Qt::AlignRight);
-
-    tubeDisplayDensity = new QSpinBox(central);
-    tubeDisplayDensity->setMinimum(2);
-    tubeDisplayDensity->setMaximum(100);
-    lineLayout->addWidget(tubeDisplayDensity, 1, 4);
-    connect(tubeDisplayDensity, SIGNAL(valueChanged(int)), this, SLOT(tubeDisplayDensityChanged(int)));
-
     tubeRadiusLabel = new QLabel(tr("Radius"), central);
     tubeRadiusLabel->setToolTip(tr("Radius used for tubes and ribbons."));
     lineLayout->addWidget(tubeRadiusLabel, 1, 0, Qt::AlignRight);
@@ -624,26 +615,22 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
             this, SLOT(tubeRadiusVarChanged(const QString&)));
     lineLayout->addWidget(tubeRadiusVar, 2, 2);
 
-    tubeRadiusVarFactorLabel = new QLabel(tr("Factor"), central);
-    lineLayout->addWidget(tubeRadiusVarFactorLabel, 2, 3, Qt::AlignRight);
-    tubeRadiusVarFactorEdit = new QLineEdit(central);
-    connect(tubeRadiusVarFactorEdit, SIGNAL(returnPressed()),
-            this, SLOT(tubeRadiusVarFactorProcessText()));
-    lineLayout->addWidget(tubeRadiusVarFactorEdit, 2, 4);
+    tubeRadiusVarRatioLabel = new QLabel(tr("Max/Min Ratio"), central);
+    lineLayout->addWidget(tubeRadiusVarRatioLabel, 2, 3, Qt::AlignRight);
+    tubeRadiusVarRatio = new QLineEdit(central);
+    connect(tubeRadiusVarRatio, SIGNAL(returnPressed()),
+            this, SLOT(tubeRadiusVarRatioProcessText()));
+    lineLayout->addWidget(tubeRadiusVarRatio, 2, 4);
 
 
-    // ribbonWidth = new QLineEdit(displayGrp);
-    // lineLayout->addWidget(ribbonWidth, 1, 1);
-    // connect(ribbonWidth, SIGNAL(returnPressed()),
-    //         this, SLOT(ribbonWidthProcessText()));
+    tubeResolutionLabel = new QLabel(tr("Resolution"), central);
+    lineLayout->addWidget(tubeResolutionLabel, 0, 3, Qt::AlignRight);
 
-
-
-    // ribbonSizeType = new QComboBox(displayGrp);
-    // ribbonSizeType->addItem(tr("Absolute"), 0);
-    // ribbonSizeType->addItem(tr("Fraction of Bounding Box"), 1);
-    // connect(ribbonSizeType, SIGNAL(activated(int)), this, SLOT(ribbonSizeTypeChanged(int)));
-    // lineLayout->addWidget(ribbonSizeType, 1, 2);
+    tubeResolution = new QSpinBox(central);
+    tubeResolution->setMinimum(2);
+    tubeResolution->setMaximum(100);
+    lineLayout->addWidget(tubeResolution, 0, 4);
+    connect(tubeResolution, SIGNAL(valueChanged(int)), this, SLOT(tubeResolutionChanged(int)));
 
 
     // Splitter
@@ -656,15 +643,15 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 
     endPointType = new QComboBox(central);
     endPointType->addItem(tr("None"), 0);
-    endPointType->addItem(tr("Tails"), 1);
     endPointType->addItem(tr("Heads"), 2);
+    endPointType->addItem(tr("Tails"), 1);
     endPointType->addItem(tr("Both"), 3);
     connect(endPointType, SIGNAL(activated(int)), this, SLOT(endPointTypeChanged(int)));
     lineLayout->addWidget(endPointType, 4, 1);
 
     // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
-    endPointTypeLabel->hide();
-    endPointType->hide();
+    // endPointTypeLabel->hide();
+    // endPointType->hide();
 
     endPointStyleLabel = new QLabel(tr("Style"), central);
     lineLayout->addWidget(endPointStyleLabel, 5, 0, Qt::AlignRight);
@@ -690,12 +677,42 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     lineLayout->addWidget(endPointRadiusSizeType, 6, 2);
 
 
-    endPointRatioLabel = new QLabel(tr("Height:Radius Ratio"), central);
-    lineLayout->addWidget(endPointRatioLabel, 7, 0, 1, 2, Qt::AlignRight);
-
+    endPointRatioLabel = new QLabel(tr("Height Ratio"), central);
+    lineLayout->addWidget(endPointRatioLabel, 6, 3, Qt::AlignRight);
     endPointRatio = new QLineEdit(central);
-    lineLayout->addWidget(endPointRatio, 7, 2);
-    connect(endPointRatio, SIGNAL(returnPressed()), this, SLOT(endPointRatioProcessText()));
+    connect(endPointRatio, SIGNAL(returnPressed()),
+            this, SLOT(endPointRatioProcessText()));
+    lineLayout->addWidget(endPointRatio, 6, 4);
+
+    // EndPoint variable radius.
+    endPointRadiusVarEnabled = new QCheckBox(tr("Variable radius"), central);
+    connect(endPointRadiusVarEnabled, SIGNAL(toggled(bool)), this, SLOT(endPointRadiusVarToggled(bool)));
+    lineLayout->addWidget(endPointRadiusVarEnabled, 7, 0);
+    
+    endPointRadiusVarLabel = new QLabel(tr("Variable"), central);
+    lineLayout->addWidget(endPointRadiusVarLabel, 7, 1, Qt::AlignRight);
+    endPointRadiusVar = new QvisVariableButton(true, true, true,
+                                                    QvisVariableButton::Scalars, central);
+    connect(endPointRadiusVar, SIGNAL(activated(const QString &)),
+            this, SLOT(endPointRadiusVarChanged(const QString&)));
+    lineLayout->addWidget(endPointRadiusVar, 7, 2);
+
+    endPointRadiusVarRatioLabel = new QLabel(tr("Max/Min Ratio"), central);
+    lineLayout->addWidget(endPointRadiusVarRatioLabel, 7, 3, Qt::AlignRight);
+    endPointRadiusVarRatio = new QLineEdit(central);
+    connect(endPointRadiusVarRatio, SIGNAL(returnPressed()),
+            this, SLOT(endPointRadiusVarRatioProcessText()));
+    lineLayout->addWidget(endPointRadiusVarRatio, 7, 4);
+
+
+    endPointResolutionLabel = new QLabel(tr("Resolution"), central);
+    lineLayout->addWidget(endPointResolutionLabel, 4, 3, Qt::AlignRight);
+
+    endPointResolution = new QSpinBox(central);
+    endPointResolution->setMinimum(2);
+    endPointResolution->setMaximum(100);
+    lineLayout->addWidget(endPointResolution, 4, 4);
+    connect(endPointResolution, SIGNAL(valueChanged(int)), this, SLOT(endPointResolutionChanged(int)));
 
     //
     // Create point related controls.
@@ -1125,13 +1142,13 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             {
               if( pcAtts->GetLineType() == PseudocolorAttributes::Tube )
               {
-                  tubeDisplayDensityLabel->show();
-                  tubeDisplayDensity->show();
+                  tubeResolutionLabel->show();
+                  tubeResolution->show();
               }
               else if( pcAtts->GetLineType() == PseudocolorAttributes::Ribbon )
               {
-                  tubeDisplayDensityLabel->hide();
-                  tubeDisplayDensity->hide();
+                  tubeResolutionLabel->hide();
+                  tubeResolution->hide();
               }
               
               tubeRadiusLabel->show();
@@ -1142,13 +1159,13 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
               tubeRadiusVar->show();
               tubeRadiusVarLabel->show();
               tubeRadiusVar->show();
-              tubeRadiusVarFactorLabel->show();
-              tubeRadiusVarFactorEdit->show();
+              tubeRadiusVarRatioLabel->show();
+              tubeRadiusVarRatio->show();
             }
             else
             {
-              tubeDisplayDensityLabel->hide();
-              tubeDisplayDensity->hide();
+              tubeResolutionLabel->hide();
+              tubeResolution->hide();
               tubeRadiusLabel->hide();
               tubeRadius->hide();
               tubeRadiusSizeType->hide();
@@ -1157,8 +1174,8 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
               tubeRadiusVar->hide();
               tubeRadiusVarLabel->hide();
               tubeRadiusVar->hide();
-              tubeRadiusVarFactorLabel->hide();
-              tubeRadiusVarFactorEdit->hide();
+              tubeRadiusVarRatioLabel->hide();
+              tubeRadiusVarRatio->hide();
             }
 
             break;
@@ -1175,11 +1192,11 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             lineWidth->blockSignals(false);
             break;
 
-            // tube
-          case PseudocolorAttributes::ID_tubeDisplayDensity:
-            tubeDisplayDensity->blockSignals(true);
-            tubeDisplayDensity->setValue(pcAtts->GetTubeDisplayDensity());
-            tubeDisplayDensity->blockSignals(false);
+            // tubes and ribbons
+        case PseudocolorAttributes::ID_tubeResolution:
+            tubeResolution->blockSignals(true);
+            tubeResolution->setValue(pcAtts->GetTubeResolution());
+            tubeResolution->blockSignals(false);
             break;
 
         case PseudocolorAttributes::ID_tubeRadiusSizeType:
@@ -1214,8 +1231,8 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             tubeRadiusVarEnabled->setChecked( pcAtts->GetTubeRadiusVarEnabled() );
             tubeRadiusVarLabel->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
             tubeRadiusVar->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
-            tubeRadiusVarFactorLabel->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
-            tubeRadiusVarFactorEdit->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
+            tubeRadiusVarRatioLabel->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
+            tubeRadiusVarRatio->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
             tubeRadiusVar->blockSignals(false);
 
         case PseudocolorAttributes::ID_tubeRadiusVar:
@@ -1224,13 +1241,19 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             tubeRadiusVar->blockSignals(false);
             break;
 
-        case PseudocolorAttributes::ID_tubeRadiusVarFactor:
-            tubeRadiusVarFactorEdit->blockSignals(true);
-            tubeRadiusVarFactorEdit->setText(DoubleToQString(pcAtts->GetTubeRadiusVarFactor()));
-            tubeRadiusVarFactorEdit->blockSignals(false);
+        case PseudocolorAttributes::ID_tubeRadiusVarRatio:
+            tubeRadiusVarRatio->blockSignals(true);
+            tubeRadiusVarRatio->setText(DoubleToQString(pcAtts->GetTubeRadiusVarRatio()));
+            tubeRadiusVarRatio->blockSignals(false);
             break;
 
             // endpoints
+        case PseudocolorAttributes::ID_endPointResolution:
+            endPointResolution->blockSignals(true);
+            endPointResolution->setValue(pcAtts->GetEndPointResolution());
+            endPointResolution->blockSignals(false);
+            break;
+
         case PseudocolorAttributes::ID_endPointType:
             endPointType->blockSignals(true);
             endPointType->setCurrentIndex(int(pcAtts->GetEndPointType()));
@@ -1243,9 +1266,27 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
               endPointRadiusSizeType->show();
               endPointRadiusLabel->show();
               endPointRadius->show();
-              
-              endPointRatioLabel->show();
-              endPointRatio->show();
+
+              if( pcAtts->GetEndPointStyle() == PseudocolorAttributes::Cones )
+              {
+                endPointRatioLabel->show();
+                endPointRatio->show();
+              }
+              else
+              {
+                endPointRatioLabel->hide();
+                endPointRatio->hide();
+              }
+
+              endPointRadiusVarEnabled->show();
+              endPointRadiusVar->show();
+              endPointRadiusVarLabel->show();
+              endPointRadiusVar->show();
+              endPointRadiusVarRatioLabel->show();
+              endPointRadiusVarRatio->show();
+
+              endPointResolutionLabel->show();
+              endPointResolution->show();
             }
             else
             {
@@ -1256,6 +1297,16 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
               endPointRadius->hide();         
               endPointRatioLabel->hide();
               endPointRatio->hide();
+
+              endPointRadiusVarEnabled->hide();
+              endPointRadiusVar->hide();
+              endPointRadiusVarLabel->hide();
+              endPointRadiusVar->hide();
+              endPointRadiusVarRatioLabel->hide();
+              endPointRadiusVarRatio->hide();
+
+              endPointResolutionLabel->hide();
+              endPointResolution->hide();
             }
 
             endPointStyleLabel->setEnabled( bool(pcAtts->GetEndPointType()) );
@@ -1266,6 +1317,9 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
 
             endPointRatioLabel->setEnabled( bool(pcAtts->GetEndPointType()) );
             endPointRatio->setEnabled( bool(pcAtts->GetEndPointType()) );
+
+            endPointResolutionLabel->setEnabled( bool(pcAtts->GetEndPointType()) );
+            endPointResolution->setEnabled( bool(pcAtts->GetEndPointType()) );
 
             break;
 
@@ -1313,6 +1367,28 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             break;
         case PseudocolorAttributes::ID_endPointRatio:
             endPointRatio->setText(DoubleToQString(pcAtts->GetEndPointRatio()));
+            break;
+
+        case PseudocolorAttributes::ID_endPointRadiusVarEnabled:
+            endPointRadiusVar->blockSignals(true);
+
+            endPointRadiusVarEnabled->setChecked( pcAtts->GetEndPointRadiusVarEnabled() );
+            endPointRadiusVarLabel->setEnabled( pcAtts->GetEndPointRadiusVarEnabled() );
+            endPointRadiusVar->setEnabled( pcAtts->GetEndPointRadiusVarEnabled() );
+            endPointRadiusVarRatioLabel->setEnabled( pcAtts->GetEndPointRadiusVarEnabled() );
+            endPointRadiusVarRatio->setEnabled( pcAtts->GetEndPointRadiusVarEnabled() );
+            endPointRadiusVar->blockSignals(false);
+
+        case PseudocolorAttributes::ID_endPointRadiusVar:
+            endPointRadiusVar->blockSignals(true);
+            endPointRadiusVar->setText(pcAtts->GetEndPointRadiusVar().c_str());
+            endPointRadiusVar->blockSignals(false);
+            break;
+
+        case PseudocolorAttributes::ID_endPointRadiusVarRatio:
+            endPointRadiusVarRatio->blockSignals(true);
+            endPointRadiusVarRatio->setText(DoubleToQString(pcAtts->GetEndPointRadiusVarRatio()));
+            endPointRadiusVarRatio->blockSignals(false);
             break;
 
             // smoothing
@@ -1470,12 +1546,12 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // tube density
-    if (which_widget == PseudocolorAttributes::ID_tubeDisplayDensity|| doAll)
+    // tube resultion
+    if (which_widget == PseudocolorAttributes::ID_tubeResolution|| doAll)
     {
         // This can only be an integer, so no error checking is needed.
-        int val = tubeDisplayDensity->value();
-        pcAtts->SetTubeDisplayDensity(val);
+        int val = tubeResolution->value();
+        pcAtts->SetTubeResolution(val);
     }
 
     // tube radius
@@ -1506,28 +1582,36 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // tube radius variable factor
-    if (which_widget == PseudocolorAttributes::ID_tubeRadiusVarFactor || doAll)
+    // tube radius variable Ratio
+    if (which_widget == PseudocolorAttributes::ID_tubeRadiusVarRatio || doAll)
     {
         double val;
-        bool res = LineEditGetDouble(tubeRadiusVarFactorEdit, val);
+        bool res = LineEditGetDouble(tubeRadiusVarRatio, val);
         if (res)
         {
             if (val >= 1.0)
-                pcAtts->SetTubeRadiusVarFactor(val);
+                pcAtts->SetTubeRadiusVarRatio(val);
             else
             {
-                ResettingError(tr("Tube variable radius factor must be >= 1.0"),
-                               DoubleToQString(pcAtts->GetTubeRadiusVarFactor()));
-                pcAtts->SetTubeRadiusVarFactor(pcAtts->GetTubeRadiusVarFactor());
+                ResettingError(tr("Tube variable radius ratio must be >= 1.0"),
+                               DoubleToQString(pcAtts->GetTubeRadiusVarRatio()));
+                pcAtts->SetTubeRadiusVarRatio(pcAtts->GetTubeRadiusVarRatio());
             }
         }
         else
         {
-            ResettingError(tr("Tube variable radius factor"),
-                DoubleToQString(pcAtts->GetTubeRadiusVarFactor()));
-            pcAtts->SetTubeRadiusVarFactor(pcAtts->GetTubeRadiusVarFactor());
+            ResettingError(tr("Tube variable radius ratio"),
+                DoubleToQString(pcAtts->GetTubeRadiusVarRatio()));
+            pcAtts->SetTubeRadiusVarRatio(pcAtts->GetTubeRadiusVarRatio());
         }
+    }
+
+    // endPoint resolution
+    if (which_widget == PseudocolorAttributes::ID_endPointResolution|| doAll)
+    {
+        // This can only be an integer, so no error checking is needed.
+        int val = endPointResolution->value();
+        pcAtts->SetEndPointResolution(val);
     }
 
     // endPoint radius
@@ -1569,6 +1653,29 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("endPoint ratio"),
                 DoubleToQString(pcAtts->GetEndPointRatio()));
             pcAtts->SetEndPointRatio(pcAtts->GetEndPointRatio());
+        }
+    }
+    // endPoint radius variable Ratio
+    if (which_widget == PseudocolorAttributes::ID_endPointRadiusVarRatio || doAll)
+    {
+        double val;
+        bool res = LineEditGetDouble(endPointRadiusVarRatio, val);
+        if (res)
+        {
+            if (val >= 1.0)
+                pcAtts->SetEndPointRadiusVarRatio(val);
+            else
+            {
+                ResettingError(tr("EndPoint variable radius ratio must be >= 1.0"),
+                               DoubleToQString(pcAtts->GetEndPointRadiusVarRatio()));
+                pcAtts->SetEndPointRadiusVarRatio(pcAtts->GetEndPointRadiusVarRatio());
+            }
+        }
+        else
+        {
+            ResettingError(tr("EndPoint variable radius ratio"),
+                DoubleToQString(pcAtts->GetEndPointRadiusVarRatio()));
+            pcAtts->SetEndPointRadiusVarRatio(pcAtts->GetEndPointRadiusVarRatio());
         }
     }
     // Do the point size value and point size var value.
@@ -2001,9 +2108,9 @@ QvisPseudocolorPlotWindow::lineWidthChanged(int newWidth)
 
 
 void
-QvisPseudocolorPlotWindow::tubeDisplayDensityChanged(int val)
+QvisPseudocolorPlotWindow::tubeResolutionChanged(int val)
 {
-    pcAtts->SetTubeDisplayDensity(val);
+    pcAtts->SetTubeResolution(val);
     Apply();
 }
 
@@ -2038,9 +2145,9 @@ QvisPseudocolorPlotWindow::tubeRadiusVarChanged(const QString &var)
 }
 
 void
-QvisPseudocolorPlotWindow::tubeRadiusVarFactorProcessText()
+QvisPseudocolorPlotWindow::tubeRadiusVarRatioProcessText()
 {
-    GetCurrentValues(PseudocolorAttributes::ID_tubeRadiusVarFactor);
+    GetCurrentValues(PseudocolorAttributes::ID_tubeRadiusVarRatio);
     Apply();
 }
 
@@ -2068,6 +2175,13 @@ QvisPseudocolorPlotWindow::endPointRadiusProcessText()
 }
 
 void
+QvisPseudocolorPlotWindow::endPointResolutionChanged(int val)
+{
+    pcAtts->SetEndPointResolution(val);
+    Apply();
+}
+
+void
 QvisPseudocolorPlotWindow::endPointRatioProcessText()
 {
     GetCurrentValues(PseudocolorAttributes::ID_endPointRatio);
@@ -2081,6 +2195,26 @@ QvisPseudocolorPlotWindow::endPointRadiusSizeTypeChanged(int v)
     Apply();
 }
 
+void
+QvisPseudocolorPlotWindow::endPointRadiusVarToggled(bool val)
+{
+    pcAtts->SetEndPointRadiusVarEnabled( val );
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::endPointRadiusVarChanged(const QString &var)
+{
+    pcAtts->SetEndPointRadiusVar(var.toStdString());
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::endPointRadiusVarRatioProcessText()
+{
+    GetCurrentValues(PseudocolorAttributes::ID_endPointRadiusVarRatio);
+    Apply();
+}
 
 
 // ****************************************************************************
