@@ -64,9 +64,9 @@ export SVN_THIRDPARTY_PATH=${SVN_THIRDPARTY_PATH-"trunk/third_party"}
 ###
 # RC Branch:
 ###
-export TRUNK_BUILD="no"
-export SVN_SOURCE_PATH="branches/2.10RC/src"
-export SVN_THIRDPARTY_PATH="branches/2.10RC/third_party"
+#export TRUNK_BUILD="no"
+#export SVN_SOURCE_PATH="branches/2.10RC/src"
+#export SVN_THIRDPARTY_PATH="branches/2.10RC/third_party"
 
 
 ###
