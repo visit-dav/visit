@@ -638,6 +638,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     splitter->setFrameStyle(QFrame::HLine + QFrame::Raised);
     lineLayout->addWidget(splitter, 3, 0, 1, 5);
 
+    // End points
     endPointTypeLabel = new QLabel(tr("Show end points"), central);
     lineLayout->addWidget(endPointTypeLabel, 4, 0);
 
@@ -649,10 +650,6 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     connect(endPointType, SIGNAL(activated(int)), this, SLOT(endPointTypeChanged(int)));
     lineLayout->addWidget(endPointType, 4, 1);
 
-    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
-    // endPointTypeLabel->hide();
-    // endPointType->hide();
-
     endPointStyleLabel = new QLabel(tr("Style"), central);
     lineLayout->addWidget(endPointStyleLabel, 5, 0, Qt::AlignRight);
 
@@ -661,7 +658,6 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     endPointStyle->addItem(tr("Cones"), 1);
     connect(endPointStyle, SIGNAL(activated(int)), this, SLOT(endPointStyleChanged(int)));
     lineLayout->addWidget(endPointStyle, 5, 1);
-
 
     endPointRadiusLabel = new QLabel(tr("Radius"), central);
     lineLayout->addWidget(endPointRadiusLabel, 6, 0, Qt::AlignRight);
@@ -684,7 +680,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
             this, SLOT(endPointRatioProcessText()));
     lineLayout->addWidget(endPointRatio, 6, 4);
 
-    // EndPoint variable radius.
+    // End point variable radius.
     endPointRadiusVarEnabled = new QCheckBox(tr("Variable radius"), central);
     connect(endPointRadiusVarEnabled, SIGNAL(toggled(bool)), this, SLOT(endPointRadiusVarToggled(bool)));
     lineLayout->addWidget(endPointRadiusVarEnabled, 7, 0);
@@ -1546,7 +1542,7 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // tube resultion
+    // tube resolution
     if (which_widget == PseudocolorAttributes::ID_tubeResolution|| doAll)
     {
         // This can only be an integer, so no error checking is needed.
@@ -1606,7 +1602,7 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // endPoint resolution
+    // End point resolution
     if (which_widget == PseudocolorAttributes::ID_endPointResolution|| doAll)
     {
         // This can only be an integer, so no error checking is needed.
@@ -1614,7 +1610,7 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
         pcAtts->SetEndPointResolution(val);
     }
 
-    // endPoint radius
+    // End point radius
     if ((which_widget == PseudocolorAttributes::ID_endPointRadiusAbsolute || doAll)
         && pcAtts->GetEndPointRadiusSizeType() == PseudocolorAttributes::Absolute)
     {
@@ -1655,7 +1651,7 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
             pcAtts->SetEndPointRatio(pcAtts->GetEndPointRatio());
         }
     }
-    // endPoint radius variable Ratio
+    // End point radius variable ratio
     if (which_widget == PseudocolorAttributes::ID_endPointRadiusVarRatio || doAll)
     {
         double val;
