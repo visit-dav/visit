@@ -628,7 +628,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     lineLayout->addWidget(tubeResolutionLabel, 0, 3, Qt::AlignRight);
 
     tubeResolution = new QSpinBox(central);
-    tubeResolution->setMinimum(2);
+    tubeResolution->setMinimum(3);
     tubeResolution->setMaximum(100);
     lineLayout->addWidget(tubeResolution, 0, 4);
     connect(tubeResolution, SIGNAL(valueChanged(int)), this, SLOT(tubeResolutionChanged(int)));
@@ -706,7 +706,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     lineLayout->addWidget(endPointResolutionLabel, 4, 3, Qt::AlignRight);
 
     endPointResolution = new QSpinBox(central);
-    endPointResolution->setMinimum(2);
+    endPointResolution->setMinimum(3);
     endPointResolution->setMaximum(100);
     lineLayout->addWidget(endPointResolution, 4, 4);
     connect(endPointResolution, SIGNAL(valueChanged(int)), this, SLOT(endPointResolutionChanged(int)));
@@ -1582,7 +1582,16 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
     {
         double val;
         if(LineEditGetDouble(tubeRadius, val))
-            pcAtts->SetTubeRadiusAbsolute(val);
+        {
+            if (val > 0.0)
+              pcAtts->SetTubeRadiusAbsolute(val);
+            else
+            {
+                ResettingError(tr("Tube radius must be > 0.0"),
+                               DoubleToQString(pcAtts->GetTubeRadiusAbsolute()));
+                pcAtts->SetTubeRadiusAbsolute(pcAtts->GetTubeRadiusAbsolute());
+            }
+        }
         else
         {
             ResettingError(tr("tube radius"),
@@ -1595,7 +1604,16 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
     {
         double val;
         if(LineEditGetDouble(tubeRadius, val))
-            pcAtts->SetTubeRadiusBBox(val);
+        {
+            if (val > 0.0)
+              pcAtts->SetTubeRadiusBBox(val);
+            else
+            {
+                ResettingError(tr("Tube radius must be > 0.0"),
+                               DoubleToQString(pcAtts->GetTubeRadiusBBox()));
+                pcAtts->SetTubeRadiusBBox(pcAtts->GetTubeRadiusBBox());
+            }
+        }
         else
         {
             ResettingError(tr("tube radius"),
@@ -1608,8 +1626,7 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
     if (which_widget == PseudocolorAttributes::ID_tubeRadiusVarRatio || doAll)
     {
         double val;
-        bool res = LineEditGetDouble(tubeRadiusVarRatio, val);
-        if (res)
+        if (LineEditGetDouble(tubeRadiusVarRatio, val))
         {
             if (val >= 1.0)
                 pcAtts->SetTubeRadiusVarRatio(val);
@@ -1642,10 +1659,19 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
     {
         double val;
         if(LineEditGetDouble(endPointRadius, val))
-            pcAtts->SetEndPointRadiusAbsolute(val);
+        {
+            if (val > 0.0)
+                pcAtts->SetEndPointRadiusAbsolute(val);
+            else
+            {
+                ResettingError(tr("End point radius must be > 0.0"),
+                               DoubleToQString(pcAtts->GetEndPointRadiusAbsolute()));
+                pcAtts->SetEndPointRadiusAbsolute(pcAtts->GetEndPointRadiusAbsolute());
+            }
+        }
         else
         {
-            ResettingError(tr("endPoint radius"),
+            ResettingError(tr("End point radius"),
                 DoubleToQString(pcAtts->GetEndPointRadiusAbsolute()));
             pcAtts->SetEndPointRadiusAbsolute(pcAtts->GetEndPointRadiusAbsolute());
         }
@@ -1656,10 +1682,19 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
     {
         double val;
         if(LineEditGetDouble(endPointRadius, val))
-            pcAtts->SetEndPointRadiusBBox(val);
+        {
+            if (val > 0.0)
+                pcAtts->SetEndPointRadiusBBox(val);
+            else
+            {
+                ResettingError(tr("End point radius must be > 0.0"),
+                               DoubleToQString(pcAtts->GetEndPointRadiusBBox()));
+                pcAtts->SetEndPointRadiusBBox(pcAtts->GetEndPointRadiusBBox());
+            }
+        }
         else
         {
-            ResettingError(tr("endPoint radius"),
+            ResettingError(tr("End point radius"),
                 DoubleToQString(pcAtts->GetEndPointRadiusBBox()));
             pcAtts->SetEndPointRadiusBBox(pcAtts->GetEndPointRadiusBBox());
         }
@@ -1669,7 +1704,16 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
     {
         double val;
         if(LineEditGetDouble(endPointRatio, val))
-            pcAtts->SetEndPointRatio(val);
+        {
+            if (val > 0.0)
+              pcAtts->SetEndPointRatio(val);
+            else
+            {
+              ResettingError(tr("End point height ratio must be > 0.0"),
+                             DoubleToQString(pcAtts->GetEndPointRatio()));
+              pcAtts->SetEndPointRatio(pcAtts->GetEndPointRatio());
+            }
+        }
         else
         {
             ResettingError(tr("endPoint ratio"),
@@ -1681,8 +1725,7 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
     if (which_widget == PseudocolorAttributes::ID_endPointRadiusVarRatio || doAll)
     {
         double val;
-        bool res = LineEditGetDouble(endPointRadiusVarRatio, val);
-        if (res)
+        if(LineEditGetDouble(endPointRadiusVarRatio, val))
         {
             if (val >= 1.0)
                 pcAtts->SetEndPointRadiusVarRatio(val);
