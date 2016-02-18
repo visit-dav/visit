@@ -40,6 +40,8 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <snprintf.h>
+#include <ColorAttribute.h>
+#include <ColorAttribute.h>
 
 // ****************************************************************************
 // Module: PyPseudocolorAttributes
@@ -389,6 +391,12 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
         SNPRINTF(tmpStr, 1000, "%slightingFlag = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
+    str += tmpStr;
+    const unsigned char *wireframeColor = atts->GetWireframeColor().GetColor();
+    SNPRINTF(tmpStr, 1000, "%swireframeColor = (%d, %d, %d, %d)\n", prefix, int(wireframeColor[0]), int(wireframeColor[1]), int(wireframeColor[2]), int(wireframeColor[3]));
+    str += tmpStr;
+    const unsigned char *pointColor = atts->GetPointColor().GetColor();
+    SNPRINTF(tmpStr, 1000, "%spointColor = (%d, %d, %d, %d)\n", prefix, int(pointColor[0]), int(pointColor[1]), int(pointColor[2]), int(pointColor[3]));
     str += tmpStr;
     return str;
 }
@@ -1655,6 +1663,160 @@ PseudocolorAttributes_GetLightingFlag(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+PseudocolorAttributes_SetWireframeColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int c[4];
+    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
+    {
+        c[3] = 255;
+        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
+        {
+            double dr, dg, db, da;
+            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = int(da);
+            }
+            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = 255;
+            }
+            else
+            {
+                PyObject *tuple = NULL;
+                if(!PyArg_ParseTuple(args, "O", &tuple))
+                    return NULL;
+
+                if(!PyTuple_Check(tuple))
+                    return NULL;
+
+                // Make sure that the tuple is the right size.
+                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
+                    return NULL;
+
+                // Make sure that all elements in the tuple are ints.
+                for(int i = 0; i < PyTuple_Size(tuple); ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyInt_Check(item))
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
+                    else if(PyFloat_Check(item))
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
+                    else
+                        return NULL;
+                }
+            }
+        }
+        PyErr_Clear();
+    }
+
+    // Set the wireframeColor in the object.
+    ColorAttribute ca(c[0], c[1], c[2], c[3]);
+    obj->data->SetWireframeColor(ca);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetWireframeColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the wireframeColor.
+    PyObject *retval = PyTuple_New(4);
+    const unsigned char *wireframeColor = obj->data->GetWireframeColor().GetColor();
+    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(wireframeColor[0])));
+    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(wireframeColor[1])));
+    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(wireframeColor[2])));
+    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(wireframeColor[3])));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetPointColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int c[4];
+    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
+    {
+        c[3] = 255;
+        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
+        {
+            double dr, dg, db, da;
+            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = int(da);
+            }
+            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = 255;
+            }
+            else
+            {
+                PyObject *tuple = NULL;
+                if(!PyArg_ParseTuple(args, "O", &tuple))
+                    return NULL;
+
+                if(!PyTuple_Check(tuple))
+                    return NULL;
+
+                // Make sure that the tuple is the right size.
+                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
+                    return NULL;
+
+                // Make sure that all elements in the tuple are ints.
+                for(int i = 0; i < PyTuple_Size(tuple); ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyInt_Check(item))
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
+                    else if(PyFloat_Check(item))
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
+                    else
+                        return NULL;
+                }
+            }
+        }
+        PyErr_Clear();
+    }
+
+    // Set the pointColor in the object.
+    ColorAttribute ca(c[0], c[1], c[2], c[3]);
+    obj->data->SetPointColor(ca);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetPointColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the pointColor.
+    PyObject *retval = PyTuple_New(4);
+    const unsigned char *pointColor = obj->data->GetPointColor().GetColor();
+    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(pointColor[0])));
+    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(pointColor[1])));
+    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(pointColor[2])));
+    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(pointColor[3])));
+    return retval;
+}
+
 
 
 PyMethodDef PyPseudocolorAttributes_methods[PSEUDOCOLORATTRIBUTES_NMETH] = {
@@ -1755,6 +1917,10 @@ PyMethodDef PyPseudocolorAttributes_methods[PSEUDOCOLORATTRIBUTES_NMETH] = {
     {"GetLegendFlag", PseudocolorAttributes_GetLegendFlag, METH_VARARGS},
     {"SetLightingFlag", PseudocolorAttributes_SetLightingFlag, METH_VARARGS},
     {"GetLightingFlag", PseudocolorAttributes_GetLightingFlag, METH_VARARGS},
+    {"SetWireframeColor", PseudocolorAttributes_SetWireframeColor, METH_VARARGS},
+    {"GetWireframeColor", PseudocolorAttributes_GetWireframeColor, METH_VARARGS},
+    {"SetPointColor", PseudocolorAttributes_SetPointColor, METH_VARARGS},
+    {"GetPointColor", PseudocolorAttributes_GetPointColor, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1966,6 +2132,10 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         return PseudocolorAttributes_GetLegendFlag(self, NULL);
     if(strcmp(name, "lightingFlag") == 0)
         return PseudocolorAttributes_GetLightingFlag(self, NULL);
+    if(strcmp(name, "wireframeColor") == 0)
+        return PseudocolorAttributes_GetWireframeColor(self, NULL);
+    if(strcmp(name, "pointColor") == 0)
+        return PseudocolorAttributes_GetPointColor(self, NULL);
 
     // Try and handle legacy fields in PseudocolorAttributes
     if(strcmp(name, "useColorTableOpacity") == 0)
@@ -2083,6 +2253,10 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PseudocolorAttributes_SetLegendFlag(self, tuple);
     else if(strcmp(name, "lightingFlag") == 0)
         obj = PseudocolorAttributes_SetLightingFlag(self, tuple);
+    else if(strcmp(name, "wireframeColor") == 0)
+        obj = PseudocolorAttributes_SetWireframeColor(self, tuple);
+    else if(strcmp(name, "pointColor") == 0)
+        obj = PseudocolorAttributes_SetPointColor(self, tuple);
 
     // Try and handle legacy fields in PseudocolorAttributes
     if(obj == NULL)

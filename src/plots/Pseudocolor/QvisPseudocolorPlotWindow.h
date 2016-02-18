@@ -53,6 +53,7 @@ class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisVariableButton;
 class QSpinBox;
+class QvisColorButton;
 
 class Subject;
 class PseudocolorAttributes;
@@ -196,7 +197,9 @@ private slots:
     void smoothingLevelChanged(int index);
     void renderSurfacesChanged(bool);
     void renderWireframeChanged(bool);
+    void wireframeColorChanged(const QColor &color);
     void renderPointsChanged(bool);
+    void pointColorChanged(const QColor &color);
 
     void legendToggled(bool on);
     void lightingToggled(bool on);
@@ -281,7 +284,9 @@ private:
     QLabel                *renderLabel;
     QCheckBox             *renderSurfaces;
     QCheckBox             *renderWireframe;
+    QvisColorButton       *wireframeRenderColor;
     QCheckBox             *renderPoints;
+    QvisColorButton       *pointsRenderColor;
     QButtonGroup          *smoothingLevelButtons;
 
     QCheckBox             *legendToggle;

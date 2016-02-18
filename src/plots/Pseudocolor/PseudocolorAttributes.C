@@ -508,6 +508,8 @@ void PseudocolorAttributes::Copy(const PseudocolorAttributes &obj)
     smoothingLevel = obj.smoothingLevel;
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
+    wireframeColor = obj.wireframeColor;
+    pointColor = obj.pointColor;
 
     PseudocolorAttributes::SelectAll();
 }
@@ -534,7 +536,8 @@ const AttributeGroup::private_tmfs_t PseudocolorAttributes::TmfsStruct = {PSEUDO
 
 PseudocolorAttributes::PseudocolorAttributes() : 
     AttributeSubject(PseudocolorAttributes::TypeMapFormatString),
-    colorTableName("hot"), pointSizeVar("default")
+    colorTableName("hot"), pointSizeVar("default"), 
+    wireframeColor(0, 0, 0, 0), pointColor(0, 0, 0, 0)
 {
     PseudocolorAttributes::Init();
 }
@@ -556,7 +559,8 @@ PseudocolorAttributes::PseudocolorAttributes() :
 
 PseudocolorAttributes::PseudocolorAttributes(private_tmfs_t tmfs) : 
     AttributeSubject(tmfs.tmfs),
-    colorTableName("hot"), pointSizeVar("default")
+    colorTableName("hot"), pointSizeVar("default"), 
+    wireframeColor(0, 0, 0, 0), pointColor(0, 0, 0, 0)
 {
     PseudocolorAttributes::Init();
 }
@@ -714,7 +718,9 @@ PseudocolorAttributes::operator == (const PseudocolorAttributes &obj) const
             (renderPoints == obj.renderPoints) &&
             (smoothingLevel == obj.smoothingLevel) &&
             (legendFlag == obj.legendFlag) &&
-            (lightingFlag == obj.lightingFlag));
+            (lightingFlag == obj.lightingFlag) &&
+            (wireframeColor == obj.wireframeColor) &&
+            (pointColor == obj.pointColor));
 }
 
 // ****************************************************************************
@@ -906,6 +912,8 @@ PseudocolorAttributes::SelectAll()
     Select(ID_smoothingLevel,           (void *)&smoothingLevel);
     Select(ID_legendFlag,               (void *)&legendFlag);
     Select(ID_lightingFlag,             (void *)&lightingFlag);
+    Select(ID_wireframeColor,           (void *)&wireframeColor);
+    Select(ID_pointColor,               (void *)&pointColor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1226,6 +1234,22 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("lightingFlag", lightingFlag));
     }
 
+        DataNode *wireframeColorNode = new DataNode("wireframeColor");
+        if(wireframeColor.CreateNode(wireframeColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(wireframeColorNode);
+        }
+        else
+            delete wireframeColorNode;
+        DataNode *pointColorNode = new DataNode("pointColor");
+        if(pointColor.CreateNode(pointColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(pointColorNode);
+        }
+        else
+            delete pointColorNode;
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1498,6 +1522,10 @@ PseudocolorAttributes::SetFromNode(DataNode *parentNode)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("lightingFlag")) != 0)
         SetLightingFlag(node->AsBool());
+    if((node = searchNode->GetNode("wireframeColor")) != 0)
+        wireframeColor.SetFromNode(node);
+    if((node = searchNode->GetNode("pointColor")) != 0)
+        pointColor.SetFromNode(node);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1840,6 +1868,20 @@ PseudocolorAttributes::SetLightingFlag(bool lightingFlag_)
     Select(ID_lightingFlag, (void *)&lightingFlag);
 }
 
+void
+PseudocolorAttributes::SetWireframeColor(const ColorAttribute &wireframeColor_)
+{
+    wireframeColor = wireframeColor_;
+    Select(ID_wireframeColor, (void *)&wireframeColor);
+}
+
+void
+PseudocolorAttributes::SetPointColor(const ColorAttribute &pointColor_)
+{
+    pointColor = pointColor_;
+    Select(ID_pointColor, (void *)&pointColor);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2162,6 +2204,30 @@ PseudocolorAttributes::GetLightingFlag() const
     return lightingFlag;
 }
 
+const ColorAttribute &
+PseudocolorAttributes::GetWireframeColor() const
+{
+    return wireframeColor;
+}
+
+ColorAttribute &
+PseudocolorAttributes::GetWireframeColor()
+{
+    return wireframeColor;
+}
+
+const ColorAttribute &
+PseudocolorAttributes::GetPointColor() const
+{
+    return pointColor;
+}
+
+ColorAttribute &
+PseudocolorAttributes::GetPointColor()
+{
+    return pointColor;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2194,6 +2260,18 @@ void
 PseudocolorAttributes::SelectEndPointRadiusVar()
 {
     Select(ID_endPointRadiusVar, (void *)&endPointRadiusVar);
+}
+
+void
+PseudocolorAttributes::SelectWireframeColor()
+{
+    Select(ID_wireframeColor, (void *)&wireframeColor);
+}
+
+void
+PseudocolorAttributes::SelectPointColor()
+{
+    Select(ID_pointColor, (void *)&pointColor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2268,6 +2346,8 @@ PseudocolorAttributes::GetFieldName(int index) const
     case ID_smoothingLevel:           return "smoothingLevel";
     case ID_legendFlag:               return "legendFlag";
     case ID_lightingFlag:             return "lightingFlag";
+    case ID_wireframeColor:           return "wireframeColor";
+    case ID_pointColor:               return "pointColor";
     default:  return "invalid index";
     }
 }
@@ -2340,6 +2420,8 @@ PseudocolorAttributes::GetFieldType(int index) const
     case ID_smoothingLevel:           return FieldType_int;
     case ID_legendFlag:               return FieldType_bool;
     case ID_lightingFlag:             return FieldType_bool;
+    case ID_wireframeColor:           return FieldType_color;
+    case ID_pointColor:               return FieldType_color;
     default:  return FieldType_unknown;
     }
 }
@@ -2412,6 +2494,8 @@ PseudocolorAttributes::GetFieldTypeName(int index) const
     case ID_smoothingLevel:           return "int";
     case ID_legendFlag:               return "bool";
     case ID_lightingFlag:             return "bool";
+    case ID_wireframeColor:           return "color";
+    case ID_pointColor:               return "color";
     default:  return "invalid index";
     }
 }
@@ -2678,6 +2762,16 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (lightingFlag == obj.lightingFlag);
         }
         break;
+    case ID_wireframeColor:
+        {  // new scope
+        retval = (wireframeColor == obj.wireframeColor);
+        }
+        break;
+    case ID_pointColor:
+        {  // new scope
+        retval = (pointColor == obj.pointColor);
+        }
+        break;
     default: retval = false;
     }
 
@@ -2772,9 +2866,11 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
             needSecondaryVar ||
             geometryChange ||
             smoothingLevel != obj.smoothingLevel ||
-//            renderSurfaces != obj.renderSurfaces ||
-//            renderWireframe != obj.renderWireframe ||
-//            renderPoints != obj.renderPoints ||
+            renderSurfaces != obj.renderSurfaces ||
+            renderWireframe != obj.renderWireframe ||
+            renderPoints != obj.renderPoints ||
+            wireframeColor != obj.wireframeColor ||
+            pointColor != obj.pointColor ||
             0);
 
 }

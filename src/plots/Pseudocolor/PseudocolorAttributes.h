@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+#include <ColorAttribute.h>
 #include <visitstream.h>
 
 // ****************************************************************************
@@ -151,6 +152,8 @@ public:
     void SelectPointSizeVar();
     void SelectTubeRadiusVar();
     void SelectEndPointRadiusVar();
+    void SelectWireframeColor();
+    void SelectPointColor();
 
     // Property setting methods
     void SetScaling(Scaling scaling_);
@@ -201,61 +204,67 @@ public:
     void SetSmoothingLevel(int smoothingLevel_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
+    void SetWireframeColor(const ColorAttribute &wireframeColor_);
+    void SetPointColor(const ColorAttribute &pointColor_);
 
     // Property getting methods
-    Scaling           GetScaling() const;
-    double            GetSkewFactor() const;
-    LimitsMode        GetLimitsMode() const;
-    bool              GetMinFlag() const;
-    double            GetMin() const;
-    bool              GetMaxFlag() const;
-    double            GetMax() const;
-    Centering         GetCentering() const;
-    const std::string &GetColorTableName() const;
-          std::string &GetColorTableName();
-    bool              GetInvertColorTable() const;
-    OpacityType       GetOpacityType() const;
-    const std::string &GetOpacityVariable() const;
-          std::string &GetOpacityVariable();
-    double            GetOpacity() const;
-    double            GetOpacityVarMin() const;
-    double            GetOpacityVarMax() const;
-    bool              GetOpacityVarMinFlag() const;
-    bool              GetOpacityVarMaxFlag() const;
-    double            GetPointSize() const;
-    PointType         GetPointType() const;
-    bool              GetPointSizeVarEnabled() const;
-    const std::string &GetPointSizeVar() const;
-          std::string &GetPointSizeVar();
-    int               GetPointSizePixels() const;
-    int               GetLineStyle() const;
-    LineType          GetLineType() const;
-    int               GetLineWidth() const;
-    int               GetTubeResolution() const;
-    SizeType          GetTubeRadiusSizeType() const;
-    double            GetTubeRadiusAbsolute() const;
-    double            GetTubeRadiusBBox() const;
-    bool              GetTubeRadiusVarEnabled() const;
-    const std::string &GetTubeRadiusVar() const;
-          std::string &GetTubeRadiusVar();
-    double            GetTubeRadiusVarRatio() const;
-    EndPointType      GetEndPointType() const;
-    EndPointStyle     GetEndPointStyle() const;
-    SizeType          GetEndPointRadiusSizeType() const;
-    double            GetEndPointRadiusAbsolute() const;
-    double            GetEndPointRadiusBBox() const;
-    int               GetEndPointResolution() const;
-    double            GetEndPointRatio() const;
-    bool              GetEndPointRadiusVarEnabled() const;
-    const std::string &GetEndPointRadiusVar() const;
-          std::string &GetEndPointRadiusVar();
-    double            GetEndPointRadiusVarRatio() const;
-    int               GetRenderSurfaces() const;
-    int               GetRenderWireframe() const;
-    int               GetRenderPoints() const;
-    int               GetSmoothingLevel() const;
-    bool              GetLegendFlag() const;
-    bool              GetLightingFlag() const;
+    Scaling              GetScaling() const;
+    double               GetSkewFactor() const;
+    LimitsMode           GetLimitsMode() const;
+    bool                 GetMinFlag() const;
+    double               GetMin() const;
+    bool                 GetMaxFlag() const;
+    double               GetMax() const;
+    Centering            GetCentering() const;
+    const std::string    &GetColorTableName() const;
+          std::string    &GetColorTableName();
+    bool                 GetInvertColorTable() const;
+    OpacityType          GetOpacityType() const;
+    const std::string    &GetOpacityVariable() const;
+          std::string    &GetOpacityVariable();
+    double               GetOpacity() const;
+    double               GetOpacityVarMin() const;
+    double               GetOpacityVarMax() const;
+    bool                 GetOpacityVarMinFlag() const;
+    bool                 GetOpacityVarMaxFlag() const;
+    double               GetPointSize() const;
+    PointType            GetPointType() const;
+    bool                 GetPointSizeVarEnabled() const;
+    const std::string    &GetPointSizeVar() const;
+          std::string    &GetPointSizeVar();
+    int                  GetPointSizePixels() const;
+    int                  GetLineStyle() const;
+    LineType             GetLineType() const;
+    int                  GetLineWidth() const;
+    int                  GetTubeResolution() const;
+    SizeType             GetTubeRadiusSizeType() const;
+    double               GetTubeRadiusAbsolute() const;
+    double               GetTubeRadiusBBox() const;
+    bool                 GetTubeRadiusVarEnabled() const;
+    const std::string    &GetTubeRadiusVar() const;
+          std::string    &GetTubeRadiusVar();
+    double               GetTubeRadiusVarRatio() const;
+    EndPointType         GetEndPointType() const;
+    EndPointStyle        GetEndPointStyle() const;
+    SizeType             GetEndPointRadiusSizeType() const;
+    double               GetEndPointRadiusAbsolute() const;
+    double               GetEndPointRadiusBBox() const;
+    int                  GetEndPointResolution() const;
+    double               GetEndPointRatio() const;
+    bool                 GetEndPointRadiusVarEnabled() const;
+    const std::string    &GetEndPointRadiusVar() const;
+          std::string    &GetEndPointRadiusVar();
+    double               GetEndPointRadiusVarRatio() const;
+    int                  GetRenderSurfaces() const;
+    int                  GetRenderWireframe() const;
+    int                  GetRenderPoints() const;
+    int                  GetSmoothingLevel() const;
+    bool                 GetLegendFlag() const;
+    bool                 GetLightingFlag() const;
+    const ColorAttribute &GetWireframeColor() const;
+          ColorAttribute &GetWireframeColor();
+    const ColorAttribute &GetPointColor() const;
+          ColorAttribute &GetPointColor();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -369,63 +378,67 @@ public:
         ID_smoothingLevel,
         ID_legendFlag,
         ID_lightingFlag,
+        ID_wireframeColor,
+        ID_pointColor,
         ID__LAST
     };
 
 private:
-    int         scaling;
-    double      skewFactor;
-    int         limitsMode;
-    bool        minFlag;
-    double      min;
-    bool        maxFlag;
-    double      max;
-    int         centering;
-    std::string colorTableName;
-    bool        invertColorTable;
-    int         opacityType;
-    std::string opacityVariable;
-    double      opacity;
-    double      opacityVarMin;
-    double      opacityVarMax;
-    bool        opacityVarMinFlag;
-    bool        opacityVarMaxFlag;
-    double      pointSize;
-    int         pointType;
-    bool        pointSizeVarEnabled;
-    std::string pointSizeVar;
-    int         pointSizePixels;
-    int         lineStyle;
-    int         lineType;
-    int         lineWidth;
-    int         tubeResolution;
-    int         tubeRadiusSizeType;
-    double      tubeRadiusAbsolute;
-    double      tubeRadiusBBox;
-    bool        tubeRadiusVarEnabled;
-    std::string tubeRadiusVar;
-    double      tubeRadiusVarRatio;
-    int         endPointType;
-    int         endPointStyle;
-    int         endPointRadiusSizeType;
-    double      endPointRadiusAbsolute;
-    double      endPointRadiusBBox;
-    int         endPointResolution;
-    double      endPointRatio;
-    bool        endPointRadiusVarEnabled;
-    std::string endPointRadiusVar;
-    double      endPointRadiusVarRatio;
-    int         renderSurfaces;
-    int         renderWireframe;
-    int         renderPoints;
-    int         smoothingLevel;
-    bool        legendFlag;
-    bool        lightingFlag;
+    int            scaling;
+    double         skewFactor;
+    int            limitsMode;
+    bool           minFlag;
+    double         min;
+    bool           maxFlag;
+    double         max;
+    int            centering;
+    std::string    colorTableName;
+    bool           invertColorTable;
+    int            opacityType;
+    std::string    opacityVariable;
+    double         opacity;
+    double         opacityVarMin;
+    double         opacityVarMax;
+    bool           opacityVarMinFlag;
+    bool           opacityVarMaxFlag;
+    double         pointSize;
+    int            pointType;
+    bool           pointSizeVarEnabled;
+    std::string    pointSizeVar;
+    int            pointSizePixels;
+    int            lineStyle;
+    int            lineType;
+    int            lineWidth;
+    int            tubeResolution;
+    int            tubeRadiusSizeType;
+    double         tubeRadiusAbsolute;
+    double         tubeRadiusBBox;
+    bool           tubeRadiusVarEnabled;
+    std::string    tubeRadiusVar;
+    double         tubeRadiusVarRatio;
+    int            endPointType;
+    int            endPointStyle;
+    int            endPointRadiusSizeType;
+    double         endPointRadiusAbsolute;
+    double         endPointRadiusBBox;
+    int            endPointResolution;
+    double         endPointRatio;
+    bool           endPointRadiusVarEnabled;
+    std::string    endPointRadiusVar;
+    double         endPointRadiusVarRatio;
+    int            renderSurfaces;
+    int            renderWireframe;
+    int            renderPoints;
+    int            smoothingLevel;
+    bool           legendFlag;
+    bool           lightingFlag;
+    ColorAttribute wireframeColor;
+    ColorAttribute pointColor;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PSEUDOCOLORATTRIBUTES_TMFS "idibdbdisbisdddbbdibsiiiiiiddbsdiiiddidbsdiiiibb"
+#define PSEUDOCOLORATTRIBUTES_TMFS "idibdbdisbisdddbbdibsiiiiiiddbsdiiiddidbsdiiiibbaa"
 
 #endif

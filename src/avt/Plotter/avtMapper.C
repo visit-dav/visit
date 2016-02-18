@@ -119,6 +119,17 @@ avtMapper::avtMapper()
     transparencyIndex = -1;
     globalAmbient = 0.;
     specularIsInappropriate = false;
+    
+    drawSurfaces = false;
+    drawWireframe = false;
+    drawPoints = false;
+    wireframeColorByScalar =  pointsColorByScalar = false;
+    wireframeColor[0] = 0;
+    wireframeColor[1] = 0;
+    wireframeColor[2] = 0;
+    pointColor[0] = 0;
+    pointColor[1] = 0;
+    pointColor[2] = 0;
 }
 
 
@@ -400,6 +411,13 @@ avtMapper::SetUpMappers(void)
         tree->GetAllLabels(labels);
     if (!labels.empty() )
     {
+        int n = labels.size();
+        if (drawWireframe)
+            for (int i = 0; i < n; i++)
+                labels.push_back(labels[i]);
+        if (drawPoints)
+            for (int i = 0; i < n; i++)
+                labels.push_back(labels[i]);
         SetLabels(labels, true);
         labels.clear();
     }
@@ -407,18 +425,33 @@ avtMapper::SetUpMappers(void)
     input->GetInfo().GetAttributes().GetLabels(labels);
     if (!labels.empty())
     {
+        int n = labels.size();
+        if (drawWireframe)
+            for (int i = 0; i < n; i++)
+                labels.push_back(labels[i]);
+        if (drawPoints)
+            for (int i = 0; i < n; i++)
+                labels.push_back(labels[i]);
+        
         SetLabels(labels, false);
         labels.clear();
     }
 
     vtkDataSet **children = NULL;
+    int nChildren = 0;
     if (*tree != NULL)
-        children = tree->GetAllLeaves(nMappers);
-    else
-        nMappers = 0;
+        children = tree->GetAllLeaves(nChildren);
+
+    nMappers = nChildren;
+    //Add mapper/actors for wire/points.
+    if (drawWireframe)
+        nMappers += nChildren;
+    if (drawPoints)
+        nMappers += nChildren;
 
     mappers  = new vtkDataSetMapper*[nMappers];
     actors   = new vtkActor*[nMappers];
+    mapperType = new MapperType[nMappers];
 
     for (int j = 0 ; j < nMappers ; j++)
     {
@@ -426,33 +459,95 @@ avtMapper::SetUpMappers(void)
         actors[j]  = NULL;
     }
     SetUpFilters(nMappers);
-    for (int i = 0; i < nMappers; i++)
+    //Do the regular stuff.
+    int mi = 0;
+    if (drawSurfaces)
     {
-        // We might have some dummy data (SR-mode).  If so, just continue.
-        if (children[i] == NULL)
-            continue;
-        if (children[i]->GetNumberOfCells() <= 0)
-            continue;
-
-        mappers[i] = CreateMapper();
-        vtkAlgorithmOutput * outputPort = InsertFilters(children[i], i);
-        if (outputPort != NULL)
-            mappers[i]->SetInputConnection(outputPort);
-        else
-            mappers[i]->SetInputData(children[i]);
-        if (immediateMode)
+        for (int i = 0; i < nChildren; i++, mi++)
         {
-            mappers[i]->ImmediateModeRenderingOn();
+            // We might have some dummy data (SR-mode).  If so, just continue.
+            if (children[i] == NULL || children[i]->GetNumberOfCells() <= 0)
+                continue;
+            mappers[mi] = CreateMapper();
+            vtkAlgorithmOutput * outputPort = InsertFilters(children[i], i);
+            if (outputPort != NULL)
+                mappers[mi]->SetInputConnection(outputPort);
+            else
+                mappers[mi]->SetInputData(children[i]);
+            if (immediateMode)
+                mappers[mi]->ImmediateModeRenderingOn();
+            actors[mi]  = vtkActor::New();
+            actors[mi]->SetMapper(mappers[mi]);
+            mapperType[mi] = DEFAULT;
         }
-        actors[i]  = vtkActor::New();
-        actors[i]->SetMapper(mappers[i]);
     }
+    if (drawWireframe)
+    {
+        for (int i = 0; i < nChildren; i++, mi++)
+        {
+            // We might have some dummy data (SR-mode).  If so, just continue.
+            if (children[i] == NULL || children[i]->GetNumberOfCells() <= 0)
+                continue;
+            mappers[mi] = vtkDataSetMapper::New();
+            //mappers[mi] = CreateMapper();
+            vtkAlgorithmOutput * outputPort = InsertFilters(children[i], i);
+            if (outputPort != NULL)
+                mappers[mi]->SetInputConnection(outputPort);
+            else
+                mappers[mi]->SetInputData(children[i]);
+            if (immediateMode)
+                mappers[mi]->ImmediateModeRenderingOn();
+            actors[mi]  = vtkActor::New();
+            actors[mi]->SetMapper(mappers[mi]);
+            actors[mi]->GetProperty()->SetRepresentationToWireframe();
+            actors[mi]->GetProperty()->SetAmbient(1.);
+            actors[mi]->GetProperty()->SetDiffuse(0.);
+            if (wireframeColorByScalar)
+                mappers[mi]->ScalarVisibilityOn();
+            else
+            {
+                mappers[mi]->ScalarVisibilityOff();
+                actors[mi]->GetProperty()->SetColor(wireframeColor);
+            }
+            mapperType[mi] = WIREFRAME;
+        }
+    }
+    if (drawPoints)
+    {
+        for (int i = 0; i < nChildren; i++, mi++)
+        {
+            // We might have some dummy data (SR-mode).  If so, just continue.
+            if (children[i] == NULL || children[i]->GetNumberOfCells() <= 0)
+                continue;
+            mappers[mi] = CreateMapper();
+            vtkAlgorithmOutput * outputPort = InsertFilters(children[i], i);
+            if (outputPort != NULL)
+                mappers[mi]->SetInputConnection(outputPort);
+            else
+                mappers[mi]->SetInputData(children[i]);
+            if (immediateMode)
+                mappers[mi]->ImmediateModeRenderingOn();
+            actors[mi]  = vtkActor::New();
+            actors[mi]->SetMapper(mappers[mi]);
+            actors[mi]->GetProperty()->SetRepresentationToPoints();
+            actors[mi]->GetProperty()->SetAmbient(1.);
+            actors[mi]->GetProperty()->SetDiffuse(0.);
+            if (pointsColorByScalar)
+                mappers[mi]->ScalarVisibilityOn();
+            else
+            {
+                mappers[mi]->ScalarVisibilityOff();
+                actors[mi]->GetProperty()->SetColor(pointColor);
+            }
+            mapperType[mi] = POINT;
+        }
+    }
+
     // this was allocated in GetAllLeaves, need to free it now
     if (children != NULL)
         delete [] children;
 
     PrepareExtents();
-
     CustomizeMappers();
 
     if (transparencyActor != NULL)
@@ -1198,6 +1293,9 @@ avtMapper::SetSurfaceRepresentation(int rep)
 {
     for (int i = 0 ; i < nMappers ; i++)
     {
+        if (mapperType[i] != DEFAULT)
+            continue;
+        
         if (actors[i] != NULL)
         {
             vtkProperty *prop = actors[i]->GetProperty();

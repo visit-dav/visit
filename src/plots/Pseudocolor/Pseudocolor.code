@@ -123,9 +123,11 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
             needSecondaryVar ||
             geometryChange ||
             smoothingLevel != obj.smoothingLevel ||
-//            renderSurfaces != obj.renderSurfaces ||
-//            renderWireframe != obj.renderWireframe ||
-//            renderPoints != obj.renderPoints ||
+            renderSurfaces != obj.renderSurfaces ||
+            renderWireframe != obj.renderWireframe ||
+            renderPoints != obj.renderPoints ||
+            wireframeColor != obj.wireframeColor ||
+            pointColor != obj.pointColor ||
             0);
 
 }
@@ -316,3 +318,4 @@ PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
       }
     }
 }
+
