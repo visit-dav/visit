@@ -57,6 +57,7 @@
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
+#include <QvisColorButton.h>
 
 #include "QvisCollapsibleFrame.h"
 
@@ -761,17 +762,19 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     renderingLayout->addWidget( renderWireframe, 0,2);
     connect(renderWireframe, SIGNAL(toggled(bool)),
             this, SLOT(renderWireframeChanged(bool)));
+    wireframeRenderColor = new QvisColorButton(central);
+    renderingLayout->addWidget(wireframeRenderColor, 0,3);
+    connect(wireframeRenderColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(wireframeColorChanged(const QColor &)));
 
     renderPoints = new QCheckBox(tr("Points"), central);
-    renderingLayout->addWidget( renderPoints, 0,3);
+    renderingLayout->addWidget( renderPoints, 0,4);
     connect(renderPoints, SIGNAL(toggled(bool)),
             this, SLOT(renderPointsChanged(bool)));
-
-    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
-    renderLabel->hide();
-    renderSurfaces->hide();
-    renderWireframe->hide();
-    renderPoints->hide();
+    pointsRenderColor = new QvisColorButton(central);
+    renderingLayout->addWidget(pointsRenderColor, 0,5);
+    connect(pointsRenderColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(pointColorChanged(const QColor &)));
 
     // Create the smoothing options
     renderingLayout->addWidget(new QLabel(tr("Smoothing"), central), 1,0);
@@ -1400,17 +1403,40 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             renderSurfaces->setChecked( pcAtts->GetRenderSurfaces() );
             renderSurfaces->blockSignals(false);
             break;
-            // render surface
+            // render wireframe
         case PseudocolorAttributes::ID_renderWireframe:
             renderWireframe->blockSignals(true);
             renderWireframe->setChecked( pcAtts->GetRenderWireframe() );
             renderWireframe->blockSignals(false);
             break;
-            // render surface
+        case PseudocolorAttributes::ID_wireframeColor:
+            { // new scope
+            QColor temp(pcAtts->GetWireframeColor().Red(),
+                        pcAtts->GetWireframeColor().Green(),
+                        pcAtts->GetWireframeColor().Blue());
+            wireframeRenderColor->blockSignals(true);
+            wireframeRenderColor->setButtonColor(temp);
+            wireframeRenderColor->blockSignals(false);
+            wireframeRenderColor->setEnabled(pcAtts->GetRenderWireframe());
+            }
+            break;
+
+            // render point
         case PseudocolorAttributes::ID_renderPoints:
             renderPoints->blockSignals(true);
             renderPoints->setChecked( pcAtts->GetRenderPoints() );
             renderPoints->blockSignals(false);
+            pointsRenderColor->setEnabled(pcAtts->GetRenderPoints());
+            break;
+        case PseudocolorAttributes::ID_pointColor:
+            { // new scope
+            QColor temp(pcAtts->GetPointColor().Red(),
+                        pcAtts->GetPointColor().Green(),
+                        pcAtts->GetPointColor().Blue());
+            pointsRenderColor->blockSignals(true);
+            pointsRenderColor->setButtonColor(temp);
+            pointsRenderColor->blockSignals(false);
+            }
             break;
 
             // legend
@@ -2250,6 +2276,7 @@ void
 QvisPseudocolorPlotWindow::renderWireframeChanged(bool val)
 {
     pcAtts->SetRenderWireframe(val);
+    wireframeRenderColor->setEnabled(val);
     SetUpdate(false);
     Apply();
 }
@@ -2258,6 +2285,7 @@ void
 QvisPseudocolorPlotWindow::renderPointsChanged(bool val)
 {
     pcAtts->SetRenderPoints(val);
+    pointsRenderColor->setEnabled(val);
     SetUpdate(false);
     Apply();
 }
@@ -2273,5 +2301,23 @@ void
 QvisPseudocolorPlotWindow::lightingToggled(bool val)
 {
     pcAtts->SetLightingFlag(val);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::wireframeColorChanged(const QColor &color)
+{
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    pcAtts->SetWireframeColor(temp);
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::pointColorChanged(const QColor &color)
+{
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    pcAtts->SetPointColor(temp);
+    SetUpdate(false);
     Apply();
 }

@@ -785,6 +785,17 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     {
         glyphMapper->ColorByScalarOn(std::string(varname));
     }
+
+    glyphMapper->SetDrawSurfaces(atts.GetRenderSurfaces());
+    glyphMapper->SetDrawWireframe(atts.GetRenderWireframe());
+    glyphMapper->SetWireframeColor(atts.GetWireframeColor().Red()/255.,
+                                   atts.GetWireframeColor().Green()/255.,
+                                   atts.GetWireframeColor().Blue()/255.);
+    glyphMapper->SetDrawPoints(atts.GetRenderPoints());
+    glyphMapper->SetPointsColor(atts.GetPointColor().Red()/255.,
+                                atts.GetPointColor().Green()/255.,
+                                atts.GetPointColor().Blue()/255.);
+
 }
 
 

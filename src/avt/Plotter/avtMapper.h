@@ -164,6 +164,25 @@ class PLOTTER_API avtMapper : public avtTerminatingDatasetSink
 
     virtual void               ReducedDetailModeOn() {; }
     virtual bool               ReducedDetailModeOff() { return false; }
+    virtual void               SetDrawSurfaces(bool v) {drawSurfaces=v;}
+    virtual void               SetDrawWireframe(bool v) {drawWireframe=v;}
+    virtual void               SetWireframeColorScalars(){wireframeColorByScalar=true;}
+    virtual void               SetWireframeColor(double r,double g, double b)
+                               {
+                                   wireframeColor[0]=r;
+                                   wireframeColor[1]=g;
+                                   wireframeColor[2]=b;
+                                   wireframeColorByScalar=false;
+                               }
+    virtual void               SetDrawPoints(bool v) {drawPoints=v;}
+    virtual void               SetPointsColorScalars() {pointsColorByScalar=true;}
+    virtual void               SetPointsColor(double r,double g, double b)
+                               {
+                                   pointColor[0]=r;
+                                   pointColor[1]=g;
+                                   pointColor[2]=b;
+                                   pointsColorByScalar=false;
+                               }
 
   protected:
     bool                       immediateMode;
@@ -172,8 +191,15 @@ class PLOTTER_API avtMapper : public avtTerminatingDatasetSink
     avtTransparencyActor      *transparencyActor;
     int                        transparencyIndex;
 
+    bool drawSurfaces, drawWireframe, drawPoints;
+    bool wireframeColorByScalar, pointsColorByScalar;
+    double wireframeColor[3], pointColor[3];
+
+    //DRP. Or call DEFAULT SURFACE??
+    typedef enum {DEFAULT, WIREFRAME, POINT} MapperType;
     vtkDataSetMapper         **mappers;
     int                        nMappers;
+    MapperType                *mapperType;
     vtkActor                 **actors;
 
     double                     globalAmbient;

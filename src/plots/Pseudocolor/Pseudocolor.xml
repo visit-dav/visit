@@ -164,7 +164,7 @@
         0.125000
       </Field>
       <Field name="endPointRadiusBBox" label="Radius (BBox Fraction)" type="double" enabler="endPointRadiusSizeType:FractionOfBBox">
-        0.05000
+        0.050000
       </Field>
       <Field name="endPointResolution" label="End point resolution" type="int">
         10
@@ -197,6 +197,18 @@
       </Field>
       <Field name="lightingFlag" label="Lighting" type="bool">
         true
+      </Field>
+      <Field name="wireframeColor" label="wireframeColor" type="color" length="4">
+        0
+        0
+        0
+        0
+      </Field>
+      <Field name="pointColor" label="pointColor" type="color" length="4">
+        0
+        0
+        0
+        0
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
