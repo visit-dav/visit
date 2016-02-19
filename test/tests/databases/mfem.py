@@ -29,7 +29,10 @@ for f in input_meshs:
     AddPlot("Mesh","main")
     AddOperator("MultiresControl")
     SetActivePlots((0,1))
-    for mres in [0,10,15,20]:
+    levels = [0,10,15,20]
+    if f.count("amr") > 0:
+        levels = [0,5]
+    for mres in levels:
         mc_atts  = MultiresControlAttributes()
         mc_atts.resolution = mres
         SetOperatorOptions(mc_atts)
@@ -45,7 +48,6 @@ for f in ex01_results:
     #AddPlot("Mesh","main")
     DrawPlots()
     Test("ex01_%s" % (base))
-
 
 TestSection("ex02 results")
 for f in ex02_results:
