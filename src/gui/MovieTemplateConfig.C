@@ -745,13 +745,14 @@ DataNode *
 MovieTemplateConfig::GetViewport(const std::string &name) const
 {
     const char *mName = "MovieTemplateConfig::GetViewport: ";
-    DataNode *node = 0;
-    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
-    if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
+    DataNode *node = NULL;
+    DataNode *rn = GetRootNode();
+    DataNode *vpData = (rn != NULL) ? rn->GetNode("VIEWPORTS") : NULL;
+    if(vpData != NULL && vpData->GetNodeType() == INTERNAL_NODE)
     {
         node = vpData->GetNode(name);
         if(node->GetNodeType() != INTERNAL_NODE)
-            node = 0;
+            node = NULL;
     }
     else
         debug5 << mName << VIEWPORTS_MISSING_WRONG_TYPE << endl;
@@ -782,8 +783,9 @@ MovieTemplateConfig::GetActiveViewport()
     const char *mName = "MovieTemplateConfig::GetActiveViewport: ";
     if(activeViewport == 0)
     {
-        DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
-        if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
+        DataNode *rn = GetRootNode();
+        DataNode *vpData = (rn != NULL) ? rn->GetNode("VIEWPORTS") : NULL;
+        if(vpData != NULL && vpData->GetNodeType() == INTERNAL_NODE)
         {
             DataNode **children = vpData->GetChildren();
             for(int i = 0; i < vpData->GetNumChildren(); ++i)
@@ -821,7 +823,8 @@ MovieTemplateConfig::GetNumberOfViewports() const
 {
     const char *mName = "MovieTemplateConfig::GetNumberOfViewports: ";
     int nvpt = 0;
-    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
+    DataNode *rn = GetRootNode();
+    DataNode *vpData = (rn!=NULL) ? rn->GetNode("VIEWPORTS") : NULL;
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         DataNode **children = vpData->GetChildren();
@@ -893,7 +896,8 @@ MovieTemplateConfig::ViewportGetIndexForName(const std::string &name,
 {
     const char *mName = "MovieTemplateConfig::ViewportGetIndexForName: ";
     int _index = 0;
-    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
+    DataNode *rn = GetRootNode();
+    DataNode *vpData = (rn != NULL) ? rn->GetNode("VIEWPORTS") : NULL;
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         DataNode **children = vpData->GetChildren();
@@ -942,7 +946,8 @@ MovieTemplateConfig::ViewportGetNameForIndex(int index, std::string &name) const
 {
     const char *mName = "MovieTemplateConfig::ViewportGetNameForIndex";
     int _index = 0;
-    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
+    DataNode *rn = GetRootNode();
+    DataNode *vpData = (rn != NULL) ? rn->GetNode("VIEWPORTS") : NULL;
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         DataNode **children = vpData->GetChildren();
@@ -1024,7 +1029,8 @@ MovieTemplateConfig::ViewportAdd(const std::string &name,
 {
     const char *mName = "MovieTemplateConfig::ViewportAdd: ";
     bool retval = false;
-    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
+    DataNode *rn = GetRootNode();
+    DataNode *vpData = (rn != NULL) ? rn->GetNode("VIEWPORTS") : NULL;
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         // If the viewport already exists, delete it.
@@ -1090,7 +1096,8 @@ MovieTemplateConfig::ViewportRemove(const std::string &name)
     bool retval = false;
 
     // Delete the viewport.
-    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
+    DataNode *rn = GetRootNode();
+    DataNode *vpData = (rn != NULL) ? rn->GetNode("VIEWPORTS") : NULL;
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         bool setActive = GetViewport(name) == GetActiveViewport();
@@ -1139,7 +1146,8 @@ MovieTemplateConfig::ViewportRemoveAll()
     bool retval = false;
 
     // Delete the viewport.
-    DataNode *vpData = GetRootNode()->GetNode("VIEWPORTS");
+    DataNode *rn = GetRootNode();
+    DataNode *vpData = (rn != NULL) ? rn->GetNode("VIEWPORTS") : NULL;
     if(vpData != 0 && vpData->GetNodeType() == INTERNAL_NODE)
     {
         DataNode **children = vpData->GetChildren();
