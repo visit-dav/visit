@@ -152,7 +152,6 @@ class Connection
 
     private boolean OrderConnections() throws IOException
     {
-        System.out.println("Connection::OrderConnections");
         boolean retval = true;
         byte[] buf = new byte[4];
         DirectWriteHelper(readConnection.getOutputStream(), buf);
