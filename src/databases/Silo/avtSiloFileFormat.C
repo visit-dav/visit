@@ -1597,9 +1597,7 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                     char *searchpath_str = new char[lsearchpath+1];
                     DBReadVar(dbfile, "_visit_searchpath", searchpath_str);
                     searchpath_str[lsearchpath] = '\0';
-                    int i, len = strlen(searchpath_str);
-                    for (i = 0; i < len && (isblank(searchpath_str[i]) || searchpath_str[i]==';'); i++);
-                    if (i < len)
+                    if (strspn(searchpath_str, " ;\t") < strlen(searchpath_str))
                     {
                         debug1 << "Setting search path from _visit_searchpath" << endl;
                         *searchpath_strp = searchpath_str;
@@ -1617,9 +1615,7 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                     char *searchpath_str = new char[lsearchpath+1];
                     DBReadVar(dbfile, "_meshtv_searchpath", searchpath_str);
                     searchpath_str[lsearchpath] = '\0';
-                    int i, len = strlen(searchpath_str);
-                    for (i = 0; i < len && (isblank(searchpath_str[i]) || searchpath_str[i]==';'); i++);
-                    if (i < len)
+                    if (strspn(searchpath_str, " ;\t") < strlen(searchpath_str))
                     {
                         debug1 << "Setting search path from _meshtv_searchpath" << endl;
                         *searchpath_strp = searchpath_str;
