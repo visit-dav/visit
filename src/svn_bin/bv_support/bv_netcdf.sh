@@ -271,6 +271,10 @@ function apply_netcdf_patch
             info "Applying OS X 10.9 Mavericks patch . . ."
             apply_netcdf_411_darwin_patch
          fi
+         if [[ `sw_vers -productVersion` == 10.11.[0-9]* ]] ; then
+            info "Applying OS X 10.9 Mavericks patch . . ."
+            apply_netcdf_411_darwin_patch
+         fi
       fi
    fi
 
