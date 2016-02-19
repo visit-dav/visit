@@ -540,25 +540,25 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
         return dbfiles[f];
     }
 
-    debug4 << "Opening silo file " << filenames[f] << endl;
+    debug4 << "Opening silo file \"" << filenames[f] << "\"" << endl;
 
     //
     // Open the Silo file. Impose priority order on drivers by first
-    // trying PDB, then HDF5, then fall-back to UNKNOWN
+    // trying then HDF5, then PDB, then fall-back to UNKNOWN
     //
-    if ((dbfiles[f] = DBOpen(filenames[f], DB_PDB, DB_READ)) != NULL)
+    if ((dbfiles[f] = DBOpen(filenames[f], DB_HDF5, DB_READ)) != NULL)
     {
-        debug1 << "Succeeding in opening Silo file with DB_PDB driver" << endl;
-        siloDriver = DB_PDB;
-    }
-    else if ((dbfiles[f] = DBOpen(filenames[f], DB_HDF5, DB_READ)) != NULL)
-    {
-        debug1 << "Succeeding in opening Silo file with DB_HDF5 driver" << endl;
+        debug1 << "Opened with DB_HDF5 driver; lib=" << DBVersion() << ", file=" << DBFileVersion(dbfiles[f]) <<endl;
         siloDriver = DB_HDF5;
+    }
+    else if ((dbfiles[f] = DBOpen(filenames[f], DB_PDB, DB_READ)) != NULL)
+    {
+        debug1 << "Opened with DB_PDB driver; lib=" << DBVersion() << ", file=" << DBFileVersion(dbfiles[f]) <<endl;
+        siloDriver = DB_PDB;
     }
     else if ((dbfiles[f] = DBOpen(filenames[f], DB_UNKNOWN, DB_READ)) != NULL)
     {
-        debug1 << "Succeeding in opening Silo file with DB_UNKNOWN driver" << endl;
+        debug1 << "Opened with DB_UNKNOWN driver; lib=" << DBVersion() << ", file=" << DBFileVersion(dbfiles[f]) <<endl;
         siloDriver = DBGetDriverType(dbfiles[f]);
     }
     else
@@ -1490,6 +1490,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    I also added "_visit_searchpath" as a synonym for "_meshtv_searchpath"
 //    since "_visit_searchpath" is much more appropriate for VisIt.
 //
+//    Mark C. Miller, Wed Feb 10 20:47:43 PST 2016
+//    Add logic to ignore searchpath vars if once read they consist entirely
+//    of blank or ';' characters.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
@@ -1595,7 +1598,11 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                     char *searchpath_str = new char[lsearchpath+1];
                     DBReadVar(dbfile, "_visit_searchpath", searchpath_str);
                     searchpath_str[lsearchpath] = '\0';
-                    *searchpath_strp = searchpath_str;
+                    if (strspn(searchpath_str, " ;\t") < strlen(searchpath_str))
+                    {
+                        debug1 << "Setting search path from _visit_searchpath" << endl;
+                        *searchpath_strp = searchpath_str;
+                    }
                 }
                 hadVisitSearchpath = true;
             }
@@ -1609,7 +1616,11 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                     char *searchpath_str = new char[lsearchpath+1];
                     DBReadVar(dbfile, "_meshtv_searchpath", searchpath_str);
                     searchpath_str[lsearchpath] = '\0';
-                    *searchpath_strp = searchpath_str;
+                    if (strspn(searchpath_str, " ;\t") < strlen(searchpath_str))
+                    {
+                        debug1 << "Setting search path from _meshtv_searchpath" << endl;
+                        *searchpath_strp = searchpath_str;
+                    }
                 }
             }
 
@@ -4089,12 +4100,6 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
                                                               mm_ent,
                                                               dirname);
                     //
-                    // note: prev code: mm vs ms  - looks wrong?
-                    //   meshname = DetermineMultiMeshForSubVariable(dbfile,
-                    //                                          multimatspecies_names[i],
-                    //                                          mm->matnames,
-                    //                                          ms->nspec, dirname);
-
                     // get the species info
 
                     string realvar;
@@ -4293,6 +4298,9 @@ avtSiloFileFormat::ReadDefvars(DBfile *dbfile,
 //    I also added "_visit_searchpath" as a synonym for "_meshtv_searchpath"
 //    since "_visit_searchpath" is much more appropriate for VisIt.
 //
+//    Mark C. Miller, Thu Feb 11 17:40:32 PST 2016
+//    Adjusted logic for going into directories to only call ReadDir() when
+//    preceding call to DBSetDir succeeds.
 // ****************************************************************************
 #define COPY_TOC_ENTRY(NM)                        \
     int      n ## NM = toc->n ## NM;                    \
@@ -4411,6 +4419,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         //
         // Create the new list of directories.
         //
+        debug1 << "Set list of directories to search from searchpath_str..." << endl;
         dir_names = new char*[max_ndir];
         ndir = 0;
         int searchpath_strlen = strlen(searchpath_str);
@@ -4428,6 +4437,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             {
                 dir_names[ndir] = new char[strlen(dirname)+1];
                 strcpy(dir_names[ndir], dirname);
+                debug1 << "... \"" << dirname << "\"" << endl;
                 ndir++;
             }
         }
@@ -4457,9 +4467,16 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             }
             if (ShouldGoToDir(path))
             {
-                DBSetDir(dbfile, dir_names[i]);
-                ReadDir(dbfile, path, md);
-                DBSetDir(dbfile, "..");
+                int dir_status = DBSetDir(dbfile, dir_names[i]);
+                if (dir_status == 0) 
+                {
+                    ReadDir(dbfile, path, md);
+                    DBSetDir(dbfile, "..");
+                }
+                else
+                {
+                    debug1 << "Unable to DBSetDir(\"" << path << "\")" << endl;
+                }
             }
 
         }
