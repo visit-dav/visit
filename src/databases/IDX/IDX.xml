@@ -10,6 +10,7 @@
     <LIBS>
       avtview
       ${VISUS_LIBRARIES}
+      vtkIOXML
     </LIBS>
     <FilePatterns>
       *.idx *.midx

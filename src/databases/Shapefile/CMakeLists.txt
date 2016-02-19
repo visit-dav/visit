@@ -52,11 +52,10 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${EAVL_INCLUDE_DIR} 
-${VTKM_INCLUDE_DIR} 
-${VTK_INCLUDE_DIRS} 
+${EAVL_INCLUDE_DIR}
+${VTKM_INCLUDE_DIR}
+${VTK_INCLUDE_DIRS}
 )
-
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} )
 
@@ -65,7 +64,7 @@ TARGET_LINK_LIBRARIES(IShapefileDatabase visitcommon)
 SET(INSTALLTARGETS IShapefileDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    ADD_LIBRARY(MShapefileDatabase ${LIBM_SOURCES}    )
+    ADD_LIBRARY(MShapefileDatabase ${LIBM_SOURCES})
     TARGET_LINK_LIBRARIES(MShapefileDatabase visitcommon avtdbatts avtdatabase_ser )
     ADD_TARGET_DEFINITIONS(MShapefileDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MShapefileDatabase)

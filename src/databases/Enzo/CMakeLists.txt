@@ -48,9 +48,9 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${EAVL_INCLUDE_DIR} 
-${VTKM_INCLUDE_DIR} 
-${VTK_INCLUDE_DIRS} 
+${EAVL_INCLUDE_DIR}
+${VTKM_INCLUDE_DIR}
+${VTK_INCLUDE_DIRS}
 )
 
 IF(WIN32)
@@ -64,7 +64,7 @@ TARGET_LINK_LIBRARIES(IEnzoDatabase visitcommon)
 SET(INSTALLTARGETS IEnzoDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    ADD_LIBRARY(MEnzoDatabase ${LIBM_SOURCES}    )
+    ADD_LIBRARY(MEnzoDatabase ${LIBM_SOURCES})
     TARGET_LINK_LIBRARIES(MEnzoDatabase visitcommon avtdbatts avtdatabase_ser ${HDF4_LIB} ${HDF5_LIB} ${ZLIB_LIB} )
     ADD_TARGET_DEFINITIONS(MEnzoDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MEnzoDatabase)

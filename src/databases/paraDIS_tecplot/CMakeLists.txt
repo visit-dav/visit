@@ -64,9 +64,9 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${EAVL_INCLUDE_DIR} 
-${VTKM_INCLUDE_DIR} 
-${VTK_INCLUDE_DIRS} 
+${EAVL_INCLUDE_DIR}
+${VTKM_INCLUDE_DIR}
+${VTK_INCLUDE_DIRS}
 )
 
 ADD_DEFINITIONS(-DNO_BOOST)
@@ -78,7 +78,7 @@ TARGET_LINK_LIBRARIES(IparaDIS_tecplotDatabase visitcommon)
 SET(INSTALLTARGETS IparaDIS_tecplotDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    ADD_LIBRARY(MparaDIS_tecplotDatabase ${LIBM_SOURCES}    )
+    ADD_LIBRARY(MparaDIS_tecplotDatabase ${LIBM_SOURCES})
     TARGET_LINK_LIBRARIES(MparaDIS_tecplotDatabase visitcommon avtdbatts avtdatabase_ser )
     ADD_TARGET_DEFINITIONS(MparaDIS_tecplotDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MparaDIS_tecplotDatabase)
