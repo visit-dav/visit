@@ -690,5 +690,6 @@ simInfo.otherValues = ()
 #genericCommands does not contain any avtSimulationCommandSpecification objects.
 simInfo.mode = simInfo.Unknown  # Unknown, Running, Stopped
 #customCommands does not contain any avtSimulationCommandSpecification objects.
+simInfo.message = ""
 suggestedDefaultSILRestriction = ()
 replacementMask = -65
