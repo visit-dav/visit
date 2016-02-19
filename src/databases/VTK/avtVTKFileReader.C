@@ -279,8 +279,8 @@ avtVTKFileReader::FreeUpResources(void)
 
 avtVTKFileReader::~avtVTKFileReader()
 {
-    delete [] filename;
     FreeUpResources();
+    delete [] filename;
 }
 
 
