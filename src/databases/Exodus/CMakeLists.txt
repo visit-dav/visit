@@ -49,9 +49,9 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${EAVL_INCLUDE_DIR} 
-${VTKM_INCLUDE_DIR} 
-${VTK_INCLUDE_DIRS} 
+${EAVL_INCLUDE_DIR}
+${VTKM_INCLUDE_DIR}
+${VTK_INCLUDE_DIRS}
 )
 
 IF(WIN32)
@@ -65,7 +65,7 @@ TARGET_LINK_LIBRARIES(IExodusDatabase visitcommon)
 SET(INSTALLTARGETS IExodusDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    ADD_LIBRARY(MExodusDatabase ${LIBM_SOURCES}    )
+    ADD_LIBRARY(MExodusDatabase ${LIBM_SOURCES})
     TARGET_LINK_LIBRARIES(MExodusDatabase visitcommon avtdbatts avtdatabase_ser ${NETCDF_LIB} )
     ADD_TARGET_DEFINITIONS(MExodusDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MExodusDatabase)

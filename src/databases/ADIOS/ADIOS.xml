@@ -19,6 +19,7 @@
       avtSpecFEMFileFormat.C
       avtADIOSSchemaFileFormat.C
       avtLAMMPSFileFormat.C
+      avtPIConGPUFileFormat.C
       ADIOSFileObject.C
     </Files>
     <LIBS components="M">
@@ -31,6 +32,7 @@
       avtSpecFEMFileFormat.C
       avtADIOSSchemaFileFormat.C
       avtLAMMPSFileFormat.C
+      avtPIConGPUFileFormat.C
       ADIOSFileObject.C
     </Files>
     <LIBS components="ESer">

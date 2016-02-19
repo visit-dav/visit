@@ -3,6 +3,12 @@
     <CXXFLAGS>
       ${GLEW_INCLUDE_DIR}
     </CXXFLAGS>
+    <LDFLAGS>
+      ${NEKTAR++_LIBRARY_DIR}
+      ${NEKTAR++_LIBRARY_DIRS}
+      ${NEKTAR++_TP_LIBRARY_DIRS}
+      ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
+    </LDFLAGS>
     <Files components="V">
       avtStreamlineRenderer.C
       avtOpenGLStreamlineRenderer.C

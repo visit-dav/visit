@@ -163,6 +163,11 @@
 //    Eric Brugger, Thu Dec 10 11:07:56 PST 2015
 //    I added support for VTKm.
 //
+//    Kathleen Biagas, Fri Feb 19 10:29:33 PST 2016
+//    Convert -I flags to proper IncludeDir when writing plot/operator
+//    instead of stuffing them in an add_defintions call.  Removed commented-
+//    out logic, clean up writing of whitespace.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -318,12 +323,12 @@ class CMakeGeneratorPlugin : public Plugin
         QString condition, incs;
         if(GetCondition("Includes:", condition, incs))
         {
-            out << endl;
             out << "IF(" << condition << ")" << endl;
             out << "    INCLUDE_DIRECTORIES(";
             out << incs;
             out << ")" << endl;
             out << "ENDIF(" << condition << ")" << endl;
+            out << endl;
         }
     }
 
@@ -337,6 +342,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << defs;
             out << ")" << endl;
             out << "ENDIF(" << condition << ")" << endl;
+            out << endl;
         }
     }
 
@@ -350,6 +356,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << "ELSE(" << condition << ")" << endl;
             out << "    LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
             out << "ENDIF(" << condition << ")" << endl;
+            out << endl;
         }
     }
 
@@ -363,6 +370,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << indent << "IF(" << condition << ")" << endl;
             out << indent << "    TARGET_LINK_LIBRARIES(" << libType << target << plugType << " " << link << ")" << endl;
             out << indent << "ENDIF(" << condition << ")" << endl;
+            out << endl;
         }
     }
 
@@ -415,6 +423,8 @@ class CMakeGeneratorPlugin : public Plugin
                  extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i]));
             else if(cxxflags[i].startsWith("$("))
                  extraIncludes.push_back(ConvertToProperVisItIncludeDir(ConvertDollarParenthesis(cxxflags[i])));
+            else if(cxxflags[i].startsWith("-I"))
+                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i].right(cxxflags[i].size()-2)));
         }
 
         out << endl
@@ -476,13 +486,14 @@ class CMakeGeneratorPlugin : public Plugin
         out << "${QT_INCLUDE_DIR}" << endl;
         out << "${QT_QTCORE_INCLUDE_DIR}" << endl;
         out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
-        out << "${EAVL_INCLUDE_DIR} " << endl;
-        out << "${VTKM_INCLUDE_DIR} " << endl;
-        out << "${VTK_INCLUDE_DIRS} " << endl;
+        out << "${EAVL_INCLUDE_DIR}" << endl;
+        out << "${VTKM_INCLUDE_DIR}" << endl;
+        out << "${VTK_INCLUDE_DIRS}" << endl;
         out << "${PYINCLUDES}" << endl;
         if(extraIncludes.size() > 0)
             out << ToString(extraIncludes, true);
         out << ")" << endl;
+        out << endl;
     }
 
     bool CustomFilesUseFortran(const std::vector<QString> &files) const
@@ -622,31 +633,29 @@ class CMakeGeneratorPlugin : public Plugin
         WriteCMake_ConditionalIncludes(out);
 
         // Pass other CXXFLAGS
+        bool added_defs = false;
         for (size_t i=0; i<cxxflags.size(); i++)
         {
-            if(!cxxflags[i].startsWith("${") && !cxxflags[i].startsWith("$("))
+            if(!cxxflags[i].startsWith("${") &&
+               !cxxflags[i].startsWith("$(") &&
+               !cxxflags[i].startsWith("-I"))
+            {
                  out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << endl;
+                 added_defs = true;
+            }
         }
-        out << endl;
 
         // Pass DEFINITIONS
         for (size_t i=0; i<defs.size(); i++)
         {
             out << "ADD_DEFINITIONS(" << defs[i] << ")" << endl;
+            added_defs = true;
         }
-        out << endl;
+        if (added_defs)
+            out << endl;
 
         WriteCMake_ConditionalDefinitions(out);
 
-#if 0
-        if (installpublic)
-            out << "SET(LIBRARY_OUTPUT_PATH " << visitplugdirpub << ")" << endl;
-        else if (installprivate)
-            out << "SET(LIBRARY_OUTPUT_PATH " << visitplugdirpri << ")" << endl;
-        else
-#endif
-
-        out << endl;
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
         linkDirs.push_back("${QT_LIBRARY_DIR}");
@@ -865,32 +874,30 @@ class CMakeGeneratorPlugin : public Plugin
         WriteCMake_PlotOperator_Includes(out, true);
         WriteCMake_ConditionalIncludes(out);
 
+        bool added_defs = false;
         // Pass other CXXFLAGS
         for (size_t i=0; i<cxxflags.size(); i++)
         {
-            if(!cxxflags[i].startsWith("${") && !cxxflags[i].startsWith("$("))
+            if(!cxxflags[i].startsWith("${") &&
+               !cxxflags[i].startsWith("$(") &&
+               !cxxflags[i].startsWith("-I"))
+            {
                  out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << endl;
+                 added_defs = true;
+            }
         }
-        out << endl;
 
         // Pass Defines
         for (size_t i=0; i<defs.size(); i++)
         {
             out << "ADD_DEFINITIONS(" << defs[i] << ")" << endl;
+            added_defs = true;
         }
-        out << endl;
+        if (added_defs)
+            out << endl;
 
         WriteCMake_ConditionalDefinitions(out);
 
-#if 0
-        if (installpublic)
-            out << "SET(LIBRARY_OUTPUT_PATH " << visitplugdirpub << ")" << endl;
-        else if (installprivate)
-            out << "SET(LIBRARY_OUTPUT_PATH " << visitplugdirpri << ")" << endl;
-        else
-#endif
-
-        out << endl;
         // Extract extra link directories from LDFLAGS if they have ${},$(),-L
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
@@ -1132,9 +1139,9 @@ class CMakeGeneratorPlugin : public Plugin
         out << VisItIncludeDir() << "/avt/VisWindow/VisWindow" << endl;
         out << VisItIncludeDir() << "/visit_vtk/full" << endl;
         out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
-        out << "${EAVL_INCLUDE_DIR} " << endl;
-        out << "${VTKM_INCLUDE_DIR} " << endl;
-        out << "${VTK_INCLUDE_DIRS} " << endl;
+        out << "${EAVL_INCLUDE_DIR}" << endl;
+        out << "${VTKM_INCLUDE_DIR}" << endl;
+        out << "${VTK_INCLUDE_DIRS}" << endl;
         out << ")" << endl;
         out << endl;
 
@@ -1154,6 +1161,8 @@ class CMakeGeneratorPlugin : public Plugin
         {
             out << "ADD_DEFINITIONS(" << defs[i] << ")" << endl;
         }
+        if (!defs.empty())
+            out << endl;
 
         bool needWindowsDefines = false;
         for (size_t i=0; i<libs.size() && !needWindowsDefines; i++)
@@ -1190,15 +1199,16 @@ class CMakeGeneratorPlugin : public Plugin
                      out << "  ADD_DEFINITIONS(-DUSE_DLL)" << endl;
             }
             out << "ENDIF(WIN32)" << endl;
+            out << endl;
         }
         WriteCMake_ConditionalDefinitions(out);
 
         if(useFortran)
         {
             out << "ENABLE_LANGUAGE(Fortran)" << endl;
+            out << endl;
         }
 
-        out << endl;
         // Extract extra link directories from LDFLAGS if they have ${},$(),-L
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
@@ -1233,7 +1243,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << "    ADD_LIBRARY(M"<<name<<"Database ${LIBM_SOURCES}";
             if (customwmfiles)
                 out << "     ${LIBM_WIN32_SOURCES}";
-            out << "    )" << endl;
+            out << ")" << endl;
             out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser " << ToString(libs) << ToString(mlibs) << ")" << endl;
             WriteCMake_ConditionalTargetLinks(out, name, "M", "Database", "    ");
             out << "    ADD_TARGET_DEFINITIONS(M"<<name<<"Database MDSERVER)" << endl;

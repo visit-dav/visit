@@ -73,9 +73,9 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${EAVL_INCLUDE_DIR} 
-${VTKM_INCLUDE_DIR} 
-${VTK_INCLUDE_DIRS} 
+${EAVL_INCLUDE_DIR}
+${VTKM_INCLUDE_DIR}
+${VTK_INCLUDE_DIRS}
 )
 
 IF(UNIX AND NOT APPLE)
@@ -89,20 +89,20 @@ TARGET_LINK_LIBRARIES(IH5PartDatabase visitcommon)
 SET(INSTALLTARGETS IH5PartDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    ADD_LIBRARY(MH5PartDatabase ${LIBM_SOURCES}    )
-    TARGET_LINK_LIBRARIES(MH5PartDatabase visitcommon avtdbatts avtdatabase_ser ${FASTBIT_LIB} ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} ${RT})
+    ADD_LIBRARY(MH5PartDatabase ${LIBM_SOURCES})
+    TARGET_LINK_LIBRARIES(MH5PartDatabase visitcommon avtdbatts avtdatabase_ser ${FASTBIT_LIB} ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} ${RT} )
     ADD_TARGET_DEFINITIONS(MH5PartDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MH5PartDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EH5PartDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EH5PartDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${FASTBIT_LIB} ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} ${RT})
+TARGET_LINK_LIBRARIES(EH5PartDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${FASTBIT_LIB} ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} ${RT} )
 ADD_TARGET_DEFINITIONS(EH5PartDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EH5PartDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EH5PartDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EH5PartDatabase_par visitcommon avtdatabase_par avtpipeline_par ${FASTBIT_LIB} ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} ${RT})
+    TARGET_LINK_LIBRARIES(EH5PartDatabase_par visitcommon avtdatabase_par avtpipeline_par ${FASTBIT_LIB} ${H5PART_LIB} ${HDF5_LIB} ${ZLIB_LIB} ${RT} )
     ADD_TARGET_DEFINITIONS(EH5PartDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EH5PartDatabase_par)
 ENDIF(VISIT_PARALLEL)
