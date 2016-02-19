@@ -45,13 +45,16 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidCellTypeException.h>
+#include <UnexpectedValueException.h>
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
+#include <vtkCharArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
+#include <vtkLongArray.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
@@ -65,9 +68,9 @@
 #include <avtMixedVariable.h>
 #include <avtVariableCache.h>
 
-#include <Expression.h>
-
 #include <DebugStream.h>
+#include <Expression.h>
+#include <StringHelpers.h>
 #include <snprintf.h>
 
 // This header file is last because it includes "scstd.h" (indirectly
@@ -123,6 +126,9 @@ PP_ZFileReader::PP_ZFileReader(const char *filename) :
     initialized = false;
     varStorageInitialized = false;
     cache = 0;
+
+    nmarkATgnl = -1;
+    have_nmarkATgnl = false;
 }
 
 PP_ZFileReader::PP_ZFileReader(PDBFileObject *pdb) :
@@ -143,6 +149,9 @@ PP_ZFileReader::PP_ZFileReader(PDBFileObject *pdb) :
     initialized = false;
     varStorageInitialized = false;
     cache = 0;
+
+    nmarkATgnl = -1;
+    have_nmarkATgnl = false;
 }
 
 // ****************************************************************************
@@ -923,6 +932,37 @@ PP_ZFileReader::InitializeVarStorage()
 }
 
 // ****************************************************************************
+// Method: PP_ZFileReader::HandleMarkerVariable
+//
+// Purpose: If the variable is a marker mesh variable, handle it here
+//
+// Programmer: Mark C Miller
+// Creation:   February 18, 2016
+// ****************************************************************************
+
+bool
+PP_ZFileReader::HandleMarkerVariable(bool have_nmarkATgnl, avtDatabaseMetaData *md,
+    PDBFileObject *pdb, char const *var)
+{
+    if (!have_nmarkATgnl)
+        return false;
+
+    if (StringHelpers::FindRE(var, "^mark.*@gnl") == StringHelpers::FindNone)
+        return false;
+
+    // Filter out marker mesh coordinate variables
+    if (std::string(var) == "markrc@gnl" || std::string(var) == "markzc@gnl")
+        return false;
+
+    std::string tmpvar = std::string(var);
+    tmpvar.erase(tmpvar.size()-4);
+    avtScalarMetaData *smd = new avtScalarMetaData("marker/"+tmpvar, "marker", AVT_NODECENT);
+    md->Add(smd);
+
+    return true;
+}
+
+// ****************************************************************************
 // Method: PP_ZFileReader::PopulateDatabaseMetaData
 //
 // Purpose: 
@@ -1042,6 +1082,26 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
     debug4 << "problemSize = " << problemSize << endl;
 
     //
+    // Check for maker mesh variables
+    //
+    nmarkATgnl = -1;
+    have_nmarkATgnl = pdb->GetInteger("nmark@gnl", &nmarkATgnl);
+    if (nmarkATgnl < 1)
+        have_nmarkATgnl = false;
+    if (have_nmarkATgnl)
+    {
+        debug1 << "Have marker mesh of size nmark@gnl = " << nmarkATgnl << endl;
+        avtMeshMetaData *mmd = new avtMeshMetaData("marker", 1, 0, 
+            cellOrigin, 0, ndims, 0, AVT_POINT_MESH);
+        mmd->hasSpatialExtents = false;
+        mmd->cellOrigin = cellOrigin;
+        mmd->nodeOrigin = 1;
+        mmd->xLabel = "Z-Axis";
+        mmd->yLabel = "R-Axis";
+        md->Add(mmd);
+    }
+
+    //
     // Read all variables of the specified type.
     //
     PDBfile *pdbPtr = pdb->filePointer();
@@ -1066,6 +1126,10 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
             int numDims;
             int kmaxDim = -1, lmaxDim = -1, cyclesDim = -1;
             syment *ep = 0;
+
+            // Handle possible marker mesh variables
+            if (HandleMarkerVariable(have_nmarkATgnl, md, pdb, varList[j]))
+                continue;
 
             // Check to see if the  variable is problem sized.
             if((ep = PD_inquire_entry(pdbPtr, varList[j], 0, NULL)) != NULL)
@@ -1844,6 +1908,8 @@ GetMesh_StoreMeshPoints(float *ptr, const T *rt, const T *zt, const int kmax,
 vtkDataSet *
 PP_ZFileReader::GetMesh(int state, const char *var)
 {
+    vtkDataSet *retval = 0;
+
     debug4 << "PP_ZFileReader::GetMesh: state=" << state
            << ", var=" << var << endl;
 
@@ -1853,9 +1919,14 @@ PP_ZFileReader::GetMesh(int state, const char *var)
     InitializeVarStorage();
 
     //
+    // Try getting marker mesh
+    //
+    if((retval = GetMarkerMesh(state, var)) != 0)
+        return retval;
+
+    //
     // Try getting the ray mesh.
     //
-    vtkDataSet *retval = 0;
     if((retval = GetRayMesh(state, var)) != 0)
         return retval;
    
@@ -2159,6 +2230,67 @@ PP_ZFileReader::GetRayMesh(int state, const char *mesh)
     
     return retval;
 }
+
+// ****************************************************************************
+// Method: PP_ZFileReader::GetMarkerMesh
+//
+// Purpose: Returns a pointer to the marker mesh or 0 if marker mesh wasn't
+//          requested
+//
+// Programmer: Mark C Miller
+// Creation:   18 February 2016
+// ****************************************************************************
+
+vtkDataSet *
+PP_ZFileReader::GetMarkerMesh(int state, const char *mesh)
+{
+    vtkDataSet *retval = 0;
+
+    if (!have_nmarkATgnl) return 0;
+
+    if (strcmp(mesh, "marker")) return 0;
+
+    int nrcoords;
+    double *rcoords = 0;
+    pdb->GetDoubleArray("markrc@gnl", &rcoords, &nrcoords);
+    if (nrcoords != nmarkATgnl)
+    {
+        EXCEPTION2(UnexpectedValueException, nmarkATgnl, nrcoords);
+    }
+    if (!rcoords)
+    {
+        EXCEPTION1(InvalidVariableException, mesh);
+    }
+
+    int nzcoords;
+    double *zcoords = 0;
+    pdb->GetDoubleArray("markzc@gnl", &zcoords, &nzcoords);
+    if (nzcoords != nmarkATgnl)
+    {
+        EXCEPTION2(UnexpectedValueException, nmarkATgnl, nzcoords);
+    }
+    if (!zcoords)
+    {
+        EXCEPTION1(InvalidVariableException, mesh);
+    }
+
+    vtkPoints *points = vtkPoints::New();
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    for (int i = 0; i < nmarkATgnl; i++)
+    {
+        double pt[3];
+        pt[0] = zcoords[i];
+        pt[1] = rcoords[i];
+        pt[2] = 0;
+        vtkIdType id = points->InsertNextPoint(pt);
+        ugrid->InsertNextCell(VTK_VERTEX,1,&id);
+    }
+    ugrid->SetPoints(points);
+    points->Delete();
+
+    return ugrid;
+}
+
 
 // ****************************************************************************
 // Method: ConstructRayMesh_CreateMesh_3D
@@ -3188,6 +3320,76 @@ PP_ZFileReader::GetRayVar(int state, const std::string &varStr)
 }
 
 // ****************************************************************************
+// Method: PP_ZFileReader::GetMarkerVar
+//
+// Purpose: Returns data for a marker mesh variable
+//
+// Programmer: Mark C Miller
+// Creation: 18 February 2016
+// ****************************************************************************
+vtkDataArray *
+PP_ZFileReader::GetMarkerVar(int state, const std::string &varStr)
+{
+    vtkDataArray *retval = 0;
+
+    std::string tmpvar = varStr + "@gnl";
+    int ndims = -1;
+    int *dims = 0;
+    int nvals = -1;
+    TypeEnum etype = NO_TYPE;
+
+    void *vals = pdb->ReadValues(tmpvar.c_str(), &etype, &nvals, &dims, &ndims);
+    if (dims)
+        delete [] dims;
+    if (nvals != nmarkATgnl)
+    {
+        EXCEPTION2(UnexpectedValueException, nmarkATgnl, nvals);
+    }
+    if (!vals)
+    {
+        EXCEPTION1(InvalidVariableException, varStr);
+    }
+
+    switch (etype)
+    {
+        case CHAR_TYPE:
+        case CHARARRAY_TYPE:
+        {
+            retval = vtkCharArray::New();
+            break;
+        }
+        case INTEGER_TYPE:
+        case INTEGERARRAY_TYPE:
+        {
+            retval = vtkIntArray::New();
+            break;
+        }
+        case LONG_TYPE:
+        case LONGARRAY_TYPE:
+        {
+            retval = vtkLongArray::New();
+            break;
+        }
+        case FLOAT_TYPE:
+        case FLOATARRAY_TYPE:
+        {
+            retval = vtkFloatArray::New();
+            break;
+        }
+        case DOUBLE_TYPE:
+        case DOUBLEARRAY_TYPE:
+        {
+            retval = vtkDoubleArray::New();
+            break;
+        }
+    }
+
+    retval->SetVoidArray(vals, nvals, 0);
+    return retval;
+}
+ 
+
+// ****************************************************************************
 // Method: PP_ZFileReader::GetVar
 //
 // Purpose: 
@@ -3246,6 +3448,7 @@ PP_ZFileReader::GetVar(int state, const char *var)
     std::string revolved("revolved_mesh/");
     std::string ray("ray/");
     std::string ray3d("ray3d/");
+    std::string marker("marker/");
     std::string compBase("_comps/comp_");
     bool wantRevolvedMesh = false;
     if(varStr.substr(0, meshName.size()) == meshName)
@@ -3266,6 +3469,11 @@ PP_ZFileReader::GetVar(int state, const char *var)
     {
         varStr = varStr.substr(ray3d.size());
         return GetRayVar(state, varStr);
+    }
+    else if(have_nmarkATgnl && varStr.substr(0, marker.size()) == marker)
+    {
+        varStr = varStr.substr(marker.size());
+        return GetMarkerVar(state, varStr);
     }
 
 #ifndef USE_DECOMPOSE
