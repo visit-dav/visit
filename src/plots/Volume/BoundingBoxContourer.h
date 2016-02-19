@@ -58,6 +58,8 @@
 class BoundingBoxContourer
 {
   public:
+    BoundingBoxContourer();
+
     float x[8];
     float y[8];
     float z[8];
