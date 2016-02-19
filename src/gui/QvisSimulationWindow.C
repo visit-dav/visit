@@ -821,7 +821,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             char val[128];
             int row, column;
 
-            sscanf (value.toStdString().c_str(),"%d | %d | %s",
+            sscanf (value.toStdString().c_str(),"%d | %d | %127s",
                     &row, &column, val);
 
             debug5 << "found QTableWidget " << name.toStdString()
@@ -1241,7 +1241,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
       int index;
       char name[128];
       
-      sscanf (uiValues->GetSvalue().c_str(),"%d | %s", &index, name);
+      sscanf(uiValues->GetSvalue().c_str(),"%d | %127s", &index, name);
 
       switch( index )
       {
@@ -1273,7 +1273,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
       char name[128];
       double x, y;
       
-      sscanf (uiValues->GetSvalue().c_str(), "%s | %lf | %lf", name, &x, &y);
+      sscanf(uiValues->GetSvalue().c_str(), "%127s | %lf | %lf", name, &x, &y);
 
       double maxY;
       double minY;
