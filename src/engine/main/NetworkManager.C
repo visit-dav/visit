@@ -6778,12 +6778,17 @@ NetworkManager::RenderGeometry()
         }
         else
         {
+            int nranks = PAR_Size();
+
+            // Resize in case we have not rendered before. This is not common.
+            if(renderState.haveCells.empty())
+                renderState.haveCells.resize(nranks, 0);
+
             // make the list of ranks that need to composite
             // because they have local geometry. if a rank is not
             // in this list then it will do no compositing work.
             // rank 0 always receives the result, whether or not
             // it is in the list.
-            int nranks = PAR_Size();
             vector<int> ranksToComp;
             for (int i = 0; i < nranks; ++i)
                 if (renderState.haveCells[i])
