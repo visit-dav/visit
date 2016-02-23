@@ -82,7 +82,7 @@ bool
 avtXGCFileFormat::Identify(const char *fname)
 {
     string str(fname);
-    if (str.find("xgc.3d") != string::npos)
+    if (str.find("xgc.") != string::npos)
         return true;
     else if (str.find("xgc.particle") != string::npos)
         return true;
@@ -418,7 +418,8 @@ avtXGCFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
     vtkDataArray *conn = NULL, *nextNode = NULL;
     meshFile->ReadScalarData("/cell_set[0]/node_connect_list", timestate, &conn);
-    meshFile->ReadScalarData("/nextnode", timestate, &nextNode);
+    if (!meshFile->ReadScalarData("/nextnode", timestate, &nextNode))
+        meshFile->ReadScalarData("nextnode", timestate, &nextNode);
 
     //Create the points.
     double dPhi = 2.0*M_PI/(double)numPhi;
@@ -927,8 +928,10 @@ avtXGCFileFormat::Initialize()
     haveSepMesh = f.good();
 
     //Read in mesh/plane info.
-    meshFile->GetScalar("/n_n", numNodes);
-    meshFile->GetScalar("/n_t", numTris);
+    if (!meshFile->GetScalar("/n_n", numNodes))
+        meshFile->GetScalar("n_n", numNodes);
+    if (!meshFile->GetScalar("/n_t", numTris))
+        meshFile->GetScalar("n_t", numTris);
     if (!file->GetScalar("/nphi", numPhi))
         file->GetScalar("nphi", numPhi);
     
