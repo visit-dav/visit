@@ -120,7 +120,7 @@ avtMapper::avtMapper()
     globalAmbient = 0.;
     specularIsInappropriate = false;
     
-    drawSurfaces = false;
+    drawSurfaces = true;
     drawWireframe = false;
     drawPoints = false;
     wireframeColorByScalar =  pointsColorByScalar = false;
