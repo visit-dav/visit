@@ -2,7 +2,7 @@
 ## Setup VISITHOME & VISITARCH variables.
 ##
 SET(VISITHOME /home/biagas2/visit/thirdparty/2.10.0)
-SET(VISITHOMEQT5 /home/biagas2/visit/thirdparty/2.11.0)
+SET(VISITHOMEQT5 /home/biagas2/visit/thirdparty/3.0.0)
 
 ## Compiler flags.
 ##
@@ -52,7 +52,7 @@ endif()
 ## Qt
 ##
 if(VISIT_QT5)
-VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOMEQT5}/qt/5.5.1)
+VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOMEQT5}/qt/5.6.0-rc)
 else()
 VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/bin)
 endif()
@@ -135,7 +135,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_D
 ##
 ## MFEM
 ##
-VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/3.0.1)
+VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/3.1)
 
 ##
 ## PySide
