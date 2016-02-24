@@ -793,6 +793,9 @@ public:
 //   Burlen Loring, Thu Oct  8 14:41:11 PDT 2015
 //   fix leak of NetworkManager
 //
+//   Alok Hota, Tue Feb 23 19:10:32 PST 2016
+//   Add support for OSPRay.
+//
 // ****************************************************************************
 
 void
@@ -2336,6 +2339,12 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-no-launch-x") == 0)
         {
             this->launchXServers = false;
+        }
+        else if (strcmp(argv[i], "-ospray") == 0)
+        {
+            std::cout << "Engine found OSPRay flag" << std::endl;
+            debug5 << "Engine found OSPRay flag" << endl;
+            avtCallback::SetOSPRayMode(true);
         }
     }
     avtCallback::SetSoftwareRendering(!haveHWAccel);

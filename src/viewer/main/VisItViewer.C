@@ -63,6 +63,9 @@ static void LogGlxAndXdpyInfo();
 //   Kathleen Biagas, Wed Aug 28 14:34:55 PDT 2013
 //   Don't call LogGlxAndXdpyInfo if in nowin mode.
 //
+//   Alok Hota, Tue Feb 23 19:10:32 PST 2016
+//   Add OSPRay support.
+//
 // ****************************************************************************
 
 void
@@ -77,6 +80,11 @@ VisItViewer::Initialize(int *argc, char ***argv)
         {
             std::cerr << "setting Manta mode\n";
             avtCallback::SetMantaMode(true);
+        }
+        else if (strcmp((*argv)[i], "-ospray") == 0)
+        {
+            debug5 << "Viewer launching with OSPRay" << endl;
+            avtCallback::SetOSPRayMode(true);
         }
         else if (strcmp((*argv)[i], "-nowin") == 0)
         {

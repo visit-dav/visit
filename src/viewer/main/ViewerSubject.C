@@ -2373,6 +2373,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //    Kathleen Biagas, Fri Jan 22 14:09:28 PST 2016
 //    Use QStyleFactory for list of possible styles.
 //
+//    Alok Hota, Tue Feb 23 19:10:32 PST 2016
+//    Add -ospray argument.
+//
 // ****************************************************************************
 
 void
@@ -2636,6 +2639,10 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-manta") == 0)
         {
             avtCallback::SetMantaMode(true);
+        }
+        else if (strcmp(argv[i], "-ospray") == 0)
+        {
+            avtCallback::SetOSPRayMode(true);
         }
         else if (strcmp(argv[i], "-fullscreen") == 0)
         {

@@ -1146,6 +1146,13 @@ ELSE(VISIT_THREAD)
     MESSAGE(STATUS "Threading for VisIt: OFF")
 ENDIF(VISIT_THREAD)
 
+IF(VISIT_OSPRAY)
+    ADD_DEFINITIONS(-DVISIT_OSPRAY)
+    MESSAGE(STATUS "OSPRAY for VisIt: ON")
+ELSE(VISIT_OSPRAY)
+    MESSAGE(STATUS "OSPRAY for VisIt: OFF")
+ENDIF(VISIT_OSPRAY)
+
 #-----------------------------------------------------------------------------
 # If we are doing a static build or the VTK Python wrappers do not exist:
 #   Disable python filters.
