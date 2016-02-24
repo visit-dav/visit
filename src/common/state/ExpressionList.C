@@ -452,6 +452,9 @@ ExpressionList::CreateSubAttributeGroup(int)
 //   Brad Whitlock, Fri Dec 14 16:04:18 PST 2007
 //   Made it use ids.
 //
+//   Kathleen Biagas, Tue Feb 23 16:24:08 PST 2016
+//   Don't write Operator-created expressions.
+//
 // ****************************************************************************
 
 bool
@@ -470,7 +473,7 @@ ExpressionList::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         for(size_t i = 0; i < expressions.size(); ++i)
         {
             Expression *expr = (Expression *)expressions[i];
-            if(!expr->GetFromDB())
+            if(!expr->GetFromDB() && !expr->GetFromOperator())
             {
                 addToParent = true;
                 expr->CreateNode(node, completeSave, true);
