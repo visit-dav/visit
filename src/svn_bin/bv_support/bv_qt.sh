@@ -90,7 +90,7 @@ function bv_qt_qt5
     info "enabling Qt5.."
     bv_qt_enable
 
-    QT_VERSION="5.5.1"
+    QT_VERSION="5.6.0-rc"
     QT_FILE="qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"
     QT_BUILD_DIR="${QT_FILE%.tar*}"
     QT_BIN_DIR="${QT_BUILD_DIR}/bin"
@@ -443,12 +443,12 @@ function build_qt
     QT_VER_MSG="Qt4"
     if [[ $IS_QT5 == "yes" ]]; then
         QT_VER_MSG="Qt5"
-        qt_flags="${qt_flags} -skip webkit -skip webkit-examples"
+        qt_flags="${qt_flags} -skip 3d"
         qt_flags="${qt_flags} -skip sensors"
         qt_flags="${qt_flags} -skip doc"
         qt_flags="${qt_flags} -skip serialport"
-        qt_flags="${qt_flags} -skip quick1"
         qt_flags="${qt_flags} -skip quickcontrols"
+        qt_flags="${qt_flags} -skip quickcontrols2"
         qt_flags="${qt_flags} -skip connectivity"
         qt_flags="${qt_flags} -nomake examples"
         qt_flags="${qt_flags} -nomake tests"
