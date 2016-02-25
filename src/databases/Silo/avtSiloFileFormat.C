@@ -2688,6 +2688,10 @@ GetRestrictedMaterialIndices(const avtDatabaseMetaData *md, const char *const va
 //
 //    Mark C. Miller, Tue Feb  2 15:01:05 PST 2016
 //    Add support for all-empty multi-vars.
+//
+//    Mark C. Miller, Thu Feb 25 12:40:17 PST 2016
+//    Add logic to check mesh identified by mmesh_name member and then fall
+//    back to fuzzy match if it doesn't exist.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
@@ -2737,9 +2741,23 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                         DBGetDir(dbfile, cwd);
                         meshname = FileFunctions::Absname(cwd,mv->mmesh_name,"/");
                         meshname.erase(meshname.begin());
-                        debug5 << "Variable \"" << multivar_names[i] 
-                               << "\" indicates it is defined on mesh \""
-                               << meshname.c_str() << "\"" << endl;
+                        if (!DBInqVarExists(dbfile, meshname.c_str()))
+                        {
+                            debug5 << "Although 'mmesh_name' member indicates variable \"" << multivar_names[i] 
+                                   << "\" is defined on mesh \"" << meshname.c_str() << "\", "
+                                   << "the associated mesh does not exist." << endl;
+                            meshname = DetermineMultiMeshForSubVariable(dbfile,
+                                multivar_names[i], mv_ent, dirname);
+                            debug5 << "Guessing variable \"" << multivar_names[i] 
+                                   << "\" is defined on mesh \""
+                                   << meshname.c_str() << "\"" << endl;
+                        }
+                        else
+                        {
+                            debug5 << "Variable \"" << multivar_names[i] 
+                                   << "\" indicates it is defined on mesh \""
+                                   << meshname.c_str() << "\"" << endl;
+                        }
                     }
                     else
                     {
@@ -3674,6 +3692,10 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
 //
 //    Mark C. Miller, Tue Feb  2 15:01:05 PST 2016
 //    Add support for all-empty multi-mats.
+//
+//    Mark C. Miller, Thu Feb 25 12:40:17 PST 2016
+//    Add logic to check mesh identified by mmesh_name member and then fall
+//    back to fuzzy match if it doesn't exist.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
@@ -3820,9 +3842,23 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                     DBGetDir(dbfile, cwd);
                     meshname = FileFunctions::Absname(cwd,mm->mmesh_name,"/");
                     meshname.erase(meshname.begin());
-                    debug5 << "Material \"" << multimat_names[i]
-                           << "\" indicates it is defined on mesh \""
-                           << meshname.c_str() << "\"" << endl;
+                    if (!DBInqVarExists(dbfile, meshname.c_str()))
+                    {
+                        debug5 << "Although 'mmesh_name' member indicates material \"" << multimat_names[i]
+                               << "\" is defined on mesh \"" << meshname.c_str() << "\", "
+                               << "the associated mesh does not exist." << endl;
+                        meshname = DetermineMultiMeshForSubVariable(dbfile,
+                                       multimat_names[i], mm_ent, dirname);
+                        debug5 << "Guessing material \"" << multimat_names[i]
+                               << "\" is defined on mesh \""
+                               << meshname.c_str() << "\"" << endl;
+                    }
+                    else
+                    {
+                        debug5 << "Material \"" << multimat_names[i]
+                               << "\" indicates it is defined on mesh \""
+                               << meshname.c_str() << "\"" << endl;
+                    }
                 }
                 else if (!is_all_empty)
                 {
