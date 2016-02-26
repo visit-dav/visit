@@ -12,14 +12,8 @@ typedef struct
     void (*slot_valueChanged)(int, void*);
     void *slot_valueChanged_data;
 
-    void (*slot_textChanged)(char*, void*);
-    void *slot_textChanged_data;
-
     void (*slot_stateChanged)(int, void *);
     void *slot_stateChanged_data;
-
-    void (*slot_cellChanged)(char*, void *);
-    void *slot_cellChanged_data;
 
 } sim_ui_element;
 

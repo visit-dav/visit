@@ -147,62 +147,6 @@ void SimCommandSlots::ClickedHandler()
 }
 
 // ****************************************************************************
-// Method: SimCommandSlots::ToggledHandler
-//
-// Purpose:
-//   This is the ToggledHandler signal handler function. It is generated
-//   when the users changes a value on a custom UI widget.
-//
-// Programmer: Allen Sanderson
-// Creation:   Feb 6, 2016
-//
-// ****************************************************************************
-
-void SimCommandSlots::ToggledHandler(bool on)
-{
-    const QObject *ui = sender();
-    debug5 << "inside ToggledHandler signal" << endl;
-    if (ui)
-    {
-      debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
-      debug5 << "New Value = " << on << endl;
-    }
-    else
-      debug5 << "unknown signaler" << endl;
-    QString value = QString::number(on);
-    SendCMD("valueChanged(int)", ui, value);
-}
-
-// ****************************************************************************
-// Method: SimCommandSlots::CurrentIndexChangedHandler
-//
-// Purpose:
-//   This is the CurrentIndexChangedHandler signal handler function. It is
-//   generated when the users changes a value on a custom UI widget.
-//
-// Programmer: Allen Sanderson
-// Creation:   Feb 6, 2016
-//
-// ****************************************************************************
-
-void SimCommandSlots::CurrentIndexChangedHandler(int index)
-{
-    const QObject *ui = sender();
-    debug5 << "inside CurrentIndexChangedHandler signal" << endl;
-    if (ui)
-    {
-      debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
-      debug5 << "New Value = " << index << endl;
-    }
-    else
-      debug5 << "unknown signaler" << endl;
-    QString value = QString::number(index);
-    SendCMD("valueChanged(int)", ui, value);
-}
-
-// ****************************************************************************
 // Method: SimCommandSlots::ValueChangedHandler
 //
 // Purpose:
@@ -322,21 +266,25 @@ void SimCommandSlots::StateChangedHandler(int OnOff)
 }
 
 // ****************************************************************************
-// Method: SimCommandSlots::CellChangedHandler
+// Method: SimCommandSlots::CurrentChangedHandler
 //
 // Purpose:
-//   This is the CellChangedHandler signal handler function. It is generated
+//   This is the CurrentChangedHandler signal handler function. It is generated
 //   when the users changes a text value inside a text custom UI widget.
 //
-// Programmer: Allen Sanderson
-// Creation:   Feb 6, 2016
+// Programmer: Shelly Prevost
+// Creation:   Jan 6, 2006
+//
+// Modifications:
+//   Brad Whitlock, Tue Jul  8 11:28:04 PDT 2008
+//   Qt 4.
 //
 // ****************************************************************************
 
-void SimCommandSlots::CellChangedHandler(int row, int col)
+void SimCommandSlots::CurrentChangedHandler(int row, int col)
 {
     const QObject *ui = sender();
-    debug5 << "inside CellChangedHandler signal" << endl;
+    debug5 << "inside CurrentChangedHandler signal" << endl;
     QString tvalue;
     if (ui)
     {
@@ -348,11 +296,44 @@ void SimCommandSlots::CellChangedHandler(int row, int col)
     }
     else
         debug5 << "unknown signaler" << endl;
+    QString value = QString::number(row) + ";" + QString::number(col) + ";" + tvalue;
+    SendCMD("currentChanged(int,int)", ui, value);
+}
 
-    QString value =
-      QString::number(row) + " | " + QString::number(col) + " | " + tvalue;
 
-    SendCMD("cellChanged(int,int)", ui, value);
+// ****************************************************************************
+// Method: SimCommandSlots::ValueChangedHandler
+//
+// Purpose:
+//   This is the CurrentChangedHandler signal handler function. It is generated
+//   when the users changes a text value inside a text custom UI widget.
+//
+// Programmer: Shelly Prevost
+// Creation:   Mon Jun 18 16:56:13 PDT 2007
+//
+// Modifications:
+//   Brad Whitlock, Tue Jul  8 11:28:04 PDT 2008
+//   Qt 4.
+//
+// ****************************************************************************
+
+void SimCommandSlots::ValueChangedHandler(int row, int col)
+{
+    const QObject *ui = sender();
+    debug5 << "inside ValueChangedHandler signal" << endl;
+    QString tvalue;
+    if (ui)
+    {
+        debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
+               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
+        tvalue = ((QTableWidget *)ui)->item(row, col)->text();
+        debug5 << "New Value row,col,text = " << row << ", " << col << ", "
+               << tvalue.toStdString() << endl;
+    }
+    else
+        debug5 << "unknown signaler" << endl;
+    QString value = QString::number(row) + ";" + QString::number(col) + ";" + tvalue;
+    SendCMD("valueChanged(int,int)", ui, value);
 }
 
 // ****************************************************************************
@@ -372,7 +353,7 @@ void SimCommandSlots::CellChangedHandler(int row, int col)
 void SimCommandSlots::ActivatedHandler(int index)
 {
     const QObject *ui = sender();
-    debug5 << "inside ActivateHandler signal" << endl;
+    debug5 << "inside ValueChangedHandler signal" << endl;
     if (ui)
     {
         debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
@@ -411,5 +392,5 @@ void SimCommandSlots::TextChangedHandler(const QString &newText)
     }
     else
         debug5 << "unknown signaler" << endl;
-    SendCMD("textChanged(char *)", ui, newText);
+    SendCMD("textChanged(QString)", ui, newText);
 }

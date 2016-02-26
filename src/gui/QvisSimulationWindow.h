@@ -131,8 +131,7 @@ private:
     QString GetUIFileDirectory() const;
     QString GetUIFile(const QString &key) const;
     void CreateCommandUI();
-    // void UpdateSimulationUI(const avtDatabaseMetaData *md);
-    // void UpdateCustomUI (const avtDatabaseMetaData *md);
+    void UpdateSimulationUI(const avtDatabaseMetaData *md);
     void UpdateUIComponent(QWidget *window, const QString &name, const QString &value, bool e);
 
     void ViewerSendCMD ( int simIndex, QString cmd);
@@ -177,8 +176,8 @@ private:
     QvisUiLoader       *uiLoader;
     QMap<int,int>      simulationToEngineListMap;
     QvisStripChartMgr  *stripCharts;
-    QvisSimulationCommandWindow  *simCommands;
-    QvisSimulationMessageWindow  *simMessages;
+    QvisSimulationMessageWindow *simMessages;
+    QvisSimulationCommandWindow *simCommands;
 };
 
 #endif

@@ -72,22 +72,6 @@ VisIt_CommandMetaData_getName(visit_handle h, char **val)
         (h, val));
 }
 
-int
-VisIt_CommandMetaData_setEnabled(visit_handle h, int val)
-{
-    VISIT_DYNAMIC_EXECUTE(CommandMetaData_setEnabled,
-        int, (visit_handle, int),
-        (h, val));
-}
-
-int
-VisIt_CommandMetaData_getEnabled(visit_handle h, int *val)
-{
-    VISIT_DYNAMIC_EXECUTE(CommandMetaData_getEnabled,
-        int, (visit_handle, int*),
-        (h, val));
-}
-
 
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
@@ -95,8 +79,6 @@ VisIt_CommandMetaData_getEnabled(visit_handle h, int *val)
 #define F_VISITMDCMDFREE                  F77_ID(visitmdcmdfree_,visitmdcmdfree,VISITMDCMDFREE)
 #define F_VISITMDCMDSETNAME               F77_ID(visitmdcmdsetname_,visitmdcmdsetname, VISITMDCMDSETNAME)
 #define F_VISITMDCMDGETNAME               F77_ID(visitmdcmdgetname_,visitmdcmdgetname, VISITMDCMDGETNAME)
-#define F_VISITMDCMDSETENABLED            F77_ID(visitmdcmdsetenabled_,visitmdcmdsetenabled, VISITMDCMDSETENABLED)
-#define F_VISITMDCMDGETENABLED            F77_ID(visitmdcmdgetenabled_,visitmdcmdgetenabled, VISITMDCMDGETENABLED)
 
 int
 F_VISITMDCMDALLOC(visit_handle *h)
@@ -132,17 +114,5 @@ F_VISITMDCMDGETNAME(visit_handle *h, char *val, int *lval)
         free(s);
     }
     return retval;
-}
-
-int
-F_VISITMDCMDSETENABLED(visit_handle *h, int *val)
-{
-    return VisIt_CommandMetaData_setEnabled(*h, *val);
-}
-
-int
-F_VISITMDCMDGETENABLED(visit_handle *h, int *val)
-{
-    return VisIt_CommandMetaData_getEnabled(*h, val);
 }
 

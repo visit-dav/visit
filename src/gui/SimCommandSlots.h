@@ -76,15 +76,14 @@ public:
 public slots:
     void SimCommands() {printf("command Slot Fired\n");};
     void ClickedHandler();
-    void ToggledHandler(bool);
-    void CurrentIndexChangedHandler(int);
     void TextChangedHandler(const QString &);
     void ValueChangedHandler(int);
     void ValueChangedHandler(const QTime &theTime);
     void ValueChangedHandler(const QDate &theDate);
     void ActivatedHandler(int);
     void StateChangedHandler(int);
-    void CellChangedHandler(int, int);
+    void CurrentChangedHandler(int, int);
+    void ValueChangedHandler(int, int);
     int  SendCMD(QString sig, const  QObject *ui,QString value);
 
 private:

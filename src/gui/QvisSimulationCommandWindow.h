@@ -75,17 +75,12 @@ public:
 
     int  numCommandButtons() const;
     bool setButtonCommand(int index, const QString &cmd);
-    bool setButtonEnabled(int index, bool enabled, bool clearText);
+    bool setButtonEnabled(int index, bool);
     void setCustomButtonEnabled(bool);
     void setTimeValues(bool timeRanging, 
                        const QString &start, 
                        const QString &stop,
                        const QString &step);
-
-    void setTimeRanging(bool timeRanging);
-    void setTimeStart(const QString &start);
-    void setTimeStep(const QString &step);
-    void setTimeStop(const QString &stop);
 
 signals:
     void executeButtonCommand(const QString &cmd);
@@ -99,9 +94,9 @@ public slots:
     void unpost();
 private slots:
     void handleTimeRanging(bool);
-    void handleStart(const QString&);
-    void handleStop(const QString&);
-    void handleStep(const QString&);
+    void handleStart();
+    void handleStop();
+    void handleStep();
     void handleCommandButton(int);
 protected:
     virtual void CreateWindowContents();

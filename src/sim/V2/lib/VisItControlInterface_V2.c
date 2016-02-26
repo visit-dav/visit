@@ -524,24 +524,13 @@ GetEnvironment(visit_string *env)
         done = ReadEnvironmentFromCommand(path, env);
     }
 
-    /* Try the one in their VISIT_HOME environment var next */
-    if (!done)
-    {
-      if(getenv("VISIT_HOME") != NULL)
-      {
-        char path[LIBSIM_MAX_STRING_SIZE];
-        sprintf(path, "%s/bin/visit", getenv("VISIT_HOME"));
-        done = ReadEnvironmentFromCommand(path, env);
-      }
-    }
-
     /* Try the one in their path next */
     if (!done)
     {
         done = ReadEnvironmentFromCommand("visit", env);
     }
 
-    /* If we still can't find it, try the LLNL path /usr/gapps/visit */
+    /* If we still can't find it, try the one in /usr/gapps/visit */
     if (!done)
     {
         done = ReadEnvironmentFromCommand("/usr/gapps/visit/bin/visit", env);
@@ -1832,8 +1821,8 @@ static int LoadVisItLibrary_Windows(void)
     {
         WCHAR msg[1024];
         va_list *va = 0;
-        LIBSIM_MESSAGE1("Error: %d", GetLastError());
-        LIBSIM_MESSAGE1("Error: %x", GetLastError());
+LIBSIM_MESSAGE1("Error: %d", GetLastError());
+LIBSIM_MESSAGE1("Error: %x", GetLastError());
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError(), 0,
                       msg, 1024, va);
         wprintf(L"Formatted message: %s\n", msg);
@@ -4161,38 +4150,6 @@ VisItUI_valueChanged(const char *name, void (*cb)(int,void*), void *cbdata)
 }
 
 int
-VisItUI_textChanged(const char *name, void (*cb)(char*,void*), void *cbdata)
-{
-    int retval = VISIT_ERROR;
-    sim_ui_element *e = NULL;
-    LIBSIM_API_ENTER(VisItUI_textChanged);
-    if((e = sim_ui_get(name)) != NULL)
-    {
-        e->slot_textChanged = cb;
-        e->slot_textChanged_data = cbdata;
-        retval = VISIT_OKAY;
-    }
-    LIBSIM_API_LEAVE(VisItUI_textChanged);
-    return retval;
-}
-
-int
-VisItUI_cellChanged(const char *name, void (*cb)(char*,void*), void *cbdata)
-{
-    int retval = VISIT_ERROR;
-    sim_ui_element *e = NULL;
-    LIBSIM_API_ENTER(VisItUI_cellChanged);
-    if((e = sim_ui_get(name)) != NULL)
-    {
-        e->slot_cellChanged = cb;
-        e->slot_cellChanged_data = cbdata;
-        retval = VISIT_OKAY;
-    }
-    LIBSIM_API_LEAVE(VisItUI_cellChanged);
-    return retval;
-}
-
-int
 VisItUI_setValueI(const char *name, int value, int enabled)
 {
     int retval = VISIT_ERROR;
@@ -4202,25 +4159,7 @@ VisItUI_setValueI(const char *name, int value, int enabled)
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         char cmd[500];
-        sprintf(cmd, "SetUI:s:%s:%d:%d", name, value, enabled?1:0);
-        (*callbacks->control.execute_command)(engine, cmd);
-        retval = VISIT_OKAY;
-    }
-    LIBSIM_API_LEAVE(VisItUI_setValueI)
-    return retval;
-}
-
-int
-VisItUI_setValueD(const char *name, double value, int enabled)
-{
-    int retval = VISIT_ERROR;
-
-    LIBSIM_API_ENTER(VisItUI_setValueI);
-    /* Make sure the function exists before using it. */
-    if (engine && callbacks != NULL && callbacks->control.execute_command)
-    {
-        char cmd[500];
-        sprintf(cmd, "SetUI:s:%s:%lf:%d", name, value, enabled?1:0);
+        sprintf(cmd, "SetUI:i:%s:%d:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
     }
@@ -4246,87 +4185,6 @@ VisItUI_setValueS(const char *name, const char *value, int enabled)
     return retval;
 }
 
-
-int
-VisItUI_setTableValueI(const char *name,
-                       int row, int column, int value, int enabled)
-{
-    int retval = VISIT_ERROR;
-
-    LIBSIM_API_ENTER(VisItUI_setTableValueI);
-    /* Make sure the function exists before using it. */
-    if (engine && callbacks != NULL && callbacks->control.execute_command)
-    {
-        char cmd[500];
-        sprintf(cmd, "SetUI:s:%s:%d | %d | %d :%d",
-                name, row, column, value, enabled?1:0);
-        (*callbacks->control.execute_command)(engine, cmd);
-        retval = VISIT_OKAY;
-    }
-    LIBSIM_API_LEAVE(VisItUI_setTableValueI)
-    return retval;
-}
-
-int
-VisItUI_setTableValueD(const char *name,
-                       int row, int column, double value, int enabled)
-{
-    int retval = VISIT_ERROR;
-
-    LIBSIM_API_ENTER(VisItUI_setTableValueI);
-    /* Make sure the function exists before using it. */
-    if (engine && callbacks != NULL && callbacks->control.execute_command)
-    {
-        char cmd[500];
-        sprintf(cmd, "SetUI:s:%s:%d | %d | %lf :%d",
-                name, row, column, value, enabled?1:0);
-        (*callbacks->control.execute_command)(engine, cmd);
-        retval = VISIT_OKAY;
-    }
-    LIBSIM_API_LEAVE(VisItUI_setTableValueI)
-    return retval;
-}
-
-int
-VisItUI_setTableValueV(const char *name,
-                       int row, int column, double x, double y, double z, int enabled)
-{
-    int retval = VISIT_ERROR;
-
-    LIBSIM_API_ENTER(VisItUI_setTableValueV);
-    /* Make sure the function exists before using it. */
-    if (engine && callbacks != NULL && callbacks->control.execute_command)
-    {
-        char cmd[500];
-        sprintf(cmd, "SetUI:s:%s:%d | %d | %lf,%lf,%lf :%d",
-                name, row, column, x, y, z, enabled?1:0);
-        (*callbacks->control.execute_command)(engine, cmd);
-        retval = VISIT_OKAY;
-    }
-    LIBSIM_API_LEAVE(VisItUI_setTableValueV)
-    return retval;
-}
-
-int
-VisItUI_setTableValueS(const char *name,
-                       int row, int column, const char *value, int enabled)
-{
-    int retval = VISIT_ERROR;
-
-    LIBSIM_API_ENTER(VisItUI_setTableValueS);
-    /* Make sure the function exists before using it. */
-    if (engine && callbacks != NULL && callbacks->control.execute_command)
-    {
-        char cmd[500];
-        sprintf(cmd, "SetUI:s:%s:%d | %d | %s :%d",
-                name, row, column, value, enabled?1:0);
-        (*callbacks->control.execute_command)(engine, cmd);
-        retval = VISIT_OKAY;
-    }
-    LIBSIM_API_LEAVE(VisItUI_setTableValueS)
-    return retval;
-}
- 
 /***************************************************************************
 
                         EXPERIMENTAL PLOTTING CODE

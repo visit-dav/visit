@@ -146,7 +146,6 @@ public:
     int  getCurrentCycle();
     
 public slots:
-    void reset( const int index );
     void reset();
     void zoomIn();
     void zoomOut();

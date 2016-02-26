@@ -73,7 +73,6 @@ simv2_ExpressionMetaData.C
 simv2_MaterialData.C
 simv2_MaterialMetaData.C
 simv2_MeshMetaData.C
-simv2_MessageMetaData.C
 simv2_NameList.C
 simv2_OptionList.C
 simv2_PointMesh.C

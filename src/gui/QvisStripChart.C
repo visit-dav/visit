@@ -77,6 +77,7 @@
 //
 // ****************************************************************************
 
+
 VisItSimStripChart::VisItSimStripChart(QWidget *parent, int winX, int winY )
     : QWidget(parent)
 {
@@ -91,7 +92,7 @@ VisItSimStripChart::VisItSimStripChart(QWidget *parent, int winX, int winY )
     winYSize = winY;
     maxPoint = 1.0;
     minPoint =-1.0;
-    minData =  std::numeric_limits<double>::max();
+    minData = std::numeric_limits<double>::max();
     maxData = -std::numeric_limits<double>::max();
     resize(winX,winY);
     enableLogScale = false;
@@ -134,6 +135,7 @@ VisItSimStripChart::~VisItSimStripChart()
 {
 // cleanup
 }
+
 
 // ****************************************************************************
 // Method: VisItSimStripChart::paintEvent
@@ -241,6 +243,8 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
     }
 }
 
+
+
 // ****************************************************************************
 // Method: VisItSimStripChart::paintGrid
 //
@@ -264,36 +268,34 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
 //    Qt 4.
 //
 // ****************************************************************************
+
 void VisItSimStripChart::paintGrid(QPainter *paint)
 {
     float w = width();
     float h = height();
-    float gridRes = 5.0*zoom;
-    float range = maxPoint - minPoint;
+    float gridRes = 15.0*zoom;
+    float range = maxPoint -minPoint;
     delta = 10.0;
     vdelta = (h/range);
     middle = (range/2.0)+minPoint;
     if ( points.empty()) return;
-
     float last = points.back().x();
-
-    // draw verticle lines
-    for ( int i=int(0); i<last*delta; i+=int(delta*10)) 
+    for ( int i=int(0); i<last*delta; i+= int(delta*10)) 
     {   
+        // draw verticle lines
         paint->setPen(Qt::darkGray); // set pen color
         paint->drawLine(QPoint(int(i+timeShift),int(0)), QPoint(i+timeShift,int(h*5.0) )); // draw line
     }    
 
-    // draw horizontal lines
     for ( float i=-range; i<=range*5.0; i+=range/gridRes)
-    {
+    {// draw horizontal lines
         paint->setPen(Qt::black); // set pen color
         paint->drawLine( QPoint(int(0),int(h-(i*vdelta))), QPoint(int(w),int(h-(i*vdelta)))); // draw line
         paint->drawText( int(0),   int(h-(i*vdelta)), QString::number(i+minPoint));
         // be careful not to draw over the other numbers.
-        // if ( (w-timeShift) > 200)
-        //    paint->drawText( int(w-80),int(h-(i*vdelta)),QString::number(i+minPoint));
-        // paint->drawText( timeShift,int(h-(i*vdelta)), QString::number(i+minPoint));
+        if ( (w-timeShift) > 200)
+           paint->drawText( int(w-80),int(h-(i*vdelta)),QString::number(i+minPoint));
+        paint->drawText( timeShift,int(h-(i*vdelta)), QString::number(i+minPoint));
         for ( int t=int(0); t<int(last*delta); t+=int(delta)) 
         {
             // draw verticle tick lines
@@ -303,6 +305,8 @@ void VisItSimStripChart::paintGrid(QPainter *paint)
     }    
     setWindowTitle(tr("Strip chart"));
 }
+
+
 
 // ****************************************************************************
 // Method: VisItSimStripChart::mousePressEvent
@@ -323,6 +327,7 @@ void VisItSimStripChart::paintGrid(QPainter *paint)
 //  
 //   
 // ****************************************************************************
+
 
 void VisItSimStripChart::mousePressEvent( QMouseEvent * )
 {
@@ -354,36 +359,35 @@ void VisItSimStripChart::mousePressEvent( QMouseEvent * )
 // 
 // ****************************************************************************
 
+
 bool VisItSimStripChart::addDataPoint( double x, double y )
 {
     float additionalMargin;
     bool outOfBounds = false;
-
+    currentData = y;
     currentCycle = x;
-    currentData  = y;
+    // special startup processing
+    if (points.size() < 2)
+    {
+        additionalMargin =0.3f;
+        maxPoint = maxData = y + ( fabs(y) * 0.1);
+        minPoint = minData = y - ( fabs(y) * 0.1);
+    }
+        else
+            additionalMargin = 0.2f;
 
     if (maxData < y) maxData = y;
     if (minData > y) minData = y;
     
-    // special startup processing
-    if (points.size() < 1)
-    {
-        additionalMargin = 0.3f;
-        maxPoint = y + (fabs(y) * 0.1);
-        minPoint = y - (fabs(y) * 0.1);
-    }
-    else
-        additionalMargin = 0.2f;
-
     if (maxPoint < y)
     {
-        maxPoint = y + fabs(y) * additionalMargin;
-        maxPoint = (int(maxPoint + 9.99) / 10) * 10;
+        maxPoint = y + fabs(y) *additionalMargin;
+        maxPoint = (int(maxPoint + 9.99) / 10) *10;
     }
     if (minPoint > y)
     {
-        minPoint = y - fabs(y) * additionalMargin;
-        minPoint = (int(minPoint - 9.99) / 10) * 10;
+        minPoint = y - fabs(y)*additionalMargin;
+        minPoint = (int(minPoint - 9.99) / 10) *10;
     }
 
     // add point
@@ -396,9 +400,9 @@ bool VisItSimStripChart::addDataPoint( double x, double y )
          if (data.y() > maxYLimit || data.y() < minYLimit )
          outOfBounds = true;
      }
-
-     return outOfBounds;
+    return outOfBounds;
 }
+
 
 // ****************************************************************************
 // Method: VisItSimStripChart::mouseReleaseEvent
@@ -417,8 +421,10 @@ bool VisItSimStripChart::addDataPoint( double x, double y )
 //   
 // ****************************************************************************
 
+
 void VisItSimStripChart::mouseReleaseEvent( QMouseEvent * )
 {
+
 }
 
 // ****************************************************************************
@@ -435,7 +441,6 @@ void VisItSimStripChart::mouseReleaseEvent( QMouseEvent * )
 //    made parameter positions consitent with other functions
 //   
 // ****************************************************************************
-
 void VisItSimStripChart::setOutOfBandLimits( double minY, double maxY )
 {
    minYLimit = minY;
@@ -456,7 +461,6 @@ void VisItSimStripChart::setOutOfBandLimits( double minY, double maxY )
 //    made parameter positions consitent with other functions
 //   
 // ****************************************************************************
-
 void VisItSimStripChart::getOutOfBandLimits( double &minY, double &maxY )
 {
    minY = minYLimit;
@@ -476,13 +480,11 @@ void VisItSimStripChart::getOutOfBandLimits( double &minY, double &maxY )
 //
 //
 // ****************************************************************************
-
 void VisItSimStripChart::getMinMaxData( double &minY, double &maxY )
 {
    minY = minData;
    maxY = maxData;
 }
-
 // ****************************************************************************
 // Method: VisItSimStripChart::getCurrentData
 //
@@ -496,7 +498,6 @@ void VisItSimStripChart::getMinMaxData( double &minY, double &maxY )
 //
 //
 // ****************************************************************************
-
 double VisItSimStripChart::getCurrentData( )
 {
    return currentData;
@@ -515,7 +516,6 @@ double VisItSimStripChart::getCurrentData( )
 //
 //
 // ****************************************************************************
-
 int VisItSimStripChart::getCurrentCycle( )
 {
    return currentCycle;
@@ -534,7 +534,6 @@ int VisItSimStripChart::getCurrentCycle( )
 //  
 //   
 // ****************************************************************************
-
 void VisItSimStripChart::enableOutOfBandLimits( bool enable )
 {
    outOfBandLimitsEnabled = enable;
@@ -553,7 +552,6 @@ void VisItSimStripChart::enableOutOfBandLimits( bool enable )
 //  
 //   
 // ****************************************************************************
-
 bool VisItSimStripChart::getEnableOutOfBandLimits()
 {
     return outOfBandLimitsEnabled;
@@ -572,7 +570,6 @@ bool VisItSimStripChart::getEnableOutOfBandLimits()
 //  
 //   
 // ****************************************************************************
-
 void VisItSimStripChart::setEnableLogScale( bool enable )
 {
    enableLogScale = enable;
@@ -591,7 +588,6 @@ void VisItSimStripChart::setEnableLogScale( bool enable )
 //  
 //   
 // ****************************************************************************
-
 bool VisItSimStripChart::getEnableLogScale()
 {
     return enableLogScale;
@@ -613,7 +609,6 @@ bool VisItSimStripChart::getEnableLogScale()
 //  
 //   
 // ****************************************************************************
-
 void VisItSimStripChart::mouseMoveEvent( QMouseEvent *e )
 {
 }
@@ -638,6 +633,7 @@ void VisItSimStripChart::mouseMoveEvent( QMouseEvent *e )
 bool VisItSimStripChart::getEnable( )
 {
     return enabled;
+
 }
 
 // ****************************************************************************
@@ -660,6 +656,7 @@ bool VisItSimStripChart::getEnable( )
 void VisItSimStripChart::setEnable( bool enable )
 {
     enabled = enable;
+
 }
 
 // ****************************************************************************
@@ -686,8 +683,8 @@ void VisItSimStripChart::setEnable( bool enable )
 void VisItSimStripChart::zoomIn()
 {
     zoom += 0.25;
-    if( zoom > 3.0 ) zoom =3.0;
-    if( zoom <= zoomOutLimit ) zoom = zoomOutLimit;
+    if(zoom > 3.0 )  zoom =3.0;
+    if (zoom <= zoomOutLimit) zoom = zoomOutLimit;
     setFontSize();
 }
 
@@ -713,58 +710,6 @@ void VisItSimStripChart::setFontSize()
     if ( zoom  > 0.5 )  pointSize = 14;
     if ( zoom  > 1.0 )  pointSize = 10;
     if ( zoom  > 1.25)  pointSize = 6;
-}
-
-// ****************************************************************************
-// Method: VisItSimStripChart::reset
-//
-// Purpose:
-//   This function is to reset the strip chart back to
-//   it's original state.
-//
-// Arguments:
-//
-// Programmer: Shelly Prevost
-// Creation:   Wed Oct 10 11:27:08 PDT 2007
-//
-// Modifications:
-//  
-// ****************************************************************************
-
-void VisItSimStripChart::reset()
-{
-
-    delta = 0;
-    vdelta = 0;
-    maxPoint =  1.0;
-    minPoint = -1.0;
-    minData =  std::numeric_limits<double>::max();
-    maxData = -std::numeric_limits<double>::max();
-    currentData = 0.0;
-    currentCycle = 0;
-    currentScaledY = 0;
-    
-    //enableLogScale = false;
-   
-    // set the timeshift offset to start at the right side of the 
-    // window.
-    timeShift = width();
-    
-    setOutOfBandLimits( -std::numeric_limits<double>::max(),std::numeric_limits<double>::max());
-    points.clear();
-    // create in disabled mode
-    enabled = false;
-    outOfBandLimitsEnabled = 0;
-    // Used to scale up and down the y axis in the strip chart
-    zoom =1.0;
-    center = false;
-    // controls maximum amount you can zoom out.
-    zoomOutLimit = 0.001;
-    pointSize = 14;
-    gridFont = new QFont("Helvetica");
-    setFont(*gridFont);
-
-    update();
 }
 
 // ****************************************************************************
@@ -794,10 +739,63 @@ void VisItSimStripChart::zoomOut()
     else  zoom = zoom/2.0;
     if (zoom <= zoomOutLimit ) zoom = zoomOutLimit;
     setFontSize();
+
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::focus
+// Method: VisItSimStripChart::reset
+//
+// Purpose:
+//   This function is to reset the strip chart back to
+//   it's original state.
+//
+// Arguments:
+//
+// Programmer: Shelly Prevost
+// Creation:   Wed Oct 10 11:27:08 PDT 2007
+//
+// Modifications:
+//  
+// ****************************************************************************
+void VisItSimStripChart::reset()
+{
+
+    delta = 0;
+    vdelta = 0;
+    maxPoint = 1.0;
+    minPoint =-1.0;
+    minData = std::numeric_limits<double>::max();
+    maxData = -std::numeric_limits<double>::max();
+    currentData = 0.0;
+    currentCycle = 0;
+    currentScaledY=0;
+    
+    //enableLogScale = false;
+   
+    // set the timeshift offset to start at the right side of the 
+    // window.
+    timeShift = width();
+    
+    setOutOfBandLimits( -std::numeric_limits<double>::max(),std::numeric_limits<double>::max());
+    points.clear();
+    // create in disabled mode
+    enabled = false;
+    outOfBandLimitsEnabled = 0;
+    // Used to scale up and down the y axis in the strip chart
+    zoom =1.0;
+    center = false;
+    // controls maximum amount you can zoom out.
+    zoomOutLimit = 0.001;
+    pointSize = 14;
+    gridFont = new QFont("Helvetica");
+    setFont(*gridFont);
+
+    update();
+}
+
+
+// ****************************************************************************
+// Method: VisItSimStripChart::ZoomIn
 //
 // Purpose:
 //   This function is to center on the last data point.

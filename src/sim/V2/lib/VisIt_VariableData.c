@@ -67,13 +67,32 @@ VisIt_VariableData_setData(visit_handle obj, int owner, int dataType,
                     (obj,owner,dataType,ncomps,ntuples,ptr));
 }
 
+static int
+VisIt_VariableData_setDataEx1(visit_handle obj, int owner, int dataType,
+     int ncomps, int ntuples, void *ptr)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableData_setData,
+                    int, (visit_handle,int,int,int,int,void*),
+                    (obj,owner,dataType,ncomps,ntuples,ptr));
+}
+
+static int
+VisIt_VariableData_setDataEx2(visit_handle obj, 
+    void(*callback)(void*), void *callbackData)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableData_setDeletionCallback,
+                    int, (visit_handle,void(*)(void*),void*),
+                   (obj,callback,callbackData));
+}
+
 int
 VisIt_VariableData_setDataEx(visit_handle obj, int owner, int dataType,
      int ncomps, int ntuples, void *ptr, void(*callback)(void*), void *callbackData)
 {
-    VISIT_DYNAMIC_EXECUTE(VariableData_setDataEx,
-                    int, (visit_handle,int,int,int,int,void*,void(*)(void*),void*),
-                    (obj,owner,dataType,ncomps,ntuples,ptr,callback,callbackData));
+    int retval = VisIt_VariableData_setDataEx1(obj, owner, dataType, ncomps, ntuples, ptr);
+    if(retval == VISIT_OKAY)
+        retval = VisIt_VariableData_setDataEx2(obj, callback, callbackData);
+    return retval;
 }
 
 #define DEFINE_SET_DATA(FUNC, CTYPE, VISITTYPE) \

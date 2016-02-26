@@ -115,9 +115,8 @@ QvisSimulationCommandWindow::CreateWindowContents()
     EnsureButtonExists(5, added);
 
     // Create time controls.
-    timeGroup = new QGroupBox(tr("Enable time cycle ranging"), central);
+    timeGroup = new QGroupBox(tr("Enable time ranging"), central);
     timeGroup->setCheckable(true);
-    timeGroup->setChecked(false);
     connect(timeGroup, SIGNAL(toggled(bool)),
             this, SLOT(handleTimeRanging(bool)));
     topLayout->addWidget(timeGroup);
@@ -126,29 +125,23 @@ QvisSimulationCommandWindow::CreateWindowContents()
     startCycle = new QLineEdit(timeGroup);
     startLabel = new QLabel(timeGroup);
     startLabel->setText(tr("Start"));
-    startCycle->setText(tr("0"));
     timeLayout->addWidget(startLabel,0,0);
     timeLayout->addWidget(startCycle,0,1);
-    connect(startCycle,SIGNAL(textChanged(const QString &)),
-            this,SLOT(handleStart(const QString&)));
+    connect(startCycle,SIGNAL(returnPressed()),this,SLOT(handleStart()));
 
     stepCycle = new QLineEdit(timeGroup);
     stepLabel = new QLabel(timeGroup);
     stepLabel->setText(tr("Step"));
-    stepCycle->setText(tr("1"));
     timeLayout->addWidget(stepLabel,0,2);
     timeLayout->addWidget(stepCycle,0,3);
-    connect(stepCycle,SIGNAL(textChanged(const QString &)),
-            this,SLOT(handleStep(const QString&)));
+    connect(stepCycle,SIGNAL(returnPressed()),this,SLOT(handleStep()));
     
     stopCycle = new QLineEdit(timeGroup);
     stopLabel = new QLabel(timeGroup);
     stopLabel->setText(tr("Stop"));
-    stopCycle->setText(tr("0"));
     timeLayout->addWidget(stopLabel,0,4);
     timeLayout->addWidget(stopCycle,0,5);
-    connect(stopCycle,SIGNAL(textChanged(const QString &)),
-            this,SLOT(handleStop(const QString&)));
+    connect(stopCycle,SIGNAL(returnPressed()),this,SLOT(handleStop()));
 }
 
 int
@@ -167,14 +160,14 @@ QvisSimulationCommandWindow::setButtonCommand(int index, const QString &cmd)
 }
 
 bool
-QvisSimulationCommandWindow::setButtonEnabled(int index, bool enabled, bool clearText)
+QvisSimulationCommandWindow::setButtonEnabled(int index, bool enabled)
 {
     bool added = false;
     if(EnsureButtonExists(index, added))
     {
         QAbstractButton *b = commandGroup->buttons().at(index);
         b->setEnabled(enabled);
-        if(!enabled && clearText)
+        if(!enabled)
             b->setText("");
     }
     return added;
@@ -226,30 +219,6 @@ QvisSimulationCommandWindow::setTimeValues(bool timeRanging,
     stepCycle->setText(step);
 }
 
-void
-QvisSimulationCommandWindow::setTimeRanging(bool timeRanging)
-{
-    timeGroup->setChecked(timeRanging);
-}
-
-void
-QvisSimulationCommandWindow::setTimeStart(const QString &start)
-{
-    startCycle->setText(start);
-}
-
-void
-QvisSimulationCommandWindow::setTimeStep(const QString &step)
-{
-    stepCycle->setText(step);
-}
-
-void
-QvisSimulationCommandWindow::setTimeStop(const QString &stop)
-{
-    stopCycle->setText(stop);
-}
-
 //
 // Qt slots
 //
@@ -263,13 +232,16 @@ QvisSimulationCommandWindow::handleCommandButton(int btn)
 void
 QvisSimulationCommandWindow::handleTimeRanging(bool b)
 {
-    QString value(tr("%1").arg(b));
-    if(!value.isEmpty())
-        emit timeRangingToggled(value);
+    if(b)
+    {
+        QString value(startCycle->text().trimmed());
+        if(!value.isEmpty())
+            emit timeRangingToggled(value);
+    }
 }
 
 void
-QvisSimulationCommandWindow::handleStart(const QString &text)
+QvisSimulationCommandWindow::handleStart()
 {
     QString value(startCycle->text().trimmed());
     if(!value.isEmpty())
@@ -277,7 +249,7 @@ QvisSimulationCommandWindow::handleStart(const QString &text)
 }
 
 void
-QvisSimulationCommandWindow::handleStop(const QString &text)
+QvisSimulationCommandWindow::handleStop()
 {
     QString value(stopCycle->text().trimmed());
     if(!value.isEmpty())
@@ -285,7 +257,7 @@ QvisSimulationCommandWindow::handleStop(const QString &text)
 }
 
 void
-QvisSimulationCommandWindow::handleStep(const QString &text)
+QvisSimulationCommandWindow::handleStep()
 {
     QString value(stepCycle->text().trimmed());
     if(!value.isEmpty())
