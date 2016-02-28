@@ -1,21 +1,21 @@
 function bv_boost_initialize
 {
-export DO_BOOST="no"
-export ON_BOOST="off"
-export USE_SYSTEM_BOOST="no"
-add_extra_commandline_args "boost" "alt-boost-dir" 1 "Use alternative directory for boost"
+    export DO_BOOST="no"
+    export ON_BOOST="off"
+    export USE_SYSTEM_BOOST="no"
+    add_extra_commandline_args "boost" "alt-boost-dir" 1 "Use alternative directory for boost"
 }
 
 function bv_boost_enable
 {
-DO_BOOST="yes"
-ON_BOOST="on"
+    DO_BOOST="yes"
+    ON_BOOST="on"
 }
 
 function bv_boost_disable
 {
-DO_BOOST="no"
-ON_BOOST="off"
+    DO_BOOST="no"
+    ON_BOOST="off"
 }
 
 function bv_boost_alt_boost_dir
@@ -43,30 +43,30 @@ function bv_boost_initialize_vars
 
 function bv_boost_info
 {
-export BOOST_VERSION=${BOOST_VERSION:-"1_57_0"}
-export BOOST_FILE=${BOOST_FILE:-"boost_${BOOST_VERSION}.tar.gz"}
-export BOOST_COMPATIBILITY_VERSION=${BOOST_COMPATIBILITY_VERSION:-"1_57"}
-export BOOST_BUILD_DIR=${BOOST_BUILD_DIR:-"boost_${BOOST_VERSION}"}
-export BOOST_URL=${BOOST_URL:-"http://sourceforge.net/projects/boost/files/boost/1.57.0"}
+    export BOOST_VERSION=${BOOST_VERSION:-"1_60_0"}
+    export BOOST_FILE=${BOOST_FILE:-"boost_${BOOST_VERSION}.tar.gz"}
+    export BOOST_COMPATIBILITY_VERSION=${BOOST_COMPATIBILITY_VERSION:-"1_60"}
+    export BOOST_BUILD_DIR=${BOOST_BUILD_DIR:-"boost_${BOOST_VERSION}"}
+    export BOOST_URL=${BOOST_URL:-"http://sourceforge.net/projects/boost/files/boost/1.60.0"}
 }
 
 function bv_boost_print
 {
-  printf "%s%s\n" "BOOST_FILE=" "${BOOST_FILE}"
-  printf "%s%s\n" "BOOST_VERSION=" "${BOOST_VERSION}"
-  printf "%s%s\n" "BOOST_COMPATIBILITY_VERSION=" "${BOOST_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "BOOST_BUILD_DIR=" "${BOOST_BUILD_DIR}"
+    printf "%s%s\n" "BOOST_FILE=" "${BOOST_FILE}"
+    printf "%s%s\n" "BOOST_VERSION=" "${BOOST_VERSION}"
+    printf "%s%s\n" "BOOST_COMPATIBILITY_VERSION=" "${BOOST_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "BOOST_BUILD_DIR=" "${BOOST_BUILD_DIR}"
 }
 
 function bv_boost_print_usage
 {
-printf "%-15s %s [%s]\n" "--boost" "Build BOOST" "${DO_BOOST}"
+    printf "%-15s %s [%s]\n" "--boost" "Build BOOST" "${DO_BOOST}"
 }
 
 function bv_boost_graphical
 {
-local graphical_out="BOOST     $BOOST_VERSION($BOOST_FILE)      $ON_BOOST"
-echo $graphical_out
+    local graphical_out="BOOST     $BOOST_VERSION($BOOST_FILE)      $ON_BOOST"
+    echo $graphical_out
 }
 
 function bv_boost_host_profile
@@ -104,9 +104,9 @@ function bv_boost_ensure
 
 function bv_boost_dry_run
 {
-  if [[ "$DO_BOOST" == "yes" ]] ; then
-    echo "Dry run option not set for boost."
-  fi
+    if [[ "$DO_BOOST" == "yes" ]] ; then
+	echo "Dry run option not set for boost."
+    fi
 }
 
 function apply_boost_patch
@@ -284,7 +284,6 @@ function bv_boost_is_enabled
 
 function bv_boost_is_installed
 {
-
     if [[ "$USE_SYSTEM_BOOST" == "yes" ]]; then
         return 1
     fi
@@ -298,21 +297,21 @@ function bv_boost_is_installed
 
 function bv_boost_build
 {
-cd "$START_DIR"
+    cd "$START_DIR"
 
-if [[ "$DO_BOOST" == "yes" && "$USE_SYSTEM_BOOST" == "no" ]] ; then
-    check_if_installed "boost" $BOOST_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping BOOST build.  BOOST is already installed."
-    else
-        info "Building BOOST (~15 minutes)"
-        build_boost
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install BOOST.  Bailing out."
-        fi
-        info "Done building BOOST"
+    if [[ "$DO_BOOST" == "yes" && "$USE_SYSTEM_BOOST" == "no" ]] ; then
+	check_if_installed "boost" $BOOST_VERSION
+	if [[ $? == 0 ]] ; then
+            info "Skipping BOOST build.  BOOST is already installed."
+	else
+            info "Building BOOST (~15 minutes)"
+            build_boost
+            if [[ $? != 0 ]] ; then
+		error "Unable to build or install BOOST.  Bailing out."
+            fi
+            info "Done building BOOST"
+	fi
     fi
-fi
 }
 
 
