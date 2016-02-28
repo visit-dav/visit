@@ -1,10 +1,10 @@
 function bv_uintah_initialize
 {
-export FORCE_UINTAH="no"
-export DO_UINTAH="no"
-export ON_UINTAH="off"
-export USE_SYSTEM_UINTAH="no"
-add_extra_commandline_args "uintah" "alt-uintah-dir" 1 "Use alternative directory for uintah"
+    export FORCE_UINTAH="no"
+    export DO_UINTAH="no"
+    export ON_UINTAH="off"
+    export USE_SYSTEM_UINTAH="no"
+    add_extra_commandline_args "uintah" "alt-uintah-dir" 1 "Use alternative directory for uintah"
 }
 
 function bv_uintah_enable
@@ -59,35 +59,35 @@ function bv_uintah_initialize_vars
 
 function bv_uintah_info
 {
-export UINTAH_VERSION=${UINTAH_VERSION:-"1.6.0"}
-export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
-export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"1.6"}
-export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
-#export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}/${UINTAH_FILE}"}
-export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/devbuilds/icse/uintah/${UINTAH_VERSION}"}
-
-export UINTAH_MD5_CHECKSUM=""
-export UINTAH_SHA256_CHECKSUM=""
+    export UINTAH_VERSION=${UINTAH_VERSION:-"1.6.0"}
+    export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
+    export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"1.6"}
+    export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
+    #export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}/${UINTAH_FILE}"}
+    export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/devbuilds/icse/uintah/${UINTAH_VERSION}"}
+    
+    export UINTAH_MD5_CHECKSUM=""
+    export UINTAH_SHA256_CHECKSUM=""
 }
 
 function bv_uintah_print
 {
-  printf "%s%s\n" "UINTAH_FILE=" "${UINTAH_FILE}"
-  printf "%s%s\n" "UINTAH_VERSION=" "${UINTAH_VERSION}"
-  printf "%s%s\n" "UINTAH_COMPATIBILITY_VERSION=" "${UINTAH_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "UINTAH_BUILD_DIR=" "${UINTAH_BUILD_DIR}"
+    printf "%s%s\n" "UINTAH_FILE=" "${UINTAH_FILE}"
+    printf "%s%s\n" "UINTAH_VERSION=" "${UINTAH_VERSION}"
+    printf "%s%s\n" "UINTAH_COMPATIBILITY_VERSION=" "${UINTAH_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "UINTAH_BUILD_DIR=" "${UINTAH_BUILD_DIR}"
 }
 
 function bv_uintah_print_usage
 {
-printf "%-15s %s [%s]\n" "--uintah" "Build UINTAH" "${DO_UINTAH}"
-printf "%-15s %s [%s]\n" "--alt-uintah-dir"  "Use Uintah" "Use Uintah from alternative directory"
+    printf "%-15s %s [%s]\n" "--uintah" "Build UINTAH" "${DO_UINTAH}"
+    printf "%-15s %s [%s]\n" "--alt-uintah-dir"  "Use Uintah" "Use Uintah from alternative directory"
 }
 
 function bv_uintah_graphical
 {
-local graphical_out="UINTAH     $UINTAH_VERSION($UINTAH_FILE)      $ON_UINTAH"
-echo $graphical_out
+    local graphical_out="UINTAH     $UINTAH_VERSION($UINTAH_FILE)      $ON_UINTAH"
+    echo $graphical_out
 }
 
 function bv_uintah_host_profile
@@ -124,9 +124,9 @@ function bv_uintah_ensure
 
 function bv_uintah_dry_run
 {
-  if [[ "$DO_UINTAH" == "yes" ]] ; then
-    echo "Dry run option not set for uintah."
-  fi
+    if [[ "$DO_UINTAH" == "yes" ]] ; then
+	echo "Dry run option not set for uintah."
+    fi
 }
 
 # **************************************************************************** #
@@ -428,19 +428,19 @@ function bv_uintah_is_installed
 
 function bv_uintah_build
 {
-cd "$START_DIR"
+    cd "$START_DIR"
 
-if [[ "$DO_UINTAH" == "yes" && "$USE_SYSTEM_UINTAH" == "no" ]] ; then
-    check_if_installed "uintah" $UINTAH_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping UINTAH build.  UINTAH is already installed."
-    else
-        info "Building UINTAH (~10 minutes)"
-        build_uintah
+    if [[ "$DO_UINTAH" == "yes" && "$USE_SYSTEM_UINTAH" == "no" ]] ; then
+	check_if_installed "uintah" $UINTAH_VERSION
+	if [[ $? == 0 ]] ; then
+            info "Skipping UINTAH build.  UINTAH is already installed."
+	else
+            info "Building UINTAH (~10 minutes)"
+            build_uintah
         if [[ $? != 0 ]] ; then
             error "Unable to build or install UINTAH.  Bailing out."
         fi
         info "Done building UINTAH"
+	fi
     fi
-fi
 }
