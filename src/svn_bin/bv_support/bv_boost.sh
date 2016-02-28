@@ -37,7 +37,7 @@ function bv_boost_depends_on
 function bv_boost_initialize_vars
 {
     if [[ "$USE_SYSTEM_BOOST" == "no" ]]; then
-        BOOST_INSTALL_DIR="${VISITDIR}/boost/$BOOST_VERSION/${VISITARCH}"
+        BOOST_INSTALL_DIR="${VISITDIR}/boost/${BOOST_VERSION}/${VISITARCH}"
     fi
 }
 
@@ -219,32 +219,33 @@ function build_boost
             # version information.
             #
             info "Creating dynamic libraries for BOOST . . ."
-            INSTALLNAMEPATH="$VISITDIR/boost/${BOOST_VERSION}/$VISITARCH/lib"
+            INSTALLNAMEPATH="${BOOST_INSTALL_DIR}/lib"
 
 	    for lib in $libs;
 	    do
-                install_name_tool \
-		    -id $INSTALLNAMEPATH/libboost_${lib}.${SO_EXT} \
-                    $INSTALLNAMEPATH/libboost_${lib}.${SO_EXT}
+		fulllibname=$INSTALLNAMEPATH/libboost_${lib}.${SO_EXT}
 
-		# The filesystem, thread, and chrono libraries depend
-		# on the system library so fix up those paths as well
-		if [[ $lib == "filesystem" || $lib == "thread" || $lib == "chrono" ]] ; then
-		    install_name_tool -change \
-			libboost_system.${SO_EXT} $INSTALLNAMEPATH/libboost_system.${SO_EXT} \
-			$INSTALLNAMEPATH/libboost_${lib}.${SO_EXT}
-		fi
+                install_name_tool -id $fulllibname $fulllibname
 
-		# The timer library depends on the system and chrono
-		# library so fix up those paths as well
-		if [[ $lib == "timer" ]] ; then
-		    install_name_tool -change \
-			libboost_system.${SO_EXT} $INSTALLNAMEPATH/libboost_system.${SO_EXT} \
-			$INSTALLNAMEPATH/libboost_${lib}.${SO_EXT}
-		    install_name_tool -change \
-			libboost_chrono.${SO_EXT} $INSTALLNAMEPATH/libboost_chrono.${SO_EXT} \
-			$INSTALLNAMEPATH/libboost_${lib}.${SO_EXT}
-		fi
+		# Find all the dependent libraries (more or less)
+		deplibs=`otool -L $fulllibname | sed "s/(.*)//g"`
+
+		for deplib in $deplibs;
+		do
+		    # Only get the libraries related to boost and not itself.
+		    if [[ `echo $deplib | grep -c libboost_` == 1 && \
+			  `echo $deplib | grep -c libboost_${lib}` == 0 ]] ; then
+
+			# Get the library name sans the directory path
+			deplibname=`echo $deplib | sed "s/.*\///"`
+			
+			# Set the library path
+			install_name_tool -change $deplib \
+			    ${INSTALLNAMEPATH}/$deplibname \
+			    $fulllibname
+
+		    fi
+		done		
             done
         fi
 

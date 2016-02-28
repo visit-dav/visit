@@ -272,7 +272,7 @@ function build_uintah
 
       info "Invoking command to configure UINTAH"
       info "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
@@ -285,7 +285,7 @@ function build_uintah
 #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
 
       sh -c "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
@@ -368,6 +368,32 @@ function build_uintah
         # version information.
         #
         info "Creating dynamic libraries for UINTAH . . ."
+        INSTALLNAMEPATH="${UINTAH_INSTALL_DIR}/lib"
+
+	libs=`ls ${INSTALLNAMEPATH}/*.${SO_EXT}`
+
+	for lib in $libs;
+	do
+	    # Get the library path right
+            install_name_tool -id $lib $lib
+
+	    # Find all the dependent libraries (more or less)
+	    deplibs=`otool -L $lib | sed "s/(.*)//g"`
+
+	    for deplib in $deplibs;
+	    do
+		# Only get the libraries related to Uintah
+		if [[ `echo $deplib | grep -c ${UINTAH_BUILD_DIR}` == 1 ]] ; then
+
+		    # Get the library name sans the directory path
+		    deplibname=`echo $deplib | sed "s/.*\///"`
+
+		    # Finally set the library path
+		    install_name_tool -change \
+			$deplib ${INSTALLNAMEPATH}/$deplibname $lib
+		fi
+	    done
+	done
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
