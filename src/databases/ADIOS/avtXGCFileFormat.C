@@ -701,6 +701,8 @@ avtXGCFileFormat::GetVar(int timestate, int domain, const char *varname)
 
     vtkDataArray *var = NULL;
     file->ReadScalarData(varname, timestate, &var);
+    if (var == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
     return var;
 }
 
@@ -752,7 +754,8 @@ vtkDataArray *
 avtXGCFileFormat::GetPsi()
 {
     vtkDataArray *psi;
-    meshFile->ReadScalarData("/psi", 0, &psi);
+    if (!meshFile->ReadScalarData("/psi", 0, &psi))
+        meshFile->ReadScalarData("psi", 0, &psi);
 
     return psi;
 }
@@ -775,11 +778,16 @@ avtXGCFileFormat::GetTurbulence(int ts, int dom)
 {
     vtkDataArray *pot0 = NULL, *potm0 = NULL, *eden = NULL, *dpot = NULL, *psi = NULL;
 
-    file->ReadScalarData("/dpot", ts, &dpot);
-    file->ReadScalarData("/pot0", ts, &pot0);
-    file->ReadScalarData("/potm0", ts, &potm0);
-    file->ReadScalarData("/eden", ts, &eden);
-    meshFile->ReadScalarData("/psi", ts, &psi);
+    if(!file->ReadScalarData("/dpot", ts, &dpot))
+        file->ReadScalarData("dpot", ts, &dpot);
+    if (!file->ReadScalarData("/pot0", ts, &pot0))
+        file->ReadScalarData("pot0", ts, &pot0);
+    if (!file->ReadScalarData("/potm0", ts, &potm0))
+        file->ReadScalarData("potm0", ts, &potm0);
+    if (!file->ReadScalarData("/eden", ts, &eden))
+        file->ReadScalarData("eden", ts, &eden);
+    if (!meshFile->ReadScalarData("/psi", ts, &psi))
+        meshFile->ReadScalarData("psi", ts, &psi);
 
     vtkDataArray *psid=NULL, *dens=NULL, *temp1=NULL, *temp2=NULL;
     diagFile->ReadScalarData("/psi_mks", ts, &psid);
@@ -934,7 +942,7 @@ avtXGCFileFormat::Initialize()
         meshFile->GetScalar("n_t", numTris);
     if (!file->GetScalar("/nphi", numPhi))
         file->GetScalar("nphi", numPhi);
-    
+
     initialized = true;
 }
 
