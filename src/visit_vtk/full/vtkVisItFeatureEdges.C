@@ -39,11 +39,11 @@ vtkStandardNewMacro(vtkVisItFeatureEdges);
 vtkVisItFeatureEdges::vtkVisItFeatureEdges()
 {
   this->FeatureAngle = 30.0;
-  this->BoundaryEdges = 1;
-  this->FeatureEdges = 1;
-  this->NonManifoldEdges = 1;
-  this->ManifoldEdges = 0;
-  this->Coloring = 1;
+  this->BoundaryEdges = true;
+  this->FeatureEdges = true;
+  this->NonManifoldEdges = true;
+  this->ManifoldEdges = false;
+  this->Coloring = true;
   this->Locator = NULL;
 }
 

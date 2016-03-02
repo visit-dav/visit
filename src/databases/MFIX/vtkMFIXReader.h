@@ -91,9 +91,9 @@ public:
 
   // Description:
   // Which TimeStepRange to read
-  vtkSetMacro(SwapByteOrder, int);
-  vtkGetMacro(SwapByteOrder, int);
-  vtkBooleanMacro(SwapByteOrder, int);
+  vtkSetMacro(SwapByteOrder, bool);
+  vtkGetMacro(SwapByteOrder, bool);
+  vtkBooleanMacro(SwapByteOrder, bool);
 
   // Description
   // Get the number of cell arrays available in the input.
@@ -133,7 +133,7 @@ protected:
     vtkInformationVector **, vtkInformationVector *);
   virtual int FillOutputPortInformation(int, vtkInformation *);
 
-  int SwapByteOrder;
+  bool SwapByteOrder;
 
   //
   // ParaView Variables

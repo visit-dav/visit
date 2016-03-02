@@ -54,15 +54,15 @@
 //
 vtkYoungsMaterialInterface::vtkYoungsMaterialInterface()
 {
-    this->FillMaterial = 0;
-    this->InverseNormal = 0;
-    this->AxisSymetric = 0;
-    this->OnionPeel = 0;
-    this->ReverseMaterialOrder = 0;
-    this->UseFractionAsDistance = 0;
+    this->FillMaterial = false;
+    this->InverseNormal = false;
+    this->AxisSymetric = false;
+    this->OnionPeel = false;
+    this->ReverseMaterialOrder = false;
+    this->UseFractionAsDistance = false;
     this->VolumeFractionRange[0] = 0.0001;
     this->VolumeFractionRange[1] = 0.9999;
-    this->TwoMaterialsOptimization = 0;
+    this->TwoMaterialsOptimization = false;
 }
 
 vtkYoungsMaterialInterface::~vtkYoungsMaterialInterface()

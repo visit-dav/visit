@@ -104,8 +104,9 @@ public:
   
   // Description:
   // Set/Get the use axis orientation flag.
-  vtkSetClampMacro(UseOrientationAngle, int, 0, 1);
-  vtkGetMacro(UseOrientationAngle, int);
+  vtkSetMacro(UseOrientationAngle, bool);
+  vtkGetMacro(UseOrientationAngle, bool);
+  vtkBooleanMacro(UseOrientationAngle, bool);
 
   // Description:
   // Set/Get the axis orientation angle.
@@ -136,9 +137,9 @@ public:
   // Set/Get the flag that controls whether the labels are
   // adjusted for "nice" numerical values to make it easier to read 
   // the labels. The adjustment is based in the Range instance variable.
-  vtkSetMacro(AdjustLabels, int);
-  vtkGetMacro(AdjustLabels, int);
-  vtkBooleanMacro(AdjustLabels, int);
+  vtkSetMacro(AdjustLabels, bool);
+  vtkGetMacro(AdjustLabels, bool);
+  vtkBooleanMacro(AdjustLabels, bool);
 
   // Description:
   // Set/Get the scale factor for the major tick mark labels.
@@ -167,16 +168,16 @@ public:
   
   // Description:
   // Set/Get the flag that controls whether the minor ticks are visible. 
-  vtkSetMacro(MinorTicksVisible, int);
-  vtkGetMacro(MinorTicksVisible, int);
-  vtkBooleanMacro(MinorTicksVisible, int);
+  vtkSetMacro(MinorTicksVisible, bool);
+  vtkGetMacro(MinorTicksVisible, bool);
+  vtkBooleanMacro(MinorTicksVisible, bool);
 
   // Description:
   // Set/Get the flag that controls whether the title is placed at the end
   // of the aixs.
-  vtkSetMacro(TitleAtEnd, int);
-  vtkGetMacro(TitleAtEnd, int);
-  vtkBooleanMacro(TitleAtEnd, int);
+  vtkSetMacro(TitleAtEnd, bool);
+  vtkGetMacro(TitleAtEnd, bool);
+  vtkBooleanMacro(TitleAtEnd, bool);
 
   // Description:
   // Set/Get the title of the scalar bar actor,
@@ -214,8 +215,9 @@ public:
   // Set/Get the use seperate colors flag. When using separate colors, the label
   // and title colors come from the label and title text properties, respectively.
   // Otherwise the color comes from the property.
-  vtkSetMacro(UseSeparateColors, int);
-  vtkGetMacro(UseSeparateColors, int);
+  vtkSetMacro(UseSeparateColors, bool);
+  vtkGetMacro(UseSeparateColors, bool);
+  vtkBooleanMacro(UseSeparateColors, bool);
 
   // Description:
   // Set/Get the length of the tick marks (expressed in pixels or display
@@ -238,33 +240,33 @@ public:
   
   // Description:
   // Set/Get visibility of the axis line.
-  vtkSetMacro(AxisVisibility, int);
-  vtkGetMacro(AxisVisibility, int);
-  vtkBooleanMacro(AxisVisibility, int);
+  vtkSetMacro(AxisVisibility, bool);
+  vtkGetMacro(AxisVisibility, bool);
+  vtkBooleanMacro(AxisVisibility, bool);
 
   // Description:
   // Set/Get visibility of the axis tick marks.
-  vtkSetMacro(TickVisibility, int);
-  vtkGetMacro(TickVisibility, int);
-  vtkBooleanMacro(TickVisibility, int);
+  vtkSetMacro(TickVisibility, bool);
+  vtkGetMacro(TickVisibility, bool);
+  vtkBooleanMacro(TickVisibility, bool);
 
   // Description:
   // Set/Get visibility of the axis labels.
-  vtkSetMacro(LabelVisibility, int);
-  vtkGetMacro(LabelVisibility, int);
-  vtkBooleanMacro(LabelVisibility, int);
+  vtkSetMacro(LabelVisibility, bool);
+  vtkGetMacro(LabelVisibility, bool);
+  vtkBooleanMacro(LabelVisibility, bool);
 
   // Description:
   // Set/Get visibility of the axis title.
-  vtkSetMacro(TitleVisibility, int);
-  vtkGetMacro(TitleVisibility, int);
-  vtkBooleanMacro(TitleVisibility, int);
+  vtkSetMacro(TitleVisibility, bool);
+  vtkGetMacro(TitleVisibility, bool);
+  vtkBooleanMacro(TitleVisibility, bool);
 
   // Description:
   // Set/Get whether gridlines should be drawn.
-  vtkSetMacro(DrawGridlines, int);
-  vtkGetMacro(DrawGridlines, int);
-  vtkBooleanMacro(DrawGridlines, int);
+  vtkSetMacro(DrawGridlines, bool);
+  vtkGetMacro(DrawGridlines, bool);
+  vtkBooleanMacro(DrawGridlines, bool);
 
   // Description:
   // Set/Get the length to use when drawing gridlines. 
@@ -285,15 +287,15 @@ public:
 
   // Description:
   // Set/Get scaling of the axis.
-  vtkSetMacro(LogScale, int);
-  vtkGetMacro(LogScale, int);
-  vtkBooleanMacro(LogScale, int);
+  vtkSetMacro(LogScale, bool);
+  vtkGetMacro(LogScale, bool);
+  vtkBooleanMacro(LogScale, bool);
 
   // Set/Get the title end string orientation as being reversed from the
   // other centering.
-  vtkSetMacro(EndStringReverseOrientation, int);
-  vtkGetMacro(EndStringReverseOrientation, int);
-  vtkBooleanMacro(EndStringReverseOrientation, int);
+  vtkSetMacro(EndStringReverseOrientation, bool);
+  vtkGetMacro(EndStringReverseOrientation, bool);
+  vtkBooleanMacro(EndStringReverseOrientation, bool);
 
   // Description:
   // Draw the axis. 
@@ -315,8 +317,8 @@ public:
   static void AdjustLabelsComputeRange(double inRange[2], double outRange[2],
                                        int inNumTicks, int &outNumTicks,
                                        double *proportion, double *ticksize, 
-                                       int minorVisible, int drawGrids, 
-                                       int logScale);
+                                       bool minorVisible, bool drawGrids, 
+                                       bool logScale);
 
   // Description:
   // Computes the range based on the major tick mark location, the major tick
@@ -327,12 +329,12 @@ public:
                                     double majorTickSpacing,
                                     double minorTickSpacing, int &numTicks,
                                     double *proportion, double *ticksize,
-                                    int minorVisible, int drawGrids,
-                                    int logScale);
+                                    bool minorVisible, bool drawGrids,
+                                    bool logScale);
 
   static void ComputeLogTicks(double inRange[2], double sortedRange[2],
                              int &outNumTicks, double *proportion, 
-                             double *ticksize, int minorVisible, int drawGrids);
+                             double *ticksize, bool minorVisible, bool drawGrids);
 
   // Description:
   // Shallow copy of an axis actor. Overloads the virtual vtkProp method.
@@ -348,7 +350,7 @@ protected:
 
   vtkCoordinate *Point1Coordinate;
   vtkCoordinate *Point2Coordinate;
-  int    UseOrientationAngle;
+  bool    UseOrientationAngle;
   double OrientationAngle; 
   char   *Title;
   double  Range[2];
@@ -356,14 +358,14 @@ protected:
   char   *LabelFormat;
   char   *LogLabelFormat;
   int    NumberOfLabelsBuilt;
-  int    AdjustLabels;
+  bool   AdjustLabels;
   double MajorTickLabelScale;
   double MajorTickMinimum;
   double MajorTickMaximum;
   double MajorTickSpacing;
   double MinorTickSpacing;
-  int    MinorTicksVisible;
-  int    TitleAtEnd;
+  bool   MinorTicksVisible;
+  bool   TitleAtEnd;
   int    TitleJustification;
   int    TitleVerticalJustification;
   double  LabelFontHeight;
@@ -372,25 +374,25 @@ protected:
   int    TickOffset;
   int    TickLocation;
 
-  int    UseSeparateColors;
+  bool   UseSeparateColors;
   vtkTextProperty *TitleTextProperty;
   vtkTextProperty *LabelTextProperty;
 
-  int    DrawGridlines;
+  bool    DrawGridlines;
   double  GridlineXLength;
   double  GridlineYLength;
   
-  int    AxisVisibility;
-  int    TickVisibility;
-  int    LabelVisibility;
-  int    TitleVisibility;
+  bool    AxisVisibility;
+  bool    TickVisibility;
+  bool    LabelVisibility;
+  bool    TitleVisibility;
   
   int    LastPoint1[2];
   int    LastPoint2[2];
 
-  int    LogScale;
+  bool   LogScale;
 
-  int    EndStringReverseOrientation;
+  bool   EndStringReverseOrientation;
   
 private:
   vtkVisItAxisActor2D(const vtkVisItAxisActor2D&);

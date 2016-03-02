@@ -106,7 +106,7 @@ bool
 supported(const char *key)
 {
 #ifdef HAVE_LIBGLEW
-    return glewIsSupported(key);
+    return glewIsSupported(key)?true:false;
 #else
     return true;
 #endif

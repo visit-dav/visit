@@ -53,7 +53,7 @@ vtkVisItCutter::vtkVisItCutter(vtkImplicitFunction *cf)
   this->ContourValues = vtkContourValues::New();
   this->SortBy = VTK_SORT_BY_VALUE;
   this->CutFunction = cf;
-  this->GenerateCutScalars = 0;
+  this->GenerateCutScalars = false;
   this->Locator = NULL;
 }
 

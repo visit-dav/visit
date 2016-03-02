@@ -85,15 +85,15 @@ class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
     // Description:
     // Set a boolean to control whether to create normals.
     // DefaultNormalOn is set.
-    vtkSetMacro(CreateNormals,int);
-    vtkGetMacro(CreateNormals,int);
-    vtkBooleanMacro(CreateNormals,int);
+    vtkSetMacro(CreateNormals,bool);
+    vtkGetMacro(CreateNormals,bool);
+    vtkBooleanMacro(CreateNormals,bool);
 
     // Description:
     // Turn on/off whether to cap the ends with polygons.
-    vtkSetMacro(Capping,int);
-    vtkGetMacro(Capping,int);
-    vtkBooleanMacro(Capping,int);
+    vtkSetMacro(Capping,bool);
+    vtkGetMacro(Capping,bool);
+    vtkBooleanMacro(Capping,bool);
 
   protected:
     // ************************************************************************
@@ -160,10 +160,10 @@ class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
                             vtkInformationVector **,
                             vtkInformationVector *);
 
-    float Radius;      // minimum radius of tube
-    int NumberOfSides; // number of sides to create tube
-    int CreateNormals; // true to create normals
-    int Capping;       // true to cap ends
+    float Radius;       // minimum radius of tube
+    int NumberOfSides;  // number of sides to create tube
+    bool CreateNormals; // true to create normals
+    bool Capping;       // true to cap ends
 
     PointSequenceList *pseqlist;
 

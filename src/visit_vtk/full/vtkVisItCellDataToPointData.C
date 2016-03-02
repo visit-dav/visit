@@ -33,7 +33,7 @@ vtkStandardNewMacro(vtkVisItCellDataToPointData);
 // Instantiate object so that cell data is not passed to output.
 vtkVisItCellDataToPointData::vtkVisItCellDataToPointData()
 {
-  this->PassCellData = 0;
+  this->PassCellData = false;
 }
 
 #define VTK_MAX_CELLS_PER_POINT 4096

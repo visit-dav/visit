@@ -124,20 +124,20 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->Point2Coordinate->SetCoordinateSystemToNormalizedViewport();
   this->Point2Coordinate->SetValue(0.75, 0.0);
 
-  this->UseOrientationAngle = 0;
+  this->UseOrientationAngle = false;
   this->OrientationAngle = 0.; 
   
   this->NumberOfLabels = 5;
 
   this->Title = NULL;
-  this->AdjustLabels = 1;
+  this->AdjustLabels = true;
   this->MajorTickLabelScale = 1.0;
   this->MajorTickMinimum = 0.0;
   this->MajorTickMaximum = 1.0;
   this->MajorTickSpacing = 1.0;
   this->MinorTickSpacing = 0.1;
-  this->MinorTicksVisible = 1;
-  this->TitleAtEnd   = 0;
+  this->MinorTicksVisible = true;
+  this->TitleAtEnd   = false;
   this->LabelFontHeight = 0.02;
   this->TitleFontHeight = 0.02;
   this->TickLength = 5;
@@ -179,23 +179,23 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->AxisActor = vtkActor2D::New();
   this->AxisActor->SetMapper(this->AxisMapper);
   
-  this->AxisVisibility = 1;
-  this->TickVisibility = 1;
-  this->LabelVisibility = 1;
-  this->TitleVisibility = 1;
+  this->AxisVisibility = true;
+  this->TickVisibility = true;
+  this->LabelVisibility = true;
+  this->TitleVisibility = true;
   
   this->LastPoint1[0] = this->LastPoint1[1] = 0;
   this->LastPoint2[0] = this->LastPoint2[1] = 0;
 
-  this->DrawGridlines = 0;
+  this->DrawGridlines = false;
   this->GridlineXLength = 1.;  
   this->GridlineYLength = 1.;  
 
-  this->LogScale = 0;  
+  this->LogScale = false;  
 
   this->EndStringReverseOrientation = false;
 
-  this->UseSeparateColors = 0;
+  this->UseSeparateColors = false;
   nDecades = 2;  
 }
 
@@ -682,7 +682,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
     }
   
   // Build the labels
-  int maxStringLen = 0;
+  size_t maxStringLen = 0;
   bool useMinorForLabels = false;
   bool verticalOrientation = (UseOrientationAngle && OrientationAngle != 0);
   if ( this->LabelVisibility )
@@ -798,7 +798,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
               this->LabelActors[labelCount]->SetInput("0.00000");
       }
 
-      int stringLen = strlen(this->LabelActors[labelCount]->GetInput());
+      size_t stringLen = strlen(this->LabelActors[labelCount]->GetInput());
       maxStringLen = (maxStringLen < stringLen) ? stringLen : maxStringLen;
 
       vtkTextProperty *tprop = this->LabelActors[labelCount]->GetTextProperty();
@@ -968,9 +968,9 @@ void vtkVisItAxisActor2D::SpecifiedComputeRange(double inRange[2],
                                                double majorSpacing,
                                                double minorSpacing,
                                              int &numTicks, double *proportion,
-                                             double *ticksize, int minorVisible,
-                                             int drawGrids,
-                                             int logScale)
+                                             double *ticksize, bool minorVisible,
+                                             bool drawGrids,
+                                             bool logScale)
 {
   double minor_tick = 0.5;
   double major_tick = 1.;
@@ -1140,8 +1140,8 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
                                              double outRange[2], 
                                              int vtkNotUsed(inNumTicks),
                                              int &numTicks, double *proportion, 
-                                             double *ticksize, int minorVisible,
-                                             int drawGrids, int logScale)
+                                             double *ticksize, bool minorVisible,
+                                             bool drawGrids, bool logScale)
 {
   double minor_tick = 0.5;
   double major_tick = 1.;
@@ -1416,8 +1416,8 @@ void
 vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
                                      double sortedRange[2], 
                                      int &numTicks, double *proportion, 
-                                     double *ticksize, int minorVisible,
-                                     int drawGrids)
+                                     double *ticksize, bool minorVisible,
+                                     bool drawGrids)
 {
   double minor_tick = 0.5;
   double major_tick = 1.;

@@ -180,83 +180,85 @@ public:
 
   // Description:
   // Turn on and off the visibility of each axis.
-  vtkSetMacro(XAxisVisibility,int);
-  vtkGetMacro(XAxisVisibility,int);
-  vtkBooleanMacro(XAxisVisibility,int);
-  vtkSetMacro(YAxisVisibility,int);
-  vtkGetMacro(YAxisVisibility,int);
-  vtkBooleanMacro(YAxisVisibility,int);
-  vtkSetMacro(ZAxisVisibility,int);
-  vtkGetMacro(ZAxisVisibility,int);
-  vtkBooleanMacro(ZAxisVisibility,int);
+  vtkSetMacro(XAxisVisibility,bool);
+  vtkGetMacro(XAxisVisibility,bool);
+  vtkBooleanMacro(XAxisVisibility,bool);
+
+  vtkSetMacro(YAxisVisibility,bool);
+  vtkGetMacro(YAxisVisibility,bool);
+  vtkBooleanMacro(YAxisVisibility,bool);
+
+  vtkSetMacro(ZAxisVisibility,bool);
+  vtkGetMacro(ZAxisVisibility,bool);
+  vtkBooleanMacro(ZAxisVisibility,bool);
 
   // Description:
   // Turn on and off the visibility of labels for each axis.
-  vtkSetMacro(XAxisLabelVisibility,int);
-  vtkGetMacro(XAxisLabelVisibility,int);
-  vtkBooleanMacro(XAxisLabelVisibility,int);
+  vtkSetMacro(XAxisLabelVisibility,bool);
+  vtkGetMacro(XAxisLabelVisibility,bool);
+  vtkBooleanMacro(XAxisLabelVisibility,bool);
 
-  vtkSetMacro(YAxisLabelVisibility,int);
-  vtkGetMacro(YAxisLabelVisibility,int);
-  vtkBooleanMacro(YAxisLabelVisibility,int);
+  vtkSetMacro(YAxisLabelVisibility,bool);
+  vtkGetMacro(YAxisLabelVisibility,bool);
+  vtkBooleanMacro(YAxisLabelVisibility,bool);
 
-  vtkSetMacro(ZAxisLabelVisibility,int);
-  vtkGetMacro(ZAxisLabelVisibility,int);
-  vtkBooleanMacro(ZAxisLabelVisibility,int);
+  vtkSetMacro(ZAxisLabelVisibility,bool);
+  vtkGetMacro(ZAxisLabelVisibility,bool);
+  vtkBooleanMacro(ZAxisLabelVisibility,bool);
 
   // Description:
   // Turn on and off the visibility of titles for each axis.
-  vtkSetMacro(XAxisTitleVisibility,int);
-  vtkGetMacro(XAxisTitleVisibility,int);
-  vtkBooleanMacro(XAxisTitleVisibility,int);
+  vtkSetMacro(XAxisTitleVisibility,bool);
+  vtkGetMacro(XAxisTitleVisibility,bool);
+  vtkBooleanMacro(XAxisTitleVisibility,bool);
 
-  vtkSetMacro(YAxisTitleVisibility,int);
-  vtkGetMacro(YAxisTitleVisibility,int);
-  vtkBooleanMacro(YAxisTitleVisibility,int);
+  vtkSetMacro(YAxisTitleVisibility,bool);
+  vtkGetMacro(YAxisTitleVisibility,bool);
+  vtkBooleanMacro(YAxisTitleVisibility,bool);
 
-  vtkSetMacro(ZAxisTitleVisibility,int);
-  vtkGetMacro(ZAxisTitleVisibility,int);
-  vtkBooleanMacro(ZAxisTitleVisibility,int);
+  vtkSetMacro(ZAxisTitleVisibility,bool);
+  vtkGetMacro(ZAxisTitleVisibility,bool);
+  vtkBooleanMacro(ZAxisTitleVisibility,bool);
 
   // Description:
   // Turn on and off the visibility of ticks for each axis.
-  vtkSetMacro(XAxisTickVisibility,int);
-  vtkGetMacro(XAxisTickVisibility,int);
-  vtkBooleanMacro(XAxisTickVisibility,int);
+  vtkSetMacro(XAxisTickVisibility,bool);
+  vtkGetMacro(XAxisTickVisibility,bool);
+  vtkBooleanMacro(XAxisTickVisibility,bool);
 
-  vtkSetMacro(YAxisTickVisibility,int);
-  vtkGetMacro(YAxisTickVisibility,int);
-  vtkBooleanMacro(YAxisTickVisibility,int);
+  vtkSetMacro(YAxisTickVisibility,bool);
+  vtkGetMacro(YAxisTickVisibility,bool);
+  vtkBooleanMacro(YAxisTickVisibility,bool);
 
-  vtkSetMacro(ZAxisTickVisibility,int);
-  vtkGetMacro(ZAxisTickVisibility,int);
-  vtkBooleanMacro(ZAxisTickVisibility,int);
+  vtkSetMacro(ZAxisTickVisibility,bool);
+  vtkGetMacro(ZAxisTickVisibility,bool);
+  vtkBooleanMacro(ZAxisTickVisibility,bool);
 
   // Description:
   // Turn on and off the visibility of minor ticks for each axis.
-  vtkSetMacro(XAxisMinorTickVisibility,int);
-  vtkGetMacro(XAxisMinorTickVisibility,int);
-  vtkBooleanMacro(XAxisMinorTickVisibility,int);
+  vtkSetMacro(XAxisMinorTickVisibility,bool);
+  vtkGetMacro(XAxisMinorTickVisibility,bool);
+  vtkBooleanMacro(XAxisMinorTickVisibility,bool);
 
-  vtkSetMacro(YAxisMinorTickVisibility,int);
-  vtkGetMacro(YAxisMinorTickVisibility,int);
-  vtkBooleanMacro(YAxisMinorTickVisibility,int);
+  vtkSetMacro(YAxisMinorTickVisibility,bool);
+  vtkGetMacro(YAxisMinorTickVisibility,bool);
+  vtkBooleanMacro(YAxisMinorTickVisibility,bool);
 
-  vtkSetMacro(ZAxisMinorTickVisibility,int);
-  vtkGetMacro(ZAxisMinorTickVisibility,int);
-  vtkBooleanMacro(ZAxisMinorTickVisibility,int);
+  vtkSetMacro(ZAxisMinorTickVisibility,bool);
+  vtkGetMacro(ZAxisMinorTickVisibility,bool);
+  vtkBooleanMacro(ZAxisMinorTickVisibility,bool);
 
-  vtkSetMacro(DrawXGridlines,int);
-  vtkGetMacro(DrawXGridlines,int);
-  vtkBooleanMacro(DrawXGridlines,int);
+  vtkSetMacro(DrawXGridlines,bool);
+  vtkGetMacro(DrawXGridlines,bool);
+  vtkBooleanMacro(DrawXGridlines,bool);
 
-  vtkSetMacro(DrawYGridlines,int);
-  vtkGetMacro(DrawYGridlines,int);
-  vtkBooleanMacro(DrawYGridlines,int);
+  vtkSetMacro(DrawYGridlines,bool);
+  vtkGetMacro(DrawYGridlines,bool);
+  vtkBooleanMacro(DrawYGridlines,bool);
 
-  vtkSetMacro(DrawZGridlines,int);
-  vtkGetMacro(DrawZGridlines,int);
-  vtkBooleanMacro(DrawZGridlines,int);
+  vtkSetMacro(DrawZGridlines,bool);
+  vtkGetMacro(DrawZGridlines,bool);
+  vtkBooleanMacro(DrawZGridlines,bool);
 
   // Description:
   // Set/Get the location of ticks marks. 
@@ -289,9 +291,9 @@ public:
   // Description:
   // Set/Get the tick mark location properties for each of the x, y and
   // z axes.
-  vtkSetMacro(AdjustLabels, int);
-  vtkGetMacro(AdjustLabels, int);
-  vtkBooleanMacro(AdjustLabels, int);
+  vtkSetMacro(AdjustLabels, bool);
+  vtkGetMacro(AdjustLabels, bool);
+  vtkBooleanMacro(AdjustLabels, bool);
 
   vtkSetMacro(XMajorTickMinimum, double);
   vtkGetMacro(XMajorTickMinimum, double);
@@ -351,29 +353,29 @@ protected:
 
   int TickLocation;
 
-  int XAxisVisibility;
-  int YAxisVisibility;
-  int ZAxisVisibility;
+  bool XAxisVisibility;
+  bool YAxisVisibility;
+  bool ZAxisVisibility;
 
-  int XAxisTickVisibility;
-  int YAxisTickVisibility;
-  int ZAxisTickVisibility;
+  bool XAxisTickVisibility;
+  bool YAxisTickVisibility;
+  bool ZAxisTickVisibility;
 
-  int XAxisMinorTickVisibility;
-  int YAxisMinorTickVisibility;
-  int ZAxisMinorTickVisibility;
+  bool XAxisMinorTickVisibility;
+  bool YAxisMinorTickVisibility;
+  bool ZAxisMinorTickVisibility;
 
-  int XAxisLabelVisibility;
-  int YAxisLabelVisibility;
-  int ZAxisLabelVisibility;
+  bool XAxisLabelVisibility;
+  bool YAxisLabelVisibility;
+  bool ZAxisLabelVisibility;
 
-  int XAxisTitleVisibility;
-  int YAxisTitleVisibility;
-  int ZAxisTitleVisibility;
+  bool XAxisTitleVisibility;
+  bool YAxisTitleVisibility;
+  bool ZAxisTitleVisibility;
 
-  int DrawXGridlines;
-  int DrawYGridlines;
-  int DrawZGridlines;
+  bool DrawXGridlines;
+  bool DrawYGridlines;
+  bool DrawZGridlines;
 
   char  *XLabelFormat;
   char  *YLabelFormat;
@@ -383,14 +385,14 @@ protected:
   int   RenderCount;
   int   InertiaLocs[3];
   
-  int RenderSomething;
+  bool  RenderSomething;
   
   vtkTextProperty *TitleTextProperty[3];
   vtkTextProperty *LabelTextProperty[3];
   double           TitleScale[3];
   double           LabelScale[3];
 
-  int    AdjustLabels;
+  bool   AdjustLabels;
   double XMajorTickMinimum;
   double XMajorTickMaximum;
   double XMajorTickSpacing;
@@ -403,7 +405,7 @@ protected:
   double ZMajorTickMaximum;
   double ZMajorTickSpacing;
   double ZMinorTickSpacing;
-  int    LastAdjustLabels;
+  bool   LastAdjustLabels;
   double LastXMajorTickMinimum;
   double LastXMajorTickMaximum;
   double LastXMajorTickSpacing;

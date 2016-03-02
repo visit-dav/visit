@@ -80,21 +80,21 @@ public:
   // calling any of the FindClosestPoint routines and the extra memory
   // won't cause disk caching (24 extra bytes per cell are required to
   // save the bounds).
-  vtkSetMacro(CacheCellBounds,int);
-  vtkGetMacro(CacheCellBounds,int);
-  vtkBooleanMacro(CacheCellBounds,int);
+  vtkSetMacro(CacheCellBounds,bool);
+  vtkGetMacro(CacheCellBounds,bool);
+  vtkBooleanMacro(CacheCellBounds,bool);
 
   // Description:
   // Boolean controls whether ghost cells are ignored. 
-  vtkSetMacro(IgnoreGhosts,int);
-  vtkGetMacro(IgnoreGhosts,int);
-  vtkBooleanMacro(IgnoreGhosts,int);
+  vtkSetMacro(IgnoreGhosts,bool);
+  vtkGetMacro(IgnoreGhosts,bool);
+  vtkBooleanMacro(IgnoreGhosts,bool);
 
   // Description:
   // Boolean controls whether ghost cells are ignored. 
-  vtkSetMacro(IgnoreLines,int);
-  vtkGetMacro(IgnoreLines,int);
-  vtkBooleanMacro(IgnoreLines,int);
+  vtkSetMacro(IgnoreLines,bool);
+  vtkGetMacro(IgnoreLines,bool);
+  vtkBooleanMacro(IgnoreLines,bool);
 
 
   // Description:
@@ -267,9 +267,9 @@ protected:
   vtkNeighborCells *Buckets;
   unsigned char *CellHasBeenVisited;
   unsigned char QueryNumber;
-  int CacheCellBounds;
-  int IgnoreGhosts;
-  int IgnoreLines;
+  bool CacheCellBounds;
+  bool IgnoreGhosts;
+  bool IgnoreLines;
 //BTX - begin tcl exclude
   double (*CellBounds)[6];
 //ETX - end tcl exclude

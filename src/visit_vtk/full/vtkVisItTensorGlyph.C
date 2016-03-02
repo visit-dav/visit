@@ -36,15 +36,15 @@ vtkStandardNewMacro(vtkVisItTensorGlyph);
 // scaling is turned off.
 vtkVisItTensorGlyph::vtkVisItTensorGlyph()
 {
-  this->Scaling = 1;
+  this->Scaling = true;
   this->ScaleFactor = 1.0;
-  this->ExtractEigenvalues = 1;
-  this->ColorGlyphs = 1;
+  this->ExtractEigenvalues = true;
+  this->ColorGlyphs = true;
   this->ColorMode = COLOR_BY_SCALARS;
-  this->ClampScaling = 0;
+  this->ClampScaling = false;
   this->MaxScaleFactor = 100;
-  this->ThreeGlyphs = 0;
-  this->Symmetric = 0;
+  this->ThreeGlyphs = false;
+  this->Symmetric = false;
   this->Length = 1.0;
 
   this->SetNumberOfInputPorts(2);
@@ -166,7 +166,7 @@ vtkVisItTensorGlyph::RequestData(
     return 1;
     }
 
-  numDirs = (this->ThreeGlyphs?3:1)*(this->Symmetric+1);
+  numDirs = (this->ThreeGlyphs?3:1)*(this->Symmetric?2:1);
 
   pts = new vtkIdType[source->GetMaxCellSize()];
   trans = vtkTransform::New();

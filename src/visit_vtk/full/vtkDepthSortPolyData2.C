@@ -228,7 +228,7 @@ vtkDepthSortPolyData2::vtkDepthSortPolyData2()
   this->Vector[0] = this->Vector[1] = this->Vector[2] = 0.0;
   this->Origin[0] = this->Origin[1] = this->Origin[2] = 0.0;
   this->Transform = vtkTransform::New();
-  this->SortScalars = 0;
+  this->SortScalars = false;
 }
 
 vtkDepthSortPolyData2::~vtkDepthSortPolyData2()

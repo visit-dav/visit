@@ -44,18 +44,18 @@ vtkStandardNewMacro(vtkVisItGlyph3D);
 // initial sources are defined.
 vtkVisItGlyph3D::vtkVisItGlyph3D()
 {
-  this->Scaling = 1;
+  this->Scaling = true;
   this->ColorMode = VTK_COLOR_BY_SCALE;
   this->ScaleMode = VTK_SCALE_BY_SCALAR;
   this->ScaleFactor = 1.0;
   this->Range[0] = 0.0;
   this->Range[1] = 1.0;
-  this->Orient = 1;
+  this->Orient = true;
   this->VectorMode = VTK_USE_VECTOR;
-  this->Clamping = 0;
+  this->Clamping = false;
   this->IndexMode = VTK_INDEXING_OFF;
-  this->GeneratePointIds = 0;
-  this->TreatVectorsAs2D = 0;
+  this->GeneratePointIds = false;
+  this->TreatVectorsAs2D = false;
   this->PointIdsName = NULL;
   this->SetPointIdsName("InputPointIds");
   this->SetNumberOfInputPorts(2);
@@ -648,7 +648,7 @@ vtkVisItGlyph3D::RequestData(
 
     // Make 100% sure this is putting the glyphs at Z=0 for 2D.  Floating
     // point error can creep in with 10^15 extents.
-    if (this->TreatVectorsAs2D == 1)
+    if (this->TreatVectorsAs2D)
     {
         trans->Scale(1,1,0);
     }

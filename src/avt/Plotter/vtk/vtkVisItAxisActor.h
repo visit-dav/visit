@@ -130,9 +130,9 @@ public:
 
   // Description:
   // Set/Get the flag that controls whether the minor ticks are visible. 
-  vtkSetMacro(MinorTicksVisible, int);
-  vtkGetMacro(MinorTicksVisible, int);
-  vtkBooleanMacro(MinorTicksVisible, int);
+  vtkSetMacro(MinorTicksVisible, bool);
+  vtkGetMacro(MinorTicksVisible, bool);
+  vtkBooleanMacro(MinorTicksVisible, bool);
 
   // Description:
   // Set/Get the title of the axis actor,
@@ -163,27 +163,27 @@ public:
   
   // Description:
   // Set/Get visibility of the axis line.
-  vtkSetMacro(AxisVisibility, int);
-  vtkGetMacro(AxisVisibility, int);
-  vtkBooleanMacro(AxisVisibility, int);
+  vtkSetMacro(AxisVisibility, bool);
+  vtkGetMacro(AxisVisibility, bool);
+  vtkBooleanMacro(AxisVisibility, bool);
 
   // Description:
   // Set/Get visibility of the axis tick marks.
-  vtkSetMacro(TickVisibility, int);
-  vtkGetMacro(TickVisibility, int);
-  vtkBooleanMacro(TickVisibility, int);
+  vtkSetMacro(TickVisibility, bool);
+  vtkGetMacro(TickVisibility, bool);
+  vtkBooleanMacro(TickVisibility, bool);
 
   // Description:
   // Set/Get visibility of the axis labels.
-  vtkSetMacro(LabelVisibility, int);
-  vtkGetMacro(LabelVisibility, int);
-  vtkBooleanMacro(LabelVisibility, int);
+  vtkSetMacro(LabelVisibility, bool);
+  vtkGetMacro(LabelVisibility, bool);
+  vtkBooleanMacro(LabelVisibility, bool);
 
   // Description:
   // Set/Get visibility of the axis title.
-  vtkSetMacro(TitleVisibility, int);
-  vtkGetMacro(TitleVisibility, int);
-  vtkBooleanMacro(TitleVisibility, int);
+  vtkSetMacro(TitleVisibility, bool);
+  vtkGetMacro(TitleVisibility, bool);
+  vtkBooleanMacro(TitleVisibility, bool);
 
   // Description:
   // Get axis title text property.
@@ -197,9 +197,9 @@ public:
 
   // Description:
   // Set/Get whether gridlines should be drawn.
-  vtkSetMacro(DrawGridlines, int);
-  vtkGetMacro(DrawGridlines, int);
-  vtkBooleanMacro(DrawGridlines, int);
+  vtkSetMacro(DrawGridlines, bool);
+  vtkGetMacro(DrawGridlines, bool);
+  vtkBooleanMacro(DrawGridlines, bool);
 
   // Description:
   // Set/Get the length to use when drawing gridlines. 
@@ -284,9 +284,9 @@ public:
   // Set/Get the flag that controls whether the labels are
   // adjusted for "nice" numerical values to make it easier to read
   // the labels. The adjustment is based in the Range instance variable.
-  vtkSetMacro(AdjustLabels, int);
-  vtkGetMacro(AdjustLabels, int);
-  vtkBooleanMacro(AdjustLabels, int);
+  vtkSetMacro(AdjustLabels, bool);
+  vtkGetMacro(AdjustLabels, bool);
+  vtkBooleanMacro(AdjustLabels, bool);
 
   // Description:
   // Set/Get for the major tick mark minimum.
@@ -317,32 +317,32 @@ protected:
   double  LastRange[2];
   char  *LabelFormat;
   int    NumberOfLabelsBuilt;
-  int    MinorTicksVisible;
-  int    LastMinorTicksVisible;
+  bool    MinorTicksVisible;
+  bool    LastMinorTicksVisible;
   int    TickLocation;
  
-  int    DrawGridlines;
-  int    LastDrawGridlines;
+  bool    DrawGridlines;
+  bool    LastDrawGridlines;
   double  GridlineXLength;
   double  GridlineYLength;
   double  GridlineZLength;
   
-  int    AxisVisibility;
-  int    TickVisibility;
-  int    LastTickVisibility;
-  int    LabelVisibility;
-  int    TitleVisibility;
+  bool    AxisVisibility;
+  bool    TickVisibility;
+  bool    LastTickVisibility;
+  bool    LabelVisibility;
+  bool    TitleVisibility;
   
   int    AxisType;
   int    AxisPosition;
   double  Bounds[6];
   
-  int    AdjustLabels;
+  bool    AdjustLabels;
   double  MajorTickMinimum;
   double  MajorTickMaximum;
   double  MajorTickSpacing;
   double  MinorTickSpacing;
-  int    LastAdjustLabels;
+  bool    LastAdjustLabels;
   double  LastMajorTickMinimum;
   double  LastMajorTickMaximum;
   double  LastMajorTickSpacing;

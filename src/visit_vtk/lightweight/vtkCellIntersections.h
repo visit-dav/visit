@@ -71,9 +71,9 @@ public:
 
   // Description:
   // Boolean controls whether to test for Co-Planar condition.
-  vtkSetMacro(TestCoPlanar,int);
-  vtkGetMacro(TestCoPlanar,int);
-  vtkBooleanMacro(TestCoPlanar,int);
+  vtkSetMacro(TestCoPlanar,bool);
+  vtkGetMacro(TestCoPlanar,bool);
+  vtkBooleanMacro(TestCoPlanar,bool);
 
   int CellIntersectWithLine(vtkCell *, double [3], double [3], 
                                 double&, double [3]);
@@ -139,7 +139,7 @@ private:
 
   vtkTriangle *triangle;
   vtkQuad *quad;
-  int TestCoPlanar;
+  bool TestCoPlanar;
 };
 
 #endif

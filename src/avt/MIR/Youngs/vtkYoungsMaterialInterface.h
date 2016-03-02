@@ -89,13 +89,13 @@ class vtkYoungsMaterialInterface
   protected:
     int CellProduceInterface(int dim, int np, double fraction, double minFrac, double maxFrac);
 
-    int FillMaterial;
-    int InverseNormal;
-    int AxisSymetric;
-    int OnionPeel;
-    int ReverseMaterialOrder;
-    int UseFractionAsDistance;
-    int TwoMaterialsOptimization;
+    bool FillMaterial;
+    bool InverseNormal;
+    bool AxisSymetric;
+    bool OnionPeel;
+    bool ReverseMaterialOrder;
+    bool UseFractionAsDistance;
+    bool TwoMaterialsOptimization;
     double VolumeFractionRange[2];
 
     struct MaterialDescription

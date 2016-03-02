@@ -194,46 +194,46 @@ public:
 
   // Description:
   // Set/Get whether to create cell-to-point translated data for cell-type data
-  vtkSetMacro(CreateCellToPoint,int);
-  vtkGetMacro(CreateCellToPoint,int);
-  vtkBooleanMacro(CreateCellToPoint, int);
+  vtkSetMacro(CreateCellToPoint,bool);
+  vtkGetMacro(CreateCellToPoint,bool);
+  vtkBooleanMacro(CreateCellToPoint, bool);
 
   // Description:
   // Set/Get whether mesh is to be cached.
-  vtkSetMacro(CacheMesh, int);
-  vtkGetMacro(CacheMesh, int);
-  vtkBooleanMacro(CacheMesh, int);
+  vtkSetMacro(CacheMesh, bool);
+  vtkGetMacro(CacheMesh, bool);
+  vtkBooleanMacro(CacheMesh, bool);
 
   // Description:
   // Set/Get whether polyhedra are to be decomposed.
-  vtkSetMacro(DecomposePolyhedra, int);
-  vtkGetMacro(DecomposePolyhedra, int);
-  vtkBooleanMacro(DecomposePolyhedra, int);
+  vtkSetMacro(DecomposePolyhedra, bool);
+  vtkGetMacro(DecomposePolyhedra, bool);
+  vtkBooleanMacro(DecomposePolyhedra, bool);
 
   // Option for reading old binary lagrangian/positions format
   // Description:
   // Set/Get whether the lagrangian/positions is in OF 1.3 format
-  vtkSetMacro(PositionsIsIn13Format, int);
-  vtkGetMacro(PositionsIsIn13Format, int);
-  vtkBooleanMacro(PositionsIsIn13Format, int);
+  vtkSetMacro(PositionsIsIn13Format, bool);
+  vtkGetMacro(PositionsIsIn13Format, bool);
+  vtkBooleanMacro(PositionsIsIn13Format, bool);
 
   // Description:
   // Determine if time directories are to be listed according to controlDict
-  vtkSetMacro(ListTimeStepsByControlDict, int);
-  vtkGetMacro(ListTimeStepsByControlDict, int);
-  vtkBooleanMacro(ListTimeStepsByControlDict, int);
+  vtkSetMacro(ListTimeStepsByControlDict, bool);
+  vtkGetMacro(ListTimeStepsByControlDict, bool);
+  vtkBooleanMacro(ListTimeStepsByControlDict, bool);
 
   // Description:
   // Add dimensions to array names
-  vtkSetMacro(AddDimensionsToArrayNames, int);
-  vtkGetMacro(AddDimensionsToArrayNames, int);
-  vtkBooleanMacro(AddDimensionsToArrayNames, int);
+  vtkSetMacro(AddDimensionsToArrayNames, bool);
+  vtkGetMacro(AddDimensionsToArrayNames, bool);
+  vtkBooleanMacro(AddDimensionsToArrayNames, bool);
 
   // Description:
   // Set/Get whether zones will be read.
-  vtkSetMacro(ReadZones, int);
-  vtkGetMacro(ReadZones, int);
-  vtkBooleanMacro(ReadZones, int);
+  vtkSetMacro(ReadZones, bool);
+  vtkGetMacro(ReadZones, bool);
+  vtkBooleanMacro(ReadZones, bool);
 
   void SetRefresh() { this->Refresh = true; this->Modified(); }
 
@@ -267,25 +267,25 @@ protected:
   bool Refresh;
 
   // for creating cell-to-point translated data
-  int CreateCellToPoint;
+  bool CreateCellToPoint;
 
   // for caching mesh
-  int CacheMesh;
+  bool CacheMesh;
 
   // for decomposing polyhedra on-the-fly
-  int DecomposePolyhedra;
+  bool DecomposePolyhedra;
 
   // for reading old binary lagrangian/positions format
-  int PositionsIsIn13Format;
+  bool PositionsIsIn13Format;
 
   // for reading point/face/cell-Zones
-  int ReadZones;
+  bool ReadZones;
 
   // determine if time directories are listed according to controlDict
-  int ListTimeStepsByControlDict;
+  bool ListTimeStepsByControlDict;
 
   // add dimensions to array names
-  int AddDimensionsToArrayNames;
+  bool AddDimensionsToArrayNames;
 
   char *FileName;
   vtkCharArray *CasePath;
@@ -308,12 +308,12 @@ protected:
 
   // preserved old information
   vtkStdString *FileNameOld;
-  int ListTimeStepsByControlDictOld;
-  int CreateCellToPointOld;
-  int DecomposePolyhedraOld;
-  int PositionsIsIn13FormatOld;
-  int AddDimensionsToArrayNamesOld;
-  int ReadZonesOld;
+  bool ListTimeStepsByControlDictOld;
+  bool CreateCellToPointOld;
+  bool DecomposePolyhedraOld;
+  bool PositionsIsIn13FormatOld;
+  bool AddDimensionsToArrayNamesOld;
+  bool ReadZonesOld;
 
   // paths to Lagrangians
   vtkStringArray *LagrangianPaths;

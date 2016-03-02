@@ -82,18 +82,18 @@ public:
   // Description:
   // Is the file to be read written in binary format (as opposed
   // to ascii).
-  vtkSetMacro(BinaryFile, int);
-  vtkGetMacro(BinaryFile, int);
-  vtkBooleanMacro(BinaryFile, int);
+  vtkSetMacro(BinaryFile, bool);
+  vtkGetMacro(BinaryFile, bool);
+  vtkBooleanMacro(BinaryFile, bool);
 
   // Description:
   // Does the file to be read contain information about number of
   // grids. In some PLOT3D files, the first value contains the number
   // of grids (even if there is only 1). If reading such a file,
   // set this to true.
-  vtkSetMacro(MultiGrid, int);
-  vtkGetMacro(MultiGrid, int);
-  vtkBooleanMacro(MultiGrid, int);
+  vtkSetMacro(MultiGrid, bool);
+  vtkGetMacro(MultiGrid, bool);
+  vtkBooleanMacro(MultiGrid, bool);
 
   // Description:
   // Were the arrays written with leading and trailing byte counts ?
@@ -101,32 +101,32 @@ public:
   // byte counts whereas the ones written by C/C++ won't.
   // Newer Fortran files written as unformatted 'stream' will also
   // not have ByteCount.
-  vtkSetMacro(HasByteCount, int);
-  vtkGetMacro(HasByteCount, int);
-  vtkBooleanMacro(HasByteCount, int);
+  vtkSetMacro(HasByteCount, bool);
+  vtkGetMacro(HasByteCount, bool);
+  vtkBooleanMacro(HasByteCount, bool);
 
   // Description:
   // Is there iblanking (point visibility) information in the file.
   // If there is iblanking arrays, these will be read and assigned
   // to the PointVisibility array of the output.
-  vtkSetMacro(IBlanking, int);
-  vtkGetMacro(IBlanking, int);
-  vtkBooleanMacro(IBlanking, int);
+  vtkSetMacro(IBlanking, bool);
+  vtkGetMacro(IBlanking, bool);
+  vtkBooleanMacro(IBlanking, bool);
 
   // Description:
   // If only two-dimensional data was written to the file,
   // turn this on.
-  vtkSetMacro(TwoDimensionalGeometry, int);
-  vtkGetMacro(TwoDimensionalGeometry, int);
-  vtkBooleanMacro(TwoDimensionalGeometry, int);
+  vtkSetMacro(TwoDimensionalGeometry, bool);
+  vtkGetMacro(TwoDimensionalGeometry, bool);
+  vtkBooleanMacro(TwoDimensionalGeometry, bool);
 
   // Description:
   // Is this file in double precision or single precision.
   // This only matters for binary files.
   // Default is single.
-  vtkSetMacro(DoublePrecision, int);
-  vtkGetMacro(DoublePrecision, int);
-  vtkBooleanMacro(DoublePrecision, int);
+  vtkSetMacro(DoublePrecision, bool);
+  vtkGetMacro(DoublePrecision, bool);
+  vtkBooleanMacro(DoublePrecision, bool);
 
   // Description:
   // Set the byte order of the file (remember, more Unix workstations
@@ -226,14 +226,14 @@ protected:
   char *XYZFileName;
   char *QFileName;
 
-  int BinaryFile;
-  int HasByteCount;
-  int TwoDimensionalGeometry;
-  int MultiGrid;
+  bool BinaryFile;
+  bool HasByteCount;
+  bool TwoDimensionalGeometry;
+  bool MultiGrid;
   int ForceRead;
   int ByteOrder;
-  int IBlanking;
-  int DoublePrecision;
+  bool IBlanking;
+  bool DoublePrecision;
 
   long FileSize;
 

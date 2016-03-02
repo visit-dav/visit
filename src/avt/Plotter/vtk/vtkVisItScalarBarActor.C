@@ -125,9 +125,9 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
   this->AltTitle = NULL;
   this->BarWidth = 0.04;
 
-  this->Bold = 0;
-  this->Italic = 0;
-  this->Shadow = 0;
+  this->Bold = false;
+  this->Italic = false;
+  this->Shadow = false;
   this->FontFamily = VTK_ARIAL;
   this->FontHeight = 0.015;
   this->LabelFormat = new char[10]; 
@@ -195,23 +195,23 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
   this->LastOrigin[1] = 0;
   this->LastSize[0] = 0;
   this->LastSize[1] = 0;
-  this->TitleVisibility = 1;
-  this->RangeVisibility = 1;
-  this->ColorBarVisibility = 1;
-  this->BoundingBoxVisibility = 0;
-  this->TitleOkayToDraw = 1;
-  this->LabelOkayToDraw = 1;
+  this->TitleVisibility = true;
+  this->RangeVisibility = true;
+  this->ColorBarVisibility = true;
+  this->BoundingBoxVisibility = false;
+  this->TitleOkayToDraw = true;
+  this->LabelOkayToDraw = true;
   this->definedLabels = stringVector();
   this->definedDoubleLabels = doubleVector();
 
   this->SkewFactor = 1.;
-  this->UseSkewScaling = 0;
-  this->UseLogScaling = 0;
-  this->ReverseOrder = 0;
+  this->UseSkewScaling = false;
+  this->UseLogScaling = false;
+  this->ReverseOrder = false;
   this->Orientation = VERTICAL_TEXT_ON_RIGHT;
 
-  this->MinMaxInclusive = 1;
-  this->UseSuppliedLabels = 0;
+  this->MinMaxInclusive = true;
+  this->UseSuppliedLabels = false;
   this->suppliedLabels = stringVector();
   this->suppliedValues = doubleVector();
 
@@ -420,7 +420,7 @@ void vtkVisItScalarBarActor::BuildTitle(vtkViewport *viewport)
 
   if (0 == viewSize[0]  && 0 == viewSize[1] )
     {
-    this->TitleOkayToDraw = 0;
+    this->TitleOkayToDraw = false;
     return;
     }
  
@@ -455,7 +455,7 @@ void vtkVisItScalarBarActor::BuildTitle(vtkViewport *viewport)
                     SetCoordinateSystemToNormalizedViewport();
   this->TitleActor->GetPositionCoordinate()->SetValue(titleOrigin);
 
-  this->TitleOkayToDraw = 1;
+  this->TitleOkayToDraw = true;
 }
 
 //  Modifications:
@@ -658,7 +658,7 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
     {
     case VTK_DISCRETE:
       {
-      int nl = this->UseSuppliedLabels ? this->suppliedLabels.size() : nLabels;
+      int nl = this->UseSuppliedLabels ? static_cast<int>(this->suppliedLabels.size()) : nLabels;
       if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
           this->Orientation == VERTICAL_TEXT_ON_LEFT)
         offset = bo + 0.5 * delta;
@@ -875,7 +875,7 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
       labelOrig[0] += textWidth;
     }
 
-  this->LabelOkayToDraw = 1;
+  this->LabelOkayToDraw = true;
 }
 
 // **********************************************************************
@@ -1657,7 +1657,7 @@ int vtkVisItScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       if ( this->Title != NULL )
         this->BuildTitle(viewport); 
       else
-        this->TitleOkayToDraw = 0; 
+        this->TitleOkayToDraw = false; 
       }
 
     if ( this->RangeVisibility )
@@ -1949,8 +1949,8 @@ void vtkVisItScalarBarActor::ShallowCopy(vtkProp *prop)
 
 void vtkVisItScalarBarActor::SkewScalingOn()
 {
-    this->UseSkewScaling = 1;
-    this->UseLogScaling = 0;
+    this->UseSkewScaling = true;
+    this->UseLogScaling = false;
     this->Modified();
 }
 
@@ -1965,7 +1965,7 @@ void vtkVisItScalarBarActor::SkewScalingOn()
 
 void vtkVisItScalarBarActor::SkewScalingOff()
 {
-    this->UseSkewScaling = 0;
+    this->UseSkewScaling = false;
     this->Modified();
 }
 
@@ -1980,8 +1980,8 @@ void vtkVisItScalarBarActor::SkewScalingOff()
 
 void vtkVisItScalarBarActor::LogScalingOn()
 {
-    this->UseLogScaling = 1;
-    this->UseSkewScaling = 0;
+    this->UseLogScaling = true;
+    this->UseSkewScaling = false;
     this->Modified();
 }
 
@@ -1996,7 +1996,7 @@ void vtkVisItScalarBarActor::LogScalingOn()
 
 void vtkVisItScalarBarActor::LogScalingOff()
 {
-    this->UseLogScaling = 0;
+    this->UseLogScaling = false;
     this->Modified();
 }
 

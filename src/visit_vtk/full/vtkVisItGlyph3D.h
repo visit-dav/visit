@@ -139,9 +139,9 @@ public:
 
   // Description:
   // Turn on/off scaling of source geometry.
-  vtkSetMacro(Scaling,int);
-  vtkBooleanMacro(Scaling,int);
-  vtkGetMacro(Scaling,int);
+  vtkSetMacro(Scaling,bool);
+  vtkGetMacro(Scaling,bool);
+  vtkBooleanMacro(Scaling,bool);
 
   // Description:
   // Either scale by scalar or by vector/normal magnitude.
@@ -185,16 +185,16 @@ public:
 
   // Description:
   // Turn on/off orienting of input geometry along vector/normal.
-  vtkSetMacro(Orient,int);
-  vtkBooleanMacro(Orient,int);
-  vtkGetMacro(Orient,int);
+  vtkSetMacro(Orient,bool);
+  vtkGetMacro(Orient,bool);
+  vtkBooleanMacro(Orient,bool);
 
   // Description:
   // Turn on/off clamping of "scalar" values to range. (Scalar value may be
   //  vector magnitude if ScaleByVector() is enabled.)
-  vtkSetMacro(Clamping,int);
-  vtkBooleanMacro(Clamping,int);
-  vtkGetMacro(Clamping,int);
+  vtkSetMacro(Clamping,bool);
+  vtkGetMacro(Clamping,bool);
+  vtkBooleanMacro(Clamping,bool);
 
   // Description:
   // Specify whether to use vector or normal to perform vector operations.
@@ -222,15 +222,15 @@ public:
   // point ids are the id of the input generating point. The point ids are
   // stored in the output point field data and named "InputPointIds". Point
   // generation is useful for debugging and pick operations.
-  vtkSetMacro(GeneratePointIds,int);
-  vtkGetMacro(GeneratePointIds,int);
-  vtkBooleanMacro(GeneratePointIds,int);
+  vtkSetMacro(GeneratePointIds,bool);
+  vtkGetMacro(GeneratePointIds,bool);
+  vtkBooleanMacro(GeneratePointIds,bool);
 
   // Description:
   // Enable/disable the 2D treatment of vectors
-  vtkSetMacro(TreatVectorsAs2D,int);
-  vtkGetMacro(TreatVectorsAs2D,int);
-  vtkBooleanMacro(TreatVectorsAs2D,int);
+  vtkSetMacro(TreatVectorsAs2D,bool);
+  vtkGetMacro(TreatVectorsAs2D,bool);
+  vtkBooleanMacro(TreatVectorsAs2D,bool);
 
   // Description:
   // Set/Get the name of the PointIds array if generated. By default the Ids
@@ -296,17 +296,17 @@ protected:
   vtkPolyData* GetSource(int idx, vtkInformationVector *sourceInfo);
 
   vtkPolyData **Source; // Geometry to copy to each point
-  int Scaling; // Determine whether scaling of geometry is performed
+  bool Scaling; // Determine whether scaling of geometry is performed
   int ScaleMode; // Scale by scalar value or vector magnitude
   int ColorMode; // new scalars based on scale, scalar or vector
   double ScaleFactor; // Scale factor to use to scale geometry
   double Range[2]; // Range to use to perform scalar scaling
-  int Orient; // boolean controls whether to "orient" data
+  bool Orient; // boolean controls whether to "orient" data
   int VectorMode; // Orient/scale via normal or via vector data
-  int Clamping; // whether to clamp scale factor
+  bool Clamping; // whether to clamp scale factor
   int IndexMode; // what to use to index into glyph table
-  int GeneratePointIds; // produce input points ids for each output point
-  int TreatVectorsAs2D; // glyph only the 2D portions of vectors
+  bool GeneratePointIds; // produce input points ids for each output point
+  bool TreatVectorsAs2D; // glyph only the 2D portions of vectors
   char *PointIdsName;
 
   char *InputScalarsSelection;

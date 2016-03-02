@@ -116,9 +116,9 @@ public:
   // corresponding to the sort order. If enabled, the output of this
   // filter will include scalar values that range from 0 to (ncells-1),
   // where 0 is closest to the sort direction.
-  vtkSetMacro(SortScalars, int);
-  vtkGetMacro(SortScalars, int);
-  vtkBooleanMacro(SortScalars, int);
+  vtkSetMacro(SortScalars, bool);
+  vtkGetMacro(SortScalars, bool);
+  vtkBooleanMacro(SortScalars, bool);
 
   // Description:
   // Return MTime also considering the dependent objects: the camera
@@ -139,7 +139,7 @@ protected:
   vtkTransform *Transform;
   double Vector[3];
   double Origin[3];
-  int SortScalars;
+  bool SortScalars;
 
 private:
   vtkDepthSortPolyData2(const vtkDepthSortPolyData2&);  // Not implemented.

@@ -116,8 +116,8 @@ avtVariableLegend::avtVariableLegend()
     sBar->SetPosition2(size[0], size[1]);
     sBar->SetType(vtkVisItScalarBarActor::VTK_CONTINUOUS);
 
-    barVisibility = 1;
-    rangeVisibility = 1;
+    barVisibility = true;
+    rangeVisibility = true;
     titleVisibility = true;
     labelVisibility = 1;
     minmaxVisibility = true;
@@ -192,8 +192,8 @@ avtVariableLegend::avtVariableLegend(int)
     scale[1] = 1.;
     size[0] = 0.08;
     size[1] = 0.26;
-    barVisibility = 1;
-    rangeVisibility = 1;
+    barVisibility = true;
+    rangeVisibility = true;
     labelVisibility = 1;
     minmaxVisibility = true;
     titleVisibility = true;
@@ -319,7 +319,7 @@ void
 avtVariableLegend::SetTitleVisibility(bool val)
 {
     titleVisibility = val;
-    sBar->SetTitleVisibility(val?1:0);
+    sBar->SetTitleVisibility(val);
 }
 
 // ****************************************************************************
@@ -607,7 +607,7 @@ avtVariableLegend::SetFont(int family, bool bold, bool italic, bool shadow)
 // ****************************************************************************
 
 void
-avtVariableLegend::SetColorBarVisibility(const int val)
+avtVariableLegend::SetColorBarVisibility(const bool val)
 {
     barVisibility = val;
     sBar->SetColorBarVisibility(val);
@@ -794,7 +794,7 @@ avtVariableLegend::SetLookupTable(vtkLookupTable *LUT)
 // ****************************************************************************
 
 void
-avtVariableLegend::SetVarRangeVisibility(const int val )
+avtVariableLegend::SetVarRangeVisibility(const bool val )
 {
     rangeVisibility = val;
     sBar->SetRangeVisibility(rangeVisibility && minmaxVisibility);

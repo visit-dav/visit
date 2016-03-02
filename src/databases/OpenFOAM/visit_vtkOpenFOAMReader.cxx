@@ -4505,7 +4505,7 @@ bool visit_vtkOpenFOAMReaderPrivate::MakeInformationVector(
   this->Parent = parent;
 
   // list timesteps (skip parsing controlDict entirely if
-  // ListTimeStepsByControlDict is set to 0)
+  // ListTimeStepsByControlDict is set to false)
   bool ret = false; // tentatively set to false to suppress warning by older compilers
   if (this->Parent->GetListTimeStepsByControlDict())
     {
@@ -7307,7 +7307,7 @@ vtkMultiBlockDataSet* visit_vtkOpenFOAMReaderPrivate::MakeLagrangianMesh()
 
     // tell the IO object if the file is in OF 1.3 binary
     // lagrangian/positions format
-    io.SetIs13Positions(this->Parent->GetPositionsIsIn13Format() != 0);
+    io.SetIs13Positions(this->Parent->GetPositionsIsIn13Format());
 
     vtkFoamEntryValue dict(NULL);
     try
@@ -8180,31 +8180,31 @@ visit_vtkOpenFOAMReader::visit_vtkOpenFOAMReader()
   this->LagrangianSelectionMTimeOld = 0;
 
   // for creating cell-to-point translated data
-  this->CreateCellToPoint = 1;
-  this->CreateCellToPointOld = 1;
+  this->CreateCellToPoint = true;
+  this->CreateCellToPointOld = true;
 
   // for caching mesh
-  this->CacheMesh = 1;
+  this->CacheMesh = true;
 
   // for decomposing polyhedra
-  this->DecomposePolyhedra = 0;
-  this->DecomposePolyhedraOld = 0;
+  this->DecomposePolyhedra = false;
+  this->DecomposePolyhedraOld = false;
 
   // for reading old binary lagrangian/positions format
-  this->PositionsIsIn13Format = 0; // turned off by default
-  this->PositionsIsIn13FormatOld = 0;
+  this->PositionsIsIn13Format = false; // turned off by default
+  this->PositionsIsIn13FormatOld = false;
 
   // for reading zones
-  this->ReadZones = 0; // turned off by default
-  this->ReadZonesOld = 0;
+  this->ReadZones = false; // turned off by default
+  this->ReadZonesOld = false;
 
   // determine if time directories are to be listed according to controlDict
-  this->ListTimeStepsByControlDict = 0;
-  this->ListTimeStepsByControlDictOld = 0;
+  this->ListTimeStepsByControlDict = false;
+  this->ListTimeStepsByControlDictOld = false;
 
   // add dimensions to array names
-  this->AddDimensionsToArrayNames = 0;
-  this->AddDimensionsToArrayNamesOld = 0;
+  this->AddDimensionsToArrayNames = false;
+  this->AddDimensionsToArrayNamesOld = false;
 
   // Lagrangian paths
   this->LagrangianPaths = vtkStringArray::New();

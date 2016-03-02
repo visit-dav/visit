@@ -61,15 +61,15 @@ class vtkCEAucdReader : public vtkUnstructuredGridAlgorithm
      // Description :
      // If true, multiple outputs (one per material id) are generated,
      // otherwise a single output for all cells is generated.
-      vtkSetMacro(PerMaterialOutput, int);
-      vtkGetMacro(PerMaterialOutput, int);
-      vtkBooleanMacro(PerMaterialOutput, int);
+      vtkSetMacro(PerMaterialOutput, bool);
+      vtkGetMacro(PerMaterialOutput, bool);
+      vtkBooleanMacro(PerMaterialOutput, bool);
       
      // Description:
      // Is the file to be read written in binary format (as opposed to ascii).
-      vtkSetMacro(BinaryFile, int);
-      vtkGetMacro(BinaryFile, int);
-      vtkBooleanMacro(BinaryFile, int);
+      vtkSetMacro(BinaryFile, bool);
+      vtkGetMacro(BinaryFile, bool);
+      vtkBooleanMacro(BinaryFile, bool);
       
      // Description:
      // Get the total number of cells.
@@ -155,8 +155,8 @@ class vtkCEAucdReader : public vtkUnstructuredGridAlgorithm
       int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
       
       char *FileName;
-      int BinaryFile;
-      int PerMaterialOutput;
+      bool BinaryFile;
+      bool PerMaterialOutput;
       int NumberOfMaterials;
       
       int NumberOfNodes;
@@ -220,7 +220,7 @@ class vtkCEAucdReader : public vtkUnstructuredGridAlgorithm
       void FileStreamSeekEnd();
 
      //BTX
-      int CachedPerMaterialOutput;
+      bool CachedPerMaterialOutput;
       char* CachedFileName;
       const std::ifstream* CachedFileStream;
       long CachedGlobalOffset;

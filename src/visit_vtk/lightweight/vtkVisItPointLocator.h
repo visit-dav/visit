@@ -69,9 +69,9 @@ public:
 
   // Description:
   // Specify the average number of points in each bucket.
-  vtkSetMacro(IgnoreDisconnectedPoints,int);
-  vtkGetMacro(IgnoreDisconnectedPoints,int);
-  vtkBooleanMacro(IgnoreDisconnectedPoints,int);
+  vtkSetMacro(IgnoreDisconnectedPoints,bool);
+  vtkGetMacro(IgnoreDisconnectedPoints,bool);
+  vtkBooleanMacro(IgnoreDisconnectedPoints,bool);
 
   // Description:
   // Given a position x, return the id of the point closest to it. Alternative
@@ -236,7 +236,7 @@ protected:
   vtkIdType InsertionPointId;
 
   double InsertionLevel; 
-  int   IgnoreDisconnectedPoints;
+  bool   IgnoreDisconnectedPoints;
 private:
   vtkVisItPointLocator(const vtkVisItPointLocator&);  // Not implemented.
   void operator=(const vtkVisItPointLocator&);  // Not implemented.

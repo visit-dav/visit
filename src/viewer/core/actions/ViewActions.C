@@ -1015,7 +1015,7 @@ ChooseCenterOfRotationAction::FinishExecute(bool success,
     // Restore the old interaction mode.
     window->SetInteractionMode(oldMode);
 
-    float pt[3];
+    double pt[3];
     if(success)
     {
         pt[0] = p->GetPickPoint()[0];

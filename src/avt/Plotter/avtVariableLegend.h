@@ -137,12 +137,12 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     virtual void               SetOrientation(LegendOrientation);
     virtual void               SetFont(int family, bool bold, bool italic, bool shadow);
 
-    void                       SetColorBarVisibility(const int);
+    void                       SetColorBarVisibility(const bool);
     void                       SetRange(double min, double max);
     void                       GetRange(double &, double &);
     void                       SetScaling(int mode = 0, double skew = 1.);
     void                       SetLookupTable(vtkLookupTable *);
-    void                       SetVarRangeVisibility(const int);
+    void                       SetVarRangeVisibility(const bool);
     void                       SetVarRange(double min, double max);
 
     virtual void               SetNumTicks(int);
@@ -162,8 +162,8 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     vtkLookupTable            *lut;
 
     double                     scale[2];
-    int                        barVisibility;
-    int                        rangeVisibility;
+    bool                       barVisibility;
+    bool                       rangeVisibility;
     bool                       titleVisibility;
     int                        labelVisibility;
     bool                       minmaxVisibility;

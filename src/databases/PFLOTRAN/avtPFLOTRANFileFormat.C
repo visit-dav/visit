@@ -1615,7 +1615,7 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
 void
 avtPFLOTRANFileFormat::GetTimes(std::vector<double> &t)
 {
-    int nt = times.size();
-    for(int i=0;i<nt;i++)
+    size_t nt = times.size();
+    for(size_t i=0;i<nt;i++)
         t.push_back(times[i].first);
 }

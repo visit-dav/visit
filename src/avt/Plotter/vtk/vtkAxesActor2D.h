@@ -103,8 +103,8 @@ public:
 
   // Description:
   // Sets the log scaling for the axes.
-  void SetXLogScaling(int logScale);
-  void SetYLogScaling(int logScale);
+  void SetXLogScaling(bool logScale);
+  void SetYLogScaling(bool logScale);
 
 
   // LABELS
@@ -117,8 +117,8 @@ public:
 
   // Description:
   // Sets the label visibility
-  void SetXLabelVisibility(int vis);
-  void SetYLabelVisibility(int vis);
+  void SetXLabelVisibility(bool vis);
+  void SetYLabelVisibility(bool vis);
 
   // Description:
   // Sets the label scaling for the axes.
@@ -142,7 +142,7 @@ public:
   
   // Description:
   // Sets the flag specifying if labels are auto adjusted.
-  void SetAutoAdjustLabels(int autoAdjust);
+  void SetAutoAdjustLabels(bool autoAdjust);
 
   // Description:
   // Retrieve the text property for labels
@@ -165,8 +165,8 @@ public:
   
   // Description:
   // Sets the title visibility
-  void SetXTitleVisibility(int vis);
-  void SetYTitleVisibility(int vis);
+  void SetXTitleVisibility(bool vis);
+  void SetYTitleVisibility(bool vis);
 
   // Description:
   // Retrieve the text property for titles
@@ -182,10 +182,10 @@ public:
 
   // Description:
   // Sets the visibility of ticks.
-  void SetXMinorTickVisibility(int vis);
-  void SetXMajorTickVisibility(int vis);
-  void SetYMinorTickVisibility(int vis);
-  void SetYMajorTickVisibility(int vis);
+  void SetXMinorTickVisibility(bool vis);
+  void SetXMajorTickVisibility(bool vis);
+  void SetYMinorTickVisibility(bool vis);
+  void SetYMajorTickVisibility(bool vis);
 
   // Description:
   // Sets the minimum value Major Ticks
@@ -212,8 +212,8 @@ public:
 
   // Description:
   // Sets the title visibility
-  void SetXGridVisibility(int vis);
-  void SetYGridVisibility(int vis);
+  void SetXGridVisibility(bool vis);
+  void SetYGridVisibility(bool vis);
 
 
   // Description:

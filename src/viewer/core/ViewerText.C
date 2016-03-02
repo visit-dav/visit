@@ -69,7 +69,7 @@ ViewerText::empty() const
     return text.empty();
 }
 
-bool
+size_t
 ViewerText::size() const
 {
     return text.size();
@@ -228,7 +228,7 @@ ViewerText::append(const ViewerText &obj)
         // Renumber the keys in the text.
         ViewerText tmp(obj.text);
         char newkey[MAX_VIEWERTEXT_BUFFER];
-        int start = args.size();
+        size_t start = args.size();
         for(size_t i = 0; i < obj.args.size(); ++i)
         {
             SNPRINTF(newkey, MAX_VIEWERTEXT_BUFFER, "%%%d", int(start+i+1));

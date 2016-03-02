@@ -39,9 +39,9 @@ vtkVisItTubeFilter::vtkVisItTubeFilter()
     this->DefaultNormal[0] = this->DefaultNormal[1] = 0.0;
     this->DefaultNormal[2] = 1.0;
   
-    this->UseDefaultNormal = 0;
-    this->SidesShareVertices = 1;
-    this->Capping = 0;
+    this->UseDefaultNormal = false;
+    this->SidesShareVertices = true;
+    this->Capping = false;
     this->OnRatio = 1;
     this->Offset = 0;
 
