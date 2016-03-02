@@ -87,7 +87,7 @@ vtkVisItAxisActor::vtkVisItAxisActor()
 
   this->Camera = NULL;
   this->Title = NULL;
-  this->MinorTicksVisible = 1;
+  this->MinorTicksVisible = true;
   this->MajorTickSize = 1.0;
   this->MinorTickSize = 0.5;
   this->TickLocation = VTK_TICKS_INSIDE; 
@@ -126,12 +126,12 @@ vtkVisItAxisActor::vtkVisItAxisActor()
   this->AxisActor = vtkActor::New();
   this->AxisActor->SetMapper(this->AxisMapper);
   
-  this->AxisVisibility = 1;
-  this->TickVisibility = 1;
-  this->LabelVisibility = 1;
-  this->TitleVisibility = 1;
+  this->AxisVisibility = true;
+  this->TickVisibility = true;
+  this->LabelVisibility = true;
+  this->TitleVisibility = true;
   
-  this->DrawGridlines = 0;
+  this->DrawGridlines = false;
   this->GridlineXLength = 1.;  
   this->GridlineYLength = 1.;  
   this->GridlineZLength = 1.;  
@@ -148,9 +148,9 @@ vtkVisItAxisActor::vtkVisItAxisActor()
 
   this->LastAxisPosition = -1;
   this->LastTickLocation = -1; 
-  this->LastTickVisibility = -1; 
-  this->LastDrawGridlines = -1; 
-  this->LastMinorTicksVisible = -1; 
+  this->LastTickVisibility = false; 
+  this->LastDrawGridlines = true; 
+  this->LastMinorTicksVisible = false; 
   this->LastRange[0] = -1.0;
   this->LastRange[1] = -1.0;
 
@@ -165,12 +165,12 @@ vtkVisItAxisActor::vtkVisItAxisActor()
   this->DeltaMinor = 1.;
   this->DeltaMajor = 1.;
 
-  this->AdjustLabels = 1;
+  this->AdjustLabels = true;
   this->MajorTickMinimum = 0.0;
   this->MajorTickMaximum = 1.0;
   this->MajorTickSpacing = 1.0;
   this->MinorTickSpacing = 0.1;
-  this->LastAdjustLabels = -1;
+  this->LastAdjustLabels = false;
   this->LastMajorTickMinimum = -1.0;
   this->LastMajorTickMaximum = -1.0;
   this->LastMajorTickSpacing = -1.0;
@@ -751,8 +751,8 @@ vtkVisItAxisActor::BuildTitle(bool force)
     }
   this->TitleVector->SetText(this->Title);
   this->TitleVector->SetFontFamily(this->TitleTextProperty->GetFontFamily());
-  this->TitleVector->SetBold(this->TitleTextProperty->GetBold());
-  this->TitleVector->SetItalic(this->TitleTextProperty->GetItalic());
+  this->TitleVector->SetBold(this->TitleTextProperty->GetBold()?true:false);
+  this->TitleVector->SetItalic(this->TitleTextProperty->GetItalic()?true:false);
 
   this->TitleActor->SetCamera(this->Camera);
   this->TitleActor->SetPosition(p2[0], p2[1], p2[2]);
@@ -896,8 +896,8 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
   for (size_t i = 0; i < numLabels; i++)
     {
     this->LabelVectors[i]->SetFontFamily(this->LabelTextProperty->GetFontFamily());
-    this->LabelVectors[i]->SetBold(this->LabelTextProperty->GetBold());
-    this->LabelVectors[i]->SetItalic(this->LabelTextProperty->GetItalic());
+    this->LabelVectors[i]->SetBold(this->LabelTextProperty->GetBold()?true:false);
+    this->LabelVectors[i]->SetItalic(this->LabelTextProperty->GetItalic()?true:false);
 
     this->LabelVectors[i]->SetText(labels[i].c_str());
     }

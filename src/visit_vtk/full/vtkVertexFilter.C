@@ -63,7 +63,7 @@ vtkStandardNewMacro(vtkVertexFilter);
 
 vtkVertexFilter::vtkVertexFilter()
 {
-    VertexAtPoints = 1;
+    VertexAtPoints = true;
 }
 
 // ***************************************************************************

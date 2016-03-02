@@ -100,8 +100,8 @@ vtkOnionPeelFilter::vtkOnionPeelFilter()
     this->maxLayersReached = 0;
     this->maxLayerNum = VTK_INT_MAX;
     this->AdjacencyType = VTK_NODE_ADJACENCY;
-    this->ReconstructOriginalCells = 0; 
-    this->SeedIdIsForCell = 1; 
+    this->ReconstructOriginalCells = false; 
+    this->SeedIdIsForCell = true; 
 
     this->layerCellIds = vtkIdList::New();
     this->layerCellIds->Allocate(500);

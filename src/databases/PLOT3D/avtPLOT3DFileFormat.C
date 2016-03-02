@@ -163,7 +163,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
             if (!qFileName.empty())
             {
                 xFileName = fname;
-                int pos = xFileName.rfind(VISIT_SLASH_STRING);
+                string::size_type pos = xFileName.rfind(VISIT_SLASH_STRING);
                 string solnFile = xFileName.substr(0, pos+1);
                 qFileName = solnFile + qFileName;
                 haveSolutionFile = true;
@@ -256,7 +256,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname,
                 if (qFileName.empty() || guessedQFile)
                 {
                     string xFN(fname);
-                    int pos = xFN.rfind(VISIT_SLASH_STRING);
+                    string::size_type pos = xFN.rfind(VISIT_SLASH_STRING);
                     string solnFile = xFN.substr(0, pos+1);
                     qFileName = solnFile + qFN;
                     reader->SetQFileName(qFileName.c_str());

@@ -107,7 +107,7 @@ vtkVisItPointLocator::vtkVisItPointLocator()
   this->InsertionPointId = 0;
   this->InsertionTol2 = 0.0001;
   this->InsertionLevel = 0;
-  this->IgnoreDisconnectedPoints = 0;
+  this->IgnoreDisconnectedPoints = false;
 }
 
 vtkVisItPointLocator::~vtkVisItPointLocator()

@@ -133,9 +133,9 @@ public:
   // If this flag is enabled, then the output scalar values will be
   // interpolated from the implicit function values, and not the input scalar
   // data.
-  vtkSetMacro(GenerateCutScalars,int);
-  vtkGetMacro(GenerateCutScalars,int);
-  vtkBooleanMacro(GenerateCutScalars,int);
+  vtkSetMacro(GenerateCutScalars,bool);
+  vtkGetMacro(GenerateCutScalars,bool);
+  vtkBooleanMacro(GenerateCutScalars,bool);
 
   // Description:
   // Specify a spatial locator for merging points. By default, 
@@ -185,7 +185,7 @@ protected:
   vtkPointLocator *Locator;
   int SortBy;
   vtkContourValues *ContourValues;
-  int GenerateCutScalars;
+  bool GenerateCutScalars;
 
 private:
   vtkVisItCutter(const vtkVisItCutter&);  // Not implemented.

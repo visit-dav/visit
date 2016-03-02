@@ -40,15 +40,14 @@
 #define PY_LINE3DOBJECT_H
 #include <Python.h>
 #include <AnnotationObject.h>
-#include <visitpy_exports.h>
 
 //
 // Functions exposed to the VisIt module.
 //
-bool VISITPY_API              PyLine3DObject_Check(PyObject *obj);
-VISITPY_API AnnotationObject *PyLine3DObject_FromPyObject(PyObject *obj);
-VISITPY_API PyObject         *PyLine3DObject_NewPyObject();
-VISITPY_API PyObject         *PyLine3DObject_WrapPyObject(AnnotationObject *attr);
+bool              PyLine3DObject_Check(PyObject *obj);
+AnnotationObject *PyLine3DObject_FromPyObject(PyObject *obj);
+PyObject         *PyLine3DObject_NewPyObject();
+PyObject         *PyLine3DObject_WrapPyObject(AnnotationObject *attr);
 
 #endif
 

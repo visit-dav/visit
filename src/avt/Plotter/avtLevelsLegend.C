@@ -106,8 +106,8 @@ avtLevelsLegend::avtLevelsLegend()
     size[1] = 0.26;
     sBar->SetPosition2(size[0], size[1]);
 
-    barVisibility = 1;
-    rangeVisibility = 1;
+    barVisibility = true;
+    rangeVisibility = true;
     labelVisibility = 1;
     minmaxVisibility = true;
     titleVisibility = true;
@@ -443,7 +443,7 @@ avtLevelsLegend::SetLegendScale(double xScale, double yScale)
 void
 avtLevelsLegend::SetBoundingBoxVisibility(bool val)
 {
-    sBar->SetBoundingBoxVisibility(val?1:0);
+    sBar->SetBoundingBoxVisibility(val);
 }
 
 // ****************************************************************************
@@ -536,7 +536,7 @@ avtLevelsLegend::SetFont(int family, bool bold, bool italic, bool shadow)
 // ****************************************************************************
 
 void
-avtLevelsLegend::SetColorBarVisibility(const int val)
+avtLevelsLegend::SetColorBarVisibility(const bool val)
 {
     barVisibility = val;
     sBar->SetColorBarVisibility(val);
@@ -727,7 +727,7 @@ avtLevelsLegend::SetReverseOrder(const bool rev)
 // ****************************************************************************
 
 void
-avtLevelsLegend::SetVarRangeVisibility(const int val )
+avtLevelsLegend::SetVarRangeVisibility(const bool val )
 {
     rangeVisibility = val;
     sBar->SetRangeVisibility(rangeVisibility && minmaxVisibility);

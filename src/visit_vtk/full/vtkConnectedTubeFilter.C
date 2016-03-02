@@ -399,8 +399,8 @@ vtkConnectedTubeFilter::vtkConnectedTubeFilter()
 {
     this->Radius = 0.5;
     this->NumberOfSides = 3;
-    this->CreateNormals = 0;
-    this->Capping = 0;
+    this->CreateNormals = false;
+    this->Capping = false;
 
     pseqlist = NULL;
 }

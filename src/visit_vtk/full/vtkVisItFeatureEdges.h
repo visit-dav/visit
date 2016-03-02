@@ -65,15 +65,15 @@ public:
 
   // Description:
   // Turn on/off the extraction of boundary edges.
-  vtkSetMacro(BoundaryEdges,int);
-  vtkGetMacro(BoundaryEdges,int);
-  vtkBooleanMacro(BoundaryEdges,int);
+  vtkSetMacro(BoundaryEdges,bool);
+  vtkGetMacro(BoundaryEdges,bool);
+  vtkBooleanMacro(BoundaryEdges,bool);
 
   // Description:
   // Turn on/off the extraction of feature edges.
-  vtkSetMacro(FeatureEdges,int);
-  vtkGetMacro(FeatureEdges,int);
-  vtkBooleanMacro(FeatureEdges,int);
+  vtkSetMacro(FeatureEdges,bool);
+  vtkGetMacro(FeatureEdges,bool);
+  vtkBooleanMacro(FeatureEdges,bool);
 
   // Description:
   // Specify the feature angle for extracting feature edges.
@@ -82,21 +82,21 @@ public:
 
   // Description:
   // Turn on/off the extraction of non-manifold edges.
-  vtkSetMacro(NonManifoldEdges,int);
-  vtkGetMacro(NonManifoldEdges,int);
-  vtkBooleanMacro(NonManifoldEdges,int);
+  vtkSetMacro(NonManifoldEdges,bool);
+  vtkGetMacro(NonManifoldEdges,bool);
+  vtkBooleanMacro(NonManifoldEdges,bool);
 
   // Description:
   // Turn on/off the extraction of manifold edges.
-  vtkSetMacro(ManifoldEdges,int);
-  vtkGetMacro(ManifoldEdges,int);
-  vtkBooleanMacro(ManifoldEdges,int);
+  vtkSetMacro(ManifoldEdges,bool);
+  vtkGetMacro(ManifoldEdges,bool);
+  vtkBooleanMacro(ManifoldEdges,bool);
 
   // Description:
   // Turn on/off the coloring of edges by type.
-  vtkSetMacro(Coloring,int);
-  vtkGetMacro(Coloring,int);
-  vtkBooleanMacro(Coloring,int);
+  vtkSetMacro(Coloring,bool);
+  vtkGetMacro(Coloring,bool);
+  vtkBooleanMacro(Coloring,bool);
 
   // Description:
   // Set / get a spatial locator for merging points. By
@@ -124,11 +124,11 @@ protected:
                                   vtkInformationVector *);
   
   double FeatureAngle;
-  int BoundaryEdges;
-  int FeatureEdges;
-  int NonManifoldEdges;
-  int ManifoldEdges;
-  int Coloring;
+  bool BoundaryEdges;
+  bool FeatureEdges;
+  bool NonManifoldEdges;
+  bool ManifoldEdges;
+  bool Coloring;
   vtkPointLocator *Locator;
 
 private:

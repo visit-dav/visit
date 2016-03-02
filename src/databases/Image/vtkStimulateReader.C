@@ -143,7 +143,7 @@ bool vtkStimulateReader::GetFilenames(const char *one_file, char *spr_name,
 {
   if (one_file == NULL)
     return false;
-  int len = strlen(one_file);
+  size_t len = strlen(one_file);
   if (len < 4)
     return false;
 

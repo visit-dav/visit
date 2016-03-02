@@ -35,7 +35,7 @@ vtkStandardNewMacro(vtkVisItPointDataToCellData);
 // Instantiate object so that point data is not passed to output.
 vtkVisItPointDataToCellData::vtkVisItPointDataToCellData()
 {
-  this->PassPointData = 0;
+  this->PassPointData = false;
 }
 
 //----------------------------------------------------------------------------

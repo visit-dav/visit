@@ -205,22 +205,22 @@ public:
 
   // Description:
   // Enable/Disable bolding annotation text.
-  vtkSetMacro(Bold, int);
-  vtkGetMacro(Bold, int);
-  vtkBooleanMacro(Bold, int);
+  vtkSetMacro(Bold, bool);
+  vtkGetMacro(Bold, bool);
+  vtkBooleanMacro(Bold, bool);
 
   // Description:
   // Enable/Disable italicizing annotation text.
-  vtkSetMacro(Italic, int);
-  vtkGetMacro(Italic, int);
-  vtkBooleanMacro(Italic, int);
+  vtkSetMacro(Italic, bool);
+  vtkGetMacro(Italic, bool);
+  vtkBooleanMacro(Italic, bool);
 
   // Description:
   // Enable/Disable creating shadows on the annotation text. Shadows make 
   // the text easier to read.
-  vtkSetMacro(Shadow, int);
-  vtkGetMacro(Shadow, int);
-  vtkBooleanMacro(Shadow, int);
+  vtkSetMacro(Shadow, bool);
+  vtkGetMacro(Shadow, bool);
+  vtkBooleanMacro(Shadow, bool);
 
   // Description:
   // Set/Get the font family for the annotation text. Three font types 
@@ -268,27 +268,27 @@ public:
 
   // Description:
   // Set/Get the visibility of the range annotation text. 
-  vtkSetMacro(RangeVisibility, int);
-  vtkGetMacro(RangeVisibility, int);
-  vtkBooleanMacro(RangeVisibility, int);
+  vtkSetMacro(RangeVisibility, bool);
+  vtkGetMacro(RangeVisibility, bool);
+  vtkBooleanMacro(RangeVisibility, bool);
 
   // Description:
   // Set/Get the visibility of the color bar. 
-  vtkSetMacro(ColorBarVisibility, int);
-  vtkGetMacro(ColorBarVisibility, int);
-  vtkBooleanMacro(ColorBarVisibility, int);
+  vtkSetMacro(ColorBarVisibility, bool);
+  vtkGetMacro(ColorBarVisibility, bool);
+  vtkBooleanMacro(ColorBarVisibility, bool);
 
   // Description:
   // Set/Get the visibility of the title annotation text. 
-  vtkSetMacro(TitleVisibility, int);
-  vtkGetMacro(TitleVisibility, int);
-  vtkBooleanMacro(TitleVisibility, int);
+  vtkSetMacro(TitleVisibility, bool);
+  vtkGetMacro(TitleVisibility, bool);
+  vtkBooleanMacro(TitleVisibility, bool);
 
   // Description:
   // Set/Get the visibility of the bounding box.
-  vtkSetMacro(BoundingBoxVisibility, int);
-  vtkGetMacro(BoundingBoxVisibility, int);
-  vtkBooleanMacro(BoundingBoxVisibility, int);
+  vtkSetMacro(BoundingBoxVisibility, bool);
+  vtkGetMacro(BoundingBoxVisibility, bool);
+  vtkBooleanMacro(BoundingBoxVisibility, bool);
 
   // Description:
   // Set the bounding box color
@@ -320,9 +320,9 @@ public:
   // Default is bottom-to-top, (min on bottom, max on top).
   // Reverse is top-to-bottom.
   // Has effect only if user-defined labels are set.
-  vtkSetMacro(ReverseOrder, int);
-  vtkGetMacro(ReverseOrder, int);
-  vtkBooleanMacro(ReverseOrder, int);
+  vtkSetMacro(ReverseOrder, bool);
+  vtkGetMacro(ReverseOrder, bool);
+  vtkBooleanMacro(ReverseOrder, bool);
 
   typedef enum { VERTICAL_TEXT_ON_RIGHT, 
                  VERTICAL_TEXT_ON_LEFT,
@@ -335,15 +335,15 @@ public:
 
   // Description:
   // Enable/Disable inclusion of min and max in tick values.
-  vtkSetMacro(MinMaxInclusive, int);
-  vtkGetMacro(MinMaxInclusive, int);
-  vtkBooleanMacro(MinMaxInclusive, int);
+  vtkSetMacro(MinMaxInclusive, bool);
+  vtkGetMacro(MinMaxInclusive, bool);
+  vtkBooleanMacro(MinMaxInclusive, bool);
 
   // Description:
   // Enable/Disable use of user-supplied labels.
-  vtkSetMacro(UseSuppliedLabels, int);
-  vtkGetMacro(UseSuppliedLabels, int);
-  vtkBooleanMacro(UseSuppliedLabels, int);
+  vtkSetMacro(UseSuppliedLabels, bool);
+  vtkGetMacro(UseSuppliedLabels, bool);
+  vtkBooleanMacro(UseSuppliedLabels, bool);
 
   // Description:
   // Set/Get user defined labels; 
@@ -392,20 +392,20 @@ protected:
   int   NumberOfLabelsBuilt;
   char  *Title;
 
-  int   Bold;
-  int   Italic;
-  int   Shadow;
+  bool   Bold;
+  bool   Italic;
+  bool   Shadow;
   int   FontFamily;
   double FontHeight;
   char  *LabelFormat;
   char  *RangeFormat;
   vtkCoordinate *Position2Coordinate;
 
-  int TitleVisibility;
-  int RangeVisibility;
-  int ColorBarVisibility;
-  int ReverseOrder;
-  int BoundingBoxVisibility;
+  bool TitleVisibility;
+  bool RangeVisibility;
+  bool ColorBarVisibility;
+  bool ReverseOrder;
+  bool BoundingBoxVisibility;
   BarOrientation Orientation;    
 
   double BarWidth;
@@ -433,11 +433,11 @@ protected:
   int LastSize[2];
   int LastOrigin[2];
   char *AltTitle;
-  int TitleOkayToDraw;
-  int LabelOkayToDraw;
+  bool TitleOkayToDraw;
+  bool LabelOkayToDraw;
 
-  int UseSkewScaling;
-  int UseLogScaling;
+  bool UseSkewScaling;
+  bool UseLogScaling;
   double SkewFactor;
   stringVector definedLabels;
   doubleVector definedDoubleLabels;
@@ -446,8 +446,8 @@ protected:
 
   LevelColorMap labelColorMap; 
 
-  int MinMaxInclusive;
-  int UseSuppliedLabels;
+  bool MinMaxInclusive;
+  bool UseSuppliedLabels;
   stringVector suppliedLabels;
   doubleVector suppliedValues;
 

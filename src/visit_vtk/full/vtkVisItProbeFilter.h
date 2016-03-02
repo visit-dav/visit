@@ -58,9 +58,9 @@ public:
   // the breakup of the probe operation to be much more efficient.  When piece
   // m of n is requested for update by the user, then only n of m needs to
   // be requested of the source. 
-  vtkSetMacro(SpatialMatch, int);
-  vtkGetMacro(SpatialMatch, int);
-  vtkBooleanMacro(SpatialMatch, int);
+  vtkSetMacro(SpatialMatch, bool);
+  vtkGetMacro(SpatialMatch, bool);
+  vtkBooleanMacro(SpatialMatch, bool);
 
   // Description:
   // Get the list of point ids in the output that contain attribute data
@@ -71,16 +71,16 @@ public:
   // Added by KSB, LLNL, 03-28-2008
   // This flag is used to indicate that cell data is being probed.
   // They are handled differently than point data.
-  vtkSetMacro(CellData, int);
-  vtkGetMacro(CellData, int);
-  vtkBooleanMacro(CellData, int);
+  vtkSetMacro(CellData, bool);
+  vtkGetMacro(CellData, bool);
+  vtkBooleanMacro(CellData, bool);
   
 protected:
   vtkVisItProbeFilter();
   ~vtkVisItProbeFilter();
 
-  int SpatialMatch;
-  int CellData;
+  bool SpatialMatch;
+  bool CellData;
 
   virtual int RequestData(vtkInformation *, 
                           vtkInformationVector **, 

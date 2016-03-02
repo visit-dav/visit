@@ -82,9 +82,9 @@ vtkLineLegend::vtkLineLegend()
   this->PositionCoordinate->SetCoordinateSystemToNormalizedViewport();
   this->PositionCoordinate->SetValue(0.82, 0.1);
 
-  this->Bold = 0;
-  this->Italic = 0;
-  this->Shadow = 0;
+  this->Bold = false;
+  this->Italic = false;
+  this->Shadow = false;
   this->FontFamily = VTK_ARIAL;
   this->FontHeight = 0.015;
   
@@ -95,8 +95,8 @@ vtkLineLegend::vtkLineLegend()
   this->TitleActor->SetMapper(this->TitleMapper);
   this->TitleActor->GetPositionCoordinate()->
                     SetReferenceCoordinate(this->PositionCoordinate);
-  this->TitleVisibility = 1;
-  this->TitleOkayToDraw = 1;
+  this->TitleVisibility = true;
+  this->TitleOkayToDraw = true;
 
   this->BoundingBox = vtkPolyData::New();
   this->BoundingBoxMapper = vtkPolyDataMapper2D::New();
@@ -109,7 +109,7 @@ vtkLineLegend::vtkLineLegend()
   this->BoundingBoxColor[1] = 0.8;
   this->BoundingBoxColor[2] = 0.8;
   this->BoundingBoxColor[3] = 1.;
-  this->BoundingBoxVisibility = 0;
+  this->BoundingBoxVisibility = false;
 
   this->BarWidth = 0.04;
 
@@ -215,7 +215,7 @@ vtkLineLegend::BuildTitle(vtkViewport *viewport)
 
   if (0 == viewSize[0]  && 0 == viewSize[1] )
     {
-    this->TitleOkayToDraw = 0;
+    this->TitleOkayToDraw = false;
     return;
     }
  
@@ -246,7 +246,7 @@ vtkLineLegend::BuildTitle(vtkViewport *viewport)
   this->TitleActor->GetPositionCoordinate()->
                     SetCoordinateSystemToNormalizedViewport();
   this->TitleActor->GetPositionCoordinate()->SetValue(titleOrigin);
-  this->TitleOkayToDraw = 1;
+  this->TitleOkayToDraw = true;
 }
 
 // Build the line for this actor 
@@ -464,7 +464,7 @@ vtkLineLegend::RenderOpaqueGeometry(vtkViewport *viewport)
       if ( this->Title != NULL )
         this->BuildTitle(viewport); 
       else
-        this->TitleOkayToDraw = 0; 
+        this->TitleOkayToDraw = false; 
       }
 
     this->BuildLine(viewport); 

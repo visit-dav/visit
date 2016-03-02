@@ -32,7 +32,7 @@ vtkVisItExtractGrid::vtkVisItExtractGrid()
 
   this->SampleRate[0] = this->SampleRate[1] = this->SampleRate[2] = 1;
   
-  this->IncludeBoundary = 0;
+  this->IncludeBoundary = false;
 }
 
 int vtkVisItExtractGrid::RequestUpdateExtent(

@@ -69,7 +69,7 @@ public:
     ~ViewerText();
 
     bool empty() const;
-    bool size() const;
+    size_t size() const;
 
     ViewerText operator = (const char *obj);
     ViewerText operator = (const std::string &obj);

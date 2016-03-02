@@ -69,9 +69,9 @@ public:
   vtkTypeMacro(vtkVertexFilter, vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  vtkSetMacro(VertexAtPoints,int);
-  vtkGetMacro(VertexAtPoints,int);
-  vtkBooleanMacro(VertexAtPoints,int);
+  vtkSetMacro(VertexAtPoints,bool);
+  vtkGetMacro(VertexAtPoints,bool);
+  vtkBooleanMacro(VertexAtPoints,bool);
 
   static vtkVertexFilter *New();
 
@@ -84,7 +84,7 @@ protected:
                           vtkInformationVector *);
   virtual int FillInputPortInformation(int port, vtkInformation *info);
 
-  int VertexAtPoints;
+  bool VertexAtPoints;
 
 private:
   vtkVertexFilter(const vtkVertexFilter&);

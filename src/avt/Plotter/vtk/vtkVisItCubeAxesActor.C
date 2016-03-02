@@ -120,26 +120,26 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   for (i = 0; i < 4; i++)
     {
     this->XAxes[i] = vtkVisItAxisActor::New();
-    this->XAxes[i]->SetTickVisibility(1);
-    this->XAxes[i]->SetMinorTicksVisible(1);
-    this->XAxes[i]->SetLabelVisibility(1);
-    this->XAxes[i]->SetTitleVisibility(1);
+    this->XAxes[i]->SetTickVisibility(true);
+    this->XAxes[i]->SetMinorTicksVisible(true);
+    this->XAxes[i]->SetLabelVisibility(true);
+    this->XAxes[i]->SetTitleVisibility(true);
     this->XAxes[i]->SetAxisTypeToX();
     this->XAxes[i]->SetAxisPosition(i);
 
     this->YAxes[i] = vtkVisItAxisActor::New();
-    this->YAxes[i]->SetTickVisibility(1);
-    this->YAxes[i]->SetMinorTicksVisible(1);
-    this->YAxes[i]->SetLabelVisibility(1);
-    this->YAxes[i]->SetTitleVisibility(1);
+    this->YAxes[i]->SetTickVisibility(true);
+    this->YAxes[i]->SetMinorTicksVisible(true);
+    this->YAxes[i]->SetLabelVisibility(true);
+    this->YAxes[i]->SetTitleVisibility(true);
     this->YAxes[i]->SetAxisTypeToY();
     this->YAxes[i]->SetAxisPosition(i);
 
     this->ZAxes[i] = vtkVisItAxisActor::New();
-    this->ZAxes[i]->SetTickVisibility(1);
-    this->ZAxes[i]->SetMinorTicksVisible(1);
-    this->ZAxes[i]->SetLabelVisibility(1);
-    this->ZAxes[i]->SetTitleVisibility(1);
+    this->ZAxes[i]->SetTickVisibility(true);
+    this->ZAxes[i]->SetMinorTicksVisible(true);
+    this->ZAxes[i]->SetLabelVisibility(true);
+    this->ZAxes[i]->SetTitleVisibility(true);
     this->ZAxes[i]->SetAxisTypeToZ();
     this->ZAxes[i]->SetAxisPosition(i);
     }
@@ -168,29 +168,29 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->Inertia = 1;
   this->RenderCount = 0;
 
-  this->XAxisVisibility = 1;
-  this->YAxisVisibility = 1;
-  this->ZAxisVisibility = 1;
+  this->XAxisVisibility = true;
+  this->YAxisVisibility = true;
+  this->ZAxisVisibility = true;
 
-  this->XAxisTickVisibility = 1;
-  this->YAxisTickVisibility = 1;
-  this->ZAxisTickVisibility = 1;
+  this->XAxisTickVisibility = true;
+  this->YAxisTickVisibility = true;
+  this->ZAxisTickVisibility = true;
 
-  this->XAxisMinorTickVisibility = 1;
-  this->YAxisMinorTickVisibility = 1;
-  this->ZAxisMinorTickVisibility = 1;
+  this->XAxisMinorTickVisibility = true;
+  this->YAxisMinorTickVisibility = true;
+  this->ZAxisMinorTickVisibility = true;
 
-  this->XAxisLabelVisibility = 1;
-  this->YAxisLabelVisibility = 1;
-  this->ZAxisLabelVisibility = 1;
+  this->XAxisLabelVisibility = true;
+  this->YAxisLabelVisibility = true;
+  this->ZAxisLabelVisibility = true;
 
-  this->XAxisTitleVisibility = 1;
-  this->YAxisTitleVisibility = 1;
-  this->ZAxisTitleVisibility = 1;
+  this->XAxisTitleVisibility = true;
+  this->YAxisTitleVisibility = true;
+  this->ZAxisTitleVisibility = true;
 
-  this->DrawXGridlines = 0;
-  this->DrawYGridlines = 0;
-  this->DrawZGridlines = 0;
+  this->DrawXGridlines = false;
+  this->DrawYGridlines = false;
+  this->DrawZGridlines = false;
 
   this->XTitle = new char[7];
   SNPRINTF(this->XTitle,7, "%s","X-Axis");
@@ -242,7 +242,7 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->userYPow = 0;
   this->userZPow = 0;
 
-  this->AdjustLabels = 1;
+  this->AdjustLabels = true;
   this->XMajorTickMinimum = 0.0;
   this->XMajorTickMaximum = 1.0;
   this->XMajorTickSpacing = 1.0;
@@ -255,7 +255,7 @@ vtkVisItCubeAxesActor::vtkVisItCubeAxesActor()
   this->ZMajorTickMaximum = 1.0;
   this->ZMajorTickSpacing = 1.0;
   this->ZMinorTickSpacing = 0.1;
-  this->LastAdjustLabels = -1;
+  this->LastAdjustLabels = false;
   this->LastXMajorTickMinimum = FLT_MAX;
   this->LastXMajorTickMaximum = FLT_MAX;
   this->LastXMajorTickSpacing = FLT_MAX;
@@ -470,7 +470,7 @@ int vtkVisItCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
   if (!this->Camera)
     {
     vtkErrorMacro(<<"No camera!");
-    this->RenderSomething = 0;
+    this->RenderSomething = false;
     return 0;
     }
  
@@ -1431,7 +1431,7 @@ void vtkVisItCubeAxesActor::BuildAxes(vtkViewport *viewport)
       }
     this->scalingChanged = false;
     }
-  this->RenderSomething = 1;
+  this->RenderSomething = true;
   this->BuildTime.Modified();
   this->LastFlyMode = this->FlyMode;
 
@@ -1612,10 +1612,10 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
       {
       this->renderAxesX[1] = 2; 
       this->numAxesX = 2; 
-      this->XAxes[renderAxesX[1]]->SetTickVisibility(0);
-      this->XAxes[renderAxesX[1]]->SetLabelVisibility(0);
-      this->XAxes[renderAxesX[1]]->SetTitleVisibility(0);
-      this->XAxes[renderAxesX[1]]->SetMinorTicksVisible(0);
+      this->XAxes[renderAxesX[1]]->SetTickVisibility(false);
+      this->XAxes[renderAxesX[1]]->SetLabelVisibility(false);
+      this->XAxes[renderAxesX[1]]->SetTitleVisibility(false);
+      this->XAxes[renderAxesX[1]]->SetMinorTicksVisible(false);
       }
     else 
       {
@@ -1625,10 +1625,10 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
       {
       this->renderAxesY[1] = 2; 
       this->numAxesY = 2; 
-      this->YAxes[renderAxesY[1]]->SetTickVisibility(0);
-      this->YAxes[renderAxesY[1]]->SetLabelVisibility(0);
-      this->YAxes[renderAxesY[1]]->SetTitleVisibility(0);
-      this->YAxes[renderAxesY[1]]->SetMinorTicksVisible(0);
+      this->YAxes[renderAxesY[1]]->SetTickVisibility(false);
+      this->YAxes[renderAxesY[1]]->SetLabelVisibility(false);
+      this->YAxes[renderAxesY[1]]->SetTitleVisibility(false);
+      this->YAxes[renderAxesY[1]]->SetMinorTicksVisible(false);
       }
     else 
       {
@@ -1638,10 +1638,10 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
       {
       this->renderAxesZ[1] = 2; 
       this->numAxesZ = 2; 
-      this->ZAxes[renderAxesZ[1]]->SetTickVisibility(0);
-      this->ZAxes[renderAxesZ[1]]->SetLabelVisibility(0);
-      this->ZAxes[renderAxesZ[1]]->SetTitleVisibility(0);
-      this->ZAxes[renderAxesZ[1]]->SetMinorTicksVisible(0);
+      this->ZAxes[renderAxesZ[1]]->SetTickVisibility(false);
+      this->ZAxes[renderAxesZ[1]]->SetLabelVisibility(false);
+      this->ZAxes[renderAxesZ[1]]->SetTitleVisibility(false);
+      this->ZAxes[renderAxesZ[1]]->SetMinorTicksVisible(false);
       }
     else 
       {
@@ -1806,10 +1806,10 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
     { 
     this->renderAxesX[1] = (xloc + 2) % 4;
     this->numAxesX = 2;
-    this->XAxes[renderAxesX[1]]->SetTickVisibility(0);
-    this->XAxes[renderAxesX[1]]->SetLabelVisibility(0);
-    this->XAxes[renderAxesX[1]]->SetTitleVisibility(0);
-    this->XAxes[renderAxesX[1]]->SetMinorTicksVisible(0);
+    this->XAxes[renderAxesX[1]]->SetTickVisibility(false);
+    this->XAxes[renderAxesX[1]]->SetLabelVisibility(false);
+    this->XAxes[renderAxesX[1]]->SetTitleVisibility(false);
+    this->XAxes[renderAxesX[1]]->SetMinorTicksVisible(false);
     } 
   else
     { 
@@ -1821,10 +1821,10 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
     { 
     this->renderAxesY[1] = (yloc + 2) % 4;
     this->numAxesY = 2;
-    this->YAxes[renderAxesY[1]]->SetTickVisibility(0);
-    this->YAxes[renderAxesY[1]]->SetLabelVisibility(0);
-    this->YAxes[renderAxesY[1]]->SetTitleVisibility(0);
-    this->YAxes[renderAxesY[1]]->SetMinorTicksVisible(0);
+    this->YAxes[renderAxesY[1]]->SetTickVisibility(false);
+    this->YAxes[renderAxesY[1]]->SetLabelVisibility(false);
+    this->YAxes[renderAxesY[1]]->SetTitleVisibility(false);
+    this->YAxes[renderAxesY[1]]->SetMinorTicksVisible(false);
     } 
   else
     { 
@@ -1836,10 +1836,10 @@ void vtkVisItCubeAxesActor::DetermineRenderAxes(vtkViewport *viewport)
     { 
     this->renderAxesZ[1] = (zloc + 2) % 4;
     this->numAxesZ = 2;
-    this->ZAxes[renderAxesZ[1]]->SetTickVisibility(0);
-    this->ZAxes[renderAxesZ[1]]->SetLabelVisibility(0);
-    this->ZAxes[renderAxesZ[1]]->SetTitleVisibility(0);
-    this->ZAxes[renderAxesZ[1]]->SetMinorTicksVisible(0);
+    this->ZAxes[renderAxesZ[1]]->SetTickVisibility(false);
+    this->ZAxes[renderAxesZ[1]]->SetLabelVisibility(false);
+    this->ZAxes[renderAxesZ[1]]->SetTitleVisibility(false);
+    this->ZAxes[renderAxesZ[1]]->SetMinorTicksVisible(false);
     } 
   else
     { 

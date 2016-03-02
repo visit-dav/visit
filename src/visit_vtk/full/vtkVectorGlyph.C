@@ -79,15 +79,15 @@ vtkStandardNewMacro(vtkVectorGlyph);
 
 vtkVectorGlyph::vtkVectorGlyph()
 {
-  Arrow = 1;
-  LineStem = 1;
-  HighQuality = 0;
-  CapEnds = 0;
+  HighQuality = false;
+  CapEnds = false;
+  Arrow = true;
+  LineStem = true;
   StemWidth = 0.08;
-  MakeHead = 1;
+  MakeHead = true;
   HeadSize = 0.25;
-  ConeHead = 1;
   OriginOffset = 0.;
+  ConeHead = true;
 }
 
 
@@ -342,13 +342,13 @@ void
 vtkVectorGlyph::PrintSelf(ostream &os, vtkIndent indent)
 {
    this->Superclass::PrintSelf(os, indent);
+   os << indent << "HighQuality: " << this->HighQuality << "\n";
+   os << indent << "CapEnds:  " << this->CapEnds << "\n";
    os << indent << "Arrow:    " << this->Arrow << "\n";
-   os << indent << "MakeHead: " << this->MakeHead << "\n";
-   os << indent << "ConeHead: " << this->ConeHead << "\n";
    os << indent << "LineStem: " << this->LineStem << "\n";
    os << indent << "StemWidth: " << this->StemWidth << "\n";
-   os << indent << "CapEnds:  " << this->CapEnds << "\n";
-   os << indent << "HighQuality: " << this->HighQuality << "\n";
+   os << indent << "MakeHead: " << this->MakeHead << "\n";
    os << indent << "Relative Size of Heads: " << this->HeadSize << "\n";
+   os << indent << "ConeHead: " << this->ConeHead << "\n";
 }
 

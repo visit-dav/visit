@@ -63,8 +63,9 @@ class VISIT_VTK_API vtkVisItPolyDataNormals : public vtkPolyDataAlgorithm
 
     static vtkVisItPolyDataNormals *New();
 
-    void SetFeatureAngle(float fa)  { FeatureAngle        = fa;    }
-    void SetSplitting(bool s)       { Splitting           = s;     }
+    vtkSetMacro(FeatureAngle,float);
+    vtkSetMacro(Splitting, bool);
+    vtkBooleanMacro(Splitting, bool);
     void SetNormalTypeToCell()      { ComputePointNormals = false; }
     void SetNormalTypeToPoint()     { ComputePointNormals = true;  }
 

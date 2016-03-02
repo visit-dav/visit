@@ -69,7 +69,7 @@ vtkCEAucdReader::vtkCEAucdReader()
    this->GlobalOffset = 0;
    this->FileSize = 0;
    this->ByteOrder = FILE_BIG_ENDIAN;
-   this->BinaryFile = 0;
+   this->BinaryFile = false;
    this->OwnStream = true;
    this->NumberOfNodeFields = 0;
    this->NumberOfCellFields = 0;
@@ -88,7 +88,7 @@ vtkCEAucdReader::vtkCEAucdReader()
    this->CellDataInfo = NULL;
    this->PointDataArraySelection = vtkDataArraySelection::New();
    this->CellDataArraySelection = vtkDataArraySelection::New();
-   this->PerMaterialOutput = 0;
+   this->PerMaterialOutput = false;
    this->NumberOfMaterials = 1;
    this->CellMaterialId = vtkIntArray::New();
    this->CellMaterialId->SetNumberOfComponents(1);
@@ -334,7 +334,7 @@ int vtkCEAucdReader::RequestInformation(
    this->FileStream->putback(magic_number);
    if(magic_number != 7)
    { // most likely an ASCII file
-      this->BinaryFile = 0;
+      this->BinaryFile = false;
       if( this->OwnStream )
       {
          vtkDebugMacro(<<"Re-open file "<<this->FileName<<" in ASCII mode");
@@ -358,7 +358,7 @@ int vtkCEAucdReader::RequestInformation(
    }
    else
    {
-      this->BinaryFile = 1;
+      this->BinaryFile = true;
       
      // Here we first need to check if the file is little-endian or big-endian
      // We will read the variable once, with the given endian-ness set up in
@@ -1759,8 +1759,8 @@ void vtkCEAucdReader::PruneCache()
 
   if( this->BinaryFile )
   {
-     int no = this->CachedOutputs.size();
-     for(int i=0;i<no;i++)
+     size_t no = this->CachedOutputs.size();
+     for(size_t i=0;i<no;i++)
      {
         if(this->CachedOutputs[i] != 0 && this->CachedOutputs[i]->GetCellData()!=0) 
         {

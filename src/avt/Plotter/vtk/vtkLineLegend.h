@@ -90,22 +90,22 @@ public:
 
   // Description:
   // Enable/Disable bolding annotation text.
-  vtkSetMacro(Bold, int);
-  vtkGetMacro(Bold, int);
-  vtkBooleanMacro(Bold, int);
+  vtkSetMacro(Bold, bool);
+  vtkGetMacro(Bold, bool);
+  vtkBooleanMacro(Bold, bool);
 
   // Description:
   // Enable/Disable italicizing annotation text.
-  vtkSetMacro(Italic, int);
-  vtkGetMacro(Italic, int);
-  vtkBooleanMacro(Italic, int);
+  vtkSetMacro(Italic, bool);
+  vtkGetMacro(Italic, bool);
+  vtkBooleanMacro(Italic, bool);
 
   // Description:
   // Enable/Disable creating shadows on the annotation text. Shadows make 
   // the text easier to read.
-  vtkSetMacro(Shadow, int);
-  vtkGetMacro(Shadow, int);
-  vtkBooleanMacro(Shadow, int);
+  vtkSetMacro(Shadow, bool);
+  vtkGetMacro(Shadow, bool);
+  vtkBooleanMacro(Shadow, bool);
 
   // Description:
   // Set/Get the font family for the annotation text. Three font types 
@@ -129,9 +129,9 @@ public:
 
   // Description:
   // Set/Get the visibility of the title annotation text. 
-  vtkSetMacro(TitleVisibility, int);
-  vtkGetMacro(TitleVisibility, int);
-  vtkBooleanMacro(TitleVisibility, int);
+  vtkSetMacro(TitleVisibility, bool);
+  vtkGetMacro(TitleVisibility, bool);
+  vtkBooleanMacro(TitleVisibility, bool);
 
   vtkTextProperty * GetTitleProperty() 
      { return this->TitleMapper->GetTextProperty();};
@@ -146,9 +146,9 @@ public:
 
   // Description:
   // Set/Get the visibility of the bounding box.
-  vtkSetMacro(BoundingBoxVisibility, int);
-  vtkGetMacro(BoundingBoxVisibility, int);
-  vtkBooleanMacro(BoundingBoxVisibility, int);
+  vtkSetMacro(BoundingBoxVisibility, bool);
+  vtkGetMacro(BoundingBoxVisibility, bool);
+  vtkBooleanMacro(BoundingBoxVisibility, bool);
 
   // Description:
   // Set the bounding box color
@@ -165,9 +165,9 @@ protected:
   void BuildLine(vtkViewport *);
   void BuildBoundingBox(vtkViewport *);
 
-  int   Bold;
-  int   Italic;
-  int   Shadow;
+  bool   Bold;
+  bool   Italic;
+  bool   Shadow;
   int   FontFamily;
   double FontHeight;
 
@@ -178,9 +178,9 @@ protected:
   char          *Title;
   vtkTextMapper *TitleMapper;
   vtkActor2D    *TitleActor;
-  int            TitleVisibility;
-  int            TitleOkayToDraw;
-  int            BoundingBoxVisibility;
+  bool            TitleVisibility;
+  bool            TitleOkayToDraw;
+  bool            BoundingBoxVisibility;
 
   vtkPolyData                *Line;
   vtkPolyDataMapper2D        *LineMapper;

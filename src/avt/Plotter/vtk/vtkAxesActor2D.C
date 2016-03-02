@@ -216,13 +216,13 @@ vtkAxesActor2D::SetColor(double r, double g, double b)
 // ****************************************************************************
 
 void 
-vtkAxesActor2D::SetXLogScaling(int logScale)
+vtkAxesActor2D::SetXLogScaling(bool logScale)
 {
   this->XAxis->SetLogScale(logScale);
 }
 
 void 
-vtkAxesActor2D::SetYLogScaling(int logScale)
+vtkAxesActor2D::SetYLogScaling(bool logScale)
 {
   this->YAxis->SetLogScale(logScale);
 }
@@ -258,13 +258,13 @@ vtkAxesActor2D::SetYRange(double minY, double maxY)
 // ****************************************************************************
 
 void 
-vtkAxesActor2D::SetXLabelVisibility(int vis)
+vtkAxesActor2D::SetXLabelVisibility(bool vis)
 {
   this->XAxis->SetLabelVisibility(vis);
 }
 
 void 
-vtkAxesActor2D::SetYLabelVisibility(int vis)
+vtkAxesActor2D::SetYLabelVisibility(bool vis)
 {
   this->YAxis->SetLabelVisibility(vis);
 }
@@ -343,7 +343,7 @@ vtkAxesActor2D::SetYLabelFontHeight(double height)
 // ****************************************************************************
 
 void 
-vtkAxesActor2D::SetAutoAdjustLabels(int autoAdjust)
+vtkAxesActor2D::SetAutoAdjustLabels(bool autoAdjust)
 {
   this->XAxis->SetAdjustLabels(autoAdjust);
   this->YAxis->SetAdjustLabels(autoAdjust);
@@ -411,13 +411,13 @@ vtkAxesActor2D::SetYTitleFontHeight(double height)
 // ****************************************************************************
 
 void 
-vtkAxesActor2D::SetXTitleVisibility(int vis)
+vtkAxesActor2D::SetXTitleVisibility(bool vis)
 {
   this->XAxis->SetTitleVisibility(vis);
 }
 
 void 
-vtkAxesActor2D::SetYTitleVisibility(int vis)
+vtkAxesActor2D::SetYTitleVisibility(bool vis)
 {
   this->YAxis->SetTitleVisibility(vis);
 }
@@ -462,25 +462,25 @@ vtkAxesActor2D::SetTickLocation(int loc)
 // ****************************************************************************
 
 void 
-vtkAxesActor2D::SetXMinorTickVisibility(int vis)
+vtkAxesActor2D::SetXMinorTickVisibility(bool vis)
 {
   this->XAxis->SetMinorTicksVisible(vis);
 }
 
 void 
-vtkAxesActor2D::SetXMajorTickVisibility(int vis)
+vtkAxesActor2D::SetXMajorTickVisibility(bool vis)
 {
   this->XAxis->SetTickVisibility(vis);
 }
 
 void 
-vtkAxesActor2D::SetYMinorTickVisibility(int vis)
+vtkAxesActor2D::SetYMinorTickVisibility(bool vis)
 {
   this->YAxis->SetMinorTicksVisible(vis);
 }
 
 void 
-vtkAxesActor2D::SetYMajorTickVisibility(int vis)
+vtkAxesActor2D::SetYMajorTickVisibility(bool vis)
 {
   this->YAxis->SetTickVisibility(vis);
 }
@@ -564,13 +564,13 @@ vtkAxesActor2D::SetYMinorTickSpacing(double spacing)
 // ****************************************************************************
 
 void 
-vtkAxesActor2D::SetXGridVisibility(int vis)
+vtkAxesActor2D::SetXGridVisibility(bool vis)
 {
   this->XAxis->SetDrawGridlines(vis);
 }
 
 void 
-vtkAxesActor2D::SetYGridVisibility(int vis)
+vtkAxesActor2D::SetYGridVisibility(bool vis)
 {
   this->YAxis->SetDrawGridlines(vis);
 }

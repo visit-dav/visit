@@ -78,28 +78,28 @@ public:
   // Description:
   // Instantiate a stride filter that throws away nine of every ten elements.
   static vtkVectorGlyph *New();
-  vtkSetMacro(HighQuality,int);
-  vtkBooleanMacro(HighQuality,int);
-  vtkGetMacro(HighQuality,int);
+  vtkSetMacro(HighQuality,bool);
+  vtkGetMacro(HighQuality,bool);
+  vtkBooleanMacro(HighQuality,bool);
 
-  vtkSetMacro(CapEnds,int);
-  vtkBooleanMacro(CapEnds,int);
-  vtkGetMacro(CapEnds,int);
+  vtkSetMacro(CapEnds,bool);
+  vtkGetMacro(CapEnds,bool);
+  vtkBooleanMacro(CapEnds,bool);
 
-  vtkSetMacro(Arrow,int);
-  vtkBooleanMacro(Arrow,int);
-  vtkGetMacro(Arrow,int);
+  vtkSetMacro(Arrow,bool);
+  vtkGetMacro(Arrow,bool);
+  vtkBooleanMacro(Arrow,bool);
 
-  vtkSetMacro(LineStem,int);
-  vtkBooleanMacro(LineStem,int);
-  vtkGetMacro(LineStem,int);
+  vtkSetMacro(LineStem,bool);
+  vtkGetMacro(LineStem,bool);
+  vtkBooleanMacro(LineStem,bool);
 
   vtkSetClampMacro(StemWidth,float,0.0,0.5);
   vtkGetMacro(StemWidth,float);
 
-  vtkSetMacro(MakeHead,int);
-  vtkBooleanMacro(MakeHead,int);
-  vtkGetMacro(MakeHead,int);
+  vtkSetMacro(MakeHead,bool);
+  vtkGetMacro(MakeHead,bool);
+  vtkBooleanMacro(MakeHead,bool);
 
   vtkSetClampMacro(HeadSize,float,0.0,1.0);
   vtkGetMacro(HeadSize,float);
@@ -107,8 +107,9 @@ public:
   vtkSetClampMacro(OriginOffset,float,-.5,+.5);
   vtkGetMacro(OriginOffset,float);
 
-  vtkSetMacro(ConeHead,int);
-  vtkGetMacro(ConeHead,int);
+  vtkSetMacro(ConeHead,bool);
+  vtkGetMacro(ConeHead,bool);
+  vtkBooleanMacro(ConeHead,bool);
 
 protected:
   vtkVectorGlyph();
@@ -119,15 +120,15 @@ protected:
                   vtkInformationVector *);
   virtual int FillInputPortInformation(int port, vtkInformation *info);
 
-  int HighQuality;
-  int CapEnds;
-  int LineStem;
-  int Arrow;
+  bool HighQuality;
+  bool CapEnds;
+  bool Arrow;
+  bool LineStem;
   float StemWidth;
-  int ConeHead;
-  int MakeHead;
+  bool MakeHead;
   float HeadSize;
   float OriginOffset;
+  bool ConeHead;
 
 private:
   vtkVectorGlyph(const vtkVectorGlyph&);

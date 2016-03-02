@@ -34,8 +34,8 @@ vtkStandardNewMacro(vtkVisItProbeFilter);
 //----------------------------------------------------------------------------
 vtkVisItProbeFilter::vtkVisItProbeFilter()
 {
-  this->SpatialMatch = 0;
-  this->CellData = 0;
+  this->SpatialMatch = false;
+  this->CellData = false;
   this->ValidPoints = vtkIdTypeArray::New();
   this->SetNumberOfInputPorts(2);
 }
@@ -196,14 +196,7 @@ int vtkVisItProbeFilter::RequestInformation(
   outInfo->Set(vtkStreamingDemandDrivenPipeline::MAXIMUM_NUMBER_OF_PIECES(),
                inInfo->Get(vtkStreamingDemandDrivenPipeline::MAXIMUM_NUMBER_OF_PIECES()));
 
-  // Special case for ParaView.
-  if (this->SpatialMatch == 2)
-    {
-    outInfo->Set(vtkStreamingDemandDrivenPipeline::MAXIMUM_NUMBER_OF_PIECES(),
-                 sourceInfo->Get(vtkStreamingDemandDrivenPipeline::MAXIMUM_NUMBER_OF_PIECES()));
-    }
-  
-  if (this->SpatialMatch == 1)
+  if (this->SpatialMatch)
     {
     int m1 = inInfo->Get(vtkStreamingDemandDrivenPipeline::MAXIMUM_NUMBER_OF_PIECES());
     int m2 = sourceInfo->Get(vtkStreamingDemandDrivenPipeline::MAXIMUM_NUMBER_OF_PIECES());
@@ -275,15 +268,7 @@ int vtkVisItProbeFilter::RequestUpdateExtent(
   
   inInfo->Set(vtkStreamingDemandDrivenPipeline::EXACT_EXTENT(), 1);
   
-  if ( ! this->SpatialMatch)
-    {
-    sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER(), 0);
-    sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES(),
-                    1);
-    sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(),
-                    0);
-    }
-  else if (this->SpatialMatch == 1)
+  if (this->SpatialMatch)
     {
     if (usePiece)
       {
@@ -304,6 +289,14 @@ int vtkVisItProbeFilter::RequestUpdateExtent(
                       6);
       }
     }
+  else 
+    {
+    sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER(), 0);
+    sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES(),
+                    1);
+    sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(),
+                    0);
+    }
   
   if (usePiece)
     {
@@ -319,18 +312,6 @@ int vtkVisItProbeFilter::RequestUpdateExtent(
     inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),
                 outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT()),
                 6);
-    }
-  
-  // Use the whole input in all processes, and use the requested update
-  // extent of the output to divide up the source.
-  if (this->SpatialMatch == 2)
-    {
-    inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER(), 0);
-    inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES(), 1);
-    inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
-    sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER(), outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER()));
-    sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES(), outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES()));
-    sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS()));
     }
   return 1;
 }

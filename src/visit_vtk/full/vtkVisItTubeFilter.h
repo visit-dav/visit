@@ -128,23 +128,23 @@ public:
   // Description:
   // Set a boolean to control whether to use default normals.
   // DefaultNormalOn is set.
-  vtkSetMacro(UseDefaultNormal,int);
-  vtkGetMacro(UseDefaultNormal,int);
-  vtkBooleanMacro(UseDefaultNormal,int);
+  vtkSetMacro(UseDefaultNormal,bool);
+  vtkGetMacro(UseDefaultNormal,bool);
+  vtkBooleanMacro(UseDefaultNormal,bool);
 
   // Description:
   // Set a boolean to control whether tube sides should share vertices.
   // This creates independent strips, with constant normals so the
   // tube is always faceted in appearance.
-  vtkSetMacro(SidesShareVertices, int);
-  vtkGetMacro(SidesShareVertices, int);
-  vtkBooleanMacro(SidesShareVertices, int);
+  vtkSetMacro(SidesShareVertices, bool);
+  vtkGetMacro(SidesShareVertices, bool);
+  vtkBooleanMacro(SidesShareVertices, bool);
 
   // Description:
   // Turn on/off whether to cap the ends with polygons.
-  vtkSetMacro(Capping,int);
-  vtkGetMacro(Capping,int);
-  vtkBooleanMacro(Capping,int);
+  vtkSetMacro(Capping,bool);
+  vtkGetMacro(Capping,bool);
+  vtkBooleanMacro(Capping,bool);
 
   // Description:
   // Control the striping of the tubes. If OnRatio is greater than 1,
@@ -201,9 +201,9 @@ protected:
   int NumberOfSides; //number of sides to create tube
   double RadiusFactor; //maxium allowablew radius
   double DefaultNormal[3];
-  int UseDefaultNormal;
-  int SidesShareVertices;
-  int Capping; //control whether tubes are capped
+  bool UseDefaultNormal;
+  bool SidesShareVertices;
+  bool Capping; //control whether tubes are capped
   int OnRatio; //control the generation of the sides of the tube
   int Offset;  //control the generation of the sides
   int GenerateTCoords; //control texture coordinate generation

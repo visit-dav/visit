@@ -98,10 +98,10 @@ vtkVisItCellLocator::vtkVisItCellLocator()
   this->NumberOfDivisions = 1;
 
   this->Buckets = new vtkNeighborCells(10, 10);
-  this->CacheCellBounds = 0;
+  this->CacheCellBounds = false;
   this->CellBounds = NULL;
-  this->IgnoreGhosts = 0;
-  this->IgnoreLines = 0;
+  this->IgnoreGhosts = false;
+  this->IgnoreLines = false;
 
   this->OctantBounds[0] = 0.;
   this->OctantBounds[1] = 0.;

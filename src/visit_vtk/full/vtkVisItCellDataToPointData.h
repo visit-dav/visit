@@ -59,9 +59,9 @@ public:
   // Control whether the input cell data is to be passed to the output. If
   // on, then the input cell data is passed through to the output; otherwise,
   // only generated point data is placed into the output.
-  vtkSetMacro(PassCellData,int);
-  vtkGetMacro(PassCellData,int);
-  vtkBooleanMacro(PassCellData,int);
+  vtkSetMacro(PassCellData,bool);
+  vtkGetMacro(PassCellData,bool);
+  vtkBooleanMacro(PassCellData,bool);
 
 protected:
   vtkVisItCellDataToPointData();
@@ -71,7 +71,7 @@ protected:
                           vtkInformationVector **,
                           vtkInformationVector *);
 
-  int PassCellData;
+  bool PassCellData;
 
 private:
   vtkVisItCellDataToPointData(const vtkVisItCellDataToPointData&);  // Not implemented.
