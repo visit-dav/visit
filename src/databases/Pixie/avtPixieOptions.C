@@ -72,8 +72,9 @@ GetPixieReadOptions(void)
     partition.push_back("Y Slab");  // 1
     partition.push_back("Z Slab");  // 2
     partition.push_back("KD Tree"); // 3
-    rv->SetEnum(PixieDBOptions::RDOPT_PARTITIONING, 2); // ZSLAB 
+    rv->SetEnum(PixieDBOptions::RDOPT_PARTITIONING, PixieDBOptions::ZSLAB );
     rv->SetEnumStrings(PixieDBOptions::RDOPT_PARTITIONING, partition);
+    rv->SetBool(PixieDBOptions::RDOPT_DUPLICATE, false);
 
     return rv;
 }
