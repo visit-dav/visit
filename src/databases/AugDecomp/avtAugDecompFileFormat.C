@@ -101,7 +101,7 @@ avtAugDecompFileFormat::avtAugDecompFileFormat(const char *augd_filename,
     ifile >> filename;
     if (filename[0] != VISIT_SLASH_CHAR)
     {
-        int len = strlen(augd_filename);
+        int len = (int)strlen(augd_filename);
         const char *last = augd_filename + (len-1);
         while (*last != VISIT_SLASH_CHAR && last > augd_filename)
         {

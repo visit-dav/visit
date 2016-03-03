@@ -174,7 +174,7 @@ avtMemoryUsageQuery::GetResultMessage()
     
     std::string float_format = queryAtts.GetFloatFormat();
     
-    int nproc = memSizeVals.size();
+    size_t nproc = memSizeVals.size();
     if (  nproc == 1 )
     {
         std::string format = "Engine Memory Usage = " 

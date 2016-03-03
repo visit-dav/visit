@@ -832,7 +832,7 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
         ghosts = NULL;
 
     ncell_arrays = 0;
-    for (size_t i = 0 ; i < (size_t)rgrid->GetCellData()->GetNumberOfArrays() ; i++)
+    for (int i = 0 ; i < rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
         const char *name = arr->GetName();
@@ -856,7 +856,7 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
     }
 
     npt_arrays = 0;
-    for (size_t i = 0 ; i < (size_t)rgrid->GetPointData()->GetNumberOfArrays() ; i++)
+    for (int i = 0 ; i < rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
         const char *name = arr->GetName();

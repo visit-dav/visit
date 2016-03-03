@@ -422,7 +422,7 @@ avtPOSCARFileFormat::ReadFile()
     // with the values following it.
     in.getline(line, 132);
     int equalspos = -1;
-    for (size_t p=0; p<strlen(line); p++)
+    for (int p=0; p<(int)strlen(line); p++)
     {
         if (line[p] == '=')
             equalspos = p;
@@ -598,7 +598,7 @@ bool
 avtPOSCARFileFormat::Identify(const std::string &filename)
 {
     // strip off all leading paths
-    int pos = filename.length()-1;
+    int pos = (int)filename.length()-1;
     while (pos>=0 && filename[pos]!='/' && filename[pos]!='\\')
         pos--;
 

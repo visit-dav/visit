@@ -883,14 +883,14 @@ avtOUTCARFileFormat::ReadAllMetaData()
                 cerr << "  Attempting fixed-width ions-per-type parsing.\n";
                 natoms = 0;
                 element_counts.clear();
-                int index = 30;
-                int len = strlen(line) - index;
-                int count = element_types.size();
-                int perSpecies = len/element_types.size();
+                size_t index = 30;
+                size_t len = strlen(line) - index;
+                size_t count = element_types.size();
+                size_t perSpecies = len/element_types.size();
                 char tmp[100];
-                for (int i=0; i<count; i++)
+                for (size_t i=0; i<count; i++)
                 {
-                    int j = 0;
+                    size_t j = 0;
                     for ( ; j<perSpecies; j++)
                     {
                         tmp[j] = line[index];
@@ -1013,7 +1013,7 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
         atoms.resize(natoms);
 
         int index = 0;
-        for (size_t et_index = 0; et_index < element_counts.size(); et_index++)
+        for (int et_index = 0; et_index < (int)element_counts.size(); et_index++)
         {
             for (int a2=0; a2<element_counts[et_index]; a2++)
             {
@@ -1072,7 +1072,7 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
         atoms.resize(natoms);
 
         int index = 0;
-        for (size_t et_index = 0; et_index < element_counts.size(); et_index++)
+        for (int et_index = 0; et_index < (int)element_counts.size(); et_index++)
         {
             for (int a2=0; a2<element_counts[et_index]; a2++)
             {
@@ -1108,7 +1108,7 @@ avtOUTCARFileFormat::ReadAtomsForTimestep(int timestep)
 bool
 avtOUTCARFileFormat::Identify(const std::string &filename)
 {
-    int pos = filename.length()-1;
+    int pos = (int)filename.length()-1;
     while (pos>=0 && filename[pos]!='/' && filename[pos]!='\\')
         pos--;
 

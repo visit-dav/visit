@@ -525,7 +525,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     int tsGroup = GetTimestepGroupForTimestep(timeState);
     int localTS = GetTimestepWithinGroup(timeState);
     int offset = 0;
-    for (size_t i = 0 ; i < (size_t)nTimestepGroups ; i++)
+    for (int i = 0 ; i < nTimestepGroups ; i++)
     {
         chunks[i][0]->SetTimeSliceOffset(offset);
         offset += tsPerGroup[i];
@@ -535,8 +535,8 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     else
         chunks[tsGroup][0]->SetReadAllCyclesAndTimes(false);
     chunks[tsGroup][0]->SetDatabaseMetaData(md, localTS);
-    for (size_t i = 0 ; i < (size_t)nTimestepGroups ; i++)
-        if (i != (size_t)tsGroup)
+    for (int i = 0 ; i < nTimestepGroups ; i++)
+        if (i != tsGroup)
             chunks[i][0]->RegisterDatabaseMetaData(md);
 
     //
@@ -571,7 +571,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         {
             std::vector<int> cyclesFromMassCall = cycles;
             cycles.clear();
-            for (size_t i = 0; i < (size_t)nTotalTimesteps; i++)
+            for (int i = 0; i < nTotalTimesteps; i++)
             {
                 int tsg = GetTimestepGroupForTimestep(i);
                 int lts = GetTimestepWithinGroup(i);
@@ -604,7 +604,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     {
         // Set the times in the metadata.
         vector<double> times;
-        for (size_t i=0; i<(size_t)nTimestepGroups; i++)
+        for (int i=0; i<nTimestepGroups; i++)
         {
             vector<double> tmp;
             chunks[i][0]->FormatGetTimes(tmp);
@@ -630,7 +630,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             vector<double> timesFromMassCall = times;
 
             times.clear();
-            for (size_t i = 0; i < (size_t)nTotalTimesteps; i++)
+            for (int i = 0; i < nTotalTimesteps; i++)
             {
                 int tsg = GetTimestepGroupForTimestep(i);
                 int lts = GetTimestepWithinGroup(i);
@@ -666,8 +666,8 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     // Each one of these domains thinks that it only has one domain.  Overwrite
     // that with the true number of domains.
     //
-    size_t nm = md->GetNumMeshes();
-    for (size_t i = 0 ; i < nm ; i++)
+    int nm = md->GetNumMeshes();
+    for (int i = 0 ; i < nm ; i++)
     {
         md->SetBlocksForMesh(i, nBlocks);
     }

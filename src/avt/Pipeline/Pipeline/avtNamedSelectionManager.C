@@ -185,7 +185,7 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
         ns = dob->GetSource()->CreateNamedSelection(contract, selName);
         if (ns != NULL)
         {
-            int curSize = selList.size();
+            size_t curSize = selList.size();
             selList.resize(curSize+1);
             selList[curSize] = ns;
 
@@ -211,7 +211,7 @@ avtNamedSelectionManager::CreateNamedSelection(avtDataObject_p dob,
     DeleteNamedSelection(selName, false); // Remove sel if it already exists.
     if(ns != NULL)
     {
-        int curSize = selList.size();
+        size_t curSize = selList.size();
         selList.resize(curSize+1);
         selList[curSize] = ns;
  
@@ -250,7 +250,7 @@ avtNamedSelectionManager::DeleteNamedSelection(const std::string &name,
     {
         if (selList[i]->GetName() == name)
         {
-            numToRemove = i;
+            numToRemove = (int)i;
             break;
         }
     }
@@ -266,9 +266,9 @@ avtNamedSelectionManager::DeleteNamedSelection(const std::string &name,
     delete selList[numToRemove];
 
     std::vector<avtNamedSelection *> newList(selList.size()-1);
-    for (size_t i = 0 ; i < (size_t)numToRemove ; i++)
+    for (int i = 0 ; i < numToRemove ; i++)
         newList[i] = selList[i];
-    for (size_t i = numToRemove+1 ; i < selList.size() ; i++)
+    for (int i = numToRemove+1 ; i < (int)selList.size() ; i++)
         newList[i-1] = selList[i];
 
     selList = newList;
@@ -336,7 +336,7 @@ avtNamedSelectionManager::LoadNamedSelection(const std::string &name,
         EXCEPTION1(VisItException, msg.str().c_str());
     }
 
-    int curSize = selList.size();
+    size_t curSize = selList.size();
     selList.resize(curSize+1);
     selList[curSize] = ns;
 

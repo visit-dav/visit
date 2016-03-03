@@ -245,7 +245,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
     //
     // If it ends in .m or .mili, strip it off.
     //
-    int len = strlen(root);
+    size_t len = strlen(root);
 
     if (len > 4 && strcmp(&(root[len - 5]), ".mili") == 0)
     {
@@ -1497,7 +1497,7 @@ avtMiliFileFormat::ValidateVariables(int dom)
                 vars_valid[dom][vv].push_back(pushVal);
                 var_size[dom][vv].push_back(M_FLOAT);
             }
-            int index = sub_records[dom].size() - 1;
+            int index = (int)sub_records[dom].size() - 1;
            
             for (int k = 0 ; k < sr.qty_svars ; k++)
             {
@@ -3894,8 +3894,6 @@ avtMiliFileFormat::LoadMiliInfo(const char *fname)
                      name = string(nameC);
 
                      // Remove trailing spaces
-                     int len=name.length();
-
                      found = name.find_last_not_of(" ");
                      if ( found!=string::npos && found!=(name.length()-1) )
                           name = name.substr(0, found+1);

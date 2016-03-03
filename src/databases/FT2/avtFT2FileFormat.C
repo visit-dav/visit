@@ -255,7 +255,7 @@ avtFT2FileFormat::GetMesh(int timestate, const char *meshname)
     ReadAllMetaData();
     ReadTimeStep(timestate);
 
-    int nPts = vars[0].size();
+    int nPts = (int)vars[0].size();
 
     vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
  
@@ -529,8 +529,7 @@ avtFT2FileFormat::ReadTimeStep(int ts)
 void
 avtFT2FileFormat::GetTimes(std::vector<double> &timeOut)
 {
-    int nTimeSteps = filePositions.size();
-    for (int i=0; i<nTimeSteps; i++)
+    for (size_t i=0; i<filePositions.size(); i++)
         timeOut.push_back(times[i]);
 }
 
@@ -547,7 +546,6 @@ avtFT2FileFormat::GetTimes(std::vector<double> &timeOut)
 void
 avtFT2FileFormat::GetCycles(std::vector<int> &cycleOut)
 {
-    int nTimeSteps = filePositions.size();
-    for (int i=0; i<nTimeSteps; i++)
+    for (size_t i=0; i<filePositions.size(); i++)
         cycleOut.push_back(cycles[i]);
 }

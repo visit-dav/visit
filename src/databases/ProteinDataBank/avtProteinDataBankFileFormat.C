@@ -558,16 +558,16 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
 
     if (string(varname) == "compoundname")
     {
-        int maxlen = 1;
+        size_t maxlen = 1;
         for (size_t j=0; j<compoundNames.size(); j++)
         {
-            int l = compoundNames[j].length() + 1;
+            size_t l = compoundNames[j].length() + 1;
             if (l > maxlen)
                 maxlen = l;
         }
 
         vtkUnsignedCharArray *labels = vtkUnsignedCharArray::New();
-        labels->SetNumberOfComponents(maxlen);
+        labels->SetNumberOfComponents((int)maxlen);
         labels->SetNumberOfTuples(atoms.size());
         char *cptr = (char *)labels->GetVoidPointer(0);
         memset(cptr, 0, maxlen*atoms.size());  // Initialize all of this for
@@ -681,7 +681,7 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Slow(int model)
         return;
 
     vector<Atom> &atoms = allatoms[model];
-    int natoms = atoms.size();
+    int natoms = (int)atoms.size();
     bonds.reserve(natoms);  // just a guess
 
     //
@@ -731,7 +731,7 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
         return;
 
     vector<Atom> &atoms = allatoms[model];
-    int natoms = atoms.size();
+    int natoms = (int)atoms.size();
     if (natoms <= 0)
         return;
 
@@ -808,7 +808,7 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
             for (int k=0; k<nk; k++)
             {
                 int index1 = i + ni*(j + nj*(k));
-                int na = atomgrid[index1].size();
+                int na = (int)atomgrid[index1].size();
                 for (int a=0; a<na; a++)
                 {
                     int ctr = 0;
@@ -832,7 +832,7 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
                                     continue;
 
                                 int index2 = ii + ni*(jj + nj*(kk));
-                                int naa = atomgrid[index2].size();
+                                int naa = (int)atomgrid[index2].size();
                                 for (int aa=0; aa<naa && ctr<4; aa++)
                                 {
                                     if (index1==index2 && a==aa)
@@ -1359,7 +1359,7 @@ ScanFloat(const char *line, int len, int start, int end, float *val)
 Atom::Atom(const char *line, int cmpnd)
 {
     char record[7];
-    int len = strlen(line);
+    int len = (int)strlen(line);
     ScanString(line, len,  1,  6,  record);
     ScanInt   (line, len,  7, 11, &serial);
     ScanString(line, len, 13, 16,  name);

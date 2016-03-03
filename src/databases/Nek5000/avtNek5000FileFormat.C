@@ -2178,7 +2178,7 @@ avtNek5000FileFormat::GetTimes(vector<double> &outTimes)
     UpdateCyclesAndTimes();
     if (numberOfTimePeriods > 1)
     {
-        int nTimes = aTimes.size();
+        int nTimes = (int)aTimes.size();
         outTimes.resize(nTimes*numberOfTimePeriods);
         for (int i = 0 ; i < numberOfTimePeriods ; i++)
             for (int j = 0 ; j < nTimes ; j++)
@@ -3285,7 +3285,7 @@ avtNek5000FileFormat::RegisterDataSelections(
     int rank   = PAR_Rank();
     int nprocs = PAR_Size();
 
-    int nelements = (useAllElements ? iNumBlocks : finalElementList.size());
+    int nelements = (useAllElements ? iNumBlocks : (int)finalElementList.size());
     //int elements_per_proc = nelements / nprocs;
     //int one_extra_until = nelements % nprocs;
 
@@ -3335,8 +3335,6 @@ avtNek5000FileFormat::CombineElementLists(
 {
     int t1 = visitTimer->StartTimer();
 
-    size_t  i, j;
-
     if (lists.size() == 1)
     {
         outlist = lists[0];
@@ -3346,21 +3344,21 @@ avtNek5000FileFormat::CombineElementLists(
     if (doUnion)
     {
         vector<bool> useElements(iNumBlocks, false);
-        for (i = 0 ; i < lists.size() ; i++)
+        for (size_t i = 0 ; i < lists.size() ; i++)
         {
-            for (j = 0 ; j < lists[i].size() ; j++)
+            for (size_t j = 0 ; j < lists[i].size() ; j++)
             {
                 useElements[lists[i][j]] = true;
             }
         }
         
         int numOn = 0;
-        for (i = 0 ; i < (size_t)iNumBlocks ; i++)
+        for (int i = 0 ; i < iNumBlocks ; i++)
             if (useElements[i])
                 numOn++;
         outlist.resize(numOn);
         int ctr = 0;
-        for (i = 0 ; i < (size_t)iNumBlocks ; i++)
+        for (int i = 0 ; i < iNumBlocks ; i++)
             if (useElements[i])
                 outlist[ctr++] = i;
     }
@@ -3368,22 +3366,22 @@ avtNek5000FileFormat::CombineElementLists(
     {
         vector<int> numHits(iNumBlocks, 0);
         int numSelections = 0;
-        for (i = 0 ; i < lists.size() ; i++)
+        for (size_t i = 0 ; i < lists.size() ; i++)
         {
             if (lists[i].size() == 0)
                 continue;
             numSelections++;
-            for (j = 0 ; j < lists[i].size() ; j++)
+            for (size_t j = 0 ; j < lists[i].size() ; j++)
                 numHits[lists[i][j]]++;
         }
         
         int numOn = 0;
-        for (i = 0 ; i < (size_t)iNumBlocks ; i++)
+        for (int i = 0 ; i < iNumBlocks ; i++)
             if (numHits[i] == numSelections)
                 numOn++;
         outlist.resize(numOn);
         int ctr = 0;
-        for (i = 0 ; i < (size_t)iNumBlocks ; i++)
+        for (int i = 0 ; i < iNumBlocks ; i++)
             if (numHits[i] == numSelections)
                 outlist[ctr++] = i;
     }

@@ -209,7 +209,7 @@ avtStreamlineInfoQuery::PostExecute()
     
     std::string msg;
     char str[128];
-    int i = 0, sz = slData.size();
+    size_t i = 0, sz = slData.size();
 
     int slIdx = 0;
     MapNode result_node;

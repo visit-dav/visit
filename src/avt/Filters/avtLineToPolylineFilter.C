@@ -279,7 +279,7 @@ avtLineToPolylineFilter::ExecuteData(avtDataRepresentation *inDR)
             if(shape.size() > (size_t)ptsBufSize)
             {
                 delete [] pts;
-                ptsBufSize = shape.size();
+                ptsBufSize = (int)shape.size();
                 pts = new vtkIdType[ptsBufSize];
             }
             for(size_t i = 0; i < shape.size(); ++i)

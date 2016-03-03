@@ -562,7 +562,7 @@ avtLODIParticleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             {
                 nElems = 1;
                 for(int j = 0; j < varndims; ++j)
-                    nElems *= dimSizes[vardims[j]];
+                    nElems *= (int)dimSizes[vardims[j]];
                 if(nElems == nPts)
                 {
                     avtScalarMetaData *smd = new avtScalarMetaData(varname,
@@ -878,7 +878,7 @@ avtLODIParticleFileFormat::GetAuxiliaryData(const char *var, int ts,
             // Create matnos and names arrays so we can create an avtMaterial.
             int *matnos = new int[sourceids.size()];
             char **names = new char *[sourceids.size()];
-            for(size_t i = 0; i < sourceids.size(); ++i)
+            for(int i = 0; i < (int)sourceids.size(); ++i)
             {
                 matnos[i] = i + 1;
                 names[i] = (char *)sourceids[i].c_str();

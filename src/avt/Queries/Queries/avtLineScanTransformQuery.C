@@ -298,7 +298,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
 
     // After this loop completes, a set of line endpoints and ids will fill 
     // the hash tables.
-    for (size_t i = 0 ; i < (size_t)npts ; i++)
+    for (int i = 0 ; i < npts ; i++)
     {
         // glue segments into one long line
         if (usedPoint[i])

@@ -123,8 +123,7 @@ VisWinAxesArray::VisWinAxesArray(VisWindowColleagueProxy &p) : VisWinColleague(p
 
 VisWinAxesArray::~VisWinAxesArray()
 {
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->Delete();
     }
@@ -226,8 +225,7 @@ VisWinAxesArray::AddAxesToWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         foreground->AddActor2D(axes[i].axis);
     }
@@ -258,8 +256,7 @@ VisWinAxesArray::RemoveAxesFromWindow(void)
     }
 
     vtkRenderer *foreground = mediator.GetForeground();
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         foreground->RemoveActor2D(axes[i].axis);
     }
@@ -382,7 +379,7 @@ VisWinAxesArray::UpdateView(void)
     }
      
     bool titlechange = false;
-    int axisCount = axes.size();
+    int axisCount = (int)axes.size();
     for (int i=0; i < axisCount; i++)
     {
         double dx = vx / rx;
@@ -443,7 +440,7 @@ VisWinAxesArray::UpdateView(void)
 void
 VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
 {
-    int nActors = list.size();
+    int nActors = (int)list.size();
 
     int arrayActor = -1;
     int arrayIndex = -1;
@@ -725,8 +722,7 @@ VisWinAxesArray::SetForegroundColor(double fr_, double fg_, double fb_)
     fr = fr_;
     fg = fg_;
     fb = fb_;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->GetProperty()->SetColor(fr, fg, fb);
     }
@@ -753,8 +749,7 @@ void
 VisWinAxesArray::SetVisibility(int vis)
 {
     axisVisibility = vis;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetVisibility(axisVisibility);
     }
@@ -784,8 +779,7 @@ void
 VisWinAxesArray::SetLabelVisibility(int vis)
 {
     labelVisibility = vis;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetLabelVisibility(labelVisibility);
     }
@@ -810,8 +804,7 @@ void
 VisWinAxesArray::SetTitleVisibility(int vis)
 {
     titleVisibility = vis;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetTitleVisibility(titleVisibility);
     }
@@ -836,8 +829,7 @@ void
 VisWinAxesArray::SetTickLocation(int loc)
 {
     tickLocation = loc;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetTickLocation(tickLocation);
     }
@@ -863,8 +855,7 @@ VisWinAxesArray::SetTickVisibility(bool vis, bool labelvis)
 {
     tickVisibility = vis;
     tickLabelVisibility = labelvis;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetMinorTicksVisible(tickVisibility);
         axes[i].axis->SetTickVisibility(tickVisibility || tickLabelVisibility);
@@ -892,8 +883,7 @@ void
 VisWinAxesArray::SetAutoSetTicks(int autoset)
 {
     autoSetTicks = autoset;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetAdjustLabels(autoSetTicks);
     }
@@ -918,8 +908,7 @@ void
 VisWinAxesArray::SetMajorTickMinimum(double majorMinimum)
 {
     majorTickMinimum = majorMinimum;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetMajorTickMinimum(majorTickMinimum);
     }
@@ -945,8 +934,7 @@ void
 VisWinAxesArray::SetMajorTickMaximum(double majorMaximum)
 {
     majorTickMaximum = majorMaximum;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetMajorTickMaximum(majorTickMaximum);
     }
@@ -971,8 +959,7 @@ void
 VisWinAxesArray::SetMajorTickSpacing(double majorSpacing)
 {
     majorTickSpacing = majorSpacing;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetMajorTickSpacing(majorTickSpacing);
     }
@@ -997,8 +984,7 @@ void
 VisWinAxesArray::SetMinorTickSpacing(double minorSpacing)
 {
     minorTickSpacing = minorSpacing;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetMinorTickSpacing(minorTickSpacing);
     }
@@ -1023,8 +1009,7 @@ void
 VisWinAxesArray::SetLabelFontHeight(double height)
 {
     labelFontHeight = height;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetLabelFontHeight(labelFontHeight);
     }
@@ -1049,8 +1034,7 @@ void
 VisWinAxesArray::SetTitleFontHeight(double height)
 {
     titleFontHeight = height;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->SetTitleFontHeight(titleFontHeight);
     }
@@ -1075,8 +1059,7 @@ void
 VisWinAxesArray::SetLineWidth(int width)
 {
     lineWidth = width;
-    int axisCount = axes.size();
-    for (int i=0; i < axisCount; i++)
+    for (size_t i=0; i < axes.size(); i++)
     {
         axes[i].axis->GetProperty()->SetLineWidth(lineWidth);
     }

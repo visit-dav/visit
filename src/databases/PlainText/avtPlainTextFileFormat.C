@@ -520,7 +520,7 @@ avtPlainTextFileFormat::ReadFile()
 
     while (!!in)
     {
-        int len = strlen(buff);
+        size_t len = strlen(buff);
         char *start = buff;
         vector<float> row;
 
@@ -585,7 +585,7 @@ avtPlainTextFileFormat::ReadFile()
             }
         }
 
-        int rowlen = (firstRowIsHeader && firstRow) ? variableNames.size() : row.size();
+        int rowlen = (firstRowIsHeader && firstRow) ?(int) variableNames.size() : (int)row.size();
         if (firstRow)
         {
             ncolumns = rowlen;
@@ -642,7 +642,7 @@ avtPlainTextFileFormat::ReadFile()
     {
         // If we didn't get enough variable names, fill it out with
         // generic values; and if it's too much, trim it
-        for (int i=variableNames.size(); i<ncolumns; i++)
+        for (int i=(int)variableNames.size(); i<ncolumns; i++)
         {
             char str[20];
             sprintf(str, "var%02d", i);

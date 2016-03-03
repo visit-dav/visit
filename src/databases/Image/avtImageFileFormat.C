@@ -325,7 +325,7 @@ avtImageFileFormat::ReadImageVolumeHeader(void)
                 }
 
                 // Trim any weird control characters off of the end.
-                int len = strlen(line_with_dir);
+                int len = (int)strlen(line_with_dir);
                 char *cptr = line_with_dir + len - 1;
                 while(cptr >= line_with_dir)
                 {
@@ -938,7 +938,7 @@ avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
     int nprocs = PAR_Size();
     bool doGhostZones = nprocs>1;
     bool isNodal = !strcmp(meshname, "ImageMesh_nodal");
-    int globalZoneCount = subImages.size();
+    int globalZoneCount = (int)subImages.size();
     if (isNodal) globalZoneCount--; 
     //int globalZoneStart = 0;
     float globalZStart = (specifiedZStart ? zStart : 0.);
@@ -1156,13 +1156,13 @@ avtImageFileFormat::GetImageVolumeVar(const char *varname)
 
     // examine name to see if its node-/zone-centered
     const char *vtmp = varname;
-    int len = strlen(varname);
-    int len2 = strlen("_nodal");
+    size_t len = strlen(varname);
+    size_t len2 = strlen("_nodal");
     if (len > len2)
         vtmp = varname + len - len2;
     bool isNodal = !strcmp(vtmp, "_nodal");
 
-    int globalZoneCount = subImages.size();
+    int globalZoneCount = (int)subImages.size();
     if (isNodal) globalZoneCount--; 
     //int globalZoneStart = 0;
     //float globalZStart = (specifiedZStart ? zStart : 0.);

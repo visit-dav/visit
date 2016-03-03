@@ -470,7 +470,7 @@ avtMultiResolutionPartitionStrategy::AddBox(int *extents)
     if (box_size < minimumSize)
         return;
 
-    int s = tmpBox.size();
+    size_t s = tmpBox.size();
     tmpBox.resize(s+6);
     tmpBox[s]   = extents[0];
     tmpBox[s+1] = extents[1]-1;

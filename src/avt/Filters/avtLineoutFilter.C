@@ -1015,7 +1015,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
     for (size_t i = 0; i < cellInfoList.size(); i++)
     {
         cellInfo = cellInfoList[i];
-        int nDups = cellInfo.currCell.size();
+        size_t nDups = cellInfo.currCell.size();
         
         if (nDups == 1)
         {
@@ -1024,7 +1024,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
         else
         {
             sum = 0.;
-            for (size_t j = 0; j < (size_t)nDups; j++)
+            for (size_t j = 0; j < nDups; j++)
             {
               sum += vtkMath::Distance2BetweenPoints(pt1, cellInfo.isect[j].x);
             }
@@ -1041,8 +1041,8 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
             {
                 sum = 0;
                 ds->GetCellPoints(cellInfoList[i].currCell[0], ptIds);
-                int numCellPts = ptIds->GetNumberOfIds();
-                for (size_t j = 0; j < (size_t)numCellPts; j++)
+                vtkIdType numCellPts = ptIds->GetNumberOfIds();
+                for (vtkIdType j = 0; j < numCellPts; j++)
                     sum += scalars->GetTuple1(ptIds->GetId(j));
                 if (numCellPts > 0)
                    sum /= (double) numCellPts;
@@ -1052,11 +1052,11 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
             {
                 sum = 0;
                 std::set<int> uniquePts;
-                for (size_t j = 0; j < (size_t)nDups; j++)
+                for (size_t j = 0; j < nDups; j++)
                 { 
                     ds->GetCellPoints(cellInfoList[i].currCell[j], ptIds); 
-                    int numCellPts = ptIds->GetNumberOfIds();
-                    for (size_t k = 0; k < (size_t)numCellPts; k++)
+                    vtkIdType numCellPts = ptIds->GetNumberOfIds();
+                    for (vtkIdType k = 0; k < numCellPts; k++)
                     { 
                         if (uniquePts.count(ptIds->GetId(k)) == 0)
                         { 
@@ -1079,7 +1079,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
             else
             {
                 newVal = 0.;
-                for (size_t j = 0; j < (size_t)nDups; j++)
+                for (size_t j = 0; j < nDups; j++)
                     newVal += scalars->GetTuple1(cellInfoList[i].currCell[j]);
                 newVal /= (double) cellInfoList[i].currCell.size();
             }
@@ -1096,7 +1096,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
         vtkDataArray *sortedVal = outVal->NewInstance();
         DoubleIntMap sortedIds;
         double x;
-        for (size_t i = 0; i < (size_t)outXC->GetNumberOfTuples(); i++)
+        for (int i = 0; i < outXC->GetNumberOfTuples(); i++)
         {
             x = outXC->GetTuple1(i);
             sortedIds.insert(DoubleIntMap::value_type(x, i));

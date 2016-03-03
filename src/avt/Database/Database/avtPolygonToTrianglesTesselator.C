@@ -345,7 +345,7 @@ avtPolygonToTrianglesTesselator::AddContourVertex(double x,
 // ****************************************************************************
 void avtPolygonToTrianglesTesselator::EndContour()
 {
-    int nverts = verts.size() / 3;
+    int nverts = (int)verts.size() / 3;
     tessAddContour(tessObj,3,
                    &verts[0],
                    3*sizeof(double),

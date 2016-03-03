@@ -489,7 +489,7 @@ VisWinParallelAxes::SetViewport(double vl_, double vb_, double vr_, double vt_)
 void
 VisWinParallelAxes::UpdatePlotList(vector<avtActor_p> &list)
 {
-    int nActors = list.size();
+    int nActors = (int)list.size();
 
     //
     // Find the highest-valued axis index for any plot

@@ -452,7 +452,7 @@ avtBOUTFileFormat::GetNTimesteps()
     ReadTimes();
 
     debug4 << mName << "returning " << times.size() << endl;
-    return times.size();
+    return (int)times.size();
 }
 
 // ****************************************************************************

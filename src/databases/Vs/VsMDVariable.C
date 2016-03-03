@@ -180,7 +180,7 @@ size_t VsMDVariable::getNumComps() const {
         <<i <<"?  Returning 0." <<std::endl;
         return 0;
       }
-      int comps = varMeta->getNumComps();
+      int comps = (int)varMeta->getNumComps();
       
       //first time through the loop we just initialize the comparison variable
       if (numComponents == -1) {
@@ -205,9 +205,9 @@ size_t VsMDVariable::getNumComps() const {
 void VsMDVariable::createComponents() {
   VsLog::debugLog() <<"VsMDVariable::createComponents() - Entering" <<std::endl;
       
-  size_t numComps = getNumComps();
+  int numComps = (int)getNumComps();
   if (numComps > 1) {
-    for (size_t i = 0; i < numComps; i++) {
+    for (int i = 0; i < numComps; i++) {
       registry->registerComponent(getFullName(), i, getLabel(i));
     }
   }

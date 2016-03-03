@@ -1078,6 +1078,9 @@
 #  define ___MBS_TMP_DEF  char *___tmp_ptr;
 #  define ___TMP_PTR      ___tmp_ptr
 #  define CLEN(ptr) mblen((ZCONST char *)(ptr), MB_CUR_MAX)
+#  if defined(WIN32) && defined(PREINCSTR)
+#    undef PREINCSTR
+#  endif
 //#  ifndef PREINCSTR
 #    define PREINCSTR(ptr) (ptr += CLEN(ptr))
 //#  endif

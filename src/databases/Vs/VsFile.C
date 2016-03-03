@@ -54,20 +54,20 @@ VsFile::~VsFile() {
   registry->deleteAllObjects();
   
 // Check if anything is still open
-  int cnt = H5Fget_obj_count(getId(), H5F_OBJ_ALL);
+  int cnt = (int)H5Fget_obj_count(getId(), H5F_OBJ_ALL);
 // CNT will always be >= 1 because the FILE is still open
 // So only output the error message if there is MORE than 1 open id
   if (cnt > 1) {
     VsLog::debugLog() << "File still has " << cnt << " open objects:" <<std::endl;
     std::vector<hid_t> objIds(cnt);
-    int numObjs = H5Fget_obj_ids(getId(), H5F_OBJ_ALL, cnt, &objIds[0]);
+    int numObjs = (int)H5Fget_obj_ids(getId(), H5F_OBJ_ALL, cnt, &objIds[0]);
     char objName[1024];
     for (int i = 0; i < numObjs; ++i) {
       hid_t anobj = objIds[i];
       //Don't print a warning for the file itself, we know it's still open.
       if (anobj != getId()) {
         H5I_type_t ot = H5Iget_type(anobj);
-        int status = H5Iget_name(anobj, objName, 1024); (void) status;
+        int status = (int)(anobj, objName, 1024); (void) status;
         VsLog::debugLog() << "type = " << ot << ", name = " << objName <<", id = " <<anobj <<std::endl;;
       }
     }

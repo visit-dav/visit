@@ -26,9 +26,13 @@ Token::~Token(void)
 }    
     
 Token* Token::newToken(int ofKind)    
-{    
+{ 
+#if 0
+    // Remove warning regarding 'default' but no 'case' labels.
     switch (ofKind) {    
         default:    
             return new Token();    
-    }    
+    } 
+#endif
+    return new Token();
 }    

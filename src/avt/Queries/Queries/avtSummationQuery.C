@@ -326,7 +326,7 @@ avtSummationQuery::PreExecute(void)
 void
 avtSummationQuery::PostExecute(void)
 {
-    int ncomps = sums.size();
+    int ncomps = (int)sums.size();
     // for procs with no data, broadcast the # of comps so they can
     // still particpate in the global sum.
     ncomps = UnifyMaximumValue(ncomps);

@@ -373,7 +373,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         bool foundVar = false;
         if (!foundVar)
         {
-            size_t nsn = reader->GetNumberOfScalarsPerNode();
+            int nsn = reader->GetNumberOfScalarsPerNode();
             for (i = 0 ; i < nsn ; i++)
             {
                 const char *desc = reader->GetDescription(i,
@@ -388,7 +388,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         }
         if (!foundVar)
         {
-            size_t nsz = reader->GetNumberOfScalarsPerElement();
+            int nsz = reader->GetNumberOfScalarsPerElement();
             for (i = 0 ; i < nsz ; i++)
             {
                 const char *desc = reader->GetDescription(i,
@@ -403,7 +403,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         }
         if (!foundVar)
         {
-            size_t nsn = reader->GetNumberOfVectorsPerNode();
+            int nsn = reader->GetNumberOfVectorsPerNode();
             for (i = 0 ; i < nsn ; i++)
             {
                 const char *desc = reader->GetDescription(i,
@@ -418,7 +418,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         }
         if (!foundVar)
         {
-            size_t nsz = reader->GetNumberOfVectorsPerElement();
+            int nsz = reader->GetNumberOfVectorsPerElement();
             for (i = 0 ; i < nsz ; i++)
             {
                 const char *desc = reader->GetDescription(i,
@@ -845,13 +845,13 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) != 0)
         return NULL;
 
-    size_t i;
-    size_t nMaterials = matnames.size();
+    int i;
+    int nMaterials = (int)matnames.size();
 
     // Get the material fractions
     std::vector<float *> mats(nMaterials);
     std::vector<vtkFloatArray *> deleteList;
-    size_t nCells = 0;
+    vtkIdType nCells = 0;
     for (i = 0; i < nMaterials-1; i++)
     {
         vtkDataArray *arr = GetVar(ts, domain, matnames[i].c_str());
@@ -867,10 +867,10 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
 
     // Calculate fractions for additional "missing" material
     float *addMatPtr =  new float[nCells];
-    for(size_t cellNo = 0; cellNo < nCells; ++cellNo)
+    for(vtkIdType cellNo = 0; cellNo < nCells; ++cellNo)
     {
         double frac = 1.0;
-        for (size_t matNo = 0; matNo < nMaterials - 1; ++matNo)
+        for (int matNo = 0; matNo < nMaterials - 1; ++matNo)
             frac -= mats[matNo][cellNo];
         addMatPtr[cellNo] = frac;
     }
@@ -883,14 +883,12 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
     std::vector<int> mix_zone;
     std::vector<float> mix_vf;
 
-    for (i = 0; i < nCells; ++i)
+    for (vtkIdType i = 0; i < nCells; ++i)
     {
-        size_t j;
-
-        // First look for pure materials
+         // First look for pure materials
         int nmats = 0;
         int lastMat = -1;
-        for (j = 0; j < nMaterials; ++j)
+        for (int j = 0; j < nMaterials; ++j)
         {
             if (mats[j][i] > 0)
             {
@@ -907,7 +905,7 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
 
         // For unpure materials, we need to add entries to the tables.
         material_list[i] = -1 * (1 + (int)mix_zone.size());
-        for (j = 0; j < nMaterials; ++j)
+        for (int j = 0; j < nMaterials; ++j)
         {
             if (mats[j][i] <= 0)
                 continue;
@@ -922,7 +920,7 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
         mix_next[mix_next.size() - 1] = 0;
     }
 
-    int mixed_size = mix_zone.size();
+    int mixed_size = (int)mix_zone.size();
     // get pointers to pass to avtMaterial.  Windows will except if
     // an empty std::vector's zeroth item is dereferenced.
     int *ml = NULL, *mixm = NULL, *mixn = NULL, *mixz = NULL;

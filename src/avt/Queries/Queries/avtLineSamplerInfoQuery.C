@@ -210,7 +210,7 @@ avtLineSamplerInfoQuery::PostExecute()
     
     std::string msg;
     char str[128];
-    int i = 0, sz = lsData.size();
+    size_t i = 0, sz = lsData.size();
     
     int lsIdx = 0;
     while (i < sz)

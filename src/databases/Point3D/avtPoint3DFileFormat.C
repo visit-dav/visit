@@ -419,7 +419,7 @@ avtPoint3DFileFormat::ReadData(void)
             
     }
 
-    int npts = var1.size();
+    int npts = (int)var1.size();
 
     column1 = vtkFloatArray::New();
     column1->SetNumberOfTuples(npts);

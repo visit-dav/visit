@@ -188,7 +188,7 @@ avtPolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent,
 {
     const char *mName = "avtPolyhedralSplit::ExpandDataArray: ";
     vtkDataArray *output = NULL;
-    int polyhedralCellCount = polyhedralSplit.size() / 2;
+    int polyhedralCellCount = (int)polyhedralSplit.size() / 2;
 
     if(polyhedralCellCount == 0)
     {
@@ -338,7 +338,7 @@ avtPolyhedralSplit::CreateOriginalCells(int domain, int normalCellCount) const
     vtkUnsignedIntArray *originalCells = vtkUnsignedIntArray::New();
     originalCells->SetNumberOfComponents(2);
     int bloat = 0;
-    int polyhedralCellCount = polyhedralSplit.size()/2;
+    int polyhedralCellCount = (int)polyhedralSplit.size()/2;
     for(int i = 0; i < polyhedralCellCount; ++i)
         bloat += polyhedralSplit[i*2+1];
     originalCells->SetNumberOfTuples(normalCellCount + bloat);

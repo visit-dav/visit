@@ -568,7 +568,7 @@ JSONRoot::DataSet(const std::string &dset_name)
 int
 JSONRoot::NumberOfDataSets() const
 {
-    return dsets.size();
+    return (int)dsets.size();
 }
 
 

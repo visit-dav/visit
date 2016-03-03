@@ -663,7 +663,7 @@ avtPVLDFileFormat::GetVectorVar(int domain, const char *varname)
                         return GenerateVariable( dims, data );
                 }
             }
-            CATCH2(std::exception, e)
+            CATCH(std::exception)
             {
                 char msg[512];
                 SNPRINTF(msg, 512, "SPH data may not be available at time step %d", timestep);
@@ -784,9 +784,9 @@ GetAuxiliaryData( const char *varname, int domain,
 
                     int ndims=1;
                     int dims[1];
-                    dims[0]=mid.size();
+                    dims[0]=(int)mid.size();
                     avtMaterial *amat = new avtMaterial(
-                        mat.size(), &mat[0],
+                        (int)mat.size(), &mat[0],
                         mnames,
                         ndims, dims,
                         0, &mid[0],
@@ -2040,7 +2040,7 @@ AddSolidMaterial( avtDatabaseMetaData* md )
                 avtMaterialMetaData *matmd = new avtMaterialMetaData;
                 matmd->name = PVLD_Reader::ComposeNames( meshname, "mat", "_" );
                 matmd->meshName = meshname;
-                matmd->numMaterials = mat.size();
+                matmd->numMaterials = (int)mat.size();
                 // std::for_each( mat.begin(), mat.end(),
                 //            [&]( const int& m ) {
                 //          auto& mt = preader_->GetMaterialName( m );
@@ -2087,7 +2087,7 @@ AddShellMaterial( avtDatabaseMetaData* md )
                 avtMaterialMetaData *matmd = new avtMaterialMetaData;
                 matmd->name = PVLD_Reader::ComposeNames( meshname, "mat", "_" );
                 matmd->meshName = meshname;
-                matmd->numMaterials = mat.size();
+                matmd->numMaterials = (int)mat.size();
                 // std::for_each( mat.begin(), mat.end(),
                 //            [&]( const int& m ) {
                 //          auto& mt = preader_->GetMaterialName( m );
@@ -2134,7 +2134,7 @@ AddBeamMaterial( avtDatabaseMetaData* md )
                 avtMaterialMetaData *matmd = new avtMaterialMetaData;
                 matmd->name = PVLD_Reader::ComposeNames( meshname, "mat", "_" );
                 matmd->meshName = meshname;
-                matmd->numMaterials = mat.size();
+                matmd->numMaterials = (int)mat.size();
                 // std::for_each( mat.begin(), mat.end(),
                 //            [&]( const int& m ) {
                 //          auto& mt = preader_->GetMaterialName( m );
@@ -2177,7 +2177,7 @@ AddSurfaceMaterial( avtDatabaseMetaData* md )
                 avtMaterialMetaData *matmd = new avtMaterialMetaData;
                 matmd->name = PVLD_Reader::ComposeNames( meshname, "mat", "_" );
                 matmd->meshName = meshname;
-                matmd->numMaterials = mat.size();
+                matmd->numMaterials = (int)mat.size();
                 // std::for_each( mat.begin(), mat.end(),
                 //            [&]( const int& m ) {
                 //          auto& mt = preader_->GetMaterialName( m );
@@ -2226,7 +2226,7 @@ AddSphMaterial( avtDatabaseMetaData* md )
                 avtMaterialMetaData *matmd = new avtMaterialMetaData;
                 matmd->name = PVLD_Reader::ComposeNames( meshname, "mat", "_" );
                 matmd->meshName = meshname;
-                matmd->numMaterials = mat.size();
+                matmd->numMaterials = (int)mat.size();
                 // std::for_each( mat.begin(), mat.end(),
                 //            [&]( const int& m ) {
                 //          auto& mt = preader_->GetMaterialName( m );
@@ -2361,7 +2361,7 @@ avtPVLDFileFormat::MakePoints(vector<float> &crd)
     }
     else
     {
-        int nvrt = crd.size() / 3;
+        int nvrt = (int)crd.size() / 3;
         pts->SetNumberOfPoints(nvrt);
         float *pt = (float *) pts->GetVoidPointer(0);
         for( size_t i=0; i<crd.size(); i++ )
@@ -2397,8 +2397,8 @@ avtPVLDFileFormat::MakePoints(vector<float> &crd)
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GenerateSolidMesh( vector<float>& crd, const vector<int>& elm )
 {
-    int nvrt = crd.size()/3; (void) nvrt;
-    int nele = elm.size()/8;
+    int nvrt = (int)crd.size()/3; (void) nvrt;
+    int nele = (int)elm.size()/8;
 
     vtkPoints *pts = MakePoints(crd);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -2437,7 +2437,7 @@ avtPVLDFileFormat::GenerateSolidMesh( vector<float>& crd, const vector<int>& elm
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GenerateShellMesh( vector<float>& crd, const vector<int>& elm )
 {
-    int nele = elm.size()/4;
+    int nele = (int)elm.size()/4;
 
     vtkPoints *pts = MakePoints(crd);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -2461,7 +2461,7 @@ avtPVLDFileFormat::GenerateShellMesh( vector<float>& crd, const vector<int>& elm
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GenerateBeamMesh( vector<float>& crd, const vector<int>& elm )
 {
-    int nele = elm.size()/2;
+    int nele = (int)elm.size()/2;
 
     vtkPoints *pts = MakePoints(crd);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -2486,7 +2486,7 @@ avtPVLDFileFormat::GenerateBeamMesh( vector<float>& crd, const vector<int>& elm 
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GenerateSphMesh( vector<float>& crd, const vector<int>& elm )
 {
-    int nele = elm.size();
+    int nele = (int)elm.size();
 
     vtkPoints *pts = MakePoints(crd);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -2510,7 +2510,7 @@ avtPVLDFileFormat::GenerateSphMesh( vector<float>& crd, const vector<int>& elm )
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GeneratePointMesh( vector<float>& crd )
 {
-    int nvrt = crd.size()/3;
+    int nvrt = (int)crd.size()/3;
 
     vtkPoints *pts = MakePoints(crd);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -2531,7 +2531,7 @@ avtPVLDFileFormat::GeneratePointMesh( vector<float>& crd )
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GenerateBondMesh( const vector<float>& crd1, const vector<float>& crd2 )
 {
-    int nvrt = crd1.size()/3;
+    int nvrt = (int)crd1.size()/3;
 
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(2*nvrt);
