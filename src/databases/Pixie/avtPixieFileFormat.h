@@ -43,7 +43,9 @@
 #ifndef AVT_PIXIE_FILE_FORMAT_H
 #define AVT_PIXIE_FILE_FORMAT_H
 
+#include <avtPixieOptions.h>
 #include <avtMTSDFileFormat.h>
+
 class DBOptionsAttributes;
 
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
@@ -192,9 +194,8 @@ protected:
     static herr_t VisitLinks(hid_t, const char *, const H5L_info_t *, void *);
     static herr_t GetVariableList(hid_t, const char *, void *);
 
-    enum PartitioningDirection {XSLAB=0, YSLAB, ZSLAB, KDTREE};
-    PartitioningDirection Partitioning;
+    PixieDBOptions::PartitioningDirection partitioning;
+    bool                                  duplicateData;
 };
-
 
 #endif

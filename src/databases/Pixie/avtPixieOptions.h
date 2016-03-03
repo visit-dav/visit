@@ -49,8 +49,11 @@ class DBOptionsAttributes;
 
 namespace PixieDBOptions
 {
-    // Read options
+    enum PartitioningDirection {XSLAB=0, YSLAB, ZSLAB, KDTREE};
+
+  // Read options
     const char *const RDOPT_PARTITIONING = "Partitioning";
+    const char *const RDOPT_DUPLICATE    = "Duplicate data for particle advection (slower for all other techniques)";
 }
 
 // ****************************************************************************

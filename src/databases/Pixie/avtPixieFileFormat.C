@@ -71,8 +71,6 @@
 #include <InvalidTimeStepException.h>
 #include <snprintf.h>
 
-#include <avtPixieOptions.h>
-
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
 // versions of HDF5 before 1.8 and ensures correct compilation with
@@ -231,12 +229,17 @@ avtPixieFileFormat::avtPixieFileFormat(const char *filename, DBOptionsAttributes
     fileId = -1;
     nTimeStates = 0;
     haveMeshCoords = false;
+    partitioning = PixieDBOptions::ZSLAB;
+    duplicateData = false;
+
     if (readOpts != NULL)
     {
         for (int i = 0; i < readOpts->GetNumberOfOptions(); ++i)
         {
             if (readOpts->GetName(i) == PixieDBOptions::RDOPT_PARTITIONING)
-                this->Partitioning = (PartitioningDirection) readOpts->GetEnum(PixieDBOptions::RDOPT_PARTITIONING);
+                partitioning = (PixieDBOptions::PartitioningDirection) readOpts->GetEnum(PixieDBOptions::RDOPT_PARTITIONING);
+            else if (readOpts->GetName(i) == PixieDBOptions::RDOPT_DUPLICATE)
+                duplicateData = readOpts->GetBool(PixieDBOptions::RDOPT_DUPLICATE);
             else
                 debug1 << "Ignoring unknown option " << readOpts->GetName(i) << endl;
         }
@@ -587,7 +590,6 @@ avtPixieFileFormat::Initialize()
         H5Fclose(fileId);
         fileId = -1;
 #endif
-
         PartitionDims();
     }
 }
@@ -610,31 +612,54 @@ avtPixieFileFormat::Initialize()
 void
 avtPixieFileFormat::PartitionDims()
 {
-#ifdef PARALLEL
-    int extents[6], globalExtents[6];
-    vtkExtentTranslator *extTran = vtkExtentTranslator::New();
-
-    switch(this->Partitioning)
+    if (resultMustBeProducedOnlyOnThisProcessor || duplicateData)
     {
-    case XSLAB:
-        extTran->SetSplitModeToXSlab();
-        break;
-    case YSLAB:
-        extTran->SetSplitModeToYSlab();
-        break;
-    case ZSLAB:
-        extTran->SetSplitModeToZSlab();
-        break;
-    case KDTREE:
-        extTran->SetSplitModeToBlock();
-        break;
+      VarInfoMap::iterator it;
+      for(it = variables.begin(); it != variables.end(); ++it)
+      {
+        it->second.count[0] = it->second.dims[0];
+        it->second.count[1] = it->second.dims[1];
+        it->second.count[2] = it->second.dims[2];
+        it->second.start[0] = 0;
+        it->second.start[1] = 0;
+        it->second.start[2] = 0;
+      }
+      for(it = meshes.begin(); it != meshes.end(); ++it)
+      {
+        it->second.count[0] = it->second.dims[0];
+        it->second.count[1] = it->second.dims[1];
+        it->second.count[2] = it->second.dims[2];
+        it->second.start[0] = 0;
+        it->second.start[1] = 0;
+        it->second.start[2] = 0;
+      }
     }
-    extTran->SetNumberOfPieces(PAR_Size());
-    extTran->SetPiece(PAR_Rank());
-
-    VarInfoMap::iterator it;
-    for(it = variables.begin(); it != variables.end(); ++it)
+    else
     {
+      int extents[6], globalExtents[6];
+      vtkExtentTranslator *extTran = vtkExtentTranslator::New();
+
+      switch(partitioning)
+        {
+        case PixieDBOptions::XSLAB:
+          extTran->SetSplitModeToXSlab();
+          break;
+        case PixieDBOptions::YSLAB:
+          extTran->SetSplitModeToYSlab();
+          break;
+        case PixieDBOptions::ZSLAB:
+          extTran->SetSplitModeToZSlab();
+          break;
+        case PixieDBOptions::KDTREE:
+          extTran->SetSplitModeToBlock();
+          break;
+        }
+      extTran->SetNumberOfPieces(PAR_Size());
+      extTran->SetPiece(PAR_Rank());
+
+      VarInfoMap::iterator it;
+      for(it = variables.begin(); it != variables.end(); ++it)
+      {
         extTran->SetGhostLevel(1);
         globalExtents[0] = 0;
         globalExtents[1] = it->second.dims[0] - 1;
@@ -701,9 +726,9 @@ avtPixieFileFormat::PartitionDims()
                    << "x"<< it->second.start_no_ghost[2] << "]"
                    <<"\n";
         }
-    } // end of loop
-    for(it = meshes.begin(); it != meshes.end(); ++it)
-    {
+      } // end of loop
+      for(it = meshes.begin(); it != meshes.end(); ++it)
+      {
         extTran->SetGhostLevel(1);
         globalExtents[0] = 0;
         globalExtents[1] = it->second.dims[0] - 1;
@@ -770,29 +795,9 @@ avtPixieFileFormat::PartitionDims()
                    << "x"<< it->second.start_no_ghost[2] << "]"
                    <<"\n";
         }
-    } // end of loop
-    extTran->Delete();
-#else
-    VarInfoMap::iterator it;
-    for(it = variables.begin(); it != variables.end(); ++it)
-    {
-        it->second.count[0] = it->second.dims[0];
-        it->second.count[1] = it->second.dims[1];
-        it->second.count[2] = it->second.dims[2];
-        it->second.start[0] = 0;
-        it->second.start[1] = 0;
-        it->second.start[2] = 0;
+      } // end of loop
+      extTran->Delete();
     }
-    for(it = meshes.begin(); it != meshes.end(); ++it)
-    {
-        it->second.count[0] = it->second.dims[0];
-        it->second.count[1] = it->second.dims[1];
-        it->second.count[2] = it->second.dims[2];
-        it->second.start[0] = 0;
-        it->second.start[1] = 0;
-        it->second.start[2] = 0;
-    }
-#endif
 }
 
 // ****************************************************************************
@@ -1017,7 +1022,10 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int pmnDims = -1;
     VarInfo pm;
 #endif
-    md->SetFormatCanDoDomainDecomposition(true);
+
+    if (! duplicateData)
+        md->SetFormatCanDoDomainDecomposition(true);
+    
     for(it = meshes.begin();
         it != meshes.end(); ++it)
     {
@@ -2461,45 +2469,48 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
 void
 avtPixieFileFormat::AddGhostCellInfo(const VarInfo &info, vtkDataSet *ds)
 {
-#ifndef PARALLEL
-    return;
-#else
+    if (resultMustBeProducedOnlyOnThisProcessor || duplicateData)
+    {
+      return;
+    }
+    else
+    {
 #define GHOST
 #ifdef GHOST
-    int nx, ny, nz, i, x, y, z, id, ncells;
-    unsigned char realVal = 0, ghostVal=0;
-    avtGhostData::AddGhostZoneType(ghostVal, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-    vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-    ghostCells->SetName("avtGhostZones");
-    if (info.hasCoords)
-    {
+      int nx, ny, nz, i, x, y, z, id, ncells;
+      unsigned char realVal = 0, ghostVal=0;
+      avtGhostData::AddGhostZoneType(ghostVal, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+      vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+      ghostCells->SetName("avtGhostZones");
+      if (info.hasCoords)
+      {
         nx = info.count[2]-1;
         ny = info.count[1]-1;
         nz = info.count[0]-1;
-    }
-    else
-// the default is to always have zone-centered data and
-// grid dims were incremented by 1 in GetMesh
-// this fixes the size of the ghostCells array.
-    {
+      }
+      else
+        // the default is to always have zone-centered data and
+        // grid dims were incremented by 1 in GetMesh
+        // this fixes the size of the ghostCells array.
+      {
         nx = info.count[2];
         ny = info.count[1];
         nz = info.count[0];
-    }
-// here we swapped indices again, 2 <-> 0
+      }
+      // here we swapped indices again, 2 <-> 0
+      
+      debug4 << "allocate GhostZone array of size " << nx << "x" << ny << "x" << nz << endl;
 
-    debug4 << "allocate GhostZone array of size " << nx << "x" << ny << "x" << nz << endl;
-
-    ncells = nx * ny * nz;
-    ghostCells->SetNumberOfTuples(ncells);
-    unsigned char *gnp = ghostCells->GetPointer(0);
-    for (i=0; i<ncells; i++)
-    {
+      ncells = nx * ny * nz;
+      ghostCells->SetNumberOfTuples(ncells);
+      unsigned char *gnp = ghostCells->GetPointer(0);
+      for (i=0; i<ncells; i++)
+      {
         gnp[i] = realVal;
-    }
-    if (info.start[2] < info.start_no_ghost[2])
-    {
-    debug4 << "Xmin: " << info.start[2]<< " < " << info.start_no_ghost[2] << endl;
+      }
+      if (info.start[2] < info.start_no_ghost[2])
+      {
+        debug4 << "Xmin: " << info.start[2]<< " < " << info.start_no_ghost[2] << endl;
         x = 0;
         for (y=0; y<ny; y++)
             for (z=0; z<nz; z++)
@@ -2507,10 +2518,10 @@ avtPixieFileFormat::AddGhostCellInfo(const VarInfo &info, vtkDataSet *ds)
                 id = z*nx*ny + y*nx + x;
                 gnp[id] = ghostVal;
             }
-    }
-    if (info.start[2]+info.count[2] > info.start_no_ghost[2]+info.count_no_ghost[2])
-    {
-    debug4 << "Xmax: " << info.start[2]+info.count[2] << " > " << info.start_no_ghost[2]+info.count_no_ghost[2] << endl;
+      }
+      if (info.start[2]+info.count[2] > info.start_no_ghost[2]+info.count_no_ghost[2])
+      {
+        debug4 << "Xmax: " << info.start[2]+info.count[2] << " > " << info.start_no_ghost[2]+info.count_no_ghost[2] << endl;
         x = nx-1;
         for ( y=0; y<ny; y++)
             for ( z=0; z<nz; z++)
@@ -2518,10 +2529,10 @@ avtPixieFileFormat::AddGhostCellInfo(const VarInfo &info, vtkDataSet *ds)
                 id = z*nx*ny + y*nx + x;
                 gnp[id] = ghostVal;
             }
-    }
-    // Check planes cutting y
-    if (info.start[1] < info.start_no_ghost[1])
-    {
+      }
+      // Check planes cutting y
+      if (info.start[1] < info.start_no_ghost[1])
+      {
 debug4 << "Ymin: " << info.start[1] << " < " << info.start_no_ghost[1] << endl;
         y = 0;
         for (x=0; x<nx; x++)
@@ -2530,10 +2541,10 @@ debug4 << "Ymin: " << info.start[1] << " < " << info.start_no_ghost[1] << endl;
                 id = z*nx*ny + y*nx + x;
                 gnp[id] = ghostVal;
             }
-    }
-    if (info.start[1]+info.count[1] > info.start_no_ghost[1]+info.count_no_ghost[1])
-    {
-    debug4 << "Ymax: " << info.start[1]+info.count[1] << " > " << info.start_no_ghost[1]+info.count_no_ghost[1] << endl;
+      }
+      if (info.start[1]+info.count[1] > info.start_no_ghost[1]+info.count_no_ghost[1])
+      {
+        debug4 << "Ymax: " << info.start[1]+info.count[1] << " > " << info.start_no_ghost[1]+info.count_no_ghost[1] << endl;
         y = ny-1;
         for (x=0; x<nx; x++)
             for (z=0; z<nz; z++)
@@ -2541,12 +2552,11 @@ debug4 << "Ymin: " << info.start[1] << " < " << info.start_no_ghost[1] << endl;
                 id = z*nx*ny + y*nx + x;
                 gnp[id] = ghostVal;
             }
-    }
-    // Check planes cutting z
-//
-    if (info.start[0] < info.start_no_ghost[0])
-    {
-    debug4 << "Zmin: " << info.start[0] << " < " << info.start_no_ghost[0] << endl;
+      }
+      // Check planes cutting z
+      if (info.start[0] < info.start_no_ghost[0])
+      {
+        debug4 << "Zmin: " << info.start[0] << " < " << info.start_no_ghost[0] << endl;
         z = 0;
         for (x=0; x<nx; x++)
             for (y=0; y<ny; y++)
@@ -2554,10 +2564,10 @@ debug4 << "Ymin: " << info.start[1] << " < " << info.start_no_ghost[1] << endl;
                 id = z*nx*ny + y*nx + x;
                 gnp[id] = ghostVal;
             }
-    }
-    if (info.start[0]+info.count[0] > info.start_no_ghost[0]+info.count_no_ghost[0])
-    {
-    debug4 << "Zmax: " << info.start[0]+info.count[0] << " > " << info.start_no_ghost[0]+info.count_no_ghost[0] << endl;
+      }
+      if (info.start[0]+info.count[0] > info.start_no_ghost[0]+info.count_no_ghost[0])
+      {
+        debug4 << "Zmax: " << info.start[0]+info.count[0] << " > " << info.start_no_ghost[0]+info.count_no_ghost[0] << endl;
         z = nz-1;
         for (x=0; x<nx; x++)
             for (y=0; y<ny; y++)
@@ -2565,55 +2575,55 @@ debug4 << "Ymin: " << info.start[1] << " < " << info.start_no_ghost[1] << endl;
                 id = z*nx*ny + y*nx + x;
                 gnp[id] = ghostVal;
             }
-    }
+      }
 //
-    ds->GetCellData()->AddArray(ghostCells);
-    ghostCells->Delete();
-
-    ds->GetInformation()->Set(
-        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
+      ds->GetCellData()->AddArray(ghostCells);
+      ghostCells->Delete();
+      
+      ds->GetInformation()->Set(
+                                vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
 #endif
-    // Add the min/max local logical extents of this domain.  It's
-    // an alternate way we label ghost zones for structured grids.
-    vtkIntArray *realDims = vtkIntArray::New();
-    realDims->SetName("avtRealDims");
-    realDims->SetNumberOfValues(6);
+      // Add the min/max local logical extents of this domain.  It's
+      // an alternate way we label ghost zones for structured grids.
+      vtkIntArray *realDims = vtkIntArray::New();
+      realDims->SetName("avtRealDims");
+      realDims->SetNumberOfValues(6);
+      
+      realDims->SetValue(0, info.start_no_ghost[2]-info.start[2]);
+      realDims->SetValue(1, info.count[2]-1);
 
-    realDims->SetValue(0, info.start_no_ghost[2]-info.start[2]);
-    realDims->SetValue(1, info.count[2]-1);
-
-    realDims->SetValue(2, info.start_no_ghost[1]-info.start[1]);
-    realDims->SetValue(3, info.count[1]-1);
-
-    realDims->SetValue(4, info.start_no_ghost[0]-info.start[0]);
-    realDims->SetValue(5, info.count[0]-1);
-
-    debug5 << "adding avtRealDims (" <<
-           realDims->GetValue(0) << ", " <<
-           realDims->GetValue(1) << ", " <<
-           realDims->GetValue(2) << ", " <<
-           realDims->GetValue(3) << ", " <<
-           realDims->GetValue(4) << ", " <<
-           realDims->GetValue(5) << ")\n";
-
-    ds->GetFieldData()->AddArray(realDims);
-    ds->GetFieldData()->CopyFieldOn("avtRealDims");
-    realDims->Delete();
-
-    vtkIntArray *arr = vtkIntArray::New();
-    arr->SetNumberOfTuples(3);
-
-    arr->SetValue(0, info.start[2]);
-    arr->SetValue(1, info.start[1]);
-    arr->SetValue(2, info.start[0]);
-
-    debug1 << "adding base_index " <<
-           arr->GetValue(0) << " " <<
-           arr->GetValue(1) << " " <<
+      realDims->SetValue(2, info.start_no_ghost[1]-info.start[1]);
+      realDims->SetValue(3, info.count[1]-1);
+      
+      realDims->SetValue(4, info.start_no_ghost[0]-info.start[0]);
+      realDims->SetValue(5, info.count[0]-1);
+      
+      debug5 << "adding avtRealDims (" <<
+        realDims->GetValue(0) << ", " <<
+        realDims->GetValue(1) << ", " <<
+        realDims->GetValue(2) << ", " <<
+        realDims->GetValue(3) << ", " <<
+        realDims->GetValue(4) << ", " <<
+        realDims->GetValue(5) << ")\n";
+      
+      ds->GetFieldData()->AddArray(realDims);
+      ds->GetFieldData()->CopyFieldOn("avtRealDims");
+      realDims->Delete();
+      
+      vtkIntArray *arr = vtkIntArray::New();
+      arr->SetNumberOfTuples(3);
+      
+      arr->SetValue(0, info.start[2]);
+      arr->SetValue(1, info.start[1]);
+      arr->SetValue(2, info.start[0]);
+      
+      debug1 << "adding base_index " <<
+        arr->GetValue(0) << " " <<
+        arr->GetValue(1) << " " <<
            arr->GetValue(2) << endl;
 
-    arr->SetName("base_index");
-    ds->GetFieldData()->AddArray(arr);
-    arr->Delete();
-#endif
+      arr->SetName("base_index");
+      ds->GetFieldData()->AddArray(arr);
+      arr->Delete();
+    }
 }
