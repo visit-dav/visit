@@ -105,7 +105,7 @@ avtDivergenceExpression::GetMacro(std::vector<std::string> &args,
         do3D   = (atts.GetTopologicalDimension() == 3);
     }
 
-    int nargs = args.size();
+    size_t nargs = args.size();
 
     char new_expr[2048];
     if (do3D)

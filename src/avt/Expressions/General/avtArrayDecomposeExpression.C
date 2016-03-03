@@ -172,7 +172,7 @@ avtArrayDecomposeExpression::ProcessArguments(ArgsExpr *args,
 {
     // Check the number of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
     if (nargs != 2)
     {
         EXCEPTION2(ExpressionException, outputVariableName, 

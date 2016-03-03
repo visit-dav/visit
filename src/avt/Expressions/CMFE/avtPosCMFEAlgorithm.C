@@ -520,7 +520,7 @@ avtPosCMFEAlgorithm::DesiredPoints::Finalize(void)
         delete [] map_to_ds;
 
     total_nvals  = 0;
-    num_rgrids = rgrid_pts.size() / 3;
+    num_rgrids = (int)rgrid_pts.size() / 3;
     int numNonRGrid = (int)pt_list_size.size();
     num_datasets = numNonRGrid + num_rgrids;
     for (int i = 0 ; i < numNonRGrid ; i++)
@@ -2628,13 +2628,13 @@ avtPosCMFEAlgorithm::SpatialPartition::GetProcessorBoundaries(const double *boun
 
     itree->GetElementsListFromRange(mins, maxs, list);
 
-    int numMatches = list.size();
+    size_t numMatches = list.size();
     db.resize(numMatches*6);
-    for (int i = 0 ; i < numMatches ; i++)
+    for (size_t i = 0 ; i < numMatches ; i++)
     {
         double domBounds[6];
         itree->GetElementExtents(list[i], domBounds);
-        for (int j = 0 ; j < 6 ; j++)
+        for (size_t j = 0 ; j < 6 ; j++)
             db[6*i+j] = domBounds[j];
     }
 }

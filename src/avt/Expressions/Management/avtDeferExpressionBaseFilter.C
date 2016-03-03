@@ -116,7 +116,7 @@ avtDeferExpressionBaseFilter::SetupExpressionList(void)
     for (size_t j = 0 ; j < varsToEvaluate.size() ; j++)
     {
         bool foundMatch = false;
-        for (size_t i = 0 ; i < (size_t)el->GetNumExpressions() ; i++)
+        for (int i = 0 ; i < el->GetNumExpressions() ; i++)
             if (varsToEvaluate[j] == el->GetExpressions(i).GetName())
             {
                 bool replacedByCustom = false;
@@ -137,7 +137,7 @@ avtDeferExpressionBaseFilter::SetupExpressionList(void)
 
         // If this is a vector, then look for the magnitude as well.
         std::string newName = varsToEvaluate[j] + "_AVT_mag";
-        for (size_t i = 0 ; i < (size_t)el->GetNumExpressions() ; i++)
+        for (int i = 0 ; i < el->GetNumExpressions() ; i++)
             if (newName == el->GetExpressions(i).GetName())
                 new_el.AddExpressions(el->GetExpressions(i));
     }

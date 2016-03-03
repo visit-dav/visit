@@ -150,7 +150,7 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
 {
     // get the argument list and # of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
 
     // check for call with no args
     if (nargs == 0)
@@ -907,10 +907,10 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
                                             const std::vector<vtkIntArray*> &labels)
 {
     // loop indices
-    int i,j,k;
+    int i,j;
 
     // find out the number of sets
-    int nsets = sets.size();
+    int nsets = (int)sets.size();
 
     // if we have 0 or 1 set(s) multi-set resolve is not necessary
     if(nsets < 2) return num_comps; // not multi-set!
@@ -965,9 +965,9 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
             vtkIntArray  *can_labels   = labels[j]; 
             bset.GetIntersectionSet(i,j,src_cells,can_cells);
             
-            int nisect = src_cells.size();
+            size_t nisect = src_cells.size();
             // check if these cell labels need to be merged. 
-            for(k = 0; k < nisect; k++)
+            for(size_t k = 0; k < nisect; k++)
             {
                 // get the source and candidate component labels
                 src_label = src_labels->GetValue(src_cells[k]);
@@ -992,16 +992,16 @@ avtConnComponentsExpression::MultiSetResolve(int num_comps,
     {
         // get the current label array
         vtkIntArray *curr_array = labels[i];
-        int          ncells     = curr_array->GetNumberOfTuples();
+        vtkIdType          ncells     = curr_array->GetNumberOfTuples();
 
-        for(j = 0; j < ncells; j ++)
+        for(vtkIdType jj = 0; jj < ncells; ++jj)
         {
             // get the current label value
-            int lbl = curr_array->GetValue(j);
+            int lbl = curr_array->GetValue(jj);
             // find the final label value
             lbl = union_find.GetFinalLabel(lbl);
             // set the final label 
-            curr_array->SetValue(j,lbl);
+            curr_array->SetValue(jj,lbl);
         }
     }
 
@@ -1051,10 +1051,10 @@ avtConnComponentsExpression::MultiSetList(int num_comps,
                                          std::vector<int> &u_des)
 {
     // loop indices
-    int i,j,k;
+    int i,j;
 
     // find out the number of sets
-    int nsets = sets.size();
+    int nsets = (int)sets.size();
     // clear the result vectors
     u_src.clear();
     u_des.clear();
@@ -1118,9 +1118,9 @@ avtConnComponentsExpression::MultiSetList(int num_comps,
             vtkIntArray  *can_labels   = labels[j]; 
             bset.GetIntersectionSet(i,j,src_cells,can_cells);
 
-            int nisect = src_cells.size();
+            size_t nisect = src_cells.size();
             // check if these cell labels need to be merged. 
-            for(k = 0; k < nisect; k++)
+            for(size_t k = 0; k < nisect; k++)
             {
                 src_label = src_labels->GetValue(src_cells[k]);
                 can_label = can_labels->GetValue(can_cells[k]);
@@ -1175,9 +1175,6 @@ avtConnComponentsExpression::GlobalLabelShift
     int num_comps = num_local_comps;
 
 #ifdef PARALLEL
-    // loop indices
-    int i;
-
     // get the processor id and # of processors
     int procid = PAR_Rank();
     int nprocs = PAR_Size();
@@ -1203,7 +1200,7 @@ avtConnComponentsExpression::GlobalLabelShift
 
     int num_global_comps = 0;
     int shift = 0;
-    for(i=0;i<nprocs;i++)
+    for(int i=0;i<nprocs;i++)
     {
         // shift using component count from processors with a lower rank
         if(i < procid)
@@ -1218,8 +1215,8 @@ avtConnComponentsExpression::GlobalLabelShift
     delete [] rcv_buffer;
 
     // shift the labels
-    int nsets = labels.size();
-    for(i = 0; i < nsets ;i++)
+    size_t nsets = labels.size();
+    for(size_t i = 0; i < nsets ;i++)
     {
         ShiftLabels(labels[i],shift);
         // update progress
@@ -1269,9 +1266,6 @@ avtConnComponentsExpression::GlobalResolve(int num_comps,
 #ifdef PARALLEL
     int t0 = visitTimer->StartTimer();
 
-    // loop index
-    int i;
-
     // The spatial partition is used to evenly distributed mesh data
     // across available processors 
     SpatialPartition     spart;
@@ -1302,11 +1296,11 @@ avtConnComponentsExpression::GlobalResolve(int num_comps,
 
     // get the relocated datasets
     sets = bset.GetMeshes();
-    int n_reloc_sets = sets.size();
+    size_t n_reloc_sets = sets.size();
 
     // get the component label arrays
     labels.resize(n_reloc_sets);
-    for( i=0; i < n_reloc_sets; i++)
+    for(size_t i=0; i < n_reloc_sets; i++)
     {
         labels[i] = (vtkIntArray*)sets[i]->GetCellData()->
                                        GetArray(outputVariableName);
@@ -1499,9 +1493,9 @@ void
 avtConnComponentsExpression::ShiftLabels(vtkIntArray *labels, int shift)
 {
     // loop over all tuples
-    int nlabels = labels->GetNumberOfTuples();
+    vtkIdType nlabels = labels->GetNumberOfTuples();
     int *labels_ptr = labels->GetPointer(0);
-    for(int i = 0; i < nlabels ; i++)
+    for(vtkIdType i = 0; i < nlabels ; i++)
     {
         // get the current label value
         // add the shift amount
@@ -1735,7 +1729,7 @@ avtConnComponentsExpression::UnionFind::FinalizeLabels()
     // loop index
     int i;
     // get the total number of representatives
-    int nitems = parents.size();
+    int nitems = (int)parents.size();
 
     // used to create a map to final labels
     std::vector<int> labels(nitems,-1);
@@ -1905,7 +1899,7 @@ avtConnComponentsExpression::BoundarySet::Finalize()
     bounds[5] = -DBL_MAX;
 
     // get the number of sets
-    int nsets = meshes.size();
+    size_t nsets = meshes.size();
 
     // cleanup old itrees if they exist 
     if(itrees.size() > 0)
@@ -1929,7 +1923,7 @@ avtConnComponentsExpression::BoundarySet::Finalize()
 
     itrees.resize(nsets);
 
-    for(size_t i = 0; i < (size_t)nsets ; i++)
+    for(size_t i = 0; i < nsets ; i++)
     {
         // for each data set
         double curr_bounds[6];
@@ -1959,7 +1953,7 @@ avtConnComponentsExpression::BoundarySet::Finalize()
         {
             avtIntervalTree *curr_itree = new avtIntervalTree(curr_ncells,(is2D ? 2 : 3));
 
-            for(size_t j = 0; j< (size_t)curr_ncells; j++)
+            for(int j = 0; j< curr_ncells; j++)
             {
                 // add each cell's bounds to the interval tree
                 vtkCell *cell = curr_set->GetCell(j);
@@ -1999,8 +1993,8 @@ void
 avtConnComponentsExpression::BoundarySet::Clear()
 {
     // unregister all meshes and clean up per mesh itrees
-    int nsets = meshes.size();
-    for(int i=0;i<nsets;i++)
+    size_t nsets = meshes.size();
+    for(size_t i=0;i<nsets;i++)
     {
         meshes[i]->Delete();
         if(itrees[i])
@@ -3041,7 +3035,6 @@ void
 avtConnComponentsExpression::SpatialPartition::CreatePartition
 (const BoundarySet &bset, double *bounds)
 {
-    size_t   i, j;
     int t0 = visitTimer->StartTimer();
 
     if (itree != NULL)
@@ -3085,11 +3078,11 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
 
     int t3 = visitTimer->StartTimer();
     std::vector<vtkDataSet *> meshes = bset.GetMeshes();
-    int total_cells = 0;
-    int my_ncells = 0;
-    for (i = 0 ; i < meshes.size() ; i++)
+    vtkIdType total_cells = 0;
+    vtkIdType my_ncells = 0;
+    for (size_t i = 0 ; i < meshes.size() ; i++)
     {
-        const int ncells = meshes[i]->GetNumberOfCells();
+        vtkIdType ncells = meshes[i]->GetNumberOfCells();
         my_ncells += ncells;
         vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) meshes[i]
                                         ->GetCellData()->GetArray("avtOnBoundary");
@@ -3103,7 +3096,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
         }
         else
         {
-            for (j = 0 ; j < (size_t)ncells ; j++)
+            for (vtkIdType j = 0 ; j < ncells ; j++)
             {
                 if(gzn_ptr[j]==1)
                     total_cells++;
@@ -3124,16 +3117,16 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
         double cell_pt[3];
         double bbox[6];
         
-        for (i = 0 ; i < meshes.size() ; i++)
+        for (size_t i = 0 ; i < meshes.size() ; i++)
         {
-            const int ncells = meshes[i]->GetNumberOfCells();
+            vtkIdType ncells = meshes[i]->GetNumberOfCells();
             // get ghost zone neighbor info if available
             vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) meshes[i]->GetCellData()->GetArray("avtGhostZoneNeighbors");
             unsigned char *gzn_ptr = NULL;
             if (gzn_array)
                 gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
 
-            for (j = 0 ; j < (size_t)ncells ; j++)
+            for (vtkIdType j = 0 ; j < ncells ; j++)
             {
                 if(gzn_ptr != NULL && gzn_ptr[j]!=1)
                         continue;
@@ -3162,7 +3155,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
             int t5 = visitTimer->StartTimer();
             // Figure out how many boundaries need to keep going.
             int nBins = 0;
-            for (i = 0 ; i < (size_t)listSize ; i++)
+            for (int i = 0 ; i < listSize ; i++)
                 if (!(b_list[i]->IsDone()))
                 {
                     bin_lookup[nBins] = i;
@@ -3170,7 +3163,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
                 }
 
             // Calculate how many points fall within each region.
-            for (i = 0 ; i < (size_t)listSize ; i++)
+            for (int i = 0 ; i < listSize ; i++)
             {
                 if (b_list[i]->IsDone())
                     continue;
@@ -3188,8 +3181,8 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
 
             // See which boundaries found a suitable pivot and can now split.
             PartitionBoundary::PrepareSplitQuery(b_list, listSize);
-            size_t numAtStartOfLoop = listSize;
-            for (i = 0 ; i < numAtStartOfLoop ; i++)
+            int numAtStartOfLoop = listSize;
+            for (int i = 0 ; i < numAtStartOfLoop ; i++)
             {
                 if (b_list[i]->IsDone())
                     continue;
@@ -3205,7 +3198,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
             // Obviously, all the boundaries that were just split need more 
             // processing, because they haven't done any yet.
             keepGoing = false;
-            for (i = 0 ; i < (size_t)listSize ; i++)
+            for (int i = 0 ; i < listSize ; i++)
                 if (!(b_list[i]->IsDone()))
                     keepGoing = true;
             visitTimer->StopTimer(t5, "One iteration of spatial partition generation");
@@ -3223,7 +3216,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
             int t5 = visitTimer->StartTimer();
             // Figure out how many boundaries need to keep going.
             int nBins = 0;
-            for (i = 0 ; i < (size_t)listSize ; i++)
+            for (int i = 0 ; i < listSize ; i++)
                 if (!(b_list[i]->IsDone()))
                 {
                     bin_lookup[nBins] = i;
@@ -3231,7 +3224,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
                 }
 
             // Calculate how many points fall within each region.
-            for (i = 0 ; i < (size_t)listSize ; i++)
+            for (int i = 0 ; i < listSize ; i++)
             {
                 if (b_list[i]->IsDone())
                     continue;
@@ -3244,8 +3237,8 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
 
             // See which boundaries found a suitable pivot and can now split.
             PartitionBoundary::PrepareSplitQuery(b_list, listSize);
-            size_t numAtStartOfLoop = listSize;
-            for (i = 0 ; i < numAtStartOfLoop ; i++)
+            int numAtStartOfLoop = listSize;
+            for (int i = 0 ; i < numAtStartOfLoop ; i++)
             {
                 if (b_list[i]->IsDone())
                     continue;
@@ -3261,7 +3254,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
             // Obviously, all the boundaries that were just split need more 
             // processing, because they haven't done any yet.
             keepGoing = false;
-            for (i = 0 ; i < (size_t)listSize ; i++)
+            for (int i = 0 ; i < listSize ; i++)
                 if (!(b_list[i]->IsDone()))
                     keepGoing = true;
             visitTimer->StopTimer(t5, "One iteration of spatial partition generation");
@@ -3272,7 +3265,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
     // contains the actual spatial partitioning.
     itree = new avtIntervalTree(nProcs, (is2D ? 2 : 3));
     int count = 0;
-    for (i = 0 ; i < (size_t)listSize ; i++)
+    for (int i = 0 ; i < listSize ; i++)
     {
         if (b_list[i]->IsLeaf())
         {
@@ -3286,7 +3279,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
     itree->Calculate(true);
 
     // Clean up.
-    for (i = 0 ; i < (size_t)listSize ; i++)
+    for (int i = 0 ; i < listSize ; i++)
         delete b_list[i];
     delete [] b_list;
     delete [] bin_lookup;

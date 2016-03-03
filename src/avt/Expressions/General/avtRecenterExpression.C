@@ -116,7 +116,7 @@ avtRecenterExpression::ProcessArguments(ArgsExpr *args,
 {
     // Get the argument list and number of arguments.
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
 
     // Check for a call with no arguments.
     if (nargs == 0)

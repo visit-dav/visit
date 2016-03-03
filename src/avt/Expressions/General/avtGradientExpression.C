@@ -144,7 +144,7 @@ avtGradientExpression::ProcessArguments(ArgsExpr *args,
 {
     // get the argument list and # of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
 
     // check for call with no args
     if (nargs == 0)

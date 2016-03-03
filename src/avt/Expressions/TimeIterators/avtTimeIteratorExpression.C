@@ -115,7 +115,7 @@ avtTimeIteratorExpression::ProcessArguments(ArgsExpr *args,
 
     // get the argument list and # of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
 
     // check for call with no args
     if (nargs < NumberOfVariables())
@@ -210,7 +210,7 @@ avtTimeIteratorExpression::AddInputVariableName(const char *v)
             // Need to remove quotes around the variable (if any), since that 
             // won't be parsed well.
             std::string var_wo_quotes = std::string(v);
-            for (int j = var_wo_quotes.size()-1 ; j >= 0 ; j--)
+            for (int j = (int)var_wo_quotes.size()-1 ; j >= 0 ; j--)
                 if (var_wo_quotes[j] == '\'')
                     var_wo_quotes.replace(j,1,"");
             varnames.push_back(var_wo_quotes);
@@ -349,7 +349,7 @@ avtTimeIteratorExpression::UpdateExpressions(int ts)
     ParsingExprList *pel = ParsingExprList::Instance();
     ExpressionList new_list = *(pel->GetList());
 
-    int nvars = varnames.size();
+    int nvars = (int)varnames.size();
     if (cmfeType == POS_CMFE)
         nvars--;
     for (int i = 0 ; i < nvars ; i++)
@@ -368,7 +368,7 @@ avtTimeIteratorExpression::UpdateExpressions(int ts)
         }
         else
         {
-            int defVarIndex = varnames.size()-1;
+            int defVarIndex = (int)varnames.size()-1;
             SNPRINTF(expr_defn, 1024, "pos_cmfe(<[%d]i:%s>, <%s>, %s)", ts,
                                         varnames[i].c_str(), meshname.c_str(),
                                         varnames[defVarIndex].c_str());

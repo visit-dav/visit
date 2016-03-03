@@ -233,7 +233,7 @@ avtApplyMapExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state
 
     // Check the number of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
 
      // first argument should be the var name, let it do its own magic
     avtExprNode *first_tree = dynamic_cast<avtExprNode*>((*arguments)[0]->GetExpr());
@@ -347,9 +347,9 @@ avtApplyMapExpression::BuildMap(ListExpr *to_list)
     // 'from' list was not providied:
     // create a simple one enumerating [0 <-> (n-1)]
     // where n is the size of the 'to' list.
-    int to_size = to_list->GetElems()->size();
+    size_t to_size = to_list->GetElems()->size();
     vector<double> from_vals(to_size,0.0);
-    for(int i=0; i < to_size;i++)
+    for(size_t i=0; i < to_size;i++)
         from_vals[i] = (double)i;
 
     BuildMap(to_list,from_vals);
@@ -411,7 +411,7 @@ avtApplyMapExpression::BuildMap(ListExpr *to_list,
 
         // make sure we can hold the default string if necessary
         if(maxStringLength < (int)stringDefault.size())
-            maxStringLength= stringDefault.size() + 1;
+            maxStringLength= (int)stringDefault.size() + 1;
     }
     else
     {
