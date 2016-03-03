@@ -902,7 +902,7 @@ avtPLOT3DFileFormat::ReadVisItMetaFile()
     {
         fileFound = true;
         string base =  visitMetaFile.substr(0, visitMetaFile.length()-5);
-        int pos = visitMetaFile.rfind(VISIT_SLASH_STRING);
+        string::size_type pos = visitMetaFile.rfind(VISIT_SLASH_STRING);
         string path = visitMetaFile.substr(0, pos);
 
         while (getInfoLine(infoLine,lineSize,vp3dFp))

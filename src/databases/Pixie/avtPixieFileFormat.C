@@ -2345,10 +2345,10 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
                     {
                         for(int j = 0; j < 3; ++j)
                         {
-                            int dsize = H5Tget_size(attrType);
+                            size_t dsize = H5Tget_size(attrType);
                             char *ptr = data + dsize * j + 1;
                             char *tmp = new char[dsize+1];
-                            int i;
+                            size_t i;
                             for(i = 0; i < dsize && *ptr != ' '; ++i)
                                 tmp[i] = *ptr++;
                             tmp[i] = '\0';

@@ -628,7 +628,7 @@ avtLevelsMapper::GetLevelColor(const string &name, double col[4])
         {
             if (name == levelNames[i])
             {
-                index = i;
+                index = (int)i;
                 break;
             }
         }

@@ -1664,11 +1664,11 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds,
         int comp = nComp -1;
 
         unsigned int *oc = origCells->GetPointer(0);
-        size_t nFound = 0;
+        int nFound = 0;
         bool *zoneFound = new bool[origZones.size()];
         for (size_t i = 0; i < origZones.size(); i++)
             zoneFound[i] = false;
-        for (size_t i = 0; i < (size_t)nTuples && nFound < origZones.size(); i++)
+        for (int i = 0; i < nTuples && nFound < (int)origZones.size(); i++)
         {
             for (size_t j = 0; j < currentZones.size(); j++)
             {
@@ -1829,8 +1829,8 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
     }
 
     // need to change the zone/node names stored in all PickVarInfo
-    size_t numVars = pickAtts.GetNumVarInfos();
-    for (size_t i = 0; i < numVars; i++)
+    int numVars = pickAtts.GetNumVarInfos();
+    for (int i = 0; i < numVars; i++)
     {
         if (pickAtts.GetVarInfo(i).GetVariableType() == "material")
             continue;

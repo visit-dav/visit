@@ -612,7 +612,7 @@ ReadMaterialType( bool add_missing_parts )
                                                 sph_dsname_, sph_dsdims_,
                                                 sph_lhv_,  sph_mxhv_ );
                     }
-                    catch( std::exception& e )
+                    catch( std::exception )
                     {
                         // do nothing, continue the loop
                     }

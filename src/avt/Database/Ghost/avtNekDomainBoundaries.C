@@ -356,7 +356,7 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
     if (multipleBlocks && meshes.size() == 1)
         nLocalDomains = meshes[0]->GetNumberOfPoints()/ptsPerDomain;
     else
-        nLocalDomains = meshes.size();
+        nLocalDomains = (int) meshes.size();
     int ii, ff, pp, cc;
     const int  f[6][4] = { {0, 2, 4, 6},
                            {1, 3, 5, 7},
@@ -800,7 +800,7 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
     }
     else
     {
-        numToIterate = meshes.size();
+        numToIterate = (int)meshes.size();
         partOfLargerArray = false;
         gn = NULL;
     }
@@ -841,7 +841,7 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
             }
             else if (bAllDomainsSorted)
             {
-                int min = 0, max = allDomains.size()-1, mid;
+                int min = 0, max = (int)allDomains.size()-1, mid;
                 while (min <= max)
                 {
                     mid = (max+min)/2;

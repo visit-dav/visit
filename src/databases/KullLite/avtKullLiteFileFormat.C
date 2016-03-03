@@ -447,8 +447,6 @@ bool
 avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
                                             vtkUnstructuredGrid *ugrid)
 {
-    size_t   i;
-
     int startZoneToFaceIndex = mesh3d->zoneToFacesIndex[zone];
     int endZoneToFaceIndex = mesh3d->zoneToFacesIndex[zone+1];
 
@@ -478,7 +476,7 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
         if (sharedSlave) // Shared face, grab them in reverse order
         {
             //for (i = nodesForThisFace-1; i >= 0; i--)
-            for (i=nodesForThisFace; i-- > 0 ;)
+            for (int i=nodesForThisFace; i-- > 0 ;)
             {
                 int ix2 = nodesForThisFace - 1 - i;
                 nodes[faceI - startZoneToFaceIndex][ix2] =
@@ -487,7 +485,7 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
         }
         else // Normal face, just grab them
         {
-            for (i = 0; i < (size_t)nodesForThisFace; i++)
+            for (int i = 0; i < nodesForThisFace; i++)
             {
                 nodes[faceI - startZoneToFaceIndex][i] =
                     mesh3d->nodeIndices[i + startNodeIndex];
@@ -509,7 +507,7 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
         // If there is, we change our mind: it's a wedge.
         bool first = false;
         type = VTK_PYRAMID;
-        for (i = 0; i < (size_t)numFaces; i++)
+        for (int i = 0; i < numFaces; i++)
         {
             if (nodes[i].size() == 4)
             {
@@ -542,9 +540,10 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
         points[3] = nodes[0][3];
 
         // Look for the opposite side
+        size_t i;
         for (i = 1; i < nodes.size(); i++)
         {
-            int j;
+            size_t j;
             for (j = 0; j < 4; j++)
             {
                 // Unraveled loop, to avoid having a flag to know when 
@@ -1253,7 +1252,7 @@ avtKullLiteFileFormat::GetVar(int fi, const char *var)
         }
     }
 
-    int nmats = m_names.size();
+    int nmats = (int)m_names.size();
     int *mats_per_zone = new int[nzones];
     for (i = 0 ; i < nzones ; i++)
         mats_per_zone[i] = 0;
@@ -1625,8 +1624,6 @@ avtKullLiteFileFormat::GetAuxiliaryData(const char *var, int domain,
 void *
 avtKullLiteFileFormat::GetMeshTagMaterial(const char *var, int dom)
 {
-    size_t   i, j, k;
-
     //
     // Make sure we are really supposed to read in a mesh tag.
     //
@@ -1680,8 +1677,8 @@ avtKullLiteFileFormat::GetMeshTagMaterial(const char *var, int dom)
     // Determine how big the material will be.
     //
     int nelems = 0;
-    for (j = 0 ; j < tag_list->size() ; j++)
-        for (i = 0 ; i < (size_t)tags->num_tags ; i++)
+    for (size_t j = 0 ; j < tag_list->size() ; j++)
+        for (int i = 0 ; i < tags->num_tags ; i++)
             if ((*tag_list)[j] == tags->tags[i].tagname)
                 nelems += tags->tags[i].size;
 
@@ -1691,13 +1688,13 @@ avtKullLiteFileFormat::GetMeshTagMaterial(const char *var, int dom)
     //
     int *ptr = new int[nelems];
     int index = 0;
-    for (j = 0 ; j < tag_list->size() ; j++)
+    for (int j = 0 ; j < (int)tag_list->size() ; j++)
     {
-        for (i = 0 ; i < (size_t)tags->num_tags ; i++)
+        for (int i = 0 ; i < tags->num_tags ; i++)
         {
             if ((*tag_list)[j] == tags->tags[i].tagname)
             {
-                for (k = 0 ; k < (size_t)tags->tags[i].size ; k++)
+                for (int k = 0 ; k < tags->tags[i].size ; k++)
                 {
                     ptr[index++] = j;
                 }
@@ -1934,7 +1931,7 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
     for (int i = num_real; i < total_zones; ++i)
         material_list[i] = 0;
 
-    int mixed_size = mix_zone.size();
+    int mixed_size = (int)mix_zone.size();
     avtMaterial * mat = new avtMaterial(num_materials, mat_names, total_zones,
                                         &(material_list[0]), mixed_size,
                                         (mixed_size?&mix_mat[0]:NULL),
@@ -2181,7 +2178,7 @@ void avtKullLiteFileFormat::ReadInMaterialNames()
 {
     m_names.clear();
     m_names_per_domain.clear();
-    for (size_t i = 0; i < my_filenames.size(); i++)
+    for (int i = 0; i < (int)my_filenames.size(); i++)
         ReadInMaterialName(i);
 }
 
@@ -2427,7 +2424,7 @@ OrderWedgePoints(const vector< vector<int> > &nodes, vtkIdType *points)
     int tri2 = -1;
     for (i = 0 ; i < nWedgeFaces ; i++)
     {
-        int npts = nodes[i].size();
+        int npts = (int)nodes[i].size();
         if (npts == 4)
         {
             baseline_quad = (baseline_quad == -1 ? i : baseline_quad);

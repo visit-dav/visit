@@ -51,7 +51,7 @@ size_t VsDataset::getLength() const {
 
 void VsDataset::loadDims() {
   hid_t space = H5Dget_space(getId());
-  size_t rank = H5Sget_simple_extent_ndims(space);
+  int rank = H5Sget_simple_extent_ndims(space);
   
   if (rank <= 0) {
     VsLog::errorLog() <<"VsDataset::loadDims() - Rank was <= 0 for dataset: " << getFullName() <<std::endl;
@@ -60,8 +60,8 @@ void VsDataset::loadDims() {
   std::vector<hsize_t> sdim(rank);
   H5Sget_simple_extent_dims(space, &sdim[0], NULL);
   dims.resize(rank);
-  for (size_t i = 0; i < rank; ++i) {
-    dims[i] = sdim[i];
+  for (int i = 0; i < rank; ++i) {
+    dims[i] = (int)sdim[i];
   }
 }
 

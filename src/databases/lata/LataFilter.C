@@ -985,10 +985,10 @@ LataOptions::LataOptions()
   nc_mesh = false;
   boundary_mesh = false;
   reconnect = false;
-  reconnect_tolerance = 1e-6;
+  reconnect_tolerance = 1e-6f;
   regularize = false;
   extend_domain = 0;
-  regularize_tolerance = 1e-6;
+  regularize_tolerance = 1e-6f;
   invalidate = false;
   load_virtual_elements = false;
   user_fields_ = false;

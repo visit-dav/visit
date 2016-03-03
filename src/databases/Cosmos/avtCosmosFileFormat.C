@@ -1899,7 +1899,7 @@ GetDirName(const char *path)
 {
     string dir = "";
 
-    int len = strlen(path);
+    int len = (int)strlen(path);
     const char *last = path + (len-1);
     while (*last != '/' && last > path)
     {

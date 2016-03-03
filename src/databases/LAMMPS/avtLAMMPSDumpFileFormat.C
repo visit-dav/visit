@@ -705,7 +705,7 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
 bool
 avtLAMMPSDumpFileFormat::FileExtensionIdentify(const std::string &filename)
 {
-    int pos = filename.length()-1;
+    int pos = (int)filename.length()-1;
     while (pos>=0 && filename[pos]!='/' && filename[pos]!='\\')
         pos--;
 

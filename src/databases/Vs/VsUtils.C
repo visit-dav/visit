@@ -49,7 +49,7 @@ bool isDoubleType(hid_t dataType) {
     }
     
     hid_t nativeType = H5Tget_native_type(dataType, H5T_DIR_ASCEND);
-    bool answer = H5Tequal(nativeType, H5T_NATIVE_DOUBLE);
+    bool answer = H5Tequal(nativeType, H5T_NATIVE_DOUBLE) > 0;
     
     H5Tclose(nativeType);
     return answer;
@@ -61,7 +61,7 @@ bool isFloatType(hid_t dataType) {
       }
       
   hid_t nativeType = H5Tget_native_type(dataType, H5T_DIR_ASCEND);
-  bool answer = H5Tequal(nativeType, H5T_NATIVE_FLOAT);
+  bool answer = H5Tequal(nativeType, H5T_NATIVE_FLOAT) > 0;
   
   H5Tclose(nativeType);
   return answer;
@@ -73,7 +73,7 @@ bool isIntType(hid_t dataType) {
   }
       
   hid_t nativeType = H5Tget_native_type(dataType, H5T_DIR_ASCEND);
-  bool answer = H5Tequal(nativeType, H5T_NATIVE_INT);
+  bool answer = H5Tequal(nativeType, H5T_NATIVE_INT) >0;
   
   H5Tclose(nativeType);
   return answer;
@@ -85,7 +85,7 @@ bool isShortType(hid_t dataType) {
   }
       
   hid_t nativeType = H5Tget_native_type(dataType, H5T_DIR_ASCEND);
-  bool answer = H5Tequal(nativeType, H5T_NATIVE_SHORT);
+  bool answer = H5Tequal(nativeType, H5T_NATIVE_SHORT) > 0;
   
   H5Tclose(nativeType);
   return answer;
@@ -97,7 +97,7 @@ bool isCharType(hid_t dataType) {
   }
       
   hid_t nativeType = H5Tget_native_type(dataType, H5T_DIR_ASCEND);
-  bool answer = H5Tequal(nativeType, H5T_NATIVE_CHAR);
+  bool answer = H5Tequal(nativeType, H5T_NATIVE_CHAR) > 0;
   
   H5Tclose(nativeType);
   return answer;
@@ -109,7 +109,7 @@ bool isUnsignedCharType(hid_t dataType) {
   }
       
   hid_t nativeType = H5Tget_native_type(dataType, H5T_DIR_ASCEND);
-  bool answer = H5Tequal(nativeType, H5T_NATIVE_UCHAR);
+  bool answer = H5Tequal(nativeType, H5T_NATIVE_UCHAR)> 0;
   
   H5Tclose(nativeType);
   return answer;

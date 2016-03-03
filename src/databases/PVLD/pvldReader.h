@@ -76,7 +76,7 @@ public:
     }
     int  GetNumOfNodeVariables() const
     {
-        return node_dsname_.size();
+        return (int)node_dsname_.size();
     }
     const std::string& GetNodeVariableName( int idx ) const
     {
@@ -94,7 +94,7 @@ public:
     }
     int  GetNumOfSolidBlocks() const
     {
-        return solid_part_.size()-1;
+        return (int)solid_part_.size()-1;
     }
     int  GetSolidBlockSize( int nb ) const
     {
@@ -102,7 +102,7 @@ public:
     }
     int  GetNumOfSolidVariables() const
     {
-        return solid_dsname_.size();
+        return (int)solid_dsname_.size();
     }
     const std::string& GetSolidVariableName( int idx ) const
     {
@@ -143,7 +143,7 @@ public:
     }
     int  GetNumOfShellBlocks() const
     {
-        return shell_part_.size()-1;
+        return (int)shell_part_.size()-1;
     }
     int  GetShellBlockSize( int nb ) const
     {
@@ -151,7 +151,7 @@ public:
     }
     int  GetNumOfShellVariables() const
     {
-        return shell_dsname_.size();
+        return (int)shell_dsname_.size();
     }
     const std::string& GetShellVariableName( int idx ) const
     {
@@ -193,7 +193,7 @@ public:
     }
     int  GetNumOfBeamBlocks() const
     {
-        return beam_part_.size()-1;
+        return (int)beam_part_.size()-1;
     }
     int  GetBeamBlockSize( int nb ) const
     {
@@ -201,7 +201,7 @@ public:
     }
     int  GetNumOfBeamVariables() const
     {
-        return beam_dsname_.size();
+        return (int)beam_dsname_.size();
     }
     const std::string& GetBeamVariableName( int idx ) const
     {
@@ -243,7 +243,7 @@ public:
     }
     int  GetNumOfSurfaceBlocks() const
     {
-        return surf_part_.size()-1;
+        return (int)surf_part_.size()-1;
     }
     int  GetSurfaceBlockSize( int nb ) const
     {
@@ -251,7 +251,7 @@ public:
     }
     int  GetNumOfSurfaceVariables() const
     {
-        return surf_dsname_.size();
+        return (int)surf_dsname_.size();
     }
     const std::string& GetSurfaceVariableName( int idx ) const
     {
@@ -277,7 +277,7 @@ public:
     }
     int  GetNumOfSphBlocks() const
     {
-        return sph_part_.size()-1;
+        return (int)sph_part_.size()-1;
     }
     int  GetSphBlockSize( int nb ) const
     {
@@ -285,7 +285,7 @@ public:
     }
     int  GetNumOfSphVariables() const
     {
-        return sph_dsname_.size();
+        return (int)sph_dsname_.size();
     }
     const std::string& GetSphVariableName( int idx ) const
     {
@@ -323,7 +323,7 @@ public:
     }
     int  GetNumOfTiedSetBlocks() const
     {
-        return tdst_part_.size()-1;
+        return (int)tdst_part_.size()-1;
     }
     int  GetTiedSetBlockSize( int nb ) const
     {
@@ -332,7 +332,7 @@ public:
     //const vector<std::string>& GetTiedSetVariableNames() const { return tdst_dsname_; }
     int  GetNumOfTiedSetVariables() const
     {
-        return tdst_dsname_.size();
+        return (int)tdst_dsname_.size();
     }
     const std::string& GetTiedSetVariableName( int idx ) const
     {
@@ -350,7 +350,7 @@ public:
     }
     int  GetNumOfContactBlocks() const
     {
-        return cntt_part_.size()-1;
+        return (int)cntt_part_.size()-1;
     }
     int  GetContactBlockSize( int nb ) const
     {
@@ -358,7 +358,7 @@ public:
     }
     int  GetNumOfContactVariables() const
     {
-        return cntt_dsname_.size();
+        return (int)cntt_dsname_.size();
     }
     const std::string& GetContactVariableName( int idx ) const
     {

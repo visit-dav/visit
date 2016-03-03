@@ -1042,7 +1042,7 @@ void ExpressionParser::jj_rescan_token(void)
                 }    
                 p = p->next;    
             } while (p != NULL);    
-        } catch(LookaheadSuccess& ls) { }    
+        } catch(LookaheadSuccess) { }    
     }    
     jj_rescan = false;    
 }    

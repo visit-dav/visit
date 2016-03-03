@@ -145,7 +145,7 @@ void VsVariableWithMesh::getNodeDims(std::vector<int>& dims) const
 {
   dims.resize(1);
 
-  dims[0] = getNumPoints();
+  dims[0] = (int)getNumPoints();
 }
 
 size_t VsVariableWithMesh::getNumPoints() const
@@ -401,9 +401,9 @@ void VsVariableWithMesh::createComponents() {
   //But i'm going to leave it as-is for now...
   bool transformExists = hasTransform();
   for (size_t i = 0; i < numComps; ++i) {
-    registry->registerComponent(getFullName(), i, getLabel(i));
+    registry->registerComponent(getFullName(), (int)i, getLabel(i));
     if (transformExists) {
-      registry->registerComponent(getFullTransformedName(), i, getLabel(i));
+      registry->registerComponent(getFullTransformedName(), (int)i, getLabel(i));
     }
   }
 

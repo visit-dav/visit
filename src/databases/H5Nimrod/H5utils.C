@@ -8,7 +8,7 @@ hid_t
 _normalize_h5_type (hid_t type)
 {
     H5T_class_t tclass = H5Tget_class (type);
-    int size = H5Tget_size (type);
+    size_t size = H5Tget_size (type);
 
     switch (tclass)
     {

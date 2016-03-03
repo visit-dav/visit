@@ -1076,7 +1076,7 @@ avtNASTRANFileFormat::GetMaterial(const char *mat)
         matnos[mno] = mit->first;
     }
 
-    int dims = matList.size();
+    int dims = (int)matList.size();
     avtMaterial *retval = new avtMaterial((int)uniqMatIds.size(), matnos,
         names, 1, &dims, 0, &matList[0], 0, 0, 0, 0, 0, 0, 0);
 

@@ -47,7 +47,7 @@ private:
   std::string kind;
 
   /** The spatial dimensionality */
-  size_t numSpatialDims;
+  int numSpatialDims;
 
   /** Index order (Fortran vs C style) */
   std::string indexOrder;

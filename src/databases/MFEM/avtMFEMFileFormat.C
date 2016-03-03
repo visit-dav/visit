@@ -173,7 +173,7 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     // enumerate datasets)
 
-    for(size_t i=0;i<dset_names.size();i++)
+    for(int i=0;i<(int)dset_names.size();i++)
     {
         JSONRootDataSet &dset =  root_md.DataSet(dset_names[i]);
         int nblocks      = dset.NumberOfDomains();

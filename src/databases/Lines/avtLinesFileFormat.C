@@ -293,7 +293,7 @@ avtLinesFileFormat::ReadFile(void)
                 lineNames.push_back(headerName);
                 headerName = "";
             }
-            int len = xl.size();
+            size_t len = xl.size();
             bool shouldAddPoint = true;
             if (len > 0)
             {

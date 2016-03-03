@@ -79,12 +79,16 @@ ExpressionParserTokenManager::~ExpressionParserTokenManager(void)
 }    
     
 int ExpressionParserTokenManager::jjStopStringLiteralDfa_0(int pos, long active0)    
-{    
+{  
+#if 0
+    // Remove warning regarding 'default' but no 'case' labels.
     switch (pos)    
     {    
         default :    
             return -1;    
-    }    
+    }  
+#endif
+    return -1;
 }    
     
 int ExpressionParserTokenManager::jjStartNfa_0(int pos, long active0)    
@@ -581,7 +585,7 @@ Token* ExpressionParserTokenManager::getNextToken(void)
         try       
         {         
             curChar = input_stream->BeginToken();    
-        } catch(IOException& ex) {            
+        } catch(IOException) {            
             jjmatchedKind = 0;    
             matchedToken = jjFillToken();    
             return matchedToken;    

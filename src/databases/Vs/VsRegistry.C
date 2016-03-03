@@ -66,7 +66,7 @@ void VsRegistry::add(VsGroup* group) {
 }
 
 int VsRegistry::numGroups() {
-  return allGroups.size();
+  return (int)allGroups.size();
 }
 
 void VsRegistry::remove(VsGroup* group) {
@@ -229,7 +229,7 @@ void VsRegistry::add(VsDataset* dataset) {
 }
 
 int VsRegistry::numDatasets() {
-  return allDatasets.size();
+  return (int)allDatasets.size();
 }
 
 void VsRegistry::remove(VsDataset* dataset) {
@@ -372,7 +372,7 @@ void VsRegistry::add(VsMesh* mesh) {
 }
 
 int VsRegistry::numMeshes() {
-  return allMeshes.size();
+  return (int)allMeshes.size();
 }
 
 void VsRegistry::remove(VsMesh* mesh) {
@@ -483,7 +483,7 @@ void VsRegistry::writeAllMDMeshes() const {
 }
 
 int VsRegistry::numMDMeshes() {
-  return allMDMeshes.size();
+  return (int)allMDMeshes.size();
 }
 
 VsMDMesh* VsRegistry::getMDParentForMesh(const std::string& name) {
@@ -616,7 +616,7 @@ void VsRegistry::add(VsVariable* variable) {
 }
 
 int VsRegistry::numVariables() {
-  return allVariables.size();
+  return (int)allVariables.size();
 }
 
 void VsRegistry::remove(VsVariable* variable) {
@@ -727,7 +727,7 @@ void VsRegistry::writeAllMDVariables() const {
 }
 
 int VsRegistry::numMDVariables() {
-  return allMDVariables.size();
+  return (int)allMDVariables.size();
 }
 
 void VsRegistry::buildMDVars() {
@@ -815,7 +815,7 @@ void VsRegistry::add(VsVariableWithMesh* variable) {
 }
 
 int VsRegistry::numVariablesWithMesh() {
-  return allVariablesWithMesh.size();
+  return (int)allVariablesWithMesh.size();
 }
 
 void VsRegistry::remove(VsVariableWithMesh* variable) {  
@@ -1001,7 +1001,7 @@ std::map<std::string, std::string>* VsRegistry::getAllExpressions() {
 }
 
 int VsRegistry::numExpressions() {
-  return allExpressions.size();
+  return (int)allExpressions.size();
 }
 
 void VsRegistry::createComponents() {

@@ -375,7 +375,7 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     int tsGroup = GetTimestepGroupForTimestep(timeState);
     int localTS = GetTimestepWithinGroup(timeState);
     int offset = 0;
-    for (size_t i = 0 ; i < (size_t)nTimestepGroups ; i++)
+    for (int i = 0 ; i < nTimestepGroups ; i++)
     {
         chunks[i]->SetTimeSliceOffset(offset);
         offset += tsPerGroup[i];
@@ -385,8 +385,8 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     else
         chunks[tsGroup]->SetReadAllCyclesAndTimes(false);
     chunks[tsGroup]->SetDatabaseMetaData(md, localTS);
-    for (size_t i = 0 ; i < (size_t)nTimestepGroups ; i++)
-        if (i != (size_t)tsGroup)
+    for (int i = 0 ; i < nTimestepGroups ; i++)
+        if (i != tsGroup)
             chunks[i]->RegisterDatabaseMetaData(md);
 
     //
@@ -397,7 +397,7 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     if (md->AreAllCyclesAccurateAndValid(nTotalTimesteps) != true)
     {
         vector<int> cycles;
-        for (size_t i=0; i < (size_t)nTimestepGroups; i++)
+        for (int i=0; i < nTimestepGroups; i++)
         {
             vector<int> tmp;
             chunks[i]->FormatGetCycles(tmp);
@@ -421,12 +421,12 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         {
             std::vector<int> cyclesFromMassCall = cycles;
             cycles.clear();
-            for (size_t i = 0; i < (size_t)nTotalTimesteps; i++)
+            for (int i = 0; i < nTotalTimesteps; i++)
             {
                 int tsg = GetTimestepGroupForTimestep(i);
                 int lts = GetTimestepWithinGroup(i);
                 int c = chunks[tsg]->FormatGetCycle(lts);
-                if (c == avtFileFormat::INVALID_CYCLE && cyclesFromMassCall.size() > i)
+                if (c == avtFileFormat::INVALID_CYCLE && (int)cyclesFromMassCall.size() > i)
                     c = cyclesFromMassCall[i];
 
                 if (c != avtFileFormat::INVALID_CYCLE) 
@@ -454,7 +454,7 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     {
         // Set the times in the metadata.
         vector<double> times;
-        for (size_t i=0; i<(size_t)nTimestepGroups; i++)
+        for (int i=0; i< nTimestepGroups; i++)
         {
             vector<double> tmp;
             chunks[i]->FormatGetTimes(tmp);
@@ -478,12 +478,12 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         {
             vector<double> timesFromMassCall = times;
             times.clear();
-            for (size_t i = 0; i < (size_t)nTotalTimesteps; i++)
+            for (int i = 0; i < nTotalTimesteps; i++)
             {
                 int tsg = GetTimestepGroupForTimestep(i);
                 int lts = GetTimestepWithinGroup(i);
                 double t = chunks[tsg]->FormatGetTime(lts);
-                if (t == avtFileFormat::INVALID_TIME && timesFromMassCall.size() > i)
+                if (t == avtFileFormat::INVALID_TIME && (int)timesFromMassCall.size() > i)
                     t = timesFromMassCall[i];
 
                 if (t != avtFileFormat::INVALID_TIME) 

@@ -309,8 +309,8 @@ avtPuReMDFileFormat::GetMesh(int ts, const char *name)
 
         vtkCellArray *lines = vtkCellArray::New();
         pd->SetLines(lines);
-        int nb = bonds.size();
-        for (int k = 0 ; k < nb ; k++)
+        size_t nb = bonds.size();
+        for (size_t k = 0 ; k < nb ; k++)
         {
             lines->InsertNextCell(2);
             lines->InsertCellPoint(bonds[k].first);

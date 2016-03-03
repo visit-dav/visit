@@ -674,7 +674,7 @@ gmvAddVFace(vtkUnstructuredGrid *ugrid, const std::vector<int> &nodes)
     const char *mName = "gmvAddVFace: ";
     int nsplits = 1;
 
-    int nPoints = nodes.size()-1;
+    int nPoints = (int)nodes.size()-1;
     vtkIdType verts[10];
     if(nPoints == 3)
     {
@@ -879,7 +879,7 @@ gmvCreateUnstructuredGrid(avtPolyhedralSplit *polyhedralSplit, int &topoDim)
     // Tack the new polyhedron nodes onto the end of the points.
     if(!newNodes.empty())
     {
-        int nNewPoints = newNodes.size()/3;
+        int nNewPoints = (int)newNodes.size()/3;
         debug4 << mName << "Adding extra points for polyhedral cells" << endl;
         vtkPoints *newPoints = vtkPoints::New();
         newPoints->SetNumberOfPoints(pts->GetNumberOfPoints() + nNewPoints);

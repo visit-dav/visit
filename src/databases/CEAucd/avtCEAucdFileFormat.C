@@ -236,7 +236,7 @@ avtCEAucdFileFormat::SetUpFiles(void)
             // (1 file of a single-domain data set.)
             if (filename.find(extension, underscore_pos[0]+1) != string::npos)
             {
-                int extension_pos = filename.find(extension, 
+                string::size_type extension_pos = filename.find(extension, 
                                                   underscore_pos[0]+1);
                 stem = filename.substr(underscore_pos[0]+1, 
                                        extension_pos-(underscore_pos[0]+1));
@@ -387,7 +387,7 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         EXCEPTION1(InvalidFilesException, fileOpened.c_str());
     }
 
-    int nblocks = domains.size();
+    int nblocks = (int)domains.size();
     int block_origin = 0;
     int spatial_dimension = dimension;
     int topological_dimension = dimension;
@@ -416,7 +416,7 @@ avtCEAucdFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         nodeCentered[name] = true;
     }
 
-    int nmats = matnames.size();
+    int nmats = (int)matnames.size();
     AddMaterialToMetaData(md, "materials", meshname, nmats, matnames);
 
     //
@@ -705,7 +705,7 @@ avtCEAucdFileFormat::GetAuxiliaryData(const char *var, int dom,
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) != 0)
         return NULL;
 
-    int nMaterials = matnames.size();
+    int nMaterials = (int)matnames.size();
     if (nMaterials == 0)
         return NULL;
 
@@ -764,14 +764,14 @@ avtCEAucdFileFormat::GetAuxiliaryData(const char *var, int dom,
             mix_zone.push_back(i);
             mix_mat.push_back(j);
             mix_vf.push_back(mats[j][i]);
-            mix_next.push_back(mix_zone.size() + 1);
+            mix_next.push_back((int)mix_zone.size() + 1);
         }
 
         // When we're done, the last entry is a '0' in the mix_next
         mix_next[mix_next.size() - 1] = 0;
     }
 
-    int mixed_size = mix_zone.size();
+    int mixed_size = (int)mix_zone.size();
     avtMaterial * mat = new avtMaterial(nMaterials, matnames, nCells,
                                         &(material_list[0]), mixed_size,
                                         &(mix_mat[0]), &(mix_next[0]),

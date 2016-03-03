@@ -22,7 +22,7 @@ VsMDMesh::VsMDMesh(VsMesh* firstMesh, std::string mdMeshName):
   //made up of meshes in different paths, and we would have to choose
   //one over the other.  So, to avoid conflicts, we just use the name
   //as given
-  numSpatialDims = firstMesh->getNumSpatialDims();
+  numSpatialDims = (int)firstMesh->getNumSpatialDims();
   indexOrder = firstMesh->getIndexOrder();
   kind = firstMesh->getKind();
   name = mdMeshName;
@@ -74,7 +74,7 @@ bool VsMDMesh::addBlock(VsMesh* newBlock) {
   }
   
   blocks.push_back(newBlock);
-  newBlock->setMDMesh(this, blocks.size() - 1);
+  newBlock->setMDMesh(this, (int)blocks.size() - 1);
   
   return true;
 }

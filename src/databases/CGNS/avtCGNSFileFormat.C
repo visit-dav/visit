@@ -2156,8 +2156,8 @@ avtCGNSFileFormat::GetVar(int timestate, int domain, const char *varname)
     // Look up the base that contains the variable.
     int base = 1;
     std::string sVarName(varname);
-    int slashIndex = sVarName.find("/");
-    if(slashIndex != -1)
+    std::string::size_type slashIndex = sVarName.find("/");
+    if(slashIndex != std::string::npos)
     {
         std::string baseName = sVarName.substr(0,slashIndex);
         sVarName = sVarName.substr(slashIndex+1, sVarName.size() - slashIndex);

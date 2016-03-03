@@ -501,13 +501,13 @@ void VsUnstructuredMesh::getCellDims(std::vector<int>& dims) const
 
   if( isCompMinor() )
   {
-    dims[0] = numPoints;
-    dims[1] = numSpatialDims;
+    dims[0] = (int)numPoints;
+    dims[1] = (int)numSpatialDims;
   }
   else
   {
-    dims[0] = numSpatialDims;
-    dims[1] = numPoints;
+    dims[0] = (int)numSpatialDims;
+    dims[1] = (int)numPoints;
   }
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "

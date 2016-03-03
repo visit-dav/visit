@@ -725,8 +725,6 @@ avtLineScanFilter::ExecuteData(avtDataRepresentation *in_dr)
 vtkDataSet *
 avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
 {
-    size_t  i, j;
-
     vtkVisItCellLocator *locator = vtkVisItCellLocator::New();
     locator->SetDataSet(ds);
     locator->SetIgnoreGhosts(true);
@@ -746,7 +744,7 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
     UpdateProgress(extraMsg*currentNode, totalProg);
     int lastMilestone = 0;
 
-    for (i = 0 ; i < (size_t)nLines ; i++)
+    for (int i = 0 ; i < nLines ; i++)
     {
         double pt1[3];
         pt1[0] = lines[6*i];
@@ -759,8 +757,8 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
         int success = locator->IntersectWithLine(pt1, pt2, ipts, cpts, cells);
         if (success == 0)
             continue;  // No intersection
-        size_t nCells = cells->GetNumberOfIds();
-        for (j = 0 ; j < nCells ; j++)
+        vtkIdType nCells = cells->GetNumberOfIds();
+        for (vtkIdType j = 0 ; j < nCells ; j++)
         {
             vtkIdType id = cells->GetId(j);
             vtkCell *cell = ds->GetCell(id);
@@ -868,7 +866,7 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
     vtkPolyData *output = vtkPolyData::New();
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(dist.size());
-    for (i = 0 ; i < dist.size() ; i++)
+    for (size_t i = 0 ; i < dist.size() ; i++)
     {
         float pt[3];
         int line = line_id[i/2];
@@ -950,19 +948,17 @@ avtLineScanFilter::CartesianExecute(vtkDataSet *ds)
 vtkDataSet *
 avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
 {
-    size_t  i, j;
-
     //
     // Set up an interval tree over the cells, which well help us locate
     // the cells when we cast the lines over the axially-symmetric mesh.
     //
-    size_t nCells = ds->GetNumberOfCells();
+    vtkIdType nCells = ds->GetNumberOfCells();
     int dims   = 2;
     avtIntervalTree tree(nCells, dims);
     double bounds[6];
     vtkDataArray *ghosts = ds->GetCellData()->GetArray("avtGhostZones");
     bool hasGhost = (ghosts != NULL);
-    for (i = 0 ; i < nCells ; i++)
+    for (vtkIdType i = 0 ; i < nCells ; i++)
     {
         vtkCell *cell = ds->GetCell(i);
         cell->GetBounds(bounds);
@@ -981,7 +977,7 @@ avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
     int lastMilestone = 0;
 
     vector<int> list;
-    for (i = 0 ; i < (size_t)nLines ; i++)
+    for (int i = 0 ; i < nLines ; i++)
     {
         double pt1[3];
         pt1[0] = lines[6*i];
@@ -1000,7 +996,7 @@ avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
         if (nCells == 0)
             continue;  // No intersection
 
-        for (j = 0 ; j < nCells ; j++)
+        for (size_t j = 0 ; j < nCells ; j++)
         {
             int id = list[j];
             if (hasGhost && ghosts->GetTuple1(id) != 0.)
@@ -1071,7 +1067,7 @@ avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
     vtkPolyData *output = vtkPolyData::New();
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(dist.size());
-    for (i = 0 ; i < dist.size() ; i++)
+    for (size_t i = 0 ; i < dist.size() ; i++)
     {
         float pt[3];
         int line = line_id[i/2];

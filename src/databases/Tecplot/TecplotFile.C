@@ -488,9 +488,9 @@ TecplotTitleAndVariables::Read(FILE *f)
     {
         std::string s = ReadString(f);
 
-        int p1 = s.find("(");
-        int p2 = s.find(")");
-        if(p1 != -1 && p2 != -1)
+        std::string::size_type p1 = s.find("(");
+        std::string::size_type p2 = s.find(")");
+        if(p1 != std::string::npos && p2 != std::string::npos)
         {
             varNames.push_back(FilterName(s.substr(0, p1)));
             varUnits.push_back(s.substr(p1+1, p2 - p1 - 1));
@@ -2571,8 +2571,8 @@ TecplotFile::Read(FILE *f)
     // Now that we're done reading the header, read the variable information
     if(readDataInformation)
     {
-        int nz = zones.size();
-        for(int i = 0; i < nz; ++i)
+        size_t nz = zones.size();
+        for(size_t i = 0; i < nz; ++i)
         {
             if(!feof(f))
             {
@@ -2586,7 +2586,7 @@ TecplotFile::Read(FILE *f)
                 if(feof(f))
                     break;
 #endif
-                int nV = titleAndVars.varNames.size();
+                int nV = (int)titleAndVars.varNames.size();
                 zoneData.push_back(TecplotDataRecord(nV));
                 zoneData[i].Read(f, zones[i]);
                 debug4 << "///////////////////////////////////////////////////////" << endl;

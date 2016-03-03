@@ -353,9 +353,9 @@ avtPythonQuery::GetSecondaryVariables(std::vector<std::string> &res)
 {
     // varNames contains all vars, fill res w/ varNames[1:]
     res.clear();
-    int nvars = varNames.size();
+    size_t nvars = varNames.size();
     if(nvars >= 1)
-        for(int i =1; i < nvars; i++)
+        for(size_t i =1; i < nvars; i++)
             res.push_back(varNames[i]);
 
 }

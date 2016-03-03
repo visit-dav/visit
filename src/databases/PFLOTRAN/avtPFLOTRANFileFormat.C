@@ -798,7 +798,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
             for (size_t i=0;i<nvals;i++)
                 matls[matlist[i]] = true;
 
-            int nmats = matls.size();
+            int nmats = (int)matls.size();
             char **names = new char*[nmats];
             int i = 0;
             for (map<int,bool>::iterator iter = matls.begin(); iter != matls.end();++iter)
@@ -1556,7 +1556,7 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
         for (size_t i=0;i<nvals;i++)
             matls[matlist[i]] = true;
 
-        int nmats = matls.size();
+        int nmats = (int)matls.size();
         int *matnos = new int[nmats];
         char **names = new char*[nmats];
         int i = 0;

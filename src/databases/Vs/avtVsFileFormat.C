@@ -230,7 +230,7 @@ avtVsFileFormat::CreateCacheNameIncludingSelections(std::string s)
 
     char str[1024];
     strcpy(str, s.c_str());
-    int amt = strlen(str);
+    size_t amt = strlen(str);
     for (size_t i = 0; i < selList.size(); i++)
     {
         if ((*selsApplied)[i])
@@ -810,7 +810,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
         return NULL;
     }
 
-    int numSpatialDims = rectilinearMesh->getNumSpatialDims();
+    size_t numSpatialDims = rectilinearMesh->getNumSpatialDims();
 
     if (numSpatialDims > 3) {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -864,7 +864,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
         VsLog::debugLog() << CLASSFUNCLINE << "  "
         << "Loading data for axis " << i << std::endl;
-        VsDataset* axisData = rectilinearMesh->getAxisDataset(i);
+        VsDataset* axisData = rectilinearMesh->getAxisDataset((int)i);
 
         if (axisData == NULL) {
             VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -1528,7 +1528,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     if (unstructuredMesh->isPointMesh() && haveDataSelections)
     {
         if( maxs[0] < 0 || numNodes - 1 < (size_t)maxs[0] )
-        maxs[0] = numNodes - 1;          // last cell index,
+        maxs[0] = (int)numNodes - 1;          // last cell index,
                                          // not number of cells
 
         if( maxs[0] < mins[0] )
@@ -1587,26 +1587,26 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         if( haveDataSelections )
         {
             srcMins[0] = mins[0];
-            srcMaxs[0] = numNodes;
+            srcMaxs[0] = (int)numNodes;
             srcStrides[0] = strides[0];
         }
         else
         {
             srcMins[0] = 0;
-            srcMaxs[0] = numNodes;
+            srcMaxs[0] = (int)numNodes;
             srcStrides[0] = 1;
         }
 
-        int destSize[1] = {numNodes*3};
+        int destSize[1] = {(int)numNodes*3};
         int destMins[1] = {0};
-        int destMaxs[1] = {numNodes};
+        int destMaxs[1] = {(int)numNodes};
         int destStrides[1] = {3};
 
         for( size_t i=0; i<numSpatialDims; ++i )
         {
-            VsDataset* pointDataset = unstructuredMesh->getPointsDataset(i);
+            VsDataset* pointDataset = unstructuredMesh->getPointsDataset((int)i);
 
-            destMins[0] = i;
+            destMins[0] = (int)i;
 
             herr_t err = reader->getData(pointDataset, dataPtr,
                     unstructuredMesh->getIndexOrder(),
@@ -1625,7 +1625,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
         // The above stores the value in the correct location but make
         // sure the remaing values are all zero.
-        for (int i=numSpatialDims; i<3; ++i)
+        for (size_t i=numSpatialDims; i<3; ++i)
         {
             VsLog::debugLog() << CLASSFUNCLINE << "  "
             << "Zeroing data at unused positions." << std::endl;
@@ -1670,7 +1670,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         if (unstructuredMesh->isPointMesh() && haveDataSelections)
         {
             int srcMins[1] = {mins[0]};
-            int srcMaxs[1] = {numNodes};
+            int srcMaxs[1] = {(int)numNodes};
             int srcStrides[1] = {strides[0]};
 
             err = reader->getData( pointsDataset, dataPtr,
@@ -1697,7 +1697,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             << numSpatialDims << " is less than 3.  "
             << "Moving data into correct location." << std::endl;
 
-            for (int i=numNodes-1; i>=0; --i)
+            for (size_t i=numNodes-1; i>=0; --i)
             {
                 unsigned char* destPtr
                 = (unsigned char*) dataPtr + i*3*dsize;
@@ -1828,7 +1828,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     if( haveDataSelections )
     {
         if( maxs[0] < 0 || numCells - 1 < (size_t)maxs[0] )
-        maxs[0] = numCells - 1; // numCells - 1 = last cell index,
+        maxs[0] = (int)numCells - 1; // numCells - 1 = last cell index,
                                 // not number of cells
 
         if( maxs[0] < mins[0] )
@@ -1890,7 +1890,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     if( haveDataSelections )
     {
         int srcMins[1] = {mins[0]};
-        int srcMaxs[1] = {numCells};
+        int srcMaxs[1] = {(int)numCells};
         int srcStrides[1] = {strides[0]};
 
         err = reader->getData( connectivityDataset, vertices,
@@ -1939,7 +1939,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     //Tweak for Nautilus
     //Prepare to fix up the connectivity list if node correction data is available
     int* correctionList = NULL;
-    int correctionListSize = 0;
+    size_t correctionListSize = 0;
     if (unstructuredMesh->hasNodeCorrectionData()) {
         VsDataset* correctionDataset = registry->getDataset(unstructuredMesh->getNodeCorrectionDatasetName());
         if (correctionDataset) {
@@ -1951,13 +1951,13 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             //And when that happens, remember the local ids that need to be mapped to the original local id
             correctionList = new int[correctionListSize];
             int* globalToLocalNodeMapping = new int[correctionListSize];
-            for (int i = 0; i < correctionListSize; i++) {
+            for (size_t i = 0; i < correctionListSize; i++) {
                 correctionList[i] = -1;
                 globalToLocalNodeMapping[i] = -1;
             }
 
             //Build up the correction list
-            for (int i = 0; i < correctionListSize; i++) {
+            for (int i = 0; i < (int)correctionListSize; i++) {
                 int localId = i;
                 int globalId = localToGlobalNodeMapping[i];
                 if (globalToLocalNodeMapping[globalId] != -1) {
@@ -2168,7 +2168,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     size_t numTopologicalDims = 1;
 
     std::vector<int> numNodes(numTopologicalDims);
-    numNodes[0] = variableWithMesh->getNumPoints();
+    numNodes[0] = (int)variableWithMesh->getNumPoints();
 
     // Storage for meshes in VisIt, which is a vtkRectilinearGrid which
     // is topologically 3D so the points must also be 3D.
@@ -2275,7 +2275,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
 
     // The above stores the value in the correct location but make
     // sure the remaining values are all zero.
-    for (int i=numSpatialDims; i<3; ++i)
+    for (size_t i=numSpatialDims; i<3; ++i)
     {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
         << "Zeroing data at unused positions." << std::endl;
@@ -3528,7 +3528,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
         // 1-D variable?
         VsLog::debugLog() << CLASSFUNCLINE << "  "
         << "Determining if var is 1-D." << std::endl;
-        int numSpatialDims = 3;
+        size_t numSpatialDims = 3;
         if (meshMeta) {
             numSpatialDims = meshMeta->getNumSpatialDims();
         } else {
@@ -3565,7 +3565,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
                 for (size_t i = 0; i < numComps; ++i) {
                     //First we look for a match in the component registry
                     //using var name and component index to search
-                    std::string componentName = registry->getComponentName(*it, i);
+                    std::string componentName = registry->getComponentName(*it, (int)i);
 
                     if (!componentName.empty()) {
                         VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -3599,7 +3599,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
             for (size_t i = 0; i < numComps; ++i) {
                 //First we look for a match in the component registry
                 //using var name and component index to search
-                std::string componentName = registry->getComponentName(*it, i);
+                std::string componentName = registry->getComponentName(*it, (int)i);
 
                 if (!componentName.empty()) {
                     VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -3610,7 +3610,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
 
                     if (vMeta->hasTransform()) {
                         std::string transformVarName = vMeta->getFullTransformedName();
-                        std::string transformComponentName = registry->getComponentName(transformVarName, i);
+                        std::string transformComponentName = registry->getComponentName(transformVarName, (int)i);
                         if (!transformComponentName.empty()) {
                             VsLog::debugLog() << CLASSFUNCLINE << "  "
                             << "Registering transformed component: " <<transformVarName <<std::endl;
@@ -3681,7 +3681,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
     LoadData();
 
     // Number of mesh dims
-    int spatialDims;
+    size_t spatialDims;
     int topologicalDims; (void) topologicalDims;
 
     // All meshes names
@@ -3737,7 +3737,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         avtMeshType meshType = AVT_UNKNOWN_MESH;
         std::vector<int> dims;
         int bounds[3] = {1,1,1};
-        int numCells = 1;
+        size_t numCells = 1;
 
         //std::cout << "isDgMesh is " << meta->isDgMesh() << "\n";
 
@@ -3805,7 +3805,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                 << "transformedMeshName = " << transformedMeshName
                 << "." << std::endl;
 
-                int topologicalDims = meta->getNumTopologicalDims();
+                size_t topologicalDims = meta->getNumTopologicalDims();
                 // Add a note for this interesting case.  It is legal, but since it's a new feature
                 // we want to keep an eye on it
                 if (topologicalDims > spatialDims) {
@@ -3821,9 +3821,9 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
                 avtMeshMetaData* vmd =
                 new avtMeshMetaData(transformedMeshName, 1, 1, 1, 0,
-                        spatialDims, topologicalDims, meshType);
+                        (int)spatialDims, (int)topologicalDims, meshType);
                 vmd->SetBounds( bounds );
-                vmd->SetNumberCells( numCells );
+                vmd->SetNumberCells( (int)numCells );
                 setAxisLabels(vmd);
                 md->Add(vmd);
             }
@@ -3902,7 +3902,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                 numCells = unstructuredMesh->getNumCells();
             }
 
-            bounds[0] = numCells;
+            bounds[0] = (int)numCells;
             bounds[1] = bounds[2] = 0;
         }
 
@@ -3966,7 +3966,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
             continue;
         }
 
-        int topologicalDims = meta->getNumTopologicalDims();
+        size_t topologicalDims = meta->getNumTopologicalDims();
 
         if( meshType != AVT_UNKNOWN_MESH )
         {
@@ -3985,9 +3985,9 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
             avtMeshMetaData* vmd =
             new avtMeshMetaData(it->c_str(), 1, 1, 1, 0,
-                    spatialDims, topologicalDims, meshType);
+                    (int)spatialDims, (int)topologicalDims, meshType);
             vmd->SetBounds( bounds );
-            vmd->SetNumberCells( numCells );
+            vmd->SetNumberCells( (int)numCells );
             setAxisLabels(vmd);
             md->Add(vmd);
 
@@ -4069,7 +4069,7 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
         if (numComps > 1) {
             for (size_t i = 0; i<numComps; ++i) {
                 //first, get a unique name for this component
-                std::string compName = registry->getComponentName(*it, i);
+                std::string compName = registry->getComponentName(*it, (int)i);
 
                 if (!compName.empty()) {
                     VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -4167,7 +4167,7 @@ void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
         << "." << std::endl;
 
         avtMeshMetaData* vmd =
-        new avtMeshMetaData(it->c_str(), meta->getNumBlocks(), 1, 1, 0,
+        new avtMeshMetaData(it->c_str(), (int)meta->getNumBlocks(), 1, 1, 0,
                 meta->getNumSpatialDims(),
                 meta->getNumSpatialDims(), meshType);
         setAxisLabels(vmd);
@@ -4252,7 +4252,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
         //    for (size_t i = 0; i < lastDim-vm->numSpatialDims; ++i) {
         for (size_t i = 0; i < lastDim; ++i) {
             //first, get a unique name for this component
-            std::string compName = registry->getComponentName(*it, i);
+            std::string compName = registry->getComponentName(*it, (int)i);
 
             if (!compName.empty()) {
                 //register with VisIt
@@ -4266,7 +4266,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
                 if (vMeta->hasTransform()) {
                     std::string transformMeshName = vMeta->getTransformedMeshName();
                     std::string transformVarName = vMeta->getFullTransformedName();
-                    std::string transformComponentName = registry->getComponentName(transformVarName, i);
+                    std::string transformComponentName = registry->getComponentName(transformVarName, (int)i);
                     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
                     << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Registering a transformed component: "
@@ -4285,9 +4285,9 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
 
         // This loop registers all of the MESHES
         // Add in the logical bounds of the mesh.
-        int numCells = vMeta->getNumPoints();
+        int numCells = (int)vMeta->getNumPoints();
         int bounds[3] = {numCells,0,0};
-        int spatialDims = vMeta->getNumSpatialDims();
+        int spatialDims = (int)vMeta->getNumSpatialDims();
         if (spatialDims == 1) {
             VsLog::debugLog() << CLASSFUNCLINE << "  "
             <<"Found 1-d var with mesh, artificially elevating it to 2-d." <<std::endl;
@@ -4369,30 +4369,30 @@ void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
     // Extract timestep from filename
     // First, get file name from full path
     std::string fileName(dataFileName);
-    int lastSlash = fileName.find_last_of('/');
-    if (lastSlash == -1) {
+    std::string::size_type lastSlash = fileName.find_last_of('/');
+    if (lastSlash == std::string::npos) {
         lastSlash = fileName.find_last_of('\\');
     }
     VsLog::debugLog() << CLASSFUNCLINE << "  "
     <<"Last slash is " <<lastSlash << std::endl;
-    if (lastSlash != -1) {
-        int nameLength = fileName.length() - (lastSlash + 1);
+    if (lastSlash != std::string::npos) {
+        std::string::size_type nameLength = fileName.length() - (lastSlash + 1);
         fileName = fileName.substr(lastSlash + 1, nameLength);
     }
     VsLog::debugLog() << CLASSFUNCLINE << "  "
     <<"Extracted filename is \"" <<fileName <<"\"" << std::endl;
 
     // Timestep = the number between the last underscore and the first dot
-    int lastUnderscore = fileName.find_last_of('_');
+    std::string::size_type lastUnderscore = fileName.find_last_of('_');
     VsLog::debugLog() << CLASSFUNCLINE << "  "
     <<"lastUnderscore is " <<lastUnderscore << std::endl;
 
-    int firstDot = fileName.find_first_of('.');
+    std::string::size_type firstDot = fileName.find_first_of('.');
     VsLog::debugLog() << CLASSFUNCLINE << "  "
     <<"firstDot is " <<firstDot << std::endl;
 
-    if ((lastUnderscore != -1) &&
-            (firstDot != -1) &&
+    if ((lastUnderscore != std::string::npos) &&
+            (firstDot != std::string::npos) &&
             (firstDot > lastUnderscore + 1)) {
         std::string step =
         fileName.substr(lastUnderscore + 1, firstDot - (lastUnderscore + 1));
@@ -4663,7 +4663,7 @@ double avtVsFileFormat::GetTime()
 //  Modifications:
 //
 
-void avtVsFileFormat::GetSelectionBounds( int numTopologicalDims,
+void avtVsFileFormat::GetSelectionBounds( size_t numTopologicalDims,
         std::vector<int> &numNodes,
         std::vector<int> &gdims,
         int *mins,

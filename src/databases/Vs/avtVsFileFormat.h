@@ -254,7 +254,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
   void RegisterMdVars(avtDatabaseMetaData* md);
   void RegisterExpressions(avtDatabaseMetaData* md);
 
-  void GetSelectionBounds( int numTopologicalDims,
+  void GetSelectionBounds( size_t numTopologicalDims,
                            std::vector<int> &numCells,
                            std::vector<int> &gdims,
                            int *mins,

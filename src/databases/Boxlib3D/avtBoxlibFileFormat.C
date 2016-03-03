@@ -372,7 +372,7 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
     //
     int count = 0;
     int level = 0;
-    for (size_t i = 0; i < multifabFilenames.size(); ++i)
+    for (int i = 0; i < (int)multifabFilenames.size(); ++i)
     {
         VisMF *vmf = GetVisMF(i);
         int cnt = vmf->nComp();
@@ -384,8 +384,7 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
         bool isNode = true;
         bool isCell = true;
 
-        int k;
-        for (k = 0; k < dimension; ++k)
+        for (int k = 0; k < dimension; ++k)
         {
             if (ix.test(k))
                 isCell = false;
@@ -397,8 +396,7 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
                    isCell ? AVT_ZONECENT :
                             AVT_UNKNOWN_CENT;
 
-        int j;
-        for (j = 0; j < cnt; ++j)
+        for (int j = 0; j < cnt; ++j)
         {
             componentIds[level][j + count] = j;
             fabfileIndex[level][j + count] = i;
@@ -501,7 +499,7 @@ AVTBOXLIBFILEFORMAT::InitializeReader(void)
             startsWithFirst = true;
             foundVector = true;
         }
-        int lastChar = strlen(needle.c_str())-1;
+        int lastChar = (int)strlen(needle.c_str())-1;
         if (!foundVector && (varNames[i][lastChar] == 'x'))
         {
             needle[lastChar] = 'y';
@@ -852,8 +850,8 @@ AVTBOXLIBFILEFORMAT::ReadHeader(void)
             in.getline(buf, 1024); // Read in var names
 
             // Replace commas with underscores.
-            int len = strlen(buf);
-            for (int j = 0 ; j < len ; j++)
+            size_t len = strlen(buf);
+            for (size_t j = 0 ; j < len ; j++)
                 if (buf[j] == ',')
                     buf[j] = '_';
 
@@ -2198,7 +2196,7 @@ AVTBOXLIBFILEFORMAT::GetMaterial(const char *var, int patch,
             floatArrays[i - 1]->Delete();
     }
 
-    int mixed_size = mix_zone.size();
+    int mixed_size = (int)mix_zone.size();
 
     // get pointers to pass to avtMaterial
     int *ml = NULL, *mixm = NULL, *mixn = NULL, *mixz = NULL;
@@ -2297,7 +2295,7 @@ AVTBOXLIBFILEFORMAT::GetSpatialIntervalTree(DestructorFunction &df)
 // ****************************************************************************
 
 static void
-SwapEntries(std::vector<int> &clearlist, int t, int s)
+SwapEntries(std::vector<int> &clearlist, size_t t, size_t s)
 {
     int tmp;
     tmp = clearlist[3*t];
@@ -2397,7 +2395,7 @@ static string GetDirName(const char *path)
 {
     string dir = "";
 
-    int len = strlen(path);
+    int len = (int)strlen(path);
     const char *last = path + (len-1);
     while (*last != VISIT_SLASH_CHAR && last > path)
     {

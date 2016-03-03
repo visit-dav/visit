@@ -615,7 +615,7 @@ avtMirandaFileFormat::SkipToEndOfLine( ifstream &f, bool bCheckForBadTokens )
   char buf[512];
   f.getline(buf, 512);
 
-  int len = strlen(buf);
+  size_t len = strlen(buf);
   if (len >= 511)
     {
       EXCEPTION1(InvalidDBTypeException, "Error parsing file." );
@@ -623,8 +623,7 @@ avtMirandaFileFormat::SkipToEndOfLine( ifstream &f, bool bCheckForBadTokens )
 
   if (bCheckForBadTokens)
     {
-      int ii;
-      for (ii = 0 ; ii < len ; ii++)
+      for (size_t ii = 0 ; ii < len ; ii++)
         {
           if (buf[ii] == '#')
             {
@@ -798,8 +797,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
   else 
     debug5 << "centering is nodal"<<endl;
 
-  size_t ii;
-  for (ii = 0 ; ii < aVarNames.size() ; ii++)
+  for (size_t ii = 0 ; ii < aVarNames.size() ; ii++)
     {
       if (aVarNumComps[ii] == 1)
         {
@@ -814,7 +812,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
   if (aMatNames.size() > 0) {
     // Add material set components as scalar vars as well as a material set
-    for (ii = 0 ; ii < aMatNames.size() ; ii++)
+    for (size_t ii = 0 ; ii < aMatNames.size() ; ii++)
       {
         AddScalarVarToMetaData(md, aMatNames[ii], meshname, centering);
       }
@@ -838,7 +836,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
       rdb->SetNumDomains(nblocks);
       int bbox[6];
-      for (ii = 0 ; ii < (size_t)nblocks ; ii++)
+      for (int ii = 0 ; ii < nblocks ; ii++)
         {
           int iBlockIJK[3];           
           DomainToIJK( ii, iBlockIJK[0], iBlockIJK[1],  iBlockIJK[2]);
@@ -1465,7 +1463,7 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
           iBlockSize[0]*iBlockSize[1]*iBlockSize[2]; 
         floatvectors[ii].resize(numfloats); 
         aRawBlocks[ii] = &floatvectors[ii][0];
-        ReadRawScalar(fd, nPrevComp, aRawBlocks[ii], filename, domain, numfloats);
+        ReadRawScalar(fd, nPrevComp, aRawBlocks[ii], filename, domain, (int)numfloats);
         debug5 << "Read "<<numfloats<< " elements from " << filename << " for neighbor " << ii << " of domain " << domain << endl;
           
         fclose(fd);
@@ -1728,7 +1726,7 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
     }
   else if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-      int     nMats    = aMatNames.size();
+      int     nMats    = (int)aMatNames.size();
       
       int    *matNums  = new int[nMats];
       char  **matNames = new char*[nMats];  //ewww.  

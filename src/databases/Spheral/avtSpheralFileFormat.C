@@ -902,7 +902,7 @@ avtSpheralFileFormat::GetNodeListIndexFromName(const char *name)
     {
         if (strcmp(nodeLists[i].c_str(), name) == 0)
         {
-            return i;
+            return (int)i;
         }
     }
 
@@ -938,7 +938,7 @@ avtSpheralFileFormat::GetFieldIndexFromName(const char *name)
     {
         if (strcmp(fields[i].c_str(), name) == 0)
         {
-            return i;
+            return (int)i;
         }
     }
 

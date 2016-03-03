@@ -1577,13 +1577,13 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
     if (ccmErr != kCCMIONoErr)
         EXCEPTION1(InvalidVariableException, varname);
 
-    unsigned int nvalues = data.size();
+    size_t nvalues = data.size();
 
     vtkFloatArray *rv = vtkFloatArray::New();
     if (originalCells[domain] == NULL)
     {
         rv->SetNumberOfValues(nvalues);
-        for (unsigned int i = 0 ; i < nvalues ; ++i)
+        for (size_t i = 0 ; i < nvalues ; ++i)
         {
             rv->SetValue(i, data[i]);
         }
@@ -1601,12 +1601,12 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
         unsigned int *oc = ocarray->GetPointer(0);
         rv->SetNumberOfValues(numCells);
         std::map<int, int> cellIdMap;
-        for (unsigned int i = 0; i < mapData.size(); i++)
+        for (int i = 0; i < (int)mapData.size(); i++)
         {
             cellIdMap[mapData[i]] = i;
         }
 
-        for (unsigned int i = 0 ; i < numCells ; i++)
+        for (size_t i = 0 ; i < numCells ; i++)
         {
             rv->SetValue(i, data[cellIdMap[oc[i*2+1]]]);
         }
@@ -1702,10 +1702,10 @@ avtCCMFileFormat::GetVectorVar(int domain, const char *varname)
     rv->SetNumberOfComponents(3);
     if (originalCells[domain] == NULL)
     {
-        unsigned int nvalues = data.size();
+        size_t nvalues = data.size();
         rv->SetNumberOfTuples(nvalues/3);
         float *v = rv->WritePointer(0, nvalues);
-        for (unsigned int i = 0 ; i < nvalues ; i++)
+        for (size_t i = 0 ; i < nvalues ; i++)
         {
             v[i] = data[i];
         }
@@ -1864,7 +1864,6 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
     int dom = subdividingSingleMesh ? 0 : domain;
 
     const char *mName = "avtCCMFileFormat::TesselateCell: ";
-    unsigned int i, j, k;
     unsigned int tetCount = 0;
     vtkPoints *pts = vtkPoints::New();
     pts->Allocate(points->GetNumberOfPoints());
@@ -1876,7 +1875,7 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
     unsigned int oc[2] = {dom, 0};
 
     int useCount = 0;
-    for(i = 0; i < civ.size(); ++i)
+    for(size_t i = 0; i < civ.size(); ++i)
          useCount += (civ[i].id != -1) ? 1 : 0;
 
     originalCells[dom] = vtkUnsignedIntArray::New();
@@ -1884,17 +1883,17 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
     originalCells[dom]->SetNumberOfComponents(2);
     originalCells[dom]->Allocate(useCount * 3);
 
-    for (i = 0; i < civ.size(); ++i)
+    for (size_t i = 0; i < civ.size(); ++i)
     {
         const CellInfo &ci = civ[i];
         if(ci.id == -1)
             continue;
 
         oc[1] = ci.id;
-        unsigned int nFaces  = ci.faces.size();
+        size_t nFaces  = ci.faces.size();
         size_t nPts = 0;
         doubleVector fbounds;
-        for (j = 0; j < nFaces; ++j)
+        for (size_t j = 0; j < nFaces; ++j)
         {
             nPts += ci.faces[j].nodes.size();
             fbounds.push_back(VTK_FLOAT_MAX);
@@ -1910,11 +1909,11 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
                              VTK_FLOAT_MAX, VTK_FLOAT_MIN};
 
         int cnt = 0;
-        for (j = 0; j < nFaces; ++j)
+        for (size_t j = 0; j < nFaces; ++j)
         {
             const intVector &nodes = ci.faces[j].nodes;
 
-            for (k = 0; k < nodes.size(); ++k)
+            for (size_t k = 0; k < nodes.size(); ++k)
             {
                 cnt++;
                 pt = points->GetPoint(nodes[k]);
@@ -1949,24 +1948,24 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
 
         double cc[3] = {0.,0.,0.};
         //double fc[3] = {0.,0.,0.};
-        for (j = 0; j < 3; ++j)
+        for (size_t j = 0; j < 3; ++j)
             cc[j] = (cbounds[2*j+1]+cbounds[2*j])/2.0;
 
         int centerId = tess.GetVertexId(cc);
 
-        for (j = 0; j < nFaces; ++j)
+        for (size_t j = 0; j < nFaces; ++j)
         {
             // Find the face center
             const intVector &nodes = ci.faces[j].nodes;
             double fc[3] = {0.,0.,0.};
-            for (k = 0; k < 3; ++k)
+            for (size_t k = 0; k < 3; ++k)
                 fc[k] = (fbounds[2*k+1+(6*j)]+fbounds[2*k+(6*j)])/2.0;
 
             // Tesselate the face
             double n[3] = {(cc[0] - fc[0]), (cc[1] - fc[1]), (cc[2] - fc[2])};
             tess.SetNormal(n);
             tess.BeginContour();
-            for (k = 0; k < nodes.size(); ++k)
+            for (size_t k = 0; k < nodes.size(); ++k)
             {
                 cnt++;
                 pt = points->GetPoint(nodes[k]);
@@ -1974,13 +1973,13 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
             } // k nodes
             tess.EndContour();
 
-            unsigned int ntris = tess.Tessellate();
+            int ntris = tess.Tessellate();
             // Make a tet for each triangle in the face to the cell center.
             vtkIdType verts[4];
             verts[3] = centerId;
             if (ntris > 0)
             {
-                for (k = 0; k < ntris; ++k)
+                for (int k = 0; k < ntris; ++k)
                 {
                     int a, b, c;
                     tess.GetTriangleIndices(k, a, b, c);
@@ -2206,7 +2205,6 @@ void
 avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
                            intVector &cellTypes)
 {
-    unsigned int i, j;
     const FaceInfoVector &faces = ci.faces;
     intVector uniqueNodes;
     bool useface;
@@ -2214,15 +2212,15 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
     //int nnodes = 0;
     vtkIdList *cellNodes = vtkIdList::New();
 
-    for (i = 0; i < faces.size(); ++i)
+    for (size_t i = 0; i < faces.size(); ++i)
     {
         useface = true;
-        unsigned int nnodes = faces[i].nodes.size();
+        size_t nnodes = faces[i].nodes.size();
         if (nnodes != 4)
         {
             return;
         }
-        for (j = 0; useface && j <nnodes; ++j)
+        for (size_t j = 0; useface && j <nnodes; ++j)
         {
             useface = (count(uniqueNodes.begin(), uniqueNodes.end(),
                              faces[i].nodes[j]) == 0);
@@ -2233,7 +2231,7 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
             {
                 usedBF = (ci.faceTypes[i] == 0);
                 // reorder this face
-                for (j = 0; j < nnodes; ++j)
+                for (size_t j = 0; j < nnodes; ++j)
                 {
                     uniqueNodes.push_back(faces[i].nodes[j]);
                 }
@@ -2244,7 +2242,7 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
             }
             else
             {
-                for (j = 0; j < nnodes; ++j)
+                for (size_t j = 0; j < nnodes; ++j)
                 {
                     uniqueNodes.push_back(faces[i].nodes[j]);
                     cellNodes->InsertNextId(faces[i].nodes[j]);
@@ -2952,7 +2950,7 @@ avtCCMFileFormat::IDMap::IDtoIndex(int id) const
     }
     else
     {
-        int min = 0, max = ids.size()/2 - 1;
+        int min = 0, max = (int)ids.size()/2 - 1;
         int mid = (min+max)/2;
 
         while (min <= max)

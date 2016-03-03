@@ -536,7 +536,7 @@ vtkDataSet* HighOrderUnstructuredData::getMesh(
 
     vtkSmartPointer<vtkPoints> totalPoints = vtkPoints::New();
 
-    for (size_t i = 0; i < getNumberOfConnections(); i++) {
+    for (int i = 0; i < (int)getNumberOfConnections(); i++) {
         VsLog::debugLog() << CLASSFUNCLINE << " Adding element " << i
                 << std::endl;
         vtkSmartPointer<vtkPoints> points = vtkPoints::New();
@@ -544,7 +544,7 @@ vtkDataSet* HighOrderUnstructuredData::getMesh(
 
         computeTriangulation(points);
 
-        addToCellArray(i, getNumberOfQuadPoints());
+        addToCellArray(i, (int)getNumberOfQuadPoints());
         points->Delete();
     }
 
