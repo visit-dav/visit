@@ -485,7 +485,7 @@ avtMatvfExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 {
     // Check the number of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
     if (nargs == 0)
     {
         EXCEPTION2(ExpressionException, outputVariableName, "avtMatvfExpression: No arguments given.");

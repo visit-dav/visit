@@ -166,10 +166,10 @@ avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
 
     bool haveZonal = false;
 
-    size_t nvars = varnames.size();
+    int nvars = (int)varnames.size();
     if (cmfeType == POS_CMFE)
         nvars--;
-    for (size_t i = 0 ; i < nvars ; i++)
+    for (int i = 0 ; i < nvars ; i++)
     {
         std::string vname = GetInternalVarname(i);
         vtkDataArray *cell_data1 = ds->GetCellData()->GetArray(vname.c_str());
@@ -187,7 +187,7 @@ avtTimeIteratorDataTreeIteratorExpression::PrepareAndExecuteDataset(
     if (haveZonal)
         doZonal = true;  // mixed centering -> zonal
 
-    for (size_t i = 0 ; i < nvars ; i++)
+    for (int i = 0 ; i < nvars ; i++)
     {
         std::string vname = GetInternalVarname(i);
         vtkDataArray *cell_data1 = ds->GetCellData()->GetArray(vname.c_str());

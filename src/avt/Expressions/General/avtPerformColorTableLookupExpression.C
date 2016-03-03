@@ -126,7 +126,7 @@ avtPerformColorTableLookupExpression::ProcessArguments(ArgsExpr *args,
 {
     // Get the argument list and # of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
 
     // Check number of args
     if (nargs < 2)

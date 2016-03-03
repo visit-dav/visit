@@ -317,7 +317,7 @@ avtPerMaterialValueExpression::ProcessArguments(ArgsExpr *args,
 
     // Check the number of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
         
     // get var name
     if (nargs == 0)

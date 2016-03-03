@@ -202,9 +202,9 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
 {
     // Check the number of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
 
-    int targetArgs = 2;
+    size_t targetArgs = 2;
     const char *mismatchMsg = 
                    "The database comparison expression expects two "
                    "arguments: the database variable and a mesh to sample "
@@ -422,7 +422,7 @@ avtCMFEExpression::Execute()
     Expression exp2;
     exp2.SetName("_avt_internal_cmfe_expr");
     std::string var_wo_quotes = var;
-    for (int i = var_wo_quotes.size()-1 ; i >= 0 ; i--)
+    for (int i = (int)var_wo_quotes.size()-1 ; i >= 0 ; i--)
         if (var_wo_quotes[i] == '\'')
             var_wo_quotes.replace(i,1,"");
     std::string final_var = "<" + var_wo_quotes + ">";
@@ -528,7 +528,7 @@ avtCMFEExpression::Execute()
     Expression exp;
     exp.SetName(expr_var.c_str());
     std::string replace_string = ":" + var;
-    int pos = argument_expression.find(replace_string)+1;
+    std::string::size_type pos = argument_expression.find(replace_string)+1;
     std::string new_defn = argument_expression;
     new_defn.replace(pos, var.size(), "_avt_internal_cmfe_expr");
     exp.SetDefinition(new_defn);
@@ -752,7 +752,7 @@ avtCMFEExpression::ExamineContract(avtContract_p spec)
 
     ghostNeeds  = spec->GetDataRequest()->GetDesiredGhostDataType();
     const std::vector<avtDataSelection_p> ds = spec->GetDataRequest()->GetAllDataSelections();
-    int numSels = ds.size();
+    int numSels = (int)ds.size();
     dataSels.clear();
     for (int i = 0 ; i < numSels ; i++)
         dataSels.push_back(spec->GetDataRequest()->GetDataSelection(i));

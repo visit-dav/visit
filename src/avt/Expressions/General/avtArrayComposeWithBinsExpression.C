@@ -189,7 +189,7 @@ avtArrayComposeWithBinsExpression::ProcessArguments(ArgsExpr *args,
     std::vector<ArgExpr*> *arguments = args->GetArgs();
     nvars = (int)arguments->size()-1;
 
-    int idx_of_list = arguments->size()-1;
+    int idx_of_list = nvars;
     ArgExpr *listarg = (*arguments)[idx_of_list];
     ExprParseTreeNode *listTree = listarg->GetExpr();
     if (listTree->GetTypeName() != "List")

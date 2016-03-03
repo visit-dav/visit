@@ -119,7 +119,7 @@ ClampColor(const double c)
 vtkDataArray *
 avtHSVColorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
-    int numinputs = varnames.size();
+    size_t numinputs = varnames.size();
     if (numinputs != 3)
     {
         EXCEPTION2(ExpressionException, outputVariableName, 

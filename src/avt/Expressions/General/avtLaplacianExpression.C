@@ -99,7 +99,7 @@ avtLaplacianExpression::GetMacro(std::vector<std::string> &args,
                                  std::string &ne, Expression::ExprType &type)
 {
     char new_expr[2048];
-    int nargs = args.size();
+    size_t nargs = args.size();
     if(nargs == 1)
     {
         avtMeshType mt = GetInput()->GetInfo().GetAttributes().GetMeshType();

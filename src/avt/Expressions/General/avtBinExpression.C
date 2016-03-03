@@ -187,7 +187,7 @@ avtBinExpression::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 
     // Check the number of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
 
     // first argument should be the var name, let it do its own magic
     avtExprNode *first_tree = dynamic_cast<avtExprNode*>((*arguments)[0]->GetExpr());

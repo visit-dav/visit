@@ -114,7 +114,7 @@ avtCurlExpression::GetMacro(std::vector<std::string> &args, std::string &ne,
         }
     }
 
-    int nargs = args.size();
+    size_t nargs = args.size();
 
     char new_expr[2048];
     if (do3D)
