@@ -224,7 +224,7 @@ avtSubsetBlockMergeFilter::Execute()
     delete [] appender;
     delete [] outDataSets;
 
-    for(size_t i=0; i<outSize; i++)
+    for(int i=0; i<outSize; i++)
     {
         cleaner[i]->Delete();
     }
