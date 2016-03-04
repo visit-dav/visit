@@ -1,5 +1,8 @@
 { "skip_list":[
- {"mode":"serial","tests":[
+ {"mode":"trunk","serial","tests":[
+                    {"category":"databases","file":"xdmf.py","cases":["xdmf_4_02","xdmf_4_04"]},
+                    {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
+                    {"category":"databases","file":"chgcar.py","cases":["chgcar_01"]},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
                     {"category":"hybrid","file":"selections.py"},
                     {"category":"databases","file":"diff.py"},
@@ -49,7 +52,10 @@
                     {"category":"simulation","file":"zerocopy.py","platform":"win"},
                     {"category":"simulation","file":"life.py","cases":["life03"]}
                   ]},
- {"mode":"parallel","tests":[
+ {"mode":"trunk","parallel","tests":[
+                    {"category":"databases","file":"xdmf.py","cases":["xdmf_4_02","xdmf_4_04"]},
+                    {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
+                    {"category":"databases","file":"chgcar.py","cases":["chgcar_01"]},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
                     {"category":"hybrid","file":"selections.py"},
                     {"category":"databases","file":"diff.py"},
@@ -87,7 +93,9 @@
                     {"category":"simulation","file":"updateplots.py","platform":"win"},
                     {"category":"simulation","file":"life.py","cases":["life03"]}
                     ]},
- {"mode":"scalable,parallel,icet","tests":[
+ {"mode":"trunk","scalable","parallel","icet","tests":[
+                    {"category":"databases","file":"xdmf.py","cases":["xdmf_4_02","xdmf_4_04"]},
+                    {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
                     {"category":"database","file": "silo.py","cases":["silo_04","silo_05"]},
                     {"category":"databases","file":"itaps.py","cases":["itaps_14","itaps_15"]},
