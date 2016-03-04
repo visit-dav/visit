@@ -324,7 +324,7 @@ avtSILMatrix::GetSILCollection(int index) const
         vector<int> s;
         for (size_t i = 0 ; i < set2.size() ; i++)
         {
-            s.push_back(setsStartAt + row*static_cast<int>(set2.size()) + i);
+            s.push_back(setsStartAt + row*static_cast<int>(set2.size() + i));
         }
         ens = new avtSILEnumeratedNamespace(s);
     }
@@ -339,7 +339,7 @@ avtSILMatrix::GetSILCollection(int index) const
         vector<int> s;
         for (size_t i = 0 ; i < set1.size() ; i++)
         {
-            s.push_back(setsStartAt + i*set2.size() + column);
+            s.push_back(setsStartAt + static_cast<int>(i*set2.size()) + column);
         }
         ens = new avtSILEnumeratedNamespace(s);
     }
@@ -635,7 +635,7 @@ avtSILMatrix::SetIsInCollection(int set) const
         for (ii = 0; ii < set1.size(); ii++)
         {
             if (set1[ii] == set)
-                return (GetStartCollection() + ii);
+                return (GetStartCollection() + (int)ii);
         }
     }
     if (set2IsSequential)
@@ -648,7 +648,7 @@ avtSILMatrix::SetIsInCollection(int set) const
         for (ii = 0; ii < set2.size(); ii++)
         {
             if (set2[ii] == set)
-                return (GetStartCollection() + static_cast<int>(set1.size()) + ii);
+                return (GetStartCollection() + static_cast<int>(set1.size() + ii));
         }
     }
     return -1;

@@ -191,10 +191,10 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
 
     if (centeringTarget == AVT_NODECENT)
     {
-        size_t nArray = inDS->GetCellData()->GetNumberOfArrays();
+        int nArray = inDS->GetCellData()->GetNumberOfArrays();
         std::vector<std::string> arraysToSwap;
         
-        for (size_t i = 0 ; i < nArray ; i++)
+        for (int i = 0 ; i < nArray ; i++)
         {
             vtkDataArray *arr = inDS->GetCellData()->GetArray(i);
             int dt = arr->GetDataType();
@@ -214,17 +214,17 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
         {
             dsToShift = (vtkDataSet *) inDS->NewInstance();
             dsToShift->ShallowCopy(inDS);
-            for (size_t k = 0 ; k < arraysToSwap.size() ; k++) 
+            for (int k = 0 ; k < (int)arraysToSwap.size() ; k++) 
             {
-                int index = arraysToSwap.size()-k-1;
+                int index = (int)arraysToSwap.size()-k-1;
                 vtkDataArray *arr = inDS->GetCellData()->GetArray(arraysToSwap[index].c_str());
                 vtkDataArray *fa = arr->NewInstance();
                 int ntups  = arr->GetNumberOfTuples();
                 int ncomps = arr->GetNumberOfComponents();
                 fa->SetNumberOfComponents(ncomps);
                 fa->SetNumberOfTuples(ntups);
-                for (size_t i = 0 ; i < (size_t)ntups ; i++)
-                    for (size_t j = 0 ; j < (size_t)ncomps ; j++)
+                for (int i = 0 ; i < ntups ; i++)
+                    for (int j = 0 ; j < ncomps ; j++)
                         fa->SetComponent(i, j, arr->GetComponent(i, j));
                 fa->SetName(arr->GetName());
                 dsToShift->GetCellData()->RemoveArray(arr->GetName());
@@ -278,12 +278,12 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
                 vtkDataArray *arr_out = outDS->GetPointData()
                                             ->GetArray(arraysToSwap[k].c_str());
                 
-                size_t ntups  = arr_out->GetNumberOfTuples();
-                size_t ncomps = arr_out->GetNumberOfComponents();
+                int ntups  = arr_out->GetNumberOfTuples();
+                int ncomps = arr_out->GetNumberOfComponents();
                 new_arr->SetNumberOfComponents(ncomps);
                 new_arr->SetNumberOfTuples(ntups);
-                for (size_t i = 0 ; i < ntups ; i++)
-                    for (size_t j = 0 ; j < ncomps ; j++)
+                for (int i = 0 ; i < ntups ; i++)
+                    for (int j = 0 ; j < ncomps ; j++)
                         new_arr->SetComponent(i, j, 
                                            arr_out->GetComponent(i, j)+0.001);
                 new_arr->SetName(arr_out->GetName());
@@ -306,10 +306,10 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
     {
         // Detect if there are any integer type arrays and make them be floats for
         // recenting.
-        size_t nArray = inDS->GetPointData()->GetNumberOfArrays();
+        int nArray = inDS->GetPointData()->GetNumberOfArrays();
         std::vector<std::string> arraysToSwap;
         
-        for (size_t i = 0 ; i < nArray ; i++)
+        for (int i = 0 ; i < nArray ; i++)
         {
             vtkDataArray *arr = inDS->GetPointData()->GetArray(i);
             int dt = arr->GetDataType();
@@ -332,12 +332,12 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
             {
                 vtkDataArray *arr = inDS->GetPointData()->GetArray(arraysToSwap[k].c_str());
                 vtkDataArray *fa = arr->NewInstance();
-                size_t ntups  = arr->GetNumberOfTuples();
-                size_t ncomps = arr->GetNumberOfComponents();
+                int ntups  = arr->GetNumberOfTuples();
+                int ncomps = arr->GetNumberOfComponents();
                 fa->SetNumberOfComponents(ncomps);
                 fa->SetNumberOfTuples(ntups);
-                for (size_t i = 0 ; i < ntups ; i++)
-                    for (size_t j = 0 ; j < ncomps ; j++)
+                for (int i = 0 ; i < ntups ; i++)
+                    for (int j = 0 ; j < ncomps ; j++)
                         fa->SetComponent(i, j, arr->GetComponent(i, j));
                 fa->SetName(arr->GetName());
                 dsToShift->GetPointData()->RemoveArray(arr->GetName());
@@ -383,12 +383,12 @@ avtShiftCenteringFilter::ExecuteData(avtDataRepresentation *inDR)
 
                 vtkDataArray *arr_out = outDS->GetCellData()
                                             ->GetArray(arraysToSwap[k].c_str());
-                size_t ntups  = arr_out->GetNumberOfTuples();
-                size_t ncomps = arr_out->GetNumberOfComponents();
+                int ntups  = arr_out->GetNumberOfTuples();
+                int ncomps = arr_out->GetNumberOfComponents();
                 new_arr->SetNumberOfComponents(ncomps);
                 new_arr->SetNumberOfTuples(ntups);
-                for (size_t i = 0 ; i < ntups ; i++)
-                    for (size_t j = 0 ; j < ncomps ; j++)
+                for (int i = 0 ; i < ntups ; i++)
+                    for (int j = 0 ; j < ncomps ; j++)
                         new_arr->SetComponent(i, j, 
                                              arr_out->GetComponent(i, j)+0.001);
                 new_arr->SetName(arr_out->GetName());

@@ -1669,8 +1669,8 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
         //
         // Add all of the maps of each of the subsets.
         //
-        size_t numElems = nms->GetNumberOfElements();
-        for (size_t i = 0 ; i < numElems ; i++)
+        int numElems = nms->GetNumberOfElements();
+        for (int i = 0 ; i < numElems ; i++)
         {
             int setId = nms->GetElement(i);
             isOn[setId] = true;
@@ -1696,7 +1696,7 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves) const
     // sort out the interior nodes.
     //
     leaves.clear();
-    for (size_t i = 0 ; i < (size_t)nSets ; i++)
+    for (int i = 0 ; i < nSets ; i++)
     {
         if (isOn[i])
         {
@@ -1814,8 +1814,8 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
         //
         // Add all of the maps of each of the subsets.
         //
-        size_t numElems = nms->GetNumberOfElements();
-        for (size_t i = 0 ; i < numElems ; i++)
+        int numElems = nms->GetNumberOfElements();
+        for (int i = 0 ; i < numElems ; i++)
         {
             int setId = nms->GetElement(i);
             isOn[setId] = true;
@@ -1842,7 +1842,7 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
     // sort out the interior nodes.
     //
     outsets.clear();
-    for (size_t i = 0 ; i < (size_t)nSets ; i++)
+    for (int i = 0 ; i < nSets ; i++)
         if (isOn[i])
             outsets.push_back(i);
 
@@ -2056,7 +2056,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
 
         // special pass for materials
         avtSILCollection_p otherMatColl = NULL;
-        for (size_t i = 0 ; i < (size_t)silr->GetNumCollections() ; i++)
+        for (int i = 0 ; i < silr->GetNumCollections() ; i++)
         {
             if (silr->GetSILCollection(i)->GetRole() == SIL_MATERIAL)
             {
@@ -2068,7 +2068,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
             }
         }
         avtSILCollection_p matColl = NULL;
-        for (size_t i = 0 ; i < (size_t)GetNumCollections() ; i++)
+        for (int i = 0 ; i < GetNumCollections() ; i++)
         {
             if (GetSILCollection(i)->GetRole() == SIL_MATERIAL)
             {
@@ -2085,8 +2085,8 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
             {
                 // If a material is turned off in the original SIL restriction,
                 // then turn it off here.
-                size_t numSubsets = otherMatColl->GetNumberOfSubsets();
-                for (size_t i = 0 ; i < numSubsets ; i++)
+                int numSubsets = otherMatColl->GetNumberOfSubsets();
+                for (int i = 0 ; i < numSubsets ; i++)
                 {
                     int idx = otherMatColl->GetSubset(i);
                     if (silr->useSet[idx] == NoneUsed)
@@ -2097,7 +2097,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
 
         // special pass for blocks (often refinement levels)
         avtSILCollection_p otherBlockColl = NULL;
-        for (size_t i = 0 ; i < (size_t)silr->GetNumCollections() ; i++)
+        for (int i = 0 ; i < silr->GetNumCollections() ; i++)
         {
             if (silr->GetSILCollection(i)->GetRole() == SIL_BLOCK)
             {
@@ -2109,7 +2109,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
             }
         }
         avtSILCollection_p blockColl = NULL;
-        for (size_t i = 0 ; i < (size_t)GetNumCollections() ; i++)
+        for (int i = 0 ; i < GetNumCollections() ; i++)
         {
             if (GetSILCollection(i)->GetRole() == SIL_BLOCK)
             {
@@ -2133,7 +2133,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
             int numSubsets = (numNewSubsets < numOrigSubsets ? numNewSubsets
                                                              : numOrigSubsets);
             bool lastIsOff = false;
-            for (size_t i = 0 ; i < (size_t)numSubsets ; i++)
+            for (int i = 0 ; i < numSubsets ; i++)
             {
                 lastIsOff = false;
                 int idx = otherBlockColl->GetSubset(i);
@@ -2145,7 +2145,7 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
             }
             if (lastIsOff && (numNewSubsets > numOrigSubsets))
             {
-                for (size_t i = (size_t)numSubsets ; i < (size_t)numNewSubsets ; i++)
+                for (int i = numSubsets ; i < numNewSubsets ; i++)
                     TurnOffSet(blockColl->GetSubset(i));   
             }
         }

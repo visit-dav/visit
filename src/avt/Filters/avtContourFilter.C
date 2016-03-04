@@ -157,13 +157,13 @@ avtContourFilter::avtContourFilter(const ContourOpAttributes &a)
     else if (atts.GetContourMethod() == ContourOpAttributes::Value)
     {
         isoValues = atts.GetContourValue();
-        nLevels = isoValues.size();
+        nLevels = (int)isoValues.size();
         stillNeedExtents = false;
     }
     else // Percent
     {
         isoValues = atts.GetContourPercent();
-        nLevels = isoValues.size();
+        nLevels = (int)isoValues.size();
     }
  
     // We need to specify that we want a secondary variable as soon as
@@ -952,7 +952,7 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
     // business is to account for a case where there are 0 isolevels,
     // which could lead to a divide-by-0 when calculating progress.
     //
-    int nLevels = isoValues.size();
+    int nLevels = (int)isoValues.size();
     int total = 4*nLevels+2;
 
     #ifndef VISIT_THREADS
@@ -996,7 +996,7 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
     vtkVisItContourFilter *cf = vtkVisItContourFilter::New();
     cf->SetInputData(toBeContoured);
     vtkPolyData *output = cf->GetOutput();
-    for (size_t i = 0 ; i < isoValues.size() ; i++)
+    for (int i = 0 ; i < (int)isoValues.size() ; i++)
     {
         std::vector<vtkIdType> list;
         if (useScalarTree)

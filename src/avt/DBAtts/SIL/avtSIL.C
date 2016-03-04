@@ -1349,7 +1349,7 @@ avtSIL::Print(ostream &out,
           case SUBSET:
           {
             out << "Set" << setTable[3*i+2] << " " << (useInfo ? perSetInfo[i].c_str() : "") << endl;
-            avtSILSet_p s = GetSILSet(i);
+            avtSILSet_p s = GetSILSet((int)i);
             s->Print(out);
             break;
           }

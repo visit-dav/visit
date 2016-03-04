@@ -329,7 +329,7 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
     bool  foundOneOff = false;
     int enumGraphIndex = -1;
     avtSILCollection_p coll;
-    for (size_t i = 0 ; (enumGraphIndex == -1) && (i < mapsOut.size()) ; i++)
+    for (int i = 0 ; (enumGraphIndex == -1) && (i < (int)mapsOut.size()) ; i++)
     {
         coll = silr->GetSILCollection(mapsOut[i]);
         if (coll->GetRole() == SIL_ENUMERATION)
@@ -341,9 +341,9 @@ avtSILRestrictionTraverser::GetEnumeration(int index,
                 // look at each subset and determine if it is on or off.
                 //
                 name = coll->GetCategory();
-                size_t numElems = coll->GetNumberOfSubsets();
+                int numElems = coll->GetNumberOfSubsets();
                 enumList.resize(numElems);
-                for (size_t j = 0 ; j < numElems ; j++)
+                for (int j = 0 ; j < numElems ; j++)
                 {
                     // do a tiny bit of work to see if this enum has a graph
                     avtSILSet_p tmpSet = silr->GetSILSet(coll->GetSubset(j));
@@ -423,9 +423,9 @@ avtSILRestrictionTraverser::GetSpecies(vector<bool> &specList)
             // Now that we have found the species collection, look at each
             // of the species subsets and determine if it is on or off.
             //
-            size_t numElems = coll->GetNumberOfSubsets();
+            int numElems = coll->GetNumberOfSubsets();
             specList.resize(numElems);
-            for (size_t j = 0 ; j < numElems ; j++)
+            for (int j = 0 ; j < numElems ; j++)
             {
                 bool val = (useSet[coll->GetSubset(j)] != NoneUsed ? true : false);
                 specList[j] = val;
@@ -535,10 +535,10 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
     {
         // Why go any further?  We know this is a multi-domain data set with 
         // all domains on.
-        size_t numSets = silr->GetNumSets();
+        int numSets = silr->GetNumSets();
         numSets -= 1; // for the top set.
         list.resize(numSets);
-        for (size_t i = 0 ; i < numSets ; i++)
+        for (int i = 0 ; i < numSets ; i++)
             list[i] = i;
         visitTimer->StopTimer(timingsHandle, "GetDomainList with early return");
         return;
@@ -588,9 +588,9 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
             {
                 avtSILCollection_p coll = silr->GetSILCollection(outmaps[j]);
                 const avtSILNamespace *ns = coll->GetSubsets();
-                size_t numElems = ns->GetNumberOfElements();
+                int numElems = ns->GetNumberOfElements();
                 setList.reserve(setList.size() + numElems);
-                for (size_t k = 0 ; k < numElems ; k++)
+                for (int k = 0 ; k < numElems ; k++)
                 {
                     setList.push_back(ns->GetElement(k));
                 }
@@ -801,7 +801,7 @@ avtSILRestrictionTraverser::UsesAllDomains(void)
     // Determine how domains come off the top level set.  This is the maximum
     // domains possible.
     //
-    size_t nTargetDomains = domainCollection->GetNumberOfSubsets();
+    int nTargetDomains = domainCollection->GetNumberOfSubsets();
 
     //
     // Go through every one of the domains and see if it is being used.  If
@@ -810,7 +810,7 @@ avtSILRestrictionTraverser::UsesAllDomains(void)
     //
     const vector<unsigned char> &useSet = silr->useSet;
     bool retval = true;
-    for (size_t i = 0 ; i < nTargetDomains ; i++)
+    for (int i = 0 ; i < nTargetDomains ; i++)
     {
         if (useSet[domainCollection->GetSubset(i)] == NoneUsed)
         {
@@ -1203,8 +1203,8 @@ avtSILRestrictionTraverser::UsesAllMaterials()
             // Now that we have found the material collection, look at each
             // of the material subsets and determine if it is on or off.
             //
-            size_t numElems = coll->GetNumberOfSubsets();
-            for (size_t j = 0 ; j < numElems && allUsed; j++)
+            int numElems = coll->GetNumberOfSubsets();
+            for (int j = 0 ; j < numElems && allUsed; j++)
             {
                 allUsed = (useSet[coll->GetSubset(j)] != NoneUsed); 
             }

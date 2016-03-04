@@ -1367,7 +1367,7 @@ avtConnComponentsExpression::GlobalUnion(int num_comps,
     UnionFind union_find(num_comps,true);
 
     // get the number of local union operations
-    int n_local_unions = u_src.size();
+    int n_local_unions =(int) u_src.size();
 
     // pack the union operation label ids into an array
     int msg_size = n_local_unions*2;
@@ -1445,7 +1445,7 @@ avtConnComponentsExpression::GlobalUnion(int num_comps,
     // flatten union find to obtain the final labels
     num_comps = union_find.FinalizeLabels();
 
-    int nsets = local_labels.size();
+    int nsets = (int)local_labels.size();
     // use the union find to resolve all local component ids
     for( i = 0; i< nsets;i++)
     {
@@ -2379,7 +2379,7 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
     std::vector<int> proc_list;
 
     // get number of local meshes
-    int nmeshes = meshes.size();
+    int nmeshes = (int)meshes.size();
 
     // for each local mesh
     for( i = 0; i < nmeshes ; i++)
@@ -2417,7 +2417,7 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
             // find which processors need this cell
             vtkCell *cell = mesh->GetCell(j);
             spart.GetProcessorList(cell,proc_list);
-            int n_isect_procs = proc_list.size();
+            int n_isect_procs = (int)proc_list.size();
 
             // copy the cell data to the proper temporary mesh
             for( k = 0; k < n_isect_procs; k++)
