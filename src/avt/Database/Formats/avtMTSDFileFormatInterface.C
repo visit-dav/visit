@@ -576,7 +576,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                 int tsg = GetTimestepGroupForTimestep(i);
                 int lts = GetTimestepWithinGroup(i);
                 int c = chunks[tsg][0]->FormatGetCycle(lts);
-                if (c == avtFileFormat::INVALID_CYCLE && cyclesFromMassCall.size() > i)
+                if (c == avtFileFormat::INVALID_CYCLE && (int)cyclesFromMassCall.size() > i)
                     c = cyclesFromMassCall[i];
 
                 if (c == avtFileFormat::INVALID_CYCLE)
@@ -635,7 +635,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                 int tsg = GetTimestepGroupForTimestep(i);
                 int lts = GetTimestepWithinGroup(i);
                 double t = chunks[tsg][0]->FormatGetTime(lts);
-                if (t == avtFileFormat::INVALID_TIME && timesFromMassCall.size() > i)
+                if (t == avtFileFormat::INVALID_TIME && (int)timesFromMassCall.size() > i)
                     t = timesFromMassCall[i];
 
                 if (t != avtFileFormat::INVALID_TIME)
