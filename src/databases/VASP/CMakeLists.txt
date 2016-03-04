@@ -19,6 +19,7 @@ avtVASPFileFormat.C
 avtOUTCARFileFormat.C
 avtCHGCARFileFormat.C
 avtPOSCARFileFormat.C
+avtXDATFileFormat.C
 )
 
 SET(LIBE_SOURCES
@@ -28,6 +29,7 @@ avtVASPFileFormat.C
 avtOUTCARFileFormat.C
 avtCHGCARFileFormat.C
 avtPOSCARFileFormat.C
+avtXDATFileFormat.C
 )
 
 INCLUDE_DIRECTORIES(

@@ -5,18 +5,21 @@
       POS*
       CHG*
       CONT*
+      XDAT*
     </FilePatterns>
     <Files components="M">
       avtVASPFileFormat.C
       avtOUTCARFileFormat.C
       avtCHGCARFileFormat.C
       avtPOSCARFileFormat.C
+      avtXDATFileFormat.C
     </Files>
     <Files components="E">
       avtVASPFileFormat.C
       avtOUTCARFileFormat.C
       avtCHGCARFileFormat.C
       avtPOSCARFileFormat.C
+      avtXDATFileFormat.C
     </Files>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="VASP.code">
       <Function name="VASPCommonPluginInfo::SetupDatabase" user="false" member="true">
