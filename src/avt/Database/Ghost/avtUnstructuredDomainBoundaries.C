@@ -177,7 +177,7 @@ avtUnstructuredDomainBoundaries::SetSharedPoints(int d1, int d2,
 
     if (index == -1)
     {
-        index = giveIndex.size();
+        index = (int)giveIndex.size();
         giveIndex.push_back(pair<int, int> (d1, d2));
         givenCells.resize(givenCells.size() + 1);
         givenPoints.resize(givenPoints.size() + 1);
@@ -196,7 +196,7 @@ avtUnstructuredDomainBoundaries::SetSharedPoints(int d1, int d2,
     index = GetGivenIndex(d2, d1);
     if (index == -1)
     {
-        index = giveIndex.size();
+        index = (int)giveIndex.size();
         giveIndex.push_back(pair<int, int> (d2, d1));
         givenCells.resize(givenCells.size() + 1);
         givenPoints.resize(givenPoints.size() + 1);
@@ -298,7 +298,7 @@ avtUnstructuredDomainBoundaries::GetGivenIndex(int from, int to)
     for (size_t i = 0; i < giveIndex.size(); ++i)
     {
         if (giveIndex[i].first == from && giveIndex[i].second == to)
-            return i;
+            return (int)i;
     }
     return -1;
 }
@@ -1169,7 +1169,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
     int length = 0;
     if (mixvarname != NULL)
     {
-        length = strlen(mixvarname)+1;
+        length = (int)strlen(mixvarname)+1;
     }
     struct {int length; int rank;} len_rank_out, len_rank_in={length, rank};
 
@@ -1658,7 +1658,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                     continue;
 
                 size_t nPts = givenPoints[index].size();
-                nGainedPoints[sendDom][recvDom] += nPts;
+                nGainedPoints[sendDom][recvDom] += (int) nPts;
                 
                 gainedPoints[sendDom][recvDom] = new T[nPts * 3];
                 origPointIds[sendDom][recvDom] = new int[nPts];
@@ -1678,7 +1678,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 }
 
                 size_t nCells = givenCells[index].size();
-                nGainedCells[sendDom][recvDom] += nCells;
+                nGainedCells[sendDom][recvDom] +=(int) nCells;
 
                 cellTypes[sendDom][recvDom] = new int[nCells];
                 cellPoints[sendDom][recvDom] = new int *[nCells];
@@ -1694,7 +1694,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                     givingUg->GetCellPoints(givenCells[index][i], idList);
 
                     nPts = idList->GetNumberOfIds();
-                    nPtsPerCellPtr[i] = nPts;
+                    nPtsPerCellPtr[i] = (int)nPts;
 
                     cellPtsPtr[i] = new int[nPts];
                     for (size_t k = 0; k < nPts; ++k)
@@ -1798,7 +1798,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 
                 vtkUnstructuredGrid *givingUg = (vtkUnstructuredGrid*)meshes[i];
 
-                int nPts = givenPoints[index].size();
+                int nPts = (int)givenPoints[index].size();
 
                 // Build the point data to send
                 T *gainedPtrStart = new T[nPts * 3];
@@ -1832,7 +1832,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                          mpiOriginalIdsTag, VISIT_MPI_COMM);
 
                 // Send the number of given cells
-                int nCells = givenCells[index].size();
+                int nCells = (int)givenCells[index].size();
                 MPI_Send(&nCells, 1, MPI_INT, tRank, mpiNumGivenCellsTag, 
                          VISIT_MPI_COMM);
                 
@@ -1863,7 +1863,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                     mpiNumPointsPerCellTag, VISIT_MPI_COMM);
 
                 // Send the point cells
-                MPI_Send(&(cellPtsVector[0]), cellPtsVector.size(), MPI_INT,
+                MPI_Send(&(cellPtsVector[0]), (int)cellPtsVector.size(), MPI_INT,
                          tRank, mpiCellPointIdsTag, VISIT_MPI_COMM);
 
 
@@ -2076,7 +2076,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
 
                 avtMixedVariable *givingVar = mixvars[i];
                 
-                int nCells = givenCells[index].size();
+                size_t nCells = givenCells[index].size();
 
                 // Assess the amount of mix in cells along the boundary.
                 // For each cell "C" along the boundary, assume a counting
@@ -2087,7 +2087,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                 const int *mix_next = mats[i]->GetMixNext();
                 const int *matlist  = mats[i]->GetMatlist();
                 int nMixlen = 0;
-                for (i = 0; i < (size_t)nCells; ++i)
+                for (i = 0; i < nCells; ++i)
                 {
                     int cell = givenCells[index][i];
                     if (matlist[cell] >= 0)
@@ -2259,7 +2259,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                 avtMaterial *givingMat = mats[i];
                 
                 size_t nCells = givenCells[index].size();
-                nGainedCells[sendDom][recvDom] = nCells;
+                nGainedCells[sendDom][recvDom] = (int)nCells;
 
                 const int *mix_next = mats[i]->GetMixNext();
                 const int *matlist  = mats[i]->GetMatlist();
@@ -2382,21 +2382,21 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                     continue;
                 }
                 
-                size_t i = 0;
+                int i = 0;
                 
-                for (i = 0; i < domainNum.size(); ++i)
+                for (i = 0; i < (int)domainNum.size(); ++i)
                     if (domainNum[i] == sendDom)
                         break;
 
                 avtMaterial *givingMat = mats[i];
                 
-                int nCells = givenCells[index].size();
+                int nCells = (int)givenCells[index].size();
                 nGainedCells[sendDom][recvDom] = nCells;
 
                 const int *mix_next = mats[i]->GetMixNext();
                 const int *matlist  = mats[i]->GetMatlist();
                 int nMixlen = 0;
-                for (i = 0; i < (size_t)nCells; ++i)
+                for (i = 0; i < nCells; ++i)
                 {
                     int cell = givenCells[index][i];
                     if (matlist[cell] >= 0)
@@ -2589,7 +2589,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 vector<int> &mapRef = isPointData ? givenPoints[index] 
                                                   : givenCells[index];
                 
-                int nTuples = mapRef.size();
+                int nTuples =(int) mapRef.size();
                 nGainedTuples[sendDom][recvDom] = nTuples;
 
                 gainedData[sendDom][recvDom] = new T[nTuples * nComponents];
@@ -2652,7 +2652,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 // Send the number of tuples
                 vector<int> &mapRef = isPointData ? givenPoints[index]
                                                   : givenCells[index];
-                int nTup = mapRef.size();
+                int nTup = (int)mapRef.size();
                 MPI_Send(&nTup, 1, MPI_INT, tRank, mpiNumTuplesTag,
                     VISIT_MPI_COMM);
 

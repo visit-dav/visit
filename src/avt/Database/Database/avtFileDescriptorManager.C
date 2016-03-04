@@ -195,7 +195,7 @@ avtFileDescriptorManager::RegisterFile(CloseFileCallback cback, void *args)
         CloseLeastRecentlyUsedFile();
     }    
 
-    int index = closeFileCallbacks.size();
+    int index = (int)closeFileCallbacks.size();
     closeFileCallbacks.push_back(cback);
     closeFileArgs.push_back(args);
     fileIsOpen.push_back(true);
@@ -294,7 +294,7 @@ avtFileDescriptorManager::CloseLeastRecentlyUsedFile(void)
     //
     int lowestTimestamp = 10000000;
     int indexForLowestTimestamp = -1;
-    int nFiles = fileTimestamp.size();
+    int nFiles = (int)fileTimestamp.size();
     for (int i = 0 ; i < nFiles ; i++)
     {
         if (fileIsOpen[i] && (fileTimestamp[i] < lowestTimestamp) )

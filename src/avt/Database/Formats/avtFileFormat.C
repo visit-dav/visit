@@ -533,7 +533,7 @@ avtFileFormat::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name,
     avtArrayMetaData *st = new avtArrayMetaData();
     st->name = name;
     st->compNames = cnames;
-    st->nVars = cnames.size();
+    st->nVars = (int)cnames.size();
     st->meshName = mesh;
     st->centering = cent;
 
@@ -790,7 +790,7 @@ void
 avtFileFormat::CloseFileDescriptor(int manIndex)
 {
     int index = -1;
-    int nFiles = fileIndicesForDescriptorManager.size();
+    int nFiles = (int)fileIndicesForDescriptorManager.size();
     for (int i = 0 ; i < nFiles ; i++)
     {
         if (fileIndicesForDescriptorManager[i] == manIndex)

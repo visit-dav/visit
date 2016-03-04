@@ -504,7 +504,7 @@ avtSILGenerator::AddGroupCollections(avtSIL *sil, int top, int numGroups,
         // sorted by groupId.  Let's try to be efficient and use the qsort 
         // routine provided by stdlib to do this.
         //
-        int nDoms = domList.size();
+        int nDoms = (int)domList.size();
         int *records = new int[2*nDoms];
         for (i = 0 ; i < nDoms ; i++)
         {
@@ -571,7 +571,7 @@ avtSILGenerator::AddMaterials(avtSIL *sil, int top, const string &name,
                                  const vector<string> &matnames,
                                  vector<int> &list, int id)
 {
-    int numMats = matnames.size();
+    int numMats = (int)matnames.size();
     for (int i = 0 ; i < numMats ; i++)
     {
         avtSILSet_p set = new avtSILSet(matnames[i], id);
@@ -624,13 +624,13 @@ avtSILGenerator::AddSpecies(avtSIL *sil, int top,
                                int id)
 {
     vector<int> list;
-    int numMats = matnames.size();
+    int numMats = (int)matnames.size();
     for (int i = 0 ; i < numMats ; i++)
     {
         if(i >= 0 && i < species->GetNumSpecies())
         {
             const vector<string> &specnames = species->GetSpecies(i).speciesNames;
-            int numSpecs = specnames.size();
+            int numSpecs = (int)specnames.size();
             for (int j = 0 ; j < numSpecs; j++)
             {
                 char n[1024];
@@ -692,7 +692,7 @@ avtSILGenerator::AddMaterialSubsets(avtSIL *sil, const vector<int> &domList,
     // Start off by creating all of the material domains and adding them to
     // the sil.
     //
-    int nmat = matnames.size();
+    int nmat =(int) matnames.size();
     vector<int>  matdomlist;
     for (i = 0 ; i < blocks ; i++)
     {
@@ -813,7 +813,7 @@ AddEnumScalarSubgraph(avtSIL *sil,
         for (size_t i = 1; i < graphEdges.size(); i+=2)
             isTopEnum[graphEdges[i]] = false;
 
-        for (size_t i = 0; i < setIDs.size(); i++)
+        for (int i = 0; i < (int)setIDs.size(); i++)
         {
             if (isTopEnum[i])
             {
@@ -881,7 +881,7 @@ void
 avtSILGenerator::AddEnumScalars(avtSIL *sil, int top,
                                 const avtScalarMetaData *smd)
 {
-    int nEnums = smd->enumNames.size();
+    int nEnums = (int)smd->enumNames.size();
     vector<int> enumList;
     for (int k=0; k<nEnums; k++)
     {

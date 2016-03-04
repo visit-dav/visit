@@ -613,7 +613,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             // but another one could, then report a warning.
             if (rv != NULL && noncompliantPlugins.size() > 0)
             {
-                int n = noncompliantPlugins.size();
+                int n = (int)noncompliantPlugins.size();
                 string warning = "While we were able to open the file "
                     "with the " + string(info ? info->GetName() : "") + " reader, "+
                     (n==1?"an":"") + "other file format "+Plural(n,"reader")+
@@ -732,7 +732,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         if (succeeded.size() > 0 && noncompliantPlugins.size() > 0)
         {
 
-            int n = noncompliantPlugins.size();
+            int n = (int)noncompliantPlugins.size();
             string warning = "While we were able to open the file "
                 "with the " + succeeded[0] + " reader, " + 
                 (n==1?"an":"") + "other file format "+Plural(n,"reader")+
@@ -841,7 +841,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             // but another one could, then report a warning.
             if (rv != NULL && noncompliantPlugins.size() > 0)
             {
-                int n = noncompliantPlugins.size();
+                int n = (int)noncompliantPlugins.size();
                 string warning = "While we were able to open the file "
                     "with the " + string(info ? info->GetName() : "") + " reader, "+
                     (n==1?"an":"") + "other file format "+Plural(n,"reader")+
@@ -877,14 +877,14 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     // from any NonCompliant exceptions.
     if (rv == NULL && noncompliantPlugins.size() > 0)
     {
-        int nNonCompl = noncompliantPlugins.size();
+        size_t nNonCompl = noncompliantPlugins.size();
         string error;
         if (nNonCompl > 1)
         {
             error += "At least one file format reader claimed this file, "
                      " but could not open it:\n";
         }
-        for (int i=0; i<nNonCompl; i++)
+        for (size_t i=0; i<nNonCompl; i++)
             error += noncompliantErrors[i] + "\n";
         EXCEPTION2(InvalidFilesException,"the file",error);
     }
@@ -1114,7 +1114,7 @@ avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
     {
         visitPath = visitPath.substr(0, sepIndex + 1);
 
-        int s = visitPath.size();
+        size_t s = visitPath.size();
         string curDir("./");
         for(int j = 0; j < listcount; ++j)
         {
@@ -1132,7 +1132,7 @@ avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
                 fileName = fileName.substr(2, fileName.size() - 2);
 
             // Create a new filename that has the path prepended to it.
-            int len = fileName.size() + s + 2;
+            size_t len = fileName.size() + s + 2;
             char *name = new char[len];
             SNPRINTF(name, len, "%s%s", visitPath.c_str(), fileName.c_str());
             delete [] reallist[j];

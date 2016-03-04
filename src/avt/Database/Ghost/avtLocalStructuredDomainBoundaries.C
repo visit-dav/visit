@@ -114,7 +114,7 @@ avtLocalStructuredDomainBoundaryList::avtLocalStructuredDomainBoundaryList
 {
     domainId = lst->domainId;
     memcpy(this->extents,lst->extents,sizeof(int)*6);
-    int nnei = lst->neighbors.size();
+    int nnei = (int)lst->neighbors.size();
     for(int i=0;i<nnei;i++)
     {
         DomainNeighbor *nei = new DomainNeighbor(lst->neighbors[i]);
@@ -322,7 +322,7 @@ avtLocalStructuredDomainBoundaryList::GlobalGenerate
             ndoms = lst->domainId + 1;
         }
 
-        int nnei = lst->neighbors.size();
+        int nnei = (int)lst->neighbors.size();
         for(int j=0; j < nnei; j++)
         {
             DomainNeighbor *n = lst->neighbors[j];
@@ -409,7 +409,7 @@ avtLocalStructuredDomainBoundaryList::GlobalGather
     int num_local_domains = 0;
     int local_msg_size    = 0;
 
-    int nnei = local_lists.size();
+    int nnei = (int)local_lists.size();
 
     for(int i=0; i < nnei; i++)
     {

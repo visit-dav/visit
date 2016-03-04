@@ -798,7 +798,7 @@ void
 avtVariableCache::ClearVariablesWithString(const std::string &str)
 {
     const char *substr = str.c_str();
-    int len = strlen(substr);
+    size_t len = strlen(substr);
     int t1 = visitTimer->StartTimer();
     // clear out objectPointerMap items *before* vtkVars and voidRefVars
     std::vector<vtkObject*> itemsToRemove;
@@ -1607,7 +1607,7 @@ void
 avtVariableCache::OneVar::ClearVariablesWithString(const std::string &str)
 {
     const char *substr = str.c_str();
-    int len = strlen(substr);
+    size_t len = strlen(substr);
     if (strncmp(var, substr, len) == 0)
     {
         for (size_t i = 0 ; i < materials.size() ; i++)
