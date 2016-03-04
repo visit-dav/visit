@@ -520,7 +520,7 @@ avtPlainTextFileFormat::ReadFile()
 
     while (!!in)
     {
-        size_t len = strlen(buff);
+        int len = (int)strlen(buff);
         char *start = buff;
         vector<float> row;
 

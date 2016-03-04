@@ -335,21 +335,19 @@ void
 avtEnSightFileFormat::RegisterVariableList(const char *primVar,
                                            const vector<CharStrRef> &vars2nd)
 {
-    size_t   i, j;
-
     reader->SetReadAllVariables(0);
     reader->GetPointDataArraySelection()->RemoveAllArrays();
     reader->GetCellDataArraySelection()->RemoveAllArrays();
 
     vector<const char *> vars;
     vars.push_back(primVar);
-    for (i = 0 ; i < vars2nd.size() ; i++)
+    for (size_t i = 0 ; i < vars2nd.size() ; i++)
         vars.push_back(*(vars2nd[i]));
 
     if (matnames.size() > 0)
     {
         size_t numRealMats = matnames.size()-1;
-        for (i = 0 ; i < numRealMats ; i++)
+        for (size_t i = 0 ; i < numRealMats ; i++)
         {
             vars.push_back(matnames[i].c_str());
         }
@@ -358,7 +356,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
     //
     // Loop through all of the variables and add the ones we are interested in.
     //
-    for (j = 0 ; j < vars.size() ; j++)
+    for (size_t j = 0 ; j < vars.size() ; j++)
     {
         if (strcmp(vars[j], "mesh") == 0)
             continue;
@@ -374,7 +372,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         if (!foundVar)
         {
             int nsn = reader->GetNumberOfScalarsPerNode();
-            for (i = 0 ; i < nsn ; i++)
+            for (int i = 0 ; i < nsn ; i++)
             {
                 const char *desc = reader->GetDescription(i,
                                        vtkEnSightReader::SCALAR_PER_NODE);
@@ -389,7 +387,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         if (!foundVar)
         {
             int nsz = reader->GetNumberOfScalarsPerElement();
-            for (i = 0 ; i < nsz ; i++)
+            for (int i = 0 ; i < nsz ; i++)
             {
                 const char *desc = reader->GetDescription(i,
                                     vtkEnSightReader::SCALAR_PER_ELEMENT);
@@ -404,7 +402,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         if (!foundVar)
         {
             int nsn = reader->GetNumberOfVectorsPerNode();
-            for (i = 0 ; i < nsn ; i++)
+            for (int i = 0 ; i < nsn ; i++)
             {
                 const char *desc = reader->GetDescription(i,
                                        vtkEnSightReader::VECTOR_PER_NODE);
@@ -419,7 +417,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
         if (!foundVar)
         {
             int nsz = reader->GetNumberOfVectorsPerElement();
-            for (i = 0 ; i < nsz ; i++)
+            for (int i = 0 ; i < nsz ; i++)
             {
                 const char *desc = reader->GetDescription(i,
                                     vtkEnSightReader::VECTOR_PER_ELEMENT);
@@ -845,14 +843,13 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) != 0)
         return NULL;
 
-    int i;
     int nMaterials = (int)matnames.size();
 
     // Get the material fractions
     std::vector<float *> mats(nMaterials);
     std::vector<vtkFloatArray *> deleteList;
     vtkIdType nCells = 0;
-    for (i = 0; i < nMaterials-1; i++)
+    for (int i = 0; i < nMaterials-1; i++)
     {
         vtkDataArray *arr = GetVar(ts, domain, matnames[i].c_str());
         if (arr == NULL)
@@ -942,7 +939,7 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
     df = avtMaterial::Destruct;
 
     delete [] addMatPtr;
-    for (i = 0 ; i < deleteList.size() ; i++)
+    for (size_t i = 0 ; i < deleteList.size() ; i++)
         deleteList[i]->Delete();
 
     return (void*) mat;

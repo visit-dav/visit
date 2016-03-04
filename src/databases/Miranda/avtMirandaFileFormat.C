@@ -2153,7 +2153,7 @@ avtMirandaFileFormat::ReadRawScalar(FILE *fd, int iComp, float *out, const char 
       EXCEPTION1(InvalidFilesException, filename);
     
     float *f = out;
-    for (ii = 0 ; ii < (size_t)nPoints ; ii++, f++) {
+    for (ii = 0 ; ii < nPoints ; ii++, f++) {
       ByteSwap32(f);
     }
   }
