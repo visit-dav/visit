@@ -64,13 +64,13 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     private static int IntegralCurveAttributes_numAdditionalAtts = 69;
 
     // Enum values
-    public final static int SOURCETYPE_POINT = 0;
+    public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
     public final static int SOURCETYPE_POINTLIST = 1;
-    public final static int SOURCETYPE_LINE_ = 2;
+    public final static int SOURCETYPE_SPECIFIEDLINE = 2;
     public final static int SOURCETYPE_CIRCLE = 3;
-    public final static int SOURCETYPE_PLANE = 4;
-    public final static int SOURCETYPE_SPHERE = 5;
-    public final static int SOURCETYPE_BOX = 6;
+    public final static int SOURCETYPE_SPECIFIEDPLANE = 4;
+    public final static int SOURCETYPE_SPECIFIEDSPHERE = 5;
+    public final static int SOURCETYPE_SPECIFIEDBOX = 6;
     public final static int SOURCETYPE_SELECTION = 7;
     public final static int SOURCETYPE_FIELDDATA = 8;
 
@@ -132,7 +132,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     {
         super(IntegralCurveAttributes_numAdditionalAtts);
 
-        sourceType = SOURCETYPE_POINT;
+        sourceType = SOURCETYPE_SPECIFIEDPOINT;
         pointSource = new double[3];
         pointSource[0] = 0;
         pointSource[1] = 0;
@@ -205,7 +205,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         velocitySource[0] = 0;
         velocitySource[1] = 0;
         velocitySource[2] = 0;
-        integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
+        integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
         parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
         maxProcessCount = 10;
         maxDomainCacheSize = 3;
@@ -246,7 +246,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     {
         super(IntegralCurveAttributes_numAdditionalAtts + nMoreFields);
 
-        sourceType = SOURCETYPE_POINT;
+        sourceType = SOURCETYPE_SPECIFIEDPOINT;
         pointSource = new double[3];
         pointSource[0] = 0;
         pointSource[1] = 0;
@@ -319,7 +319,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         velocitySource[0] = 0;
         velocitySource[1] = 0;
         velocitySource[2] = 0;
-        integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
+        integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
         parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
         maxProcessCount = 10;
         maxDomainCacheSize = 3;
@@ -1562,20 +1562,20 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     {
         String str = new String();
         str = str + indent + "sourceType = ";
-        if(sourceType == SOURCETYPE_POINT)
-            str = str + "SOURCETYPE_POINT";
+        if(sourceType == SOURCETYPE_SPECIFIEDPOINT)
+            str = str + "SOURCETYPE_SPECIFIEDPOINT";
         if(sourceType == SOURCETYPE_POINTLIST)
             str = str + "SOURCETYPE_POINTLIST";
-        if(sourceType == SOURCETYPE_LINE_)
-            str = str + "SOURCETYPE_LINE_";
+        if(sourceType == SOURCETYPE_SPECIFIEDLINE)
+            str = str + "SOURCETYPE_SPECIFIEDLINE";
         if(sourceType == SOURCETYPE_CIRCLE)
             str = str + "SOURCETYPE_CIRCLE";
-        if(sourceType == SOURCETYPE_PLANE)
-            str = str + "SOURCETYPE_PLANE";
-        if(sourceType == SOURCETYPE_SPHERE)
-            str = str + "SOURCETYPE_SPHERE";
-        if(sourceType == SOURCETYPE_BOX)
-            str = str + "SOURCETYPE_BOX";
+        if(sourceType == SOURCETYPE_SPECIFIEDPLANE)
+            str = str + "SOURCETYPE_SPECIFIEDPLANE";
+        if(sourceType == SOURCETYPE_SPECIFIEDSPHERE)
+            str = str + "SOURCETYPE_SPECIFIEDSPHERE";
+        if(sourceType == SOURCETYPE_SPECIFIEDBOX)
+            str = str + "SOURCETYPE_SPECIFIEDBOX";
         if(sourceType == SOURCETYPE_SELECTION)
             str = str + "SOURCETYPE_SELECTION";
         if(sourceType == SOURCETYPE_FIELDDATA)

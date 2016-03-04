@@ -113,8 +113,8 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
       return "Performing Integral Curve"; };
 
     //turn off on demand processing, I cannot handle this functionality yet..
-    virtual bool OperatingOnDemand(void) const { return false; }
-    virtual bool CheckOnDemandViability(void) { return false; }
+    // virtual bool OperatingOnDemand(void) const { return false; }
+    // virtual bool CheckOnDemandViability(void) { return false; }
 
     virtual void         SetAtts(const AttributeGroup*);
     virtual bool         Equivalent(const AttributeGroup*);

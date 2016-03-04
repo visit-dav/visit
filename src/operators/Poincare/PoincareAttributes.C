@@ -47,20 +47,21 @@
 //
 
 static const char *SourceType_strings[] = {
-"SpecifiedPoint", "SpecifiedLine"};
+"SpecifiedPoint", "PointList", "SpecifiedLine"
+};
 
 std::string
 PoincareAttributes::SourceType_ToString(PoincareAttributes::SourceType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return SourceType_strings[index];
 }
 
 std::string
 PoincareAttributes::SourceType_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return SourceType_strings[index];
 }
 
@@ -68,7 +69,7 @@ bool
 PoincareAttributes::SourceType_FromString(const std::string &s, PoincareAttributes::SourceType &val)
 {
     val = PoincareAttributes::SpecifiedPoint;
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if(s == SourceType_strings[i])
         {
@@ -678,6 +679,15 @@ void PoincareAttributes::Init()
     pointSource[0] = 0;
     pointSource[1] = 0;
     pointSource[2] = 0;
+    pointList.push_back(0);
+    pointList.push_back(0);
+    pointList.push_back(0);
+    pointList.push_back(1);
+    pointList.push_back(0);
+    pointList.push_back(0);
+    pointList.push_back(0);
+    pointList.push_back(1);
+    pointList.push_back(0);
     lineStart[0] = 0;
     lineStart[1] = 0;
     lineStart[2] = 0;
@@ -783,6 +793,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     pointSource[1] = obj.pointSource[1];
     pointSource[2] = obj.pointSource[2];
 
+    pointList = obj.pointList;
     lineStart[0] = obj.lineStart[0];
     lineStart[1] = obj.lineStart[1];
     lineStart[2] = obj.lineStart[2];
@@ -1048,6 +1059,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (puncturePlane == obj.puncturePlane) &&
             (sourceType == obj.sourceType) &&
             pointSource_equal &&
+            (pointList == obj.pointList) &&
             lineStart_equal &&
             lineEnd_equal &&
             (pointDensity == obj.pointDensity) &&
@@ -1293,6 +1305,7 @@ PoincareAttributes::SelectAll()
     Select(ID_puncturePlane,                     (void *)&puncturePlane);
     Select(ID_sourceType,                        (void *)&sourceType);
     Select(ID_pointSource,                       (void *)pointSource, 3);
+    Select(ID_pointList,                         (void *)&pointList);
     Select(ID_lineStart,                         (void *)lineStart, 3);
     Select(ID_lineEnd,                           (void *)lineEnd, 3);
     Select(ID_pointDensity,                      (void *)&pointDensity);
@@ -1460,6 +1473,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("pointSource", pointSource, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pointList, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pointList", pointList));
     }
 
     if(completeSave || !FieldsEqual(ID_lineStart, &defaultObject))
@@ -1958,7 +1977,7 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetSourceType(SourceType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1970,6 +1989,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("pointSource")) != 0)
         SetPointSource(node->AsDoubleArray());
+    if((node = searchNode->GetNode("pointList")) != 0)
+        SetPointList(node->AsDoubleVector());
     if((node = searchNode->GetNode("lineStart")) != 0)
         SetLineStart(node->AsDoubleArray());
     if((node = searchNode->GetNode("lineEnd")) != 0)
@@ -2344,6 +2365,13 @@ PoincareAttributes::SetPointSource(const double *pointSource_)
     pointSource[1] = pointSource_[1];
     pointSource[2] = pointSource_[2];
     Select(ID_pointSource, (void *)pointSource, 3);
+}
+
+void
+PoincareAttributes::SetPointList(const doubleVector &pointList_)
+{
+    pointList = pointList_;
+    Select(ID_pointList, (void *)&pointList);
 }
 
 void
@@ -2889,6 +2917,18 @@ PoincareAttributes::GetPointSource()
     return pointSource;
 }
 
+const doubleVector &
+PoincareAttributes::GetPointList() const
+{
+    return pointList;
+}
+
+doubleVector &
+PoincareAttributes::GetPointList()
+{
+    return pointList;
+}
+
 const double *
 PoincareAttributes::GetLineStart() const
 {
@@ -3326,6 +3366,12 @@ PoincareAttributes::SelectPointSource()
 }
 
 void
+PoincareAttributes::SelectPointList()
+{
+    Select(ID_pointList, (void *)&pointList);
+}
+
+void
 PoincareAttributes::SelectLineStart()
 {
     Select(ID_lineStart, (void *)lineStart, 3);
@@ -3397,6 +3443,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_puncturePlane:                     return "puncturePlane";
     case ID_sourceType:                        return "sourceType";
     case ID_pointSource:                       return "pointSource";
+    case ID_pointList:                         return "pointList";
     case ID_lineStart:                         return "lineStart";
     case ID_lineEnd:                           return "lineEnd";
     case ID_pointDensity:                      return "pointDensity";
@@ -3498,6 +3545,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_puncturePlane:                     return FieldType_enum;
     case ID_sourceType:                        return FieldType_enum;
     case ID_pointSource:                       return FieldType_doubleArray;
+    case ID_pointList:                         return FieldType_doubleVector;
     case ID_lineStart:                         return FieldType_doubleArray;
     case ID_lineEnd:                           return FieldType_doubleArray;
     case ID_pointDensity:                      return FieldType_int;
@@ -3599,6 +3647,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_puncturePlane:                     return "enum";
     case ID_sourceType:                        return "enum";
     case ID_pointSource:                       return "doubleArray";
+    case ID_pointList:                         return "doubleVector";
     case ID_lineStart:                         return "doubleArray";
     case ID_lineEnd:                           return "doubleArray";
     case ID_pointDensity:                      return "int";
@@ -3753,6 +3802,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             pointSource_equal = (pointSource[i] == obj.pointSource[i]);
 
         retval = pointSource_equal;
+        }
+        break;
+    case ID_pointList:
+        {  // new scope
+        retval = (pointList == obj.pointList);
         }
         break;
     case ID_lineStart:
@@ -4149,6 +4203,18 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
     bool sourcePointsDiffer = ((sourceType == SpecifiedPoint) &&
                                POINT_DIFFERS(pointSource, obj.pointSource));
 
+    bool sourcePointListDiffer = false;
+
+    if (sourceType == PointList)
+    {
+        if (pointList.size() != obj.pointList.size())
+            sourcePointListDiffer = true;
+        else
+            for (size_t i = 0 ; i < pointList.size() ; i++)
+                if (pointList[i] != obj.pointList[i])
+                    sourcePointListDiffer = true;
+    }
+
     // If we're in line source mode and the line differs, sourceLineDiffers
     // evaluates to true.
     bool sourceLineDiffers = ((sourceType == SpecifiedLine) &&
@@ -4162,6 +4228,7 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
 
     return (sourceType != obj.sourceType ||
             sourcePointsDiffer ||
+            sourcePointListDiffer ||
             sourceLineDiffers ||
 
             (fieldType == FlashField &&
