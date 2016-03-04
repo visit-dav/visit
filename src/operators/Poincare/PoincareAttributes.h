@@ -64,6 +64,7 @@ public:
     enum SourceType
     {
         SpecifiedPoint,
+        PointList,
         SpecifiedLine
     };
     enum FieldType
@@ -200,6 +201,7 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectPointSource();
+    void SelectPointList();
     void SelectLineStart();
     void SelectLineEnd();
     void SelectVelocitySource();
@@ -220,6 +222,7 @@ public:
     void SetPuncturePlane(PuncturePlaneType puncturePlane_);
     void SetSourceType(SourceType sourceType_);
     void SetPointSource(const double *pointSource_);
+    void SetPointList(const doubleVector &pointList_);
     void SetLineStart(const double *lineStart_);
     void SetLineEnd(const double *lineEnd_);
     void SetPointDensity(int pointDensity_);
@@ -300,6 +303,8 @@ public:
     SourceType           GetSourceType() const;
     const double         *GetPointSource() const;
           double         *GetPointSource();
+    const doubleVector   &GetPointList() const;
+          doubleVector   &GetPointList();
     const double         *GetLineStart() const;
           double         *GetLineStart();
     const double         *GetLineEnd() const;
@@ -483,6 +488,7 @@ public:
         ID_puncturePlane,
         ID_sourceType,
         ID_pointSource,
+        ID_pointList,
         ID_lineStart,
         ID_lineEnd,
         ID_pointDensity,
@@ -564,6 +570,7 @@ private:
     int            puncturePlane;
     int            sourceType;
     double         pointSource[3];
+    doubleVector   pointList;
     double         lineStart[3];
     double         lineEnd[3];
     int            pointDensity;
@@ -634,6 +641,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiibddiiDDDiibdDiidbddiddiiiiddiiiidddbbiasibibibibisbbbbbbbiiiibbddibbbbd"
+#define POINCAREATTRIBUTES_TMFS "idiiiibddiiDd*DDiibdDiidbddiddiiiiddiiiidddbbiasibibibibisbbbbbbbiiiibbddibbbbd"
 
 #endif

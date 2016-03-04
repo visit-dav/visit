@@ -40,8 +40,8 @@
 //                          avtPoincareFilter.h                              //
 // ************************************************************************* //
 
-#ifndef AVT_Poincare_FILTER_H
-#define AVT_Poincare_FILTER_H
+#ifndef AVT_POINCARE_FILTER_H
+#define AVT_POINCARE_FILTER_H
 
 /** header file for plugin development */
 #include <avtPluginFilter.h>
@@ -85,6 +85,7 @@ class avtPoincareFilter : public virtual avtPluginFilter,
       return "Performing Poincare"; };
 
     void SetPointSource(const double *p);
+    void SetPointListSource(const std::vector<double> &ptList);
     void SetLineSource(const double *p0, const double *p1,
                        int den, bool rand, int seed, int numPts);
 
@@ -178,6 +179,7 @@ class avtPoincareFilter : public virtual avtPluginFilter,
     virtual std::vector<avtVector> GetInitialVelocities();
 
     void GenerateSeedPointsFromPoint(std::vector<avtVector> &pts);
+    void GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
     void GenerateSeedPointsFromLine(std::vector<avtVector> &pts);
 
     void CreateIntegralCurveOutput(std::vector<avtIntegralCurve*,
@@ -262,7 +264,7 @@ class avtPoincareFilter : public virtual avtPluginFilter,
     double   maxTime;
 
     // Various starting locations for streamlines.
-    avtVector points[2];
+    std::vector< avtVector > points;
     int       numSamplePoints;
     int       sampleDensity[3];
     bool      randomSamples;

@@ -70,6 +70,7 @@
 std::string avtIntegralCurveFilter::colorVarArrayName = "colorVar";
 std::string avtIntegralCurveFilter::thetaArrayName = "theta";
 std::string avtIntegralCurveFilter::tangentsArrayName = "tangents";
+std::string avtIntegralCurveFilter::normalsArrayName = "normals";
 
 
 // ****************************************************************************
@@ -216,7 +217,7 @@ avtIntegralCurveFilter::avtIntegralCurveFilter() : seedVelocity(0,0,0),
     //
     // Initialize source values.
     //
-    sourceType = IntegralCurveAttributes::Point;
+    sourceType = IntegralCurveAttributes::SpecifiedPoint;
     sampleDensity[0] = sampleDensity[1] = sampleDensity[2] = 0;
     sampleDistance[0] = sampleDistance[1] = sampleDistance[2] = 0.0;
     numSamplePoints = 0;
@@ -323,29 +324,26 @@ avtIntegralCurveFilter::ExamineContract(avtContract_p in_contract)
 
     std::string key( "PseudocolorAttributes::lineType" );
     std::string lineTypeString("");
-    std::string varyTubeRadiusVariable("");
+    std::string tubeRadiusVar("");
 
     if( in_contract->GetAttribute( key ) )
       lineTypeString = in_contract->GetAttribute( key )->AsString();
     else
       lineTypeString = std::string("");
 
-    if( lineTypeString == "Tube" )
+    if( lineTypeString == "Tube" || lineTypeString == "Ribbon" )
     {
+      if( lineTypeString == "Tube" )
         displayGeometry = IntegralCurveAttributes::Tubes;
-
-        key = std::string( "PseudocolorAttributes::varyTubeRadiusVariable" );
-
-        if( in_contract->GetAttribute( key ) )
-          varyTubeRadiusVariable = in_contract->GetAttribute( key )->AsString();
-        else
-          varyTubeRadiusVariable = std::string("");
-
-    }
-
-    else if( lineTypeString == "Ribbon" )
-    {
+      else if( lineTypeString == "Ribbon" )
         displayGeometry = IntegralCurveAttributes::Ribbons;
+      
+      key = std::string( "PseudocolorAttributes::tubeRadiusVar" );
+      
+      if( in_contract->GetAttribute( key ) )
+        tubeRadiusVar = in_contract->GetAttribute( key )->AsString();
+      else
+        tubeRadiusVar = std::string("");
     }
 
     // Data from all secondary variables need to be added in.
@@ -358,8 +356,8 @@ avtIntegralCurveFilter::ExamineContract(avtContract_p in_contract)
     {
       secondaryVariables[i] = std::string( *(secondaryVars[i]) );
 
-      if( ! varyTubeRadiusVariable.empty() &&
-          varyTubeRadiusVariable == secondaryVariables[i] )
+      if( ! tubeRadiusVar.empty() &&
+          tubeRadiusVar == secondaryVariables[i] )
       {
         tubeVariableIndex = i;
       }
@@ -504,9 +502,8 @@ avtIntegralCurveFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 
-    // ARS - FIXME  - FIXME  - FIXME 
-    // if(displayGeometry == IntegralCurveAttributes::Lines)
-    //     GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
+    if(displayGeometry == IntegralCurveAttributes::Lines)
+      GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
 
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();
@@ -575,19 +572,19 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
     //
     switch (atts.GetSourceType())
     {
-      case IntegralCurveAttributes::Point:
+      case IntegralCurveAttributes::SpecifiedPoint:
         SetPointSource(atts.GetPointSource());
         break;
       case IntegralCurveAttributes::PointList:
         SetPointListSource(atts.GetPointList());
         break;
 
-      case IntegralCurveAttributes::Line_:
+      case IntegralCurveAttributes::SpecifiedLine:
         SetLineSource(atts.GetLineStart(), atts.GetLineEnd(),
                       atts.GetSampleDensity0(), atts.GetRandomSamples(),
                       atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
         break;
-      case IntegralCurveAttributes::Plane:
+      case IntegralCurveAttributes::SpecifiedPlane:
         SetPlaneSource(atts.GetPlaneOrigin(), atts.GetPlaneNormal(),
                        atts.GetPlaneUpAxis(), atts.GetSampleDensity0(),
                        atts.GetSampleDensity1(), atts.GetSampleDistance0(),
@@ -603,7 +600,7 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
                         atts.GetFillInterior(), atts.GetRandomSamples(),
                         atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
         break;
-      case IntegralCurveAttributes::Sphere:
+      case IntegralCurveAttributes::SpecifiedSphere:
         SetSphereSource(atts.GetSphereOrigin(), atts.GetRadius(),
                         atts.GetSampleDensity0(), atts.GetSampleDensity1(),
                         atts.GetSampleDensity2(), atts.GetFillInterior(),
@@ -611,7 +608,7 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
                         atts.GetNumberOfRandomSamples());
         break;
 
-      case IntegralCurveAttributes::Box:
+      case IntegralCurveAttributes::SpecifiedBox:
         SetBoxSource(atts.GetBoxExtents(),atts.GetUseWholeBox(),
                      atts.GetSampleDensity0(), atts.GetSampleDensity1(),
                      atts.GetSampleDensity2(), atts.GetFillInterior(),
@@ -825,7 +822,7 @@ avtPICSFilter::CommunicationPattern
 avtIntegralCurveFilter::GetCommunicationPattern()
 {
   // ARS - FIXME  - FIXME  - FIXME  - FIXME  - FIXME 
-    // if (! scaleTubeRadiusVariable.empty())
+    // if (!tubeRadiusVar.empty())
     //     return avtPICSFilter::ReturnToOriginatingProcessor;
     
     return avtPICSFilter::RestoreSequenceAssembleUniformly;
@@ -896,6 +893,9 @@ avtIntegralCurveFilter::GenerateAttributeFields() const
             break;
         }
     }
+
+    if( displayGeometry == IntegralCurveAttributes::Ribbons )
+        attr |= avtStateRecorderIntegralCurve::SAMPLE_VORTICITY;
 
     return attr;
 }
@@ -1130,7 +1130,7 @@ avtIntegralCurveFilter::SetVelocitySource(const double *p)
 void
 avtIntegralCurveFilter::SetPointSource(const double *p)
 {
-    sourceType = IntegralCurveAttributes::Point;
+    sourceType = IntegralCurveAttributes::SpecifiedPoint;
     points[0].set(p);
 }
 
@@ -1159,7 +1159,7 @@ void
 avtIntegralCurveFilter::SetLineSource(const double *p0, const double *p1,
                                       int den, bool rand, int seed, int numPts)
 {
-    sourceType = IntegralCurveAttributes::Line_;
+    sourceType = IntegralCurveAttributes::SpecifiedLine;
     points[0].set(p0);
     points[1].set(p1);
     
@@ -1201,7 +1201,7 @@ avtIntegralCurveFilter::SetPlaneSource(double O[3], double N[3], double U[3],
                                        bool f, 
                                        bool rand, int seed, int numPts)
 {
-    sourceType = IntegralCurveAttributes::Plane;
+    sourceType = IntegralCurveAttributes::SpecifiedPlane;
     points[0].set(O);
     vectors[0].set(N);
     vectors[1].set(U);
@@ -1288,7 +1288,7 @@ avtIntegralCurveFilter::SetSphereSource(double O[3], double R,
                                      int den1, int den2, int den3,
                                      bool f, bool rand, int seed, int numPts)
 {
-    sourceType = IntegralCurveAttributes::Sphere;
+    sourceType = IntegralCurveAttributes::SpecifiedSphere;
     points[0].set(O);
     sampleDistance[0] = R;
     sampleDistance[1] = 0.0;
@@ -1328,7 +1328,7 @@ avtIntegralCurveFilter::SetBoxSource(double E[6], bool wholeBox,
                                   int den1, int den2, int den3,
                                   bool f, bool rand, int seed, int numPts)
 {
-    sourceType = IntegralCurveAttributes::Box;
+    sourceType = IntegralCurveAttributes::SpecifiedBox;
     points[0].set(E[0], E[2], E[4]);
     points[1].set(E[1], E[3], E[5]);
 
@@ -1445,23 +1445,23 @@ std::string
 avtIntegralCurveFilter::SeedInfoString() const
 {
     char buff[256];
-    if (sourceType == IntegralCurveAttributes::Point)
+    if (sourceType == IntegralCurveAttributes::SpecifiedPoint)
         sprintf(buff, "Point [%g %g %g]", 
                 points[0].x, points[0].y, points[0].z);
-    else if (sourceType == IntegralCurveAttributes::Line_)
+    else if (sourceType == IntegralCurveAttributes::SpecifiedLine)
         sprintf(buff, "Line [%g %g %g] [%g %g %g] D: %d",
                 points[0].x, points[0].y, points[0].z,
                 points[1].x, points[1].y, points[1].z, sampleDensity[0]);
-    else if (sourceType == IntegralCurveAttributes::Plane)
+    else if (sourceType == IntegralCurveAttributes::SpecifiedPlane)
         sprintf(buff, "Plane O[%g %g %g] N[%g %g %g] D: %d %d",
                 points[0].x, points[0].y, points[0].z,
                 vectors[0].x, vectors[0].y, vectors[0].z,
                 sampleDensity[0], sampleDensity[1]);
-    else if (sourceType == IntegralCurveAttributes::Sphere)
+    else if (sourceType == IntegralCurveAttributes::SpecifiedSphere)
         sprintf(buff, "Sphere [%g %g %g] %g D: %d %d",
                 points[0].x, points[0].y, points[0].z, sampleDistance[0],
                 sampleDensity[0], sampleDensity[1]);
-    else if (sourceType == IntegralCurveAttributes::Box)
+    else if (sourceType == IntegralCurveAttributes::SpecifiedBox)
         sprintf(buff, "Box [%g %g] [%g %g] [%g %g] D: %d %d %d",
                 points[0].x, points[1].x,
                 points[0].y, points[1].y,
@@ -1535,15 +1535,15 @@ avtIntegralCurveFilter::GetInitialLocations(void)
         srand(randomSeed);
 
     // Add seed points based on the source.
-    if(sourceType == IntegralCurveAttributes::Point)
+    if(sourceType == IntegralCurveAttributes::SpecifiedPoint)
         GenerateSeedPointsFromPoint(seedPts);
-    else if(sourceType == IntegralCurveAttributes::Line_)
+    else if(sourceType == IntegralCurveAttributes::SpecifiedLine)
         GenerateSeedPointsFromLine(seedPts);
-    else if(sourceType == IntegralCurveAttributes::Plane)
+    else if(sourceType == IntegralCurveAttributes::SpecifiedPlane)
         GenerateSeedPointsFromPlane(seedPts);
-    else if(sourceType == IntegralCurveAttributes::Sphere)
+    else if(sourceType == IntegralCurveAttributes::SpecifiedSphere)
         GenerateSeedPointsFromSphere(seedPts);
-    else if(sourceType == IntegralCurveAttributes::Box)
+    else if(sourceType == IntegralCurveAttributes::SpecifiedBox)
         GenerateSeedPointsFromBox(seedPts);
     else if(sourceType == IntegralCurveAttributes::Circle)
         GenerateSeedPointsFromCircle(seedPts);
@@ -2648,6 +2648,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     vtkDoubleArray *scalars  = vtkDoubleArray::New();
     vtkDoubleArray *tangents = vtkDoubleArray::New();
     vtkDoubleArray *thetas   = NULL;
+    vtkDoubleArray *normals = NULL;
 
     std::vector< vtkDoubleArray * > secondarys;
     secondarys.resize(secondaryVariables.size());
@@ -2669,12 +2670,18 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     pd->GetPointData()->AddArray(tangents);
 
     // theta scalars
-    if(displayGeometry == IntegralCurveAttributes::Ribbons)
+    if( displayGeometry == IntegralCurveAttributes::Ribbons )
     {
         thetas = vtkDoubleArray::New();
         thetas->Allocate(numPts);
         thetas->SetName(thetaArrayName.c_str());
-        pd->GetPointData()->AddArray(thetas);
+        // pd->GetPointData()->AddArray(thetas);
+
+        normals = vtkDoubleArray::New();
+        normals->SetNumberOfComponents(3);
+        normals->SetNumberOfTuples(numPts);
+        normals->SetName(normalsArrayName.c_str());
+        pd->GetPointData()->SetNormals(normals);
     }
 
     // secondary scalars
@@ -2833,7 +2840,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         vtkPolyLine *line = vtkPolyLine::New();
         line->GetPointIds()->SetNumberOfIds(totalSamples);
 
-        float theta = 0.0, lastTime = 0.0;
+        double theta = 0.0, lastTime = 0.0;
 
         avtStateRecorderIntegralCurve::Sample s, s0 = ic->GetSample(0);
 
@@ -2878,7 +2885,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             points->InsertPoint(pIdx,
                                 s.position.x, s.position.y, s.position.z);
 
-            float speed = s.velocity.length();
+            double speed = s.velocity.length();
 
             if (speed > 0)
                 s.velocity *= 1.0f/speed;
@@ -2937,7 +2944,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             // theta scalars
             if(displayGeometry == IntegralCurveAttributes::Ribbons)
             {
-                float scaledVort = s.vorticity * (lastTime-s.time);
+                double scaledVort = s.vorticity * (lastTime-s.time);
                 theta += scaledVort;
                 thetas->InsertTuple1(pIdx, theta);
                 lastTime = s.time;
@@ -3039,13 +3046,58 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         lines->InsertNextCell(line);
         line->Delete();
     }
-    
+
+    if(displayGeometry == IntegralCurveAttributes::Ribbons)
+    {
+      vtkPolyLine::GenerateSlidingNormals(points, lines, normals);
+
+      // Now, rotate the normals according to the vorticity..
+      // double normal[3], local1[3], local2[3],length,costheta,
+      // sintheta;
+      double theta, normal[3], tan[3], biNormal[3], p0[3], p1[3];
+      
+      numPts = pd->GetPointData()->GetNumberOfTuples();
+      
+      for( int i=0; i<numPts; ++i)
+      {
+        thetas->GetTuple(i, &theta);    
+        points->GetPoint(i, p0);
+        
+        if (i < numPts-1)
+        {
+          points->GetPoint(i+1, p1);
+        }
+        else
+        {
+          points->GetPoint(i-1, p0);
+          points->GetPoint(i, p1);
+        }
+
+        for( int j=0; j<3; ++j )
+          tan[j] = p1[j]-p0[j];
+        
+        normals->GetTuple(i, normal);
+        vtkMath::Normalize(tan);
+        vtkMath::Normalize(normal);
+        
+        vtkMath::Cross(normal, tan, biNormal);
+        double cosTheta = cos(theta);
+        double sinTheta = sin(theta);
+
+        for( int j=0; j<3; ++j )
+          normal[j] = cosTheta*normal[j] + sinTheta*biNormal[j];
+        
+        normals->SetTuple(i,normal);
+      }
+      
+      thetas->Delete();
+      normals->Delete();
+    }
+
     points->Delete();
     lines->Delete();
     scalars->Delete();
     tangents->Delete();
-    if(displayGeometry == IntegralCurveAttributes::Ribbons)
-        thetas->Delete();
 
     for( unsigned int i=0; i<secondaryVariables.size(); ++i )
          secondarys[i]->Delete();

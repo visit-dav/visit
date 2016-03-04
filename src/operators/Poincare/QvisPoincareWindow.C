@@ -59,6 +59,7 @@
 #include <QvisPointControl.h>
 #include <QPushButton>
 #include <QFileDialog>
+#include <QListWidget>
 
 #include <stdio.h>
 #include <string>
@@ -205,12 +206,13 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
     sourceTypeCombo = new QComboBox(sourceGroup);
     sourceTypeCombo->addItem(tr("Point"));
+    sourceTypeCombo->addItem(tr("PointList"));
     sourceTypeCombo->addItem(tr("Line"));
     connect(sourceTypeCombo, SIGNAL(activated(int)),
            this, SLOT(sourceTypeChanged(int)));
     sourceLayout->addWidget(sourceTypeCombo, 0, 1);
 
-
+    // Point Source
     pointSourceLabel = new QLabel(tr("Location"), sourceGroup);
     sourceLayout->addWidget(pointSourceLabel, 0, 2);
     pointSource = new QLineEdit(sourceGroup);
@@ -218,8 +220,30 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
             this, SLOT(pointSourceProcessText()));
     sourceLayout->addWidget(pointSource, 0, 3);
 
+    // Point list.
+    pointList = new QListWidget(sourceGroup);
+    sourceLayout->addWidget(pointList, 0, 3, 4, 1);
+    connect(pointList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(pointListDoubleClicked(QListWidgetItem*)));
+    connect(pointList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(pointListClicked(QListWidgetItem*)));
+    connect(pointList, SIGNAL(currentTextChanged(const QString&)), this, SLOT(textChanged(QString)));
+
+    pointListAddPoint     = new QPushButton(tr("Add Point"), sourceGroup);
+    pointListDelPoint     = new QPushButton(tr("Delete Point"), sourceGroup);
+    pointListDelAllPoints = new QPushButton(tr("Delete All Points"), sourceGroup );
+    pointListReadPoints   = new QPushButton(tr("Read Text File"), sourceGroup);
+
+    sourceLayout->addWidget(pointListAddPoint,     0, 2);
+    sourceLayout->addWidget(pointListDelPoint,     1, 2);
+    sourceLayout->addWidget(pointListDelAllPoints, 2, 2);
+    sourceLayout->addWidget(pointListReadPoints,   3, 2);
+
+    connect(pointListAddPoint, SIGNAL(clicked()), this, SLOT(addPoint()));
+    connect(pointListDelPoint, SIGNAL(clicked()), this, SLOT(deletePoint()));
+    connect(pointListDelAllPoints, SIGNAL(clicked()), this, SLOT(deletePoints()));
+    connect(pointListReadPoints, SIGNAL(clicked()), this, SLOT(readPoints()));
 
 
+    // Line Source
     lineStartLabel = new QLabel(tr("Start Point"), sourceGroup);
     sourceLayout->addWidget(lineStartLabel, 0, 2);
     lineStart = new QLineEdit(sourceGroup);
@@ -1156,6 +1180,35 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
                 pointSource->hide();
                 pointSourceLabel->hide();
             }
+            if (atts->GetSourceType() == PoincareAttributes::PointList)
+            {
+                pointList->setEnabled(true);
+                pointListDelPoint->setEnabled(true);
+                pointListDelAllPoints->setEnabled(true);
+                pointListAddPoint->setEnabled(true);
+                pointListReadPoints->setEnabled(true);
+
+                pointList->show();
+                pointListDelPoint->show();
+                pointListDelAllPoints->show();
+                pointListAddPoint->show();
+                pointListReadPoints->show();
+            }
+            else
+            {
+                pointList->setEnabled(false);
+                pointListDelPoint->setEnabled(false);
+                pointListDelAllPoints->setEnabled(false);
+                pointListAddPoint->setEnabled(false);
+                pointListReadPoints->setEnabled(false);
+
+                pointList->hide();
+                pointListDelPoint->hide();
+                pointListDelAllPoints->hide();
+                pointListAddPoint->hide();
+                pointListReadPoints->hide();
+            }
+
             if (atts->GetSourceType() == PoincareAttributes::SpecifiedLine)
             {
                 lineStart->setEnabled(true);
@@ -1207,6 +1260,24 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
           case PoincareAttributes::ID_pointSource:
             pointSource->setText(DoublesToQString(atts->GetPointSource(), 3));
             break;
+          case PoincareAttributes::ID_pointList:
+          {
+              std::vector<double> points = atts->GetPointList();
+
+              pointList->clear();
+              for (size_t i = 0; i < points.size(); i+= 3)
+              {
+                  char tmp[256];
+                  sprintf(tmp, "%lf %lf %lf",
+                          points[i], points[i+1], points[i+2]);
+                  QString str = tmp;
+                  QListWidgetItem *item = new QListWidgetItem(str, pointList);
+                  item->setFlags(item->flags() | Qt::ItemIsEditable);
+                  pointList->setCurrentItem(item);
+              }
+              
+              break;
+          }
           case PoincareAttributes::ID_lineStart:
             lineStart->setText(DoublesToQString(atts->GetLineStart(), 3));
             break;
@@ -1603,6 +1674,26 @@ QvisPoincareWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do pointList
+    if(which_widget == PoincareAttributes::ID_pointList || doAll)
+    {
+        std::vector<double> points;
+        double x,y,z;
+        for (int i = 0; i < pointList->count(); i++)
+        {
+            QListWidgetItem *item = pointList->item(i);
+            if (item)
+            {
+                std::string str = item->text().toLatin1().data();
+                sscanf(str.c_str(), "%lf %lf %lf", &x, &y, &z);
+                points.push_back(x);
+                points.push_back(y);
+                points.push_back(z);
+            }
+        }
+        atts->SetPointList(points);
+    }
+    
     // Do lineStart
     if(which_widget == PoincareAttributes::ID_lineStart || doAll)
     {
@@ -2078,6 +2169,93 @@ QvisPoincareWindow::pointSourceProcessText()
 {
     GetCurrentValues(PoincareAttributes::ID_pointSource);
     Apply();
+}
+
+
+void
+QvisPoincareWindow::pointListProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_pointList);
+    Apply();
+}
+
+
+void
+QvisPoincareWindow::pointListDoubleClicked(QListWidgetItem *item)
+{
+    item->setFlags(item->flags() | Qt::ItemIsEditable);
+}
+
+void
+QvisPoincareWindow::pointListClicked(QListWidgetItem *item)
+{
+}
+
+void
+QvisPoincareWindow::textChanged(const QString &currentText)
+{
+}
+
+void
+QvisPoincareWindow::addPoint()
+{
+    QListWidgetItem *item = new QListWidgetItem("0 0 0", pointList);
+    item->setFlags(item->flags() | Qt::ItemIsEditable);
+    pointList->setCurrentItem(item);
+}
+
+void
+QvisPoincareWindow::deletePoint()
+{
+    if (!pointList->selectedItems().empty())
+    {
+        qDeleteAll(pointList->selectedItems());
+    }
+}
+
+void
+QvisPoincareWindow::deletePoints()
+{
+    pointList->clear();
+}
+
+void
+QvisPoincareWindow::readPoints()
+{
+    QString res = QFileDialog::getOpenFileName(NULL, tr("Open text file"), ".");
+    std::string filename = res.toLatin1().data();
+
+    if (filename == "")
+        return;
+    std::ifstream f;
+    f.open(filename.c_str());
+    while (f.good())
+    {
+        char tmp[256];
+        f.getline(tmp, 256);
+        if (strlen(tmp) == 0)
+            break;
+
+        float x, y, z;
+        int n = sscanf(tmp, "%f %f %f", &x, &y, &z);
+        if (n != 3)
+            n = sscanf(tmp, "%f, %f, %f", &x, &y, &z);
+        if (n == 2)
+        {
+            z = 0.0;
+            n = 3;
+        }
+        if (n == 3)
+        {
+            char vals[256];
+            sprintf(vals, "%f %f %f", x,y,z);
+            QListWidgetItem *item = new QListWidgetItem(vals, pointList);
+            item->setFlags(item->flags() | Qt::ItemIsEditable);
+            pointList->setCurrentItem(item);
+        }
+    }
+
+    f.close();
 }
 
 

@@ -76,36 +76,36 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
     std::string str;
     char tmpStr[1000];
 
-    const char *sourceType_names = "Point, PointList, Line_, Circle, Plane, "
-        "Sphere, Box, Selection, FieldData";
+    const char *sourceType_names = "SpecifiedPoint, PointList, SpecifiedLine, Circle, SpecifiedPlane, "
+        "SpecifiedSphere, SpecifiedBox, Selection, FieldData";
     switch (atts->GetSourceType())
     {
-      case IntegralCurveAttributes::Point:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sPoint  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::SpecifiedPoint:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPoint  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       case IntegralCurveAttributes::PointList:
           SNPRINTF(tmpStr, 1000, "%ssourceType = %sPointList  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::Line_:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sLine_  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::SpecifiedLine:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedLine  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       case IntegralCurveAttributes::Circle:
           SNPRINTF(tmpStr, 1000, "%ssourceType = %sCircle  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::Plane:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sPlane  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::SpecifiedPlane:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPlane  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::Sphere:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSphere  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::SpecifiedSphere:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedSphere  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::Box:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sBox  # %s\n", prefix, prefix, sourceType_names);
+      case IntegralCurveAttributes::SpecifiedBox:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedBox  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       case IntegralCurveAttributes::Selection:
@@ -726,8 +726,8 @@ IntegralCurveAttributes_SetSourceType(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid sourceType value was given. "
                         "Valid values are in the range of [0,8]. "
                         "You can also use the following names: "
-                        "Point, PointList, Line_, Circle, Plane, "
-                        "Sphere, Box, Selection, FieldData"
+                        "SpecifiedPoint, PointList, SpecifiedLine, Circle, SpecifiedPlane, "
+                        "SpecifiedSphere, SpecifiedBox, Selection, FieldData"
                         ".");
         return NULL;
     }
@@ -2991,20 +2991,20 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "sourceType") == 0)
         return IntegralCurveAttributes_GetSourceType(self, NULL);
-    if(strcmp(name, "Point") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::Point));
+    if(strcmp(name, "SpecifiedPoint") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedPoint));
     if(strcmp(name, "PointList") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::PointList));
-    if(strcmp(name, "Line_") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::Line_));
+    if(strcmp(name, "SpecifiedLine") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedLine));
     if(strcmp(name, "Circle") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Circle));
-    if(strcmp(name, "Plane") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::Plane));
-    if(strcmp(name, "Sphere") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::Sphere));
-    if(strcmp(name, "Box") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::Box));
+    if(strcmp(name, "SpecifiedPlane") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedPlane));
+    if(strcmp(name, "SpecifiedSphere") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedSphere));
+    if(strcmp(name, "SpecifiedBox") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::SpecifiedBox));
     if(strcmp(name, "Selection") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Selection));
     if(strcmp(name, "FieldData") == 0)

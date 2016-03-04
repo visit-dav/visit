@@ -462,6 +462,10 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
         SetPointSource(atts.GetPointSource());
         break;
         
+      case PoincareAttributes::PointList:
+        SetPointListSource(atts.GetPointList());
+        break;
+
       case PoincareAttributes::SpecifiedLine:
         if( atts.GetPointDensity() > 1 )
         {
@@ -511,7 +515,11 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
                  CMFEType);
 
 
-    maxSteps = atts.GetMaxSteps();
+    if( puncturePlotType == PoincareAttributes::Single )
+      maxSteps = 1e9;
+    else //if( puncturePlotType == PoincareAttributes::Double )
+      maxSteps = atts.GetMaxSteps();
+    
     doTime = atts.GetTerminateByTime();
     maxTime = atts.GetTermTime();
 
@@ -675,6 +683,8 @@ avtPoincareFilter::GetInitialLocations(void)
     // Add seed points based on the source.
     if(sourceType == PICS_SOURCE_POINT)
         GenerateSeedPointsFromPoint(seedPts);
+    else if(sourceType == PICS_SOURCE_POINT_LIST)
+        GenerateSeedPointsFromPointList(seedPts);
     else if(sourceType == PICS_SOURCE_LINE)
         GenerateSeedPointsFromLine(seedPts);
 
@@ -710,6 +720,32 @@ void
 avtPoincareFilter::GenerateSeedPointsFromPoint(std::vector<avtVector> &pts)
 {
     pts.push_back(points[0]);
+}
+
+
+// ****************************************************************************
+//  Method: avtPoincareFilter::GenerateSeedPointsFromPointList
+//
+//  Purpose:
+//      
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
+// ****************************************************************************
+
+void
+avtPoincareFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &pts)
+{
+  for( unsigned int i=0; i<points.size(); ++i )
+  {
+    pts.push_back(points[i]);
+  }
 }
 
 
@@ -808,7 +844,41 @@ void
 avtPoincareFilter::SetPointSource(const double *p)
 {
     sourceType = PICS_SOURCE_POINT;
+    points.resize(1);
     points[0].set(p);
+}
+
+
+// ****************************************************************************
+// Method: avtIntegralCurveFilter::SetPointListSource
+//
+// Purpose: 
+//   Sets the integral curve point list source.
+//
+// Arguments:
+//   ptlist : A list of points
+//
+// Programmer: Hank Childs
+// Creation:   May 3, 2009
+//
+// Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
+//   
+// ****************************************************************************
+
+void
+avtPoincareFilter::SetPointListSource(const std::vector<double> &ptList)
+{
+    sourceType = PICS_SOURCE_POINT_LIST;
+
+    points.resize( ptList.size()/3 );
+
+    for( unsigned int i=0, j=0; i<ptList.size(); i+=3, ++j )
+    {
+      points[j].set( &(ptList[i]) );
+    }
 }
 
 
@@ -837,6 +907,7 @@ avtPoincareFilter::SetLineSource(const double *p0, const double *p1,
                                  int den, bool rand, int seed, int numPts)
 {
     sourceType = PICS_SOURCE_LINE;
+    points.resize(2);
     points[0].set(p0);
     points[1].set(p1);
     
@@ -1611,7 +1682,8 @@ avtPoincareFilter::ContinueExecute()
 
                   SetupNewSeed(seed, poincare_ic, seeds[s], point1, point2);              
                   
-                  if (2 <= RATIONAL_DEBUG)std::cerr << " with ID: " << seed->id <<"\n";
+                  if (2 <= RATIONAL_DEBUG)
+                    std::cerr << " with ID: " << seed->id <<"\n";
                 }
               if (2 <= RATIONAL_DEBUG)std::cerr << std::endl;
             }

@@ -137,6 +137,18 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
     bool sourcePointsDiffer = ((sourceType == SpecifiedPoint) &&
                                POINT_DIFFERS(pointSource, obj.pointSource));
 
+    bool sourcePointListDiffer = false;
+
+    if (sourceType == PointList)
+    {
+        if (pointList.size() != obj.pointList.size())
+            sourcePointListDiffer = true;
+        else
+            for (size_t i = 0 ; i < pointList.size() ; i++)
+                if (pointList[i] != obj.pointList[i])
+                    sourcePointListDiffer = true;
+    }
+
     // If we're in line source mode and the line differs, sourceLineDiffers
     // evaluates to true.
     bool sourceLineDiffers = ((sourceType == SpecifiedLine) &&
@@ -150,6 +162,7 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
 
     return (sourceType != obj.sourceType ||
             sourcePointsDiffer ||
+            sourcePointListDiffer ||
             sourceLineDiffers ||
 
             (fieldType == FlashField &&

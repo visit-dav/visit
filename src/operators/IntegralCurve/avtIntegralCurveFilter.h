@@ -113,8 +113,8 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
       return "Performing Integral Curve"; };
 
     //turn off on demand processing, I cannot handle this functionality yet..
-    virtual bool OperatingOnDemand(void) const { return false; }
-    virtual bool CheckOnDemandViability(void) { return false; }
+    // virtual bool OperatingOnDemand(void) const { return false; }
+    // virtual bool CheckOnDemandViability(void) { return false; }
 
     virtual void         SetAtts(const AttributeGroup*);
     virtual bool         Equivalent(const AttributeGroup*);
@@ -201,11 +201,9 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     virtual void ReportWarnings(std::vector<avtIntegralCurve *> &ics);
 
     static std::string colorVarArrayName;
-    static std::string paramArrayName;
-    static std::string opacityArrayName;
     static std::string thetaArrayName;
     static std::string tangentsArrayName;
-    static std::string scaleRadiusArrayName;
+    static std::string normalsArrayName;
 
     void SetCoordinateSystem(int c) {coordinateSystem = c;}
 
@@ -288,4 +286,5 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
 
     std::string  SeedInfoString() const;
 };
+
 #endif

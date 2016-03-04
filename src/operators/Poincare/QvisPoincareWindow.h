@@ -56,6 +56,8 @@ class QRadioButton;
 class QComboBox;
 class QGroupBox;
 class QPushButton;
+class QListWidget;
+class QListWidgetItem;
 
 // ****************************************************************************
 // Class: QvisPoincareWindow
@@ -108,11 +110,20 @@ class QvisPoincareWindow : public QvisOperatorWindow
     // Fieldlines
     void sourceTypeChanged(int val);
     void pointSourceProcessText();
+    void pointListProcessText();
     void lineStartProcessText();
     void lineEndProcessText();
     void pointDensityChanged(int val);
 
-    void fieldTypeChanged(int val);
+    void pointListClicked(QListWidgetItem*);
+    void pointListDoubleClicked(QListWidgetItem*);
+    void addPoint();
+    void deletePoint();
+    void deletePoints();
+    void readPoints();
+    void textChanged(const QString &currentText);
+
+  void fieldTypeChanged(int val);
     void fieldConstantProccessText();
     void velocitySourceProcessText();
 
@@ -203,6 +214,8 @@ class QvisPoincareWindow : public QvisOperatorWindow
     QLabel    *velocitySourceLabel;
     QLineEdit *pointSource;
     QLabel    *pointSourceLabel;
+    QListWidget *pointList;
+    QPushButton *pointListDelPoint, *pointListDelAllPoints, *pointListAddPoint, *pointListReadPoints;
     QLineEdit *lineStart;
     QLabel    *lineStartLabel;
     QLineEdit *lineEnd;

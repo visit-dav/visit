@@ -143,11 +143,15 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           break;
     }
 
-    const char *sourceType_names = "SpecifiedPoint, SpecifiedLine";
+    const char *sourceType_names = "SpecifiedPoint, PointList, SpecifiedLine";
     switch (atts->GetSourceType())
     {
       case PoincareAttributes::SpecifiedPoint:
           SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPoint  # %s\n", prefix, prefix, sourceType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::PointList:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sPointList  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::SpecifiedLine:
@@ -166,6 +170,22 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
             SNPRINTF(tmpStr, 1000, "%g", pointSource[i]);
             str += tmpStr;
             if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const doubleVector &pointList = atts->GetPointList();
+        SNPRINTF(tmpStr, 1000, "%spointList = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < pointList.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", pointList[i]);
+            str += tmpStr;
+            if(i < pointList.size() - 1)
             {
                 SNPRINTF(tmpStr, 1000, ", ");
                 str += tmpStr;
@@ -947,14 +967,14 @@ PoincareAttributes_SetSourceType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the sourceType in the object.
-    if(ival >= 0 && ival < 2)
+    if(ival >= 0 && ival < 3)
         obj->data->SetSourceType(PoincareAttributes::SourceType(ival));
     else
     {
         fprintf(stderr, "An invalid sourceType value was given. "
-                        "Valid values are in the range of [0,1]. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "SpecifiedPoint, SpecifiedLine.");
+                        "SpecifiedPoint, PointList, SpecifiedLine.");
         return NULL;
     }
 
@@ -1021,6 +1041,69 @@ PoincareAttributes_GetPointSource(PyObject *self, PyObject *args)
     const double *pointSource = obj->data->GetPointSource();
     for(int i = 0; i < 3; ++i)
         PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(pointSource[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetPointList(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    doubleVector  &vec = obj->data->GetPointList();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                vec[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = PyLong_AsDouble(item);
+            else
+                vec[i] = 0.;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyFloat_AS_DOUBLE(tuple);
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = double(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyLong_AsDouble(tuple);
+    }
+    else
+        return NULL;
+
+    // Mark the pointList in the object as modified.
+    obj->data->SelectPointList();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetPointList(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the pointList.
+    const doubleVector &pointList = obj->data->GetPointList();
+    PyObject *retval = PyTuple_New(pointList.size());
+    for(size_t i = 0; i < pointList.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(pointList[i]));
     return retval;
 }
 
@@ -2859,6 +2942,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetSourceType", PoincareAttributes_GetSourceType, METH_VARARGS},
     {"SetPointSource", PoincareAttributes_SetPointSource, METH_VARARGS},
     {"GetPointSource", PoincareAttributes_GetPointSource, METH_VARARGS},
+    {"SetPointList", PoincareAttributes_SetPointList, METH_VARARGS},
+    {"GetPointList", PoincareAttributes_GetPointList, METH_VARARGS},
     {"SetLineStart", PoincareAttributes_SetLineStart, METH_VARARGS},
     {"GetLineStart", PoincareAttributes_GetLineStart, METH_VARARGS},
     {"SetLineEnd", PoincareAttributes_SetLineEnd, METH_VARARGS},
@@ -3058,11 +3143,15 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetSourceType(self, NULL);
     if(strcmp(name, "SpecifiedPoint") == 0)
         return PyInt_FromLong(long(PoincareAttributes::SpecifiedPoint));
+    if(strcmp(name, "PointList") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::PointList));
     if(strcmp(name, "SpecifiedLine") == 0)
         return PyInt_FromLong(long(PoincareAttributes::SpecifiedLine));
 
     if(strcmp(name, "pointSource") == 0)
         return PoincareAttributes_GetPointSource(self, NULL);
+    if(strcmp(name, "pointList") == 0)
+        return PoincareAttributes_GetPointList(self, NULL);
     if(strcmp(name, "lineStart") == 0)
         return PoincareAttributes_GetLineStart(self, NULL);
     if(strcmp(name, "lineEnd") == 0)
@@ -3336,6 +3425,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetSourceType(self, tuple);
     else if(strcmp(name, "pointSource") == 0)
         obj = PoincareAttributes_SetPointSource(self, tuple);
+    else if(strcmp(name, "pointList") == 0)
+        obj = PoincareAttributes_SetPointList(self, tuple);
     else if(strcmp(name, "lineStart") == 0)
         obj = PoincareAttributes_SetLineStart(self, tuple);
     else if(strcmp(name, "lineEnd") == 0)
