@@ -5980,7 +5980,21 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
 
 
     avtDomainBoundaries *dbi = (avtDomainBoundaries*)*vr;
-    if (dbi == NULL)
+
+    int need_db = (int) (dbi == NULL);
+
+    // Only get the domain information if there is no domain
+    // information on all processors. This prevents problems when
+    // there are more processes than domains.
+#ifdef PARALLEL
+    int need_db_global;
+    MPI_Allreduce(&need_db, &need_db_global, 1,
+                  MPI_INT, MPI_MIN, VISIT_MPI_COMM);
+
+    need_db = need_db_global;
+#endif
+    
+    if (need_db)
     {
         debug1  << "avtGenericDatabase::GetDomainBoundaryInformation Cached "
                 << "global domain boundary info not found, checking for local info."
