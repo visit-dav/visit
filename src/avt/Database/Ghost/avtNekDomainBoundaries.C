@@ -556,7 +556,7 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
 
     //Send all the matches to proc 0
     int *aNumMatches = NULL;
-    int  nMatches = aMatchedFaces.size() / 4;
+    int  nMatches = (int)aMatchedFaces.size() / 4;
     if (iRank == 0)
         aNumMatches = new int[nProcs];
     
@@ -611,7 +611,7 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
     }
     else
     {
-        err = MPI_Send( &(aMatchedFaces[0]), aMatchedFaces.size(), 
+        err = MPI_Send( &(aMatchedFaces[0]), (int)aMatchedFaces.size(), 
                         MPI_INT,  0, 888, VISIT_MPI_COMM);
         if (err != MPI_SUCCESS)
             EXCEPTION1(ImproperUseException, 

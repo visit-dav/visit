@@ -120,7 +120,7 @@ bool VsMDMesh::isStructuredMesh() const {
   return (kind == VsSchema::structuredMeshKey);
 }
 
-int VsMDMesh::getNumSpatialDims() const {
+size_t VsMDMesh::getNumSpatialDims() const {
   return numSpatialDims;
 }
 

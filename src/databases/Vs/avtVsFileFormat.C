@@ -2075,7 +2075,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             //Apply node corrections
             if (correctionList) {
                 for (size_t j = 0; j < cellVerts; j++) {
-                    if ((verts[j] >= 0) && (verts[j] < correctionListSize)) {
+                    if ((verts[j] >= 0) && (verts[j] < (int)correctionListSize)) {
                         vtkIdType localVertexId = verts[j];
                         vtkIdType newId = correctionList[localVertexId];
                         if (newId != -1) {
@@ -4168,8 +4168,8 @@ void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
 
         avtMeshMetaData* vmd =
         new avtMeshMetaData(it->c_str(), (int)meta->getNumBlocks(), 1, 1, 0,
-                meta->getNumSpatialDims(),
-                meta->getNumSpatialDims(), meshType);
+                (int)meta->getNumSpatialDims(),
+                (int)meta->getNumSpatialDims(), meshType);
         setAxisLabels(vmd);
         md->Add(vmd);
     }

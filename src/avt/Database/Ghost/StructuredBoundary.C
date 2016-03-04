@@ -301,7 +301,7 @@ Boundary::DeleteNeighbor(int d, std::vector<Boundary> &wholelist)
     // unsigned ints don't ever go below 0.
     for (size_t ii = 0 ; ii < delete_list.size() ; ii++)
     {
-        int i = delete_list.size() - (ii+1);
+        size_t i = delete_list.size() - (ii+1);
         int n = delete_list[i];
         // Stop expansion of the boundary
         if (neighbors[n].type == IMIN)
@@ -318,7 +318,7 @@ Boundary::DeleteNeighbor(int d, std::vector<Boundary> &wholelist)
             if (neighbors[n].neighbor_rel != RECIPIENT_NEIGHBOR) expand[5] = 0;
     
         // Remove the neighbor from the list
-        for (size_t j=n+1; j<neighbors.size(); j++)
+        for (int j=n+1; j<(int)neighbors.size(); j++)
         {
             int d = neighbors[j].domain;
             int entry = neighbors[j].match;

@@ -35,7 +35,7 @@ public:
   bool isRectilinearMesh() const;
   bool isUnstructuredMesh() const;
   bool isStructuredMesh() const;
-  int getNumSpatialDims() const;
+  size_t getNumSpatialDims() const;
   std::string getFullName() const;
 
 private:
@@ -47,7 +47,7 @@ private:
   std::string kind;
 
   /** The spatial dimensionality */
-  int numSpatialDims;
+  size_t numSpatialDims;
 
   /** Index order (Fortran vs C style) */
   std::string indexOrder;

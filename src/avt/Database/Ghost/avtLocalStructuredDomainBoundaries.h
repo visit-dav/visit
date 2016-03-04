@@ -63,7 +63,7 @@ public:
                            int orientation[3],
                            int extents[6]);
 
-    int         NumberOfNeighbors() const {return neighbors.size();}
+    int         NumberOfNeighbors() const {return (int)neighbors.size();}
     static avtStructuredDomainBoundaries  *GlobalGenerate(const std::vector<avtLocalStructuredDomainBoundaryList*> &lists);
 
     void        Print(ostream &os) const;
@@ -74,7 +74,7 @@ private:
 
     int    Pack(int *ptr) const;
 
-    int    PackedSize() const { return 8 + 11 * neighbors.size();}
+    int    PackedSize() const { return 8 + 11 * (int)neighbors.size();}
 
     static void GlobalGather(const std::vector<avtLocalStructuredDomainBoundaryList*> &local_lists,
                              std::vector<avtLocalStructuredDomainBoundaryList*> &out);

@@ -940,7 +940,7 @@ int Ghost3Dmodule::selectBlock()
     for (i = 0; i < 5; i++)
     {
       block = 0;
-      j = candidate_queue[i]->size();
+      j = (int)candidate_queue[i]->size();
       if (DEBUG_OUTPUT) {printf("[%d] looking at queue %d with %d after processing %d of %d blocks\n",rank,i,j,num_processed_blocks,num_blocks); fflush(0);}
       while (j--)
       {
@@ -1021,7 +1021,7 @@ int Ghost3Dmodule::selectBlock()
   for (i = 0; i < 5; i++)
   {
     block = 0;
-    j = candidate_queue[i]->size();
+    j = (int)candidate_queue[i]->size();
     while (j--)
     {
       // get the front element
