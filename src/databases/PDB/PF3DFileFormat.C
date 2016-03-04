@@ -2368,6 +2368,9 @@ PF3DFileFormat::MasterInformation::GetNDomains() const
 //   Eric Brugger, Fri Oct 30 08:44:02 PDT 2015
 //   Added support for reading multi level files.
 //   
+//   Eric Brugger, Fri Mar  4 14:39:00 PST 2016
+//   I corrected a bug reading the multi level files.
+//
 // ****************************************************************************
 
 bool
@@ -2799,7 +2802,7 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb, int cycle,
                 strncpy(viz_nams_new+nd, vizdir, viz_nams_len);
 
                 // The second value is the filename.
-                long ifile = iChunk * nfiles_per_dir + id / nhostgroup_leaders;
+                long ifile = iChunk * nfiles_per_dir + id / (ngrp_members / nfiles_per_dir);
                 sprintf(vizfile, "%sp%dvs%d.pdb", basename, ifile, cycle);
                 strncpy(viz_nams_new+nd+viz_nams_len, vizfile, viz_nams_len);
             }
