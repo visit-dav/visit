@@ -457,7 +457,7 @@ avtSILArray::GetSetIndex(const std::string &name) const
         {
             if (names[ii] == name)
             {
-                return (iFirstSet + ii);
+                return (iFirstSet + (int)ii);
             }
         }
         return -1;

@@ -1130,7 +1130,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 
             vector<int> list;
             tree.GetElementsList(pt1, dir, list);
-            int nCells = list.size();
+            int nCells = (int)list.size();
             if (nCells == 0)
                 continue;  // No intersection
 
@@ -1305,7 +1305,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 
             vector<int> list;
             tree.GetElementsList(pt1, dir, list);
-            int nCells = list.size();
+            int nCells = (int)list.size();
             if (nCells == 0)
                 continue;  // No intersection
 
@@ -1398,7 +1398,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 
             vector<int> list;
             tree.GetElementsList(pt1, dir, list);
-            int nCells = list.size();
+            int nCells = (int)list.size();
             if (nCells == 0)
                 continue;  // No intersection
 
@@ -1564,7 +1564,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 
             vector<int> list;
             tree.GetElementsList(pt1, dir, list);
-            int nCells = list.size();
+            int nCells = (int)list.size();
             if (nCells == 0)
                 continue;  // No intersection
 
@@ -1772,7 +1772,7 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
 
         vector<int> list;
         tree.GetElementsFromAxiallySymmetricLineIntersection(pt1, dir, list);
-        int nCells = list.size();
+        int nCells = (int)list.size();
         if (nCells == 0)
             continue;  // No intersection
 

@@ -423,7 +423,6 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
     outGrid->GetPointData()->SetScalars(outVal);
     outVal->Delete();
     int nPoints; 
-    vtkIdType i;
 
     //
     //  Ensure that the output is 2d by setting z-component to zero.
@@ -438,7 +437,7 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
             inVal = ((vtkRectilinearGrid*)ds[(*it).second])->GetPointData()->
                     GetScalars();
             nPoints = inXC->GetNumberOfTuples();
-            for (i = 0; i < nPoints; i++, index++)
+            for (vtkIdType i = 0; i < nPoints; i++, index++)
             {
                 outXC->InsertNextTuple1(inXC->GetTuple1(i));
                 outVal->InsertNextTuple1(inVal->GetTuple1(i));
@@ -457,7 +456,7 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
             if (nPoints%4 == 0)
             {
                 bIsHistogramPlot = true;
-                for (i = 0; i < nPoints; i+=4)
+                for (int i = 0; i < nPoints; i+=4)
                 {
                     if ( inXC->GetComponent(i,   0) != inXC->GetComponent(i+1, 0) ||
                          inXC->GetComponent(i+2, 0) != inXC->GetComponent(i+3, 0) ||
@@ -471,7 +470,7 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
             }
             if (!bIsHistogramPlot)
             {
-                for (i = 0; i < nPoints; i++, index++)
+                for (int i = 0; i < nPoints; i++, index++)
                 {
                     outXC->InsertNextTuple1(inXC->GetComponent(i, 0));
                     outVal->InsertNextTuple1(inXC->GetComponent(i, 1));
@@ -479,7 +478,7 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
             }
             else
             {
-                for (i = 0; i < nPoints; i+=4, index+=4)
+                for (int i = 0; i < nPoints; i+=4, index+=4)
                 {
                     outXC->InsertNextTuple1( inXC->GetComponent(i,   0));
                     outVal->InsertNextTuple1(inXC->GetComponent(i,   1));
@@ -505,7 +504,7 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
         sortedVal = outVal->NewInstance();
         DoubleIntMap sortedIds;
         nPoints = outXC->GetNumberOfTuples();
-        for (i = 0; i < nPoints; i++)
+        for (int i = 0; i < nPoints; i++)
         {
             x = outXC->GetTuple1(i); 
             sortedIds.insert(DoubleIntMap::value_type(x, i));
@@ -529,7 +528,7 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
     nPoints = sortedXC->GetNumberOfTuples();
     outGrid->SetDimensions(nPoints, 1, 1);
     outputArray.clear();
-    for (i = 0; i < nPoints; i++)
+    for (int i = 0; i < nPoints; i++)
     {
         outputArray.push_back(sortedXC->GetTuple1(i));
         outputArray.push_back(sortedVal->GetTuple1(i));

@@ -485,7 +485,7 @@ vtkDataSet *
 avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
 {
     const stringVector curVariables = atts.GetListedVarNames();
-    int curVarCount = curVariables.size();
+    int curVarCount = (int)curVariables.size();
     int curVarNum;
     vtkPointData *inPointData = in_ds->GetPointData();
     

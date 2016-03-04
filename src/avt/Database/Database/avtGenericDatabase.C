@@ -5261,12 +5261,12 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
     else if (subT == AVT_ENUMSCALAR_SUBSET)
     {
         const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var);
-        size_t n = smd->enumNames.size();
+        int n = (int)smd->enumNames.size();
         char tmp[100];
         sprintf(tmp,"%d",n);
         enumScalarLabel += tmp;
         enumScalarLabel += ";";
-        for (size_t i=0; i<n; ++i)
+        for (int i=0; i<n; ++i)
         {
             string name = smd->enumNames[i];
             int value = smd->enumRanges[2*i];

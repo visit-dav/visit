@@ -2435,7 +2435,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                 const float *mix_vf   = givingMat->GetMixVF();
 
                 int mixcnt = 0;
-                for (i = 0; i < (size_t)nCells; ++i)
+                for (i = 0; i < nCells; ++i)
                 {
                     int cell = givenCells[index][i];
                     if (matlist[cell] >= 0)

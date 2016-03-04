@@ -130,13 +130,13 @@ avtSubsetBlockMergeFilter::Execute()
     inputTree->GetAllUniqueLabels(uniqueLabels);
 
     // Merge datasets for each block
-    size_t outSize = uniqueLabels.size();
+    int  outSize = (int)uniqueLabels.size();
 
     vtkDataSet **outDataSets = new vtkDataSet *[outSize];
     vtkAppendPolyData **appender = new vtkAppendPolyData *[outSize];
     vtkCleanPolyData **cleaner = new vtkCleanPolyData *[outSize];
 
-    for(size_t i=0; i<outSize; i++)
+    for(int i=0; i<outSize; i++)
     {
         appender[i] = vtkAppendPolyData::New();
         cleaner[i] = vtkCleanPolyData::New();
@@ -150,7 +150,7 @@ avtSubsetBlockMergeFilter::Execute()
     }
 
     // Clean all merged data sets
-    for(size_t i=0; i<outSize; i++)
+    for(int i=0; i<outSize; i++)
     {
         cleaner[i]->SetInputConnection(appender[i]->GetOutputPort());
         cleaner[i]->Update();
@@ -254,7 +254,7 @@ avtDataTree_p
 avtSubsetBlockMergeFilter::CreateOutputDataTree(map<string, vtkAppendPolyData *> &blockAppenderMap)
 {
     vector<string> labels;
-    int numChildren = blockAppenderMap.size();
+    int numChildren = (int)blockAppenderMap.size();
     vtkDataSet **outDataSets = new vtkDataSet *[numChildren];
     vtkCleanPolyData **cleaners = new vtkCleanPolyData *[numChildren];
 
@@ -458,7 +458,7 @@ avtSubsetBlockMergeFilter::Send(map<int, vector<BlockIdDatasetPair> > &procDatas
             if(iter != procDatasetMap.end())
             {
                 vector<BlockIdDatasetPair> *sendDataList = &iter->second;
-                count = sendDataList->size();
+                count = (int)sendDataList->size();
                 MPI_Send(&count, 1, MPI_INT, dest, SIZE_TAG, VISIT_MPI_COMM);  // Send # of datasets
 
                 for(int dataIdx=0; dataIdx<count; dataIdx++)
@@ -563,7 +563,7 @@ avtSubsetBlockMergeFilter::GetIndexFromBlockId(const std::string blockId, const 
     {
         if(blockId.compare(labels[i]) == 0)
         {
-            return i;
+            return (int)i;
         }
     }
 

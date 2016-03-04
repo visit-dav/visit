@@ -314,7 +314,7 @@ avtLocalStructuredDomainBoundaryList::GlobalGenerate
 
     // now construct the global object, include slots of all neighbors
     int ndoms = 0;
-    for(int i=0; i<all_lists.size(); i++)
+    for(size_t i=0; i<all_lists.size(); i++)
     {
         avtLocalStructuredDomainBoundaryList *lst = all_lists[i];
         if( (lst->domainId+1) > ndoms)
@@ -335,7 +335,7 @@ avtLocalStructuredDomainBoundaryList::GlobalGenerate
     // the enabled domains are actually considered
     vector<bool> domains_enabled(ndoms,false);
 
-    for(int i=0; i<all_lists.size(); i++)
+    for(size_t i=0; i<all_lists.size(); i++)
     {
         avtLocalStructuredDomainBoundaryList *lst = all_lists[i];
         debug5 << "avtLocalStructuredDomainBoundaryList::GlobalGenerate: "
@@ -347,7 +347,7 @@ avtLocalStructuredDomainBoundaryList::GlobalGenerate
     dbi->SetNumDomains(ndoms);
     debug5 << "avtLocalStructuredDomainBoundaryList::GlobalGenerate: "
            << "Number of known domains " << ndoms << endl;
-    for(int i=0; i<all_lists.size(); i++)
+    for(size_t i=0; i<all_lists.size(); i++)
     {
         avtLocalStructuredDomainBoundaryList *lst = all_lists[i];
         int domain_id = lst->domainId;
@@ -404,7 +404,6 @@ avtLocalStructuredDomainBoundaryList::GlobalGather
     out.clear();
     // get the number of processors and the current processor id
     int nprocs = PAR_Size();
-    int procid = PAR_Rank();
 
     int num_local_domains = 0;
     int local_msg_size    = 0;
@@ -488,7 +487,7 @@ avtLocalStructuredDomainBoundaryList::GlobalGather
 #else
     int t_ggather_ser = visitTimer->StartTimer();
     // we need to copy the local list b/c they will be modified
-    for(int i=0; i<local_lists.size(); i++)
+    for(size_t i=0; i<local_lists.size(); i++)
     {
         avtLocalStructuredDomainBoundaryList *lst = local_lists[i];
         out.push_back(new avtLocalStructuredDomainBoundaryList(lst));

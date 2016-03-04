@@ -1061,7 +1061,7 @@ avtRayTracer::Execute(void)
         std::multimap< std::pair<int,int>, imgData>::iterator itImgData;
         int bufferDivisionIndex = 0;
         int divIndex = 0;
-        int totalSize = allImgMetaData.size();
+        int totalSize = (int) allImgMetaData.size();
 
         debug5 << PAR_Rank() << "   ~   totalSize to compose: " << totalSize << "    numZDivisions: " << numZDivisions << endl;
 
