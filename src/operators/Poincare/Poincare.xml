@@ -21,6 +21,7 @@
     <Attribute name="PoincareAttributes" purpose="Attributes for the Poincare" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Poincare.code">
       <Enum name="SourceType">
         SpecifiedPoint
+        PointList
         SpecifiedLine
       </Enum>
       <Enum name="FieldType">
@@ -151,6 +152,17 @@
       <Field name="pointSource" label="Point Source" type="doubleArray" length="3" enabler="sourceType:SpecifiedPoint">
         0.000000
         0.000000
+        0.000000
+      </Field>
+      <Field name="pointList" label="List of Points" type="doubleVector" enabler="sourceType:PointList">
+        0.000000
+        0.000000
+        0.000000
+        1.000000
+        0.000000
+        0.000000
+        0.000000
+        1.000000
         0.000000
       </Field>
       <Field name="lineStart" label="Line Point Start" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
@@ -327,8 +339,6 @@
       <Field name="workGroupSize" label="Work group size" type="int">
         32
       </Field>
-
-
       <Field name="pathlines" label="Do pathlines" type="bool">
         false
       </Field>

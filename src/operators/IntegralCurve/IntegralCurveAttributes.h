@@ -62,13 +62,13 @@ class IntegralCurveAttributes : public AttributeSubject
 public:
     enum SourceType
     {
-        Point,
+        SpecifiedPoint,
         PointList,
-        Line_,
+        SpecifiedLine,
         Circle,
-        Plane,
-        Sphere,
-        Box,
+        SpecifiedPlane,
+        SpecifiedSphere,
+        SpecifiedBox,
         Selection,
         FieldData
     };
