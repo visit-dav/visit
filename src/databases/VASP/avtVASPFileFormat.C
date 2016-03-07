@@ -46,6 +46,7 @@
 #include <avtOUTCARFileFormat.h>
 #include <avtCHGCARFileFormat.h>
 #include <avtPOSCARFileFormat.h>
+#include <avtXDATFileFormat.h>
 
 // ****************************************************************************
 // Method: VASP_CreateFileFormatInterface
@@ -101,6 +102,12 @@ VASP_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
                 debug4 << "Database is avtPOSCARFileFormat" << endl;
             }
 
+            if(flavor == -1 && avtXDATFileFormat::Identify(fn))
+            {
+                flavor = 3;
+                debug4 << "Database is avtXDATFileFormat" << endl;
+            }
+
             if(flavor == -1)
             {
                 EXCEPTION1(InvalidFilesException, list[0]);
@@ -122,6 +129,9 @@ VASP_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
             break;
           case 2:
             ffi = avtPOSCARFileFormat::CreateInterface(list, nList, nBlock);
+            break;
+          case 3:
+            ffi = avtXDATFileFormat::CreateInterface(list, nList, nBlock);
             break;
         }
     }

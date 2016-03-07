@@ -170,6 +170,7 @@ VASPGeneralPluginInfo::GetDefaultFilePatterns() const
     defaultPatterns.push_back("POS*");
     defaultPatterns.push_back("CHG*");
     defaultPatterns.push_back("CONT*");
+    defaultPatterns.push_back("XDAT*");
 
     return defaultPatterns;
 }
