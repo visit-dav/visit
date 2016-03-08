@@ -324,7 +324,7 @@ avtSILMatrix::GetSILCollection(int index) const
         vector<int> s;
         for (size_t i = 0 ; i < set2.size() ; i++)
         {
-            s.push_back(setsStartAt + row*static_cast<int>(set2.size() + i));
+            s.push_back(setsStartAt + row*static_cast<int>(set2.size()) + static_cast<int>(i));
         }
         ens = new avtSILEnumeratedNamespace(s);
     }
