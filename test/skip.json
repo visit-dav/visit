@@ -1,5 +1,5 @@
 { "skip_list":[
- {"mode":"trunk,serial","tests":[
+ {"mode":"serial","tests":[
                     {"category":"databases","file":"xdmf.py","cases":["xdmf_4_02","xdmf_4_04"]},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"databases","file":"chgcar.py","cases":["chgcar_01"]},
@@ -52,7 +52,7 @@
                     {"category":"simulation","file":"zerocopy.py","platform":"win"},
                     {"category":"simulation","file":"life.py","cases":["life03"]}
                   ]},
- {"mode":"trunk,parallel","tests":[
+ {"mode":"parallel","tests":[
                     {"category":"databases","file":"xdmf.py","cases":["xdmf_4_02","xdmf_4_04"]},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"databases","file":"chgcar.py","cases":["chgcar_01"]},
@@ -93,7 +93,7 @@
                     {"category":"simulation","file":"updateplots.py","platform":"win"},
                     {"category":"simulation","file":"life.py","cases":["life03"]}
                     ]},
- {"mode":"trunk,scalable,parallel,icet","tests":[
+ {"mode":"scalable,parallel,icet","tests":[
                     {"category":"databases","file":"xdmf.py","cases":["xdmf_4_02","xdmf_4_04"]},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
