@@ -76,15 +76,15 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
     std::string str;
     char tmpStr[1000];
 
-    const char *sourceType_names = "Line_, Plane";
+    const char *sourceType_names = "SpecifiedLine, SpecifiedPlane";
     switch (atts->GetSourceType())
     {
-      case LimitCycleAttributes::Line_:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sLine_  # %s\n", prefix, prefix, sourceType_names);
+      case LimitCycleAttributes::SpecifiedLine:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedLine  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
-      case LimitCycleAttributes::Plane:
-          SNPRINTF(tmpStr, 1000, "%ssourceType = %sPlane  # %s\n", prefix, prefix, sourceType_names);
+      case LimitCycleAttributes::SpecifiedPlane:
+          SNPRINTF(tmpStr, 1000, "%ssourceType = %sSpecifiedPlane  # %s\n", prefix, prefix, sourceType_names);
           str += tmpStr;
           break;
       default:
@@ -573,7 +573,7 @@ LimitCycleAttributes_SetSourceType(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid sourceType value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
-                        "Line_, Plane.");
+                        "SpecifiedLine, SpecifiedPlane.");
         return NULL;
     }
 
@@ -2390,10 +2390,10 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "sourceType") == 0)
         return LimitCycleAttributes_GetSourceType(self, NULL);
-    if(strcmp(name, "Line_") == 0)
-        return PyInt_FromLong(long(LimitCycleAttributes::Line_));
-    if(strcmp(name, "Plane") == 0)
-        return PyInt_FromLong(long(LimitCycleAttributes::Plane));
+    if(strcmp(name, "SpecifiedLine") == 0)
+        return PyInt_FromLong(long(LimitCycleAttributes::SpecifiedLine));
+    if(strcmp(name, "SpecifiedPlane") == 0)
+        return PyInt_FromLong(long(LimitCycleAttributes::SpecifiedPlane));
 
     if(strcmp(name, "lineStart") == 0)
         return LimitCycleAttributes_GetLineStart(self, NULL);

@@ -16,8 +16,8 @@
     </LIBS>
     <Attribute name="LimitCycleAttributes" purpose="Attributes for the LimitCycle" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LimitCycle.code">
       <Enum name="SourceType">
-        Line_
-        Plane
+        SpecifiedLine
+        SpecifiedPlane
       </Enum>
       <Enum name="DataValue">
         Solid
@@ -72,7 +72,7 @@
         FractionOfBBox
       </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
-        Line_
+        SpecifiedLine
       </Field>
       <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:Line">
         0.000000
@@ -265,6 +265,8 @@
       <Function name="CreateCompatible" user="false" member="true">
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
       <Function name="LimitCycleViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
       </Function>

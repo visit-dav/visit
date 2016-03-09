@@ -62,8 +62,8 @@ class LimitCycleAttributes : public AttributeSubject
 public:
     enum SourceType
     {
-        Line_,
-        Plane
+        SpecifiedLine,
+        SpecifiedPlane
     };
     enum DataValue
     {
@@ -341,6 +341,7 @@ public:
 
     // User-defined methods
     bool ChangesRequireRecalculation(const LimitCycleAttributes &) const;
+    virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {

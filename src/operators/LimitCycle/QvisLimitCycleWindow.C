@@ -1469,7 +1469,7 @@ QvisLimitCycleWindow::UpdateSourceAttributes()
 
     bool showSampling = false, enableFill = false;
     
-    if (atts->GetSourceType() == LimitCycleAttributes::Line_)
+    if (atts->GetSourceType() == LimitCycleAttributes::SpecifiedLine)
     {
         TurnOn(lineStart, lineStartLabel);
         TurnOn(lineEnd, lineEndLabel);
@@ -1488,7 +1488,7 @@ QvisLimitCycleWindow::UpdateSourceAttributes()
             sampleDensity[0]->setMinimum(1);
         }
     }
-    else if (atts->GetSourceType() == LimitCycleAttributes::Plane)
+    else if (atts->GetSourceType() == LimitCycleAttributes::SpecifiedPlane)
     {
         TurnOn(planeOrigin, planeOriginLabel);
         TurnOn(planeNormal, planeNormalLabel);

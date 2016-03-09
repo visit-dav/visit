@@ -306,16 +306,15 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
 
     // Create the source geometry subgroup
     QGroupBox *geometryGroup = new QGroupBox(sourceGroup);
-    sourceLayout->addWidget(geometryGroup, 1, 0, 4, 3);
+    sourceLayout->addWidget(geometryGroup, 1, 0, 1, 3);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
     geometryLayout->setMargin(5);
     geometryLayout->setSpacing(10);
     geometryLayout->setRowStretch(5,10);
 
-    int gRow = 0;
-
     // Create the widgets that specify a point source.
+    int gRow = 0;
     pointSource = new QLineEdit(sourceGroup);
     connect(pointSource, SIGNAL(returnPressed()),
             this, SLOT(pointSourceProcessText()));
@@ -323,60 +322,57 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     pointSourceLabel->setBuddy(pointSource);
     geometryLayout->addWidget(pointSourceLabel, gRow, 0);
     geometryLayout->addWidget(pointSource, gRow, 1);
-    ++gRow;
 
     //Point list.
+    gRow = 0;
     pointList = new QListWidget(sourceGroup);
-    geometryLayout->addWidget(pointList, gRow, 0);
+    geometryLayout->addWidget(pointList, gRow, 1, 4, 1);
     connect(pointList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(pointListDoubleClicked(QListWidgetItem*)));
     connect(pointList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(pointListClicked(QListWidgetItem*)));
     connect(pointList, SIGNAL(currentTextChanged(const QString&)), this, SLOT(textChanged(QString)));
 
-    pointListReadPoints = new QPushButton(tr("Read Text File"), sourceGroup);
-    geometryLayout->addWidget(pointListReadPoints, gRow, 1);
-    connect(pointListReadPoints, SIGNAL(clicked()), this, SLOT(readPoints()));
-
-    gRow++;
-
     pointListAddPoint = new QPushButton(tr("Add Point"), sourceGroup);
     pointListDelPoint = new QPushButton(tr("Delete Point"), sourceGroup);
     pointListDelAllPoints = new QPushButton(tr("Delete All Points"), sourceGroup);
+    pointListReadPoints = new QPushButton(tr("Read Text File"), sourceGroup);
+
     connect(pointListAddPoint, SIGNAL(clicked()), this, SLOT(addPoint()));
     connect(pointListDelPoint, SIGNAL(clicked()), this, SLOT(deletePoint()));
     connect(pointListDelAllPoints, SIGNAL(clicked()), this, SLOT(deletePoints()));
-    geometryLayout->addWidget(pointListAddPoint, gRow, 0);
-    geometryLayout->addWidget(pointListDelPoint, gRow, 1);
-    geometryLayout->addWidget(pointListDelAllPoints, gRow, 2);
-    gRow++;
+    connect(pointListReadPoints, SIGNAL(clicked()), this, SLOT(readPoints()));
+
+    geometryLayout->addWidget(pointListAddPoint, gRow++, 0);
+    geometryLayout->addWidget(pointListDelPoint, gRow++, 0);
+    geometryLayout->addWidget(pointListDelAllPoints, gRow++, 0);
+    geometryLayout->addWidget(pointListReadPoints, gRow++, 0);
 
     // Create the widgets that specify a line source.
+    gRow = 0;
     lineStart = new QLineEdit(sourceGroup);
     connect(lineStart, SIGNAL(returnPressed()),
             this, SLOT(lineStartProcessText()));
     lineStartLabel = new QLabel(tr("Start"), sourceGroup);
     lineStartLabel->setBuddy(lineStart);
     geometryLayout->addWidget(lineStartLabel, gRow, 0);
-    geometryLayout->addWidget(lineStart, gRow, 1);
-    ++gRow;
+    geometryLayout->addWidget(lineStart, gRow++, 1);
+
     lineEnd = new QLineEdit(sourceGroup);
     connect(lineEnd, SIGNAL(returnPressed()),
             this, SLOT(lineEndProcessText()));
     lineEndLabel = new QLabel(tr("End"), sourceGroup);
     lineEndLabel->setBuddy(lineEnd);
     geometryLayout->addWidget(lineEndLabel, gRow, 0);
-    geometryLayout->addWidget(lineEnd, gRow, 1);
-    ++gRow;
-
+    geometryLayout->addWidget(lineEnd, gRow++, 1);
 
     // Create the widgets that specify a plane source.
+    gRow = 0;
     planeOrigin = new QLineEdit(sourceGroup);
     connect(planeOrigin, SIGNAL(returnPressed()),
             this, SLOT(planeOriginProcessText()));
     planeOriginLabel = new QLabel(tr("Origin"), sourceGroup);
     planeOriginLabel->setBuddy(planeOrigin);
     geometryLayout->addWidget(planeOriginLabel,gRow,0);
-    geometryLayout->addWidget(planeOrigin, gRow,1);
-    ++gRow;
+    geometryLayout->addWidget(planeOrigin, gRow++,1);
 
     planeNormal = new QLineEdit(sourceGroup);
     connect(planeNormal, SIGNAL(returnPressed()),
@@ -384,8 +380,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     planeNormalLabel = new QLabel(tr("Normal"), sourceGroup);
     planeNormalLabel->setBuddy(planeNormal);
     geometryLayout->addWidget(planeNormalLabel,gRow,0);
-    geometryLayout->addWidget(planeNormal, gRow,1);
-    ++gRow;
+    geometryLayout->addWidget(planeNormal, gRow++,1);
 
     planeUpAxis = new QLineEdit(sourceGroup);
     connect(planeUpAxis, SIGNAL(returnPressed()),
@@ -393,8 +388,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     planeUpAxisLabel = new QLabel(tr("Up axis"), sourceGroup);
     planeUpAxisLabel->setBuddy(planeUpAxis);
     geometryLayout->addWidget(planeUpAxisLabel,gRow,0);
-    geometryLayout->addWidget(planeUpAxis, gRow,1);
-    ++gRow;
+    geometryLayout->addWidget(planeUpAxis, gRow++,1);
 
     // Create the widgets that specify a sphere source.
     sphereOrigin = new QLineEdit(sourceGroup);
@@ -403,23 +397,21 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sphereOriginLabel = new QLabel(tr("Origin"), sourceGroup);
     sphereOriginLabel->setBuddy(sphereOrigin);
     geometryLayout->addWidget(sphereOriginLabel,gRow,0);
-    geometryLayout->addWidget(sphereOrigin, gRow,1);
-    ++gRow;
+    geometryLayout->addWidget(sphereOrigin, gRow++,1);
 
     radius = new QLineEdit(sourceGroup);
     connect(radius, SIGNAL(returnPressed()), this, SLOT(radiusProcessText()));
     radiusLabel = new QLabel(tr("Radius"), sourceGroup);
     radiusLabel->setBuddy(radius);
     geometryLayout->addWidget(radiusLabel,gRow,0);
-    geometryLayout->addWidget(radius, gRow,1);
-    ++gRow;
+    geometryLayout->addWidget(radius, gRow++,1);
 
     // Create the widgets that specify a box source
+    gRow = 0;
     useWholeBox = new QCheckBox(tr("Whole data set"), sourceGroup);
     connect(useWholeBox, SIGNAL(toggled(bool)),
             this, SLOT(useWholeBoxChanged(bool)));
-    geometryLayout->addWidget(useWholeBox, gRow, 0);
-    ++gRow;
+    geometryLayout->addWidget(useWholeBox, gRow++, 0);
 
     boxExtents[0] = new QLineEdit(sourceGroup);
     connect(boxExtents[0], SIGNAL(returnPressed()),
@@ -427,8 +419,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     boxExtentsLabel[0] = new QLabel(tr("X Extents"), sourceGroup);
     boxExtentsLabel[0]->setBuddy(boxExtents[0]);
     geometryLayout->addWidget(boxExtentsLabel[0], gRow, 0);
-    geometryLayout->addWidget(boxExtents[0], gRow, 1);
-    ++gRow;
+    geometryLayout->addWidget(boxExtents[0], gRow++, 1);
 
     boxExtents[1] = new QLineEdit(sourceGroup);
     connect(boxExtents[1], SIGNAL(returnPressed()),
@@ -436,8 +427,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     boxExtentsLabel[1] = new QLabel(tr("Y Extents"), sourceGroup);
     boxExtentsLabel[1]->setBuddy(boxExtents[1]);
     geometryLayout->addWidget(boxExtentsLabel[1], gRow, 0);
-    geometryLayout->addWidget(boxExtents[1], gRow, 1);
-    ++gRow;
+    geometryLayout->addWidget(boxExtents[1], gRow++, 1);
 
     boxExtents[2] = new QLineEdit(sourceGroup);
     connect(boxExtents[2], SIGNAL(returnPressed()),
@@ -445,9 +435,10 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     boxExtentsLabel[2] = new QLabel(tr("Z Extents"), sourceGroup);
     boxExtentsLabel[2]->setBuddy(boxExtents[2]);
     geometryLayout->addWidget(boxExtentsLabel[2], gRow, 0);
-    geometryLayout->addWidget(boxExtents[2], gRow, 1);
-    gRow++;
+    geometryLayout->addWidget(boxExtents[2], gRow++, 1);
 
+    // FieldData Point list.
+    gRow = 0;
     selectionsLabel = new QLabel(tr("Selection"), sourceGroup);
     selections = new QComboBox(sourceGroup);
 
@@ -455,29 +446,26 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
             this, SLOT(selectionsChanged(int)));
 
     geometryLayout->addWidget(selectionsLabel, gRow, 0);
-    geometryLayout->addWidget(selections, gRow, 1);
-    gRow++;
+    geometryLayout->addWidget(selections, gRow++, 1);
 
-
-    //Point list.
+    // FieldData Point list.
+    gRow = 0;
     fieldData = new QListWidget(sourceGroup);
-    geometryLayout->addWidget(fieldData, gRow, 0);
+    geometryLayout->addWidget(fieldData, gRow, 0, 4, 1);
 
     fieldDataCopyPoints = new QPushButton(tr("Copy to point list"), sourceGroup);
     connect(fieldDataCopyPoints, SIGNAL(clicked()), this, SLOT(copyPoints()));
-    geometryLayout->addWidget(fieldDataCopyPoints, gRow, 1);
-    gRow++;
-
-
+    geometryLayout->addWidget(fieldDataCopyPoints, gRow++, 1);
+    
     //Sampling options.
     samplingGroup = new QGroupBox(sourceGroup);
     samplingGroup->setTitle(tr("Sampling"));
-    sourceLayout->addWidget(samplingGroup, gRow, 0, 1, 5);
+    sourceLayout->addWidget(samplingGroup, 2, 0, 1, 6);
+
     QGridLayout *samplingLayout = new QGridLayout(samplingGroup);
     samplingLayout->setMargin(5);
     samplingLayout->setSpacing(10);
     samplingLayout->setRowStretch(5,10);
-    gRow++;
     
     int sRow = 0;
     samplingTypeLabel = new QLabel(tr("Sampling type:"), samplingGroup);
@@ -880,7 +868,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     // Pathline Options
     QGroupBox *pathlineOptionsGrp = new QGroupBox(icGrp);
-    pathlineOptionsGrp->setTitle(tr("Pathlines Options"));
+    pathlineOptionsGrp->setTitle(tr("Pathline Options"));
     icGrpLayout->addWidget(pathlineOptionsGrp, 3, 0);
 
     QGridLayout *pathlineOptionsGrpLayout = new QGridLayout(pathlineOptionsGrp);

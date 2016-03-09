@@ -51,7 +51,7 @@
 //
 
 static const char *SourceType_strings[] = {
-"Line_", "Plane"};
+"SpecifiedLine", "SpecifiedPlane"};
 
 std::string
 LimitCycleAttributes::SourceType_ToString(LimitCycleAttributes::SourceType t)
@@ -71,7 +71,7 @@ LimitCycleAttributes::SourceType_ToString(int t)
 bool
 LimitCycleAttributes::SourceType_FromString(const std::string &s, LimitCycleAttributes::SourceType &val)
 {
-    val = LimitCycleAttributes::Line_;
+    val = LimitCycleAttributes::SpecifiedLine;
     for(int i = 0; i < 2; ++i)
     {
         if(s == SourceType_strings[i])
@@ -369,7 +369,7 @@ LimitCycleAttributes::SizeType_FromString(const std::string &s, LimitCycleAttrib
 
 void LimitCycleAttributes::Init()
 {
-    sourceType = Line_;
+    sourceType = SpecifiedLine;
     lineStart[0] = 0;
     lineStart[1] = 0;
     lineStart[2] = 0;
@@ -862,7 +862,7 @@ LimitCycleAttributes::CopyAttributes(const AttributeGroup *atts)
     }
     else if(atts->TypeName() == "Line")
     {
-        if(sourceType == Line_)
+        if(sourceType == SpecifiedLine)
         {
             const Line *line = (const Line *)atts;
             SetLineStart(line->GetPoint1());
@@ -872,7 +872,7 @@ LimitCycleAttributes::CopyAttributes(const AttributeGroup *atts)
     }
     else if(atts->TypeName() == "PlaneAttributes")
     {
-        if(sourceType == Plane)
+        if(sourceType == SpecifiedPlane)
         {
             const PlaneAttributes *plane = (const PlaneAttributes *)atts;
             SetPlaneOrigin(plane->GetOrigin());
@@ -3289,7 +3289,7 @@ LimitCycleAttributes::ChangesRequireRecalculation(const LimitCycleAttributes &ob
     }
 
     //Check by source type.
-    if (sourceType == Line_)
+    if (sourceType == SpecifiedLine)
     {
         if (POINT_DIFFERS(lineStart, obj.lineStart) ||
             POINT_DIFFERS(lineEnd, obj.lineEnd) ||
@@ -3302,7 +3302,7 @@ LimitCycleAttributes::ChangesRequireRecalculation(const LimitCycleAttributes &ob
         }
     }
 
-    if (sourceType == Plane)
+    if (sourceType == SpecifiedPlane)
     {
         if (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
             POINT_DIFFERS(planeNormal, obj.planeNormal) ||
@@ -3321,5 +3321,56 @@ LimitCycleAttributes::ChangesRequireRecalculation(const LimitCycleAttributes &ob
     }
 
     return false;
+}
+
+// ****************************************************************************
+// Method: LimitCycleAttributes::ProcessOldVersions
+//
+// Purpose:
+//   Updates the config settings in the data node to the current IndexSelect
+//   opertor version.
+//
+// Arguments:
+//   parentNode    : The data node that stores the IndexSelect attributes.
+//   configVersion : The version of the config file from which the node
+//                   was read.
+//
+// Programmer: Allen Sanderson
+// Creation:   8 March 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+LimitCycleAttributes::ProcessOldVersions(DataNode *parentNode,
+    const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "2.11.0"))
+    {
+        DataNode *searchNode = parentNode->GetNode("LimitCycleAttributes");
+        if(searchNode == 0)
+            return;
+
+        DataNode *sourceNode = searchNode->GetNode("sourceType");
+        if(sourceNode == 0)
+            return;
+
+        std::string mode = sourceNode->AsString();
+        
+        if (mode == "Line_")
+        {
+          searchNode->RemoveNode(sourceNode, true);
+          searchNode->AddNode(new DataNode("sourceType", SourceType_ToString(LimitCycleAttributes::SpecifiedLine)));
+        }
+        else if (mode == "Plane")
+        {
+          searchNode->RemoveNode(sourceNode, true);
+          searchNode->AddNode(new DataNode("sourceType", SourceType_ToString(LimitCycleAttributes::SpecifiedPlane)));
+        }
+    }
 }
 
