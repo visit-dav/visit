@@ -387,7 +387,11 @@ DebugStreamFull::DebugStreamBuf::open(const char *filename_, bool buffer_debug)
  
     for(int i=0; i<numThreadLogs; ++i) {
         std::stringstream fname;
+#if VISIT_THREAD
         fname << filename << i << ".vlog";
+#else
+        fname << filename << ".vlog";
+#endif
         out[i].open(fname.str().c_str(), ios::out);
         if (! out[i])
         {
@@ -584,7 +588,7 @@ DebugStreamFull::~DebugStreamFull()
 //
 // ****************************************************************************
 
-
+#if VISIT_THREAD
 void
 DebugStreamFull::open(const char *progname, bool clobber, bool buffer_debug)
 {
@@ -664,6 +668,78 @@ DebugStreamFull::open(const char *progname, bool clobber, bool buffer_debug)
     buf->open(filename, buffer_debug);
     enabled = true;
 }
+#else
+void
+DebugStreamFull::open(const char *progname, bool clobber, bool buffer_debug)
+{
+    char filename[256];
+
+#ifdef WIN32
+    // On windows, we always use pids, so won't need to rename, and thus
+    // don't need to prepend a letter.
+    sprintf(filename, "%s.%d", progname, level);
+
+#else
+    sprintf(filename, "A.%s.%d", progname, level);
+
+    // only rename old vlogs if we don't have pids
+    bool renameOld = !clobber && (strspn(progname, ".0123456789") == 0);
+
+    // Move all older filenames by one letter
+    if (renameOld)
+    {
+        char filenametmp1[256];
+        char filenametmp2[256];
+        sprintf(filenametmp1, "E.%s.%d.vlog", progname, level);
+        while (access( filenametmp1, F_OK) != -1 )
+        {
+             unlink(filenametmp1);               // E->deleted 
+             sprintf(filenametmp1, "E.%s.%d.vlog", progname, level);
+        }
+        sprintf(filenametmp1, "E.%s.%d.vlog", progname, level);
+        sprintf(filenametmp2, "D.%s.%d.vlog", progname, level);
+        while (access( filenametmp2, F_OK) != -1 )
+        {
+            rename(filenametmp2, filenametmp1); // D->E
+ 
+            sprintf(filenametmp1, "E.%s.%d.vlog", progname, level);
+            sprintf(filenametmp2, "D.%s.%d.vlog", progname, level);
+        }
+        sprintf(filenametmp1, "D.%s.%d.vlog", progname, level);
+        sprintf(filenametmp2, "C.%s.%d.vlog", progname, level);
+        while (access( filenametmp2, F_OK) != -1 )
+        {
+            rename(filenametmp2, filenametmp1); // C->D
+ 
+            sprintf(filenametmp1, "D.%s.%d.vlog", progname, level);
+            sprintf(filenametmp2, "C.%s.%d.vlog", progname, level);
+        }
+        sprintf(filenametmp1, "C.%s.%d.vlog", progname, level);
+        sprintf(filenametmp2, "B.%s.%d.vlog", progname, level);
+        while (access( filenametmp2, F_OK) != -1 )
+        {
+            rename(filenametmp2, filenametmp1); // B->C
+ 
+            sprintf(filenametmp1, "C.%s.%d.vlog", progname, level);
+            sprintf(filenametmp2, "B.%s.%d.vlog", progname, level);
+        }
+        sprintf(filenametmp1, "B.%s.%d.vlog", progname, level);
+        sprintf(filenametmp2, "A.%s.%d.vlog", progname, level);
+        while (access( filenametmp2, F_OK) != -1 )
+        {
+            rename(filenametmp2, filenametmp1); // A->B
+
+            sprintf(filenametmp1, "B.%s.%d.vlog", progname, level);
+            sprintf(filenametmp2, "A.%s.%d.vlog", progname, level);
+        }
+    }
+#endif
+
+    // ok, open the stream
+    buf->open(filename, buffer_debug);
+    enabled = true;
+}
+#endif
 
 
 // ****************************************************************************
