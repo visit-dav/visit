@@ -143,7 +143,7 @@ avtLimitCycleFilter::avtLimitCycleFilter() : seedVelocity(0,0,0),
     //
     // Initialize source values.
     //
-    sourceType = LimitCycleAttributes::Line_;
+    sourceType = LimitCycleAttributes::SpecifiedLine;
     sampleDensity[0] = sampleDensity[1] = sampleDensity[2] = 0;
     sampleDistance[0] = sampleDistance[1] = sampleDistance[2] = 0.0;
     numSamplePoints = 0;
@@ -416,12 +416,12 @@ avtLimitCycleFilter::SetAtts(const AttributeGroup *a)
     //
     switch (atts.GetSourceType())
     {
-      case LimitCycleAttributes::Line_:
+      case LimitCycleAttributes::SpecifiedLine:
         SetLineSource(atts.GetLineStart(), atts.GetLineEnd(),
                       atts.GetSampleDensity0(), atts.GetRandomSamples(),
                       atts.GetRandomSeed(), atts.GetNumberOfRandomSamples());
         break;
-      case LimitCycleAttributes::Plane:
+      case LimitCycleAttributes::SpecifiedPlane:
         SetPlaneSource(atts.GetPlaneOrigin(), atts.GetPlaneNormal(),
                        atts.GetPlaneUpAxis(), atts.GetSampleDensity0(),
                        atts.GetSampleDensity1(), atts.GetSampleDistance0(),
@@ -736,12 +736,12 @@ avtLimitCycleFilter::ContinueExecute()
         {
           avtVector tangent;
 
-          if( sourceType == LimitCycleAttributes::Line_ )
+          if( sourceType == LimitCycleAttributes::SpecifiedLine )
           {
             tangent = avtVector(points[1] - points[0]);
             tangent.normalize();
           }
-          else if( sourceType == LimitCycleAttributes::Plane )
+          else if( sourceType == LimitCycleAttributes::SpecifiedPlane )
           {
             tangent = avtVector(vectors[1]);
             tangent.normalize();
@@ -777,7 +777,7 @@ avtLimitCycleFilter::ContinueExecute()
           double tolerance = atts.GetCycleTolerance();
           
           // Find the curves in the list not being used in any pair.  These
-          // curves are prviously found cycles.
+          // curves are previously found cycles.
           std::vector< int > ids_to_keep;
           
           for (size_t i=0; i<nics; ++i)
@@ -1371,7 +1371,7 @@ void
 avtLimitCycleFilter::SetLineSource(const double *p0, const double *p1,
                                       int den, bool rand, int seed, int numPts)
 {
-    sourceType = LimitCycleAttributes::Line_;
+    sourceType = LimitCycleAttributes::SpecifiedLine;
     points[0].set(p0);
     points[1].set(p1);
     
@@ -1410,7 +1410,7 @@ avtLimitCycleFilter::SetPlaneSource(double O[3], double N[3], double U[3],
                                        bool f, 
                                        bool rand, int seed, int numPts)
 {
-    sourceType = LimitCycleAttributes::Plane;
+    sourceType = LimitCycleAttributes::SpecifiedPlane;
     points[0].set(O);
     vectors[0].set(N);
     vectors[1].set(U);
@@ -1449,11 +1449,11 @@ std::string
 avtLimitCycleFilter::SeedInfoString() const
 {
     char buff[256];
-    if (sourceType == LimitCycleAttributes::Line_)
+    if (sourceType == LimitCycleAttributes::SpecifiedLine)
         sprintf(buff, "Line [%g %g %g] [%g %g %g] D: %d",
                 points[0].x, points[0].y, points[0].z,
                 points[1].x, points[1].y, points[1].z, sampleDensity[0]);
-    else if (sourceType == LimitCycleAttributes::Plane)
+    else if (sourceType == LimitCycleAttributes::SpecifiedPlane)
         sprintf(buff, "Plane O[%g %g %g] N[%g %g %g] D: %d %d",
                 points[0].x, points[0].y, points[0].z,
                 vectors[0].x, vectors[0].y, vectors[0].z,
@@ -1512,9 +1512,9 @@ avtLimitCycleFilter::GetInitialLocations(void)
         srand(randomSeed);
 
     // Add seed points based on the source.
-    if(sourceType == LimitCycleAttributes::Line_)
+    if(sourceType == LimitCycleAttributes::SpecifiedLine)
         GenerateSeedPointsFromLine(seedPts);
-    else if(sourceType == LimitCycleAttributes::Plane)
+    else if(sourceType == LimitCycleAttributes::SpecifiedPlane)
         GenerateSeedPointsFromPlane(seedPts);
 
     //Check for 2D input.
@@ -1965,7 +1965,7 @@ avtLimitCycleFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &
 
       line->GetPointIds()->SetNumberOfIds( returnDistances.size() );
 
-      if( sourceType == LimitCycleAttributes::Line_ )
+      if( sourceType == LimitCycleAttributes::SpecifiedLine )
       {
         avtVector dv = avtVector(points[1] - points[0]) /
           (double) sampleDensity[0];
@@ -1998,7 +1998,7 @@ avtLimitCycleFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &
         lines->InsertNextCell(line);
         line->Delete();
       }
-      else if( sourceType == LimitCycleAttributes::Plane )
+      else if( sourceType == LimitCycleAttributes::SpecifiedPlane )
       {
       
       }
@@ -2272,7 +2272,7 @@ avtLimitCycleFilter::ComputeCorrelationDistance(int idx,
 void
 avtLimitCycleFilter::SetIntersectionCriteria()
 {
-    if( sourceType == LimitCycleAttributes::Line_ )
+    if( sourceType == LimitCycleAttributes::SpecifiedLine )
     {
         planePt = avtVector(points[1] + points[0]);
         planePt *= 0.5;
@@ -2283,7 +2283,7 @@ avtLimitCycleFilter::SetIntersectionCriteria()
         planeN = avtVector(tangent[1],-tangent[0],tangent[2]);
         planeN.normalize();
     }
-    else if( sourceType == LimitCycleAttributes::Plane )
+    else if( sourceType == LimitCycleAttributes::SpecifiedPlane )
     {
         planePt = points[0];
         planeN = vectors[0];

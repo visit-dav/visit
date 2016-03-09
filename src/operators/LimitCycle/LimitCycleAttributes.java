@@ -62,8 +62,8 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
     private static int LimitCycleAttributes_numAdditionalAtts = 59;
 
     // Enum values
-    public final static int SOURCETYPE_LINE_ = 0;
-    public final static int SOURCETYPE_PLANE = 1;
+    public final static int SOURCETYPE_SPECIFIEDLINE = 0;
+    public final static int SOURCETYPE_SPECIFIEDPLANE = 1;
 
     public final static int DATAVALUE_SOLID = 0;
     public final static int DATAVALUE_SEEDPOINTID = 1;
@@ -115,7 +115,7 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
     {
         super(LimitCycleAttributes_numAdditionalAtts);
 
-        sourceType = SOURCETYPE_LINE_;
+        sourceType = SOURCETYPE_SPECIFIEDLINE;
         lineStart = new double[3];
         lineStart[0] = 0;
         lineStart[1] = 0;
@@ -198,7 +198,7 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
     {
         super(LimitCycleAttributes_numAdditionalAtts + nMoreFields);
 
-        sourceType = SOURCETYPE_LINE_;
+        sourceType = SOURCETYPE_SPECIFIEDLINE;
         lineStart = new double[3];
         lineStart[0] = 0;
         lineStart[1] = 0;
@@ -1266,10 +1266,10 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
     {
         String str = new String();
         str = str + indent + "sourceType = ";
-        if(sourceType == SOURCETYPE_LINE_)
-            str = str + "SOURCETYPE_LINE_";
-        if(sourceType == SOURCETYPE_PLANE)
-            str = str + "SOURCETYPE_PLANE";
+        if(sourceType == SOURCETYPE_SPECIFIEDLINE)
+            str = str + "SOURCETYPE_SPECIFIEDLINE";
+        if(sourceType == SOURCETYPE_SPECIFIEDPLANE)
+            str = str + "SOURCETYPE_SPECIFIEDPLANE";
         str = str + "\n";
         str = str + doubleArrayToString("lineStart", lineStart, indent) + "\n";
         str = str + doubleArrayToString("lineEnd", lineEnd, indent) + "\n";

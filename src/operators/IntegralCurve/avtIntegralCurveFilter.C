@@ -1552,7 +1552,7 @@ avtIntegralCurveFilter::GetInitialLocations(void)
     else if (sourceType == IntegralCurveAttributes::Selection)
         GenerateSeedPointsFromSelection(seedPts);
     else if (sourceType == IntegralCurveAttributes::FieldData)
-      GenerateSeedPointsFromFieldData(seedPts);
+        GenerateSeedPointsFromFieldData(seedPts);
 
     //Check for 2D input.
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
