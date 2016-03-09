@@ -1800,7 +1800,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
 
     bool showSampling = false, enableFill = false;
     
-    if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedPoint)
+    if (atts->GetSourceType() == IntegralCurveAttributes::Point)
         TurnOn(pointSource, pointSourceLabel);
     else if (atts->GetSourceType() == IntegralCurveAttributes::PointList)
     {
@@ -1810,7 +1810,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
         TurnOn(pointListAddPoint);
         TurnOn(pointListReadPoints);
     }
-    else if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedLine)
+    else if (atts->GetSourceType() == IntegralCurveAttributes::Line_)
     {
         TurnOn(lineStart, lineStartLabel);
         TurnOn(lineEnd, lineEndLabel);
@@ -1829,7 +1829,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
             sampleDensity[0]->setMinimum(1);
         }
     }
-    else if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedPlane)
+    else if (atts->GetSourceType() == IntegralCurveAttributes::Plane)
     {
         TurnOn(planeOrigin, planeOriginLabel);
         TurnOn(planeNormal, planeNormalLabel);
@@ -1888,7 +1888,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
             }
         }
     }
-    else if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedSphere)
+    else if (atts->GetSourceType() == IntegralCurveAttributes::Sphere)
     {
         TurnOn(sphereOrigin, sphereOriginLabel);
         TurnOn(radius, radiusLabel);
@@ -1915,7 +1915,7 @@ QvisIntegralCurveWindow::UpdateSourceAttributes()
             }
         }
      }
-    else if (atts->GetSourceType() == IntegralCurveAttributes::SpecifiedBox)
+    else if (atts->GetSourceType() == IntegralCurveAttributes::Box)
     {
         TurnOn(useWholeBox);
         for (int i = 0; i < 3; i++)

@@ -51,9 +51,9 @@
 //
 
 static const char *SourceType_strings[] = {
-"SpecifiedPoint", "PointList", "SpecifiedLine", 
-"Circle", "SpecifiedPlane", "SpecifiedSphere", 
-"SpecifiedBox", "Selection", "FieldData"
+"Point", "PointList", "Line_", 
+"Circle", "Plane", "Sphere", 
+"Box", "Selection", "FieldData"
 };
 
 std::string
@@ -74,7 +74,7 @@ IntegralCurveAttributes::SourceType_ToString(int t)
 bool
 IntegralCurveAttributes::SourceType_FromString(const std::string &s, IntegralCurveAttributes::SourceType &val)
 {
-    val = IntegralCurveAttributes::SpecifiedPoint;
+    val = IntegralCurveAttributes::Point;
     for(int i = 0; i < 9; ++i)
     {
         if(s == SourceType_strings[i])
@@ -448,7 +448,7 @@ IntegralCurveAttributes::SizeType_FromString(const std::string &s, IntegralCurve
 
 void IntegralCurveAttributes::Init()
 {
-    sourceType = SpecifiedPoint;
+    sourceType = Point;
     pointSource[0] = 0;
     pointSource[1] = 0;
     pointSource[2] = 0;
@@ -509,7 +509,7 @@ void IntegralCurveAttributes::Init()
     velocitySource[0] = 0;
     velocitySource[1] = 0;
     velocitySource[2] = 0;
-    integrationType = AdamsBashforth;
+    integrationType = DormandPrince;
     parallelizationAlgorithmType = VisItSelects;
     maxProcessCount = 10;
     maxDomainCacheSize = 3;
@@ -1010,7 +1010,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     }
     else if(atts->TypeName() == "PointAttributes")
     {
-        if(sourceType == SpecifiedPoint)
+        if(sourceType == Point)
         {
             const PointAttributes *p = (PointAttributes *)atts;
             SetPointSource(p->GetPoint());
@@ -1019,7 +1019,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     } 
     else if(atts->TypeName() == "Line")
     {
-        if(sourceType == SpecifiedLine)
+        if(sourceType == Line_)
         {
             const Line *line = (const Line *)atts;
             SetLineStart(line->GetPoint1());
@@ -1029,7 +1029,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     }
     else if(atts->TypeName() == "PlaneAttributes")
     {
-        if(sourceType == SpecifiedPlane || sourceType == Circle)
+        if(sourceType == Plane || sourceType == Circle)
         {
             const PlaneAttributes *plane = (const PlaneAttributes *)atts;
             SetPlaneOrigin(plane->GetOrigin());
@@ -1042,7 +1042,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     }
     else if(atts->TypeName() == "SphereAttributes")
     {
-        if(sourceType == SpecifiedSphere)
+        if(sourceType == Sphere)
         {
             const SphereAttributes *sphere = (const SphereAttributes *)atts;
             SetSphereOrigin(sphere->GetOrigin());
@@ -1052,7 +1052,7 @@ IntegralCurveAttributes::CopyAttributes(const AttributeGroup *atts)
     }   
     else if(atts->TypeName() == "BoxExtents")
     {
-        if(sourceType == SpecifiedBox)
+        if(sourceType == Box)
         {
             const BoxExtents *box = (const BoxExtents *)atts;
             SetBoxExtents(box->GetExtents());
@@ -3921,13 +3921,12 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
     }
 
     //Check by source type.
-    if ((sourceType == SpecifiedPoint) &&
-        POINT_DIFFERS(pointSource, obj.pointSource))
+    if ((sourceType == Point) && POINT_DIFFERS(pointSource, obj.pointSource))
     {
         return true;
     }
 
-    if (sourceType == SpecifiedLine)
+    if (sourceType == Line_)
     {
         if (POINT_DIFFERS(lineStart, obj.lineStart) ||
             POINT_DIFFERS(lineEnd, obj.lineEnd) ||
@@ -3940,7 +3939,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
 
-    if (sourceType == SpecifiedPlane)
+    if (sourceType == Plane)
     {
         if (POINT_DIFFERS(planeOrigin, obj.planeOrigin) ||
             POINT_DIFFERS(planeNormal, obj.planeNormal) ||
@@ -3976,7 +3975,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
 
-    if (sourceType == SpecifiedSphere)
+    if (sourceType == Sphere)
     {
         if (POINT_DIFFERS(sphereOrigin, obj.sphereOrigin) ||
             radius != obj.radius ||
@@ -3992,7 +3991,7 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
         }
     }
 
-    if (sourceType == SpecifiedBox)
+    if (sourceType == Box)
     {
         if (POINT_DIFFERS(boxExtents, obj.boxExtents) ||
             POINT_DIFFERS(boxExtents+3, obj.boxExtents+3) ||
