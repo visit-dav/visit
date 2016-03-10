@@ -63,7 +63,7 @@ SetOperatorOptions(LCSAtts, 0)
 
 
 IntegralCurveAtts = IntegralCurveAttributes()
-IntegralCurveAtts.sourceType = IntegralCurveAtts.Point  # Point, PointList, Line_, Circle, Plane, Sphere, Box, Selection, FieldData
+IntegralCurveAtts.sourceType = IntegralCurveAtts.SpecifiedPoint  # SpecifiedPoint, PointList, SpecifiedLine, Circle, SpecifiedPlane, SpecifiedSphere, SpecifiedBox, Selection, FieldData
 IntegralCurveAtts.pointSource = (1.23053, 0.624189, 0)
 IntegralCurveAtts.dataValue = IntegralCurveAtts.SeedPointID  # Solid, SeedPointID, Speed, Vorticity, ArcLength, TimeAbsolute, TimeRelative, AverageDistanceFromSeed, CorrelationDistance, Difference, Variable
 IntegralCurveAtts.integrationDirection = IntegralCurveAtts.ForwardDirectionless  # Forward, Backward, Both, ForwardDirectionless, BackwardDirectionless, BothDirectionless
