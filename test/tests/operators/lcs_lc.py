@@ -63,7 +63,7 @@ SetOperatorOptions(LCSAtts, 0)
 
 
 LimitCycleAtts = LimitCycleAttributes()
-LimitCycleAtts.sourceType = LimitCycleAtts.Line_  # Line_, Plane
+LimitCycleAtts.sourceType = LimitCycleAtts.SpecifiedLine  # SpecifiedLine, SpecifiedPlane
 LimitCycleAtts.lineStart = (1.0564, 0.667238, 0)
 LimitCycleAtts.lineEnd = (1.51521, 0.553799, 0)
 LimitCycleAtts.sampleDensity0 = 500
