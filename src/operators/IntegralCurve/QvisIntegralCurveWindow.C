@@ -61,8 +61,6 @@
 #include <QFileDialog>
 #include <QListWidget>
 
-#include <QvisLineWidthWidget.h>
-#include <QvisVariableButton.h>
 #include <SelectionList.h>
 #include <SelectionProperties.h>
 
@@ -784,8 +782,8 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataLayout->addWidget(dataValueComboBox, 0, 1);
 
     dataVariable = new QvisVariableButton(false, true, true,
-                                         QvisVariableButton::Scalars,
-                                         dataGroup);
+                                          QvisVariableButton::Scalars,
+                                          dataGroup);
     dataLayout->addWidget(dataVariable, 0, 2);
     connect(dataVariable, SIGNAL(activated(const QString &)),
             this, SLOT(dataVariableChanged(const QString&)));
