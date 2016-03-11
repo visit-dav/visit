@@ -60,7 +60,6 @@ ParallelCoordinates
 Pseudocolor
 Scatter
 Spreadsheet
-Streamline
 Subset
 Surface
 Tensor
