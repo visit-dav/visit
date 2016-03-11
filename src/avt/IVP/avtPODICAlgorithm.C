@@ -212,7 +212,7 @@ avtPODICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
         debug1 << "Proc " << PAR_Rank()
                << "  active ICs " << activeICs.size()
                << "  inactive ICs " << inactiveICs.size()
-               << "  terminated ICs " << terminatedICs.size() << endl;
+               << "  terminated ICs " << terminatedICs.size() << std::endl;
 
         std::ostringstream os;
 
