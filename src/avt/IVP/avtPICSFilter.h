@@ -206,6 +206,7 @@ class IVP_API avtPICSFilter :
     void SetTolerances(double reltol, double abstol, bool isFraction);
 
     void SetIntegrationDirection(int dir);
+    int  GetIntegrationDirection() { return integrationDirection; };
 
     void InitializeLocators(void);
     void UpdateProgress(int amt, int total)
