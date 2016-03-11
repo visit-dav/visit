@@ -460,9 +460,9 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
         polylineToTubeFilter->radius =
           atts.GetTubeRadiusBBox() * GetBBoxSize( bbox );
       
-      polylineToTubeFilter->varyRadius   = atts.GetTubeRadiusVarEnabled();
-      polylineToTubeFilter->radiusVar    = atts.GetTubeRadiusVar();
-      polylineToTubeFilter->radiusFactor = atts.GetTubeRadiusVarRatio();
+      polylineToTubeFilter->varyRadius    = atts.GetTubeRadiusVarEnabled();
+      polylineToTubeFilter->radiusVar     = atts.GetTubeRadiusVar();
+      polylineToTubeFilter->radiusFactor  = atts.GetTubeRadiusVarRatio();
       polylineToTubeFilter->numberOfSides = atts.GetTubeResolution();
           
       polylineToTubeFilter->SetInput(dob);
@@ -795,7 +795,6 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     glyphMapper->SetPointsColor(atts.GetPointColor().Red()/255.,
                                 atts.GetPointColor().Green()/255.,
                                 atts.GetPointColor().Blue()/255.);
-
 }
 
 
