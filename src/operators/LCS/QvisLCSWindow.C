@@ -648,7 +648,7 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     // Pathline Options
     QGroupBox *pathlineOptionsGrp = new QGroupBox(icGrp);
-    pathlineOptionsGrp->setTitle(tr("Pathlines Options"));
+    pathlineOptionsGrp->setTitle(tr("Pathline Options"));
     icGrpLayout->addWidget(pathlineOptionsGrp, 3, 0);
 
     QGridLayout *pathlineOptionsGrpLayout = new QGridLayout(pathlineOptionsGrp);
