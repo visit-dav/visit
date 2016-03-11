@@ -46,6 +46,8 @@
 #include <DebugStream.h>
 #include <VisItStreamUtil.h>
 
+#include <vtkStreamer.h>
+
 // ****************************************************************************
 //  Method: avtSerialICAlgorithm::avtSerialICAlgorithm
 //
@@ -195,8 +197,24 @@ avtSerialICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve *> &ics)
             i0 = (rank)*(nSeedsPerProc) + oneExtraUntil;
             i1 = (rank+1)*(nSeedsPerProc) + oneExtraUntil;
         }
+
+        // When integrating in both directions make sure the forward
+        // and backwards seed are on the same rank. If the number of
+        // seeds for this rank is odd then adjust the seed count.
+        if (picsFilter->GetIntegrationDirection() ==
+            VTK_INTEGRATE_BOTH_DIRECTIONS &&
+            (i1-i0) % 2)
+        {
+          // Odd rank so give up a seed to make the seed count even.
+          if( rank % 2 == 1 )
+            i0 += 1;
+          
+          // Even rank so add a seed to make the seed count even.
+          else if( rank % 2 == 0 )
+            i1 += 1;
+        }
     
-        //Delete the seeds I don't need.
+        // Delete the seeds not needed.
         for (int i = 0; i < i0; i++)
             delete ics[i];
         for (int i = i1; i < nSeeds; i++)
@@ -217,8 +235,8 @@ avtSerialICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve *> &ics)
     {
       if( i0 < i1 )
       {
-        debug1 << "Proc " << PAR_Rank() << " has seeds: "
-               << i0 << " to " << (i1-1) << " of " << nSeeds << " seeds"
+        debug1 << "Proc " << PAR_Rank() << " has " << (i1-i0) << " seeds: "
+               << i0 << " to " << (i1-1) << " of " << nSeeds << " total seeds"
                << std::endl;
       }
       else
