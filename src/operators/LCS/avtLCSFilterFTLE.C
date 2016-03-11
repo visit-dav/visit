@@ -75,7 +75,6 @@
 //#include <vtkImageGaussianSmooth.h>
 
 #ifdef PARALLEL
-#include <mpi.h>
 #include <avtParallel.h>
 #include <vtkDataSetReader.h>
 #include <vtkDataSetWriter.h>
@@ -992,7 +991,7 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
                     dz = (remapPoints[k+5][i] - remapPoints[k+4][i]) * delta;
                   else
                     dz = 0;
-                  
+
                   jacobian[i]->SetTuple3(j, dx, dy, dz);
                 }
               }
