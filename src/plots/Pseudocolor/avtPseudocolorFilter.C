@@ -187,10 +187,10 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
 
     int topoDim = data.GetTopologicalDimension();
 
-    std::string pointVar   = plotAtts.GetPointSizeVar();
-    std::string tubeRadiusVar  = plotAtts.GetTubeRadiusVar();
+    std::string pointVar           = plotAtts.GetPointSizeVar();
+    std::string tubeRadiusVar      = plotAtts.GetTubeRadiusVar();
     std::string endPointRadiusVar  = plotAtts.GetEndPointRadiusVar();
-    std::string opacityVar = plotAtts.GetOpacityVariable();
+    std::string opacityVar         = plotAtts.GetOpacityVariable();
 
     avtDataRequest_p dataRequest = new avtDataRequest(
                                        contract->GetDataRequest());
