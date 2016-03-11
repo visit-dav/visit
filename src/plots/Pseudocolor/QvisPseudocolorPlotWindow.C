@@ -610,8 +610,8 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     
     tubeRadiusVarLabel = new QLabel(tr("Variable"), central);
     lineLayout->addWidget(tubeRadiusVarLabel, 2, 1, Qt::AlignRight);
-    tubeRadiusVar = new QvisVariableButton(true, true, true,
-                                                    QvisVariableButton::Scalars, central);
+    tubeRadiusVar = new QvisVariableButton(false, true, true,
+                                           QvisVariableButton::Scalars, central);
     connect(tubeRadiusVar, SIGNAL(activated(const QString &)),
             this, SLOT(tubeRadiusVarChanged(const QString&)));
     lineLayout->addWidget(tubeRadiusVar, 2, 2);
@@ -689,7 +689,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     endPointRadiusVarLabel = new QLabel(tr("Variable"), central);
     lineLayout->addWidget(endPointRadiusVarLabel, 7, 1, Qt::AlignRight);
     endPointRadiusVar = new QvisVariableButton(true, true, true,
-                                                    QvisVariableButton::Scalars, central);
+                                               QvisVariableButton::Scalars, central);
     connect(endPointRadiusVar, SIGNAL(activated(const QString &)),
             this, SLOT(endPointRadiusVarChanged(const QString&)));
     lineLayout->addWidget(endPointRadiusVar, 7, 2);
