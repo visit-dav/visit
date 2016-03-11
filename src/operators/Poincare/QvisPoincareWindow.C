@@ -479,7 +479,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     puncturePlotLayout->addWidget(puncturePeriodTolerance, 1, 3);
 
 
-    QLabel *maxStepsLabel = new QLabel(tr("Maximum number of steps"), puncturesGroup);
+    maxStepsLabel = new QLabel(tr("Maximum number of steps"), puncturesGroup);
 puncturePlotLayout->addWidget(maxStepsLabel, 2, 0, 1, 2);
     maxSteps = new QLineEdit(central);
     connect(maxSteps, SIGNAL(returnPressed()),
@@ -907,7 +907,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     // Pathline Options
     QGroupBox *pathlineOptionsGrp = new QGroupBox(icGrp);
-    pathlineOptionsGrp->setTitle(tr("Pathlines Options"));
+    pathlineOptionsGrp->setTitle(tr("Pathline Options"));
     icGrpLayout->addWidget(pathlineOptionsGrp, 3, 0);
 
     QGridLayout *pathlineOptionsGrpLayout = new QGridLayout(pathlineOptionsGrp);
@@ -1129,14 +1129,18 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             if( (int) atts->GetPuncturePlotType() == PoincareAttributes::Single)
             {
               puncturePeriodTolerance->setEnabled(false);
+              puncturePeriodToleranceLabel->setEnabled(false);
               maxSteps->setEnabled(false);
+              maxStepsLabel->setEnabled(false);
               limitMaxTime->setEnabled(false);
               maxTime->setEnabled(false);
             }
             else
             {
               puncturePeriodTolerance->setEnabled(true);
+              puncturePeriodToleranceLabel->setEnabled(true);
               maxSteps->setEnabled(true);
+              maxStepsLabel->setEnabled(true);
               limitMaxTime->setEnabled(true);
               maxTime->setEnabled(atts->GetTerminateByTime());
             }

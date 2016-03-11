@@ -251,6 +251,7 @@ class QvisPoincareWindow : public QvisOperatorWindow
     QLineEdit *puncturePeriodTolerance;
     QLabel    *puncturePeriodToleranceLabel;
     QLineEdit *maxSteps;
+    QLabel    *maxStepsLabel;
     QCheckBox *limitMaxTime;
     QLineEdit *maxTime;
 
