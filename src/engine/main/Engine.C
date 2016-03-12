@@ -2149,7 +2149,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
                     }
                     else if (strcmp(argv[i], "-idle-timeout") == 0)
                         idleTimeoutMins = (int) to;
-                    else
+                    else //if (strcmp(argv[i], "-exec-timeout") == 0)
                         executionTimeoutMins = (int) to;
                 }
                 else
