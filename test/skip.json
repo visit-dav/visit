@@ -35,6 +35,7 @@
                     {"category":"unit","file":"namescheme.py","platform":"win"},
                     {"category":"unit","file":"stringhelpers.py","platform":"win"},
                     {"category":"unit","file":"utility.py","platform":"win"},
+                    {"category":"queries","file":"streamlineInfo.py"},
                     {"category":"plots","file":"pics.py"},
                     {"category":"plots","file":"sl_integration.py"},
                     {"category":"plots","file":"sl_termination.py"},
