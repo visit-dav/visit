@@ -4,7 +4,7 @@
     <Field name="host" type="string">ash.chpc.utah.edu</Field>
     <Field name="userName" type="string"></Field>
     <Field name="hostAliases" type="string">"ash#.chpc.utah.edu ash#.wasatch.peaks"</Field>
-    <Field name="directory" type="string">/uufs/ash.peaks/sys/pkg/VisIt/Install/gcc</Field>
+    <Field name="directory" type="string">/uufs/chpc.utah.edu/sys/installdir/VisIt/install</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
