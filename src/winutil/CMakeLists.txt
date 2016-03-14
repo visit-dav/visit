@@ -41,6 +41,9 @@
 #   Kathleen Biagas, Fri Aug 8 08:52:46 PDT 2014
 #   Added QvisNoDefaultColorTableButton.
 #
+#   Kathleen Biagas, Mon Mar 14 13:51:16 PDT 2016
+#   With QT 5 on linux, link with Qt's X11Extras library.
+#
 #****************************************************************************/
 
 SET(WINUTIL_SOURCES
@@ -86,5 +89,8 @@ ADD_LIBRARY(winutil ${WINUTIL_SOURCES})
 
 # Specify the libraries to link against on Windows & Mac
 TARGET_LINK_LIBRARIES(winutil visitcommon avtdbatts ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+if(VISIT_QT5 AND LINUX)
+    target_link_libraries(winutil ${QT_QTX11EXTRAS_LIBRARY})
+ENDIF()
 
 VISIT_INSTALL_TARGETS(winutil)

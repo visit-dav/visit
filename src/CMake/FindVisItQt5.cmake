@@ -9,6 +9,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(QT5_LIBRARIES "")
 
 set(visit_qt_modules Core Gui Widgets OpenGL Network PrintSupport Xml UiTools)
+
+if(LINUX)
+    set (visit_qt_modules ${visit_qt_modules} X11Extras)
+endif()
+
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${VISIT_QT_DIR}/lib/cmake)
 find_package (Qt5 REQUIRED ${visit_qt_modules})
 
@@ -51,6 +56,10 @@ set(QT_QTXML_LIBRARY ${Qt5Xml_LIBRARIES})
 
 # why is core not named the same as the others?
 set(QT_CORE_LIBRARY ${Qt5Core_LIBRARIES})
+
+if (LINUX)
+    set(QT_QTX11EXTRAS_LIBRARY ${Qt5X11Extras_LIBRARIES})
+endif()
 
 if(NOT VISIT_QT_SKIP_INSTALL)
   # moc
