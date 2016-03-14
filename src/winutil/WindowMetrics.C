@@ -46,6 +46,8 @@
 #elif defined(Q_WS_X11) || defined(Q_OS_LINUX)
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QX11Info>
+#else
+#include <QtX11Extras/QX11Info.h>
 #endif
 #include <X11/Xlib.h>
 static Window GetParent(Display *dpy, Window win, Window *root_ret=NULL);
@@ -220,12 +222,14 @@ WindowMetrics::CalculateScreen(QWidget *win,
 //   elsewhere. If we think we're displaying to a Mac then limit one of our
 //   loops to once so we don't get stuck.
 //
+//   Kathleen Biagas, Mon Mar 14 13:45:14 PDT 2016
+//   Re-enable this method for QT 5.
+//
 // ****************************************************************************
 
 void
 WindowMetrics::MeasureScreen(bool waitForWM)
 {
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #if defined(Q_WS_X11) || defined(Q_OS_LINUX)
     //
     // Create the test window
@@ -307,7 +311,6 @@ WindowMetrics::MeasureScreen(bool waitForWM)
 #if defined(Q_WS_WIN) || defined(Q_OS_WIN)
     preshiftX = shiftX = borderL;
     preshiftY = shiftY = borderT;
-#endif
 #endif
 #endif
 }
