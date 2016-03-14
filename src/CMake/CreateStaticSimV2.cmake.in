@@ -77,8 +77,7 @@ list(APPEND visit_libs_ser ${SIMV2_SER_LIBS} ${AVT_LIBS} ${AVT_SER_LIBS}
                            ${VISIT_LIBS} ${TP_LIBS} ${SLIVR_LIBS})
 if(VISIT_PARALLEL)
     list(APPEND visit_libs_par ${SIMV2_PAR_LIBS} ${AVT_LIBS} ${AVT_PAR_LIBS}
-                               ${VISIT_LIBS} ${TP_LIBS} ${DDTSIM_LIBS}
-                               ${VISIT_SLIVR})
+                               ${VISIT_LIBS} ${TP_LIBS} ${SLIVR_LIBS})
 endif()
 
 
@@ -98,14 +97,14 @@ get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_plots.h"
                     "Plot" "_ser" visit_libs_ser)
 get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_operators.h"
                     "Operator" "_ser" visit_libs_ser)
-list(APPEND visit_libs_ser "ISimV2Database" "ESimV2Database_ser")
+list(APPEND visit_libs_ser "ISimV2Database" "ESimV2Database_ser" "IVTKDatabase" "EVTKDatabase_ser")
 
 if(VISIT_PARALLEL)
     get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_plots.h"
                         "Plot" "_par" visit_libs_par)
     get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_operators.h"
                         "Operator" "_par" visit_libs_par)
-    list(APPEND visit_libs_par "ISimV2Database" "ESimV2Database_ser")
+    list(APPEND visit_libs_par "ISimV2Database" "ESimV2Database_ser" "IVTKDatabase" "EVTKDatabase_ser")
 endif()
 
 
