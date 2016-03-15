@@ -213,6 +213,8 @@ avtIntegralCurveFilter::avtIntegralCurveFilter() : seedVelocity(0,0,0),
 {
     dataValue = IntegralCurveAttributes::TimeAbsolute;
     displayGeometry = IntegralCurveAttributes::Lines;
+    cleanupValue = IntegralCurveAttributes::None;
+    velThreshold = 1e-3;
     cropValue = IntegralCurveAttributes::Time;
 
     //
@@ -686,6 +688,8 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
                                   atts.GetCriticalPointThreshold());
 
     SetDataValue(int(atts.GetDataValue()), atts.GetDataVariable());
+    SetCleanupValue(int(atts.GetCleanupValue()),
+                    double(atts.GetVelThreshold()));
     SetCropValue(int(atts.GetCropValue()));
 
     if (atts.GetDataValue() == IntegralCurveAttributes::CorrelationDistance)
@@ -1038,6 +1042,29 @@ avtIntegralCurveFilter::SetDataValue(int m, const std::string &var)
 {
     dataValue = m;
     dataVariable = var;
+}
+
+// ****************************************************************************
+// Method: avtIntegralCurveFilter::SetCleanupValue
+//
+// Purpose: 
+//   Sets clean up value to use
+//
+// Arguments:
+//   m : The crop value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 22 12:41:08 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtIntegralCurveFilter::SetCleanupValue(int m, double v)
+{
+    cleanupValue = m;
+    velThreshold = v;
 }
 
 // ****************************************************************************
@@ -2841,15 +2868,21 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         // Remove all of the points that are below the critical point
         // threshold except for the first point.  The first point is
         // kept so the critical point location is known.
-        for (int j=beginIndex; j<=endIndex; ++j)
+        if( displayGeometry == IntegralCurveAttributes::Tubes ||
+            displayGeometry == IntegralCurveAttributes::Ribbons ||
+            cleanupValue == IntegralCurveAttributes::Before ||
+            cleanupValue == IntegralCurveAttributes::After )
         {
+          for (int j=beginIndex; j<=endIndex; ++j)
+          {
             s = ic->GetSample(j);
             
-            if (s.velocity.length() < criticalPointThreshold)
+            if (s.velocity.length() < velThreshold)
             {
               totalSamples -= (endIndex-j);
               break;
             }
+          }
         }
         
         if( totalSamples < 2 )
@@ -2888,25 +2921,37 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             distance /= nSamples;
         }
 
-        for (int j=beginIndex; j<=endIndex; ++j)
+        for (int j=beginIndex, k=0; j<=endIndex; ++j, ++k)
         {
-          if( cropBeginInterpolate && j == beginIndex )
-            cropBeginIndex = pIdx;
-
-          if( cropEndInterpolate && j == endIndex )
-            cropEndIndex = pIdx;
-
             s = ic->GetSample(j);
 
-            line->GetPointIds()->SetId(j-beginIndex, pIdx);
-
-            // Points
-            points->InsertPoint(pIdx,
-                                s.position.x, s.position.y, s.position.z);
-
-            // Normalize the spped.
             double speed = s.velocity.length();
 
+            // Reached a critical point so stop.
+            if( cleanupValue == IntegralCurveAttributes::Before )
+            {
+              if (speed < velThreshold)
+              {
+                j = endIndex;
+                
+                s = ic->GetSample(j);
+
+                speed = s.velocity.length();
+              }
+            }
+
+            if( cropBeginInterpolate && j == beginIndex )
+              cropBeginIndex = pIdx;
+
+            if( cropEndInterpolate && j == endIndex )
+              cropEndIndex = pIdx;
+
+            line->GetPointIds()->SetId(k, pIdx);
+
+            // Points
+            points->InsertPoint(pIdx, s.position.x, s.position.y, s.position.z);
+
+            // Normalize the spped.
             if (speed > 0)
                 s.velocity *= 1.0f/speed;
 
@@ -2971,14 +3016,19 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             }
 
             // secondary scalars
-            for( unsigned int i=0; i<secondaryVariables.size(); ++i )
-                secondarys[i]->InsertTuple1(pIdx, s.secondarys[i]);
+            for( unsigned int l=0; l<secondaryVariables.size(); ++l )
+                secondarys[l]->InsertTuple1(pIdx, s.secondarys[l]);
 
             pIdx++;
 
             // Reached a critical point so stop.
-            if (speed < criticalPointThreshold)
-              break;
+            if( displayGeometry == IntegralCurveAttributes::Tubes ||
+                displayGeometry == IntegralCurveAttributes::Ribbons ||
+                cleanupValue == IntegralCurveAttributes::After )
+            {
+              if (speed < velThreshold)
+                break;
+            }
         }
 
         // When cropping the first and last values are the oringal
@@ -3121,18 +3171,30 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     for( unsigned int i=0; i<secondaryVariables.size(); ++i )
          secondarys[i]->Delete();
 
-    vtkCleanPolyData *clean = vtkCleanPolyData::New();
-    clean->ConvertLinesToPointsOff();
-    clean->ConvertPolysToLinesOff();
-    clean->ConvertStripsToPolysOff();
-    clean->PointMergingOn();
-    clean->SetInputData(pd);
-    clean->Update();
-    pd->Delete();
+    vtkPolyData *outPD;
+    
+    if( displayGeometry == IntegralCurveAttributes::Tubes ||
+        displayGeometry == IntegralCurveAttributes::Ribbons ||
+        cleanupValue == IntegralCurveAttributes::Merge )
+    {
+      vtkCleanPolyData *clean = vtkCleanPolyData::New();
+      clean->ConvertLinesToPointsOff();
+      clean->ConvertPolysToLinesOff();
+      clean->ConvertStripsToPolysOff();
+      clean->PointMergingOn();
+      clean->SetInputData(pd);
+      clean->Update();
+      pd->Delete();
 
-    vtkPolyData *outPD = clean->GetOutput();
+      outPD = clean->GetOutput();
+    }
+    else
+    {
+      outPD = pd;
+    }
+
     outPD->Register(NULL);
-    clean->Delete();
+    pd->Delete();
     
     avtDataTree *dt = new avtDataTree(outPD, 0);
     SetOutputDataTree(dt);

@@ -808,10 +808,37 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     connect(correlationDistanceMinDistEdit, SIGNAL(returnPressed()),
             this, SLOT(processCorrelationDistanceMinDistEditText()));
 
+    // Create the cleanup group
+    QGroupBox *cleanupGrp = new QGroupBox(pageAppearance);
+    cleanupGrp->setTitle(tr("Cleanup the integral curve"));
+    mainLayout->addWidget(cleanupGrp, 3, 0);
+
+    QGridLayout *cleanupLayout = new QGridLayout(cleanupGrp);
+    cleanupLayout->setMargin(5);
+    cleanupLayout->setSpacing(10);
+
+    // Create the cleanup value.
+    cleanupLayout->addWidget(new QLabel(tr("Point cleanup"), cleanupGrp), 0, 0);
+
+    cleanupValueComboBox = new QComboBox(cleanupGrp);
+    cleanupValueComboBox->addItem(tr("Keep all points"));
+    cleanupValueComboBox->addItem(tr("Merge"));
+    cleanupValueComboBox->addItem(tr("Delete points before"));
+    cleanupValueComboBox->addItem(tr("Delete points after "));
+    connect(cleanupValueComboBox, SIGNAL(activated(int)), this, SLOT(cleanupValueChanged(int)));
+    cleanupLayout->addWidget(cleanupValueComboBox, 0, 1);
+
+    velThresholdLabel = new QLabel(tr("Velocity threshold"), cleanupGrp);
+    cleanupLayout->addWidget(velThresholdLabel, 0, 2);
+
+    velThreshold = new QLineEdit(cleanupGrp);
+    connect(velThreshold, SIGNAL(returnPressed()), this, SLOT(velThresholdnProcessText()));
+    cleanupLayout->addWidget(velThreshold, 0, 3);
+    
     // Create the crop group
     QGroupBox *cropGrp = new QGroupBox(pageAppearance);
     cropGrp->setTitle(tr("Crop the integral curve (for animations)"));
-    mainLayout->addWidget(cropGrp, 3, 0);
+    mainLayout->addWidget(cropGrp, 4, 0);
 
     QGridLayout *cropLayout = new QGridLayout(cropGrp);
     cropLayout->setMargin(5);
@@ -848,7 +875,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     // Streamlines/Pathline Group.
     QGroupBox *icGrp = new QGroupBox(pageAppearance);
     icGrp->setTitle(tr("Streamlines vs Pathlines"));
-    mainLayout->addWidget(icGrp, 4, 0);
+    mainLayout->addWidget(icGrp, 5, 0);
 
     QGridLayout *icGrpLayout = new QGridLayout(icGrp);
     icGrpLayout->setSpacing(10);
@@ -1399,6 +1426,20 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
                 TurnOff(correlationDistanceMinDistEdit);
                 TurnOff(correlationDistanceMinDistType);
             }
+            break;
+
+        case IntegralCurveAttributes::ID_cleanupValue:
+            cleanupValueComboBox->blockSignals(true);
+            cleanupValueComboBox->setCurrentIndex(int(atts->GetCleanupValue()));
+            cleanupValueComboBox->blockSignals(false);
+
+            velThresholdLabel->setEnabled(atts->GetCleanupValue()>1);
+            velThreshold->setEnabled(atts->GetCleanupValue()>1);
+
+            break;
+
+        case IntegralCurveAttributes::ID_velThreshold:
+            velThreshold->setText(DoubleToQString(atts->GetVelThreshold()));
             break;
 
         case IntegralCurveAttributes::ID_cropBeginFlag:
@@ -2280,6 +2321,20 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
             atts->SetTermDistance(atts->GetTermDistance());
         }
     }
+    // Do velocity threshold
+    if(which_widget == IntegralCurveAttributes::ID_velThreshold || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(velThreshold, val))
+            atts->SetVelThreshold(val);
+        else
+        {
+            ResettingError(tr("velocity threshold"),
+                DoubleToQString(atts->GetVelThreshold()));
+            atts->SetVelThreshold(atts->GetVelThreshold());
+        }
+    }
+
     // Do crop begin
     if(which_widget == IntegralCurveAttributes::ID_cropBegin || doAll)
     {
@@ -2937,6 +2992,20 @@ void
 QvisIntegralCurveWindow::workGroupSizeChanged(int val)
 {
     atts->SetWorkGroupSize(val);
+    Apply();
+}
+
+void
+QvisIntegralCurveWindow::cleanupValueChanged(int val)
+{
+    atts->SetCleanupValue((IntegralCurveAttributes::CleanupValue)val);
+    Apply();
+}
+
+void
+QvisIntegralCurveWindow::velThresholdProcessText()
+{
+    GetCurrentValues(IntegralCurveAttributes::ID_velThreshold);
     Apply();
 }
 

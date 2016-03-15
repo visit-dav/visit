@@ -160,6 +160,7 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     
     void SetDisplayGeometry(int d);
     void SetDataValue(int, const std::string &var="");
+    void SetCleanupValue(int, double);
     void SetCropValue(int);
     void SetCorrelationDistanceTol(double angTol,
                                    double minDist, bool doBBox)
@@ -241,6 +242,8 @@ class avtIntegralCurveFilter : public virtual avtPluginFilter,
     int    sourceType;   
     int    displayGeometry;
     int    dataValue;
+    int    cleanupValue;
+    double velThreshold;
     int    cropValue;
 
     std::string dataVariable;
