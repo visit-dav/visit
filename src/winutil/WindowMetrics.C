@@ -47,7 +47,7 @@
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QX11Info>
 #else
-#include <QtX11Extras/QX11Info.h>
+#include <QtX11Extras/QX11Info>
 #endif
 #include <X11/Xlib.h>
 static Window GetParent(Display *dpy, Window win, Window *root_ret=NULL);
