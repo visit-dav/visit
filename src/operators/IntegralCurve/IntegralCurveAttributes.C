@@ -127,6 +127,44 @@ IntegralCurveAttributes::DataValue_FromString(const std::string &s, IntegralCurv
 }
 
 //
+// Enum conversion methods for IntegralCurveAttributes::CleanupValue
+//
+
+static const char *CleanupValue_strings[] = {
+"None", "Merge", "Before", 
+"After"};
+
+std::string
+IntegralCurveAttributes::CleanupValue_ToString(IntegralCurveAttributes::CleanupValue t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return CleanupValue_strings[index];
+}
+
+std::string
+IntegralCurveAttributes::CleanupValue_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return CleanupValue_strings[index];
+}
+
+bool
+IntegralCurveAttributes::CleanupValue_FromString(const std::string &s, IntegralCurveAttributes::CleanupValue &val)
+{
+    val = IntegralCurveAttributes::None;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == CleanupValue_strings[i])
+        {
+            val = (CleanupValue)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for IntegralCurveAttributes::CropValue
 //
 
@@ -520,6 +558,8 @@ void IntegralCurveAttributes::Init()
     pathlinesPeriod = 0;
     pathlinesCMFE = POS_CMFE;
     displayGeometry = Lines;
+    cleanupValue = None;
+    velThreshold = 0.001;
     cropBeginFlag = false;
     cropBegin = 0;
     cropEndFlag = false;
@@ -636,6 +676,8 @@ void IntegralCurveAttributes::Copy(const IntegralCurveAttributes &obj)
     pathlinesPeriod = obj.pathlinesPeriod;
     pathlinesCMFE = obj.pathlinesCMFE;
     displayGeometry = obj.displayGeometry;
+    cleanupValue = obj.cleanupValue;
+    velThreshold = obj.velThreshold;
     cropBeginFlag = obj.cropBeginFlag;
     cropBegin = obj.cropBegin;
     cropEndFlag = obj.cropEndFlag;
@@ -907,6 +949,8 @@ IntegralCurveAttributes::operator == (const IntegralCurveAttributes &obj) const
             (pathlinesPeriod == obj.pathlinesPeriod) &&
             (pathlinesCMFE == obj.pathlinesCMFE) &&
             (displayGeometry == obj.displayGeometry) &&
+            (cleanupValue == obj.cleanupValue) &&
+            (velThreshold == obj.velThreshold) &&
             (cropBeginFlag == obj.cropBeginFlag) &&
             (cropBegin == obj.cropBegin) &&
             (cropEndFlag == obj.cropEndFlag) &&
@@ -1232,6 +1276,8 @@ IntegralCurveAttributes::SelectAll()
     Select(ID_pathlinesPeriod,                    (void *)&pathlinesPeriod);
     Select(ID_pathlinesCMFE,                      (void *)&pathlinesCMFE);
     Select(ID_displayGeometry,                    (void *)&displayGeometry);
+    Select(ID_cleanupValue,                       (void *)&cleanupValue);
+    Select(ID_velThreshold,                       (void *)&velThreshold);
     Select(ID_cropBeginFlag,                      (void *)&cropBeginFlag);
     Select(ID_cropBegin,                          (void *)&cropBegin);
     Select(ID_cropEndFlag,                        (void *)&cropEndFlag);
@@ -1556,6 +1602,18 @@ IntegralCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
     {
         addToParent = true;
         node->AddNode(new DataNode("displayGeometry", DisplayGeometry_ToString(displayGeometry)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_cleanupValue, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("cleanupValue", CleanupValue_ToString(cleanupValue)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_velThreshold, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("velThreshold", velThreshold));
     }
 
     if(completeSave || !FieldsEqual(ID_cropBeginFlag, &defaultObject))
@@ -1954,6 +2012,24 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
                 SetDisplayGeometry(value);
         }
     }
+    if((node = searchNode->GetNode("cleanupValue")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetCleanupValue(CleanupValue(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            CleanupValue value;
+            if(CleanupValue_FromString(node->AsString(), value))
+                SetCleanupValue(value);
+        }
+    }
+    if((node = searchNode->GetNode("velThreshold")) != 0)
+        SetVelThreshold(node->AsDouble());
     if((node = searchNode->GetNode("cropBeginFlag")) != 0)
         SetCropBeginFlag(node->AsBool());
     if((node = searchNode->GetNode("cropBegin")) != 0)
@@ -2366,6 +2442,20 @@ IntegralCurveAttributes::SetDisplayGeometry(IntegralCurveAttributes::DisplayGeom
 {
     displayGeometry = displayGeometry_;
     Select(ID_displayGeometry, (void *)&displayGeometry);
+}
+
+void
+IntegralCurveAttributes::SetCleanupValue(IntegralCurveAttributes::CleanupValue cleanupValue_)
+{
+    cleanupValue = cleanupValue_;
+    Select(ID_cleanupValue, (void *)&cleanupValue);
+}
+
+void
+IntegralCurveAttributes::SetVelThreshold(double velThreshold_)
+{
+    velThreshold = velThreshold_;
+    Select(ID_velThreshold, (void *)&velThreshold);
 }
 
 void
@@ -2882,6 +2972,18 @@ IntegralCurveAttributes::GetDisplayGeometry() const
     return DisplayGeometry(displayGeometry);
 }
 
+IntegralCurveAttributes::CleanupValue
+IntegralCurveAttributes::GetCleanupValue() const
+{
+    return CleanupValue(cleanupValue);
+}
+
+double
+IntegralCurveAttributes::GetVelThreshold() const
+{
+    return velThreshold;
+}
+
 bool
 IntegralCurveAttributes::GetCropBeginFlag() const
 {
@@ -3183,6 +3285,8 @@ IntegralCurveAttributes::GetFieldName(int index) const
     case ID_pathlinesPeriod:                    return "pathlinesPeriod";
     case ID_pathlinesCMFE:                      return "pathlinesCMFE";
     case ID_displayGeometry:                    return "displayGeometry";
+    case ID_cleanupValue:                       return "cleanupValue";
+    case ID_velThreshold:                       return "velThreshold";
     case ID_cropBeginFlag:                      return "cropBeginFlag";
     case ID_cropBegin:                          return "cropBegin";
     case ID_cropEndFlag:                        return "cropEndFlag";
@@ -3276,6 +3380,8 @@ IntegralCurveAttributes::GetFieldType(int index) const
     case ID_pathlinesPeriod:                    return FieldType_double;
     case ID_pathlinesCMFE:                      return FieldType_enum;
     case ID_displayGeometry:                    return FieldType_enum;
+    case ID_cleanupValue:                       return FieldType_enum;
+    case ID_velThreshold:                       return FieldType_double;
     case ID_cropBeginFlag:                      return FieldType_bool;
     case ID_cropBegin:                          return FieldType_double;
     case ID_cropEndFlag:                        return FieldType_bool;
@@ -3369,6 +3475,8 @@ IntegralCurveAttributes::GetFieldTypeName(int index) const
     case ID_pathlinesPeriod:                    return "double";
     case ID_pathlinesCMFE:                      return "enum";
     case ID_displayGeometry:                    return "enum";
+    case ID_cleanupValue:                       return "enum";
+    case ID_velThreshold:                       return "double";
     case ID_cropBeginFlag:                      return "bool";
     case ID_cropBegin:                          return "double";
     case ID_cropEndFlag:                        return "bool";
@@ -3687,6 +3795,16 @@ IntegralCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
     case ID_displayGeometry:
         {  // new scope
         retval = (displayGeometry == obj.displayGeometry);
+        }
+        break;
+    case ID_cleanupValue:
+        {  // new scope
+        retval = (cleanupValue == obj.cleanupValue);
+        }
+        break;
+    case ID_velThreshold:
+        {  // new scope
+        retval = (velThreshold == obj.velThreshold);
         }
         break;
     case ID_cropBeginFlag:

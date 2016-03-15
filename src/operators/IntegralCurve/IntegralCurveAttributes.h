@@ -86,6 +86,13 @@ public:
         Difference,
         Variable
     };
+    enum CleanupValue
+    {
+        None,
+        Merge,
+        Before,
+        After
+    };
     enum CropValue
     {
         Distance,
@@ -229,6 +236,8 @@ public:
     void SetPathlinesPeriod(double pathlinesPeriod_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
     void SetDisplayGeometry(DisplayGeometry displayGeometry_);
+    void SetCleanupValue(CleanupValue cleanupValue_);
+    void SetVelThreshold(double velThreshold_);
     void SetCropBeginFlag(bool cropBeginFlag_);
     void SetCropBegin(double cropBegin_);
     void SetCropEndFlag(bool cropEndFlag_);
@@ -312,6 +321,8 @@ public:
     double             GetPathlinesPeriod() const;
     PathlinesCMFE      GetPathlinesCMFE() const;
     DisplayGeometry    GetDisplayGeometry() const;
+    CleanupValue       GetCleanupValue() const;
+    double             GetVelThreshold() const;
     bool               GetCropBeginFlag() const;
     double             GetCropBegin() const;
     bool               GetCropEndFlag() const;
@@ -352,6 +363,11 @@ public:
     static bool DataValue_FromString(const std::string &, DataValue &);
 protected:
     static std::string DataValue_ToString(int);
+public:
+    static std::string CleanupValue_ToString(CleanupValue);
+    static bool CleanupValue_FromString(const std::string &, CleanupValue &);
+protected:
+    static std::string CleanupValue_ToString(int);
 public:
     static std::string CropValue_ToString(CropValue);
     static bool CropValue_FromString(const std::string &, CropValue &);
@@ -451,6 +467,8 @@ public:
         ID_pathlinesPeriod,
         ID_pathlinesCMFE,
         ID_displayGeometry,
+        ID_cleanupValue,
+        ID_velThreshold,
         ID_cropBeginFlag,
         ID_cropBegin,
         ID_cropEndFlag,
@@ -524,6 +542,8 @@ private:
     double       pathlinesPeriod;
     int          pathlinesCMFE;
     int          displayGeometry;
+    int          cleanupValue;
+    double       velThreshold;
     bool         cropBeginFlag;
     double       cropBegin;
     bool         cropEndFlag;
@@ -553,6 +573,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*d*iiiisiibdbddbddiddidDiiiiibbddiibdbdidddbbiibbbbbbddddis"
+#define INTEGRALCURVEATTRIBUTES_TMFS "iDDDDDDdDDbd*d*iiiisiibdbddbddiddidDiiiiibbddiiidbdbdidddbbiibbbbbbddddis"
 
 #endif

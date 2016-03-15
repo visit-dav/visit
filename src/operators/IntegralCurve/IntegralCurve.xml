@@ -39,6 +39,12 @@
         Difference
         Variable
       </Enum>
+      <Enum name="CleanupValue">
+        None
+        Merge
+        Before
+        After
+      </Enum>
       <Enum name="CropValue">
         Distance
         Time
@@ -249,6 +255,12 @@
       </Field>
       <Field name="displayGeometry" label="Display geometry" type="enum" subtype="DisplayGeometry">
         Lines
+      </Field>
+      <Field name="cleanupValue" label="Clean up value" type="enum" subtype="CleanupValue">
+        None
+      </Field>
+      <Field name="velThreshold" label="Velocity Threshold" type="double">
+        0.001000
       </Field>
       <Field name="cropBeginFlag" label="Crop from" type="bool">
         false

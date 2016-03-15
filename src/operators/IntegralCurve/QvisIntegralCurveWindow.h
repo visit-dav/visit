@@ -250,6 +250,9 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     void processCorrelationDistanceAngTolEditText();
     void processCorrelationDistanceMinDistEditText();
 
+    void cleanupValueChanged(int val);
+    void velThresholdProcessText();
+
     void cropBeginFlagChanged(bool val);
     void cropBeginProcessText();
     void cropEndFlagChanged(bool val);
@@ -357,7 +360,11 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     QLineEdit *correlationDistanceAngTolEdit, *correlationDistanceMinDistEdit;
     QComboBox *correlationDistanceMinDistType;
 
-    QCheckBox *cropBeginFlag;
+    QLabel    *velThresholdLabel;
+    QLineEdit *velThreshold;
+    QComboBox *cleanupValueComboBox;
+
+  QCheckBox *cropBeginFlag;
     QLineEdit *cropBegin;
     QCheckBox *cropEndFlag;
     QLineEdit *cropEnd;
