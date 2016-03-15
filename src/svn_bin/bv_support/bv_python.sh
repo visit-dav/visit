@@ -112,16 +112,16 @@ echo ""
 function bv_python_info
 {
 export PYTHON_FILE_SUFFIX="tgz"
-export PYTHON_VERSION=${PYTHON_VERSION:-"2.7.6"}
+export PYTHON_VERSION=${PYTHON_VERSION:-"2.7.11"}
 export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"2.7"}
 export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
 export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
-export PYTHON_MD5_CHECKSUM="2cf641732ac23b18d139be077bd906cd"
+export PYTHON_MD5_CHECKSUM="6b6076ec9e93f05dd63e47eb9c15728b"
 export PYTHON_SHA256_CHECKSUM=""
 
 export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}
-export PIL_FILE=${PIL_FILE:-"Imaging-1.1.6.tar.gz"}
-export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.6"}
+export PIL_FILE=${PIL_FILE:-"Imaging-1.1.7.tar.gz"}
+export PIL_BUILD_DIR=${PIL_BUILD_DIR:-"Imaging-1.1.7"}
 
 export PYPARSING_FILE=${PYPARSING_FILE:-"pyparsing-1.5.2.tar.gz"}
 export PYPARSING_BUILD_DIR=${PYPARSING_BUILD_DIR:-"pyparsing-1.5.2"}
@@ -419,12 +419,12 @@ function apply_python_pil_patch
 {
    info "Patching PIL: Add /usr/lib64/ to lib search path."
    patch -f -p0 << \EOF
-diff -c Imaging-1.1.6.orig/setup.py Imaging-1.1.6/setup.py
-*** Imaging-1.1.6.orig/setup.py Sun Dec  3 03:37:29 2006
---- Imaging-1.1.6/setup.py      Tue Dec 14 13:39:39 2010
+diff -c Imaging-1.1.7.orig/setup.py  Imaging-1.1.7/setup.py
+*** Imaging-1.1.7.orig/setup.py Wed Jan  6 11:39:52 2016
+--- Imaging-1.1.7/setup.py      Wed Jan  6 11:41:13 2016
 ***************
-*** 196,201 ****
---- 196,205 ----
+*** 211,216 ****
+--- 211,220 ----
           add_directory(library_dirs, "/usr/local/lib")
           add_directory(include_dirs, "/usr/local/include")
 
