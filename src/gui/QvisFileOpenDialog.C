@@ -185,6 +185,10 @@ QvisFileOpenDialog::delayedChangePath(const QString &initialFile,
 //   Kathleen Bonnell, Fri May 13 14:21:27 PDT 2011
 //   Added fallbackPath arg, pass it to delayedChangePath.
 //
+//   Kathleen Biagas, Tue Mar 15 18:25:50 MST 2016
+//   Initialize progressCallback and progressCallbackData to prevent
+//   windows exception in debug mode.
+//
 // ****************************************************************************
 
 QString
@@ -199,8 +203,8 @@ QvisFileOpenDialog::getOpenFileNameEx(const QString &initialFile,
     std::string oldpath(fileServer->GetPath());
     std::string oldfilter(fileServer->GetFilter());
 
-    bool           (*progressCallback)(void *, int);
-    void            *progressCallbackData;
+    bool           (*progressCallback)(void *, int) = NULL;
+    void            *progressCallbackData = NULL;
     fileServer->GetProgressCallback(progressCallback, progressCallbackData);
 
     // Set up a delayed order to change the path.

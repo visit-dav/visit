@@ -91,6 +91,13 @@ QvisSessionFileDialog::QvisSessionFileDialog(const QString &caption) :
 
 QvisSessionFileDialog::~QvisSessionFileDialog()
 {
+    RestoreFileServerSettings();
+}
+
+
+void
+QvisSessionFileDialog::RestoreFileServerSettings()
+{
     fileServer->SetFilter(origFilter);
     fileServer->SetAutomaticFileGrouping(autoFileGrouping);
     fileServer->SetSmartFileGrouping(smartFileGrouping);
@@ -120,6 +127,10 @@ QvisSessionFileDialog::~QvisSessionFileDialog()
 //   Kathleen Biagas, Tue Oct 13 09:49:51 PDT 2015
 //   Windows hasn't used '.vses' in a very long time, so don't use it.
 //
+//   Kathleen Biagas, Tue Mar 15 18:14:44 MST 2016
+//   Restore fileserver settings after filename is retrieved, so that
+//   SessionSourceChanger (if used) will be using the correct settings.
+//
 // ****************************************************************************
 
 void
@@ -140,5 +151,7 @@ QvisSessionFileDialog::getFileName(DLG_TYPE type,
     {
         filename.SetFromString(qfilename.toStdString());
     }
+
+    RestoreFileServerSettings();
 }
 
