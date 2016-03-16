@@ -57,6 +57,9 @@
 //   Add storage for original filter, grouping settings retrieved from 
 //   file server.
 //
+//   Kathleen Biagas, Tue Mar 15 18:27:17 MST 2016
+//   Added RestoreFileServerSettings method.
+//
 // ****************************************************************************
 
 class QvisSessionFileDialog : public QvisFileOpenDialog
@@ -73,6 +76,7 @@ public:
                      QualifiedFilename &filename);
 
 private:
+    void RestoreFileServerSettings(void);
     std::string origFilter;
     bool autoFileGrouping;
     bool smartFileGrouping;
