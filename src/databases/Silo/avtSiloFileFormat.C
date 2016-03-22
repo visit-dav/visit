@@ -17224,7 +17224,6 @@ static int FindFirstNonEmptyBlock(char const *mbobj_name, int nblocks,
                    << "\" is all empty." << endl;
             return is_all_empty;
         }
-        return blocknum;
     }
     return blocknum;
 }
