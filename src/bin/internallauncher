@@ -1326,6 +1326,30 @@ class CudaDebugger(Debugger):
         return launcherargs + self.Executable() + vgargs + visitargs
 
 ###############################################################################
+# Class: CudaMemcheck
+#
+# Purpose:  Launch a CUDA-enabled VisIt component under NVIDIA's cuda-memcheck
+# 
+# Programmer: Kevin Griffin 
+# Date:       Mon Mar 21 16:34:52 PDT 2016 
+#
+# Modifications:
+#
+###############################################################################
+
+class CudaMemcheck(Debugger):
+    def __init__(self, launcher):
+        super(CudaMemcheck, self).__init__(launcher)
+
+    def Executable(self):
+        return ["cuda-memcheck"]
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
+        vgargs = self.DebuggerArguments()
+        return launcherargs + self.Executable() + visitargs
+
+###############################################################################
 # Class: ValgrindDebugger
 #
 # Purpose:    Launch a VisIt component under valgrind.
@@ -2921,6 +2945,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Burlen Loring, Wed Aug 19 09:48:07 PDT 2015
     #   Added callgrind
     #
+    #   Kevin Griffin, Mon Mar 21 16:34:52 PDT 2016 
+    #   Added cuda-memcheck.
+    #
     ############################################################################
     def Debuggers(self):
         return ["gdb",
@@ -2932,7 +2959,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 "debug-malloc",
                 "ddt",
                 "lldb",
-                "nvprof"]
+                "nvprof",
+                "cuda-memcheck"]
 
     ############################################################################
     # Method: DebuggerFactory
@@ -2954,6 +2982,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #
     #   Kevin Griffin,
     #   Added nvprof.
+    #
+    #   Kevin Griffin Mon Mar 21 16:34:52 PDT 2016
+    #   Added cuda-memcheck.
     #
     ############################################################################
 
@@ -2978,6 +3009,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return LLDBDebugger(self)
         elif debugger == "nvprof":
             return CudaDebugger(self)
+        elif debugger == "cuda-memcheck":
+            return CudaMemcheck(self)
         # Return a debugger that does not do anything.
         return Debugger(self)
 
