@@ -34,27 +34,42 @@
 # OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 # DAMAGE.
 #*****************************************************************************
+#*****************************************************************************
 """
- file: __init__.py
- author: Cyrus Harrison <cyrush@llnl.gov>
- created: 4/9/2010
+ file: slurm.py
  description:
-     Init file for 'visit_utils' module.
+    Provides a python command for sbatch submission.
 """
 
-import common
-import exprs
-import engine
-import encoding
-import status
-import ult
+import os
+from visit_utils.common import *
 
-import moab
-import slurm
+class SbatchError(Exception):
+    def __init__(self,emsg):
+        self.msg = "<sbatch error:> " + emsg
 
-import qannote
-import qplot
-
-from query import query, python_query
-from windows import Window, WindowManager
-from property_tree import PropertyTree
+def sbatch(cmd,rmin,nnodes=1,mach=None,part=None,bank=None,rdir=None,obase=None,depend=None):
+    if mach is None:
+        mach = hostname(False)
+    # create output file name
+    if obase is None:
+        ctoks = cmd.split()
+        sname = os.path.split(ctoks[0])[1]
+        obase = sname
+    ofile = "out.sbatch.%s.%s.%s.txt" % (obase,hostname(),timestamp())
+    xcmd  = "sbatch -o %s -N %d -t %s" % (ofile,nnodes, str(rmin))
+    if not rdir is None:
+        xcmd += " -d %s " % (os.path.abspath(rdir))
+    if not depend is None:
+        xcmd += " -after:%s " % depend
+    if not part is None:
+        xcmd += " -p %s" % part
+    if not bank is None:
+        xcmd += " -A %s" % bank
+    xcmd += " %s" % cmd
+    ret,out = sexe(xcmd,ret_output=True,echo=True)
+    if ret == 0:
+        jid = int(out.split(" ")[-1].strip())
+        return jid, ofile
+    else:
+        raise SbatchError(out)
