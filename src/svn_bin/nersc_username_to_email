@@ -214,6 +214,10 @@ case $1 in
     "jimeliot")
         emaddr=jim.eliot@awe.co.uk
         ;;
+    # Iulian Grindeanu
+    "iulian")
+        emaddr=iulian@mcs.anl.gov
+        ;;
     *)
         emaddr=visit-core-support@elist.ornl.gov
         ;;
