@@ -47,16 +47,19 @@ notes:   Ported/refactored from 'Testing.py'
 #
 # ----------------------------------------------------------------------------
 
-import string
-import sys
-import time
-import os
+import atexit
 import glob
-import subprocess
-import thread
+import gzip
 import json
-import shutil
+import os
 import platform
+import shutil
+import string
+import subprocess
+import sys
+import tempfile
+import thread
+import time
 
 import HtmlDiff
 import HtmlPython
@@ -84,6 +87,9 @@ sys.path.append(os.path.abspath(os.path.split(__visit_script_file__)[0]))
 
 from visit_test_common import *
 from visit_test_ctest import *
+
+# list of files to clean up at exit
+filesToRemoveUponExit = []
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -1922,8 +1928,42 @@ def TurnOffAllAnnotations(givenAtts=0):
     SetAnnotationAttributes(a)
 
 # ----------------------------------------------------------------------------
+# Function: CleanUpFilesToRemoveUponExit 
+# Remove any files we created temporarily
+# ----------------------------------------------------------------------------
+def CleanUpFilesToRemoveUponExit():
+    for f in filesToRemoveUponExit:
+        os.unlink(f)
+
+# ----------------------------------------------------------------------------
+# Function: DecompressDatabase
+# Do this using python itself instead of relying upon having a gzip OS tool
+# available and be judicious about memory usage.
+# ----------------------------------------------------------------------------
+def DecompressDatabase(abs_dbname, zip_ext):
+    gname = ""
+    try:
+        f = gzip.GzipFile(abs_dbname+zip_ext,"r")
+        (gd, gname) = tempfile.mkstemp(suffix=os.path.basename(abs_dbname),
+                                   dir=os.path.dirname(abs_dbname),text="wb")
+        os.close(gd)
+        g = open(gname,"wb")
+        buf = f.read(100000)
+        while len(buf):
+            g.write(buf)
+            buf = f.read(100000)
+        g.close()
+    except:
+        pass
+    filesToRemoveUponExit.append(gname)
+    return gname
+
+# ----------------------------------------------------------------------------
 # Function: FindAndOpenDatabase
 #
+# Modifications:
+#   Mark C. Miller, Thu Mar 24 14:29:45 PDT 2016
+#   Added support for gzip'd compressed variants of the file.
 # ----------------------------------------------------------------------------
 def FindAndOpenDatabase(dbname, extraPaths=()):
     """
@@ -1939,6 +1979,9 @@ def FindAndOpenDatabase(dbname, extraPaths=()):
     for p in externalDbPaths + extraPaths:
         abs_dbname = "%s/%s"%(p,dbname)
         if os.path.isfile(abs_dbname):
+            return OpenDatabase(abs_dbname), abs_dbname
+        elif os.path.isfile(abs_dbname+".gz"):
+            abs_dbname = DecompressDatabase(abs_dbname, ".gz")
             return OpenDatabase(abs_dbname), abs_dbname
     Log("Unable to OpenDatabase \"%s\" at any of the specified paths.\n" % dbname)
     return 0, ""
@@ -2384,6 +2427,8 @@ def InitTestEnv():
     """
     Sets up VisIt to execute a test script.
     """
+    atexit.register(CleanUpFilesToRemoveUponExit)
+
     # default file
     params_file="params.json"
     for arg in sys.argv:
