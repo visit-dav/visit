@@ -7931,6 +7931,9 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
 //    Changed 'vector<int>' to 'intVector'.
 //
+//    Kathleen Biagas, Wed Mar 23 18:06:29 PDT 2016
+//    Account for some domains being empty (NULL vtkDataSet).
+//
 // ****************************************************************************
 
 void
@@ -7942,9 +7945,13 @@ avtGenericDatabase::CreateGlobalZones(avtDatasetCollection &ds,
     src->DatabaseProgress(0, 0, progressString);
     for (int i = 0 ; i < ds.GetNDomains() ; i++)
     {
-        vtkDataArray *arr = GetGlobalZoneIds(domains[i], spec->GetVariable(),
-                                             spec->GetTimestep());
-        ds.GetDataset(i, 0)->GetCellData()->AddArray(arr);
+        if (ds.GetDataset(i,0) != NULL)
+        {
+            vtkDataArray *arr = GetGlobalZoneIds(domains[i],
+                                                 spec->GetVariable(),
+                                                 spec->GetTimestep());
+            ds.GetDataset(i, 0)->GetCellData()->AddArray(arr);
+        }
         src->DatabaseProgress(i, ds.GetNDomains(), progressString);
     }
     src->DatabaseProgress(1, 0, progressString);
@@ -7964,6 +7971,9 @@ avtGenericDatabase::CreateGlobalZones(avtDatasetCollection &ds,
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
 //    Changed 'vector<int>' to 'intVector'.
 //
+//    Kathleen Biagas, Wed Mar 23 18:06:29 PDT 2016
+//    Account for some domains being empty (NULL vtkDataSet).
+//
 // ****************************************************************************
 
 void
@@ -7975,9 +7985,13 @@ avtGenericDatabase::CreateGlobalNodes(avtDatasetCollection &ds,
     src->DatabaseProgress(0, 0, progressString);
     for (int i = 0 ; i < ds.GetNDomains() ; i++)
     {
-        vtkDataArray *arr = GetGlobalNodeIds(domains[i], spec->GetVariable(),
-                                             spec->GetTimestep());
-        ds.GetDataset(i, 0)->GetPointData()->AddArray(arr);
+        if (ds.GetDataset(i,0) != NULL)
+        {
+            vtkDataArray *arr = GetGlobalNodeIds(domains[i],
+                                                 spec->GetVariable(),
+                                                 spec->GetTimestep());
+            ds.GetDataset(i, 0)->GetPointData()->AddArray(arr);
+        }
         src->DatabaseProgress(i, ds.GetNDomains(), progressString);
     }
     src->DatabaseProgress(1, 0, progressString);
