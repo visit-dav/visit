@@ -1941,10 +1941,20 @@ def CleanUpFilesToRemoveUponExit():
 # available and be judicious about memory usage.
 # ----------------------------------------------------------------------------
 def DecompressDatabase(abs_dbname, zip_ext):
+
+    if os.path.isdir(os.environ['TMPDIR']):
+         tmpdir = os.environ['TMPDIR']
+    elif os.path.isdir(os.environ['TMP']):
+         tmpdir = os.environ['TMP']
+    elif os.path.isdir("/tmp"):
+        tmpdir = "/tmp"
+    else:
+        tmpdir = os.path.dirname(abs_dbname)
+
     try:
         f = gzip.GzipFile(abs_dbname+zip_ext,"r")
         (gd, gname) = tempfile.mkstemp(suffix=os.path.basename(abs_dbname),
-                                   dir=os.path.dirname(abs_dbname),text="wb")
+                          dir=tmpdir,text="wb")
         os.close(gd)
         g = open(gname,"wb")
         buf = f.read(100000)
