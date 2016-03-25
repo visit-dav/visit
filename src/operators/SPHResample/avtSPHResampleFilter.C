@@ -719,6 +719,12 @@ avtSPHResampleFilter::CreateTensorStruct(vtkDataArray* const input_support, cons
 //  Programmer: Cody Raskin
 //  Creation:   Fri Dec 5 13:50:31 PST 2014
 //
+//  Modifications:
+//
+//      Kevin Griffin, Thu Mar 24 18:28:09 PDT 2016
+//      Added check for datasets = 0 and for NULL PointData to prevent Engine
+//      crash.
+//
 // ****************************************************************************
 template<int Dim>
 void
@@ -765,7 +771,6 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
     {
         //        int var_ncomps = GetInput()->GetInfo().GetAttributes().GetVariableDimension(varname.c_str());
         // number of components can be used in the future to deal with resampled scalars, tensors, etc
-        
         vtkIdType npart = 0;    // number of particles
         vtkDataSet *dset = data_sets[0];
         vtkAppendPolyData *appender = NULL;
@@ -822,9 +827,42 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
             B.push_back(vector<double>(Dim,0.0));
         }
         
-        vtkDataArray *input_var     = dset->GetPointData()->GetArray(varname.c_str());
-        vtkDataArray *input_support = dset->GetPointData()->GetArray(supportVarName.c_str());
-        vtkDataArray *input_weight  = dset->GetPointData()->GetArray(weightVarName.c_str());
+        vtkDataArray *input_var = NULL;
+        vtkDataArray *input_support = NULL;
+        vtkDataArray *input_weight = NULL;
+        
+        input_var = dset->GetPointData()->GetArray(varname.c_str());
+        
+        if(input_var != NULL) {
+            input_support = dset->GetPointData()->GetArray(supportVarName.c_str());
+            input_weight  = dset->GetPointData()->GetArray(weightVarName.c_str());
+        } else {
+            input_var = dset->GetCellData()->GetArray(varname.c_str());
+            input_support = dset->GetCellData()->GetArray(supportVarName.c_str());
+            input_weight  = dset->GetCellData()->GetArray(weightVarName.c_str());
+        }
+        
+        std::string errMsg;
+        
+        if(input_var == NULL) {
+            errMsg.append(varname);
+            errMsg.append(" must exist and have the same centering");
+            EXCEPTION1(InvalidVariableException, errMsg);
+        }
+        
+        if(input_support == NULL) {
+            errMsg.clear();
+            errMsg.append(supportVarName);
+            errMsg.append(" must exist and have the same centering");
+            EXCEPTION1(InvalidVariableException, errMsg);
+        }
+        
+        if(input_weight == NULL) {
+            errMsg.clear();
+            errMsg.append(weightVarName);
+            errMsg.append(" must exist and have the same centering");
+            EXCEPTION1(InvalidVariableException, errMsg);
+        }
         
         int nCompSupport;
         nCompSupport = input_support->GetNumberOfComponents();
@@ -1097,7 +1135,6 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
     }
     else
     {           // For processors without any datasets
-#ifdef PARALLEL
         scalarValues.resize(ntot, 0.0);
         vector<double> m0(ntot, 0.0);  // moments of data points
         vector<double> m1(Dim*ntot, 0.0); // data points?
@@ -1117,7 +1154,6 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
         double *m2Out = new double[9*ntot];
         SumDoubleArrayAcrossAllProcessors(m2.data(), m2Out, ntot*9);
         delete [] m2Out;
-#endif
     }
 }
 
@@ -1132,6 +1168,12 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
 //
 //  Programmer: Cody Raskin
 //  Creation:   Fri Dec 5 13:50:31 PST 2014
+//
+//  Modifications:
+//
+//      Kevin Griffin, Thu Mar 24 18:28:09 PDT 2016
+//      Added check for datasets = 0 and for NULL PointData to prevent Engine
+//      crash.
 //
 // ****************************************************************************
 template<int Dim>
@@ -1204,9 +1246,42 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
         vector<double> A;   // correction terms
         vector<vector<double> > B;  // correction terms
         
-        vtkDataArray *input_var     = dset->GetPointData()->GetArray(varname.c_str());
-        vtkDataArray *input_support = dset->GetPointData()->GetArray(supportVarName.c_str());
-        vtkDataArray *input_weight  = dset->GetPointData()->GetArray(weightVarName.c_str());
+        vtkDataArray *input_var = NULL;
+        vtkDataArray *input_support = NULL;
+        vtkDataArray *input_weight = NULL;
+        
+        input_var = dset->GetPointData()->GetArray(varname.c_str());
+        
+        if(input_var != NULL) {
+            input_support = dset->GetPointData()->GetArray(supportVarName.c_str());
+            input_weight  = dset->GetPointData()->GetArray(weightVarName.c_str());
+        } else {
+            input_var = dset->GetCellData()->GetArray(varname.c_str());
+            input_support = dset->GetCellData()->GetArray(supportVarName.c_str());
+            input_weight  = dset->GetCellData()->GetArray(weightVarName.c_str());
+        }
+        
+        std::string errMsg;
+        
+        if(input_var == NULL) {
+            errMsg.append(varname);
+            errMsg.append(" must exist and have the same centering");
+            EXCEPTION1(InvalidVariableException, errMsg);
+        }
+        
+        if(input_support == NULL) {
+            errMsg.clear();
+            errMsg.append(supportVarName);
+            errMsg.append(" must exist and have the same centering");
+            EXCEPTION1(InvalidVariableException, errMsg);
+        }
+        
+        if(input_weight == NULL) {
+            errMsg.clear();
+            errMsg.append(weightVarName);
+            errMsg.append(" must exist and have the same centering");
+            EXCEPTION1(InvalidVariableException, errMsg);
+        }
         
         // assemble your input data arrays ...
         vtkIdType npart = dset->GetNumberOfPoints();
@@ -1499,7 +1574,6 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
     }
     else
     {           // For processors without any datasets
-#ifdef PARALLEL
         int myRank = PAR_Rank();
         
         vector<int> latticeIndexList(1, 0);
@@ -1543,7 +1617,6 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
         }
         
         i_latticeIndexList.erase(i_latticeIndexList.begin(), i_latticeIndexList.end());
-#endif
     }
 }
 
@@ -2138,6 +2211,10 @@ avtSPHResampleFilter::ModifyContract(avtContract_p in_contract)
     {
         weightVarName = "mass";
     }
+    
+//    debug5 << "Resample Variable Name: " << resampleVarName << endl;
+//    debug5 << "Tensor Support Variable Name: " << supportVarName << endl;
+//    debug5 << "Weight Variable Name: " << weightVarName << endl;
     
     debug5 << "Resample Variable Name: " << resampleVarName << endl;
     debug5 << "Tensor Support Variable Name: " << supportVarName << endl;
