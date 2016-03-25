@@ -523,9 +523,9 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
           }
         }
 
-        delete dx;
-        delete dy;
-        delete dz;
+        delete[] dx;
+        delete[] dy;
+        delete[] dz;
       }
 
       //now have the jacobian - 3 arrays with 3 workingArrays.
