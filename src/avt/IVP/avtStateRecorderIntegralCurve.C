@@ -167,7 +167,12 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
         
     if( historyMask & SAMPLE_VELOCITY )
     {
-        avtVector v = step.GetV( time );
+        // Do not call as it can give inaccurate results. Use the
+        // field directly.
+        // avtVector v = step.GetV( time );
+
+        avtVector v;
+        (*field)( time, p, v );
         history.push_back( v.x );
         history.push_back( v.y );
         history.push_back( v.z );

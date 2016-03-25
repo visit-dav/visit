@@ -187,27 +187,31 @@ public:
         return tmp[size()-1];
     }
 
-    avtVector GetV( double param ) const
-    {
-        if( param == t0 )
-            return (size()-1) / (t1 - t0) * ((*this)[1] - (*this)[0]);
-        if( param == t1 )
-            return (size()-1) / (t1 - t0) * ((*this)[size()-1] - (*this)[size()-2]);
+    // Do not call as it can give inaccurate results. Use the
+    // field directly.
 
-        param -= t0;
-        param /= (t1 - t0);
+    // avtVector GetV( double param ) const
+    // {
+    //     if( param == t0 )
+    //         return (size()-1) / (t1 - t0) * ((*this)[1] - (*this)[0]);
+    //     if( param == t1 )
+    //         return (size()-1) / (t1 - t0) * ((*this)[size()-1] - (*this)[size()-2]);
 
-        std::vector<avtVector> tmp(size()-1);
+    //     param -= t0;
+    //     param /= (t1 - t0);
 
-        for( size_t i=0; i<size()-1; ++i )
-            tmp[i] = (*this)[i+1] - (*this)[i];
+    //     // BezierSegment evaluation using deCasteljau's scheme
+    //     std::vector<avtVector> tmp(size()-1);
 
-        for( size_t l=1; l<size()-1; ++l )
-            for( size_t i=size()-2; i>=l; --i )
-                tmp[i] = (1.0-param)*tmp[i-1] + param*tmp[i];
+    //     for( size_t i=0; i<size()-1; ++i )
+    //         tmp[i] = (*this)[i+1] - (*this)[i];
+
+    //     for( size_t l=1; l<size()-1; ++l )
+    //         for( size_t i=size()-2; i>=l; --i )
+    //             tmp[i] = (1.0-param)*tmp[i-1] + param*tmp[i];
                 
-        return (size() - 1) / (t1 - t0) * tmp[size()-2];
-    }
+    //     return (size() - 1) / (t1 - t0) * tmp[size()-2];
+    // }
 
     void ClampToLength( double L )
     {

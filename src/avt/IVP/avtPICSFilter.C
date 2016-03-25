@@ -352,7 +352,7 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
     
     std::vector<int> doms;
     intervalTree->GetElementsListFromRange(xyz0, xyz1, doms);
-    
+
     bool blockLoaded = false;
     for (size_t i = 0; i < doms.size(); i++)
     {
@@ -383,10 +383,6 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
         ic->status.SetExitSpatialBoundary();
     else if (!blockLoaded)
         ic->status.SetAtSpatialBoundary();
-
-    // std::cerr << PAR_Rank() << "  " << __FUNCTION__ << "  " << __LINE__ << "  "
-    //        << ic->id << "  " << ic->status << "  " << blockLoaded
-    //        << std::endl;
 }
 
 // ****************************************************************************
@@ -1078,11 +1074,10 @@ avtPICSFilter::SetTolerances(double reltol, double abstol, bool isFraction)
 void
 avtPICSFilter::SetIntegrationDirection(int dir)
 {
-    // Note the direction is based on the VTK definitions in:
-    // Filters/FlowPaths/vtkStreamer.h 
-    // #define VTK_INTEGRATE_FORWARD  0
-    // #define VTK_INTEGRATE_BACKWARD 1
-    // #define VTK_INTEGRATE_BOTH     2
+    // Note the direction is based on the VTK definitions in vtkStreamer.h 
+    // #define VTK_INTEGRATE_FORWARD         0
+    // #define VTK_INTEGRATE_BACKWARD        1
+    // #define VTK_INTEGRATE_BOTH_DIRECTIONS 2
 
     // The directionless attribute is specific to VisIt.
     // #define VTK_INTEGRATE_FORWARD_DIRECTIONLESS  3
