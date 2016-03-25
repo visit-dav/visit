@@ -14,8 +14,8 @@ output=$1
 uppercase_out=`echo $1 | tr '[a-z]' '[A-Z]'`
 
 if [[ $output == "" ]]; then
-   echo "Please enter module name /path/to/visit/construct_build_visit_module module_name"
-   exit 0
+    echo "Please enter module name /path/to/visit/construct_build_visit_module module_name"
+    exit 0
 fi
 
 
@@ -159,4 +159,3 @@ function bv_${output}_build
        fi
     fi
 }" >> $filename
-

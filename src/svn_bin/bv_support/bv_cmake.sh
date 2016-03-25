@@ -6,64 +6,64 @@ function bv_cmake_initialize
     export USE_SYSTEM_CMAKE="no"
     add_extra_commandline_args "cmake" "system-cmake" 0 "Use cmake found on system"
     add_extra_commandline_args "cmake" "alt-cmake-dir" 1 "Use cmake found in alternative directory"
-    add_extra_commandline_args "cmake" "cmake-bin-dir" 1 "Use cmake found in alternative directory"
+    add_extra_commandline_args "cmake" "bin-cmake-dir" 1 "Use cmake found in alternative binary directory"
 }
 
 function bv_cmake_enable
 {
-DO_CMAKE="yes"
-ON_CMAKE="on"
-FORCE_CMAKE="yes"
+    DO_CMAKE="yes"
+    ON_CMAKE="on"
+    FORCE_CMAKE="yes"
 }
 
 function bv_cmake_disable
 {
-DO_CMAKE="no"
-ON_CMAKE="off"
-FORCE_CMAKE="no"
+    DO_CMAKE="no"
+    ON_CMAKE="off"
+    FORCE_CMAKE="no"
 }
 
 function bv_cmake_depends_on
 {
-echo ""
+    echo ""
 }
 
 function bv_cmake_force
 {
-  if [[ "$FORCE_CMAKE" == "yes" ]]; then
-     return 0;
-  fi
-  return 1;
+    if [[ "$FORCE_CMAKE" == "yes" ]]; then
+        return 0;
+    fi
+    return 1;
 }
 
 function cmake_set_vars_helper
 {
-   CMAKE_VERSION=`"${CMAKE_COMMAND}" --version`
-   CMAKE_VERSION=${CMAKE_VERSION/cmake version }
-   CMAKE_BUILD_DIR=`"${CMAKE_COMMAND}" --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g`
-   CMAKE_BUILD_DIR=`echo $CMAKE_BUILD_DIR`
-   CMAKE_INSTALL="$CMAKE_BUILD_DIR/bin"
-   CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g` 
-   CMAKE_ROOT=`echo "$CMAKE_ROOT"`
-   CMAKE_ROOT=`echo $CMAKE_ROOT`
+    CMAKE_VERSION=`"${CMAKE_COMMAND}" --version`
+    CMAKE_VERSION=${CMAKE_VERSION/cmake version }
+    CMAKE_BUILD_DIR=`"${CMAKE_COMMAND}" --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g`
+    CMAKE_BUILD_DIR=`echo $CMAKE_BUILD_DIR`
+    CMAKE_INSTALL="$CMAKE_BUILD_DIR/bin"
+    CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g` 
+    CMAKE_ROOT=`echo "$CMAKE_ROOT"`
+    CMAKE_ROOT=`echo $CMAKE_ROOT`
 
-   echo "version: $CMAKE_VERSION build: $CMAKE_BUILD_DIR bin: $CMAKE_INSTALL root: $CMAKE_ROOT"
+    echo "version: $CMAKE_VERSION build: $CMAKE_BUILD_DIR bin: $CMAKE_INSTALL root: $CMAKE_ROOT"
 }
 
 function bv_cmake_system_cmake
 {
-   echo "using system cmake"
+    echo "using system cmake"
 
-   TEST=`which cmake`
-   [ $? != 0 ] && error "System CMake not found"
-
-   bv_cmake_enable
-
-   USE_SYSTEM_CMAKE="yes"
-
-   CMAKE_COMMAND="cmake"
-   CMAKE_FILE=""
-   cmake_set_vars_helper #set vars..
+    TEST=`which cmake`
+    [ $? != 0 ] && error "System CMake not found"
+    
+    bv_cmake_enable
+    
+    USE_SYSTEM_CMAKE="yes"
+    
+    CMAKE_COMMAND="cmake"
+    CMAKE_FILE=""
+    cmake_set_vars_helper #set vars..
 }
 
 function bv_cmake_alt_cmake_dir
@@ -81,7 +81,7 @@ function bv_cmake_alt_cmake_dir
     cmake_set_vars_helper #set vars..
 }
 
-function bv_cmake_cmake_bin_dir
+function bv_cmake_bin_cmake_dir
 {
     CMAKE_BIN_DIR="$1"
     echo "Using cmake from bin directory $1"
@@ -99,31 +99,32 @@ function bv_cmake_cmake_bin_dir
 
 function bv_cmake_info
 {
-export CMAKE_FILE=${CMAKE_FILE:-"cmake-3.0.2.tar.gz"}
-export CMAKE_VERSION=${CMAKE_VERSION:-"3.0.2"}
-export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-3.0.2"}
-export CMAKE_MD5_CHECKSUM="db4c687a31444a929d2fdc36c4dfb95f"
-export CMAKE_SHA256_CHECKSUM=""
+    export CMAKE_FILE=${CMAKE_FILE:-"cmake-3.0.2.tar.gz"}
+    export CMAKE_VERSION=${CMAKE_VERSION:-"3.0.2"}
+    export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-3.0.2"}
+    export CMAKE_MD5_CHECKSUM="db4c687a31444a929d2fdc36c4dfb95f"
+    export CMAKE_SHA256_CHECKSUM=""
 }
 
 function bv_cmake_print
 {
- printf "%s%s\n" "CMAKE_FILE=" "${CMAKE_FILE}"
- printf "%s%s\n" "CMAKE_VERSION=" "${CMAKE_VERSION}"
- printf "%s%s\n" "CMAKE_BUILD_DIR=" "${CMAKE_BUILD_DIR}"
+    printf "%s%s\n" "CMAKE_FILE=" "${CMAKE_FILE}"
+    printf "%s%s\n" "CMAKE_VERSION=" "${CMAKE_VERSION}"
+    printf "%s%s\n" "CMAKE_BUILD_DIR=" "${CMAKE_BUILD_DIR}"
 }
 
 function bv_cmake_print_usage
 {
-printf "%-15s %s [%s]\n" "--cmake"   "Build CMake" "built by default unless --no-thirdparty flag is used"
-printf "%-15s %s [%s]\n" "--system-cmake"   "Use CMake" "Use system cmake"
-printf "%-15s %s [%s]\n" "--alt-cmake-dir"  "Use CMake" "Use cmake from alternative directory"
+    printf "%-15s %s [%s]\n" "--cmake" "Build CMake" "built by default unless --no-thirdparty flag is used"
+    printf "%-15s %s [%s]\n" "--system-cmake"  "Use the system installed CMake"
+    printf "%-15s %s [%s]\n" "--alt-cmake-dir" "Use CMake from an alternative directory"
+    printf "%-15s %s [%s]\n" "--bin-cmake-dir" "Use CMake from an alternative binary directory"
 }
 
 function bv_cmake_host_profile
 {
-#nothing to be done for cmake in cmake host profile..
-echo "##" >> $HOSTCONF
+    #nothing to be done for cmake in cmake host profile..
+    echo "##" >> $HOSTCONF
 }
 
 function bv_cmake_initialize_vars
@@ -153,9 +154,9 @@ function bv_cmake_ensure
 
 function bv_cmake_dry_run
 {
-  if [[ "$DO_CMAKE" == "yes" ]] ; then
-    echo "Dry run option not set for cmake."
-  fi
+    if [[ "$DO_CMAKE" == "yes" ]] ; then
+        echo "Dry run option not set for cmake."
+    fi
 }
 
 # *************************************************************************** #
@@ -164,7 +165,7 @@ function bv_cmake_dry_run
 
 function apply_cmake_patch_4
 {
-   patch -p0 <<\EOF
+    patch -p0 <<\EOF
 --- cmake-3.0.2/Source/cmMakefileTargetGenerator.cxx
 +++ cmake-3.0.2-new/Source/cmMakefileTargetGenerator.cxx
 @@ -306,6 +306,11 @@ std::string cmMakefileTargetGenerator::G
@@ -200,17 +201,17 @@ function apply_cmake_patch_4
        }
      }
 EOF
-   if [[ $? != 0 ]] ; then
+    if [[ $? != 0 ]] ; then
         warn "Unable to apply patch 4 to cmake."
         return 1
-   else
+    else
         return 0
-   fi
+    fi
 }
 
 function apply_cmake_patch_3
 {
-   patch -p0 <<\EOF
+    patch -p0 <<\EOF
 *** cmake-2.8.12.2/Modules/Platform/Darwin.cmake
 --- cmake-2.8.12.2/Modules/Platform/Darwin.cmake.patched
 ***************
@@ -238,17 +239,17 @@ function apply_cmake_patch_3
       set(_sdk_ver "${CMAKE_MATCH_1}")
     elseif("${_CMAKE_OSX_SYSROOT_ORIG}" MATCHES "^macosx([0-9]+\\.[0-9]+)$")
 EOF
-   if [[ $? != 0 ]] ; then
+    if [[ $? != 0 ]] ; then
         warn "Unable to apply patch 3 to cmake."
         return 1
-   else
+    else
         return 0
-   fi
+    fi
 }
 
 function apply_cmake_patch_2
 {
-   patch -p0 <<\EOF
+    patch -p0 <<\EOF
 *** cmake-2.8.10.2/Modules/Platform/Darwin.cmake
 --- cmake-2.8.10.2/Modules/Platform/Darwin.cmake.patched
 ***************
@@ -276,17 +277,17 @@ function apply_cmake_patch_2
       set(_sdk_ver "${CMAKE_MATCH_1}")
     elseif("${_CMAKE_OSX_SYSROOT_ORIG}" MATCHES "^macosx([0-9]+\\.[0-9]+)$")
 EOF
-   if [[ $? != 0 ]] ; then
+    if [[ $? != 0 ]] ; then
         warn "Unable to apply patch 2 to cmake."
         return 1
-   else
+    else
         return 0
-   fi
+    fi
 }
 
 function apply_cmake_patch_1
 {
-   patch -p0 <<\EOF
+    patch -p0 <<\EOF
 diff -c a/Modules/Platform/UnixPaths.cmake cmake-2.8.8/Modules/Platform/UnixPaths.cmake
 *** a/Modules/Platform/UnixPaths.cmake
 --- cmake-2.8.8/Modules/Platform/UnixPaths.cmake
@@ -315,47 +316,47 @@ diff -c a/Modules/Platform/UnixPaths.cmake cmake-2.8.8/Modules/Platform/UnixPath
 
   LIST(APPEND CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES
 EOF
-   if [[ $? != 0 ]] ; then
+    if [[ $? != 0 ]] ; then
         warn "Unable to apply patch 1 to cmake."
         return 1
-   else
+    else
         return 0
-   fi
+    fi
 }
 
 function apply_cmake_patch
 {
-   info "Patching CMake . . ."
+    info "Patching CMake . . ."
 
-   if [[ "${CMAKE_VERSION}" == "2.8.0" ]]; then
-       apply_cmake_patch_1
-       if [[ $? != 0 ]] ; then
-          return 1
-       fi
-   fi
+    if [[ "${CMAKE_VERSION}" == "2.8.0" ]]; then
+        apply_cmake_patch_1
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
 
-   if [[ "${CMAKE_VERSION}" == "2.8.10.2" ]]; then
-       apply_cmake_patch_2
-       if [[ $? != 0 ]] ; then
-          return 1
-       fi
-   fi
+    if [[ "${CMAKE_VERSION}" == "2.8.10.2" ]]; then
+        apply_cmake_patch_2
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
 
-   if [[ "${CMAKE_VERSION}" == "2.8.12.2" ]]; then
-       apply_cmake_patch_3
-       if [[ $? != 0 ]] ; then
-          return 1
-       fi
-   fi
+    if [[ "${CMAKE_VERSION}" == "2.8.12.2" ]]; then
+        apply_cmake_patch_3
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
 
-   if [[ "${CMAKE_VERSION}" == "3.0.2" && "$BUILD_VISIT_BGQ" == "yes" ]]; then
-       apply_cmake_patch_4
-       if [[ $? != 0 ]] ; then
-          return 1
-       fi
-   fi
+    if [[ "${CMAKE_VERSION}" == "3.0.2" && "$BUILD_VISIT_BGQ" == "yes" ]]; then
+        apply_cmake_patch_4
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
 
-   return 0
+    return 0
 }
 
 
@@ -367,8 +368,8 @@ function build_cmake
     prepare_build_dir $CMAKE_BUILD_DIR $CMAKE_FILE
     untarred_cmake=$?
     if [[ $untarred_cmake == -1 ]] ; then
-       warn "Unable to prepare CMake build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare CMake build directory. Giving Up!"
+        return 1
     fi
 
     #
@@ -376,15 +377,15 @@ function build_cmake
     #
     apply_cmake_patch
     if [[ $? != 0 ]] ; then
-       if [[ $untarred_cmake == 1 ]] ; then
-          warn "Giving up on CMake build because the patch failed."
-          return 1
-       else
-          warn "Patch failed, but continuing.  I believe that this script\n"\
-               "tried to apply a patch to an existing directory which had\n"\
-               "already been patched ... that is, that the patch is\n"\
-               "failing harmlessly on a second application."
-       fi
+        if [[ $untarred_cmake == 1 ]] ; then
+            warn "Giving up on CMake build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n"\
+                 "tried to apply a patch to an existing directory which had\n"\
+                 "already been patched ... that is, that the patch is\n"\
+                 "failing harmlessly on a second application."
+        fi
     fi
 
     #
@@ -400,8 +401,8 @@ function build_cmake
         env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
     fi
     if [[ $? != 0 ]] ; then
-       warn "Bootstrap for cmake failed, giving up."
-       return 1
+        warn "Bootstrap for cmake failed, giving up."
+        return 1
     fi
 
     #
@@ -410,16 +411,16 @@ function build_cmake
     info "Building CMake . . ."
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "Cannot build cmake, giving up."
-       return 1
+        warn "Cannot build cmake, giving up."
+        return 1
     fi
 
     info "Installing CMake . . ."
     $MAKE install
     info "Successfully built CMake"
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/cmake"
-       chgrp -R ${GROUP} "$VISITDIR/cmake"
+        chmod -R ug+w,a+rX "$VISITDIR/cmake"
+        chgrp -R ${GROUP} "$VISITDIR/cmake"
     fi
     cd "$START_DIR"
     info "Done with CMake"
@@ -448,22 +449,21 @@ function bv_cmake_is_installed
 
 function bv_cmake_build
 {
-#
-# Build CMake
-#
-cd "$START_DIR"
-if [[ "$DO_CMAKE" == "yes" && "$USE_SYSTEM_CMAKE" == "no" ]]; then
-    check_if_installed "cmake" $CMAKE_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping CMake build.  CMake is already installed."
-    else
-        info "Building CMake (~2 minutes)"
-        build_cmake
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install CMake.  Bailing out."
+    #
+    # Build CMake
+    #
+    cd "$START_DIR"
+    if [[ "$DO_CMAKE" == "yes" && "$USE_SYSTEM_CMAKE" == "no" ]]; then
+        check_if_installed "cmake" $CMAKE_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping CMake build.  CMake is already installed."
+        else
+            info "Building CMake (~2 minutes)"
+            build_cmake
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install CMake.  Bailing out."
+            fi
+            info "Done building CMake"
         fi
-        info "Done building CMake"
     fi
-fi
 }
-

@@ -1,4 +1,3 @@
-
 function bv_vtkm_initialize
 {
     export DO_VTKM="no"
@@ -62,7 +61,8 @@ function bv_vtkm_print
 
 function bv_vtkm_print_usage
 {
-    printf "%-15s %s [%s]\n" "--vtkm" "Build vtkm support" "$DO_VTKM"
+    printf "%-15s %s [%s]\n" "--vtkm" "Build VTKm support" "$DO_VTKM"
+    printf "%-15s %s [%s]\n" "--alt-vtkm-dir" "Use VTKm from an alternative directory"
 }
 
 function bv_vtkm_graphical
@@ -79,8 +79,8 @@ function bv_vtkm_host_profile
         echo "## VTKM" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VTKM_INSTALL_DIR})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VTKM_INSTALL_DIR})" \
+            >> $HOSTCONF
     fi
 }
 
@@ -127,8 +127,8 @@ diff -c vtkm/exec/cuda/internal/CMakeLists.txt.orig vtkm/exec/cuda/internal/CMak
   #-----------------------------------------------------------------------------
 EOF
     if [[ $? != 0 ]] ; then
-      warn "vtkm patch 1 failed."
-      return 1
+        warn "vtkm patch 1 failed."
+        return 1
     fi
 
     return 0;
@@ -167,8 +167,8 @@ diff -c vtkm/internal/Configure.h.in.orig vtkm/internal/Configure.h.in
  #define VTKM_THIRDPARTY_PRE_INCLUDE
 EOF
     if [[ $? != 0 ]] ; then
-      warn "vtkm patch 2 failed."
-      return 1
+        warn "vtkm patch 2 failed."
+        return 1
     fi
 
     return 0;
@@ -199,8 +199,8 @@ diff -c vtkm/ListTag.h.orig vtkm/ListTag.h
   namespace detail {
 EOF
     if [[ $? != 0 ]] ; then
-      warn "vtkm patch 3 failed."
-      return 1
+        warn "vtkm patch 3 failed."
+        return 1
     fi
 
     return 0;
@@ -253,8 +253,8 @@ function build_vtkm
     prepare_build_dir $VTKM_BUILD_DIR $VTKM_FILE
     untarred_vtkm=$?
     if [[ $untarred_vtkm == -1 ]] ; then
-       warn "Unable to prepare vtkm build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare vtkm build directory. Giving Up!"
+        return 1
     fi
     
     #
@@ -323,8 +323,8 @@ function build_vtkm
     $MAKE install || error "vtkm did not install correctly."
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/vtkm"
-       chgrp -R ${GROUP} "$VISITDIR/vtkm"
+        chmod -R ug+w,a+rX "$VISITDIR/vtkm"
+        chgrp -R ${GROUP} "$VISITDIR/vtkm"
     fi
     cd "$START_DIR"
     info "Done with vtkm"
@@ -369,4 +369,3 @@ function bv_vtkm_build
         fi
     fi
 }
-

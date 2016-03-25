@@ -61,6 +61,7 @@ function bv_boost_print
 function bv_boost_print_usage
 {
     printf "%-15s %s [%s]\n" "--boost" "Build BOOST" "${DO_BOOST}"
+    printf "%-15s %s [%s]\n" "--alt-boost-dir" "Use Boost from an alternative directory"
 }
 
 function bv_boost_graphical
@@ -80,12 +81,12 @@ function bv_boost_host_profile
         echo "SETUP_APP_VERSION(BOOST $BOOST_VERSION)" >> $HOSTCONF
         if [[ "$USE_SYSTEM_BOOST" == "yes" ]]; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR $BOOST_INSTALL_DIR)" \
-            >> $HOSTCONF 
+                "VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR $BOOST_INSTALL_DIR)" \
+                >> $HOSTCONF 
         else
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR \${VISITHOME}/boost/$BOOST_VERSION/\${VISITARCH})" \
-            >> $HOSTCONF 
+                "VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR \${VISITHOME}/boost/$BOOST_VERSION/\${VISITARCH})" \
+                >> $HOSTCONF 
         fi
     fi
 }
@@ -105,7 +106,7 @@ function bv_boost_ensure
 function bv_boost_dry_run
 {
     if [[ "$DO_BOOST" == "yes" ]] ; then
-	echo "Dry run option not set for boost."
+        echo "Dry run option not set for boost."
     fi
 }
 
@@ -126,8 +127,8 @@ function build_boost
     prepare_build_dir $BOOST_BUILD_DIR $BOOST_FILE
     untarred_boost=$?
     if [[ $untarred_boost == -1 ]] ; then
-       warn "Unable to prepare BOOST Build Directory. Giving Up"
-       return 1
+        warn "Unable to prepare BOOST Build Directory. Giving Up"
+        return 1
     fi
 
     #
@@ -141,7 +142,7 @@ function build_boost
     build_libs=""
 
     if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
-	libs="$libs \
+        libs="$libs \
               chrono iostreams thread date_time filesystem \
               system program_options regex timer"
 
@@ -152,9 +153,9 @@ function build_boost
         libs="$libs \
               date_time system filesystem"
         if [[ "$build_libs" != ""  ]] ; then
-          build_libs="$build_libs,date_time,system,filesystem"
+            build_libs="$build_libs,date_time,system,filesystem"
         else
-          build_libs="date_time,system,filesystem"
+            build_libs="date_time,system,filesystem"
         fi
     fi
 
@@ -164,30 +165,30 @@ function build_boost
 
         info "Configuring BOOST . . . $build_libs"
 
-#        if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
-#            cf_build_type="--disable-shared --enable-static"
-#        else
-#            cf_build_type="--enable-shared --disable-static"
-#        fi
+        #        if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        #            cf_build_type="--disable-shared --enable-static"
+        #        else
+        #            cf_build_type="--enable-shared --disable-static"
+        #        fi
 
-#        if [[ "$DO_THREAD_BUILD" == "yes" ]]; then
-#            cf_build_thread="--enable-threadsafe --with-pthread"
-#        else
-#            cf_build_thread=""
-#        fi
+        #        if [[ "$DO_THREAD_BUILD" == "yes" ]]; then
+        #            cf_build_thread="--enable-threadsafe --with-pthread"
+        #        else
+        #            cf_build_thread=""
+        #        fi
 
         # In order to ensure $FORTRANARGS is expanded to build the arguments to
         # configure, we wrap the invokation in 'sh -c "..."' syntax
         info "Invoking command to configure BOOST"
-#        info  "./bootstrap.sh $build_libs \
-#            --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
+        #        info  "./bootstrap.sh $build_libs \
+        #            --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
 
         sh -c "./bootstrap.sh $build_libs \
             --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
 
         if [[ $? != 0 ]] ; then
-           warn "BOOST configure failed.  Giving up"
-           return 1
+            warn "BOOST configure failed.  Giving up"
+            return 1
         fi
 
         #
@@ -197,8 +198,8 @@ function build_boost
 
         sh -c "./b2"
         if [[ $? != 0 ]] ; then
-           warn "BOOST build failed.  Giving up"
-           return 1
+            warn "BOOST build failed.  Giving up"
+            return 1
         fi
 
         #
@@ -209,8 +210,8 @@ function build_boost
               --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
 
         if [[ $? != 0 ]] ; then
-           warn "BOOST install failed.  Giving up"
-           return 1
+            warn "BOOST install failed.  Giving up"
+            return 1
         fi
 
         if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
@@ -221,53 +222,53 @@ function build_boost
             info "Creating dynamic libraries for BOOST . . ."
             INSTALLNAMEPATH="${BOOST_INSTALL_DIR}/lib"
 
-	    for lib in $libs;
-	    do
-		fulllibname=$INSTALLNAMEPATH/libboost_${lib}.${SO_EXT}
+            for lib in $libs;
+            do
+                fulllibname=$INSTALLNAMEPATH/libboost_${lib}.${SO_EXT}
 
                 install_name_tool -id $fulllibname $fulllibname
 
-		# Find all the dependent libraries (more or less)
-		deplibs=`otool -L $fulllibname | sed "s/(.*)//g"`
+                # Find all the dependent libraries (more or less)
+                deplibs=`otool -L $fulllibname | sed "s/(.*)//g"`
 
-		for deplib in $deplibs;
-		do
-		    # Only get the libraries related to boost and not itself.
-		    if [[ `echo $deplib | grep -c libboost_` == 1 && \
-			  `echo $deplib | grep -c libboost_${lib}` == 0 ]] ; then
+                for deplib in $deplibs;
+                do
+                    # Only get the libraries related to boost and not itself.
+                    if [[ `echo $deplib | grep -c libboost_` == 1 && \
+                                `echo $deplib | grep -c libboost_${lib}` == 0 ]] ; then
 
-			# Get the library name sans the directory path
-			deplibname=`echo $deplib | sed "s/.*\///"`
-			
-			# Set the library path
-			install_name_tool -change $deplib \
-			    ${INSTALLNAMEPATH}/$deplibname \
-			    $fulllibname
+                        # Get the library name sans the directory path
+                        deplibname=`echo $deplib | sed "s/.*\///"`
+                        
+                        # Set the library path
+                        install_name_tool -change $deplib \
+                                          ${INSTALLNAMEPATH}/$deplibname \
+                                          $fulllibname
 
-		    fi
-		done		
+                    fi
+                done            
             done
         fi
 
     else
         info "Installing BOOST . . . headers only"
 
-	mkdir "$VISITDIR/boost"
-	mkdir "$VISITDIR/boost/$BOOST_VERSION"
-	mkdir "$VISITDIR/boost/$BOOST_VERSION/$VISITARCH"
-	mkdir "$VISITDIR/boost/$BOOST_VERSION/$VISITARCH/include"
+        mkdir "$VISITDIR/boost"
+        mkdir "$VISITDIR/boost/$BOOST_VERSION"
+        mkdir "$VISITDIR/boost/$BOOST_VERSION/$VISITARCH"
+        mkdir "$VISITDIR/boost/$BOOST_VERSION/$VISITARCH/include"
 
-	cp -r boost $VISITDIR/boost/$BOOST_VERSION/$VISITARCH/include
+        cp -r boost $VISITDIR/boost/$BOOST_VERSION/$VISITARCH/include
 
         if [[ $? != 0 ]] ; then
-           warn "BOOST install failed.  Giving up"
-           return 1
+            warn "BOOST install failed.  Giving up"
+            return 1
         fi
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/boost"
-       chgrp -R ${GROUP} "$VISITDIR/boost"
+        chmod -R ug+w,a+rX "$VISITDIR/boost"
+        chgrp -R ${GROUP} "$VISITDIR/boost"
     fi
     cd "$START_DIR"
     info "Done with BOOST"
@@ -300,17 +301,17 @@ function bv_boost_build
     cd "$START_DIR"
 
     if [[ "$DO_BOOST" == "yes" && "$USE_SYSTEM_BOOST" == "no" ]] ; then
-	check_if_installed "boost" $BOOST_VERSION
-	if [[ $? == 0 ]] ; then
+        check_if_installed "boost" $BOOST_VERSION
+        if [[ $? == 0 ]] ; then
             info "Skipping BOOST build.  BOOST is already installed."
-	else
+        else
             info "Building BOOST (~15 minutes)"
             build_boost
             if [[ $? != 0 ]] ; then
-		error "Unable to build or install BOOST.  Bailing out."
+                error "Unable to build or install BOOST.  Bailing out."
             fi
             info "Done building BOOST"
-	fi
+        fi
     fi
 }
 

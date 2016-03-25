@@ -63,7 +63,7 @@ function bv_damaris_host_profile
         echo "## DAMARIS" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_DAMARIS_DIR \${VISITHOME}/damaris/$DAMARIS_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+             >> $HOSTCONF
     fi
 }
 
@@ -88,7 +88,7 @@ function bv_damaris_dry_run
 
 function apply_damaris_patch
 {
-   return 0
+    return 0
 }
 
 function build_damaris
@@ -112,29 +112,29 @@ function build_damaris
     # content from bv_visit.sh.
     #
     if [[ "$DO_SVN" != "yes" || "$USE_VISIT_FILE" == "yes" ]] ; then
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -f ${VISIT_FILE} ]] ; then
-        info "Unzipping/untarring ${VISIT_FILE} because Damaris needs it . . ."
-        uncompress_untar ${VISIT_FILE}
-        if [[ $? != 0 ]] ; then
-        warn "Unable to untar ${VISIT_FILE}.  Corrupted file or out of space on device?"
-        return 1
+        #
+        # Unzip the file, provided a gzipped file exists.
+        #
+        if [[ -f ${VISIT_FILE} ]] ; then
+            info "Unzipping/untarring ${VISIT_FILE} because Damaris needs it . . ."
+            uncompress_untar ${VISIT_FILE}
+            if [[ $? != 0 ]] ; then
+                warn "Unable to untar ${VISIT_FILE}.  Corrupted file or out of space on device?"
+                return 1
+            fi
+        elif [[ -f ${VISIT_FILE%.*} ]] ; then
+            info "Unzipping ${VISIT_FILE%.*} because Damaris needs it . . ."
+            $TAR xf ${VISIT_FILE%.*}
+            if [[ $? != 0 ]] ; then
+                warn "Unable to untar ${VISIT_FILE%.*}.  Corrupted file or out of space on device?"
+                return 1
+            fi
         fi
-    elif [[ -f ${VISIT_FILE%.*} ]] ; then
-        info "Unzipping ${VISIT_FILE%.*} because Damaris needs it . . ."
-        $TAR xf ${VISIT_FILE%.*}
-        if [[ $? != 0 ]] ; then
-        warn "Unable to untar ${VISIT_FILE%.*}.  Corrupted file or out of space on device?"
-        return 1
-        fi
-    fi
     fi
 
     local LIBSIMV2_INCLUDE="../${VISIT_FILE%.tar*}/src/sim/V2/lib"
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-    LIBSIMV2_INCLUDE="../src/sim/V2/lib"
+        LIBSIMV2_INCLUDE="../src/sim/V2/lib"
     fi
     
     #
@@ -143,7 +143,7 @@ function build_damaris
     prepare_build_dir $DAMARIS_BUILD_DIR $DAMARIS_FILE
     untarred_damaris=$?
     if [[ $untarred_damaris == -1 ]] ; then
-       warn "Unable to prepare Damaris build directory. Giving Up!"
+        warn "Unable to prepare Damaris build directory. Giving Up!"
     fi
     cd $DAMARIS_BUILD_DIR
 
@@ -152,8 +152,8 @@ function build_damaris
     #
     apply_damaris_patch
     if [[ $? != 0 ]] ; then
-       warn "Unable to prepare Damaris build directory. Giving Up"
-       return 1
+        warn "Unable to prepare Damaris build directory. Giving Up"
+        return 1
     fi
 
     #
@@ -173,8 +173,8 @@ function build_damaris
     -DENABLE_TESTS:BOOL=false"
 
     if [[ $? != 0 ]] ; then
-    warn "Cmake failed to create build files for Damaris.  Giving up."
-    return 1
+        warn "Cmake failed to create build files for Damaris.  Giving up."
+        return 1
     fi
 
     #
@@ -231,7 +231,6 @@ function bv_damaris_build
                 error "Unable to build or install Damaris.  Bailing out."
             fi
             info "Done building Damaris"
-       fi
+        fi
     fi
 }
-

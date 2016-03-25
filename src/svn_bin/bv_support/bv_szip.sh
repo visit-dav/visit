@@ -1,53 +1,53 @@
 function bv_szip_initialize
 {
-export DO_SZIP="no"
-export ON_SZIP="off"
+    export DO_SZIP="no"
+    export ON_SZIP="off"
 }
 
 function bv_szip_enable
 {
-DO_SZIP="yes"
-ON_SZIP="on"
+    DO_SZIP="yes"
+    ON_SZIP="on"
 }
 
 function bv_szip_disable
 {
-DO_SZIP="no"
-ON_SZIP="off"
+    DO_SZIP="no"
+    ON_SZIP="off"
 }
 
 function bv_szip_depends_on
 {
-echo ""
+    echo ""
 }
 
 function bv_szip_info
 {
-export SZIP_FILE=${SZIP_FILE:-"szip-2.1.tar.gz"}
-export SZIP_VERSION=${SZIP_VERSION:-"2.1"}
-export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION:-"2.0"}
-export SZIP_BUILD_DIR=${SZIP_BUILD_DIR:-"szip-2.1"}
-export SZIP_MD5_CHECKSUM="9cc9125a58b905a4148e4e2fda3fabc6"
-export SZIP_SHA256_CHECKSUM=""
+    export SZIP_FILE=${SZIP_FILE:-"szip-2.1.tar.gz"}
+    export SZIP_VERSION=${SZIP_VERSION:-"2.1"}
+    export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION:-"2.0"}
+    export SZIP_BUILD_DIR=${SZIP_BUILD_DIR:-"szip-2.1"}
+    export SZIP_MD5_CHECKSUM="9cc9125a58b905a4148e4e2fda3fabc6"
+    export SZIP_SHA256_CHECKSUM=""
 }
 
 function bv_szip_print
 {
-  printf "%s%s\n" "SZIP_FILE=" "${SZIP_FILE}"
-  printf "%s%s\n" "SZIP_VERSION=" "${SZIP_VERSION}"
-  printf "%s%s\n" "SZIP_COMPATIBILITY_VERSION=" "${SZIP_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "SZIP_BUILD_DIR=" "${SZIP_BUILD_DIR}"
+    printf "%s%s\n" "SZIP_FILE=" "${SZIP_FILE}"
+    printf "%s%s\n" "SZIP_VERSION=" "${SZIP_VERSION}"
+    printf "%s%s\n" "SZIP_COMPATIBILITY_VERSION=" "${SZIP_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "SZIP_BUILD_DIR=" "${SZIP_BUILD_DIR}"
 }
 
 function bv_szip_print_usage
 {
-printf "%-15s %s [%s]\n" "--szip" "Build with SZIP" "$DO_SZIP"  
+    printf "%-15s %s [%s]\n" "--szip" "Build with SZIP" "$DO_SZIP"  
 }
 
 function bv_szip_graphical
 {
-local graphical_out="SZip     $SZIP_VERSION($SZIP_FILE)      $ON_SZIP"
-echo "$graphical_out"
+    local graphical_out="SZip     $SZIP_VERSION($SZIP_FILE)      $ON_SZIP"
+    echo "$graphical_out"
 }
 
 function bv_szip_host_profile
@@ -58,8 +58,8 @@ function bv_szip_host_profile
         echo "## SZIP" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
     fi
 }
 
@@ -77,9 +77,9 @@ function bv_szip_ensure
 
 function bv_szip_dry_run
 {
-  if [[ "$DO_SZIP" == "yes" ]] ; then
-    echo "Dry run option not set for szip."
-  fi
+    if [[ "$DO_SZIP" == "yes" ]] ; then
+        echo "Dry run option not set for szip."
+    fi
 }
 
 # *************************************************************************** #
@@ -94,8 +94,8 @@ function build_szip
     prepare_build_dir $SZIP_BUILD_DIR $SZIP_FILE
     untarred_szip=$?
     if [[ $untarred_szip == -1 ]] ; then
-       warn "Unable to prepare SZip build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare SZip build directory. Giving Up!"
+        return 1
     fi
 
     #
@@ -112,12 +112,12 @@ function build_szip
         --prefix=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" ${cf_szip}"
 
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" LIBS="-lm" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" ${cf_szip}
+                CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" ${cf_szip}
 
     if [[ $? != 0 ]] ; then
-       warn "SZIP configure failed.  Giving up"
-       return 1
+        warn "SZIP configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -127,8 +127,8 @@ function build_szip
 
     $MAKE
     if [[ $? != 0 ]] ; then
-       warn "SZIP build failed.  Giving up"
-       return 1
+        warn "SZIP build failed.  Giving up"
+        return 1
     fi
     #
     # Install into the VisIt third party location.
@@ -137,8 +137,8 @@ function build_szip
 
     $MAKE install
     if [[ $? != 0 ]] ; then
-       warn "SZIP install failed.  Giving up"
-       return 1
+        warn "SZIP install failed.  Giving up"
+        return 1
     fi
 
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
@@ -149,29 +149,29 @@ function build_szip
         info "Creating dynamic libraries for SZIP . . ."
         INSTALLNAMEPATH="$VISITDIR/szip/${SZIP_VERSION}/$VISITARCH/lib"
 
-## go back to gcc bacause if "external relocation entries" restFP saveFP
-##      /usr/bin/libtool -o libsz.${SO_EXT} -dynamic src/.libs/libsz.a \
-##      -lSystem -lz -headerpad_max_install_names \
-##      -install_name $INSTALLNAMEPATH/libsz.${SO_EXT} \
-##      -compatibility_version $SZIP_COMPATIBILITY_VERSION \
-##      -current_version $SZIP_VERSION
+        ## go back to gcc bacause if "external relocation entries" restFP saveFP
+        ##      /usr/bin/libtool -o libsz.${SO_EXT} -dynamic src/.libs/libsz.a \
+        ##      -lSystem -lz -headerpad_max_install_names \
+        ##      -install_name $INSTALLNAMEPATH/libsz.${SO_EXT} \
+        ##      -compatibility_version $SZIP_COMPATIBILITY_VERSION \
+        ##      -current_version $SZIP_VERSION
         $C_COMPILER -dynamiclib -o libsz.${SO_EXT} src/*.o \
-           -Wl,-headerpad_max_install_names \
-           -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
-           -Wl,-install_name,$INSTALLNAMEPATH/libsz.${SO_EXT} \
-           -Wl,-compatibility_version,$SZIP_COMPATIBILITY_VERSION \
-           -Wl,-current_version,$SZIP_VERSION -lSystem 
+                    -Wl,-headerpad_max_install_names \
+                    -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
+                    -Wl,-install_name,$INSTALLNAMEPATH/libsz.${SO_EXT} \
+                    -Wl,-compatibility_version,$SZIP_COMPATIBILITY_VERSION \
+                    -Wl,-current_version,$SZIP_VERSION -lSystem 
         if [[ $? != 0 ]] ; then
-           warn "SZIP dynamic library build failed.  Giving up"
-           return 1
+            warn "SZIP dynamic library build failed.  Giving up"
+            return 1
         fi
         rm -f "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.${SO_EXT}"
         cp libsz.${SO_EXT} "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/szip"
-       chgrp -R ${GROUP} "$VISITDIR/szip"
+        chmod -R ug+w,a+rX "$VISITDIR/szip"
+        chgrp -R ${GROUP} "$VISITDIR/szip"
     fi
     cd "$START_DIR"
     info "Done with SZIP"
@@ -197,18 +197,18 @@ function bv_szip_is_installed
 
 function bv_szip_build
 {
-cd "$START_DIR"
-if [[ "$DO_SZIP" == "yes" ]] ; then
-    check_if_installed "szip" $SZIP_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping SZIP build.  SZIP is already installed."
-    else
-        info "Building SZIP (~2 minutes)"
-        build_szip
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install SZIP.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_SZIP" == "yes" ]] ; then
+        check_if_installed "szip" $SZIP_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping SZIP build.  SZIP is already installed."
+        else
+            info "Building SZIP (~2 minutes)"
+            build_szip
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install SZIP.  Bailing out."
+            fi
+            info "Done building SZIP"
         fi
-        info "Done building SZIP"
     fi
-fi
 }

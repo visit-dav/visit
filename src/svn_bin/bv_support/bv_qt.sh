@@ -5,31 +5,31 @@ function bv_qt_initialize
     export FORCE_QT="no"
     export USE_SYSTEM_QT="no"
     export IS_QT5="no"
-    add_extra_commandline_args "qt" "qt5" 0 "Use qt found on system"
+    add_extra_commandline_args "qt" "qt5" 0 "Build Qt5 instead of Qt4"
     add_extra_commandline_args "qt" "system-qt" 0 "Use qt found on system"
     add_extra_commandline_args "qt" "alt-qt-dir" 1 "Use qt found in alternative directory"
 }
 
 function bv_qt_enable
 {
-DO_QT="yes"
-ON_QT="on"
-FORCE_QT="yes"
+    DO_QT="yes"
+    ON_QT="on"
+    FORCE_QT="yes"
 }
 
 function bv_qt_disable
 {
-DO_QT="no"
-ON_QT="off"
-FORCE_QT="no"
+    DO_QT="no"
+    ON_QT="off"
+    FORCE_QT="no"
 }
 
 function bv_qt_force
 {
-  if [[ "$FORCE_QT" == "yes" ]]; then
-     return 0;
-  fi
-  return 1;
+    if [[ "$FORCE_QT" == "yes" ]]; then
+        return 0;
+    fi
+    return 1;
 }
 
 function qt_set_vars_helper
@@ -46,35 +46,36 @@ function qt_set_vars_helper
         IS_QT5="yes"
     fi 
 }
+
 function bv_qt_system_qt
 {
-   echo "using system qt"
+    echo "using system qt"
 
-   QTEXEC="qmake"
-   TEST=`which $QTEXEC`
-   if [[ $? != 0 ]]; then
-     QTEXEC="qmake-qt4"
-     TEST=`which $QTEXEC`
-     [ $? != 0 ] && error "System Qt not found"
-   fi
+    QTEXEC="qmake"
+    TEST=`which $QTEXEC`
+    if [[ $? != 0 ]]; then
+        QTEXEC="qmake-qt4"
+        TEST=`which $QTEXEC`
+        [ $? != 0 ] && error "System Qt not found"
+    fi
 
-   bv_qt_enable
+    bv_qt_enable
 
-   USE_SYSTEM_QT="yes"
-   QT_QMAKE_COMMAND="$QTEXEC"
-   qt_set_vars_helper #set vars..
-   QT_FILE=""
+    USE_SYSTEM_QT="yes"
+    QT_QMAKE_COMMAND="$QTEXEC"
+    qt_set_vars_helper #set vars..
+    QT_FILE=""
 }
 
 function bv_qt_alt_qt_dir
 {
     info "using qt from alternative directory $1"
 
-   QTEXEC="qmake"
-   if [[ ! -e "$1/bin/$QTEXEC" ]]; then
-     QTEXEC="qmake-qt4"
-     [ ! -e "$1/bin/$QTEXEC" ] && error "qmake was not found in directory: $1/bin"
-   fi
+    QTEXEC="qmake"
+    if [[ ! -e "$1/bin/$QTEXEC" ]]; then
+        QTEXEC="qmake-qt4"
+        [ ! -e "$1/bin/$QTEXEC" ] && error "qmake was not found in directory: $1/bin"
+    fi
 
     bv_qt_enable
     USE_SYSTEM_QT="yes"
@@ -104,18 +105,18 @@ function bv_qt_initialize_vars
 {
     info "initalizing qt vars"
     if [[ $USE_SYSTEM_QT != "yes" ]]; then
-      QT_INSTALL_DIR="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-      QT_QMAKE_COMMAND="${QT_INSTALL_DIR}/bin/qmake"
-      if [[ -e "$QT_QMAKE_COMMAND" ]]; then
-        QT_BIN_DIR=`$QT_QMAKE_COMMAND -query QT_INSTALL_BINS`
-        QT_INCLUDE_DIR=`$QT_QMAKE_COMMAND -query QT_INSTALL_HEADERS`
-        QT_LIB_DIR=`"$QT_QMAKE_COMMAND" -query QT_INSTALL_LIBS`
-      else
-        QT_BIN_DIR="$QT_INSTALL_DIR/bin"
-        QT_INCLUDE_DIR="$QT_INSTALL_DIR/include"
-        QT_LIB_DIR="$QT_INSTALL_DIR/lib"
-      fi
-      QT_QTUITOOLS_INCLUDE_DIR="$QT_INCLUDE_DIR/QtUiTools"
+        QT_INSTALL_DIR="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
+        QT_QMAKE_COMMAND="${QT_INSTALL_DIR}/bin/qmake"
+        if [[ -e "$QT_QMAKE_COMMAND" ]]; then
+            QT_BIN_DIR=`$QT_QMAKE_COMMAND -query QT_INSTALL_BINS`
+            QT_INCLUDE_DIR=`$QT_QMAKE_COMMAND -query QT_INSTALL_HEADERS`
+            QT_LIB_DIR=`"$QT_QMAKE_COMMAND" -query QT_INSTALL_LIBS`
+        else
+            QT_BIN_DIR="$QT_INSTALL_DIR/bin"
+            QT_INCLUDE_DIR="$QT_INSTALL_DIR/include"
+            QT_LIB_DIR="$QT_INSTALL_DIR/lib"
+        fi
+        QT_QTUITOOLS_INCLUDE_DIR="$QT_INCLUDE_DIR/QtUiTools"
     fi
 }
 
@@ -126,68 +127,68 @@ function bv_qt_depends_on
 
 function bv_qt_info
 {
-# if we are on osx 10.8 or later, we need to use 4.8.6   
+    # if we are on osx 10.8 or later, we need to use 4.8.6   
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.8" ||
-              "${MACOSX_DEPLOYMENT_TARGET}" == "10.9" ||
-              "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
-              "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
+                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.9" ||
+                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
+                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
             export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.8.6.tar.gz"}
             export QT_VERSION=${QT_VERSION:-"4.8.6"}
             export QT_MD5_CHECKSUM="2edbe4d6c2eff33ef91732602f3518eb"
         fi
     fi
-        
-export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.8.3.tar.gz"}
-export QT_VERSION=${QT_VERSION:-"4.8.3"}
-export QT_MD5_CHECKSUM=${QT_MD5_CHECKSUM:-"a663b6c875f8d7caa8ac9c30e4a4ec3b"}
-export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
-export QT_BIN_DIR="${QT_BUILD_DIR}/bin"
-export QT_SHA256_CHECKSUM=""
+    
+    export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.8.3.tar.gz"}
+    export QT_VERSION=${QT_VERSION:-"4.8.3"}
+    export QT_MD5_CHECKSUM=${QT_MD5_CHECKSUM:-"a663b6c875f8d7caa8ac9c30e4a4ec3b"}
+    export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
+    export QT_BIN_DIR="${QT_BUILD_DIR}/bin"
+    export QT_SHA256_CHECKSUM=""
 }
 
 function bv_qt_print
 {
-  printf "%s%s\n" "QT_FILE=" "${QT_FILE}"
-  printf "%s%s\n" "QT_VERSION=" "${QT_VERSION}"
-  printf "%s%s\n" "QT_PLATFORM=" "${QT_PLATFORM}"
-  printf "%s%s\n" "QT_BUILD_DIR=" "${QT_BUILD_DIR}"
-  printf "%s%s\n" "QT_BIN_DIR=" "${QT_BIN_DIR}"
+    printf "%s%s\n" "QT_FILE=" "${QT_FILE}"
+    printf "%s%s\n" "QT_VERSION=" "${QT_VERSION}"
+    printf "%s%s\n" "QT_PLATFORM=" "${QT_PLATFORM}"
+    printf "%s%s\n" "QT_BUILD_DIR=" "${QT_BUILD_DIR}"
+    printf "%s%s\n" "QT_BIN_DIR=" "${QT_BIN_DIR}"
 }
 
 function bv_qt_print_usage
 {
-printf "%-15s %s [%s]\n" "--qt" "Build Qt" "built by default unless --no-thirdparty flag is used"
-printf "%-15s %s [%s]\n" "--qt5" "Build Qt5" "built by default unless --no-thirdparty flag is used"
-printf "%-15s %s [%s]\n" "--system-qt" "Use System Qt" "Used by default unless --no-thirdparty flag is used"
-printf "%-15s %s [%s]\n" "--alt-qt-dir" "Use Qt from alternative directory" "Used by default unless --no-thirdparty flag is used"
+    printf "%-15s %s [%s]\n" "--qt" "Build Qt4" "built by default unless --no-thirdparty flag is used"
+    printf "%-15s %s [%s]\n" "--qt5" "Build Qt5 instead of Qt4" "$IS_QT5"
+    printf "%-15s %s [%s]\n" "--system-qt" "Use the system installed Qt"
+    printf "%-15s %s [%s]\n" "--alt-qt-dir" "Use Qt from alternative directory"
 }
 
 function bv_qt_host_profile
 {
-if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-    if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
-        if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then 
-            echo >> $HOSTCONF
-            echo "##" >> $HOSTCONF
-            echo "## Qt" >> $HOSTCONF
-            echo "##" >> $HOSTCONF
-            if [[ "$IS_QT5" == "yes" ]]; then
-                echo "VISIT_OPTION_DEFAULT(VISIT_QT5 ON TYPE BOOL)" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${QT_INSTALL_DIR})" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
-            else 
-                if [[ $USE_SYSTEM_QT == "yes" ]]; then
-                    echo "VISIT_OPTION_DEFAULT(QT_QTUITOOLS_INCLUDE_DIR ${QT_QTUITOOLS_INCLUDE_DIR})" >> $HOSTCONF
+    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+        if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
+            if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then 
+                echo >> $HOSTCONF
+                echo "##" >> $HOSTCONF
+                echo "## Qt" >> $HOSTCONF
+                echo "##" >> $HOSTCONF
+                if [[ "$IS_QT5" == "yes" ]]; then
+                    echo "VISIT_OPTION_DEFAULT(VISIT_QT5 ON TYPE BOOL)" >> $HOSTCONF
+                    echo "VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${QT_INSTALL_DIR})" >> $HOSTCONF
                     echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
-                    echo "SET(VISIT_QT_SKIP_INSTALL ON)" >> $HOSTCONF
-                else
-                    echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH}/bin)" >> $HOSTCONF
+                else 
+                    if [[ $USE_SYSTEM_QT == "yes" ]]; then
+                        echo "VISIT_OPTION_DEFAULT(QT_QTUITOOLS_INCLUDE_DIR ${QT_QTUITOOLS_INCLUDE_DIR})" >> $HOSTCONF
+                        echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
+                        echo "SET(VISIT_QT_SKIP_INSTALL ON)" >> $HOSTCONF
+                    else
+                        echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH}/bin)" >> $HOSTCONF
+                    fi
                 fi
             fi
         fi
-    fi
-fi    
+    fi    
 }
 
 function bv_qt_ensure
@@ -202,9 +203,9 @@ function bv_qt_ensure
 
 function bv_qt_dry_run
 {
-  if [[ "$DO_QT" == "yes" ]] ; then
-    echo "Dry run option not set for qt."
-  fi
+    if [[ "$DO_QT" == "yes" ]] ; then
+        echo "Dry run option not set for qt."
+    fi
 }
 
 # *************************************************************************** #
@@ -215,73 +216,73 @@ function qt_license_prompt
 {
 
 
-QT_LIC_MSG="During the build process this script will build Qt and confirm\
+    QT_LIC_MSG="During the build process this script will build Qt and confirm\
             that you accept Trolltech's license for the Qt Open Source\
             Edition. Please respond \"yes\" to accept (in advance) either\
             the Lesser GNU General Public License (LGPL) version 2.1 or \
             the GNU General Public License (GPL) version 3. Visit \
             http://www.qt.io/qt-licensing-terms to view these licenses."
 
-QT_CONFIRM_MSG="VisIt requires Qt: Please respond with \"yes\" to accept\
+    QT_CONFIRM_MSG="VisIt requires Qt: Please respond with \"yes\" to accept\
                 Qt licensing under the terms of the Lesser GNU General \
                 Public License (LGPL) version 2.1 or \
                 the GNU General Public License (GPL) version 3"
-if [[ "$GRAPHICAL" == "yes" ]] ; then
-    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_LIC_MSG" 0 0 1>&3
-    else
-        $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_LIC_MSG" 0 0 
-    fi
-    if [[ $? == 1 ]] ; then
+    if [[ "$GRAPHICAL" == "yes" ]] ; then
         if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-            $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_CONFIRM_MSG" 0 0 1>&3
+            $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_LIC_MSG" 0 0 1>&3
         else
-            $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_CONFIRM_MSG" 0 0 
+            $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_LIC_MSG" 0 0 
         fi
         if [[ $? == 1 ]] ; then
-            return 1
+            if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
+                $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_CONFIRM_MSG" 0 0 1>&3
+            else
+                $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_CONFIRM_MSG" 0 0 
+            fi
+            if [[ $? == 1 ]] ; then
+                return 1
+            fi
         fi
-    fi
-else
-    info $QT_LIC_MSG
-    read RESPONSE
-    if [[ "$RESPONSE" != "yes" ]] ; then
-        info $QT_CONFIRM_MSG
+    else
+        info $QT_LIC_MSG
         read RESPONSE
-        if [[ $RESPONSE != "yes" ]] ; then
-            return 1
+        if [[ "$RESPONSE" != "yes" ]] ; then
+            info $QT_CONFIRM_MSG
+            read RESPONSE
+            if [[ $RESPONSE != "yes" ]] ; then
+                return 1
+            fi
         fi
     fi
-fi
 
-return 0
+    return 0
 }
 
 
 function apply_qt_patch
 {
-   if [[ ${QT_VERSION} == 4.8.6 ]] ; then
-      if [[ "$OPSYS" == "Darwin" ]]; then
-         if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
-               "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
-            apply_qt_486_osx1011_patch 
-         fi
-      fi
-   fi
+    if [[ ${QT_VERSION} == 4.8.6 ]] ; then
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
+                        "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
+                apply_qt_486_osx1011_patch 
+            fi
+        fi
+    fi
 
-   return 0
+    return 0
 }
 
 
 function apply_qt_486_osx1011_patch
 {
-# fix for OS X 10.11 
+    # fix for OS X 10.11 
     info "Patching qt 4.8.6 for OS X 10.10 or 10.11"
     patch -p0 << \EOF
 
 diff -c src/gui/painting/qpaintengine_mac.cpp.orig src/gui/painting/qpaintengine_mac.cpp
-*** src/gui/painting/qpaintengine_mac.cpp.orig	2014-04-10 12:37:12.000000000 -0600
---- src/gui/painting/qpaintengine_mac.cpp	2016-01-05 15:43:29.000000000 -0700
+*** src/gui/painting/qpaintengine_mac.cpp.orig  2014-04-10 12:37:12.000000000 -0600
+--- src/gui/painting/qpaintengine_mac.cpp       2016-01-05 15:43:29.000000000 -0700
 ***************
 *** 340,352 ****
       }
@@ -308,8 +309,8 @@ diff -c src/gui/painting/qpaintengine_mac.cpp.orig src/gui/painting/qpaintengine
 
 EOF
     if [[ $? != 0 ]] ; then
-      warn "qt 4.8.6 patch failed."
-      return 1
+        warn "qt 4.8.6 patch failed."
+        return 1
     fi
 
     return 0;
@@ -327,8 +328,8 @@ function build_qt
     # 0, already exists, 1  untarred src, 2 error
 
     if [[ untarred_qt == -1 ]] ; then
-       warn "Unable to prepare Qt build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare Qt build directory. Giving Up!"
+        return 1
     fi
 
     #
@@ -338,15 +339,15 @@ function build_qt
     cd $QT_BUILD_DIR || error "Can't cd to Qt build dir."
     apply_qt_patch
     if [[ $? != 0 ]] ; then
-       if [[ $untarred_qt == 1 ]] ; then
-          warn "Giving up on Qt build because the patch failed."
-          return 1
-       else
-          warn "Patch failed, but continuing.  I believe that this script\n" \
-               "tried to apply a patch to an existing directory which had " \
-               "already been patched ... that is, that the patch is " \
-               "failing harmlessly on a second application."
-       fi
+        if [[ $untarred_qt == 1 ]] ; then
+            warn "Giving up on Qt build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory which had " \
+                 "already been patched ... that is, that the patch is " \
+                 "failing harmlessly on a second application."
+        fi
     fi
 
     #
@@ -409,7 +410,7 @@ function build_qt
                 QT_PLATFORM="linux-g++-64"
             fi
         else
-          if [[ "$C_COMPILER" == "icc" || "$CXX_COMPILER" == "icpc" ]]; then
+            if [[ "$C_COMPILER" == "icc" || "$CXX_COMPILER" == "icpc" ]]; then
                 QT_PLATFORM="linux-icc"
             else
                 QT_PLATFORM="linux-g++"
@@ -468,37 +469,37 @@ function build_qt
          "-make libs -make tools -no-separate-debug-info" \
          "${qt_flags}" 
 
-   (echo "o"; echo "yes") | CFLAGS="${QT_CFLAGS}" CXXFLAGS="${QT_CXXFLAGS}"  \
-           ./configure --prefix=${QT_INSTALL_DIR} \
-                    -platform ${QT_PLATFORM} \
-                    -make libs -make tools -no-separate-debug-info \
-                    ${qt_flags} | tee qt.config.out
+    (echo "o"; echo "yes") | CFLAGS="${QT_CFLAGS}" CXXFLAGS="${QT_CXXFLAGS}"  \
+                                   ./configure --prefix=${QT_INSTALL_DIR} \
+                                   -platform ${QT_PLATFORM} \
+                                   -make libs -make tools -no-separate-debug-info \
+                                   ${qt_flags} | tee qt.config.out
     if [[ $? != 0 ]] ; then
-       warn "${QT_VER_MSG} configure failed. Giving up."
-       return 1
+        warn "${QT_VER_MSG} configure failed. Giving up."
+        return 1
     fi
 
     #
     # Figure out if configure found the OpenGL libraries
     #
     if [[ "${DO_DBIO_ONLY}" != "yes" && "${DO_ENGINE_ONLY}" != "yes" && "${DO_SERVER_COMPONENTS_ONLY}" != "yes" ]] ; then
-       HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'  | cut -c 1-3`
-       if [[ "$IS_QT5" == "no" && "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
-          warn "Qt4 configure did not find OpenGL." \
-                "VisIt needs Qt4 with enabled OpenGL support. Giving up.\n" \
-                "Here are some common reasons why Qt will not build with GL support.\n" \
-                "\t- The OpenGL development environment is not installed.\n" \
-                "\t  (You can check this by searching for /usr/include/GL/GL.h)\n" \
-                "\t- libGLU is not available\n"\
-                "\t- libGLU is available, but only as a shared library\n"\
-                "You can learn more about exactly why Qt failed by doing the following:\n"\
-                "\t- cd $QT_BUILD_DIR\n" \
-                "\t- ./configure -opengl -verbose\n" \
-                "\t  (this will produce the details of the failed OpenGL tests.)\n" \
-                "\t  (also note you will need to respond with \"o\" to opt for\n" \
-                "\t   the open source license and \"yes\" to accept.)\n"
-          return 1
-       fi
+        HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'  | cut -c 1-3`
+        if [[ "$IS_QT5" == "no" && "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
+            warn "Qt4 configure did not find OpenGL." \
+                 "VisIt needs Qt4 with enabled OpenGL support. Giving up.\n" \
+                 "Here are some common reasons why Qt will not build with GL support.\n" \
+                 "\t- The OpenGL development environment is not installed.\n" \
+                 "\t  (You can check this by searching for /usr/include/GL/GL.h)\n" \
+                 "\t- libGLU is not available\n"\
+                 "\t- libGLU is available, but only as a shared library\n"\
+                 "You can learn more about exactly why Qt failed by doing the following:\n"\
+                 "\t- cd $QT_BUILD_DIR\n" \
+                 "\t- ./configure -opengl -verbose\n" \
+                 "\t  (this will produce the details of the failed OpenGL tests.)\n" \
+                 "\t  (also note you will need to respond with \"o\" to opt for\n" \
+                 "\t   the open source license and \"yes\" to accept.)\n"
+            return 1
+        fi
     fi
 
     #
@@ -507,8 +508,8 @@ function build_qt
     info "Building ${QT_VER_MSG} . . . (~60 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "${QT_VER_MSG} build failed.  Giving up"
-       return 1
+        warn "${QT_VER_MSG} build failed.  Giving up"
+        return 1
     fi
 
     info "Installing ${QT_VER_MSG} . . . "
@@ -531,8 +532,8 @@ function build_qt
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/qt"
-       chgrp -R ${GROUP} "$VISITDIR/qt"
+        chmod -R ug+w,a+rX "$VISITDIR/qt"
+        chgrp -R ${GROUP} "$VISITDIR/qt"
     fi
 
     cd "$START_DIR"
@@ -567,21 +568,21 @@ function bv_qt_is_installed
 
 function bv_qt_build
 {
-#
-# Build Qt
-#
-cd "$START_DIR"
-if [[ "$DO_QT" == "yes"  && "$USE_SYSTEM_QT" == "no" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
+    #
+    # Build Qt
+    #
+    cd "$START_DIR"
+    if [[ "$DO_QT" == "yes"  && "$USE_SYSTEM_QT" == "no" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
         check_if_installed "qt" $QT_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping Qt build.  Qt4 is already installed."
-   else
-      info "Building Qt (~60 minutes)"
-      build_qt
-      if [[ $? != 0 ]] ; then
-         error "Unable to build or install Qt.  Bailing out."
-      fi
-      info "Done building Qt"
-   fi
-fi
+        if [[ $? == 0 ]] ; then
+            info "Skipping Qt build.  Qt4 is already installed."
+        else
+            info "Building Qt (~60 minutes)"
+            build_qt
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install Qt.  Bailing out."
+            fi
+            info "Done building Qt"
+        fi
+    fi
 }

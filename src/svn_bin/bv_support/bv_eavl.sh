@@ -1,22 +1,21 @@
-
 function bv_eavl_initialize
 {
-export DO_EAVL="no"
-export ON_EAVL="off"
-export USE_SYSTEM_EAVL="no"
-add_extra_commandline_args "eavl" "alt-eavl-dir" 1 "Use alternative directory for EAVL"
+    export DO_EAVL="no"
+    export ON_EAVL="off"
+    export USE_SYSTEM_EAVL="no"
+    add_extra_commandline_args "eavl" "alt-eavl-dir" 1 "Use alternative directory for EAVL"
 }
 
 function bv_eavl_enable
 {
-DO_EAVL="yes"
-ON_EAVL="on"
+    DO_EAVL="yes"
+    ON_EAVL="on"
 }
 
 function bv_eavl_disable
 {
-DO_EAVL="no"
-ON_EAVL="off"
+    DO_EAVL="no"
+    ON_EAVL="off"
 }
 
 function bv_eavl_alt_eavl_dir
@@ -46,29 +45,30 @@ function bv_eavl_initialize_vars
 
 function bv_eavl_info
 {
-export EAVL_VERSION=${EAVL_VERSION:-"4593630"}
-export EAVL_FILE=${EAVL_FILE:-"EAVL-${EAVL_VERSION}.tar.gz"}
-export EAVL_BUILD_DIR=${EAVL_BUILD_DIR:-"EAVL-${EAVL_VERSION}"}
-export EAVL_MD5_CHECKSUM="3528aec602573baa6da327594eb7d061"
-export EAVL_SHA256_CHECKSUM="c6a94b503d6800c4875af8dc3235a510e9564efcb524a04bd07d1e295c45f9fe"
+    export EAVL_VERSION=${EAVL_VERSION:-"4593630"}
+    export EAVL_FILE=${EAVL_FILE:-"EAVL-${EAVL_VERSION}.tar.gz"}
+    export EAVL_BUILD_DIR=${EAVL_BUILD_DIR:-"EAVL-${EAVL_VERSION}"}
+    export EAVL_MD5_CHECKSUM="3528aec602573baa6da327594eb7d061"
+    export EAVL_SHA256_CHECKSUM="c6a94b503d6800c4875af8dc3235a510e9564efcb524a04bd07d1e295c45f9fe"
 }
 
 function bv_eavl_print
 {
-  printf "%s%s\n" "EAVL_FILE=" "${EAVL_FILE}"
-  printf "%s%s\n" "EAVL_VERSION=" "${EAVL_VERSION}"
-  printf "%s%s\n" "EAVL_BUILD_DIR=" "${EAVL_BUILD_DIR}"
+    printf "%s%s\n" "EAVL_FILE=" "${EAVL_FILE}"
+    printf "%s%s\n" "EAVL_VERSION=" "${EAVL_VERSION}"
+    printf "%s%s\n" "EAVL_BUILD_DIR=" "${EAVL_BUILD_DIR}"
 }
 
 function bv_eavl_print_usage
 {
-printf "%-15s %s [%s]\n" "--eavl" "Build eavl support" "$DO_EAVL"
+    printf "%-15s %s [%s]\n" "--eavl" "Build eavl support" "$DO_EAVL"
+    printf "%-15s %s [%s]\n" "--alt-eavl-dir" "Use eavl from an alternative directory"
 }
 
 function bv_eavl_graphical
 {
-local graphical_out="eavl     $EAVL_VERSION($EAVL_FILE)      $ON_EAVL"
-echo "$graphical_out"
+    local graphical_out="eavl     $EAVL_VERSION($EAVL_FILE)      $ON_EAVL"
+    echo "$graphical_out"
 }
 
 function bv_eavl_host_profile
@@ -79,8 +79,8 @@ function bv_eavl_host_profile
         echo "## EAVL" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_EAVL_DIR ${EAVL_INSTALL_DIR})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_EAVL_DIR ${EAVL_INSTALL_DIR})" \
+            >> $HOSTCONF
     fi
 }
 
@@ -98,9 +98,9 @@ function bv_eavl_ensure
 
 function bv_eavl_dry_run
 {
-  if [[ "$DO_EAVL" == "yes" ]] ; then
-    echo "Dry run option not set for eavl."
-  fi
+    if [[ "$DO_EAVL" == "yes" ]] ; then
+        echo "Dry run option not set for eavl."
+    fi
 }
 
 # *************************************************************************** #
@@ -111,10 +111,10 @@ function bv_eavl_dry_run
 
 function apply_EAVL_5f53629eed_patch
 {
-   patch -p0 <<\EOF
+    patch -p0 <<\EOF
 diff -c a/configure EAVL-5f53629eed/configure
-*** a/configure	Tue Aug 12 16:25:47 2014
---- EAVL-5f53629eed/configure	Tue Aug 12 16:26:02 2014
+*** a/configure Tue Aug 12 16:25:47 2014
+--- EAVL-5f53629eed/configure   Tue Aug 12 16:26:02 2014
 ***************
 *** 4435,4444 ****
   
@@ -156,25 +156,25 @@ diff -c a/configure EAVL-5f53629eed/configure
      if test "$UNAME" = "Darwin"; then
                VTK_LDFLAGS="$VTK_LDFLAGS"
 EOF
-   if [[ $? != 0 ]] ; then
+    if [[ $? != 0 ]] ; then
         warn "Unable to apply patch to EAVL 5f53629eed"
         return 1
-   else
+    else
         return 0
-   fi
+    fi
 }
 
 function apply_EAVL_patch
 {
-   info "Patching EAVL . . ."
-   if [[ ${EAVL_VERSION} == "5f53629eed" ]] ; then
-      apply_EAVL_5f53629eed_patch
-      if [[ $? != 0 ]] ; then
-        return 1
-      fi
-   fi
+    info "Patching EAVL . . ."
+    if [[ ${EAVL_VERSION} == "5f53629eed" ]] ; then
+        apply_EAVL_5f53629eed_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
 
-   return 0
+    return 0
 }
 
 function build_EAVL
@@ -185,8 +185,8 @@ function build_EAVL
     prepare_build_dir $EAVL_BUILD_DIR $EAVL_FILE
     untarred_EAVL=$?
     if [[ $untarred_EAVL == -1 ]] ; then
-       warn "Unable to prepare eavl build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare eavl build directory. Giving Up!"
+        return 1
     fi
     
     apply_EAVL_patch
@@ -215,7 +215,7 @@ function build_EAVL
     else
         export EAVL_VTK_ARGS=" --with-vtk=$SYSTEM_VTK_DIR"
     fi
-        
+    
     #info ./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
     #                 CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
     #                 CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
@@ -229,21 +229,21 @@ function build_EAVL
     #                 --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
     # avoid passing flags for now
     info ./configure $EAVL_CUDA_TOOLKIT_ARGS $EAVL_VTK_ARGS --with-openmp \
-                     --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
+         --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
 
     ./configure $EAVL_CUDA_TOOLKIT_ARGS $EAVL_VTK_ARGS --with-openmp \
-                 --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
+                --prefix="$VISITDIR/eavl/$EAVL_VERSION/$VISITARCH"
 
     #
     # Build eavl
     #
     info "Building eavl . . . (~2 minutes)"
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       $MAKE $MAKE_OPT_FLAGS
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+        $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "eavl build failed.  Giving up"
-       return 1
+        warn "eavl build failed.  Giving up"
+        return 1
     fi
 
     #
@@ -273,8 +273,8 @@ function build_EAVL
 
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/eavl"
-       chgrp -R ${GROUP} "$VISITDIR/eavl"
+        chmod -R ug+w,a+rX "$VISITDIR/eavl"
+        chgrp -R ${GROUP} "$VISITDIR/eavl"
     fi
     cd "$START_DIR"
     info "Done with eavl"
@@ -304,19 +304,18 @@ function bv_eavl_is_installed
 
 function bv_eavl_build
 {
-cd "$START_DIR"
-if [[ "$DO_EAVL" == "yes" && "$USE_SYSTEM_EAVL" == "no" ]] ; then
-    check_if_installed "eavl" $EAVL_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping eavl build.  eavl is already installed."
-    else
-        info "Building eavl (~2 minutes)"
-        build_EAVL
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install eavl.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_EAVL" == "yes" && "$USE_SYSTEM_EAVL" == "no" ]] ; then
+        check_if_installed "eavl" $EAVL_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping eavl build.  eavl is already installed."
+        else
+            info "Building eavl (~2 minutes)"
+            build_EAVL
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install eavl.  Bailing out."
+            fi
+            info "Done building eavl"
         fi
-        info "Done building eavl"
     fi
-fi
 }
-

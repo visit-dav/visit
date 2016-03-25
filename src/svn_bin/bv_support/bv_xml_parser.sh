@@ -10,6 +10,7 @@ declare -a xmlp_optlibs
 declare -a xmlp_grouplibs_name
 declare -a xmlp_grouplibs_deps
 declare -a xmlp_grouplibs_comment
+declare -a xmlp_grouplibs_enabled
 
 function xmlp_removeSingleLineComment
 {
@@ -144,16 +145,19 @@ function parseXmlGroupModules
     local title=""
     local deps=""
     local comment=""
+    local enabled=""
+
     #find required tag and parse all its parameters..
     for (( i=$lstart; i < $lend; ++i ))
     do
         if [[ ${xmlp_filecontents[$i]} == *$endPattern* ]]; then
             startReading=0
             #remove whitespace with echo
-            #echo "Title: $title Comment: $comment Deps $deps"
+            #echo "Title: $title Comment: $comment Enabled: $enabled Deps $deps"
             xmlp_grouplibs_name[${#xmlp_grouplibs_name[*]}]=`echo $title`
             xmlp_grouplibs_deps[${#xmlp_grouplibs_deps[*]}]=`echo $deps`
             xmlp_grouplibs_comment[${#xmlp_grouplibs_comment[*]}]=`echo $comment`
+            xmlp_grouplibs_enabled[${#xmlp_grouplibs_enabled[*]}]=`echo $enabled`
             title=""
             deps=""
         fi
@@ -168,11 +172,35 @@ function parseXmlGroupModules
         if [[ ${xmlp_filecontents[$i]} == *$startPattern* ]]; then
             startReading=1
             local tmp="${xmlp_filecontents[$i]}"
+            #has enabled
+            if [[ "$tmp" == *enabled* ]]; then
+                tmp_enabled=${tmp/*enabled}
+                tmp_enabled=`echo $tmp | sed -e s/^.*=\"// -e s/\".*$//`
+                enabled="$tmp_enabled"
+
+		tmp=${tmp/enabled*}
+
+		#has comment
+		if [[ "$tmp" == *comment* ]]; then
+                    tmp_comment=${tmp/*comment}
+                    tmp_comment=`echo $tmp | sed -e s/^.*=\"// -e s/\".*$//`
+                    comment="$tmp_comment"
+
+                    tmp=${tmp/comment*}
+                    tmp=`echo $tmp | sed -e s/^.*=\"// -e s/\".*$//`
+                    title="$tmp"
+		else
+                    tmp=`echo $tmp | sed -e s/^.*=\"// -e s/\".*$//`
+                    title="$tmp"
+                    comment=""
+		fi
             #has comment
-            if [[ "$tmp" == *comment* ]]; then
+            elif [[ "$tmp" == *comment* ]]; then
                 tmp_comment=${tmp/*comment}
                 tmp_comment=`echo $tmp | sed -e s/^.*=\"// -e s/\".*$//`
                 comment="$tmp_comment"
+                enabled=""
+
                 tmp=${tmp/comment*}
                 tmp=`echo $tmp | sed -e s/^.*=\"// -e s/\".*$//`
                 title="$tmp"
@@ -180,6 +208,7 @@ function parseXmlGroupModules
                 tmp=`echo $tmp | sed -e s/^.*=\"// -e s/\".*$//`
                 title="$tmp"
                 comment=""
+                enabled=""
             fi
         fi
     done
@@ -236,6 +265,7 @@ function parseXmlModuleContents
     xmlp_grouplibs_name=()
     xmlp_grouplibs_deps=()
     xmlp_grouplibs_comment=()
+    xmlp_grouplibs_enabled=()
 
     for (( i=0; i < ${#xmlp_licenses[*]}; ++i ))
     do
@@ -262,7 +292,7 @@ function parseXmlModuleContents
     fi
 
     if [[   ${xmlp_filecontents[0]} != *\<modules* || 
-            ${xmlp_filecontents[${#xmlp_filecontents[*]}-1]} != *\</modules\>* ]]; then
+                ${xmlp_filecontents[${#xmlp_filecontents[*]}-1]} != *\</modules\>* ]]; then
         echo "Module file not formatted properly must start and end with <module> </module> tag"
         return 0
     fi
@@ -281,7 +311,7 @@ function parseXmlModuleContents
     parseXmlGroupModules $lstart $lend
 
     if [[   ${#xmlp_reqlibs[*]} == 0 || 
-            ${#xmlp_optlibs[*]} == 0 ]]; then
+                ${#xmlp_optlibs[*]} == 0 ]]; then
         echo "Required and Optional Modules not present in module files"
         return 0
     fi

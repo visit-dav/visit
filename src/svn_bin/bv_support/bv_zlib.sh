@@ -1,19 +1,19 @@
 function bv_zlib_initialize
 {
-export DO_ZLIB="no"
-export ON_ZLIB="off"
+    export DO_ZLIB="no"
+    export ON_ZLIB="off"
 }
 
 function bv_zlib_enable
 {
-DO_ZLIB="yes"
-ON_ZLIB="on"
+    DO_ZLIB="yes"
+    ON_ZLIB="on"
 }
 
 function bv_zlib_disable
 {
-DO_ZLIB="no"
-ON_ZLIB="off"
+    DO_ZLIB="no"
+    ON_ZLIB="off"
 }
 
 function bv_zlib_depends_on
@@ -25,32 +25,32 @@ function bv_zlib_depends_on
 
 function bv_zlib_info
 {
-export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.7"}
-export ZLIB_FILE=${ZLIB_FILE:-"zlib-${ZLIB_VERSION}.tar.gz"}
-export ZLIB_COMPATIBILITY_VERSION=${ZLIB_COMPATIBILITY_VERSION:-"1.2"}
-export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-${ZLIB_VERSION}"}
-export ZLIB_URL=${ZLIB_URL:-https://wci.llnl.gov/codes/zlib/zlib-${ZLIB_VERSION}}
-export ZLIB_MD5_CHECKSUM=""
-export ZLIB_SHA256_CHECKSUM=""
+    export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.7"}
+    export ZLIB_FILE=${ZLIB_FILE:-"zlib-${ZLIB_VERSION}.tar.gz"}
+    export ZLIB_COMPATIBILITY_VERSION=${ZLIB_COMPATIBILITY_VERSION:-"1.2"}
+    export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-${ZLIB_VERSION}"}
+    export ZLIB_URL=${ZLIB_URL:-https://wci.llnl.gov/codes/zlib/zlib-${ZLIB_VERSION}}
+    export ZLIB_MD5_CHECKSUM=""
+    export ZLIB_SHA256_CHECKSUM=""
 }
 
 function bv_zlib_print
 {
-  printf "%s%s\n" "ZLIB_FILE=" "${ZLIB_FILE}"
-  printf "%s%s\n" "ZLIB_VERSION=" "${ZLIB_VERSION}"
-  printf "%s%s\n" "ZLIB_COMPATIBILITY_VERSION=" "${ZLIB_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "ZLIB_BUILD_DIR=" "${ZLIB_BUILD_DIR}"
+    printf "%s%s\n" "ZLIB_FILE=" "${ZLIB_FILE}"
+    printf "%s%s\n" "ZLIB_VERSION=" "${ZLIB_VERSION}"
+    printf "%s%s\n" "ZLIB_COMPATIBILITY_VERSION=" "${ZLIB_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "ZLIB_BUILD_DIR=" "${ZLIB_BUILD_DIR}"
 }
 
 function bv_zlib_print_usage
 {
-printf "%-15s %s [%s]\n" "--zlib" "Build ZLIB support" "$DO_ZLIB"
+    printf "%-15s %s [%s]\n" "--zlib" "Build ZLIB support" "$DO_ZLIB"
 }
 
 function bv_zlib_graphical
 {
-local graphical_out="ZLIB     $ZLIB_VERSION($ZLIB_FILE)      $ON_ZLIB"
-echo "$graphical_out"
+    local graphical_out="ZLIB     $ZLIB_VERSION($ZLIB_FILE)      $ON_ZLIB"
+    echo "$graphical_out"
 }
 
 function bv_zlib_host_profile
@@ -61,8 +61,8 @@ function bv_zlib_host_profile
         echo "## ZLIB" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR \${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR \${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
     fi
 }
 
@@ -80,9 +80,9 @@ function bv_zlib_ensure
 
 function bv_zlib_dry_run
 {
-  if [[ "$DO_ZLIB" == "yes" ]] ; then
-    echo "Dry run option not set for zlib."
-  fi
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        echo "Dry run option not set for zlib."
+    fi
 }
 
 # *************************************************************************** #
@@ -100,8 +100,8 @@ function build_zlib
     prepare_build_dir $ZLIB_BUILD_DIR $ZLIB_FILE
     untarred_zlib=$?
     if [[ $untarred_zlib == -1 ]] ; then
-       warn "Unable to prepare ZLIB build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare ZLIB build directory. Giving Up!"
+        return 1
     fi
     
     #
@@ -124,8 +124,8 @@ function build_zlib
         --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATICARGS
 
     if [[ $? != 0 ]] ; then
-       warn "ZLIB configure failed.  Giving up"
-       return 1
+        warn "ZLIB configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -134,8 +134,8 @@ function build_zlib
     info "Building ZLIB . . . (~1 minute)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "ZLIB build failed.  Giving up"
-       return 1
+        warn "ZLIB build failed.  Giving up"
+        return 1
     fi
     #
     # Install into the VisIt third party location.
@@ -148,8 +148,8 @@ function build_zlib
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/zlib"
-       chgrp -R ${GROUP} "$VISITDIR/zlib"
+        chmod -R ug+w,a+rX "$VISITDIR/zlib"
+        chgrp -R ${GROUP} "$VISITDIR/zlib"
     fi
     cd "$START_DIR"
     info "Done with ZLIB"
@@ -175,19 +175,18 @@ function bv_zlib_is_installed
 
 function bv_zlib_build
 {
-cd "$START_DIR"
-if [[ "$DO_ZLIB" == "yes" ]] ; then
-    check_if_installed "zlib" $ZLIB_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping ZLIB build.  ZLIB is already installed."
-    else
-        info "Building ZLIB (~1 minute)"
-        build_zlib
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install ZLIB.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        check_if_installed "zlib" $ZLIB_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping ZLIB build.  ZLIB is already installed."
+        else
+            info "Building ZLIB (~1 minute)"
+            build_zlib
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install ZLIB.  Bailing out."
+            fi
+            info "Done building ZLIB"
         fi
-        info "Done building ZLIB"
     fi
-fi
 }
-

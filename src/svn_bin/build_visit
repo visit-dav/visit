@@ -410,6 +410,7 @@ do
             grouplibs_name[${#grouplibs_name[*]}]="${xmlp_grouplibs_name[$bv_i]}"
             grouplibs_deps[${#grouplibs_deps[*]}]="${xmlp_grouplibs_deps[$bv_i]}"
             grouplibs_comment[${#grouplibs_comment[*]}]="${xmlp_grouplibs_comment[$bv_i]}"
+            grouplibs_enabled[${#grouplibs_enabled[*]}]="${xmlp_grouplibs_enabled[$bv_i]}"
         fi
     done
 done
@@ -566,6 +567,7 @@ function bv_write_unified_file
     echo "    grouplibs_name[\${#grouplibs_name[*]}]=\"\${xmlp_grouplibs_name[\$bv_i]}\"" >> $OUTPUT_bv_FILE
     echo "    grouplibs_deps[\${#grouplibs_deps[*]}]=\"\${xmlp_grouplibs_deps[\$bv_i]}\"" >> $OUTPUT_bv_FILE
     echo "    grouplibs_comment[\${#grouplibs_comment[*]}]=\"\${xmlp_grouplibs_comment[\$bv_i]}\"" >> $OUTPUT_bv_FILE
+    echo "    grouplibs_enabled[\${#grouplibs_enabled[*]}]=\"\${xmlp_grouplibs_enabled[\$bv_i]}\"" >> $OUTPUT_bv_FILE
     echo "  fi" >> $OUTPUT_bv_FILE
     echo "  done" >> $OUTPUT_bv_FILE
     echo "done" >> $OUTPUT_bv_FILE

@@ -29,7 +29,7 @@ function bv_adios_alt_adios_dir
     echo "Using alternate Adios directory"
 
     # Check to make sure the directory or a particular include file exists.
-#    [ ! -e "$1" ] && error "Adios not found in $1"
+    #    [ ! -e "$1" ] && error "Adios not found in $1"
 
     bv_adios_enable
     USE_SYSTEM_ADIOS="yes"
@@ -65,31 +65,32 @@ function bv_adios_initialize_vars
 
 function bv_adios_info
 {
-export ADIOS_FILE=${ADIOS_FILE:-"adios-1.9.0.tar.gz"}
-export ADIOS_VERSION=${ADIOS_VERSION:-"1.9.0"}
-export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.9.0"}
-export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.9.0"}
-export ADIOS_MD5_CHECKSUM="dbf5cb10e32add2f04c9b4052b7ffa76"
-export ADIOS_SHA256_CHECKSUM=""
+    export ADIOS_FILE=${ADIOS_FILE:-"adios-1.9.0.tar.gz"}
+    export ADIOS_VERSION=${ADIOS_VERSION:-"1.9.0"}
+    export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.9.0"}
+    export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.9.0"}
+    export ADIOS_MD5_CHECKSUM="dbf5cb10e32add2f04c9b4052b7ffa76"
+    export ADIOS_SHA256_CHECKSUM=""
 }
 
 function bv_adios_print
 {
-  printf "%s%s\n" "ADIOS_FILE=" "${ADIOS_FILE}"
-  printf "%s%s\n" "ADIOS_VERSION=" "${ADIOS_VERSION}"
-  printf "%s%s\n" "ADIOS_COMPATIBILITY_VERSION=" "${ADIOS_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "ADIOS_BUILD_DIR=" "${ADIOS_BUILD_DIR}"
+    printf "%s%s\n" "ADIOS_FILE=" "${ADIOS_FILE}"
+    printf "%s%s\n" "ADIOS_VERSION=" "${ADIOS_VERSION}"
+    printf "%s%s\n" "ADIOS_COMPATIBILITY_VERSION=" "${ADIOS_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "ADIOS_BUILD_DIR=" "${ADIOS_BUILD_DIR}"
 }
 
 function bv_adios_print_usage
 {
-printf "%-15s %s [%s]\n" "--adios"   "Build ADIOS" "$DO_ADIOS"
+    printf "%-15s %s [%s]\n" "--adios" "Build ADIOS" "$DO_ADIOS"
+    printf "%-15s %s [%s]\n" "--alt-adios-dir" "Use ADIOS from an alternative directory"
 }
 
 function bv_adios_graphical
 {
-local graphical_out="ADIOS    $ADIOS_VERSION($ADIOS_FILE)    $ON_ADIOS"
-echo $graphical_out
+    local graphical_out="ADIOS    $ADIOS_VERSION($ADIOS_FILE)    $ON_ADIOS"
+    echo $graphical_out
 }
 
 function bv_adios_host_profile
@@ -107,8 +108,8 @@ function bv_adios_host_profile
             echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR $ADIOS_INSTALL_DIR)" >> $HOSTCONF 
         else
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR \${VISITHOME}/adios/$ADIOS_VERSION/\${VISITARCH})" \
-            >> $HOSTCONF 
+                "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR \${VISITHOME}/adios/$ADIOS_VERSION/\${VISITARCH})" \
+                >> $HOSTCONF 
         fi
     fi
 }
@@ -127,9 +128,9 @@ function bv_adios_ensure
 
 function bv_adios_dry_run
 {
-  if [[ "$DO_ADIOS" == "yes" ]] ; then
-    echo "Dry run option not set for adios."
-  fi
+    if [[ "$DO_ADIOS" == "yes" ]] ; then
+        echo "Dry run option not set for adios."
+    fi
 }
 
 # ***************************************************************************
@@ -141,12 +142,12 @@ function bv_adios_dry_run
 
 function apply_ADIOS_1_6_0_patch
 {
-# fix for osx -- malloc.h doesn't exist (examples/C/schema includes this file)
+    # fix for osx -- malloc.h doesn't exist (examples/C/schema includes this file)
     info "Patching ADIOS"
     patch -p0 << \EOF
 diff -rcN adios-1.6.0-orig/examples/C/schema/rectilinear2d.c adios-1.6.0/examples/C/schema/rectilinear2d.c
-*** adios-1.6.0-orig/examples/C/schema/rectilinear2d.c	2013-12-05 08:15:37.000000000 -0800
---- adios-1.6.0/examples/C/schema/rectilinear2d.c	2014-06-02 15:27:23.000000000 -0700
+*** adios-1.6.0-orig/examples/C/schema/rectilinear2d.c  2013-12-05 08:15:37.000000000 -0800
+--- adios-1.6.0/examples/C/schema/rectilinear2d.c       2014-06-02 15:27:23.000000000 -0700
 ***************
 *** 10,16 ****
   #include <stdio.h>
@@ -167,8 +168,8 @@ diff -rcN adios-1.6.0-orig/examples/C/schema/rectilinear2d.c adios-1.6.0/example
   #include <fcntl.h>
   #include <errno.h>
 diff -rcN adios-1.6.0-orig/examples/C/schema/structured2d.c adios-1.6.0/examples/C/schema/structured2d.c
-*** adios-1.6.0-orig/examples/C/schema/structured2d.c	2013-12-05 08:15:37.000000000 -0800
---- adios-1.6.0/examples/C/schema/structured2d.c	2014-06-02 15:27:23.000000000 -0700
+*** adios-1.6.0-orig/examples/C/schema/structured2d.c   2013-12-05 08:15:37.000000000 -0800
+--- adios-1.6.0/examples/C/schema/structured2d.c        2014-06-02 15:27:23.000000000 -0700
 ***************
 *** 10,16 ****
   #include <stdio.h>
@@ -189,8 +190,8 @@ diff -rcN adios-1.6.0-orig/examples/C/schema/structured2d.c adios-1.6.0/examples
   #include <fcntl.h>
   #include <errno.h>
 diff -rcN adios-1.6.0-orig/examples/C/schema/tri2d.c adios-1.6.0/examples/C/schema/tri2d.c
-*** adios-1.6.0-orig/examples/C/schema/tri2d.c	2013-12-05 08:15:37.000000000 -0800
---- adios-1.6.0/examples/C/schema/tri2d.c	2014-06-02 15:27:23.000000000 -0700
+*** adios-1.6.0-orig/examples/C/schema/tri2d.c  2013-12-05 08:15:37.000000000 -0800
+--- adios-1.6.0/examples/C/schema/tri2d.c       2014-06-02 15:27:23.000000000 -0700
 ***************
 *** 10,16 ****
   #include <stdio.h>
@@ -211,8 +212,8 @@ diff -rcN adios-1.6.0-orig/examples/C/schema/tri2d.c adios-1.6.0/examples/C/sche
   #include <fcntl.h>
   #include <errno.h>
 diff -rcN adios-1.6.0-orig/examples/C/schema/uniform2d.c adios-1.6.0/examples/C/schema/uniform2d.c
-*** adios-1.6.0-orig/examples/C/schema/uniform2d.c	2013-12-05 08:15:37.000000000 -0800
---- adios-1.6.0/examples/C/schema/uniform2d.c	2014-06-02 15:27:23.000000000 -0700
+*** adios-1.6.0-orig/examples/C/schema/uniform2d.c      2013-12-05 08:15:37.000000000 -0800
+--- adios-1.6.0/examples/C/schema/uniform2d.c   2014-06-02 15:27:23.000000000 -0700
 ***************
 *** 10,16 ****
   #include <stdio.h>
@@ -235,8 +236,8 @@ diff -rcN adios-1.6.0-orig/examples/C/schema/uniform2d.c adios-1.6.0/examples/C/
 
 EOF
     if [[ $? != 0 ]] ; then
-      warn "ADIOS patch failed."
-      return 1
+        warn "ADIOS patch failed."
+        return 1
     fi
 
     return 0;
@@ -263,8 +264,8 @@ function build_ADIOS
     prepare_build_dir $ADIOS_BUILD_DIR $ADIOS_FILE
     untarred_ADIOS=$?
     if [[ $untarred_ADIOS == -1 ]] ; then
-       warn "Unable to prepare ADIOS Build Directory. Giving Up"
-       return 1
+        warn "Unable to prepare ADIOS Build Directory. Giving Up"
+        return 1
     fi
     apply_ADIOS_patch
     if [[ $? != 0 ]] ; then
@@ -292,27 +293,27 @@ function build_ADIOS
     else
         ADIOS_MPI_OPTS="--without-mpi"
     fi
-       info     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-                  CC="$C_COMPILER" CFLAGS=\"$CFLAGS $C_OPT_FLAGS $ADIOS_MPI_INC\" \
-                  CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $ADIOS_MPI_INC\" \
-                  $ADIOS_MPI_OPTS \
-                  --disable-fortran \
-	              --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
-                  --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
-                  --prefix="$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH"
-        
-        sh -c "./configure ${OPTIONAL} CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+    info     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
+             CC="$C_COMPILER" CFLAGS=\"$CFLAGS $C_OPT_FLAGS $ADIOS_MPI_INC\" \
+             CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $ADIOS_MPI_INC\" \
+             $ADIOS_MPI_OPTS \
+             --disable-fortran \
+             --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
+             --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
+             --prefix="$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH"
+    
+    sh -c "./configure ${OPTIONAL} CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
                 CFLAGS=\"$CFLAGS $C_OPT_FLAGS $ADIOS_MPI_INC\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $ADIOS_MPI_INC\" \
                 $ADIOS_MPI_OPTS \
                 --disable-fortran \
-	            --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
+                    --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
                 --with-mxml=\"$VISITDIR/mxml/$MXML_VERSION/$VISITARCH\" \
                 --prefix=\"$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH\""
-           
-        
+    
+    
     if [[ $? != 0 ]] ; then
-       warn "ADIOS configure failed.  Giving up"
-       return 1
+        warn "ADIOS configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -322,20 +323,20 @@ function build_ADIOS
 
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "ADIOSbuild failed.  Giving up"
-       return 1
+        warn "ADIOSbuild failed.  Giving up"
+        return 1
     fi
     info "Installing ADIOS . . ."
 
     $MAKE install
     if [[ $? != 0 ]] ; then
-       warn "ADIOS build (make install) failed.  Giving up"
-       return 1
+        warn "ADIOS build (make install) failed.  Giving up"
+        return 1
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/ADIOS"
-       chgrp -R ${GROUP} "$VISITDIR/ADIOS"
+        chmod -R ug+w,a+rX "$VISITDIR/ADIOS"
+        chgrp -R ${GROUP} "$VISITDIR/ADIOS"
     fi
     cd "$START_DIR"
     info "Done with ADIOS"
@@ -365,19 +366,19 @@ function bv_adios_is_installed
 
 function bv_adios_build
 {
-cd "$START_DIR"
+    cd "$START_DIR"
 
-if [[ "$DO_ADIOS" == "yes" && "$USE_SYSTEM_ADIOS" == "no" ]] ; then
-    check_if_installed "adios" $ADIOS_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping ADIOS build.  ADIOS is already installed."
-    else
-        info "Building ADIOS (~1 minutes)"
-        build_ADIOS
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install ADIOS.  Bailing out."
+    if [[ "$DO_ADIOS" == "yes" && "$USE_SYSTEM_ADIOS" == "no" ]] ; then
+        check_if_installed "adios" $ADIOS_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping ADIOS build.  ADIOS is already installed."
+        else
+            info "Building ADIOS (~1 minutes)"
+            build_ADIOS
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install ADIOS.  Bailing out."
+            fi
+            info "Done building ADIOS"
         fi
-        info "Done building ADIOS"
-   fi
-fi
+    fi
 }

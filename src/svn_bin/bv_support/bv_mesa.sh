@@ -1,53 +1,53 @@
 function bv_mesa_initialize
 {
-export DO_MESA="no"
-export ON_MESA="off"
+    export DO_MESA="no"
+    export ON_MESA="off"
 }
 
 function bv_mesa_enable
 {
-DO_MESA="yes"
-ON_MESA="on"
+    DO_MESA="yes"
+    ON_MESA="on"
 }
 
 function bv_mesa_disable
 {
-DO_MESA="no"
-ON_MESA="off"
+    DO_MESA="no"
+    ON_MESA="off"
 }
 
 function bv_mesa_depends_on
 {
-echo ""
+    echo ""
 }
 
 function bv_mesa_info
 {
-export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
-export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
-export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
-export MESA_MD5_CHECKSUM=""
-export MESA_SHA256_CHECKSUM=""
+    export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
+    export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
+    export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
+    export MESA_MD5_CHECKSUM=""
+    export MESA_SHA256_CHECKSUM=""
 }
 
 function bv_mesa_print
 {
-printf "%s%s\n" "MESA_FILE=" "${MESA_FILE}"
-printf "%s%s\n" "MESA_VERSION=" "${MESA_VERSION}"
-printf "%s%s\n" "MESA_TARGET=" "${MESA_TARGET}"
-printf "%s%s\n" "MESA_BUILD_DIR=" "${MESA_BUILD_DIR}"
+    printf "%s%s\n" "MESA_FILE=" "${MESA_FILE}"
+    printf "%s%s\n" "MESA_VERSION=" "${MESA_VERSION}"
+    printf "%s%s\n" "MESA_TARGET=" "${MESA_TARGET}"
+    printf "%s%s\n" "MESA_BUILD_DIR=" "${MESA_BUILD_DIR}"
 }
 
 function bv_mesa_print_usage
 {
-printf "\t\t%15s\n" "NOTE: not available for download from web"
-printf "%-15s %s [%s]\n" "--mesa" "Build Mesa" "$DO_MESA"
+    printf "\t\t%15s\n" "NOTE: not available for download from web"
+    printf "%-15s %s [%s]\n" "--mesa" "Build Mesa" "$DO_MESA"
 }
 
 function bv_mesa_graphical
 {
-local graphical_out="Mesa     $MESA_VERSION($MESA_FILE)      $ON_MESA"
-echo $graphical_out
+    local graphical_out="Mesa     $MESA_VERSION($MESA_FILE)      $ON_MESA"
+    echo $graphical_out
 }
 
 function bv_mesa_host_profile
@@ -94,7 +94,7 @@ function bv_mesa_dry_run
 
 function apply_mesa_75_patch_1
 {
-   patch -f -p0 <<\EOF
+    patch -f -p0 <<\EOF
 diff -c a/src/mesa/main/config.h Mesa-7.5/src/mesa/main/config.h
 *** a/src/mesa/main/config.h
 --- Mesa-7.5/src/mesa/main/config.h
@@ -120,12 +120,12 @@ diff -c a/src/mesa/main/config.h Mesa-7.5/src/mesa/main/config.h
   /** Maxmimum size for CVA.  May be overridden by the drivers.  */
   #define MAX_ARRAY_LOCK_SIZE 3000
 EOF
-   if [[ $? != 0 ]] ; then
+    if [[ $? != 0 ]] ; then
         warn "Unable to apply patch 1 to Mesa 7.5."
         return 1
-   else
+    else
         return 0
-   fi
+    fi
 }
 
 function apply_mesa_75_patch_2
@@ -152,7 +152,7 @@ EOF
         return 1
     else
         return 0
-   fi
+    fi
 }
 
 function apply_mesa_75_patch_3
@@ -183,44 +183,44 @@ diff -c a/progs/Makefile Mesa-7.5/progs/Makefile
   
   
   subdirs:
-! 	@for dir in $(SUBDIRS) ; do \
-! 		if [ -d $$dir ] ; then \
-! 			(cd $$dir && $(MAKE)) || exit 1 ; \
-! 		fi \
-! 	done
+!       @for dir in $(SUBDIRS) ; do \
+!               if [ -d $$dir ] ; then \
+!                       (cd $$dir && $(MAKE)) || exit 1 ; \
+!               fi \
+!       done
   
   # Dummy install target
   install:
   
   clean:
-! 	-@for dir in $(SUBDIRS) tests ; do \
-! 		if [ -d $$dir ] ; then \
-! 			(cd $$dir && $(MAKE) clean) ; \
-! 		fi \
-! 	done
+!       -@for dir in $(SUBDIRS) tests ; do \
+!               if [ -d $$dir ] ; then \
+!                       (cd $$dir && $(MAKE) clean) ; \
+!               fi \
+!       done
 --- 15,36 ----
   
   
   subdirs:
-! 	@if test -n "$(SUBDIRS)" ; then \
-! 		for dir in $(SUBDIRS) ; do \
-! 			if [ -d $$dir ] ; then \
-! 				(cd $$dir && $(MAKE)) || exit 1 ; \
-! 			fi \
-! 		done \
-! 	fi
+!       @if test -n "$(SUBDIRS)" ; then \
+!               for dir in $(SUBDIRS) ; do \
+!                       if [ -d $$dir ] ; then \
+!                               (cd $$dir && $(MAKE)) || exit 1 ; \
+!                       fi \
+!               done \
+!       fi
   
   # Dummy install target
   install:
   
   clean:
-! 	-@if test -n "$(SUBDIRS)" ; then \
-! 		for dir in $(SUBDIRS) tests ; do \
-! 			if [ -d $$dir ] ; then \
-! 				(cd $$dir && $(MAKE) clean) ; \
-! 			fi \
-! 		done \
-! 	fi
+!       -@if test -n "$(SUBDIRS)" ; then \
+!               for dir in $(SUBDIRS) tests ; do \
+!                       if [ -d $$dir ] ; then \
+!                               (cd $$dir && $(MAKE) clean) ; \
+!                       fi \
+!               done \
+!       fi
 EOF
 
     if [[ $? != 0 ]] ; then
@@ -228,7 +228,7 @@ EOF
         return 1
     else
         return 0
-   fi
+    fi
 }
 
 
@@ -242,23 +242,23 @@ diff -c a/src/mesa/main/compiler.h Mesa-7.5/src/mesa/main/compiler.h
 *** 233,239 ****
   #elif defined(__APPLE__)
   #include <CoreFoundation/CFByteOrder.h>
-  #define CPU_TO_LE32( x )	CFSwapInt32HostToLittle( x )
+  #define CPU_TO_LE32( x )      CFSwapInt32HostToLittle( x )
 ! #else /*__linux__ __APPLE__*/
   #include <sys/endian.h>
-  #define CPU_TO_LE32( x )	bswap32( x )
+  #define CPU_TO_LE32( x )      bswap32( x )
   #endif /*__linux__*/
 --- 233,244 ----
   #elif defined(__APPLE__)
   #include <CoreFoundation/CFByteOrder.h>
-  #define CPU_TO_LE32( x )	CFSwapInt32HostToLittle( x )
+  #define CPU_TO_LE32( x )      CFSwapInt32HostToLittle( x )
 ! #elif defined(_AIX)
-! #define CPU_TO_LE32( x )	x = ((x & 0x000000ff) << 24) | \
-! 				    ((x & 0x0000ff00) <<  8) | \
-! 				    ((x & 0x00ff0000) >>  8) | \
-! 				    ((x & 0xff000000) >> 24);
+! #define CPU_TO_LE32( x )      x = ((x & 0x000000ff) << 24) | \
+!                                   ((x & 0x0000ff00) <<  8) | \
+!                                   ((x & 0x00ff0000) >>  8) | \
+!                                   ((x & 0xff000000) >> 24);
 ! #else /*__linux__*/
   #include <sys/endian.h>
-  #define CPU_TO_LE32( x )	bswap32( x )
+  #define CPU_TO_LE32( x )      bswap32( x )
   #endif /*__linux__*/
 EOF
 
@@ -267,13 +267,13 @@ EOF
         return 1
     else
         return 0
-   fi
+    fi
 }
 
 
 function apply_mesa_782_patch_1
 {
-   patch -f -p0 <<\EOF
+    patch -f -p0 <<\EOF
 diff -c a/src/mesa/drivers/osmesa/osmesa.c Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c
 *** a/src/mesa/drivers/osmesa/osmesa.c
 --- Mesa-7.8.2/src/mesa/drivers/osmesa/osmesa.c
@@ -303,18 +303,18 @@ diff -c a/src/mesa/drivers/osmesa/osmesa.c Mesa-7.8.2/src/mesa/drivers/osmesa/os
       * osmesa_renderbuffer_storage() being called by _mesa_resize_framebuffer()
 EOF
 
-   if [[ $? != 0 ]] ; then
-      warn "Unable to apply patch 1 to Mesa 7.8.2."
-      return 1
-   else
-      return 0
-   fi
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 1 to Mesa 7.8.2."
+        return 1
+    else
+        return 0
+    fi
 }
 
 
 function apply_mesa_782_patch_2
 {
-   patch -f -p1 <<\EOF
+    patch -f -p1 <<\EOF
 From cc32ff741c5d32a66531a586b1f9268b94846c58 Mon Sep 17 00:00:00 2001
 From: Tom Fogal <tfogal@alumni.unh.edu>
 Date: Sun, 26 Sep 2010 18:57:59 -0600
@@ -359,7 +359,7 @@ index a156823..8434491 100644
 +   unsigned char c;
 +
 +   __asm__ __volatile__("lock; decl %0; sete %1":"+m"(*v), "=qm"(c)
-+			::"memory");
++                       ::"memory");
 +
 +   return c != 0;
 +}
@@ -395,18 +395,18 @@ index a156823..8434491 100644
 1.7.0.2
 EOF
 
-   if [[ $? != 0 ]] ; then
-      warn "Unable to apply patch 2 to Mesa 7.8.2."
-      return 1
-   else
-      return 0
-   fi
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 2 to Mesa 7.8.2."
+        return 1
+    else
+        return 0
+    fi
 }
 
 
 function apply_mesa_7102_patch_1
 {
-   patch -f -p0 <<\EOF
+    patch -f -p0 <<\EOF
 diff -c a/src/mesa/main/APIspec.py Mesa-7.10.2/src/mesa/main/APIspec.py
 *** a/src/mesa/main/APIspec.py
 --- Mesa-7.10.2/src/mesa/main/APIspec.py
@@ -433,18 +433,18 @@ diff -c a/src/mesa/main/APIspec.py Mesa-7.10.2/src/mesa/main/APIspec.py
                   args.append("void")
 EOF
 
-   if [[ $? != 0 ]] ; then
-      warn "Unable to apply patch 1 to Mesa 7.10.2."
-      return 1
-   else
-      return 0
-   fi
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 1 to Mesa 7.10.2."
+        return 1
+    else
+        return 0
+    fi
 }
 
 
 function apply_mesa_7102_patch_2
 {
-   patch -f -p0 <<\EOF
+    patch -f -p0 <<\EOF
 diff -c a/src/mesa/main/APIspecutil.py Mesa-7.10.2/src/mesa/main/APIspecutil.py
 *** a/src/mesa/main/APIspecutil.py
 --- Mesa-7.10.2/src/mesa/main/APIspecutil.py
@@ -529,18 +529,18 @@ diff -c a/src/mesa/main/APIspecutil.py Mesa-7.10.2/src/mesa/main/APIspecutil.py
   def Categories(funcname):
 EOF
 
-   if [[ $? != 0 ]] ; then
-      warn "Unable to apply patch 2 to Mesa 7.10.2."
-      return 1
-   else
-      return 0
-   fi
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 2 to Mesa 7.10.2."
+        return 1
+    else
+        return 0
+    fi
 }
 
 
 function apply_mesa_7102_patch_3
 {
-   patch -f -p0 <<\EOF
+    patch -f -p0 <<\EOF
 diff -c a/src/mesa/main/es_generator.py Mesa-7.10.2/src/mesa/main/es_generator.py
 *** a/src/mesa/main/es_generator.py
 --- Mesa-7.10.2/src/mesa/main/es_generator.py
@@ -567,12 +567,12 @@ diff -c a/src/mesa/main/es_generator.py Mesa-7.10.2/src/mesa/main/es_generator.p
           # version does not match
 EOF
 
-   if [[ $? != 0 ]] ; then
-      warn "Unable to apply patch 3 to Mesa 7.10.2."
-      return 1
-   else
-      return 0
-   fi
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 3 to Mesa 7.10.2."
+        return 1
+    else
+        return 0
+    fi
 }
 
 
@@ -648,7 +648,7 @@ function build_mesa
         if [[ $untarred_mesa == 1 ]] ; then
             warn "Giving up on Mesa build because the patch failed."
             return 1
-         else
+        else
             warn "Patch failed, but continuing.  I believe that this script\n"\
                  "tried to apply a patch to an existing directory which had\n"\
                  "already been patched ... that is, that the patch is\n"\
@@ -711,20 +711,20 @@ function build_mesa
     fi
 
     ./configure \
-      CC="${C_COMPILER}" \
-      CXX="${CXX_COMPILER}" \
-      CFLAGS="${C_OPT_FLAGS} ${CFLAGS} ${AIX_MESA_CFLAGS} ${HACK_FLAGS}" \
-      CXXFLAGS="${CXX_OPT_FLAGS} ${CXXFLAGS} ${HACK_FLAGS}" \
-      --prefix=${PF}                    \
-      --without-demos                   \
-      --with-driver=osmesa              \
-      --disable-gallium                 \
-      --with-max-width=16384            \
-      --with-max-height=16384           \
-      --enable-glx-tls                  \
-      --disable-glw                     \
-      ${DISABLE_GLU}                    \
-      --disable-egl  ${MESA_STATIC_DYNAMIC}
+        CC="${C_COMPILER}" \
+        CXX="${CXX_COMPILER}" \
+        CFLAGS="${C_OPT_FLAGS} ${CFLAGS} ${AIX_MESA_CFLAGS} ${HACK_FLAGS}" \
+        CXXFLAGS="${CXX_OPT_FLAGS} ${CXXFLAGS} ${HACK_FLAGS}" \
+        --prefix=${PF}                    \
+        --without-demos                   \
+        --with-driver=osmesa              \
+        --disable-gallium                 \
+        --with-max-width=16384            \
+        --with-max-height=16384           \
+        --enable-glx-tls                  \
+        --disable-glw                     \
+        ${DISABLE_GLU}                    \
+        --disable-egl  ${MESA_STATIC_DYNAMIC}
     if [[ $? != 0 ]] ; then
         warn "Mesa: 'configure' for Offscreen failed.  Giving up"
         return 1
@@ -799,4 +799,3 @@ function bv_mesa_build
         fi
     fi
 }
-

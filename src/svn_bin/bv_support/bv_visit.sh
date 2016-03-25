@@ -74,42 +74,42 @@ function bv_visit_ensure_built_or_ready
     # Check-out the latest svn sources, before building VisIt
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
         if [[ -d src ]] ; then
-           info "Found existing VisIt SVN src directory, using that . . ."
+            info "Found existing VisIt SVN src directory, using that . . ."
         else
-           # Print a dialog screen
-           info "SVN check-out of VisIt ($SVN_ROOT_PATH/$SVN_SOURCE_PATH) . . ."
-           if [[ "$DO_REVISION" == "yes" && "$SVNREVISION" != "" ]] ; then
-               svn co --quiet --non-interactive --revision "$SVNREVISION" \
-                  $SVN_ROOT_PATH/$SVN_SOURCE_PATH
-           else
-               svn co --quiet --non-interactive $SVN_ROOT_PATH/$SVN_SOURCE_PATH
-           fi
-           if [[ $? != 0 ]] ; then
-               warn "Unable to build VisIt. SVN download failed."
-               return 1
-           fi
+            # Print a dialog screen
+            info "SVN check-out of VisIt ($SVN_ROOT_PATH/$SVN_SOURCE_PATH) . . ."
+            if [[ "$DO_REVISION" == "yes" && "$SVNREVISION" != "" ]] ; then
+                svn co --quiet --non-interactive --revision "$SVNREVISION" \
+                    $SVN_ROOT_PATH/$SVN_SOURCE_PATH
+            else
+                svn co --quiet --non-interactive $SVN_ROOT_PATH/$SVN_SOURCE_PATH
+            fi
+            if [[ $? != 0 ]] ; then
+                warn "Unable to build VisIt. SVN download failed."
+                return 1
+            fi
         fi
 
-    # Build using (the assumed) existing VisIt svn "src" directory
+        # Build using (the assumed) existing VisIt svn "src" directory
     elif [[ -d src ]] ; then
-           info "Found VisIt SVN src directory found, using it."
-           #resetting any values that have mixup the build between Trunk and RC
-           VISIT_FILE="" #erase any accidental setting of these values
-           USE_VISIT_FILE="no"
-           ON_USE_VISIT_FILE="off"
-           DO_SVN="yes" #if src directory exists it may have come from svn..
+        info "Found VisIt SVN src directory found, using it."
+        #resetting any values that have mixup the build between Trunk and RC
+        VISIT_FILE="" #erase any accidental setting of these values
+        USE_VISIT_FILE="no"
+        ON_USE_VISIT_FILE="off"
+        DO_SVN="yes" #if src directory exists it may have come from svn..
 
-    # Build using a VisIt source tarball
+        # Build using a VisIt source tarball
     else
         if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
             info \
-"Got VisIt source code. Lets look for 3rd party libraries."
+                "Got VisIt source code. Lets look for 3rd party libraries."
         else
             download_file $VISIT_FILE
             if [[ $? != 0 ]] ; then
-               warn \
-"Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
-               return 1
+                warn \
+                    "Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
+                return 1
             fi
         fi
     fi
@@ -117,17 +117,17 @@ function bv_visit_ensure_built_or_ready
 
 function bv_visit_dry_run
 {
-  if [[ "$DO_VISIT" == "yes" ]] ; then
-    echo "Dry run option not set for VisIt"
-  fi
+    if [[ "$DO_VISIT" == "yes" ]] ; then
+        echo "Dry run option not set for VisIt"
+    fi
 }
 
 
 #print what the module will do for building
 function bv_visit_print_build_command
 {
-   #print the build command..
-   echo "visit has no build commands set"
+    #print the build command..
+    echo "visit has no build commands set"
 }
 
 # Modify the makefiles that cmake generated.
@@ -139,73 +139,73 @@ function bv_visit_modify_makefiles
         # Check for version < 8.0.0 (MacOS 10.4, Tiger) for gcc < 4.x
         VER=$(uname -r)
         if (( ${VER%%.*} > 8 )) ; then
-           cat databases/Shapefile/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
-           mv -f databases/Shapefile/Makefile databases/Shapefile/Makefile.orig
-           mv -f Make.tmp databases/Shapefile/Makefile
-           if [[ "$DO_CCMIO" == "yes" ]] ; then
-              cat databases/CCM/Makefile | \
-                 sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
-              mv -f databases/CCM/Makefile databases/CCM/Makefile.orig
-              mv -f Make.tmp databases/CCM/Makefile
-           fi
+            cat databases/Shapefile/Makefile | \
+                sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
+            mv -f databases/Shapefile/Makefile databases/Shapefile/Makefile.orig
+            mv -f Make.tmp databases/Shapefile/Makefile
+            if [[ "$DO_CCMIO" == "yes" ]] ; then
+                cat databases/CCM/Makefile | \
+                    sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
+                mv -f databases/CCM/Makefile databases/CCM/Makefile.orig
+                mv -f Make.tmp databases/CCM/Makefile
+            fi
         fi 
         if (( ${VER%%.*} < 8 )) ; then
-           info "Patching VisIt . . ."
-           cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
-           mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
-           mv -f Make.tmp databases/Fluent/Makefile
-           cat avt/Pipeline/Data/avtCommonDataFunctions.C | \
-              sed '/isfinite/s/isfinite/__isfinited/g' > C.tmp
-           mv -f avt/Pipeline/Data/avtCommonDataFunctions.C \
-              avt/Pipeline/Data/avtCommonDataFunctions.C.orig
-           mv -f C.tmp avt/Pipeline/Data/avtCommonDataFunctions.C
-           cat avt/Expressions/Abstract/avtExpressionFilter.C | \
-              sed '/isfinite/s/isfinite/__isfinited/g' > C.tmp
-           mv -f avt/Expressions/Abstract/avtExpressionFilter.C \
-              avt/Expressions/Abstract/avtExpressionFilter.C.orig
-           mv -f C.tmp avt/Expressions/Abstract/avtExpressionFilter.C
+            info "Patching VisIt . . ."
+            cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
+            mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
+            mv -f Make.tmp databases/Fluent/Makefile
+            cat avt/Pipeline/Data/avtCommonDataFunctions.C | \
+                sed '/isfinite/s/isfinite/__isfinited/g' > C.tmp
+            mv -f avt/Pipeline/Data/avtCommonDataFunctions.C \
+               avt/Pipeline/Data/avtCommonDataFunctions.C.orig
+            mv -f C.tmp avt/Pipeline/Data/avtCommonDataFunctions.C
+            cat avt/Expressions/Abstract/avtExpressionFilter.C | \
+                sed '/isfinite/s/isfinite/__isfinited/g' > C.tmp
+            mv -f avt/Expressions/Abstract/avtExpressionFilter.C \
+               avt/Expressions/Abstract/avtExpressionFilter.C.orig
+            mv -f C.tmp avt/Expressions/Abstract/avtExpressionFilter.C
         fi
         if (( ${VER%%.*} < 7 )) ; then
-           cat third_party_builtin/mesa_stub/Makefile | \
-              sed 's/glx.c glxext.c//' > Make.tmp
-           mv -f third_party_builtin/mesa_stub/Makefile \
-              third_party_builtin/mesa_stub/Makefile.orig
-           mv -f Make.tmp third_party_builtin/mesa_stub/Makefile
+            cat third_party_builtin/mesa_stub/Makefile | \
+                sed 's/glx.c glxext.c//' > Make.tmp
+            mv -f third_party_builtin/mesa_stub/Makefile \
+               third_party_builtin/mesa_stub/Makefile.orig
+            mv -f Make.tmp third_party_builtin/mesa_stub/Makefile
         fi
         if (( ${VER%%.*} > 6 )) ; then
-           cat databases/SimV1/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
-           mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
-           mv -f Make.tmp databases/SimV1/Makefile
-           cat databases/SimV1Writer/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
-           mv -f databases/SimV1Writer/Makefile \
-             databases/SimV1Writer/Makefile.orig
-           mv -f Make.tmp databases/SimV1Writer/Makefile
-           cat avt/Expressions/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
-           mv -f avt/Expressions/Makefile \
-             avt/Expressions/Makefile.orig
-           mv -f Make.tmp avt/Expressions/Makefile
+            cat databases/SimV1/Makefile | \
+                sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
+            mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
+            mv -f Make.tmp databases/SimV1/Makefile
+            cat databases/SimV1Writer/Makefile | \
+                sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
+            mv -f databases/SimV1Writer/Makefile \
+               databases/SimV1Writer/Makefile.orig
+            mv -f Make.tmp databases/SimV1Writer/Makefile
+            cat avt/Expressions/Makefile | \
+                sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
+            mv -f avt/Expressions/Makefile \
+               avt/Expressions/Makefile.orig
+            mv -f Make.tmp avt/Expressions/Makefile
         else
-           cat databases/SimV1/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
-              Make.tmp
-           mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
-           mv -f Make.tmp databases/SimV1/Makefile
-           cat databases/SimV1Writer/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
-              Make.tmp
-           mv -f databases/SimV1Writer/Makefile \
-             databases/SimV1Writer/Makefile.orig
-           mv -f Make.tmp databases/SimV1Writer/Makefile
-           cat avt/Expressions/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
-              Make.tmp
-           mv -f avt/Expressions/Makefile \
-             avt/Expressions/Makefile.orig
-           mv -f Make.tmp avt/Expressions/Makefile
+            cat databases/SimV1/Makefile | \
+                sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
+                    Make.tmp
+            mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
+            mv -f Make.tmp databases/SimV1/Makefile
+            cat databases/SimV1Writer/Makefile | \
+                sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
+                    Make.tmp
+            mv -f databases/SimV1Writer/Makefile \
+               databases/SimV1Writer/Makefile.orig
+            mv -f Make.tmp databases/SimV1Writer/Makefile
+            cat avt/Expressions/Makefile | \
+                sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
+                    Make.tmp
+            mv -f avt/Expressions/Makefile \
+               avt/Expressions/Makefile.orig
+            mv -f Make.tmp avt/Expressions/Makefile
         fi
     elif [[ "$OPSYS" == "SunOS" ]]; then
         # Some Solaris systems hang when compiling Fluent when optimizations
@@ -287,21 +287,21 @@ function build_visit
         # Unzip the file, provided a gzipped file exists.
         #
         if [[ -f ${VISIT_FILE} ]] ; then
-           info "Unzipping/untarring ${VISIT_FILE} . . ."
-           uncompress_untar ${VISIT_FILE}
-           if [[ $? != 0 ]] ; then
-              warn \
-"Unable to untar ${VISIT_FILE}.  Corrupted file or out of space on device?"
-              return 1
-           fi
+            info "Unzipping/untarring ${VISIT_FILE} . . ."
+            uncompress_untar ${VISIT_FILE}
+            if [[ $? != 0 ]] ; then
+                warn \
+                    "Unable to untar ${VISIT_FILE}.  Corrupted file or out of space on device?"
+                return 1
+            fi
         elif [[ -f ${VISIT_FILE%.*} ]] ; then
-           info "Unzipping ${VISIT_FILE%.*} . . ."
-           $TAR xf ${VISIT_FILE%.*}
-           if [[ $? != 0 ]] ; then
-              warn  \
-"Unable to untar ${VISIT_FILE%.*}.  Corrupted file or out of space on device?"
-              return 1
-           fi
+            info "Unzipping ${VISIT_FILE%.*} . . ."
+            $TAR xf ${VISIT_FILE%.*}
+            if [[ $? != 0 ]] ; then
+                warn  \
+                    "Unable to untar ${VISIT_FILE%.*}.  Corrupted file or out of space on device?"
+                return 1
+            fi
         fi
     fi
 
@@ -345,31 +345,31 @@ function build_visit
         FEATURES="${FEATURES} -DVISIT_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
     fi
     if [[ "${DO_JAVA}" == "yes" ]] ; then
-       FEATURES="${FEATURES} -DVISIT_JAVA:BOOL=ON"
+        FEATURES="${FEATURES} -DVISIT_JAVA:BOOL=ON"
     fi
     if [[ "${DO_SLIVR}" == "no" ]] ; then
-       FEATURES="${FEATURES} -DVISIT_SLIVR:BOOL=OFF"
+        FEATURES="${FEATURES} -DVISIT_SLIVR:BOOL=OFF"
     fi
     if [[ "${VISIT_INSTALL_PREFIX}" != "" ]] ; then
-       FEATURES="${FEATURES} -DCMAKE_INSTALL_PREFIX:PATH=${VISIT_INSTALL_PREFIX}"
+        FEATURES="${FEATURES} -DCMAKE_INSTALL_PREFIX:PATH=${VISIT_INSTALL_PREFIX}"
     fi
     # Select a specialized build mode.
     if [[ "${DO_DBIO_ONLY}" == "yes" ]] ; then
-       FEATURES="${FEATURES} -DVISIT_DBIO_ONLY:BOOL=ON"
+        FEATURES="${FEATURES} -DVISIT_DBIO_ONLY:BOOL=ON"
     elif [[ "${DO_ENGINE_ONLY}" = "yes" ]] ; then
-       FEATURES="${FEATURES} -DVISIT_ENGINE_ONLY:BOOL=ON"
+        FEATURES="${FEATURES} -DVISIT_ENGINE_ONLY:BOOL=ON"
     elif [[ "${DO_SERVER_COMPONENTS_ONLY}" = "yes" ]] ; then
-       FEATURES="${FEATURES} -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON"
+        FEATURES="${FEATURES} -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON"
     fi
 
     # Let the user turn on XDB.
     if [[ "${DO_XDB}" == "yes" ]] ; then
-       FEATURES="${FEATURES} -DVISIT_ENABLE_XDB:BOOL=ON"
+        FEATURES="${FEATURES} -DVISIT_ENABLE_XDB:BOOL=ON"
     fi
 
     # Let the user pick a subset of plugins.
     if [[ "${VISIT_SELECTED_DATABASE_PLUGINS}" != "" ]] ; then
-       FEATURES="${FEATURES} -DVISIT_SELECTED_DATABASE_PLUGINS:STRING=${VISIT_SELECTED_DATABASE_PLUGINS}"
+        FEATURES="${FEATURES} -DVISIT_SELECTED_DATABASE_PLUGINS:STRING=${VISIT_SELECTED_DATABASE_PLUGINS}"
     fi
 
     CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
@@ -377,8 +377,8 @@ function build_visit
     rm -f CMakeCache.txt
     issue_command "${CMAKE_BIN}" ${FEATURES} . 
     if [[ $? != 0 ]] ; then
-       echo "VisIt configure failed.  Giving up"
-       return 1
+        echo "VisIt configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -392,8 +392,8 @@ function build_visit
     info "Building VisIt . . . (~50 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "VisIt build failed.  Giving up"
-       return 1
+        warn "VisIt build failed.  Giving up"
+        return 1
     fi
     warn "All indications are that VisIt successfully built."
 
@@ -439,15 +439,15 @@ function bv_visit_is_installed
 function bv_patch_2_5_0
 {
 
-  if [[ -e visit2.5.0 ]]; then
-    info "apply patch to ModelFit operator"
-patch -f -p0 visit2.5.0/src/operators/ModelFit/CMakeLists.txt <<\EOF
+    if [[ -e visit2.5.0 ]]; then
+        info "apply patch to ModelFit operator"
+        patch -f -p0 visit2.5.0/src/operators/ModelFit/CMakeLists.txt <<\EOF
 24d23
 < QT_WRAP_CPP(GModelFitOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 94a94
 >     QT_WRAP_CPP(GModelFitOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
 EOF
-  fi
+    fi
 
 }
 
@@ -473,7 +473,7 @@ function bv_visit_build
             VISIT_SRC_DIR="${VISIT_FILE%.tar*}/src"
         fi
 
-    FINISHED_MSG="Finished building VisIt.\n\n\
+        FINISHED_MSG="Finished building VisIt.\n\n\
     You many now try to run VisIt by cd'ing into the \
     $VISIT_SRC_DIR/bin directory and invoking \"visit\".\n\n\
     To create a binary distribution tarball from this build, cd to \

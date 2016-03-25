@@ -46,7 +46,7 @@
         </optional>
 
         <!-- thirdparty flag -->
-        <group name="required" comment="All required libraries">
+        <group name="required" comment="All required libraries" enabled="yes">
             <lib name="cmake"/> <!-- cmake is here -->
             <lib name="python"/>
             <lib name="mesa"/>
@@ -54,7 +54,7 @@
             <lib name="qt"/>
         </group>
 
-        <group name="optional" comment="All optional libraries">
+        <group name="optional" comment="All optional libraries" enabled="no">
             <lib name="adios"/>
             <lib name="advio"/>
             <lib name="boost"/>
@@ -79,7 +79,7 @@
             <lib name="zlib"/>
         </group>
 
-        <group name="no-thirdparty" comment="Do not build required 3rd party libraries">
+        <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
             <lib name="no-python"/>
             <lib name="no-pyside"/>
@@ -88,7 +88,7 @@
         </group>
 
         <!-- all io libraries -->
-        <group name="all-io" comment="Build all available I/O libraries">
+        <group name="all-io" comment="Build all available I/O libraries" enabled="no">
             <lib name="adios"/>
 <!--        <lib name="advio"/>    Removed by Allen Sanderson-->
             <lib name="boxlib"/>
@@ -110,7 +110,7 @@
         </group>
 
         <!-- dbio-only-->
-        <group name="dbio-only" comment="Disables EVERYTHING but I/O.">
+        <group name="dbio-only" comment="Disables EVERYTHING but I/O." enabled="no">
             <lib name="adios"/>
             <lib name="advio"/>
             <lib name="boxlib"/>
@@ -137,7 +137,7 @@
         <!--
             #all the optional non io libraries
         -->
-        <group name="nonio" comment="Build non I/O libraries">
+        <group name="nonio" comment="Build non I/O libraries" enabled="no">
             <lib name="icet"/>
             <lib name="mesa"/>
         </group>
@@ -145,7 +145,7 @@
         <!--
         # Releasibility of these libs is not yet understood
         -->
-        <group name="advanced" comment="Must be manually downloaded">
+        <group name="advanced" comment="Must be manually downloaded" enabled="no">
             <lib name="hdf4"/>
             <lib name="itaps"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->

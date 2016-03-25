@@ -1,58 +1,58 @@
 function bv_xdmf_initialize
 {
-export DO_XDMF="no"
-export ON_XDMF="off"
+    export DO_XDMF="no"
+    export ON_XDMF="off"
 }
 
 function bv_xdmf_enable
 {
-DO_XDMF="yes"
-ON_XDMF="on"
+    DO_XDMF="yes"
+    ON_XDMF="on"
 
-#xdmf is dependent on HDF5
-DO_HDF5="yes"
-ON_HDF5="on"
+    #xdmf is dependent on HDF5
+    DO_HDF5="yes"
+    ON_HDF5="on"
 }
 
 function bv_xdmf_disable
 {
-DO_XDMF="no"
-ON_XDMF="off"
+    DO_XDMF="no"
+    ON_XDMF="off"
 }
 
 function bv_xdmf_depends_on
 {
-echo "cmake vtk hdf5"
+    echo "cmake vtk hdf5"
 }
 
 function bv_xdmf_info
 {
-export XDMF_FILE=${XDMF_FILE:-"Xdmf-2.1.1.tar.gz"}
-export XDMF_VERSION=${XDMF_VERSION:-"2.1.1"}
-export XDMF_COMPATIBILITY_VERSION=${XDMF_COMPATIBILITY_VERSION:-"2.1.1"}
-export XDMF_BUILD_DIR=${XDMF_BUILD_DIR:-"Xdmf"}
-export XDMF_MD5_CHECKSUM="09e2afd3a1b7b3e7d650b860212a95d1"
-export XDMF_SHA256_CHECKSUM=""
+    export XDMF_FILE=${XDMF_FILE:-"Xdmf-2.1.1.tar.gz"}
+    export XDMF_VERSION=${XDMF_VERSION:-"2.1.1"}
+    export XDMF_COMPATIBILITY_VERSION=${XDMF_COMPATIBILITY_VERSION:-"2.1.1"}
+    export XDMF_BUILD_DIR=${XDMF_BUILD_DIR:-"Xdmf"}
+    export XDMF_MD5_CHECKSUM="09e2afd3a1b7b3e7d650b860212a95d1"
+    export XDMF_SHA256_CHECKSUM=""
 }
 
 function bv_xdmf_print
 {
-  printf "%s%s\n" "XDMF_FILE=" "${XDMF_FILE}"
-  printf "%s%s\n" "XDMF_VERSION=" "${XDMF_VERSION}"
-  printf "%s%s\n" "XDMF_COMPATIBILITY_VERSION=" "${XDMF_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "XDMF_BUILD_DIR=" "${XDMF_BUILD_DIR}"
+    printf "%s%s\n" "XDMF_FILE=" "${XDMF_FILE}"
+    printf "%s%s\n" "XDMF_VERSION=" "${XDMF_VERSION}"
+    printf "%s%s\n" "XDMF_COMPATIBILITY_VERSION=" "${XDMF_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "XDMF_BUILD_DIR=" "${XDMF_BUILD_DIR}"
 }
 
 function bv_xdmf_print_usage
 {
-printf "\t\t%15s\n" "NOTE: not available for download from web" 
-printf "%-15s %s [%s]\n" "--xdmf" "Build Xdmf" "$DO_XDMF"
+    printf "\t\t%15s\n" "NOTE: not available for download from web" 
+    printf "%-15s %s [%s]\n" "--xdmf" "Build Xdmf" "$DO_XDMF"
 }
 
 function bv_xdmf_graphical
 {
-local graphical_out="Xdmf     $XDMF_VERSION($XDMF_FILE)    $ON_XDMF"
-echo "$graphical_out"
+    local graphical_out="Xdmf     $XDMF_VERSION($XDMF_FILE)    $ON_XDMF"
+    echo "$graphical_out"
 }
 
 function bv_xdmf_host_profile
@@ -63,11 +63,11 @@ function bv_xdmf_host_profile
         echo "## Xdmf" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR \${VISITHOME}/Xdmf/$XDMF_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR \${VISITHOME}/Xdmf/$XDMF_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} VTK_LIBRARY_DIRS vtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} VTK_LIBRARY_DIRS vtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
+            >> $HOSTCONF
     fi
 }
 
@@ -85,9 +85,9 @@ function bv_xdmf_ensure
 
 function bv_xdmf_dry_run
 {
-  if [[ "$DO_XDMF" == "yes" ]] ; then
-    echo "Dry run option not set for xdmf."
-  fi
+    if [[ "$DO_XDMF" == "yes" ]] ; then
+        echo "Dry run option not set for xdmf."
+    fi
 }
 
 
@@ -105,8 +105,8 @@ function build_xdmf
     prepare_build_dir $XDMF_BUILD_DIR $XDMF_FILE
     untarred_XDMF=$?
     if [[ $untarred_XDMF == -1 ]] ; then
-       warn "Unable to prepare Xdmf Build Directory. Giving up"
-       return 1
+        warn "Unable to prepare Xdmf Build Directory. Giving up"
+        return 1
     fi
 
     # We need to patch the CMakeLists.txt so it uses our HDF5 by default
@@ -124,31 +124,31 @@ function build_xdmf
     fi
 
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
-        -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-        -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
-        -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}"\
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}"\
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-        -DBUILD_TESTING:BOOL=OFF \
-        -DXDMF_BUILD_MPI:BOOL=OFF \
-        -DXDMF_BUILD_VTK:BOOL=OFF \
-        -DXDMF_BUILD_UTILS:BOOL=OFF \
-        -DXDMF_SYSTEM_HDF5:BOOL=ON \
-        -DHDF5_INCLUDE_PATH:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include" \
-        -DHDF5_LIBRARY:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}" \
-        -DXDMF_SYSTEM_ZLIB:BOOL=ON \
-        -DZLIB_INCLUDE_PATH:PATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibz" \
-        -DZLIB_LIBRARY:PATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtkzlib-${VTK_SHORT_VERSION}.${SO_EXT}" \
-        -DXDMF_SYSTEM_LIBXML2:BOOL=ON \
-        -DLIBXML2_INCLUDE_PATH:PATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2" \
-        -DLIBXML2_LIBRARY="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}" \
-        .
+                 -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
+                 -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
+                 -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
+                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}"\
+                 -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}"\
+                 -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+                 -DBUILD_TESTING:BOOL=OFF \
+                 -DXDMF_BUILD_MPI:BOOL=OFF \
+                 -DXDMF_BUILD_VTK:BOOL=OFF \
+                 -DXDMF_BUILD_UTILS:BOOL=OFF \
+                 -DXDMF_SYSTEM_HDF5:BOOL=ON \
+                 -DHDF5_INCLUDE_PATH:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include" \
+                 -DHDF5_LIBRARY:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}" \
+                 -DXDMF_SYSTEM_ZLIB:BOOL=ON \
+                 -DZLIB_INCLUDE_PATH:PATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibz" \
+                 -DZLIB_LIBRARY:PATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtkzlib-${VTK_SHORT_VERSION}.${SO_EXT}" \
+                 -DXDMF_SYSTEM_LIBXML2:BOOL=ON \
+                 -DLIBXML2_INCLUDE_PATH:PATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2" \
+                 -DLIBXML2_LIBRARY="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}" \
+                 .
 
     if [[ $? != 0 ]] ; then
-       warn "Xdmf configure failed.  Giving up"
-       return 1
+        warn "Xdmf configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -158,16 +158,16 @@ function build_xdmf
 
     $MAKE
     if [[ $? != 0 ]] ; then
-       warn "Xdmf build failed.  Giving up"
-       return 1
+        warn "Xdmf build failed.  Giving up"
+        return 1
     fi
 
     # Install Xdmf
     info "Installing Xdmf"
     $MAKE install
     if [[ $? != 0 ]] ; then
-       warn "Xdmf install failed.  Giving up"
-       return 1
+        warn "Xdmf install failed.  Giving up"
+        return 1
     fi
 
     if [[ "$DO_STATIC_BUILD" != "yes" && "$OPSYS" == "Darwin" ]]; then
@@ -177,8 +177,8 @@ function build_xdmf
 
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/Xdmf"
-       chgrp -R ${GROUP} "$VISITDIR/Xdmf"
+        chmod -R ug+w,a+rX "$VISITDIR/Xdmf"
+        chgrp -R ${GROUP} "$VISITDIR/Xdmf"
     fi
 
     cd "$START_DIR"
@@ -205,18 +205,18 @@ function bv_xdmf_is_installed
 
 function bv_xdmf_build
 {
-cd "$START_DIR"
-if [[ "$DO_XDMF" == "yes" ]] ; then
-    check_if_installed "Xdmf" $XDMF_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping Xdmf build.  Xdmf is already installed."
-    else
-        info "Building Xdmf (~2 minutes)"
-        build_xdmf
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install Xdmf.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_XDMF" == "yes" ]] ; then
+        check_if_installed "Xdmf" $XDMF_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping Xdmf build.  Xdmf is already installed."
+        else
+            info "Building Xdmf (~2 minutes)"
+            build_xdmf
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install Xdmf.  Bailing out."
+            fi
+            info "Done building Xdmf"
         fi
-        info "Done building Xdmf"
-   fi
-fi
+    fi
 }

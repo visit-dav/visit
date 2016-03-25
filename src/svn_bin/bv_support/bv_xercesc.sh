@@ -60,8 +60,8 @@ function bv_xercesc_host_profile
         echo "## XERCESC" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_XERCESC_DIR \${VISITHOME}/xerces-c/$XERCESC_VERSION/\${VISITARCH})" \
-    >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_XERCESC_DIR \${VISITHOME}/xerces-c/$XERCESC_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
     fi
 }
 
@@ -79,9 +79,9 @@ function bv_xercesc_ensure
 
 function bv_xercesc_dry_run
 {
-   if [[ "$DO_XERCESC" == "yes" ]] ; then
-     echo "Dry run option not set for Xerces-C"
-   fi
+    if [[ "$DO_XERCESC" == "yes" ]] ; then
+        echo "Dry run option not set for Xerces-C"
+    fi
 }
 
 function build_xercesc
@@ -93,8 +93,8 @@ function build_xercesc
     prepare_build_dir $XERCESC_BUILD_DIR $XERCESC_FILE
     untarred_xc=$?
     if [[ $untarred_xc == -1 ]] ; then
-       warn "Unable to prepare Xerces-C build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare Xerces-C build directory. Giving Up!"
+        return 1
     fi
 
     #
@@ -109,13 +109,13 @@ function build_xercesc
     --enable-transcoder-iconv"
     
     env CXX=$CXX_COMPILER CC=$C_COMPILER ./configure \
-    --prefix=$VISITDIR/xerces-c/$XERCESC_VERSION/$VISITARCH \
-    --disable-threads --disable-network --disable-shared \
-    --enable-transcoder-iconv
+        --prefix=$VISITDIR/xerces-c/$XERCESC_VERSION/$VISITARCH \
+        --disable-threads --disable-network --disable-shared \
+        --enable-transcoder-iconv
 
     if [[ $? != 0 ]] ; then
-    warn "Xerces-C configuration failed. Giving up"
-    return 1
+        warn "Xerces-C configuration failed. Giving up"
+        return 1
     fi
 
     #
@@ -124,8 +124,8 @@ function build_xercesc
     info "Building Xerces-C . . . (~10 minute)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "Xerces-C build failed.  Giving up"
-       return 1
+        warn "Xerces-C build failed.  Giving up"
+        return 1
     fi
 
     #
@@ -134,13 +134,13 @@ function build_xercesc
     info "Installing Xerces-C"
     $MAKE install
     if [[ $? != 0 ]] ; then
-       warn "Xerces-C install failed.  Giving up"
-       return 1
+        warn "Xerces-C install failed.  Giving up"
+        return 1
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-     chmod -R ug+w,a+rX "$VISITDIR/xerces-c"
-     chgrp -R ${GROUP} "$VISITDIR/xerces-c"
+        chmod -R ug+w,a+rX "$VISITDIR/xerces-c"
+        chgrp -R ${GROUP} "$VISITDIR/xerces-c"
     fi
     cd "$START_DIR"
     return 0
@@ -176,6 +176,6 @@ function bv_xercesc_build
                 error "Unable to build or install Xerces-C.  Bailing out."
             fi
             info "Done building Xerces-C"
-       fi
+        fi
     fi
 }
