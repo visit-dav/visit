@@ -185,7 +185,7 @@
         </optional>
 
         <!-- thirdparty flag -->
-        <group name="required" comment="All required libraries">
+        <group name="required" comment="All required libraries" enabled="yes">
             <lib name="cmake"/>
             <lib name="python"/>
             <lib name="mesa"/>
@@ -194,7 +194,7 @@
             <lib name="qt"/>
         </group>
 
-        <group name="optional" comment="All optional libraries">
+        <group name="optional" comment="All optional libraries" enabled="no">
             <lib name="boost"/>
             <lib name="hdf5"/>
             <lib name="netcdf"/>
@@ -207,7 +207,7 @@
         </group>
 
 
-        <group name="no-thirdparty" comment="Do not build required 3rd party libraries">
+        <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
             <lib name="no-python"/>
             <lib name="no-qt" />
@@ -215,7 +215,7 @@
         </group>
 
         <!-- nodbio flag -->
-        <group name="dbio-only" comment="Disables EVERYTHING but I/O.">
+        <group name="dbio-only" comment="Disables EVERYTHING but I/O." enabled="no">
             <lib name="hdf5"/>
             <lib name="netcdf"/>
             <lib name="szip"/>
@@ -226,14 +226,14 @@
         </group>
 
         <!-- all io libraries -->
-        <group name="all-io" comment="Build all available I/O libraries">
+        <group name="all-io" comment="Build all available I/O libraries" enabled="no">
             <lib name="hdf5"/>
             <lib name="netcdf"/>
             <lib name="szip"/>
             <lib name="uintah"/>
         </group>
         <!-- #all the optional non io libraries -->
-        <group name="nonio" comment="Build non I/O libraries">
+        <group name="nonio" comment="Build non I/O libraries" enabled="no">
             <lib name="icet"/>
             <lib name="mesa"/>
         </group>
@@ -241,7 +241,7 @@
         <!-- you have to mangle both vtk and visit, otherwise the
              build_visit will fail -->
         <!--
-        <group name="mangled" comment="Use mangled VTK to build VisIt">
+        <group name="mangled" comment="Use mangled VTK to build VisIt" enabled="no">
             <custom-flag lib="vtk" flag="mangled"/>
             <custom-flag lib="visit" flag="mangled"/>
         </group>
