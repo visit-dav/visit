@@ -1,37 +1,37 @@
 function bv_hdf4_initialize
 {
-export DO_HDF4="no"
-export ON_HDF4="off"
+    export DO_HDF4="no"
+    export ON_HDF4="off"
 }
 
 function bv_hdf4_enable
 {
-DO_HDF4="yes"
-ON_HDF4="on"
-DO_SZIP="yes"
-ON_SZIP="on"
+    DO_HDF4="yes"
+    ON_HDF4="on"
+    DO_SZIP="yes"
+    ON_SZIP="on"
 }
 
 function bv_hdf4_disable
 {
-DO_HDF4="no"
-ON_HDF4="off"
+    DO_HDF4="no"
+    ON_HDF4="off"
 }
 
 function bv_hdf4_depends_on
 {
-echo "szip"
+    echo "szip"
 }
 
 function bv_hdf4_info
 {
-export HDF4_FILE=${HDF4_FILE:-"hdf-4.2.5.tar.gz"}
-export HDF4_VERSION=${HDF4_VERSION:-"4.2.5"}
-export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION:-"4.2"}
-export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"hdf-4.2.5"}
-export HDF4_URL=${HDF4_URL:-"http://www.hdfgroup.org/ftp/HDF/HDF_Current/src"}
-export HDF4_MD5_CHECKSUM="7241a34b722d29d8561da0947c06069f"
-export HDF4_SHA256_CHECKSUM=""
+    export HDF4_FILE=${HDF4_FILE:-"hdf-4.2.5.tar.gz"}
+    export HDF4_VERSION=${HDF4_VERSION:-"4.2.5"}
+    export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION:-"4.2"}
+    export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"hdf-4.2.5"}
+    export HDF4_URL=${HDF4_URL:-"http://www.hdfgroup.org/ftp/HDF/HDF_Current/src"}
+    export HDF4_MD5_CHECKSUM="7241a34b722d29d8561da0947c06069f"
+    export HDF4_SHA256_CHECKSUM=""
 }
 
 function bv_hdf4_initialize_vars
@@ -47,21 +47,21 @@ function bv_hdf4_initialize_vars
 
 function bv_hdf4_print
 {
-  printf "%s%s\n" "HDF4_FILE=" "${HDF4_FILE}"
-  printf "%s%s\n" "HDF4_VERSION=" "${HDF4_VERSION}"
-  printf "%s%s\n" "HDF4_COMPATIBILITY_VERSION=" "${HDF4_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "HDF4_BUILD_DIR=" "${HDF4_BUILD_DIR}"
+    printf "%s%s\n" "HDF4_FILE=" "${HDF4_FILE}"
+    printf "%s%s\n" "HDF4_VERSION=" "${HDF4_VERSION}"
+    printf "%s%s\n" "HDF4_COMPATIBILITY_VERSION=" "${HDF4_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "HDF4_BUILD_DIR=" "${HDF4_BUILD_DIR}"
 }
 
 function bv_hdf4_print_usage
 {
-printf "%-15s %s [%s]\n" "--hdf4" "Build HDF4" "${DO_HDF4}"
+    printf "%-15s %s [%s]\n" "--hdf4" "Build HDF4" "${DO_HDF4}"
 }
 
 function bv_hdf4_graphical
 {
-local graphical_out="HDF4     $HDF4_VERSION($HDF4_FILE)      $ON_HDF4"
-echo $graphical_out
+    local graphical_out="HDF4     $HDF4_VERSION($HDF4_FILE)      $ON_HDF4"
+    echo $graphical_out
 }
 
 function bv_hdf4_host_profile
@@ -72,16 +72,16 @@ function bv_hdf4_host_profile
         echo "## HDF4" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR \${VISITHOME}/hdf4/$HDF4_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR \${VISITHOME}/hdf4/$HDF4_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
         if [[ "$DO_SZIP" == "yes" ]] ; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH}/lib vtkjpeg-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)" \
-            >> $HOSTCONF
-          else
+                "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH}/lib vtkjpeg-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)" \
+                >> $HOSTCONF
+        else
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH}/lib vtkjpeg-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)" \
-            >> $HOSTCONF
+                "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH}/lib vtkjpeg-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)" \
+                >> $HOSTCONF
         fi
     fi
 }
@@ -100,9 +100,9 @@ function bv_hdf4_ensure
 
 function bv_hdf4_dry_run
 {
-  if [[ "$DO_HDF4" == "yes" ]] ; then
-    echo "Dry run option not set for hdf4."
-  fi
+    if [[ "$DO_HDF4" == "yes" ]] ; then
+        echo "Dry run option not set for hdf4."
+    fi
 }
 
 
@@ -111,9 +111,9 @@ function bv_hdf4_dry_run
 # *************************************************************************** #
 function apply_hdf4_421_darwin_patch
 {
-   patch -p0 << \EOF
-*** HDF4.2r1.orig/configure	Tue Feb  8 10:29:27 2005
---- HDF4.2r1/configure	Thu Apr 26 13:30:56 2007
+    patch -p0 << \EOF
+*** HDF4.2r1.orig/configure     Tue Feb  8 10:29:27 2005
+--- HDF4.2r1/configure  Thu Apr 26 13:30:56 2007
 *************** done
 *** 5656,5711 ****
   
@@ -491,14 +491,14 @@ function apply_hdf4_421_darwin_patch
 !     {
 !       long i = longval ();
 !       if (i != ((long) (sizeof (int*))))
-! 	exit (1);
+!       exit (1);
 !       fprintf (f, "%ld\n", i);
 !     }
 !   else
 !     {
 !       unsigned long i = ulongval ();
 !       if (i != ((long) (sizeof (int*))))
-! 	exit (1);
+!       exit (1);
 !       fprintf (f, "%lu\n", i);
 !     }
 !   exit (ferror (f) || fclose (f) != 0);
@@ -802,14 +802,14 @@ function apply_hdf4_421_darwin_patch
 ! #    {
 ! #      long i = longval ();
 ! #      if (i != ((long) (sizeof (int*))))
-! #	exit (1);
+! #     exit (1);
 ! #      fprintf (f, "%ld\n", i);
 ! #    }
 ! #  else
 ! #    {
 ! #      unsigned long i = ulongval ();
 ! #      if (i != ((long) (sizeof (int*))))
-! #	exit (1);
+! #     exit (1);
 ! #      fprintf (f, "%lu\n", i);
 ! #    }
 ! #  exit (ferror (f) || fclose (f) != 0);
@@ -854,8 +854,8 @@ function apply_hdf4_421_darwin_patch
   echo "$as_me:$LINENO: result: $ac_cv_sizeof_intp" >&5
   echo "${ECHO_T}$ac_cv_sizeof_intp" >&6
   cat >>confdefs.h <<_ACEOF
-*** HDF4.2r1.orig/hdf/src/hdfi.h	Mon Jan 24 19:36:44 2005
---- HDF4.2r1/hdf/src/hdfi.h	Thu Apr 26 13:39:53 2007
+*** HDF4.2r1.orig/hdf/src/hdfi.h        Mon Jan 24 19:36:44 2005
+--- HDF4.2r1/hdf/src/hdfi.h     Thu Apr 26 13:39:53 2007
 ***************
 *** 10,16 ****
    *                                                                          *
@@ -948,18 +948,18 @@ function apply_hdf4_421_darwin_patch
   #if defined _M_ALPHA || defined _M_IX86 || defined INTEL86 || defined M_I86 || defined M_I386 || defined DOS386 || defined __i386 || defined UNIX386 || defined i386
   #ifndef INTEL86
 EOF
-   if [[ $? != 0 ]] ; then
-      warn "Unable to patch HDF4. Wrong version?"
-      return 1
-   fi
+    if [[ $? != 0 ]] ; then
+        warn "Unable to patch HDF4. Wrong version?"
+        return 1
+    fi
 }
 
 # Sets up defines so that HDF4 can build on Linux-ppc64.
 function apply_hdf4_421_ppc_patch
 {
     patch -p0 << \EOF
---- HDF4.2r1/hdf/src/hdfi.h.bak	2004-06-11 21:28:20.763821223 +0200
-+++ HDF4.2r1/hdf/src/hdfi.h	2004-06-11 21:43:34.853673152 +0200
+--- HDF4.2r1/hdf/src/hdfi.h.bak 2004-06-11 21:28:20.763821223 +0200
++++ HDF4.2r1/hdf/src/hdfi.h     2004-06-11 21:43:34.853673152 +0200
 @@ -1318,6 +1318,55 @@
  
  #endif /* IA-64 */
@@ -1022,15 +1022,15 @@ EOF
 # Switches a define for the endianness on PPC systems.
 function apply_hdf4_421_ppc_patch_endianness
 {
-  patch -p0 << \EOF
---- HDF4.2r1/hdf/fmpool/config/fmplinux.h.orig	2009-03-17 21:10:59.240084436 -0700
-+++ HDF4.2r1/hdf/fmpool/config/fmplinux.h	2009-03-17 21:11:24.868152481 -0700
+    patch -p0 << \EOF
+--- HDF4.2r1/hdf/fmpool/config/fmplinux.h.orig  2009-03-17 21:10:59.240084436 -0700
++++ HDF4.2r1/hdf/fmpool/config/fmplinux.h       2009-03-17 21:11:24.868152481 -0700
 @@ -36,7 +36,7 @@
  #define HAVE_STAT
  #define HAVE_MIN_MAX
  #define HAVE_CDEFS_H
--#define	BYTE_ORDER  LITTLE_ENDIAN	
-+#define	BYTE_ORDER  BIG_ENDIAN	
+-#define        BYTE_ORDER  LITTLE_ENDIAN       
++#define        BYTE_ORDER  BIG_ENDIAN  
  
  #endif /* _FMPCONF_H */
 EOF
@@ -1038,19 +1038,19 @@ EOF
 
 function apply_hdf4_421_patch
 {
-   if [[ "$OPSYS" == "Darwin" ]]; then
-       apply_hdf4_421_darwin_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        apply_hdf4_421_darwin_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
 
-   return 0
+    return 0
 }
 
 function apply_hdf4_425_patch
 {
-   patch -p0 << \EOF
+    patch -p0 << \EOF
 diff -c a/configure hdf-4.2.5/configure
 *** a/configure
 --- hdf-4.2.5/configure
@@ -1265,34 +1265,34 @@ diff -c a/configure hdf-4.2.5/configure
   else
     unset HAVE_JPEG
 EOF
-   if [[ $? != 0 ]] ; then
-      warn "HDF4 patch failed."
-      return 1
-   fi
+    if [[ $? != 0 ]] ; then
+        warn "HDF4 patch failed."
+        return 1
+    fi
 
-   return 0
+    return 0
 }
 
 function apply_hdf4_patch
 {
-   if [[ ${HDF4_VERSION} == 4.2.1 ]] ; then
-       apply_hdf4_421_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
-   if [[ ${HDF4_VERSION} == 4.2.5 ]] ; then
-       apply_hdf4_425_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
-   if [[ `uname -m` == "ppc64" ]]; then
-       apply_hdf4_421_ppc_patch
-       apply_hdf4_421_ppc_patch_endianness
-   fi
+    if [[ ${HDF4_VERSION} == 4.2.1 ]] ; then
+        apply_hdf4_421_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+    if [[ ${HDF4_VERSION} == 4.2.5 ]] ; then
+        apply_hdf4_425_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+    if [[ `uname -m` == "ppc64" ]]; then
+        apply_hdf4_421_ppc_patch
+        apply_hdf4_421_ppc_patch_endianness
+    fi
 
-   return 0
+    return 0
 }
 
 function build_hdf4
@@ -1303,8 +1303,8 @@ function build_hdf4
     prepare_build_dir $HDF4_BUILD_DIR $HDF4_FILE
     untarred_hdf4=$?
     if [[ $untarred_hdf4 == -1 ]] ; then
-       warn "Unable to prepare HDF4 Build Directory. Giving Up"
-       return 1
+        warn "Unable to prepare HDF4 Build Directory. Giving Up"
+        return 1
     fi
     #
     # Apply patches
@@ -1312,15 +1312,15 @@ function build_hdf4
     info "Patching HDF . . ." 
     apply_hdf4_patch
     if [[ $? != 0 ]] ; then
-       if [[ $untarred_hdf4 == 1 ]] ; then
-          warn "Giving up on HDF4 build because the patch failed."
-          return 1
-       else
-          warn "Patch failed, but continuing.  I believe that this script\n" \
-               "tried to apply a patch to an existing directory which had\n" \
-               "already been patched ... that is, that the patch is\n" \
-               "failing harmlessly on a second application."
-       fi
+        if [[ $untarred_hdf4 == 1 ]] ; then
+            warn "Giving up on HDF4 build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory which had\n" \
+                 "already been patched ... that is, that the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
     fi
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
@@ -1347,9 +1347,9 @@ function build_hdf4
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
         --disable-dependency-tracking"
         if [[ $? != 0 ]] ; then
-           warn "HDF4 configure failed.  Giving up"\
-                "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
-           return 1
+            warn "HDF4 configure failed.  Giving up"\
+                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
+            return 1
         fi
         MAKEOPS="-i"
     else
@@ -1365,9 +1365,9 @@ function build_hdf4
         --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\""
         if [[ $? != 0 ]] ; then
-           warn "HDF4 configure failed.  Giving up.\n"\
-                "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
-           return 1
+            warn "HDF4 configure failed.  Giving up.\n"\
+                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
+            return 1
         fi
     fi
 
@@ -1378,8 +1378,8 @@ function build_hdf4
 
     $MAKE $MAKEOPS
     if [[ $? != 0 ]] ; then
-       warn "HDF4 build failed.  Giving up"
-       return 1
+        warn "HDF4 build failed.  Giving up"
+        return 1
     fi
     #
     # Install into the VisIt third party location.
@@ -1387,8 +1387,8 @@ function build_hdf4
     info "Installing HDF4 . . ."
     $MAKE $MAKEOPS install
     if [[ $? != 0 ]] ; then
-       warn "HDF4 install failed.  Giving up"
-       return 1
+        warn "HDF4 install failed.  Giving up"
+        return 1
     fi
 
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
@@ -1400,41 +1400,41 @@ function build_hdf4
         INSTALLNAMEPATH="$VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH/lib"
 
         ${C_COMPILER} -dynamiclib -o libdf.${SO_EXT} hdf/src/*.o \
-           -Wl,-headerpad_max_install_names \
-           -Wl,-install_name,$INSTALLNAMEPATH/libdf.${SO_EXT} \
-           -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
-           -Wl,-current_version,$HDF4_VERSION \
-           -L"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib" \
-           -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" \
-           -lvtkjpeg-${VTK_SHORT_VERSION} -lsz -lz
+                      -Wl,-headerpad_max_install_names \
+                      -Wl,-install_name,$INSTALLNAMEPATH/libdf.${SO_EXT} \
+                      -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
+                      -Wl,-current_version,$HDF4_VERSION \
+                      -L"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib" \
+                      -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" \
+                      -lvtkjpeg-${VTK_SHORT_VERSION} -lsz -lz
         if [[ $? != 0 ]] ; then
-           warn \
-"HDF4 dynamic library build failed for libdf.${SO_EXT}.  Giving up"
-           return 1
+            warn \
+                "HDF4 dynamic library build failed for libdf.${SO_EXT}.  Giving up"
+            return 1
         fi
         cp libdf.${SO_EXT} "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib"
 
         # Relink libmfhdf.
         ${C_COMPILER} -dynamiclib -o libmfhdf.${SO_EXT} mfhdf/libsrc/*.o \
-           -Wl,-headerpad_max_install_names \
-           -Wl,-install_name,$INSTALLNAMEPATH/libmfhdf.${SO_EXT} \
-           -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
-           -Wl,-current_version,$HDF4_VERSION \
-           -L"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib" \
-           -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" \
-           -L"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib" \
-           -lvtkjpeg-${VTK_SHORT_VERSION} -ldf -lsz -lz
+                      -Wl,-headerpad_max_install_names \
+                      -Wl,-install_name,$INSTALLNAMEPATH/libmfhdf.${SO_EXT} \
+                      -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
+                      -Wl,-current_version,$HDF4_VERSION \
+                      -L"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib" \
+                      -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" \
+                      -L"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib" \
+                      -lvtkjpeg-${VTK_SHORT_VERSION} -ldf -lsz -lz
         if [[ $? != 0 ]] ; then
-           warn \
-"HDF4 dynamic library build failed for libmfhdf.${SO_EXT}.  Giving up"
-           return 1
+            warn \
+                "HDF4 dynamic library build failed for libmfhdf.${SO_EXT}.  Giving up"
+            return 1
         fi
         cp libmfhdf.${SO_EXT} "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/hdf4"
-       chgrp -R ${GROUP} "$VISITDIR/hdf4"
+        chmod -R ug+w,a+rX "$VISITDIR/hdf4"
+        chgrp -R ${GROUP} "$VISITDIR/hdf4"
     fi
     cd "$START_DIR"
     info "Done with HDF4"
@@ -1460,19 +1460,18 @@ function bv_hdf4_is_installed
 
 function bv_hdf4_build
 {
-cd "$START_DIR"
-if [[ "$DO_HDF4" == "yes" ]] ; then
-    check_if_installed "hdf4" $HDF4_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping HDF4 build.  HDF4 is already installed."
-    else
-        info "Building HDF4 (~2 minutes)"
-        build_hdf4
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install HDF4.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_HDF4" == "yes" ]] ; then
+        check_if_installed "hdf4" $HDF4_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping HDF4 build.  HDF4 is already installed."
+        else
+            info "Building HDF4 (~2 minutes)"
+            build_hdf4
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install HDF4.  Bailing out."
+            fi
+            info "Done building HDF4"
         fi
-        info "Done building HDF4"
     fi
-fi
 }
-

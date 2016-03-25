@@ -1,54 +1,54 @@
 function bv_mili_initialize
 {
-export DO_MILI="no"
-export ON_MILI="off"
+    export DO_MILI="no"
+    export ON_MILI="off"
 }
 
 function bv_mili_enable
 {
-DO_MILI="yes"
-ON_MILI="on"
+    DO_MILI="yes"
+    ON_MILI="on"
 }
 
 function bv_mili_disable
 {
-DO_MILI="no"
-ON_MILI="off"
+    DO_MILI="no"
+    ON_MILI="off"
 }
 
 function bv_mili_depends_on
 {
-echo ""
+    echo ""
 }
 
 function bv_mili_info
 {
-export MILI_FILE=${MILI_FILE:-"mili_15_1.tar.gz"}
-export MILI_VERSION=${MILI_VERSION:-"15.1"}
-export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"15.1"}
-export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
-export MILI_MD5_CHECKSUM="115c6aaf742f151aea6c644d719ee067"
-export MILI_SHA256_CHECKSUM="564c50b003aded7ec33977f8192fbf6ec2f5dc22a41c9551a8fa492c484031bf"
+    export MILI_FILE=${MILI_FILE:-"mili_15_1.tar.gz"}
+    export MILI_VERSION=${MILI_VERSION:-"15.1"}
+    export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"15.1"}
+    export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
+    export MILI_MD5_CHECKSUM="115c6aaf742f151aea6c644d719ee067"
+    export MILI_SHA256_CHECKSUM="564c50b003aded7ec33977f8192fbf6ec2f5dc22a41c9551a8fa492c484031bf"
 }
 
 function bv_mili_print
 {
-  printf "%s%s\n" "MILI_FILE=" "${MILI_FILE}"
-  printf "%s%s\n" "MILI_VERSION=" "${MILI_VERSION}"
-  printf "%s%s\n" "MILI_COMPATIBILITY_VERSION=" "${MILI_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "MILI_BUILD_DIR=" "${MILI_BUILD_DIR}"
+    printf "%s%s\n" "MILI_FILE=" "${MILI_FILE}"
+    printf "%s%s\n" "MILI_VERSION=" "${MILI_VERSION}"
+    printf "%s%s\n" "MILI_COMPATIBILITY_VERSION=" "${MILI_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "MILI_BUILD_DIR=" "${MILI_BUILD_DIR}"
 }
 
 function bv_mili_print_usage
 {
-printf "\t\t%15s\n" "NOTE: not available for download from web"
-printf "%-15s %s [%s]\n" "--mili" "Build Mili" "$DO_MILI"
+    printf "\t\t%15s\n" "NOTE: not available for download from web"
+    printf "%-15s %s [%s]\n" "--mili" "Build Mili" "$DO_MILI"
 }
 
 function bv_mili_graphical
 {
-local graphical_out="MILI    $MILI_VERSION($MILI_FILE)     $ON_MILI"
-echo "$graphical_out"
+    local graphical_out="MILI    $MILI_VERSION($MILI_FILE)     $ON_MILI"
+    echo "$graphical_out"
 }
 
 function bv_mili_host_profile
@@ -59,8 +59,8 @@ function bv_mili_host_profile
         echo "## Mili" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_MILI_DIR \${VISITHOME}/mili/$MILI_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_MILI_DIR \${VISITHOME}/mili/$MILI_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
     fi
 }
 
@@ -84,9 +84,9 @@ function bv_mili_ensure
 
 function bv_mili_dry_run
 {
-  if [[ "$DO_MILI" == "yes" ]] ; then
-    echo "Dry run option not set for mili."
-  fi
+    if [[ "$DO_MILI" == "yes" ]] ; then
+        echo "Dry run option not set for mili."
+    fi
 }
 
 # *************************************************************************** #
@@ -207,8 +207,8 @@ function apply_mili_151_darwin_patch1
 {
     patch -p0 << \EOF
 diff -c mili/src/mesh_u.c mili.patched/src/mesh_u.c
-*** mili/src/mesh_u.c	2015-09-22 13:20:42.000000000 -0700
---- mili.patched/src/mesh_u.c	2015-10-19 12:44:52.000000000 -0700
+*** mili/src/mesh_u.c   2015-09-22 13:20:42.000000000 -0700
+--- mili.patched/src/mesh_u.c   2015-10-19 12:44:52.000000000 -0700
 ***************
 *** 14,20 ****
   
@@ -238,11 +238,11 @@ EOF
 function apply_mili_151_darwin_patch2
 {
     patch -p0 << \EOF
-*** mili/Makefile.Library	2013-12-10 12:55:55.000000000 -0800
---- mili.patched/Makefile.Library	2015-10-20 13:37:27.000000000 -0700
+*** mili/Makefile.Library       2013-12-10 12:55:55.000000000 -0800
+--- mili.patched/Makefile.Library       2015-10-20 13:37:27.000000000 -0700
 ***************
 *** 386,393 ****
-  	done
+        done
   
   uninstall:
 - 
@@ -263,8 +263,8 @@ EOF
 function apply_mili_151_darwin_patch3
 {
     patch -p0 << \EOF
-*** mili/src/mili_internal.h	2015-09-17 13:26:32.000000000 -0700
---- mili.patched/src/mili_internal.h	2015-10-20 16:57:21.000000000 -0700
+*** mili/src/mili_internal.h    2015-09-17 13:26:32.000000000 -0700
+--- mili.patched/src/mili_internal.h    2015-10-20 16:57:21.000000000 -0700
 ***************
 *** 534,542 ****
    * Library-private file family management routines and data.
@@ -384,8 +384,8 @@ function build_mili
     prepare_build_dir $MILI_BUILD_DIR $MILI_FILE
     untarred_mili=$?
     if [[ $untarred_mili == -1 ]] ; then
-       warn "Unable to prepare Mili Build Directory. Giving Up"
-       return 1
+        warn "Unable to prepare Mili Build Directory. Giving Up"
+        return 1
     fi
 
     #
@@ -394,15 +394,15 @@ function build_mili
     info "Patching mili . . ."
     apply_mili_patch
     if [[ $? != 0 ]] ; then
-       if [[ $untarred_mili == 1 ]] ; then
-          warn "Giving up on Mili build because the patches failed."
-          return 1
-       else
-          warn "Patch failed, but continuing.  I believe that this script " 
-          warn "tried to apply a patch to an existing directory which had " 
-          warn "already been patched ... that is, that the patch is "
-          warn "failing harmlessly on a second application."
-       fi
+        if [[ $untarred_mili == 1 ]] ; then
+            warn "Giving up on Mili build because the patches failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script " 
+            warn "tried to apply a patch to an existing directory which had " 
+            warn "already been patched ... that is, that the patch is "
+            warn "failing harmlessly on a second application."
+        fi
     fi
 
     info "Configuring Mili . . ."
@@ -410,12 +410,12 @@ function build_mili
 
     info "Invoking command to configure Mili"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        ac_cv_prog_FOUND_GMAKE=make \
-        --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
+                CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                ac_cv_prog_FOUND_GMAKE=make \
+                --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
-       warn "Mili configure failed.  Giving up"
-       return 1
+        warn "Mili configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -427,9 +427,9 @@ function build_mili
         cd MILI-$OPSYS-*
         cd src
         $C_COMPILER $CFLAGS $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c \
-            mili.c direc.c param.c io.c util.c dep.c svar.c \
-            srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c \
-            sarray.c gahl.c util.c partition.c ti.c tidirc.c
+                    mili.c direc.c param.c io.c util.c dep.c svar.c \
+                    srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c \
+                    sarray.c gahl.c util.c partition.c ti.c tidirc.c
         if [[ $? != 0 ]] ; then
             warn "Mili build failed.  Giving up"
             return 1
@@ -438,11 +438,11 @@ function build_mili
         cd MILI-*-*
         cd src
         $C_COMPILER $CFLAGS $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c \
-            mili.c dep.c direc.c eprtf.c gahl.c io_mem.c \
-            mesh_u.c mr_funcs.c param.c partition.c read_db.c sarray.c \
-            srec.c svar.c taurus_db.c taurus_mesh_u.c taurus_srec.c \
-            taurus_svars.c taurus_util.c ti.c tidirc.c util.c wrap_c.c \
-            write_db.c
+                    mili.c dep.c direc.c eprtf.c gahl.c io_mem.c \
+                    mesh_u.c mr_funcs.c param.c partition.c read_db.c sarray.c \
+                    srec.c svar.c taurus_db.c taurus_mesh_u.c taurus_srec.c \
+                    taurus_svars.c taurus_util.c ti.c tidirc.c util.c wrap_c.c \
+                    write_db.c
         if [[ $? != 0 ]] ; then
             warn "Mili build failed.  Giving up"
             return 1
@@ -474,28 +474,28 @@ function build_mili
 
         if [[ ${MILI_VERSION} != 15.1 ]] ; then
             $C_COMPILER -dynamiclib -o libmili.$SO_EXT *.o \
-              -Wl,-headerpad_max_install_names \
-              -Wl,-install_name,$INSTALLNAMEPATH/libmili.${SO_EXT} \
-              -Wl,-compatibility_version,$MILI_COMPATIBILITY_VERSION \
-              -Wl,-current_version,$MILI_VERSION
+                        -Wl,-headerpad_max_install_names \
+                        -Wl,-install_name,$INSTALLNAMEPATH/libmili.${SO_EXT} \
+                        -Wl,-compatibility_version,$MILI_COMPATIBILITY_VERSION \
+                        -Wl,-current_version,$MILI_VERSION
         else
             $C_COMPILER -dynamiclib -o libmili.$SO_EXT objs_opt/*.o \
-              -Wl,-headerpad_max_install_names \
-              -Wl,-install_name,$INSTALLNAMEPATH/libmili.${SO_EXT} \
-              -Wl,-compatibility_version,$MILI_COMPATIBILITY_VERSION \
-              -Wl,-current_version,$MILI_VERSION
+                        -Wl,-headerpad_max_install_names \
+                        -Wl,-install_name,$INSTALLNAMEPATH/libmili.${SO_EXT} \
+                        -Wl,-compatibility_version,$MILI_COMPATIBILITY_VERSION \
+                        -Wl,-current_version,$MILI_VERSION
         fi
         if [[ $? != 0 ]] ; then
-          warn "Mili dynamic library build failed.  Giving up"
-          return 1
+            warn "Mili dynamic library build failed.  Giving up"
+            return 1
         fi
         cp libmili.$SO_EXT "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     else
         if [[ ${MILI_VERSION} != 13.1.1-patch && ${MILI_VERSION} != 15.1 ]] ; then
             ar -rc libmili.a *.o 
             if [[ $? != 0 ]] ; then
-              warn "Mili install failed.  Giving up"
-              return 1
+                warn "Mili install failed.  Giving up"
+                return 1
             fi
             cp libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
         else
@@ -504,8 +504,8 @@ function build_mili
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/mili"
-       chgrp -R ${GROUP} "$VISITDIR/mili"
+        chmod -R ug+w,a+rX "$VISITDIR/mili"
+        chgrp -R ${GROUP} "$VISITDIR/mili"
     fi
     cd "$START_DIR"
     info "Done with Mili"
@@ -531,19 +531,18 @@ function bv_mili_is_installed
 
 function bv_mili_build
 {
-cd "$START_DIR"
-if [[ "$DO_MILI" == "yes" ]] ; then
-    check_if_installed "mili" $MILI_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping Mili build.  Mili is already installed."
-    else
-        info "Building Mili (~2 minutes)"
-        build_mili
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install Mili.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_MILI" == "yes" ]] ; then
+        check_if_installed "mili" $MILI_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping Mili build.  Mili is already installed."
+        else
+            info "Building Mili (~2 minutes)"
+            build_mili
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install Mili.  Bailing out."
+            fi
+            info "Done building Mili"
         fi
-        info "Done building Mili"
     fi
-fi
 }
-

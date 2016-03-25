@@ -8,8 +8,8 @@ export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
 # *************************************************************************** #
 function errorFunc
 {
-  echo $1
-  exit 0
+    echo $1
+    exit 0
 }
 
 # *************************************************************************** #
@@ -121,26 +121,26 @@ export EXTRA_COMMANDLINE_ARG_CALL=""
 function add_extra_commandline_args 
 {
 
-  if [[ $# != 4 ]]; then
-   echo "extra command line usage requires 4 parameters"
-   return
-  fi
+    if [[ $# != 4 ]]; then
+        echo "extra command line usage requires 4 parameters"
+        return
+    fi
 
-  #replace all occurrences of "-" with "_"
-  local enable_func="bv_$1_${2//-/_}"
+    #replace all occurrences of "-" with "_"
+    local enable_func="bv_$1_${2//-/_}"
 
-  #check if function exists..
-  #maybe this should be moved to build_visit rather than here..
-  #in case some bash consoles don't have declare -F capabilities?
-  declare -F "$enable_func" &>/dev/null || errorFunc "function pointer $enable_func not found"
+    #check if function exists..
+    #maybe this should be moved to build_visit rather than here..
+    #in case some bash consoles don't have declare -F capabilities?
+    declare -F "$enable_func" &>/dev/null || errorFunc "function pointer $enable_func not found"
 
-  #add parameters..
-  for f in "$@"; do
-    extra_commandline_args[${#extra_commandline_args[*]}]="$f"
-  done
+    #add parameters..
+    for f in "$@"; do
+        extra_commandline_args[${#extra_commandline_args[*]}]="$f"
+    done
 
-  #add function pointer..
-  extra_commandline_args[${#extra_commandline_args[*]}]="$enable_func"
+    #add function pointer..
+    extra_commandline_args[${#extra_commandline_args[*]}]="$enable_func"
 }
 
 
@@ -298,20 +298,20 @@ function uncompress_untar
     else
         case $COMPRESSTYPE in
             gzip) 
-               gunzip $1
-               $TAR xf ${1%.gz}
-               ;;
+                gunzip $1
+                $TAR xf ${1%.gz}
+                ;;
             targzip) 
-               gunzip $1
-               $TAR xf "${1%.tgz}.tar"
-               ;;
+                gunzip $1
+                $TAR xf "${1%.tgz}.tar"
+                ;;
             bzip)
-               bunzip2 $1
-               $TAR xf ${1%.bz2}
-               ;;
+                bunzip2 $1
+                $TAR xf ${1%.bz2}
+                ;;
             zip)
-               unzip $1
-               ;;
+                unzip $1
+                ;;
         esac
         
         if [[ $? != 0 ]]; then
@@ -457,12 +457,12 @@ function verify_checksum
 
 function download_file
 {
-# $1 is the file name to download
-# $2...$* [OPTIONAL] list of sites to obtain the file from
-#
-# Since we always pass optional download sites to this function for
-# some third party libs - we can't skip svn mode just b/c this info is given.
-#
+    # $1 is the file name to download
+    # $2...$* [OPTIONAL] list of sites to obtain the file from
+    #
+    # Since we always pass optional download sites to this function for
+    # some third party libs - we can't skip svn mode just b/c this info is given.
+    #
     typeset dfile=$1
     info "Downloading $dfile . . ." 
     shift
@@ -728,32 +728,32 @@ function prepare_build_dir
 
     untarred_src=0
     if [[ -d ${BUILD_DIR} ]] ; then
-       info "Found ${BUILD_DIR} . . ."
-       untarred_src=0
+        info "Found ${BUILD_DIR} . . ."
+        untarred_src=0
     elif [[ -f ${SRC_FILE} ]] ; then
-       if [[ $CHECKSUM_VALUE != "" && $CHECKSUM_TYPE != "" ]]; then
+        if [[ $CHECKSUM_VALUE != "" && $CHECKSUM_TYPE != "" ]]; then
             verify_checksum $CHECKSUM_TYPE $CHECKSUM_VALUE ${SRC_FILE}
             if [[ $? != 0 ]]; then
                 return 2
             fi
-       fi
-       info "Unzipping/Untarring ${SRC_FILE} . . ."
-       uncompress_untar ${SRC_FILE}
-       untarred_src=1
-       if [[ $? != 0 ]] ; then
-          warn \
-"Unable to untar $SRC_FILE  Corrupted file or out of space on device?"
-          return -1
-       fi
+        fi
+        info "Unzipping/Untarring ${SRC_FILE} . . ."
+        uncompress_untar ${SRC_FILE}
+        untarred_src=1
+        if [[ $? != 0 ]] ; then
+            warn \
+                "Unable to untar $SRC_FILE  Corrupted file or out of space on device?"
+            return -1
+        fi
     elif [[ -f ${SRC_FILE%.*} ]] ; then
-       info "Untarring ${SRC_FILE%.*} . . ."
-       $TAR xf ${SRC_FILE%.*}
-       untarred_src=1
-       if [[ $? != 0 ]] ; then
-          warn \
-"Unable to untar ${SRC_FILE%.*}.  Corrupted file or out of space on device?"
-          return -1
-       fi
+        info "Untarring ${SRC_FILE%.*} . . ."
+        $TAR xf ${SRC_FILE%.*}
+        untarred_src=1
+        if [[ $? != 0 ]] ; then
+            warn \
+                "Unable to untar ${SRC_FILE%.*}.  Corrupted file or out of space on device?"
+            return -1
+        fi
     fi
     
     return $untarred_src
@@ -821,10 +821,10 @@ function check_files
     fi
 
     if [[ "$DO_VISIT" == "yes" ]] ;  then
-       bv_visit_ensure_built_or_ready
-       if [[ $? != 0 ]]; then
-           return 1
-       fi
+        bv_visit_ensure_built_or_ready
+        if [[ $? != 0 ]]; then
+            return 1
+        fi
     fi
 
     check_optional_3rdparty
@@ -848,29 +848,29 @@ function check_more_options
     #
     if [[ "$DO_MORE" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         result=$($DLG --backtitle "$DLG_BACKTITLE" \
-        --title "More build options" \
-        --checklist \
-"Version: specify version of VisIt to download and build\n"\
-"Build: build VisIt, disable to build 3rd party only\n"\
-"Required: build required 3rd party libraries\n"\
-"Logging: display build log to stdout\n"\
-"Symbol: turn on -g, debugging flag\n"\
-"Group: specify the group name for install\n"\
-"Path: specify the root directory for libraries\n"\
-"to use the given Path rather than the default [@executable_path/../lib]\n"\
-"Trace: print a trace of commands and arguments during build\n\n"\
-"Select build and installed options:" 0 0 0 \
-           "Version"   "specify VisIt version [$VISIT_VERSION]" $ON_VERSION \
-           "Build"     "enable building VisIt"                  $ON_VISIT \
-           "Logging"   "disable logging to file"                $ON_LOG \
-           "Symbol"    "enable debug compiling"                 $ON_DEBUG \
-           "Group"     "specify group name for install"         $ON_GROUP \
-           "HostConf"  "create host.conf file"                  $ON_HOSTCONF \
-           "Path"      "specify library path [$THIRD_PARTY_PATH]" $ON_PATH \
-           "Trace"     "enable SHELL debugging"      $ON_VERBOSE 3>&1 1>&2 2>&3)
+                      --title "More build options" \
+                      --checklist \
+                      "Version: specify version of VisIt to download and build\n"\
+                      "Build: build VisIt, disable to build 3rd party only\n"\
+                      "Required: build required 3rd party libraries\n"\
+                      "Logging: display build log to stdout\n"\
+                      "Symbol: turn on -g, debugging flag\n"\
+                      "Group: specify the group name for install\n"\
+                      "Path: specify the root directory for libraries\n"\
+                      "to use the given Path rather than the default [@executable_path/../lib]\n"\
+                      "Trace: print a trace of commands and arguments during build\n\n"\
+                      "Select build and installed options:" 0 0 0 \
+                      "Version"   "specify VisIt version [$VISIT_VERSION]" $ON_VERSION \
+                      "Build"     "enable building VisIt"                  $ON_VISIT \
+                      "Logging"   "disable logging to file"                $ON_LOG \
+                      "Symbol"    "enable debug compiling"                 $ON_DEBUG \
+                      "Group"     "specify group name for install"         $ON_GROUP \
+                      "HostConf"  "create host.conf file"                  $ON_HOSTCONF \
+                      "Path"      "specify library path [$THIRD_PARTY_PATH]" $ON_PATH \
+                      "Trace"     "enable SHELL debugging"      $ON_VERBOSE 3>&1 1>&2 2>&3)
         retval=$?
 
-    # Remove the extra quoting, new dialog has --single-quoted
+        # Remove the extra quoting, new dialog has --single-quoted
         choice="$(echo $result | sed 's/"//g' )"
         case $retval in
           0)
@@ -930,274 +930,274 @@ function check_more_options
     return 0
 }
 
-# *************************************************************************** #
-#                          extract_parallel_ldflags                           #
-# --------------------------------------------------------------------------- #
-# VisIt's cmake config wants lib names stripped of "-l"                       #
-# If PAR_LIBS is used to pass parallel LDFLAGS we need to separate the libs   #
-# from the linker flags and strip the "-l" prefixes.                          #
-# This function accomplishes this and creates two new  variables:             #
-#   PAR_LINKER_FLAGS & PAR_LIBRARY_NAMES                                      #
-# *************************************************************************** #
-function process_parallel_ldflags
-{
-    export PAR_LINKER_FLAGS=""
-    export PAR_LIBRARY_NAMES=""
+        # *************************************************************************** #
+        #                          extract_parallel_ldflags                           #
+        # --------------------------------------------------------------------------- #
+        # VisIt's cmake config wants lib names stripped of "-l"                       #
+        # If PAR_LIBS is used to pass parallel LDFLAGS we need to separate the libs   #
+        # from the linker flags and strip the "-l" prefixes.                          #
+        # This function accomplishes this and creates two new  variables:             #
+        #   PAR_LINKER_FLAGS & PAR_LIBRARY_NAMES                                      #
+        # *************************************************************************** #
+        function process_parallel_ldflags
+        {
+            export PAR_LINKER_FLAGS=""
+            export PAR_LIBRARY_NAMES=""
 
-    for arg in $1; do
-        pos=`echo "$arg" | awk '{ printf "%d", index($1,"-l"); }'`
-        if [[ "$pos" != "0" ]] ; then
-            # we have a lib, remove the "-l" prefix & add it to the running
-            # list
-            LIB_NAME=${arg#-l}
-            export PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES$LIB_NAME "
-        else
-            # we have a linker flag, add it to the running list.
-            export PAR_LINKER_FLAGS="$PAR_LINKER_FLAGS$arg "
-        fi
-    done
-
-}
-
-
-# *************************************************************************** #
-#                         Function 2.1, check_parallel                        #
-# --------------------------------------------------------------------------- #
-# This function will check to make sure that parallel options have been setup #
-# if we're going to build a parallel version of VisIt.                        #
-# *************************************************************************** #
-
-function check_parallel
-{
-    rv=0
-
-    if [[ "$DO_MPICH" == "yes" && "$parallel" == "no" ]] ; then
-        parallel="yes"
-    fi
-
-    # if we are using PAR_LIBS, call helper to split this into:
-    # PAR_LIBRARY_NAMES & PAR_LINKER_FLAGS
-    process_parallel_ldflags "$PAR_LIBS"
-
-    #
-    # Parallelization
-    #
-    if [[ "$parallel" == "yes" ]] ; then
-
-        #
-        # VisIt's cmake build can obtain all necessary MPI flags from
-        # a MPI compiler wrapper.
-        # Check if PAR_COMPILER is set & if so use that.
-        #
-        export VISIT_MPI_COMPILER=""
-        export VISIT_MPI_COMPILER_CXX=""
-        if [[ "$PAR_COMPILER" != "" ]] ; then
-            export VISIT_MPI_COMPILER="$PAR_COMPILER"
-            info \
-                "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
-            if [[ "$PAR_COMPILER_CXX" != "" ]] ; then
-                export VISIT_MPI_COMPILER_CXX="$PAR_COMPILER_CXX"
-                "Configuring with mpi c++ compiler wrapper: $VISIT_MPI_COMPILER_CXX"
-            fi
-            return 0
-        fi
-
-        #
-        # VisIt's build_visit can obtain all necessary MPI flags from
-        # bv_mpich. If we are building mpich and the user
-        # did not set PAR_LIBS or PAR_INCLUDE we are done.
-        #
-        if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
-
-            export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
-            export MPICH_COMPILER_CXX="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpic++"
-            export VISIT_MPI_COMPILER="$MPICH_COMPILER"
-            export VISIT_MPI_COMPILER_CXX="$MPICH_COMPILER_CXX"
-            export PAR_COMPILER="$MPICH_COMPILER"
-            export PAR_COMPILER_CXX="$MPICH_COMPILER_CXX"
-            info  "Configuring parallel with mpich build: "
-            info  "  PAR_COMPILER: $MPICH_COMPILER " 
-            info  "  PAR_COMPILER_CXX: $MPICH_COMPILER_CXX"
-            return 0
-        fi
-
-        #
-        # Check the environment that mpicc would set up as a first stab.
-        # Since VisIt currently only ever uses MPI's C interface, we need
-        # only the information to link to MPI's implementation of its C
-        # interface. So, although VisIt is largely a C++ code, it is fine
-        # and correct to utilize an MPI C compiler here.
-        #
-        MPICC_CPPFLAGS=""
-        MPICC_LDFLAGS=""
-        MPIWRAPPER=$(which mpicc)
-        if [[ "${MPIWRAPPER#no }" != "${MPIWRAPPER}" ]] ; then
-           MPIWRAPPER=""
-        fi
-        if [[ "$MPIWRAPPER" == "" ]] ; then
-            warn "Unable to find mpicc..."
-        fi
-
-        #
-        # VisIt's cmake build can obtain all necessary MPI flags from
-        # a MPI compiler wrapper. If we have found one & the user
-        # did not set PAR_LIBS or PAR_INCLUDE we are done.
-        #
-        if [[ "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" != "" ]] ; then
-            export VISIT_MPI_COMPILER=$MPIWRAPPER
-            export PAR_COMPILER=$MPIWRAPPER
-            info \
-                "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
-            return 0
-        fi
-
-        #
-        # VisIt's build_visit can obtain all necessary MPI flags from
-        # bv_mpich. If we are building mpich and the user
-        # did not set PAR_LIBS or PAR_INCLUDE we are done.
-        #
-        if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
-
-            export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
-            export VISIT_MPI_COMPILER="$MPICH_COMPILER"
-            export PAR_COMPILER="$MPICH_COMPILER"
-            info \
-                "Configuring with build mpich: $MPICH_COMPILER"
-            return 0
-        fi
-
-        #
-        # If we have not found a MPI compiler wrapper. 
-        # Keep trying to discover mpi setttings.
-        #
-        if [[ "$PAR_CPPFLAGS" == "" ]] ; then
-            warn \
-"We have no guesses as to where MPI might reside. Look for it..."
-            if [[ -e /usr/include/mpi.h ]] ; then
-                PAR_CPPFLAGS="-I/usr/include"
-                PAR_LDFLAGS="-L/usr/lib -lmpi"
-            fi
-        fi
-
-        if [[ "$GRAPHICAL" == "yes" ]] ; then
-            # We have suggestions from the user or mpicc as to where mpi might
-            # be located. See what the user thinks of the options.
-            tryagain=1
-            while [[ $tryagain == 1 ]]; do
-                $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-"The CPPFLAGS for MPI are:\n\n$PAR_CPPFLAGS\n\nDo these look right?" \
-                15 $DLG_WIDTH 3>1& 1>&2 2>&3
-                if [[ $? == 1 ]] ; then
-                    tryagain=1
-                    result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                    --nocancel --inputbox \
-"Enter CPPFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_CPPFLAGS" 3>&1 1>&2 2>&3) 
-                    PAR_CPPFLAGS="$result"
+            for arg in $1; do
+                pos=`echo "$arg" | awk '{ printf "%d", index($1,"-l"); }'`
+                if [[ "$pos" != "0" ]] ; then
+                    # we have a lib, remove the "-l" prefix & add it to the running
+                    # list
+                    LIB_NAME=${arg#-l}
+                    export PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES$LIB_NAME "
                 else
-                    tryagain=0
+                    # we have a linker flag, add it to the running list.
+                    export PAR_LINKER_FLAGS="$PAR_LINKER_FLAGS$arg "
                 fi
             done
 
-            PAR_INCLUDE=$PAR_CPPFLAGS
+        }
 
-            # We have suggestions from the user or mpicc as to where mpi might
-            # be located. See what the user thinks of the options.
-            tryagain=1
-            while [[ $tryagain == 1 ]]; do
-                $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-"The LDFLAGS for MPI are:\n\n$PAR_LDFLAGS\n\nDo these look right?" 15 $DLG_WIDTH 3>1& 1>&2 2>&3
-                if [[ $? == 1 ]] ; then
-                    tryagain=1
-                    result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                    --nocancel --inputbox \
-"Enter LDFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_LDFLAGS"  3>&1 1>&2 2>&3) 
-                    PAR_LDFLAGS="$result"
-                else
-                    tryagain=0
+
+        # *************************************************************************** #
+        #                         Function 2.1, check_parallel                        #
+        # --------------------------------------------------------------------------- #
+        # This function will check to make sure that parallel options have been setup #
+        # if we're going to build a parallel version of VisIt.                        #
+        # *************************************************************************** #
+
+        function check_parallel
+        {
+            rv=0
+
+            if [[ "$DO_MPICH" == "yes" && "$parallel" == "no" ]] ; then
+                parallel="yes"
+            fi
+
+            # if we are using PAR_LIBS, call helper to split this into:
+            # PAR_LIBRARY_NAMES & PAR_LINKER_FLAGS
+            process_parallel_ldflags "$PAR_LIBS"
+
+            #
+            # Parallelization
+            #
+            if [[ "$parallel" == "yes" ]] ; then
+
+                #
+                # VisIt's cmake build can obtain all necessary MPI flags from
+                # a MPI compiler wrapper.
+                # Check if PAR_COMPILER is set & if so use that.
+                #
+                export VISIT_MPI_COMPILER=""
+                export VISIT_MPI_COMPILER_CXX=""
+                if [[ "$PAR_COMPILER" != "" ]] ; then
+                    export VISIT_MPI_COMPILER="$PAR_COMPILER"
+                    info \
+                        "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
+                    if [[ "$PAR_COMPILER_CXX" != "" ]] ; then
+                        export VISIT_MPI_COMPILER_CXX="$PAR_COMPILER_CXX"
+                        "Configuring with mpi c++ compiler wrapper: $VISIT_MPI_COMPILER_CXX"
+                    fi
+                    return 0
                 fi
-            done
 
-            PAR_LIBS=$PAR_LDFLAGS
-        fi
+                #
+                # VisIt's build_visit can obtain all necessary MPI flags from
+                # bv_mpich. If we are building mpich and the user
+                # did not set PAR_LIBS or PAR_INCLUDE we are done.
+                #
+                if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
 
-        # The script pretty much assumes that you *must* have some flags 
-        # and libs to do a parallel build.  If that is *not* true, 
-        # i.e. mpi.h is in your include path, then, congratulations, 
-        # you are working on a better configured system than I have 
-        # ever encountered.
-        if [[ "$PAR_INCLUDE" == "" || "$PAR_LIBRARY_NAMES" == "" || "$PAR_LINKER_FLAGS" == "" ]] ; then
-            warn \
-"To configure parallel VisIt you must satisfy one of the following conditions:
+                    export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
+                    export MPICH_COMPILER_CXX="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpic++"
+                    export VISIT_MPI_COMPILER="$MPICH_COMPILER"
+                    export VISIT_MPI_COMPILER_CXX="$MPICH_COMPILER_CXX"
+                    export PAR_COMPILER="$MPICH_COMPILER"
+                    export PAR_COMPILER_CXX="$MPICH_COMPILER_CXX"
+                    info  "Configuring parallel with mpich build: "
+                    info  "  PAR_COMPILER: $MPICH_COMPILER " 
+                    info  "  PAR_COMPILER_CXX: $MPICH_COMPILER_CXX"
+                    return 0
+                fi
+
+                #
+                # Check the environment that mpicc would set up as a first stab.
+                # Since VisIt currently only ever uses MPI's C interface, we need
+                # only the information to link to MPI's implementation of its C
+                # interface. So, although VisIt is largely a C++ code, it is fine
+                # and correct to utilize an MPI C compiler here.
+                #
+                MPICC_CPPFLAGS=""
+                MPICC_LDFLAGS=""
+                MPIWRAPPER=$(which mpicc)
+                if [[ "${MPIWRAPPER#no }" != "${MPIWRAPPER}" ]] ; then
+                    MPIWRAPPER=""
+                fi
+                if [[ "$MPIWRAPPER" == "" ]] ; then
+                    warn "Unable to find mpicc..."
+                fi
+
+                #
+                # VisIt's cmake build can obtain all necessary MPI flags from
+                # a MPI compiler wrapper. If we have found one & the user
+                # did not set PAR_LIBS or PAR_INCLUDE we are done.
+                #
+                if [[ "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" != "" ]] ; then
+                    export VISIT_MPI_COMPILER=$MPIWRAPPER
+                    export PAR_COMPILER=$MPIWRAPPER
+                    info \
+                        "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
+                    return 0
+                fi
+
+                #
+                # VisIt's build_visit can obtain all necessary MPI flags from
+                # bv_mpich. If we are building mpich and the user
+                # did not set PAR_LIBS or PAR_INCLUDE we are done.
+                #
+                if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
+
+                    export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
+                    export VISIT_MPI_COMPILER="$MPICH_COMPILER"
+                    export PAR_COMPILER="$MPICH_COMPILER"
+                    info \
+                        "Configuring with build mpich: $MPICH_COMPILER"
+                    return 0
+                fi
+
+                #
+                # If we have not found a MPI compiler wrapper. 
+                # Keep trying to discover mpi setttings.
+                #
+                if [[ "$PAR_CPPFLAGS" == "" ]] ; then
+                    warn \
+                        "We have no guesses as to where MPI might reside. Look for it..."
+                    if [[ -e /usr/include/mpi.h ]] ; then
+                        PAR_CPPFLAGS="-I/usr/include"
+                        PAR_LDFLAGS="-L/usr/lib -lmpi"
+                    fi
+                fi
+
+                if [[ "$GRAPHICAL" == "yes" ]] ; then
+                    # We have suggestions from the user or mpicc as to where mpi might
+                    # be located. See what the user thinks of the options.
+                    tryagain=1
+                    while [[ $tryagain == 1 ]]; do
+                        $DLG --backtitle "$DLG_BACKTITLE" --yesno \
+                             "The CPPFLAGS for MPI are:\n\n$PAR_CPPFLAGS\n\nDo these look right?" \
+                             15 $DLG_WIDTH 3>1& 1>&2 2>&3
+                        if [[ $? == 1 ]] ; then
+                            tryagain=1
+                            result=$($DLG --backtitle "$DLG_BACKTITLE" \
+                                          --nocancel --inputbox \
+                                          "Enter CPPFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_CPPFLAGS" 3>&1 1>&2 2>&3) 
+                            PAR_CPPFLAGS="$result"
+                        else
+                            tryagain=0
+                        fi
+                    done
+
+                    PAR_INCLUDE=$PAR_CPPFLAGS
+
+                    # We have suggestions from the user or mpicc as to where mpi might
+                    # be located. See what the user thinks of the options.
+                    tryagain=1
+                    while [[ $tryagain == 1 ]]; do
+                        $DLG --backtitle "$DLG_BACKTITLE" --yesno \
+                             "The LDFLAGS for MPI are:\n\n$PAR_LDFLAGS\n\nDo these look right?" 15 $DLG_WIDTH 3>1& 1>&2 2>&3
+                        if [[ $? == 1 ]] ; then
+                            tryagain=1
+                            result=$($DLG --backtitle "$DLG_BACKTITLE" \
+                                          --nocancel --inputbox \
+                                          "Enter LDFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_LDFLAGS"  3>&1 1>&2 2>&3) 
+                            PAR_LDFLAGS="$result"
+                        else
+                            tryagain=0
+                        fi
+                    done
+
+                    PAR_LIBS=$PAR_LDFLAGS
+                fi
+
+                # The script pretty much assumes that you *must* have some flags 
+                # and libs to do a parallel build.  If that is *not* true, 
+                # i.e. mpi.h is in your include path, then, congratulations, 
+                # you are working on a better configured system than I have 
+                # ever encountered.
+                if [[ "$PAR_INCLUDE" == "" || "$PAR_LIBRARY_NAMES" == "" || "$PAR_LINKER_FLAGS" == "" ]] ; then
+                    warn \
+                        "To configure parallel VisIt you must satisfy one of the following conditions:
     The PAR_COMPILER env var provides a path to a mpi compiler wrapper (such as mpicc).
     A mpi compiler wrapper (such as mpicc) to exists in your path.
     The PAR_INCLUDE & PAR_LIBS env vars provide necessary CXX & LDFLAGS to use mpi.
 
  To build ICE-T the PAR_INCLUDE env var must provide the include path to your mpi headers.
     "
-            rv=1
-        fi
+                    rv=1
+                fi
 
-        if [[ $rv != 0 ]] ; then
-           return 1
-        fi
-    fi
+                if [[ $rv != 0 ]] ; then
+                    return 1
+                fi
+            fi
 
-    return 0
-}
+            return 0
+        }
 
-# *************************************************************************** #
-#                         Function 2.2, check_variables                       #
-# --------------------------------------------------------------------------- #
-# This function will display variables and optionally allow changing          #
-# *************************************************************************** #
+        # *************************************************************************** #
+        #                         Function 2.2, check_variables                       #
+        # --------------------------------------------------------------------------- #
+        # This function will display variables and optionally allow changing          #
+        # *************************************************************************** #
 
-function check_variables_dialog
-{
-    local var="$1"
-    local input="$2"
+        function check_variables_dialog
+        {
+            local var="$1"
+            local input="$2"
 
-    result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                           --nocancel --inputbox \
-"Enter $var value:" 0 $DLG_WIDTH_WIDE "$input"  3>&1 1>&2 2>&3)
-    echo "$result"
-}
-
-function check_variables
-{
-
-    # Override variable settings dialog
-    #
-    if [[ "$verify" == "yes" ]] ; then
-        if [[ "$GRAPHICAL" == "yes" ]] ; then
             result=$($DLG --backtitle "$DLG_BACKTITLE" \
-            --title "Variable settings" \
-            --checklist \
-"These variables use these system dependent defaults, but can be overridden "\
-"through this interface or using environment variables.\n\n"\
-"OPSYS: the default value returned from 'uname -s'\n"\
-"ARCH: architecure info (Darwin, linux, aix, irix64, ...)\n"\
-"C_COMPILER and CXX_COMPILER: the C and C++ compiler, respectively\n"\
-"CFLAGS and CXXFLAGS: the flags to use for all compiles (e.g. -fPIC)\n"\
-"C_OPT_FLAGS and CXX_OPT_FLAGS: the optimization flags to use for C and C++\n"\
-"VISITARCH: unique architecture info, appended to library path installation\n"\
-"REVISION: checkout a cwspecific SVN revision using supplied argument\n\n"\
-"Select the variables you wish to modify:" 28 $DLG_WIDTH 8 \
-           "OPSYS"            "$OPSYS"             "off" \
-           "ARCH"             "$ARCH"              "off" \
-           "C_COMPILER"       "$C_COMPILER"        "off" \
-           "CXX_COMPILER"     "$CXX_COMPILER"      "off" \
-           "CFLAGS"           "$CFLAGS"       "off" \
-           "CXXFLAGS"         "$CXXFLAGS"     "off" \
-           "C_OPT_FLAGS"      "$C_OPT_FLAGS"       "off" \
-           "CXX_OPT_FLAGS"    "$CXX_OPT_FLAGS"     "off" \
-           "FC_COMPILER"      "$FC_COMPILER"       "off" \
-           "FCFLAGS"          "$FCFLAGS"       "off" \
-           "VISITARCH"        "$VISITARCHTMP"      "off" \
-           "REVISION"         "$SVNREVISION"       "off"   3>&1 1>&2 2>&3) 
-           retval=$?
+                          --nocancel --inputbox \
+                          "Enter $var value:" 0 $DLG_WIDTH_WIDE "$input"  3>&1 1>&2 2>&3)
+            echo "$result"
+        }
 
-           # Remove the extra quoting, new dialog has --single-quoted
-           choice="$(echo $result | sed 's/"//g' )"
+        function check_variables
+        {
+
+            # Override variable settings dialog
+            #
+            if [[ "$verify" == "yes" ]] ; then
+                if [[ "$GRAPHICAL" == "yes" ]] ; then
+                    result=$($DLG --backtitle "$DLG_BACKTITLE" \
+                                  --title "Variable settings" \
+                                  --checklist \
+                                  "These variables use these system dependent defaults, but can be overridden "\
+                                  "through this interface or using environment variables.\n\n"\
+                                  "OPSYS: the default value returned from 'uname -s'\n"\
+                                  "ARCH: architecure info (Darwin, linux, aix, irix64, ...)\n"\
+                                  "C_COMPILER and CXX_COMPILER: the C and C++ compiler, respectively\n"\
+                                  "CFLAGS and CXXFLAGS: the flags to use for all compiles (e.g. -fPIC)\n"\
+                                  "C_OPT_FLAGS and CXX_OPT_FLAGS: the optimization flags to use for C and C++\n"\
+                                  "VISITARCH: unique architecture info, appended to library path installation\n"\
+                                  "REVISION: checkout a cwspecific SVN revision using supplied argument\n\n"\
+                                  "Select the variables you wish to modify:" 28 $DLG_WIDTH 8 \
+                                  "OPSYS"            "$OPSYS"             "off" \
+                                  "ARCH"             "$ARCH"              "off" \
+                                  "C_COMPILER"       "$C_COMPILER"        "off" \
+                                  "CXX_COMPILER"     "$CXX_COMPILER"      "off" \
+                                  "CFLAGS"           "$CFLAGS"       "off" \
+                                  "CXXFLAGS"         "$CXXFLAGS"     "off" \
+                                  "C_OPT_FLAGS"      "$C_OPT_FLAGS"       "off" \
+                                  "CXX_OPT_FLAGS"    "$CXX_OPT_FLAGS"     "off" \
+                                  "FC_COMPILER"      "$FC_COMPILER"       "off" \
+                                  "FCFLAGS"          "$FCFLAGS"       "off" \
+                                  "VISITARCH"        "$VISITARCHTMP"      "off" \
+                                  "REVISION"         "$SVNREVISION"       "off"   3>&1 1>&2 2>&3) 
+                    retval=$?
+
+                    # Remove the extra quoting, new dialog has --single-quoted
+                    choice="$(echo $result | sed 's/"//g' )"
            tmp_var=0
            case $retval in
              0)
@@ -1273,7 +1273,7 @@ function hostconf_library
     #build ..
     $"bv_${build_lib}_host_profile"
     hostconf_library_success="${hostconf_library_success} ${build_lib}"
-}
+ }
 
 
 function build_hostconf
@@ -1448,158 +1448,166 @@ function build_hostconf
     echo \
 "##############################################################" >> $HOSTCONF
 
-    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
-    do
-        hostconf_library ${reqlibs[$bv_i]}
-    done
+ for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+ do
+     hostconf_library ${reqlibs[$bv_i]}
+ done
 
-    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-    do
-        hostconf_library ${optlibs[$bv_i]}
-    done
-    echo >> $HOSTCONF
+ for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
+ do
+     hostconf_library ${optlibs[$bv_i]}
+ done
+ echo >> $HOSTCONF
 
-    #
-    # Patch for Ubuntu 11.04
-    #
-    #if test -d "/usr/lib/x86_64-linux-gnu" ; then
-    #    numLibs=$(ls -1 /usr/lib/x86_64-linux-gnu | wc -l)
-    #    if (( $numLibs > 10 )) ; then
-    #       rm -f $HOSTCONF.tmp
-    #       cat $HOSTCONF | sed "s/\/usr\/lib/\/usr\/lib\/x86_64-linux-gnu/" > $HOSTCONF.tmp
-    #       rm $HOSTCONF
-    #       mv $HOSTCONF.tmp $HOSTCONF
-    #    fi
-    #fi
+ #
+ # Patch for Ubuntu 11.04
+ #
+ #if test -d "/usr/lib/x86_64-linux-gnu" ; then
+ #    numLibs=$(ls -1 /usr/lib/x86_64-linux-gnu | wc -l)
+ #    if (( $numLibs > 10 )) ; then
+ #       rm -f $HOSTCONF.tmp
+ #       cat $HOSTCONF | sed "s/\/usr\/lib/\/usr\/lib\/x86_64-linux-gnu/" > $HOSTCONF.tmp
+ #       rm $HOSTCONF
+ #       mv $HOSTCONF.tmp $HOSTCONF
+ #    fi
+ #fi
 
-    cd "$START_DIR"
-    echo "Done creating $HOSTCONF"
-    return 0
+ cd "$START_DIR"
+ echo "Done creating $HOSTCONF"
+ return 0
 }
 
 function printvariables  
 {
-  printf "The following is a list of user settable environment variables\n"
-  printf "\n"
-  printf "%s%s\n" "OPSYS=" "${OPSYS}"
-  printf "%s%s\n" "PROC=" "${PROC}"
-  printf "%s%s\n" "REL=" "${REL}"
-  printf "%s%s\n" "ARCH=" "${ARCH}"
-  printf "%s%s\n" "VISITARCH=" "${VISITARCHTMP}"
+    printf "The following is a list of user settable environment variables\n"
+    printf "\n"
+    printf "%s%s\n" "OPSYS=" "${OPSYS}"
+    printf "%s%s\n" "PROC=" "${PROC}"
+    printf "%s%s\n" "REL=" "${REL}"
+    printf "%s%s\n" "ARCH=" "${ARCH}"
+    printf "%s%s\n" "VISITARCH=" "${VISITARCHTMP}"
 
-  printf "%s%s\n" "C_COMPILER=" "${C_COMPILER}"
-  printf "%s%s\n" "CXX_COMPILER=" "${CXX_COMPILER}"
-  printf "%s%s\n" "CFLAGS=" "${CFLAGS}"
-  printf "%s%s\n" "CXXFLAGS=" "${CXXFLAGS}"
-  printf "%s%s\n" "C_OPT_FLAGS=" "${C_OPT_FLAGS}"
-  printf "%s%s\n" "CXX_OPT_FLAGS=" "${CXX_OPT_FLAGS}"
-  printf "%s%s\n" "PAR_INCLUDE=" "${PAR_INCLUDE}"
-  printf "%s%s\n" "PAR_LIBS=" "${PAR_LIBS}"
+    printf "%s%s\n" "C_COMPILER=" "${C_COMPILER}"
+    printf "%s%s\n" "CXX_COMPILER=" "${CXX_COMPILER}"
+    printf "%s%s\n" "CFLAGS=" "${CFLAGS}"
+    printf "%s%s\n" "CXXFLAGS=" "${CXXFLAGS}"
+    printf "%s%s\n" "C_OPT_FLAGS=" "${C_OPT_FLAGS}"
+    printf "%s%s\n" "CXX_OPT_FLAGS=" "${CXX_OPT_FLAGS}"
+    printf "%s%s\n" "PAR_INCLUDE=" "${PAR_INCLUDE}"
+    printf "%s%s\n" "PAR_LIBS=" "${PAR_LIBS}"
 
-  printf "%s%s\n" "MAKE=" "${MAKE}"
-  printf "%s%s\n" "THIRD_PARTY_PATH=" "${THIRD_PARTY_PATH}"
-  printf "%s%s\n" "GROUP=" "${GROUP}"
-  printf "%s%s\n" "LOG_FILE=" "${LOG_FILE}"
-  printf "%s%s\n" "LOG_FILE=" "${LOG_FILE}"
-  printf "%s%s\n" "WGET_OPTS=" "${WGET_OPTS}"
-  printf "%s%s\n" "SVNREVISION=" "${SVNREVISION}"
-  
-  bv_visit_print
-  for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
-  do
-      initialize="bv_${reqlibs[$bv_i]}_print"
-      $initialize
-  done
+    printf "%s%s\n" "MAKE=" "${MAKE}"
+    printf "%s%s\n" "THIRD_PARTY_PATH=" "${THIRD_PARTY_PATH}"
+    printf "%s%s\n" "GROUP=" "${GROUP}"
+    printf "%s%s\n" "LOG_FILE=" "${LOG_FILE}"
+    printf "%s%s\n" "LOG_FILE=" "${LOG_FILE}"
+    printf "%s%s\n" "WGET_OPTS=" "${WGET_OPTS}"
+    printf "%s%s\n" "SVNREVISION=" "${SVNREVISION}"
+    
+    bv_visit_print
+    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    do
+        initialize="bv_${reqlibs[$bv_i]}_print"
+        $initialize
+    done
 
-  for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-  do
-      initialize="bv_${optlibs[$bv_i]}_print"
-      $initialize
-  done
+    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
+    do
+        initialize="bv_${optlibs[$bv_i]}_print"
+        $initialize
+    done
 }
 
 function usage  
 {
-  printf "Usage: %s [options]\n" $0
-  printf "A download attempt will be made for all files which do not exist."
-  printf "\n\n"
-  printf "BOOLEAN FLAGS\n"
-  printf "\tThese are used to enable or disable specific functionality.  They do not take option values.\n\n"
-  printf "%-15s %s [%s]\n" "--dry-run"  "Dry run of the presented options" "false"
-  printf "%-15s %s [%s]\n" "--build-mode" "VisIt build mode (Debug or Release)" "$VISIT_BUILD_MODE"
-  printf "%-15s %s [%s]\n" "--console" "Do not use dialog ('graphical') interface" "!$GRAPHICAL"
-  printf "%-15s %s [%s]\n" "--dbio-only" "Disables EVERYTHING but I/O." "$DO_DBIO_ONLY"
-  printf "%-15s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
-  printf "%-15s %s [%s]\n" "--debug"   "Enable debugging for this script" "false"
-  printf "%-15s %s [%s]\n" "--download-only" "Only download the specified packages" "false"
-  printf "%-15s %s [%s]\n" "--flags-debug" "Add '-g' to C[XX]FLAGS" "false"
-  printf "%-15s %s [%s]\n" "--group" "Group name of installed libraries" "$GROUP"
-  printf "%-15s %s [%s]\n" "-h" "Display this help message." "false"
-  printf "%-15s %s [%s]\n" "--help" "Display this help message." "false"
-  printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
-  printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$ON_HOSTCONF"
-  printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
-  printf "%-15s %s [%s]\n" "--prefix" "The directory to which VisIt should be installed once it is built" "$VISIT_INSTALL_PREFIX"
-  printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"
-  printf "%-15s %s [%s]\n" "--server-components-only" "Only build VisIt's server components (mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
-  printf "%-15s %s [%s]\n" "--slivr" "Build with SLIVR shader support" "$DO_SLIVR"
-  printf "%-15s %s [%s]\n" "--paradis" "Build with the paraDIS client library" "${DO_PARADIS}"
-  printf "%-15s %s [%s]\n" "--static" "Build using static linking" "$DO_STATIC_BUILD"
-  printf "%-15s %s [%s]\n" "--stdout" "Write build log to stdout" "$LOG_FILE"
-  printf "%-15s %s [%s]\n" "--xdb" "Enable FieldView XDB plugin." "$DO_XDB"
+    initialize_build_visit
+    
+    printf "Usage: %s [options]\n" $0
+    printf "A download attempt will be made for all files which do not exist."
+    printf "\n\n"
+    printf "BOOLEAN FLAGS\n"
+    printf "\tThese are used to enable or disable specific functionality.  They do not take option values.\n\n"
+    printf "%-15s %s [%s]\n" "--dry-run"  "Dry run of the presented options" "false"
+    printf "%-15s %s [%s]\n" "--build-mode" "VisIt build mode (Debug or Release)" "$VISIT_BUILD_MODE"
+    printf "%-15s %s [%s]\n" "--console" "Do not use dialog ('graphical') interface" "$GRAPHICAL"
+    printf "%-15s %s [%s]\n" "--dbio-only" "Disables EVERYTHING but I/O." "$DO_DBIO_ONLY"
+    printf "%-15s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
+    printf "%-15s %s [%s]\n" "--debug"   "Enable debugging for this script" "false"
+    printf "%-15s %s [%s]\n" "--download-only" "Only download the specified packages" "false"
+    printf "%-15s %s [%s]\n" "--flags-debug" "Add '-g' to C[XX]FLAGS" "false"
+    printf "%-15s %s [%s]\n" "--group" "Group name of installed libraries" "$GROUP"
+    printf "%-15s %s [%s]\n" "-h" "Display this help message." "false"
+    printf "%-15s %s [%s]\n" "--help" "Display this help message." "false"
+    printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
+    printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$ON_HOSTCONF"
+    printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
+    printf "%-15s %s [%s]\n" "--prefix" "The directory to which VisIt should be installed once it is built" "$VISIT_INSTALL_PREFIX"
+    printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"
+    printf "%-15s %s [%s]\n" "--server-components-only" "Only build VisIt's server components (mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
+    printf "%-15s %s [%s]\n" "--slivr" "Build with SLIVR shader support" "$DO_SLIVR"
+    printf "%-15s %s [%s]\n" "--paradis" "Build with the paraDIS client library" "$DO_PARADIS"
+    printf "%-15s %s [%s]\n" "--static" "Build using static linking" "$DO_STATIC_BUILD"
+    printf "%-15s %s [%s]\n" "--stdout" "Write build log to stdout" "$LOG_FILE"
+    printf "%-15s %s [%s]\n" "--xdb" "Enable FieldView XDB plugin." "$DO_XDB"
 
-  for (( bv_i=0; bv_i<${#grouplibs_comment[*]}; ++bv_i ))
-  do
+    for (( bv_i=0; bv_i<${#grouplibs_name[*]}; ++bv_i ))
+    do
         name=${grouplibs_name[$bv_i]}
         comment=${grouplibs_comment[$bv_i]}
-        printf "%-15s %s [%s]\n" "--$name" "$comment" ""
-  done
+        enabled=${grouplibs_enabled[$bv_i]}
+        printf "%-15s %s [%s]\n" "--$name" "$comment" "$enabled"
+    done
 
-  bv_visit_print_usage
+    bv_visit_initialize
+    bv_visit_print_usage
 
-  for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
-  do
-      initialize="bv_${reqlibs[$bv_i]}_print_usage"
-      $initialize
-  done
+    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    do
+        initializeFunc="bv_${reqlibs[$bv_i]}_initialize"
+        $initializeFunc
+        printUsageFunc="bv_${reqlibs[$bv_i]}_print_usage"
+        $printUsageFunc
+    done
 
-  for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-  do
-      initialize="bv_${optlibs[$bv_i]}_print_usage"
-      $initialize
-  done
+    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
+    do
+        initializeFunc="bv_${optlibs[$bv_i]}_initialize"
+        $initializeFunc
+        printUsageFunc="bv_${optlibs[$bv_i]}_print_usage"
+        $printUsageFunc
+    done
 
-  printf "%s\n" ""
-  printf "OPTIONS\n"
-  printf "These values all take a special value.  If given, they require an associated value to be provided as well.\n\n"
-  printf "%-15s \n\t%s [%s]\n" "--installation-build-dir"  "Specify the directory visit will use for building" "output-filename"
-  printf "%-15s \n\t%s [%s]\n" "--write-unified-file"  "Write single unified build_visit file" "output-filename"
-  printf "%s <%s> %s [%s]\n" "--arch" "architecture" "Set architecture" "$VISITARCHTMP"
-  printf "\t  %s\n" "   This variable is used in constructing the 3rd party"
-  printf "\t  %s\n" "   library path; usually set to something like"
-  printf "\t  %s\n" "   'linux_gcc-3.4.6' or 'Darwin_gcc-4.0.1'"
-  printf "%-11s %s [%s]\n" "--cflag"   "Append a flag to CFLAGS" "${CFLAGS}"
-  printf "%-11s %s [%s]\n" "--cxxflag" "Append a flag to CXXFLAGS" "$CXXFLAGS"
-  printf "%-11s %s [%s]\n" "--cflags"  "Explicitly set CFLAGS" "$CFLAGS"
-  printf "%-11s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
-  printf "%-11s %s [%s]\n" "--cc"  "Explicitly set C_COMPILER" "$C_COMPILER"
-  printf "%-11s %s [%s]\n" "--cxx" "Explicitly set CXX_COMPILER" "$CXX_COMPILER"
-  printf "%-11s <%s> %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
-  printf "%s <%s> %s\n" "--svn" \
-    "Obtain VisIt source code and third party libraries from the SVN server"
-  printf "\t%s\n" "    [svn co $SVN_REPO_ROOT_PATH/$SVN_SOURCE_PATH]"
-  printf "%s <%s> %s\n" "--svn-anonymous" \
-    "Obtain VisIt source code and third party libraries using the anonymous SVN mirror."
-  printf "\t%s\n" "    [svn co $SVN_ANON_ROOT_PATH/$SVN_SOURCE_PATH]"
-  printf "%s <%s> %s\n" "--svn-revision" "revision" \
-    "Specify the SVN revision of the VisIt source code and third party libraries to download.  Used in conjunction with --svn or --svn-anonymous."
-  printf "%s <%s> %s [%s]\n" "--tarball" "file" "tarball to extract VisIt from" "$VISIT_FILE"
-  printf "%-11s <%s> \n%s [%s]\n" "--thirdparty-path" "/path/to/directory" \
-    "             Specify the root directory name under which the 3rd party
+    printf "%s\n" ""
+    printf "OPTIONS\n"
+    printf "These values all take a special value.  If given, they require an associated value to be provided as well.\n\n"
+    printf "%-15s \n\t%s [%s]\n" "--installation-build-dir"  "Specify the directory visit will use for building" "output-filename"
+    printf "%-15s \n\t%s [%s]\n" "--write-unified-file"  "Write single unified build_visit file" "output-filename"
+    printf "%s <%s> %s [%s]\n" "--arch" "architecture" "Set architecture" "$VISITARCHTMP"
+    printf "\t  %s\n" "   This variable is used in constructing the 3rd party"
+    printf "\t  %s\n" "   library path; usually set to something like"
+    printf "\t  %s\n" "   'linux_gcc-3.4.6' or 'Darwin_gcc-4.0.1'"
+    printf "%-11s %s [%s]\n" "--cflag"   "Append a flag to CFLAGS" "${CFLAGS}"
+    printf "%-11s %s [%s]\n" "--cxxflag" "Append a flag to CXXFLAGS" "$CXXFLAGS"
+    printf "%-11s %s [%s]\n" "--cflags"  "Explicitly set CFLAGS" "$CFLAGS"
+    printf "%-11s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
+    printf "%-11s %s [%s]\n" "--cc"  "Explicitly set C_COMPILER" "$C_COMPILER"
+    printf "%-11s %s [%s]\n" "--cxx" "Explicitly set CXX_COMPILER" "$CXX_COMPILER"
+    printf "%-11s <%s> %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
+    printf "%s <%s> %s\n" "--svn" \
+           "Obtain VisIt source code and third party libraries from the SVN server"
+    printf "\t%s\n" "    [svn co $SVN_REPO_ROOT_PATH/$SVN_SOURCE_PATH]"
+    printf "%s <%s> %s\n" "--svn-anonymous" \
+           "Obtain VisIt source code and third party libraries using the anonymous SVN mirror."
+    printf "\t%s\n" "    [svn co $SVN_ANON_ROOT_PATH/$SVN_SOURCE_PATH]"
+    printf "%s <%s> %s\n" "--svn-revision" "revision" \
+           "Specify the SVN revision of the VisIt source code and third party libraries to download.  Used in conjunction with --svn or --svn-anonymous."
+    printf "%s <%s> %s [%s]\n" "--tarball" "file" "tarball to extract VisIt from" "$VISIT_FILE"
+    printf "%-11s <%s> \n%s [%s]\n" "--thirdparty-path" "/path/to/directory" \
+           "             Specify the root directory name under which the 3rd party
              libraries have been installed.  If defined, it would typically
              mean the 3rd party libraries are pre-built and are installed
              somewhere like /usr/gapps/visit." "${THIRD_PARTY_PATH}"
-  printf "%s <%s> %s [%s]\n" "--version" "version" "The VisIt version to build" "$VISIT_VERSION"
+    printf "%s <%s> %s [%s]\n" "--version" "version" "The VisIt version to build" "$VISIT_VERSION"
 }
 
 
@@ -1663,7 +1671,7 @@ function mangle_libraries
         newpath=${newpath//${lc_mangled_src}/${lc_mangled_dest}}
         mangled_path="${mangled_dir}/${newpath}"
         newdir=`dirname "${mangled_path}"`
-    
+        
         #create new dir
         mkdir -p "$newdir"
         #cat old file replace ${mangled_src} with ${mangled_dest}

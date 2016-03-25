@@ -1,54 +1,54 @@
 function bv_mdsplus_initialize
 {
-export DO_MDSPLUS="no"
-export ON_MDSPLUS="off"
+    export DO_MDSPLUS="no"
+    export ON_MDSPLUS="off"
 }
 
 function bv_mdsplus_enable
 {
-DO_MDSPLUS="yes"
-ON_MDSPLUS="on"
+    DO_MDSPLUS="yes"
+    ON_MDSPLUS="on"
 }
 
 function bv_mdsplus_disable
 {
-DO_MDSPLUS="no"
-ON_MDSPLUS="off"
+    DO_MDSPLUS="no"
+    ON_MDSPLUS="off"
 }
 
 function bv_mdsplus_depends_on
 {
-echo ""
+    echo ""
 }
 
 function bv_mdsplus_info
 {
-export MDSPLUS_VERSION=${MDSPLUS_VERSION:-"5.0"}
-export MDSPLUS_FILE=${MDSPLUS_FILE:-"mdsplus-${MDSPLUS_VERSION}.tar.gz"}
-export MDSPLUS_COMPATIBILITY_VERSION=${MDSPLUS_COMPATIBILITY_VERSION:-"5.0"}
-export MDSPLUS_BUILD_DIR=${MDSPLUS_BUILD_DIR:-"mdsplus-${MDSPLUS_VERSION}"}
-#export MDSPLUS_BUILD_DIR=${MDSPLUS_BUILD_DIR:-"mdsplus"}
-export MDSPLUS_MD5_CHECKSUM=""
-export MDSPLUS_SHA256_CHECKSUM=""
+    export MDSPLUS_VERSION=${MDSPLUS_VERSION:-"5.0"}
+    export MDSPLUS_FILE=${MDSPLUS_FILE:-"mdsplus-${MDSPLUS_VERSION}.tar.gz"}
+    export MDSPLUS_COMPATIBILITY_VERSION=${MDSPLUS_COMPATIBILITY_VERSION:-"5.0"}
+    export MDSPLUS_BUILD_DIR=${MDSPLUS_BUILD_DIR:-"mdsplus-${MDSPLUS_VERSION}"}
+    #export MDSPLUS_BUILD_DIR=${MDSPLUS_BUILD_DIR:-"mdsplus"}
+    export MDSPLUS_MD5_CHECKSUM=""
+    export MDSPLUS_SHA256_CHECKSUM=""
 }
 
 function bv_mdsplus_print
 {
-  printf "%s%s\n" "MDSPLUS_FILE=" "${MDSPLUS_FILE}"
-  printf "%s%s\n" "MDSPLUS_VERSION=" "${MDSPLUS_VERSION}"
-  printf "%s%s\n" "MDSPLUS_COMPATIBILITY_VERSION=" "${MDSPLUS_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "MDSPLUS_BUILD_DIR=" "${MDSPLUS_BUILD_DIR}"
+    printf "%s%s\n" "MDSPLUS_FILE=" "${MDSPLUS_FILE}"
+    printf "%s%s\n" "MDSPLUS_VERSION=" "${MDSPLUS_VERSION}"
+    printf "%s%s\n" "MDSPLUS_COMPATIBILITY_VERSION=" "${MDSPLUS_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "MDSPLUS_BUILD_DIR=" "${MDSPLUS_BUILD_DIR}"
 }
 
 function bv_mdsplus_print_usage
 {
-printf "%-15s %s [%s]\n" "--mdsplus" "Build MDSplus" "${DO_MDSPLUS}"
+    printf "%-15s %s [%s]\n" "--mdsplus" "Build MDSplus" "${DO_MDSPLUS}"
 }
 
 function bv_mdsplus_graphical
 {
-local graphical_out="MDSPLUS    $MDSPLUS_VERSION($MDSPLUS_FILE)     $ON_MDSPLUS"
-echo $graphical_out
+    local graphical_out="MDSPLUS    $MDSPLUS_VERSION($MDSPLUS_FILE)     $ON_MDSPLUS"
+    echo $graphical_out
 }
 
 function bv_mdsplus_host_profile
@@ -59,11 +59,11 @@ function bv_mdsplus_host_profile
         echo "## Mdsplus" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_MDSPLUS_DIR \${VISITHOME}/mdsplus/$MDSPLUS_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_MDSPLUS_DIR \${VISITHOME}/mdsplus/$MDSPLUS_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_MDSPLUS_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_MDSPLUS_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+            >> $HOSTCONF
     fi
 }
 
@@ -81,9 +81,9 @@ function bv_mdsplus_ensure
 
 function bv_mdsplus_dry_run
 {
-  if [[ "$DO_MDSPLUS" == "yes" ]] ; then
-    echo "Dry run option not set for mdsplus."
-  fi
+    if [[ "$DO_MDSPLUS" == "yes" ]] ; then
+        echo "Dry run option not set for mdsplus."
+    fi
 }
 
 # ***************************************************************************
@@ -106,8 +106,8 @@ function build_mdsplus
     prepare_build_dir $MDSPLUS_BUILD_DIR $MDSPLUS_FILE
     untarred_mdsplus=$?
     if [[ $untarred_mdsplus == -1 ]] ; then
-       warn "Unable to prepare MDSplus Build Directory. Giving Up"
-       return 1
+        warn "Unable to prepare MDSplus Build Directory. Giving Up"
+        return 1
     fi
 
     #
@@ -115,11 +115,11 @@ function build_mdsplus
     cd $MDSPLUS_BUILD_DIR || error "Can't cd to mdsplus build dir."
     info "Invoking command to configure MDSplus"
     ./configure ${OPTIONAL} --disable-java CXX="$CXX_COMPILER" \
-       CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       --prefix="$VISITDIR/mdsplus/$MDSPLUS_VERSION/$VISITARCH"
+                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                --prefix="$VISITDIR/mdsplus/$MDSPLUS_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
-       warn "MDSplus configure failed.  Giving up"
-       return 1
+        warn "MDSplus configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -129,20 +129,20 @@ function build_mdsplus
 
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "MDSplus build failed.  Giving up"
-       return 1
+        warn "MDSplus build failed.  Giving up"
+        return 1
     fi
     info "Installing MDSplus . . ."
 
     $MAKE install
     if [[ $? != 0 ]] ; then
-       warn "MDSplus build (make install) failed.  Giving up"
-       return 1
+        warn "MDSplus build (make install) failed.  Giving up"
+        return 1
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/mdsplus"
-       chgrp -R ${GROUP} "$VISITDIR/mdsplus"
+        chmod -R ug+w,a+rX "$VISITDIR/mdsplus"
+        chgrp -R ${GROUP} "$VISITDIR/mdsplus"
     fi
     cd "$START_DIR"
     info "Done with MDSplus"
@@ -168,18 +168,18 @@ function bv_mdsplus_is_installed
 
 function bv_mdsplus_build
 {
-cd "$START_DIR"
-if [[ "$DO_MDSPLUS" == "yes" ]] ; then
-    check_if_installed "mdsplus" $MDSPLUS_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping MDSplus build.  MDSplus is already installed."
-    else
-        info "Building MDSplus (~1 minutes)"
-        build_mdsplus
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install MDSplus.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_MDSPLUS" == "yes" ]] ; then
+        check_if_installed "mdsplus" $MDSPLUS_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping MDSplus build.  MDSplus is already installed."
+        else
+            info "Building MDSplus (~1 minutes)"
+            build_mdsplus
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install MDSplus.  Bailing out."
+            fi
+            info "Done building MDSplus"
         fi
-        info "Done building MDSplus"
     fi
-fi
 }

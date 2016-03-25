@@ -1,19 +1,19 @@
 function bv_mfem_initialize
 {
-export DO_MFEM="no"
-export ON_MFEM="off"
+    export DO_MFEM="no"
+    export ON_MFEM="off"
 }
 
 function bv_mfem_enable
 {
-DO_MFEM="yes"
-ON_MFEM="on"
+    DO_MFEM="yes"
+    ON_MFEM="on"
 }
 
 function bv_mfem_disable
 {
-DO_MFEM="no"
-ON_MFEM="off"
+    DO_MFEM="no"
+    ON_MFEM="off"
 }
 
 function bv_mfem_depends_on
@@ -25,28 +25,28 @@ function bv_mfem_depends_on
 
 function bv_mfem_info
 {
-export MFEM_VERSION=${MFEM_VERSION:-"3.1"}
-export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
-export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
-export MFEM_URL=${MFEM_URL:-"http://mfem.github.io/releases"}
+    export MFEM_VERSION=${MFEM_VERSION:-"3.1"}
+    export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
+    export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
+    export MFEM_URL=${MFEM_URL:-"http://mfem.github.io/releases"}
 }
 
 function bv_mfem_print
 {
-  printf "%s%s\n" "MFEM_FILE=" "${MFEM_FILE}"
-  printf "%s%s\n" "MFEM_VERSION=" "${MFEM_VERSION}"
-  printf "%s%s\n" "MFEM_BUILD_DIR=" "${MFEM_BUILD_DIR}"
+    printf "%s%s\n" "MFEM_FILE=" "${MFEM_FILE}"
+    printf "%s%s\n" "MFEM_VERSION=" "${MFEM_VERSION}"
+    printf "%s%s\n" "MFEM_BUILD_DIR=" "${MFEM_BUILD_DIR}"
 }
 
 function bv_mfem_print_usage
 {
-printf "%-15s %s [%s]\n" "--mfem" "Build mfem support" "$DO_MFEM"
+    printf "%-15s %s [%s]\n" "--mfem" "Build mfem support" "$DO_MFEM"
 }
 
 function bv_mfem_graphical
 {
-local graphical_out="mfem     $MFEM_VERSION($MFEM_FILE)      $ON_MFEM"
-echo "$graphical_out"
+    local graphical_out="mfem     $MFEM_VERSION($MFEM_FILE)      $ON_MFEM"
+    echo "$graphical_out"
 }
 
 function bv_mfem_host_profile
@@ -57,8 +57,8 @@ function bv_mfem_host_profile
         echo "## MFEM " >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR \${VISITHOME}/mfem/$MFEM_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR \${VISITHOME}/mfem/$MFEM_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
     fi
 }
 
@@ -76,9 +76,9 @@ function bv_mfem_ensure
 
 function bv_mfem_dry_run
 {
-  if [[ "$DO_MFEM" == "yes" ]] ; then
-    echo "Dry run option not set for mfem."
-  fi
+    if [[ "$DO_MFEM" == "yes" ]] ; then
+        echo "Dry run option not set for mfem."
+    fi
 }
 
 # *************************************************************************** #
@@ -92,8 +92,8 @@ function build_mfem
     prepare_build_dir $MFEM_BUILD_DIR $MFEM_FILE
     untarred_mfem=$?
     if [[ $untarred_mfem == -1 ]] ; then
-       warn "Unable to prepare mfem build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare mfem build directory. Giving Up!"
+        return 1
     fi
 
     cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
@@ -112,8 +112,8 @@ function build_mfem
     info "Building mfem . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "mfem build failed.  Giving up"
-       return 1
+        warn "mfem build failed.  Giving up"
+        return 1
     fi
 
     #
@@ -123,8 +123,8 @@ function build_mfem
     $MAKE install PREFIX="$VISITDIR/mfem/$MFEM_VERSION/$VISITARCH/"
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/mfem"
-       chgrp -R ${GROUP} "$VISITDIR/mfem"
+        chmod -R ug+w,a+rX "$VISITDIR/mfem"
+        chgrp -R ${GROUP} "$VISITDIR/mfem"
     fi
     cd "$START_DIR"
     info "Done with mfem"
@@ -151,19 +151,18 @@ function bv_mfem_is_installed
 
 function bv_mfem_build
 {
-cd "$START_DIR"
-if [[ "$DO_MFEM" == "yes" ]] ; then
-    check_if_installed "mfem" $MFEM_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping mfem build.  mfem is already installed."
-    else
-        info "Building mfem (~2 minutes)"
-        build_mfem
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install mfem.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_MFEM" == "yes" ]] ; then
+        check_if_installed "mfem" $MFEM_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping mfem build.  mfem is already installed."
+        else
+            info "Building mfem (~2 minutes)"
+            build_mfem
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install mfem.  Bailing out."
+            fi
+            info "Done building mfem"
         fi
-        info "Done building mfem"
     fi
-fi
 }
-

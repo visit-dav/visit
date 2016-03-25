@@ -1,21 +1,21 @@
 function bv_R_initialize
 {
-export DO_R="no"
-export ON_R="off"
-export USE_SYSTEM_R="no"
-add_extra_commandline_args "R" "alt-R-dir" 1 "Use alternative directory for R" 
+    export DO_R="no"
+    export ON_R="off"
+    export USE_SYSTEM_R="no"
+    add_extra_commandline_args "R" "alt-R-dir" 1 "Use alternative directory for R" 
 }
 
 function bv_R_enable
 {
-DO_R="yes"
-ON_R="on"
+    DO_R="yes"
+    ON_R="on"
 }
 
 function bv_R_disable
 {
-DO_R="no"
-ON_R="off"
+    DO_R="no"
+    ON_R="off"
 }
 
 function bv_R_alt_R_dir
@@ -27,7 +27,7 @@ function bv_R_alt_R_dir
 
 function bv_R_depends_on
 {
-echo ""
+    echo ""
 }
 
 function bv_R_initialize_vars
@@ -39,31 +39,32 @@ function bv_R_initialize_vars
 
 function bv_R_info
 {
-export R_FILE=${R_FILE:-"R-2.13.2.tar.gz"}
-export R_VERSION=${R_VERSION:-"2.13.2"}
-export R_COMPATIBILITY_VERSION=${R_COMPATIBILITY_VERSION:-"2.13.2"}
-export R_BUILD_DIR=${R_BUILD_DIR:-"R-2.13.2"}
-export R_MD5_CHECKSUM="fbad74f6415385f86425d0f3968dd684"
-export R_SHA256_CHECKSUM=""
+    export R_FILE=${R_FILE:-"R-2.13.2.tar.gz"}
+    export R_VERSION=${R_VERSION:-"2.13.2"}
+    export R_COMPATIBILITY_VERSION=${R_COMPATIBILITY_VERSION:-"2.13.2"}
+    export R_BUILD_DIR=${R_BUILD_DIR:-"R-2.13.2"}
+    export R_MD5_CHECKSUM="fbad74f6415385f86425d0f3968dd684"
+    export R_SHA256_CHECKSUM=""
 }
 
 function bv_R_print
 {
-  printf "%s%s\n" "R_FILE=" "${R_FILE}"
-  printf "%s%s\n" "R_VERSION=" "${R_VERSION}"
-  printf "%s%s\n" "R_COMPATIBILITY_VERSION=" "${R_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "R_BUILD_DIR=" "${R_BUILD_DIR}"
+    printf "%s%s\n" "R_FILE=" "${R_FILE}"
+    printf "%s%s\n" "R_VERSION=" "${R_VERSION}"
+    printf "%s%s\n" "R_COMPATIBILITY_VERSION=" "${R_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "R_BUILD_DIR=" "${R_BUILD_DIR}"
 }
 
 function bv_R_print_usage
 {
-printf "%-15s %s [%s]\n" "--R"   "Build R" "$DO_R"
+    printf "%-15s %s [%s]\n" "--R" "Build R" "$DO_R"
+    printf "%-15s %s [%s]\n" "--alt-R-dir" "Use R from an alternative directory"
 }
 
 function bv_R_graphical
 {
-local graphical_out="R    $R_VERSION($R_FILE)    $ON_R"
-echo $graphical_out
+    local graphical_out="R    $R_VERSION($R_FILE)    $ON_R"
+    echo $graphical_out
 }
 
 function bv_R_host_profile
@@ -75,12 +76,12 @@ function bv_R_host_profile
         echo "##" >> $HOSTCONF
         if [[ "$USE_SYSTEM_R" == "yes" ]]; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_R_DIR $R_INSTALL_DIR/lib/R)" \
-            >> $HOSTCONF
+                "VISIT_OPTION_DEFAULT(VISIT_R_DIR $R_INSTALL_DIR/lib/R)" \
+                >> $HOSTCONF
         else
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_R_DIR \${VISITHOME}/R/$R_VERSION/\${VISITARCH}/lib/R)" \
-            >> $HOSTCONF
+                "VISIT_OPTION_DEFAULT(VISIT_R_DIR \${VISITHOME}/R/$R_VERSION/\${VISITARCH}/lib/R)" \
+                >> $HOSTCONF
         fi
     fi
 }
@@ -99,9 +100,9 @@ function bv_R_ensure
 
 function bv_R_dry_run
 {
-  if [[ "$DO_R" == "yes" ]] ; then
-    echo "Dry run option not set for R."
-  fi
+    if [[ "$DO_R" == "yes" ]] ; then
+        echo "Dry run option not set for R."
+    fi
 }
 
 # ***************************************************************************
@@ -119,8 +120,8 @@ function build_R
     prepare_build_dir $R_BUILD_DIR $R_FILE
     untarred_R=$?
     if [[ $untarred_R == -1 ]] ; then
-       warn "Unable to prepare R Build Directory. Giving Up"
-       return 1
+        warn "Unable to prepare R Build Directory. Giving Up"
+        return 1
     fi
 
     #
@@ -136,9 +137,9 @@ function build_R
             RFLAG="64"
         fi
         if [[ $MACOSX_DEPLOYMENT_TARGET == "10.6" || $MACOSX_DEPLOYMENT_TARGET == "10.7" || $MACOSX_DEPLOYMENT_TARGET == "10.8" ]]; then
-        ./configure FFLAGS="-m64" CFLAGS="-std=gnu99 -g -O2" CXXFLAGS="-std=gnu99 -g -O2" --without-jpeglib --disable-R-framework --enable-R-shlib --disable-openmp --without-cairo --without-ICU --without-libpng --without-system-xz --without-aqua --without-tcltk --without-readline --prefix="$R_INSTALL_DIR"
+            ./configure FFLAGS="-m64" CFLAGS="-std=gnu99 -g -O2" CXXFLAGS="-std=gnu99 -g -O2" --without-jpeglib --disable-R-framework --enable-R-shlib --disable-openmp --without-cairo --without-ICU --without-libpng --without-system-xz --without-aqua --without-tcltk --without-readline --prefix="$R_INSTALL_DIR"
         else
-        ./configure FFLAGS="-m$RFLAG" CFLAGS="-std=gnu99 -g -O2" CXXFLAGS="-std=gnu99 -g -O2" --without-jpeglib --disable-R-framework --enable-R-shlib --disable-openmp --without-cairo --without-ICU --without-libpng --without-system-xz --without-aqua --without-tcltk --without-readline --prefix="$R_INSTALL_DIR"
+            ./configure FFLAGS="-m$RFLAG" CFLAGS="-std=gnu99 -g -O2" CXXFLAGS="-std=gnu99 -g -O2" --without-jpeglib --disable-R-framework --enable-R-shlib --disable-openmp --without-cairo --without-ICU --without-libpng --without-system-xz --without-aqua --without-tcltk --without-readline --prefix="$R_INSTALL_DIR"
         fi
     else
         env LIBnn=lib ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
@@ -158,16 +159,16 @@ function build_R
 
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "R build failed.  Giving up"
-       exit 1
+        warn "R build failed.  Giving up"
+        exit 1
     fi
 
     info "Installing R . . ."
     #$MAKE $MAKE_OPT_FLAGS install
     $MAKE -j1 install
     if [[ $? != 0 ]] ; then
-       warn "R install failed.  Giving up"
-       exit 1
+        warn "R install failed.  Giving up"
+        exit 1
     fi
 
     info "Installing package ismev . . ."
@@ -183,8 +184,8 @@ function build_R
         for i in $R_LIB_NAMES
         do
             install_name_tool -id \
-                $INSTALLNAMEPATH/$i.$SO_EXT \
-                $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/$i.$SO_EXT
+                              $INSTALLNAMEPATH/$i.$SO_EXT \
+                              $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/$i.$SO_EXT
         done
 
         #
@@ -194,15 +195,15 @@ function build_R
             for j in $R_LIB_NAMES
             do
                 install_name_tool -change \
-                    $j.$SO_EXT \
-                    $INSTALLNAMEPATH/$j.$SO_EXT \
-                    $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/$i.$SO_EXT
+                                  $j.$SO_EXT \
+                                  $INSTALLNAMEPATH/$j.$SO_EXT \
+                                  $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/$i.$SO_EXT
             done
         done
     fi
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/R"
-       chgrp -R ${GROUP} "$VISITDIR/R"
+        chmod -R ug+w,a+rX "$VISITDIR/R"
+        chgrp -R ${GROUP} "$VISITDIR/R"
     fi
     cd "$START_DIR"
     return 0
@@ -231,19 +232,18 @@ function bv_R_is_installed
 
 function bv_R_build
 {
-cd "$START_DIR"
-if [[ "$DO_R" == "yes" && "$USE_SYSTEM_R" == "no" ]] ; then
-    check_if_installed "R" $R_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping R build.  R is already installed."
-    else
-        info "Building R (~10 minutes)"
-        build_R
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install R.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_R" == "yes" && "$USE_SYSTEM_R" == "no" ]] ; then
+        check_if_installed "R" $R_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping R build.  R is already installed."
+        else
+            info "Building R (~10 minutes)"
+            build_R
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install R.  Bailing out."
+            fi
+            info "Done building R"
         fi
-        info "Done building R"
-   fi
-fi
+    fi
 }
-

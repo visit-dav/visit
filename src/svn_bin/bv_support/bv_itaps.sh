@@ -1,19 +1,19 @@
 function bv_itaps_initialize
 {
-export DO_ITAPS="no"
-export ON_ITAPS="off"
+    export DO_ITAPS="no"
+    export ON_ITAPS="off"
 }
 
 function bv_itaps_enable
 {
-DO_ITAPS="yes"
-ON_ITAPS="on"
+    DO_ITAPS="yes"
+    ON_ITAPS="on"
 }
 
 function bv_itaps_disable
 {
-DO_ITAPS="no"
-ON_ITAPS="off"
+    DO_ITAPS="no"
+    ON_ITAPS="off"
 }
 
 function bv_itaps_depends_on
@@ -37,29 +37,29 @@ function bv_itaps_depends_on
 
 function bv_itaps_print
 {
-  printf "%s%s\n" "ITAPS_FMDB_FILE=" "${ITAPS_FMDB_FILE}"
-  printf "%s%s\n" "ITAPS_FMDB_VERSION=" "${ITAPS_FMDB_VERSION}"
-  printf "%s%s\n" "ITAPS_FMDB_BUILD_DIR=" "${ITAPS_FMDB_BUILD_DIR}"
+    printf "%s%s\n" "ITAPS_FMDB_FILE=" "${ITAPS_FMDB_FILE}"
+    printf "%s%s\n" "ITAPS_FMDB_VERSION=" "${ITAPS_FMDB_VERSION}"
+    printf "%s%s\n" "ITAPS_FMDB_BUILD_DIR=" "${ITAPS_FMDB_BUILD_DIR}"
 
-  printf "%s%s\n" "ITAPS_GRUMMP_FILE=" "${ITAPS_GRUMMP_FILE}"
-  printf "%s%s\n" "ITAPS_GRUMMP_VERSION=" "${ITAPS_GRUMMP_VERSION}"
-  printf "%s%s\n" "ITAPS_GRUMMP_BUILD_DIR=" "${ITAPS_GRUMMP_BUILD_DIR}"
+    printf "%s%s\n" "ITAPS_GRUMMP_FILE=" "${ITAPS_GRUMMP_FILE}"
+    printf "%s%s\n" "ITAPS_GRUMMP_VERSION=" "${ITAPS_GRUMMP_VERSION}"
+    printf "%s%s\n" "ITAPS_GRUMMP_BUILD_DIR=" "${ITAPS_GRUMMP_BUILD_DIR}"
 
-  printf "%s%s\n" "ITAPS_MOAB_FILE=" "${ITAPS_MOAB_FILE}"
-  printf "%s%s\n" "ITAPS_MOAB_VERSION=" "${ITAPS_MOAB_VERSION}"
-  printf "%s%s\n" "ITAPS_MOAB_BUILD_DIR=" "${ITAPS_MOAB_BUILD_DIR}"
+    printf "%s%s\n" "ITAPS_MOAB_FILE=" "${ITAPS_MOAB_FILE}"
+    printf "%s%s\n" "ITAPS_MOAB_VERSION=" "${ITAPS_MOAB_VERSION}"
+    printf "%s%s\n" "ITAPS_MOAB_BUILD_DIR=" "${ITAPS_MOAB_BUILD_DIR}"
 
 }
 
 function bv_itaps_print_usage
 {
-printf "%-15s %s [%s]\n" "--itaps" "Build ITAPS" "${DO_ITAPS}"
+    printf "%-15s %s [%s]\n" "--itaps" "Build ITAPS" "${DO_ITAPS}"
 }
 
 function bv_itaps_graphical
 {
-local graphical_out="ITAPS    $ITAPS_VERSION(GRUMMP/FMDB/MOAB) $ON_ITAPS"
-echo "$graphical_out"
+    local graphical_out="ITAPS    $ITAPS_VERSION(GRUMMP/FMDB/MOAB) $ON_ITAPS"
+    echo "$graphical_out"
 }
 
 function bv_itaps_host_profile
@@ -71,7 +71,7 @@ function bv_itaps_host_profile
         echo "##" >> $HOSTCONF
         echo "## MOAB implementation" >> $HOSTCONF
         echo "ITAPS_INCLUDE_DIRECTORIES(MOAB \${VISITHOME}/itaps/$ITAPS_VERSION/MOAB/$ITAPS_MOAB_VERSION/\${VISITARCH}/include)" \
-        >> $HOSTCONF
+             >> $HOSTCONF
         echo "ITAPS_FILE_PATTERNS(MOAB *.cub)" >> $HOSTCONF
         local hdf5_libs=""
         local hdf5_libdir=""
@@ -92,7 +92,7 @@ function bv_itaps_host_profile
             netcdf_libdir="\${VISITHOME}/netcdf/${NETCDF_VERSION}/\${VISITARCH}/lib "
         fi
         echo "ITAPS_LINK_LIBRARIES(MOAB iMesh MOAB $hdf5_libs $szip_libs z $netcdf_libs )" \
-        >> $HOSTCONF
+             >> $HOSTCONF
         echo "ITAPS_LINK_DIRECTORIES(MOAB " \
              "\${VISITHOME}/itaps/$ITAPS_VERSION/MOAB/$ITAPS_MOAB_VERSION/\${VISITARCH}/lib " \
              "$hdf5_libdir" \
@@ -100,18 +100,18 @@ function bv_itaps_host_profile
              "$netcdf_libdir)" >> $HOSTCONF
         echo "## FMDB implementation" >> $HOSTCONF
         echo "ITAPS_INCLUDE_DIRECTORIES(FMDB \${VISITHOME}/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/\${VISITARCH}/include)" \
-        >> $HOSTCONF
+             >> $HOSTCONF
         echo "ITAPS_FILE_PATTERNS(FMDB *.sms)" >> $HOSTCONF
         echo "ITAPS_LINK_LIBRARIES(FMDB FMDB SCORECModel SCORECUtil )" >> $HOSTCONF
         echo "ITAPS_LINK_DIRECTORIES(FMDB \${VISITHOME}/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/\${VISITARCH}/lib)" >> $HOSTCONF
         echo "## GRUMMP implementation" >> $HOSTCONF
         echo "ITAPS_INCLUDE_DIRECTORIES(GRUMMP \${VISITHOME}/itaps/$ITAPS_VERSION/GRUMMP/$ITAPS_GRUMMP_VERSION/\${VISITARCH}/include)" \
-        >> $HOSTCONF
+             >> $HOSTCONF
         echo "ITAPS_FILE_PATTERNS(GRUMMP *.bdry *.smesh *.vmesh)" >> $HOSTCONF
         echo "ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_geom GR_base SUMAAlog_lite OptMS cgm dl)" \
-        >> $HOSTCONF
+             >> $HOSTCONF
         echo "ITAPS_LINK_DIRECTORIES(GRUMMP \${VISITHOME}/itaps/$ITAPS_VERSION/GRUMMP/$ITAPS_GRUMMP_VERSION/\${VISITARCH}/lib)" \
-        >> $HOSTCONF
+             >> $HOSTCONF
     fi
 }
 
@@ -119,31 +119,31 @@ function bv_itaps_host_profile
 
 function bv_itaps_info
 {
-export ITAPS_VERSION=${ITAPS_VERSION:-"1.4"}
-export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION:-"4.8.1"}
-export ITAPS_MOAB_FILE=${ITAPS_MOAB_FILE:-"moab-${ITAPS_MOAB_VERSION}.tar.gz"}
-export ITAPS_MOAB_URL=${ITAPS_MOAB_URL:-http://ftp.mcs.anl.gov/pub/fathom}
-export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR:-"moab-${ITAPS_MOAB_VERSION}"}
+    export ITAPS_VERSION=${ITAPS_VERSION:-"1.4"}
+    export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION:-"4.8.1"}
+    export ITAPS_MOAB_FILE=${ITAPS_MOAB_FILE:-"moab-${ITAPS_MOAB_VERSION}.tar.gz"}
+    export ITAPS_MOAB_URL=${ITAPS_MOAB_URL:-http://ftp.mcs.anl.gov/pub/fathom}
+    export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR:-"moab-${ITAPS_MOAB_VERSION}"}
 
-export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"1.4.0"}
-export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE:-"FMDB-${ITAPS_FMDB_VERSION}.tar.gz"}
-export ITAPS_FMDB_URL=${ITAPS_FMDB_URL:-http://www.scorec.rpi.edu/FMDB/source}
-export ITAPS_FMDB_BUILD_DIR=${ITAPS_FMDB_BUILD_DIR:-"${ITAPS_FMDB_FILE%.tar*}"}
+    export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"1.4.0"}
+    export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE:-"FMDB-${ITAPS_FMDB_VERSION}.tar.gz"}
+    export ITAPS_FMDB_URL=${ITAPS_FMDB_URL:-http://www.scorec.rpi.edu/FMDB/source}
+    export ITAPS_FMDB_BUILD_DIR=${ITAPS_FMDB_BUILD_DIR:-"${ITAPS_FMDB_FILE%.tar*}"}
 
-# CGM is an indirect dependency introduced by ITAPS_GRUMMP. No other part
-# of VisIt uses CGM, presently. That is likely to change in the future
-# if we add an iGeom reader to VisIt.
-export ITAPS_GRUMMP_CGM_VERSION=${ITAPS_GRUMMP_CGM_VERSION:-"12.2.0b1"}
-export ITAPS_GRUMMP_CGM_FILE=${ITAPS_GRUMMP_CGM_FILE:-"cgm-${ITAPS_GRUMMP_CGM_VERSION}.tar.gz"}
-export ITAPS_GRUMMP_CGM_URL=${ITAPS_GRUMMP_CGM_URL:-http://ftp.mcs.anl.gov/pub/fathom}
-export ITAPS_GRUMMP_CGM_BUILD_DIR=${ITAPS_GRUMMP_CGM_BUILD_DIR:-"cgma-${ITAPS_GRUMMP_CGM_VERSION}"}
+    # CGM is an indirect dependency introduced by ITAPS_GRUMMP. No other part
+    # of VisIt uses CGM, presently. That is likely to change in the future
+    # if we add an iGeom reader to VisIt.
+    export ITAPS_GRUMMP_CGM_VERSION=${ITAPS_GRUMMP_CGM_VERSION:-"12.2.0b1"}
+    export ITAPS_GRUMMP_CGM_FILE=${ITAPS_GRUMMP_CGM_FILE:-"cgm-${ITAPS_GRUMMP_CGM_VERSION}.tar.gz"}
+    export ITAPS_GRUMMP_CGM_URL=${ITAPS_GRUMMP_CGM_URL:-http://ftp.mcs.anl.gov/pub/fathom}
+    export ITAPS_GRUMMP_CGM_BUILD_DIR=${ITAPS_GRUMMP_CGM_BUILD_DIR:-"cgma-${ITAPS_GRUMMP_CGM_VERSION}"}
 
-export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION:-"0.6.5"}
-export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE:-"GRUMMP-${ITAPS_GRUMMP_VERSION}.tar.gz"}
-#export ITAPS_GRUMMP_URL=${ITAPS_GRUMMP_URL:-ftp://tetra.mech.ubc.ca/pub/GRUMMP}
-export ITAPS_GRUMMP_BUILD_DIR=${ITAPS_GRUMMP_BUILD_DIR:-"GRUMMP-${ITAPS_GRUMMP_VERSION}"}
-export ITAPS_MD5_CHECKSUM=""
-export ITAPS_SHA256_CHECKSUM=""
+    export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION:-"0.6.5"}
+    export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE:-"GRUMMP-${ITAPS_GRUMMP_VERSION}.tar.gz"}
+    #export ITAPS_GRUMMP_URL=${ITAPS_GRUMMP_URL:-ftp://tetra.mech.ubc.ca/pub/GRUMMP}
+    export ITAPS_GRUMMP_BUILD_DIR=${ITAPS_GRUMMP_BUILD_DIR:-"GRUMMP-${ITAPS_GRUMMP_VERSION}"}
+    export ITAPS_MD5_CHECKSUM=""
+    export ITAPS_SHA256_CHECKSUM=""
 }
 
 function bv_itaps_ensure
@@ -179,9 +179,9 @@ function bv_itaps_ensure
 
 function bv_itaps_dry_run
 {
-  if [[ "$DO_ITAPS" == "yes" ]] ; then
-    echo "Dry run option not set for itaps."
-  fi
+    if [[ "$DO_ITAPS" == "yes" ]] ; then
+        echo "Dry run option not set for itaps."
+    fi
 }
 
 # *************************************************************************** #
@@ -196,8 +196,8 @@ function build_itaps_moab
     prepare_build_dir $ITAPS_MOAB_BUILD_DIR $ITAPS_MOAB_FILE
     untarred_itaps_moab=$?
     if [[ $untarred_itaps_moab == -1 ]] ; then
-       warn "Unable to prepare ITAPS_MOAB build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare ITAPS_MOAB build directory. Giving Up!"
+        return 1
     fi
     
     #
@@ -207,28 +207,28 @@ function build_itaps_moab
     cd $ITAPS_MOAB_BUILD_DIR || error "Cannot cd to $ITAPS_MOAB_BUILD_DIR build dir."
     info "Invoking command to configure ITAPS_MOAB"
     if [[ "$DO_HDF5" == "yes" ]] ; then
-       WITHHDF5ARG="--with-hdf5=$HDF5_INSTALL_DIR --with-hdf5-ldflags=-lz"
+        WITHHDF5ARG="--with-hdf5=$HDF5_INSTALL_DIR --with-hdf5-ldflags=-lz"
     else
-       WITHHDF5ARG="--without-hdf5"
+        WITHHDF5ARG="--without-hdf5"
     fi
     if [[ "$DO_SZIP" == "yes" ]] ; then
-       WITHSZIPARG="--with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+        WITHSZIPARG="--with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
     else
-       WITHSZIPARG="--without-szip"
+        WITHSZIPARG="--without-szip"
     fi
     if [[ "$DO_NETCDF" == "yes" ]] ; then
-       WITHNETCDFARG="--with-netcdf=$NETCDF_INSTALL_DIR"
+        WITHNETCDFARG="--with-netcdf=$NETCDF_INSTALL_DIR"
     else
-       WITHNETCDFARG="--without-netcdf"
+        WITHNETCDFARG="--without-netcdf"
     fi
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        --prefix="$VISITDIR/itaps/$ITAPS_VERSION/MOAB/$ITAPS_MOAB_VERSION/$VISITARCH" \
-        --with-zlib \
-        $WITHHDF5ARG "$WITHSZIPARG" "$WITHNETCDFARG"
+                CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                --prefix="$VISITDIR/itaps/$ITAPS_VERSION/MOAB/$ITAPS_MOAB_VERSION/$VISITARCH" \
+                --with-zlib \
+                $WITHHDF5ARG "$WITHSZIPARG" "$WITHNETCDFARG"
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_MOAB configure failed.  Giving up"
-       return 1
+        warn "ITAPS_MOAB configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -237,8 +237,8 @@ function build_itaps_moab
     info "Building ITAPS_MOAB. . . (~10 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_MOAB build failed.  Giving up"
-       return 1
+        warn "ITAPS_MOAB build failed.  Giving up"
+        return 1
     fi
 
     #
@@ -251,8 +251,8 @@ function build_itaps_moab
     else
         $MAKE install
         if [[ $? != 0 ]] ; then
-           warn "ITAPS_MOAB install failed.  Giving up"
-           return 1
+            warn "ITAPS_MOAB install failed.  Giving up"
+            return 1
         fi
         # To make it easier to package this build up, ensure we don't wind up
         # liking to shared libraries.
@@ -260,8 +260,8 @@ function build_itaps_moab
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/itaps/$ITAPS_VERSION/MOAB"
-       chgrp -R ${GROUP} "$VISITDIR/itaps/$ITAPS_VERSION/MOAB"
+        chmod -R ug+w,a+rX "$VISITDIR/itaps/$ITAPS_VERSION/MOAB"
+        chgrp -R ${GROUP} "$VISITDIR/itaps/$ITAPS_VERSION/MOAB"
     fi
     cd "$START_DIR"
     info "Done with ITAPS_MOAB"
@@ -280,8 +280,8 @@ function build_itaps_fmdb
     prepare_build_dir $ITAPS_FMDB_BUILD_DIR $ITAPS_FMDB_FILE
     untarred_itaps_fmdb=$?
     if [[ $untarred_itaps_fmdb == -1 ]] ; then
-       warn "Unable to prepare ITAPS_FMDB build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare ITAPS_FMDB build directory. Giving Up!"
+        return 1
     fi
 
     cd $ITAPS_FMDB_BUILD_DIR
@@ -312,28 +312,28 @@ function build_itaps_fmdb
     info "Configuring GMI for ITAPS_FMDB. . ."
     pushd GMI-1.0.1 >/dev/null 2>&1
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        --with-fmdb=$abs_itaps_fmdb_build_dir \
-        --with-scorecutil=$abs_itaps_fmdb_build_dir/SCUtil/SCORECUtil-0.1 \
-        --with-iterators=$abs_itaps_fmdb_build_dir/SCUtil/siter \
-        --prefix="$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH"
+                CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                --with-fmdb=$abs_itaps_fmdb_build_dir \
+                --with-scorecutil=$abs_itaps_fmdb_build_dir/SCUtil/SCORECUtil-0.1 \
+                --with-iterators=$abs_itaps_fmdb_build_dir/SCUtil/siter \
+                --prefix="$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_FMBD configure failed.  Giving up"
-       return 1
+        warn "ITAPS_FMBD configure failed.  Giving up"
+        return 1
     fi
     info "Building GMI for ITAPS_FMDB. . ."
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_FMDB build failed.  Giving up"
-       return 1
+        warn "ITAPS_FMDB build failed.  Giving up"
+        return 1
     fi
     if [[ "$OPSYS" == "Darwin" ]]; then
         warn "I do not know how to install ITAPS_FMDB on a Mac. Giving up"
     else
         $MAKE install
         if [[ $? != 0 ]] ; then
-           warn "ITAPS_FMDB install failed.  Giving up"
-           return 1
+            warn "ITAPS_FMDB install failed.  Giving up"
+            return 1
         fi
     fi
     popd >/dev/null 2>&1
@@ -344,28 +344,28 @@ function build_itaps_fmdb
     info "Configuring SCORECUtil for ITAPS_FMDB. . ."
     pushd SCUtil/SCORECUtil-0.1 >/dev/null 2>&1
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        --with-gmi=$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH \
-        --with-fmdb=$abs_itaps_fmdb_build_dir \
-        --with-iterators=$abs_itaps_fmdb_build_dir/SCUtil/siter \
-        --prefix="$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH"
+                CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                --with-gmi=$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH \
+                --with-fmdb=$abs_itaps_fmdb_build_dir \
+                --with-iterators=$abs_itaps_fmdb_build_dir/SCUtil/siter \
+                --prefix="$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_FMBD configure failed.  Giving up"
-       return 1
+        warn "ITAPS_FMBD configure failed.  Giving up"
+        return 1
     fi
     info "Building SCORECUtil for ITAPS_FMDB. . ."
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_FMDB build failed.  Giving up"
-       return 1
+        warn "ITAPS_FMDB build failed.  Giving up"
+        return 1
     fi
     if [[ "$OPSYS" == "Darwin" ]]; then
         warn "I do not know how to install ITAPS_FMDB on a Mac. Giving up"
     else
         $MAKE install
         if [[ $? != 0 ]] ; then
-           warn "ITAPS_FMDB install failed.  Giving up"
-           return 1
+            warn "ITAPS_FMDB install failed.  Giving up"
+            return 1
         fi
     fi
     popd >/dev/null 2>&1
@@ -375,15 +375,15 @@ function build_itaps_fmdb
     #
     info "Invoking command to configure ITAPS_FMDB"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        --with-scorecutil=$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH \
-        --with-gmi=$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH \
-        --with-iterators=$abs_itaps_fmdb_build_dir/SCUtil/siter \
-        --prefix="$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH" \
-        --enable-imesh
+                CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                --with-scorecutil=$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH \
+                --with-gmi=$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH \
+                --with-iterators=$abs_itaps_fmdb_build_dir/SCUtil/siter \
+                --prefix="$VISITDIR/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/$VISITARCH" \
+                --enable-imesh
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_FMBD configure failed.  Giving up"
-       return 1
+        warn "ITAPS_FMBD configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -392,8 +392,8 @@ function build_itaps_fmdb
     info "Building ITAPS_FMDB. . . (~10 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_FMDB build failed.  Giving up"
-       return 1
+        warn "ITAPS_FMDB build failed.  Giving up"
+        return 1
     fi
 
     #
@@ -406,8 +406,8 @@ function build_itaps_fmdb
     else
         $MAKE install
         if [[ $? != 0 ]] ; then
-           warn "ITAPS_FMDB install failed.  Giving up"
-           return 1
+            warn "ITAPS_FMDB install failed.  Giving up"
+            return 1
         fi
         # To make it easier to package this build up, ensure we don't wind up
         # liking to shared libraries.
@@ -415,8 +415,8 @@ function build_itaps_fmdb
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/itaps/$ITAPS_VERSION/FMDB"
-       chgrp -R ${GROUP} "$VISITDIR/itaps/$ITAPS_VERSION/FMDB"
+        chmod -R ug+w,a+rX "$VISITDIR/itaps/$ITAPS_VERSION/FMDB"
+        chgrp -R ${GROUP} "$VISITDIR/itaps/$ITAPS_VERSION/FMDB"
     fi
     cd "$START_DIR"
     info "Done with ITAPS_FMDB"
@@ -435,8 +435,8 @@ function build_itaps_grummp
     prepare_build_dir $ITAPS_GRUMMP_CGM_BUILD_DIR $ITAPS_GRUMMP_CGM_FILE
     untarred_itaps_cgm_grummp=$?
     if [[ $untarred_itaps_cgm_grummp == -1 ]] ; then
-       warn "Unable to prepare ITAPS_GRUMMP_CGM build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare ITAPS_GRUMMP_CGM build directory. Giving Up!"
+        return 1
     fi
 
     #
@@ -446,11 +446,11 @@ function build_itaps_grummp
     cd $ITAPS_GRUMMP_CGM_BUILD_DIR || error "Cannot cd to $ITAPS_GRUMMP_CGM_BUILD_DIR build dir."
     info "Invoking command to configure ITAPS_GRUMMP_CGM"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        --prefix="$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH"
+                CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                --prefix="$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_GRUMMP_CGM configure failed.  Giving up"
-       return 1
+        warn "ITAPS_GRUMMP_CGM configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -459,8 +459,8 @@ function build_itaps_grummp
     info "Building ITAPS_GRUMMP_CGM. . . (~10 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_GRUMMP_CGM build failed.  Giving up"
-       return 1
+        warn "ITAPS_GRUMMP_CGM build failed.  Giving up"
+        return 1
     fi
 
     #
@@ -473,8 +473,8 @@ function build_itaps_grummp
     else
         $MAKE install
         if [[ $? != 0 ]] ; then
-           warn "ITAPS_GRUMMP_CGM install failed.  Giving up"
-           return 1
+            warn "ITAPS_GRUMMP_CGM install failed.  Giving up"
+            return 1
         fi
         # To make it easier to package this build up, ensure we don't wind up
         # liking to shared libraries.
@@ -482,8 +482,8 @@ function build_itaps_grummp
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP"
-       chgrp -R ${GROUP} "$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP"
+        chmod -R ug+w,a+rX "$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP"
+        chgrp -R ${GROUP} "$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP"
     fi
     cd "$START_DIR"
     info "Done with ITAPS_GRUMMP_CGM"
@@ -494,8 +494,8 @@ function build_itaps_grummp
     prepare_build_dir $ITAPS_GRUMMP_BUILD_DIR $ITAPS_GRUMMP_FILE
     untarred_itaps_grummp=$?
     if [[ $untarred_itaps_grummp == -1 ]] ; then
-       warn "Unable to prepare ITAPS_GRUMMP build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare ITAPS_GRUMMP build directory. Giving Up!"
+        return 1
     fi
     
     #
@@ -505,13 +505,13 @@ function build_itaps_grummp
     cd $ITAPS_GRUMMP_BUILD_DIR || error "Cannot cd to $ITAPS_GRUMMP_BUILD_DIR build dir."
     info "Invoking command to configure ITAPS_GRUMMP"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        --prefix="$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH" \
-        --with-CGM-path="$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH" \
-        --enable-imesh
+                CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+                --prefix="$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH" \
+                --with-CGM-path="$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP/$ITAPS_GRUMMP_VERSION/$VISITARCH" \
+                --enable-imesh
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_GRUMMP configure failed.  Giving up"
-       return 1
+        warn "ITAPS_GRUMMP configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -520,8 +520,8 @@ function build_itaps_grummp
     info "Building ITAPS_GRUMMP. . . (~10 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "ITAPS_GRUMMP build failed.  Giving up"
-       return 1
+        warn "ITAPS_GRUMMP build failed.  Giving up"
+        return 1
     fi
 
     #
@@ -534,8 +534,8 @@ function build_itaps_grummp
     else
         $MAKE install
         if [[ $? != 0 ]] ; then
-           warn "ITAPS_GRUMMP install failed.  Giving up"
-           return 1
+            warn "ITAPS_GRUMMP install failed.  Giving up"
+            return 1
         fi
         # To make it easier to package this build up, ensure we don't wind up
         # liking to shared libraries.
@@ -543,8 +543,8 @@ function build_itaps_grummp
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP"
-       chgrp -R ${GROUP} "$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP"
+        chmod -R ug+w,a+rX "$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP"
+        chgrp -R ${GROUP} "$VISITDIR/itaps/$ITAPS_VERSION/GRUMMP"
     fi
     cd "$START_DIR"
     info "Done with ITAPS_GRUMMP"
@@ -571,47 +571,46 @@ function bv_itaps_is_installed
 
 function bv_itaps_build
 {
-cd "$START_DIR"
-if [[ "$DO_ITAPS" == "yes" ]] ; then
+    cd "$START_DIR"
+    if [[ "$DO_ITAPS" == "yes" ]] ; then
 
-    # handle MOAB implementation of ITAPS
-    check_if_installed "itaps/$ITAPS_VERSION/MOAB" $ITAPS_MOAB_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping ITAPS_MOAB build.  ITAPS_MOAB is already installed."
-    else
-        info "Building ITAPS_MOAB (~10 minutes)"
-        build_itaps_moab
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install ITAPS_MOAB.  Bailing out."
+        # handle MOAB implementation of ITAPS
+        check_if_installed "itaps/$ITAPS_VERSION/MOAB" $ITAPS_MOAB_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping ITAPS_MOAB build.  ITAPS_MOAB is already installed."
+        else
+            info "Building ITAPS_MOAB (~10 minutes)"
+            build_itaps_moab
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install ITAPS_MOAB.  Bailing out."
+            fi
+            info "Done building ITAPS_MOAB"
         fi
-        info "Done building ITAPS_MOAB"
-    fi
 
-    # handle FMDB implementation of ITAPS
-    check_if_installed "itaps/$ITAPS_VERSION/FMDB" $ITAPS_FMDB_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping ITAPS_FMDB build.  ITAPS_FMDB is already installed."
-    else
-        info "Building ITAPS_FMDB (~10 minutes)"
-        build_itaps_fmdb
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install ITAPS_FMDB.  Bailing out."
+        # handle FMDB implementation of ITAPS
+        check_if_installed "itaps/$ITAPS_VERSION/FMDB" $ITAPS_FMDB_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping ITAPS_FMDB build.  ITAPS_FMDB is already installed."
+        else
+            info "Building ITAPS_FMDB (~10 minutes)"
+            build_itaps_fmdb
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install ITAPS_FMDB.  Bailing out."
+            fi
+            info "Done building ITAPS_FMDB"
         fi
-        info "Done building ITAPS_FMDB"
-    fi
 
-    # handle GRUMMP implementation ot ITAPS
-    check_if_installed "itaps/$ITAPS_VERSION/GRUMMP" $ITAPS_GRUMMP_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping ITAPS_GRUMMP build.  ITAPS_GRUMMP is already installed."
-    else
-        info "Building ITAPS_GRUMMP (~10 minutes)"
-        build_itaps_grummp
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install ITAPS_GRUMMP.  Bailing out."
+        # handle GRUMMP implementation ot ITAPS
+        check_if_installed "itaps/$ITAPS_VERSION/GRUMMP" $ITAPS_GRUMMP_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping ITAPS_GRUMMP build.  ITAPS_GRUMMP is already installed."
+        else
+            info "Building ITAPS_GRUMMP (~10 minutes)"
+            build_itaps_grummp
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install ITAPS_GRUMMP.  Bailing out."
+            fi
+            info "Done building ITAPS_GRUMMP"
         fi
-        info "Done building ITAPS_GRUMMP"
     fi
-fi
-
 }

@@ -1,4 +1,4 @@
-function bv_xsd_initialize
+xfunction bv_xsd_initialize
 {
     export DO_XSD="no"
     export ON_XSD="off"
@@ -58,7 +58,7 @@ function bv_xsd_host_profile
         echo "## XSD" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_XSD_DIR \${VISITHOME}/xsd/$XSD_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+             >> $HOSTCONF
     fi
 }
 
@@ -76,9 +76,9 @@ function bv_xsd_ensure
 
 function bv_xsd_dry_run
 {
-  if [[ "$DO_XSD" == "yes" ]] ; then
-    echo "Dry run option not set for XSD."
-  fi
+    if [[ "$DO_XSD" == "yes" ]] ; then
+        echo "Dry run option not set for XSD."
+    fi
 }
 
 function  apply_xsd_patch
@@ -96,8 +96,8 @@ function build_xsd
     prepare_build_dir $XSD_BUILD_DIR $XSD_FILE
     untarred_xsd=$?
     if [[ $untarred_xsd == -1 ]] ; then
-      warn "Unable to prepare XSD build directory. Giving Up!"
-      return 1
+        warn "Unable to prepare XSD build directory. Giving Up!"
+        return 1
     fi
     cd $XSD_BUILD_DIR/xsd
 
@@ -108,8 +108,8 @@ function build_xsd
     cp -r libxsd/xsd $VISITDIR/xsd/$XSD_VERSION/$VISITARCH/include/
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-    chmod -R ug+w,a+rX "$VISITDIR/xsd"
-    chgrp -R ${GROUP} "$VISITDIR/xsd"
+        chmod -R ug+w,a+rX "$VISITDIR/xsd"
+        chgrp -R ${GROUP} "$VISITDIR/xsd"
     fi
     cd "$START_DIR"
     return 0
@@ -145,6 +145,6 @@ function bv_xsd_build
                 error "Unable to build or install XSD.  Bailing out."
             fi
             info "Done building XSD"
-       fi
+        fi
     fi
 }

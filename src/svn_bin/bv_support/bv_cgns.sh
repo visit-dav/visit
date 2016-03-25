@@ -1,19 +1,19 @@
 function bv_cgns_initialize
 {
-export DO_CGNS="no"
-export ON_CGNS="off"
+    export DO_CGNS="no"
+    export ON_CGNS="off"
 }
 
 function bv_cgns_enable
 {
-DO_CGNS="yes"
-ON_CGNS="on"
+    DO_CGNS="yes"
+    ON_CGNS="on"
 }
 
 function bv_cgns_disable
 {
-DO_CGNS="no"
-ON_CGNS="off"
+    DO_CGNS="no"
+    ON_CGNS="off"
 }
 
 function bv_cgns_depends_on
@@ -31,32 +31,32 @@ function bv_cgns_depends_on
 
 function bv_cgns_info
 {
-export CGNS_FILE=${CGNS_FILE:-"cgnslib_3.2.1.tar.gz"}
-export CGNS_VERSION=${CGNS_VERSION:-"3.2.1"}
-export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"3.2"}
-export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"cgnslib_3.2.1/src"}
-export CGNS_MD5_CHECKSUM="2d26f88b2058dcd0ee5ce58f483bfccb"
-export CGNS_SHA256_CHECKSUM="34306316f04dbf6484343a4bc611b3bf912ac7dbc3c13b581defdaebbf6c1fc3"
+    export CGNS_FILE=${CGNS_FILE:-"cgnslib_3.2.1.tar.gz"}
+    export CGNS_VERSION=${CGNS_VERSION:-"3.2.1"}
+    export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"3.2"}
+    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"cgnslib_3.2.1/src"}
+    export CGNS_MD5_CHECKSUM="2d26f88b2058dcd0ee5ce58f483bfccb"
+    export CGNS_SHA256_CHECKSUM="34306316f04dbf6484343a4bc611b3bf912ac7dbc3c13b581defdaebbf6c1fc3"
 
 }
 
 function bv_cgns_print
 {
-  printf "%s%s\n" "CGNS_FILE=" "${CGNS_FILE}"
-  printf "%s%s\n" "CGNS_VERSION=" "${CGNS_VERSION}"
-  printf "%s%s\n" "CGNS_COMPATIBILITY_VERSION=" "${CGNS_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "CGNS_BUILD_DIR=" "${CGNS_BUILD_DIR}"
+    printf "%s%s\n" "CGNS_FILE=" "${CGNS_FILE}"
+    printf "%s%s\n" "CGNS_VERSION=" "${CGNS_VERSION}"
+    printf "%s%s\n" "CGNS_COMPATIBILITY_VERSION=" "${CGNS_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "CGNS_BUILD_DIR=" "${CGNS_BUILD_DIR}"
 }
 
 function bv_cgns_print_usage
 {
-printf "%-15s %s [%s]\n" "--cgns"    "Build CGNS" "$DO_CGNS" 
+    printf "%-15s %s [%s]\n" "--cgns"    "Build CGNS" "$DO_CGNS" 
 }
 
 function bv_cgns_graphical
 {
-local graphical_out="CGNS     $CGNS_VERSION($CGNS_FILE)      $ON_CGNS"
-echo $graphical_out
+    local graphical_out="CGNS     $CGNS_VERSION($CGNS_FILE)      $ON_CGNS"
+    echo $graphical_out
 }
 
 function bv_cgns_host_profile
@@ -67,12 +67,12 @@ function bv_cgns_host_profile
         echo "## CGNS" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR \${VISITHOME}/cgns/$CGNS_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR \${VISITHOME}/cgns/$CGNS_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
         if [[ "$DO_HDF5" == "yes" ]] ; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
-            >> $HOSTCONF
+                "VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+                >> $HOSTCONF
         fi
     fi
 
@@ -92,17 +92,17 @@ function bv_cgns_ensure
 
 function bv_cgns_dry_run
 {
-  if [[ "$DO_CGNS" == "yes" ]] ; then
-    echo "Dry run option not set for cgns."
-  fi
+    if [[ "$DO_CGNS" == "yes" ]] ; then
+        echo "Dry run option not set for cgns."
+    fi
 }
 
 function apply_cgns_321_darwin_patch
 {
-   patch -p0 << \EOF
+    patch -p0 << \EOF
 diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
-*** cgnslib_3.2.1/src/configure.orig	2015-04-27 15:11:36.000000000 -0700
---- cgnslib_3.2.1/src/configure	2015-04-27 14:24:48.000000000 -0700
+*** cgnslib_3.2.1/src/configure.orig    2015-04-27 15:11:36.000000000 -0700
+--- cgnslib_3.2.1/src/configure 2015-04-27 14:24:48.000000000 -0700
 ***************
 *** 2324,2333 ****
   echo "$ac_t""$shared" 1>&6
@@ -154,19 +154,19 @@ diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
   fi
 
 EOF
-   if [[ $? != 0 ]] ; then
-      return 1
-   fi
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
 
-   return 0
+    return 0
 }
 
 function apply_cgns_321_zlib_patch
 {
-   patch -p0 << \EOF
+    patch -p0 << \EOF
 diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
-*** cgnslib_3.2.1/src/configure.orig	2013-06-19 21:04:00.000000000 -0700
---- cgnslib_3.2.1/src/configure	2015-04-27 15:03:16.000000000 -0700
+*** cgnslib_3.2.1/src/configure.orig    2013-06-19 21:04:00.000000000 -0700
+--- cgnslib_3.2.1/src/configure 2015-04-27 15:03:16.000000000 -0700
 ***************
 *** 2490,2495 ****
 --- 2490,2496 ----
@@ -188,38 +188,38 @@ diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
         echo "$ac_t""yes" 1>&6
         ac_safe=`echo "zlib.h" | sed 'y%./+-%__p_%'`
 EOF
-   if [[ $? != 0 ]] ; then
-      return 1
-   fi
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
 
-   return 0
+    return 0
 }
 
 function apply_cgns_321_patch
 {
 
-   if [[ "$OPSYS" == "Darwin" ]] ; then
-       info "Applying OS X patch . . ."
-       apply_cgns_321_darwin_patch
-       apply_cgns_321_zlib_patch
-   else 
-       info "Applying patch . . ."
-       apply_cgns_321_zlib_patch
-   fi
+    if [[ "$OPSYS" == "Darwin" ]] ; then
+        info "Applying OS X patch . . ."
+        apply_cgns_321_darwin_patch
+        apply_cgns_321_zlib_patch
+    else 
+        info "Applying patch . . ."
+        apply_cgns_321_zlib_patch
+    fi
 
-   return $?
+    return $?
 }
 
 function apply_cgns_patch
 {
-   if [[ ${CGNS_VERSION} == 3.2.1 ]] ; then
-      apply_cgns_321_patch
-      if [[ $? != 0 ]] ; then
-         return 1
-      fi
-   fi
+    if [[ ${CGNS_VERSION} == 3.2.1 ]] ; then
+        apply_cgns_321_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
 
-   return 0
+    return 0
 }
 
 # *************************************************************************** #
@@ -248,8 +248,8 @@ function build_cgns
     prepare_build_dir $CGNS_BUILD_DIR $CGNS_FILE
     untarred_cgns=$?
     if [[ $untarred_cgns == -1 ]] ; then
-       warn "Unable to prepare CGNS Build Directory. Giving Up"
-       return 1
+        warn "Unable to prepare CGNS Build Directory. Giving Up"
+        return 1
     fi
 
     #
@@ -257,15 +257,15 @@ function build_cgns
     #
     apply_cgns_patch
     if [[ $? != 0 ]] ; then
-       if [[ $untarred_cgns == 1 ]] ; then
-          warn "Giving up on CGNS build because the patch failed."
-          return 1
-       else
-          warn "Patch failed, but continuing.  I believe that this script\n" \
-          warn "tried to apply a patch to an existing directory which had\n" \
-          warn "already been patched ... that is, that the patch is\n" \
-          warn "failing harmlessly on a second application."
-       fi
+        if [[ $untarred_cgns == 1 ]] ; then
+            warn "Giving up on CGNS build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 warn "tried to apply a patch to an existing directory which had\n" \
+                 warn "already been patched ... that is, that the patch is\n" \
+                 warn "failing harmlessly on a second application."
+        fi
     fi
 
     info "Configuring CGNS . . ."
@@ -289,40 +289,40 @@ function build_cgns
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
             if [[ "$OPSYS" == "Darwin" ]] ; then
-               H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.$LIBEXT"
+                H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.$LIBEXT"
             else
-               H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.$LIBEXT"
+                H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.$LIBEXT"
             fi
         fi
         if [[ "$DO_ZLIB" == "yes" ]] ; then
             if [[ "$OPSYS" == "Darwin" ]] ; then
-               H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.$LIBEXT"
+                H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.$LIBEXT"
             else
-               H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.$LIBEXT"
+                H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.$LIBEXT"
             fi
         fi
     fi
     if [[ "$OPSYS" == "Darwin" ]] ; then
-       info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
        ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
 
-       env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
+        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+            ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
     else
-       info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
        ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
 
-       env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-       CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
+        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+            ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
     fi
 
     if [[ $? != 0 ]] ; then
-       warn "CGNS configure failed.  Giving up"
-       return 1
+        warn "CGNS configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -332,8 +332,8 @@ function build_cgns
 
     $MAKE
     if [[ $? != 0 ]] ; then
-       warn "CGNS build failed.  Giving up"
-       return 1
+        warn "CGNS build failed.  Giving up"
+        return 1
     fi
     #
     # Install into the VisIt third party location.
@@ -347,8 +347,8 @@ function build_cgns
     mkdir "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib"
     $MAKE install
     if [[ $? != 0 ]] ; then
-       warn "CGNS install failed.  Giving up"
-       return 1
+        warn "CGNS install failed.  Giving up"
+        return 1
     fi
 
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
@@ -360,22 +360,22 @@ function build_cgns
         INSTALLNAMEPATH="$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH/lib"
 
         $C_COMPILER -dynamiclib -o libcgns.${SO_EXT} lib/*.o \
-           -Wl,-headerpad_max_install_names \
-	   -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
-           -Wl,-install_name,$INSTALLNAMEPATH/libcgns.${SO_EXT} \
-           -Wl,-compatibility_version,$CGNS_COMPATIBILITY_VERSION \
-           -Wl,-current_version,$CGNS_VERSION -lSystem 
+                    -Wl,-headerpad_max_install_names \
+                    -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
+                    -Wl,-install_name,$INSTALLNAMEPATH/libcgns.${SO_EXT} \
+                    -Wl,-compatibility_version,$CGNS_COMPATIBILITY_VERSION \
+                    -Wl,-current_version,$CGNS_VERSION -lSystem 
         if [[ $? != 0 ]] ; then
-           warn "CGNS dynamic library creation failed.  Giving up"
-           return 1
+            warn "CGNS dynamic library creation failed.  Giving up"
+            return 1
         fi
         rm -f "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib/libcgns.${SO_EXT}"
         cp libcgns.${SO_EXT} "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/cgns"
-       chgrp -R ${GROUP} "$VISITDIR/cgns"
+        chmod -R ug+w,a+rX "$VISITDIR/cgns"
+        chgrp -R ${GROUP} "$VISITDIR/cgns"
     fi
     cd "$START_DIR"
     info "Done with CGNS"
@@ -401,19 +401,18 @@ function bv_cgns_is_installed
 
 function bv_cgns_build
 {
-cd "$START_DIR"
-if [[ "$DO_CGNS" == "yes" ]] ; then
-    check_if_installed "cgns" $CGNS_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping CGNS build.  CGNS is already installed."
-    else
-        info "Building CGNS (~2 minutes)"
-        build_cgns
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install CGNS.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_CGNS" == "yes" ]] ; then
+        check_if_installed "cgns" $CGNS_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping CGNS build.  CGNS is already installed."
+        else
+            info "Building CGNS (~2 minutes)"
+            build_cgns
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install CGNS.  Bailing out."
+            fi
+            info "Done building CGNS"
         fi
-        info "Done building CGNS"
-   fi
-fi
+    fi
 }
-

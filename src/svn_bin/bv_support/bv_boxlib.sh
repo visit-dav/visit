@@ -1,54 +1,54 @@
 function bv_boxlib_initialize
 {
-export DO_BOXLIB="no"
-export ON_BOXLIB="off"
+    export DO_BOXLIB="no"
+    export ON_BOXLIB="off"
 }
 
 function bv_boxlib_enable
 {
-DO_BOXLIB="yes"
-ON_BOXLIB="on"
+    DO_BOXLIB="yes"
+    ON_BOXLIB="on"
 }
 
 function bv_boxlib_disable
 {
-DO_BOXLIB="no"
-ON_BOXLIB="off"
+    DO_BOXLIB="no"
+    ON_BOXLIB="off"
 }
 
 function bv_boxlib_depends_on
 {
-echo ""
+    echo ""
 }
 
 function bv_boxlib_info
 {
-export BOXLIB_VERSION=${BOXLIB_VERSION:-"1.3.5"}
-export BOXLIB_FILE=${BOXLIB_FILE:-"ccse-${BOXLIB_VERSION}.tar.gz"}
-export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"1.3.5"}
-export BOXLIB_URL=${BOXLIB_URL:-"https://ccse.lbl.gov/Software/tarfiles/"}
-export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"ccse-${BOXLIB_VERSION}/Src/C_BaseLib"}
-export BOXLIB_MD5_CHECKSUM="263214a8b7f6046f99186601afc90144"
-export BOXLIB_SHA256_CHECKSUM="2dd2496d27dc84d9171be06b44e3968fa481867d936174e7d49a547da5f6f755"
+    export BOXLIB_VERSION=${BOXLIB_VERSION:-"1.3.5"}
+    export BOXLIB_FILE=${BOXLIB_FILE:-"ccse-${BOXLIB_VERSION}.tar.gz"}
+    export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"1.3.5"}
+    export BOXLIB_URL=${BOXLIB_URL:-"https://ccse.lbl.gov/Software/tarfiles/"}
+    export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"ccse-${BOXLIB_VERSION}/Src/C_BaseLib"}
+    export BOXLIB_MD5_CHECKSUM="263214a8b7f6046f99186601afc90144"
+    export BOXLIB_SHA256_CHECKSUM="2dd2496d27dc84d9171be06b44e3968fa481867d936174e7d49a547da5f6f755"
 }
 
 function bv_boxlib_print
 {
-  printf "%s%s\n" "BOXLIB_FILE=" "${BOXLIB_FILE}"
-  printf "%s%s\n" "BOXLIB_VERSION=" "${BOXLIB_VERSION}"
-  printf "%s%s\n" "BOXLIB_COMPATIBILITY_VERSION=" "${BOXLIB_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "BOXLIB_BUILD_DIR=" "${BOXLIB_BUILD_DIR}"
+    printf "%s%s\n" "BOXLIB_FILE=" "${BOXLIB_FILE}"
+    printf "%s%s\n" "BOXLIB_VERSION=" "${BOXLIB_VERSION}"
+    printf "%s%s\n" "BOXLIB_COMPATIBILITY_VERSION=" "${BOXLIB_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "BOXLIB_BUILD_DIR=" "${BOXLIB_BUILD_DIR}"
 }
 
 function bv_boxlib_print_usage
 {
-printf "%-15s %s [%s]\n" "--boxlib"  "Build Boxlib" "$DO_BOXLIB" 
+    printf "%-15s %s [%s]\n" "--boxlib"  "Build Boxlib" "$DO_BOXLIB" 
 }
 
 function bv_boxlib_graphical
 {
-  local graphical_output="Boxlib   $BOXLIB_VERSION($BOXLIB_FILE)    $ON_BOXLIB"
-  echo $graphical_output
+    local graphical_output="Boxlib   $BOXLIB_VERSION($BOXLIB_FILE)    $ON_BOXLIB"
+    echo $graphical_output
 }
 
 function bv_boxlib_host_profile
@@ -59,8 +59,8 @@ function bv_boxlib_host_profile
         echo "## Boxlib" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR \${VISITHOME}/boxlib/$BOXLIB_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR \${VISITHOME}/boxlib/$BOXLIB_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
     fi
 
 }
@@ -79,9 +79,9 @@ function bv_boxlib_ensure
 
 function bv_boxlib_dry_run
 {
-  if [[ "$DO_BOXLIB" == "yes" ]] ; then
-    echo "Dry run option not set for boxlib."
-  fi
+    if [[ "$DO_BOXLIB" == "yes" ]] ; then
+        echo "Dry run option not set for boxlib."
+    fi
 }
 # *************************************************************************** #
 #                         Function 8.8, build_boxlib                          #
@@ -95,8 +95,8 @@ function build_boxlib
     prepare_build_dir $BOXLIB_BUILD_DIR $BOXLIB_FILE
     untarred_boxlib=$?
     if [[ $untarred_boxlib == -1 ]] ; then
-       warn "Unable to prepare Boxlib Build Directory. Giving Up"
-       return 1
+        warn "Unable to prepare Boxlib Build Directory. Giving Up"
+        return 1
     fi
 
     cd $BOXLIB_BUILD_DIR || error "Can't cd to BoxLib build dir."
@@ -108,34 +108,34 @@ function build_boxlib
 
     if [[ "$OPSYS" == "AIX" ]]; then
         $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-           CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-           DEBUG="FALSE" DIM=3 COMP="xlC" USE_MPI="FALSE" \
-           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+              CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+              DEBUG="FALSE" DIM=3 COMP="xlC" USE_MPI="FALSE" \
+              BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
 
         $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-           CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-           DEBUG="FALSE" DIM=2 COMP="xlC" USE_MPI="FALSE" \
-           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+              CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+              DEBUG="FALSE" DIM=2 COMP="xlC" USE_MPI="FALSE" \
+              BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
     elif [[ "$OPSYS" == "Darwin" ]]; then
         $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-           CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-           DEBUG="FALSE" DIM=3 USE_MPI="FALSE" BL_MANGLE_SYMBOLS_WITH_DIM="TRUE" \
-           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+              CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+              DEBUG="FALSE" DIM=3 USE_MPI="FALSE" BL_MANGLE_SYMBOLS_WITH_DIM="TRUE" \
+              BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
 
         $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-           CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-           DEBUG="FALSE" DIM=2 USE_MPI="FALSE" BL_MANGLE_SYMBOLS_WITH_DIM="TRUE" \
-           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+              CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+              DEBUG="FALSE" DIM=2 USE_MPI="FALSE" BL_MANGLE_SYMBOLS_WITH_DIM="TRUE" \
+              BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
     else
         $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-           CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-           DEBUG="FALSE" DIM=3 USE_MPI="FALSE" \
-           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+              CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+              DEBUG="FALSE" DIM=3 USE_MPI="FALSE" \
+              BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
 
         $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-           CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-           DEBUG="FALSE" DIM=2 USE_MPI="FALSE" \
-           BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
+              CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+              DEBUG="FALSE" DIM=2 USE_MPI="FALSE" \
+              BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
     fi
 
     #
@@ -145,17 +145,17 @@ function build_boxlib
         INSTALLNAMEPATH="$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib"
 
         $CXX_COMPILER -dynamiclib -o libbox3D.$SO_EXT o/3d.Darwin.*/*.o \
-          -lSystem -Wl,-headerpad_max_install_names \
-          -Wl,-install_name,$INSTALLNAMEPATH/libbox3D.$SO_EXT \
-          -Wl,-compatibility_version,$BOXLIB_COMPATIBILITY_VERSION \
-          -Wl,-current_version,$BOXLIB_VERSION || \
-          error "Creation of dynamic 3D Boxlib library failed. Giving up!"
+                      -lSystem -Wl,-headerpad_max_install_names \
+                      -Wl,-install_name,$INSTALLNAMEPATH/libbox3D.$SO_EXT \
+                      -Wl,-compatibility_version,$BOXLIB_COMPATIBILITY_VERSION \
+                      -Wl,-current_version,$BOXLIB_VERSION || \
+            error "Creation of dynamic 3D Boxlib library failed. Giving up!"
         $CXX_COMPILER -dynamiclib -o libbox2D.$SO_EXT o/2d.Darwin.*/*.o \
-          -lSystem -Wl,-headerpad_max_install_names \
-          -Wl,-install_name,$INSTALLNAMEPATH/libbox2D.$SO_EXT \
-          -Wl,-compatibility_version,$BOXLIB_COMPATIBILITY_VERSION \
-          -Wl,-current_version,$BOXLIB_VERSION || \
-          error "Creation of dynamic 2D Boxlib library failed. Giving up!"
+                      -lSystem -Wl,-headerpad_max_install_names \
+                      -Wl,-install_name,$INSTALLNAMEPATH/libbox2D.$SO_EXT \
+                      -Wl,-compatibility_version,$BOXLIB_COMPATIBILITY_VERSION \
+                      -Wl,-current_version,$BOXLIB_VERSION || \
+            error "Creation of dynamic 2D Boxlib library failed. Giving up!"
         boxlib_ext=$SO_EXT
     else
         mv libbox3d.*.a libbox3D.a
@@ -176,18 +176,18 @@ function build_boxlib
 
     cp libbox3D.$boxlib_ext \
        "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/" || \
-       error "Boxlib install failed. Giving up!"
+        error "Boxlib install failed. Giving up!"
 
     cp libbox2D.$boxlib_ext \
        "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/" || \
-       error "Boxlib install failed. Giving up!"
+        error "Boxlib install failed. Giving up!"
 
     cp *.H "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include" || \
-       error "Boxlib install failed. Giving up!"
+        error "Boxlib install failed. Giving up!"
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/boxlib"
-       chgrp -R ${GROUP} "$VISITDIR/boxlib"
+        chmod -R ug+w,a+rX "$VISITDIR/boxlib"
+        chgrp -R ${GROUP} "$VISITDIR/boxlib"
     fi
 
     cd "$START_DIR"
@@ -214,18 +214,18 @@ function bv_boxlib_is_installed
 
 function bv_boxlib_build
 {
-cd "$START_DIR"
-if [[ "$DO_BOXLIB" == "yes" ]] ; then
-    check_if_installed "boxlib" $BOXLIB_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping Boxlib build.  Boxlib is already installed."
-    else
-        info "Building Boxlib (~2 minutes)"
-        build_boxlib
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install Boxlib.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_BOXLIB" == "yes" ]] ; then
+        check_if_installed "boxlib" $BOXLIB_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping Boxlib build.  Boxlib is already installed."
+        else
+            info "Building Boxlib (~2 minutes)"
+            build_boxlib
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install Boxlib.  Bailing out."
+            fi
+            info "Done building Boxlib"
         fi
-        info "Done building Boxlib"
     fi
-fi
 }

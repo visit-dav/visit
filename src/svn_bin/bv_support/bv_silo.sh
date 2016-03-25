@@ -30,15 +30,15 @@ function bv_silo_depends_on
     local depends_on=""
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        depends_on="hdf5"    
+        depends_on="hdf5"
     fi
     
     if [[ "$DO_SZIP" == "yes" ]] ; then
-        depends_on="$depends_on szip"    
+        depends_on="$depends_on szip"
     fi
 
     if [[ "$DO_ZLIB" == "yes" ]] ; then
-        depends_on="$depends_on zlib"    
+        depends_on="$depends_on zlib"
     fi
 
     echo $depends_on
@@ -46,33 +46,33 @@ function bv_silo_depends_on
 
 function bv_silo_info
 {
-export SILO_VERSION=${SILO_VERSION:-"4.10.1"}
-export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
-export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.10.1"}
-export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
-export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
-export SILO_MD5_CHECKSUM="29e6cdf25e98aef96e1f541167839c6f"
-export SILO_SHA256_CHECKSUM="8549167d1315ab27d3752ee463c45a6919d68a3bdad4acc8389a1d5f73071028"
+    export SILO_VERSION=${SILO_VERSION:-"4.10.1"}
+    export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
+    export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.10.1"}
+    export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
+    export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
+    export SILO_MD5_CHECKSUM="29e6cdf25e98aef96e1f541167839c6f"
+    export SILO_SHA256_CHECKSUM="8549167d1315ab27d3752ee463c45a6919d68a3bdad4acc8389a1d5f73071028"
 }
 
 function bv_silo_print
 {
-  printf "%s%s\n" "SILO_FILE=" "${SILO_FILE}"
-  printf "%s%s\n" "SILO_VERSION=" "${SILO_VERSION}"
-  printf "%s%s\n" "SILO_COMPATIBILITY_VERSION=" "${SILO_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "SILO_BUILD_DIR=" "${SILO_BUILD_DIR}"
+    printf "%s%s\n" "SILO_FILE=" "${SILO_FILE}"
+    printf "%s%s\n" "SILO_VERSION=" "${SILO_VERSION}"
+    printf "%s%s\n" "SILO_COMPATIBILITY_VERSION=" "${SILO_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "SILO_BUILD_DIR=" "${SILO_BUILD_DIR}"
 }
 
 function bv_silo_print_usage
 {
-printf "%-15s %s [%s]\n" "--silo" "Build Silo support" "$DO_SILO"
-printf "%-15s %s [%s]\n" "--silex" "Enable silex when building Silo" "$DO_SILEX"
+    printf "%-15s %s [%s]\n" "--silo" "Build Silo support" "$DO_SILO"
+    printf "%-15s %s [%s]\n" "--silex" "Enable silex when building Silo" "$DO_SILEX"
 }
 
 function bv_silo_graphical
 {
-local graphical_out="Silo     $SILO_VERSION($SILO_FILE)      $ON_SILO"
-echo "$graphical_out"
+    local graphical_out="Silo     $SILO_VERSION($SILO_FILE)      $ON_SILO"
+    echo "$graphical_out"
 }
 
 function bv_silo_host_profile
@@ -83,27 +83,27 @@ function bv_silo_host_profile
         echo "## Silo" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_SILO_DIR \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_SILO_DIR \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
         if [[ "$DO_HDF5" == "yes" ]] ; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
-            >> $HOSTCONF
+                "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+                >> $HOSTCONF
         else
             if [[ "$DO_ZLIB" == "yes" ]] ; then
-               echo \
-               "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP ZLIB_LIBRARY_DIR z TYPE STRING)" \
-               >> $HOSTCONF
+                echo \
+                    "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP ZLIB_LIBRARY_DIR z TYPE STRING)" \
+                    >> $HOSTCONF
             else
-               if [[ -d /usr/lib/x86_64-linux-gnu ]]; then
+                if [[ -d /usr/lib/x86_64-linux-gnu ]]; then
                     echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib/x86_64-linux-gnu z TYPE STRING)" \
-                    >> $HOSTCONF
-               else
+                        "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib/x86_64-linux-gnu z TYPE STRING)" \
+                        >> $HOSTCONF
+                else
                     echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z TYPE STRING)" \
-                    >> $HOSTCONF
-               fi
+                        "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z TYPE STRING)" \
+                        >> $HOSTCONF
+                fi
             fi
         fi
     fi
@@ -123,9 +123,9 @@ function bv_silo_ensure
 
 function bv_silo_dry_run
 {
-  if [[ "$DO_SILO" == "yes" ]] ; then
-    echo "Dry run option not set for silo."
-  fi
+    if [[ "$DO_SILO" == "yes" ]] ; then
+        echo "Dry run option not set for silo."
+    fi
 }
 
 # *************************************************************************** #
@@ -156,8 +156,8 @@ function build_silo
     prepare_build_dir $SILO_BUILD_DIR $SILO_FILE
     untarred_silo=$?
     if [[ $untarred_silo == -1 ]] ; then
-       warn "Unable to prepare Silo build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare Silo build directory. Giving Up!"
+        return 1
     fi
     
     #
@@ -168,38 +168,38 @@ function build_silo
     info "Invoking command to configure Silo"
     SILO_LINK_OPT=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
-       export HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
-       export HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
-       WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
-       SILO_LINK_OPT="-L$HDF5LIB -lhdf5"
+        export HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
+        export HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
+        WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
+        SILO_LINK_OPT="-L$HDF5LIB -lhdf5"
     else
-       WITHHDF5ARG="--without-hdf5"
+        WITHHDF5ARG="--without-hdf5"
     fi
     SILO_LINK_OPT="$SILO_LINK_OPT -lz"
     if [[ "$DO_SZIP" == "yes" ]] ; then
-       export SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
-       WITHSZIPARG="--with-szlib=$SZIPDIR"
-       SILO_LINK_OPT="$SILO_LINK_OPT -L$SZIPDIR/lib -lsz"
+        export SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+        WITHSZIPARG="--with-szlib=$SZIPDIR"
+        SILO_LINK_OPT="$SILO_LINK_OPT -L$SZIPDIR/lib -lsz"
     else
-       WITHSZIPARG="--without-szlib"
+        WITHSZIPARG="--without-szlib"
     fi
     WITHSHAREDARG="--enable-shared"
     if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
         WITHSHAREDARG="--disable-shared"
     fi
     if [[ "$DO_SILEX" == "no" || "$DO_QT" != "yes" || "$DO_STATIC_BUILD" == "yes" || "$IS_QT5" == "yes" ]] ; then
-       WITHSILOQTARG='--disable-silex'
+        WITHSILOQTARG='--disable-silex'
     else
-       export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-       if [[ "$OPSYS" == "Darwin" ]] ; then
-           WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="m -F${SILOQTDIR}/lib -framework QtGui -framework QtCore"'
-       else
-           WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="QtGui -lQtCore"'
-       fi
+        export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
+        if [[ "$OPSYS" == "Darwin" ]] ; then
+            WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="m -F${SILOQTDIR}/lib -framework QtGui -framework QtCore"'
+        else
+            WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="QtGui -lQtCore"'
+        fi
     fi
 
     if [[ "$DO_ZLIB" == "yes" ]] ; then
-       ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
+        ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
     fi
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
@@ -227,8 +227,8 @@ function build_silo
         $ZLIBARGS $SILO_EXTRA_OPTIONS"
 
     if [[ $? != 0 ]] ; then
-       warn "Silo configure failed.  Giving up"
-       return 1
+        warn "Silo configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -237,8 +237,8 @@ function build_silo
     info "Building Silo . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "Silo build failed.  Giving up"
-       return 1
+        warn "Silo build failed.  Giving up"
+        return 1
     fi
     #
     # Install into the VisIt third party location.
@@ -252,8 +252,8 @@ function build_silo
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/silo"
-       chgrp -R ${GROUP} "$VISITDIR/silo"
+        chmod -R ug+w,a+rX "$VISITDIR/silo"
+        chgrp -R ${GROUP} "$VISITDIR/silo"
     fi
     cd "$START_DIR"
     info "Done with Silo"
@@ -279,19 +279,18 @@ function bv_silo_is_installed
 
 function bv_silo_build
 {
-cd "$START_DIR"
-if [[ "$DO_SILO" == "yes" ]] ; then
-    check_if_installed "silo" $SILO_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping Silo build.  Silo is already installed."
-    else
-        info "Building Silo (~2 minutes)"
-        build_silo
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install Silo.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_SILO" == "yes" ]] ; then
+        check_if_installed "silo" $SILO_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping Silo build.  Silo is already installed."
+        else
+            info "Building Silo (~2 minutes)"
+            build_silo
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install Silo.  Bailing out."
+            fi
+            info "Done building Silo"
         fi
-        info "Done building Silo"
     fi
-fi
 }
-

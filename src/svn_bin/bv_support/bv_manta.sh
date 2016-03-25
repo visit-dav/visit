@@ -1,53 +1,53 @@
 function bv_manta_initialize
 {
-export DO_MANTA="no"
-export ON_MANTA="off"
+    export DO_MANTA="no"
+    export ON_MANTA="off"
 }
 
 function bv_manta_enable
 {
-DO_MANTA="yes"
-ON_MANTA="on"
+    DO_MANTA="yes"
+    ON_MANTA="on"
 }
 
 function bv_manta_disable
 {
-DO_MANTA="no"
-ON_MANTA="off"
+    DO_MANTA="no"
+    ON_MANTA="off"
 }
 
 function bv_manta_depends_on
 {
-echo ""
+    echo ""
 }
 
 function bv_manta_info
 {
-export MANTA_VERSION=${MANTA_VERSION:-"2540"}
-export MANTA_FILE=${MANTA_FILE:-"manta-${MANTA_VERSION}.tar.gz"}
-export MANTA_COMPATIBILITY_VERSION=${MANTA_COMPATIBILITY_VERSION:-"2540"}
-export MANTA_BUILD_DIR=${MANTA_BUILD_DIR:-"manta-${MANTA_VERSION}"}
-export MANTA_MD5_CHECKSUM=""
-export MANTA_SHA256_CHECKSUM=""
+    export MANTA_VERSION=${MANTA_VERSION:-"2540"}
+    export MANTA_FILE=${MANTA_FILE:-"manta-${MANTA_VERSION}.tar.gz"}
+    export MANTA_COMPATIBILITY_VERSION=${MANTA_COMPATIBILITY_VERSION:-"2540"}
+    export MANTA_BUILD_DIR=${MANTA_BUILD_DIR:-"manta-${MANTA_VERSION}"}
+    export MANTA_MD5_CHECKSUM=""
+    export MANTA_SHA256_CHECKSUM=""
 }
 
 function bv_manta_print
 {
-  printf "%s%s\n" "MANTA_FILE=" "${MANTA_FILE}"
-  printf "%s%s\n" "MANTA_VERSION=" "${MANTA_VERSION}"
-  printf "%s%s\n" "MANTA_COMPATIBILITY_VERSION=" "${MANTA_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "MANTA_BUILD_DIR=" "${MANTA_BUILD_DIR}"
+    printf "%s%s\n" "MANTA_FILE=" "${MANTA_FILE}"
+    printf "%s%s\n" "MANTA_VERSION=" "${MANTA_VERSION}"
+    printf "%s%s\n" "MANTA_COMPATIBILITY_VERSION=" "${MANTA_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "MANTA_BUILD_DIR=" "${MANTA_BUILD_DIR}"
 }
 
 function bv_manta_print_usage
 {
-printf "%-15s %s [%s]\n" "--manta" "Build Manta" "${DO_MANTA}"
+    printf "%-15s %s [%s]\n" "--manta" "Build Manta" "${DO_MANTA}"
 }
 
 function bv_manta_graphical
 {
-local graphical_out="MANTA    $MANTA_VERSION($MANTA_FILE)     $ON_MANTA"
-echo $graphical_out
+    local graphical_out="MANTA    $MANTA_VERSION($MANTA_FILE)     $ON_MANTA"
+    echo $graphical_out
 }
 
 function bv_manta_host_profile
@@ -58,8 +58,8 @@ function bv_manta_host_profile
         echo "## MANTA" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_MANTA_DIR \${VISITHOME}/manta/$MANTA_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_MANTA_DIR \${VISITHOME}/manta/$MANTA_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
     fi
 }
 
@@ -77,9 +77,9 @@ function bv_manta_ensure
 
 function bv_manta_dry_run
 {
-  if [[ "$DO_MANTA" == "yes" ]] ; then
-    echo "Dry run option not set for manta."
-  fi
+    if [[ "$DO_MANTA" == "yes" ]] ; then
+        echo "Dry run option not set for manta."
+    fi
 }
 
 # ***************************************************************************
@@ -95,8 +95,8 @@ function build_manta
     prepare_build_dir $MANTA_BUILD_DIR $MANTA_FILE
     untarred_manta=$?
     if [[ $untarred_manta == -1 ]] ; then
-       warn "Unable to prepare Manta Build Directory. Giving Up"
-       return 1
+        warn "Unable to prepare Manta Build Directory. Giving Up"
+        return 1
     fi
 
     #
@@ -136,8 +136,8 @@ function build_manta
             #cmake .
             ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX=$MANTA_PREFIX_DIR .
             if [[ $? != 0 ]] ; then
-                 warn "Manta configure failed.  Giving up"
-            return 1
+                warn "Manta configure failed.  Giving up"
+                return 1
             fi
 
             if [[ "$OPSYS" != "Darwin" || ${VER%%.*} -ge 9 ]]; then
@@ -149,8 +149,8 @@ function build_manta
     #  Manta CMake
     #
     if [[ $? != 0 ]] ; then
-       warn "Manta cmake failed.  Giving up"
-       return 1
+        warn "Manta cmake failed.  Giving up"
+        return 1
     fi
 
     #
@@ -159,14 +159,14 @@ function build_manta
     info "Building Manta . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "Manta build failed.  Giving up"
-       return 1
+        warn "Manta build failed.  Giving up"
+        return 1
     fi
     info "Installing Manta . . ."
     $MAKE install
     if [[ $? != 0 ]] ; then
-       warn "Manta build (make install) failed.  Giving up"
-       return 1
+        warn "Manta build (make install) failed.  Giving up"
+        return 1
     fi
 
     chmod -R ug+w,a+rX $VISITDIR/manta
@@ -199,18 +199,18 @@ function bv_manta_is_installed
 
 function bv_manta_build
 {
-cd "$START_DIR"
-if [[ "$DO_MANTA" == "yes" ]] ; then
-    check_if_installed "manta" $MANTA_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping Manta build.  Manta is already installed."
-    else
-        info "Building Manta (~1 minutes)"
-        build_manta
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install Manta.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_MANTA" == "yes" ]] ; then
+        check_if_installed "manta" $MANTA_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping Manta build.  Manta is already installed."
+        else
+            info "Building Manta (~1 minutes)"
+            build_manta
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install Manta.  Bailing out."
+            fi
+            info "Done building Manta"
         fi
-        info "Done building Manta"
     fi
-fi
 }

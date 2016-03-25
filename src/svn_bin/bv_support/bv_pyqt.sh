@@ -1,21 +1,21 @@
 function bv_pyqt_initialize
 {
-export DO_PYQT="no"
-export ON_PYQT="off"
-export USE_SYSTEM_PYQT="no"
-add_extra_commandline_args "pyqt" "alt-pyqt-dir" 1 "Use alternative directory for PyQt" 
+    export DO_PYQT="no"
+    export ON_PYQT="off"
+    export USE_SYSTEM_PYQT="no"
+    add_extra_commandline_args "pyqt" "alt-pyqt-dir" 1 "Use alternative directory for PyQt" 
 }
 
 function bv_pyqt_enable
 {
-DO_PYQT="yes"
-ON_PYQT="on"
+    DO_PYQT="yes"
+    ON_PYQT="on"
 }
 
 function bv_pyqt_disable
 {
-DO_PYQT="no"
-ON_PYQT="off"
+    DO_PYQT="no"
+    ON_PYQT="off"
 }
 
 function bv_pyqt_alt_pyqt_dir
@@ -27,36 +27,37 @@ function bv_pyqt_alt_pyqt_dir
 
 function bv_pyqt_depends_on
 {
-echo ""
+    echo ""
 }
 
 function bv_pyqt_info
 {
-export PYQT_FILE=${PYQT_FILE:-"pyqt"}
-export PYQT_VERSION=${PYQT_VERSION:-"0"}
-export PYQT_COMPATIBILITY_VERSION=${PYQT_COMPATIBILITY_VERSION:-"0"}
-export PYQT_BUILD_DIR=${PYQT_BUILD_DIR:-"pyqt"}
-export PYQT_MD5_CHECKSUM=""
-export PYQT_SHA256_CHECKSUM=""
+    export PYQT_FILE=${PYQT_FILE:-"pyqt"}
+    export PYQT_VERSION=${PYQT_VERSION:-"0"}
+    export PYQT_COMPATIBILITY_VERSION=${PYQT_COMPATIBILITY_VERSION:-"0"}
+    export PYQT_BUILD_DIR=${PYQT_BUILD_DIR:-"pyqt"}
+    export PYQT_MD5_CHECKSUM=""
+    export PYQT_SHA256_CHECKSUM=""
 }
 
 function bv_pyqt_print
 {
-  printf "%s%s\n" "PYQT_FILE=" "${PYQT_FILE}"
-  printf "%s%s\n" "PYQT_VERSION=" "${PYQT_VERSION}"
-  printf "%s%s\n" "PYQT_COMPATIBILITY_VERSION=" "${PYQT_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "PYQT_BUILD_DIR=" "${PYQT_BUILD_DIR}"
+    printf "%s%s\n" "PYQT_FILE=" "${PYQT_FILE}"
+    printf "%s%s\n" "PYQT_VERSION=" "${PYQT_VERSION}"
+    printf "%s%s\n" "PYQT_COMPATIBILITY_VERSION=" "${PYQT_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "PYQT_BUILD_DIR=" "${PYQT_BUILD_DIR}"
 }
 
 function bv_pyqt_print_usage
 {
-printf "%-15s %s [%s]\n" "--alt-pyqt-dir"   "Use alternative pyqt dir" "$DO_PYQT"
+    printf "%-15s %s [%s]\n" "--pyqt" "Build PyQt support" "$DO_PYQT"
+    printf "%-15s %s [%s]\n" "--alt-pyqt-dir" "Use alternative PyQt dir"
 }
 
 function bv_pyqt_graphical
 {
-local graphical_out="PyQt    $PYQT_VERSION($PYQT_FILE)    $ON_PYQT"
-echo $graphical_out
+    local graphical_out="PyQt    $PYQT_VERSION($PYQT_FILE)    $ON_PYQT"
+    echo $graphical_out
 }
 
 function bv_pyqt_host_profile
@@ -89,9 +90,9 @@ function bv_pyqt_ensure
 
 function bv_pyqt_dry_run
 {
-  if [[ "$DO_PYQT" == "yes" ]] ; then
-    echo "Dry run option not set for PyQt."
-  fi
+    if [[ "$DO_PYQT" == "yes" ]] ; then
+        echo "Dry run option not set for PyQt."
+    fi
 }
 
 # ***************************************************************************
@@ -129,19 +130,18 @@ function bv_pyqt_is_installed
 
 function bv_pyqt_build
 {
-cd "$START_DIR"
-if [[ "$DO_PYQT" == "yes" && "$USE_SYSTEM_PYQT" == "no" ]] ; then
-    check_if_installed "pyqt" $PYQT_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping PyQt build.  PyQt is already installed."
-    else
-        info "Building PyQt (~20 minutes)"
-        build_pyqt
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install PyQt.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_PYQT" == "yes" && "$USE_SYSTEM_PYQT" == "no" ]] ; then
+        check_if_installed "pyqt" $PYQT_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping PyQt build.  PyQt is already installed."
+        else
+            info "Building PyQt (~20 minutes)"
+            build_pyqt
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install PyQt.  Bailing out."
+            fi
+            info "Done building PyQt"
         fi
-        info "Done building PyQt"
-   fi
-fi
+    fi
 }
-

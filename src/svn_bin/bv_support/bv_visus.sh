@@ -1,4 +1,3 @@
-
 function bv_visus_initialize
 {
     export DO_VISUS="no"
@@ -61,7 +60,7 @@ function bv_visus_print
 function bv_visus_print_usage
 {
     printf "%-15s %s [%s]\n" "--visus" "Build ViSUS support" "$DO_VISUS"
-    printf "%-15s %s [%s]\n" "--alt-visus-dir"  "Use ViSUS" "Use ViSUS from alternative directory"
+    printf "%-15s %s [%s]\n" "--alt-visus-dir" "Use ViSUS from an alternative directory"
 }
 
 function bv_visus_graphical
@@ -175,4 +174,3 @@ function bv_visus_build
         fi
     fi
 }
-
