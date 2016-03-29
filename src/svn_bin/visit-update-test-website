@@ -1,7 +1,14 @@
 #!/bin/sh
 
+# Parse the command line.
+tarfile="html.tar.gz"
+
+if (argc == 1) ; then
+    tarfile=$1
+fi
+
 # Untar the html
-tar zxmf html.tar.gz -C /project/projectdirs/visit/www/tests
+tar zxmf $tarfile -C /project/projectdirs/visit/www/tests
 
 cd /project/projectdirs/visit/www
 

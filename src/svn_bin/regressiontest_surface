@@ -361,7 +361,7 @@ if test "$post" = "true" ; then
     tar -czvf  html.tar.gz \$dateTag
 
     # Copy the results to nersc
-    scp html.tar.gz $userNersc@$nerscHost:
+    scp html.tar.gz $userNersc@$nerscHost:${branch}_html.tar.gz
     if test "$debug" = "true" ; then
         echo "Results copied to $nerscHost at: `date`" | mail -s "Results copied" $userEmail
     fi
@@ -371,7 +371,7 @@ if test "$post" = "true" ; then
     # Post the results.
     cd ..
     scp src/svn_bin/visit-update-test-website $userNersc@$nerscHost:
-    ssh $userNersc@$nerscHost "./visit-update-test-website"
+    ssh $userNersc@$nerscHost "./visit-update-test-website ${branch}_html.tar.gz"
     if test "$debug" = "true" ; then
         echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
     fi
