@@ -1956,8 +1956,11 @@ ViewerWindowManager::SaveWindow(int windowIndex)
         if (windowIsInScalableRenderingMode)
         {
             GetViewerMessaging()->Error(
-                TR("You cannot save curve formats (ultra, curve) from a window "
-                   "that is currently in scalable rendering mode."));
+                TR("You cannot save non-image formats (e.g. ultra, curve, stl, etc.) from "
+                   "a window that is currently in scalable rendering mode. You may force "
+                   "scalable rendering to Never but if the resulting data is too big for the "
+                   "viewer to handle, it will likely crash VisIt. For 3D formats, try "
+                   "an export database operation instead."));
             return;
         }
 
