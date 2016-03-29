@@ -596,6 +596,10 @@ TestSection("Curve with polar coordinates")
 
 OpenDatabase(silo_data_path("multi_rect2d.silo"))
 AddPlot("Curve","circle")
+catts = CurveAttributes()
+catts.curveColorSource = catts.Custom
+catts.curveColor = (255, 255, 0, 255)
+SetPlotOptions(catts)
 DrawPlots()
 ResetView()
 Test("silo_%d"%testNum)
