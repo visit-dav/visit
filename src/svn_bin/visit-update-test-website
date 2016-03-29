@@ -1,7 +1,14 @@
 #!/bin/sh
 
+# Parse the command line.
+tarfile="html.tar.gz"
+
+if test "$#" = "1" ; then
+    tarfile=$1
+fi
+
 # Untar the html
-tar zxmf html.tar.gz -C /project/projectdirs/visit/www
+tar zxmf $tarfile -C /project/projectdirs/visit/www/tests
 
 cd /project/projectdirs/visit/www
 
@@ -21,9 +28,9 @@ echo "   <td><b>Mode</b></td>" >> index.html
 echo "   <td><b>Result</b></td>" >> index.html
 echo "</tr>" >> index.html
 
-ls -1t /project/projectdirs/visit/www/*/*/index.html | while read testLine; do
+ls -1t /project/projectdirs/visit/www/tests/*/*/index.html | while read testLine; do
 
-    theMode=`echo $testLine | cut -d'/' -f7`
+    theMode=`echo $testLine | cut -d'/' -f8`
     theRelDir=`echo $testLine | cut -d'/' -f6-`
     theRelDir="./${theRelDir}"
     theTimeStamp=`ls -l --time-style=+"%A_%b_%d_%I:%M%p" $testLine | tr -s ' ' | cut -d' ' -f6`
