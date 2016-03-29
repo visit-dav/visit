@@ -1027,6 +1027,11 @@ PF3DFileFormat::FreeUpResources()
 //   Brad Whitlock, Thu Sep 7 16:28:34 PST 2006
 //   Added more debugging log information.
 //
+//   Eric Brugger, Tue Mar 29 08:22:09 PDT 2016
+//   Temporarily disabled setting up domain connectivity since it is a
+//   memory hog and we don't need them for volume rendering, which is the
+//   primary visualization technique used with PF3D data.
+//
 // ****************************************************************************
 
 void
@@ -1174,12 +1179,20 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         debug4 << "glob_nams and int_nams are not the same size!" << endl;
     }
 
+#if 0
     //
     // Set up the domain connectivity arrays so this file format can
     // use VisIt's automatic ghost zone creation facilities.
     //
     debug4 << mName << "Setting up domain connectivity." << endl;
     SetUpDomainConnectivity();
+#else
+    //
+    // Temporarily skip setting up domain connectivity since it is a
+    // memory hog.
+    //
+    debug4 << mName << "Skipping setting up domain connectivity." << endl;
+#endif
 
     debug4 << mName << "end" << endl;
 }
