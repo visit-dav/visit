@@ -3,7 +3,7 @@
 # Parse the command line.
 tarfile="html.tar.gz"
 
-if (argc == 1) ; then
+if test "$#" = "1" ; then
     tarfile=$1
 fi
 
