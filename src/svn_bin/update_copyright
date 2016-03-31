@@ -18,3 +18,7 @@ find -type f -name "*.cxx" -exec sed -i "s/Copyright (c) 2000 - 2015, Lawrence L
 find -type f -name "*.hxx" -exec sed -i "s/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC/" {} \; -print
 find -type f -name "*.cpp" -exec sed -i "s/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC/" {} \; -print
 find -type f -name "*.mm" -exec sed -i "s/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.cu" -exec sed -i "s/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.vpe" -exec sed -i "s/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.vpq" -exec sed -i "s/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC/" {} \; -print
+find -type f -name "*.i" -exec sed -i "s/Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC/Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC/" {} \; -print
