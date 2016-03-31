@@ -231,6 +231,10 @@
     </Function>
     <Function name="CreateXMLString" user="true" member="true">
     </Function>
+    <Function name="PyPickAttributes_GetLogString" user="false" member="true">
+    </Function>
+    <Function name="PyPickAttributes_CallLogRoutine" user="false" member="true">
+    </Function>
     <Include file="source" quoted="false">
       stdio.h
     </Include>

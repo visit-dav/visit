@@ -1172,7 +1172,7 @@ static Observer *PickAttributesObserver = 0;
 std::string
 PyPickAttributes_GetLogString()
 {
-    std::string s("PickAtts = PickAttributes()\n");
+    std::string s("PickAtts = GetPickAttributes()\n");
     if(currentAtts != 0)
         s += PyPickAttributes_ToString(currentAtts, "PickAtts.");
     return s;
@@ -1186,7 +1186,7 @@ PyPickAttributes_CallLogRoutine(Subject *subj, void *data)
 
     if(cb != 0)
     {
-        std::string s("PickAtts = PickAttributes()\n");
+        std::string s("PickAtts = GetPickAttributes()\n");
         s += PyPickAttributes_ToString(currentAtts, "PickAtts.");
         cb(s);
     }

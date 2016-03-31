@@ -1406,3 +1406,34 @@ PickAttributes::CreateXMLString(std::string &os, bool withLetter)
         os = m.ToXML();
 }
 
+Target: xml2python
+Function: PyPickAttributes_GetLogString
+Declaration: std::string PyPickAttributes_GetLogString()
+Definition:
+std::string
+PyPickAttributes_GetLogString()
+{
+    std::string s("PickAtts = GetPickAttributes()\n");
+    if(currentAtts != 0)
+        s += PyPickAttributes_ToString(currentAtts, "PickAtts.");
+    return s;
+}
+
+
+Function: PyPickAttributes_CallLogRoutine
+Declaration: static void PyPickAttributes_CallLogRoutine(Subject *subj, void *data)
+Definition:
+static void
+PyPickAttributes_CallLogRoutine(Subject *subj, void *data)
+{
+    typedef void (*logCallback)(const std::string &);
+    logCallback cb = (logCallback)data;
+
+    if(cb != 0)
+    {
+        std::string s("PickAtts = GetPickAttributes()\n");
+        s += PyPickAttributes_ToString(currentAtts, "PickAtts.");
+        cb(s);
+    }
+}
+
