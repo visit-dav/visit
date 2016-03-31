@@ -72,6 +72,9 @@
 #  Brad Whitlock, Wed Mar 13 11:41:38 PDT 2013
 #  Install frontendlauncher.py
 #
+#  Kathleen Biagas, Thu Mar 24 16:29:50 PDT 2016
+#  Remove qt.conf in favor of having FindVisItQtx.cmake create one on the fly.
+#
 #****************************************************************************/
 
 #-----------------------------------------------------------------------------
@@ -144,12 +147,6 @@ IF (NOT WIN32)
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
-
-    INSTALL(FILES qt.conf
-        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-        PERMISSIONS OWNER_READ OWNER_WRITE
-                    GROUP_READ GROUP_WRITE
-                    WORLD_READ)
 
 ELSE (NOT WIN32)
 
