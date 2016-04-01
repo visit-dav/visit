@@ -213,8 +213,8 @@ avtIntegralCurveFilter::avtIntegralCurveFilter() : seedVelocity(0,0,0),
 {
     dataValue = IntegralCurveAttributes::TimeAbsolute;
     displayGeometry = IntegralCurveAttributes::Lines;
-    cleanupValue = IntegralCurveAttributes::None;
-    velThreshold = 1e-3;
+    cleanupMethod = IntegralCurveAttributes::NoCleanup;
+    cleanupThreshold = 1e-8;
     cropValue = IntegralCurveAttributes::Time;
 
     //
@@ -688,8 +688,8 @@ avtIntegralCurveFilter::SetAtts(const AttributeGroup *a)
                                   atts.GetCriticalPointThreshold());
 
     SetDataValue(int(atts.GetDataValue()), atts.GetDataVariable());
-    SetCleanupValue(int(atts.GetCleanupValue()),
-                    double(atts.GetVelThreshold()));
+    SetCleanupMethod(int(atts.GetCleanupMethod()),
+                     double(atts.GetCleanupThreshold()));
     SetCropValue(int(atts.GetCropValue()));
 
     if (atts.GetDataValue() == IntegralCurveAttributes::CorrelationDistance)
@@ -1045,10 +1045,10 @@ avtIntegralCurveFilter::SetDataValue(int m, const std::string &var)
 }
 
 // ****************************************************************************
-// Method: avtIntegralCurveFilter::SetCleanupValue
+// Method: avtIntegralCurveFilter::SetCleanupMethod
 //
 // Purpose: 
-//   Sets clean up value to use
+//   Sets clean up method and value to use
 //
 // Arguments:
 //   m : The crop value.
@@ -1061,10 +1061,10 @@ avtIntegralCurveFilter::SetDataValue(int m, const std::string &var)
 // ****************************************************************************
 
 void
-avtIntegralCurveFilter::SetCleanupValue(int m, double v)
+avtIntegralCurveFilter::SetCleanupMethod(int method, double threshold)
 {
-    cleanupValue = m;
-    velThreshold = v;
+    cleanupMethod = method;
+    cleanupThreshold = threshold;
 }
 
 // ****************************************************************************
@@ -2868,16 +2868,16 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         // Remove all of the points that are below the critical point
         // threshold except for the first point.  The first point is
         // kept so the critical point location is known.
-        if( displayGeometry == IntegralCurveAttributes::Tubes ||
-            displayGeometry == IntegralCurveAttributes::Ribbons ||
-            cleanupValue == IntegralCurveAttributes::Before ||
-            cleanupValue == IntegralCurveAttributes::After )
+        if( //displayGeometry == IntegralCurveAttributes::Tubes ||
+            //displayGeometry == IntegralCurveAttributes::Ribbons ||
+            cleanupMethod == IntegralCurveAttributes::Before ||
+            cleanupMethod == IntegralCurveAttributes::After )
         {
           for (int j=beginIndex; j<=endIndex; ++j)
           {
             s = ic->GetSample(j);
             
-            if (s.velocity.length() < velThreshold)
+            if (s.velocity.length() < cleanupThreshold)
             {
               totalSamples -= (endIndex-j);
               break;
@@ -2928,9 +2928,9 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             double speed = s.velocity.length();
 
             // Reached a critical point so stop.
-            if( cleanupValue == IntegralCurveAttributes::Before )
+            if( cleanupMethod == IntegralCurveAttributes::Before )
             {
-              if (speed < velThreshold)
+              if (speed < cleanupThreshold)
               {
                 j = endIndex;
                 
@@ -3022,11 +3022,11 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
             pIdx++;
 
             // Reached a critical point so stop.
-            if( displayGeometry == IntegralCurveAttributes::Tubes ||
-                displayGeometry == IntegralCurveAttributes::Ribbons ||
-                cleanupValue == IntegralCurveAttributes::After )
+            if( //displayGeometry == IntegralCurveAttributes::Tubes ||
+                //displayGeometry == IntegralCurveAttributes::Ribbons ||
+                cleanupMethod == IntegralCurveAttributes::After )
             {
-              if (speed < velThreshold)
+              if (speed < cleanupThreshold)
                 break;
             }
         }
@@ -3119,13 +3119,61 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     if(displayGeometry == IntegralCurveAttributes::Ribbons)
     {
       vtkPolyLine::GenerateSlidingNormals(points, lines, normals);
+    }
+    
+    std::cerr << "in " << pd->GetPointData()->GetNumberOfTuples() << "  ";
+    
+    vtkPolyData *outPD;
+    
+    if( //displayGeometry == IntegralCurveAttributes::Tubes ||
+        //displayGeometry == IntegralCurveAttributes::Ribbons ||
+        cleanupMethod == IntegralCurveAttributes::Merge )
+    {
+      vtkCleanPolyData *clean = vtkCleanPolyData::New();
+      clean->ConvertLinesToPointsOff();
+      clean->ConvertPolysToLinesOff();
+      clean->ConvertStripsToPolysOff();
 
-      // Now, rotate the normals according to the vorticity..
-      // double normal[3], local1[3], local2[3],length,costheta,
-      // sintheta;
+      if( cleanupMethod == IntegralCurveAttributes::Merge &&
+          cleanupThreshold > 0 )
+      {
+        clean->ToleranceIsAbsoluteOn();
+        clean->SetAbsoluteTolerance(cleanupThreshold);
+      }
+      
+      clean->PointMergingOn();
+      clean->SetInputData(pd);
+      clean->Update();
+      pd->Delete();
+
+      std::cerr << "cleaning  ";
+            outPD = clean->GetOutput();
+
+      if( cleanupMethod != IntegralCurveAttributes::Merge )
+        avtCallback::IssueWarning("\nThe integral curves are being displayed "
+                                  "as tubes or ribbons which requires "
+                                  "vtkCleanPolyData to be called to remove "
+                                  "duplicate points. As such, the integral "
+                                  "curves will be terminated based on a "
+                                  "spatial criteria rather a velocity "
+                                  "criteria");
+    }
+    else
+    {
+      std::cerr << "no cleaning  ";
+      outPD = pd;
+    }
+
+    std::cerr << "out " << outPD->GetPointData()->GetNumberOfTuples() << std::endl;
+
+    if(displayGeometry == IntegralCurveAttributes::Ribbons)
+    {
+      vtkPolyLine::GenerateSlidingNormals(points, lines, normals);
+
+      // Rotate the normals according to the vorticity.
       double theta, normal[3], tan[3], biNormal[3], p0[3], p1[3];
       
-      numPts = pd->GetPointData()->GetNumberOfTuples();
+      numPts = outPD->GetPointData()->GetNumberOfTuples();
       
       for( int i=0; i<numPts; ++i)
       {
@@ -3170,28 +3218,6 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 
     for( unsigned int i=0; i<secondaryVariables.size(); ++i )
          secondarys[i]->Delete();
-
-    vtkPolyData *outPD;
-    
-    if( displayGeometry == IntegralCurveAttributes::Tubes ||
-        displayGeometry == IntegralCurveAttributes::Ribbons ||
-        cleanupValue == IntegralCurveAttributes::Merge )
-    {
-      vtkCleanPolyData *clean = vtkCleanPolyData::New();
-      clean->ConvertLinesToPointsOff();
-      clean->ConvertPolysToLinesOff();
-      clean->ConvertStripsToPolysOff();
-      clean->PointMergingOn();
-      clean->SetInputData(pd);
-      clean->Update();
-      pd->Delete();
-
-      outPD = clean->GetOutput();
-    }
-    else
-    {
-      outPD = pd;
-    }
 
     outPD->Register(NULL);
     pd->Delete();

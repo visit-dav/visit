@@ -589,30 +589,30 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           break;
     }
 
-    const char *cleanupValue_names = "None, Merge, Before, After";
-    switch (atts->GetCleanupValue())
+    const char *cleanupMethod_names = "NoCleanup, Merge, Before, After";
+    switch (atts->GetCleanupMethod())
     {
-      case IntegralCurveAttributes::None:
-          SNPRINTF(tmpStr, 1000, "%scleanupValue = %sNone  # %s\n", prefix, prefix, cleanupValue_names);
+      case IntegralCurveAttributes::NoCleanup:
+          SNPRINTF(tmpStr, 1000, "%scleanupMethod = %sNoCleanup  # %s\n", prefix, prefix, cleanupMethod_names);
           str += tmpStr;
           break;
       case IntegralCurveAttributes::Merge:
-          SNPRINTF(tmpStr, 1000, "%scleanupValue = %sMerge  # %s\n", prefix, prefix, cleanupValue_names);
+          SNPRINTF(tmpStr, 1000, "%scleanupMethod = %sMerge  # %s\n", prefix, prefix, cleanupMethod_names);
           str += tmpStr;
           break;
       case IntegralCurveAttributes::Before:
-          SNPRINTF(tmpStr, 1000, "%scleanupValue = %sBefore  # %s\n", prefix, prefix, cleanupValue_names);
+          SNPRINTF(tmpStr, 1000, "%scleanupMethod = %sBefore  # %s\n", prefix, prefix, cleanupMethod_names);
           str += tmpStr;
           break;
       case IntegralCurveAttributes::After:
-          SNPRINTF(tmpStr, 1000, "%scleanupValue = %sAfter  # %s\n", prefix, prefix, cleanupValue_names);
+          SNPRINTF(tmpStr, 1000, "%scleanupMethod = %sAfter  # %s\n", prefix, prefix, cleanupMethod_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%svelThreshold = %g\n", prefix, atts->GetVelThreshold());
+    SNPRINTF(tmpStr, 1000, "%scleanupThreshold = %g\n", prefix, atts->GetCleanupThreshold());
     str += tmpStr;
     if(atts->GetCropBeginFlag())
         SNPRINTF(tmpStr, 1000, "%scropBeginFlag = 1\n", prefix);
@@ -2251,7 +2251,7 @@ IntegralCurveAttributes_GetDisplayGeometry(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-IntegralCurveAttributes_SetCleanupValue(PyObject *self, PyObject *args)
+IntegralCurveAttributes_SetCleanupMethod(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
 
@@ -2259,15 +2259,15 @@ IntegralCurveAttributes_SetCleanupValue(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the cleanupValue in the object.
+    // Set the cleanupMethod in the object.
     if(ival >= 0 && ival < 4)
-        obj->data->SetCleanupValue(IntegralCurveAttributes::CleanupValue(ival));
+        obj->data->SetCleanupMethod(IntegralCurveAttributes::CleanupMethod(ival));
     else
     {
-        fprintf(stderr, "An invalid cleanupValue value was given. "
+        fprintf(stderr, "An invalid cleanupMethod value was given. "
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
-                        "None, Merge, Before, After.");
+                        "NoCleanup, Merge, Before, After.");
         return NULL;
     }
 
@@ -2276,15 +2276,15 @@ IntegralCurveAttributes_SetCleanupValue(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-IntegralCurveAttributes_GetCleanupValue(PyObject *self, PyObject *args)
+IntegralCurveAttributes_GetCleanupMethod(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetCleanupValue()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCleanupMethod()));
     return retval;
 }
 
 /*static*/ PyObject *
-IntegralCurveAttributes_SetVelThreshold(PyObject *self, PyObject *args)
+IntegralCurveAttributes_SetCleanupThreshold(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
 
@@ -2292,18 +2292,18 @@ IntegralCurveAttributes_SetVelThreshold(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the velThreshold in the object.
-    obj->data->SetVelThreshold(dval);
+    // Set the cleanupThreshold in the object.
+    obj->data->SetCleanupThreshold(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-IntegralCurveAttributes_GetVelThreshold(PyObject *self, PyObject *args)
+IntegralCurveAttributes_GetCleanupThreshold(PyObject *self, PyObject *args)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetVelThreshold());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetCleanupThreshold());
     return retval;
 }
 
@@ -2995,10 +2995,10 @@ PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH] = {
     {"GetPathlinesCMFE", IntegralCurveAttributes_GetPathlinesCMFE, METH_VARARGS},
     {"SetDisplayGeometry", IntegralCurveAttributes_SetDisplayGeometry, METH_VARARGS},
     {"GetDisplayGeometry", IntegralCurveAttributes_GetDisplayGeometry, METH_VARARGS},
-    {"SetCleanupValue", IntegralCurveAttributes_SetCleanupValue, METH_VARARGS},
-    {"GetCleanupValue", IntegralCurveAttributes_GetCleanupValue, METH_VARARGS},
-    {"SetVelThreshold", IntegralCurveAttributes_SetVelThreshold, METH_VARARGS},
-    {"GetVelThreshold", IntegralCurveAttributes_GetVelThreshold, METH_VARARGS},
+    {"SetCleanupMethod", IntegralCurveAttributes_SetCleanupMethod, METH_VARARGS},
+    {"GetCleanupMethod", IntegralCurveAttributes_GetCleanupMethod, METH_VARARGS},
+    {"SetCleanupThreshold", IntegralCurveAttributes_SetCleanupThreshold, METH_VARARGS},
+    {"GetCleanupThreshold", IntegralCurveAttributes_GetCleanupThreshold, METH_VARARGS},
     {"SetCropBeginFlag", IntegralCurveAttributes_SetCropBeginFlag, METH_VARARGS},
     {"GetCropBeginFlag", IntegralCurveAttributes_GetCropBeginFlag, METH_VARARGS},
     {"SetCropBegin", IntegralCurveAttributes_SetCropBegin, METH_VARARGS},
@@ -3274,10 +3274,10 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Ribbons") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Ribbons));
 
-    if(strcmp(name, "cleanupValue") == 0)
-        return IntegralCurveAttributes_GetCleanupValue(self, NULL);
-    if(strcmp(name, "None") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::None));
+    if(strcmp(name, "cleanupMethod") == 0)
+        return IntegralCurveAttributes_GetCleanupMethod(self, NULL);
+    if(strcmp(name, "NoCleanup") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::NoCleanup));
     if(strcmp(name, "Merge") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Merge));
     if(strcmp(name, "Before") == 0)
@@ -3285,8 +3285,8 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "After") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::After));
 
-    if(strcmp(name, "velThreshold") == 0)
-        return IntegralCurveAttributes_GetVelThreshold(self, NULL);
+    if(strcmp(name, "cleanupThreshold") == 0)
+        return IntegralCurveAttributes_GetCleanupThreshold(self, NULL);
     if(strcmp(name, "cropBeginFlag") == 0)
         return IntegralCurveAttributes_GetCropBeginFlag(self, NULL);
     if(strcmp(name, "cropBegin") == 0)
@@ -3451,10 +3451,10 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IntegralCurveAttributes_SetPathlinesCMFE(self, tuple);
     else if(strcmp(name, "displayGeometry") == 0)
         obj = IntegralCurveAttributes_SetDisplayGeometry(self, tuple);
-    else if(strcmp(name, "cleanupValue") == 0)
-        obj = IntegralCurveAttributes_SetCleanupValue(self, tuple);
-    else if(strcmp(name, "velThreshold") == 0)
-        obj = IntegralCurveAttributes_SetVelThreshold(self, tuple);
+    else if(strcmp(name, "cleanupMethod") == 0)
+        obj = IntegralCurveAttributes_SetCleanupMethod(self, tuple);
+    else if(strcmp(name, "cleanupThreshold") == 0)
+        obj = IntegralCurveAttributes_SetCleanupThreshold(self, tuple);
     else if(strcmp(name, "cropBeginFlag") == 0)
         obj = IntegralCurveAttributes_SetCropBeginFlag(self, tuple);
     else if(strcmp(name, "cropBegin") == 0)

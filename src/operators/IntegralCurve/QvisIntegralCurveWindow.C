@@ -820,20 +820,20 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     // Create the cleanup value.
     cleanupLayout->addWidget(new QLabel(tr("Point cleanup"), cleanupGrp), 0, 0);
 
-    cleanupValueComboBox = new QComboBox(cleanupGrp);
-    cleanupValueComboBox->addItem(tr("Keep all points"));
-    cleanupValueComboBox->addItem(tr("Merge"));
-    cleanupValueComboBox->addItem(tr("Delete points before"));
-    cleanupValueComboBox->addItem(tr("Delete points after "));
-    connect(cleanupValueComboBox, SIGNAL(activated(int)), this, SLOT(cleanupValueChanged(int)));
-    cleanupLayout->addWidget(cleanupValueComboBox, 0, 1);
+    cleanupMethodComboBox = new QComboBox(cleanupGrp);
+    cleanupMethodComboBox->addItem(tr("Keep all points"));
+    cleanupMethodComboBox->addItem(tr("Merge points"));
+    cleanupMethodComboBox->addItem(tr("Delete points before"));
+    cleanupMethodComboBox->addItem(tr("Delete points after "));
+    connect(cleanupMethodComboBox, SIGNAL(activated(int)), this, SLOT(cleanupMethodChanged(int)));
+    cleanupLayout->addWidget(cleanupMethodComboBox, 0, 1);
 
-    velThresholdLabel = new QLabel(tr("Velocity threshold"), cleanupGrp);
-    cleanupLayout->addWidget(velThresholdLabel, 0, 2);
+    cleanupThresholdLabel = new QLabel(tr("Velocity threshold"), cleanupGrp);
+    cleanupLayout->addWidget(cleanupThresholdLabel, 0, 2);
 
-    velThreshold = new QLineEdit(cleanupGrp);
-    connect(velThreshold, SIGNAL(returnPressed()), this, SLOT(velThresholdnProcessText()));
-    cleanupLayout->addWidget(velThreshold, 0, 3);
+    cleanupThreshold = new QLineEdit(cleanupGrp);
+    connect(cleanupThreshold, SIGNAL(returnPressed()), this, SLOT(cleanupThresholdProcessText()));
+    cleanupLayout->addWidget(cleanupThreshold, 0, 3);
     
     // Create the crop group
     QGroupBox *cropGrp = new QGroupBox(pageAppearance);
@@ -1428,18 +1428,24 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             }
             break;
 
-        case IntegralCurveAttributes::ID_cleanupValue:
-            cleanupValueComboBox->blockSignals(true);
-            cleanupValueComboBox->setCurrentIndex(int(atts->GetCleanupValue()));
-            cleanupValueComboBox->blockSignals(false);
+        case IntegralCurveAttributes::ID_cleanupMethod:
+            cleanupMethodComboBox->blockSignals(true);
+            cleanupMethodComboBox->setCurrentIndex(int(atts->GetCleanupMethod()));
+            cleanupMethodComboBox->blockSignals(false);
 
-            velThresholdLabel->setEnabled(atts->GetCleanupValue()>1);
-            velThreshold->setEnabled(atts->GetCleanupValue()>1);
+            cleanupThresholdLabel->setEnabled(atts->GetCleanupMethod() !=
+                                              IntegralCurveAttributes::NoCleanup);
+            cleanupThreshold->setEnabled(atts->GetCleanupMethod() !=
+                                              IntegralCurveAttributes::NoCleanup);
+            if( atts->GetCleanupMethod() == IntegralCurveAttributes::Merge )
+              cleanupThresholdLabel->setText(tr("Spatial threshold"));
+            else
+              cleanupThresholdLabel->setText(tr("Velocity threshold"));
 
             break;
 
-        case IntegralCurveAttributes::ID_velThreshold:
-            velThreshold->setText(DoubleToQString(atts->GetVelThreshold()));
+        case IntegralCurveAttributes::ID_cleanupThreshold:
+            cleanupThreshold->setText(DoubleToQString(atts->GetCleanupThreshold()));
             break;
 
         case IntegralCurveAttributes::ID_cropBeginFlag:
@@ -2322,16 +2328,16 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
         }
     }
     // Do velocity threshold
-    if(which_widget == IntegralCurveAttributes::ID_velThreshold || doAll)
+    if(which_widget == IntegralCurveAttributes::ID_cleanupThreshold || doAll)
     {
         double val;
-        if(LineEditGetDouble(velThreshold, val))
-            atts->SetVelThreshold(val);
+        if(LineEditGetDouble(cleanupThreshold, val))
+            atts->SetCleanupThreshold(val);
         else
         {
             ResettingError(tr("velocity threshold"),
-                DoubleToQString(atts->GetVelThreshold()));
-            atts->SetVelThreshold(atts->GetVelThreshold());
+                DoubleToQString(atts->GetCleanupThreshold()));
+            atts->SetCleanupThreshold(atts->GetCleanupThreshold());
         }
     }
 
@@ -2996,16 +3002,16 @@ QvisIntegralCurveWindow::workGroupSizeChanged(int val)
 }
 
 void
-QvisIntegralCurveWindow::cleanupValueChanged(int val)
+QvisIntegralCurveWindow::cleanupMethodChanged(int val)
 {
-    atts->SetCleanupValue((IntegralCurveAttributes::CleanupValue)val);
+    atts->SetCleanupMethod((IntegralCurveAttributes::CleanupMethod)val);
     Apply();
 }
 
 void
-QvisIntegralCurveWindow::velThresholdProcessText()
+QvisIntegralCurveWindow::cleanupThresholdProcessText()
 {
-    GetCurrentValues(IntegralCurveAttributes::ID_velThreshold);
+    GetCurrentValues(IntegralCurveAttributes::ID_cleanupThreshold);
     Apply();
 }
 

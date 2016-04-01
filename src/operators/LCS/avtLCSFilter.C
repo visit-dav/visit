@@ -1585,6 +1585,10 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
           valArray->SetTuple1(l, eigenval);
           vecArray->SetTuple (l, eigenvec);
         }
+        // For calulating elliptic LCSs which are closed stationary
+        // curves of the averaged strain. Solutions to this
+        // variational problem are the closed orbits of one of
+        // two parametrized vector-field families. 
         else if( eigenComponent == LCSAttributes::PosLambdaShearVector ||
                  eigenComponent == LCSAttributes::NegLambdaShearVector )
         {
@@ -1605,7 +1609,8 @@ void avtLCSFilter::ComputeEigenVectors(vtkDataArray *jacobian[3],
         }
       }
     }
-    else
+    else //if( auxIdx == LCSAttributes::ThreeDim ||
+         //    GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3 )
     {
       for(size_t l = 0; l < nTuples; ++l)
       {
@@ -1776,7 +1781,8 @@ void avtLCSFilter::ComputeLyapunovExponent(vtkDataArray *jacobian[3],
         }
       }
     }
-    else
+    else //if( auxIdx == LCSAttributes::ThreeDim ||
+         //    GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3 )
     {
       for(size_t l = 0; l < nTuples; ++l)
       {
@@ -2029,9 +2035,6 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 std::string
 avtLCSFilter::CreateCacheString(void)
 {
-  const int*    resolution = atts.GetResolution();
-  const double* startPosition = atts.GetStartPosition();
-  const double* endPosition = atts.GetEndPosition();
   const double* velocitySource = atts.GetVelocitySource();
 
   std::ostringstream os;
@@ -2045,21 +2048,11 @@ avtLCSFilter::CreateCacheString(void)
      << cycleCached << "  "
      << timeCached << "  "
 
-     << atts.GetSourceType() << " "
-     << resolution[0] << " "
-     << resolution[1] << " "
-     << resolution[2] << " "
-     << atts.GetUseDataSetStart() << " "
-     << startPosition[0] << " "
-     << startPosition[1] << " "
-     << startPosition[2] << " "
-     << atts.GetUseDataSetEnd() << " "
-     << endPosition[0] << " "
-     << endPosition[1] << " "
-     << endPosition[2] << " "
+     << CreateCacheStringSource()
 
      << atts.GetAuxiliaryGrid() << " "
-     << atts.GetAuxiliaryGridSpacing() << " "
+     << (atts.GetAuxiliaryGrid() ? atts.GetAuxiliaryGridSpacing() : 0) << " "
+    
      << atts.GetIntegrationDirection() << " "
 
      << atts.GetFieldType() << " "
@@ -2085,12 +2078,16 @@ avtLCSFilter::CreateCacheString(void)
      << atts.GetClampLogValues() << " "
 
      << atts.GetTerminationType() << " "
-     << atts.GetTerminateBySize() << " "
-     << atts.GetTermSize() << " "
-     << atts.GetTerminateByDistance() << " "
-     << atts.GetTermDistance() << " "
+
      << atts.GetTerminateByTime() << " "
-     << atts.GetTermTime() << " "
+     << (atts.GetTerminateByTime() ? atts.GetTermTime() : 0) << " "
+
+     << atts.GetTerminateByDistance() << " "
+     << (atts.GetTerminateByDistance() ? atts.GetTermDistance() : 0) << " "
+
+     << atts.GetTerminateBySize() << " "
+     << (atts.GetTerminateBySize() ? atts.GetTermSize() : 0) << " "
+
      << atts.GetMaxSteps() << " "
 
      << atts.GetThresholdLimit() << " "
@@ -2119,6 +2116,56 @@ avtLCSFilter::CreateCacheString(void)
   return os.str();
 }
 
+std::string
+avtLCSFilter::CreateCacheStringSource(void)
+{
+  const int*    resolution = atts.GetResolution();
+  const double* startPosition = atts.GetStartPosition();
+  const double* endPosition = atts.GetEndPosition();
+
+  std::ostringstream os;
+
+  os << atts.GetSourceType() << " ";
+  
+  if( atts.GetSourceType() == LCSAttributes::NativeMesh )
+  {
+    os << 0 << " " << 0 << " " << 0 << " "
+       << 0 << " " << 0 << " " << 0 << " " << 0 << " "
+       << 0 << " " << 0 << " " << 0 << " " << 0 << " ";
+  }
+  else //if( atts.GetSourceType() == LCSAttributes::RegularGrid )
+  {
+    os << resolution[0] << " " << resolution[1] << " " << resolution[2] << " ";
+
+    os << atts.GetUseDataSetStart() << " ";
+
+    if( atts.GetUseDataSetStart() ) // Subset start
+    {
+      os << startPosition[0] << " "
+         << startPosition[1] << " "
+         << startPosition[2] << " ";
+    }
+    else // Full
+    {
+      os << 0 << " " << 0 << " " << 0 << " ";
+    }
+
+    os << atts.GetUseDataSetEnd() << " ";
+         
+    if( atts.GetUseDataSetEnd() ) // Subset end
+    {
+      os << endPosition[0] << " "
+         << endPosition[1] << " "
+         << endPosition[2] << " ";
+    }
+    else // Full
+    {
+      os << 0 << " " << 0 << " " << 0 << " ";
+    }
+  }
+  
+  return os.str();
+}
 
 // ****************************************************************************
 //  Method: avtLCSFilter::GetCachedDataSet
