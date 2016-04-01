@@ -39,8 +39,8 @@
         Difference
         Variable
       </Enum>
-      <Enum name="CleanupValue">
-        None
+      <Enum name="CleanupMethod">
+        NoCleanup
         Merge
         Before
         After
@@ -256,11 +256,11 @@
       <Field name="displayGeometry" label="Display geometry" type="enum" subtype="DisplayGeometry">
         Lines
       </Field>
-      <Field name="cleanupValue" label="Clean up value" type="enum" subtype="CleanupValue">
-        None
+      <Field name="cleanupMethod" label="Clean up method" type="enum" subtype="CleanupMethod">
+        NoCleanup
       </Field>
-      <Field name="velThreshold" label="Velocity Threshold" type="double">
-        0.001000
+      <Field name="cleanupThreshold" label="Cleanup Threshold" type="double">
+        1.0e-8
       </Field>
       <Field name="cropBeginFlag" label="Crop from" type="bool">
         false

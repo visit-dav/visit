@@ -86,9 +86,9 @@ public:
         Difference,
         Variable
     };
-    enum CleanupValue
+    enum CleanupMethod
     {
-        None,
+        NoCleanup,
         Merge,
         Before,
         After
@@ -236,8 +236,8 @@ public:
     void SetPathlinesPeriod(double pathlinesPeriod_);
     void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
     void SetDisplayGeometry(DisplayGeometry displayGeometry_);
-    void SetCleanupValue(CleanupValue cleanupValue_);
-    void SetVelThreshold(double velThreshold_);
+    void SetCleanupMethod(CleanupMethod cleanupMethod_);
+    void SetCleanupThreshold(double cleanupThreshold_);
     void SetCropBeginFlag(bool cropBeginFlag_);
     void SetCropBegin(double cropBegin_);
     void SetCropEndFlag(bool cropEndFlag_);
@@ -321,8 +321,8 @@ public:
     double             GetPathlinesPeriod() const;
     PathlinesCMFE      GetPathlinesCMFE() const;
     DisplayGeometry    GetDisplayGeometry() const;
-    CleanupValue       GetCleanupValue() const;
-    double             GetVelThreshold() const;
+    CleanupMethod      GetCleanupMethod() const;
+    double             GetCleanupThreshold() const;
     bool               GetCropBeginFlag() const;
     double             GetCropBegin() const;
     bool               GetCropEndFlag() const;
@@ -364,10 +364,10 @@ public:
 protected:
     static std::string DataValue_ToString(int);
 public:
-    static std::string CleanupValue_ToString(CleanupValue);
-    static bool CleanupValue_FromString(const std::string &, CleanupValue &);
+    static std::string CleanupMethod_ToString(CleanupMethod);
+    static bool CleanupMethod_FromString(const std::string &, CleanupMethod &);
 protected:
-    static std::string CleanupValue_ToString(int);
+    static std::string CleanupMethod_ToString(int);
 public:
     static std::string CropValue_ToString(CropValue);
     static bool CropValue_FromString(const std::string &, CropValue &);
@@ -467,8 +467,8 @@ public:
         ID_pathlinesPeriod,
         ID_pathlinesCMFE,
         ID_displayGeometry,
-        ID_cleanupValue,
-        ID_velThreshold,
+        ID_cleanupMethod,
+        ID_cleanupThreshold,
         ID_cropBeginFlag,
         ID_cropBegin,
         ID_cropEndFlag,
@@ -542,8 +542,8 @@ private:
     double       pathlinesPeriod;
     int          pathlinesCMFE;
     int          displayGeometry;
-    int          cleanupValue;
-    double       velThreshold;
+    int          cleanupMethod;
+    double       cleanupThreshold;
     bool         cropBeginFlag;
     double       cropBegin;
     bool         cropEndFlag;

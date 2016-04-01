@@ -86,10 +86,10 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public final static int DATAVALUE_DIFFERENCE = 9;
     public final static int DATAVALUE_VARIABLE = 10;
 
-    public final static int CLEANUPVALUE_NONE = 0;
-    public final static int CLEANUPVALUE_MERGE = 1;
-    public final static int CLEANUPVALUE_BEFORE = 2;
-    public final static int CLEANUPVALUE_AFTER = 3;
+    public final static int CLEANUPMETHOD_NOCLEANUP = 0;
+    public final static int CLEANUPMETHOD_MERGE = 1;
+    public final static int CLEANUPMETHOD_BEFORE = 2;
+    public final static int CLEANUPMETHOD_AFTER = 3;
 
     public final static int CROPVALUE_DISTANCE = 0;
     public final static int CROPVALUE_TIME = 1;
@@ -221,8 +221,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         pathlinesPeriod = 0;
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
         displayGeometry = DISPLAYGEOMETRY_LINES;
-        cleanupValue = CLEANUPVALUE_NONE;
-        velThreshold = 0.001;
+        cleanupMethod = CLEANUPMETHOD_NOCLEANUP;
+        cleanupThreshold = 1e-08;
         cropBeginFlag = false;
         cropBegin = 0;
         cropEndFlag = false;
@@ -337,8 +337,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         pathlinesPeriod = 0;
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
         displayGeometry = DISPLAYGEOMETRY_LINES;
-        cleanupValue = CLEANUPVALUE_NONE;
-        velThreshold = 0.001;
+        cleanupMethod = CLEANUPMETHOD_NOCLEANUP;
+        cleanupThreshold = 1e-08;
         cropBeginFlag = false;
         cropBegin = 0;
         cropEndFlag = false;
@@ -463,8 +463,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         pathlinesPeriod = obj.pathlinesPeriod;
         pathlinesCMFE = obj.pathlinesCMFE;
         displayGeometry = obj.displayGeometry;
-        cleanupValue = obj.cleanupValue;
-        velThreshold = obj.velThreshold;
+        cleanupMethod = obj.cleanupMethod;
+        cleanupThreshold = obj.cleanupThreshold;
         cropBeginFlag = obj.cropBeginFlag;
         cropBegin = obj.cropBegin;
         cropEndFlag = obj.cropEndFlag;
@@ -616,8 +616,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
                 (pathlinesPeriod == obj.pathlinesPeriod) &&
                 (pathlinesCMFE == obj.pathlinesCMFE) &&
                 (displayGeometry == obj.displayGeometry) &&
-                (cleanupValue == obj.cleanupValue) &&
-                (velThreshold == obj.velThreshold) &&
+                (cleanupMethod == obj.cleanupMethod) &&
+                (cleanupThreshold == obj.cleanupThreshold) &&
                 (cropBeginFlag == obj.cropBeginFlag) &&
                 (cropBegin == obj.cropBegin) &&
                 (cropEndFlag == obj.cropEndFlag) &&
@@ -999,15 +999,15 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         Select(44);
     }
 
-    public void SetCleanupValue(int cleanupValue_)
+    public void SetCleanupMethod(int cleanupMethod_)
     {
-        cleanupValue = cleanupValue_;
+        cleanupMethod = cleanupMethod_;
         Select(45);
     }
 
-    public void SetVelThreshold(double velThreshold_)
+    public void SetCleanupThreshold(double cleanupThreshold_)
     {
-        velThreshold = velThreshold_;
+        cleanupThreshold = cleanupThreshold_;
         Select(46);
     }
 
@@ -1201,8 +1201,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public double   GetPathlinesPeriod() { return pathlinesPeriod; }
     public int      GetPathlinesCMFE() { return pathlinesCMFE; }
     public int      GetDisplayGeometry() { return displayGeometry; }
-    public int      GetCleanupValue() { return cleanupValue; }
-    public double   GetVelThreshold() { return velThreshold; }
+    public int      GetCleanupMethod() { return cleanupMethod; }
+    public double   GetCleanupThreshold() { return cleanupThreshold; }
     public boolean  GetCropBeginFlag() { return cropBeginFlag; }
     public double   GetCropBegin() { return cropBegin; }
     public boolean  GetCropEndFlag() { return cropEndFlag; }
@@ -1322,9 +1322,9 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(44, buf))
             buf.WriteInt(displayGeometry);
         if(WriteSelect(45, buf))
-            buf.WriteInt(cleanupValue);
+            buf.WriteInt(cleanupMethod);
         if(WriteSelect(46, buf))
-            buf.WriteDouble(velThreshold);
+            buf.WriteDouble(cleanupThreshold);
         if(WriteSelect(47, buf))
             buf.WriteBool(cropBeginFlag);
         if(WriteSelect(48, buf))
@@ -1515,10 +1515,10 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             SetDisplayGeometry(buf.ReadInt());
             break;
         case 45:
-            SetCleanupValue(buf.ReadInt());
+            SetCleanupMethod(buf.ReadInt());
             break;
         case 46:
-            SetVelThreshold(buf.ReadDouble());
+            SetCleanupThreshold(buf.ReadDouble());
             break;
         case 47:
             SetCropBeginFlag(buf.ReadBool());
@@ -1752,17 +1752,17 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         if(displayGeometry == DISPLAYGEOMETRY_RIBBONS)
             str = str + "DISPLAYGEOMETRY_RIBBONS";
         str = str + "\n";
-        str = str + indent + "cleanupValue = ";
-        if(cleanupValue == CLEANUPVALUE_NONE)
-            str = str + "CLEANUPVALUE_NONE";
-        if(cleanupValue == CLEANUPVALUE_MERGE)
-            str = str + "CLEANUPVALUE_MERGE";
-        if(cleanupValue == CLEANUPVALUE_BEFORE)
-            str = str + "CLEANUPVALUE_BEFORE";
-        if(cleanupValue == CLEANUPVALUE_AFTER)
-            str = str + "CLEANUPVALUE_AFTER";
+        str = str + indent + "cleanupMethod = ";
+        if(cleanupMethod == CLEANUPMETHOD_NOCLEANUP)
+            str = str + "CLEANUPMETHOD_NOCLEANUP";
+        if(cleanupMethod == CLEANUPMETHOD_MERGE)
+            str = str + "CLEANUPMETHOD_MERGE";
+        if(cleanupMethod == CLEANUPMETHOD_BEFORE)
+            str = str + "CLEANUPMETHOD_BEFORE";
+        if(cleanupMethod == CLEANUPMETHOD_AFTER)
+            str = str + "CLEANUPMETHOD_AFTER";
         str = str + "\n";
-        str = str + doubleToString("velThreshold", velThreshold, indent) + "\n";
+        str = str + doubleToString("cleanupThreshold", cleanupThreshold, indent) + "\n";
         str = str + boolToString("cropBeginFlag", cropBeginFlag, indent) + "\n";
         str = str + doubleToString("cropBegin", cropBegin, indent) + "\n";
         str = str + boolToString("cropEndFlag", cropEndFlag, indent) + "\n";
@@ -1849,8 +1849,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     private double   pathlinesPeriod;
     private int      pathlinesCMFE;
     private int      displayGeometry;
-    private int      cleanupValue;
-    private double   velThreshold;
+    private int      cleanupMethod;
+    private double   cleanupThreshold;
     private boolean  cropBeginFlag;
     private double   cropBegin;
     private boolean  cropEndFlag;

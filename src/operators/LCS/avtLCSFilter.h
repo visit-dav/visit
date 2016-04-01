@@ -214,6 +214,7 @@ protected:
 
     // Additional methods
     std::string   CreateCacheString(void);
+    std::string   CreateCacheStringSource(void);
     avtDataTree_p GetCachedDataSet();
     avtDataTree_p GetCachedResampledDataSet();
     avtDataTree_p GetCachedNativeDataSet(avtDataTree_p);

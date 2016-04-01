@@ -85,6 +85,7 @@ class LCSGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual LC
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
+    virtual const char **XPMIconData() const;
 };
 
 class LCSViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual LCSCommonPluginInfo
@@ -113,6 +114,7 @@ class LCSViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo,
 class LCSViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual LCSViewerEnginePluginInfo
 {
   public:
+    virtual const char **XPMIconData() const;
 };
 
 class LCSEnginePluginInfo : public virtual EngineOperatorPluginInfo, public virtual LCSViewerEnginePluginInfo

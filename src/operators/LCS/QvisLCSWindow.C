@@ -1157,9 +1157,9 @@ QvisLCSWindow::UpdateWindow(bool doAll)
             terminationTypeButtonGroup->button(atts->GetTerminationType())->setChecked(true);
             terminationTypeButtonGroup->blockSignals(false);
 
-            maxTime->setEnabled(atts->GetTerminationType()==0);
-            maxDistance->setEnabled(atts->GetTerminationType()==1);
-            maxSize->setEnabled(atts->GetTerminationType()==2);
+            maxTime->setEnabled(atts->GetTerminationType() == LCSAttributes::Time);
+            maxDistance->setEnabled(atts->GetTerminationType() == LCSAttributes::Distance);
+            maxSize->setEnabled(atts->GetTerminationType() == LCSAttributes::Size);
             break;
         case LCSAttributes::ID_termSize:
             maxSize->setText(DoubleToQString(atts->GetTermSize()));
