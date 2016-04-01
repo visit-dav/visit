@@ -139,6 +139,9 @@ if(NOT VISIT_QT_SKIP_INSTALL)
           string(REPLACE ".${Qt5Core_VERSION}" ""
                  qtlib_location ${qtlib_location})
       endif()
+      if (APPLE)
+          string(CONCAT qtlib_location ${qtlib_location} ".la")                 
+      endif()      
       THIRD_PARTY_INSTALL_LIBRARY(${qtlib_location})
   endforeach()
 
