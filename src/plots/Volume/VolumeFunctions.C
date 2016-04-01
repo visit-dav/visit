@@ -924,7 +924,7 @@ Unnormalized_Kernel_Gradient(int dim, double r, double *r12, double h,
     double s = 0;
     double temp = 0;
 
-    s = abs(r/h);
+    s = fabs(r/h);
 // NORMALIZATION IS SET FOR 1-DIMENSION
     if( (s>0.0) && (s<=1.0) )
     {
