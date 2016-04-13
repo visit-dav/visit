@@ -2073,6 +2073,11 @@ avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
 //
 //    Mark C. Miller, Wed May  6 13:51:30 PDT 2009
 //    Fix md for the mesh if we indeed add VERTEX cells.
+//
+//    Kathleen Biagas, Tue Apr 12 16:58:47 PDT 2016
+//    Removed examination of cell/pt data arrays, as the restriction prevents
+//    creation of Vertex Cells for Mesh plots.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2089,31 +2094,6 @@ avtTransformManager::AddVertexCellsToPointsOnlyDataset(avtDatabaseMetaData *md,
         return ds; // no-op
 
     if (ds->GetNumberOfCells() != 0)
-        return ds; // no-op
-
-    if ((ds->GetCellData() == 0 || ds->GetCellData()->GetNumberOfArrays() == 0) &&
-        (ds->GetPointData() == 0 || ds->GetPointData()->GetNumberOfArrays() == 0))
-        return ds; // no-op
-
-    bool hasEmptyCellDataArrays = true;
-    for (i = 0; i < ds->GetCellData()->GetNumberOfArrays(); i++)
-    {
-        if (ds->GetCellData()->GetArray(i)->GetNumberOfTuples() == ds->GetNumberOfPoints())
-        {
-            hasEmptyCellDataArrays = false;
-            break;
-        }
-    }
-    bool hasEmptyPointDataArrays = true;
-    for (i = 0; i < ds->GetPointData()->GetNumberOfArrays(); i++)
-    {
-        if (ds->GetPointData()->GetArray(i)->GetNumberOfTuples() == ds->GetNumberOfPoints())
-        {
-            hasEmptyPointDataArrays = false;
-            break;
-        }
-    }
-    if (hasEmptyCellDataArrays && hasEmptyPointDataArrays)
         return ds; // no-op
 
     // Ok, really look this object up via reverse lookup
