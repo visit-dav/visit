@@ -70,26 +70,26 @@
 //    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001
 //    Initialize atts, set the title for the legend.
 //
-//    Kathleen Bonnell, Tue Apr 24 12:22:01 PDT 2001 
+//    Kathleen Bonnell, Tue Apr 24 12:22:01 PDT 2001
 //    Initialize filter.
-// 
-//    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002 
+//
+//    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002
 //    Removed previousMode.
-// 
+//
 //    Hank Childs, Sun Jun 23 12:22:58 PDT 2002
 //    Initialize glyphPoints.
 //
 //    Eric Brugger, Wed Jul 16 11:09:02 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
-//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004 
-//    Replaced varMapper and glyphPoints with glyphMapper. 
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    Replaced varMapper and glyphPoints with glyphMapper.
 //
-//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004 
+//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004
 //    Added pcfilter.
 //
 //    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
-//    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper. 
+//    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper.
 //
 //    Hank Childs, Tue Nov 18 11:58:46 PST 2008
 //    Remove the "NoOp" filter, which was almost certainly checked in by
@@ -121,7 +121,7 @@ avtPseudocolorPlot::avtPseudocolorPlot()
     //
     // This is to allow the legend to reference counted so the behavior can
     // still access it after the plot is deleted.  The legend cannot be
-    // reference counted all of the time since we need to know that it is a 
+    // reference counted all of the time since we need to know that it is a
     // VariableLegend.
     //
     varLegendRefPtr = varLegend;
@@ -136,17 +136,17 @@ avtPseudocolorPlot::avtPseudocolorPlot()
 //
 //  Modifications:
 //
-//    Kathleen Bonnell, Tue Apr 24 12:22:01 PDT 2001 
+//    Kathleen Bonnell, Tue Apr 24 12:22:01 PDT 2001
 //    Destruct filter.
-// 
+//
 //    Hank Childs, Sun Jun 23 12:22:58 PDT 2002
 //    Destruct glyphPoints.
 //
-//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004 
-//    No longer using glyphPoints, replaced varMapper with glyphMapepr.
+//    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
+//    No longer using glyphPoints, replaced varMapper with glyphMapper.
 //
-//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004 
-//    Added pcfilter. 
+//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004
+//    Added pcfilter.
 //
 // ****************************************************************************
 
@@ -263,20 +263,20 @@ avtPseudocolorPlot::GetMapper(void)
 //    Only use shift-centering filter if needed, fix potential
 //    memory leak.
 //
-//    Kathleen Bonnell, Tue Oct 22 08:41:29 PDT 2002  
-//    Moved the glyph filter to ApplyRenderingTransformtion, so that the 
+//    Kathleen Bonnell, Tue Oct 22 08:41:29 PDT 2002
+//    Moved the glyph filter to ApplyRenderingTransformtion, so that the
 //    output of this method (used as query input), would still have topo dim
-//    of 0 for point meshes, and thus be possibly unquery-able. 
+//    of 0 for point meshes, and thus be possibly unquery-able.
 //
 //    Hank Childs, Wed Feb 25 15:48:23 PST 2004
 //    Do not consider the centering of the current dataset if we are asked to
 //    shift the centering.
 //
-//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004 
+//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004
 //    Added pcfilter for point meshes.
 //
 //    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
-//    Added pcfilter->SetPlotAtts. 
+//    Added pcfilter->SetPlotAtts.
 //
 //    Cyrus Harrison, Fri Mar  7 11:37:07 PST 2008
 //    Moved recentering code to the ApplyRenderingTransormation so centering
@@ -287,7 +287,7 @@ avtPseudocolorPlot::GetMapper(void)
 avtDataObject_p
 avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 {
-    avtDataObject_p dob = input; 
+    avtDataObject_p dob = input;
 
     if (staggeringFilter != NULL) {
       delete staggeringFilter;
@@ -296,7 +296,7 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
     staggeringFilter = new avtStaggeringFilter();
     staggeringFilter->SetInput(dob);
     dob = staggeringFilter->GetOutput();
-  
+
     if (input->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         if (pcfilter != NULL)
@@ -316,17 +316,17 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 //  Method: avtPseudocolorPlot::ApplyRenderingTransormation
 //
 //  Purpose:
-//      Applies the rendering transformation associated with a pseudo color 
-//      plot.  Namely, a glyph filter for point meshes. 
+//      Applies the rendering transformation associated with a pseudo color
+//      plot.  Namely, a glyph filter for point meshes.
 //
 //  Arguments:
 //      input   The input data object.
 //
-//  Returns:    The data object after the glyph points has (possibly) 
+//  Returns:    The data object after the glyph points has (possibly)
 //              been applied.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 22, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 22, 2002
 //
 //  Modifications:
 //
@@ -337,8 +337,8 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 //    Added support for different types of point glyphs.
 //
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
-//    Removed glyph filter (replaced by glyphMapper).  Record topological 
-//    dimension for use by EhanceSpecification. 
+//    Removed glyph filter (replaced by glyphMapper).  Record topological
+//    dimension for use by EhanceSpecification.
 //
 //    Cyrus Harrison, Fri Mar  7 11:37:07 PST 2008
 //    Added recentering code previously in ApplyOperators so centering
@@ -353,7 +353,7 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 avtDataObject_p
 avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
-    avtDataObject_p dob = input; 
+    avtDataObject_p dob = input;
     topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
 
     if ((atts.GetCentering() == PseudocolorAttributes::Nodal) ||
@@ -395,33 +395,33 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Hank Childs, Mon Mar 12 16:59:34 PST 2001
 //    Add shift factor.
 //
-//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001 
-//    Add error checking for Log scale, added calls to retrieve the 
+//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001
+//    Add error checking for Log scale, added calls to retrieve the
 //    variable's range and set it in the legend. (Controls display of
 //    limit text, even if artificial limits have been set.)
 //
-//    Kathleen Bonnell, Thu Apr  5 11:29:33 PDT 2001 
-//    Set render order when opacity < 1. 
-//    
-//    Kathleen Bonnell, Wed Apr 25 14:28:22 PDT 2001 
-//    Reflect change in InvalidLimitsException signature. 
-//    
+//    Kathleen Bonnell, Thu Apr  5 11:29:33 PDT 2001
+//    Set render order when opacity < 1.
+//
+//    Kathleen Bonnell, Wed Apr 25 14:28:22 PDT 2001
+//    Reflect change in InvalidLimitsException signature.
+//
 //    Jeremy Meredith, Tue Jun  5 20:45:02 PDT 2001
 //    Allow storage of attributes as a class member.
 //
-//    Kathleen Bonnell, Thu Aug 30 16:45:39 PDT 2001 
+//    Kathleen Bonnell, Thu Aug 30 16:45:39 PDT 2001
 //    Use avtLUT to set the legend's lut.  Added call to SetScaling
 //    before throwing exception.
 //
 //    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002
 //    Move code that sets legend range to new method.
 //
-//    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003 
-//    Set AntialiasedRenderOrder. 
+//    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003
+//    Set AntialiasedRenderOrder.
 //
-//    Kathleen Bonnell, Wed Apr 28 17:37:47 PDT 2004 
-//    Chagned 'SetLegendRanges' to 'SetLimitsMode', as the legend ranges are
-//    dependent upon values set in SetLimitsMode. 
+//    Kathleen Bonnell, Wed Apr 28 17:37:47 PDT 2004
+//    Changed 'SetLegendRanges' to 'SetLimitsMode', as the legend ranges are
+//    dependent upon values set in SetLimitsMode.
 //
 //    Jeremy Meredith, Fri Feb 20 15:09:22 EST 2009
 //    Added support for using per-color alpha values from a color table
@@ -463,8 +463,8 @@ avtPseudocolorPlot::CustomizeBehavior()
 //
 //  Purpose:
 //      Tells the compositer that it needs zbuffer info to composite correctly,
-//      in the case that the pseudocolor plot is bleeding over the domain 
-//      boundary, which means it can spill into other processor's portion of 
+//      in the case that the pseudocolor plot is bleeding over the domain
+//      boundary, which means it can spill into other processor's portion of
 //      image space.
 //
 //  Programmer: Hank Childs
@@ -503,7 +503,7 @@ avtPseudocolorPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    Jeremy Meredith, Fri Mar  2 13:10:02 PST 2001
 //    Made this method take a generic AttributeGroup since it is now virtual.
 //
-//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001 
+//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001
 //    Made atts a member. Added call to SetScaling method.
 //
 //    Jeremy Meredith, Tue Jun  5 20:33:13 PDT 2001
@@ -516,20 +516,20 @@ avtPseudocolorPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    Jeremy Meredith, Thu Aug 23 14:11:40 PDT 2001
 //    Made it use the color table name "Default" instead of the boolean flag.
 //
-//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001 
-//    Moved Min/Max code to new method SetLimitsMode. 
+//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
+//    Moved Min/Max code to new method SetLimitsMode.
 //
-//    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002 
-//    varLegends requires SetScaling come before SetLimitsMode. 
+//    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002
+//    varLegends requires SetScaling come before SetLimitsMode.
 //
-//    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002 
+//    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002
 //    Removed previousMode.
-// 
+//
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Replaced varMapper with glyphMapper. Added glyphMapper specific code.
 //
-//    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
-//    Replaced glyphMapper methods with new names. 
+//    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
+//    Replaced glyphMapper methods with new names.
 //
 //    Brad Whitlock, Wed Jul 20 13:26:13 PST 2005
 //    I made the pointSize in the atts be used for to set the point size for
@@ -591,49 +591,49 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
     glyphMapper->SetScale(atts.GetPointSize());
 
-    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
+    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME
     if( atts.GetOpacityType() == PseudocolorAttributes::VariableRange &&
         atts.GetOpacityVariable() != "" &&
         atts.GetOpacityVariable() != "\0")
-    {   
+    {
       // glyphMapper->SetVariableOpacity(atts.GetOpacity());
       // if( atts.GetOpacityVarMinFlag() )
       //     glyphMapper->SetVariableMinOpacity(atts.GetOpacityVarMin());
       // if( atts.GetOpacityVarMaxFlag() )
       //     glyphMapper->SetVariableMaxOpacity(atts.GetOpacityVarMax());
         if (atts.GetOpacityVariable() == "default")
-        { 
+        {
 //            if (varname != NULL)
 //                glyphMapper->ScaleOpacityByVar(varname);
-        } 
+        }
         else
-        { 
+        {
 //            glyphMapper->ScaleOpacityByVar(atts.GetOpacityVariable());
-        } 
+        }
     }
-    else 
+    else
     {
 //        glyphMapper->OpacityScalingOff();
     }
 
-    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME 
+    // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME
     if( //(topoDim == 1 || (topoDim > 1 && atts.GetRenderWireframe())) &&
-        atts.GetLineType() == PseudocolorAttributes::Tube && 
+        atts.GetLineType() == PseudocolorAttributes::Tube &&
         atts.GetVaryTubeRadius() == true  &&
         atts.GetVaryTubeRadiusVariable() != "" &&
         atts.GetVaryTubeRadiusVariable() != "\0" )
     {
         if (atts.GetVaryTubeRadiusVariable() == "default")
-        { 
+        {
 //            if (varname != NULL)
 //                glyphMapper->ScaleTubesByVar(varname);
-        } 
+        }
         else
-        { 
+        {
 //            glyphMapper->ScaleTubesByVar(atts.GetVaryTubeRadiusVariable());
-        } 
+        }
     }
-    else 
+    else
     {
 //        glyphMapper->TubeScalingOff();
     }
@@ -646,16 +646,16 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
         atts.GetPointSizeVar() != "\0" )
     {
         if (atts.GetPointSizeVar() == "default")
-        { 
+        {
             if (varname != NULL)
                 glyphMapper->ScaleByVar(varname);
         }
         else
-        { 
+        {
             glyphMapper->ScaleByVar(atts.GetPointSizeVar());
-        } 
+        }
     }
-    else 
+    else
     {
         glyphMapper->DataScalingOff();
     }
@@ -715,7 +715,7 @@ avtPseudocolorPlot::GetDataExtents(std::vector<double> &extents)
 // ****************************************************************************
 // Method: avtPseudocolorPlot::SetColorTable
 //
-// Purpose: 
+// Purpose:
 //   Sets the plot's color table if the color table is the same as that of
 //   the plot or we are using the default color table for the plot.
 //
@@ -733,12 +733,12 @@ avtPseudocolorPlot::GetDataExtents(std::vector<double> &extents)
 //    Made it use the color table name "Default" instead of the boolean flag.
 //
 //    Kathleen Bonnell, Thu Aug 30 16:10:15 PDT 2001 
-//    Main functionality now resides in avtLookupTable::SetColorTable. 
+//    Main functionality now resides in avtLookupTable::SetColorTable.
 //
-//    Kathleen Bonnell, Fri Aug 31 15:21:45 PDT 2001 
+//    Kathleen Bonnell, Fri Aug 31 15:21:45 PDT 2001
 //    Added logic (that existed here before I moved functionality to
 //    avtLookupTable) to ensure that changes to active color in color table
-//    window will have effect if this plot's color table is "Default". 
+//    window will have effect if this plot's color table is "Default".
 //
 //    Jeremy Meredith, Fri Feb 20 15:09:22 EST 2009
 //    Added support for using per-color alpha values from a color table
@@ -752,6 +752,12 @@ avtPseudocolorPlot::GetDataExtents(std::vector<double> &extents)
 //    Eric Brugger, Mon Dec 29 13:46:32 PST 2014
 //    I added a call to SetScaling so that setting the color table would
 //    set the color tables in the legend and mapper.
+//
+//    Kathleen Biagas, Wed Apr 13 17:51:22 MST 2016
+//    Use DefaultContinuousColorTable name in call to avtLUT->SetColorTable
+//    when this atts ColorTableName is Default.
+//    Added call to InvalidateTransparencyCache when this plot is utilizing
+//    colortable opacity and the colortable opaqueness changed.
 //
 // ****************************************************************************
 
@@ -780,17 +786,26 @@ avtPseudocolorPlot::SetColorTable(const char *ctName)
                    (oldColorTableIsFullyOpaque != colorTableIsFullyOpaque));
 
     if (atts.GetColorTableName() == "Default")
-        retval |= avtLUT->SetColorTable(NULL, namesMatch,
-                                        useOpacities, 
-                                        atts.GetInvertColorTable(),
-                                        rampOpacity );
+        retval |= avtLUT->SetColorTable(
+           avtColorTables::Instance()->GetDefaultContinuousColorTable().c_str(),
+           true, /* Yes, this default ct name is valid */
+           useOpacities,
+           atts.GetInvertColorTable(),
+           rampOpacity );
     else
-        retval |= avtLUT->SetColorTable(ctName, namesMatch,
-                                        useOpacities, 
-                                        atts.GetInvertColorTable(),
-                                        rampOpacity ); 
+        retval |= avtLUT->SetColorTable(
+           ctName,
+           namesMatch,
+           useOpacities,
+           atts.GetInvertColorTable(),
+           rampOpacity );
 
     SetScaling(atts.GetScaling(), atts.GetSkewFactor());
+
+    // Invalidate transparencies if ct opaqueness changed and this plot
+    // is using the ct's opacities.
+    if (useOpacities && (oldColorTableIsFullyOpaque != colorTableIsFullyOpaque))
+        glyphMapper->InvalidateTransparencyCache();
 
     return retval;
 }
@@ -827,22 +842,22 @@ avtPseudocolorPlot::SetLegend(bool legendOn)
 //  Method: avtPseudocolorPlot::SetScaling
 //
 //  Purpose:
-//    Set up mapper and legend to perform needed scaling 
+//    Set up mapper and legend to perform needed scaling
 //
 //  Arguments:
 //    mode   Which scaling mode to use: 0 = Linear, 1 = Log, 2 = Skew
 //    skew   The skew factor to use in the case of skew mode.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 30, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 30, 2001
 //
 //  Modifications:
 //
 //    Kathleen Bonnell, Thu Aug 30 14:35:32 PDT 2001
 //    Set mapper's lut via one retrieved from avtLUT.
 //
-//    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002    
-//    Set legend's lut and scaling. 
+//    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002
+//    Set legend's lut and scaling.
 //
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Replaced varMapper with glyphMapper.
@@ -864,7 +879,7 @@ avtPseudocolorPlot::SetScaling(int mode, double skew)
        avtLUT->SetSkewFactor(skew);
        glyphMapper->SetLookupTable(avtLUT->GetSkewLookupTable());
     }
-    else 
+    else
     {
        glyphMapper->SetLookupTable(avtLUT->GetLookupTable());
     }
@@ -925,17 +940,17 @@ avtPseudocolorPlot::SetLighting(bool lightingOn)
 //    Made it use the generated name for the user-specified limits mode.
 //
 //    Kathleen Bonnell, Tue Dec 18 08:58:09 PST 2001
-//    Added code to set the legend range from the mapper's range. 
+//    Added code to set the legend range from the mapper's range.
 //
-//    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002    
-//    Use new method to set legend range. 
+//    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002
+//    Use new method to set legend range.
 //
-//    Kathleen Bonnell, Thu Mar 28 08:21:21 PST 2002 
-//    Handle cases where min > max. 
+//    Kathleen Bonnell, Thu Mar 28 08:21:21 PST 2002
+//    Handle cases where min > max.
 //
-//    Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002  
-//    Always allow user to specify Min/Max. 
-// 
+//    Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002
+//    Always allow user to specify Min/Max.
+//
 //    Eric Brugger, Thu Mar 25 17:12:04 PST 2004
 //    I added code to use the data extents from the base class if set.
 //
@@ -955,7 +970,7 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
 
     double userMin = atts.GetMinFlag() ? atts.GetMin() : min;
     double userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
-      
+
     if (dataExtents.size() == 2)
     {
         glyphMapper->SetMin(dataExtents[0]);
@@ -965,7 +980,7 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
     {
         if (userMin >= userMax)
         {
-            EXCEPTION1(InvalidLimitsException, false); 
+            EXCEPTION1(InvalidLimitsException, false);
         }
         else
         {
@@ -1021,8 +1036,8 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
 //  Creation:   December 28, 2000
 //
 //  Modifications:
-//    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003 
-//    Set AntialiasedRenderOrder. 
+//    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003
+//    Set AntialiasedRenderOrder.
 //
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Replaced varMapper with glyphMapper.
@@ -1042,7 +1057,7 @@ avtPseudocolorPlot::SetOpacityFromAtts()
 {
     double realOpacity = 1.0;
 
-    if( atts.GetOpacityType() == PseudocolorAttributes::FullyOpaque ) 
+    if( atts.GetOpacityType() == PseudocolorAttributes::FullyOpaque )
       realOpacity = 1.0;
     else if (atts.GetOpacityType() == PseudocolorAttributes::ColorTable )
     {
@@ -1088,18 +1103,18 @@ avtPseudocolorPlot::SetOpacityFromAtts()
 //  Method: avtPseudocolorPlot::SetLegendRanges
 //
 //  Purpose:
-//    Sets the legend ranges (color bar labels and limits text). 
+//    Sets the legend ranges (color bar labels and limits text).
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 13, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 13, 2002
 //
 //  Modifications
-//    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002 
+//    Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002
 //    Removed call to SetScaling before throwing exception.
-// 
-//    Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002  
-//    Always allow user to specify Min/Max. 
-// 
+//
+//    Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002
+//    Always allow user to specify Min/Max.
+//
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Replaced varMapper with glyphMapper.
 //
@@ -1125,13 +1140,13 @@ avtPseudocolorPlot::SetLegendRanges()
 
     varLegend->SetRange(min, max);
 
-    // 
+    //
     // Perform error checking if log scaling is to be used.
-    // 
+    //
     if (atts.GetScaling() == PseudocolorAttributes::Log &&
        ( min <= 0. || max <= 0. ) && validRange == true)
     {
-        EXCEPTION1(InvalidLimitsException, true); 
+        EXCEPTION1(InvalidLimitsException, true);
     }
  
     varLegend->SetScaling(atts.GetScaling(), atts.GetSkewFactor());
@@ -1146,7 +1161,7 @@ avtPseudocolorPlot::SetLegendRanges()
 // ****************************************************************************
 // Method: avtPseudocolorPlot::SetPointGlyphSize
 //
-// Purpose: 
+// Purpose:
 //   Sets the point glyph size into the mapper.
 //
 // Programmer: Brad Whitlock
@@ -1180,11 +1195,11 @@ avtPseudocolorPlot::SetPointGlyphSize()
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Removed glyphPoints.
 //
-//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004 
-//    Added pcfilter. 
+//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004
+//    Added pcfilter.
 //
 // ****************************************************************************
- 
+
 void
 avtPseudocolorPlot::ReleaseData(void)
 {
@@ -1225,10 +1240,10 @@ avtPseudocolorPlot::GetSmoothingLevel()
 //  Method: avtPseudocolorPlot::EnhanceSpecification
 //
 //  Purpose:
-//    Add secondary variable to pipeline if needed. 
+//    Add secondary variable to pipeline if needed.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   August 19, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 19, 2004
 //
 //  Modifications:
 //
@@ -1251,7 +1266,7 @@ avtPseudocolorPlot::EnhanceSpecification(avtContract_p spec)
         //
         // Find out if we REALLY need to add the secondary variable.
         //
-        if (atts.GetPointSizeVarEnabled() && 
+        if (atts.GetPointSizeVarEnabled() &&
             pointVar != "default" &&
             pointVar != dataRequest->GetVariable() &&
             !dataRequest->HasSecondaryVariable(pointVar.c_str()))
@@ -1268,10 +1283,10 @@ avtPseudocolorPlot::EnhanceSpecification(avtContract_p spec)
     if( atts.GetOpacityType() == PseudocolorAttributes::VariableRange &&
         atts.GetOpacityVariable() != "" &&
         atts.GetOpacityVariable() != "\0")
-    {   
+    {
         std::string opacityVar = atts.GetOpacityVariable();
         avtDataRequest_p dataRequest = rv->GetDataRequest();
-      
+
         if( opacityVar != "default" &&
             opacityVar != dataRequest->GetVariable() &&
             !dataRequest->HasSecondaryVariable(opacityVar.c_str()) )
@@ -1300,7 +1315,7 @@ avtPseudocolorPlot::EnhanceSpecification(avtContract_p spec)
 
     // Add in the tube variable
     if( (topoDim == 1 || (topoDim > 1 && atts.GetRenderWireframe())) &&
-        atts.GetLineType() == PseudocolorAttributes::Tube && 
+        atts.GetLineType() == PseudocolorAttributes::Tube &&
         atts.GetVaryTubeRadius() == true &&
         atts.GetVaryTubeRadiusVariable() != "" &&
         atts.GetVaryTubeRadiusVariable() != "\0" )
@@ -1392,18 +1407,18 @@ avtPseudocolorPlot::EnhanceSpecification(avtContract_p spec)
 // ****************************************************************************
 //  Method: avtPlot::SetCellCountMultiplierForSRThreshold
 //
-//  Purpose: 
-//    Set this plot's cell count multiplier for SR threshold. 
+//  Purpose:
+//    Set this plot's cell count multiplier for SR threshold.
 //    If not a point-var (topoDim == 0), returns 1.0 because no glyphing will
 //    take place.  Otherwise uses the maximum polys that could be created
 //    based on spatial dimension.
-// 
+//
 //  Arguments:
 //    dob       The current input, used to determine correct topological
-//              and spatial dimenions. 
+//              and spatial dimenions.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   August 24, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 24, 2004
 //
 // ****************************************************************************
 
@@ -1414,25 +1429,25 @@ avtPseudocolorPlot::SetCellCountMultiplierForSRThreshold(
     if (dob->GetInfo().GetAttributes().GetTopologicalDimension() > 0)
     {
         // Not a point var, no multiplier.
-        cellCountMultiplierForSRThreshold = 1.0; 
+        cellCountMultiplierForSRThreshold = 1.0;
     }
-    else 
+    else
     {
         //
         // Actual polygon count can change on-the-fly based on point type,
         // and does not require re-execution of the engine (where the
-        // cell count is important, and queried from.) 
+        // cell count is important, and queried from.)
         // Using the current polgyon count doesn't make sense,
         // the default point-type is 'Point' which does not do any
         // glyhing.  If we return 1, then we may never switch into SR
         // mode even when necessary (if user changes type to icosahedron
-        // in 3D, which adds 20 polys per point). 
+        // in 3D, which adds 20 polys per point).
         // Always using the maximum may be overkill, but it seems best
         // under the circumstances.
         //
         if (dob->GetInfo().GetAttributes().GetSpatialDimension() == 3)
             cellCountMultiplierForSRThreshold = 20.0;
-        else 
+        else
             cellCountMultiplierForSRThreshold = 12.0;
     }
 }

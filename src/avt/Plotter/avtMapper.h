@@ -120,6 +120,9 @@ class   ColorAttribute;
 //    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
 //    Changed signature of InsertFilters.
 //
+//    Kathleen Biagas, Wed Apr 13 18:02:22 MST 2016
+//    Added InvalidateTransparencyCache.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtMapper : public avtTerminatingDatasetSink
@@ -164,6 +167,8 @@ class PLOTTER_API avtMapper : public avtTerminatingDatasetSink
 
     virtual void               ReducedDetailModeOn() {; }
     virtual bool               ReducedDetailModeOff() { return false; }
+
+    void                       InvalidateTransparencyCache(void);
 
   protected:
     bool                       immediateMode;
