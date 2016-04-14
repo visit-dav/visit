@@ -316,6 +316,9 @@ avtLookupTable::GetNumberOfColors()
 //    Kathleen Bonnell, Mon Jan 17 17:38:40 MST 2011
 //    Added invert argument.
 //
+//    Kathleen Biagas, Tue Apr 12 10:02:22 MST 2016
+//    Don't attempt to retrieve alphas values if ctName is NULL.
+//
 // ****************************************************************************
 
 bool
@@ -367,7 +370,7 @@ avtLookupTable::SetColorTable(const char *ctName, bool validName,
         
         SetLUTColorsAndOpacity(c, a, ct->GetNumColors());
       }
-      else if (useOpacities)
+      else if (useOpacities && ctName != NULL)
       {
         const unsigned char *a = ct->GetAlphas(ctName);
         SetLUTColorsAndOpacity(c, a, ct->GetNumColors());

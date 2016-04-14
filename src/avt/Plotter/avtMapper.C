@@ -1327,3 +1327,28 @@ avtMapper::SetSurfaceRepresentation(int rep)
         }
     }
 }
+
+// ****************************************************************************
+//  Method: avtMapper::InvalidateTransparencyCache
+//
+//  Purpose:
+//      Invalidates transparency cache.
+//
+//  Notes:
+//      Can be used by plots when transparency cache won't be invalidated
+//      through normal methods.  Eg during a SetColorTable call from viewer.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   April 13, 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMapper::InvalidateTransparencyCache()
+{
+    if (transparencyActor != NULL)
+        transparencyActor->InvalidateTransparencyCache();
+}
+
