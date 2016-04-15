@@ -180,7 +180,6 @@ class QvisPoincareWindow : public QvisOperatorWindow
     void showPointsChanged(bool val);
     void numberPlanesChanged(int val);
     void singlePlaneProcessText();
-    void adjustPlaneChanged(int val);
     void overlapsChanged(int val);
 
     // Advanced
@@ -309,8 +308,6 @@ class QvisPoincareWindow : public QvisOperatorWindow
     QSpinBox     *numberPlanes;
     QLabel       *singlePlaneLabel;
     QLineEdit    *singlePlane;
-    QLabel       *adjustPlaneLabel;
-    QSpinBox     *adjustPlane;
     QWidget      *overlaps;
     QLabel       *overlapsLabel;
     QButtonGroup *overlapsButtonGroup;

@@ -331,7 +331,22 @@ Point FieldlineLib::interpert( Point lastPt, Point currPt, double t ) {
 }
 
 
-int FieldlineLib::ccw( Vector v0, Vector v1 ) {
+// Is point 0 (v0) clockwise or counter clockwise of point 1 (v1)
+int FieldlineLib::ccwXY( Vector v0, Vector v1 ) {
+    
+  if( v0.x * v1.y - v0.y * v1.x > FLT_MIN ) return  1;    // CCW
+  if( v0.y * v1.x - v0.x * v1.y > FLT_MIN ) return -1;    // CW
+  if( v0.x * v1.x < 0.0 || v0.y * v1.y < 0.0 ) return -1; // CW
+    
+  if( v0.x*v0.x+v0.y*v0.y >=
+      v1.x*v1.x+v1.y*v1.y ) return 0;                     //  ON LINE
+    
+  return 1;                                               //  CCW
+}
+
+
+// Is point 0 (v0) clockwise or counter clockwise of point 1 (v1)
+int FieldlineLib::ccwXZ( Vector v0, Vector v1 ) {
     
   if( v0.x * v1.z - v0.z * v1.x > FLT_MIN ) return  1;    // CCW
   if( v0.z * v1.x - v0.x * v1.z > FLT_MIN ) return -1;    // CW
@@ -362,10 +377,10 @@ int FieldlineLib::intersect( Point l0_p0, Point l0_p1,
   return 0;
 
   //  See if the lines intersect.    
-  if( ( ccw( Vector(l0_p1-l0_p0), Vector(l1_p0-l0_p0)) *
-        ccw( Vector(l0_p1-l0_p0), Vector(l1_p1-l0_p0) ) <= 0 ) &&
-      ( ccw( Vector(l1_p1-l1_p0), Vector(l0_p0-l1_p0)) *
-        ccw( Vector(l1_p1-l1_p0), Vector(l0_p1-l1_p0) ) <= 0 ) ) {
+  if( ( ccwXZ( Vector(l0_p1-l0_p0), Vector(l1_p0-l0_p0)) *
+        ccwXZ( Vector(l0_p1-l0_p0), Vector(l1_p1-l0_p0) ) <= 0 ) &&
+      ( ccwXZ( Vector(l1_p1-l1_p0), Vector(l0_p0-l1_p0)) *
+        ccwXZ( Vector(l1_p1-l1_p0), Vector(l0_p1-l1_p0) ) <= 0 ) ) {
         
     //  See if there is not a shared point.
     if( l0_p0 != l1_p0 && l0_p0 != l1_p1 &&
@@ -428,7 +443,7 @@ FieldlineLib::convexHull( std::vector< std::pair< Point, unsigned int > > &hullP
       Vector v0 = (Vector) hullPts[m-1].first - (Vector) hullPts[min].first;
       Vector v1 = (Vector) hullPts[i  ].first - (Vector) hullPts[min].first;
 
-      int CCW = ccw( v0, v1 );
+      int CCW = ccwXZ( v0, v1 );
 
       // The next point that is the farthest to the right of all
       // others will be in a clockwise direction (i.e. the convex
@@ -468,7 +483,7 @@ bool FieldlineLib::hullCheck( std::vector< Point > &points, int &direction )
       return true;
   }
   else if( points.size() == 3 ) {
-    return ccw( points[0] - points[1], points[2] - points[1] );
+    return ccwXZ( points[0] - points[1], points[2] - points[1] );
   }
 
   std::vector< std::pair < Point, unsigned int > > pts;
@@ -1630,7 +1645,7 @@ islandChecks( std::vector< Point >& points,
     Vector v0 = (Vector) points[i                ] - baseCentroid;
     Vector v1 = (Vector) points[i+toroidalWinding] - baseCentroid;
 
-    bool localCCW, lastCCW = (ccw( v0, v1 ) == 1);
+    bool localCCW, lastCCW = (ccwXZ( v0, v1 ) == 1);
 
     // Get the direction based on the remaining points.
     for( unsigned int j=i+2*toroidalWinding;
@@ -1643,10 +1658,10 @@ islandChecks( std::vector< Point >& points,
       // Points are parallel - this result should not occur as the
       // base centroid point should be on the concave side of the
       // island.
-      if (ccw( v0, v1 ) == 0 )
+      if (ccwXZ( v0, v1 ) == 0 )
         localCCW = lastCCW;
       else
-        localCCW = (ccw( v0, v1 ) == 1);
+        localCCW = (ccwXZ( v0, v1 ) == 1);
 
       // A change in direction indicates that an island is present.
       if( localCCW != lastCCW )
@@ -2852,7 +2867,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
   rationalSurfaceTolerance *= rationalSurfaceFactor;
 
-  int helicity = ccw( ptList[1] - ptList[0], ptList[1] - ptList[2] );
+  int helicity = ccwXZ( ptList[1] - ptList[0], ptList[1] - ptList[2] );
 
   // Get the safety factor.
 //   for( unsigned int i=0; i<poloidal_puncture_pts.size(); ++i )
@@ -3796,7 +3811,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
     // Surface or island so check for the secondary axis case. To date
     // we have seen secondary axis in 1,1 surfaces and islands and in
-    // higher order islands. But no in higher order surfaces.
+    // higher order islands. But not in higher order surfaces.
     if( analysisState == FieldlineProperties::COMPLETED &&
         //        toroidalWinding == poloidalWinding &&
         (type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
@@ -3804,7 +3819,6 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     {
       // QUESTION - is it possible to have secondary islands within
       // the 1,1 that have an secondary axis. YES
-
       if( toroidalWinding == poloidalWinding )
       {
         if( toroidalWinding > 1 ) 
@@ -3825,7 +3839,9 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       std::vector< std::pair< Point, unsigned int > > hullPts;
       
       hullPts.resize( toroidalWindingP+1 );
-      
+
+      // Get the points from the first island to be used for creating
+      // the convex hull.
       for(unsigned int i=0, j=0; i<toroidalWindingP*islands; i+=islands, ++j )
       {
         hullPts[j] =
@@ -3861,9 +3877,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       // Find all the differences and count each one.
       for(unsigned int i=0; i<nHullPts; ++i )
       {
+        // Index of the neighboring point.
         unsigned int i1 = (i+1) % toroidalWindingP;
 
-        // Offset from one puncture point to it's neighbor.
+        // Index offset from one puncture point to it's neighbor.
         offset = (hullPts[i1].second - hullPts[i].second + toroidalWindingP) %
           toroidalWindingP;
         
@@ -3872,7 +3889,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         
         // Not found, new offset.
         if( ic == offsets.end() )
-          offsets.insert( std::pair< unsigned int, unsigned int >( offset, 1) );
+          offsets.insert( std::pair< unsigned int, unsigned int >(offset, 1) );
         // Found this offset, increment the count.
         else
           (*ic).second++;
@@ -3889,10 +3906,11 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       
       while( ic != offsets.end() )
       {
-        if( offsets.size() != 1 )
+        if( offsets.size() > 1 )
           if( verboseFlag && (*ic).second > 1 )
             std::cerr << (*ic).first << " (" << (*ic).second << ")  ";
 
+        // Keep the offset with most occurances.
         if( nMatches < (*ic).second )
         {
           offset = (*ic).first;
@@ -3902,7 +3920,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         ++ic;
       }
 
-      if( offsets.size() != 1 )
+      if( offsets.size() > 1 )
         if( verboseFlag )
           std::cerr << std::endl;
 
@@ -3924,9 +3942,9 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         
         if( verboseFlag )
           std::cerr << "Secondary poloidal rotation  "
-               << toroidalWindingP << "," << poloidalWindingP << " ("
-               << ((float) toroidalWindingP / (float) poloidalWindingP) << ")  "
-               << "with offset " << offset << std::endl;
+                    << toroidalWindingP << "," << poloidalWindingP << " ("
+                    << ((float) toroidalWindingP / (float) poloidalWindingP) << ")  "
+                    << "with offset " << offset << std::endl;
       }
       else
       {
@@ -4825,14 +4843,14 @@ islandProperties( std::vector< Point > &points,
   Vector v0 = (Vector) points[0] - baseCentroid;
   Vector v1 = (Vector) points[1] - baseCentroid;
 
-  bool lastCCW = (ccw(v0, v1) == 1);
+  bool lastCCW = (ccwXZ(v0, v1) == 1);
   v0 = v1;
 
   for( unsigned int j=2; j<points.size(); j++ ) {
 
     v1 = (Vector) points[j] - baseCentroid;
 
-    bool CCW = (ccw(v0, v1) == 1);
+    bool CCW = (ccwXZ(v0, v1) == 1);
     v0 = v1;
 
     if( CCW != lastCCW ) {
@@ -4949,24 +4967,25 @@ islandProperties( std::vector< Point > &points,
 unsigned int
 FieldlineLib::
 surfaceOverlapCheck( std::vector<std::vector< Point > > &bins,
-                     unsigned int toroidalWinding,
-                     unsigned int windingGroupOffset,
-                     unsigned int &nnodes )
+                     unsigned int windingGroupOffset )
 {
-  nnodes = (unsigned int)bins[0].size();
+  unsigned int toroidalWinding = bins.size();
 
+  unsigned int nnodes = (unsigned int) bins[0].size();
+  
   // First make sure none of the groups overlap themselves.
-  for( unsigned int i=0; i<toroidalWinding; i++ ) {
-
+  for( unsigned int i=0; i<toroidalWinding; ++i )
+  {
     if( nnodes > bins[i].size() )
-      nnodes = (unsigned int)bins[i].size();
+      nnodes = (unsigned int) bins[i].size();
 
-    for( unsigned int j=2; j<nnodes; j++ ) {
-
+    for( unsigned int j=2; j<nnodes; j++ )
+    {
       Vector v0 = (Vector) bins[i][0] - (Vector) bins[i][j];
       Vector v1 = (Vector) bins[i][1] - (Vector) bins[i][j];
       
-      if( Dot( v0, v1 ) < 0.0 ) {
+      if( Dot( v0, v1 ) < 0.0 )
+      {
         nnodes = j;
         break;
       }
@@ -4976,7 +4995,8 @@ surfaceOverlapCheck( std::vector<std::vector< Point > > &bins,
       v0 = (Vector) bins[i][0] - midPt;
       v1 = (Vector) bins[i][1] - midPt;
       
-      if( Dot( v0, v1 ) < 0.0 ) {
+      if( Dot( v0, v1 ) < 0.0 )
+      {
         nnodes = j;
         break;
       }
@@ -4998,34 +5018,36 @@ surfaceOverlapCheck( std::vector<std::vector< Point > > &bins,
     windingGroupOffset : toroidalWinding-windingGroupOffset;
 
   // Second make sure none of the groups overlap each other.
-  for( unsigned int i=0; i<toroidalWinding; i++ )
+  for( unsigned int i=0; i<toroidalWinding; ++i )
   {
     // The previous group
     unsigned int j = (i + offset) % toroidalWinding;
 
     // Check for a point in the previous group being between the first
     // two points in the current group.
-    for( unsigned int k=0; k<nnodes; k++ ) {
-
+    for( unsigned int k=0; k<nnodes; ++k )
+    {
       Vector v0 = (Vector) bins[i][0] - (Vector) bins[j][k];
       Vector v1 = (Vector) bins[i][1] - (Vector) bins[j][k];
       
       if( Dot( v0, v1 ) < 0.0 ) {
         nnodes = k;
-//        std::cerr << "adjacent overlap1 " << i << "  " << j << "  " << k << std::endl;
+        // std::cerr << "adjacent overlap1 " << i << "  " << j << "  " << k
+        //        << std::endl;
       }
     }
 
     // Check for a point in the current group being between two points
     // in the previous group.
-    for( unsigned int k=1; k<nnodes; k++ ) {
-
+    for( unsigned int k=1; k<nnodes; ++k )
+    {
       Vector v0 = (Vector) bins[j][k  ] - (Vector) bins[i][0];
       Vector v1 = (Vector) bins[j][k-1] - (Vector) bins[i][0];
       
       if( Dot( v0, v1 ) < 0.0 ) {
         nnodes = k;
-//        std::cerr << "adjacent overlap2 " << i << "  " << j << "  " << k << std::endl;
+        // std::cerr << "adjacent overlap2 " << i << "  " << j << "  " << k
+        //        << std::endl;
         break;
       }
     }
@@ -5063,174 +5085,70 @@ surfaceGroupCheck( std::vector<std::vector< Point > > &bins,
 
 unsigned int
 FieldlineLib::
-removeOverlap( std::vector< std::vector < Point > > &bins,
-               unsigned int &nnodes,
-               unsigned int toroidalWinding,
-               unsigned int poloidalWinding,
-               unsigned int windingGroupOffset,
-               unsigned int island )
+removeOverlap( std::vector< std::vector< std::vector < Point > > > &bins,
+               unsigned int windingGroupOffset )
 {
-  Vector globalCentroid = Vector(0,0,0);;
-
-  for( unsigned int i=0; i<toroidalWinding; i++ )
-    for( unsigned int j=0; j<nnodes; j++ )
-      globalCentroid += (Vector) bins[i][j];
+  unsigned int nnodes;
+  unsigned int nSections = bins.size();
   
-  globalCentroid /= (toroidalWinding*nnodes);
+  for( unsigned int s=0; s<nSections; ++s )
+  {
+    unsigned int toroidalWinding = bins[s].size();
+
+    // Get the centroid for this section.
+    unsigned int cc = 0;
+    Vector globalCentroid = Vector(0,0,0);
     
-  if( island && nnodes == 1 )
-  {
-  }
-  else if( island )
-  {
-    // Loop through each island.
-    for( unsigned int i=0; i<toroidalWinding; i++ )
+    for( unsigned int i=0; i<toroidalWinding; ++i )
     {
-      unsigned int nodes = 0;
-      bool completeIsland = false;
-
-      // If just a single island search for an overlap immediately.
-      if( toroidalWinding == 1 )
+      for( unsigned int j=0; j<bins[s][i].size(); ++j )
       {
-        unsigned int i = 0;
-
-        // See if the first point overlaps another section.
-        for( unsigned int  j=nnodes/2; j<bins[i].size(); j++ )
-        {
-          if( Dot( (Vector) bins[i][j  ] - (Vector) bins[i][0],
-                   (Vector) bins[i][j-1] - (Vector) bins[i][0] ) < 0.0 )
-          {
-            nodes = j;
-        
-            completeIsland = true;
-            break;
-          }
-        }
-
-        // See if a point overlaps the first section.
-        if( nodes == 0 )
-        {
-          for( unsigned int j=nnodes/2; j<bins[i].size(); j++ )
-          {
-            if( Dot( (Vector) bins[i][0] - (Vector) bins[i][j],
-                     (Vector) bins[i][1] - (Vector) bins[i][j] ) < 0.0 )
-            {
-              nodes = j;
-
-              completeIsland = true;
-              break;
-            }
-          }
-        }
+        globalCentroid += (Vector) bins[s][i][j];
+        ++cc;
       }
-
-      // Toroidal winding is greater than 1 as such get detailed data
-      // for the removal of points so that each island has the same of
-      // resulting nodes.
-      else
-      {
-        /*
-        unsigned int startIndex;
-        unsigned int middleIndex;
-        unsigned int stopIndex;
-        
-       std::vector< Point > points;
-        points.resize( bins[i].size() );
-
-        for( unsigned int j=0; j<bins[i].size(); j++ )
-          points[j] = bins[i][j];
-        
-        if( islandProperties( points, globalCentroid,
-                              startIndex, middleIndex, stopIndex, nodes ) == 3 )
-        */
-        completeIsland = true;
-
-        nodes = nnodes;
-      }
-
-      if( nodes == 0 )
-      {
-        if( verboseFlag )
-          std::cerr << "removeOverlap - "
-                    << "Island properties returned ZERO NODES for island "
-                    << i << std::endl;
-
-        nodes = (unsigned int)bins[i].size();
-      }
-
-      // No more than one point should be added.
-      if( nodes > nnodes+1 )
-      {
-        if( verboseFlag )
-          std::cerr << "removeOverlap - Island " << i << "  "
-                    << "nnodes mismatch " << nnodes << "  "
-                    << nodes << std::endl;
-      }
-
-      // Erase all of the overlapping points.
-      bins[i].erase( bins[i].begin()+nnodes, bins[i].end() );
-      
-      // Close the island if it is complete
-      if( completeIsland )
-        bins[i].push_back( bins[i][0] );
     }
-
-  }
-
-  // Surface
-  else // if( !islands )
-  {
-//     std::cerr << "nnodes  " << nnodes << std::endl;
-
-//     for( unsigned int i=0; i<toroidalWinding; i++ )
-//     {
-//       std::cerr << bins[i].size() << "  ";
-//     }
-
-
-    // This gives the minimal number of nodes for each group.
-    surfaceOverlapCheck( bins, toroidalWinding, windingGroupOffset, nnodes );
+  
+    globalCentroid /= (double) cc;
+    
+    // This gives the minimal number of nodes for each winding group.
+    nnodes = surfaceOverlapCheck( bins[s], windingGroupOffset );
     
     if( nnodes == 0 )
     {
       if( verboseFlag )
-          std::cerr << "removeOverlap - "
-                    << "Surface properties returned ZERO NODES for surface "
-                    << std::endl;
+        std::cerr << "removeOverlap - "
+                  << "Surface properties returned ZERO NODES for surface "
+                  << std::endl;
 
-      nnodes = (unsigned int)bins[0].size();
-
-//       std::cerr << bins[0].size() << "  ";
+      nnodes = (unsigned int) bins[s][0].size();
 
       for( unsigned int i=1; i<toroidalWinding; i++ )
-      {
-//      std::cerr << bins[i].size() << "  ";
-
-        if( nnodes > bins[i].size())
-          nnodes = (unsigned int)bins[i].size();
-      }
-
-//       std::cerr << std::endl;
+        {
+        if( nnodes > bins[s][i].size())
+          nnodes = (unsigned int) bins[s][i].size();
+        }
     }
-
+    
     // If the offset and point ordering are opposite in directions
     // then the next group is the -windingGroupOffset. Otherwise if
     // they have the same direction then windingGroupOffset is the
     // next group.
-    Vector intra = (Vector) bins[                 0][1] - (Vector) bins[0][0];
-    Vector inter = (Vector) bins[windingGroupOffset][0] - (Vector) bins[0][0];
-
+    Vector intra = ((Vector) bins[s][0][1] -
+                    (Vector) bins[s][0][0]);
+    Vector inter = ((Vector) bins[s][windingGroupOffset][0] -
+                    (Vector) bins[s][0][0]);
+    
     int offset = (Dot( intra, inter ) < 0.0) ?
       toroidalWinding-windingGroupOffset : windingGroupOffset;
-
-    for( unsigned int i=0; i<toroidalWinding; i++ )
+    
+    for( unsigned int i=0; i<toroidalWinding; ++i )
     {
       // The next group
       unsigned int j = (i + offset) % toroidalWinding;
-
+      
       // Add back in any nodes that may not overlap.
-      unsigned int nodes = surfaceGroupCheck( bins, i, j, nnodes );
-
+      unsigned int nodes = surfaceGroupCheck( bins[s], i, j, nnodes );
+      
       // No more than one point should be added.
       if( nodes > nnodes+1 )
       {
@@ -5239,12 +5157,12 @@ removeOverlap( std::vector< std::vector < Point > > &bins,
                     << "nnodes mismatch " << nnodes << "  "
                     << nodes << std::endl;
       }
-
+      
       // Erase all of the overlapping points.
-      bins[i].erase( bins[i].begin()+nodes, bins[i].end() );
+      bins[s][i].erase( bins[s][i].begin()+nodes, bins[s][i].end() );
     }
   }
-
+  
   return nnodes;
 }
 
@@ -5254,7 +5172,6 @@ FieldlineLib::
 smoothCurve( std::vector< std::vector < Point > > &bins,
              unsigned int &nnodes,
              unsigned int toroidalWinding,
-             unsigned int poloidalWinding,
              unsigned int offset,
              unsigned int island )
 {
@@ -5476,7 +5393,6 @@ FieldlineLib::
 mergeOverlap( std::vector< std::vector < Point > > &bins,
               unsigned int &nnodes,
               unsigned int toroidalWinding,
-              unsigned int poloidalWinding,
               unsigned int windingGroupOffset,
               unsigned int island )
 {
@@ -5706,13 +5622,13 @@ mergeOverlap( std::vector< std::vector < Point > > &bins,
     }
   } else {
 
-   std::vector< std::vector < Point > > tmp_bins(toroidalWinding);
+    std::vector< std::vector < Point > > tmp_bins(toroidalWinding);
 
-    // This gives the minimal number of nodes for each group.
-    surfaceOverlapCheck( bins, toroidalWinding, windingGroupOffset, nnodes );
+   // This gives the minimal number of nodes for each group.
+    nnodes = surfaceOverlapCheck( bins, windingGroupOffset );
 
-    if( nnodes == 0 ) {
-
+    if( nnodes == 0 )
+    {
       for( unsigned int i=1; i<toroidalWinding; i++ ) {
         if( nnodes > bins[i].size())
           nnodes = (unsigned int)bins[i].size();

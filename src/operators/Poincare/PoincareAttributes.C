@@ -716,7 +716,6 @@ void PoincareAttributes::Init()
     overridePoloidalWinding = 0;
     windingPairConfidence = 0.9;
     rationalSurfaceFactor = 0.1;
-    adjustPlane = -1;
     overlaps = Remove;
     meshType = Curves;
     numberPlanes = 1;
@@ -825,7 +824,6 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     overridePoloidalWinding = obj.overridePoloidalWinding;
     windingPairConfidence = obj.windingPairConfidence;
     rationalSurfaceFactor = obj.rationalSurfaceFactor;
-    adjustPlane = obj.adjustPlane;
     overlaps = obj.overlaps;
     meshType = obj.meshType;
     numberPlanes = obj.numberPlanes;
@@ -1082,7 +1080,6 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (overridePoloidalWinding == obj.overridePoloidalWinding) &&
             (windingPairConfidence == obj.windingPairConfidence) &&
             (rationalSurfaceFactor == obj.rationalSurfaceFactor) &&
-            (adjustPlane == obj.adjustPlane) &&
             (overlaps == obj.overlaps) &&
             (meshType == obj.meshType) &&
             (numberPlanes == obj.numberPlanes) &&
@@ -1328,7 +1325,6 @@ PoincareAttributes::SelectAll()
     Select(ID_overridePoloidalWinding,           (void *)&overridePoloidalWinding);
     Select(ID_windingPairConfidence,             (void *)&windingPairConfidence);
     Select(ID_rationalSurfaceFactor,             (void *)&rationalSurfaceFactor);
-    Select(ID_adjustPlane,                       (void *)&adjustPlane);
     Select(ID_overlaps,                          (void *)&overlaps);
     Select(ID_meshType,                          (void *)&meshType);
     Select(ID_numberPlanes,                      (void *)&numberPlanes);
@@ -1611,12 +1607,6 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("rationalSurfaceFactor", rationalSurfaceFactor));
-    }
-
-    if(completeSave || !FieldsEqual(ID_adjustPlane, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("adjustPlane", adjustPlane));
     }
 
     if(completeSave || !FieldsEqual(ID_overlaps, &defaultObject))
@@ -2105,8 +2095,6 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetWindingPairConfidence(node->AsDouble());
     if((node = searchNode->GetNode("rationalSurfaceFactor")) != 0)
         SetRationalSurfaceFactor(node->AsDouble());
-    if((node = searchNode->GetNode("adjustPlane")) != 0)
-        SetAdjustPlane(node->AsInt());
     if((node = searchNode->GetNode("overlaps")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -2532,13 +2520,6 @@ PoincareAttributes::SetRationalSurfaceFactor(double rationalSurfaceFactor_)
 {
     rationalSurfaceFactor = rationalSurfaceFactor_;
     Select(ID_rationalSurfaceFactor, (void *)&rationalSurfaceFactor);
-}
-
-void
-PoincareAttributes::SetAdjustPlane(int adjustPlane_)
-{
-    adjustPlane = adjustPlane_;
-    Select(ID_adjustPlane, (void *)&adjustPlane);
 }
 
 void
@@ -3079,12 +3060,6 @@ PoincareAttributes::GetRationalSurfaceFactor() const
     return rationalSurfaceFactor;
 }
 
-int
-PoincareAttributes::GetAdjustPlane() const
-{
-    return adjustPlane;
-}
-
 PoincareAttributes::OverlapType
 PoincareAttributes::GetOverlaps() const
 {
@@ -3466,7 +3441,6 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_overridePoloidalWinding:           return "overridePoloidalWinding";
     case ID_windingPairConfidence:             return "windingPairConfidence";
     case ID_rationalSurfaceFactor:             return "rationalSurfaceFactor";
-    case ID_adjustPlane:                       return "adjustPlane";
     case ID_overlaps:                          return "overlaps";
     case ID_meshType:                          return "meshType";
     case ID_numberPlanes:                      return "numberPlanes";
@@ -3568,7 +3542,6 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_overridePoloidalWinding:           return FieldType_int;
     case ID_windingPairConfidence:             return FieldType_double;
     case ID_rationalSurfaceFactor:             return FieldType_double;
-    case ID_adjustPlane:                       return FieldType_int;
     case ID_overlaps:                          return FieldType_enum;
     case ID_meshType:                          return FieldType_enum;
     case ID_numberPlanes:                      return FieldType_int;
@@ -3670,7 +3643,6 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_overridePoloidalWinding:           return "int";
     case ID_windingPairConfidence:             return "double";
     case ID_rationalSurfaceFactor:             return "double";
-    case ID_adjustPlane:                       return "int";
     case ID_overlaps:                          return "enum";
     case ID_meshType:                          return "enum";
     case ID_numberPlanes:                      return "int";
@@ -3934,11 +3906,6 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (rationalSurfaceFactor == obj.rationalSurfaceFactor);
         }
         break;
-    case ID_adjustPlane:
-        {  // new scope
-        retval = (adjustPlane == obj.adjustPlane);
-        }
-        break;
     case ID_overlaps:
         {  // new scope
         retval = (overlaps == obj.overlaps);
@@ -4175,15 +4142,18 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 bool
 PoincareAttributes::ChangesRequireRecalculation(const PoincareAttributes &obj) const
 {
-    return StreamlineAttsRequireRecalculation(obj) ||
+    std::cerr << IntegralCurveAttsRequireRecalculation(obj) << "  " 
+              << PoincareAttsRequireRecalculation(obj) << std::endl;
+              
+    return IntegralCurveAttsRequireRecalculation(obj) ||
            PoincareAttsRequireRecalculation(obj);
 }
 
 // ****************************************************************************
-// Method: PoincareAttributes::StreamlineAttsRequireRecalculation
+// Method: PoincareAttributes::IntegralCurveAttsRequireRecalculation
 //
 // Purpose: 
-//   Determine if streamline attribute changes require recalculation.
+//   Determine if integral curve attribute changes require recalculation.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tues Oct 21 14:22:17 EDT 2008
@@ -4196,7 +4166,7 @@ PoincareAttributes::ChangesRequireRecalculation(const PoincareAttributes &obj) c
 #define POINT_DIFFERS(p1,p2) (PDIF(p1,p2,0) || PDIF(p1,p2,1) || PDIF(p1,p2,2))
 
 bool
-PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes &obj) const
+PoincareAttributes::IntegralCurveAttsRequireRecalculation(const PoincareAttributes &obj) const
 {
     // If we're in point source mode and the points differ, sourcePointsDiffer
     // evaluates to true.
@@ -4219,12 +4189,8 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
     // evaluates to true.
     bool sourceLineDiffers = ((sourceType == SpecifiedLine) &&
                               (POINT_DIFFERS(lineStart, obj.lineStart) ||
-                               POINT_DIFFERS(lineEnd, obj.lineEnd)));
-    
-    // Other things need to be true before we start paying attention to
-    // point density.
-    bool densityMatters = ((sourceType == SpecifiedLine) &&
-                           (pointDensity != obj.pointDensity));
+                               POINT_DIFFERS(lineEnd, obj.lineEnd) ||
+                               pointDensity != obj.pointDensity));
 
     return (sourceType != obj.sourceType ||
             sourcePointsDiffer ||
@@ -4233,8 +4199,6 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
 
             (fieldType == FlashField &&
              POINT_DIFFERS(velocitySource, obj.velocitySource)) ||
-
-            densityMatters ||
 
             minPunctures != obj.minPunctures ||
             maxPunctures != obj.maxPunctures ||
@@ -4302,9 +4266,6 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            numberPlanes != obj.numberPlanes ||
            singlePlane != obj.singlePlane ||
 
-           adjustPlane != obj.adjustPlane ||
-
            showLines != obj.showLines ||
            showPoints != obj.showPoints;
 }
-

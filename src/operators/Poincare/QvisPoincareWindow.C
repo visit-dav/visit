@@ -839,16 +839,6 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
             this, SLOT(singlePlaneProcessText()));
     displayLayout->addWidget(singlePlane, 1, 3);
 
-    adjustPlaneLabel = new QLabel(tr("Adjust plane index"), displayGroup);
-    displayLayout->addWidget(adjustPlaneLabel, 1, 2);
-    adjustPlane = new QSpinBox(displayGroup);
-    adjustPlane->setMinimum(-1);
-    adjustPlane->setMaximum(250);
-    connect(adjustPlane, SIGNAL(valueChanged(int)),
-            this, SLOT(adjustPlaneChanged(int)));
-    displayLayout->addWidget(adjustPlane, 1, 3);
-
-
     // Create the overlaps group box.
     QGroupBox *overlapsGroup = new QGroupBox(central);
     overlapsGroup->setTitle(tr("Overlaps"));
@@ -1429,11 +1419,6 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
           case PoincareAttributes::ID_rationalSurfaceFactor:
             rationalSurfaceFactor->setText(DoubleToQString(atts->GetRationalSurfaceFactor()));
             break;
-          case PoincareAttributes::ID_adjustPlane:
-            adjustPlane->blockSignals(true);
-            adjustPlane->setValue(atts->GetAdjustPlane());
-            adjustPlane->blockSignals(false);
-            break;
           case PoincareAttributes::ID_overlaps:
             overlapsButtonGroup->blockSignals(true);
             if(overlapsButtonGroup->button((int)atts->GetOverlaps()) != 0)
@@ -1975,19 +1960,12 @@ QvisPoincareWindow::UpdateMeshTypeAttributes()
     //Turn off everything.
     singlePlaneLabel->hide();
     singlePlane->hide();
-    adjustPlaneLabel->hide();
-    adjustPlane->hide();
 
     switch( atts->GetMeshType() )
     {
     case PoincareAttributes::Curves:
         singlePlaneLabel->show();
         singlePlane->show();
-        break;
-
-    case PoincareAttributes::Surfaces:
-        adjustPlaneLabel->show();
-        adjustPlane->show();
         break;
     }
 }
@@ -2539,14 +2517,6 @@ void
 QvisPoincareWindow::singlePlaneProcessText()
 {
     GetCurrentValues(PoincareAttributes::ID_singlePlane);
-    Apply();
-}
-
-
-void
-QvisPoincareWindow::adjustPlaneChanged(int val)
-{
-    atts->SetAdjustPlane(val);
     Apply();
 }
 

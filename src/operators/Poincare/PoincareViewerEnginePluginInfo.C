@@ -121,6 +121,8 @@ PoincareViewerEnginePluginInfo::GetDefaultAtts()
 void
 PoincareViewerEnginePluginInfo::SetClientAtts(AttributeSubject *atts)
 {
+  std::cerr << __FUNCTION__ << "  " << __LINE__ << std::endl;
+
     *clientAtts = *(PoincareAttributes *)atts;
     clientAtts->Notify();
 }

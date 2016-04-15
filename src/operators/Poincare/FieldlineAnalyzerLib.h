@@ -80,7 +80,8 @@ public:
 
   Point interpert( Point lastPt, Point currPt, double t );
 
-  int ccw( Vector v0, Vector v1 );
+  int ccwXY( Vector v0, Vector v1 );
+  int ccwXZ( Vector v0, Vector v1 );
 
   int intersect( Point l0_p0, Point l0_p1,
                  Point l1_p0, Point l1_p1 );
@@ -242,9 +243,7 @@ public:
 
   unsigned int
   surfaceOverlapCheck( std::vector< std::vector< Point > > &bins,
-                    unsigned int toroidalWinding,
-                    unsigned int skip,
-                    unsigned int &nnodes );
+                       unsigned int skip );
 
   unsigned int
   surfaceGroupCheck( std::vector< std::vector< Point > > &bins,
@@ -253,18 +252,13 @@ public:
                      unsigned int nnodes );
 
   unsigned int
-  removeOverlap( std::vector< std::vector < Point > > &bins,
-                 unsigned int &nnodes,
-                 unsigned int toroidalWinding,
-                 unsigned int poloidalWinding,
-                 unsigned int skip,
-                 unsigned int island );
+  removeOverlap( std::vector< std::vector< std::vector < Point > > > &bins,
+                 unsigned int skip );
 
   unsigned int
   smoothCurve( std::vector< std::vector < Point > > &bins,
                unsigned int &nnodes,
                unsigned int toroidalWinding,
-               unsigned int poloidalWinding,
                unsigned int skip,
                unsigned int island );
 
@@ -272,7 +266,6 @@ public:
   mergeOverlap( std::vector< std::vector < Point > > &bins,
                 unsigned int &nnodes,
                 unsigned int toroidalWinding,
-                unsigned int poloidalWinding,
                 unsigned int skip,
                 unsigned int island );
 
