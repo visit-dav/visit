@@ -60,17 +60,15 @@ function bv_mpich_host_profile
         echo "##" >> $HOSTCONF
         echo "## MPICH" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "" >> $HOSTCONF
         echo "# Give VisIt information so it can install MPI into the binary distribution." >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR \${VISITHOME}/mpich/$MPICH_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON TYPE BOOL)" >> $HOSTCONF
         echo "" >> $HOSTCONF
         echo "# Tell VisIt the parallel compiler so it can deduce parallel flags" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER \${VISIT_MPICH_DIR}/bin/mpicc)" \
-             >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER \${VISIT_MPICH_DIR}/bin/mpicc TYPE FILEPATH)"  >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)" >> $HOSTCONF
     fi
 }
 

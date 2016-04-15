@@ -138,26 +138,31 @@ function build_boost
         warn "Patch failed, but continuing."
     fi
 
+    # Get a list of libraries to build. This list of libraries is used
+    # for the OS X name fix up.
+
+    # This list must include dependent libraries also. For instance,
+    # the serialization library requires the wserialization
+    # library. So it too must be listed. However, it can not be in the
+    # build_libs list otherwise boost barfs.
     libs=""
-    build_libs=""
-
-    if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
-        libs="$libs \
-              chrono iostreams thread date_time filesystem \
-              system program_options regex timer"
-
-        build_libs="chrono,iostreams,thread,date_time,filesystem,system,program_options,regex,timer"
-    fi
 
     if [[ "$DO_DAMARIS" == "yes" ]] ; then
         libs="$libs \
               date_time system filesystem"
-        if [[ "$build_libs" != ""  ]] ; then
-            build_libs="$build_libs,date_time,system,filesystem"
-        else
-            build_libs="date_time,system,filesystem"
-        fi
     fi
+    if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
+        libs="$libs \
+              chrono iostreams thread date_time filesystem \
+              system program_options regex timer"
+    fi
+    
+    # Remove all of the duplicate libs.
+    libs=`echo $libs | tr ' ' '\n' | sort -u | tr '\n' ' ' | sed s'/.$//'`
+
+    # Note: the library name 'wserialization' can not be in the list
+    # of build libraries but must be part of the name fixup for OS X.
+    build_libs=`echo $libs | sed s'/ wserialization//' | tr ' ' ','`
 
     if [[ "$build_libs" != ""  ]] ; then
 
