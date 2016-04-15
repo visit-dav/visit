@@ -237,9 +237,6 @@
       <Field name="rationalSurfaceFactor" label="Rational surface factor" type="double">
         0.100000
       </Field>
-      <Field name="adjustPlane" label="Adjust plane" type="int">
-        -1
-      </Field>
       <Field name="overlaps" label="Overlaps" type="enum" subtype="OverlapType">
         Remove
       </Field>
@@ -376,7 +373,7 @@
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
-      <Function name="StreamlineAttsRequireRecalculation" user="true" member="true">
+      <Function name="IntegralCurveAttsRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="PoincareAttsRequireRecalculation" user="true" member="true">
       </Function>

@@ -245,7 +245,6 @@ public:
     void SetOverridePoloidalWinding(int overridePoloidalWinding_);
     void SetWindingPairConfidence(double windingPairConfidence_);
     void SetRationalSurfaceFactor(double rationalSurfaceFactor_);
-    void SetAdjustPlane(int adjustPlane_);
     void SetOverlaps(OverlapType overlaps_);
     void SetMeshType(ShowMeshType meshType_);
     void SetNumberPlanes(int numberPlanes_);
@@ -330,7 +329,6 @@ public:
     int                  GetOverridePoloidalWinding() const;
     double               GetWindingPairConfidence() const;
     double               GetRationalSurfaceFactor() const;
-    int                  GetAdjustPlane() const;
     OverlapType          GetOverlaps() const;
     ShowMeshType         GetMeshType() const;
     int                  GetNumberPlanes() const;
@@ -471,7 +469,7 @@ public:
 
     // User-defined methods
     bool ChangesRequireRecalculation(const PoincareAttributes &obj) const;
-    bool StreamlineAttsRequireRecalculation(const PoincareAttributes &obj) const;
+    bool IntegralCurveAttsRequireRecalculation(const PoincareAttributes &obj) const;
     bool PoincareAttsRequireRecalculation(const PoincareAttributes &obj) const;
 
     // IDs that can be used to identify fields in case statements
@@ -511,7 +509,6 @@ public:
         ID_overridePoloidalWinding,
         ID_windingPairConfidence,
         ID_rationalSurfaceFactor,
-        ID_adjustPlane,
         ID_overlaps,
         ID_meshType,
         ID_numberPlanes,
@@ -593,7 +590,6 @@ private:
     int            overridePoloidalWinding;
     double         windingPairConfidence;
     double         rationalSurfaceFactor;
-    int            adjustPlane;
     int            overlaps;
     int            meshType;
     int            numberPlanes;
@@ -641,6 +637,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiibddiiDd*DDiibdDiidbddiddiiiiddiiiidddbbiasibibibibisbbbbbbbiiiibbddibbbbd"
+#define POINCAREATTRIBUTES_TMFS "idiiiibddiiDd*DDiibdDiidbddiddiiiiddiiidddbbiasibibibibisbbbbbbbiiiibbddibbbbd"
 
 #endif

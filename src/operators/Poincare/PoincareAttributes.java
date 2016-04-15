@@ -62,7 +62,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int PoincareAttributes_numAdditionalAtts = 78;
+    private static int PoincareAttributes_numAdditionalAtts = 77;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -207,7 +207,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overridePoloidalWinding = 0;
         windingPairConfidence = 0.9;
         rationalSurfaceFactor = 0.1;
-        adjustPlane = -1;
         overlaps = OVERLAPTYPE_REMOVE;
         meshType = SHOWMESHTYPE_CURVES;
         numberPlanes = 1;
@@ -312,7 +311,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overridePoloidalWinding = 0;
         windingPairConfidence = 0.9;
         rationalSurfaceFactor = 0.1;
-        adjustPlane = -1;
         overlaps = OVERLAPTYPE_REMOVE;
         meshType = SHOWMESHTYPE_CURVES;
         numberPlanes = 1;
@@ -420,7 +418,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         overridePoloidalWinding = obj.overridePoloidalWinding;
         windingPairConfidence = obj.windingPairConfidence;
         rationalSurfaceFactor = obj.rationalSurfaceFactor;
-        adjustPlane = obj.adjustPlane;
         overlaps = obj.overlaps;
         meshType = obj.meshType;
         numberPlanes = obj.numberPlanes;
@@ -546,7 +543,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (overridePoloidalWinding == obj.overridePoloidalWinding) &&
                 (windingPairConfidence == obj.windingPairConfidence) &&
                 (rationalSurfaceFactor == obj.rationalSurfaceFactor) &&
-                (adjustPlane == obj.adjustPlane) &&
                 (overlaps == obj.overlaps) &&
                 (meshType == obj.meshType) &&
                 (numberPlanes == obj.numberPlanes) &&
@@ -845,262 +841,256 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(34);
     }
 
-    public void SetAdjustPlane(int adjustPlane_)
-    {
-        adjustPlane = adjustPlane_;
-        Select(35);
-    }
-
     public void SetOverlaps(int overlaps_)
     {
         overlaps = overlaps_;
-        Select(36);
+        Select(35);
     }
 
     public void SetMeshType(int meshType_)
     {
         meshType = meshType_;
-        Select(37);
+        Select(36);
     }
 
     public void SetNumberPlanes(int numberPlanes_)
     {
         numberPlanes = numberPlanes_;
-        Select(38);
+        Select(37);
     }
 
     public void SetSinglePlane(double singlePlane_)
     {
         singlePlane = singlePlane_;
-        Select(39);
+        Select(38);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(40);
+        Select(39);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(41);
+        Select(40);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(42);
+        Select(41);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(43);
+        Select(42);
     }
 
     public void SetColorType(int colorType_)
     {
         colorType = colorType_;
-        Select(44);
+        Select(43);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(45);
+        Select(44);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(46);
+        Select(45);
     }
 
     public void SetDataValue(int dataValue_)
     {
         dataValue = dataValue_;
-        Select(47);
+        Select(46);
     }
 
     public void SetShowRationalSurfaces(boolean showRationalSurfaces_)
     {
         showRationalSurfaces = showRationalSurfaces_;
-        Select(48);
+        Select(47);
     }
 
     public void SetRationalSurfaceMaxIterations(int RationalSurfaceMaxIterations_)
     {
         RationalSurfaceMaxIterations = RationalSurfaceMaxIterations_;
-        Select(49);
+        Select(48);
     }
 
     public void SetShowOPoints(boolean showOPoints_)
     {
         showOPoints = showOPoints_;
-        Select(50);
+        Select(49);
     }
 
     public void SetOPointMaxIterations(int OPointMaxIterations_)
     {
         OPointMaxIterations = OPointMaxIterations_;
-        Select(51);
+        Select(50);
     }
 
     public void SetShowXPoints(boolean showXPoints_)
     {
         showXPoints = showXPoints_;
-        Select(52);
+        Select(51);
     }
 
     public void SetXPointMaxIterations(int XPointMaxIterations_)
     {
         XPointMaxIterations = XPointMaxIterations_;
-        Select(53);
+        Select(52);
     }
 
     public void SetPerformOLineAnalysis(boolean performOLineAnalysis_)
     {
         performOLineAnalysis = performOLineAnalysis_;
-        Select(54);
+        Select(53);
     }
 
     public void SetOLineToroidalWinding(int OLineToroidalWinding_)
     {
         OLineToroidalWinding = OLineToroidalWinding_;
-        Select(55);
+        Select(54);
     }
 
     public void SetOLineAxisFileName(String OLineAxisFileName_)
     {
         OLineAxisFileName = OLineAxisFileName_;
-        Select(56);
+        Select(55);
     }
 
     public void SetShowChaotic(boolean showChaotic_)
     {
         showChaotic = showChaotic_;
-        Select(57);
+        Select(56);
     }
 
     public void SetShowIslands(boolean showIslands_)
     {
         showIslands = showIslands_;
-        Select(58);
+        Select(57);
     }
 
     public void SetSummaryFlag(boolean SummaryFlag_)
     {
         SummaryFlag = SummaryFlag_;
-        Select(59);
+        Select(58);
     }
 
     public void SetVerboseFlag(boolean verboseFlag_)
     {
         verboseFlag = verboseFlag_;
-        Select(60);
+        Select(59);
     }
 
     public void SetShow1DPlots(boolean show1DPlots_)
     {
         show1DPlots = show1DPlots_;
-        Select(61);
+        Select(60);
     }
 
     public void SetShowLines(boolean showLines_)
     {
         showLines = showLines_;
-        Select(62);
+        Select(61);
     }
 
     public void SetShowPoints(boolean showPoints_)
     {
         showPoints = showPoints_;
-        Select(63);
+        Select(62);
     }
 
     public void SetParallelizationAlgorithmType(int parallelizationAlgorithmType_)
     {
         parallelizationAlgorithmType = parallelizationAlgorithmType_;
-        Select(64);
+        Select(63);
     }
 
     public void SetMaxProcessCount(int maxProcessCount_)
     {
         maxProcessCount = maxProcessCount_;
-        Select(65);
+        Select(64);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(66);
+        Select(65);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(67);
+        Select(66);
     }
 
     public void SetPathlines(boolean pathlines_)
     {
         pathlines = pathlines_;
-        Select(68);
+        Select(67);
     }
 
     public void SetPathlinesOverrideStartingTimeFlag(boolean pathlinesOverrideStartingTimeFlag_)
     {
         pathlinesOverrideStartingTimeFlag = pathlinesOverrideStartingTimeFlag_;
-        Select(69);
+        Select(68);
     }
 
     public void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_)
     {
         pathlinesOverrideStartingTime = pathlinesOverrideStartingTime_;
-        Select(70);
+        Select(69);
     }
 
     public void SetPathlinesPeriod(double pathlinesPeriod_)
     {
         pathlinesPeriod = pathlinesPeriod_;
-        Select(71);
+        Select(70);
     }
 
     public void SetPathlinesCMFE(int pathlinesCMFE_)
     {
         pathlinesCMFE = pathlinesCMFE_;
-        Select(72);
+        Select(71);
     }
 
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(73);
+        Select(72);
     }
 
     public void SetIssueStepsizeWarnings(boolean issueStepsizeWarnings_)
     {
         issueStepsizeWarnings = issueStepsizeWarnings_;
-        Select(74);
+        Select(73);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(75);
+        Select(74);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(76);
+        Select(75);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(77);
+        Select(76);
     }
 
     // Property getting methods
@@ -1139,7 +1129,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public int            GetOverridePoloidalWinding() { return overridePoloidalWinding; }
     public double         GetWindingPairConfidence() { return windingPairConfidence; }
     public double         GetRationalSurfaceFactor() { return rationalSurfaceFactor; }
-    public int            GetAdjustPlane() { return adjustPlane; }
     public int            GetOverlaps() { return overlaps; }
     public int            GetMeshType() { return meshType; }
     public int            GetNumberPlanes() { return numberPlanes; }
@@ -1257,90 +1246,88 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(34, buf))
             buf.WriteDouble(rationalSurfaceFactor);
         if(WriteSelect(35, buf))
-            buf.WriteInt(adjustPlane);
-        if(WriteSelect(36, buf))
             buf.WriteInt(overlaps);
-        if(WriteSelect(37, buf))
+        if(WriteSelect(36, buf))
             buf.WriteInt(meshType);
-        if(WriteSelect(38, buf))
+        if(WriteSelect(37, buf))
             buf.WriteInt(numberPlanes);
-        if(WriteSelect(39, buf))
+        if(WriteSelect(38, buf))
             buf.WriteDouble(singlePlane);
-        if(WriteSelect(40, buf))
+        if(WriteSelect(39, buf))
             buf.WriteDouble(min);
-        if(WriteSelect(41, buf))
+        if(WriteSelect(40, buf))
             buf.WriteDouble(max);
-        if(WriteSelect(42, buf))
+        if(WriteSelect(41, buf))
             buf.WriteBool(minFlag);
-        if(WriteSelect(43, buf))
+        if(WriteSelect(42, buf))
             buf.WriteBool(maxFlag);
-        if(WriteSelect(44, buf))
+        if(WriteSelect(43, buf))
             buf.WriteInt(colorType);
-        if(WriteSelect(45, buf))
+        if(WriteSelect(44, buf))
             singleColor.Write(buf);
-        if(WriteSelect(46, buf))
+        if(WriteSelect(45, buf))
             buf.WriteString(colorTableName);
-        if(WriteSelect(47, buf))
+        if(WriteSelect(46, buf))
             buf.WriteInt(dataValue);
-        if(WriteSelect(48, buf))
+        if(WriteSelect(47, buf))
             buf.WriteBool(showRationalSurfaces);
-        if(WriteSelect(49, buf))
+        if(WriteSelect(48, buf))
             buf.WriteInt(RationalSurfaceMaxIterations);
-        if(WriteSelect(50, buf))
+        if(WriteSelect(49, buf))
             buf.WriteBool(showOPoints);
-        if(WriteSelect(51, buf))
+        if(WriteSelect(50, buf))
             buf.WriteInt(OPointMaxIterations);
-        if(WriteSelect(52, buf))
+        if(WriteSelect(51, buf))
             buf.WriteBool(showXPoints);
-        if(WriteSelect(53, buf))
+        if(WriteSelect(52, buf))
             buf.WriteInt(XPointMaxIterations);
-        if(WriteSelect(54, buf))
+        if(WriteSelect(53, buf))
             buf.WriteBool(performOLineAnalysis);
-        if(WriteSelect(55, buf))
+        if(WriteSelect(54, buf))
             buf.WriteInt(OLineToroidalWinding);
-        if(WriteSelect(56, buf))
+        if(WriteSelect(55, buf))
             buf.WriteString(OLineAxisFileName);
-        if(WriteSelect(57, buf))
+        if(WriteSelect(56, buf))
             buf.WriteBool(showChaotic);
-        if(WriteSelect(58, buf))
+        if(WriteSelect(57, buf))
             buf.WriteBool(showIslands);
-        if(WriteSelect(59, buf))
+        if(WriteSelect(58, buf))
             buf.WriteBool(SummaryFlag);
-        if(WriteSelect(60, buf))
+        if(WriteSelect(59, buf))
             buf.WriteBool(verboseFlag);
-        if(WriteSelect(61, buf))
+        if(WriteSelect(60, buf))
             buf.WriteBool(show1DPlots);
-        if(WriteSelect(62, buf))
+        if(WriteSelect(61, buf))
             buf.WriteBool(showLines);
-        if(WriteSelect(63, buf))
+        if(WriteSelect(62, buf))
             buf.WriteBool(showPoints);
-        if(WriteSelect(64, buf))
+        if(WriteSelect(63, buf))
             buf.WriteInt(parallelizationAlgorithmType);
-        if(WriteSelect(65, buf))
+        if(WriteSelect(64, buf))
             buf.WriteInt(maxProcessCount);
-        if(WriteSelect(66, buf))
+        if(WriteSelect(65, buf))
             buf.WriteInt(maxDomainCacheSize);
-        if(WriteSelect(67, buf))
+        if(WriteSelect(66, buf))
             buf.WriteInt(workGroupSize);
-        if(WriteSelect(68, buf))
+        if(WriteSelect(67, buf))
             buf.WriteBool(pathlines);
-        if(WriteSelect(69, buf))
+        if(WriteSelect(68, buf))
             buf.WriteBool(pathlinesOverrideStartingTimeFlag);
-        if(WriteSelect(70, buf))
+        if(WriteSelect(69, buf))
             buf.WriteDouble(pathlinesOverrideStartingTime);
-        if(WriteSelect(71, buf))
+        if(WriteSelect(70, buf))
             buf.WriteDouble(pathlinesPeriod);
-        if(WriteSelect(72, buf))
+        if(WriteSelect(71, buf))
             buf.WriteInt(pathlinesCMFE);
-        if(WriteSelect(73, buf))
+        if(WriteSelect(72, buf))
             buf.WriteBool(issueTerminationWarnings);
-        if(WriteSelect(74, buf))
+        if(WriteSelect(73, buf))
             buf.WriteBool(issueStepsizeWarnings);
-        if(WriteSelect(75, buf))
+        if(WriteSelect(74, buf))
             buf.WriteBool(issueStiffnessWarnings);
-        if(WriteSelect(76, buf))
+        if(WriteSelect(75, buf))
             buf.WriteBool(issueCriticalPointsWarnings);
-        if(WriteSelect(77, buf))
+        if(WriteSelect(76, buf))
             buf.WriteDouble(criticalPointThreshold);
     }
 
@@ -1454,133 +1441,130 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetRationalSurfaceFactor(buf.ReadDouble());
             break;
         case 35:
-            SetAdjustPlane(buf.ReadInt());
-            break;
-        case 36:
             SetOverlaps(buf.ReadInt());
             break;
-        case 37:
+        case 36:
             SetMeshType(buf.ReadInt());
             break;
-        case 38:
+        case 37:
             SetNumberPlanes(buf.ReadInt());
             break;
-        case 39:
+        case 38:
             SetSinglePlane(buf.ReadDouble());
             break;
-        case 40:
+        case 39:
             SetMin(buf.ReadDouble());
             break;
-        case 41:
+        case 40:
             SetMax(buf.ReadDouble());
             break;
-        case 42:
+        case 41:
             SetMinFlag(buf.ReadBool());
             break;
-        case 43:
+        case 42:
             SetMaxFlag(buf.ReadBool());
             break;
-        case 44:
+        case 43:
             SetColorType(buf.ReadInt());
             break;
-        case 45:
+        case 44:
             singleColor.Read(buf);
-            Select(45);
+            Select(44);
             break;
-        case 46:
+        case 45:
             SetColorTableName(buf.ReadString());
             break;
-        case 47:
+        case 46:
             SetDataValue(buf.ReadInt());
             break;
-        case 48:
+        case 47:
             SetShowRationalSurfaces(buf.ReadBool());
             break;
-        case 49:
+        case 48:
             SetRationalSurfaceMaxIterations(buf.ReadInt());
             break;
-        case 50:
+        case 49:
             SetShowOPoints(buf.ReadBool());
             break;
-        case 51:
+        case 50:
             SetOPointMaxIterations(buf.ReadInt());
             break;
-        case 52:
+        case 51:
             SetShowXPoints(buf.ReadBool());
             break;
-        case 53:
+        case 52:
             SetXPointMaxIterations(buf.ReadInt());
             break;
-        case 54:
+        case 53:
             SetPerformOLineAnalysis(buf.ReadBool());
             break;
-        case 55:
+        case 54:
             SetOLineToroidalWinding(buf.ReadInt());
             break;
-        case 56:
+        case 55:
             SetOLineAxisFileName(buf.ReadString());
             break;
-        case 57:
+        case 56:
             SetShowChaotic(buf.ReadBool());
             break;
-        case 58:
+        case 57:
             SetShowIslands(buf.ReadBool());
             break;
-        case 59:
+        case 58:
             SetSummaryFlag(buf.ReadBool());
             break;
-        case 60:
+        case 59:
             SetVerboseFlag(buf.ReadBool());
             break;
-        case 61:
+        case 60:
             SetShow1DPlots(buf.ReadBool());
             break;
-        case 62:
+        case 61:
             SetShowLines(buf.ReadBool());
             break;
-        case 63:
+        case 62:
             SetShowPoints(buf.ReadBool());
             break;
-        case 64:
+        case 63:
             SetParallelizationAlgorithmType(buf.ReadInt());
             break;
-        case 65:
+        case 64:
             SetMaxProcessCount(buf.ReadInt());
             break;
-        case 66:
+        case 65:
             SetMaxDomainCacheSize(buf.ReadInt());
             break;
-        case 67:
+        case 66:
             SetWorkGroupSize(buf.ReadInt());
             break;
-        case 68:
+        case 67:
             SetPathlines(buf.ReadBool());
             break;
-        case 69:
+        case 68:
             SetPathlinesOverrideStartingTimeFlag(buf.ReadBool());
             break;
-        case 70:
+        case 69:
             SetPathlinesOverrideStartingTime(buf.ReadDouble());
             break;
-        case 71:
+        case 70:
             SetPathlinesPeriod(buf.ReadDouble());
             break;
-        case 72:
+        case 71:
             SetPathlinesCMFE(buf.ReadInt());
             break;
-        case 73:
+        case 72:
             SetIssueTerminationWarnings(buf.ReadBool());
             break;
-        case 74:
+        case 73:
             SetIssueStepsizeWarnings(buf.ReadBool());
             break;
-        case 75:
+        case 74:
             SetIssueStiffnessWarnings(buf.ReadBool());
             break;
-        case 76:
+        case 75:
             SetIssueCriticalPointsWarnings(buf.ReadBool());
             break;
-        case 77:
+        case 76:
             SetCriticalPointThreshold(buf.ReadDouble());
             break;
         }
@@ -1691,7 +1675,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + intToString("overridePoloidalWinding", overridePoloidalWinding, indent) + "\n";
         str = str + doubleToString("windingPairConfidence", windingPairConfidence, indent) + "\n";
         str = str + doubleToString("rationalSurfaceFactor", rationalSurfaceFactor, indent) + "\n";
-        str = str + intToString("adjustPlane", adjustPlane, indent) + "\n";
         str = str + indent + "overlaps = ";
         if(overlaps == OVERLAPTYPE_RAW)
             str = str + "OVERLAPTYPE_RAW";
@@ -1836,7 +1819,6 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private int            overridePoloidalWinding;
     private double         windingPairConfidence;
     private double         rationalSurfaceFactor;
-    private int            adjustPlane;
     private int            overlaps;
     private int            meshType;
     private int            numberPlanes;

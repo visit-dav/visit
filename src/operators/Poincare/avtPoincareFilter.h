@@ -55,6 +55,7 @@
 
 #include <vector>
 
+class avtPoincareIC;
 
 // ****************************************************************************
 //  Class: avtPoincareFilter
@@ -106,8 +107,6 @@ class avtPoincareFilter : public virtual avtPluginFilter,
 
     void SetWindingPairConfidence( double val ) { windingPairConfidence = val; }
     void SetRationalSurfaceFactor( double val ) { rationalSurfaceFactor = val; }
-
-    void SetAdjustPlane( int val ) { adjust_plane = val; }
 
     void SetOverlaps( unsigned int val ) { overlaps = val; }
 
@@ -198,7 +197,6 @@ class avtPoincareFilter : public virtual avtPluginFilter,
 
     virtual void drawRationalCurve( avtDataTree *dt,
                                     std::vector< std::vector < std::vector < avtVector > > > &nodes,
-                                    unsigned int nnodes,
                                     unsigned int islands,
                                     unsigned int skip,
                                     unsigned int color,
@@ -216,12 +214,10 @@ class avtPoincareFilter : public virtual avtPluginFilter,
   
     virtual void drawSurface( avtDataTree *dt,
                               std::vector< std::vector < std::vector < avtVector > > > &nodes,
-                              unsigned int nnodes,
                               unsigned int islands,
                               unsigned int skip,
                               unsigned int color,
-                              double color_value,
-                              bool modulo = false);
+                              double color_value);
   
     virtual void drawPeriodicity( avtDataTree *dt,
                                   std::vector < avtVector > &nodes,
@@ -235,6 +231,7 @@ class avtPoincareFilter : public virtual avtPluginFilter,
 
     // Poincare filter methods.
     bool ClassifyFieldlines(std::vector<avtIntegralCurve *> &ic);
+    void SetupPlaneOrdering( avtPoincareIC *poincare_ic );
     void CreatePoincareOutput(avtDataTree *dt,
                               std::vector<avtIntegralCurve *> &ic);
 
@@ -287,7 +284,6 @@ class avtPoincareFilter : public virtual avtPluginFilter,
     double rationalSurfaceFactor;
 
     std::vector< double > planes;
-    int adjust_plane;
 
     unsigned int overlaps;
     bool is_curvemesh;

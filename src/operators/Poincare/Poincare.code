@@ -105,19 +105,22 @@ Definition:
 bool
 PoincareAttributes::ChangesRequireRecalculation(const PoincareAttributes &obj) const
 {
-    return StreamlineAttsRequireRecalculation(obj) ||
+    std::cerr << IntegralCurveAttsRequireRecalculation(obj) << "  " 
+              << PoincareAttsRequireRecalculation(obj) << std::endl;
+              
+    return IntegralCurveAttsRequireRecalculation(obj) ||
            PoincareAttsRequireRecalculation(obj);
 }
 
 Target: xml2atts
-Function: StreamlineAttsRequireRecalculation
-Declaration: bool StreamlineAttsRequireRecalculation(const PoincareAttributes &obj) const;
+Function: IntegralCurveAttsRequireRecalculation
+Declaration: bool IntegralCurveAttsRequireRecalculation(const PoincareAttributes &obj) const;
 Definition:
 // ****************************************************************************
-// Method: PoincareAttributes::StreamlineAttsRequireRecalculation
+// Method: PoincareAttributes::IntegralCurveAttsRequireRecalculation
 //
 // Purpose: 
-//   Determine if streamline attribute changes require recalculation.
+//   Determine if integral curve attribute changes require recalculation.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tues Oct 21 14:22:17 EDT 2008
@@ -130,7 +133,7 @@ Definition:
 #define POINT_DIFFERS(p1,p2) (PDIF(p1,p2,0) || PDIF(p1,p2,1) || PDIF(p1,p2,2))
 
 bool
-PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes &obj) const
+PoincareAttributes::IntegralCurveAttsRequireRecalculation(const PoincareAttributes &obj) const
 {
     // If we're in point source mode and the points differ, sourcePointsDiffer
     // evaluates to true.
@@ -153,12 +156,8 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
     // evaluates to true.
     bool sourceLineDiffers = ((sourceType == SpecifiedLine) &&
                               (POINT_DIFFERS(lineStart, obj.lineStart) ||
-                               POINT_DIFFERS(lineEnd, obj.lineEnd)));
-    
-    // Other things need to be true before we start paying attention to
-    // point density.
-    bool densityMatters = ((sourceType == SpecifiedLine) &&
-                           (pointDensity != obj.pointDensity));
+                               POINT_DIFFERS(lineEnd, obj.lineEnd) ||
+                               pointDensity != obj.pointDensity));
 
     return (sourceType != obj.sourceType ||
             sourcePointsDiffer ||
@@ -167,8 +166,6 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
 
             (fieldType == FlashField &&
              POINT_DIFFERS(velocitySource, obj.velocitySource)) ||
-
-            densityMatters ||
 
             minPunctures != obj.minPunctures ||
             maxPunctures != obj.maxPunctures ||
@@ -239,8 +236,6 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            meshType != obj.meshType ||
            numberPlanes != obj.numberPlanes ||
            singlePlane != obj.singlePlane ||
-
-           adjustPlane != obj.adjustPlane ||
 
            showLines != obj.showLines ||
            showPoints != obj.showPoints;
