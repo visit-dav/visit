@@ -286,6 +286,8 @@ function build_ccmio
     #
     prepare_build_dir $CCMIO_BUILD_DIR $CCMIO_FILE
     untarred_ccmio=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_ccmio == -1 ]] ; then
         warn "Unable to prepare CCMIO Build Directory. Giving Up"
         return 1
@@ -301,9 +303,9 @@ function build_ccmio
             warn "Giving up on CCMIO build because the patch failed."
             return 1
         else
-            warn "Patch failed, but continuing.  I believe that this script" \
-                 "tried to apply a patch to an existing directory which had" \
-                 "already been patched ... that is, that the patch is" \
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
                  "failing harmlessly on a second application."
         fi
     fi
@@ -326,6 +328,10 @@ function build_ccmio
             fi
         fi
     fi
+
+
+    #
+    # Configure CCMIO
     #
     info "Configuring CCMIO . . ."
     cd $CCMIO_BUILD_DIR || error "Can't cd to CCMIO build dir."

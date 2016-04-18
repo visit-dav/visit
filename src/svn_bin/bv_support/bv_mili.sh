@@ -383,6 +383,8 @@ function build_mili
     #
     prepare_build_dir $MILI_BUILD_DIR $MILI_FILE
     untarred_mili=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_mili == -1 ]] ; then
         warn "Unable to prepare Mili Build Directory. Giving Up"
         return 1
@@ -398,13 +400,16 @@ function build_mili
             warn "Giving up on Mili build because the patches failed."
             return 1
         else
-            warn "Patch failed, but continuing.  I believe that this script " 
-            warn "tried to apply a patch to an existing directory which had " 
-            warn "already been patched ... that is, that the patch is "
-            warn "failing harmlessly on a second application."
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
+                 "failing harmlessly on a second application."
         fi
     fi
 
+    #
+    # Configure Mili
+    #
     info "Configuring Mili . . ."
     cd $MILI_BUILD_DIR || error "Can't cd to mili build dir."
 

@@ -576,17 +576,33 @@ function build_hdf5
     #
     prepare_build_dir $HDF5_BUILD_DIR $HDF5_FILE
     untarred_hdf5=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_hdf5 == -1 ]] ; then
         warn "Unable to prepare HDF5 Build Directory. Giving Up"
         return 1
     fi
 
     #
+    # Apply patches
+    #
     cd $HDF5_BUILD_DIR || error "Can't cd to HDF5 build dir."
     apply_hdf5_patch
-    if [[ $? != 0 ]]; then
-        warn "Patch failed, but continuing."
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_hdf5 == 1 ]] ; then
+            warn "Giving up on HDF5 build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
     fi
+
+    #
+    # Configure HDF5
+    #
     info "Configuring HDF5 . . ."
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH

@@ -126,16 +126,28 @@ function build_boost
     #
     prepare_build_dir $BOOST_BUILD_DIR $BOOST_FILE
     untarred_boost=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_boost == -1 ]] ; then
         warn "Unable to prepare BOOST Build Directory. Giving Up"
         return 1
     fi
 
     #
+    # Apply patches
+    #
     cd $BOOST_BUILD_DIR || error "Can't cd to BOOST build dir."
     apply_boost_patch
-    if [[ $? != 0 ]]; then
-        warn "Patch failed, but continuing."
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_boost == 1 ]] ; then
+            warn "Giving up on Boost build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
     fi
 
     # Get a list of libraries to build. This list of libraries is used

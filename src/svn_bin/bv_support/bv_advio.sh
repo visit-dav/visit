@@ -163,6 +163,8 @@ function build_advio
     #
     prepare_build_dir $ADVIO_BUILD_DIR $ADVIO_FILE
     untarred_ADVIO=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_ADVIO == -1 ]] ; then
         warn "Unable to prepare AdvIO Build Directory. Giving up"
         return 1
@@ -179,13 +181,15 @@ function build_advio
             return 1
         else 
             warn "Patch failed, but continuing.  I believe that this script\n" \
-                 warn "tried to apply a patch to an existing directory which had\n" \
-                 warn "already been patched ... that is, that the patch is\n" \
-                 warn "failing harmlessly on a second application."
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
+                 "failing harmlessly on a second application."
         fi
     fi
 
+    #
     # Configure AdvIO
+    #
     info "Configuring AdvIO . . ."
     cd $ADVIO_BUILD_DIR || error "Can't cd to AdvIO build dir."
     # Remove IDL dependencies from the build process

@@ -323,10 +323,9 @@ function build_qt
     #
     # Prepare the build dir using src file.
     #
-
     prepare_build_dir $QT_BUILD_DIR $QT_FILE
     untarred_qt=$?
-    # 0, already exists, 1  untarred src, 2 error
+    # 0, already exists, 1 untarred src, 2 error
 
     if [[ untarred_qt == -1 ]] ; then
         warn "Unable to prepare Qt build directory. Giving Up!"
@@ -345,8 +344,8 @@ function build_qt
             return 1
         else
             warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory which had " \
-                 "already been patched ... that is, that the patch is " \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
                  "failing harmlessly on a second application."
         fi
     fi

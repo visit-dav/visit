@@ -300,22 +300,32 @@ function build_python
 {
     prepare_build_dir $PYTHON_BUILD_DIR $PYTHON_FILE
     untarred_python=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_python == -1 ]] ; then
         warn "Unable to prepare Python build directory. Giving Up!"
         return 1
     fi
 
     #
-    # Do any python patches if necessary
+    # Apply patches
     #
     cd $PYTHON_BUILD_DIR || error "Can't cd to Python build dir."
     apply_python_patch
     if [[ $? != 0 ]] ; then
-        warn "Patch failed, but continuing."
+        if [[ $untarred_python == 1 ]] ; then
+            warn "Giving up on Python build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
     fi
 
     #
-    # Call configure
+    # Configure Python
     #
     cCompiler="${C_COMPILER}"
     cFlags="${CFLAGS} ${C_OPT_FLAGS}"
@@ -474,7 +484,15 @@ function build_pil
     # apply PIL patches
     apply_python_pil_patch
     if [[ $? != 0 ]] ; then
-        warn "Patch failed, but continuing."
+        if [[ $untarred_python == 1 ]] ; then
+            warn "Giving up on Pyhton Pil build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
     fi
 
     # NOTE:

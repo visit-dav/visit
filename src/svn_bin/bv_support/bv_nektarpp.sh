@@ -170,6 +170,8 @@ function build_nektarpp
     #
     prepare_build_dir $NEKTAR_PLUS_PLUS_BUILD_DIR $NEKTAR_PLUS_PLUS_FILE
     untarred_nektar_plus_plus=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_nektar_plus_plus == -1 ]] ; then
         warn "Unable to prepare Nektar++ Build Directory. Giving Up"
         return 1
@@ -177,10 +179,28 @@ function build_nektarpp
 
     #
     cd $NEKTAR_PLUS_PLUS_BUILD_DIR || error "Can't cd to Nektar++ build dir." $NEKTAR_PLUS_PLUS_BUILD_DIR 
+
+    #
+    # Apply patches
+    #
+    info "Patching Nektar++ . . ."
     apply_nektarpp_patch
-    if [[ $? != 0 ]]; then
-        warn "Patch failed, but continuing."
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_nektar_plus_plus == 1 ]] ; then
+            warn "Giving up on Nektar++ build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
     fi
+ 
+    #
+    # Configure Nektar++
+    #
+    info "Configuring Nektar++ . . ."
 
     ntopts=""
     nektar_plus_plus_build_mode="${VISIT_BUILD_MODE}"
@@ -254,8 +274,6 @@ function build_nektarpp
     #            export LD_LIBRARY_PATH="$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
     #        fi
     #    fi
-
-    info "Configuring Nektar++ . . ."
 
     cd "$START_DIR"
 

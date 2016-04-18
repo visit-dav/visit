@@ -517,8 +517,14 @@ function build_vtk
             ensure_built_or_ready $VTK_INSTALL_DIR    $VTK_VERSION    $VTK_BUILD_DIR    $VTK_FILE
         fi
     fi
+
+    #
+    # Prepare the build dir using src file.
+    #
     prepare_build_dir $VTK_BUILD_DIR $VTK_FILE
     untarred_vtk=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_vtk == -1 ]] ; then
         warn "Unable to prepare VTK build directory. Giving Up!"
         return 1
@@ -536,14 +542,18 @@ function build_vtk
             return 1
         else
             warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory which had " \
-                 "already been patched ... that is, that the patch is " \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
                  "failing harmlessly on a second application."
         fi
     fi
+
     # move back up to the start dir 
     cd "$START_DIR"
 
+    #
+    # Configure VTK
+    #
     info "Configuring VTK . . ."
 
     # Make a build directory for an out-of-source build.. Change the
@@ -564,7 +574,6 @@ function build_vtk
     #
     # Setup paths and libs for python for the VTK build.
     #
-
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ "${VISIT_PYTHON_DIR}/lib" != "/usr/lib" ]]; then
             export DYLD_LIBRARY_PATH="${VISIT_PYTHON_DIR}/lib/:$DYLD_LIBRARY_PATH"

@@ -252,6 +252,8 @@ function build_vtkm
     #
     prepare_build_dir $VTKM_BUILD_DIR $VTKM_FILE
     untarred_vtkm=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_vtkm == -1 ]] ; then
         warn "Unable to prepare vtkm build directory. Giving Up!"
         return 1
@@ -263,15 +265,23 @@ function build_vtkm
     cd $VTKM_BUILD_DIR || error "Can't cd to vtkm build dir."
     apply_vtkm_patch
     if [[ $? != 0 ]] ; then
-        warn "Patch failed, but continuing."
+        if [[ $untarred_vtkm == 1 ]] ; then
+            warn "Giving up on VTKm build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
     fi
     # move back up to the start dir
     cd "$START_DIR"
 
     #
-    # Call cmake
+    # Configure VTK
     #
-    info "Configuring vtkm . . ."
+    info "Configuring VTKm . . ."
     
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
 

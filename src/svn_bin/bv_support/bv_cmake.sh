@@ -99,9 +99,9 @@ function bv_cmake_bin_cmake_dir
 
 function bv_cmake_info
 {
-    export CMAKE_FILE=${CMAKE_FILE:-"cmake-3.0.2.tar.gz"}
-    export CMAKE_VERSION=${CMAKE_VERSION:-"3.0.2"}
-    export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-3.0.2"}
+    export CMAKE_FILE=${CMAKE_FILE:-"cmake-3.5.2.tar.gz"}
+    export CMAKE_VERSION=${CMAKE_VERSION:-"3.5.2"}
+    export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-3.5.2"}
     export CMAKE_MD5_CHECKSUM="db4c687a31444a929d2fdc36c4dfb95f"
     export CMAKE_SHA256_CHECKSUM=""
 }
@@ -367,6 +367,8 @@ function build_cmake
     #
     prepare_build_dir $CMAKE_BUILD_DIR $CMAKE_FILE
     untarred_cmake=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_cmake == -1 ]] ; then
         warn "Unable to prepare CMake build directory. Giving Up!"
         return 1
@@ -381,9 +383,9 @@ function build_cmake
             warn "Giving up on CMake build because the patch failed."
             return 1
         else
-            warn "Patch failed, but continuing.  I believe that this script\n"\
-                 "tried to apply a patch to an existing directory which had\n"\
-                 "already been patched ... that is, that the patch is\n"\
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
                  "failing harmlessly on a second application."
         fi
     fi
