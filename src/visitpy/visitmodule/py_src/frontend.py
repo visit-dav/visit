@@ -247,7 +247,8 @@ class VisItModuleState(object):
     @classmethod
     def __read_visit_env(cls,vcmd):
         if sys.platform.startswith("win"):
-            pcmd = [vcmd, "-env"]
+            pcmd = vcmd.strip().split(' ')
+            pcmd.append("-env")
         else:
             pcmd = vcmd + " -env"
         p = subprocess.Popen(pcmd,

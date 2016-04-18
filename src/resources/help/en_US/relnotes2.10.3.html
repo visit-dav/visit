@@ -27,6 +27,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Command recording for changing PickAttributes now reports the correct 'getter' method: GetPickAttributes.</li>
   <li>Fixed a bug where VisIt could draw a Pseudocolor plot of a .vtu file with only points (no cells) defined, but could not draw a Mesh plot of the same dataset.</li>
   <li>Fixed a few issues related to Pseudocolor plot's use of ColorTable opacity: viewer crash when creating a transparent colortable via cli; Pseudocolor plot affected by changes to a ColorTable it isn't utilizing; changing the ColorTable's opacities would make the Pseudocolor plot go blank.</li>
+  <li>Fixed a bug using system python on Windows, error parsing added arguments.</li>
 </ul>
 
 <a name="Enhancements"></a>
