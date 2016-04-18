@@ -300,6 +300,8 @@ function build_netcdf
     #
     prepare_build_dir $NETCDF_BUILD_DIR $NETCDF_FILE
     untarred_netcdf=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_netcdf == -1 ]] ; then
         warn "Unable to prepare NetCDF Build Directory. Giving Up"
         return 1
@@ -316,12 +318,15 @@ function build_netcdf
             return 1
         else
             warn "Patch failed, but continuing.  I believe that this script\n" \
-                 warn "tried to apply a patch to an existing directory which had\n" \
-                 warn "already been patched ... that is, that the patch is\n" \
-                 warn "failing harmlessly on a second application."
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
+                 "failing harmlessly on a second application."
         fi
     fi
 
+    #
+    # Configure NetCDF
+    #
     info "Configuring NetCDF . . ."
     cd $NETCDF_BUILD_DIR || error "Can't cd to netcdf build dir."
     info "Invoking command to configure NetCDF"

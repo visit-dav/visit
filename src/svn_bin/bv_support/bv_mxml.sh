@@ -137,6 +137,8 @@ function build_mxml
     #
     prepare_build_dir $MXML_BUILD_DIR $MXML_FILE
     untarred_mxml=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_mxml == -1 ]] ; then
         warn "Unable to prepare mxml Build Directory. Giving Up"
         return 1
@@ -152,13 +154,15 @@ function build_mxml
             warn "Giving up on MXML build because the patch failed."
             return 1
         else
-            warn "Patch failed, but continuing.  I believe that this script" \
-                 "tried to apply a patch to an existing directory which had" \
-                 "already been patched ... that is, that the patch is" \
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
                  "failing harmlessly on a second application."
         fi
     fi
     
+    #
+    # Configure MXML
     #
     info "Configuring mxml . . ."
     cd $MXML_BUILD_DIR || error "Can't cd to mxml build dir."

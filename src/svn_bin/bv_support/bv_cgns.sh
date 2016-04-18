@@ -247,6 +247,8 @@ function build_cgns
     #
     prepare_build_dir $CGNS_BUILD_DIR $CGNS_FILE
     untarred_cgns=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_cgns == -1 ]] ; then
         warn "Unable to prepare CGNS Build Directory. Giving Up"
         return 1
@@ -262,12 +264,15 @@ function build_cgns
             return 1
         else
             warn "Patch failed, but continuing.  I believe that this script\n" \
-                 warn "tried to apply a patch to an existing directory which had\n" \
-                 warn "already been patched ... that is, that the patch is\n" \
-                 warn "failing harmlessly on a second application."
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, that the patch is\n" \
+                 "failing harmlessly on a second application."
         fi
     fi
 
+    #
+    # Configure CGNS
+    #
     info "Configuring CGNS . . ."
     cd $CGNS_BUILD_DIR || error "Can't cd to CGNS build dir."
     info "Invoking command to configure CGNS"

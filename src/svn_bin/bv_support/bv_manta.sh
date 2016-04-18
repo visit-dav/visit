@@ -94,22 +94,19 @@ function build_manta
     #
     prepare_build_dir $MANTA_BUILD_DIR $MANTA_FILE
     untarred_manta=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_manta == -1 ]] ; then
         warn "Unable to prepare Manta Build Directory. Giving Up"
         return 1
     fi
 
     #
-    info "Configuring Manta . . ."
-    cd ${MANTA_BUILD_DIR} || error "Can't cd to Manta build dir."
-    #apply_manta_patch
-    #if [[ $? != 0 ]] ; then
-    #    warn "Patch failed, but continuing."
-    #fi
-
-    #
     # Call configure
     #
+    info "Configuring Manta . . ."
+    cd ${MANTA_BUILD_DIR} || error "Can't cd to Manta build dir."
+
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     cCompiler="${C_COMPILER}"
     cFlags="${CFLAGS} ${C_OPT_FLAGS}"

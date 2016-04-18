@@ -1302,10 +1302,13 @@ function build_hdf4
     #
     prepare_build_dir $HDF4_BUILD_DIR $HDF4_FILE
     untarred_hdf4=$?
+    # 0, already exists, 1 untarred src, 2 error
+
     if [[ $untarred_hdf4 == -1 ]] ; then
         warn "Unable to prepare HDF4 Build Directory. Giving Up"
         return 1
     fi
+
     #
     # Apply patches
     #
@@ -1317,18 +1320,24 @@ function build_hdf4
             return 1
         else
             warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory which had\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
                  "already been patched ... that is, that the patch is\n" \
                  "failing harmlessly on a second application."
         fi
     fi
 
+    #
+    # Set  Fortran compiler
+    #
     if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS="--disable-fortran"
     else
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
     fi
 
+    #
+    # Configure HDF4
+    #
     info "Configuring HDF4 . . ."
     cd $HDF4_BUILD_DIR || error "Can't cd to hdf4 build dir."
     info "Invoking command to configure HDF4"
