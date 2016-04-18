@@ -343,12 +343,16 @@ function build_uintah
         mkdir $VISITDIR/uintah || error "Can't make UINTAH install dir."
     fi
 
-    if [[ -e $VISITDIR/uintah/$UINTAH_VERSION ]] ; then
-        rm -rf $VISITDIR/uintah/$UINTAH_VERSION || error "Can't remove old UINTAH install dir."
+    if [[ ! -e $VISITDIR/uintah/$UINTAH_VERSION ]] ; then
+	mkdir $VISITDIR/uintah/$UINTAH_VERSION || error "Can't make UINTAH install dir."
     fi
 
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/ || error "Can't make UINTAH install dir."
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH || error "Can't make UINTAH install dir."
+    if [[ ! -e $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH ]] ; then
+	mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH || error "Can't make UINTAH install dir."
+    else	
+        rm -rf $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/* || error "Can't remove old UINTAH install dir."
+    fi
+
     mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/lib || error "Can't make UINTAH install dir."
     mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include || error "Can't make UINTAH install dir."
     mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/StandAlone || error "Can't make UINTAH install dir."
