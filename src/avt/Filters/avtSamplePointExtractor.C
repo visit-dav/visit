@@ -58,6 +58,8 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkVoxel.h>
 #include <vtkWedge.h>
+#include <vtkPolygon.h>
+#include <vtkIdList.h>
 
 #include <avtCellList.h>
 #include <avtDatasetExaminer.h>
@@ -993,6 +995,9 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
 //    Hank Childs, Mon Oct 29 20:29:55 PST 2007
 //    Ignore surface primitives in 3D.
 //
+//    Kevin Griffin, Fri Apr 22 16:31:57 PDT 2016
+//    Added support for polygons.
+//
 // ****************************************************************************
 
 void
@@ -1104,6 +1109,10 @@ avtSamplePointExtractor::RasterBasedSample(vtkDataSet *ds, int num)
 
           case VTK_PIXEL:
             ExtractPixel((vtkPixel *) cell, ds, j, li);
+            break;
+                
+          case VTK_POLYGON:
+            ExtractPolygon((vtkPolygon *)cell, ds, j, li);
             break;
 
           default:
@@ -1726,6 +1735,92 @@ avtSamplePointExtractor::ExtractVoxel(vtkVoxel *voxel, vtkDataSet *ds,
     hexExtractor->Extract(h);
 }
 
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::ExtractPolygon
+//
+//  Purpose:
+//      Triangulates the polygon cell and calls the extract method for each
+//      triangle (2D) or tetrahedron (3D).
+//
+//  Arguments:
+//      poly     The polygon cell.
+//      ds       The dataset the polygon came from (needed to find the var).
+//      polyind  The index of the polygon in ds.
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    Fri Apr 22 16:31:57 PDT 2016
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+void
+avtSamplePointExtractor::ExtractPolygon(vtkPolygon *poly, vtkDataSet *ds, int polyind, LoadingInfo &li)
+{
+    vtkIdList *ptIds = vtkIdList::New();
+    int ptId, offset;
+    
+    poly->Triangulate(ptIds);
+    
+    if(poly->GetCellDimension() == 2)   // Triangle
+    {
+        int numTriangles = ptIds->GetNumberOfIds() / 3;
+        
+        for(int i=0; i<numTriangles; i++)
+        {
+            vtkTriangle *tri = vtkTriangle::New();
+            vtkIdList *triPtIds = tri->GetPointIds();
+            vtkPoints *triPoints = tri->GetPoints();
+            
+            offset = i*3;
+            
+            ptId = ptIds->GetId(offset);
+            triPtIds->SetId(0, ptId);
+            triPoints->SetPoint(0, poly->GetPoints()->GetPoint(ptId));
+            
+            ptId = ptIds->GetId(offset+1);
+            triPtIds->SetId(1, ptId);
+            triPoints->SetPoint(1, poly->GetPoints()->GetPoint(ptId));
+            
+            ptId = ptIds->GetId(offset+2);
+            triPtIds->SetId(2, ptId);
+            triPoints->SetPoint(2, poly->GetPoints()->GetPoint(ptId));
+            
+            ExtractTriangle(tri, ds, polyind, li);
+        }
+    }
+    else    // Tetrahedron
+    {
+        int numTets = ptIds->GetNumberOfIds() / 4;
+        
+        for(int i=0; i<numTets; i++)
+        {
+            vtkTetra *tet = vtkTetra::New();
+            vtkIdList *tetPtIds = tet->GetPointIds();
+            vtkPoints *tetPoints = tet->GetPoints();
+            
+            offset = i*4;
+            
+            ptId = ptIds->GetId(offset);
+            tetPtIds->SetId(0, ptId);
+            tetPoints->SetPoint(0, poly->GetPoints()->GetPoint(ptId));
+            
+            ptId = ptIds->GetId(offset+1);
+            tetPtIds->SetId(1, ptId);
+            tetPoints->SetPoint(1, poly->GetPoints()->GetPoint(ptId));
+            
+            ptId = ptIds->GetId(offset+2);
+            tetPtIds->SetId(2, ptId);
+            tetPoints->SetPoint(2, poly->GetPoints()->GetPoint(ptId));
+            
+            ptId = ptIds->GetId(offset+3);
+            tetPtIds->SetId(3, ptId);
+            tetPoints->SetPoint(3, poly->GetPoints()->GetPoint(ptId));
+            
+            ExtractTet(tet, ds, polyind, li);
+        }
+    }
+}
 
 // ****************************************************************************
 //  Method: avtSamplePointExtractor::ExtractTriangle
@@ -1941,6 +2036,8 @@ avtSamplePointExtractor::ExtractQuad(vtkQuad *quad, vtkDataSet *ds,
     //
     hexExtractor->Extract(h);
 }
+
+
 
 
 // ****************************************************************************
