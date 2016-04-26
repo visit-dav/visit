@@ -128,6 +128,10 @@ avtEnSightFileFormat::avtEnSightFileFormat(const char *fname)
 //    Burlen Loring, Mon Jul 14 14:44:40 PDT 2014
 //    fix out of bounds index into string during wildcard substitution.
 //
+//    Kathleen Biagas, Tue Apr 26 08:05:53 PDT 2016
+//    Utilize 'filename  start number' and 'filename increment' (if present)
+//    when substituting wildcards for geometry name.
+//
 // ****************************************************************************
 
 void
@@ -172,6 +176,8 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
     std::string line;
     std::string type_line;
     std::string model_line;
+    int geomFileNameStart = -1;
+    int geomFileNameStride = -1;
 
     while (case_file.good())
     {
@@ -182,6 +188,16 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
             type_line = line;
         if(line.find("model:") != std::string::npos)
             model_line = line;
+        if(line.find("filename start number:") != std::string::npos)
+        {
+            std::string fileStart = line.substr(line.find(":")+1);
+            geomFileNameStart = atoi(fileStart.c_str());
+        }
+        if(line.find("filename increment:") != std::string::npos)
+        {
+            std::string fileStride = line.substr(line.find(":")+1);
+            geomFileNameStride = atoi(fileStride.c_str());
+        }
     }
 
     if(type_line.empty())
@@ -219,20 +235,52 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
         EXCEPTION1(InvalidFilesException, fname);
 
     //
-    // There may be wildcards in the case name.  If so, then substitute in
-    // 001 for any *** (or 0001 for ****, etc).  This way we can get the
+    // There may be wildcards in the case name.  If so, and we have a valid
+    // 'filename start number' then substitute in that number, otherwise,
+    // substitute 001 for any *** (or 0001 for ****, etc).  This way we can get the
     // name of a valid geometry file to open.
     //
 
     string model_name = model_line.substr(lastword);
-    for (size_t i = 0 ; i < model_name.size(); ++i)
+    if(geomFileNameStart != -1)
     {
-        if (model_name[i] == '*')
+        int numStars = 0;
+        std::string model_begin, model_end;
+
+        for (size_t i = 0 ; i < model_name.size(); ++i)
         {
-            if (i+1 < model_name.size() && model_name[i+1] == '*')
-                model_name[i] = '0';
+            if (model_name[i] == '*')
+            {
+                numStars++;
+            }
+            else if (numStars > 0)
+            {
+                model_end.append(&model_name[i], 1);
+            }
             else
-                model_name[i] = '1';
+            {
+                model_begin.append(&model_name[i], 1);
+            }
+        }
+        char format[12];
+        SNPRINTF(format, 12, "%s%d%s", "%0", numStars, "d");
+        char model_mid[12];
+        SNPRINTF(model_mid, 12, format, geomFileNameStart);
+        model_name = model_begin + std::string(model_mid) + model_end;
+    }
+    else
+    {
+        debug3 << "avtEnSightFileFormat::InstantiateReader, did not read 'file"
+               << " start number', guesstimating first geometry file name." << endl;
+        for (size_t i = 0 ; i < model_name.size(); ++i)
+        {
+            if (model_name[i] == '*')
+            {
+                if (i+1 < model_name.size() && model_name[i+1] == '*')
+                    model_name[i] = '0';
+                else
+                    model_name[i] = '1';
+            }
         }
     }
 
