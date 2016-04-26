@@ -129,8 +129,8 @@ avtEnSightFileFormat::avtEnSightFileFormat(const char *fname)
 //    fix out of bounds index into string during wildcard substitution.
 //
 //    Kathleen Biagas, Tue Apr 26 08:05:53 PDT 2016
-//    Utilize 'filename  start number' and 'filename increment' (if present)
-//    when substituting wildcards for geometry name.
+//    Utilize 'filename  start number' (if present) when substituting
+//    wildcards for geometry name.
 //
 // ****************************************************************************
 
@@ -177,7 +177,6 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
     std::string type_line;
     std::string model_line;
     int geomFileNameStart = -1;
-    int geomFileNameStride = -1;
 
     while (case_file.good())
     {
@@ -192,11 +191,6 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
         {
             std::string fileStart = line.substr(line.find(":")+1);
             geomFileNameStart = atoi(fileStart.c_str());
-        }
-        if(line.find("filename increment:") != std::string::npos)
-        {
-            std::string fileStride = line.substr(line.find(":")+1);
-            geomFileNameStride = atoi(fileStride.c_str());
         }
     }
 
