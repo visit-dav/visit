@@ -1787,6 +1787,7 @@ avtSamplePointExtractor::ExtractPolygon(vtkPolygon *poly, vtkDataSet *ds, int po
             triPoints->SetPoint(2, poly->GetPoints()->GetPoint(ptId));
             
             ExtractTriangle(tri, ds, polyind, li);
+            tri->Delete();
         }
     }
     else    // Tetrahedron
@@ -1818,8 +1819,11 @@ avtSamplePointExtractor::ExtractPolygon(vtkPolygon *poly, vtkDataSet *ds, int po
             tetPoints->SetPoint(3, poly->GetPoints()->GetPoint(ptId));
             
             ExtractTet(tet, ds, polyind, li);
+            tet->Delete();
         }
     }
+    
+    ptIds->Delete();
 }
 
 // ****************************************************************************
