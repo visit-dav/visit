@@ -256,11 +256,14 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
                 model_begin.append(&model_name[i], 1);
             }
         }
-        char format[12];
-        SNPRINTF(format, 12, "%s%d%s", "%0", numStars, "d");
-        char model_mid[12];
-        SNPRINTF(model_mid, 12, format, geomFileNameStart);
-        model_name = model_begin + std::string(model_mid) + model_end;
+        if (numStars > 0)
+        {
+            char format[12];
+            SNPRINTF(format, 12, "%s%d%s", "%0", numStars, "d");
+            char model_mid[12];
+            SNPRINTF(model_mid, 12, format, geomFileNameStart);
+            model_name = model_begin + std::string(model_mid) + model_end;
+        }
     }
     else
     {
