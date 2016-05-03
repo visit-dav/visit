@@ -186,19 +186,19 @@ PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.Absolute
 SetPlotOptions(PseudocolorAtts)
 Test( "ic_geometry_06" )
 
-PseudocolorAtts.lineType = PseudocolorAtts.Ribbon
-SetPlotOptions(PseudocolorAtts)
-Test( "ic_geometry_07" )
+#PseudocolorAtts.lineType = PseudocolorAtts.Ribbon
+#SetPlotOptions(PseudocolorAtts)
+#Test( "ic_geometry_07" )
 
-PseudocolorAtts.tubeRadiusBBox = 0.01
-PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.FractionOfBBox
-SetPlotOptions(PseudocolorAtts)
-Test( "ic_geometry_08" )
+#PseudocolorAtts.tubeRadiusBBox = 0.01
+#PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.FractionOfBBox
+#SetPlotOptions(PseudocolorAtts)
+#Test( "ic_geometry_08" )
 
-PseudocolorAtts.tubeRadiusAbsolute = 0.4
-PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.Absolute
-SetPlotOptions(PseudocolorAtts)
-Test( "ic_geometry_09" )
+#PseudocolorAtts.tubeRadiusAbsolute = 0.4
+#PseudocolorAtts.tubeRadiusSizeType = PseudocolorAtts.Absolute
+#SetPlotOptions(PseudocolorAtts)
+#Test( "ic_geometry_09" )
 
 PseudocolorAtts.lineType = PseudocolorAtts.Line
 PseudocolorAtts.endPointType = PseudocolorAtts.Both
