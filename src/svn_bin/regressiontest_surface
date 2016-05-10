@@ -222,23 +222,23 @@ echo "Checkout of $branch started at: \`date\`"
 
 if test "$branch" = "trunk" ; then
     if test "$revision" = "latest" ; then
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src > buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/data >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/test >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src > buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/data >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/test >> buildlog 2>&1
     else
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src -r $revision > buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/data -r $revision >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/test -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src -r $revision > buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/data -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/test -r $revision >> buildlog 2>&1
     fi
 else
     if test "$revision" = "latest" ; then
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/src > buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/data >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/test >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/src > buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/data >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/test >> buildlog 2>&1
     else
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/src -r $revision > buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/data -r $revision >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/test -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/src -r $revision > buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/data -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/test -r $revision >> buildlog 2>&1
     fi
 fi
 if test "$debug" = "true" ; then
