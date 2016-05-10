@@ -66,6 +66,9 @@
 #  Kathleen Biagas, Mon Jul 13 18:48:19 PDT 2015
 #  Add common/PyLine3DObject.
 #
+#  Eric Brugger, Mon Apr 11 15:08:56 PDT 2016
+#  Added visit_flow
+#
 #****************************************************************************/
 
 SET(COMMON_SOURCES
@@ -295,6 +298,7 @@ ENDIF(VISIT_STATIC)
 #
 ADD_SUBDIRECTORY(visitmodule)
 ADD_SUBDIRECTORY(visit_utils)
+ADD_SUBDIRECTORY(visit_flow)
 
 
 IF(VISIT_PYTHON_FILTERS)
