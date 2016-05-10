@@ -90,6 +90,10 @@ typedef struct
     int      dims[3];
     float    extents[6];
     int      groupSize;
+    int      export;
+    int      render;
+    int      image_width;
+    int      image_height;
     float   *x;
     float   *y;
     float   *z;
@@ -118,6 +122,10 @@ simulation_data_ctor(simulation_data *sim)
     sim->extents[4] = 0.f;
     sim->extents[5] = 10.f;
     sim->groupSize = -1;
+    sim->export = 1;
+    sim->render = 0;
+    sim->image_width = 1920/2;
+    sim->image_height = 1080/2;
     sim->x = NULL;
     sim->y = NULL;
     sim->z = NULL;
@@ -276,50 +284,70 @@ void mainloop_batch(simulation_data *sim)
         /* Tell VisIt that some metadata changed.*/
         VisItTimeStepChanged();
 
-        /* Set some extract options. */
-        extract_set_options(sim->format, (sim->groupSize > 0)?1:0, sim->groupSize);
-
-        /* Make some extracts. */
-        sprintf(filebase, "slice3v_%04d", sim->cycle);
-        err = extract_slice_3v(filebase, v0, v1, v2, extractvars);
-        if(sim->par_rank == 0)
+        if(sim->export)
         {
-            printf("slice3v export returned %s\n", extract_err(err));
+            /* Set some extract options. */
+            extract_set_options(sim->format, (sim->groupSize > 0)?1:0, sim->groupSize);
+
+            /* Make some extracts. */
+            sprintf(filebase, "slice3v_%04d", sim->cycle);
+            err = extract_slice_3v(filebase, v0, v1, v2, extractvars);
+            if(sim->par_rank == 0)
+            {
+                printf("slice3v export returned %s\n", extract_err(err));
+            }
+
+            sprintf(filebase, "sliceON_%04d", sim->cycle);
+            err = extract_slice_origin_normal(filebase, origin, normal, extractvars);
+            if(sim->par_rank == 0)
+            {
+                printf("sliceON export returned %s\n", extract_err(err));
+            }
+
+            sprintf(filebase, "sliceX_%04d", sim->cycle);
+            err = extract_slice(filebase, 0, 0.5, extractvars);
+            if(sim->par_rank == 0)
+            {
+                printf("sliceX export returned %s\n", extract_err(err));
+            }
+
+            sprintf(filebase, "sliceY_%04d", sim->cycle);
+            err = extract_slice(filebase, 1, 2.5, extractvars);
+            if(sim->par_rank == 0)
+            {
+                printf("slice export returned %s\n", extract_err(err));
+            }
+
+            sprintf(filebase, "sliceZ_%04d", sim->cycle);
+            err = extract_slice(filebase, 2, 5., extractvars);
+            if(sim->par_rank == 0)
+            {
+                printf("sliceZ export returned %s\n", extract_err(err));
+            }
+
+            sprintf(filebase, "iso_%04d", sim->cycle);
+            err = extract_iso(filebase, "radius", isos, 3, extractvars);
+            if(sim->par_rank == 0)
+            {
+                printf("iso export returned %s\n", extract_err(err));
+            }
         }
 
-        sprintf(filebase, "sliceON_%04d", sim->cycle);
-        err = extract_slice_origin_normal(filebase, origin, normal, extractvars);
-        if(sim->par_rank == 0)
+        if(sim->render)
         {
-            printf("sliceON export returned %s\n", extract_err(err));
-        }
-
-        sprintf(filebase, "sliceX_%04d", sim->cycle);
-        err = extract_slice(filebase, 0, 0.5, extractvars);
-        if(sim->par_rank == 0)
-        {
-            printf("sliceX export returned %s\n", extract_err(err));
-        }
-
-        sprintf(filebase, "sliceY_%04d", sim->cycle);
-        err = extract_slice(filebase, 1, 2.5, extractvars);
-        if(sim->par_rank == 0)
-        {
-            printf("slice export returned %s\n", extract_err(err));
-        }
-
-        sprintf(filebase, "sliceZ_%04d", sim->cycle);
-        err = extract_slice(filebase, 2, 5., extractvars);
-        if(sim->par_rank == 0)
-        {
-            printf("sliceZ export returned %s\n", extract_err(err));
-        }
-
-        sprintf(filebase, "iso_%04d", sim->cycle);
-        err = extract_iso(filebase, "radius", isos, 3, extractvars);
-        if(sim->par_rank == 0)
-        {
-            printf("iso export returned %s\n", extract_err(err));
+            char filename[100];
+            sprintf(filename, "batch%04d.png", sim->cycle);
+ 
+            VisItAddPlot("Contour", "d");
+            VisItDrawPlots();
+            if(VisItSaveWindow(filename, sim->image_width, sim->image_height, VISIT_IMAGEFORMAT_PNG) == VISIT_OKAY)
+            {
+                if(sim->par_rank == 0)
+                    printf("Saved %s\n", filename);
+            }
+            else if(sim->par_rank == 0)
+                printf("The image could not be saved to %s\n", filename);
+            VisItDeleteActivePlots();
         }
 
         ++sim->cycle;
@@ -410,6 +438,26 @@ int main(int argc, char **argv)
             else if(strcmp(argv[i], "-format") == 0)
             {
                 strncpy(sim.format, argv[i+1], 30);
+                i++;
+            }
+            else if(strcmp(argv[i], "-export") == 0)
+            {
+                sim.export = atoi(argv[i+1]);
+                i++;
+            }
+            else if(strcmp(argv[i], "-render") == 0)
+            {
+                sim.render = atoi(argv[i+1]);
+                i++;
+            }
+            else if(strcmp(argv[i], "-image-width") == 0)
+            {
+                sim.image_width = atoi(argv[i+1]);
+                i++;
+            }
+            else if(strcmp(argv[i], "-image-height") == 0)
+            {
+                sim.image_height = atoi(argv[i+1]);
                 i++;
             }
             else
@@ -595,6 +643,14 @@ SimGetMetaData(void *cbdata)
             VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
             VisIt_SimulationMetaData_addVariable(md, vmd);
         }
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "d");
+            VisIt_VariableMetaData_setMeshName(vmd, "mesh");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
 #ifdef DEFINE_EXPRESSIONS
         /* Add expressions for VisIt to calculate. */
         for(i = 0; i < 6; ++i)
@@ -694,6 +750,21 @@ SimGetVariable(int domain, const char *name, void *cbdata)
             rad[index] = sqrt(sim->x[index]*sim->x[index] + 
                               sim->y[index]*sim->y[index] + 
                               sim->z[index]*sim->z[index]);
+        VisIt_VariableData_setDataD(h, VISIT_OWNER_VISIT, 1,
+            npts, rad);
+    }
+    else if(strcmp(name, "d") == 0)
+    {
+        int index;
+        double *rad = NULL;
+        VisIt_VariableData_alloc(&h);
+        /* On the fly data generation. We donate the array to VisIt. */
+        rad = (double *)malloc(npts * sizeof(double));
+        for(index = 0; index < npts; ++index)
+            rad[index] = sin(sim->time + 
+                             0.25 * sqrt(sim->x[index]*sim->x[index] + 
+                              sim->y[index]*sim->y[index] + 
+                              sim->z[index]*sim->z[index]));
         VisIt_VariableData_setDataD(h, VISIT_OWNER_VISIT, 1,
             npts, rad);
     }

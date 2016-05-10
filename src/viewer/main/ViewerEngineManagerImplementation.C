@@ -2342,11 +2342,11 @@ ViewerEngineManagerImplementation::Execute(const EngineKey &ek,
 //
 // Arguments:
 //   ek         : The engine key for the engine to use.
-//   rdr        : The data object reader produced as a result of executing.
+//   img        : The data object reader produced as a result of executing.
 //   waitCB     : A callback function to handle events while we wait for data.
 //   waitCBData : callback data.
 //
-// Returns:    True on success; false on failure.
+// Returns:    0==failure, 1==null image, 2==valid image.
 //
 // Note:       
 //
@@ -2354,20 +2354,57 @@ ViewerEngineManagerImplementation::Execute(const EngineKey &ek,
 // Creation:   Wed Sep 10 13:57:45 PDT 2014
 //
 // Modifications:
+//   Brad Whitlock, Tue Mar 22 07:40:28 PDT 2016
+//   I moved some code here so the API could return an avtImage_p directly,
+//   which lets us avoid some bad stuff in the in situ implementation
+//   of this interface.
+//
+//   Brad Whitlock, Tue Mar 22 10:42:16 PDT 2016
+//   Changed the API to return an avtImage_p and an int return code. This lets
+//   us return images more cheaply elsewhere in situ.
 //
 // ****************************************************************************
 
-bool
+int
 ViewerEngineManagerImplementation::Render(const EngineKey &ek,
-   avtDataObjectReader_p &rdr,
+   avtImage_p &img,
    bool sendZBuffer, const intVector &networkIds, 
    int annotMode, int windowID, bool leftEye,
    void (*waitCB)(void *), void *waitCBData)
 {
     ENGINE_PROXY_RPC_BEGIN("Render");
-    rdr = engine->GetEngineMethods()->Render(sendZBuffer, networkIds, 
-                                             annotMode, windowID, leftEye,
-                                             waitCB, waitCBData);
+
+    // We get a data object reader back from the engine.
+    avtDataObjectReader_p rdr = engine->GetEngineMethods()->Render(
+        sendZBuffer, networkIds, annotMode, windowID, leftEye,
+        waitCB, waitCBData);
+
+    if (*rdr == NULL)
+    {
+        retval = false;
+        ViewerText msg(TR("Obtained null data reader for rendered image "
+                          "for engine %1").
+                       arg(ek.HostName()));
+        EXCEPTION1(VisItException, msg.toStdString());
+        return 0;
+    }
+
+    // check to see if engine decided that SR mode is no longer necessary
+    if (rdr->InputIs(AVT_NULL_IMAGE_MSG))
+    {
+        return 1;
+    }
+
+    // Do some magic to update the network so we don't need the reader anymore
+    avtDataObject_p tmpDob = rdr->GetOutput();
+    avtContract_p spec = tmpDob->GetOriginatingSource()->GetGeneralContract();
+    tmpDob->Update(spec);
+
+    // Put the resultant image in the returned list
+    CopyTo(img,tmpDob);
+
+    // We have a valid image. Return here.
+    return 2;
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW;
 }
 

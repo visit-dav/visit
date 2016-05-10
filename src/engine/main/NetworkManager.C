@@ -2854,11 +2854,7 @@ NetworkManager::Render(
     bool checkThreshold, intVector plotIds, bool getZBuffer,
     int annotMode, int windowID, bool leftEye)
 {
-#ifdef NetworkManagerTIME
-    struct timeval tv0,tv1;
-    gettimeofday(&tv0, 0);
-#endif
-
+    StackTimer t0("NetworkManager::Render");
     DataNetwork *origWorkingNet = workingNet;
     avtDataObject_p output;
 
@@ -2886,11 +2882,6 @@ NetworkManager::Render(
 
     workingNet = origWorkingNet;
 
-#ifdef NetworkManagerTIME
-    gettimeofday(&tv1, 0);
-    if (PAR_Rank() == 0)
-        cerr << "NetworkManager::Render " << elapsed(tv0, tv1) << endl;
-#endif
     return output;
 }
 
@@ -5056,6 +5047,8 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 void
 NetworkManager::NewVisWindow(int winID)
 {
+    StackTimer t0("NetworkManager::NewVisWindow");
+
     //
     // Delete any VisWindow objects that are marked for deletion
     //
@@ -5077,6 +5070,7 @@ NetworkManager::NewVisWindow(int winID)
 
     TRY
     {
+        StackTimer t1("Create new vis window");
         viswinMap[winID].viswin = new VisWindow();
         viswinMap[winID].visualCuesNeedUpdate = false;
         viswinMap[winID].markedForDeletion = false;
@@ -6288,6 +6282,9 @@ NetworkManager::RenderSetup(int windowID, intVector& plotIds, bool getZBuffer,
         EXCEPTION1(ImproperUseException, invalid);
     }
 
+    // Start render timer.
+    this->StartTimer();
+
     EngineVisWinInfo &viswinInfo = viswinMap.find(windowID)->second;
     viswinInfo.markedForDeletion = false;
     std::string &changedCtName = viswinInfo.changedCtName;
@@ -6554,6 +6551,7 @@ NetworkManager::RenderCleanup()
     // return viswindow to its true stereo mode
     if(renderState.stereoType != -1)
         renderState.window->SetStereoRendering(true, renderState.stereoType);
+    this->StopTimer();
 }
 
 // ****************************************************************************
@@ -6666,10 +6664,7 @@ NetworkManager::RenderingStages()
 avtImage_p
 NetworkManager::RenderGeometry()
 {
-#ifdef NetworkManagerTIME
-    struct timeval tv0,tv1;
-    gettimeofday(&tv0, 0);
-#endif
+    StackTimer t0("NetworkManager::RenderGeometry");
 
     // render the image and capture it. Relies upon explicit render
     CallProgressCallback("NetworkManager", "render pass 1", 0, 1);
@@ -6718,7 +6713,8 @@ NetworkManager::RenderGeometry()
         int w = 0, h = 0;
         int rank = PAR_Rank();
         //if (!renderState.haveCells[rank])
-        //{
+        TimedCodeBlock("Render & Readback",
+        {
             // configure for ordered composite. 1) enable alpha channel
             // 2) use solid bg 3) set clear color to 0 0 0 0
             double bgColor[3] = {0.0};
@@ -6752,7 +6748,7 @@ NetworkManager::RenderGeometry()
                 viswin->SetBackgroundMode(bgMode);
                 viswin->SetBackgroundColor(bgColor[0], bgColor[1], bgColor[2]);
             }
-        //}
+        });
 
         CallProgressCallback("NetworkManager", "render pass 1", 1, 1);
         CallProgressCallback("NetworkManager", "composite pass 1", 0, 1);
@@ -6779,6 +6775,7 @@ NetworkManager::RenderGeometry()
         else
         {
             int nranks = PAR_Size();
+            StackTimer t1("Z Compositing");
 
             // make the list of ranks that need to composite
             // because they have local geometry. if a rank is not
@@ -6818,6 +6815,8 @@ NetworkManager::RenderGeometry()
     }
     else
     {
+        StackTimer t2("NonZ Compositing");
+
         // do visit's non-z-buffer composite
         viswin->ScreenRender(renderState.viewportedMode,
             /*disbale fg=*/true, /*opaque on=*/true,
@@ -6865,11 +6864,6 @@ NetworkManager::RenderGeometry()
 
     CallProgressCallback("NetworkManager", "composite pass 1", 1, 1);
 
-#ifdef NetworkManagerTIME
-    gettimeofday(&tv1, 0);
-    if (PAR_Rank() == 0)
-        cerr << "NetworkManager::RenderGeometry " << elapsed(tv0, tv1) << endl;
-#endif
     return output;
 }
 
@@ -6905,10 +6899,7 @@ NetworkManager::RenderGeometry()
 avtImage_p
 NetworkManager::RenderTranslucent(avtImage_p& input)
 {
-#ifdef NetworkManagerTIME
-    struct timeval tv0,tv1;
-    gettimeofday(&tv0, 0);
-#endif
+    StackTimer t0("NetworkManager::RenderTranslucent");
     CallProgressCallback("NetworkManager", "render pass 2", 0, 1);
 
     VisWindow *viswin = renderState.window;
@@ -7070,13 +7061,6 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
 
     CallProgressCallback("NetworkManager", "composite pass 2", 0, 1);
 
-#ifdef NetworkManagerTIME
-    gettimeofday(&tv1, 0);
-    if (PAR_Rank() == 0)
-        cerr << "NetworkManager::RenderTranslucent "
-            << renderState.orderComposite << " " << elapsed(tv0, tv1) << endl;
-#endif
-
     return output;
 }
 
@@ -7165,6 +7149,7 @@ NetworkManager::StopTimer()
 void
 NetworkManager::RenderShadows(avtImage_p& input) const
 {
+    StackTimer t0("NetworkManager::RenderShadows");
     CallProgressCallback("NetworkManager", "Creating shadows",0,1);
 
     VisWindow *viswin = renderState.window;
@@ -7270,6 +7255,7 @@ NetworkManager::RenderShadows(avtImage_p& input) const
 void
 NetworkManager::RenderDepthCues(avtImage_p& input) const
 {
+    StackTimer t0("NetworkManager::RenderDepthCues");
     CallProgressCallback("NetworkManager", "Applying depth cueing", 0,1);
     if (PAR_Rank() == 0)
     {
@@ -7334,6 +7320,7 @@ NetworkManager::RenderDepthCues(avtImage_p& input) const
 void
 NetworkManager::RenderPostProcess(avtImage_p &input)
 {
+    StackTimer t0("NetworkManager::RenderPostProcess");
     if (renderState.imageBasedPlots)
     {
         std::vector<avtPlot_p>::iterator it = renderState.windowInfo->imageBasedPlots.begin();

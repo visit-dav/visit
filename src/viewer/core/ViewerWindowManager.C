@@ -71,7 +71,9 @@
 #include <SelectionList.h>
 #include <SelectionProperties.h>
 #include <SelectionSummary.h>
+#include <StackTimer.h>
 #include <StringHelpers.h>
+#include <TimingsManager.h>
 #include <View2DAttributes.h>
 #include <View3DAttributes.h>
 #include <ViewAxisArrayAttributes.h>
@@ -1663,6 +1665,9 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Modified the routine to take into account the save tiled and advanced
 //    multi window save settings when setting the image width and height.
 //
+//    Brad Whitlock, Tue Mar 22 19:35:40 PDT 2016
+//    Do not check permissions in CreateFilename when running in situ.
+//
 // ****************************************************************************
 
 void
@@ -1691,6 +1696,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     // Figure out a candidate for the base filename. This involves
     // gluing the output directory on when necessary.
     //
+    int t0 = visitTimer->StartTimer();
     std::string fileBase;
     if(GetViewerState()->GetSaveWindowAttributes()->GetOutputToCurrentDirectory())
     {
@@ -1753,9 +1759,11 @@ ViewerWindowManager::SaveWindow(int windowIndex)
         if (GetViewerState()->GetSaveWindowAttributes()->GetFamily())
         {
             filename = fileWriter->CreateFilename(fileBase.c_str(),
-                                  GetViewerState()->GetSaveWindowAttributes()->GetFamily());
+                                  GetViewerState()->GetSaveWindowAttributes()->GetFamily(),
+                                  !GetViewerProperties()->GetInSitu());
             filename2 = fileWriter->CreateFilename(fileBase.c_str(),
-                                  GetViewerState()->GetSaveWindowAttributes()->GetFamily());
+                                  GetViewerState()->GetSaveWindowAttributes()->GetFamily(),
+                                  !GetViewerProperties()->GetInSitu());
         }
         else
         {
@@ -1810,15 +1818,18 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                 sprintf(right_prefix, "right_%s", stem);
             }
             filename = fileWriter->CreateFilename(left_prefix,
-                                  GetViewerState()->GetSaveWindowAttributes()->GetFamily());
+                                  GetViewerState()->GetSaveWindowAttributes()->GetFamily(),
+                                  !GetViewerProperties()->GetInSitu());
             filename2 = fileWriter->CreateFilename(right_prefix,
-                                  GetViewerState()->GetSaveWindowAttributes()->GetFamily());
+                                  GetViewerState()->GetSaveWindowAttributes()->GetFamily(),
+                                  !GetViewerProperties()->GetInSitu());
         }
     }
     else
     {
         filename = fileWriter->CreateFilename(fileBase.c_str(),
-                              GetViewerState()->GetSaveWindowAttributes()->GetFamily());
+                              GetViewerState()->GetSaveWindowAttributes()->GetFamily(),
+                              !GetViewerProperties()->GetInSitu());
     }
 
     //
@@ -1837,12 +1848,15 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     }
     GetViewerMessaging()->Status(message, 6000000);
     GetViewerMessaging()->Message(message);
+    visitTimer->StopTimer(t0, "Creating filename");
 
     avtDataObject_p dob = NULL;
     avtDataObject_p dob2 = NULL;
     bool savedWindow = true;
     if (GetViewerState()->GetSaveWindowAttributes()->CurrentFormatIsImageFormat())
     {
+        StackTimer t1("Getting image");
+
         avtImage_p image = NULL;
         avtImage_p image2 = NULL;
 
@@ -1987,6 +2001,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     // Save the window.
     if(GetViewerProperties()->GetMasterProcess())
     {
+        StackTimer t2("Writing image");
         if (*dob != NULL)
         {
             TRY
@@ -2137,6 +2152,7 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
 
         if(screenCapture)
         {
+            StackTimer t0("Screen capture");
 #ifdef MESA_STUB
             if(GetViewerProperties()->GetNowin() == false)
             {
@@ -2159,6 +2175,7 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
         }
         else
         {
+            StackTimer t1("External Render");
             if (windows[index]->GetPlotList()->GetAnimationAttributes().GetPipelineCachingMode())
             {
                 GetViewerMessaging()->Warning(

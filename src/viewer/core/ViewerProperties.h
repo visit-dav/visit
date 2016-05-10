@@ -98,6 +98,7 @@ public:
 
     // Property setting methods
     void SetMasterProcess(bool MasterProcess_);
+    void SetInSitu(bool InSitu_);
     void SetNowin(bool nowin_);
     void SetWindowBorders(const std::string &windowBorders_);
     void SetWindowShift(const std::string &windowShift_);
@@ -125,6 +126,7 @@ public:
 
     // Property getting methods
     bool               GetMasterProcess() const;
+    bool               GetInSitu() const;
     bool               GetNowin() const;
     const std::string  &GetWindowBorders() const;
           std::string  &GetWindowBorders();
@@ -163,6 +165,7 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_MasterProcess = 0,
+        ID_InSitu,
         ID_nowin,
         ID_windowBorders,
         ID_windowShift,
@@ -192,6 +195,7 @@ public:
 
 private:
     bool         MasterProcess;
+    bool         InSitu;
     bool         nowin;
     std::string  windowBorders;
     std::string  windowShift;
@@ -221,6 +225,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VIEWERPROPERTIES_TMFS "bbssssibbbbssbbis*s*s*ibbbbb"
+#define VIEWERPROPERTIES_TMFS "bbbssssibbbbssbbis*s*s*ibbbbb"
 
 #endif

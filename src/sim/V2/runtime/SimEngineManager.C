@@ -59,6 +59,8 @@
 #include <DatabasePluginManager.h>
 #include <AbortException.h>
 #include <TimingsManager.h>
+#include <StackTimer.h>
+#include <DebugStream.h>
 
 #include <SimEngine.h>
 #include <NetworkManager.h>
@@ -66,8 +68,11 @@
 #include <avtCallback.h>
 #include <avtDatabaseFactory.h>
 #include <avtDataObjectString.h>
+#include <avtImage.h>
 #include <avtParallel.h>
 #include <avtNamedSelectionManager.h>
+
+#include <vtkImageData.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -230,6 +235,7 @@ SimEngineManager::EngineExists(const EngineKey &/*ek*/)
 void
 SimEngineManager::ClearCacheForAllEngines()
 {
+    StackTimer t0("SimEngineManager::ClearCacheForAllEngines");
     engine->GetNetMgr()->ClearAllNetworks();
 }
 
@@ -256,6 +262,7 @@ SimEngineManager::ClearCacheForAllEngines()
 void
 SimEngineManager::UpdateEngineList()
 {
+    StackTimer t0("SimEngineManager::UpdateEngineList");
     EngineList newEL;
     EngineProperties props(engine->GetEngineProperties());
 
@@ -295,6 +302,7 @@ SimEngineManager::SendSimulationCommand(const EngineKey &/*ek*/,
                                         const std::string &command,
                                         const std::string &argument)
 {
+    StackTimer t0("SimEngineManager::SendSimulationCommand");
     engine->ExecuteSimulationCommand(command, argument);
 }
 
@@ -372,6 +380,7 @@ SimEngineManager::OpenDatabase(const EngineKey &/*ek*/,
                                const std::string &filename,
                                int timeState)
 {
+    StackTimer t0("SimEngineManager::OpenDatabase");
     return engine->OpenDatabase();
 }
 
@@ -403,6 +412,7 @@ SimEngineManager::DefineVirtualDatabase(const EngineKey &/*ek*/,
                                         const stringVector &files,
                                         int time)
 {
+    StackTimer t0("SimEngineManager::DefineVirtualDatabase");
 // NOTE: This is pretty much the same as Executors.h. We could make this a proper
 //       method of NetworkManager to reduce code duplication.
 
@@ -451,6 +461,7 @@ SimEngineManager::ReadDataObject(const EngineKey &/*ek*/,
     const std::string &selName,
     int windowID)
 {
+    StackTimer t0("SimEngineManager::ReadDataObject");
     engine->GetNetMgr()->GetDatabasePluginManager()->PluginAvailable(format);
 
     // Need this??
@@ -498,6 +509,7 @@ SimEngineManager::ApplyOperator(const EngineKey &/*ek*/,
                                 const std::string &name,
                                 const AttributeSubject *atts)
 {
+    StackTimer t0("SimEngineManager::ApplyOperator");
     engine->GetNetMgr()->AddFilter(name, atts);
     return true;
 }
@@ -530,6 +542,7 @@ SimEngineManager::MakePlot(const EngineKey &/*ek*/,
                            const std::vector<double> &ext,
                            int winID, int *networkId)
 {
+    StackTimer t0("SimEngineManager::MakePlot");
     if (!engine->GetNetMgr()->GetPlotPluginManager()->PluginAvailable(pluginID))
     {
         engine->GetNetMgr()->CancelNetwork();
@@ -568,6 +581,7 @@ SimEngineManager::UpdatePlotAttributes(const EngineKey &/*ek*/,
                                        const std::string &pluginID,
                                        int id, const AttributeSubject *atts)
 {
+    StackTimer t0("SimEngineManager::UpdatePlotAttributes");
     // Prepare
     if (!engine->GetNetMgr()->GetPlotPluginManager()->PluginAvailable(pluginID))
     {
@@ -581,7 +595,7 @@ SimEngineManager::UpdatePlotAttributes(const EngineKey &/*ek*/,
 }
 
 // ****************************************************************************
-// Method: SimEngineManager::UpdatePlotAttributes
+// Method: SimEngineManager::UseNetwork
 //
 // Purpose:
 //   Called when the engine needs to activate a particular network.
@@ -603,6 +617,7 @@ SimEngineManager::UpdatePlotAttributes(const EngineKey &/*ek*/,
 bool
 SimEngineManager::UseNetwork(const EngineKey &/*ek*/, int networkId)
 {
+    StackTimer t0("SimEngineManager::UseNetwork");
     engine->GetNetMgr()->UseNetwork(networkId);
     return true;
 }
@@ -638,6 +653,7 @@ SimEngineManager::UseNetwork(const EngineKey &/*ek*/, int networkId)
 void
 SimEngineManager::WriteCallback(avtDataObjectString &do_str, void *cbdata)
 {
+    StackTimer t0("SimEngineManager::WriteCallback");
     DOString *d = (DOString *)cbdata;
 
     // Get the string as a whole from the do_str.
@@ -672,6 +688,7 @@ void
 SimEngineManager::ReadDataObjectString(avtDataObjectReader_p rdr, 
     SimEngineManager::DOString &dos)
 {
+    StackTimer t0("SimEngineManager::ReadDataObjectString");
 #if defined(PARALLEL) && defined(TEMPORARILY_FORCE_SAME_DATA_IN_VIEWER)
     BroadcastInt(dos.size);
     if(!PAR_UIProcess())
@@ -717,6 +734,7 @@ SimEngineManager::Execute(const EngineKey &/*ek*/, avtDataObjectReader_p &rdr,
                           void (*waitCB)(void*), void *waitCBData)
 {
     bool success = false;
+    StackTimer t0("SimEngineManager::Execute");
 
     TRY
     {
@@ -729,66 +747,67 @@ SimEngineManager::Execute(const EngineKey &/*ek*/, avtDataObjectReader_p &rdr,
         // Get the output of the network manager. This does the job of
         // executing the network.
         avtDataObjectWriter_p writer;
-        int gettingData = visitTimer->StartTimer();
-        TRY
+        TimedCodeBlock("Executing network",
         {
-            writer = engine->GetNetMgr()->GetOutput(replyWithNullData, false,
-                                                    &cellCountMultiplier);
-        }
-        CATCH(AbortException)
+            TRY
+            {
+                writer = engine->GetNetMgr()->GetOutput(replyWithNullData, false,
+                                                        &cellCountMultiplier);
+            }
+            CATCH(AbortException)
+            {
+                // make a dummy dataobject writer for the call to WriteData
+                abortDob.SetWriterShouldMergeParallelStreams();
+                writer = abortDob.InstantiateWriter();
+            }
+            ENDTRY
+        });
+
+        TimedCodeBlock("Writing data",
         {
-            // make a dummy dataobject writer for the call to WriteData
-            abortDob.SetWriterShouldMergeParallelStreams();
-            writer = abortDob.InstantiateWriter();
-        }
-        ENDTRY
-        visitTimer->StopTimer(gettingData, "Executing network");
+            // set params influencing scalable rendering 
+            int scalableThreshold = engine->GetNetMgr()->GetScalableThreshold(winId);
+            int currentTotalGlobalCellCount = engine->GetNetMgr()->GetTotalGlobalCellCounts(winId);
+            int currentNetworkGlobalCellCount = 0;
+            bool scalableThresholdExceeded = false;
+            bool useCompression = engine->GetNetMgr()->GetShouldUseCompression(winId);
 
-        int writingData = visitTimer->StartTimer();
-        // set params influencing scalable rendering 
-        int scalableThreshold = engine->GetNetMgr()->GetScalableThreshold(winId);
-        int currentTotalGlobalCellCount = engine->GetNetMgr()->GetTotalGlobalCellCounts(winId);
-        int currentNetworkGlobalCellCount = 0;
-        bool scalableThresholdExceeded = false;
-        bool useCompression = engine->GetNetMgr()->GetShouldUseCompression(winId);
+            // Gather the data for the viewer and call the write callback.
+            rdr = new avtDataObjectReader;
+            std::string errorMessage;
+            TRY
+            {
+                DOString dos;
+                success = engine->GatherData(writer,
+                                         useCompression,
+                                         replyWithNullData,
+                                         scalableThreshold, 
+                                         currentTotalGlobalCellCount, cellCountMultiplier,
+                                         NULL, NULL,
+                                         WriteCallback, (void*)&dos,
+                                         errorMessage,
+                                         &scalableThresholdExceeded,
+                                         &currentNetworkGlobalCellCount);
 
-        // Gather the data for the viewer and call the write callback.
-        rdr = new avtDataObjectReader;
-        std::string errorMessage;
-        TRY
-        {
-            DOString dos;
-            success = engine->GatherData(writer,
-                                     useCompression,
-                                     replyWithNullData,
-                                     scalableThreshold, 
-                                     currentTotalGlobalCellCount, cellCountMultiplier,
-                                     NULL, NULL,
-                                     WriteCallback, (void*)&dos,
-                                     errorMessage,
-                                     &scalableThresholdExceeded,
-                                     &currentNetworkGlobalCellCount);
+                // Read the data object string that we harvested in WriteCallback.
+                if(success)
+                    ReadDataObjectString(rdr, dos);
+            }
+            CATCH(VisItException)
+            {
+                RETHROW;
+            }
+            ENDTRY
 
-            // Read the data object string that we harvested in WriteCallback.
-            if(success)
-                ReadDataObjectString(rdr, dos);
-        }
-        CATCH(VisItException)
-        {
-            visitTimer->StopTimer(writingData, "Writing data");
-            RETHROW;
-        }
-        ENDTRY
+            // re-set the network if we exceeded the scalable threshold
+            if (scalableThresholdExceeded && !replyWithNullData)
+                engine->GetNetMgr()->UseNetwork(netId);
 
-        // re-set the network if we exceeded the scalable threshold
-        if (scalableThresholdExceeded && !replyWithNullData)
-            engine->GetNetMgr()->UseNetwork(netId);
+            // only update cell count if we're not here asking for null data
+            if (!replyWithNullData)
+                engine->GetNetMgr()->SetGlobalCellCount(netId, currentNetworkGlobalCellCount);
 
-        // only update cell count if we're not here asking for null data
-        if (!replyWithNullData)
-            engine->GetNetMgr()->SetGlobalCellCount(netId, currentNetworkGlobalCellCount);
-
-        visitTimer->StopTimer(writingData, "Writing data");
+        });
     }
     CATCH(ImproperUseException)
     {
@@ -820,60 +839,65 @@ SimEngineManager::Execute(const EngineKey &/*ek*/, avtDataObjectReader_p &rdr,
 // Creation:   Mon Sep 15 14:59:01 PDT 2014
 //
 // Modifications:
+//   Brad Whitlock, Tue Mar 22 10:42:16 PDT 2016
+//   Changed the API to return an avtImage_p and an int return code. I replaced
+//   code to write/read/broadcast an image to all ranks to reduce rendering
+//   costs in situ.
 //
 // ****************************************************************************
 
-bool 
-SimEngineManager::Render(const EngineKey &/*ek*/, avtDataObjectReader_p &rdr,
+int 
+SimEngineManager::Render(const EngineKey &/*ek*/, avtImage_p &img,
                          bool sendZBuffer, const intVector &networkIds, 
                          int annotMode, int windowID, bool leftEye,
                          void (*waitCB)(void *), void *waitCBData)
 {
-    // do the render
+    StackTimer t0("SimEngineManager::Render");
+    int retval = 0; // no image
+
+    // Do the render
     avtDataObject_p image = engine->GetNetMgr()->Render(true,
         networkIds, sendZBuffer, annotMode, windowID, leftEye);
-        
-    avtDataObjectWriter_p writer;
+
+    // Non-0 ranks will have an empty image. Share some information about
+    // the image on rank 0 so we can do the right thing on other ranks.
+    int data[3] = {0,0,0};
     if(*image != NULL)
     {
-        writer = image->InstantiateWriter();
-        writer->SetInput(image);
+        data[0] = 2;
+        // We get to directly pass back the rendered image to the
+        // calling viewer infrastructure.
+        CopyTo(img, image);
+        img->GetImage().GetSize(&data[1], &data[2]);
     }
+
+    // Send the rank 0 results to all.
+    BroadcastIntArray(data, 3);
+
+    if(data[0] == 0)
+        retval = 0; // fail.
     else
     {
-        writer = engine->GetNetMgr()->CreateNullDataWriter();
+        if(PAR_Rank() > 0)
+        {
+            debug5 << "Making blank image " << data[1] << "x" << data[2] << endl;
+            // Make an image. This is just to make the viewer pieces
+            // happy so we can make basically a blank image.
+            int npix = data[1]*data[2];
+            vtkImageData *rgb = avtImageRepresentation::NewImage(data[1],data[2]);
+            float *z = new float[npix];
+            memset(rgb->GetScalarPointer(0,0,0), 0, sizeof(unsigned char) * npix * 3);
+            memset(z, 0, sizeof(float) * npix);
+            img = new avtImage(NULL);
+            img->SetImage(avtImageRepresentation(rgb, z, true));
+            rgb->Delete();
+        }
+
+        retval = 2; // we have an image.
     }
 
-    // Send the data back to the viewer.
-    bool useCompression = engine->GetNetMgr()->GetShouldUseCompression(windowID);
-
-    rdr = new avtDataObjectReader;
-    std::string errorMessage;
-    bool  respondWithNull = false;
-    int   scalableThreshold = -1;
-    bool  scalableThresholdExceeded = false;
-    int   currentTotalGlobalCellCount = 0;
-    float cellCountMultiplier = 1.f;
-    int   currentNetworkGlobalCellCount = 0;
-
-    DOString dos;
-
-    bool success = engine->GatherData(writer,
-                       useCompression,
-                       respondWithNull,
-                       scalableThreshold, 
-                       currentTotalGlobalCellCount, cellCountMultiplier,
-                       NULL, NULL,
-                       WriteCallback, (void*)&dos,
-                       errorMessage,
-                       &scalableThresholdExceeded,
-                       &currentNetworkGlobalCellCount);
-
-    // Read the data object string that we harvested in WriteCallback.
-    if (success)
-        ReadDataObjectString(rdr, dos);
-
-    return success;
+    debug5 << "SimEngineManager::Render: retval = " << retval << endl;
+    return retval;
 }
 
 // ****************************************************************************
@@ -900,6 +924,7 @@ bool
 SimEngineManager::Pick(const EngineKey &/*ek*/, const int networkId, int windowId,
                        const PickAttributes *atts, PickAttributes &retAtts)
 {
+    StackTimer t0("SimEngineManager::Pick");
     retAtts = *atts;
 
     if (networkId >= 0)
@@ -933,6 +958,7 @@ bool
 SimEngineManager::StartPick(const EngineKey &/*ek*/, const bool forZones,
                             const bool flag, const int nid)
 {
+    StackTimer t0("SimEngineManager::StartPick");
     if (flag)
         engine->GetNetMgr()->StartPickMode(forZones);
     else
@@ -963,6 +989,7 @@ SimEngineManager::StartPick(const EngineKey &/*ek*/, const bool forZones,
 bool
 SimEngineManager::StartQuery(const EngineKey &/*ek*/, const bool flag, const int nid)
 {
+    StackTimer t0("SimEngineManager::StartQuery");
     if (flag)
         engine->GetNetMgr()->StartQueryMode();
     else
@@ -1002,6 +1029,7 @@ SimEngineManager::SetWinAnnotAtts(const EngineKey &/*ek*/,
                                  const std::string ctName,
                                  const int windowID)
 {
+    StackTimer t0("SimEngineManager::SetWinAnnotAtts");
     engine->GetNetMgr()->SetWindowAttributes(*wa,
                                 extStr,
                                 viewExtents,
@@ -1042,6 +1070,7 @@ SimEngineManager::Query(const EngineKey &/*ek*/,
                         const QueryAttributes *atts,
                         QueryAttributes &retAtts)
 {
+    StackTimer t0("SimEngineManager::Query");
     retAtts = *atts;
     engine->GetNetMgr()->Query(networkIds, &retAtts);
     return true;
@@ -1072,6 +1101,7 @@ SimEngineManager::GetQueryParameters(const EngineKey &/*ek*/,
                                      const std::string &qname,
                                      std::string *params)
 {
+    StackTimer t0("SimEngineManager::GetQueryParameters");
     *params = engine->GetNetMgr()->GetQueryParameters(qname);
     return true;
 }
@@ -1099,6 +1129,7 @@ SimEngineManager::GetQueryParameters(const EngineKey &/*ek*/,
 bool
 SimEngineManager::ClearCache(const EngineKey &/*ek*/, const std::string &dbName)
 {
+    StackTimer t0("SimEngineManager::ClearCache");
     if (dbName.empty())
         engine->GetNetMgr()->ClearAllNetworks();
     else
@@ -1130,6 +1161,7 @@ SimEngineManager::ClearCache(const EngineKey &/*ek*/, const std::string &dbName)
 bool
 SimEngineManager::GetProcInfo(const EngineKey &/*ek*/, ProcessAttributes &retAtts)
 {
+    StackTimer t0("SimEngineManager::GetProcInfo");
     retAtts = *engine->GetProcessAttributes();
     return true;
 }
@@ -1158,6 +1190,7 @@ SimEngineManager::GetProcInfo(const EngineKey &/*ek*/, ProcessAttributes &retAtt
 bool
 SimEngineManager::ReleaseData(const EngineKey &/*ek*/, int networkId)
 {
+    StackTimer t0("SimEngineManager::ReleaseData");
     engine->GetNetMgr()->DoneWithNetwork(networkId);
     return true;
 }
@@ -1187,6 +1220,7 @@ bool
 SimEngineManager::CloneNetwork(const EngineKey &/*ek*/, int networkId, 
                                const QueryOverTimeAttributes *qatts)
 {
+    StackTimer t0("SimEngineManager::CloneNetwork");
     engine->GetNetMgr()->CloneNetwork(networkId);
 #if 0
 // This is a sim. We don't want query over time atts do we?
@@ -1228,6 +1262,7 @@ SimEngineManager::CreateNamedSelection(const EngineKey &/*ek*/,
                                        const SelectionProperties &props,
                                        SelectionSummary &summary)
 {
+    StackTimer t0("SimEngineManager::CreateNamedSelection");
     summary.SetName(props.GetName());
     avtNamedSelectionManager::GetInstance()->ClearCache(props.GetName());
     summary = engine->GetNetMgr()->CreateNamedSelection(networkId, props);
@@ -1389,6 +1424,7 @@ SimEngineManager::ExportDatabases(const EngineKey &/*ek*/,
                                   const ExportDBAttributes &expAtts, 
                                   const std::string &timeSuffix)
 {
+    StackTimer t0("SimEngineManager::ExportDatabases");
     engine->GetNetMgr()->ExportDatabases(ids, expAtts, timeSuffix);
     return true;
 }
@@ -1472,6 +1508,7 @@ SimEngineManager::UpdateExpressions(const EngineKey &/*ek*/, const ExpressionLis
 void
 SimEngineManager::UpdateDefaultFileOpenOptions(FileOpenOptions *opts)
 {
+    StackTimer t0("SimEngineManager::UpdateDefaultFileOpenOptions");
     avtDatabaseFactory::SetDefaultFileOpenOptions(*opts);
 }
 
