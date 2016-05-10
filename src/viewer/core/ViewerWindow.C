@@ -10073,12 +10073,15 @@ ViewerWindow::IssueExternalRenderRequests(
                 annotMode = doAllAnnotations ? 2 : 1;
 
             // Send the render RPC.
-            avtDataObjectReader_p rdr;
-            GetViewerEngineManager()->Render(ek, rdr,
+            //   0 == no image, throw exception.
+            //   1 == null image, exit SR.
+            //   2 == valid image.
+            avtImage_p img;
+            int ret = GetViewerEngineManager()->Render(ek, img,
                 sendZBuffer, pos->second, annotMode, windowID, leftEye,
                 this->ProcessEventsCB, this->ProcessEventsCBData);
 
-            if (*rdr == NULL)
+            if(ret == 0)
             {
                 retval = false;
                 ViewerText msg(TR("Obtained null data reader for rendered image "
@@ -10086,24 +10089,16 @@ ViewerWindow::IssueExternalRenderRequests(
                                arg(ek.HostName()));
                 EXCEPTION1(VisItException, msg.toStdString()); 
             }
-
-            // check to see if engine decided that SR mode is no longer necessary
-            if (rdr->InputIs(AVT_NULL_IMAGE_MSG))
+            else if (ret == 1)
             {
+                // The engine decided that SR mode is no longer necessary
                 shouldTurnOffScalableRendering = true;
                 break;
             }
-
-            // do some magic to update the network so we don't need the reader anymore
-            avtDataObject_p tmpDob = rdr->GetOutput();
-            avtContract_p spec = 
-                tmpDob->GetOriginatingSource()->GetGeneralContract();
-            tmpDob->Update(spec);
-
-            // put the resultant image in the returned list
-            avtImage_p img;
-            CopyTo(img,tmpDob);
-            imgList.push_back(img);
+            else
+            {
+                imgList.push_back(img);
+            }
         }
 
 #ifndef VIEWER_MT

@@ -378,12 +378,6 @@ public:
     void InterruptEngine(const EngineKey &ek);
     void SendKeepAlives();
 
-    bool ExternalRender(const ExternalRenderRequestInfo& reqInfo,
-                        bool& shouldTurnOfScalableRendering,
-                        bool doAllAnnotations,
-                        std::vector<avtImage_p>& imgList,
-                        int winID);
-
     avtDataObjectReader_p GetDataObjectReader(ViewerPlot *const plot);
     avtDataObjectReader_p UseDataObjectReader(ViewerPlot *const plot,
                                               bool turningOffScalableRendering);
@@ -427,7 +421,7 @@ public:
     bool UseNetwork(const EngineKey &ek, int networkId);
     bool Execute(const EngineKey &ek, avtDataObjectReader_p &rdr,
                  bool replyWithNullData, void (*waitCB)(void*), void *waitCBData);
-    bool Render(const EngineKey &ek, avtDataObjectReader_p &rdr,
+    int  Render(const EngineKey &ek, avtImage_p &img,
                 bool sendZBuffer, const intVector &networkIds, 
                 int annotMode, int windowID, bool leftEye,
                 void (*waitCB)(void *), void *waitCBData);

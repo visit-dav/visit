@@ -57,6 +57,7 @@
 void ViewerProperties::Init()
 {
     MasterProcess = true;
+    InSitu = false;
     nowin = false;
     windowFullScreen = 0;
     windowSmall = false;
@@ -95,6 +96,7 @@ void ViewerProperties::Init()
 void ViewerProperties::Copy(const ViewerProperties &obj)
 {
     MasterProcess = obj.MasterProcess;
+    InSitu = obj.InSitu;
     nowin = obj.nowin;
     windowBorders = obj.windowBorders;
     windowShift = obj.windowShift;
@@ -277,6 +279,7 @@ ViewerProperties::operator == (const ViewerProperties &obj) const
 {
     // Create the return value
     return ((MasterProcess == obj.MasterProcess) &&
+            (InSitu == obj.InSitu) &&
             (nowin == obj.nowin) &&
             (windowBorders == obj.windowBorders) &&
             (windowShift == obj.windowShift) &&
@@ -445,6 +448,7 @@ void
 ViewerProperties::SelectAll()
 {
     Select(ID_MasterProcess,           (void *)&MasterProcess);
+    Select(ID_InSitu,                  (void *)&InSitu);
     Select(ID_nowin,                   (void *)&nowin);
     Select(ID_windowBorders,           (void *)&windowBorders);
     Select(ID_windowShift,             (void *)&windowShift);
@@ -480,6 +484,13 @@ ViewerProperties::SetMasterProcess(bool MasterProcess_)
 {
     MasterProcess = MasterProcess_;
     Select(ID_MasterProcess, (void *)&MasterProcess);
+}
+
+void
+ViewerProperties::SetInSitu(bool InSitu_)
+{
+    InSitu = InSitu_;
+    Select(ID_InSitu, (void *)&InSitu);
 }
 
 void
@@ -658,6 +669,12 @@ bool
 ViewerProperties::GetMasterProcess() const
 {
     return MasterProcess;
+}
+
+bool
+ViewerProperties::GetInSitu() const
+{
+    return InSitu;
 }
 
 bool

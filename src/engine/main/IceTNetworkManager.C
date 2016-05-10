@@ -320,7 +320,7 @@ IceTNetworkManager::Render(
     bool getZBuffer, int annotMode, int windowID,
     bool leftEye)
 {
-    int t0 = visitTimer->StartTimer();
+    StackTimer t0("IceTNetworkManager::Render");
     DataNetwork *origWorkingNet = workingNet;
     avtDataObject_p retval;
 
@@ -333,8 +333,6 @@ IceTNetworkManager::Render(
 
     TRY
     {
-        this->StartTimer();
-
         RenderSetup(windowID, networkIds, getZBuffer,
             annotMode, leftEye, checkThreshold);
 
@@ -481,7 +479,6 @@ IceTNetworkManager::Render(
     ENDTRY
 
     workingNet = origWorkingNet;
-    visitTimer->StopTimer(t0, "Ice-T Render");
     return retval;
 }
 

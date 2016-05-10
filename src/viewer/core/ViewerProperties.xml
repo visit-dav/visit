@@ -3,6 +3,9 @@
     <Field name="MasterProcess" label="Master process" type="bool">
       true
     </Field>
+    <Field name="InSitu" label="in situ" type="bool">
+      false
+    </Field>
     <Field name="nowin" label="No window" type="bool">
       false
     </Field>
