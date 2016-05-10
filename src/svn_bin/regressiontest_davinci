@@ -247,7 +247,7 @@
 #
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
-svnHost=portal-auth.nersc.gov
+svnHost=edison.nersc.gov
 rootTestDir=/project/projectdirs/visit/test/trunk
 errorLogFile=$rootTestDir/testLogFile_$dateTag
 modifiersFile=$rootTestDir/nersc_repo_modifiers_since_last_pass

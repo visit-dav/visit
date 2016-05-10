@@ -343,9 +343,9 @@ fi
 export SVN_ANON_ROOT_PATH="http://visit.ilight.com/svn/visit"
 # Setup svn path: use SVN_NERSC_NAME if set
 if test -z "$SVN_NERSC_NAME" ; then
-    export SVN_REPO_ROOT_PATH="svn+ssh://portal-auth.nersc.gov/project/projectdirs/visit/svn/visit"
+    export SVN_REPO_ROOT_PATH="svn+ssh://edison.nersc.gov/project/projectdirs/visit/svn/visit"
 else
-    export SVN_REPO_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit"
+    export SVN_REPO_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@edison.nersc.gov/project/projectdirs/visit/svn/visit"
 fi
 
 

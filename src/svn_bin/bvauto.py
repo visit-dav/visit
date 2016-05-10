@@ -94,7 +94,7 @@ def get_svn_root():
         sys.stderr.write("<Error: Could not obtain nersc svn user name from environment.")
         sys.stderr.write("Make sure SVN_NERSC_NAME is set!>\n")
         sys.exit(-1)
-    return "svn+ssh://%s@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src" % os.environ["SVN_NERSC_NAME"]
+    return "svn+ssh://%s@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src" % os.environ["SVN_NERSC_NAME"]
     
 def create_run_dir(mode):
     """

@@ -69,9 +69,9 @@ rm -rf checksum_dir
 mkdir checksum_dir
 cd checksum_dir
 echo "Downloading third_party..."
-svn co svn+ssh://brugger@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/tags/$version/third_party
+svn co svn+ssh://brugger@edison.nersc.gov/project/projectdirs/visit/svn/visit/tags/$version/third_party
 echo "Downloading $version..."
-svn co svn+ssh://brugger@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/releases/$version
+svn co svn+ssh://brugger@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/releases/$version
 
 #
 # Create an awk script for use with the filesize command
