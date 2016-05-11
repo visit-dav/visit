@@ -629,9 +629,9 @@ int vtkPLOT3DReader::ReadQHeader(FILE* qFp)
     this->SolutionOffsets = new long[this->NumberOfGrids];
     for (int i = 0; i < numGrid; ++i)
       this->SolutionOffsets[i] = -1;
+    }
 
-    int bytes = this->SkipByteCount(qFp);
-
+  int bytes = this->SkipByteCount(qFp);
   if (bytes > 0 &&
       bytes == (numGrid*this->Internal->NumberOfDimensions+2)*4)
     {
@@ -641,48 +641,55 @@ int vtkPLOT3DReader::ReadQHeader(FILE* qFp)
     {
     this->IsOverflow = false;
     }
-
-    for(int i = 0; i < numGrid; ++i)
+ 
+  for(int i = 0; i < numGrid; ++i)
+    {
+    int ni, nj, nk=1;
+    this->ReadIntBlock(qFp, 1, &ni);
+    this->ReadIntBlock(qFp, 1, &nj);
+    if (!this->TwoDimensionalGeometry)
       {
-      int ni, nj, nk=1;
-      this->ReadIntBlock(qFp, 1, &ni);
-      this->ReadIntBlock(qFp, 1, &nj);
-      if (!this->TwoDimensionalGeometry)
-        {
-        this->ReadIntBlock(qFp, 1, &nk);
-        }
-      vtkDebugMacro("Q, block " << i << " dimensions: "
-                    << ni << " " << nj << " " << nk);
-      if (this->GridDimensions[    3*i] != ni ||
-          this->GridDimensions[1 + 3*i] != nj ||
-          this->GridDimensions[2 + 3*i] != nk)
-        {
-        vtkErrorMacro("Geometry and data dimensions do not match. "
-                      "Data file may be corrupt.");
-        return VTK_ERROR;
-        }
+      this->ReadIntBlock(qFp, 1, &nk);
       }
-    if (this->IsOverflow)
+    vtkDebugMacro("Q, block " << i << " dimensions: "
+                  << ni << " " << nj << " " << nk);
+    if (this->GridDimensions[    3*i] != ni ||
+        this->GridDimensions[1 + 3*i] != nj ||
+        this->GridDimensions[2 + 3*i] != nk)
       {
-      this->ReadIntBlock(qFp, 1, &this->OverflowNQ);
-      this->ReadIntBlock(qFp, 1, &this->OverflowNQC);
-      }
-    else 
-      {
-      this->OverflowNQ = 5;
-      this->OverflowNQC = 0;
-      this->SkipByteCount(qFp);
-      }
-    // Get to the location of the fsmach
-    this->SkipByteCount(qFp);
-    this->SolutionOffsets[0] = ftell(qFp);
-    if (this->IsOverflow)
-      {
-      int count = this->SkipByteCount(qFp);
-      this->NumProperties = (count-4)/this->Internal->Precision + 1;
-      fseek(qFp, this->SolutionOffsets[0], SEEK_SET);
+      vtkErrorMacro("Geometry and data dimensions do not match. "
+                    "Data file may be corrupt.");
+      return VTK_ERROR;
       }
     }
+
+  if (this->IsOverflow)
+    {
+    this->ReadIntBlock(qFp, 1, &this->OverflowNQ);
+    this->ReadIntBlock(qFp, 1, &this->OverflowNQC);
+    }
+  else 
+    {
+    this->OverflowNQ = 5;
+    this->OverflowNQC = 0;
+    }
+
+  // Get to the location of the fsmach
+  int endbytes = this->SkipByteCount(qFp);
+  if(bytes != endbytes)
+  {
+      vtkErrorMacro("ReadQHeader " << bytes << " != " << endbytes);
+      return VTK_ERROR;
+  }
+
+  this->SolutionOffsets[0] = ftell(qFp);
+  if (this->IsOverflow)
+    {
+    int count = this->SkipByteCount(qFp);
+    this->NumProperties = (count-4)/this->Internal->Precision + 1;
+    fseek(qFp, this->SolutionOffsets[0], SEEK_SET);
+    }
+
   return VTK_OK;
 }
 
@@ -814,7 +821,6 @@ vtkPLOT3DReader::ReadGrid(FILE *xyzFp)
   rewind(xyzFp);
   long offset = this->ComputeGridOffset(xyzFp);
   fseek(xyzFp, offset, SEEK_SET);
-
   this->SkipByteCount(xyzFp);
   int d = this->Internal->NumberOfDimensions;
   if (this->ReadVector(xyzFp, this->NumberOfPoints, d, pointArray) == 0)
@@ -857,7 +863,7 @@ vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
         {
         if (this->Internal->IBlanking)
           {
-          this->GridOffsets[j] = (this->GridOffsets[j-1] + (nd+1)*this->GridSizes[j-1]*4) + bc;
+            this->GridOffsets[j] = (this->GridOffsets[j-1] + (nd+1)*this->GridSizes[j-1]*4) + 2*bc;
           }
         else
           {
@@ -900,8 +906,7 @@ vtkPLOT3DReader::ReadSolutionProperties(FILE *qFp)
   rewind(qFp);
   long offset = this->ComputeSolutionOffset(qFp);
   fseek (qFp, offset, SEEK_SET);
-  if(this->GridNumber == 0)
-    this->SkipByteCount(qFp);
+  int start = this->SkipByteCount(qFp);
 
   // read parameters
   vtkDataArray *newProp = this->NewFloatArray();
@@ -950,7 +955,12 @@ vtkPLOT3DReader::ReadSolutionProperties(FILE *qFp)
       }
     dummyArray->Delete();
     }
-  this->SkipByteCount(qFp);
+  int end = this->SkipByteCount(qFp);
+  if(start != end)
+  {
+      vtkErrorMacro("ReadSolutionProperties error.");
+  }
+
   this->Properties = newProp;
   this->Properties->Register(this);
   newProp->Delete();
@@ -1017,6 +1027,7 @@ vtkPLOT3DReader::ComputeSolutionOffset(FILE *qFp)
         }
       }
     }
+
   return this->SolutionOffsets[this->GridNumber];
 }
 
@@ -1189,7 +1200,6 @@ vtkPLOT3DReader::GetFunction(PLOT3DFunctions<DataType> &P3DF_helper, const char 
     return VTK_ERROR;
     }
 
-
   string sFName(funcName);
   this->SkipByteCount(qFp);
 
@@ -1224,7 +1234,6 @@ vtkPLOT3DReader::GetFunction(PLOT3DFunctions<DataType> &P3DF_helper, const char 
     fclose(qFp);
     return VTK_OK;
     }
-
 
   // MOMENTUM
   DataType *momentum = new DataType[numPts*3];
