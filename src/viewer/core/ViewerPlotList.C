@@ -3695,6 +3695,12 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //  Purpose:
 //    Delete the active plots from the plot list.
 //
+//  Arguments:
+//    doUpdate      : Specifies whether or not an update should be performed after
+//                    the plot has been removed. Default value is true.
+//    considerPlots : Whether to consider the active plots when choosing the
+//                    name of the database to use. Default value is true.
+//
 //  Programmer: Eric Brugger
 //  Creation:   August 3, 2000
 //
@@ -3766,10 +3772,14 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    can happen with batch in situ. Separating the dependency deletion from
 //    the plot deletion is safer.
 //
+//    Kevin Griffin, Wed May 11 16:47:05 PDT 2016
+//    Updated the call to UpdateExpressionList use the considerPlots
+//    argument.
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::DeleteActivePlots(bool doUpdates)
+ViewerPlotList::DeleteActivePlots(bool doUpdates, bool considerPlots)
 {
     //
     // Delete plot dependencies and record which plots need to be removed.
@@ -3853,7 +3863,7 @@ ViewerPlotList::DeleteActivePlots(bool doUpdates)
         UpdatePlotList();
         UpdatePlotAtts();
         UpdateSILRestrictionAtts();
-        UpdateExpressionList(true);
+        UpdateExpressionList(considerPlots);
 
         //
         // DBPluginInfo is currently expected to follow the selected plot's host.
@@ -4531,6 +4541,11 @@ ViewerPlotList::SetPlotOperatorAtts(const int operatorType,
 //    Kathleen Biagas, Wed Jul 3 11:42:39 MST 2013
 //    Update the expression list.
 //
+//    Kevin Griffin, Wed May 11 16:47:05 PDT 2016
+//    Updated the call to UpdateExpressionList to not consider active plots
+//    which caused invalid expression variables when multiple plots were
+//    active from different databases (See Bug #2528).
+//
 // ****************************************************************************
 
 void
@@ -4607,7 +4622,7 @@ ViewerPlotList::ActivateSource(const std::string &source, const EngineKey &ek)
         }
     } // end numstates > 1
 
-    UpdateExpressionList(true);
+    UpdateExpressionList(false, true);
 
     //
     // Update the window information since the source and active time

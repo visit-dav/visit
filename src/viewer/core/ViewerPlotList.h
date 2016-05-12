@@ -322,6 +322,10 @@ typedef std::map<std::string, int> StringIntMap;
 //    Eric Brugger, Fri Oct 28 09:52:40 PDT 2011
 //    Add a multi resolution display capability for AMR data.
 //
+//    Kevin Griffin, Wed May 11 16:47:05 PDT 2016
+//    Added a default argument to DeleteActivePlots to determine if the current
+//    active plots should be considered when updating the expression list.
+//
 // ****************************************************************************
 
 
@@ -406,7 +410,7 @@ public:
     void ClearPlots(bool clearAll = true);
     void ClearActors();
     void TransmutePlots(bool turningOffScalableRendering);
-    void DeleteActivePlots(bool doUpdates = true);
+    void DeleteActivePlots(bool doUpdates = true, bool considerPlots = true);
     void DeleteAllPlots(bool doUpdates);
 
     int  FindCompatiblePlot(ViewerPlot *);
