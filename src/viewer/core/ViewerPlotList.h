@@ -325,6 +325,10 @@ typedef std::map<std::string, int> StringIntMap;
 //    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
 //    Changed the return type of GetNumberOfCells to long long
 //
+//    Kevin Griffin, Wed May 11 16:47:05 PDT 2016
+//    Added a default argument to DeleteActivePlots to determine if the current
+//    active plots should be considered when updating the expression list.
+//
 // ****************************************************************************
 
 
@@ -409,7 +413,7 @@ public:
     void ClearPlots(bool clearAll = true);
     void ClearActors();
     void TransmutePlots(bool turningOffScalableRendering);
-    void DeleteActivePlots(bool doUpdates = true);
+    void DeleteActivePlots(bool doUpdates = true, bool considerPlots = true);
     void DeleteAllPlots(bool doUpdates);
 
     int  FindCompatiblePlot(ViewerPlot *);
