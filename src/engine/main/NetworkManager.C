@@ -6659,6 +6659,10 @@ NetworkManager::RenderingStages()
 //    Burlen Loring, Sat Oct 17 08:23:57 PDT 2015
 //    fix a compiler warning
 //
+//    Kathleen Biagas, Mon May 16 14:46:39 PDT 2016
+//    Use start/stop timer instead of TimedClodeBlock to prevent compiler
+//    error on BGQ due to #ifdef inside the code block.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -6713,7 +6717,7 @@ NetworkManager::RenderGeometry()
         int w = 0, h = 0;
         int rank = PAR_Rank();
         //if (!renderState.haveCells[rank])
-        TimedCodeBlock("Render & Readback",
+        int readbackTimer = visitTimer->StartTimer();
         {
             // configure for ordered composite. 1) enable alpha channel
             // 2) use solid bg 3) set clear color to 0 0 0 0
@@ -6748,7 +6752,8 @@ NetworkManager::RenderGeometry()
                 viswin->SetBackgroundMode(bgMode);
                 viswin->SetBackgroundColor(bgColor[0], bgColor[1], bgColor[2]);
             }
-        });
+        }
+        visitTimer->StopTimer(readbackTimer, "Render & Readback");
 
         CallProgressCallback("NetworkManager", "render pass 1", 1, 1);
         CallProgressCallback("NetworkManager", "composite pass 1", 0, 1);
