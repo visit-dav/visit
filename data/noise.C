@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -454,6 +454,11 @@ static double G_r = 1.;
 static double G_rSquared = 1.;
 static double G_alpha = -0.5;
 
+static int isteps = ISTEPS;
+static int jsteps = JSTEPS;
+static int ksteps = KSTEPS;
+static int driver = DB_PDB;
+
 // ****************************************************************************
 // Function: ShepardGlobal
 //
@@ -875,6 +880,117 @@ void WritePoints(DBfile *db)
 }
 
 // ****************************************************************************
+// Function: CreateTimeSequence
+//
+// Purpose:
+//   Create a time sequence of data based on the hardy global and shepard
+//   global functions.
+//
+// Notes:      
+//
+// Programmer: Eric Brugger
+// Creation:   Wed May 18 15:24:27 PDT 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void CreateTimeSequence(bool do_meteor, bool do_flow)
+{
+    float xMin, xMax, yMin, yMax, zMin, zMax;
+    xMin = - float(isteps-1) / 2.;
+    xMax =   float(isteps-1) / 2.;
+    yMin = - float(jsteps-1) / 2.;
+    yMax =   float(jsteps-1) / 2.;
+    zMin = 0.;
+    zMax = float(ksteps-1);
+
+    float dX, dY, dZ;
+    dX = xMax - xMin;
+    dY = yMax - yMin;
+    dZ = zMax - zMin;
+
+    int nTimeSteps = 100;
+    for(int iTimeStep = 0; iTimeStep < nTimeSteps; ++iTimeStep)
+    {
+        RectilinearMesh C(isteps, jsteps, ksteps);
+        C.SetMeshTime(float(iTimeStep));
+        C.SetMeshCycle(iTimeStep);
+        C.SetXValues(xMin, xMax);
+        C.SetYValues(yMin, yMax);
+        C.SetZValues(zMin, zMax);
+        C.SetMeshLabels("Width", "Height", "Length");
+        C.SetMeshUnits("meters", "meters", "meters");
+
+        // Update the points for the time step.
+        for(int i = 0; i < G_nPoints; ++i)
+        {
+            // Set the coordinate. Rotate about the x axis.
+            if (do_meteor)
+            {
+                // Rotate about the x axis and move foward in the z direction.
+                float theta;
+                float pt1[3], pt2[2], pt3[3];
+                pt1[0] = GetRandomNumber() * 0.6 * dX + xMin + 0.2 * dX;
+                pt1[1] = GetRandomNumber() * 0.6 * dY + yMin + 0.2 * dY;
+                pt1[2] = GetRandomNumber() * 0.6 * dX + zMin - 0.3 * dX;
+                theta = (float(iTimeStep) / float(nTimeSteps)) *
+                    (2 * 3.1415926535);
+                pt2[0] = 1.0 * pt1[0] +
+                         0.0 * pt1[1] +
+                         0.0 * pt1[2];
+                pt2[1] = 0.0 * pt1[0] +
+                         cos(theta) * pt1[1] -
+                         sin(theta) * pt1[2];
+                pt2[2] = 0.0 * pt1[0] +
+                         sin(theta) * pt1[1] +
+                         cos(theta) * pt1[2];
+                pt3[0] = pt2[0];
+                pt3[1] = pt2[1];
+                pt3[2] = pt2[2] + 0.5 * dX;
+                G_coords[0][i] = pt3[0];
+                G_coords[1][i] = pt3[1];
+                G_coords[2][i] = pt3[2] +
+                    (float(iTimeStep)/float(nTimeSteps)) * 0.8 * (zMax - zMin);
+            }
+            else
+            {
+                // Move foward in the z direction.
+                G_coords[0][i] = GetRandomNumber() * 0.6 * dX + xMin + 0.2 * dX;
+                G_coords[1][i] = GetRandomNumber() * 0.6 * dY + yMin + 0.2 * dY;
+                G_coords[2][i] = GetRandomNumber() * 2.5 * dZ + zMin - dZ +
+                    (float(iTimeStep) / float(nTimeSteps)) * dZ;
+            }
+
+            // Fill the value at that coordinate.
+            G_values[i] = GetRandomNumber() * 5. + 1.;
+        }
+
+        // Initialize the hardy global matrix.
+        InitializeHardyGlobal();
+
+        // Write the file.
+        char fileName[80];
+        DBfile *db = NULL;
+        if (do_meteor)
+        {
+            sprintf(fileName, "meteor%04d.silo", iTimeStep);
+            db = DBCreate(fileName, DB_CLOBBER, DB_LOCAL, "Meteor dataset", driver);
+        }
+        else
+        {
+            sprintf(fileName, "flow%04d.silo", iTimeStep);
+            db = DBCreate(fileName, DB_CLOBBER, DB_LOCAL, "Flow dataset", driver);
+        }
+
+        C.CreateNodalData("Density", ShepardGlobal, "g/cm^2");
+        C.CreateNodalData("Pressure", HardyGlobal, "Newton/m^2");
+        C.WriteFile(db);
+        DBClose(db);
+    }
+}
+
+// ****************************************************************************
 // Function: main
 //
 // Purpose:
@@ -902,15 +1018,16 @@ void WritePoints(DBfile *db)
 //   Brad Whitlock, Wed Feb 2 11:51:41 PDT 2005
 //   I changed drand48 to GetRandomNumber.
 //
+//   Eric Brugger, Wed May 18 15:24:27 PDT 2016
+//   I added support for creating time varying data bases.
+//
 // ****************************************************************************
 
 int
 main(int argc, char *argv[])
 {
-    int isteps = ISTEPS;
-    int jsteps = JSTEPS;
-    int ksteps = KSTEPS;
-    int driver = DB_PDB;
+    bool do_meteor = false;
+    bool do_flow = false;
 
     // Look through command line args.
     bool writePoints = true;
@@ -965,6 +1082,14 @@ main(int argc, char *argv[])
                fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
                    argv[j]);
             }
+        }
+        else if (strcmp(argv[j], "-meteor") == 0)
+        {
+            do_meteor = true;
+        }
+        else if (strcmp(argv[j], "-flow") == 0)
+        {
+            do_flow = true;
         }
     }
 
@@ -1026,6 +1151,11 @@ main(int argc, char *argv[])
         WritePoints(db);
     DBClose(db);
 
+    if (do_meteor || do_flow)
+    {
+        CreateTimeSequence(do_meteor, do_flow);
+    }
+    
     // Delete the global arrays
     delete [] G_coords[0];
     delete [] G_coords[1];

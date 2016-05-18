@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -70,6 +70,9 @@
 //   I moved the internal classes into the implementation so we can focus
 //   on the interface that matters.
 //
+//   Eric Brugger, Wed May 18 13:37:22 PDT 2016
+//   I added support for adding time and cycle.
+//
 // ****************************************************************************
 
 class QuadMesh
@@ -90,6 +93,9 @@ public:
     int XDim() const;
     int YDim() const;
     int ZDim() const;
+
+    void SetMeshTime(float time);
+    void SetMeshCycle(int cycle);
 
     void SetMeshLabels(const std::string &labelX, 
                        const std::string &labelY, 
@@ -148,6 +154,8 @@ protected:
     std::vector<SliceInfo *>  sliceInfo;
     MaterialList     *mats;
     bool              writeMaterial;
+    float             meshTime;
+    int               meshCycle;
     std::string       meshName;
     std::string       meshLabelX, meshLabelY, meshLabelZ;
     std::string       meshUnitsX, meshUnitsY, meshUnitsZ;

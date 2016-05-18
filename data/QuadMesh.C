@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2014, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -1065,6 +1065,10 @@ QuadMesh::QuadMesh(int nx, int ny, int nz, bool rect) : scalarData(),
     else
         mats->AllocClean((xdim-1) * (ydim-1));
     writeMaterial = false;
+
+    // Set the default time and cycle to indicate that they weren't specified.
+    meshTime = -1.;
+    meshCycle = -1;
 }
 
 QuadMesh::~QuadMesh()
@@ -1091,9 +1095,19 @@ void QuadMesh::SetMeshName(const std::string &name)
     meshName = name;
 }
 
-int QuadMesh::XDim() const { return xdim; };
-int QuadMesh::YDim() const { return ydim; };
-int QuadMesh::ZDim() const { return zdim; };
+int QuadMesh::XDim() const { return xdim; }
+int QuadMesh::YDim() const { return ydim; }
+int QuadMesh::ZDim() const { return zdim; }
+
+void QuadMesh::SetMeshTime(float time)
+{
+    meshTime = time;
+}
+
+void QuadMesh::SetMeshCycle(int cycle)
+{
+    meshCycle = cycle;
+}
 
 void QuadMesh::SetMeshLabels(const std::string &labelX, 
    const std::string &labelY, const std::string &labelZ)
@@ -1283,8 +1297,18 @@ void QuadMesh::WriteFile(DBfile *db)
 DBoptlist *
 QuadMesh::MakeOptionList() const
 {
-    DBoptlist *optList = DBMakeOptlist(6);
+    DBoptlist *optList = DBMakeOptlist(8);
     int opt = 0;
+    if(meshTime >= 0.)
+    {
+        ++opt;
+        DBAddOption(optList, DBOPT_TIME, (void*)&meshTime);
+    }
+    if(meshCycle >= 0)
+    {
+        ++opt;
+        DBAddOption(optList, DBOPT_CYCLE, (void*)&meshCycle);
+    }
     if(meshLabelX.size() > 0)
     {
         ++opt;
