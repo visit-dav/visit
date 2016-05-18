@@ -193,9 +193,9 @@ cat <<EOF > $testHost
 dateTag=\`date +%Y-%m-%d-%H:%M\`
 
 if test "$serial" = "true" ; then
-    modes="$testHost,serial"
+    modes="$testHost,$branch,serial"
 else
-    modes="$testHost,serial $testHost,parallel $testHost,scalable,parallel,icet"
+    modes="$testHost,$branch,serial $testHost,$branch,parallel $testHost,$branch,scalable,parallel,icet"
 fi
 
 # Check out the source
@@ -274,7 +274,7 @@ fi
     -DVISIT_EAVL_DIR="/usr/gapps/visit/thirdparty_shared/2.10.0/eavl/4593630/linux-x86_64_gcc-4.4" \
     . >> ../buildlog 2>&1
 rm -rf ../make.out ../make.err
-/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make --output-sync=line -k -j 16 1>../make.out 2>../make.err
+make -k -j 16 1>../make.out 2>../make.err
 if test $? -ne 0; then
     echo "Source build FAILED at: \`date\`" | mail -s "Source build FAILED" $userEmail
     exit 1
@@ -361,7 +361,7 @@ if test "$post" = "true" ; then
     tar -czvf  html.tar.gz \$dateTag
 
     # Copy the results to nersc
-    scp html.tar.gz $userNersc@$nerscHost:
+    scp html.tar.gz $userNersc@$nerscHost:${branch}_html.tar.gz
     if test "$debug" = "true" ; then
         echo "Results copied to $nerscHost at: `date`" | mail -s "Results copied" $userEmail
     fi
@@ -371,7 +371,7 @@ if test "$post" = "true" ; then
     # Post the results.
     cd ..
     scp src/svn_bin/visit-update-test-website $userNersc@$nerscHost:
-    ssh $userNersc@$nerscHost "./visit-update-test-website"
+    ssh $userNersc@$nerscHost "./visit-update-test-website ${branch}_html.tar.gz"
     if test "$debug" = "true" ; then
         echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
     fi
