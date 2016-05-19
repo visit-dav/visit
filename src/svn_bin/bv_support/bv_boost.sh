@@ -85,7 +85,7 @@ function bv_boost_host_profile
                 >> $HOSTCONF 
         else
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR \${VISITHOME}/boost/$BOOST_VERSION/\${VISITARCH})" \
+                "VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR \${VISITHOME}/boost/\${BOOST_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF 
         fi
     fi
