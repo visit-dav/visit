@@ -40,13 +40,13 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
   SET_UP_THIRD_PARTY(QWT lib include qwt)
+  SET(QWT_LIBRARY ${QWT_LIB})
 ELSEIF (APPLE)
   SET_UP_THIRD_PARTY(QWT lib lib/qwt.framework/Headers qwt)
   SET(QWT_LIBRARY ${QWT_LIBRARY_DIR}/${QWT_LIB}/qwt)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(QWT lib include qwt)
-  SET(QWT_LIBRARY qwt)
-
+  SET(QWT_LIBRARY ${QWT_LIB})
 ENDIF (WIN32)
 
 
