@@ -1,7 +1,8 @@
 function bv_qwt_initialize
 {
-    export DO_QWT="no"
-    export ON_QWT="off"
+    export DO_QWT="yes"
+    export ON_QWT="on"
+    export FORCE_QWT="no"
     export USE_SYSTEM_QWT="no"
     add_extra_commandline_args "qwt" "alt-qwt-dir" 1 "Use alternative directory for Qwt"
 }
@@ -10,12 +11,22 @@ function bv_qwt_enable
 {
     DO_QWT="yes"
     ON_QWT="on"
+    FORCE_QWT="yes"
 }
 
 function bv_qwt_disable
 {
     DO_QWT="no"
     ON_QWT="off"
+    FORCE_QT="no"
+}
+
+function bv_qwt_force
+{
+    if [[ "$FORCE_QWT" == "yes" ]]; then
+        return 0;
+    fi
+    return 1;
 }
 
 function bv_qwt_alt_qwt_dir
@@ -83,7 +94,7 @@ function bv_qwt_host_profile
     if [[ "$USE_SYSTEM_QWT" == "yes" ]]; then
         echo "VISIT_OPTION_DEFAULT(VISIT_QWT_DIR $SYSTEM_QWT_DIR)" >> $HOSTCONF
     else
-        echo "VISIT_OPTION_DEFAULT(VISIT_QWT_DIR \${VISITHOME}/qwt/\${QWT_VERSION}/\${VISITARCH})" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_QWT_DIR \${VISITHOME}/qwt/\${QWT_VERSION}-qt-\${QT_VERSION}/\${VISITARCH})" >> $HOSTCONF
     fi
 }
 
@@ -148,13 +159,12 @@ function apply_qwt_windows_patch
     
     echo "--- qwtconfig.pri        2014-12-11 07:13:13.000000000 -0700" >> $PATCHFILE
     echo "+++ qwtconfig.pri.new    2016-05-03 16:14:00.000000000 -0600" >> $PATCHFILE
-    echo "@@ -19,7 +19,7 @@" >> $PATCHFILE
-    echo " QWT_INSTALL_PREFIX = \$\$[QT_INSTALL_PREFIX]" >> $PATCHFILE
+    echo " }" >> $PATCHFILE
     echo " " >> $PATCHFILE
-    echo " unix {" >> $PATCHFILE
-    echo "-    QWT_INSTALL_PREFIX    = /usr/local/qwt-\$\$QWT_VERSION" >> $PATCHFILE
-    echo "+    QWT_INSTALL_PREFIX    = $VISITDIR/qwt/$QWT_VERSION/$VISITARCH" >> $PATCHFILE
-    echo "     # QWT_INSTALL_PREFIX = /usr/local/qwt-\$\$QWT_VERSION-qt-\$\$QT_VERSION" >> $PATCHFILE
+    echo " win32 {" >> $PATCHFILE
+    echo "-    QWT_INSTALL_PREFIX    = C:/Qwt-$$QWT_VERSION" >> $PATCHFILE
+    echo "+    QWT_INSTALL_PREFIX    = ${QWT_INSTALL_DIR}" >> $PATCHFILE
+    echo "     # QWT_INSTALL_PREFIX = C:/Qwt-$$QWT_VERSION-qt-$$QT_VERSION" >> $PATCHFILE
     echo " }" >> $PATCHFILE
 
     patch -p0 < $PATCHFILE
@@ -206,14 +216,14 @@ function build_qwt
     #
     # Build Qwt
     #
-    info "Building Qwt project. . . (~1 minutes)"
+    info "Building Qwt project. . . (~1 minute)"
     $VISITDIR/qt/${QT_VERSION}/$VISITARCH/bin/qmake qwt.pro
     if [[ $? != 0 ]] ; then
         warn "Qwt project build failed.  Giving up"
         return 1
     fi
     
-    info "Building Qwt . . . (~3 minutes)"
+    info "Building Qwt . . . (~2 minutes)"
     $MAKE
     if [[ $? != 0 ]] ; then
         warn "Qwt build failed.  Giving up"
@@ -281,7 +291,7 @@ function bv_qwt_build
         if [[ $? == 0 ]] ; then
             info "Skipping QWT build. Qwt is already installed."
         else
-            info "Building QWT (~2 minutes)"
+            info "Building QWT (~3 minutes)"
             build_qwt
             if [[ $? != 0 ]] ; then
                 error "Unable to build or install Qwt. Bailing out."

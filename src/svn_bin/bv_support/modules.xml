@@ -86,6 +86,7 @@
             <lib name="no-python"/>
             <lib name="no-pyside"/>
             <lib name="no-qt" />
+            <lib name="no-qwt" />
             <lib name="no-vtk"/>
         </group>
 
@@ -133,6 +134,7 @@
             <lib name="xdmf"/>
             <lib name="no-mesa"/>
             <lib name="no-qt"/>
+            <lib name="no-qwt"/>
             <lib name="no-python"/>
         </group>
 
@@ -215,6 +217,7 @@
             <lib name="no-cmake"/>
             <lib name="no-python"/>
             <lib name="no-qt" />
+            <lib name="no-qwt" />
             <lib name="no-vtk"/>
         </group>
 
@@ -227,6 +230,7 @@
             <lib name="no-mesa"/>
             <lib name="no-python"/>
             <lib name="no-qt"/>
+            <lib name="no-qwt"/>
         </group>
 
         <!-- all io libraries -->
