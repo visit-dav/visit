@@ -7,6 +7,7 @@
             <lib name="mesa"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="mesa"/> -->
             <lib name="qt"/>
+            <lib name="qwt"/>
         </required>
 
         <!-- optional libraries -->
@@ -52,6 +53,7 @@
             <lib name="mesa"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="mesa"/> -->
             <lib name="qt"/>
+            <lib name="qwt"/>
         </group>
 
         <group name="optional" comment="All optional libraries" enabled="no">
@@ -167,6 +169,7 @@
             <lib name="R"/>
             <lib name="vtk"/>
             <lib name="qt"/>
+            <lib name="qwt"/>
         </required>
 
         <!-- optional libraries -->
@@ -192,6 +195,7 @@
             <lib name="R"/>
             <lib name="vtk"/>
             <lib name="qt"/>
+            <lib name="qwt"/>
         </group>
 
         <group name="optional" comment="All optional libraries" enabled="no">
