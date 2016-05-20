@@ -1,4 +1,3 @@
-
 /*****************************************************************************
 *
 * Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC
@@ -38,126 +37,117 @@
 *****************************************************************************/
 #ifndef QVIS_STRIPCHART_H
 #define QVIS_STRIPCHART_H
-#include <QVector>
-#include <QWidget>
 
-class QScrollArea;
+#include <qwt_plot.h>
+#include <qwt_plot_curve.h>
 
-// ****************************************************************************
-// Class: VisItPointD
+#define HISTORY 50
+#define MAX_STRIP_CHART_VARS 4
+
+class Background;
+
+class QwtPlotCurve;
+class QwtPlotZoomer;
+class QwtPlotPicker;
+class QwtPlotPanner;
+
+//****************************************************************************
+// Class: StripChartCurve
 //
 // Purpose:
-//    Implements a simple point with a double as the base data type.
-//    QT will have a QPointF in it's next release but for now I use this.
+//    Implements a class to hold the strip chart curve.
 //
-// Notes:
-//
-// Programmer: Shelly Prevost,
-// Creation:   Wed Mar 21 16:35:30 PDT 2007.
+// Programmer: Allen Sanderson
+// Creation:   1 May 2016
 //
 // Modifications:
 //
-// ***************************************************************************
-class VisItPointD
+//****************************************************************************
+
+class StripChartCurve: public QwtPlotCurve
 {
 public:
-           VisItPointD () { p_x = 0; p_y = 0; };
-           VisItPointD ( double x, double y ) { p_x = x; p_y = y; };
-    double x() { return p_x; };
-    double y() { return p_y; };
-    void   setX(double x) { p_x = x; };
-    void   setY(double y) { p_y= y; };
-private:
-    double p_x;
-    double p_y;  
+    StripChartCurve( const QString &title ):
+        QwtPlotCurve( title )
+    {
+        setRenderHint( QwtPlotItem::RenderAntialiased );
+    }
+
+    void setColor( const QColor &color )
+    {
+        QColor c = color;
+        c.setAlpha( 150 );
+
+        setPen( QPen( Qt::NoPen ) );
+        setBrush( c );
+    }
 };
 
-typedef QVector<VisItPointD> Points;
-
-
-// ****************************************************************************
-// Class: VisItSimStripChart
+//****************************************************************************
+// Class: StripChartCurve
 //
 // Purpose:
-//    Implements a simple strip chart. It is intended 
-//    for tracking rate of change of simulation variables.
-//    The strip chart will auto range ( keep the full range
-//    of data visible on the chart) and change the plot color
-//    to red if the values are outside the set limits.
+//    Implements a class to hold the strip chart plot.
 //
-// Notes:      
-//
-// Programmer: Shelly Prevost, 
-// Creation:   Friday Oct. 27, 2006
+// Programmer: Allen Sanderson
+// Creation:   1 May 2016
 //
 // Modifications:
-//    Shelly Prevost, Wed Mar 21 16:35:30 PDT 2007.
-//    Added Zoom In and out and focus ( center ) to controls
 //
-//    Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
-//    added Font variable to update font size as zoom changes. Also added variable
-//    zoomOutLimit for zoom checks.
-//
-// ****************************************************************************
+//****************************************************************************
 
-class VisItSimStripChart : public QWidget
-{                                                          
+class QvisStripChart : public QwtPlot
+{
     Q_OBJECT
-    
+
 public:
-            VisItSimStripChart( QWidget *parent=0, int winX=4000, int winY=1000 );
-            ~VisItSimStripChart();
-    void    setOutOfBandLimits( double minY, double miaxY );
-    void    getOutOfBandLimits( double &minY, double &maxY );
-    void    enableOutOfBandLimits( bool enable);
-    bool    getEnableOutOfBandLimits();
-    bool    addDataPoint( double x, double y );
-    void    setEnable( bool enable );
-    bool    getEnable();
-    void    getMinMaxData( double &minY, double &maxY);
-    void    zoomOut();
-    void    zoomIn();
-    void    reset();
-    void    focus(QScrollArea *sc);
-    void    setFontSize();
-    void    setEnableLogScale( bool enable );
-    bool    getEnableLogScale();
-    double  getCurrentData();
-    int     getCurrentCycle();
-       
-protected:
-    void    paintEvent( QPaintEvent * );
-    void    mousePressEvent( QMouseEvent *);
-    void    mouseReleaseEvent( QMouseEvent *);
-    void    mouseMoveEvent( QMouseEvent *);
-    void    paintGrid(QPainter *paint);
+    QvisStripChart( QWidget * = 0 );
+
+    // void setEnable( bool enable ) {};
+    // bool getEnable() { return true; };
+  
+    // void setEnableLogScale( bool enable ) {};
+    // bool getEnableLogScale() { return false; };
+
+    void enableZoomMode( bool );
+    void reset();
+    void clear();
+
+    void setCurveTitle( unsigned int index, const QString &newTitle);
+    void addDataPoint( const QwtText &var, double x, double y);
+
+private Q_SLOTS:
+    void legendChecked( const QVariant &, bool on );
 
 private:
-    Points  points;           // point array
-    int     timeShift;    // how far left to points
-    bool    down;         // TRUE if mouse down
-    float   delta;
-    float   vdelta;
-    float   middle;
-    float   maxPoint;
-    float   minPoint;
-    double  minYLimit;
-    double  maxYLimit;
-    double  minData;
-    double  maxData;
-    double  currentData;
-    int     currentCycle;
-    int     winXSize;
+    void showCurve( QwtPlotItem *, bool on );
+    void hideCurve( QwtPlotItem *item );
 
-    int     winYSize;
-    bool    enabled;
-    bool    enableLogScale;
-    bool    outOfBandLimitsEnabled;
-    float   zoom;
-    bool    center;
-    float   zoomOutLimit;
-    QFont   *gridFont;
-    int     pointSize;
-    int     currentScaledY;
+    void setupTimeAxis( double time, double timeStep );
+    void advanceDataCount( double time );
+
+    void updateSamples();
+    void updateAxis();
+    void AdjustLabelsComputeRange( double inRange[2], 
+                                   double outRange[2],
+                                   double &interval,
+                                   unsigned int &nTicks );
+    unsigned int dataCount;
+
+    double timeData[HISTORY];
+
+    Background *bg;
+
+    QwtPlotZoomer *d_zoomer[2];
+    QwtPlotPicker *d_picker;
+    QwtPlotPanner *d_panner;
+
+    struct
+    {
+        double varData[HISTORY];
+
+        StripChartCurve *curve;
+    }
+    vars[MAX_STRIP_CHART_VARS];
 };
-#endif /* QVIS_STRIPCHART_MGR */
+#endif

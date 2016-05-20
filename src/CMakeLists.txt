@@ -808,6 +808,7 @@ VISIT_3RDPARTY_VAR(OPENGL_DIR    "Path containing the OpenGL library's include a
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
 VISIT_3RDPARTY_VAR(PYSIDE_DIR    "Path containing the PySide installation")
+VISIT_3RDPARTY_VAR(QWT_DIR       "Path containing the Qwt library's include and lib")
 VISIT_3RDPARTY_VAR(R_DIR         "Path containing the R library's include and lib")
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
 VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
@@ -1062,6 +1063,11 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItBoost.cmake)
 IF(BOOST_FOUND)
   SET(HAVE_BOOST 1)
 ENDIF(BOOST_FOUND)
+
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindQwt.cmake)
+IF(QWT_FOUND)
+  SET(HAVE_QWT 1)
+ENDIF(QWT_FOUND)
 
 
 IF( (VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)

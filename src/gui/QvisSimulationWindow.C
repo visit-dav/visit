@@ -68,6 +68,8 @@
 #include <QTableWidgetItem>
 #include <QTreeWidget>
 
+#include <qwt_plot.h>
+
 #include <DebugStream.h>
 #include <EngineList.h>
 #include <EngineProperties.h>
@@ -80,7 +82,6 @@
 
 #include <QvisSimulationCommandWindow.h>
 #include <QvisSimulationMessageWindow.h>
-#include <QvisStripChart.h>
 #include <QvisStripChartMgr.h>
 #include <QvisNotepadArea.h>
 #include <QvisUiLoader.h>
@@ -124,8 +125,10 @@ QvisSimulationWindow::QvisSimulationWindow(EngineList *engineList,
     uiValues = NULL;
     DynamicCommandsWin = NULL;
     uiLoader = new QvisUiLoader;
-    stripCharts = 0;
+    stripChartMgr = 0;
     simMessages = 0;
+
+    curvePlots = 0;
 }
 
 // ****************************************************************************
@@ -160,7 +163,9 @@ QvisSimulationWindow::~QvisSimulationWindow()
     if (uiValues)
         uiValues->Detach(this);
 
-    delete stripCharts;
+    delete stripChartMgr;
+
+    delete curvePlots;
 }
   
 // ****************************************************************************
@@ -286,9 +291,11 @@ QvisSimulationWindow::CreateWindowContents()
     // Create the strip chart manager and post it to the notepad.
     int simindex = simCombo->currentIndex();
     int index = simulationToEngineListMap[simindex];
-    stripCharts = new QvisStripChartMgr(0, GetViewerProxy(), engines, index, notepadAux);
-    stripCharts->post();
+    stripChartMgr = new QvisStripChartMgr(0, GetViewerProxy(), engines, index, notepadAux);
+    stripChartMgr->post();
 
+    curvePlots = new QwtPlot;
+    
     // Make sure we show the commands page.
     notepadAux->showPage(simCommands);
 }
@@ -819,10 +826,9 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             tWidget->setEnabled(true);
 
             char val[128];
-            int row, column;
+            unsigned int row, column;
 
-            sscanf (value.toStdString().c_str(),"%d | %d | %127s",
-                    &row, &column, val);
+            getTableCMD( value.toStdString().c_str(), row, column, val );
 
             debug5 << "found QTableWidget " << name.toStdString()
                    << " row = " << row << " column = " << column
@@ -1202,93 +1208,38 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
         simMessages->clear();
     }
 
-    else if(uiValues->GetName() == "STRIP_CHART_RESET")
+    else if(uiValues->GetName() == "STRIP_CHART_CLEAR")
     {
       int index = atoi( uiValues->GetSvalue().c_str() );
-
-      switch( index )
-      {
-      case 0:
-        stripCharts->setTabLabel(STRIP_CHART_0_TAB_NAME,
-                                 STRIP_CHART_0_WIDGET_NAME );
-        stripCharts->reset( STRIP_CHART_0_TAB_NAME );
-        break;
-      case 1:
-        stripCharts->setTabLabel(STRIP_CHART_1_TAB_NAME,
-                                 STRIP_CHART_1_WIDGET_NAME );
-        stripCharts->reset( STRIP_CHART_1_TAB_NAME );
-        break;
-      case 2:
-        stripCharts->setTabLabel(STRIP_CHART_2_TAB_NAME,
-                                 STRIP_CHART_2_WIDGET_NAME );
-        stripCharts->reset( STRIP_CHART_2_TAB_NAME );
-        break;
-      case 3:
-        stripCharts->setTabLabel(STRIP_CHART_3_TAB_NAME,
-                                 STRIP_CHART_3_WIDGET_NAME );
-        stripCharts->reset( STRIP_CHART_3_TAB_NAME );
-        break;
-      case 4:
-        stripCharts->setTabLabel(STRIP_CHART_4_TAB_NAME,
-                                 STRIP_CHART_4_WIDGET_NAME );
-        stripCharts->reset( STRIP_CHART_4_TAB_NAME );
-        break;
-      }
+      stripChartMgr->clear( index );
     }
 
     else if(uiValues->GetName() == "STRIP_CHART_SET_NAME")
     {
-      int index;
+      unsigned int row, column;
       char name[128];
       
-      sscanf(uiValues->GetSvalue().c_str(),"%d | %127s", &index, name);
+      getTableCMD( uiValues->GetSvalue().c_str(), row, column, name );
 
-      switch( index )
+      if( row == 0 )
       {
-      case 0:
-        stripCharts->setTabLabel(STRIP_CHART_0_TAB_NAME, name );
-        stripCharts->reset( STRIP_CHART_0_TAB_NAME );
-        break;
-      case 1:
-        stripCharts->setTabLabel(STRIP_CHART_1_TAB_NAME, name );
-        stripCharts->reset( STRIP_CHART_1_TAB_NAME );
-        break;
-      case 2:
-        stripCharts->setTabLabel(STRIP_CHART_2_TAB_NAME, name );
-        stripCharts->reset( STRIP_CHART_2_TAB_NAME );
-        break;
-      case 3:
-        stripCharts->setTabLabel(STRIP_CHART_3_TAB_NAME, name );
-        stripCharts->reset( STRIP_CHART_3_TAB_NAME );
-        break;
-      case 4:
-        stripCharts->setTabLabel(STRIP_CHART_4_TAB_NAME, name );
-        stripCharts->reset( STRIP_CHART_4_TAB_NAME );
-        break;
+        stripChartMgr->setTabLabel(column, name );
+      }
+      else
+      {
+        stripChartMgr->setCurveTitle(column, row-1, name );
       }
     }
 
     else if(uiValues->GetName() == "STRIP_CHART_ADD_POINT")
     {
       char name[128];
+      char var[128];
       double x, y;
       
-      sscanf(uiValues->GetSvalue().c_str(), "%127s | %lf | %lf", name, &x, &y);
+      getTableCMD( uiValues->GetSvalue().c_str(), name, var, x, y);
 
-      double maxY;
-      double minY;
-      stripCharts->setEnable(name, uiValues->GetEnabled());
-      bool outOfBounds = stripCharts->addDataPoint(name, x, y);
-      stripCharts->update(name);
-      stripCharts->getMinMaxData(name, minY, maxY);
-      
-      if( outOfBounds )
-      {
-        QString warning;
-        warning.sprintf( "ALERT;%s;Data;OutOfBounds;", name);
-        int simIndex = simCombo->currentIndex();
-        ViewerSendCMD( simIndex, warning );
-      }
+      stripChartMgr->addDataPoint(name, var, x, y);
     }
 }
 
@@ -1579,146 +1530,6 @@ QvisSimulationWindow::UpdateInformation()
         simInfo->setEnabled(true);
     }
 }
-
-#if 0
-// ****************************************************************************
-// Method: QvisSimulationWindow::UpdateCustomUI
-//
-// Purpose:
-//   Updates the ui components in the Custom UI popup.
-//
-// Arguments:
-//   md : meta data from the simulation.
-//
-// Programmer: Shelly Prevost
-// Creation:   December 9, 2005
-//
-// Modifications:
-//   Shelly Prevost, Tue Sep 12 15:05:31 PDT 2006
-//   The new version of UpdateUIComponent requires you pass in the
-//   window as an arguement.
-//
-//   Brad Whitlock, Fri Mar 9 17:08:29 PST 2007
-//   Updated so it uses new metadata interface.
-//
-// ****************************************************************************
-
-void
-QvisSimulationWindow::UpdateCustomUI (const avtDatabaseMetaData *md)
-{
-    int numCustCommands = md->GetSimInfo().GetNumCustomCommands();
-    // loop thru all command updates and updates the matching UI component.
-    for (int c=0; c<numCustCommands; c++)
-    {
-        UpdateUIComponent (DynamicCommandsWin,&(md->GetSimInfo().GetCustomCommands(c)));
-    }
-}
-#endif
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::UpdateSimulationUI
-//
-// Purpose:
-//   Updates the ui components in the simulation window UI.
-//
-// Arguments:
-//   md : meta data from the simulation.
-//
-// Programmer: Shelly Prevost
-// Creation:   August 25, 2006
-//
-// Modifications:
-//   Shelly Prevost Fri Dec  1 10:36:07 PST 2006
-//   To support the Strip Chart and other special widgets it
-//   additional processing was required. I added a function call
-//   to do this.
-//
-// ****************************************************************************
-
-#if 0
-void
-QvisSimulationWindow::UpdateSimulationUI (const avtDatabaseMetaData *md)
-{
-    int numCommands = md->GetSimInfo().GetNumGenericCommands();
-    // loop thru all command updates and updates the matching UI component.
-    for (int c=simCommands->numCommandButtons(); c<numCommands; c++)
-    {
-//        UpdateUIComponent (this,&(md->GetSimInfo().GetGenericCommands(c)));
-//        SpecialWidgetUpdate (&(md->GetSimInfo().GetGenericCommands(c)));
-    }
-}
-#endif
-
-#if 0
-// ****************************************************************************
-// Method: QvisSimulationWindow::SpecialWidgetUpdate
-//
-// Purpose:
-//   Some Widgets need special processing in addition to their
-//   data being updated. This method calls the proper methods
-//   to do the processing.
-//
-// Arguments:
-//   cmd:  ui data information
-//
-// Programmer: Shelly Prevost
-// Creation:   Tue Nov 28 17:12:04 PST 2006
-//
-// Modifications:
-//   Shelly Prevost Fri Oct 12 15:19:40 PDT 2007
-//   added multiple strip chart data updating and 
-//   special processing for tab label updates
-//
-//   Brad Whitlock, Tue Jul  8 09:10:38 PDT 2008
-//   Qt 4.
-//
-// ****************************************************************************
-
-void 
-QvisSimulationWindow::SpecialWidgetUpdate (const avtSimulationCommandSpecification *cmd)
-{
-    QObject *ui = NULL;
-    ui  = findChild<QObject *>(cmd->GetName().c_str());  
-    if ( stripCharts->isStripChartWidget(cmd->GetName().c_str()))
-    {
-         double maxY;
-         double minY;
-         const QString dataX(cmd->GetText().c_str());
-         const QString dataY(cmd->GetValue().c_str());
-         stripCharts->setEnable(cmd->GetName().c_str(),cmd->GetEnabled());
-         bool outOfBounds = stripCharts->addDataPoint(cmd->GetName().c_str(),dataX.toDouble(),dataY.toDouble());   
-         stripCharts->update(cmd->GetName().c_str());
-         stripCharts->getMinMaxData(cmd->GetName().c_str(), minY, maxY);
- 
-         if ( outOfBounds )
-         {
-            QString warning;
-            warning.sprintf( "ALERT;%s;Data;OutOfBounds;", cmd->GetName().c_str());
-            int simIndex = simCombo->currentIndex();
-            ViewerSendCMD ( simIndex, warning);
-         }
-    }
-    if ( stripCharts->isStripChartTabLabel(cmd->GetName().c_str()))
-    {    
-        QString tabName( cmd->GetName().c_str() );
-        QString tabLabel( cmd->GetText().c_str() );
-        stripCharts->setTabLabel(tabName, tabLabel);
-    }
-
-    if ( !strcmp (MESSAGE_WIDGET_NAME,cmd->GetName().c_str()))
-    {
-         const QString dataX(cmd->GetText().c_str());
-         const QString dataY(cmd->GetValue().c_str());
-         if (ui != NULL && dataX != "")
-         {
-             QTextEdit *t = (QTextEdit*)ui;
-             QPalette pal(t->palette());
-             pal.setColor(QPalette::Text, getColor(dataY));
-             t->setPalette(pal);
-         }
-    }
-}
-#endif
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::AddStatusEntry
@@ -2328,68 +2139,6 @@ QvisSimulationWindow::ViewerSendCMD (int simIndex, QString cmd)
 }
 
 // ****************************************************************************
-// Method: QvisSimulationWindow::zoomIn()
-//
-// Purpose:
-//   This method is called to increase the scale of the strip chart.
-//
-// Programmer: Shelly Prevost
-// Creation:   Wed Mar 21 16:38:47 PDT 2007
-//
-// Modifications:
-//   Shelly Prevost Fri Dec  1 10:36:07 PST 2006
-//   modified to use the strip chart manager
-//
-//
-// ****************************************************************************
-void
-QvisSimulationWindow::zoomIn()
-{
-    stripCharts->zoomIn();
-}
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::zoomOut()
-//
-// Purpose:
-//   This method is called to decrease the scale of the strip chart.
-//
-// Programmer: Shelly Prevost
-// Creation:   Wed Mar 21 16:38:47 PDT 2007
-//
-// Modifications:
-//   Shelly Prevost Fri Dec  1 10:36:07 PST 2006
-//   modified to use the strip chart manager
-//
-// ****************************************************************************
-void
-QvisSimulationWindow::zoomOut()
-{
-    stripCharts->zoomOut();
-}
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::focus()
-//
-// Purpose:
-//   This method is called to center on the last data point in the strip chart.
-//
-// Programmer: Shelly Prevost
-// Creation:   Wed Mar 21 16:38:47 PDT 2007
-//
-// Modifications:
-//   Shelly Prevost Fri Dec  1 10:36:07 PST 2006
-//   modified to use the strip chart manager
-//
-// ****************************************************************************
-void
-QvisSimulationWindow::focus()
-{
-    stripCharts->focus();
-}
-
-
-// ****************************************************************************
 // Method: QvisSimulationWindow::getColor
 //
 // Purpose:
@@ -2425,4 +2174,55 @@ QvisSimulationWindow::showMinimized()
     QvisPostableWindowObserver::showMinimized();
     if(DynamicCommandsWin != NULL)
         DynamicCommandsWin->showMinimized();
+}
+
+
+void QvisSimulationWindow::getTableCMD( const char *cmd,
+                                        unsigned int &row, unsigned int &column,
+                                        char *name )
+{
+  std::string strcmd(cmd);
+
+  std::string str = getNextString( strcmd, "|" );
+  row = atoi( str.c_str() );
+
+  str = getNextString( strcmd, "|" );
+  column = atoi( str.c_str() );
+
+  str = getNextString( strcmd, "|" );
+  strcpy( name, str.c_str() );
+}
+
+void QvisSimulationWindow::getTableCMD( const char *cmd, char *name, char *var,
+                                        double &x, double &y )
+{
+  std::string strcmd(cmd);
+
+  std::string str = getNextString( strcmd, "|" );
+  strcpy( name, str.c_str() );
+
+  str = getNextString( strcmd, "|" );
+  strcpy( var, str.c_str() );
+
+  str = getNextString( strcmd, "|" );
+  x = atof( str.c_str() );
+
+  str = getNextString( strcmd, "|" );
+  y = atof( str.c_str() );
+}
+
+std::string QvisSimulationWindow::getNextString( std::string &cmd,
+                                                 const std::string delimiter )
+{
+  size_t delim = cmd.find_first_of( delimiter );
+
+  std::string str = cmd;
+
+  if( delim != std::string::npos)
+  {
+    str.erase(delim-1, std::string::npos);  
+    cmd.erase(0, delim+2);
+  }
+  
+  return str;
 }

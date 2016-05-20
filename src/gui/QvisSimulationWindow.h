@@ -70,6 +70,8 @@ class StatusAttributes;
 class avtSimulationCommandSpecification;
 class SimulationUIValues;
 
+class QwtPlot;
+
 // ****************************************************************************
 // Class: QvisSimulationWindow
 //
@@ -130,13 +132,19 @@ private:
 
     QString GetUIFileDirectory() const;
     QString GetUIFile(const QString &key) const;
+
     void CreateCommandUI();
-    // void UpdateSimulationUI(const avtDatabaseMetaData *md);
-    // void UpdateCustomUI (const avtDatabaseMetaData *md);
     void UpdateUIComponent(QWidget *window, const QString &name, const QString &value, bool e);
 
     void ViewerSendCMD ( int simIndex, QString cmd);
     QColor getColor(const QString &color) const;
+
+    void getTableCMD( const char *cmd,
+                      unsigned int &row, unsigned int &column, char *name );
+    void getTableCMD( const char *cmd, char *name, char *var,
+                      double &x, double &y );
+    std::string getNextString( std::string &cmd, const std::string delimiter );
+                                                                              
 public slots:
     virtual void showNormal();
     virtual void showMinimized();
@@ -151,9 +159,6 @@ private slots:
     void executeStartCommand(const QString &cmd);
     void executeStopCommand(const QString &cmd);
     void executeStepCommand(const QString &cmd);
-    void zoomOut();
-    void zoomIn();
-    void focus();
 
 private:
     EngineList           *engines;
@@ -176,9 +181,10 @@ private:
     QWidget            *DynamicCommandsWin;
     QvisUiLoader       *uiLoader;
     QMap<int,int>      simulationToEngineListMap;
-    QvisStripChartMgr  *stripCharts;
+    QvisStripChartMgr  *stripChartMgr;
     QvisSimulationCommandWindow  *simCommands;
     QvisSimulationMessageWindow  *simMessages;
-};
 
+    QwtPlot *curvePlots;
+};
 #endif
