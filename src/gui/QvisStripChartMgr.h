@@ -37,6 +37,7 @@
 *****************************************************************************/
 #ifndef QVIS_STRIPCHART_MGR
 #define QVIS_STRIPCHART_MGR
+
 #include <QWidget>
 #include <QGroupBox>
 #include <QvisPostableWindow.h>
@@ -85,73 +86,47 @@ public:
                       EngineList *engineList, int index,
                       QvisNotepadArea *notepad2);
     virtual ~QvisStripChartMgr();
-    bool  isStripChartWidget( QString name );
-    bool  isStripChartTabLabel( QString name );
-    
-    void setEnable( QString name, bool enable );
-    bool getEnable( QString name);
 
-    bool addDataPoint( QString name, double x, double y );
-    void update(QString name);
-    void getMinMaxData( QString name, double &minY, double &maxY);
-    void enableOutOfBandLimits(QString name, bool enabled);
-    void setOutOfBandLimits(QString name,double min, double max);
-    void setOutOfBandLimits(double min, double max);
-    void setLimitStripChartDataDisplay(double min, double max);
-    void setCurrentDataDisplay(double currentData );
-    void setCycleDisplay (int currentCycle);
-    int  sendCMD(QString sig, const QObject *ui, QString value);
-    int  sendCMD(QString cmd);
+    void setTabLabel( const unsigned int index, QString newLabel );
+    void setCurveTitle( const unsigned int tabIndex,
+                        const unsigned int curveIndex, QString newTitle );
 
-    void setTabLabel(QString tabName, QString newLabel );
+    void addDataPoint( const QString name,
+                       const QString var,
+                       double x, double y );
 
     virtual void CreateEntireWindow();
 public slots:
-    void reset(QString tabName );
+    void pick();
+    void zoom();
     void reset();
-    void zoomIn();
-    void zoomOut();
-    void focus();
-    void updateCurrentTabData();
+    void clear();
+    void clear( const unsigned int index );
+
     void post();
     void unpost();
-    
-protected slots:
-    void executeMaxLimitStripChart();
-    void executeMinLimitStripChart();
-    void setMinMaxStripChartDataDisplay (double minY, double maxY);
-    void executeEnableStripChartLimits();
-    void executeEnableLogScale();
-    
+        
+    void updateCurrentTabData();
+
 protected:
     virtual void CreateWindowContents();
+
 private:
     QvisStripChartTabWidget *stripChartTabWidget;
-    QCheckBox          *enableStripChartLimits;
-    QLineEdit          *maxLimitEdit;
-    QLabel             *maxLimitLabel;
-    QLineEdit          *minLimitEdit;
-    QLabel             *minLimitLabel;
-    QLineEdit          *maxEdit;
-    QLabel             *maxLabel;
-    QLineEdit          *minEdit;
-    QLabel             *minLabel;
-    QLineEdit          *curEdit;
-    QLabel             *curLabel;
-    QLineEdit          *cycleEdit;
-    QLabel             *cycleLabel;
+
     QGridLayout        *chartLayout;
+    QPushButton        *pickButton;
+    QPushButton        *zoomButton;
     QPushButton        *resetButton;
-    QPushButton        *plusButton;
-    QPushButton        *minusButton;
-    QPushButton        *focusButton;
+    QPushButton        *clearButton;
+
     QScrollArea        *sc;
     QCheckBox          *enableLogScale;
     
-    bool                posted;
+    bool               posted;
     
-    EngineList  *engines;
-    ViewerProxy *viewer;
-    int          simIndex;
+    EngineList         *engines;
+    ViewerProxy        *viewer;
+    int                simIndex;
 };
 #endif /* QVIS_STRIPCHART_MGR */

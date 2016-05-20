@@ -1,4 +1,3 @@
-
 /*****************************************************************************
 *
 * Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC
@@ -38,28 +37,15 @@
 *****************************************************************************/
 #ifndef QVIS_STRIPCHART_TABWIDGET_H
 #define QVIS_STRIPCHART_TABWIDGET_H
-#include <QPainter>
+
 #include <QString>
-#include <QTabWidget>
 #include <QVector>
-#include <QWidget>
+#include <QTabWidget>
 
-class QCheckBox;
-class QColor;
-class QComboBox;
-class QGridLayout;
-class QGroupBox;
-class QLabel;
-class QLineEdit;
-class QObject;
-class QPushButton;
 class QScrollArea;
-class QSignal;
-class QSpinBox;
-class QTreeWidget;
-class QVBoxLayout;
-class VisItSimStripChart;
+class QvisStripChart;
 
+#define MAX_STRIP_CHARTS 5
 
 // ****************************************************************************
 // Class: SC_NamesTabsIndex
@@ -82,17 +68,15 @@ class SC_NamesTabsIndex
 {
 public:
     SC_NamesTabsIndex(){}
-    SC_NamesTabsIndex(const char *n, const char *tab, int i):name(n),tabName(tab), index(i){}
+    SC_NamesTabsIndex(const char *n) : name(n) {}
+
     QString getName() const {return name;}
+
     void setScrollView(QScrollArea *sc) {scrollView = sc;}
     QScrollArea *getScrollView() {return scrollView;}
-    QString getTabName() const {return tabName;}
-    int getIndex() const {return index;}
+  
 private:
      QString name;
-     QString tabName;
-     int  index;
-
      QScrollArea *scrollView;
 };
 
@@ -120,73 +104,37 @@ class QvisStripChartTabWidget : public QTabWidget
 {                                                          
     Q_OBJECT
 public:
-    QvisStripChartTabWidget( QWidget *parent=0, QObject *mgr=NULL, int winX=4000, int winY=1000 );
+    QvisStripChartTabWidget( QWidget *parent=0, QObject *mgr=NULL,
+                             int winX=4000, int winY=1000 );
     ~QvisStripChartTabWidget();
-    void setEnable(const QString &name, bool enable );
-    bool getEnable(const QString &name) const;
-    bool addDataPoint (const QString &name,double x, double y);
-    void update(const QString &name);
-    void getMinMaxData(const QString &name, double &minY, double &maxY);
-    void getMinMaxData(double &minY, double &maxY);
- 
-    enum numStripCharts { maxStripCharts = 5 };
+  
     int  nameToIndex(const QString &SC_Name) const;
-    int  nameToTabIndex(const QString &Tab_Name) const;
-    bool isStripChartWidget(const QString &name) const;
-    bool isStripChartTabLabel(const QString &name) const;
-    int  getCurrentPageIndex() const;
-    void executeEnableStripChartLimits();
-    QWidget *getCurrentStripChart();
-    void getOutOfBandLimits(double &min, double &max);
-    bool getEnableOutOfBandLimits();
-    void setEnableLogScale( bool enable );
-    bool getEnableLogScale();
+
+    // void setEnableLogScale( bool enable );
+    // bool getEnableLogScale();
+
     void setTabLabel(int tabIndex, const QString &newLabel);
-    double getCurrentData();
-    int  getCurrentCycle();
+    void setCurveTitle(int tabIndex, int cruveIndex, const QString &newTitle);
     
+    void addDataPoint(const QString &name,
+                      const QString &var,
+                      double x, double y);
+  
 public slots:
-    void reset( const int index );
+    void pick();
+    void zoom();
     void reset();
-    void zoomIn();
-    void zoomOut();
-    void focus();
+    void clear();
+    void clear( const unsigned int index );
+
     void updateCurrentTabData();
-    void enableOutOfBandLimits(const QString &name, bool enabled);
-    void enableOutOfBandLimits( bool enabled);
-    void setOutOfBandLimits(const QString &name,double min, double max);
-    void setOutOfBandLimits(double min, double max);
 
 private:
-
-    int     timeShift;    // how far left to points
-    bool    down;         // TRUE if mouse down
-    float   delta;
-    float   vdelta;
-    float   middle;
-    float   maxPoint;
-    float   minPoint;
-    double  minYLimit;
-    double  maxYLimit;
-    double  minData;
-    double  maxData;
-    int     winXSize;
-
-    int     winYSize;
-    bool    enabled;
-    bool    outOfBandLimitsEnabled;
-    float   zoom;
-    bool    center;
-    float   zoomOutLimit;
-    QFont   *gridFont;
-    int     pointSize;
-    
-    
     // index of the currently displayed strip chart
     int currentStripChart;
+
     // array of maxStripCharts
-    VisItSimStripChart *stripCharts[maxStripCharts];
+    QvisStripChart *stripCharts[MAX_STRIP_CHARTS];
     SC_NamesVector SC_Info;
 };
-
 #endif /* QVISSTRIPCHARTTABWIDGET */

@@ -129,7 +129,9 @@ function apply_qwt_patch
 function apply_qwt_linix_patch
 {
     PATCHFILE="./patchfile.patch"
-    
+    rm -rf $PATCHFILE
+    touch $PATCHFILE
+
     echo "--- qwtconfig.pri        2014-12-11 07:13:13.000000000 -0700" >> $PATCHFILE
     echo "+++ qwtconfig.pri.new    2016-05-03 16:14:00.000000000 -0600" >> $PATCHFILE
     echo "@@ -19,7 +19,7 @@" >> $PATCHFILE
@@ -148,7 +150,7 @@ function apply_qwt_linix_patch
         return 1
     fi
 
-    rm -rf $PATCHFILE
+#    rm -rf $PATCHFILE
     
     return 0;
 }

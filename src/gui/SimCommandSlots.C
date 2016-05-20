@@ -116,9 +116,9 @@ int SimCommandSlots::SendCMD(QString sig, const QObject *ui, QString value)
     string sim  = engines->GetSimulationName()[simIndex];
 
     QString cmd = QString("UI;%1;%2;%3;%4").arg(ui->objectName())
-                                     .arg(ui->metaObject()->className())
-                                     .arg(sig)
-                                     .arg(value);
+                                           .arg(ui->metaObject()->className())
+                                           .arg(sig)
+                                           .arg(value);
 
     viewer->GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString());
 
@@ -351,7 +351,7 @@ void SimCommandSlots::CellChangedHandler(int row, int col)
 
     QString value =
       QString::number(row) + " | " + QString::number(col) + " | " + tvalue;
-
+    
     SendCMD("cellChanged(int,int)", ui, value);
 }
 

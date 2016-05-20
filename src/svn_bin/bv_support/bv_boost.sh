@@ -169,6 +169,11 @@ function build_boost
               system program_options regex timer"
     fi
     
+    if [[ "$DO_UINTAH" == "yes" ]] ; then
+        libs="$libs \
+              chrono filesystem wserialization serialization system thread signals date_time program_options"
+    fi
+
     # Remove all of the duplicate libs.
     libs=`echo $libs | tr ' ' '\n' | sort -u | tr '\n' ' ' | sed s'/.$//'`
 
