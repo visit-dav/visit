@@ -217,7 +217,7 @@ function build_qwt
     # Build Qwt
     #
     info "Building Qwt project. . . (~1 minute)"
-    $VISITDIR/qt/${QT_VERSION}/$VISITARCH/bin/qmake qwt.pro
+    ${QT_BIN_DIR}/qmake qwt.pro
     if [[ $? != 0 ]] ; then
         warn "Qwt project build failed.  Giving up"
         return 1
