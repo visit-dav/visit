@@ -863,11 +863,16 @@ vtkPLOT3DReader::ComputeGridOffset(FILE *xyzFp)
         {
         if (this->Internal->IBlanking)
           {
-            this->GridOffsets[j] = (this->GridOffsets[j-1] + (nd+1)*this->GridSizes[j-1]*4) + 2*bc;
+            this->GridOffsets[j] = (this->GridOffsets[j-1] +        // starting offset
+                nd*this->GridSizes[j-1]*this->Internal->Precision + // coordinate sizes
+                this->GridSizes[j-1]*4 +                            // iblank sizes
+                2*bc);                                              // start/end byte counts
           }
         else
           {
-            this->GridOffsets[j] = (this->GridOffsets[j-1] + nd*this->GridSizes[j-1]*this->Internal->Precision) + 2*bc;
+            this->GridOffsets[j] = (this->GridOffsets[j-1] +        // starting offset
+                nd*this->GridSizes[j-1]*this->Internal->Precision + // coordinate sizes
+                2*bc);                                              // start/end byte counts
           }
         }
       else
