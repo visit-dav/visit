@@ -7299,13 +7299,38 @@ QvisGUIApplication::HandleMetaDataUpdate()
         GetViewerState()->GetDatabaseMetaData()->Print(DebugStream::Stream4());
     }
 
+    QualifiedFilename qf = fileServer->GetOpenFile();
+
+    // Because simulation meta data is pushed rather than pulled, the
+    // open file (active source) may not belong to the simulation. As
+    // such, find the meta data's QualifiedFilename from the
+    // fileserver.
+    if( GetViewerState()->GetDatabaseMetaData()->GetIsSimulation() )
+    {
+        const std::string mdf =
+          GetViewerState()->GetDatabaseMetaData()->GetDatabaseName();   
+
+        const QualifiedFilenameVector &qfv = fileServer->GetAppliedFileList();
+
+        // Find the qualified name based on the meta data database
+        // name which should be unique as it contains a time stamp.
+        for( unsigned int i=0; i<qfv.size(); ++i )
+        {
+            if( qfv[i].PathAndFile() == mdf )
+            {
+                qf = mdf;
+                break;
+            }
+        }
+    }
+
     // Poke the metadata into the file server
-    fileServer->SetOpenFileMetaData(GetViewerState()->GetDatabaseMetaData(),
-                                    GetStateForSource(fileServer->GetOpenFile()));
+    fileServer->SetFileMetaData(qf, GetViewerState()->GetDatabaseMetaData(),
+                                GetStateForSource(qf));
 
     // Poke the SIL into the file server
     avtSIL *sil = new avtSIL(*GetViewerState()->GetSILAttributes());
-    fileServer->SetOpenFileSIL(sil);
+    fileServer->SetFileSIL(qf, sil);
     delete sil;
 
     //
@@ -7323,8 +7348,8 @@ QvisGUIApplication::HandleMetaDataUpdate()
     QString fileInfoWinName(windowNames[WINDOW_FILE_INFORMATION]);
     if (otherWindows.count(fileInfoWinName))
     {
-        QvisFileInformationWindow *fileInfoWin = (QvisFileInformationWindow*)
-            otherWindows[fileInfoWinName];
+        QvisFileInformationWindow *fileInfoWin =
+            (QvisFileInformationWindow*) otherWindows[fileInfoWinName];
         fileInfoWin->Update(fileServer);
     }
 
@@ -7332,7 +7357,6 @@ QvisGUIApplication::HandleMetaDataUpdate()
     QString simWinName(windowNames[WINDOW_SIMULATION]);
     if (otherWindows.count(simWinName))
     {
-        const QualifiedFilename &qf = fileServer->GetOpenFile();
         QvisSimulationWindow *simWin =
             (QvisSimulationWindow*)otherWindows[simWinName];
         simWin->SetNewMetaData(qf, GetViewerState()->GetDatabaseMetaData());
