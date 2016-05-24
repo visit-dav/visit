@@ -45,6 +45,9 @@
 #   Brad Whitlock, Fri May 18 16:09:34 PST 2012
 #   Use different resource file.
 #
+#   Kathleen Biagas, Tue May 24 16:17:22 MST 2016
+#   Add qwt lib.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -66,9 +69,10 @@ ${QT_QTOPENGL_INCLUDE_DIR}
 ${QT_QTNETWORK_INCLUDE_DIR} 
 ${QT_QTXML_INCLUDE_DIR} 
 ${QT_QTUITOOLS_INCLUDE_DIR}
+${QWT_INCLUDE_DIR}
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR} ${QWT_LIBRARY_DIR})
 
 IF(VISIT_STATIC)
     # If the gui is static then we need some static symbol lookup functions

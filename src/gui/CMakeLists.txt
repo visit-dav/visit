@@ -432,7 +432,7 @@ mdserverproxy
 avtdbatts
 winutil
 ${GUI_QT_LIBS}
-${QWT_LIBRARY}
+${QWT_LIB}
 )
 
 IF(APPLE)

@@ -117,16 +117,8 @@ function bv_qwt_dry_run
     fi
 }
 
-function apply_qwt_patch
-{
-    if [[ "$OPSYS" == "Linux" || "$OPSYS" == "Darwin" ]]; then
-	apply_qwt_linix_patch
-    else
-	apply_qwt_windows_patch
-    fi
-}
 
-function apply_qwt_linix_patch
+function apply_qwt_linux_patch
 {
     PATCHFILE="./patchfile.patch"
     rm -rf $PATCHFILE
@@ -155,31 +147,72 @@ function apply_qwt_linix_patch
     return 0;
 }
 
-function apply_qwt_windows_patch
+function apply_qwt_static_patch
 {
-    PATCHFILE="./patchfile.patch"
-    
-    echo "--- qwtconfig.pri        2014-12-11 07:13:13.000000000 -0700" >> $PATCHFILE
-    echo "+++ qwtconfig.pri.new    2016-05-03 16:14:00.000000000 -0600" >> $PATCHFILE
-    echo " }" >> $PATCHFILE
-    echo " " >> $PATCHFILE
-    echo " win32 {" >> $PATCHFILE
-    echo "-    QWT_INSTALL_PREFIX    = C:/Qwt-$$QWT_VERSION" >> $PATCHFILE
-    echo "+    QWT_INSTALL_PREFIX    = ${QWT_INSTALL_DIR}" >> $PATCHFILE
-    echo "     # QWT_INSTALL_PREFIX = C:/Qwt-$$QWT_VERSION-qt-$$QT_VERSION" >> $PATCHFILE
-    echo " }" >> $PATCHFILE
+    # must patch a file in order to create static library
+    info "Patching qwt for static build"
+    patch -p0 << \EOF
+diff -c qwtconfig.pri.orig qwtconfig.pri
+*** qwtconfig.pri.orig  2016-05-24 14:09:02.000000000 -0700
+--- qwtconfig.pri       2016-05-24 14:10:06.268628351 -0700
+***************
+*** 72,78 ****
+  # it will be a static library.
+  ######################################################################
 
-    patch -p0 < $PATCHFILE
+! QWT_CONFIG           += QwtDll
 
+  ######################################################################
+  # QwtPlot enables all classes, that are needed to use the QwtPlot
+--- 72,78 ----
+  # it will be a static library.
+  ######################################################################
+
+! #QWT_CONFIG           += QwtDll
+
+  ######################################################################
+  # QwtPlot enables all classes, that are needed to use the QwtPlot
+***************
+*** 93,99 ****
+  # export a plot to a SVG document
+  ######################################################################
+
+! QWT_CONFIG     += QwtSvg
+
+  ######################################################################
+  # If you want to use a OpenGL plot canvas
+--- 93,99 ----
+  # export a plot to a SVG document
+  ######################################################################
+
+! #QWT_CONFIG     += QwtSvg
+
+  ######################################################################
+  # If you want to use a OpenGL plot canvas
+
+
+EOF
     if [[ $? != 0 ]] ; then
-        warn "qwt patch failed."
+        warn "qwt static patch failed."
         return 1
     fi
 
-    rm -rf $PATCHFILE
-    
     return 0;
+
 }
+
+function apply_qwt_patch
+{
+    if [[ "$OPSYS" == "Linux" || "$OPSYS" == "Darwin" ]]; then
+        apply_qwt_linux_patch
+    fi
+
+    if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+        apply_qwt_static_patch
+    fi
+}
+
+
 
 # *************************************************************************** #
 #                          Function 8.0, build_qwt                           #
@@ -225,7 +258,6 @@ function build_qwt
         return 1
     fi
     
-    info "Building Qwt . . . (~2 minutes)"
     $MAKE
     if [[ $? != 0 ]] ; then
         warn "Qwt build failed.  Giving up"
