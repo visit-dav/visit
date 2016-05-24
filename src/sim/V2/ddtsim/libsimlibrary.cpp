@@ -42,8 +42,8 @@
 LibsimLibrary::LibsimLibrary(const char* lib) :
     mLibsim(lib)
 {
-    mVisItUpdatePlots = (void (*)()) mLibsim.symbol("VisItTimeStepChanged");
-    mVisItTimeStepChanged = (void (*)()) mLibsim.symbol("VisItUpdatePlots");
+    mVisItUpdatePlots = (void (*)()) mLibsim.symbol("VisItUpdatePlots");
+    mVisItTimeStepChanged = (void (*)()) mLibsim.symbol("VisItTimeStepChanged");
 
     mVisItDetectInput = (int (*)(int,int)) mLibsim.symbol("VisItDetectInput");
     mVisItProcessEngineCommand = (int (*)(void)) mLibsim.symbol("VisItProcessEngineCommand");
