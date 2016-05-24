@@ -3515,7 +3515,7 @@ FileServerList::GetSeparatorString(const string &host)
 }
 
 // ****************************************************************************
-//  Method:  FileServerList::SetOpenFileMetaData
+//  Method:  FileServerList::SetFileMetaData
 //
 //  Purpose:
 //    Poke new metadata into the file server.  This is needed by
@@ -3544,11 +3544,12 @@ FileServerList::GetSeparatorString(const string &host)
 // ****************************************************************************
 
 void
-FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md, int timeState)
+FileServerList::SetFileMetaData(const QualifiedFilename &filename,
+                                const avtDatabaseMetaData *md, int timeState)
 {
-    if(fileMetaData.find(openFile.FullName()) != fileMetaData.end())
+    if(fileMetaData.find(filename.FullName()) != fileMetaData.end())
     {
-        *(fileMetaData[openFile.FullName()]) = *md;
+        *(fileMetaData[filename.FullName()]) = *md;
         // hack to have it return that the file changed
         fileAction=FILE_OPEN;
         Select(ID_fileAction, (void *)&fileAction);
@@ -3556,12 +3557,12 @@ FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md, int timeState
     else
     {
         debug1 << "Attempted to insert metadata for a file that has not been "
-                  "opened. openFile=" << openFile.FullName() << endl;
+                  "opened. openFile=" << filename.FullName() << endl;
     } 
 }
 
 // ****************************************************************************
-//  Method:  FileServerList::SetOpenFileSIL
+//  Method:  FileServerList::SetFileSIL
 //
 //  Purpose:
 //    Poke a new SIL into the file server.  This is needed by
@@ -3582,11 +3583,12 @@ FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md, int timeState
 // ****************************************************************************
 
 void
-FileServerList::SetOpenFileSIL(const avtSIL *sil)
+FileServerList::SetFileSIL(const QualifiedFilename &filename,
+                           const avtSIL *sil)
 {
-    if(SILData.find(openFile.FullName()) != SILData.end())
+    if(SILData.find(filename.FullName()) != SILData.end())
     {
-        *(SILData[openFile.FullName()]) = *sil;
+        *(SILData[filename.FullName()]) = *sil;
         // hack to have it return that the file changed
         fileAction=FILE_OPEN;
         Select(ID_fileAction, (void *)&fileAction);
@@ -3680,4 +3682,3 @@ FileServerList::RestoreSessionFile(const std::string &host, const std::string &f
         info->second->server->GetMDServerMethods()->RestoreSession(filename, contents);
     }
 }
-
