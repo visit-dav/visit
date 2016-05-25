@@ -705,7 +705,7 @@ ViewerEngineManagerImplementation::CreateEngineEx(const EngineKey &ek,
         GetViewerMessaging()->Error(
             TR("VisIt cannot use the compute engine on "
                "host \"%1\" because the engine has an incompatible "
-               " version number.").
+               "version number.").
             arg(ek.HostName()));
     }
     CATCH(IncompatibleSecurityTokenException)
@@ -978,7 +978,7 @@ ViewerEngineManagerImplementation::ConnectSim(const EngineKey &ek,
         GetViewerMessaging()->Error(
             TR("VisIt cannot use the simulation on "
                "host \"%1\" because the simulation has an incompatible "
-               " version number.").
+               "version number.").
             arg(ek.HostName()));
     }
     CATCH(IncompatibleSecurityTokenException)
