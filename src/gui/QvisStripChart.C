@@ -56,7 +56,9 @@
 // Class: TimeScaleDraw
 //
 // Purpose:
-//    Implements a class for drawing the x axis based on an index
+//    Implements a class for drawing the x axis based on a value.
+//
+//    Note this class is not used but is present as a demonstration
 //
 // Programmer: Allen Sanderson
 // Creation:   1 May 2016
@@ -71,10 +73,12 @@
 //     TimeScaleDraw( const QTime &base ):
 //         baseTime( base )
 //     {
+//         // Pass the base time to init the system.
 //     }
-  
+//
 //     virtual QwtText label( double v ) const
 //     {
+//         // Add the current time to the base time and return it as a string.
 //         QTime upTime = baseTime.addSecs( static_cast<int>( v ) );
 //         return upTime.toString();
 //     }
@@ -119,6 +123,7 @@ public:
         QColor c( Qt::darkGray );
         QRectF r = canvasRect;
 
+        // Create a series of gradated bands to give a relative scale.
         for( unsigned int n=0; n<nBands; ++n )
         {
             r.setBottom( yMap.transform( start+(double)(n  )*height ) );
@@ -184,7 +189,7 @@ public:
 //
 //****************************************************************************
 QvisStripChart::QvisStripChart( QWidget *parent ):
-    QwtPlot( parent )
+  QwtPlot( parent ), dataCount( 0 )
 {
     setAutoReplot( false );
 
@@ -216,7 +221,7 @@ QvisStripChart::QvisStripChart( QWidget *parent ):
 
     d_zoomer[1] = new Zoomer( QwtPlot::xTop, QwtPlot::yRight, canvas );
 
-    enableZoomMode( false );
+    toggleDisplayMode( false );
 
     // Create and add the background to the plot
     bg = new Background();
@@ -232,7 +237,10 @@ QvisStripChart::QvisStripChart( QWidget *parent ):
     setAxisTitle( QwtPlot::xBottom, "Cycle" );
     setAxisScale( QwtPlot::xBottom, 0, HISTORY );
 
+    // This call is not used but is left as demostration when on wants
+    // to offset from a base value.
 //  setAxisScaleDraw( QwtPlot::xBottom, new TimeScaleDraw( cpuStat.upTime() ) );
+    
     setAxisLabelRotation( QwtPlot::xBottom, -50.0 );
     setAxisLabelAlignment( QwtPlot::xBottom, Qt::AlignLeft | Qt::AlignBottom );
 
@@ -248,7 +256,7 @@ QvisStripChart::QvisStripChart( QWidget *parent ):
     const int fmh = QFontMetrics( scaleWidget->font() ).height();
     scaleWidget->setMinBorderDist( 0, fmh / 2 );
 
-    // Set up the time that holds the cycle.
+    // Set up the time array that holds the cycle values.
     for( unsigned int i=0; i<HISTORY; ++i )
       timeData[i] = 0;
 
@@ -275,8 +283,6 @@ QvisStripChart::QvisStripChart( QWidget *parent ):
         hideCurve( vars[c].curve );
     }
     
-    dataCount = 0;
-
     connect( legend,
              SIGNAL( checked( const QVariant &, bool, int ) ),
              SLOT( legendChecked( const QVariant &, bool ) ) );
@@ -297,6 +303,9 @@ QvisStripChart::QvisStripChart( QWidget *parent ):
 void
 QvisStripChart::setCurveTitle( unsigned int index, const QString &newTitle)
 {
+    bool clearData = false;
+  
+    // If blank use a default name. 
     if( newTitle.isEmpty() )
     {
       std::ostringstream title;
@@ -304,49 +313,23 @@ QvisStripChart::setCurveTitle( unsigned int index, const QString &newTitle)
 
       vars[index].curve->setTitle( title.str().c_str() );
       hideCurve( vars[index].curve );
+
+      clearData = true;
     }
-    else
+    else if( vars[index].curve->title() != newTitle )
     {
       vars[index].curve->setTitle( newTitle );
       showCurve( vars[index].curve, 1 );
+
+      clearData = true;
     }
 
     // Clear the data.
-    for( unsigned int i=0; i<HISTORY; ++i )
-      vars[index].varData[i] = 0.0;
-}
-
-//****************************************************************************
-// Class: QvisStripChart::hideCurve
-//
-// Purpose:
-//    Hide the curve on the legend and plot.
-//
-// Programmer: Allen Sanderson
-// Creation:   1 May 2016
-//
-// Modifications:
-//
-//****************************************************************************
-void
-QvisStripChart::hideCurve( QwtPlotItem *item )
-{
-    item->setVisible( false );
-
-    QwtLegend *lgd = qobject_cast<QwtLegend *>( legend() );
-
-    QList<QWidget *> legendWidgets = lgd->legendWidgets( itemToInfo( item ) );
-
-    if( legendWidgets.size() == 1 )
+    if( clearData )
     {
-        QwtLegendLabel *legendLabel =
-            qobject_cast<QwtLegendLabel *>( legendWidgets[0] );
-
-        if( legendLabel )
-            legendLabel->setVisible( false );
+      for( unsigned int i=0; i<HISTORY; ++i )
+        vars[index].varData[i] = 0.0;
     }
-
-    replot();
 }
 
 //****************************************************************************
@@ -386,6 +369,39 @@ QvisStripChart::showCurve( QwtPlotItem *item, bool on )
 }
 
 //****************************************************************************
+// Class: QvisStripChart::hideCurve
+//
+// Purpose:
+//    Hide the curve on the legend and plot.
+//
+// Programmer: Allen Sanderson
+// Creation:   1 May 2016
+//
+// Modifications:
+//
+//****************************************************************************
+void
+QvisStripChart::hideCurve( QwtPlotItem *item )
+{
+    item->setVisible( false );
+
+    QwtLegend *lgd = qobject_cast<QwtLegend *>( legend() );
+
+    QList<QWidget *> legendWidgets = lgd->legendWidgets( itemToInfo( item ) );
+
+    if( legendWidgets.size() == 1 )
+    {
+        QwtLegendLabel *legendLabel =
+            qobject_cast<QwtLegendLabel *>( legendWidgets[0] );
+
+        if( legendLabel )
+            legendLabel->setVisible( false );
+    }
+
+    replot();
+}
+
+//****************************************************************************
 // Class: QvisStripChart::legendChecked
 //
 // Purpose:
@@ -407,7 +423,7 @@ QvisStripChart::legendChecked( const QVariant &itemInfo, bool on )
 }
 
 //****************************************************************************
-// Class: QvisStripChart::enableZoomMode
+// Class: QvisStripChart::toggleDisplayMode
 //
 // Purpose: Toogles between pick and pan/zoom mode.
 //    
@@ -418,23 +434,20 @@ QvisStripChart::legendChecked( const QVariant &itemInfo, bool on )
 // Modifications:
 //
 //****************************************************************************
-void QvisStripChart::enableZoomMode( bool on )
+void QvisStripChart::toggleDisplayMode( bool mode )
 {
-    d_panner->setEnabled( on );
+    d_picker->setEnabled( !mode );
 
-    d_zoomer[0]->setEnabled( on );
-    // d_zoomer[0]->zoom( 0 );
+    d_panner->setEnabled( mode );
 
-    d_zoomer[1]->setEnabled( on );
-    // d_zoomer[1]->zoom( 0 );
-
-    d_picker->setEnabled( !on );
+    d_zoomer[0]->setEnabled( mode );
+    d_zoomer[1]->setEnabled( mode );
 }
 
 //****************************************************************************
 // Class: QvisStripChart::reset
 //
-// Purpose: Reset the view to teh full extents.
+// Purpose: Reset the view to the full extents.
 //    
 //
 // Programmer: Allen Sanderson
@@ -479,7 +492,7 @@ void QvisStripChart::clear()
     
     replot();
 
-    enableZoomMode(false);
+    toggleDisplayMode(false);
 }
 
 //****************************************************************************
@@ -517,7 +530,7 @@ void QvisStripChart::setupTimeAxis( double time, double timeStep )
 void QvisStripChart::advanceDataCount( double time )
 {
     // If a single samples set the full time axis so the time
-    // axis is consistant.
+    // axis is consistant. 
     if( dataCount == 0 )
       setupTimeAxis( time, 1 );
 
@@ -559,31 +572,22 @@ void QvisStripChart::advanceDataCount( double time )
 // Modifications:
 //
 //****************************************************************************
-void QvisStripChart::addDataPoint( const QwtText &var, double x, double y)
+void QvisStripChart::addDataPoint( unsigned int index, double x, double y)
 {
-    // Find the correct variable to update.
-    for( unsigned int c=0; c<MAX_STRIP_CHART_VARS; ++c )
-    {
-        if( var == vars[c].curve->title() )
-        {
-            // If a new time advance the data count which also sets
-            // the new time.
-            if( timeData[0] != x )
-                advanceDataCount( x );
+    // If a new time advance the data count which also sets
+    // the new time.
+    if( timeData[0] != x )
+      advanceDataCount( x );
 
-            // Set the new Y value.
-            vars[c].varData[0] = y;
-
-            // Update the samples for all curves.
-            updateSamples();
-
-            updateAxis();
-
-            replot();
-            
-            break;
-        }
-    }    
+    // Set the new Y value.
+    vars[index].varData[0] = y;
+    
+    // Update the samples for all curves.
+    updateSamples();
+    
+    updateAxis();
+    
+    replot();
 }
 
 //****************************************************************************
@@ -621,7 +625,7 @@ void QvisStripChart::updateAxis()
 {
     bool haveData = false;
 
-    // Get teh min/max for all of the curves.
+    // Get the min/max for all of the curves.
     double c_min =  std::numeric_limits<float>::max();
     double c_max = -std::numeric_limits<float>::max();
 
@@ -649,21 +653,21 @@ void QvisStripChart::updateAxis()
     if( c_max - c_min < std::numeric_limits<float>::min() )
         c_max = c_min + 1.0;
 
-    double inRange[2] = {c_min,c_max}, outRange[2];
+    double range[2] = {c_min,c_max};
 
     // Find some reasonable bounds the includes the min/max.
     double interval;
     unsigned int nTicks;
-    AdjustLabelsComputeRange(inRange, outRange, interval, nTicks );
+    AdjustLabelsComputeRange( range, interval, nTicks );
 
     // Set the parameters for the background.
     bg->nBands = nTicks;
     bg->height = interval;
-    bg->start = outRange[0];
+    bg->start = range[0];
 
     // Set the axii.
     setAxisScale( QwtPlot::xBottom, timeData[HISTORY-1], timeData[0] );
-    setAxisScale( QwtPlot::yLeft, outRange[0], outRange[1] );
+    setAxisScale( QwtPlot::yLeft, range[0], range[1] );
 }
 
 // ****************************************************************************
@@ -704,9 +708,9 @@ inline double fsign(double value, double sign)
 }
 
 //****************************************************************************
-// Class: QvisStripChart::
+// Class: QvisStripChart::AdjustLabelsComputeRange
 //
-// Purpose:
+// Purpose: Gets an even range for labeling axis.
 //    
 //
 // Programmer: Allen Sanderson
@@ -715,26 +719,17 @@ inline double fsign(double value, double sign)
 // Modifications:
 //
 //****************************************************************************
-void QvisStripChart::AdjustLabelsComputeRange( double inRange[2], 
-                                               double outRange[2],
+void QvisStripChart::AdjustLabelsComputeRange( double range[2], 
                                                double &interval,
                                                unsigned int &nTicks )
 {
-  double sortedRange[2], range;
-  double fxt, fnt, frac;
-  double div;
-  double start;
+  double sortedRange[2] = { (range[0] < range[1] ? range[0] : range[1]),
+                            (range[0] > range[1] ? range[0] : range[1]) };
 
-  outRange[0] = inRange[0];
-  outRange[1] = inRange[1];
-
-  sortedRange[0] = (double)(inRange[0] < inRange[1] ? inRange[0] : inRange[1]);
-  sortedRange[1] = (double)(inRange[0] > inRange[1] ? inRange[0] : inRange[1]);
-
-  range = sortedRange[1] - sortedRange[0];
+  double diff = sortedRange[1] - sortedRange[0];
 
   // Find the integral points.
-  double pow10 = log10(range);
+  double pow10 = log10(diff);
 
   // Build in numerical tolerance
   if (pow10 != 0.)
@@ -749,15 +744,15 @@ void QvisStripChart::AdjustLabelsComputeRange( double inRange[2],
       pow10 = pow10 - 1.;
   }
 
-  fxt = pow(10., ffix(pow10));
+  double fxt = pow(10., ffix(pow10));
     
   // Find the number of integral points in the interval.
-  fnt  = range/fxt;
+  double fnt  = diff / fxt;
   fnt  = ffix(fnt);
-  frac = fnt;
+  double frac = fnt;
   nTicks = (frac <= 0.5 ? (int)ffix(fnt) : ((int)ffix(fnt) + 1));
 
-  div = 1.;
+  double div = 1.;
 
   if (nTicks < 5)
       div = 2.;
@@ -773,6 +768,8 @@ void QvisStripChart::AdjustLabelsComputeRange( double inRange[2],
 
   // Figure out the first tick locations, relative to the start of the
   // axis.
+  double start;
+
   if (sortedRange[0] < 0.)
       start = interval*(ffix(sortedRange[0]*(1./interval)) + 0.);
   else
@@ -781,15 +778,20 @@ void QvisStripChart::AdjustLabelsComputeRange( double inRange[2],
   // Create all of the ticks.
   nTicks = 0;
 
-  outRange[0] = start - interval;
-  outRange[1] = outRange[0];
+  // The first tick starts one interval back so to fully include all
+  // values.
+  range[0] = start - interval;
+  range[1] = range[0];
 
-  while (outRange[1] < sortedRange[1])
+  // Add ticks until the full range is reach.
+  while (range[1] < sortedRange[1])
   {
-      outRange[1] += interval;
+      range[1] += interval;
       ++nTicks;
   }
   
-  outRange[1] += interval;
+  // The last tick continues one interval forward so to fully include
+  // all values.
+  range[1] += interval;
   ++nTicks;
 }

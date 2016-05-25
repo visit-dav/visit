@@ -59,8 +59,6 @@ class QvisStripChart;
 // Creation:   Wed Aug  1 15:11:06 PDT 2007
 //
 // Modifications:
-//    Jeremy Meredith, Thu Aug  7 15:41:55 EDT 2008
-//    Use const char*'s when possible to allow string literals.
 //
 // ****************************************************************************
 
@@ -95,8 +93,6 @@ typedef QVector<SC_NamesTabsIndex> SC_NamesVector;
 // Creation:   Wed Aug  1 15:11:06 PDT 2007
 //
 // Modifications:
-//   Brad Whitlock, Tue Jul  8 09:33:22 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
 
@@ -113,11 +109,11 @@ public:
     // void setEnableLogScale( bool enable );
     // bool getEnableLogScale();
 
-    void setTabLabel(int tabIndex, const QString &newLabel);
-    void setCurveTitle(int tabIndex, int cruveIndex, const QString &newTitle);
+    void setTabLabel(unsigned int tabIndex, const QString &newLabel);
+    void setCurveTitle(int unsigned tabIndex, int unsigned cruveIndex,
+                       const QString &newTitle);
     
-    void addDataPoint(const QString &name,
-                      const QString &var,
+    void addDataPoint(int unsigned tabIndex, int unsigned cruveIndex,
                       double x, double y);
   
 public slots:

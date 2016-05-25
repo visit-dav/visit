@@ -38,9 +38,24 @@
 
 #include <QvisSimulationWindow.h>
 
-#include <time.h>
-#include <algorithm>
-#include <string>
+#include <DebugStream.h>
+#include <EngineList.h>
+#include <EngineProperties.h>
+#include <SimulationUIValues.h>
+#include <StatusAttributes.h>
+#include <ViewerProxy.h>
+#include <avtSimulationInformation.h>
+#include <avtSimulationCommandSpecification.h>
+#include <QualifiedFilename.h>
+
+#include <QvisSimulationCommandWindow.h>
+#include <QvisSimulationMessageWindow.h>
+#include <QvisStripChartMgr.h>
+#include <QvisStripChartTabWidget.h>
+#include <QvisStripChart.h>
+#include <QvisNotepadArea.h>
+#include <QvisUiLoader.h>
+#include <SimCommandSlots.h>
 
 #include <QCheckBox>
 #include <QColor>
@@ -68,28 +83,7 @@
 #include <QTableWidgetItem>
 #include <QTreeWidget>
 
-#include <qwt_plot.h>
-
-#include <DebugStream.h>
-#include <EngineList.h>
-#include <EngineProperties.h>
-#include <SimulationUIValues.h>
-#include <StatusAttributes.h>
-#include <ViewerProxy.h>
-#include <avtSimulationInformation.h>
-#include <avtSimulationCommandSpecification.h>
-#include <QualifiedFilename.h>
-
-#include <QvisSimulationCommandWindow.h>
-#include <QvisSimulationMessageWindow.h>
-#include <QvisStripChartMgr.h>
-#include <QvisNotepadArea.h>
-#include <QvisUiLoader.h>
-#include <SimCommandSlots.h>
-#include <SimWidgetNames.h>
-
-using std::string;
-using std::vector;
+#include <string>
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::QvisSimulationWindow
@@ -107,28 +101,24 @@ using std::vector;
 //   Brad Whitlock, Wed Apr  9 11:50:52 PDT 2008
 //   QString for caption, shortName.
 //
-//   Brad Whitlock, Mon Jul  7 13:19:10 PDT 2008
-//   Qt 4.
-//
 // ****************************************************************************
-
 QvisSimulationWindow::QvisSimulationWindow(EngineList *engineList,
-    const QString &caption, const QString &shortName, QvisNotepadArea *notepad) :
-    QvisPostableWindowObserver(engineList, caption, shortName, notepad,
-                               QvisPostableWindowObserver::NoExtraButtons),
-    activeEngine(""), statusMap()
+                                           const QString &caption,
+                                           const QString &shortName,
+                                           QvisNotepadArea *notepad) :
+  QvisPostableWindowObserver(engineList, caption, shortName, notepad,
+                             QvisPostableWindowObserver::NoExtraButtons),
+  activeEngine(""), statusMap()
 {
     engines = engineList;
     caller = engines;
     statusAtts = 0;
     metadata = new avtDatabaseMetaData;
     uiValues = NULL;
-    DynamicCommandsWin = NULL;
+    CustomUIWindow = NULL;
     uiLoader = new QvisUiLoader;
     stripChartMgr = 0;
     simMessages = 0;
-
-    curvePlots = 0;
 }
 
 // ****************************************************************************
@@ -141,15 +131,13 @@ QvisSimulationWindow::QvisSimulationWindow(EngineList *engineList,
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   Brad Whitlock, Mon Jul  7 10:55:12 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
-
 QvisSimulationWindow::~QvisSimulationWindow()
 {
     // Delete the status attributes in the status map.
     SimulationStatusMap::Iterator pos;
+
     for (pos = statusMap.begin(); pos != statusMap.end(); ++pos)
     {
         delete pos.value();
@@ -164,8 +152,6 @@ QvisSimulationWindow::~QvisSimulationWindow()
         uiValues->Detach(this);
 
     delete stripChartMgr;
-
-    delete curvePlots;
 }
   
 // ****************************************************************************
@@ -199,14 +185,7 @@ QvisSimulationWindow::~QvisSimulationWindow()
 //   Factored out strip chart window widgets and replaced them
 //   with a strip chart window manager. 
 //
-//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
-//   Support for internationalization.
-//
-//   Brad Whitlock, Mon Jul  7 10:56:03 PDT 2008
-//   Qt 4. Reorganized window.
-//
 // ****************************************************************************
-
 void
 QvisSimulationWindow::CreateWindowContents()
 {
@@ -271,8 +250,8 @@ QvisSimulationWindow::CreateWindowContents()
     simCommands->post();
     connect(simCommands, SIGNAL(executeButtonCommand(const QString &)),
             this, SLOT(executePushButtonCommand(const QString &)));
-    connect(simCommands, SIGNAL(showCommandWindow()),
-            this, SLOT(showCommandWindow()));
+    connect(simCommands, SIGNAL(showCustomUIWindow()),
+            this, SLOT(showCustomUIWindow()));
 
     connect(simCommands, SIGNAL(executeStart(const QString &)),
             this, SLOT(executeStartCommand(const QString &)));
@@ -289,126 +268,51 @@ QvisSimulationWindow::CreateWindowContents()
     simMessages->post();
 
     // Create the strip chart manager and post it to the notepad.
-    int simindex = simCombo->currentIndex();
-    int index = simulationToEngineListMap[simindex];
-    stripChartMgr = new QvisStripChartMgr(0, GetViewerProxy(), engines, index, notepadAux);
+    int index = GetEngineListIndex(activeEngine);
+    stripChartMgr = 
+      new QvisStripChartMgr(0, GetViewerProxy(), engines, index, notepadAux);
     stripChartMgr->post();
 
-    curvePlots = new QwtPlot;
-    
     // Make sure we show the commands page.
     notepadAux->showPage(simCommands);
 }
 
 // ****************************************************************************
-// Method: QvisSimulationWindow::GetUIFileDirectory
-//
-// Purpose: 
-//   Returns the name of the directory where VisIt looks for UI files.
-//
-// Returns:    The directory where VisIt looks for UI files.
-//
-// Programmer: Shelly Prevost
-// Creation:   December 21, 2005
-//
-// Modifications:
-//   Brad Whitlock, Tue Jan 31 16:40:02 PST 2006
-//   Refactored code from elsewhere into this method.
-//
-//   Shelly Prevost, Mon Mar 13 14:49:07 PST 2006
-//   Changed the default directory to check for ui files from UI to ui.
-//
-// ****************************************************************************
-
-QString
-QvisSimulationWindow::GetUIFileDirectory() const
-{
-    // First look in user defined variable
-    QString dirName(getenv("VISITSIMDIR"));
-    // if still not defined then look in the users home directory
-    if (dirName.isEmpty())
-    {
-        dirName = getenv("HOME");
-        if (!dirName.isEmpty()) dirName += "/.visit/ui/";
-    }
-    // if not defined then look in global location
-    if ( dirName.isEmpty())
-    {
-        dirName = getenv("VISITDIR");
-        if (!dirName.isEmpty()) dirName += "/ui/";
-    }
-
-    return dirName;
-}
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::GetUIfile
+// Method: ConnectUIChildren
 //
 // Purpose: 
 //   Returns the name of the directory where VisIt looks for UI files.
 //
 // Arguments:
-//   key : The key for the simulation whose UI file we want to get.
+//   obj : The Qt object
+//   cc  : Simulation command slots
 //
-// Returns:    The directory name of the UI file that is appropriate for the
-//             currently selected simulation, or an empty string if there
-//             is no simulation or if it does not have a user interface.
+// Returns:    Connect slots to the object.
 //
 // Programmer: Shelly Prevost
 // Creation:   December 21, 2005
 //
 // Modifications:
-//   Brad Whitlock, Tue Jan 31 16:40:02 PST 2006
-//   Refactored code from elsewhere into this method.
-//
-//   Brad Whitlock, Fri Nov 19 11:23:23 PDT 2010
-//   Pass the key in instead of getting it from a widget.
 //
 // ****************************************************************************
-
-QString
-QvisSimulationWindow::GetUIFile(const QString &key) const
-{
-    QString retval;
-
-    SimulationMetaDataMap::ConstIterator pos = metadataMap.find(key);
-    if(pos != metadataMap.end())
-    {
-        // get ui filename from value array
-        avtDatabaseMetaData *md = pos.value();
-        QString uiFilename;
-        const stringVector &names  = md->GetSimInfo().GetOtherNames();
-        const stringVector &values = md->GetSimInfo().GetOtherValues();
-
-        for (size_t i=0; i<names.size(); i++)
-        {
-            if (names[i] == "uiFile")
-                uiFilename = QString(values[i].c_str());
-        }
-
-        if (!uiFilename.isEmpty())
-        {
-            retval = GetUIFileDirectory() + uiFilename;
-        }
-    }
-
-    return retval;
-}
-
-static void
-ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
+void
+QvisSimulationWindow::ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
 {
     // Connect up handlers to all signals based on component type.
     const QObjectList &GUI_Objects = obj->children();
+    
     for (int i = 0; i < GUI_Objects.size(); ++i)
     {
         QObject *ui = GUI_Objects[i];
         const QMetaObject *mo = ui->metaObject();
+
 #if 0
         const QMetaObject *ccmo = cc->metaObject();
+
         for(int m = 0; m < uimo->methodCount(); ++m)
         {
             QMetaMethod uimm = uimo->method(m);
+
             if(uimm.methodType() == QMetaMethod::Signal)
             {
                 for(int n = 0; n < ccmo->methodCount(); ++n)
@@ -425,14 +329,14 @@ ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
         }
 
                 
-            if(mm.methodType() == QMetaMethod::Method)
-                qDebug("    %d: method: %s", m, mm.signature());
-            else if(mm.methodType() == QMetaMethod::Signal)
-                qDebug("    %d: signal: %s", m, mm.signature());
-            else if(mm.methodType() == QMetaMethod::Slot)
-                qDebug("    %d: slot:   %s", m, mm.signature());
-            else if(mm.methodType() == QMetaMethod::Constructor)
-                qDebug("    %d: ctor:   %s", m, mm.signature());
+        if(mm.methodType() == QMetaMethod::Method)
+            qDebug("    %d: method: %s", m, mm.signature());
+        else if(mm.methodType() == QMetaMethod::Signal)
+            qDebug("    %d: signal: %s", m, mm.signature());
+        else if(mm.methodType() == QMetaMethod::Slot)
+            qDebug("    %d: slot:   %s", m, mm.signature());
+        else if(mm.methodType() == QMetaMethod::Constructor)
+            qDebug("    %d: ctor:   %s", m, mm.signature());
         }
 #endif
 
@@ -525,7 +429,7 @@ ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
 }
 
 // ****************************************************************************
-// Method: void QvisSimulationWindow::CreateCommandUI
+// Method: void QvisSimulationWindow::CreateCustomUIWindowdow
 //
 // Purpose:
 //   Updates the ui components in the Custom UI popup. It check for matches
@@ -542,42 +446,44 @@ ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
 //   Shelly Prevost Tue Jun 19 16:10:17 PDT 2007
 //   Added signal connection for row col table widget.
 //
-//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
-//   Support for internationalization.
-//
-//   Brad Whitlock, Mon Jul  7 13:17:33 PDT 2008
-//   Qt 4.
-//
 // ****************************************************************************
-#include <QMetaMethod>
 void
-QvisSimulationWindow::CreateCommandUI()
+QvisSimulationWindow::CreateCustomUIWindow()
 {
-//qDebug("QvisSimulationWindow::CreateCommandUI");
+    // qDebug("QvisSimulationWindow::CreateCommandUI");
+
     // Try and get the name of the UI file.
     QString fname(GetUIFile(activeEngine));
+
     if(fname.isEmpty())
     {
-        if(DynamicCommandsWin != NULL)
-            delete DynamicCommandsWin;
-        DynamicCommandsWin = NULL;
+        if(CustomUIWindow != NULL)
+        {
+            delete CustomUIWindow;
+            CustomUIWindow = NULL;
+        }
+
         simCommands->setCustomButtonEnabled(false);
+        
+        clearStripCharts();
+
         return;
     }
     
     debug5 << "UI_DIR = " << fname.toStdString() << endl;
-//qDebug("QvisSimulationWindow::CreateCommandUI: creating ui");
+    // qDebug("QvisSimulationWindow::CreateCommandUI: creating ui");
+
     // Dynamically create the custom UI be reading in it's xml file.
-    int simindex = simCombo->currentIndex();
-    int index = simulationToEngineListMap[simindex];
-    SimCommandSlots *CommandConnections = new SimCommandSlots(GetViewerProxy(),
-        engines, index);
+    int index = GetEngineListIndex(activeEngine);
+    SimCommandSlots *CommandConnections =
+      new SimCommandSlots(GetViewerProxy(), engines, index);
+
     QFile uiFile(fname);
     if(uiFile.open(QIODevice::ReadOnly))
-        DynamicCommandsWin = uiLoader->load(&uiFile, NULL);
+        CustomUIWindow = uiLoader->load(&uiFile, NULL);
     
     // If creation failed then jump out 
-    if (DynamicCommandsWin == NULL)
+    if (CustomUIWindow == NULL)
     {
         simCommands->setCustomButtonEnabled(false);
         QString msg = tr("VisIt could not locate the simulation's "
@@ -588,13 +494,13 @@ QvisSimulationWindow::CreateCommandUI()
         return;
     }
 
-    DynamicCommandsWin->setWindowTitle(simCombo->currentText());
-//qDebug("QvisSimulationWindow::CreateCommandUI: hooking up ui");
+    CustomUIWindow->setWindowTitle(simCombo->currentText());
+    // qDebug("QvisSimulationWindow::CreateCommandUI: hooking up ui");
 
     // Hook up the widget and its children to the command connections
     // object which will translate its signals into commands that we
     // will send to the simulation.
-    ConnectUIChildren(DynamicCommandsWin, CommandConnections);
+    ConnectUIChildren(CustomUIWindow, CommandConnections);
   
     // enable custom command UI button
     debug5 << "enabling custom command button" << endl;
@@ -618,7 +524,6 @@ QvisSimulationWindow::CreateCommandUI()
 // Modifications:
 //
 // ****************************************************************************
-
 void
 QvisSimulationWindow::Update(Subject *TheChangedSubject)
 {
@@ -644,7 +549,6 @@ QvisSimulationWindow::Update(Subject *TheChangedSubject)
 // Modifications:
 //   
 // ****************************************************************************
-
 void
 QvisSimulationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 {
@@ -654,18 +558,19 @@ QvisSimulationWindow::SubjectRemoved(Subject *TheRemovedSubject)
         statusAtts = 0;
 }
 
-#if 0
 // ****************************************************************************
-// Method: QvisSimulationWindow::UpdateCustomUIComponent
+// Method: QvisSimulationWindow::UpdateUIComponent
 //
 // Purpose:
-//   Updates the ui components in the Costom UI popup. It check for matches
+//   Updates the ui components in the Custom UI popup. It check for matches
 //   between ui updates sent from the simulations to ui components in the
 //   custom ui popup. If it finds a match it update the ui component.
 //
 // Arguments:
-//   cmd   : command specification that update the UI component
-//   window: the parent window that contains the ui
+//   window : The parent window that contains the ui
+//   name   : The name of the widget to be updated.
+//   value  : If applicable the value for the widge 
+//   e      : Boolean to enable/disable the gui
 //
 // Programmer: Shelly Prevost
 // Creation:   December 21, 2005
@@ -681,19 +586,7 @@ QvisSimulationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   text if it is equal to "". This fixes the problem of not being able
 //   to shut off messages.
 //
-//   Brad Whitlock, Mon Jul  7 13:37:13 PDT 2008
-//   Qt 4.
-//
 // ****************************************************************************
-
-void 
-QvisSimulationWindow::UpdateUIComponent (QWidget *window, 
-    const avtSimulationCommandSpecification *cmd)
-{
-
-}
-#endif
-
 void
 QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
                                         const QString &value, bool e)
@@ -907,7 +800,6 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 // Modifications:
 //   
 // ****************************************************************************
-
 void
 QvisSimulationWindow::ConnectStatusAttributes(StatusAttributes *s)
 {
@@ -918,6 +810,21 @@ QvisSimulationWindow::ConnectStatusAttributes(StatusAttributes *s)
     }
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::ConnectSimulationUIValues
+//
+// Purpose: 
+//   Connects the UI value subject that the window will observe.
+//
+// Arguments:
+//   s : A pointer to the UI value that the window will observe.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 21, 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
 void
 QvisSimulationWindow::ConnectSimulationUIValues(SimulationUIValues *s)
 {
@@ -925,54 +832,6 @@ QvisSimulationWindow::ConnectSimulationUIValues(SimulationUIValues *s)
     {
         uiValues = s;
         uiValues->Attach(this);
-    }
-}
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::SetNewMetaData
-//
-// Purpose:
-//    Update the meta data for the given file.
-//
-// Arguments:
-//   qf        the host+file
-//   md        the new meta data
-//
-// Programmer: Jeremy Meredith
-// Creation:   March 21, 2005
-//
-// Modifications:
-//    Jeremy Meredith, Thu Apr 28 18:03:57 PDT 2005
-//    It needed more info to construct the key correctly.
-//
-// ****************************************************************************
-
-void
-QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
-                                     const avtDatabaseMetaData *md)
-{
-    if (md && md->GetIsSimulation())
-    {
-        // Save the metadata in case we need it later.
-        *metadata = *md;
-
-        // Create a key with which to associate this metadata.
-        std::string host = qf.host;
-        if (host == "localhost")
-            host = GetViewerProxy()->GetLocalHostName();
-        std::string path = qf.PathAndFile();
-        QString key(MakeKey(host, path));
-
-        // Store the metadata.
-        UpdateMetaDataEntry(key, *md);
-
-        // If the sender of the status message is the engine that we're
-        // currently looking at, update the status widgets.
-        if (key == activeEngine)
-        {
-            UpdateStatusArea();
-            UpdateInformation();
-        }
     }
 }
 
@@ -993,14 +852,7 @@ QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
 //   causes a crash when you go to click on it because of its SimCommandSlots
 //   object.
 //
-//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
-//   Support for internationalization.
-//
-//   Brad Whitlock, Mon Jul  7 13:46:00 PDT 2008
-//   Qt 4.
-//
 // ****************************************************************************
-
 void
 QvisSimulationWindow::UpdateWindow(bool doAll)
 {
@@ -1012,24 +864,28 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
         // If we have zero hosts but we have a dynamic command window then
         // we must have disconnected from the simulation. Blow away the
         // dynamic command window.
-        if(host.size() < 1 && DynamicCommandsWin != NULL)
+        if(host.size() < 1 )
         {
-            debug5 << "Destroying dynamic command window" << endl;
-            delete DynamicCommandsWin;
-            DynamicCommandsWin = NULL;
+          if( CustomUIWindow != NULL)
+          {
+            delete CustomUIWindow;
+            CustomUIWindow = NULL;
+            simCommands->setCustomButtonEnabled(false);
+          }
+          
+          clearMessages();
+          clearStripCharts();
         }
 
         // Add the engines to the widget.
         simCombo->blockSignals(true);
         simCombo->clear();
-        simulationToEngineListMap.clear();
-        int current = -1;
+        int index = -1;
+
         for (size_t i = 0; i < host.size(); ++i)
         {
             if (!sim[i].empty())
             {
-                simulationToEngineListMap[simCombo->count()] = i;
-
                 int lastSlashPos = QString(sim[i].c_str()).lastIndexOf('/');
                 QString newsim = QString(sim[i].substr(lastSlashPos+1).c_str());
                 int lastDotPos =  newsim.lastIndexOf('.');
@@ -1037,43 +893,49 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 
                 QString name = newsim.mid(firstDotPos+1,
                                           lastDotPos-firstDotPos-1);
-                QString temp(tr("%1 on %2").arg(name).arg(host[i].c_str()));
-                simCombo->addItem(temp);
 
-                if (temp == activeEngine)
-                    current = i;
+                simCombo->
+                  addItem(tr("%1 on %2").arg(name).arg(host[i].c_str()));
 
+                QString key = MakeKey(host[i], sim[i]);
+                if (key == activeEngine)
+                    index = i;
             }
         }
 
-        if (current == -1)
+        // The active engine is in the list of engines returned by the
+        // viewer so update the combo box index to its index.
+        if (index >= 0)
         {
-            // Update the activeEngine string.
+            simCombo->setCurrentIndex(index);
+        }
+        // The active engine was not in the list of engines returned
+        // by the viewer.
+        else      
+        {
+            // Remove the entry from the list.
+            RemoveStatusEntry(activeEngine);
+            RemoveMetaDataEntry(activeEngine);
+            activeEngine = QString("");
+
+            // If other engines are running switch to the first one.
             if (simCombo->count() > 0)
             {
-                simCombo->setCurrentIndex(0);
-                int index = simulationToEngineListMap[0];
-                current = index;
-                activeEngine = MakeKey(host[index], sim[index]);
+                index = 0;
+                simCombo->setCurrentIndex(index);
+
+                QString key = MakeKey(host[index], sim[index]);
 
                 // Add current status
-                AddStatusEntry(activeEngine, *statusAtts);
+                AddStatusEntry(key, *statusAtts);
                 // Add current metadata
-                AddMetaDataEntry(activeEngine, *metadata);
-            }
-            else
-            {
-                // The active engine was not in the list of engines returned
-                // by the viewer. Remove the entry from the list.
-                RemoveStatusEntry(activeEngine);
-                RemoveMetaDataEntry(activeEngine);
-                activeEngine = QString("");
+                AddMetaDataEntry(key, *metadata);
+
+                // Select the engine.
+                selectEngine(index);
             }
         }
-        else
-        {
-            simCombo->setCurrentIndex(current);
-        }
+
         simCombo->blockSignals(false);
 
         // Update the engine information.
@@ -1089,9 +951,10 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
     if (caller == statusAtts || doAll)
     {
         QString key(statusAtts->GetSender().c_str());
-        debug5 << "Status being updated" << endl; 
+
         if (key != QString("viewer"))
         {
+            debug5 << "Status being updated" << endl;
             UpdateStatusEntry(key, *statusAtts);
 
             // If the sender of the status message is the engine that we're
@@ -1105,30 +968,35 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 
     if(caller == uiValues || doAll)
     {
-        if(DynamicCommandsWin != 0)
-        {
-            UpdateUIComponent(DynamicCommandsWin, 
-                              uiValues->GetName().c_str(),
-                              uiValues->GetSvalue().c_str(), 
-                              uiValues->GetEnabled());
-        }
-    }
+      std::string host = uiValues->GetHost();
 
-    if(uiValues->GetName() == "SIMULATION_ENABLE_BUTTON")
-    {
-        // Use activeEngine to get the metadata
-        SimulationMetaDataMap::Iterator pos;
-        
-        if ((pos = metadataMap.find(activeEngine)) != metadataMap.end())
-        {
-            const avtDatabaseMetaData *md = pos.value();
+      if (host == "localhost")
+        host = GetViewerProxy()->GetLocalHostName();
+
+      std::string path = uiValues->GetSim();
+      QString key(MakeKey(host, path));
+      
+      // If the sender of the uiValues is the engine that we're
+      // currently looking at, update the status widgets.
+      if (key == activeEngine)
+      {
+          debug5 << "uiValues being updated" << endl;
+          
+          if(uiValues->GetName() == "SIMULATION_ENABLE_BUTTON")
+          {
+            // Use activeEngine to get the metadata
+            SimulationMetaDataMap::Iterator pos;
             
-            // Loop through all of the buttons to find the one being
-            // enabled/disabled.
-            int nButtons = simCommands->numCommandButtons();
-        
-            for (int c=0; c<nButtons; c++)
+            if ((pos = metadataMap.find(activeEngine)) != metadataMap.end())
             {
+              const avtDatabaseMetaData *md = pos.value();
+              
+              // Loop through all of the buttons to find the one being
+              // enabled/disabled.
+              int nButtons = simCommands->numCommandButtons();
+              
+              for (int c=0; c<nButtons; ++c)
+              {
                 avtSimulationCommandSpecification cmd = 
                   md->GetSimInfo().GetGenericCommands(c);
                 
@@ -1137,109 +1005,113 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
                 
                 if (t == avtSimulationCommandSpecification::CmdArgNone)
                 {
-                    QString bName = QString(cmd.GetName().c_str());
+                  QString bName = QString(cmd.GetName().c_str());
+                  
+                  if( bName == QString(uiValues->GetSvalue().c_str() ) )
+                  {
+                    bool enabled = uiValues->GetEnabled();
                     
-                    if( bName == QString(uiValues->GetSvalue().c_str() ) )
-                    {
-                        bool enabled = uiValues->GetEnabled();
-
-                        simCommands->setButtonEnabled(c, enabled, false);
-                    }
+                    simCommands->setButtonEnabled(c, enabled, false);
+                  }
                 }
+              }
             }
-        }
-    }
+          }
+          
+          else if(uiValues->GetName() == "SIMULATION_TIME_LIMITS_ENABLED")
+          {
+            simCommands->setTimeRanging( uiValues->GetSvalue() == "1" );
+          }
+          else if(uiValues->GetName() == "SIMULATION_TIME_START_CYCLE")
+          {
+            simCommands->setTimeStart( QString(uiValues->GetSvalue().c_str()) );
+          }
+          else if(uiValues->GetName() == "SIMULATION_TIME_STEP_CYCLE")
+          {
+            simCommands->setTimeStep( QString(uiValues->GetSvalue().c_str()) );
+          }
+          else if(uiValues->GetName() == "SIMULATION_TIME_STOP_CYCLE")
+          {
+            simCommands->setTimeStop( QString(uiValues->GetSvalue().c_str()) );
+          }
+          else if(uiValues->GetName() == "SIMULATION_MESSAGE_BOX")
+          {
+            QString msg = QString(uiValues->GetSvalue().c_str());
+            
+            // Post the message to the user.
+            if (QMessageBox::warning(this, "VisIt", msg, QMessageBox::Ok ) ==
+                QMessageBox::Ok)
+              return;
+          }
+          
+          else if(uiValues->GetName() == "SIMULATION_MODE")
+          {
+            QString mode = QString(uiValues->GetSvalue().c_str());
+            simulationMode->setText(mode);
+          }
+          
+          else if(uiValues->GetName() == "SIMULATION_MESSAGE")
+          {
+            QString message = QString(uiValues->GetSvalue().c_str());
+            QString error = QString("<span style=\"color:#000000;\">%1</span>").arg(message);
+            simMessages->addMessage(error);
+          }
+          
+          else if(uiValues->GetName() == "SIMULATION_MESSAGE_WARNING")
+          {
+            QString message = QString(uiValues->GetSvalue().c_str());
+            QString warning = QString("<span style=\" color:#aaaa00;\">%1</span>").arg(message);
+            simMessages->addMessage(warning);
+          }
+          
+          else if(uiValues->GetName() == "SIMULATION_MESSAGE_ERROR")
+          {
+            QString message = QString(uiValues->GetSvalue().c_str());
+            QString error = QString("<span style=\" color:#aa0000;\">%1</span>").arg(message);
+            simMessages->addMessage(error);
+          }
 
-    else if(uiValues->GetName() == "SIMULATION_TIME_LIMITS_ENABLED")
-    {
-        simCommands->setTimeRanging( uiValues->GetSvalue() == "1" );
-    }
-    else if(uiValues->GetName() == "SIMULATION_TIME_START_CYCLE")
-    {
-        simCommands->setTimeStart( QString(uiValues->GetSvalue().c_str()) );
-    }
-    else if(uiValues->GetName() == "SIMULATION_TIME_STEP_CYCLE")
-    {
-        simCommands->setTimeStep( QString(uiValues->GetSvalue().c_str()) );
-    }
-    else if(uiValues->GetName() == "SIMULATION_TIME_STOP_CYCLE")
-    {
-        simCommands->setTimeStop( QString(uiValues->GetSvalue().c_str()) );
-    }
-    else if(uiValues->GetName() == "SIMULATION_MESSAGE_BOX")
-    {
-        QString msg = QString(uiValues->GetSvalue().c_str());
-
-        // Post the message to the user.
-        if (QMessageBox::warning(this, "VisIt", msg, QMessageBox::Ok )
-          == QMessageBox::Ok)
-            return;
-    }
-
-    else if(uiValues->GetName() == "SIMULATION_MODE")
-    {
-        QString mode = QString(uiValues->GetSvalue().c_str());
-        simulationMode->setText(mode);
-    }
-
-    else if(uiValues->GetName() == "SIMULATION_MESSAGE")
-    {
-        QString message = QString(uiValues->GetSvalue().c_str());
-        QString error = QString("<span style=\"color:#000000;\">%1</span>").arg(message);
-        simMessages->addMessage(error);
-    }
-
-    else if(uiValues->GetName() == "SIMULATION_MESSAGE_WARNING")
-    {
-        QString message = QString(uiValues->GetSvalue().c_str());
-        QString warning = QString("<span style=\" color:#aaaa00;\">%1</span>").arg(message);
-        simMessages->addMessage(warning);
-    }
-
-    else if(uiValues->GetName() == "SIMULATION_MESSAGE_ERROR")
-    {
-        QString message = QString(uiValues->GetSvalue().c_str());
-        QString error = QString("<span style=\" color:#aa0000;\">%1</span>").arg(message);
-        simMessages->addMessage(error);
-    }
-
-    else if(uiValues->GetName() == "SIMULATION_MESSAGE_CLEAR")
-    {
-        simMessages->clear();
-    }
-
-    else if(uiValues->GetName() == "STRIP_CHART_CLEAR")
-    {
-      int index = atoi( uiValues->GetSvalue().c_str() );
-      stripChartMgr->clear( index );
-    }
-
-    else if(uiValues->GetName() == "STRIP_CHART_SET_NAME")
-    {
-      unsigned int row, column;
-      char name[128];
-      
-      getTableCMD( uiValues->GetSvalue().c_str(), row, column, name );
-
-      if( row == 0 )
-      {
-        stripChartMgr->setTabLabel(column, name );
+          else if(uiValues->GetName() == "SIMULATION_MESSAGE_CLEAR")
+          {
+            clearMessages();
+          }
+          
+          else if(uiValues->GetName() == "STRIP_CHART_CLEAR")
+          {
+            int index = atoi( uiValues->GetSvalue().c_str() );
+            stripChartMgr->clear( index );
+          }
+          
+          else if(uiValues->GetName() == "STRIP_CHART_SET_NAME")
+          {
+            unsigned int chart, index;
+            char name[128];
+            
+            getTableCMD( uiValues->GetSvalue().c_str(), chart, index, name );
+            
+            if( index == 0 )
+              stripChartMgr->setTabLabel(chart, name );
+            else
+              stripChartMgr->setCurveTitle(chart, index-1, name );
+          }
+          
+          else if(uiValues->GetName() == "STRIP_CHART_ADD_POINT")
+          {
+            unsigned int chart, curve;
+            double x, y;
+            
+            getTableCMD( uiValues->GetSvalue().c_str(), chart, curve, x, y);
+            
+            stripChartMgr->addDataPoint(chart, curve, x, y);
+          }
+          else if(CustomUIWindow != 0)
+          {
+            UpdateUIComponent(CustomUIWindow, 
+                              uiValues->GetName().c_str(),
+                              uiValues->GetSvalue().c_str(), 
+                              uiValues->GetEnabled());
+          }
       }
-      else
-      {
-        stripChartMgr->setCurveTitle(column, row-1, name );
-      }
-    }
-
-    else if(uiValues->GetName() == "STRIP_CHART_ADD_POINT")
-    {
-      char name[128];
-      char var[128];
-      double x, y;
-      
-      getTableCMD( uiValues->GetSvalue().c_str(), name, var, x, y);
-
-      stripChartMgr->addDataPoint(name, var, x, y);
     }
 }
 
@@ -1254,15 +1126,13 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   Brad Whitlock, Mon Jul  7 14:43:57 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
-
 void
 QvisSimulationWindow::UpdateStatusArea()
 {
     SimulationStatusMap::Iterator pos;
+
     if ((pos = statusMap.find(activeEngine)) == statusMap.end())
         return;
 
@@ -1288,46 +1158,6 @@ QvisSimulationWindow::UpdateStatusArea()
         // Set the progress bar percent done.
         totalProgressBar->setValue(total);
    }
-}
-
-QString
-QvisSimulationWindow::MakeKey(const std::string &host, const std::string &sim) const
-{
-    QString retval;
-    if(sim.empty())
-        retval = QString(host.c_str());
-    else
-        retval = QString().sprintf("%s:%s", host.c_str(), sim.c_str());
-    return retval;
-}
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::GetEngineListIndex
-//
-// Purpose: 
-//   Gets the engine list index for the given host:sim key.
-//
-// Arguments:
-//   key : The host:sim whose EngineList index we want to get.
-//
-// Programmer: Brad Whitlock
-// Creation:   November 19 2010
-//
-// Modifications:
-//
-// ****************************************************************************
-
-int
-QvisSimulationWindow::GetEngineListIndex(const QString &key) const
-{
-    for(size_t i = 0; i < engines->GetEngineName().size(); ++i)
-    {
-        QString testkey(MakeKey(engines->GetEngineName()[i],
-                                engines->GetSimulationName()[i]));
-        if(testkey == key)
-            return i;
-    }
-    return -1;
 }
 
 // ****************************************************************************
@@ -1364,12 +1194,6 @@ QvisSimulationWindow::GetEngineListIndex(const QString &key) const
 //   Brad Whitlock, Fri Mar 9 17:10:40 PST 2007
 //   Made it use new metadata api.
 //
-//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
-//   Support for internationalization.
-//
-//   Brad Whitlock, Tue Jul  8 14:59:48 PDT 2008
-//   Qt 4.
-//
 //   Brad Whitlock, Fri Nov 19 10:48:34 PDT 2010
 //   I made it use activeEngine to get the metadata.
 //
@@ -1377,7 +1201,6 @@ QvisSimulationWindow::GetEngineListIndex(const QString &key) const
 //   Use current time in some cases.
 //
 // ****************************************************************************
-
 void
 QvisSimulationWindow::UpdateInformation()
 {
@@ -1385,17 +1208,21 @@ QvisSimulationWindow::UpdateInformation()
 
     // Clear the sim information.
     simInfo->clear();
-
+    
     // Use activeEngine to get the metadata
     SimulationMetaDataMap::Iterator pos;
+
     if ((pos = metadataMap.find(activeEngine)) == metadataMap.end())
     {
         // We did not find metadata for activeEngine so just clear the window
         simInfo->setEnabled(false);
-        for (int c=0; c<simCommands->numCommandButtons(); c++)
+
+        for (int c=0; c<simCommands->numCommandButtons(); ++c)
         {
             simCommands->setButtonEnabled(c, false, true);
         }
+
+        // FIX ME - clear msg, strip charts, and customUI
     }
     else
     {
@@ -1449,9 +1276,13 @@ QvisSimulationWindow::UpdateInformation()
                                    QStringList(tmp1));
 
         // Other values from the .sim2 file
-        const vector<string> &names  = md->GetSimInfo().GetOtherNames();
-        const vector<string> &values = md->GetSimInfo().GetOtherValues();
-        for (size_t i=0; i<names.size(); i++)
+        const std::vector<std::string> &names  =
+          md->GetSimInfo().GetOtherNames();
+
+        const std::vector<std::string> &values =
+          md->GetSimInfo().GetOtherValues();
+        
+        for (size_t i=0; i<names.size(); ++i)
         {
             item = new QTreeWidgetItem(simInfo,
                                        QStringList(names[i].c_str()) + 
@@ -1481,7 +1312,7 @@ QvisSimulationWindow::UpdateInformation()
         bool updateSize = false;
         int nButtonsToUpdate = std::max(simCommands->numCommandButtons(),
                                         md->GetSimInfo().GetNumGenericCommands());
-        for (int c=0; c < nButtonsToUpdate; c++)
+        for (int c=0; c < nButtonsToUpdate; ++c)
         {
             if (c >= md->GetSimInfo().GetNumGenericCommands())
             {
@@ -1518,15 +1349,13 @@ QvisSimulationWindow::UpdateInformation()
         // we can get a decent-looking UI filename, enabled the custom
         // command button so we can create a window when that button
         // is clicked.
-        if(DynamicCommandsWin == NULL)
+        if(CustomUIWindow == NULL)
         {
             QString fname(GetUIFile(activeEngine));
+
             simCommands->setCustomButtonEnabled(!fname.isEmpty());
         }
 
-        // update ui component information from the meta data
-        // UpdateCustomUI(md);
-        // UpdateSimulationUI(md);
         simInfo->setEnabled(true);
     }
 }
@@ -1546,17 +1375,13 @@ QvisSimulationWindow::UpdateInformation()
 // Modifications:
 //   
 // ****************************************************************************
-
 void
 QvisSimulationWindow::AddStatusEntry(const QString &key,
                                      const StatusAttributes &s)
 {
-    // If the entry is in the map, return.
-    if (statusMap.contains(key))
-        return;
-
-    // Add the entry to the map.
-    statusMap.insert(key, new StatusAttributes(s));
+    // If the entry is not in the map add the entry to the map.
+    if (!statusMap.contains(key))
+        statusMap.insert(key, new StatusAttributes(s));
 }
 
 // ****************************************************************************
@@ -1572,23 +1397,22 @@ QvisSimulationWindow::AddStatusEntry(const QString &key,
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   Brad Whitlock, Mon Jul  7 11:16:12 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
-
 void
 QvisSimulationWindow::RemoveStatusEntry(const QString &key)
 {
-    // If the entry is not in the map, return.
     SimulationStatusMap::Iterator pos;
-    if ((pos = statusMap.find(key)) == statusMap.end())
-        return;
-
-    // Delete the status attributes that are in the map.
-    delete pos.value();
-    // Remove the key from the map.
-    statusMap.remove(key);
+    
+    // If the entry is in the map delete the key and remove it from
+    // the map.
+    if ((pos = statusMap.find(key)) != statusMap.end())
+    {
+        // Delete the status attributes that are in the map.
+        delete pos.value();
+        // Remove the key from the map.
+        statusMap.remove(key);
+    }
 }
 
 // ****************************************************************************
@@ -1605,11 +1429,8 @@ QvisSimulationWindow::RemoveStatusEntry(const QString &key)
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   Brad Whitlock, Mon Jul  7 11:16:27 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
-
 void
 QvisSimulationWindow::UpdateStatusEntry(const QString &key,
                                         const StatusAttributes &s)
@@ -1617,13 +1438,61 @@ QvisSimulationWindow::UpdateStatusEntry(const QString &key,
     // If the sender is in the status map, copy the status into the map entry.
     // If the sender is not in the map, add it.
     SimulationStatusMap::Iterator pos;
-    if ((pos = statusMap.find(activeEngine)) != statusMap.end())
+
+    if ((pos = statusMap.find(key)) != statusMap.end())
     {
         // Copy the status attributes.
         *(pos.value()) = *statusAtts;
     }
     else
         AddStatusEntry(key, *statusAtts);
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::SetNewMetaData
+//
+// Purpose:
+//    Update the meta data for the given file.
+//
+// Arguments:
+//   qf        the host+file
+//   md        the new meta data
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 21, 2005
+//
+// Modifications:
+//    Jeremy Meredith, Thu Apr 28 18:03:57 PDT 2005
+//    It needed more info to construct the key correctly.
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
+                                     const avtDatabaseMetaData *md)
+{
+    if (md && md->GetIsSimulation())
+    {
+        // Save the metadata in case we need it later.
+        *metadata = *md;
+
+        // Create a key with which to associate this metadata.
+        std::string host = qf.host;
+        if (host == "localhost")
+            host = GetViewerProxy()->GetLocalHostName();
+        std::string path = qf.PathAndFile();
+        QString key(MakeKey(host, path));
+
+        // Store the metadata.
+        UpdateMetaDataEntry(key, *md);
+
+        // If the sender of the status message is the engine that we're
+        // currently looking at, update the status widgets.
+        if (key == activeEngine)
+        {
+            UpdateStatusArea();
+            UpdateInformation();
+        }
+    }
 }
 
 // ****************************************************************************
@@ -1642,17 +1511,13 @@ QvisSimulationWindow::UpdateStatusEntry(const QString &key,
 // Modifications:
 //   
 // ****************************************************************************
-
 void
 QvisSimulationWindow::AddMetaDataEntry(const QString &key, 
                                        const avtDatabaseMetaData &md)
 {
-    // If the entry is in the map, return.
-    if (metadataMap.contains(key))
-        return;
-
-    // Add the entry to the map.
-    metadataMap.insert(key, new avtDatabaseMetaData(md));
+    // If the entry is not in the map add the entry to the map.
+    if (!metadataMap.contains(key))
+      metadataMap.insert(key, new avtDatabaseMetaData(md));
 }
 
 // ****************************************************************************
@@ -1668,23 +1533,23 @@ QvisSimulationWindow::AddMetaDataEntry(const QString &key,
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   Brad Whitlock, Mon Jul  7 11:16:41 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
-
 void
 QvisSimulationWindow::RemoveMetaDataEntry(const QString &key)
 {
-    // If the entry is not in the map, return.
     SimulationMetaDataMap::Iterator pos;
-    if ((pos = metadataMap.find(key)) == metadataMap.end())
-        return;
+    
+    // If the entry is in the map delete the key and remove it from
+    // the map.
+    if ((pos = metadataMap.find(key)) != metadataMap.end())
+    {
+        // Delete the meta data that are in the map.
+        delete pos.value();
 
-    // Delete the meta data that are in the map.
-    delete pos.value();
-    // Remove the key from the map.
-    metadataMap.remove(key);
+        // Remove the key from the map.
+        metadataMap.remove(key);
+    }
 }
 
 // ****************************************************************************
@@ -1702,121 +1567,320 @@ QvisSimulationWindow::RemoveMetaDataEntry(const QString &key)
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   Brad Whitlock, Mon Jul  7 11:16:50 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
-
 void
 QvisSimulationWindow::UpdateMetaDataEntry(const QString &key, 
                                           const avtDatabaseMetaData &md)
 {
     // If the sender is in the meta data map, copy the MD into the map entry.
-    // If the sender is not in the map, add it.
     SimulationMetaDataMap::Iterator pos;
-    if ((pos = metadataMap.find(activeEngine)) != metadataMap.end())
+
+    if ((pos = metadataMap.find(key)) != metadataMap.end())
     {
         // Copy the status attributes.
         *(pos.value()) = md;
     }
+    // If the sender is not in the meta data map, add it.
     else
         AddMetaDataEntry(key, md);
 }
 
+// ****************************************************************************
+// Method: QvisSimulationWindow::clearMessages
+//
+// Purpose: 
+//   Clear all of the strips charts.
+//
+// Programmer: Allen Sanderson
+// Creation:   6 May 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::clearMessages()
+{
+    // Clear the message and strip charts.
+    simMessages->clear();
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::clearStripCharts
+//
+// Purpose: 
+//   Clear all of the strips charts.
+//
+// Programmer: Allen Sanderson
+// Creation:   6 May 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::clearStripCharts()
+{
+    for( unsigned int i=0; i<MAX_STRIP_CHARTS; ++i )
+    {
+      stripChartMgr->clear( i );
+      stripChartMgr->setTabLabel(i, "" );
+
+      for( unsigned int j=0; j<MAX_STRIP_CHART_VARS; ++j )
+        stripChartMgr->setCurveTitle(i, j, "" );
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::MakeKey
+//
+// Purpose: 
+//   Creates a key using the host name and the simulation.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 21, 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+QString
+QvisSimulationWindow::MakeKey(const std::string &host,
+                              const std::string &sim) const
+{
+    if(sim.empty())
+        return QString(host.c_str());
+    else
+        return QString().sprintf("%s:%s", host.c_str(), sim.c_str());
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::GetEngineListIndex
+//
+// Purpose: 
+//   Gets the engine list index for the given host:sim key.
+//
+// Arguments:
+//   key : The host:sim whose EngineList index we want to get.
+//
+// Programmer: Brad Whitlock
+// Creation:   November 19 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+int
+QvisSimulationWindow::GetEngineListIndex(const QString &key) const
+{
+    for(size_t i = 0; i < engines->GetEngineName().size(); ++i)
+    {
+        QString testkey(MakeKey(engines->GetEngineName()[i],
+                                engines->GetSimulationName()[i]));
+        if(testkey == key)
+            return i;
+    }
+
+    return -1;
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::GetUIFileDirectory
+//
+// Purpose: 
+//   Returns the name of the directory where VisIt looks for UI files.
+//
+// Returns:    The directory where VisIt looks for UI files.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//   Brad Whitlock, Tue Jan 31 16:40:02 PST 2006
+//   Refactored code from elsewhere into this method.
+//
+//   Shelly Prevost, Mon Mar 13 14:49:07 PST 2006
+//   Changed the default directory to check for ui files from UI to ui.
+//
+// ****************************************************************************
+QString
+QvisSimulationWindow::GetUIFileDirectory() const
+{
+    // First look in user defined variable
+    QString dirName(getenv("VISITSIMDIR"));
+    // if still not defined then look in the users home directory
+    if (dirName.isEmpty())
+    {
+        dirName = getenv("HOME");
+        if (!dirName.isEmpty()) dirName += "/.visit/ui/";
+    }
+    // if not defined then look in global location
+    if ( dirName.isEmpty())
+    {
+        dirName = getenv("VISITDIR");
+        if (!dirName.isEmpty()) dirName += "/ui/";
+    }
+
+    return dirName;
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::GetUIfile
+//
+// Purpose: 
+//   Returns the name of the directory where VisIt looks for UI files.
+//
+// Arguments:
+//   key : The key for the simulation whose UI file we want to get.
+//
+// Returns:    The directory name of the UI file that is appropriate for the
+//             currently selected simulation, or an empty string if there
+//             is no simulation or if it does not have a user interface.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//   Brad Whitlock, Tue Jan 31 16:40:02 PST 2006
+//   Refactored code from elsewhere into this method.
+//
+//   Brad Whitlock, Fri Nov 19 11:23:23 PDT 2010
+//   Pass the key in instead of getting it from a widget.
+//
+// ****************************************************************************
+QString
+QvisSimulationWindow::GetUIFile(const QString &key) const
+{
+  QString retval("");
+
+    SimulationMetaDataMap::ConstIterator pos = metadataMap.find(key);
+
+    if(pos != metadataMap.end())
+    {
+        // get ui filename from the value array
+        avtDatabaseMetaData *md = pos.value();
+        const stringVector &names  = md->GetSimInfo().GetOtherNames();
+        const stringVector &values = md->GetSimInfo().GetOtherValues();
+
+        for (size_t i=0; i<names.size(); ++i)
+        {
+            if (names[i] == "uiFile" && !values[i].empty())
+            {
+                retval = GetUIFileDirectory() + QString(values[i].c_str());
+                break;
+            }
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::getTableCMD
+//
+// Purpose:
+//   This method is called to parse the table cmd to get the
+//   row, column, and name.
+//
+// Arguments:
+//   cmd      : The properly form command string.
+//
+// Programmer: Allen Sanderson
+// Creation:   6 May 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::getTableCMD( const char *cmd,
+                                   unsigned int &row, unsigned int &column,
+                                   char *name )
+{
+  std::string strcmd(cmd);
+
+  std::string str = getNextString( strcmd, "|" );
+  row = atoi( str.c_str() );
+
+  str = getNextString( strcmd, "|" );
+  column = atoi( str.c_str() );
+
+  str = getNextString( strcmd, "|" );
+  strcpy( name, str.c_str() );
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::getTableCMD
+//
+// Purpose:
+//   This method is called to parse the table cmd to get the
+//   row, column, x, and y values.
+//
+// Arguments:
+//   cmd      : The properly form command string.
+//
+// Programmer: Allen Sanderson
+// Creation:   6 May 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::getTableCMD( const char *cmd,
+                                   unsigned int &row, unsigned int &column,
+                                   double &x, double &y )
+{
+  std::string strcmd(cmd);
+
+  std::string str = getNextString( strcmd, "|" );
+  row = atof( str.c_str() );
+
+  str = getNextString( strcmd, "|" );
+  column = atof( str.c_str() );
+
+  str = getNextString( strcmd, "|" );
+  x = atof( str.c_str() );
+
+  str = getNextString( strcmd, "|" );
+  y = atof( str.c_str() );
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::getNextString
+//
+// Purpose:
+//   This method is called to get the next string value and return
+//   the remaining part.
+//
+//   NOTE: it is assumed that there is a space on both sides of teh delimiter
+//   EXAMPLE: string | string string | string
+//
+// Arguments:
+//   cmd      : the properly form command string.
+//   delimiter: the sentinal that separtates the strings.
+//
+// Programmer: Allen Sanderson
+// Creation:   6 May 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+std::string QvisSimulationWindow::getNextString( std::string &cmd,
+                                                 const std::string delimiter )
+{
+  size_t delim = cmd.find_first_of( delimiter );
+
+  std::string str = cmd;
+
+  if( delim != std::string::npos)
+  {
+    str.erase(delim-1, std::string::npos);  
+    cmd.erase(0, delim+2);
+  }
+  
+  return str;
+}
+
+
 //
 // Qt slots
 //
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::closeEngine
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the "Close engine" button
-//   is clicked. Its job is to tell the viewer to close the engine being
-//   displayed by the window.
-//
-// Programmer: Jeremy Meredith
-// Creation:   March 21, 2005
-//
-// Modifications:
-//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
-//   Support for internationalization.
-//
-//   Brad Whitlock, Mon Jul  7 11:18:45 PDT 2008
-//   Qt 4.
-//
-//   Brad Whitlock, Fri Nov 19 11:56:34 PDT 2010
-//   Use the sim to enginelist map to get the right engine list index.
-//
-// ****************************************************************************
-
-void
-QvisSimulationWindow::closeEngine()
-{
-    int simindex = simCombo->currentIndex();
-    if (simindex < 0)
-        return;
-    int index = simulationToEngineListMap[simindex];
-
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
-
-    // Create a prompt for the user.
-    QString msg;
-    if (sim == "")
-    {
-        msg = tr("Really close the compute engine on host \"%1\"?\n\n").
-              arg(host.c_str());
-    }
-    else
-    {
-        msg = tr("Really disconnect from the simulation \"%1\" on "
-                 "host \"%2\"?\n\n").
-              arg(sim.c_str()).
-              arg(host.c_str());
-    }
-
-    // Ask the user if he really wants to close the engine.
-    if (QMessageBox::warning(this, "VisIt", msg, QMessageBox::Ok | QMessageBox::Cancel)
-        == QMessageBox::Ok)
-    {
-        // The user actually chose to close the engine.
-        GetViewerMethods()->CloseComputeEngine(host, sim);
-    }
-}
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::interruptEngine
-//
-// Purpose: 
-//   This is a Qt slot function that is called to interrupt the engine that's
-//   displayed in the window.
-//
-// Programmer: Jeremy Meredith
-// Creation:   March 21, 2005
-//
-// Modifications:
-//   Brad Whitlock, Mon Jul  7 11:14:49 PDT 2008
-//   Qt 4.
-//
-//   Brad Whitlock, Fri Nov 19 11:56:34 PDT 2010
-//   Use the sim to enginelist map to get the right engine list index.
-//
-// ****************************************************************************
-
-void
-QvisSimulationWindow::interruptEngine()
-{
-    int simindex = simCombo->currentIndex();
-    if(simindex < 0)
-        return;
-    int index = simulationToEngineListMap[simindex];
-
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
-
-    GetViewerProxy()->InterruptComputeEngine(host, sim);
-}
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::selectEngine
@@ -1836,19 +1900,114 @@ QvisSimulationWindow::interruptEngine()
 //   Call MakeKey.
 //
 // ****************************************************************************
-
 void
-QvisSimulationWindow::selectEngine(int simindex)
+QvisSimulationWindow::selectEngine(int index)
 {
-    int index = simulationToEngineListMap[simindex];
+    // Clear the message and strip charts.
+    clearMessages();
+    clearStripCharts();
+
+    // Get the new active engine.
     activeEngine = MakeKey(engines->GetEngineName()[index],
                            engines->GetSimulationName()[index]);
 
+    if (CustomUIWindow != NULL)
+    {
+        bool show = CustomUIWindow->isVisible();
+        CustomUIWindow->hide();
+
+        delete CustomUIWindow;
+        CustomUIWindow = NULL;
+        simCommands->setCustomButtonEnabled(false);
+
+        if( show )
+          showCustomUIWindow();
+    }
+    
     // Update the rest of the widgets using the information for the
     // active engine.
     UpdateStatusArea();
     // Update the engine information.
     UpdateInformation();
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::interruptEngine
+//
+// Purpose: 
+//   This is a Qt slot function that is called to interrupt the engine that's
+//   displayed in the window.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 21, 2005
+//
+// Modifications:
+//   Brad Whitlock, Fri Nov 19 11:56:34 PDT 2010
+//   Use the sim to enginelist map to get the right engine list index.
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::interruptEngine()
+{
+    int index = GetEngineListIndex(activeEngine);
+    if(index < 0)
+        return;
+
+    std::string host = engines->GetEngineName()[index];
+    std::string sim  = engines->GetSimulationName()[index];
+
+    GetViewerProxy()->InterruptComputeEngine(host, sim);
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::closeEngine
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the "Close engine" button
+//   is clicked. Its job is to tell the viewer to close the engine being
+//   displayed by the window.
+//
+// Programmer: Jeremy Meredith
+// Creation:   March 21, 2005
+//
+// Modifications:
+//   Brad Whitlock, Fri Nov 19 11:56:34 PDT 2010
+//   Use the sim to enginelist map to get the right engine list index.
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::closeEngine()
+{
+    int index = GetEngineListIndex(activeEngine);
+    if (index < 0)
+        return;
+
+    std::string host = engines->GetEngineName()[index];
+    std::string sim  = engines->GetSimulationName()[index];
+
+    // Create a prompt for the user.
+    QString msg;
+    if (sim == "")
+    {
+        msg = tr("Really close the compute engine on host \"%1\"?\n\n").
+              arg(host.c_str());
+    }
+    else
+    {
+        msg = tr("Really disconnect from the simulation \"%1\" on "
+                 "host \"%2\"?\n\n").
+              arg(sim.c_str()).
+              arg(host.c_str());
+    }
+
+    // Ask the user if they really wants to close the engine.
+    if (QMessageBox::warning(this, "VisIt", msg,
+                             QMessageBox::Ok | QMessageBox::Cancel) ==
+        QMessageBox::Ok)
+    {
+        // Close the engine.
+        GetViewerMethods()->CloseComputeEngine(host, sim);
+    }
 }
 
 // ****************************************************************************
@@ -1862,24 +2021,19 @@ QvisSimulationWindow::selectEngine(int simindex)
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   Brad Whitlock, Mon Jul  7 11:13:39 PDT 2008
-//   Qt 4.
-//
 //   Brad Whitlock, Fri Nov 19 11:56:34 PDT 2010
 //   Use the sim to enginelist map to get the right engine list index.
 //
 // ****************************************************************************
-
 void
 QvisSimulationWindow::clearCache()
 {
-    int simindex = simCombo->currentIndex();
-    if (simindex < 0)
+    int index = GetEngineListIndex(activeEngine);
+    if (index < 0)
         return;
-    int index = simulationToEngineListMap[simindex];
 
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
+    std::string host = engines->GetEngineName()[index];
+    std::string sim  = engines->GetSimulationName()[index];
 
     if (GetViewerProxy()->GetLocalHostName() == host)
         GetViewerMethods()->ClearCache("localhost", sim);
@@ -1888,60 +2042,54 @@ QvisSimulationWindow::clearCache()
 }
 
 // ****************************************************************************
-// Method: QvisSimulationWindow::showCommandWindow
+// Method: QvisSimulationWindow::showCustomUIWindow
 //
 // Purpose:
-//   This method is called when the subjects that the window observes are
-//   modified.
+//   If specficed, creates and shows the Custom UI window.
 //
 // Programmer: Shelly Prevost
 // Creation:   December 21, 2005
 //
 // Modifications:
 //    Brad Whitlock, Tue Jan 31 15:54:43 PST 2006
-//    I made it create the commands window on the fly instead of creating
+//    I made it create the custom ui window on the fly instead of creating
 //    it at the same time as the regular Window is created.
 //
 // ****************************************************************************
-
-void QvisSimulationWindow::showCommandWindow()
+void
+QvisSimulationWindow::showCustomUIWindow()
 {
-    if(DynamicCommandsWin == NULL)
-        CreateCommandUI();
+    if( CustomUIWindow == NULL )
+        CreateCustomUIWindow();
 
-    if (DynamicCommandsWin != NULL)
-        DynamicCommandsWin->show();
+    if( CustomUIWindow != NULL )
+        CustomUIWindow->show();
 }
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::executePushButtonCommand
 //
 // Purpose:
-//   This method is called when the subjects that the window observes are
-//   modified.
+//   This method is called when the command buttons are pushed.
 //
 // Programmer: Shelly Prevost
 // Creation:   December 21, 2005
 //
 // Modifications:
-//   Brad Whitlock, Tue Jan 31 15:54:43 PST 2006
-//   I made it create the commands window on the fly instead of creating
-//   it at the same time as the regular Window is created.
-//
-//   Brad Whitlock, Mon Jul  7 11:14:13 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
 void
 QvisSimulationWindow::executePushButtonCommand(const QString &btncmd)
 {
-    int simindex = simCombo->currentIndex();
-    if (simindex < 0)
+    int index = GetEngineListIndex(activeEngine);
+    if (index < 0)
         return;
-    int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
+    
+    std::string host = engines->GetEngineName()[index];
+    std::string sim  = engines->GetSimulationName()[index];
 
+    // Special handlers for abort and terminate buttons. Ask for a
+    // confirmation before sending the signal.
     if( btncmd == QString("Abort") ||
         btncmd == QString("abort") ||
         btncmd == QString("Terminate") ||
@@ -1964,8 +2112,9 @@ QvisSimulationWindow::executePushButtonCommand(const QString &btncmd)
       }
 
       // Ask the user if they really want to execute this command.
-      if (QMessageBox::warning(this, "VisIt", msg, QMessageBox::Ok | QMessageBox::Cancel)
-          == QMessageBox::Cancel)
+      if (QMessageBox::warning(this, "VisIt", msg,
+                               QMessageBox::Ok | QMessageBox::Cancel) ==
+          QMessageBox::Cancel)
         return;
     }
 
@@ -1985,25 +2134,22 @@ QvisSimulationWindow::executePushButtonCommand(const QString &btncmd)
 // Creation:   December 21, 2005
 //
 // Modifications:
-//   Brad Whitlock, Mon Jul  7 11:15:38 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
 void
 QvisSimulationWindow::executeEnableTimeRange(const QString &value)
 {
-    int simindex = simCombo->currentIndex();
-    if (simindex < 0)
+    int index = GetEngineListIndex(activeEngine);
+    if (index < 0)
         return;
-    int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
+
+    std::string host = engines->GetEngineName()[index];
+    std::string sim  = engines->GetSimulationName()[index];
 
     QString cmd("TimeLimitsEnabled");
     QString args(QString("clicked();%1;QCheckBox;Simulations;%2").arg(cmd).arg(value));
     GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString());
 }
-
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::executeStartCommand()
@@ -2020,20 +2166,16 @@ QvisSimulationWindow::executeEnableTimeRange(const QString &value)
 //   Corrected the widget name being passed to the simulation in the
 //   command string.
 //
-//   Brad Whitlock, Tue Jul  8 14:53:05 PDT 2008
-//   Qt 4.
-//
 // ****************************************************************************
-
 void 
 QvisSimulationWindow::executeStartCommand(const QString &value)
 {
-    int simindex = simCombo->currentIndex();
-    if (simindex < 0)
+    int index = GetEngineListIndex(activeEngine);
+    if (index < 0)
         return;
-    int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
+
+    std::string host = engines->GetEngineName()[index];
+    std::string sim  = engines->GetSimulationName()[index];
 
     QString cmd("StartCycle");
     QString args(QString("returnedPressed();%1;QLineEdit;Simulations;%2").arg(cmd).arg(value));
@@ -2055,20 +2197,16 @@ QvisSimulationWindow::executeStartCommand(const QString &value)
 //    Corrected the widget name being passed to the simulation in the
 //    command string.
 //
-//   Brad Whitlock, Tue Jul  8 14:53:51 PDT 2008
-//   Qt 4.
-//
 // ****************************************************************************
-
 void 
 QvisSimulationWindow::executeStepCommand(const QString &value)
 {
-    int simindex = simCombo->currentIndex();
-    if (simindex < 0)
+    int index = GetEngineListIndex(activeEngine);
+    if (index < 0)
         return;
-    int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
+
+    std::string host = engines->GetEngineName()[index];
+    std::string sim  = engines->GetSimulationName()[index];
 
     QString cmd("StepCycle");
     QString args(QString("returnedPressed();%1;QLineEdit;Simulations;%2").arg(cmd).arg(value));
@@ -2094,135 +2232,14 @@ QvisSimulationWindow::executeStepCommand(const QString &value)
 void 
 QvisSimulationWindow::executeStopCommand(const QString &value)
 {
-    int simindex = simCombo->currentIndex();
-    if (simindex < 0)
+    int index = GetEngineListIndex(activeEngine);
+    if (index < 0)
         return;
-    int index = simulationToEngineListMap[simindex];
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
+
+    std::string host = engines->GetEngineName()[index];
+    std::string sim  = engines->GetSimulationName()[index];
 
     QString cmd("StopCycle");
     QString args(QString("returnedPressed();%1;QLineEdit;Simulations;%2").arg(cmd).arg(value));
     GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString()); 
-}
-
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::ViewerSendCMD
-//
-// Purpose:
-//   This method is called to send a command to the simulation
-//
-// Arguments:
-//   simIndex : The index from the combo box for the simulation
-//              that you want to send your command too.
-//   cmd      : the properly form command string.
-//
-// Programmer: Shelly Prevost
-// Creation:   Thu Mar 15 15:22:25 PDT 2007
-//
-// Modifications:
-//   Brad Whitlock, Mon Jul  7 14:51:44 PDT 2008
-//   Qt 4.
-//
-// ****************************************************************************
-
-void
-QvisSimulationWindow::ViewerSendCMD (int simIndex, QString cmd)
-{
-    if (simIndex < 0)
-        return;
-    int index = simulationToEngineListMap[simIndex];
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
-    GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString().c_str());
-}
-
-// ****************************************************************************
-// Method: QvisSimulationWindow::getColor
-//
-// Purpose:
-//   This method is called to translate a string color into a Qt color.
-//
-// Programmer: Shelly Prevost
-// Creation:   Wed Mar 21 16:38:47 PDT 2007
-//
-// Modifications:
-//
-//
-// ****************************************************************************
-QColor
-QvisSimulationWindow::getColor(const QString &color) const
-{
-    QColor newColor(color);
-    if(!newColor.isValid())
-        newColor = QColor(Qt::black);
-    return newColor;
-}
-
-void
-QvisSimulationWindow::showNormal()
-{
-    QvisPostableWindowObserver::showNormal();
-    if(DynamicCommandsWin != NULL)
-        DynamicCommandsWin->showNormal();
-}
-
-void
-QvisSimulationWindow::showMinimized()
-{
-    QvisPostableWindowObserver::showMinimized();
-    if(DynamicCommandsWin != NULL)
-        DynamicCommandsWin->showMinimized();
-}
-
-
-void QvisSimulationWindow::getTableCMD( const char *cmd,
-                                        unsigned int &row, unsigned int &column,
-                                        char *name )
-{
-  std::string strcmd(cmd);
-
-  std::string str = getNextString( strcmd, "|" );
-  row = atoi( str.c_str() );
-
-  str = getNextString( strcmd, "|" );
-  column = atoi( str.c_str() );
-
-  str = getNextString( strcmd, "|" );
-  strcpy( name, str.c_str() );
-}
-
-void QvisSimulationWindow::getTableCMD( const char *cmd, char *name, char *var,
-                                        double &x, double &y )
-{
-  std::string strcmd(cmd);
-
-  std::string str = getNextString( strcmd, "|" );
-  strcpy( name, str.c_str() );
-
-  str = getNextString( strcmd, "|" );
-  strcpy( var, str.c_str() );
-
-  str = getNextString( strcmd, "|" );
-  x = atof( str.c_str() );
-
-  str = getNextString( strcmd, "|" );
-  y = atof( str.c_str() );
-}
-
-std::string QvisSimulationWindow::getNextString( std::string &cmd,
-                                                 const std::string delimiter )
-{
-  size_t delim = cmd.find_first_of( delimiter );
-
-  std::string str = cmd;
-
-  if( delim != std::string::npos)
-  {
-    str.erase(delim-1, std::string::npos);  
-    cmd.erase(0, delim+2);
-  }
-  
-  return str;
 }
