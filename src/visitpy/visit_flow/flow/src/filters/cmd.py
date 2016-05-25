@@ -57,7 +57,7 @@ class ShellCommand(Filter):
         cmd = "%s %s " % (self.params.cmd,self.input("in"))
         cmd = cmd.replace("{svec.idx}",str(self.state_vector.idx))
         if obase.count("%s") >0:
-            ofname = obase % str(svec.idx)
+            ofname = obase % str(self.state_vector.idx)
         else:
             ofname = obase
         cmd = cmd + ofname
