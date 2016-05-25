@@ -84,6 +84,7 @@
 #include <QTreeWidget>
 
 #include <string>
+#include <time.h>
 
 // ****************************************************************************
 // Method: QvisSimulationWindow::QvisSimulationWindow
