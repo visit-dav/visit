@@ -89,7 +89,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPM3DC1Field.h>
 #include <avtIVPNek5000Field.h>
 #include <avtIVPNek5000TimeVaryingField.h>
-#ifdef NEKTAR_PLUS_PLUS_FOUND
+#ifdef HAVE_NEKTAR_PP
 #include <avtIVPNektar++Field.h>
 #include <avtIVPNektar++TimeVaryingField.h>
 #endif
@@ -1742,7 +1742,9 @@ avtPICSFilter::InitializeIntervalTree()
 
     // Set domain and dataset info.
     if( intervalTree )
+    {
       numDomains = intervalTree->GetNLeaves();
+    }
     else
     {
       EXCEPTION1(ImproperUseException, "No initial interval tree");
@@ -2169,7 +2171,7 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
       }
       else if( fieldType == PICS_FIELD_NEKTARPP )
       {
-#ifdef NEKTAR_PLUS_PLUS_FOUND
+#ifdef HAVE_NEKTAR_PP
         if (integrationDirection == VTK_INTEGRATE_BACKWARD)
             return new avtIVPNektarPPTimeVaryingField(ds, *locator, 
                                        domainTimeIntervals[curTimeSlice-1][1],
@@ -2209,7 +2211,7 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
 
       else if( fieldType == PICS_FIELD_NEKTARPP )
       {
-#ifdef NEKTAR_PLUS_PLUS_FOUND
+#ifdef HAVE_NEKTAR_PP
          return new avtIVPNektarPPField(ds, *locator);
 #else
         EXCEPTION1(ImproperUseException, "Requesting Nektar++ interpolation but VisIt has not been built with Nektar++ support.");

@@ -53,7 +53,7 @@
 
 #include <ivp_exports.h>
 
-#ifdef NEKTAR_PLUS_PLUS_FOUND
+#ifdef HAVE_NEKTAR_PP
 #include <MultiRegions/ExpList.h>
 #endif
 
