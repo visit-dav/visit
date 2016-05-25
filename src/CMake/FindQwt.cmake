@@ -36,9 +36,8 @@
 #
 #*****************************************************************************
 
-# Configure for Qwt.
-IF(NOT DEFINED VISIT_QWT_DIR)
-    MESSAGE(FATAL_ERROR "Qwt installation directory not specified")
+IF (NOT (EXISTS "${VISIT_QWT_DIR}"))
+    MESSAGE(FATAL_ERROR "Qwt installation directory is not specified or does not exist")
 ENDIF()
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
@@ -54,4 +53,6 @@ ELSE (WIN32)
   SET(QWT_LIBRARY ${QWT_LIB})
 ENDIF (WIN32)
 
-
+IF(NOT QWT_FOUND)
+    MESSAGE(FATAL_ERROR "Qwt installation could not be used.")
+ENDIF(NOT QWT_FOUND)
