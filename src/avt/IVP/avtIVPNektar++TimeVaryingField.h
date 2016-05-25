@@ -49,7 +49,7 @@
 
 #include <vtkIntArray.h>
 
-#ifdef NEKTAR_PLUS_PLUS_FOUND
+#ifdef HAVE_NEKTAR_PP
 #include <MultiRegions/ExpList.h>
 #endif
 
@@ -161,7 +161,7 @@ class IVP_API avtIVPNektarPPTimeVaryingField : public avtIVPField
     mutable vtkIdType               lastCell;
     mutable avtInterpolationWeights lastWeights;
 
-#ifdef NEKTAR_PLUS_PLUS_FOUND
+#ifdef HAVE_NEKTAR_PP
   // Nektar++ field
   Nektar::MultiRegions::ExpListSharedPtr nektar_field[2][3];
 #endif

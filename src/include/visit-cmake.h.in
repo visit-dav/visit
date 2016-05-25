@@ -44,6 +44,9 @@
 /* Define if you have the boost library. */
 #cmakedefine HAVE_BOOST
 
+/* Define if you have the Damaris library. */
+#cmakedefine HAVE_DAMARIS
+
 /* Define if you have the EAVL library. */
 #cmakedefine HAVE_LIBEAVL
 
@@ -70,6 +73,9 @@
 
 /* Define to 1 if you have the `z' library (-lz). */
 #cmakedefine HAVE_LIBZ 1
+
+/* Define if you have the Nektar++ library. */
+#cmakedefine HAVE_NEKTAR_PP
 
 /* Define if you have the OSMESA */
 #cmakedefine HAVE_OSMESA
