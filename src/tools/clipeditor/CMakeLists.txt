@@ -41,15 +41,15 @@
 #****************************************************************************/
 
 SET(CLIPEDITOR_SOURCES
-ClipEditor.C
-DataSet.C
-Font.C
-main.C
-Matrix.C
-Shape.C
-Transforms.C
-Vector.C
-Viewer.C
+    ClipEditor.C
+    DataSet.C
+    Font.C
+    main.C
+    Matrix.C
+    Shape.C
+    Transforms.C
+    Vector.C
+    Viewer.C
 )
 
 ADD_EXECUTABLE(genhexcases genhexcases.C)
@@ -58,16 +58,16 @@ ADD_EXECUTABLE(genvoxcases genvoxcases.C)
 ADD_EXECUTABLE(genpolycases genpolycases.C)
 
 SET(CLIPEDITOR_MOC_SOURCES
-ClipEditor.h
-Viewer.h
+    ClipEditor.h
+    Viewer.h
 )
 
 QT_WRAP_CPP(clipeditor CLIPEDITOR_SOURCES ${CLIPEDITOR_MOC_SOURCES})
 
 SET(RELEVANT_QT_LIBS 
-${QT_QTOPENGL_LIBRARY}
-${QT_QTGUI_LIBRARY}
-${QT_QTCORE_LIBRARY}
+    ${QT_QTOPENGL_LIBRARY}
+    ${QT_QTGUI_LIBRARY}
+    ${QT_QTCORE_LIBRARY}
 )
 IF(VISIT_STATIC)
     MAC_NIB_INSTALL(clipeditor)
@@ -79,12 +79,11 @@ IF(VISIT_STATIC)
     )
 ENDIF(VISIT_STATIC)
 
-INCLUDE_DIRECTORIES(
-../../visit_vtk/lightweight
-${QT_INCLUDE_DIR}
-${QT_QTCORE_INCLUDE_DIR}
-${QT_QTGUI_INCLUDE_DIR}
-${QT_QTOPENGL_INCLUDE_DIR}
+INCLUDE_DIRECTORIES( ../../visit_vtk/lightweight
+		     ${QT_INCLUDE_DIR}
+		     ${QT_QTCORE_INCLUDE_DIR}
+		     ${QT_QTGUI_INCLUDE_DIR}
+		     ${QT_QTOPENGL_INCLUDE_DIR}
 )
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR})
@@ -92,6 +91,6 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR})
 ADD_EXECUTABLE(clipeditor ${VISIT_APPLICATION_STYLE} ${CLIPEDITOR_SOURCES})
 
 TARGET_LINK_LIBRARIES(clipeditor
-${RELEVANT_QT_LIBS}
-${OPENGL_gl_LIBRARY}
+		      ${RELEVANT_QT_LIBS}
+		      ${OPENGL_gl_LIBRARY}
 )
