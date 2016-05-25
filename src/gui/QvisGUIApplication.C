@@ -7318,7 +7318,7 @@ QvisGUIApplication::HandleMetaDataUpdate()
         {
             if( qfv[i].PathAndFile() == mdf )
             {
-                qf = mdf;
+                qf = qfv[i];
                 break;
             }
         }
