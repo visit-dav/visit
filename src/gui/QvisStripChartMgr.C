@@ -38,7 +38,7 @@
 
 #include "QvisStripChartMgr.h"
 #include "QvisStripChartTabWidget.h"
-#include <SimWidgetNames.h>
+
 #include <EngineList.h>
 #include <StatusAttributes.h>
 #include <ViewerProxy.h>
@@ -73,9 +73,6 @@
 // Creation:   Friday Oct. 27, 2006
 //
 // Modifications:
-//    Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
-//    added pointSize to update font size. Also added a variable for
-//    zoomOutLimit to prevent to small of zooms.
 //   
 // ****************************************************************************
 QvisStripChartMgr::QvisStripChartMgr(QWidget *parent, ViewerProxy *theViewer,
@@ -102,11 +99,9 @@ QvisStripChartMgr::QvisStripChartMgr(QWidget *parent, ViewerProxy *theViewer,
 //
 // Modifications:
 //  
-//   
 // ****************************************************************************
 QvisStripChartMgr::~QvisStripChartMgr()
 {
-// cleanup
 }
 
 // ****************************************************************************
@@ -119,7 +114,6 @@ QvisStripChartMgr::~QvisStripChartMgr()
 // Creation:   Oct. 27, 2006
 //
 // Modifications:
-//  
 //   
 // ****************************************************************************
 void
@@ -139,15 +133,6 @@ QvisStripChartMgr::CreateEntireWindow()
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//   Shelly Prevost  Thu Oct 18 14:25:35 PDT 2007
-//   added new widgets for cycle display and removed widgets that
-//   do not fully function yet.
-//  
-//   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
-//   Support for internationalization.
-//
-//   Brad Whitlock, Tue Jul  8 09:42:46 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
 void 
@@ -202,9 +187,8 @@ QvisStripChartMgr::CreateWindowContents()
 // Programmer: Shelly Prevost
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
-//    Shelly Prevost  Thu Oct 18 14:25:35 PDT 2007
-//    disabled widget that do not fully function yet.
-//   
+// Modifications:
+//  
 // ****************************************************************************
 void 
 QvisStripChartMgr::updateCurrentTabData()
@@ -223,7 +207,6 @@ QvisStripChartMgr::updateCurrentTabData()
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//  
 //   
 // ****************************************************************************
 void
@@ -244,7 +227,6 @@ QvisStripChartMgr::pick()
 //
 // Modifications:
 //  
-//   
 // ****************************************************************************
 void
 QvisStripChartMgr::zoom()
@@ -263,7 +245,6 @@ QvisStripChartMgr::zoom()
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//  
 //   
 // ****************************************************************************
 void
@@ -284,7 +265,6 @@ QvisStripChartMgr::reset()
 //
 // Modifications:
 //  
-//   
 // ****************************************************************************
 void
 QvisStripChartMgr::clear()
@@ -300,14 +280,13 @@ QvisStripChartMgr::clear()
 //   same name in the strip chat tab widget.
 //
 // Arguments:
-//   tabName    :  name of the strip chart this label should be applied to.
+//   index    :  index of the strip chart this label should be applied to.
 //
 // Programmer: Shelly Prevost
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
 //  
-//   
 // ****************************************************************************
 void
 QvisStripChartMgr::clear( const unsigned int index )
@@ -323,14 +302,13 @@ QvisStripChartMgr::clear( const unsigned int index )
 //   the matching strip chart.
 //
 // Arguments:
-//   tabName    :  name of the strip chart this label should be applied to.
-//   newLabel   :  the tab label for the strip chart.
+//   index    :  index of the strip chart this label should be applied to.
+//   newLabel :  the tab label for the strip chart.
 //
 // Programmer: Shelly Prevost
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//  
 //   
 // ****************************************************************************
 void
@@ -347,14 +325,14 @@ QvisStripChartMgr::setTabLabel( const unsigned int index, QString newLabel )
 //   the matching strip chart.
 //
 // Arguments:
-//   tabName    :  name of the strip chart this label should be applied to.
-//   newLabel   :  the tab label for the strip chart.
+//   tabIndex    :  index of the strip chart of the curve.
+//   curveIndex  :  index of the curve this label should be applied to.
+//   newLabel    :  the tab label for the strip chart.
 //
 // Programmer: Shelly Prevost
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//  
 //   
 // ****************************************************************************
 void
@@ -381,16 +359,14 @@ QvisStripChartMgr::setCurveTitle( const unsigned int tabIndex,
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//    Shelly Prevost,  Thu Oct 18 16:36:59 PDT 2007
-//    fixed return type to pass on out of bounds information.
 //   
 // ****************************************************************************
 void
-QvisStripChartMgr::addDataPoint( const QString name,
-                                 const QString var,
+QvisStripChartMgr::addDataPoint( const unsigned int tabIndex,
+                                 const unsigned int curveIndex,
                                  double x, double y )
 {
-    stripChartTabWidget->addDataPoint(name,var,x,y);
+    stripChartTabWidget->addDataPoint(tabIndex, curveIndex, x, y);
 }
 // ****************************************************************************
 // Method: VisItSimStripChart::unpost()
@@ -402,7 +378,6 @@ QvisStripChartMgr::addDataPoint( const QString name,
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//  
 //   
 // ****************************************************************************
 void 
@@ -421,7 +396,6 @@ QvisStripChartMgr::unpost()
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//  
 //   
 // ****************************************************************************
 void 

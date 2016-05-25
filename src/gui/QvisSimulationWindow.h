@@ -69,6 +69,7 @@ class EngineList;
 class StatusAttributes;
 class avtSimulationCommandSpecification;
 class SimulationUIValues;
+class SimCommandSlots;
 
 class QwtPlot;
 
@@ -133,27 +134,24 @@ private:
     QString GetUIFileDirectory() const;
     QString GetUIFile(const QString &key) const;
 
-    void CreateCommandUI();
+    void ConnectUIChildren(QObject *obj, SimCommandSlots *cc);
+    void CreateCustomUIWindow();
     void UpdateUIComponent(QWidget *window, const QString &name, const QString &value, bool e);
-
-    void ViewerSendCMD ( int simIndex, QString cmd);
-    QColor getColor(const QString &color) const;
 
     void getTableCMD( const char *cmd,
                       unsigned int &row, unsigned int &column, char *name );
-    void getTableCMD( const char *cmd, char *name, char *var,
+    void getTableCMD( const char *cmd, unsigned int &row, unsigned int &column,
                       double &x, double &y );
     std::string getNextString( std::string &cmd, const std::string delimiter );
                                                                               
-public slots:
-    virtual void showNormal();
-    virtual void showMinimized();
 private slots:
     void closeEngine();
     void interruptEngine();
     void selectEngine(int index);
+    void clearMessages();
+    void clearStripCharts();
     void clearCache();
-    void showCommandWindow();
+    void showCustomUIWindow();
     void executePushButtonCommand(const QString &cmd);
     void executeEnableTimeRange(const QString &cmd);
     void executeStartCommand(const QString &cmd);
@@ -178,13 +176,10 @@ private:
     QPushButton        *interruptEngineButton;
     QPushButton        *closeEngineButton;
     QPushButton        *clearCacheButton;
-    QWidget            *DynamicCommandsWin;
+    QWidget            *CustomUIWindow;
     QvisUiLoader       *uiLoader;
-    QMap<int,int>      simulationToEngineListMap;
     QvisStripChartMgr  *stripChartMgr;
     QvisSimulationCommandWindow  *simCommands;
     QvisSimulationMessageWindow  *simMessages;
-
-    QwtPlot *curvePlots;
 };
 #endif

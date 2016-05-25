@@ -109,18 +109,18 @@ public:
     // void setEnableLogScale( bool enable ) {};
     // bool getEnableLogScale() { return false; };
 
-    void enableZoomMode( bool );
+    void toggleDisplayMode( bool mode );
     void reset();
     void clear();
 
     void setCurveTitle( unsigned int index, const QString &newTitle);
-    void addDataPoint( const QwtText &var, double x, double y);
+    void addDataPoint( unsigned int index, double x, double y);
 
 private Q_SLOTS:
     void legendChecked( const QVariant &, bool on );
 
 private:
-    void showCurve( QwtPlotItem *, bool on );
+    void showCurve( QwtPlotItem *item, bool on );
     void hideCurve( QwtPlotItem *item );
 
     void setupTimeAxis( double time, double timeStep );
@@ -128,8 +128,7 @@ private:
 
     void updateSamples();
     void updateAxis();
-    void AdjustLabelsComputeRange( double inRange[2], 
-                                   double outRange[2],
+    void AdjustLabelsComputeRange( double range[2], 
                                    double &interval,
                                    unsigned int &nTicks );
     unsigned int dataCount;

@@ -89,7 +89,7 @@ public:
 
 signals:
     void executeButtonCommand(const QString &cmd);
-    void showCommandWindow();
+    void showCustomUIWindow();
     void timeRangingToggled(const QString &);
     void executeStart(const QString &);
     void executeStop(const QString &);

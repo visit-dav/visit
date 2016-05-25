@@ -37,17 +37,9 @@
 *****************************************************************************/
 
 #include <QvisStripChartTabWidget.h>
-#include <math.h>
-
-#include <QFont>
-#include <QLabel>
-#include <QLayout>
-#include <QPen>
-#include <QScrollArea>
-#include <QTimer>
-
 #include <QvisStripChart.h>
-#include <SimWidgetNames.h>
+
+#include <QScrollArea>
 
 #include <sstream>
 #include <iostream>
@@ -68,16 +60,6 @@
 // Creation:   Friday Oct. 27, 2006
 //
 // Modifications:
-//    Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
-//    added pointSize to update font size. Also added a variable for
-//    zoomOutLimit to prevent to small of zooms.
-//
-//    Shelly Prevost Thu Oct 18 16:47:10 PDT 2007
-//    set the scroll area all the way to the left where the data will 
-//    first be drawn.
-//
-//    Brad Whitlock, Tue Jul  8 10:09:06 PDT 2008
-//    Qt 4.
 //
 // ****************************************************************************
 QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent,
@@ -137,12 +119,10 @@ QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent,
 // Creation:   Oct. 27, 2006
 //
 // Modifications:
-//  
 //   
 // ****************************************************************************
 QvisStripChartTabWidget::~QvisStripChartTabWidget()
 {
-// cleanup
 }
 
 // ****************************************************************************
@@ -158,8 +138,6 @@ QvisStripChartTabWidget::~QvisStripChartTabWidget()
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//   Brad Whitlock, Tue Jul  8 10:56:00 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
 void 
@@ -178,15 +156,12 @@ QvisStripChartTabWidget::updateCurrentTabData()
 //    returns -1.
 //   
 // Arguments:
-//   SC_Name : the name of the strip chart widget you are looking for. This will
-//             be one of the standard names found in the SimWidgetNames.h file.
+//   SC_Name : the name of the strip chart widget wanted.
 //
 // Programmer: Shelly Prevost
 // Creation:   Oct. 27, 2006
 //
 // Modifications:
-//  Brad Whitlock, Tue Jul  8 10:59:40 PDT 2008
-//  Qt 4.
 //   
 // ****************************************************************************
 int
@@ -217,7 +192,6 @@ QvisStripChartTabWidget::nameToIndex(const QString &SC_Name) const
 //
 // Modifications:
 //  
-//   
 // ****************************************************************************
 // void 
 // QvisStripChartTabWidget::setEnableLogScale( bool enable )
@@ -236,7 +210,6 @@ QvisStripChartTabWidget::nameToIndex(const QString &SC_Name) const
 //
 // Modifications:
 //  
-//   
 // ****************************************************************************
 // bool 
 // QvisStripChartTabWidget::getEnableLogScale()
@@ -255,13 +228,12 @@ QvisStripChartTabWidget::nameToIndex(const QString &SC_Name) const
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//  
 //   
 // **************************************************************************** 
 void
 QvisStripChartTabWidget::pick()
 {
-    stripCharts[currentStripChart]->enableZoomMode(false);
+    stripCharts[currentStripChart]->toggleDisplayMode(false);
 }
 
 // ****************************************************************************
@@ -275,13 +247,12 @@ QvisStripChartTabWidget::pick()
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//  
 //   
 // **************************************************************************** 
 void
 QvisStripChartTabWidget::zoom()
 {
-    stripCharts[currentStripChart]->enableZoomMode(true);
+    stripCharts[currentStripChart]->toggleDisplayMode(true);
 }
 
 // ****************************************************************************
@@ -295,7 +266,6 @@ QvisStripChartTabWidget::zoom()
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//  
 //   
 // **************************************************************************** 
 void
@@ -316,7 +286,6 @@ QvisStripChartTabWidget::reset()
 //
 // Modifications:
 //  
-//   
 // **************************************************************************** 
 void
 QvisStripChartTabWidget::clear()
@@ -335,7 +304,6 @@ QvisStripChartTabWidget::clear()
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//  
 //   
 // **************************************************************************** 
 void
@@ -358,25 +326,25 @@ QvisStripChartTabWidget::clear( const unsigned int index )
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//  Brad Whitlock, Tue Jul  8 10:58:23 PDT 2008
-//  Qt 4.
 //   
 // ****************************************************************************
 void
-QvisStripChartTabWidget::setTabLabel(int tabIndex, const QString &newLabel)
+QvisStripChartTabWidget::setTabLabel(unsigned int tabIndex,
+                                     const QString &newLabel)
 {
-  if( newLabel.isEmpty() )
-  {
-    std::ostringstream label;
-    label << "StripChart_" << tabIndex;
-    setTabText(tabIndex, label.str().c_str());
-    stripCharts[tabIndex]->setTitle( "History" );
-  }
-  else
-  {
-    setTabText(tabIndex, newLabel);
-    stripCharts[tabIndex]->setTitle( newLabel );
-  }
+    // If no labe use a default.
+    if( newLabel.isEmpty() )
+    {
+        std::ostringstream label;
+        label << "StripChart_" << tabIndex;
+        setTabText(tabIndex, label.str().c_str());
+        stripCharts[tabIndex]->setTitle( "History" );
+    }
+    else
+    {
+        setTabText(tabIndex, newLabel);
+        stripCharts[tabIndex]->setTitle( newLabel );
+    }
 }   
 
 // ****************************************************************************
@@ -393,13 +361,11 @@ QvisStripChartTabWidget::setTabLabel(int tabIndex, const QString &newLabel)
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//  Brad Whitlock, Tue Jul  8 10:58:23 PDT 2008
-//  Qt 4.
 //   
 // ****************************************************************************
 void
-QvisStripChartTabWidget::setCurveTitle(int tabIndex,
-                                       int curveIndex,
+QvisStripChartTabWidget::setCurveTitle(unsigned int tabIndex,
+                                       unsigned int curveIndex,
                                        const QString &newTitle)
 {
     stripCharts[tabIndex]->setCurveTitle(curveIndex, newTitle);
@@ -411,26 +377,21 @@ QvisStripChartTabWidget::setCurveTitle(int tabIndex,
 // Purpose: 
 //   
 // Arguments:
-//   name : the name of the strip chart widget wanted. This will be
-//          one of the standard names found in the SimWidgetNames.h file.
-//    x   : data x value, i.e. the cycle
-//    y   : data y value, i.e. the current value of the variable being plotted.
+//   name : the name of the strip chart widget wanted.
+//   var  : The name of the strip chart curve wanted.
+//   x    : data x value, i.e. the cycle
+//   y    : data y value, i.e. the current value of the variable being plotted.
 //
 // Programmer: Shelly Prevost
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//    Shelly Prevost,  Thu Oct 18 16:36:59 PDT 2007
-//    fixed return type to pass on out of bounds information.
 //   
 // ****************************************************************************
 void 
-QvisStripChartTabWidget::addDataPoint( const QString &name,
-                                       const QString &var,
+QvisStripChartTabWidget::addDataPoint( unsigned int tabIndex,
+                                       unsigned int curveIndex,
                                        double x, double y )
 {
-    int ST_Index = nameToIndex(name);
-
-    if( ST_Index >= 0 )
-        stripCharts[ST_Index]->addDataPoint(var, x, y);
+    stripCharts[tabIndex]->addDataPoint(curveIndex, x, y);
 }

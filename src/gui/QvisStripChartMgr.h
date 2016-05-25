@@ -72,8 +72,6 @@ class ViewerProxy;
 // Creation:   Wed Aug  1 15:11:06 PDT 2007
 //
 // Modifications:
-//   Brad Whitlock, Tue Jul  8 09:05:14 PDT 2008
-//   Qt 4.
 //
 // ****************************************************************************
 
@@ -85,17 +83,19 @@ public:
     QvisStripChartMgr(QWidget *parent, ViewerProxy *theViewer,
                       EngineList *engineList, int index,
                       QvisNotepadArea *notepad2);
+  
     virtual ~QvisStripChartMgr();
 
     void setTabLabel( const unsigned int index, QString newLabel );
     void setCurveTitle( const unsigned int tabIndex,
                         const unsigned int curveIndex, QString newTitle );
 
-    void addDataPoint( const QString name,
-                       const QString var,
+    void addDataPoint( const unsigned int tabIndex,
+                       const unsigned int curveIndex,
                        double x, double y );
 
     virtual void CreateEntireWindow();
+
 public slots:
     void pick();
     void zoom();

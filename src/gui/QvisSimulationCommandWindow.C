@@ -85,7 +85,7 @@ QvisSimulationCommandWindow::CreateWindowContents()
     hLayout->setMargin(0);
     activateCustomGUI = new QPushButton(tr("Activate Custom UI . . ."), h);
     connect(activateCustomGUI, SIGNAL(clicked()),
-            this, SIGNAL(showCommandWindow()));
+            this, SIGNAL(showCustomUIWindow()));
     hLayout->addStretch(10);
     hLayout->addWidget(activateCustomGUI);
     hLayout->addStretch(10);
