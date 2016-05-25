@@ -163,16 +163,17 @@ function build_boost
         libs="$libs \
               date_time system filesystem"
     fi
+
     if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
         libs="$libs \
               chrono iostreams thread date_time filesystem \
               system program_options regex timer"
     fi
     
-    if [[ "$DO_UINTAH" == "yes" ]] ; then
-        libs="$libs \
-              chrono filesystem wserialization serialization system thread signals date_time program_options"
-    fi
+#    if [[ "$DO_UINTAH" == "yes" ]] ; then
+#        libs="$libs \
+#              chrono filesystem wserialization serialization system thread signals date_time program_options"
+#    fi
 
     # Remove all of the duplicate libs.
     libs=`echo $libs | tr ' ' '\n' | sort -u | tr '\n' ' ' | sed s'/.$//'`
