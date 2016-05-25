@@ -36,6 +36,11 @@
 #
 #*****************************************************************************
 
+# Configure for Qwt.
+IF(NOT DEFINED VISIT_QWT_DIR)
+    MESSAGE(FATAL_ERROR "Qwt installation directory not specified")
+ENDIF()
+
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
