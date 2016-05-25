@@ -117,7 +117,6 @@ function bv_qwt_dry_run
     fi
 }
 
-
 function apply_qwt_linux_patch
 {
     PATCHFILE="./patchfile.patch"
@@ -212,8 +211,6 @@ function apply_qwt_patch
     fi
 }
 
-
-
 # *************************************************************************** #
 #                          Function 8.0, build_qwt                           #
 # *************************************************************************** #
@@ -258,6 +255,7 @@ function build_qwt
         return 1
     fi
     
+    info "Building Qwt. . . (~2 minutes)"
     $MAKE
     if [[ $? != 0 ]] ; then
         warn "Qwt build failed.  Giving up"
