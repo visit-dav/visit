@@ -75,6 +75,13 @@ else()
 endif()
 
 ##
+## QWT
+##
+if (VISIT_QT5)
+  VISIT_OPTION_DEFAULT(VISIT_QWT_DIR     ${VISITHOME}/Qwt/6.1.2)
+endif()
+
+##
 ## PYTHON
 ##
 if(VISIT_QT5)
