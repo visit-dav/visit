@@ -43,6 +43,8 @@
 #ifndef AVT_IVPNEKTARPPTIMEVARYINGFIELD_H
 #define AVT_IVPNEKTARPPTIMEVARYINGFIELD_H
 
+#include "visit-config.h"
+
 #include <avtIVPField.h>
 #include <avtCellLocator.h>
 #include <ivp_exports.h>
