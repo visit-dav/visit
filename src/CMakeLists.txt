@@ -756,16 +756,11 @@ MACRO(VISIT_3RDPARTY_DEP libvar comment)
     ENDIF(NOT DEFINED VISIT_${libvar})
 ENDMACRO(VISIT_3RDPARTY_DEP libvar comment)
 
-# Do not define these for Qt and Qwt as there are checks for them in
-# the Find*.cmake files. If they are defined then they become optional
-# (not requested).
-#VISIT_3RDPARTY_VAR(QT_DIR       "Path containing the Qt library's include and lib")
-#VISIT_3RDPARTY_VAR(QWT_DIR      "Path containing the Qwt library's include and lib")
-
 # Define options that let us pick our standard libraries: VTK,Mesa,Qt,Python
 # and so on.
 VISIT_3RDPARTY_VAR(VTK_DIR    "Path containing the VTK library's bin and lib")
 VISIT_3RDPARTY_VAR(QT_BIN     "Path to the Qt library's bin (path containing qmake)")
+VISIT_3RDPARTY_VAR(QWT_DIR    "Path containing the Qwt library's include and lib")
 VISIT_3RDPARTY_VAR(PYTHON_DIR "Path containing the Python library's include and lib")
 IF (NOT WIN32)
   VISIT_3RDPARTY_VAR(MESA_DIR   "Path containing the Mesa library's include and lib")
@@ -1051,7 +1046,6 @@ ELSE(VISIT_USE_X)
 ENDIF(VISIT_USE_X)
 INCLUDE(${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
 
-
 # Configure Nektar++ support. 
 # Do it before the other libraries like boost because many can depend on it.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
@@ -1207,13 +1201,14 @@ IF(VISIT_PYTHON_FILTERS AND VISIT_DBIO_ONLY)
     MESSAGE(STATUS "Python Engine Filters disabled because VISIT_DBIO_ONLY was selected.")
 ENDIF(VISIT_PYTHON_FILTERS AND VISIT_DBIO_ONLY)
 
-# Configure Qt4 support.
+# Configure Qt and Qwt support.
 IF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt.cmake)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindQwt.cmake)
     IF(QWT_FOUND)
 	SET(HAVE_QWT 1)
     ENDIF(QWT_FOUND)
+
 ENDIF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
 # Configure PySide Support
