@@ -58,8 +58,11 @@
 import sys
 import os
 
-import ply.lex as lex
-import ply.yacc as yacc
+try:
+    import ply.lex as lex
+    import ply.yacc as yacc
+except ImportError as e:
+    pass
 
 #------------------------------------------------------------------
 # Key objects used to encapsulate the data flow network components.
@@ -245,10 +248,6 @@ def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
-# Build the lexer
-lex.lex()
-
-
 #------------------
 # Parsing rules
 #------------------
@@ -394,10 +393,15 @@ def p_error(p):
     if p:
         print "<line",p.lineno, "> Syntax Error", p.type, p.value
 
-# Build the parser
-yacc.yacc()
 
 class Parser(object):
+    @classmethod
+    def init(cls):
+        # Build the lexer
+        lex.lex()
+        # Build the parser
+        yacc.yacc()
+    
     @classmethod
     def parse(cls,txt):
         """

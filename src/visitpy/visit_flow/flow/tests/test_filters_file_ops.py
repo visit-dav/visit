@@ -47,8 +47,8 @@ import unittest
 import os
 from os.path import join as pjoin
 
-from flow import *
-from flow.filters import file_ops
+from visit_flow import *
+from visit_flow.filters import file_ops
 
 # uncomment for detailed exe info
 #import logging

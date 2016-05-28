@@ -49,21 +49,23 @@ try:
 except:
     pass
 
-from flow import *
-from flow.filters import npy_ops
+from visit_flow import *
+from visit_flow.filters import npy_ops
 
-from decorators import numpy_test
+from decorators import numpy_test, ply_test
 # uncomment for detailed exe info
 #import logging
 #logging.basicConfig(level=logging.INFO)
 
 class TestParser(unittest.TestCase):
+    @ply_test
     def test_01_simple_expr_gen(self):
         filters = Generator.parse_network("vel_mag = sqrt(vx^2 + vy^2 + vz^2)")
         print ""
         for f in filters:
             print f
         self.assertTrue(True)
+    @ply_test
     def test_02_simple_expr_gen_context(self):
         w = Workspace()
         w.register_filters(npy_ops)
@@ -88,6 +90,7 @@ class TestParser(unittest.TestCase):
         print "Test Result:         %s" % str(test_res)
         print "Difference:          %s" % str(dsum)
         self.assertTrue(dsum < 1e-6)
+    @ply_test
     def test_03_simple_expr_gen_from_workspace(self):
         w = Workspace()
         w.register_filters(npy_ops)
@@ -110,6 +113,7 @@ class TestParser(unittest.TestCase):
         print "Test Result:         %s" % str(test_res)
         print "Difference:          %s" % str(dsum)
         self.assertTrue(dsum < 1e-6)
+    @ply_test
     def test_04_simple_decomp_gen_context(self):
         w = Workspace()
         w.register_filters(npy_ops)

@@ -49,8 +49,8 @@ try:
 except:
     pass
 
-from flow import *
-from flow.filters import npy_ops
+from visit_flow import *
+from visit_flow.filters import npy_ops
 
 from decorators import numpy_test
 
