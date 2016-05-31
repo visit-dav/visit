@@ -46,7 +46,7 @@
 import unittest
 import math
 import json
-from flow import *
+from visit_flow import *
 
 # uncomment for detailed exe info
 #import logging

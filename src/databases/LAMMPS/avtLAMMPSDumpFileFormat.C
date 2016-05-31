@@ -571,6 +571,9 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
 //    Added options for reading atom coordinates.  The reader can now handle
 //    options xu,yu,zu and xsu,ysu,zsu
 //
+//    Matthew Wheeler, Tue May 31 09:27:45 PDT 2016
+//    Corrected a typo in handling options xsu, ysu, zsu.
+//
 // ****************************************************************************
 void
 avtLAMMPSDumpFileFormat::ReadAllMetaData()
@@ -644,11 +647,11 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
                                varName == "zu" || varName == "zsu" )
                         zIndex = (int)varNames.size();
 
-                    if (varName == "xs" || "xsu")
+                    if (varName == "xs" || varName == "xsu")
                         xScaled = true;
-                    if (varName == "ys" || "ysu")
+                    if (varName == "ys" || varName == "ysu")
                         yScaled = true;
-                    if (varName == "zs" || "zsu")
+                    if (varName == "zs" || varName == "zsu")
                         zScaled = true;
 
                     varNames.push_back(varName);

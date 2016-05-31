@@ -48,8 +48,8 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 
 
-import numpy as npy
 try:
+    import numpy as npy
     import vtk
     import vtk.util.numpy_support as vnp
 except:

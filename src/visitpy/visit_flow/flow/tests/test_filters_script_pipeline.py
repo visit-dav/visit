@@ -49,8 +49,10 @@ try:
 except:
     pass
 
-from flow import *
-from flow.filters import script_pipeline
+from visit_flow import *
+from visit_flow.filters import script_pipeline
+
+from decorators import numpy_test
 
 # uncomment for detailed exe info
 #import logging
@@ -59,6 +61,7 @@ from flow.filters import script_pipeline
 class TestSPipeline(unittest.TestCase):
     def setUp(self):
         print ""
+    @numpy_test
     def test_01_simple_spipeline(self):
         sdef = {}
         sdef["scripts"] = {"add":{"source":"r=a+b\nsetout(r)",
@@ -105,6 +108,7 @@ class TestSPipeline(unittest.TestCase):
         print "Test Result:         %s" % str(test_res)
         print "Difference:          %s" % str(dsum)
         self.assertTrue(dsum < 1e-6)
+    @numpy_test
     def test_02_simple_from_dict(self):
         sdef = {}
         sdef["scripts"] = {"add":{"source":"r=a+b\nsetout(r)",
