@@ -49,8 +49,8 @@ try:
 except:
     pass
 
-from flow import *
-from flow.filters import pyocl_ops
+from visit_flow import *
+from visit_flow.filters import pyocl_ops
 
 from decorators import pyocl_test
 

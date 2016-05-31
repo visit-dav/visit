@@ -43,10 +43,23 @@
     if these modules are not available.
 
 """
-from flow.core import sexe
+from visit_flow.core import sexe
 
 def skip_warning(name):
     print "[%s not found: Skipping dependant test.]" % name
+
+def ply_test(fn):
+    """
+    Decorator that skips tests that require ply.
+    """
+    def run_fn(*args):
+        try:
+            import ply
+        except ImportError:
+            skip_warning("ply")
+            return None
+        return fn(*args)
+    return run_fn
 
 def numpy_test(fn):
     """
