@@ -468,10 +468,10 @@ avtReflectFilter::UpdateDataObjectInfo(void)
     GetOutput()->GetInfo().GetAttributes().SetCanUseInvTransform(false);
     GetOutput()->GetInfo().GetAttributes().SetCanUseTransform(false);
 
-    // Rectilinear reflect reorders the cells.
-    avtMeshType mt = GetInput()->GetInfo().GetAttributes().GetMeshType();
-    if (mt == AVT_RECTILINEAR_MESH || mt == AVT_AMR_MESH)
-        GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    // There are more zones and nodes than originally, so invalidate
+    // the original information
+    GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    GetOutput()->GetInfo().GetValidity().InvalidateNodes();
 
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 
