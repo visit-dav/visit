@@ -593,6 +593,29 @@ def PickReflect():
     s = GetPickOutput()
     Pick(149, 94, vars)
     s = s + GetPickOutput()
+    NodePick(coord=(0, 3, 0))
+    s = s + GetPickOutput()
+    NodePick(coord=(0, -3, 0))
+    s = s + GetPickOutput()
+
+    DeleteAllPlots()
+
+    # Try a rectilinear grid
+    OpenDatabase(silo_data_path("noise.silo"))
+    AddPlot("Subset", "Mesh")
+    AddOperator("Reflect")
+    DrawPlots()
+    ResetView()
+
+    Pick(coord=(-5, 5, 10))
+    s = s + GetPickOutput()
+    NodePick(coord=(-5, 5, 10))
+    s = s + GetPickOutput()
+    Pick(coord=(-5, -25, 10))
+    s = s + GetPickOutput()
+    NodePick(coord=(-5, -25, 10))
+    s = s + GetPickOutput()
+
 
     TestText("PickReflect", s)
     DeleteAllPlots()
