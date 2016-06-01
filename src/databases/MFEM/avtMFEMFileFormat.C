@@ -430,6 +430,11 @@ avtMFEMFileFormat::GetVectorVar(int domain, const char *varname)
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
 //
+// Modifications:
+//   Cyrus Harrison, Wed Jun  1 08:46:12 PDT 2016
+//   Change MFEM Mesh constructor call to resolve coordinate system issue
+//   (See: http://visitbugs.ornl.gov/issues/2578)
+//
 // ****************************************************************************
 Mesh *
 avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
@@ -459,7 +464,7 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
         EXCEPTION1(InvalidFilesException, msg.str());
     }
    
-    mesh = new Mesh(imesh, 1, 1);
+    mesh = new Mesh(imesh, 1, 1, false);
     imesh.close();
    
     return mesh;
