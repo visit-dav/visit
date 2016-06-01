@@ -40,8 +40,9 @@
 #define ICET_NETWORK_MANAGER_H
 
 #include <NetworkManager.h>
-#include <GL/ice-t.h>
+#include <IceTGL.h>
 #include <engine_main_exports.h>
+#include <vector>
 
 class Engine;
 
@@ -94,9 +95,8 @@ class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
 
     void       TileLayout(size_t width, size_t height) const;
 
-    virtual avtDataObject_p Render(bool, intVector networkIds, bool getZBuffer,
-                                   int annotMode, int windowID, bool leftEye);
-    void       RealRender(); /// OpenGL calls sourced from here
+    //virtual avtDataObject_p Render(bool, intVector networkIds, bool getZBuffer,
+    //                               int annotMode, int windowID, bool leftEye);
 
     static Engine *engine_for_render;
 
@@ -105,22 +105,27 @@ class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
     virtual
     avtImage_p         RenderGeometry();
 
+    virtual
+    avtDataObject_p    RenderInternal();
+
     /*virtual
     avtImage_p         RenderTranslucent(int windowID,
                            const avtImage_p& input);*/
 
-    virtual avtImage_p Readback(VisWindow * const, bool) const;
-
     virtual void       StopTimer();
     virtual void       FormatDebugImage(char*, size_t, const char*) const;
-
+    
  private:
-
-    void  VerifyColorFormat() const;
-
+    void  VerifyColorFormat(IceTImage image) const;
+    void  DebugIceTTimings() const;
+    void  IceTSetup();
+    void  UnpackBuffer(const unsigned char*, const int &);
+    void  PackBuffer(unsigned char*, const int &);
  private:
     IceTCommunicator comm;
     IceTContext context;
+    //Buffers for image conversion
+    std::vector<unsigned char> rgba;
     unsigned int renderings; ///< counts how many renderings we've done.
 };
 #endif /* ICET_NETWORK_MANAGER_H */
