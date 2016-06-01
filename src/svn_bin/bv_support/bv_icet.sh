@@ -1,54 +1,54 @@
 function bv_icet_initialize
 {
-export DO_ICET="no"
-export ON_ICET="off"
+    export DO_ICET="no"
+    export ON_ICET="off"
 }
 
 function bv_icet_enable
 {
-DO_ICET="yes"
-ON_ICET="on"
+    DO_ICET="yes"
+    ON_ICET="on"
 }
 
 function bv_icet_disable
 {
-DO_ICET="no"
-ON_ICET="off"
+    DO_ICET="no"
+    ON_ICET="off"
 }
 
 function bv_icet_depends_on
 {
-echo "cmake"
+    echo "cmake"
 }
 
 function bv_icet_info
 {
-export ICET_FILE=${ICET_FILE:-"IceT-1-0-0.tar.gz"}
-export ICET_VERSION=${ICET_VERSION:-"1.0.0"}
-export ICET_COMPATIBILITY_VERSION=${ICET_COMPATIBILITY_VERSION:-"1.0.0"}
-export ICET_BUILD_DIR=${ICET_BUILD_DIR:-"IceT-1-0-0"}
-export ICET_MD5_CHECKSUM="90a93507b8fdc88f46b9a8d7ed651c6c"
-export ICET_SHA256_CHECKSUM=""
+    export ICET_FILE=${ICET_FILE:-"icet-master-0d08b037.tar.gz"}
+    export ICET_VERSION=${ICET_VERSION:-"icet-master-0d08b037"}
+    export ICET_COMPATIBILITY_VERSION=${ICET_COMPATIBILITY_VERSION:-"master-0d08b037"}
+    export ICET_BUILD_DIR=${ICET_BUILD_DIR:-"icet-master-0d08b037"}
+    export ICET_MD5_CHECKSUM=""
+    export ICET_SHA256_CHECKSUM=""
 }
 
 function bv_icet_print
 {
-  printf "%s%s\n" "ICET_FILE=" "${ICET_FILE}"
-  printf "%s%s\n" "ICET_VERSION=" "${ICET_VERSION}"
-  printf "%s%s\n" "ICET_COMPATIBILITY_VERSION=" "${ICET_COMPATIBILITY_VERSION}"
-  printf "%s%s\n" "ICET_BUILD_DIR=" "${ICET_BUILD_DIR}"
+    printf "%s%s\n" "ICET_FILE=" "${ICET_FILE}"
+    printf "%s%s\n" "ICET_VERSION=" "${ICET_VERSION}"
+    printf "%s%s\n" "ICET_COMPATIBILITY_VERSION=" "${ICET_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "ICET_BUILD_DIR=" "${ICET_BUILD_DIR}"
 }
 
 function bv_icet_print_usage
 {
-printf "%-15s %s [%s]\n" "--icet" "Build Ice-T (parallel rendering lib)" "$DO_ICET"
-printf "%-15s %s [%s]\n" "--no-icet" "Ice-T is automatically built with --enable-parallel.  Prevent it from being built" "$PREVENT_ICET"
+    printf "%-15s %s [%s]\n" "--icet" "Build Ice-T (parallel rendering lib)" "$DO_ICET"
+    printf "%-15s %s [%s]\n" "--no-icet" "Ice-T is automatically built with --enable-parallel.  Prevent it from being built" "$PREVENT_ICET"
 }
 
 function bv_icet_graphical
 {
-local graphical_out="IceT     $ICET_VERSION($ICET_FILE)      $ON_ICET"
-echo $graphical_out
+    local graphical_out="IceT     $ICET_VERSION($ICET_FILE)      $ON_ICET"
+    echo $graphical_out
 }
 
 function bv_icet_host_profile
@@ -59,8 +59,8 @@ function bv_icet_host_profile
         echo "## Ice-T" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "VISIT_OPTION_DEFAULT(VISIT_ICET_DIR \${VISITHOME}/icet/$ICET_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_ICET_DIR \${VISITHOME}/icet/$ICET_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
     fi
 }
 
@@ -78,80 +78,15 @@ function bv_icet_ensure
 
 function bv_icet_dry_run
 {
-  if [[ "$DO_ICET" == "yes" ]] ; then
-    echo "Dry run option not set for icet."
-  fi
+    if [[ "$DO_ICET" == "yes" ]] ; then
+        echo "Dry run option not set for icet."
+    fi
 }
 
-# *************************************************************************** #
-#                           Function 8.13, build_icet                         #
-# *************************************************************************** #
-
-function apply_icet_100_patch
-{
-   patch -p0 <<\EOF
-diff -c a/src/CMakeLists.txt IceT-1-0-0/src/CMakeLists.txt
-*** a/src/CMakeLists.txt
---- IceT-1-0-0/src/CMakeLists.txt
-***************
-*** 18,35 ****
-        "${CMAKE_CURRENT_SOURCE_DIR}/communication"
-        "${CMAKE_CURRENT_SOURCE_DIR}/strategies")
-    SET(filesToInstall)
-!   FOREACH(p IN ${resPath})
-        SET(tmpFilesToInstall)
-        SET(exts "${p}/*.h;${p}/*.hxx;${p}/*.txx")
-!       FOREACH(ext IN ${exts})
-            FILE(GLOB tmpFilesToInstall
-            RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${ext}")
-            IF(tmpFilesToInstall)
-                SET(filesToInstall "${filesToInstall};${tmpFilesToInstall}")
-            ENDIF(tmpFilesToInstall)
-!       ENDFOREACH(ext IN ${exts})
-!   ENDFOREACH(p IN ${resPath})
-    INSTALL(
-        FILES ${filesToInstall}
-        DESTINATION "${ICET_INSTALL_INCLUDE_DIR}/ice-t"
---- 18,35 ----
-        "${CMAKE_CURRENT_SOURCE_DIR}/communication"
-        "${CMAKE_CURRENT_SOURCE_DIR}/strategies")
-    SET(filesToInstall)
-!   FOREACH(p ${resPath})
-        SET(tmpFilesToInstall)
-        SET(exts "${p}/*.h;${p}/*.hxx;${p}/*.txx")
-!       FOREACH(ext ${exts})
-            FILE(GLOB tmpFilesToInstall
-            RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${ext}")
-            IF(tmpFilesToInstall)
-                SET(filesToInstall "${filesToInstall};${tmpFilesToInstall}")
-            ENDIF(tmpFilesToInstall)
-!       ENDFOREACH(ext)
-!   ENDFOREACH(p)
-    INSTALL(
-        FILES ${filesToInstall}
-        DESTINATION "${ICET_INSTALL_INCLUDE_DIR}/ice-t"
-EOF
-   if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch to IceT 1.0.0."
-        return 1
-   else
-        return 0
-   fi
-}
 
 function apply_icet_patch
 {
-   info "Patching IceT . . ."
-   if [[ ${ICET_VERSION} == "1.0.0" ]] ; then
-      apply_icet_100_patch
-      if [[ $? != 0 ]] ; then
-        return 1
-      fi
-   fi
-
-   return 0
+    return 0
 }
 
 function build_icet
@@ -177,11 +112,11 @@ function build_icet
     fi
 
     if [[ "$PAR_INCLUDE_STRING" == "" ]] ; then
-       warn "You must set either the PAR_COMPILER or PAR_INCLUDE environment variable to be Ice-T."
-       warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpicc\""
-       warn "PAR_INCLUDE should be of the form \"-I/path/to/mpi/include\""
-       warn "Giving Up!"
-       return 1
+        warn "You must set either the PAR_COMPILER or PAR_INCLUDE environment variable to be Ice-T."
+        warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpicc\""
+        warn "PAR_INCLUDE should be of the form \"-I/path/to/mpi/include\""
+        warn "Giving Up!"
+        return 1
     fi
 
     # IceT's CMake config doesn't take the compiler options, but rather the
@@ -223,7 +158,7 @@ function build_icet
             error "Please re-run with the required \"-I\" option included in PAR_INCLUDE"
         else
             error "You need to specify either PAR_COMPILER or PAR_INCLUDE variable.  On many "
-                  " systems, the output of \"mpicc -showme\" is good enough."
+            " systems, the output of \"mpicc -showme\" is good enough."
             error ""
         fi
     fi
@@ -237,8 +172,8 @@ function build_icet
     prepare_build_dir $ICET_BUILD_DIR $ICET_FILE
     untarred_icet=$?
     if [[ $untarred_icet == -1 ]] ; then
-       warn "Unable to prepare Ice-T build directory. Giving Up!"
-       return 1
+        warn "Unable to prepare Ice-T build directory. Giving Up!"
+        return 1
     fi
 
     apply_icet_patch
@@ -272,8 +207,8 @@ function build_icet
     rm fakempi.${LIBEXT}
 
     if [[ $? != 0 ]] ; then
-       warn "Cannot get CMAKE to create the makefiles.  Giving up."
-       return 1
+        warn "Cannot get CMAKE to create the makefiles.  Giving up."
+        return 1
     fi
 
     #
@@ -282,21 +217,21 @@ function build_icet
     info "Building Ice-T . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-       warn "Ice-T did not build correctly.  Giving up."
-       return 1
+        warn "Ice-T did not build correctly.  Giving up."
+        return 1
     fi
 
     info "Installing Ice-T . . ."
 
     $MAKE install
     if [[ $? != 0 ]] ; then
-       warn "Ice-T: 'make install' failed.  Giving up"
-       return 1
+        warn "Ice-T: 'make install' failed.  Giving up"
+        return 1
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+rX "$VISITDIR/icet"
-       chgrp -R ${GROUP} "$VISITDIR/icet"
+        chmod -R ug+w,a+rX "$VISITDIR/icet"
+        chgrp -R ${GROUP} "$VISITDIR/icet"
     fi
 
     cd "$START_DIR"
@@ -323,18 +258,18 @@ function bv_icet_is_installed
 
 function bv_icet_build
 {
-cd "$START_DIR"
-if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
-    check_if_installed "icet" $ICET_VERSION
-    if [[ $? == 0 ]] ; then
-        info "Skipping Ice-T build.  Ice-T is already installed."
-    else
-        info "Building Ice-T (~2 minutes)"
-        build_icet
-        if [[ $? != 0 ]] ; then
-            error "Unable to build or install Ice-T.  Bailing out."
+    cd "$START_DIR"
+    if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
+        check_if_installed "icet" $ICET_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping Ice-T build.  Ice-T is already installed."
+        else
+            info "Building Ice-T (~2 minutes)"
+            build_icet
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install Ice-T.  Bailing out."
+            fi
+            info "Done building Ice-T"
         fi
-        info "Done building Ice-T"
     fi
-fi
 }
