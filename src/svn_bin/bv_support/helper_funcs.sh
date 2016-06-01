@@ -507,9 +507,18 @@ function download_file
     # Now try the various places listed.
     if [[ "$1" != "" ]] ; then
         for site in $* ; do
-            try_download_file $site/$dfile $dfile
-            if [[ $? == 0 ]] ; then
-                return 0
+            # check if we have a google shortened url that won't accept
+            # the actual file name (we need this for mfem's urls)
+            if [[ $site == *goo.gl* ]] ; then
+                try_download_file_from_shortened_url $site $dfile
+                if [[ $? == 0 ]] ; then
+                    return 0
+                fi
+            else
+                try_download_file $site/$dfile $dfile
+                if [[ $? == 0 ]] ; then
+                    return 0
+                fi
             fi
         done
     fi
@@ -582,6 +591,44 @@ function try_download_file
         return 1
     fi
 }
+
+# *************************************************************************** 
+# Function: try_download_file_from_shortened_url
+#
+# Purpose: DONT USE THIS FUNCTION. USE download_file.
+#
+# New variant of try_download_file, downloads a file using wget or curl
+# using an explicit file name. This is necessary for shortened urls. 
+#
+# Programmer: Cyrus Harrison 
+# Creation: June 1, 2016
+#
+# *************************************************************************** 
+
+function try_download_file_from_shortened_url
+{
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        # MaxOS X comes with curl
+        /usr/bin/curl -o $2 -ksfLO $1
+    else
+        check_wget
+        if [[ $? != 0 ]] ; then
+            error "Need to download $1, but \
+                   cannot locate the wget utility to do so."
+        fi
+        wget $WGET_OPTS -O $2 -o /dev/null $1
+    fi
+
+    if [[ $? == 0 && -e $2 ]] ; then
+        info "Download succeeded: $1"
+        return 0
+    else    
+        warn "Download attempt failed: $1"
+        rm -f $2
+        return 1
+    fi
+}
+
 
 
 # *************************************************************************** #
