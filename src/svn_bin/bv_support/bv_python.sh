@@ -52,13 +52,16 @@ function python_set_vars_helper
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.a"
     else
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.dylib"
-        else
-            PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.so"
-        fi
+          if [[ "$OPSYS" == "Darwin" ]]; then
+              PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.dylib"
+          else
+              PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.so"
+          fi
     fi
-    PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/lib"
+    #
+    # use python's distutils info to get the proper library directory.
+    #
+    PYTHON_LIBRARY_DIR=`"$PYTHON_COMMAND" -c "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"`
     if [ ! -e "${PYTHON_LIBRARY_DIR}/${PYTHON_LIBRARY}" ]
     then
         # some systems eg fedora use lib64...
