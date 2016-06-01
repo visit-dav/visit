@@ -581,6 +581,7 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     bool               ValidNetworkId(int id) const;
     void               ExportSingleDatabase(int, const ExportDBAttributes &);
 
+    virtual
     avtDataObject_p    RenderInternal();
 
     void               RenderSetup(int windowId, intVector& networkIds, bool getZBuffer,

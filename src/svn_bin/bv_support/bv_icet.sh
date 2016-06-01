@@ -23,11 +23,11 @@ function bv_icet_depends_on
 
 function bv_icet_info
 {
-    export ICET_FILE=${ICET_FILE:-"IceT-1-0-0.tar.gz"}
-    export ICET_VERSION=${ICET_VERSION:-"1.0.0"}
-    export ICET_COMPATIBILITY_VERSION=${ICET_COMPATIBILITY_VERSION:-"1.0.0"}
-    export ICET_BUILD_DIR=${ICET_BUILD_DIR:-"IceT-1-0-0"}
-    export ICET_MD5_CHECKSUM="90a93507b8fdc88f46b9a8d7ed651c6c"
+    export ICET_FILE=${ICET_FILE:-"icet-master-0d08b037.tar.gz"}
+    export ICET_VERSION=${ICET_VERSION:-"icet-master-0d08b037"}
+    export ICET_COMPATIBILITY_VERSION=${ICET_COMPATIBILITY_VERSION:-"master-0d08b037"}
+    export ICET_BUILD_DIR=${ICET_BUILD_DIR:-"icet-master-0d08b037"}
+    export ICET_MD5_CHECKSUM=""
     export ICET_SHA256_CHECKSUM=""
 }
 
@@ -83,74 +83,9 @@ function bv_icet_dry_run
     fi
 }
 
-# *************************************************************************** #
-#                           Function 8.13, build_icet                         #
-# *************************************************************************** #
-
-function apply_icet_100_patch
-{
-    patch -p0 <<\EOF
-diff -c a/src/CMakeLists.txt IceT-1-0-0/src/CMakeLists.txt
-*** a/src/CMakeLists.txt
---- IceT-1-0-0/src/CMakeLists.txt
-***************
-*** 18,35 ****
-        "${CMAKE_CURRENT_SOURCE_DIR}/communication"
-        "${CMAKE_CURRENT_SOURCE_DIR}/strategies")
-    SET(filesToInstall)
-!   FOREACH(p IN ${resPath})
-        SET(tmpFilesToInstall)
-        SET(exts "${p}/*.h;${p}/*.hxx;${p}/*.txx")
-!       FOREACH(ext IN ${exts})
-            FILE(GLOB tmpFilesToInstall
-            RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${ext}")
-            IF(tmpFilesToInstall)
-                SET(filesToInstall "${filesToInstall};${tmpFilesToInstall}")
-            ENDIF(tmpFilesToInstall)
-!       ENDFOREACH(ext IN ${exts})
-!   ENDFOREACH(p IN ${resPath})
-    INSTALL(
-        FILES ${filesToInstall}
-        DESTINATION "${ICET_INSTALL_INCLUDE_DIR}/ice-t"
---- 18,35 ----
-        "${CMAKE_CURRENT_SOURCE_DIR}/communication"
-        "${CMAKE_CURRENT_SOURCE_DIR}/strategies")
-    SET(filesToInstall)
-!   FOREACH(p ${resPath})
-        SET(tmpFilesToInstall)
-        SET(exts "${p}/*.h;${p}/*.hxx;${p}/*.txx")
-!       FOREACH(ext ${exts})
-            FILE(GLOB tmpFilesToInstall
-            RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${ext}")
-            IF(tmpFilesToInstall)
-                SET(filesToInstall "${filesToInstall};${tmpFilesToInstall}")
-            ENDIF(tmpFilesToInstall)
-!       ENDFOREACH(ext)
-!   ENDFOREACH(p)
-    INSTALL(
-        FILES ${filesToInstall}
-        DESTINATION "${ICET_INSTALL_INCLUDE_DIR}/ice-t"
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch to IceT 1.0.0."
-        return 1
-    else
-        return 0
-    fi
-}
 
 function apply_icet_patch
 {
-    info "Patching IceT . . ."
-    if [[ ${ICET_VERSION} == "1.0.0" ]] ; then
-        apply_icet_100_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
     return 0
 }
 
