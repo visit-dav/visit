@@ -24,3 +24,45 @@ u:  <nodal>
     (453) = -0.378543
     (452) = -0.296725
 
+
+C:  curv2d.silo
+curvmesh2d 
+Point (Z,R): <7.97148e-08, 2.975>
+Node:  418
+Incident Zones:  404  374  405  375  
+u:  <nodal> = 2.73935e-08
+
+
+D:  curv2d.silo
+curvmesh2d 
+Point (Z,R): <9.17725e-08, 3.425>
+Node:  604
+Incident Zones:  584  554  585  555  
+u:  <nodal> = 2.93307e-08
+
+
+E:  noise.silo
+Mesh 
+Point: (in transformed space) 
+       <-5, 5, 10>
+Zone:  117024
+Incident Nodes:  121812  121813  121862  121863  124312  124313  124362  124363  
+
+F:  noise.silo
+Mesh 
+Point: <-5.10204, 5.10204, 10>
+Node:  124362
+Incident Zones:  117023  117072  117024  117073  
+
+G:  noise.silo
+Mesh 
+Point: (in transformed space) 
+       <-5, -25, 10>
+Zone:  117024
+Incident Nodes:  121812  121813  121862  121863  124312  124313  124362  124363  
+
+H:  noise.silo
+Mesh 
+Point: <-5.10204, 5.10204, 10>
+Node:  124362
+Incident Zones:  117023  117072  117024  117073  
