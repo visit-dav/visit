@@ -179,6 +179,14 @@ int main()
     if (strcmp(ns->GetName(15), "chemA_016_00000.3") != 0) return 1;
     delete ns;
 
+    ns = new Namescheme("|chemA_%04X|n%3");
+    if (ns->GetIndex(0) != 0) return 1;
+    if (ns->GetIndex(1) != 1) return 1;
+    if (ns->GetIndex(2) != 2) return 1;
+    if (ns->GetIndex(3) != 0) return 1;
+    if (ns->GetIndex(4) != 1) return 1;
+    delete ns;
+
     // This is only necessary if you wanna run valgrind and confirm no leaks
     Namescheme::FreeClassStaticResources();
 }
