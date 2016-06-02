@@ -2449,6 +2449,15 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
                 SET(outputLine FALSE)
             ENDIF(\"\${line}\" MATCHES \".*\${suppress}_LIB_DEPENDS.*\")
         ENDFOREACH(suppress)
+
+        # If we get here with outputLine true, we need to output a filtered version.
+        #   * Since all of VisIt's libs get 'installed' to VISIT_LIBRARY_DIR,
+        #     we replace instances of lib-specific LIBRARY_DIR variables with
+        #     VISIT_LIBRARY_DIR; QT, PYTHON, MPICH (It appears LibQtUiTools.a
+        #     is explicitly handled specially here too. No idea why.).
+        #   * Find all instances of absolute paths of the form '/*lib*.*'
+        #     and replace with {VISIT_LIBRARY_DIR}/ as well.
+
         IF(\${outputLine} STREQUAL \"TRUE\")
             STRING(REPLACE \"${QT_LIBRARY_DIR}/\"
                    \"\\\${VISIT_LIBRARY_DIR}/\"
@@ -2463,13 +2472,34 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
                    filteredline3
                    \"\${filteredline2}\")
 
+            # Repeatedly regex replace abs paths to lib*.a, lib*.so, lib*.dylib
+            # With just the library file names themsevles. Do similarly for
+            # .framework references.
+            # Input to this block = filteredline3
+            # Output from this block = filteredline3b
+            SET(filteredline3a \"\")
+            SET(filteredline3b \"\")
+            WHILE(NOT \"\${filteredline3b}\" STREQUAL \"\${filteredline3}\")
+                IF(NOT \"\${filteredline3b}\" STREQUAL \"\")
+                    SET(filteredline3 \"\${filteredline3b}\")
+                ENDIF(NOT \"\${filteredline3b}\" STREQUAL \"\")
+                STRING(REGEX REPLACE \";/[^;]*/lib(.*)\\.(a|so|dylib)\"
+                    \";\\\${VISIT_LIBRARY_DIR}/lib\\\\1.\\\\2\"
+                    filteredline3a
+                    \"\${filteredline3}\")
+                STRING(REGEX REPLACE \";/[^;]*/(.*)\\.framework\"
+                    \";\\\${VISIT_LIBRARY_DIR}/\\\\1.framework\"
+                    filteredline3b
+                    \"\${filteredline3a}\")
+            ENDWHILE(NOT \"\${filteredline3b}\" STREQUAL \"\${filteredline3}\")
+
             IF(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
-                SET(filteredline4 \"\${filteredline3}\")
+                SET(filteredline4 \"\${filteredline3b}\")
             ELSE(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
                 STRING(REPLACE \"${VISIT_MPICH_DIR}/lib/\"
                        \"\\\${VISIT_LIBRARY_DIR}/\"
                        filteredline4
-                       \"\${filteredline3}\")
+                       \"\${filteredline3b}\")
             ENDIF(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
             
             #
