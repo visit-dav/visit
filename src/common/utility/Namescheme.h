@@ -73,6 +73,7 @@ class UTILITY_API Namescheme
     Namescheme(const char *fmt, ...);
    ~Namescheme();
     const char *GetName(int n);
+    int GetIndex(int n);
     static void FreeClassStaticResources(void);
 
   private:
