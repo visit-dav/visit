@@ -133,7 +133,7 @@ Queries/avtSampleStatisticsQuery.C
 Queries/avtShapeletDecompositionQuery.C
 Queries/avtSkewnessQuery.C
 Queries/avtSphericalCompactnessFactorQuery.C
-Queries/avtStreamlineInfoQuery.C
+Queries/avtIntegralCurveInfoQuery.C
 Queries/avtSummationQuery.C
 Queries/avtTimeQuery.C
 Queries/avtTotalLengthQuery.C

@@ -181,7 +181,6 @@ private slots:
     void clearResultText();
     void displayModeChanged(int);
     void useGlobalToggled(bool);
-    void dumpStepsToggled(bool);
     void dumpCoordinatesToggled(bool);
     void dumpValuesToggled(bool);
     void saveResultText();
@@ -214,7 +213,7 @@ private:
     QGroupBox           *argPanel;
     QLabel              *labels[6];
     QLineEdit           *textFields[6];
-    QCheckBox           *useGlobal, *dumpSteps, *dumpCoordinates, *dumpValues;
+    QCheckBox           *useGlobal, *dumpCoordinates, *dumpValues;
     QvisVariableButton  *varsButton;
     QLineEdit           *varsLineEdit;
 
@@ -223,6 +222,7 @@ private:
     QTextEdit           *resultText;
 
     QButtonGroup        *dataOpts;
+    QButtonGroup        *dumpOpts;
 
     int                 saveCount;
     int                 queryVarTypes;

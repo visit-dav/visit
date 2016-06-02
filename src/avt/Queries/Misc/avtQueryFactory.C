@@ -102,7 +102,7 @@
 #include <avtWeightedVariableSummationQuery.h>
 #include <avtXRayImageQuery.h>
 #include <avtZoneCenterQuery.h>
-#include <avtStreamlineInfoQuery.h>
+#include <avtIntegralCurveInfoQuery.h>
 #include <avtLineSamplerInfoQuery.h>
 
 #include <visit-python-config.h>
@@ -667,9 +667,9 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
                       "VisIt was build without Python Filter support.");
 #endif
     }
-    else if (CaseInsenstiveEqual(qname,"Streamline Info"))
+    else if (CaseInsenstiveEqual(qname,"Integral Curve Info"))
     {
-        query = new avtStreamlineInfoQuery();
+        query = new avtIntegralCurveInfoQuery();
     }
 
     else if (CaseInsenstiveEqual(qname,"Line Sampler Info"))
@@ -774,9 +774,9 @@ avtQueryFactory::GetDefaultInputParams(const string &qname)
         avtShapeletDecompositionQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
-    else if (CaseInsenstiveEqual(qname,"Streamline Info"))
+    else if (CaseInsenstiveEqual(qname,"Inetgral Curve Info"))
     {
-        avtStreamlineInfoQuery::GetDefaultInputParams(params);
+        avtIntegralCurveInfoQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
     else if (CaseInsenstiveEqual(qname,"Line Sampler Info"))
