@@ -394,18 +394,18 @@ QvisQueryWindow::CreateStandardQueryWidget()
     QRadioButton *dCoords = new QRadioButton(tr("Dump Coordinates"), argPanel);
     dumpOpts->addButton(dCoords,1);
     sLayout->addWidget(dCoords, 10, 0);
-    
-    QRadioButton *dIndex = new QRadioButton(tr("Dump Index"), argPanel);
-    dumpOpts->addButton(dIndex,2);
-    sLayout->addWidget(dIndex, 11, 0);
 
     QRadioButton *dArcLen = new QRadioButton(tr("Dump Arc Length"), argPanel);
-    dumpOpts->addButton(dArcLen,3);
-    sLayout->addWidget(dArcLen, 12, 0);
+    dumpOpts->addButton(dArcLen,2);
+    sLayout->addWidget(dArcLen, 11, 0);
+
+    QRadioButton *dIndex = new QRadioButton(tr("Dump Index"), argPanel);
+    dumpOpts->addButton(dIndex,3);
+    sLayout->addWidget(dIndex, 12, 0);
 
     dumpOpts->button(0)->setChecked(true);
 
-    
+    // Add the dump check box options to the argument panel.
     dumpCoordinates = new QCheckBox(tr("Dump Coordinates"), argPanel);
     connect(dumpCoordinates, SIGNAL(toggled(bool)), this, 
             SLOT(dumpCoordinatesToggled(bool)));

@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtIntegralCurveInfoQuery.C                       //
+//                            avtIntegralCurveInfoQuery.C                    //
 // ************************************************************************* //
 
 #include <avtIntegralCurveInfoQuery.h>
@@ -67,7 +67,6 @@
 //  Modifications:
 //
 // ****************************************************************************
-
 avtIntegralCurveInfoQuery::avtIntegralCurveInfoQuery() : avtDatasetQuery() 
 {
     dumpOpts = 0;
@@ -83,7 +82,6 @@ avtIntegralCurveInfoQuery::avtIntegralCurveInfoQuery() : avtDatasetQuery()
 //  Modifications:
 //
 // ****************************************************************************
-
 avtIntegralCurveInfoQuery::~avtIntegralCurveInfoQuery() 
 {
 }
@@ -100,7 +98,6 @@ avtIntegralCurveInfoQuery::~avtIntegralCurveInfoQuery()
 //    to specific type.
 //
 // ****************************************************************************
-
 void
 avtIntegralCurveInfoQuery::SetInputParams(const MapNode &params)
 {
@@ -118,7 +115,6 @@ avtIntegralCurveInfoQuery::SetInputParams(const MapNode &params)
 // Creation:    July 15, 2011
 //
 // ****************************************************************************
-
 void
 avtIntegralCurveInfoQuery::GetDefaultInputParams(MapNode &params)
 {
@@ -133,7 +129,6 @@ avtIntegralCurveInfoQuery::GetDefaultInputParams(MapNode &params)
 // Creation:    November  9, 2010
 //
 // ****************************************************************************
-
 void
 avtIntegralCurveInfoQuery::VerifyInput()
 {
@@ -149,7 +144,6 @@ avtIntegralCurveInfoQuery::VerifyInput()
 //  Modifications:
 //
 // ****************************************************************************
-
 void
 avtIntegralCurveInfoQuery::PreExecute()
 {
@@ -168,15 +162,15 @@ avtIntegralCurveInfoQuery::PreExecute()
 //    Add XML results.
 //
 // ****************************************************************************
-
 void
 avtIntegralCurveInfoQuery::PostExecute()
 {
-    //Everyone communicate data to proc 0.
+    // Collect all data to proc 0.
 #ifdef PARALLEL
     int nProcs = PAR_Size();
     int *counts = new int[nProcs];
-    for (int i = 0; i < nProcs; i++)
+    
+    for (unsigned int i = 0; i < nProcs; i++)
         counts[i] = 0;
     
     counts[PAR_Rank()] = slData.size();
@@ -184,18 +178,21 @@ avtIntegralCurveInfoQuery::PostExecute()
     
     int tag = GetUniqueMessageTag();
     MPI_Status stat;
+
     if (PAR_Rank() == 0)
     {
-        for (int i = 1; i < nProcs; i++)
+        for (int i=1; i<nProcs; ++i)
         {
             if (counts[i] > 0)
             {
-                float *vals = new float[counts[i]];
-                void *ptr = (void *)&vals[0];
-                MPI_Recv(ptr, counts[i], MPI_FLOAT, i, tag, VISIT_MPI_COMM, &stat);
+                double *vals = new double[counts[i]];
+                void *ptr = (void *) &vals[0];
 
-                for (int j = 0; j < counts[i]; j++)
+                MPI_Recv(ptr, counts[i], MPI_DOUBLE, i, tag, VISIT_MPI_COMM, &stat);
+
+                for (int j=0; j<counts[i]; ++j)
                     slData.push_back(vals[j]);
+                
                 delete [] vals;
             }
         }
@@ -204,83 +201,104 @@ avtIntegralCurveInfoQuery::PostExecute()
     {
         if (slData.size() > 0)
         {
-            void *ptr = (void *)&slData[0];
-            MPI_Send(ptr, slData.size(), MPI_FLOAT, 0, tag, VISIT_MPI_COMM);
+            void *ptr = (void *) &slData[0];
+            MPI_Send(ptr, slData.size(), MPI_DOUBLE, 0, tag, VISIT_MPI_COMM);
         }
     }
+
     delete [] counts;
 #endif
     
     std::string msg;
     char str[128];
-    int i = 0, sz = slData.size();
+    unsigned int i = 0, sz = slData.size();
 
     int slIdx = 0;
     MapNode result_node;
     while (i < sz)
     {
-        sprintf(str, "IntegralCurve %d: Seed %f %f %f Arclength %f\n",
-                slIdx, slData[i], slData[i+1], slData[i+2], slData[i+3]);
-
         MapNode sl_res_node;
         doubleVector sl_res_seed;
-        sl_res_seed.push_back(slData[i]);
-        sl_res_seed.push_back(slData[i+1]);
-        sl_res_seed.push_back(slData[i+2]);
+
+        double x = slData[i++], y = slData[i++], z = slData[i++];
+        double arcLength = slData[i++];
+
+        sl_res_seed.push_back(x);
+        sl_res_seed.push_back(y);
+        sl_res_seed.push_back(z);
         sl_res_node["seed"] = sl_res_seed;
-        sl_res_node["arclength"] = slData[i+3];
-        i+=4;
+        sl_res_node["arcLength"] = arcLength;
+        sprintf(str, "IntegralCurve %d: Seed %lf %lf %lf, Arclength %lf",
+                slIdx, x, y, z, arcLength );
         msg += str;
 
         if (dumpOpts || dumpValues)
         {
-            int numSteps =  (int) slData[i++];
+            unsigned int numSteps = (unsigned int) slData[i++];
+            sl_res_node["numSteps"] = (int) numSteps;
+
+            sprintf(str, ", Steps %d\n", numSteps);
+            msg += str;
+            
             doubleVector sl_steps;
 
-            for (int j = 0; j < numSteps; j++)
+            for (unsigned int j = 0; j < numSteps; j++)
             {
               str[0] = '\0';
               
               if (dumpOpts == 1) // Coordinates
               {
-                sprintf(str, " %f %f %f ", slData[i], slData[i+1], slData[i+2]);
-                sl_steps.push_back(slData[i]);
-                sl_steps.push_back(slData[i+1]);
-                sl_steps.push_back(slData[i+2]);
+                x = slData[i++]; y = slData[i++]; z = slData[i++];
+
+                sl_steps.push_back(x);
+                sl_steps.push_back(y);
+                sl_steps.push_back(z);
+                sprintf(str, " %lf %lf %lf ", x, y, z );
+              }
+
+              else if (dumpOpts == 2) // Arc Length
+              {
+                arcLength = slData[i++];
+
+                sl_steps.push_back(arcLength);
+                sprintf(str, " %lf ", arcLength);
               }
                 
-              else if (dumpOpts == 2) // Index
+              else if (dumpOpts == 3) // Index
               {
-                sprintf(str, " %i ", j );
                 sl_steps.push_back(j);
+                sprintf(str, " %i ", j );
               }
-                
-              else if (dumpOpts == 3) // Arc Length
+
+              if (dumpValues) // Value and carriage return.
               {
-                sprintf(str, " %f ", slData[i+3]);
-                sl_steps.push_back(slData[i+3]);
+                double value = slData[i++];
+
+                sl_steps.push_back(value);
+                sprintf(str, "%s %lf \n", str, value);
               }
-                
-              if (dumpValues) // Value
-              {
-                sprintf(str, "%s %f \n", str, slData[i+4]);
-                sl_steps.push_back(slData[i+4]);
-              }
-              else
+              else // Carriage return. 
               {
                 sprintf(str, "%s \n", str);
               }
               
-              i += 5;
               msg += str;
             }
 
             sl_res_node["steps"] = sl_steps;
-        }
 
+            sprintf(str, "\n");
+            msg += str;
+        }
+        else
+        {
+          sprintf(str, "\n");
+          msg += str;
+        }
+        
         sprintf(str, "IntegralCurve %d", slIdx);
         result_node[str] = sl_res_node;
-        slIdx++;
+        ++slIdx;
     }
 
     SetResultMessage(msg.c_str());
@@ -296,70 +314,74 @@ avtIntegralCurveInfoQuery::PostExecute()
 //  Modifications:
 //
 // ****************************************************************************
-
 void
 avtIntegralCurveInfoQuery::Execute(vtkDataSet *data, const int chunk)
 {
     if (!data->IsA("vtkPolyData") ||
         data->GetPointData()->GetArray("colorVar") == NULL)
     {
-        EXCEPTION1(NonQueryableInputException,"Integral Curve Info query only valid on integral curve operators");
+        EXCEPTION1(NonQueryableInputException,
+                   "Integral Curve Info query only valid on integral curve operator data");
     }
-    
-    vtkPolyData *ds = (vtkPolyData *)data;
-    vtkPoints *points = ds->GetPoints();
+
+    vtkPolyData *ds = (vtkPolyData *) data;
+    vtkPoints *points   = ds->GetPoints();
     vtkCellArray *lines = ds->GetLines();
-    vtkIdType *segments = lines->GetPointer();
+    vtkIdType *segptr = lines->GetPointer();
     vtkDoubleArray *scalar =
       (vtkDoubleArray *) data->GetPointData()->GetArray("colorVar");
 
-    vtkIdType *segptr = segments;
-    double pt[3], p0[3];
+    unsigned int nLines = ds->GetNumberOfLines();
+    double pt0[3], pt1[3];
     
-    for (int i=0; i<ds->GetNumberOfLines(); i++)
+    for (unsigned int i=0; i<nLines; ++i)
     {
-        int nPts = *segptr;
-        segptr++; //Now segptr points at vtx0.
-        
-        float arcLen = 0.0;
-        std::vector<float> steps;
-        
-        //Seed point.
-        points->GetPoint(segptr[0], p0);
-        slData.push_back(p0[0]);
-        slData.push_back(p0[1]);
-        slData.push_back(p0[2]);
-        
-        for (int j = 0; j < nPts; j++)
-        {
-            points->GetPoint(segptr[j], pt);
-            
-            double x = p0[0]-pt[0];
-            double y = p0[1]-pt[1];
-            double z = p0[2]-pt[2];
-            arcLen += sqrt(x*x + y*y + z*z);
+        unsigned int nPts = *segptr;
+        ++segptr;  // Segptr now points to the first vertex index.
 
-            if (dumpOpts || dumpValues)
+        double arcLength = 0.0;
+        std::vector<double> steps;
+        
+        // Push the seed point on to the stack.
+        points->GetPoint(segptr[0], pt0);
+        slData.push_back(pt0[0]);
+        slData.push_back(pt0[1]);
+        slData.push_back(pt0[2]);
+
+        for (unsigned int j=0; j<nPts; ++j)
+        {
+            points->GetPoint(segptr[j], pt1);
+            arcLength += (avtVector( pt1 ) - avtVector( pt0 )).length();
+
+            if (dumpOpts == 1)
             {
-                steps.push_back(pt[0]);
-                steps.push_back(pt[1]);
-                steps.push_back(pt[2]);
-                
-                double s = scalar->GetTuple1(segptr[j]);
-                steps.push_back(arcLen);
-                steps.push_back(s);
+                steps.push_back(pt1[0]);
+                steps.push_back(pt1[1]);
+                steps.push_back(pt1[2]);
+            }
+            else if (dumpOpts == 2)
+            {
+                steps.push_back(arcLength);
             }
 
-            p0[0] = pt[0];
-            p0[1] = pt[1];
-            p0[2] = pt[2];
+            if (dumpValues)
+            {
+                double val = scalar->GetTuple1(segptr[j]);
+                steps.push_back(val);
+            }
+
+            pt0[0] = pt1[0];
+            pt0[1] = pt1[1];
+            pt0[2] = pt1[2];
         }
 
-        slData.push_back(arcLen);
+        // Push the arc length on to the stack.
+        slData.push_back(arcLength);
 
+        // Now push the optional values on to the stack.
         if (dumpOpts || dumpValues)
         {
-            slData.push_back((float)(nPts));
+            slData.push_back((double)(nPts));
             slData.insert(slData.end(), steps.begin(), steps.end());
         }
 
