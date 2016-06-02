@@ -37,11 +37,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtStreamlineInfoQuery.h                       //
+//                            avtIntegralCurveInfoQuery.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_STREAMLINE_INFO_QUERY_H
-#define AVT_STREAMLINE_INFO_QUERY_H
+#ifndef AVT_INTEGRAL_CURVE_INFO_QUERY_H
+#define AVT_INTEGRAL_CURVE_INFO_QUERY_H
 #include <query_exports.h>
 #include <avtDatasetQuery.h>
 
@@ -49,10 +49,10 @@
 
 
 // ****************************************************************************
-//  Class: avtStreamlineInfoQuery
+//  Class: avtIntegralCurveInfoQuery
 //
 //  Purpose:
-//      Query information on a streamline plot.
+//      Query information on an integral curve operator.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   9 Nov 2010
@@ -66,20 +66,21 @@
 //
 // ****************************************************************************
 
-class QUERY_API avtStreamlineInfoQuery : public avtDatasetQuery
+class QUERY_API avtIntegralCurveInfoQuery : public avtDatasetQuery
 {
   public:
-                              avtStreamlineInfoQuery();
-    virtual                  ~avtStreamlineInfoQuery(); 
+                              avtIntegralCurveInfoQuery();
+    virtual                  ~avtIntegralCurveInfoQuery(); 
 
-    virtual const char        *GetType(void) { return "avtStreamlineInfoQuery"; };
+    virtual const char        *GetType(void) { return "avtIntegralCurveInfoQuery"; };
     virtual const char        *GetDescription(void) 
-                                  { return "Streamline information"; };
+                                  { return "Integral Curve Information"; };
 
     virtual void             SetInputParams(const MapNode &);
     static  void             GetDefaultInputParams(MapNode &);
 
-    void                     SetDumpSteps(bool v) {dumpSteps = v;}
+    void                     SetDumpOpts  (int  v) {dumpOpts   = v;}
+    void                     SetDumpValues(bool v) {dumpValues = v;}
 
   protected:
     virtual void             VerifyInput(void);
@@ -87,7 +88,8 @@ class QUERY_API avtStreamlineInfoQuery : public avtDatasetQuery
     virtual void             PostExecute(void);
     virtual void             Execute(vtkDataSet *ds, const int chunk);
 
-    bool dumpSteps;
+    int  dumpOpts;
+    bool dumpValues;
     std::vector<float> slData;
 };
 

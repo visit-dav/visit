@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -37,18 +37,18 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtStreamlineInfoQuery.C                       //
+//                            avtIntegralCurveInfoQuery.C                       //
 // ************************************************************************* //
 
-#include <avtStreamlineInfoQuery.h>
+#include <avtIntegralCurveInfoQuery.h>
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
 #include <snprintf.h>
+#include <vtkDoubleArray.h>
 #include <vtkPolyData.h>
 #include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkCellArray.h>
-#include <vtkFloatArray.h>
 #include <NonQueryableInputException.h>
 #ifdef PARALLEL
 #include <mpi.h>
@@ -59,7 +59,7 @@
 
 
 // ****************************************************************************
-//  Method: avtStreamlineInfoQuery constructor
+//  Method: avtIntegralCurveInfoQuery constructor
 //
 // Programmer:  Dave Pugmire
 // Creation:    November  9, 2010
@@ -68,13 +68,14 @@
 //
 // ****************************************************************************
 
-avtStreamlineInfoQuery::avtStreamlineInfoQuery() : avtDatasetQuery() 
+avtIntegralCurveInfoQuery::avtIntegralCurveInfoQuery() : avtDatasetQuery() 
 {
-    dumpSteps = false;
+    dumpOpts = 0;
+    dumpValues = false;
 }
 
 // ****************************************************************************
-// Method:  avtStreamlineInfoQuery destructor
+// Method:  avtIntegralCurveInfoQuery destructor
 //
 // Programmer:  Dave Pugmire
 // Creation:    November  9, 2010
@@ -83,13 +84,12 @@ avtStreamlineInfoQuery::avtStreamlineInfoQuery() : avtDatasetQuery()
 //
 // ****************************************************************************
 
-avtStreamlineInfoQuery::~avtStreamlineInfoQuery() 
+avtIntegralCurveInfoQuery::~avtIntegralCurveInfoQuery() 
 {
 }
 
-
 // ****************************************************************************
-// Method:  avtStreamlineInfoQuery::SetInputParams
+// Method:  avtIntegralCurveInfoQuery::SetInputParams
 //
 // Programmer:  Kathleen Biagas 
 // Creation:    June 17, 2011
@@ -102,14 +102,17 @@ avtStreamlineInfoQuery::~avtStreamlineInfoQuery()
 // ****************************************************************************
 
 void
-avtStreamlineInfoQuery::SetInputParams(const MapNode &params)
+avtIntegralCurveInfoQuery::SetInputParams(const MapNode &params)
 {
-    if (params.HasNumericEntry("dump_steps"))
-        SetDumpSteps(params.GetEntry("dump_steps")->ToBool());
+    if (params.HasNumericEntry("dump_opts"))
+        SetDumpOpts(params.GetEntry("dump_opts")->ToInt());
+
+    if (params.HasNumericEntry("dump_values"))
+        SetDumpValues(params.GetEntry("dump_values")->ToBool());
 }
 
 // ****************************************************************************
-// Method:  avtStreamlineInfoQuery::GetDefaultInputParams
+// Method:  avtIntegralCurveInfoQuery::GetDefaultInputParams
 //
 // Programmer:  Kathleen Biagas 
 // Creation:    July 15, 2011
@@ -117,13 +120,14 @@ avtStreamlineInfoQuery::SetInputParams(const MapNode &params)
 // ****************************************************************************
 
 void
-avtStreamlineInfoQuery::GetDefaultInputParams(MapNode &params)
+avtIntegralCurveInfoQuery::GetDefaultInputParams(MapNode &params)
 {
-    params["dump_steps"] = 0;
+    params["dump_opts"] = 0;
+    params["dump_values"] = 0;
 }
 
 // ****************************************************************************
-// Method:  avtStreamlineInfoQuery::VerifyInput
+// Method:  avtIntegralCurveInfoQuery::VerifyInput
 //
 // Programmer:  Dave Pugmire
 // Creation:    November  9, 2010
@@ -131,13 +135,13 @@ avtStreamlineInfoQuery::GetDefaultInputParams(MapNode &params)
 // ****************************************************************************
 
 void
-avtStreamlineInfoQuery::VerifyInput()
+avtIntegralCurveInfoQuery::VerifyInput()
 {
     avtDatasetQuery::VerifyInput();
 }
 
 // ****************************************************************************
-// Method:  avtStreamlineInfoQuery::PreExecute()
+// Method:  avtIntegralCurveInfoQuery::PreExecute()
 //
 // Programmer:  Dave Pugmire
 // Creation:    November  9, 2010
@@ -147,14 +151,14 @@ avtStreamlineInfoQuery::VerifyInput()
 // ****************************************************************************
 
 void
-avtStreamlineInfoQuery::PreExecute()
+avtIntegralCurveInfoQuery::PreExecute()
 {
     avtDatasetQuery::PreExecute();
     slData.resize(0);
 }
 
 // ****************************************************************************
-// Method:  avtStreamlineInfoQuery::PostExecute()
+// Method:  avtIntegralCurveInfoQuery::PostExecute()
 //
 // Programmer:  Dave Pugmire
 // Creation:    November  9, 2010
@@ -166,7 +170,7 @@ avtStreamlineInfoQuery::PreExecute()
 // ****************************************************************************
 
 void
-avtStreamlineInfoQuery::PostExecute()
+avtIntegralCurveInfoQuery::PostExecute()
 {
     //Everyone communicate data to proc 0.
 #ifdef PARALLEL
@@ -209,13 +213,15 @@ avtStreamlineInfoQuery::PostExecute()
     
     std::string msg;
     char str[128];
-    size_t i = 0, sz = slData.size();
+    int i = 0, sz = slData.size();
 
     int slIdx = 0;
     MapNode result_node;
     while (i < sz)
     {
-        sprintf(str, "Streamline %d: Seed %f %f %f Arclength %f\n", slIdx, slData[i], slData[i+1], slData[i+2], slData[i+3]);
+        sprintf(str, "IntegralCurve %d: Seed %f %f %f Arclength %f\n",
+                slIdx, slData[i], slData[i+1], slData[i+2], slData[i+3]);
+
         MapNode sl_res_node;
         doubleVector sl_res_seed;
         sl_res_seed.push_back(slData[i]);
@@ -226,22 +232,53 @@ avtStreamlineInfoQuery::PostExecute()
         i+=4;
         msg += str;
 
-        if (dumpSteps)
+        if (dumpOpts || dumpValues)
         {
-            int numSteps =  (int)slData[i++];
+            int numSteps =  (int) slData[i++];
             doubleVector sl_steps;
+
             for (int j = 0; j < numSteps; j++)
             {
-                sprintf(str, " %f %f %f \n", slData[i], slData[i+1], slData[i+2]);// slData[i+3], slData[i+4]);
+              str[0] = '\0';
+              
+              if (dumpOpts == 1) // Coordinates
+              {
+                sprintf(str, " %f %f %f ", slData[i], slData[i+1], slData[i+2]);
                 sl_steps.push_back(slData[i]);
                 sl_steps.push_back(slData[i+1]);
                 sl_steps.push_back(slData[i+2]);
-                i+=5;
-                msg += str;
+              }
+                
+              else if (dumpOpts == 2) // Index
+              {
+                sprintf(str, " %i ", j );
+                sl_steps.push_back(j);
+              }
+                
+              else if (dumpOpts == 3) // Arc Length
+              {
+                sprintf(str, " %f ", slData[i+3]);
+                sl_steps.push_back(slData[i+3]);
+              }
+                
+              if (dumpValues) // Value
+              {
+                sprintf(str, "%s %f \n", str, slData[i+4]);
+                sl_steps.push_back(slData[i+4]);
+              }
+              else
+              {
+                sprintf(str, "%s \n", str);
+              }
+              
+              i += 5;
+              msg += str;
             }
+
             sl_res_node["steps"] = sl_steps;
         }
-        sprintf(str, "streamline %d", slIdx);
+
+        sprintf(str, "IntegralCurve %d", slIdx);
         result_node[str] = sl_res_node;
         slIdx++;
     }
@@ -251,39 +288,30 @@ avtStreamlineInfoQuery::PostExecute()
 }
 
 // ****************************************************************************
-// Method:  avtStreamlineInfoQuery::Execute()
+// Method:  avtIntegralCurveInfoQuery::Execute()
 //
 // Programmer:  Dave Pugmire
 // Creation:    November  9, 2010
 //
 //  Modifications:
-//    Burlen Loring, Mon Jul 14 16:29:04 PDT 2014
-//    fix bad casts
 //
 // ****************************************************************************
 
 void
-avtStreamlineInfoQuery::Execute(vtkDataSet *data, const int chunk)
+avtIntegralCurveInfoQuery::Execute(vtkDataSet *data, const int chunk)
 {
-    vtkPolyData *ds = dynamic_cast<vtkPolyData *>(data);
-
-    vtkFloatArray *vtkscalar
-      = dynamic_cast<vtkFloatArray*>(data->GetPointData()->GetArray("colorVar"));
-
-    vtkFloatArray *vtkparam
-      = dynamic_cast<vtkFloatArray*>(data->GetPointData()->GetArray("params"));
-
-
-    if (!ds || !vtkscalar || !vtkparam)
+    if (!data->IsA("vtkPolyData") ||
+        data->GetPointData()->GetArray("colorVar") == NULL)
     {
-        EXCEPTION1(NonQueryableInputException,"Streamline Info query only valid on streamline plots");
+        EXCEPTION1(NonQueryableInputException,"Integral Curve Info query only valid on integral curve operators");
     }
-
+    
+    vtkPolyData *ds = (vtkPolyData *)data;
     vtkPoints *points = ds->GetPoints();
     vtkCellArray *lines = ds->GetLines();
     vtkIdType *segments = lines->GetPointer();
-    float *scalar = vtkscalar->GetPointer(0);
-    float *param = vtkparam->GetPointer(0);
+    vtkDoubleArray *scalar =
+      (vtkDoubleArray *) data->GetPointData()->GetArray("colorVar");
 
     vtkIdType *segptr = segments;
     double pt[3], p0[3];
@@ -302,25 +330,25 @@ avtStreamlineInfoQuery::Execute(vtkDataSet *data, const int chunk)
         slData.push_back(p0[1]);
         slData.push_back(p0[2]);
         
-        for (int j = 1; j < nPts; j++)
+        for (int j = 0; j < nPts; j++)
         {
             points->GetPoint(segptr[j], pt);
-            if (dumpSteps)
+            
+            double x = p0[0]-pt[0];
+            double y = p0[1]-pt[1];
+            double z = p0[2]-pt[2];
+            arcLen += sqrt(x*x + y*y + z*z);
+
+            if (dumpOpts || dumpValues)
             {
                 steps.push_back(pt[0]);
                 steps.push_back(pt[1]);
                 steps.push_back(pt[2]);
                 
-                float p = param[segptr[j]];
-                float s = scalar[segptr[j]];
-                steps.push_back(p);
+                double s = scalar->GetTuple1(segptr[j]);
+                steps.push_back(arcLen);
                 steps.push_back(s);
             }
-
-            double x = p0[0]-pt[0];
-            double y = p0[1]-pt[1];
-            double z = p0[2]-pt[2];
-            arcLen += sqrt(x*x + y*y + z*z);
 
             p0[0] = pt[0];
             p0[1] = pt[1];
@@ -328,9 +356,10 @@ avtStreamlineInfoQuery::Execute(vtkDataSet *data, const int chunk)
         }
 
         slData.push_back(arcLen);
-        if (dumpSteps)
+
+        if (dumpOpts || dumpValues)
         {
-            slData.push_back((float)(nPts-1));
+            slData.push_back((float)(nPts));
             slData.insert(slData.end(), steps.begin(), steps.end());
         }
 

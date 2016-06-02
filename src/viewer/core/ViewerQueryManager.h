@@ -235,7 +235,7 @@ typedef struct {
 //    Added floatFormat 
 //
 //    Dave Pugmire, Tue Nov  9 14:57:53 EST 2010
-//    Added dumpSteps for StreamlineInfo query.
+//    Added dumpSteps for Streamline info query.
 //
 //    Kathleen Bonnell, Tue Mar  1 10:24:20 PST 2011
 //    Added arg curvePlotType to PointQuery and PickThroughTime methods.

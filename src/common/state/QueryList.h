@@ -83,7 +83,7 @@ public:
         ShapeletsDecomp,
         XRayImage,
         LineSamplerInfo,
-        StreamlineInfo,
+        IntegralCurveInfo,
         Pick,
         Lineout,
         Compactness

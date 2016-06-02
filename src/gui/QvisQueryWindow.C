@@ -381,15 +381,31 @@ QvisQueryWindow::CreateStandardQueryWidget()
     sLayout->addWidget(origData, 9, 0);
     QRadioButton *actualData = new QRadioButton(tr("Actual Data"), argPanel);
     dataOpts->addButton(actualData,1);
-    dataOpts->button(0)->setChecked(true);
     sLayout->addWidget(actualData, 10, 0);
 
-    dumpSteps = new QCheckBox(tr("Dump Steps"), argPanel);
-    connect(dumpSteps, SIGNAL(toggled(bool)), this, 
-            SLOT(dumpStepsToggled(bool)));
-    dumpSteps->hide();
-    sLayout->addWidget(dumpSteps, 13, 0, 1, 2);
+    dataOpts->button(0)->setChecked(true);
 
+    // Add the dump options radio button group to the argument panel.
+    dumpOpts = new QButtonGroup(argPanel);
+    QRadioButton *dNothing = new QRadioButton(tr("Dump Nothing"), argPanel);
+    dumpOpts->addButton(dNothing,0);
+    sLayout->addWidget(dNothing, 9, 0);
+
+    QRadioButton *dCoords = new QRadioButton(tr("Dump Coordinates"), argPanel);
+    dumpOpts->addButton(dCoords,1);
+    sLayout->addWidget(dCoords, 10, 0);
+    
+    QRadioButton *dIndex = new QRadioButton(tr("Dump Index"), argPanel);
+    dumpOpts->addButton(dIndex,2);
+    sLayout->addWidget(dIndex, 11, 0);
+
+    QRadioButton *dArcLen = new QRadioButton(tr("Dump Arc Length"), argPanel);
+    dumpOpts->addButton(dArcLen,3);
+    sLayout->addWidget(dArcLen, 12, 0);
+
+    dumpOpts->button(0)->setChecked(true);
+
+    
     dumpCoordinates = new QCheckBox(tr("Dump Coordinates"), argPanel);
     connect(dumpCoordinates, SIGNAL(toggled(bool)), this, 
             SLOT(dumpCoordinatesToggled(bool)));
@@ -969,8 +985,8 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     }
     // reset a few defaults
     dataOpts->button(0)->setChecked(true);
+    dumpOpts->button(0)->setChecked(true);
     useGlobal->setChecked(0);
-    dumpSteps->setChecked(0);
     dumpCoordinates->setChecked(0);
     dumpValues->setChecked(0);
     labels[0]->setEnabled(true);
@@ -990,8 +1006,8 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     {
         bool showWidgets[6] = {false, false, false, false, false, false};
         bool showDataOptions = false;
+        bool showDumpOptions = false;
         bool showGlobal = false;
-        bool showDumpSteps = false;
         bool showDumpCoordinates = false;
         bool showDumpValues = false;
         QueryList::WindowType winT   = (QueryList::WindowType)winType[index];
@@ -1118,9 +1134,10 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             xRayImageQueryWidget->setEnabled(true);
             xRayImageQueryWidget->show();
         }
-        else if (winT == QueryList::StreamlineInfo)
+        else if (winT == QueryList::IntegralCurveInfo)
         {
-            showDumpSteps = true;
+            showDumpOptions = true;
+            showDumpValues = true;
         }
         else if (winT == QueryList::LineSamplerInfo)
         {
@@ -1148,6 +1165,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
                 textFields[i]->hide();
             }
         }
+
         if (showVars)
         {
             varsButton->show();
@@ -1158,6 +1176,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             varsButton->hide();
             varsLineEdit->hide();
         }
+
         if (showGlobal)
         {
             useGlobal->show();
@@ -1166,10 +1185,6 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         {
             useGlobal->hide();
         }
-        if (showDumpSteps)
-            dumpSteps->show();
-        else
-            dumpSteps->hide();
 
         if (showDumpCoordinates)
             dumpCoordinates->show();
@@ -1190,6 +1205,17 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         {
             dataOpts->button(0)->hide();
             dataOpts->button(1)->hide();
+        }
+
+        if (showDumpOptions)
+        {
+            dumpOpts->button(0)->show();
+            dumpOpts->button(1)->show();
+        }
+        else
+        {
+            dumpOpts->button(0)->hide();
+            dumpOpts->button(1)->hide();
         }
 
         if (showTime)
@@ -1564,11 +1590,15 @@ QvisQueryWindow::ExecuteStandardQuery()
             if (!xRayImageQueryWidget->GetQueryParameters(queryParams))
                 noErrors = false;
         }
-        else if (winT == QueryList::StreamlineInfo)
+        else if (winT == QueryList::IntegralCurveInfo)
         {
             if(noErrors)
             {
-                queryParams["dump_steps"] = (int)dumpSteps->isChecked();
+              for( int i=0; i<4; ++i )
+                if( dumpOpts->button(i)->isChecked() )
+                  queryParams["dump_opts"] = i;
+              
+                queryParams["dump_values"] = (int)dumpValues->isChecked();
             }
         }
         else if (winT == QueryList::LineSamplerInfo)
@@ -1954,21 +1984,6 @@ QvisQueryWindow::useGlobalToggled(bool val)
 {
     labels[0]->setEnabled(!val);
     textFields[0]->setEnabled(!val);
-}
-
-
-// ****************************************************************************
-// Method:  QvisQueryWindow::dumpStepsToggled
-//
-// Programmer:  Dave Pugmire
-// Creation:    November  9, 2010
-//
-// ****************************************************************************
-
-void
-QvisQueryWindow::dumpStepsToggled(bool val)
-{
-    dumpSteps->setChecked(val);
 }
 
 
