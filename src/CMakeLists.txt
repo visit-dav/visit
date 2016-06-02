@@ -2446,7 +2446,9 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
 
             # Repeatedly regex replace abs paths to lib*.a, lib*.so, lib*.dylib
             # With just the library file names themsevles. Do similarly for
-            # .framework references.
+            # .framework references. We exlude system libs in /usr..., /etc...
+            # and /lib... by first finding and replacing them with @@@@@@@
+            # and then unduing that at the end.
             # Input to this block = filteredline3
             # Output from this block = filteredline3b
             SET(filteredline3a \"\")
@@ -2455,14 +2457,24 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
                 IF(NOT \"\${filteredline3b}\" STREQUAL \"\")
                     SET(filteredline3 \"\${filteredline3b}\")
                 ENDIF(NOT \"\${filteredline3b}\" STREQUAL \"\")
-                STRING(REGEX REPLACE \";/[^;]*/lib(.*)\\.(a|so|dylib)\"
+                STRING(REGEX REPLACE \";/(usr/lib|usr/local/lib|lib|etc)([^;]*)/lib(.*)\\\\.(a|so|dylib)\"
+                    \";@@@@@@@@\\\\1\\\\2/lib\\\\3.\\\\4\"
+                    filteredline3aa
+                    \"\${filteredline3}\")
+
+                STRING(REGEX REPLACE \";/[^;]*/lib(.*)\\\\.(a|so|dylib)\"
                     \";\\\${VISIT_LIBRARY_DIR}/lib\\\\1.\\\\2\"
                     filteredline3a
-                    \"\${filteredline3}\")
-                STRING(REGEX REPLACE \";/[^;]*/(.*)\\.framework\"
+                    \"\${filteredline3aa}\")
+                STRING(REGEX REPLACE \";/[^;]*/(.*)\\\\.framework\"
                     \";\\\${VISIT_LIBRARY_DIR}/\\\\1.framework\"
-                    filteredline3b
+                    filteredline3bb
                     \"\${filteredline3a}\")
+
+                STRING(REGEX REPLACE \";@@@@@@@@([^;]*)\"
+                    \";/\\\\1\"
+                    filteredline3b
+                    \"\${filteredline3bb}\")
             ENDWHILE(NOT \"\${filteredline3b}\" STREQUAL \"\${filteredline3}\")
 
             IF(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
