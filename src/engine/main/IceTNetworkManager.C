@@ -262,7 +262,7 @@ IceTNetworkManager::IceTSetup()
     ICET(icetSetDepthFormat(ICET_IMAGE_DEPTH_FLOAT));
     ICET(icetCompositeMode(ICET_COMPOSITE_MODE_Z_BUFFER));
     ICET(icetEnable(ICET_COMPOSITE_ONE_BUFFER));
-    bool isSupportedBackGround ==  (renderState.window->GetBackgroundMode() == 
+    bool isSupportedBackground =  (renderState.window->GetBackgroundMode() == 
                                     AnnotationAttributes::Solid);
     if(renderState.getZBuffer || !isSupportedBackground)
     {
