@@ -88,9 +88,10 @@ class QUERY_API avtIntegralCurveInfoQuery : public avtDatasetQuery
     virtual void             PostExecute(void);
     virtual void             Execute(vtkDataSet *ds, const int chunk);
 
-    int  dumpOpts;
+    unsigned int dumpOpts;
     bool dumpValues;
-    std::vector<float> slData;
+
+    std::vector<double> slData;
 };
 
 #endif
