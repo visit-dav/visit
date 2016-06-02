@@ -88,10 +88,37 @@ def extract(ifile,opattern):
     else:
         raise VisItException("ffmpeg not found: Unable to extract frames.")
 
-def encode(ipattern,ofile,fdup=None,etype=None,stereo=False):
+def encode(ipattern,
+           ofile,
+           fdup=None,
+           etype=None,
+           stereo=False,
+           input_frame_rate=None,
+           output_frame_rate=None):
     """
     Encodes a sequence of images into a movie.
+
     Requires ipattern to use printf style # format like "file%04d.png".
+           
+    ipattern -- input file pattern
+
+    etype -- allows to select which encoder to use 
+        ( if not passed the file extension is used to select an encoder 
+
+    Frame Rate Related Options:
+     
+    fdup -- allows you to set an integer number of times to duplicate 
+        the input frames as they are passed to the encoder. 
+        (the duplication actually happens via symlinks)
+
+    input_frame_rate -- allows you to set the input frame rate, in frames
+        per second, that the encoder uses.
+
+    output_frame_rate -- allows you to set the output frame rate, in 
+       frames per second, that the encoder uses. Note output formats
+       typically only support a few output fps values. To obtain 
+        a perceived fps, the input_frame_rate is a better option to
+       try.
     """
     ipattern = os.path.abspath(ipattern)
     ofile = os.path.abspath(ofile)
@@ -109,12 +136,22 @@ def encode(ipattern,ofile,fdup=None,etype=None,stereo=False):
        patterns,lnks = gen_symlinks(ipattern,fdup)
     if stereo:
        patterns,lnks = gen_symlinks_stereo(ipattern,fdup)
-    ret = encode_patterns(patterns,ofile,etype,stereo)
+    ret = encode_patterns(patterns,
+                          ofile,
+                          etype,
+                          stereo,
+                          input_frame_rate,
+                          output_frame_rate)
     if len(lnks) > 0:
        clean_symlinks(lnks)
     return ret
 
-def encode_patterns(patterns,ofile,etype,stereo):
+def encode_patterns(patterns,
+                    ofile,
+                    etype,
+                    stereo,
+                    input_frame_rate,
+                    output_frame_rate):
     """
     Helper which dispatches encoding.
 
@@ -138,19 +175,34 @@ def encode_patterns(patterns,ofile,etype,stereo):
         if etype == "sm":
             cur = encode_sm(out[0],out[1],stereo=out[2])
         elif etype == "mpg" or etype == "mpeg1":
-            cur = encode_mpeg1(out[0],out[1])
+            cur = encode_mpeg1(out[0],out[1],
+                              input_frame_rate,
+                              output_frame_rate)
         elif etype == "wmv":
-            cur = encode_wmv(out[0],out[1])
+            cur = encode_wmv(out[0],out[1],
+                             input_frame_rate,
+                             output_frame_rate)
         elif etype == "avi":
-            cur = encode_avi(out[0],out[1])
+            cur = encode_avi(out[0],out[1],
+                             input_frame_rate,
+                             output_frame_rate)
         elif etype == "mov":
-            cur = encode_mov(out[0],out[1])
+            cur = encode_mov(out[0],out[1],
+                             input_frame_rate,
+                              output_frame_rate)
         elif etype == "swf":
-            cur = encode_swf(out[0],out[1])
+            cur = encode_swf(out[0],out[1],
+                             input_frame_rate,
+                             output_frame_rate)
         elif etype == "mp4":
-            cur = encode_mp4(out[0],out[1])
+            cur = encode_mp4(out[0],out[1],
+                             input_frame_rate,
+                             output_frame_rate)
         elif etype == "divx":
-            cur = encode_divx(out[0],out[1])
+            cur = encode_divx(out[0],out[1],
+                              input_frame_rate,
+                              output_frame_rate)
+                            
         if cur != 0:
             nfails = nfails + 1
     return nfails
@@ -165,181 +217,294 @@ def encode_sm(ipattern,ofile,stereo=False):
         if stereo:
             cmd += " -stereo"
         cmd += " %s %s " % (ipattern,ofile)
-        return sexe(cmd)
+        return sexe(cmd,echo=True)
     else:
         raise VisItException("img2sm not found: Unable to encode streaming movie.")
 
-def encode_mpeg1(ipattern,ofile):
+def encode_mpeg1(ipattern,
+                 ofile,
+                 input_frame_rate,
+                 output_frame_rate):
     """
     Creates a mpeg1 video file using ffmpeg.
     """
     enc_bin = ffmpeg_bin()
-    if not ffmpeg_bin is None:
+    if not enc_bin is None:
+        mpeg1_ofps = 24
+        if not output_frame_rate is None:
+            mpeg1_ofps = output_frame_rate
         if ffmpeg_version() > .09 :
             # two pass support with newer versions requires two calls to ffmpeg
-            cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
             cmd += "-trellis 2 -cmp 2 -subcmp 2 -pass %d "
-            cmd += "-b:v 18000000 -r 24 %s"
+            cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
+            cmd += "-b:v 18000000 -r %s %s"
             # pass 1
-            cmd_pass1 =  cmd % (enc_bin,ipattern,1,ofile)
-            res = sexe(cmd_pass1)
+            cmd_pass1 =  cmd % (enc_bin,ipattern,1,mpeg1_ofps,ofile)
+            res = sexe(cmd_pass1,echo=True)
             if res == 0:
                 # pass 2
-                cmd_pass2 =  cmd % (enc_bin,ipattern,2,ofile)
-                res = sexe(cmd_pass2)
+                cmd_pass2 =  cmd % (enc_bin,ipattern,2,mpeg1_ofps,ofile)
+                res = sexe(cmd_pass2,echo=True)
         else:
-            cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
             cmd += "-trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
-            cmd += "-b 18000000 -r 24 %s"
-            cmd =  cmd % (enc_bin,ipattern,ofile)
-            res = sexe(cmd)
+            cmd += "-b 18000000 -r %s %s"
+            cmd =  cmd % (enc_bin,ipattern,mpeg1_ofps,ofile)
+            res = sexe(cmd,echo=True)
+        # clean up the log file if it exists
+        if os.path.isfile(ffmpeg_log_file_for_pass(ofile)):
+            os.remove(ffmpeg_log_file_for_pass(ofile))
         return res
     else:
         raise VisItException("ffmpeg not found: Unable to encode mpeg.")
 
-def encode_wmv(ipattern,ofile):
+def encode_wmv(ipattern,
+               ofile,
+               input_frame_rate,
+               output_frame_rate):
     """
     Creates a wmv video file using ffmpeg.
     """
     enc_bin = ffmpeg_bin()
-    if not ffmpeg_bin is None:
+    if not enc_bin is None:
+        wmv_ofps = 30
+        if not output_frame_rate is None:
+            wmv_ofps = output_frame_rate
         if ffmpeg_version() > .09 :
             # two pass support with newer versions requires two calls to ffmpeg
-            cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
             cmd += "-flags +aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
-            cmd += "-b:v 18000000 -r 30 %s"
+            cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
+            cmd += "-b:v 18000000 -r %s %s"
             # pass 1
-            cmd_pass1 =  cmd % (enc_bin,ipattern,1,ofile)
-            res = sexe(cmd_pass1)
+            cmd_pass1 =  cmd % (enc_bin,ipattern,1,wmv_ofps,ofile)
+            res = sexe(cmd_pass1,echo=True)
             if res == 0:
                 # pass 2
-                cmd_pass2 =  cmd % (enc_bin,ipattern,2,ofile)
-                res = sexe(cmd_pass2)
+                cmd_pass2 =  cmd % (enc_bin,ipattern,2,wmv_ofps,ofile)
+                res = sexe(cmd_pass2,echo=True)
         else:
-            cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
             cmd += "-mbd -rd -flags +aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
-            cmd += "-b 18000000 -r 30 %s"
-            cmd =  cmd % (enc_bin,ipattern,ofile)
-            res = sexe(cmd)
+            cmd += "-b 18000000 -r %s %s"
+            cmd =  cmd % (enc_bin,ipattern,wmv_ofps,ofile)
+            res = sexe(cmd,echo=True)
+        # clean up the log file if it exists
+        if os.path.isfile(ffmpeg_log_file_for_pass(ofile)):
+            os.remove(ffmpeg_log_file_for_pass(ofile))
         return res
     else:
         raise VisItException("ffmpeg not found: Unable to encode wmv.")
 
-def encode_swf(ipattern,ofile):
+def encode_swf(ipattern,
+               ofile,
+               input_frame_rate,
+               output_frame_rate):
     """
     Creates a swf (flash) video file using ffmpeg.
     """
     enc_bin = ffmpeg_bin()
-    if not ffmpeg_bin is None:
+    if not enc_bin is None:
+        swf_ofps = 30
+        if not output_frame_rate is None:
+            swf_ofps = output_frame_rate
         if ffmpeg_version() > .09 :
             # two pass support with newer versions requires two calls to ffmpeg
-            cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd +=  "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
             cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
-            cmd += "-b:v 18000000 -r 30 -f swf %s"
+            cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
+            cmd += "-b:v 18000000 -r %s -f swf %s"
             # pass 1
-            cmd_pass1 =  cmd % (enc_bin,ipattern,1,ofile)
-            res = sexe(cmd_pass1)
+            cmd_pass1 =  cmd % (enc_bin,ipattern,1,swf_ofps,ofile)
+            res = sexe(cmd_pass1,echo=True)
             if res == 0:
                 # pass 2
-                cmd_pass2 =  cmd % (enc_bin,ipattern,2,ofile)
-                res = sexe(cmd_pass2)
+                cmd_pass2 =  cmd % (enc_bin,ipattern,2,swf_ofps,ofile)
+                res = sexe(cmd_pass2,echo=True)
         else:
-            cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += "-framerate %s" % input_frame_rate
+            cmd =  "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
             cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
-            cmd += "-b 18000000 -r 30 -f swf %s"
-            cmd =  cmd % (enc_bin,ipattern,ofile)
-            res = sexe(cmd)
+            cmd += "-b 18000000 -r %s -f swf %s"
+            cmd =  cmd % (enc_bin,ipattern,swf_ofps,ofile)
+            res = sexe(cmd,echo=True)
+        # clean up the log file if it exists
+        if os.path.isfile(ffmpeg_log_file_for_pass(ofile)):
+            os.remove(ffmpeg_log_file_for_pass(ofile))
         return res
     else:
         raise VisItException("ffmpeg not found: Unable to encode swf.")
 
 
-def encode_avi(ipattern,ofile):
+def encode_avi(ipattern,
+               ofile,
+               input_frame_rate,
+               output_frame_rate):
      """
      Creates an avi video file (mjpeg) using ffmpeg.
      """
      enc_bin = ffmpeg_bin()
-     if not ffmpeg_bin is None:
+     if not enc_bin is None:
         if ffmpeg_version() > .09 :
-            cmd =  "echo y | %s -f image2 -i %s -vcodec mjpeg -q:v 1 -an %s "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd += "-f image2 -i %s -vcodec mjpeg -q:v 1 -an "
+            if not output_frame_rate is None:
+                cmd += " -r %s " % output_frame_rate
+            cmd += " %s "
         else:
-            cmd =  "echo y | %s -f image2 -i %s -vcodec mjpeg -qscale 1 -an %s "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd += "-f image2 -i %s -vcodec mjpeg -qscale 1 -an "
+            if not output_frame_rate is None:
+                cmd += " -r %s " % output_frame_rate
+            cmd += " %s "
+
         cmd =  cmd % (enc_bin,ipattern,ofile)
-        return sexe(cmd)
+        return sexe(cmd,echo=True)
      else:
         raise VisItException("ffmpeg not found: Unable to encode avi.")
 
 
-def encode_divx(ipattern,ofile):
+def encode_divx(ipattern,
+                ofile,
+                input_frame_rate,
+                output_frame_rate):
     """
     Creates divx avi video file (mpeg4) using ffmpeg.
     """
     enc_bin = ffmpeg_bin()
-    if not ffmpeg_bin is None:
+    if not enc_bin is None:
         if ffmpeg_version() > .09 :
-            cmd  = "echo y | %s -f image2 -i %s -vcodec mpeg4 -q:v 1 -f avi "
+            cmd  = "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd += "-f image2 -i %s -vcodec mpeg4 -q:v 1 -f avi "
+            if not output_frame_rate is None:
+                cmd += " -r %s " % output_frame_rate
             cmd += "-vtag DX50 -an %s "
         else:
-            cmd  = "echo y | %s -f image2 -i %s -vcodec mpeg4 -qscale 1 -f avi "
+            cmd  = "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd +="-f image2 -i %s -vcodec mpeg4 -qscale 1 -f avi "
+            if not output_frame_rate is None:
+                cmd += " -r %s " % output_frame_rate
             cmd += "-vtag DX50 -an %s "
         cmd  = cmd % (enc_bin,ipattern,ofile)
-        return sexe(cmd)
+        return sexe(cmd,echo=True)
     else:
         raise VisItException("ffmpeg not found: Unable to encode divx avi.")
 
 
-def encode_mov(ipattern,ofile):
+def encode_mov(ipattern,
+               ofile,
+               input_frame_rate,
+               output_frame_rate):
     """
     Creates a mov video file (mpeg4) using ffmpeg.
     """
     enc_bin = ffmpeg_bin()
-    if not ffmpeg_bin is None:
+    if not enc_bin is None:
+        mov_ofps = 30
+        if not output_frame_rate is None:
+            mov_ofps = output_frame_rate
         if ffmpeg_version() > .09 :
             # two pass support with newer versions requires two calls to ffmpeg
-            cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd +=  "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
-            cmd += "-an -b:v 18000000 -f mov -r 30 %s"
+            cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
+            cmd += "-an -b:v 18000000 -f mov -r %s %s"
             # pass 1
-            cmd_pass1 =  cmd % (enc_bin,ipattern,1,ofile)
-            res = sexe(cmd_pass1)
+            print cmd
+            cmd_pass1 =  cmd % (enc_bin,ipattern,1,mov_ofps,ofile)
+            res = sexe(cmd_pass1,echo=True)
             if res == 0:
                 # pass 2
-                cmd_pass2 =  cmd % (enc_bin,ipattern,2,ofile)
-                res = sexe(cmd_pass2)
+                cmd_pass2 =  cmd % (enc_bin,ipattern,2,mov_ofps,ofile)
+                res = sexe(cmd_pass2,echo=True)
         else:
-            cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
-            cmd += "-an -b 18000000 -f mov -r 30 %s"
-            cmd =  cmd % (enc_bin,ipattern,ofile)
-            res = sexe(cmd)
+            cmd += "-an -b 18000000 -f mov -r %s %s"
+            cmd =  cmd % (enc_bin,ipattern,mov_ofps,ofile)
+            res = sexe(cmd,echo=True)
+        # clean up the log file if it exists
+        if os.path.isfile(ffmpeg_log_file_for_pass(ofile)):
+            os.remove(ffmpeg_log_file_for_pass(ofile))
         return res
     else:
         raise VisItException("ffmpeg not found: Unable to encode mov.")
 
-def encode_mp4(ipattern,ofile):
+def encode_mp4(ipattern,
+               ofile,
+               input_frame_rate,
+               output_frame_rate):
     """
     Creates a mp4 video file (mpeg4) using ffmpeg.
     """
     enc_bin = ffmpeg_bin()
-    if not ffmpeg_bin is None:
+    if not enc_bin is None:
         if ffmpeg_version() > .09 :
             # two pass support with newer versions requires two calls to ffmpeg
-            cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
-            cmd += "-an -b:v 18000000 -f mp4 %s"
+            cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
+            cmd += "-an -b:v 18000000 -f mp4 "
+            if not output_frame_rate is None:
+                cmd += " -r %s " % output_frame_rate
+            cmd += " %s"
             # pass 1
             cmd_pass1 =  cmd % (enc_bin,ipattern,1,ofile)
-            res = sexe(cmd_pass1)
+            res = sexe(cmd_pass1,echo=True)
             if res == 0:
                 # pass 2
                 cmd_pass2 =  cmd % (enc_bin,ipattern,2,ofile)
-                res = sexe(cmd_pass2)
+                res = sexe(cmd_pass2,echo=True)
         else:
-            cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
+            cmd =  "echo y | %s "
+            if not input_frame_rate is None:
+                cmd += " -framerate %s " % input_frame_rate
+            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
-            cmd += "-an -b 18000000 -f mp4 %s"
+            cmd += "-an -b 18000000 -f mp4"
+            if not output_frame_rate is None:
+                cmd += " -r %s " % output_frame_rate
+            cmd += " %s"
             cmd =  cmd % (enc_bin,ipattern,ofile)
-            res = sexe(cmd)
+            res = sexe(cmd,echo=True)
+        # clean up the log file if it exists
+        if os.path.isfile(ffmpeg_log_file_for_pass(ofile)):
+            os.remove(ffmpeg_log_file_for_pass(ofile))
         return res
     else:
         raise VisItException("ffmpeg not found: Unable to encode mp4.")
@@ -434,6 +599,21 @@ def clean_symlinks(lnks):
     for lnk in lnks:
         os.remove(lnk)
 
+def ffmpeg_log_file_prefix(ofile):
+    """
+    Helper to create a ~unique ffmpeg log name prefix, to void collisions 
+    for encoding tasks started concurrently int he same directory. 
+    """
+    return "ffmpeg2pass-" + str(os.getpid()) + "-" + os.path.basename(ofile)
+
+
+def ffmpeg_log_file_for_pass(ofile,pass_number=0):
+    """
+    Helper to create the ~unique ffmpeg log name given a pass number.
+    """
+    return ffmpeg_log_file_prefix(ofile) + ("-%d.log" % pass_number)
+
+    
 #
 # Helpers to find encoding binaries
 #
