@@ -601,3 +601,8 @@ const char *Namescheme::GetName(int natnum)
     }
     return SaveReturnedString(retval);
 }
+
+void Namescheme::FreeClassStaticResources(void)
+{
+    SaveReturnedString(0);
+}

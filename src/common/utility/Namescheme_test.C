@@ -37,13 +37,13 @@
 *****************************************************************************/
 #include <Namescheme.h>
 #include <string.h>
-//#include <iostream>
+#include <iostream>
 #include <stdio.h>
 
 int main()
 {
     int i;
-    int P[100], U[4];
+    int P[100], U[4], PFS[4] = {0,1,2,3};
     const char *N[3] = { "red", "green", "blue" };
     const char *FileNumbers[] = {"1","2","3"};
 
@@ -61,6 +61,7 @@ int main()
         return 1;
     if (strcmp(ns->GetName(20861), "gorfo") != 0)
         return 1;
+    delete ns;
 
     // Test ?:: operator
     ns = new Namescheme("@foo_%d@(n-5)?14:77:");
@@ -166,5 +167,18 @@ int main()
     if (strcmp(ns->GetName(2746), "VOLFRC_2746") != 0) return 1;
     delete ns;
 
-    return 0;
+    ns = new Namescheme("|chemA_016_00000%s%.0d|#PFS[(n/4) % 4]?'.':'':|#PFS[(n/4) % 4]", PFS);
+    if (strcmp(ns->GetName(0), "chemA_016_00000") != 0) return 1;
+    if (strcmp(ns->GetName(1), "chemA_016_00000") != 0) return 1;
+    if (strcmp(ns->GetName(2), "chemA_016_00000") != 0) return 1;
+    if (strcmp(ns->GetName(3), "chemA_016_00000") != 0) return 1;
+    if (strcmp(ns->GetName(4), "chemA_016_00000.1") != 0) return 1;
+    if (strcmp(ns->GetName(5), "chemA_016_00000.1") != 0) return 1;
+    if (strcmp(ns->GetName(8), "chemA_016_00000.2") != 0) return 1;
+    if (strcmp(ns->GetName(11), "chemA_016_00000.2") != 0) return 1;
+    if (strcmp(ns->GetName(15), "chemA_016_00000.3") != 0) return 1;
+    delete ns;
+
+    // This is only necessary if you wanna run valgrind and confirm no leaks
+    Namescheme::FreeClassStaticResources();
 }
