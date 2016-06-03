@@ -75,7 +75,7 @@ class TestFile(unittest.TestCase):
         mv["pattern"] = pjoin(odir,"result.%04d.txt")
         w.connect("finput","mv:in")
         print w.graph
-        sspace = StateSpace({"idx":10})
+        sspace = StateSpace({"index":10})
         sgen = StateVectorGenerator(sspace)
         for svec in sgen:
             w.execute(svec)

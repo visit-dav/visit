@@ -71,7 +71,7 @@ def gen_output_file_name(node):
     # note, we can check for abs path here ...
     # provide an option besides usign the working_dir
     ofname = pjoin(node.context.working_dir(), obase)
-    return ofname + "%s_%s_output.png" % (obase,node.state_vector.idx)
+    return ofname + "%s_%s_output.png" % (obase,node.state_vector.index())
 
 def imagick_exe(cmd,ofname):
     ret, out = sexe(cmd + " " + ofname,ret_output=True)
@@ -79,8 +79,8 @@ def imagick_exe(cmd,ofname):
         raise ImagickExecuteError(out)
     return ofname
 
-class ImageGenerator(Filter):
-    filter_type    = "gen"
+class ImageFill(Filter):
+    filter_type    = "fill"
     input_ports    = []
     default_params = {"width":0,
                       "height":0,
@@ -106,12 +106,12 @@ class ImageResize(Filter):
 class ImageOver(Filter):
     filter_type    = "over"
     input_ports    = ["over","under"]
-    default_params = {"x_offset":0,
-                      "y_offset":0}
+    default_params = {"x":0,
+                      "y":0}
     output_port    = True
     def execute(self):
         p   = self.params
-        cmd = "composite -geometry +%d+%d %s %s " % (p.x_offset,p.y_offset,
+        cmd = "composite -geometry +%d+%d %s %s " % (p.x,p.y,
                                                      self.input("over"),
                                                      self.input("under"))
         return imagick_exe(cmd,gen_output_file_name(self))
@@ -119,15 +119,15 @@ class ImageOver(Filter):
 class ImageBlend(Filter):
     filter_type    = "blend"
     input_port     = ["over","under"]
-    default_params = {"x_offset":0,
-                      "y_offset":0,
+    default_params = {"x":0,
+                      "y":0,
                       "percent":0}
     output_port    = True
     def execute(self):
         p   = self.params
         cmd = "composite -blend %f -geometry +%d+%d %s %s " % (p.percent,
-                                                               p.x_offset,
-                                                               p.y_offset,
+                                                               p.x,
+                                                               p.y,
                                                                self.input("over"),
                                                                self.input("under"))
         return imagick_exe(cmd,gen_output_file_name(self))
@@ -135,8 +135,8 @@ class ImageBlend(Filter):
 class ImageCrop(Filter):
     filter_type    = "crop"
     input_ports    = ["in"]
-    default_params = {"x_offset":0,
-                      "y_offset":0,
+    default_params = {"x":0,
+                      "y":0,
                       "width":0,
                       "height":0}
     output_port    = True
@@ -144,25 +144,25 @@ class ImageCrop(Filter):
         p = self.params
         cmd = "convert -crop %dx%d+%d+%d %s "  % (p.width,
                                                   p.height,
-                                                  p.x_offset,
-                                                  p.y_offset,
+                                                  p.x,
+                                                  p.y,
                                                   self.input("in"))
         return imagick_exe(cmd,gen_output_file_name(self))
 
 class ImageAppend(Filter):
     filter_type    = "append"
     input_ports    = ["in_a","in_b"]
-    default_params = {"direction":"hz"}
+    default_params = {"direction":"horz"}
     output_port    = True
     def execute(self):
         p = self.params
         d = p.direction
         op = "+"
-        if d == "vz":
+        if d == "vert":
             op = "-"
         cmd = "convert %s %s %sappend " % (self.input("in_a"),self.input("in_b"),op)
         return imagick_exe(cmd,gen_output_file_name(self))
 
 
-filters = [ImageGenerator, ImageResize, ImageOver, ImageBlend, ImageCrop, ImageAppend]
+filters = [ImageFill, ImageResize, ImageOver, ImageBlend, ImageCrop, ImageAppend]
 contexts = [ImagickContext]

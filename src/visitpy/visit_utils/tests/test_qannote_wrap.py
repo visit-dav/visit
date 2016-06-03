@@ -65,19 +65,19 @@ def out_path(fname):
 
 def test_txt_items(x,y,wrap,hz,vz="top",txt=None,fsize=22):
     rect = Rect( {"x":x,"y":y,
-                  "w":wrap,"h":200,
+                  "width":wrap,"height":200,
                    "color":(0,255,0,255)})
     rect2 = Rect( {"x":x-5,"y":y-5,
-                   "w":10,"h":10,
+                   "width":10,"height":10,
                    "color":(255,255,0,255)})
     if txt is None:
         txt = "Testing word wrap capability with a long sentence."
-    txt  = Text( {"txt": txt,
+    txt  = Text( {"text": txt,
                   "x": x,
                   "y": y,
                   "color": (255,255,255,255),
-                  "vz":vz,
-                  "hz":hz,
+                  "vert_align":vz,
+                  "horz_align":hz,
                   "wrap":wrap,
                   "font/name": "Times New Roman",
                   "font/bold": True,

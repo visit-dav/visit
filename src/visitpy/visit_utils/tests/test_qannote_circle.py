@@ -68,7 +68,7 @@ class TestCircle(unittest.TestCase):
     @pyside_test
     def setUp(self):
         bg = Rect({"x":0,"y":0,
-                   "w":500,"h":250,
+                   "width":500,"height":250,
                    "color":(30,30,30,255)})
 
         hz = Line({"x0":0,"x1":500,
@@ -81,7 +81,7 @@ class TestCircle(unittest.TestCase):
 
         circ = Circle({"x":250,
                        "y":125,
-                       "r":125,
+                       "radius":125,
                        "outline":True,
                        "color":(255,0,0,255)})
         self.items = [bg,hz,vz,circ]

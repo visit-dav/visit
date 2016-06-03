@@ -70,13 +70,13 @@ class TestMultiProgBar(unittest.TestCase):
         w = 600;
         h = 1000;
         items = [ Rect({"x":0,"y":0,
-                        "w":w,"h":h,
+                        "width":w,"height":h,
                         "color":(0,0,0,255)})]
         y = 10
         for v in range(0,600,30):
             mbp = MultiProgressBar({"x":10,"y":y,
-                                    "w":500,"h":20,
-                                    "bgcolor":(20,20,20,255),
+                                    "width":500,"height":20,
+                                    "bg_color":(20,20,20,255),
                                     "segment/ranges": [250,150,100],
                                     "segment/labels": ["Go","Caution","Stop"],
                                     "segment/colors": [ (0,193,0,255),
@@ -92,13 +92,13 @@ class TestMultiProgBar(unittest.TestCase):
         w = 600;
         h = 1000;
         items = [ Rect({"x":0,"y":0,
-                        "w":w,"h":h,
+                        "width":w,"height":h,
                         "color":(0,0,0,255)})]
         y = 10
         for v in range(0,600,30):
             mbp = MultiProgressBar({"x":10,"y":y,
-                                    "w":500,"h":20,
-                                    "bgcolor":(20,20,20,255),
+                                    "width":500,"height":20,
+                                    "bg_color":(20,20,20,255),
                                     "force_labels" : True,
                                     "segment/ranges": [250,150,100],
                                     "segment/labels": ["Go","Caution","Stop"],
