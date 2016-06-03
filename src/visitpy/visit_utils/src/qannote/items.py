@@ -421,14 +421,17 @@ class MultiProgressBar(CanvasItemSet):
                            "color":bgcolor}))
         cx = x
         sx = x
+        # convert percentage val to length in pixels
+        val = w * val + x;
         for i in range(len(seg_ranges)):
-            sr = seg_ranges[i]
+            sr = seg_ranges[i] * w
             cx += sr/2.0
+            # check if this segment is full covered
             if val >= sx + sr:
                 items.append( Rect({"x":sx,"y":y,
                                     "width":sr,"height":h,
                                     "color":seg_colors[i]}))
-
+            # check if this segment is partially covered
             elif val >= sx:
                 items.append( Rect({"x":sx,"y":y,
                                     "width":val-sx,"height":h,
@@ -438,6 +441,7 @@ class MultiProgressBar(CanvasItemSet):
                                     "x1":sx+sr,"y1":y + h /2.0,
                                     "width":lw,
                                     "color":seg_colors[i]}))
+            # check if this segment is partially uncovered
             else:
                 items.append( Line({"x0":sx,"y0":y + h /2.0,
                                     "x1":sx+sr,"y1":y + h /2.0,
@@ -448,7 +452,7 @@ class MultiProgressBar(CanvasItemSet):
                                     "x1":sx,"y1":y+h,
                                     "width":2,
                                     "color":seg_colors[i]}))
-
+            # check if we should draw the labels for this segment
             if self.params.force_labels or (val >= sx + sr or val >=sx):
                 items.append( Text({"text": seg_lbls[i],
                                     "x": cx,
