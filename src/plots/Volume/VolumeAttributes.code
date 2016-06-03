@@ -73,6 +73,13 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         rendererType == VolumeAttributes::RayCastingSLIVR || 
         rendererType == VolumeAttributes::RayCastingIntegration)
     {
+        // Trilinear requires ghost zone while Rasterization and KernelBased do not
+        if ((sampling == Rasterization || sampling == KernelBased) && obj.sampling == Trilinear)
+            return true;
+
+        if ((sampling == Trilinear) && (obj.sampling == KernelBased || obj.sampling == Rasterization))
+            return true;
+        
         // We're in software mode. Any change to the renderer type requires
         // a reexecute.
         if(rendererType != obj.rendererType)
