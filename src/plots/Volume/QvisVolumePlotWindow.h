@@ -239,6 +239,21 @@ private slots:
     void setMaterialKd(double val);
     void setMaterialKs(double val);
     void setMaterialN(double val);
+    void shiftGuassiansLeft();
+    void shiftGuassiansRight();
+    void raiseGuassians();
+    void lowerGuassians();
+    void thinGuassians();
+    void thickenGuassians();
+    void raiseLeftGuassians();
+    void raiseRightGuassians();
+    void clearAllGuassians();
+    void setGuassians();
+    void setManyGuassians();
+
+
+
+
 private:
     int                      plotType;
     VolumeAttributes         *volumeAtts;
@@ -340,6 +355,18 @@ private:
     QLabel                   *Kd;
     QLabel                   *Ks;
     QLabel                   *specPow;
+
+    QPushButton              *shiftLeftButton;
+    QPushButton              *shiftRightButton;
+    QPushButton              *lowerPeaksButton;
+    QPushButton              *raisePeaksButton;
+    QPushButton              *thinningButton;
+    QPushButton              *thickenButton;
+    QPushButton              *rightToLeftButton;
+    QPushButton              *leftToRightButton;
+    QPushButton              *clearGaussButton;
+    QPushButton              *setGaussButton;
+    QPushButton              *setManyGaussButton;
 
     //Sampling group
     QGroupBox               *resampleGroup;

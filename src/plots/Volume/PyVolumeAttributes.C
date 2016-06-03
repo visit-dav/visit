@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -1225,11 +1225,11 @@ VolumeAttributes_GetTransferFunction2DWidgets(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetTransferFunction2DWidgets().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetTransferFunction2DWidgets().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because transferFunction2DWidgets is empty.");
+            SNPRINTF(msg, 400, "In VolumeAttributes::GetTransferFunction2DWidgets : The index %d is invalid because transferFunction2DWidgets is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetTransferFunction2DWidgets().size());
+            SNPRINTF(msg, 400, "In VolumeAttributes::GetTransferFunction2DWidgets : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetTransferFunction2DWidgets().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1262,8 +1262,8 @@ VolumeAttributes_AddTransferFunction2DWidgets(PyObject *self, PyObject *args)
         return NULL;
     if(!PyTransferFunctionWidget_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddTransferFunction2DWidgets method only accepts TransferFunctionWidget objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The VolumeAttributes::AddTransferFunction2DWidgets method only accepts TransferFunctionWidget objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1310,7 +1310,9 @@ VolumeAttributes_RemoveTransferFunction2DWidgets(PyObject *self, PyObject *args)
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
     if(index < 0 || index >= obj->data->GetNumTransferFunction2DWidgets())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In VolumeAttributes::RemoveTransferFunction2DWidgets : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 

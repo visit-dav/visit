@@ -75,7 +75,8 @@ class GUI_API QvisGaussianOpacityBar : public QvisAbstractOpacityBar
     int           getNumberOfGaussians();
     void          getGaussian(int, float*,float*,float*,float*,float*);
     void          setAllGaussians(int, float*);
-
+    void          removeAllGaussians();
+    
   protected:
     virtual void  mouseMoveEvent(QMouseEvent*);
     virtual void  mousePressEvent(QMouseEvent*);

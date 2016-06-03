@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -2548,6 +2548,13 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         rendererType == VolumeAttributes::RayCastingSLIVR || 
         rendererType == VolumeAttributes::RayCastingIntegration)
     {
+        // Trilinear requires ghost zone while Rasterization and KernelBased do not
+        if ((sampling == Rasterization || sampling == KernelBased) && obj.sampling == Trilinear)
+            return true;
+
+        if ((sampling == Trilinear) && (obj.sampling == KernelBased || obj.sampling == Rasterization))
+            return true;
+        
         // We're in software mode. Any change to the renderer type requires
         // a reexecute.
         if(rendererType != obj.rendererType)

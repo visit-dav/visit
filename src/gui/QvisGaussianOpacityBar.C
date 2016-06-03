@@ -571,6 +571,27 @@ QvisGaussianOpacityBar::removeGaussian(int n)
 }
 
 
+
+// ****************************************************************************
+//  Method:  QvisGaussianOpacityBar::removeAllGaussian
+//
+//  Purpose:
+//    
+//
+//  Programmer:  Pascal Grosset
+//  Creation:    September 15, 2015
+//
+// ****************************************************************************
+void
+QvisGaussianOpacityBar::removeAllGaussians()
+{
+    ngaussian=0;
+
+    imageDirty();
+    update();
+}
+
+
 #define dist2(x1,y1,x2,y2) (((x2)-(x1))*((x2)-(x1)) + ((y2)-(y1))*((y2)-(y1)))
 // ****************************************************************************
 //  Method:  QvisGaussianOpacityBar::findGaussianControlPoint
