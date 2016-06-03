@@ -1547,7 +1547,7 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
         indices[2] = index_bottom;      indices[3] = index_top;
         indices[0] = index_left;        indices[1] = index_right;
 
-        if (trilinearInterpolation){
+        if (trilinearInterpolation || rayCastingSLIVR){
             if (indices[0] < 0 || indices[0]>dims[0]-2)
                 valid_sample[i] = false;
 
@@ -1569,27 +1569,7 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
                 valid_sample[i] = false;
         }
 
-        if (rayCastingSLIVR){
-            if (indices[0] < 1 || indices[0]>dims[0]-2)
-                valid_sample[i] = false;
-
-            if (indices[1] < 1 || indices[1]>dims[0]-2)
-                valid_sample[i] = false;
-
-
-            if (indices[2] < 1 || indices[2]>dims[1]-2)
-                valid_sample[i] = false;
-
-            if (indices[3] < 1 || indices[3]>dims[1]-2)
-                valid_sample[i] = false;
-
-
-            if (indices[4] < 1 || indices[4]>dims[2]-2)
-                valid_sample[i] = false;
-
-            if (indices[5] < 1 || indices[5]>dims[2]-2)
-                valid_sample[i] = false;
-        }
+      
 
         if (!valid_sample[i]){
             continue;
