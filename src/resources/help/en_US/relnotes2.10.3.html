@@ -24,30 +24,29 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Bugs fixed in version 2.10.3</font></b></p>
 <ul>
-  <li>Fixed a bug in the LAMMPS reader that caused axis scaling to always be applied.</li>
-  <li>Command recording for changing PickAttributes now reports the correct 'getter' method: GetPickAttributes.</li>
-  <li>Fixed a bug where VisIt could draw a Pseudocolor plot of a .vtu file with only points (no cells) defined, but could not draw a Mesh plot of the same dataset.</li>
-  <li>Fixed a few issues related to Pseudocolor plot's use of ColorTable opacity: viewer crash when creating a transparent colortable via cli; Pseudocolor plot affected by changes to a ColorTable it isn't utilizing; changing the ColorTable's opacities would make the Pseudocolor plot go blank.</li>
+  <li>Fixed a bug in the LAMMPS database plugin that caused axis scaling to always be applied.</li>
+  <li>Fixed a bug with command recording where it would report the name of the function for getting the pick attributes as "PickAttributes" instead of the correct name "GetPickAttributes".</li>
+  <li>Fixed a bug where VisIt could not draw a Mesh plot of a .vtu file with only points (no cells) defined.</li>
+  <li>Fixed a few issues related to the Pseudocolor plot's use of ColorTable opacity: the viewer crashed when creating a transparent colortable with the command line interface; the Pseudocolor plot was affected by changes to a ColorTable it wasn't utilizing; changing the opacities of a ColorTable associated with a Pseudocolor plot would cause the Pseudocolor plot to go blank.</li>
   <li>Fixed a bug using system python on Windows, error parsing added arguments.</li>
-  <li>Fixed reader for EnSight gold files where geometry file name specified by wildcards and a '001' numbered geometry file did not exist.</li>
-  <li>Fixed a bug that prevented multigrid, Fortran binary PLOT3D files from being read successfully.</li>
-  <li>Fixed a bug that prevented multigrid, Fortran binary, double-precision, iblanked PLOT3D files from being read successfully.</li>
+  <li>Fixed a bug in the EnSight database plugin with EnSight Gold files where the geometry file name was specified by wildcards and a '001' numbered geometry file did not exist.</li>
+  <li>Fixed a bug with the PLOT3D database plugin that prevented multigrid, Fortran binary PLOT3D files from being read successfully.</li>
+  <li>Fixed a bug with the PLOT3D database plugin that prevented multigrid, Fortran binary, double-precision, iblanked PLOT3D files from being read successfully.</li>
   <li>Fixed a bug that caused invalid expression variables after deleting a plot and switching back to its active source.</li>
-  <li>Fixed a bug with pick on the reflected part of subset plots with reflected operator applied.</li>
+  <li>Fixed a bug with picking on the reflected part of a Subset plot with the Reflect operator applied.</li>
 </ul>
 
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 2.10.3</font></b></p>
 <ul>
   <li>Enhanced the Resample Operator to handle polygon cells.</li>
-  <li>The Cosmos++ reader was enhanced to support reading particle data.</li>
+  <li>The Cosmos++ database plugin was enhanced to support reading particle data.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.10.3</font></b></p>
 <ul>
-  <li>Ice-T was upgraded to the latest version on the master branch. You will need to rebuild Ice-T if you are building from source and using Ice-T.</li>
-  <li>Developer Changes 2</li>
+  <li>Ice-T was upgraded to the latest version on its master branch. You will need to rebuild Ice-T if you are building from source and using Ice-T.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
