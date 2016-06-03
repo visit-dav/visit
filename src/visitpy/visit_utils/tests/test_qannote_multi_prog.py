@@ -69,20 +69,25 @@ class TestMultiProgBar(unittest.TestCase):
     def test_01_mpb(self):
         w = 600;
         h = 1000;
-        items = [ Rect({"x":0,"y":0,
-                        "width":w,"height":h,
+        items = [ Rect({"x":0,
+                        "y":0,
+                        "width":w,
+                        "height":h,
                         "color":(0,0,0,255)})]
         y = 10
-        for v in range(0,600,30):
+        for v in range(0,100,5):
             mbp = MultiProgressBar({"x":10,"y":y,
-                                    "width":500,"height":20,
+                                    "width":500,
+                                    "height":20,
                                     "bg_color":(20,20,20,255),
-                                    "segment/ranges": [250,150,100],
+                                    "segment/ranges": [.5,
+                                                       .2,
+                                                       .3],
                                     "segment/labels": ["Go","Caution","Stop"],
                                     "segment/colors": [ (0,193,0,255),
                                                         (235,195,0,255),
                                                         (195,0,0,255) ],
-                                    "position": v})
+                                    "position": v / 100.0})
             items.append(mbp)
             y += 55
         test_output = out_path("test.multi.prog.bar.00.png")
@@ -91,24 +96,57 @@ class TestMultiProgBar(unittest.TestCase):
     def test_02_mpb(self):
         w = 600;
         h = 1000;
-        items = [ Rect({"x":0,"y":0,
-                        "width":w,"height":h,
+        items = [ Rect({"x":0,
+                        "y":0,
+                        "width":w,
+                        "height":h,
                         "color":(0,0,0,255)})]
         y = 10
-        for v in range(0,600,30):
+        for v in range(0,100,5):
             mbp = MultiProgressBar({"x":10,"y":y,
-                                    "width":500,"height":20,
+                                    "width":500,
+                                    "height":20,
                                     "bg_color":(20,20,20,255),
                                     "force_labels" : True,
-                                    "segment/ranges": [250,150,100],
+                                    "segment/ranges": [.5,
+                                                       .2,
+                                                       .3],
                                     "segment/labels": ["Go","Caution","Stop"],
                                     "segment/colors": [ (0,193,0,255),
                                                         (235,195,0,255),
                                                         (195,0,0,255) ],
-                                    "position": v})
+                                    "position": v / 100.0})
             items.append(mbp)
             y += 55
         test_output = out_path("test.multi.prog.bar.01.png")
+        Canvas.render(items,(w,h),test_output)
+    @pyside_test
+    def test_03_mpb(self):
+        w = 600;
+        h = 1000;
+        items = [ Rect({"x":0,
+                        "y":0,
+                        "width":w,"height":h,
+                        "color":(0,0,0,255)})]
+        y = 10
+        for v in range(0,100,5):
+            mbp = MultiProgressBar({"x":100,
+                                    "y":y,
+                                    "width":400,
+                                    "height":20,
+                                    "bg_color":(20,20,20,255),
+                                    "force_labels" : True,
+                                    "segment/ranges": [.25,
+                                                       .25,
+                                                       .5],
+                                    "segment/labels": ["Go","Caution","Stop"],
+                                    "segment/colors": [ (0,193,0,255),
+                                                        (235,195,0,255),
+                                                        (195,0,0,255) ],
+                                    "position": v / 100.0})
+            items.append(mbp)
+            y += 55
+        test_output = out_path("test.multi.prog.bar.02.png")
         Canvas.render(items,(w,h),test_output)
 
 
