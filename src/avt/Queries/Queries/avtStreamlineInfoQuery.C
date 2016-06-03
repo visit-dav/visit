@@ -70,7 +70,8 @@
 
 avtStreamlineInfoQuery::avtStreamlineInfoQuery() : avtDatasetQuery() 
 {
-    dumpSteps = false;
+    dumpCoordinates = false;
+    dumpValues = false;
 }
 
 // ****************************************************************************
@@ -104,8 +105,10 @@ avtStreamlineInfoQuery::~avtStreamlineInfoQuery()
 void
 avtStreamlineInfoQuery::SetInputParams(const MapNode &params)
 {
-    if (params.HasNumericEntry("dump_steps"))
-        SetDumpSteps(params.GetEntry("dump_steps")->ToBool());
+    if (params.HasNumericEntry("dump_coordinates"))
+        SetDumpCoordinates(params.GetEntry("dump_coordinates")->ToBool());
+    if (params.HasNumericEntry("dump_values"))
+        SetDumpValues(params.GetEntry("dump_values")->ToBool());
 }
 
 // ****************************************************************************
@@ -215,7 +218,6 @@ avtStreamlineInfoQuery::PostExecute()
     MapNode result_node;
     while (i < sz)
     {
-        sprintf(str, "Streamline %d: Seed %f %f %f Arclength %f\n", slIdx, slData[i], slData[i+1], slData[i+2], slData[i+3]);
         MapNode sl_res_node;
         doubleVector sl_res_seed;
         sl_res_seed.push_back(slData[i]);
@@ -223,21 +225,35 @@ avtStreamlineInfoQuery::PostExecute()
         sl_res_seed.push_back(slData[i+2]);
         sl_res_node["seed"] = sl_res_seed;
         sl_res_node["arclength"] = slData[i+3];
-        i+=4;
-        msg += str;
 
-        if (dumpSteps)
+        sprintf(str, "Streamline %d: Seed %f %f %f Arclength %f\n", slIdx, slData[i], slData[i+1], slData[i+2], slData[i+3]);
+        msg += str;
+        i+=4;
+        
+        if (dumpCoordinates || dumpValues)
         {
             int numSteps =  (int)slData[i++];
             doubleVector sl_steps;
             for (int j = 0; j < numSteps; j++)
             {
-                sprintf(str, " %f %f %f \n", slData[i], slData[i+1], slData[i+2]);// slData[i+3], slData[i+4]);
-                sl_steps.push_back(slData[i]);
-                sl_steps.push_back(slData[i+1]);
-                sl_steps.push_back(slData[i+2]);
-                i+=5;
+                if( dumpCoordinates )
+                {
+                    sl_steps.push_back(slData[i]);
+                    sl_steps.push_back(slData[i+1]);
+                    sl_steps.push_back(slData[i+2]);
+                    sprintf(str, " %f %f %f", slData[i], slData[i+1], slData[i+2]);
+                    msg += str;
+                }
+                if( dumpValues )
+                {
+                    sl_steps.push_back(slData[i+3]);
+                    sl_steps.push_back(slData[i+4]);
+                    sprintf(str, " %f %f", slData[i+3], slData[i+4]);
+                    msg += str;
+                }               
+                sprintf(str, "\n");
                 msg += str;
+                i+=5;
             }
             sl_res_node["steps"] = sl_steps;
         }
@@ -302,10 +318,11 @@ avtStreamlineInfoQuery::Execute(vtkDataSet *data, const int chunk)
         slData.push_back(p0[1]);
         slData.push_back(p0[2]);
         
-        for (int j = 1; j < nPts; j++)
+        for (int j = 0; j < nPts; j++)
         {
             points->GetPoint(segptr[j], pt);
-            if (dumpSteps)
+
+            if (dumpCoordinates || dumpValues)
             {
                 steps.push_back(pt[0]);
                 steps.push_back(pt[1]);
@@ -328,9 +345,9 @@ avtStreamlineInfoQuery::Execute(vtkDataSet *data, const int chunk)
         }
 
         slData.push_back(arcLen);
-        if (dumpSteps)
+        if (dumpCoordinates || dumpValues)
         {
-            slData.push_back((float)(nPts-1));
+            slData.push_back((float)(nPts));
             slData.insert(slData.end(), steps.begin(), steps.end());
         }
 

@@ -1120,7 +1120,8 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         }
         else if (winT == QueryList::StreamlineInfo)
         {
-            showDumpSteps = true;
+            showDumpCoordinates = true;
+            showDumpValues = true;
         }
         else if (winT == QueryList::LineSamplerInfo)
         {
@@ -1568,7 +1569,8 @@ QvisQueryWindow::ExecuteStandardQuery()
         {
             if(noErrors)
             {
-                queryParams["dump_steps"] = (int)dumpSteps->isChecked();
+                queryParams["dump_coordinates"] = (int)dumpCoordinates->isChecked();
+                queryParams["dump_values"] = (int)dumpValues->isChecked();
             }
         }
         else if (winT == QueryList::LineSamplerInfo)
