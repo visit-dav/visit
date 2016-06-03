@@ -78,9 +78,9 @@ class TestUlt(unittest.TestCase):
     def test_plot_direct(self):
         w = Window()
         ult.plot(db)
-        ofile = pjoin(output_dir,"test.ult.plot.direct.render.png")
-        w.render(obase=ofile,res=[200,200])
-        self.assertTrue(os.path.isfile(ofile))
+        obase = pjoin(output_dir,"test.ult.plot.direct.render")
+        w.render(obase=obase,res=[200,200])
+        self.assertTrue(os.path.isfile(obase + ".png"))
         WindowManager.cleanup_windows()
         visit.DeleteAllPlots()
         visit.CloseDatabase(db)

@@ -55,7 +55,7 @@ class ShellCommand(Filter):
         if not self.params.obase is None:
             obase = self.params.obase
         cmd = "%s %s " % (self.params.cmd,self.input("in"))
-        cmd = cmd.replace("{svec.idx}",str(self.state_vector.idx))
+        cmd = cmd.replace("{index}",str(self.state_vector.index()))
         if obase.count("%s") >0:
             ofname = obase % str(self.state_vector.idx)
         else:

@@ -129,19 +129,19 @@ class Text(CanvasItem):
         defs.font.bold = False
         defs.font.ital = False
         defs.color  = (255,255,255,255)
-        defs.vz = "left"
-        defs.hz = "top"
-        defs.orient = "hz"
+        defs.vert_align = "left"
+        defs.horz_align = "top"
+        defs.orient = "horz"
         defs.wrap = -1
         CanvasItem.__init__(self,params,defs)
         self.params.lock()
     @require_pyside
     def render(self,painter):
-        txt = process_encoded_text(self.params.txt)
+        txt = process_encoded_text(self.params.text)
         x   = self.params.x
         y   = self.params.y
-        vza = self.params.vz
-        hza = self.params.hz
+        vza = self.params.vert_align
+        hza = self.params.horz_align
         c = self.params.color
         color = QColor(c[0],c[1],c[2],c[3])
         font = QFont(self.params.font.name)
@@ -154,7 +154,7 @@ class Text(CanvasItem):
         painter.setBrush(Qt.NoBrush)
         fmtx = painter.fontMetrics()
         tlines = self.__wrap_text(txt,fmtx,self.params.wrap)
-        if self.params.orient == "vz":
+        if self.params.orient == "vert":
             painter.save()
             painter.rotate(-90)
         # calc largest width
@@ -175,7 +175,7 @@ class Text(CanvasItem):
                 rx -= fmtx.width(t)
             painter.drawText(QPointF(rx,ry),t)
             cy += fmtx.height()
-        if self.params.orient  == "vz":
+        if self.params.orient  == "vert":
             painter.restore()
     def __wrap_text(self,txt,fmtx,length):
         res = []
@@ -206,16 +206,16 @@ class Image(CanvasItem):
         defs = PropertyTree()
         defs.x = 0.0
         defs.y = 0.0
-        defs.vz = "left"
-        defs.hz = "bottom"
+        defs.vert_align = "left"
+        defs.horz_align = "bottom"
         CanvasItem.__init__(self,params,defs)
     @require_pyside
     def render(self,painter):
         ifile = self.params.image
         x = self.params.x
         y = self.params.y
-        vza = self.params.vz
-        hza = self.params.hz
+        vza = self.params.vert_align
+        hza = self.params.horz_align
         img = QImage(ifile)
         iw = float(img.size().width())
         ih = float(img.size().height())
@@ -306,8 +306,8 @@ class Rect(CanvasItem):
     def render(self,painter):
         x = self.params.x
         y = self.params.y
-        w = self.params.w
-        h = self.params.h
+        w = self.params.width
+        h = self.params.height
         c = self.params.color
         width = self.params.width
         outline = self.params.outline
@@ -329,7 +329,7 @@ class Circle(CanvasItem):
         CanvasItem.__init__(self,params,defs)
     @require_pyside
     def render(self,painter):
-        r = self.params.r
+        r = self.params.radius
         x = self.params.x - r/2.0
         y = self.params.y - r/2.0
         c = self.params.color
@@ -355,8 +355,8 @@ class Ellipse(CanvasItem):
         CanvasItem.__init__(self,params,defs)
     @require_pyside
     def render(self,painter):
-        w = self.params.w
-        h = self.params.h
+        w = self.params.width
+        h = self.params.height
         x = self.params.x - w/2.0
         y = self.params.y - h/2.0
         c = self.params.color
@@ -377,12 +377,11 @@ class TextBox(CanvasItemSet):
     @require_pyside
     def __init__(self,params):
         defs = PropertyTree()
-        defs.fgcolor = (255,255,255,255)
+        defs.fg_color = (255,255,255,255)
         defs.padding = 2
-        defs.text.color  = (255,255,255,255)
-        defs.text.vz     = "top"
-        defs.text.hz     = "left"
-        defs.bgcolor     = (0,0,0,255)
+        defs.text_vert_align = "top"
+        defs.text_horz_align = "left"
+        defs.bg_color     = (0,0,0,255)
         defs.font.name   = "Times New Roman"
         defs.font.bold   = True
         defs.font.size   = 15
@@ -393,23 +392,23 @@ class TextBox(CanvasItemSet):
         items = []
         x = self.params.x
         y = self.params.y
-        w = self.params.w
-        h = self.params.h
-        txt = self.params.txt
+        w = self.params.width
+        h = self.params.height
+        txt = self.params.text
         pad = self.params.padding
         items.append(Rect({"x":x-pad,"y":y-pad,
                            "w":w+pad*2,"h":h+pad*2,
-                           "color":self.params.fgcolor}))
+                           "color":self.params.fg_color}))
         items.append(Rect({"x":x,"y":y,
-                           "w":w,"h":h,
-                           "color":self.params.bgcolor}))
-        items.append(Text( {"txt": txt,
+                           "width":w,"height":h,
+                           "color":self.params.bg_color}))
+        items.append(Text( {"text": txt,
                              "x": x+pad,
                              "y": y+pad,
                              "wrap":w-pad*2,
-                             "color": self.params.fgcolor,
-                             "vz": self.params.text.vz,
-                             "hz": self.params.text.hz,
+                             "color": self.params.fg_color,
+                             "vert_align": self.params.text_vert_align,
+                             "horz_align": self.params.text_horz_align,
                              "font/name": self.params.font.name,
                              "font/bold": self.params.font.bold,
                              "font/size": self.params.font.size}))
@@ -422,7 +421,7 @@ class MultiProgressBar(CanvasItemSet):
         defs.force_labels = False
         defs.padding    = 2
         defs.line_width = 2
-        defs.bgcolor = (0,0,0,255)
+        defs.bg_color = (0,0,0,255)
         defs.font.name = "Times New Roman"
         defs.font.bold = True
         defs.font.size = 15
@@ -433,17 +432,17 @@ class MultiProgressBar(CanvasItemSet):
         items = []
         x  = self.params.x
         y  = self.params.y
-        w  = self.params.w
-        h  = self.params.h
+        w  = self.params.width
+        h  = self.params.height
         lw = self.params.line_width
         pad        = self.params.padding
-        bgcolor    = self.params.bgcolor
+        bgcolor    = self.params.bg_color
         seg_ranges = self.params.segment.ranges
         seg_lbls   = self.params.segment.labels
         seg_colors = self.params.segment.colors
         val = self.params.position
         items.append(Rect({"x":x-pad,"y":y-pad,
-                           "w":w+pad*2,"h":h+pad*2,
+                           "width":w+pad*2,"height":h+pad*2,
                            "color":bgcolor}))
         cx = x
         sx = x
@@ -452,12 +451,12 @@ class MultiProgressBar(CanvasItemSet):
             cx += sr/2.0
             if val >= sx + sr:
                 items.append( Rect({"x":sx,"y":y,
-                                    "w":sr,"h":h,
+                                    "width":sr,"height":h,
                                     "color":seg_colors[i]}))
 
             elif val >= sx:
                 items.append( Rect({"x":sx,"y":y,
-                                    "w":val-sx,"h":h,
+                                    "width":val-sx,"height":h,
                                     "color":seg_colors[i]}))
 
                 items.append( Line({"x0": val,"y0":y + h /2.0,
@@ -476,12 +475,12 @@ class MultiProgressBar(CanvasItemSet):
                                     "color":seg_colors[i]}))
 
             if self.params.force_labels or (val >= sx + sr or val >=sx):
-                items.append( Text({"txt": seg_lbls[i],
+                items.append( Text({"text": seg_lbls[i],
                                     "x": cx,
                                     "y": y + h,
                                     "color": seg_colors[i],
-                                    "vz":"top",
-                                    "hz":"center",
+                                    "vert_align":"top",
+                                    "horz_align":"center",
                                     "font/name": self.params.font.name,
                                     "font/bold": self.params.font.bold,
                                     "font/size": self.params.font.size}))

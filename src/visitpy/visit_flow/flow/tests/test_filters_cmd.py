@@ -71,12 +71,12 @@ class TestCmd(unittest.TestCase):
             f.close()
         fi = w.add_filter("file_name","finput")
         fi["pattern"] = pjoin(odir,"cmd.test.input.%04d.txt")
-        mv = w.add_filter("cmd","mv")
-        mv["cmd"]   = "mv "
-        mv["obase"] = pjoin(odir,"cmd_mv")
-        w.connect("finput","mv:in")
+        shell_move = w.add_filter("cmd","shell_move")
+        shell_move["cmd"]   = "mv "
+        shell_move["obase"] = pjoin(odir,"cmd_mv")
+        w.connect("finput","shell_move:in")
         print w.graph
-        sspace = StateSpace({"idx":10})
+        sspace = StateSpace({"index":10})
         sgen = StateVectorGenerator(sspace)
         w.execute(sgen)
 
