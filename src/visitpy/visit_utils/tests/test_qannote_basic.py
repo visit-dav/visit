@@ -64,12 +64,12 @@ def out_path(fname):
 
 class TestBasic(unittest.TestCase):
     def setUp(self):
-        txt =  Text( {"txt": "Text Overlay!",
+        txt =  Text( {"text": "Text Overlay!",
                          "x": 100,
                          "y": 200,
                          "color": (255,255,255,255),
-                         "vz":"center",
-                         "hz":"center",
+                         "vert_align":"center",
+                         "horz_align":"center",
                          "font/name": "Times New Roman",
                          "font/size": 22})
         img = Image( {"image":pjoin(data_dir,"blue.box.png"),
@@ -77,10 +77,10 @@ class TestBasic(unittest.TestCase):
         arr = Arrow( {"x0": 10, "y0":10,
                       "x1":100,"y1":175,"tip_len":20})
         rect = Rect( {"x":400,"y":400,
-                      "w":100,"h":200,
+                      "width":100,"height":200,
                       "color":(0,255,0,255)})
         box  = Rect( {"x":200,"y":200,
-                      "w":100,"h":100,
+                      "width":100,"height":100,
                        "color":(0,255,0,255),"outline":True})
         self.items = [img,txt,arr,rect,box]
     @pyside_test
@@ -111,9 +111,9 @@ class TestBasic(unittest.TestCase):
         items = [bg]
         txt = "Testing text box with wrap capability with a long sentence.\nWith some new lines for good measure.\nFinal."
         items.append(TextBox({"x":200,"y":200,
-                              "w":300,"h":200,
+                              "width":300,"height":200,
                               "font/size":20,
-                              "txt":txt}))
+                              "text":txt}))
         sz = bg.size()
         Canvas.render(items,sz,test_output,(-10,-10,sz[0],sz[1]))
     def tearDown(self):

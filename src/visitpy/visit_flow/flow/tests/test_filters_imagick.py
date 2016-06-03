@@ -71,11 +71,11 @@ class TestImagick(unittest.TestCase):
         w.register_filters(file_ops)
         ctx = w.add_context("imagick","root")
         ctx.set_working_dir(odir)
-        ng = ctx.add_filter("gen","gen0")
+        ng = ctx.add_filter("fill","gen0")
         ng["color"] = "blue"
         ng["width"] = 320
         ng["height"] = 240
-        ng = ctx.add_filter("gen","gen1")
+        ng = ctx.add_filter("fill","gen1")
         ng["color"] = "green"
         ng["width"] = 320
         ng["height"] = 240
@@ -85,8 +85,8 @@ class TestImagick(unittest.TestCase):
         nc["height"] = 200
 
         no = ctx.add_filter("over","over0")
-        no["x_offset"] = 10
-        no["y_offset"] = 20
+        no["x"] = 10
+        no["y"] = 20
 
         na = ctx.add_filter("append","append0")
         na["direction"] = "vz"

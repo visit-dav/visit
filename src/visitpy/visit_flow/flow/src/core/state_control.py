@@ -56,6 +56,8 @@ class StateVector(object):
         self.vec = copy.deepcopy(vec)
     def __str__(self):
         return "[%d]:%s" % (self.idx, str(self.vec))
+    def index(self):
+        return self.idx
 
 class Dimension(object):
     """

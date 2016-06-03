@@ -50,7 +50,7 @@ def gen_ofname(node):
     pattern = p.pattern
     offset  = p.offset
     if pattern.find("%") >0:
-        ofname = pattern % (node.state_vector.idx + offset)
+        ofname = pattern % (node.state_vector.index() + offset)
     else:
         ofname = pattern
     return ofname
