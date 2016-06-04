@@ -3513,8 +3513,23 @@ public class ViewerMethods
         return Synchronize();
     }
 
-
-
+    /**
+     * Exports a host profile to a file.
+     *
+     * @param profile The nickname of the host profile to save.
+     * @param filename The name of the file to save the profile to.
+     * @param saveInUserDir Whether to save in the user's ~/.visit/hosts directory.
+     * @return true on success; false otherwise.
+     */
+    public boolean ExportHostProfile(String profile, String filename, boolean saveInUserDir)
+    {
+        GetViewerState().GetViewerRPC().SetRPCType(ViewerRPC.VIEWERRPCTYPE_EXPORTHOSTPROFILERPC);
+        GetViewerState().GetViewerRPC().SetStringArg1(profile);
+        GetViewerState().GetViewerRPC().SetStringArg2(filename);
+        GetViewerState().GetViewerRPC().SetBoolFlag(saveInUserDir);
+        GetViewerState().GetViewerRPC().Notify();
+        return Synchronize();
+    }
 
     //
     // Convenience methods

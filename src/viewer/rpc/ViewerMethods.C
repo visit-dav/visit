@@ -5598,17 +5598,23 @@ ViewerMethods::ExportWindows(const intVector &windowIds, const std::string &form
     state->GetViewerRPC()->Notify();
 }
 
-void
-ViewerMethods::ExportHostProfile(const std::string& profile, const std::string& filename, const bool &saveInUserDir)
-{
-    JSONNode node;
-    node["action"] = "ExportHostProfile";
-    node["profileName"] = profile;
-    node["fileName"] = filename;
-    node["saveInUserDir"] = saveInUserDir;
+// ****************************************************************************
+//  Method: ViewerMethods::ExportHostProfile
+//
+//  Purpose: Exports a host profile to a file.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Jun  3 16:08:37 PDT 2016
+//
+// ****************************************************************************
 
-    state->GetViewerRPC()->SetRPCType(ViewerRPC::ExportRPC);
-    state->GetViewerRPC()->SetStringArg1(node.ToString());
+void
+ViewerMethods::ExportHostProfile(const std::string &profile, const std::string &filename, bool saveInUserDir)
+{
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ExportHostProfileRPC);
+    state->GetViewerRPC()->SetStringArg1(profile);
+    state->GetViewerRPC()->SetStringArg2(filename);
+    state->GetViewerRPC()->SetBoolFlag(saveInUserDir);
     state->GetViewerRPC()->Notify();
 }
 

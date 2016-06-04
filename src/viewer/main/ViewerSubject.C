@@ -3138,63 +3138,6 @@ ViewerSubject::ExportWindow()
 }
 
 // ****************************************************************************
-// Method: QvisHostProfileWindow::ExportHostProfile
-//
-// Purpose:
-//   Export Selected HostProfile to Directory.
-//
-// Programmer:
-// Creation:   September 10, 2013
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ExportHostProfile()
-{
-    JSONNode node;
-    node.Parse(GetViewerState()->GetViewerRPC()->GetStringArg1());
-
-    std::string profileName = node["profileName"].GetString();
-    std::string fileName = node["fileName"].GetString();
-    bool saveInUserDir = node["saveInUserDir"].GetBool();
-
-    std::string userdir = GetAndMakeUserVisItHostsDirectory();
-    HostProfileList *hpl = GetViewerState()->GetHostProfileList();
-
-    for (int i = 0; i < hpl->GetNumMachines(); ++i)
-    {
-        MachineProfile &pl = hpl->GetMachines(i);
-        std::string host = pl.GetHostNickname();
-
-        if(host != profileName) continue;
-
-        std::string name = "";
-
-        if(!saveInUserDir)
-            name = fileName;
-        else
-            name = userdir + VISIT_SLASH_STRING + fileName;
-
-        GetViewerMessaging()->Status(
-            TR("Host profile %1 exported to %2").
-               arg(host).
-               arg(name));
-
-        // Tell the user what happened.
-        GetViewerMessaging()->Message(
-            TR("VisIt exported host profile \"%1\" to the file: %2. ").
-               arg(host).
-               arg(name));
-
-        SingleAttributeConfigManager mgr(&pl);
-        mgr.Export(name);
-        break;
-    }
-}
-
-// ****************************************************************************
 // Method: ViewerSubject::Export
 //
 // Purpose:
@@ -3252,10 +3195,6 @@ ViewerSubject::Export()
 
     if(action == "ExportWindows") {
         ExportWindow();
-    }
-
-    if(action == "ExportHostProfile") {
-        ExportHostProfile();
     }
 
     if(action == "GetFileList") {

@@ -260,8 +260,7 @@ private:
     void BroadcastData(int windowId, int clientId);
     void Export();
     void ExportWindow();
-    void ExportHostProfile();
-    static void RenderEventCallback(int windowId, bool inMotion, void* data);
+     static void RenderEventCallback(int windowId, bool inMotion, void* data);
     static vtkRenderWindowInteractor* CreateGlobalInteractor();
 
     SharedDaemon             *shared_viewer_daemon;

@@ -216,4 +216,28 @@ public:
     virtual void Execute();
 };
 
+// ****************************************************************************
+// Class: ExportHostProfileAction
+//
+// Purpose:
+//   Handles ViewerRPC::ExportHostProfileRPC
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun  3 16:14:51 PDT 2016
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWERCORE_API ExportHostProfileAction : public ViewerActionLogic
+{
+public:
+    ExportHostProfileAction(ViewerWindow *win) : ViewerActionLogic(win) {}
+    virtual ~ExportHostProfileAction() {}
+
+    virtual void Execute();
+};
+
 #endif

@@ -50,6 +50,10 @@
 
 #include <ExportDBAttributes.h>
 #include <avtColorTables.h>
+#include <HostProfileList.h>
+#include <MachineProfile.h>
+#include <InstallationFunctions.h>
+#include <SingleAttributeConfigManager.h>
 
 //
 // These methods were adapted from ViewerSubject handlers.
@@ -304,6 +308,62 @@ ExportEntireStateAction::Execute()
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
+// Method: ExportHostProfileAction::Execute
+//
+// Purpose: 
+//   Execute ViewerRPC::ExportHostProfileRPC
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun  3 16:27:38 PDT 2016
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ExportHostProfileAction::Execute()
+{
+    std::string profileName(args.GetStringArg1());
+    std::string fileName(args.GetStringArg2());
+    bool saveInUserDir(args.GetBoolFlag());
+
+    std::string userdir = GetAndMakeUserVisItHostsDirectory();
+    HostProfileList *hpl = GetViewerState()->GetHostProfileList();
+
+    for (int i = 0; i < hpl->GetNumMachines(); ++i)
+    {
+        MachineProfile &pl = hpl->GetMachines(i);
+        std::string host = pl.GetHostNickname();
+
+        if(host != profileName) continue;
+
+        std::string name = "";
+
+        if(!saveInUserDir)
+            name = fileName;
+        else
+            name = userdir + VISIT_SLASH_STRING + fileName;
+
+        GetViewerMessaging()->Status(
+            TR("Host profile %1 exported to %2").
+               arg(host).
+               arg(name));
+
+        // Tell the user what happened.
+        GetViewerMessaging()->Message(
+            TR("VisIt exported host profile \"%1\" to the file: %2. ").
+               arg(host).
+               arg(name));
+
+        SingleAttributeConfigManager mgr(&pl);
+        mgr.Export(name);
+        break;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
 // Method: ImportEntireStateAction::Execute
 //
 // Purpose: 
@@ -396,3 +456,4 @@ WriteConfigFileAction::Execute()
     GetViewerStateManager()->WriteConfigFile();
     GetViewerStateManager()->WriteHostProfiles();
 }
+
