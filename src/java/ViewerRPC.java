@@ -264,9 +264,10 @@ public class ViewerRPC extends AttributeSubject
     public final static int VIEWERRPCTYPE_RELEASETODDTRPC = 200;
     public final static int VIEWERRPCTYPE_PLOTDDTVISPOINTVARIABLESRPC = 201;
     public final static int VIEWERRPCTYPE_EXPORTRPC = 202;
-    public final static int VIEWERRPCTYPE_READHOSTPROFILESFROMDIRECTORYRPC = 203;
-    public final static int VIEWERRPCTYPE_SETREMOVEDUPLICATENODESRPC = 204;
-    public final static int VIEWERRPCTYPE_MAXRPC = 205;
+    public final static int VIEWERRPCTYPE_EXPORTHOSTPROFILERPC = 203;
+    public final static int VIEWERRPCTYPE_READHOSTPROFILESFROMDIRECTORYRPC = 204;
+    public final static int VIEWERRPCTYPE_SETREMOVEDUPLICATENODESRPC = 205;
+    public final static int VIEWERRPCTYPE_MAXRPC = 206;
 
 
     public ViewerRPC()
@@ -1344,6 +1345,8 @@ public class ViewerRPC extends AttributeSubject
             str = str + "VIEWERRPCTYPE_PLOTDDTVISPOINTVARIABLESRPC";
         if(RPCType == VIEWERRPCTYPE_EXPORTRPC)
             str = str + "VIEWERRPCTYPE_EXPORTRPC";
+        if(RPCType == VIEWERRPCTYPE_EXPORTHOSTPROFILERPC)
+            str = str + "VIEWERRPCTYPE_EXPORTHOSTPROFILERPC";
         if(RPCType == VIEWERRPCTYPE_READHOSTPROFILESFROMDIRECTORYRPC)
             str = str + "VIEWERRPCTYPE_READHOSTPROFILESFROMDIRECTORYRPC";
         if(RPCType == VIEWERRPCTYPE_SETREMOVEDUPLICATENODESRPC)

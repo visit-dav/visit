@@ -268,6 +268,7 @@ ViewerFactory::SetActionManagerLogic(ViewerActionManager *mgr, ViewerWindow *win
     mgr->SetLogic(ViewerRPC::ExportColorTableRPC,           new ExportColorTableAction(win));
     mgr->SetLogic(ViewerRPC::ExportDBRPC,                   new ExportDBAction(win));
     mgr->SetLogic(ViewerRPC::ExportEntireStateRPC,          new ExportEntireStateAction(win));
+    mgr->SetLogic(ViewerRPC::ExportHostProfileRPC,          new ExportHostProfileAction(win));
     mgr->SetLogic(ViewerRPC::GetProcInfoRPC,                new GetProcInfoAction(win));
     mgr->SetLogic(ViewerRPC::GetQueryParametersRPC,         new GetQueryParametersAction(win));
     mgr->SetLogic(ViewerRPC::GetQueryParametersRPC,         new GetQueryParametersAction(win));
