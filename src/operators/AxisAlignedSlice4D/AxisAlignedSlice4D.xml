@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Plugin name="AxisAlignedSlice4D" type="operator" label="Axis Aligned Slice 4D" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="array" exprOutType="scalar">
+    <Attribute name="AxisAlignedSlice4DAttributes" purpose="Attributes for AxisAlignedSlice4D" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="AxisAlignedSlice4D.code">
+      <Field name="I" label="I" type="intVector">
+      </Field>
+      <Field name="J" label="J" type="intVector">
+      </Field>
+      <Field name="K" label="K" type="intVector">
+      </Field>
+      <Field name="L" label="L" type="intVector">
+      </Field>
+      <Function name="AxisAlignedSlice4DCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

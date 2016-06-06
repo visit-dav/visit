@@ -407,6 +407,7 @@ avtExtractPointFunction2DFilter::Execute()
                     if (val > range[1]) range[1] = val;
                 }
         odata->SetName(outVarName.c_str());
+        odata->SetName(outVarName.c_str());
         ogrid->GetCellData()->SetScalars(odata);
         odata->Delete();
 
