@@ -79,8 +79,7 @@ class QUERY_API avtStreamlineInfoQuery : public avtDatasetQuery
     virtual void             SetInputParams(const MapNode &);
     static  void             GetDefaultInputParams(MapNode &);
 
-    void                     SetDumpCoordinates(bool v) {dumpCoordinates = v;}
-    void                     SetDumpValues(bool v) {dumpValues = v;}
+    void                     SetDumpSteps(bool v) {dumpSteps = v;}
 
   protected:
     virtual void             VerifyInput(void);
@@ -88,8 +87,7 @@ class QUERY_API avtStreamlineInfoQuery : public avtDatasetQuery
     virtual void             PostExecute(void);
     virtual void             Execute(vtkDataSet *ds, const int chunk);
 
-    bool dumpCoordinates;
-    bool dumpValues;
+    bool dumpSteps;
     std::vector<float> slData;
 };
 
