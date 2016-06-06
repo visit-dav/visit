@@ -79,8 +79,10 @@ class QUERY_API avtIntegralCurveInfoQuery : public avtDatasetQuery
     virtual void             SetInputParams(const MapNode &);
     static  void             GetDefaultInputParams(MapNode &);
 
-    void                     SetDumpOpts  (int  v) {dumpOpts   = v;}
-    void                     SetDumpValues(bool v) {dumpValues = v;}
+    void                     SetDumpIndex      (bool v) {dumpIndex = v;}
+    void                     SetDumpCoordinates(bool v) {dumpCoordinates = v;}
+    void                     SetDumpArcLength  (bool v) {dumpArcLength = v;}
+    void                     SetDumpValues     (bool v) {dumpValues = v;}
 
   protected:
     virtual void             VerifyInput(void);
@@ -88,7 +90,9 @@ class QUERY_API avtIntegralCurveInfoQuery : public avtDatasetQuery
     virtual void             PostExecute(void);
     virtual void             Execute(vtkDataSet *ds, const int chunk);
 
-    unsigned int dumpOpts;
+    bool dumpIndex;
+    bool dumpCoordinates;
+    bool dumpArcLength;
     bool dumpValues;
 
     std::vector<double> slData;
