@@ -30,7 +30,7 @@ def QueryMain() :
     s = s + GetQueryOutputString()
     s = s + "\n"
     
-    Query("Streamline Info", dump_coordinates=1)
+    Query("Streamline Info", dump_steps=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
     
