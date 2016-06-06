@@ -205,7 +205,7 @@ avtPoincareFilter::avtPoincareFilter() :
     //
     // Initialize source values.
     //
-    sourceType = PICS_SOURCE_POINT;
+    sourceType = PoincareAttributes::SpecifiedPoint;
     numSamplePoints = 0;
     randomSamples = false;
     randomSeed = 0;
@@ -666,11 +666,11 @@ avtPoincareFilter::GetInitialLocations(void)
         srand(randomSeed);
 
     // Add seed points based on the source.
-    if(sourceType == PICS_SOURCE_POINT)
+    if(sourceType == PoincareAttributes::SpecifiedPoint)
         GenerateSeedPointsFromPoint(seedPts);
-    else if(sourceType == PICS_SOURCE_POINT_LIST)
+    else if(sourceType == PoincareAttributes::PointList)
         GenerateSeedPointsFromPointList(seedPts);
-    else if(sourceType == PICS_SOURCE_LINE)
+    else if(sourceType == PoincareAttributes::SpecifiedLine)
         GenerateSeedPointsFromLine(seedPts);
 
     //Check for 2D input.
@@ -828,7 +828,7 @@ avtPoincareFilter::GetInitialVelocities(void)
 void
 avtPoincareFilter::SetPointSource(const double *p)
 {
-    sourceType = PICS_SOURCE_POINT;
+    sourceType = PoincareAttributes::SpecifiedPoint;
     points.resize(1);
     points[0].set(p);
 }
@@ -856,7 +856,7 @@ avtPoincareFilter::SetPointSource(const double *p)
 void
 avtPoincareFilter::SetPointListSource(const std::vector<double> &ptList)
 {
-    sourceType = PICS_SOURCE_POINT_LIST;
+    sourceType = PoincareAttributes::PointList;
 
     points.resize( ptList.size()/3 );
 
@@ -891,7 +891,7 @@ void
 avtPoincareFilter::SetLineSource(const double *p0, const double *p1,
                                  int den, bool rand, int seed, int numPts)
 {
-    sourceType = PICS_SOURCE_LINE;
+    sourceType = PoincareAttributes::SpecifiedLine;
     points.resize(2);
     points[0].set(p0);
     points[1].set(p1);
