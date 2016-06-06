@@ -1727,11 +1727,13 @@ avtPICSFilter::InitializeIntervalTree()
         // The reader returns an interval tree with one domain (for everything).
         // This is not what we want.  So forget about this one, as we will be 
         // better off calculating one.
+cerr << "Not using precalculated interval tree!!" << endl;
         dontUseIntervalTree = true;
     }
 
     if (it_tmp == NULL || dontUseIntervalTree)
     {
+cerr << "Updating interval tree" << endl;
         UpdateIntervalTree(curTimeSlice);
     }
     else
@@ -1744,6 +1746,7 @@ avtPICSFilter::InitializeIntervalTree()
     if( intervalTree )
     {
       numDomains = intervalTree->GetNLeaves();
+cerr << "Successfully got an interval tree, nleaves = " << numDomains << endl;
     }
     else
     {
@@ -1768,6 +1771,7 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
 {
     if (OperatingOnDemand())
     {
+cerr << "Operating on demand" << endl;
         // Get/Compute the interval tree.
         avtIntervalTree *it_tmp = GetMetaData()->GetSpatialExtents(timeSlice);
 
@@ -1785,6 +1789,9 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
                 debug1 << "Pathlines - This file format reader does dynamic "
                        << "decomposition. Assuming it can handle hints about "
                        << "what data to read." << std::endl;
+                cerr << "Pathlines - This file format reader does dynamic "
+                       << "decomposition. Assuming it can handle hints about "
+                       << "what data to read." << std::endl;
             }
             specifyPoint = true;
 
@@ -1795,6 +1802,7 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
             // the existing interface.
             // Make a copy so it doesn't get deleted out from underneath us.
             intervalTree = new avtIntervalTree(it_tmp);
+cerr << "Making dummy tree" << endl;
         }
         else
         {
@@ -1808,10 +1816,13 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
     }
     else
     {
+cerr << "Not operating on demand" << endl;
         bool dataIsReplicated = GetInput()->GetInfo().GetAttributes().
                                          DataIsReplicatedOnAllProcessors();
+cerr << "Data is replicated = " << dataIsReplicated << endl;
         
         bool performCalculationsOverAllProcs = dataIsReplicated ? false : true;
+cerr << "Perform calc on all procs = " << performCalculationsOverAllProcs << endl;
 
         GetTypedInput()->RenumberDomainIDs(performCalculationsOverAllProcs);
 
@@ -1823,8 +1834,10 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
                 intervalTree = NULL;
             }
 
+cerr << "(1) Calculating spatial interval tree" << endl;
             intervalTree = GetTypedInput()->CalculateSpatialIntervalTree(
                                            performCalculationsOverAllProcs);
+cerr << "(1) Done calculating spatial interval tree" << endl;
         }
         CATCH(VisItException)
         {

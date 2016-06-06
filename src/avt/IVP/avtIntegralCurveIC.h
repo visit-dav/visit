@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtStreamlineIC.h                              //
+//                            avtIntegralCurveIC.h                              //
 // ************************************************************************* //
 
 #ifndef AVT_STREAMLINE_IC_H
@@ -46,7 +46,7 @@
 #include <avtStateRecorderIntegralCurve.h>
 
 // ****************************************************************************
-//  Class: avtStreamlineIC
+//  Class: avtIntegralCurveIC
 //
 //  Purpose:
 //      A derived type of avtStateRecorderIntegralCurve.  This class 
@@ -67,18 +67,18 @@
 //
 // ****************************************************************************
 
-class IVP_API avtStreamlineIC : public avtStateRecorderIntegralCurve
+class IVP_API avtIntegralCurveIC : public avtStateRecorderIntegralCurve
 {
 public:
-    avtStreamlineIC(int maxSteps, bool doDistance, double maxDistance,
+    avtIntegralCurveIC(int maxSteps, bool doDistance, double maxDistance,
                     bool doTime, double maxTime,
                     unsigned int mask, const avtIVPSolver* model, 
                     Direction dir, const double& t_start, 
                     const avtVector &p_start, const avtVector &v_start,
                     int ID);
 
-    avtStreamlineIC();
-    virtual ~avtStreamlineIC();
+    avtIntegralCurveIC();
+    virtual ~avtIntegralCurveIC();
 
     virtual void    Serialize(MemStream::Mode mode,
                               MemStream &buff, 
@@ -98,8 +98,8 @@ public:
                                  { return terminatedBecauseOfMaxSteps; };
 
   protected:
-    avtStreamlineIC( const avtStreamlineIC& );
-    avtStreamlineIC& operator=( const avtStreamlineIC& );
+    avtIntegralCurveIC( const avtIntegralCurveIC& );
+    avtIntegralCurveIC& operator=( const avtIntegralCurveIC& );
     
     virtual bool     CheckForTermination(avtIVPStep& step, avtIVPField *);
 

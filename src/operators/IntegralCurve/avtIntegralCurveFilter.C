@@ -63,7 +63,7 @@
 
 #include <MapNode.h>
 
-#include <avtStreamlineIC.h>
+#include <avtIntegralCurveIC.h>
 
 #include <vector>
 #include <limits>
@@ -450,7 +450,7 @@ avtIntegralCurveFilter::ModifyContract(avtContract_p in_contract)
     else if (strcmp(in_dr->GetVariable(), "colorVar") == 0 ||
              secondaryVariables.size() )
     {
-        // The avtStreamlinePlot requested "colorVar", so remove that from the
+        // The avtIntegralCurvePlot requested "colorVar", so remove that from the
         // contract now.
         out_dr = new avtDataRequest(in_dr, in_dr->GetOriginalVariable());
     }
@@ -911,7 +911,7 @@ avtIntegralCurveFilter::GenerateAttributeFields() const
 //  Method: avtIntegralCurveFilter::SetTermination
 //
 //  Purpose:
-//      Sets the termination criteria for a streamline.
+//      Sets the termination criteria for an integral curve.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 5, 2010
@@ -935,8 +935,9 @@ avtIntegralCurveFilter::SetTermination(int maxSteps_, bool doDistance_,
 //  Method: avtIntegralCurveFilter::CreateIntegralCurve
 //
 //  Purpose:
-//      Each derived type of avtPICSFilter must know how to create an integral
-//      curve.  The streamline filter creates an avtStateRecorderIntegralCurve.
+//      Each derived type of avtPICSFilter must know how to create an
+//      integral curve.  The integral curve filter creates an
+//      avtStateRecorderIntegralCurve.
 //
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2010
@@ -944,7 +945,7 @@ avtIntegralCurveFilter::SetTermination(int maxSteps_, bool doDistance_,
 //  Modifications:
 //
 //    Hank Childs, Mon Oct  4 14:53:13 PDT 2010
-//    Create an avtStreamline (not an avtStateRecorderIntegralCurve) and
+//    Create an avtIntegralCurve (not an avtStateRecorderIntegralCurve) and
 //    put the termination criteria into the signature.
 //
 //   Dave Pugmire, Fri Nov  5 15:38:33 EDT 2010
@@ -955,7 +956,7 @@ avtIntegralCurveFilter::SetTermination(int maxSteps_, bool doDistance_,
 avtIntegralCurve *
 avtIntegralCurveFilter::CreateIntegralCurve()
 {
-    avtStreamlineIC *ic = new avtStreamlineIC();
+    avtIntegralCurveIC *ic = new avtIntegralCurveIC();
     ic->SetMaxSteps( maxSteps );
     ic->SetHistoryMask( GenerateAttributeFields() );
     return ic;
@@ -966,8 +967,9 @@ avtIntegralCurveFilter::CreateIntegralCurve()
 //  Method: avtIntegralCurveFilter::CreateIntegralCurve
 //
 //  Purpose:
-//      Each derived type of avtPICSFilter must know how to create an integral
-//      curve.  The streamline filter creates an avtStateRecorderIntegralCurve.
+//      Each derived type of avtPICSFilter must know how to create an
+//      integral curve.  The integral curve filter creates an
+//      avtStateRecorderIntegralCurve.
 //
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2010
@@ -975,7 +977,7 @@ avtIntegralCurveFilter::CreateIntegralCurve()
 //  Modifications:
 //
 //    Hank Childs, Mon Oct  4 14:53:13 PDT 2010
-//    Create an avtStreamline (not an avtStateRecorderIntegralCurve) and
+//    Create an avtIntegralCurve (not an avtStateRecorderIntegralCurve) and
 //    put the termination criteria into the signature.
 //
 //    Hank Childs, Fri Mar  9 16:50:48 PST 2012
@@ -1009,8 +1011,8 @@ avtIntegralCurveFilter::CreateIntegralCurve( const avtIVPSolver* model,
             absMaxTime = maxTime;
     }
 
-    avtStreamlineIC *rv = 
-        new avtStreamlineIC(maxSteps, doDistance, maxDistance, doTime, absMaxTime,
+    avtIntegralCurveIC *rv = 
+        new avtIntegralCurveIC(maxSteps, doDistance, maxDistance, doTime, absMaxTime,
                             attr, model, dir, t_start, p_start, v_start, ID);
 
     return rv;
@@ -1541,8 +1543,7 @@ avtIntegralCurveFilter::GetInitialVelocities(void)
 //  Purpose:
 //      Get the seed points out of the attributes.
 //
-//  Programmer: Hank Childs (harvested from GetStreamlinesFromInitialSeeds by
-//                           David Pugmire)
+//  Programmer: Hank Childs
 //  Creation:   June 5, 2008
 //
 //  Modifications:
@@ -2471,7 +2472,7 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     // Loop through all the IC for warnings.
     for (int i = 0; i < numICs; ++i)
     {
-        avtStreamlineIC *ic = dynamic_cast<avtStreamlineIC*>(ics[i]);
+        avtIntegralCurveIC *ic = dynamic_cast<avtIntegralCurveIC*>(ics[i]);
 
         bool badTime = (doTime && (fabs(ic->GetTime() - absMaxTime) > FLT_MIN));
         bool badDistance = (doDistance && (ic->GetDistance() < maxDistance));
@@ -2599,61 +2600,12 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 //  Method: avtIntegralCurveFilter::CreateIntegralCurveOutput
 //
 //  Purpose:
-//      Create the VTK poly data output from the streamline.
+//      Create the VTK poly data output from the integral curve.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
 //
 //  Modifications:
-//
-//   Dave Pugmire, Wed Aug 13 14:11:04 EST 2008
-//   Add dataSpatialDimension.
-//
-//   Hank Childs, Tue Dec  2 13:51:19 PST 2008
-//   Removed this method from avtIntegralCurveFilter to 
-//   avtIntegralCurveFilter.  The motivation for this refactoring was to
-//   allow other modules (Poincare) to inherit from avtIntegralCurveFilter and
-//   use its parallel-aware goodness.
-//
-//   Dave Pugmire, Tue Dec 23 13:52:42 EST 2008
-//   Removed ReportStatistics from this method.
-//
-//   Dave Pugmire, Tue Feb  3 11:00:54 EST 2009
-//   Changed debugs.
-//
-//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
-//   Add custom renderer and lots of appearance options to the streamlines plots.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename this method to reflect the new emphasis in particle advection, as
-//   opposed to streamlines.
-//
-//   Dave Pugmire, Tue Sep 28 10:41:00 EDT 2010
-//   Optimize the creation of vtkPolyData.
-//
-//   Dave Pugmire, Wed Sep 29 14:57:59 EDT 2010
-//   Initialize scalar array if data value is solid.
-//
-//   Hank Childs, Wed Oct  6 20:07:28 PDT 2010
-//   Initialize referenceTypeForDisplay.
-//
-//   Hank Childs, Fri Oct  8 14:57:13 PDT 2010
-//   Check to see if any curves terminated because of the steps criteria.
-//
-//   Dave Pugmire, Thu Dec  2 12:49:33 EST 2010
-//   Can't early return until after collective communication.
-//
-//   Hank Childs, Sun Dec  5 10:43:57 PST 2010
-//   Issue warnings for more problems.
-//
-//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
-//   Add vary tube radius by variable.
-//
-//   Dave Pugmire, Mon Feb 21 08:22:30 EST 2011
-//   Set the dataValue by correlation distance.
 //
 // ****************************************************************************
 void
@@ -3286,9 +3238,10 @@ avtIntegralCurveFilter::ComputeCorrelationDistance(int idx,
 // ****************************************************************************
 // Method:  avtIntegralCurveFilter::ProcessVaryTubeRadiusByScalar
 //
-// Purpose: Unify the radius scaling parameter for streamlines that go in both
-//          directions.  Since both dir streamlines are split up, they will
-//          be treated separately, resulting in different scaling.
+// Purpose: Unify the radius scaling parameter for integral curve that
+//          go in both directions.  Since both dir integral curves are
+//          split up, they will be treated separately, resulting in
+//          different scaling.
 //   
 //
 // Programmer:  Dave Pugmire
