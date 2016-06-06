@@ -46,7 +46,7 @@
 /** header file for plugin development */
 #include <avtPluginFilter.h>
 /** header file for parallel integral curve system via the streamline filter */
-#include <avtStreamlineFilter.h>
+#include <avtPICSFilter.h>
 
 /** included attributes for Poincare */
 #include <PoincareAttributes.h>
