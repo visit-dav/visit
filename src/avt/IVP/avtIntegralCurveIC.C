@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtStreamlineIC.C                             //
+//                             avtIntegralCurveIC.C                             //
 // ************************************************************************* //
 
-#include <avtStreamlineIC.h>
+#include <avtIntegralCurveIC.h>
 
 #include <list>
 #include <cmath>
@@ -54,7 +54,7 @@
 
 
 // ****************************************************************************
-//  Method: avtStreamlineIC constructor
+//  Method: avtIntegralCurveIC constructor
 //
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
@@ -70,7 +70,7 @@
 //
 // ****************************************************************************
 
-avtStreamlineIC::avtStreamlineIC(
+avtIntegralCurveIC::avtIntegralCurveIC(
     int maxSteps_,
     bool doDistance_,
     double maxDistance_,
@@ -99,7 +99,7 @@ avtStreamlineIC::avtStreamlineIC(
 
 
 // ****************************************************************************
-//  Method: avtStreamlineIC constructor
+//  Method: avtIntegralCurveIC constructor
 //
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
@@ -111,7 +111,7 @@ avtStreamlineIC::avtStreamlineIC(
 //
 // ****************************************************************************
 
-avtStreamlineIC::avtStreamlineIC() : avtStateRecorderIntegralCurve()
+avtIntegralCurveIC::avtIntegralCurveIC() : avtStateRecorderIntegralCurve()
 {
     numSteps = 0;
 
@@ -126,20 +126,20 @@ avtStreamlineIC::avtStreamlineIC() : avtStateRecorderIntegralCurve()
 
 
 // ****************************************************************************
-//  Method: avtStreamlineIC destructor
+//  Method: avtIntegralCurveIC destructor
 //
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
 //
 // ****************************************************************************
 
-avtStreamlineIC::~avtStreamlineIC()
+avtIntegralCurveIC::~avtIntegralCurveIC()
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtStreamlineIC::CheckForTermination
+//  Method: avtIntegralCurveIC::CheckForTermination
 //
 //  Purpose:
 //      Checks to see if we should terminate the streamline.
@@ -158,7 +158,7 @@ avtStreamlineIC::~avtStreamlineIC()
 // ****************************************************************************
 
 bool
-avtStreamlineIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
+avtIntegralCurveIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
 {
     bool shouldTerminate = false;
 
@@ -212,7 +212,7 @@ avtStreamlineIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
 
 
 // ****************************************************************************
-//  Method: avtStreamlineIC::Serialize
+//  Method: avtIntegralCurveIC::Serialize
 //
 //  Purpose:
 //      Serializes a streamline so it can be sent to another processor.
@@ -235,7 +235,7 @@ avtStreamlineIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
 // ****************************************************************************
 
 void
-avtStreamlineIC::Serialize(MemStream::Mode mode, MemStream &buff, 
+avtIntegralCurveIC::Serialize(MemStream::Mode mode, MemStream &buff, 
                            avtIVPSolver *solver, SerializeFlags serializeFlags)
 {
     // Have the base class serialize its part
@@ -252,7 +252,7 @@ avtStreamlineIC::Serialize(MemStream::Mode mode, MemStream &buff,
 
 
 // ****************************************************************************
-//  Method: avtStreamlineIC::MergeIntegralCurve
+//  Method: avtIntegralCurveIC::MergeIntegralCurve
 //
 //  Purpose:
 //      Merge a values from one curve into another
@@ -263,9 +263,9 @@ avtStreamlineIC::Serialize(MemStream::Mode mode, MemStream &buff,
 // ****************************************************************************
 
 void
-avtStreamlineIC::MergeIntegralCurve(avtIntegralCurve *ic)
+avtIntegralCurveIC::MergeIntegralCurve(avtIntegralCurve *ic)
 {
-  avtStreamlineIC *sic = (avtStreamlineIC* ) ic;
+  avtIntegralCurveIC *sic = (avtIntegralCurveIC* ) ic;
 
   numSteps = sic->numSteps;
   terminatedBecauseOfMaxSteps = sic->terminatedBecauseOfMaxSteps;

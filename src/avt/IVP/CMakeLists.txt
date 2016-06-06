@@ -71,7 +71,7 @@ avtIVPVTKTimeVaryingField.C
 avtLCSIC.C
 avtPoincareIC.C
 avtStateRecorderIntegralCurve.C
-avtStreamlineIC.C
+avtIntegralCurveIC.C
 MemStream.C
 avtCommDSOnDemandICAlgorithm.C
 avtICAlgorithm.C
@@ -82,8 +82,6 @@ avtPICSFilter.C
 avtPODICAlgorithm.C
 avtPOSBalanceICAlgorithm.C
 avtSerialICAlgorithm.C
-avtStreamlineFilter.C
-avtStreamlinePolyDataFilter.C
 )
 
 IF( NEKTAR++_FOUND )
