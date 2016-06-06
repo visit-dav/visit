@@ -311,6 +311,7 @@ avtExtractPointFunction2DFilter::ExecuteData(avtDataRepresentation *in_dr)
                 if (val < range[0]) range[0] = val;
                 if (val > range[1]) range[1] = val;
             }
+        odata->SetName(outVarName.c_str());
         ogrid->GetCellData()->SetScalars(odata);
         odata->Delete();
 
