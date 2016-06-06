@@ -385,32 +385,24 @@ QvisQueryWindow::CreateStandardQueryWidget()
 
     dataOpts->button(0)->setChecked(true);
 
-    // Add the dump options radio button group to the argument panel.
-    dumpOpts = new QButtonGroup(argPanel);
-    QRadioButton *dNothing = new QRadioButton(tr("Dump Nothing"), argPanel);
-    dumpOpts->addButton(dNothing,0);
-    sLayout->addWidget(dNothing, 9, 0);
-
-    QRadioButton *dCoords = new QRadioButton(tr("Dump Coordinates"), argPanel);
-    dumpOpts->addButton(dCoords,1);
-    sLayout->addWidget(dCoords, 10, 0);
-
-    QRadioButton *dArcLen = new QRadioButton(tr("Dump Arc Length"), argPanel);
-    dumpOpts->addButton(dArcLen,2);
-    sLayout->addWidget(dArcLen, 11, 0);
-
-    QRadioButton *dIndex = new QRadioButton(tr("Dump Index"), argPanel);
-    dumpOpts->addButton(dIndex,3);
-    sLayout->addWidget(dIndex, 12, 0);
-
-    dumpOpts->button(0)->setChecked(true);
-
     // Add the dump check box options to the argument panel.
+    dumpIndex = new QCheckBox(tr("Dump Index"), argPanel);
+    connect(dumpIndex, SIGNAL(toggled(bool)), this, 
+            SLOT(dumpIndexToggled(bool)));
+    dumpIndex->hide();
+    sLayout->addWidget(dumpIndex, 11, 0, 1, 2);
+
     dumpCoordinates = new QCheckBox(tr("Dump Coordinates"), argPanel);
     connect(dumpCoordinates, SIGNAL(toggled(bool)), this, 
             SLOT(dumpCoordinatesToggled(bool)));
     dumpCoordinates->hide();
-    sLayout->addWidget(dumpCoordinates, 13, 0, 1, 2);
+    sLayout->addWidget(dumpCoordinates, 12, 0, 1, 2);
+
+    dumpArcLength = new QCheckBox(tr("Dump Arc Length"), argPanel);
+    connect(dumpArcLength, SIGNAL(toggled(bool)), this, 
+            SLOT(dumpArcLengthToggled(bool)));
+    dumpArcLength->hide();
+    sLayout->addWidget(dumpArcLength, 13, 0, 1, 2);
 
     dumpValues = new QCheckBox(tr("Dump Values"), argPanel);
     connect(dumpValues, SIGNAL(toggled(bool)), this, 
@@ -985,9 +977,10 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     }
     // reset a few defaults
     dataOpts->button(0)->setChecked(true);
-    dumpOpts->button(0)->setChecked(true);
     useGlobal->setChecked(0);
+    dumpIndex->setChecked(0);
     dumpCoordinates->setChecked(0);
+    dumpArcLength->setChecked(0);
     dumpValues->setChecked(0);
     labels[0]->setEnabled(true);
     textFields[0]->setEnabled(true);
@@ -1008,7 +1001,9 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         bool showDataOptions = false;
         bool showDumpOptions = false;
         bool showGlobal = false;
+        bool showDumpIndex = false;
         bool showDumpCoordinates = false;
+        bool showDumpArcLength = false;
         bool showDumpValues = false;
         QueryList::WindowType winT   = (QueryList::WindowType)winType[index];
         bool showTime = queryMode[index] != QueryList::QueryOnly;
@@ -1136,7 +1131,9 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         }
         else if (winT == QueryList::IntegralCurveInfo)
         {
-            showDumpOptions = true;
+            showDumpIndex = true;
+            showDumpCoordinates = true;
+            showDumpArcLength = true;
             showDumpValues = true;
         }
         else if (winT == QueryList::LineSamplerInfo)
@@ -1186,10 +1183,20 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             useGlobal->hide();
         }
 
+        if (showDumpIndex)
+            dumpIndex->show();
+        else
+            dumpIndex->hide();
+
         if (showDumpCoordinates)
             dumpCoordinates->show();
         else
             dumpCoordinates->hide();
+
+        if (showDumpArcLength)
+            dumpArcLength->show();
+        else
+            dumpArcLength->hide();
 
         if (showDumpValues)
             dumpValues->show();
@@ -1205,17 +1212,6 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         {
             dataOpts->button(0)->hide();
             dataOpts->button(1)->hide();
-        }
-
-        if (showDumpOptions)
-        {
-            dumpOpts->button(0)->show();
-            dumpOpts->button(1)->show();
-        }
-        else
-        {
-            dumpOpts->button(0)->hide();
-            dumpOpts->button(1)->hide();
         }
 
         if (showTime)
@@ -1594,10 +1590,9 @@ QvisQueryWindow::ExecuteStandardQuery()
         {
             if(noErrors)
             {
-              for( int i=0; i<4; ++i )
-                if( dumpOpts->button(i)->isChecked() )
-                  queryParams["dump_opts"] = i;
-              
+                queryParams["dump_index"] = (int)dumpIndex->isChecked();
+                queryParams["dump_coordinates"] = (int)dumpCoordinates->isChecked();
+                queryParams["dump_arclength"] = (int)dumpArcLength->isChecked();
                 queryParams["dump_values"] = (int)dumpValues->isChecked();
             }
         }
@@ -1999,6 +1994,36 @@ void
 QvisQueryWindow::dumpCoordinatesToggled(bool val)
 {
     dumpCoordinates->setChecked(val);
+}
+
+
+// ****************************************************************************
+// Method:  QvisQueryWindow::dumpArcLengthToggled
+//
+// Programmer:  Dave Pugmire
+// Creation:    November  9, 2010
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::dumpArcLengthToggled(bool val)
+{
+    dumpArcLength->setChecked(val);
+}
+
+
+// ****************************************************************************
+// Method:  QvisQueryWindow::dumpIndexToggled
+//
+// Programmer:  Dave Pugmire
+// Creation:    November  9, 2010
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::dumpIndexToggled(bool val)
+{
+    dumpIndex->setChecked(val);
 }
 
 

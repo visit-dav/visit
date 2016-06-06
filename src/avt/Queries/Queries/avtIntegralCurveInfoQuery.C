@@ -69,7 +69,9 @@
 // ****************************************************************************
 avtIntegralCurveInfoQuery::avtIntegralCurveInfoQuery() : avtDatasetQuery() 
 {
-    dumpOpts = 0;
+    dumpIndex = false;
+    dumpCoordinates = false;
+    dumpArcLength = false;
     dumpValues = false;
 }
 
@@ -101,8 +103,14 @@ avtIntegralCurveInfoQuery::~avtIntegralCurveInfoQuery()
 void
 avtIntegralCurveInfoQuery::SetInputParams(const MapNode &params)
 {
-    if (params.HasNumericEntry("dump_opts"))
-        SetDumpOpts(params.GetEntry("dump_opts")->ToInt());
+    if (params.HasNumericEntry("dump_index"))
+        SetDumpIndex(params.GetEntry("dump_index")->ToBool());
+
+    if (params.HasNumericEntry("dump_coordinates"))
+        SetDumpCoordinates(params.GetEntry("dump_coordinates")->ToBool());
+
+    if (params.HasNumericEntry("dump_arclength"))
+        SetDumpArcLength(params.GetEntry("dump_arclength")->ToBool());
 
     if (params.HasNumericEntry("dump_values"))
         SetDumpValues(params.GetEntry("dump_values")->ToBool());
@@ -221,7 +229,7 @@ avtIntegralCurveInfoQuery::PostExecute()
         doubleVector sl_res_seed;
 
         double x = slData[i++], y = slData[i++], z = slData[i++];
-        double arcLength = slData[i++];
+        double value, arcLength = slData[i++];
 
         sl_res_seed.push_back(x);
         sl_res_seed.push_back(y);
@@ -232,7 +240,7 @@ avtIntegralCurveInfoQuery::PostExecute()
                 slIdx, x, y, z, arcLength );
         msg += str;
 
-        if (dumpOpts || dumpValues)
+        if (dumpIndex || dumpCoordinates || dumpArcLength || dumpValues)
         {
             unsigned int numSteps = (unsigned int) slData[i++];
             sl_res_node["numSteps"] = (int) numSteps;
@@ -246,42 +254,39 @@ avtIntegralCurveInfoQuery::PostExecute()
             {
               str[0] = '\0';
               
-              if (dumpOpts == 1) // Coordinates
+              if (dumpIndex) // Index
+              {
+                sl_steps.push_back(j);
+                sprintf(str, "%s  %i", str, j);
+              }
+
+              if (dumpCoordinates) // Coordinates
               {
                 x = slData[i++]; y = slData[i++]; z = slData[i++];
 
                 sl_steps.push_back(x);
                 sl_steps.push_back(y);
                 sl_steps.push_back(z);
-                sprintf(str, " %lf %lf %lf ", x, y, z );
+                sprintf(str, "%s  %lf %lf %lf", str, x, y, z);
               }
 
-              else if (dumpOpts == 2) // Arc Length
+              if (dumpArcLength) // Arc Length
               {
                 arcLength = slData[i++];
 
                 sl_steps.push_back(arcLength);
-                sprintf(str, " %lf ", arcLength);
+                sprintf(str, "%s  %lf", str, arcLength);
               }
                 
-              else if (dumpOpts == 3) // Index
+              if (dumpValues) // Value
               {
-                sl_steps.push_back(j);
-                sprintf(str, " %i ", j );
-              }
-
-              if (dumpValues) // Value and carriage return.
-              {
-                double value = slData[i++];
+                value = slData[i++];
 
                 sl_steps.push_back(value);
-                sprintf(str, "%s %lf \n", str, value);
-              }
-              else // Carriage return. 
-              {
-                sprintf(str, "%s \n", str);
+                sprintf(str, "%s  %lf", str, value);
               }
               
+              sprintf(str, "%s\n", str);
               msg += str;
             }
 
@@ -353,13 +358,14 @@ avtIntegralCurveInfoQuery::Execute(vtkDataSet *data, const int chunk)
             points->GetPoint(segptr[j], pt1);
             arcLength += (avtVector( pt1 ) - avtVector( pt0 )).length();
 
-            if (dumpOpts == 1)
+            if (dumpCoordinates)
             {
                 steps.push_back(pt1[0]);
                 steps.push_back(pt1[1]);
                 steps.push_back(pt1[2]);
             }
-            else if (dumpOpts == 2)
+
+            if (dumpArcLength)
             {
                 steps.push_back(arcLength);
             }
@@ -379,7 +385,7 @@ avtIntegralCurveInfoQuery::Execute(vtkDataSet *data, const int chunk)
         slData.push_back(arcLength);
 
         // Now push the optional values on to the stack.
-        if (dumpOpts || dumpValues)
+        if (dumpIndex || dumpCoordinates || dumpArcLength || dumpValues)
         {
             slData.push_back((double)(nPts));
             slData.insert(slData.end(), steps.begin(), steps.end());
