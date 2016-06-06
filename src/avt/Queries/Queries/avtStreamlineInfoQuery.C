@@ -100,11 +100,16 @@ avtStreamlineInfoQuery::~avtStreamlineInfoQuery()
 //    Use newer MapNode methods that check for numeric entries and retrieves 
 //    to specific type.
 //
+//    Eric Brugger, Mon Jun  6 13:16:43 PDT 2016
+//    I added dump_steps as an alias for dump_coordinates.
+//
 // ****************************************************************************
 
 void
 avtStreamlineInfoQuery::SetInputParams(const MapNode &params)
 {
+    if (params.HasNumericEntry("dump_steps"))
+        SetDumpCoordinates(params.GetEntry("dump_steps")->ToBool());
     if (params.HasNumericEntry("dump_coordinates"))
         SetDumpCoordinates(params.GetEntry("dump_coordinates")->ToBool());
     if (params.HasNumericEntry("dump_values"))
