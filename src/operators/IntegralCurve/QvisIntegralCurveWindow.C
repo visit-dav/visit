@@ -141,7 +141,7 @@ QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
 //   Added useWholeBox.
 //
 //   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
-//   Add streamline direction option.
+//   Add integral curve direction option.
 //
 //   Brad Whitlock, Wed Apr 23 11:46:59 PDT 2008
 //   Added tr()'s
@@ -156,7 +156,7 @@ QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
 //   Add accurate distance calculate option.
 //
 //   Dave Pugmire, Wed Aug 13 12:56:11 EST 2008
-//   Changed label text for streamline algorithms.
+//   Changed label text for integral curve algorithms.
 //
 //   Dave Pugmire, Tue Aug 19 17:18:03 EST 2008
 //   Removed the accurate distance calculation option.
@@ -186,7 +186,7 @@ QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
 //   Add color by variable.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
-//   Add custom renderer and lots of appearance options to the streamlines plots.
+//   Add custom renderer and lots of appearance options to the integral curves plots.
 //
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
@@ -1103,7 +1103,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 //   Added support for useWholeBox.
 //
 //   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
-//   Add streamline direction option.
+//   Add integral curve direction option.
 //
 //   Brad Whitlock, Wed Aug  6 10:39:12 PDT 2008
 //   Qt 4.
@@ -1121,7 +1121,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 //   Added workGroupSize for the masterSlave algorithm.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
-//   Add custom renderer and lots of appearance options to the streamlines plots.
+//   Add custom renderer and lots of appearance options to the integral curves plots.
 //
 //   Hank Childs, Wed Sep 29 19:12:39 PDT 2010
 //   Rename None to FullyOpaque.
@@ -1203,9 +1203,7 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             {
               char tmp[256];
               sprintf(tmp, "%lf %lf %lf", points[i], points[i+1], points[i+2]);
-              
-              // std::cerr << tmp << std::endl;
-              
+                     
               QString str = tmp;
               QListWidgetItem *item = new QListWidgetItem(str, fieldData);
 //            item->setFlags(item->flags() | Qt::ItemIsEditable);
@@ -2223,7 +2221,7 @@ QvisIntegralCurveWindow::UpdateAlgorithmAttributes()
 //   Added workGroupSize for the masterSlave algorithm.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
-//   Add custom renderer and lots of appearance options to the streamlines plots.
+//   Add custom renderer and lots of appearance options to the integral curves plots.
 //
 //   Hank Childs, Wed Sep 29 20:44:18 PDT 2010
 //   Add support for the max time step.
