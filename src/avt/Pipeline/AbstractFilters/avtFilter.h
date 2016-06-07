@@ -229,7 +229,7 @@ class PIPELINE_API avtFilter
     enum CacheItemDependence
     {
         DATA_DEPENDENCE = 1,          // Example: scalar tree for contouring
-        SPATIAL_DEPENDENCE = 2,       // Example: lookup structure for streamlines
+        SPATIAL_DEPENDENCE = 2,       // Example: lookup structure for integral curves
         CONNECTIVITY_DEPENDENCE = 4   // Example: facelist (point positions not important)
     };
 

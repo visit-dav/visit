@@ -95,7 +95,6 @@ public class PlotTypes extends RunViewer
         namestovar.put("Pseudocolor", new Integer(SCALAR | SPECIES));
         namestovar.put("Scatter", new Integer(SCALAR));
         namestovar.put("Spreadsheet", new Integer(SCALAR));
-        namestovar.put("Streamline", new Integer(VECTOR));
         namestovar.put("Subset", new Integer(SUBSET | MESH));
         namestovar.put("Surface", new Integer(SCALAR | SPECIES));
         namestovar.put("Tensor", new Integer(TENSOR | SYMMETRICTENSOR));

@@ -45,7 +45,7 @@
 
 /** header file for plugin development */
 #include <avtPluginFilter.h>
-/** header file for parallel integral curve system via the streamline filter */
+/** header file for parallel integral curve system via the avtPICSfilter */
 #include <avtPICSFilter.h>
 
 #include <vtkPlane.h>
@@ -212,7 +212,7 @@ class avtLimitCycleFilter : public virtual avtPluginFilter,
 
     double   absMaxTime;
 
-    // Various starting locations for streamlines.
+    // Various starting locations for integral curves.
     std::vector<avtVector> pointList;
     avtVector points[2];
     avtVector vectors[2];

@@ -281,7 +281,7 @@ avtCondenseDatasetFilter::ExecuteData(avtDataRepresentation *in_dr)
         debug5 << "Not taking relevant points because we have a mesh "
                   "consisting of lines and the number of points is more "
                   "than 5x the number of cells. This is common with "
-                  "streamlines and we need to skip because the relevant "
+                  "integral curves and we need to skip because the relevant "
                   "points filter tends to die right now with line data of "
                   "this kind."
                << endl;

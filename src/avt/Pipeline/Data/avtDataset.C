@@ -638,7 +638,7 @@ avtDataset::CalculateSpatialIntervalTree(bool acrossAllProcs)
 //  Purpose:
 //      Renumbers the domain IDs.  If a domain has ID 10 and then the reflect
 //      operator comes along, then each of the reflected data sets will also
-//      have ID 10.  This is a nightmare for streamline calculations.
+//      have ID 10.  This is a nightmare for integral curve calculations.
 //      This routine will through away the original IDs and create a new
 //      numbering space.
 //

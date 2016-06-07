@@ -309,7 +309,7 @@ avtLimitCycleFilter::ModifyContract(avtContract_p in_contract)
     else if (strcmp(in_dr->GetVariable(), "colorVar") == 0 ||
              secondaryVariables.size() )
     {
-        // The avtStreamlinePlot requested "colorVar", so remove that from the
+        // The plot requested "colorVar", so remove that from the
         // contract now.
         out_dr = new avtDataRequest(in_dr, in_dr->GetOriginalVariable());
     }
@@ -1210,7 +1210,7 @@ avtLimitCycleFilter::GenerateAttributeFields() const
 //  Method: avtLimitCycleFilter::SetTermination
 //
 //  Purpose:
-//      Sets the termination criteria for a streamline.
+//      Sets the termination criteria for a integral curve.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 5, 2010
@@ -1235,7 +1235,7 @@ avtLimitCycleFilter::SetTermination(int maxSteps_, bool doDistance_,
 //
 //  Purpose:
 //      Each derived type of avtPICSFilter must know how to create an integral
-//      curve.  The streamline filter creates an avtStateRecorderIntegralCurve.
+//      curve.  The integral curve filter creates an avtPoincareIC.
 //
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2010
@@ -1258,7 +1258,7 @@ avtLimitCycleFilter::CreateIntegralCurve()
 //
 //  Purpose:
 //      Each derived type of avtPICSFilter must know how to create an integral
-//      curve.  The streamline filter creates an avtStateRecorderIntegralCurve.
+//      curve.  The integral curve filter creates an avtPoincareIC.
 //
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2010
@@ -1495,8 +1495,7 @@ avtLimitCycleFilter::GetInitialVelocities(void)
 //  Purpose:
 //      Get the seed points out of the attributes.
 //
-//  Programmer: Hank Childs (harvested from GetStreamlinesFromInitialSeeds by
-//                           David Pugmire)
+//  Programmer: Hank Childs
 //  Creation:   June 5, 2008
 //
 //  Modifications:
@@ -1875,7 +1874,7 @@ avtLimitCycleFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 //  Method: avtLimitCycleFilter::CreateIntegralCurveOutput
 //
 //  Purpose:
-//      Create the VTK poly data output from the streamline.
+//      Create the VTK poly data output from the integral curve.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
