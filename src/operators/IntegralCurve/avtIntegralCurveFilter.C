@@ -3073,8 +3073,6 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
       vtkPolyLine::GenerateSlidingNormals(points, lines, normals);
     }
     
-    std::cerr << "in " << pd->GetPointData()->GetNumberOfTuples() << "  ";
-    
     vtkPolyData *outPD;
     
     if( //displayGeometry == IntegralCurveAttributes::Tubes ||
@@ -3098,8 +3096,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
       clean->Update();
       pd->Delete();
 
-      std::cerr << "cleaning  ";
-            outPD = clean->GetOutput();
+      outPD = clean->GetOutput();
 
       if( cleanupMethod != IntegralCurveAttributes::Merge )
         avtCallback::IssueWarning("\nThe integral curves are being displayed "
@@ -3112,11 +3109,8 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     }
     else
     {
-      std::cerr << "no cleaning  ";
       outPD = pd;
     }
-
-    std::cerr << "out " << outPD->GetPointData()->GetNumberOfTuples() << std::endl;
 
     if(displayGeometry == IntegralCurveAttributes::Ribbons)
     {
