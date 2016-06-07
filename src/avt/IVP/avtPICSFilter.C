@@ -1340,9 +1340,6 @@ avtPICSFilter::CheckOnDemandViability(void)
 //   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
 //   New methods for seedpoint generation.
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//   
 //   Dave Pugmire, Tue Jul 13 09:24:57 EDT 2010
 //   Move icAlgo cleanup from Execute() to PostExecute(). The poincare plot
 //   analysis was using IC data after Execute() had been called.
@@ -1822,6 +1819,9 @@ avtPICSFilter::UpdateIntervalTree(int timeSlice)
                 delete intervalTree;
                 intervalTree = NULL;
             }
+
+            intervalTree = GetTypedInput()->CalculateSpatialIntervalTree(
+                                           performCalculationsOverAllProcs);
         }
         CATCH(VisItException)
         {
@@ -2669,9 +2669,6 @@ avtPICSFilter::DomainToRank(BlockIDType &domain)
 //   Hank Childs, Fri Jun  4 05:13:49 PDT 2010
 //   Remove call for collecting statistics that was a no-op.
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
 //   Dave Pugmire, Mon Dec 15 11:00:23 EST 2014
 //   Return number of steps taken.
 //
@@ -2990,7 +2987,7 @@ avtPICSFilter::PostExecute(void)
 //   Added support for point list sources.
 //
 //   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
-//   Set what scalars to compute on the avtStreamline object.
+//   Set what scalars to compute on the avtIntegralCurve object.
 //
 //   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
 //   Add ability to restart integration of integral curves.
@@ -3003,9 +3000,6 @@ avtPICSFilter::PostExecute(void)
 //
 //   Dave Pugmire (for Christoph Garth), Wed Jan 20 09:28:59 EST 2010
 //   Add circle source.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 //   Hank Childs, Sat Jun  5 16:30:00 PDT 2010
 //   Have derived type set up point list.
@@ -3102,15 +3096,6 @@ avtPICSFilter::AddSeedPoints(std::vector<avtVector> &pts,
 //  Creation:   December 3, 2009
 //
 //  Modifications:
-//
-//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
-//   Removed avtStreamlineWrapper:Dir
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sat Jun  5 16:26:12 CDT 2010
-//   Use avtIntegralCurves.
 //
 //   Hank Childs, Fri Oct  8 23:30:27 PDT 2010
 //   Don't do initialization of distance for integral curves.  That happens in
@@ -3489,9 +3474,6 @@ avtPICSFilter::ExamineContract(avtContract_p in_contract)
 //  Creation:   Mon Aug 17 09:23:32 EDT 2009
 //
 //  Modifications:
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
