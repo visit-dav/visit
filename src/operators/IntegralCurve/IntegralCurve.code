@@ -256,11 +256,11 @@ Definition:
 //  Programmer: Brad Whitlock
 //  Creation:   Fri Oct 4 15:22:57 PST 2002
 //
-//  Notes:  Most attributes cause the streamline to change.
+//  Notes:  Most attributes cause the integral curve to change.
 //
 //  Modifications:
 //    Brad Whitlock, Wed Dec 22 12:52:45 PDT 2004
-//    I made the coloring method matter when comparing streamline attributes
+//    I made the coloring method matter when comparing integral curve attributes
 //    and I added support for ribbons.
 //
 //    Hank Childs, Sat Mar  3 09:00:12 PST 2007
