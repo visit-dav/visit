@@ -53,7 +53,7 @@ using namespace std;
 #ifdef PARALLEL
 
 int avtParICAlgorithm::MESSAGE_TAG =  420000;
-int avtParICAlgorithm::STREAMLINE_TAG = 420001;
+int avtParICAlgorithm::INTEGRAL_CURVE_TAG = 420001;
 int avtParICAlgorithm::DATASET_PREP_TAG = 420002;
 int avtParICAlgorithm::DATASET_TAG = 420003;
 
@@ -156,9 +156,6 @@ avtParICAlgorithm::PostExecute()
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Limit the number of async recvs outstanding.
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
 //   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
 //   Rename to InitializeBuffers to prevent name collision.
 //
@@ -194,7 +191,7 @@ avtParICAlgorithm::InitializeBuffers(vector<avtIntegralCurve *> &seeds,
     int dsSize = 2*sizeof(int);
     
     messageTagInfo[avtParICAlgorithm::MESSAGE_TAG] = pair<int,int>(numMsgRecvs, msgSize);
-    messageTagInfo[avtParICAlgorithm::STREAMLINE_TAG] = pair<int,int>(numSLRecvs, slSize*slsPerRecv);
+    messageTagInfo[avtParICAlgorithm::INTEGRAL_CURVE_TAG] = pair<int,int>(numSLRecvs, slSize*slsPerRecv);
     messageTagInfo[avtParICAlgorithm::DATASET_PREP_TAG] = pair<int,int>(numDSRecvs, dsSize);
 
     //Setup receive buffers.
@@ -725,7 +722,7 @@ avtParICAlgorithm::RecvAny(vector<MsgCommData> *msgs,
     }
     if (recvICs)
     {
-        tags.insert(avtParICAlgorithm::STREAMLINE_TAG);
+        tags.insert(avtParICAlgorithm::INTEGRAL_CURVE_TAG);
         recvICs->resize(0);
     }
     if (ds)
@@ -756,7 +753,7 @@ avtParICAlgorithm::RecvAny(vector<MsgCommData> *msgs,
 
             msgs->push_back(msg);
         }
-        else if (buffers[i].first == avtParICAlgorithm::STREAMLINE_TAG)
+        else if (buffers[i].first == avtParICAlgorithm::INTEGRAL_CURVE_TAG)
         {
             int num, sendRank;
             buffers[i].second->read(sendRank);
@@ -856,7 +853,7 @@ avtParICAlgorithm::SendICs(int dst, vector<avtIntegralCurve*> &ics)
 //  Method: avtParICAlgorithm::RecvICs
 //
 //  Purpose:
-//      Recv streamlines.
+//      Recv integral curves.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Mon Mar 16 15:45:11 EDT 2009
@@ -871,9 +868,6 @@ avtParICAlgorithm::SendICs(int dst, vector<avtIntegralCurve*> &ics)
 //
 //  Hank Childs, Sat Feb 20 16:53:18 CST 2010
 //  Don't output timing values to the timing logs.
-//
-//  Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//  Use avtStreamlines, not avtStreamlineWrappers.
 //
 //  Hank Childs, Sat Jun  5 16:21:27 CDT 2010
 //  Use the PICS filter to instantiate integral curves, as this is now
@@ -924,7 +918,7 @@ avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &recvICs)
 //  Method: avtParICAlgorithm::DoSendICs
 //
 //  Purpose:
-//      Send streamlines to a dst.
+//      Send integral curves to a dst.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   September 24, 2009
@@ -933,9 +927,6 @@ avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &recvICs)
 //
 //   Hank Childs, Sat Feb 20 16:53:18 CST 2010
 //   Don't output timing values to the timing logs.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 //   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
 //   Fix for unstructured meshes. Need to account for particles that are sent to domains
@@ -981,7 +972,7 @@ avtParICAlgorithm::DoSendICs(int dst, vector<avtIntegralCurve*> &ics)
     for (size_t i = 0; i < ics.size(); i++)
         ics[i]->Serialize(MemStream::WRITE, *buff, GetSolver(), avtIntegralCurve::SERIALIZE_NO_OPT);
     
-    SendData(dst, avtParICAlgorithm::STREAMLINE_TAG, buff);
+    SendData(dst, avtParICAlgorithm::INTEGRAL_CURVE_TAG, buff);
     
     return true;
 }
@@ -1134,25 +1125,23 @@ CountIDs(list<avtIntegralCurve *> &l, int id)
 //  Method: avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor
 //
 //  Purpose:
-//      Communicate streamlines pieces to destinations.
-//      When a streamline is communicated, only the state information is sent.
-//      All the integration steps need to sent to the proc that owns the terminated
-//      streamline.  This method figures out where each streamline has terminated and
-//      sends all the pieces there.
+//      Communicate integral curves pieces to destinations.  When a
+//      integral curve is communicated, only the state information is
+//      sent.  All the integration steps need to sent to the proc that
+//      owns the terminated integral curve.  This method figures out
+//      where each integral curve has terminated and sends all the
+//      pieces there.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   September 21, 2009
 //
 //  Modifications:
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
 //   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
 //   Rename method, as we plan to add more communication methods.
 //
 //   Dave Pugmire, Mon Nov 29 09:23:01 EST 2010
-//   Cleanup only the STREAMLINE_TAG requests.
+//   Cleanup only the INTEGRAL_CURVE_TAG requests.
 //
 //   Dave Pugmire, Fri Jan 14 11:07:41 EST 2011
 //   Renamed RestoreIntegralCurveSequence to RestoreIntegralCurveSequenceAssembleOnCurrentProcessor
@@ -1171,16 +1160,16 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
               <<communicatedICs.size()
               <<" terminatedICs: "<<terminatedICs.size()<<endl;
     }
-    //Create larger streamline buffers.
+    //Create larger integral curve buffers.
 
-    CleanupRequests(avtParICAlgorithm::STREAMLINE_TAG);
-    messageTagInfo[avtParICAlgorithm::STREAMLINE_TAG] = pair<int,int>(numSLRecvs, 512*1024);
+    CleanupRequests(avtParICAlgorithm::INTEGRAL_CURVE_TAG);
+    messageTagInfo[avtParICAlgorithm::INTEGRAL_CURVE_TAG] = pair<int,int>(numSLRecvs, 512*1024);
 
     for (int i = 0; i < numSLRecvs; i++)
-        PostRecv(avtParICAlgorithm::STREAMLINE_TAG);
+        PostRecv(avtParICAlgorithm::INTEGRAL_CURVE_TAG);
 
     //Communicate to everyone where the terminators are located.
-    //Do this "N" streamlines at a time, so we don't have a super big buffer.
+    //Do this "N" integral curves at a time, so we don't have a super big buffer.
     int N;
     if (numSeedPoints > 500)
         N = 500;
@@ -1310,13 +1299,13 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
             seqGathered = !needMore;
         }
         
-        //Advance to next N streamlines.
+        //Advance to next N integral curves.
         maxId += N;
         minId += N;
         CheckPendingSendRequests();
     }
 
-    //All ICs are distributed, merge the sequences into single streamlines.
+    //All ICs are distributed, merge the sequences into single integral curves.
     MergeTerminatedICSequences();
     
     delete [] idBuffer;
@@ -1326,8 +1315,8 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleOnCurrentProcessor()
 // ****************************************************************************
 // Method:  avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly
 //
-// Purpose: Communicate streamlines pieces to destinations.
-//      When a streamline is communicated, only the state information is sent.
+// Purpose: Communicate integral curves pieces to destinations.
+//      When a integral curve is communicated, only the state information is sent.
 //      All the integration steps need to resassmbled. This method assigns curves
 //      curves uniformly across all procs, and assembles the pieces.
 //
@@ -1345,8 +1334,8 @@ avtParICAlgorithm::RestoreIntegralCurveSequenceAssembleUniformly()
 // ****************************************************************************
 // Method:  avtParICAlgorithm::RestoreIntegralCurveToOriginatingProcessor
 //
-// Purpose: Communicate streamlines pieces to destinations.
-//      When a streamline is communicated, only the state information is sent.
+// Purpose: Communicate integral curves pieces to destinations.
+//      When a integral curve is communicated, only the state information is sent.
 //      All the integration steps need to resassmbled. This method assigns curves
 //      curves uniformly across all procs, and assembles the pieces.
 //
@@ -1393,12 +1382,12 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
           <<communicatedICs.size()
           <<" terminatedICs: "<<terminatedICs.size()<<endl;
     }
-    //Create larger streamline buffers.
-    CleanupRequests(avtParICAlgorithm::STREAMLINE_TAG);
-    messageTagInfo[avtParICAlgorithm::STREAMLINE_TAG] = pair<int,int>(numSLRecvs, 512*1024);
+    //Create larger integral curve buffers.
+    CleanupRequests(avtParICAlgorithm::INTEGRAL_CURVE_TAG);
+    messageTagInfo[avtParICAlgorithm::INTEGRAL_CURVE_TAG] = pair<int,int>(numSLRecvs, 512*1024);
 
     for (int i = 0; i < numSLRecvs; i++)
-        PostRecv(avtParICAlgorithm::STREAMLINE_TAG);
+        PostRecv(avtParICAlgorithm::INTEGRAL_CURVE_TAG);
 
     //Stuff all ICs into one list, and sort.
     std::list<avtIntegralCurve *> allICs;
@@ -1418,7 +1407,7 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
     communicatedICs.clear();
 
     //Communicate to everyone where the pieces are located.
-    //Do this "N" streamlines at a time, so we don't have a super big buffer.
+    //Do this "N" integral curves at a time, so we don't have a super big buffer.
     int N;
     if (numSeedPoints > 500)
         N = 500;
@@ -1612,15 +1601,12 @@ avtParICAlgorithm::RestoreIntegralCurve(bool uniformlyDistrubute)
 //  Method: avtParICAlgorithm::MergeTerminatedICSequences
 //
 //  Purpose:
-//      Merge streamline sequences.
+//      Merge integral curve sequences.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Sept 21, 2009
 //
 //  Modifications:
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
 //
 //   Hank Childs, Tue Jun  8 09:30:45 CDT 2010
 //   Reflect movement of some routines to state recorder IC class.

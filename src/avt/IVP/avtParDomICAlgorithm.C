@@ -118,22 +118,16 @@ avtParDomICAlgorithm::~avtParDomICAlgorithm()
 //   Message size and number of receives moved to Initialize().
 //
 //   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
-//   Establish how many streamlines there are once each proc determines if a
-//   seed is in the domain.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename method called in this function to reflect the new emphasis 
-//   in particle advection, as opposed to streamlines.
+//   Establish how many integral curves there are once each proc
+//   determines if a seed is in the domain.
 //
 //   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
 //   Reflect change in name to InitializeBuffers method.
 //
 //   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
-//   Fix for unstructured meshes. Need to account for particles that are sent to domains
-//   that based on bounding box, and the particle does not lay in any cells.
+//   Fix for unstructured meshes. Need to account for particles that
+//   are sent to domains that based on bounding box, and the particle
+//   does not lay in any cells.
 //
 // ****************************************************************************
 
@@ -153,19 +147,12 @@ avtParDomICAlgorithm::Initialize(vector<avtIntegralCurve *> &seedPts)
 //  Method: avtParDomICAlgorithm::AddIntegralCurves
 //
 //  Purpose:
-//      Add streamlines
+//      Add integral curves
 //
 //  Programmer: Dave Pugmire
 //  Creation:   December 3, 2009
 //
 //  Modifications:
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename this method to reflect the new emphasis in particle advection, as
-//   opposed to streamlines.
 //
 // ****************************************************************************
 
@@ -277,9 +264,9 @@ avtParDomICAlgorithm::PreRunAlgorithm()
 //  Modifications:
 //
 //   Dave Pugmire, Wed Feb  4 16:17:40 EST 2009
-//   Regression fix. Handling streamlines that lie in multiple domains after
-//   integration was not handled correctly after the code refactor. Added
-//   HandleOOBIC().
+//   Regression fix. Handling integral curves that lie in multiple
+//   domains after integration was not handled correctly after the
+//   code refactor. Added HandleOOBIC().
 //
 //   Dave Pugmire, Fri Feb  6 08:43:00 EST 2009
 //   Change numTerminated to numICChange.
@@ -290,16 +277,10 @@ avtParDomICAlgorithm::PreRunAlgorithm()
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Replace Execute() with RunAlgorithm().
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename data members to reflect the new emphasis in particle advection, as
-//   opposed to streamlines.
-//
 //   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
-//   Fix for unstructured meshes. Need to account for particles that are sent to domains
-//   that based on bounding box, and the particle does not lay in any cells.
+//   Fix for unstructured meshes. Need to account for particles that
+//   are sent to domains that based on bounding box, and the particle
+//   does not lay in any cells.
 //
 // ****************************************************************************
 
@@ -312,7 +293,7 @@ avtParDomICAlgorithm::RunAlgorithm()
     
     while (totalNumIntegralCurves > 0)
     {
-        //Integrate upto maxCnt streamlines.
+        //Integrate upto maxCnt integral curves.
         list<avtIntegralCurve *>::iterator s;
         int cnt = 0;
         while (cnt < maxCnt && !activeICs.empty())
@@ -513,7 +494,7 @@ avtParDomICAlgorithm::ProcessMsgs(vector<MsgCommData> &msgs)
 //  Method: avtParDomICAlgorithm::HandleOOBIC
 //
 //  Purpose:
-//      Handle an out of bounds streamline.
+//      Handle an out of bounds integral curve.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Febuary 4 2009
@@ -533,28 +514,27 @@ avtParDomICAlgorithm::ProcessMsgs(vector<MsgCommData> &msgs)
 //   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
 //   Bug fix. Set the new domain before communicating SL.
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
 //   Dave Pugmire, Fri Sep 24 12:42:49 EDT 2010
-//   Handle case where single IC goes to multiple places. Increase number of ICs.
+//   Handle case where single IC goes to multiple places. Increase
+//   number of ICs.
 //
 //   Dave Pugmire, Fri Nov  5 15:39:58 EDT 2010
-//   Fix for unstructured meshes. Need to account for particles that are sent to domains
-//   that based on bounding box, and the particle does not lay in any cells.
+//   Fix for unstructured meshes. Need to account for particles that
+//   are sent to domains that based on bounding box, and the particle
+//   does not lay in any cells.
 //
 // ****************************************************************************
 
 void
 avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
 {
-    // The integrated streamline could lie in multiple domains.
+    // The integrated integral curve could lie in multiple domains.
     // Duplicate the IC and send to the proper owner.
     set<int> sentRanks;
     
     for (int i = 0; i < s->seedPtDomainList.size(); i++)
     {
-        // if i > 0, we create new streamlines.
+        // if i > 0, we create new integral curves.
         //        if (i > 0)
         //            numICChange++;
         

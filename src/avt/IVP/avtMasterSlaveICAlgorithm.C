@@ -241,9 +241,6 @@ avtMasterSlaveICAlgorithm::~avtMasterSlaveICAlgorithm()
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Message size and number of receives put in Initialize().
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
 //   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
 //   Reflect change in method name to InitializeBuffers.
 //
@@ -285,7 +282,7 @@ avtMasterSlaveICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics
 // ****************************************************************************
 
 bool
-avtMasterSlaveICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &streamlines,
+avtMasterSlaveICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &ics,
                                        vector<vector< avtIntegralCurve *> > &sendICs)
 {
     bool newIntegralCurves = false;
@@ -299,12 +296,12 @@ avtMasterSlaveICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &streamlines,
         else // Pass them to myself....
         {
             for (int j = 0; j < ic.size(); j++)
-                streamlines.push_back(ic[j]);
+                ics.push_back(ic[j]);
         }
     }
 
     // See if there are any recieves....
-    int numNewICs = RecvICs(streamlines);
+    int numNewICs = RecvICs(ics);
     newIntegralCurves = (numNewICs > 0);
     return newIntegralCurves;
 }
@@ -547,12 +544,6 @@ avtMasterICAlgorithm::~avtMasterICAlgorithm()
 //
 //   Dave Pugmire, Fri Feb 12 09:30:27 EST 2010
 //   Wrong initial sizes for status and prevStatus.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename several methods called in this function to reflect the new emphasis //   in particle advection, as opposed to streamlines.
 //
 // ****************************************************************************
 
@@ -1226,19 +1217,12 @@ avtMasterICAlgorithm::ProcessOffloadIC(vector<int> &status)
 //  Method: avtMasterICAlgorithm::NewIntegralCurves
 //
 //  Purpose:
-//      Handle incoming streamlines.
+//      Handle incoming integral curves.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
 //
 //  Modifications:
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename this method to reflect the new emphasis in particle advection, as
-//   opposed to streamlines.
 //
 // ****************************************************************************
 
@@ -1514,7 +1498,8 @@ avtMasterICAlgorithm::FindSlackers(int oobFactor,
 {
     slackers.resize(0);
 
-    //if oobFactor != -1, find slaves with between 0 and oobFactor OOB streamlines.
+    //if oobFactor != -1, find slaves with between 0 and oobFactor OOB
+    //integral curves.
 
     for (int i = 0; i < slaveInfo.size(); i++)
         if (slaveInfo[i].icLoadedCount <= LATENCY_SEND_CNT ||
@@ -1551,9 +1536,6 @@ avtMasterICAlgorithm::FindSlackers(int oobFactor,
 //   Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
 //   Bug fix. Case1 never happened. forgot the "not" empty.
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
 // ****************************************************************************
 
 void
@@ -1565,7 +1547,7 @@ avtMasterICAlgorithm::Case1(int &counter)
     FindSlackers();
     
     vector< vector< avtIntegralCurve *> > distributeICs(nProcs);
-    bool streamlinesToSend = false;
+    bool icsToSend = false;
     
     for (int i = 0; i < slackers.size(); i++)
     {
@@ -1584,7 +1566,7 @@ avtMasterICAlgorithm::Case1(int &counter)
                 distributeICs[slackerRank].push_back(*s);
                 slaveInfo[slackers[i]].AddIC(sDom, DomCacheSize());
                 s = activeICs.erase(s);
-                streamlinesToSend = true;
+                icsToSend = true;
                 cnt++;
             }
             else
@@ -1603,7 +1585,7 @@ avtMasterICAlgorithm::Case1(int &counter)
         }
     }
 
-    if (streamlinesToSend)
+    if (icsToSend)
         ExchangeICs(activeICs, distributeICs);
 }
 
@@ -1625,9 +1607,6 @@ avtMasterICAlgorithm::Case1(int &counter)
 //   Dave Pugmire, Fri Feb 12 09:30:27 EST 2010
 //   Fix memory leak of domCnts.
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
 // ****************************************************************************
 
 static bool domCntCompare( const int *a, const int *b) { return a[1] > b[1]; }
@@ -1641,7 +1620,7 @@ avtMasterICAlgorithm::Case2(int &counter)
     FindSlackers();
     
     vector< vector< avtIntegralCurve *> > distributeICs(nProcs);
-    bool streamlinesToSend = false;
+    bool icsToSend = false;
 
     for (int s = 0; s < slackers.size(); s++)
     {
@@ -1719,7 +1698,7 @@ avtMasterICAlgorithm::Case2(int &counter)
 
         if (cnt > 0)
         {
-            streamlinesToSend = true;
+            icsToSend = true;
             if (distributeICs[slackerRank].size() > 0)
             {
                 debug1<<"Case 2: "<<slackerRank<<" Send "<<cnt<<" ICs [";
@@ -1731,7 +1710,7 @@ avtMasterICAlgorithm::Case2(int &counter)
         }
     }
     
-    if (streamlinesToSend)
+    if (icsToSend)
     {
         for (int i = 0; i < nProcs; i++)
         {
@@ -2140,9 +2119,6 @@ avtSlaveICAlgorithm::HandleLatencyTimer(int activeICCnt, bool checkMaxLatency)
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
 // ****************************************************************************
 
 void
@@ -2167,9 +2143,6 @@ avtSlaveICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 //
 //  Modifications:
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
 // ****************************************************************************
 
 void
@@ -2185,7 +2158,7 @@ avtSlaveICAlgorithm::UpdateStatus()
         status[i] = (DomainLoaded(d) ? 1: 0);
     }
     
-    //Increment/decrement all the streamlines we have.
+    //Increment/decrement all the integral curves we have.
     list<avtIntegralCurve *>::const_iterator s;
     
     bool prevWorkToDo = workToDo;
@@ -2304,13 +2277,6 @@ avtSlaveICAlgorithm::SendStatus(bool forceSend)
 //   
 //   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
 //   Add auto-load code for slaves.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename several methods called in this function to reflect the new emphasis
-//   in particle advection, as opposed to streamlines.
 //
 //   Dave Pugmire, Tue Jan 18 06:58:40 EST 2011
 //   Regression fix. The old recvICs code was doing a domain load, as a side effect.
@@ -2481,14 +2447,8 @@ avtSlaveICAlgorithm::RunAlgorithm()
 //   Bug fix. Didn't use new BlockIDType structure for MSG_SEND_IC.
 //
 //   Dave Pugmire, Wed Mar 18 21:55:32 EDT 2009
-//   Improve the logic for streamline offloading. Only offload streamlines
-//   in unloaded domains.
-//
-//   Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
-//   Handle streamline offloading (case5).
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
+//   Improve the logic for integral curve offloading. Only offload
+//   integral curves in unloaded domains.
 //
 // ****************************************************************************
 
@@ -2580,7 +2540,7 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
             }
         }
         
-        //Send streamlines to another slave.
+        //Send integral curves to another slave.
         else if (msgType == MSG_SEND_IC)
         {
             int dst = msg[1];

@@ -49,7 +49,7 @@
 // Class: avtSerialICAlgorithm
 //
 // Purpose:
-//    A class for performing serial streamline integration.
+//    A class for performing serial integral curve integration.
 //
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
@@ -57,22 +57,10 @@
 // Modifications:
 //
 //   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
-//   Add ability to restart integration of streamlines.
+//   Add ability to restart integration of integral curves.
 //
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Change Execute to RunAlgorithm.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
-//   Change the names of several methods to reflect the new emphasis in
-//   particle advection, as opposed to streamlines.  Also change reference
-//   from avtStreamlineFilter to avtPICSFilter.
-//
-//   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
-//   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
-//   as opposed to streamlines.
 //
 //   Dave Pugmire, Thu Dec  2 11:21:06 EST 2010
 //   Add CheckNextTimeStepNeeded.

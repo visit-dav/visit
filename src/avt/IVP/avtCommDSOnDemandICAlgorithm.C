@@ -208,7 +208,7 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
     debug1<<"avtCommDSOnDemandICAlgorithm::RunAlgorithm()\n";
     int timer = visitTimer->StartTimer();
 
-    //Sort the streamlines and load the first domain.
+    //Sort the integral curves and load the first domain.
     SortIntegralCurves(activeICs);
     SortIntegralCurves(oobICs);
 

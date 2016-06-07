@@ -67,7 +67,7 @@ struct avtIVPStateHelper;
 //      an avtIVPStep instance can be queried for any point of the solution on 
 //      its corresponding parameter interval, and also supports evaluation of 
 //      derivatives. This enables advanced applications such as direct 
-//      intersection of solutions with a plane, or the Illuminated Streamlines 
+//      intersection of solutions with a plane, or the Illuminated Integral Curves 
 //      technique, which all require solution derivatives for efficient 
 //      implementation.
 //
@@ -373,7 +373,7 @@ class avtIVPState
 //  Purpose:
 //      avtIVPSolver is an abstract type. It embodies the low-level interface 
 //      and represents a specific numerical scheme used for the solution of an 
-//      Initial Value Problem (IVP) corresponding to a streamline. Any 
+//      Initial Value Problem (IVP) corresponding to a integral curve. Any 
 //      numerical scheme derives from avtIVPSolver and adheres to a basic 
 //      common interface.
 //

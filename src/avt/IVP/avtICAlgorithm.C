@@ -77,9 +77,6 @@ avtICAlgorithm::ICStatistics::operator << (std::ostream &out) const
 //   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //   Change how timings are reported/calculated.
 //     
-//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
-//   Change reference from streamline filter to PICS filter.
-//
 //   Dave Pugmire, Mon Dec 15 11:00:23 EST 2014
 //   Add a #steps taken counter.
 //
@@ -115,9 +112,6 @@ avtICAlgorithm::avtICAlgorithm( avtPICSFilter *f ) :
 //
 //  Modifications:
 //
-//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
-//   Change reference from streamline filter to PICS filter.
-//
 // ****************************************************************************
 
 avtICAlgorithm::~avtICAlgorithm()
@@ -152,12 +146,6 @@ avtICAlgorithm::PostRunAlgorithm()
 //
 //   Hank Childs, Thu Jun  3 10:22:16 PDT 2010
 //   Use new name "GetCurrentLocation".
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
-//   Change reference from streamline filter to PICS filter.
 //
 // ****************************************************************************
 
@@ -211,13 +199,6 @@ avtICAlgorithm::GetDomain(const BlockIDType &dom, const avtVector &pt)
 //
 //  Modifications:
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename this method to reflect the new emphasis in particle advection, as
-//   opposed to streamlines.
-//
 // ****************************************************************************
 
 void
@@ -259,12 +240,6 @@ avtICAlgorithm::AdvectParticle(avtIntegralCurve *s, vtkDataSet *ds, const BlockI
 //  
 //   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
 //   Initialize the initial domain load count and timer.  
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
-//   Change reference from streamline filter to PICS filter.
 //
 // ****************************************************************************
 
@@ -314,9 +289,6 @@ avtICAlgorithm::Execute()
 //   Dave Pugmire, Tue Mar 24 08:15:04 EDT 2009
 //   Report stats if timer is enabled.
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
 // ****************************************************************************
 
 void
@@ -347,7 +319,7 @@ avtICAlgorithm::PostExecute()
 //  Method: avtICAlgorithm::SortIntegralCurves
 //
 //  Purpose:
-//      Sort streamlines based on the domains they span.
+//      Sort integral curves based on the domains they span.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
@@ -359,13 +331,6 @@ avtICAlgorithm::PostExecute()
 //
 //   Dave Pugmire, Tue Aug 11 13:44:44 EDT 2009
 //   Fix compiler warning.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename this method to reflect the new emphasis in particle advection, as
-//   opposed to streamlines.
 //
 //   Dave Pugmire, Mon Oct 14 09:26:24 EDT 2013
 //   Check for empty domain list.
@@ -402,7 +367,7 @@ avtICAlgorithm::SortIntegralCurves(std::list<avtIntegralCurve *> &ic)
 //  Method: avtICAlgorithm::SortIntegralCurves
 //
 //  Purpose:
-//      Sort streamlines based on the domains they span.
+//      Sort integral curves based on the domains they span.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
@@ -411,13 +376,6 @@ avtICAlgorithm::SortIntegralCurves(std::list<avtIntegralCurve *> &ic)
 //
 //   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
 //   Generalized domain to include domain/time. Pathine cleanup.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename this method to reflect the new emphasis in particle advection, as
-//   opposed to streamlines.
 //
 //   Dave Pugmire, Mon Oct 14 09:26:24 EDT 2013
 //   Check for empty domain list.
@@ -476,19 +434,12 @@ avtICAlgorithm::Sleep(long nanoSec) const
 //  Method: avtICAlgorithm::GetTerminatedICs
 //
 //  Purpose:
-//      Return an array of terminated streamlines.
+//      Return an array of terminated integral curves.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Tue Aug 18 08:59:40 EDT 2009
 //
 //  Modifications:
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename this method to reflect the new emphasis in particle advection, as
-//   opposed to streamlines.
 //
 // ****************************************************************************
 
@@ -506,19 +457,12 @@ avtICAlgorithm::GetTerminatedICs(std::vector<avtIntegralCurve *> &v)
 //  Method: avtICAlgorithm::DeleteIntegralCurves
 //
 //  Purpose:
-//      Delete streamlines.
+//      Delete integral curves.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Tue May 25 10:15:35 EDT 2010
 //
 //  Modifications:
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename this method to reflect the new emphasis in particle advection, as
-//   opposed to streamlines.
 //
 //   Dave Pugmire, Fri Mar 11 12:57:08 EST 2011
 //   Fixed a crash. Iterator invalidated after erase.
@@ -579,9 +523,6 @@ avtICAlgorithm::CompileTimingStatistics()
 //
 //   Dave Pugmire, Thu Mar 26 12:02:27 EDT 2009
 //   Add counters for domain loading.
-//
-//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
-//   Change reference from streamline filter to PICS filter.
 //
 // ****************************************************************************
 
@@ -733,9 +674,6 @@ avtICAlgorithm::ComputeStatistic(ICStatistics &stats)
 //
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Compute avgDomainLoaded, instead of 1.0/avgDomainLoaded.
-//
-//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
-//   Change reference from streamline filter to PICS filter.
 //
 // ****************************************************************************
 
@@ -1241,19 +1179,12 @@ avtICAlgorithm::ActivateICsForNextTimeStep()
 //  Method: avtICAlgorithm::ResetIntegralCurvesForContinueExecute
 //
 //  Purpose:
-//      Reset for continued streamline integration.
+//      Reset for continued integral curve integration.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   Tue Aug 18 08:59:40 EDT 2009
 //
 //  Modifications:
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename this method to reflect the new emphasis in particle advection, as 
-//   opposed to streamlines.
 //
 //   Dave Pugmire, Tue Nov 30 13:24:26 EST 2010
 //   Change IC status when ic to not-terminated.

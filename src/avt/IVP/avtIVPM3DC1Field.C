@@ -84,7 +84,7 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
 
   // Because the triangluar mesh is defined by using non unique points
   // and the data is cell centered data VisIt moves it out to the
-  // nodes for STREAMLINES thus there are 3 times the number of
+  // nodes for INTEGRAL CURVES thus there are 3 times the number of
   // original values.
   if( ds->GetPointData()->GetArray("hidden/elements") )
   {
@@ -274,7 +274,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 
   // Because the triangluar mesh is defined by using non unique points
   // and the data is cell centered data VisIt moves it out to the
-  // nodes for STREAMLINES thus there are 3 times the number of
+  // nodes for INTEGRAL CURVES thus there are 3 times the number of
   // original values.
   if( ds->GetPointData()->GetArray(varname) )
   {

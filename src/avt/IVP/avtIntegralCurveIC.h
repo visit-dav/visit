@@ -40,8 +40,8 @@
 //                            avtIntegralCurveIC.h                              //
 // ************************************************************************* //
 
-#ifndef AVT_STREAMLINE_IC_H
-#define AVT_STREAMLINE_IC_H
+#ifndef AVT_INTEGRAL_CURVE_IC_H
+#define AVT_INTEGRAL_CURVE_IC_H
 
 #include <avtStateRecorderIntegralCurve.h>
 
@@ -50,7 +50,7 @@
 //
 //  Purpose:
 //      A derived type of avtStateRecorderIntegralCurve.  This class 
-//      decides how to terminate a streamline.
+//      decides how to terminate a integral curve.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010

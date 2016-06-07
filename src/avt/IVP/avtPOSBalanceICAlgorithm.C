@@ -194,7 +194,7 @@ avtPOSBalanceMasterICAlgorithm::RunAlgorithm()
     debug1<<"avtPOSBalanceMasterICAlgorithm::RunAlgorithm()"<<endl;
     int timer = visitTimer->StartTimer();
     
-    //Sort the streamlines and load the first domain.
+    //Sort the integral curves and load the first domain.
     SortIntegralCurves(activeICs);
 
     while (1)
@@ -310,7 +310,7 @@ avtPOSBalanceMasterICAlgorithm::RunAlgorithm()
              }
          }
          
-        //Sort the remaining streamlines, get the next domain, continue.
+        //Sort the remaining integral curves, get the next domain, continue.
         activeICs = oobICs;
         oobICs.clear();
         
@@ -452,7 +452,7 @@ avtPOSBalanceWorkerICAlgorithm::RunAlgorithm()
         }
         else
         {
-            //Sort the remaining streamlines, get the next domain, continue.
+            //Sort the remaining integral curves, get the next domain, continue.
             activeICs = oobICs;
             oobICs.clear();
         

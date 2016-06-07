@@ -56,7 +56,7 @@ class DSCommData;
 // Class: avtParICAlgorithm
 //
 // Purpose:
-//    Abstract base class for parallel streamline algorithms.
+//    Abstract base class for parallel integral curve algorithms.
 //
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
@@ -78,16 +78,6 @@ class DSCommData;
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Replace Execute() with RunAlgorithm(). Add a Pre/Post RunAlgorithm.
 //   Add code to exchange communicated SLs after all processing is complete.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
-//   Change reference from avtStreamlineFilter to avtPICSFilter.
-//
-//   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
-//   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
-//   as opposed to streamlines.
 //
 //   Hank Childs, Mon Jun  7 14:57:13 CDT 2010
 //   Rename Initialize method to be InitializeBuffers to prevent name collision.
@@ -212,7 +202,7 @@ class avtParICAlgorithm : public avtICAlgorithm
     int slSize, slsPerRecv, msgSize;
     
     
-    static int                MESSAGE_TAG, STREAMLINE_TAG, DATASET_PREP_TAG, DATASET_TAG;
+    static int                MESSAGE_TAG, INTEGRAL_CURVE_TAG, DATASET_PREP_TAG, DATASET_TAG;
     int                       msgID;
 
     //Message headers.
