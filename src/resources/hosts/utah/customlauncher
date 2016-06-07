@@ -25,7 +25,7 @@ If you are a *developer*, it's very likely I've chosen the wrong MPI implementat
         from env_modules_python import module
 
         module("purge")
-        module("load","libxml2 gcc mvapich2")
+        module("load","visit libxml2 gcc mvapich2")
 
 
 # Launcher creation function

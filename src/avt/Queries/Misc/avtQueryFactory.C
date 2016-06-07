@@ -319,9 +319,6 @@ avtQueryFactory::Instance()
 //    Cyrus Harrison, Tue Sep 21 11:12:17 PDT 2010
 //    Added explicit passing of args to the python filter query.
 //
-//    Dave Pugmire, Tue Nov  9 14:57:20 EST 2010
-//    Add Streamline Info query.
-//
 //    Kathleen Bonnell, Thu Feb 17 09:51:44 PST 2011
 //    Set number of vars for LocateAndPickNode/Zone queries, and 
 //    VariableyByNode/Zone queries.

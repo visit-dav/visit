@@ -5172,7 +5172,7 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //
 //    Hank Childs, Tue Jan 20 13:01:52 CST 2009
 //    If we are doing dynamic domain decomposition, then give each processor's
-//    domain a domain ID that matches the processor's rank.  The streamline
+//    domain a domain ID that matches the processor's rank.  The integral curve
 //    algorithm (for example) assumes that all of the domains have different
 //    IDs.
 //

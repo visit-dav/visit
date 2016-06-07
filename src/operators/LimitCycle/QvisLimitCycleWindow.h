@@ -82,7 +82,7 @@ class QvisVariableButton;
 //   Added useWholeBox.
 //
 //   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
-//   Add streamline direction option.
+//   Add integral curve direction option.
 //
 //   Dave Pugmire, Mon Aug 4 2:49:38 EDT 2008
 //   Added termination, algorithm and integration options.
@@ -112,7 +112,7 @@ class QvisVariableButton;
 //   Add min/max options to color table.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
-//   Add lots of appearance options to the streamlines plots.
+//   Add lots of appearance options to the integral curves plots.
 //
 //   Dave Pugmire, Wed Jan 20 09:28:59 EST 2010
 //   Add ramp opacity, show head geom.
