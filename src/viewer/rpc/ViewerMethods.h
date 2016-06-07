@@ -138,9 +138,6 @@ class ViewerState;
 //   Brad Whitlock, Fri Aug 27 10:38:23 PDT 2010
 //   I added RenamePickLabel.
 //
-//   Dave Pugmire, Tue Nov  9 16:09:44 EST 2010
-//   Added dumpSteps for streamline info query.
-//
 //   Brad Whitlock, Tue Dec 14 16:45:05 PST 2010
 //   I added new methods that let me pass selection properties when creating
 //   or updating a selection.

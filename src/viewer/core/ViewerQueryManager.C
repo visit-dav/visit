@@ -1008,9 +1008,6 @@ ViewerQueryManager::DisableTool(ViewerWindow *oWin, avtToolInterface &ti)
 //    case the query involves expressions that have not been sent to the engine
 //    yet.
 //
-//    Dave Pugmire, Tue Nov  9 16:08:30 EST 2010
-//    Add dumpSteps for streamline info query.
-//
 //    Kathleen Biagas, Fri Jun 10 13:53:10 PDT 2011
 //    Send the 'suppressQueryOutput' flag to QueryAtts.
 //
