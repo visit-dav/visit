@@ -52,7 +52,7 @@
 // Class: avtParDomICAlgorithm
 //
 // Purpose:
-//    A streamline algorithm that parallelizes over domains.
+//    A integral curve algorithm that parallelizes over domains.
 //
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
@@ -60,7 +60,7 @@
 //  Modifications:
 //
 //   Dave Pugmire, Wed Feb  4 16:17:40 EST 2009
-//   Regression fix. Handling streamlines that lie in multiple domains after
+//   Regression fix. Handling integral curves that lie in multiple domains after
 //   integration was not handled correctly after the code refactor. Added
 //   HandleOOBSL().
 //
@@ -73,23 +73,8 @@
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Change Execute to RunAlgorithm.
 //
-//   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
-//   Add AddStreamlines and ResetStreamlinesForContinueExecute
-//
 //   Hank Childs, Fri Feb 19 16:20:45 CST 2010
 //   Add PreRunAlgorithm.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
-//   Change the names of several methods to reflect the new emphasis in
-//   particle advection, as opposed to streamlines.  Also change reference
-//   from avtStreamlineFilter to avtPICSFilter.
-//
-//   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
-//   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
-//   as opposed to streamlines.
 //
 //   Dave Pugmire, Tue Oct 19 10:53:51 EDT 2010
 //   Fix for unstructured meshes.

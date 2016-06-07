@@ -286,11 +286,8 @@ class IVP_API ICStatus
 //   Remove TMin, PtStart, TStart, IsForward, IsBackward, and IsBothDir.
 //   Rename TMax to GetCurrentTime, PtEnd to GetCurrentLocation.
 //
-//   Hank Childs, Fri Jun  4 15:45:39 CDT 2010
-//   Combine this class with the contents of avtStreamlineWrapper.
-//
 //   Hank Childs, Fri Jun  4 21:30:18 CDT 2010
-//   Separate out portions specific to Poincare and Streamline into
+//   Separate out portions specific to Poincare and Integral Curve into
 //   avtStateRecorderIntegralCurve.
 //
 //   Hank Childs, Tue Jun  8 09:30:45 CDT 2010

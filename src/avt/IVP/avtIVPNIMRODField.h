@@ -59,7 +59,7 @@ typedef avtMatrix mat3;
 //
 //  Purpose:
 //    A wrapper class to allow the use of vtkDataSets as IVP fields for 
-//    streamline integration. Uses vtkInterpolatedVelocityField on top of 
+//    integral curve integration. Uses vtkInterpolatedVelocityField on top of 
 //    the supplied vtkDataSet. 
 //
 //  Programmer:  Allen Sanderson

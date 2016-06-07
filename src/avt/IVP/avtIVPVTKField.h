@@ -55,7 +55,7 @@ class vtkDataArray;
 //
 //  Purpose:
 //    A wrapper class to allow the use of vtkDataSets as IVP fields for 
-//    streamline integration. Uses vtkInterpolatedVelocityField on top of 
+//    integral curve integration. Uses vtkInterpolatedVelocityField on top of 
 //    the supplied vtkDataSet. 
 //
 //  Programmer:  Christoph Garth

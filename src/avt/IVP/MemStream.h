@@ -58,7 +58,7 @@ class vtkDataSet;
 //  Struct: MemStream
 //
 //  Purpose:
-//      A helper class for serializing a streamline.
+//      A helper class for serializing a integral curve.
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008

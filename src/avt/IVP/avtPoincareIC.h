@@ -53,7 +53,7 @@ class vtkObject;
 //
 //  Purpose:
 //      A derived type of avtStateRecorderIntegralCurve.  This class 
-//      decides how to terminate a streamline.
+//      decides how to terminate a Poncare integral curve.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010

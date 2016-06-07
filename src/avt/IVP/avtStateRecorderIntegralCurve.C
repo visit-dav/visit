@@ -582,9 +582,6 @@ avtStateRecorderIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
 //   Sorting can be done independant of curve direction. Changed curve
 //   step from list to vector.
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Move this method from avtStreamlineWrapper.
-//
 //   David Camp, Fri Jul 29 06:55:39 PDT 2011
 //   Added code to send the ending setting, IC status, domain, ivp.
 //   The pathlines need this information.
@@ -701,9 +698,6 @@ avtStateRecorderIntegralCurve::LessThan(const avtIntegralCurve *ic) const
 //
 //  Modifications:
 //
-//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//    Move this method from avtStreamlineWrapper.
-//
 // ****************************************************************************
 
 bool
@@ -729,9 +723,6 @@ avtStateRecorderIntegralCurve::IdSeqCompare(const avtIntegralCurve *icA,
 //  Creation:   September 24, 2009
 //
 //  Modifications:
-//
-//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//    Move this method from avtStreamlineWrapper.
 //
 // ****************************************************************************
 

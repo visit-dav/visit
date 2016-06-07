@@ -62,7 +62,7 @@
 class BlockIDType;
 class avtICAlgorithm;
 
-// Must match the streamline (poincare) attributes!!
+// Must match the integral curve (poincare) attributes!!
 #define PICS_FIELD_DEFAULT   0
 #define PICS_FIELD_FLASH     1
 #define PICS_FIELD_M3D_C1_2D 2
@@ -102,16 +102,12 @@ class avtICAlgorithm;
 //    of this filter is to define an AVT filter that can do parallel
 //    particle advection.  How to analyze those particles, termination 
 //    criteria, etc, are left to the derived types.  Examples of derived
-//    types are for streamlines and poincare analysis.
+//    types are for integral curves and poincare analysis.
 //
-// Programmer: Hank Childs (extracted base class from avtStreamlineFilter)
+// Programmer: Hank Childs
 // Creation:   June 5, 2010
 //
 // Modifications:
-//
-//   Hank Childs, Sun Jun  6 15:26:15 CDT 2010
-//   Rename all methods and data members to reflect integral curves, not 
-//   streamlines.
 //
 //   Hank Childs, Tue Jun  8 09:11:36 CDT 2010
 //   Added communication pattern enum and virtual method.

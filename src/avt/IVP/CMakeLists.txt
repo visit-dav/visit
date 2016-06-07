@@ -39,9 +39,6 @@
 #   Hank Childs, Sat Jun  5 16:26:46 CDT 2010
 #   Add avtStateRecorderIntegralCurve.
 #
-#   Hank Childs, Sun Jun  6 12:01:50 PDT 2010
-#   Delete avtStreamline.C and add its replacement, avtIntegralCurve.C.
-#
 #****************************************************************************/
 SET(AVTIVP_SOURCES
 avtCellLocator.C

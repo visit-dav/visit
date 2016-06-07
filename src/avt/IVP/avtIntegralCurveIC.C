@@ -142,7 +142,7 @@ avtIntegralCurveIC::~avtIntegralCurveIC()
 //  Method: avtIntegralCurveIC::CheckForTermination
 //
 //  Purpose:
-//      Checks to see if we should terminate the streamline.
+//      Checks to see if we should terminate the integral curve.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010
@@ -215,7 +215,7 @@ avtIntegralCurveIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
 //  Method: avtIntegralCurveIC::Serialize
 //
 //  Purpose:
-//      Serializes a streamline so it can be sent to another processor.
+//      Serializes a integral curve so it can be sent to another processor.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2010

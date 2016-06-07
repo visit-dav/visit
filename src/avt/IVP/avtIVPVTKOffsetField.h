@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtIVPVTKOffsetField.h                             //
+//                              avtIVPVTKOffsetField.h                       //
 // ************************************************************************* //
 
 #ifndef AVT_IVPVTKOFFSETFIELD_H
@@ -59,7 +59,7 @@ class vtkDataArray;
 //
 //  Purpose:
 //    A wrapper class to allow the use of vtkDataSets as IVP fields for 
-//    streamline integration. Uses vtkInterpolatedVelocityField on top of 
+//    integral curve integration. Uses vtkInterpolatedVelocityField on top of 
 //    the supplied vtkDataSet. Fields are allowed to have offsets, i.e. 
 //    each component can have a different stagger.
 //

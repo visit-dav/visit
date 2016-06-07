@@ -76,18 +76,6 @@ class SlaveInfo;
 //   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
 //   New counters.
 //
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:25:31 CDT 2010
-//   Change the names of several methods to reflect the new emphasis in
-//   particle advection, as opposed to streamlines.  Also change reference
-//   from avtStreamlineFilter to avtPICSFilter.
-//
-//   Hank Childs, Sun Jun  6 14:54:08 CDT 2010
-//   Rename class "IC" from "SL", to reflect the emphasis on integral curves,
-//   as opposed to streamlines.
-//
 //   Dave Pugmire, Thu Dec  2 11:21:06 EST 2010
 //   Add CheckNextTimeStepNeeded.
 //
@@ -117,7 +105,7 @@ class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
                                              int workGroupSz);
 
   protected:
-    bool                      ExchangeICs(std::list<avtIntegralCurve *> &streamlines,
+    bool                      ExchangeICs(std::list<avtIntegralCurve *> &ics,
                                           std::vector<std::vector< avtIntegralCurve *> > &sendICs);
     int                        maxCnt, case4AThreshold;
     int                        NUM_DOMAINS;

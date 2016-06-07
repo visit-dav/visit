@@ -67,7 +67,7 @@
 //
 //    Hank Childs, Fri Oct  8 23:30:27 PDT 2010
 //    Refactor into an abstract type.  Remove all data members specific to
-//    streamlines or Poincare.
+//    integral curves or Poincare.
 //
 //    Dave Pugmire, Fri Nov  5 15:36:31 EDT 2010
 //    Make historyMask public.

@@ -59,9 +59,6 @@
 //
 //  Modifications:
 //
-//    Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//    Remove reference to avtStreamlineFilter, add reference to avtPICSFilter.
-//
 // ****************************************************************************
 
 avtSerialICAlgorithm::avtSerialICAlgorithm( avtPICSFilter *picsFilter )
@@ -154,7 +151,7 @@ avtSerialICAlgorithm::RestoreInitialize(std::vector<avtIntegralCurve *> &ics, in
 //  Method: avtSerialICAlgorithm::AddIntegralCurves
 //
 //  Purpose:
-//      Add streamlines
+//      Add integral curves
 //
 //  Programmer: Dave Pugmire
 //  Creation:   December 3, 2009
@@ -163,12 +160,6 @@ avtSerialICAlgorithm::RestoreInitialize(std::vector<avtIntegralCurve *> &ics, in
 //
 //   Hank Childs, Thu Jun  3 10:22:16 PDT 2010
 //   Use new name "GetCurrentLocation".
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename method to AddIntegralCurves.
 //
 // ****************************************************************************
 
@@ -280,7 +271,7 @@ avtSerialICAlgorithm::ActivateICs()
 //  Method: avtSerialICAlgorithm::RunAlgorithm
 //
 //  Purpose:
-//      Execute the serial streamline algorithm.
+//      Execute the serial integral curve algorithm.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -302,13 +293,6 @@ avtSerialICAlgorithm::ActivateICs()
 //
 //   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
 //   Move some initialization into RunAlgorithm.
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename several methods that reflect the new emphasis in particle 
-//   advection, as opposed to streamlines.
 //
 //   Hank Childs, Sat Nov 27 16:52:12 PST 2010
 //   Add progress reporting.

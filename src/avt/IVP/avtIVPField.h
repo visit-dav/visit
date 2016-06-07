@@ -53,7 +53,7 @@
 //  Purpose:
 //      avtIVPField is a base class for all manners of vector fields. 
 //      Deriving from it should allow an adaptation of many different vector 
-//      field types for the use of streamlines/IVP solutions by wrapping 
+//      field types for the use of integral curves/IVP solutions by wrapping 
 //      existing interpolation facilities.
 //
 //      The IVP right-hand side is made accessible to an IVP solver by means of 
