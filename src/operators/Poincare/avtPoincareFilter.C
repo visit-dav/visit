@@ -325,7 +325,7 @@ avtPoincareFilter::ModifyContract(avtContract_p in_contract)
 
     else if (strcmp(in_dr->GetVariable(), "colorVar") == 0 )
     {
-        // The avtStreamlinePlot requested "colorVar", so remove that from the
+        // The plot requested "colorVar", so remove that from the
         // contract now.
         out_dr = new avtDataRequest(in_dr, in_dr->GetOriginalVariable());
     }
@@ -643,8 +643,7 @@ avtPoincareFilter::PostExecute(void)
 //  Purpose:
 //      Get the seed points out of the attributes.
 //
-//  Programmer: Hank Childs (harvested from GetStreamlinesFromInitialSeeds by
-//                           David Pugmire)
+//  Programmer: Hank Childs
 //  Creation:   June 5, 2008
 //
 //  Modifications:

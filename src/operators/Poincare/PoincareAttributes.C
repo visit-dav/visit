@@ -1177,7 +1177,7 @@ PoincareAttributes::TypeName() const
 //
 // Modifications:
 //    Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
-//    Initial steps to unification with streamline attributes.
+//    Initial steps to unification with integral curve attributes.
 // ****************************************************************************
 
 bool
@@ -1218,7 +1218,7 @@ PoincareAttributes::CopyAttributes(const AttributeGroup *atts)
 //
 // Modifications:
 //    Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
-//    Initial steps to unification with streamline attributes.
+//    Initial steps to unification with integral curve attributes.
 // ****************************************************************************
 
 AttributeSubject *
