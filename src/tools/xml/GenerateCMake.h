@@ -659,6 +659,7 @@ class CMakeGeneratorPlugin : public Plugin
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
         linkDirs.push_back("${QT_LIBRARY_DIR}");
+        linkDirs.push_back("${QWT_LIBRARY_DIR}");
         linkDirs.push_back("${GLEW_LIBRARY_DIR}");
         linkDirs.push_back("${EAVL_LIBRARY_DIR}");
         linkDirs.push_back("${VTKM_LIBRARY_DIR}");
@@ -902,6 +903,7 @@ class CMakeGeneratorPlugin : public Plugin
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
         linkDirs.push_back("${QT_LIBRARY_DIR}");
+        linkDirs.push_back("${QWT_LIBRARY_DIR}");
         linkDirs.push_back("${GLEW_LIBRARY_DIR}");
         linkDirs.push_back("${EAVL_LIBRARY_DIR}");
         linkDirs.push_back("${VTKM_LIBRARY_DIR}");
