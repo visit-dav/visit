@@ -46,11 +46,11 @@
 // For now use the avtLCSIC as the state does not need to be recorded
 // for the FSLE. That is because currently the integration is being
 // done step by step rather than in chunks. However, the code is set up
-// to use avtStreamlineIC. Which if the integration is done in chucks
+// to use avtIntegralCurveIC. Which if the integration is done in chucks
 // will probably be more efficient.
 
-//#include <avtStreamlineIC.h>
-#define avtStreamlineIC avtLCSIC
+//#include <avtIntegralCurveIC.h>
+#define avtIntegralCurveIC avtLCSIC
 
 #include <avtExtents.h>
 #include <avtMatrix.h>

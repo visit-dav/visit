@@ -46,11 +46,11 @@
 // For now use the avtLCSIC as the state does not need to be recorded
 // for the FSLE. That is because currently the integration is being
 // done step by step rather than in chunks. However, the code is set up
-// to use avtStreamlineIC. Which if the integration is done in chucks
+// to use avtIntegralCurveIC. Which if the integration is done in chucks
 // will probably be more efficient.
 
-//#include <avtStreamlineIC.h>
-#define avtStreamlineIC avtLCSIC
+//#include <avtIntegralCurveIC.h>
+#define avtIntegralCurveIC avtLCSIC
 
 #include <avtExtents.h>
 #include <avtMatrix.h>
@@ -499,7 +499,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *in_ds,
 
     for(size_t i = 0; i < ics.size(); ++i)
     {
-        avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
+        avtIntegralCurveIC * ic = (avtIntegralCurveIC *) ics[i];
 
         size_t index = ic->id;
         int l = (int)(index-offset);
@@ -574,7 +574,7 @@ avtLCSFilter::SingleBlockIterativeCalc( vtkDataSet *in_ds,
     // additional integration is required.
     for(size_t i=0; i<ics.size(); ++i)
     {
-      avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
+      avtIntegralCurveIC * ic = (avtIntegralCurveIC *) ics[i];
 
       size_t index = ic->id;
       size_t l = (index-offset);
@@ -633,7 +633,7 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
 
     for(size_t i=0, j=0; i<nics; ++i, j+=3)
     {
-        avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
+        avtIntegralCurveIC * ic = (avtIntegralCurveIC *) ics[i];
 
         indices[i] = ic->id;
         avtVector point = ic->GetEndPoint();
@@ -773,7 +773,7 @@ avtLCSFilter::RectilinearGridIterativeCalc( std::vector<avtIntegralCurve*> &ics 
         // ARS - FIX ME not parallelized!!!!!!!!
         for(size_t i=0; i<ics.size(); ++i)
         {
-          avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
+          avtIntegralCurveIC * ic = (avtIntegralCurveIC *) ics[i];
 
           int ms = ic->GetMaxSteps();
 
@@ -1121,7 +1121,7 @@ avtLCSFilter::CreateSingleBlockIterativeCalcOutput( vtkDataSet *in_ds,
 
   for(size_t i=0; i<ics.size(); ++i)
   {
-    avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
+    avtIntegralCurveIC * ic = (avtIntegralCurveIC *) ics[i];
     
     size_t index = ic->id;
     size_t l = (index-offset);
@@ -1217,7 +1217,7 @@ avtLCSFilter::CreateRectilinearGridIterativeCalcOutput(std::vector<avtIntegralCu
 
       for(size_t i=0; i<ics.size(); ++i)
       {
-        avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
+        avtIntegralCurveIC * ic = (avtIntegralCurveIC *) ics[i];
 
         size_t l = ic->id; // The curve id is the index into the VTK data.
 
