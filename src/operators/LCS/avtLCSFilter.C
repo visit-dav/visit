@@ -46,11 +46,11 @@
 // For now use the avtLCSIC as the state does not need to be recorded
 // for the FSLE. That is because currently the integration is being
 // done step by step rather than in chunks. However, the code is set up
-// to use avtStreamlineIC. Which if the integration is done in chucks
+// to use avtIntegralCurveIC. Which if the integration is done in chucks
 // will probably be more efficient.
 
-//#include <avtStreamlineIC.h>
-#define avtStreamlineIC avtLCSIC
+//#include <avtIntegralCurveIC.h>
+#define avtIntegralCurveIC avtLCSIC
 
 #include <avtExtents.h>
 #include <avtMatrix.h>
@@ -948,7 +948,7 @@ avtIntegralCurve*
 avtLCSFilter::CreateIntegralCurve(void)
 {
   if( doSize ) 
-    return (new avtStreamlineIC());
+    return (new avtIntegralCurveIC());
   else
     return (new avtLCSIC());
 }
@@ -993,7 +993,7 @@ avtLCSFilter::CreateIntegralCurve(const avtIVPSolver* model,
       // recorded for the FSLE. That is because currently the
       // integration is being done step by step rather than in
       // chunks. However, the code is set up to use
-      // avtStreamlineIC. Which if the integration is done in chucks
+      // avtIntegralCurveIC. Which if the integration is done in chucks
       // will probably be more efficient.
 
       // unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
@@ -1001,7 +1001,7 @@ avtLCSFilter::CreateIntegralCurve(const avtIVPSolver* model,
       // attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
       
       // return
-      //   (new avtStreamlineIC(numSteps, doDistance, maxDistance, doTime, absMaxTime,
+      //   (new avtIntegralCurveIC(numSteps, doDistance, maxDistance, doTime, absMaxTime,
       //                        attr, model, dir, t_start, p_start, v_start, ID));
       return
         (new avtLCSIC(numSteps, doDistance, maxDistance, doTime, absMaxTime,
@@ -1864,7 +1864,7 @@ avtLCSFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     {
         for (int i = 0; i < numICs; ++i)
         {
-            avtStreamlineIC *ic = dynamic_cast<avtStreamlineIC*>(ics[i]);
+            avtIntegralCurveIC *ic = dynamic_cast<avtIntegralCurveIC*>(ics[i]);
 
             bool badSize = (doSize && ic->GetTime() < maxSize);
 
