@@ -1653,6 +1653,10 @@ QvisVolumePlotWindow::UpdateHistogram(bool need2D)
 //   Use helper function DoubleToQString for consistency in formatting across
 //   all windows.
 //
+//   Kathleen Biagas, Tue Jun  7 16:07:23 PDT 2016
+//   Only call 'UpdateSamplingGroup' when renderertype has changed. Prevents
+//   spin boxes losing focus as user types.
+//
 // ****************************************************************************
 
 void
@@ -1871,6 +1875,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             samplesPerRay->blockSignals(false);
             break;
         case VolumeAttributes::ID_rendererType:
+            UpdateSamplingGroup();
             rendererTypesComboBox->blockSignals(true);
             if (volumeAtts->GetRendererType() == VolumeAttributes::Splatting)
             {
@@ -1999,9 +2004,6 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
     bool notDefaultVar = (volumeAtts->GetOpacityVariable() != "default");
     opacityMinToggle->setEnabled(notDefaultVar);
     opacityMaxToggle->setEnabled(notDefaultVar);
-
-    //Update the sampling group
-    UpdateSamplingGroup();
 }
 
 // ****************************************************************************
