@@ -46,19 +46,18 @@ class QLineEdit;
 class QCheckBox;
 class QButtonGroup;
 class QLabel;
+class QSpinBox;
 class QvisOpacitySlider;
 class QvisColorTableWidget;
 class QvisPointControl;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisVariableButton;
-class QSpinBox;
 class QvisColorButton;
+class QvisCollapsibleLayout;
 
-class Subject;
 class PseudocolorAttributes;
 
-class QvisCollapsibleLayout;
 
 // ****************************************************************************
 // Class: QvisPseudocolorPlotWindow

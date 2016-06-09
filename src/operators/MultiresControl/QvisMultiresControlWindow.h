@@ -44,7 +44,6 @@
 
 class MultiresControlAttributes;
 class QLabel;
-class QLineEdit;
 class QSlider;
 
 // ****************************************************************************

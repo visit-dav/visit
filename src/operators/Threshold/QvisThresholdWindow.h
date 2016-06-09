@@ -43,9 +43,7 @@
 #include <ThresholdAttributes.h>
 
 class QTableWidget;
-class QLabel;
 class QButtonGroup;
-class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisThresholdWindow

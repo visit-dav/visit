@@ -46,7 +46,6 @@
 
 #include <QButtonGroup>
 #include <QCheckBox>
-#include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
 #include <QRadioButton>
@@ -54,11 +53,6 @@
 #include <QTimer>
 #include <QWidget>
 #include <vectortypes.h>
-#include <stdio.h>
-#include <string>
-
-
-using std::string;
 
 
 #define MAX_VAL 100000000

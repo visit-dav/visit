@@ -43,19 +43,8 @@
 #include <AttributeSubject.h>
 
 class RemoveCellsAttributes;
-class QLabel;
-class QCheckBox;
 class QLineEdit;
-class QSpinBox;
-class QVBox;
-class QButtonGroup;
 class QListWidget;
-class QListWidgetItem;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
 
 // ****************************************************************************
 // Class: QvisRemoveCellsWindow

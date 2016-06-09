@@ -44,16 +44,8 @@
 
 class LagrangianAttributes;
 class QLabel;
-class QCheckBox;
 class QLineEdit;
-class QSpinBox;
-class QVBox;
 class QButtonGroup;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
 class QvisVariableButton;
 
 // ****************************************************************************

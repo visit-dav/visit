@@ -58,8 +58,6 @@
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
 #include <QNarrowLineEdit.h>
-#include <stdio.h>
-#include <string>
 
 // Icons
 #include <ci_triup.xpm>
@@ -69,7 +67,6 @@
 #include <ci_plus.xpm>
 #include <ci_x.xpm>
 
-using std::string;
 
 // ****************************************************************************
 // Method: QvisCurvePlotWindow::QvisCurvePlotWindow

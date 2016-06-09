@@ -41,7 +41,6 @@
 #include <QLabel>
 #include <QLayout>
 #include <QCheckBox>
-#include <QRadioButton>
 
 #include <QvisScatterWidget.h>
 #include <QvisVariableButton.h>

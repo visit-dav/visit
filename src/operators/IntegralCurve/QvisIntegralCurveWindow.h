@@ -45,12 +45,10 @@
 // Forward declarations
 class IntegralCurveAttributes;
 
-class QTabWidget;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
 class QSpinBox;
-class QVBox;
 class QButtonGroup;
 class QRadioButton;
 class QComboBox;
@@ -59,7 +57,6 @@ class QPushButton;
 class QListWidget;
 class QListWidgetItem;
 
-class QvisLineWidthWidget;
 class QvisVariableButton;
 
 class SelectionList;

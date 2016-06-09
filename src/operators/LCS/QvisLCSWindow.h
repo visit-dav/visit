@@ -45,22 +45,12 @@
 class LCSAttributes;
 
 class QLabel;
-class QGroupBox;
-class QListWidget;
-class QListWidgetItem;
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
 class QSlider;
 class QSpinBox;
-class QvisColorTableButton;
-class QvisColorButton;
-class QvisLineWidthWidget;
-class QvisVariableButton;
-class QvisOpacitySlider;
-class QPushButton;
 class QButtonGroup;
-class QRadioButton;
 
 // ****************************************************************************
 // Class: QvisLCSWindow

@@ -40,7 +40,6 @@
 #include <ParallelCoordinatesAttributes.h>
 #include <ViewerProxy.h>
 
-#include <QButtonGroup>
 #include <QCheckBox>
 #include <QGroupBox>
 #include <QComboBox>
@@ -49,23 +48,13 @@
 #include <QLineEdit>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
-#include <QRadioButton>
 #include <QSlider>
-#include <QSpinBox>
 #include <QWidget>
 #include <QNarrowLineEdit.h>
-#include <QvisColorTableButton.h>
-#include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
 
 #include <math.h>
-#include <stdio.h>
-#include <string>
-
-using std::string;
 
 // ****************************************************************************
 // Method: QvisParallelCoordinatesPlotWindow::QvisParallelCoordinatesPlotWindow

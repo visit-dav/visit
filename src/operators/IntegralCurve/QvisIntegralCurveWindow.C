@@ -51,12 +51,7 @@
 #include <QComboBox>
 #include <QGroupBox>
 #include <QRadioButton>
-#include <QvisColorTableButton.h>
-#include <QvisColorButton.h>
-#include <QvisLineWidthWidget.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisVariableButton.h>
-#include <QvisPointControl.h>
 #include <QPushButton>
 #include <QFileDialog>
 #include <QListWidget>
@@ -68,9 +63,6 @@
 #include <PlotList.h>
 #include <PlotInfoAttributes.h>
 
-#include <stdio.h>
-#include <string>
-#include <vector>
 
 static void
 TurnOn(QWidget *w0, QWidget *w1=NULL);

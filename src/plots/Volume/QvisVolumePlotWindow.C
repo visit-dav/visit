@@ -55,7 +55,6 @@ public:
 #endif
 #include <QApplication>
 #include <QComboBox>
-#include <QCursor>
 #include <QDesktopWidget>
 #include <QLayout>
 #include <QPushButton>
@@ -70,7 +69,6 @@ public:
 #include <QTabWidget>
 
 #include <math.h>
-#include <stdio.h>
 #ifdef _WIN32
 // Windows #defines its own min/max, since we are using
 // std::min, std::max, undefine the windows versions here.
@@ -85,7 +83,6 @@ public:
 #include <QvisScribbleOpacityBar.h>
 #include <QvisVariableButton.h>
 #include <QvisColorTableButton.h>
-#include <QNarrowLineEdit.h>
 #include <TransferFunctionWidget.h>
 
 #include <VolumeAttributes.h>

@@ -46,7 +46,6 @@
 #include <QGroupBox>
 #include <QLayout>
 #include <QvisOpacitySlider.h>
-#include <stdio.h>
 
 
 // ****************************************************************************

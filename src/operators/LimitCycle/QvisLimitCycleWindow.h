@@ -45,21 +45,16 @@
 // Forward declarations
 class LimitCycleAttributes;
 
-class QTabWidget;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
 class QSpinBox;
-class QVBox;
 class QButtonGroup;
 class QRadioButton;
 class QComboBox;
 class QGroupBox;
-class QPushButton;
 class QListWidget;
-class QListWidgetItem;
 
-class QvisLineWidthWidget;
 class QvisVariableButton;
 
 // ****************************************************************************

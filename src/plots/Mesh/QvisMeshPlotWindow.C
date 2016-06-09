@@ -41,16 +41,13 @@
 #include <QWidget> 
 #include <QLayout> 
 #include <QGroupBox> 
-#include <QPushButton> 
 #include <QLabel>
 #include <QCheckBox>
-#include <QLineEdit>
 #include <QButtonGroup>
 #include <QRadioButton>
 
 #include <QvisColorButton.h>
 #include <QvisPointControl.h>
-#include <QvisColorManagerWidget.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>

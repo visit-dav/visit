@@ -50,7 +50,6 @@ class QLabel;
 class QButtonGroup;
 class SliceAttributes;
 class QSlider;
-class QGridLayout;
 class QHBoxLayout;
 
 // ****************************************************************************

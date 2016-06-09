@@ -36,25 +36,18 @@
 *
 *****************************************************************************/
 
-#include <stdio.h> // for sscanf
-
 #include <QButtonGroup>
 #include <QCheckBox>
-#include <QComboBox>
 #include <QGroupBox>
 #include <QWidget>
-#include <QGroupBox>
 #include <QVBoxLayout>
 #include <QLabel>
-#include <QLayout>
 #include <QLineEdit>
 #include <QRadioButton>
-#include <QWidget>
 #include <QWidget>
 
 #include <QvisClipWindow.h>
 #include <ClipAttributes.h>
-#include <ViewerProxy.h>
 
 // ****************************************************************************
 // Method: QPlaneGroup::QPlaneGroup

@@ -39,8 +39,6 @@
 #include "QvisLCSWindow.h"
 
 #include <LCSAttributes.h>
-#include <ViewerProxy.h>
-#include <DataNode.h>
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -50,23 +48,11 @@
 #include <QLineEdit>
 #include <QSlider>
 #include <QSpinBox>
-#include <QPushButton>
 #include <QTabWidget>
-#include <QToolTip>
 #include <QButtonGroup>
 #include <QRadioButton>
-#include <QvisColorTableButton.h>
-#include <QvisColorButton.h>
-#include <QvisLineWidthWidget.h>
-#include <QvisVariableButton.h>
-#include <QListWidget>
-#include <QFileDialog>
 #include <SelectionProperties.h>
 
-#include <stdio.h>
-
-#include <string>
-#include <vector>
 
 static void
 TurnOn(QWidget *w0, QWidget *w1=NULL);

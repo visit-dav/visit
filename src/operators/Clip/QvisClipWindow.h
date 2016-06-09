@@ -42,14 +42,8 @@
 #include <QGroupBox>
 
 class QCheckBox;
-class QComboBox;
 class QButtonGroup;
-class QGrid;
 class QLineEdit;
-class QLabel;
-class QGroupBox;
-class QVBoxLayout;
-class QPlaneGroup;
 class ClipAttributes;
 
 

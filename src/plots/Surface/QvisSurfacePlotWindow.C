@@ -47,15 +47,12 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
-#include <QPushButton>
 #include <QRadioButton>
 
 #include <QvisColorButton.h>
-#include <QvisColorManagerWidget.h>
 #include <QvisColorTableWidget.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
-#include <QvisOpacitySlider.h>
 #include <SurfaceAttributes.h>
 #include <ViewerProxy.h>
 

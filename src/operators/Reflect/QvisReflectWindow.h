@@ -44,9 +44,7 @@
 
 class ReflectAttributes;
 class QLabel;
-class QCheckBox;
 class QLineEdit;
-class QVBox;
 class QButtonGroup;
 class QComboBox;
 class QRadioButton;

@@ -37,11 +37,10 @@
 *****************************************************************************/
 
 #include <QvisParallelCoordinatesPlotWizardPage.h>
-#include <QButtonGroup>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
-#include <QRadioButton>
+#include <QPushButton>
 #include <QListWidget>
 
 #include <QvisParallelCoordinatesWidget.h>
@@ -50,7 +49,6 @@
 
 #include <avtDatabaseMetaData.h>
 #include <ExpressionList.h>
-#include <QDebug>
 
 
 // ****************************************************************************

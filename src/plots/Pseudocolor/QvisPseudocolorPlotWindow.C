@@ -39,7 +39,6 @@
 #include <QWidget> 
 #include <QLayout> 
 #include <QGroupBox>
-#include <QPushButton> 
 #include <QRadioButton>
 #include <QButtonGroup>
 #include <QLabel>
@@ -59,7 +58,7 @@
 #include <QvisVariableButton.h>
 #include <QvisColorButton.h>
 
-#include "QvisCollapsibleFrame.h"
+#include <QvisCollapsibleFrame.h>
 
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::QvisPseudocolorPlotWindow

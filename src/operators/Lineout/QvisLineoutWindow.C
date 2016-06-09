@@ -39,17 +39,12 @@
 #include "QvisLineoutWindow.h"
 
 #include <LineoutAttributes.h>
-#include <ViewerProxy.h>
 
 #include <QCheckBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
 #include <QNarrowLineEdit.h>
-#include <stdio.h>
-#include <string>
-
-using std::string;
 
 // ****************************************************************************
 // Method: QvisLineoutWindow::QvisLineoutWindow

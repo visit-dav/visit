@@ -48,15 +48,11 @@ class QCheckBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
-class QSpinBox;
-class QVBox;
 class QvisColorButton;
 class QvisColorManagerWidget;
-class QvisColorTableButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
-class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisMultiCurvePlotWindow

@@ -52,7 +52,6 @@ class QvisColorButton;
 class QvisColorTableWidget;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
-class QvisOpacitySlider;
 class VectorAttributes;
 
 // ****************************************************************************

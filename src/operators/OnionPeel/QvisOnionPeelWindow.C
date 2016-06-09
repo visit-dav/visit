@@ -52,9 +52,7 @@
 #include <QLineEdit>
 #include <QRadioButton>
 #include <QSpinBox>
-#include <QStringList>
 #include <QTimer>
-#include <stdio.h>
 #include <vectortypes.h>
 
 

@@ -42,15 +42,12 @@
 #include <QButtonGroup>
 #include <QGroupBox>
 #include <QRadioButton>
-#include <QPushButton>
 #include <QLabel>
 #include <QCheckBox>
 #include <QLineEdit>
 
 #include <TensorAttributes.h>
 #include <ViewerProxy.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
 #include <QvisColorButton.h>
 #include <QvisColorTableWidget.h>
 

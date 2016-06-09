@@ -39,7 +39,6 @@
 #include "QvisThresholdWindow.h"
 
 #include <ThresholdAttributes.h>
-#include <ViewerProxy.h>
 
 #include <QTableWidget>
 #include <QTableWidgetItem>
@@ -52,13 +51,8 @@
 #include <QButtonGroup>
 #include <QPushButton>
 #include <QRadioButton>
-#include <QLineEdit>
 #include <QvisVariableButton.h>
 
-#include <stdio.h>
-#include <string>
-
-using std::string;
 
 // ****************************************************************************
 // Method: QvisThresholdWindow::QvisThresholdWindow

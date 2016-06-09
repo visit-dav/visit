@@ -47,23 +47,10 @@ class QLabel;
 class QCheckBox;
 class QGroupBox;
 class QLineEdit;
-class QSpinBox;
-class QVBox;
-class QButtonGroup;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
-class QvisVariableButton;
 class QPushButton;
-class QListWidget;
-class QComboBox;
 class QTreeWidget;
-class QTreeWidgetItem;
 class QvisElementButton;
-class QCheckBox;
-class QGroupBox;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisCreateBondsWindow

@@ -41,7 +41,7 @@
 
 #include <QvisOperatorWindow.h>
 #include <AttributeSubject.h>
-#include <QLineEdit>
+#include <QNarrowLineEdit.h>
 
 class TransformAttributes;
 class QButtonGroup;
@@ -50,35 +50,6 @@ class QLabel;
 class QTabWidget;
 class QComboBox;
 
-// ****************************************************************************
-//  Class:  QNarrowLineEdit
-//
-//  Purpose:
-//    A QLineEdit that has a narrower default size.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    September 25, 2001
-//
-//  Modifications:
-//    Brad Whitlock, Wed Aug 13 20:10:25 PDT 2008
-//    Qt 4.
-//
-// ****************************************************************************
-class QNarrowLineEdit : public QLineEdit
-{
-  public:
-    QNarrowLineEdit(QWidget *p) : QLineEdit(p)
-    {
-    }
-    QSize sizeHint() const
-    {
-        QSize size = QLineEdit::sizeHint();
-        QFontMetrics fm(font());
-        int w = fm.width('x') * 4; // 4 characters
-        size.setWidth(w);
-        return size;
-    }
-};
 
 // ****************************************************************************
 //  Class:  QvisTransformWindow

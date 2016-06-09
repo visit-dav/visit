@@ -48,20 +48,13 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QRadioButton>
-#include <QSpinBox>
 
 #include <QvisColorButton.h>
 #include <QvisColorManagerWidget.h>
-#include <QvisColorTableButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
-#include <QvisVariableButton.h>
 
-#include <stdio.h>
-#include <string>
-
-using std::string;
 
 // ****************************************************************************
 // Method: QvisMultiCurvePlotWindow::QvisMultiCurvePlotWindow

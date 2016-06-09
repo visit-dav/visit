@@ -45,7 +45,6 @@ class QButtonGroup;
 class QCheckBox;
 class QGroupBox;
 class QLabel;
-class QSlider;
 class QvisColorButton;
 class QvisColorSwatchListWidget;
 class QvisColorTableWidget;

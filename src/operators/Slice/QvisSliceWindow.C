@@ -37,7 +37,6 @@
 *****************************************************************************/
 
 #include <math.h>
-#include <stdio.h> // for sscanf
 
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -46,15 +45,12 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
-#include <QListWidget>
-#include <QPushButton>
 #include <QRadioButton>
 #include <QSlider>
 
 #include <QvisSliceWindow.h>
 #include <FileServerList.h>
 #include <SliceAttributes.h>
-#include <ViewerProxy.h>
 
 // ****************************************************************************
 // Method: QvisSliceWindow::QvisSliceWindow

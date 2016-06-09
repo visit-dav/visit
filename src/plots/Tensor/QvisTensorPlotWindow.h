@@ -43,15 +43,10 @@
 // Forward declarations
 class QButtonGroup;
 class QCheckBox;
-class QGroupBox;
-class QLabel;
 class QLineEdit;
 class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
-class TensorAttributes;
-class QvisOpacitySlider;
 class QvisColorTableWidget;
+class TensorAttributes;
 
 // ****************************************************************************
 // Class: QvisTensorPlotWindow
