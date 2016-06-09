@@ -46,6 +46,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added optional input and output frames per second options to <i>visit_utils.encoding.encode</i>. These enable more precise frame rates for ffmpeg outputs.</li>
   <li>Several parameter names were changed made to make the <i>visit_utils.qannote</i>, <i>visit_utils.qplot</i>, and <i>visit_flow</i> python modules have a consistent interface.</li>
   <li><i>visit_utils.qannote.MultiProgressBar</i> was changed to use percentages for the segment ranges and input position.</li>
+  <li>Added a warning message to VisIt's CLI when a file named 'visit.py' is found in the current working directory at CLI startup. When this happens the 'visit.py' file is imported instead of VisIt's actual python client interface, which breaks the CLI. 
+  This happens rarely, but has confused users and developers so we wanted to detect and explain the situation.
+  </li>
 </ul>
 
 
