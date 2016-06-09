@@ -160,6 +160,7 @@ QvisAnimationWindow::CreateWindowContents()
 
     // The animation increment
     animationIncrement = new QSpinBox(central);
+    animationIncrement->setKeyboardTracking(false);
     animationIncrement->setMinimum(1);
     animationIncrement->setMaximum(100);
     connect(animationIncrement, SIGNAL(valueChanged(int)),

@@ -130,6 +130,7 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
     cLayout->addWidget(rb, row, 1);
     // Add controls for relative height
     relativeHeightSpinBox = new QSpinBox(this);
+    relativeHeightSpinBox->setKeyboardTracking(false);
     relativeHeightSpinBox->setMinimum(1);
     relativeHeightSpinBox->setMaximum(100);
     relativeHeightSpinBox->setSuffix("%");
@@ -162,6 +163,7 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
     ++row;
 
     rotateZ = new QSpinBox(this);
+    rotateZ->setKeyboardTracking(false);
     rotateZ->setMinimum(-360);
     rotateZ->setMaximum(360);
     rotateZ->setButtonSymbols(QSpinBox::PlusMinus);
@@ -170,6 +172,7 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
             this, SLOT(rotateZChanged(int)));
     QLabel *rotateZLabel = new QLabel(tr("Rotate Z"), this);
     rotateX = new QSpinBox(this);
+    rotateX->setKeyboardTracking(false);
     rotateX->setMinimum(-360);
     rotateX->setMaximum(360);
     rotateX->setButtonSymbols(QSpinBox::PlusMinus);
@@ -178,6 +181,7 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
             this, SLOT(rotateXChanged(int)));
     QLabel *rotateXLabel = new QLabel(tr("Rotate X"), this);
     rotateY = new QSpinBox(this);
+    rotateY->setKeyboardTracking(false);
     rotateY->setMinimum(-360);
     rotateY->setMaximum(360);
     rotateY->setButtonSymbols(QSpinBox::PlusMinus);
@@ -435,9 +439,7 @@ QvisText3DInterface::GetCurrentValues(int which_widget)
     if(which_widget == 2 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(relativeHeightSpinBox);
-        int h = relativeHeightSpinBox->value();
-        annot->SetRelativeHeight(h);
+        annot->SetRelativeHeight(relativeHeightSpinBox->value());
     }
 
     if(which_widget == 3 || doAll)
@@ -464,7 +466,6 @@ QvisText3DInterface::GetCurrentValues(int which_widget)
     if(which_widget == 4 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(rotateZ);
         int r = rotateZ->value();
         double rotations[3];
         rotations[0] = annot->GetRotations()[0];
@@ -476,7 +477,6 @@ QvisText3DInterface::GetCurrentValues(int which_widget)
     if(which_widget == 5 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(rotateX);
         int r = rotateX->value();
         double rotations[3];
         rotations[0] = (double)r;
@@ -488,7 +488,6 @@ QvisText3DInterface::GetCurrentValues(int which_widget)
     if(which_widget == 6 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(rotateY);
         int r = rotateY->value();
         double rotations[3];
         rotations[0] = annot->GetRotations()[0];

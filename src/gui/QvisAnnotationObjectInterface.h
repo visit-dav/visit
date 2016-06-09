@@ -95,7 +95,6 @@ protected:
     void GetScreenPosition(QvisScreenPositionEdit *spe, const QString &name);
     void GetPosition2(QLineEdit *le, const QString &name);
     void GetScreenPosition2(QvisScreenPositionEdit *spe, const QString &name);
-    void ForceSpinBoxUpdate(QSpinBox *sb);
 
     QVBoxLayout      *topLayout;
 

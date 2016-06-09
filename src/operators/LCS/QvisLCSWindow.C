@@ -558,6 +558,9 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
 // ****************************************************************************
 
@@ -607,6 +610,7 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
     seedLimitLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
     seedGroupLayout->addWidget( seedLimitLabel, 3, 0);
     seedLimit = new QSpinBox(seedGroup);
+    seedLimit->setKeyboardTracking(false);
     seedLimit->setMinimum(1);
     seedLimit->setMaximum(100);
     connect(seedLimit, SIGNAL(valueChanged(int)),
@@ -702,6 +706,10 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
 //   Hank Childs, Sun Dec  5 05:31:57 PST 2010
 //   Add additional warning controls.
 //
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
 // ****************************************************************************
 
 void
@@ -733,6 +741,7 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     
     maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
     maxSLCount = new QSpinBox(algoGrp);
+    maxSLCount->setKeyboardTracking(false);
     maxSLCount->setMinimum(1);
     maxSLCount->setMaximum(100000);
     connect(maxSLCount, SIGNAL(valueChanged(int)), 
@@ -742,6 +751,7 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     maxDomainCacheLabel = new QLabel(tr("Domain cache size"), algoGrp);
     maxDomainCache = new QSpinBox(algoGrp);
+    maxDomainCache->setKeyboardTracking(false);
     maxDomainCache->setMinimum(1);
     maxDomainCache->setMaximum(100000);
     connect(maxDomainCache, SIGNAL(valueChanged(int)),
@@ -751,6 +761,7 @@ QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     workGroupSizeLabel = new QLabel(tr("Work group size"), algoGrp);
     workGroupSize = new QSpinBox(algoGrp);
+    workGroupSize->setKeyboardTracking(false);
     workGroupSize->setMinimum(2);
     workGroupSize->setMaximum(1000000);
     connect(workGroupSize, SIGNAL(valueChanged(int)),
@@ -1552,6 +1563,8 @@ QvisLCSWindow::UpdateAlgorithmAttributes()
 // Creation:   Mon Oct 21 14:19:00 PST 2002
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Ensure values are retrieved from spin boxes.
 //
 // ****************************************************************************
 
@@ -1884,6 +1897,12 @@ QvisLCSWindow::GetCurrentValues(int which_widget)
                 DoubleToQString(atts->GetCriticalPointThreshold()));
             atts->SetCriticalPointThreshold(atts->GetCriticalPointThreshold());
         }
+    }
+    // maxDomainCache
+    if (which_widget == LCSAttributes::ID_maxDomainCacheSize || doAll)
+    {
+        if (maxDomainCache->value() != atts->GetMaxDomainCacheSize())
+            atts->SetMaxDomainCacheSize(maxDomainCache->value());
     }
 }
 

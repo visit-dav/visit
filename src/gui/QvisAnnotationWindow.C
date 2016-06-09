@@ -1013,6 +1013,10 @@ QvisAnnotationWindow::CreateGeneralTabArray(QWidget *parentWidget)
 //   Brad Whitlock, Thu Jun 26 10:40:10 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
 // ****************************************************************************
 
 void
@@ -1136,6 +1140,7 @@ QvisAnnotationWindow::CreateColorTab()
 
     // Add the image repeat x,y widgets. 
     imageRepeatX = new QSpinBox(pageColor);
+    imageRepeatX->setKeyboardTracking(false);
     imageRepeatX->setMinimum(1);
     imageRepeatX->setMaximum(100);
     imageRepeatX->setButtonSymbols(QSpinBox::PlusMinus);
@@ -1148,6 +1153,7 @@ QvisAnnotationWindow::CreateColorTab()
     ++row;
 
     imageRepeatY = new QSpinBox(pageColor);
+    imageRepeatY->setKeyboardTracking(false);
     imageRepeatY->setMinimum(1);
     imageRepeatY->setMaximum(100);
     imageRepeatY->setButtonSymbols(QSpinBox::PlusMinus);
@@ -1917,6 +1923,9 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
 //   Hank Childs, Mon May 23 10:31:29 PDT 2011
 //   Added support for setting the bounding box location.
 //
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Ensure spinbox values are retrieved.
+//
 // ****************************************************************************
 
 void
@@ -1978,6 +1987,18 @@ QvisAnnotationWindow::GetCurrentValues(int which_widget)
     {
         QString temp(databaseTimeOffset->displayText().trimmed());
         annotationAtts->SetDatabaseInfoTimeOffset(temp.toDouble());
+    }
+
+    if (which_widget == AnnotationAttributes::ID_imageRepeatX || doAll)
+    {
+        if (imageRepeatX->value() != annotationAtts->GetImageRepeatX())
+            annotationAtts->SetImageRepeatX(imageRepeatX->value());
+    }
+
+    if (which_widget == AnnotationAttributes::ID_imageRepeatY || doAll)
+    {
+        if (imageRepeatY->value() != annotationAtts->GetImageRepeatY())
+            annotationAtts->SetImageRepeatY(imageRepeatY->value());
     }
 }
 

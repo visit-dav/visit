@@ -972,6 +972,10 @@ QvisVolumePlotWindow::Create2DTransferFunctionGroup()
 //   Allen Harvey, Brad Whitlock, Tue Jan 31 16:32:54 PST 2012
 //   Add support for no resampling.
 //
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
 // ****************************************************************************
 
 void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayout)
@@ -988,6 +992,7 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         resampleTargetLabel             = new QLabel(tr("Number of samples"),               resampleGroup);
         resampleToggle                  = new QCheckBox(tr("Sample data onto regular grid"),resampleGroup);
         resampleTarget                  = new QSpinBox(                                     resampleGroup);
+        resampleTarget->setKeyboardTracking(false);
         resampleTarget->setMinimum(1000);
         resampleTarget->setMaximum(100000000);
         resampleTarget->setSingleStep(10000);
@@ -1029,6 +1034,7 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         QHBoxLayout *texture3dLayout    = new QHBoxLayout(                  texture3dOptions);
         QLabel      *num3DSlicesLabel   = new QLabel(tr("Number of slices"),texture3dOptions);
         num3DSlices                     = new QSpinBox(                     texture3dOptions);
+        num3DSlices->setKeyboardTracking(false);
         num3DSlices->setMinimum(1);
         num3DSlices->setMaximum(1000);
         num3DSlices->setSingleStep(10);
@@ -1068,10 +1074,12 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         samplingButtonGroup->addButton(rasterizationButton, 0);
         samplingButtonGroup->addButton(kernelButton, 1);
         samplingButtonGroup->addButton(trilinearButton, 2);
+        samplesPerRay->setKeyboardTracking(false);
         samplesPerRay->setMinimum(1);
         samplesPerRay->setMaximum(25000);
         samplesPerRay->setSingleStep(50);
         samplesPerRayLabel->setBuddy(samplesPerRay);
+        rendererSamples->setKeyboardTracking(false);
         rendererSamples->setMinimum(1);
         rendererSamples->setMaximum(20);
         rendererSamples->setSingleStep(.1);
@@ -1103,6 +1111,7 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         QHBoxLayout *slivrLayout     = new QHBoxLayout(                  slivrOptions);
         rendererSamplesSLIVRLabel    = new QLabel(tr("Sampling rate"),   slivrOptions);
         rendererSamplesSLIVR         = new QDoubleSpinBox(               slivrOptions);
+        rendererSamplesSLIVR->setKeyboardTracking(false);
         rendererSamplesSLIVR->setMinimum(1);
         rendererSamplesSLIVR->setMaximum(20);
         rendererSamplesSLIVR->setSingleStep(.1);
@@ -1124,6 +1133,7 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         QHBoxLayout *tuvokLayout        = new QHBoxLayout(                  tuvokOptions);
         QLabel      *num3DSlicesLabel   = new QLabel(tr("Number of slices"),tuvokOptions);
         QSpinBox    *num3DSlices        = new QSpinBox(                     tuvokOptions);
+        num3DSlices->setKeyboardTracking(false);
         num3DSlices->setMinimum(1);
         num3DSlices->setMaximum(1000);
         num3DSlices->setSingleStep(10);
@@ -2535,7 +2545,8 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
     // Get the value of the resample target
     if(which_widget == VolumeAttributes::ID_resampleTarget || doAll)
     {
-        volumeAtts->SetResampleTarget(resampleTarget->value());
+        if (resampleTarget->value() != volumeAtts->GetResampleTarget())
+            volumeAtts->SetResampleTarget(resampleTarget->value());
     }
     
     // Get the value of the minimum for the color variable.
@@ -2601,13 +2612,15 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
     // Get the number of samples per ray.
     if(which_widget == VolumeAttributes::ID_samplesPerRay || doAll)
     {
-        volumeAtts->SetSamplesPerRay(samplesPerRay->value());
+        if (samplesPerRay->value() != volumeAtts->GetSamplesPerRay())
+            volumeAtts->SetSamplesPerRay(samplesPerRay->value());
     }
 
     // Get the number of slices for 3D texturing.
     if(which_widget == VolumeAttributes::ID_num3DSlices || doAll)
     {
-        volumeAtts->SetNum3DSlices(num3DSlices->value());
+        if (num3DSlices->value() != volumeAtts->GetNum3DSlices())
+            volumeAtts->SetNum3DSlices(num3DSlices->value());
     }
 
     // Do the skew factor value
@@ -2629,7 +2642,8 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
     // Get the value of the renderer samples
     if(which_widget == VolumeAttributes::ID_rendererSamples || doAll)
     {
-        volumeAtts->SetRendererSamples(rendererSamples->value());
+        if (rendererSamples->value() != volumeAtts->GetRendererSamples())
+            volumeAtts->SetRendererSamples(rendererSamples->value());
     }
 
     if(which_widget == VolumeAttributes::ID_lowGradientLightingClampValue

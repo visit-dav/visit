@@ -328,6 +328,11 @@ QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
 // Programmer: Kathleen Biagas 
 // Creation:   September 11, 2013
 //
+// Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
 // ****************************************************************************
 
 void
@@ -480,6 +485,7 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 
     // Create the point stride 
     pointStride = new QSpinBox(central);
+    pointStride->setKeyboardTracking(false);
     pointStride->setMinimum(1);
     pointStride->setMaximum(5000);
     pointStrideLabel = new QLabel(tr("Point stride"), central);
@@ -500,6 +506,7 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 
     // Create the point density spin box
     symbolDensity = new QSpinBox(central);
+    symbolDensity->setKeyboardTracking(false);
     symbolDensity->setMinimum(10);
     symbolDensity->setMaximum(1000);
     symbolDensityLabel = new QLabel(tr("Point density"), central);

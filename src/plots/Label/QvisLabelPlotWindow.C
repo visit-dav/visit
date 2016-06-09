@@ -142,6 +142,10 @@ QvisLabelPlotWindow::~QvisLabelPlotWindow()
 //   Hank Childs, Wed Oct 20 11:04:12 PDT 2010
 //   Change text heights from spin box to "double spin box".
 //
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
 // ****************************************************************************
 
 void
@@ -174,6 +178,7 @@ QvisLabelPlotWindow::CreateWindowContents()
     selLayout->addWidget(restrictNumberOfLabelsToggle, 1,0,1,2);
 
     numberOfLabelsSpinBox = new QSpinBox(selectionGroupBox);
+    numberOfLabelsSpinBox->setKeyboardTracking(false);
     numberOfLabelsSpinBox->setRange(1, 200000);
     numberOfLabelsSpinBox->setSingleStep(200);
     connect(numberOfLabelsSpinBox, SIGNAL(valueChanged(int)),
@@ -255,6 +260,7 @@ QvisLabelPlotWindow::CreateWindowContents()
     fmtLayout->addWidget(textColor2Button, 2, 1, Qt::AlignLeft);
 
     textHeight1SpinBox = new QDoubleSpinBox(formattingGroupBox);
+    textHeight1SpinBox->setKeyboardTracking(false);
     textHeight1SpinBox->setMinimum(0.0);
     textHeight1SpinBox->setMaximum(100.0);
     textHeight1SpinBox->setSingleStep(0.1);
@@ -266,6 +272,7 @@ QvisLabelPlotWindow::CreateWindowContents()
     fmtLayout->addWidget(textHeight1SpinBox, 3, 1);
 
     textHeight2SpinBox = new QDoubleSpinBox(formattingGroupBox);
+    textHeight2SpinBox->setKeyboardTracking(false);
     textHeight2SpinBox->setMinimum(0.0);
     textHeight2SpinBox->setMaximum(100.0);
     textHeight2SpinBox->setSingleStep(0.1);

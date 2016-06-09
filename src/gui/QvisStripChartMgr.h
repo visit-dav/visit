@@ -39,23 +39,15 @@
 #define QVIS_STRIPCHART_MGR
 
 #include <QWidget>
-#include <QGroupBox>
 #include <QvisPostableWindow.h>
 
 class QvisStripChartTabWidget;
-class QVBoxLayout;
-class QComboBox;
-class QGroupBox;
 class QLabel;
 class QPushButton;
-class QLineEdit;
-class QTreeView;
 class QString;
-class QSpinBox;
 class QCheckBox;
 class QGridLayout;
 class QScrollArea;
-class QColor;
 
 class EngineList;
 class ViewerProxy;

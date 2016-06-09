@@ -89,6 +89,7 @@ QvisRotationTransition::QvisRotationTransition(const QPixmap &pix,
 
     // Angle controls.
     startAngle = new QSpinBox(this);
+    startAngle->setKeyboardTracking(false);
     startAngle->setMinimum(-360 * 100);
     startAngle->setMaximum(360 * 100);
     startAngle->setValue(0);
@@ -99,6 +100,7 @@ QvisRotationTransition::QvisRotationTransition(const QPixmap &pix,
     gLayout->addWidget(startAngle, 0, 1);
     
     endAngle = new QSpinBox(this);
+    endAngle->setKeyboardTracking(false);
     endAngle->setMinimum(-360 * 100);
     endAngle->setMaximum(360 * 100);
     endAngle->setValue(360);
@@ -109,6 +111,7 @@ QvisRotationTransition::QvisRotationTransition(const QPixmap &pix,
 
     // Number of steps controls.
     nSteps = new QSpinBox(this);
+    nSteps->setKeyboardTracking(false);
     nSteps->setMinimum(1);
     nSteps->setValue(30);
     gLayout->addWidget(

@@ -153,6 +153,9 @@
 //    Enablers produced bad code for checkboxes. There is no label. Added
 //    a virtual method, HasLabel() to determine if code should be generated.
 //
+//    Kathleen Biagas, Thu Jun  9 16:22:37 PDT 2016
+//    For QSpinBox, turn off keyboardTracking.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -230,6 +233,7 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
         if (rangeSet)
         {
             c << "    "<<name<<" = new QSpinBox(central);" << endl;
+            c << "    "<<name<<"->setKeyboardTracking(false);"<<endl;
             c << "    "<<name<<"->setMinimum("<<min<<");"<<endl;
             c << "    "<<name<<"->setMaximum("<<max<<");"<<endl;
             c << "    connect("<<name<<", SIGNAL(valueChanged(int)), " << endl
@@ -243,12 +247,13 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
         }
         c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
     }
-    virtual bool            providesSourceGetCurrent() const { return !rangeSet; }
+    virtual bool            providesSourceGetCurrent() const { return true; }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
         if (rangeSet)
         {
-            c << "        // Nothing for " << name << endl;
+            c << "        if ("<<name<<"->value() != atts->Get"<<Name<<"())" << endl;
+            c << "            atts->Set"<<Name<<"("<<name<<"->value())" << endl;
         }
         else
         {

@@ -137,6 +137,7 @@ QvisSequenceTransition::QvisSequenceTransition(const QPixmap &pix,
     innerLayout->addLayout(frameLayout);
     frameLayout->setSpacing(5);
     nFrames = new QSpinBox(this);
+    nFrames->setKeyboardTracking(false);
     nFrames->setMinimum(1);
     nFrames->setValue(10);
     frameLayout->addWidget(

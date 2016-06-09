@@ -101,6 +101,7 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent) :
 
     // Add controls for position2
     widthSpinBox = new QSpinBox(this);
+    widthSpinBox->setKeyboardTracking(false);
     widthSpinBox->setMinimum(1);
     widthSpinBox->setMaximum(100);
     widthSpinBox->setSuffix("%");
@@ -110,6 +111,7 @@ QvisTimeSliderInterface::QvisTimeSliderInterface(QWidget *parent) :
     cLayout->addWidget(widthSpinBox, 1, 1);
     cLayout->addWidget(new QLabel(tr("Width"), this), 1, 0);
     heightSpinBox = new QSpinBox(this);
+    heightSpinBox->setKeyboardTracking(false);
     heightSpinBox->setMinimum(1);
     heightSpinBox->setMaximum(100);
     heightSpinBox->setSuffix("%");
@@ -410,7 +412,6 @@ QvisTimeSliderInterface::GetCurrentValues(int which_widget)
     if(which_widget == 2 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(widthSpinBox);
         int w = widthSpinBox->value();
         double pos2[3];
         pos2[0] = double(w) * 0.01;
@@ -422,7 +423,6 @@ QvisTimeSliderInterface::GetCurrentValues(int which_widget)
     if(which_widget == 3 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(heightSpinBox);
         int h = heightSpinBox->value();
         double pos2[3];
         pos2[0] = annot->GetPosition2()[0];

@@ -43,19 +43,9 @@
 #include <StatusAttributes.h>
 #include <ViewerProxy.h>
 
-#include <QCheckBox>
-#include <QColor>
 #include <QGroupBox>
-#include <QLabel>
 #include <QLayout>
-#include <QLineEdit>
-#include <QMessageBox>
 #include <QPushButton>
-#include <QRadioButton> 
-#include <QScrollArea>
-#include <QSpinBox>
-#include <QSplitter>
-#include <QTextEdit>
 
 // ****************************************************************************
 // Method: VisItSimStripChart::QvisStripChartMgr

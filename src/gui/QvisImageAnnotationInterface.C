@@ -116,6 +116,7 @@ QvisImageAnnotationInterface::QvisImageAnnotationInterface(QWidget *parent) :
 
     // Add controls for width.
     widthSpinBox = new QSpinBox(this);
+    widthSpinBox->setKeyboardTracking(false);
     widthSpinBox->setMinimum(1);
     widthSpinBox->setMaximum(1000);
     widthSpinBox->setSuffix("%");
@@ -129,6 +130,7 @@ QvisImageAnnotationInterface::QvisImageAnnotationInterface(QWidget *parent) :
 
     // Add controls for height.
     heightSpinBox = new QSpinBox(this);
+    heightSpinBox->setKeyboardTracking(false);
     heightSpinBox->setSuffix("%");
     heightSpinBox->setMinimum(1);
     heightSpinBox->setMaximum(1000);
@@ -348,7 +350,6 @@ QvisImageAnnotationInterface::GetCurrentValues(int which_widget)
     if(which_widget == 1 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(widthSpinBox);
         int w = widthSpinBox->value();
         pos[0] = w;
         pos[1] = annot->GetPosition2()[1];
@@ -361,7 +362,6 @@ QvisImageAnnotationInterface::GetCurrentValues(int which_widget)
     if(which_widget == 2 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(heightSpinBox);
         int h = heightSpinBox->value();
         pos[0] = annot->GetPosition2()[0];
         pos[1] = h;

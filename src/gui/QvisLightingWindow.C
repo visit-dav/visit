@@ -256,6 +256,7 @@ QvisLightingWindow::CreateWindowContents()
     sLayout->addWidget(lightBrightness, 4, 1);
 
     lightBrightnessSpinBox = new QSpinBox(lightGroupBox);
+    lightBrightnessSpinBox->setKeyboardTracking(false);
     lightBrightnessSpinBox->setRange(0,100);
     lightBrightnessSpinBox->setSingleStep(1);
     lightBrightnessSpinBox->setSuffix("%");

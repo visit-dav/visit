@@ -167,6 +167,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     lLayout->setColumnStretch(1, 10);
 
     labelScaling = new QSpinBox(labelGroup);
+    labelScaling->setKeyboardTracking(false);
     labelScaling->setMinimum(-300);
     labelScaling->setMaximum(300);
     connect(labelScaling, SIGNAL(valueChanged(int)),
@@ -518,14 +519,14 @@ QvisAxisAttributesWidget::GetCurrentValues(AxisAttributes &aa,
     }
 
     // Do the label group
-    if(doAllGroups || which_group == AxisAttributes::ID_title)
+    if(doAllGroups || which_group == AxisAttributes::ID_label)
     {
         if(doAll || which_widget == AxisLabels::ID_font)
             atts.GetLabel().SetFont(labelFont->getFontAttributes());
         if(doAll || which_widget == AxisLabels::ID_scaling)
         {
-            ForceSpinBoxUpdate(labelScaling);
-            atts.GetLabel().SetScaling(labelScaling->value());
+            if(labelScaling->value() != atts.GetLabel().GetScaling())
+                atts.GetLabel().SetScaling(labelScaling->value());
         }
     }
 
@@ -598,47 +599,6 @@ QvisAxisAttributesWidget::GetDouble(double &val, QLineEdit *le, const QString &n
         Message(msg);
     }
     return okay;
-}
-
-// ****************************************************************************
-// Method: QvisAxisAttributesWidget::ForceSpinBoxUpdate
-//
-// Purpose: 
-//   Forces a spin box to update so we can get its new value.
-//
-// Arguments:
-//
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Feb 8 17:53:47 PST 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAxisAttributesWidget::ForceSpinBoxUpdate(QSpinBox *sb)
-{
-// No longer needed...
-#if 0
-    // Block signals.
-    sb->blockSignals(true);
-
-    // textChanged is protected and the compiler does not let us call
-    // it directly so call it as a slot. We do this to make the spin box
-    // think that it has new text input so it will parse it again when
-    // we call value().
-    QTimer::singleShot(0, sb, SLOT(textChanged()));
-
-    // Call the value function to make the spin box parse the new value.
-    sb->value();
-
-    // Let the spinbox emit signals again.
-    sb->blockSignals(false);
-#endif
 }
 
 //

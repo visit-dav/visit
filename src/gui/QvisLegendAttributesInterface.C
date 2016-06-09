@@ -37,16 +37,13 @@
 *****************************************************************************/
 
 #include <QvisLegendAttributesInterface.h>
-#include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFrame>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLayout>
-#include <QLineEdit>
 #include <QPushButton>
-#include <QRadioButton>
 #include <QSpinBox>
 #include <QStringList>
 #include <QTabWidget>
@@ -140,6 +137,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
 
     // Add controls for position2
     widthSpinBox = new QSpinBox(this);
+    widthSpinBox->setKeyboardTracking(false);
     widthSpinBox->setMinimum(1);
     widthSpinBox->setMaximum(int(WIDTH_HEIGHT_PRECISION * 5));
     widthSpinBox->setSuffix("%");
@@ -150,6 +148,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     pLayout->addWidget(new QLabel(tr("X-scale"), this), row, 0);
 
     heightSpinBox = new QSpinBox(this);
+    heightSpinBox->setKeyboardTracking(false);
     heightSpinBox->setMinimum(1);
     heightSpinBox->setMaximum(int(WIDTH_HEIGHT_PRECISION * 5));
     heightSpinBox->setSuffix("%");
@@ -189,6 +188,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     ++row;
 
     numTicksSpinBox = new QSpinBox(this);
+    numTicksSpinBox->setKeyboardTracking(false);
     numTicksSpinBox->setMinimum(1);
     numTicksSpinBox->setMaximum(100);
     numTicksSpinBox->setButtonSymbols(QSpinBox::PlusMinus);
@@ -733,7 +733,6 @@ QvisLegendAttributesInterface::GetCurrentValues(int which_widget)
     if(which_widget == 2 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(widthSpinBox);
         int w = widthSpinBox->value();
         double pos2[3];
         pos2[0] = double(w) * (1. / WIDTH_HEIGHT_PRECISION);
@@ -745,7 +744,6 @@ QvisLegendAttributesInterface::GetCurrentValues(int which_widget)
     if(which_widget == 3 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(heightSpinBox);
         int h = heightSpinBox->value();
         double pos2[3];
         pos2[0] = annot->GetPosition2()[0];

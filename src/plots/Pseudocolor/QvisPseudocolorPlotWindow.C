@@ -526,6 +526,9 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
 // ****************************************************************************
 
@@ -627,6 +630,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     lineLayout->addWidget(tubeResolutionLabel, 0, 3, Qt::AlignRight);
 
     tubeResolution = new QSpinBox(central);
+    tubeResolution->setKeyboardTracking(false);
     tubeResolution->setMinimum(3);
     tubeResolution->setMaximum(100);
     lineLayout->addWidget(tubeResolution, 0, 4);
@@ -705,6 +709,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     lineLayout->addWidget(endPointResolutionLabel, 4, 3, Qt::AlignRight);
 
     endPointResolution = new QSpinBox(central);
+    endPointResolution->setKeyboardTracking(false);
     endPointResolution->setMinimum(3);
     endPointResolution->setMaximum(100);
     lineLayout->addWidget(endPointResolution, 4, 4);
@@ -1571,8 +1576,8 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
     if (which_widget == PseudocolorAttributes::ID_tubeResolution|| doAll)
     {
         // This can only be an integer, so no error checking is needed.
-        int val = tubeResolution->value();
-        pcAtts->SetTubeResolution(val);
+        if (tubeResolution->value() != pcAtts->GetTubeResolution())
+            pcAtts->SetTubeResolution(tubeResolution->value());
     }
 
     // tube radius
@@ -1648,8 +1653,8 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
     if (which_widget == PseudocolorAttributes::ID_endPointResolution|| doAll)
     {
         // This can only be an integer, so no error checking is needed.
-        int val = endPointResolution->value();
-        pcAtts->SetEndPointResolution(val);
+        if (endPointResolution->value() != pcAtts->GetEndPointResolution())
+            pcAtts->SetEndPointResolution(endPointResolution->value());
     }
 
     // End point radius
