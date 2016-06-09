@@ -63,6 +63,7 @@
 #include <InstallationFunctions.h>
 #include <StringHelpers.h>
 #include <VisItException.h>
+#include <DebugStream.h>
 
 #include <string>
 #include <vector>
@@ -484,6 +485,38 @@ main(int argc, char *argv[])
 
     TRY
     {
+
+        // 
+        // If there is a file named "visit.py" in the current working directory,
+        // this will be imported instead of the actual visit python module.
+        // This is the expected  python interpreter behavior, but it is very 
+        // confusing when users stumble upon this. 
+        //
+        // We decided to provide an error message to let users identify this case.
+        //
+        
+        FileFunctions::VisItStat_t vstat_info;
+        if(FileFunctions::VisItStat("visit.py", &vstat_info) != -1)
+        {
+            std::ostringstream oss;
+            oss <<"!!!! - WARNING - !!!!" 
+                << std::endl
+                <<"You have a file named 'visit.py' in your current working "
+                <<"directory. Python's standard module import logic will use "
+                <<"this 'visit.py' file instead of the VisIt python module "
+                <<"that implements VisIt's python client interface."
+                << std::endl
+                <<"This will most likely disable all VisIt python client "
+                <<"features!"
+                << std::endl
+                <<"To avoid this please run in a directory without a file "
+                <<"named 'visit.py'."
+                << std::endl;
+
+            std::cout << oss.str() << std::endl;
+            debug1    << oss.str() << std::endl;
+        }
+        
         // Initialize python
         Py_Initialize();
         PyEval_InitThreads();
