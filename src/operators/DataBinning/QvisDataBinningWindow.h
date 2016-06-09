@@ -47,15 +47,8 @@ class QLabel;
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
-class QSpinBox;
-class QVBox;
 class QButtonGroup;
 class QRadioButton;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
 class QvisVariableButton;
 
 // ****************************************************************************

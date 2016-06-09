@@ -46,7 +46,6 @@
 class QListWidget;
 class QPushButton;
 class QButtonGroup;
-class QFrame;
 class QLabel;
 class QvisParallelCoordinatesWidget;
 class avtDatabaseMetaData;

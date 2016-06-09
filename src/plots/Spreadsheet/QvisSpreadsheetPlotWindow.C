@@ -46,20 +46,13 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
-#include <QSpinBox>
 #include <QWidget>
 #include <QButtonGroup>
 #include <QRadioButton>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
-#include <QvisVariableButton.h>
 #include <QvisDialogLineEdit.h>
-
-#include <stdio.h>
-#include <string>
 
 #include <BadIndexException.h>
 

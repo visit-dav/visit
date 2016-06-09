@@ -39,19 +39,12 @@
 #include "QvisCracksClipperWindow.h"
 
 #include <CracksClipperAttributes.h>
-#include <ViewerProxy.h>
 
 #include <QCheckBox>
-#include <QComboBox>
 #include <QLabel>
 #include <QLayout>
-#include <QWidget>
 #include <QvisVariableButton.h>
 
-#include <stdio.h>
-#include <string>
-
-using std::string;
 
 // ****************************************************************************
 // Method: QvisCracksClipperWindow::QvisCracksClipperWindow

@@ -40,7 +40,7 @@
 #define QVIS_MESH_PLOT_WINDOW_H
 #include <QvisPostableWindowObserver.h>
 
-class QLineEdit;
+class MeshAttributes;
 class QCheckBox;
 class QButtonGroup;
 class QLabel;
@@ -48,8 +48,6 @@ class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisColorButton;
 class QvisPointControl;
-class Subject;
-class MeshAttributes;
 class QvisOpacitySlider;
 
 // ****************************************************************************

@@ -39,26 +39,11 @@
 #include "QvisDecimateWindow.h"
 
 #include <DecimateAttributes.h>
-#include <ViewerProxy.h>
 
-#include <QCheckBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
-#include <QSpinBox>
-#include <QButtonGroup>
-#include <QRadioButton>
-#include <QvisColorTableButton.h>
-#include <QvisOpacitySlider.h>
-#include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
-#include <QvisVariableButton.h>
 
-#include <stdio.h>
-#include <string>
-
-using std::string;
 
 // ****************************************************************************
 // Method: QvisDecimateWindow::QvisDecimateWindow

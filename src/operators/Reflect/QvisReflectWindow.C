@@ -39,10 +39,8 @@
 #include "QvisReflectWindow.h"
 
 #include <ReflectAttributes.h>
-#include <ViewerProxy.h>
 
 #include <QvisReflectWidget.h>
-#include <QCheckBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
@@ -50,9 +48,6 @@
 #include <QWidget>
 #include <QButtonGroup>
 #include <QRadioButton>
-#include <stdio.h>
-#include <string>
-using std::string;
 
 static const int widget2OperatorOctants[] = {0, 1, 3, 2, 4, 5, 7, 6};
 static const int operator2WidgetOctants[] = {0, 1, 3, 2, 4, 5, 7, 6};

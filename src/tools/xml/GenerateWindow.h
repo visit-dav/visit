@@ -1566,6 +1566,9 @@ class WindowGeneratorAttribute : public GeneratorBase
     //   Brad Whitlock, Wed Apr  9 12:49:00 PDT 2008
     //   Use QString for the caption, shortName.
     //
+    //   Kathleen Biagas, Wed Jun  8 16:57:39 PDT 2016
+    //   Only forward declare color/oapcity/line widgets for plots.
+    //
     // ************************************************************************
 
     void WriteHeader(QTextStream &h)
@@ -1585,13 +1588,15 @@ class WindowGeneratorAttribute : public GeneratorBase
         h << "class QCheckBox;" << endl;
         h << "class QLineEdit;" << endl;
         h << "class QSpinBox;" << endl;
-        h << "class QVBox;" << endl;
         h << "class QButtonGroup;" << endl;
-        h << "class QvisColorTableButton;" << endl;
-        h << "class QvisOpacitySlider;" << endl;
-        h << "class QvisColorButton;" << endl;
-        h << "class QvisLineStyleWidget;" << endl;
-        h << "class QvisLineWidthWidget;" << endl;
+        if(plugintype == "plot")
+        {
+            h << "class QvisColorTableButton;" << endl;
+            h << "class QvisOpacitySlider;" << endl;
+            h << "class QvisColorButton;" << endl;
+            h << "class QvisLineStyleWidget;" << endl;
+            h << "class QvisLineWidthWidget;" << endl;
+        }
         h << "class QvisVariableButton;" << endl;
         h << endl;
         
@@ -1689,9 +1694,12 @@ class WindowGeneratorAttribute : public GeneratorBase
     //   Brad Whitlock, Wed Apr  9 12:49:53 PDT 2008
     //   Use QString for caption, shortName.
     //
-    //    Dave Pugmire, Wed Sep  5 11:01:33 EDT 2012
-    //    Enablers produced bad code for checkboxes. There is no label. Added
-    //    a virtual method, HasLabel() to determine if code should be generated.
+    //   Dave Pugmire, Wed Sep  5 11:01:33 EDT 2012
+    //   Enablers produced bad code for checkboxes. There is no label. Added
+    //   a virtual method, HasLabel() to determine if code should be generated.
+    //
+    //   Kathleen Biagas, Wed Jun  8 16:57:39 PDT 2016
+    //   Only include ViewerProxy and color/oapcity/line widgets for plots.
     //
     // ************************************************************************
 
@@ -1701,7 +1709,8 @@ class WindowGeneratorAttribute : public GeneratorBase
         c << "#include \""<<windowname<<".h\"" << endl;
         c << endl;
         c << "#include <"<<name<<".h>" << endl;
-        c << "#include <ViewerProxy.h>" << endl;
+        if(plugintype == "plot")
+            c << "#include <ViewerProxy.h>" << endl;
         c << endl;
         c << "#include <QCheckBox>" << endl;
         c << "#include <QLabel>" << endl;
@@ -1710,17 +1719,16 @@ class WindowGeneratorAttribute : public GeneratorBase
         c << "#include <QSpinBox>" << endl;
         c << "#include <QButtonGroup>" << endl;
         c << "#include <QRadioButton>" << endl;
-        c << "#include <QvisColorTableButton.h>" << endl;
-        c << "#include <QvisOpacitySlider.h>" << endl;
-        c << "#include <QvisColorButton.h>" << endl;
-        c << "#include <QvisLineStyleWidget.h>" << endl;
-        c << "#include <QvisLineWidthWidget.h>" << endl;
+        if(plugintype == "plot")
+        {
+            c << "#include <QvisColorTableButton.h>" << endl;
+            c << "#include <QvisOpacitySlider.h>" << endl;
+            c << "#include <QvisColorButton.h>" << endl;
+            c << "#include <QvisLineStyleWidget.h>" << endl;
+            c << "#include <QvisLineWidthWidget.h>" << endl;
+        }
         c << "#include <QvisVariableButton.h>" << endl;
         c << endl;
-        c << "#include <stdio.h>" << endl;
-        c << "#include <string>" << endl;
-        c << endl;
-        c << "using std::string;" << endl;
         c << endl;
 
         // constructor

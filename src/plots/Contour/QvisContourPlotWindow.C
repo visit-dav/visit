@@ -39,7 +39,6 @@
 #include <QvisContourPlotWindow.h>
 
 #include <math.h>
-#include <stdio.h>
 
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -48,7 +47,6 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
-#include <QPushButton>
 #include <QRadioButton>
 
 #include <QvisColorButton.h>

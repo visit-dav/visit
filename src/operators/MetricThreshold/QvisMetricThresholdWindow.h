@@ -43,18 +43,9 @@
 #include <AttributeSubject.h>
 
 class MetricThresholdAttributes;
-class QLabel;
 class QCheckBox;
 class QLineEdit;
-class QSpinBox;
-class QVBox;
 class QComboBox;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
-class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisMetricThresholdWindow

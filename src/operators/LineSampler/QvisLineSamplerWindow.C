@@ -49,7 +49,6 @@
 #include "LineSamplerToroidalConfLayout.xpm"
 
 #include <LineSamplerAttributes.h>
-#include <ViewerProxy.h>
 
 #include <QTabWidget>
 #include <QGroupBox>
@@ -58,7 +57,6 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
-#include <QSpinBox>
 #include <QButtonGroup>
 #include <QRadioButton>
 #include <QListWidget>
@@ -67,15 +65,6 @@
 #include <QBitmap>
 #include <QPixmap>
 
-#include <QvisColorTableButton.h>
-#include <QvisOpacitySlider.h>
-#include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
-#include <QvisVariableButton.h>
-
-#include <stdio.h>
-#include <string>
 
 // ****************************************************************************
 // Method: QvisLineSamplerWindow::QvisLineSamplerWindow

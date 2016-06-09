@@ -42,23 +42,16 @@
 #include <AttributeSubject.h>
 
 class ParallelCoordinatesAttributes;
-class QButtonGroup;
 class QCheckBox;
 class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QTreeWidget;
-class QSlider;
-class QSpinBox;
-class QVBox;
-class QvisColorButton;
-class QvisColorTableButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
-class QvisOpacitySlider;
-class QvisVariableButton;
 class QTreeWidgetItem;
+class QSlider;
+class QvisColorButton;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisParallelCoordinatesPlotWindow

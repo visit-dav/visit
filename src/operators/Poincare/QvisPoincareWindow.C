@@ -39,7 +39,6 @@
 #include "QvisPoincareWindow.h"
 
 #include <PoincareAttributes.h>
-#include <ViewerProxy.h>
 
 #include <QTabWidget>
 #include <QCheckBox>
@@ -51,18 +50,10 @@
 #include <QComboBox>
 #include <QGroupBox>
 #include <QRadioButton>
-#include <QvisColorTableButton.h>
-#include <QvisColorButton.h>
-#include <QvisLineWidthWidget.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisVariableButton.h>
-#include <QvisPointControl.h>
 #include <QPushButton>
 #include <QFileDialog>
 #include <QListWidget>
 
-#include <stdio.h>
-#include <string>
 
 static void
 TurnOn(QWidget *w0, QWidget *w1=NULL);

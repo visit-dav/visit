@@ -39,28 +39,17 @@
 #include "QvisModelFitWindow.h"
 
 #include <ModelFitAtts.h>
-#include <ViewerProxy.h>
 
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QHeaderView>
-#include <QComboBox>
 #include <QGroupBox>
 #include <QWidget>
 #include <QPushButton>
 
-#include <QCheckBox>
-#include <QLabel>
 #include <QLayout>
-#include <QLineEdit>
-#include <QSpinBox>
 #include <QButtonGroup>
 #include <QRadioButton>
-#include <QvisColorTableButton.h>
-#include <QvisOpacitySlider.h>
-#include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
 
 #include <stdio.h>

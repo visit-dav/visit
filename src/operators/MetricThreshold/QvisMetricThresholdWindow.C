@@ -39,26 +39,13 @@
 #include "QvisMetricThresholdWindow.h"
 
 #include <MetricThresholdAttributes.h>
-#include <ViewerProxy.h>
 
 #include <QCheckBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
-#include <QSpinBox>
 #include <QComboBox>
-#include <QRadioButton>
-#include <QvisColorTableButton.h>
-#include <QvisOpacitySlider.h>
-#include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
-#include <QvisVariableButton.h>
 
-#include <stdio.h>
-#include <string>
-
-using std::string;
 
 // ****************************************************************************
 // Method: QvisMetricThresholdWindow::QvisMetricThresholdWindow

@@ -42,14 +42,9 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QGroupBox>
-#include <QItemDelegate>
 #include <QLabel>
 #include <QLayout>
 #include <QListWidget>
-#include <QPainter>
-#include <QPixmap>
-#include <QPixmapCache>
-#include <QPushButton>
 #include <QRadioButton>
 #include <QSlider>
 

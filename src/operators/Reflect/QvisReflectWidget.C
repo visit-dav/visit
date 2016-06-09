@@ -39,9 +39,7 @@
 #include <QvisReflectWidget.h>
 #include <math.h>
 #include <qdrawutil.h>
-//#include <QColorGroup>
 #include <QPainter>
-#include <QPixmap>
 #include <QResizeEvent>
 #include <QTimer>
 

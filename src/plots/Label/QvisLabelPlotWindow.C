@@ -56,7 +56,6 @@
 #include <QvisColorButton.h>
 #include <snprintf.h>
 
-#include <stdio.h>
 
 // ****************************************************************************
 // Method: QvisLabelPlotWindow::QvisLabelPlotWindow

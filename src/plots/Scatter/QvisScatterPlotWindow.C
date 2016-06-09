@@ -49,22 +49,13 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QRadioButton>
-#include <QSpinBox>
 #include <QTabWidget>
-#include <QToolTip>
 #include <QWidget>
 
 #include <QvisColorTableWidget.h>
-#include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
 
-#include <stdio.h>
-#include <string>
-
-using std::string;
 
 const char *QvisScatterPlotWindow::roleNames[5] = {
     QT_TRANSLATE_NOOP( "ScatterPlotRoleNames", "X coordinate" ),

@@ -45,14 +45,11 @@
 // Forward declarations
 class PoincareAttributes;
 
-class QTabWidget;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
 class QSpinBox;
-class QVBox;
 class QButtonGroup;
-class QRadioButton;
 class QComboBox;
 class QGroupBox;
 class QPushButton;

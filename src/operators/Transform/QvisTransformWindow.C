@@ -39,7 +39,6 @@
 #include "QvisTransformWindow.h"
 
 #include <TransformAttributes.h>
-#include <ViewerProxy.h>
 
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -47,17 +46,10 @@
 #include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
-#include <QLineEdit>
 #include <QRadioButton>
 #include <QTabWidget>
 #include <QWidget>
 
-#include <QvisColorTableButton.h>
-#include <QvisOpacitySlider.h>
-#include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
-#include <stdio.h>
 
 // ****************************************************************************
 // Method: QvisTransformWindow::QvisTransformWindow

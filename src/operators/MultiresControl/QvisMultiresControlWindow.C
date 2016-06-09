@@ -36,8 +36,6 @@
 *
 *****************************************************************************/
 #include <algorithm>
-#include <cstdio>
-#include <string>
 
 #include <QApplication>
 #include <QLabel>
@@ -48,9 +46,7 @@
 #include <DebugStream.h>
 #include <FileServerList.h>
 #include <MultiresControlAttributes.h>
-#include <ViewerProxy.h>
 
-using std::string;
 
 // ****************************************************************************
 // Method: QvisMultiresControlWindow::QvisMultiresControlWindow

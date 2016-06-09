@@ -46,15 +46,8 @@ class LineoutAttributes;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
-class QSpinBox;
 class QButtonGroup;
 class QGroupBox;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
-class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisLineoutWindow

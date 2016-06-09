@@ -45,7 +45,6 @@
 class IndexSelectAttributes;
 class QButtonGroup;
 class QCheckBox;
-class QGroupBox;
 class QLabel;
 class QSpinBox;
 class QvisSILSetSelector;

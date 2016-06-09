@@ -28,6 +28,8 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/gapps/visit/thirdparty_shared/2.10.
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 
+VISIT_OPTION_DEFAULT(VISIT_QT5 ON TYPE BOOL)
+
 ##############################################################
 ##
 ## Database reader plugin support libraries
@@ -155,7 +157,7 @@ VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISIT_SZIP_DIR}/lib sz ${VISIT_VTK_DIR}
 ##
 ## Ice-T
 ##
-VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
+#VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
 
 ##
 ## NetCDF
@@ -166,7 +168,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_D
 ##
 ## Mesa 
 ##
-VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR /usr/gapps/visit/thirdparty_shared/2.10.0/mesa/7.10.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR /usr/gapps/visit/thirdparty_shared/2.10.0/mesa/7.10.2/${VISITARCH})
 
 ##
 ## MFEM 

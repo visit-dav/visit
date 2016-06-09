@@ -39,27 +39,12 @@
 #include "QvisCartographicProjectionWindow.h"
 
 #include <CartographicProjectionAttributes.h>
-#include <ViewerProxy.h>
 
-#include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
-#include <QSpinBox>
-#include <QButtonGroup>
-#include <QRadioButton>
-#include <QvisColorTableButton.h>
-#include <QvisOpacitySlider.h>
-#include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
-#include <QvisVariableButton.h>
 
-#include <stdio.h>
-#include <string>
-
-using std::string;
 
 // ****************************************************************************
 // Method: QvisCartographicProjectionWindow::QvisCartographicProjectionWindow
