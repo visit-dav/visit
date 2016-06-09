@@ -754,6 +754,7 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     connect(maxNodesCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleUseMaxNodes(bool)));
     maxNodes = new QSpinBox(machineGroup);
+    maxNodes->setKeyboardTracking(false);
     maxNodes->setRange(1, 1000000);
     connect(maxNodes, SIGNAL(valueChanged(int)),
             this, SLOT(maxNodesChanged(int)));
@@ -765,6 +766,7 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     connect(maxProcessorsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleUseMaxProcessors(bool)));
     maxProcessors = new QSpinBox(machineGroup);
+    maxProcessors->setKeyboardTracking(false);
     maxProcessors->setRange(1, 16000000);
     connect(maxProcessors, SIGNAL(valueChanged(int)),
             this, SLOT(maxProcessorsChanged(int)));
@@ -1017,6 +1019,7 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
     row++;
 
     timeout = new QSpinBox(currentGroup);
+    timeout->setKeyboardTracking(false);
     timeout->setRange(1, 1440);
     timeout->setSingleStep(1);
     connect(timeout, SIGNAL(valueChanged(int)),
@@ -1027,6 +1030,7 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
     row++;
 
     threads = new QSpinBox(currentGroup);
+    threads->setKeyboardTracking(false);
     threads->setRange(0, 256);
     threads->setSingleStep(1);
     connect(threads, SIGNAL(valueChanged(int)),
@@ -1201,6 +1205,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     row = 0;
 
     numProcessors = new QSpinBox(defaultGroup);
+    numProcessors->setKeyboardTracking(false);
     numProcessors->setRange(1,999999);
     numProcessors->setSingleStep(1);
     connect(numProcessors, SIGNAL(valueChanged(int)),
@@ -1211,6 +1216,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     row++;
 
     numNodes = new QSpinBox(defaultGroup);
+    numNodes->setKeyboardTracking(false);
     numNodes->setRange(1,999999);
     numNodes->setSingleStep(1);
     
@@ -1462,6 +1468,7 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
 
     QLabel* lblNGPUs = new QLabel(tr("Number of GPUs per node:"), hardwareGroup);
     sbNGPUs = new QSpinBox();
+    sbNGPUs->setKeyboardTracking(false);
     sbNGPUs->setRange(0, 2048);
     sbNGPUs->setEnabled(true);
     connect(sbNGPUs, SIGNAL(valueChanged(const QString&)), this,
@@ -2464,52 +2471,22 @@ QvisHostProfileWindow::GetCurrentValues()
     // Do the number of processors
     if (currentLaunch && currentLaunch->GetParallel())
     {
-        bool okay = false;
-        temp = numProcessors->text();
-        temp = temp.trimmed();
-        if(!temp.isEmpty())
-        {
-            int nProc = temp.toInt(&okay);
-            if(okay)
-            {
-                if (nProc != currentLaunch->GetNumProcessors())
-                    needNotify = true;
-                currentLaunch->SetNumProcessors(nProc);
-            }
-        }
- 
-        if(!okay)
+        int nProc = numProcessors->value();
+        if (nProc != currentLaunch->GetNumProcessors())
         {
             needNotify = true;
-            msg = tr("An invalid number of processors was specified,"
-                     " reverting to %1 processors.").
-                  arg(currentLaunch->GetNumProcessors());
-            Message(msg);
+            currentLaunch->SetNumProcessors(nProc);
         }
     }
 
     // Do the number of nodes
     if (currentLaunch && currentLaunch->GetParallel())
     {
-        bool okay = false;
-        temp = numNodes->text();
-        temp = temp.trimmed();
-        if(!temp.isEmpty())
-        {
-            int nNodes = temp.toInt(&okay);
-            if(okay)
-            {
-                currentLaunch->SetNumNodes(nNodes);
-            }
-        }
- 
-        if(!okay)
+        int nNodes = numNodes->value();
+        if (nNodes != currentLaunch->GetNumNodes())
         {
             needNotify = true;
-            msg = tr("An invalid number of nodes was specified,"
-                     " reverting to %1 nodes.").
-                  arg(currentLaunch->GetNumNodes());
-            Message(msg);
+            currentLaunch->SetNumNodes(nNodes);
         }
     }
 
@@ -2627,52 +2604,22 @@ QvisHostProfileWindow::GetCurrentValues()
     // Do the timeout
     if (currentLaunch)
     {
-        bool okay = false;
-        temp = timeout->text();
-        temp = temp.trimmed();
-        if(!temp.isEmpty())
+        int tOut = timeout->value();
+        if (tOut != currentLaunch->GetTimeout())
         {
-            int tOut = temp.toInt(&okay);
-            if(okay)
-            {
-                if (tOut != currentLaunch->GetTimeout())
-                    needNotify = true;
-                currentLaunch->SetTimeout(tOut);
-            }
-        }
- 
-        if(!okay)
-        {
-            needNotify = true;
-            msg = tr("An invalid timeout was specified, reverting to %1 minutes.").
-                  arg(currentLaunch->GetTimeout());
-            Message(msg);
+           needNotify = true;
+           currentLaunch->SetTimeout(tOut);
         }
     }
 
     // Do the threads
     if (currentLaunch)
     {
-        bool okay = false;
-        temp = threads->text();
-        temp = temp.trimmed();
-        if (!temp.isEmpty())
-        {
-            int tOut = temp.toInt(&okay);
-            if (okay)
-            {
-                if (tOut != currentLaunch->GetNumThreads())
-                    needNotify = true;
-                currentLaunch->SetNumThreads(tOut);
-            }
-        }
-
-        if (!okay)
+        int tOut = threads->value();
+        if (tOut != currentLaunch->GetNumThreads())
         {
             needNotify = true;
-            msg = tr("An invalid threads value was specified, reverting to %1 minutes.").
-                  arg(currentLaunch->GetNumThreads());
-            Message(msg);
+            currentLaunch->SetNumThreads(tOut);
         }
     }
 

@@ -253,6 +253,9 @@ QvisLimitCycleWindow::CreateWindowContents()
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
 // ****************************************************************************
 
@@ -380,6 +383,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     numberOfRandomSamplesLabel = new QLabel(tr("Number of random samples"), samplingGroup);
     samplingLayout->addWidget(numberOfRandomSamplesLabel, sRow, 0, 1, 2);
     numberOfRandomSamples = new QSpinBox(samplingGroup);
+    numberOfRandomSamples->setKeyboardTracking(false);
     numberOfRandomSamples->setMinimum(1);
     numberOfRandomSamples->setMaximum(100000000);
     connect(numberOfRandomSamples, SIGNAL(valueChanged(int)), this, SLOT(numberOfRandomSamplesChanged(int)));
@@ -388,6 +392,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     randomSeedLabel = new QLabel(tr("Random number seed"), samplingGroup);
     samplingLayout->addWidget(randomSeedLabel, sRow, 3, 1, 2);
     randomSeed = new QSpinBox(samplingGroup);
+    randomSeed->setKeyboardTracking(false);
     randomSeed->setMinimum(0);
     randomSeed->setMaximum(100000000);
     connect(randomSeed, SIGNAL(valueChanged(int)), this, SLOT(randomSeedChanged(int)));
@@ -400,9 +405,11 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sampleDensityLabel[1] = new QLabel(tr("Sample density 1"), samplingGroup);
     sampleDensity[0] = new QSpinBox(samplingGroup);
     sampleDensity[1] = new QSpinBox(samplingGroup);
+    sampleDensity[0]->setKeyboardTracking(false);
     sampleDensity[0]->setMinimum(1);
     sampleDensity[0]->setMaximum(10000000);
     sampleDensity[0]->setValue(atts->GetSampleDensity0());
+    sampleDensity[1]->setKeyboardTracking(false);
     sampleDensity[1]->setMinimum(1);
     sampleDensity[1]->setMaximum(10000000);
     sampleDensity[1]->setValue(atts->GetSampleDensity1());
@@ -835,6 +842,7 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     
     maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
     maxSLCount = new QSpinBox(algoGrp);
+    maxSLCount->setKeyboardTracking(false);
     maxSLCount->setMinimum(1);
     maxSLCount->setMaximum(100000);
     connect(maxSLCount, SIGNAL(valueChanged(int)), 
@@ -844,6 +852,7 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     maxDomainCacheLabel = new QLabel(tr("Domain cache size"), algoGrp);
     maxDomainCache = new QSpinBox(algoGrp);
+    maxDomainCache->setKeyboardTracking(false);
     maxDomainCache->setMinimum(1);
     maxDomainCache->setMaximum(100000);
     connect(maxDomainCache, SIGNAL(valueChanged(int)),
@@ -853,6 +862,7 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     workGroupSizeLabel = new QLabel(tr("Work group size"), algoGrp);
     workGroupSize = new QSpinBox(algoGrp);
+    workGroupSize->setKeyboardTracking(false);
     workGroupSize->setMinimum(2);
     workGroupSize->setMaximum(1000000);
     connect(workGroupSize, SIGNAL(valueChanged(int)),
@@ -1735,6 +1745,9 @@ QvisLimitCycleWindow::UpdateAlgorithmAttributes()
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
 //
+//   Kathleen Biagas, Thu Jun  9 11:44:32 PDT 2016
+//   Ensure values from spin boxes are retrieved.
+//
 // ****************************************************************************
 
 void
@@ -2043,6 +2056,41 @@ QvisLimitCycleWindow::GetCurrentValues(int which_widget)
         int val = workGroupSize->value();
         if (val >= 2)
             atts->SetWorkGroupSize(val);
+    }
+
+    // maxDomainCache
+    if (which_widget == LimitCycleAttributes::ID_maxDomainCacheSize || doAll)
+    {
+        if (maxDomainCache->value() != atts->GetMaxDomainCacheSize())
+            atts->SetMaxDomainCacheSize(maxDomainCache->value());
+    }
+
+    // numberOfRandomSamples
+    if (which_widget == LimitCycleAttributes::ID_numberOfRandomSamples || doAll)
+    {
+        if (numberOfRandomSamples->value() != atts->GetNumberOfRandomSamples())
+            atts->SetNumberOfRandomSamples(maxDomainCache->value());
+    }
+
+    // randomSeed
+    if (which_widget == LimitCycleAttributes::ID_randomSeed || doAll)
+    {
+        if (randomSeed->value() != atts->GetRandomSeed())
+            atts->SetRandomSeed(randomSeed->value());
+    }
+
+    // sampleDensity0
+    if (which_widget == LimitCycleAttributes::ID_sampleDensity0 || doAll)
+    {
+        if (sampleDensity[0]->value() != atts->GetSampleDensity0())
+            atts->SetSampleDensity0(sampleDensity[0]->value());
+    }
+
+    // sampleDensity1
+    if (which_widget == LimitCycleAttributes::ID_sampleDensity1 || doAll)
+    {
+        if (sampleDensity[1]->value() != atts->GetSampleDensity1())
+            atts->SetSampleDensity1(sampleDensity[1]->value());
     }
     
     // criticalPointThreshold

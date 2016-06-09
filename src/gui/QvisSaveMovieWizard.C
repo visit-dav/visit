@@ -1423,6 +1423,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     f2layout->addWidget(rb, 2, 0, 1, 3);
 
     page9_scaleSpinBox = new QSpinBox(formatAndResolution);
+    page9_scaleSpinBox->setKeyboardTracking(false);
     page9_scaleSpinBox->setMinimum(1);
     page9_scaleSpinBox->setMaximum(10);
     connect(page9_scaleSpinBox, SIGNAL(valueChanged(int)),
@@ -1437,6 +1438,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     f2layout->addWidget(rb, 4, 0, 1, 3);
 
     page9_widthSpinBox = new QSpinBox(formatAndResolution);
+    page9_widthSpinBox->setKeyboardTracking(false);
     page9_widthSpinBox->setMinimum(32);
     page9_widthSpinBox->setMaximum(VISIT_RENDERING_SIZE_LIMIT);
     page9_widthSpinBox->setValue((int)(default_movie_size[0]));
@@ -1450,6 +1452,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     f2layout->addWidget(page9_widthSpinBox, 5, 1);
     
     page9_heightSpinBox = new QSpinBox(formatAndResolution);
+    page9_heightSpinBox->setKeyboardTracking(false);
     page9_heightSpinBox->setMinimum(32);
     page9_heightSpinBox->setMaximum(VISIT_RENDERING_SIZE_LIMIT);
     page9_heightSpinBox->setValue((int)(default_movie_size[1]));
@@ -1603,6 +1606,7 @@ QvisSaveMovieWizard::CreateNumFramesPage()
     gLayout->addWidget(page10_strideLabel, 3, 0);
 
     page10_strideSpinBox = new QSpinBox(page10);
+    page10_strideSpinBox->setKeyboardTracking(false);
     page10_strideSpinBox->setMinimum(1);
     page10_strideSpinBox->setMaximum(100);
     gLayout->addWidget(page10_strideSpinBox, 3, 1);

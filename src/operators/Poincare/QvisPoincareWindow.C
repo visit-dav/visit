@@ -173,6 +173,9 @@ QvisPoincareWindow::CreateWindowContents()
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
 // ****************************************************************************
 
@@ -252,6 +255,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     pointDensityLabel = new QLabel(tr("Point density"), sourceGroup);
     sourceLayout->addWidget(pointDensityLabel, 2, 2);
     pointDensity = new QSpinBox(sourceGroup);
+    pointDensity->setKeyboardTracking(false);
     pointDensity->setMinimum(1);
     pointDensity->setMaximum(10000);
     connect(pointDensity, SIGNAL(valueChanged(int)),
@@ -418,6 +422,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     minPuncturesLabel = new QLabel(tr("Minimum"), puncturesGroup);
     puncturesMinMaxLayout->addWidget(minPuncturesLabel, 0, 0);
     minPunctures = new QSpinBox(central);
+    minPunctures->setKeyboardTracking(false);
     minPunctures->setMinimum(1);
     minPunctures->setMaximum(10000);
     connect(minPunctures, SIGNAL(valueChanged(int)),
@@ -427,6 +432,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     maxPuncturesLabel = new QLabel(tr("Maximum"), puncturesGroup);
     puncturesMinMaxLayout->addWidget(maxPuncturesLabel, 0, 2);
     maxPunctures = new QSpinBox(central);
+    maxPunctures->setKeyboardTracking(false);
     maxPunctures->setMinimum(1);
     maxPunctures->setMaximum(10000);
     connect(maxPunctures, SIGNAL(valueChanged(int)),
@@ -566,6 +572,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
       new QLabel(tr("Maximum toroidal winding"), central);
     analysisLayout->addWidget(maximumToroidalWindingLabel, 0, 0);
     maximumToroidalWinding = new QSpinBox(central);
+    maximumToroidalWinding->setKeyboardTracking(false);
     maximumToroidalWinding->setMinimum(0);
     maximumToroidalWinding->setMaximum(1000);
     connect(maximumToroidalWinding, SIGNAL(valueChanged(int)),
@@ -576,6 +583,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
       new QLabel(tr("Override toroidal winding"), central);
     analysisLayout->addWidget(overrideToroidalWindingLabel, 1, 0);
     overrideToroidalWinding = new QSpinBox(central);
+    overrideToroidalWinding->setKeyboardTracking(false);
     overrideToroidalWinding->setMinimum(0);
     overrideToroidalWinding->setMaximum(1000);
     connect(overrideToroidalWinding, SIGNAL(valueChanged(int)),
@@ -586,6 +594,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
       new QLabel(tr("Override poloidal winding"), central);
     analysisLayout->addWidget(overridePoloidalWindingLabel, 1, 2);
     overridePoloidalWinding = new QSpinBox(central);
+    overridePoloidalWinding->setKeyboardTracking(false);
     overridePoloidalWinding->setMinimum(0);
     overridePoloidalWinding->setMaximum(1000);
     connect(overridePoloidalWinding, SIGNAL(valueChanged(int)),
@@ -626,6 +635,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     rationalSurfaceMaxIterationsLabel =
       new QLabel(tr("Maximum iterations"), rationalSurfaceGroup);
     rationalSurfaceMaxIterations = new QSpinBox(rationalSurfaceGroup);
+    rationalSurfaceMaxIterations->setKeyboardTracking(false);
     rationalSurfaceMaxIterations->setRange(0, 100);
     connect(rationalSurfaceMaxIterations, SIGNAL(valueChanged(int)), 
             this, SLOT(rationalSurfaceMaxIterationsChanged(int)));
@@ -649,6 +659,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     OPointMaxIterationsLabel =
       new QLabel(tr("Maximum iterations"), criticalPointGroup);
     OPointMaxIterations = new QSpinBox(criticalPointGroup);
+    OPointMaxIterations->setKeyboardTracking(false);
     OPointMaxIterations->setRange(0, 10);
     connect(OPointMaxIterations, SIGNAL(valueChanged(int)), 
             this, SLOT(OPointMaxIterationsChanged(int)));
@@ -674,6 +685,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     OLineToroidalWindingLabel =
       new QLabel(tr("O-Line toroidal windings"), OLineAnalysisGroup);
     OLineToroidalWinding = new QSpinBox(OLineAnalysisGroup);
+    OLineToroidalWinding->setKeyboardTracking(false);
     OLineToroidalWinding->setRange(1, 999);
     connect(OLineToroidalWinding, SIGNAL(valueChanged(int)), 
             this, SLOT(OLineToroidalWindingChanged(int)));
@@ -817,6 +829,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     numberPlanesLabel = new QLabel(tr("Number of planes"), displayGroup);
     displayLayout->addWidget(numberPlanesLabel, 1, 0);
     numberPlanes = new QSpinBox(displayGroup);
+    numberPlanes->setKeyboardTracking(false);
     numberPlanes->setMinimum(1);
     numberPlanes->setMaximum(250);
     connect(numberPlanes, SIGNAL(valueChanged(int)),
@@ -979,6 +992,7 @@ QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     
     maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
     maxSLCount = new QSpinBox(algoGrp);
+    maxSLCount->setKeyboardTracking(false);
     maxSLCount->setMinimum(1);
     maxSLCount->setMaximum(100000);
     connect(maxSLCount, SIGNAL(valueChanged(int)), 
@@ -988,6 +1002,7 @@ QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     maxDomainCacheLabel = new QLabel(tr("Domain cache size"), algoGrp);
     maxDomainCache = new QSpinBox(algoGrp);
+    maxDomainCache->setKeyboardTracking(false);
     maxDomainCache->setMinimum(1);
     maxDomainCache->setMaximum(100000);
     connect(maxDomainCache, SIGNAL(valueChanged(int)),
@@ -997,6 +1012,7 @@ QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     workGroupSizeLabel = new QLabel(tr("Work group size"), algoGrp);
     workGroupSize = new QSpinBox(algoGrp);
+    workGroupSize->setKeyboardTracking(false);
     workGroupSize->setMinimum(2);
     workGroupSize->setMaximum(1000000);
     connect(workGroupSize, SIGNAL(valueChanged(int)),
@@ -1618,6 +1634,8 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
 // Creation:   omitted
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Ensure values are retrieved from spin boxes. 
 //   
 // ****************************************************************************
 
@@ -1928,9 +1946,62 @@ QvisPoincareWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    if (doAll)
+    if (which_widget == PoincareAttributes::ID_pointDensity || doAll)
     {
+        if (pointDensity->value() != atts->GetPointDensity())
+            atts->SetPointDensity(pointDensity->value());
     }
+    if (which_widget == PoincareAttributes::ID_minPunctures || doAll)
+    {
+        if (minPunctures->value() != atts->GetMinPunctures())
+            atts->SetMinPunctures(minPunctures->value());
+    }
+    if (which_widget == PoincareAttributes::ID_maxPunctures || doAll)
+    {
+        if (maxPunctures->value() != atts->GetMaxPunctures())
+            atts->SetMaxPunctures(maxPunctures->value());
+    }
+    if (which_widget == PoincareAttributes::ID_maximumToroidalWinding || doAll)
+    {
+        if (maximumToroidalWinding->value() != atts->GetMaximumToroidalWinding())
+            atts->SetMaximumToroidalWinding(maximumToroidalWinding->value());
+    }
+    if (which_widget == PoincareAttributes::ID_overrideToroidalWinding || doAll)
+    {
+        if (overrideToroidalWinding->value() != atts->GetOverrideToroidalWinding())
+            atts->SetOverrideToroidalWinding(overrideToroidalWinding->value());
+    }
+    if (which_widget == PoincareAttributes::ID_overridePoloidalWinding || doAll)
+    {
+        if (overridePoloidalWinding->value() != atts->GetOverridePoloidalWinding())
+            atts->SetOverridePoloidalWinding(overridePoloidalWinding->value());
+    }
+    if (which_widget == PoincareAttributes::ID_RationalSurfaceMaxIterations || doAll)
+    {
+        if (rationalSurfaceMaxIterations->value() != atts->GetRationalSurfaceMaxIterations())
+            atts->SetRationalSurfaceMaxIterations(rationalSurfaceMaxIterations->value());
+    }
+    if (which_widget == PoincareAttributes::ID_OPointMaxIterations || doAll)
+    {
+        if (OPointMaxIterations->value() != atts->GetOPointMaxIterations())
+            atts->SetOPointMaxIterations(OPointMaxIterations->value());
+    }
+    if (which_widget == PoincareAttributes::ID_OLineToroidalWinding || doAll)
+    {
+        if (OLineToroidalWinding->value() != atts->GetOLineToroidalWinding())
+            atts->SetOLineToroidalWinding(OLineToroidalWinding->value());
+    }
+    if (which_widget == PoincareAttributes::ID_numberPlanes || doAll)
+    {
+        if (numberPlanes->value() != atts->GetNumberPlanes())
+            atts->SetNumberPlanes(numberPlanes->value());
+    }
+    if (which_widget == PoincareAttributes::ID_maxDomainCacheSize || doAll)
+    {
+        if (maxDomainCache->value() != atts->GetMaxDomainCacheSize())
+            atts->SetMaxDomainCacheSize(maxDomainCache->value());
+    }
+
 }
 
 

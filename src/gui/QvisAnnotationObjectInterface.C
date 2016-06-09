@@ -408,25 +408,3 @@ QvisAnnotationObjectInterface::GetScreenPosition2(QvisScreenPositionEdit *spe,
     }
 }
 
-// ****************************************************************************
-// Method: QvisAnnotationObjectInterface::ForceSpinBoxUpdate
-//
-// Purpose: 
-//   Utility method that lets us trick a spin box into thinking it has new
-//   text.
-//
-// Arguments:
-//   sb : The spin box to update.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar 6 14:21:40 PST 2006
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisAnnotationObjectInterface::ForceSpinBoxUpdate(QSpinBox *sb)
-{
-// No longer needed...
-}

@@ -259,6 +259,9 @@ QvisIntegralCurveWindow::CreateWindowContents()
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
 // ****************************************************************************
 
@@ -487,6 +490,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     numberOfRandomSamplesLabel = new QLabel(tr("Number of random samples"), samplingGroup);
     samplingLayout->addWidget(numberOfRandomSamplesLabel, sRow, 0, 1, 2);
     numberOfRandomSamples = new QSpinBox(samplingGroup);
+    numberOfRandomSamples->setKeyboardTracking(false);
     numberOfRandomSamples->setMinimum(1);
     numberOfRandomSamples->setMaximum(100000000);
     connect(numberOfRandomSamples, SIGNAL(valueChanged(int)), this, SLOT(numberOfRandomSamplesChanged(int)));
@@ -495,6 +499,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     randomSeedLabel = new QLabel(tr("Random number seed"), samplingGroup);
     samplingLayout->addWidget(randomSeedLabel, sRow, 3, 1, 2);
     randomSeed = new QSpinBox(samplingGroup);
+    randomSeed->setKeyboardTracking(false);
     randomSeed->setMinimum(0);
     randomSeed->setMaximum(100000000);
     connect(randomSeed, SIGNAL(valueChanged(int)), this, SLOT(randomSeedChanged(int)));
@@ -509,12 +514,15 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sampleDensity[0] = new QSpinBox(samplingGroup);
     sampleDensity[1] = new QSpinBox(samplingGroup);
     sampleDensity[2] = new QSpinBox(samplingGroup);
+    sampleDensity[0]->setKeyboardTracking(false);
     sampleDensity[0]->setMinimum(1);
     sampleDensity[0]->setMaximum(10000000);
     sampleDensity[0]->setValue(atts->GetSampleDensity0());
+    sampleDensity[1]->setKeyboardTracking(false);
     sampleDensity[1]->setMinimum(1);
     sampleDensity[1]->setMaximum(10000000);
     sampleDensity[1]->setValue(atts->GetSampleDensity1());
+    sampleDensity[2]->setKeyboardTracking(false);
     sampleDensity[2]->setMinimum(1);
     sampleDensity[2]->setMaximum(10000000);
     sampleDensity[2]->setValue(atts->GetSampleDensity2());
@@ -952,6 +960,10 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
 //   Hank Childs, Sun Dec  5 05:31:57 PST 2010
 //   Add additional warning controls.
 //
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
 // ****************************************************************************
 
 void
@@ -983,6 +995,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     
     maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
     maxSLCount = new QSpinBox(algoGrp);
+    maxSLCount->setKeyboardTracking(false);
     maxSLCount->setMinimum(1);
     maxSLCount->setMaximum(100000);
     connect(maxSLCount, SIGNAL(valueChanged(int)), 
@@ -992,6 +1005,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     maxDomainCacheLabel = new QLabel(tr("Domain cache size"), algoGrp);
     maxDomainCache = new QSpinBox(algoGrp);
+    maxDomainCache->setKeyboardTracking(false);
     maxDomainCache->setMinimum(1);
     maxDomainCache->setMaximum(100000);
     connect(maxDomainCache, SIGNAL(valueChanged(int)),
@@ -1001,6 +1015,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     workGroupSizeLabel = new QLabel(tr("Work group size"), algoGrp);
     workGroupSize = new QSpinBox(algoGrp);
+    workGroupSize->setKeyboardTracking(false);
     workGroupSize->setMinimum(2);
     workGroupSize->setMaximum(1000000);
     connect(workGroupSize, SIGNAL(valueChanged(int)),
@@ -2230,6 +2245,9 @@ QvisIntegralCurveWindow::UpdateAlgorithmAttributes()
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
 //
+//   Kathleen Biagas, Thu Jun  9 11:15:04 PDT 2016
+//   Ensure values from spin boxes are retrieved.
+//
 // ****************************************************************************
 
 void
@@ -2733,10 +2751,34 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
             atts->SetCorrelationDistanceMinDistBBox(atts->GetCorrelationDistanceMinDistBBox());
         }
     }
-    if (which_widget == IntegralCurveAttributes::ID_selection || doAll)
+
+
+    if (which_widget == IntegralCurveAttributes::ID_sampleDensity0 || doAll)
     {
-        int val = selections->currentIndex(); (void) val; /// TODO: is this necessary?
+        if (sampleDensity[0]->value() != atts->GetSampleDensity0())
+            atts->SetSampleDensity0(sampleDensity[0]->value());
     }
+    if (which_widget == IntegralCurveAttributes::ID_sampleDensity1 || doAll)
+    {
+        if (sampleDensity[1]->value() != atts->GetSampleDensity1())
+            atts->SetSampleDensity1(sampleDensity[1]->value());
+    }
+    if (which_widget == IntegralCurveAttributes::ID_sampleDensity2 || doAll)
+    {
+        if (sampleDensity[2]->value() != atts->GetSampleDensity2())
+            atts->SetSampleDensity2(sampleDensity[2]->value());
+    }
+    if (which_widget == IntegralCurveAttributes::ID_numberOfRandomSamples || doAll)
+    {
+        if (numberOfRandomSamples->value() != atts->GetNumberOfRandomSamples())
+            atts->SetNumberOfRandomSamples(numberOfRandomSamples->value());
+    }
+    if (which_widget == IntegralCurveAttributes::ID_randomSeed || doAll)
+    {
+        if (randomSeed->value() != atts->GetRandomSeed())
+            atts->SetRandomSeed(randomSeed->value());
+    }
+
 }
 
 void

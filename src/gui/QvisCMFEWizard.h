@@ -46,23 +46,13 @@
 #include <SimpleObserver.h>
 
 class QButtonGroup;
-class QCheckBox;
 class QComboBox;
-class QGroupBox;
 class QListWidget;
 class QLabel;
 class QLineEdit;
-class QListWidget;
-class QTreeWidget;
 class QPushButton;
-class QRadioButton;
-class QScrollArea;
-class QSpinBox;
-class QTextEdit;
-class QVBoxLayout;
 class QListWidgetItem;
 
-class QvisDialogLineEdit;
 class QvisVariableButton;
 class QvisCustomSourceVariableButton;
 

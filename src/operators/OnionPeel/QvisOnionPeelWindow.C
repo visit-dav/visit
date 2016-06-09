@@ -142,6 +142,10 @@ QvisOnionPeelWindow::~QvisOnionPeelWindow()
 //   Kathleen Biagas, Tue Jul 22 19:32:57 MST 2014
 //   Added honorOriginalMesh comboBox.
 //
+//   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//   Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
 // ****************************************************************************
 
 void
@@ -220,6 +224,7 @@ QvisOnionPeelWindow::CreateWindowContents()
     //
     mainLayout->addWidget(new QLabel(tr("Layers"), central),5,0);
     requestedLayer = new QSpinBox(central);
+    requestedLayer->setKeyboardTracking(false);
     requestedLayer->setMinimum(0);
     requestedLayer->setMaximum(10000);
     connect(requestedLayer, SIGNAL(valueChanged(int)), 

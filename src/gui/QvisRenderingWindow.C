@@ -477,6 +477,7 @@ QvisRenderingWindow::CreateAdvancedPage()
     scalrenGeometryLabel =  new QLabel(tr("When polygon count exceeds"), advancedOptions);
     advLayout->addWidget(scalrenGeometryLabel, row, 1, 1, 2);
     scalrenAutoThreshold = new QSpinBox(advancedOptions);
+    scalrenAutoThreshold->setKeyboardTracking(false);
     scalrenAutoThreshold->setMinimum(0);
     scalrenAutoThreshold->setMaximum(10000);
     scalrenAutoThreshold->setValue(RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD);
@@ -530,6 +531,7 @@ QvisRenderingWindow::CreateAdvancedPage()
     compactDomainsGeometryLabel =  new QLabel(tr("When domains per process exceeds"), advancedOptions);
     advLayout->addWidget(compactDomainsGeometryLabel, row, 1, 1, 2);
     compactDomainsAutoThreshold = new QSpinBox(advancedOptions);
+    compactDomainsAutoThreshold->setKeyboardTracking(false);
     compactDomainsAutoThreshold->setMinimum(0);
     compactDomainsAutoThreshold->setMaximum(100000);
     compactDomainsAutoThreshold->setValue(RenderingAttributes::DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD);

@@ -576,6 +576,7 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     cqHistogramNumBinsLabel = new QLabel(tr("Number of bins"), axisGroup);
     aLayout->addWidget(cqHistogramNumBinsLabel, 2, 0);
     cqHistogramNumBins = new QSpinBox(axisGroup);
+    cqHistogramNumBins->setKeyboardTracking(false);
     cqHistogramNumBins->setRange(1,1024);
     connect(cqHistogramNumBins, SIGNAL(valueChanged(int)),
             this, SLOT(histogramNumBinsChanged(int)));
@@ -599,6 +600,7 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
 
     cqHistogramMinLabel = new QLabel(tr("Minimum bin"), summationGroup);
     cqHistogramMin = new QSpinBox(summationGroup);
+    cqHistogramMin->setKeyboardTracking(false);
     cqHistogramMin->setRange(0,1023);
     connect(cqHistogramMin, SIGNAL(valueChanged(int)),
             this, SLOT(histogramStartChanged(int)));
@@ -607,6 +609,7 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
 
     cqHistogramMaxLabel = new QLabel(tr("Maximum bin"), summationGroup);
     cqHistogramMax = new QSpinBox(summationGroup);
+    cqHistogramMax->setKeyboardTracking(false);
     cqHistogramMax->setRange(0,1023);
     connect(cqHistogramMax, SIGNAL(valueChanged(int)),
             this, SLOT(histogramEndChanged(int)));

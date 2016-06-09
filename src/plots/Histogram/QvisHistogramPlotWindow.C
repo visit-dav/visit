@@ -128,6 +128,10 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 //    Kevin Bensema, Mon Nov 11, 12:54 2013 PST
 //    Normalize/ComputeAsCDF checkboxes added.
 //
+//    Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
+//    Set keyboard tracking to false for spin boxes so that 'valueChanged'
+//    signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
 // ****************************************************************************
 
 void
@@ -175,6 +179,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     hgLayout->addWidget(numBinsLabel, 0, 0);
 
     numBins = new QSpinBox(central);
+    numBins->setKeyboardTracking(false);
     numBins->setMinimum(2);
     numBins->setMaximum(1000);
     numBins->setSingleStep(1);
@@ -769,6 +774,9 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
 //    Brad Whitlock, Mon Aug 11 11:56:58 PDT 2008
 //    Changed to new style.
 //
+//    Kathleen Biagas, Thu Jun  9 08:18:01 PDT 2016
+//    Added numBins.
+//
 // ****************************************************************************
 
 void
@@ -830,6 +838,13 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
                 IntToQString(atts->GetZone()));
             atts->SetZone(atts->GetZone());
         }
+    }
+
+    // Do numBins
+    if(which_widget == HistogramAttributes::ID_numBins || doAll)
+    {
+        if (numBins->value() != atts->GetNumBins())
+            atts->SetNumBins(numBins->value());
     }
 }
 

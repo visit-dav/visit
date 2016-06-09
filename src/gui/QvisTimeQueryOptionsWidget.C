@@ -141,6 +141,7 @@ QvisTimeQueryOptionsWidget::CreateWindowContents()
     gLayout->addWidget(startLabel, 0, 0);
 
     startTime = new QSpinBox();
+    startTime->setKeyboardTracking(false);
     startTime->setValue(0);
     startTime->setMinimum(0);
     startTime->setButtonSymbols(QAbstractSpinBox::PlusMinus);
@@ -152,6 +153,7 @@ QvisTimeQueryOptionsWidget::CreateWindowContents()
     endLabel   = new QLabel(tr("Ending timestep"));
     gLayout->addWidget(endLabel, 1, 0);
     endTime = new QSpinBox();
+    endTime->setKeyboardTracking(false);
     endTime->setValue(0);
     endTime->setMinimum(0);
     endTime->setButtonSymbols(QAbstractSpinBox::PlusMinus);
@@ -163,6 +165,7 @@ QvisTimeQueryOptionsWidget::CreateWindowContents()
     strideLabel = new QLabel(tr("Stride"));
     gLayout->addWidget(strideLabel, 2, 0);
     stride = new QSpinBox();
+    stride->setKeyboardTracking(false);
     stride->setMinimum(1);
     stride->setValue(1);
     stride->setButtonSymbols(QAbstractSpinBox::PlusMinus);

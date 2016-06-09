@@ -52,28 +52,15 @@
 #include <avtExpressionTypeConversions.h>
 
 #include <QButtonGroup>
-#include <QCheckBox>
 #include <QComboBox>
-#include <QDir>
-#include <QFileDialog>
 #include <QFrame>
-#include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
 #include <QListWidget>
-#include <QProcess>
 #include <QPushButton>
 #include <QRadioButton>
-#include <QScrollArea>
-#include <QSpinBox>
-#include <QTextEdit>
-#include <QTimer>
-#include <QToolTip>
-#include <QTreeWidget>
-#include <QWidget>
 
-#include <QvisDialogLineEdit.h>
 #include <QvisFileOpenDialog.h>
 #include <QvisVariableButton.h>
 

@@ -99,6 +99,7 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent) :
 
     // Add controls for position2
     heightSpinBox = new QSpinBox(this);
+    heightSpinBox->setKeyboardTracking(false);
     heightSpinBox->setMinimum(1);
     heightSpinBox->setMaximum(100);
     heightSpinBox->setSuffix("%");
@@ -360,7 +361,6 @@ QvisText2DInterface::GetCurrentValues(int which_widget)
     if(which_widget == 2 || doAll)
     {
         // Get its new current value and store it in the atts.
-        ForceSpinBoxUpdate(heightSpinBox);
         int w = heightSpinBox->value();
         double pos2[3];
         pos2[0] = double(w) * 0.01;

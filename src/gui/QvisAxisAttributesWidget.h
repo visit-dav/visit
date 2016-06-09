@@ -104,7 +104,6 @@ private slots:
 private:
     void Update(int,int);
     void GetCurrentValues(AxisAttributes &, int = -1, int = -1);
-    void ForceSpinBoxUpdate(QSpinBox *sb);
     bool GetDouble(double &val, QLineEdit *le, const QString &name);
 
     AxisAttributes           atts;
