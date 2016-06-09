@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<page>
+  <title><![CDATA[Release Notes for VisIt 2.10.3]]></title>
+  <owner><![CDATA[Page Owner Name]]></owner>
+  <IM>LLNL-WEB-694491</IM>
+  <lastchanged><![CDATA[June 22, 2016]]></lastchanged>
+  <template><![CDATA[l2]]></template> 
+  <content>
+    <![CDATA[
+	
+<link rel="stylesheet" href="content/css/mods.css" media="screen" />	
+
+<div class="row">	
+<div class="span9">
+
+<ul class="nav nav-tabs">
+  	<li><a href="simulation/computer-codes/visit">VisIt Home</a></li>
+	<li class="active"><a href="simulation/computer-codes/visit/downloads">Downloads</a></li>
+  	<li><a href="simulation/computer-codes/visit/new">What's New</a></li>
+  	<li><a href="simulation/computer-codes/visit/screenshots">Screen Shots</a></li>
+	<li><a href="simulation/computer-codes/visit/gallery">Gallery</a></li>
+	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
+</ul>
+
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<h2>Bugs fixed in version 2.10.3</h2>
+<ul>
+  <li>Fixed a bug in the LAMMPS database plugin that caused axis scaling to always be applied.</li>
+  <li>Fixed a bug with command recording where it would report the name of the function for getting the pick attributes as "PickAttributes" instead of the correct name "GetPickAttributes".</li>
+  <li>Fixed a bug where VisIt could not draw a Mesh plot of a .vtu file with only points (no cells) defined.</li>
+  <li>Fixed a few issues related to the Pseudocolor plot's use of ColorTable opacity: the viewer crashed when creating a transparent colortable with the command line interface; the Pseudocolor plot was affected by changes to a ColorTable it wasn't utilizing; changing the opacities of a ColorTable associated with a Pseudocolor plot would cause the Pseudocolor plot to go blank.</li>
+  <li>Fixed a bug using system python on Windows, error parsing added arguments.</li>
+  <li>Fixed a bug in the EnSight database plugin with EnSight Gold files where the geometry file name was specified by wildcards and a '001' numbered geometry file did not exist.</li>
+  <li>Fixed a bug with the PLOT3D database plugin that prevented multigrid, Fortran binary PLOT3D files from being read successfully.</li>
+  <li>Fixed a bug with the PLOT3D database plugin that prevented multigrid, Fortran binary, double-precision, iblanked PLOT3D files from being read successfully.</li>
+  <li>Fixed a bug that caused invalid expression variables after deleting a plot and switching back to its active source.</li>
+  <li>Fixed a bug with picking on the reflected part of a Subset plot with the Reflect operator applied.</li>
+  <li>Changed how MFEM Meshes are constructed to avoid a coordinate system problems with the high-order Nedelec case.</li>
+  <li>Fixed a bug with the Volume Plot attributes window involving widgets losing focus as data was typed.</li>
+</ul>
+
+<h2>Enhancements in version 2.10.3</h2>
+<ul>
+  <li>Enhanced the Resample Operator to handle polygon cells.</li>
+  <li>The Cosmos++ database plugin was enhanced to support reading particle data.</li>
+  <li>Added optional input and output frames per second options to <i>visit_utils.encoding.encode</i>. These enable more precise frame rates for ffmpeg outputs.</li>
+  <li>Several parameter names were changed made to make the <i>visit_utils.qannote</i>, <i>visit_utils.qplot</i>, and <i>visit_flow</i> python modules have a consistent interface.</li>
+  <li><i>visit_utils.qannote.MultiProgressBar</i> was changed to use percentages for the segment ranges and input position.</li>
+</ul>
+
+<h2>Changes for VisIt developers in version 2.10.3</h2>
+<ul>
+  <li>Ice-T was upgraded to the latest version on its master branch. You will need to rebuild Ice-T if you are building from source and using Ice-T.</li>
+  <li>Updated build_visit's python support to use python distutils to determine the proper python library directory when using system python installs.</li>
+</ul>
+
+<p>For any additional questions, send e-mail to <a href="mailto:visit-users@ornl.gov">VisIt Users</a>.</p>
+
+</div>
+</div>	
+	  
+	  ]]>
+  </content>
+</page>
