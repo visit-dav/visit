@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 #
 #  Script: mk_branch_from_rc
 # 
@@ -19,7 +19,7 @@
 issueHelp="no"
 CDPATH="" # Prevent unneeded echoing of chdir's.
 
-P=$(whence $0)
+P=$(which $0)
 P2=${P%/*}
 . ${P2}/visit_svn_helper
 
@@ -99,5 +99,5 @@ echo ""
 echo "Successful!"
 echo ""
 
-return 0
+exit 0
 

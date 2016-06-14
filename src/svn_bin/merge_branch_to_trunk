@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 #
 #  Script: merge_branch_to_trunk
 # 
@@ -37,7 +37,7 @@
 issueHelp="no"
 allowLocalMods="no"
 
-P=$(whence $0)
+P=$(which $0)
 P2=${P%/*}
 . ${P2}/visit_svn_helper
 
@@ -239,5 +239,5 @@ echo ""
 echo "  set_branch_to_trunk_revision $BRANCHNAME $REV"
 echo ""
 
-return 0
+exit 0
 

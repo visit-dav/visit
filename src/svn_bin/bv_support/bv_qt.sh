@@ -91,7 +91,7 @@ function bv_qt_qt5
     info "enabling Qt5.."
     bv_qt_enable
 
-    QT_VERSION="5.6.0-rc"
+    QT_VERSION="5.6.1"
     QT_FILE="qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"
     QT_BUILD_DIR="${QT_FILE%.tar*}"
     QT_BIN_DIR="${QT_BUILD_DIR}/bin"
