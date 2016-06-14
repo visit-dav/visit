@@ -96,6 +96,8 @@
 //    Hank Childs, Fri Sep  7 17:54:21 PDT 2012
 //    Initialize shouldOutputZonal.
 //
+//    Mark C. Miller, Tue Jun 14 10:39:39 PDT 2016
+//    Added writeContextHasNoDataProcs.
 // ****************************************************************************
 
 avtDatabaseWriter::avtDatabaseWriter()
@@ -112,6 +114,8 @@ avtDatabaseWriter::avtDatabaseWriter()
     nTargetChunks = 1;
     targetTotalZones = 1;
     savedContract = NULL;
+
+    writeContextHasNoDataProcs = false;
 }
 
 
@@ -806,6 +810,8 @@ avtDatabaseWriter::GetWriteContext()
 //    Brad Whitlock, Thu Aug  6 16:55:50 PDT 2015
 //    Added support for writing data in parallel as groups.
 //    
+//    Mark C. Miller, Tue Jun 14 10:40:00 PDT 2016
+//    Added logic to set writeContextHasNoDataProcs
 // ****************************************************************************
 
 void
@@ -991,6 +997,7 @@ avtDatabaseWriter::Write(const std::string &plotName,
         debug5 << "Grouping ranks into write groups:" << endl;
         int nGroups = 1, count = 0;
         std::set<int> unique;
+        bool someProcsHaveNoData = false;
         for(int i = 0; i < writeContext.Size(); ++i)
         {
             if(nDatasets[i] > 0)
@@ -1007,6 +1014,7 @@ avtDatabaseWriter::Write(const std::string &plotName,
             else
             {
                 group[i] = 0;
+                someProcsHaveNoData = true;
             }
 
             unique.insert(group[i]);
@@ -1015,6 +1023,7 @@ avtDatabaseWriter::Write(const std::string &plotName,
 
         // Create a new communicator for the write group based on the colors.
         writeContext = oldContext.Split(group[writeContext.Rank()], unique.size());
+        writeContextHasNoDataProcs = someProcsHaveNoData;
     }
 
     TRY
