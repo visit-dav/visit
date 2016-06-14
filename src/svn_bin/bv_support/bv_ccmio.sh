@@ -251,9 +251,11 @@ function apply_ccmio_261_patch
             return 1
         fi
     fi
-    apply_ccmio_261_aix_patch
-    if [[ $? != 0 ]] ; then
-        return 1
+    if [[ "$OPSYS" == "AIX" ]]; then
+        apply_ccmio_261_aix_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
     return 0

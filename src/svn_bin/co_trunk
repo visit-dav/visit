@@ -91,7 +91,7 @@ checkout_dir()
 {
     cd trunk
     echo "Getting files for \"${1}\" from remote repo..."
-    svn checkout --quiet --non-interactive ${VISIT_SVN_TRUNK}/${1}
+    svn checkout -r 28233 --quiet --non-interactive ${VISIT_SVN_TRUNK}/${1}
     cd ..
 }
 
