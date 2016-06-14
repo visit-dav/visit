@@ -49,9 +49,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added a warning message to VisIt's CLI when a file named 'visit.py' is found in the current working directory at CLI startup. When this happens the 'visit.py' file is imported instead of VisIt's actual python client interface, which breaks the CLI. 
   This happens rarely, but has confused users and developers so we wanted to detect and explain the situation.
   </li>
+  <li>Silo plugin was enhanced to handle group writing and, in particular, deal with cases where there are fewer chunks written
+      than the are mpi ranks.</li>
+  <li>Single file output from the Silo plugin in parallel was enabled. Previously, single file output was supported by a Silo-specifc
+      write option and only for serial engines. Now, single file output is affected by doing a group write where the write group size
+      is equal to the number of processors the engine is using. Although this does have the effect of serializing the I/O from a 
+      parallel engine (necessary in any case for single file output), it also ensures all the data is written to a single file.</li>
 </ul>
-
-
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.10.3</font></b></p>
