@@ -55,6 +55,10 @@ enhancements and bug-fixes that were added to this release.</p>
       write option and only for serial engines. Now, single file output is affected by doing a group write where the write group size
       is equal to the number of processors the engine is using. Although this does have the effect of serializing the I/O from a 
       parallel engine (necessary in any case for single file output), it also ensures all the data is written to a single file.</li>
+  <li>The Silo plugin was enhanced to, in certain circumstances, load up the block
+      decomposition of a mesh as variable. The resulting variable is then availabe for
+      use in operators, such as Threshold, where it can be used as a sort of poor man's
+      subset selection.</li>
 </ul>
 
 <a name="Dev_changes"></a>
