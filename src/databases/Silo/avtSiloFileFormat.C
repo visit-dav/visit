@@ -319,6 +319,8 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     useLocalDomainBoundries = false;
     hasDisjointElements = false;
     ioInfoValid = false;
+    addBlockDecompositionAsVar = false;
+    haveAddedBlockDecompositionAsVar = false;
     topDir = "/";
     siloDriver = DB_UNKNOWN;
     dbfiles = new DBfile*[MAX_FILES];
@@ -1493,6 +1495,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Wed Feb 10 20:47:43 PST 2016
 //    Add logic to ignore searchpath vars if once read they consist entirely
 //    of blank or ';' characters.
+//
+//    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
+//    Added logic to support adding of block decomposition as a variable.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
@@ -1635,6 +1640,12 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                     delete [] fileinfo_str;
                 }
             }
+
+
+            // See if we should add the block decomp as a scalar var
+            if (codeNameGuess == "BlockStructured" &&
+                DBInqVarExists(dbfile, "Decomposition/Domains_BlockNums"))
+                addBlockDecompositionAsVar = true;
         }
 
     }
@@ -1686,6 +1697,9 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
 //    Collapsed DB_QUAD_CURV, DB_QUAD_RECT switch cases to a single case and
 //    added support for DB_QUADMESH where actual mesh type is known only on
 //    first non-empty block via the coordtype member of a DBquadmesh.
+//    
+//    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
+//    Added logic to support adding of block decomposition as a variable.
 // ****************************************************************************
 
 void
@@ -1998,6 +2012,20 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
         }
         ENDTRY
 
+        // Add block decomp as variable if needed
+        if (i == 0 && 
+            addBlockDecompositionAsVar &&
+            !haveAddedBlockDecompositionAsVar)
+        {
+            char cwd[512];
+            DBGetDir(dbfile, cwd);
+            if (!strcmp(cwd, "/"))
+            {
+                SNPRINTF(cwd, sizeof(cwd), "%s_block_nums", name_w_dir);
+                md->Add(new avtScalarMetaData(cwd, name_w_dir, AVT_ZONECENT));
+                haveAddedBlockDecompositionAsVar = true;
+            }
+        }
 
         if (name_w_dir) delete [] name_w_dir;
     }
@@ -2010,6 +2038,9 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
 //  Modifications:
 //    Mark C. Miller, Thu Jun 18 20:56:08 PDT 2009
 //    Replaced DBtoc* arg. with list of object names.
+//
+//    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
+//    Added logic to support adding of block decomposition as a variable.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadQuadmeshes(DBfile *dbfile,
@@ -2122,6 +2153,21 @@ avtSiloFileFormat::ReadQuadmeshes(DBfile *dbfile,
             md->Add(mmd);
         }
         ENDTRY
+
+        // Add block decomp as variable if needed
+        if (i == 0 && 
+            addBlockDecompositionAsVar &&
+            !haveAddedBlockDecompositionAsVar)
+        {
+            char cwd[512];
+            DBGetDir(dbfile, cwd);
+            if (!strcmp(cwd, "/"))
+            {
+                SNPRINTF(cwd, sizeof(cwd), "%s_block_nums", name_w_dir);
+                md->Add(new avtScalarMetaData(cwd, name_w_dir, AVT_ZONECENT));
+                haveAddedBlockDecompositionAsVar = true;
+            }
+        }
 
         if (name_w_dir) delete [] name_w_dir;
         if (qm) DBFreeQuadmesh(qm);
@@ -4587,6 +4633,9 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 //
 //    Mark C. Miller, Thu Apr 12 23:07:36 PDT 2012
 //    Removed calls to build NChooseRMaps supporting nodelists.
+//
+//    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
+//    Added logic to support adding of block decomposition as a variable.
 // ****************************************************************************
 void
 avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
@@ -4673,6 +4722,14 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
     BroadcastInt(groupInfo.ndomains);
     BroadcastInt(groupInfo.numgroups);
     BroadcastIntVector(groupInfo.ids,  rank);
+
+    //
+    // Broadcast domainToBlockGrouping info
+    //
+    int dtbg_size = addBlockDecompositionAsVar ? (int) domainToBlockGrouping.size() : 0;
+    BroadcastInt(dtbg_size);
+    if (dtbg_size)
+        BroadcastIntVector(domainToBlockGrouping, rank);
 
     int ignore_extents = ignoreSpatialExtents;
     BroadcastInt(ignore_extents);
@@ -5144,6 +5201,9 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile,
 //    Cyrus Harrison, Fri Sep  7 10:58:11 PDT 2007
 //    Added option for connectivity from the MultiMeshadj object.
 //
+//    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
+//    Read the Domains_BlockNums data to support adding block decompposition
+//    as a variable.
 // ****************************************************************************
 
 void
@@ -5236,6 +5296,13 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
                 FindStandardConnectivity(dbfile, ndomains, nneighbors, extents,
                                      lneighbors, neighbors, numGroups,groupIds,
                                      needConnectivityInfo, needGroupInfo);
+            }
+
+            /* While we're here, get domain-to-block mapping information too */
+            if (DBInqVarExists(dbfile, "Domains_BlockNums"))
+            {
+                domainToBlockGrouping.resize(ndomains);
+                DBReadVar(dbfile, "Domains_BlockNums", &domainToBlockGrouping[0]);
             }
 
             DBSetDir(dbfile, topDir.c_str());
@@ -7045,6 +7112,48 @@ avtSiloFileFormat::GetMrgTreeNodelistsVar(int domain, string listsname)
 }
 
 // ****************************************************************************
+//  Method: avtSiloFileFormat::GetBlockDecompositionVar
+//
+//  Mark C. Miller, Wed Jun 15 09:28:04 PDT 2016
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetBlockDecompositionAsVar(int domain, string meshName)
+{
+    if (emptyObjectsList.find(meshName) != emptyObjectsList.end())
+        return 0;
+
+    //
+    // Look up the mesh in the cache.
+    //
+    vtkDataSet *ds = (vtkDataSet *) cache->GetVTKObject(meshName.c_str(),
+                                            avtVariableCache::DATASET_NAME,
+                                            timestep, domain, "_all");
+    if (ds == 0)
+    {
+        char msg[256];
+        SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
+            "paint \"block_nums\" variable", meshName.c_str(), domain);
+        EXCEPTION1(InvalidVariableException, msg);
+    }
+
+    debug5 << "Generating \"block_nums\" variable for domain " << domain << endl;
+
+    //
+    // Construct the return variable array
+    //
+    int ncells = ds->GetNumberOfCells();
+    vtkIntArray *bnvar = vtkIntArray::New();
+    bnvar->SetNumberOfComponents(1);
+    bnvar->SetNumberOfTuples(ncells);
+    for (int i = 0; i < ncells; i++)
+        bnvar->SetComponent(i, 0, domainToBlockGrouping[domain]);
+
+    return bnvar;
+}
+
+// ****************************************************************************
 //  Method: avtSiloFileFormat::GetVar
 //
 //  Purpose:
@@ -7116,6 +7225,9 @@ avtSiloFileFormat::GetMrgTreeNodelistsVar(int domain, string listsname)
 //
 //    Mark C. Miller, Tue Feb  2 15:03:59 PST 2016
 //    Add logic to return immediately if the var is an all-empty multi-var.
+//
+//    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
+//    Added logic to support adding of block decomposition as a variable.
 // ****************************************************************************
 
 vtkDataArray *
@@ -7142,12 +7254,26 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
         if (nlvar != 0)
             return nlvar;
     }
+
     // If the variable name begings with "nodesets_" or "facesets_"...
     if (string(v).find("nodesets_") == 0 || string(v).find("facesets_") == 0)
     {
         vtkDataArray *nlvar = GetMrgTreeNodelistsVar(domain, v);
         if (nlvar != 0)
             return nlvar;
+    }
+
+    // If the variable is the block decomposition as a variable
+    // domainToBlockGrouping size will be non-zero only when this feature
+    // is activated.
+    if (domainToBlockGrouping.size() && string(v).find("_block_nums") != string::npos)
+    {
+        string meshName = metadata->MeshForVar(v);
+        if (string(v) == meshName + "_block_nums")
+        {
+            vtkDataArray *bnvar = GetBlockDecompositionAsVar(domain, meshName);
+            if (bnvar) return bnvar;
+        }
     }
 
     int localdomain = domain;

@@ -292,6 +292,10 @@ typedef struct _GroupInfo
 //    Mark C. Miller, Tue Feb  2 14:48:25 PST 2016
 //    Added firstAllEmptyMultimesh and emptyObjectList to handle cases where
 //    a multi-mesh consists of all empty blocks.
+//
+//    Mark C. Miller, Wed Jun 15 09:16:56 PDT 2016
+//    Added support for loading the block decomposition as a variable
+//    under certain conditions.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -343,6 +347,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     bool                  metadataIsTimeVaryingChecked;
     bool                  hasDisjointElements;
     std::string           codeNameGuess;
+    bool                  addBlockDecompositionAsVar;
+    bool                  haveAddedBlockDecompositionAsVar;
 
     bool                  ioInfoValid;
     avtIOInformation      ioInfo;
@@ -370,6 +376,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     GroupInfo                       groupInfo;
     bool                            haveAmrGroupInfo;
     bool                            useLocalDomainBoundries;
+    std::vector<int>                domainToBlockGrouping;
+
 
     std::map<std::string, std::map<int, std::vector<int>* > > arbMeshCellReMap;
     std::map<std::string, std::map<int, std::vector<int>* > > arbMeshNodeReMap;
@@ -423,6 +431,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     vtkDataArray         *GetNodelistsVar(int);
     vtkDataArray         *GetAnnotIntNodelistsVar(int, std::string);
     vtkDataArray         *GetMrgTreeNodelistsVar(int, std::string);
+    vtkDataArray         *GetBlockDecompositionAsVar(int, std::string);
     vtkDataArray         *GetQuadVar(DBfile *, const char *, const char *,int);
     void                  ExpandUcdvar(DBucdvar *uv, const char *vname, const char *tvn,
                               int domain);
