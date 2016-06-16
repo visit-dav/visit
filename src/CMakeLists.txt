@@ -398,6 +398,9 @@
 #    Eric Brugger, Thu Jan 14 08:43:03 PST 2016
 #    Added vtkm directory that builds vtkm library.
 #
+#    Cyrus Harrison, Thu Jun 16 08:44:43 PDT 2016
+#    Added support for conduit (software.llnl.gov/conduit).
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
@@ -790,6 +793,8 @@ VISIT_3RDPARTY_VAR(CCMIO_DIR     "Path containing the CCMIO library's include an
 VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
 VISIT_3RDPARTY_VAR(CGNS_DIR      "Path containing the CGNS library's include and lib")
 VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
+VISIT_3RDPARTY_VAR(CONDUIT_DIR   "Path containing the Conduit library's include and lib")
+VISIT_3RDPARTY_VAR(CONDUIT_LIBDEP "Conduit library dependencies")
 VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
 VISIT_3RDPARTY_VAR(EAVL_DIR      "Path containing the eavl library's include and lib")
 VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the Fastbit library's include and lib")
@@ -1325,6 +1330,13 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     IF(CGNS_FOUND)
         SET(HAVE_LIBCGNS 1)
     ENDIF(CGNS_FOUND)
+
+    # Configure Conduit support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
+    IF(CONDUIT_FOUND)
+        SET(HAVE_LIBCONDUIT 1)
+    ENDIF(CONDUIT_FOUND)
+
 
     # Configure eavl support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindEAVL.cmake)

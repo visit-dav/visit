@@ -18,6 +18,7 @@
             <lib name="boxlib"/>
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
+            <lib name="conduit"/>
             <lib name="cgns"/>
             <lib name="eavl"/>
             <lib name="visus"/>
@@ -63,6 +64,7 @@
             <lib name="boxlib"/>
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
+            <lib name="conduit"/>
             <lib name="cgns"/>
             <lib name="gdal"/>
             <lib name="fastbit"/>
@@ -97,6 +99,7 @@
             <lib name="boxlib"/>
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
+            <lib name="conduit"/>
             <lib name="cgns"/>
             <lib name="fastbit"/>
             <lib name="gdal"/>
@@ -119,6 +122,7 @@
             <lib name="boxlib"/>
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
+            <lib name="conduit"/>
             <lib name="cgns"/>
             <lib name="fastbit"/>
             <lib name="gdal"/>
