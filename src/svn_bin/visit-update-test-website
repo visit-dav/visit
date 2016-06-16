@@ -60,10 +60,11 @@ ls -1t /project/projectdirs/visit/www/tests/*/*/index.html | while read testLine
 done
 
 echo "</table>" >> index.html
-quota_gb_used=`prjquota visit | grep visit | tr -s ' ' |  cut -d' ' -f3`
-quota_gb_quota=`prjquota visit | grep visit | tr -s ' ' |  cut -d' ' -f4`
-quota_in_used=`prjquota visit | grep visit | tr -s ' ' |  cut -d' ' -f6`
-quota_in_quota=`prjquota visit | grep visit | tr -s ' ' |  cut -d' ' -f7`
+quota=`prjquota visit | grep visit | tr -s ' '`
+quota_gb_used=`echo $quota | cut -d ' ' -f2`
+quota_gb_quota=`echo $quota | cut -d ' ' -f3`
+quota_in_used=`echo $quota | cut -d ' ' -f5`
+quota_in_quota=`echo $quota | cut -d ' ' -f6`
 echo "<h2> Quota Info </h2>" >> index.html
 echo "<table border=1>" >> index.html 
 echo "<tr>" >> index.html
