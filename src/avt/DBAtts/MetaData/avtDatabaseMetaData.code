@@ -1984,14 +1984,20 @@ Definition:
 //  Programmer: Hank Childs
 //  Creation:   September 4, 2002
 //
+//  Mark C. Miller, Thu Jun 16 18:23:24 PDT 2016
+//  Remove leading slash, if any, from expression name.
 // ****************************************************************************
 
 void
-avtDatabaseMetaData::AddExpression(Expression *expr)
+avtDatabaseMetaData::AddExpression(Expression *_expr)
 {
-    expr->SetFromDB(true);
-    expr->SetDbName(databaseName);
-    exprList.AddExpressions(*expr);
+    Expression expr = *_expr;
+    std::string exprName = expr.GetName();
+    if (exprName[0] == '/')
+        expr.SetName(&exprName[1]);
+    expr.SetFromDB(true);
+    expr.SetDbName(databaseName);
+    exprList.AddExpressions(expr);
 }
 
 Function: GetExpression
