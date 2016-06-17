@@ -607,6 +607,10 @@ avtOpenGLCurveRenderer::GetAspect(int &bin_x_n, double &bin_x_size, double &bin_
 //    I modified the REDUCE_SCALE macro to include atts.PointSize() so that
 //    these symbol sizes could be adjusted also. Previosly only point symbols
 //    could have their size adjusted.
+//
+//    Mark C. Miller, Fri Jun 17 14:24:23 PDT 2016
+//    I adjusted above to use atts.GetPointSize() / 5.0 to deal with fact that
+//    default point size is 5 but defaut non-point symbol size was 1.
 // ****************************************************************************
 
 void
@@ -665,7 +669,7 @@ avtOpenGLCurveRenderer::DrawCurveAsSymbols()
 
 #define SWAP(a,b) { int tmp = a; a = b; b = tmp; }
 #define ONE_THIRD_ROUND (2. * M_PI / 3.)
-#define REDUCE_SCALE (0.8 * atts.GetPointSize())
+#define REDUCE_SCALE (0.8 * atts.GetPointSize() / 5.0)
 #define MAX_SYMBOL_VERTS 25
 
     double symbolPoints[MAX_SYMBOL_VERTS][2];
