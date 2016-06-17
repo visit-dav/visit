@@ -36,7 +36,6 @@
 *
 *****************************************************************************/
 
-#include <avtDatabaseMetaData.h>
 #include <DataNode.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
@@ -46,6 +45,8 @@
 #include <ExprNode.h>
 #include <snprintf.h>
 #include <plugin_vartypes.h>
+#include <avtDatabaseMetaData.h>
+#include <avtExpressionTypeConversions.h>
 #include <avtMeshMetaData.h>
 #include <avtSubsetsMetaData.h>
 #include <avtScalarMetaData.h>
@@ -5694,11 +5695,15 @@ avtDatabaseMetaData::UnsetExtents(void)
 // ****************************************************************************
 
 void
-avtDatabaseMetaData::AddExpression(Expression *expr)
+avtDatabaseMetaData::AddExpression(Expression *_expr)
 {
-    expr->SetFromDB(true);
-    expr->SetDbName(databaseName);
-    exprList.AddExpressions(*expr);
+    Expression expr = *_expr;
+    std::string exprName = expr.GetName();
+    if (exprName[0] == '/')
+        expr.SetName(&exprName[1]);
+    expr.SetFromDB(true);
+    expr.SetDbName(databaseName);
+    exprList.AddExpressions(expr);
 }
 
 // ****************************************************************************
@@ -5901,7 +5906,6 @@ avtDatabaseMetaData::GetNDomains(const std::string &var) const
 //    Mark C. Miller, Thu Dec 18 17:55:57 PST 2014
 //    Replaced terminating exception with return of UNKNOWN_VAR
 // ****************************************************************************
-#include <avtExpressionTypeConversions.h>
 
 avtVarType
 avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
