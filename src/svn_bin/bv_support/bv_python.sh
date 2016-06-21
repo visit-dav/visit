@@ -322,7 +322,7 @@ function build_python
         else
             warn "Patch failed, but continuing.  I believe that this script\n" \
                  "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, that the patch is\n" \
+                 "already been patched ... that is, the patch is\n" \
                  "failing harmlessly on a second application."
         fi
     fi
@@ -493,7 +493,7 @@ function build_pil
         else
             warn "Patch failed, but continuing.  I believe that this script\n" \
                  "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, that the patch is\n" \
+                 "already been patched ... that is, the patch is\n" \
                  "failing harmlessly on a second application."
         fi
     fi
