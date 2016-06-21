@@ -66,29 +66,30 @@ function bv_mxml_ensure
 function bv_mxml_dry_run
 {
     if [[ "$DO_MXML" == "yes" ]] ; then
-        echo "Dry run option not set for mxml."
+        echo "Dry run option not set for MXML."
     fi
 }
 
 function apply_mxml_26_darwin_patch
 {
+    info "Patching MXML for darwin build"
     patch -p0 << \EOF
-diff -c mxml-2.6/Makefile.in mxml-2.6.new/Makefile.in
-*** mxml-2.6/Makefile.in        2008-12-05 20:20:38.000000000 -0800
---- mxml-2.6.new/Makefile.in    2012-11-21 11:14:45.000000000 -0800
+diff -c mxml-2.6/Makefile.in mxml-2.6/Makefile.in.new
+*** mxml-2.6/Makefile.in	2016-06-21 14:05:57.000000000 -0600
+--- mxml-2.6/Makefile.in.new	2016-06-21 14:07:38.000000000 -0600
 ***************
 *** 344,353 ****
 --- 344,355 ----
-                        --header doc/docset.header --intro doc/docset.intro \
-                        --css doc/docset.css --title "Mini-XML API Reference" \
-                        mxml.xml || exit 1; \
-+         if test -e /Developer/usr/bin/docsetutil; then \
-                /Developer/usr/bin/docsetutil package --output org.minixml.xar \
-                        --atom org.minixml.atom \
-                        --download-url http://www.minixml.org/org.minixml.xar \
-                        org.minixml.docset || exit 1; \
-+         fi \
-        fi
+  			--header doc/docset.header --intro doc/docset.intro \
+  			--css doc/docset.css --title "Mini-XML API Reference" \
+  			mxml.xml || exit 1; \
++ 	    if test -e /Developer/usr/bin/docsetutil; then \
+  		/Developer/usr/bin/docsetutil package --output org.minixml.xar \
+  			--atom org.minixml.atom \
+  			--download-url http://www.minixml.org/org.minixml.xar \
+  			org.minixml.docset || exit 1; \
++ 	    fi \
+  	fi
 EOF
     if [[ $? != 0 ]] ; then
         warn "Unable to patch MXML. Wrong version?"
@@ -140,33 +141,32 @@ function build_mxml
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_mxml == -1 ]] ; then
-        warn "Unable to prepare mxml Build Directory. Giving Up"
+        warn "Unable to prepare MXML Build Directory. Giving Up"
         return 1
     fi
 
     #
     # Apply patches
     #
-    info "Patching MXML . . ."
     apply_mxml_patch
     if [[ $? != 0 ]] ; then
-	if [[ $untarred_mxml == 1 ]] ; then
+        if [[ $untarred_mxml == 1 ]] ; then
             warn "Giving up on MXML build because the patch failed."
             return 1
-	else
-            warn "Patch failed, but continuing.  I believe that this script" \
-		 "tried to apply a patch to an existing directory which had" \
-		 "already been patched ... that is, that the patch is" \
-		 "failing harmlessly on a second application."
-	fi
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
     fi
     
     #
     # Configure MXML
     #
-    info "Configuring mxml . . ."
-    cd $MXML_BUILD_DIR || error "Can't cd to mxml build dir."
-    info "Invoking command to configure mxml"
+    cd $MXML_BUILD_DIR || error "Can't cd to MXML build dir."
+
+    info "Configuring MXML . . ."
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
                 CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 --prefix="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" --disable-threads
@@ -176,16 +176,16 @@ function build_mxml
     fi
 
     #
-    # Build mxml
+    # Build MXML
     #
-    info "Building mxml . . . (~1 minutes)"
+    info "Building MXML . . . (~1 minutes)"
 
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "mxml build failed.  Giving up"
         return 1
     fi
-    info "Installing ADIOS . . ."
+    info "Installing MXML . . ."
 
     $MAKE install
     if [[ $? != 0 ]] ; then
@@ -198,7 +198,7 @@ function build_mxml
         chgrp -R ${GROUP} "$VISITDIR/mxml"
     fi
     cd "$START_DIR"
-    info "Done with mxml"
+    info "Done with MXML"
     return 0
 }
 
@@ -228,9 +228,9 @@ function bv_mxml_build
         else
             build_mxml
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install mxml.  Bailing out."
+                error "Unable to build or install MXML.  Bailing out."
             fi
-            info "Done building mxml"
+            info "Done building MXML"
         fi
     fi
 }

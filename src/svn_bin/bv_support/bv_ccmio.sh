@@ -98,30 +98,30 @@ diff -c a/config/config.gnu.to.star libccmio-2.6.1/config/config.gnu.to.star
       *)                                 echo unknown                         ;;
   esac
   
-diff -c a/config/config.system libccmio-2.6.1/config/config.system 
-*** a/config/config.system
---- libccmio-2.6.1/config/config.system
-*************** case ${SYSTEM} in
-*** 85,93 ****
+diff -c libccmio-2.6.1/config/config.system   libccmio-2.6.1/config/config.system.new
+*** libccmio-2.6.1/config/config.system	2016-06-21 14:37:41.000000000 -0600
+--- libccmio-2.6.1/config/config.system.new	2016-06-21 14:39:19.000000000 -0600
+***************
+*** 84,92 ****
       ppc64-unknown-linux-gnu)
-        echo ppc64-unknown-linux-gnu ;;
+  	echo ppc64-unknown-linux-gnu ;;
   
 !     i386-apple-darwin8.11.1)
-        echo i386-apple-darwin8 ;;
+  	echo i386-apple-darwin8 ;;
   
       *)
           echo unknown
           echo System type ${SYSTEM} not supported! 1>&2 ;;
---- 85,96 ----
+--- 84,95 ----
       ppc64-unknown-linux-gnu)
-        echo ppc64-unknown-linux-gnu ;;
+  	echo ppc64-unknown-linux-gnu ;;
   
-!     i386-apple-darwin8* | i386-apple-darwin9* | i386-apple-darwin10* | i386-apple-darwin11* | i386-apple-darwin12* | i386-apple-darwin13*)
-        echo i386-apple-darwin8 ;;
+!     i386-apple-darwin8* | i386-apple-darwin9* | i386-apple-darwin10* | i386-apple-darwin11* | i386-apple-darwin12* | i386-apple-darwin13* | i386-apple-darwin14* | i386-apple-darwin15*)
+  	echo i386-apple-darwin8 ;;
   
 +     powerpc-apple-darwin7* | powerpc-apple-darwin8* | powerpc-apple-darwin9* )
-+       echo powerpc-apple-darwin7 ;;
-+ 
++         echo powerpc-apple-darwin7 ;;
++  
       *)
           echo unknown
           echo System type ${SYSTEM} not supported! 1>&2 ;;
@@ -307,7 +307,7 @@ function build_ccmio
         else
             warn "Patch failed, but continuing.  I believe that this script\n" \
                  "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, that the patch is\n" \
+                 "already been patched ... that is, the patch is\n" \
                  "failing harmlessly on a second application."
         fi
     fi
