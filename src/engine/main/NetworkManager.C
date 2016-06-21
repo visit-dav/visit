@@ -2725,9 +2725,6 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    causing a hang when not all ranks are writing debugging logs. It did not
 //    provide much information anyway.
 //
-//    Matt Larsen, Wed June 1 11:01:11 PDT 2016
-//    Changed call to RenderGeometry to this-> in order to call IceTa
-//
 // ****************************************************************************
 
 avtDataObject_p
@@ -2776,7 +2773,7 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
         // FIRST PASS - Opaque only
         // ************************************************************
 
-        avtImage_p theImage = this->RenderGeometry();
+        avtImage_p theImage = NetworkManager::RenderGeometry();
 
         CallProgressCallback("NetworkManager", "Compositing", 0, 1);
 
