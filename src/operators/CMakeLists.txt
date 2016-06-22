@@ -80,7 +80,6 @@ ENDIF(NOT WIN32)
 
 SET(REQUIRED_OPERATOR_PLUGINS
 AMRStitchCell
-AxisAlignedSlice4D
 BoundaryOp
 Box
 Clip
