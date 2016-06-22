@@ -34,40 +34,31 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with the PLOT3D database plugin that prevented multigrid, Fortran binary, double-precision, iblanked PLOT3D files from being read successfully.</li>
   <li>Fixed a bug that caused invalid expression variables after deleting a plot and switching back to its active source.</li>
   <li>Fixed a bug with picking on the reflected part of a Subset plot with the Reflect operator applied.</li>
-  <li>Changed how MFEM Meshes are constructed to avoid a coordinate system problems with the high-order Nedelec case.</li>
-  <li>Fixed a bug with the Volume Plot attributes window involving widgets losing focus as data was typed.</li>
-   <li>Fixed problem adjusting symbol sizes in curves for any symbol type other than point.</li>
-   <li>Prevent leading slash character in expression names from causing empty submenus.</li>
+  <li>Changed how MFEM Meshes are constructed to avoid a coordinate system problem with the high-order Nedelec case.</li>
+  <li>Fixed a bug with the Volume plot attributes window involving widgets losing focus as data was typed.</li>
+  <li>Fixed problem adjusting symbol sizes in curves for any symbol type other than point.</li>
+  <li>Prevent leading slash character in expression names from causing empty submenus.</li>
 </ul>
 
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 2.10.3</font></b></p>
 <ul>
-  <li>Enhanced the Resample Operator to handle polygon cells.</li>
+  <li>The Resample operator was enhanced to handle polygon cells.</li>
   <li>The Cosmos++ database plugin was enhanced to support reading particle data.</li>
   <li>Added optional input and output frames per second options to <i>visit_utils.encoding.encode</i>. These enable more precise frame rates for ffmpeg outputs.</li>
-  <li>Several parameter names were changed made to make the <i>visit_utils.qannote</i>, <i>visit_utils.qplot</i>, and <i>visit_flow</i> python modules have a consistent interface.</li>
+  <li>Several parameter names were changed to make the <i>visit_utils.qannote</i>, <i>visit_utils.qplot</i>, and <i>visit_flow</i> python modules have a consistent interface.</li>
   <li><i>visit_utils.qannote.MultiProgressBar</i> was changed to use percentages for the segment ranges and input position.</li>
-  <li>Added a warning message to VisIt's CLI when a file named 'visit.py' is found in the current working directory at CLI startup. When this happens the 'visit.py' file is imported instead of VisIt's actual python client interface, which breaks the CLI. 
-  This happens rarely, but has confused users and developers so we wanted to detect and explain the situation.
-  </li>
-  <li>Silo plugin was enhanced to handle group writing and, in particular, deal with cases where there are fewer chunks written
-      than the are mpi ranks.</li>
-  <li>Single file output from the Silo plugin in parallel was enabled. Previously, single file output was supported by a Silo-specifc
-      write option and only for serial engines. Now, single file output is affected by doing a group write where the write group size
-      is equal to the number of processors the engine is using. Although this does have the effect of serializing the I/O from a 
-      parallel engine (necessary in any case for single file output), it also ensures all the data is written to a single file.</li>
-  <li>The Silo plugin was enhanced to, in certain circumstances, load up the block
-      decomposition of a mesh as variable. The resulting variable is then availabe for
-      use in operators, such as Threshold, where it can be used as a sort of poor man's
-      subset selection.</li>
+  <li>Added a warning message to VisIt's CLI when a file named 'visit.py' is found in the current working directory at CLI startup. When this happens the 'visit.py' file is imported instead of VisIt's actual python client interface, which breaks the CLI. This happens rarely, but has confused users and developers so we wanted to detect and explain the situation.</li>
+  <li>The Silo database plugin was enhanced to handle group writing and, in particular, deal with cases where there are fewer chunks written than there are mpi ranks.</li>
+  <li>Single file output from the Silo database plugin in parallel was enabled. Previously, single file output was supported by a Silo-specifc write option and only for serial engines. Now, single file output is affected by doing a group write where the write group size is equal to the number of processors the engine is using. Although this does have the effect of serializing the I/O from a parallel engine (necessary in any case for single file output), it also ensures all the data is written to a single file.</li>
+  <li>The Silo database plugin was enhanced to, in certain circumstances, load up the block decomposition of a mesh as variable. The resulting variable is then availabe for use in operators, such as Threshold, where it can be used as a poor man's subset selection.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.10.3</font></b></p>
 <ul>
-  <li>Ice-T was upgraded to the latest version on its master branch. You will need to rebuild Ice-T if you are building from source and using Ice-T.</li>
-  <li>Updated build_visit's python support to use python distutils to determine the proper python library directory when using system python installs.</li>
+  <li>Build_visit's python support was updated to use python distutils to determine the proper python library directory when using system python installs.</li>
+  <li>Fixed a bug with build_visit where the Mili library wouldn't build properly without a fortran compiler in your path.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
