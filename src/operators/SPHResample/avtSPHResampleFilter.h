@@ -112,6 +112,7 @@ struct sphData {
     
     // Dataset
     vtkDataSet *dset;
+    double bounds[6];
     
     // Ghost Cells
     std::vector<ghostCell> ghostCells;
@@ -165,7 +166,7 @@ protected:
     
     virtual void Execute();
     
-    vtkRectilinearGrid                  *CreateOutputGrid(const double bounds[6], std::vector<double>);
+    vtkRectilinearGrid                  *CreateOutputGrid(const double *const, const std::vector<double>  &);
     template <int Dim> tensorStruct     *CreateTensorStruct(vtkDataArray* const, const int);
     
     
