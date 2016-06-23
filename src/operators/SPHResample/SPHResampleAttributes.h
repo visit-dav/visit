@@ -101,7 +101,6 @@ public:
     void SetTensorSupportVariable(const std::string &tensorSupportVariable_);
     void SetWeightVariable(const std::string &weightVariable_);
     void SetRK(bool RK_);
-    void SetMemScale(bool memScale_);
 
     // Property getting methods
     float             GetMinX() const;
@@ -118,7 +117,6 @@ public:
     const std::string &GetWeightVariable() const;
           std::string &GetWeightVariable();
     bool              GetRK() const;
-    bool              GetMemScale() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -146,7 +144,6 @@ public:
         ID_tensorSupportVariable,
         ID_weightVariable,
         ID_RK,
-        ID_memScale,
         ID__LAST
     };
 
@@ -163,12 +160,11 @@ private:
     std::string tensorSupportVariable;
     std::string weightVariable;
     bool        RK;
-    bool        memScale;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SPHRESAMPLEATTRIBUTES_TMFS "ffiffiffissbb"
+#define SPHRESAMPLEATTRIBUTES_TMFS "ffiffiffissb"
 
 #endif

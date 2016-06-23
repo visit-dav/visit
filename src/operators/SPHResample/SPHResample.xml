@@ -37,8 +37,5 @@
       <Field name="RK" label="Enable First Order (more accurate) Corrective Kernel Interpolations" type="bool">
         true
       </Field>
-      <Field name="memScale" label="Enable Memory Scaling" type="bool">
-        false
-      </Field>
     </Attribute>
   </Plugin>

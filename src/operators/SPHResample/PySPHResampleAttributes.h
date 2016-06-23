@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SPHRESAMPLEATTRIBUTES_NMETH 28
+#define SPHRESAMPLEATTRIBUTES_NMETH 26
 void           PySPHResampleAttributes_StartUp(SPHResampleAttributes *subj, void *data);
 void           PySPHResampleAttributes_CloseDown();
 PyMethodDef *  PySPHResampleAttributes_GetMethodTable(int *nMethods);

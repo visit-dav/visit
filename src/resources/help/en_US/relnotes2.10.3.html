@@ -52,6 +52,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Silo database plugin was enhanced to handle group writing and, in particular, deal with cases where there are fewer chunks written than there are mpi ranks.</li>
   <li>Single file output from the Silo database plugin in parallel was enabled. Previously, single file output was supported by a Silo-specifc write option and only for serial engines. Now, single file output is affected by doing a group write where the write group size is equal to the number of processors the engine is using. Although this does have the effect of serializing the I/O from a parallel engine (necessary in any case for single file output), it also ensures all the data is written to a single file.</li>
   <li>The Silo database plugin was enhanced to, in certain circumstances, load up the block decomposition of a mesh as variable. The resulting variable is then availabe for use in operators, such as Threshold, where it can be used as a poor man's subset selection.</li>
+  <li>Improved memory scaling for the SPH Resample operator. Also, rewrote large portions of the SPH code to improve overall efficiency.</li>
 </ul>
 
 <a name="Dev_changes"></a>

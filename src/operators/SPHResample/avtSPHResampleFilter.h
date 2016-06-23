@@ -65,6 +65,67 @@ struct tensorStruct{
     double zz;
 };
 
+struct ghostCell {
+    ghostCell(int dim) {
+        globalLatticeIdx = -1;
+        m0 = 0;
+        m1.resize(dim, 0.0);
+        value = 0;
+        A = 0;
+        B.resize(dim, 0.0);
+    }
+    
+    int globalLatticeIdx;
+    double m0;
+    std::vector<double> m1;
+    tensorStruct m2;
+    double value;
+    
+    double A;
+    std::vector<double> B;
+};
+
+struct sphData {
+    sphData(int size, int dim) {
+        totalCells = size;
+        indices.resize(dim*2, 0);
+        
+        dset = NULL;
+        
+        m0.resize(size,0.0);
+        m2.resize(size);
+        A.resize(size, 0.0);
+        
+        for(int i=0; i<size; i++)
+        {
+            m1.push_back(std::vector<double>(dim,0.0));
+            B.push_back(std::vector<double>(dim,0.0));
+        }
+        
+        scalarValues.resize(size, 0.0);
+        globalLatticeIndices.resize(size, 0);
+    }
+    
+    int totalCells;
+    std::vector<int> globalLatticeIndices;
+    std::vector<int> indices;
+    
+    // Dataset
+    vtkDataSet *dset;
+    
+    // Ghost Cells
+    std::vector<ghostCell> ghostCells;
+    std::map<int, int> ghostZoneIdMap;
+    
+    // RK Moments
+    std::vector<double> m0;
+    std::vector<std::vector<double> > m1;
+    std::vector<tensorStruct> m2;
+    std::vector<double> A;
+    std::vector<std::vector<double> > B;
+    std::vector<double> scalarValues;
+};
+
 // ****************************************************************************
 //  Class: avtSPHResampleFilter
 //
@@ -99,22 +160,16 @@ protected:
     std::string             supportVarName;
     std::string             weightVarName;
     
-    bool                    cellCentered;
     bool                    keepNodeZone;
     int                     nDim;
-    float                   RKcorrections;
-    
-    std::map<int,int> latticeIndexMap;
     
     virtual void Execute();
     
-    vtkRectilinearGrid                      *CreateOutputGrid();
-    vtkRectilinearGrid                      *CreateLocalOutputGrid(const double, const double, const double,
-                                                           const double, const double, const double, int[]);
-    template <int Dim> tensorStruct  *CreateTensorStruct(vtkDataArray* const, const int);
+    vtkRectilinearGrid                  *CreateOutputGrid(const double bounds[6], std::vector<double>);
+    template <int Dim> tensorStruct     *CreateTensorStruct(vtkDataArray* const, const int);
     
     
-    template <int Dim> void Sample(std::vector<double>&);
+    template <int Dim> void Sample(std::vector<sphData>&);
     template <int Dim> void SampleNMS(std::vector<double>&);
     
     // Return the kernel weight for a given normalized distance or position.
@@ -124,10 +179,15 @@ protected:
     template <int Dim> double kernelGradValue(double etaMagnitude, double Hdet);
     
 private:
-    void GetLocalMinMaxIndex(const int[], int &, int &, const int, const int);
-    int GetIndexFromLatticeIndex(const int);
-    void ExecuteNMS();
-    
+    void    ExecuteNMS();
+    void    CheckInputVariables(const vtkDataArray* const, const vtkDataArray* const, const vtkDataArray* const);
+    int     GetGhostCellIndex(const std::vector<ghostCell> &, int);
+    std::vector<double> GetStepSizeXYZ(void);
+    int     GetLocalIndex(const sphData &, int);
+    void    SynchMoments(sphData &);
+    void    SynchScalars(sphData &);
+    std::vector<int> GetParticipatingIndices(vtkDataSet **, const int);
+    void    GetDimensions(std::vector<int> &, std::vector<double> &, std::vector<double> &, const std::vector<double> &, const double *const);
 };
 
 #endif
