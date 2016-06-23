@@ -55,13 +55,10 @@
 #include <UnexpectedValueException.h>
 #include <VisWindow.h>
 
-#include <IceT.h>
-#include <IceTMPI.h>
+#include <GL/ice-t_mpi.h>
 #include <mpi.h>
 #include <vtkImageData.h>
 
-//Rank IceT send the composited image to
-#define ICET_COLLECTION_RANK 0
 // ****************************************************************************
 // Debugging help.
 
@@ -96,104 +93,135 @@
         ICET(icetGetIntegerv(ICET_NUM_PROCESSES, &nproc));                 \
         ICET(icetGetIntegerv(ICET_NUM_TILES, &ntiles));                    \
         debug1 << "IceT: (rank, procs, tiles): (" << rank << ", " << nproc \
-                 << ", " << ntiles << ")" << std::endl;                      \
-      } while(0)
+               << ", " << ntiles << ")" << std::endl;                      \
+    } while(0)
 
 #ifdef DEBUG_ICET
 #   define ICET(stmt)     \
-      do {                  \
-          stmt;             \
-          ICET_CHECK_ERROR; \
-      } while(0)
+    do {                  \
+        stmt;             \
+        ICET_CHECK_ERROR; \
+    } while(0)
 #else
 #   define ICET(stmt) stmt
 #endif
 
+static void SendImageToRenderNodes(int, int, bool, GLubyte * const,
+                                   GLuint * const);
+
 // ****************************************************************************
-//  Function: SendImageToRenderNodes
+//  Method: lerp
 //
-//  Purpose: IceT distinguishes between `tile nodes' and `render nodes'.  All
-//           nodes assist in image composition, but final images are only
-//           collected on tile nodes.
-//           Unfortunately various post-rendering algorithms in VisIt do not
-//           make this distinction, which in IceT parlance means we assume all
-//           nodes are tile nodes.  This method should send out the image to
-//           all other nodes, so we can still utilize IceT by blurring that
-//           distinction so that the rest of VisIt never knows.
+//  Purpose: Linearly interpolates a value from one range to another.
 //
 //  Programmer: Tom Fogal
-//  Creation:   August 7, 2008
+//  Creation:   July 17, 2008
 //
-//  Modifications:
-//    Matt Larsen, Mon May 9, 2016 15:34:01 PDT
-//    Removed un-used variables and changed types from GL to normal
 // ****************************************************************************
-static void
-SendImageToRenderNodes(int width, int height, bool Z,
-                       unsigned char * const pixels,
-                       float * const depth)
+template <typename in, typename out>
+static inline out
+lerp(in value, in imin, in imax, out omin, out omax)
 {
-    MPI_Bcast(pixels, 
-              4*width*height, 
-              MPI_BYTE, 
-              ICET_COLLECTION_RANK, 
-              VISIT_MPI_COMM);
-    if(Z) 
-    {
-        MPI_Bcast(depth, 
-                  width*height, 
-                  MPI_FLOAT, 
-                  ICET_COLLECTION_RANK, 
-                  VISIT_MPI_COMM);
-    }
+    return omin + (value-imin) * (static_cast<float>(omax-omin) / (imax-imin));
 }
 
-  // ****************************************************************************
-  //  Method: IceTNetworkManager default constructor
-  //
-  //  Programmer: Tom Fogal
-  //  Creation:   June 17, 2008
-  //
-  //  Modifications:
-  //
-  //    Tom Fogal, Wed May 18 11:57:34 MDT 2011
-  //    Initialize 'renderings'.
-  //
-  //    Matt Larsen, Mon May 9, 2016 08:15:54 PDT 2016
-  //    Updated some IceT calls
-  // ****************************************************************************
-  IceTNetworkManager::IceTNetworkManager(void): NetworkManager(), renderings(0)
-  {
-      this->comm = icetCreateMPICommunicator(VISIT_MPI_COMM);
-      DEBUG_ONLY(ICET_CHECK_ERROR);
-      this->context = icetCreateContext(comm);
-      DEBUG_ONLY(ICET_CHECK_ERROR);
+// ****************************************************************************
+//  Method: utofv
+//
+//  Purpose: Converts a vector of unsigned integers to a vector of floats.  The
+//           returned buffer is dynamically allocated, and should be delete[]d
+//           by the caller.
+//
+//  Programmer: Tom Fogal
+//  Creation:   July 2, 2008
+//
+//  Modifications:
+//
+//    Tom Fogal, Thu Jul 17 10:27:43 EDT 2008
+//    lerp the IceT buffer onto the range [0,1] as we convert.  This seems to
+//    be what the rest of VisIt expects.
+//
+//    Tom Fogal, Fri May 29 20:32:50 MDT 2009
+//    Query the correct depth max from IceT.
+//
+// ****************************************************************************
+static float *
+utofv(const unsigned int * const src, size_t n_elem)
+{
+    float *res = new float[n_elem];
+    unsigned int depth_max;
+    {
+      // IceT gives an unsigned int, but the accessor function only accepts
+      // GLint.  We'll grab the latter and rely on a conversion to get the
+      // correct type.
+      GLint far_depth;
+      icetGetIntegerv(ICET_ABSOLUTE_FAR_DEPTH, &far_depth);
+      depth_max = far_depth;
+    }
+    for(size_t i=0; i < n_elem; ++i) {
+        res[i] = lerp(src[i], 0U,depth_max, 0.0f,1.0f);
+    }
+    return res;
+}
 
-      ICET(icetSetContext(this->context));
-
-      DEBUG_ONLY(ICET(icetDiagnostics(ICET_DIAG_FULL)));
-  
-      ICET(icetSetColorFormat(ICET_IMAGE_COLOR_RGBA_UBYTE));
-      ICET(icetSetDepthFormat(ICET_IMAGE_DEPTH_FLOAT));
-
-      DEBUG_ONLY(PR_ICET_MPI);
-  }
-
-  // ****************************************************************************
-  //  Method: IceTNetworkManager destructor
-  //
-  //  Programmer: Tom Fogal
-  //  Creation:   June 17, 2008
-  //
-  // ****************************************************************************
-  IceTNetworkManager::~IceTNetworkManager(void)
-  {
-      ICET(icetDestroyContext(this->context));
-      ICET(icetDestroyMPICommunicator(this->comm));
-  }
+// IceT render callback.
+// IceT needs to control the render; it calls the user render function as
+// needed (and multiple times, potentially) -- much like GLUT does rendering.
+// So we define a callback function which perform the rendering by grabbing
+// our instance (we're a singleton!) and calling the appropriate rendering
+// method there (``RealRender'').
+extern "C" void render();
 
 // ****************************************************************************
-//  Method: IceTNetworkManager TileLayout
+//  Method: IceTNetworkManager default constructor
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 17, 2008
+//
+//  Modifications:
+//
+//    Tom Fogal, Wed May 18 11:57:34 MDT 2011
+//    Initialize 'renderings'.
+//
+// ****************************************************************************
+IceTNetworkManager::IceTNetworkManager(void): NetworkManager(), renderings(0)
+{
+    this->comm = icetCreateMPICommunicator(VISIT_MPI_COMM);
+    DEBUG_ONLY(ICET_CHECK_ERROR);
+    this->context = icetCreateContext(comm);
+    DEBUG_ONLY(ICET_CHECK_ERROR);
+
+    ICET(icetSetContext(this->context));
+
+    DEBUG_ONLY(ICET(icetDiagnostics(ICET_DIAG_FULL)));
+
+    ICET(icetStrategy(ICET_STRATEGY_REDUCE));
+    ICET(icetDrawFunc(render));
+
+    ICET(icetDisable(ICET_DISPLAY));
+    ICET(icetInputOutputBuffers(
+            ICET_COLOR_BUFFER_BIT | ICET_DEPTH_BUFFER_BIT, /* inputs */
+            ICET_COLOR_BUFFER_BIT | ICET_DEPTH_BUFFER_BIT  /* outputs */
+        ));
+
+    DEBUG_ONLY(PR_ICET_MPI);
+}
+
+// ****************************************************************************
+//  Method: IceTNetworkManager destructor
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 17, 2008
+//
+// ****************************************************************************
+IceTNetworkManager::~IceTNetworkManager(void)
+{
+    ICET(icetDestroyContext(this->context));
+    ICET(icetDestroyMPICommunicator(this->comm));
+}
+
+// ****************************************************************************
+//  Method: IceTNetworkManager destructor
 //
 //  Purpose: Configures IceT for the tiled system we'll be rendering too (note
 //           that a lone monitor is a `1x1 tiled display').
@@ -201,10 +229,8 @@ SendImageToRenderNodes(int width, int height, bool Z,
 //  Programmer: Tom Fogal
 //  Creation:   June 17, 2008
 //
-//  Modifications: 
+//  Modifications:
 //
-//    Matt Larsen, Mon May 9, 2016 08:15:54 PDT
-//    Modified to use collection rank
 // ****************************************************************************
 void
 IceTNetworkManager::TileLayout(size_t width, size_t height) const
@@ -213,189 +239,308 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
            << " single tile display." << std::endl;
 
     ICET(icetResetTiles());
-    ICET(icetAddTile(0,0, width, height, ICET_COLLECTION_RANK));
+    const GLint this_mpi_rank_gets_an_image = 0;
+    ICET(icetAddTile(0,0, width, height, this_mpi_rank_gets_an_image));
 }
 
 // ****************************************************************************
-//  Method: IceTNetworkManager IceTSetup
+//  Method: Render
 //
-//  Purpose: Setup and configure IceT based on the current rendering state. 
-//           Moved code into this fuction as part of updating and refactoring.
+//  Purpose: Render entry point.  We can't do a real render here because IceT
+//           wants to manage our render process.  Here we setup the networks,
+//           tell IceT to render, and then read back IceT's result.
 //
-//  Programmer: Matt Larsen
-//  Creation:   May 9th, 2016
+//  Arguments:
 //
-// ****************************************************************************
-void
-IceTNetworkManager::IceTSetup()
-{
-    EngineVisWinInfo &viswinInfo = viswinMap[renderState.windowID];
-    VisWindow *viswin = viswinInfo.viswin;
-
-    // If there is a backdrop image, we need to tell IceT so that it can
-    // composite correctly.
-    if(viswin->GetBackgroundMode() != AnnotationAttributes::Solid)
-    {
-        ICET(icetEnable(ICET_CORRECT_COLORED_BACKGROUND));
-    }
-    else
-    {
-        ICET(icetDisable(ICET_CORRECT_COLORED_BACKGROUND));
-    }
-
-    debug5 << "Rendering " << viswin->GetNumPrimitives()
-           << " primitives." << endl;
-
-    int width, height, width_start, height_start;
-    // This basically gets the width and the height.
-    // The distinction is for 2D rendering, where we only want the
-    // width and the height of the viewport.
-    viswin->GetCaptureRegion(width_start, height_start, width, height,
-                             renderState.viewportedMode);
-    this->TileLayout(width, height);
-
-    //reset IceT to the defualt state
-    ICET(icetStrategy(ICET_STRATEGY_SEQUENTIAL)); 
-    ICET(icetSingleImageStrategy(ICET_SINGLE_IMAGE_STRATEGY_AUTOMATIC));
-
-    ICET(icetSetColorFormat(ICET_IMAGE_COLOR_RGBA_UBYTE));
-    ICET(icetSetDepthFormat(ICET_IMAGE_DEPTH_FLOAT));
-    ICET(icetCompositeMode(ICET_COMPOSITE_MODE_Z_BUFFER));
-    ICET(icetEnable(ICET_COMPOSITE_ONE_BUFFER));
-    bool isSupportedBackground =  (renderState.window->GetBackgroundMode() == 
-                                    AnnotationAttributes::Solid);
-    if(renderState.getZBuffer || !isSupportedBackground)
-    {
-        //By default IceT will not return the zbuffer to
-        //the final image. We must call this to "enable"
-        //the zbuffer
-        ICET(icetDisable(ICET_COMPOSITE_ONE_BUFFER));
-    }
-
-
-    CallInitializeProgressCallback(this->RenderingStages());
-
-    // IceT sometimes omits large parts of Curve plots when using the
-    // REDUCE strategy. Use a different compositing strategy for Curve
-    // plots to avoid the problem.
-    if(viswin->GetWindowMode() == WINMODE_CURVE)
-    {
-        //It appears as if the curve plots do not have zbuffer information
-        //when rendered. Thus, we have to switch the compositing mode to 
-        //blend, otherwise the results are blown away. With the tests
-        //so far, only rank 0 has any image and this needs to be tested.
-        ICET(icetSetDepthFormat(ICET_IMAGE_DEPTH_NONE));
-        ICET(icetCompositeMode(ICET_COMPOSITE_MODE_BLEND));
-    }
-}
-
-// ****************************************************************************
-//  Method: IceTNetworkManager UnpackBuffer
-//
-//  Purpose: Function for converting from RGB to RGBA. IceT always needs RGBA
-//           pixel data and the image represention does not always have an
-//           alpha channel
-//
-//  Programmer: Matt Larsen
-//  Creation:   May 9th, 2016
-//
-// ****************************************************************************
-void
-IceTNetworkManager::UnpackBuffer(const unsigned char *rgb,
-                                 const int &numPixels)
-{ 
-    if(numPixels*4 != rgba.size()) 
-        rgba.resize(numPixels*4);
-    
-    for(int i = 0; i < numPixels; ++i)
-    {
-         rgba[i*4+0] = rgb[i*3+0];
-         rgba[i*4+1] = rgb[i*3+1];
-         rgba[i*4+2] = rgb[i*3+2];
-         rgba[i*4+3] = 255;
-    }
-}
-// ****************************************************************************
-//  Method: IceTNetworkManager PackBuffer
-//
-//  Purpose: Function for converting from RGB to RGBA. IceT always needs RGBA
-//           pixel data and the image represention does not always have an
-//           alpha channel
-//
-//  Programmer: Matt Larsen
-//  Creation:   May 9th, 2016
-//
-// ****************************************************************************
-
-void
-IceTNetworkManager::PackBuffer(unsigned char *rgb,
-                               const int &numPixels)
-{ 
-    for(int i = 0; i < numPixels; ++i)
-    {
-         rgb[i*3+0] = rgba[i*4+0];
-         rgb[i*3+1] = rgba[i*4+1];
-         rgb[i*3+2] = rgba[i*4+2];
-    }
-}
-// ****************************************************************************
-//  Method: NetworkManager::RenderInternal
-//
-//  Purpose: do the actual rendering and compositing work. this was
-//          originally lumped together with setup/tear down. I factored
-//          it out so that the setup/tear down was not done twice when
-//          IceTNetworkManager called it.
-//
-//  Programmer:  Burlen Loring
-//  Creation:    Thu Sep  3 10:26:48 PDT 2015
+//  Programmer: Tom Fogal
+//  Creation:   June 20, 2008
 //
 //  Modifications:
-//    Matt Larsen Fri May 6 08:22:21 PDT 2016 
-//    Matching refactor with main Network manager to share as much code as 
-//    possible.
+//
+//    Tom Fogal, Tue Jun 24 14:32:17 EDT 2008
+//    Added depth cueing back in.
+//
+//    Tom Fogal, Fri Jul 11 19:53:03 PDT 2008
+//    Added timer analogous to parent's overall render timer.
+//
+//    Tom Fogal, Fri Jul 18 17:32:31 EDT 2008
+//    Query parent's implementation for rendering features.
+//
+//    Tom Fogal, Mon Jul 28 14:45:09 EDT 2008
+//    Do Z test earlier, and request IceT buffers based on Z test.
+//
+//    Tom Fogal, Sun Aug  3 23:04:20 EDT 2008
+//    Use MemoMultipass; this fixes a bug which occurs when IceT calls our
+//    render function multiple times on a subset of nodes.
+//
+//    Hank Childs, Thu Jan 15 11:07:53 CST 2009
+//    Changed GetSize call to GetCaptureRegion, since that works for 2D.
+//
+//    Brad Whitlock, Mon Mar  2 16:38:53 PST 2009
+//    I made the routine return an avtDataObject_p.
+//
+//    Hank Childs, Sat Mar 21 10:34:16 PST 2009
+//    Fix compilation error.
+//
+//    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//    Replaced CATCHALL(...) with CATCHALL.
+//
+//    Tom Fogal, Tue Jul 21 19:20:40 MDT 2009
+//    Fall back to the NetworkManager when we find transparency.
+//
+//    Hank Childs, Sun Feb 21 09:52:09 CST 2010
+//    Add case detecting plots down their own transparency.  For example
+//    splatting volume rendering, which doesn't work with Ice-T.
+//
+//    Eric Brugger, Fri Mar 26 16:37:34 PDT 2010
+//    I added a fix to Hank's change that was causing scalable rendering
+//    to fail in some instances.  In particular workingNet needed to be set
+//    back to NULL after it was used.
+//
+//    Brad Whitlock, Fri Jul 20 16:42:05 PDT 2012
+//    Use a different compositing strategy for curve windows.
+//
+//    Hank Childs, Tue Jul  9 15:12:18 PDT 2013
+//    Pass along checkThreshold argument so we can get kicked out of SR-mode
+//    when Ice-T falls back to normal compositing.
+//
+//    Brad Whitlock, Wed Oct 29 09:57:16 PDT 2014
+//    Don't call RenderBalance. It was doing collective communication and 
+//    causing a hang when not all ranks are writing debugging logs. It did not
+//    provide much information anyway.
+//
+//    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
+//    sync up with network manager(base class) order compositing refactor
 //
 // ****************************************************************************
 
 avtDataObject_p
-IceTNetworkManager::RenderInternal()
+IceTNetworkManager::Render(
+    bool checkThreshold, intVector networkIds,
+    bool getZBuffer, int annotMode, int windowID,
+    bool leftEye)
 {
-    CallInitializeProgressCallback(RenderingStages());
+    StackTimer t0("IceTNetworkManager::Render");
+    DataNetwork *origWorkingNet = workingNet;
+    avtDataObject_p retval;
 
-    // ************************************************************
-    // pass 1a : opaque (and translucent geometry if serial)
-    // ************************************************************
-    avtImage_p pass = RenderGeometry();
+    EngineVisWinInfo &viswinInfo = viswinMap[windowID];
+    viswinInfo.markedForDeletion = false;
+    VisWindow *viswin = viswinInfo.viswin;
+    std::vector<avtPlot_p>& imageBasedPlots = viswinInfo.imageBasedPlots;
 
-    // ************************************************************
-    // pass 1b : shadow mapping
-    // ************************************************************
-    if (renderState.shadowMap)
-        NetworkManager::RenderShadows(pass);
+    renderings = 0;
 
-    // ************************************************************
-    // pass 1c : depth cues
-    // ************************************************************
-    if (renderState.depthCues)
-        NetworkManager::RenderDepthCues(pass);
+    TRY
+    {
+        RenderSetup(windowID, networkIds, getZBuffer,
+            annotMode, leftEye, checkThreshold);
 
+        bool plotDoingTransparencyOutsideTransparencyActor = false;
+        for(size_t i = 0 ; i < networkIds.size() ; i++)
+        {
+            workingNet = NULL;
+            UseNetwork(networkIds[i]);
+            if(this->workingNet->GetPlot()->ManagesOwnTransparency())
+            {
+                plotDoingTransparencyOutsideTransparencyActor = true;
+            }
+        }
+        workingNet = NULL;
 
-    // ************************************************************
-    // pass 2 : translucent geometry if parallel
-    // ************************************************************
-    if (renderState.transparencyInPass2)
-        pass = NetworkManager::RenderTranslucent(pass);
+        // We can't easily figure out a compositing order, which IceT requires
+        // in order to properly composite transparent geometry.  Thus if there
+        // is some transparency, fallback to our parent implementation.
+        avtTransparencyActor* trans = viswin->GetTransparencyActor();
+        bool transparenciesExist = trans->TransparenciesExist()
+                           ||  plotDoingTransparencyOutsideTransparencyActor;
+        if (transparenciesExist)
+        {
+            debug2 << "Encountered transparency: falling back to old "
+                      "SR / compositing routines." << std::endl;
 
-    // ************************************************************
-    // pass 3 : 2d overlays
-    // ************************************************************
-    RenderPostProcess(pass);
+            retval = NetworkManager::RenderInternal();
+        }
+        else
+        {
+            bool needZB = !imageBasedPlots.empty() ||
+                          renderState.shadowMap  ||
+                          renderState.depthCues;
 
-    avtDataObject_p output;
-    CopyTo(output, pass);
+            // Confusingly, we need to set the input to be *opposite* of what VisIt
+            // wants.  This is due to (IMHO) poor naming in the IceT case; on the
+            // input side:
+            //     ICET_DEPTH_BUFFER_BIT set:     do Z-testing
+            //     ICET_DEPTH_BUFFER_BIT not set: do Z-based compositing.
+            // On the output side:
+            //     ICET_DEPTH_BUFFER_BIT set:     readback of Z buffer is allowed
+            //     ICET_DEPTH_BUFFER_BIT not set: readback of Z does not work.
+            // In VisIt's case, we calculated a `need Z buffer' predicate based
+            // around the idea that we need the Z buffer to do Z-compositing.
+            // However, IceT \emph{always} needs the Z buffer internally -- the
+            // flag only differentiates between `compositing' methodologies
+            // (painter-style or `over' operator) on input.
+            GLenum inputs = ICET_COLOR_BUFFER_BIT;
+            GLenum outputs = ICET_COLOR_BUFFER_BIT;
+            // Scratch all that, I guess.  That might be the correct way to go
+            // about things in the long run, but IceT only gives us back half an
+            // image if we don't set the depth buffer bit.  The compositing is a
+            // bit wrong, but there's not much else we can do..
+            // Consider removing the `hack' if a workaround is found.
+            if (/*hack*/true/*hack*/) // || !this->MemoMultipass(viswin))
+            {
+                inputs |= ICET_DEPTH_BUFFER_BIT;
+            }
+            if(needZB)
+            {
+                outputs |= ICET_DEPTH_BUFFER_BIT;
+            }
+            ICET(icetInputOutputBuffers(inputs, outputs));
 
-    return output;
+            // If there is a backdrop image, we need to tell IceT so that it can
+            // composite correctly.
+            if(viswin->GetBackgroundMode() != AnnotationAttributes::Solid)
+            {
+                ICET(icetEnable(ICET_CORRECT_COLORED_BACKGROUND));
+            }
+            else
+            {
+                ICET(icetDisable(ICET_CORRECT_COLORED_BACKGROUND));
+            }
+
+            if (renderState.renderOnViewer)
+            {
+                RenderCleanup();
+                avtDataObject_p dobj = NULL;
+                CATCH_RETURN2(1, dobj);
+            }
+
+            debug5 << "Rendering " << viswin->GetNumPrimitives()
+                   << " primitives." << endl;
+
+            int width, height, width_start, height_start;
+            // This basically gets the width and the height.
+            // The distinction is for 2D rendering, where we only want the
+            // width and the height of the viewport.
+            viswin->GetCaptureRegion(width_start, height_start, width, height,
+                                     renderState.viewportedMode);
+
+            this->TileLayout(width, height);
+
+            CallInitializeProgressCallback(this->RenderingStages());
+
+            // IceT mode is different from the standard network manager; we don't
+            // need to create any compositor or anything: it's all done under the
+            // hood.
+            // Whether or not to do multipass rendering (opaque first, translucent
+            // second) is all handled in the callback; from our perspective, we
+            // just say draw, read back the image, and post-process it.
+
+            // IceT sometimes omits large parts of Curve plots when using the
+            // REDUCE strategy. Use a different compositing strategy for Curve
+            // plots to avoid the problem.
+            if(viswin->GetWindowMode() == WINMODE_CURVE)
+                ICET(icetStrategy(ICET_STRATEGY_VTREE));
+            else
+                ICET(icetStrategy(ICET_STRATEGY_REDUCE));
+
+            ICET(icetDrawFunc(render));
+            ICET(icetDrawFrame());
+
+            // Now that we're done rendering, we need to post process the image.
+            debug3 << "IceTNM: Starting readback." << std::endl;
+            avtImage_p img = this->Readback(viswin, needZB);
+
+            // Now its essentially back to the same behavior as our parent:
+            //  shadows
+            //  depth cueing
+            //  post processing
+
+            if (renderState.shadowMap)
+                this->RenderShadows(img);
+
+            if (renderState.depthCues)
+                this->RenderDepthCues(img);
+
+            // If the engine is doing more than just 3D annotations,
+            // post-process the composited image.
+            RenderPostProcess(img);
+
+            CopyTo(retval, img);
+        }
+
+        RenderCleanup();
+    }
+    CATCHALL
+    {
+        RenderCleanup();
+        RETHROW;
+    }
+    ENDTRY
+
+    workingNet = origWorkingNet;
+    return retval;
 }
 
+// ****************************************************************************
+//  Method: RealRender
+//
+//  Purpose: Code which manages the `in OpenGL' portions of the render.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 20, 2008
+//
+//  Modifications:
+//
+//    Tom Fogal, Mon Jun 30 16:17:43 EDT 2008
+//    Support multipass rendering.
+//
+//    Tom Fogal, Sat Jul 26 23:15:21 EDT 2008
+//    Don't bother copying back the image; there's no way to get that image
+//    anyway.  If it doesn't render into the framebuffer, it might as well not
+//    happen...
+//
+//    Tom Fogal, Mon Aug  4 17:47:25 EDT 2008
+//    Remove the DataObject; since we override the method, it's always NULL
+//    (and was never used anyway).
+//
+//    Tom Fogal, Wed May 18 11:59:50 MDT 2011
+//    Save images in debug mode.
+//
+//    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
+//    sync up with network manager(base class) order compositing refactor
+//
+// ****************************************************************************
+
+void
+IceTNetworkManager::RealRender()
+{
+    avtImage_p im = this->RenderGeometry();
+
+    if(avtDebugDumpOptions::DumpEnabled())
+        this->DumpImage(im, "icet-render-geom");
+
+    //  Burlen Loring, Tue Sep  1 14:32:54 PDT 2015
+    //  note, opaque rendering needs to be z-buffer composited in one (or more
+    //  eg shadow map etc) pass, then translucent rendering needs to be alpha
+    //  composited in a final and completely distinct pass. ie moved out of
+    //  this method.
+    /*
+    VisWindow *viswin = renderState.window;
+
+    if (this->MemoMultipass(viswin))
+    {
+        avtDataObject_p trans_dob;
+        trans_dob = this->RenderTranslucent(renderState.windowID, im);
+        CopyTo(im, trans_dob);
+    }
+    */
+
+    if(avtDebugDumpOptions::DumpEnabled())
+        this->DumpImage(im, "icet-render-translucent");
+
+    this->renderings++;
+}
 
 // ****************************************************************************
 //  Method: RenderGeometry
@@ -417,206 +562,17 @@ IceTNetworkManager::RenderInternal()
 //    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
 //    sync up with network manager(base class) order compositing refactor
 //
-//    Matt Larsen, Tue May 10 08:26:54 PDT 2015
-//    Refactoring and updating to newer version of IceT. Fix: broadcasting
-//    image to all ranks only when needed. Fix: now works with translucency
-//    in second pass. Fix: reduce the amount of peak memory usage by
-//    eliminating extra image copies.
 // ****************************************************************************
 avtImage_p
 IceTNetworkManager::RenderGeometry()
 {
-    StackTimer t0("IceTNetworkManager::RenderGeometry");
-    CallInitializeProgressCallback(this->RenderingStages());
-    
-    
-    if (renderState.transparencyInPass1)
+    if (renderState.transparencyInPass2)
         return NetworkManager::RenderGeometry();
 
-    this->IceTSetup();
-   
-    //figure out if we are using a zbuffer composite
-    IceTEnum depthFormat;
-    ICET(icetGetEnumv(ICET_DEPTH_FORMAT,&depthFormat));
-    bool usingZ = depthFormat == ICET_IMAGE_DEPTH_FLOAT; 
-    
-    VisWindow *viswin = renderState.window; 
-    
-    //find out if we are expecting an alpha channel in the image
-    //and should return one.
-    bool needsAlpha = renderState.orderComposite;
-    
-   
-    double bgColorBackup[3] = {0.0};
-    AnnotationAttributes::BackgroundMode bgMode = AnnotationAttributes::Solid;
-    
-    //Setup some state for translucency
-    if(needsAlpha)
-    {
-        viswin->EnableAlphaChannel();
-
-        bgMode = viswin->GetBackgroundMode();
-        viswin->SetBackgroundMode(AnnotationAttributes::Solid);
-
-        memcpy(bgColorBackup, viswin->GetBackgroundColor(), 3*sizeof(double));
-        viswin->SetBackgroundColor(0.0, 0.0, 0.0);
-    }
-    
-    avtImage_p img;
-    
     CallProgressCallback("IceTNetworkManager", "Render geometry", 0, 1);
-    viswin->ScreenRender(renderState.viewportedMode,
-        /*disbale fg=*/true, /*opaque on=*/true,
-        /*translucent on=*/false,
-        /*disable bg=*/false, /*input image=*/NULL);
-
-    img = viswin->ScreenReadBack(renderState.viewportedMode,
-                      /*read z=*/usingZ, /*read a=*/needsAlpha);
-
+    renderState.window->ScreenRender(renderState.viewportedMode, true);
     CallProgressCallback("IceTNetworkManager", "Render geometry", 0, 1);
-    
-    
-    //restore some state for transluceny
-    if(needsAlpha)
-    {
-        viswin->DisableAlphaChannel();
-        viswin->SetBackgroundMode(bgMode);
-        viswin->SetBackgroundColor(bgColorBackup[0], 
-                                   bgColorBackup[1], 
-                                   bgColorBackup[2]);
-    }
-    
-    int height = -1;
-    int width = -1;
-
-    img->GetImage().GetSize(&width, &height);
-    int numChannels = img->GetImage().GetNumberOfColorChannels();
-    debug5 <<"IceTNetworkManager: Image has " << numChannels << "channels\n";
-    const int num_pixels = width * height; 
-    unsigned char *pixels = NULL;
-    float *zbuffer = NULL;
-    
-    // We need to put RGB values into a RGBA format
-    // IcetCompositeImage uses a shallow copy
-    // of the pre-rendered image, so we cannot delete
-    // the pointers. We will just keep them around, and 
-    // delete them at the end.
-        
-    unsigned char *imgPixels = img->GetImage().GetRGBBuffer(); 
-    if(!needsAlpha)
-    {
-        //this is a rgb buffer and we need to unpack it
-        this->UnpackBuffer(imgPixels,num_pixels);
-        pixels = &rgba[0];
-    }
-    else
-    { 
-        pixels = imgPixels;   
-    }
-    
-    if(usingZ)
-    {
-        zbuffer = img->GetImage().GetZBuffer(); 
-    }
-       
-    //extract the background for IceT
-    float bgColor[4];
-    if(renderState.window->GetBackgroundMode() == AnnotationAttributes::Solid)
-    {
-        const double *bgDouble = renderState.window->GetBackgroundColor();
-        for(int i = 0; i < 3; ++i) bgColor[i] = bgDouble[i];
-        bgColor[3] = 1.f;
-    }
-    else 
-    {  
-        for(int i = 0; i < 4; ++i) bgColor[i] = 1.f;
-        bgColor[3] = 0.f;
-    }
-    
-    IceTImage compositedImg = ICET(icetCompositeImage(pixels,
-                                                      zbuffer,
-                             /*active pixel viewport*/NULL, 
-                                        /*projMatrix*/NULL,
-                                   /*modelViewMatrix*/NULL,
-                                                      bgColor));
-                                                 
-    
-
-    //in the current config, only one rank gets the composited image
-    int rank;
-    ICET(icetGetIntegerv(ICET_RANK, &rank));
-    bool haveImage = rank == ICET_COLLECTION_RANK;  
-
-    //Check to see if we need the depth buffer back
-    //This should only set if we need it, otherwise,
-    //Icet will complain about the depth format
-    IceTBoolean noDepthBuffer;
-    ICET(icetGetBooleanv(ICET_COMPOSITE_ONE_BUFFER, &noDepthBuffer));
-    bool returnDepth = renderState.getZBuffer;
-    if(haveImage)
-    {
-        // IceT does not support gradient or image based 
-        // backgrounds.This is a *hack* to get IceT to retun a
-        // the propper background. There are probably cases
-        // where this breaks.
-        if(renderState.window->GetBackgroundMode() 
-            != AnnotationAttributes::Solid 
-            && usingZ)
-        {
-            unsigned char * comp_pixels = NULL;
-            float * comp_depth = NULL;
-            comp_pixels = icetImageGetColorub(compositedImg);
-            comp_depth = icetImageGetDepthf(compositedImg);
-            for(int i = 0; i < num_pixels; ++i)
-            { 
-              //background is at depth 1.f
-              if(comp_depth[i] != 1.f)
-              {
-                pixels[i*4+0] = comp_pixels[i*4+0];
-                pixels[i*4+1] = comp_pixels[i*4+1];
-                pixels[i*4+2] = comp_pixels[i*4+2];
-                pixels[i*4+3] = comp_pixels[i*4+3];
-                
-              }
-              if(returnDepth) zbuffer[i] = comp_depth[i];
-            }
-        }
-        else
-        {
-            //Copy back the final image so we can send it to all processors.
-            //Still unclear why this needs to happen, but I will continue the
-            //tradition.
-            ICET(icetImageCopyColorub(compositedImg,
-                                      pixels,
-                                      ICET_IMAGE_COLOR_RGBA_UBYTE));
-        }
-        if(returnDepth)
-        {
-            ICET(icetImageCopyDepthf(compositedImg,
-                                     zbuffer,
-                                     ICET_IMAGE_DEPTH_FLOAT));
-        }
-    }
-    
-    //Need to distribute the composited image back to all processes.
-    //Note: there is a way to leave the composited peices on all
-    //procs and reduce the gather comm.
-    if(renderState.allReducePass1)
-        SendImageToRenderNodes(width, height, returnDepth, &rgba[0], zbuffer);
-
-    //Now that all nodes have the image, we need pack it
-    //backing into rgb format if that is what we received.
-    if(!needsAlpha)
-    {
-        this->PackBuffer(imgPixels, num_pixels);
-    }
-    if(avtDebugDumpOptions::DumpEnabled())
-        this->DumpImage(img, "icet-render-geom");
-
-
-    this->renderings++;
- 
-    return img;
+    return NULL;
 }
 
 // ****************************************************************************
@@ -675,6 +631,141 @@ IceTNetworkManager::RenderTranslucent(int windowID, const avtImage_p& input)
     // read it back from IceT instead!
     return NULL;
 }*/
+
+// ****************************************************************************
+//  Method: Readback
+//
+//  Purpose: Reads back the image buffer from IceT.
+//
+//  Programmer: Tom Fogal
+//  Creation:   June 20, 2008
+//
+//  Modifications:
+//
+//    Tom Fogal, Tue Jul  1 11:06:55 EDT 2008
+//    Hack the number of scalars in the vtkImageData we create to be 4, to
+//    match the kind of buffer IceT gives us.  This allows us to skip an
+//    expensive GL_RGBA -> GL_RGB conversion.
+//    Also, use a void*; don't know why it was a uchar* before ...
+//
+//    Tom Fogal, Wed Jul  2 11:05:07 EDT 2008
+//    Readback and send/recv the Z buffer (unconditionally...).
+//
+//    Tom Fogal, Thu Jul 17 17:02:40 EDT 2008
+//    Repurposed viewported argument for a boolean to grab Z.
+//
+//    Tom Fogal, Mon Jul 28 14:44:28 EDT 2008
+//    Don't ask IceT for Z if we're not going to use it anyway.
+//
+//    Tom Fogal, Mon Sep  1 14:21:46 EDT 2008
+//    Removed asserts / dependence on NDEBUG.
+//
+//    Hank Childs, Mon Dec 29 18:24:05 CST 2008
+//    Make an image have 3 components, not 4, since 3 is better supported
+//    throughout VisIt (including saving TIFFs).
+//
+//    Hank Childs, Thu Jan 15 11:07:53 CST 2009
+//    Changed GetSize call to GetCaptureRegion, since that works for 2D.
+//
+//    Hank Childs, Fri Feb  6 15:47:17 CST 2009
+//    Fix memory leak.
+//
+//    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
+//    sync up with network manager(base class) order compositing refactor
+//
+// ****************************************************************************
+avtImage_p
+IceTNetworkManager::Readback(VisWindow * const viswin,
+                             bool readZ) const
+{
+    GLboolean have_image;
+
+    ICET(icetGetBooleanv(ICET_COLOR_BUFFER_VALID, &have_image));
+
+    int width=-42, height=-42, width_start, height_start;
+    // This basically gets the width and the height.
+    // The distinction is for 2D rendering, where we only want the
+    // width and the height of the viewport.
+    viswin->GetCaptureRegion(width_start, height_start, width, height,
+                             renderState.viewportedMode);
+
+    GLubyte *pixels = NULL;
+    GLuint *depth = NULL;
+
+    if(readZ && have_image == GL_TRUE)
+    {
+        depth = icetGetDepthBuffer();
+        DEBUG_ONLY(ICET_CHECK_ERROR);
+    }
+    // We can't delete pointers IceT gives us.  However if we're a receiving
+    // node, we'll dynamically allocate our buffers and thus need to deallocate
+    // them.
+    bool dynamic = false;
+
+    if(have_image == GL_TRUE)
+    {
+        // We have an image.  First read it back from IceT.
+        pixels = icetGetColorBuffer();
+        DEBUG_ONLY(ICET_CHECK_ERROR);
+
+        this->VerifyColorFormat(); // Bail out if we don't get GL_RGBA data.
+    } else {
+        // We don't have an image -- we need to receive it from our buddy.
+        // Purpose of static pixel_ptr ... if I delete this memory too soon (i.e. along
+        // with "depth"), then there is a crash ... it is being used after the function
+        // exits.  So just wait until the next render to free it.
+        static GLubyte *pixel_ptr = NULL;
+        if (pixel_ptr != NULL)
+           delete [] pixel_ptr;
+        pixel_ptr = new GLubyte[4*width*height];
+        pixels = pixel_ptr;
+        depth = new GLuint[width*height];
+
+        dynamic = true;
+    }
+    SendImageToRenderNodes(width, height, readZ, pixels, depth);
+
+    vtkImageData *image = avtImageRepresentation::NewImage(width, height);
+    // NewImage assumes we want a 3-component ("GL_RGB") image, but IceT gives
+    // us back data in a GL_RGBA format.  So we just reset the number of
+    // components and reallocate the data; unfortunately this means we do an
+    // allocate in NewImage and then immediately throw it away when doing an
+    // allocate here.
+    image->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
+    {
+        unsigned char *img_pix = (unsigned char *) image->GetScalarPointer();
+        const int numPix = width*height;
+        for (int i = 0 ; i < numPix ; i++)
+        {
+            *img_pix++ = *pixels++;
+            *img_pix++ = *pixels++;
+            *img_pix++ = *pixels++;
+            pixels++; // Alpha
+        }
+    }
+    float *visit_depth_buffer = NULL;
+
+    if(readZ)
+    {
+        debug4 << "Converting depth values ..." << std::endl;
+        visit_depth_buffer = utofv(depth, width*height);
+    }
+
+    avtSourceFromImage screenCapSrc(image, visit_depth_buffer);
+    avtImage_p visit_img = screenCapSrc.GetTypedOutput();
+    visit_img->Update(screenCapSrc.GetGeneralContract());
+    visit_img->SetSource(NULL);
+    image->Delete();
+    delete[] visit_depth_buffer;
+    if(dynamic)
+    {
+        delete[] depth;
+    }
+
+    debug3 << "Readback complete." << std::endl;
+
+    return visit_img;
+}
 
 // ****************************************************************************
 //  Method: StopTimer
@@ -742,74 +833,80 @@ void IceTNetworkManager::FormatDebugImage(char* out, size_t len,
 //  Programmer: Tom Fogal
 //  Creation:   July 1, 2008
 //
-//  Modifications:
-//
-//    Matt Larsen, Tues May 10, 2016 09:15:03 PDT
-//    Updated to newest version of IceT
-//
 // ****************************************************************************
 void
-IceTNetworkManager::VerifyColorFormat(IceTImage image) const
+IceTNetworkManager::VerifyColorFormat() const
 {
-    IceTEnum color_format;
-    ICET(color_format = icetImageGetColorFormat(image));
-    if(color_format != ICET_IMAGE_COLOR_RGBA_UBYTE)
+    GLint color_format;
+    ICET(icetGetIntegerv(ICET_COLOR_FORMAT, &color_format));
+    if(color_format != GL_RGBA)
     {
         const char *str;
         switch(color_format)
         {
-            case ICET_IMAGE_COLOR_RGBA_FLOAT: str = "ICET_RGBA_FLOAT"; break;
-            case ICET_IMAGE_COLOR_NONE: str = "ICET_NONE"; break;
+            case GL_RGB: str = "GL_RGB"; break;
+            case GL_BGR: str = "GL_BGR"; break;
+            case GL_BGRA: str = "GL_BGRA"; break;
             default: str = "unexpected error case"; break;
         }
-        EXCEPTION2(UnexpectedValueException, "ICET_RGBA", std::string(str));
+        EXCEPTION2(UnexpectedValueException, "GL_RGBA", std::string(str));
     }
-    //TODO:mark
-    
 }
 
 // ****************************************************************************
-//  Method: DebugIceTTimings
+//  Method: render
 //
-//  Purpose: To print interal IceT timing for debugging.
+//  Purpose: IceT render callback.  IceT operates like GLUT: it controls the
+//           rendering process.  This is the method we'll give to IceT which
+//           tells it to render.
+//           Note this function MUST have C linkage!
 //
-//  Programmer: Matt Larsen
-//  Creation:   May 10, 2016
+//  Programmer: Tom Fogal
+//  Creation:   June 19, 2008
 //
 // ****************************************************************************
-void
-IceTNetworkManager::DebugIceTTimings() const
+extern "C" void
+render()
 {
-    int rank;
+    debug2 << "IceT has invoked our render function." << std::endl;
+    IceTNetworkManager *net_mgr;
+
+    net_mgr = dynamic_cast<IceTNetworkManager*>(IceTNetworkManager::GetEngine()->GetNetMgr());
+    net_mgr->RealRender();
+}
+
+// ****************************************************************************
+//  Function: SendImageToRenderNodes
+//
+//  Purpose: IceT distinguishes between `tile nodes' and `render nodes'.  All
+//           nodes assist in image composition, but final images are only
+//           collected on tile nodes.
+//           Unfortunately various post-rendering algorithms in VisIt do not
+//           make this distinction, which in IceT parlance means we assume all
+//           nodes are tile nodes.  This method should send out the image to
+//           all other nodes, so we can still utilize IceT by blurring that
+//           distinction so that the rest of VisIt never knows.
+//
+//  Programmer: Tom Fogal
+//  Creation:   August 7, 2008
+//
+// ****************************************************************************
+static void
+SendImageToRenderNodes(int width, int height, bool Z,
+                       GLubyte * const pixels,
+                       GLuint * const depth)
+{
+    GLint n_tiles, n_procs, rank;
+    GLboolean have_image;
+
+    ICET(icetGetIntegerv(ICET_NUM_TILES, &n_tiles));
+    ICET(icetGetIntegerv(ICET_NUM_PROCESSES, &n_procs));
     ICET(icetGetIntegerv(ICET_RANK, &rank));
-    if(rank == 0)
-    {
-        //Time spent reading and copying buffer data
-        double bufferReadTime = 0;
-        ICET(icetGetDoublev(ICET_BUFFER_READ_TIME, &bufferReadTime));
-        //Time spent writing to buffers
-        double bufferWriteTime = 0;
-        ICET(icetGetDoublev(ICET_BUFFER_WRITE_TIME, &bufferWriteTime));
-        //Time spent blending or z-compositing
-        double blendTime = 0;
-        ICET(icetGetDoublev(ICET_BLEND_TIME, &blendTime));
-        //Total composite time
-        double totCompTime = 0;
-        ICET(icetGetDoublev(ICET_COMPOSITE_TIME, &totCompTime));
-        //Time spent in drawing callback
-        double callBackTime = 0;
-        ICET(icetGetDoublev(ICET_BUFFER_READ_TIME, &callBackTime));
-        //total bytes sent last composite
-        int bytesSent = 0;
-        ICET(icetGetIntegerv(ICET_BYTES_SENT, &bytesSent));
-        
-        debug3<<"-----ICET stats for rank "<<rank<<" -------\n"
-              <<"Total Composite Time       : "<<totCompTime<<"\n"
-              <<"Call Back Time             : "<<callBackTime<<"\n"
-              <<"Blend time                 : "<<blendTime<<"\n"
-              <<"Buffer Write Time          : "<<bufferWriteTime<<"\n"
-              <<"Buffer Read Time           : "<<bufferReadTime<<"\n"
-              <<"Total Bytes sent           : "<<bytesSent<<"\n"
-              <<"--------------------------------------\n";
+    ICET(icetGetBooleanv(ICET_COLOR_BUFFER_VALID, &have_image));
+
+    //              4: assuming GL_RGBA.
+    MPI_Bcast(pixels, 4*width*height, MPI_BYTE, 0, VISIT_MPI_COMM);
+    if(Z) {
+        MPI_Bcast(depth, width*height, MPI_UNSIGNED, 0, VISIT_MPI_COMM);
     }
 }
