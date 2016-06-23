@@ -66,7 +66,6 @@ void SPHResampleAttributes::Init()
     maxZ = 1;
     znum = 10;
     RK = true;
-    memScale = false;
 
     SPHResampleAttributes::SelectAll();
 }
@@ -100,7 +99,6 @@ void SPHResampleAttributes::Copy(const SPHResampleAttributes &obj)
     tensorSupportVariable = obj.tensorSupportVariable;
     weightVariable = obj.weightVariable;
     RK = obj.RK;
-    memScale = obj.memScale;
 
     SPHResampleAttributes::SelectAll();
 }
@@ -271,8 +269,7 @@ SPHResampleAttributes::operator == (const SPHResampleAttributes &obj) const
             (znum == obj.znum) &&
             (tensorSupportVariable == obj.tensorSupportVariable) &&
             (weightVariable == obj.weightVariable) &&
-            (RK == obj.RK) &&
-            (memScale == obj.memScale));
+            (RK == obj.RK));
 }
 
 // ****************************************************************************
@@ -428,7 +425,6 @@ SPHResampleAttributes::SelectAll()
     Select(ID_tensorSupportVariable, (void *)&tensorSupportVariable);
     Select(ID_weightVariable,        (void *)&weightVariable);
     Select(ID_RK,                    (void *)&RK);
-    Select(ID_memScale,              (void *)&memScale);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -533,12 +529,6 @@ SPHResampleAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("RK", RK));
     }
 
-    if(completeSave || !FieldsEqual(ID_memScale, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("memScale", memScale));
-    }
-
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -599,8 +589,6 @@ SPHResampleAttributes::SetFromNode(DataNode *parentNode)
         SetWeightVariable(node->AsString());
     if((node = searchNode->GetNode("RK")) != 0)
         SetRK(node->AsBool());
-    if((node = searchNode->GetNode("memScale")) != 0)
-        SetMemScale(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -691,13 +679,6 @@ SPHResampleAttributes::SetRK(bool RK_)
     Select(ID_RK, (void *)&RK);
 }
 
-void
-SPHResampleAttributes::SetMemScale(bool memScale_)
-{
-    memScale = memScale_;
-    Select(ID_memScale, (void *)&memScale);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -786,12 +767,6 @@ SPHResampleAttributes::GetRK() const
     return RK;
 }
 
-bool
-SPHResampleAttributes::GetMemScale() const
-{
-    return memScale;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -844,7 +819,6 @@ SPHResampleAttributes::GetFieldName(int index) const
     case ID_tensorSupportVariable: return "tensorSupportVariable";
     case ID_weightVariable:        return "weightVariable";
     case ID_RK:                    return "RK";
-    case ID_memScale:              return "memScale";
     default:  return "invalid index";
     }
 }
@@ -881,7 +855,6 @@ SPHResampleAttributes::GetFieldType(int index) const
     case ID_tensorSupportVariable: return FieldType_variablename;
     case ID_weightVariable:        return FieldType_variablename;
     case ID_RK:                    return FieldType_bool;
-    case ID_memScale:              return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -918,7 +891,6 @@ SPHResampleAttributes::GetFieldTypeName(int index) const
     case ID_tensorSupportVariable: return "variablename";
     case ID_weightVariable:        return "variablename";
     case ID_RK:                    return "bool";
-    case ID_memScale:              return "bool";
     default:  return "invalid index";
     }
 }
@@ -1003,11 +975,6 @@ SPHResampleAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_RK:
         {  // new scope
         retval = (RK == obj.RK);
-        }
-        break;
-    case ID_memScale:
-        {  // new scope
-        retval = (memScale == obj.memScale);
         }
         break;
     default: retval = false;
