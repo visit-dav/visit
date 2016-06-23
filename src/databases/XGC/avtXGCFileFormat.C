@@ -307,30 +307,33 @@ avtXGCFileFormat::GetVar(const char *varname)
     hid_t vS = H5Dget_space(vD);
     int n = H5Sget_simple_extent_dims(vS, dims, NULL);
 
-    int sz = dims[0];
-    if (n == 2)
-    {
-        sz *= dims[1];
-        sz += dims[0];
-    }
+    int sz = (n==1 ? dims[0] : (dims[0]*dims[1] + dims[0]));
 
-    cout<<varname<<" dims: "<<dims[0]<<" "<<dims[1]<<endl;
     vtkFloatArray *arr = vtkFloatArray::New();
     arr->SetNumberOfTuples(sz);
-    H5Dread(vD, H5T_NATIVE_FLOAT, H5S_ALL, vS, H5P_DEFAULT, arr->GetVoidPointer(0));
 
-    H5Dclose(vD);
-    H5Gclose(grp);
-    H5Fclose(file);
-
-
-    //For 3D mesh, need to copy plane 0 onto end...
-    if (n == 2)
+    if (n == 1)
+        H5Dread(vD, H5T_NATIVE_FLOAT, H5S_ALL, vS, H5P_DEFAULT, arr->GetVoidPointer(0));
+    else
     {
+        vector<float> tmp(sz);
+        H5Dread(vD, H5T_NATIVE_FLOAT, H5S_ALL, vS, H5P_DEFAULT, &tmp[0]);
+
+        //Need to transpose the array...
+        int d0 = dims[1], d1 = dims[0];
+        for (int r = 0; r < d0; r++)
+            for (int c = 0; c < d1; c++)
+                arr->SetTuple1(d1*(d0-1-r)+c, tmp[c*d0 + r]);
+
+        //copy the first plane to last..
         int off = numNodes*numPhi;
         for (int i = 0; i < numNodes; i++)
             arr->SetTuple1(i+off, arr->GetTuple1(i));
     }
+    
+    H5Dclose(vD);
+    H5Gclose(grp);
+    H5Fclose(file);
 
     return arr;
 }
