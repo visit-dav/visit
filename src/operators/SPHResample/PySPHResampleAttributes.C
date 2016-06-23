@@ -103,11 +103,6 @@ PySPHResampleAttributes_ToString(const SPHResampleAttributes *atts, const char *
     else
         SNPRINTF(tmpStr, 1000, "%sRK = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetMemScale())
-        SNPRINTF(tmpStr, 1000, "%smemScale = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%smemScale = 0\n", prefix);
-    str += tmpStr;
     return str;
 }
 
@@ -408,30 +403,6 @@ SPHResampleAttributes_GetRK(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-SPHResampleAttributes_SetMemScale(PyObject *self, PyObject *args)
-{
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the memScale in the object.
-    obj->data->SetMemScale(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-SPHResampleAttributes_GetMemScale(PyObject *self, PyObject *args)
-{
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetMemScale()?1L:0L);
-    return retval;
-}
-
 
 
 PyMethodDef PySPHResampleAttributes_methods[SPHRESAMPLEATTRIBUTES_NMETH] = {
@@ -460,8 +431,6 @@ PyMethodDef PySPHResampleAttributes_methods[SPHRESAMPLEATTRIBUTES_NMETH] = {
     {"GetWeightVariable", SPHResampleAttributes_GetWeightVariable, METH_VARARGS},
     {"SetRK", SPHResampleAttributes_SetRK, METH_VARARGS},
     {"GetRK", SPHResampleAttributes_GetRK, METH_VARARGS},
-    {"SetMemScale", SPHResampleAttributes_SetMemScale, METH_VARARGS},
-    {"GetMemScale", SPHResampleAttributes_GetMemScale, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -514,8 +483,6 @@ PySPHResampleAttributes_getattr(PyObject *self, char *name)
         return SPHResampleAttributes_GetWeightVariable(self, NULL);
     if(strcmp(name, "RK") == 0)
         return SPHResampleAttributes_GetRK(self, NULL);
-    if(strcmp(name, "memScale") == 0)
-        return SPHResampleAttributes_GetMemScale(self, NULL);
 
     return Py_FindMethod(PySPHResampleAttributes_methods, self, name);
 }
@@ -554,8 +521,6 @@ PySPHResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SPHResampleAttributes_SetWeightVariable(self, tuple);
     else if(strcmp(name, "RK") == 0)
         obj = SPHResampleAttributes_SetRK(self, tuple);
-    else if(strcmp(name, "memScale") == 0)
-        obj = SPHResampleAttributes_SetMemScale(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

@@ -90,7 +90,6 @@ class QvisSPHResampleWindow : public QvisOperatorWindow
     void tensorSupportVariableChanged(const QString &varName);
     void weightVariableChanged(const QString &varName);
     void RKChanged(bool val);
-    void memoryScalingCheckBoxChanged(bool val);
   private:
     QLineEdit *minX;
     QLineEdit *maxX;
@@ -104,7 +103,6 @@ class QvisSPHResampleWindow : public QvisOperatorWindow
     QvisVariableButton *tensorSupportVariable;
     QvisVariableButton *weightVariable;
     QCheckBox *RK;
-    QCheckBox *memoryScalingCheckBox;
     QLabel *minXLabel;
     QLabel *maxXLabel;
     QLabel *xnumLabel;

@@ -199,11 +199,6 @@ QvisSPHResampleWindow::CreateWindowContents()
     connect(RK, SIGNAL(toggled(bool)),
             this, SLOT(RKChanged(bool)));
     mainLayout->addWidget(RK, 11, 0, 1, -1, Qt::AlignLeft);
-
-    memoryScalingCheckBox = new QCheckBox(tr("Enable Memory Scaling"), central);
-    connect(memoryScalingCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(memoryScalingCheckBoxChanged(bool)));
-    mainLayout->addWidget(memoryScalingCheckBox, 12, 0, 1, -1, Qt::AlignLeft);
 }
 
 
@@ -279,11 +274,6 @@ QvisSPHResampleWindow::UpdateWindow(bool doAll)
             RK->blockSignals(true);
             RK->setChecked(atts->GetRK());
             RK->blockSignals(false);
-            break;
-          case SPHResampleAttributes::ID_memScale:
-            memoryScalingCheckBox->blockSignals(true);
-            memoryScalingCheckBox->setChecked(atts->GetMemScale());
-            memoryScalingCheckBox->blockSignals(false);
             break;
         }
     }
@@ -541,12 +531,3 @@ QvisSPHResampleWindow::RKChanged(bool val)
     SetUpdate(false);
     Apply();
 }
-
-void
-QvisSPHResampleWindow::memoryScalingCheckBoxChanged(bool val)
-{
-    atts->SetMemScale(val);
-    SetUpdate(false);
-    Apply();
-}
-

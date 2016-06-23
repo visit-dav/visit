@@ -54,9 +54,12 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCleanPolyData.h>
+#include <vtkPolygon.h>
+#include <vtkMath.h>
 
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
+#include <TimingsManager.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -65,6 +68,8 @@
 using std::vector;
 using std::min;
 using std::max;
+
+const double KERNEL_EXTENT = 2.0;
 
 // ****************************************************************************
 //  Method: avtSPHResampleFilter constructor
@@ -76,7 +81,6 @@ using std::max;
 
 avtSPHResampleFilter::avtSPHResampleFilter()
 {
-    cellCentered = false;
     keepNodeZone = false;
 }
 
@@ -228,8 +232,8 @@ avtSPHResampleFilter::kernelGradValue(double etaMagnitude, double Hdet) {
 //   Compute the step size of the grid.
 //
 // Arguments:
-//   xmin       Vector for the min grid location in each direction
-//   xmax       Vector for the max grid location in each direction
+//   minXYZ       Vector for the min grid location in each direction
+//   maxXYZ       Vector for the max grid location in each direction
 //   nsample    Vector for the number of grid cells in each direction
 //
 // Programmer:  Cody Raskin
@@ -240,13 +244,42 @@ avtSPHResampleFilter::kernelGradValue(double etaMagnitude, double Hdet) {
 template<int Dim>
 inline
 vector<double>
-stepSize(vector<double>& xmin, vector<double>& xmax, vector<int>& nsample) {
+stepSize(vector<double>& minXYZ, vector<double>& maxXYZ, vector<int>& nsample) {
     vector<double> result(Dim);
+    
     for (int i = 0; i < Dim; ++i) {
-        result[i] = (xmax[i]-xmin[i])/nsample[i];
+        result[i] = (maxXYZ[i]-minXYZ[i]) / nsample[i];
     }
     
     return result;
+}
+
+vector<double>
+avtSPHResampleFilter::GetStepSizeXYZ()
+{
+    // Global Lattice Info to calculate step sizes
+    vector<double> globalLatticeMin(nDim);
+    vector<double> globalLatticeMax(nDim);
+    vector<int> globalLatticeSamples(nDim);
+    
+    globalLatticeSamples[0] = atts.GetXnum();
+    globalLatticeSamples[1] = atts.GetYnum();
+    globalLatticeMin[0] = atts.GetMinX();
+    globalLatticeMin[1] = atts.GetMinY();
+    globalLatticeMax[0] = atts.GetMaxX();
+    globalLatticeMax[1] = atts.GetMaxY();
+    
+    if(nDim == 3)
+    {
+        globalLatticeMin[2] = atts.GetMinZ();
+        globalLatticeMax[2] = atts.GetMaxZ();
+        globalLatticeSamples[2] = atts.GetZnum();
+    }
+    
+    vector<double> stepXYZ = (nDim == 3) ? stepSize<3>(globalLatticeMin, globalLatticeMax, globalLatticeSamples)
+                                         : stepSize<2>(globalLatticeMin, globalLatticeMax, globalLatticeSamples);
+    
+    return stepXYZ;
 }
 
 // ****************************************************************************
@@ -317,11 +350,11 @@ makeIndex<3>(const int ix,
 //   Compute the indicies of the lattice over which a given particle overlaps.
 //
 // Arguments:
-//   ri         Location of the particle
-//   extent     Extent of the kernel
-//   xmin       Vector for the min grid location in each direction
-//   stepSize   Vector describing the distance between grid location in each direction
-//   nsample    Vector for the number of grid cells in each direction
+//   ri             Location of the particle
+//   extent         Extent of the kernel
+//   minXYZ         Vector for the min grid location in each direction
+//   stepSizeXYZ    Vector describing the distance between grid location in each direction
+//   gridCellsXYZ   Vector for the number of grid cells in each direction
 //
 // Programmer:  Cody Raskin
 // Creation:    July 1, 2015
@@ -333,17 +366,18 @@ inline
 vector< vector<int> >
 latticePoints(const double* ri,
               vector<double>& extent,
-              vector<double>& xmin,
-              vector<double>& stepSize,
-              const vector<int>& nsample) {
+              vector<double>& minXYZ,
+              vector<double>& stepSizeXYZ,
+              const vector<int>& gridCellsXYZ) {
+    
     // Find the min & max indicies in each dimension.
     vector<int> imin(Dim);
     vector<int> imax(Dim);
     int ntot = 1;
     
     for (int i = 0; i < Dim; ++i) {
-        imin[i] = max(0, min(nsample[i] - 1, int((ri[i] - extent[i] - xmin[i])/stepSize[i])));
-        imax[i] = max(0, min(nsample[i] - 1, int((ri[i] + extent[i] - xmin[i])/stepSize[i]) + 1));
+        imin[i] = max(0, min(gridCellsXYZ[i] - 1, int((ri[i] - extent[i] - minXYZ[i])/stepSizeXYZ[i])));
+        imax[i] = max(0, min(gridCellsXYZ[i] - 1, int((ri[i] + extent[i] - minXYZ[i])/stepSizeXYZ[i]) + 1));
         ntot *= imax[i] - imin[i] + 1;
     }
     
@@ -379,28 +413,33 @@ latticePoints(const double* ri,
 //   Compute the position for the given lattice index.
 //
 // Arguments:
-//   indicies       Vector of grid indices
-//   xmin           Vector for the minimum grid location in each direction
-//   xmax           Vector for the maximum grid location in each direction
-//   xstep          Vector describing the distance between grid locations in
+//   cellIndexXYZ   Vector of grid indices
+//   minXYZ         Vector for the minimum grid location in each direction
+//   stepSizeXYZ    Vector describing the distance between grid locations in
 //                  each direction
 //
 // Programmer:  Cody Raskin
 // Creation:    July 1, 2015
+//
+// Modifications:
+//
+//      Kevin Griffin, Wed May 25 14:38:01 PDT 2016
+//      Changed the addition of 0.5*... to the subtraction of 0.5*... to get
+//      the correct cell center position. Renamed the method parameters and
+//      removed the unused latticeMax parameter.
 //
 // ****************************************************************************
 
 template<int Dim>
 inline
 vector<double>
-latticePosition(const vector<int>& indicies,
-                vector<double>& xmin,
-                vector<double>& xmax,
-                vector<double>& xstep)
+latticePosition(const vector<int>& cellIndexXYZ, vector<double>& minXYZ, vector<double>& stepSizeXYZ)
 {
     vector<double> result(Dim);
-    for(int k=0;k<Dim;++k)
-        result[k] = xmin[k]+indicies[k]*xstep[k] + 0.5*xstep[k];
+    for(int k=0;k<Dim;++k) {
+        result[k] = minXYZ[k]+cellIndexXYZ[k]*stepSizeXYZ[k] - 0.5*stepSizeXYZ[k];
+    }
+    
     return result;
 }
 
@@ -622,35 +661,6 @@ outerProduct(vector<double>& v1, vector<double>& v2) {
     return M;
 }
 
-// ****************************************************************************
-//  Method:      avtSPHResampleFilter::GetIndexFromLatticeIndex
-//
-//  Purpose:
-//      Return the local index corresponding to the lattice 1D index.
-//
-//  Arguments:
-//      latticeIndex    The lattice index to convert to a local index
-//
-//  Returns:
-//      The local index corresponding to the lattice index or -1 if there is no
-//      corresponding local index.
-//
-//  Programmer: Kevin Griffin
-//  Creation:   Tue Aug 25 18:01:32 PDT 2015
-//
-// ****************************************************************************
-int
-avtSPHResampleFilter::GetIndexFromLatticeIndex(const int latticeIndex)
-{
-    std::map<int,int>::iterator itr = latticeIndexMap.find(latticeIndex);
-    
-    if(itr != latticeIndexMap.end()) {
-        return itr->second;
-    }
-    
-    return -1;
-}
-
 template<int Dim>
 tensorStruct *
 avtSPHResampleFilter::CreateTensorStruct(vtkDataArray* const input_support, const int i)
@@ -709,9 +719,8 @@ avtSPHResampleFilter::CreateTensorStruct(vtkDataArray* const input_support, cons
 //  Method:      avtSPHResampleFilter::SampleNMS
 //
 //  Purpose:
-//      Sample a given particle dataset to a rectilinear grid. This is the
-//      non-memory scaling version.
-//
+//      Sample a given particle dataset to a rectilinear grid. This method
+//      is called for serial execution only.
 //
 //  Arguments:
 //      scalarValues    Vector of doubles holding the sampled data in a flat array
@@ -725,15 +734,18 @@ avtSPHResampleFilter::CreateTensorStruct(vtkDataArray* const input_support, cons
 //      Added check for datasets = 0 and for NULL PointData to prevent Engine
 //      crash.
 //
+//      Kevin Griffin, Wed May 25 14:38:01 PDT 2016
+//      Cleaned-up the code, made variable names more meaningful, and removed
+//      code designed to run in parallel.
+//
 // ****************************************************************************
 template<int Dim>
 void
 avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
 {
+    int timerHandle = visitTimer->StartTimer();
     std::string varname = resampleVarName;
     int nsets = 0;
-    // Size of the kernel.
-    const double kernelExtent = 2.0;
     
     avtDataTree_p input_tree = GetInputDataTree();   /* get input data tree to obtain datasets */
     
@@ -748,31 +760,34 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
     // creating the lattice
     vector<double> latticeMin(Dim);
     vector<double> latticeMax(Dim);
-    vector<int> n(Dim); // X, Y, Z Grid Cells
+    vector<int> gridCells(Dim); // X, Y, Z Grid Cells
     
-    n[0] = atts.GetXnum();
-    n[1] = atts.GetYnum();
+    gridCells[0] = atts.GetXnum();
+    gridCells[1] = atts.GetYnum();
     latticeMin[0] = atts.GetMinX();
     latticeMin[1] = atts.GetMinY();
     latticeMax[0] = atts.GetMaxX();
     latticeMax[1] = atts.GetMaxY();
     
-    int ntot = n[0]*n[1];
+    int totalCells = gridCells[0]*gridCells[1];
     
     if(Dim==3)
     {
         latticeMin[2] = atts.GetMinZ();
         latticeMax[2] = atts.GetMaxZ();
-        n[2] = atts.GetZnum();
-        ntot = ntot * n[2];
+        gridCells[2] = atts.GetZnum();
+        totalCells = totalCells * gridCells[2];
     }
+    
+    debug5 << "Sampling to " << totalCells << " cells..." << endl;
+    
+    vector<int> partIdx = GetParticipatingIndices(data_sets, nsets);
+    nsets = partIdx.size();
     
     if(vars_to_resample && (nsets > 0))
     {
-        //        int var_ncomps = GetInput()->GetInfo().GetAttributes().GetVariableDimension(varname.c_str());
-        // number of components can be used in the future to deal with resampled scalars, tensors, etc
-        vtkIdType npart = 0;    // number of particles
-        vtkDataSet *dset = data_sets[0];
+        // number of particles
+        vtkDataSet *dset = data_sets[partIdx[0]];
         vtkAppendPolyData *appender = NULL;
         
         if(nsets > 1)
@@ -781,47 +796,37 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
             
             for(int i=0; i<nsets; i++)
             {
-                // Get the total number of particles in all datasets
-                npart += data_sets[i]->GetNumberOfPoints();
                 // Merge data sets
-                appender->AddInputData(dynamic_cast<vtkPolyData *>(data_sets[i]));
+                appender->AddInputData(dynamic_cast<vtkPolyData *>(data_sets[partIdx[i]]));
             }
             
             appender->Update();
             dset = appender->GetOutput();
         }
         
-        debug5 << "Sampling to " << ntot << " points..." << endl;
-        
+        vtkIdType npart = dset->GetNumberOfPoints();;
         if (Dim==3)
         {
-            debug5 << npart << " particles to " << n[0] << "x" << n[1] << "x" << n[2] << " cells" << endl;
+            debug5 << npart << " particles to " << gridCells[0] << "x" << gridCells[1] << "x" << gridCells[2] << " cells" << endl;
         }
         else
         {
-            debug5 << npart << " particles to " << n[0] << "x" << n[1] << " cells" << endl;
+            debug5 << npart << " particles to " << gridCells[0] << "x" << gridCells[1] << " cells" << endl;
         }
         
         // Compute the step size.
-        vector<double> xstep = stepSize<Dim>(latticeMin, latticeMax, n);
-        
-        //        for(int k=0;k<Dim;++k)
-        //        {
-        //            printf("d%d: xmin =%f xmax =%f n =%d xstep =%f\n",k,latticeMin[k],latticeMax[k],n[k],xstep[k]);
-        //        }
+        vector<double> stepXYZ = stepSize<Dim>(latticeMin, latticeMax, gridCells);
         
         // Prepare the output
-        vector<double> m0;  // moments of data points
+        vector<double> m0(totalCells, 0.0);  // moments of data points
         vector<vector<double> > m1; // data points?
-        vector<tensorStruct> m2(ntot);
-        vector<double> A;   // correction terms
+        vector<tensorStruct> m2(totalCells);
+        vector<double> A(totalCells, 0.0);   // correction terms
         vector<vector<double> > B;  // correction terms
         
-        scalarValues.resize(ntot, 0.0);
-        m0.resize(ntot, 0.0);
-        A.resize(ntot, 0.0);
+        scalarValues.resize(totalCells, 0.0);
         
-        for(int k=0;k<ntot;++k)
+        for(int k=0;k<totalCells;++k)
         {
             m1.push_back(vector<double>(Dim,0.0));
             B.push_back(vector<double>(Dim,0.0));
@@ -842,229 +847,129 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
             input_weight  = dset->GetCellData()->GetArray(weightVarName.c_str());
         }
         
-        std::string errMsg;
+        CheckInputVariables(input_var, input_support, input_weight);
         
-        if(input_var == NULL) {
-            errMsg.append(varname);
-            errMsg.append(" must exist and have the same centering");
-            EXCEPTION1(InvalidVariableException, errMsg);
-        }
-        
-        if(input_support == NULL) {
-            errMsg.clear();
-            errMsg.append(supportVarName);
-            errMsg.append(" must exist and have the same centering");
-            EXCEPTION1(InvalidVariableException, errMsg);
-        }
-        
-        if(input_weight == NULL) {
-            errMsg.clear();
-            errMsg.append(weightVarName);
-            errMsg.append(" must exist and have the same centering");
-            EXCEPTION1(InvalidVariableException, errMsg);
-        }
-        
-        int nCompSupport;
-        nCompSupport = input_support->GetNumberOfComponents();
-        //        printf("input support has %d components.\n",nCompSupport);
-        
-        // assemble your input data arrays ...
-        npart = dset->GetNumberOfPoints();
-        
-        for(int i=0; i<npart;++i)
+        if(atts.GetRK())    // Don't need to compute the moments and correction values if RPK corrections is not selected
         {
-            tensorStruct* Hi = CreateTensorStruct<Dim>(input_support, i);
-            
-            double Hdet = determinant<Dim>(*Hi);
-            tensorStruct M = square<Dim>(*Hi);
-            
-            double weighti = *input_weight->GetTuple(i);
-            vector<double> extent(Dim);
-            
-            extent[0] = kernelExtent/Hdet*sqrt(M.yy);
-            extent[1] = kernelExtent/Hdet*sqrt(M.xx);
-            
-            double ri[3] = {0, 0, 0};
-            dset->GetPoint(i, &ri[0]);
-            
-            if(Dim==3)
+            for(int i=0; i<npart; i++)
             {
-                extent[0] = kernelExtent/Hdet*sqrt(M.yy*M.zz - M.yz*M.zy);
-                extent[1] = kernelExtent/Hdet*sqrt(M.xx*M.zz - M.xz*M.zx);
-                extent[2] = kernelExtent/Hdet*sqrt(M.xx*M.yy - M.xy*M.yx);
+                tensorStruct* Hi = CreateTensorStruct<Dim>(input_support, i);
+                
+                double Hdet = determinant<Dim>(*Hi);
+                tensorStruct M = square<Dim>(*Hi);
+                
+                double weighti = *(input_weight->GetTuple(i));
+                
+                // Calculate smoothing length
+                vector<double> extent(Dim);
+                if(Dim==3)
+                {
+                    extent[0] = KERNEL_EXTENT/Hdet*sqrt(M.yy*M.zz - M.yz*M.zy);
+                    extent[1] = KERNEL_EXTENT/Hdet*sqrt(M.xx*M.zz - M.xz*M.zx);
+                    extent[2] = KERNEL_EXTENT/Hdet*sqrt(M.xx*M.yy - M.xy*M.yx);
+                }
+                else
+                {
+                    extent[0] = KERNEL_EXTENT/Hdet*sqrt(M.yy);
+                    extent[1] = KERNEL_EXTENT/Hdet*sqrt(M.xx);
+                }
+                
+                double ri[3] = {0, 0, 0};
+                dset->GetPoint(i, &ri[0]);
+                
+                // Compute the set of lattice ids this node contributes to.
+                const vector< vector<int> > ids = latticePoints<Dim>(ri, extent, latticeMin, stepXYZ, gridCells);
+                
+                // Iterate over the lattice ids.
+                for (vector< vector<int> >::const_iterator itr = ids.begin(); itr != ids.end(); ++itr)
+                {
+                    vector<double> rj = latticePosition<Dim>(*itr, latticeMin, stepXYZ);    // Cell Center (xyz coords)
+                    const int j = latticeIndex(*itr, gridCells);    // 1D Lattice Index
+                    
+                    // Contribution of the SPH point to this position.
+                    vector<double> rij(Dim);
+                    for(int k=0;k<Dim;++k)
+                        rij[k] = ri[k]-rj[k];
+                    
+                    vector<double> etaVec(Dim);
+                    etaVec              = tensorVectorMult<Dim>(*Hi,rij);
+                    
+                    const double etai   = vectorMag<Dim>(etaVec);
+                    
+                    //= (Hi*rij).magnitude();
+                    const double Wi     = avtSPHResampleFilter::kernelValue<Dim>(etai, Hdet);
+                    //                    const double gradWi = avtSPHResampleFilter::kernelGradValue<Dim>(etai, Hdet);
+                    
+                    // zeroth moment
+                    const double wwi    = Wi*weighti;
+                    m0[j]               += wwi;
+                    //gradm0[j]           += gradWi*weighti;
+                    
+                    // first moment
+                    vector<double> m1i(Dim);
+                    m1i                 = vectorScalarMult<Dim>(rij,wwi);
+                    m1[j]               = vectorSum<Dim>(m1[j],m1i);
+                    /*
+                     vector<double> vgradWi(Dim);
+                     for(int k=0;k<Dim;++k) vgradWi[k] = gradWi;
+                     vector<double> rji  = vectorScalarMult<Dim>(rij,-1.0);
+                     tensorStruct gm1i   = outerProduct<Dim>(rji,vgradWi);
+                     gm1i.xx             += Wi;
+                     gm1i.yy             += Wi;
+                     gm1i.zz             += Wi;
+                     gm1i                = tensorScalarMult<Dim>(gm1i,weighti);
+                     gradm1[j]           = tensorSum<Dim>(gradm1[j],gm1i);
+                     */
+                    
+                    //second moment
+                    tensorStruct thpt;
+                    thpt                = outerProduct<Dim>(rij,rij);
+                    tensorStruct m2i;
+                    m2i                 = tensorScalarMult<Dim>(thpt,wwi);
+                    m2[j]               = tensorSum<Dim>(m2[j],m2i);
+                    
+                    /*
+                     printf("\n\n< ");
+                     for(int k=0;k<Dim;++k)
+                     printf("%f ",rj[k]);
+                     printf(">\n");
+                     
+                     printf("i=%d\n",i);
+                     printf("rij=<%3.3f,%3.3f>\n",rij[0],rij[1]);
+                     printf("etai=%3.2f Wi=%3.2f wwi=%3.2f\n",etai,Wi,wwi);
+                     
+                     printf("m1=<%3.3f,%3.3f>\n",m1i[0],m1i[1]);
+                     
+                     printf("m2=[[%3.3f,%3.3f][%3.3f,%3.3f]]\n",m2i.xx,m2i.xy,m2i.yx,m2i.yy);
+                     */
+                    
+                }
+                
+                delete Hi;
             }
-            
-            // Compute the set of lattice positions this node contributes to.
-            const vector< vector<int> > ids = latticePoints<Dim>(ri, extent,
-                                                                 latticeMin, xstep, n);
-            
-            // Iterate over the lattice points.
-            for (vector< vector<int> >::const_iterator itr = ids.begin();
-                 itr != ids.end();
-                 ++itr)
+        
+            // compute A & B on the lattice points
+            for(int i=0; i<totalCells;++i)
             {
-                // Compute the sample position and index into the lattice sample array.
-                vector<double> rj = latticePosition<Dim>(*itr, latticeMin, latticeMax, xstep);
-                const int j = latticeIndex(*itr, n);
-                
-                // Contribution of the SPH point to this position.
-                vector<double> rij(Dim);
-                for(int k=0;k<Dim;++k)
-                    rij[k] = ri[k]-rj[k];
-                
-                vector<double> etaVec(Dim);
-                etaVec              = tensorVectorMult<Dim>(*Hi,rij);
-                
-                const double etai   = vectorMag<Dim>(etaVec);
-                
-                //= (Hi*rij).magnitude();
-                const double Wi     = avtSPHResampleFilter::kernelValue<Dim>(etai, Hdet);
-                //                    const double gradWi = avtSPHResampleFilter::kernelGradValue<Dim>(etai, Hdet);
-                
-                // zeroth moment
-                const double wwi    = Wi*weighti;
-                m0[j]               += wwi;
-                //gradm0[j]           += gradWi*weighti;
-                
-                // first moment
-                vector<double> m1i(Dim);
-                m1i                 = vectorScalarMult<Dim>(rij,wwi);
-                m1[j]               = vectorSum<Dim>(m1[j],m1i);
-                /*
-                 vector<double> vgradWi(Dim);
-                 for(int k=0;k<Dim;++k) vgradWi[k] = gradWi;
-                 vector<double> rji  = vectorScalarMult<Dim>(rij,-1.0);
-                 tensorStruct gm1i   = outerProduct<Dim>(rji,vgradWi);
-                 gm1i.xx             += Wi;
-                 gm1i.yy             += Wi;
-                 gm1i.zz             += Wi;
-                 gm1i                = tensorScalarMult<Dim>(gm1i,weighti);
-                 gradm1[j]           = tensorSum<Dim>(gradm1[j],gm1i);
-                 */
-                
-                //second moment
-                tensorStruct thpt;
-                thpt                = outerProduct<Dim>(rij,rij);
-                tensorStruct m2i;
-                m2i                 = tensorScalarMult<Dim>(thpt,wwi);
-                m2[j]               = tensorSum<Dim>(m2[j],m2i);
-                
-                /*
-                 printf("\n\n< ");
-                 for(int k=0;k<Dim;++k)
-                 printf("%f ",rj[k]);
-                 printf(">\n");
-                 
-                 printf("i=%d\n",i);
-                 printf("rij=<%3.3f,%3.3f>\n",rij[0],rij[1]);
-                 printf("etai=%3.2f Wi=%3.2f wwi=%3.2f\n",etai,Wi,wwi);
-                 
-                 printf("m1=<%3.3f,%3.3f>\n",m1i[0],m1i[1]);
-                 
-                 printf("m2=[[%3.3f,%3.3f][%3.3f,%3.3f]]\n",m2i.xx,m2i.xy,m2i.yx,m2i.yy);
-                 */
-                
-            }
-            
-            delete Hi;
-        }
-        
-#ifdef PARALLEL
-        // ReduceAll m0
-        double *m0Out = new double[ntot];
-        //            m0.shrink_to_fit();
-        SumDoubleArrayAcrossAllProcessors(m0.data(), m0Out, ntot);
-        
-        for(int i=0; i<ntot; i++) {
-            m0[i] = m0Out[i];
-        }
-        
-        delete [] m0Out;
-        
-        // ReduceAll m1
-        double *m1Out = new double[Dim*ntot];
-        double *m1DblArray = new double[Dim*ntot];
-        
-        for(int i=0; i<ntot; i++) {
-            for(int j=0; j<Dim; j++) {
-                m1DblArray[i*Dim+j] = m1[i].at(j);
-            }
-        }
-        
-        SumDoubleArrayAcrossAllProcessors(m1DblArray, m1Out, ntot*Dim);
-        
-        for(int i=0; i<ntot; i++) {
-            for(int j=0; j<Dim; j++) {
-                m1[i].at(j) = m1Out[i*Dim+j];
-            }
-        }
-        
-        delete [] m1DblArray;
-        delete [] m1Out;
-        
-        // ReduceAll m2
-        double *m2Out = new double[9*ntot];
-        double *m2DblArray = new double[9*ntot];
-        
-        for(int i=0; i<ntot; i++) {
-            int offset = i*9;
-            m2DblArray[offset] = m2[i].xx;
-            m2DblArray[offset+1] = m2[i].xy;
-            m2DblArray[offset+2] = m2[i].xz;
-            
-            m2DblArray[offset+3] = m2[i].yx;
-            m2DblArray[offset+4] = m2[i].yy;
-            m2DblArray[offset+5] = m2[i].yz;
-            
-            m2DblArray[offset+6] = m2[i].zx;
-            m2DblArray[offset+7] = m2[i].zy;
-            m2DblArray[offset+8] = m2[i].zz;
-        }
-        
-        SumDoubleArrayAcrossAllProcessors(m2DblArray, m2Out, ntot*9);
-        
-        for(int i=0; i<ntot; i++) {
-            int offset = i*9;
-            m2[i].xx = m2Out[offset];
-            m2[i].xy = m2Out[offset+1];
-            m2[i].xz = m2Out[offset+2];
-            
-            m2[i].yx = m2Out[offset+3];
-            m2[i].yy = m2Out[offset+4];
-            m2[i].yz = m2Out[offset+5];
-            
-            m2[i].zx = m2Out[offset+6];
-            m2[i].zy = m2Out[offset+7];
-            m2[i].zz = m2Out[offset+8];
-        }
-        
-        delete [] m2DblArray;
-        delete [] m2Out;
-#endif
-        
-        // compute A & B on the lattice points
-        for(int i=0; i<ntot;++i)
-        {
-            double m2det            = determinant<Dim>(m2[i]);
-            //double m2det = 0;
-            tensorStruct m2inv;
-            if(fabs(m2det) < 1.0e-10) m2det = 0;
-            if(fabs(m2det) > 0)
+                double m2det            = determinant<Dim>(m2[i]);
+                //double m2det = 0;
+                tensorStruct m2inv;
+                if(fabs(m2det) < 1.0e-10) m2det = 0;
+                if(fabs(m2det) > 0)
                 m2inv               = tensorInverse<Dim>(m2[i]);
             
-            //printf("m2inv=[[%3.2f %3.2f][%3.2f %3.2f]]\n",m2inv.xx,m2inv.xy,m2inv.yx,m2inv.yy);
+                //printf("m2inv=[[%3.2f %3.2f][%3.2f %3.2f]]\n",m2inv.xx,m2inv.xy,m2inv.yx,m2inv.yy);
             
-            vector<double> m2invm1(Dim);
-            m2invm1                 = tensorVectorMult<Dim>(m2inv,m1[i]);
+                vector<double> m2invm1(Dim);
+                m2invm1                 = tensorVectorMult<Dim>(m2inv,m1[i]);
             
-            //printf("m2invm1=[%3.3f,%3.3f]\n",m2invm1[0],m2invm1[1]);
-            //double Ainv             = m0[i] - dotP<Dim>(m2invm1,m1[i]);
-            double Ainv             = m0[i];
-            A[i]                    = (fabs(Ainv)>1e-10 ? 1.0/Ainv : 1.0);
-            B[i]                    = vectorScalarMult<Dim>(m2invm1,-1.0);
-            
-            
-        }
+                //printf("m2invm1=[%3.3f,%3.3f]\n",m2invm1[0],m2invm1[1]);
+                //double Ainv             = m0[i] - dotP<Dim>(m2invm1,m1[i]);
+                double Ainv             = m0[i];
+                A[i]                    = (fabs(Ainv)>1e-10 ? 1.0/Ainv : 1.0);
+                B[i]                    = vectorScalarMult<Dim>(m2invm1,-1.0);
+            }
+        } // End if(atts.GetRK())
         
         for(int i=0; i<npart;++i)
         {
@@ -1074,26 +979,27 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
             tensorStruct M = square<Dim>(*Hi);
             
             double weighti = *input_weight->GetTuple(i);
-            vector<double> extent(Dim);
             
-            extent[0] = kernelExtent/Hdet*sqrt(M.yy);
-            extent[1] = kernelExtent/Hdet*sqrt(M.xx);
+            vector<double> extent(Dim);
+            if(Dim==3)
+            {
+                extent[0] = KERNEL_EXTENT/Hdet*sqrt(M.yy*M.zz - M.yz*M.zy);
+                extent[1] = KERNEL_EXTENT/Hdet*sqrt(M.xx*M.zz - M.xz*M.zx);
+                extent[2] = KERNEL_EXTENT/Hdet*sqrt(M.xx*M.yy - M.xy*M.yx);
+            }
+            else
+            {
+                extent[0] = KERNEL_EXTENT/Hdet*sqrt(M.yy);
+                extent[1] = KERNEL_EXTENT/Hdet*sqrt(M.xx);
+            }
             
             double ri[3] = {0, 0, 0};
             dset->GetPoint(i, &ri[0]);
-            if(Dim==3)
-            {
-                extent[0] = kernelExtent/Hdet*sqrt(M.yy*M.zz - M.yz*M.zy);
-                extent[1] = kernelExtent/Hdet*sqrt(M.xx*M.zz - M.xz*M.zx);
-                extent[2] = kernelExtent/Hdet*sqrt(M.xx*M.yy - M.xy*M.yx);
-            }
+            
+            // Compute the set of lattice ids this node contributes to.
+            const vector< vector<int> > ids = latticePoints<Dim>(ri, extent, latticeMin, stepXYZ, gridCells);
             
             double field = *input_var->GetTuple(i);
-            
-            // Compute the set of lattice positions this node contributes to.
-            const vector< vector<int> > ids = latticePoints<Dim>(ri, extent,
-                                                                 latticeMin, xstep, n);
-            
             
             // Iterate over the lattice points.
             for (vector< vector<int> >::const_iterator itr = ids.begin();
@@ -1101,8 +1007,8 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
                  ++itr)
             {
                 // Compute the sample position and index into the lattice sample array.
-                vector<double> rj = latticePosition<Dim>(*itr, latticeMin, latticeMax, xstep);
-                const int j = latticeIndex(*itr, n);
+                vector<double> rj = latticePosition<Dim>(*itr, latticeMin, stepXYZ);
+                const int j = latticeIndex(*itr, gridCells);
                 
                 // Contribution of the SPH point to this position.
                 vector<double> rij(Dim);
@@ -1117,7 +1023,7 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
                 const double Wi = avtSPHResampleFilter::kernelValue<Dim>(etai, Hdet);
                 const double thpt = weighti*Wi;
                 //scalarValues[j] += thpt * field;
-                if(RKcorrections)
+                if(atts.GetRK())
                     //scalarValues[j] += thpt * field * A[j] * (1.0+dotP<Dim>(B[j],rij));
                     scalarValues[j] += thpt * field * A[j];
                 else
@@ -1128,33 +1034,17 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
             delete Hi;
         }
         
-        // Cleanup Memory
-        if(nsets > 1) {
+        if(appender != NULL)
+        {
             appender->Delete();
         }
     }
     else
-    {           // For processors without any datasets
-        scalarValues.resize(ntot, 0.0);
-        vector<double> m0(ntot, 0.0);  // moments of data points
-        vector<double> m1(Dim*ntot, 0.0); // data points?
-        vector<double> m2(ntot*9, 0.0);
-        
-        // Synch m0 accross all processors
-        double *m0Out = new double[ntot];
-        SumDoubleArrayAcrossAllProcessors(m0.data(), m0Out, ntot);
-        delete [] m0Out;
-        
-        // Synch m1
-        double *m1Out = new double[Dim*ntot];
-        SumDoubleArrayAcrossAllProcessors(m1.data(), m1Out, ntot*Dim);
-        delete [] m1Out;
-        
-        // m2 vector<tensorStruct> m2(ntot);
-        double *m2Out = new double[9*ntot];
-        SumDoubleArrayAcrossAllProcessors(m2.data(), m2Out, ntot*9);
-        delete [] m2Out;
+    {
+        scalarValues.resize(totalCells, 0.0);
     }
+    
+    visitTimer->StopTimer(timerHandle, "avtSPHResample::SampleNMS");
 }
 
 // ****************************************************************************
@@ -1164,7 +1054,9 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
 //      Sample a given particle dataset to a rectilinear grid.
 //
 //  Arguments:
-//      scalarValues    Vector of doubles holding the sampled data in a flat array
+//      data    Vector of of SPH data. Currently this vector will contain at
+//              most one item.
+
 //
 //  Programmer: Cody Raskin
 //  Creation:   Fri Dec 5 13:50:31 PST 2014
@@ -1175,461 +1067,555 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
 //      Added check for datasets = 0 and for NULL PointData to prevent Engine
 //      crash.
 //
+//      Kevin Griffin, Tue Jun 21 13:09:21 PDT 2016
+//      Reimplemented to work better in parallel and scale in memory.
+//
 // ****************************************************************************
 template<int Dim>
 void
-avtSPHResampleFilter::Sample(vector<double>& scalarValues)
+avtSPHResampleFilter::Sample(vector<sphData>& data)
 {
-    std::string varname = resampleVarName;
+    int timerHandle = visitTimer->StartTimer();
+    
     int nsets = 0;
-    // Size of the kernel.
-    const double kernelExtent = 2.0;
+    vector<int> partIdx;
+    avtDataTree_p input_tree = GetInputDataTree();
     
-    avtDataTree_p input_tree = GetInputDataTree();   /* get input data tree to obtain datasets */
-    
-    //    int num_input_vars = GetInput()->GetInfo().GetAttributes().GetNumberOfVariables();
-    //    for most plots -- we expect at least 2 vars, one input var and one support tensor.
     vtkDataSet **data_sets = input_tree->GetAllLeaves(nsets);
     
-    /// get the var we want to resample
-    // make sure the name passed isn't simply our mesh name
-    bool vars_to_resample = (GetInput()->GetInfo().GetAttributes().GetMeshname() != varname);
+    // Global Lattice Info
+    vector<double> globalLatticeMin(Dim);
+    vector<double> globalLatticeMax(Dim);
+    vector<int> globalGridCells(Dim);
     
-    // creating the lattice
-    vector<double> latticeMin(Dim);
-    vector<double> latticeMax(Dim);
-    vector<int> n(Dim); // X, Y, Z Grid Cells
-    
-    n[0] = atts.GetXnum();
-    n[1] = atts.GetYnum();
-    latticeMin[0] = atts.GetMinX();
-    latticeMin[1] = atts.GetMinY();
-    latticeMax[0] = atts.GetMaxX();
-    latticeMax[1] = atts.GetMaxY();
+    globalGridCells[0] = atts.GetXnum();
+    globalGridCells[1] = atts.GetYnum();
+    globalLatticeMin[0] = atts.GetMinX();
+    globalLatticeMin[1] = atts.GetMinY();
+    globalLatticeMax[0] = atts.GetMaxX();
+    globalLatticeMax[1] = atts.GetMaxY();
     
     if(Dim==3)
     {
-        latticeMin[2] = atts.GetMinZ();
-        latticeMax[2] = atts.GetMaxZ();
-        n[2] = atts.GetZnum();
+        globalLatticeMin[2] = atts.GetMinZ();
+        globalLatticeMax[2] = atts.GetMaxZ();
+        globalGridCells[2] = atts.GetZnum();
     }
     
-    if(vars_to_resample && (nsets > 0))
+    // Local Lattice Info
+    vector<double> latticeMin(Dim);
+    vector<double> latticeMax(Dim);
+    vector<int> gridCells(Dim);
+    
+    int totalCells  = 0;
+    vector<double> stepXYZ = GetStepSizeXYZ();
+    
+    // Determine participation and merge datasets
+    if(nsets > 0)
     {
-        //        int var_ncomps = GetInput()->GetInfo().GetAttributes().GetVariableDimension(varname.c_str());
-        // number of components can be used in the future to deal with resampled scalars, tensors, etc
+        partIdx = GetParticipatingIndices(data_sets, nsets);
+        nsets = partIdx.size();
+    }
+    
+    bool isParticipating = nsets > 0;
+    vtkDataSet *dset = isParticipating ? data_sets[partIdx[0]] : NULL;
+    vtkAppendPolyData *appender = NULL;
+    
+    if(nsets > 1)
+    {
+        appender = vtkAppendPolyData::New();
         
-        vtkDataSet *dset = data_sets[0];
-        vtkAppendPolyData *appender = NULL;
-        
-        if(nsets > 1)   // Merge all datasets into one
+        for(int i=0; i<nsets; i++)
         {
-            appender = vtkAppendPolyData::New();
-            
-            for(int i=0; i<nsets; i++)
+            // Merge data sets
+            appender->AddInputData(dynamic_cast<vtkPolyData *>(data_sets[i]));
+        }
+        
+        appender->Update();
+        dset = appender->GetOutput();
+    }
+    
+    if(atts.GetRK())
+    {
+        if(isParticipating)
+        {
+            for(int i=0; i<1; i++)  // For now I'm merging the datasets into 1, change if decided to process each domain individually
             {
-                // Merge data sets
-                appender->AddInputData(dynamic_cast<vtkPolyData *>(data_sets[i]));
-            }
-            
-            appender->Update();
-            dset = appender->GetOutput();
-        }
+                // Number of particles
+                vtkIdType npart = dset->GetNumberOfPoints();
+                
+                double bounds[6];
+                dset->GetBounds(bounds);
+                
+                debug5 << "Bounds " << bounds[0] << ", " << bounds[1] << ", " << bounds[2] << ", " << bounds[3] << ", " << bounds[4] << ", " << bounds[5] << endl;
+                
+                GetDimensions(gridCells, latticeMin, latticeMax, stepXYZ, bounds);
+                
+                if(Dim == 2)
+                {
+                    totalCells = gridCells[0]*gridCells[1];
+                    debug5 << npart << " particles to " << gridCells[0] << "x" << gridCells[1] << " cells" << endl;
+                }
+                else
+                {
+                    totalCells = gridCells[0]*gridCells[1]*gridCells[2];
+                    debug5 << npart << " particles to " << gridCells[0] << "x" << gridCells[1] << "x" << gridCells[2] << " cells" << endl;
+                }
+                
+                debug5 << "Sampling to " << totalCells << " cells..." << endl;
+                
+                sphData currentData = sphData(totalCells, Dim);
+                currentData.dset = dset;
+                
+                currentData.indices[0] = max(0, int(floor((latticeMin[0] - globalLatticeMin[0]) / stepXYZ[0])));
+                currentData.indices[1] = currentData.indices[0] + gridCells[0];
+                
+                currentData.indices[2] = max(0, int(floor((latticeMin[1] - globalLatticeMin[1]) / stepXYZ[1])));;
+                currentData.indices[3] = currentData.indices[2] + gridCells[1];
+                
+                if(Dim == 3)
+                {
+                    currentData.indices[4] = max(0, int(floor((latticeMin[2] - globalLatticeMin[2]) / stepXYZ[2])));;
+                    currentData.indices[5] = currentData.indices[4] + gridCells[2];
+                    
+                    debug5 << "Indices " << currentData.indices[0] << ", " << currentData.indices[1] << ", " << currentData.indices[2] << ", " << currentData.indices[3] << ", " << currentData.indices[4] << ", " << currentData.indices[5] << endl;
+                }
+                else
+                {
+                    debug5 << "Indices " << currentData.indices[0] << ", " << currentData.indices[1] << ", " << currentData.indices[2] << ", " << currentData.indices[3] << endl;
+                }
+                
+                // Get Input Variables
+                vtkDataArray *input_var = dset->GetPointData()->GetArray(resampleVarName.c_str());
+                vtkDataArray *input_support = NULL;
+                vtkDataArray *input_weight = NULL;
+                
+                if(input_var != NULL) {
+                    input_support = dset->GetPointData()->GetArray(supportVarName.c_str());
+                    input_weight  = dset->GetPointData()->GetArray(weightVarName.c_str());
+                } else {
+                    input_var = dset->GetCellData()->GetArray(resampleVarName.c_str());
+                    input_support = dset->GetCellData()->GetArray(supportVarName.c_str());
+                    input_weight  = dset->GetCellData()->GetArray(weightVarName.c_str());
+                }
+                
+                CheckInputVariables(input_var, input_support, input_weight);
+                
+                // Calculate moments
+                for(int ii=0; ii<npart; ii++)
+                {
+                    tensorStruct *Hi = CreateTensorStruct<Dim>(input_support, ii);
+                    
+                    double Hdet = determinant<Dim>(*Hi);
+                    tensorStruct M = square<Dim>(*Hi);
+                    double weighti = *(input_weight->GetTuple(ii));
+                    
+                    // Calculate Smoothing Length
+                    vector<double> extent(Dim);
+                    extent[0] = KERNEL_EXTENT/Hdet*sqrt(M.yy);
+                    extent[1] = KERNEL_EXTENT/Hdet*sqrt(M.xx);
+                    
+                    if(Dim == 3)
+                    {
+                        extent[0] = KERNEL_EXTENT/Hdet*sqrt(M.yy*M.zz - M.yz*M.zy);
+                        extent[1] = KERNEL_EXTENT/Hdet*sqrt(M.xx*M.zz - M.xz*M.zx);
+                        extent[2] = KERNEL_EXTENT/Hdet*sqrt(M.xx*M.yy - M.xy*M.yx);
+                    }
+                    
+                    double ri[3] = {0,0,0};
+                    dset->GetPoint(ii, &ri[0]);
+                    
+                    // Compute the set of lattice ids this node contributes to.
+                    const vector< vector<int> > ids = latticePoints<Dim>(ri, extent, globalLatticeMin, stepXYZ, globalGridCells);
+                    ghostCell temp(Dim);
+                    
+                    // Iterate over the lattice ids.
+                    for (vector< vector<int> >::const_iterator itr = ids.begin(); itr != ids.end(); ++itr)
+                    {
+                        vector<double> rj = latticePosition<Dim>(*itr, globalLatticeMin, stepXYZ);    // Cell Center (xyz coords)
+                        const int j = latticeIndex(*itr, globalGridCells);    // 1D Lattice Index
+                        int localj = GetLocalIndex(currentData, j);
+                        temp.globalLatticeIdx = j;
+                        
+                        // Contribution of the SPH point to this position.
+                        vector<double> rij(Dim);
+                        for(int k=0;k<Dim;++k)
+                        {
+                            rij[k] = ri[k]-rj[k];
+                        }
+                        
+                        vector<double> etaVec(Dim);
+                        etaVec = tensorVectorMult<Dim>(*Hi,rij);
+                        
+                        const double etai = vectorMag<Dim>(etaVec);
+                        const double Wi = avtSPHResampleFilter::kernelValue<Dim>(etai, Hdet);
+                        
+                        // zeroth moment
+                        const double wwi = Wi * weighti;
+                        temp.m0 = wwi;
+                        
+                        // first moment
+                        temp.m1 = vectorScalarMult<Dim>(rij,wwi);
+                        
+                        // second moment
+                        tensorStruct thpt;
+                        thpt = outerProduct<Dim>(rij,rij);
+                        temp.m2 = tensorScalarMult<Dim>(thpt,wwi);
+                        
+                        if(localj >= 0)
+                        {
+                            currentData.globalLatticeIndices[localj] = temp.globalLatticeIdx;
+                            
+                            currentData.m0[localj] += temp.m0;
+                            currentData.m1[localj] = vectorSum<Dim>(currentData.m1[localj], temp.m1);
+                            currentData.m2[localj] = tensorSum<Dim>(currentData.m2[localj], temp.m2);
+                        }
+                        else
+                        {
+                            int idx = GetGhostCellIndex(currentData.ghostCells, j);
+                            
+                            if(idx >= 0)
+                            {
+                                currentData.ghostCells[idx].m0 += temp.m0;
+                                currentData.ghostCells[idx].m1 = vectorSum<Dim>(currentData.ghostCells[idx].m1, temp.m1);
+                                currentData.ghostCells[idx].m2 = tensorSum<Dim>(currentData.ghostCells[idx].m2, temp.m2);
+                            }
+                            else
+                            {
+                                ghostCell gc(Dim);
+                                
+                                gc.globalLatticeIdx = temp.globalLatticeIdx;
+                                gc.m0 = temp.m0;
+                                gc.m1 = temp.m1;
+                                gc.m2 = temp.m2;
+                                
+                                currentData.ghostCells.push_back(gc);
+                            }
+                        }
+                    }
+                    
+                    delete Hi;
+                } // for(npart)
+                debug5 << "Total Cells: " << currentData.totalCells << " Ghost Cells: " << currentData.ghostCells.size() << endl;
+                data.push_back(currentData);
+            }   // End For(nsets)
+        }   // isParticipating
         
-        // Compute the step size.
-        vector<double> stepSizeAllDim = stepSize<Dim>(latticeMin, latticeMax, n);
-        
-        // Prepare the output
-        vector<double> m0;  // moments of data points
-        vector<vector<double> > m1; // data points?
-        vector<tensorStruct> m2;
-        vector<double> A;   // correction terms
-        vector<vector<double> > B;  // correction terms
-        
-        vtkDataArray *input_var = NULL;
-        vtkDataArray *input_support = NULL;
-        vtkDataArray *input_weight = NULL;
-        
-        input_var = dset->GetPointData()->GetArray(varname.c_str());
-        
-        if(input_var != NULL) {
-            input_support = dset->GetPointData()->GetArray(supportVarName.c_str());
-            input_weight  = dset->GetPointData()->GetArray(weightVarName.c_str());
-        } else {
-            input_var = dset->GetCellData()->GetArray(varname.c_str());
-            input_support = dset->GetCellData()->GetArray(supportVarName.c_str());
-            input_weight  = dset->GetCellData()->GetArray(weightVarName.c_str());
-        }
-        
-        std::string errMsg;
-        
-        if(input_var == NULL) {
-            errMsg.append(varname);
-            errMsg.append(" must exist and have the same centering");
-            EXCEPTION1(InvalidVariableException, errMsg);
-        }
-        
-        if(input_support == NULL) {
-            errMsg.clear();
-            errMsg.append(supportVarName);
-            errMsg.append(" must exist and have the same centering");
-            EXCEPTION1(InvalidVariableException, errMsg);
-        }
-        
-        if(input_weight == NULL) {
-            errMsg.clear();
-            errMsg.append(weightVarName);
-            errMsg.append(" must exist and have the same centering");
-            EXCEPTION1(InvalidVariableException, errMsg);
-        }
-        
-        // assemble your input data arrays ...
-        vtkIdType npart = dset->GetNumberOfPoints();
-        
-        if (Dim==3)
+        // Synchronize moments
+        if(data.size() > 0)
         {
-            debug5 << "P" << PAR_Rank() << ": " << npart << " particles to " << n[0] << "x" << n[1] << "x" << n[2] << " cells" << endl;
+            SynchMoments(data[0]);
         }
         else
         {
-            debug5 << "P" << PAR_Rank() << ": " << npart << " particles to " << n[0] << "x" << n[1] << " cells" << endl;
+            sphData fakeData(0, Dim);
+            SynchMoments(fakeData);
         }
         
-//        cout << "P" << PAR_Rank() << ": started iterate over particles" << endl;
-        for(int i=0; i<npart;++i)   // Loop through all the points in the merged dataset
+        // Compute A and B Correction Values
+        for(int i=0; i<data.size(); i++)
         {
-            tensorStruct* Hi = CreateTensorStruct<Dim>(input_support, i);
-            
-            double Hdet = determinant<Dim>(*Hi);
-            tensorStruct M = square<Dim>(*Hi);
-            
-            double weighti = *input_weight->GetTuple(i);
-            vector<double> extent(Dim);
-            
-            extent[0] = kernelExtent/Hdet*sqrt(M.yy);
-            extent[1] = kernelExtent/Hdet*sqrt(M.xx);
-            
-            double ri[3] = {0, 0, 0};
-            dset->GetPoint(i, &ri[0]);
-            
-            if(Dim==3)
+            for(int j=0; j<data[i].totalCells; j++)
             {
-                extent[0] = kernelExtent/Hdet*sqrt(M.yy*M.zz - M.yz*M.zy);
-                extent[1] = kernelExtent/Hdet*sqrt(M.xx*M.zz - M.xz*M.zx);
-                extent[2] = kernelExtent/Hdet*sqrt(M.xx*M.yy - M.xy*M.yx);
-            }
-            
-            // Compute the set of lattice positions this node contributes to.
-            const vector< vector<int> > ids = latticePoints<Dim>(&ri[0], extent, latticeMin, stepSizeAllDim, n);
-            
-            // Iterate over the lattice points.
-            for (vector< vector<int> >::const_iterator itr = ids.begin(); itr != ids.end(); ++itr)
-            {
-                // Compute the sample position and index into the lattice sample array.
-                vector<double> rj = latticePosition<Dim>(*itr, latticeMin, latticeMax, stepSizeAllDim);
-                const int j = latticeIndex(*itr, n);
-                
-                // Update the latticeIndex List if necessary
-                int idx = GetIndexFromLatticeIndex(j);
-                
-                if(idx == -1) {
-                    idx = latticeIndexMap.size();
-                    latticeIndexMap[j] = idx;
-                    
-                    m0.push_back(0.0);
-                    m1.push_back(vector<double>(Dim,0.0));
-                    tensorStruct ts;
-                    m2.push_back(ts);
-                    
-                    A.push_back(0.0);
-                    B.push_back(vector<double>(Dim,0.0));
-                    
-                    scalarValues.push_back(0.0);
+                double m2det            = determinant<Dim>(data[i].m2[j]);
+                //double m2det = 0;
+                tensorStruct m2inv;
+                if(fabs(m2det) < 1.0e-10)
+                {
+                    m2det = 0;
                 }
                 
-                // Contribution of the SPH point to this position.
-                vector<double> rij(Dim);
-                for(int k=0;k<Dim;++k)
-                    rij[k] = ri[k]-rj[k];
+                if(fabs(m2det) > 0)
+                {
+                    m2inv               = tensorInverse<Dim>(data[i].m2[j]);
+                }
                 
-                vector<double> etaVec(Dim);
-                etaVec              = tensorVectorMult<Dim>(*Hi,rij);
-                
-                const double etai   = vectorMag<Dim>(etaVec);
-                
-                //= (Hi*rij).magnitude();
-                const double Wi     = avtSPHResampleFilter::kernelValue<Dim>(etai, Hdet);
-                //                    const double gradWi = avtSPHResampleFilter::kernelGradValue<Dim>(etai, Hdet);
-                
-                // zeroth moment
-                const double wwi    = Wi*weighti;
-                //                m0[j]               += wwi;
-                m0[idx]               += wwi;
-                //gradm0[j]           += gradWi*weighti;
-                
-                // first moment
-                vector<double> m1i(Dim);
-                m1i                 = vectorScalarMult<Dim>(rij,wwi);
-                m1[idx]               = vectorSum<Dim>(m1[idx],m1i);
-                
-                //second moment
-                tensorStruct thpt;
-                thpt                = outerProduct<Dim>(rij,rij);
-                tensorStruct m2i;
-                m2i                 = tensorScalarMult<Dim>(thpt,wwi);
-                m2[idx]               = tensorSum<Dim>(m2[idx],m2i);
+                vector<double> m2invm1(Dim);
+                m2invm1                 = tensorVectorMult<Dim>(m2inv,data[i].m1[j]);
+                double Ainv             = data[i].m0[j];
+                data[i].A[j]                    = (fabs(Ainv)>1e-10 ? 1.0/Ainv : 1.0);
+                data[i].B[j]                    = vectorScalarMult<Dim>(m2invm1,-1.0);
             }
             
-            delete Hi;
+            for(int j=0; j<data[i].ghostCells.size(); j++)
+            {
+                ghostCell *gc = &(data[i].ghostCells[j]);
+                double m2det            = determinant<Dim>(gc->m2);
+                //double m2det = 0;
+                tensorStruct m2inv;
+                if(fabs(m2det) < 1.0e-10)
+                {
+                    m2det = 0;
+                }
+                
+                if(fabs(m2det) > 0)
+                {
+                    m2inv               = tensorInverse<Dim>(gc->m2);
+                }
+                
+                vector<double> m2invm1(Dim);
+                m2invm1                 = tensorVectorMult<Dim>(m2inv,gc->m1);
+                double Ainv             = gc->m0;
+                gc->A                    = (fabs(Ainv)>1e-10 ? 1.0/Ainv : 1.0);
+                gc->B                    = vectorScalarMult<Dim>(m2invm1,-1.0);
+            }
         }
-//        cout << "P" << PAR_Rank() << ": ended iterate over particles" << endl;
         
-#ifdef PARALLEL
-//        Barrier();
-        int myRank = PAR_Rank();
-        
-        vector<int> i_latticeIndexList;
-        vector<double> i_m0;
-        vector<vector<double> > i_m1;
-        vector<tensorStruct> i_m2;
-        
-        // Keep copy of the current state of the data to send
-        vector<double> m_m0(m0.begin(), m0.end());
-        vector<vector<double> > m_m1(m1.begin(), m1.end());
-        vector<tensorStruct> m_m2(m2.begin(), m2.end());
-        
-//        cout << "P" << myRank << " Started Parallel Section 1" << endl;
-        
-        for(int root=0; root<PAR_Size(); root++) {
-            if(myRank == root) {
-                int ntot = latticeIndexMap.size();
-                
-                // Send the list of lattice indices this processor has
-                vector<int> latticeIndexList(ntot);
-                for(std::map<int,int>::iterator itr=latticeIndexMap.begin(); itr!=latticeIndexMap.end(); itr++) {
-                    latticeIndexList[itr->second] = itr->first;
-                }
-                
-                BroadcastIntVectorFromAny(latticeIndexList, root, root);
-                
-                // Send m0
-                BroadcastDoubleVectorFromAny(m_m0, root, root);
-                
-                // Send m1
-                double *m1DblArray = new double[Dim*ntot];
-                
-                for(int i=0; i<ntot; i++) {
-                    for(int j=0; j<Dim; j++) {
-                        m1DblArray[i*Dim+j] = m_m1[i].at(j);
-                    }
-                }
-                
-                BroadcastDoubleArrayFromAny(m1DblArray, ntot*Dim, root);
-                
-                delete [] m1DblArray;
-                
-                // Send m2
-                BroadcastDoubleArrayFromAny(&m_m2[0].xx, ntot*9, root);
+        // Compute Scalar Values
+        for(int i=0; i<data.size(); i++)
+        {
+            vtkDataSet *dset = data[i].dset;
+            vtkIdType npart = dset->GetNumberOfPoints();
+            double bounds[6];
+            dset->GetBounds(bounds);
+            
+            // Get Input Variables
+            vtkDataArray *input_var = dset->GetPointData()->GetArray(resampleVarName.c_str());
+            vtkDataArray *input_support = NULL;
+            vtkDataArray *input_weight = NULL;
+            
+            if(input_var != NULL) {
+                input_support = dset->GetPointData()->GetArray(supportVarName.c_str());
+                input_weight  = dset->GetPointData()->GetArray(weightVarName.c_str());
             } else {
-                // Receive the list of lattice indices this processor has
-                BroadcastIntVectorFromAny(i_latticeIndexList, myRank, root);
-                int ntot = i_latticeIndexList.size();
-                
-                // Receive m0
-                BroadcastDoubleVectorFromAny(i_m0, myRank, root);
-                
-                // Receive m1
-                double *temp_m1 = new double[Dim*ntot];
-                i_m1.resize(ntot);
-                BroadcastDoubleArrayFromAny(temp_m1, ntot*Dim, root);
-                
-                for(int i=0; i<ntot; i++) {
-                    vector<double> m1Val;
-                    
-                    for(int j=0; j<Dim; j++) {
-                        m1Val.push_back(temp_m1[i*Dim+j]);
-                    }
-                    
-                    i_m1[i] = m1Val;
-                }
-                
-                delete [] temp_m1;
-                
-                // Receive m2
-                i_m2.resize(9*ntot);
-                BroadcastDoubleArrayFromAny(&i_m2[0].xx, ntot*9, root);
-                
-                // Update values
-                for(int i=0; i<ntot; i++) {
-                    int index = GetIndexFromLatticeIndex(i_latticeIndexList[i]);
-                    
-                    if(index != -1) {
-                        m0[index] += i_m0[i];
-                        m1[index] = vectorSum<Dim>(m1[index],i_m1[i]);
-                        m2[index] = tensorSum<Dim>(m2[index],i_m2[i]);
-                    }
-                }
-            }
-        }
-        
-        i_latticeIndexList.erase(i_latticeIndexList.begin(), i_latticeIndexList.end());
-        
-        i_m0.erase(i_m0.begin(), i_m0.end());
-        i_m2.erase(i_m2.begin(), i_m2.end());
-        i_m1.erase(i_m1.begin(), i_m1.end());
-        
-        m_m0.erase(m_m0.begin(), m_m0.end());
-        m_m1.erase(m_m1.begin(), m_m1.end());
-        m_m2.erase(m_m2.begin(), m_m2.end());
-        
-//        cout << "P" << myRank << " Ended Parallel Section 1" << endl;
-#endif
-        // compute A & B on the lattice points
-        for(int i=0; i<latticeIndexMap.size();++i)
-        {
-            double m2det            = determinant<Dim>(m2[i]);
-            //double m2det = 0;
-            tensorStruct m2inv;
-            if(fabs(m2det) < 1.0e-10) m2det = 0;
-            if(fabs(m2det) > 0)
-                m2inv               = tensorInverse<Dim>(m2[i]);
-            
-            //printf("m2inv=[[%3.2f %3.2f][%3.2f %3.2f]]\n",m2inv.xx,m2inv.xy,m2inv.yx,m2inv.yy);
-            
-            vector<double> m2invm1(Dim);
-            m2invm1                 = tensorVectorMult<Dim>(m2inv,m1[i]);
-            
-            //printf("m2invm1=[%3.3f,%3.3f]\n",m2invm1[0],m2invm1[1]);
-            //double Ainv             = m0[i] - dotP<Dim>(m2invm1,m1[i]);
-            double Ainv             = m0[i];
-            A[i]                    = (fabs(Ainv)>1e-10 ? 1.0/Ainv : 1.0);
-            B[i]                    = vectorScalarMult<Dim>(m2invm1,-1.0);
-        }
-        
-        for(int i=0; i<npart; ++i)
-        {
-            tensorStruct *Hi = CreateTensorStruct<Dim>(input_support, i);
-            
-            double Hdet = determinant<Dim>(*Hi);
-            tensorStruct M = square<Dim>(*Hi);
-            
-            double weighti = *input_weight->GetTuple(i);
-            vector<double> extent(Dim);
-            
-            extent[0] = kernelExtent/Hdet*sqrt(M.yy);
-            extent[1] = kernelExtent/Hdet*sqrt(M.xx);
-            
-            double ri[3] = {0, 0, 0};
-            dset->GetPoint(i, ri);
-            
-            if(Dim==3)
-            {
-                extent[0] = kernelExtent/Hdet*sqrt(M.yy*M.zz - M.yz*M.zy);
-                extent[1] = kernelExtent/Hdet*sqrt(M.xx*M.zz - M.xz*M.zx);
-                extent[2] = kernelExtent/Hdet*sqrt(M.xx*M.yy - M.xy*M.yx);
+                input_var = dset->GetCellData()->GetArray(resampleVarName.c_str());
+                input_support = dset->GetCellData()->GetArray(supportVarName.c_str());
+                input_weight  = dset->GetCellData()->GetArray(weightVarName.c_str());
             }
             
-            double field = *input_var->GetTuple(i);
-            
-            // Compute the set of lattice positions this node contributes to.
-            const vector< vector<int> > ids = latticePoints<Dim>(ri, extent,
-                                                                 latticeMin, stepSizeAllDim, n);
-            
-            // Iterate over the lattice points.
-            for (vector< vector<int> >::const_iterator itr = ids.begin(); itr != ids.end(); ++itr)
+            for(int ii=0; ii<npart; ii++)
             {
-                // Compute the sample position and index into the lattice sample array.
-                vector<double> rj = latticePosition<Dim>(*itr, latticeMin, latticeMax, stepSizeAllDim);
-                const int j = latticeIndex(*itr, n);
-                const int idx = GetIndexFromLatticeIndex(j);
+                tensorStruct* Hi = CreateTensorStruct<Dim>(input_support, ii);
                 
-                // Contribution of the SPH point to this position.
-                vector<double> rij(Dim);
-                for(int k=0;k<Dim;++k)
-                    rij[k] = ri[k]-rj[k];
-                vector<double> etaVec(Dim);
-                etaVec            = tensorVectorMult<Dim>(*Hi,rij);
+                double Hdet = determinant<Dim>(*Hi);
+                tensorStruct M = square<Dim>(*Hi);
                 
-                const double etai = vectorMag<Dim>(etaVec);
+                double weighti = *input_weight->GetTuple(ii);
                 
-                //= (Hi*rij).magnitude();
-                const double Wi = avtSPHResampleFilter::kernelValue<Dim>(etai, Hdet);
-                const double thpt = weighti*Wi;
-                //scalarValues[j] += thpt * field;
-                if(RKcorrections)
-                    //scalarValues[j] += thpt * field * A[j] * (1.0+dotP<Dim>(B[j],rij));
-                    scalarValues[idx] += thpt * field * A[idx];
+                vector<double> extent(Dim);
+                if(Dim==3)
+                {
+                    extent[0] = KERNEL_EXTENT/Hdet*sqrt(M.yy*M.zz - M.yz*M.zy);
+                    extent[1] = KERNEL_EXTENT/Hdet*sqrt(M.xx*M.zz - M.xz*M.zx);
+                    extent[2] = KERNEL_EXTENT/Hdet*sqrt(M.xx*M.yy - M.xy*M.yx);
+                }
                 else
-                    scalarValues[idx] += thpt * field;
-                //printf("SPH=%3.2e RK=%3.2e\n",thpt * field,thpt * field * (1.0 + A[j] * (1.0+dotP<Dim>(B[j],rij))));
+                {
+                    extent[0] = KERNEL_EXTENT/Hdet*sqrt(M.yy);
+                    extent[1] = KERNEL_EXTENT/Hdet*sqrt(M.xx);
+                }
+                
+                double ri[3] = {0, 0, 0};
+                dset->GetPoint(ii, &ri[0]);
+                
+                // Compute the set of lattice ids this node contributes to.
+                const vector< vector<int> > ids = latticePoints<Dim>(ri, extent, globalLatticeMin, stepXYZ, globalGridCells);
+                
+                double field = *input_var->GetTuple(ii);
+                
+                // Iterate over the lattice points.
+                for (vector< vector<int> >::const_iterator itr = ids.begin(); itr != ids.end(); ++itr)
+                {
+                    // Compute the sample position and index into the lattice sample array.
+                    vector<double> rj = latticePosition<Dim>(*itr, globalLatticeMin, stepXYZ);
+                    const int j = latticeIndex(*itr, globalGridCells);
+                    int localj = GetLocalIndex(data[i], j);
+                    
+                    // Contribution of the SPH point to this position.
+                    vector<double> rij(Dim);
+                    for(int k=0;k<Dim;++k)
+                    {
+                        rij[k] = ri[k]-rj[k];
+                    }
+                    
+                    vector<double> etaVec(Dim);
+                    etaVec            = tensorVectorMult<Dim>(*Hi,rij);
+                    
+                    const double etai = vectorMag<Dim>(etaVec);
+                    
+                    //= (Hi*rij).magnitude();
+                    const double Wi = avtSPHResampleFilter::kernelValue<Dim>(etai, Hdet);
+                    const double thpt = weighti*Wi;
+                    
+                    if(localj >= 0)
+                    {
+                        data[i].scalarValues[localj] += thpt * field * data[i].A[localj];
+                    }
+                    else
+                    {
+                        int idx = GetGhostCellIndex(data[i].ghostCells, j);
+                        
+                        if(idx >= 0)
+                        {
+                            data[i].ghostCells[idx].value += thpt * field * data[i].ghostCells[idx].A;
+                        }
+                        else    // Should never get here
+                        {
+                            EXCEPTION1(VisItException, "Couldn't find a Ghost Cell that should exist");
+                        }
+                    }
+                }
+                delete Hi;
+            }   // for(npart)
+        } // for(data.size())
+    } // End if(atts.GetRPK())
+    else
+    {
+        if(isParticipating)
+        {
+            // Compute Scalar Values without RPK Corrections
+            double bounds[6];
+            dset->GetBounds(bounds);
+            
+            GetDimensions(gridCells, latticeMin, latticeMax, stepXYZ, bounds);
+            totalCells = Dim == 3 ? gridCells[0]*gridCells[1]*gridCells[2] : gridCells[0]*gridCells[1];
+            
+            debug5 << "Sampling to " << totalCells << " cells..." << endl;
+            
+            sphData currentData = sphData(totalCells, Dim);
+            currentData.dset = dset;
+            
+            currentData.indices[0] = max(0, int(floor((latticeMin[0] - globalLatticeMin[0]) / stepXYZ[0])));
+            currentData.indices[1] = currentData.indices[0] + gridCells[0];
+            
+            currentData.indices[2] = max(0, int(floor((latticeMin[1] - globalLatticeMin[1]) / stepXYZ[1])));;
+            currentData.indices[3] = currentData.indices[2] + gridCells[1];
+            
+            if(Dim == 3)
+            {
+                currentData.indices[4] = max(0, int(floor((latticeMin[2] - globalLatticeMin[2]) / stepXYZ[2])));;
+                currentData.indices[5] = currentData.indices[4] + gridCells[2];
             }
             
-            delete Hi;
-        }
-        
-        // Cleanup Memory
-        if(nsets > 1) {
-            appender->Delete();
-        }
+            // Get Input Variables
+            vtkDataArray *input_var = dset->GetPointData()->GetArray(resampleVarName.c_str());
+            vtkDataArray *input_support = NULL;
+            vtkDataArray *input_weight = NULL;
+            
+            if(input_var != NULL) {
+                input_support = dset->GetPointData()->GetArray(supportVarName.c_str());
+                input_weight  = dset->GetPointData()->GetArray(weightVarName.c_str());
+            } else {
+                input_var = dset->GetCellData()->GetArray(resampleVarName.c_str());
+                input_support = dset->GetCellData()->GetArray(supportVarName.c_str());
+                input_weight  = dset->GetCellData()->GetArray(weightVarName.c_str());
+            }
+            
+            CheckInputVariables(input_var, input_support, input_weight);
+            
+            vtkIdType npart = dset->GetNumberOfPoints();
+            
+            // Compute Scalar Values
+            for(int ii=0; ii<npart; ii++)
+            {
+                tensorStruct* Hi = CreateTensorStruct<Dim>(input_support, ii);
+                
+                double Hdet = determinant<Dim>(*Hi);
+                tensorStruct M = square<Dim>(*Hi);
+                
+                double weighti = *input_weight->GetTuple(ii);
+                
+                vector<double> extent(Dim);
+                if(Dim==3)
+                {
+                    extent[0] = KERNEL_EXTENT/Hdet*sqrt(M.yy*M.zz - M.yz*M.zy);
+                    extent[1] = KERNEL_EXTENT/Hdet*sqrt(M.xx*M.zz - M.xz*M.zx);
+                    extent[2] = KERNEL_EXTENT/Hdet*sqrt(M.xx*M.yy - M.xy*M.yx);
+                }
+                else
+                {
+                    extent[0] = KERNEL_EXTENT/Hdet*sqrt(M.yy);
+                    extent[1] = KERNEL_EXTENT/Hdet*sqrt(M.xx);
+                }
+                
+                double ri[3] = {0, 0, 0};
+                dset->GetPoint(ii, &ri[0]);
+                
+                // Compute the set of lattice ids this node contributes to.
+                const vector< vector<int> > ids = latticePoints<Dim>(ri, extent, globalLatticeMin, stepXYZ, globalGridCells);
+                
+                double field = *input_var->GetTuple(ii);
+                
+                // Iterate over the lattice points.
+                for (vector< vector<int> >::const_iterator itr = ids.begin();
+                     itr != ids.end();
+                     ++itr)
+                {
+                    // Compute the sample position and index into the lattice sample array.
+                    vector<double> rj = latticePosition<Dim>(*itr, globalLatticeMin, stepXYZ);
+                    const int j = latticeIndex(*itr, globalGridCells);
+                    int localj = GetLocalIndex(currentData, j);
+                    
+                    // Contribution of the SPH point to this position.
+                    vector<double> rij(Dim);
+                    for(int k=0;k<Dim;++k)
+                    {
+                        rij[k] = ri[k]-rj[k];
+                    }
+                    
+                    vector<double> etaVec(Dim);
+                    etaVec            = tensorVectorMult<Dim>(*Hi,rij);
+                    
+                    const double etai = vectorMag<Dim>(etaVec);
+                    
+                    //= (Hi*rij).magnitude();
+                    const double Wi = avtSPHResampleFilter::kernelValue<Dim>(etai, Hdet);
+                    const double thpt = weighti*Wi;
+                    
+                    if(localj >= 0)
+                    {
+                        currentData.globalLatticeIndices[localj] = j;
+                        currentData.scalarValues[localj] += thpt * field;
+                    }
+                    else
+                    {
+                        int idx = GetGhostCellIndex(currentData.ghostCells, j);
+                        
+                        if(idx >= 0)
+                        {
+                            currentData.ghostCells[idx].value += thpt * field;
+                        }
+                        else
+                        {
+                            ghostCell gc(Dim);
+                            
+                            gc.globalLatticeIdx = j;
+                            gc.value += thpt * field;
+                            
+                            currentData.ghostCells.push_back(gc);
+                        }
+                    }
+                }
+                delete Hi;
+            }   // for(npart)
+            data.push_back(currentData);
+        }   // End isParticipating
+    } // End Else
+    
+    // Synchronize scalar values
+    if(data.size() > 0)
+    {
+        SynchScalars(data[0]);
     }
     else
-    {           // For processors without any datasets
-        int myRank = PAR_Rank();
-        
-        vector<int> latticeIndexList(1, 0);
-        scalarValues.resize(1, 0.0);
-        
-        vector<double> m0(1, 0.0);  // moments of data points
-        vector<double> m1(Dim, 0.0); // data points?
-        vector<double> m2(9, 0.0);
-        
-        vector<int> i_latticeIndexList;
-        vector<double> i_m0;
-        
-        for(int root=0; root<PAR_Size(); root++) {
-            if(myRank == root) {
-                // Send lattice indices
-                BroadcastIntVectorFromAny(latticeIndexList, root, root);
-                // Send m0
-                BroadcastDoubleVectorFromAny(m0, root, root);
-                // Send m1
-                BroadcastDoubleArrayFromAny(&m1[0], Dim, root);
-                // Send m2
-                BroadcastDoubleArrayFromAny(&m2[0], 9, root);
-            } else {
-                // Receive lattice indices
-                BroadcastIntVectorFromAny(i_latticeIndexList, myRank, root);
-                
-                int ntot = i_latticeIndexList.size();
-                
-                // Receive m0
-                BroadcastDoubleVectorFromAny(i_m0, myRank, root);
-                i_m0.erase(i_m0.begin(), i_m0.end());
-                // Receive m1
-                double *temp_m1 = new double[Dim*ntot];
-                BroadcastDoubleArrayFromAny(temp_m1, Dim*ntot, root);
-                delete [] temp_m1;
-                // Receive m2
-                double *temp_m2 = new double[ntot*9];
-                BroadcastDoubleArrayFromAny(temp_m2, ntot*9, root);
-                delete [] temp_m2;
-            }
-        }
-        
-        i_latticeIndexList.erase(i_latticeIndexList.begin(), i_latticeIndexList.end());
+    {
+        sphData fakeData(0, Dim);
+        SynchScalars(fakeData);
     }
+    
+    if(appender != NULL)
+    {
+        appender->Delete();
+    }
+    
+    visitTimer->StopTimer(timerHandle, "avtSPHResample::Sample");
 }
 
 // ****************************************************************************
-//  Method: avtSPHResampleFilter::ExecuteData
+//  Method: avtSPHResampleFilter::Execute
 //
 //  Purpose:
 //      Sends the specified input and output through the SPHResample filter.
-//
-//  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
 //
 //  Returns:       The output dataset.
 //
@@ -1640,195 +1626,68 @@ avtSPHResampleFilter::Sample(vector<double>& scalarValues)
 //  Kevin Griffin, Mon Jan 4 17:51:20 PST 2016
 //  Added a check for cell-centered data.
 //
+//  Kevin Griffin, Tue Jun 21 13:09:21 PDT 2016
+//  Reimplemented to work better in parallel and scale in memory
+//
 // ****************************************************************************
 void
 avtSPHResampleFilter::Execute()
 {
-     cellCentered = (GetInput()->GetInfo().GetAttributes().GetCentering() == AVT_ZONECENT) ? true : false;
-    
-    if(!atts.GetMemScale()) { // Non-Memory Scaling
-        ExecuteNMS();
-    }
-    else {
 #ifndef PARALLEL
-        ExecuteNMS();
-        return;
+    ExecuteNMS();
+    return;
 #endif
-        const int myRank = PAR_Rank();
-        int parSize = PAR_Size();
-        vector<double> vectorofScalars;
-        std::string varname = resampleVarName;
-        //    int var_ncomps = GetInput()->GetInfo().GetAttributes().GetVariableDimension(varname.c_str());
+    
+    vector<sphData> vectorOfSPHData;
+    
+    avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
+    nDim = inAtts.GetSpatialDimension();
         
-        avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
-        nDim = inAtts.GetSpatialDimension();
+    if(nDim==3)
+    {
+        avtSPHResampleFilter::Sample<3>(vectorOfSPHData);
+    }
+    else
+    {
+        avtSPHResampleFilter::Sample<2>(vectorOfSPHData);
+    }
+
+    int size = vectorOfSPHData.size();
+    
+    if(size > 0)
+    {
+        vtkDataSet *dset = vectorOfSPHData[0].dset;
         
-        if(atts.GetRK())
-            RKcorrections=1.0;
-        else
-            RKcorrections=0.0;
+        double bounds[6];
+        dset->GetBounds(bounds);
         
-        if(nDim==3)
+        int sampledPointsSize = vectorOfSPHData[0].scalarValues.size();
+        
+        // create output data array
+        vtkDoubleArray *out_var = vtkDoubleArray::New();
+        out_var->SetName(resampleVarName.c_str());
+        out_var->SetNumberOfTuples(sampledPointsSize);
+        out_var->SetNumberOfComponents(1);
+        
+        for(int j=0; j<sampledPointsSize; j++)
         {
-            parSize = parSize <= atts.GetZnum() ? parSize : atts.GetZnum();
-            avtSPHResampleFilter::Sample<3>(vectorofScalars);
-        }
-        else
-        {
-            parSize = parSize <= atts.GetYnum() ? parSize : atts.GetYnum();
-            avtSPHResampleFilter::Sample<2>(vectorofScalars);
+            out_var->SetTuple1(j, vectorOfSPHData[0].scalarValues[j]);
         }
         
-        double dx = (atts.GetMaxX() - atts.GetMinX()) / atts.GetXnum();
-        double dy = (atts.GetMaxY() - atts.GetMinY()) / atts.GetYnum();
-        double dz = (nDim == 3) ? (atts.GetMaxZ() - atts.GetMinZ()) / atts.GetZnum() : 0.0;
+        vtkDataSet *out_dset = CreateOutputGrid(bounds, GetStepSizeXYZ());
+        out_dset->GetCellData()->AddArray(out_var);
+        out_dset->GetCellData()->SetActiveScalars(out_var->GetName());
+        out_var->Delete();
         
-        //    cout << "dy = " << dy << endl;
-        
-        int l_dims[] = {0, 0, 0};
-        l_dims[0] = atts.GetXnum();
-        l_dims[1] = (nDim == 2) ? (atts.GetYnum() / parSize) : atts.GetYnum();
-        l_dims[2] = (nDim == 3) ? (atts.GetZnum() / parSize) : 1;
-        
-        if(myRank == (parSize-1)) {
-            if(nDim == 2) {
-                l_dims[1] += atts.GetYnum() - (l_dims[1]*parSize);
-            } else {
-                l_dims[2] += atts.GetZnum() - (l_dims[2]*parSize);
-            }
-        }
-        
-        double l_xMin = atts.GetMinX();
-        double l_yMin = myRank != (parSize - 1) ? atts.GetMinY() + (myRank * l_dims[1] * dy)
-        : atts.GetMinY() + (myRank * (atts.GetYnum() / parSize) * dy);
-        double l_zMin = 0;
-        
-        if(nDim == 3) {
-            l_yMin = atts.GetMinY();
-            l_zMin = myRank != (parSize - 1) ? atts.GetMinZ() + (myRank * l_dims[2] * dz)
-            : atts.GetMinZ() + (myRank * (atts.GetZnum() / parSize) * dz);
-        }
-        
-        // Allows separate datasets to line-up
-        if(nDim == 2) {
-            l_dims[1] += 1; // Create overlap so datasets can merge correctly
-        } else {
-            l_dims[2] += 1;
-        }
-        
-        const int l_ntot = l_dims[0] * l_dims[1] * l_dims[2];
-        //    cout << "l_ntot = " << l_ntot << endl;
-        
-#ifdef PARALLEL
-        //    cout << "P" << myRank << " Started Parallel Section 2" << endl;
-        // This processors original scalar values
-        vector<double> m_vectorofScalars(vectorofScalars.begin(), vectorofScalars.end());
-        
-        vectorofScalars.erase(vectorofScalars.begin(), vectorofScalars.end());
-        vectorofScalars.resize(l_ntot, 0.0);
-        
-        // Data Exchanges
-        vector<double> i_vectorofScalars;
-        vector<int> i_latticeIndexList;
-        int minIndex = 0;
-        int maxIndex = 0;
-        
-        for(int root=0; root<PAR_Size(); root++) {
-            // Send the list of lattice indices
-            if(myRank == root) {
-                vector<int> latticeIndexList(latticeIndexMap.size());
-                for(std::map<int,int>::iterator itr=latticeIndexMap.begin(); itr!=latticeIndexMap.end(); itr++) {
-                    latticeIndexList[itr->second] = itr->first;
-                }
-                BroadcastIntVectorFromAny(latticeIndexList, root, root);
-            } else {
-                BroadcastIntVectorFromAny(i_latticeIndexList, myRank, root);
-            }
-            
-            // Broadcast Scalar Values
-            if(myRank == root) {
-                BroadcastDoubleVectorFromAny(m_vectorofScalars, root, root);
-                
-                if(myRank < parSize) {
-                    GetLocalMinMaxIndex(l_dims, minIndex, maxIndex, nDim, parSize);
-                    
-                    for(std::map<int,int>::iterator itr=latticeIndexMap.begin(); itr!=latticeIndexMap.end(); itr++) {
-                        if(itr->first >= minIndex && itr->first < maxIndex) {
-                            int localIndex = itr->first - minIndex;
-                            vectorofScalars[localIndex] += m_vectorofScalars[itr->second];
-                        }
-                    }
-                }
-                
-                m_vectorofScalars.erase(m_vectorofScalars.begin(), m_vectorofScalars.end());
-                
-            } else {
-                BroadcastDoubleVectorFromAny(i_vectorofScalars, myRank, root);
-                
-                if(myRank < parSize) {
-                    GetLocalMinMaxIndex(l_dims, minIndex, maxIndex, nDim, parSize);
-                    
-                    for(unsigned int i=0; i<i_latticeIndexList.size(); i++) {
-                        if(i_latticeIndexList[i] >= minIndex && i_latticeIndexList[i] < maxIndex) {
-                            int localIndex = i_latticeIndexList[i] - minIndex;
-                            vectorofScalars[localIndex] += i_vectorofScalars[i];
-                        }
-                    }
-                }
-            }
-        }
-        
-        i_latticeIndexList.erase(i_latticeIndexList.begin(), i_latticeIndexList.end());
-        i_vectorofScalars.erase(i_vectorofScalars.begin(), i_vectorofScalars.end());
-        //    cout << "P" << myRank << " Ended Parallel Section 2" << endl;
-        
-#else
-        // For a single processor need to put scalars in the correct position
-        vector<double> m_vectorofScalars(vectorofScalars.begin(), vectorofScalars.end());
-        
-        vectorofScalars.erase(vectorofScalars.begin(), vectorofScalars.end());
-        vectorofScalars.resize(l_ntot, 0.0);
-        
-        for(std::map<int,int>::iterator itr=latticeIndexMap.begin(); itr!=latticeIndexMap.end(); itr++) {
-            vectorofScalars[itr->first] = m_vectorofScalars[itr->second];
-        }
-        
-#endif
-        
-        if(myRank < parSize) {
-            vtkDoubleArray *out_var = vtkDoubleArray::New();
-            out_var->SetName(varname.c_str());
-            out_var->SetNumberOfTuples(l_ntot);
-            out_var->SetNumberOfComponents(1);
-            
-            // Initialize Data Array
-            for(unsigned int i=0; i<l_ntot; i++)
-            {
-                out_var->SetTuple1(i, vectorofScalars[i]);
-            }
-            
-            vtkRectilinearGrid *out_dset = CreateLocalOutputGrid(l_xMin, l_yMin, l_zMin, dx, dy, dz, l_dims);
-            
-            if(!cellCentered)
-            {
-                out_dset->GetPointData()->AddArray(out_var);
-                out_dset->GetPointData()->SetActiveScalars(out_var->GetName());
-            }
-            else
-            {
-                out_dset->GetCellData()->AddArray(out_var);
-                out_dset->GetCellData()->SetActiveScalars(out_var->GetName());
-            }
-            
-            out_var->Delete();
-            
-            avtDataTree_p out_tree = new avtDataTree(out_dset, 0);
-            out_dset->Delete();
-            SetOutputDataTree(out_tree);
-        } else {
-            avtDataTree_p dummy = new avtDataTree();
-            SetOutputDataTree(dummy);
-        }
+        avtDataTree_p out_tree = new avtDataTree(out_dset, 0);
+        SetOutputDataTree(out_tree);
+        out_dset->Delete();
+    }
+    else
+    {
+        debug5 << "Sending dummy data" << endl;
+        avtDataTree_p dummy = new avtDataTree();
+        SetOutputDataTree(dummy);
     }
 }
 
@@ -1838,10 +1697,6 @@ avtSPHResampleFilter::Execute()
 //  Purpose:
 //      Sends the specified input and output through the SPHResample filter.
 //
-//  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
 //
 //  Returns:       The output dataset.
 //
@@ -1852,24 +1707,17 @@ avtSPHResampleFilter::Execute()
 //  Kevin Griffin, Mon Jan 4 17:51:20 PST 2016
 //  Added a check for cell-centered data.
 //
+//  Kevin Griffin, Wed May 25 14:38:01 PDT 2016
+//  Removed the check for cell-centered data. Cleaned-up the code.
+//
 // ****************************************************************************
 void
 avtSPHResampleFilter::ExecuteNMS()
 {
     vector<double> vectorofScalars;
-    std::string varname = resampleVarName;
-    int var_ncomps = GetInput()->GetInfo().GetAttributes().GetVariableDimension(varname.c_str());
     
     avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
     nDim = inAtts.GetSpatialDimension();
-    
-    if(atts.GetRK())
-        RKcorrections=1.0;
-    else
-        RKcorrections=0.0;
-    
-    //    bool num_input_vars = GetInput()->GetInfo().GetAttributes().GetNumberOfVariables();
-    //    for most plots -- we expect at least 2 vars, one input var and one support tensor.
     
     if(nDim==3)
     {
@@ -1881,205 +1729,391 @@ avtSPHResampleFilter::ExecuteNMS()
     }
     
     int sampledPointsSize = vectorofScalars.size();
+    std::string varname = resampleVarName;
     
-#ifdef PARALLEL
-    if(PAR_Rank() == 0)
+    // create output data array
+    vtkDoubleArray *out_var = vtkDoubleArray::New();
+    out_var->SetName(varname.c_str());
+    out_var->SetNumberOfTuples(sampledPointsSize);
+    out_var->SetNumberOfComponents(1);
+        
+    for(int i=0;i<sampledPointsSize;i++)
     {
-        SumDoubleArrayInPlace(vectorofScalars.data(), sampledPointsSize);
+        out_var->SetTuple1(i,vectorofScalars[i]);
     }
-    else
-    {
-        double *recvBuf = new double[sampledPointsSize];
-        SumDoubleArray(vectorofScalars.data(), recvBuf, sampledPointsSize);
-        delete [] recvBuf;
-    }
-#endif
     
-    if(PAR_Rank() == 0)
-    {
-        debug5 << sampledPointsSize << " sampled points" << endl;
-        
-        // create output data array
-        vtkDoubleArray *out_var = vtkDoubleArray::New();
-        out_var->SetName(varname.c_str());
-        out_var->SetNumberOfTuples(sampledPointsSize);
-        out_var->SetNumberOfComponents(var_ncomps);
-        
-        for(int i=0;i<sampledPointsSize;i++)
-        {
-            out_var->SetTuple1(i,vectorofScalars[i]);
-        }
-        
-        vtkRectilinearGrid *out_dset = CreateOutputGrid();
-        
-        if(!cellCentered)
-        {
-            out_dset->GetPointData()->AddArray(out_var);
-            out_dset->GetPointData()->SetActiveScalars(out_var->GetName());
-        }
-        else
-        {
-            out_dset->GetCellData()->AddArray(out_var);
-            out_dset->GetCellData()->SetActiveScalars(out_var->GetName());
-        }
-        
-        out_var->Delete();
-        
-        avtDataTree_p out_tree = new avtDataTree(out_dset, 0);
-        out_dset->Delete();
-        SetOutputDataTree(out_tree);
-    }
-    else
-    {
-        avtDataTree_p dummy = new avtDataTree();
-        SetOutputDataTree(dummy);
-    }
+    double bounds[6] = {atts.GetMinX(), atts.GetMaxX(), atts.GetMinY(), atts.GetMaxY(), atts.GetMinZ(), atts.GetMaxZ()};
+    
+    vtkRectilinearGrid *out_dset = CreateOutputGrid(bounds, GetStepSizeXYZ());
+    out_dset->GetCellData()->AddArray(out_var);
+    out_dset->GetCellData()->SetActiveScalars(out_var->GetName());
+    out_var->Delete();
+    
+    avtDataTree_p out_tree = new avtDataTree(out_dset, 0);
+    out_dset->Delete();
+    SetOutputDataTree(out_tree);
 }
 
 // ****************************************************************************
-// Method:  avtSPHResampleFilter::GetLocalMinMaxIndex
+// Method:  avtSPHResampleFilter::GetParticipatingIndices
 //
-// Purpose: Get the min and max indices covered by this processor's portion
-//          of the output grid.
+// Purpose: Determines the indices of the datasets that need to be processed.
+//          Potentially, not all of the datasets will need to be processed if
+//          the user selects a subset of the data to resample.
 //
 // Arguments:
-//      dims    The x,y,z dimensions
-//      min     An output variable for the minimum index
-//      max     An output variable for the maximum index
-//      dim     The grid dimensionality
-//      size    The number of processors helping to compute the output grid
-//
+//      dsets   The datasets that this rank has
+//      nsets   The number of datasets
 //
 // Programmer:  Kevin Griffin
-// Creation:    Tue Aug 25 18:01:32 PDT 2015
+// Creation:    Tue Jun 21 16:37:00 PDT 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+vector<int>
+avtSPHResampleFilter::GetParticipatingIndices(vtkDataSet **dsets, const int nsets)
+{
+    vector<int> partIdx;
+    bool good;
+    double bounds[6];
+    
+    double latticeMinXYZ[3] = {atts.GetMinX(), atts.GetMinY(), nDim == 3 ? atts.GetMinZ() : 0};
+    double latticeMaxXYZ[3] = {atts.GetMaxX(), atts.GetMaxY(), nDim == 3 ? atts.GetMaxZ() : 1};
+    
+    for(int j=0; j<nsets; j++)
+    {
+        good = true;
+        dsets[j]->GetBounds(bounds);
+        
+        for(int i=0; i<nDim; i++)
+        {
+            int offset = i*2;
+            if( (latticeMinXYZ[i] > bounds[offset+1]) || (latticeMaxXYZ[i] < bounds[offset]) )
+            {
+                good = false;
+                break;
+            }
+        }
+        
+        if(good)
+        {
+            partIdx.push_back(j);
+        }
+    }
+    
+    return partIdx;
+}
+
+// ****************************************************************************
+// Method:  avtSPHResampleFilter::SynchScalars
+//
+// Purpose: Perform a sum reduction of the scalar values across all ranks.
+//
+// Arguments:
+//      data  The SPH data containing this rank's scalar values
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu Jun 16 19:07:57 PDT 2016
+//
+//  Modifications:
 //
 // ****************************************************************************
 void
-avtSPHResampleFilter::GetLocalMinMaxIndex(const int dims[], int &min, int &max, const int dim, const int size) {
+avtSPHResampleFilter::SynchScalars(sphData &data)
+{
     int myRank = PAR_Rank();
-    int parSize = size;
-    int dimY = dims[1] - 1; // Remove overlap for min calculation
-    int dimZ = dims[2] - 1; // Remove overlap for min calculation
     
-    if(dim == 2) {
-        if(myRank != (parSize - 1)) {
-            min = myRank * dims[0] * dimY;
-        } else {
-            min = myRank * dims[0] * (atts.GetYnum() / parSize);
-        }
+    // Collect all the ghost cell data that need to be synchronized
+    // Need to be done before values are updated
+    vector<double> o_scalars;
+    vector<int> o_latticeIndices;
+    
+    vector<ghostCell> ghostCells = data.ghostCells;
+    
+    for(int j=0; j<ghostCells.size(); j++)
+    {
+        o_latticeIndices.push_back(ghostCells[j].globalLatticeIdx);
+        o_scalars.push_back(ghostCells[j].value);
+    }
+    
+    vector<double> values = data.scalarValues;
+    
+    for(int j=0; j<values.size(); j++)
+    {
+        int glIdx = data.globalLatticeIndices[j];
         
-        max = min + (dims[0] * dims[1]);
-    } else if(dim == 3) {
-        if(myRank != (parSize - 1)) {
-            min = myRank * (dims[0] * dims[1] * dimZ);
-        } else {
-            min = myRank * (dims[0] * dims[1] * (atts.GetZnum() / parSize));
+        o_latticeIndices.push_back(glIdx);
+        o_scalars.push_back(values[j]);
+    }
+    
+    vector<double> i_scalars;
+    vector<int> i_latticeIndices;
+    
+    for(int root=0; root<PAR_Size(); root++)
+    {
+        if(myRank == root)
+        {
+            int idxTot = o_latticeIndices.size();
+            
+            if(idxTot == 0)
+            {
+                o_latticeIndices.push_back(-1);
+            }
+            
+            // Send the list of ghost lattice cell indices this rank has
+            BroadcastIntVectorFromAny(o_latticeIndices, myRank, root);
+            
+            if(idxTot > 0)
+            {
+                // Send scalars
+                BroadcastDoubleVectorFromAny(o_scalars, myRank, root);
+            }
         }
-        
-        max = min + (dims[0] * dims[1] * dims[2]);
+        else    // Receive ghost cells
+        {
+            // Ghost Cell Global Lattice Indices
+            BroadcastIntVectorFromAny(i_latticeIndices, myRank, root);
+            
+            if(i_latticeIndices[0] != -1)
+            {
+                // Receive scalars
+                BroadcastDoubleVectorFromAny(i_scalars, myRank, root);
+                
+                // Update scalar values
+                for(int j=0; j<i_latticeIndices.size(); j++)
+                {
+                    int localIdx = GetLocalIndex(data, i_latticeIndices[j]);
+                    if(localIdx >= 0)
+                    {
+                        data.scalarValues[localIdx] += i_scalars[j];
+                    }
+                    else
+                    {
+                        int gcIdx = GetGhostCellIndex(data.ghostCells, i_latticeIndices[j]);
+                        if(gcIdx >= 0)
+                        {
+                            data.ghostCells[gcIdx].value += i_scalars[j];
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
 // ****************************************************************************
-// Method:  avtSPHResampleFilter::CreateLocalOutputGrid
+// Method:  avtSPHResampleFilter::SynchMoments
 //
-// Purpose: Create this processor's portion of the output grid.
+// Purpose: Perform a sum reduction of the moments across all ranks.
 //
 // Arguments:
-//      l_xmin  Minimum x value for this portion of the output grid
-//      l_ymin  Minimum y value for this portion of the output grid
-//      l_zmin  Minimum z value for this portion of the output grid
-//      dx      The step size along the x-axis
-//      dy      The step size along the y-axis
-//      dz      The step size along the z-axis
-//      dims    The x,y,z dimensions
-//
-// Returns: Part of the output grid
+//      data  The SPH data containing this rank's moment values
 //
 // Programmer:  Kevin Griffin
-// Creation:    Tue Aug 25 18:01:32 PDT 2015
+// Creation:    Thu Jun 16 19:07:57 PDT 2016
 //
 //  Modifications:
-//  Kevin Griffin, Mon Jan 4 17:51:20 PST 2016
-//  Changed return type to vtkRectilinearGrid and added a check for cell
-//  centered data.
 //
 // ****************************************************************************
-vtkRectilinearGrid *
-avtSPHResampleFilter::CreateLocalOutputGrid(const double l_xmin, const double l_ymin, const double l_zmin,
-                                            const double dx, const double dy, const double dz, int dims[])
+void
+avtSPHResampleFilter::SynchMoments(sphData &data)
 {
-    vtkRectilinearGrid *out_dset = vtkRectilinearGrid::New();
-    out_dset->SetDimensions(dims);
+    int myRank = PAR_Rank();
     
-    // create the xcoords
-    vtkDoubleArray *out_xcoords = vtkDoubleArray::New();
-    out_xcoords->SetNumberOfTuples(dims[0]);
-    out_xcoords->SetNumberOfComponents(1);
+    vector<double> o_m0;
+    vector<vector<double> > o_m1;
+    vector<tensorStruct> o_m2;
+    vector<int> o_latticeIndices;
     
-    for(int i=0; i<dims[0]; i++)
+    // Collect all the data that need to be synchronized
+    vector<ghostCell> ghostCells = data.ghostCells;
+    
+    for(int j=0; j<ghostCells.size(); j++)
     {
-        double val = cellCentered ? (l_xmin + i * dx + dx/2.0) : (l_xmin + i * dx);
-        out_xcoords->SetTuple1(i,val);
+        o_latticeIndices.push_back(ghostCells[j].globalLatticeIdx);
+        o_m0.push_back(ghostCells[j].m0);
+        o_m1.push_back(ghostCells[j].m1);
+        o_m2.push_back(ghostCells[j].m2);
     }
     
-    out_dset->SetXCoordinates(out_xcoords);
-    out_xcoords->Delete();
+    for(int j=0; j<data.totalCells; j++) {
+        o_latticeIndices.push_back(data.globalLatticeIndices[j]);
+        o_m0.push_back(data.m0[j]);
+        o_m1.push_back(data.m1[j]);
+        o_m2.push_back(data.m2[j]);
+    }
     
-    // create the ycoords
-    vtkDoubleArray *out_ycoords = vtkDoubleArray::New();
-    out_ycoords->SetNumberOfComponents(1);
+    vector<double> i_m0;
+    vector<vector<double> > i_m1;
+    vector<tensorStruct> i_m2;
+    vector<int> i_latticeIndices;
     
-    if(dims[1] > 1)
+    for(int root=0; root<PAR_Size(); root++)
     {
-        out_ycoords->SetNumberOfTuples(dims[1]);
-        
-        for(int i=0; i<dims[1]; i++)
+        if(myRank == root)
         {
-            double val = cellCentered ? (l_ymin + i * dy + dy/2.0) : (l_ymin + i * dy);
-            out_ycoords->SetTuple1(i,val);
+            int idxTot = o_latticeIndices.size();
+           
+            if(idxTot == 0) {
+                o_latticeIndices.push_back(-1);
+            }
+            
+            // Send the list of ghost lattice cell indices this rank has
+            BroadcastIntVectorFromAny(o_latticeIndices, myRank, root);
+            
+            if(idxTot > 0)
+            {
+                // Send m0
+                BroadcastDoubleVectorFromAny(o_m0, myRank, root);
+                
+                // Send m1
+                double *m1Array = new double[nDim*idxTot];
+                for(int i=0; i<idxTot; i++)
+                {
+                    for(int j=0; j<nDim; j++)
+                    {
+                        m1Array[i+nDim+j] = o_m1[i].at(j);
+                    }
+                }
+                
+                BroadcastDoubleArrayFromAny(m1Array, idxTot*nDim, root);
+                delete [] m1Array;
+                
+                // Send m2
+                BroadcastDoubleArrayFromAny(&o_m2[0].xx, idxTot*9, root);
+            }
         }
-    }
-    else
-    {
-        out_ycoords->SetNumberOfTuples(1);
-        out_ycoords->SetNumberOfComponents(1);
-        out_ycoords->SetTuple1(0,l_ymin);
-    }
+        else    // Receive ghost cells
+        {
+            // Ghost Cell Global Lattice Indices
+            BroadcastIntVectorFromAny(i_latticeIndices, myRank, root);
+            int idxTot = i_latticeIndices.size();
+            
+            if(i_latticeIndices[0] != -1)
+            {
+                // Receive m0
+                BroadcastDoubleVectorFromAny(i_m0, myRank, root);
+                
+                // Receive m1
+                double *temp_m1 = new double[nDim*idxTot];
+                i_m1.resize(idxTot);
+                
+                BroadcastDoubleArrayFromAny(temp_m1, idxTot*nDim, root);
+                
+                for(int i=0; i<idxTot; i++)
+                {
+                    vector<double> m1Val;
+                    
+                    for(int j=0; j<nDim; j++)
+                    {
+                        m1Val.push_back(temp_m1[i*nDim+j]);
+                    }
+                    
+                    i_m1[i] = m1Val;
+                }
+                
+                delete [] temp_m1;
+                
+                // Receive m2
+                i_m2.resize(9*idxTot);
+                BroadcastDoubleArrayFromAny(&i_m2[0].xx, 9*idxTot, root);
+                
+                // Update moment values
+                for(int j=0; j<i_latticeIndices.size(); j++)
+                {
+                    int localIdx = GetLocalIndex(data, i_latticeIndices[j]);
+                    if(localIdx >= 0)
+                    {
+                        data.m0[localIdx] += i_m0[j];
+                        
+                        if(nDim == 2)
+                        {
+                            data.m1[localIdx] = vectorSum<2>(data.m1[localIdx], i_m1[j]);
+                            data.m2[localIdx] = tensorSum<2>(data.m2[localIdx], i_m2[j]);
+                        }
+                        else
+                        {
+                            data.m1[localIdx] = vectorSum<3>(data.m1[localIdx], i_m1[j]);
+                            data.m2[localIdx] = tensorSum<3>(data.m2[localIdx], i_m2[j]);
+                        }
+                    }
+                    else
+                    {
+                        int gcIdx = GetGhostCellIndex(data.ghostCells, i_latticeIndices[j]);
+                        
+                        if(gcIdx >= 0)
+                        {
+                            data.ghostCells[gcIdx].m0 += i_m0[j];
+                            
+                            if(nDim == 2)
+                            {
+                                data.ghostCells[gcIdx].m1 = vectorSum<2>(data.ghostCells[gcIdx].m1, i_m1[j]);
+                                data.ghostCells[gcIdx].m2 = tensorSum<2>(data.ghostCells[gcIdx].m2, i_m2[j]);
+                            }
+                            else
+                            {
+                                data.ghostCells[gcIdx].m1 = vectorSum<3>(data.ghostCells[gcIdx].m1, i_m1[j]);
+                                data.ghostCells[gcIdx].m2 = tensorSum<3>(data.ghostCells[gcIdx].m2, i_m2[j]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } // End For
+}
+
+void
+avtSPHResampleFilter::GetDimensions(vector<int> &dims, vector<double> &min, vector<double> &max, const vector<double> &steps, const double *const bounds)
+{
+    // X Dims
+    min[0] = (bounds[0] >= atts.GetMinX() && bounds[0] <= atts.GetMaxX()) ? bounds[0] : atts.GetMinX();
+    max[0] = (bounds[1] <= atts.GetMaxX() && bounds[1] >= atts.GetMinX()) ? bounds[1] : atts.GetMaxX();
+    dims[0] = int(ceil((max[0] - min[0]) / steps[0]));
     
-    out_dset->SetYCoordinates(out_ycoords);
-    out_ycoords->Delete();
+    // Y Dims
+    min[1] = (bounds[2] >= atts.GetMinY() && bounds[2] <= atts.GetMaxY()) ? bounds[2] : atts.GetMinY();
+    max[1] = (bounds[3] <= atts.GetMaxY() && bounds[3] >= atts.GetMinY()) ? bounds[3] : atts.GetMaxY();
+    dims[1] = int(ceil((max[1] - min[1]) / steps[1]));
     
-    // create the zcoords
-    vtkDoubleArray *out_zcoords = vtkDoubleArray::New();
-    out_zcoords->SetNumberOfComponents(1);
-    
+    // Z Dims
     if(nDim == 3)
     {
-        out_zcoords->SetNumberOfTuples(dims[2]);
+        min[2] = (bounds[4] >= atts.GetMinZ() && bounds[4] <= atts.GetMaxZ()) ? bounds[4] : atts.GetMinZ();
+        max[2] = (bounds[5] <= atts.GetMaxZ() && bounds[5] >= atts.GetMinZ()) ? bounds[5] : atts.GetMaxZ();
+        dims[2] = int(ceil((max[2] - min[2]) / steps[2]));
         
-        for(int i=0; i<dims[2]; i++)
+        if (dims[0] <= 0 || dims[1] <= 0 || dims[2] < 0)
         {
-            double val = cellCentered ? (l_zmin + i * dz + dz/2.0) : (l_zmin + i * dz);
-            out_zcoords->SetTuple1(i,val);
+            EXCEPTION1(VisItException, "The grid to SPHResample on is degenerate."
+                       "Make sure that the number of samples in each direction "
+                       "is positive.");
         }
+        
+        debug5 << "SPHResampling onto grid of dimensions: " << dims[0] << ", " << dims[1] << ", " << dims[2] << endl;
     }
     else
     {
-        out_zcoords->SetNumberOfTuples(1);
-        out_zcoords->SetTuple1(0, l_zmin);
+        if (dims[0] <= 0 || dims[1] <= 0)
+        {
+            EXCEPTION1(VisItException, "The grid to SPHResample on is degenerate."
+                       "Make sure that the number of samples in each direction "
+                       "is positive.");
+        }
+        
+        debug5 << "SPHResampling onto grid of dimensions: " << dims[0] << ", " << dims[1] << endl;
     }
-    
-    out_dset->SetZCoordinates(out_zcoords);
-    out_zcoords->Delete();
-    
-    return out_dset;
 }
 
 // ****************************************************************************
 // Method:  avtSPHResampleFilter::CreateOutputGrid
 //
 // Purpose: Map the sampled grid to the output grid.
+//
+// Arguments:
+//      bounds  The grid bounds
+//      steps The dimensions in each direction
 //
 //
 // Programmer:  Cody Raskin
@@ -2090,31 +2124,54 @@ avtSPHResampleFilter::CreateLocalOutputGrid(const double l_xmin, const double l_
 //  Changed return type to vtkRectilinear Grid and added a check for cell
 //  centered data.
 //
+//  Kevin Griffin, Fri May 27 16:20:35 PDT 2016
+//  Generalized the method by adding bounds and steps parameters.
+//
 // ****************************************************************************
+
 vtkRectilinearGrid *
-avtSPHResampleFilter::CreateOutputGrid()
+avtSPHResampleFilter::CreateOutputGrid(const double bounds[6], vector<double> steps)
 {
     vtkRectilinearGrid *out_dset = vtkRectilinearGrid::New();
+    vector<double> minXYZ(nDim, 0);
+    vector<double> maxXYZ(nDim, 0);
+    vector<int> dimVec(nDim, 0);
     
-    int dims[3]  = {0,0,0};
-    // get the dimensions from the input attributes
-    dims[0] = atts.GetXnum();
-    dims[1] = atts.GetYnum();
-    dims[2] = (nDim==3 ? atts.GetZnum() : 1);
+    GetDimensions(dimVec, minXYZ, maxXYZ, steps, bounds);
     
-    //    printf("x: %d y: %d z: %d\n", dims[0], dims[1], dims[2]);
+    int dims[3] = {0, 0, 1};
+    dims[0] = dimVec[0] + 1;
+    dims[1] = dimVec[1] + 1;
+    
+    // X Dims
+    double xmin = minXYZ[0];
+    
+    // Y Dims
+    double ymin = minXYZ[1];
+  
+    // Z Dims
+    double zmin = 0;
+    if(nDim == 3)
+    {
+        zmin = minXYZ[2];
+        dims[2] = dimVec[2] + 1;
+    }
+    
+    debug5 << "Output Grid - dim1: " << dims[0] << " dim2: " << dims[1] << " dims3: " << dims[2] << endl;
+    debug5 << "Output Grid - step1: " << steps[0] << " step2: " << steps[1] << " step3: " << steps[2] << endl;
+    
     out_dset->SetDimensions(dims);
-    
     
     // create the xcoords
     vtkDoubleArray *out_xcoords = vtkDoubleArray::New();
     out_xcoords->SetNumberOfTuples(dims[0]);
     out_xcoords->SetNumberOfComponents(1);
-    double xmin = atts.GetMinX();
-    double dx = (atts.GetMaxX() - xmin) / atts.GetXnum();
+    
+    double dx = steps[0];
+    
     for(int i=0;i<dims[0];i++)
     {
-        double val = cellCentered ? (xmin + i * dx + dx/2.0) : (xmin + i * dx);
+        double val = xmin + i * dx;
         out_xcoords->SetTuple1(i,val);
     }
     
@@ -2123,24 +2180,15 @@ avtSPHResampleFilter::CreateOutputGrid()
     
     // create the ycoords
     vtkDoubleArray *out_ycoords = vtkDoubleArray::New();
+    out_ycoords->SetNumberOfTuples(dims[1]);
     out_ycoords->SetNumberOfComponents(1);
-    double ymin = atts.GetMinY();
+
+    double dy = steps[1];
     
-    if(dims[1] > 1)
+    for(int i=0;i<dims[1];i++)
     {
-        out_ycoords->SetNumberOfTuples(dims[1]);
-        double dy = (atts.GetMaxY() - ymin) / atts.GetYnum();
-        for(int i=0;i<dims[1];i++)
-        {
-            double val = cellCentered ? (ymin + i * dy + dy/2.0) : (ymin + i * dy);
-            out_ycoords->SetTuple1(i,val);
-        }
-        
-    }
-    else
-    {
-        out_ycoords->SetNumberOfTuples(1);
-        out_ycoords->SetTuple1(0,ymin);
+        double val = ymin + i * dy;
+        out_ycoords->SetTuple1(i,val);
     }
     
     out_dset->SetYCoordinates(out_ycoords);
@@ -2149,16 +2197,15 @@ avtSPHResampleFilter::CreateOutputGrid()
     // create the zcoords
     vtkDoubleArray *out_zcoords = vtkDoubleArray::New();
     out_zcoords->SetNumberOfComponents(1);
-    double zmin = atts.GetMinZ();
     
     if(nDim == 3)
     {
         out_zcoords->SetNumberOfTuples(dims[2]);
-        double dz   = (atts.GetMaxZ() - zmin) / atts.GetZnum();
+        double dz   = steps[2];
         
         for(int i=0;i<dims[2];i++)
         {
-            double val = cellCentered ? (zmin + i * dz + dz/2.0) : (zmin + i * dz);
+            double val = zmin + i * dz;
             out_zcoords->SetTuple1(i,val);
         }
     }
@@ -2172,6 +2219,148 @@ avtSPHResampleFilter::CreateOutputGrid()
     out_zcoords->Delete();
     
     return out_dset;
+}
+
+// ****************************************************************************
+//  Method: avtSPHResampleFilter::GetLocalIndex
+//
+//  Purpose:
+//      Convert the global lattice index to the local lattice index. If the
+//      global lattice index is out of range for the local lattice -1 is
+//      is returned.
+//
+//  Arguments:
+//      data        The SPH data (moments, correction coefficients, etc)
+//      globalIdx   The global lattice index
+//
+//  Returns:        The local lattice index corresponding to the global lattice
+//                  index, otherwise -1
+//
+//  Programmer: Kevin Griffin
+//  Creation:   Thu May 26 16:20:35 PDT 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+int
+avtSPHResampleFilter::GetLocalIndex(const sphData &data, int globalIdx)
+{
+    if(nDim == 2)
+    {
+        int y = globalIdx / atts.GetXnum();
+        int x = globalIdx - (y * atts.GetXnum());
+        
+        if((x >= data.indices[0] && x < data.indices[1]) && (y >= data.indices[2] && y < data.indices[3]))
+        {
+            int localx = x - data.indices[0];
+            int localy = y - data.indices[2];
+            
+            int xNum = data.indices[1] - data.indices[0];
+            
+            int localIdx = localy * xNum + localx;
+            return localIdx;
+        }
+    }
+    else    // nDim == 3
+    {
+        int z = globalIdx / (atts.GetXnum() * atts.GetYnum());
+        int tempIdx = globalIdx - (z * atts.GetXnum() * atts.GetYnum());
+        int y =  tempIdx / atts.GetXnum();
+        int x = tempIdx % atts.GetXnum();
+        
+        if((x >= data.indices[0] && x < data.indices[1]) && (y >= data.indices[2] && y < data.indices[3]) && (z >= data.indices[4] && z < data.indices[5]))
+        {
+            int localx = x - data.indices[0];
+            int localy = y - data.indices[2];
+            int localz = z - data.indices[4];
+            
+            int yNum = data.indices[3] - data.indices[2];
+            int xNum = data.indices[1] - data.indices[0];
+            
+            int localIdx = localz * yNum * xNum + localy * xNum + localx;
+            return localIdx;
+        }
+    }
+    
+    return -1;
+}
+
+// ****************************************************************************
+//  Method: avtSPHResampleFilter::GetGhostCellIndex
+//
+//  Purpose:
+//      Find the index of the ghost cell with global lattice index equal to
+//      globalIdx.
+//
+//  Arguments:
+//      ghostCells  The list of ghost cells
+//      globalIdx   The global lattice index
+//
+//  Returns:       The index of the ghost cell in the list, otherwise -1
+//
+//  Programmer: Kevin Griffin
+//  Creation:   Thu May 26 16:20:35 PDT 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+int
+avtSPHResampleFilter::GetGhostCellIndex(const vector<ghostCell> &ghostCells,  int globalIdx)
+{
+    for(int i=0; i<ghostCells.size(); i++)
+    {
+        if(ghostCells[i].globalLatticeIdx == globalIdx)
+        {
+            return i;
+        }
+    }
+    
+    return -1;
+}
+
+// ****************************************************************************
+// Method:  avtSPHResampleFilter::CheckInputVariables
+//
+// Purpose: Check that the required variables exist and have the same centering.
+//
+// Arguments:
+//      var1    resample variable
+//      var2    support variable
+//      var3    weight variable
+//
+//
+// Programmer:  Kevin Griffin
+// Creation:    TWed May 25 14:38:01 PDT 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtSPHResampleFilter::CheckInputVariables(const vtkDataArray *const var1,
+                                          const vtkDataArray *const var2,
+                                          const vtkDataArray *const var3)
+{
+    std::string errMsg;
+    
+    if(var1 == NULL) {
+        errMsg.append(resampleVarName);
+        errMsg.append(" must exist and have the same centering");
+        EXCEPTION1(InvalidVariableException, errMsg);
+    }
+    
+    if(var2 == NULL) {
+        errMsg.clear();
+        errMsg.append(supportVarName);
+        errMsg.append(" must exist and have the same centering");
+        EXCEPTION1(InvalidVariableException, errMsg);
+    }
+    
+    if(var3 == NULL) {
+        errMsg.clear();
+        errMsg.append(weightVarName);
+        errMsg.append(" must exist and have the same centering");
+        EXCEPTION1(InvalidVariableException, errMsg);
+    }
 }
 
 // ****************************************************************************
@@ -2193,9 +2382,8 @@ avtContract_p
 avtSPHResampleFilter::ModifyContract(avtContract_p in_contract)
 {
     avtContract_p rv = new avtContract(in_contract);
-    // Turn off ghost data, since ghost data created upstream will not be pertinent
-    // after resampling.
     rv->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
+//    rv->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
     rv->NoStreaming();
     
     resampleVarName = std::string(rv->GetDataRequest()->GetVariable());
@@ -2211,11 +2399,7 @@ avtSPHResampleFilter::ModifyContract(avtContract_p in_contract)
     {
         weightVarName = "mass";
     }
-    
-//    debug5 << "Resample Variable Name: " << resampleVarName << endl;
-//    debug5 << "Tensor Support Variable Name: " << supportVarName << endl;
-//    debug5 << "Weight Variable Name: " << weightVarName << endl;
-    
+   
     debug5 << "Resample Variable Name: " << resampleVarName << endl;
     debug5 << "Tensor Support Variable Name: " << supportVarName << endl;
     debug5 << "Weight Variable Name: " << weightVarName << endl;
@@ -2276,10 +2460,10 @@ avtSPHResampleFilter::UpdateDataObjectInfo(void)
     int spatialDim = inAtts.GetSpatialDimension();
     
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
-//    GetOutput()->GetInfo().GetValidity().InvalidateNodes();
+    GetOutput()->GetInfo().GetValidity().InvalidateDataMetaData();
     outAtts.SetTopologicalDimension(spatialDim);
     
-    double bounds[6];
+    double bounds[6] = {0, 0, 0, 0, 0, 0};
     bounds[0] = atts.GetMinX();
     bounds[1] = atts.GetMaxX();
     bounds[2] = atts.GetMinY();
