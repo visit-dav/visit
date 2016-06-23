@@ -20,8 +20,11 @@ ds = data_path("silo_sph_test_data/KelvinHelmholtz-2d_McNally.visit")
 OpenDatabase(ds)
 
 AddPlot("Pseudocolor", "mass_density") 
-AddOperator("SPHResample")
+pc = PseudocolorAttributes()
+pc.centering = pc.Nodal
+SetPlotOptions(pc)
 
+AddOperator("SPHResample")
 SPHResampleAtts = SPHResampleAttributes()
 SPHResampleAtts.minX = 0
 SPHResampleAtts.maxX = 1
@@ -36,6 +39,7 @@ SPHResampleAtts.tensorSupportVariable = "H"
 SPHResampleAtts.weightVariable = "mass"
 SPHResampleAtts.RK = 1
 SetOperatorOptions(SPHResampleAtts, 1)
+
 DrawPlots()
 
 Test("sph_2d")
