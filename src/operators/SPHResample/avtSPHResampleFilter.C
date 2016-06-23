@@ -1128,7 +1128,7 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
         for(int i=0; i<nsets; i++)
         {
             // Merge data sets
-            appender->AddInputData(dynamic_cast<vtkPolyData *>(data_sets[i]));
+            appender->AddInputData(dynamic_cast<vtkPolyData *>(data_sets[partIdx[i]]));
         }
         
         appender->Update();
@@ -1166,6 +1166,12 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
                 
                 sphData currentData = sphData(totalCells, Dim);
                 currentData.dset = dset;
+                currentData.bounds[0] = bounds[0];
+                currentData.bounds[1] = bounds[1];
+                currentData.bounds[2] = bounds[2];
+                currentData.bounds[3] = bounds[3];
+                currentData.bounds[4] = bounds[4];
+                currentData.bounds[5] = bounds[5];
                 
                 currentData.indices[0] = max(0, int(floor((latticeMin[0] - globalLatticeMin[0]) / stepXYZ[0])));
                 currentData.indices[1] = currentData.indices[0] + gridCells[0];
@@ -1474,6 +1480,12 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
             
             sphData currentData = sphData(totalCells, Dim);
             currentData.dset = dset;
+            currentData.bounds[0] = bounds[0];
+            currentData.bounds[1] = bounds[1];
+            currentData.bounds[2] = bounds[2];
+            currentData.bounds[3] = bounds[3];
+            currentData.bounds[4] = bounds[4];
+            currentData.bounds[5] = bounds[5];
             
             currentData.indices[0] = max(0, int(floor((latticeMin[0] - globalLatticeMin[0]) / stepXYZ[0])));
             currentData.indices[1] = currentData.indices[0] + gridCells[0];
@@ -1586,6 +1598,7 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
                         }
                     }
                 }
+                
                 delete Hi;
             }   // for(npart)
             data.push_back(currentData);
@@ -1653,14 +1666,8 @@ avtSPHResampleFilter::Execute()
     }
 
     int size = vectorOfSPHData.size();
-    
     if(size > 0)
     {
-        vtkDataSet *dset = vectorOfSPHData[0].dset;
-        
-        double bounds[6];
-        dset->GetBounds(bounds);
-        
         int sampledPointsSize = vectorOfSPHData[0].scalarValues.size();
         
         // create output data array
@@ -1674,7 +1681,9 @@ avtSPHResampleFilter::Execute()
             out_var->SetTuple1(j, vectorOfSPHData[0].scalarValues[j]);
         }
         
-        vtkDataSet *out_dset = CreateOutputGrid(bounds, GetStepSizeXYZ());
+        vector<double> steps = GetStepSizeXYZ();
+        vtkDataSet *out_dset = CreateOutputGrid(vectorOfSPHData[0].bounds, steps);
+        
         out_dset->GetCellData()->AddArray(out_var);
         out_dset->GetCellData()->SetActiveScalars(out_var->GetName());
         out_var->Delete();
@@ -2064,6 +2073,24 @@ avtSPHResampleFilter::SynchMoments(sphData &data)
     } // End For
 }
 
+// ****************************************************************************
+// Method:  avtSPHResampleFilter::GetDimensions
+//
+// Purpose: Generate the xyz dimensions for a dataset with bounds.
+//
+// Arguments:
+//      dims    The output dimensions of the grid
+//      min     The output minimum x,y, and z coordinates
+//      max     The output maximum x,y, and z coordinates
+//      steps   The input steps per x, y, and z
+//      bounds  The input bounds of the dataset
+//
+//
+// Programmer:  Kevin Griffin
+// Creation:    Thu Jun 23 16:02:34 PDT 2016
+//
+//
+// ****************************************************************************
 void
 avtSPHResampleFilter::GetDimensions(vector<int> &dims, vector<double> &min, vector<double> &max, const vector<double> &steps, const double *const bounds)
 {
@@ -2130,13 +2157,13 @@ avtSPHResampleFilter::GetDimensions(vector<int> &dims, vector<double> &min, vect
 // ****************************************************************************
 
 vtkRectilinearGrid *
-avtSPHResampleFilter::CreateOutputGrid(const double bounds[6], vector<double> steps)
+avtSPHResampleFilter::CreateOutputGrid(const double* const bounds, const vector<double> &steps)
 {
     vtkRectilinearGrid *out_dset = vtkRectilinearGrid::New();
     vector<double> minXYZ(nDim, 0);
     vector<double> maxXYZ(nDim, 0);
     vector<int> dimVec(nDim, 0);
-    
+
     GetDimensions(dimVec, minXYZ, maxXYZ, steps, bounds);
     
     int dims[3] = {0, 0, 1};
@@ -2382,8 +2409,7 @@ avtContract_p
 avtSPHResampleFilter::ModifyContract(avtContract_p in_contract)
 {
     avtContract_p rv = new avtContract(in_contract);
-    rv->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
-//    rv->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    rv->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);   // GHOST_ZONE_DATA
     rv->NoStreaming();
     
     resampleVarName = std::string(rv->GetDataRequest()->GetVariable());
@@ -2460,7 +2486,6 @@ avtSPHResampleFilter::UpdateDataObjectInfo(void)
     int spatialDim = inAtts.GetSpatialDimension();
     
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
-    GetOutput()->GetInfo().GetValidity().InvalidateDataMetaData();
     outAtts.SetTopologicalDimension(spatialDim);
     
     double bounds[6] = {0, 0, 0, 0, 0, 0};
