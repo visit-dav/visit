@@ -283,7 +283,7 @@ class CurveScene(object):
         w = 100 + int(mgns[0] + mgns[1])
         h = 100 + int(mgns[2] + mgns[3])
         bg = Rect({"x":-mgns[0],"y":-mgns[3],
-                  "w":w,"h":h,"color":self.params.bg_color})
+                  "width":w,"height":h,"color":self.params.bg_color})
         self.items.append(bg)
     def __add_plot(self,params):
         pass
