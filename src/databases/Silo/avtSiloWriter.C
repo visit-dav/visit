@@ -67,7 +67,6 @@
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
-#include <FileFunctions.h>
 #include <Utility.h>
 
 #include <silo.h>
@@ -351,9 +350,9 @@ avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
 {
     headerDbMd = 0;
     optlist = 0;
-    singleFile = false;
     nblocks = 0;
     driver = DB_PDB;
+    singleFile = false;
     checkSums = false;
 
     for (int i = 0; dbopts != 0 && i < dbopts->GetNumberOfOptions(); ++i)
@@ -366,6 +365,17 @@ avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
                 case 1: driver = DB_HDF5; break;
             }
         }
+        else if (dbopts->GetName(i) == SILO_WROPT_SINGLE_FILE)
+        {
+            singleFile = dbopts->GetBool(SILO_WROPT_SINGLE_FILE);
+#if defined(PARALLEL)
+            if (singleFile)
+            {
+                debug1 << "Cannot guarentee single file option from parallel engine. Ignoring." << endl;
+                singleFile = false;
+            }
+#endif
+        }
         else if (dbopts->GetName(i) == SILO_WROPT_COMPRESSION)
             compressionParams = dbopts->GetString(SILO_WROPT_COMPRESSION);
         else if (dbopts->GetName(i) == SILO_WROPT_CKSUMS)
@@ -376,7 +386,6 @@ avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
 
     nmeshes = 0;
     meshtypes = NULL;
-    chunkToFileMap = NULL;
     SaveAndSetSiloLibState(driver, checkSums, compressionParams);
 }
 
@@ -411,30 +420,6 @@ avtSiloWriter::~avtSiloWriter()
 
 
 // ****************************************************************************
-//  Method: avtSiloWriter::SingleFile
-//
-//  Purpose: Determine if output should be single file
-// 
-//  When GroupSize() is 1, this goes without saying. When its '2', it could be
-//  either that there are two groups each of which have data or it could be
-//  that one of the groups has no data. The latter case should also be handled
-//  as single file. Previously, single file operation was selected via a write
-//  option. Now, it is inferred by group write where # groups is 1.
-//
-//  Programmer Mark C. Miller, Mon Jun 13 20:57:28 PDT 2016
-// ****************************************************************************
-
-bool
-avtSiloWriter::SingleFile(void)
-{
-    if (writeContext.GroupSize() == 1)
-        return true;
-    if (writeContext.GroupSize() == 2 && GetWriteContextHasNoDataProcs())
-        return true;
-    return false;
-}
-
-// ****************************************************************************
 //  Method: avtSiloWriter::OpenFile
 //
 //  Purpose:
@@ -463,7 +448,6 @@ avtSiloWriter::OpenFile(const string &stemname, int nb)
 {
     stem = stemname;
     nblocks = nb;
-    singleFile = SingleFile();
     dir ="";
     // find dir if provided
     size_t idx = stem.rfind("/");
@@ -482,7 +466,6 @@ avtSiloWriter::OpenFile(const string &stemname, int nb)
     nmeshes = 0;
     if (meshtypes != NULL) delete [] meshtypes;
     meshtypes = new int[nchunks];
-    chunkToFileMap = new int[nchunks];
 }
 
 
@@ -575,15 +558,11 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Cyrus Harrison, Tue Feb 15 13:20:20 PST 2011
 //    Preserve axis labels if they exist.
 //
-//    Mark C. Miller, Tue Jun 14 10:34:02 PDT 2016
-//    Added chunkMap so that this code also supports cases where mapping of
-//    chunks to files is not known and cannot be predicted until the chunks
-//    are actually written.
 // ****************************************************************************
 
 void
 avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
-    int const *meshtypes, int const *chunkMap)
+    int *meshtypes)
 {
     size_t   i,j,k; (void) j; (void) k;
 
@@ -612,9 +591,7 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
                 sprintf(tmp, "domain_%ld/%s", i, VN(mmd->name));
         }
         else
-        {
-            sprintf(tmp, "%s.%ld.silo:/%s", stem.c_str(), chunkMap[i], VN(mmd->name));
-        }
+            sprintf(tmp, "%s.%ld.silo:/%s", stem.c_str(), i,VN(mmd->name));
         mesh_names[i] = new char[strlen(tmp)+1];
         strcpy(mesh_names[i], tmp);
 
@@ -727,15 +704,11 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd,
 //    Cyrus Harrison, Tue Feb 15 13:20:20 PST 2011
 //    Preserve axis labels if they exist.
 //
-//    Mark C. Miller, Tue Jun 14 10:34:02 PDT 2016
-//    Added chunkMap so that this code also supports cases where mapping of
-//    chunks to files is not known and cannot be predicted until the chunks
-//    are actually written.
 // ****************************************************************************
 
 void
 avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
-    const avtMeshMetaData *mmd, int const *meshtypes, int const *chunkMap)
+    const avtMeshMetaData *mmd, int *meshtypes)
 {
     int   i,j,k;
 
@@ -793,9 +766,7 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
                 sprintf(tmp, "domain_%d/%s", i, VN(sname));
         }
         else
-        {
-            sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), chunkMap[i], VN(sname));
-        }
+            sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, VN(sname));
         var_names[i] = new char[strlen(tmp)+1];
         strcpy(var_names[i], tmp);
 
@@ -889,15 +860,11 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
 //    Brad Whitlock, Fri Mar 6 15:00:31 PST 2009
 //    Allow subdirectories.
 //
-//    Mark C. Miller, Tue Jun 14 10:34:02 PDT 2016
-//    Added chunkMap so that this code also supports cases where mapping of
-//    chunks to files is not known and cannot be predicted until the chunks
-//    are actually written.
 // ****************************************************************************
 
 void
 avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
-    const avtMeshMetaData *mmd, int const *chunkMap)
+                                 const avtMeshMetaData *mmd)
 {
     int   i;
 
@@ -919,9 +886,7 @@ avtSiloWriter::ConstructMultimat(DBfile *dbfile, const string &mname,
                 sprintf(tmp, "domain_%d/%s", i, VN(mname));
         }
         else
-        {
-            sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), chunkMap[i], VN(mname));
-        }
+            sprintf(tmp, "%s.%d.silo:/%s", stem.c_str(), i, VN(mname));
         mat_names[i] = new char[strlen(tmp)+1];
         strcpy(mat_names[i], tmp);
     }
@@ -1051,36 +1016,34 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     //
     string fname = dir + stem;
     char filename[1024];
-    if (singleFile)
-    {
+    if (singleFile || nblocks == 1)
         sprintf(filename, "%s.silo", fname.c_str());
-        chunkToFileMap[nmeshes] = -1;
-    }
     else
-    {
-        sprintf(filename, "%s.%d.silo", fname.c_str(), writeContext.GroupRank());
-        chunkToFileMap[nmeshes] = writeContext.GroupRank();
-    }
+        sprintf(filename, "%s.%d.silo", fname.c_str(), chunk);
+
 
     DBfile *dbfile;
-    if (writeContext.Rank() == 0)
-    {
-        if (FileFunctions::CheckPermissions(filename) == FileFunctions::PERMISSION_RESULT_NOFILE)
-             dbfile = DBCreate(filename, 0, DB_LOCAL, "VisIt ExportDB", driver);
-        else
-             dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
-    }
-    else
+    if (chunk > 0 && singleFile)
     {
         dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
-    }
 
-    if (nblocks > 1)
-    {
         char dirname[32];
         sprintf(dirname, "domain_%d", chunk);
         DBMkDir(dbfile, dirname);
         DBSetDir(dbfile, dirname);
+    }
+    else
+    {
+        dbfile = DBCreate(filename, 0, DB_LOCAL, 
+                     "Silo file written by VisIt", driver);
+
+        if (singleFile && nblocks > 1)
+        {
+            char dirname[32];
+            sprintf(dirname, "domain_%d", chunk);
+            DBMkDir(dbfile, dirname);
+            DBSetDir(dbfile, dirname);
+        }
     }
 
     //
@@ -1193,8 +1156,6 @@ avtSiloWriter::CloseFile(void)
 //    when using write groups and rank 0 in the global communicator did not
 //    output any data. Use the write mesh name.
 //
-//    Mark C. Miller, Tue Jun 14 10:36:25 PDT 2016
-//    Added logic to gather the chunk map
 // ****************************************************************************
 
 void
@@ -1218,10 +1179,6 @@ avtSiloWriter::WriteRootFile()
     int *globalNMesh = NULL;
     writeContext.CollectIntArraysOnRank(globalMeshtypes, globalNMesh,
                                         meshtypes, nmeshes, writerRank);
-    int *globalChunkToFileMap = NULL;
-    int *globalNMesh2 = NULL;
-    writeContext.CollectIntArraysOnRank(globalChunkToFileMap, globalNMesh2,
-                                        chunkToFileMap, nmeshes, writerRank);
 
     if (writeContext.Rank() == writerRank && nblocks > 1)
     {
@@ -1230,27 +1187,26 @@ avtSiloWriter::WriteRootFile()
         size_t i;
         char filename[1024];
         string fname = dir + stem;
-        DBfile *dbfile;
-
         sprintf(filename, "%s.silo", fname.c_str());
+
+        DBfile *dbfile;
         if (singleFile)
             dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
         else
-            dbfile = DBCreate(filename, 0, DB_LOCAL, "VisIt ExportDB", driver);
+            dbfile = DBCreate(filename, 0, DB_LOCAL, 
+                         "Silo file written by VisIt", driver);
 
         const avtMeshMetaData *mmd = headerDbMd->GetMesh(meshname);
-        ConstructMultimesh(dbfile, mmd, globalMeshtypes, globalChunkToFileMap);
+        ConstructMultimesh(dbfile, mmd, globalMeshtypes);
         for (i = 0 ; i < headerScalars.size() ; i++)
-            ConstructMultivar(dbfile, headerScalars[i], mmd, globalMeshtypes, globalChunkToFileMap);
+            ConstructMultivar(dbfile, headerScalars[i], mmd, globalMeshtypes);
         for (i = 0 ; i < headerVectors.size() ; i++)
-            ConstructMultivar(dbfile, headerVectors[i], mmd, globalMeshtypes, globalChunkToFileMap);
+            ConstructMultivar(dbfile, headerVectors[i], mmd, globalMeshtypes);
         for (i = 0 ; i < headerMaterials.size() ; i++)
-            ConstructMultimat(dbfile, headerMaterials[i], mmd, globalChunkToFileMap);
+            ConstructMultimat(dbfile, headerMaterials[i], mmd);
 
         delete [] globalNMesh;
         delete [] globalMeshtypes;
-        delete [] globalNMesh2;
-        delete [] globalChunkToFileMap;
 
         WriteExpressions(dbfile);
         DBClose(dbfile);
