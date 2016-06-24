@@ -128,8 +128,10 @@ function bv_qt_info
 {
 # if we are on osx 10.8 or later, we need to use 4.8.6   
     if [[ "$OPSYS" == "Darwin" ]]; then
-        if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.8" ||
-              "${MACOSX_DEPLOYMENT_TARGET}" == "10.9" ]]; then
+        if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.8"  ||
+              "${MACOSX_DEPLOYMENT_TARGET}" == "10.9"  ||
+              "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
+              "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
             export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.8.6.tar.gz"}
             export QT_VERSION=${QT_VERSION:-"4.8.6"}
             export QT_MD5_CHECKSUM="2edbe4d6c2eff33ef91732602f3518eb"
@@ -255,21 +257,72 @@ fi
 return 0
 }
 
-
 function apply_qt_patch
 {
-   return 0
+    if [[ ${QT_VERSION} == 4.8.6 ]] ; then
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
+                        "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
+                apply_qt_486_osx1011_patch 
+            fi
+        fi
+    fi
+
+    return 0
 }
+
+
+function apply_qt_486_osx1011_patch
+{
+    # fix for OS X 10.11 
+    info "Patching qt 4.8.6 for OS X 10.10 or 10.11"
+    patch -p0 << \EOF
+
+diff -c src/gui/painting/qpaintengine_mac.cpp.orig src/gui/painting/qpaintengine_mac.cpp
+*** src/gui/painting/qpaintengine_mac.cpp.orig  2014-04-10 12:37:12.000000000 -0600
+--- src/gui/painting/qpaintengine_mac.cpp       2016-01-05 15:43:29.000000000 -0700
+***************
+*** 340,352 ****
+      }
+  
+      // Get the color space from the display profile.
+!     CGColorSpaceRef colorSpace = 0;
+!     CMProfileRef displayProfile = 0;
+!     CMError err = CMGetProfileByAVID((CMDisplayIDType)displayID, &displayProfile);
+!     if (err == noErr) {
+!         colorSpace = CGColorSpaceCreateWithPlatformColorSpace(displayProfile);
+!         CMCloseProfile(displayProfile);
+!     }
+  
+      // Fallback: use generic DeviceRGB
+      if (colorSpace == 0)
+--- 340,346 ----
+      }
+  
+      // Get the color space from the display profile.
+!     CGColorSpaceRef colorSpace = CGDisplayCopyColorSpace(displayID);
+  
+      // Fallback: use generic DeviceRGB
+      if (colorSpace == 0)
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 4.8.6 patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 
 function build_qt
 {
     #
     # Prepare the build dir using src file.
     #
-
     prepare_build_dir $QT_BUILD_DIR $QT_FILE
     untarred_qt=$?
-    # 0, already exists, 1  untarred src, 2 error
+    # 0, already exists, 1 untarred src, 2 error
 
     if [[ untarred_qt == -1 ]] ; then
        warn "Unable to prepare Qt build directory. Giving Up!"
@@ -280,6 +333,7 @@ function build_qt
     # Apply patches
     #
     info "Patching qt . . ."
+    cd $QT_BUILD_DIR || error "Can't cd to Qt build dir."
     apply_qt_patch
     if [[ $? != 0 ]] ; then
        if [[ $untarred_qt == 1 ]] ; then
@@ -292,8 +346,6 @@ function build_qt
                "failing harmlessly on a second application."
        fi
     fi
-
-    cd $QT_BUILD_DIR || error "Can't cd to Qt build dir."
 
     #
     # Platform specific configuration
