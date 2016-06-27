@@ -53,16 +53,6 @@ fi
 version2=`echo $version | tr "." "_"`
 
 #
-# List the third_party files.
-#
-third_party_files="AdvIO-1.2.tar.gz BoxLib-2011.04.28.tar.gz EAVL-4593630.tar.gz FMDB-1.2.tar.gz GRUMMP-0.6.5.tar.gz H5Part-1.6.6.tar.gz IceT-1-0-0.tar.gz Imaging-1.1.6.tar.gz MesaLib-7.10.2.tar.gz MesaLib-7.8.2.tar.gz Python-2.7.6.tgz R-2.13.2.tar.gz R-3.0.2.tar.gz Uintah-1.6.0.tar.gz VTK-6.1.0.tar.gz Xdmf-2.1.1.tar.gz adios-1.7.0.tar.gz cfitsio3006.tar.gz cgnslib_3.2.1.tar.gz cmake-3.0.2.tar.gz damaris-1.0.1.tgz fastbit-ibis1.2.0.tar.gz gdal-1.10.0.tar.gz google-perftools-0.97.tar.gz hdf-4.2.5.tar.gz hdf5-1.8.14.tar.gz libccmio-2.6.1.tar.gz manta-2540.tar.gz mfem-3.0.1.tgz moab-4.8.1.tar.gz mpich-3.0.4.tar.gz mxml-2.6.tar.gz nektar++-4.1.0.tar.gz netcdf-4.1.1.tar.gz pyparsing-1.5.2.tar.gz pyside-combined-1.2.2.tar.gz qt-everywhere-opensource-src-4.8.3.tar.gz qt-everywhere-opensource-src-4.8.6.tar.gz qt-everywhere-opensource-src-5.2.1.tar.gz requests-2.5.1.tar.gz seedme-python-client-v1.1.0.zip silo-4.10.1.tar.gz szip-2.1.tar.gz zlib-1.2.7.tar.gz zlib-1.2.8.tar.gz"
-
-#
-# List the release files.
-#
-release_files="INSTALL_NOTES VisIt-$version.dmg jvisit$version.tar.gz visit${version}.exe visit-install$version2 visit${version}_x64.exe visit$version2.darwin-x86_64.tar.gz visit$version2.linux-x86_64-ubuntu11.tar.gz visit$version2.linux-x86_64-ubuntu11-wmesa.tar.gz visit$version2.linux-x86_64-ubuntu14.tar.gz visit$version2.linux-x86_64-ubuntu14-wmesa.tar.gz visit$version2.linux-x86_64-rhel6.tar.gz visit$version2.linux-x86_64-rhel6-wmesa.tar.gz build_visit$version2 $dist.tar.gz visitdev$version.exe"
-
-#
 # Download the files.
 #
 rm -rf checksum_dir
@@ -134,8 +124,8 @@ do
    $cmd visit$version2.linux-x86_64-ubuntu11-wmesa.tar.gz >> ../$output
    $cmd visit$version2.linux-x86_64-ubuntu14.tar.gz       >> ../$output
    $cmd visit$version2.linux-x86_64-ubuntu14-wmesa.tar.gz >> ../$output
-   $cmd visit$version2.linux-x86_64-rhel6.tar.gz          >> ../$output
-   $cmd visit$version2.linux-x86_64-rhel6-wmesa.tar.gz    >> ../$output
+   $cmd visit$version2.linux-x86_64-rhel7.tar.gz          >> ../$output
+   $cmd visit$version2.linux-x86_64-rhel7-wmesa.tar.gz    >> ../$output
 
    echo ""                                                >> ../$output
    echo "The VisIt source code $property"                 >> ../$output
