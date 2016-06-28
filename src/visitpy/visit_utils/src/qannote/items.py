@@ -397,7 +397,7 @@ class TextBox(CanvasItemSet):
         txt = self.params.text
         pad = self.params.padding
         items.append(Rect({"x":x-pad,"y":y-pad,
-                           "w":w+pad*2,"h":h+pad*2,
+                           "width":w+pad*2,"height":h+pad*2,
                            "color":self.params.fg_color}))
         items.append(Rect({"x":x,"y":y,
                            "width":w,"height":h,
