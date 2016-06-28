@@ -8,7 +8,7 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_static/2.10.0)
+SET(VISITHOME /usr/gapps/visit/thirdparty_static/2.11.0)
 SET(VISITARCH linux-ppc64_gcc-4.4)
 
 ## Compiler flags.

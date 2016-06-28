@@ -8,7 +8,7 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_static/2.10.0)
+SET(VISITHOME /usr/gapps/visit/thirdparty_static/2.11.0)
 SET(VISITARCH linux-ppc64_gcc-4.4_BGQ)
 
 ## Compiler flags.
@@ -94,7 +94,8 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ##
 ## Ice-T
 ##
-VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/icet-master-0d08b037/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_ICET_DIR /usr/gapps/visit/thirdparty_static/2.10.0/icet/1.0.0/${VISITARCH})
+#VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/icet-master-0d08b037/${VISITARCH})
 
 ##
 ## Silo
