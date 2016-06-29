@@ -73,7 +73,7 @@ set(guiwrapper_include_paths
 
 include_directories(${guiwrapper_include_paths})
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${QWT_LIBRARY_DIR})
 set(guiwrapper_link_libs 
     gui
     viewer
@@ -84,6 +84,7 @@ ${QT_QTGUI_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTXML_LIBRARY}
 ${QT_QTCORE_LIBRARY}
+${QWT_LIBRARY}
     )
 
 set(guiwrapper_sources ${CMAKE_CURRENT_SOURCE_DIR}/guiwrapper.C)
