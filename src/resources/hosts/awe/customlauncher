@@ -137,6 +137,9 @@ class JobSubmitter_qsub_AWE(JobSubmitter_qsub):
 #   Removed Ivy (including JobSubmitter_sbatch_AWE) & Willow
 #   Updated MOAB location for Spruce & Sprig
 #
+#   Paul Selby, Wed 29 Jun 11:59:18 BST 2016
+#   Removed Bonsai
+#
 ###############################################################################
 
 class AWELauncher(MainLauncher):
@@ -150,9 +153,6 @@ class AWELauncher(MainLauncher):
 
     def IsRunningOnBlackthorn(self):
         return self.sectorname() in ("blackthorn")
-
-    def IsRunningOnBonsai(self):
-        return self.sectorname() in ("bonsaia", "bonsaib")
 
     def IsRunningOnSprig(self):
         # Compute nodes are r[0-1]i[0-1]n[0-9]* => get this with batch VisIt
@@ -184,7 +184,7 @@ class AWELauncher(MainLauncher):
     #Check to see if VisIt is starting on Login node, it's not allowed on ALL platforms
     def IsVisItAllowed(self):
 
-        if not (self.IsRunningOnWorkstation() or self.IsRunningOnBonsai()):
+        if not self.IsRunningOnWorkstation():
             if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
                 msg = "###################################################\n"
                 msg += "Do not run the VisIt GUI here\n"
@@ -206,10 +206,6 @@ class AWELauncher(MainLauncher):
             if GETENV("MOABHOMEDIR") == "" :
                 SETENV("MOABHOMEDIR", "/awe/opt/moab/home")
             paths += ["/awe/opt/moab/current/bin"]
-
-        elif self.IsRunningOnBonsai():
-            paths += ["/opt/sgi/mpt/mpt-2.05/bin"]
-            ld_paths += ["/opt/sgi/mpt/mpt-2.05/lib"]
 
         elif self.IsRunningOnSprig():
             if GETENV("MODULESHOME") == "" :
@@ -245,10 +241,7 @@ class AWELauncher(MainLauncher):
         if launch[:4] == 'msub':
             return JobSubmitter_qsub_AWE(self)
         elif launch[:6] == 'mpirun':
-            if self.IsRunningOnBonsai():
-                return JobSubmitter_mpirun(self)
-            else:
-                return JobSubmitter_mpirun_AWE(self)
+            return JobSubmitter_mpirun_AWE(self)
         return super(AWELauncher, self).JobSubmitterFactory(launch)
 
 # Launcher creation function
