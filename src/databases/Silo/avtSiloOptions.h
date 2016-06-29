@@ -62,7 +62,6 @@ namespace SiloDBOptions
     const char *const SILO_RDOPT_IGNORE_DEXTS2 = "Ignore Data Extents";
 
     // Write options
-    const char *const SILO_WROPT_SINGLE_FILE = "Single File";
     const char *const SILO_WROPT_DRIVER = "Driver";
     const char *const SILO_WROPT_CKSUMS = "Checksums";
     const char *const SILO_WROPT_COMPRESSION = "DBSetCompression()";
