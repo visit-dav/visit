@@ -109,6 +109,9 @@ class DBOptionsAttributes;
 //    I modified the writer to handle the case where the meshes in a
 //    multimesh or multivar were not all of the same type.
 //
+//    Mark C. Miller, Tue Jun 14 10:35:34 PDT 2016
+//    Added arg to ConstrutMulti... methods. Added SingleFile() method to
+//    subsume functionality of singleFile write option.
 // ****************************************************************************
 
 class
@@ -127,13 +130,14 @@ avtSiloWriter : public virtual avtDatabaseWriter
     int            driver;
     int            nmeshes;
     int           *meshtypes;
+    int           *chunkToFileMap;
     DBoptlist     *optlist;
     bool           singleFile;
     bool           checkSums;
-    std::string         compressionParams;
+    std::string    compressionParams;
 
     // places to hold args passed in WriteHeaders
-    const avtDatabaseMetaData *headerDbMd;
+    const avtDatabaseMetaData           *headerDbMd;
     std::vector<std::string>             headerScalars;
     std::vector<std::string>             headerVectors;
     std::vector<std::string>             headerMaterials;
@@ -145,7 +149,12 @@ avtSiloWriter : public virtual avtDatabaseWriter
     std::map<std::string,std::vector<double> > dataMins;
     std::map<std::string,std::vector<double> > dataMaxs;
 
+    bool           WriteContextIsDefault();
+    int            FileID();
+    bool           ShouldCreateFile();
+
     virtual bool   CanHandleMaterials(void) { return true; };
+
 
     virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
@@ -157,11 +166,11 @@ avtSiloWriter : public virtual avtDatabaseWriter
     virtual void   WriteRootFile();
 
     void           ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *,
-                                      int *);
+                       int const *, int const *);
     void           ConstructMultivar(DBfile *dbfile, const std::string &,
-                                     const avtMeshMetaData *, int *);
+                       const avtMeshMetaData *, int const *, int const *);
     void           ConstructMultimat(DBfile *dbfile, const std::string &,
-                                     const avtMeshMetaData *);
+                       const avtMeshMetaData *, int const *);
     void           ConstructChunkOptlist(const avtDatabaseMetaData *);
 
     void           WriteCurvilinearMesh(DBfile *, vtkStructuredGrid *, int);

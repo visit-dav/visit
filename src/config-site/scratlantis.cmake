@@ -1,7 +1,7 @@
 #/Users/miller86/visit/thirdparty_shared/2.11/cmake/3.0.2/i386-apple-darwin15_mpicc/bin/cmake
 ##
 ## ../trunk_svn_bin/build_visit generated host.cmake
-## created: Tue Jun 21 08:47:52 PDT 2016
+## created: Wed Jun 22 11:17:37 PDT 2016
 ## system: Darwin scratlantis 15.4.0 Darwin Kernel Version 15.4.0: Fri Feb 26 22:08:05 PST 2016; root:xnu-3248.40.184~3/RELEASE_X86_64 x86_64
 ## by: miller86
 
@@ -151,8 +151,14 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
+## Mili
+##
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/15.1/${VISITARCH})
+
+##
 ## Silo
 ##
+#VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10.4-pre/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 

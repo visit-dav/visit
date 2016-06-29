@@ -141,7 +141,6 @@ GetSiloWriteOptions(void)
     drivers.push_back("PDB");  // 0
     drivers.push_back("HDF5"); // 1
     rv->SetEnumStrings(SILO_WROPT_DRIVER, drivers);
-    rv->SetBool(SILO_WROPT_SINGLE_FILE, false);
     rv->SetBool(SILO_WROPT_CKSUMS, false);
     rv->SetString(SILO_WROPT_COMPRESSION, "");
 

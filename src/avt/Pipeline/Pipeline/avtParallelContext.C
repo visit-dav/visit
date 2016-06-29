@@ -448,7 +448,9 @@ avtParallelContext::Split(int groupId, int nGroups)
     ctx.d->group_rank = groupId;
     ctx.d->group_size = nGroups;
 debug5 << "avtParallelContext::Split: created new communicator for group " << groupId << endl;
-debug5 << "avtParallelContext::Split: grouprank=" << ctx.Rank() << ", groupsize=" << ctx.Size() << endl;
+debug5 << "avtParallelContext::Split: rank=" << ctx.Rank() << ", size=" << ctx.Size() << endl;
+debug5 << "avtParallelContext::Split: grouprank=" << ctx.GroupRank() << ", groupsize=" << ctx.GroupSize() << endl;
+debug5 << "avtParallelContext::Split: globalrank=" << ctx.GlobalRank() << ", globalsize=" << ctx.GlobalSize() << endl;
     return ctx;
 #else
     return *this;
