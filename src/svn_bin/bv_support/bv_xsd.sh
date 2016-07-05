@@ -1,4 +1,4 @@
-xfunction bv_xsd_initialize
+function bv_xsd_initialize
 {
     export DO_XSD="no"
     export ON_XSD="off"
