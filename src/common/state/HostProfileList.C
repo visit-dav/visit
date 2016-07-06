@@ -907,7 +907,7 @@ LaunchProfile *
 HostProfileList::GetActiveLaunchProfileForHost(const std::string &hostName) const
 {   
     MachineProfile *machine = GetMachineProfileForHost(hostName);
-    return machine->GetActiveLaunchProfile();
+    return machine ? machine->GetActiveLaunchProfile() : NULL;
 }
 
 // ****************************************************************************
