@@ -86,15 +86,21 @@ function bv_qwt_graphical
 
 function bv_qwt_host_profile
 {
-    echo >> $HOSTCONF
-    echo "##" >> $HOSTCONF
-    echo "## QWT" >> $HOSTCONF
-    echo "##" >> $HOSTCONF
-    echo "SETUP_APP_VERSION(QWT $QWT_VERSION)" >> $HOSTCONF
-    if [[ "$USE_SYSTEM_QWT" == "yes" ]]; then
-        echo "VISIT_OPTION_DEFAULT(VISIT_QWT_DIR $SYSTEM_QWT_DIR)" >> $HOSTCONF
-    else
-        echo "VISIT_OPTION_DEFAULT(VISIT_QWT_DIR \${VISITHOME}/qwt/\${QWT_VERSION}/\${VISITARCH})" >> $HOSTCONF
+    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+        if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
+            if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then 
+                echo >> $HOSTCONF
+                echo "##" >> $HOSTCONF
+                echo "## QWT" >> $HOSTCONF
+                echo "##" >> $HOSTCONF
+                echo "SETUP_APP_VERSION(QWT $QWT_VERSION)" >> $HOSTCONF
+                if [[ "$USE_SYSTEM_QWT" == "yes" ]]; then
+                    echo "VISIT_OPTION_DEFAULT(VISIT_QWT_DIR $SYSTEM_QWT_DIR)" >> $HOSTCONF
+                else
+                    echo "VISIT_OPTION_DEFAULT(VISIT_QWT_DIR \${VISITHOME}/qwt/\${QWT_VERSION}/\${VISITARCH})" >> $HOSTCONF
+                fi
+            fi
+        fi
     fi
 }
 
