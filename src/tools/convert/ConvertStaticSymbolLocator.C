@@ -40,6 +40,7 @@
 #include <vector>
 
 #include <DebugStream.h>
+#include <plugin_entry_point.h>
 
 class GeneralDatabasePluginInfo;
 class EngineDatabasePluginInfo;
@@ -50,8 +51,8 @@ class EngineOperatorPluginInfo;
 
 #define DECLARE_DATABASE(X) \
    extern const char *X##VisItPluginVersion; \
-   extern "C" GeneralDatabasePluginInfo *X##_GetGeneralInfo(void); \
-   extern "C" EngineDatabasePluginInfo *X##_GetEngineInfo(void);
+   extern "C" GeneralDatabasePluginInfo *VISIT_PLUGIN_ENTRY_FUNC(X,General)(VISIT_PLUGIN_ENTRY_ARGS); \
+   extern "C" EngineDatabasePluginInfo *VISIT_PLUGIN_ENTRY_FUNC(X,Engine)(VISIT_PLUGIN_ENTRY_ARGS);
 
 // Declare the databases.
 #define PLUGIN_VERB DECLARE_DATABASE
@@ -62,10 +63,10 @@ class EngineOperatorPluginInfo;
 #define CHECK_PLUGIN(X) \
    if (sym == #X"VisItPluginVersion") \
        retval = (void *) &X##VisItPluginVersion; \
-   else if (sym == #X"_GetGeneralInfo") \
-       retval = (void *) &X##_GetGeneralInfo; \
-   else if (sym == #X"_GetEngineInfo") \
-       retval = (void *) &X##_GetEngineInfo; \
+   else if (sym == VISIT_PLUGIN_ENTRY_FUNC_STR(X,General)) \
+       retval = (void *) &VISIT_PLUGIN_ENTRY_FUNC(X,General); \
+   else if (sym == VISIT_PLUGIN_ENTRY_FUNC_STR(X,Engine)) \
+       retval = (void *) &VISIT_PLUGIN_ENTRY_FUNC(X,Engine); \
 
 
 // Split apart to make it compile faster

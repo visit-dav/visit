@@ -84,7 +84,6 @@ class NektarPPCommonPluginInfo : public virtual CommonDatabasePluginInfo, public
                                                     int nList, int nBlock);
     virtual DBOptionsAttributes *GetReadOptions() const;
     virtual DBOptionsAttributes *GetWriteOptions() const;
-    virtual std::string               GetLicense() const;
 };
 
 class NektarPPMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual NektarPPCommonPluginInfo

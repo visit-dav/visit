@@ -43,6 +43,7 @@
 #ifndef DATABASE_PLUGIN_INFO_H
 #define DATABASE_PLUGIN_INFO_H
 #include <plugin_exports.h>
+#include <plugin_entry_point.h>
 #include <stdio.h>
 
 #include <string>

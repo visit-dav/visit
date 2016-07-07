@@ -82,7 +82,6 @@ class WellLogsCommonPluginInfo : public virtual CommonDatabasePluginInfo, public
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual std::string               GetLicense() const;
 };
 
 class WellLogsMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual WellLogsCommonPluginInfo

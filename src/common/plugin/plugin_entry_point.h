@@ -36,12 +36,47 @@
 *
 *****************************************************************************/
 
-#include <FLASHPluginInfo.h>
+#ifndef PLUGIN_ENTRY_POINT_H
+#define PLUGIN_ENTRY_POINT_H
 
-VISIT_DATABASE_PLUGIN_ENTRY(FLASH,MDServer)
+/* Plugin entry point macros. This enables easy customization of plugin entry
+ * point functions, etc.
+ */
+#define VISIT_PLUGIN_ENTRY_FUNC(NAME,FLAVOR)     NAME##_Get##FLAVOR##Info
+#define VISIT_PLUGIN_ENTRY_FUNC_STR(NAME,FLAVOR) #NAME"_Get"#FLAVOR"Info"
+#define VISIT_PLUGIN_ENTRY_ARGS void
+#define VISIT_PLUGIN_ENTRY_NAMED_ARGS void
+#define VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+#define VISIT_PLUGIN_ENTRY_ARGS_CALL
 
-// this makes compilers happy... remove if we ever have functions here
-void FLASHMDServerPluginInfo::dummy()
-{
+#define VISIT_PLOT_PLUGIN_ENTRY(NAME, FLAVOR) \
+extern "C" PLOT_EXPORT FLAVOR##PlotPluginInfo* VISIT_PLUGIN_ENTRY_FUNC(NAME,FLAVOR)(VISIT_PLUGIN_ENTRY_NAMED_ARGS) \
+{ \
+    return new NAME##FLAVOR##PluginInfo; \
+}
+#define VISIT_PLOT_PLUGIN_ENTRY_EV(NAME, FLAVOR) \
+extern "C" PLOT_EXPORT FLAVOR##PlotPluginInfo* VISIT_PLUGIN_ENTRY_FUNC(NAME,FLAVOR)(VISIT_PLUGIN_ENTRY_NAMED_ARGS) \
+{ \
+    NAME##FLAVOR##PluginInfo::InitializeGlobalObjects(); \
+    return new NAME##FLAVOR##PluginInfo; \
 }
 
+#define VISIT_OPERATOR_PLUGIN_ENTRY(NAME, FLAVOR) \
+extern "C" OP_EXPORT FLAVOR##OperatorPluginInfo* VISIT_PLUGIN_ENTRY_FUNC(NAME,FLAVOR)(VISIT_PLUGIN_ENTRY_NAMED_ARGS) \
+{ \
+    return new NAME##FLAVOR##PluginInfo; \
+}
+#define VISIT_OPERATOR_PLUGIN_ENTRY_EV(NAME, FLAVOR) \
+extern "C" OP_EXPORT FLAVOR##OperatorPluginInfo* VISIT_PLUGIN_ENTRY_FUNC(NAME,FLAVOR)(VISIT_PLUGIN_ENTRY_NAMED_ARGS) \
+{ \
+    NAME##FLAVOR##PluginInfo::InitializeGlobalObjects(); \
+    return new NAME##FLAVOR##PluginInfo; \
+}
+
+#define VISIT_DATABASE_PLUGIN_ENTRY(NAME, FLAVOR) \
+extern "C" DBP_EXPORT FLAVOR##DatabasePluginInfo* VISIT_PLUGIN_ENTRY_FUNC(NAME,FLAVOR)(VISIT_PLUGIN_ENTRY_NAMED_ARGS) \
+{ \
+    return new NAME##FLAVOR##PluginInfo; \
+}
+
+#endif

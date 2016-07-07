@@ -280,7 +280,7 @@
 /* We need the extern "C" on Windows. */
 #define VISIT_PLUGIN_VERSION(NAME, EXPORTMACRO) extern "C" EXPORTMACRO const char *VISIT_PLUGIN_VERSION_NAME(NAME,VisItPluginVersion) = VISIT_VERSION;
 #else
-#define VISIT_PLUGIN_VERSION(NAME, EXPORTMACRO) EXPORTMACRO const char *VISIT_PLUGIN_VERSION_NAME(NAME,VisItPluginVersion) = VISIT_VERSION;
+#define VISIT_PLUGIN_VERSION(NAME, EXPORTMACRO) EXPORTMACRO const char *NAME##VisItPluginVersion = VISIT_VERSION;
 #endif
 
 /* Define to 1 if your processor stores words with the most significant byte

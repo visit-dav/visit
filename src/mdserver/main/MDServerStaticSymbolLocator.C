@@ -40,14 +40,15 @@
 #include <vector>
 
 #include <DebugStream.h>
+#include <plugin_entry_point.h>
 
 class GeneralDatabasePluginInfo;
 class MDServerDatabasePluginInfo;
 
 #define DECLARE_DATABASE(X) \
    extern const char *X##VisItPluginVersion; \
-   extern "C" GeneralDatabasePluginInfo *X##_GetGeneralInfo(); \
-   extern "C" MDServerDatabasePluginInfo *X##_GetMDServerInfo();
+   extern "C" GeneralDatabasePluginInfo *VISIT_PLUGIN_ENTRY_FUNC(X,General)(VISIT_PLUGIN_ENTRY_ARGS); \
+   extern "C" MDServerDatabasePluginInfo *VISIT_PLUGIN_ENTRY_FUNC(X,MDServer)(VISIT_PLUGIN_ENTRY_ARGS);
 
 // Declare the databases.
 #define PLUGIN_VERB DECLARE_DATABASE
@@ -59,10 +60,10 @@ PLUGIN_VERB(SimV2)
 #define CHECK_PLUGIN(X) \
    if (sym == #X"VisItPluginVersion") \
        retval = (void *) &X##VisItPluginVersion; \
-   else if (sym == #X"_GetGeneralInfo") \
-       retval = (void *) &X##_GetGeneralInfo; \
-   else if (sym == #X"_GetMDServerInfo") \
-       retval = (void *) &X##_GetMDServerInfo; \
+   else if (sym == VISIT_PLUGIN_ENTRY_FUNC_STR(X,General)) \
+       retval = (void *) &VISIT_PLUGIN_ENTRY_FUNC(X,General); \
+   else if (sym == VISIT_PLUGIN_ENTRY_FUNC_STR(X,MDServer)) \
+       retval = (void *) &VISIT_PLUGIN_ENTRY_FUNC(X,MDServer); \
 
 
 #define PLUGIN_VERB CHECK_PLUGIN
