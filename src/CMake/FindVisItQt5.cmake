@@ -59,6 +59,10 @@ if(LINUX)
     set (visit_qt_modules ${visit_qt_modules} X11Extras)
 endif()
 
+if(WIN32)
+    set (visit_qt_modules ${visit_qt_modules} Svg)
+endif()
+
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${VISIT_QT_DIR}/lib/cmake)
 find_package (Qt5 REQUIRED ${visit_qt_modules})
 
@@ -128,6 +132,9 @@ if(NOT VISIT_QT_SKIP_INSTALL)
   )
   if(LINUX)
       set(qt_libs_install ${qt_libs_install} Qt5::X11Extras)
+  endif()
+  if(WIN32)
+      set(qt_libs_install ${qt_libs_install} Qt5::Svg)
   endif()
 
   foreach(qtlib ${qt_libs_install})
