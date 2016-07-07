@@ -78,9 +78,6 @@ avtDatabase *
 IDXCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
-    if (nBlock!=1) 
-      return NULL;
-
     // ignore any nBlocks past 1
     int nTimestepGroups = nList / nBlock;
     avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
@@ -90,6 +87,5 @@ IDXCommonPluginInfo::SetupDatabase(const char *const *list,
     }
     avtMTMDFileFormatInterface *inter 
            = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
-
     return new avtGenericDatabase(inter);
 }

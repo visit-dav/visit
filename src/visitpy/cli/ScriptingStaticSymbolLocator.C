@@ -40,6 +40,7 @@
 #include <vector>
 
 #include <DebugStream.h>
+#include <plugin_entry_point.h>
 
 class GeneralPlotPluginInfo;
 class ScriptingPlotPluginInfo;
@@ -48,13 +49,13 @@ class ScriptingOperatorPluginInfo;
 
 #define DECLARE_OPERATOR(X) \
    extern const char *X##VisItPluginVersion; \
-   extern "C" GeneralOperatorPluginInfo *X##_GetGeneralInfo(void); \
-   extern "C" ScriptingOperatorPluginInfo *X##_GetScriptingInfo(void);
+   extern "C" GeneralOperatorPluginInfo *VISIT_PLUGIN_ENTRY_FUNC(X,General)(VISIT_PLUGIN_ENTRY_ARGS); \
+   extern "C" ScriptingOperatorPluginInfo *VISIT_PLUGIN_ENTRY_FUNC(X,Scripting)(VISIT_PLUGIN_ENTRY_ARGS);
 
 #define DECLARE_PLOT(X) \
    extern const char *X##VisItPluginVersion; \
-   extern "C" GeneralPlotPluginInfo *X##_GetGeneralInfo(void); \
-   extern "C" ScriptingPlotPluginInfo *X##_GetScriptingInfo(void);
+   extern "C" GeneralPlotPluginInfo *VISIT_PLUGIN_ENTRY_FUNC(X,General)(VISIT_PLUGIN_ENTRY_ARGS); \
+   extern "C" ScriptingPlotPluginInfo *VISIT_PLUGIN_ENTRY_FUNC(X,Scripting)(VISIT_PLUGIN_ENTRY_ARGS);
 
 // Declare the plots.
 #define PLUGIN_VERB DECLARE_PLOT
@@ -69,10 +70,10 @@ class ScriptingOperatorPluginInfo;
 #define CHECK_PLUGIN(X) \
    if (sym == #X"VisItPluginVersion") \
        retval = (void *) &X##VisItPluginVersion; \
-   else if (sym == #X"_GetGeneralInfo") \
-       retval = (void *) &X##_GetGeneralInfo; \
-   else if (sym == #X"_GetScriptingInfo") \
-       retval = (void *) &X##_GetScriptingInfo; \
+   else if (sym == VISIT_PLUGIN_ENTRY_FUNC_STR(X,General)) \
+       retval = (void *) &VISIT_PLUGIN_ENTRY_FUNC(X,General); \
+   else if (sym == VISIT_PLUGIN_ENTRY_FUNC_STR(X,Scripting)) \
+       retval = (void *) &VISIT_PLUGIN_ENTRY_FUNC(X,Scripting); \
 
 
 // Split apart to make it compile faster

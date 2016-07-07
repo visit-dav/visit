@@ -331,9 +331,11 @@ OperatorPluginManager::BroadcastGeneralInfo(PluginBroadcaster *broadcaster)
 bool
 OperatorPluginManager::LoadGeneralPluginInfo()
 {
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
     // Get the GeneralPluginInfo creator
-    GeneralOperatorPluginInfo *(*getInfo)(void)    =
-        (GeneralOperatorPluginInfo*(*)(void))PluginSymbol("GetGeneralInfo");
+    GeneralOperatorPluginInfo *(*getInfo)(VISIT_PLUGIN_ENTRY_ARGS)    =
+        (GeneralOperatorPluginInfo* (*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetGeneralInfo");
     if (!getInfo)
     {
         EXCEPTION3(InvalidPluginException, "Error retrieving info creator",
@@ -341,7 +343,7 @@ OperatorPluginManager::LoadGeneralPluginInfo()
     }
 
     // Get the general plugin info
-    GeneralOperatorPluginInfo *info = (*getInfo)();
+    GeneralOperatorPluginInfo *info = (*getInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL);
     if (!info)
     {
         EXCEPTION2(InvalidPluginException, "Error creating general info",
@@ -382,8 +384,10 @@ OperatorPluginManager::LoadGeneralPluginInfo()
 void
 OperatorPluginManager::LoadGUIPluginInfo()
 {
-    GUIOperatorPluginInfo  *(*getGUIInfo)(void) = 
-        (GUIOperatorPluginInfo* (*)(void))PluginSymbol("GetGUIInfo");
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
+    GUIOperatorPluginInfo  *(*getGUIInfo)(VISIT_PLUGIN_ENTRY_ARGS) = 
+        (GUIOperatorPluginInfo* (*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetGUIInfo");
 
     if (!getGUIInfo)
     {
@@ -392,8 +396,8 @@ OperatorPluginManager::LoadGUIPluginInfo()
                     openPlugin.c_str());
     }
 
-    guiPluginInfo.push_back((*getGUIInfo)());
-    commonPluginInfo.push_back((*getGUIInfo)());
+    guiPluginInfo.push_back((*getGUIInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
+    commonPluginInfo.push_back((*getGUIInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
 }
 
 // ****************************************************************************
@@ -412,8 +416,10 @@ OperatorPluginManager::LoadGUIPluginInfo()
 void
 OperatorPluginManager::LoadViewerPluginInfo()
 {
-    ViewerOperatorPluginInfo  *(*getViewerInfo)(void) =
-        (ViewerOperatorPluginInfo* (*)(void))PluginSymbol("GetViewerInfo");
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
+    ViewerOperatorPluginInfo  *(*getViewerInfo)(VISIT_PLUGIN_ENTRY_ARGS) =
+        (ViewerOperatorPluginInfo* (*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetViewerInfo");
 
     if (!getViewerInfo)
     {
@@ -422,8 +428,8 @@ OperatorPluginManager::LoadViewerPluginInfo()
         openPlugin.c_str());
     }
 
-    viewerPluginInfo.push_back((*getViewerInfo)());
-    commonPluginInfo.push_back((*getViewerInfo)());
+    viewerPluginInfo.push_back((*getViewerInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
+    commonPluginInfo.push_back((*getViewerInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
 }
 
 // ****************************************************************************
@@ -442,8 +448,10 @@ OperatorPluginManager::LoadViewerPluginInfo()
 void
 OperatorPluginManager::LoadEnginePluginInfo()
 {
-    EngineOperatorPluginInfo  *(*getEngineInfo)(void) =
-        (EngineOperatorPluginInfo* (*)(void))PluginSymbol("GetEngineInfo");
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
+    EngineOperatorPluginInfo  *(*getEngineInfo)(VISIT_PLUGIN_ENTRY_ARGS) =
+        (EngineOperatorPluginInfo* (*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetEngineInfo");
 
     if (!getEngineInfo)
     {
@@ -452,8 +460,8 @@ OperatorPluginManager::LoadEnginePluginInfo()
                    openPlugin.c_str());
     }
 
-    enginePluginInfo.push_back((*getEngineInfo)());
-    commonPluginInfo.push_back((*getEngineInfo)());
+    enginePluginInfo.push_back((*getEngineInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
+    commonPluginInfo.push_back((*getEngineInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
 }
 
 // ****************************************************************************
@@ -472,8 +480,10 @@ OperatorPluginManager::LoadEnginePluginInfo()
 void
 OperatorPluginManager::LoadScriptingPluginInfo()
 {
-    ScriptingOperatorPluginInfo  *(*getScriptingInfo)(void) =
-        (ScriptingOperatorPluginInfo* (*)(void))PluginSymbol("GetScriptingInfo");
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
+    ScriptingOperatorPluginInfo  *(*getScriptingInfo)(VISIT_PLUGIN_ENTRY_ARGS) =
+        (ScriptingOperatorPluginInfo* (*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetScriptingInfo");
 
     if (!getScriptingInfo)
     {
@@ -482,8 +492,8 @@ OperatorPluginManager::LoadScriptingPluginInfo()
                     openPlugin.c_str());
     }
 
-    scriptingPluginInfo.push_back((*getScriptingInfo)());
-    commonPluginInfo.push_back((*getScriptingInfo)());
+    scriptingPluginInfo.push_back((*getScriptingInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
+    commonPluginInfo.push_back((*getScriptingInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
 }
 
 // ****************************************************************************

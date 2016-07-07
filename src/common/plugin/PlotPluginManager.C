@@ -272,9 +272,11 @@ PlotPluginManager::GetScriptingPluginInfo(const string &id)
 bool
 PlotPluginManager::LoadGeneralPluginInfo()
 {
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
     // Get the GeneralPluginInfo creator
-    GeneralPlotPluginInfo *(*getInfo)(void)    =
-        (GeneralPlotPluginInfo*(*)(void))PluginSymbol("GetGeneralInfo");
+    GeneralPlotPluginInfo *(*getInfo)(VISIT_PLUGIN_ENTRY_ARGS)    =
+        (GeneralPlotPluginInfo*(*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetGeneralInfo");
     if (!getInfo)
     {
         EXCEPTION3(InvalidPluginException, "Error retrieving info creator",
@@ -282,7 +284,7 @@ PlotPluginManager::LoadGeneralPluginInfo()
     }
 
     // Get the general plugin info
-    GeneralPlotPluginInfo *info = (*getInfo)();
+    GeneralPlotPluginInfo *info = (*getInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL);
     if (!info)
     {
         EXCEPTION2(InvalidPluginException, "Error creating general info",
@@ -322,8 +324,10 @@ PlotPluginManager::LoadGeneralPluginInfo()
 void
 PlotPluginManager::LoadGUIPluginInfo()
 {
-    GUIPlotPluginInfo  *(*getGUIInfo)(void) = 
-        (GUIPlotPluginInfo* (*)(void))PluginSymbol("GetGUIInfo");
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
+    GUIPlotPluginInfo  *(*getGUIInfo)(VISIT_PLUGIN_ENTRY_ARGS) = 
+        (GUIPlotPluginInfo* (*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetGUIInfo");
 
     if (!getGUIInfo)
     {
@@ -332,8 +336,8 @@ PlotPluginManager::LoadGUIPluginInfo()
                     openPlugin.c_str());
     }
 
-    guiPluginInfo.push_back((*getGUIInfo)());
-    commonPluginInfo.push_back((*getGUIInfo)());
+    guiPluginInfo.push_back((*getGUIInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
+    commonPluginInfo.push_back((*getGUIInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
 }
 
 // ****************************************************************************
@@ -352,8 +356,10 @@ PlotPluginManager::LoadGUIPluginInfo()
 void
 PlotPluginManager::LoadViewerPluginInfo()
 {
-    ViewerPlotPluginInfo  *(*getViewerInfo)(void) =
-        (ViewerPlotPluginInfo* (*)(void))PluginSymbol("GetViewerInfo");
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
+    ViewerPlotPluginInfo  *(*getViewerInfo)(VISIT_PLUGIN_ENTRY_ARGS) =
+        (ViewerPlotPluginInfo* (*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetViewerInfo");
 
     if (!getViewerInfo)
     {
@@ -362,8 +368,8 @@ PlotPluginManager::LoadViewerPluginInfo()
         openPlugin.c_str());
     }
 
-    viewerPluginInfo.push_back((*getViewerInfo)());
-    commonPluginInfo.push_back((*getViewerInfo)());
+    viewerPluginInfo.push_back((*getViewerInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
+    commonPluginInfo.push_back((*getViewerInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
 }
 
 // ****************************************************************************
@@ -382,8 +388,10 @@ PlotPluginManager::LoadViewerPluginInfo()
 void
 PlotPluginManager::LoadEnginePluginInfo()
 {
-    EnginePlotPluginInfo  *(*getEngineInfo)(void) =
-        (EnginePlotPluginInfo* (*)(void))PluginSymbol("GetEngineInfo");
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
+    EnginePlotPluginInfo  *(*getEngineInfo)(VISIT_PLUGIN_ENTRY_ARGS) =
+        (EnginePlotPluginInfo* (*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetEngineInfo");
 
     if (!getEngineInfo)
     {
@@ -392,8 +400,8 @@ PlotPluginManager::LoadEnginePluginInfo()
                    openPlugin.c_str());
     }
 
-    enginePluginInfo.push_back((*getEngineInfo)());
-    commonPluginInfo.push_back((*getEngineInfo)());
+    enginePluginInfo.push_back((*getEngineInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
+    commonPluginInfo.push_back((*getEngineInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
 }
 
 // ****************************************************************************
@@ -412,8 +420,10 @@ PlotPluginManager::LoadEnginePluginInfo()
 void
 PlotPluginManager::LoadScriptingPluginInfo()
 {
-    ScriptingPlotPluginInfo  *(*getScriptingInfo)(void) =
-        (ScriptingPlotPluginInfo* (*)(void))PluginSymbol("GetScriptingInfo");
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
+    ScriptingPlotPluginInfo  *(*getScriptingInfo)(VISIT_PLUGIN_ENTRY_ARGS) =
+        (ScriptingPlotPluginInfo* (*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetScriptingInfo");
 
     if (!getScriptingInfo)
     {
@@ -422,8 +432,8 @@ PlotPluginManager::LoadScriptingPluginInfo()
                     openPlugin.c_str());
     }
 
-    scriptingPluginInfo.push_back((*getScriptingInfo)());
-    commonPluginInfo.push_back((*getScriptingInfo)());
+    scriptingPluginInfo.push_back((*getScriptingInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
+    commonPluginInfo.push_back((*getScriptingInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
 }
 
 // ****************************************************************************

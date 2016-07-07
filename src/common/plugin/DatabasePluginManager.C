@@ -47,7 +47,6 @@
 #include <InvalidPluginException.h>
 #include <Utility.h>
 #include <visitstream.h>
-#include <visit-config.h>
 #include <string>
 #include <vector>
 
@@ -266,9 +265,11 @@ DatabasePluginManager::GetCommonPluginInfo(const string &id)
 bool
 DatabasePluginManager::LoadGeneralPluginInfo()
 {
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
     // Get the GeneralPluginInfo creator
-    GeneralDatabasePluginInfo *(*getInfo)(void)    =
-        (GeneralDatabasePluginInfo*(*)(void))PluginSymbol("GetGeneralInfo");
+    GeneralDatabasePluginInfo *(*getInfo)(VISIT_PLUGIN_ENTRY_ARGS)    =
+        (GeneralDatabasePluginInfo*(*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetGeneralInfo");
     if (!getInfo)
     {
         EXCEPTION3(InvalidPluginException, "Error retrieving info creator",
@@ -276,7 +277,7 @@ DatabasePluginManager::LoadGeneralPluginInfo()
     }
 
     // Get the general plugin info
-    GeneralDatabasePluginInfo *info = (*getInfo)();
+    GeneralDatabasePluginInfo *info = (*getInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL);
     if (!info)
     {
         EXCEPTION2(InvalidPluginException, "Error creating general info",
@@ -320,8 +321,10 @@ DatabasePluginManager::LoadGeneralPluginInfo()
 void
 DatabasePluginManager::LoadEnginePluginInfo()
 {
-    EngineDatabasePluginInfo  *(*getEngineInfo)(void) =
-        (EngineDatabasePluginInfo* (*)(void))PluginSymbol("GetEngineInfo");
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
+    EngineDatabasePluginInfo  *(*getEngineInfo)(VISIT_PLUGIN_ENTRY_ARGS) =
+        (EngineDatabasePluginInfo* (*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetEngineInfo");
 
     if (!getEngineInfo)
     {
@@ -330,8 +333,8 @@ DatabasePluginManager::LoadEnginePluginInfo()
                    openPlugin.c_str());
     }
 
-    enginePluginInfo.push_back((*getEngineInfo)());
-    commonPluginInfo.push_back((*getEngineInfo)());
+    enginePluginInfo.push_back((*getEngineInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
+    commonPluginInfo.push_back((*getEngineInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
 }
 
 // ****************************************************************************
@@ -350,8 +353,10 @@ DatabasePluginManager::LoadEnginePluginInfo()
 void
 DatabasePluginManager::LoadMDServerPluginInfo()
 {
-    MDServerDatabasePluginInfo  *(*getMDServerInfo)(void) =
-        (MDServerDatabasePluginInfo* (*)(void))PluginSymbol("GetMDServerInfo");
+    VISIT_PLUGIN_ENTRY_ARGS_DECLARE
+
+    MDServerDatabasePluginInfo  *(*getMDServerInfo)(VISIT_PLUGIN_ENTRY_ARGS) =
+        (MDServerDatabasePluginInfo* (*)(VISIT_PLUGIN_ENTRY_ARGS))PluginSymbol("GetMDServerInfo");
 
     if (!getMDServerInfo)
     {
@@ -360,8 +365,8 @@ DatabasePluginManager::LoadMDServerPluginInfo()
                    openPlugin.c_str());
     }
 
-    mdserverPluginInfo.push_back((*getMDServerInfo)());
-    commonPluginInfo.push_back((*getMDServerInfo)());
+    mdserverPluginInfo.push_back((*getMDServerInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
+    commonPluginInfo.push_back((*getMDServerInfo)(VISIT_PLUGIN_ENTRY_ARGS_CALL));
 }
 
 // ****************************************************************************

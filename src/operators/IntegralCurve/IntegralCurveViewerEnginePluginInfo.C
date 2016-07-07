@@ -241,7 +241,7 @@ IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject 
 
       var = justTheVar;
     }
-    
+
     var += std::string(" - ") +
         std::string(typeString[atts_in->GetDataValue()]);
 
@@ -271,3 +271,4 @@ IntegralCurveViewerEnginePluginInfo::GetMenuName() const
 {
     return "IntegralCurve";
 }
+

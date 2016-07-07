@@ -36,8 +36,8 @@
 *
 *****************************************************************************/
 
-#include <qapplication.h>
-#include <qdir.h>
+#include <QApplication>
+#include <QDir>
 
 #include <visitstream.h>
 #include <VisItViewer.h>
