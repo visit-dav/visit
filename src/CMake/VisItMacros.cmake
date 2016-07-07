@@ -81,34 +81,15 @@ IF (WIN32)
 ENDIF (WIN32)
 
 FUNCTION(ADD_TARGET_INCLUDE target)
-    # Setting include_directories via set_target_properties overrides
-    # the current settings, but we want to append, so first retrieve
-    # the current values, then append the desired include.
-    GET_TARGET_PROPERTY(currentInc ${target} INCLUDE_DIRECTORIES)
-    LIST(APPEND currentInc ${ARGN})
-    SET_TARGET_PROPERTIES(${target} PROPERTIES
-                          INCLUDE_DIRECTORIES "${currentInc}")
-    UNSET(currentInc)
+      set_property(TARGET ${target} 
+                   APPEND
+                   PROPERTY INCLUDE_DIRECTORIES ${ARGN})
 ENDFUNCTION(ADD_TARGET_INCLUDE)
 
 FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
-    GET_TARGET_PROPERTY(currentDefs ${target} COMPILE_DEFINITIONS)
-    # if there truly are current definitions, and more than 1 in the list, then
-    # IF(${currentDefs} MATCHES NOTFOUND) causes a configure failure.
-    # Grab the first item in the list for comparison instead.
-    if (currentDefs)
-        LIST(GET currentDefs 0 firstItem )
-        IF(${firstItem} MATCHES NOTFOUND)
-            SET(allDefs ${newDefs})
-        ELSE(${firstItem} MATCHES NOTFOUND)
-            SET(allDefs ${currentDefs} ${newDefs})
-        ENDIF(${firstItem} MATCHES NOTFOUND)
-    else()
-        SET(allDefs ${newDefs})
-    endif()
-    SET_TARGET_PROPERTIES(${target} PROPERTIES
-            COMPILE_DEFINITIONS "${allDefs}"
-        )
+        set_property(TARGET ${target}
+                     APPEND
+                     PROPERTY COMPILE_DEFINITIONS ${newDefs})
 ENDFUNCTION(ADD_TARGET_DEFINITIONS)
 
 FUNCTION(ADD_PARALLEL_LIBRARY target)
@@ -120,17 +101,15 @@ FUNCTION(ADD_PARALLEL_LIBRARY target)
         FOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
             SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
         ENDFOREACH(X)
-        SET_TARGET_PROPERTIES(${target} PROPERTIES
-            COMPILE_FLAGS ${PAR_COMPILE_FLAGS}
-        )
+        set_property(TARGET ${target}
+                     APPEND PROPERTY COMPILE_FLAGS ${PAR_COMPILE_FLAGS})
         IF(VISIT_PARALLEL_LINKER_FLAGS)
             SET(PAR_LINK_FLAGS "")
             FOREACH(X ${VISIT_PARALLEL_LINKER_FLAGS})
                 SET(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
             ENDFOREACH(X)
-            SET_TARGET_PROPERTIES(${target} PROPERTIES
-                LINK_FLAGS ${PAR_LINK_FLAGS}
-            )
+            set_property(TARGET ${target}
+                     APPEND PROPERTY LINK_FLAGS ${PAR_LINK_FLAGS})
         ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
 
         IF(VISIT_PARALLEL_RPATH)
@@ -141,9 +120,8 @@ FUNCTION(ADD_PARALLEL_LIBRARY target)
             FOREACH(X ${VISIT_PARALLEL_RPATH})
                 SET(PAR_RPATHS "${PAR_RPATHS} ${X}")
             ENDFOREACH(X)
-            SET_TARGET_PROPERTIES(${target} PROPERTIES
-                INSTALL_RPATH ${PAR_RPATHS}
-            )
+            set_property(TARGET ${target}
+                     APPEND PROPERTY INSTALL_RPATH ${PAR_RPATHS})
         ENDIF(VISIT_PARALLEL_RPATH)
       ENDIF(VISIT_PARALLEL_CXXFLAGS)
 
