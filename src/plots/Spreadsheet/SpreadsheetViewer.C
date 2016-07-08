@@ -69,6 +69,7 @@
 #include <QvisVariableButton.h>
 #include <plugin_vartypes.h>
 
+#include <ColorTableAttributes.h>
 #include <PlotList.h>
 #include <Plot.h>
 
@@ -151,12 +152,20 @@
 //   Brad Whitlock, Mon Aug 11 16:13:52 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Thu Jul  7 18:06:45 PDT 2016
+//   Ensure that the color table atts are set into the color table button.
+//
 // ****************************************************************************
 
 SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     QMainWindow(parent), Observer((Subject*)p->GetPlotAtts()), 
     cachedAtts(), menuPopulator()
 {
+    // Initialize the color table button if we've not done that before
+    // in the viewer. Is this the best place for this? Maybe not. It's the
+    // only non-embedded app place that uses it.
+    QvisColorTableButton::setColorTableAttributes(p->GetViewerState()->GetColorTableAttributes());
+
     // Initialize members.
     input = 0;
     allowRender = true;
