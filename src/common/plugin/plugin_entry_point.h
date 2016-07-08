@@ -17,7 +17,7 @@
 *  - Redistributions in binary form must reproduce the above copyright notice,
 *    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
 *    documentation and/or other materials provided with the distribution.
-*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*  - Neither the NAME of  the LLNS/LLNL nor the NAMEs of  its contributors may
 *    be used to endorse or promote products derived from this software without
 *    specific prior written permission.
 *
@@ -73,8 +73,11 @@ extern "C" OP_EXPORT FLAVOR##OperatorPluginInfo* VISIT_PLUGIN_ENTRY_FUNC(NAME,FL
     return new NAME##FLAVOR##PluginInfo; \
 }
 
+/* NOTE: We can't seem to use VISIT_PLUGIN_ENTRY_FUNC in this one because
+ *       it keeps evaluating to 1_GetEngineInfo when we do ITAPS.
+ */
 #define VISIT_DATABASE_PLUGIN_ENTRY(NAME, FLAVOR) \
-extern "C" DBP_EXPORT FLAVOR##DatabasePluginInfo* VISIT_PLUGIN_ENTRY_FUNC(NAME,FLAVOR)(VISIT_PLUGIN_ENTRY_NAMED_ARGS) \
+extern "C" DBP_EXPORT FLAVOR##DatabasePluginInfo* NAME##_Get##FLAVOR##Info(VISIT_PLUGIN_ENTRY_NAMED_ARGS) \
 { \
     return new NAME##FLAVOR##PluginInfo; \
 }
