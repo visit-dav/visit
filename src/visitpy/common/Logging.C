@@ -44,6 +44,7 @@
 #include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
 #include <DebugStream.h>
+#include <StringHelpers.h>
 #include <TimingsManager.h>
 #include <snprintf.h>
 #include <visit-config.h>
@@ -216,6 +217,18 @@ static std::string constructor(const std::string &s)
     return s.substr(0, pos + 3) + visitmodule() + s.substr(pos+3);
 }
 
+static std::string EscapeFilename(const std::string &s)
+{
+#if defined(_WIN32)
+    // Replace single backslash with double backslash
+    std::string s2(StringHelpers::Replace(s, "\\", "\\\\"));
+    // If we ended up adding in 4 backslashes, change back to 2.
+    return StringHelpers::Replace(s2, "\\\\\\\\", "\\\\");
+#else
+    return s;
+#endif
+}
+
 // ****************************************************************************
 //
 // State Logging functions
@@ -302,7 +315,7 @@ static std::string log_OpenDatabaseRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "OpenDatabase(\"%s\", %d)\n",
-             rpc->GetDatabase().c_str(),
+             EscapeFilename(rpc->GetDatabase()).c_str(),
              rpc->GetIntArg1());
     return visitmodule() + std::string(str);
 }
@@ -311,7 +324,7 @@ static std::string log_CloseDatabaseRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "OpenDatabase(\"%s\")\n",
-             rpc->GetDatabase().c_str());
+             EscapeFilename(rpc->GetDatabase()).c_str());
     return visitmodule() + std::string(str);
 }
 
@@ -319,7 +332,7 @@ static std::string log_ActivateDatabaseRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "ActivateDatabase(\"%s\")\n",
-             rpc->GetDatabase().c_str());
+             EscapeFilename(rpc->GetDatabase()).c_str());
     return visitmodule() + std::string(str);
 }
 
@@ -327,7 +340,7 @@ static std::string log_CheckForNewStatesRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "CheckForNewStates(\"%s\")\n",
-             rpc->GetDatabase().c_str());
+             EscapeFilename(rpc->GetDatabase()).c_str());
     return visitmodule() + std::string(str);
 }
 
@@ -335,12 +348,12 @@ static std::string log_CreateDatabaseCorrelationRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     std::string s("CreateDatabaseCorrelation(\"");
-    s += rpc->GetDatabase();
+    s += EscapeFilename(rpc->GetDatabase());
     s += "\",(";
     const stringVector &dbs = rpc->GetProgramOptions();
     for(unsigned int i = 0; i < dbs.size(); ++i)
     {
-        s += dbs[i];
+        s += EscapeFilename(dbs[i]);
         if(i < dbs.size() - 1)
             s += ", ";
     }
@@ -352,12 +365,12 @@ static std::string log_AlterDatabaseCorrelationRPC(ViewerRPC *rpc)
 {
      char str[SLEN];
      std::string s("AlterDatabaseCorrelation(\"");
-     s += rpc->GetDatabase();
+     s += EscapeFilename(rpc->GetDatabase());
      s += "\",(";
      const stringVector &dbs = rpc->GetProgramOptions();
      for(unsigned int i = 0; i < dbs.size(); ++i)
      {
-         s += dbs[i];
+         s += EscapeFilename(dbs[i]);
          if(i < dbs.size() - 1)
              s += ", ";
      }
@@ -369,7 +382,7 @@ static std::string log_DeleteDatabaseCorrelationRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "DeleteDatabaseCorrelation(\"%s\")\n", 
-             rpc->GetDatabase().c_str());
+             EscapeFilename(rpc->GetDatabase()).c_str());
     return visitmodule() + std::string(str);
 }
 
@@ -377,7 +390,7 @@ static std::string log_ReOpenDatabaseRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "OpenDatabase(\"%s\", %d)\n",
-             rpc->GetDatabase().c_str(),
+             EscapeFilename(rpc->GetDatabase()).c_str(),
              rpc->GetIntArg1());
     return visitmodule() + std::string(str);
 }
@@ -386,7 +399,7 @@ static std::string log_ReplaceDatabaseRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "ReplaceDatabase(\"%s\", %d)\n",
-             rpc->GetDatabase().c_str(),
+             EscapeFilename(rpc->GetDatabase()).c_str(),
              rpc->GetIntArg1());
     return visitmodule() + std::string(str);
 }
@@ -395,7 +408,7 @@ static std::string log_OverlayDatabaseRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "OverlayDatabase(\"%s\")\n", 
-             rpc->GetDatabase().c_str());
+             EscapeFilename(rpc->GetDatabase()).c_str());
     return visitmodule() + std::string(str);
 }
 
@@ -494,7 +507,7 @@ static std::string log_SetActiveTimeSliderRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetActiveTimeSlider(\"%s\")\n",
-             rpc->GetDatabase().c_str());
+             EscapeFilename(rpc->GetDatabase()).c_str());
     return visitmodule() + std::string(str);
 }
 
@@ -1576,14 +1589,14 @@ static std::string log_ExportColorTableRPC(ViewerRPC *rpc)
 static std::string log_ExportEntireStateRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    SNPRINTF(str, SLEN, "SaveSession(\"%s\")\n", rpc->GetVariable().c_str());
+    SNPRINTF(str, SLEN, "SaveSession(\"%s\")\n", EscapeFilename(rpc->GetVariable()).c_str());
     return visitmodule() + std::string(str);
 }
 
 static std::string log_ImportEntireStateRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
-    SNPRINTF(str, SLEN, "RestoreSession(\"%s\", %d)\n", rpc->GetVariable().c_str(),
+    SNPRINTF(str, SLEN, "RestoreSession(\"%s\", %d)\n", EscapeFilename(rpc->GetVariable()).c_str(),
              rpc->GetBoolFlag()?1:0);
     return visitmodule() + std::string(str);
 }
@@ -1596,14 +1609,14 @@ static std::string log_ImportEntireStateWithDifferentSourcesRPC(ViewerRPC *rpc)
     stuple = "(";
     for(unsigned int i = 0; i < sources.size(); ++i)
     {
-        stuple += std::string("\"") + sources[i] + std::string("\"");
+        stuple += std::string("\"") + EscapeFilename(sources[i]) + std::string("\"");
         if(i < sources.size()-1)
             stuple += ",";
     }
     stuple += ")";
 
     SNPRINTF(str, SLEN, "RestoreSessionWithDifferentSources(\"%s\", %d, %s)\n",
-             rpc->GetVariable().c_str(),
+             EscapeFilename(rpc->GetVariable()).c_str(),
              rpc->GetBoolFlag()?1:0,
              stuple.c_str());
     return visitmodule() + std::string(str);
@@ -1845,7 +1858,7 @@ static std::string log_RequestMetaDataRPC(ViewerRPC *rpc)
 {
     char str[SLEN]; 
     SNPRINTF(str, SLEN, "metadata = %sGetMetaData(\"%s\", %d)\n",
-             visitmodule().c_str(), rpc->GetDatabase().c_str(), rpc->GetStateNumber());
+             visitmodule().c_str(), EscapeFilename(rpc->GetDatabase()).c_str(), rpc->GetStateNumber());
     return std::string(str);
 }
 

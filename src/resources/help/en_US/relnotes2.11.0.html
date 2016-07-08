@@ -65,7 +65,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li></li>
   <li></li>
   <li></li>
-  <li>A bug was fixed with the scatter plot, where VisIt would give an error if it generated any empty domains.</li>
+  <li>A bug was fixed with the Scatter plot, where VisIt would give an error if it generated any empty domains.</li>
 </ul>
 
 <a name="Operator_changes"></a>
@@ -80,7 +80,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Other bugs fixed in version 2.11</font></b></p>
 <ul>
   <li>Viewer-based filename generation code used in the Libsim runtime library no longer queries the file system for permissions, which caused a massive slowdown when rendering images using Libsim at scale.</li>
-  <li></li>
+  <li>Command recording does not escape back-slashes in Windows filenames, preventing recorded commands such as <i>OpenDatabase()</i> to fail on Windows.</li>
   <li></li>
   <li></li>
 </ul>
