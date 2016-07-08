@@ -38,6 +38,9 @@
 
 #include <OVERFLOWPluginInfo.h>
 
+#ifdef OVERFLOW
+#undef OVERFLOW
+#endif
 VISIT_DATABASE_PLUGIN_ENTRY(OVERFLOW,Engine)
 
 // ****************************************************************************
