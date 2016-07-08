@@ -45,6 +45,9 @@
 #include <visit-config.h>
 VISIT_PLUGIN_VERSION(OVERFLOW,DBP_EXPORT)
 
+#ifdef OVERFLOW
+#undef OVERFLOW
+#endif
 VISIT_DATABASE_PLUGIN_ENTRY(OVERFLOW,General)
 
 // ****************************************************************************

@@ -38,6 +38,9 @@
 
 #include <OVERFLOWPluginInfo.h>
 
+#ifdef OVERFLOW
+#undef OVERFLOW
+#endif
 VISIT_DATABASE_PLUGIN_ENTRY(OVERFLOW,MDServer)
 
 // this makes compilers happy... remove if we ever have functions here
