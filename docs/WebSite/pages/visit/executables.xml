@@ -68,7 +68,7 @@
         <tr>
           <td>Mac OS X 10.9 - Intel 64 bit<br />
           Darwin 10.9.5, Darwin Kernel Version 13.4.0, clang-503.0.38, MPICH<br />
-          <i>(Includes parallel VisIt with self-contained MPICH MPI. Works on all versions of Mac OS X 10.8 and later.)</i></td>
+          <i>(Includes parallel VisIt with self-contained MPICH MPI. Works on all versions of Mac OS X 10.9 and later.)</i></td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.10.3/VisIt-2.10.3.dmg">Download</a></td>
         </tr>
         <tr>
