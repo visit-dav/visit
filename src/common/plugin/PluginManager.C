@@ -1722,7 +1722,11 @@ PluginManager::PluginError() const
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError(), 0,
                   pluginError, MAX_PLUGINERROR, va);
 #elif !defined(VISIT_STATIC)
-    strncpy(pluginError, dlerror(), MAX_PLUGINERROR);
+    const char *pe = dlerror();
+    if(pe == NULL)
+        pluginError[0] = '\0';
+    else
+        strncpy(pluginError, pe, MAX_PLUGINERROR);
 #endif
     return pluginError;
 }
