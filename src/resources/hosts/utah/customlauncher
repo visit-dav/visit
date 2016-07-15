@@ -17,7 +17,7 @@ class UtahLauncher(MainLauncher):
 
     def Customize(self):
         msg = """
-NOTE: Using a specific MPI implementation (mvapich2/2.1g) which the release versions of VisIt are known to be compiled against.
+NOTE: Using a specific MPI implementation (mvapich2/2.1.g) which the release versions of VisIt are known to be compiled against.
 If you are a *developer*, it's very likely I've chosen the wrong MPI implementation; you might have to hack internallauncher to load the module you need.\n"""
         print msg
 
@@ -25,7 +25,7 @@ If you are a *developer*, it's very likely I've chosen the wrong MPI implementat
         from env_modules_python import module
 
         module("purge")
-        module("load","libxml2 gcc mvapich2")
+        module("load","visit gcc mvapich2 libxml2")
 
 
 # Launcher creation function
