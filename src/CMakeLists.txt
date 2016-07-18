@@ -2659,7 +2659,9 @@ ELSE (NOT WIN32)
                 COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P ${VISIT_BINARY_DIR}/data/cmake_install.cmake)
         ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
 
-        SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
+        SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES 
+                              EXCLUDE_FROM_DEFAULT_BUILD 1 
+                              EXCLUDE_FROM_ALL 1 )
 
         # source installer
         ADD_CUSTOM_COMMAND(OUTPUT visitdev${VISIT_VERSION}.exe
@@ -2671,7 +2673,9 @@ ELSE (NOT WIN32)
             DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi
         )
         ADD_CUSTOM_TARGET(_SRC_PACKAGE ALL DEPENDS visitdev${VISIT_VERSION}.exe)
-        SET_TARGET_PROPERTIES(_SRC_PACKAGE PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
+        SET_TARGET_PROPERTIES(_SRC_PACKAGE PROPERTIES 
+                              EXCLUDE_FROM_DEFAULT_BUILD 1
+                              EXCLUDE_FROM_ALL 1)
         UNSET(VSD_NATIVE)
         UNSET(CIP_NATIVE)
         UNSET(CBD_NATIVE)
