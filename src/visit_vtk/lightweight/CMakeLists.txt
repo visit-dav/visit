@@ -58,6 +58,7 @@ vtkCellIntersections.C
 vtkDataSetFromVolume.C  
 vtkDebugStream.C        
 vtkEnumThreshold.C
+vtkMultiLineSource.C
 vtkPolyDataRelevantPointsFilter.C
 vtkSkewLookupTable.C
 vtkTriangulationTables.C

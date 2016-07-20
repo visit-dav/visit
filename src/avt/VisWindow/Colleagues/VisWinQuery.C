@@ -432,6 +432,9 @@ VisWinQuery::QueryIsValid(const VisualCueInfo *vqPoint, const VisualCueInfo *vqL
 //    the maximum amount that any plot has been shifted in z. (otherwise
 //    pick letters may not be visible).
 //
+//    Matt Larsen, Tue Jul 19 12:00:12 PDT 2016
+//    Added line extracting from visual q for pick highlights.
+//
 // ****************************************************************************
 
 void 
@@ -464,6 +467,24 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
     mediator.GetForegroundColor(fg);
     pp->SetForegroundColor(fg);
 
+    // Get PickHighlihgt lines if they exist
+    // first point is the attatchment point
+    const int numPoints = vq->GetPoints().size() / 3 - 1;
+    bool linesExist =  false;
+    if(numPoints > 1 && (numPoints % 2 == 0))
+        linesExist = true;
+    const int numLines = numPoints / 2;
+    if(linesExist)
+    {  
+        for(int i = 0; i < numLines; ++i)
+        {
+            double p1[3], p2[3];
+            // First point is the attactment
+            vq->GetPointD(i*2+1, p1);
+            vq->GetPointD(i*2+2, p2);
+            pp->AddLine(p1, p2);
+        }
+    }
     //
     // Pull the pick actors a little closer to the camera to make sure
     // there are no z-buffer errors.  Note that canvas issues are hidden
@@ -493,6 +514,7 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
         pp->Shift(shiftVec);
     }
 
+    pp->SetShowPickLetter(vq->GetShowLabel());
 
     //
     //  Add the pickpoint to the renderer. 

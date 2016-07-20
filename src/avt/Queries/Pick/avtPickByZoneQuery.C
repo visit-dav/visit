@@ -44,6 +44,7 @@
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
+
 #include <vtkDataSet.h>
 #include <vtkFieldData.h>
 #include <vtkIntArray.h>
@@ -56,7 +57,6 @@
 #include <avtVector.h>
 
 #include <BadCellException.h>
-
 
 
 // ****************************************************************************
@@ -135,6 +135,10 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Kathleen Biagas, Thu Aug 14 09:43:20 PDT 2014
 //    Use the center found by the DB when available.  Fixes a PickByZone bug
 //    where the returned 'point' didn't match the zone center.
+//
+//    Matt Larsen, Fri Jul 8 08:15:00 PDT 2016
+//    Added call to base class ExtractZonePickHighlights to support 
+//    zone highlights
 //
 // ****************************************************************************
 
@@ -311,6 +315,9 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     {
         pickAtts.SetPickPoint(center);
     }
+    // By this point, the zoneId should be the original zone
+    // if it was decomposed.
+    this->ExtractZonePickHighlights(zoneid, ds, dom);
 }
 
 
