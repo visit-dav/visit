@@ -143,6 +143,10 @@ avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 //    Kathleen Bonnell, Fri Jul  8 14:15:21 PDT 2005 
 //    Modified test for determining if 'real' id needs to be calculated. 
 //
+//    Matt Larsen, Fri Jul 8 08:15:00 PDT 2016
+//    Added call to base class ExtractZonePickHighlights to support 
+//    zone highlights
+//
 // ****************************************************************************
 
 void
@@ -321,6 +325,9 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
         // 
         pickAtts.SetCellPoint(pickAtts.GetPickPoint());
     }
+    //By this point, the element Id should be the original zone
+    //if it was decomposed.
+    this->ExtractZonePickHighlights(pickAtts.GetElementNumber(), ds, dom);
 }
 
 

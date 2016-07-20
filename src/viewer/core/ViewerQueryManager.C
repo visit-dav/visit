@@ -2707,6 +2707,10 @@ ViewerQueryManager::SetDDTPickCallback(void (*cb)(PickAttributes *, void*), void
 //   Brad Whitlock, Wed Sep  3 09:22:59 PDT 2014
 //   Move DDT pick code to external callback function.
 //
+//   Matt Larsen, Tues July 19 08:50:01 PDT 2016
+//   Added extra condition to create a pick actor if either
+//   showPickLetter or showPickHighlight is enabled.
+//
 // ****************************************************************************
 
 void
@@ -2753,8 +2757,10 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
             //
             // Add a pick point to the window
             //
-            if (pickAtts->GetShowPickLetter() &&
-                pickAtts->GetPickPoint()[0] != FLT_MAX)
+            bool showPick = pickAtts->GetShowPickLetter() ||
+                            pickAtts->GetShowPickHighlight();
+            if ( showPick &&
+                 pickAtts->GetPickPoint()[0] != FLT_MAX)
             {
                 win->ValidateQuery(pickAtts, NULL);
             } // else no valid position could be determined, data was transformed

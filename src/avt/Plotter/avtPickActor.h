@@ -45,10 +45,10 @@
 class vtkActor;
 class vtkFollower;
 class vtkLineSource;
+class vtkMultiLineSource;
 class vtkPolyDataMapper;
 class vtkRenderer;
 class vtkGlyphSource2D;
-
 
 // ****************************************************************************
 //  Class:  avtPickActor
@@ -81,6 +81,13 @@ class vtkGlyphSource2D;
 //    Burlen Loring, Thu Oct  8 10:36:25 PDT 2015
 //    fix a compliler warning
 //
+//    Matt Larsen, Thu June  30 08:16:11 PDT 2016
+//    Adding support for zone highlights.
+//    Added members for Highlight source, mapper, and actor
+//    Added method 'AddLine'
+//    Added methods 'GetShowPickLetter' 'SetShowPickLetter'
+//    Added member variable showPickLetter
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPickActor
@@ -110,10 +117,13 @@ class PLOTTER_API avtPickActor
     void               Translate(const double vec[3]);
     void               ResetPosition(const double vec[3]);
     void               UseGlyph(const bool v) { useGlyph = v; } ;
-
+    void               AddLine(double p0[3], double p1[3]);
+    bool               GetShowPickLetter() const;
+    void               SetShowPickLetter(const bool);
   protected:
     bool               mode3D;
     bool               useGlyph;
+    bool               showPickLetter;
     double             attach[3];
     std::string        designator;
     vtkFollower       *letterActor;
@@ -126,8 +136,11 @@ class PLOTTER_API avtPickActor
     vtkGlyphSource2D  *glyphSource;
     vtkPolyDataMapper *glyphMapper;
 
-    vtkRenderer       *renderer; 
-
+    vtkMultiLineSource *highlightSource;
+    vtkPolyDataMapper  *highlightMapper;
+    vtkActor           *highlightActor;
+    
+    vtkRenderer        *renderer;
   private:
 };
 

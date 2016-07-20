@@ -227,6 +227,7 @@ private slots:
     void displayIncElsToggled(bool val);
     void displayGlobalIdsToggled(bool val);
     void displayPickLetterToggled(bool val);
+    void displayPickHighlightToggled(bool val);
     void nodeIdToggled(bool val);
     void nodeDomLogToggled(bool val);
     void nodeBlockLogToggled(bool val);
@@ -291,6 +292,7 @@ private:
     QCheckBox          *displayIncEls;
     QCheckBox          *displayGlobalIds;
     QCheckBox          *displayPickLetter;
+    QCheckBox          *displayPickHighlight;
 
     QCheckBox          *nodeId;
     QCheckBox          *nodePhysical;

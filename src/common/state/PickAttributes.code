@@ -1208,6 +1208,60 @@ PickAttributes::SetRayPoint2(const doubleVector &_v)
     rayPoint2[2] = _v[2];
 }
 
+Function: AddLine
+Declaration: void AddLine(const double *_c0, const double *_c1, const int &pos);
+Definition:
+// ****************************************************************************
+// Method: PickAttributes::AddLine
+//
+// Purpose: 
+//   Add the a line to the pick. This highlights the cell
+//
+// Programmer:  Matt Larsen
+// Creation:     
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickAttributes::AddLine(const double *_c0, const double *_c1, const int &pos)
+{
+    if(!_c0 || !_c1) return; //TODO: is there error checking here?
+    // extend vector of points as necessary
+    while ((int)cellCoordinates.size() < 6*(pos+1))
+        cellCoordinates.push_back(0.0);
+
+    cellCoordinates[pos*6+0] = _c0[0];
+    cellCoordinates[pos*6+1] = _c0[1];
+    cellCoordinates[pos*6+2] = _c0[2];
+    cellCoordinates[pos*6+3] = _c1[0];
+    cellCoordinates[pos*6+4] = _c1[1];
+    cellCoordinates[pos*6+5] = _c1[2];
+
+}
+
+Function: ClearLines
+Declaration: void ClearLines();
+Definition:
+// ****************************************************************************
+// Method: PickAttributes::ClearLines
+//
+// Purpose: 
+//   Clear the vector of lines for cell highlights
+//
+// Programmer:  Matt Larsen
+// Creation:     
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickAttributes::ClearLines()
+{
+    cellCoordinates.clear();
+}
 
 Function: CreateOutputMapNode
 Declaration: void CreateOutputMapNode(MapNode &m, bool withLetter);
@@ -1368,7 +1422,6 @@ PickAttributes::CreateOutputMapNode(MapNode &m, bool withLetter)
     }
 }
 
-
 Function: CreateXMLString
 Declaration: void CreateXMLString(std::string &os, bool withLetter = true);
 Definition:
@@ -1418,7 +1471,6 @@ PyPickAttributes_GetLogString()
         s += PyPickAttributes_ToString(currentAtts, "PickAtts.");
     return s;
 }
-
 
 Function: PyPickAttributes_CallLogRoutine
 Declaration: static void PyPickAttributes_CallLogRoutine(Subject *subj, void *data)

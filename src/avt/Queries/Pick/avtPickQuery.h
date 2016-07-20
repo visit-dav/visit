@@ -141,6 +141,10 @@ class avtExpressionEvaluatorFilter;
 //    Burlen Loring, Thu Oct  8 12:46:02 PDT 2015
 //    Fix a couple of warnings
 //
+//    Matt Larsen, Fri Jul 8 08:15:00 PDT 2016
+//    Added method ExtractZonePickHighlights to support 
+//    zone highlights
+//
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -210,6 +214,10 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     void                            ConvertElNamesToGlobal(void);
     void                            SetRealIds(vtkDataSet *);
 
+    void                            ExtractZonePickHighlights(const int &,
+                                                              vtkDataSet *,
+                                                              const int &);                   
+    
     PickAttributes                  pickAtts;
     avtExpressionEvaluatorFilter   *eef;
     avtQueryableSource             *src;

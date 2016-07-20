@@ -41,6 +41,7 @@
 #include <vtkActor.h>
 #include <vtkFollower.h>
 #include <vtkLineSource.h>
+#include <vtkMultiLineSource.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
@@ -65,12 +66,21 @@
 //    Brad Whitlock, Fri Aug 27 10:59:33 PDT 2010
 //    Initialize designator.
 //
+//    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
+//    Added initialization for highlight for zone highlight 
+//    actor, mapper and source
+//
+//    Matt Larsen, Tues July 18 08:11:01 PDT 2016 
+//    Added initialization for showPickLetter
+//
 // ****************************************************************************
 
 avtPickActor:: avtPickActor()
 {
     mode3D  = true;
     useGlyph  = false;
+    showPickLetter = true;
+
     attach[0] = attach[1] = attach[2] = 0.;
     designator = "";
 
@@ -110,7 +120,11 @@ avtPickActor:: avtPickActor()
         glyphActor->GetProperty()->SetColor(0., 0., 0.);
         glyphActor->GetProperty()->SetAmbient(1.);
         glyphActor->GetProperty()->SetDiffuse(0.);
-
+    
+    // Only create highlights if they exist
+    highlightSource = NULL;
+    highlightMapper = NULL;
+    highlightActor = NULL;
 
     renderer = NULL; 
 }
@@ -125,6 +139,9 @@ avtPickActor:: avtPickActor()
 //  Modifications:
 //    Kathleen Bonnell, Fri Jun 27 16:57:45 PDT 2003 
 //    Delete glyphActor, glyphMapper, glyphSource
+//
+//    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
+//    Delete highlightActor, highlightSource,highlightMapper
 //
 // ****************************************************************************
 
@@ -166,6 +183,21 @@ avtPickActor::~avtPickActor()
         lineSource->Delete();
         lineSource = NULL;
     }
+    if (highlightSource != NULL)
+    {
+        highlightSource->Delete();
+        highlightSource = NULL;
+    }
+    if (highlightMapper != NULL)
+    {
+        highlightMapper->Delete();
+        highlightMapper = NULL;
+    }
+    if (highlightActor != NULL)
+    {
+        highlightActor->Delete();
+        highlightActor = NULL;
+    }
 }
 
 
@@ -185,6 +217,9 @@ avtPickActor::~avtPickActor()
 //    Kathleen Bonnell, Fri Jun 27 16:57:45 PDT 2003 
 //    Add glyphActor to renderer when required.
 //
+//    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
+//    Add highlightActor to renderer.
+//
 // ****************************************************************************
 
 void 
@@ -194,6 +229,8 @@ avtPickActor::Add(vtkRenderer *ren)
     letterActor->SetCamera(renderer->GetActiveCamera());
     renderer->AddActor(letterActor);
     renderer->AddActor(lineActor);
+
+    if(highlightSource != NULL) renderer->AddActor(highlightActor);
     if (useGlyph) 
     {
         glyphActor->SetCamera(renderer->GetActiveCamera());
@@ -214,6 +251,9 @@ avtPickActor::Add(vtkRenderer *ren)
 //    Kathleen Bonnell, Fri Jun 27 16:57:45 PDT 2003 
 //    Remove glyphActor from renderer when required.
 //
+//    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
+//    Remove highlightActor
+//
 // ****************************************************************************
 
 void 
@@ -225,6 +265,7 @@ avtPickActor::Remove()
             renderer->RemoveActor(glyphActor);
         renderer->RemoveActor(lineActor);
         renderer->RemoveActor(letterActor);
+        if(highlightSource != NULL) renderer->RemoveActor(highlightActor);
         renderer = NULL;
     }
 }
@@ -249,11 +290,13 @@ avtPickActor::Remove()
 //    Kathleen Bonnell, Tue Jun  8 17:42:59 PDT 2004 
 //    For 2d, use correct vec components. 
 //
+//    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
+//    Added highlightSource shift.
 // ****************************************************************************
 
 void 
 avtPickActor::Shift(const double vec[3])
-{
+{  
     double newPos[3], newGlyphPos[3], shiftFactor ; 
     if (mode3D)
     {
@@ -266,7 +309,7 @@ avtPickActor::Shift(const double vec[3])
         newGlyphPos[2] = attach[2] + vec[2] *0.25;
     
         glyphActor->SetPosition(newGlyphPos[0], newGlyphPos[1], newGlyphPos[2]);
-    
+        if(highlightSource != NULL) highlightSource->Shift3d(vec, .7);
     }
     else
     {
@@ -274,11 +317,15 @@ avtPickActor::Shift(const double vec[3])
         newPos[0] = attach[0] + vec[0] *shiftFactor;
         newPos[1] = attach[1] + vec[1] *shiftFactor;
         newPos[2] = attach[2];
+        double vec2[3];
+        vec2[0] = 0.;
+        vec2[1] = 0.;
+        vec2[2] = vec[2];
+        if(highlightSource != NULL) highlightSource->Shift2d(.1);
     }
     lineSource->SetPoint2(newPos[0], newPos[1], newPos[2]);
     letterActor->SetPosition(newPos[0], newPos[1], newPos[2]);
 }
-
 
 // ****************************************************************************
 //  Method:  avtPickActor::SetMode3D
@@ -471,6 +518,8 @@ avtPickActor::SetForegroundColor(double r, double g, double b)
 //    Kathleen Bonnell, Fri Jun 27 16:57:45 PDT 2003 
 //    Hide glyphActor.
 //
+//    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
+//    hide highlightActor.
 // ****************************************************************************
 
 void 
@@ -479,6 +528,7 @@ avtPickActor::Hide()
     letterActor->VisibilityOff();
     lineActor->VisibilityOff();
     glyphActor->VisibilityOff();
+    if(highlightSource != NULL) highlightActor->VisibilityOff();
 }
 
 
@@ -494,14 +544,25 @@ avtPickActor::Hide()
 //    Kathleen Bonnell, Fri Jun 27 16:57:45 PDT 2003 
 //    Unhide glyphActor.
 //
+//    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
+//    Unhide highlightActor.
+//
+//    Matt Larsen, Tues July 18 09:08:01 PDT 2016 
+//    set visibility on only if pick letter is to be shown
+//
 // ****************************************************************************
 
 void 
 avtPickActor::UnHide()
 {
-    letterActor->VisibilityOn();
-    lineActor->VisibilityOn();
+    if(showPickLetter)
+    {
+        letterActor->VisibilityOn();
+        lineActor->VisibilityOn();
+    }
+    
     glyphActor->VisibilityOn();
+    if(highlightSource != NULL) highlightActor->VisibilityOn();
 }
 
 
@@ -638,4 +699,83 @@ const double *
 avtPickActor::GetLetterPosition()
 {
     return letterActor->GetPosition();
+}
+
+// ****************************************************************************
+//  Method:  avtPickActor::AddLine
+//
+//  Purpose:  Adds a line for a zone highlight 
+//            
+//
+//  Programmer:  Matt Larsen 
+//  Creation:    June 30, 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPickActor::AddLine(double p0[3], double p1[3])
+{
+    if(highlightSource == NULL)
+    {
+        highlightSource = vtkMultiLineSource::New();
+        highlightMapper = vtkPolyDataMapper::New();
+            highlightMapper->SetInputConnection(highlightSource->GetOutputPort());
+        highlightActor = vtkActor::New();
+        highlightActor->SetMapper(highlightMapper);
+            highlightActor->PickableOff(); 
+            highlightActor->GetProperty()->SetColor(1., 0., 0.);
+            highlightActor->GetProperty()->SetAmbient(1.);
+            highlightActor->GetProperty()->SetDiffuse(0.); 
+            highlightActor->GetProperty()->SetLineWidth(3.);
+    }
+   
+    highlightSource->AddLine(p0,p1);
+}
+
+// ****************************************************************************
+//  Method:  avtPickActor::GetShowPickLetter
+//
+//  Purpose: returns a boolean indicating if rhe pick letter is show
+//            
+//
+//  Programmer:  Matt Larsen 
+//  Creation:    July 18, 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtPickActor::GetShowPickLetter() const
+{
+   return showPickLetter;
+}
+
+// ****************************************************************************
+//  Method:  avtPickActor::SetShowPickLetter
+//
+//  Purpose: Sets whether the pick letter is to be shown. It is possilbe to be
+//           off if highlights are on and letters are off. In the past, if the 
+//           letter was not shown, then no actor was ever created.
+//            
+//
+//  Programmer:  Matt Larsen 
+//  Creation:    July 18, 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPickActor::SetShowPickLetter(const bool val) 
+{
+   showPickLetter = val;
+   if(!showPickLetter)
+   {
+        letterActor->VisibilityOff();
+        lineActor->VisibilityOff();
+   }
+    
 }

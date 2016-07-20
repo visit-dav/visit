@@ -497,6 +497,12 @@ QvisPickWindow::CreateDisplayOptionsTab()
             this, SLOT(displayPickLetterToggled(bool)));
     dLayout->addWidget(displayPickLetter, 4, 0, 1, 4);
 
+    displayPickHighlight = new QCheckBox(tr("Pick Highlights"), 
+                                      pageDisplay);
+    connect(displayPickHighlight, SIGNAL(toggled(bool)),
+            this, SLOT(displayPickHighlightToggled(bool)));
+    dLayout->addWidget(displayPickHighlight, 4, 2, 1, 2);
+
 
     // Node settings
     QGroupBox *nodeGroupBox = new QGroupBox(pageDisplay);
@@ -893,6 +899,14 @@ QvisPickWindow::UpdateAll(bool doAll)
         displayPickLetter->blockSignals(true);
         displayPickLetter->setChecked(pickAtts->GetShowPickLetter());
         displayPickLetter->blockSignals(false);
+    }
+
+    // displayPickHighlight
+    if (pickAtts->IsSelected(PickAttributes::ID_showPickHighlight) || doAll)
+    {
+        displayPickHighlight->blockSignals(true);
+        displayPickHighlight->setChecked(pickAtts->GetShowPickHighlight());
+        displayPickHighlight->blockSignals(false);
     }
 
     // createSpreadsheet
@@ -1902,6 +1916,28 @@ void
 QvisPickWindow::displayPickLetterToggled(bool val)
 {
     pickAtts->SetShowPickLetter(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::displayPickHighlihgtToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the pick highlight should be displayed. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Matt Larsen 
+// Creation:   Jul 18, 2016 
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::displayPickHighlightToggled(bool val)
+{   
+    pickAtts->SetShowPickHighlight(val);
     Apply();
 }
 

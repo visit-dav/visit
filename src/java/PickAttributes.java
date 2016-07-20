@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class PickAttributes extends AttributeSubject
 {
-    private static int PickAttributes_numAdditionalAtts = 70;
+    private static int PickAttributes_numAdditionalAtts = 72;
 
     // Enum values
     public final static int PICKTYPE_ZONE = 0;
@@ -98,6 +98,7 @@ public class PickAttributes extends AttributeSubject
         domain = -1;
         elementNumber = -1;
         incidentElements = new Vector();
+        cellCoordinates = new Vector();
         timeStep = -1;
         dimension = -1;
         databaseName = new String("");
@@ -158,6 +159,7 @@ public class PickAttributes extends AttributeSubject
         ghostType = 0;
         hasMixedGhostTypes = -1;
         linesData = false;
+        showPickHighlight = false;
         inputTopoDim = -1;
         meshCoordType = COORDINATETYPE_XY;
         createSpreadsheet = false;
@@ -190,6 +192,7 @@ public class PickAttributes extends AttributeSubject
         domain = -1;
         elementNumber = -1;
         incidentElements = new Vector();
+        cellCoordinates = new Vector();
         timeStep = -1;
         dimension = -1;
         databaseName = new String("");
@@ -250,6 +253,7 @@ public class PickAttributes extends AttributeSubject
         ghostType = 0;
         hasMixedGhostTypes = -1;
         linesData = false;
+        showPickHighlight = false;
         inputTopoDim = -1;
         meshCoordType = COORDINATETYPE_XY;
         createSpreadsheet = false;
@@ -291,6 +295,13 @@ public class PickAttributes extends AttributeSubject
             Integer iv = (Integer)obj.incidentElements.elementAt(i);
             incidentElements.addElement(new Integer(iv.intValue()));
         }
+        cellCoordinates = new Vector(obj.cellCoordinates.size());
+        for(i = 0; i < obj.cellCoordinates.size(); ++i)
+        {
+            Double dv = (Double)obj.cellCoordinates.elementAt(i);
+            cellCoordinates.addElement(new Double(dv.doubleValue()));
+        }
+
         timeStep = obj.timeStep;
         dimension = obj.dimension;
         databaseName = new String(obj.databaseName);
@@ -402,6 +413,7 @@ public class PickAttributes extends AttributeSubject
         ghostType = obj.ghostType;
         hasMixedGhostTypes = obj.hasMixedGhostTypes;
         linesData = obj.linesData;
+        showPickHighlight = obj.showPickHighlight;
         inputTopoDim = obj.inputTopoDim;
         meshCoordType = obj.meshCoordType;
         createSpreadsheet = obj.createSpreadsheet;
@@ -446,6 +458,15 @@ public class PickAttributes extends AttributeSubject
             Integer incidentElements1 = (Integer)incidentElements.elementAt(i);
             Integer incidentElements2 = (Integer)obj.incidentElements.elementAt(i);
             incidentElements_equal = incidentElements1.equals(incidentElements2);
+        }
+        // Compare the elements in the cellCoordinates vector.
+        boolean cellCoordinates_equal = (obj.cellCoordinates.size() == cellCoordinates.size());
+        for(i = 0; (i < cellCoordinates.size()) && cellCoordinates_equal; ++i)
+        {
+            // Make references to Double from Object.
+            Double cellCoordinates1 = (Double)cellCoordinates.elementAt(i);
+            Double cellCoordinates2 = (Double)obj.cellCoordinates.elementAt(i);
+            cellCoordinates_equal = cellCoordinates1.equals(cellCoordinates2);
         }
         // Compare the pickPoint arrays.
         boolean pickPoint_equal = true;
@@ -588,6 +609,7 @@ public class PickAttributes extends AttributeSubject
                 (domain == obj.domain) &&
                 (elementNumber == obj.elementNumber) &&
                 incidentElements_equal &&
+                cellCoordinates_equal &&
                 (timeStep == obj.timeStep) &&
                 (dimension == obj.dimension) &&
                 (databaseName.equals(obj.databaseName)) &&
@@ -633,6 +655,7 @@ public class PickAttributes extends AttributeSubject
                 (ghostType == obj.ghostType) &&
                 (hasMixedGhostTypes == obj.hasMixedGhostTypes) &&
                 (linesData == obj.linesData) &&
+                (showPickHighlight == obj.showPickHighlight) &&
                 (inputTopoDim == obj.inputTopoDim) &&
                 (meshCoordType == obj.meshCoordType) &&
                 (createSpreadsheet == obj.createSpreadsheet) &&
@@ -741,28 +764,34 @@ public class PickAttributes extends AttributeSubject
         Select(15);
     }
 
+    public void SetCellCoordinates(Vector cellCoordinates_)
+    {
+        cellCoordinates = cellCoordinates_;
+        Select(16);
+    }
+
     public void SetTimeStep(int timeStep_)
     {
         timeStep = timeStep_;
-        Select(16);
+        Select(17);
     }
 
     public void SetDimension(int dimension_)
     {
         dimension = dimension_;
-        Select(17);
+        Select(18);
     }
 
     public void SetDatabaseName(String databaseName_)
     {
         databaseName = databaseName_;
-        Select(18);
+        Select(19);
     }
 
     public void SetActiveVariable(String activeVariable_)
     {
         activeVariable = activeVariable_;
-        Select(19);
+        Select(20);
     }
 
     public void SetPickPoint(double[] pickPoint_)
@@ -770,7 +799,7 @@ public class PickAttributes extends AttributeSubject
         pickPoint[0] = pickPoint_[0];
         pickPoint[1] = pickPoint_[1];
         pickPoint[2] = pickPoint_[2];
-        Select(20);
+        Select(21);
     }
 
     public void SetPickPoint(double e0, double e1, double e2)
@@ -778,7 +807,7 @@ public class PickAttributes extends AttributeSubject
         pickPoint[0] = e0;
         pickPoint[1] = e1;
         pickPoint[2] = e2;
-        Select(20);
+        Select(21);
     }
 
     public void SetCellPoint(double[] cellPoint_)
@@ -786,7 +815,7 @@ public class PickAttributes extends AttributeSubject
         cellPoint[0] = cellPoint_[0];
         cellPoint[1] = cellPoint_[1];
         cellPoint[2] = cellPoint_[2];
-        Select(21);
+        Select(22);
     }
 
     public void SetCellPoint(double e0, double e1, double e2)
@@ -794,7 +823,7 @@ public class PickAttributes extends AttributeSubject
         cellPoint[0] = e0;
         cellPoint[1] = e1;
         cellPoint[2] = e2;
-        Select(21);
+        Select(22);
     }
 
     public void SetNodePoint(double[] nodePoint_)
@@ -802,7 +831,7 @@ public class PickAttributes extends AttributeSubject
         nodePoint[0] = nodePoint_[0];
         nodePoint[1] = nodePoint_[1];
         nodePoint[2] = nodePoint_[2];
-        Select(22);
+        Select(23);
     }
 
     public void SetNodePoint(double e0, double e1, double e2)
@@ -810,13 +839,13 @@ public class PickAttributes extends AttributeSubject
         nodePoint[0] = e0;
         nodePoint[1] = e1;
         nodePoint[2] = e2;
-        Select(22);
+        Select(23);
     }
 
     public void SetPlotBounds(Vector plotBounds_)
     {
         plotBounds = plotBounds_;
-        Select(23);
+        Select(24);
     }
 
     public void SetRayPoint1(double[] rayPoint1_)
@@ -824,7 +853,7 @@ public class PickAttributes extends AttributeSubject
         rayPoint1[0] = rayPoint1_[0];
         rayPoint1[1] = rayPoint1_[1];
         rayPoint1[2] = rayPoint1_[2];
-        Select(24);
+        Select(25);
     }
 
     public void SetRayPoint1(double e0, double e1, double e2)
@@ -832,7 +861,7 @@ public class PickAttributes extends AttributeSubject
         rayPoint1[0] = e0;
         rayPoint1[1] = e1;
         rayPoint1[2] = e2;
-        Select(24);
+        Select(25);
     }
 
     public void SetRayPoint2(double[] rayPoint2_)
@@ -840,7 +869,7 @@ public class PickAttributes extends AttributeSubject
         rayPoint2[0] = rayPoint2_[0];
         rayPoint2[1] = rayPoint2_[1];
         rayPoint2[2] = rayPoint2_[2];
-        Select(25);
+        Select(26);
     }
 
     public void SetRayPoint2(double e0, double e1, double e2)
@@ -848,265 +877,271 @@ public class PickAttributes extends AttributeSubject
         rayPoint2[0] = e0;
         rayPoint2[1] = e1;
         rayPoint2[2] = e2;
-        Select(25);
+        Select(26);
     }
 
     public void SetMeshInfo(String meshInfo_)
     {
         meshInfo = meshInfo_;
-        Select(26);
+        Select(27);
     }
 
     public void SetRealElementNumber(int realElementNumber_)
     {
         realElementNumber = realElementNumber_;
-        Select(27);
+        Select(28);
     }
 
     public void SetRealIncidentElements(Vector realIncidentElements_)
     {
         realIncidentElements = realIncidentElements_;
-        Select(28);
+        Select(29);
     }
 
     public void SetPnodeCoords(Vector pnodeCoords_)
     {
         pnodeCoords = pnodeCoords_;
-        Select(29);
+        Select(30);
     }
 
     public void SetDnodeCoords(Vector dnodeCoords_)
     {
         dnodeCoords = dnodeCoords_;
-        Select(30);
+        Select(31);
     }
 
     public void SetBnodeCoords(Vector bnodeCoords_)
     {
         bnodeCoords = bnodeCoords_;
-        Select(31);
+        Select(32);
     }
 
     public void SetDzoneCoords(Vector dzoneCoords_)
     {
         dzoneCoords = dzoneCoords_;
-        Select(32);
+        Select(33);
     }
 
     public void SetBzoneCoords(Vector bzoneCoords_)
     {
         bzoneCoords = bzoneCoords_;
-        Select(33);
+        Select(34);
     }
 
     public void SetNeedTransformMessage(boolean needTransformMessage_)
     {
         needTransformMessage = needTransformMessage_;
-        Select(34);
+        Select(35);
     }
 
     public void SetInvalidVars(Vector invalidVars_)
     {
         invalidVars = invalidVars_;
-        Select(36);
+        Select(37);
     }
 
     public void SetDoTimeCurve(boolean doTimeCurve_)
     {
         doTimeCurve = doTimeCurve_;
-        Select(37);
+        Select(38);
     }
 
     public void SetErrorMessage(String errorMessage_)
     {
         errorMessage = errorMessage_;
-        Select(38);
+        Select(39);
     }
 
     public void SetError(boolean error_)
     {
         error = error_;
-        Select(39);
+        Select(40);
     }
 
     public void SetMatSelected(boolean matSelected_)
     {
         matSelected = matSelected_;
-        Select(40);
+        Select(41);
     }
 
     public void SetNeedActualCoords(boolean needActualCoords_)
     {
         needActualCoords = needActualCoords_;
-        Select(41);
+        Select(42);
     }
 
     public void SetConciseOutput(boolean conciseOutput_)
     {
         conciseOutput = conciseOutput_;
-        Select(42);
+        Select(43);
     }
 
     public void SetShowTimeStep(boolean showTimeStep_)
     {
         showTimeStep = showTimeStep_;
-        Select(43);
+        Select(44);
     }
 
     public void SetShowMeshName(boolean showMeshName_)
     {
         showMeshName = showMeshName_;
-        Select(44);
+        Select(45);
     }
 
     public void SetBlockPieceName(String blockPieceName_)
     {
         blockPieceName = blockPieceName_;
-        Select(45);
+        Select(46);
     }
 
     public void SetGroupPieceName(String groupPieceName_)
     {
         groupPieceName = groupPieceName_;
-        Select(46);
+        Select(47);
     }
 
     public void SetGhosts(Vector ghosts_)
     {
         ghosts = ghosts_;
-        Select(47);
+        Select(48);
     }
 
     public void SetIncludeGhosts(boolean includeGhosts_)
     {
         includeGhosts = includeGhosts_;
-        Select(48);
+        Select(49);
     }
 
     public void SetElementIsGhost(boolean elementIsGhost_)
     {
         elementIsGhost = elementIsGhost_;
-        Select(49);
+        Select(50);
     }
 
     public void SetRequiresGlyphPick(boolean requiresGlyphPick_)
     {
         requiresGlyphPick = requiresGlyphPick_;
-        Select(50);
+        Select(51);
     }
 
     public void SetLocationSuccessful(boolean locationSuccessful_)
     {
         locationSuccessful = locationSuccessful_;
-        Select(51);
+        Select(52);
     }
 
     public void SetShowGlobalIds(boolean showGlobalIds_)
     {
         showGlobalIds = showGlobalIds_;
-        Select(52);
+        Select(53);
     }
 
     public void SetGlobalElement(int globalElement_)
     {
         globalElement = globalElement_;
-        Select(53);
+        Select(54);
     }
 
     public void SetGlobalIncidentElements(Vector globalIncidentElements_)
     {
         globalIncidentElements = globalIncidentElements_;
-        Select(54);
+        Select(55);
     }
 
     public void SetElementIsGlobal(boolean elementIsGlobal_)
     {
         elementIsGlobal = elementIsGlobal_;
-        Select(55);
+        Select(56);
     }
 
     public void SetShowPickLetter(boolean showPickLetter_)
     {
         showPickLetter = showPickLetter_;
-        Select(56);
+        Select(57);
     }
 
     public void SetReusePickLetter(boolean reusePickLetter_)
     {
         reusePickLetter = reusePickLetter_;
-        Select(57);
+        Select(58);
     }
 
     public void SetGhostType(int ghostType_)
     {
         ghostType = ghostType_;
-        Select(58);
+        Select(59);
     }
 
     public void SetHasMixedGhostTypes(int hasMixedGhostTypes_)
     {
         hasMixedGhostTypes = hasMixedGhostTypes_;
-        Select(59);
+        Select(60);
     }
 
     public void SetLinesData(boolean linesData_)
     {
         linesData = linesData_;
-        Select(60);
+        Select(61);
+    }
+
+    public void SetShowPickHighlight(boolean showPickHighlight_)
+    {
+        showPickHighlight = showPickHighlight_;
+        Select(62);
     }
 
     public void SetInputTopoDim(int inputTopoDim_)
     {
         inputTopoDim = inputTopoDim_;
-        Select(61);
+        Select(63);
     }
 
     public void SetMeshCoordType(int meshCoordType_)
     {
         meshCoordType = meshCoordType_;
-        Select(62);
+        Select(64);
     }
 
     public void SetCreateSpreadsheet(boolean createSpreadsheet_)
     {
         createSpreadsheet = createSpreadsheet_;
-        Select(63);
+        Select(65);
     }
 
     public void SetSubsetName(String subsetName_)
     {
         subsetName = subsetName_;
-        Select(64);
+        Select(66);
     }
 
     public void SetFloatFormat(String floatFormat_)
     {
         floatFormat = floatFormat_;
-        Select(65);
+        Select(67);
     }
 
     public void SetTimePreserveCoord(boolean timePreserveCoord_)
     {
         timePreserveCoord = timePreserveCoord_;
-        Select(66);
+        Select(68);
     }
 
     public void SetTimeCurveType(int timeCurveType_)
     {
         timeCurveType = timeCurveType_;
-        Select(67);
+        Select(69);
     }
 
     public void SetTimeOptions(MapNode timeOptions_)
     {
         timeOptions = timeOptions_;
-        Select(68);
+        Select(70);
     }
 
     public void SetPlotRequested(MapNode plotRequested_)
     {
         plotRequested = plotRequested_;
-        Select(69);
+        Select(71);
     }
 
     // Property getting methods
@@ -1126,6 +1161,7 @@ public class PickAttributes extends AttributeSubject
     public int      GetDomain() { return domain; }
     public int      GetElementNumber() { return elementNumber; }
     public Vector   GetIncidentElements() { return incidentElements; }
+    public Vector   GetCellCoordinates() { return cellCoordinates; }
     public int      GetTimeStep() { return timeStep; }
     public int      GetDimension() { return dimension; }
     public String   GetDatabaseName() { return databaseName; }
@@ -1171,6 +1207,7 @@ public class PickAttributes extends AttributeSubject
     public int      GetGhostType() { return ghostType; }
     public int      GetHasMixedGhostTypes() { return hasMixedGhostTypes; }
     public boolean  GetLinesData() { return linesData; }
+    public boolean  GetShowPickHighlight() { return showPickHighlight; }
     public int      GetInputTopoDim() { return inputTopoDim; }
     public int      GetMeshCoordType() { return meshCoordType; }
     public boolean  GetCreateSpreadsheet() { return createSpreadsheet; }
@@ -1217,44 +1254,46 @@ public class PickAttributes extends AttributeSubject
         if(WriteSelect(15, buf))
             buf.WriteIntVector(incidentElements);
         if(WriteSelect(16, buf))
-            buf.WriteInt(timeStep);
+            buf.WriteDoubleVector(cellCoordinates);
         if(WriteSelect(17, buf))
-            buf.WriteInt(dimension);
+            buf.WriteInt(timeStep);
         if(WriteSelect(18, buf))
-            buf.WriteString(databaseName);
+            buf.WriteInt(dimension);
         if(WriteSelect(19, buf))
-            buf.WriteString(activeVariable);
+            buf.WriteString(databaseName);
         if(WriteSelect(20, buf))
-            buf.WriteDoubleArray(pickPoint);
+            buf.WriteString(activeVariable);
         if(WriteSelect(21, buf))
-            buf.WriteDoubleArray(cellPoint);
+            buf.WriteDoubleArray(pickPoint);
         if(WriteSelect(22, buf))
-            buf.WriteDoubleArray(nodePoint);
+            buf.WriteDoubleArray(cellPoint);
         if(WriteSelect(23, buf))
-            buf.WriteDoubleVector(plotBounds);
+            buf.WriteDoubleArray(nodePoint);
         if(WriteSelect(24, buf))
-            buf.WriteDoubleArray(rayPoint1);
+            buf.WriteDoubleVector(plotBounds);
         if(WriteSelect(25, buf))
-            buf.WriteDoubleArray(rayPoint2);
+            buf.WriteDoubleArray(rayPoint1);
         if(WriteSelect(26, buf))
-            buf.WriteString(meshInfo);
+            buf.WriteDoubleArray(rayPoint2);
         if(WriteSelect(27, buf))
-            buf.WriteInt(realElementNumber);
+            buf.WriteString(meshInfo);
         if(WriteSelect(28, buf))
-            buf.WriteIntVector(realIncidentElements);
+            buf.WriteInt(realElementNumber);
         if(WriteSelect(29, buf))
-            buf.WriteStringVector(pnodeCoords);
+            buf.WriteIntVector(realIncidentElements);
         if(WriteSelect(30, buf))
-            buf.WriteStringVector(dnodeCoords);
+            buf.WriteStringVector(pnodeCoords);
         if(WriteSelect(31, buf))
-            buf.WriteStringVector(bnodeCoords);
+            buf.WriteStringVector(dnodeCoords);
         if(WriteSelect(32, buf))
-            buf.WriteStringVector(dzoneCoords);
+            buf.WriteStringVector(bnodeCoords);
         if(WriteSelect(33, buf))
-            buf.WriteStringVector(bzoneCoords);
+            buf.WriteStringVector(dzoneCoords);
         if(WriteSelect(34, buf))
-            buf.WriteBool(needTransformMessage);
+            buf.WriteStringVector(bzoneCoords);
         if(WriteSelect(35, buf))
+            buf.WriteBool(needTransformMessage);
+        if(WriteSelect(36, buf))
         {
             buf.WriteInt(varInfo.size());
             for(int i = 0; i < varInfo.size(); ++i)
@@ -1263,73 +1302,75 @@ public class PickAttributes extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(36, buf))
-            buf.WriteStringVector(invalidVars);
         if(WriteSelect(37, buf))
-            buf.WriteBool(doTimeCurve);
+            buf.WriteStringVector(invalidVars);
         if(WriteSelect(38, buf))
-            buf.WriteString(errorMessage);
+            buf.WriteBool(doTimeCurve);
         if(WriteSelect(39, buf))
-            buf.WriteBool(error);
+            buf.WriteString(errorMessage);
         if(WriteSelect(40, buf))
-            buf.WriteBool(matSelected);
+            buf.WriteBool(error);
         if(WriteSelect(41, buf))
-            buf.WriteBool(needActualCoords);
+            buf.WriteBool(matSelected);
         if(WriteSelect(42, buf))
-            buf.WriteBool(conciseOutput);
+            buf.WriteBool(needActualCoords);
         if(WriteSelect(43, buf))
-            buf.WriteBool(showTimeStep);
+            buf.WriteBool(conciseOutput);
         if(WriteSelect(44, buf))
-            buf.WriteBool(showMeshName);
+            buf.WriteBool(showTimeStep);
         if(WriteSelect(45, buf))
-            buf.WriteString(blockPieceName);
+            buf.WriteBool(showMeshName);
         if(WriteSelect(46, buf))
-            buf.WriteString(groupPieceName);
+            buf.WriteString(blockPieceName);
         if(WriteSelect(47, buf))
-            buf.WriteIntVector(ghosts);
+            buf.WriteString(groupPieceName);
         if(WriteSelect(48, buf))
-            buf.WriteBool(includeGhosts);
+            buf.WriteIntVector(ghosts);
         if(WriteSelect(49, buf))
-            buf.WriteBool(elementIsGhost);
+            buf.WriteBool(includeGhosts);
         if(WriteSelect(50, buf))
-            buf.WriteBool(requiresGlyphPick);
+            buf.WriteBool(elementIsGhost);
         if(WriteSelect(51, buf))
-            buf.WriteBool(locationSuccessful);
+            buf.WriteBool(requiresGlyphPick);
         if(WriteSelect(52, buf))
-            buf.WriteBool(showGlobalIds);
+            buf.WriteBool(locationSuccessful);
         if(WriteSelect(53, buf))
-            buf.WriteInt(globalElement);
+            buf.WriteBool(showGlobalIds);
         if(WriteSelect(54, buf))
-            buf.WriteIntVector(globalIncidentElements);
+            buf.WriteInt(globalElement);
         if(WriteSelect(55, buf))
-            buf.WriteBool(elementIsGlobal);
+            buf.WriteIntVector(globalIncidentElements);
         if(WriteSelect(56, buf))
-            buf.WriteBool(showPickLetter);
+            buf.WriteBool(elementIsGlobal);
         if(WriteSelect(57, buf))
-            buf.WriteBool(reusePickLetter);
+            buf.WriteBool(showPickLetter);
         if(WriteSelect(58, buf))
-            buf.WriteInt(ghostType);
+            buf.WriteBool(reusePickLetter);
         if(WriteSelect(59, buf))
-            buf.WriteInt(hasMixedGhostTypes);
+            buf.WriteInt(ghostType);
         if(WriteSelect(60, buf))
-            buf.WriteBool(linesData);
+            buf.WriteInt(hasMixedGhostTypes);
         if(WriteSelect(61, buf))
-            buf.WriteInt(inputTopoDim);
+            buf.WriteBool(linesData);
         if(WriteSelect(62, buf))
-            buf.WriteInt(meshCoordType);
+            buf.WriteBool(showPickHighlight);
         if(WriteSelect(63, buf))
-            buf.WriteBool(createSpreadsheet);
+            buf.WriteInt(inputTopoDim);
         if(WriteSelect(64, buf))
-            buf.WriteString(subsetName);
+            buf.WriteInt(meshCoordType);
         if(WriteSelect(65, buf))
-            buf.WriteString(floatFormat);
+            buf.WriteBool(createSpreadsheet);
         if(WriteSelect(66, buf))
-            buf.WriteBool(timePreserveCoord);
+            buf.WriteString(subsetName);
         if(WriteSelect(67, buf))
-            buf.WriteInt(timeCurveType);
+            buf.WriteString(floatFormat);
         if(WriteSelect(68, buf))
-            timeOptions.Write(buf);
+            buf.WriteBool(timePreserveCoord);
         if(WriteSelect(69, buf))
+            buf.WriteInt(timeCurveType);
+        if(WriteSelect(70, buf))
+            timeOptions.Write(buf);
+        if(WriteSelect(71, buf))
             plotRequested.Write(buf);
     }
 
@@ -1386,63 +1427,66 @@ public class PickAttributes extends AttributeSubject
             SetIncidentElements(buf.ReadIntVector());
             break;
         case 16:
-            SetTimeStep(buf.ReadInt());
+            SetCellCoordinates(buf.ReadDoubleVector());
             break;
         case 17:
-            SetDimension(buf.ReadInt());
+            SetTimeStep(buf.ReadInt());
             break;
         case 18:
-            SetDatabaseName(buf.ReadString());
+            SetDimension(buf.ReadInt());
             break;
         case 19:
-            SetActiveVariable(buf.ReadString());
+            SetDatabaseName(buf.ReadString());
             break;
         case 20:
-            SetPickPoint(buf.ReadDoubleArray());
+            SetActiveVariable(buf.ReadString());
             break;
         case 21:
-            SetCellPoint(buf.ReadDoubleArray());
+            SetPickPoint(buf.ReadDoubleArray());
             break;
         case 22:
-            SetNodePoint(buf.ReadDoubleArray());
+            SetCellPoint(buf.ReadDoubleArray());
             break;
         case 23:
-            SetPlotBounds(buf.ReadDoubleVector());
+            SetNodePoint(buf.ReadDoubleArray());
             break;
         case 24:
-            SetRayPoint1(buf.ReadDoubleArray());
+            SetPlotBounds(buf.ReadDoubleVector());
             break;
         case 25:
-            SetRayPoint2(buf.ReadDoubleArray());
+            SetRayPoint1(buf.ReadDoubleArray());
             break;
         case 26:
-            SetMeshInfo(buf.ReadString());
+            SetRayPoint2(buf.ReadDoubleArray());
             break;
         case 27:
-            SetRealElementNumber(buf.ReadInt());
+            SetMeshInfo(buf.ReadString());
             break;
         case 28:
-            SetRealIncidentElements(buf.ReadIntVector());
+            SetRealElementNumber(buf.ReadInt());
             break;
         case 29:
-            SetPnodeCoords(buf.ReadStringVector());
+            SetRealIncidentElements(buf.ReadIntVector());
             break;
         case 30:
-            SetDnodeCoords(buf.ReadStringVector());
+            SetPnodeCoords(buf.ReadStringVector());
             break;
         case 31:
-            SetBnodeCoords(buf.ReadStringVector());
+            SetDnodeCoords(buf.ReadStringVector());
             break;
         case 32:
-            SetDzoneCoords(buf.ReadStringVector());
+            SetBnodeCoords(buf.ReadStringVector());
             break;
         case 33:
-            SetBzoneCoords(buf.ReadStringVector());
+            SetDzoneCoords(buf.ReadStringVector());
             break;
         case 34:
-            SetNeedTransformMessage(buf.ReadBool());
+            SetBzoneCoords(buf.ReadStringVector());
             break;
         case 35:
+            SetNeedTransformMessage(buf.ReadBool());
+            break;
+        case 36:
             {
                 int len = buf.ReadInt();
                 varInfo.clear();
@@ -1453,108 +1497,111 @@ public class PickAttributes extends AttributeSubject
                     varInfo.addElement(tmp);
                 }
             }
-            Select(35);
-            break;
-        case 36:
-            SetInvalidVars(buf.ReadStringVector());
+            Select(36);
             break;
         case 37:
-            SetDoTimeCurve(buf.ReadBool());
+            SetInvalidVars(buf.ReadStringVector());
             break;
         case 38:
-            SetErrorMessage(buf.ReadString());
+            SetDoTimeCurve(buf.ReadBool());
             break;
         case 39:
-            SetError(buf.ReadBool());
+            SetErrorMessage(buf.ReadString());
             break;
         case 40:
-            SetMatSelected(buf.ReadBool());
+            SetError(buf.ReadBool());
             break;
         case 41:
-            SetNeedActualCoords(buf.ReadBool());
+            SetMatSelected(buf.ReadBool());
             break;
         case 42:
-            SetConciseOutput(buf.ReadBool());
+            SetNeedActualCoords(buf.ReadBool());
             break;
         case 43:
-            SetShowTimeStep(buf.ReadBool());
+            SetConciseOutput(buf.ReadBool());
             break;
         case 44:
-            SetShowMeshName(buf.ReadBool());
+            SetShowTimeStep(buf.ReadBool());
             break;
         case 45:
-            SetBlockPieceName(buf.ReadString());
+            SetShowMeshName(buf.ReadBool());
             break;
         case 46:
-            SetGroupPieceName(buf.ReadString());
+            SetBlockPieceName(buf.ReadString());
             break;
         case 47:
-            SetGhosts(buf.ReadIntVector());
+            SetGroupPieceName(buf.ReadString());
             break;
         case 48:
-            SetIncludeGhosts(buf.ReadBool());
+            SetGhosts(buf.ReadIntVector());
             break;
         case 49:
-            SetElementIsGhost(buf.ReadBool());
+            SetIncludeGhosts(buf.ReadBool());
             break;
         case 50:
-            SetRequiresGlyphPick(buf.ReadBool());
+            SetElementIsGhost(buf.ReadBool());
             break;
         case 51:
-            SetLocationSuccessful(buf.ReadBool());
+            SetRequiresGlyphPick(buf.ReadBool());
             break;
         case 52:
-            SetShowGlobalIds(buf.ReadBool());
+            SetLocationSuccessful(buf.ReadBool());
             break;
         case 53:
-            SetGlobalElement(buf.ReadInt());
+            SetShowGlobalIds(buf.ReadBool());
             break;
         case 54:
-            SetGlobalIncidentElements(buf.ReadIntVector());
+            SetGlobalElement(buf.ReadInt());
             break;
         case 55:
-            SetElementIsGlobal(buf.ReadBool());
+            SetGlobalIncidentElements(buf.ReadIntVector());
             break;
         case 56:
-            SetShowPickLetter(buf.ReadBool());
+            SetElementIsGlobal(buf.ReadBool());
             break;
         case 57:
-            SetReusePickLetter(buf.ReadBool());
+            SetShowPickLetter(buf.ReadBool());
             break;
         case 58:
-            SetGhostType(buf.ReadInt());
+            SetReusePickLetter(buf.ReadBool());
             break;
         case 59:
-            SetHasMixedGhostTypes(buf.ReadInt());
+            SetGhostType(buf.ReadInt());
             break;
         case 60:
-            SetLinesData(buf.ReadBool());
+            SetHasMixedGhostTypes(buf.ReadInt());
             break;
         case 61:
-            SetInputTopoDim(buf.ReadInt());
+            SetLinesData(buf.ReadBool());
             break;
         case 62:
-            SetMeshCoordType(buf.ReadInt());
+            SetShowPickHighlight(buf.ReadBool());
             break;
         case 63:
-            SetCreateSpreadsheet(buf.ReadBool());
+            SetInputTopoDim(buf.ReadInt());
             break;
         case 64:
-            SetSubsetName(buf.ReadString());
+            SetMeshCoordType(buf.ReadInt());
             break;
         case 65:
-            SetFloatFormat(buf.ReadString());
+            SetCreateSpreadsheet(buf.ReadBool());
             break;
         case 66:
-            SetTimePreserveCoord(buf.ReadBool());
+            SetSubsetName(buf.ReadString());
             break;
         case 67:
-            SetTimeCurveType(buf.ReadInt());
+            SetFloatFormat(buf.ReadString());
             break;
         case 68:
-            timeOptions.Read(buf);
+            SetTimePreserveCoord(buf.ReadBool());
             break;
         case 69:
+            SetTimeCurveType(buf.ReadInt());
+            break;
+        case 70:
+            timeOptions.Read(buf);
+            break;
+        case 71:
             plotRequested.Read(buf);
             break;
         }
@@ -1592,6 +1639,7 @@ public class PickAttributes extends AttributeSubject
         str = str + intToString("domain", domain, indent) + "\n";
         str = str + intToString("elementNumber", elementNumber, indent) + "\n";
         str = str + intVectorToString("incidentElements", incidentElements, indent) + "\n";
+        str = str + doubleVectorToString("cellCoordinates", cellCoordinates, indent) + "\n";
         str = str + intToString("timeStep", timeStep, indent) + "\n";
         str = str + intToString("dimension", dimension, indent) + "\n";
         str = str + stringToString("databaseName", databaseName, indent) + "\n";
@@ -1646,6 +1694,7 @@ public class PickAttributes extends AttributeSubject
         str = str + intToString("ghostType", ghostType, indent) + "\n";
         str = str + intToString("hasMixedGhostTypes", hasMixedGhostTypes, indent) + "\n";
         str = str + boolToString("linesData", linesData, indent) + "\n";
+        str = str + boolToString("showPickHighlight", showPickHighlight, indent) + "\n";
         str = str + intToString("inputTopoDim", inputTopoDim, indent) + "\n";
         str = str + indent + "meshCoordType = ";
         if(meshCoordType == COORDINATETYPE_XY)
@@ -1674,13 +1723,13 @@ public class PickAttributes extends AttributeSubject
     public void AddVarInfo(PickVarInfo obj)
     {
         varInfo.addElement(new PickVarInfo(obj));
-        Select(35);
+        Select(36);
     }
 
     public void ClearVarInfos()
     {
         varInfo.clear();
-        Select(35);
+        Select(36);
     }
 
     public void RemoveVarInfo(int index)
@@ -1688,7 +1737,7 @@ public class PickAttributes extends AttributeSubject
         if(index >= 0 && index < varInfo.size())
         {
             varInfo.remove(index);
-            Select(35);
+            Select(36);
         }
     }
 
@@ -1721,6 +1770,7 @@ public class PickAttributes extends AttributeSubject
     private int      domain;
     private int      elementNumber;
     private Vector   incidentElements; // vector of Integer objects
+    private Vector   cellCoordinates; // vector of Double objects
     private int      timeStep;
     private int      dimension;
     private String   databaseName;
@@ -1766,6 +1816,7 @@ public class PickAttributes extends AttributeSubject
     private int      ghostType;
     private int      hasMixedGhostTypes;
     private boolean  linesData;
+    private boolean  showPickHighlight;
     private int      inputTopoDim;
     private int      meshCoordType;
     private boolean  createSpreadsheet;

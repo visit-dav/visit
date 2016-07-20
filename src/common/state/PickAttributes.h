@@ -112,6 +112,7 @@ public:
     void SelectVariables();
     void SelectPickLetter();
     void SelectIncidentElements();
+    void SelectCellCoordinates();
     void SelectDatabaseName();
     void SelectActiveVariable();
     void SelectPickPoint();
@@ -156,6 +157,7 @@ public:
     void SetDomain(int domain_);
     void SetElementNumber(int elementNumber_);
     void SetIncidentElements(const intVector &incidentElements_);
+    void SetCellCoordinates(const doubleVector &cellCoordinates_);
     void SetTimeStep(int timeStep_);
     void SetDimension(int dimension_);
     void SetDatabaseName(const std::string &databaseName_);
@@ -200,6 +202,7 @@ public:
     void SetGhostType(int ghostType_);
     void SetHasMixedGhostTypes(int hasMixedGhostTypes_);
     void SetLinesData(bool linesData_);
+    void SetShowPickHighlight(bool showPickHighlight_);
     void SetInputTopoDim(int inputTopoDim_);
     void SetMeshCoordType(CoordinateType meshCoordType_);
     void SetCreateSpreadsheet(bool createSpreadsheet_);
@@ -230,6 +233,8 @@ public:
     int                GetElementNumber() const;
     const intVector    &GetIncidentElements() const;
           intVector    &GetIncidentElements();
+    const doubleVector &GetCellCoordinates() const;
+          doubleVector &GetCellCoordinates();
     int                GetTimeStep() const;
     int                GetDimension() const;
     const std::string  &GetDatabaseName() const;
@@ -297,6 +302,7 @@ public:
     int                GetGhostType() const;
     int                GetHasMixedGhostTypes() const;
     bool               GetLinesData() const;
+    bool               GetShowPickHighlight() const;
     int                GetInputTopoDim() const;
     CoordinateType     GetMeshCoordType() const;
     bool               GetCreateSpreadsheet() const;
@@ -357,6 +363,8 @@ public:
     void CreateConciseOutputString(std::string &os, bool withLetter = true);
     void SetRayPoint1(const doubleVector &);
     void SetRayPoint2(const doubleVector &);
+    void AddLine(const double *_c0, const double *_c1, const int &pos);
+    void ClearLines();
     void CreateOutputMapNode(MapNode &m, bool withLetter);
     void CreateXMLString(std::string &os, bool withLetter = true);
 
@@ -378,6 +386,7 @@ public:
         ID_domain,
         ID_elementNumber,
         ID_incidentElements,
+        ID_cellCoordinates,
         ID_timeStep,
         ID_dimension,
         ID_databaseName,
@@ -423,6 +432,7 @@ public:
         ID_ghostType,
         ID_hasMixedGhostTypes,
         ID_linesData,
+        ID_showPickHighlight,
         ID_inputTopoDim,
         ID_meshCoordType,
         ID_createSpreadsheet,
@@ -454,6 +464,7 @@ private:
     int                  domain;
     int                  elementNumber;
     intVector            incidentElements;
+    doubleVector         cellCoordinates;
     int                  timeStep;
     int                  dimension;
     std::string          databaseName;
@@ -499,6 +510,7 @@ private:
     int                  ghostType;
     int                  hasMixedGhostTypes;
     bool                 linesData;
+    bool                 showPickHighlight;
     int                  inputTopoDim;
     int                  meshCoordType;
     bool                 createSpreadsheet;
@@ -513,6 +525,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibiibssbimm"
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibbiibssbimm"
 
 #endif
