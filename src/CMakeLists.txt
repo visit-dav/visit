@@ -561,15 +561,17 @@ ENDIF()
 # If the config-site file above has not set a NEKTAR++ version set a
 # default NEKTAR++ version of 4.0.0.  
 #-----------------------------------------------------------------------------
-IF(NOT NEKTAR++_VERSION)
-  IF(VISIT_NEKTAR++_VERSION)
+IF(EXISTS ${VISIT_NEKTAR++_DIR})
+  IF(NOT NEKTAR++_VERSION)
+    IF(VISIT_NEKTAR++_VERSION)
       IF(${VISIT_NEKTAR++_VERSION} VERSION_LESS ${NEKTAR++_MINIMUM_VERSION})
           MESSAGE(FATAL_ERROR "NEKTAR++ version must be at least ${NEKTAR++_MINIMUM_VERSION}")
       ENDIF()
       SETUP_APP_VERSION(NEKTAR++ ${VISIT_NEKTAR++_VERSION})
-  ELSE()
+    ELSE()
       MESSAGE(STATUS "VISIT_NEKTAR++_VERSION NOT FOUND assuming 4.0.0")
       SETUP_APP_VERSION(NEKTAR++ 4.0.0)
+    ENDIF()
   ENDIF()
 ENDIF()
 
