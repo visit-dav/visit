@@ -266,7 +266,7 @@ function apply_qt_patch
     if [[ ${QT_VERSION} == 4.8.6 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]]; then
             if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
-                        "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
+                  "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
                 apply_qt_486_osx1011_patch 
             fi
         fi
