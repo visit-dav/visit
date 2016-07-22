@@ -27,16 +27,18 @@
 //   Changed lineSource to a multiLineSouce to support pick highlights
 //   Added AddLine to add lines
 //   Added shift method to move lines from original points by a supplied vector
+//
+//   Matt Larsen, Thus Jul 21 14:00:12 PST 2016
+//   Corrected VTK_LIGHT_API macro
 
 #ifndef vtkMultiLineSource_h
 #define vtkMultiLineSource_h
 
-#include "vtkFiltersSourcesModule.h" // For export macro
 #include "vtkPolyDataAlgorithm.h"
-
+#include <visit_vtk_light_exports.h>
 class vtkPoints;
 
-class VTKFILTERSSOURCES_EXPORT vtkMultiLineSource : public vtkPolyDataAlgorithm
+class VISIT_VTK_LIGHT_API vtkMultiLineSource : public vtkPolyDataAlgorithm
 {
 public:
   static vtkMultiLineSource *New();
