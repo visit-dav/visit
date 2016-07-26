@@ -786,7 +786,7 @@ while [ "$config" = "prompt" ]; do
    echo "   18) Sandia closed network"
    echo "   19) Swiss National Supercomputing Center (CSCS) network"
    echo "   20) TACC network"
-   echo "   21) U of Michigan Center for Advanced Computing network"
+   echo "   21) U of Michigan Advanced Research Computing (ARC-TS) network"
    echo "   22) U of Utah Center for High Performance Computing network"
    echo ""
    echo "Enter (1-22):"
