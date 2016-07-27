@@ -37,14 +37,11 @@
 #*****************************************************************************
 
 SET(PY_TESTS
-    pathlines
-    #pics
     truecolor)
 
 PY_3RDPARTY_TEST(PY_TESTS SILO
     contour curve mesh multicolor parcoords pseudocolor ray_trace scatter
-    singlecolor sl_integration sl_termination streamline_geom
-    streamlines surface tensor vector volumePlot)
+    singlecolor surface tensor vector volumePlot)
 
 PY_3RDPARTIES_TEST(TESTLIST PY_TESTS
     LIBNAMES SILO BOXLIB
