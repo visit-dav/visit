@@ -52,10 +52,9 @@ PY_3RDPARTIES_TEST(TESTLIST PY_TESTS
 
 PY_3RDPARTY_TEST(PY_TESTS SILO
     avg_value bestfitline casetest centroid consistencyChecks curvature
-    database hohlraum l2norm length pickarray
+    database hohlraum IntegralCurveInfo l2norm length pickarray
     pickcleanzonesonly pickNamedArgs py_queries queryMultiWindow
-    revolved_surface_area scf streamlineInfo watertight
-    xrayimage)
+    revolved_surface_area scf watertight xrayimage)
 
 IF (HAVE_OSMESA)
     # osmesa rasterizes lines differently and
