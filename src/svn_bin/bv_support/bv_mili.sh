@@ -23,12 +23,12 @@ function bv_mili_depends_on
 
 function bv_mili_info
 {
-    export MILI_FILE=${MILI_FILE:-"mili_15_1.tar.gz"}
+    export MILI_FILE=${MILI_FILE:-"mili-LGPL-15.1.tar.gz"}
     export MILI_VERSION=${MILI_VERSION:-"15.1"}
     export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"15.1"}
     export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
-    export MILI_MD5_CHECKSUM="115c6aaf742f151aea6c644d719ee067"
-    export MILI_SHA256_CHECKSUM="564c50b003aded7ec33977f8192fbf6ec2f5dc22a41c9551a8fa492c484031bf"
+    export MILI_MD5_CHECKSUM="770cdb75d13a91151046a03f81543a06"
+    export MILI_SHA256_CHECKSUM="ec7e938a6a80c5bd1ffd63bb84eeecb2d163f59fece0dbaf699d8f455e6259a1"
 }
 
 function bv_mili_print
@@ -990,9 +990,11 @@ function apply_mili_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
-        apply_mili_151_darwin_patch4
-        if [[ $? != 0 ]] ; then
-            return 1
+        if [[ "${MILI_FILE}" == "mili_15_1.tar.gz" ]]; then
+            apply_mili_151_darwin_patch4
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
         fi
     fi
 
