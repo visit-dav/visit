@@ -128,8 +128,8 @@ EOF
 function apply_advio_12_patch
 {
     if [[ "$OPSYS" == "Darwin" ]] ; then
-        if [[ `sw_vers -productVersion` == 10.9.[0-9]* ]] ; then
-            info "Applying OS X 10.9 Mavericks patch . . ."
+        if [[ `sw_vers -productVersion` == 10.9.[0-9]* || `sw_vers -productVersion` == 10.1*.[0-9]* ]] ; then
+            info "Applying OS X patch . . ."
             apply_advio_12_mavericks_patch
         fi
     fi
@@ -154,6 +154,9 @@ function apply_advio_patch
 #                                                                             #
 # Kevin Griffin, Tue Nov 18 18:25:38 PST 2014                                 #
 # Added patch for OS X 10.9 Mavericks.                                        #
+#                                                                             #
+# Kevin Griffin, Mon Aug 8 17:34:52 PDT 2016                                  #
+# Updated patch for OS X 10.1*.                                                 #
 # *************************************************************************** #
 
 function build_advio
