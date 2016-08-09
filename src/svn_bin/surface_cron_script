@@ -12,4 +12,4 @@ svn_bin/regressiontest_surface
 
 sleep 600
 
-svn_bin/regressiontest_surface -branch 2.10RC
+svn_bin/regressiontest_surface -branch 2.11RC
