@@ -268,8 +268,8 @@ p = PseudocolorAttributes()
 # Look in the object 
 print p 
 # Set the min/max values 
-p.min, p.minFlag = 1, 0.0 
-p.max, p.maxFlag = 1, 10.0 
+p.min, p.minFlag = 0.0, 1 
+p.max, p.maxFlag = 10.0, 1 
 SetPlotOptions(p) 
 \end{verbatim}
 
