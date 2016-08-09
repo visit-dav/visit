@@ -70,10 +70,10 @@ avtAxisAlignedSlice4DFilter::avtAxisAlignedSlice4DFilter()
 {
     range[0] = 0;
     range[1] = 0;
-    spatialExtents[0] = 0;
-    spatialExtents[1] = 0;
-    spatialExtents[2] = 0;
-    spatialExtents[3] = 0;
+    spatialExtents[0] = FLT_MAX;
+    spatialExtents[1] = -FLT_MAX;
+    spatialExtents[2] = FLT_MAX;
+    spatialExtents[3] = -FLT_MAX;
     spatialExtents[4] = 0;
     spatialExtents[5] = 0;
 }
@@ -170,10 +170,10 @@ avtAxisAlignedSlice4DFilter::PreExecute(void)
 
     range[0] =  FLT_MAX;
     range[1] = -FLT_MAX;
-    spatialExtents[0] = 0;
-    spatialExtents[1] = 0;
-    spatialExtents[2] = 0;
-    spatialExtents[3] = 0;
+    spatialExtents[0] = FLT_MAX;
+    spatialExtents[1] = -FLT_MAX;
+    spatialExtents[2] = FLT_MAX;
+    spatialExtents[3] = -FLT_MAX;
     spatialExtents[4] = 0;
     spatialExtents[5] = 0;
 
@@ -380,37 +380,37 @@ avtAxisAlignedSlice4DFilter::ExecuteData(avtDataRepresentation *in_dr)
         if (varyingAxis[0] == 0)
         {
             vtkDataArray *xCoords = rgrid->GetXCoordinates();
-            spatialExtents[0] = xCoords->GetTuple1(0);
-            spatialExtents[1] = xCoords->GetTuple1(xCoords->GetNumberOfTuples()-1);
+            spatialExtents[0] = std::min(spatialExtents[0], xCoords->GetTuple1(0));
+            spatialExtents[1] = std::max(spatialExtents[1], xCoords->GetTuple1(xCoords->GetNumberOfTuples()-1));
         }
         else if (varyingAxis[0] == 1)
         {
             vtkDataArray *yCoords = rgrid->GetYCoordinates();
-            spatialExtents[0] = yCoords->GetTuple1(0);
-            spatialExtents[1] = yCoords->GetTuple1(yCoords->GetNumberOfTuples()-1);
+            spatialExtents[0] = std::min(spatialExtents[0], yCoords->GetTuple1(0));
+            spatialExtents[1] = std::max(spatialExtents[1], yCoords->GetTuple1(yCoords->GetNumberOfTuples()-1));
         }
         else
         {
-            spatialExtents[0] = base_idx[varyingAxis[0]] * dx[varyingAxis[0]];
-            spatialExtents[1] = (base_idx[varyingAxis[0]] + dims[varyingAxis[0]]) * dx[varyingAxis[0]];
+            spatialExtents[0] = std::min(spatialExtents[0], base_idx[varyingAxis[0]] * dx[varyingAxis[0]]);
+            spatialExtents[1] = std::max(spatialExtents[1], (base_idx[varyingAxis[0]] + dims[varyingAxis[0]]) * dx[varyingAxis[0]]);
         }
 
         if (varyingAxis[1] == 0)
         {
             vtkDataArray *xCoords = rgrid->GetXCoordinates();
-            spatialExtents[2] = xCoords->GetTuple1(0);
-            spatialExtents[3] = xCoords->GetTuple1(xCoords->GetNumberOfTuples()-1);
+            spatialExtents[2] = std::min(spatialExtents[2], xCoords->GetTuple1(0));
+            spatialExtents[3] = std::max(spatialExtents[3], xCoords->GetTuple1(xCoords->GetNumberOfTuples()-1));
         }
         else if (varyingAxis[1] == 1)
         {
             vtkDataArray *yCoords = rgrid->GetYCoordinates();
-            spatialExtents[2] = yCoords->GetTuple1(0);
-            spatialExtents[3] = yCoords->GetTuple1(yCoords->GetNumberOfTuples()-1);
+            spatialExtents[2] = std::min(spatialExtents[2], yCoords->GetTuple1(0));
+            spatialExtents[3] = std::max(spatialExtents[3], yCoords->GetTuple1(yCoords->GetNumberOfTuples()-1));
         }
         else
         {
-            spatialExtents[2] = base_idx[varyingAxis[1]] * dx[varyingAxis[1]];
-            spatialExtents[3] = (base_idx[varyingAxis[1]] + dims[varyingAxis[1]]) * dx[varyingAxis[1]];
+            spatialExtents[2] = std::min(spatialExtents[2], base_idx[varyingAxis[1]] * dx[varyingAxis[1]]);
+            spatialExtents[3] = std::max(spatialExtents[3], (base_idx[varyingAxis[1]] + dims[varyingAxis[1]]) * dx[varyingAxis[1]]);
         }
         spatialExtents[4] = 0;
         spatialExtents[5] = 0;
