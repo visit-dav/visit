@@ -48,6 +48,8 @@
 #    Hank Childs, Thu May 12 15:37:21 PDT 2011
 #    Add avtAverageValueQuery.
 #
+#    Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
+#    Add avtGyRadiusQuery.
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -151,6 +153,7 @@ Queries/avtWeightedVariableSummationQuery.C
 Queries/avtXRayImageQuery.C
 Queries/avtZoneCenterQuery.C
 Queries/MinMaxInfo.C
+Queries/avtGyRadiusQuery.C
 )
 
 IF(VISIT_PYTHON_FILTERS)
