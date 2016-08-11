@@ -328,6 +328,8 @@ CHECK_THIRDPARTY_SATISIFED(Velodyne HDF5)
 CHECK_THIRDPARTY_SATISIFED(Vs HDF5)
 CHECK_THIRDPARTY_SATISIFED(XGC HDF5)
 
+CHECK_THIRDPARTY_SATISIFED(MOAB MOAB HDF5)
+
 # if we don't have the xdmf lib, we can fall back to VisIt's xdmf reader
 # that only uses hdf5
 IF(NOT XDMF_FOUND)

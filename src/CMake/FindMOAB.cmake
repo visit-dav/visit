@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-442911
 # All rights reserved.
@@ -35,44 +35,16 @@
 # DAMAGE.
 #
 # Modifications:
-#   Kathleen Bonnell, Mon Dec 27, 17:52:39 MST 2010
-#   Added high-level hdf5 lib to search on Windows. (hdf5_hldll).
-#
-#   Kathleen Biagas, Wed Oct 19 09:58:16 MST 2011
-#   Remove ${VISIT_MSVC_VERSION} from lib location.
-#
-#   Kathleen Biagas, Thu Jan 9 18:47:21 PDT 2014
-#   Add patch from John Cary for hdf5 without 'dll' suffix on name.
-#
+#    Iulian R. Grindeanu & Vijay S. Mahadevan via Mark C Miller
+#    Wed Aug 10 14:54:05 PDT 2016
+#    Added support for ANL's Mesh Object datABase (MOAB)
 #****************************************************************************/
 
-# Use the HDF5_DIR hint from the config-site .cmake file 
+# Use the H5PART_DIR hint from the config-site .cmake file 
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-OPTION(HDF5_LIBNAMES_AFFIX_DLL "Whether HDF5 library base names end with dll" ON)
-IF(WIN32)
-  if(HDF5_LIB_NAME)
-    SET_UP_THIRD_PARTY(HDF5 lib include ${HDF5_LIB_NAME})
-    IF(VISIT_PARALLEL)
-        SET_UP_THIRD_PARTY(HDF5_MPIPAR lib include ${HDF5_LIB_NAME})
-    ENDIF(VISIT_PARALLEL)
-  else()
-    if(HDF5_LIBNAMES_AFFIX_DLL)
-      SET_UP_THIRD_PARTY(HDF5 lib include hdf5dll hdf5_hldll)
-      IF(VISIT_PARALLEL)
-          SET_UP_THIRD_PARTY(HDF5_MPIPAR lib include hdf5dll hdf5_hldll)
-      ENDIF(VISIT_PARALLEL)
-    else()
-      SET_UP_THIRD_PARTY(HDF5 lib include hdf5 hdf5_hl)
-      IF(VISIT_PARALLEL)
-          SET_UP_THIRD_PARTY(HDF5_MPIPAR lib include hdf5 hdf5_hl)
-      ENDIF(VISIT_PARALLEL)
-    endif()
-  endif()
-ELSE()
-  SET_UP_THIRD_PARTY(HDF5 lib include hdf5)
-  IF(VISIT_PARALLEL)
-      SET_UP_THIRD_PARTY(HDF5_MPIPAR lib include hdf5)
-  ENDIF(VISIT_PARALLEL)
-ENDIF()
+SET_UP_THIRD_PARTY(MOAB lib include MOAB)
+IF(VISIT_PARALLEL)
+    SET_UP_THIRD_PARTY(MOAB_MPIPAR lib include MOAB)
+ENDIF(VISIT_PARALLEL)
