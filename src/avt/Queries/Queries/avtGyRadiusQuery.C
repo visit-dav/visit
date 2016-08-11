@@ -193,6 +193,7 @@ void
 avtGyRadiusQuery::PreExecute(void)
 {
     avtDatasetQuery::PreExecute();
+    varName = queryAtts.GetVariables()[0];
     
     if(!overrideCentroid)
     {
@@ -206,6 +207,16 @@ avtGyRadiusQuery::PreExecute(void)
         centroid[1] = results[1];
         centroid[2] = results[2];
     }
+    
+    // Get the denominator value (total mass)
+    avtSummationQuery sumQuery;
+    sumQuery.SetInput(GetInput());
+    sumQuery.SetVariableName(varName);
+    sumQuery.SumGhostValues(false);
+    
+    QueryAttributes qa;
+    sumQuery.PerformQuery(&qa);
+    totalMass = qa.GetResultsValue()[0];
 }
 
 // ****************************************************************************
@@ -227,16 +238,6 @@ avtGyRadiusQuery::PostExecute(void)
     
     if(PAR_Rank() == 0)
     {
-        // Get the denominator value (total mass)
-        avtSummationQuery sumQuery;
-        sumQuery.SetInput(GetInput());
-        sumQuery.SetVariableName(varName);
-        sumQuery.SumGhostValues(false);
-        
-        QueryAttributes qa;
-        sumQuery.PerformQuery(&qa);
-        totalMass = qa.GetResultsValue()[0];
-        
         // Calculate the radius
         double R = sqrt(totalSum / totalMass);
         
@@ -347,7 +348,7 @@ avtGyRadiusQuery::ApplyFilters(avtDataObject_p inData)
 void
 avtGyRadiusQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    varName = queryAtts.GetVariables()[0];
+    
     vtkDataArray *ghosts = ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *var = ds->GetCellData()->GetArray(varName.c_str());
     
