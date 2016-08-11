@@ -956,6 +956,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Cyrus Harrison, Thu Jul 17 09:16:39 PDT 2014
 //   Added GUI case for Compactness queries.
 //
+//   Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
+//   Added GUI case for CompactnessVar queries.
+//
 // ****************************************************************************
 
 void
@@ -1143,6 +1146,13 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         }
         else if (winT == QueryList::Compactness)
         {
+            labels[0]->setText(tr("Centroid"));
+            textFields[0]->setText("default");
+            showWidgets[0] = true;
+        }
+        else if (winT == QueryList::CompactnessVar)
+        {
+            varsLineEdit->setText("default");
             labels[0]->setText(tr("Centroid"));
             textFields[0]->setText("default");
             showWidgets[0] = true;
@@ -1434,6 +1444,9 @@ QvisQueryWindow::Apply(bool ignore)
 //   Kathleen Biagas, Thu Jan 12 09:55:40 PST 2012
 //   For Pick, put time options in a MapNode.
 //
+//   Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
+//   Added CompactnessVar query list.
+//
 // ****************************************************************************
 
 void
@@ -1609,7 +1622,8 @@ QvisQueryWindow::ExecuteStandardQuery()
             if (!pickQueryWidget->GetQueryParameters(queryParams))
                 noErrors = false;
         }
-        else if(winT == QueryList::Compactness)
+        else if((winT == QueryList::Compactness) ||
+                (winT == QueryList::CompactnessVar))
         {
             string cen_txt = textFields[0]->text().simplified().toStdString();
             if(cen_txt != "default")

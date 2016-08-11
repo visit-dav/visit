@@ -104,6 +104,7 @@
 #include <avtZoneCenterQuery.h>
 #include <avtIntegralCurveInfoQuery.h>
 #include <avtLineSamplerInfoQuery.h>
+#include <avtGyRadiusQuery.h>
 
 #include <visit-python-config.h>
 #ifdef VISIT_PYTHON_FILTERS
@@ -344,6 +345,9 @@ avtQueryFactory::Instance()
 //
 //    Kathleen Biagas, Thu Jan 10 08:43:14 PST 2013
 //    Use new MapNode method for testing existence of numeric entry.
+//
+//    Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
+//    Added the GyRadius Query
 //
 // ****************************************************************************
 
@@ -674,6 +678,11 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         query = new avtLineSamplerInfoQuery();
     }
 
+    else if (CaseInsenstiveEqual(qname,"GyRadius"))
+    {
+        query = new avtGyRadiusQuery();
+    }
+
     if (query == NULL && !foundAQuery)
     {
         EXCEPTION1(VisItException, "No query to execute was found. "
@@ -806,6 +815,11 @@ avtQueryFactory::GetDefaultInputParams(const string &qname)
     else if (CaseInsenstiveEqual(qname,"TrajectoryByNode"))
     {
         avtTrajectoryByNode::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (CaseInsenstiveEqual(qname,"GyRadius"))
+    {
+        avtGyRadiusQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
     return retval;
