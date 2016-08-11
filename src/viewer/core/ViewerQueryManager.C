@@ -3981,6 +3981,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Changed windowtype for Statistics queries to be Basic, as the actual
 //    code for the queries does not seem to make use of the 'ActualData' flag.
 //
+//    Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
+//    Added the GyRadius Query.
+//
 // ****************************************************************************
 
 void
@@ -4027,6 +4030,7 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::WindowType pick    = QueryList::Pick;
     QueryList::WindowType line    = QueryList::Lineout;
     QueryList::WindowType compact = QueryList::Compactness;
+    QueryList::WindowType compactv = QueryList::CompactnessVar;
 
     QueryList::QueryMode qo = QueryList::QueryOnly;
     QueryList::QueryMode qt = QueryList::QueryAndTime;
@@ -4099,6 +4103,7 @@ ViewerQueryManager::InitializeQueryList()
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR |
             QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;
 
+    GetViewerState()->GetQueryList()->AddQuery("GyRadius", dq, vr, compactv, 1, 0, qt, 1, 1);
     GetViewerState()->GetQueryList()->AddQuery("MinMax", dq, vr, ad, 1, MinMaxVars, qo);
     GetViewerState()->GetQueryList()->AddQuery("Min", dq, vr, ad, 1, MinMaxVars, qt);
     GetViewerState()->GetQueryList()->AddQuery("Max", dq, vr, ad, 1, MinMaxVars, qt);
