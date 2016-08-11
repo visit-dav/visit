@@ -54,7 +54,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.11</font></b></p>
 <ul>
-  <li></li>
+  <li>A native MOAB reader was added by Iulian R. Grindeanu and Vijay S. Mahadevan<li>
   <li></li>
   <li></li>
 </ul>
@@ -104,7 +104,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.11</font></b></p>
 <ul>
-  <li></li>
+  <li>Support for separately linking to both a serial and a parallel installation of a TPL
+      (HDF5 in this case) was developed. The relevant CMake variables are all those you
+      would ordinarily have for any TPL except with the moniker _MPIPAR added just after
+      the library moniker (e.g. for hdf5, we have HDF5 and HDF5_MPIPAR variables).</li>
   <li></li>
   <li></li>
 </ul>
