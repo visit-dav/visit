@@ -401,6 +401,9 @@
 #    Cyrus Harrison, Thu Jun 16 08:44:43 PDT 2016
 #    Added support for conduit (software.llnl.gov/conduit).
 #
+#    Iulian R. Grindeanu & Vijay S. Mahadevan via Mark C Miller
+#    Wed Aug 10 14:54:05 PDT 2016
+#    Added support for ANL's Mesh Object datABase (MOAB)
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
@@ -787,6 +790,13 @@ ENDIF(WIN32)
 #       needs to link but not to compile). Use the plugin's .xml file for
 #       libs a plugin is DIRECTLY dependent on (e.g. needs to both compile
 #       and link).
+#
+# _MPIPAR_ variables are needed *only* for libs that support *both* serial and MPI
+# parallel installs. Otherwise, lib is assumed to be either serial only or parallel
+# only and not require separate varibles for both serial and MPI parallel variants.
+# In addition, we use MPIPAR and not just PAR because there are potentially multiple
+# forms of parallelism and the variables here are for MPI parallelism.
+#
 VISIT_3RDPARTY_VAR(ADIOS_DIR     "Path containing the ADIOS library's include and lib")
 VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
 VISIT_3RDPARTY_VAR(BOOST_DIR     "Path containing the BOOST library's include and lib")
@@ -806,6 +816,8 @@ VISIT_3RDPARTY_VAR(HDF4_DIR      "Path containing the HDF4 library's include and
 VISIT_3RDPARTY_DEP(HDF4_LIBDEP   "HDF4 library dependencies")
 VISIT_3RDPARTY_VAR(HDF5_DIR      "Path containing the HDF5 library's include and lib")
 VISIT_3RDPARTY_DEP(HDF5_LIBDEP   "HDF5 library dependencies")
+VISIT_3RDPARTY_VAR(HDF5_MPIPAR_DIR  "Path containing the parallel HDF5 library's include and lib")
+VISIT_3RDPARTY_DEP(HDF5_MPIPAR_LIBDEP "HDF5 parallel library dependencies")
 VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include and lib")
 VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
@@ -829,6 +841,8 @@ VISIT_3RDPARTY_VAR(XSD_DIR       "Path containing the XSD library's include and 
 VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include and lib")
 VISIT_3RDPARTY_VAR(MANTA_DIR     "Path containing the Manta library's include and lib")
 VISIT_3RDPARTY_VAR(ZLIB_DIR      "Path containing the zlib library's include and lib")
+VISIT_3RDPARTY_VAR(MOAB_DIR      "Path containing the MOAB library's include and lib")
+VISIT_3RDPARTY_VAR(MOAB_MPIPAR_DIR  "Path containing the parallel MOAB library's include and lib")
 
 #-----------------------------------------------------------------------------
 # Read the version
@@ -1296,6 +1310,9 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     IF(HDF5_FOUND)
         SET(HAVE_LIBHDF5 1)
     ENDIF(HDF5_FOUND)
+    IF(HDF5_MPIPAR_FOUND)
+        SET(HAVE_LIBHDF5_MPIPAR 1)
+    ENDIF(HDF5_MPIPAR_FOUND)
 
     # Configure adios support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADIOS.cmake)
@@ -1378,6 +1395,15 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure ITAPS support -- it's treated specially.
     CONFIGURE_ITAPS()
+
+    # Configure MOAB support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMOAB.cmake)
+    IF(MOAB_FOUND)
+      SET(HAVE_LIBMOAB 1)
+    ENDIF(MOAB_FOUND)
+    IF(MOAB_MPIPAR_FOUND)
+      SET(HAVE_LIBMOAB_MPIPAR 1)
+    ENDIF(MOAB_MPIPAR_FOUND)
 
     # Configure mfem support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMFEM.cmake)
