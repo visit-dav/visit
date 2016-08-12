@@ -28,6 +28,9 @@ exec perl -x $0 ${1+"$@"};
 #   Brad Whitlock, Fri Oct 12 16:50:08 PDT 2012
 #   Remove help directory since it is now under resources.
 #
+#   Eric Brugger, Fri Aug 12 13:47:44 PDT 2016
+#   Add vtkm directory.
+#
 # ----------------------------------------------------------------------------
 
 if  (! -d "src")
@@ -96,6 +99,7 @@ if ($ARGV[0] eq "-dbio-only")
     push @files, get_svn_norecursive  "./src/visit_vtk";
     push @files, get_svn_recursive    "./src/visit_vtk/full";
     push @files, get_svn_recursive    "./src/visit_vtk/lightweight";
+    push @files, get_svn_recursive    "./src/vtkm";
     push @files, get_svn_norecursive  "./src/avt";
     push @files, get_svn_norecursive  "./src/avt/Math/avtVector.h";
     push @files, get_svn_norecursive  "./src/avt/Math/avtMatrix.h";
@@ -123,6 +127,7 @@ else
     push @files, get_svn_recursive    "./src/CMake";
     push @files, get_svn_recursive    "./src/common";
     push @files, get_svn_recursive    "./src/visit_vtk";
+    push @files, get_svn_recursive    "./src/vtkm";
     push @files, get_svn_recursive    "./src/engine";
     push @files, get_svn_recursive    "./src/launcher";
     push @files, get_svn_recursive    "./src/avt";
