@@ -7,13 +7,13 @@
       ${ZLIB_LIB}
     </LIBS>
     <LIBS components="M">
-        -L${MOAB_LIBRARY_DIR} -lMOAB -L${HDF5_LIBRARY_DIR} -lhdf5
+        -L${MOAB_LIBRARY_DIR} -lMOAB -L${HDF5_LIBRARY_DIR} -lhdf5 -Wl,-rpath,${MOAB_LIBRARY_DIR} -Wl,-rpath,${HDF5_LIBRARY_DIR}
     </LIBS>
     <LIBS components="ESer">
-        -L${MOAB_LIBRARY_DIR} -lMOAB -L${HDF5_LIBRARY_DIR} -lhdf5
+        -L${MOAB_LIBRARY_DIR} -lMOAB -L${HDF5_LIBRARY_DIR} -lhdf5 -Wl,-rpath,${MOAB_LIBRARY_DIR} -Wl,-rpath,${HDF5_LIBRARY_DIR}
     </LIBS>
     <LIBS components="EPar">
-        -L${MOAB_MPIPAR_LIBRARY_DIR} -lMOAB -L${HDF5_MPIPAR_LIBRARY_DIR} -lhdf5
+        -L${MOAB_MPIPAR_LIBRARY_DIR} -lMOAB -L${HDF5_MPIPAR_LIBRARY_DIR} -lhdf5 -Wl,-rpath,${MOAB_MPIPAR_LIBRARY_DIR} -Wl,-rpath,${HDF5_MPIPAR_LIBRARY_DIR}
     </LIBS>
     <FilePatterns>
       *.h5m
