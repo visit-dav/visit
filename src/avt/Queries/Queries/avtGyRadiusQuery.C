@@ -342,13 +342,18 @@ avtGyRadiusQuery::ApplyFilters(avtDataObject_p inData)
 //  Creation:   Fri Jul 22 09:54:08 PDT 2016
 //
 //  Modifications:
-//
+//    Kevin Griffin, Mon Aug 15 18:13:40 PDT 2016
+//    Removed the assignment of totalSum to zero since this method can be
+//    called multiple times for datasets with multiple domains. Setting
+//    totalSum to zero at the beginning of the method essentially wiped out
+//    all the results for all domains except the last which is not desired.
+//  
 // ****************************************************************************
 
 void
 avtGyRadiusQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    
+    double Ri[3] = {0, 0, 0};
     vtkDataArray *ghosts = ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *var = ds->GetCellData()->GetArray(varName.c_str());
     
@@ -356,7 +361,6 @@ avtGyRadiusQuery::Execute(vtkDataSet *ds, const int dom)
     {
         isZonal = true;
         int nCells = ds->GetNumberOfCells();
-        totalSum = 0;
         
         for(int i=0; i<nCells; i++)
         {
@@ -366,11 +370,10 @@ avtGyRadiusQuery::Execute(vtkDataSet *ds, const int dom)
             }
             
             vtkCell *cell = ds->GetCell(i);
-            double center[3];
-            vtkVisItUtility::GetCellCenter(cell, center);
+            vtkVisItUtility::GetCellCenter(cell, Ri);
             
             double mass = var->GetTuple1(i);
-            double dist = sqrt(pow(centroid[0] - center[0], 2) + pow(centroid[1] - center[1], 2) + pow(centroid[2] - center[2], 2));
+            double dist = sqrt(pow((Ri[0] - centroid[0]), 2) + pow((Ri[1] - centroid[1]), 2) + pow((Ri[2] - centroid[2]), 2));
             totalSum += mass * dist * dist;
         }
     }
@@ -392,11 +395,9 @@ avtGyRadiusQuery::Execute(vtkDataSet *ds, const int dom)
                     continue;
                 }
                 
-                double coord[3] = {0, 0, 0};
-                ds->GetPoint(i, coord);
-                
+                ds->GetPoint(i, Ri);
                 double mass = var->GetTuple1(i);
-                double dist = sqrt(pow(centroid[0] - coord[0], 2) + pow(centroid[1] - coord[1], 2) + pow(centroid[2] - coord[2], 2));
+                double dist = sqrt(pow((Ri[0] - centroid[0]), 2) + pow((Ri[1] - centroid[1]), 2) + pow((Ri[2] - centroid[2]), 2));
                 totalSum += mass * dist * dist;
             }
         }
