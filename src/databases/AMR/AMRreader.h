@@ -6,6 +6,7 @@
 #include <AMRreaderInterface.h>
 #include <EOS.h>
 #include <hdf5.h>
+#include <visit-hdf5.h>
 #include <string>
 
 class AMRreader : public AMRreaderInterface

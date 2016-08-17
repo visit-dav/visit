@@ -57,6 +57,7 @@
 #include <InvalidVariableException.h>
 
 #include <hdf5.h>
+#include <visit-hdf5.h>
 #include <avtParallel.h>
 #include <vtkDoubleArray.h>
 
