@@ -189,6 +189,7 @@ private:
     void    SynchScalars(sphData &);
     std::vector<int> GetParticipatingIndices(vtkDataSet **, const int);
     void    GetDimensions(std::vector<int> &, std::vector<double> &, std::vector<double> &, const std::vector<double> &, const double *const);
+    void    ExtendBoundsIfNeeded(double *const);
 };
 
 #endif
