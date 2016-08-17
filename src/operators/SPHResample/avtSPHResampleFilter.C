@@ -1070,6 +1070,11 @@ avtSPHResampleFilter::SampleNMS(vector<double>& scalarValues)
 //      Kevin Griffin, Tue Jun 21 13:09:21 PDT 2016
 //      Reimplemented to work better in parallel and scale in memory.
 //
+//      Kevin Griffin, Wed Aug 17 16:17:16 PDT 2016
+//      Extended the dataset bounds, if needed, to match the user supplied
+//      min/max bounds. Fixed the issue with holes appearing in the final
+//      image.
+//
 // ****************************************************************************
 template<int Dim>
 void
@@ -1146,6 +1151,8 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
                 
                 double bounds[6];
                 dset->GetBounds(bounds);
+                
+                ExtendBoundsIfNeeded(bounds);
                 
                 debug5 << "Bounds " << bounds[0] << ", " << bounds[1] << ", " << bounds[2] << ", " << bounds[3] << ", " << bounds[4] << ", " << bounds[5] << endl;
                 
@@ -1306,6 +1313,11 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
                 data.push_back(currentData);
             }   // End For(nsets)
         }   // isParticipating
+        else
+        {
+            double bounds[6] = {0,0,0,0,0,0};
+            ExtendBoundsIfNeeded(bounds);
+        }
         
         // Synchronize moments
         if(data.size() > 0)
@@ -1372,8 +1384,7 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
         {
             vtkDataSet *dset = data[i].dset;
             vtkIdType npart = dset->GetNumberOfPoints();
-            double bounds[6];
-            dset->GetBounds(bounds);
+//            double *bounds = data[i].bounds;
             
             // Get Input Variables
             vtkDataArray *input_var = dset->GetPointData()->GetArray(resampleVarName.c_str());
@@ -1472,6 +1483,8 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
             // Compute Scalar Values without RPK Corrections
             double bounds[6];
             dset->GetBounds(bounds);
+            ExtendBoundsIfNeeded(bounds);
+            debug5 << "Bounds " << bounds[0] << ", " << bounds[1] << ", " << bounds[2] << ", " << bounds[3] << ", " << bounds[4] << ", " << bounds[5] << endl;
             
             GetDimensions(gridCells, latticeMin, latticeMax, stepXYZ, bounds);
             totalCells = Dim == 3 ? gridCells[0]*gridCells[1]*gridCells[2] : gridCells[0]*gridCells[1];
@@ -1603,6 +1616,11 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
             }   // for(npart)
             data.push_back(currentData);
         }   // End isParticipating
+        else
+        {
+            double bounds[6] = {0,0,0,0,0,0};
+            ExtendBoundsIfNeeded(bounds);
+        }
     } // End Else
     
     // Synchronize scalar values
@@ -1897,12 +1915,221 @@ avtSPHResampleFilter::SynchScalars(sphData &data)
                     {
                         data.scalarValues[localIdx] += i_scalars[j];
                     }
-                    else
+                    //                    else
+                    //                    {
+                    //                        int gcIdx = GetGhostCellIndex(data.ghostCells, i_latticeIndices[j]);
+                    //                        if(gcIdx >= 0)
+                    //                        {
+                    //                            data.ghostCells[gcIdx].value += i_scalars[j];
+                    //                        }
+                    //                    }
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+// Method:  avtSPHResampleFilter::ExtendBoundsIfNeeded
+//
+// Purpose:     Extend the dataset bounds, if necessary, to match the user supplied
+//              min/max ranges.
+//
+// Arguments:
+//      bounds  the dataset's current bounds
+//
+// Programmer:  Kevin Griffin
+// Creation:    Wed Aug 17 16:17:16 PDT 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtSPHResampleFilter::ExtendBoundsIfNeeded(double *const bounds)
+{
+    int myRank = PAR_Rank();
+    bool skip = false;
+    bool needMinX = true;
+    bool needMaxX = true;
+    bool needMinY = true;
+    bool needMaxY = true;
+    bool needMinZ = (nDim == 3) ? true : false;
+    bool needMaxZ = (nDim == 3) ? true : false;
+    
+    if(bounds[0] == 0 && bounds[1] == 0 && bounds[2] == 0 && bounds[3] == 0 && bounds[4] == 0 && bounds[5] == 0)
+    {
+        skip = true;
+    }
+        
+    double temp[6];
+    temp[0] = bounds[0];
+    temp[1] = bounds[1];
+    temp[2] = bounds[2];
+    temp[3] = bounds[3];
+    temp[4] = bounds[4];
+    temp[5] = bounds[5];
+    
+    for(int root=0; root<PAR_Size(); root++)
+    {
+        if(myRank == root)
+        {
+            // Send this node's dataset bounds
+            BroadcastDoubleArrayFromAny(bounds, 6, myRank);
+        }
+        else
+        {
+            double recvBounds[6];
+            
+            // Receive dataset bounds from root
+            BroadcastDoubleArrayFromAny(recvBounds, 6, root);
+            
+            if(!skip)
+            {
+                // Extend X dimensions if needed
+                if(needMinX)
+                {
+                    if(recvBounds[0] < bounds[0])
                     {
-                        int gcIdx = GetGhostCellIndex(data.ghostCells, i_latticeIndices[j]);
-                        if(gcIdx >= 0)
+                        if(bounds[2] >= recvBounds[2] && bounds[3] <= recvBounds[3])
                         {
-                            data.ghostCells[gcIdx].value += i_scalars[j];
+                            if(nDim == 3)
+                            {
+                                if(bounds[4] >= recvBounds[4] && bounds[5] <= recvBounds[5])
+                                {
+                                    bounds[0] = temp[0];
+                                    needMinX = false;
+                                }
+                            }
+                            else
+                            {
+                                bounds[0] = temp[0];
+                                needMinX = false;
+                            }
+                        }
+                        else
+                        {
+                            bounds[0] = atts.GetMinX();
+                        }
+                    }
+                }
+                
+                if(needMaxX)
+                {
+                    if(recvBounds[1] > bounds[1])
+                    {
+                        if(bounds[2] >= recvBounds[2] && bounds[3] <= recvBounds[3])
+                        {
+                            if(nDim == 3)
+                            {
+                                if(bounds[4] >= recvBounds[4] && bounds[5] <= recvBounds[5])
+                                {
+                                    bounds[1] = temp[1];
+                                    needMaxX = false;
+                                }
+                            }
+                            else
+                            {
+                                bounds[1] = temp[1];
+                                needMaxX = false;
+                            }
+                        }
+                        else
+                        {
+                            bounds[1] = atts.GetMaxX();
+                        }
+                    }
+                }
+                
+                // Extend Y dimensions if needed
+                if(needMinY)
+                {
+                    if(recvBounds[2] < bounds[2])
+                    {
+                        if(bounds[0] >= recvBounds[0] && bounds[1] <= recvBounds[1])
+                        {
+                            if(nDim == 3)
+                            {
+                                if(bounds[4] >= recvBounds[4] && bounds[5] <= recvBounds[5])
+                                {
+                                    bounds[2] = temp[2];
+                                    needMinY = false;
+                                }
+                            }
+                            else
+                            {
+                                bounds[2] = temp[2];
+                                needMinY = false;
+                            }
+                        }
+                        else
+                        {
+                            bounds[2] = atts.GetMinY();
+                        }
+                    }
+                }
+                
+                if(needMaxY)
+                {
+                    if(recvBounds[3] > bounds[3])
+                    {
+                        if(bounds[0] >= recvBounds[0] && bounds[1] <= recvBounds[1])
+                        {
+                            if(nDim == 3)
+                            {
+                                if(bounds[4] >= recvBounds[4] && bounds[5] <= recvBounds[5])
+                                {
+                                    bounds[3] = temp[3];
+                                    needMaxY = false;
+                                }
+                            }
+                            else
+                            {
+                                bounds[3] = temp[3];
+                                needMaxY = false;
+                            }
+                        }
+                        else
+                        {
+                            bounds[3] = atts.GetMaxY();
+                        }
+                    }
+                }
+                
+                // Extend Z dimensions if needed
+                if(needMinZ)
+                {
+                    if(recvBounds[4] < bounds[4])
+                    {
+                        if(bounds[0] >= recvBounds[0] && bounds[1] <= recvBounds[1])
+                        {
+                            if(bounds[2] >= recvBounds[2] && bounds[3] <= recvBounds[3])
+                            {
+                                bounds[4] = temp[4];
+                                needMinZ = false;
+                            }
+                        }
+                        else
+                        {
+                            bounds[4] = atts.GetMinZ();
+                        }
+                    }
+                }
+                
+                if(needMaxZ)
+                {
+                    if(recvBounds[5] > bounds[5])
+                    {
+                        if(bounds[0] >= recvBounds[0] && bounds[1] <= recvBounds[1])
+                        {
+                            if(bounds[2] >= recvBounds[2] && bounds[3] <= recvBounds[3])
+                            {
+                                bounds[5] = temp[5];
+                                needMaxZ = false;
+                            }
+                        }
+                        else
+                        {
+                            bounds[5] = atts.GetMaxZ();
                         }
                     }
                 }
