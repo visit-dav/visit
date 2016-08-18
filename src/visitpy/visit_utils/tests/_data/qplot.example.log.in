@@ -69,7 +69,7 @@ scene.plots[4].log_scale_y = True
 scene.annotations = [PropertyTree() for i in xrange(1) ]
 
 scene.annotations[0].type="text"
-scene.annotations[0].txt="Here"
+scene.annotations[0].text="Here"
 scene.annotations[0].x=200
 scene.annotations[0].y=200
 
