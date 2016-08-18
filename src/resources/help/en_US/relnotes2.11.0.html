@@ -82,6 +82,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Viewer-based filename generation code used in the Libsim runtime library no longer queries the file system for permissions, which caused a massive slowdown when rendering images using Libsim at scale.</li>
   <li>Command recording does not escape back-slashes in Windows filenames, preventing recorded commands such as <i>OpenDatabase()</i> to fail on Windows.</li>
   <li>The Spreadsheet plot crashes when you turn on coloring and attempt to change the color table to something other than the default.</li>
+  <li>Fixed the missing data issue in the SPH Resample Operator.</li>
+  <li>The Average Value query now works for point data.</li>
   <li></li>
 </ul>
 

@@ -386,7 +386,6 @@ avtGyRadiusQuery::Execute(vtkDataSet *ds, const int dom)
         {
             int nPoints = ds->GetNumberOfPoints();
             ghosts = ds->GetPointData()->GetArray("avtGhostNodes");
-            totalSum = 0;
             
             for(int i=0; i<nPoints; i++)
             {

@@ -49,6 +49,7 @@
 #include <avtOriginatingSource.h>
 #include <avtVMetricArea.h>
 #include <avtVMetricVolume.h>
+#include <avtConstantCreatorExpression.h>
 
 #include <DebugStream.h>
 
@@ -72,6 +73,9 @@ using     std::string;
 //    Hank Childs, Wed Apr 28 05:27:24 PDT 2010
 //    Add support for edges (1D cross sections)
 //
+//    Kevin Griffin, Wed Aug 17 19:40:04 PDT 2016
+//    Add support for points
+//
 // ****************************************************************************
 
 avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery() 
@@ -92,6 +96,9 @@ avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery()
 
     revolvedVolume = new avtRevolvedVolume;
     revolvedVolume->SetOutputVariableName("avt_weights");
+    
+    constExpr = new avtConstantCreatorExpression;
+    constExpr->SetOutputVariableName("avt_weights");
 
     string vname = "avt_sum";
     SetVariableName(vname);
@@ -108,7 +115,10 @@ avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery()
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
-//    Added revolvedVolume. 
+//    Added revolvedVolume.
+//
+//    Kevin Griffin, Wed Aug 17 19:40:04 PDT 2016
+//    Added constExpr
 //
 // ****************************************************************************
 
@@ -119,6 +129,7 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
     delete multiply;
     delete volume;
     delete revolvedVolume;
+    delete constExpr;
 }
 
 
@@ -168,7 +179,10 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //
 //    Kathleen Bonnell, Tue Sep 23 08:53:03 PDT 2008 
 //    Move setting of secondary var "avt_weights" till after the contract
-//    has been set for the time-varying case. 
+//    has been set for the time-varying case.
+//
+//    Kevin Griffin, Wed Aug 17 19:40:04 PDT 2016
+//    Added support for point data (topo == 0)
 //
 // ****************************************************************************
 
@@ -196,7 +210,16 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     SetSumType(varname);
 
     int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
-    if (topo == 1)
+    
+    if(topo == 0)
+    {
+        debug5 << "WeightedVariableSum using Point" << endl;
+        constExpr->SetInput(dob);
+        constExpr->SetFilterCreatesSingleton(false);
+        constExpr->SetValue(1.0);
+        dob = constExpr->GetOutput();
+    }
+    else if (topo == 1)
     {
         debug5 << "WeightedVariableSum using length" << endl;
         length->SetInput(dob);
