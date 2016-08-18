@@ -82,6 +82,10 @@ const double KERNEL_EXTENT = 2.0;
 avtSPHResampleFilter::avtSPHResampleFilter()
 {
     keepNodeZone = false;
+    xBoundsExtended = false;
+    yBoundsExtended = false;
+    zBoundsExtended = false;
+    nDim = 0;
 }
 
 
@@ -1915,14 +1919,14 @@ avtSPHResampleFilter::SynchScalars(sphData &data)
                     {
                         data.scalarValues[localIdx] += i_scalars[j];
                     }
-                    //                    else
-                    //                    {
-                    //                        int gcIdx = GetGhostCellIndex(data.ghostCells, i_latticeIndices[j]);
-                    //                        if(gcIdx >= 0)
-                    //                        {
-                    //                            data.ghostCells[gcIdx].value += i_scalars[j];
-                    //                        }
-                    //                    }
+                    else
+                    {
+                        int gcIdx = GetGhostCellIndex(data.ghostCells, i_latticeIndices[j]);
+                        if(gcIdx >= 0)
+                        {
+                            data.ghostCells[gcIdx].value += i_scalars[j];
+                        }
+                    }
                 }
             }
         }
@@ -2025,6 +2029,7 @@ avtSPHResampleFilter::ExtendBoundsIfNeeded(double *const bounds)
                                 {
                                     bounds[1] = temp[1];
                                     needMaxX = false;
+                                    
                                 }
                             }
                             else
@@ -2036,6 +2041,7 @@ avtSPHResampleFilter::ExtendBoundsIfNeeded(double *const bounds)
                         else
                         {
                             bounds[1] = atts.GetMaxX();
+                            xBoundsExtended = true;
                         }
                     }
                 }
@@ -2091,6 +2097,7 @@ avtSPHResampleFilter::ExtendBoundsIfNeeded(double *const bounds)
                         else
                         {
                             bounds[3] = atts.GetMaxY();
+                            yBoundsExtended = true;
                         }
                     }
                 }
@@ -2130,6 +2137,7 @@ avtSPHResampleFilter::ExtendBoundsIfNeeded(double *const bounds)
                         else
                         {
                             bounds[5] = atts.GetMaxZ();
+                            zBoundsExtended = true;
                         }
                     }
                 }
@@ -2429,6 +2437,11 @@ avtSPHResampleFilter::CreateOutputGrid(const double* const bounds, const vector<
         out_xcoords->SetTuple1(i,val);
     }
     
+    if(xBoundsExtended)
+    {
+        out_xcoords->SetTuple1(out_xcoords->GetSize()-1, atts.GetMaxX());
+    }
+    
     out_dset->SetXCoordinates(out_xcoords);
     out_xcoords->Delete();
     
@@ -2443,6 +2456,11 @@ avtSPHResampleFilter::CreateOutputGrid(const double* const bounds, const vector<
     {
         double val = ymin + i * dy;
         out_ycoords->SetTuple1(i,val);
+    }
+    
+    if(yBoundsExtended)
+    {
+        out_ycoords->SetTuple1(out_ycoords->GetSize()-1, atts.GetMaxY());
     }
     
     out_dset->SetYCoordinates(out_ycoords);
@@ -2461,6 +2479,11 @@ avtSPHResampleFilter::CreateOutputGrid(const double* const bounds, const vector<
         {
             double val = zmin + i * dz;
             out_zcoords->SetTuple1(i,val);
+        }
+        
+        if(zBoundsExtended)
+        {
+            out_zcoords->SetTuple1(out_zcoords->GetSize()-1, atts.GetMaxZ());
         }
     }
     else
