@@ -73,6 +73,9 @@
 //    Hank Childs, Thu Oct  9 09:44:37 PDT 2008
 //    Define method "NullInputIsExpected".
 //
+//    Kevin Griffin, Wed Aug 17 19:40:04 PDT 2016
+//    Define method "SetFilterCreatesSingleton".
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConstantCreatorExpression 
@@ -82,6 +85,7 @@ class EXPRESSION_API avtConstantCreatorExpression
                              avtConstantCreatorExpression();
     virtual                 ~avtConstantCreatorExpression();
 
+    void                     SetFilterCreatesSingleton(bool b) { isSingleton = b; }
     void                     SetValue(double v) {value = v;}
     virtual const char *     GetType(void) 
                                          { return "avtConstantCreatorExpression"; }
@@ -96,10 +100,11 @@ class EXPRESSION_API avtConstantCreatorExpression
     virtual int              GetNumberOfComponentsInOutput(int) { return 1; };
     virtual int              GetVariableDimension(void) { return 1; };
     virtual vtkDataArray    *CreateArray(vtkDataArray *);
-    virtual bool             FilterCreatesSingleton(void) { return true; };
+    virtual bool             FilterCreatesSingleton(void) { return isSingleton; };
     virtual bool             CanHandleSingletonConstants(void) {return true;};
 
     double                   value;
+    bool                     isSingleton;
 };
 
 
