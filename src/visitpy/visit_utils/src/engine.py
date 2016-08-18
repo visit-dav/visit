@@ -71,9 +71,15 @@ def open(**kwargs):
     args = {"ppn":1,"part":None,"bank":None,"rtime":None,"vdir":None}
     if not kwargs.has_key("method"):
         hname = hostname(False)
-        if not hosts().has_key(hname):
+        # when the visit module is imported (vs used in the CLI), 
+        # VISITHOME won't be set, allow user to pass vdir argument 
+        # here to locate the host profiles
+        vdir = None
+        if kwargs.has_key("vdir"):
+            vdir = kwargs["vdir"]
+        if not hosts(vdir=vdir).has_key(hname):
             raise VisItException("Unsupported host: '%s'" % hname)
-        host = hosts(args["vdir"])[hname]
+        host = hosts(vdir=vdir)[hname]
         # prep args for launch
         args["host"] = host.name
         args.update(host.defaults)
@@ -85,6 +91,9 @@ def open(**kwargs):
             nnodes = int(os.environ["SLURM_JOB_NUM_NODES"])
             ppn    = int(os.environ["SLURM_CPUS_ON_NODE"])
             nprocs = ppn * nnodes
+        else:
+            raise VisItException("engine.open(method='slurm') requires "
+                                 "SLURM_JOB_NUM_NODES and SLURM_CPUS_ON_NODE env vars")
         args["nprocs"]   = nprocs
         args["ppn"]      = ppn
         kwargs["method"] = "srun"
@@ -126,7 +135,8 @@ def launch(host,nprocs,ppn,method,part,bank,rtime,vdir,extra_args=None):
         args.extend(extra_args)
     if method == "msub/srun":
         rtime = str(rtime)
-        if rtime.count(":") == 0: rtime += ":00"
+        if rtime.count(":") == 0:
+            rtime += ":00"
         args.extend(["-b", bank,"-t", rtime])
     if visit.OpenComputeEngine(ehost,args) != 1:
         raise VisItException("Failed to open compute engine on %s." % host)
