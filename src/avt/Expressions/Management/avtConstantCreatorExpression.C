@@ -61,6 +61,7 @@
 avtConstantCreatorExpression::avtConstantCreatorExpression()
 {
     value = 0;
+    isSingleton = true;
 }
 
 
