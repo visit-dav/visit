@@ -162,9 +162,6 @@ protected:
     std::string             weightVarName;
     
     bool                    keepNodeZone;
-    bool                    xBoundsExtended;
-    bool                    yBoundsExtended;
-    bool                    zBoundsExtended;
     int                     nDim;
     
     virtual void Execute();
