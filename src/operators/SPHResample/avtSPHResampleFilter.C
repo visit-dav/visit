@@ -82,9 +82,6 @@ const double KERNEL_EXTENT = 2.0;
 avtSPHResampleFilter::avtSPHResampleFilter()
 {
     keepNodeZone = false;
-    xBoundsExtended = false;
-    yBoundsExtended = false;
-    zBoundsExtended = false;
     nDim = 0;
 }
 
@@ -2041,7 +2038,6 @@ avtSPHResampleFilter::ExtendBoundsIfNeeded(double *const bounds)
                         else
                         {
                             bounds[1] = atts.GetMaxX();
-                            xBoundsExtended = true;
                         }
                     }
                 }
@@ -2097,7 +2093,6 @@ avtSPHResampleFilter::ExtendBoundsIfNeeded(double *const bounds)
                         else
                         {
                             bounds[3] = atts.GetMaxY();
-                            yBoundsExtended = true;
                         }
                     }
                 }
@@ -2137,7 +2132,6 @@ avtSPHResampleFilter::ExtendBoundsIfNeeded(double *const bounds)
                         else
                         {
                             bounds[5] = atts.GetMaxZ();
-                            zBoundsExtended = true;
                         }
                     }
                 }
@@ -2434,12 +2428,8 @@ avtSPHResampleFilter::CreateOutputGrid(const double* const bounds, const vector<
     for(int i=0;i<dims[0];i++)
     {
         double val = xmin + i * dx;
+        val = val <= atts.GetMaxX() ? val : atts.GetMaxX();
         out_xcoords->SetTuple1(i,val);
-    }
-    
-    if(xBoundsExtended)
-    {
-        out_xcoords->SetTuple1(out_xcoords->GetSize()-1, atts.GetMaxX());
     }
     
     out_dset->SetXCoordinates(out_xcoords);
@@ -2455,12 +2445,8 @@ avtSPHResampleFilter::CreateOutputGrid(const double* const bounds, const vector<
     for(int i=0;i<dims[1];i++)
     {
         double val = ymin + i * dy;
+        val = val <= atts.GetMaxY() ? val : atts.GetMaxY();
         out_ycoords->SetTuple1(i,val);
-    }
-    
-    if(yBoundsExtended)
-    {
-        out_ycoords->SetTuple1(out_ycoords->GetSize()-1, atts.GetMaxY());
     }
     
     out_dset->SetYCoordinates(out_ycoords);
@@ -2478,12 +2464,8 @@ avtSPHResampleFilter::CreateOutputGrid(const double* const bounds, const vector<
         for(int i=0;i<dims[2];i++)
         {
             double val = zmin + i * dz;
+            val = val <= atts.GetMaxZ() ? val : atts.GetMaxZ();
             out_zcoords->SetTuple1(i,val);
-        }
-        
-        if(zBoundsExtended)
-        {
-            out_zcoords->SetTuple1(out_zcoords->GetSize()-1, atts.GetMaxZ());
         }
     }
     else
