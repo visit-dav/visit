@@ -404,6 +404,9 @@
 #    Iulian R. Grindeanu & Vijay S. Mahadevan via Mark C Miller
 #    Wed Aug 10 14:54:05 PDT 2016
 #    Added support for ANL's Mesh Object datABase (MOAB)
+#
+#    Mark C. Miller, Mon Aug 22 15:23:12 PDT 2016
+#    Add tools/writer to installed headers
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
@@ -1024,7 +1027,7 @@ ENDMACRO(VISIT_INSTALL_TARGETS)
 IF(VISIT_HEADERS_SKIP_INSTALL)
     MESSAGE(STATUS "Skipping VisIt headers installation")
 ELSE(VISIT_HEADERS_SKIP_INSTALL)
-    INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin viewer visit_vtk visitpy vtkm vtkqt winutil
+    INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin tools/writer viewer visit_vtk visitpy vtkm vtkqt winutil
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/visit
         FILE_PERMISSIONS OWNER_READ OWNER_WRITE
                          GROUP_READ GROUP_WRITE
