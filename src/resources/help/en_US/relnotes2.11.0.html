@@ -102,8 +102,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Build_changes"></a>
 <p><b><font size="4">Build changes in version 2.11</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
+  <li>New CMake variables for packages that may be built either for serial or for parallel were introduced.
+      These new variables have _MPIPAR appended just after the package moniker (e.g. HDF5_MPIPAR_DIR). When it is necessary to
+      distinguish between serial and parallel installations of a package, the _MPIPAR variables are used to reference a
+      parallel-enabled package's installation whereas the non_MPIPAR variables reference a serial installation.
+      Otherwise, only the non_MPIPAR variables are used. And, depending on the build
+      circumstances, the non_MPIPAR variables may refer to either a serial or a parallel package installation.</li>
+  <li>Proliferant references to ${ZLIB_LIB} variable in database plugins .xml files was removed. Only those plugins that
+      actually directly call zlib library functions need it.</li>
   <li></li>
 </ul>
 

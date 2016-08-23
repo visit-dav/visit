@@ -8,7 +8,6 @@
     </LDFLAGS>
     <LIBS>
       ${HDF5_LIB} 
-      ${ZLIB_LIB}
     </LIBS>
     <FilePatterns>
       *.h5
