@@ -40,6 +40,9 @@ class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
 #   Brad Whitlock, Wed Jun  5 16:24:26 PDT 2013
 #   Special handling of networking arguments for BG/Q.
 #
+#   Cyrus Harrison, Tue Aug 23 08:21:12 PDT 2016
+#   Added check for sequioa (seqlac)
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -70,7 +73,9 @@ class LLNLLauncher(MainLauncher):
         if self.parallelArgs.parallel and \
            (string.find(self.generalArgs.exe_name, "_par") != -1 or \
             string.find(self.generalArgs.exe_name, "_ser") != -1):
-            if self.sectorname() == "vulcanlac" or self.sectorname() == "rzuseqlac":
+            if self.sectorname() == "vulcanlac" or \
+               self.sectorname() == "rzuseqlac" or \
+               self.sectorname() == "seqlac":
                 self.generalArgs.host = self.GetIPAddress()
                 self.generalArgs.guesshost = 0
                 self.generalArgs.sshtunneling = 0
