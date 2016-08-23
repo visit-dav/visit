@@ -15,6 +15,5 @@
     <LIBS>     
         ${HDF4_LIB}  
         ${HDF5_LIB}  
-        ${ZLIB_LIB} 
     </LIBS>
   </Plugin>

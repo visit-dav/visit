@@ -9,6 +9,7 @@
 #include <string>
 
 #include <hdf5.h>
+#include <visit-hdf5.h>
 
 class PVLD_Reader
 {

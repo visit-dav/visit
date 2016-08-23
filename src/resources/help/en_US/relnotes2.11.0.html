@@ -54,9 +54,11 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.11</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>A native MOAB (Mesh Object datABase) plugin was added thanks to Iulian R. Grindeanu and Vijay S. Mahadevan at ANL.</li>
+  <li>Several HDF5-based plugins were missing some VisIt-specific file opening and closing logic to detect bad HDF5 actors. These
+      were the ALS, AMR, PVLD, SXRIS and XGC plugins. In theory, users should see no difference in behavior.</li>
+  <li>The Exodus plugin was enhanced to build against classic netCDF which does not require HDF5 or netCDF 4, which does
+      require HDF5.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -98,8 +100,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Build_changes"></a>
 <p><b><font size="4">Build changes in version 2.11</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
+  <li>New CMake variables for packages that may be built either for serial or for parallel were introduced.
+      These new variables have _MPIPAR appended just after the package moniker (e.g. HDF5_MPIPAR_DIR). When it is necessary to
+      distinguish between serial and parallel installations of a package, the _MPIPAR variables are used to reference a
+      parallel-enabled package's installation whereas the non_MPIPAR variables reference a serial installation.
+      Otherwise, only the non_MPIPAR variables are used. And, depending on the build
+      circumstances, the non_MPIPAR variables may refer to either a serial or a parallel package installation.</li>
+  <li>Proliferant references to ${ZLIB_LIB} variable in database plugins .xml files was removed. Only those plugins that
+      actually directly call zlib library functions need it.</li>
   <li></li>
 </ul>
 

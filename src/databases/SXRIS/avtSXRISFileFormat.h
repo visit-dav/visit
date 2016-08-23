@@ -44,6 +44,7 @@
 #define AVT_SXRIS_FILE_FORMAT_H
 
 #include <hdf5.h>
+#include <visit-hdf5.h>
 #include <avtMTSDFileFormat.h>
 #include <vector>
 
