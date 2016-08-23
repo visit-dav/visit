@@ -32,6 +32,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">General features added in version 2.11</font></b></p>
 <ul>
   <li>New GyRadius Query</li>
+  <li>Added <i>inferno</i>, <i>plasma</i>, <i>magma</i> and <i>viridis</i> color tables from matplotlib. These color tables were developed to be perceptually uniform and more friendly to color blindness. For more details see <a href="https://bids.github.io/colormap/">https://bids.github.io/colormap/</a>. These  color tables are available under the <a href="https://creativecommons.org/about/cc0">CCO license</a>. Thanks to Akshay Subramaniam of Standford for providing the ct formated variants of these tables.
+  <li>Added the <i>viridis_light</i> color table, contributed by Robert Blake (of LLNL, formally at John's Hopkins).  Low saturation on the lower end of viridis can make it hard to use in 3D settings where lighting is applied. This variant helps address this. 
+  </li>
   <li></li>
   <li></li>
 </ul>
@@ -84,6 +87,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Spreadsheet plot crashes when you turn on coloring and attempt to change the color table to something other than the default.</li>
   <li>Fixed the missing data issue in the SPH Resample Operator.</li>
   <li>The Average Value query now works for point data.</li>
+  <li>Fixed a bug in the MFEM database plugin related to mesh construction. </li>
   <li></li>
 </ul>
 
