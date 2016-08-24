@@ -71,7 +71,6 @@ function bv_netcdf_print
 
 function bv_netcdf_print_usage
 {
-    printf "\t\t%15s\n" "NOTE: not available for download from web"
     printf "%-15s %s [%s]\n" "--netcdf" "Build NetCDF" "${DO_NETCDF}"
     printf "%-15s %s [%s]\n" "--alt-netcdf-dir" "Use NetCDF from an alternative directory"
 }

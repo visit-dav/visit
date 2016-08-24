@@ -45,7 +45,6 @@ function bv_xdmf_print
 
 function bv_xdmf_print_usage
 {
-    printf "\t\t%15s\n" "NOTE: not available for download from web" 
     printf "%-15s %s [%s]\n" "--xdmf" "Build Xdmf" "$DO_XDMF"
 }
 

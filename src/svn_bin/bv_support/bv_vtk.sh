@@ -95,7 +95,6 @@ function bv_vtk_print
 
 function bv_vtk_print_usage
 {
-    printf "\t\t%15s\n" "NOTE: not available for download from web"
     printf "%-15s %s [%s]\n" "--vtk" "Build VTK" "built by default unless --no-thirdparty flag is used"
     printf "%-15s %s [%s]\n" "--system-vtk" "Use the system installed VTK"
     printf "%-15s %s [%s]\n" "--alt-vtk-dir" "Use VTK from an alternative directory"

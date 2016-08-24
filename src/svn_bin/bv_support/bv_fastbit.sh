@@ -41,6 +41,7 @@ function bv_fastbit_print
 
 function bv_fastbit_print_usage
 {
+    printf "\t\t%15s\n" "NOTE: FastBit not available for download from web" 
     printf "%-15s %s [%s]\n" "--fastbit" "Build FastBit" "$DO_FASTBIT"
 }
 

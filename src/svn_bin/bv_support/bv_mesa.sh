@@ -40,7 +40,6 @@ function bv_mesa_print
 
 function bv_mesa_print_usage
 {
-    printf "\t\t%15s\n" "NOTE: not available for download from web"
     printf "%-15s %s [%s]\n" "--mesa" "Build Mesa" "$DO_MESA"
 }
 
