@@ -30,7 +30,11 @@ function bv_hdf5_depends_on
     if [[ "$USE_SYSTEM_HDF5" == "yes" ]]; then
         echo ""
     else
-        local depends_on="szip"
+        local depends_on=""
+
+        if [[ "$DO_SZIP" == "yes" ]] ; then
+            depends_on="$depends_on szip"    
+        fi
 
         if [[ "$DO_ZLIB" == "yes" ]] ; then
             depends_on="$depends_on zlib"    
@@ -44,6 +48,9 @@ function bv_hdf5_initialize_vars
 {
     if [[ "$USE_SYSTEM_HDF5" == "no" ]]; then
         HDF5_INSTALL_DIR="${VISITDIR}/hdf5/$HDF5_VERSION/${VISITARCH}"
+        if [[ "$DO_MOAB" == "yes" && "DO_STATIC_BUILD" == "yes" && "$parallel" == "yes" ]]; then
+            HDF5_MPIPAR_INSTALL_DIR="${VISITDIR}/hdf5/$HDF5_VERSION/mpipar/${VISITARCH}"
+        fi
     fi
 }
 
@@ -96,6 +103,12 @@ function bv_hdf5_host_profile
                 "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR \${VISITHOME}/hdf5/$HDF5_VERSION/\${VISITARCH})" \
                 >> $HOSTCONF 
 
+            if [[ -n "$HDF5_MPIPAR_INSTALL_DIR" ]]; then
+                echo \
+                    "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPIPAR_DIR $HDF5_MPIPAR_INSTALL_DIR)" \
+                    >> $HOSTCONF 
+            fi
+
             if [[ "$DO_ZLIB" == "yes" ]] ; then
                 ZLIB_LIBDEP="\${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH}/lib z"
             else
@@ -110,10 +123,20 @@ function bv_hdf5_host_profile
                 echo \
                     "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz $ZLIB_LIBDEP TYPE STRING)" \
                     >> $HOSTCONF
+                if [[ -n "$HDF5_MPIPAR_INSTALL_DIR" ]]; then
+                    echo \
+                        "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPIPAR_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz $ZLIB_LIBDEP TYPE STRING)" \
+                        >> $HOSTCONF
+                fi
             else
                 echo \
                     "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                     >> $HOSTCONF
+                if [[ -n "$HDF5_MPIPAR_INSTALL_DIR" ]]; then
+                    echo \
+                        "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPIPAR_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
+                        >> $HOSTCONF
+                fi
             fi
         fi
     fi
@@ -530,6 +553,57 @@ EOF
     return 0;
 }
 
+function apply_hdf5_serial_parallel_patch
+{
+    info "Patch 1 of 2 for HDF5 for serial/parallel support"
+    patch -p0 << \EOF
+*** src/hdf5.h	2016-08-23 14:14:26.000000000 -0700
+--- src/hdf5.h.patched	2016-08-23 14:14:49.000000000 -0700
+***************
+*** 43,49 ****
+--- 43,51 ----
+  #include "H5FDcore.h"		/* Files stored entirely in memory	*/
+  #include "H5FDfamily.h"		/* File families 			*/
+  #include "H5FDlog.h"        	/* sec2 driver with I/O logging (for debugging) */
++ #ifdef PARALLEL
+  #include "H5FDmpi.h"            /* MPI-based file drivers		*/
++ #endif
+  #include "H5FDmulti.h"		/* Usage-partitioned file family	*/
+  #include "H5FDsec2.h"		/* POSIX unbuffered file I/O		*/
+  #include "H5FDstdio.h"		/* Standard C buffered I/O		*/
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patch 1 of 2 for HDF5 for serial/parallel patch failed."
+        return 1
+    fi
+
+    info "Patch 2 of 2 for HDF5 for serial/parallel support"
+    patch -p0 << \EOF
+*** src/H5public.h	2016-08-23 14:13:42.000000000 -0700
+--- src/H5public.h.patched	2016-08-23 14:14:59.000000000 -0700
+***************
+*** 57,68 ****
+--- 57,70 ----
+  #ifdef H5_HAVE_STDDEF_H
+  #   include <stddef.h>
+  #endif
++ #ifdef PARALLEL
+  #ifdef H5_HAVE_PARALLEL
+  #   include <mpi.h>
+  #ifndef MPI_FILE_NULL		/*MPIO may be defined in mpi.h already       */
+  #   include <mpio.h>
+  #endif
+  #endif
++ #endif
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patch 2 of 2 for HDF5 for serial/parallel patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 function apply_hdf5_patch
 {
     if [[ "${HDF5_VERSION}" == 1.8.7 ]] ; then
@@ -560,6 +634,11 @@ function apply_hdf5_patch
                 fi
             fi
         fi
+    fi
+
+    apply_hdf5_serial_parallel_patch
+    if [[ $? != 0 ]]; then
+        return 1
     fi
 
     return 0
@@ -632,56 +711,118 @@ function build_hdf5
         cf_build_thread="--enable-threadsafe --with-pthread"
     fi
 
-    # In order to ensure $FORTRANARGS is expanded to build the arguments to
-    # configure, we wrap the invokation in 'sh -c "..."' syntax
-    info "Invoking command to configure HDF5"
-    info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        $FORTRANARGS \
-        --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH\" \
-        ${cf_szip} ${cf_build_type} ${cf_build_thread}"
-    sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        $FORTRANARGS \
-        --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH\" \
-        ${cf_szip} ${cf_build_type} ${cf_build_thread}"
-    if [[ $? != 0 ]] ; then
-        warn "HDF5 configure failed.  Giving up"
-        return 1
+    if [[ "$DO_MOAB" == "yes" && "DO_STATIC_BUILD" == "yes" && "$parallel" == "yes" ]]; then
+        par_build_types="serial parallel"
+    else
+        par_build_types="default" # should result in the way things always used to work prior to 23Aug16
     fi
 
     #
-    # Build HDF5
+    # Loop over build types, building an instance of an HDF5 installation for each.
+    # There are multiple pieces to whats going on here.
+    #    First, there is the patch to the HDF5 sources we apply (above) to add conditional
+    #        compilation logic around #include <mpi.h> and other parallel-specific headers
+    #        for HDF5 installations that have been compiled for parallel. This logic permits
+    #        VisIt to control how HDF5's header inclusion works for MPI based on VisIt's
+    #        own PARALLEL CPPFLAG (e.g. -DPARALLEL).
+    #    Second, there are tiny changes made to HDF5's configure script (done inline as sed
+    #        operations and not as a patch because it is more likely to work across many
+    #        versions of HDF5). Those changes basically fix a problem with HDF5 where
+    #        --disable-parallel configuration switch isn't always honored.
+    #    Third, setting of RUNSERIAL and PARALLEL configuration variables HDF5's configure
+    #        script is sensitive to. The preceding changes to HDF5's configure script
+    #        work in tandem with setting RUNSERIAL and PARALLEL configuration variables to
+    #        affect control over whether we get a serial or a parallel library.
+    #    Fourth, we only need to build something other than what we used to in the past 
+    #        under very limited circumstances...we are building a parallel VisIt, it is
+    #        being built statically *and* the MOAB plugin is also being built. If any one
+    #        of these conditions is not met, then by the logic above setting par_build_types
+    #        we should get a single instance of HDF5 installed as we always would have in
+    #        the past but which still incoroproates the patches for VisIt to select
+    #        serial/parallel headers via the -DPARALLEL CPP flag when needed.
     #
-    info "Making HDF5 . . ."
-    $MAKE $MAKE_OPT_FLAGS
-    if [[ $? != 0 ]] ; then
-        warn "HDF5 build failed.  Giving up"
-        return 1
-    fi
-    #
-    # Install into the VisIt third party location.
-    #
-    info "Installing HDF5 . . ."
+    for bt in $par_build_types; do
 
-    $MAKE install
-    if [[ $? != 0 ]] ; then
-        warn "HDF5 install failed.  Giving up"
-        return 1
-    fi
+        mkdir build_$bt
+        pushd build_$bt
 
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
+        if [[ ! -e ../configure.orig ]]; then
+            cp ../configure ../configure.orig
+        fi
+        cp ../configure.orig ../configure
+
+        cf_build_parallel=""
+        par_prefix=""
+        if [[ "$bt" == "serial" ]]; then
+            # Do some gymnastics to FORCE HDF5 to compile for serial
+            sed -i -e 's/^ *PARALLEL=\([^$]\)\(.*\)/PARALLEL=${PARALLEL:=\1\2}/' ../configure
+            sed -i -e 's/^if test -n "$PARALLEL"/if test -n "$PARALLEL" -a "$PARALLEL" \!= "no"/' ../configure
+            RUNSERIAL=" "
+            PARALLEL=no 
+            cf_build_parallel="--disable-parallel"
+        elif [[ "$bt" == "parallel" ]]; then
+            cf_build_parallel="--enable-parallel"
+            C_OPT_FLAGS="-DPARALLEL"
+            CXX_OPT_FLAGS="-DPARALLEL"
+            par_prefix="mpipar/"
+            RUNSERIAL=""
+            PARALLEL=yes
+        elif [[ "$bt" == "default" ]]; then
+            if [[ -n "$($CXX_COMPILER -show | tr ' ' '\n' | grep -e '-lmpi')" ]]; then
+                C_OPT_FLAGS="-DPARALLEL"
+                CXX_OPT_FLAGS="-DPARALLEL"
+            fi
+            RUNSERIAL=""
+            PARALLEL=""
+        fi
+
+        # In order to ensure $FORTRANARGS is expanded to build the arguments to
+        # configure, we wrap the invokation in 'sh -c "..."' syntax
+        info "Invoking command to configure $bt HDF5"
+        info "../configure RUNSERIAL=\"$RUNSERIAL\" PARALLEL=\"$PARALLEL\" \
+            CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+            CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+            $FORTRANARGS \
+            --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/${par_prefix}$VISITARCH\" \
+            ${cf_szip} ${cf_build_type} ${cf_build_thread} ${cf_build_parallel}"
+        sh -c "../configure RUNSERIAL=\"$RUNSERIAL\" PARALLEL=\"$PARALLEL\" \
+            CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+            CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+            $FORTRANARGS \
+            --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/${par_prefix}$VISITARCH\" \
+            ${cf_szip} ${cf_build_type} ${cf_build_thread} ${cf_build_parallel}"
+        if [[ $? != 0 ]] ; then
+            warn "$bt HDF5 configure failed.  Giving up"
+            return 1
+        fi
+
         #
-        # Make dynamic executable, need to patch up the install path and
-        # version information.
+        # Build HDF5
         #
-        info "Creating dynamic libraries for HDF5 . . ."
-    fi
+        info "Making $bt HDF5 . . ."
+        $MAKE $MAKE_OPT_FLAGS
+        if [[ $? != 0 ]] ; then
+            warn "$bt HDF5 build failed.  Giving up"
+            return 1
+        fi
+        #
+        # Install into the VisIt third party location.
+        #
+        info "Installing $bt HDF5 . . ."
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/hdf5"
-        chgrp -R ${GROUP} "$VISITDIR/hdf5"
-    fi
+        $MAKE install
+        if [[ $? != 0 ]] ; then
+            warn "$bt HDF5 install failed.  Giving up"
+            return 1
+        fi
+
+        if [[ "$DO_GROUP" == "yes" ]] ; then
+            chmod -R ug+w,a+rX "$VISITDIR/hdf5"
+            chgrp -R ${GROUP} "$VISITDIR/hdf5"
+        fi
+        popd
+    done
+
     cd "$START_DIR"
     info "Done with HDF5"
     return 0
