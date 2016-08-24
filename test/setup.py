@@ -57,6 +57,7 @@ def generate():
                     "visit_test_main.py",
                     "visit_test_reports.py",
                     "visit_test_suite.py",
+                    "visit_test_ctest.py",
                     "nobaseline.pnm",
                     "notext.txt",
                     "report_templates"]
