@@ -143,6 +143,8 @@ def hosts(vdir=None,legacy=False,reload=False):
             __hosts.update(llnl_closed)
         else:
             if vdir is None:
+                if not os.environ.has_key("VISITHOME"):
+                    raise VisItException("hosts() requires VISITHOME env var or explicit vdir argument")
                 vdir = os.environ["VISITHOME"]
             hpf_files = glob.glob(pjoin(vdir,".visit","hosts","*.xml"))
             for hpf_file in hpf_files:
