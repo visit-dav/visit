@@ -67,6 +67,17 @@ function bv_moab_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_MOAB_DIR \${VISITHOME}/moab/$MOAB_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
+        echo \
+            "VISIT_OPTION_DEFAULT(VISIT_MOAB_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+            >> $HOSTCONF
+        if [[ "DO_STATIC_BUILD" == "yes" && "$parallel" == "yes" ]]; then
+            echo \
+                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPIPAR_DIR \${VISITHOME}/moab/$MOAB_VERSION/mpipar/\${VISITARCH})" \
+                >> $HOSTCONF
+            echo \
+                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPIPAR_LIBDEP HDF5_MPIPAR_LIBRARY_DIR hdf5 \${VISIT_HDF5_MPIPAR_LIBDEP} TYPE STRING)" \
+                >> $HOSTCONF
+        fi
     fi
 }
 
@@ -105,7 +116,7 @@ function build_moab
     fi
 
     cd $MOAB_BUILD_DIR || error "Can't cd to moab build dir."
-    rm -f src/moab/MOABConfig.h
+    rm -f src/moab/MOABConfig.h # work around a potential issue in MOAB tarball
 
     if [[ "DO_STATIC_BUILD" == "yes" && "$parallel" == "yes" ]]; then
         par_build_types="serial parallel"
