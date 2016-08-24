@@ -370,24 +370,6 @@ ELSE()
     endif()
 ENDIF()
 
-
-# Add ITAPS
-IF(ITAPS_DIRS)
-    LIST(APPEND THIRDPARTY_DEPENDENT_PLUGINS ${ITAPS_DIRS})
-    IF(VISIT_STATIC)
-        FOREACH(impl ${ITAPS_DIRS})
-            SET(itapslib "${impl}_LIB")
-            IF(${itapslib})
-                LIST(APPEND TMP_THIRDPARTY_IO_LIB  ${${itapslib}})
-            ENDIF(${itapslib})
-            SET(itapslibdir "${imps}_LIBRARY_DIR")
-            IF(${itapslibdir})
-                LIST(APPEND TMP_THIRDPARTY_IO_LIBRARY_DIR ${${itapslibdir}})
-            ENDIF(${itapslibdir})
-        ENDFOREACH(impl)
-    ENDIF(VISIT_STATIC)
-ENDIF(ITAPS_DIRS)
-
 # Save the list of all library dirs and libs so the engine can use it
 IF(VISIT_STATIC)
     SET(ALL_THIRDPARTY_IO_LIBRARY_DIR ${TMP_THIRDPARTY_IO_LIBRARY_DIR} CACHE INTERNAL "List of all I/O lib dirs")

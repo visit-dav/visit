@@ -509,8 +509,6 @@ FUNCTION(VISIT_OPTION_DEFAULT var)
   ENDIF(NOT "${default_base_val}" STREQUAL "${opt_ARGS}")
 ENDFUNCTION(VISIT_OPTION_DEFAULT var)
 
-INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetupITAPS.cmake)
-
 SET(VTK_MINIMUM_VERSION "6.0.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
 
 SET(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++ that VisIt can use")
@@ -1395,9 +1393,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     IF(H5PART_FOUND)
         SET(HAVE_LIBH5PART 1)
     ENDIF(H5PART_FOUND)
-
-    # Configure ITAPS support -- it's treated specially.
-    CONFIGURE_ITAPS()
 
     # Configure MOAB support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMOAB.cmake)

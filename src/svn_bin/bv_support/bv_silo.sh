@@ -85,26 +85,22 @@ function bv_silo_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_SILO_DIR \${VISITHOME}/silo/$SILO_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
+
+        libdep=""
         if [[ "$DO_HDF5" == "yes" ]] ; then
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
-                >> $HOSTCONF
+            libdep="HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP}"
+        fi
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            libdep="$libdep ZLIB_LIBRARY_DIR z"
+        elif [[ -d /usr/lib/x86_64-linux-gnu ]]; then
+            libdep="$libdep /usr/lib/x86_64-linux-gnu z"
         else
-            if [[ "$DO_ZLIB" == "yes" ]] ; then
-                echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP ZLIB_LIBRARY_DIR z TYPE STRING)" \
-                    >> $HOSTCONF
-            else
-                if [[ -d /usr/lib/x86_64-linux-gnu ]]; then
-                    echo \
-                        "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib/x86_64-linux-gnu z TYPE STRING)" \
-                        >> $HOSTCONF
-                else
-                    echo \
-                        "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z TYPE STRING)" \
-                        >> $HOSTCONF
-                fi
-            fi
+            libdep="$libdep /usr/lib z"
+        fi
+        if [[ -n "$libdep" ]]; then
+            echo \
+                "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP $libdep TYPE STRING)" \
+                >> $HOSTCONF
         fi
     fi
 }
