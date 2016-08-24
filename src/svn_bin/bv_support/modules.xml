@@ -29,10 +29,11 @@
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="itaps"/>
+            <lib name="manta"/>
+<!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="mfem"/>
             <lib name="mili"/>
-<!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
-            <lib name="manta"/>
+            <lib name="moab"/>
             <lib name="mpich"/>
             <lib name="mxml"/>
             <lib name="nektarpp"/>

@@ -95,7 +95,7 @@ function readXmlModuleFile
     fi
 
     #get list of all libs, sort and get unique set..
-    uniq_libs=`echo $addlibs | sed -e s/\ /\\\\n/g | sort | uniq`
+    uniq_libs=`echo $addlibs | tr ' ' '\n' | sort | uniq`
     for lib in $uniq_libs;
     do
         xmlp_alllibs[${#xmlp_alllibs[*]}]="$lib"

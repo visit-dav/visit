@@ -110,7 +110,9 @@ enhancements and bug-fixes that were added to this release.</p>
       circumstances, the non_MPIPAR variables may refer to either a serial or a parallel package installation.</li>
   <li>Proliferant references to ${ZLIB_LIB} variable in database plugins .xml files was removed. Only those plugins that
       actually directly call zlib library functions need it.</li>
-  <li></li>
+  <li>build_visit was enhanced to build MOAB (Mesh Object datABase).</li>
+  <li>build_visit was enhanced to build HDF5 for both serial and parallel installations if the following conditions are
+      met...static build, parallel build, moab is being built.</li>
 </ul>
 
 <a name="Dev_changes"></a>
