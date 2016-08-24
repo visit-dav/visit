@@ -33,9 +33,9 @@ function bv_moab_depends_on
 
 function bv_moab_info
 {
-    export MOAB_VERSION=${MOAB_VERSION:-"4.9.1"}
+    export MOAB_VERSION=${MOAB_VERSION:-"4.9.2-RC0"}
     export MOAB_FILE=${MOAB_FILE:-"moab-${MOAB_VERSION}.tar.gz"}
-    export MOAB_BUILD_DIR=${MOAB_BUILD_DIR:-"moab-${MOAB_VERSION}"}
+    export MOAB_BUILD_DIR=${MOAB_BUILD_DIR:-"moab-4.9.2"}
     export MOAB_URL=${MOAB_URL:-"ftp://ftp.mcs.anl.gov/pub/fathom"}
 }
 
@@ -70,7 +70,7 @@ function bv_moab_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_MOAB_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
             >> $HOSTCONF
-        if [[ "DO_STATIC_BUILD" == "yes" && "$parallel" == "yes" ]]; then
+        if [[ "$parallel" == "yes" ]]; then
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPIPAR_DIR \${VISITHOME}/moab/$MOAB_VERSION/mpipar/\${VISITARCH})" \
                 >> $HOSTCONF
@@ -118,7 +118,7 @@ function build_moab
     cd $MOAB_BUILD_DIR || error "Can't cd to moab build dir."
     rm -f src/moab/MOABConfig.h # work around a potential issue in MOAB tarball
 
-    if [[ "DO_STATIC_BUILD" == "yes" && "$parallel" == "yes" ]]; then
+    if [[ "$parallel" == "yes" ]]; then
         par_build_types="serial parallel"
     else
         par_build_types="default"
@@ -142,7 +142,7 @@ function build_moab
         prefix_arg="--prefix=$VISITDIR/moab/$MOAB_VERSION/${par_prefix}$VISITARCH"
         common_args="--with-pic --disable-fortran"
 
-        if [[ "DO_STATIC_BUILD" == "yes" ]]; then
+        if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
             static_args="--enable-static --disable-shared"
         else
             static_args="--disable-static --enable-shared"
