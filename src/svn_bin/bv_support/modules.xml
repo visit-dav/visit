@@ -28,7 +28,6 @@
             <lib name="hdf4"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
-            <lib name="itaps"/>
             <lib name="manta"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="mfem"/>
@@ -156,7 +155,6 @@
         -->
         <group name="advanced" comment="Must be manually downloaded" enabled="no">
             <lib name="hdf4"/>
-            <lib name="itaps"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="mili"/>
             <lib name="tcmalloc"/>
