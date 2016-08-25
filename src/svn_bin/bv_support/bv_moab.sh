@@ -70,9 +70,9 @@ function bv_moab_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_MOAB_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
             >> $HOSTCONF
-        if [[ "$parallel" == "yes" ]]; then
+        if [[ -n "$PAR_COMPILER" ]]; then
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPIPAR_DIR \${VISITHOME}/moab/$MOAB_VERSION/mpipar/\${VISITARCH})" \
+                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MIPPAR_DIR \${VISITHOME}/moab/$MOAB_VERSION/mpipar/\${VISITARCH})" \
                 >> $HOSTCONF
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPIPAR_LIBDEP HDF5_MPIPAR_LIBRARY_DIR hdf5 \${VISIT_HDF5_MPIPAR_LIBDEP} TYPE STRING)" \
@@ -118,10 +118,9 @@ function build_moab
     cd $MOAB_BUILD_DIR || error "Can't cd to moab build dir."
     rm -f src/moab/MOABConfig.h # work around a potential issue in MOAB tarball
 
-    if [[ "$parallel" == "yes" ]]; then
-        par_build_types="serial parallel"
-    else
-        par_build_types="default"
+    par_build_types="serial"
+    if [[ -n "$PAR_COMPILER_CXX" ]]; then
+        par_build_types="$par_build_types parallel"
     fi
 
     for bt in $par_build_types; do 
@@ -129,54 +128,56 @@ function build_moab
         mkdir build_$bt
         pushd build_$bt
 
-        par_prefix=""
-        if [[ "$bt" == "parallel" ]]; then
-            mpi_arg="--with-mpi"
-            par_prefix="mpipar/"
-        elif [[ "$bt" == "default" ]]; then
-            if [[ "$parallel" == "yes" ]]; then
-                mpi_arg="--with-mpi"
-            fi
+        cf_mpi_arg=""
+        cf_par_prefix=""
+        if [[ "$bt" == "serial" ]]; then
+            cf_c_compiler="$C_COMPILER"
+            cf_cxx_compiler="$CXX_COMPILER"
+        elif [[ "$bt" == "parallel" ]]; then
+            cf_mpi_arg="--with-mpi"
+            cf_par_prefix="mpipar/"
+            cf_c_compiler="$PAR_COMPILER"
+            cf_cxx_compiler="$PAR_COMPILER_CXX"
         fi
 
-        prefix_arg="--prefix=$VISITDIR/moab/$MOAB_VERSION/${par_prefix}$VISITARCH"
-        common_args="--with-pic --disable-fortran"
+        cf_prefix_arg="--prefix=$VISITDIR/moab/$MOAB_VERSION/${par_prefix}$VISITARCH"
+        cf_common_args="--with-pic --disable-fortran"
 
-        if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
-            static_args="--enable-static --disable-shared"
+        if [[ "DO_STATIC_BUILD" == "yes" ]]; then
+            cf_static_args="--enable-static --disable-shared"
         else
-            static_args="--disable-static --enable-shared"
+            cf_static_args="--disable-static --enable-shared"
         fi
 
-        hdf5_ldflags_arg=""
-        szip_arg=""
-        zlib_arg=""
-        hdf5_arg="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/${par_prefix}$VISITARCH"
+        cf_hdf5_ldflags_arg=""
+        cf_szip_arg=""
+        cf_zlib_arg=""
+        cf_hdf5_arg="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/${par_prefix}$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
-            szip_arg="--with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
-            hdf5_ldflags_arg="-lsz"
+            cf_szip_arg="--with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+            cf_hdf5_ldflags_arg="-lsz"
         fi
         if [[ "$DO_ZLIB" == "yes" ]] ; then
-            zlib_arg="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
-            hdf5_ldflags_arg="$hdf5_ldflags_arg -lz"
+            cf_zlib_arg="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
+            cf_hdf5_ldflags_arg="$cf_hdf5_ldflags_arg -lz"
         fi
-        if [[ -n "$hdf5_ldflags_arg" ]]; then
-            hdf5_ldflags_arg="--with-hdf5-ldflags=\"$hdf5_ldflags_arg\""
+        if [[ -n "$cf_hdf5_ldflags_arg" ]]; then
+            cf_hdf5_ldflags_arg="--with-hdf5-ldflags=\"$cf_hdf5_ldflags_arg\""
         fi
 
         info "Configuring $bt moab . . ."
-        info ../configure CXX=\"$CXX_COMPILER\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-            CC=\"$C_COMPILER\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-            ${prefix_arg} ${mpi_arg} ${common_args} ${static_args} \
-            ${hdf5_arg} ${hdf5_ldflags_arg} \
-            ${szip_arg} ${zlib_arg}
+        info ../configure CXX=\"$cf_cxx_compiler\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+            CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
+            ${cf_prefix_arg} ${cf_mpi_arg} ${cf_common_args} ${cf_static_args} \
+            ${cf_hdf5_arg} ${cf_hdf5_ldflags_arg} \
+            ${cf_szip_arg} ${cf_zlib_arg}
 
         sh -c "../configure \
-            CXX=\"$CXX_COMPILER\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-            CC=\"$C_COMPILER\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-            ${prefix_arg} ${mpi_arg} ${common_args} ${static_args} \
-            ${hdf5_arg} ${hdf5_ldflags_arg} \
-            ${szip_arg} ${zlib_arg}"
+            CXX=\"$cf_cxx_compiler\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+            CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
+            ${cf_prefix_arg} ${cf_mpi_arg} ${cf_common_args} ${cf_static_args} \
+            ${cf_hdf5_arg} ${cf_hdf5_ldflags_arg} \
+            ${cf_szip_arg} ${cf_zlib_arg}"
 
         if [[ $? != 0 ]] ; then
             warn "$bt MOAB configure failed.  Giving up"
