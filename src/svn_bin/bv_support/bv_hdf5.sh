@@ -655,39 +655,10 @@ function build_hdf5
         par_build_types="$par_build_types parallel"
     fi
 
-    #
-    # Loop over build types, building an instance of an HDF5 installation for each.
-    # There are multiple pieces to whats going on here.
-    #    First, there is the patch to the HDF5 sources we apply (above) to add conditional
-    #        compilation logic around #include <mpi.h> and other parallel-specific headers
-    #        for HDF5 installations that have been compiled for parallel. This logic permits
-    #        VisIt to control how HDF5's header inclusion works for MPI based on VisIt's
-    #        own PARALLEL CPPFLAG (e.g. -DPARALLEL).
-    #    Second, there are tiny changes made to HDF5's configure script (done inline as sed
-    #        operations and not as a patch because it is more likely to work across many
-    #        versions of HDF5). Those changes basically fix a problem with HDF5 where
-    #        --disable-parallel configuration switch isn't always honored.
-    #    Third, setting of RUNSERIAL and PARALLEL configuration variables HDF5's configure
-    #        script is sensitive to. The preceding changes to HDF5's configure script
-    #        work in tandem with setting RUNSERIAL and PARALLEL configuration variables to
-    #        affect control over whether we get a serial or a parallel library.
-    #    Fourth, we only need to build something other than what we used to in the past 
-    #        under very limited circumstances...we are building a parallel VisIt, it is
-    #        being built statically *and* the MOAB plugin is also being built. If any one
-    #        of these conditions is not met, then by the logic above setting par_build_types
-    #        we should get a single instance of HDF5 installed as we always would have in
-    #        the past but which still incoroproates the patches for VisIt to select
-    #        serial/parallel headers via the -DPARALLEL CPP flag when needed.
-    #
     for bt in $par_build_types; do
 
         mkdir build_$bt
         pushd build_$bt
-
-        if [[ ! -e ../configure.orig ]]; then
-            cp ../configure ../configure.orig
-        fi
-        cp ../configure.orig ../configure
 
         cf_build_parallel=""
         cf_par_prefix=""
@@ -696,7 +667,6 @@ function build_hdf5
             cf_c_compiler="$C_COMPILER"
         elif [[ "$bt" == "parallel" ]]; then
             cf_build_parallel="--enable-parallel"
-            cf_c_opt_flags="-DPARALLEL"
             cf_par_prefix="mpipar/"
             cf_c_compiler="$PAR_COMPILER"
         fi
@@ -704,11 +674,11 @@ function build_hdf5
         # In order to ensure $cf_fortranargs is expanded to build the arguments to
         # configure, we wrap the invokation in 'sh -c "..."' syntax
         info "Invoking command to configure $bt HDF5"
-        info "../configure CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $cf_c_opt_flags\" \
+        info "../configure CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
             $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/${cf_par_prefix}$VISITARCH\" \
             ${cf_szip} ${cf_build_type} ${cf_build_thread} ${cf_build_parallel}"
-        sh -c "../configure CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $cf_c_opt_flagS\" \
+        sh -c "../configure CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
             $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/${cf_par_prefix}$VISITARCH\" \
             ${cf_szip} ${cf_build_type} ${cf_build_thread} ${cf_build_parallel}"
@@ -742,6 +712,11 @@ function build_hdf5
             chmod -R ug+w,a+rX "$VISITDIR/hdf5"
             chgrp -R ${GROUP} "$VISITDIR/hdf5"
         fi
+
+
+#ls -1 ../.lib.orig/ | sed 's/libhdf5\(.\)\(.*\)/libhdf5\1\2 libhdf5-mpipar\1\2/' | xargs -t -L 1 ln -s
+
+
         popd
     done
 

@@ -140,7 +140,7 @@ function build_moab
             cf_cxx_compiler="$PAR_COMPILER_CXX"
         fi
 
-        cf_prefix_arg="--prefix=$VISITDIR/moab/$MOAB_VERSION/${par_prefix}$VISITARCH"
+        cf_prefix_arg="--prefix=$VISITDIR/moab/$MOAB_VERSION/${cf_par_prefix}$VISITARCH"
         cf_common_args="--with-pic --disable-fortran"
 
         if [[ "DO_STATIC_BUILD" == "yes" ]]; then
@@ -152,7 +152,7 @@ function build_moab
         cf_hdf5_ldflags_arg=""
         cf_szip_arg=""
         cf_zlib_arg=""
-        cf_hdf5_arg="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/${par_prefix}$VISITARCH"
+        cf_hdf5_arg="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/${cf_par_prefix}$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
             cf_szip_arg="--with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
             cf_hdf5_ldflags_arg="-lsz"
