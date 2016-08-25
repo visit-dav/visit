@@ -1,7 +1,7 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /home/biagas2/visit/thirdparty/2.11.0)
+SET(VISITHOME /home/biagas2/visit/thirdparty/3.0.0)
 
 ## Compiler flags.
 ##
