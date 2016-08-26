@@ -163,12 +163,16 @@ avtMOABFileFormat::gatherMhdfInformation()
     // need to communicate file summary to all processes
     int mpi_err = MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, VISIT_MPI_COMM);
     if (mpi_err || !size)
+    {
         debug1 << "fail to communicate size: " << size << "\n";
+    }
     if (0 != rank)
         file_descriptor = reinterpret_cast<MHDF_FileDesc*>(malloc(size));
     mpi_err = MPI_Bcast(file_descriptor, size, MPI_BYTE, 0, VISIT_MPI_COMM);
     if (mpi_err )
+    {
         debug1 << "fail to communicate file summary: \n";
+    }
 
     if (0 != rank)
         mhdf_fixFileDesc(file_descriptor, reinterpret_cast<MHDF_FileDesc*>(file_descriptor->offset));
@@ -709,6 +713,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         if (!avtCallback::IssueWarning(errInfo.c_str()))
             std::cerr << errInfo << std::endl;
     }
+    return 0;
 }
 
 
@@ -734,35 +739,8 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
 vtkDataArray *
 avtMOABFileFormat::GetVar(int domain, const char *varname)
 {
-    // YOU MUST IMPLEMENT THIS
-
-    //
-    // If you have a file format where variables don't apply (for example a
-    // strictly polygonal format like the STL (Stereo Lithography) format,
-    // then uncomment the code below.
-    //
-    // EXCEPTION1(InvalidVariableException, varname);
-    //
-
-    //
-    // If you do have a scalar variable, here is some code that may be helpful.
-    //
-    // int ntuples = XXX; // this is the number of entries in the variable.
-    // vtkFloatArray *rv = vtkFloatArray::New();
-    // rv->SetNumberOfTuples(ntuples);
-    // for (int i = 0 ; i < ntuples ; i++)
-    // {
-    //      rv->SetTuple1(i, VAL);  // you must determine value for ith entry.
-    // }
-    //
-    // return rv;
-    //
-  //
-      // Look up the mesh in the cache.
-      //
     if (!fileLoaded)
       EXCEPTION1(InvalidVariableException, varname);
-
 
     try
     {
@@ -878,7 +856,6 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         }
         return result;
     }
-
     catch (moab::ErrorCode errCode)
     {
         std::string errInfo;
@@ -886,7 +863,7 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         if (!avtCallback::IssueWarning(errInfo.c_str()))
             std::cerr << errInfo << std::endl;
     }
-
+    return 0;
 }
 
 vtkDataArray*
@@ -962,6 +939,7 @@ avtMOABFileFormat::GetPartitionTagAsEnumScalar(){
         if (!avtCallback::IssueWarning(errInfo.c_str()))
             std::cerr << errInfo << std::endl;
     }
+    return 0;
 }
 
 vtkDataArray*
@@ -1037,6 +1015,7 @@ avtMOABFileFormat::GetMaterialTagAsEnumScalar()
       if (!avtCallback::IssueWarning(errInfo.c_str()))
           std::cerr << errInfo << std::endl;
   }
+  return 0;
 }
 
 vtkDataArray*
@@ -1113,6 +1092,7 @@ avtMOABFileFormat::GetNeumannSetsVar()
         if (!avtCallback::IssueWarning(errInfo.c_str()))
             std::cerr << errInfo << std::endl;
     }
+    return 0;
 }
 
 vtkDataArray*
@@ -1181,6 +1161,7 @@ avtMOABFileFormat::GetDirichletSetsVar()
         if (!avtCallback::IssueWarning(errInfo.c_str()))
             std::cerr << errInfo << std::endl;
     }
+    return 0;
 }
 
 vtkDataArray*
@@ -1272,6 +1253,7 @@ avtMOABFileFormat::GetGeometrySetsVar()
         if (!avtCallback::IssueWarning(errInfo.c_str()))
             std::cerr << errInfo << std::endl;
     }
+    return 0;
 }
 // ****************************************************************************
 //  Method: avtMOABFileFormat::GetVectorVar
@@ -1294,37 +1276,5 @@ avtMOABFileFormat::GetGeometrySetsVar()
 vtkDataArray *
 avtMOABFileFormat::GetVectorVar(int domain, const char *varname)
 {
-    // YOU MUST IMPLEMENT THIS
-    //
-    // If you have a file format where variables don't apply (for example a
-    // strictly polygonal format like the STL (Stereo Lithography) format,
-    // then uncomment the code below.
-    //
-    // EXCEPTION1(InvalidVariableException, varname);
-    //
-
-    //
-    // If you do have a vector variable, here is some code that may be helpful.
-    //
-    // int ncomps = YYY;  // This is the rank of the vector - typically 2 or 3.
-    // int ntuples = XXX; // this is the number of entries in the variable.
-    // vtkFloatArray *rv = vtkFloatArray::New();
-    // int ucomps = (ncomps == 2 ? 3 : ncomps);
-    // rv->SetNumberOfComponents(ucomps);
-    // rv->SetNumberOfTuples(ntuples);
-    // float *one_entry = new float[ucomps];
-    // for (int i = 0 ; i < ntuples ; i++)
-    // {
-    //      int j;
-    //      for (j = 0 ; j < ncomps ; j++)
-    //           one_entry[j] = ...
-    //      for (j = ncomps ; j < ucomps ; j++)
-    //           one_entry[j] = 0.;
-    //      rv->SetTuple(i, one_entry);
-    // }
-    //
-    // delete [] one_entry;
-    // return rv;
-    //
+    return 0;
 }
-
