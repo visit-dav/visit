@@ -651,7 +651,7 @@ function build_hdf5
     fi
 
     par_build_types="serial"
-    if [[ -n "$PAR_COMPILER" ]]; then
+    if [[ -n "$PAR_COMPILER" && "$DO_MOAB" == "yes" ]]; then
         par_build_types="$par_build_types parallel"
     fi
 
