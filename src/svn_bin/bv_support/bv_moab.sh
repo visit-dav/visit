@@ -72,10 +72,10 @@ function bv_moab_host_profile
             >> $HOSTCONF
         if [[ -n "$PAR_COMPILER" ]]; then
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MIPPAR_DIR \${VISITHOME}/moab/$MOAB_VERSION/mpipar/\${VISITARCH})" \
+                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_DIR \${VISITHOME}/moab_mpi/$MOAB_VERSION/\${VISITARCH})" \
                 >> $HOSTCONF
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPIPAR_LIBDEP HDF5_MPIPAR_LIBRARY_DIR hdf5 \${VISIT_HDF5_MPIPAR_LIBDEP} TYPE STRING)" \
+                "VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_LIBDEP HDF5_MPI_LIBRARY_DIR hdf5_mpi \${VISIT_HDF5_MPI_LIBDEP} TYPE STRING)" \
                 >> $HOSTCONF
         fi
     fi
@@ -129,19 +129,22 @@ function build_moab
         pushd build_$bt
 
         cf_mpi_arg=""
-        cf_par_prefix=""
+        cf_par_suffix=""
         if [[ "$bt" == "serial" ]]; then
             cf_c_compiler="$C_COMPILER"
             cf_cxx_compiler="$CXX_COMPILER"
-        elif [[ "$bt" == "parallel" ]]; then
+        elif [[ "$bt" == "parallel" ]]; then # second pass, ruins configure
+            # change name of lib MOAB thinks it needs to link to
+            sed -i .orig -e 's/libhdf5/libhdf5_mpi/g' ../configure
+            sed -i .orig -e 's/=hdf5/=hdf5_mpi/' ../configure
             cf_mpi_arg="--with-mpi"
-            cf_par_prefix="mpipar/"
+            cf_par_suffix="_mpi"
             cf_c_compiler="$PAR_COMPILER"
             cf_cxx_compiler="$PAR_COMPILER_CXX"
         fi
 
-        cf_prefix_arg="--prefix=$VISITDIR/moab/$MOAB_VERSION/${cf_par_prefix}$VISITARCH"
-        cf_common_args="--with-pic --disable-fortran"
+        cf_prefix_arg="--prefix=$VISITDIR/moab${cf_par_suffix}/$MOAB_VERSION/$VISITARCH"
+        cf_common_args="--with-pic --disable-fortran --disable-imesh"
 
         if [[ "DO_STATIC_BUILD" == "yes" ]]; then
             cf_static_args="--enable-static --disable-shared"
@@ -152,7 +155,7 @@ function build_moab
         cf_hdf5_ldflags_arg=""
         cf_szip_arg=""
         cf_zlib_arg=""
-        cf_hdf5_arg="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/${cf_par_prefix}$VISITARCH"
+        cf_hdf5_arg="--with-hdf5=$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
             cf_szip_arg="--with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
             cf_hdf5_ldflags_arg="-lsz"
@@ -204,6 +207,21 @@ function build_moab
         if [[ "$DO_GROUP" == "yes" ]] ; then
             chmod -R ug+w,a+rX "$VISITDIR/moab"
             chgrp -R ${GROUP} "$VISITDIR/moab"
+        fi
+
+        #
+        # Change name of installed lib to libXXX_mpi.whatever
+        #
+        if [[ "$bt" == "parallel" ]]; then
+            pushd $VISITDIR/moab_mpi/$MOAB_VERSION/$VISITARCH/lib
+            rm -f libMOAB.dylib
+            sed -e 's/libMOAB/libMOAB_mpi/g' -i .orig libMOAB.la
+            ls -1 | sed 's/libMOAB\(.\)\(.*\)/libMOAB\1\2 libMOAB_mpi\1\2/' | xargs -t -L 1 mv
+            ln -s libMOAB_mpi.[0-9]*.dylib libMOAB_mpi.dylib
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                install_name_tool -id $VISITDIR/moab_mpi/$MOAB_VERSION/$VISITARCH/lib/libMOAB_mpi.dylib libMOAB_mpi.dylib
+            fi
+            popd
         fi
 
         popd

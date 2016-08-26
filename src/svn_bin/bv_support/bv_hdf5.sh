@@ -49,7 +49,7 @@ function bv_hdf5_initialize_vars
     if [[ "$USE_SYSTEM_HDF5" == "no" ]]; then
         HDF5_INSTALL_DIR="${VISITDIR}/hdf5/$HDF5_VERSION/${VISITARCH}"
         if [[ -n "$PAR_COMPILER" ]]; then
-            HDF5_MPIPAR_INSTALL_DIR="${VISITDIR}/hdf5/$HDF5_VERSION/mpipar/${VISITARCH}"
+            HDF5_MPIPAR_INSTALL_DIR="${VISITDIR}/hdf5_mpi/$HDF5_VERSION/${VISITARCH}"
         fi
     fi
 }
@@ -661,13 +661,13 @@ function build_hdf5
         pushd build_$bt
 
         cf_build_parallel=""
-        cf_par_prefix=""
+        cf_par_suffix=""
         if [[ "$bt" == "serial" ]]; then
             cf_build_parallel="--disable-parallel"
             cf_c_compiler="$C_COMPILER"
         elif [[ "$bt" == "parallel" ]]; then
             cf_build_parallel="--enable-parallel"
-            cf_par_prefix="mpipar/"
+            cf_par_suffix="_mpi"
             cf_c_compiler="$PAR_COMPILER"
         fi
 
@@ -676,11 +676,11 @@ function build_hdf5
         info "Invoking command to configure $bt HDF5"
         info "../configure CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
             $cf_fortranargs \
-            --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/${cf_par_prefix}$VISITARCH\" \
+            --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_build_type} ${cf_build_thread} ${cf_build_parallel}"
         sh -c "../configure CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
             $cf_fortranargs \
-            --prefix=\"$VISITDIR/hdf5/$HDF5_VERSION/${cf_par_prefix}$VISITARCH\" \
+            --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_build_type} ${cf_build_thread} ${cf_build_parallel}"
         if [[ $? != 0 ]] ; then
             warn "$bt HDF5 configure failed.  Giving up"
@@ -713,10 +713,23 @@ function build_hdf5
             chgrp -R ${GROUP} "$VISITDIR/hdf5"
         fi
 
-
-#ls -1 ../.lib.orig/ | sed 's/libhdf5\(.\)\(.*\)/libhdf5\1\2 libhdf5-mpipar\1\2/' | xargs -t -L 1 ln -s
-
-
+        #
+        # Change name of installed lib to libXXX_mpi.whatever
+        #
+        if [[ "$bt" == "parallel" ]]; then
+            pushd $VISITDIR/hdf5_mpi/$HDF5_VERSION/$VISITARCH/lib
+            rm -f libhdf5.dylib libhdf5_hl.dylib
+            sed -e 's/libhdf5/libhdf5_mpi/g' -i .orig libhdf5.la
+            sed -e 's/libhdf5/libhdf5_mpi/g' -i  .orig libhdf5_hl.la
+            ls -1 | sed 's/libhdf5\(.\)\(.*\)/libhdf5\1\2 libhdf5_mpi\1\2/' | xargs -t -L 1 mv
+            ln -s libhdf5_mpi.[0-9]*.dylib libhdf5_mpi.dylib
+            ln -s libhdf5_mpi_hl.[0-9]*.dylib libhdf5_mpi_hl.dylib
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                install_name_tool -id $VISITDIR/hdf5_mpi/$HDF5_VERSION/$VISITARCH/lib/libhdf5_mpi.dylib libhdf5_mpi.dylib
+                install_name_tool -id $VISITDIR/hdf5_mpi/$HDF5_VERSION/$VISITARCH/lib/libhdf5_mpi_hl.dylib libhdf5_mpi_hl.dylib
+            fi
+            popd
+        fi
         popd
     done
 

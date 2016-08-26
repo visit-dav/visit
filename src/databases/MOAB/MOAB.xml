@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
   <Plugin name="MOAB" type="database" label="MOAB" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true" filePatternsStrict="false">
     <CXXFLAGS>
-      ${MOAB_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${MOAB_MPIPAR_INCLUDE_DIR} ${HDF5_MPIPAR_INCLUDE_DIR}
+      ${MOAB_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${MOAB_MPI_INCLUDE_DIR} ${HDF5_MPI_INCLUDE_DIR}
     </CXXFLAGS>
     <LIBS components="M">
         -L${MOAB_LIBRARY_DIR} -lMOAB -L${HDF5_LIBRARY_DIR} -lhdf5 -Wl,-rpath,${MOAB_LIBRARY_DIR} -Wl,-rpath,${HDF5_LIBRARY_DIR}
@@ -10,7 +10,7 @@
         -L${MOAB_LIBRARY_DIR} -lMOAB -L${HDF5_LIBRARY_DIR} -lhdf5 -Wl,-rpath,${MOAB_LIBRARY_DIR} -Wl,-rpath,${HDF5_LIBRARY_DIR}
     </LIBS>
     <LIBS components="EPar">
-        -L${MOAB_MPIPAR_LIBRARY_DIR} -lMOAB -L${HDF5_MPIPAR_LIBRARY_DIR} -lhdf5 -Wl,-rpath,${MOAB_MPIPAR_LIBRARY_DIR} -Wl,-rpath,${HDF5_MPIPAR_LIBRARY_DIR}
+        -L${MOAB_MPI_LIBRARY_DIR} -lMOAB_mpi -L${HDF5_MPI_LIBRARY_DIR} -lhdf5_mpi -Wl,-rpath,${MOAB_MPI_LIBRARY_DIR} -Wl,-rpath,${HDF5_MPI_LIBRARY_DIR}
     </LIBS>
     <FilePatterns>
       *.h5m
