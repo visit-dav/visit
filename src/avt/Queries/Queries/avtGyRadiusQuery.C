@@ -192,7 +192,8 @@ avtGyRadiusQuery::GetDefaultInputParams(MapNode &params)
 void
 avtGyRadiusQuery::PreExecute(void)
 {
-    avtDatasetQuery::PreExecute();
+    totalSum = 0;
+    totalMass = 0;
     varName = queryAtts.GetVariables()[0];
     
     if(!overrideCentroid)
@@ -209,14 +210,14 @@ avtGyRadiusQuery::PreExecute(void)
     }
     
     // Get the denominator value (total mass)
-    avtSummationQuery sumQuery;
-    sumQuery.SetInput(GetInput());
-    sumQuery.SetVariableName(varName);
-    sumQuery.SumGhostValues(false);
-    
-    QueryAttributes qa;
-    sumQuery.PerformQuery(&qa);
-    totalMass = qa.GetResultsValue()[0];
+//    avtSummationQuery sumQuery;
+//    sumQuery.SetInput(GetInput());
+//    sumQuery.SetVariableName(varName);
+//    sumQuery.SumGhostValues(false);
+//    
+//    QueryAttributes qa;
+//    sumQuery.PerformQuery(&qa);
+//    totalMass = qa.GetResultsValue()[0];
 }
 
 // ****************************************************************************
@@ -235,6 +236,7 @@ void
 avtGyRadiusQuery::PostExecute(void)
 {
     SumDoubleAcrossAllProcessors(totalSum);
+    SumDoubleAcrossAllProcessors(totalMass);
     
     if(PAR_Rank() == 0)
     {
@@ -245,7 +247,7 @@ avtGyRadiusQuery::PostExecute(void)
         char charBuf[256];
         if(isZonal)
         {
-            SNPRINTF(charBuf, 256, "R = %f", R);
+            SNPRINTF(charBuf, 256, "R = %f\n", R);
         }
         else
         {
@@ -272,20 +274,13 @@ avtGyRadiusQuery::PostExecute(void)
 avtDataObject_p
 avtGyRadiusQuery::ApplyFilters(avtDataObject_p inData)
 {
-    //
-    // Create an artificial pipeline.
-    //
-    avtDataset_p ds;
+    avtDataObject_p ds;
     CopyTo(ds, inData);
-    avtSourceFromAVTDataset termsrc(ds);
-    avtDataObject_p dob = termsrc.GetOutput();
-    
-    avtDataRequest_p dataRequest = inData->GetOriginatingSource()->GetFullDataRequest();
+    avtDataRequest_p dataRequest = new avtDataRequest(inData->GetOriginatingSource()->GetGeneralContract()->GetDataRequest(), querySILR);
     
     bool requiresUpdate = false;
     string var = queryAtts.GetVariables()[0];
     
-   
     if(dataRequest->GetVariable() != var)
     {
         if (!dataRequest->HasSecondaryVariable(var.c_str()))
@@ -302,26 +297,8 @@ avtGyRadiusQuery::ApplyFilters(avtDataObject_p inData)
         return inData;
     }
     
-    // if we don't use the same data selections then:
-    // (1) we may load too much data
-    // (2) the indexing of the new data won't match the
-    //     original data.
-    std::vector<avtDataSelection_p> selList =
-    inData->GetOriginatingSource()->GetSelectionsForLastExecution();
-    for (unsigned int i = 0 ; i < selList.size() ; i++)
-    {
-        dataRequest->AddDataSelectionRefPtr(selList[i]);
-    }
-    
-    avtContract_p contract = new avtContract(dataRequest, 0);
-    // We don't want to disturb the original pipeline, so get the
-    // terminating source's output, and tack on an EEF, in case any of
-    // the vars are Expressions.
-    avtDataObject_p t1 = inData->GetOriginatingSource()->GetOutput();
-    avtDataObject_p temp;
-    CopyTo(temp, t1);
-    
-    eef->SetInput(temp);
+    avtContract_p contract = new avtContract(dataRequest, queryAtts.GetPipeIndex());
+    eef->SetInput(ds);
     avtDataObject_p retObj = eef->GetOutput();
     retObj->Update(contract);
     return retObj;
@@ -373,8 +350,9 @@ avtGyRadiusQuery::Execute(vtkDataSet *ds, const int dom)
             vtkVisItUtility::GetCellCenter(cell, Ri);
             
             double mass = var->GetTuple1(i);
-            double dist = sqrt(pow((Ri[0] - centroid[0]), 2) + pow((Ri[1] - centroid[1]), 2) + pow((Ri[2] - centroid[2]), 2));
-            totalSum += mass * dist * dist;
+            double radius = sqrt(pow((Ri[0] - centroid[0]), 2.0) + pow((Ri[1] - centroid[1]), 2.0) + pow((Ri[2] - centroid[2]), 2.0));
+            totalSum += mass * (radius * radius);
+            totalMass += mass;
         }
     }
     else
@@ -396,8 +374,9 @@ avtGyRadiusQuery::Execute(vtkDataSet *ds, const int dom)
                 
                 ds->GetPoint(i, Ri);
                 double mass = var->GetTuple1(i);
-                double dist = sqrt(pow((Ri[0] - centroid[0]), 2) + pow((Ri[1] - centroid[1]), 2) + pow((Ri[2] - centroid[2]), 2));
+                double dist = sqrt(pow((Ri[0] - centroid[0]), 2.0) + pow((Ri[1] - centroid[1]), 2.0) + pow((Ri[2] - centroid[2]), 2.0));
                 totalSum += mass * dist * dist;
+                totalMass += mass;
             }
         }
         else
