@@ -206,8 +206,10 @@ do
          ubuntu1404_64=false
          aztec=false
          rzzeus=false
+         rzuseq=false
          carver=false
          glory=false
+         vulcan=false
          shift
          ;;
       -kickit)
