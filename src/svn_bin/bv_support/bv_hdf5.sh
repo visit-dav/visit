@@ -718,12 +718,10 @@ function build_hdf5
         #
         if [[ "$bt" == "parallel" ]]; then
             pushd $VISITDIR/hdf5_mpi/$HDF5_VERSION/$VISITARCH/lib
-            rm -f libhdf5.dylib libhdf5_hl.dylib
-            sed -e 's/libhdf5/libhdf5_mpi/g' -i .orig libhdf5.la
-            sed -e 's/libhdf5/libhdf5_mpi/g' -i  .orig libhdf5_hl.la
-            ls -1 | sed 's/libhdf5\(.\)\(.*\)/libhdf5\1\2 libhdf5_mpi\1\2/' | xargs -t -L 1 mv
-            ln -s libhdf5_mpi.[0-9]*.dylib libhdf5_mpi.dylib
-            ln -s libhdf5_mpi_hl.[0-9]*.dylib libhdf5_mpi_hl.dylib
+            sed -e 's/libhdf5/libhdf5_mpi/g' -i.orig libhdf5.la
+            sed -e 's/libhdf5/libhdf5_mpi/g' -i.orig libhdf5_hl.la
+            ls -1 | sed 's/libhdf5\(.\)\(.*\)/libhdf5\1\2 libhdf5_mpi\1\2/' | xargs -L 1 mv
+            ls -l | grep ^l | tr -s ' ' | sed -e 's/\(^.*\) libhdf5\(.\)\(.*\) -> libhdf5\(.\)\(.*\)/libhdf5_mpi\4\5 libhdf5\2\3/' | xargs -L 1 ln -s -f
             if [[ "$OPSYS" == "Darwin" ]]; then
                 install_name_tool -id $VISITDIR/hdf5_mpi/$HDF5_VERSION/$VISITARCH/lib/libhdf5_mpi.dylib libhdf5_mpi.dylib
                 install_name_tool -id $VISITDIR/hdf5_mpi/$HDF5_VERSION/$VISITARCH/lib/libhdf5_mpi_hl.dylib libhdf5_mpi_hl.dylib
