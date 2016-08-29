@@ -21,7 +21,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
-  <li><a href="#Operator_changes">Changes to operators</a></li>
+  <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Configuration_changes">Configuration changes</a></li>
   <li><a href="#Build_changes">Changes to build_visit</a></li>
@@ -31,56 +31,48 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 2.11</font></b></p>
 <ul>
-  <li>New GyRadius Query</li>
-  <li>Added <i>inferno</i>, <i>plasma</i>, <i>magma</i> and <i>viridis</i> color tables from matplotlib. These color tables were developed to be perceptually uniform and more friendly to color blindness. For more details see <a href="https://bids.github.io/colormap/">https://bids.github.io/colormap/</a>. These  color tables are available under the <a href="https://creativecommons.org/about/cc0">CCO license</a>. Thanks to Akshay Subramaniam of Standford for providing the ct formated variants of these tables.
-  <li>Added the <i>viridis_light</i> color table, contributed by Robert Blake (of LLNL, formally at John's Hopkins).  Low saturation on the lower end of viridis can make it hard to use in 3D settings where lighting is applied. This variant helps address this. 
-  </li>
-  <li></li>
-  <li></li>
+  <li>The <i>inferno</i>, <i>plasma</i>, <i>magma</i> and <i>viridis</i> color tables from matplotlib were added to VisIt. These color tables were developed to be perceptually uniform and more friendly to color blindness. For more details see <a href="https://bids.github.io/colormap/">https://bids.github.io/colormap/</a>. These  color tables are available under the <a href="https://creativecommons.org/about/cc0">CCO license</a>. Thanks to Akshay Subramaniam of Standford for providing the ct formated variants of these tables.</li>
+  <li>The <i>viridis_light</i> color table, contributed by Robert Blake of LLNL, formally at John's Hopkins, was added to VisIt. Low saturation on the lower end of viridis can make it hard to use in 3D settings where lighting is applied. This variant helps address this.</li>
+  <li>The re-architecting of the Parallel Integral Curve System (PICS), which formed the basis for functionality such as the Streamline and Poincare plots, has been completed. The changes began with the 2.9 release and provide a more flexible system with increased functionality. The most recent change in 2.11 is the removal of the Streamline plot. The same functionalty can now be achieved using the IntegralCurve operator and the Pseudocolor plot. The new system consists of four operators that feed their results into the Pseudocolor plot for display. The operators include the IntegralCurve, LCS (Lagrangian Coherent Structures), LimitCycle and Poincare operators. The Pseudocolor plot has been enhanced to be allow it to render lines in the same manner as the Streamline plot. For example, the Pseudocolor plot can now display lines as tubes and add spheres to the ends of the lines to show seed points. The Streamline Info query has been replaced with the Integral Curve Info query. For more information on using these operators, see the <a href="http://www.visitusers.org/index.php?title=Parallel_Integral_Curve_System_in_VisIt">Parallel Integral Curve System in VisIt</a> on the visitusers.org wiki.</li>
+  <li>The qplot and visit_flow Python modules are now included as part of the standard VisIt distribution. The qplot module contains plotting routines based on Qt. The visit_flow module contains a dataflow infrastructure for compositing and annotating images. Together these two modules allow users to create sophisticated movies using VisIt. See the <a href="http://visitusers.org/index.php?title=Visit-tutorial-Advanced-movie-making">Advanced movie making</a> tutorial on the visitusers.org wiki for a detailed tutorial on using these modules to create a movie.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.11</font></b></p>
 <ul>
   <li>Libsim was changed so it does not require extra image broadcasts when rendering in batch mode.</li>
-  <li></li>
 </ul>
 
 <a name="GUI_Changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 2.11</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>The Streamline plot has been removed. The same functionality can now be achieved with the Integral Curve operator and the Pseudocolor plot.</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.11</font></b></p>
 <ul>
   <li>A native MOAB (Mesh Object datABase) plugin was added thanks to Iulian R. Grindeanu and Vijay S. Mahadevan at ANL.</li>
-  <li>Several HDF5-based plugins were missing some VisIt-specific file opening and closing logic to detect bad HDF5 actors. These
+  <li>Several HDF5-based plugins were missing some VisIt-specific file opening and closing logic to detect bad HDF5 usage. These
       were the ALS, AMR, PVLD, SXRIS and XGC plugins. In theory, users should see no difference in behavior.</li>
   <li>The Exodus plugin was enhanced to build against classic netCDF which does not require HDF5 or netCDF 4, which does
       require HDF5.</li>
   <li>The ITAPS plugin was removed. MOAB users should now have better capability with the new MOAB native plugin.</li>
-  <li>The Mili library was updated to the new Open Source version of Mili (currently only available in VisIt's repo).</li>
+  <li>The Mili library was updated to the new Open Source version of Mili (currently only available in VisIt's repository).</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.11</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
   <li>A bug was fixed with the Scatter plot, where VisIt would give an error if it generated any empty domains.</li>
+  <li>The line plotting has been improved in the Pseudocolor plot. It is now possible to display lines as Lines, Tubes or Ribbons. It is also possible to display the end points of the lines as Spheres or Cones.</li>
 </ul>
 
-<a name="Operator_changes"></a>
-<p><b><font size="4">Changes to VisIt's operators in version 2.11</font></b></p>
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 2.11</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>The GyRadius Query was added to VisIt, which returns the radius of gyration. By default it uses the centroid of the actual data. The user can overide this by specifying the coordinate to use in the <i>Centriod</i> setting. The query takes a density variable. The radius is calculated as sqrt(sum(Mi * sqr(Ri - Rcentroid)) / sum(Mi)), where Mi is the mass of cell i, Ri is the center of cell i and Rcentroid is the coordinate of the centroid.</li>
+  <li>The Streamline Info query has been replaced with the Integral Curve Info query.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -92,15 +84,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed the missing data issue in the SPH Resample Operator.</li>
   <li>The Average Value query now works for point data.</li>
   <li>Fixed a bug in the MFEM database plugin related to mesh construction. </li>
-  <li></li>
 </ul>
 
 <a name="Configuration_changes"></a>
 <p><b><font size="4">Configuration changes in version 2.11</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>Host profiles have been removed for LLNL's coastal, eos, graph, hera and tempest systems.</li>
+  <li>Host profiles have been removed for LANL's cielo system.</li>
 </ul>
 
 <a name="Build_changes"></a>
@@ -112,19 +102,18 @@ enhancements and bug-fixes that were added to this release.</p>
       parallel-enabled package's installation whereas the non_MPIPAR variables reference a serial installation.
       Otherwise, only the non_MPIPAR variables are used. And, depending on the build
       circumstances, the non_MPIPAR variables may refer to either a serial or a parallel package installation.</li>
-  <li>Proliferant references to ${ZLIB_LIB} variable in database plugins .xml files was removed. Only those plugins that
+  <li>Proliferant references to the ${ZLIB_LIB} variable in database plugins .xml files was removed. Only those plugins that
       actually directly call zlib library functions need it.</li>
   <li>build_visit was enhanced to build MOAB (Mesh Object datABase).</li>
   <li>build_visit was enhanced to build HDF5 for both serial and parallel installations if the following conditions are
       met...static build, parallel build, moab is being built.</li>
+  <li>build_visit was enhanced to allow building of Qwt. To build Qwt, specify "-qwt" on the command line.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.11</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>Qwt is now a required third party library when building the graphical user interface. To build it with build_visit, specify "-qwt" on the command line.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

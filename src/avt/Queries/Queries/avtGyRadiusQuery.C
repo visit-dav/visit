@@ -84,7 +84,7 @@ avtGyRadiusQuery::avtGyRadiusQuery()
 }
 
 // ****************************************************************************
-//  Method: avtWeightedVariableSummationQuery destructor
+//  Method: avtGyRadiusQuery destructor
 //
 //  Programmer: Kevin Griffin
 //  Creation:   Wed Jul 20 16:18:51 PDT 2016
@@ -156,10 +156,10 @@ avtGyRadiusQuery::SetInputParams(const MapNode &params)
 // ****************************************************************************
 //  Method: avtGyRadiusQuery::GetDefaultInputParams
 //
-//  Purpose:    This method gets called directly from the avtQueryFactory to help
-//              set up the default arguments for your new query. Fill in any
-//              values in the MapNode that you want your query to use when it
-//              gets initialized.
+//  Purpose:    This method gets called directly from the avtQueryFactory to
+//              help set up the default arguments for your new query. Fill in
+//              any values in the MapNode that you want your query to use
+//              when it gets initialized.
 //
 //  Arguments:
 //    params:   MapNode to store the default values in.
