@@ -92,7 +92,7 @@ case $1 in
         ;;
     # Jeremy Meredith, Oak Ridge National Laboratory
     "js9")
-        emaddr=jsmeredith@ornl.gov
+        emaddr=jsmeredith@gmail.com
         ;;
     # Hank Childs, Lawrence Berkeley National Laboratory
     "hrchilds")
