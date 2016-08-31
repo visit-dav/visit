@@ -133,11 +133,13 @@ function build_moab
         if [[ "$bt" == "serial" ]]; then
             cf_c_compiler="$C_COMPILER"
             cf_cxx_compiler="$CXX_COMPILER"
-        elif [[ "$bt" == "parallel" ]]; then # second pass, ruins configure
-            # change name of lib MOAB thinks it needs to link to
-            sed -i .orig -e 's/libhdf5/libhdf5_mpi/g' ../configure
-            sed -i .orig -e 's/=hdf5/=hdf5_mpi/' ../configure
-            sed -i .orig -e 's/^LIBS = @LIBS@/LIBS = @HDF5_LIBS@ @LIBS@/' ../tools/Makefile.in
+        elif [[ "$bt" == "parallel" ]]; then
+            # these commands ruin the untar'd source code for normal builds
+            sed -i.orig -e 's/libhdf5/libhdf5_mpi/g' ../configure
+            sed -i.orig -e 's/libMOAB/libMOAB_mpi/g' ../configure
+            sed -i.orig -e 's/=hdf5/=hdf5_mpi/' ../configure
+            sed -i.orig -e 's/^LIBS = @LIBS@/LIBS = @HDF5_LIBS@ @LIBS@/' ../tools/Makefile.in
+            find .. -name Makefile.in -exec sed -e 's/libMOAB/libMOAB_mpi/g' -i.orig {} \;
             cf_mpi_arg="--with-mpi"
             cf_par_suffix="_mpi"
             cf_c_compiler="$PAR_COMPILER"
@@ -208,21 +210,6 @@ function build_moab
         if [[ "$DO_GROUP" == "yes" ]] ; then
             chmod -R ug+w,a+rX "$VISITDIR/moab"
             chgrp -R ${GROUP} "$VISITDIR/moab"
-        fi
-
-        #
-        # Change name of installed lib to libXXX_mpi.whatever
-        #
-        if [[ "$bt" == "parallel" ]]; then
-            pushd $VISITDIR/moab_mpi/$MOAB_VERSION/$VISITARCH/lib
-            sed -e 's/libMOAB/libMOAB_mpi/g' -i.orig libMOAB.la
-            sed -e 's/libMOAB/libMOAB_mpi/g' -i.orig libMOAB_hl.la
-            ls -1 | sed 's/libMOAB\(.\)\(.*\)/libMOAB\1\2 libMOAB_mpi\1\2/' | xargs -L 1 mv
-            ls -1l | grep ^l | tr -s ' ' | sed -e 's/\(^.*\) libMOAB\(.\)\(.*\) -> libMOAB\(.\)\(.*\)/libMOAB_mpi\4\5 libMOAB\2\3/' | xargs -L 1 ln -s -f
-            if [[ "$OPSYS" == "Darwin" ]]; then
-                install_name_tool -id $VISITDIR/moab_mpi/$MOAB_VERSION/$VISITARCH/lib/libMOAB_mpi.dylib libMOAB_mpi.dylib
-            fi
-            popd
         fi
 
         popd

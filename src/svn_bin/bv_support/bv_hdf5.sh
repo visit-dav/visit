@@ -49,7 +49,7 @@ function bv_hdf5_initialize_vars
     if [[ "$USE_SYSTEM_HDF5" == "no" ]]; then
         HDF5_INSTALL_DIR="${VISITDIR}/hdf5/$HDF5_VERSION/${VISITARCH}"
         if [[ -n "$PAR_COMPILER" ]]; then
-            HDF5_MPIPAR_INSTALL_DIR="${VISITDIR}/hdf5_mpi/$HDF5_VERSION/${VISITARCH}"
+            HDF5_MPI_INSTALL_DIR="${VISITDIR}/hdf5_mpi/$HDF5_VERSION/${VISITARCH}"
         fi
     fi
 }
@@ -103,9 +103,9 @@ function bv_hdf5_host_profile
                 "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR \${VISITHOME}/hdf5/$HDF5_VERSION/\${VISITARCH})" \
                 >> $HOSTCONF 
 
-            if [[ -n "$HDF5_MPIPAR_INSTALL_DIR" ]]; then
+            if [[ -n "$HDF5_MPI_INSTALL_DIR" ]]; then
                 echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPIPAR_DIR $HDF5_MPIPAR_INSTALL_DIR)" \
+                    "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_DIR \${VISITHOME}/hdf5_mpi/$HDF5_VERSION/\${VISITARCH})" \
                     >> $HOSTCONF 
             fi
 
@@ -128,9 +128,9 @@ function bv_hdf5_host_profile
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP $SZIP_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                     >> $HOSTCONF
-            if [[ -n "$HDF5_MPIPAR_INSTALL_DIR" ]]; then
+            if [[ -n "$HDF5_MPI_INSTALL_DIR" ]]; then
                 echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPIPAR_LIBDEP $SZIP_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
+                    "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP $SZIP_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                         >> $HOSTCONF
             fi
         fi
@@ -666,6 +666,11 @@ function build_hdf5
             cf_build_parallel="--disable-parallel"
             cf_c_compiler="$C_COMPILER"
         elif [[ "$bt" == "parallel" ]]; then
+            # these commands ruin the untar'd source code for 'normal' builds
+            sed -e 's/libhdf5/libhdf5_mpi/g' -i.orig ../configure
+            find .. -name Makefile.in -exec sed -e 's/libhdf5/libhdf5_mpi/g' -i.orig {} \;
+            sed -e 's/libhdf5\.settings/libhdf5_mpi.settings/g' -i.orig ../src/H5make_libsettings.c
+            pushd ../src; ln -s libhdf5.settings.in libhdf5_mpi.settings.in; popd
             cf_build_parallel="--enable-parallel"
             cf_par_suffix="_mpi"
             cf_c_compiler="$PAR_COMPILER"
@@ -691,18 +696,21 @@ function build_hdf5
         # Build HDF5
         #
         info "Making $bt HDF5 . . ."
-        info "$MAKE $MAKE_OPT_FLAGS"
-        $MAKE $MAKE_OPT_FLAGS
+        info "$MAKE $MAKE_OPT_FLAGS" lib
+        $MAKE $MAKE_OPT_FLAGS lib
         if [[ $? != 0 ]] ; then
             warn "$bt HDF5 build failed.  Giving up"
             return 1
         fi
         #
         # Install into the VisIt third party location.
+        # Avoid building all the test clients by cd src/hl
         #
         info "Installing $bt HDF5 . . ."
-        info "$MAKE install"
-        $MAKE install
+        info "(cd src; $MAKE install)"
+        (cd src; $MAKE install)
+        info "(cd hl; $MAKE install)"
+        (cd hl; $MAKE install)
         if [[ $? != 0 ]] ; then
             warn "$bt HDF5 install failed.  Giving up"
             return 1
@@ -713,21 +721,6 @@ function build_hdf5
             chgrp -R ${GROUP} "$VISITDIR/hdf5"
         fi
 
-        #
-        # Change name of installed lib to libXXX_mpi.whatever
-        #
-        if [[ "$bt" == "parallel" ]]; then
-            pushd $VISITDIR/hdf5_mpi/$HDF5_VERSION/$VISITARCH/lib
-            sed -e 's/libhdf5/libhdf5_mpi/g' -i.orig libhdf5.la
-            sed -e 's/libhdf5/libhdf5_mpi/g' -i.orig libhdf5_hl.la
-            ls -1 | sed 's/libhdf5\(.\)\(.*\)/libhdf5\1\2 libhdf5_mpi\1\2/' | xargs -L 1 mv
-            ls -l | grep ^l | tr -s ' ' | sed -e 's/\(^.*\) libhdf5\(.\)\(.*\) -> libhdf5\(.\)\(.*\)/libhdf5_mpi\4\5 libhdf5\2\3/' | xargs -L 1 ln -s -f
-            if [[ "$OPSYS" == "Darwin" ]]; then
-                install_name_tool -id $VISITDIR/hdf5_mpi/$HDF5_VERSION/$VISITARCH/lib/libhdf5_mpi.dylib libhdf5_mpi.dylib
-                install_name_tool -id $VISITDIR/hdf5_mpi/$HDF5_VERSION/$VISITARCH/lib/libhdf5_mpi_hl.dylib libhdf5_mpi_hl.dylib
-            fi
-            popd
-        fi
         popd
     done
 
