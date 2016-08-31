@@ -339,7 +339,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.11.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
@@ -358,7 +358,7 @@ ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/li
 rm -rf $dist
 gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
 cd $dist/src
-/usr/gapps/visit/thirdparty_shared/2.10.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_MESA_DIR="/usr/gapps/visit/thirdparty_shared/2.10.0/mesa/7.10.2/linux-x86_64_gcc-4.4" >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.11.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_MESA_DIR="/usr/gapps/visit/thirdparty_shared/2.11.0/mesa/7.10.2/linux-x86_64_gcc-4.4" >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
 cd ../..
