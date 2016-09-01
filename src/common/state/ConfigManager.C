@@ -191,6 +191,8 @@ ConfigManager::WriteQuotedStringData(std::ostream& out, const std::string &str)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Sep  1 14:48:24 PDT 2016
+//    Change to proper XML-style escaping of certain characters
 // ****************************************************************************
 
 void
@@ -201,15 +203,15 @@ ConfigManager::WriteEscapedString(std::ostream &out, const std::string &str)
         const char *cptr = str.c_str();
         for (size_t i = 0; i < str.size(); ++i)
         {
-            // Add escape characters.
-            if (cptr[i] == '"'  ||
-               cptr[i] == '\\' ||
-               cptr[i] == '<'  ||
-               cptr[i] == '>')
+            switch (cptr[i])
             {
-                out.put('\\');
+                case '<':  out.write("&lt;",4);   break;
+                case '>':  out.write("&gt;",4);   break;
+                case '&':  out.write("&amp;",5);  break;
+                case '\'': out.write("&apos;",6); break;
+                case '"':  out.write("&quot;",6); break;
+                default:   out.put(cptr[i]);
             }
-            out.put(cptr[i]);
         }
     }
 }
