@@ -2029,6 +2029,8 @@ QvisPoincareWindow::UpdateMeshTypeAttributes()
         singlePlaneLabel->show();
         singlePlane->show();
         break;
+    case PoincareAttributes::Surfaces:
+        break;
     }
 }
 

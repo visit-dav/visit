@@ -1697,7 +1697,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             << numSpatialDims << " is less than 3.  "
             << "Moving data into correct location." << std::endl;
 
-            for (size_t i=numNodes-1; i>=0; --i)
+            for (int i=numNodes-1; i>=0; --i)
             {
                 unsigned char* destPtr
                 = (unsigned char*) dataPtr + i*3*dsize;
