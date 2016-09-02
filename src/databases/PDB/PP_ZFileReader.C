@@ -3358,6 +3358,13 @@ PP_ZFileReader::GetMarkerVar(int state, const std::string &varStr)
             retval = vtkCharArray::New();
             break;
         }
+        case SHORT_TYPE:
+        case SHORTARRAY_TYPE:
+        {
+            EXCEPTION1(InvalidVariableException, "Short Type");
+            // retval = vtkShortArray::New();
+            break;
+        }
         case INTEGER_TYPE:
         case INTEGERARRAY_TYPE:
         {
@@ -3382,6 +3389,12 @@ PP_ZFileReader::GetMarkerVar(int state, const std::string &varStr)
             retval = vtkDoubleArray::New();
             break;
         }
+        case NO_TYPE:
+          EXCEPTION1(InvalidVariableException, "No Type");
+          break;
+        case OBJECT_TYPE:
+          EXCEPTION1(InvalidVariableException, "Object Type");
+          break;
     }
 
     retval->SetVoidArray(vals, nvals, 0);
@@ -4430,6 +4443,3 @@ PP_ZFileReader::RevolveDataSet(vtkDataSet *in_ds, const double *axis,
 
     return retval;
 }
-
-
-
