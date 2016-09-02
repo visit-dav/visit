@@ -77,6 +77,9 @@ Viewer_LogQtMessages(QtMsgType type, const char *msg)
 {
     switch(type)
     {
+    case QtInfoMsg:
+        debug1 << "Qt: Info: " << msg << endl;
+        break;
     case QtDebugMsg:
         debug1 << "Qt: Debug: " << msg << endl;
         break;
@@ -96,8 +99,11 @@ Viewer_LogQtMessages(QtMsgType type, const char *msg)
 static void
 Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QString& msg)
 {
-        switch(type)
+    switch(type)
     {
+    case QtInfoMsg:
+        debug1 << "Qt: Info: " << msg.toStdString() << endl;
+        break;
     case QtDebugMsg:
         debug1 << "Qt: Debug: " << msg.toStdString() << endl;
         break;
