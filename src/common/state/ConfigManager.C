@@ -161,17 +161,8 @@ void
 ConfigManager::WriteQuotedStringData(std::ostream& out, const std::string &str)
 {
     out.put('"');
-    if(str.size() > 0)
-    {
-        const char *cptr = str.c_str();
-        for(size_t i = 0; i < str.size(); ++i)
-        {
-            // Add escape characters.
-            if(cptr[i] == '"' || cptr[i] == '\\')
-                out.put('\\');
-            out.put(cptr[i]);
-        }
-    }
+
+    WriteEscapedString(out, str);
 
     out.put('"');
     out.put(' ');
@@ -685,12 +676,50 @@ ConfigManager::ReadStringVector(std::istream& in, char termChar)
                 tempString += '\\';
                 escaped = false;
             }
+
             retval.push_back(tempString);
             tempString = "";
             reading = false;
         }
     }
- 
+
+//  Change the XML-style escaping of certain characters back to ascii
+//  characters.
+    for( unsigned int i=0; i<retval.size(); ++i )
+    {
+      std::size_t pos;
+
+      do {
+        if( (pos = retval[i].find("&lt;")) != std::string::npos)
+          retval[i].replace(pos,4,"<");
+      }
+      while(pos != std::string::npos);
+            
+      do {
+        if( (pos = retval[i].find("&gt;")) != std::string::npos)
+          retval[i].replace(pos,4,">");
+      }
+      while(pos != std::string::npos);
+            
+      do {
+        if( (pos = retval[i].find("&amp;")) != std::string::npos)
+          retval[i].replace(pos,5,"&");
+      }
+      while(pos != std::string::npos);
+            
+      do {
+        if( (pos = retval[i].find("&apos;")) != std::string::npos)
+          retval[i].replace(pos,6,"'");
+      }
+      while(pos != std::string::npos);
+            
+      do {
+        if( (pos = retval[i].find("&quot;")) != std::string::npos)
+          retval[i].replace(pos,6,"\"");
+      }
+      while(pos != std::string::npos);
+    }
+            
     return retval;
 }
 
