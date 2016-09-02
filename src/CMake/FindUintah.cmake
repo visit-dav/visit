@@ -56,8 +56,8 @@ ELSE (${VISIT_USE_SYSTEM_UINTAH})
   SET(INCLUDE_TMP_DIR include)
 ENDIF (${VISIT_USE_SYSTEM_UINTAH})
 
-SET_UP_THIRD_PARTY(UINTAH lib ${INCLUDE_TMP_DIR}
-  ${UINTAH_UDA2VIS_LIB}
+
+SET(REQ_UINTAH_MODS 
 #  CCA_Components_Arches
 #  CCA_Components_Arches_fortran
 #  CCA_Components_DataArchiver
@@ -93,9 +93,9 @@ SET_UP_THIRD_PARTY(UINTAH lib ${INCLUDE_TMP_DIR}
   Core_Math
 #  Core_OS
   Core_Parallel
-  Core_Persistent
+#  Core_Persistent
   Core_ProblemSpec
-  Core_Thread
+#  Core_Thread
 #  Core_Tracker
   Core_Util
 #  testprograms_TestBoxGrouper
@@ -103,7 +103,19 @@ SET_UP_THIRD_PARTY(UINTAH lib ${INCLUDE_TMP_DIR}
 #  testprograms_TestMatrix3
 #  testprograms_TestRangeTree
 #  testprograms_TestSuite
-  )
+   )
+
+IF(${UINTAH_VERSION} VERSION_LESS "1.7.0")
+    SET(REQ_UINTAH_MODS ${REQ_UINTAH_MODS}
+    			Core_Persistent
+			Core_Thread
+			)
+ENDIF(${UINTAH_VERSION} VERSION_LESS "1.7.0")
+
+SET_UP_THIRD_PARTY(UINTAH lib ${INCLUDE_TMP_DIR}
+  ${UINTAH_UDA2VIS_LIB}
+  ${REQ_UINTAH_MODS}
+)
 
 # Note UINTAH_UDA2VIS_LIB is called in the reader using dlopen
 # so the true library is need for the compiled operating system.
