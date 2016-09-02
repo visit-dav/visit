@@ -155,6 +155,8 @@ ConfigManager::WriteIndent(std::ostream& out, int indentLevel)
 //
 // Modifications:
 //   
+//    Allen Sanderson, Thu Sep  1 15:25:29 PDT 2016
+//    Replaced duplicate loop of string output with call to WriteEscapedString
 // ****************************************************************************
 
 void
@@ -592,6 +594,8 @@ ConfigManager::FinishTag(std::istream& in)
 //   Jeremy Meredith, Tue Aug  2 16:13:04 PDT 2005
 //   I made escaping work even for < and > characters.
 //
+//    Allen Sanderson, Thu Sep  1 15:25:29 PDT 2016
+//    Add logic to undue XML-style escaping
 // ****************************************************************************
 
 stringVector
