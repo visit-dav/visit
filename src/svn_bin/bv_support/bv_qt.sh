@@ -452,6 +452,7 @@ function build_qt
         qt_flags="${qt_flags} -skip quickcontrols"
         qt_flags="${qt_flags} -skip quickcontrols2"
         qt_flags="${qt_flags} -skip connectivity"
+        qt_flags="${qt_flags} -skip multimedia"
         qt_flags="${qt_flags} -nomake examples"
         qt_flags="${qt_flags} -nomake tests"
         qt_flags="${qt_flags} -no-qml-debug"
