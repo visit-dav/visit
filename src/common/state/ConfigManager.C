@@ -155,16 +155,23 @@ ConfigManager::WriteIndent(std::ostream& out, int indentLevel)
 //
 // Modifications:
 //   
-//    Allen Sanderson, Thu Sep  1 15:25:29 PDT 2016
-//    Replaced duplicate loop of string output with call to WriteEscapedString
 // ****************************************************************************
 
 void
 ConfigManager::WriteQuotedStringData(std::ostream& out, const std::string &str)
 {
     out.put('"');
-
-    WriteEscapedString(out, str);
+    if(str.size() > 0)
+    {
+        const char *cptr = str.c_str();
+        for(size_t i = 0; i < str.size(); ++i)
+        {
+            // Add escape characters.
+            if(cptr[i] == '"' || cptr[i] == '\\')
+                out.put('\\');
+            out.put(cptr[i]);
+        }
+    }
 
     out.put('"');
     out.put(' ');
@@ -184,8 +191,6 @@ ConfigManager::WriteQuotedStringData(std::ostream& out, const std::string &str)
 //
 // Modifications:
 //   
-//    Mark C. Miller, Thu Sep  1 14:48:24 PDT 2016
-//    Change to proper XML-style escaping of certain characters
 // ****************************************************************************
 
 void
@@ -196,15 +201,15 @@ ConfigManager::WriteEscapedString(std::ostream &out, const std::string &str)
         const char *cptr = str.c_str();
         for (size_t i = 0; i < str.size(); ++i)
         {
-            switch (cptr[i])
+            // Add escape characters.
+            if (cptr[i] == '"'  ||
+               cptr[i] == '\\' ||
+               cptr[i] == '<'  ||
+               cptr[i] == '>')
             {
-                case '<':  out.write("&lt;",4);   break;
-                case '>':  out.write("&gt;",4);   break;
-                case '&':  out.write("&amp;",5);  break;
-                case '\'': out.write("&apos;",6); break;
-                case '"':  out.write("&quot;",6); break;
-                default:   out.put(cptr[i]);
+                out.put('\\');
             }
+            out.put(cptr[i]);
         }
     }
 }
@@ -594,8 +599,6 @@ ConfigManager::FinishTag(std::istream& in)
 //   Jeremy Meredith, Tue Aug  2 16:13:04 PDT 2005
 //   I made escaping work even for < and > characters.
 //
-//    Allen Sanderson, Thu Sep  1 15:25:29 PDT 2016
-//    Add logic to undue XML-style escaping
 // ****************************************************************************
 
 stringVector
@@ -680,50 +683,12 @@ ConfigManager::ReadStringVector(std::istream& in, char termChar)
                 tempString += '\\';
                 escaped = false;
             }
-
             retval.push_back(tempString);
             tempString = "";
             reading = false;
         }
     }
-
-//  Change the XML-style escaping of certain characters back to ascii
-//  characters.
-    for( unsigned int i=0; i<retval.size(); ++i )
-    {
-      std::size_t pos;
-
-      do {
-        if( (pos = retval[i].find("&lt;")) != std::string::npos)
-          retval[i].replace(pos,4,"<");
-      }
-      while(pos != std::string::npos);
-            
-      do {
-        if( (pos = retval[i].find("&gt;")) != std::string::npos)
-          retval[i].replace(pos,4,">");
-      }
-      while(pos != std::string::npos);
-            
-      do {
-        if( (pos = retval[i].find("&amp;")) != std::string::npos)
-          retval[i].replace(pos,5,"&");
-      }
-      while(pos != std::string::npos);
-            
-      do {
-        if( (pos = retval[i].find("&apos;")) != std::string::npos)
-          retval[i].replace(pos,6,"'");
-      }
-      while(pos != std::string::npos);
-            
-      do {
-        if( (pos = retval[i].find("&quot;")) != std::string::npos)
-          retval[i].replace(pos,6,"\"");
-      }
-      while(pos != std::string::npos);
-    }
-            
+ 
     return retval;
 }
 
