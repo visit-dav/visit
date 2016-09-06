@@ -77,9 +77,6 @@ Viewer_LogQtMessages(QtMsgType type, const char *msg)
 {
     switch(type)
     {
-    case QtInfoMsg:
-        debug1 << "Qt: Info: " << msg << endl;
-        break;
     case QtDebugMsg:
         debug1 << "Qt: Debug: " << msg << endl;
         break;
