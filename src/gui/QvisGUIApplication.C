@@ -453,6 +453,9 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
 
     switch(type)
     {
+    case QtInfoMsg:
+        debug1 << "Qt: Info: " << msg.toStdString() << endl;
+        break;
     case QtDebugMsg:
         debug1 << "Qt: Debug: " << msg.toStdString() << endl;
         break;

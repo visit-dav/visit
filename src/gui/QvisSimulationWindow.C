@@ -927,6 +927,9 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 
                 QString key = MakeKey(host[index], sim[index]);
 
+                // ARS - FIXME How do we know that the statusAtts and
+                // metadata belong to the first engine?
+
                 // Add current status
                 AddStatusEntry(key, *statusAtts);
                 // Add current metadata
@@ -1796,13 +1799,13 @@ QvisSimulationWindow::getTableCMD( const char *cmd,
 {
   std::string strcmd(cmd);
 
-  std::string str = getNextString( strcmd, "|" );
+  std::string str = getNextString( strcmd, " | " );
   row = atoi( str.c_str() );
 
-  str = getNextString( strcmd, "|" );
+  str = getNextString( strcmd, " | " );
   column = atoi( str.c_str() );
 
-  str = getNextString( strcmd, "|" );
+  str = getNextString( strcmd, " | " );
   strcpy( name, str.c_str() );
 }
 
@@ -1829,16 +1832,16 @@ QvisSimulationWindow::getTableCMD( const char *cmd,
 {
   std::string strcmd(cmd);
 
-  std::string str = getNextString( strcmd, "|" );
+  std::string str = getNextString( strcmd, " | " );
   row = atof( str.c_str() );
 
-  str = getNextString( strcmd, "|" );
+  str = getNextString( strcmd, " | " );
   column = atof( str.c_str() );
 
-  str = getNextString( strcmd, "|" );
+  str = getNextString( strcmd, " | " );
   x = atof( str.c_str() );
 
-  str = getNextString( strcmd, "|" );
+  str = getNextString( strcmd, " | " );
   y = atof( str.c_str() );
 }
 
@@ -1849,7 +1852,7 @@ QvisSimulationWindow::getTableCMD( const char *cmd,
 //   This method is called to get the next string value and return
 //   the remaining part.
 //
-//   NOTE: it is assumed that there is a space on both sides of teh delimiter
+//   NOTE: it is assumed that there is a space on both sides of the delimiter
 //   EXAMPLE: string | string string | string
 //
 // Arguments:
@@ -1871,8 +1874,10 @@ std::string QvisSimulationWindow::getNextString( std::string &cmd,
 
   if( delim != std::string::npos)
   {
-    str.erase(delim-1, std::string::npos);  
-    cmd.erase(0, delim+2);
+    // str.erase(delim-1, std::string::npos);  
+    // cmd.erase(0, delim+2);
+    str.erase(delim, std::string::npos);  
+    cmd.erase(0, delim+delimiter.length());
   }
   
   return str;
