@@ -108,12 +108,13 @@ protected:
     char ReadChar(std::istream &in);
     void PutBackChar(char c);
     void FinishTag(std::istream& in);
-    bool ReadField(std::istream &in, DataNode *parentNode, const std::string &tagName,
-                   NodeTypeEnum tagType, int tagLength);
-    DataNode *ReadFieldData(std::istream& in, const std::string &tagName, NodeTypeEnum tagType,
-                            int tagLength);
+    bool ReadField(std::istream &in, DataNode *parentNode,
+                   const std::string &tagName,
+                   NodeTypeEnum tagType, int tagLength, bool noEndTag);
+    DataNode *ReadFieldData(std::istream& in, const std::string &tagName,
+                            NodeTypeEnum tagType, int tagLength, bool noEndTag);
     bool ReadTag(std::istream &in, std::string &tagName, NodeTypeEnum &tagType,
-                   int &tagLength, bool &tagIsReturnTag);
+                 int &tagLength, bool &tagIsEndTag, bool &noEndTag);
     stringVector ReadStringVector(std::istream &in, char termChar);
     void RemoveLeadAndTailQuotes(stringVector &sv);
 

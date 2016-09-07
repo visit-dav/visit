@@ -687,8 +687,8 @@ ConfigManager::ReadStringVector(std::istream& in, char termChar)
         }
     }
 
-//  Change the XML-style escaping of certain characters back to ascii
-//  characters.
+    //  Change the XML-style escaping of certain characters back to ascii
+    //  characters.
     for( unsigned int i=0; i<retval.size(); ++i )
     {
       std::size_t pos;
@@ -793,8 +793,9 @@ ConfigManager::RemoveLeadAndTailQuotes(stringVector &sv)
 // ****************************************************************************
 
 DataNode *
-ConfigManager::ReadFieldData(std::istream& in, const std::string &tagName, NodeTypeEnum type,
-    int tagLength)
+ConfigManager::ReadFieldData(std::istream& in,
+                             const std::string &tagName, NodeTypeEnum type,
+                             int tagLength, bool noEndTag)
 {
     DataNode *retval = 0;
 
@@ -807,9 +808,15 @@ ConfigManager::ReadFieldData(std::istream& in, const std::string &tagName, NodeT
     double        dval;
     bool          bval;
 
-    // Read strings until we get a '<' character.
-    stringVector  sv = ReadStringVector(in, '<');
+    stringVector sv;
 
+    // If there is no ending tag then a short cut and there is no data.
+    if( !noEndTag )
+    {
+      // Read strings until we get a '<' character.
+      sv = ReadStringVector(in, '<');
+    }
+    
     int minSize = (tagLength == 0) ? (int)sv.size() :
                   ((tagLength < (int)sv.size()) ? tagLength : (int)sv.size());
 
@@ -1190,12 +1197,14 @@ ConfigManager::ReadObjectHelper(std::istream &in, DataNode *parentNode, bool &te
 {
     bool keepReading = true;
     bool tagIsEndTag = false;
+    bool noEndTag = false;
     std::string  tagName;
     NodeTypeEnum tagType = INTERNAL_NODE;
     int          tagLength = 0;
 
     // Read the opening tag.
-    keepReading = ReadTag(in, tagName, tagType, tagLength, tagIsEndTag);
+    keepReading = ReadTag(in, tagName, tagType, tagLength,
+                          tagIsEndTag, noEndTag);
 
     if(tagIsEndTag && keepReading)
     {
@@ -1208,22 +1217,33 @@ ConfigManager::ReadObjectHelper(std::istream &in, DataNode *parentNode, bool &te
         DataNode *node = new DataNode(tagName);
         parentNode->AddNode(node);
 
-        while(keepReading && !tagIsEndTag)
+        while(keepReading && !tagIsEndTag && !noEndTag)
         {
             keepReading = ReadObjectHelper(in, node, tagIsEndTag);
         }
 
-        if(tagIsEndTag)
+        if(tagIsEndTag || noEndTag)
             return keepReading;
     }
     else
-        keepReading = ReadField(in, parentNode, tagName, tagType, tagLength);
+      keepReading =
+        ReadField(in, parentNode, tagName, tagType, tagLength, noEndTag);
 
+    // No ending tag so keep reading.
+    if( noEndTag )
+    {
+      keepReading = true;
+    }
     // Read the ending tag.
-    stringVector sv = ReadStringVector(in,'>');
-    keepReading = sv.size() > 0;
-
+    else
+    {
+      stringVector sv = ReadStringVector(in,'>');
+      // If ending tag then must have been an error.
+      keepReading = sv.size() > 0;
+    }
+    
     te = false;
+    
     return keepReading;
 }
 
@@ -1237,7 +1257,7 @@ ConfigManager::ReadObjectHelper(std::istream &in, DataNode *parentNode, bool &te
 //   tagName        : The return name for the tag.
 //   tagType        : The return type for the tag.
 //   tagLength      : The return length for the tag.
-//   tafIsReturnTag : Whether or not the tag is an ending tag.
+//   tafIsEndTag    : Whether or not the tag is an ending tag.
 //
 // Returns:    True if a tag was read.
 //
@@ -1249,8 +1269,11 @@ ConfigManager::ReadObjectHelper(std::istream &in, DataNode *parentNode, bool &te
 // ****************************************************************************
 
 bool
-ConfigManager::ReadTag(std::istream& in, std::string &tagName, NodeTypeEnum &tagType,
-    int &tagLength, bool &tagIsReturnTag)
+ConfigManager::ReadTag(std::istream& in, std::string &tagName,
+                       NodeTypeEnum &tagType,
+                       int &tagLength,
+                       bool &tagIsEndTag,
+                       bool &noEndTag)
 {
     // Read strings.
     stringVector sv = ReadStringVector(in, '>');
@@ -1259,6 +1282,29 @@ ConfigManager::ReadTag(std::istream& in, std::string &tagName, NodeTypeEnum &tag
     tagName = "";
     tagType = INTERNAL_NODE;
     tagLength = 0;
+    tagIsEndTag = false;
+    noEndTag = false;
+
+    // For the last string check to see if there is a forward slash
+    // "/" in front of the terminal character ">" (i.e. "/>"). If so
+    // there will not be a ending tag as there is no data.
+    if( !sv.empty() )
+    {
+      std::string &str = sv.back();
+
+      // Check for the short cut ending tag.
+      if( str.find_last_of("/") == str.length()-1)
+      {
+        noEndTag = true;
+
+        // If the forward slash was by itself remove the string.
+        if( str.size() == 1 )
+          sv.pop_back();
+        // Else remove the forward slash so the string can be processed.
+        else
+          str.erase(str.length()-1, 1);
+      }
+    }
 
     for(size_t i = 0; i < sv.size(); ++i)
     {
@@ -1271,7 +1317,7 @@ ConfigManager::ReadTag(std::istream& in, std::string &tagName, NodeTypeEnum &tag
 
         if(sv[i][0] == '/')
         {
-            tagIsReturnTag = true;
+            tagIsEndTag = true;
             return true;
         }
         else if(token == "type=")
@@ -1326,10 +1372,12 @@ ConfigManager::ReadTag(std::istream& in, std::string &tagName, NodeTypeEnum &tag
 // ****************************************************************************
 
 bool
-ConfigManager::ReadField(std::istream& in, DataNode *parentNode, const std::string &tagName,
-    NodeTypeEnum tagType, int tagLength)
+ConfigManager::ReadField(std::istream& in,
+                         DataNode *parentNode, const std::string &tagName,
+                         NodeTypeEnum tagType, int tagLength, bool noEndTag)
 {
-    DataNode *retval = ReadFieldData(in, tagName, tagType, tagLength);
+    DataNode *retval =
+      ReadFieldData(in, tagName, tagType, tagLength, noEndTag);
 
     if(retval != 0)
     {
