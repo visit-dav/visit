@@ -248,6 +248,7 @@ def launch_visit_test(args):
     tparams["display_failed"] = opts["display_failed"]
     tparams["parallel_launch"]= opts["parallel_launch"]
     tparams["host_profile_dir"]   = opts["host_profile_dir"]
+    tparams["sessionfiles"]= opts["sessionfiles"]
 
     exe_dir, exe_file = os.path.split(tparams["visit_bin"])
     if sys.platform.startswith("win"):
@@ -404,6 +405,9 @@ def log_test_result(result_dir,result):
 #    Burlen Loring, Wed Oct 21 15:44:24 PDT 2015
 #    Added an option (--display-failed) to display current,
 #    baseline, and diff in a popup window as the test runs.
+#
+#    Mark C. Miller, Tue Sep  6 18:54:31 PDT 2016
+#    Added sessionfiles option to rigoursly test session files
 # ----------------------------------------------------------------------------
 def default_suite_options():
     data_dir_def    = abs_path(visit_root(),"data")
@@ -451,6 +455,7 @@ def default_suite_options():
                       "ctest":False,
                       "display_failed":False,
                       "parallel_launch":"mpirun",
+                      "sessionfiles":False,
                       "no_timings":False,
                       "rsync_post":None}
     return opts_full_defs
@@ -491,6 +496,8 @@ def finalize_options(opts):
 #    Added an option (--display-failed) to display current,
 #    baseline, and diff in a popup window as the test runs.
 #
+#    Mark C. Miller, Tue Sep  6 18:54:31 PDT 2016
+#    Added sessionfiles option to rigoursly test session files
 # ----------------------------------------------------------------------------
 def parse_args():
     """
@@ -686,6 +693,13 @@ def parse_args():
                       help="specify the parallel launch method. "
                            "Options are mpirun and srun, or a space-separated "
                            "list of parallel launch options.")
+    parser.add_option("--sessionfiles",
+                      dest="sessionfiles",
+                      action = "store_true",
+                      default=defs["sessionfiles"],
+                      help="Rigoursly test session files by saving a session, "
+                           "validating the XML and then perturbing and "
+                           "restoring the session prior to each image save.")
     parser.add_option("--no-timings",
                       dest="no_timings",
                       default=defs["no_timings"],
