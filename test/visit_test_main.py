@@ -329,6 +329,16 @@ def TestScriptPath():
     script_dir      = tests_path(script_category,script_file)
     return script_dir
 
+def RemoveFile(f):
+    """
+    Remove a file, failing silently if it did not exist to begin with
+    """
+    try:
+        os.unlink(f)
+    except:
+        pass
+   
+
 # ----------------------------------------------------------------------------
 # Function: GenFileNames
 #
@@ -768,6 +778,46 @@ def JSONImageTestResult(case_name, status,
     json_results_save(res)
 
 # ----------------------------------------------------------------------------
+# Function: Save_Validate_Perturb_Restore_Session
+#
+# Purpose: Rigorously test session files by checking xml compliance 
+# (which requires xmllint) and also saving the session and then perturbing
+# thestate and restoring the saved session
+#
+# Programmer: Mark C. Miller, Tue Sep  6 18:53:39 PDT 2016
+# ----------------------------------------------------------------------------
+def Save_Validate_Perturb_Restore_Session(cur):
+    retval = 0
+    trans = string.maketrans("():; #","______")
+    sfile = "%s.session"%string.translate(string.rstrip(cur,".png"),trans)
+    RemoveFile(sfile)
+    SaveSession(sfile)
+
+    # Coarse check for xml validity using xmllint tool
+    xmlvalid = subprocess.call(["xmllint", "--noout", "--postvalid", "--dtdvalid", \
+        abs_path(test_root_path(),"visit.dtd"), sfile])
+    if xmlvalid != 0:
+        retval = 1
+
+    # Delete all plots and all windows but 1
+    for i in range(16,1,-1):
+        try:
+            SetActiveWindow(i)
+            DeleteWindow()
+        except:
+            pass
+    SetActiveWindow(1)
+    DeleteAllPlots()
+
+    # Restore a crummy session file that changes a lot of stuff wildly
+    # so that when we restore the real session, we have a higher likelihood
+    # of encountering overlooked session issus
+    RestoreSession(abs_path(test_root_path(),"crummy.session"),0)
+    RestoreSession(sfile,0)
+
+    return retval
+
+# ----------------------------------------------------------------------------
 # Function: Test
 #
 # Purpose:
@@ -824,6 +874,9 @@ def JSONImageTestResult(case_name, status,
 #
 #   Kathleen Biagas, Wed Jan 15 09:39:13 MST 2014
 #   Saved alternate SaveWindowAttributes for use in GetBackgroundImage
+#
+#   Mark C. Miller, Tue Sep  6 18:51:23 PDT 2016
+#   Added Save_Validate_... to rigorously test sessionfiles
 # ----------------------------------------------------------------------------
 def Test(case_name, altSWA=0, alreadySaved=0):
     CheckInteractive(case_name)
@@ -834,6 +887,9 @@ def Test(case_name, altSWA=0, alreadySaved=0):
     global savedAltSWA
 
     (cur, diff, base, altbase, modeSpecific) = GenFileNames(case_name, ".png")
+
+    if TestEnv.params["sessionfiles"]:
+        sessState = Save_Validate_Perturb_Restore_Session(cur)
 
     # save the window in visit
     if alreadySaved == 0:
@@ -893,6 +949,11 @@ def Test(case_name, altSWA=0, alreadySaved=0):
         'Unknown' :      3,
         'Skipped' :      0
     }
+
+    # Capture session file xml validity failure as Unacceptable if all else was ok
+    if TestEnv.params["sessionfiles"] and sessState != 0 and diffVals[diffState] < 2:
+            diffState = 'Unacceptable'
+
     TestEnv.results["maxds"] = max(TestEnv.results["maxds"], diffVals[diffState])
 
 # ----------------------------------------------------------------------------
@@ -1933,7 +1994,7 @@ def TurnOffAllAnnotations(givenAtts=0):
 # ----------------------------------------------------------------------------
 def CleanUpFilesToRemoveUponExit():
     for f in filesToRemoveUponExit:
-        os.unlink(f)
+        RemoveFile(f)
 
 # ----------------------------------------------------------------------------
 # Function: DecompressDatabase
@@ -1964,7 +2025,7 @@ def DecompressDatabase(abs_dbname, zip_ext):
         g.close()
         filesToRemoveUponExit.append(gname)
     except:
-        os.unlink(gname)
+        RemoveFile(gname)
         gname = ""
     return gname
 
