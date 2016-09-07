@@ -66,6 +66,9 @@
 #   While I was at it I also modified the script to use 16 cores instead of
 #   12 since it is grabbing an entire node of surface, which has 16 cores.
 #
+#   Eric Brugger, Wed Sep  7 08:09:01 PDT 2016
+#   I updated the script to build using the newly built 2.11 libraries.
+#
 
 
 #
@@ -262,7 +265,7 @@ export OPENGLLIB=-L/opt/cudatoolkit-6.0/lib64 -lcudart -lcuda
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/surface86.cmake
 fi
-/usr/gapps/visit/thirdparty_shared/2.9.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake \
+/usr/gapps/visit/thirdparty_shared/2.11.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake \
     -DVISIT_CONFIG_SITE=config-site/surface86.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DVISIT_BUILD_ALL_PLUGINS=1 \
@@ -271,7 +274,6 @@ fi
     -DCMAKE_CXX_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
     -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
     -DCMAKE_MAKE_PROGRAM:FILEPATH="/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make" \
-    -DVISIT_EAVL_DIR="/usr/gapps/visit/thirdparty_shared/2.10.0/eavl/4593630/linux-x86_64_gcc-4.4" \
     . >> ../buildlog 2>&1
 rm -rf ../make.out ../make.err
 make -k -j 16 1>../make.out 2>../make.err
