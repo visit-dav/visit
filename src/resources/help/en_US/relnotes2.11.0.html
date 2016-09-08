@@ -54,12 +54,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">File format reader changes in version 2.11</font></b></p>
 <ul>
   <li>A native MOAB (Mesh Object datABase) plugin was added thanks to Iulian R. Grindeanu and Vijay S. Mahadevan at ANL.</li>
-  <li>Several HDF5-based plugins were missing some VisIt-specific file opening and closing logic to detect bad HDF5 usage. These
-      were the ALS, AMR, PVLD, SXRIS and XGC plugins. In theory, users should see no difference in behavior.</li>
-  <li>The Exodus plugin was enhanced to build against classic netCDF which does not require HDF5 or netCDF 4, which does
-      require HDF5.</li>
+  <li>Several HDF5-based plugins were missing some VisIt-specific file opening and closing logic to detect bad HDF5 usage. These were the ALS, AMR, PVLD, SXRIS and XGC plugins. In theory, users should see no difference in behavior.</li>
+  <li>The Exodus plugin was enhanced to build against classic netCDF which does not require HDF5 or netCDF 4, which does require HDF5.</li>
   <li>The ITAPS plugin was removed. MOAB users should now have better capability with the new MOAB native plugin.</li>
   <li>The Mili library was updated to the new Open Source version of Mili (currently only available in VisIt's repository).</li>
+  <li>Fixed a bug in the MFEM database plugin related to mesh construction.</li>
+  <li>A couple of bugs related to reading particle data were corrected in the Cosmos++ database plugin.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -84,7 +84,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Spreadsheet plot crashes when you turn on coloring and attempt to change the color table to something other than the default.</li>
   <li>Fixed the missing data issue in the SPH Resample Operator.</li>
   <li>The Average Value query now works for point data.</li>
-  <li>Fixed a bug in the MFEM database plugin related to mesh construction. </li>
   <li>Fixed malformed XML in session files replacing back-slash escaping of certain
       characters with XML-style escaping.</li>
 </ul>
@@ -99,27 +98,17 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Build_changes"></a>
 <p><b><font size="4">Build changes in version 2.11</font></b></p>
 <ul>
-  <li>New CMake variables for packages that may be built either for serial or for parallel were introduced.
-      These new variables have _MPIPAR appended just after the package moniker (e.g. HDF5_MPIPAR_DIR). When it is necessary to
-      distinguish between serial and parallel installations of a package, the _MPIPAR variables are used to reference a
-      parallel-enabled package's installation whereas the non_MPIPAR variables reference a serial installation.
-      Otherwise, only the non_MPIPAR variables are used. And, depending on the build
-      circumstances, the non_MPIPAR variables may refer to either a serial or a parallel package installation.</li>
-  <li>Proliferant references to the ${ZLIB_LIB} variable in database plugins .xml files was removed. Only those plugins that
-      actually directly call zlib library functions need it.</li>
+  <li>New CMake variables for packages that may be built either for serial or for parallel were introduced. These new variables have _MPIPAR appended just after the package moniker (e.g. HDF5_MPIPAR_DIR). When it is necessary to distinguish between serial and parallel installations of a package, the _MPIPAR variables are used to reference a parallel-enabled package's installation whereas the non_MPIPAR variables reference a serial installation. Otherwise, only the non_MPIPAR variables are used. And, depending on the build circumstances, the non_MPIPAR variables may refer to either a serial or a parallel package installation.</li>
+  <li>Proliferant references to the ${ZLIB_LIB} variable in database plugins .xml files was removed. Only those plugins that actually directly call zlib library functions need it.</li>
   <li>build_visit was enhanced to build MOAB (Mesh Object datABase).</li>
-  <li>build_visit was enhanced to build HDF5 for both serial and parallel installations if the following conditions are
-      met...static build, parallel build, moab is being built.</li>
+  <li>build_visit was enhanced to build HDF5 for both serial and parallel installations if the following conditions are met...static build, parallel build, moab is being built.</li>
   <li>build_visit was enhanced to allow building of Qwt. To build Qwt, specify "-qwt" on the command line.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.11</font></b></p>
 <ul>
-  <li>Support for separately linking to both a serial and a parallel installation of a TPL
-      (HDF5 in this case) was developed. The relevant CMake variables are all those you
-      would ordinarily have for any TPL except with the moniker _MPIPAR added just after
-      the library moniker (e.g. for hdf5, we have HDF5 and HDF5_MPIPAR variables).</li>
+  <li>Support for separately linking to both a serial and a parallel installation of a TPL (HDF5 in this case) was developed. The relevant CMake variables are all those you would ordinarily have for any TPL except with the moniker _MPIPAR added just after the library moniker (e.g. for hdf5, we have HDF5 and HDF5_MPIPAR variables).</li>
   <li>Qwt is now a required third party library when building the graphical user interface. To build it with build_visit, specify "-qwt" on the command line.</li>
 </ul>
 
