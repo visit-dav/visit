@@ -785,34 +785,58 @@ def JSONImageTestResult(case_name, status,
 # thestate and restoring the saved session
 #
 # Programmer: Mark C. Miller, Tue Sep  6 18:53:39 PDT 2016
+#
+# Modifications
+#
+# Mark C. Miller, Wed Sep  7 17:38:39 PDT 2016
+# Added logic to have xmllint save its output and then have VisIt attempt
+# to read the file xmllint produces. This tests VisIt's ability to read
+# foreign-generated XML content which may vary a bit from how VisIt writes it.
 # ----------------------------------------------------------------------------
 def Save_Validate_Perturb_Restore_Session(cur):
     retval = 0
     trans = string.maketrans("():; #","______")
     sfile = "%s.session"%string.translate(string.rstrip(cur,".png"),trans)
+    ofile = "%s.xmlized.session"%string.translate(string.rstrip(cur,".png"),trans)
     RemoveFile(sfile)
     SaveSession(sfile)
 
-    # Coarse check for xml validity using xmllint tool
-    xmlvalid = subprocess.call(["xmllint", "--noout", "--postvalid", "--dtdvalid", \
+    # Coarse check for xml validity using xmllint tool and for VisIt's ability to
+    # re-read xml from some producer other than VisIt
+    xmlvalid = subprocess.call(["xmllint", "--output", ofile, "--postvalid", "--dtdvalid", \
         abs_path(test_root_path(),"visit.dtd"), sfile])
     if xmlvalid != 0:
         retval = 1
+    else:
+        try:
+            xmlvalid = RestoreSession(ofile, 0)
+            if xmlvalid != 1L:
+                retval = 1
+        except:
+            retval = 1
 
     # Delete all plots and all windows but 1
     for i in range(16,1,-1):
         try:
             SetActiveWindow(i)
+            DeleteAllPlots()
             DeleteWindow()
         except:
             pass
     SetActiveWindow(1)
     DeleteAllPlots()
 
+    # Close all databases
+    gatts = GetGlobalAttributes()
+    for db in gatts.sources:
+        CloseDatabase(db)
+
     # Restore a crummy session file that changes a lot of stuff wildly
     # so that when we restore the real session, we have a higher likelihood
     # of encountering overlooked session issus
     RestoreSession(abs_path(test_root_path(),"crummy.session"),0)
+
+    # Now restore the original session
     RestoreSession(sfile,0)
 
     return retval
