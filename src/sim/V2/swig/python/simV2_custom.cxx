@@ -664,7 +664,7 @@ void pylibsim_invoke_v_F_i_pv(int arg0, void *cbdata)
 }
 
 /******************************************************************************
- * used by: UI_textChanged
+ * used by: UI_textChanged, UI_cellChanged
  ******************************************************************************/
 void pylibsim_invoke_v_F_pc_pv(char *arg0, void *cbdata)
 {

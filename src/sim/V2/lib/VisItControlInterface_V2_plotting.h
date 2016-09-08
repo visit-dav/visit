@@ -24,7 +24,7 @@ int VisItSetPlotOptionsI(const char *name,int v);
 int VisItSetPlotOptionsL(const char *name,long v);
 int VisItSetPlotOptionsF(const char *name,float v);
 int VisItSetPlotOptionsD(const char *name,double v);
-int VisItSetPlotOptionsS(const char *name,const char *v);
+int VisItSetPlotOptionsS(const char *name,const char *s);
 
 int VisItSetPlotOptionsCv(const char *name,const char *v,int L);
 int VisItSetPlotOptionsUCv(const char *name,const unsigned char *v,int L);
@@ -32,7 +32,7 @@ int VisItSetPlotOptionsIv(const char *name,const int *v,int L);
 int VisItSetPlotOptionsLv(const char *name,const long *v,int L);
 int VisItSetPlotOptionsFv(const char *name,const float *v,int L);
 int VisItSetPlotOptionsDv(const char *name,const double *v,int L);
-int VisItSetPlotOptionsSv(const char *name,const char **v,int L);
+int VisItSetPlotOptionsSv(const char *name,const char **sv,int L);
 
 /* Set values for the current operator */
 int VisItSetOperatorOptionsC(const char *name,char v);
@@ -42,7 +42,7 @@ int VisItSetOperatorOptionsI(const char *name,int v);
 int VisItSetOperatorOptionsL(const char *name,long v);
 int VisItSetOperatorOptionsF(const char *name,float v);
 int VisItSetOperatorOptionsD(const char *name,double v);
-int VisItSetOperatorOptionsS(const char *name,const char *v);
+int VisItSetOperatorOptionsS(const char *name,const char *s);
 
 int VisItSetOperatorOptionsCv(const char *name,const char *v,int L);
 int VisItSetOperatorOptionsUCv(const char *name,const unsigned char *v,int L);
@@ -50,6 +50,6 @@ int VisItSetOperatorOptionsIv(const char *name,const int *v,int L);
 int VisItSetOperatorOptionsLv(const char *name,const long *v,int L);
 int VisItSetOperatorOptionsFv(const char *name,const float *v,int L);
 int VisItSetOperatorOptionsDv(const char *name,const double *v,int L);
-int VisItSetOperatorOptionsSv(const char *name,const char **v,int L);
+int VisItSetOperatorOptionsSv(const char *name,const char **sv,int L);
 
 #endif
