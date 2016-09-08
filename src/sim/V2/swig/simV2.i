@@ -17,11 +17,13 @@
 %{
 #define SWIG_FILE_WITH_INIT
 #include <VisItControlInterface_V2.h>
+#include <VisItControlInterface_V2_plotting.h>
 #include <VisItDataInterface_V2.h>
 #include <stdio.h>
 #include <simV2_python_config.h>
 #include <simV2_PyObject.h>
 #include <simV2_custom.h>
+#include <vector>
 %}
 
 %init %{
@@ -36,6 +38,7 @@ import_array();
 
 /* Parse these headers to generate wrappers */
 %include <VisItControlInterface_V2.h>
+%include <VisItControlInterface_V2_plotting.h>
 %include <VisItInterfaceTypes_V2.h>
 
 #if 1
