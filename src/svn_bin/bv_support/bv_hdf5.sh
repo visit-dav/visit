@@ -48,7 +48,7 @@ function bv_hdf5_initialize_vars
 {
     if [[ "$USE_SYSTEM_HDF5" == "no" ]]; then
         HDF5_INSTALL_DIR="${VISITDIR}/hdf5/$HDF5_VERSION/${VISITARCH}"
-        if [[ -n "$PAR_COMPILER" ]]; then
+        if [[ -n "$PAR_COMPILER" && "$DO_MOAB" == "yes" ]]; then
             HDF5_MPI_INSTALL_DIR="${VISITDIR}/hdf5_mpi/$HDF5_VERSION/${VISITARCH}"
         fi
     fi
