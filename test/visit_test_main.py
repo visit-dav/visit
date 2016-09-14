@@ -66,6 +66,9 @@ import HtmlPython
 
 from stat import *
 
+import xml.etree.ElementTree as ElTree
+from xml.etree.ElementTree import ParseError
+
 # check for pil
 pil_available = True
 try:
@@ -792,6 +795,9 @@ def JSONImageTestResult(case_name, status,
 # Added logic to have xmllint save its output and then have VisIt attempt
 # to read the file xmllint produces. This tests VisIt's ability to read
 # foreign-generated XML content which may vary a bit from how VisIt writes it.
+#
+# Mark C. Miller, Wed Sep 14 13:25:12 PDT 2016
+# Added logic to fallback to python's xml tools if xmllint is not available.
 # ----------------------------------------------------------------------------
 def Save_Validate_Perturb_Restore_Session(cur):
     retval = 0
@@ -803,8 +809,19 @@ def Save_Validate_Perturb_Restore_Session(cur):
 
     # Coarse check for xml validity using xmllint tool and for VisIt's ability to
     # re-read xml from some producer other than VisIt
-    xmlvalid = subprocess.call(["xmllint", "--output", ofile, "--postvalid", "--dtdvalid", \
-        abs_path(test_root_path(),"visit.dtd"), sfile])
+    try:
+        xmlvalid = subprocess.call(["xmllint", "--output", ofile, "--postvalid", "--dtdvalid", \
+            abs_path(test_root_path(),"visit.dtd"), sfile])
+    except:
+        try:
+            # Fallback to python's xml 
+            xmltree = ElTree.parse(sfile)
+            if xmltree:
+                xmltree.write(ofile, "US-ASCII")
+                xmlvalid = 0
+        except:
+            xmlvalid = 1
+
     if xmlvalid != 0:
         retval = 1
     else:
