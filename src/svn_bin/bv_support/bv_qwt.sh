@@ -1,5 +1,10 @@
 function bv_qwt_initialize
 {
+    if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]]; then
+        export DO_QT="no"
+    else
+        export DO_QT="yes"
+    fi
     export DO_QWT="yes"
     export ON_QWT="on"
     export FORCE_QWT="no"
