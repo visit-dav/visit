@@ -20,7 +20,7 @@ function bv_hdf4_disable
 
 function bv_hdf4_depends_on
 {
-    echo "szip"
+    echo "szip zlib"
 }
 
 function bv_hdf4_info
@@ -1354,6 +1354,7 @@ function build_hdf4
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
+        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
         --disable-dependency-tracking"
         if [[ $? != 0 ]] ; then
             warn "HDF4 configure failed.  Giving up"\
@@ -1372,7 +1373,8 @@ function build_hdf4
         $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
-        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\""
+        --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
+        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\""
         if [[ $? != 0 ]] ; then
             warn "HDF4 configure failed.  Giving up.\n"\
                  "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
