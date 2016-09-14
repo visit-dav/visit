@@ -9,12 +9,37 @@ import math
 # Date:       Thu Oct  1 08:39:34 PDT 2015
 #
 # Modifications:
+#   Brad Whitlock, Wed Sep 14 15:44:46 PDT 2016
+#   Implement socket relay hack as for qsub.
 #
 ###############################################################################
 
 class JobSubmitter_sbatch_NERSC(JobSubmitter_sbatch):
     def __init__(self, launcher):
         super(JobSubmitter_sbatch_NERSC, self).__init__(launcher)
+
+        # FIXME: HACK: Set up VisIt socket relay on MOM node for parallel engine by overriding settings in launcher class
+        launcher.loginnodeport = launcher.generalArgs.port
+        launcher.generalArgs.port = "$MOM_PORT"
+        launcher.loginnodehost = launcher.generalArgs.host
+        launcher.generalArgs.host = "$MOM_HOST"
+        launcher.generalArgs.noloopback = 1
+
+    def TFileSetup(self, tfile):
+        tfile.write("#SBATCH -o %s.out\n" % tfile.name)
+        tfile.write("cd %s\n" % os.path.abspath(os.curdir))
+        tfile.write("ulimit -c 0\n")
+        # Compute nodes could not talk with login node.
+        tfile.write("export MOM_HOST=$(hostname)\n")
+        tfile.write("#echo MOM_HOST=$MOM_HOST\n")
+        relay = os.path.join(self.launcher.visitbindir, "visit_socket_relay")
+        cmd = "%s %s %s > %s.port\n" % (relay, self.launcher.loginnodehost, self.launcher.loginnodeport, tfile.name)
+        tfile.write(cmd)
+        tfile.write("export MOM_PORT=$(cat %s.port)\n" % tfile.name)
+        tfile.write("#echo MOM_PORT=$MOM_PORT\n")
+        tfile.write("rm %s.port\n" % tfile.name)
+        tfile.write("eval $(modulecmd sh unload xt-shmem)\n")
+        tfile.write("sleep 5\n")
 
     def CreateFilename(self):
         tdate = time.asctime()[11:19]
