@@ -258,42 +258,8 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState,
 {
     int t0 = visitTimer->StartTimer();
     Interface->SetDatabaseMetaData(md, timeState, forceReadAllCyclesTimes);
+    md->ReplaceForbiddenCharacters();
     visitTimer->StopTimer(t0, "Getting database meta data");
-
-    std::vector<char>        forbiddenChars;
-    std::vector<std::string> replacementStrs;
-
-    forbiddenChars.push_back('\n');
-    replacementStrs.push_back("_nl_");
-
-    forbiddenChars.push_back('\t');
-    replacementStrs.push_back("_tab_");
-
-    forbiddenChars.push_back('@');
-    replacementStrs.push_back("_at_");
-
-    forbiddenChars.push_back('#');
-    replacementStrs.push_back("_number_");
-
-    forbiddenChars.push_back(':');
-    replacementStrs.push_back("_colon_");
-
-    forbiddenChars.push_back('[');
-    replacementStrs.push_back("_lb_");
-    forbiddenChars.push_back(']');
-    replacementStrs.push_back("_rb_");
-
-    forbiddenChars.push_back('<');
-    replacementStrs.push_back("_la_");
-    forbiddenChars.push_back('>');
-    replacementStrs.push_back("_ra_");
-
-    forbiddenChars.push_back('(');
-    replacementStrs.push_back("_lp_");
-    forbiddenChars.push_back(')');
-    replacementStrs.push_back("_rp_");
-
-    md->ReplaceForbiddenCharacters(forbiddenChars, replacementStrs);
 }
 
 // ****************************************************************************
