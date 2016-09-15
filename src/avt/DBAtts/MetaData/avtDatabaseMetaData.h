@@ -333,7 +333,7 @@ public:
     void         SetTimesAreAccurate(bool);
     bool         IsTimeAccurate(int) const;
     bool         AreAllTimesAccurateAndValid(int=-1) const;
-    void         ReplaceForbiddenCharacters(std::vector<char> &, stringVector &);
+    void         ReplaceForbiddenCharacters(void);
     void         Add(avtMeshMetaData *);
     void         Add(avtScalarMetaData *);
     void         Add(avtVectorMetaData *);

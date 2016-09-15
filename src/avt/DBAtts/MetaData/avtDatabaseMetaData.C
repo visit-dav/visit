@@ -36,6 +36,7 @@
 *
 *****************************************************************************/
 
+#include <avtDatabaseMetaData.h>
 #include <DataNode.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
@@ -45,8 +46,6 @@
 #include <ExprNode.h>
 #include <snprintf.h>
 #include <plugin_vartypes.h>
-#include <avtDatabaseMetaData.h>
-#include <avtExpressionTypeConversions.h>
 #include <avtMeshMetaData.h>
 #include <avtSubsetsMetaData.h>
 #include <avtScalarMetaData.h>
@@ -4321,10 +4320,32 @@ avtDatabaseMetaData::AreAllTimesAccurateAndValid(int expectedNumStates) const
 //    Brad Whitlock, Tue May 11 14:50:46 PDT 2010
 //    Check replacementMask before doing character replacement.
 //
+//    Mark C. Miller, Thu Sep 15 13:03:15 PDT 2016
+//    Moved code setting up forbidden characters and replacement strings from
+//    avtGenericDatabase to here. Adjusted interfaces to used C char*'s 
+//    instead of C++ strings.
 // ****************************************************************************
 
-static bool IsForbidden(std::string &origName, std::string &newName, 
-                 std::vector<char> &badChars, stringVector &newStr)
+static char const *forbiddenVarNameChars = "\n\t@#:[]<>(){}";
+
+static char const * const replacementVarNameStrs[13] = {
+    "_nl_",     // \n
+    "_tab_",    // \t
+    "_at_",     // @
+    "_number_", // #
+    "_colon_",  // :
+    "_lb_",     // [
+    "_rb_",     // ]
+    "_la_",     // <
+    "_ra_",     // >
+    "_lp_",     // (
+    "_rp_",     // )
+    "_lc_",     // {
+    "_rc_"      // }
+};
+
+static bool IsForbidden(std::string const &origName, std::string &newName, 
+                 char const *badChars, char const * const *newStr)
 {
     //
     // Note: this is rather unefficiently implemented.  It is expected that
@@ -4340,12 +4361,12 @@ static bool IsForbidden(std::string &origName, std::string &newName,
     for (size_t i = 0 ; i < len ; i++)
     {
         bool hadBadChar = false;
-        for (size_t j = 0 ; j < badChars.size() ; j++)
+        for (size_t j = 0 ; j < strlen(badChars) ; j++)
         {
             if (orig_name[i] == badChars[j])
             {
                 hadBadChar = true;
-                const char *replacement = newStr[j].c_str();
+                const char *replacement = newStr[j];
                 size_t len2 = strlen(replacement);
                 for (size_t k = 0 ; k < len2 ; k++)
                 {
@@ -4365,8 +4386,7 @@ static bool IsForbidden(std::string &origName, std::string &newName,
 }
 
 void
-avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
-                                      stringVector &replacementStr)
+avtDatabaseMetaData::ReplaceForbiddenCharacters(void)
 {
     int  i;
 
@@ -4378,8 +4398,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
         {
             if (GetMeshes(i).originalName == "")
                 GetMeshes(i).originalName = GetMeshes(i).name;
-            if (IsForbidden(GetMeshes(i).originalName, replacementName, badChars, 
-                            replacementStr))
+            if (IsForbidden(GetMeshes(i).originalName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
             {
                 char msg[1024];
                 SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
@@ -4399,8 +4419,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
         {
             if (GetScalars(i).originalName == "")
                 GetScalars(i).originalName = GetScalars(i).name;
-            if (IsForbidden(GetScalars(i).originalName, replacementName, badChars, 
-                            replacementStr))
+            if (IsForbidden(GetScalars(i).originalName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
             {
                 char msg[1024];
                 SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
@@ -4411,8 +4431,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
                 IssueWarning(msg);
                 GetScalars(i).name = replacementName;
             }
-            if (IsForbidden(GetScalars(i).meshName, replacementName, badChars,
-                            replacementStr))
+            if (IsForbidden(GetScalars(i).meshName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
                 GetScalars(i).meshName = replacementName;
         }
     }
@@ -4423,8 +4443,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
         {
             if (GetVectors(i).originalName == "")
                 GetVectors(i).originalName = GetVectors(i).name;
-            if (IsForbidden(GetVectors(i).originalName, replacementName, badChars, 
-                            replacementStr))
+            if (IsForbidden(GetVectors(i).originalName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
             {
                 char msg[1024];
                 SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
@@ -4435,8 +4455,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
                 IssueWarning(msg);
                 GetVectors(i).name = replacementName;
             }
-            if (IsForbidden(GetVectors(i).meshName, replacementName, badChars,
-                            replacementStr))
+            if (IsForbidden(GetVectors(i).meshName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
                 GetVectors(i).meshName = replacementName;
         }
     }
@@ -4447,8 +4467,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
         {
             if (GetTensors(i).originalName == "")
                 GetTensors(i).originalName = GetTensors(i).name;
-            if (IsForbidden(GetTensors(i).originalName, replacementName, badChars, 
-                            replacementStr))
+            if (IsForbidden(GetTensors(i).originalName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
             {
                 char msg[1024];
                 SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
@@ -4459,8 +4479,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
                 IssueWarning(msg);
                 GetTensors(i).name = replacementName;
             }
-            if (IsForbidden(GetTensors(i).meshName, replacementName, badChars,
-                            replacementStr))
+            if (IsForbidden(GetTensors(i).meshName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
                 GetTensors(i).meshName = replacementName;
         }
     }
@@ -4472,7 +4492,7 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
             if (GetSymmTensors(i).originalName == "")
                 GetSymmTensors(i).originalName = GetSymmTensors(i).name;
             if (IsForbidden(GetSymmTensors(i).originalName, replacementName, 
-                            badChars, replacementStr))
+                            forbiddenVarNameChars, replacementVarNameStrs))
             {
                 char msg[1024];
                 SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
@@ -4483,8 +4503,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
                 IssueWarning(msg);
                 GetSymmTensors(i).name = replacementName;
             }
-            if (IsForbidden(GetSymmTensors(i).meshName, replacementName, badChars,
-                            replacementStr))
+            if (IsForbidden(GetSymmTensors(i).meshName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
                 GetSymmTensors(i).meshName = replacementName;
         }
     }
@@ -4495,8 +4515,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
         {
             if (GetArrays(i).originalName == "")
                 GetArrays(i).originalName = GetArrays(i).name;
-            if (IsForbidden(GetArrays(i).originalName, replacementName, badChars, 
-                            replacementStr))
+            if (IsForbidden(GetArrays(i).originalName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
             {
                 char msg[1024];
                 SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
@@ -4507,8 +4527,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
                 IssueWarning(msg);
                 GetArrays(i).name = replacementName;
             }
-            if (IsForbidden(GetArrays(i).meshName, replacementName, badChars,
-                            replacementStr))
+            if (IsForbidden(GetArrays(i).meshName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
                 GetArrays(i).meshName = replacementName;
         }
     }
@@ -4519,8 +4539,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
         {
             if (GetMaterials(i).originalName == "")
                 GetMaterials(i).originalName = GetMaterials(i).name;
-            if (IsForbidden(GetMaterials(i).originalName, replacementName, badChars, 
-                            replacementStr))
+            if (IsForbidden(GetMaterials(i).originalName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
             {
                 char msg[1024];
                 SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
@@ -4531,8 +4551,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
                 IssueWarning(msg);
                 GetMaterials(i).name = replacementName;
             }
-            if (IsForbidden(GetMaterials(i).meshName, replacementName, badChars,
-                            replacementStr))
+            if (IsForbidden(GetMaterials(i).meshName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
                 GetMaterials(i).meshName = replacementName;
         }
     }
@@ -4543,8 +4563,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
         {
             if (GetCurves(i).originalName == "")
                 GetCurves(i).originalName = GetCurves(i).name;
-            if (IsForbidden(GetCurves(i).originalName, replacementName, badChars,
-                            replacementStr))
+            if (IsForbidden(GetCurves(i).originalName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
             {
                 char msg[1024];
                 SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
@@ -4564,8 +4584,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
         {
             if (GetLabels(i).originalName == "")
                 GetLabels(i).originalName = GetLabels(i).name;
-            if (IsForbidden(GetLabels(i).originalName, replacementName, badChars, 
-                            replacementStr))
+            if (IsForbidden(GetLabels(i).originalName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
             {
                 char msg[1024];
                 SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
@@ -4576,8 +4596,8 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
                 IssueWarning(msg);
                 GetLabels(i).name = replacementName;
             }
-            if (IsForbidden(GetLabels(i).meshName, replacementName, badChars,
-                            replacementStr))
+            if (IsForbidden(GetLabels(i).meshName, replacementName,
+                            forbiddenVarNameChars, replacementVarNameStrs))
                 GetLabels(i).meshName = replacementName;
         }
     }
@@ -5692,6 +5712,8 @@ avtDatabaseMetaData::UnsetExtents(void)
 //  Programmer: Hank Childs
 //  Creation:   September 4, 2002
 //
+//  Mark C. Miller, Thu Jun 16 18:23:24 PDT 2016
+//  Remove leading slash, if any, from expression name.
 // ****************************************************************************
 
 void
@@ -5903,9 +5925,8 @@ avtDatabaseMetaData::GetNDomains(const std::string &var) const
 //    Brad Whitlock, Tue Jan 20 16:01:51 PST 2009
 //    Change conversion function.
 //
-//    Mark C. Miller, Thu Dec 18 17:55:57 PST 2014
-//    Replaced terminating exception with return of UNKNOWN_VAR
 // ****************************************************************************
+#include <avtExpressionTypeConversions.h>
 
 avtVarType
 avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
@@ -6024,7 +6045,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
         }
     }
 
-    return AVT_UNKNOWN_TYPE;
+    EXCEPTION1(InvalidVariableException, var);
 }
 
 // ****************************************************************************
@@ -7221,6 +7242,9 @@ avtDatabaseMetaData::ParseCompoundForCategory(const std::string &inVar,
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Sep 15 11:01:24 PDT 2016
+//    Added logic to compare to original v2 or to munged v2new after forbidden 
+//    char replacement has occured.
 // ****************************************************************************
 
 bool
@@ -7228,15 +7252,18 @@ avtDatabaseMetaData::VariableNamesEqual(const std::string &v1, const std::string
 {
     bool v1BeginsWithSlash = (v1.size() >= 1) ? v1[0] == '/' : false;
     bool v2BeginsWithSlash = (v2.size() >= 1) ? v2[0] == '/' : false;
+    std::string v2new;
+
+    IsForbidden(v2, v2new, forbiddenVarNameChars, replacementVarNameStrs);
 
     if(v1BeginsWithSlash && v2BeginsWithSlash)
-        return v1 == v2;
+        return v1 == v2 || v1 == v2new;
     else if(!v1BeginsWithSlash && !v2BeginsWithSlash)
-        return v1 == v2;
+        return v1 == v2 || v1 == v2new;
     else if(v1BeginsWithSlash)
-        return v1.substr(1) == v2;
+        return v1.substr(1) == v2 || v1.substr(1) == v2new;
     else
-        return v2.substr(1) == v1;
+        return v2.substr(1) == v1 || v2new.substr(1) == v1;
 }
 
 std::string avtDatabaseMetaData::cycleFromFilenameRegex;

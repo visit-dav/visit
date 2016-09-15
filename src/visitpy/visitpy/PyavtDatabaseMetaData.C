@@ -1102,11 +1102,11 @@ avtDatabaseMetaData_GetMeshes(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetMeshes().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetMeshes().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because meshes is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetMeshes : The index %d is invalid because meshes is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetMeshes().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetMeshes : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetMeshes().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1139,8 +1139,8 @@ avtDatabaseMetaData_AddMeshes(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtMeshMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddMeshes method only accepts avtMeshMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddMeshes method only accepts avtMeshMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1187,7 +1187,9 @@ avtDatabaseMetaData_RemoveMeshes(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumMeshes())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveMeshes : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -1217,11 +1219,11 @@ avtDatabaseMetaData_GetSubsets(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSubsets().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetSubsets().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because subsets is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSubsets : The index %d is invalid because subsets is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetSubsets().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSubsets : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSubsets().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1254,8 +1256,8 @@ avtDatabaseMetaData_AddSubsets(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtSubsetsMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddSubsets method only accepts avtSubsetsMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddSubsets method only accepts avtSubsetsMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1302,7 +1304,9 @@ avtDatabaseMetaData_RemoveSubsets(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSubsets())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveSubsets : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -1332,11 +1336,11 @@ avtDatabaseMetaData_GetScalars(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetScalars().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetScalars().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because scalars is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetScalars : The index %d is invalid because scalars is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetScalars().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetScalars : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetScalars().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1369,8 +1373,8 @@ avtDatabaseMetaData_AddScalars(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtScalarMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddScalars method only accepts avtScalarMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddScalars method only accepts avtScalarMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1417,7 +1421,9 @@ avtDatabaseMetaData_RemoveScalars(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumScalars())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveScalars : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -1447,11 +1453,11 @@ avtDatabaseMetaData_GetVectors(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetVectors().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetVectors().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because vectors is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetVectors : The index %d is invalid because vectors is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetVectors().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetVectors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetVectors().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1484,8 +1490,8 @@ avtDatabaseMetaData_AddVectors(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtVectorMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddVectors method only accepts avtVectorMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddVectors method only accepts avtVectorMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1532,7 +1538,9 @@ avtDatabaseMetaData_RemoveVectors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumVectors())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveVectors : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -1562,11 +1570,11 @@ avtDatabaseMetaData_GetTensors(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetTensors().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetTensors().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because tensors is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetTensors : The index %d is invalid because tensors is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetTensors().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetTensors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetTensors().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1599,8 +1607,8 @@ avtDatabaseMetaData_AddTensors(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtTensorMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddTensors method only accepts avtTensorMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddTensors method only accepts avtTensorMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1647,7 +1655,9 @@ avtDatabaseMetaData_RemoveTensors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumTensors())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveTensors : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -1677,11 +1687,11 @@ avtDatabaseMetaData_GetSymmTensors(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSymmTensors().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetSymmTensors().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because symmTensors is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSymmTensors : The index %d is invalid because symmTensors is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetSymmTensors().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSymmTensors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSymmTensors().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1714,8 +1724,8 @@ avtDatabaseMetaData_AddSymmTensors(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtSymmetricTensorMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddSymmTensors method only accepts avtSymmetricTensorMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddSymmTensors method only accepts avtSymmetricTensorMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1762,7 +1772,9 @@ avtDatabaseMetaData_RemoveSymmTensors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSymmTensors())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveSymmTensors : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -1792,11 +1804,11 @@ avtDatabaseMetaData_GetArrays(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetArrays().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetArrays().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because arrays is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetArrays : The index %d is invalid because arrays is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetArrays().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetArrays : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetArrays().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1829,8 +1841,8 @@ avtDatabaseMetaData_AddArrays(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtArrayMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddArrays method only accepts avtArrayMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddArrays method only accepts avtArrayMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1877,7 +1889,9 @@ avtDatabaseMetaData_RemoveArrays(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumArrays())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveArrays : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -1907,11 +1921,11 @@ avtDatabaseMetaData_GetMaterials(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetMaterials().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetMaterials().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because materials is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetMaterials : The index %d is invalid because materials is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetMaterials().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetMaterials : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetMaterials().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -1944,8 +1958,8 @@ avtDatabaseMetaData_AddMaterials(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtMaterialMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddMaterials method only accepts avtMaterialMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddMaterials method only accepts avtMaterialMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -1992,7 +2006,9 @@ avtDatabaseMetaData_RemoveMaterials(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumMaterials())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveMaterials : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -2022,11 +2038,11 @@ avtDatabaseMetaData_GetSpecies(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSpecies().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetSpecies().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because species is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSpecies : The index %d is invalid because species is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetSpecies().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetSpecies : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSpecies().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2059,8 +2075,8 @@ avtDatabaseMetaData_AddSpecies(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtSpeciesMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddSpecies method only accepts avtSpeciesMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddSpecies method only accepts avtSpeciesMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -2107,7 +2123,9 @@ avtDatabaseMetaData_RemoveSpecies(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSpecies())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveSpecies : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -2137,11 +2155,11 @@ avtDatabaseMetaData_GetCurves(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetCurves().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetCurves().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because curves is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetCurves : The index %d is invalid because curves is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetCurves().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetCurves : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetCurves().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2174,8 +2192,8 @@ avtDatabaseMetaData_AddCurves(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtCurveMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddCurves method only accepts avtCurveMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddCurves method only accepts avtCurveMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -2222,7 +2240,9 @@ avtDatabaseMetaData_RemoveCurves(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumCurves())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveCurves : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -2252,11 +2272,11 @@ avtDatabaseMetaData_GetLabels(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetLabels().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetLabels().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because labels is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetLabels : The index %d is invalid because labels is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetLabels().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetLabels : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetLabels().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2289,8 +2309,8 @@ avtDatabaseMetaData_AddLabels(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtLabelMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddLabels method only accepts avtLabelMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddLabels method only accepts avtLabelMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -2337,7 +2357,9 @@ avtDatabaseMetaData_RemoveLabels(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumLabels())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveLabels : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
@@ -2367,11 +2389,11 @@ avtDatabaseMetaData_GetDefaultPlots(PyObject *self, PyObject *args)
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetDefaultPlots().size())
     {
-        char msg[200];
+        char msg[400] = {'\0'};
         if(obj->data->GetDefaultPlots().size() == 0)
-            SNPRINTF(msg, 200, "The index is invalid because defaultPlots is empty.");
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetDefaultPlots : The index %d is invalid because defaultPlots is empty.", index);
         else
-            SNPRINTF(msg, 200, "The index is invalid. Use index values in: [0, %ld).", obj->data->GetDefaultPlots().size());
+            SNPRINTF(msg, 400, "In avtDatabaseMetaData::GetDefaultPlots : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetDefaultPlots().size());
         PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
@@ -2404,8 +2426,8 @@ avtDatabaseMetaData_AddDefaultPlots(PyObject *self, PyObject *args)
         return NULL;
     if(!PyavtDefaultPlotMetaData_Check(element))
     {
-        char msg[400];
-        SNPRINTF(msg, 400, "The AddDefaultPlots method only accepts avtDefaultPlotMetaData objects.");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The avtDatabaseMetaData::AddDefaultPlots method only accepts avtDefaultPlotMetaData objects.");
         PyErr_SetString(PyExc_TypeError, msg);
         return NULL;
     }
@@ -2452,7 +2474,9 @@ avtDatabaseMetaData_RemoveDefaultPlots(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumDefaultPlots())
     {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In avtDatabaseMetaData::RemoveDefaultPlots : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
         return NULL;
     }
 
