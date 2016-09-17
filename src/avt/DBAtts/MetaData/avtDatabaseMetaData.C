@@ -38,6 +38,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <DataNode.h>
+#include <avtExpressionTypeConversions.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
 #include <BadIndexException.h>
@@ -5926,7 +5927,6 @@ avtDatabaseMetaData::GetNDomains(const std::string &var) const
 //    Change conversion function.
 //
 // ****************************************************************************
-#include <avtExpressionTypeConversions.h>
 
 avtVarType
 avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
@@ -6045,7 +6045,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
         }
     }
 
-    EXCEPTION1(InvalidVariableException, var);
+    return AVT_UNKNOWN_TYPE;
 }
 
 // ****************************************************************************

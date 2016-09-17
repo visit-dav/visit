@@ -281,6 +281,9 @@
     <Include file="header" quoted="false">
       avtDefaultPlotMetaData.h
     </Include>
+    <Include file="source" quoted="false">
+      avtExpressionTypeConversions.h
+    </Include>
     <Include file="header" quoted="false">
       avtLabelMetaData.h
     </Include>
