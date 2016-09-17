@@ -2234,7 +2234,6 @@ Definition:
 //    Change conversion function.
 //
 // ****************************************************************************
-#include <avtExpressionTypeConversions.h>
 
 avtVarType
 avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
@@ -2353,7 +2352,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
         }
     }
 
-    EXCEPTION1(InvalidVariableException, var);
+    return AVT_UNKNOWN_TYPE;
 }
 
 Function: DetermineSubsetType
