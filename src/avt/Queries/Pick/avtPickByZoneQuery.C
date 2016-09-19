@@ -140,6 +140,10 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Added call to base class ExtractZonePickHighlights to support 
 //    zone highlights
 //
+//    Matt Larsen, Mon Sep 19 10:39:02 PDT 2016
+//    Fixed pick highlight issue with incorrect zone being hightlighted 
+//    in some cases.
+//
 // ****************************************************************************
 
 void
@@ -165,9 +169,9 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
         pickAtts.SetError(true);
         return; 
     }
-
     int userZoneId = pickAtts.GetElementNumber();
     int zoneid = userZoneId;
+    int origPick = zoneid;
     int maxEls = ds->GetNumberOfCells();
     if (pickAtts.GetMatSelected() &&  !pickAtts.GetElementIsGlobal())
     {
@@ -315,9 +319,8 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     {
         pickAtts.SetPickPoint(center);
     }
-    // By this point, the zoneId should be the original zone
-    // if it was decomposed.
-    this->ExtractZonePickHighlights(zoneid, ds, dom);
+    
+    this->ExtractZonePickHighlights(origPick, ds, dom);
 }
 
 
