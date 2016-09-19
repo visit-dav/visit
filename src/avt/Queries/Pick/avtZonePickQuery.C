@@ -145,7 +145,10 @@ avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 //
 //    Matt Larsen, Fri Jul 8 08:15:00 PDT 2016
 //    Added call to base class ExtractZonePickHighlights to support 
-//    zone highlights
+//    zone highlight
+//
+//    Matt Larsen, Mon Sep 11 10:15:00 PDT 2016
+//    Fixed issue with the wrong cell being highlighted with Mili
 //
 // ****************************************************************************
 
@@ -327,7 +330,7 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
     }
     //By this point, the element Id should be the original zone
     //if it was decomposed.
-    this->ExtractZonePickHighlights(pickAtts.GetElementNumber(), ds, dom);
+    this->ExtractZonePickHighlights(pickedZone, ds, dom);
 }
 
 
