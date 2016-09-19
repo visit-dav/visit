@@ -10,7 +10,7 @@
 ##
 SET(VISITHOME /home/brugger1/visit/thirdparty_shared/2.11.0)
 SET(VISITARCH linux-x86_64_gcc-4.8)
-VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE)
+VISIT_OPTION_DEFAULT(VISIT_SLIVR FALSE TYPE BOOL)
 
 ## Compiler flags.
 ##
