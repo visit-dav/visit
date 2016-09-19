@@ -47,7 +47,6 @@
 #include <vtkRenderer.h>
 #include <vtkVectorText.h>
 #include <vtkGlyphSource2D.h>
-
 #include <DebugStream.h>
 
 // ****************************************************************************
@@ -73,14 +72,15 @@
 //    Matt Larsen, Tues July 18 08:11:01 PDT 2016 
 //    Added initialization for showPickLetter
 //
+//    Matt Larsen, Mon September 19 08:34:22 PDT 2016
+//    Changed glyph type to circle
 // ****************************************************************************
-
 avtPickActor:: avtPickActor()
 {
     mode3D  = true;
     useGlyph  = false;
     showPickLetter = true;
-
+    
     attach[0] = attach[1] = attach[2] = 0.;
     designator = "";
 
@@ -106,7 +106,7 @@ avtPickActor:: avtPickActor()
         letterActor->GetProperty()->SetDiffuse(0.);
 
     glyphSource = vtkGlyphSource2D::New();
-        glyphSource->SetGlyphTypeToSquare();
+        glyphSource->SetGlyphTypeToCircle();
         glyphSource->CrossOff();
         glyphSource->FilledOn();
         glyphSource->SetScale(0.5);
@@ -261,7 +261,7 @@ avtPickActor::Remove()
 {
     if (renderer != NULL)
     {
-        if (useGlyph)
+        if(useGlyph)
             renderer->RemoveActor(glyphActor);
         renderer->RemoveActor(lineActor);
         renderer->RemoveActor(letterActor);
