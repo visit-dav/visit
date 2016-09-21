@@ -53,6 +53,7 @@
 #include <avtDatabaseMetaData.h>
 
 #include <DBOptionsAttributes.h>
+#include <DebugStream.h>
 #include <Expression.h>
 
 #include <InvalidFilesException.h>
@@ -158,6 +159,8 @@ avtMFEMFileFormat::FreeUpResources(void)
 //   Cyrus Harrison, Wed Sep 24 10:47:00 PDT 2014
 //   Move abs path logic into JSONRoot.
 //
+//   Mark C. Miller, Tue Sep 20 18:12:29 PDT 2016
+//   Add expressions
 // ****************************************************************************
 void
 avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
@@ -266,6 +269,39 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 }
             }
         }
+    }
+
+    vector<string>expr_names;
+    root_md.Expressions(expr_names);
+    for(size_t i = 0; i < expr_names.size(); i++)
+    {
+        JSONRootExpr &jexpr = root_md.Expression(expr_names[i]);
+        
+        Expression::ExprType vartype = Expression::Unknown;
+        if      (!strncasecmp(jexpr.Type().c_str(), "scalar", 6))
+            vartype = Expression::ScalarMeshVar;
+        else if (!strncasecmp(jexpr.Type().c_str(), "vector", 6))
+            vartype = Expression::VectorMeshVar;
+        else if (!strncasecmp(jexpr.Type().c_str(), "tensor", 6))
+            vartype = Expression::TensorMeshVar;
+        else if (!strncasecmp(jexpr.Type().c_str(), "array", 5))
+            vartype = Expression::ArrayMeshVar;
+        else if (!strncasecmp(jexpr.Type().c_str(), "material", 8))
+            vartype = Expression::Material;
+        else if (!strncasecmp(jexpr.Type().c_str(), "species", 7))
+            vartype = Expression::Species;
+        else
+        {
+            debug5 << "Warning: unknown expression type \"" << jexpr.Type() << "\" for expression "
+                   << "\"" << expr_names[i] << "\"...skipping it." << endl;
+            continue;
+        }
+
+        Expression expr;
+        expr.SetName(expr_names[i]);
+        expr.SetDefinition(jexpr.Defn());
+        expr.SetType(vartype);
+        md->AddExpression(&expr);
     }
 }
 
