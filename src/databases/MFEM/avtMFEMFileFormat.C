@@ -73,6 +73,12 @@
 #include "mfem.hpp"
 
 #include <JSONRoot.h>
+
+#ifdef _WIN32
+#include <string.h>
+#define strncasecmp _strnicmp
+#endif
+
 using     std::string;
 using     std::ostringstream;
 using     std::vector;
