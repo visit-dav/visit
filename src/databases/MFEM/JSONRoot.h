@@ -103,6 +103,30 @@ class JSONRootEntry
 };
 
 // ****************************************************************************
+//  Method: avtMFEMFileFormat::JSONRootExpr
+//
+//  Purpose: Hold definition and type for an expression
+//
+//  Mark C. Miller, Tue Sep 20 18:11:55 PDT 2016
+// ****************************************************************************
+class JSONRootExpr
+{
+    public:
+                 JSONRootExpr() {};
+                 JSONRootExpr(char const *_defn, char const *_type)
+                     : defn(_defn), type(_type) {};
+        virtual ~JSONRootExpr() {};
+
+        std::string const &Defn(void) const {return defn;};
+        std::string const &Type(void) const {return type;};
+
+    private:
+
+        std::string defn;
+        std::string type;
+};
+
+// ****************************************************************************
 //  Method: avtMFEMFileFormat::JSONRootDataSet
 //
 //  Purpose: 
@@ -162,6 +186,8 @@ class JSONRootDataSet
 //   Cyrus Harrison, Wed Sep 24 10:47:00 PDT 2014
 //   Added helper for abs path logic.
 //
+//   Mark C. Miller, Tue Sep 20 18:11:11 PDT 2016
+//   Added expressions
 // ****************************************************************************
 class JSONRoot
 {
@@ -174,6 +200,9 @@ public:
     void             DataSets(std::vector<std::string> &dset_names) const;
     JSONRootDataSet &DataSet(const std::string &dset_name);
 
+    void             Expressions(std::vector<std::string> &expr_names) const;
+    JSONRootExpr    &Expression(const std::string &expr_name);
+
     int              NumberOfDataSets() const;
     std::string      ToJson();
     void             ToJson(std::ostringstream &oss);
@@ -183,6 +212,7 @@ public:
     std::string      ResolveAbsolutePath(const std::string &root_dir,const std::string &file_path);
     
     std::map<std::string,JSONRootDataSet> dsets;
+    std::map<std::string,JSONRootExpr> exprs;
     
 };
 

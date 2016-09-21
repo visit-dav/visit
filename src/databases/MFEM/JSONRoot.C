@@ -250,7 +250,6 @@ JSONRootEntry::Tag(const std::string &tag_name)
     return tags[tag_name];
 }
 
-
 // ****************************************************************************
 //  Method: JSONRootDataSet Constructor
 //
@@ -539,6 +538,25 @@ JSONRoot::DataSets(vector<string> &dset_names) const
 }
 
 // ****************************************************************************
+//  Method: JSONRootDataSet::Expressions
+//
+//  Purpose: Returns the names of the expressions in this root file.
+//
+//  Mark C. Miller, Tue Sep 20 18:09:03 PDT 2016
+// **************************************************************************** 
+void
+JSONRoot::Expressions(vector<string> &expr_names) const
+{
+    expr_names.clear();
+    for(map<string,JSONRootExpr>::const_iterator itr = exprs.begin();
+        itr!=exprs.end();
+        itr++)
+        {
+            expr_names.push_back(itr->first);
+        }
+}
+
+// ****************************************************************************
 //  Method: JSONRootDataSet::DataSet
 //
 //  Purpose:
@@ -553,6 +571,20 @@ JSONRootDataSet &
 JSONRoot::DataSet(const std::string &dset_name)
 {
     return dsets[dset_name];
+}
+
+// ****************************************************************************
+//  Method: JSONRootDataSet::Expression
+//
+//  Purpose: Return the expression with the given name.
+//     The dataset is created if it doesn't already exist.
+//
+//  Mark C. Miller, Tue Sep 20 18:10:38 PDT 2016
+// **************************************************************************** 
+JSONRootExpr &
+JSONRoot::Expression(const std::string &expr_name)
+{
+    return exprs[expr_name];
 }
 
 // ****************************************************************************
@@ -585,6 +617,8 @@ JSONRoot::NumberOfDataSets() const
 //   Cyrus Harrison, Wed Sep 24 10:47:00 PDT 2014
 //   Handle abs path logic.
 //
+//   Mark C. Miller, Tue Sep 20 18:07:42 PDT 2016
+//   Add support for expressions
 // **************************************************************************** 
 void 
 JSONRoot::ParseJSON(const std::string &json_root)
@@ -667,6 +701,23 @@ JSONRoot::ParseJSON(const std::string &json_root)
                  }
             }
         }
+
+        if (document.HasMember("expressions"))
+        {
+            const rapidjson::Value &json_exprs = document["expressions"];
+            for (rapidjson::Value::ConstMemberIterator exprs_itr = json_exprs.MemberBegin(); 
+                 exprs_itr != json_exprs.MemberEnd(); ++exprs_itr)
+            {
+                string curr_expr_name = exprs_itr->name.GetString();
+                const rapidjson::Value &json_expr = exprs_itr->value;
+                if (json_expr.HasMember("defn") && json_expr.HasMember("type"))
+                {
+                    JSONRootExpr curr_expr(json_expr["defn"].GetString(),
+                                           json_expr["type"].GetString());
+                    exprs[curr_expr_name] = curr_expr;
+                }
+            }
+        }
     }
 }
 
@@ -710,11 +761,12 @@ JSONRoot::ToJson()
 //
 //  Purpose: Writes JSON that represent the JSONRoot to the passed ostream.
 //
-//
-//
 //  Programmer:  Cyrus Harrison
 //  Creation:    Thu Jun 12 16:02:35 PDT 2014
-//
+//  
+//  Modifications
+//    Mark C. Miller, Tue Sep 20 18:07:42 PDT 2016
+//    Add support for expressions
 // **************************************************************************** 
 void
 JSONRoot::ToJson(ostringstream &oss) 
@@ -750,6 +802,19 @@ JSONRoot::ToJson(ostringstream &oss)
             oss << "}\n";
         }
         oss << "   }\n";
+    }
+    oss << "{\"expressions\":\n";
+    vector<string>expr_names;
+    Expressions(expr_names);
+    for(int i=0;i<(int)expr_names.size();i++)
+    {
+        JSONRootExpr &expr = Expression(expr_names[i]);
+        oss << "   \"" << expr_names[i]
+            << "\": { \"defn\": \"" << expr.Defn()
+            << "\", \"type\": \"" << expr.Type() << "\"}";
+        if(i < (int)expr_names.size()-1)
+            oss <<",";
+        oss << "\n";
     }
     oss << "}\n";
 }
