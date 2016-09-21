@@ -194,6 +194,8 @@
 #    Kathleen Biagas, Thu Mar  8 13:52:37 PST 2012
 #    Added test for picking scatter plots.
 #
+#    Matt Larsen, Mon Sep 19 10:20:11 PDT 2016
+#    Added a test for zone pick highlighting
 # ----------------------------------------------------------------------------
 
 def Pick3DTo2D():
@@ -2762,6 +2764,20 @@ def PickScatter():
     DeleteAllPlots()
     ResetPickLetter()
     
+def PickHighlight():
+    OpenDatabase(silo_data_path("noise.silo"))
+    annotAtts  = GetAnnotationAttributes() 
+    annotAtts.userInfoFlag = 0
+    SetAnnotationAttributes(annotAtts)
+    AddPlot("Pseudocolor", "hardyglobal")
+    pickAtts = GetPickAttributes()
+    pickAtts.showPickHighlight = 1
+    SetPickAttributes(pickAtts)
+    DrawPlots()
+    PickByZone(116242)
+    Test("PickHighlight_01")
+    DeleteAllPlots()
+
 def PickMain():
     Pick3DTo2D()
     Pick2D()
@@ -2792,6 +2808,7 @@ def PickMain():
     PickContour()
     PickBox()
     PickScatter()
+    PickHighlight()
 
 # Call the main function
 TurnOnAllAnnotations()
