@@ -2768,6 +2768,11 @@ def PickHighlight():
     OpenDatabase(silo_data_path("noise.silo"))
     annotAtts  = GetAnnotationAttributes() 
     annotAtts.userInfoFlag = 0
+    annotAtts.axes3D.xAxis.title.visible = 0
+    annotAtts.axes3D.yAxis.title.visible = 0
+    annotAtts.axes3D.zAxis.title.visible = 0
+    annotAtts.axes3D.bboxFlag = 0;
+    annotAtts.axes3D.triadFlag = 0;
     SetAnnotationAttributes(annotAtts)
     AddPlot("Pseudocolor", "hardyglobal")
     pickAtts = GetPickAttributes()
@@ -2777,6 +2782,16 @@ def PickHighlight():
     PickByZone(116242)
     Test("PickHighlight_01")
     DeleteAllPlots()
+    ResetPickLetter()
+    #restore the attributes
+    annotAtts  = GetAnnotationAttributes() 
+    annotAtts.userInfoFlag = 1
+    annotAtts.axes3D.xAxis.title.visible = 1
+    annotAtts.axes3D.yAxis.title.visible = 1
+    annotAtts.axes3D.zAxis.title.visible = 1
+    annotAtts.axes3D.bboxFlag = 1;
+    annotAtts.axes3D.triadFlag = 1;
+    SetAnnotationAttributes(annotAtts)
 
 def PickMain():
     Pick3DTo2D()
