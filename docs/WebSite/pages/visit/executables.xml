@@ -66,9 +66,9 @@
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.11.0/visit2.11.0_x64.exe">Download</a></td>
         </tr>
         <tr>
-          <td>Mac OS X 10.8 - Intel 64 bit<br />
-          Darwin 10.8.5, Darwin Kernel Version 12.5.0, gcc 4.2.1, MPICH<br />
-          <i>(Includes parallel VisIt with self-contained MPICH MPI. Works on all versions of Mac OS X 10.8 and later.)</i></td>
+          <td>Mac OS X El Capitan - Intel 64 bit<br />
+          Darwin 10.11.6, Darwin Kernel Version 15.6.0, clang-703.0.29, MPICH<br />
+          <i>(Includes parallel VisIt with self-contained MPICH MPI. Works on Mac OS X 10.11 and later.)</i></td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.11.0/VisIt-2.11.0.dmg">Download</a></td>
         </tr>
         <tr>
@@ -141,9 +141,9 @@
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.10.3/visit2.10.3_x64.exe">Download</a></td>
         </tr>
         <tr>
-          <td>Mac OS X 10.8 - Intel 64 bit<br />
-          Darwin 10.8.5, Darwin Kernel Version 12.5.0, gcc 4.2.1, MPICH<br />
-          <i>(Includes parallel VisIt with self-contained MPICH MPI. Works on all versions of Mac OS X 10.8 and later.)</i></td>
+          <td>Mac OS X 10.9 - Intel 64 bit<br />
+          Darwin 10.9.5, Darwin Kernel Version 13.4.0, clang-503.0.38, MPICH<br />
+          <i>(Includes parallel VisIt with self-contained MPICH MPI. Works on Mac OS X 10.9 and later.)</i></td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.10.3/VisIt-2.10.3.dmg">Download</a></td>
         </tr>
         <tr>
