@@ -197,6 +197,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                   int, int, int, const char *);
 
     void                      ConvertOldImagePropertiesToNew();
+    void                      CheckData(vtkDataSet **, const int);
 };
 
 

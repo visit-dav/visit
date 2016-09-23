@@ -44,6 +44,8 @@
 #include <vtkPointData.h>
 #include <vtkPNGWriter.h>
 #include <vtkTIFFWriter.h>
+#include <vtkDataArray.h>
+#include <vtkCellData.h>
 
 #include <avtDatasetExaminer.h>
 #include <avtOriginatingSource.h>
@@ -860,6 +862,11 @@ void
 avtXRayImageQuery::Execute(avtDataTree_p tree)
 {
     avtDataset_p input = GetTypedInput();
+    
+    int nsets = 0;
+    vtkDataSet **dataSets = tree->GetAllLeaves(nsets);
+    
+    CheckData(dataSets, nsets);
 
     //
     // If the number of pixels is less than or equal to zero then print
@@ -920,8 +927,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     //
     // Cause our artificial pipeline to execute.
     //
-    avtContract_p contract =
-        input->GetOriginatingSource()->GetGeneralContract();
+    avtContract_p contract = input->GetOriginatingSource()->GetGeneralContract();
     filt->GetOutput()->Update(contract);
 
     //
@@ -1124,6 +1130,74 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     visitTimer->StopTimer(t1, "avtXRayImageQuery::ExecutePipeline");
 
     delete filt;
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::CheckData
+//
+//  Purpose:    Perform error checks on the input datasets.
+//
+//  Arguments:
+//    dataSets: The input datasets
+//    nsets:    The number of datasets
+//
+//  Programmer: Kevin Griffin
+//  Creation:   Septemeber 19, 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
+{
+    for (int i = 0; i < nsets; i++)
+    {
+        vtkDataArray *abs  = dataSets[i]->GetCellData()->GetArray(absVarName.c_str());
+        vtkDataArray *emis = dataSets[i]->GetCellData()->GetArray(emisVarName.c_str());
+        
+        if (abs == NULL)
+        {
+            char msg[256];
+            if (dataSets[i]->GetPointData()->GetArray(absVarName.c_str()) != NULL)
+            {
+                SNPRINTF(msg,256, "Variable %s is node-centered, but "
+                         "it must be zone-centered for this query.",
+                         absVarName.c_str());
+                
+                EXCEPTION1(ImproperUseException, msg);
+            }
+            else
+            {
+                EXCEPTION1(QueryArgumentException, absVarName.c_str());
+            }
+        }
+        if (emis == NULL)
+        {
+            char msg[256];
+            if (dataSets[i]->GetPointData()->GetArray(emisVarName.c_str())
+                != NULL)
+            {
+                SNPRINTF(msg,256, "Variable %s is node-centered, but "
+                         "it must be zone-centered for this query.",
+                         emisVarName.c_str());
+                
+                EXCEPTION1(ImproperUseException, msg);
+            }
+            else
+            {
+                EXCEPTION1(QueryArgumentException, emisVarName.c_str());
+            }
+            
+        }
+    }
+    
+    if(nsets <= 0)
+    {
+        char msg[256];
+        SNPRINTF(msg,256, "Variables %s and %s resulted in no data being selected.",
+                 absVarName.c_str(), emisVarName.c_str());
+        EXCEPTION1(VisItException, msg);
+    }
 }
 
 // ****************************************************************************
