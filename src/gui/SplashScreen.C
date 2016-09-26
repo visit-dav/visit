@@ -338,7 +338,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 8;
+    int currentMonth = 12;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2016", this));
 
