@@ -560,7 +560,9 @@ avtImageColleague::GetOptions(AnnotationObject &annot)
 
     annot.SetPosition(actor->GetPosition());
 
-    double pos[] = {width, height, 0};
+    double pos[] = {static_cast<double>(width),
+                    static_cast<double>(height),
+                    0.};
     annot.SetPosition2(pos);
 
     annot.SetIntAttribute1(useOpacityColor ? 1 : 0);

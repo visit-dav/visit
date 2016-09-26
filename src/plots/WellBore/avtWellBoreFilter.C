@@ -621,9 +621,9 @@ avtWellBoreFilter::AddWellSegment(vtkPoints *points, vtkFloatArray *normals,
     }
     else
     {
-        float vc[3] = {coord2[0] - coord1[0],
-                       coord2[1] - coord1[1],
-                       coord2[2] - coord1[2]};
+        float vc[3] = {static_cast<float>(coord2[0] - coord1[0]),
+                       static_cast<float>(coord2[1] - coord1[1]),
+                       static_cast<float>(coord2[2] - coord1[2])};
         float va[3];
         float vb[3];
 

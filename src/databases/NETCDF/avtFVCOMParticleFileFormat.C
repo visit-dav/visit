@@ -558,7 +558,7 @@ avtFVCOMParticleFileFormat::GetMesh(int timestate, const char *mesh)
         // Need to specify time step to read SSH: timestate
         debug4 << "timestate=" << timestate << endl;
 
-        size_t starts[]={timestate,0};
+        size_t starts[]={static_cast<size_t>(timestate),0};
         size_t counts[]={1, nlag};
         ptrdiff_t stride[]={1,1};
         int x_id, y_id,z_id;
@@ -666,7 +666,7 @@ avtFVCOMParticleFileFormat::GetVar(int timestate, const char *varname)
     status = nc_inq_dimlen(ncid, nlag_id, &nlag);
     if (status != NC_NOERR) fileObject-> HandleError(status);
 
-    size_t starts[]={timestate,0};
+    size_t starts[]={static_cast<size_t>(timestate),0};
     size_t counts[]={1, nlag};
     ptrdiff_t stride[]={1,1};
     int s1_id;

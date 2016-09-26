@@ -426,10 +426,13 @@ int vtkOpenGLRectilinearGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
                                           GetArray("RectilinearGridTransform");
        double *matrix = xform->GetPointer(0);
        // OpenGL wants the transpose of our VTK matrix.
-       float glmatrix[16] = {matrix[ 0], matrix[ 4], matrix[ 8], matrix[12],
-                             matrix[ 1], matrix[ 5], matrix[ 9], matrix[13],
-                             matrix[ 2], matrix[ 6], matrix[10], matrix[14],
-                             matrix[ 3], matrix[ 7], matrix[11], matrix[15]};
+       const int indices[] = {0,4,8,12,
+                              1,5,9,13,
+                              2,6,10,14,
+                              3,7,11,15};
+       float glmatrix[16];
+       for(int i = 0; i < 16; ++i)
+           glmatrix[i] = static_cast<float>(matrix[indices[i]]);
        glPushMatrix();
        glMultMatrixf(glmatrix);
    }

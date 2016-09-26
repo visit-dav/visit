@@ -1509,7 +1509,9 @@ avtOpenGLMoleculeRenderer::DrawCylinderBetweenTwoPoints(double *p0,
 {
     CalculateCylPts();
 
-    float vc[3] = {p1[0]-p0[0], p1[1]-p0[1], p1[2]-p0[2]};
+    float vc[3] = {static_cast<float>(p1[0]-p0[0]),
+                   static_cast<float>(p1[1]-p0[1]),
+                   static_cast<float>(p1[2]-p0[2])};
     float va[3];
     float vb[3];
 
@@ -1580,7 +1582,9 @@ avtOpenGLMoleculeRenderer::DrawCylinderCap(double *p0,
 
     CalculateCylPts();
 
-    float vc[3] = {p1[0]-p0[0], p1[1]-p0[1], p1[2]-p0[2]};
+    float vc[3] = {static_cast<float>(p1[0]-p0[0]),
+                   static_cast<float>(p1[1]-p0[1]),
+                   static_cast<float>(p1[2]-p0[2])};
     float va[3];
     float vb[3];
 

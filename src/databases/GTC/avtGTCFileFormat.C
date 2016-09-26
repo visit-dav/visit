@@ -345,11 +345,11 @@ avtGTCFileFormat::ReadVariable( int domain, int varIdx, int varDim, float **ptrV
     hid_t dataspace = H5Dget_space(particleHandle);
 
     //Select the Var.
-    hsize_t start[2] = { startOffset, varIdx };
-    hsize_t count[2] = { nPoints, varDim };
+    hsize_t start[2] = { static_cast<hsize_t>(startOffset), static_cast<hsize_t>(varIdx) };
+    hsize_t count[2] = { static_cast<hsize_t>(nPoints), static_cast<hsize_t>(varDim) };
     H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL, count, NULL);
 
-    hsize_t dataDim[1] = {nPoints*varDim};
+    hsize_t dataDim[1] = {static_cast<hsize_t>(nPoints*varDim)};
     hid_t memspace = H5Screate_simple(1, dataDim, NULL);
     H5Sselect_all(memspace);
 

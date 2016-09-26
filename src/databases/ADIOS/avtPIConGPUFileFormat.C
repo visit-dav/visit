@@ -643,13 +643,15 @@ avtPIConGPUFileFormat::GetAuxiliaryData(const char *var, int domain,
             avtIntervalTree *itree = new avtIntervalTree(numBlocks, 3);
             for (int i = 0; i < numBlocks; i++)
             {
-                int x0 = avi->blockinfo[i].start[2];
-                int y0 = avi->blockinfo[i].start[1];
-                int z0 = avi->blockinfo[i].start[0];
-                int cx = avi->blockinfo[i].count[2];
-                int cy = avi->blockinfo[i].count[1];
-                int cz = avi->blockinfo[i].count[0];
-                int nx = cx+1, ny = cy+1, nz = cz+1;
+                double x0 = static_cast<double>(avi->blockinfo[i].start[2]);
+                double y0 = static_cast<double>(avi->blockinfo[i].start[1]);
+                double z0 = static_cast<double>(avi->blockinfo[i].start[0]);
+                double cx = static_cast<double>(avi->blockinfo[i].count[2]);
+                double cy = static_cast<double>(avi->blockinfo[i].count[1]);
+                double cz = static_cast<double>(avi->blockinfo[i].count[0]);
+                double nx = static_cast<double>(cx+1);
+                double ny = static_cast<double>(cy+1);
+                double nz = static_cast<double>(cz+1);
                 
                 double b[6] = {x0, x0+nx, y0, y0+ny, z0, z0+nz};
                 itree->AddElement(i, b);

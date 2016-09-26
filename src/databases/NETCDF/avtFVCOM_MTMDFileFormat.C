@@ -302,7 +302,7 @@ avtFVCOM_MTMDFileFormat::Init()
     for(dom=0; dom<(int)ndoms; ++dom)
     {
 
-        size_t start[]={dom,0};
+        size_t start[]={static_cast<size_t>(dom),0};
         size_t count[]={1, nfnames};
         ptrdiff_t stride[]={1,1};
 
