@@ -993,6 +993,8 @@ avtCosmosPPFileFormat::GetVar(int ts, int dom, const char *name)
     {
         EXCEPTION2(BadIndexException, itype, maxitype);
     }
+
+    return NULL;
 }
 
 

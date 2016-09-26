@@ -452,7 +452,9 @@ QvisImageAnnotationInterface::positionStartChanged(double x, double y)
 void
 QvisImageAnnotationInterface::widthChanged(int w)
 {
-    double pos[] = {w, annot->GetPosition2()[1], 0};
+    double pos[] = {static_cast<double>(w),
+                    annot->GetPosition2()[1],
+                    0.};
     annot->SetPosition2(pos);
     SetUpdate(false);
     Apply();
@@ -483,7 +485,7 @@ QvisImageAnnotationInterface::widthChanged(int w)
 void
 QvisImageAnnotationInterface::heightChanged(int h)
 {
-    double pos[] = {annot->GetPosition2()[0], h, 0};
+    double pos[] = {annot->GetPosition2()[0], static_cast<double>(h), 0.};
     annot->SetPosition2(pos);
     SetUpdate(false);
     Apply();

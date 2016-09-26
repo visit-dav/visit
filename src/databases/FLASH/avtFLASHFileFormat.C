@@ -3553,8 +3553,9 @@ avtFLASHFileFormat::ReadParticleVar(hid_t pointId, const char *vname,
     if (fileFormatVersion < FLASH3_FFV8)
         return;
 
+    hsize_t np = static_cast<hsize_t>(numParticles);
     hsize_t dataspace = H5Dget_space(pointId);
-    hsize_t memdims[1] = {numParticles};
+    hsize_t memdims[1] = {np};
     hsize_t memspace = H5Screate_simple(1, memdims, NULL);
     int index = particleOriginalIndexMap[vname];
 
@@ -3565,7 +3566,7 @@ avtFLASHFileFormat::ReadParticleVar(hid_t pointId, const char *vname,
 #endif
     offset[0] = 0;
     offset[1] = index;
-    hsize_t count[2] = {numParticles, 1}; 
+    hsize_t count[2] = {np, 1}; 
 
     H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL, 
                                     count, NULL);

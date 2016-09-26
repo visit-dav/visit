@@ -698,9 +698,9 @@ avtConeFilter::SetUpProjection(avtConeFilterVTKObjects &obj)
         }
     }
 
-    float origin[4] = {Corigin[0], Corigin[1], Corigin[2],1};
-    float normal[3] = {nx,ny,nz};
-    float upaxis[3] = {ux,uy,uz};
+    double origin[4] = {Corigin[0], Corigin[1], Corigin[2],1};
+    double normal[3] = {nx,ny,nz};
+    double upaxis[3] = {ux,uy,uz};
 
     vtkMath::Normalize(normal);
     vtkMath::Normalize(upaxis);
@@ -709,7 +709,7 @@ avtConeFilter::SetUpProjection(avtConeFilterVTKObjects &obj)
     // The normal and up vectors for two thirds of a basis, take their
     // cross product to find the third element of the basis.
     //
-    float  third[3];
+    double  third[3];
     vtkMath::Cross(upaxis, normal, third);
     vtkMath::Normalize(third);
 
@@ -765,7 +765,7 @@ avtConeFilter::SetUpProjection(avtConeFilterVTKObjects &obj)
     obj.transform->SetTransform(mtlt);
     mtlt->Delete();
 
-    float zdim[4];
+    double zdim[4];
     ftcf->MultiplyPoint(origin, zdim);
     zdim[0] = 0;
     zdim[1] = 0;
