@@ -162,7 +162,7 @@ avtCellLocatorRectEdge::FindCell(const double pos[3],
 
     if( weights )
     {
-        const float k[3] = { 1.0f-l[0], 1.0f-l[1], 1.0f-l[2] };
+        double k[3] = { 1.0-l[0], 1.0-l[1], 1.0-l[2] };
 
         vtkIdType base = (i[2]*coord[1].size() + i[1])*coord[0].size() + i[0];
 

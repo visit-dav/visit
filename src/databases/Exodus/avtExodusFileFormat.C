@@ -955,7 +955,7 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, avtVarTyp
                     num_elem += (int) dlen;
                     if (pass == 1)
                     {
-                        size_t starts[2] = {ts, 0};
+                        size_t starts[2] = {static_cast<size_t>(ts), 0};
                         size_t counts[2] = {1, dlen};
                         ncerr = nc_get_vara(exncfid, elem_varid, starts, counts, p);
                         CheckNCError2(ncerr, nc_get_vara, __LINE__, __FILE__)      

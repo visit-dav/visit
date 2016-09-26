@@ -1456,14 +1456,18 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
         //
         if(nVarDims == 2)
         {
-            int yxzNodes[] = {hyperslabDims[2], hyperslabDims[1], hyperslabDims[0]};
+            int yxzNodes[] = {static_cast<int>(hyperslabDims[2]),
+                              static_cast<int>(hyperslabDims[1]),
+                              static_cast<int>(hyperslabDims[0])};
             sgrid->SetDimensions((int *)yxzNodes);
         }
         else
         {
             // In 3D, Pixie dimensions are stored ZYX. Reverse them so we
             // give the right order to VTK.
-            int xyzNodes[] = {hyperslabDims[2], hyperslabDims[1], hyperslabDims[0]};
+            int xyzNodes[] = {static_cast<int>(hyperslabDims[2]),
+                              static_cast<int>(hyperslabDims[1]),
+                              static_cast<int>(hyperslabDims[0])};
             sgrid->SetDimensions(xyzNodes);
         }
         int nMeshNodes = hyperslabDims[0] * hyperslabDims[1] * hyperslabDims[2];

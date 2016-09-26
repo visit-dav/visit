@@ -68,8 +68,8 @@ void dbg_maskstderr(int mask,char *fmt, ...);
 #define DBGVERBOSE  dbg_isverbose
 
 
-#define varprint(debug, format, __var) if (debug) {printf(#__var" is '"format"'\n", __var); fflush(stdout);}
-#define badvalue(format, __var, astring, errval) if (1) {printf("Bad value of "#__var" while reading file "astring": '"#format"'\n", __var);  fflush(stdout); return errval;}
+#define varprint(debug, format, __var) if (debug) {printf(#__var" is '" format "'\n", __var); fflush(stdout);}
+#define badvalue(format, __var, astring, errval) if (1) {printf("Bad value of " #__var " while reading file " astring ": '" #format "'\n", __var);  fflush(stdout); return errval;}
 #define vectprint(debug, array, length) if (debug) {\
       int __i=0; \
       printf("printing array "#array":\n");  \

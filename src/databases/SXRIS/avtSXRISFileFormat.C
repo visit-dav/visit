@@ -407,12 +407,15 @@ avtSXRISFileFormat::GetVar(int timestate, const char *varname)
     hid_t dataId = H5Dopen(fileId, "/frames", H5P_DEFAULT);
     hid_t spaceId = H5Dget_space(dataId);
 
-    hsize_t memDim[2] = {dimensions[0], dimensions[1]};
+    hsize_t memDim[2] = {static_cast<hsize_t>(dimensions[0]),
+                         static_cast<hsize_t>(dimensions[1])};
     hid_t memspaceId = H5Screate_simple(2, memDim, NULL);
 
 
-    hsize_t offset[3] = {0,0,timestate};
-    hsize_t count[3] = {dimensions[0], dimensions[1], 1};
+    hsize_t offset[3] = {0,0,static_cast<hsize_t>(timestate)};
+    hsize_t count[3] = {static_cast<hsize_t>(dimensions[0]),
+                        static_cast<hsize_t>(dimensions[1]),
+                        1};
     H5Sselect_hyperslab(spaceId, H5S_SELECT_SET, offset, NULL, count, NULL);
     
     herr_t status = H5Dread(dataId, H5T_NATIVE_DOUBLE, memspaceId, spaceId, H5P_DEFAULT, arr->GetVoidPointer(0)); (void) status;
