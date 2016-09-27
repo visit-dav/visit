@@ -10,6 +10,7 @@
                     {"category":"meshtype","file":"emptydomains.py","cases":["meshtype_emptydomains_05","meshtype_emptydomains_06"]},
                     {"category":"databases","file":"zipwrapper.py"},
                     {"category":"databases","file":"claw.py","platform":"win"},
+                    {"category":"databases","file":"moab.py","platform":"win"},
                     {"category":"databases","file":"mfem.py","platform":"win"},
                     {"category":"databases","file":"oldsilo.py","platform":"win"},
                     {"category":"databases","file":"rect.py","platform":"win"},
