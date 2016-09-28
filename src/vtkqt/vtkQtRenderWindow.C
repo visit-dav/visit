@@ -1,12 +1,19 @@
 #include "vtkOpenGL.h"
-#include "QVTKWidget2.h"
+
 #include <vtkQtRenderWindow.h>
 
-#if defined(Q_WS_X11) || defined(Q_OS_LINUX)
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-#include <QX11Info>
+  #include "QVTKWidget2.h"
+#else
+  #include "QVTKWidget.h"
 #endif
+
+#if defined(Q_WS_X11) || defined(Q_OS_LINUX)
+  #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+    #include <QX11Info>
+  #endif
 #endif
+
 #include "vtkGenericOpenGLRenderWindow.h"
 #include "QVTKInteractor.h"
 #include <vtkRenderWindow.h>
@@ -56,19 +63,13 @@ public:
         showEventCallback = NULL;
         showEventCallbackData = NULL;
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
         QGLFormat glFormat;
 
-        glFormat.setStereo(stereo);
-        glFormat.setDepth(true);
+        glFormat.setDepth(true);     // Enabled by default.
+        glFormat.setAlpha(true);     // Disabled by default.
+        glFormat.setStereo(stereo);  // Disabled by default.
 
-        // WIth Qt5 there seesm to be an issue with asking for an
-        // alpha channel (at least for OS X). However, not asking for
-        // the channel seems to be benign.
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-        glFormat.setAlpha(true);
-#else
-        glFormat.setAlpha(false);
-#endif
         // Create the VTK widget and force our custom render window
         // into it.
 
@@ -77,9 +78,17 @@ public:
         // the appropriate time.
         gl = new QVTKWidget2(glFormat, w);
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
         if (!gl->format().alpha())
             qWarning("Could not get alpha channel; results will be suboptimal");
+#else
+        // With Qt5 there an issue with QVTKWidget2 asking for an
+        // alpha channel (at least for OS X). However, not asking for
+        // the channel seems to be benign. In addition, the 2D view
+        // bounds and picking are off.
+        gl = new QVTKWidget(w);
+
+        gl->GetRenderWindow()->AlphaBitPlanesOn();
+        gl->GetRenderWindow()->SetStereoRender( stereo );
 #endif
     }
 
@@ -87,8 +96,12 @@ public:
     {
     }
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     QVTKWidget2    *gl;
-
+#else
+    QVTKWidget     *gl;
+#endif
+    
     void          (*resizeEventCallback)(void *);
     void           *resizeEventData;
     void          (*closeEventCallback)(void *);
