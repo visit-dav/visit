@@ -856,6 +856,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Eric Brugger, Thu Jun  4 16:11:47 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
 //
+//    Kevin Griffin, Tue Sep 27 16:52:14 PDT 2016
+//    Ensured that all ranks throw an Exception if any rank throws one
+//    for incorrectly centered data and/or missing variables.
+//
 // ****************************************************************************
 
 void
@@ -1145,11 +1149,18 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 //  Creation:   Septemeber 19, 2016
 //
 //  Modifications:
+//    Kevin Griffin, Tue Sep 27 16:52:14 PDT 2016
+//    Ensured that all nodes throw an exception when at least one node does.
 //
 // ****************************************************************************
 void
 avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
 {
+    int foundError = 0;     // 0=false, 1=true
+    bool isArgException = false;
+    bool isAbs = false;
+    char msg[256];
+    
     for (int i = 0; i < nsets; i++)
     {
         vtkDataArray *abs  = dataSets[i]->GetCellData()->GetArray(absVarName.c_str());
@@ -1157,23 +1168,26 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
         
         if (abs == NULL)
         {
-            char msg[256];
             if (dataSets[i]->GetPointData()->GetArray(absVarName.c_str()) != NULL)
             {
                 SNPRINTF(msg,256, "Variable %s is node-centered, but "
                          "it must be zone-centered for this query.",
                          absVarName.c_str());
                 
-                EXCEPTION1(ImproperUseException, msg);
+                foundError = 1;
+                isAbs = true;
+                break;
             }
             else
             {
-                EXCEPTION1(QueryArgumentException, absVarName.c_str());
+                foundError = 1;
+                isArgException = true;
+                isAbs = true;
+                break;
             }
         }
         if (emis == NULL)
         {
-            char msg[256];
             if (dataSets[i]->GetPointData()->GetArray(emisVarName.c_str())
                 != NULL)
             {
@@ -1181,14 +1195,46 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
                          "it must be zone-centered for this query.",
                          emisVarName.c_str());
                 
-                EXCEPTION1(ImproperUseException, msg);
+                foundError = 1;
+                break;
             }
             else
             {
-                EXCEPTION1(QueryArgumentException, emisVarName.c_str());
+                foundError = 1;
+                isArgException = true;
+                break;
             }
             
         }
+    }
+    
+    // Check if an exception has been raised on any rank
+    int maxError = UnifyMaximumValue(foundError);
+    if(maxError > 0)
+    {
+        if(foundError == 1)
+        {
+            if(isArgException)
+            {
+                EXCEPTION1(QueryArgumentException, isAbs ? absVarName.c_str() : emisVarName.c_str());
+            }
+            else
+            {
+                EXCEPTION1(ImproperUseException, msg);
+            }
+        }
+        else
+        {
+            EXCEPTION1(VisItException, "Exception encountered on another node");
+        }
+    }
+    
+    // Check if no data is available on all ranks
+    int maxNsets = UnifyMaximumValue(nsets);
+    if(maxNsets <= 0)
+    {
+        SNPRINTF(msg, 256, "Variables %s and %s resulted in no data being selected.", absVarName.c_str(), emisVarName.c_str());
+        EXCEPTION1(VisItException, msg);
     }
 }
 
