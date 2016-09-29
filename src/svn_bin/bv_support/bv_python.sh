@@ -141,6 +141,17 @@ function bv_python_info
     export SEEDME_FILE=${SEEDME_FILE:-"seedme-python-client-v1.1.0.zip"}
     export SEEDME_BUILD_DIR=${SEEDME_BUILD_DIR:-"seedme-python-client-v1.1.0"}
 
+    export SETUPTOOLS_URL=${SETUPTOOLS_URL:-"https://pypi.python.org/packages/f7/94/eee867605a99ac113c4108534ad7c292ed48bf1d06dfe7b63daa51e49987/"}
+    export SETUPTOOLS_FILE=${SETUPTOOLS_FILE:-"setuptools-28.0.0.tar.gz"}
+    export SETUPTOOLS_BUILD_DIR=${SETUPTOOLS_BUILD_DIR:-"setuptools-28.0.0"}
+
+    export CYTHON_URL=${CYTHON_URL:-"https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/"}
+    export CYTHON_FILE=${CYTHON_FILE:-"Cython-0.24.1.tar.gz"}
+    export CYTHON_BUILD_DIR=${CYTHON_BUILD_DIR:-"Cython-0.24.1"}
+
+    export NUMPY_URL=${NUMPY_URL:-"https://pypi.python.org/packages/f8/20/76beca42e1b4ff4d2f834ab536ed5c654ffe444bec01b1392a9519c61add/"}
+    export NUMPY_FILE=${NUMPY_FILE:-"numpy-1.11.2rc1.tar.gz"}
+    export NUMPY_BUILD_DIR=${NUMPY_BUILD_DIR:-"numpy-1.11.2rc1"}
 }
 
 function bv_python_print
@@ -643,6 +654,87 @@ function build_seedme
     return 0
 }
 
+# *************************************************************************** #
+#                                  build_numpy                                #
+# *************************************************************************** #
+function build_numpy
+{
+    # download
+    if ! test -f ${SETUPTOOLS_FILE} ; then
+        download_file ${SETUPTOOLS_FILE}
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SETUPTOOLS_FILE}"
+            return 1
+        fi
+    fi
+    if ! test -f ${CYTHON_FILE} ; then
+        download_file ${CYTHON_FILE}
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${CYTHON_FILE}"
+            return 1
+        fi
+    fi
+    if ! test -f ${NUMPY_FILE} ; then
+        download_file ${NUMPY_FILE}
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${NUMPY_FILE}"
+            return 1
+        fi
+    fi
+
+    # extract
+    if ! test -d ${SETUPTOOLS_BUILD_DIR} ; then
+        info "Extracting setuptools ..."
+        uncompress_untar ${SETUPTOOLS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SETUPTOOLS_FILE}"
+            return 1
+        fi
+    fi
+    if ! test -d ${CYTHON_BUILD_DIR} ; then
+        info "Extracting cython ..."
+        uncompress_untar ${CYTHON_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${CYTHON_FILE}"
+            return 1
+        fi
+    fi
+    if ! test -d ${NUMPY_BUILD_DIR} ; then
+        info "Extracting numpy ..."
+        uncompress_untar ${NUMPY_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${NUMPY_FILE}"
+            return 1
+        fi
+    fi
+
+    # install
+    PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
+    pushd $SETUPTOOLS_BUILD_DIR > /dev/null
+    info "Installing setuptools (~1 min) ..."
+    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    popd > /dev/null
+
+    pushd $CYTHON_BUILD_DIR > /dev/null
+    info "Installing cython (~ 2 min) ..."
+    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    popd > /dev/null
+
+    pushd $NUMPY_BUILD_DIR > /dev/null
+    info "Installing numpy (~ 2 min) ..."
+    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    popd > /dev/null
+
+    # fix the perms
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/python"
+        chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    info "Done with numpy."
+    return 0
+}
+
 function bv_python_is_enabled
 {
     if [[ $DO_PYTHON == "yes" ]]; then
@@ -688,6 +780,14 @@ function bv_python_build
             fi
             info "Done building the Python Imaging Library"
 
+            info "Building the numpy module"
+            build_numpy
+            if [[ $? != 0 ]] ; then
+                warn "numpy build failed."
+            fi
+            info "Done building the numpy module."
+
+            info "Building the pyparsing module"
             build_pyparsing
             if [[ $? != 0 ]] ; then
                 warn "pyparsing build failed."
