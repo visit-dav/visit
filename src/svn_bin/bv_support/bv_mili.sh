@@ -41,7 +41,6 @@ function bv_mili_print
 
 function bv_mili_print_usage
 {
-    printf "\t\t%15s\n" "NOTE: Mili not available for download from web"
     printf "%-15s %s [%s]\n" "--mili" "Build Mili" "$DO_MILI"
 }
 
