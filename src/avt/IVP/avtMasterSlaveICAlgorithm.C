@@ -669,8 +669,8 @@ avtMasterICAlgorithm::ReportCounters(ostream &os, bool totals)
     
     if (!totals)
     {
-        float tot = case1Cnt+case2Cnt+case3ACnt+case3BCnt+case3CCnt+
-                    case4ACnt+case4BCnt+case5ACnt+case5BCnt+case6Cnt;
+        double tot = case1Cnt+case2Cnt+case3ACnt+case3BCnt+case3CCnt+
+                     case4ACnt+case4BCnt+case5ACnt+case5BCnt+case6Cnt;
         
         int case1 = case1Cnt;
         int case2 = case2Cnt;
@@ -681,20 +681,20 @@ avtMasterICAlgorithm::ReportCounters(ostream &os, bool totals)
         
         os<<"Cases:";
         os<<" C1: "<<case1;
-        os<<"("<<setprecision(3)<<(float)case1/tot*100.0<<"%)";
+        os<<"("<<setprecision(3)<<(double)case1/tot*100.0<<"%)";
         os<<" C2: "<<case2;
-        os<<"("<<setprecision(3)<<(float)case2/tot*100.0<<"%)";
+        os<<"("<<setprecision(3)<<(double)case2/tot*100.0<<"%)";
         os<<" C3: "<<case3;
         os<<"["<<case3ACnt<<" "<<case3BCnt<<" "<<case3CCnt<<"] ";
-        os<<"("<<setprecision(3)<<(float)case3/tot*100.0<<"%)";
+        os<<"("<<setprecision(3)<<(double)case3/tot*100.0<<"%)";
         os<<" C4: "<<case4;
         os<<"["<<case4ACnt<<" "<<case4BCnt<<"] ";
-        os<<"("<<setprecision(3)<<(float)case4/tot*100.0<<"%)";
+        os<<"("<<setprecision(3)<<(double)case4/tot*100.0<<"%)";
         os<<" C5: "<<case5;
         os<<"["<<case5ACnt<<" "<<case5BCnt<<"] ";
-        os<<"("<<setprecision(3)<<(float)case5/tot*100.0<<"%)";
+        os<<"("<<setprecision(3)<<(double)case5/tot*100.0<<"%)";
         os<<" C6: "<<case6;
-        os<<"("<<setprecision(3)<<(float)case6/tot*100.0<<"%)";
+        os<<"("<<setprecision(3)<<(double)case6/tot*100.0<<"%)";
         os<<endl;
     }
 }

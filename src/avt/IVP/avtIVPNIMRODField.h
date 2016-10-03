@@ -77,8 +77,8 @@ class IVP_API avtIVPNIMRODField: public avtIVPVTKField
   avtIVPNIMRODField( unsigned int nRad,
                      unsigned int nTheta,
                      unsigned int nPhi,
-                     float *grid_fourier_series,
-                     float *data_fourier_series );
+                     double *grid_fourier_series,
+                     double *data_fourier_series );
 
   ~avtIVPNIMRODField();
 
@@ -105,8 +105,8 @@ class IVP_API avtIVPNIMRODField: public avtIVPVTKField
 
  public: 
   // Variables read as part of the mesh.
-  float *grid_fourier_series;
-  float *data_fourier_series;
+  double *grid_fourier_series;
+  double *data_fourier_series;
 
   unsigned int Nrad, Ntheta, Nphi;
 

@@ -82,15 +82,14 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   
  public:
   avtIVPM3DC1Field( vtkDataSet* ds, avtCellLocator* loc, double fact ); 
-  avtIVPM3DC1Field( float *elementsPtr, int nelements, int dim, int planes );
+  avtIVPM3DC1Field( double *elementsPtr, int nelements, int dim, int planes );
 
   ~avtIVPM3DC1Field();
 
   virtual Result IsInside(const double& t, const avtVector &x) const;
 
   void findElementNeighbors();
-  int register_vert(std::vector< vertex > &vlist,
-                    double x, double y);
+  int register_vert(std::vector< vertex > &vlist, double x, double y);
   
   void add_edge(std::multimap< int, edge > &edgeMaplist,
                 int *vertexIndexs, int side, int element, int *neighborList);
@@ -102,30 +101,30 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   avtVector ConvertToCartesian(const avtVector& pt) const;
   avtVector ConvertToCylindrical(const avtVector& pt) const;
 
-  void interpBcomps(float *B, double *x, int element, double *xieta) const;
+  void interpBcomps(double *B, double *x, int element, double *xieta) const;
 
   void reparameterizeBcomps( const avtVector &p, avtVector &v ) const;
 
-  float interp(float *var, int el, double *lcoords) const;
+  double interp(double *var, int el, double *lcoords) const;
 
-  void interpdX(float *var, int el, double *lcoords,
+  void interpdX(double *var, int el, double *lcoords,
                double &xicoef, double &etacoef) const;
-  void interpdX2(float *var, int el, double *lcoords,
+  void interpdX2(double *var, int el, double *lcoords,
                  double &xixicoef, double &etaetacoef,
                  double &xietacoef ) const;
-  void interpdXdPhi(float *var, int el, double *lcoords,
+  void interpdXdPhi(double *var, int el, double *lcoords,
                     double &xicoef, double &etacoef) const;
 
-  float interpdR  (float *var, int el, double *lcoords) const;
-  float interpdz  (float *var, int el, double *lcoords) const;
-  float interpdPhi(float *var, int el, double *lcoords) const;
+  double interpdR  (double *var, int el, double *lcoords) const;
+  double interpdz  (double *var, int el, double *lcoords) const;
+  double interpdPhi(double *var, int el, double *lcoords) const;
 
-  float interpdR2 (float *var, int el, double *lcoords) const;
-  float interpdz2 (float *var, int el, double *lcoords) const;
+  double interpdR2 (double *var, int el, double *lcoords) const;
+  double interpdz2 (double *var, int el, double *lcoords) const;
 
-  float interpdRdz  (float *var, int el, double *lcoords) const;
-  float interpdRdPhi(float *var, int el, double *lcoords) const;
-  float interpdzdPhi(float *var, int el, double *lcoords) const;
+  double interpdRdz  (double *var, int el, double *lcoords) const;
+  double interpdRdPhi(double *var, int el, double *lcoords) const;
+  double interpdzdPhi(double *var, int el, double *lcoords) const;
 
  protected:
   template< class type >
@@ -137,7 +136,7 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
   
   // Variables calculated in findElementNeighbors (trigtable,
   // neighbors) or read as part of the mesh (elements).
-  float *elements;
+  double *elements;
   double *trigtable;   /* Geometry of each triangle */
   int    *neighbors;   /* Element neighbor table for efficient searches */
   
@@ -151,15 +150,15 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
  public:
 
   bool reparameterize;
-  float factor;
+  double factor;
 
   // 2D Variables variables on the mesh
-  float *psi0, *f0;                  /* Equilibrium B field conponents */
-  float *psinr, *psini, *fnr, *fni;  /* Complex perturbed field */
+  double *psi0, *f0;                  /* Equilibrium B field conponents */
+  double *psinr, *psini, *fnr, *fni;  /* Complex perturbed field */
   
   // 3D Variables variables on the mesh
-  float *I0;                         /* Equilibrium B field conponents */
-  float *f, *psi, *I;                /* Perturbed field */
+  double *I0;                         /* Equilibrium B field conponents */
+  double *f, *psi, *I;                /* Perturbed field */
 
   // Variables calculated in findElementNeighbors
 //double Rmin, Rmax, zmin, zmax;  /* Mesh bounds */

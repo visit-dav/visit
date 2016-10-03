@@ -54,8 +54,6 @@
 
 #include <vtkPlane.h>
 
-#include <float.h>
-
 // ****************************************************************************
 //  Method: avtPoincareIC constructor
 //

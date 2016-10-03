@@ -70,8 +70,8 @@ protected:
     void Build();
     void Free();
 
-    std::vector<float> coord[3];
-    bool               ascending[3];
+    std::vector<double> coord[3];
+    bool                ascending[3];
 };
 
 #endif

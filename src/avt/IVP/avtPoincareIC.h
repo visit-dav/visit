@@ -262,7 +262,7 @@ public:
 
   // If a surface it's overlap is found geometrically
   // If an island (primary or secondary) toroidalPeriod / toroidalResonance
-  float nnodes;
+  double nnodes;
 
   unsigned int maxPunctures;
   unsigned int numPunctures;

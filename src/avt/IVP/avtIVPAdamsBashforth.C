@@ -46,7 +46,6 @@
 
 #include <limits>
 #include <cmath>
-#include <float.h>
 
 static const double epsilon = std::numeric_limits<double>::epsilon();
 
