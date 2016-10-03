@@ -116,7 +116,7 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
   }
 
   // Dummy variable to the template class
-  float fltVar = 0;
+  double fltVar = 0;
     
   // The mesh elements.
   elements =
@@ -190,7 +190,7 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
 //
 // ****************************************************************************
 
-avtIVPM3DC1Field::avtIVPM3DC1Field( float *elementsPtr,
+avtIVPM3DC1Field::avtIVPM3DC1Field( double *elementsPtr,
                                     int nelements, int dim, int planes )
   : avtIVPVTKField( 0, 0 ),
     elements( elementsPtr ), neighbors(0),
@@ -423,7 +423,7 @@ void avtIVPM3DC1Field::findElementNeighbors()
   std::vector< vertex > vertexList;
   std::multimap< int, edge > edgeListMap;
 
-  float   *ptr;
+  double   *ptr;
   double  x[3], y[3], co, sn;
   int     el, vert, tri[3];
 
@@ -609,7 +609,7 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
 {
   static int el=0;  /* Needs to be static so the method is a const. */
 
-  float  *tri;
+  double  *tri;
   double co, sn, rrel, zrel;
   int    last=-1, next, flag0, flag1, flag2;
 
@@ -706,7 +706,7 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
     // Same ordering of elements in each plane,
     // Matching element alignment at each plane.
 
-    float phi = xin[1];
+    double phi = xin[1];
 
     while( phi < 0 )
       phi += 2.0*M_PI;
@@ -807,7 +807,7 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p, avtVector &ve
   }
   else 
   {
-    float B[3];
+    double B[3];
 
     interpBcomps(B, pt, element, xieta);
 
@@ -923,12 +923,12 @@ avtIVPM3DC1Field::ConvertToCylindrical(const avtVector& pt) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DC1Field::interpBcomps(float *B, double *x,
+void avtIVPM3DC1Field::interpBcomps(double *B, double *x,
                                     int element, double *xieta) const
 {
-  float *B_r   = &(B[0]);
-  float *B_z   = &(B[2]);
-  float *B_phi = &(B[1]);
+  double *B_r   = &(B[0]);
+  double *B_z   = &(B[2]);
+  double *B_phi = &(B[1]);
 
   if( element_dimension == 2 )
   {
@@ -1042,9 +1042,9 @@ void avtIVPM3DC1Field::interpBcomps(float *B, double *x,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interp(float *var, int el, double *lcoords) const
+double avtIVPM3DC1Field::interp(double *var, int el, double *lcoords) const
 {
-  float *a = var + scalar_size*el;
+  double *a = var + scalar_size*el;
   double xi = lcoords[0], eta = lcoords[1];
   double val = 0;
 
@@ -1089,10 +1089,10 @@ float avtIVPM3DC1Field::interp(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DC1Field::interpdX(float *var, int el, double *lcoords,
+void avtIVPM3DC1Field::interpdX(double *var, int el, double *lcoords,
                                 double &xicoef, double &etacoef) const
 {
-  float *a = var + scalar_size*el;
+  double *a = var + scalar_size*el;
   double xi = lcoords[0], eta = lcoords[1];
 
   if( element_dimension == 2 )
@@ -1144,7 +1144,7 @@ void avtIVPM3DC1Field::interpdX(float *var, int el, double *lcoords,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdR(float *var, int el, double *lcoords) const
+double avtIVPM3DC1Field::interpdR(double *var, int el, double *lcoords) const
 {
   double xicoef, etacoef;
   int index;
@@ -1166,7 +1166,7 @@ float avtIVPM3DC1Field::interpdR(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdz(float *var, int el, double *lcoords) const
+double avtIVPM3DC1Field::interpdz(double *var, int el, double *lcoords) const
 {
   double xicoef, etacoef;
   int index;
@@ -1189,9 +1189,9 @@ float avtIVPM3DC1Field::interpdz(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdPhi(float *var, int el, double *lcoords) const
+double avtIVPM3DC1Field::interpdPhi(double *var, int el, double *lcoords) const
 {
-  float *a = var + scalar_size*el;
+  double *a = var + scalar_size*el;
   double xi = lcoords[0], eta = lcoords[1];
   double val;
 
@@ -1237,11 +1237,11 @@ float avtIVPM3DC1Field::interpdPhi(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DC1Field::interpdX2(float *var, int el, double *lcoords,
+void avtIVPM3DC1Field::interpdX2(double *var, int el, double *lcoords,
                                  double &xixicoef, double &etaetacoef,
                                  double &xietacoef ) const
 {
-  float *a = var + scalar_size*el;
+  double *a = var + scalar_size*el;
   double xi = lcoords[0], eta = lcoords[1];
 
   if( element_dimension == 2 )
@@ -1301,7 +1301,7 @@ void avtIVPM3DC1Field::interpdX2(float *var, int el, double *lcoords,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdR2(float *var, int el, double *lcoords) const
+double avtIVPM3DC1Field::interpdR2(double *var, int el, double *lcoords) const
 {
   double xixicoef, etaetacoef, xietacoef;
   int index;
@@ -1326,7 +1326,7 @@ float avtIVPM3DC1Field::interpdR2(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdz2(float *var, int el, double *lcoords) const
+double avtIVPM3DC1Field::interpdz2(double *var, int el, double *lcoords) const
 {
   double xixicoef, etaetacoef, xietacoef;
   int index;
@@ -1351,9 +1351,9 @@ float avtIVPM3DC1Field::interpdz2(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdRdz(float *var, int el, double *lcoords) const
+double avtIVPM3DC1Field::interpdRdz(double *var, int el, double *lcoords) const
 {
-  float *a = var + scalar_size*el;
+  double *a = var + scalar_size*el;
   double xi = lcoords[0], eta = lcoords[1];
   double xixicoef, etaetacoef, xietacoef;
   int index;
@@ -1422,10 +1422,10 @@ float avtIVPM3DC1Field::interpdRdz(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void avtIVPM3DC1Field::interpdXdPhi(float *var, int el, double *lcoords,
+void avtIVPM3DC1Field::interpdXdPhi(double *var, int el, double *lcoords,
                                     double &xicoef, double &etacoef) const
 {
-  float *a = var + scalar_size*el;
+  double *a = var + scalar_size*el;
   double xi = lcoords[0], eta = lcoords[1];
 
   if( element_dimension == 2 )
@@ -1473,7 +1473,7 @@ void avtIVPM3DC1Field::interpdXdPhi(float *var, int el, double *lcoords,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdRdPhi(float *var, int el, double *lcoords) const
+double avtIVPM3DC1Field::interpdRdPhi(double *var, int el, double *lcoords) const
 {
   double xicoef, etacoef;
   int index;
@@ -1496,7 +1496,7 @@ float avtIVPM3DC1Field::interpdRdPhi(float *var, int el, double *lcoords) const
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-float avtIVPM3DC1Field::interpdzdPhi(float *var, int el, double *lcoords) const
+double avtIVPM3DC1Field::interpdzdPhi(double *var, int el, double *lcoords) const
 {
   double xicoef, etacoef;
   int index;

@@ -406,7 +406,7 @@ avtIVPNIMRODIntegrator::getBfield(const avtIVPField* field, avtVector y)
   }
   else 
   {
-    float B[3];
+    double B[3];
 
     m3dField->interpBcomps(B, pt, element, xieta);
     

@@ -82,7 +82,7 @@ class IVP_API avtIVPFlashField: public avtIVPVTKField
   avtVector ConvertToCartesian(const avtVector& pt) const;
   avtVector ConvertToCylindrical(const avtVector& pt) const;
 
-  float factor;
+  double factor;
 
   // 3D Variables variables on the mesh
   vtkDataArray *B_vtkDataArray;    // Magnetic field conponents

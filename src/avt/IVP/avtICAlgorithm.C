@@ -597,13 +597,13 @@ avtICAlgorithm::ComputeStatistic(ICStatistics &stats)
 
     int rank = PAR_Rank();
     int nProcs = PAR_Size();
-    float *input = new float[nProcs], *output = new float[nProcs];
+    double *input = new double[nProcs], *output = new double[nProcs];
 
     for (int i = 0; i < nProcs; i++)
         input[i] = 0.0;
     input[rank] = stats.value;
     
-    SumFloatArrayAcrossAllProcessors(input, output, nProcs);
+    SumDoubleArrayAcrossAllProcessors(input, output, nProcs);
     
     // A value of -1 means that there is no data to be calculated.
     // We need to remove these from the min/max/mean computation.
@@ -618,7 +618,7 @@ avtICAlgorithm::ComputeStatistic(ICStatistics &stats)
         }
     }
     if (nVals != 0)
-        stats.mean = stats.total / (float)nVals;
+        stats.mean = stats.total / (double)nVals;
     else
         stats.mean = stats.value;
 
@@ -633,7 +633,7 @@ avtICAlgorithm::ComputeStatistic(ICStatistics &stats)
     }
     if (nVals != 0)
     {
-        sum /= (float)nVals;
+        sum /= (double)nVals;
         if (sum > 0)
             stats.sigma = sqrt(sum);
         else
@@ -718,7 +718,7 @@ avtICAlgorithm::ComputeDomainLoadStatistic()
     }
 
     if (totDomainsLoaded > 0)
-        avgDomainLoaded = (float)totDomainsLoaded / (float)domainsUsed;
+        avgDomainLoaded = (double)totDomainsLoaded / (double)domainsUsed;
 
     if (DebugStream::Level1())
     {
@@ -767,7 +767,7 @@ avtICAlgorithm::ComputeDomainLoadStatistic()
     }
         
     if (globalTotDomainsLoaded > 0)
-        globalAvgDomainLoaded = (float)globalTotDomainsLoaded / (float)globalDomainsUsed;
+        globalAvgDomainLoaded = (double)globalTotDomainsLoaded / (double)globalDomainsUsed;
     delete [] sums;
 #else
     globalDomainsUsed = domainsUsed;
@@ -989,14 +989,14 @@ avtICAlgorithm::PrintTiming(std::ostream &os,
 
         if (s.mean != 0.0)
         {
-            float v = s.sigma / s.mean;
+            double v = s.sigma / s.mean;
             os<<" [s/m"<<v<<"]";
         }
         os<<endl;
     }
     else
     {
-        float v = s.value;
+        double v = s.value;
         if (s.value < 0.0)
             v = 0.0;
         
@@ -1042,7 +1042,7 @@ avtICAlgorithm::PrintCounter(std::ostream &os,
 
         if (s.mean != 0.0)
         {
-            float v = s.sigma / s.mean;
+            double v = s.sigma / s.mean;
             os<<" ["<<v<<"]";
         }
         os<<endl;
@@ -1062,14 +1062,14 @@ avtICAlgorithm::PrintCounter(std::ostream &os,
     }
     else
     {
-        float v = s.value;
+        double v = s.value;
         if (s.value < 0.0)
             v = 0.0;
-        float p = 0.0;
+        double p = 0.0;
         if (s.total > 0.0)
             p = s.value/s.total * 100.0;
 
-        float sd = 0.0;
+        double sd = 0.0;
         if (s.sigma != 0.0)
             sd = (v-s.mean) / s.sigma;
 

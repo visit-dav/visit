@@ -79,7 +79,7 @@ class IVP_API avtIVPNektarPPField: public avtIVPVTKField
 {
  public:
   avtIVPNektarPPField( vtkDataSet* ds, avtCellLocator* loc ); 
-  avtIVPNektarPPField( float *elementsPtr, int nelements, int dim, int planes );
+  //  avtIVPNektarPPField( float *elementsPtr, int nelements, int dim, int planes );
 
   ~avtIVPNektarPPField();
 

@@ -448,9 +448,10 @@ avtIntegralCurve::Advance(avtIVPField *field)
                         
                 // Determine the stepsize such that the push distance
                 // in either coordinate direction is at least 1e-6
-                // times the bounding box extent in one directions. 
+                // times the bounding box extent in one directions.
                 // That should get the point into the next domain even
-                // if the dataset geometry is given as float data.
+                // if the dataset geometry is given as single
+                // precision data.
                 double ext[6];
                 field->GetExtents(ext);
 

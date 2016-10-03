@@ -106,16 +106,16 @@ avtCellLocatorRectFace::FindCell(const double pos[3],
         else
         {
             // binary search
-            std::vector<float>::const_iterator ci;
+            std::vector<double>::const_iterator ci;
             if (ascending[d])
             {
                 ci = std::lower_bound( coord[d].begin(), coord[d].end(), 
-                                  pos[d], std::less<float>() );
+                                       pos[d], std::less<double>() );
             }
             else
             {
                 ci = std::lower_bound( coord[d].begin(), coord[d].end(), 
-                                  pos[d], std::greater<float>() );
+                                       pos[d], std::greater<double>() );
             }
             
             if( ci == coord[d].end() )

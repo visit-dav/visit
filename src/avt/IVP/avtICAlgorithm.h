@@ -171,9 +171,9 @@ protected:
             min=max=mean=sigma=total=0.0;
             histogram.resize(0);
         }
-        float min, max, mean, sigma, total;
-        std::vector<float> histogram;
-        float value;
+        double min, max, mean, sigma, total;
+        std::vector<double> histogram;
+        double value;
         std::string nm;
 
         ostream& operator<<(std::ostream &out) const;
@@ -217,7 +217,7 @@ protected:
     //Special counters.
     int                       domainsUsed, totDomainsLoaded, domainLoadedMin, domainLoadedMax;
     int                       globalDomainsUsed, globalTotDomainsLoaded, globalDomainLoadedMin, globalDomainLoadedMax;
-    float                     avgDomainLoaded, globalAvgDomainLoaded;
+    double                    avgDomainLoaded, globalAvgDomainLoaded;
 };
 
 #endif

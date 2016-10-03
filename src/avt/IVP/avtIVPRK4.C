@@ -46,7 +46,6 @@
 
 #include <limits>
 #include <cmath>
-#include <float.h>
 
 static const double epsilon = std::numeric_limits<double>::epsilon();
 
@@ -266,7 +265,7 @@ avtIVPRK4::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
     t = t + h;
     
     if( period && last )
-      t += FLT_EPSILON;
+      t += epsilon;
 
     // Reset the step size on sucessful step.
     h = h_max;
