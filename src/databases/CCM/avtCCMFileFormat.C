@@ -826,7 +826,7 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
 #else
     int t5 = visitTimer->StartTimer();
     // Override domain if we're automatically dividing the data
-    int dom = subdividingSingleMesh ? 0 : domain;
+    unsigned int dom = subdividingSingleMesh ? 0 : domain;
 
     vtkUnstructuredGrid *ugrid = NULL;
     vtkPoints *points = NULL;
@@ -1861,7 +1861,7 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
     vtkPoints *points, vtkUnstructuredGrid *ugrid)
 {
 #ifndef MDSERVER
-    int dom = subdividingSingleMesh ? 0 : domain;
+    unsigned int dom = subdividingSingleMesh ? 0 : domain;
 
     const char *mName = "avtCCMFileFormat::TesselateCell: ";
     unsigned int tetCount = 0;
@@ -2046,7 +2046,7 @@ avtCCMFileFormat::TesselateCells2D(const int domain, const CellInfoVector &civ,
     vtkPoints *points, vtkUnstructuredGrid *ugrid)
 {
 #ifndef MDSERVER
-    int dom = subdividingSingleMesh ? 0 : domain;
+    unsigned int dom = subdividingSingleMesh ? 0 : domain;
 
     unsigned int i, k;
     vtkPoints *pts = vtkPoints::New();
