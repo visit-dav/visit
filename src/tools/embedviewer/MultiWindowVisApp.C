@@ -87,9 +87,11 @@ MultiWindowVisApp::MultiWindowVisApp(VisItViewer *v) : QMainWindow()
 
     viswindows[PSEUDOCOLOR_WINDOW] = new vtkQtRenderWindow(splitter);
     viswindows[PSEUDOCOLOR_WINDOW]->setMinimumSize(QSize(300,400));
+    splitter->addWidget(viswindows[PSEUDOCOLOR_WINDOW]);
 
     viswindows[VOLUME_WINDOW] = new vtkQtRenderWindow(splitter);
     viswindows[VOLUME_WINDOW]->setMinimumSize(QSize(300,400));
+    splitter->addWidget(viswindows[VOLUME_WINDOW]);
  
     //
     // Register a window creation function (before Setup) that will
