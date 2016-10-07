@@ -1772,27 +1772,27 @@
 
 !! Non-contiguous / multi-component array storage
 
-! visitvardatasetarrc(visit_handle obj, int idx, int owner, int ncomps, int ntuples,
+! visitvardatasetarrc(visit_handle obj, int idx, int owner, int ntuples,
 !                     int offset, int stride, char ptr)
       external visitvardatasetarrc
       integer  visitvardatasetarrc
 
-! visitvardatasetarri(visit_handle obj, int idx, int owner, int ncomps, int ntuples
+! visitvardatasetarri(visit_handle obj, int idx, int owner, int ntuples,
 !                     int offset, int stride, int ptr)
       external visitvardatasetarri
       integer  visitvardatasetarri
 
-! visitvardatasetarrl(visit_handle obj, int idx, int owner, int ncomps, int ntuples
+! visitvardatasetarrl(visit_handle obj, int idx, int owner, int ntuples,
 !                     int offset, int stride, long ptr)
       external visitvardatasetarrl
       integer  visitvardatasetarrl
 
-! visitvardatasetarrf(visit_handle obj, int idx, int owner, int ncomps, int ntuples
+! visitvardatasetarrf(visit_handle obj, int idx, int owner, int ntuples,
 !                     int offset, int stride, float ptr)
       external visitvardatasetarrf
       integer  visitvardatasetarrf
 
-! visitvardatasetarrd(visit_handle obj, int idx, int owner, int ncomps, int ntuples
+! visitvardatasetarrd(visit_handle obj, int idx, int owner, int ntuples,
 !                     int offset, int stride, double ptr)
       external visitvardatasetarrd
       integer  visitvardatasetarrd
