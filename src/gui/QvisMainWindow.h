@@ -317,6 +317,7 @@ signals:
     void activateSelectionsWindow();
     void updateVisIt();
     void activateSetupHostProfilesAndConfig();
+    void activateSeedMeWindow();
 
     void saveSettings();
     void saveWindow();

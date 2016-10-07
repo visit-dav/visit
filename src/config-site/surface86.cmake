@@ -1,14 +1,14 @@
-#/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake
 ##
 ## ./build_visit2_12_0 generated host.cmake
-## created: Wed Sep  7 08:45:00 PDT 2016
-## system: Linux aztec1 2.6.32-573.26.1.1chaos.ch5.4.x86_64 #1 SMP Wed May 4 15:27:57 PDT 2016 x86_64 x86_64 x86_64 GNU/Linux
+## created: Fri Oct  7 12:50:41 PDT 2016
+## system: Linux surface60 2.6.32-642.4.2.1chaos.ch5.5.x86_64 #1 SMP Tue Aug 30 13:11:01 PDT 2016 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_shared/2.12.0)
+SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/2.12.0)
 SET(VISITARCH linux-x86_64_gcc-4.4)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 

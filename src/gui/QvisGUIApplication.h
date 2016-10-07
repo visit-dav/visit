@@ -521,6 +521,7 @@ protected slots:
     void showSelectionsWindow();
     void showSelectionsWindow2(const QString &);
     void setupHostProfilesAndConfig();
+    void showSeedMeWindow();
 
     void updateVisIt();
     void updateVisItCompleted(const QString &);
