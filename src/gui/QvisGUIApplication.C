@@ -146,6 +146,7 @@
 #include <QvisRenderingWindow.h>
 #include <QvisSaveMovieWizard.h>
 #include <QvisSaveWindow.h>
+#include <QvisSeedMeWindow.h>
 #include <QvisSelectionsWindow.h>
 #include <QvisSessionFileDatabaseLoader.h>
 #include <QvisSimulationWindow.h>
@@ -232,6 +233,7 @@
 #define WINDOW_MACRO            32
 #define WINDOW_SELECTIONS       33
 #define WINDOW_SETUP_CFG        34
+#define WINDOW_SEEDME           35
 
 #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
 #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
@@ -884,6 +886,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     windowNames += tr("Macros");
     windowNames += tr("Selections");
     windowNames += tr("Setup Host Profiles and Configuration");
+    windowNames += tr("SeedMe");
 
     // If the geometry was not passed on the command line then the 
     // savedGUIGeometry flag will still be set to false. If we
@@ -3369,7 +3372,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showSelectionsWindow2(const QString &)));
      connect(mainWin, SIGNAL(activateSetupHostProfilesAndConfig()),
              this, SLOT(setupHostProfilesAndConfig()));
-}
+     connect(mainWin, SIGNAL(activateSeedMeWindow()),
+             this, SLOT(showSeedMeWindow()));}
 
 // ****************************************************************************
 // Method: QvisGUIApplication::WindowFactory
@@ -3705,6 +3709,15 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_SETUP_CFG:
         {
             win = new QvisSetupHostProfilesAndConfigWindow(windowNames[i]);
+        }
+        break;
+    case WINDOW_SEEDME:
+        {
+            win = new QvisSeedMeWindow(GetViewerState()->GetSeedMeAttributes(),
+                                       windowNames[i], windowNames[i], 
+                                       mainWin->GetNotepad());
+            connect(win, SIGNAL(runCommand(const QString &)),
+                    this, SLOT(Interpret(const QString &)));
         }
         break;
     }
@@ -9027,3 +9040,4 @@ QvisGUIApplication::showSelectionsWindow2(const QString &selName)
     selWindow->highlightSelection(selName);
 }
 void QvisGUIApplication::setupHostProfilesAndConfig() { GetInitializedWindowPointer(WINDOW_SETUP_CFG)->show(); }
+void QvisGUIApplication::showSeedMeWindow() { GetInitializedWindowPointer(WINDOW_SEEDME)->show(); }

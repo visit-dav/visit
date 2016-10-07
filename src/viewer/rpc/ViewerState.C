@@ -76,6 +76,7 @@
 #include <QueryList.h>
 #include <RenderingAttributes.h>
 #include <SaveWindowAttributes.h>
+#include <SeedMeAttributes.h>
 #include <SelectionList.h>
 #include <SelectionProperties.h>
 #include <SimulationUIValues.h>

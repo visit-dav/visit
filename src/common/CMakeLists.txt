@@ -277,6 +277,7 @@ state/RenderingAttributes.C
 state/SaveWindowAttributes.C
 state/SaveSubWindowAttributes.C
 state/SaveSubWindowsAttributes.C
+state/SeedMeAttributes.C
 state/SelectionList.C
 state/SelectionProperties.C
 state/SelectionSummary.C

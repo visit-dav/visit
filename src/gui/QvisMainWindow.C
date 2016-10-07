@@ -491,6 +491,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->addAction(tr("File &information . . ."), 
                          this, SIGNAL(activateFileInformationWindow()),
                          QKeySequence(Qt::CTRL + Qt::Key_I));
+    filePopup->addAction(tr("SeedMe . . ."),
+                         this, SIGNAL(activateSeedMeWindow()));
 
     filePopup->addSeparator();
 

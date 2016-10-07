@@ -158,6 +158,7 @@ SimulationUIValues.java
 SaveSubWindowAttributes.java
 SaveSubWindowsAttributes.java
 SaveWindowAttributes.java 
+SeedMeAttributes.java
 SelectionList.java
 SelectionProperties.java
 SelectionSummary.java

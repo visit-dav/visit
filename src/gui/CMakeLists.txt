@@ -185,6 +185,7 @@ QvisSaveWindow.C
 QvisScreenPositionEdit.C
 QvisScreenPositioner.C
 QvisScribbleOpacityBar.C
+QvisSeedMeWindow.C
 QvisSelectionsDialog.C
 QvisSelectionsWindow.C
 QvisSetupHostProfilesAndConfigWindow.C
@@ -312,6 +313,7 @@ QvisSaveWindow.h
 QvisScreenPositionEdit.h
 QvisScreenPositioner.h
 QvisScribbleOpacityBar.h
+QvisSeedMeWindow.h
 QvisSelectionsDialog.h
 QvisSelectionsWindow.h
 QvisSessionFileDatabaseLoader.h
@@ -390,7 +392,7 @@ ${QT_QTOPENGL_INCLUDE_DIR}
 ${QT_QTNETWORK_INCLUDE_DIR} 
 ${QT_QTXML_INCLUDE_DIR} 
 ${QT_QTUITOOLS_INCLUDE_DIR}
-${QWT_INCLUDE_DIR} 
+${QWT_INCLUDE_DIR}
 )
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY}
