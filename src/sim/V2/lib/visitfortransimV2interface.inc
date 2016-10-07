@@ -1748,6 +1748,8 @@
       external visitvardatafree
       integer  visitvardatafree
 
+!! Contiguous array storage
+
 ! visitvardatasetc(visit_handle obj, int owner, int ncomps, int ntuples, char ptr)
       external visitvardatasetc
       integer  visitvardatasetc
@@ -1755,6 +1757,10 @@
 ! visitvardataseti(visit_handle obj, int owner, int ncomps, int ntuples, int ptr)
       external visitvardataseti
       integer  visitvardataseti
+
+! visitvardatasetl(visit_handle obj, int owner, int ncomps, int ntuples, long ptr)
+      external visitvardatasetl
+      integer  visitvardatasetl
 
 ! visitvardatasetf(visit_handle obj, int owner, int ncomps, int ntuples, float ptr)
       external visitvardatasetf
@@ -1764,9 +1770,34 @@
       external visitvardatasetd
       integer  visitvardatasetd
 
-! visitvardatasetl(visit_handle obj, int owner, int ncomps, int ntuples, long ptr)
-      external visitvardatasetl
-      integer  visitvardatasetl
+!! Non-contiguous / multi-component array storage
+
+! visitvardatasetarrc(visit_handle obj, int idx, int owner, int ncomps, int ntuples,
+!                     int offset, int stride, char ptr)
+      external visitvardatasetarrc
+      integer  visitvardatasetarrc
+
+! visitvardatasetarri(visit_handle obj, int idx, int owner, int ncomps, int ntuples
+!                     int offset, int stride, int ptr)
+      external visitvardatasetarri
+      integer  visitvardatasetarri
+
+! visitvardatasetarrl(visit_handle obj, int idx, int owner, int ncomps, int ntuples
+!                     int offset, int stride, long ptr)
+      external visitvardatasetarrl
+      integer  visitvardatasetarrl
+
+! visitvardatasetarrf(visit_handle obj, int idx, int owner, int ncomps, int ntuples
+!                     int offset, int stride, float ptr)
+      external visitvardatasetarrf
+      integer  visitvardatasetarrf
+
+! visitvardatasetarrd(visit_handle obj, int idx, int owner, int ncomps, int ntuples
+!                     int offset, int stride, double ptr)
+      external visitvardatasetarrd
+      integer  visitvardatasetarrd
+
+!! Get functions
 
 ! visitvardatagettype(visit_handle obj, int datatype)
       external visitvardatagettype
