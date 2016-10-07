@@ -976,7 +976,7 @@ QvisSeedMeWindow::Apply(bool ignore)
         str += "obj = seedme.SeedMe()\n";
         str += "try: \n";
 // str += "  with open(expanduser(\"~\")+'/.visit/seedme_apikey_path', 'r') as f:\n";
-        str += "  with open(\""+QString::fromAscii(configFile, strlen(configFile))+"\", 'r') as f:\n";
+        str += "  with open(\""+QString(configFile)+"\", 'r') as f:\n";
         str += "    seedme_apikey = f.readline().rstrip()\n";
         str += "    obj.set_auth_via_file(seedme_apikey)\n";
         str += "except IOError as error:\n";
@@ -1196,7 +1196,7 @@ QvisSeedMeWindow::quickDownload()
     str += "from os.path import expanduser\n";
     str += "obj = seedme.SeedMe()\n";
     str += "try: \n";
-    str += "  with open(\""+QString::fromAscii(configFile, strlen(configFile))+"\", 'r') as f:\n";
+    str += "  with open(\""+QString(configFile)+"\", 'r') as f:\n";
     str += "    seedme_apikey = f.readline().rstrip()\n";
     str += "    obj.set_auth_via_file(seedme_apikey)\n";
     str += "except IOError as error:\n";
