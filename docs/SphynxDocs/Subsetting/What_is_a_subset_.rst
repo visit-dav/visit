@@ -1,0 +1,4 @@
+What is a subset?
+-----------------
+
+A subset is a set each of whose elements is an element of an inclusive subset. In other words, a subset is a smaller part of something. In simulation terms, a subset might be the cells containing a particular material in a mesh. A subset might be the part of the simulation mesh that ran on computer processor 10. A subset might be the part of a simulated vehicle that is a tire. In many input database formats, this subset information is encoded in the file or can be inferred from how the file is structured. This leads to an organization of the data where many possible subsets may exist. If there is more than one way to create a subset, you can start asking questions like where in the mesh is there aluminum on only the parts that were computed on processor 2.
