@@ -2083,16 +2083,18 @@ class MainLauncher(object):
         st = os.stat(path)
         return bool(st.st_mode & stat.S_IWUSR)
 
-    def call(self, args, stdinpipe=0):
+    def call(self, args, stdinpipe=0, env=None):
         #print args
+        if env is None:
+            env = os.environ.copy()
         self.Logging(args)
         ret = 0
         try:
              if stdinpipe:
                   # Launchers like msub need this in order to work.
-                  p = subprocess.Popen(args, stdin=subprocess.PIPE)
+                  p = subprocess.Popen(args, stdin=subprocess.PIPE, env=env)
              else:
-                  p = subprocess.Popen(args)
+                  p = subprocess.Popen(args, env=env)
              p.communicate()
              ret = p.returncode
         except KeyboardInterrupt:
@@ -3200,10 +3202,22 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                         if self.parallelArgs.hw_precmd != None:
                             r = self.call([self.parallelArgs.hw_precmd])
 
-                    # Execute the command created by the job submitter. Note that
-                    # we pass 1 for stdinpipe so the process we make will get a new
-                    # pipe. This makes msub work, for example.
-                    ret = self.call(args, stdinpipe=1)
+                    # Execute the command created by the job submitter.
+                    # Note that we pass 1 for stdinpipe so the process we
+                    # make will get a new pipe. This makes msub work, for
+                    # example. We also remove python path information so
+                    # that we don't get the system python and our python
+                    # intermingled in case the job submitter is written in
+                    # python (e.g. aprun on Trinity).
+                    #
+                    env = os.environ.copy()
+                    if "PYTHONHOME" in os.environ.keys():
+                        del env["PYTHONHOME"]
+                    if "PYTHONPATH" in os.environ.keys():
+                        del env["PYTHONPATH"]
+                    if "LD_LIBRARY_PATH" in os.environ.keys():
+                        del env["LD_LIBRARY_PATH"]
+                    ret = self.call(args, stdinpipe=1, env=env)
 
                     # If the job submitter did not handle a hardware-related 
                     # post-command then execute it now.
