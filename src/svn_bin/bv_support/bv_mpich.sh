@@ -117,7 +117,8 @@ function build_mpich
     cd $MPICH_BUILD_DIR || error "Can't cd to MPICH build dir."
     info "Invoking command to configure MPICH"
 
-    mpich_opts=""
+    # turn on shared version of the libs
+    mpich_opts="--enable-shared"
     if [[ "$OPSYS" == "Darwin" ]]; then
         mpich_opts="${mpich_opts} --enable-two-level-namespace --enable-threads=single"
     fi

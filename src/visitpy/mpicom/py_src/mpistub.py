@@ -11,6 +11,9 @@
 #  Cyrus Harrison, Fri Apr 29 15:49:55 PDT 2011
 #  Added dummy value for MPI_PROC_NULL.
 #
+#  Kathleen Biagas, Mon Oct 17 14:29:27 PDT 2016
+#  Change 'initied' to 'inited'.
+#
 ###############################################################################
 
 _sval = None
@@ -20,7 +23,7 @@ MPI_PROC_NULL = -2
 def init():
     pass
 
-def initied():
+def inited():
     return True;
 
 def serial():

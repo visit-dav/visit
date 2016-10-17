@@ -148,6 +148,19 @@ int pylibsim_invokeBroadcastIntCallback(int *arg0, int arg1)
                 *arg0 = (int)PyInt_AsLong(ret);
                 retval = VISIT_OKAY;
             }
+            else if(PyLong_Check(ret))
+            {
+                /* Return the value in arg0. */
+                *arg0 = (int)PyLong_AsLong(ret);
+                retval = VISIT_OKAY;
+            }
+            else if (ret == Py_None)
+            {
+                // valid return from sending process
+                // if retval isn't set in this case, then LIBSIM prints
+                // a misleading VISIT_ERROR message to trace files.
+                retval = VISIT_OKAY;
+            }
             Py_DECREF(ret);
         }
     }
@@ -183,7 +196,13 @@ pylibsim_invokeBroadcastStringCallback(char *arg0, int arg1, int arg2)
                 /* Return the value in arg0. */
                 strcpy(arg0, PyString_AsString(ret));
                 retval = VISIT_OKAY;
-
+            }
+            else if(ret == Py_None)
+            {
+                // valid return from sending process
+                // if retval isn't set in this case, then LIBSIM prints
+                // a misleading VISIT_ERROR message to trace files.
+                retval = VISIT_OKAY;
             }
             Py_DECREF(ret);
         }
@@ -291,6 +310,12 @@ int pylibsim_invoke_i_F_pi_i_pv(int *arg0, int arg1, void *cbdata)
                 *arg0 = (int)PyInt_AsLong(ret);
                 retval = VISIT_OKAY;
             }
+            else if(PyLong_Check(ret))
+            {
+                /* Return the value in arg0. */
+                *arg0 = (int)PyLong_AsLong(ret);
+                retval = VISIT_OKAY;
+            }
             Py_DECREF(ret);
         }
     }
@@ -386,6 +411,10 @@ visit_handle pylibsim_invoke_h_F_pv(void *cbdata)
             {
                 h = static_cast<visit_handle>(PyInt_AsLong(ret));
             }
+            else if(PyLong_Check(ret))
+            {
+                h = static_cast<visit_handle>(PyLong_AsLong(ret));
+            }
             Py_DECREF(ret);
         }
     }
@@ -421,6 +450,10 @@ int pylibsim_invoke_i_F_pv(void *cbdata)
             if(PyInt_Check(ret))
             {
                 h = static_cast<int>(PyInt_AsLong(ret));
+            }
+            else if(PyLong_Check(ret))
+            {
+                h = static_cast<int>(PyLong_AsLong(ret));
             }
             Py_DECREF(ret);
         }
@@ -461,6 +494,10 @@ visit_handle pylibsim_invoke_h_F_i_pcc_pv(int arg0, const char *arg1, void *cbda
             {
                 h = static_cast<visit_handle>(PyInt_AsLong(ret));
             }
+            else if(PyLong_Check(ret))
+            {
+                h = static_cast<visit_handle>(PyLong_AsLong(ret));
+            }
             Py_DECREF(ret);
         }
     }
@@ -499,6 +536,10 @@ visit_handle pylibsim_invoke_h_F_pcc_pv(const char *arg0, void *cbdata)
             {
                 h = static_cast<visit_handle>(PyInt_AsLong(ret));
             }
+            else if(PyInt_Check(ret))
+            {
+                h = static_cast<visit_handle>(PyLong_AsLong(ret));
+            }
             Py_DECREF(ret);
         }
     }
@@ -536,6 +577,10 @@ int pylibsim_invoke_i_F_pcc_pv(const char *arg0, void *cbdata)
             if(PyInt_Check(ret))
             {
                 ierr = static_cast<int>(PyInt_AsLong(ret));
+            }
+            else if(PyLong_Check(ret))
+            {
+                ierr = static_cast<int>(PyLong_AsLong(ret));
             }
             Py_DECREF(ret);
         }
@@ -581,6 +626,10 @@ int pylibsim_invoke_i_F_pcc_i_i_h_h_pv(
             {
                 ierr = static_cast<int>(PyInt_AsLong(ret));
             }
+            else if(PyLong_Check(ret))
+            {
+                ierr = static_cast<int>(PyLong_AsLong(ret));
+            }
             Py_DECREF(ret);
         }
     }
@@ -624,6 +673,10 @@ int pylibsim_invoke_i_F_pcc_pcc_i_h_h_pv(
             if(PyInt_Check(ret))
             {
                 ierr = static_cast<int>(PyInt_AsLong(ret));
+            }
+            else if(PyLong_Check(ret))
+            {
+                ierr = static_cast<int>(PyLong_AsLong(ret));
             }
             Py_DECREF(ret);
         }
