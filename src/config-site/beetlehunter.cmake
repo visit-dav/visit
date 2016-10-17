@@ -77,11 +77,10 @@ VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR /home/biagas2/visit/boost_minimal_headers/1
 ##
 # Give VisIt information so it can install MPI into the binary distribution.
 if (VISIT_PARALLEL)
-VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR ${VISITHOME}/mpich/3.0.4)
-VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON TYPE BOOL)
-
-# Tell VisIt the parallel compiler so it can deduce parallel flags
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER ${VISIT_MPICH_DIR}/bin/mpicc TYPE FILEPATH)
+  VISIT_OPTION_DEFAULT(VISIT_MPICH_DIR ${VISITHOME}/mpich/3.0.4)
+  VISIT_OPTION_DEFAULT(VISIT_MPICH_INSTALL ON TYPE BOOL)
+  # Tell VisIt the parallel compiler so it can deduce parallel flags
+  VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER ${VISIT_MPICH_DIR}/bin/mpicc TYPE FILEPATH)
 endif()
 
 ##
