@@ -1268,12 +1268,12 @@ def drawRotatedText(im, x0, y0, chars, scale, angleDegrees, fillColor):
 def drawText(im, x0, y0, chars, scale, fillColor):
     drawRotatedText(im, x0, y0, chars, scale, 0., fillColor)
 
-def calculateTextWidth(str):
+def calculateTextWidth(astr):
     width = 0.
-    for c in str:
+    for c in astr:
         ch = ord(c)
         width = width + nice_triangle_spacing[ch]
     return width
 
-def calculateTextWidthInPixels(str, im, scale):
-    return (float(scale) / float(im.size[0])) * calculateTextWidth(str)
+def calculateTextWidthInPixels(astr, im, scale):
+    return (float(scale) / float(im.size[0])) * calculateTextWidth(astr)

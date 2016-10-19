@@ -967,9 +967,9 @@ class MakeMovie(object):
         print "    -expedite          Makes batch system give priority scheduling."
         print ""
 
-    def Log(self, str):
+    def Log(self, msg):
         if self.log != 0:
-            self.log.write("%s\n" % str)
+            self.log.write("%s\n" % msg)
             self.log.flush()
 
     ###########################################################################
@@ -986,18 +986,18 @@ class MakeMovie(object):
     #
     ###########################################################################
 
-    def Debug(self, level, str):
+    def Debug(self, level, msg):
         if level not in (1,2,3,4,5):
             return
         debug_level = GetDebugLevel()
         if debug_level > 0:
             for i in range(level, 6):
                  if self.debug_real[i-1] != 0:
-                     self.debug_real[i-1].write("%s\n" % str)
+                     self.debug_real[i-1].write("%s\n" % msg)
                      self.debug_real[i-1].flush()
         # Write debug1 to the log also.
         if level == 1:
-            self.Log(str)
+            self.Log(msg)
           
     ###########################################################################
     # Method: SendClientProgress

@@ -38,12 +38,12 @@ def commandInPath(command):
     lines = f.readlines()
     f.close()
     # Glue the lines together.
-    str = ""
+    astr = ""
     for line in lines:
-        str = str + line
+        astr = astr + line
     # See if the command could not be found
-    noFail1 = (str.find("no %s in" % command) == -1)
-    noFail2 = (str.find("Command not found") == -1)
+    noFail1 = (astr.find("no %s in" % command) == -1)
+    noFail2 = (astr.find("Command not found") == -1)
     return noFail1 and noFail2
 
 ###############################################################################
@@ -512,12 +512,12 @@ def ReadDataFile(filename):
     data = []
     try:
         f = open(filename, "r")
-        str = "start"
-        while(str != ''):
-            str = f.readline()
-            if(str != ''):
-                if(str[0] != '#'):
-                    data = data + [str[:-1]]
+        aline = "start"
+        while(aline != ''):
+            aline = f.readline()
+            if(aline != ''):
+                if(aline[0] != '#'):
+                    data = data + [aline[:-1]]
     except IOError:
         print "Could not read from", filename
     return data

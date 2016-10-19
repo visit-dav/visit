@@ -327,15 +327,15 @@ implFile.write("int tesselationCaseStart3D[256][4] = {")
 
 currLineLen = 80 # Enforce start with newline
 for caseStart in tesselationStart[:-1]:
-    str = "{ %d, %d, %d, %d }, " % tuple(caseStart)
-    if currLineLen + len(str) > 80: 
+    caseStr = "{ %d, %d, %d, %d }, " % tuple(caseStart)
+    if currLineLen + len(caseStr) > 80: 
         implFile.write("\n    ")
         currLineLen = 0
-    implFile.write(str)
-    currLineLen += len(str)
-str = "{ %d, %d, %d, %d }" % tuple(caseStart)
-if currLineLen + len(str) > 80: 
+    implFile.write(caseStr)
+    currLineLen += len(caseStr)
+caseStr = "{ %d, %d, %d, %d }" % tuple(caseStart)
+if currLineLen + len(caseStr) > 80: 
     implFile.write("\n    ")
     currLineLen = 0
-implFile.write(str)
+implFile.write(caseStr)
 implFile.write("\n};\n")
