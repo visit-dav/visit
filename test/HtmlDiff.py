@@ -135,22 +135,22 @@ class Differencer:
         f.close()
 
     def GetNextLeft(self):
-        str=cgi.escape(string.rstrip(self.nextleft))
+        astr=cgi.escape(string.rstrip(self.nextleft))
         self.nextleft = self.in1.readline()
         self.leftline = self.leftline+1
-        if str=="":
+        if astr=="":
             return "&nbsp;"
         else:
-            return str
+            return astr
 
     def GetNextRight(self):
-        str=cgi.escape(string.rstrip(self.nextright))
+        astr=cgi.escape(string.rstrip(self.nextright))
         self.nextright = self.in2.readline()
         self.rightline = self.rightline+1
-        if str=="":
+        if astr=="":
             return "&nbsp;"
         else:
-            return str
+            return astr
 
     def WriteLineNumber(self, num=""):
         self.out.write("    <td align=\"right\"><b><code>%d:&nbsp;</code></b></td>\n"%num)
