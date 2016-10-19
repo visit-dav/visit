@@ -3205,18 +3205,20 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                     # Execute the command created by the job submitter.
                     # Note that we pass 1 for stdinpipe so the process we
                     # make will get a new pipe. This makes msub work, for
-                    # example. We also remove python path information so
-                    # that we don't get the system python and our python
-                    # intermingled in case the job submitter is written in
-                    # python (e.g. aprun on Trinity).
+                    # example. We also remove python path information in
+                    # the case of qsub or msub so that we don't get the
+                    # system python and our python intermingled in case
+                    # the job submitter is written in python (e.g. msub on
+                    # Trinity).
                     #
                     env = os.environ.copy()
-                    if "PYTHONHOME" in os.environ.keys():
-                        del env["PYTHONHOME"]
-                    if "PYTHONPATH" in os.environ.keys():
-                        del env["PYTHONPATH"]
-                    if "LD_LIBRARY_PATH" in os.environ.keys():
-                        del env["LD_LIBRARY_PATH"]
+                    if self.parallelArgs.launch[:4] == "msub":
+                        if "PYTHONHOME" in os.environ.keys():
+                            del env["PYTHONHOME"]
+                        if "PYTHONPATH" in os.environ.keys():
+                            del env["PYTHONPATH"]
+                        if "LD_LIBRARY_PATH" in os.environ.keys():
+                            del env["LD_LIBRARY_PATH"]
                     ret = self.call(args, stdinpipe=1, env=env)
 
                     # If the job submitter did not handle a hardware-related 
