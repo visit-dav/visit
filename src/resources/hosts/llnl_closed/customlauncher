@@ -7,6 +7,8 @@
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Tue Oct 18 16:38:04 PDT 2016
+#   I modified the script to set ppn when running on trinity.
 #
 ###############################################################################
 
@@ -14,7 +16,7 @@ class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
     def __init__(self, launcher):
         super(JobSubmitter_qsub_LLNL, self).__init__(launcher)
         self.usettc = self.sectorname() == "inca"
-        self.useppn = self.sectorname() == "graph"
+        self.useppn = (self.sectorname() == "graph") or (self.sectorname() == "tr-fe")
 
 
 ###############################################################################
