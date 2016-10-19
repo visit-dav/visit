@@ -27,7 +27,7 @@ function bv_xercesc_info
     export XERCESC_VERSION=${XERCESC_VERSION:-"3.1.2"}
     export XERCESC_COMPATIBILITY_VERSION=${XERCESC_COMPATIBILITY_VERSION:-"3.1"}
     export XERCESC_BUILD_DIR=${XERCESC_BUILD_DIR:-"xerces-c-${XERCESC_VERSION}"}
-    export XERCESC_URL=${XERCESC_URL:-"http://www.webhostingjams.com/mirror/apache//xerces/c/3/sources"}
+    export XERCESC_URL=${XERCESC_URL:-"http://archive.apache.org/dist/xerces/c/3/sources"}
     export XERCESC_MD5_CHECKSUM="9eb1048939e88d6a7232c67569b23985"
 }
 
