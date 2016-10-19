@@ -32,11 +32,11 @@ def GetFullName(headerName, dirName, headers):
     return fullName
 
 
-def IndentedPrint(indent, str):
+def IndentedPrint(indent, astr):
     indentStr = ""
     for i in range(indent):
         indentStr = indentStr + "    "
-    indentStr = indentStr + str
+    indentStr = indentStr + astr
     print indentStr
 
 

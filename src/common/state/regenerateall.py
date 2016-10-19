@@ -19,9 +19,9 @@ def GetCreateNodeFiles():
     for f in files:
         index = string.find(f, ':')
         if(index != -1):
-            str = f[:index]
-            if(str not in retval):
-                retval = retval + [str]
+            astr = f[:index]
+            if(astr not in retval):
+                retval = retval + [astr]
     return retval
 
 #
