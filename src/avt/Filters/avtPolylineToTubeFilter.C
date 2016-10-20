@@ -44,6 +44,8 @@
 
 #include <vtkTubeFilter.h>
 #include <vtkAppendPolyData.h>
+#include <vtkCellArray.h>
+#include <vtkCleanPolyData.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -96,6 +98,11 @@ avtPolylineToTubeFilter::~avtPolylineToTubeFilter()
 //  Programmer: Allen Sanderson
 //  Creation:   Feb 12 2016
 //
+//  Modifications:
+//    Eric Brugger, Thu Oct 20 14:15:30 PDT 2016
+//    I added code to remove duplicate points from the lines since the 
+//    vtkTubeFilter exits on any lines that have duplicate points.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -120,8 +127,16 @@ avtPolylineToTubeFilter::ExecuteData(avtDataRepresentation *inDR)
 
     vtkDataArray *activeScalars = inDS->GetPointData()->GetScalars();
 
-    vtkPolyData *data = vtkPolyData::SafeDownCast( inDS );
+    vtkPolyData *data = vtkPolyData::SafeDownCast(inDS);
 
+    // Clean duplicate points from the polydata.
+    vtkCleanPolyData *cleanFilter = vtkCleanPolyData::New();
+
+    cleanFilter->SetInputData(data);
+
+    cleanFilter->Update();
+
+    // Create the tube polydata.
     vtkTubeFilter *tubeFilter = vtkTubeFilter::New();
 
     tubeFilter->SetRadius( radius );
@@ -129,53 +144,48 @@ avtPolylineToTubeFilter::ExecuteData(avtDataRepresentation *inDR)
     tubeFilter->SetCapping( 1 );
     tubeFilter->ReleaseDataFlagOn();
 
-    if( varyRadius && radiusVar != "" && radiusVar != "\0" )
+    if (varyRadius && radiusVar != "" && radiusVar != "\0")
     {
-      if (radiusVar != "default")
-        data->GetPointData()->SetActiveScalars( radiusVar.c_str() );
+        if (radiusVar != "default")
+            data->GetPointData()->SetActiveScalars(radiusVar.c_str());
         
-      tubeFilter->SetVaryRadiusToVaryRadiusByScalar();
-      tubeFilter->SetRadiusFactor( radiusFactor );
+        tubeFilter->SetVaryRadiusToVaryRadiusByScalar();
+        tubeFilter->SetRadiusFactor(radiusFactor);
     }
 
-    tubeFilter->SetInputData(data);
+    tubeFilter->SetInputData(cleanFilter->GetOutput());
 
-    // Create the tube polydata.
     tubeFilter->Update();
 
     // Append the original data and tube polydata
     vtkAppendPolyData *append = vtkAppendPolyData::New();
 
-    append->AddInputData( data );
-    append->AddInputData( tubeFilter->GetOutput() );
+    append->AddInputData(data);
+    append->AddInputData(tubeFilter->GetOutput());
     
     tubeFilter->Delete();
 
-    // Update.
     append->Update();
+
+    // Get the output.
     vtkPolyData *outPD = append->GetOutput();
     outPD->Register(NULL);
     append->Delete();
     
-    // Now go through all of the cells and remove the lines.
-    int nCells = outPD->GetNumberOfCells();
-
-    for( int i=0; i<nCells; ++i )
-      if( outPD->GetCellType( i ) == VTK_POLY_LINE )
-        outPD->DeleteCell( i );
-
+    // Remove the lines.
+    outPD->SetLines(NULL);
     outPD->RemoveDeletedCells();
 
     // Restore the active scalars.
-    if( activeScalars )
+    if (activeScalars)
     {
-      data->GetPointData()->SetActiveScalars(activeScalars->GetName());
-      outPD->GetPointData()->SetActiveScalars(activeScalars->GetName());
+        data->GetPointData()->SetActiveScalars(activeScalars->GetName());
+        outPD->GetPointData()->SetActiveScalars(activeScalars->GetName());
     }
 
-    // Crearte the output data rep.
+    // Create the output data rep.
     avtDataRepresentation *outDR =
-      new avtDataRepresentation( outPD, inDR->GetDomain(), inDR->GetLabel() );
+        new avtDataRepresentation(outPD, inDR->GetDomain(), inDR->GetLabel());
 
     return outDR;
 }
