@@ -111,7 +111,7 @@ function bv_qwt_host_profile
 
 function bv_qwt_ensure
 {    
-    if [[ "$DO_QWT" == "yes" ]] ; then
+    if [[ "$DO_QWT" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
         ensure_built_or_ready "qwt" $QWT_VERSION $QWT_BUILD_DIR $QWT_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
@@ -311,6 +311,9 @@ function build_qwt
 
 function bv_qwt_is_enabled
 {
+    if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]]; then
+        return 0
+    fi
     if [[ $DO_QWT == "yes" ]]; then
         return 1    
     fi
@@ -329,7 +332,7 @@ function bv_qwt_is_installed
 function bv_qwt_build
 {
     cd "$START_DIR"
-    if [[ "$DO_QWT" == "yes" ]] ; then
+    if [[ "$DO_QWT" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
         check_if_installed "qwt" $QWT_VERSION
         if [[ $? == 0 ]] ; then
             info "Skipping QWT build. Qwt is already installed."
