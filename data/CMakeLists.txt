@@ -148,16 +148,10 @@ FUNCTION(BUILD_DATA_TARGET_IMPL target_name do_parallel)
            "${ARG}" STREQUAL "DEFS")
             #switch var name to extend
             SET(ARG_VAR target_${ARG})
-        ELSE("${ARG}" STREQUAL "INCLUDE_DIRS" OR
-             "${ARG}" STREQUAL "LIB_DIRS" OR
-             "${ARG}" STREQUAL "LIBS" OR
-             "${ARG}" STREQUAL "DEFS")
+        ELSE()
             # add current arg into current varname
             SET("${ARG_VAR}" ${${ARG_VAR}} ${ARG})
-        ENDIF("${ARG}" STREQUAL "INCLUDE_DIRS" OR
-              "${ARG}" STREQUAL "LIB_DIRS" OR
-              "${ARG}" STREQUAL "LIBS" OR
-              "${ARG}" STREQUAL "DEFS")
+        ENDIF()
     ENDFOREACH(ARG ${ARGN})
 
     INCLUDE_DIRECTORIES(${target_INCLUDE_DIRS})
@@ -166,19 +160,19 @@ FUNCTION(BUILD_DATA_TARGET_IMPL target_name do_parallel)
     # Automatically setup target_SOURCES if not set
     IF(DEFINED ${target_name}_SOURCES)
         SET(target_SOURCES "${${target_name}_SOURCES}")
-    ELSE(DEFINED ${target_name}_SOURCES)
+    ELSE()
         SET(target_SOURCES ${target_name}.C)
-    ENDIF(DEFINED ${target_name}_SOURCES)
+    ENDIF()
 
     SET(tname ${target_name})
     IF("${do_parallel}" STREQUAL "ON")
         IF(VISIT_PARALLEL)
             SET(tname "${target_name}_par")
             ADD_PARALLEL_EXECUTABLE(${tname} ${target_SOURCES})
-        ENDIF(VISIT_PARALLEL)
-    ELSE("${do_parallel}" STREQUAL "ON")
+        ENDIF()
+    ELSE()
         ADD_EXECUTABLE(${tname} ${target_SOURCES})
-    ENDIF("${do_parallel}" STREQUAL "ON")
+    ENDIF()
 
     ADD_DEFINITIONS(${target_DEFS})
     TARGET_LINK_LIBRARIES(${tname} ${target_LIBS})
@@ -310,7 +304,7 @@ ENDFOREACH(BASIC_TARGET ${BASIC_TARGETS_PAR})
 # Build all VTK Targets
 #-----------------------------------------------------------------------------
 FOREACH(VTK_TARGET ${VTK_TARGETS})
-BUILD_DATA_TARGET(${VTK_TARGET}
+    BUILD_DATA_TARGET(${VTK_TARGET}
                   INCLUDE_DIRS
                     ${VTK_INCLUDE_DIRS}
                   LIB_DIRS
@@ -324,17 +318,17 @@ ENDFOREACH(VTK_TARGET ${VTK_TARGETS})
 # If we have HDF5 build all HDF5 Data Gen Target Programs
 #-----------------------------------------------------------------------------
 IF(HDF5_FOUND)
-FOREACH(HDF5_TARGET ${HDF5_TARGETS})
-    BUILD_DATA_TARGET(${HDF5_TARGET}
-                      INCLUDE_DIRS
-                        ${CMAKE_CURRENT_SOURCE_DIR}
-                        ${HDF5_INCLUDE_DIR}
-                      LIB_DIRS
-                        ${HDF5_LIBRARY_DIR}
-                      LIBS
-                        ${HDF5_LIB}
-                     )
-ENDFOREACH(HDF5_TARGET ${HDF5_TARGETS})
+    FOREACH(HDF5_TARGET ${HDF5_TARGETS})
+        BUILD_DATA_TARGET(${HDF5_TARGET}
+                          INCLUDE_DIRS
+                            ${CMAKE_CURRENT_SOURCE_DIR}
+                            ${HDF5_INCLUDE_DIR}
+                          LIB_DIRS
+                            ${HDF5_LIBRARY_DIR}
+                          LIBS
+                            ${HDF5_LIB}
+                         )
+    ENDFOREACH()
 ENDIF(HDF5_FOUND)
 
 #-----------------------------------------------------------------------------
@@ -353,7 +347,7 @@ IF(SILO_FOUND)
                         LIBS
                             ${PDB_LIB}
                         )
-    ENDFOREACH(PDB_TARGET ${PDB_TARGETS})
+    ENDFOREACH()
     # Build Silo Targets
     FOREACH (SILO_TARGET ${SILO_TARGETS})
         BUILD_DATA_TARGET(${SILO_TARGET}
@@ -366,7 +360,7 @@ IF(SILO_FOUND)
                         LIBS
                             ${SILO_LIB}
                         )
-    ENDFOREACH(SILO_TARGET ${SILO_TARGETS})
+    ENDFOREACH()
     if(WIN32)
       set_target_properties(multi_test PROPERTIES LINK_FLAGS "/STACK:8000000")
     endif()
@@ -398,25 +392,31 @@ IF(NOT WIN32)
     IF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
         SET(UNTAR_CMD ${TAR_EXE})
         SET(UNTAR_ARGS "-xzvf")
-    ELSE(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
+    ELSE()
         SET(UNTAR_CMD ${CMAKE_COMMAND})
         SET(UNTAR_ARGS "-E tar -xzvf")
-    ENDIF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
+    ENDIF()
 ELSE(NOT WIN32)
-   # limitations in cmake's untar, even winzip's command line, so
-   # try 7-zip if available.
+   # There used to be limitations in cmake's untar, even winzip's command line,
+   # so 7-zip was utilized.  Recent versions of 7-zip now handle symlinks on
+   # windows. Cool! but the functionality requires 7-zip be run as-admin or
+   # have a special group-policy set that allows symlink creation otherwise the
+   # extraction fails.  So, now only use 7-zip if requested. 
    # 
-   set(progx86 "PROGRAMFILES(X86)") 
-   FIND_PROGRAM(SEVEN_ZIP_EXE 7z "${VISIT_SEVEN_ZIP_DIR}" 
-                                 "$ENV{PROGRAMFILES}/7-Zip" 
-                                 "$ENV{progx86}/7-Zip"
-                                 "$ENV{PROGRAM6432}/7-Zip")
+   if(VISIT_USE_7ZIP)
+       set(PF1 "PROGRAMFILES")
+       set(PF2 "PROGRAMFILES(X86)")
+       FIND_PROGRAM(SEVEN_ZIP_EXE 7z "${VISIT_SEVEN_ZIP_DIR}" 
+                                     "$ENV{${PF1}}/7-Zip" 
+                                     "$ENV{${PF2}}/7-Zip")
 
-   unset(progx86)
-   IF ("${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
-       MESSAGE(WARNING "7-Zip not found, .tar.gz data files will not be extracted.")
-   ENDIF ("${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+       unset(PF2)
+       unset(PF1)
+       if("${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+           MESSAGE(WARNING "7-Zip not found, .tar.gz data files will not be extracted.")
+       endif()
 ENDIF(NOT WIN32)
+endif()
 
 
 #-----------------------------------------------------------------------------
@@ -445,7 +445,7 @@ FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             )
     ELSE(NOT WIN32)
-        IF (NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+        if(VISIT_USE_7ZIP AND NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
             # With 7-zip, first command extracts the tar file part, the second 
             # extracts the data files from the tarball.
             # We then must delete the .tar file
@@ -456,10 +456,16 @@ FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
                 COMMAND del ${DATASET_TARGET}.tar
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 )
-        ENDIF (NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+        else()
+            ADD_CUSTOM_COMMAND(
+                OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
+                COMMAND ${CMAKE_COMMAND} -E tar -xzvf ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            )
+        endif()
     ENDIF (NOT WIN32)
     SET( DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET})
-ENDFOREACH(DATASET_TARGET_FILE IN ${ARCHIVED_DATASETS})
+ENDFOREACH()
 
 #-----------------------------------------------------------------------------
 # Add custom targets: "data" & "testdata"
@@ -478,14 +484,17 @@ IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
 
         INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
     ELSE(NOT WIN32)
-        IF (NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+        IF(VISIT_USE_7ZIP AND NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
             SET (DIST_UNTAR_CMD1 "\"${SEVEN_ZIP_EXE}\" x -y \"${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz\"")
             SET (DIST_UNTAR_CMD2 "\"${SEVEN_ZIP_EXE}\" x -y visit_dist_data.tar")
             SET (DIST_UNTAR_CMD3 "del /F visit_dist_data.tar")
             INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD1} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
             INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD2} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
             INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD3} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
-        ENDIF (NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
+        else()
+            SET(DIST_UNTAR_CMD "${CMAKE_COMMAND} -E tar -xzvf ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz")
+            INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
+        endif()
     ENDIF(NOT WIN32)
 
     INSTALL(DIRECTORY
@@ -512,10 +521,10 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
                       FILE(COPY        ${SD}/${SL_WE}.dll
                            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CFG})
                   ENDFOREACH()
-                ENDIF(EXISTS ${SD}/${SL})
-              ENDFOREACH(SL ${SILO_LIB})
-            ENDFOREACH(SD ${SILO_LIBRARY_DIR})
-        ENDIF(WIN32)
+                ENDIF()
+              ENDFOREACH()
+            ENDFOREACH()
+        ENDIF()
 
         SET(testall_output  curv2d_colmajor.silo
                             curv3d.silo
