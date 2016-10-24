@@ -36,6 +36,7 @@ SET(VISITHOME ${VISIT_WINDOWS_DIR}/${VISIT_MSVC_VERSION})
 # Create the NSIS installer package (override default from root CMakeLists.txt
 OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS." ON)
 VISIT_OPTION_DEFAULT(VISIT_QT5 false TYPE BOOL)
+VISIT_OPTION_DEFAULT(VISIT_USE_7ZIP true TYPE BOOL)
 
 ##############################################################
 ##
