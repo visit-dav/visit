@@ -2606,6 +2606,9 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 //  Creation:   June 16, 2008
 //
 //  Modifications:
+//    Eric Brugger, Mon Oct 24 14:42:18 PDT 2016
+//    I corrected several bugs with generation of normals for displaying
+//    the curves as ribbons.
 //
 // ****************************************************************************
 void
@@ -2627,7 +2630,6 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     vtkDoubleArray *scalars  = vtkDoubleArray::New();
     vtkDoubleArray *tangents = vtkDoubleArray::New();
     vtkDoubleArray *thetas   = NULL;
-    vtkDoubleArray *normals = NULL;
 
     std::vector< vtkDoubleArray * > secondarys;
     secondarys.resize(secondaryVariables.size());
@@ -2640,13 +2642,17 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     
     vtkPolyData *pd = vtkPolyData::New();
     pd->SetPoints(points);
+    points->Delete();
     pd->SetLines(lines);
+    lines->Delete();
     scalars->SetName(colorVarArrayName.c_str());
     tangents->SetName(tangentsArrayName.c_str());
 
     pd->GetPointData()->SetScalars(scalars);
     pd->GetPointData()->AddArray(scalars);
     pd->GetPointData()->AddArray(tangents);
+    scalars->Delete();
+    tangents->Delete();
 
     // theta scalars
     if( displayGeometry == IntegralCurveAttributes::Ribbons )
@@ -2654,13 +2660,8 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         thetas = vtkDoubleArray::New();
         thetas->Allocate(numPts);
         thetas->SetName(thetaArrayName.c_str());
-        // pd->GetPointData()->AddArray(thetas);
-
-        normals = vtkDoubleArray::New();
-        normals->SetNumberOfComponents(3);
-        normals->SetNumberOfTuples(numPts);
-        normals->SetName(normalsArrayName.c_str());
-        pd->GetPointData()->SetNormals(normals);
+        pd->GetPointData()->AddArray(thetas);
+        thetas->Delete();
     }
 
     // secondary scalars
@@ -2670,12 +2671,13 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         secondarys[i]->Allocate(numPts);
         secondarys[i]->SetName(secondaryVariables[i].c_str());
         pd->GetPointData()->AddArray(secondarys[i]);
+        secondarys[i]->Delete();
     }
 
     if((displayGeometry == IntegralCurveAttributes::Tubes ||
         displayGeometry == IntegralCurveAttributes::Ribbons) &&
-       integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS &&
-       tubeVariableIndex >= 0)
+        integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS &&
+        tubeVariableIndex >= 0)
       ProcessVaryTubeRadiusByScalar(ics);
 
     double correlationDistMinDistToUse = correlationDistanceMinDist;
@@ -2698,7 +2700,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     for (int i = 0; i < numICs; i++)
     {
         avtStateRecorderIntegralCurve *ic =
-          dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
+            dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
 
         size_t nSamples = (ic ? ic->GetNumberOfSamples() : 0);
         if (nSamples <= 1)
@@ -3068,106 +3070,102 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
         line->Delete();
     }
 
-    if(displayGeometry == IntegralCurveAttributes::Ribbons)
-    {
-      vtkPolyLine::GenerateSlidingNormals(points, lines, normals);
-    }
-    
     vtkPolyData *outPD;
     
-    if( //displayGeometry == IntegralCurveAttributes::Tubes ||
-        //displayGeometry == IntegralCurveAttributes::Ribbons ||
+    if (displayGeometry == IntegralCurveAttributes::Ribbons ||
         cleanupMethod == IntegralCurveAttributes::Merge )
     {
-      vtkCleanPolyData *clean = vtkCleanPolyData::New();
-      clean->ConvertLinesToPointsOff();
-      clean->ConvertPolysToLinesOff();
-      clean->ConvertStripsToPolysOff();
+        vtkCleanPolyData *clean = vtkCleanPolyData::New();
+        clean->ConvertLinesToPointsOff();
+        clean->ConvertPolysToLinesOff();
+        clean->ConvertStripsToPolysOff();
 
-      if( cleanupMethod == IntegralCurveAttributes::Merge &&
-          cleanupThreshold > 0 )
-      {
-        clean->ToleranceIsAbsoluteOn();
-        clean->SetAbsoluteTolerance(cleanupThreshold);
-      }
-      
-      clean->PointMergingOn();
-      clean->SetInputData(pd);
-      clean->Update();
-      pd->Delete();
+        if (cleanupMethod == IntegralCurveAttributes::Merge &&
+            cleanupThreshold > 0)
+        {
+            clean->ToleranceIsAbsoluteOn();
+            clean->SetAbsoluteTolerance(cleanupThreshold);
+        }
 
-      outPD = clean->GetOutput();
+        clean->PointMergingOn();
+        clean->SetInputData(pd);
+        clean->Update();
 
-      if( cleanupMethod != IntegralCurveAttributes::Merge )
-        avtCallback::IssueWarning("\nThe integral curves are being displayed "
-                                  "as tubes or ribbons which requires "
-                                  "vtkCleanPolyData to be called to remove "
-                                  "duplicate points. As such, the integral "
-                                  "curves will be terminated based on a "
-                                  "spatial criteria rather a velocity "
-                                  "criteria");
+        outPD = clean->GetOutput();
+        outPD->Register(NULL);
+        pd->Delete();
+        clean->Delete();
+
+#if 0
+        if( cleanupMethod != IntegralCurveAttributes::Merge )
+            avtCallback::IssueWarning("\nThe integral curves are being "
+                "displayed as tubes or ribbons which requires "
+                "vtkCleanPolyData to be called to remove duplicate points. "
+                "As such, the integral curves will be terminated based on a "
+                "spatial criteria rather than a velocity criteria");
+#endif
     }
     else
     {
-      outPD = pd;
+        outPD = pd;
     }
 
     if(displayGeometry == IntegralCurveAttributes::Ribbons)
     {
-      vtkPolyLine::GenerateSlidingNormals(points, lines, normals);
+        points = outPD->GetPoints();
+        lines = outPD->GetLines();
+        thetas = vtkDoubleArray::SafeDownCast(
+            outPD->GetPointData()->GetArray(thetaArrayName.c_str()));
 
-      // Rotate the normals according to the vorticity.
-      double theta, normal[3], tan[3], biNormal[3], p0[3], p1[3];
-      
-      numPts = outPD->GetPointData()->GetNumberOfTuples();
-      
-      for( int i=0; i<numPts; ++i)
-      {
-        thetas->GetTuple(i, &theta);    
-        points->GetPoint(i, p0);
-        
-        if (i < numPts-1)
+        numPts = outPD->GetPointData()->GetNumberOfTuples();
+
+        vtkDoubleArray *normals = vtkDoubleArray::New();
+        normals->SetNumberOfComponents(3);
+        normals->SetNumberOfTuples(numPts);
+        normals->SetName(normalsArrayName.c_str());
+
+        vtkPolyLine::GenerateSlidingNormals(points, lines, normals);
+
+        // Rotate the normals according to the vorticity.
+        double theta, normal[3], tan[3], biNormal[3], p0[3], p1[3];
+
+        for( int i=0; i<numPts; ++i)
         {
-          points->GetPoint(i+1, p1);
-        }
-        else
-        {
-          points->GetPoint(i-1, p0);
-          points->GetPoint(i, p1);
+            thetas->GetTuple(i, &theta);    
+            points->GetPoint(i, p0);
+
+            if (i < numPts-1)
+            {
+                points->GetPoint(i+1, p1);
+            }
+            else
+            {
+                points->GetPoint(i-1, p0);
+                points->GetPoint(i, p1);
+            }
+
+            for (int j = 0; j < 3; ++j)
+                tan[j] = p1[j] - p0[j];
+
+            normals->GetTuple(i, normal);
+            vtkMath::Normalize(tan);
+            vtkMath::Normalize(normal);
+
+            vtkMath::Cross(normal, tan, biNormal);
+            double cosTheta = cos(theta);
+            double sinTheta = sin(theta);
+
+            for (int j = 0; j < 3; ++j)
+                normal[j] = cosTheta*normal[j] + sinTheta*biNormal[j];
+        
+            normals->SetTuple(i, normal);
         }
 
-        for( int j=0; j<3; ++j )
-          tan[j] = p1[j]-p0[j];
-        
-        normals->GetTuple(i, normal);
-        vtkMath::Normalize(tan);
-        vtkMath::Normalize(normal);
-        
-        vtkMath::Cross(normal, tan, biNormal);
-        double cosTheta = cos(theta);
-        double sinTheta = sin(theta);
-
-        for( int j=0; j<3; ++j )
-          normal[j] = cosTheta*normal[j] + sinTheta*biNormal[j];
-        
-        normals->SetTuple(i,normal);
-      }
-      
-      thetas->Delete();
-      normals->Delete();
+        outPD->GetPointData()->SetNormals(normals);
+        normals->Delete();
+        outPD->GetPointData()->RemoveArray(thetaArrayName.c_str());
     }
 
-    points->Delete();
-    lines->Delete();
-    scalars->Delete();
-    tangents->Delete();
-
-    for( unsigned int i=0; i<secondaryVariables.size(); ++i )
-         secondarys[i]->Delete();
-
-    outPD->Register(NULL);
-    pd->Delete();
-    
     avtDataTree *dt = new avtDataTree(outPD, 0);
     SetOutputDataTree(dt);
 }

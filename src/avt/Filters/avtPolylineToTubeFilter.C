@@ -44,7 +44,6 @@
 
 #include <vtkTubeFilter.h>
 #include <vtkAppendPolyData.h>
-#include <vtkCellArray.h>
 #include <vtkCleanPolyData.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
@@ -139,9 +138,9 @@ avtPolylineToTubeFilter::ExecuteData(avtDataRepresentation *inDR)
     // Create the tube polydata.
     vtkTubeFilter *tubeFilter = vtkTubeFilter::New();
 
-    tubeFilter->SetRadius( radius );
-    tubeFilter->SetNumberOfSides( numberOfSides );
-    tubeFilter->SetCapping( 1 );
+    tubeFilter->SetRadius(radius);
+    tubeFilter->SetNumberOfSides(numberOfSides);
+    tubeFilter->SetCapping(1);
     tubeFilter->ReleaseDataFlagOn();
 
     if (varyRadius && radiusVar != "" && radiusVar != "\0")
@@ -154,6 +153,8 @@ avtPolylineToTubeFilter::ExecuteData(avtDataRepresentation *inDR)
     }
 
     tubeFilter->SetInputData(cleanFilter->GetOutput());
+
+    cleanFilter->Delete();
 
     tubeFilter->Update();
 
