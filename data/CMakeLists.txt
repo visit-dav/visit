@@ -415,8 +415,8 @@ ELSE(NOT WIN32)
        if("${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
            MESSAGE(WARNING "7-Zip not found, .tar.gz data files will not be extracted.")
        endif()
+    endif()
 ENDIF(NOT WIN32)
-endif()
 
 
 #-----------------------------------------------------------------------------
