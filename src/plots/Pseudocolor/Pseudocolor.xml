@@ -43,15 +43,10 @@
         Tube
         Ribbon
       </Enum>
-      <Enum name="EndPointType">
-        None
-        Heads
-        Tails
-        Both
-      </Enum>
       <Enum name="EndPointStyle">
-        Spheres
-        Cones
+        EndPointNone
+        EndPointSphere
+        EndPointCone
       </Enum>
       <Enum name="SizeType">
         Absolute
@@ -151,11 +146,11 @@
       <Field name="tubeRadiusVarRatio" label="Tube radius variable ration" type="double">
         10.000000
       </Field>
-      <Field name="endPointType" label="End point type" type="enum" subtype="EndPointType">
-        None
+      <Field name="tailStyle" label="Tail style" type="enum" subtype="EndPointStyle">
+        EndPointNone
       </Field>
-      <Field name="endPointStyle" label="End point style" type="enum" subtype="EndPointStyle">
-        Spheres
+      <Field name="headStyle" label="Head style" type="enum" subtype="EndPointStyle">
+        EndPointNone
       </Field>
       <Field name="endPointRadiusSizeType" label="endPointRadiusSizeType" type="enum" subtype="SizeType">
         FractionOfBBox

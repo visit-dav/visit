@@ -104,17 +104,11 @@ public:
         Tube,
         Ribbon
     };
-    enum EndPointType
-    {
-        None,
-        Heads,
-        Tails,
-        Both
-    };
     enum EndPointStyle
     {
-        Spheres,
-        Cones
+        EndPointNone,
+        EndPointSphere,
+        EndPointCone
     };
     enum SizeType
     {
@@ -188,8 +182,8 @@ public:
     void SetTubeRadiusVarEnabled(bool tubeRadiusVarEnabled_);
     void SetTubeRadiusVar(const std::string &tubeRadiusVar_);
     void SetTubeRadiusVarRatio(double tubeRadiusVarRatio_);
-    void SetEndPointType(EndPointType endPointType_);
-    void SetEndPointStyle(EndPointStyle endPointStyle_);
+    void SetTailStyle(EndPointStyle tailStyle_);
+    void SetHeadStyle(EndPointStyle headStyle_);
     void SetEndPointRadiusSizeType(SizeType endPointRadiusSizeType_);
     void SetEndPointRadiusAbsolute(double endPointRadiusAbsolute_);
     void SetEndPointRadiusBBox(double endPointRadiusBBox_);
@@ -244,8 +238,8 @@ public:
     const std::string    &GetTubeRadiusVar() const;
           std::string    &GetTubeRadiusVar();
     double               GetTubeRadiusVarRatio() const;
-    EndPointType         GetEndPointType() const;
-    EndPointStyle        GetEndPointStyle() const;
+    EndPointStyle        GetTailStyle() const;
+    EndPointStyle        GetHeadStyle() const;
     SizeType             GetEndPointRadiusSizeType() const;
     double               GetEndPointRadiusAbsolute() const;
     double               GetEndPointRadiusBBox() const;
@@ -300,11 +294,6 @@ public:
     static bool LineType_FromString(const std::string &, LineType &);
 protected:
     static std::string LineType_ToString(int);
-public:
-    static std::string EndPointType_ToString(EndPointType);
-    static bool EndPointType_FromString(const std::string &, EndPointType &);
-protected:
-    static std::string EndPointType_ToString(int);
 public:
     static std::string EndPointStyle_ToString(EndPointStyle);
     static bool EndPointStyle_FromString(const std::string &, EndPointStyle &);
@@ -362,8 +351,8 @@ public:
         ID_tubeRadiusVarEnabled,
         ID_tubeRadiusVar,
         ID_tubeRadiusVarRatio,
-        ID_endPointType,
-        ID_endPointStyle,
+        ID_tailStyle,
+        ID_headStyle,
         ID_endPointRadiusSizeType,
         ID_endPointRadiusAbsolute,
         ID_endPointRadiusBBox,
@@ -416,8 +405,8 @@ private:
     bool           tubeRadiusVarEnabled;
     std::string    tubeRadiusVar;
     double         tubeRadiusVarRatio;
-    int            endPointType;
-    int            endPointStyle;
+    int            tailStyle;
+    int            headStyle;
     int            endPointRadiusSizeType;
     double         endPointRadiusAbsolute;
     double         endPointRadiusBBox;
