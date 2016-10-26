@@ -93,9 +93,9 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     public final static int LINETYPE_TUBE = 1;
     public final static int LINETYPE_RIBBON = 2;
 
-    public final static int ENDPOINTSTYLE_ENDPOINTNONE = 0;
-    public final static int ENDPOINTSTYLE_ENDPOINTSPHERE = 1;
-    public final static int ENDPOINTSTYLE_ENDPOINTCONE = 2;
+    public final static int ENDPOINTSTYLE_NONE = 0;
+    public final static int ENDPOINTSTYLE_SPHERES = 1;
+    public final static int ENDPOINTSTYLE_CONES = 2;
 
     public final static int SIZETYPE_ABSOLUTE = 0;
     public final static int SIZETYPE_FRACTIONOFBBOX = 1;
@@ -137,8 +137,8 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         tubeRadiusVarEnabled = false;
         tubeRadiusVar = new String("");
         tubeRadiusVarRatio = 10;
-        tailStyle = ENDPOINTSTYLE_ENDPOINTNONE;
-        headStyle = ENDPOINTSTYLE_ENDPOINTNONE;
+        tailStyle = ENDPOINTSTYLE_NONE;
+        headStyle = ENDPOINTSTYLE_NONE;
         endPointRadiusSizeType = SIZETYPE_FRACTIONOFBBOX;
         endPointRadiusAbsolute = 0.125;
         endPointRadiusBBox = 0.05;
@@ -193,8 +193,8 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         tubeRadiusVarEnabled = false;
         tubeRadiusVar = new String("");
         tubeRadiusVarRatio = 10;
-        tailStyle = ENDPOINTSTYLE_ENDPOINTNONE;
-        headStyle = ENDPOINTSTYLE_ENDPOINTNONE;
+        tailStyle = ENDPOINTSTYLE_NONE;
+        headStyle = ENDPOINTSTYLE_NONE;
         endPointRadiusSizeType = SIZETYPE_FRACTIONOFBBOX;
         endPointRadiusAbsolute = 0.125;
         endPointRadiusBBox = 0.05;
@@ -1051,20 +1051,20 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         str = str + stringToString("tubeRadiusVar", tubeRadiusVar, indent) + "\n";
         str = str + doubleToString("tubeRadiusVarRatio", tubeRadiusVarRatio, indent) + "\n";
         str = str + indent + "tailStyle = ";
-        if(tailStyle == ENDPOINTSTYLE_ENDPOINTNONE)
-            str = str + "ENDPOINTSTYLE_ENDPOINTNONE";
-        if(tailStyle == ENDPOINTSTYLE_ENDPOINTSPHERE)
-            str = str + "ENDPOINTSTYLE_ENDPOINTSPHERE";
-        if(tailStyle == ENDPOINTSTYLE_ENDPOINTCONE)
-            str = str + "ENDPOINTSTYLE_ENDPOINTCONE";
+        if(tailStyle == ENDPOINTSTYLE_NONE)
+            str = str + "ENDPOINTSTYLE_NONE";
+        if(tailStyle == ENDPOINTSTYLE_SPHERES)
+            str = str + "ENDPOINTSTYLE_SPHERES";
+        if(tailStyle == ENDPOINTSTYLE_CONES)
+            str = str + "ENDPOINTSTYLE_CONES";
         str = str + "\n";
         str = str + indent + "headStyle = ";
-        if(headStyle == ENDPOINTSTYLE_ENDPOINTNONE)
-            str = str + "ENDPOINTSTYLE_ENDPOINTNONE";
-        if(headStyle == ENDPOINTSTYLE_ENDPOINTSPHERE)
-            str = str + "ENDPOINTSTYLE_ENDPOINTSPHERE";
-        if(headStyle == ENDPOINTSTYLE_ENDPOINTCONE)
-            str = str + "ENDPOINTSTYLE_ENDPOINTCONE";
+        if(headStyle == ENDPOINTSTYLE_NONE)
+            str = str + "ENDPOINTSTYLE_NONE";
+        if(headStyle == ENDPOINTSTYLE_SPHERES)
+            str = str + "ENDPOINTSTYLE_SPHERES";
+        if(headStyle == ENDPOINTSTYLE_CONES)
+            str = str + "ENDPOINTSTYLE_CONES";
         str = str + "\n";
         str = str + indent + "endPointRadiusSizeType = ";
         if(endPointRadiusSizeType == SIZETYPE_ABSOLUTE)

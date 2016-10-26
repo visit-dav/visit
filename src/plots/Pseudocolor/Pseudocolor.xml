@@ -44,9 +44,9 @@
         Ribbon
       </Enum>
       <Enum name="EndPointStyle">
-        EndPointNone
-        EndPointSphere
-        EndPointCone
+        None
+        Spheres
+        Cones
       </Enum>
       <Enum name="SizeType">
         Absolute
@@ -147,10 +147,10 @@
         10.000000
       </Field>
       <Field name="tailStyle" label="Tail style" type="enum" subtype="EndPointStyle">
-        EndPointNone
+        None
       </Field>
       <Field name="headStyle" label="Head style" type="enum" subtype="EndPointStyle">
-        EndPointNone
+        None
       </Field>
       <Field name="endPointRadiusSizeType" label="endPointRadiusSizeType" type="enum" subtype="SizeType">
         FractionOfBBox

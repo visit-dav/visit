@@ -272,7 +272,7 @@ PseudocolorAttributes::LineType_FromString(const std::string &s, PseudocolorAttr
 //
 
 static const char *EndPointStyle_strings[] = {
-"EndPointNone", "EndPointSphere", "EndPointCone"
+"None", "Spheres", "Cones"
 };
 
 std::string
@@ -293,7 +293,7 @@ PseudocolorAttributes::EndPointStyle_ToString(int t)
 bool
 PseudocolorAttributes::EndPointStyle_FromString(const std::string &s, PseudocolorAttributes::EndPointStyle &val)
 {
-    val = PseudocolorAttributes::EndPointNone;
+    val = PseudocolorAttributes::None;
     for(int i = 0; i < 3; ++i)
     {
         if(s == EndPointStyle_strings[i])
@@ -387,8 +387,8 @@ void PseudocolorAttributes::Init()
     tubeRadiusBBox = 0.005;
     tubeRadiusVarEnabled = false;
     tubeRadiusVarRatio = 10;
-    tailStyle = EndPointNone;
-    headStyle = EndPointNone;
+    tailStyle = None;
+    headStyle = None;
     endPointRadiusSizeType = FractionOfBBox;
     endPointRadiusAbsolute = 0.125;
     endPointRadiusBBox = 0.05;
@@ -2771,6 +2771,10 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   Kathleen Bonnell, Fri Nov 12 11:11:41 PST 2004 
 //   Modified determination of when secondary var requires recalc. 
 //
+//   Eric Brugger, Wed Oct 26 09:36:37 PDT 2016
+//   I modified the plot to support independently setting the point style
+//   for the two end points of lines.
+//
 // ****************************************************************************
 bool
 PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
@@ -2790,8 +2794,8 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             obj.tubeRadiusVar != "" &&
                             obj.tubeRadiusVar != "\0") ||
 
-                           ((obj.tailStyle != EndPointNone ||
-                             obj.headStyle != EndPointNone) &&
+                           ((obj.tailStyle != None ||
+                             obj.headStyle != None) &&
                             obj.endPointRadiusVarEnabled &&
                             obj.endPointRadiusVar != endPointRadiusVar &&
                             obj.endPointRadiusVar != "default" && 

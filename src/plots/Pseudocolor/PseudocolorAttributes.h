@@ -106,9 +106,9 @@ public:
     };
     enum EndPointStyle
     {
-        EndPointNone,
-        EndPointSphere,
-        EndPointCone
+        None,
+        Spheres,
+        Cones
     };
     enum SizeType
     {

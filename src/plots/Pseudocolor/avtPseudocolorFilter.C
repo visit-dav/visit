@@ -248,8 +248,8 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
 
     // End Point scaling by a secondary variable
     if( (topoDim == 1 || (topoDim > 1 && plotAtts.GetRenderWireframe())) &&
-        (plotAtts.GetTailStyle() != PseudocolorAttributes::EndPointNone ||
-         plotAtts.GetHeadStyle() != PseudocolorAttributes::EndPointNone) && 
+        (plotAtts.GetTailStyle() != PseudocolorAttributes::None ||
+         plotAtts.GetHeadStyle() != PseudocolorAttributes::None) && 
         plotAtts.GetEndPointRadiusVarEnabled() &&
         endPointRadiusVar != "default" &&
         endPointRadiusVar != "\0" &&
