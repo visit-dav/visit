@@ -65,8 +65,8 @@ PseudocolorAtts.tubeRadiusBBox = 0.005
 PseudocolorAtts.tubeRadiusVarEnabled = 0
 PseudocolorAtts.tubeRadiusVar = ""
 PseudocolorAtts.tubeRadiusVarRatio = 10
-PseudocolorAtts.endPointType = PseudocolorAtts.Tails  # None, Heads, Tails, Both
-PseudocolorAtts.endPointStyle = PseudocolorAtts.Spheres  # Spheres, Cones
+PseudocolorAtts.tailStyle = PseudocolorAtts.Spheres  # None, Spheres, Cones
+PseudocolorAtts.headStyle = PseudocolorAtts.None  # None, Spheres, Cones
 PseudocolorAtts.endPointRadiusSizeType = PseudocolorAtts.Absolute  # Absolute, FractionOfBBox
 PseudocolorAtts.endPointRadiusAbsolute = 0.3
 PseudocolorAtts.endPointRadiusBBox = 0.005
@@ -201,7 +201,7 @@ Test( "ic_geometry_06" )
 #Test( "ic_geometry_09" )
 
 PseudocolorAtts.lineType = PseudocolorAtts.Line
-PseudocolorAtts.endPointType = PseudocolorAtts.Both
+PseudocolorAtts.headStyle = PseudocolorAtts.Spheres  # None, Spheres, Cones
 SetPlotOptions(PseudocolorAtts)
 Test( "ic_geometry_10" )
 
@@ -215,7 +215,8 @@ PseudocolorAtts.endPointRadiusAbsolute = 0.6
 SetPlotOptions(PseudocolorAtts)
 Test( "ic_geometry_12" )
 
-PseudocolorAtts.endPointStyle = PseudocolorAtts.Cones
+PseudocolorAtts.tailStyle = PseudocolorAtts.Cones  # None, Spheres, Cones
+PseudocolorAtts.headStyle = PseudocolorAtts.Cones  # None, Spheres, Cones
 SetPlotOptions(PseudocolorAtts)
 Test( "ic_geometry_13" )
 
@@ -263,8 +264,8 @@ PseudocolorAtts.tubeRadiusBBox = 0.02
 PseudocolorAtts.tubeRadiusVarEnabled = 0
 PseudocolorAtts.tubeRadiusVar = ""
 PseudocolorAtts.tubeRadiusVarRatio = 10
-PseudocolorAtts.endPointType = PseudocolorAtts.Heads  # None, Heads, Tails, Both
-PseudocolorAtts.endPointStyle = PseudocolorAtts.Cones  # Spheres, Cones
+PseudocolorAtts.tailStyle = PseudocolorAtts.None  # None, Spheres, Cones
+PseudocolorAtts.headStyle = PseudocolorAtts.Cones  # None, Spheres, Cones
 PseudocolorAtts.endPointRadiusSizeType = PseudocolorAtts.Absolute  # Absolute, FractionOfBBox
 PseudocolorAtts.endPointRadiusAbsolute = 0.8
 PseudocolorAtts.endPointRadiusBBox = 0.04
