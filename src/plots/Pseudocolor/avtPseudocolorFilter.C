@@ -176,6 +176,10 @@ avtPseudocolorFilter::UpdateDataObjectInfo(void)
 //    Kathleen Biagas, Fri Nov  2 10:24:21 PDT 2012
 //    Retrieve the active variable.
 //
+//    Eric Brugger, Wed Oct 26 09:23:35 PDT 2016
+//    I modified the plot to support independently setting the point style
+//    for the two end points of lines.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -244,7 +248,8 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
 
     // End Point scaling by a secondary variable
     if( (topoDim == 1 || (topoDim > 1 && plotAtts.GetRenderWireframe())) &&
-        plotAtts.GetEndPointType() != PseudocolorAttributes::None && 
+        (plotAtts.GetTailStyle() != PseudocolorAttributes::EndPointNone ||
+         plotAtts.GetHeadStyle() != PseudocolorAttributes::EndPointNone) && 
         plotAtts.GetEndPointRadiusVarEnabled() &&
         endPointRadiusVar != "default" &&
         endPointRadiusVar != "\0" &&

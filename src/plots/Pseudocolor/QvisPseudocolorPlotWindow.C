@@ -530,6 +530,10 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Eric Brugger, Wed Oct 26 09:18:20 PDT 2016
+//   I modified the plot to support independently setting the point style
+//   for the two end points of lines.
+//
 // ****************************************************************************
 
 void
@@ -643,76 +647,73 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     lineLayout->addWidget(splitter, 3, 0, 1, 5);
 
     // End points
-    endPointTypeLabel = new QLabel(tr("Show end points"), central);
-    lineLayout->addWidget(endPointTypeLabel, 4, 0);
+    tailStyleLabel = new QLabel(tr("Tail"), central);
+    lineLayout->addWidget(tailStyleLabel, 4, 0, Qt::AlignRight);
 
-    endPointType = new QComboBox(central);
-    endPointType->addItem(tr("None"), 0);
-    endPointType->addItem(tr("Heads"), 2);
-    endPointType->addItem(tr("Tails"), 1);
-    endPointType->addItem(tr("Both"), 3);
-    connect(endPointType, SIGNAL(activated(int)), this, SLOT(endPointTypeChanged(int)));
-    lineLayout->addWidget(endPointType, 4, 1);
+    tailStyle = new QComboBox(central);
+    tailStyle->addItem(tr("None"), 0);
+    tailStyle->addItem(tr("Sphere"), 1);
+    tailStyle->addItem(tr("Cone"), 2);
+    connect(tailStyle, SIGNAL(activated(int)), this, SLOT(tailStyleChanged(int)));
+    lineLayout->addWidget(tailStyle, 4, 1);
 
-    endPointStyleLabel = new QLabel(tr("Style"), central);
-    lineLayout->addWidget(endPointStyleLabel, 5, 0, Qt::AlignRight);
+    headStyleLabel = new QLabel(tr("Head"), central);
+    lineLayout->addWidget(headStyleLabel, 4, 2, Qt::AlignRight);
 
-    endPointStyle = new QComboBox(central);
-    endPointStyle->addItem(tr("Spheres"), 0);
-    endPointStyle->addItem(tr("Cones"), 1);
-    connect(endPointStyle, SIGNAL(activated(int)), this, SLOT(endPointStyleChanged(int)));
-    lineLayout->addWidget(endPointStyle, 5, 1);
+    headStyle = new QComboBox(central);
+    headStyle->addItem(tr("None"), 0);
+    headStyle->addItem(tr("Sphere"), 1);
+    headStyle->addItem(tr("Cone"), 2);
+    connect(headStyle, SIGNAL(activated(int)), this, SLOT(headStyleChanged(int)));
+    lineLayout->addWidget(headStyle, 4, 3);
 
     endPointRadiusLabel = new QLabel(tr("Radius"), central);
-    lineLayout->addWidget(endPointRadiusLabel, 6, 0, Qt::AlignRight);
+    lineLayout->addWidget(endPointRadiusLabel, 5, 0, Qt::AlignRight);
 
     endPointRadius = new QLineEdit(central);
-    lineLayout->addWidget(endPointRadius, 6, 1);
+    lineLayout->addWidget(endPointRadius, 5, 1);
     connect(endPointRadius, SIGNAL(returnPressed()), this, SLOT(endPointRadiusProcessText()));
 
     endPointRadiusSizeType = new QComboBox(central);
     endPointRadiusSizeType->addItem(tr("Absolute"), 0);
-    endPointRadiusSizeType->addItem(tr("Fraction of Bounding Box"), 1);
+    endPointRadiusSizeType->addItem(tr("Fraction of bounding box"), 1);
     connect(endPointRadiusSizeType, SIGNAL(activated(int)), this, SLOT(endPointRadiusSizeTypeChanged(int)));
-    lineLayout->addWidget(endPointRadiusSizeType, 6, 2);
+    lineLayout->addWidget(endPointRadiusSizeType, 5, 2);
 
+    endPointRatioLabel = new QLabel(tr("Cone ratio"), central);
+    lineLayout->addWidget(endPointRatioLabel, 5, 3, Qt::AlignRight);
 
-    endPointRatioLabel = new QLabel(tr("Height Ratio"), central);
-    lineLayout->addWidget(endPointRatioLabel, 6, 3, Qt::AlignRight);
     endPointRatio = new QLineEdit(central);
     connect(endPointRatio, SIGNAL(returnPressed()),
             this, SLOT(endPointRatioProcessText()));
-    lineLayout->addWidget(endPointRatio, 6, 4);
+    lineLayout->addWidget(endPointRatio, 5, 4);
 
     // End point variable radius.
     endPointRadiusVarEnabled = new QCheckBox(tr("Variable radius"), central);
     connect(endPointRadiusVarEnabled, SIGNAL(toggled(bool)), this, SLOT(endPointRadiusVarToggled(bool)));
-    lineLayout->addWidget(endPointRadiusVarEnabled, 7, 0);
+    lineLayout->addWidget(endPointRadiusVarEnabled, 6, 0, 1, 2, Qt::AlignRight);
     
-    endPointRadiusVarLabel = new QLabel(tr("Variable"), central);
-    lineLayout->addWidget(endPointRadiusVarLabel, 7, 1, Qt::AlignRight);
     endPointRadiusVar = new QvisVariableButton(true, true, true,
                                                QvisVariableButton::Scalars, central);
     connect(endPointRadiusVar, SIGNAL(activated(const QString &)),
             this, SLOT(endPointRadiusVarChanged(const QString&)));
-    lineLayout->addWidget(endPointRadiusVar, 7, 2);
+    lineLayout->addWidget(endPointRadiusVar, 6, 2);
 
-    endPointRadiusVarRatioLabel = new QLabel(tr("Max/Min Ratio"), central);
-    lineLayout->addWidget(endPointRadiusVarRatioLabel, 7, 3, Qt::AlignRight);
+    endPointRadiusVarRatioLabel = new QLabel(tr("Max/Min ratio"), central);
+    lineLayout->addWidget(endPointRadiusVarRatioLabel, 6, 3, Qt::AlignRight);
     endPointRadiusVarRatio = new QLineEdit(central);
     connect(endPointRadiusVarRatio, SIGNAL(returnPressed()),
             this, SLOT(endPointRadiusVarRatioProcessText()));
-    lineLayout->addWidget(endPointRadiusVarRatio, 7, 4);
-
+    lineLayout->addWidget(endPointRadiusVarRatio, 6, 4);
 
     endPointResolutionLabel = new QLabel(tr("Resolution"), central);
-    lineLayout->addWidget(endPointResolutionLabel, 4, 3, Qt::AlignRight);
+    lineLayout->addWidget(endPointResolutionLabel, 7, 0, Qt::AlignRight);
 
     endPointResolution = new QSpinBox(central);
     endPointResolution->setKeyboardTracking(false);
     endPointResolution->setMinimum(3);
     endPointResolution->setMaximum(100);
-    lineLayout->addWidget(endPointResolution, 4, 4);
+    lineLayout->addWidget(endPointResolution, 7, 1);
     connect(endPointResolution, SIGNAL(valueChanged(int)), this, SLOT(endPointResolutionChanged(int)));
 
     //
@@ -925,6 +926,10 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
 //   Use helper function DoubleToQString for consistency in formatting across
 //   all windows.
+//
+//   Eric Brugger, Wed Oct 26 09:18:20 PDT 2016
+//   I modified the plot to support independently setting the point style
+//   for the two end points of lines.
 //
 // ****************************************************************************
 
@@ -1257,90 +1262,74 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             endPointResolution->blockSignals(false);
             break;
 
-        case PseudocolorAttributes::ID_endPointType:
-            endPointType->blockSignals(true);
-            endPointType->setCurrentIndex(int(pcAtts->GetEndPointType()));
-            endPointType->blockSignals(false);
+        case PseudocolorAttributes::ID_tailStyle:
+        case PseudocolorAttributes::ID_headStyle:
+            tailStyle->blockSignals(true);
+            tailStyle->setCurrentIndex(int(pcAtts->GetTailStyle()));
+            tailStyle->blockSignals(false);
+            headStyle->blockSignals(true);
+            headStyle->setCurrentIndex(int(pcAtts->GetHeadStyle()));
+            headStyle->blockSignals(false);
             
-            if( bool(pcAtts->GetEndPointType()) )
             {
-              endPointStyleLabel->show();
-              endPointStyle->show();
-              endPointRadiusSizeType->show();
-              endPointRadiusLabel->show();
-              endPointRadius->show();
-
-              if( pcAtts->GetEndPointStyle() == PseudocolorAttributes::Cones )
-              {
+            bool showEndPointAttributes =
+                pcAtts->GetTailStyle() != PseudocolorAttributes::EndPointNone ||
+                pcAtts->GetHeadStyle() != PseudocolorAttributes::EndPointNone;
+            if (showEndPointAttributes)
+            {
+                endPointRadiusLabel->show();
+                endPointRadius->show();
+                endPointRadiusSizeType->show();
                 endPointRatioLabel->show();
                 endPointRatio->show();
-              }
-              else
-              {
+
+                endPointRadiusVarEnabled->show();
+                endPointRadiusVar->show();
+                endPointRadiusVarRatioLabel->show();
+                endPointRadiusVarRatio->show();
+
+                endPointResolutionLabel->show();
+                endPointResolution->show();
+            }
+            else
+            {
+                endPointRadiusLabel->hide();
+                endPointRadius->hide();         
+                endPointRadiusSizeType->hide();
                 endPointRatioLabel->hide();
                 endPointRatio->hide();
-              }
 
-              endPointRadiusVarEnabled->show();
-              endPointRadiusVar->show();
-              endPointRadiusVarLabel->show();
-              endPointRadiusVar->show();
-              endPointRadiusVarRatioLabel->show();
-              endPointRadiusVarRatio->show();
+                endPointRadiusVarEnabled->hide();
+                endPointRadiusVar->hide();
+                endPointRadiusVarRatioLabel->hide();
+                endPointRadiusVarRatio->hide();
 
-              endPointResolutionLabel->show();
-              endPointResolution->show();
+                endPointResolutionLabel->hide();
+                endPointResolution->hide();
+            }
+
+            if (pcAtts->GetTailStyle() == PseudocolorAttributes::EndPointCone ||
+                pcAtts->GetHeadStyle() == PseudocolorAttributes::EndPointCone)
+            {
+                endPointRatioLabel->show();
+                endPointRatio->show();
             }
             else
             {
-              endPointStyleLabel->hide();
-              endPointStyle->hide();
-              endPointRadiusSizeType->hide();
-              endPointRadiusLabel->hide();
-              endPointRadius->hide();         
-              endPointRatioLabel->hide();
-              endPointRatio->hide();
-
-              endPointRadiusVarEnabled->hide();
-              endPointRadiusVar->hide();
-              endPointRadiusVarLabel->hide();
-              endPointRadiusVar->hide();
-              endPointRadiusVarRatioLabel->hide();
-              endPointRadiusVarRatio->hide();
-
-              endPointResolutionLabel->hide();
-              endPointResolution->hide();
+                endPointRatioLabel->hide();
+                endPointRatio->hide();
             }
 
-            endPointStyleLabel->setEnabled( bool(pcAtts->GetEndPointType()) );
-            endPointStyle->setEnabled( bool(pcAtts->GetEndPointType()) );
-            endPointRadiusSizeType->setEnabled( bool(pcAtts->GetEndPointType()) );
-            endPointRadiusLabel->setEnabled( bool(pcAtts->GetEndPointType()) );
-            endPointRadius->setEnabled( bool(pcAtts->GetEndPointType()) );
+            endPointRadiusLabel->setEnabled(showEndPointAttributes);
+            endPointRadius->setEnabled(showEndPointAttributes);
+            endPointRadiusSizeType->setEnabled(showEndPointAttributes);
+            endPointRatioLabel->setEnabled(showEndPointAttributes);
+            endPointRatio->setEnabled(showEndPointAttributes);
 
-            endPointRatioLabel->setEnabled( bool(pcAtts->GetEndPointType()) );
-            endPointRatio->setEnabled( bool(pcAtts->GetEndPointType()) );
-
-            endPointResolutionLabel->setEnabled( bool(pcAtts->GetEndPointType()) );
-            endPointResolution->setEnabled( bool(pcAtts->GetEndPointType()) );
-
-            break;
-
-        case PseudocolorAttributes::ID_endPointStyle:
-            endPointStyle->blockSignals(true);
-            endPointStyle->setCurrentIndex(int(pcAtts->GetEndPointStyle()));
-            endPointStyle->blockSignals(false);
-
-            if( pcAtts->GetEndPointStyle() == PseudocolorAttributes::Cones )
-            {
-              endPointRatioLabel->show();
-              endPointRatio->show();
+            endPointResolutionLabel->setEnabled(showEndPointAttributes);
+            endPointResolution->setEnabled(showEndPointAttributes);
             }
-            else
-            {
-              endPointRatioLabel->hide();
-              endPointRatio->hide();
-            }
+
             break;
 
         case PseudocolorAttributes::ID_endPointRadiusSizeType:
@@ -1376,7 +1365,6 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             endPointRadiusVar->blockSignals(true);
 
             endPointRadiusVarEnabled->setChecked( pcAtts->GetEndPointRadiusVarEnabled() );
-            endPointRadiusVarLabel->setEnabled( pcAtts->GetEndPointRadiusVarEnabled() );
             endPointRadiusVar->setEnabled( pcAtts->GetEndPointRadiusVarEnabled() );
             endPointRadiusVarRatioLabel->setEnabled( pcAtts->GetEndPointRadiusVarEnabled() );
             endPointRadiusVarRatio->setEnabled( pcAtts->GetEndPointRadiusVarEnabled() );
@@ -2221,19 +2209,18 @@ QvisPseudocolorPlotWindow::tubeRadiusVarRatioProcessText()
 }
 
 void
-QvisPseudocolorPlotWindow::endPointTypeChanged(int newType)
+QvisPseudocolorPlotWindow::tailStyleChanged(int newStyle)
 {
-    pcAtts->SetEndPointType((PseudocolorAttributes::EndPointType)newType);
+    pcAtts->SetTailStyle((PseudocolorAttributes::EndPointStyle)newStyle);
     Apply();
 }
 
 void
-QvisPseudocolorPlotWindow::endPointStyleChanged(int newStyle)
+QvisPseudocolorPlotWindow::headStyleChanged(int newStyle)
 {
-    pcAtts->SetEndPointStyle((PseudocolorAttributes::EndPointStyle)newStyle);
+    pcAtts->SetHeadStyle((PseudocolorAttributes::EndPointStyle)newStyle);
     Apply();
 }
-
 
 void
 QvisPseudocolorPlotWindow::endPointRadiusProcessText()

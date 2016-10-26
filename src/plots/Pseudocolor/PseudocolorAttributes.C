@@ -268,70 +268,33 @@ PseudocolorAttributes::LineType_FromString(const std::string &s, PseudocolorAttr
 }
 
 //
-// Enum conversion methods for PseudocolorAttributes::EndPointType
-//
-
-static const char *EndPointType_strings[] = {
-"None", "Heads", "Tails", 
-"Both"};
-
-std::string
-PseudocolorAttributes::EndPointType_ToString(PseudocolorAttributes::EndPointType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
-    return EndPointType_strings[index];
-}
-
-std::string
-PseudocolorAttributes::EndPointType_ToString(int t)
-{
-    int index = (t < 0 || t >= 4) ? 0 : t;
-    return EndPointType_strings[index];
-}
-
-bool
-PseudocolorAttributes::EndPointType_FromString(const std::string &s, PseudocolorAttributes::EndPointType &val)
-{
-    val = PseudocolorAttributes::None;
-    for(int i = 0; i < 4; ++i)
-    {
-        if(s == EndPointType_strings[i])
-        {
-            val = (EndPointType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for PseudocolorAttributes::EndPointStyle
 //
 
 static const char *EndPointStyle_strings[] = {
-"Spheres", "Cones"};
+"EndPointNone", "EndPointSphere", "EndPointCone"
+};
 
 std::string
 PseudocolorAttributes::EndPointStyle_ToString(PseudocolorAttributes::EndPointStyle t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return EndPointStyle_strings[index];
 }
 
 std::string
 PseudocolorAttributes::EndPointStyle_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return EndPointStyle_strings[index];
 }
 
 bool
 PseudocolorAttributes::EndPointStyle_FromString(const std::string &s, PseudocolorAttributes::EndPointStyle &val)
 {
-    val = PseudocolorAttributes::Spheres;
-    for(int i = 0; i < 2; ++i)
+    val = PseudocolorAttributes::EndPointNone;
+    for(int i = 0; i < 3; ++i)
     {
         if(s == EndPointStyle_strings[i])
         {
@@ -424,8 +387,8 @@ void PseudocolorAttributes::Init()
     tubeRadiusBBox = 0.005;
     tubeRadiusVarEnabled = false;
     tubeRadiusVarRatio = 10;
-    endPointType = None;
-    endPointStyle = Spheres;
+    tailStyle = EndPointNone;
+    headStyle = EndPointNone;
     endPointRadiusSizeType = FractionOfBBox;
     endPointRadiusAbsolute = 0.125;
     endPointRadiusBBox = 0.05;
@@ -492,8 +455,8 @@ void PseudocolorAttributes::Copy(const PseudocolorAttributes &obj)
     tubeRadiusVarEnabled = obj.tubeRadiusVarEnabled;
     tubeRadiusVar = obj.tubeRadiusVar;
     tubeRadiusVarRatio = obj.tubeRadiusVarRatio;
-    endPointType = obj.endPointType;
-    endPointStyle = obj.endPointStyle;
+    tailStyle = obj.tailStyle;
+    headStyle = obj.headStyle;
     endPointRadiusSizeType = obj.endPointRadiusSizeType;
     endPointRadiusAbsolute = obj.endPointRadiusAbsolute;
     endPointRadiusBBox = obj.endPointRadiusBBox;
@@ -703,8 +666,8 @@ PseudocolorAttributes::operator == (const PseudocolorAttributes &obj) const
             (tubeRadiusVarEnabled == obj.tubeRadiusVarEnabled) &&
             (tubeRadiusVar == obj.tubeRadiusVar) &&
             (tubeRadiusVarRatio == obj.tubeRadiusVarRatio) &&
-            (endPointType == obj.endPointType) &&
-            (endPointStyle == obj.endPointStyle) &&
+            (tailStyle == obj.tailStyle) &&
+            (headStyle == obj.headStyle) &&
             (endPointRadiusSizeType == obj.endPointRadiusSizeType) &&
             (endPointRadiusAbsolute == obj.endPointRadiusAbsolute) &&
             (endPointRadiusBBox == obj.endPointRadiusBBox) &&
@@ -896,8 +859,8 @@ PseudocolorAttributes::SelectAll()
     Select(ID_tubeRadiusVarEnabled,     (void *)&tubeRadiusVarEnabled);
     Select(ID_tubeRadiusVar,            (void *)&tubeRadiusVar);
     Select(ID_tubeRadiusVarRatio,       (void *)&tubeRadiusVarRatio);
-    Select(ID_endPointType,             (void *)&endPointType);
-    Select(ID_endPointStyle,            (void *)&endPointStyle);
+    Select(ID_tailStyle,                (void *)&tailStyle);
+    Select(ID_headStyle,                (void *)&headStyle);
     Select(ID_endPointRadiusSizeType,   (void *)&endPointRadiusSizeType);
     Select(ID_endPointRadiusAbsolute,   (void *)&endPointRadiusAbsolute);
     Select(ID_endPointRadiusBBox,       (void *)&endPointRadiusBBox);
@@ -1138,16 +1101,16 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("tubeRadiusVarRatio", tubeRadiusVarRatio));
     }
 
-    if(completeSave || !FieldsEqual(ID_endPointType, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tailStyle, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("endPointType", EndPointType_ToString(endPointType)));
+        node->AddNode(new DataNode("tailStyle", EndPointStyle_ToString(tailStyle)));
     }
 
-    if(completeSave || !FieldsEqual(ID_endPointStyle, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_headStyle, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("endPointStyle", EndPointStyle_ToString(endPointStyle)));
+        node->AddNode(new DataNode("headStyle", EndPointStyle_ToString(headStyle)));
     }
 
     if(completeSave || !FieldsEqual(ID_endPointRadiusSizeType, &defaultObject))
@@ -1448,36 +1411,36 @@ PseudocolorAttributes::SetFromNode(DataNode *parentNode)
         SetTubeRadiusVar(node->AsString());
     if((node = searchNode->GetNode("tubeRadiusVarRatio")) != 0)
         SetTubeRadiusVarRatio(node->AsDouble());
-    if((node = searchNode->GetNode("endPointType")) != 0)
+    if((node = searchNode->GetNode("tailStyle")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
-                SetEndPointType(EndPointType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            EndPointType value;
-            if(EndPointType_FromString(node->AsString(), value))
-                SetEndPointType(value);
-        }
-    }
-    if((node = searchNode->GetNode("endPointStyle")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
-                SetEndPointStyle(EndPointStyle(ival));
+            if(ival >= 0 && ival < 3)
+                SetTailStyle(EndPointStyle(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
             EndPointStyle value;
             if(EndPointStyle_FromString(node->AsString(), value))
-                SetEndPointStyle(value);
+                SetTailStyle(value);
+        }
+    }
+    if((node = searchNode->GetNode("headStyle")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetHeadStyle(EndPointStyle(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            EndPointStyle value;
+            if(EndPointStyle_FromString(node->AsString(), value))
+                SetHeadStyle(value);
         }
     }
     if((node = searchNode->GetNode("endPointRadiusSizeType")) != 0)
@@ -1757,17 +1720,17 @@ PseudocolorAttributes::SetTubeRadiusVarRatio(double tubeRadiusVarRatio_)
 }
 
 void
-PseudocolorAttributes::SetEndPointType(PseudocolorAttributes::EndPointType endPointType_)
+PseudocolorAttributes::SetTailStyle(PseudocolorAttributes::EndPointStyle tailStyle_)
 {
-    endPointType = endPointType_;
-    Select(ID_endPointType, (void *)&endPointType);
+    tailStyle = tailStyle_;
+    Select(ID_tailStyle, (void *)&tailStyle);
 }
 
 void
-PseudocolorAttributes::SetEndPointStyle(PseudocolorAttributes::EndPointStyle endPointStyle_)
+PseudocolorAttributes::SetHeadStyle(PseudocolorAttributes::EndPointStyle headStyle_)
 {
-    endPointStyle = endPointStyle_;
-    Select(ID_endPointStyle, (void *)&endPointStyle);
+    headStyle = headStyle_;
+    Select(ID_headStyle, (void *)&headStyle);
 }
 
 void
@@ -2102,16 +2065,16 @@ PseudocolorAttributes::GetTubeRadiusVarRatio() const
     return tubeRadiusVarRatio;
 }
 
-PseudocolorAttributes::EndPointType
-PseudocolorAttributes::GetEndPointType() const
+PseudocolorAttributes::EndPointStyle
+PseudocolorAttributes::GetTailStyle() const
 {
-    return EndPointType(endPointType);
+    return EndPointStyle(tailStyle);
 }
 
 PseudocolorAttributes::EndPointStyle
-PseudocolorAttributes::GetEndPointStyle() const
+PseudocolorAttributes::GetHeadStyle() const
 {
-    return EndPointStyle(endPointStyle);
+    return EndPointStyle(headStyle);
 }
 
 PseudocolorAttributes::SizeType
@@ -2330,8 +2293,8 @@ PseudocolorAttributes::GetFieldName(int index) const
     case ID_tubeRadiusVarEnabled:     return "tubeRadiusVarEnabled";
     case ID_tubeRadiusVar:            return "tubeRadiusVar";
     case ID_tubeRadiusVarRatio:       return "tubeRadiusVarRatio";
-    case ID_endPointType:             return "endPointType";
-    case ID_endPointStyle:            return "endPointStyle";
+    case ID_tailStyle:                return "tailStyle";
+    case ID_headStyle:                return "headStyle";
     case ID_endPointRadiusSizeType:   return "endPointRadiusSizeType";
     case ID_endPointRadiusAbsolute:   return "endPointRadiusAbsolute";
     case ID_endPointRadiusBBox:       return "endPointRadiusBBox";
@@ -2404,8 +2367,8 @@ PseudocolorAttributes::GetFieldType(int index) const
     case ID_tubeRadiusVarEnabled:     return FieldType_bool;
     case ID_tubeRadiusVar:            return FieldType_string;
     case ID_tubeRadiusVarRatio:       return FieldType_double;
-    case ID_endPointType:             return FieldType_enum;
-    case ID_endPointStyle:            return FieldType_enum;
+    case ID_tailStyle:                return FieldType_enum;
+    case ID_headStyle:                return FieldType_enum;
     case ID_endPointRadiusSizeType:   return FieldType_enum;
     case ID_endPointRadiusAbsolute:   return FieldType_double;
     case ID_endPointRadiusBBox:       return FieldType_double;
@@ -2478,8 +2441,8 @@ PseudocolorAttributes::GetFieldTypeName(int index) const
     case ID_tubeRadiusVarEnabled:     return "bool";
     case ID_tubeRadiusVar:            return "string";
     case ID_tubeRadiusVarRatio:       return "double";
-    case ID_endPointType:             return "enum";
-    case ID_endPointStyle:            return "enum";
+    case ID_tailStyle:                return "enum";
+    case ID_headStyle:                return "enum";
     case ID_endPointRadiusSizeType:   return "enum";
     case ID_endPointRadiusAbsolute:   return "double";
     case ID_endPointRadiusBBox:       return "double";
@@ -2682,14 +2645,14 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (tubeRadiusVarRatio == obj.tubeRadiusVarRatio);
         }
         break;
-    case ID_endPointType:
+    case ID_tailStyle:
         {  // new scope
-        retval = (endPointType == obj.endPointType);
+        retval = (tailStyle == obj.tailStyle);
         }
         break;
-    case ID_endPointStyle:
+    case ID_headStyle:
         {  // new scope
-        retval = (endPointStyle == obj.endPointStyle);
+        retval = (headStyle == obj.headStyle);
         }
         break;
     case ID_endPointRadiusSizeType:
@@ -2827,7 +2790,8 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             obj.tubeRadiusVar != "" &&
                             obj.tubeRadiusVar != "\0") ||
 
-                           (obj.endPointType != None &&
+                           ((obj.tailStyle != EndPointNone ||
+                             obj.headStyle != EndPointNone) &&
                             obj.endPointRadiusVarEnabled &&
                             obj.endPointRadiusVar != endPointRadiusVar &&
                             obj.endPointRadiusVar != "default" && 
@@ -2850,11 +2814,12 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             tubeRadiusVarRatio   != obj.tubeRadiusVarRatio ||
                             tubeResolution       != obj.tubeResolution ||
 
-                            endPointType             != obj.endPointType ||
-                            endPointStyle            != obj.endPointStyle ||
+                            tailStyle                != obj.tailStyle ||
+                            headStyle                != obj.headStyle ||
+                            endPointRatio            != obj.endPointRatio ||
+                            endPointRadiusSizeType   != obj.endPointRadiusSizeType ||
                             endPointRadiusAbsolute   != obj.endPointRadiusAbsolute ||
                             endPointRadiusBBox       != obj.endPointRadiusBBox ||
-                            endPointRatio            != obj.endPointRatio ||
                             endPointRadiusVarEnabled != obj.endPointRadiusVarEnabled ||
                             endPointRadiusVar        != obj.endPointRadiusVar ||
                             endPointRadiusVarRatio   != obj.endPointRadiusVarRatio ||

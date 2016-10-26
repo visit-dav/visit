@@ -65,6 +65,10 @@ Definition:
 //   Kathleen Bonnell, Fri Nov 12 11:11:41 PST 2004 
 //   Modified determination of when secondary var requires recalc. 
 //
+//   Eric Brugger, Wed Oct 26 09:36:37 PDT 2016
+//   I modified the plot to support independently setting the point style
+//   for the two end points of lines.
+//
 // ****************************************************************************
 bool
 PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
@@ -84,7 +88,8 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             obj.tubeRadiusVar != "" &&
                             obj.tubeRadiusVar != "\0") ||
 
-                           (obj.endPointType != None &&
+                           ((obj.tailStyle != EndPointNone ||
+                             obj.headStyle != EndPointNone) &&
                             obj.endPointRadiusVarEnabled &&
                             obj.endPointRadiusVar != endPointRadiusVar &&
                             obj.endPointRadiusVar != "default" && 
@@ -107,11 +112,12 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             tubeRadiusVarRatio   != obj.tubeRadiusVarRatio ||
                             tubeResolution       != obj.tubeResolution ||
 
-                            endPointType             != obj.endPointType ||
-                            endPointStyle            != obj.endPointStyle ||
+                            tailStyle                != obj.tailStyle ||
+                            headStyle                != obj.headStyle ||
+                            endPointRatio            != obj.endPointRatio ||
+                            endPointRadiusSizeType   != obj.endPointRadiusSizeType ||
                             endPointRadiusAbsolute   != obj.endPointRadiusAbsolute ||
                             endPointRadiusBBox       != obj.endPointRadiusBBox ||
-                            endPointRatio            != obj.endPointRatio ||
                             endPointRadiusVarEnabled != obj.endPointRadiusVarEnabled ||
                             endPointRadiusVar        != obj.endPointRadiusVar ||
                             endPointRadiusVarRatio   != obj.endPointRadiusVarRatio ||
