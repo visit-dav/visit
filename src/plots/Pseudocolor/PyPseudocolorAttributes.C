@@ -304,38 +304,38 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%stubeRadiusVarRatio = %g\n", prefix, atts->GetTubeRadiusVarRatio());
     str += tmpStr;
-    const char *tailStyle_names = "EndPointNone, EndPointSphere, EndPointCone";
+    const char *tailStyle_names = "None, Spheres, Cones";
     switch (atts->GetTailStyle())
     {
-      case PseudocolorAttributes::EndPointNone:
-          SNPRINTF(tmpStr, 1000, "%stailStyle = %sEndPointNone  # %s\n", prefix, prefix, tailStyle_names);
+      case PseudocolorAttributes::None:
+          SNPRINTF(tmpStr, 1000, "%stailStyle = %sNone  # %s\n", prefix, prefix, tailStyle_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::EndPointSphere:
-          SNPRINTF(tmpStr, 1000, "%stailStyle = %sEndPointSphere  # %s\n", prefix, prefix, tailStyle_names);
+      case PseudocolorAttributes::Spheres:
+          SNPRINTF(tmpStr, 1000, "%stailStyle = %sSpheres  # %s\n", prefix, prefix, tailStyle_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::EndPointCone:
-          SNPRINTF(tmpStr, 1000, "%stailStyle = %sEndPointCone  # %s\n", prefix, prefix, tailStyle_names);
+      case PseudocolorAttributes::Cones:
+          SNPRINTF(tmpStr, 1000, "%stailStyle = %sCones  # %s\n", prefix, prefix, tailStyle_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    const char *headStyle_names = "EndPointNone, EndPointSphere, EndPointCone";
+    const char *headStyle_names = "None, Spheres, Cones";
     switch (atts->GetHeadStyle())
     {
-      case PseudocolorAttributes::EndPointNone:
-          SNPRINTF(tmpStr, 1000, "%sheadStyle = %sEndPointNone  # %s\n", prefix, prefix, headStyle_names);
+      case PseudocolorAttributes::None:
+          SNPRINTF(tmpStr, 1000, "%sheadStyle = %sNone  # %s\n", prefix, prefix, headStyle_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::EndPointSphere:
-          SNPRINTF(tmpStr, 1000, "%sheadStyle = %sEndPointSphere  # %s\n", prefix, prefix, headStyle_names);
+      case PseudocolorAttributes::Spheres:
+          SNPRINTF(tmpStr, 1000, "%sheadStyle = %sSpheres  # %s\n", prefix, prefix, headStyle_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::EndPointCone:
-          SNPRINTF(tmpStr, 1000, "%sheadStyle = %sEndPointCone  # %s\n", prefix, prefix, headStyle_names);
+      case PseudocolorAttributes::Cones:
+          SNPRINTF(tmpStr, 1000, "%sheadStyle = %sCones  # %s\n", prefix, prefix, headStyle_names);
           str += tmpStr;
           break;
       default:
@@ -1269,7 +1269,7 @@ PseudocolorAttributes_SetTailStyle(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid tailStyle value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "EndPointNone, EndPointSphere, EndPointCone.");
+                        "None, Spheres, Cones.");
         return NULL;
     }
 
@@ -1302,7 +1302,7 @@ PseudocolorAttributes_SetHeadStyle(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid headStyle value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "EndPointNone, EndPointSphere, EndPointCone.");
+                        "None, Spheres, Cones.");
         return NULL;
     }
 
@@ -2083,21 +2083,21 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         return PseudocolorAttributes_GetTubeRadiusVarRatio(self, NULL);
     if(strcmp(name, "tailStyle") == 0)
         return PseudocolorAttributes_GetTailStyle(self, NULL);
-    if(strcmp(name, "EndPointNone") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::EndPointNone));
-    if(strcmp(name, "EndPointSphere") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::EndPointSphere));
-    if(strcmp(name, "EndPointCone") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::EndPointCone));
+    if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::None));
+    if(strcmp(name, "Spheres") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Spheres));
+    if(strcmp(name, "Cones") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Cones));
 
     if(strcmp(name, "headStyle") == 0)
         return PseudocolorAttributes_GetHeadStyle(self, NULL);
-    if(strcmp(name, "EndPointNone") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::EndPointNone));
-    if(strcmp(name, "EndPointSphere") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::EndPointSphere));
-    if(strcmp(name, "EndPointCone") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::EndPointCone));
+    if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::None));
+    if(strcmp(name, "Spheres") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Spheres));
+    if(strcmp(name, "Cones") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::Cones));
 
     if(strcmp(name, "endPointRadiusSizeType") == 0)
         return PseudocolorAttributes_GetEndPointRadiusSizeType(self, NULL);

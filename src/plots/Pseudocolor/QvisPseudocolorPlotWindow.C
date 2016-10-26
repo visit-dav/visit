@@ -1273,8 +1273,8 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             
             {
             bool showEndPointAttributes =
-                pcAtts->GetTailStyle() != PseudocolorAttributes::EndPointNone ||
-                pcAtts->GetHeadStyle() != PseudocolorAttributes::EndPointNone;
+                pcAtts->GetTailStyle() != PseudocolorAttributes::None ||
+                pcAtts->GetHeadStyle() != PseudocolorAttributes::None;
             if (showEndPointAttributes)
             {
                 endPointRadiusLabel->show();
@@ -1308,8 +1308,8 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
                 endPointResolution->hide();
             }
 
-            if (pcAtts->GetTailStyle() == PseudocolorAttributes::EndPointCone ||
-                pcAtts->GetHeadStyle() == PseudocolorAttributes::EndPointCone)
+            if (pcAtts->GetTailStyle() == PseudocolorAttributes::Cones ||
+                pcAtts->GetHeadStyle() == PseudocolorAttributes::Cones)
             {
                 endPointRatioLabel->show();
                 endPointRatio->show();

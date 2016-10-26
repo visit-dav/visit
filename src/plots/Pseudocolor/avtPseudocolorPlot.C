@@ -419,8 +419,8 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
       polylineAddEndPointsFilter = NULL;
     }
 
-    if( atts.GetTailStyle() != PseudocolorAttributes::EndPointNone ||
-        atts.GetHeadStyle() != PseudocolorAttributes::EndPointNone)
+    if( atts.GetTailStyle() != PseudocolorAttributes::None ||
+        atts.GetHeadStyle() != PseudocolorAttributes::None)
     {
       double bbox[6] = {0.,1.,0.,1.,0.,1.};
       dob->GetInfo().GetAttributes().GetOriginalSpatialExtents()->CopyTo(bbox);
