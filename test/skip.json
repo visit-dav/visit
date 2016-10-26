@@ -37,6 +37,7 @@
                     {"category":"hybrid","file":"movie.py","platform":"win"},
                     {"category":"operators" ,"file": "ic_pathlines.py","platform":"win"},
                     {"category":"operators" ,"file": "ic_pics.py","platform":"win"},
+                    {"category":"operators" ,"file": "ic_streamlines.py","platform":"win"},
                     {"category":"operators" ,"file": "lcs.py","platform":"win"},
                     {"category":"operators" ,"file": "lcs_ic.py","platform":"win"},
                     {"category":"operators" ,"file": "lcs_lc.py","platform":"win"},
