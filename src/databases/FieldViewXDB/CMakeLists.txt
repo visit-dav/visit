@@ -11,6 +11,11 @@
 MACRO(INSTALL_XDB_LIBRARY libfile)
     IF(WIN32)
 	SET(XDB_INSTALL_DIR ${VISIT_INSTALLED_VERSION_BIN})
+        if(VISIT_NO_ALLBUILD)
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                            ${libfile}
+                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../../ThirdParty)
+        endif()
     ELSE(WIN32)
 	SET(XDB_INSTALL_DIR ${VISIT_INSTALLED_VERSION_LIB})
     ENDIF(WIN32)

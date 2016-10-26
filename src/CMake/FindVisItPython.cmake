@@ -367,7 +367,7 @@ ELSE(NOT WIN32)
     FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CCBD_NATIVE)
     STRING(REPLACE "\\" "\\\\" CCBD_ESC_PATH "${CCBD_NATIVE}")
 
-    add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/build
+    add_custom_target(${target_name} ALL
             COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
             build
             --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
@@ -376,7 +376,10 @@ ELSE(NOT WIN32)
             DEPENDS  ${setup_file} ${ARGN}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-    add_custom_target(${target_name} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/build)
+    if(VISIT_NO_ALLBUILD)
+        add_dependencies(visit_special_builds ${target_name})
+    endif()
+
     # also use distutils for the install ...
     FILE(TO_NATIVE_PATH ${VISIT_INSTALLED_VERSION_LIB} VIVL_NATIVE)
     STRING(REPLACE "\\" "\\\\" VIVL_ESC_PATH "${VIVL_NATIVE}")

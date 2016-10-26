@@ -159,13 +159,14 @@ IF(VISIT_PYTHON_DIR)
     # because you don't need to choose your configuration up-front
     # on windows, make this a custom target so they are copied to the
     # correct lib/${CFG} directory
-    ADD_CUSTOM_TARGET(python_lib ALL)
-    ADD_CUSTOM_COMMAND(TARGET python_lib POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ADD_CUSTOM_TARGET(python_lib ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${VISIT_PYTHON_DIR}/Lib
             ${VISIT_LIBRARY_DIR}/python/Lib
-            COMMENT "Copying ${VISIT_PYTHON_DIR}/Lib/ ${VISIT_LIBRARY_DIR}/python/Lib"
-            )
+        COMMENT "Copying ${VISIT_PYTHON_DIR}/Lib/ ${VISIT_LIBRARY_DIR}/python/Lib")
+    if(VISIT_NO_ALLBUILD)
+        add_dependencies(visit_special_builds python_lib)
+    endif()
   ENDIF (NOT WIN32)
 ENDIF()
 
@@ -211,25 +212,15 @@ IF(VISIT_PYTHON_FILTERS)
         # because you don't need to choose your configuration up-front
         # on windows, make this a custom target so they are copied to the
         # correct lib/${CFG} directory
-        ADD_CUSTOM_TARGET(vtk_python_modules ALL)
-        IF(${VTK_VERSION} VERSION_LESS "6.1.0")
-            ADD_CUSTOM_COMMAND(TARGET vtk_python_modules POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_directory
-                        ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk
-                        ${VISIT_LIBRARY_DIR}/site-packages/vtk
-                COMMAND ${CMAKE_COMMAND} -E copy
-                        ${VTK_EGG_FILE}
-                        ${VISIT_LIBRARY_DIR}/site-packages
-                COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/site-packages to ${VISIT_LIBRARY_DIR}/site-packages/vtk"
-                )
-        ELSE()
-            ADD_CUSTOM_COMMAND(TARGET vtk_python_modules POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_directory
-                        ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk
-                        ${VISIT_LIBRARY_DIR}/site-packages/vtk
-                COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/site-packages to ${VISIT_LIBRARY_DIR}/site-packages/vtk"
-                )
-        ENDIF()
+        ADD_CUSTOM_TARGET(vtk_python_modules ALL
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk
+                    ${VISIT_LIBRARY_DIR}/site-packages/vtk
+            COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/site-packages to ${VISIT_LIBRARY_DIR}/site-packages/vtk"
+        )
+        if(VISIT_NO_ALLBUILD)
+            add_dependencies(visit_special_builds vtk_python_modules)
+        endif()
     ENDIF (NOT WIN32)
 ENDIF(VISIT_PYTHON_FILTERS)
 
