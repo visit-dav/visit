@@ -60,20 +60,18 @@
 //    Eric Brugger, Mon Jul 21 13:51:03 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eric Brugger, Tue Oct 25 14:16:39 PDT 2016
+//    I modified the class to support independently setting the point
+//    style for two end points.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtPolylineAddEndPointsFilter : virtual public avtDataTreeIterator
 {
   public:
-    enum EndPointType
-    {
-        None,
-        Heads,
-        Tails,
-        Both
-    };
     enum EndPointStyle
     {
+        None,
         Spheres,
         Cones
     };
@@ -85,8 +83,8 @@ class AVTFILTERS_API avtPolylineAddEndPointsFilter : virtual public avtDataTreeI
     virtual const char      *GetDescription(void)
                                  { return "Add end points to polylines"; };
 
-    int type;
-    int style;
+    int tailStyle;
+    int headStyle;
     int resolution;
 
     double radius;

@@ -109,13 +109,16 @@ avtPolylineAddEndPointsFilter::~avtPolylineAddEndPointsFilter()
 //  Creation:   Thu Aug 27 11:53:59 PDT 2009
 //
 //  Modifications:
-//
 //    Tom Fogal, Mon Apr 26 17:27:44 MDT 2010
 //    Break out of a loop to prevent incrementing a singular iterator.
 //    Use `empty' instead of 'size'.
 //
 //    Eric Brugger, Mon Jul 21 13:51:51 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
+//
+//    Eric Brugger, Tue Oct 25 14:17:37 PDT 2016
+//    I modified the class to support independently setting the point
+//    style for two end points.
 //
 // ****************************************************************************
 
@@ -146,137 +149,142 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
 
     double range[2], scale;
 
-    if( varyRadius && radiusVar != "" && radiusVar != "\0" )
+    if (varyRadius && radiusVar != "" && radiusVar != "\0")
     {
-      if (radiusVar != "default" && radiusVar != activeScalars->GetName() )
-        activeRadius = inDS->GetPointData()->GetArray( radiusVar.c_str() );
-      else
-        activeRadius = activeScalars;
+        if (radiusVar != "default" && radiusVar != activeScalars->GetName())
+            activeRadius = inDS->GetPointData()->GetArray(radiusVar.c_str());
+        else
+            activeRadius = activeScalars;
 
-      activeRadius->GetRange( range, 0 );
+        activeRadius->GetRange(range, 0);
 
-      if( (range[1] - range[0]) == 0.0 )
-        range[1] = range[0] + 1.0;
+        if ((range[1] - range[0]) == 0.0)
+            range[1] = range[0] + 1.0;
 
-      scale = (radiusFactor-1) / (range[1]-range[0]);
+        scale = (radiusFactor-1) / (range[1]-range[0]);
     }
 
-    vtkPolyData *data   = vtkPolyData::SafeDownCast( inDS );
+    vtkPolyData *data   = vtkPolyData::SafeDownCast(inDS);
     vtkCellArray *lines = data->GetLines();
     vtkPoints *points   = data->GetPoints();
    
     vtkIdType numPts;
     vtkIdType *ptIndexs;
 
-    append->AddInputData( data );
+    append->AddInputData(data);
 
-    while( lines->GetNextCell( numPts, ptIndexs ) )
+    while (lines->GetNextCell(numPts, ptIndexs))
     {
-      vtkPolyData *outPD = NULL;
+        vtkPolyData *outPD = NULL;
 
-      double p0[3], p1[3];
+        double p0[3], p1[3];
 
-      avtVector vec;
+        avtVector vec;
 
-      for( int i=Heads; i<=Tails; ++i )
-      {
-        if( type == i || type == Both )
+        // Do the two endpoints in a loop. The first iteration is for the
+        // tail and the second is for the head.
+        for (int i = 0; i < 2; ++i)
         {
-          int tip, tail;
-        
-          if( i == Heads )
-          {
-            tip  = numPts - 1;
-            tail = numPts - 2;
-          }
-          else if( i == Tails )
-          {
-            tip  = 0;
-            tail = 1;
-          }
-          
-          points->GetPoint( ptIndexs[tip], p0 );
-
-          double scaledRadius = radius;
-          
-          if( varyRadius && radiusVar != "" && radiusVar != "\0" )
-          {
-            scaledRadius *=
-              (1.0 + (activeRadius->GetComponent( ptIndexs[tip], 0 ) -
-                      range[0]) * scale);
-          }
-
-          if( style == Spheres )
-          {
-            vtkSphereSource *sphere = vtkSphereSource::New();
-            
-            sphere->SetRadius( scaledRadius );
-            sphere->SetPhiResolution( resolution );
-            sphere->SetThetaResolution( resolution );
-            sphere->SetCenter( p0 );
-            sphere->Update();
-            
-            outPD = sphere->GetOutput();
-          }
-          else if( style == Cones )
-          {
-            points->GetPoint( ptIndexs[tail], p1 );
-            
-            vec = avtVector( p0[0]-p1[0], p0[1]-p1[1],  p0[2]-p1[2] );
-            vec.normalize();
-            
-            p0[0] += (vec * scaledRadius * ratio / 2.0).x;
-            p0[1] += (vec * scaledRadius * ratio / 2.0).y;
-            p0[2] += (vec * scaledRadius * ratio / 2.0).z;
-            
-            vtkConeSource *cone = vtkConeSource::New();
-            
-            cone->SetRadius( scaledRadius );
-            cone->SetHeight( scaledRadius * ratio );
-            cone->SetResolution( resolution );
-            cone->SetCenter( p0 );
-            cone->SetDirection( vec.x, vec.y, vec.z );
-            cone->CappingOn();
-            cone->Update();
-            
-            outPD = cone->GetOutput();
-          }
-          
-          int npts = outPD->GetPoints()->GetNumberOfPoints();
-
-          // Copy over all of the point data from the lines to the
-          // cones so the append filter will append correctly.
-          int nArrays = inDS->GetPointData()->GetNumberOfArrays();
-
-          for( int j=0; j<nArrays; ++j )
-          {
-            vtkDataArray *array = inDS->GetPointData()->GetArray(j);
-
-            vtkDoubleArray *scalars = vtkDoubleArray::New();
-            scalars->Allocate(npts);
-            scalars->SetName(array->GetName());
-
-            if( array->GetName() == activeScalars->GetName() )
+            if ((i == 0 && tailStyle != None) ||
+                (i == 1 && headStyle != None))
             {
-              outPD->GetPointData()->SetScalars(scalars);
-              outPD->GetPointData()->SetActiveScalars(scalars->GetName());
+                int style, tip, tail;
+
+                if (i == 0)
+                {
+                    style = tailStyle;
+                    tip  = 0;
+                    tail = 1;
+                }
+                else
+                {
+                    style = headStyle;
+                    tip  = numPts - 1;
+                    tail = numPts - 2;
+                }
+
+                points->GetPoint(ptIndexs[tip], p0);
+
+                double scaledRadius = radius;
+
+                if (varyRadius && radiusVar != "" && radiusVar != "\0")
+                {
+                    scaledRadius *=
+                      (1.0 + (activeRadius->GetComponent( ptIndexs[tip], 0 ) -
+                              range[0]) * scale);
+                }
+
+                if (style == Spheres)
+                {
+                    vtkSphereSource *sphere = vtkSphereSource::New();
+
+                    sphere->SetRadius(scaledRadius);
+                    sphere->SetPhiResolution(resolution);
+                    sphere->SetThetaResolution(resolution);
+                    sphere->SetCenter(p0);
+                    sphere->Update();
+
+                    outPD = sphere->GetOutput();
+                }
+                else if (style == Cones)
+                {
+                    points->GetPoint(ptIndexs[tail], p1);
+
+                    vec = avtVector(p0[0]-p1[0], p0[1]-p1[1],  p0[2]-p1[2]);
+                    vec.normalize();
+
+                    p0[0] += (vec * scaledRadius * ratio / 2.0).x;
+                    p0[1] += (vec * scaledRadius * ratio / 2.0).y;
+                    p0[2] += (vec * scaledRadius * ratio / 2.0).z;
+
+                    vtkConeSource *cone = vtkConeSource::New();
+
+                    cone->SetRadius(scaledRadius);
+                    cone->SetHeight(scaledRadius * ratio);
+                    cone->SetResolution(resolution);
+                    cone->SetCenter(p0);
+                    cone->SetDirection(vec.x, vec.y, vec.z);
+                    cone->CappingOn();
+                    cone->Update();
+
+                    outPD = cone->GetOutput();
+                }
+
+                int npts = outPD->GetPoints()->GetNumberOfPoints();
+
+                // Copy over all of the point data from the lines to the
+                // cones so the append filter will append correctly.
+                int nArrays = inDS->GetPointData()->GetNumberOfArrays();
+
+                for (int j = 0; j < nArrays; ++j)
+                {
+                    vtkDataArray *array = inDS->GetPointData()->GetArray(j);
+
+                    vtkDoubleArray *scalars = vtkDoubleArray::New();
+                    scalars->Allocate(npts);
+                    scalars->SetName(array->GetName());
+
+                    if (array->GetName() == activeScalars->GetName())
+                    {
+                        outPD->GetPointData()->SetScalars(scalars);
+                        outPD->GetPointData()->SetActiveScalars(scalars->GetName());
+                    }
+                    else
+                        outPD->GetPointData()->AddArray(scalars);
+
+                    double scalar = array->GetComponent(ptIndexs[tip], 0);
+
+                    for (int k = 0; k < npts; ++k)
+                        scalars->InsertTuple1(k, scalar);
+
+                    scalars->Delete();
+                }
+
+                append->AddInputData(outPD);
+
+                outPD->Delete();
             }
-            else
-              outPD->GetPointData()->AddArray(scalars);
-              
-            double scalar = array->GetComponent( ptIndexs[tip], 0 );
-        
-            for( int k=0; k<npts; ++k )
-              scalars->InsertTuple1(k, scalar);
-
-            scalars->Delete();
-          }
-
-          append->AddInputData( outPD );
-          
-          outPD->Delete();
         }
-      }
     }      
     
     // Update.
@@ -286,15 +294,15 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
     append->Delete();
    
     // Restore the active scalars.
-    if( activeScalars )
+    if (activeScalars)
     {
-      data->GetPointData()->SetActiveScalars(activeScalars->GetName());
-      outPD->GetPointData()->SetActiveScalars(activeScalars->GetName());
+        data->GetPointData()->SetActiveScalars(activeScalars->GetName());
+        outPD->GetPointData()->SetActiveScalars(activeScalars->GetName());
     }
     
     // Create the output data rep.
     avtDataRepresentation *outDR =
-      new avtDataRepresentation( outPD, inDR->GetDomain(), inDR->GetLabel() );
+        new avtDataRepresentation(outPD, inDR->GetDomain(), inDR->GetLabel());
 
     return outDR;
 }
