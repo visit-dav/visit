@@ -622,6 +622,8 @@ avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int 
 
         pt_idx += refined_geo->RefPts.GetNPoints();
    }
+   
+   delete mesh;
        
    return res_ds;
 }

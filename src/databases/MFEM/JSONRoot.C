@@ -710,9 +710,9 @@ JSONRoot::ParseJSON(const std::string &json_root)
             {
                 string curr_expr_name = exprs_itr->name.GetString();
                 const rapidjson::Value &json_expr = exprs_itr->value;
-                if (json_expr.HasMember("defn") && json_expr.HasMember("type"))
+                if (json_expr.HasMember("definition") && json_expr.HasMember("type"))
                 {
-                    JSONRootExpr curr_expr(json_expr["defn"].GetString(),
+                    JSONRootExpr curr_expr(json_expr["definition"].GetString(),
                                            json_expr["type"].GetString());
                     exprs[curr_expr_name] = curr_expr;
                 }
