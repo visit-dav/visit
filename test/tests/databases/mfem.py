@@ -38,6 +38,8 @@ for f in input_meshs:
         SetOperatorOptions(mc_atts)
         DrawPlots()
         Test("input_mesh_%s_mres_%04d" % (base,mres))
+    DeleteAllPlots()
+    CloseDatabase(f)
 
 TestSection("ex01 results")
 for f in ex01_results:
@@ -48,6 +50,8 @@ for f in ex01_results:
     #AddPlot("Mesh","main")
     DrawPlots()
     Test("ex01_%s" % (base))
+    DeleteAllPlots()
+    CloseDatabase(f)
 
 TestSection("ex02 results")
 for f in ex02_results:
@@ -61,9 +65,10 @@ for f in ex02_results:
     ChangeActivePlotsVar("gf_magnitude");
     DrawPlots()
     Test("ex02_gf_mag_%s" % (base))
+    DeleteAllPlots()
+    CloseDatabase(f)
 
 TestSection("MFEM Expressions")
-DeleteAllPlots()
 OpenDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
 AddPlot("Pseudocolor","mag-gf")
 DrawPlots()
