@@ -151,6 +151,8 @@ elif [ "$1" = "all" ] ; then
    checkout_dir "/third_party"
    echo "Checking out /windowsbuild"
    checkout_dir "/windowsbuild"
+   echo "Checking out /SphynxDocs"
+   checkout_dir "/SphynxDocs"
 else
    checkout_dir $1
 fi
