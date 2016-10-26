@@ -2133,6 +2133,9 @@ ELSE(NOT WIN32)
                             WORLD_READ
         )
     ENDIF(MSVC)
+    if(VISIT_NO_ALLBUILD)
+        add_custom_target(visit_special_builds ALL)
+    endif()
 ENDIF(NOT WIN32)
 
 # Store some configure information into a C file (like version, SVN version
@@ -2663,6 +2666,7 @@ ELSE (NOT WIN32)
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DBIN_DIR=${CBD_NATIVE}
                     /DCL_64=${CMAKE_CL_64}
+                    /DQT5=${VISIT_QT5}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
             COMMAND ${MAKENSIS}
                     /DVisItVersion=${VISIT_VERSION}
@@ -2671,6 +2675,7 @@ ELSE (NOT WIN32)
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DBIN_DIR=${CBD_NATIVE}
                     /DCL_64=${CMAKE_CL_64}
+                    /DQT5=${VISIT_QT5}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
             DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
                     ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
