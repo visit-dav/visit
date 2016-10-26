@@ -142,7 +142,6 @@ avtCosmosPPFileFormat::avtCosmosPPFileFormat(const char *fname)
             times.resize(ntimesteps);
             dump_names.resize(ntimesteps);
             grid_dump_names.resize(ntimesteps);
-            debug1 << "Reading timesteps = " << ntimesteps << endl;
         }
         else if (key == "#DUMP_CYCLE_TIME_FILENAME")
         {
@@ -352,6 +351,9 @@ avtCosmosPPFileFormat::avtCosmosPPFileFormat(const char *fname)
 //  Programmer:  Hank Childs
 //  Creation:    November 24, 2003
 //
+//  Peter Anninos
+//  Added particle meshes.
+//
 // ****************************************************************************
 
 avtCosmosPPFileFormat::~avtCosmosPPFileFormat()
@@ -407,6 +409,9 @@ avtCosmosPPFileFormat::~avtCosmosPPFileFormat()
 //    Kathleen Bonnell, Mon Jun 11 12:32:10 PDT 2007 
 //    Added H5*close for attr1, space_id, c_handle.
 //
+//    Peter Anninos
+//    Added particle meshes.
+//
 // ****************************************************************************
 
 void
@@ -417,8 +422,11 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
 
     if (particleTypeNames.size() > 0)
     {
-        if (particleDataset[0][ts][dom] != NULL)
-            return;
+       for (i = 0; i < nParticleTypes; i++)
+       {
+           if (particleDataset[i][ts][dom] != NULL)
+               return;
+       }
     }
 
     dataset[ts][dom] = vtkUnstructuredGrid::New();
@@ -428,7 +436,7 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
     // an error from VisIt when opening an HDF5 file.
     hid_t file_access_properties = H5Pcreate(H5P_FILE_ACCESS);
     H5Pset_fclose_degree(file_access_properties, H5F_CLOSE_SEMI);
-    hid_t file_handle = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    hid_t file_handle = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, file_access_properties);
 
     int nodes_per_zone = 0;
     switch (rank)
@@ -458,7 +466,8 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         numParticles.resize(numParticleTypes, 0);
         numParticleScalars.resize(numParticleTypes, 0);
         numParticleVectors.resize(numParticleTypes, 0);
-        for (i = 0; i < numParticleTypes; i++) {
+        for (i = 0; i < numParticleTypes; i++)
+        {
             particleDataset[i][ts][dom] = vtkUnstructuredGrid::New();
             int attr1  = H5Aopen_name(c_handle, particleTypeNames[i].data());
             H5Aread(attr1, H5T_NATIVE_INT, &numParticles[i]);
@@ -539,7 +548,6 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         for (int i = 0; i < numParticleTypes; i++) 
         {
             int nparts = numParticles[i];
-            if (nparts > 0) {
             for (int j = 0; j < numParticleScalars[i]; j++) 
             {
                 vtkFloatArray *arr = vtkFloatArray::New();
@@ -596,7 +604,6 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
                     arr->Delete();
                 }
             } // end vector fields
-            } // end if(nparts>o)
         } // end partucle types
     } // end particle lists
 
@@ -609,6 +616,7 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
         H5Fclose(file_handle);
 
         filename    = proc_names[dom] + string("/") + grid_dump_names[ts];
+        H5Pset_fclose_degree(file_access_properties, H5F_CLOSE_SEMI);
         file_handle = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, file_access_properties);
         c_handle    = H5Dopen(file_handle, "Cosmos++", H5P_DEFAULT);
         space_id    = H5Dget_space(c_handle);
@@ -846,7 +854,6 @@ avtCosmosPPFileFormat::GetMesh(int ts, int dom, const char *mesh)
        ugrid->GetCellData()->AddArray(
                      dataset[ts][dom]->GetCellData()->GetArray("avtGhostZones"));
        return ugrid;
-
     }
     else if ( particleTypeNames.size() > 0) 
     {
@@ -854,7 +861,7 @@ avtCosmosPPFileFormat::GetMesh(int ts, int dom, const char *mesh)
        int maxitype = particleTypeNames.size() - 1;
        for (int n = 0; n < maxitype+1; n++) 
        {
-           if(string(mesh) == particleTypeNames[n]) 
+           if (string(mesh) == particleTypeNames[n]) 
            {
               itype = n;
            }
@@ -869,8 +876,8 @@ avtCosmosPPFileFormat::GetMesh(int ts, int dom, const char *mesh)
        ugrid->CopyStructure(particleDataset[itype][ts][dom]);
      //ugrid = particleDataset[itype][ts][dom];
        return ugrid;
-
-    } else 
+    }
+    else 
     {
        EXCEPTION1(InvalidVariableException, mesh);
     }
@@ -978,7 +985,7 @@ avtCosmosPPFileFormat::GetVar(int ts, int dom, const char *name)
            vtkDataArray *arr = particleDataset[itype][ts][dom]->GetCellData()->GetArray(fieldname.c_str());
            if (arr == NULL)
            {
-               EXCEPTION1(InvalidVariableException, fieldname.c_str());
+               //EXCEPTION1(InvalidVariableException, fieldname.c_str());
            }
 
            // The calling function will believe that it owns the memory.  Increment
