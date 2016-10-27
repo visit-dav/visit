@@ -2069,7 +2069,20 @@ QvisSimulationWindow::showCustomUIWindow()
         CreateCustomUIWindow();
 
     if( CustomUIWindow != NULL )
+    {
         CustomUIWindow->show();
+
+        int index = GetEngineListIndex(activeEngine);
+        if (index < 0)
+          return;
+        
+        std::string host = engines->GetEngineName()[index];
+        std::string sim  = engines->GetSimulationName()[index];
+        
+        QString cmd("ActivateCustomUI");
+        QString args(QString("clicked();%1;QPushButton;Simulations;NONE").arg(cmd));
+        GetViewerMethods()->SendSimulationCommand(host, sim, cmd.toStdString(), args.toStdString());
+    }
 }
 
 // ****************************************************************************
