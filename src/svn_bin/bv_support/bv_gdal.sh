@@ -191,7 +191,7 @@ function build_gdal
                 --with-libz=internal --with-netcdf=no \
                 --with-hdf5=no --with-pg=no --with-curl=no \
                 --without-jasper --without-python \
-                --without-sqlite3 --without-xml2
+                --without-sqlite3 --without-xml2 --with-geos=no
     if [[ $? != 0 ]] ; then
         warn "GDAL configure failed.  Giving up"
         return 1
