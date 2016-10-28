@@ -73,19 +73,6 @@ def TestLength(testname):
     TestText(testname, testString)
 
 #
-# Test the expression list.
-#
-def TestExpressions(name):
-    expr = Expressions()
-    testString = ""
-    for e in expr:
-        s = e[0]
-        while len(s) < 30:
-            s = s + " "
-        testString = testString + s + e[1] + "\n"
-    TestText(name, testString)
-
-#
 # Returns whether all files in the list are in the current directory.
 #
 def FilesPresent(files):

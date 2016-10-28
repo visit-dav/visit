@@ -16,15 +16,6 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
-def ExprStrings():
-    exprList = Expressions()
-    estr = "Expressions:\n"
-    index = 1
-    for expr in exprList:
-        estr = estr + "expression %d: %s = %s\n" % (index, expr[0], expr[1])
-        index = index + 1
-    return estr
-
 TurnOnAllAnnotations()
 
 # Define some expressions just so we have some in the list.
@@ -39,7 +30,7 @@ AddPlot("Pseudocolor", "speed")
 DrawPlots()
 
 # This test should show our scalar expressions + globe's expressions.
-TestText("exprList00", ExprStrings())
+TestExpressions("exprList00")
 
 # Add a new window and open a different database that has no expressions of
 # its own.
@@ -48,18 +39,18 @@ SetActiveWindow(2)
 DeleteAllPlots()
 OpenDatabase(silo_data_path("wave*.silo database"))
 
-TestText("exprList01", ExprStrings())
+TestExpressions("exprList01")
 
 # Going back to window 1, where globe is open. This should make the expression
 # list contain globe's expressions.
 SetActiveWindow(1)
-TestText("exprList02", ExprStrings())
+TestExpressions("exprList02")
 
 # Open a new database. This should make the expression list contain the
 # expressions for rect3d and our scalar expressions.
 OpenDatabase(silo_data_path("rect3d.silo"))
 
-TestText("exprList03", ExprStrings())
+TestExpressions("exprList03")
 
 # Add a plot
 AddPlot("Pseudocolor", "u")
@@ -68,6 +59,6 @@ DrawPlots()
 # Make the active plot be the plot of globe. The expression list should 
 # contain globe's expressions.
 SetActivePlots(0)
-TestText("exprList04", ExprStrings())
+TestExpressions("exprList04")
 
 Exit()

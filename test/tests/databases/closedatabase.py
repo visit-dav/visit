@@ -101,8 +101,7 @@ for i in range(len(dbs)):
 
 # Check that database expressions are cleared when database is closed.
 OpenDatabase(dbs[1])
-TestText("closedatabase_exprs00","Expressions() = " + str(Expressions()))
-test_str=GetCloseString(dbs[1]) + "\nExpressions() = " + str(Expressions())
-TestText("closedatabase_exprs01",test_str)
+TestExpressions("closedatabase_exprs00")
+TestExpressions("closedatabase_exprs01", prefix=GetCloseString(dbs[1])+"\n")
 
 Exit()

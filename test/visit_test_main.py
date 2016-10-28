@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-442911
 # All rights reserved.
@@ -2121,6 +2121,9 @@ def TestSimulation(sim, sim2):
 def TestParallelSimulation(sim, sim2, np):
     return Simulation(SimVisItDir(), SimProgram(sim), SimFile(sim2), np)
 
+def TestBatchSimulation(sim):
+    return Simulation(SimVisItDir(), SimProgram(sim), SimFile("batch"), batch=True)
+
 # ----------------------------------------------------------------------------
 #  Class: Simulation
 #
@@ -2146,7 +2149,7 @@ def TestParallelSimulation(sim, sim2, np):
 #
 # ----------------------------------------------------------------------------
 class Simulation(object):
-    def __init__(self, vdir, s, sim2, np=1):
+    def __init__(self, vdir, s, sim2, np=1, batch=False):
         self.simulation = s
         self.host = "localhost"
         self.sim2 = sim2
@@ -2157,6 +2160,7 @@ class Simulation(object):
         self.np = np
         self.valgrind = False
         self.gdb = False
+        self.batch = batch
 
     def enablevalgrind(self):
         self.valgrind = True
@@ -2169,7 +2173,10 @@ class Simulation(object):
         CloseComputeEngine()
         # Start up the simulation.
         tfile = self.sim2 + ".trace"
-        args = [self.simulation, "-dir", self.visitdir, "-trace", tfile, "-sim2", self.sim2]
+        if self.batch:
+            args = [self.simulation, "-dir", self.visitdir, "-trace", tfile]
+        else:
+            args = [self.simulation, "-dir", self.visitdir, "-trace", tfile, "-sim2", self.sim2]
         for a in self.extraargs:
             args = args + [a]
         if self.np > 1:
@@ -2232,6 +2239,8 @@ class Simulation(object):
         self.extraargs = self.extraargs + [arg]
 
     def wait(self):
+        if self.batch:
+            return True
         for i in xrange(120): # Wait up to 2 minutes.
             try:
                 s = os.stat(self.sim2)
@@ -2269,13 +2278,18 @@ class Simulation(object):
         """
         Tell the simulation to terminate."
         """
+        havesim = False
+        if self.batch:
+            havesim = True
+        elif self.connected:
+            havesim = True
         # 'being nice' hangs on windows
-        if not sys.platform.startswith("win") and self.connected:
+        if not sys.platform.startswith("win") and havesim:
             # Be nice about it.
             self.p.stdin.write("quit\n")
             (o,e) = self.p.communicate()
-            #sys.stderr.write('sim stdout = %s\n'%(o))
-            #sys.stderr.write('sim stderr = %s\n'%(e))
+            sys.stderr.write('sim stdout = %s\n'%(o))
+            sys.stderr.write('sim stderr = %s\n'%(e))
             self.p.wait()
         else:
             # Force the sim to terminate.
@@ -2398,6 +2412,21 @@ class SimulationMemoryRecorder(object):
             for i in range(len(self.samples[k])):
                 f.write("%g %g\n" % (self.times[i], self.samples[k][i]))
         f.close()
+
+def TestExpressions(name, meshQuality=True, operatorCreated=False, prefix=""):
+    exprList = Expressions()
+    estr = prefix + "Expressions:\n"
+    index = 1
+    for expr in exprList:
+        add = True
+        if not meshQuality and "mesh_quality/" in expr[0]:
+           add = False
+        if not operatorCreated and "operators/" in expr[0]:
+           add = False
+        if add:
+            estr = estr + "expression %d: %s = %s\n" % (index, expr[0], expr[1])
+            index = index + 1
+    TestText(name, estr)
 
 #############################################################################
 #   Argument/Environment Processing
