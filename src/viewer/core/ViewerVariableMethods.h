@@ -82,6 +82,10 @@ public:
                                 const std::string &host,
                                 const std::string &db,
                                 int state);
+    void GetOperatorCreatedExpressions(ExpressionList &newList,
+                                const std::string &host,
+                                const std::string &db,
+                                int state);
     void GetAllExpressions(ExpressionList &newList,
                            const std::string &host,
                            const std::string &db,

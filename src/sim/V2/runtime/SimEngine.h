@@ -74,6 +74,7 @@ public:
     SimEngine();
     virtual ~SimEngine();
 
+    virtual void SimulationTimeStepChanged();
     virtual void SimulationInitiateCommand(const std::string &command);
 
     void InitializeViewer(const std::vector<std::string> &plotPlugins,
