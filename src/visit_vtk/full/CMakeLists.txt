@@ -61,6 +61,7 @@ vtkDataSetRemoveGhostCells.C
 vtkDepthSortPolyData2.C
 vtkLineoutFilter.C
 vtkLinesFromOriginalCells.C
+vtkMergeTree.C
 vtkMultiSplitter.C
 vtkOBJWriter.C
 vtkOnionPeelFilter.C

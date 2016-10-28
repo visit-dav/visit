@@ -75,6 +75,9 @@
 #    Kevin Griffin, Tue Jul 29 10:08:40 PDT 2014
 #    Added q_criterion.
 #
+#    Timo Bremer, Fri Oct 28 09:09:27 PDT 2016
+#    Added merge tree and local threshold.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -167,10 +170,12 @@ General/avtIsNaNExpression.C
 General/avtKeyAggregatorExpression.C
 General/avtLambda2Expression.C
 General/avtLaplacianExpression.C
+General/avtLocalThresholdExpression.C
 General/avtMIRvfExpression.C
 General/avtMagnitudeExpression.C
 General/avtMatErrorExpression.C
 General/avtMatvfExpression.C
+General/avtMergeTreeExpression.C
 General/avtMeshCoordinateExpression.C
 General/avtMinMaxExpression.C
 General/avtNMatsExpression.C
