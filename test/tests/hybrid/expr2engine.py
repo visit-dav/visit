@@ -25,15 +25,6 @@
 #
 # ----------------------------------------------------------------------------
 
-def TestExpressionList(name):
-    exprList = Expressions()
-    s = "Expressions:\n"
-    index = 1
-    for expr in exprList:
-        s = s + "expression %d: %s = %s\n" % (index, expr[0], expr[1])
-        index = index + 1
-    TestText(name, s)
-
 #
 # Create some expressions.
 #
@@ -58,13 +49,13 @@ SetView3D(v)
 # Test the image that we should have by this point. Also make sure that the
 # expression list contains the database expressions for the first database.
 Test("expr2engine_00")
-TestExpressionList("expr2engine_01")
+TestExpressions("expr2engine_01")
 
 # Open a different database. The expression list should only contain the 
 # database variables from the new database.
 OpenDatabase(silo_data_path("noise.silo"))
 
-TestExpressionList("expr2engine_02")
+TestExpressions("expr2engine_02")
 
 # Test that the plot from the old database, which was a plot of an expression
 # from the first database can still be generated.
