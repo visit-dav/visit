@@ -1406,6 +1406,10 @@ avtPICSFilter::Execute(void)
     }
     else
     {
+        // Clear _ics, which would contain stale pointers to ic's that
+        // no longer seem to exist. This comes up in export.
+        _ics.clear();
+
         GetIntegralCurvesFromInitialSeeds(_ics);
 
         icAlgo->SetAllSeedsSentToAllProcs( GetAllSeedsSentToAllProcs() );

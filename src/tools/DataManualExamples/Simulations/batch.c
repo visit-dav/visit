@@ -64,13 +64,6 @@ visit_handle SimGetMesh(int, const char *, void *);
 visit_handle SimGetVariable(int, const char *, void *);
 visit_handle SimGetDomainList(const char *, void *);
 
-#ifdef DEFINE_EXPRESSIONS
-/* Expression names and definitions. */
-static const char *exprNames[] = {"nid", "zid", "xc", "yc", "zc", "radius"};
-static const char *exprDefinitions[] = {"nodeid(mesh)", "zoneid(mesh)",
-"coord(mesh)[0]", "coord(mesh)[1]", "coord(mesh)[2]", "sqrt(xc*xc+yc*yc+zc*zc)"};
-#endif
-
 /******************************************************************************
  * Simulation data and functions
  ******************************************************************************/
@@ -257,6 +250,20 @@ void mainloop_batch(simulation_data *sim)
     double origin[] = {5., 5., 5.}, normal[] = {0., 0.707, 0.707};
     double isos[] = {5., 11., 18.};
     double v0[] = {1.,1.,1.}, v1[] = {5., 1.5, 7.}, v2[] = {8., 2., 5.};
+    double seeds[] = {
+        0.5, 0.5, 0.5,
+        1.5, 0.5, 0.5,
+        2.5, 0.5, 0.5,
+        3.5, 0.5, 0.5,
+        4.5, 0.5, 0.5,
+        5.5, 0.5, 0.5,
+        0.5, 4.5, 0.5,
+        1.5, 4.5, 0.5,
+        2.5, 4.5, 0.5,
+        3.5, 4.5, 0.5,
+        4.5, 4.5, 0.5,
+        5.5, 4.5, 0.5};
+    int lseeds = sizeof(seeds) / sizeof(double);
 #ifdef PARALLEL
     double init0, init1;
     init0 = MPI_Wtime();
@@ -331,6 +338,14 @@ void mainloop_batch(simulation_data *sim)
             {
                 printf("iso export returned %s\n", extract_err(err));
             }
+
+            /* NOTE: This exercises expressions and operator-created vars. */
+            sprintf(filebase, "streamline_%04d", sim->cycle);
+            err = extract_streamline(filebase, "vec", seeds, lseeds, extractvars);
+            if(sim->par_rank == 0)
+            {
+                printf("streamline export returned %s\n", extract_err(err));
+            }
         }
 
         if(sim->render)
@@ -391,7 +406,7 @@ int main(int argc, char **argv)
 
 #if 1
     /* Let's restrict the plugins that we load in batch. */
-    strcpy(options, "-plotplugins Contour,Mesh,Pseudocolor -operatorplugins Slice,Isosurface,Threshold -noconfig");
+    strcpy(options, "-plotplugins Contour,Mesh,Pseudocolor -operatorplugins Slice,IntegralCurve,Isosurface,Threshold -noconfig");
     opt = options + strlen(options);
 #else
     opt = options;
@@ -581,9 +596,8 @@ SimGetMetaData(void *cbdata)
     {
         visit_handle mmd = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
-#ifdef DEFINE_EXPRESSIONS
         visit_handle emd = VISIT_INVALID_HANDLE;
-#endif
+
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, VISIT_SIMMODE_RUNNING);
         VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);
@@ -651,19 +665,15 @@ SimGetMetaData(void *cbdata)
             VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
             VisIt_SimulationMetaData_addVariable(md, vmd);
         }
-#ifdef DEFINE_EXPRESSIONS
+
         /* Add expressions for VisIt to calculate. */
-        for(i = 0; i < 6; ++i)
+        if(VisIt_ExpressionMetaData_alloc(&emd) == VISIT_OKAY)
         {
-            if(VisIt_ExpressionMetaData_alloc(&emd) == VISIT_OKAY)
-            {
-                VisIt_ExpressionMetaData_setName(emd, exprNames[i]);
-                VisIt_ExpressionMetaData_setDefinition(emd, exprDefinitions[i]);
-                VisIt_ExpressionMetaData_setType(emd, VISIT_VARTYPE_SCALAR);
-                VisIt_SimulationMetaData_addExpression(md, emd);
-            }
+            VisIt_ExpressionMetaData_setName(emd, "vec");
+            VisIt_ExpressionMetaData_setDefinition(emd, "gradient(radius)");
+            VisIt_ExpressionMetaData_setType(emd, VISIT_VARTYPE_VECTOR);
+            VisIt_SimulationMetaData_addExpression(md, emd);
         }
-#endif
     }
 
     return md;

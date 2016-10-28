@@ -198,3 +198,32 @@ int extract_iso(const char *filebase, const char *isovar,
     return retval;
 }
 
+int extract_streamline(const char *filebase, const char *vectorvar,
+    const double *seeds, int lseeds, const char **extractvars)
+{
+    int retval = -1;
+    char opvarname[1024];
+    if(filebase == NULL || vectorvar == NULL || seeds == NULL || lseeds < 3 || extractvars == NULL)
+         return -1;
+
+    /* 2.10.x has a Streamline plot. 2.11.x and later does not so use IntegralCurve. */
+    /* We have to make a plot of an operator-created var.*/
+    sprintf(opvarname, "operators/IntegralCurve/%s", vectorvar);
+    if(VisItAddPlot("Pseudocolor", opvarname) == VISIT_OKAY)
+    {
+        /* Adding the plot also added the IntegralCurve operator. */
+
+        VisItSetOperatorOptionsI("sourceType", 1); /* point list */
+        VisItSetOperatorOptionsDv("pointList", seeds, lseeds);
+
+        if(VisItDrawPlots() == VISIT_OKAY)
+        {
+            retval = export_visit(filebase, extractvars);
+        }
+
+        VisItDeleteActivePlots();
+    }
+
+    return retval;
+}
+
