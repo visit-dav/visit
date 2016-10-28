@@ -56,6 +56,8 @@
 #include <StringHelpers.h>
 #include <InvalidFilesException.h>
 
+#include "visit_gzstream.h"
+
 
 using std::vector;
 using std::string;
@@ -265,9 +267,9 @@ avtLinesFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 void
 avtLinesFileFormat::ReadFile(void)
 {
-    ifstream ifile(filename.c_str());
+    visit_ifstream ifile(filename.c_str());
 
-    if (ifile.fail())
+    if (ifile().fail())
     {
         debug1 << "Unable to open file " << filename.c_str() << endl;
         return;
@@ -282,11 +284,11 @@ avtLinesFileFormat::ReadFile(void)
     vector<float> zl;
     vector<int>   cutoff;
     string  headerName = "";
-    while (!ifile.eof())
+    while (!ifile().eof())
     {
         float   x, y, z;
         string  lineName;
-        if (GetPoint(ifile, x, y, z, lineName))
+        if (GetPoint(ifile(), x, y, z, lineName))
         {
             if (headerName.find_first_not_of(" ") != string::npos)
             {
@@ -393,7 +395,7 @@ avtLinesFileFormat::ReadFile(void)
 // ****************************************************************************
 
 bool
-avtLinesFileFormat::GetPoint(ifstream &ifile, float &x, float &y, float &z,
+avtLinesFileFormat::GetPoint(istream &ifile, float &x, float &y, float &z,
                              string &ln)
 {
     char line[256];

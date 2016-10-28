@@ -82,6 +82,7 @@ class Curve2DCommonPluginInfo : public virtual CommonDatabasePluginInfo, public 
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+    virtual std::string               GetLicense() const;
 };
 
 class Curve2DMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual Curve2DCommonPluginInfo

@@ -60,6 +60,8 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
+#include "visit_gzstream.h"
+
 #include <errno.h>
 #include <float.h>
 #include <stdlib.h>
@@ -355,9 +357,9 @@ avtCurve2DFileFormat::ReadFile(void)
 {
     int invalidPointCount = 0;
     int lineCount = 1;
-    ifstream ifile(filename.c_str());
+    visit_ifstream ifile(filename.c_str());
 
-    if (ifile.fail())
+    if (ifile().fail())
     {
         debug1 << "Unable to open file " << filename.c_str() << endl;
         return;
@@ -380,11 +382,11 @@ avtCurve2DFileFormat::ReadFile(void)
     bool justStartedNewCurve = false;
     xl.reserve(1000);
     yl.reserve(1000);
-    while (!ifile.eof())
+    while (!ifile().eof())
     {
         double   x, y;
         string  lineName;
-        CurveToken t = GetPoint(ifile, x, y, lineName);
+        CurveToken t = GetPoint(ifile(), x, y, lineName);
         switch (t)
         {
           case VALID_POINT:
@@ -670,7 +672,7 @@ avtCurve2DFileFormat::ReadFile(void)
 // ****************************************************************************
 
 CurveToken
-avtCurve2DFileFormat::GetPoint(ifstream &ifile, double &x, double &y, string &ln)
+avtCurve2DFileFormat::GetPoint(istream &ifile, double &x, double &y, string &ln)
 {
     char line[256];
     ifile.getline(line, 256, '\n');

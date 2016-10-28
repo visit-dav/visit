@@ -44,6 +44,7 @@
 
 #include <snprintf.h>
 #include <visitstream.h>
+#include <visit_gzstream.h>
 
 #include <vtkAppendFilter.h>
 #include <vtkAppendPolyData.h>
@@ -79,6 +80,7 @@
 #include <NoInputException.h>
 
 #include <float.h>
+#include <math.h>
 
 #include <visit-config.h>
 
@@ -95,6 +97,18 @@ static vtkScalarsToColors * GetColorTableFromEnv();
 using   std::string;
 using   std::vector;
 
+#define SETUP_OFSTREAM(OFH, FNAME, QUAL, COMP)                 \
+    std::string _ext = "";                                     \
+    std::string _mode = "w";                                   \
+    if (COMP != 0)                                             \
+    {                                                          \
+        char levelchar = '0' + QUAL;                           \
+        char levelstr[2] = {levelchar, '\0'};                  \
+        _ext = ".gz";                                          \
+        _mode = std::string("zwb")+std::string(levelstr);      \
+    }                                                          \
+    std::string _fname = std::string(FNAME)+std::string(_ext); \
+    visit_ofstream ofile(_fname.c_str(), _mode.c_str())
 
 // ****************************************************************************
 //  Method: avtDatasetFileWriter constructor
@@ -174,12 +188,24 @@ avtDatasetFileWriter::~avtDatasetFileWriter()
 
 void
 avtDatasetFileWriter::Write(DatasetFileFormat format, const char *filename,
-                            bool binary)
+    int quality, int compression, bool binary)
 {
+    if (quality == 80) // GUI default
+    {
+        quality = 6;   // Deflate default
+    }
+    else
+    {
+        double q = (double) quality / 100.0 * 9.0;
+        quality = (int) round(q);
+        if (quality < 1) quality = 1;
+        if (quality > 9) quality = 9;
+    }
+    
     switch (format)
     {
       case CURVE:
-        WriteCurveFile(filename);
+        WriteCurveFile(filename, quality, compression);
         break;
       case OBJ:
         WriteOBJFamily(filename);
@@ -191,7 +217,7 @@ avtDatasetFileWriter::Write(DatasetFileFormat format, const char *filename,
         WriteSTLFile(filename, binary);
         break;
       case ULTRA:
-        WriteCurveFile(filename);
+        WriteCurveFile(filename, quality, compression);
         break;
       case VTK:
         WriteVTKFamily(filename, binary);
@@ -729,7 +755,7 @@ avtDatasetFileWriter::WritePLYFile(const char *filename, bool binary)
 // ****************************************************************************
 
 void
-avtDatasetFileWriter::WriteCurveFile(const char *filename)
+avtDatasetFileWriter::WriteCurveFile(const char *filename, int quality, int compression)
 {
     // We want it all in a single output file
     vtkDataSet *ds = GetSingleDataset();
@@ -755,20 +781,21 @@ avtDatasetFileWriter::WriteCurveFile(const char *filename)
     std::vector< std::vector<int> >  line_segments;
     SortLineSegments(pd, line_segments);
 
-    ofstream ofile(filename, ios::out);
+    SETUP_OFSTREAM(ofile, filename, quality, compression);
     vtkPoints *pts = pd->GetPoints();
     for (size_t i = 0 ; i < line_segments.size() ; i++)
     {
         if (line_segments.size() <= 1)
-            ofile << "# curve" << endl;
+            ofile() << "# curve" << endl;
         else
-            ofile << "# curve" << i << endl;
+            ofile() << "# curve" << i << endl;
 
+        ofile() << std::setprecision(16);
         for (size_t j = 0 ; j < line_segments[i].size() ; j++)
         {
             double pt[3]; 
             pts->GetPoint(line_segments[i][j], pt);
-            ofile << std::setprecision(16) << pt[0] << " " << pt[1] << endl;
+            ofile() << pt[0] << " " << pt[1] << endl;
         }
     }
 
