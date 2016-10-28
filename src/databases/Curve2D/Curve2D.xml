@@ -5,6 +5,10 @@
       *.ultra
       *.ult
       *.u
+      *.curve.gz
+      *.ultra.gz
+      *.ult.gz
+      *.u.gz
     </FilePatterns>
     <Attribute name="" purpose="" persistent="false">
     </Attribute>

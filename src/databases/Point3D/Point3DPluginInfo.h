@@ -82,6 +82,7 @@ class Point3DCommonPluginInfo : public virtual CommonDatabasePluginInfo, public 
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+    virtual std::string               GetLicense() const;
 };
 
 class Point3DMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual Point3DCommonPluginInfo

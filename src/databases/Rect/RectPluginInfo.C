@@ -167,6 +167,7 @@ RectGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.rect");
+    defaultPatterns.push_back("*.rect.gz");
 
     return defaultPatterns;
 }

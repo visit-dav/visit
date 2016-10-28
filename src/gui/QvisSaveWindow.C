@@ -624,20 +624,29 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             familyCheckBox->blockSignals(false);
             break;
         case SaveWindowAttributes::ID_format:
+        {
             fileFormatComboBox->blockSignals(true);
             fileFormatComboBox->setCurrentIndex(saveWindowAtts->GetFormat());
             fileFormatComboBox->blockSignals(false);
 
-            qualityLabel->setEnabled(saveWindowAtts->GetFormat() ==
-                                     SaveWindowAttributes::JPEG);
-            qualitySlider->setEnabled(saveWindowAtts->GetFormat() ==
-                                      SaveWindowAttributes::JPEG);
+            bool isCompressible = 
+                saveWindowAtts->GetFormat() == SaveWindowAttributes::TIFF ||
+                saveWindowAtts->GetFormat() == SaveWindowAttributes::JPEG ||
+                saveWindowAtts->GetFormat() == SaveWindowAttributes::ULTRA ||
+                saveWindowAtts->GetFormat() == SaveWindowAttributes::CURVE;
+
+            bool hasCompressionQuality =
+                saveWindowAtts->GetFormat() == SaveWindowAttributes::JPEG ||
+                saveWindowAtts->GetFormat() == SaveWindowAttributes::ULTRA ||
+                saveWindowAtts->GetFormat() == SaveWindowAttributes::CURVE;
+
+            qualityLabel->setEnabled(hasCompressionQuality);
+            qualitySlider->setEnabled(hasCompressionQuality);
+
             progressiveCheckBox->setEnabled(saveWindowAtts->GetFormat() ==
                                       SaveWindowAttributes::JPEG);
-            compressionTypeLabel->setEnabled(saveWindowAtts->GetFormat() ==
-                                      SaveWindowAttributes::TIFF);
-            compressionTypeComboBox->setEnabled(saveWindowAtts->GetFormat() ==
-                                      SaveWindowAttributes::TIFF);
+            compressionTypeLabel->setEnabled(isCompressible);
+
             if (saveWindowAtts->GetFormat() 
                      == SaveWindowAttributes::VTK
                 || saveWindowAtts->GetFormat() 
@@ -651,6 +660,9 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             {
                 binaryCheckBox->setEnabled(false);
             }
+
+            compressionTypeComboBox->setEnabled(isCompressible);
+
             if (saveWindowAtts->CurrentFormatIsImageFormat())
             {
                 forceMergeCheckBox->setEnabled(false);
@@ -666,6 +678,7 @@ QvisSaveWindow::UpdateWindow(bool doAll)
                 multiWindowSaveBox->setEnabled(false);
             }
             break;
+        }
         case SaveWindowAttributes::ID_width:
             temp.sprintf("%d", saveWindowAtts->GetWidth());
             widthLineEdit->setText(temp);

@@ -110,7 +110,7 @@ class avtRectFileFormat : public avtMTMDFileFormat
     std::vector<origin_t>               origins;
     avtMeshType                         gridType;
 
-    void                                ReadVizFile(ifstream &);
+    void                                ReadVizFile(istream &);
     void                                SetUpDomainConnectivity();
 };
 

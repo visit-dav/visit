@@ -84,6 +84,7 @@ class PlainTextCommonPluginInfo : public virtual CommonDatabasePluginInfo, publi
                                                     int nList, int nBlock);
     virtual DBOptionsAttributes *GetReadOptions() const;
     virtual DBOptionsAttributes *GetWriteOptions() const;
+    virtual std::string               GetLicense() const;
 };
 
 class PlainTextMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual PlainTextCommonPluginInfo

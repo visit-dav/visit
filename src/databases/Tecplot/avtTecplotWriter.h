@@ -49,6 +49,7 @@
 #include <string>
 #include <vector>
 #include <visitstream.h>
+#include <visit_gzstream.h>
 
 class vtkPoints;
 class vtkPolyData;
@@ -107,10 +108,11 @@ class avtTecplotWriter : public virtual avtDatabaseWriter
     bool           ReallyHasMaterials();
 
     std::string              stem;
-    ofstream                 file;
+    visit_ofstream           file;
     std::vector<std::string> variableList;
     std::vector<std::string> materialList;
     bool                     variablesWritten;
+    int                      gzipLevel;
 };
 
 

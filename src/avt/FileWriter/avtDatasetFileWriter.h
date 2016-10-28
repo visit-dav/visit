@@ -106,7 +106,7 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
                        avtDatasetFileWriter();
     virtual           ~avtDatasetFileWriter();
 
-    void               Write(DatasetFileFormat, const char *filename, bool);
+    void               Write(DatasetFileFormat, const char *filename, int, int, bool);
 
     char              *CreateFilename(const char *base, bool family,
                                       DatasetFileFormat);
@@ -120,7 +120,7 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
 
     void               WritePLYFile(const char *, bool);
 
-    void               WriteCurveFile(const char *);
+    void               WriteCurveFile(const char *, int, int);
 
     void               WritePOVRayFamily(const char *);
     int                WritePOVRayTree(avtDataTree_p, int, const char *,

@@ -66,6 +66,8 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 
+#include "visit_gzstream.h"
+
 
 using std::vector;
 using std::string;
@@ -102,17 +104,17 @@ avtRectFileFormat::avtRectFileFormat(const char *fname)
     dirname = GetDirName(fname);
     filename = fname;
 
-    ifstream ifile(filename.c_str());
+    visit_ifstream ifile(filename.c_str());
 
-    if (ifile.fail())
+    if (ifile().fail())
     {
         debug1 << "Unable to open viz file " << fname << endl;
     }
     else
     {
-        ReadVizFile(ifile);
+        ReadVizFile(ifile());
     }
-    ifile.close();
+    //ifile().close();
 
     cachedMeshes = new vtkDataSet*[ndomains];
     for (int d=0; d<ndomains; d++)
@@ -570,7 +572,7 @@ avtRectFileFormat::SetUpDomainConnectivity()
 //    Fixed parsing of size info from 'domainIJK' lines
 // ****************************************************************************
 void
-avtRectFileFormat::ReadVizFile(ifstream &in)
+avtRectFileFormat::ReadVizFile(istream &in)
 {
     int i;
     string buff;

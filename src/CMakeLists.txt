@@ -1287,6 +1287,9 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTCMALLOC.cmake)
 
 # zlib
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
+IF(ZLIB_FOUND)
+    SET(HAVE_LIBZ 1)
+ENDIF(ZLIB_FOUND)
 
 # szip and jpeg
 IF(WIN32)

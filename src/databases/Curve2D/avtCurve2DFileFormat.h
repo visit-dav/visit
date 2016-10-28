@@ -125,7 +125,7 @@ class avtCurve2DFileFormat : public avtSTSDFileFormat
     int                        curveCycle;
 
     void                  ReadFile(void);
-    CurveToken            GetPoint(ifstream &, double &, double &,
+    CurveToken            GetPoint(istream &, double &, double &,
                                    std::string &);
 };
 

@@ -89,7 +89,7 @@ class avtLinesFileFormat : public avtSTMDFileFormat
     std::vector<std::string>   lineNames;
 
     void                  ReadFile(void);
-    bool                  GetPoint(ifstream &, float &, float &, float &,
+    bool                  GetPoint(istream &, float &, float &, float &,
                                    std::string &);
 };
 

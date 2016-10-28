@@ -323,6 +323,7 @@ utility/GeometricHelpers.C
 utility/Namescheme.C
 utility/StringHelpers.C
 utility/Utility.C
+utility/visit_gzstream.C
 utility/void_ref_ptr.C
 )
 IF(WIN32)
@@ -350,18 +351,18 @@ ADD_LIBRARY(visitcommon
 IF(WIN32)
     TARGET_LINK_LIBRARIES(visitcommon ws2_32 shlwapi userenv)
 ELSE(WIN32)
-    TARGET_LINK_LIBRARIES(visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_EXECUTABLE(StringHelpers_test utility/StringHelpers_test.C)
-    TARGET_LINK_LIBRARIES(StringHelpers_test visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(StringHelpers_test visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_EXECUTABLE(Utility_test utility/Utility_test.C)
-    TARGET_LINK_LIBRARIES(Utility_test visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(Utility_test visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_EXECUTABLE(Namescheme_test utility/Namescheme_test.C)
-    TARGET_LINK_LIBRARIES(Namescheme_test visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(Namescheme_test visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_EXECUTABLE(MRUCache_test utility/MRUCache_test.C)
     ADD_EXECUTABLE(exprconfig expr/ExprConfig.C)
-    TARGET_LINK_LIBRARIES(exprconfig visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(exprconfig visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_EXECUTABLE(exprtest expr/test.C)
-    TARGET_LINK_LIBRARIES(exprtest visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    TARGET_LINK_LIBRARIES(exprtest visitcommon ${ZLIB_LIB} ${CMAKE_THREAD_LIBS} ${DL_LIB})
     ADD_CUSTOM_TARGET(init)
     ADD_DEPENDENCIES(init exprconfig)
     ADD_CUSTOM_COMMAND(TARGET init POST_BUILD COMMAND exprconfig ExprInit.C

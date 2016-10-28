@@ -170,6 +170,10 @@ Curve2DGeneralPluginInfo::GetDefaultFilePatterns() const
     defaultPatterns.push_back("*.ultra");
     defaultPatterns.push_back("*.ult");
     defaultPatterns.push_back("*.u");
+    defaultPatterns.push_back("*.curve.gz");
+    defaultPatterns.push_back("*.ultra.gz");
+    defaultPatterns.push_back("*.ult.gz");
+    defaultPatterns.push_back("*.u.gz");
 
     return defaultPatterns;
 }

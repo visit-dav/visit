@@ -61,6 +61,8 @@
 #include <avtDatabaseMetaData.h>
 
 #include <InvalidFilesException.h>
+
+#include "visit_gzstream.h"
     
 // ****************************************************************************
 // Class: VertexManager
@@ -248,8 +250,8 @@ avtRAWFileFormat::ReadFile(const char *name)
     debug4 << mName << endl;
 
     // Open the file.
-    ifstream ifile(name);
-    if (ifile.fail())
+    visit_ifstream ifile(name);
+    if (ifile().fail())
     {
         EXCEPTION1(InvalidFilesException, name);
     }
@@ -278,10 +280,10 @@ avtRAWFileFormat::ReadFile(const char *name)
     char   line[1024];
     double pts[9] = {0.,0.,0.,0.,0.,0.,0.,0.,0.}; (void) pts;
     //int nc = 0;
-    for(size_t lineIndex = 0; ifile.good(); ++lineIndex)
+    for(size_t lineIndex = 0; ifile().good(); ++lineIndex)
     {
         // Get the line
-        ifile.getline(line, 1024);
+        ifile().getline(line, 1024);
         if (lineIndex<100 && !StringHelpers::IsPureASCII(line, 1024))
             EXCEPTION2(InvalidFilesException, name, "Not ASCII.");
 
@@ -366,7 +368,7 @@ avtRAWFileFormat::ReadFile(const char *name)
             else
             {
                 debug4 << mName << "Empty domain name" << endl;
-                if (GetStrictMode() && !ifile.eof())
+                if (GetStrictMode() && !ifile().eof())
                 {
                     EXCEPTION2(InvalidFilesException, GetFilename(),
                                "Empty domain name.");

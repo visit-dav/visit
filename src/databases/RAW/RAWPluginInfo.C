@@ -167,6 +167,7 @@ RAWGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.raw");
+    defaultPatterns.push_back("*.raw.gz");
 
     return defaultPatterns;
 }
