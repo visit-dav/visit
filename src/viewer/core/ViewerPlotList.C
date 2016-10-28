@@ -8077,45 +8077,6 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
     GetViewerStateManager()->GetVariableMethods()->GetAllExpressions(newList, host, db, t);    
 
     //
-    // Update the expression list with the set of variables
-    // created by the operators in the active plots.
-    //
-
-    // First, remove the old ones since we're about to regenerate them.
-    for (int i=newList.GetNumExpressions()-1 ; i>=0; --i)
-    {
-        if (newList[i].GetFromOperator())
-        {
-            newList.RemoveExpressions(i);
-        }
-    }
-
-    // Then add everything created by any active plots' operators.
-    for (int i=0 ; i < nPlots ; i++)
-    {
-        if (!plots[i].active)
-            continue;
-
-        ViewerPlot *plot = plots[i].plot;
-        for (int j = 0 ; j < plot->GetNOperators() ; j++)
-        {
-            ViewerOperator *oper = plot->GetOperator(j);
-            const avtDatabaseMetaData *md = plot->GetMetaData();
-            ExpressionList *exprs = oper->GetCreatedVariables(md);
-            if (exprs != NULL)
-            {
-                for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
-                {
-                    Expression exp = exprs->GetExpressions(k);
-                    exp.SetFromOperator(true);
-                    newList.AddExpressions(exp);
-                }
-                delete exprs;
-            }
-        }
-    }
-
-    //
     // If the new expression list is different from the expression list
     // that we already have, save the new expression list and send it to
     // the client.

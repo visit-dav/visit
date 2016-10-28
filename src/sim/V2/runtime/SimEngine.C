@@ -42,8 +42,12 @@
 #include <DebugStream.h>
 #include <DatabasePluginManager.h>
 #include <DatabasePluginInfo.h>
+#include <ExpressionList.h>
+#include <Expression.h>
+#include <ParsingExprList.h>
 #include <SimPlotPluginManager.h>
 #include <SimOperatorPluginManager.h>
+#include <OperatorPluginInfo.h>
 #include <PlotPluginInfo.h>
 #include <LoadBalancer.h>
 #include <NetworkManager.h>
@@ -84,6 +88,12 @@
 #include <SimFileServer.h>
 #include <SimPlotPluginManager.h>
 #include <SimOperatorPluginManager.h>
+
+#include <VisItParser.h>
+#include <avtExprNodeFactory.h>
+#include <ExprParser.h>
+
+#include <avtDatabaseMetaData.h>
 
 #include <avtParallel.h>
 #include <cstring>
@@ -158,6 +168,13 @@ SimEngine::SimEngine() : Engine()
 #endif
     , viewerInitialized(false), simsource(), rpcNotifier(NULL)
 {
+    // Install an avtExprNodeFactory object in the parser. This is critical for
+    // making the parser create avt versions of the parse objects, which is needed
+    // for the various dynamic_cast calls in the expression library to convert
+    // the avt*Expr objects.
+    Parser *p = new ExprParser(new avtExprNodeFactory());
+    // This saves the instance in ParsingExprList::Instance(). Don't free.
+    ParsingExprList *l = new ParsingExprList(p);
 }
 
 // ****************************************************************************
@@ -291,6 +308,70 @@ SimEngine::CreatePluginManagers()
     GetNetMgr()->SetOperatorPluginManager(new SimOperatorPluginManager());
 
     GetNetMgr()->SetDatabasePluginManager(new DatabasePluginManager());
+}
+
+// ****************************************************************************
+// Method: SimEngine::SimulationTimeStepChanged
+//
+// Purpose:
+//   This method is called when we change timesteps.
+//
+// Note:       We need this for in situ.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 14 15:02:36 PDT 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+SimEngine::SimulationTimeStepChanged()
+{
+    // Get the new metadata from the simulation, save it.
+    Engine::SimulationTimeStepChanged();
+
+    // Let's the use new metadata to make sure that expressions are up to date.
+    ExpressionList newList;
+
+    //
+    // Create a new expression list that contains all of the expressions
+    // from the main expression list that are not expressions that come
+    // from databases.
+    //
+    ExpressionList *exprList = ParsingExprList::Instance()->GetList();
+    for(int i = 0; i < exprList->GetNumExpressions(); ++i)
+    {
+        const Expression &expr = exprList->GetExpressions(i);
+        if(!expr.GetFromDB() && !expr.GetFromOperator())
+            newList.AddExpressions(expr);
+    }
+    // Add the expressions for the database.
+    for (int i = 0 ; i < metaData->GetNumberOfExpressions(); ++i)
+        newList.AddExpressions(*(metaData->GetExpression(i)));
+
+    // NOTE: adapted from VariableMenuPopulator::GetOperatorCreatedExpressions
+
+    // Iterate over the meshes in the metadata and add operator-created expressions
+    // for each relevant mesh.
+    avtDatabaseMetaData md2 = *metaData;
+    md2.GetExprList() = newList;
+    for(int j = 0; j < GetOperatorPluginManager()->GetNEnabledPlugins(); j++)
+    {
+        std::string id(GetOperatorPluginManager()->GetEnabledID(j));
+        CommonOperatorPluginInfo *ComInfo = GetOperatorPluginManager()->GetCommonPluginInfo(id);
+        ExpressionList *fromOperators = ComInfo->GetCreatedExpressions(&md2);
+        if(fromOperators != NULL)
+        {
+            for(int k = 0; k < fromOperators->GetNumExpressions(); k++)
+                newList.AddExpressions(fromOperators->GetExpressions(k));
+            delete fromOperators;
+        }
+    }
+
+    // Stash the expressions.
+    if(newList != *exprList)
+        *exprList = newList;
 }
 
 // ****************************************************************************

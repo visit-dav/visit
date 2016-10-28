@@ -25,4 +25,7 @@ int extract_iso(const char *filebase, const char *isovar,
                 const double *isovalues, int nisovalues,
                 const char **extractvars);
 
+int extract_streamline(const char *filebase, const char *vectorvar,
+                       const double *seeds, int lseeds, const char **extractvars);
+
 #endif
