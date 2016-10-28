@@ -154,6 +154,7 @@ Point3DGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.3D");
+    defaultPatterns.push_back("*.3D.gz");
 
     return defaultPatterns;
 }

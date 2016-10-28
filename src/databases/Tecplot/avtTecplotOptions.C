@@ -102,5 +102,6 @@ DBOptionsAttributes *
 GetTecplotWriteOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
+    rv->SetInt("Gzip compression level [1,9] (0 for none)", 0);
     return rv;
 }

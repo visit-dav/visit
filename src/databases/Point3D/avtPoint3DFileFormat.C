@@ -58,6 +58,8 @@
 #include <DebugStream.h>
 #include <StringHelpers.h>
 
+#include "visit_gzstream.h"
+
 const char      *avtPoint3DFileFormat::MESHNAME = "points";
 
 #define COORDINATE_ORDER_DEFAULT 0
@@ -322,8 +324,8 @@ avtPoint3DFileFormat::ReadData(void)
     const char *mName = "avtPoint3DFileFormat::ReadData: ";
     int      i;
 
-    ifstream ifile(filename);
-    if (ifile.fail())
+    visit_ifstream ifile(filename);
+    if (ifile().fail())
     {
         EXCEPTION1(InvalidFilesException, filename);
     }
@@ -336,7 +338,7 @@ avtPoint3DFileFormat::ReadData(void)
     for (i = 0 ; i < 4 ; i++)
     {
         char buf[1024];
-        ifile >> buf;
+        ifile() >> buf;
         if (GetStrictMode() && !StringHelpers::IsPureASCII(buf, 1024))
             EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
         varnames.push_back(buf);
@@ -351,7 +353,7 @@ avtPoint3DFileFormat::ReadData(void)
 
     // We read out the four variables, but not the newline at the end.
     // Get that now.
-    ifile.getline(line, 1024);
+    ifile().getline(line, 1024);
     if (!StringHelpers::IsPureASCII(line, 1024))
         EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
 
@@ -363,10 +365,10 @@ avtPoint3DFileFormat::ReadData(void)
     int linesToCheck = 100;
 
     line[0] = '\0';
-    ifile.getline(line, 1024);
+    ifile().getline(line, 1024);
     if (GetStrictMode() && !StringHelpers::IsPureASCII(line, 1024))
         EXCEPTION2(InvalidFilesException, filename, "Not ASCII.");
-    while (!ifile.eof())
+    while (!ifile().eof())
     {
         // Allow the user to specify "coordflag" in the file.
         if(line[0] == '#')
@@ -403,7 +405,7 @@ avtPoint3DFileFormat::ReadData(void)
         }
 
         line[0] = '\0';
-        ifile.getline(line, 1024);
+        ifile().getline(line, 1024);
         --linesToCheck;
         if (GetStrictMode() && linesToCheck > 0 &&
             !StringHelpers::IsPureASCII(line, 1024))
@@ -510,8 +512,8 @@ avtPoint3DFileFormat::ReadConfigFile(int &coordFlag)
     coordFlag = COORDINATE_ORDER_DEFAULT;
  
     // Open the file.
-    ifstream ifile(configFile.c_str());
-    if (ifile.fail())
+    visit_ifstream ifile(configFile.c_str());
+    if (ifile().fail())
     {
         debug4 << mName << "Could not open config file: "
                << configFile.c_str() << endl;
@@ -522,10 +524,10 @@ avtPoint3DFileFormat::ReadConfigFile(int &coordFlag)
                << configFile.c_str() << endl;
 
         char line[1024];
-        for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
+        for(int lineIndex = 0; !ifile().eof(); ++lineIndex)
         {
             // Get the line
-            ifile.getline(line, 1024);
+            ifile().getline(line, 1024);
 
             if(strncmp(line, "coordflag", 9) == 0)
             {

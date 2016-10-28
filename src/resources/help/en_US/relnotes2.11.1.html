@@ -33,7 +33,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Enhancements in version 2.11.1</font></b></p>
 <ul>
   <li>VisIt was ported to and installed on Los Alamos National Laboratories' Trinity system. A host profile was added for running in client/server mode from Lawrence Livermore National Laboratory.</li>
-  <li></li>
+  <li>Several of the ASCII-based database readers (PlainText, Curve2D, Lines, Rect, etc.), were upgraded to support
+      on-the-fly decompression via gzstream class. This means VisIt can directly read a gzip'd input file in these
+      formats. Previously, this would have been handled through VisIt's ZipWrapper database reader but this new
+      apporach is simpler and more efficient for simple ASCII-based files. This capability does not currently extend
+      to ASCII-based formats that are read via other libraries such as VTK, MFEM, etc. In addition, as part of this
+      enhancement VisIt's Save Window feature can now save gzip'd compressed curve formats. In this case, the
+      quality slider selects the gzip level in the range [1..9]. Some of the ASCII Export Database formats were
+      also enhanced.</li>
 </ul>
 
 <a name="Dev_changes"></a>

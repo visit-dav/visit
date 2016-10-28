@@ -156,6 +156,9 @@ PlainTextGeneralPluginInfo::GetDefaultFilePatterns() const
     defaultPatterns.push_back("*.csv");
     defaultPatterns.push_back("*.tsv");
     defaultPatterns.push_back("*.txt");
+    defaultPatterns.push_back("*.csv.gz");
+    defaultPatterns.push_back("*.tsv.gz");
+    defaultPatterns.push_back("*.txt.gz");
 
     return defaultPatterns;
 }

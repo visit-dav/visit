@@ -59,6 +59,8 @@
 #include <Expression.h>
 #include <StringHelpers.h>
 
+#include "visit_gzstream.h"
+
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 
@@ -489,8 +491,8 @@ avtPlainTextFileFormat::ReadFile()
     if (fileRead)
         return;
 
-    ifstream in(filename.c_str());
-    if (!in)
+    visit_ifstream in(filename.c_str());
+    if (!in())
         EXCEPTION1(InvalidFilesException, filename.c_str());
 
     // skip the first lines if asked
@@ -499,7 +501,7 @@ avtPlainTextFileFormat::ReadFile()
     memset(buff, 0, sizeof(char) * linelen);
     for (int l=0; l<skipLines; l++)
     {
-        in.getline(buff, linelen);
+        in().getline(buff, linelen);
         if (!StringHelpers::IsPureASCII(buff, linelen))
             EXCEPTION2(InvalidFilesException, filename.c_str(), "Not ASCII.");
     }
@@ -509,7 +511,7 @@ avtPlainTextFileFormat::ReadFile()
     ncolumns = 0;
     nrows = 0;
     bool firstRow = true;
-    in.getline(buff, linelen);
+    in().getline(buff, linelen);
     if (!StringHelpers::IsPureASCII(buff, linelen))
         EXCEPTION2(InvalidFilesException, filename.c_str(), "Not ASCII.");
 
@@ -518,7 +520,7 @@ avtPlainTextFileFormat::ReadFile()
         if (*p == ',')
             comma = true;
 
-    while (!!in)
+    while (in())
     {
         int len = (int)strlen(buff);
         char *start = buff;
@@ -600,7 +602,7 @@ avtPlainTextFileFormat::ReadFile()
             nrows++;
         }
         firstRow = false;
-        in.getline(buff, linelen);
+        in().getline(buff, linelen);
 
         if (nrows < 5)
         {
@@ -652,6 +654,6 @@ avtPlainTextFileFormat::ReadFile()
             variableNames.resize(ncolumns);
     }
 
-    in.close();
+    //in().close();
     fileRead = true;
 }

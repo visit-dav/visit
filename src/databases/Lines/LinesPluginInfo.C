@@ -154,6 +154,7 @@ LinesGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.lines");
+    defaultPatterns.push_back("*.lines.gz");
 
     return defaultPatterns;
 }
