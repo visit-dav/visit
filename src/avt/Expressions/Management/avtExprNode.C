@@ -100,6 +100,8 @@
 #include <avtVariableSkewExpression.h>
 #include <avtVectorComposeExpression.h>
 #include <avtVectorDecomposeExpression.h>
+#include <avtMergeTreeExpression.h>
+#include <avtLocalThresholdExpression.h>
 
 #include <visit-python-config.h>
 #ifdef VISIT_PYTHON_FILTERS
@@ -506,6 +508,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Kevin Griffin, Tue Aug 5 15:01:27 PDT 2014
 //    Added lambda2 expression.
 //
+//    Timo Bremer, Fri Oct 28 09:09:27 PDT 2016
+//    Added merge_tree, split_tree and local_threshold.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -565,6 +570,12 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtProcessorIdExpression();
     if (functionName == "threadid")
         return new avtThreadIdExpression();
+    if (functionName == "merge_tree")
+        return new avtMergeTreeExpression(true);
+    if (functionName == "split_tree")
+        return new avtMergeTreeExpression(false);
+    if (functionName == "local_threshold")
+        return new avtLocalThresholdExpression();
     if (functionName == "python" || functionName == "py")
 #ifdef VISIT_PYTHON_FILTERS
         return new avtPythonExpression();
