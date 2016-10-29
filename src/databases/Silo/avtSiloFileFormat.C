@@ -180,6 +180,8 @@ static int FindFirstNonEmptyBlock(char const *mbobj_name, int nblocks,
     avtSiloMBObjectCacheEntry const *mb_ent,
     int repr_block_idx, int empty_cnt, int const *empty_list);
 
+static int db_get_index(DBnamescheme const *ns, int natnum);
+
 // ****************************************************************************
 //  Class: avtSiloFileFormat
 //
@@ -321,6 +323,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     ioInfoValid = false;
     addBlockDecompositionAsVar = false;
     haveAddedBlockDecompositionAsVar = false;
+    ignoreMissingBlocks = false;
     topDir = "/";
     siloDriver = DB_UNKNOWN;
     dbfiles = new DBfile*[MAX_FILES];
@@ -1558,6 +1561,14 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
                 hasDisjointElements = true;
             }
 
+            if (DBInqVarExists(dbfile, "_visit_allow_empty_blocks"))
+            {
+                int mbFlag;
+                DBReadVar(dbfile, "_visit_allow_empty_blocks", &mbFlag);
+                if (mbFlag == 1)
+                    ignoreMissingBlocks = true;
+            }
+
             bool hadVisitDefvars = false;
             if (DBInqVarExists(dbfile, "_visit_defvars") &&
                 DBInqVarType(dbfile, "_visit_defvars") == DB_VARIABLE)
@@ -1781,7 +1792,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                                                   correctFile,
                                                   realvar);
                         DBucdmesh *um = DBGetUcdmesh(correctFile, realvar.c_str());
-                        if (um == NULL)
+                        if (um == NULL && !ignoreMissingBlocks)
                         {
                             debug1 << "Invalidating mesh \"" << multimesh_names[i] 
                                    << "\" since its first non-empty block (" << mb_meshname
@@ -1949,6 +1960,28 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                     HandleMrgtreeNodelistVars(dbfile, name_w_dir, mm->mrgtree_name, md);
                 }
 
+                //
+                // Handle possible layer namescheme
+                //
+                map<int, string> layer_names_map;
+                vector<int> layer_group_ids; 
+                string candidate_layer_namescheme = string(name_w_dir) + "_layer_namescheme";
+                if (DBInqVarExists(dbfile, candidate_layer_namescheme.c_str()))
+                {
+                    char *layer_ns_str = (char*) DBGetVar(dbfile, candidate_layer_namescheme.c_str());
+                    DBnamescheme *layer_ns = DBMakeNamescheme(layer_ns_str);
+                    for (int b = 0; b < (mm?mm->nblocks:0); b++)
+                    {
+                        int layer_id = db_get_index(layer_ns, b);
+                        char layer_name[64];
+                        SNPRINTF(layer_name, sizeof(layer_name), "layer%d", layer_id);
+                        layer_group_ids.push_back(layer_id);
+                        layer_names_map[layer_id] = string(layer_name);
+                    }
+                    DBFreeNamescheme(layer_ns);
+                    free(layer_ns_str);
+                }
+
                 if (mt == AVT_UNSTRUCTURED_MESH)
                     mmd->disjointElements = hasDisjointElements || mm->disjoint_mode != 0; 
 
@@ -1968,6 +2001,22 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                     haveAmrGroupInfo = true;
                     md->AddGroupInformation(num_amr_groups, mm?mm->nblocks:0, amr_group_ids);
                     debug1 << "Using AMR levels as Group Information"<<endl;
+                }
+                else if (layer_group_ids.size() > 0 && !is_all_empty)
+                {
+                    vector<string> layer_block_names;
+                    layer_block_names.reserve(layer_names_map.size());
+                    for (map<int,string>::const_iterator it = layer_names_map.begin();
+                         it != layer_names_map.end(); it++)
+                        layer_block_names[it->first] = it->second;
+  
+                    mmd->numGroups = (int) layer_names_map.size();
+                    mmd->groupTitle = "layers";
+                    mmd->groupPieceName = "layer";
+                    mmd->blockNames = layer_block_names;
+                    md->Add(mmd);
+                    md->AddGroupInformation((int)layer_names_map.size(), mm?mm->nblocks:0, layer_group_ids);
+                    debug1 << "Using Layers as Group Information"<<endl;
                 }
                 else
                 {
@@ -6960,7 +7009,7 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
         DBucdmesh  *um = DBGetUcdmesh(domain_file, directory_mesh.c_str());
         DBSetDataReadMask2(oldMask);
 
-        if (um == NULL)
+        if (um == NULL && !ignoreMissingBlocks)
         {
             char msg[256];
             SNPRINTF(msg, sizeof(msg), "DBGetUcdmesh() failed for \"%s\" for domain %d to "
@@ -7064,7 +7113,7 @@ avtSiloFileFormat::GetMrgTreeNodelistsVar(int domain, string listsname)
     unsigned long long oldMask = DBSetDataReadMask2(0x0);
     DBucdmesh  *um = DBGetUcdmesh(domain_file, domain_mesh.c_str());
     DBSetDataReadMask2(oldMask);
-    if (!um)
+    if (!um && !ignoreMissingBlocks)
     {
         debug3 << "Unable to get mesh \"" << meshName << "\" for domain " << domain << endl;
         return nlvar;
@@ -7833,7 +7882,7 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
     // Get the Silo construct.
     //
     DBucdvar  *uv = DBGetUcdvar(dbfile, varname);
-    if (uv == NULL)
+    if (uv == NULL && !ignoreMissingBlocks)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
@@ -8938,7 +8987,7 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
     // Get the Silo construct.
     //
     DBucdvar  *uv = DBGetUcdvar(dbfile, varname);
-    if (uv == NULL)
+    if (uv == NULL && !ignoreMissingBlocks)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
@@ -9690,7 +9739,7 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     // Get the Silo construct.
     //
     DBucdmesh  *um = DBGetUcdmesh(dbfile, meshname);
-    if (um == NULL)
+    if (um == NULL && !ignoreMissingBlocks)
     {
         EXCEPTION1(InvalidVariableException, meshname);
     }
@@ -13244,7 +13293,8 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     int meshnum = 0;
     string mb_varname = obj->GenerateName(meshnum);
     int nblocks = obj->NumberOfBlocks();
-    while ( mb_varname  == "EMPTY")
+    
+    while (GetMeshname(dbfile, mb_varname.c_str(), subMesh) != 0)
     {
         meshnum++;
         if (meshnum >= nblocks)
@@ -13253,8 +13303,6 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
         }
         mb_varname = obj->GenerateName(meshnum);
     }
-
-    GetMeshname(dbfile, mb_varname.c_str(), subMesh);
 
     //
     // The code involving subMeshTmp is to maintain backward compability
@@ -13354,48 +13402,6 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     EXCEPTION1(SiloException, str);
 }
 
-
-// ****************************************************************************
-//  Method: avtSiloFileFormat::GetMeshtype
-//
-//  Purpose:
-//      Gets the mesh type for a variable, even if it is in a different file.
-//
-//  Arguments:
-//      dbfile    The dbfile that mesh came from.
-//      mesh      A mesh name, possibly with a prepended directory and filename
-//
-//  Programmer: Hank Childs
-//  Creation:   March 5, 2001
-//
-//  Modifications:
-//
-//    Sean Ahern, Fri Feb  8 13:57:12 PST 2002
-//    Added error checking.
-//
-//    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
-//    Limited support for Silo nameschemes, use new multi block cache data
-//    structures.
-//
-// ****************************************************************************
-
-int
-avtSiloFileFormat::GetMeshtype(DBfile *dbfile, const char *mesh)
-{
-    string dirvar;
-    DBfile *correctFile = dbfile;
-    DetermineFileAndDirectory(mesh, "", correctFile, dirvar);
-    int rv = DBInqMeshtype(correctFile, dirvar.c_str());
-    if (rv < 0)
-    {
-        char str[1024];
-        sprintf(str, "Unable to determine mesh type for \"%s\".", mesh);
-        EXCEPTION1(SiloException, str);
-    }
-    return rv;
-}
-
-
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetMeshname
 //
@@ -13427,19 +13433,14 @@ avtSiloFileFormat::GetMeshtype(DBfile *dbfile, const char *mesh)
 //
 // ****************************************************************************
 
-void
+int
 avtSiloFileFormat::GetMeshname(DBfile *dbfile, const char *var, char *meshname)
 {
     string dirvar;
     DBfile *correctFile = dbfile;
     DetermineFileAndDirectory(var, "", correctFile, dirvar);
     int rv = DBInqMeshname(correctFile, dirvar.c_str(), meshname);
-    if (rv < 0)
-    {
-        char str[1024];
-        sprintf(str, "Unable to determine mesh for %s.", var);
-        EXCEPTION1(SiloException, str);
-    }
+    return rv;
 }
 
 
@@ -14072,7 +14073,7 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
     DBSetDataReadMask2(DBUMGlobNodeNo);
     DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh.c_str());
     DBSetDataReadMask2(mask);
-    if (um == NULL)
+    if (um == NULL && !ignoreMissingBlocks)
         EXCEPTION1(InvalidVariableException, mesh);
 
     vtkDataArray *rv = NULL;
@@ -14239,7 +14240,7 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
     DBSetDataReadMask2(DBUMZonelist|DBZonelistGlobZoneNo|DBZonelistInfo);
     DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh.c_str());
     DBSetDataReadMask2(mask);
-    if (um == NULL)
+    if (um == NULL && !ignoreMissingBlocks)
         EXCEPTION1(InvalidVariableException, mesh);
 
     vtkDataArray *rv = NULL;
@@ -14786,7 +14787,7 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, const char *mesh)
     DBucdmesh *um = DBGetUcdmesh(correctFile, realvar.c_str());
     DBSetDataReadMask2(mask);
     VisitMutexUnlock("avtSiloFileFormat::CalcExternalFacelist");
-    if (um == NULL)
+    if (um == NULL && !ignoreMissingBlocks)
         EXCEPTION1(InvalidVariableException, mesh);
     DBfacelist *fl = um->faces;
 
@@ -17354,4 +17355,22 @@ static int FindFirstNonEmptyBlock(char const *mbobj_name, int nblocks,
         }
     }
     return blocknum;
+}
+
+// Temporary: Replace with DBGetIndex after new Silo is available
+static int
+db_get_index(DBnamescheme const *ns, int natnum)
+{
+    char const *name_str = DBGetName(ns, natnum);
+    int i = 0;
+
+    if (!name_str) return -1;
+
+    while (name_str[i] && !(strchr("0123456789+-",      name_str[i  ]) &&
+                            strchr("0123456789.aAbBcCdDeEfFxX+-", name_str[i+1])))
+        i++;
+
+    if (!name_str[i]) return -1;
+
+    return (int) strtol(&name_str[i], 0, 10);
 }
