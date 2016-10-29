@@ -26,6 +26,7 @@
 // Standard C++ Library".
 // ============================================================================
 #if 0
+/*
 
                   GNU LESSER GENERAL PUBLIC LICENSE
                        Version 2.1, February 1999
@@ -538,6 +539,7 @@ That's all there is to it!
      with or without zlib
    * Other notes:
        * consider mode char options for zlib's internal buffer sizes
+*/
 #endif
 
 #ifndef VISIT_GZSTREAM_H
@@ -548,6 +550,7 @@ That's all there is to it!
 // standard C++ with new header file names and std:: namespace
 #include <iostream>
 #include <fstream>
+#include <cstring>
 #ifdef HAVE_LIBZ
 #include "zlib.h"
 #endif
@@ -638,7 +641,7 @@ public:
         else
 #endif
         {
-            std::ios_base::openmode m = 0x0;
+            std::ios_base::openmode m = (std::ios_base::openmode) 0x0;
             if (strchr(mode,'r')) m |= std::ios_base::in;
             if (strchr(mode,'b')) m |= std::ios_base::binary;
             strm = new std::ifstream(name,m);
@@ -652,7 +655,7 @@ public:
         else
 #endif
         {
-            std::ios_base::openmode m = 0x0;
+            std::ios_base::openmode m = (std::ios_base::openmode) 0x0;
             if (strchr(mode,'r')) m |= std::ios_base::in;
             if (strchr(mode,'b')) m |= std::ios_base::binary;
             strm = new std::ifstream(name,m);
@@ -710,7 +713,7 @@ public:
         else
 #endif
         {
-            std::ios_base::openmode m = 0x0;
+            std::ios_base::openmode m = (std::ios_base::openmode) 0x0;
             if (strchr(mode,'a')) m |= std::ios_base::app;
             else if (strchr(mode,'t')) m |= std::ios_base::trunc;
             if (strchr(mode,'w')) m |= std::ios_base::out;
@@ -730,7 +733,7 @@ public:
         else
 #endif
         {
-            std::ios_base::openmode m = 0x0;
+            std::ios_base::openmode m = (std::ios_base::openmode) 0x0;
             if (strchr(mode,'a')) m |= std::ios_base::app;
             else if (strchr(mode,'t')) m |= std::ios_base::trunc;
             if (strchr(mode,'w')) m |= std::ios_base::out;
