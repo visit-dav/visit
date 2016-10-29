@@ -50,6 +50,7 @@
 #include <FileFunctions.h>
 
 #include <cerrno>
+#include <cstring>
 
 // ****************************************************************************
 //  Method: avtFileWriter constructor
