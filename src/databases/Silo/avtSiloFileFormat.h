@@ -349,6 +349,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     std::string           codeNameGuess;
     bool                  addBlockDecompositionAsVar;
     bool                  haveAddedBlockDecompositionAsVar;
+    bool                  ignoreMissingBlocks;
 
     bool                  ioInfoValid;
     avtIOInformation      ioInfo;
@@ -515,8 +516,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                                            const char *name,
                                                            avtSiloMBObjectCacheEntry *obj,
                                                            const char *curdir);
-    int                   GetMeshtype(DBfile *, const char *);
-    void                  GetMeshname(DBfile *, const char *, char *);
+    int                   GetMeshname(DBfile *, const char *, char *);
     void                 *GetComponent(DBfile *, char *, const char *);
 
     void                  GetTimeVaryingInformation(DBfile *,
