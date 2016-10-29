@@ -199,6 +199,7 @@ ${VISIT_SOURCE_DIR}/avt/Plotter/vtk
 ${VISIT_SOURCE_DIR}/avt/View
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
+${OPENGL_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 )
 
