@@ -30,7 +30,7 @@
 
 #ifdef HAVE_LIBZ
 #include <iostream>
-#include <string.h>  // for memcpy
+#include <cstring>  // for memcpy
 
 // ----------------------------------------------------------------------------
 // Internal classes to implement gzstream. See header file for user classes.
