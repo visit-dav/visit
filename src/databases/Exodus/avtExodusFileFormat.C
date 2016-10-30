@@ -602,6 +602,11 @@ static int SizeOfNCType(int type)
 // known to be different.
 //
 // Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+//
+// Modifications:
+//
+//    Mark C. Miller, Sun Oct 30 16:28:22 PDT 2016
+//    Fix ordering issues for HEX-27
 // ****************************************************************************
 
 #define SWAP_NODES(A,B) {vtkIdType tmp=verts[A]; verts[A]=verts[B]; verts[B]=tmp;}
@@ -646,12 +651,16 @@ InsertExodusCellInVTKUnstructuredGrid(vtkUnstructuredGrid *ugrid, int vtk_cellty
             // face nodes
             SWAP_NODES(21,24);
             SWAP_NODES(22,25);
-            SWAP_NODES(23,20);
-            SWAP_NODES(24,21);
-            SWAP_NODES(25,22);
-            SWAP_NODES(26,23);
-            // volume node
-            SWAP_NODES(20,26);
+
+            // Remaining order changes can't be handled by swaps
+            {   vtkIdType tmp20 = verts[20];
+                vtkIdType tmp23 = verts[23];
+                vtkIdType tmp26 = verts[26];
+                verts[20] = tmp23;
+                verts[23] = tmp26;
+                verts[26] = tmp20;
+            }
+
             contains_nonlinear_elems = true;
             break;
         }
