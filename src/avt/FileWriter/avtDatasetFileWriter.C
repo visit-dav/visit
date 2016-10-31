@@ -100,7 +100,7 @@ using   std::vector;
 #define SETUP_OFSTREAM(OFH, FNAME, QUAL, COMP)                 \
     std::string _ext = "";                                     \
     std::string _mode = "w";                                   \
-    if (COMP != 0)                                             \
+    if (COMP == 3)                                             \
     {                                                          \
         char levelchar = '0' + QUAL;                           \
         char levelstr[2] = {levelchar, '\0'};                  \
@@ -190,16 +190,19 @@ void
 avtDatasetFileWriter::Write(DatasetFileFormat format, const char *filename,
     int quality, int compression, bool binary)
 {
-    if (quality == 80) // GUI default
+    if (compression == 3) // Deflate
     {
-        quality = 6;   // Deflate default
-    }
-    else
-    {
-        double q = (double) quality / 100.0 * 9.0;
-        quality = (int) round(q);
-        if (quality < 1) quality = 1;
-        if (quality > 9) quality = 9;
+        if (quality == 80) // GUI default quality
+        {
+            quality = 6;   // Deflate default level
+        }
+        else
+        {
+            double q = (double) quality / 100.0 * 9.0;
+            quality = (int) round(q);
+            if (quality < 1) quality = 1;
+            if (quality > 9) quality = 9;
+        }
     }
     
     switch (format)
