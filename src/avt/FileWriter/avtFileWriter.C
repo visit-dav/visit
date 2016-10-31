@@ -384,8 +384,7 @@ avtFileWriter::CreateFilename(const char *base, bool family, bool fileChecks)
                     msg = statmsg;
                 }
             }
-
-            if (statbuf.st_mode & S_IWUSR)
+            else if (statbuf.st_mode & S_IWUSR)
             {
                 isWriteable = true;
             }
