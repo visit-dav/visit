@@ -407,6 +407,10 @@
 #
 #    Mark C. Miller, Mon Aug 22 15:23:12 PDT 2016
 #    Add tools/writer to installed headers
+#
+#    Kathleen Biagas, Mon Oct 31 15:23:31 PDT 2016
+#    Add ZLIB_INCLUDE_DIR to VISIT_COMMON_INCLUDES when HAVE_ZLIB_H is true.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
@@ -1789,6 +1793,10 @@ SET(VISIT_COMMON_INCLUDES
     ${VISIT_SOURCE_DIR}/common/state
     ${VISIT_SOURCE_DIR}/common/utility
     )
+
+if(HAVE_ZLIB_H)
+    list(APPEND VISIT_COMMON_INCLUDES ${ZLIB_INCLUDE_DIR})
+endif()
 
 # macros/defines also needed by PluginVsInstall.cmake.in
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
