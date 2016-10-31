@@ -384,7 +384,11 @@ avtFileWriter::CreateFilename(const char *base, bool family, bool fileChecks)
                     msg = statmsg;
                 }
             }
+#if defined(_WIN32)
+            else if (statbuf.st_mode & _S_IWRITE)
+#else
             else if (statbuf.st_mode & S_IWUSR)
+#endif
             {
                 isWriteable = true;
             }

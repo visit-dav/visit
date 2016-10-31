@@ -84,6 +84,11 @@
 
 #include <visit-config.h>
 
+#if defined (_MSC_VER) && !defined(round)
+inline double round(double x) {return (x-floor(x)) > 0.5 ? ceil(x) : floor(x);}
+#endif
+
+
 // This array contains strings that correspond to the file types that are 
 // enumerated in the DatasetFileFormat enum.
 const char *avtDatasetFileWriter::extensions[] = { ".curve", ".obj",
