@@ -145,13 +145,9 @@ function bv_python_info
     export SETUPTOOLS_FILE=${SETUPTOOLS_FILE:-"setuptools-28.0.0.tar.gz"}
     export SETUPTOOLS_BUILD_DIR=${SETUPTOOLS_BUILD_DIR:-"setuptools-28.0.0"}
 
-    export CYTHON_URL=${CYTHON_URL:-"https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/"}
-    export CYTHON_FILE=${CYTHON_FILE:-"Cython-0.24.1.tar.gz"}
-    export CYTHON_BUILD_DIR=${CYTHON_BUILD_DIR:-"Cython-0.24.1"}
-
-    export NUMPY_URL=${NUMPY_URL:-"https://pypi.python.org/packages/f8/20/76beca42e1b4ff4d2f834ab536ed5c654ffe444bec01b1392a9519c61add/"}
-    export NUMPY_FILE=${NUMPY_FILE:-"numpy-1.11.2rc1.tar.gz"}
-    export NUMPY_BUILD_DIR=${NUMPY_BUILD_DIR:-"numpy-1.11.2rc1"}
+    export NUMPY_URL=${NUMPY_URL:-"https://pypi.python.org/packages/16/f5/b432f028134dd30cfbf6f21b8264a9938e5e0f75204e72453af08d67eb0b/"}
+    export NUMPY_FILE=${NUMPY_FILE:-"numpy-1.11.2.tar.gz"}
+    export NUMPY_BUILD_DIR=${NUMPY_BUILD_DIR:-"numpy-1.11.2"}
 }
 
 function bv_python_print
@@ -667,13 +663,7 @@ function build_numpy
             return 1
         fi
     fi
-    if ! test -f ${CYTHON_FILE} ; then
-        download_file ${CYTHON_FILE}
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${CYTHON_FILE}"
-            return 1
-        fi
-    fi
+
     if ! test -f ${NUMPY_FILE} ; then
         download_file ${NUMPY_FILE}
         if [[ $? != 0 ]] ; then
@@ -691,14 +681,7 @@ function build_numpy
             return 1
         fi
     fi
-    if ! test -d ${CYTHON_BUILD_DIR} ; then
-        info "Extracting cython ..."
-        uncompress_untar ${CYTHON_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${CYTHON_FILE}"
-            return 1
-        fi
-    fi
+
     if ! test -d ${NUMPY_BUILD_DIR} ; then
         info "Extracting numpy ..."
         uncompress_untar ${NUMPY_FILE}
@@ -712,11 +695,6 @@ function build_numpy
     PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $SETUPTOOLS_BUILD_DIR > /dev/null
     info "Installing setuptools (~1 min) ..."
-    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
-    popd > /dev/null
-
-    pushd $CYTHON_BUILD_DIR > /dev/null
-    info "Installing cython (~ 2 min) ..."
     ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
     popd > /dev/null
 
