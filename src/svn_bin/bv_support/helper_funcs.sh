@@ -1044,7 +1044,8 @@ function check_more_options
                         "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
                     if [[ "$PAR_COMPILER_CXX" != "" ]] ; then
                         export VISIT_MPI_COMPILER_CXX="$PAR_COMPILER_CXX"
-                        "Configuring with mpi c++ compiler wrapper: $VISIT_MPI_COMPILER_CXX"
+			info \
+                            "Configuring with mpi c++ compiler wrapper: $VISIT_MPI_COMPILER_CXX"
                     fi
                     return 0
                 fi
