@@ -21,6 +21,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
+  <li><a href="#Operator_changes">Changes to operators</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Configuration_changes">Configuration changes</a></li>
@@ -51,6 +52,15 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">File format reader changes in version 2.12</font></b></p>
 <ul>
   <li>The Cosmos++ database reader has been updated with new features and bug fixes.</li>
+  <li>Fixed node order problem with hex27 elements in Exodus files.</li>
+  <li>Several of the ASCII-based database readers (PlainText, Curve2D, Lines, Rect, etc.), were upgraded to support
+      on-the-fly decompression via gzstream class. This means VisIt can directly read a gzip'd input file in these
+      formats. Previously, this would have been handled through VisIt's ZipWrapper database reader but this new
+      apporach is simpler and more efficient for simple ASCII-based files. This capability does not currently extend
+      to ASCII-based formats that are read via other libraries such as VTK, MFEM, etc. In addition, as part of this
+      enhancement VisIt's Save Window feature can now save gzip'd compressed curve formats. In this case, the
+      quality slider selects the gzip level in the range [1..9]. Some of the ASCII Export Database formats were
+      also enhanced.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -59,9 +69,17 @@ enhancements and bug-fixes that were added to this release.</p>
   <li></li>
 </ul>
 
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 2.12</font></b></p>
+<ul>
+  <li>Corrected a bug in the Pseudocolor plot where displaying lines from the IntegralCurve operator as tubes could cause some of the lines to disappear.</li>
+  <li></li>
+</ul>
+
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.12</font></b></p>
 <ul>
+  <li>Fixed the issue with the XRay Image Query crashing when given bad variable names.</li>
   <li></li>
 </ul>
 
@@ -72,11 +90,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Simulations instrumented with Libsim using a batch-style integration would crash when evaluating expressions.</li>
   <li>Simulations instrumented with Libsim using a batch-style integration were not able to use operator-created variables.</li>
   <li>Exporting streamlines caused the engine to crash because it was trying to save integral curve objects that no longer existed.</li>
+  <li>Fixed crash running parallel python simulation examples.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
 <p><b><font size="4">Configuration changes in version 2.12</font></b></p>
 <ul>
+  <li>VisIt was ported to and installed on Los Alamos National Laboratories' Trinity system. A host profile was added for running in client/server mode from Lawrence Livermore National Laboratory.</li>
   <li></li>
 </ul>
 
@@ -84,6 +104,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Build changes in version 2.12</font></b></p>
 <ul>
   <li>build_visit was enhanced to build version 1.2.4 of the SeedMe Python Client.</li>
+  <li>Xdmf configuration in build_visit was modified to correctly set XDMF_SYSTEM_ZLIB and XDMF_SYSTEM_LIBXML2 to ON, since we use the vtk versions during the build.</li>
 </ul>
 
 <a name="Dev_changes"></a>
