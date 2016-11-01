@@ -114,7 +114,12 @@ function bv_python_alt_python_dir
 
 function bv_python_depends_on
 {
-    echo ""
+    if [[ "$DO_OPENSSL" == "yes" ]] ; then
+        echo "openssl"
+    else
+        echo ""
+    fi
+
 }
 
 function bv_python_info
@@ -349,6 +354,7 @@ function build_python
     fi
     PYTHON_OPT="$cFlags"
     PYTHON_LDFLAGS=""
+    PYTHON_CPPFLAGS=""
     PYTHON_PREFIX_DIR="$VISITDIR/python/$PYTHON_VERSION/$VISITARCH"
     if [[ "$DO_STATIC_BUILD" == "no" ]]; then
         PYTHON_SHARED="--enable-shared"
@@ -369,6 +375,15 @@ function build_python
             fi
         fi
     fi
+
+    if [[ "$DO_OPENSSL" == "yes" ]]; then
+        OPENSSL_INCLUDE="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/include"
+        OPENSSL_LIB="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/lib"
+        PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L ${OPENSSL_LIB}"
+        PYTHON_CPPFLAGS="-I ${OPENSSL_INCLUDE}"
+    fi
+    
+    
     if [[ "$OPSYS" == "AIX" ]]; then
         info "Configuring Python (AIX): ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
              "--prefix=\"$PYTHON_PREFIX_DIR\" --disable-ipv6"
@@ -376,9 +391,11 @@ function build_python
                     --prefix="$PYTHON_PREFIX_DIR" --disable-ipv6
     else
         info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-             "LDFLAGS=\"$PYTHON_LDFLAGS\""\
+             "LDFLAGS=\"$PYTHON_LDFLAGS\" CPPFLAGS=\"$PYTHON_CPPFLAGS\""\
              "${PYTHON_SHARED} --prefix=\"$PYTHON_PREFIX_DIR\" --disable-ipv6"
-        ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" LDFLAGS="$PYTHON_LDFLAGS" \
+        ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
+                    LDFLAGS="$PYTHON_LDFLAGS" \
+                    CPPFLAGS="$PYTHON_CPPFLAGS" \
                     ${PYTHON_SHARED} \
                     --prefix="$PYTHON_PREFIX_DIR" --disable-ipv6
     fi

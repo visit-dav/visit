@@ -37,6 +37,7 @@
             <lib name="mxml"/>
             <lib name="nektarpp"/>
             <lib name="netcdf"/>
+            <lib name="openssl"/>
             <lib name="pyside"/>
             <lib name="uintah"/>
             <lib name="silo"/>
@@ -74,6 +75,7 @@
             <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="nektarpp"/>
+            <lib name="openssl"/>
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
@@ -206,6 +208,7 @@
         <group name="optional" comment="All optional libraries" enabled="no">
             <lib name="boost"/>
             <lib name="hdf5"/>
+            <lib name="openssl"/>
             <lib name="netcdf"/>
             <lib name="mpich"/>
             <lib name="szip"/>
