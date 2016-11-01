@@ -1151,10 +1151,9 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
      */
     if (!usingdev)
     {
-        sprintf(tmp, "PYTHONPATH=%s\\lib;%s\\lib\\Python\\lib", 
-                visitpath, visitpath);
+        sprintf(tmp, "PYTHONPATH=%s\\lib", visitpath);
         env.push_back(tmp);
-        sprintf(tmp, "PYTHONHOME=%s",visitpath);
+        sprintf(tmp, "PYTHONHOME=%s\\lib\\python",visitpath);
         env.push_back(tmp);
     }
     else 
