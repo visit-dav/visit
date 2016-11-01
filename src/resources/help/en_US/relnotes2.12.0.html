@@ -22,6 +22,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Operator_changes">Changes to operators</a></li>
+  <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Configuration_changes">Configuration changes</a></li>
@@ -32,14 +33,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 2.12</font></b></p>
 <ul>
-  <li></li>
+  <li>The integration with SeedMe.org has been improved. A window was added to the graphical user interface to easily upload, share data and create videos from image sequences. Go to "File->Seedme" to bring up the window in the graphical user interface. More information can be found at http://visitusers.org/index.php?title=Seedme.
+</li>
 </ul>
 
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.12</font></b></p>
 <ul>
-  <li> Added experimental <i>merge_tree, split_tree, and local_threshold</i> serial-only expressions for segmentation using the topology of a scalar field. The <i>merge_tree and split_tree</i> expressions take an input scalar and create a new scalar field with segmentation labels. The <i>local_threshold</i> expression takes a scalar field and a segmentation label and applies a local threshold metric to create a new scalar field.
-  </li>
+  <li>The experimental <i>merge_tree</i>, <i>split_tree</i>, and <i>local_threshold</i> expressions were added to VisIt. They are serial-only implementations for segmentation using the topology of a scalar field. The <i>merge_tree</i> and <i>split_tree</i> expressions take an input scalar and create a new scalar field with segmentation labels. The <i>local_threshold</i> expression takes a scalar field and a segmentation label and applies a local threshold metric to create a new scalar field.</li>
 </ul>
 
 <a name="GUI_Changes"></a>
@@ -52,45 +53,42 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">File format reader changes in version 2.12</font></b></p>
 <ul>
   <li>The Cosmos++ database reader has been updated with new features and bug fixes.</li>
-  <li>Fixed node order problem with hex27 elements in Exodus files.</li>
-  <li>Several of the ASCII-based database readers (PlainText, Curve2D, Lines, Rect, etc.), were upgraded to support
-      on-the-fly decompression via gzstream class. This means VisIt can directly read a gzip'd input file in these
-      formats. Previously, this would have been handled through VisIt's ZipWrapper database reader but this new
-      apporach is simpler and more efficient for simple ASCII-based files. This capability does not currently extend
-      to ASCII-based formats that are read via other libraries such as VTK, MFEM, etc. In addition, as part of this
-      enhancement VisIt's Save Window feature can now save gzip'd compressed curve formats. In this case, the
-      quality slider selects the gzip level in the range [1..9]. Some of the ASCII Export Database formats were
-      also enhanced.</li>
+  <li>Fixed a bug in the Exodus database reader with the node ordering of hex27 elements.</li>
+  <li>Several of the ASCII-based database readers (PlainText, Curve2D, Lines, Rect, etc.) were upgraded to support on-the-fly decompression via gzstream. This means VisIt can directly read a gzip'd input file in these formats. Previously, this would have been handled through VisIt's ZipWrapper database reader but this new apporach is simpler and more efficient for simple ASCII-based files. This capability does not currently extend to ASCII-based formats that are read via other libraries such as VTK, MFEM, etc. In addition, as part of this enhancement VisIt's Save Window feature can now save gzip'd compressed curve formats. In this case, the quality slider selects the gzip level in the range [1..9]. Some of the ASCII Export Database formats were also enhanced.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.12</font></b></p>
 <ul>
-  <li></li>
+  <li>Enhanced the Pseudocolor plot to allow specifying the endpoints of lines independently. The Pseudocolor attributes in the Python scripting interface have also changed as a result of this. The <i>endPointType</i> and <i>endPointStyle</i> fields have been replaced with <i>tailStyle</i> and <i>headStyle</i> (which can be one of <i>None</i>, <i>Spheres</i>, <i>Cones</i>).</li>
+  <li>Fixed a bug with the Pseudocolor plot where displaying lines as ribbons would cause the engine to crash.</li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.12</font></b></p>
 <ul>
-  <li>Corrected a bug in the Pseudocolor plot where displaying lines from the IntegralCurve operator as tubes could cause some of the lines to disappear.</li>
+  <li>Fixed a bug with the Pseudocolor plot where displaying lines from the IntegralCurve operator as tubes could cause some of the lines to disappear.</li>
+</ul>
+
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 2.12</font></b></p>
+<ul>
   <li></li>
 </ul>
 
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.12</font></b></p>
 <ul>
-  <li>Fixed the issue with the XRay Image Query crashing when given bad variable names.</li>
-  <li></li>
+  <li>Fixed a bug with the XRay Image Query where giving bad variable names would cause the engine to crash.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 2.12</font></b></p>
 <ul>
-  <li>Fixed the GDAL build_visit error for OSX 10.11</li>
-  <li>Simulations instrumented with Libsim using a batch-style integration would crash when evaluating expressions.</li>
-  <li>Simulations instrumented with Libsim using a batch-style integration were not able to use operator-created variables.</li>
-  <li>Exporting streamlines caused the engine to crash because it was trying to save integral curve objects that no longer existed.</li>
-  <li>Fixed crash running parallel python simulation examples.</li>
+  <li>Fixed a bug where simulations instrumented with Libsim using a batch-style integration would crash when evaluating expressions.</li>
+  <li>Fixed a bug with simulations instrumented with Libsim using a batch-style integration were not able to use operator-created variables.</li>
+  <li>Fixed a bug where exporting streamlines caused the engine to crash because it was trying to save integral curve objects that no longer existed.</li>
+  <li>Fixed a crash with some of the parallel Python simulation examples.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
@@ -104,7 +102,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Build changes in version 2.12</font></b></p>
 <ul>
   <li>build_visit was enhanced to build version 1.2.4 of the SeedMe Python Client.</li>
-  <li>Xdmf configuration in build_visit was modified to correctly set XDMF_SYSTEM_ZLIB and XDMF_SYSTEM_LIBXML2 to ON, since we use the vtk versions during the build.</li>
+  <li>Fixed a bug with build_visit building GDAL on OSX 10.11</li>
+  <li>Fixed a bug with build_visit building XDMF where XDMF_SYSTEM_ZLIB and XDMF_SYSTEM_LIBXML2 where incorrectly set to OFF. They are now set to ON, to indicate that we are getting those libraries from the VTK build.</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -114,6 +113,6 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href="relnotes2.11.2.html">VisIt 2.11.2 Release Notes</a>.</p>
+of VisIt: <a href="relnotes2.11.0.html">VisIt 2.11 Release Notes</a>.</p>
 </body>
 </html>
