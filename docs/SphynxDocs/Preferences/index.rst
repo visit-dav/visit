@@ -1,3 +1,5 @@
+.. _Preferences:
+
 Preferences
 ===========
 .. toctree::
