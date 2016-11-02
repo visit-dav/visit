@@ -20,7 +20,9 @@ many times, VisIt provides controls in its **Main Window** to handle these
 functions. The **Active plots area**, shown in :ref:`gorfo`, contains the
 controls for managing plots.
 
-.. image:: images/activeplotsarea.png
+.. _activeplotsarea:
+
+.. figure:: images/activeplotsarea.png
 
 The most prominent feature of the **Active plots area**, the **Plot list**
 contains a list of the plots that are in the active visualization window.
@@ -50,7 +52,9 @@ database name in the **Selected files list**. After opening a database, use the
 **Plots** menu to create a plot. To activate the **Plots** menu, click on the
 **Plots** option in the **Plots and Operators** menu shown in.
 
-.. image:: images/plotmenu.png
+.. _plotmenu:
+
+.. figure:: images/plotmenu.png
 
 Selecting the **Plots** menu pops up a list of VisIt plot types. Plots for which
 the open database has no data are disabled. If a plot type is enabled, pulling
@@ -111,7 +115,9 @@ by selecting a plot type from the **PlotAtts** (Plot Attributes) menu shown in.
 Changing plot variables
 """""""""""""""""""""""
 
-.. image:: images/varmenu.png
+.. _varmenu:
+
+.. figure:: images/varmenu.png
 
 When examining a plot, you might want to look at another variable. For
 example, you might want to switch from looking at density to pressure.
