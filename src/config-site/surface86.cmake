@@ -1,8 +1,8 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake
 ##
-## ./build_visit2_12_0 generated host.cmake
-## created: Fri Oct  7 12:50:41 PDT 2016
-## system: Linux surface60 2.6.32-642.4.2.1chaos.ch5.5.x86_64 #1 SMP Tue Aug 30 13:11:01 PDT 2016 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_13_0 generated host.cmake
+## created: Wed Nov  2 12:11:39 PDT 2016
+## system: Linux surface27 2.6.32-642.6.2.1chaos.ch5.5.x86_64 #1 SMP Mon Oct 24 10:49:01 PDT 2016 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
