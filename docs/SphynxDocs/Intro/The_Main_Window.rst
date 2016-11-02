@@ -35,6 +35,8 @@ and the posted window's contents are added to the new tab. Clicking on a tab in 
 window so that it can be used.
 
 
+.. _Intro_Posting_a_window:
+
 Posting a window
 ~~~~~~~~~~~~~~~~
 
