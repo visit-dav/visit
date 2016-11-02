@@ -1,3 +1,5 @@
+.. _Appendix_A:
+
 Appendix A: VisIt Command Line Options
 ======================================
 .. toctree::
