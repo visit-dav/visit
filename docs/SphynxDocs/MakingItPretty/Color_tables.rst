@@ -1,3 +1,5 @@
+.. _MakingItPretty_Color_tables:
+
 Color tables
 ------------
 

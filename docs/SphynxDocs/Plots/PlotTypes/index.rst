@@ -9,6 +9,8 @@ FilledBoundary,
 Histogram,
 Label,
 Mesh,
+``Molecule,``
+``MultiCurve,``
 ParallelCoordinates,
 Pseudocolor,
 Scatter,
@@ -23,6 +25,7 @@ Vector, and Volume. This section explains each plot in detail.
 .. toctree::
     :maxdepth: 2
 
+    Common
     BoundryPlot
     ContourPlot
     CurvePlot

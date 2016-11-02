@@ -1,3 +1,4 @@
+.. _Plots:
 Plots
 =====
 .. toctree::
