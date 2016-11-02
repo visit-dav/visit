@@ -8,10 +8,15 @@ VisIt supports a few different annotation types that can be used to enhance visu
 Annotation Window
 ~~~~~~~~~~~~~~~~~
 
-The
-**Annotation Window**
-(see
-) contains controls for the various annotations that can appear in a visualization window. You can open the window choosing the
+.. _fig-annotation1:
+
+.. figure:: images/annotation1.png
+
+   Annotation Window
+
+The **Annotation Window** (see :numref:`Figure %s <fig-annotation1>`)
+
+contains controls for the various annotations that can appear in a visualization window. You can open the window choosing the
 **Annotation**
 option from the
 **Main Window's Controls menu**
@@ -31,8 +36,13 @@ General Annotations
 
 VisIt has a few general annotations that describe the visualization and are independent of the type of database in the visualization. General annotations encompass user name, database name, and plot legends. The
 **Annotation Window**
-does not provide too much flexibility for these types of annotations, but it does provide controls that allow you to disable these annotations.
-shows common locations for some general annotations.
+does not provide too much flexibility for these types of annotations, but it does provide controls that allow you to disable these annotations. :numref:`Figure %s <fig-annot2D>` shows common locations for some general annotations.
+
+.. _fig-annot2D:
+
+.. figure:: images/annot2D.png
+
+   2D plot with annotations 
 
 Turning user information on/off
 """""""""""""""""""""""""""""""
@@ -134,11 +144,9 @@ or
 **Set Y-Axis title**
 check boxes on the
 **Title and Labels**
-sub-tab (see
-) on the
-**Annotation Window's 2D Options **
-**tab**
-. Next, type the new axis titles into the adjacent text fields.
+sub-tab (see :numref:`Figure %s <fig-annotation1>`) on the
+**Annotation Window's 2D Options tab.**
+Next, type the new axis titles into the adjacent text fields.
 
 On addition to overriding the names of the axis titles, you can also override the units that are displayed next to the axis titles. Units are displayed only when they are available in the file format and like axis titles, they are not always stored in the file being plotted. If you want to specify units for the axes, turn on the
 **Set X-Axis units**
@@ -146,18 +154,35 @@ or
 **Set Y-Axis units**
 check boxes and type new units into the adjacent text fields.
 
+.. _fig-annotation2:
+
+.. figure:: images/annotation1.png
+
+   Title and Labels tab on Annotation Window's 2D Options tab
+
 3D Annotations
 ~~~~~~~~~~~~~~
 
+.. _fig-annot3D:
+
+.. figure:: images/annot3D.png
+
+   3D plot with annotations
+
 VisIt has a number of controls, located on the
-**3D Options tab**
-, in the
-**Annotation Window**
-for controlling annotations that are used when the visualization window contains 3D plots. Like the 2D controls, these controls focus mainly on the axes that are drawn around plots.
-shows an example 3D plot with the 3D annotations labeled and
-shows the
-**Annotation Window's 3D Options**
-tab.
+**3D Options tab**, in the **Annotation Window** for controlling annotations that are used when the visualization window contains 3D plots. Like the 2D controls, these controls focus mainly on the axes that are drawn around plots. :numref:`Figure %s <fig-annot3D>` shows an example 3D plot with the 3D annotations labeled and :numref:`Figure %s <fig-annotation2>` and :numref:`Figure %s <fig-annotation2b>` shows the **Annotation Window's 3D Options** tab.
+
+.. _fig-annotation2:
+
+.. figure:: images/annotation2.png
+
+   3D options tab for Grid and Ticks
+
+.. _fig-annotation2b:
+
+.. figure:: images/annotation2b.png
+
+   3D options tab for Title and Labels
 
 Hiding all axes
 """""""""""""""
