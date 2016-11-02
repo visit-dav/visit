@@ -57,16 +57,16 @@ export VISIT_VERSION=${VISIT_VERSION:-"2.12.0"}
 ####
 # Trunk:
 ####
-export TRUNK_BUILD="yes"
-export SVN_SOURCE_PATH=${SVN_SOURCE_PATH-"trunk/src"}
-export SVN_THIRDPARTY_PATH=${SVN_THIRDPARTY_PATH-"trunk/third_party"}
+#export TRUNK_BUILD="yes"
+#export SVN_SOURCE_PATH=${SVN_SOURCE_PATH-"trunk/src"}
+#export SVN_THIRDPARTY_PATH=${SVN_THIRDPARTY_PATH-"trunk/third_party"}
 
 ###
 # RC Branch:
 ###
-#export TRUNK_BUILD="no"
-#export SVN_SOURCE_PATH="branches/2.12RC/src"
-#export SVN_THIRDPARTY_PATH="branches/2.12RC/third_party"
+export TRUNK_BUILD="no"
+export SVN_SOURCE_PATH="branches/2.12RC/src"
+export SVN_THIRDPARTY_PATH="branches/2.12RC/third_party"
 
 
 ###
