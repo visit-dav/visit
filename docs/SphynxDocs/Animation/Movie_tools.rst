@@ -1,19 +1,15 @@
 Movie tools
 -----------
 
-VisIt provides a command line utility based on VisIt's Command Line Interface that is called
-*visit -movie*
-. The
-*visit -movie*
-movie generation utility is installed with all versions of VisIt and can be used to generate movies using session files or Python scripts as input. If you want to design movies based on visualizations that you have created while using VisIt's GUI then you might also want to read about the
-**Save movie wizard**
-. If the visit command is in your path then typing
-*visit -movie*
-at the command prompt, regardless of the platform that you are using, will launch the
-*visit -movie*
-utility. The following table lists
-*visit -movie'*
-s command line arguments:
+VisIt provides a command line utility based on VisIt's Command Line Interface
+that is called ``visit -movie`` . The ``visit -movie`` movie generation utility
+is installed with all versions of VisIt and can be used to generate movies
+using session files or Python scripts as input. If you want to design movies
+based on visualizations that you have created while using VisIt's GUI then you
+might also want to read about the **Save movie wizard** . If the visit command
+is in your path then typing ``visit -movie`` at the command prompt, regardless
+of the platform that you are using, will launch the ``visit -movie``
+utility. The following table lists ``visit -movie'`` s command line arguments:
 
 +-------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Argument          | Description                                                                                                                                                                                                                                                                                       |
@@ -71,23 +67,30 @@ s command line arguments:
 +-------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 
-The
-*visit -movie*
-utility always supports creation of series of image files but it does not always support creation of movie formats such as QuickTime, or Streaming movie. Support for movie formats varies based on the platform. QuickTime and Streaming movie formats are currently limited to computers running IRIX and the appropriate movie conversion tools (
-*makemovie*
-,
-*img2sm*
-) must be in your path or VisIt will create a series of image files instead of a single movie file. You can always
-use
-*visit -movie*
-to generate the individual movie frames and then use your favorite movie generation software to convert the frames into a single movie file.
+The ``visit -movie``
+utility always supports creation of series of image files but it does not
+always support creation of movie formats such as QuickTime, or Streaming
+movie. Support for movie formats varies based on the platform. QuickTime
+and Streaming movie formats are currently limited to computers running IRIX
+and the appropriate movie conversion tools (*makemovie*, *img2sm* ) must be in
+your path or VisIt will create a series of image files instead of a single
+movie file. You can always use *visit -movie* to generate the individual movie
+frames and then use your favorite movie generation software to convert the
+frames into a single movie file.
 
-If you browse the Windows file system and come across a VisIt session file, which on Windows ends with a
-*.vses*
-extension, you can right click on the file and choose from several movie generation options. The movie generation options make one-click movie generation possible so you don't have to master the arguments for
-*visit -movie*
-like you do on other platforms. After selecting a movie generation option for a VisIt session file, Windows runs
-*visit -movie*
-implicitly with the right arguments and saves out the movie frames to the same directory that
-contains the session file. The movie generations option in a session file's context menu are shown in
-.
+.. _windows_movie_context_menu:
+
+.. figure:: images/movieoptions.png 
+   
+   Movie generation options for session files on Windows platform
+
+If you browse the Windows file system and come across a VisIt session file,
+which on Windows ends with a ``.vses`` extension, you can right click on the
+file and choose from several movie generation options. The movie generation
+options make one-click movie generation possible so you don't have to master
+the arguments for ``visit -movie`` like you do on other platforms. After
+selecting a movie generation option for a VisIt session file, Windows runs
+``visit -movie`` implicitly with the right arguments and saves out the movie
+frames to the same directory that contains the session file. The movie
+generations option in a session file's context menu are shown in 
+:numref:`Figure %s<windows_movie_context_menu>` .
