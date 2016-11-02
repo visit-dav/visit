@@ -1,3 +1,5 @@
+.. _Introduction_to_VisIt:
+
 Introduction to VisIt
 =====================
 .. toctree::
