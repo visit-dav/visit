@@ -1,5 +1,8 @@
+.. _animation_and_keyframing:
+
 Animation
 =========
+
 .. toctree::
     :maxdepth: 2
 
