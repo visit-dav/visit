@@ -1,14 +1,14 @@
-#/home/brugger1/visit/thirdparty_shared/2.11.0/cmake/3.0.2/linux-x86_64_gcc-4.8/bin/cmake
+#/home/brugger1/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.8/bin/cmake
 ##
-## ./build_visit2_11_0 generated host.cmake
-## created: Wed Sep 14 11:25:47 PDT 2016
+## ./build_visit2_12_0 generated host.cmake
+## created: Thu Nov  3 08:51:25 PDT 2016
 ## system: Linux ubuntu1404-64.sqalab-llnl.gov 3.13.0-91-generic #138-Ubuntu SMP Fri Jun 24 17:00:34 UTC 2016 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger1
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /home/brugger1/visit/thirdparty_shared/2.11.0)
+SET(VISITHOME /home/brugger1/visit/thirdparty_shared/2.12.0)
 SET(VISITARCH linux-x86_64_gcc-4.8)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR FALSE TYPE BOOL)
 
