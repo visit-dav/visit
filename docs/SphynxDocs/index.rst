@@ -14,6 +14,7 @@ Contents:
    :includehidden:
 
    Intro/index
+   WorkingWithFiles/index
    Plots/index   
    Operators/index            
    SavingPrinting/index
@@ -30,7 +31,6 @@ Contents:
    Appendix_A/index           
    Appendix_B/index             
    Appendix_C/index              
-   WorkingWithFiles/index
 
 
 .. Indices and tables
@@ -38,4 +38,5 @@ Contents:
 
 .. * :ref:`genindex`
 .. * :ref:`search`
+
 
