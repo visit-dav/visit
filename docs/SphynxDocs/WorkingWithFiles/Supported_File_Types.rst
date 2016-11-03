@@ -1,3 +1,5 @@
+.. _Supported File Types:
+
 Supported File Types
 --------------------
 
@@ -25,9 +27,9 @@ plugin, VisIt attempts to load the file with that plugin. If the plugin cannot
 load the file then VisIt attempts to open the file with the next suitable 
 plugin, before trying to open the file with the default database reader plugin.
 If your files do not have file extensions then VisIt will attempt to use the 
-default database reader plugin. You can provide the *-default_format*
+default database reader plugin. You can provide the ``-default_format``
 command line option with the name of the database reader plugin to use if 
 you want to specify which reader VisIt should use when first trying to open a 
 file. For example, if you want to load a PDB/Flash file, which usually has no 
-file extension, you could provide: *-default_format PDB* on the command line.
+file extension, you could provide: ``-default_format PDB`` on the command line.
 

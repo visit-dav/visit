@@ -14,7 +14,7 @@ controls in the **File panel**.
 
 .. _fiw_image:
 
-.. figure:: images/fileinformation.png
+.. figure:: images/fileinformationwindow.png
 
    File Information Window
 
