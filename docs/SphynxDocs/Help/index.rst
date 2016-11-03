@@ -1,3 +1,5 @@
+.. _Help:
+
 Help
 ====
 .. toctree::
