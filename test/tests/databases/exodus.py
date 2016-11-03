@@ -246,6 +246,6 @@ DrawPlots()
 Test("exodus_26")
 
 DeleteAllPlots()
-CloseeDatabase(data_path("exodus_test_data/sphere-HEX27.ex2"))
+CloseDatabase(data_path("exodus_test_data/sphere-HEX27.ex2"))
 
 Exit()
