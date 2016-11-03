@@ -187,60 +187,60 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 //   Kathleen Bonnell, Mon Jan 17 18:02:39 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Cyrus Harrison, Wed Nov  2 18:43:13 PDT 2016
+//   Changed layout to use tabs.
+//
 // ****************************************************************************
 
 void
 QvisPseudocolorPlotWindow::CreateWindowContents()
-{ 
-    propertyLayout = new QvisCollapsibleLayout(central);
-    propertyLayout->setParent( this );
-    topLayout->addWidget(propertyLayout);
+{
+    // create atts window a with  a standard tab style layout
+    QTabWidget *propertyTabs = new QTabWidget(central);
+    topLayout->addWidget(propertyTabs);
 
-    // // ----------------------------------------------------------------------
-    // // Data tab
-    // // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // Data tab
+    // ----------------------------------------------------------------------
     QWidget *dataTab = new QWidget(central);
+    propertyTabs->addTab(dataTab, tr("Data"));
     CreateDataTab(dataTab);
 
-    QvisCollapsibleFrame* dataFrame =
-      propertyLayout->addFrame( tr("Data"), dataTab);
-
-    dataFrame->setShow();
-
-    // // ----------------------------------------------------------------------
-    // // Geometry tab
-    // // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // Geometry tab
+    // ----------------------------------------------------------------------
     QWidget *geometryTab = new QWidget(central);
+    propertyTabs->addTab(geometryTab, tr("Geometry"));
     CreateGeometryTab(geometryTab);
+    
+//     This code was used to create the accordion style layout 
 
-    QvisCollapsibleFrame* geometryFrame =
-      propertyLayout->addFrame( tr("Geometry"), geometryTab);
-
-    geometryFrame->setHide();
-
-    // QTabWidget *propertyTabs = new QTabWidget(central);
-    // topLayout->addWidget(propertyTabs);
-
-    // // ----------------------------------------------------------------------
-    // // Data tab
-    // // ----------------------------------------------------------------------
-    // QWidget *dataTab = new QWidget(central);
-    // propertyTabs->addTab(dataTab, tr("Data"));
-    // CreateDataTab(dataTab);
-
-    // // ----------------------------------------------------------------------
-    // // Geometry tab
-    // // ----------------------------------------------------------------------
-    // QWidget *geometryTab = new QWidget(central);
-    // propertyTabs->addTab(geometryTab, tr("Geometry"));
-    // CreateGeometryTab(geometryTab);
-
-    // ----------------------------------------------------------------------
-    // Extras tab
-    // ----------------------------------------------------------------------
-    // QWidget *extrasTab = new QWidget(central);
-    // propertyTabs->addTab(extrasTab, tr("Extras"));
-    // CreateExtrasTab(extrasTab);
+//     propertyLayout = new QvisCollapsibleLayout(central);
+//     propertyLayout = new QvisCollapsibleLayout(central);
+//     propertyLayout->setParent( this );
+//     topLayout->addWidget(propertyLayout);
+//
+//     // // ----------------------------------------------------------------------
+//     // // Data tab
+//     // // ----------------------------------------------------------------------
+//     QWidget *dataTab = new QWidget(central);
+//     CreateDataTab(dataTab);
+//
+//     QvisCollapsibleFrame* dataFrame =
+//       propertyLayout->addFrame( tr("Data"), dataTab);
+//
+//     dataFrame->setShow();
+//
+//     // // ----------------------------------------------------------------------
+//     // // Geometry tab
+//     // // ----------------------------------------------------------------------
+//     QWidget *geometryTab = new QWidget(central);
+//     CreateGeometryTab(geometryTab);
+//
+//     QvisCollapsibleFrame* geometryFrame =
+//       propertyLayout->addFrame( tr("Geometry"), geometryTab);
+//
+//     geometryFrame->setHide();
 }
 
 
