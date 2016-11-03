@@ -40,6 +40,9 @@
 #   specific).  Create a qt.conf file to be installed in the bin dir that
 #   tells Qt where to find the plugins.
 #
+#   Kevin Griffin, Wed Nov 2 10:04:28 PDT 2016
+#   Added logic to install the correct MAC frameworks and static library.
+#
 #*****************************************************************************
 
 
@@ -72,6 +75,13 @@ foreach(mod ${visit_qt_modules})
   if(NOT VISIT_QT_SKIP_INSTALL)
     if(WIN32 AND EXISTS ${VISIT_QT_DIR}/lib/Qt5${mod}.lib)
       THIRD_PARTY_INSTALL_LIBRARY(${VISIT_QT_DIR}/lib/Qt5${mod}.lib)
+    elseif(APPLE)
+      if(EXISTS ${VISIT_QT_DIR}/lib/Qt${mod}.framework)
+          THIRD_PARTY_INSTALL_LIBRARY(${VISIT_QT_DIR}/lib/Qt${mod}.framework)
+      else()
+          get_target_property(lib_loc Qt5::${mod} LOCATION)
+          THIRD_PARTY_INSTALL_LIBRARY(${lib_loc})
+      endif()
     endif()
     # headers
     foreach(H ${Qt5${mod}_INCLUDE_DIRS})
@@ -137,20 +147,19 @@ if(NOT VISIT_QT_SKIP_INSTALL)
       set(qt_libs_install ${qt_libs_install} Qt5::Svg)
   endif()
 
-  foreach(qtlib ${qt_libs_install})
-      get_target_property(qtlib_location ${qtlib} LOCATION)
-      # On Linux, the library names are Qt5xxx.so.${QT_VERSION}
-      # We need to remove the version part so that THIRD_PARTY_INSTALL_LIBRARY
-      # will work correctly.
-      if (LINUX)
-          string(REPLACE ".${Qt5Core_VERSION}" ""
-                 qtlib_location ${qtlib_location})
-      endif()
-      if (APPLE)
-          string(CONCAT qtlib_location ${qtlib_location} ".la")                 
-      endif()      
-      THIRD_PARTY_INSTALL_LIBRARY(${qtlib_location})
-  endforeach()
+  if(NOT APPLE)
+      foreach(qtlib ${qt_libs_install})
+          get_target_property(qtlib_location ${qtlib} LOCATION)
+          # On Linux, the library names are Qt5xxx.so.${QT_VERSION}
+          # We need to remove the version part so that THIRD_PARTY_INSTALL_LIBRARY
+          # will work correctly.
+          if (LINUX)
+              string(REPLACE ".${Qt5Core_VERSION}" ""
+                     qtlib_location ${qtlib_location})
+          endif()
+          THIRD_PARTY_INSTALL_LIBRARY(${qtlib_location})
+      endforeach()
+  endif(NOT APPLE)
 
 
   # We need a qt.conf file telling qt where to find the plugins
