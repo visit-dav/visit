@@ -5,7 +5,7 @@ Working with Databases
 
     Overview
     Supported_File_Types
-    File_Selection_Window
-    File_panel
+    File_Open_Window
+    Sources_Pane
+    Time_Pane
     File_Information_Window
-    Advanced_file_options
