@@ -119,6 +119,9 @@ class PseudocolorAttributes;
 //   I modified the plot to support independently setting the point style
 //   for the two end points of lines.
 //
+//   Cyrus Harrison, Wed Nov  2 19:09:51 PDT 2016
+//   Remove tubeRadiusVarLabel, the check box used for this includes a label.
+//
 // ****************************************************************************
 
 class QvisPseudocolorPlotWindow : public QvisPostableWindowObserver
@@ -256,7 +259,6 @@ private:
     QComboBox          *tubeRadiusSizeType;
 
     QCheckBox          *tubeRadiusVarEnabled;
-    QLabel             *tubeRadiusVarLabel;
     QvisVariableButton *tubeRadiusVar;
     QLabel             *tubeRadiusVarRatioLabel;
     QLineEdit          *tubeRadiusVarRatio;

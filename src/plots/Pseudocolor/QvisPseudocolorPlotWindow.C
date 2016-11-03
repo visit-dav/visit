@@ -610,12 +610,10 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     lineLayout->addWidget(tubeRadiusSizeType, 1, 2);
 
     // Tube variable radius.
+
     tubeRadiusVarEnabled = new QCheckBox(tr("Variable radius"), central);
     connect(tubeRadiusVarEnabled, SIGNAL(toggled(bool)), this, SLOT(tubeRadiusVarToggled(bool)));
-    lineLayout->addWidget(tubeRadiusVarEnabled, 2, 0);
-    
-    tubeRadiusVarLabel = new QLabel(tr("Variable"), central);
-    lineLayout->addWidget(tubeRadiusVarLabel, 2, 1, Qt::AlignRight);
+    lineLayout->addWidget(tubeRadiusVarEnabled, 2, 1, Qt::AlignRight);
     tubeRadiusVar = new QvisVariableButton(false, true, true,
                                            QvisVariableButton::Scalars, central);
     connect(tubeRadiusVar, SIGNAL(activated(const QString &)),
@@ -931,6 +929,9 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //   I modified the plot to support independently setting the point style
 //   for the two end points of lines.
 //
+//   Cyrus Harrison, Wed Nov  2 19:09:51 PDT 2016
+//   Remove tubeRadiusVarLabel, the check box used for this includes a label.
+//
 // ****************************************************************************
 
 void
@@ -1162,10 +1163,8 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
               tubeRadiusLabel->show();
               tubeRadius->show();
               tubeRadiusSizeType->show();
-              
               tubeRadiusVarEnabled->show();
               tubeRadiusVar->show();
-              tubeRadiusVarLabel->show();
               tubeRadiusVar->show();
               tubeRadiusVarRatioLabel->show();
               tubeRadiusVarRatio->show();
@@ -1177,10 +1176,8 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
               tubeRadiusLabel->hide();
               tubeRadius->hide();
               tubeRadiusSizeType->hide();
-              
               tubeRadiusVarEnabled->hide();
               tubeRadiusVar->hide();
-              tubeRadiusVarLabel->hide();
               tubeRadiusVar->hide();
               tubeRadiusVarRatioLabel->hide();
               tubeRadiusVarRatio->hide();
@@ -1237,7 +1234,6 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             tubeRadiusVar->blockSignals(true);
 
             tubeRadiusVarEnabled->setChecked( pcAtts->GetTubeRadiusVarEnabled() );
-            tubeRadiusVarLabel->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
             tubeRadiusVar->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
             tubeRadiusVarRatioLabel->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
             tubeRadiusVarRatio->setEnabled( pcAtts->GetTubeRadiusVarEnabled() );
