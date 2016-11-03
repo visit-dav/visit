@@ -1,14 +1,14 @@
-#/home/visit/visit/thirdparty_shared/2.11.0/cmake/3.0.2/linux-x86_64_gcc-4.5/bin/cmake
+#/home/visit/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.5/bin/cmake
 ##
-## ./build_visit2_11_0 generated host.cmake
-## created: Mon Sep 19 12:30:29 PDT 2016
+## ./build_visit2_12_0 generated host.cmake
+## created: Thu Nov  3 13:32:58 PDT 2016
 ## system: Linux ubuntu1104-64.sqalab-llnl.gov 2.6.38-8-generic #42-Ubuntu SMP Mon Apr 11 03:31:24 UTC 2011 x86_64 x86_64 x86_64 GNU/Linux
 ## by: visit
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /home/visit/visit/thirdparty_shared/2.11.0)
+SET(VISITHOME /home/visit/visit/thirdparty_shared/2.12.0)
 SET(VISITARCH linux-x86_64_gcc-4.5)
 
 ## Compiler flags.

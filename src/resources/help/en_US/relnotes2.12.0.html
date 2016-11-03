@@ -18,16 +18,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li><a href="#General_Features">Features for all users</a></li>
   <li><a href="#Advanced_Features">Features for advanced users</a></li>
-  <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
-  <li><a href="#Operator_changes">Changes to operators</a></li>
-  <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Configuration_changes">Configuration changes</a></li>
   <li><a href="#Build_changes">Changes to build_visit</a></li>
-  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
 
 <a name="General_Features"></a>
@@ -44,12 +40,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Numpy is now included in VisIt's Python interpreter.</li>
 </ul>
 
-<a name="GUI_Changes"></a>
-<p><b><font size="4">Changes in GUI behavior for version 2.12</font></b></p>
-<ul>
-  <li></li>
-</ul>
-
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.12</font></b></p>
 <ul>
@@ -64,17 +54,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Enhanced the Pseudocolor plot to allow specifying the endpoints of lines independently. The Pseudocolor attributes in the Python scripting interface have also changed as a result of this. The <i>endPointType</i> and <i>endPointStyle</i> fields have been replaced with <i>tailStyle</i> and <i>headStyle</i> (which can be one of <i>None</i>, <i>Spheres</i>, <i>Cones</i>).</li>
   <li>Fixed a bug with the Pseudocolor plot where displaying lines from the IntegralCurve operator as tubes could cause some of the lines to disappear.</li>
   <li>Fixed a bug with the Pseudocolor plot where displaying lines as ribbons would cause the engine to crash.</li>
-</ul>
-
-<a name="Operator_changes"></a>
-<p><b><font size="4">Changes to VisIt's operators in version 2.12</font></b></p>
-<ul>
-</ul>
-
-<a name="Expression_changes"></a>
-<p><b><font size="4">Changes to VisIt's expressions in version 2.12</font></b></p>
-<ul>
-  <li></li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -106,12 +85,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with build_visit building GDAL on OSX 10.11</li>
   <li>Fixed a bug with build_visit building XDMF where XDMF_SYSTEM_ZLIB and XDMF_SYSTEM_LIBXML2 where incorrectly set to OFF. They are now set to ON, to indicate that we are getting those libraries from the VTK build.</li>
   <li>Fixed make install to install the correct OSX Qt frameworks and libraries.</li>
-</ul>
-
-<a name="Dev_changes"></a>
-<p><b><font size="4">Changes for VisIt developers in version 2.12</font></b></p>
-<ul>
-  <li></li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
