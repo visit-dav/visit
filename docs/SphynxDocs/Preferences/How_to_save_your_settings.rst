@@ -28,10 +28,9 @@ VisIt saves two preference files, the first of which stores preferences
 for VisIt's GUI while the second file stores preferences for VisIt's
 viewer. When running VisIt on UNIX, MacOS X systems, the preference files
 are called: ``guiconfig`` and ``config`` and they are saved in the ``.visit``
-directory in your home directory. The Windows version of VisIt calls the
-preference files: ``guiconfig for user`` and ``config for user`` where
-user is your username and they are stored in the directory where the
-VisIt executable programs were installed.
+directory in your home directory. The Windows version of the ``.visit`` 
+directory is ``%USERPROFILE%\Documents\VisIt``, which may be something like: 
+``C:\Users\<your-user-name>\Documents\VisIt``.
 
 If you prefer to run VisIt without reading your saved settings, you can
 provide the ``-noconfig`` option on the command line when you run VisIt.
