@@ -264,16 +264,16 @@ function build_nektarpp
     #    fi
 
 
-        if test "x${DO_VTK}" = "xyes"; then
-            info "vtk requested.  Configuring NEKTAR++ with vtk support."
-            ntopts="${ntopts} -DNEKTAR_USE_VTK=ON -DVTK_DIR:PATH=${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/cmake/vtk-${VTK_SHORT_VERSION}"
+#        if test "x${DO_VTK}" = "xyes"; then
+#            info "vtk requested.  Configuring NEKTAR++ with vtk support."
+#            ntopts="${ntopts} -DNEKTAR_USE_VTK=ON -DVTK_DIR:PATH=${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/cmake/vtk-${VTK_SHORT_VERSION}"
 
-            if [[ "$OPSYS" == "Darwin" ]]; then
-                export DYLD_LIBRARY_PATH="$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-            else
-                export LD_LIBRARY_PATH="$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
-            fi
-        fi
+#            if [[ "$OPSYS" == "Darwin" ]]; then
+#                export DYLD_LIBRARY_PATH="$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+#            else
+#                export LD_LIBRARY_PATH="$VISITDIR/$VTK_INSTALL_DIR/$VTK_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+#            fi
+#        fi
 
     cd "$START_DIR"
 
