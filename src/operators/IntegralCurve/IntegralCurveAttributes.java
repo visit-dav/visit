@@ -222,7 +222,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
         displayGeometry = DISPLAYGEOMETRY_LINES;
         cleanupMethod = CLEANUPMETHOD_NOCLEANUP;
-        cleanupThreshold = 0;
+        cleanupThreshold = 1e-08;
         cropBeginFlag = false;
         cropBegin = 0;
         cropEndFlag = false;
@@ -338,7 +338,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
         displayGeometry = DISPLAYGEOMETRY_LINES;
         cleanupMethod = CLEANUPMETHOD_NOCLEANUP;
-        cleanupThreshold = 0;
+        cleanupThreshold = 1e-08;
         cropBeginFlag = false;
         cropBegin = 0;
         cropEndFlag = false;
