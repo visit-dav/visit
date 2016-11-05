@@ -133,6 +133,11 @@ ELSE(WIN32)
     ENDIF(NOT APPLE)
 ENDIF(WIN32)
 
+# If we have XDB and we're static linking then we need to link with libXDBLib here.
+IF(VISIT_STATIC AND VISIT_ENABLE_XDB)
+    SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${VISIT_LIBRARY_DIR}/libXDBLib.so) # Just Linux for now.
+ENDIF(VISIT_STATIC AND VISIT_ENABLE_XDB)
+
 SET(VTK_LIBS vtkCommonCore vtkImagingCore vtkRenderingCore vtkIOLegacy vtkIOPLY
              vtkInteractionStyle vtkRenderingOpenGL vtkRenderingFreeTypeOpenGL
              vtkFiltersHybrid vtkFiltersModeling vtkGeovisCore)
