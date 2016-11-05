@@ -76,6 +76,9 @@ class EngineOperatorPluginInfo;
 
 // Declare the databases.
 #define PLUGIN_VERB DECLARE_DATABASE
+#ifdef HAVE_XDB
+PLUGIN_VERB(FieldViewXDB)
+#endif
 PLUGIN_VERB(VTK)
 PLUGIN_VERB(SimV2)
 #undef PLUGIN_VERB
@@ -112,6 +115,9 @@ static void *
 database_dlsym(const std::string &sym)
 {
     void *retval = NULL;
+#ifdef HAVE_XDB
+    PLUGIN_VERB(FieldViewXDB)
+#endif
     PLUGIN_VERB(VTK)
     PLUGIN_VERB(SimV2)
     return retval;
@@ -187,6 +193,9 @@ StaticGetSupportedLibs(std::vector<std::pair<std::string, std::string> > &libs,
     {
         // Add the databases
 #define PLUGIN_VERB ADD_DATABASE_PLUGIN
+#ifdef HAVE_XDB
+PLUGIN_VERB(FieldViewXDB)
+#endif
 PLUGIN_VERB(VTK)
 PLUGIN_VERB(SimV2)
 #undef PLUGIN_VERB
