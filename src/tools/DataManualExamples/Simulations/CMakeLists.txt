@@ -133,12 +133,17 @@ ELSE(WIN32)
     ENDIF(NOT APPLE)
 ENDIF(WIN32)
 
+# If we have XDB and we're static linking then we need to link with libXDBLib here.
+IF(VISIT_STATIC AND VISIT_ENABLE_XDB)
+    SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${VISIT_LIBRARY_DIR}/libXDBLib.so) # Just Linux for now.
+ENDIF(VISIT_STATIC AND VISIT_ENABLE_XDB)
+
 SET(VTK_LIBS vtkCommonCore vtkImagingCore vtkRenderingCore vtkIOLegacy vtkIOPLY
              vtkInteractionStyle vtkRenderingOpenGL vtkRenderingFreeTypeOpenGL
              vtkFiltersHybrid vtkFiltersModeling vtkGeovisCore)
-IF(BLUEGENEQ)
+IF(ICET_FOUND)
     LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
-ENDIF(BLUEGENEQ)
+ENDIF(ICET_FOUND)
 
 ##
 ## SimV2 functions
@@ -151,8 +156,8 @@ FUNCTION(ADD_SIMV2_SIMULATION target)
     IF(NOT VISIT_STATIC)
         TARGET_LINK_LIBRARIES(sim_${target} simV2 ${EXTRA_SIM_LIBS})
     ELSE()
-        TARGET_LINK_LIBRARIES(sim_${target} simV2_static_ser ${VTK_LIBS} ${ZLIB_LIB}
-                                                             ${EXTRA_SIM_LIBS})
+        TARGET_LINK_LIBRARIES(sim_${target} simV2_static_ser
+           ${VTK_LIBS} ${ZLIB_LIB} ${EXTRA_SIM_LIBS})
     ENDIF()
     ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
 ENDFUNCTION(ADD_SIMV2_SIMULATION)
@@ -161,7 +166,12 @@ FUNCTION(ADD_FORTRAN_SIMV2_SIMULATION target)
     IF(VISIT_FORTRAN)
         ADD_EXECUTABLE(sim_${target} ${ARGN} simulationexamplev2.f)
         SET_SIMULATION_PROPERTIES(${target})
-        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${EXTRA_SIM_LIBS})
+        IF(NOT VISIT_STATIC)
+            TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${EXTRA_SIM_LIBS})
+        ELSE()
+            TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2_static_ser 
+                ${VTK_LIBS} ${ZLIB_LIB} ${EXTRA_SIM_LIBS})
+        ENDIF()
         ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
     ENDIF(VISIT_FORTRAN)
 ENDFUNCTION(ADD_FORTRAN_SIMV2_SIMULATION)
@@ -173,6 +183,10 @@ FUNCTION(ADD_PARALLEL_SIMV2_SIMULATION target)
             # Do this to try and control the order of MPI libraries on the command line
             SET(VISIT_NOLINK_MPI_WITH_LIBRARIES ON)
             SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${ICET_LIB} ${VISIT_PARALLEL_LIBS})
+        ELSE(BLUEGENEQ)
+           IF(ICET_FOUND)
+               SET(EXTRA_SIM_LIBS ${EXTRA_SIM_LIBS} ${ICET_LIB})
+           ENDIF(ICET_FOUND)
         ENDIF(BLUEGENEQ)
         ADD_PARALLEL_EXECUTABLE(sim_${target} ${ARGN})
         SET_SIMULATION_PROPERTIES(${target})
@@ -194,8 +208,21 @@ FUNCTION(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
     IF(VISIT_PARALLEL AND VISIT_FORTRAN)
         ADD_PARALLEL_FORTRAN_EXECUTABLE(sim_${target} ${ARGN} simulationexamplev2.f)
         SET_SIMULATION_PROPERTIES(${target})
-        TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${EXTRA_SIM_LIBS})
+        SET(FLIBS ${EXTRA_SIM_LIBS})
+        IF(ICET_FOUND)
+            SET(FLIBS ${FLIBS} ${ICET_LIB})
+        ENDIF(ICET_FOUND)
+        # HACK: Force the Fortran MPI libraries.
+        SET(FLIBS ${FLIBS} ${MPI_Fortran_LIBRARIES})
+        IF(NOT VISIT_STATIC)
+            TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2 ${FLIBS})
+        ELSE()
+            TARGET_LINK_LIBRARIES(sim_${target} simV2f simV2_static_ser 
+                ${VTK_LIBS} ${ZLIB_LIB} ${FLIBS})
+        ENDIF()
         ADD_TARGET_INCLUDE(sim_${target} ${VISIT_SOURCE_DIR}/sim/V2/lib)
+        # HACK:Force the Fortran include path. Why was it not already set?
+        ADD_TARGET_INCLUDE(sim_${target} ${MPI_Fortran_INCLUDE_PATH})
     ENDIF(VISIT_PARALLEL AND VISIT_FORTRAN)
 ENDFUNCTION(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION)
 

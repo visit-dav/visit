@@ -47,6 +47,7 @@ set(VISIT_PARALLEL @VISIT_PARALLEL@)
 set(MESA_FOUND @MESA_FOUND@)
 set(VISIT_BINARY_DIR @VISIT_BINARY_DIR@)
 set(VISIT_FORTRAN @VISIT_FORTRAN@)
+set(VISIT_ENABLE_XDB @VISIT_ENABLE_XDB@)
 set(CMAKE_CURRENT_BINARY_DIR "@CMAKE_CURRENT_BINARY_DIR@")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "@CMAKE_ARCHIVE_OUTPUT_DIRECTORY@")
 set(CMAKE_AR "@CMAKE_AR@")
@@ -102,24 +103,35 @@ get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_plots.h"
                     "Plot" "_ser" visit_libs_ser)
 get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_operators.h"
                     "Operator" "_ser" visit_libs_ser)
+
 list(APPEND visit_libs_ser "ISimV2Database" "ESimV2Database_ser" "IVTKDatabase" "EVTKDatabase_ser")
+IF(VISIT_ENABLE_XDB)
+    message(STATUS "Adding XDB to SimV2 static library.")
+    list(APPEND visit_libs_ser "VXDB_ser" "IFieldViewXDBDatabase" "EFieldViewXDBDatabase_ser")
+ENDIF(VISIT_ENABLE_XDB)
 
 if(VISIT_PARALLEL)
     get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_plots.h"
                         "Plot" "_par" visit_libs_par)
     get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_operators.h"
                         "Operator" "_par" visit_libs_par)
-    list(APPEND visit_libs_par "ISimV2Database" "ESimV2Database_ser" "IVTKDatabase" "EVTKDatabase_ser")
+    list(APPEND visit_libs_par "ISimV2Database" "ESimV2Database_par" "IVTKDatabase" "EVTKDatabase_par")
+    IF(VISIT_ENABLE_XDB)
+        message(STATUS "Adding XDB to parallel SimV2 static library.")
+        list(APPEND visit_libs_par "VXDB_par" "IFieldViewXDBDatabase" "EFieldViewXDBDatabase_par")
+    ENDIF(VISIT_ENABLE_XDB)
 endif()
 
 
 function(create_archive libname liblist)
     unset(ALL_OBJS)
     make_directory(${TMPDIR})
+    message("Creating ${libname}")
     # Extract every library in the list into a series of object files
     foreach(LIB ${${liblist}})
       if(EXISTS ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/lib${LIB}.a)
 	file(MAKE_DIRECTORY ${TMPDIR}/${LIB})
+        message("Extracting lib${LIB}.a")
 	execute_process(
             COMMAND ${CMAKE_AR} x ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/lib${LIB}.a
             WORKING_DIRECTORY ${TMPDIR}/${LIB}
