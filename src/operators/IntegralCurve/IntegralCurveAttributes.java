@@ -210,7 +210,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         velocitySource[0] = 0;
         velocitySource[1] = 0;
         velocitySource[2] = 0;
-        integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
+        integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
         parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
         maxProcessCount = 10;
         maxDomainCacheSize = 3;
@@ -222,7 +222,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
         displayGeometry = DISPLAYGEOMETRY_LINES;
         cleanupMethod = CLEANUPMETHOD_NOCLEANUP;
-        cleanupThreshold = 1e-08;
+        cleanupThreshold = 0;
         cropBeginFlag = false;
         cropBegin = 0;
         cropEndFlag = false;
@@ -326,7 +326,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         velocitySource[0] = 0;
         velocitySource[1] = 0;
         velocitySource[2] = 0;
-        integrationType = INTEGRATIONTYPE_ADAMSBASHFORTH;
+        integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
         parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
         maxProcessCount = 10;
         maxDomainCacheSize = 3;
@@ -338,7 +338,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
         displayGeometry = DISPLAYGEOMETRY_LINES;
         cleanupMethod = CLEANUPMETHOD_NOCLEANUP;
-        cleanupThreshold = 1e-08;
+        cleanupThreshold = 0;
         cropBeginFlag = false;
         cropBegin = 0;
         cropEndFlag = false;

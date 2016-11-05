@@ -547,7 +547,7 @@ void IntegralCurveAttributes::Init()
     velocitySource[0] = 0;
     velocitySource[1] = 0;
     velocitySource[2] = 0;
-    integrationType = AdamsBashforth;
+    integrationType = DormandPrince;
     parallelizationAlgorithmType = VisItSelects;
     maxProcessCount = 10;
     maxDomainCacheSize = 3;
