@@ -2,8 +2,6 @@
    sphinx-quickstart on Thu Sep 22 14:59:45 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
-   Plots/index   
-   Operators/index            
 
 The VisIt User Manual
 ======================
@@ -17,6 +15,8 @@ Contents:
 
    Intro/index
    WorkingWithFiles/index
+   Plots/index   
+   Operators/index            
    SavingPrinting/index
    VisualizationWindows/index
    Subsetting/index
