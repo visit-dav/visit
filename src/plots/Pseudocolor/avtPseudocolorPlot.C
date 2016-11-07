@@ -47,6 +47,7 @@
 #include <avtColorTables.h>
 #include <avtExtents.h>
 #include <avtLookupTable.h>
+#include <avtPolylineCleanupFilter.h>
 #include <avtPolylineAddEndPointsFilter.h>
 #include <avtPolylineToRibbonFilter.h>
 #include <avtPolylineToTubeFilter.h>
@@ -119,6 +120,7 @@ avtPseudocolorPlot::avtPseudocolorPlot()
     filter = NULL;
     pcfilter = NULL;
     staggeringFilter = NULL;
+    polylineCleanupFilter = NULL;
     polylineAddEndPointsFilter = NULL;
     polylineToRibbonFilter = NULL;
     polylineToTubeFilter = NULL;
@@ -168,6 +170,12 @@ avtPseudocolorPlot::~avtPseudocolorPlot()
     {
         delete staggeringFilter;
         staggeringFilter = NULL;
+    }
+
+    if (polylineCleanupFilter != NULL)
+    {
+        delete polylineCleanupFilter;
+        polylineCleanupFilter = NULL;
     }
 
     if (polylineToTubeFilter != NULL)
@@ -411,6 +419,17 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
         filter->SetInput(dob);
         dob = filter->GetOutput();
     }
+
+    // PolylineCleanup Filter
+    if (polylineCleanupFilter != NULL)
+    {
+      delete polylineCleanupFilter;
+      polylineCleanupFilter = NULL;
+    }
+
+    polylineCleanupFilter = new avtPolylineCleanupFilter();
+    polylineCleanupFilter->SetInput(dob);
+    dob = polylineCleanupFilter->GetOutput();
 
     // PolylineAddEndPoints Filter
     if (polylineAddEndPointsFilter != NULL)
@@ -1330,6 +1349,11 @@ avtPseudocolorPlot::ReleaseData(void)
     if (staggeringFilter != NULL)
     {
         staggeringFilter->ReleaseData();
+    }
+
+    if (polylineCleanupFilter != NULL)
+    {
+        polylineCleanupFilter->ReleaseData();
     }
 
     if (polylineToTubeFilter != NULL)
