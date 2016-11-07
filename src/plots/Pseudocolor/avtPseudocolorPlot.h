@@ -53,6 +53,7 @@ class     avtPseudocolorFilter;
 class     avtShiftCenteringFilter;
 class     avtVariablePointGlyphMapper;
 class     avtVariableLegend;
+class     avtPolylineCleanupFilter;
 class     avtPolylineAddEndPointsFilter;
 class     avtPolylineToRibbonFilter;
 class     avtPolylineToTubeFilter;
@@ -171,6 +172,8 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     avtLegend_p                 varLegendRefPtr;
     PseudocolorAttributes       atts;
     avtPseudocolorFilter       *pcfilter;
+
+    avtPolylineCleanupFilter   *polylineCleanupFilter;
     avtPolylineAddEndPointsFilter *polylineAddEndPointsFilter;
     avtPolylineToRibbonFilter  *polylineToRibbonFilter;
     avtPolylineToTubeFilter    *polylineToTubeFilter;

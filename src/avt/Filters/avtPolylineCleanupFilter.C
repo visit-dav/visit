@@ -37,72 +37,73 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtPolylineToRibbonFilter.C                      //
+//                          avtPolylineCleanupFilter.C                        //
 // ************************************************************************* //
 
-#include <avtPolylineToRibbonFilter.h>
+#include <avtPolylineCleanupFilter.h>
 
-#include <vtkRibbonFilter.h>
+#include <vtkTubeFilter.h>
 #include <vtkAppendPolyData.h>
+#include <vtkCleanPolyData.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
 // ****************************************************************************
-//  Method: avtPolylineToRibbonFilter constructor
+//  Method: avtPolylineCleanupFilter constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
 //      header because it causes problems for certain compilers.
 //
-//  Programmer: Allen Sanderson
-//  Creation:   Feb 12 2016
+//  Programmer: Cyrus Harrison
+//  Creation:   Mon Nov  7 11:21:19 PST 2016
 //
 // ****************************************************************************
 
-avtPolylineToRibbonFilter::avtPolylineToRibbonFilter() : avtDataTreeIterator()
+avtPolylineCleanupFilter::avtPolylineCleanupFilter() : avtDataTreeIterator()
 {
 }
 
 // ****************************************************************************
-//  Method: avtPolylineToRibbonFilter destructor
+//  Method: avtPolylineCleanupFilter destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
 //      because it causes problems for certain compilers.
 //
-//  Programmer: Allen Sanderson
-//  Creation:   Feb 12 2016
+//  Programmer: Cyrus Harrison
+//  Creation:   Mon Nov  7 11:21:19 PST 2016
 //
 // ****************************************************************************
 
-avtPolylineToRibbonFilter::~avtPolylineToRibbonFilter()
+avtPolylineCleanupFilter::~avtPolylineCleanupFilter()
 {
 }
 
 // ****************************************************************************
-//  Method: avtPolylineToRibbonFilter::ExecuteData
+//  Method: avtPolylineCleanupFilter::ExecuteData
 //
 //  Purpose:
-//    Creates a ribbon from a polyline
+//    Cleans duplicate points from a poly line using the
+//    vtkCleanPolyData filter.
 //
 //  Arguments:
 //      inDR       The input data representation.
 //
 //  Returns:       The output data representation.
 //
-//  Programmer: Allen Sanderson
-//  Creation:   Feb 12 2016
+//  Note: The cell data copying is untested.
+//
+//  Programmer:  Cyrus Harrison 
+//  Creation:    Mon Nov  7 11:21:19 PST 2016
 //
 //  Modifications:
-//    Eric Brugger, Thu Oct 20 14:51:51 PDT 2016
-//    I added code to remove duplicate points from the lines since the 
-//    vtkRibbonFilter exits on any lines that have duplicate points.
 //
 // ****************************************************************************
 
 avtDataRepresentation *
-avtPolylineToRibbonFilter::ExecuteData(avtDataRepresentation *inDR)
+avtPolylineCleanupFilter::ExecuteData(avtDataRepresentation *inDR)
 {
     //
     // Get the VTK data set.
@@ -112,7 +113,7 @@ avtPolylineToRibbonFilter::ExecuteData(avtDataRepresentation *inDR)
     if (inDS->GetDataObjectType() != VTK_POLY_DATA)
     {
         // We only work on line data
-        EXCEPTION1(VisItException, "avtPolylineToRibbonFilter::ExecuteDataTree "
+        EXCEPTION1(VisItException, "avtPolylineCleanupFilter::ExecuteDataTree "
                                    "-- Did not get polydata");
     }
 
@@ -125,42 +126,15 @@ avtPolylineToRibbonFilter::ExecuteData(avtDataRepresentation *inDR)
 
     vtkPolyData *data = vtkPolyData::SafeDownCast(inDS);
 
-    // Create the ribbon polydata.
-    vtkRibbonFilter *ribbonFilter = vtkRibbonFilter::New();
+    // Clean duplicate points from the polydata.
+    vtkCleanPolyData *cleanFilter = vtkCleanPolyData::New();
 
-    ribbonFilter->SetWidth( width );
-    ribbonFilter->ReleaseDataFlagOn();
-    ribbonFilter->SetVaryWidth( varyWidth );
-    ribbonFilter->ReleaseDataFlagOn();
-
-    if (varyWidth && widthVar != "" && widthVar != "\0")
-    {
-        if (widthVar != "default")
-            data->GetPointData()->SetActiveScalars(widthVar.c_str());
-    }
-
-    ribbonFilter->SetInputData(data);
-
-    ribbonFilter->Update();
-
-    // Append the original data and ribbon polydata
-    vtkAppendPolyData *append = vtkAppendPolyData::New();
-
-    append->AddInputData(data);
-    append->AddInputData(ribbonFilter->GetOutput());
-    
-    ribbonFilter->Delete();
-
-    append->Update();
+    cleanFilter->SetInputData(data);
+    cleanFilter->Update();
 
     // Get the output.
-    vtkPolyData *outPD = append->GetOutput();
+    vtkPolyData *outPD = cleanFilter->GetOutput();
     outPD->Register(NULL);
-    append->Delete();
-    
-    // Remove the lines.
-    outPD->SetLines(NULL);
-    outPD->RemoveDeletedCells();
 
     // Restore the active scalars.
     if (activeScalars)
@@ -171,25 +145,25 @@ avtPolylineToRibbonFilter::ExecuteData(avtDataRepresentation *inDR)
 
     // Create the output data rep.
     avtDataRepresentation *outDR =
-        new avtDataRepresentation( outPD, inDR->GetDomain(), inDR->GetLabel() );
+        new avtDataRepresentation(outPD, inDR->GetDomain(), inDR->GetLabel());
 
     return outDR;
 }
 
 
 // ****************************************************************************
-//  Method: avtPolylineToRibbonFilter::UpdateDataObjectInfo
+//  Method: avtPolylineCleanupFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicate that this invalidates the zone numberings.
 //
-//  Programmer: Allen Sanderson
-//  Creation:   Feb 12 2016
+//  Programmer:  Cyrus Harrison 
+//  Creation:    Mon Nov  7 11:21:19 PST 2016
 //
 // ****************************************************************************
 
 void
-avtPolylineToRibbonFilter::UpdateDataObjectInfo(void)
+avtPolylineCleanupFilter::UpdateDataObjectInfo(void)
 {
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 1)
         GetOutput()->GetInfo().GetValidity().InvalidateZones();
