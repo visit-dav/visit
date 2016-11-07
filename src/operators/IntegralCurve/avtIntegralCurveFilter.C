@@ -542,7 +542,12 @@ avtIntegralCurveFilter::UpdateDataObjectInfo(void)
 //    avtPluginFilter::UpdateDataObjectInfo();
     avtPICSFilter::UpdateDataObjectInfo();
 
-    out_atts.AddFilterMetaData("IntegralCurve");
+    // Encode some filter information in the output metadata.
+    std::string params("dataValue=");
+    params += IntegralCurveAttributes::DataValue_ToString(atts.GetDataValue());
+    if(atts.GetDataValue() == IntegralCurveAttributes::Variable)
+        params += (std::string(",dataVariable=") + atts.GetDataVariable());
+    out_atts.AddFilterMetaData("IntegralCurve", params);
 }
 
 
