@@ -11,8 +11,8 @@
 #    visit-install    [-c anag | anl | arl | asu | awe | clemson | cscs |"
 #                         eth_zurich | llnl_open | llnl_open_rz |"
 #                         llnl_open_cz | llnl_closed | lsu | ncar |"
-#                         nersc | nics | ornl | princeton | sandia |"
-#                         sandia_closed | tacc | umich | utah]"
+#                         nersc | nics | ohio | ornl | princeton |"
+#                         sandia | sandia_closed | tacc | umich | utah]"
 #                      [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
 #                      [-beta | -private] version platform directory"
 #
@@ -453,8 +453,8 @@ if [ "$#" != "3" ]; then
    echo "Usage: visit-install [-c anag | anl | arl | asu | awe | clemson | cscs |"
    echo "                         eth_zurich | llnl_open | llnl_open_rz |"
    echo "                         llnl_open_cz | llnl_closed | lsu | ncar |"
-   echo "                         nersc | nics | ornl | princeton | sandia |"
-   echo "                         sandia_closed | tacc | umich | utah]"
+   echo "                         nersc | nics | ohio | ornl | princeton | "
+   echo "                         sandia | sandia_closed | tacc | umich | utah]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -699,6 +699,14 @@ if [ "$test" = "true" ]; then
        echo "failed"
        exit 1
     fi
+    echo "Testing ohio configuration..."
+    rm -rf $dir
+    $0 -c ohio $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_ohio*`
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
     echo "Testing ornl configuration..."
     rm -rf $dir
     $0 -c ornl $version $platform $dir > /dev/null 2>&1
@@ -780,16 +788,17 @@ while [ "$config" = "prompt" ]; do
    echo "   12) NCAR network"
    echo "   13) NERSC network"
    echo "   14) NICS at University of Tennessee at Knoxville"
-   echo "   15) ORNL network"
-   echo "   16) Princeton network"
-   echo "   17) Sandia network"
-   echo "   18) Sandia closed network"
-   echo "   19) Swiss National Supercomputing Center (CSCS) network"
-   echo "   20) TACC network"
-   echo "   21) U of Michigan Advanced Research Computing (ARC-TS) network"
-   echo "   22) U of Utah Center for High Performance Computing network"
+   echo "   15) Ohio Supercomputer Center (OSC) network"
+   echo "   16) ORNL network"
+   echo "   17) Princeton network"
+   echo "   18) Sandia network"
+   echo "   19) Sandia closed network"
+   echo "   20) Swiss National Supercomputing Center (CSCS) network"
+   echo "   21) TACC network"
+   echo "   22) U of Michigan Advanced Research Computing (ARC-TS) network"
+   echo "   23) U of Utah Center for High Performance Computing (CHPC) network"
    echo ""
-   echo "Enter (1-22):"
+   echo "Enter (1-23):"
 
    read config
    case "$config" in
@@ -836,27 +845,30 @@ while [ "$config" = "prompt" ]; do
          config=nics
          ;;
       15)
-         config=ornl
+         config=ohio
          ;;
       16)
-         config=princeton
+         config=ornl
          ;;
       17)
-         config=sandia
+         config=princeton
          ;;
       18)
-         config=sandia_closed
+         config=sandia
          ;;
       19)
-         config=cscs
+         config=sandia_closed
          ;;
       20)
-         config=tacc
+         config=cscs
          ;;
       21)
-         config=umich
+         config=tacc
          ;;
       22)
+         config=umich
+         ;;
+      23)
          config=utah
          ;;
       *)
@@ -898,6 +910,8 @@ case "$config" in
       ;;
    nics)
       ;; 
+   ohio)
+      ;;
    ornl)
       ;;
    princeton)
@@ -917,8 +931,8 @@ case "$config" in
    *)
       echo "Illegal configuration option, choices are none, anag, anl,"
       echo "arl, asu, awe, clemson, cscs, eth_zurich, llnl_open, llnl_open_rz,"
-      echo "llnl_open_cz, llnl_closed, lsu, ncar, nersc, nics, ornl, princeton,"
-      echo "sandia, sandia_closed, tacc, umich, utah"
+      echo "llnl_open_cz, llnl_closed, lsu, ncar, nersc, nics, ohio, ornl,"
+      echo "princeton, sandia, sandia_closed, tacc, umich, utah"
       exit 4
       ;;
 esac
@@ -1086,6 +1100,9 @@ elif [ "$config" = "nersc" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "nics" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "ohio" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "ornl" ]; then
