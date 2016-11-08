@@ -1,0 +1,66 @@
+###############################################################################
+# Class: OSCLauncher
+#
+# Purpose:    Custom launcher for Ohio Supercomputer Center
+# Programmer: Kevin Manalo
+# Date:       Tues Nov 1 2016
+#
+# Customization issues:
+#    1) Exposure of locally related PATH and LD_LIBRARY_PATH by using Lmod
+#    2) Absolute path for qsub
+#    3) Bypass PPNArgument and favor Argonne mpiexec
+#    4) PBS_HOME needs to be set for the OSC submitfilter to work
+#    5) Only Cluster Currently Supported is Owens
+#
+# Thanks to Allen Sanderson for the help!
+###############################################################################
+
+
+class JobSubmitter_qsub_OSC(JobSubmitter_qsub):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub_OSC, self).__init__(launcher)
+
+    def Executable(self):
+        if self.launcher.osc_host == "OWENS":
+            return ["/opt/torque/bin/qsub"]
+        else:
+            print "Cannot resolve OSC host, trying default 'qsub'"
+            print "Contact oschelp@osc.edu for help"
+            return ["qsub"]
+
+    def PPNArgument(self):
+        return "-ppn"
+
+
+class OSCLauncher(MainLauncher):
+
+    def __init__(self):
+        super(OSCLauncher, self).__init__()
+        self.osc_host = ''
+        #if not self.osc_host:
+        #    exit("OSC_HOST is undefined - only Owens cluster is supported", 1)
+
+    def Customize(self):
+        msg = """ Ohio Supercomputer Center - Custom Launch File \n"""
+        print msg
+
+        sys.path.insert(0, "/usr/local/lmod/lmod/init/")
+        import os
+        os.environ["MODULEPATH"] = "/usr/local/share/lmodfiles/Core"
+        os.environ["PBS_HOME"] = "/var/spool/torque"
+        sys.path.insert(0, "/opt/torque/bin")
+        from env_modules_python import module
+        module("load", "visit")
+        self.osc_host =  os.getenv('OSC_HOST', '')
+
+    # Snippet derived from NERSC Resource File
+    # Override the JobSubmitterFactory method with custom job submitter
+    def JobSubmitterFactory(self, launch):
+        if launch[:4] == "qsub" or launch[:4] == "msub":
+            return JobSubmitter_qsub_OSC(self)
+        return super(OSCLauncher, self).JobSubmitterFactory(launch)
+
+
+# Launcher creation function
+def createlauncher():
+    return OSCLauncher()
