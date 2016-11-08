@@ -110,13 +110,6 @@ avtPolylineCleanupFilter::ExecuteData(avtDataRepresentation *inDR)
     //
     vtkDataSet *inDS = inDR->GetDataVTK();
 
-    if (inDS->GetDataObjectType() != VTK_POLY_DATA)
-    {
-        // We only work on line data
-        EXCEPTION1(VisItException, "avtPolylineCleanupFilter::ExecuteDataTree "
-                                   "-- Did not get polydata");
-    }
-
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 1)
     {
         return inDR;
