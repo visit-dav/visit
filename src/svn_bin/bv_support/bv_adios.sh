@@ -44,9 +44,9 @@ function bv_adios_depends_on
     fi
 
     if [[ "$DO_MPICH" == "yes" ]] ; then
-        echo "mxml mpich"
+        echo "mpich"
     else
-        echo "mxml"
+        echo ""
     fi
 }
 
@@ -65,11 +65,11 @@ function bv_adios_initialize_vars
 
 function bv_adios_info
 {
-    export ADIOS_FILE=${ADIOS_FILE:-"adios-1.9.0.tar.gz"}
-    export ADIOS_VERSION=${ADIOS_VERSION:-"1.9.0"}
-    export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.9.0"}
-    export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.9.0"}
-    export ADIOS_MD5_CHECKSUM="dbf5cb10e32add2f04c9b4052b7ffa76"
+    export ADIOS_FILE=${ADIOS_FILE:-"adios-1.10.0.tar.gz"}
+    export ADIOS_VERSION=${ADIOS_VERSION:-"1.10.0"}
+    export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.10.0"}
+    export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.10.0"}
+    export ADIOS_MD5_CHECKSUM="f438e3ec790a1a088c8c760abe71d1fb"
     export ADIOS_SHA256_CHECKSUM=""
 }
 
@@ -305,16 +305,14 @@ function build_ADIOS
              CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $ADIOS_MPI_INC\" \
              $ADIOS_MPI_OPTS \
              --disable-fortran \
-             --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
-             --with-mxml="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" \
+             --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 --without-mxml \
              --prefix="$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH"
     
     sh -c "./configure ${OPTIONAL} CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
                 CFLAGS=\"$CFLAGS $C_OPT_FLAGS $ADIOS_MPI_INC\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $ADIOS_MPI_INC\" \
                 $ADIOS_MPI_OPTS \
                 --disable-fortran \
-                    --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 \
-                --with-mxml=\"$VISITDIR/mxml/$MXML_VERSION/$VISITARCH\" \
+                --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 --without-mxml \
                 --prefix=\"$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH\""
     
     
