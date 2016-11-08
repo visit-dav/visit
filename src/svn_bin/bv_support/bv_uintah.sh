@@ -280,7 +280,7 @@ function build_uintah
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_darwin} \
         ${cf_build_type} \
-        --enable-optimize \
+        --enable-optimize --without-petc --without-hypre \
         --with-mpi="${PAR_INCLUDE_DIR}/.." "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
@@ -293,7 +293,7 @@ function build_uintah
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_darwin} \
         ${cf_build_type} \
-        --enable-optimize \
+        --enable-optimize --without-petc --without-hypre \
         --with-mpi="${PAR_INCLUDE_DIR}/.." "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
@@ -308,7 +308,7 @@ function build_uintah
         $FORTRANARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
-        --enable-optimize"
+        --enable-optimize --without-petc --without-hypre"
 
         sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
@@ -316,7 +316,7 @@ function build_uintah
         $FORTRANARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
-        --enable-optimize"
+        --enable-optimize --without-petc --without-hypre"
     fi
 
 

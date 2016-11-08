@@ -213,21 +213,21 @@ function build_nektarpp
     ntopts="${ntopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
     ntopts="${ntopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
     ntopts="${ntopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
-    ntopts="${ntopts} -DCMAKE_EXE_LINKER_FLAGS:STRING=${lf}"
-    ntopts="${ntopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
-    ntopts="${ntopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
+#    ntopts="${ntopts} -DCMAKE_EXE_LINKER_FLAGS:STRING=${lf}"
+#    ntopts="${ntopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
+#    ntopts="${ntopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
 
     # Nektar++ specific options for a faster build.
-    #    ntopts="${ntopts} -DTHIRDPARTY_BUILD_BOOST:BOOL=ON"
+#    ntopts="${ntopts} -DTHIRDPARTY_BUILD_BOOST:BOOL=ON"
     ntopts="${ntopts} -DNEKTAR_BUILD_DEMOS:BOOL=OFF"
     ntopts="${ntopts} -DNEKTAR_BUILD_SOLVERS:BOOL=OFF"
     ntopts="${ntopts} -DNEKTAR_BUILD_UTILITIES:BOOL=OFF"
     ntopts="${ntopts} -DNEKTAR_BUILD_TESTS:BOOL=OFF"
     ntopts="${ntopts} -DNEKTAR_BUILD_UNIT_TESTS:BOOL=OFF"
 
-    #    if test "${OPSYS}" = "Darwin" ; then
-    #        ntopts="${ntopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${nektar_plus_plus_inst_path}/lib"
-    #    fi
+#    if test "${OPSYS}" = "Darwin" ; then
+#        ntopts="${ntopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${nektar_plus_plus_inst_path}/lib"
+#    fi
 
     if test "x${DO_BOOST}" = "xyes"; then
         info "boost requested.  Configuring NEKTAR++ with boost support."
@@ -252,16 +252,16 @@ function build_nektarpp
         fi
     fi
 
-    #    if test "x${DO_MPICH}" = "xyes"; then
-    #        info "mpich requested.  Configuring NEKTAR++ with mpich support."
-    #        ntopts="${ntopts} -DMPI_ROOT:PATH=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}"
+#    if test "x${DO_MPICH}" = "xyes"; then
+#        info "mpich requested.  Configuring NEKTAR++ with mpich support."
+#        ntopts="${ntopts} -DMPI_ROOT:PATH=${VISITDIR}/mpich/${MPICH_VERSION}/${VISITARCH}"
 
-    #        if [[ "$OPSYS" == "Darwin" ]]; then
-    #            export DYLD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
-    #        else
-    #            export LD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
-    #        fi
-    #    fi
+#        if [[ "$OPSYS" == "Darwin" ]]; then
+#            export DYLD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+#        else
+#            export LD_LIBRARY_PATH="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+#        fi
+#    fi
 
 
 #        if test "x${DO_VTK}" = "xyes"; then
