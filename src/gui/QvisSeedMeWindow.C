@@ -174,6 +174,8 @@ QvisSeedMeWindow::browseApiKey()
             stream << apikeyFile << endl;
             settingsFile.close();
         }
+        confLocationLabel->setText("Using "+apikeyFile+" for seedme APIKey file.");
+
     }
 }
 
@@ -567,6 +569,9 @@ QvisSeedMeWindow::CreateSettingsTab()
     mainLayout->addWidget(helpLabelWarning,1,0);
     helpLabelWarning->setVisible(false);
 
+    confLocationLabel = new QLabel("Using "+apikeyFile+" for seedme APIKey file.");
+    mainLayout->addWidget(confLocationLabel,2,0);
+
     seedmeWatcher = new QFileSystemWatcher(this);
     connect(seedmeWatcher, SIGNAL(directoryChanged(const QString &)), this, SLOT(directoryChanged(const QString &)));
 
@@ -579,8 +584,8 @@ QvisSeedMeWindow::CreateSettingsTab()
     QLabel* label = new QLabel("Choose the location of seedme apikey file");
     QPushButton* button = new QPushButton("Browse");
     connect(button, SIGNAL(clicked()), SLOT(browseApiKey()));
-    mainLayout->addWidget(label, 2,0);
-    mainLayout->addWidget(button, 2,1);
+    mainLayout->addWidget(label, 3,0);
+    mainLayout->addWidget(button, 3,1);
 
     return w;
 }

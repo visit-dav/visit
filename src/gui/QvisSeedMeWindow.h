@@ -201,6 +201,8 @@ private:
     QLabel *helpLabel;
     QLabel *helpLabelWarning;
 
+    QLabel *confLocationLabel;
+
     QFileSystemWatcher *seedmeWatcher;
 
     QTextBrowser *statusLabel;
