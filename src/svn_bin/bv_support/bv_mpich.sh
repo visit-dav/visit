@@ -219,6 +219,12 @@ function build_mpich
                     -Wl,-compatibility_version,${MPICH_COMPATIBILITY_VERSION} \
                     -Wl,-current_version,${MPICH_VERSION}
 
+        $C_COMPILER -dynamiclib -o libmpichcxx.dylib -DSTUB=STUB_LIBMPICHCXX stub.c \
+                    -headerpad_max_install_names \
+                    -Wl,-install_name,"$MPICH_LIBDIR/libmpichcxx.dylib" \
+                    -Wl,-compatibility_version,${MPICH_COMPATIBILITY_VERSION} \
+                    -Wl,-current_version,${MPICH_VERSION}
+
         # Combine the libaries into a new libmpich.
         $C_COMPILER -dynamiclib -o libmpich.dylib libmpl/*.o libopa/*.o libmpich/*.o libpmpich/lib_libpmpich*.o\
                     -headerpad_max_install_names \
