@@ -13,7 +13,7 @@ National Center for Supercomputing Applications (NCSA) network:ncsa
 National Energy Scientific Research Computing Center (NERSC) network:nersc
 National Institute for Computational Sciences (NICS) newtwork:nics
 Oak Ridge National Laboratory (ORNL) network:ornl
-Ohio State University network:ohio
+Ohio Supercomputer Center (OSC) network:ohio
 Princeton University network:princeton
 Sandia National Laboratory (SNL) closed network:sandia_closed
 Sandia National Laboratory (SNL) open network:sandia
@@ -22,4 +22,4 @@ Swiss Federal Institue of Technology Zurich network:eth_zurich
 Swiss National Supercomputing Center (CSCS) network:cscs
 Texas Advanced Computing Center (TACC) network:tacc
 University of Michigan Advanced Research Computing (ARC-TS) network:umich
-University of Utah Center for High Performance Computing network:utah
+University of Utah Center for High Performance Computing (CHPC) network:utah
