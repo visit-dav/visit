@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[What's New in VisIt]]></title>
-  <IM>LLNL-WEB-702158</IM>
+  <IM>LLNL-WEB-707917</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
   <lastchanged><![CDATA[August 31, 2016]]></lastchanged>
   <template><![CDATA[l2]]></template> 
@@ -22,8 +22,10 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
+<h2>November, 2016 - VisIt 2.12 released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.12 contains almost twenty bug-fixes and new features. It is closer to a bug fix release in scope except for the fact that the component protocols changed, necessitating a major release. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.12.0">VisIt 2.12 Release Notes</a>.</p>
 <h2>August, 2016 - VisIt 2.11 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.11 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.11.0">VisIt 2.11 Release Notes</a>.</p>
+<p>VisIt 2.11 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.11.0">VisIt 2.11 Release Notes</a>.</p>
 <h4>1.  The re-architecting of the Parallel Integral Curve System was completed.</h4>
 <p>The re-architecting of the Parallel Integral Curve System (PICS), which formed the basis for functionality such as the Streamline and Poincare plots, has been completed. The changes began with the 2.9 release and provide a more flexible system with increased functionality. The most recent change in 2.11 is the removal of the Streamline plot. The same functionalty can now be achieved using the IntegralCurve operator and the Pseudocolor plot. The new system consists of four operators that feed their results into the Pseudocolor plot for display. The operators include the IntegralCurve, LCS (Lagrangian Coherent Structures), LimitCycle and Poincare operators. The Pseudocolor plot has been enhanced to be allow it to render lines in the same manner as the Streamline plot. For example, the Pseudocolor plot can now display lines as tubes and add spheres to the ends of the lines to show seed points. The Streamline Info query has been replaced with the Integral Curve Info query. For more information on using these operators, see the <a href="http://www.visitusers.org/index.php?title=Parallel_Integral_Curve_System_in_VisIt">Parallel Integral Curve System in VisIt</a> on the visitusers.org wiki.</p>
 <h4>2.  Advanced movie making capabilities have been added.</h4>
