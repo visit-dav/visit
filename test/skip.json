@@ -52,7 +52,13 @@
                     {"category":"simulation","file":"updateplots_session.py","platform":"win"},
                     {"category":"simulation","file":"zerocopy.py","platform":"win"},
                     {"category":"simulation","file":"life.py","cases":["life03"]},
-                    {"category":"simulation","file":"curve.py","cases":["curve03","curve04"]}
+                    {"category":"simulation","file":"curve.py","cases":["curve03","curve04"],
+                    {"category":"queries","file":"IntegralCurveInfo.py"},
+                    {"category":"operators","file":"ic_integration.py"},
+                    {"category":"operators","file":"ic_streamlines.py"},
+                    {"category":"operators","file":"ic_pathlines.py"},
+                    {"category":"operators","file":"ic_geometry.py"},
+                    {"category":"operators","file":"ic_pics.py"}
                   ]},
  {"mode":"parallel","tests":[
                     {"category":"databases","file":"xdmf.py","cases":["xdmf_4_02","xdmf_4_04"]},
@@ -91,7 +97,13 @@
                     {"category":"simulation","file":"ucdcurve.py","platform":"win"},
                     {"category":"simulation","file":"updateplots.py","platform":"win"},
                     {"category":"simulation","file":"life.py","cases":["life03"]},
-                    {"category":"simulation","file":"curve.py","cases":["curve03","curve04"]}
+                    {"category":"simulation","file":"curve.py","cases":["curve03","curve04"]},
+                    {"category":"queries","file":"IntegralCurveInfo.py"},
+                    {"category":"operators","file":"ic_integration.py"},
+                    {"category":"operators","file":"ic_streamlines.py"},
+                    {"category":"operators","file":"ic_pathlines.py"},
+                    {"category":"operators","file":"ic_geometry.py"},
+                    {"category":"operators","file":"ic_pics.py"}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"databases","file":"xdmf.py","cases":["xdmf_4_02","xdmf_4_04"]},
@@ -120,6 +132,12 @@
                     {"category":"simulation","file":"ucdcurve.py","platform":"win"},
                     {"category":"simulation","file":"updateplots.py","platform":"win"},
                     {"category":"simulation","file":"life.py","cases":["life03"]},
-                    {"category":"simulation","file":"curve.py","cases":["curve03","curve04"]}
+                    {"category":"simulation","file":"curve.py","cases":["curve03","curve04"]},
+                    {"category":"queries","file":"IntegralCurveInfo.py"},
+                    {"category":"operators","file":"ic_integration.py"},
+                    {"category":"operators","file":"ic_streamlines.py"},
+                    {"category":"operators","file":"ic_pathlines.py"},
+                    {"category":"operators","file":"ic_geometry.py"},
+                    {"category":"operators","file":"ic_pics.py"}
                     ]}
 ]}
