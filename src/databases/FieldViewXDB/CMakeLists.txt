@@ -85,13 +85,13 @@ IF(XDB_PLATFORM)
 
     IF(WIN32)
         SET(XDB_LIB_DEST ${VISIT_EXECUTABLE_DIR})
+        SET(XDBLIB_LIB   ${XDBLIB_NAME})
     ELSE(WIN32)
         SET(XDB_LIB_DEST ${VISIT_LIBRARY_DIR})
+        # Set XDBLIB_LIB to the name of the installed XDB library so dependencies 
+        # will be better for VXDB and the plugin.
+        SET(XDBLIB_LIB ${XDB_LIB_DEST}/${LIBPREFIX}${XDBLIB_NAME}${XDBLIB_EXT})
     ENDIF(WIN32)
-
-    # Set XDBLIB_LIB to the name of the installed XDB library so dependencies 
-    # will be better for VXDB and the plugin.
-    SET(XDBLIB_LIB ${XDB_LIB_DEST}/${LIBPREFIX}${XDBLIB_NAME}${XDBLIB_EXT})
 
     # Build the FieldView XDB plugin.
     MESSAGE(STATUS "The FieldView XDB database plugin will be built.")
