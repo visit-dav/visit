@@ -154,9 +154,9 @@ or
 **Set Y-Axis units**
 check boxes and type new units into the adjacent text fields.
 
-.. _fig-annotation2:
+.. _fig-annotation1b:
 
-.. figure:: images/annotation1.png
+.. figure:: images/annotation1b.png
 
    Title and Labels tab on Annotation Window's 2D Options tab
 
@@ -278,13 +278,18 @@ Annotation Colors
 
 Colors are very important in a visualization since they help to determine how easy it is to read annotations. VisIt provides a tab in the
 **Annotation Window**
-, shown in
-, specifically devoted to choosing annotation colors. The
+, shown in :numref:`Figure %s <fig-annotation3>`, specifically devoted to choosing annotation colors. The
 **Colors**
 tab contains controls to set the background and foreground for the visualization window which, in turn, sets the colors used for annotations.
 The
 **Colors**
 tab also provides controls for more advanced background colors called gradients which are colors that bleed into each other.
+
+.. _fig-annotation3:
+
+.. figure:: images/annotation3.png
+
+   Colors tab
 
 Setting background and foreground colors
 """"""""""""""""""""""""""""""""""""""""
@@ -299,10 +304,15 @@ color button and select a color from the
 **Popup color menu**
 . Releasing the mouse outside of the
 **Popup color menu**
-(see
-) cancels color selection and the color is not changed. Once you select a new color and click the
+(see :numref:`Figure %s <fig-colorselectdialog>`) cancels color selection and the color is not changed. Once you select a new color and click the
 **Apply**
 button, the colors for the active visualization window change. Note that each visualization window can have different background and foreground colors.
+
+.. _fig-colorselectdialog:
+
+.. figure:: images/colorselectdialog.png
+
+   Color Selection Dialog
 
 Changing the background style
 """""""""""""""""""""""""""""
@@ -332,18 +342,26 @@ that are used to change colors. To change the gradient colors, click on the colo
 **Popup color menu**
 . The gradient style is used to determine how colors blend into each other. To change the gradient style, make a selection from the
 **Gradient style**
-menu. The available options are Bottom to Top, Top to Bottom, Left to Right, Right to Left, and Radial. The first four options blend gradient color 1 to gradient color 2 in the manner prescribed by the style name. For example, Bottom to Top will have gradient color 1 at the bottom and gradient color 2 at the top. The radial gradient style puts gradient color 1 in the middle of the visualization window and blends gradient color 2 radially outward from the center. Examples of the gradient styles are shown in
-.
+menu. The available options are Bottom to Top, Top to Bottom, Left to Right, Right to Left, and Radial. The first four options blend gradient color 1 to gradient color 2 in the manner prescribed by the style name. For example, Bottom to Top will have gradient color 1 at the bottom and gradient color 2 at the top. The radial gradient style puts gradient color 1 in the middle of the visualization window and blends gradient color 2 radially outward from the center. Examples of the gradient styles are shown in :numref:`Figure %s <fig-gradients>`.
+
+.. _fig-gradients:
+
+.. figure:: images/gradients.png
+
+   Gradient styles
 
 Annotation Objects
 ~~~~~~~~~~~~~~~~~~
 
 So far, the annotations that have been described can only have a single instance. To provide more flexibility in the types and numbers of annotations, VisIt allows you to create annotation objects, which are objects that are added to the visualization window to convey information about the visualization. Currently, VisIt supports four types of annotation objects: 2D text objects, time slider objects, 2D line objects, and image objects. All of those types of annotation objects will be described herein. The fourth tab, or
 **Objects**
-tab, in the
-**Annotation Window**
-(
-) is devoted to managing the list of annotation objects and setting their properties.
+tab, in the **Annotation Window** (:numref:`Figure %s <fig-annotation4>` ) is devoted to managing the list of annotation objects and setting their properties.
+
+.. _fig-annotation4:
+
+.. figure:: images/annotation4.png
+  
+   Annotation object tab
 
 The
 **Objects**
@@ -412,8 +430,7 @@ button.
 Text annotation objects
 """""""""""""""""""""""
 
-Text annotation objects, shown in
-, are created by clicking the
+Text annotation objects, shown in :numref:`Figure %s <fig-combined_annot_text>`, are created by clicking the
 **Text**
 button in the
 **Create new**
@@ -421,13 +438,24 @@ area on the
 **Objects**
 tab. Text annotation objects are simple 2D text objects that are drawn on top of plots in the visualization window and are useful for adding titles or classification levels to a visualization. Text annotation objects can be placed anywhere in the visualization window and you can set their size, text, colors, and font properties.
 
+.. _fig-combined_annot_text:
+
+.. figure:: images/combined_annot_text.png
+  
+   Text annotations and text annotation interface
+
 Text annotation objects are placed using 2D coordinates where the X, and Y values are in the range [0,1]. The point (0,0) corresponds to the lower left corner of the visualization window and the point (1,1) corresponds to the upper right of the visualization window. The 2D coordinate used to position the text annotation matches the text annotation's lower left corner. To position a
 text annotation object, enter a new 2D coordinate into the
 **Lower left**
 text field. You can also click the down arrow next to the
 **Lower left**
-text field to interactively choose a new lower left coordinate for the text annotation using the screen positioning control, which represents the visualization window. The screen positioning control, shown in
-, lets you move a set of cross-hairs to any point on a square area that represents the visualization window. Once you release the left mouse button, the location of the cross-hairs is used as the new coordinate for the text annotation object's lower left corner.
+text field to interactively choose a new lower left coordinate for the text annotation using the screen positioning control, which represents the visualization window. The screen positioning control, shown in :numref:`Figure %s <fig-annotationobjectinterface_text2>`, lets you move a set of cross-hairs to any point on a square area that represents the visualization window. Once you release the left mouse button, the location of the cross-hairs is used as the new coordinate for the text annotation object's lower left corner.
+
+.. _fig-annotationobjectinterface_text2:
+
+.. figure:: images/annotationobjectinterface_text2.png
+  
+   Screen positioning control
 
 Text annotations objects are currently sized using a percentage of the visualization window's width. When you specify a width for the text annotation object, you are setting its maximum width. To set the width for a text annotation, type a new width value into the
 **Width**
@@ -454,18 +482,22 @@ In addition to being able to set the position, size, message, and color for the 
 Time slider annotation objects
 """"""""""""""""""""""""""""""
 
-Time slider annotation objects, shown in
-, are created by clicking the Time slider button in the
-**Create new**
-area on the
-**Objects**
-tab. Time slider annotation objects consist of a graphic that shows the progress through an animation using animation and text that shows the current database time. Time slider annotation objects can be placed anywhere in the visualization window and you can set their size, text, colors, and appearance properties.
+Time slider annotation objects, shown in :numref:`Figure %s <fig-annotationobject_timeslider>`, are created by clicking the Time slider button in the **Create new** area on the **Objects** tab. Time slider annotation objects consist of a graphic that shows the progress through an animation using animation and text that shows the current database time. Time slider annotation objects can be placed anywhere in the visualization window and you can set their size, text, colors, and appearance properties.
 
-Time slider annotation objects are placed using 2D coordinates where the X, and Y values are in the range [0,1]. The point (0,0) corresponds to the lower left corner of the visualization window and the point (1,1) corresponds to the upper right of the visualization window. The 2D coordinate used to position the text annotation matches the text annotation's lower left corner. To position a text annotation object, enter a new 2D coordinate into the
-**Lower left**
-text field. You can also click the down arrow next to the
-**Lower left**
+.. _fig-annotationobject_timeslider:
+
+.. figure:: images/annotationobject_timeslider.png
+  
+   Time slider annotation object
+
+Time slider annotation objects are placed using 2D coordinates where the X, and Y values are in the range [0,1]. The point (0,0) corresponds to the lower left corner of the visualization window and the point (1,1) corresponds to the upper right of the visualization window. The 2D coordinate used to position the text annotation matches the text annotation's lower left corner. To position a text annotation object, enter a new 2D coordinate into the **Lower left** text field. You can also click the down arrow next to the **Lower left**
 text field to interactively choose a new lower left coordinate for the text annotation using the screen positioning control, which represents the visualization window.
+
+.. _fig-annotationobjectinterface_timeslider:
+
+.. figure:: images/annotationobjectinterface_timeslider.png
+  
+   Time slider object interface
 
 The size of a time slider annotation object is controlled by settings its height and width as a percentage of the vis window height and width. Type new values into the
 **Width**
@@ -513,14 +545,13 @@ check box. When a time slider annotation object is shaded, simple lighting is ap
 2D line annotation objects
 """"""""""""""""""""""""""
 
-2D line annotation objects, shown in
-, are created by clicking the
-**2D Line**
-button in the
-**Create new**
-area on the
-**Objects**
-tab. 2D line annotation objects are simple line objects that are drawn on top of plots in the visualization window and are useful for pointing to features of interest in a visualization. 2D line annotation objects can be placed anywhere in the visualization window and you can set their locations, arrow properties, and color.
+2D line annotation objects, shown in :numref:`Figure %s <fig-annotationobject_line2D>`, are created by clicking the **2D Line** button in the **Create new** area on the **Objects** tab. 2D line annotation objects are simple line objects that are drawn on top of plots in the visualization window and are useful for pointing to features of interest in a visualization. 2D line annotation objects can be placed anywhere in the visualization window and you can set their locations, arrow properties, and color.
+
+.. _fig-annotationobject_line2D:
+
+.. figure:: images/annotationobject_line2D.png
+  
+   2D line annotations and text annotations can be used to point to features of interest
 
 2D line annotations are described mainly by two coordinates that specify the start and end points for the line. The start and end coordinates are specified as pairs of floating point numbers in the range [0,1] where the
 point (0,0) corresponds to the lower left corner of the visualization window and the point (1,1) corresponds to the upper right corner of the visualization window. You can set the start or end points for the 2D line annotation by entering new start or end points into the
@@ -532,6 +563,12 @@ text fields in the 2D line object interface. You can also click the down arrow t
 or
 **End**
 text fields to interactively choose new coordinates using the screen positioning control.
+
+.. _fig-annotationobjectinterface_line2D:
+
+.. figure:: images/annotationobjectinterface_line2D.png
+  
+   2D line object interface
 
 Once the 2D line annotation has been positioned there are other attributes that can be set to improve its appearance. First of all, if the 2D line annotation is being used to point at important features in a visualization, you might want to increase the 2D line annotation's width to make it stand out more. To change the width, type a new number of pixels into the
 **Width**
@@ -552,15 +589,15 @@ menus.
 Image annotation objects
 """"""""""""""""""""""""
 
-Image annotation objects, shown in
-, are created by clicking the
-**Image**
-button in the
-**Create new**
-area on the
-**Objects**
-tab. Image annotation objects display images from image files on disk in a visualization window. Images are drawn on top of plots in the visualization window and are useful for adding logos, pictures of experimental data, or other views of the same visualization. Image annotation objects can be placed anywhere in the visualization window and
+Image annotation objects, shown in :numref:`Figure %s <fig-combined_annot_text>`, are created by clicking the **Image** button in the
+**Create new** area on the **Objects** tab. Image annotation objects display images from image files on disk in a visualization window. Images are drawn on top of plots in the visualization window and are useful for adding logos, pictures of experimental data, or other views of the same visualization. Image annotation objects can be placed anywhere in the visualization window and
 you can set their size, and optional transparency color.
+
+.. _fig-annotationobject_image:
+
+.. figure:: images/annotationobject_image.png
+  
+   Visualization with two overlayed image annotations
 
 The first step in incorporating an image annotation into a visualization is to choose the file that contains the image that will serve as the annotation. To choose an image file for the image annotation, type in the full path and filename to the file that you want to use into the
 **Image source**
@@ -568,8 +605,7 @@ text field. You can also use the file browser to locate the image file if you cl
 **Image source**
 text field in the
 **Image annotation interface**
-, shown in
-. Note that since image annotations are incorporated into a visualization inside of VisIt's viewer component, the image file must be located on the same computer that runs the viewer.
+, shown in :numref:`Figure %s <fig-annotationobjectinterface_image>`. Note that since image annotations are incorporated into a visualization inside of VisIt's viewer component, the image file must be located on the same computer that runs the viewer.
 
 After selecting an image file, you can position its lower left coordinate in the visualization window. The lower left corner of the visualization window is the origin (0,0) and the upper right corner of the visualization window is (1,1).
 
@@ -581,11 +617,10 @@ spin boxes or click their +/- buttons. If you want to scale one dimension of the
 **Lock aspect**
 check box.
 
-Finally, if you are overlaying an image annotation whose image contains a constant background color or other area that you want to remove, you can pick a color that VisIt will make transparent. For example,
-shows an image of some Curve plots overlayed on top of the plots in the visualization window and the original background color in the annotation object was removed to make it transparent. If you want to make a color in an image transparent before VisIt displays it as an image annotation object, click on the
-**Transparent color**
-check box and then select a new color by clicking on the
-**Transparent color**
-button and picking a new color from the
-**Popup color menu**
-.
+.. _fig-annotationobjectinterface_image:
+
+.. figure:: images/annotationobjectinterface_image.png
+  
+   Image object interface
+
+Finally, if you are overlaying an image annotation whose image contains a constant background color or other area that you want to remove, you can pick a color that VisIt will make transparent. For example, :numref:`Figure %s <fig-annotationobjectinterface_image>` shows an image of some Curve plots overlayed on top of the plots in the visualization window and the original background color in the annotation object was removed to make it transparent. If you want to make a color in an image transparent before VisIt displays it as an image annotation object, click on the **Transparent color** check box and then select a new color by clicking on the **Transparent color** button and picking a new color from the **Popup color menu**.
