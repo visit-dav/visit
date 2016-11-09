@@ -42,6 +42,14 @@ function bv_uintah_depends_on
     else
         echo ""
     fi
+    
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        echo "zlib"
+    else
+        echo ""
+    fi
+    
+    
 }
 
 function bv_uintah_initialize_vars
@@ -267,6 +275,12 @@ function build_uintah
         cf_build_type="--enable-shared --disable-static"
     fi
 
+    ZLIB_ARGS=""
+    
+    if [[ "$DO_ZLIB" == "yes" ]]; then
+        ZLIB_ARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
+    fi
+
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
 
@@ -277,6 +291,7 @@ function build_uintah
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         $FORTRANARGS \
+        $ZLIB_ARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_darwin} \
         ${cf_build_type} \
@@ -290,6 +305,7 @@ function build_uintah
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         $FORTRANARGS \
+        $ZLIB_ARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_darwin} \
         ${cf_build_type} \
@@ -306,17 +322,21 @@ function build_uintah
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         $FORTRANARGS \
+        $ZLIB_ARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
-        --enable-optimize --without-petc --without-hypre"
+        --enable-optimize --without-petc --without-hypre" \
+        $ZLIBARGS 
 
         sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
         $FORTRANARGS \
+        $ZLIB_ARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
-        --enable-optimize --without-petc --without-hypre"
+        --enable-optimize --without-petc --without-hypre" \
+        $ZLIBARGS
     fi
 
 
