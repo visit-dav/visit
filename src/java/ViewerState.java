@@ -189,6 +189,8 @@ public class ViewerState
             Register(attsViewerClientAttributes);
         attsViewerClientInformation = new ViewerClientInformation();
             Register(attsViewerClientInformation);
+        attsSeedMeAttributes = new SeedMeAttributes();
+            Register(attsSeedMeAttributes);
     }
 
     //
@@ -248,6 +250,7 @@ public class ViewerState
     public SelectionList             GetSelectionList() { return attsSelectionList; }
     public ViewerClientAttributes    GetViewerClientAttributes() { return attsViewerClientAttributes; }
     public ViewerClientInformation   GetViewerClientInformation() { return attsViewerClientInformation; }
+    public SeedMeAttributes          GetSeedMeAttributes() { return attsSeedMeAttributes; }
 
     /**
      * Returns the i'th state object.
@@ -416,6 +419,7 @@ public class ViewerState
     private SelectionList            attsSelectionList;
     private ViewerClientAttributes   attsViewerClientAttributes;
     private ViewerClientInformation  attsViewerClientInformation;
+    private SeedMeAttributes         attsSeedMeAttributes;
 
     private Vector objVector;
     private int nPlots;
