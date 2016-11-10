@@ -428,6 +428,70 @@ EOF
     return 0;
 }
 
+function apply_vtk_610_patch_3
+{
+    patch -p0 << \EOF
+diff -c CMake/vtkCompilerExtras.cmake.orig CMake/vtkCompilerExtras.cmake
+*** CMake/vtkCompilerExtras.cmake.orig        2014-01-22 07:55:41.000000000 -0800
+--- CMake/vtkCompilerExtras.cmake     2016-11-10 12:58:15.000000000 -0800
+***************
+*** 27,33 ****
+      OUTPUT_VARIABLE _gcc_version_info
+      ERROR_VARIABLE _gcc_version_info)
+
+!   string (REGEX MATCH "[345]\\.[0-9]\\.[0-9]"
+      _gcc_version "${_gcc_version_info}")
+    if(NOT _gcc_version)
+      string (REGEX REPLACE ".*\\(GCC\\).* ([34]\\.[0-9]) .*" "\\1.0"
+--- 27,33 ----
+      OUTPUT_VARIABLE _gcc_version_info
+      ERROR_VARIABLE _gcc_version_info)
+
+!   string (REGEX MATCH "[3456]\\.[0-9]\\.[0-9]"
+      _gcc_version "${_gcc_version_info}")
+    if(NOT _gcc_version)
+      string (REGEX REPLACE ".*\\(GCC\\).* ([34]\\.[0-9]) .*" "\\1.0"
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk610_3 patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_vtk_610_patch_4
+{
+    patch -p0 << \EOF
+diff -c CMake/GenerateExportHeader.cmake.orig CMake/GenerateExportHeader.cmake
+*** CMake/GenerateExportHeader.cmake.orig     2014-01-22 07:55:41.000000000 -0800
+--- CMake/GenerateExportHeader.cmake  2016-11-10 13:06:42.000000000 -0800
+***************
+*** 166,172 ****
+      execute_process(COMMAND ${CMAKE_C_COMPILER} --version
+        OUTPUT_VARIABLE _gcc_version_info
+        ERROR_VARIABLE _gcc_version_info)
+!     string(REGEX MATCH "[345]\\.[0-9]\\.[0-9]"
+        _gcc_version "${_gcc_version_info}")
+      # gcc on mac just reports: "gcc (GCC) 3.3 20030304 ..." without the
+      # patch level, handle this here:
+--- 166,172 ----
+      execute_process(COMMAND ${CMAKE_C_COMPILER} --version
+        OUTPUT_VARIABLE _gcc_version_info
+        ERROR_VARIABLE _gcc_version_info)
+!     string(REGEX MATCH "[3456]\\.[0-9]\\.[0-9]"
+        _gcc_version "${_gcc_version_info}")
+      # gcc on mac just reports: "gcc (GCC) 3.3 20030304 ..." without the
+      # patch level, handle this here:
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk610_4 patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 function apply_vtk_patch
 {  
     # also apply objc flag patch to 6.1.0
@@ -435,6 +499,8 @@ function apply_vtk_patch
     if [[ ${VTK_VERSION} == 6.1.0 ]] ; then
         apply_vtk_600_patch
         apply_vtk_610_patch_2
+        apply_vtk_610_patch_3
+        apply_vtk_610_patch_4
         if [[ "$OPSYS" == "Linux" ]] ; then
             apply_vtk_610_patch
         fi
