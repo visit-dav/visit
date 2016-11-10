@@ -1,14 +1,14 @@
-#/usr/projects/views/visit/thirdparty_shared/2.11.0/cmake/3.0.2/linux-x86_64_gcc-6.1/bin/cmake
+#/usr/projects/views/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-6.1/bin/cmake
 ##
-## ./build_visit2_11_0 generated host.cmake
-## created: Mon Sep 19 14:50:22 MDT 2016
-## system: Linux tr-fe5 3.12.51-52.39-default #1 SMP Fri Jan 15 20:03:12 UTC 2016 (16f5bac) x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_12_0 generated host.cmake
+## created: Thu Nov 10 12:23:42 MST 2016
+## system: Linux tr-fe5 3.12.60-52.57-default #1 SMP Wed Oct 19 12:00:53 UTC 2016 (f48a516) x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/projects/views/visit/thirdparty_shared/2.11.0)
+SET(VISITHOME /usr/projects/views/visit/thirdparty_shared/2.12.0)
 SET(VISITARCH linux-x86_64_gcc-6.1)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
