@@ -54,6 +54,11 @@ vtkMergeTree* avtMergeTreeExpression::tree = vtkMergeTree::New();
 //  Programmer: Peer-Timo Bremer
 //  Creation:   August 8, 2016
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Nov 10 18:14:10 PST 2016
+//    Create a less-than comparator for vtkTypeUInt32, passed to std::map,
+//    satisfies static symbol problems with xlc on BGQ.
+//
 // ****************************************************************************
 
 class UnionFind
@@ -80,6 +85,14 @@ private:
 
     //! The current representative of the i'th label
     std::vector<vtkTypeUInt32> mLabel;
+
+    // create a less-than comparator for vtkTypeUInt32, to be used with map
+    struct vtkTypeUInt32Less
+    {
+        bool operator()(const vtkTypeUInt32 &lhs, const vtkTypeUInt32 &rhs)
+        {    return lhs < rhs; }
+    };
+
     //! An index map to convert global label-indices into local mLabel indices
     std::map<vtkTypeUInt32,vtkTypeUInt32> mIndexMap;
 };
