@@ -94,7 +94,7 @@ private:
     };
 
     //! An index map to convert global label-indices into local mLabel indices
-    std::map<vtkTypeUInt32,vtkTypeUInt32> mIndexMap;
+    std::map<vtkTypeUInt32,vtkTypeUInt32,vtkTypeUInt32Less> mIndexMap;
 };
 
 // ****************************************************************************
