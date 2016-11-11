@@ -827,7 +827,7 @@ mkdir visit\${ver2}.linux-ppc64
 bgqinstdir=\`pwd\`/visit\${ver2}.linux-ppc64
 # Build for compute node, engine-only version
 cd compute_build
-/usr/gapps/visit/thirdparty_static/2.12.0/cmake/3.0.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-compute.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
+/usr/workspace/wsa/visit/visit/thirdparty_static/2.12.0/cmake/3.0.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-compute.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
 sh svn_bin/filter_link_commands_BGQ.sh >> ../../buildlog 2>&1
 make install >> ../../buildlog 2>&1
 cd ..
@@ -835,7 +835,7 @@ cd ..
 mv .data data
 # Build for login node, server-components-only version
 cd login_build
-/usr/gapps/visit/thirdparty_static/2.12.0/cmake/3.0.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
+/usr/workspace/wsa/visit/visit/thirdparty_static/2.12.0/cmake/3.0.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE:PATH=config-site/vulcanlac4-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON . >> ../../buildlog 2>&1
 make install >> ../../buildlog 2>&1
 cd ..
 # Now, tar up the common install directory.
