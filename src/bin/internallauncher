@@ -2642,6 +2642,10 @@ class MainLauncher(object):
     #   end of the LD_LIBRARY_PATH and the code would load the system version. 
     #   So I moved the osmesa path to the first path and everything works.
     #
+    #   Cyrus Harrison, Thu Nov 10 22:38:22 PST 2016
+    #   Make sure to set PYTHONHOME for engine_ser and engine_par if we
+    #   are using VisIt's python. It's needed to properly init the
+    #   python filter env.
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2710,7 +2714,10 @@ class MainLauncher(object):
 
         # If we're using VisIt's Python, set PYTHONHOME
         visitlibdir_python = os.path.join(self.visitlibdir, "python")
-        if (self.generalArgs.exe_name == "cli") and os.path.isdir(visitlibdir_python):
+        if os.path.isdir(visitlibdir_python) and  \
+           (self.generalArgs.exe_name == "cli" or \
+            self.generalArgs.exe_name == "engine_ser" or \
+            self.generalArgs.exe_name == "engine_par" ):
             SETENV("PYTHONHOME", visitlibdir_python)
 
         # Unset QT_PLUGIN_PATH
