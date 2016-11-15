@@ -634,7 +634,7 @@ public:
        named file appears to be a gzip'd compressed file.
        https://refspecs.linuxbase.org/LSB_3.0.0/LSB-PDA/LSB-PDA/zlib-gzopen-1.html. */
     visit_ifstream() : strm(0) {};
-    visit_ifstream(char const *name, char const *mode = "rb") {
+    visit_ifstream(char const *name, char const *mode = "r") {
 #ifdef HAVE_LIBZ
         if (maybe_gz(name))
             strm = new igzstream(name,mode);
