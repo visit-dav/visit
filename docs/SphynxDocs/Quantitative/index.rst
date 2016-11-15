@@ -1,3 +1,5 @@
+.. _Quantitative:
+
 Quantitative Analysis
 =====================
 .. toctree::

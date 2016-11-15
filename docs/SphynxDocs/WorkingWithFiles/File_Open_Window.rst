@@ -43,7 +43,7 @@ computer so you can access files there. Note that if you do not have an account
 on the remote computer, or if VisIt is not installed there, you will not be 
 able to access files. Also note that VisIt may prompt you for a password to 
 authenticate your access to the remote computer. To set up password-less 
-access to remote computers, refer to :ref:`Setting up password-less ssh`.
+access to remote computers, refer to :ref:`Appendix_B`.
 
 Once a database server is running on the remote computer, its file system 
 appears in the directory and file lists. The host name for each computer you 

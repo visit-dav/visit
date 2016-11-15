@@ -1,3 +1,5 @@
+.. _MultipleDatabaseAndWindows:
+
 Multiple Databases and Windows
 ==============================
 .. toctree::

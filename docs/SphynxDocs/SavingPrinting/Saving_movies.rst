@@ -6,7 +6,7 @@ current time state, VisIt also allows you to save movies and sets of images for
 your visualizations that vary over time. There are multiple methods for saving
 movies with VisIt. This section introduces the Save movie wizard and explains
 how to use it to create movies from within VisIt's GUI. The 
-:ref:`animation_and_keyframing` chapter explains some auxiliary methods that
+:ref:`Animation` chapter explains some auxiliary methods that
 can be used to create movies.
 
 .. _save_movie_wizard_1:

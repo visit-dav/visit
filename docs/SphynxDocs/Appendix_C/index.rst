@@ -1,3 +1,5 @@
+.. _Appendix_C:
+
 Appendix C: Installing VisIt
 ============================
 .. toctree::

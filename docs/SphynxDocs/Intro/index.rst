@@ -1,4 +1,4 @@
-.. _Introduction_to_VisIt:
+.. _Intro:
 
 Introduction to VisIt
 =====================

@@ -1,4 +1,4 @@
-.. _Setting up password-less ssh:
+.. _Appendix_B:
 
 Appendix B: Setting up password-less ssh
 ========================================
