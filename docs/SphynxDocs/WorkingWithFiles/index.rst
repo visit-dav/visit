@@ -1,3 +1,5 @@
+.. _WorkingWithFiles:
+
 Working with Databases
 ======================
 .. toctree::

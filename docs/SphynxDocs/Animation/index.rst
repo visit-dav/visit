@@ -1,4 +1,4 @@
-.. _animation_and_keyframing:
+.. _Animation:
 
 Animation
 =========

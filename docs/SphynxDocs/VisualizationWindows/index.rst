@@ -1,3 +1,5 @@
+.. _VisualizationWindows:
+
 Visualization Windows
 =====================
 .. toctree::

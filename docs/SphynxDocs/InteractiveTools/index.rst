@@ -1,3 +1,5 @@
+.. _InteractiveTools:
+
 Interactive Tools
 =================
 .. toctree::

@@ -1,3 +1,5 @@
+.. _Subsetting:
+
 Subsetting
 ==========
 .. toctree::

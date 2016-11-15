@@ -1,3 +1,5 @@
+.. _MakingItPretty:
+
 Making it pretty
 ================
 .. toctree::
