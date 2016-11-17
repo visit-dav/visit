@@ -59,6 +59,10 @@ vtkMergeTree* avtMergeTreeExpression::tree = vtkMergeTree::New();
 //    Create a less-than comparator for vtkTypeUInt32, passed to std::map,
 //    satisfies static symbol problems with xlc on BGQ.
 //
+//    Burlen Loring, Thu Nov 17 10:28:57 PST 2016
+//    fix a compile error on Apple, vtkTypeUInt32Less::operator() needs
+//    to be const
+//
 // ****************************************************************************
 
 class UnionFind
@@ -89,7 +93,8 @@ private:
     // create a less-than comparator for vtkTypeUInt32, to be used with map
     struct vtkTypeUInt32Less
     {
-        bool operator()(const vtkTypeUInt32 &lhs, const vtkTypeUInt32 &rhs)
+        bool operator()(const vtkTypeUInt32 &lhs,
+            const vtkTypeUInt32 &rhs) const
         {    return lhs < rhs; }
     };
 
