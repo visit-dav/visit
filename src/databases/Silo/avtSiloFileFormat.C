@@ -1711,6 +1711,12 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
 //    
 //    Mark C. Miller, Wed Jun 15 09:22:14 PDT 2016
 //    Added logic to support adding of block decomposition as a variable.
+//
+//    Kathleen Biagas, Thu Nov 17 16:18:32 PST 2016
+//    Change use of std::vector::reserve to adding the size to the
+//    constructor.  Prevents segv for attempting to access a slot in the
+//    vector that hasn't been allocated yet.
+//
 // ****************************************************************************
 
 void
@@ -2004,12 +2010,11 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 }
                 else if (layer_group_ids.size() > 0 && !is_all_empty)
                 {
-                    vector<string> layer_block_names;
-                    layer_block_names.reserve(layer_names_map.size());
+                    vector<string> layer_block_names(layer_names_map.size());
                     for (map<int,string>::const_iterator it = layer_names_map.begin();
                          it != layer_names_map.end(); it++)
                         layer_block_names[it->first] = it->second;
-  
+
                     mmd->numGroups = (int) layer_names_map.size();
                     mmd->groupTitle = "layers";
                     mmd->groupPieceName = "layer";
