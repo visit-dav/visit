@@ -1,14 +1,14 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/2.11.0/cmake/3.0.2/linux-x86_64_gcc-4.9/bin/cmake
+#/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.9/bin/cmake
 ##
-## ./build_visit2_11_0 generated host.cmake
-## created: Mon Sep 26 09:54:58 PDT 2016
-## system: Linux jade188 3.10.0-327.28.2.1chaos.ch6.x86_64 #1 SMP Wed Aug 3 15:09:48 PDT 2016 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_12_0 generated host.cmake
+## created: Mon Nov 21 11:17:04 PST 2016
+## system: Linux jade962 3.10.0-510.0.0.2chaos.ch6.x86_64 #1 SMP Fri Oct 21 17:08:57 PDT 2016 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/2.11.0)
+SET(VISITHOME /usr/gapps/visit/thirdparty_shared/2.12.0)
 SET(VISITARCH linux-x86_64_gcc-4.9)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -172,13 +172,6 @@ VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/3.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/15.1/${VISITARCH})
 
 ##
-## Nektar++
-##
-SETUP_APP_VERSION(NEKTAR++ 4.1.0)
-VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR ${VISITHOME}/nektar++/${NEKTAR++_VERSION}/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP ${VISITHOME}/zlib/1.2.7/${VISITARCH}/lib z TYPE STRING)
-
-##
 ## NetCDF
 ##
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
@@ -194,17 +187,6 @@ VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.2.2/${VISITARCH}/)
 ##
 VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} ZLIB_LIBRARY_DIR z TYPE STRING)
-
-##
-## Uintah
-##
-SETUP_APP_VERSION(UINTAH 1.6.0)
-VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/1.6.0/${VISITARCH})
-
-##
-## VISUS 
-##
-VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR ${VISITHOME}/visus/5f5fd6c/${VISITARCH})
 
 ##
 ## Xdmf

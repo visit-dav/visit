@@ -2,8 +2,8 @@
 <Object name="MachineProfile">
     <Field name="host" type="string">jade.llnl.gov</Field>
     <Field name="hostAliases" type="string">jade#.llnl.gov jade##.llnl.gov jade###.llnl.gov jade# jade## jade###</Field>
-    <Field name="hostNickname" type="string">LLNL Jade</Field>
-    <Field name="directory" type="string">/usr/workspace/wsa/visit/visit</Field>
+    <Field name="hostNickname" type="string">LLNL Closed Jade</Field>
+    <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
     <Field name="tunnelSSH" type="bool">true</Field>
     <Object name="LaunchProfile">
@@ -34,7 +34,7 @@
         <Field name="partitionSet" type="bool">true</Field>
         <Field name="partition" type="string">pbatch</Field>
         <Field name="bankSet" type="bool">true</Field>
-        <Field name="bank" type="string">science</Field>
+        <Field name="bank" type="string">wbronze</Field>
         <Field name="timeLimitSet" type="bool">true</Field>
         <Field name="timeLimit" type="string">30:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
