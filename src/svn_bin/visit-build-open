@@ -140,6 +140,9 @@
 #   Eric Brugger, Fri Sep 25 09:04:35 PDT 2015
 #   I removed sidious.
 #
+#   Eric Brugger, Tue Nov 22 16:07:04 PST 2016
+#   I added quartz.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -184,6 +187,7 @@ kickit=true
 ubuntu1104_64=false
 ubuntu1404_64=false
 aztec=true
+quartz=true
 rzzeus=true
 rzuseq=false
 carver=true
@@ -205,6 +209,7 @@ do
          ubuntu1104_64=false
          ubuntu1404_64=false
          aztec=false
+         quartz=false
          rzzeus=false
          rzuseq=false
          carver=false
@@ -242,6 +247,14 @@ do
          ;;
       +aztec)
          aztec=true
+         shift
+         ;;
+      -quartz)
+         quartz=false
+         shift
+         ;;
+      +quartz)
+         quartz=true
          shift
          ;;
       -rzzeus)
@@ -302,6 +315,7 @@ then
    echo "    ubuntu1104_64(B-Div, Linux, x86_64),"
    echo "    ubuntu1404_64(B-Div, Linux, x86_64),"
    echo "    aztec (LC, Linux, x86_64),"
+   echo "    quartz (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
    echo "    rzuesq (LC, Linux, ppc64-BG/Q),"
    echo "    carver (LBNL, Linux, x86_64),"
@@ -565,6 +579,58 @@ then
       scp aztec aztec:aztec_buildit
       scp $dist.tar.gz aztec:aztec_$dist.tar.gz
       ssh aztec3 "chmod 750 aztec_buildit;./aztec_buildit" &
+   fi
+fi
+
+#
+# Build on quartz.
+#
+rm -f quartz
+cat <<EOF > quartz
+#!/bin/sh
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/quartz ; then
+   mkdir /usr/tmp/$user/quartz
+fi
+rm -rf /usr/tmp/$user/quartz/visitbuild
+mkdir /usr/tmp/$user/quartz/visitbuild
+mv quartz_$dist.tar.gz /usr/tmp/$user/quartz/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/quartz/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make -j 6 >> ../../buildlog 2>&1
+make -j 6 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on quartz"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $quartz = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on quartz"
+      scp quartz quartz386:quartz_buildit
+      scp $dist.tar.gz quartz386:quartz_$dist.tar.gz
+      ssh quartz386 "chmod 750 quartz_buildit;./quartz_buildit" &
    fi
 fi
 
@@ -869,5 +935,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1104_64 ubuntu1404_64 aztec rzzeus rzuseq carver glory vulcan
+   rm -f kickit ubuntu1104_64 ubuntu1404_64 aztec quartz rzzeus rzuseq carver glory vulcan
 fi
