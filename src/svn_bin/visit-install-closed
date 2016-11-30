@@ -227,6 +227,9 @@ cat <<EOF > jade
 rm -rf /usr/gapps/visit/toss3
 ./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux-x86_64-jade /usr/gapps/visit/toss3 > installlog 2>&1
 mv /usr/gapps/visit/toss3/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
+cp /usr/gapps/visit/toss3/$ver+/.visit/hosts/host_llnl_jade.xml /usr/gapps/visit/$ver+/.visit/hosts
+chmod 775 /usr/gapps/visit/$ver+/.visit/hosts/host_llnl_jade.xml
+chgrp visit /usr/gapps/visit/$ver+/.visit/hosts/host_llnl_jade.xml
 rm -rf /usr/gapps/visit/toss3
 sed -i "/arch = \"linux-x86_64\"/ i 16SPACESif GETENV(\"SYS_TYPE\") == \"toss_3_x86_64_ib\" or GETENV(\"SYS_TYPE\") == \"toss_3_x86_64\":" /usr/gapps/visit/$ver+/bin/internallauncher
 sed -i "/arch = \"linux-x86_64\"/ i 20SPACESarch = \"linux-x86_64-toss3\"" /usr/gapps/visit/$ver+/bin/internallauncher
