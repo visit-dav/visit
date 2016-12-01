@@ -139,6 +139,10 @@ class ErrorHandler : public QXmlErrorHandler
 //
 //    Mark C. Miller, Wed Aug 26 11:03:19 PDT 2009
 //    Added support for custom base class for derived state objects.
+//
+//    Kathleen Biagas, Wed Nov 30 18:59:22 PST 2016
+//    Changed location for report whitespace feature, fixes problems with QT5.
+//
 // ****************************************************************************
 
 void
@@ -172,7 +176,7 @@ XMLDocument::open(const QString &file)
         QXmlSimpleReader  reader;
         ErrorHandler      errorhandler;
         
-        reader.setFeature("http://trolltech.com/xml/features/report-whitespace-only-CharData", false);
+        reader.setFeature("http://qt-project.org/xml/features/report-whitespace-only-CharData", false);
         reader.setContentHandler(&parser);
         reader.setErrorHandler(&errorhandler);
         bool success = reader.parse(source);
