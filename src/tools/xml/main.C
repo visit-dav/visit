@@ -533,6 +533,9 @@ int main(int argc, char *argv[])
 //    Brad Whitlock, Thu Jan 29 16:24:59 PST 2009
 //    I moved all of the code into routines called CallGenerator.
 //
+//    Kathleen Biagas, Wed Nov 30 19:16:52 PST 2016
+//    Update URL used for setFeature.
+//
 // ****************************************************************************
 
 void
@@ -561,7 +564,7 @@ ProcessFile(QString file)
         ErrorHandler      errorhandler;
         
         reader.setFeature(
-           "http://trolltech.com/xml/features/report-whitespace-only-CharData",
+           "http://qt-project.org/xml/features/report-whitespace-only-CharData",
            false);
         reader.setContentHandler(&parser);
         reader.setErrorHandler(&errorhandler);
