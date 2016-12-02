@@ -1,21 +1,6 @@
 #!/bin/sh
 
-# Parse the command line.
-tarfile="html.tar.gz"
-
-if test "$#" = "1" ; then
-    tarfile=$1
-fi
-
-# Untar the html
-tar zxmf $tarfile -C /project/projectdirs/visit/www/tests
-
 cd /project/projectdirs/visit/www
-
-# Set the permissions
-newDir=`ls -t | head -1`
-chgrp -R visit $newDir
-chmod -R g+rwX,o+rX $newDir
 
 # update top-level index.html file
 rm -f index.html
@@ -79,4 +64,3 @@ echo "</table>"  >> index.html
 
 chgrp -R visit index.html
 chmod -R g+rwX,o+rX index.html
-

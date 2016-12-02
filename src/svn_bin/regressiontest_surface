@@ -372,8 +372,8 @@ if test "$post" = "true" ; then
 
     # Post the results.
     cd ..
-    scp src/svn_bin/visit-update-test-website $userNersc@$nerscHost:
-    ssh $userNersc@$nerscHost "./visit-update-test-website ${branch}_html.tar.gz"
+    scp src/svn_bin/visit-copy_test_results $userNersc@$nerscHost:
+    ssh $userNersc@$nerscHost "./visit-copy-test-results ${branch}_html.tar.gz"
     if test "$debug" = "true" ; then
         echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
     fi
