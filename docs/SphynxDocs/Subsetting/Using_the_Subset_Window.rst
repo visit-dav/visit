@@ -1,14 +1,14 @@
 Using the Subset Window
 -----------------------
 
-You can open the **Subset Window**, shown in :numref:`Figure %s <Subset_window>`
+You can open the **Subset Window**, shown in :numref:`Figure %s <subsetwindow>`
 , by clicking on the **Subset** option in the **Main Window's Controls** menu
 or by clicking on the **Subset** icon next to the name of a plot in the
 **Plot lists's** plot entries. VisIt's **Subset Window** displays subset
 relations and provides controls that allow you to alter a plot's SIL
 restriction by turning off parts of the database.
 
-.. _Subset_window:
+.. _subsetwindow:
 
 .. figure:: images/subsetwindow.png
 
@@ -59,19 +59,19 @@ correspond to computer processor) numbered 1 through 4. If you want to
 turn off the subset that is domain1, first click on the "domains" subset
 category to list the subsets in that category. Next, click the check box
 next to the subset name "domain1" and click the **Apply** button. The
-result of this operation, shown in :numref:`Figure %s <Removing_one_subset>`,
+result of this operation, shown in :numref:`Figure %s <subset1>`,
 removes the "domain1" subset from the visualization. Note that the
 **Subset Window** "domain1" set's check box is unchecked and the top
 level set's check box has a slash through it to show that some subsets
 are turned off.
 
-.. _Removing_one_subset:
+.. _subset1:
 
 .. figure:: images/subset1.png
 
    Removing one subset.
 
-.. _Subset_window_with_one_subset_removed:
+.. _subsetwindow2:
 
 .. figure:: images/subsetwindow2.png
 
@@ -92,17 +92,16 @@ panel. Select the "Materials" subset category in the second panel to make
 the third panel list the materials that you can remove from the "domain4"
 subset. Turning off a couple materials from the list in the third panel
 will only affect the "domain4" subset. An example of a complex subset is
-shown in :numref:`Figure %s<Example_of_a_complex_subset>` and the state of
-the **Subset window** is shown in
-:numref:`Figure %s <Subset_window_for_complex_subset_example>`.
+shown in :numref:`Figure %s<subset2>` and the state of the **Subset window**
+is shown in :numref:`Figure %s <subsetwindow3>`.
 
-.. _Example_of_a_complex_subset:
+.. _subset2:
 
 .. figure:: images/subset2.png
 
    Example of a complex subset.
 
-.. _Subset_window_for_complex_subset_example:
+.. _subsetwindow3:
 
 .. figure:: images/subsetwindow3.png
 
