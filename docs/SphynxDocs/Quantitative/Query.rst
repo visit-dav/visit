@@ -16,7 +16,7 @@ be covered in more detail a little later.
 
 .. _querywindow:
 
-.. _figure:: images/querywindow.png
+.. figure:: images/querywindow.png
 
    Query window
 
@@ -43,20 +43,20 @@ nodes. Point queries calculate information for a point in the database
 and several types of variable picking queries fall into this category.
 Line queries calculate information along a line. Each type of query has
 different controls in the **Query parameters** area (see
-:numref:`Figure %s <queryparams_db>`) and as you highlight different
+:numref:`Figure %s <queryparams_line>`) and as you highlight different
 queries, the controls in the **Query parameters** area may change.
 
-.. _queryparams_db:
+.. image:: images/queryparams_db.png
 
-.. _figure:: images/queryparams_db.png
+.. image:: images/queryparams_db2.png
 
-.. _figure:: images/queryparams_db2.png
+.. image:: images/queryparams_db3.png
 
-.. _figure:: images/queryparams_db3.png
+.. image:: images/queryparams_point.png
 
-.. _figure:: images/queryparams_point.png
+.. _queryparams_line:
 
-.. _figure:: images/queryparams_line.png
+.. figure:: images/queryparams_line.png
 
    Query parameters area
 
@@ -393,7 +393,7 @@ uses the query results versus time as the curve data.
 
 .. _queryovertimewindow:
 
-.. _figure:: images/queryovertimewindow.png
+.. figure:: images/queryovertimewindow.png
 
    Query Over Time Window
 
