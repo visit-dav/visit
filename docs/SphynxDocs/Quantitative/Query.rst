@@ -1,52 +1,87 @@
 Query
 -----
 
-VisIt allows you to gather quantitative information from the database being visualized through the use of queries. A query is a type of calculation that can either return values from the database or values that are calculated from data in the database. For example, VisIt's Pick and Lineout capabilities (described later in this chapter) are specialized point and line queries that print out the values of variables in the database at points or along lines. In addition to point and line queries, VisIt provides database queries that return values that are based on all of the data in a database.
+VisIt allows you to gather quantitative information from the database being
+visualized through the use of queries. A query is a type of calculation that
+can either return values from the database or values that are calculated
+from data in the database. For example, VisIt's Pick and Lineout capabilities
+(described later in this chapter) are specialized point and line queries
+that print out the values of variables in the database at points or along
+lines. In addition to point and line queries, VisIt provides database
+queries that return values that are based on all of the data in a database.
 
-Some queries can even be executed for all of the
-time states in a database to yield a Curve plot of the query's behavior over time. This feature will be covered in more detail a little later.
+Some queries can even be executed for all of the time states in a database
+to yield a Curve plot of the query's behavior over time. This feature will
+be covered in more detail a little later.
 
-VisIt's queries are available in the
-**Query Window**
+.. _querywindow:
 
-(shown in
-), which you can open by clicking the
-**Query**
-option in the
-**Main Window's Control**
-menu. The
-**Query Window**
-consists of upper and lower areas where the upper area allows you to select a query and set its query parameters. The controls for setting a query's parameters change as required and some queries have no parameters and thus have no controls for setting parameters. The bottom area of the window displays the results of the query once VisIt has finished processing it. The results for new queries are appended to the output from previous queries until you clear the
-**Query results**
-by clicking the
-**Clear results**
+.. _figure:: images/querywindow.png
+
+   Query window
+
+VisIt's queries are available in the **Query Window** (shown in
+:numref:`Figure %s <querywindow>`), which you can open by clicking the
+**Query** option in the **Main Window's Control** menu. The **Query Window**
+consists of upper and lower areas where the upper area allows you to select
+a query and set its query parameters. The controls for setting a query's
+parameters change as required and some queries have no parameters and thus
+have no controls for setting parameters. The bottom area of the window
+displays the results of the query once VisIt has finished processing it.
+The results for new queries are appended to the output from previous queries
+until you clear the **Query results** by clicking the **Clear results**
 button.
 
 Query types
 ~~~~~~~~~~~
 
-VisIt's queries can be divided into three types: database queries, point queries, and line queries. Database queries usually calculate information for the database as a whole instead of concentrating on a single zone or node but some Pick-related database queries do concentrate on cells and nodes. Point queries calculate information for a point in the database and several types
-of variable picking queries fall into this category. Line queries calculate information along a line. Each type of query has different controls in the
-**Query parameters**
-area (see
-) and as you highlight different queries, the controls in the
-**Query parameters**
-area may change.
+VisIt's queries can be divided into three types: database queries, point
+queries, and line queries. Database queries usually calculate information
+for the database as a whole instead of concentrating on a single zone or
+node but some Pick-related database queries do concentrate on cells and
+nodes. Point queries calculate information for a point in the database
+and several types of variable picking queries fall into this category.
+Line queries calculate information along a line. Each type of query has
+different controls in the **Query parameters** area (see
+:numref:`Figure %s <queryparams_db>`) and as you highlight different
+queries, the controls in the **Query parameters** area may change.
 
-Database queries provide a few different interfaces depending on the query. Many database queries require no additional input so they have no controls except for the
-**Query**
-button. Other database queries ask whether the query is to be performed with respect to the original data or the actual data, which is that data that is left in the plot after subsets have been removed and operators have transformed the data. Finally, some database queries ask for a specific domain number and zone or node number.
+.. _queryparams_db:
 
-Point queries provide interfaces in the
-**Query parameters**
-area that allow you to enter a 3D point or a screen space point to use as the point for the query. Line queries provide an interface that lets you specify the start and end positions of the line as well as the number of sample points to consider along the length of the line. Nearly all query types allow you to provide additional variables to query in a
-**Variables**
-text field.
+.. _figure:: images/queryparams_db.png
+
+.. _figure:: images/queryparams_db2.png
+
+.. _figure:: images/queryparams_db3.png
+
+.. _figure:: images/queryparams_point.png
+
+.. _figure:: images/queryparams_line.png
+
+   Query parameters area
+
+Database queries provide a few different interfaces depending on the query.
+Many database queries require no additional input so they have no controls
+except for the **Query** button. Other database queries ask whether the
+query is to be performed with respect to the original data or the actual
+data, which is that data that is left in the plot after subsets have been
+removed and operators have transformed the data. Finally, some database
+queries ask for a specific domain number and zone or node number.
+
+Point queries provide interfaces in the **Query parameters** area that allow
+you to enter a 3D point or a screen space point to use as the point for the
+query. Line queries provide an interface that lets you specify the start
+and end positions of the line as well as the number of sample points to
+consider along the length of the line. Nearly all query types allow you to
+provide additional variables to query in a **Variables** text field.
 
 Built-in queries
 ~~~~~~~~~~~~~~~~
 
-The following table lists the query name, type, and description for the built-in queries that VisIt supports. The query type for database queries, point queries, and line queries are respectively marked as: DB, Point, and Line.
+The following table lists the query name, type, and description for the
+built-in queries that VisIt supports. The query type for database queries,
+point queries, and line queries are respectively marked as: DB, Point,
+and Line.
 
 +------------------------------+------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Query name                   | Query type | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -330,90 +365,81 @@ The following table lists the query name, type, and description for the built-in
 Executing a query
 ~~~~~~~~~~~~~~~~~
 
-VisIt has many queries from which to choose. You can choose the type of query to execute by clicking on the name of the query in the
-**Queries list**
-. The
-**Queries list**
-usually displays the names of all of the queries that VisIt knows how to execute. If you instead want to view a subset of the queries, grouped by function, you can make a selection from the
-**Display as**
-combo box. Once you have clicked on a query in the
-**Query list**
-, the
-**Query parameters**
-area updates to show the controls that you need to edit the parameters for the query. In the case of a point query like Pick, the only parameters you need to specify are the 3D point where VisIt will extract values and the names of the variables that you want to examine. Once you specify the query parameters, click the
-**Query**
-button to tell VisIt to process the query. Once VisIt has fulfilled your request, the query results are displayed in the
-**Query results**
-at the bottom of the
-**Query Window**
-.
+VisIt has many queries from which to choose. You can choose the type of query
+to execute by clicking on the name of the query in the **Queries list**. The
+**Queries list** usually displays the names of all of the queries that VisIt
+knows how to execute. If you instead want to view a subset of the queries,
+grouped by function, you can make a selection from the **Display as** combo
+box. Once you have clicked on a query in the **Query list**, the
+**Query parameters** area updates to show the controls that you need to edit
+the parameters for the query. In the case of a point query like Pick, the
+only parameters you need to specify are the 3D point where VisIt will extract
+values and the names of the variables that you want to examine. Once you
+specify the query parameters, click the **Query** button to tell VisIt to
+process the query. Once VisIt has fulfilled your request, the query results
+are displayed in the **Query results** at the bottom of the **Query Window**.
 
 Querying over time
 ~~~~~~~~~~~~~~~~~~
 
-Many of VisIt's queries can be executed for every time state in the database used by the queried plot. The
-results from a query over time is a Curve plot that plots the query results with respect to time. The
-**Query parameters**
-area contains a
-**Time Curve**
-button when the selected query can be plotted over time. Clicking the
-**Time Curve**
-button executes the selected query for each time state in the database used by the plot highlighted in the
-**Plot list**
-. VisIt then creates a new Curve plot in a new vis window and uses the query results versus time as the curve data.
+Many of VisIt's queries can be executed for every time state in the database
+used by the queried plot. The results from a query over time is a Curve plot
+that plots the query results with respect to time. The **Query parameters**
+area contains a **Time Curve** button when the selected query can be plotted
+over time. Clicking the **Time Curve** button executes the selected query
+for each time state in the database used by the plot highlighted in the
+**Plot list**. VisIt then creates a new Curve plot in a new vis window and
+uses the query results versus time as the curve data.
 
-By default, querying over time will force VisIt to execute the selected query on every time state in the relevant database. If you want to restrict the number of time states used when querying over time or if you want to set some general options that also affect how time curves are created, you can set additional options in the
-**Query Over Time Window**
-(see
-). If you want to open the
-**Query Over Time Window**
-, click on the
-**Query over time**
-option in the
-**Controls**
-menu in VisIt's
-**Main Window**
-.
+.. _queryovertimewindow:
+
+.. _figure:: images/queryovertimewindow.png
+
+   Query Over Time Window
+
+By default, querying over time will force VisIt to execute the selected
+query on every time state in the relevant database. If you want to restrict
+the number of time states used when querying over time or if you want to
+set some general options that also affect how time curves are created, you
+can set additional options in the **Query Over Time Window** (see
+:numref:`Figure %s <queryovertimewindow>`). If you want to open the
+**Query Over Time Window**, click on the **Query over time** option in the
+**Controls** menu in VisIt's **Main Window**.
 
 Querying over a time range
 """"""""""""""""""""""""""
 
-You can restrict the range of time states that are considered when VisIt is performing a query over time if you specify a start or end time state in the
-**Query Over Time Window**
-. To set a starting time state, click the
-**Starting timestep**
-check box and enter a new time state into the adjacent text field. To set an ending time state, click the
-**Ending timestep**
+You can restrict the range of time states that are considered when VisIt
+is performing a query over time if you specify a start or end time state
+in the **Query Over Time Window**. To set a starting time state, click the
+**Starting timestep** check box and enter a new time state into the adjacent
+text field. To set an ending time state, click the **Ending timestep**
 check box and enter a new ending time state into the adjacent text field.
 
-In addition to setting the starting and ending time states, you can also specify a stride so VisIt can skip frames in the middle and consider every N
-th
-frame instead of every frame. If you want to specify a stride, enter a new stride into the
-**Stride**
-text field in the
-**Query Over Time Window**
-and click the
-**Apply**
-button.
+In addition to setting the starting and ending time states, you can also
+specify a stride so VisIt can skip frames in the middle and consider every
+Nth frame instead of every frame. If you want to specify a stride, enter
+a new stride into the **Stride** text field in the **Query Over Time Window**
+and click the **Apply** button.
 
 Setting the axis title
 """"""""""""""""""""""
 
-When VisIt creates a new Curve plot, after having calculated a query over time, the horizontal axis label is labeled with the database cycles. If you prefer to think about time in terms of time state or simulation time then you can change the axis label by clicking one of the following radio buttons in the
-**Query Over Time Window**
-:
-**Cycle**
-,
-**Time**
-,
-**Timestep**
-.
+When VisIt creates a new Curve plot, after having calculated a query over
+time, the horizontal axis label is labeled with the database cycles. If you
+prefer to think about time in terms of time state or simulation time then
+you can change the axis label by clicking one of the following radio buttons
+in the **Query Over Time Window** : **Cycle**, **Time**, **Timestep**.
 
 Setting the time curve's destination window
 """""""""""""""""""""""""""""""""""""""""""
 
-When VisIt creates a Curve plot using the results of a query over time, the Curve plot is placed in a vis window designated for Curve plots. If there is no vis window into which the Curve plot can be added, VisIt creates a new vis window to contain the Curve plot. If you want VisIt to always place the new Curve plot in a specific window, turn off the Use
-**1st unused window or create new one**
-check box and enter a new window number into the
-**Window#**
-text field. After setting these options, subsequent Curve plots created by querying over time will be added to the specified vis window.
+When VisIt creates a Curve plot using the results of a query over time,
+the Curve plot is placed in a vis window designated for Curve plots. If
+there is no vis window into which the Curve plot can be added, VisIt
+creates a new vis window to contain the Curve plot. If you want VisIt to
+always place the new Curve plot in a specific window, turn off the
+**Use 1st unused window or create new one** check box and enter a new
+window number into the **Window#** text field. After setting these
+options, subsequent Curve plots created by querying over time will be
+added to the specified vis window.
