@@ -28,7 +28,7 @@ definition.
 
 .. _expressionwindow:
 
-.. _figure:: images/expressionwindow.png
+.. figure:: images/expressionwindow.png
 
    Expression Window
 
@@ -57,7 +57,7 @@ variables.
 
 .. _meshquality:
 
-.. _figure:: images/meshquality.png
+.. figure:: images/meshquality.png
 
    Mesh quality expressions
 
@@ -95,7 +95,7 @@ menu.
 
 .. _expressionwindow-functionmenu:
 
-.. _figure:: images/expressionwindow-functionmenu.png
+.. figure:: images/expressionwindow-functionmenu.png
 
    Expression Window's Insert Function... menu
 
@@ -110,7 +110,7 @@ heading so they are easy to find.
 
 .. _expressionwindow-varmenu:
 
-.. _figure:: images/expressionwindow-varmenu.png
+.. figure:: images/expressionwindow-varmenu.png
 
    Expression Window's Insert Variable... menu
 
@@ -141,7 +141,7 @@ The following paragraphs detail the syntax of VisIt expressions.
 Math operators
 """"""""""""""
 
-These include use of +, -, *, /, ^ as addition, subtraction, multiplication,
+These include use of +, -, %%*%%, /, ^ as addition, subtraction, multiplication,
 division, and exponentiation as infix operators, as well as the unary minus,
 in their normal precedence and associativity. Parentheses may be used as
 well to force a desired associativity.
@@ -1272,7 +1272,7 @@ expression takes scalar variables as its arguments.
 | skew                        | Mesh skew                                                                                                      | **skew(expr)**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 |                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 |                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-|                             |                                                                                                                | expr must be an expression that evaluates to a mesh. The skew expression calculates the skew for each cell in the mesh and stores the result in a cell-centered scalar expression. The skew is the maximum |cosA| where A is the angle between the edges at the cell center. Cells with high skew are generally created in error.                                                                                                                                                                                                                                     |
+|                             |                                                                                                                | expr must be an expression that evaluates to a mesh. The skew expression calculates the skew for each cell in the mesh and stores the result in a cell-centered scalar expression. The skew is the maximum abs(cos(A)) where A is the angle between the edges at the cell center. Cells with high skew are generally created in error.                                                                                                                                                                                                                                |
 |                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 |                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 |                             |                                                                                                                | *Example: skew(MESH)*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
