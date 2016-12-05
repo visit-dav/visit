@@ -1,217 +1,256 @@
 Expressions
 -----------
 
-Scientific simulations often keep track of several dozen variables as they run. However, only a small subset of those variables are usually written to a simulation database to save disk space. Sometimes variables can be derived from other variables using a variable expression. VisIt provides variable expressions to allow scientists to create derived variables using variables that are stored in the database. Expressions are extremely powerful because they allow you to analyze new data without necessarily having to rerun a simulation. Variables created using expressions behave just like variables stored in a database; they appear in the plot menu and can be visualized using VisIt's plots.
+Scientific simulations often keep track of several dozen variables as they
+run. However, only a small subset of those variables are usually written
+to a simulation database to save disk space. Sometimes variables can be
+derived from other variables using a variable expression. VisIt provides
+variable expressions to allow scientists to create derived variables using
+variables that are stored in the database. Expressions are extremely powerful
+because they allow you to analyze new data without necessarily having to
+rerun a simulation. Variables created using expressions behave just like
+variables stored in a database; they appear in the plot menu and can be
+visualized using VisIt's plots.
 
 Expression Window
 ~~~~~~~~~~~~~~~~~
 
-VisIt provides an
-**Expression Window**
-, shown in
-, that allows you to create new variables that can be used in visualizations. You can open the
-**Expression Window**
-by clicking on the
-**Expressions**
-option in the
-**Main Window's Controls**
-menu. The
-**Expression Window**
-is divided vertically into two main areas:
-**Expression list**
-and
-**Definitions**
-. The Expression list contains the list of expressions. The Definitions area displays the definition of the expression that is highlighted in the
-**Expression list**
-and provides controls to edit the expression definition.
+VisIt provides an **Expression Window**, shown in
+:numref:`Figure %s <expressionwindow>`, that allows you to create new
+variables that can be used in visualizations. You can open the
+**Expression Window** by clicking on the **Expressions** option in the
+**Main Window's Controls** menu. The **Expression Window** is divided
+vertically into two main areas: **Expression list** and **Definitions**.
+The Expression list contains the list of expressions. The Definitions
+area displays the definition of the expression that is highlighted in
+the **Expression list** and provides controls to edit the expression
+definition.
+
+.. _expressionwindow:
+
+.. _figure:: images/expressionwindow.png
+
+   Expression Window
 
 In addition to displaying expressions that you create yourself, the
-**Expression Window**
-displays expressions that were written to the database or expressions that were added by one of VisIt's database reader plugins. Expressions that came from a database change when you change open databases but expressions that you defined yourself remain in the window regardless which database is open. Expressions that came from a database are not usually shown in the
-**Expression list **
-by default but you can choose to show them by clicking on the
-**Display expressions from database**
-check box.
+**Expression Window** displays expressions that were written to the
+database or expressions that were added by one of VisIt's database
+reader plugins.  Expressions that came from a database change when you
+change open databases but expressions that you defined yourself remain
+in the window regardless which database is open. Expressions that came
+from a database are not usually shown in the **Expression list** by
+default but you can choose to show them by clicking on the **Display
+expressions from database** check box.
 
-There is one special case when VisIt adds expressions to the expression list that were not in the database and were not added by a database reader plugin: mesh quality expressions. When the open database contains meshes that are unstructured or curvilinear, VisIt adds special mesh quality expressions to the expression list to let you more easily plot metrics of mesh quality such as the volume of cells or how
-much cells are skewed. The mesh quality expressions are primarily used to evaluate the fitness of computational meshes and VisIt adds them to the expression list to make them more accessible to users since they are so commonly used.
-shows the how the mesh quality expressions appear in the variable list for plots that accept scalar variables.
+There is one special case when VisIt adds expressions to the expression
+list that were not in the database and were not added by a database
+reader plugin: mesh quality expressions. When the open database contains
+meshes that are unstructured or curvilinear, VisIt adds special mesh
+quality expressions to the expression list to let you more easily plot
+metrics of mesh quality such as the volume of cells or how much cells
+are skewed. The mesh quality expressions are primarily used to evaluate
+the fitness of computational meshes and VisIt adds them to the expression
+list to make them more accessible to users since they are so commonly
+used. :numref:`Figure %s <meshquality>` shows the how the mesh quality
+expressions appear in the variable list for plots that accept scalar
+variables.
+
+.. _meshquality:
+
+.. _figure:: images/meshquality.png
+
+   Mesh quality expressions
 
 Creating a new expression
 """""""""""""""""""""""""
 
-You can create a new expression by clicking on the
-**Expression Window**
-**'s New**
-button. When you click on the
-**New**
-button, VisIt adds a new expression and shows its new, empty definition in the
-**Definitions**
-area. The initial name for a new expression is
-*"unnamed"*
-followed by some integer suffix. As you type a new name for the expression into the
-**Name**
-text field, the expression's name in the
-**Expression list**
-will update.
+You can create a new expression by clicking on the **Expression Window's New**
+button. When you click on the **New** button, VisIt adds a new expression
+and shows its new, empty definition in the **Definitions** area. The initial
+name for a new expression is *"unnamed"* followed by some integer suffix.
+As you type a new name for the expression into the **Name** text field,
+the expression's name in the **Expression list** will update.
 
-Each expression has an expression type that determines the variable menu in which the new variable appears. The available expression types are:
-*Scalar Mesh Variable*
-,
-*Vector Mesh Variable*
-,
-*Mesh variable*
-,
-*Tensor variable, *
-*S*
-*ymmetric Tensor Variable*
-. Since the expression type determines the menu in which the variable appears, it also determines the plots that can operate on the variable. Scalar mesh variables and species variables can be used in the Contour, Pseudocolor, and Volume plots. Vector mesh variables are used in the Streamline and Vector plots. Tensor mesh variables are used in the Tensor plot.
+Each expression has an expression type that determines the variable menu
+in which the new variable appears. The available expression types are:
+*Scalar Mesh Variable*, *Vector Mesh Variable*, *Mesh variable*,
+*Tensor variable*, *Symmetric Tensor Variable*. Since the expression
+type determines the menu in which the variable appears, it also determines
+the plots that can operate on the variable. Scalar mesh variables and
+species variables can be used in the Contour, Pseudocolor, and Volume
+plots. Vector mesh variables are used in the Streamline and Vector plots.
+Tensor mesh variables are used in the Tensor plot.
 
-To edit an expression's actual definition, you can type a new expression comprised of constants, variable names, and other VisIt expressions into the
-**Definition**
-text field. The expression definition can span multiple lines as the VisIt expression parser ignores whitespace. For a complete list of VisIt's built-in expressions, refer to page 183. You can also use the
-**Insert Function...**
-menu, shown in
-, to insert any of VisIt's built-in expressions directly into the expression definition. The list of built-in expressions divided into certain categories as evidenced by the structure of the
-**Insert Function...**
+To edit an expression's actual definition, you can type a new expression
+comprised of constants, variable names, and other VisIt expressions into
+the **Definition** text field. The expression definition can span multiple
+lines as the VisIt expression parser ignores whitespace. For a complete
+list of VisIt's built-in expressions, refer to the table in section
+:ref:`Built-in_expressions`. You can also use the **Insert Function...**
+menu, shown in :numref:`Figure %s <expressionwindow-functionmenu>`, to
+insert any of VisIt's built-in expressions directly into the expression
+definition. The list of built-in expressions divided into certain
+categories as evidenced by the structure of the **Insert Function...**
 menu.
 
-In addition to the
-**Insert Function...**
-menu, which lets you insert built-in functions into the expression definition, VisIt's
-**Expression Window**
-provides an
-**Insert Variable...**
-menu that allows you to insert variables for the active database into the expression definition. The
-**Insert Variable...**
-menu, shown in
-, is broken up into Scalars, Vectors, Meshes, etc. and has the available variables under the appropriate heading so they are easy to find.
+.. _expressionwindow-functionmenu:
 
-Some variables can only be expressed as very complex expressions containing several intermediate subexpressions that are only used to simplify the overall expression definition. These types of subexpressions are seldom visualized on their own. If you want to prevent them from being added to the
-**Plot**
-menu, turn off the
-**Show variable in plot menus**
-check box.
+.. _figure:: images/expressionwindow-functionmenu.png
+
+   Expression Window's Insert Function... menu
+
+In addition to the **Insert Function...** menu, which lets you insert built-in
+functions into the expression definition, VisIt's **Expression Window**
+provides an **Insert Variable...** menu that allows you to insert variables
+for the active database into the expression definition. The
+**Insert Variable...** menu, shown in
+:numref:`Figure %s <expressionwindow-varmenu>`, is broken up into Scalars,
+Vectors, Meshes, etc. and has the available variables under the appropriate
+heading so they are easy to find.
+
+.. _expressionwindow-varmenu:
+
+.. _figure:: images/expressionwindow-varmenu.png
+
+   Expression Window's Insert Variable... menu
+
+Some variables can only be expressed as very complex expressions containing
+several intermediate subexpressions that are only used to simplify the
+overall expression definition. These types of subexpressions are seldom
+visualized on their own. If you want to prevent them from being added to
+the **Plot** menu, turn off the **Show variable in plot menus** check box.
 
 Deleting an expression
 """"""""""""""""""""""
 
-You can delete an expression by clicking on it in the
-**Expression list**
-and then clicking on the
-**Delete**
-button. Deleting an expression removes it from the list of defined expressions and will
-cause unresolved references for any other expression that uses the deleted expression. If a plot uses an expression with unresolved references, VisIt will not be able to generate it until you resolve the reference or change the active plot variable.
+You can delete an expression by clicking on it in the **Expression list**
+and then clicking on the **Delete** button. Deleting an expression removes
+it from the list of defined expressions and will cause unresolved references
+for any other expression that uses the deleted expression. If a plot uses
+an expression with unresolved references, VisIt will not be able to generate
+it until you resolve the reference or change the active plot variable.
 
 Expression grammar
 ~~~~~~~~~~~~~~~~~~
 
-VisIt allows expressions to be written using a host of unary and binary math operators as well as built-in and user-defined functions. VisIt's expressions follow C-language syntax, although there are a few differences. The following paragraphs detail the syntax of VisIt expressions.
+VisIt allows expressions to be written using a host of unary and binary
+math operators as well as built-in and user-defined functions. VisIt's
+expressions follow C-language syntax, although there are a few differences.
+The following paragraphs detail the syntax of VisIt expressions.
 
 Math operators
 """"""""""""""
 
-These include use of +, -, *, /, ^ as addition, subtraction,
-multiplication, division, and exponentiation as infix operators, as well as the unary minus, in their normal precedence and associativity.
-Parentheses may be used as well to force a desired associativity.
+These include use of +, -, *, /, ^ as addition, subtraction, multiplication,
+division, and exponentiation as infix operators, as well as the unary minus,
+in their normal precedence and associativity. Parentheses may be used as
+well to force a desired associativity.
 
-*Examples: *
-*a+b^-c *
-*(a+b)*c*
+*Examples: a+b^-c (a+b)*c*
 
 Constants
 """""""""
 
-Scalar constants include floating point numbers and integers, as well as booleans (true, false, on, off) and strings.
+Scalar constants include floating point numbers and integers, as well as
+booleans (true, false, on, off) and strings.
 
-*Examples: *
-*3e4 *
-*10 *
-*"mauve" true *
-*false*
+*Examples: 3e4 10 "mauve" true false*
 
 Vectors
 """""""
 
-Expressions can be grouped into two or three dimensional vector variables using curly braces.
+Expressions can be grouped into two or three dimensional vector variables
+using curly braces.
 
-*Examples: *
-*{xc, yc} *
-*{0,0,1}*
+*Examples: {xc, yc} {0,0,1}*
 
 Lists
 """""
 
-Lists are used to specify multiple items or ranges, using colons to create ranges of integers, possibly with strides, or using comma-separated lists of integers, integer ranges, floating points numbers, or strings.
+Lists are used to specify multiple items or ranges, using colons to create
+ranges of integers, possibly with strides, or using comma-separated lists
+of integers, integer ranges, floating points numbers, or strings.
 
-*Examples: *
-*[1,3,2] *
-*[1:2, 10:20:5, 22] *
-*[silver, gold] *
-*[1.1, 2.5, 3.9] [level1, level2]*
+*Examples: [1,3,2] [1:2, 10:20:5, 22] [silver, gold] [1.1, 2.5, 3.9] [level1, level2]*
 
 Identifiers
 """""""""""
 
-Identifiers include function names, defined variable and function names, and file variable names.
-They may include alphabetic characters, numeric characters, and underscores in any order.
-Identifiers should have at least one non-numeric character so that they are not confused with integers, and they should not look identical to floating point numbers such as 1e6.
+Identifiers include function names, defined variable and function names,
+and file variable names. They may include alphabetic characters, numeric
+characters, and underscores in any order. Identifiers should have at least
+one non-numeric character so that they are not confused with integers, and
+they should not look identical to floating point numbers such as 1e6.
 
-*Examples: *
-*density x y z 3d_mesh*
+*Examples: density x y z 3d_mesh*
 
 Functions
 """""""""
 
-These are used for built in functions, but they may also be used for functions/macros defined by the user.
-They take specific types and numbers of arguments within the parentheses, separated by commas.
-Some functions may accept named arguments in the form identifier=value.
+These are used for built in functions, but they may also be used for
+functions/macros defined by the user. They take specific types and numbers
+of arguments within the parentheses, separated by commas. Some functions
+may accept named arguments in the form identifier=value.
 
-*Examples: *
-*sin(pi / 2) cross(vec1, {0,0,1}) *
-*my_xform(mesh1) *
-*subselect(materials=[a,b])*
+*Examples: sin(pi / 2) cross(vec1, {0,0,1}) my_xform(mesh1) subselect(materials=[a,b])*
 
 Database variables
 """"""""""""""""""
 
-These are like identifiers, but may also include periods, plus, and minus characters.
-A normal identifier will map to a file variable when it is not defined as another expression.
-To force variables that look like integers or floating point numbers to be interpreted as variable names, or to force variable names which are defined by another expression to map to a variable in a file, they should be enclosed with < and >, the left and right carats/angle brackets.
-Note that quotation marks will cause them to be interpreted as string constants, not variable names.
-In addition, variables in files may be in directories within a file, so they may include slashes in a path when in angle brackets.
+These are like identifiers, but may also include periods, plus, and minus
+characters. A normal identifier will map to a file variable when it is not
+defined as another expression. To force variables that look like integers
+or floating point numbers to be interpreted as variable names, or to force
+variable names which are defined by another expression to map to a variable
+in a file, they should be enclosed with < and >, the left and right
+carats/angle brackets. Note that quotation marks will cause them to be
+interpreted as string constants, not variable names. In addition, variables
+in files may be in directories within a file, so they may include slashes
+in a path when in angle brackets.
 
-*Examples: *
-*density *
-*<pressure> *
-*<a.001> <a.002> <domain1/density>*
+*Examples: density <pressure> <a.001> <a.002> <domain1/density>*
 
 Databases
 """""""""
 
-A database specification looks similar to a database variable contained in angle brackets, but it is followed by a colon before the closing angle bracket, and it may also contain extra information.
-A database specification includes a file specification possibly followed a machine name, a time specification by itself, or a file/machine specification followed by a time specification.
-A file specification is just a file name with a path if needed. A machine specification is an at-sign @ followed by a host name.
-A time specification looks much like a list in that it contains integer numbers or ranges, or floating point numbers, separated by commas and enclosed in square brackets.
-However, it may also be followed by a letter c, t, or i to specify if the time specification refers to cycles, times, or indices, respectively.
-If no letter is specified, then the parser guesses that integers refer to cycles, floating point numbers refer to times.
-There is also an alternative to force indices which is the pound sign # after the opening square bracket.
+A database specification looks similar to a database variable contained
+in angle brackets, but it is followed by a colon before the closing angle
+bracket, and it may also contain extra information. A database specification
+includes a file specification possibly followed a machine name, a time
+specification by itself, or a file/machine specification followed by a
+time specification. A file specification is just a file name with a path
+if needed. A machine specification is an at-sign @ followed by a host name.
+A time specification looks much like a list in that it contains integer
+numbers or ranges, or floating point numbers, separated by commas and
+enclosed in square brackets. However, it may also be followed by a letter
+c, t, or i to specify if the time specification refers to cycles, times,
+or indices, respectively. If no letter is specified, then the parser
+guesses that integers refer to cycles, floating point numbers refer to
+times. There is also an alternative to force indices which is the pound
+sign # after the opening square bracket.
 
 *Examples: </dir/file:> <file@host.gov:> <[# 0:10]:> <file[1.234]:> <file[000, 023, 047]:> <file[10]c:>*
 
 Qualified file variables
 """"""""""""""""""""""""
 
-Just like variables may be in directories within a file, they may also be in other timesteps within the same database, within other databases, and even within databases on other machines.
-To specify where a variable is located, use the angle brackets again, and prefix the variable name with a database specification, using the colon after the database specification as a delimiter.
+Just like variables may be in directories within a file, they may also be
+in other timesteps within the same database, within other databases, and
+even within databases on other machines. To specify where a variable is
+located, use the angle brackets again, and prefix the variable name with
+a database specification, using the colon after the database specification
+as a delimiter.
 
 *Examples: <file:var> </dir/file:/domain/var> <file@192.168.1.1:/var> <[#0]:zerocyclevar>*
+
+.. _Built-in_expressions:
 
 Built-in expressions
 ~~~~~~~~~~~~~~~~~~~~
 
-The following table lists
-built-in expressions that can be used to create more advanced expressions. Unless otherwise noted in the description, each expression takes scalar variables as its arguments.
+The following table lists built-in expressions that can be used to create
+more advanced expressions. Unless otherwise noted in the description, each
+expression takes scalar variables as its arguments.
 
 +-----------------------------+----------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Expression                  | Meaning                                                                                                        | Usage                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -1382,4 +1421,3 @@ built-in expressions that can be used to create more advanced expressions. Unles
 |                             |                                                                                                                | *Example: zoneid(density)*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 +-----------------------------+----------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
