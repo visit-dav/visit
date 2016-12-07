@@ -7,11 +7,10 @@ Lighting is an important element when producing 3D visualizations because all ar
 
 Lighting Window
 ~~~~~~~~~~~~~~~
-
+ 
 You can open the
 **Lighting Window**
-(see
-) by selecting the
+(see :numref:`Figure %s <fig-lighting1>`) by selecting the
 **Lighting**
 option from the
 **Main Window's Controls**
@@ -24,6 +23,12 @@ test sphere so the cumulative effect of the lights can be observed. When the win
 panel and you can position lights interactively by moving them around in the lighting panel to the left of the
 **Properties**
 panel.
+
+.. _fig-lighting1:
+
+.. figure:: images/lighting1.png
+
+   Lighting Window
 
 Switching between edit mode and preview mode
 """"""""""""""""""""""""""""""""""""""""""""
@@ -45,12 +50,17 @@ is in preview mode, all lights are shown in the lighting panel and none of them 
 Choosing the active light
 """""""""""""""""""""""""
 
+.. _fig-lighting3:
+
+.. figure:: images/lighting3.png
+
+   Active light pulldown
+
 The active light is the light whose properties are shown in the
 **Lighting Window**
 . Only the active light can be modified so you must switch active lights each time you want to make changes to a light. To change the active light, select a new light from the
 **Active light**
-pulldown (
-). The
+pulldown (:numref:`Figure %s <fig-lighting3>`). The
 **Active light**
 pulldown contains a list of eight possible lights of which only light 1 is active by default. When a light is active, it has a small light bulb icon next to it. Inactive lights have no light bulb icon. Once a new light has been selected from the
 **Active light**
@@ -72,6 +82,12 @@ is in edit mode.
 
 Light type
 """"""""""
+
+.. _fig-lighting2:
+
+.. figure:: images/lighting2.png
+
+   Different kinds of lights 
 
 VisIt supports three types of lights. The first type is called an ambient light. An ambient light is a light that has no direction and contributes brightness to the entire visualization. When an ambient light is present, the lighting panel displays a small light bulb. The second type of light and the default light in VisIt is a camera light. A camera light stays fixed in space and always points the same direction regardless of how the objects in the visualization are positioned. Camera lights are represented in the lighting panel as small blue arrows. The third type of light in VisIt is the object light. An object light has a direction that is relative to the orientation of the object in the visualization. When the objects in the visualization are rotated, an object light keeps shining on the
 same area of the object. Object lights are represented in the lighting panel as small yellow cones. To change the light type for the active light, select a new light type from the

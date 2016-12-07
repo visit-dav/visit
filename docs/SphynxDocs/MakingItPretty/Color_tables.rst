@@ -19,10 +19,14 @@ is a set of N colors that can be set individually. There are no other colors in 
 Color table window
 ~~~~~~~~~~~~~~~~~~
 
+.. _fig-colortables:
+
+.. figure:: images/colortables.png
+
+   Color table window
+
 You can open VisIt's
-**Color table window**
-, shown in
-, by selecting the
+**Color table window**, shown in :numref:`Figure %s <fig-colortables>`, by selecting the
 **Color table**
 option from the
 **Main Window's Controls**
@@ -76,10 +80,13 @@ extension. Copying a color table file to a user's .visit directory will allow Vi
 Editing a continuous color table
 """"""""""""""""""""""""""""""""
 
-There are a handful of controls in the editor portion of the
-**Color table window**
-, shown in
-, that are used to change the definition of a color table. To change a color table definition, you must alter its color control points. This means adding and removing color control points as well as changing their colors and locations.
+.. _fig-coloredit:
+
+.. figure:: images/coloredit.png
+
+   Continuous color table editor
+
+There are a handful of controls in the editor portion of the **Color table window**, shown in :numref:`Figure %s <fig-coloredit>`, that are used to change the definition of a color table. To change a color table definition, you must alter its color control points. This means adding and removing color control points as well as changing their colors and locations.
 
 To change the number of color control points in a color table, type a new number of color control
 points into the Number of colors spin box or use the up/down arrows to increase or decrease the number of color control points. When a new color control point is added, it appears to the right of the selected color control point and to the left of the next color control point. Color control points are represented as a pointy box just above the color spectrum. The color control point that has a small triangular mark is the selected color control point. When a color control point is removed, the color control point that was created before the deleted color control point becomes the new selected color control point. Clicking the
@@ -105,8 +112,13 @@ turned off.
 Editing a discrete color table
 """"""""""""""""""""""""""""""
 
-The
-**Color table window's Editor area **
+.. _fig-coloredit2:
+
+.. figure:: images/coloredit2.png
+
+   Discrete color table editor
+
+The **Color table window's Editor area **
 looks different when you edit a discrete color table. Instead of showing a spectrum of colors, the window shows a grid of colors that correspond to the colors in the discrete color table. The order of the color control points if left to right, top to bottom. To edit a discrete color table, first left click on the color that you want to edit and then use the
 **Red, Green, **
 and
