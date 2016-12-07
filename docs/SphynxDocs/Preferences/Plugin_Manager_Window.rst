@@ -1,3 +1,5 @@
+.. _Plugin Manager Window:
+
 Plugin Manager Window
 ---------------------
 
