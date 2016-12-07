@@ -10,13 +10,16 @@ Boundary plot, shown in, displays the surface or lines that separate materials.
 
 .. figure:: ../images/boundarystuff.png
 
+   Boundary plot and its plot attributes window
 
 
 .. _filledboundarystuff:
 
 .. figure:: ../images/filledboundarystuff.png
 
-The FilledBoundary plot (see :numref:`figure%s<filledboundarystuff>`) shows
+   FilledBoundary plot and its plot attributes window
+
+The FilledBoundary plot (see :numref:`figure %s<filledboundarystuff>`) shows
 the entire set of materials, each using a different color. Both plots perform
 material interface reconstruction on materials that have mixed cells,
 resulting in the material boundaries used in the plots.
@@ -87,6 +90,8 @@ window.
 
 .. figure:: ../images/filledboundarywireframe.png
 
+   Filled mode and wireframe mode
+
 Drawing internal surfaces
 """""""""""""""""""""""""
 
@@ -126,6 +131,8 @@ the popup color palette.
 
 .. figure:: ../images/filledboundarymixedzones.png
 
+   All zones and clean zones
+
 Setting point properties
 """"""""""""""""""""""""
 
@@ -151,3 +158,5 @@ or **Sphere**.
 .. _pointtypes:
 
 .. figure:: ../images/pointtypes.png
+
+   Point types (left-to-right): Box, Axis, Icosahedron, Point, Sphere
