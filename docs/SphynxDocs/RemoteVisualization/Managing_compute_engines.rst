@@ -19,7 +19,7 @@ manage simulations, display their progress, and provide extra controls for the
 simulations.
 
 Compute Engines Window
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. _remote_vis_compute_engine_window:
 
@@ -91,14 +91,14 @@ computer's other applications, you can click the **Clear cache** button in the
 Simulation Window
 ~~~~~~~~~~~~~~~~~
 
-.. _remote_vis_close_compute_engine:
+.. _remote_vis_sim_window:
 
 .. figure:: images/simulationwindow.png
    
    Simulation Window
 
 You can open the **Simulation Window**, shown in
-:numref:`Figure %s<remote_vis_compute_engine_window>`, by selecting the
+:numref:`Figure %s<remote_vis_sim_window>`, by selecting the
 **Simulations** option from the **Main Window's File ** menu. The main purpose
 of the **Simulation Window** is to display the progress of a simulation that is
 acting as a VisIt compute engine as it completes its visualization tasks. The
