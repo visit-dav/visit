@@ -15,7 +15,7 @@ any or all dimensions.
    Box tool with a plot restricted to the box
 
 You can move the box tool around the vis window by clicking on the origin
-hotpoint, which has the word *"Origin" * next to it, and dragging it around
+hotpoint, which has the word "Origin" next to it, and dragging it around
 the vis window. When you move the box tool, it moves in a plane that is
 parallel to the screen. You can move the box tool backward and forward
 along an axis by holding down the keyboard's *Shift* key before you click
