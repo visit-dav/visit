@@ -24,6 +24,8 @@ controls for managing plots.
 
 .. figure:: images/activeplotsarea.png
 
+   Active plots area
+
 The most prominent feature of the **Active plots area**, the **Plot list**
 contains a list of the plots that are in the active visualization window.
 The entries in the plot list contain the index of the file used for the
@@ -55,6 +57,8 @@ database name in the **Selected files list**. After opening a database, use the
 .. _plotmenu:
 
 .. figure:: images/plotmenu.png
+
+   Plot menu
 
 Selecting the **Plots** menu pops up a list of VisIt plot types. Plots for which
 the open database has no data are disabled. If a plot type is enabled, pulling
@@ -112,12 +116,21 @@ for that plot type. Plot attributes windows are activated by double-clicking
 a plot entry in the **Plot list**. You can also open a plot attribute window
 by selecting a plot type from the **PlotAtts** (Plot Attributes) menu shown in.
 
+.. _plotatts:
+
+.. figure:: images/plotatts.png
+
+   Plot attributes window
+
+
 Changing plot variables
 """""""""""""""""""""""
 
 .. _varmenu:
 
 .. figure:: images/varmenu.png
+
+   Variable menu
 
 When examining a plot, you might want to look at another variable. For
 example, you might want to switch from looking at density to pressure.
