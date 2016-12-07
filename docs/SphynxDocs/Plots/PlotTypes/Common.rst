@@ -10,7 +10,7 @@ are described here first using the **Pseudocolor plot** as an example.
 
 .. _pseudocolorwindow_1:
 
-.. image:: ../images/pseudocolorwindow.png
+.. figure:: ../images/pseudocolorwindow.png
 
    Example of **Pseudocolor plot attribute window**
 
