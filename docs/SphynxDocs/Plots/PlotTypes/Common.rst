@@ -8,10 +8,14 @@ many, if not all plots. These include such things as **Color table**,
 the **Legend** checkbox and others. These common plot attributes
 are described here first using the **Pseudocolor plot** as an example.
 
-Then, attributes specific to each plot type are described in the
-remaining sections.
+.. _pseudocolorwindow_1:
 
 .. image:: ../images/pseudocolorwindow.png
+
+   Example of **Pseudocolor plot attribute window**
+
+Then, attributes specific to each plot type are described in the
+remaining sections.
 
 Plot buttons
 """"""""""""

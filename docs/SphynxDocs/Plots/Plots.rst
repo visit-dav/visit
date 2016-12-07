@@ -17,7 +17,7 @@ Managing plots
 To visualize your data, you will iteratively create and modify many plots
 until you achieve the end result. Since plots may be created and deleted
 many times, VisIt provides controls in its **Main Window** to handle these
-functions. The **Active plots area**, shown in :ref:`gorfo`, contains the
+functions. The **Active plots area**, shown in :numref:`figure %s <activeplotsarea>`, contains the
 controls for managing plots.
 
 .. _activeplotsarea:
