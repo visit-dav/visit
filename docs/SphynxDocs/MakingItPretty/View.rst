@@ -29,9 +29,13 @@ Visualization windows that contain Curve plots use a special type of view known 
 text field on the
 **Curve tab**
 of the
-**View Window**
-(
-). The minimum and maximum X values should come first, followed by the minimum and maximum Y values.
+**View Window** (:numref:`Figure %s <fig-viewcurve>`). The minimum and maximum X values should come first, followed by the minimum and maximum Y values.
+
+.. _fig-viewcurve:
+
+.. figure:: images/viewcurve.png
+
+   Curve view options
 
 The domain and range refer to the limits on the X and Y axes. You can set the domain, which is the range of X values that will be displayed in the viewport, by typing new minimum and maximum values into the
 **Domain**
@@ -47,9 +51,13 @@ Setting the 2D view is conceptually simple. There are only two pieces of informa
 and
 **Window**
 text fields on the
-**View Window's 2D view tab**
-(
-).
+**View Window's 2D view tab** (:numref:`Figure %s <fig-view2d>`).
+
+.. _fig-view2d:
+
+.. figure:: images/view2d.png
+
+   2D view options
 
 Fullframe mode
 """"""""""""""
@@ -64,16 +72,26 @@ buttons in the
 **Auto**
 , VisIt determines the aspect ratio of the X and Y dimensions for the plots being visualized and automatically scales the plots to fit the window when extents for one of the dimensions are much larger than the extents of the other dimension.
 
+.. _fig-fullframe:
+
+.. figure:: images/fullframe.png
+
+   Effect of Fullframe mode on an extremely skinny plot
+
 Setting the 3D view
 """""""""""""""""""
+
+.. _fig-view3d:
+
+.. figure:: images/view3d.png
+
+   3D view options
 
 Setting the 3D view using controls in the
 **View Window's**
 
 **3D view tab**
-(see
-) demands an understanding of 3D views. A 3D view is essentially a location in space (view normal) looking at another location in space (focus) with a cone of vision (view angle). There are also clipping planes that lie along the view normal that clip the near and far objects from the view.
-depicts the various components of a 3D view.
+(see :numref:`Figure %s <fig-view3d>`) demands an understanding of 3D views. A 3D view is essentially a location in space (view normal) looking at another location in space (focus) with a cone of vision (view angle). There are also clipping planes that lie along the view normal that clip the near and far objects from the view. :numref:`Figure %s <fig-perspective3d>` depicts the various components of a 3D view.
 
 To set the 3D view, first decide on where you want to look from. Type a vector value into the
 **View normal**
@@ -98,6 +116,12 @@ VisIt supports stereo rendering, during which VisIt draws the image in the visua
 text field or by using the
 **Eye angle**
 slider.
+
+.. _fig-perspective3d:
+
+.. figure:: images/perspective3d.png
+
+   3D perspective view volume
 
 Using axis alignment buttons
 """"""""""""""""""""""""""""
@@ -183,8 +207,13 @@ Advanced view features
 
 The
 **View Window's Advanced tab**
-, shown in
-, contains features that are not needed by all users.
+, shown in :numref:`Figure %s <fig-viewAdvanced>`, contains features that are not needed by all users.
+
+.. _fig-viewAdvanced:
+
+.. figure:: images/viewAdvanced.png
+
+   Advanced view options
 
 View centering
 """"""""""""""
