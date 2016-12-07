@@ -7,6 +7,18 @@ In visualization terms, these plots are isosurfaces. VisIt's Contour plot
 allows you to specify the number of contours to display as well as the
 colors and opacities of the contours.
 
+.. _contourplot:
+
+.. figure:: ../images/contourplot.png
+
+   Example of Contour plot
+
+.. _contourwindow:
+
+.. figure:: ../images/contourwindow.png
+
+   **Contour plot attributes window**
+
 Setting the number of contours
 """"""""""""""""""""""""""""""
 
