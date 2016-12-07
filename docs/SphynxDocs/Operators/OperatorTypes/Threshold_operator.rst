@@ -34,7 +34,7 @@ keyword: min into the **Threshold operator attributes window's**
 a new upper bound, type a new number or the special keyword: max into the
 **Upper bound** text field.
 
-.. _ thresholdwindow:
+.. _thresholdwindow:
 
 .. figure:: images/thresholdwindow.png
 

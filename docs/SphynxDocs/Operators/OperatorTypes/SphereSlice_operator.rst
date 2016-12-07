@@ -1,20 +1,35 @@
 SphereSlice operator
 ~~~~~~~~~~~~~~~~~~~~
 
-The SphereSlice operator slices a 2D or 3D database with an arbitrary sphere. Plots to which the SphereSlice operator have been applied become 2D surfaces that are coincident with the surface of the slicing sphere. The resulting plots remain in 3D space. You can use the SphereSlice operator to slice objects to judge their deviation from being perfectly spherical. An example of the SphereSlice operator is shown in
-.
+The SphereSlice operator slices a 2D or 3D database with an arbitrary sphere. 
+Plots to which the SphereSlice operator have been applied become 2D surfaces 
+that are coincident with the surface of the slicing sphere. The resulting 
+plots remain in 3D space. You can use the SphereSlice operator to slice objects 
+to judge their deviation from being perfectly spherical. An example of the 
+SphereSlice operator is shown in :numref:`Figure %s <sphere>`.
+
+.. _sphere:
+
+.. figure:: images/sphere.png
+
+   SphereSlice operator example
 
 Positioning and resizing the slice sphere
 """""""""""""""""""""""""""""""""""""""""
 
 You can position the slice sphere by setting its origin in the
-**SphereSlice operator attributes window**
-shown in
-. The slice sphere is specified by a center point and a radius. To change the slice sphere's center, enter a new point into the
-**Origin**
-text field. The origin is a 3D coordinate that is represented by three space-separated floating point numbers. To resize the sphere, enter a new radius number into the
-**Radius**
-text field.
+**SphereSlice operator attributes window** shown in 
+:numref:`Figure %s <sphereslicewindow>` . The slice sphere is specified by a 
+center point and a radius. To change the slice sphere's center, enter a new 
+point into the **Origin** text field. The origin is a 3D coordinate that is 
+represented by three space-separated floating point numbers. To resize the 
+sphere, enter a new radius number into the **Radius** text field.
+
+.. _sphereslicewindow:
+
+.. figure:: images/sphereslicewindow.png
+
+  SphereSlice operator attributes window
 
 Positioning the slice sphere using the Sphere tool
 """"""""""""""""""""""""""""""""""""""""""""""""""

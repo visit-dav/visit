@@ -7,6 +7,12 @@ same time. The ThreeSlice operator is meant primarily for quick visual
 exploration of 3D data where the internal features cannot be readily observed 
 from the outside.
 
+.. _threeslice:
+
+.. figure:: images/threeslice.png
+
+  ThreeSlice operator example
+
 Moving the ThreeSlice operator
 """"""""""""""""""""""""""""""
 
@@ -21,12 +27,6 @@ ThreeSlice operator's origin. When you use the Point tool to set the origin for
 the ThreeSlice operator, the act of moving the Point tool sets the ThreeSlice 
 operator's origin and causes plots that use the ThreeSlice operator to be 
 recalculated with the new origin.
-
-.. _threeslice:
-
-.. figure:: images/threeslice.png
-
-  ThreeSlice operator example
 
 .. _threeslicewindow:
 
