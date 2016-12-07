@@ -1,36 +1,12 @@
 Operator Types
 --------------
 
-VisIt is installed with operator plugins, which perform a wide variety of functions. Some of the operators are not be enabled by default so they do not show up in the
-**Operator**
-menu. Use the
-**Plugin Manager Window**
-, which can be opened by clicking on the
-**Plugin Manager**
-option in the
-**Main Window's Preferences menu**
-, to enable additional operators or disable operators that you rarely use. This section explains each operator in alphabetical order; not in terms of an operator's importance.
-
-+-----------------------------------------------------------------------------------------------+
-| **Operator plugins that are enabled by default**                                              |
-|                                                                                               |
-+--------------------------------------------------+------------------+-----------+-------------+
-| Box                                              | Elevate          | Lineout   | Slice       |
-|                                                  |                  |           |             |
-+--------------------------------------------------+------------------+-----------+-------------+
-| Clip                                             | IndexSelect      | OnionPeel | SphereSlice |
-|                                                  |                  |           |             |
-+--------------------------------------------------+------------------+-----------+-------------+
-| Cone                                             | InverseGhostZone | Project   | ThreeSlice  |
-|                                                  |                  |           |             |
-+--------------------------------------------------+------------------+-----------+-------------+
-| Cylinder                                         | Isosurface       | Reflect   | Threshold   |
-|                                                  |                  |           |             |
-+--------------------------------------------------+------------------+-----------+-------------+
-| Displace                                         | Isovolume        | Revolve   | Transform   |
-|                                                  |                  |           |             |
-+--------------------------------------------------+------------------+-----------+-------------+
-
+VisIt is installed with operator plugins, which perform a wide variety of 
+functions. Some of the operators are not be enabled by default so they do not 
+show up in the **Operator** menu. Use the :ref:`Plugin Manager Window`, which 
+can be opened by clicking on the **Plugin Manager** option in the 
+**Main Window's Preferences menu**, to enable additional operators or disable 
+operators that you rarely use. 
 
 .. toctree::
     :maxdepth: 1
