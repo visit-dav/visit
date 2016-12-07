@@ -83,6 +83,10 @@ materials as seen in. To make the Boundary or FilledBoundary plots display
 in wireframe mode, check the **Wireframe** check box near the bottom of the
 window.
 
+.. _filledboundarywireframe:
+
+.. figure:: ../images/filledboundarywireframe.png
+
 Drawing internal surfaces
 """""""""""""""""""""""""
 
@@ -118,6 +122,10 @@ databases. To make VisIt draw only the clean zones, click the
 clicking on the **Mixed color** color button and selecting a new color from
 the popup color palette.
 
+.. _filledboundarymixedzones:
+
+.. figure:: ../images/filledboundarymixedzones.png
+
 Setting point properties
 """"""""""""""""""""""""
 
@@ -139,3 +147,7 @@ on the **Scale point size by variable** check box and by selecting a scalar
 variable from the **Variable** button to the right of that check box. Note
 that point scaling does not occur when the point type is set to **Point**
 or **Sphere**.
+
+.. _pointtypes:
+
+.. figure:: ../images/pointtypes.png
