@@ -267,8 +267,8 @@ ADD_PARALLEL_SIMV2_SIMULATION(life_par life.c)
 ADD_SIMV2_SIMULATION(mandelbrot mandelbrot.C patch.C)
 ADD_PARALLEL_SIMV2_SIMULATION(mandelbrot_par mandelbrot.C patch.C)
 
-ADD_SIMV2_SIMULATION(mandelbulbsim mandelbulbsim.C)
-ADD_PARALLEL_SIMV2_SIMULATION(mandelbulbsim_par mandelbulbsim.C)
+ADD_SIMV2_SIMULATION(mandelbulbsim mandelbulbsim.C extract.c)
+ADD_PARALLEL_SIMV2_SIMULATION(mandelbulbsim_par mandelbulbsim.C extract.c)
 
 ADD_SIMV2_SIMULATION(material material.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fmaterial fmaterial.f)

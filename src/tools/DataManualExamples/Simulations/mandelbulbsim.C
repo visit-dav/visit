@@ -47,6 +47,10 @@
 #include <mpi.h>
 #endif
 
+extern "C" {
+#include "extract.h"
+}
+
 #define VISIT_COMMAND_PROCESS 0
 #define VISIT_COMMAND_SUCCESS 1
 #define VISIT_COMMAND_FAILURE 2
@@ -188,6 +192,8 @@ typedef struct
     int      dims[3];
     float    extents0[6];
     float    extents1[6];
+    int      render;
+    int      exports;
     int      image_width;
     int      image_height;
     float    *x;
@@ -204,6 +210,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->maxcycles = 1000;
     sim->cycle = 0;
     sim->time = 0.;
+    strcpy(sim->format, "FieldViewXDB_1.0");
     sim->domains[0] = 1;
     sim->domains[1] = 1;
     sim->domains[2] = 1;
@@ -222,6 +229,8 @@ simulation_data_ctor(simulation_data *sim)
     sim->extents1[3] = M_PI/2 + M_PI/12.;
     sim->extents1[4] = M_PI - M_PI / 12.;
     sim->extents1[5] = M_PI + M_PI / 12.;
+    sim->render = 1;
+    sim->exports = 0;
     sim->image_width = 2000;
     sim->image_height = 2000;
     sim->x = NULL;
@@ -366,6 +375,8 @@ void mainloop_batch(simulation_data *sim)
     double contours[] = {3., 5.};
     int nContours = sizeof(contours) / sizeof(double);
     int nViews = 1;
+    char filename[100];
+    const char *extractvars[] = {"bulb", "dom", NULL};
 
 #ifdef PARALLEL
     double init0, init1;
@@ -394,31 +405,47 @@ void mainloop_batch(simulation_data *sim)
         /* Tell VisIt that some metadata changed.*/
         VisItTimeStepChanged();
 
-        for(int i = 0; i < nContours; ++i)
+        if(sim->exports)
         {
-            VisItAddPlot("Pseudocolor", "dom");
-            VisItSetPlotOptionsS("colorTableName", "hot_desaturated");
-            VisItAddOperator("Isosurface", 1);
-            VisItSetOperatorOptionsS("variable", "bulb");
-            VisItSetOperatorOptionsI("contourMethod", 1); /* value */
-            VisItSetOperatorOptionsDv("contourValue", &contours[i], 1);
-            VisItDrawPlots();
+            /* Set some extract options. */
+            extract_set_options(sim->format, 0,0);
 
-            for(int v = 0; v < nViews; ++v)
+            sprintf(filename, "mandelbulbsim_iso_%04d", sim->cycle);
+            err = extract_iso(filename, "bulb", contours, nContours, extractvars);
+            if(sim->par_rank == 0)
             {
-                char filename[100];
-                sprintf(filename, "batch_%d_%d_%04d.png", int(contours[i]), v, sim->cycle);
-
-                if(VisItSaveWindow(filename, sim->image_width, sim->image_height, VISIT_IMAGEFORMAT_PNG) == VISIT_OKAY)
-                {
-                    if(sim->par_rank == 0)
-                        printf("Saved %s\n", filename);
-                }
-                else if(sim->par_rank == 0)
-                    printf("The image could not be saved to %s\n", filename);
+                printf("iso export returned %s\n", extract_err(err));
             }
+        }
 
-            VisItDeleteActivePlots();
+        if(sim->render)
+        {
+            for(int i = 0; i < nContours; ++i)
+            {
+                VisItAddPlot("Pseudocolor", "dom");
+                VisItSetPlotOptionsS("colorTableName", "hot_desaturated");
+                VisItAddOperator("Isosurface", 1);
+                VisItSetOperatorOptionsS("variable", "bulb");
+                VisItSetOperatorOptionsI("contourMethod", 1); /* value */
+                VisItSetOperatorOptionsDv("contourValue", &contours[i], 1);
+                VisItDrawPlots();
+
+                for(int v = 0; v < nViews; ++v)
+                {
+                    sprintf(filename, "mandelbulbsim_%d_%d_%04d.png",
+                            int(contours[i]), v, sim->cycle);
+
+                    if(VisItSaveWindow(filename, sim->image_width, sim->image_height, VISIT_IMAGEFORMAT_PNG) == VISIT_OKAY)
+                    {
+                        if(sim->par_rank == 0)
+                            printf("Saved %s\n", filename);
+                    }
+                    else if(sim->par_rank == 0)
+                        printf("The image could not be saved to %s\n", filename);
+                }
+
+                VisItDeleteActivePlots();
+            }
         }
 
         ++sim->cycle;
@@ -499,6 +526,21 @@ int main(int argc, char **argv)
             {
                 sprintf(tracefile, "%s.%d.log", argv[i+1], sim.par_rank);
                 VisItOpenTraceFile(tracefile);
+                i++;
+            }
+            else if(strcmp(argv[i], "-format") == 0)
+            {
+                strncpy(sim.format, argv[i+1], 30);
+                i++;
+            }
+            else if(strcmp(argv[i], "-export") == 0)
+            {
+                sim.exports = atoi(argv[i+1]);
+                i++;
+            }
+            else if(strcmp(argv[i], "-render") == 0)
+            {
+                sim.render = atoi(argv[i+1]);
                 i++;
             }
             else if(strcmp(argv[i], "-image-width") == 0)
