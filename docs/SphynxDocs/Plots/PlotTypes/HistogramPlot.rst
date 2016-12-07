@@ -12,6 +12,8 @@ shown in :numref:`Figure %s <histogramplot>`.
 .. _histogramplot:
 
 .. figure:: ../images/histogramplot.png
+   :height: 400px
+   :width: 400px
 
    Histogram plot
 
