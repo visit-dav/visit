@@ -19,7 +19,7 @@ Boundary plot, shown in, displays the surface or lines that separate materials.
 
    FilledBoundary plot and its plot attributes window
 
-The FilledBoundary plot (see :numref:`figure %s<filledboundarystuff>`) shows
+The FilledBoundary plot (see :numref:`Figure %s <filledboundarystuff>`) shows
 the entire set of materials, each using a different color. Both plots perform
 material interface reconstruction on materials that have mixed cells,
 resulting in the material boundaries used in the plots.

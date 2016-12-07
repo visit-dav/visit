@@ -1,11 +1,12 @@
 Contour Plot
 ~~~~~~~~~~~~
 
-This plot, shown in, displays the location of values for scalar variables
-like density or pressure using lines for 2D plots and surfaces for 3D plots.
-In visualization terms, these plots are isosurfaces. VisIt's Contour plot
-allows you to specify the number of contours to display as well as the
-colors and opacities of the contours.
+This plot, shown in :numref:`Figure %s <contourplot>`, displays the
+location of values for scalar variables like density or pressure using
+lines for 2D plots and surfaces for 3D plots. In visualization terms,
+these plots are isosurfaces. VisIt's Contour plot allows you to specify
+the number of contours to display as well as the colors and opacities
+of the contours.
 
 .. _contourplot:
 
