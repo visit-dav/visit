@@ -88,8 +88,8 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             obj.tubeRadiusVar != "" &&
                             obj.tubeRadiusVar != "\0") ||
 
-                           ((obj.tailStyle != EndPointNone ||
-                             obj.headStyle != EndPointNone) &&
+                           ((obj.tailStyle != None ||
+                             obj.headStyle != None) &&
                             obj.endPointRadiusVarEnabled &&
                             obj.endPointRadiusVar != endPointRadiusVar &&
                             obj.endPointRadiusVar != "default" && 
