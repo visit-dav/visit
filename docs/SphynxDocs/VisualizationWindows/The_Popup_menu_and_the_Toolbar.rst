@@ -345,11 +345,11 @@ draw the plots that correspond to the selected plot entries in VisIt's
 but the **Plot** toolbar is not visible by default. If you want to make
 the **Plot** toolbar visible, you can turn it on in the
 **Popup menu's Customize** menu. The **Plot** menu and toolbar are
-shown in :numref:`Figure %s <plotmenu>`.
+shown in :numref:`Figure %s <plotmenu2>`.
 
 .. image:: images/plottoolbar.png
 
-.. _plotmenu:
+.. _plotmenu2:
 
 .. figure:: images/plotmenu.png
 
