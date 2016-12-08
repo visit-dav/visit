@@ -6,7 +6,6 @@ Time Pane
 The **Time Pane** contains controls for setting the active timestep, and
 vcr-controls for playing animations.
 
-
 Setting the active time step
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -27,9 +26,11 @@ cycle number into the **Animation text field** . If you type in a cycle number
 that is not in the database, the active time step will be set to the time step 
 with the closest cycle number to the cycle that was specified. 
 
-.. image:: images/TimeVaryingAnimationControls.png
+.. _TimeVaryingAnimationControls:
 
+.. figure:: images/TimeVaryingAnimationControls.png
 
+   Controls for setting the active time step
 
 Playing animations
 ~~~~~~~~~~~~~~~~~~
@@ -43,4 +44,3 @@ middle VCR button stops the animation. The VCR button second from the right
 plays the animation. The VCR button farthest to the right advances the 
 animation by one frame. As the animation progresses, the **Animation Slider**
 and the **Animation Text Field** are updated to reflect the active time step.
-

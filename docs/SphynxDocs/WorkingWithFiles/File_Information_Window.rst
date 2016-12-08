@@ -17,4 +17,3 @@ controls in the **File panel**.
 .. figure:: images/fileinformationwindow.png
 
    File Information Window
-
