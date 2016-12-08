@@ -15,7 +15,6 @@ ParallelCoordinates,
 Pseudocolor,
 Scatter,
 Spreadsheet,
-Streamline,
 Subset,
 Surface,
 Tensor,
@@ -34,7 +33,6 @@ Vector, and Volume. This section explains each plot in detail.
     MeshPlot
     PseudocolorPlot
     ScatterPlot
-    StreamlinePlot
     SubsetPlot
     SurfacePlot
     TensorPlot
