@@ -312,7 +312,7 @@ button, the colors for the active visualization window change. Note that each vi
 
 .. figure:: images/colorselectdialog.png
 
-   Color Selection Dialog
+   Popup color menu and the Color Selection Dialog
 
 Changing the background style
 """""""""""""""""""""""""""""
