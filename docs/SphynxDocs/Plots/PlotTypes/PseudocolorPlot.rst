@@ -1,3 +1,5 @@
+.. _pseudocolor_plot_head:
+
 Pseudocolor plot
 ~~~~~~~~~~~~~~~~
 
