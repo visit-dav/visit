@@ -1,8 +1,13 @@
 Surface Plot
 ~~~~~~~~~~~~
 
-The Surface plot (example shown in
-) takes 2D scalar databases as input and adds a height component to the variable's mesh, resulting in a height map that is then colored by the plotted variable. You might want to use this plot to examine 2D datasets because features of the plotted variable are highlighted by the height of the plot in addition to being highlighted by the plot's colors.
+The Surface plot (example shown in :numref:`Figure %s <fig-surfaceplotattrs>`) takes 2D scalar databases as input and adds a height component to the variable's mesh, resulting in a height map that is then colored by the plotted variable. You might want to use this plot to examine 2D datasets because features of the plotted variable are highlighted by the height of the plot in addition to being highlighted by the plot's colors.
+
+.. _fig-surfaceplotattrs:
+
+.. figure:: ../images/surfaceplotattrs.png
+
+   Surface plot and its plot attribute window
 
 Surface and Wireframe modes
 """""""""""""""""""""""""""
@@ -19,8 +24,7 @@ check boxes in the
 Surface color
 """""""""""""
 
-By default, the Surface plot is colored by the variable value or Z-value as with the Pseudocolor plot. The second coloration scheme uses constant coloration where the entire surface is the same color (see
-). To choose a coloration scheme, click on the
+By default, the Surface plot is colored by the variable value or Z-value as with the Pseudocolor plot. The second coloration scheme uses constant coloration where the entire surface is the same color (see :numref:`Figure %s <fig-surfaceplotcolor>`). To choose a coloration scheme, click on the
 **Constant**
 or
 **Z-Value**
@@ -31,6 +35,12 @@ radio button and selecting a new color from the popup color menu. When the plot 
 , you change colors by selecting a new color table name from the color table button next to the
 **Z-Value**
 radio button. The available color table names are an up-to-date list of VisIt color table names.
+
+.. _fig-surfaceplotcolor:
+
+.. figure:: ../images/surfaceplotcolor.png
+
+   Surface plot colored by Z-value (left) and constant color (right)
 
 Wireframe properties
 """"""""""""""""""""
@@ -46,6 +56,12 @@ button and choose a new color from the popup color menu. Note that wireframes mu
 Scaling the data
 """"""""""""""""
 
+.. _fig-surfaceplotlinlog:
+
+.. figure:: ../images/surfaceplotlinlog.png
+
+   Linear scale (left) and Log scale (right)
+
 The scale is map data values to color values and surface height. VisIt provides three scaling options:
 **Linear**
 ,
@@ -56,11 +72,9 @@ The scale is map data values to color values and surface height. VisIt provides 
 **Linear**
 , which is the default, uses a linear mapping of data values to color values.
 **Log**
-scaling is used to map small ranges of data to larger ranges of color (see
-).
+scaling is used to map small ranges of data to larger ranges of color (see :numref:`Figure %s <fig-surfaceplotlinlog>`).
 **Skew**
-scaling (
-) goes one step further by using an exponential function based on a skew factor to adjust the mapping of data to colors and surface height. The function used in skew scaling is
+scaling (:numref:`Figure %s <fig-surfaceplotskew>`) goes one step further by using an exponential function based on a skew factor to adjust the mapping of data to colors and surface height. The function used in skew scaling is
 **(s^d - 1) / (s - 1) **
 where s is a skew factor greater than zero and d is a data value that has been mapped to a range from zero to one.
 **Skew**
@@ -70,7 +84,11 @@ scaling and type a new skew factor into the
 **Skew factor**
 text field.
 
+.. _fig-surfaceplotskew:
 
+.. figure:: ../images/surfaceplotskew.png
+
+   Effects of skew factor on Surface plot
 
 Limits
 """"""
