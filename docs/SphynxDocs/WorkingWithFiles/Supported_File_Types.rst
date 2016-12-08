@@ -32,4 +32,3 @@ command line option with the name of the database reader plugin to use if
 you want to specify which reader VisIt should use when first trying to open a 
 file. For example, if you want to load a PDB/Flash file, which usually has no 
 file extension, you could provide: ``-default_format PDB`` on the command line.
-

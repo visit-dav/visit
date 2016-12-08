@@ -24,8 +24,6 @@ See :numref:`Figure %s<fow_image>`.
 
    File Open Window
 
-
-
 Changing hosts
 ~~~~~~~~~~~~~~
 
@@ -83,7 +81,7 @@ By default, VisIt looks for files in the current directory. This is often
 useful in a UNIX environment where VisIt is launched from a command line shell
 in a directory where database files are likely to be located. When VisIt is 
 set to look for files in the current directory, the 
-``use "current working directory" by default`` check box is set. If all of 
+**Use "current working directory" by default** check box is set. If all of 
 your databases are located in a central directory that rarely changes, it is 
 worthwhile to uncheck the check box, change directories to your data directory, 
 and save settings so the next time VisIt runs, it will look for files in your 
@@ -104,7 +102,6 @@ pattern matching, where, for example, a "*" matches filter ("*") shows all
 files in the **File list**. Note that you can specify more than one filter 
 provided you separate them with a space.
 
-
 Virtual databases
 ~~~~~~~~~~~~~~~~~
 
@@ -117,14 +114,14 @@ filter. That is, only files that match the file filter are considered for
 grouping into virtual databases. You can change the definition of a virtual 
 database by changing the file filter.  A virtual database appears in the file 
 list as a set of filenames that are grouped under a single filename that 
-contains the "*" wildcard character. (:numref:`fgon_image`) When you click on
+contains the "*" wildcard character. (:numref:`Figure %s <fgon_image>`) When you click on
 any of the filenames in the virtual database, the entire database is selected.
 
 You can tell VisIt to not automatically create virtual databases by selecting 
 the ``Off`` option in the **File grouping** pull-down menu. When automatic file 
 grouping is turned off, no files are grouped into virtual databases and groups 
 of files that make up a time-varying database will not be recognized as such 
-without a ``.visit`` file.  See :numref:`fgoff_image`.
+without a ``.visit`` file.  See :numref:`Figure %s <fgoff_image>`.
 
 .. _fgon_image:
 
@@ -145,7 +142,6 @@ you find that Smart file grouping does not provide the virtual databases that
 you expect, you can back the file grouping mode down to On or turn it off 
 entirely.
 
-
 Refreshing the file list
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -155,8 +151,6 @@ new files added by a running simulation. If the active source is a virtual
 database whose definition was changed by refreshing the file list, then VisIt 
 will close and reopen the active source so information about new time states 
 is made available.
-
-
 
 Clearing out recently visited paths
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -172,7 +166,6 @@ Remove Paths** button to activate the **Remove Recent Paths** window. The
 **Remove Recent Paths** window allows you to select paths from the recently 
 visited paths list and remove them from the list. The **Remove Recent Paths**
 window is shown in :numref:`Figure %s<rrp_image>`.
-
 
 .. _rrp_image:
 
