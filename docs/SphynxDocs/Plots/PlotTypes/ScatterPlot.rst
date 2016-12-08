@@ -12,7 +12,7 @@ controls for setting the limits of each input variable and also allows each
 input variable to be scaled so that all of the resulting points from disparate
 data ranges fit in a unit cube.
 
-.. _scatterwizard:
+.. _scatterplot:
 
 .. figure:: ../images/scatterplot.png
 
