@@ -2,9 +2,12 @@
 
 Operators
 =========
+
+This chapter explains the concept of an operator and goes into detail about 
+each of VisIt's operators.
+
 .. toctree::
     :maxdepth: 2
 
-    Overview
     Operators
     OperatorTypes/index
