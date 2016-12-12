@@ -15,6 +15,22 @@ Contents:
 
    Intro/index
    WorkingWithFiles/index
+   Plots/index   
+   Operators/index            
+   SavingPrinting/index
+   VisualizationWindows/index
+   Subsetting/index
+   Quantitative/index
+   MakingItPretty/index
+   Animation/index
+   InteractiveTools/index
+   MultipleDatabaseAndWindows/index
+   RemoteVisualization/index
+   Preferences/index
+   Help/index                   
+   Appendix_A/index           
+   Appendix_B/index             
+   Appendix_C/index              
 
 .. Indices and tables
 .. ==================
