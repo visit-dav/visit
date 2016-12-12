@@ -2793,6 +2793,21 @@ def PickHighlight():
     annotAtts.axes3D.triadFlag = 1;
     SetAnnotationAttributes(annotAtts)
 
+def PickRange():
+    OpenDatabase(silo_data_path("noise.silo"))
+    TurnOffAllAnnotations()
+    AddPlot("Pseudocolor", "hardyglobal")
+    pickAtts = GetPickAttributes()
+    pickAtts.showPickHighlight = 1
+    SetPickAttributes(pickAtts)
+    DrawPlots()
+    options = {}
+    options["pick_range"] = "116242-116300, 116350,1"
+    PickByZone(options)
+    Test("PickRange_01")
+    DeleteAllPlots()
+    ResetPickLetter()
+    
 def PickMain():
     Pick3DTo2D()
     Pick2D()
@@ -2824,6 +2839,7 @@ def PickMain():
     PickBox()
     PickScatter()
     PickHighlight()
+    PickRange()
 
 # Call the main function
 TurnOnAllAnnotations()
