@@ -65,6 +65,7 @@
 #include <QueryAttributes.h>
 #include <QueryList.h>
 #include <QueryOverTimeAttributes.h>
+#include <StringHelpers.h>
 #include <ViewerActionManager.h>
 #include <ViewerEngineManagerInterface.h>
 #include <ParsingExprList.h>
@@ -90,6 +91,7 @@
 #include <stdio.h>
 
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -3261,7 +3263,6 @@ ViewerQueryManager::HandlePickCache()
     handlingCache = false;
 }
 
-
 // ****************************************************************************
 //  Method: ViewerQueryManager::PointQuery
 //
@@ -3303,6 +3304,9 @@ ViewerQueryManager::HandlePickCache()
 //    Kathleen Biagas, Tue Mar 25 07:56:00 PDT 2014
 //    Check if 'vars' is a single string.
 //
+//    Matt Larseb, Mon Dec 12 08:11:00 PDT 2016
+//    Adding detection of a range of picks and looping over them. 
+//
 // ****************************************************************************
 
 void
@@ -3332,7 +3336,43 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
             }
         }
     }
+    
+    //
+    // Look for a pick range and iterate though them
+    //
+    bool hasPickRange = false;
+    if(queryParams.HasEntry("pick_range"))
+    {
+        string range = queryParams.GetEntry("pick_range")->AsString();
+        if(range != "") hasPickRange = true;
+        if(hasPickRange)
+        {
+            ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+            win->DisableUpdates();
+            
+            //
+            // This is a purely visual operation. Disable window updates while
+            // geometry is being generated.
+            //
 
+            pickAtts->SetNotifyEnabled(false);
+            intVector pickList;
+            bool parseError = StringHelpers::ParseRange(range, pickList);
+            const int numPicks = static_cast<int>(pickList.size());
+            for(int i = 0; i < numPicks; ++i)
+            {
+
+                MapNode singlePick(queryParams);
+                singlePick["pick_range"] = "";
+                singlePick["element"] = pickList[i];
+                PointQuery(singlePick);
+            }
+
+            pickAtts->SetNotifyEnabled(true);
+            win->EnableUpdates();
+        }
+    }
+    
     if (!vars.empty())
         pickAtts->SetVariables(vars);
 
@@ -3341,7 +3381,6 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     if (queryParams.HasNumericEntry("do_time"))
         timeCurve = queryParams.GetEntry("do_time")->ToInt();
     timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0);
-
     // A query with time options should override what is set from PickWindow,
     // but then PickAtts should be reset, so save what PickAtts currently has
     // to reset it later.
@@ -3429,6 +3468,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     }
     else if (pType == "DomainZone"  || pType == "DomainNode")
     {
+      
         int domain = 0, element = -1;
         if (queryParams.HasNumericEntry("use_global_id"))
         {
@@ -3451,7 +3491,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
           preserveCoord = queryParams.GetEntry("preserve_coord")->ToBool();
         else
           preserveCoord = pickAtts->GetTimePreserveCoord();
-
+        
         if (timeCurve && preserveCoord)
         {
             // need to determine the coordinate to use, and change
@@ -5648,7 +5688,6 @@ ViewerQueryManager::Query(const MapNode &queryParams)
         GetViewerState()->GetQueryAttributes()->Notify();
         return;
     }
-
     string qName = queryParams.GetEntry("query_name")->AsString();
     if (qName.empty())
     {
@@ -5691,9 +5730,13 @@ ViewerQueryManager::Query(const MapNode &queryParams)
         qtype  = GetViewerState()->GetQueryList()->GetQueryType(qName);
 
     if (qtype == QueryList::DatabaseQuery)
-        DatabaseQuery(queryParams);
+    {
+      DatabaseQuery(queryParams);
+    }
     else if (qtype == QueryList::PointQuery)
-        PointQuery(queryParams);
+    {  
+      PointQuery(queryParams);
+    }
     else if (qtype == QueryList::LineQuery)
     {
         StartLineQuery(queryParams);

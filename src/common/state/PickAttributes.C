@@ -227,6 +227,7 @@ void PickAttributes::Init()
     hasMixedGhostTypes = -1;
     linesData = false;
     showPickHighlight = false;
+    notifyEnabled = true;
     inputTopoDim = -1;
     meshCoordType = XY;
     createSpreadsheet = false;
@@ -348,6 +349,7 @@ void PickAttributes::Copy(const PickAttributes &obj)
     hasMixedGhostTypes = obj.hasMixedGhostTypes;
     linesData = obj.linesData;
     showPickHighlight = obj.showPickHighlight;
+    notifyEnabled = obj.notifyEnabled;
     inputTopoDim = obj.inputTopoDim;
     meshCoordType = obj.meshCoordType;
     createSpreadsheet = obj.createSpreadsheet;
@@ -615,6 +617,7 @@ PickAttributes::operator == (const PickAttributes &obj) const
             (hasMixedGhostTypes == obj.hasMixedGhostTypes) &&
             (linesData == obj.linesData) &&
             (showPickHighlight == obj.showPickHighlight) &&
+            (notifyEnabled == obj.notifyEnabled) &&
             (inputTopoDim == obj.inputTopoDim) &&
             (meshCoordType == obj.meshCoordType) &&
             (createSpreadsheet == obj.createSpreadsheet) &&
@@ -830,6 +833,7 @@ PickAttributes::SelectAll()
     Select(ID_hasMixedGhostTypes,          (void *)&hasMixedGhostTypes);
     Select(ID_linesData,                   (void *)&linesData);
     Select(ID_showPickHighlight,           (void *)&showPickHighlight);
+    Select(ID_notifyEnabled,               (void *)&notifyEnabled);
     Select(ID_inputTopoDim,                (void *)&inputTopoDim);
     Select(ID_meshCoordType,               (void *)&meshCoordType);
     Select(ID_createSpreadsheet,           (void *)&createSpreadsheet);
@@ -1030,6 +1034,7 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     // hasMixedGhostTypes is not persistent and should not be saved.
     // linesData is not persistent and should not be saved.
     // showPickHighlight is not persistent and should not be saved.
+    // notifyEnabled is not persistent and should not be saved.
     // inputTopoDim is not persistent and should not be saved.
     // meshCoordType is not persistent and should not be saved.
     if(completeSave || !FieldsEqual(ID_createSpreadsheet, &defaultObject))
@@ -1168,6 +1173,7 @@ PickAttributes::SetFromNode(DataNode *parentNode)
     // hasMixedGhostTypes is not persistent and was not saved.
     // linesData is not persistent and was not saved.
     // showPickHighlight is not persistent and was not saved.
+    // notifyEnabled is not persistent and was not saved.
     // inputTopoDim is not persistent and was not saved.
     // meshCoordType is not persistent and was not saved.
     if((node = searchNode->GetNode("createSpreadsheet")) != 0)
@@ -1628,6 +1634,13 @@ PickAttributes::SetShowPickHighlight(bool showPickHighlight_)
 {
     showPickHighlight = showPickHighlight_;
     Select(ID_showPickHighlight, (void *)&showPickHighlight);
+}
+
+void
+PickAttributes::SetNotifyEnabled(bool notifyEnabled_)
+{
+    notifyEnabled = notifyEnabled_;
+    Select(ID_notifyEnabled, (void *)&notifyEnabled);
 }
 
 void
@@ -2231,6 +2244,12 @@ PickAttributes::GetShowPickHighlight() const
     return showPickHighlight;
 }
 
+bool
+PickAttributes::GetNotifyEnabled() const
+{
+    return notifyEnabled;
+}
+
 int
 PickAttributes::GetInputTopoDim() const
 {
@@ -2777,6 +2796,7 @@ PickAttributes::GetFieldName(int index) const
     case ID_hasMixedGhostTypes:          return "hasMixedGhostTypes";
     case ID_linesData:                   return "linesData";
     case ID_showPickHighlight:           return "showPickHighlight";
+    case ID_notifyEnabled:               return "notifyEnabled";
     case ID_inputTopoDim:                return "inputTopoDim";
     case ID_meshCoordType:               return "meshCoordType";
     case ID_createSpreadsheet:           return "createSpreadsheet";
@@ -2873,6 +2893,7 @@ PickAttributes::GetFieldType(int index) const
     case ID_hasMixedGhostTypes:          return FieldType_int;
     case ID_linesData:                   return FieldType_bool;
     case ID_showPickHighlight:           return FieldType_bool;
+    case ID_notifyEnabled:               return FieldType_bool;
     case ID_inputTopoDim:                return FieldType_int;
     case ID_meshCoordType:               return FieldType_enum;
     case ID_createSpreadsheet:           return FieldType_bool;
@@ -2969,6 +2990,7 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_hasMixedGhostTypes:          return "int";
     case ID_linesData:                   return "bool";
     case ID_showPickHighlight:           return "bool";
+    case ID_notifyEnabled:               return "bool";
     case ID_inputTopoDim:                return "int";
     case ID_meshCoordType:               return "enum";
     case ID_createSpreadsheet:           return "bool";
@@ -3351,6 +3373,11 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_showPickHighlight:
         {  // new scope
         retval = (showPickHighlight == obj.showPickHighlight);
+        }
+        break;
+    case ID_notifyEnabled:
+        {  // new scope
+        retval = (notifyEnabled == obj.notifyEnabled);
         }
         break;
     case ID_inputTopoDim:
@@ -4628,6 +4655,41 @@ PickAttributes::AddLine(const double *_c0, const double *_c1, const int &pos)
     cellCoordinates[pos*6+4] = _c1[1];
     cellCoordinates[pos*6+5] = _c1[2];
 
+}
+
+// ****************************************************************************
+// Method: PickAttributes::Notify
+//
+// Purpose: 
+//    Notifies the observers. This is an override of an inherented method that
+//    adds the ability to disable notification. This is desirable when picking 
+//    ranges of elements, possibly 100+, for visual reasons only and not to
+//    encur the overhead of waiting for all the tabs to appear in the GUI.
+//
+// Programmer:  Matt Larsen 
+// Creation:    December 12, 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+//
+
+void
+PickAttributes::Notify()
+{
+    //
+    // Check to see if we want to notify the window
+    //
+
+    if(notifyEnabled)
+    {
+        // Call the base class's Notify method.
+        Subject::Notify();
+
+        // Now that all the Obsevrers have been called, unselect all the
+        // attributes.
+        UnSelectAll();
+    }
 }
 
 // ****************************************************************************

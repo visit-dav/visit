@@ -196,6 +196,9 @@
     <Field name="showPickHighlight" label="showPickHighlight" type="bool" internal="false" persistent="false">
       false
     </Field>
+    <Field name="notifyEnabled" label="notifyEnabled" type="bool" internal="false" persistent="false">
+      true 
+    </Field>
     <Field name="inputTopoDim" label="inputTopoDim" type="int" internal="true" persistent="false">
       -1
     </Field>
@@ -233,6 +236,8 @@
     <Function name="SetRayPoint2" user="true" member="true">
     </Function>
     <Function name="AddLine" user="true" member="true">
+    </Function>
+    <Function name="Notify" user="true" member="true">
     </Function>
     <Function name="ClearLines" user="true" member="true">
     </Function>

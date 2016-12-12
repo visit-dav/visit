@@ -1187,3 +1187,129 @@ StringHelpers::UpperCase(const std::string &src)
     return tmp;
 }
 
+// ****************************************************************************
+//  Method:  StringHelpers::StringToInt
+//
+//  Purpose:
+//     Utility method to convert a string to an int. returns true if the 
+//     conversion was successful.
+//  Arguments 
+//    input: the string to convert to an int
+//    output: an integer representation of the string
+//
+//  Returns:
+//    boolean indicating if the conversion was successful.
+//
+//  Progammer:  Matt Larsen
+//  Creation:   Dec 12, 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool 
+StringHelpers::StringToInt(const string &input, int &output)
+{
+    bool valid 
+        = input.find_first_not_of(" 0123456789") == std::string::npos;
+    if(!valid) return false;
+    
+    output = atoi(input.c_str());
+    //
+    //  Check for conversion errors
+    //
+    if(output == 0 && input != "0") 
+        return false;
+
+    return true;
+}
+//
+// ****************************************************************************
+//  Method:  StringHelpers::ParseRange
+//
+//  Purpose:
+//      To parse a string that constains a range of positive integers
+//      in a comma separated list. For example, "1,5-6,10" becomes "1,5,6,10".
+//  
+//
+//  Progammer:  Matt Larsen
+//  Creation:   Dec 12, 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+StringHelpers::ParseRange(const string range, std::vector<int> &list)
+{
+    std::vector<std::string> rangeTokens = StringHelpers::split(range, ',');
+
+    bool parseError = false;
+    for(int i =0; i < rangeTokens.size(); ++i)
+    {
+        int first = 0;
+        int last = 0;
+        std::vector<std::string> currentRange 
+            = StringHelpers::split(rangeTokens.at(i),'-');
+        const int size = static_cast<int>(currentRange.size());
+        
+        //
+        // Check to see that we have exactly one or two items 
+        //
+
+        if(size < 1 || size > 2) 
+        {
+            parseError = true;
+            continue;
+        }
+       
+        size_t dashPos = rangeTokens[i].find("-");
+        bool hasDash = dashPos != std::string::npos;
+
+        if(hasDash && size == 1)
+        {
+            parseError = true;
+            continue;
+        }
+         
+        bool valid = StringHelpers::StringToInt(currentRange[0], first);
+
+        if(!valid)
+        {
+            parseError = true;
+            continue;
+        }
+        
+        if(size == 1) 
+        {
+            list.push_back(first);
+            continue;
+        }
+
+        valid = StringHelpers::StringToInt(currentRange[1], last);
+
+        if(!valid)
+        {
+            parseError = true;
+            continue;
+        } 
+        
+        //
+        // Allow for backward range and don't go into inf loop
+        //
+
+        if(first > last)
+        {
+            int tmp = first;
+            first = last;
+            last = tmp;
+        }
+
+        for(int n = first; n <= last; ++n)
+        {
+            list.push_back(n);
+        }
+    }
+  
+    return parseError;
+}
+

@@ -1241,6 +1241,44 @@ PickAttributes::AddLine(const double *_c0, const double *_c1, const int &pos)
 
 }
 
+Function: Notify 
+Declaration: void Notify();
+Definition:
+// ****************************************************************************
+// Method: PickAttributes::Notify
+//
+// Purpose: 
+//    Notifies the observers. This is an override of an inherented method that
+//    adds the ability to disable notification. This is desirable when picking 
+//    ranges of elements, possibly 100+, for visual reasons only and not to
+//    encur the overhead of waiting for all the tabs to appear in the GUI.
+//
+// Programmer:  Matt Larsen 
+// Creation:    December 12, 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+//
+
+void
+PickAttributes::Notify()
+{
+    //
+    // Check to see if we want to notify the window
+    //
+
+    if(notifyEnabled)
+    {
+        // Call the base class's Notify method.
+        Subject::Notify();
+
+        // Now that all the Obsevrers have been called, unselect all the
+        // attributes.
+        UnSelectAll();
+    }
+}
+
 Function: ClearLines
 Declaration: void ClearLines();
 Definition:
@@ -1488,4 +1526,5 @@ PyPickAttributes_CallLogRoutine(Subject *subj, void *data)
         cb(s);
     }
 }
+
 

@@ -12436,7 +12436,6 @@ visit_ZonePick(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     pickParams["query_name"] = std::string("Pick");
-
     if (!suppressQueryOutputState)
         ToggleSuppressQueryOutput_NoLogging(true);
 
@@ -13417,6 +13416,9 @@ visit_PickByZone_deprecated(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
+//   Matt Larsen, Mon Dec  12 09:23:11 PST 2016
+//   Allow pick only by range and not specify element id. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -13454,7 +13456,7 @@ visit_PickByZone(PyObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
     }
-    if (!pickParams.HasEntry("element"))
+    if (!pickParams.HasEntry("element") && !pickParams.HasEntry("pick_range"))
     {
         VisItErrorFunc("PickByZone: requires \"element\" argument.");
         return NULL;
@@ -13567,6 +13569,9 @@ visit_PickByGlobalZone_deprecated(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
+//   Matt Larsen, Mon Dec  12 09:23:11 PST 2016
+//   Allow pick only by range and not specify element id. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -13604,7 +13609,7 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
     }
-    if (!pickParams.HasEntry("element"))
+    if (!pickParams.HasEntry("element") && !pickParams.HasEntry("pick_range"))
     {
         VisItErrorFunc("PickByGlobalZone: requires \"element\" argument.");
         return NULL;
@@ -13729,6 +13734,9 @@ visit_PickByNode_deprecated(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
+//   Matt Larsen, Mon Dec  12 09:23:11 PST 2016
+//   Allow pick only by range and not specify element id. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -13766,11 +13774,12 @@ visit_PickByNode(PyObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
     }
-    if (!pickParams.HasEntry("element"))
+    if (!pickParams.HasEntry("element") && !pickParams.HasEntry("pick_range"))
     {
         VisItErrorFunc("PickByNode: requires \"element\" argument.");
         return NULL;
-    } 
+    }
+  
     pickParams["query_name"] = std::string("Pick");
     pickParams["pick_type"] = std::string("DomainNode");
 
@@ -13882,6 +13891,9 @@ visit_PickByGlobalNode_deprecated(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
+//   Matt Larsen, Mon Dec  12 09:23:11 PST 2016
+//   Allow pick only by range and not specify element id. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -13919,7 +13931,7 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
     }
-    if (!pickParams.HasEntry("element"))
+    if (!pickParams.HasEntry("element") && !pickParams.HasEntry("pick_range"))
     {
         VisItErrorFunc("PickByGlobalNode:  requires \"element\" argument.");
         return NULL;

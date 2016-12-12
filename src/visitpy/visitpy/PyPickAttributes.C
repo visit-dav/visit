@@ -177,6 +177,11 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%sshowPickHighlight = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetNotifyEnabled())
+        SNPRINTF(tmpStr, 1000, "%snotifyEnabled = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%snotifyEnabled = 0\n", prefix);
+    str += tmpStr;
     const char *meshCoordType_names = "XY, RZ, ZR";
     switch (atts->GetMeshCoordType())
     {
@@ -717,6 +722,30 @@ PickAttributes_GetShowPickHighlight(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PickAttributes_SetNotifyEnabled(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the notifyEnabled in the object.
+    obj->data->SetNotifyEnabled(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PickAttributes_GetNotifyEnabled(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetNotifyEnabled()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 PickAttributes_SetMeshCoordType(PyObject *self, PyObject *args)
 {
     PickAttributesObject *obj = (PickAttributesObject *)self;
@@ -896,6 +925,8 @@ PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
     {"GetReusePickLetter", PickAttributes_GetReusePickLetter, METH_VARARGS},
     {"SetShowPickHighlight", PickAttributes_SetShowPickHighlight, METH_VARARGS},
     {"GetShowPickHighlight", PickAttributes_GetShowPickHighlight, METH_VARARGS},
+    {"SetNotifyEnabled", PickAttributes_SetNotifyEnabled, METH_VARARGS},
+    {"GetNotifyEnabled", PickAttributes_GetNotifyEnabled, METH_VARARGS},
     {"SetMeshCoordType", PickAttributes_SetMeshCoordType, METH_VARARGS},
     {"GetMeshCoordType", PickAttributes_GetMeshCoordType, METH_VARARGS},
     {"SetCreateSpreadsheet", PickAttributes_SetCreateSpreadsheet, METH_VARARGS},
@@ -972,6 +1003,8 @@ PyPickAttributes_getattr(PyObject *self, char *name)
         return PickAttributes_GetReusePickLetter(self, NULL);
     if(strcmp(name, "showPickHighlight") == 0)
         return PickAttributes_GetShowPickHighlight(self, NULL);
+    if(strcmp(name, "notifyEnabled") == 0)
+        return PickAttributes_GetNotifyEnabled(self, NULL);
     if(strcmp(name, "meshCoordType") == 0)
         return PickAttributes_GetMeshCoordType(self, NULL);
     if(strcmp(name, "XY") == 0)
@@ -1046,6 +1079,8 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PickAttributes_SetReusePickLetter(self, tuple);
     else if(strcmp(name, "showPickHighlight") == 0)
         obj = PickAttributes_SetShowPickHighlight(self, tuple);
+    else if(strcmp(name, "notifyEnabled") == 0)
+        obj = PickAttributes_SetNotifyEnabled(self, tuple);
     else if(strcmp(name, "meshCoordType") == 0)
         obj = PickAttributes_SetMeshCoordType(self, tuple);
     else if(strcmp(name, "createSpreadsheet") == 0)
