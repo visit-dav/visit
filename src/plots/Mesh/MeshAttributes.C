@@ -1450,6 +1450,9 @@ MeshAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //    Removed point type and point size from test, changed pointSizeVar test
 //    so that only true if changes require adding new secondary varaible. 
 //
+//    Kathleen Biagas, Thu Apr 23 13:14:51 PDT 2015
+//    Removed never-used oulineOnly and errorTolerance atts.
+//
 // ****************************************************************************
 
 bool
