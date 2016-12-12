@@ -116,6 +116,8 @@ namespace StringHelpers
                                          const std::string &str_b);
     std::string UTILITY_API UpperCase(const std::string &src);
 
+    bool UTILITY_API StringToInt(const std::string &, int &);
+    bool UTILITY_API ParseRange(const std::string , std::vector<int> &);
 // ****************************************************************************
 //  Function: str_to_u_numeric
 //

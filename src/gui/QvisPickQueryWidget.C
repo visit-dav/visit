@@ -391,6 +391,44 @@ QvisPickQueryWidget::GetElement(int *num)
 
 
 // ****************************************************************************
+// Method: QvisPickQueryWidget::GetElementRange
+//
+// Purpose: 
+//   Retrieves the element range from the text field.
+//
+// Arguments:
+//   range  : output value that will be non-empty if the text field constains
+//            a possible range. Parsing occurs in the view query manager 
+//
+// Returns:    True if it worked.
+//
+// Programmer: Matt Larsen
+// Creation:  December 12, 2016 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool 
+QvisPickQueryWidget::GetElementRange(std::string &range)
+{
+    QString temp(element->displayText().simplified());
+    bool okay = !temp.isEmpty();
+    if (okay)
+    {
+      std::string possibleRange = temp.toStdString();
+      size_t hasComma = possibleRange.find(","); 
+      size_t hasDash = possibleRange.find("-"); 
+      if(hasComma != std::string::npos || hasDash != std::string::npos)
+      {
+        range = possibleRange; 
+      }
+      else range = "";
+    }
+    return okay;
+}
+
+// ****************************************************************************
 // Method: QvisPickQueryWidget::GetElementType
 //
 // Purpose: 
@@ -457,6 +495,7 @@ QvisPickQueryWidget::GetQueryParameters(MapNode &params)
     int  curvePlotType = GetPlotType();
     int preserveCoord = (int) GetTimePreservesCoord();
     int dom = 0, el = 0;
+    std::string range;
     switch (pickType->currentIndex())
     {
       case 0: // Pick by zone coordinate
@@ -482,6 +521,8 @@ QvisPickQueryWidget::GetQueryParameters(MapNode &params)
               noerrors = false;
           if (!GetDomain(&dom))
               noerrors = false;
+          if (!GetElementRange(range))
+              noerrors = false;
           if (noerrors)
           {
               if (GetElementType() == 0)
@@ -494,6 +535,8 @@ QvisPickQueryWidget::GetQueryParameters(MapNode &params)
           break;
       case 3: // Pick by global element 
           if (!GetElement(&el))
+              noerrors = false;
+          if (!GetElementRange(range))
               noerrors = false;
           if (noerrors)
           { 
@@ -513,6 +556,8 @@ QvisPickQueryWidget::GetQueryParameters(MapNode &params)
     {
         params["curve_plot_type"] = curvePlotType;
         params["preserve_coord"] = preserveCoord;
+        if(range != "") 
+            params["pick_range"] = range;
     }
     return noerrors; 
 }

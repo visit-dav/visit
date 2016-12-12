@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class PickAttributes extends AttributeSubject
 {
-    private static int PickAttributes_numAdditionalAtts = 72;
+    private static int PickAttributes_numAdditionalAtts = 73;
 
     // Enum values
     public final static int PICKTYPE_ZONE = 0;
@@ -160,6 +160,7 @@ public class PickAttributes extends AttributeSubject
         hasMixedGhostTypes = -1;
         linesData = false;
         showPickHighlight = false;
+        notifyEnabled = true;
         inputTopoDim = -1;
         meshCoordType = COORDINATETYPE_XY;
         createSpreadsheet = false;
@@ -254,6 +255,7 @@ public class PickAttributes extends AttributeSubject
         hasMixedGhostTypes = -1;
         linesData = false;
         showPickHighlight = false;
+        notifyEnabled = true;
         inputTopoDim = -1;
         meshCoordType = COORDINATETYPE_XY;
         createSpreadsheet = false;
@@ -414,6 +416,7 @@ public class PickAttributes extends AttributeSubject
         hasMixedGhostTypes = obj.hasMixedGhostTypes;
         linesData = obj.linesData;
         showPickHighlight = obj.showPickHighlight;
+        notifyEnabled = obj.notifyEnabled;
         inputTopoDim = obj.inputTopoDim;
         meshCoordType = obj.meshCoordType;
         createSpreadsheet = obj.createSpreadsheet;
@@ -656,6 +659,7 @@ public class PickAttributes extends AttributeSubject
                 (hasMixedGhostTypes == obj.hasMixedGhostTypes) &&
                 (linesData == obj.linesData) &&
                 (showPickHighlight == obj.showPickHighlight) &&
+                (notifyEnabled == obj.notifyEnabled) &&
                 (inputTopoDim == obj.inputTopoDim) &&
                 (meshCoordType == obj.meshCoordType) &&
                 (createSpreadsheet == obj.createSpreadsheet) &&
@@ -1090,58 +1094,64 @@ public class PickAttributes extends AttributeSubject
         Select(62);
     }
 
+    public void SetNotifyEnabled(boolean notifyEnabled_)
+    {
+        notifyEnabled = notifyEnabled_;
+        Select(63);
+    }
+
     public void SetInputTopoDim(int inputTopoDim_)
     {
         inputTopoDim = inputTopoDim_;
-        Select(63);
+        Select(64);
     }
 
     public void SetMeshCoordType(int meshCoordType_)
     {
         meshCoordType = meshCoordType_;
-        Select(64);
+        Select(65);
     }
 
     public void SetCreateSpreadsheet(boolean createSpreadsheet_)
     {
         createSpreadsheet = createSpreadsheet_;
-        Select(65);
+        Select(66);
     }
 
     public void SetSubsetName(String subsetName_)
     {
         subsetName = subsetName_;
-        Select(66);
+        Select(67);
     }
 
     public void SetFloatFormat(String floatFormat_)
     {
         floatFormat = floatFormat_;
-        Select(67);
+        Select(68);
     }
 
     public void SetTimePreserveCoord(boolean timePreserveCoord_)
     {
         timePreserveCoord = timePreserveCoord_;
-        Select(68);
+        Select(69);
     }
 
     public void SetTimeCurveType(int timeCurveType_)
     {
         timeCurveType = timeCurveType_;
-        Select(69);
+        Select(70);
     }
 
     public void SetTimeOptions(MapNode timeOptions_)
     {
         timeOptions = timeOptions_;
-        Select(70);
+        Select(71);
     }
 
     public void SetPlotRequested(MapNode plotRequested_)
     {
         plotRequested = plotRequested_;
-        Select(71);
+        Select(72);
     }
 
     // Property getting methods
@@ -1208,6 +1218,7 @@ public class PickAttributes extends AttributeSubject
     public int      GetHasMixedGhostTypes() { return hasMixedGhostTypes; }
     public boolean  GetLinesData() { return linesData; }
     public boolean  GetShowPickHighlight() { return showPickHighlight; }
+    public boolean  GetNotifyEnabled() { return notifyEnabled; }
     public int      GetInputTopoDim() { return inputTopoDim; }
     public int      GetMeshCoordType() { return meshCoordType; }
     public boolean  GetCreateSpreadsheet() { return createSpreadsheet; }
@@ -1355,22 +1366,24 @@ public class PickAttributes extends AttributeSubject
         if(WriteSelect(62, buf))
             buf.WriteBool(showPickHighlight);
         if(WriteSelect(63, buf))
-            buf.WriteInt(inputTopoDim);
+            buf.WriteBool(notifyEnabled);
         if(WriteSelect(64, buf))
-            buf.WriteInt(meshCoordType);
+            buf.WriteInt(inputTopoDim);
         if(WriteSelect(65, buf))
-            buf.WriteBool(createSpreadsheet);
+            buf.WriteInt(meshCoordType);
         if(WriteSelect(66, buf))
-            buf.WriteString(subsetName);
+            buf.WriteBool(createSpreadsheet);
         if(WriteSelect(67, buf))
-            buf.WriteString(floatFormat);
+            buf.WriteString(subsetName);
         if(WriteSelect(68, buf))
-            buf.WriteBool(timePreserveCoord);
+            buf.WriteString(floatFormat);
         if(WriteSelect(69, buf))
-            buf.WriteInt(timeCurveType);
+            buf.WriteBool(timePreserveCoord);
         if(WriteSelect(70, buf))
-            timeOptions.Write(buf);
+            buf.WriteInt(timeCurveType);
         if(WriteSelect(71, buf))
+            timeOptions.Write(buf);
+        if(WriteSelect(72, buf))
             plotRequested.Write(buf);
     }
 
@@ -1578,30 +1591,33 @@ public class PickAttributes extends AttributeSubject
             SetShowPickHighlight(buf.ReadBool());
             break;
         case 63:
-            SetInputTopoDim(buf.ReadInt());
+            SetNotifyEnabled(buf.ReadBool());
             break;
         case 64:
-            SetMeshCoordType(buf.ReadInt());
+            SetInputTopoDim(buf.ReadInt());
             break;
         case 65:
-            SetCreateSpreadsheet(buf.ReadBool());
+            SetMeshCoordType(buf.ReadInt());
             break;
         case 66:
-            SetSubsetName(buf.ReadString());
+            SetCreateSpreadsheet(buf.ReadBool());
             break;
         case 67:
-            SetFloatFormat(buf.ReadString());
+            SetSubsetName(buf.ReadString());
             break;
         case 68:
-            SetTimePreserveCoord(buf.ReadBool());
+            SetFloatFormat(buf.ReadString());
             break;
         case 69:
-            SetTimeCurveType(buf.ReadInt());
+            SetTimePreserveCoord(buf.ReadBool());
             break;
         case 70:
-            timeOptions.Read(buf);
+            SetTimeCurveType(buf.ReadInt());
             break;
         case 71:
+            timeOptions.Read(buf);
+            break;
+        case 72:
             plotRequested.Read(buf);
             break;
         }
@@ -1695,6 +1711,7 @@ public class PickAttributes extends AttributeSubject
         str = str + intToString("hasMixedGhostTypes", hasMixedGhostTypes, indent) + "\n";
         str = str + boolToString("linesData", linesData, indent) + "\n";
         str = str + boolToString("showPickHighlight", showPickHighlight, indent) + "\n";
+        str = str + boolToString("notifyEnabled", notifyEnabled, indent) + "\n";
         str = str + intToString("inputTopoDim", inputTopoDim, indent) + "\n";
         str = str + indent + "meshCoordType = ";
         if(meshCoordType == COORDINATETYPE_XY)
@@ -1817,6 +1834,7 @@ public class PickAttributes extends AttributeSubject
     private int      hasMixedGhostTypes;
     private boolean  linesData;
     private boolean  showPickHighlight;
+    private boolean  notifyEnabled;
     private int      inputTopoDim;
     private int      meshCoordType;
     private boolean  createSpreadsheet;

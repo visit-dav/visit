@@ -203,6 +203,7 @@ public:
     void SetHasMixedGhostTypes(int hasMixedGhostTypes_);
     void SetLinesData(bool linesData_);
     void SetShowPickHighlight(bool showPickHighlight_);
+    void SetNotifyEnabled(bool notifyEnabled_);
     void SetInputTopoDim(int inputTopoDim_);
     void SetMeshCoordType(CoordinateType meshCoordType_);
     void SetCreateSpreadsheet(bool createSpreadsheet_);
@@ -303,6 +304,7 @@ public:
     int                GetHasMixedGhostTypes() const;
     bool               GetLinesData() const;
     bool               GetShowPickHighlight() const;
+    bool               GetNotifyEnabled() const;
     int                GetInputTopoDim() const;
     CoordinateType     GetMeshCoordType() const;
     bool               GetCreateSpreadsheet() const;
@@ -364,6 +366,7 @@ public:
     void SetRayPoint1(const doubleVector &);
     void SetRayPoint2(const doubleVector &);
     void AddLine(const double *_c0, const double *_c1, const int &pos);
+    void Notify();
     void ClearLines();
     void CreateOutputMapNode(MapNode &m, bool withLetter);
     void CreateXMLString(std::string &os, bool withLetter = true);
@@ -433,6 +436,7 @@ public:
         ID_hasMixedGhostTypes,
         ID_linesData,
         ID_showPickHighlight,
+        ID_notifyEnabled,
         ID_inputTopoDim,
         ID_meshCoordType,
         ID_createSpreadsheet,
@@ -511,6 +515,7 @@ private:
     int                  hasMixedGhostTypes;
     bool                 linesData;
     bool                 showPickHighlight;
+    bool                 notifyEnabled;
     int                  inputTopoDim;
     int                  meshCoordType;
     bool                 createSpreadsheet;
@@ -525,6 +530,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibbiibssbimm"
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibbbiibssbimm"
 
 #endif
