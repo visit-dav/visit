@@ -1359,17 +1359,16 @@ CumulativeQuery<CQCellIdentifier, CQSelection>::SelectAndHistogram(
         // For IDs the number of bins is based on the user defined
         // number of bins.
         numBins = props.GetHistogramNumBins();
+        double cellsPerBin = double(totalCells) / double(numBins);
+
         binPoints = new int[numBins + 1];
 
         for(int i = 0; i < numBins+1; ++i)
-        {
-            float t = float(i) / float(numBins);
-            binPoints[i] = int(t * float(totalCells));
-        }
-
+          binPoints[i] = int(double(i) * cellsPerBin);
+          
         // Capture the ID of the first cell in the start bin.
         narrowedSelection.startBinID = allIds[index[0]];
-        narrowedSelection.endBinID = allIds[index[totalCells-1]];
+        narrowedSelection.endBinID   = allIds[index[totalCells-1]];
     }
 
     // Matches Histogram
@@ -1394,7 +1393,7 @@ CumulativeQuery<CQCellIdentifier, CQSelection>::SelectAndHistogram(
         {
             // Get the threshold for this bin. The threshold is based on
             // the frequency of matches.
-            float t = min + float(i) * (max-min) / float(numBins);
+            double t = min + double(i) * (max-min) / double(numBins);
 
             while( allFrequencies[index[j]] < t )
               ++j;
@@ -1565,7 +1564,7 @@ CumulativeQuery<CQCellIdentifier, CQSelection>::SelectAndHistogram(
     {
         // Get the threshold for this bin. The threshold is based on
         // the frequency of matches.
-        float t = min + float(i) * (max-min) / float(numBins);
+        double t = min + double(i) * (max-min) / double(numBins);
 
         while( allVariables[index[j]] < t )
           ++j;
