@@ -95,4 +95,4 @@ fixed number of vectors or by setting a stride. To set a fixed number of
 vectors, select the **N vectors** radio button and enter a new number of
 vectors into the **N vectors** text field. To reduce the number of vectors
 by setting the stride, select the **Stride** radio button and enter a new
-stride value into the **Stride**text field.
+stride value into the **Stride** text field.
