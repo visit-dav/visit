@@ -131,7 +131,7 @@ inline Triplex operator ^ (const Triplex &obj, float n)
     // http://www.bugman123.com/Hypercomplex/index.html
     float r = obj.mag();
     float theta = n * atan2(obj.y,obj.x);
-    float phi = (r <= 0.) ? (n * asin(1)) : (n * asin(obj.z/r));
+    float phi = (r <= 0.) ? (n * asin(1.)) : (n * asin(obj.z/r));
     float rn = pow(r,n);
     float newx = rn * cos(theta) * cos(phi);
     float newy = rn * sin(theta) * cos(phi);
