@@ -278,7 +278,7 @@ diff -c Modules/_ctypes/libffi/src/x86/ffi64.c.orig Modules/_ctypes/libffi/src/x
   #if defined(__SUNPRO_C)
 EOF
     if [[ $? != 0 ]] ; then
-        warn "Python patch for icc fialed."
+        warn "Python patch for icc failed."
         return 1
     fi
 
