@@ -65,11 +65,11 @@ function bv_adios_initialize_vars
 
 function bv_adios_info
 {
-    export ADIOS_FILE=${ADIOS_FILE:-"adios-1.10.0.tar.gz"}
-    export ADIOS_VERSION=${ADIOS_VERSION:-"1.10.0"}
-    export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.10.0"}
-    export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.10.0"}
-    export ADIOS_MD5_CHECKSUM="f438e3ec790a1a088c8c760abe71d1fb"
+    export ADIOS_FILE=${ADIOS_FILE:-"adios-1.11.0.tar.gz"}
+    export ADIOS_VERSION=${ADIOS_VERSION:-"1.11.0"}
+    export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.11.0"}
+    export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.11.0"}
+    export ADIOS_MD5_CHECKSUM="0af25c6eba7f78333d6ab50eba06652c"
     export ADIOS_SHA256_CHECKSUM=""
 }
 
