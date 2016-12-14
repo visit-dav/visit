@@ -60,7 +60,7 @@ function bv_fastbit_host_profile
         echo "##" >> $HOSTCONF
         echo "SETUP_APP_VERSION(FASTBIT $FASTBIT_VERSION)" >> $HOSTCONF
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_FASTBIT_DIR \${VISITHOME}/fastbit/$FASTBIT_VERSION/\${VISITARCH})" \
+            "VISIT_OPTION_DEFAULT(VISIT_FASTBIT_DIR \${VISITHOME}/fastbit/\${FASTBIT_VERSION}/\${VISITARCH})" \
             >> $HOSTCONF
     fi
 

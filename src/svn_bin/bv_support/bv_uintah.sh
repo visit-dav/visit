@@ -114,7 +114,7 @@ function bv_uintah_host_profile
         else
             echo "SETUP_APP_VERSION(UINTAH $UINTAH_VERSION)" >> $HOSTCONF
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR \${VISITHOME}/uintah/$UINTAH_VERSION/\${VISITARCH})" \
+                "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR \${VISITHOME}/uintah/\${UINTAH_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF 
         fi
     fi
