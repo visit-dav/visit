@@ -6,13 +6,12 @@
 #ifdef HAVE_LIBFASTBIT
 
 #include "indexfile.h"
-#include <vector>
-#include <map>
-#include <string>
-#include <assert.h>
 #include "timestep.h"   // H5_FQ_Timestep
 #include "ibis.h"       // H5_FQ_Timestep
 
+#include <vector>
+#include <map>
+#include <string>
 
 /*! \mainpage HDF5-FastQuery
 

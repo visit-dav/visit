@@ -6,6 +6,7 @@
 
 #ifdef HAVE_LIBFASTBIT
 
+#include "fastbit-config.h"
 #include "indexfile.h"  // the underline HDF5 operations
 #include <column.h>     // ibis::column
 #include <part.h>       // ibis::part
@@ -32,7 +33,11 @@ public:
     /// indexes.  The second argument in FastBit specifies the number of
     /// threads used to build the indexes, but this implementation always
     /// always uses one thread.
+#if FASTBIT_IBIS_INT_VERSION < 2000000
     virtual int buildIndexes(const char* opt=0, int =1);
+#else
+    virtual int buildIndexes(const char* iopt, int nthr);
+#endif
     /// Build index for the named dataset in the time step.  The optional
     /// argument is the binning option.  The format for binning option is
     /// "<binning xxxx />".  If the option is not specified or the string
@@ -161,9 +166,13 @@ public:
     selectInts(const ibis::bitvector& mask) const;
     virtual ibis::array_t<int64_t>*
     selectLongs(const ibis::bitvector& mask) const;
+#if FASTBIT_IBIS_INT_VERSION < 2000000
     virtual ibis::array_t<char>*
     selectBytes(const ibis::bitvector& mask) const;
-
+#else
+    virtual ibis::array_t<signed char>*
+    selectBytes(const ibis::bitvector& mask) const;
+#endif
     /// Return the H5_Index object containing this variable.
     H5_Index& getH5Index() const {return h5file_;}
 
