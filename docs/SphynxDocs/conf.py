@@ -45,7 +45,20 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'VisIt User Manual'
-copyright = u'2016, LLNL'
+copyright = u'2008, LLNL, UCRL-SM-220449\n'\
+'This document was prepared as an account of work sponsored by an agency of\n'\
+'the United States government. Neither the United States government nor\n'\
+'Lawrence Livermore National Security, LLC, nor any of their employees makes\n'\
+'any warranty, expressed or implied, or assumes any legal liability or\n'\
+'responsibility for the accuracy, completeness, or usefulness of any information,\n'\
+'apparatus, product, or process disclosed, or represents that its use would not\n'\
+'infringe privately owned rights. Reference herein to any specific commercial\n'\
+'product, process, or service by trade name, trademark, manufacturer, or otherwise\n'\
+'does not necessarily constitute or imply its endorsement, recommendation, or\n'\
+'favoring by the United States government or Lawrence Livermore National Security,\n'\
+'LLC. The views and opinions of authors expressed herein do not necessarily state\n'\
+'or reflect those of the United States government or Lawrence Livermore National\n'\
+'Security, LLC, and shall not be used for advertising or product endorsement purposes.'
 author = u'LLNL'
 
 # The version info for the project you're documenting, acts as replacement for
