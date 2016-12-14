@@ -111,7 +111,7 @@ function bv_adios_host_profile
         else
             echo "SETUP_APP_VERSION(ADIOS $ADIOS_VERSION)" >> $HOSTCONF
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR \${VISITHOME}/adios/$ADIOS_VERSION/\${VISITARCH})" \
+                "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR \${VISITHOME}/adios/\${ADIOS_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF 
         fi
     fi
