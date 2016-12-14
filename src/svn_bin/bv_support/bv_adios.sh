@@ -65,10 +65,10 @@ function bv_adios_initialize_vars
 
 function bv_adios_info
 {
-    export ADIOS_FILE=${ADIOS_FILE:-"adios-1.11.0.tar.gz"}
     export ADIOS_VERSION=${ADIOS_VERSION:-"1.11.0"}
-    export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.11.0"}
-    export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.11.0"}
+    export ADIOS_FILE=${ADIOS_FILE:-"adios-${ADIOS_VERSION}.tar.gz"}
+    export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"${ADIOS_VERSION}"}
+    export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-${ADIOS_VERSION}"}
     export ADIOS_MD5_CHECKSUM="0af25c6eba7f78333d6ab50eba06652c"
     export ADIOS_SHA256_CHECKSUM=""
 }
@@ -105,8 +105,11 @@ function bv_adios_host_profile
         echo "##" >> $HOSTCONF
 
         if [[ "$USE_SYSTEM_ADIOS" == "yes" ]]; then
+            warn "Assuming version 1.11.0 for Adios"
+            echo "SETUP_APP_VERSION(UINTAH 1.11.0)" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR $ADIOS_INSTALL_DIR)" >> $HOSTCONF 
         else
+            echo "SETUP_APP_VERSION(ADIOS $ADIOS_VERSION)" >> $HOSTCONF
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR \${VISITHOME}/adios/$ADIOS_VERSION/\${VISITARCH})" \
                 >> $HOSTCONF 
@@ -140,7 +143,7 @@ function bv_adios_dry_run
 #
 # ***************************************************************************
 
-function apply_ADIOS_1_6_0_patch
+function apply_adios_1_6_0_patch
 {
     # fix for osx -- malloc.h doesn't exist (examples/C/schema includes this file)
     info "Patching ADIOS"
@@ -243,10 +246,10 @@ EOF
     return 0;
 }
 
-function apply_ADIOS_patch
+function apply_adios_patch
 {
     if [[ ${ADIOS_VERSION} == 1.6.0 ]] ; then
-        apply_ADIOS_1_6_0_patch
+        apply_adios_1_6_0_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -255,8 +258,7 @@ function apply_ADIOS_patch
     return 0
 }
 
-
-function build_ADIOS
+function build_adios
 {
     #
     # Prepare build dir
@@ -273,7 +275,7 @@ function build_ADIOS
     #
     # Apply patches
     #
-    apply_ADIOS_patch
+    apply_adios_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_ADIOS == 1 ]] ; then
             warn "Giving up on ADIOS build because the patch failed."
@@ -314,25 +316,39 @@ function build_ADIOS
                 --disable-fortran \
                 --without-netcdf --without-nc4par --without-hdf5 --without-phdf5 --without-mxml \
                 --prefix=\"$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH\""
-    
-    
+
     if [[ $? != 0 ]] ; then
         warn "ADIOS configure failed.  Giving up"
         return 1
     fi
 
     #
+    # Apply patches
+    #
+    apply_adios_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_adios == 1 ]] ; then
+            warn "Giving up on Adios build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    #
     # Build ADIOS
     #
     info "Building ADIOS . . . (~2 minutes)"
-
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "ADIOSbuild failed.  Giving up"
+        warn "ADIOS build failed.  Giving up"
         return 1
     fi
-    info "Installing ADIOS . . ."
 
+    info "Installing ADIOS . . ."
     $MAKE install
     if [[ $? != 0 ]] ; then
         warn "ADIOS build (make install) failed.  Giving up"
@@ -343,6 +359,7 @@ function build_ADIOS
         chmod -R ug+w,a+rX "$VISITDIR/ADIOS"
         chgrp -R ${GROUP} "$VISITDIR/ADIOS"
     fi
+
     cd "$START_DIR"
     info "Done with ADIOS"
     return 0
@@ -379,7 +396,7 @@ function bv_adios_build
             info "Skipping ADIOS build.  ADIOS is already installed."
         else
             info "Building ADIOS (~1 minutes)"
-            build_ADIOS
+            build_adios
             if [[ $? != 0 ]] ; then
                 error "Unable to build or install ADIOS.  Bailing out."
             fi
