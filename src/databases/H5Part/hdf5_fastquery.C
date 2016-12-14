@@ -1,6 +1,10 @@
 #include "hdf5_fastquery.h"
 #include "base_api.h"
 
+#include <fastbit-config.h>
+
+#include <assert.h>
+
 #ifdef HAVE_LIBFASTBIT
 
 /// Constructor.
@@ -25,14 +29,18 @@ HDF5_FQ::HDF5_FQ(const int v, const char* rcfile, const char* logfile)
 }
 
 HDF5_FQ::~HDF5_FQ() {
+#if FASTBIT_IBIS_INT_VERSION < 2000000
     ibis::util::clean(timeSlices);
+#endif
     delete dataFile;
     ibis::fileManager::instance().clear();
     ibis::util::closeLogFile();
 }
 
 void HDF5_FQ::deleteSlices() {
+#if FASTBIT_IBIS_INT_VERSION < 2000000
     ibis::util::clean(timeSlices);
+#endif
 }
 
 void HDF5_FQ::createSlices() {
@@ -81,7 +89,9 @@ void HDF5_FQ::openFile(const std::string &name, const bool useH5PartFile) {
     }
 
     // perform the clean up
+#if FASTBIT_IBIS_INT_VERSION < 2000000
     ibis::util::clean(timeSlices);
+#endif
 // would prefer to simply close the existing file rather than create a new
 // dataFile object, however, it does not seem to work as of May 5, 2009
 //     if (dataFile != 0)
@@ -195,12 +205,20 @@ void HDF5_FQ::getVariableInformation(const std::string &variableName,
 }
 
 void HDF5_FQ::buildSpecificTimeIndex(int64_t time) {
-    timeSlices[time]->buildIndexes();
-}
+#if FASTBIT_IBIS_INT_VERSION < 2000000
+  timeSlices[time]->buildIndexes();
+#else
+  timeSlices[time]->buildIndexes(0,1);
+#endif
+  }
 
 void HDF5_FQ::buildAllIndexes() {
     for(int64_t i=0; i<(int64_t)numTimeSlices(); i++){
-        timeSlices[i]->buildIndexes();
+#if FASTBIT_IBIS_INT_VERSION < 2000000
+      timeSlices[i]->buildIndexes();
+#else
+      timeSlices[i]->buildIndexes(0,1);
+#endif
     }
 }
 
