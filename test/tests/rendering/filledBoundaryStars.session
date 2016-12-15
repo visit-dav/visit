@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<Object name="VisIt">
+    <Field name="Version" type="string">2.12.0</Field>
+    <Object name="VIEWER">
+        <Object name="ViewerSubject">
+            <Object name="SourceMap">
+                <Field name="SOURCE00" type="string">galaxy0000.silo</Field>
+            </Object>
+            <Object name="SourcePlugins">
+                <Field name="galaxy0000.silo" type="string">Silo_1.0</Field>
+            </Object>
+            <Object name="ViewerWindowManager">
+                <Field name="viewExtentsType" type="string">AVT_ORIGINAL_EXTENTS</Field>
+                <Object name="Windows">
+                    <Object name="ViewerWindow">
+                        <Field name="windowSize" type="intArray" length="2">545 545 </Field>
+                        <Field name="windowImageSize" type="intArray" length="2">545 473 </Field>
+                        <Field name="windowLocation" type="intArray" length="2">495 49 </Field>
+                        <Field name="maintainView" type="bool">false</Field>
+                        <Field name="cameraView" type="bool">false</Field>
+                        <Field name="viewExtentsType" type="string">AVT_ORIGINAL_EXTENTS</Field>
+                        <Field name="viewIsLocked" type="bool">false</Field>
+                        <Field name="timeLocked" type="bool">false</Field>
+                        <Field name="toolsLocked" type="bool">false</Field>
+                        <Field name="interactionMode" type="string">NAVIGATE</Field>
+                        <Field name="toolUpdateMode" type="string">ONRELEASE</Field>
+                        <Object name="View3DAttributes">
+                            <Field name="viewNormal" type="doubleArray" length="3">0.838506681870427 -0.0452542645064116 0.543008836026294 </Field>
+                            <Field name="focus" type="doubleArray" length="3">0.499551624059697 0.500361658254405 0.499909310143266 </Field>
+                            <Field name="viewUp" type="doubleArray" length="3">0.0708679691190014 0.997138082768048 -0.0263320118223197 </Field>
+                            <Field name="viewAngle" type="double">30</Field>
+                            <Field name="parallelScale" type="double">0.865386588319334</Field>
+                            <Field name="nearPlane" type="double">-1.73077317663867</Field>
+                            <Field name="farPlane" type="double">1.73077317663867</Field>
+                            <Field name="imagePan" type="doubleArray" length="2">0 0 </Field>
+                            <Field name="imageZoom" type="double">1</Field>
+                            <Field name="perspective" type="bool">true</Field>
+                            <Field name="eyeAngle" type="double">2</Field>
+                            <Field name="centerOfRotationSet" type="bool">false</Field>
+                            <Field name="centerOfRotation" type="doubleArray" length="3">0.499551624059697 0.500361658254405 0.499909310143266 </Field>
+                            <Field name="axis3DScaleFlag" type="bool">false</Field>
+                            <Field name="axis3DScales" type="doubleArray" length="3">1 1 1 </Field>
+                            <Field name="shear" type="doubleArray" length="3">0 0 1 </Field>
+                            <Field name="windowValid" type="bool">true</Field>
+                        </Object>
+                        <Object name="AnnotationObjectList">
+                            <Object name="AnnotationObject">
+                                <Field name="objectName" type="string">Plot0002</Field>
+                                <Field name="objectType" type="string">LegendAttributes</Field>
+                                <Field name="visible" type="bool">true</Field>
+                                <Field name="active" type="bool">true</Field>
+                                <Field name="position" type="doubleArray" length="3">0.05 0.9 0 </Field>
+                                <Field name="position2" type="doubleArray" length="3">1 1 1 </Field>
+                                <Object name="textColor">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="useForegroundForTextColor" type="bool">true</Field>
+                                <Object name="color1">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 50 </Field>
+                                    </Object>
+                                </Object>
+                                <Object name="color2">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="text" type="stringVector">"%# -9.4g" </Field>
+                                <Field name="fontFamily" type="string">Arial</Field>
+                                <Field name="fontBold" type="bool">false</Field>
+                                <Field name="fontItalic" type="bool">false</Field>
+                                <Field name="fontShadow" type="bool">false</Field>
+                                <Field name="doubleAttribute1" type="double">0.015</Field>
+                                <Field name="intAttribute1" type="int">993</Field>
+                                <Field name="intAttribute2" type="int">5</Field>
+                                <Field name="intAttribute3" type="int">1</Field>
+                                <Field name="doubleVector1" type="doubleVector"></Field>
+                                <Field name="stringVector1" type="stringVector"></Field>
+                                <Field name="stringVector2" type="stringVector">"1 Brown Dwarf" "2 White Dwarf" "3 Sun type star" "4 Red Giant" "5 Neutron star" "6 Black hole" </Field>
+                            </Object>
+                        </Object>
+                        <Object name="ViewerPlotList">
+                            <Object name="plot00">
+                                <Field name="plotName" type="string">Plot0002</Field>
+                                <Field name="pluginID" type="string">FilledBoundary_1.0</Field>
+                                <Field name="sourceID" type="string">SOURCE00</Field>
+                                <Field name="variableName" type="string">stars</Field>
+                                <Field name="active" type="bool">true</Field>
+                                <Field name="hidden" type="bool">false</Field>
+                                <Field name="realized" type="bool">true</Field>
+                                <Object name="ViewerPlot">
+                                    <Field name="plotDescription" type="string"></Field>
+                                    <Field name="cacheIndex" type="int">0</Field>
+                                    <Field name="spatialExtentsType" type="string">AVT_ORIGINAL_EXTENTS</Field>
+                                    <Field name="bgColor" type="doubleArray" length="3">1 1 1 </Field>
+                                    <Field name="fgColor" type="doubleArray" length="3">0 0 0 </Field>
+                                    <Field name="expandedFlag" type="bool">false</Field>
+                                    <Field name="followsTime" type="bool">true</Field>
+                                    <Object name="FilledBoundaryAttributes">
+                                        <Field name="colorType" type="string">ColorByMultipleColors</Field>
+                                        <Field name="colorTableName" type="string">Default</Field>
+                                        <Field name="invertColorTable" type="bool">false</Field>
+                                        <Field name="filledFlag" type="bool">true</Field>
+                                        <Field name="legendFlag" type="bool">true</Field>
+                                        <Field name="lineStyle" type="int">0</Field>
+                                        <Field name="lineWidth" type="int">0</Field>
+                                        <Object name="singleColor">
+                                            <Object name="ColorAttribute">
+                                                <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                            </Object>
+                                        </Object>
+                                        <Object name="multiColor">
+                                            <Object name="ColorAttributeList">
+                                                <Object name="ColorAttribute">
+                                                    <Field name="color" type="unsignedCharArray" length="4">255 0 0 255 </Field>
+                                                </Object>
+                                                <Object name="ColorAttribute">
+                                                    <Field name="color" type="unsignedCharArray" length="4">0 255 0 255 </Field>
+                                                </Object>
+                                                <Object name="ColorAttribute">
+                                                    <Field name="color" type="unsignedCharArray" length="4">0 0 255 255 </Field>
+                                                </Object>
+                                                <Object name="ColorAttribute">
+                                                    <Field name="color" type="unsignedCharArray" length="4">0 255 255 255 </Field>
+                                                </Object>
+                                                <Object name="ColorAttribute">
+                                                    <Field name="color" type="unsignedCharArray" length="4">255 0 255 255 </Field>
+                                                </Object>
+                                                <Object name="ColorAttribute">
+                                                    <Field name="color" type="unsignedCharArray" length="4">255 255 0 255 </Field>
+                                                </Object>
+                                            </Object>
+                                        </Object>
+                                        <Field name="boundaryNames" type="stringVector">"1 Brown Dwarf" "2 White Dwarf" "3 Sun type star" "4 Red Giant" "5 Neutron star" "6 Black hole" </Field>
+                                        <Field name="boundaryType" type="string">Material</Field>
+                                        <Field name="opacity" type="double">1</Field>
+                                        <Field name="wireframe" type="bool">false</Field>
+                                        <Field name="drawInternal" type="bool">false</Field>
+                                        <Field name="smoothingLevel" type="int">0</Field>
+                                        <Field name="cleanZonesOnly" type="bool">false</Field>
+                                        <Object name="mixedColor">
+                                            <Object name="ColorAttribute">
+                                                <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>
+                                            </Object>
+                                        </Object>
+                                        <Field name="pointSize" type="double">0.05</Field>
+                                        <Field name="pointType" type="string">Axis</Field>
+                                        <Field name="pointSizeVarEnabled" type="bool">false</Field>
+                                        <Field name="pointSizeVar" type="string">default</Field>
+                                        <Field name="pointSizePixels" type="int">2</Field>
+                                    </Object>
+                                </Object>
+                            </Object>
+                            <Field name="activeSource" type="string">SOURCE00</Field>
+                            <Field name="nPlots" type="int">1</Field>
+                        </Object>
+                    </Object>
+                </Object>
+            </Object>
+        </Object>
+    </Object>
+</Object>
