@@ -402,7 +402,7 @@ avtXGCFileFormat::Initialize()
     H5Gclose(grp);
     H5Fclose(vfile);
 
-    cout<<"NumNodes: "<<numNodes<<" NumPhi: "<<numPhi<<endl;
+    // cout<<"NumNodes: "<<numNodes<<" NumPhi: "<<numPhi<<endl;
 
     initialized = true;
 }
