@@ -57,15 +57,16 @@
 #include <map>
 #include <string>
 
+// FastBit
 #ifdef HAVE_LIBFASTBIT
-#include "hdf5_fastquery.h"
-#include "HistogramCache.h"
+  #include <fastbit-config.h>
 
-#include <fastbit-config.h>
-#if FASTBIT_IBIS_INT_VERSION < 1020000
-#error "The H5Part plugin requires FastBit 1.2.0 or newer."
-#endif
+  #if FASTBIT_IBIS_INT_VERSION < 1020000
+    #error "The H5Part plugin requires FastBit 1.2.0 or newer."
+  #endif
 
+  #include "hdf5_fastquery.h"
+  #include "HistogramCache.h"
 #endif
 
 class DBOptionsAttributes;

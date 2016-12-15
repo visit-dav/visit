@@ -1,11 +1,11 @@
 #include "hdf5_fastquery.h"
-#include "base_api.h"
-
-#include <fastbit-config.h>
-
-#include <assert.h>
 
 #ifdef HAVE_LIBFASTBIT
+#include <fastbit-config.h>
+
+#include "base_api.h"
+
+#include <assert.h>
 
 /// Constructor.
 ///@arg v Verbose level.  Default to 0.
