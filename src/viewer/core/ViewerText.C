@@ -216,6 +216,17 @@ operator << (std::ostream &os, const ViewerText &obj)
     return os;
 }
 
+
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Biagas, Wed Dec 14 17:25:28 PST 2016
+//    Reworked logic to do the %d old-key->new-key replacement in tmp here,
+//    rather than relying on toStdString, as the call to ReplaceAll doesn't
+//    remember position for subsequent calls. In the case of one arg in this,
+//    and two args in obj, you would end up with %1 %3 %3 instead of %1 %2 %3.
+//
+// ****************************************************************************
+
 ViewerText
 ViewerText::append(const ViewerText &obj)
 {
@@ -225,18 +236,26 @@ ViewerText::append(const ViewerText &obj)
     }
     else
     {
-        // Renumber the keys in the text.
-        ViewerText tmp(obj.text);
+        // Renumber the keys in the obj.text.
+        std::string tmp(obj.text);
+
+        char oldkey[MAX_VIEWERTEXT_BUFFER];
         char newkey[MAX_VIEWERTEXT_BUFFER];
-        size_t start = args.size();
+        int next = int(args.size()+1);
+        size_t pos = 0;
         for(size_t i = 0; i < obj.args.size(); ++i)
         {
-            SNPRINTF(newkey, MAX_VIEWERTEXT_BUFFER, "%%%d", int(start+i+1));
-            tmp.args.push_back(newkey);
-        }
-        text += tmp.toStdString();
-        for(size_t i = 0; i < obj.args.size(); ++i)
+            SNPRINTF(oldkey, MAX_VIEWERTEXT_BUFFER, "%%%d", int(i+1));
+            SNPRINTF(newkey, MAX_VIEWERTEXT_BUFFER, "%%%d", next++);
+            pos = tmp.find(oldkey, pos);
+            if (pos != std::string::npos)
+            {
+                tmp.replace(pos, strlen(oldkey), newkey);
+                pos+=strlen(newkey);
+            }
             args.push_back(obj.args[i]);
+        }
+        text.append(tmp);
     }
 
     return *this;
