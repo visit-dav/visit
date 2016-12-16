@@ -11,7 +11,7 @@
 
 visit.Source(TestEnv.params["tests_dir"][:-5] + "tests/operators/lcs_operator.py")
 
-operator="LimirCycle"
+operator="LimitCycle"
 
 databases=["ftle_double_gyre_2_domains"]
 
