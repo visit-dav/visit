@@ -108,6 +108,7 @@
                     {"category":"operators","file":"ic_pathlines.py"},
                     {"category":"operators","file":"ic_geometry.py"},
                     {"category":"operators","file":"ic_pics.py"}
+                    {"category":"operators","file":"lcs_operator.py"},
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"databases","file":"xdmf.py","cases":["xdmf_4_02","xdmf_4_04"]},
@@ -143,5 +144,6 @@
                     {"category":"operators","file":"ic_pathlines.py"},
                     {"category":"operators","file":"ic_geometry.py"},
                     {"category":"operators","file":"ic_pics.py"}
+                    {"category":"operators","file":"lcs_operator.py"},
                     ]}
 ]}
