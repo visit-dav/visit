@@ -59,21 +59,26 @@
 #    I fixed a bug that made small baselines. I also increased the legend size
 #    in some tests so it's more prominent.
 #
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset, and Subset for 
+#    domains instead of FilledBoundary.
+#
 # ----------------------------------------------------------------------------
 
-# Test the Subset plot with some subsets turned off, and single-color on.
+# Test the Filled Boundary plot with some subsets turned off, and
+# single-color on.
 # This test ensures that correct labels are applied to the legend.
 def TestLevelsLegend(a):
     TestSection("Test levels legend")
     OpenDatabase(silo_data_path("globe.silo"))
 
 
-    AddPlot("Subset", "mat1")
+    AddPlot("FilledBoundary", "mat1")
     TurnMaterialsOff(("2", "4"))
-    subAtts = SubsetAttributes()
-    subAtts.colorType = subAtts.ColorBySingleColor
-    subAtts.singleColor = (0, 255, 255, 255)
-    SetPlotOptions(subAtts)
+    fbAtts = FilledBoundaryAttributes()
+    fbAtts.colorType = fbAtts.ColorBySingleColor
+    fbAtts.singleColor = (0, 255, 255, 255)
+    SetPlotOptions(fbAtts)
     DrawPlots()
 
     Test("legends_01")
@@ -120,7 +125,7 @@ def TestSizeAndPosition(a):
 
     AddPlot("Pseudocolor", "d")
     AddPlot("Vector", "vel")
-    AddPlot("Subset", "mat1")
+    AddPlot("FilledBoundary", "mat1")
     DrawPlots()
     Test("legends_05")
     DeleteAllPlots()
@@ -148,7 +153,7 @@ def TestSizeAndPosition(a):
     contourAtts = ContourAttributes()
     contourAtts.contourNLevels = 15
     SetPlotOptions(contourAtts)
-    AddPlot("FilledBoundary", "domains")
+    AddPlot("Subset", "domains")
     DrawPlots()
     Test("legends_08")
     DeleteAllPlots()

@@ -30,6 +30,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -54,7 +58,7 @@ DrawPlots()
 Test("globe_02")
 
 DeleteAllPlots()
-AddPlot("Subset", "mat1")
+AddPlot("FilledBoundary", "mat1")
 DrawPlots()
 Test("globe_03")
 

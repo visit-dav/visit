@@ -4,7 +4,7 @@
 #  Test Case:  multivar.py
 #
 #  Tests:      mesh      - 3D unstructured, single domain
-#              plots     - pc, vector, mat subset
+#              plots     - pc, vector, filledboundary 
 #              operators - isosurface
 #
 #  Defect ID:  '7843
@@ -29,6 +29,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -65,7 +69,7 @@ DeleteAllPlots()
 
 # Test the subset plot with the isosurface operator.
 
-AddPlot("Subset", "mat1")
+AddPlot("FilledBoundary", "mat1")
 AddOperator("Isosurface")
 DrawPlots()
 Test("multivar_02")

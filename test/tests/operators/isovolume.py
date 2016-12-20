@@ -6,7 +6,7 @@
 #  Tests:      mesh      - 3D unstructured, single domain,
 #                          3D rectilinear, multiple domain,
 #                          2D curvilinear, multiple domain
-#              plots     - pc, mesh, subset, contour
+#              plots     - pc, mesh, filledboundary, contour
 #              operators - isovolume
 #              selection - none
 #
@@ -27,6 +27,9 @@
 #    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
+#
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
 #
 # ----------------------------------------------------------------------------
 
@@ -96,7 +99,7 @@ DeleteAllPlots()
 # Material plot, isovolumeed by a scalar variable.  Multi-block,
 # curvilinear, 2D.
 #
-AddPlot("Subset", "mat1")
+AddPlot("FilledBoundary", "mat1")
 DrawPlots()
 
 isovol.lbound = -0.4

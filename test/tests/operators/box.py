@@ -22,6 +22,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -57,7 +61,7 @@ DeleteAllPlots()
 # 3D, unstructured
 OpenDatabase(silo_data_path("globe.silo"))
 
-AddPlot("Subset", "mat1")
+AddPlot("FilledBoundary", "mat1")
 AddOperator("Box")
 atts.minx = -5
 atts.maxx = +5

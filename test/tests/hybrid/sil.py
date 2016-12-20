@@ -21,6 +21,9 @@
 #    Hank Childs, Fri Feb 24 15:45:41 PST 2012
 #    Add test for preserving SILs across time slice changes.
 #
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -37,7 +40,7 @@ SetView3D(view)
 
 OpenDatabase(silo_data_path("bigsil.silo"))
 
-AddPlot("Subset", "mat")
+AddPlot("FilledBoundary", "mat")
 DrawPlots()
 
 # Test the normal material plot.

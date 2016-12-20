@@ -39,6 +39,10 @@
 #
 #   Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #   Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -46,13 +50,13 @@
 
 OpenDatabase(silo_data_path("globe.silo"))
 
-AddPlot("Subset", "mat1")
+AddPlot("FilledBoundary", "mat1")
 DrawPlots()
 
-subsetAtts = SubsetAttributes()
-subsetAtts.opacity = 0.9
-subsetAtts.colorType = subsetAtts.ColorByMultipleColors
-SetPlotOptions(subsetAtts)
+fbAtts = FilledBoundaryAttributes()
+fbAtts.opacity = 0.9
+fbAtts.colorType = fbAtts.ColorByMultipleColors
+SetPlotOptions(fbAtts)
 
 # Test that the normals stick around when we slightly drop the transparency
 # ('2784)
@@ -60,8 +64,8 @@ Test("transparency_01")
 
 
 # Test that it still looks good when we crank the transparency down.
-subsetAtts.opacity = 0.4
-SetPlotOptions(subsetAtts)
+fbAtts.opacity = 0.4
+SetPlotOptions(fbAtts)
 
 Test("transparency_02")
 
