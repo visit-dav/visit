@@ -3,7 +3,7 @@
 #
 #  Test Case:  moveoperators.py
 #
-#  Tests:      plots     - Pseudocolor, Mesh, Subset
+#  Tests:      plots     - Pseudocolor, Mesh, FilledBoundary
 #              operators - Erase, Isosurface, Reflect, Slice, Transform
 #
 #  Defect ID:  '1837
@@ -32,6 +32,9 @@
 #
 #    Kathleen Biagas, Thu Jul 11 08:18:42 PDT 2013
 #    Removed legacy sytle annotation setting.
+#
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
 #
 # ----------------------------------------------------------------------------
 
@@ -152,7 +155,7 @@ def runTest3():
     pc.SetOpacityType(pc.Constant)
     pc.opacity = 0.2
     SetPlotOptions(pc)
-    AddPlot("Subset", "mat1")
+    AddPlot("FilledBoundary", "mat1")
 
     # The subset plot is the active plot, add a couple transform
     # operators to it.

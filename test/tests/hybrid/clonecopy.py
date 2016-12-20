@@ -23,6 +23,9 @@
 #    Kathleen Biagas, Thu Jul 11 08:16:36 PDT 2013
 #    Removed legacy style annotation settings.
 #
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off annotation
@@ -53,7 +56,7 @@ a1.backgroundMode = a1.Gradient
 # Set up the plots.
 OpenDatabase(silo_data_path("wave.visit"))
 
-AddPlot("Subset", "Material")
+AddPlot("FilledBoundary", "Material")
 DrawPlots()
 v = View3DAttributes()
 v.viewNormal = (-0.427729, 0.776091, 0.463391)

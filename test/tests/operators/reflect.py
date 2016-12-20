@@ -43,6 +43,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -62,7 +65,7 @@ Test("ops_refl01")
 DeleteAllPlots()
 
 AddPlot("Mesh", "quadmesh2d")
-AddPlot("Subset", "mat1")
+AddPlot("FilledBoundary", "mat1")
 SetActivePlots((0,1))
 AddOperator("Reflect")
 DrawPlots()

@@ -43,6 +43,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -132,7 +135,7 @@ DeleteAllPlots()
 # Material plot, thresholded by a scalar variable.  Multi-block,
 # curvilinear, 2D.
 #
-AddPlot("Subset", "mat1")
+AddPlot("FilledBoundary", "mat1")
 DrawPlots()
 
 thresh.outputMeshType = 0
@@ -229,7 +232,7 @@ DeleteAllPlots()
 # Material plot, thresholded by two scalar variables.  Multi-block,
 # curvilinear, 2D.
 #
-AddPlot("Subset", "mat1")
+AddPlot("FilledBoundary", "mat1")
 DrawPlots()
 
 thresh.zonePortions = (0, 0)

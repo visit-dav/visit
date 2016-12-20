@@ -25,6 +25,10 @@
 #
 #    Mark C. Miller, Sat Feb  3 00:42:05 PST 2007
 #    Added tests for array variables
+#
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 ##
@@ -62,7 +66,7 @@ def TestWithDatabase(db, testName):
     ##
 
     # Add the plots.
-    AddPlot("Subset", "material(mesh)")
+    AddPlot("FilledBoundary", "material(mesh)")
     DrawPlots()
 
     # Do the first test in the series
@@ -121,7 +125,7 @@ def TestWithDatabase(db, testName):
     ## Do the 3D tests.
     ##
 
-    AddPlot("Subset", "material2(revolved_mesh)")
+    AddPlot("FilledBoundary", "material2(revolved_mesh)")
     AddOperator("Clip")
     c = ClipAttributes()
     c.funcType = c.Plane

@@ -196,6 +196,11 @@
 #
 #    Matt Larsen, Mon Sep 19 10:20:11 PDT 2016
 #    Added a test for zone pick highlighting
+#
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    For PickSubset, change plot var to 'domains' as Subset plots shouldn't 
+#    work for materials.  Change pick var to 'mat1' to preserve baselines.
+#
 # ----------------------------------------------------------------------------
 
 def Pick3DTo2D():
@@ -477,7 +482,7 @@ def PickSubset():
     #From defect VisIt00003348
     OpenDatabase(silo_data_path("globe.silo"))
 
-    AddPlot("Subset", "mat1")
+    AddPlot("Subset", "domains")
     TurnMaterialsOff()
     TurnMaterialsOn("1")
  
@@ -494,7 +499,7 @@ def PickSubset():
     v.perspective = 0
     SetView3D(v)
 
-    vars = ("default")
+    vars = ("mat1")
     Pick(173, 111, vars)
     s = GetPickOutput()
     Pick(191, 116, vars)

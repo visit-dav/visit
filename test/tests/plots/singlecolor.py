@@ -15,6 +15,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use domains var for Subset plot test instead of materials.
+#
 # ----------------------------------------------------------------------------
 
 # Set the single color to light blue and partially transparent using the
@@ -63,7 +67,7 @@ Test("singlecolor01")
 
 # Test the single color opacity for the Subset plot
 DeleteAllPlots()
-AddPlot("Subset", "mat1")
+AddPlot("Subset", "domains")
 s = SubsetAttributes()
 SetSingleColor(s)
 DrawPlots()

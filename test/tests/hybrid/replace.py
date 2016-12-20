@@ -16,6 +16,10 @@
 # 
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off annotation
@@ -31,7 +35,7 @@ SetAnnotationAttributes(a)
 # Set up the plots.
 OpenDatabase(silo_data_path("wave0110.silo"))
 
-AddPlot("Subset", "Material")
+AddPlot("FilledBoundary", "Material")
 DrawPlots()
 v = View3DAttributes()
 v.viewNormal = (-0.427729, 0.776091, 0.463391)

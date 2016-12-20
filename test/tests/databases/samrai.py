@@ -49,6 +49,9 @@
 #    Brad Whitlock, Thu Feb 4 10:18:23 PDT 2010
 #    Turn off sets by name instead of index since that can change.
 #
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use Subset plot for levels instead of FilledBoundary.
+#
 # ----------------------------------------------------------------------------
 
 LevelZero = 4 # set id for level 0
@@ -298,7 +301,7 @@ OpenDatabase(data_path("samrai_test_data/front/dumps.visit"))
 
 # Get rid of the default plot
 DeleteAllPlots()
-AddPlot("FilledBoundary", "levels")
+AddPlot("Subset", "levels")
 DrawPlots()
 ResetView()
 Test("samrai_21")

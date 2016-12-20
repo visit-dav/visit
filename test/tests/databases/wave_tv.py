@@ -20,6 +20,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -29,7 +33,7 @@ OpenDatabase(silo_data_path("wave_tv*.silo database"), 9)
 #
 # This brings up a subset plot with 5 materials.
 #
-AddPlot("Subset", "Material")
+AddPlot("FilledBoundary", "Material")
 DrawPlots()
 
 Test("wave_tv_01")

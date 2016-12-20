@@ -56,6 +56,9 @@
 #    Kathleen Biagas, Wed Jan 11 13:57:00 PST 2012
 #    Added test for Index Select of point meshes with Box operator applied.
 #
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -106,7 +109,7 @@ Test("ops_indexselect03")
 DeleteAllPlots()
 
 # 3D, rectilinear, subset.
-AddPlot("Subset", "mat1")
+AddPlot("FilledBoundary", "mat1")
 AddOperator("IndexSelect")
 atts.xIncr = 1
 atts.yIncr = 1

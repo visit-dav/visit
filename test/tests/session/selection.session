@@ -2354,7 +2354,7 @@
                             </Object>
                             <Object name="plot01">
                                 <Field name="plotName" type="string">Plot0001</Field>
-                                <Field name="pluginID" type="string">FilledBoundary_1.0</Field>
+                                <Field name="pluginID" type="string">Subset_1.0</Field>
                                 <Field name="sourceID" type="string">SOURCE00</Field>
                                 <Field name="variableName" type="string">domains</Field>
                                 <Field name="active" type="bool">false</Field>
@@ -2366,7 +2366,7 @@
                                     <Field name="bgColor" type="doubleArray" length="3">0.4 0.298039 0.498039 </Field>
                                     <Field name="fgColor" type="doubleArray" length="3">1 1 1 </Field>
                                     <Field name="expandedFlag" type="bool">false</Field>
-                                    <Object name="FilledBoundaryAttributes">
+                                    <Object name="SubsetAttributes">
                                         <Field name="colorType" type="string">ColorByMultipleColors</Field>
                                         <Field name="colorTableName" type="string">Default</Field>
                                         <Field name="filledFlag" type="bool">true</Field>
@@ -2397,18 +2397,12 @@
                                                 </Object>
                                             </Object>
                                         </Object>
-                                        <Field name="boundaryNames" type="stringVector">"1" "2" "3" "4" "5" </Field>
-                                        <Field name="boundaryType" type="string">Domain</Field>
+                                        <Field name="subsetNames" type="stringVector">"1" "2" "3" "4" "5" </Field>
+                                        <Field name="subsetType" type="string">Domain</Field>
                                         <Field name="opacity" type="double">1</Field>
                                         <Field name="wireframe" type="bool">false</Field>
                                         <Field name="drawInternal" type="bool">false</Field>
                                         <Field name="smoothingLevel" type="int">0</Field>
-                                        <Field name="cleanZonesOnly" type="bool">false</Field>
-                                        <Object name="mixedColor">
-                                            <Object name="ColorAttribute">
-                                                <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>
-                                            </Object>
-                                        </Object>
                                         <Field name="pointSize" type="double">0.05</Field>
                                         <Field name="pointType" type="string">Point</Field>
                                         <Field name="pointSizeVarEnabled" type="bool">false</Field>
@@ -2419,7 +2413,7 @@
                                         <Object name="AttributeSubjectMap">
                                             <Field name="indices" type="intVector">0 </Field>
                                             <Object name="attributes">
-                                                <Object name="FilledBoundaryAttributes">
+                                                <Object name="SubsetAttributes">
                                                     <Field name="colorType" type="string">ColorByMultipleColors</Field>
                                                     <Field name="colorTableName" type="string">Default</Field>
                                                     <Field name="filledFlag" type="bool">true</Field>
@@ -2450,8 +2444,8 @@
                                                             </Object>
                                                         </Object>
                                                     </Object>
-                                                    <Field name="boundaryNames" type="stringVector">"1" "2" "3" "4" "5" </Field>
-                                                    <Field name="boundaryType" type="string">Domain</Field>
+                                                    <Field name="subsetNames" type="stringVector">"1" "2" "3" "4" "5" </Field>
+                                                    <Field name="subsetType" type="string">Domain</Field>
                                                     <Field name="opacity" type="double">1</Field>
                                                     <Field name="wireframe" type="bool">false</Field>
                                                     <Field name="drawInternal" type="bool">false</Field>

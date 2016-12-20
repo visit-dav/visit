@@ -49,6 +49,9 @@
 #    Kathleen Biagas, Wed Jan  8 13:39:46 PST 2014
 #    Added 2d tests 26 & 27, gridlines with a different saved window size.
 #
+#    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
+#    Use FilledBoundary plot for materials instead of Subset.
+#
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
@@ -327,7 +330,7 @@ Test("annot2d_27", swa)
 DeleteAllPlots()
 OpenDatabase(silo_data_path("globe.silo"))
 
-AddPlot("Subset", "mat1")
+AddPlot("FilledBoundary", "mat1")
 DrawPlots()
 v = View3DAttributes()
 v.viewNormal = (-0.527602, 0.329431, 0.783014)
