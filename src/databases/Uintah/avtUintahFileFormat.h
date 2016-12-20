@@ -98,14 +98,17 @@ protected:
   int              GetGlobalDomainNumber(int, int);
   void             CalculateDomainNesting(int, const std::string&);
         
-  virtual bool     HasInvariantMetaData(void) const { return false; };
-  virtual bool     HasInvariantSIL(void) const { return false; };
+  virtual bool     HasInvariantMetaData(void) const { return !dataVariesOverTime; };
+  virtual bool     HasInvariantSIL(void) const { return !dataVariesOverTime; };
 
   void             AddExpressionsToMetadata(avtDatabaseMetaData *md);
-  void             CheckNaNs(int num,double *data,int level,int patch);
+  void             CheckNaNs(double *data, const int num,
+                             const char* varname,
+                             const int level, const int patch);
 
   // DATA MEMBERS
   bool useExtraCells;
+  bool dataVariesOverTime;
   int currTimeStep;
   bool nodeCentered;
   bool forceMeshReload;

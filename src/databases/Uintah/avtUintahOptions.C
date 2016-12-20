@@ -52,6 +52,7 @@ GetUintahReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     rv->SetBool("Load extra cells", true);
+    rv->SetBool("Data varies over time", true);
     return rv;
 }
 
