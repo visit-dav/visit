@@ -48,8 +48,7 @@
 #include <dlfcn.h>
 #include <string>
 #include <vector>
-#include <climits> 
-#include <dlfcn.h>
+#include <climits>
 
 #ifdef PARALLEL
 #  include <mpi.h>
@@ -75,6 +74,7 @@
 #include <avtMaterial.h>
 #include <avtCallback.h>
 
+#include <TimingsManager.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
@@ -109,14 +109,20 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
                                          DBOptionsAttributes* attrs) :
   avtMTMDFileFormat(filename),
   useExtraCells(true),
+  dataVariesOverTime(true),
   nodeCentered(false),
   forceMeshReload(true),
   archive(NULL),
   grid(NULL)
 {
+  int t1 = visitTimer->StartTimer();
+
   for (int i=0; attrs!=0 && i<attrs->GetNumberOfOptions(); ++i) {
     if (attrs->GetName(i) == "Load extra cells") {
       useExtraCells = attrs->GetBool("Load extra cells");
+    }
+    else if (attrs->GetName(i) == "Data varies over time") {
+      dataVariesOverTime = attrs->GetBool("Data varies over time");
     }
   }
 
@@ -377,7 +383,6 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
     EXCEPTION1(InvalidDBTypeException, "The function getParticlePositionName could not be located in the library!!!");
   }
 
-
   // use the folder name, not the index.xml file name to open the archive
   string folder(filename);
   size_t found = folder.find_last_of("/");
@@ -385,11 +390,19 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
   archive = (*openDataArchive)(folder);
 
   // timestep times
+  int t2 = visitTimer->StartTimer();
+
+  debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
   cycleTimes = (*getCycleTimes)(archive);
+  debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+  
+  visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getCycleTimes");
 
   // haven't loaded any timestep data yet
   stepInfo = NULL;  
   currTimeStep = -1;
+
+  visitTimer->StopTimer(t1, "avtUintahFileFormat::avtUintahFileFormat");
 }
 
 
@@ -459,17 +472,36 @@ avtUintahFileFormat::ActivateTimestep(int ts)
   if (currTimeStep == ts)
     return;
 
+  int t1 = visitTimer->StartTimer();
+
   // get the uda grid for the new timestep
+  int t2 = visitTimer->StartTimer();
+
   if (grid)
     (*releaseGrid)(grid);
+
+  debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
   grid = (*getGrid)(archive, ts);
+  debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+
+  visitTimer->StopTimer(t2, "avtUintahFileFormat::ActivateTimestep getGrid");
+
+  // get the time step info for the new timestep
+  int t3 = visitTimer->StartTimer();
 
   if (stepInfo)
     delete stepInfo;
+
+  debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
   stepInfo = (*getTimeStepInfo)(archive, grid, ts, useExtraCells);
+  debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
 
   currTimeStep = ts; 
   forceMeshReload = true;
+
+  visitTimer->StopTimer(t3, "avtUintahFileFormat::ActivateTimestep getTimeStepInfo");
+
+  visitTimer->StopTimer(t1, "avtUintahFileFormat::ActivateTimestep");
 }
 
 
@@ -580,13 +612,15 @@ void getBounds(int low[3], int high[3], const string meshName, const LevelInfo &
 void
 avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 {
+  int t1 = visitTimer->StartTimer();
+
   ActivateTimestep(timeState);
 
   int numLevels = stepInfo->levelInfo.size();
 
   int totalPatches = 0;
   for (int i = 0; i < numLevels; i++)
-    totalPatches +=  stepInfo->levelInfo[i].patchInfo.size();
+    totalPatches += stepInfo->levelInfo[i].patchInfo.size();
 
   vector<int> groupIds(totalPatches);
   vector<string> pieceNames(totalPatches);
@@ -602,26 +636,31 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
     pieceNames[i] = tmpName;
   }
 
-  // compute the bounding box of the mesh from the grid indices of level 0
+  // Compute the bounding box of the mesh from the grid indices of
+  // level 0
   LevelInfo &levelInfo = stepInfo->levelInfo[0];
 
-  // don't add proc id unless CC_Mesh or NC_Mesh exists (some only have SFCk_MESH)
-  bool addProcId=false;
+  // Don't add proc id unless CC_Mesh or NC_Mesh exists (some only
+  // have SFCk_MESH)
+  bool addProcId = false;
   string mesh_for_procid("NC_Mesh");
 
-  // grid meshes are shared between materials, and particle meshes are
-  // shared between variables - keep track of what has been added so they're only added once
+  // Grid meshes are shared between materials, and particle meshes are
+  // shared between variables - keep track of what has been added so
+  // they're only added once
   std::set<string> meshes_added;
 
-  // If a variable exists in multiple materials, we don't want to add it more than
-  // once to the meta data - it can mess up visit's expressions variable lists.
+  // If a variable exists in multiple materials, we don't want to add
+  // it more than once to the meta data - it can mess up visit's
+  // expressions variable lists.
   std::set<string> mesh_vars_added;
 
-  //get CC bounds
+  // Get CC bounds
   int low[3],high[3];
   getBounds(low,high,"CC_Mesh",levelInfo);
 
-  //this can be done once for everything because the spatial range is the same for all meshes
+  // This can be done once for everything because the spatial range is
+  // the same for all meshes
   double box_min[3] = { levelInfo.anchor[0] + low[0] * levelInfo.spacing[0],
                         levelInfo.anchor[1] + low[1] * levelInfo.spacing[1],
                         levelInfo.anchor[2] + low[2] * levelInfo.spacing[2] };
@@ -631,11 +670,11 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   //debug5<<"box_min/max=["<<box_min[0]<<","<<box_min[1]<<","<<box_min[2]<<"] to ["<<box_max[0]<<","<<box_max[1]<<","<<box_max[2]<<"]\n";
 
   int logical[3];
-  for (int i=0; i<3; i++)
+  for (int i=0; i<3; ++i)
     logical[i] = high[i]-low[i];
   //debug5 <<"logical: "<< logical[0] << ", "<< logical[1] << ", "<< logical[2]<<endl;
 
-  for (int i=0; i<(int)stepInfo->varInfo.size(); i++) {
+  for (int i=0; i<(int)stepInfo->varInfo.size(); ++i) {
     if (stepInfo->varInfo[i].type.find("ParticleVariable") == string::npos) {
       string varname = stepInfo->varInfo[i].name;
       string vartype = stepInfo->varInfo[i].type;
@@ -701,7 +740,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
         meshes_added.insert(mesh_for_this_var);
       }
 
-      //Add meshvars
+      // Add meshvars
       for (int j=0; j<(int)stepInfo->varInfo[i].materials.size(); j++) {
         char buffer[128];
         string newVarname = varname;
@@ -727,7 +766,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
     }   
   }
 
-  // add a proc id enum variable
+  // Add a proc id enum variable
   if (addProcId)
   {
     avtScalarMetaData *scalar = new avtScalarMetaData();
@@ -741,14 +780,15 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   }
   
 
-  // Nothing needs to be modifed for particle data, as they exist only on a single level
-  for (int i=0; i<(int)stepInfo->varInfo.size(); i++) {
+  // Nothing needs to be modifed for particle data, as they exist only
+  // on a single level
+  for (int i=0; i<(int)stepInfo->varInfo.size(); ++i) {
     if (stepInfo->varInfo[i].type.find("ParticleVariable") != string::npos) {
       string varname = stepInfo->varInfo[i].name;
       string vartype = stepInfo->varInfo[i].type;
 
       // j=-1 -> all materials (*)
-      for (int j=-1; j<(int)stepInfo->varInfo[i].materials.size(); j++) {
+      for (int j=-1; j<(int)stepInfo->varInfo[i].materials.size(); ++j) {
         string mesh_for_this_var = string("Particle_Mesh/");
         string newVarname = varname+"/";
 
@@ -801,15 +841,19 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
           mesh_vars_added.insert(mesh_for_this_var+newVarname);
 
           avtCentering cent = AVT_NODECENT;
+          // 3 -> vector dimension
           if ((vartype.find("Vector") != string::npos) ||
               (vartype.find("Point") != string::npos))
-            AddVectorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 3); // 3 -> vector dimension
+            AddVectorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 3);
+          // 9 -> tensor
           else if (vartype.find("Matrix3") != string::npos)
-            AddTensorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 9); // 9 -> tensor 
+            AddTensorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 9);
+          // 7 -> vector
           else if (vartype.find("Stencil7") != string::npos)
-            AddVectorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 7); // 7 -> vector
+            AddVectorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 7);
+          // 4 -> vector
           else if (vartype.find("Stencil4") != string::npos)
-            AddVectorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 4); // 4 -> vector
+            AddVectorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 4);
           else
             AddScalarVarToMetaData(md, newVarname, mesh_for_this_var, cent);
         }
@@ -836,6 +880,8 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   md->SetTimes( cycleTimes );
   
   AddExpressionsToMetadata(md);
+
+  visitTimer->StopTimer(t1, "avtUintahFileFormat::ActivateTimestep");
 }
 
 
@@ -897,6 +943,8 @@ void
 avtUintahFileFormat::GetLevelAndLocalPatchNumber(int global_patch, 
                                                  int &level, int &local_patch)
 {
+//  int t1 = visitTimer->StartTimer();
+
   int num_levels = stepInfo->levelInfo.size();
   int num_patches = 0;
   int tmp = global_patch;
@@ -909,6 +957,8 @@ avtUintahFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
     level++;
   }
   local_patch = tmp;
+
+//  visitTimer->StopTimer(t1, "avtUintahFileFormat::GetLevelAndLocalPatchNumber");
 }
 
 
@@ -960,6 +1010,8 @@ avtUintahFileFormat::CalculateDomainNesting(int timestate, const std::string &me
     return;
 
 #else
+  int t1 = visitTimer->StartTimer();
+
   //lookup mesh in our cache and if it's not there, compute it
   if (*this->mesh_domains[meshname]==NULL || forceMeshReload == true)
   {
@@ -1107,6 +1159,8 @@ avtUintahFileFormat::CalculateDomainNesting(int timestate, const std::string &me
                             timestate, -1);
   if (*vrTmp == NULL || *vrTmp != *this->mesh_domains[meshname])
     throw InvalidFilesException("uda domain mesh not registered");
+
+  visitTimer->StopTimer(t1, "avtUintahFileFormat::CalculateDomainNesting");
 #endif
 }
 
@@ -1164,6 +1218,8 @@ vtkLongArray *ConvertToLong(vtkDataArray *input)
 vtkDataSet *
 avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
+  int t1 = visitTimer->StartTimer();
+  
   //debug5<<"avtUintahFileFormat::GetMesh(timestate="<<timestate<<",domain="<<domain<<",meshname="<<meshname<<std::endl;
 
   ActivateTimestep(timestate);
@@ -1192,8 +1248,8 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
     //debug5<<"Calculating vtkRectilinearGrid mesh for "<<meshName<<" mesh ("<<rgrid<<").\n";
 
-          if (meshName.find("NC_") != string::npos)
-            nodeCentered = true;
+    if (meshName.find("NC_") != string::npos)
+      nodeCentered = true;
 
     int dims[3];
     for (int i=0; i<3; i++) 
@@ -1258,6 +1314,8 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
       coords->Delete();
     }
 
+    visitTimer->StopTimer(t1, "avtUintahFileFormat::GetMesh() Volume Grid");
+
     return rgrid;
   }
 
@@ -1271,11 +1329,19 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     if (matl.compare("*") != 0)
       matlNo = atoi(matl.c_str());
 
+    int t2 = visitTimer->StartTimer();
+
     // we always want p.x when setting up the mesh
 //    string vars = "p.x";
+    debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
     string vars = (*getParticlePositionName)(archive);
+    debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
 
+    debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
     ParticleDataRaw *pd = (*getParticleData)(archive, grid, level, local_patch, vars, matlNo, timestate);
+    debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+
+    visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getParticleData");
 
     // Create the vtkPoints object and copy points into it.
     vtkDoubleArray *doubleArray = vtkDoubleArray::New();
@@ -1327,8 +1393,16 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 #if (1 <= UINTAH_MAJOR_VERSION && 7 <= UINTAH_MINOR_VERSION )
       if( variableExists(archive, "p.particleID") )
 #endif
-        pd = (*getParticleData)(archive, grid, level, local_patch, "p.particleID", matlNo, timestate);
+      {
+        int t2 = visitTimer->StartTimer();
 
+        debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+        pd = (*getParticleData)(archive, grid, level, local_patch, "p.particleID", matlNo, timestate);
+        debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+
+        visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getParticleData");
+      }
+      
       //debug5 << "got particle data: "<<pd<<"\n";
       if (pd)
       {
@@ -1366,6 +1440,8 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
       }
     }
 
+    visitTimer->StopTimer(t1, "avtUintahFileFormat::GetMesh() Particle Grid");
+
     return ugrid;
   }
 
@@ -1396,6 +1472,8 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 vtkDataArray *
 avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
+  int t1 = visitTimer->StartTimer();
+
   ActivateTimestep(timestate);
 
   string varName(varname);
@@ -1489,20 +1567,31 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       if (prev>=0)
         MPI_Recv(&msg, 1, MPI_INT, prev, tag, VISIT_MPI_COMM, &status);
 
-      gd = (*getGridData)(archive, grid, level, local_patch, varName, atoi(matl.c_str()), timestate, qlow, qhigh);
+      int t2 = visitTimer->StartTimer();
 
+      debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+      gd = (*getGridData)(archive, grid, level, local_patch, varName, atoi(matl.c_str()), timestate, qlow, qhigh);
+      debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+
+      visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getGridData");
       // let the next read go
       if (next>=0)
         MPI_Send(&msg, 1, MPI_INT, next, tag, VISIT_MPI_COMM);
 
 #else
+      int t2 = visitTimer->StartTimer();
+      
+      debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
       gd = (*getGridData)(archive, grid, level, local_patch, varName, atoi(matl.c_str()), timestate, qlow, qhigh);
+      debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+
+      visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getGridData");
 #endif
     }
 
     int n = (qhigh[0]-qlow[0])*(qhigh[1]-qlow[1])*(qhigh[2]-qlow[2]);
 
-    CheckNaNs(n*gd->components,gd->data,level,local_patch);
+    CheckNaNs(gd->data,n*gd->components,varname,level,local_patch);
 
     rv->SetNumberOfComponents(gd->components);
     rv->SetArray(gd->data, n*gd->components, 0);
@@ -1545,17 +1634,29 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     if (prev>=0)
       MPI_Recv(&msg, 1, MPI_INT, prev, tag, VISIT_MPI_COMM, &status);
 
+    int t2 = visitTimer->StartTimer();
+
+    debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
     pd = (*getParticleData)(archive, grid, level, local_patch, varName, matlNo, timestate);
+    debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+
+    visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getParticleData");
 
     // let the next read go
     if (next>=0)
       MPI_Send(&msg, 1, MPI_INT, next, tag, VISIT_MPI_COMM);
 
 #else
+    int t2 = visitTimer->StartTimer();
+
+    debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
     pd = (*getParticleData)(archive, grid, level, local_patch, varName, matlNo, timestate);
+    debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+
+    visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getParticleData");
 #endif
 
-    CheckNaNs(pd->num*pd->components,pd->data,level,local_patch);
+    CheckNaNs(pd->data,pd->num*pd->components,varname,level,local_patch);
 
     rv->SetNumberOfComponents(pd->components);
     rv->SetArray(pd->data, pd->num*pd->components, 0);
@@ -1563,6 +1664,8 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     // don't delete pd->data - vtk owns it now!
     delete pd;
   }
+
+  visitTimer->StopTimer(t1, "avtUintahFileFormat::GetVar");
 
   return rv;
 }
@@ -1648,7 +1751,9 @@ avtUintahFileFormat::GetAuxiliaryData(const char *var, int dom,
 //
 //  Modifications:
 void
-avtUintahFileFormat::CheckNaNs(int num, double *data, int level, int patch)
+avtUintahFileFormat::CheckNaNs(double *data, const int num,
+                               const char* varname,
+                               const int level, const int patch)
 {
   // replace nan's with a large negative number
   std::vector<int> nanCells;
@@ -1664,22 +1769,28 @@ avtUintahFileFormat::CheckNaNs(int num, double *data, int level, int patch)
   if (!nanCells.empty())
   {
     std::stringstream sstr;
-    sstr << "NaNs exist in this file (patch "<<patch<<" of level "<<level
-         <<"). They have been replaced by the value "<< NAN_REPLACE_VAL<<".";
-    if ((int)nanCells.size()>40)
-    {
-      sstr<<"\nFirst 20: ";
-      for (int i=0;i<(int)nanCells.size() && i<20;i++)
-        sstr<<nanCells[i]<<",";
-      sstr<<"\nLast 20: ";
-      for (int i=(int)nanCells.size()-21;i<(int)nanCells.size();i++)
-        sstr<<nanCells[i]<<",";
-    }
-    else
-    {
-      for (int i=0;i<(int)nanCells.size();i++)
-        sstr<<nanCells[i]<<((int)nanCells.size()!=(i+1)?",":".");
-    }
+    sstr << "NaNs exist for variable " << varname
+         << " in patch " << patch << " of level " << level
+         << " and " << nanCells.size() << "/" << num
+         << " cells have been replaced by the value "
+         <<  NAN_REPLACE_VAL << ".";
+
+    // if ((int)nanCells.size()>40)
+    // {
+    //   sstr<<"\nFirst 20: ";
+    //   for (int i=0;i<(int)nanCells.size() && i<20;i++)
+    //     sstr<<nanCells[i]<<",";
+    //   sstr<<"\nLast 20: ";
+    //   for (int i=(int)nanCells.size()-21;i<(int)nanCells.size();i++)
+    //     sstr<<nanCells[i]<<",";
+    // }
+    // else
+    // {
+    //   for (int i=0;i<(int)nanCells.size();i++)
+    //     sstr<<nanCells[i]<<((int)nanCells.size()!=(i+1)?",":".");
+    // }
+
     avtCallback::IssueWarning(sstr.str().c_str());
   }
 }
+
