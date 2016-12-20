@@ -398,6 +398,9 @@ QvisSubsetPlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Mon Jan 17 18:14:12 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Tue Dec 20 14:24:32 PST 2016
+//   Removed filledFlag.
+//
 // ****************************************************************************
 
 void
@@ -432,9 +435,6 @@ QvisSubsetPlotWindow::UpdateWindow(bool doAll)
             break;
         case SubsetAttributes::ID_invertColorTable:
             colorTableWidget->setInvertColorTable(subsetAtts->GetInvertColorTable());
-            break;
-        case SubsetAttributes::ID_filledFlag:
-            // nothing anymore
             break;
         case SubsetAttributes::ID_legendFlag:
             legendToggle->blockSignals(true);

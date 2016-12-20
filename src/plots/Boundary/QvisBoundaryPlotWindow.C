@@ -54,7 +54,6 @@
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
-#include <QvisPointControl.h>
 #include <BoundaryAttributes.h>
 #include <ViewerProxy.h>
 
@@ -140,6 +139,9 @@ QvisBoundaryPlotWindow::~QvisBoundaryPlotWindow()
 //
 //   Kathleen Bonnell, Mon Jan 17 17:45:38 MST 2011
 //   Changed colorTableButton to colorTableWidget to gain the invert toggle.
+//
+//   Kathleen Biagas, Tue Dec 20 13:58:48 PST 2016
+//   Removed point controls.
 //
 // ****************************************************************************
 
@@ -265,27 +267,13 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     //
 
     QGroupBox * styleGroup = new QGroupBox(central);
-    styleGroup->setTitle(tr("Point / Line Style"));
+    styleGroup->setTitle(tr("Line Style"));
     topLayout->addWidget(styleGroup);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroup);
     styleLayout->setMargin(5);
     styleLayout->setSpacing(10);
  
-    // Create the point control
-    pointControl = new QvisPointControl(central);
-    connect(pointControl, SIGNAL(pointSizeChanged(double)),
-            this, SLOT(pointSizeChanged(double)));
-    connect(pointControl, SIGNAL(pointSizePixelsChanged(int)),
-            this, SLOT(pointSizePixelsChanged(int)));
-    connect(pointControl, SIGNAL(pointSizeVarChanged(const QString &)),
-            this, SLOT(pointSizeVarChanged(const QString &)));
-    connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
-            this, SLOT(pointSizeVarToggled(bool)));
-    connect(pointControl, SIGNAL(pointTypeChanged(int)),
-            this, SLOT(pointTypeChanged(int)));
-    styleLayout->addWidget(pointControl, 0, 0, 1, 4);
-
     //
     // Create the line style/width buttons
     //
@@ -389,6 +377,9 @@ QvisBoundaryPlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Mon Jan 17 17:45:38 MST 2011
 //   Changed colorTableButton to colorTableWidget to gain the invert toggle.
 //
+//   Kathleen Biagas, Tue Dec 20 13:59:24 PST 2016
+//   Removed filledFlag, boundaryType and point related.
+//
 // ****************************************************************************
 
 void
@@ -423,9 +414,6 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
             break;
         case BoundaryAttributes::ID_invertColorTable:
             colorTableWidget->setInvertColorTable(boundaryAtts->GetInvertColorTable());
-            break;
-        case BoundaryAttributes::ID_filledFlag:
-            // nothing anymore
             break;
         case BoundaryAttributes::ID_legendFlag:
             legendToggle->blockSignals(true);
@@ -463,8 +451,6 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
         case BoundaryAttributes::ID_boundaryNames:
             updateMultiple = true;
             break;
-        case BoundaryAttributes::ID_boundaryType:
-            break;
         case BoundaryAttributes::ID_opacity:
             overallOpacity->blockSignals(true);
             overallOpacity->setValue((int)(boundaryAtts->GetOpacity() * 255.f));
@@ -479,33 +465,6 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
             smoothingLevelButtons->blockSignals(true);
             smoothingLevelButtons->button(boundaryAtts->GetSmoothingLevel())->setChecked(true);
             smoothingLevelButtons->blockSignals(false);
-            break;
-        case BoundaryAttributes::ID_pointSize:
-            pointControl->blockSignals(true);
-            pointControl->SetPointSize(boundaryAtts->GetPointSize());
-            pointControl->blockSignals(false);
-            break;
-        case BoundaryAttributes::ID_pointType:
-            pointControl->blockSignals(true);
-            pointControl->SetPointType(boundaryAtts->GetPointType());
-            pointControl->blockSignals(false);
-            break;
-        case BoundaryAttributes::ID_pointSizeVarEnabled:
-            pointControl->blockSignals(true);
-            pointControl->SetPointSizeVarChecked(
-                          boundaryAtts->GetPointSizeVarEnabled());
-            pointControl->blockSignals(false);
-            break;
-        case BoundaryAttributes::ID_pointSizeVar:
-            pointControl->blockSignals(true);
-            temp = QString(boundaryAtts->GetPointSizeVar().c_str());
-            pointControl->SetPointSizeVar(temp);
-            pointControl->blockSignals(false);
-            break;
-        case BoundaryAttributes::ID_pointSizePixels:
-            pointControl->blockSignals(true);
-            pointControl->SetPointSizePixels(boundaryAtts->GetPointSizePixels());
-            pointControl->blockSignals(false);
             break;
         }
     } // end for
@@ -785,6 +744,9 @@ QvisBoundaryPlotWindow::SetMultipleColorWidgets(int index)
 //   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
 //   Uncommented GetCurrentValues.
 //   
+//   Kathleen Biagas, Tue Dec 20 14:01:16 PST 2016
+//   Removed call to no-longer needed GetCurrentValues.
+//
 // ****************************************************************************
 
 void
@@ -792,9 +754,6 @@ QvisBoundaryPlotWindow::Apply(bool ignore)
 {
     if(AutoUpdate() || ignore)
     {
-        // Get the current boundary plot attributes and tell the other
-        // observers about them.
-        GetCurrentValues(-1);
         boundaryAtts->Notify();
 
         // Tell the viewer to set the boundary plot attributes.
@@ -846,13 +805,15 @@ QvisBoundaryPlotWindow::apply()
 //   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
 //   Uncommented GetCurrentValues.
 //   
+//   Kathleen Biagas, Tue Dec 20 14:01:16 PST 2016
+//   Removed call to no-longer needed GetCurrentValues.
+//
 // ****************************************************************************
 
 void
 QvisBoundaryPlotWindow::makeDefault()
 {
     // Tell the viewer to set the default boundary plot attributes.
-    GetCurrentValues(-1);
     boundaryAtts->Notify();
     GetViewerMethods()->SetDefaultPlotOptions(plotType);
 }
@@ -1304,150 +1265,3 @@ QvisBoundaryPlotWindow::invertColorTableToggled(bool val)
     Apply();
 }
 
-
-// ****************************************************************************
-// Method: QvisBoundaryPlotWindow::GetCurrentValues
-//
-// Purpose: 
-//   Gets the current values for one or all of the lineEdit widgets.
-//
-// Arguments:
-//   which_widget : The number of the widget to update. If -1 is passed,
-//                  the routine gets the current values for all widgets.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 10, 2004 
-//
-// Modifications:
-//   Brad Whitlock, Wed Jul 20 18:00:29 PST 2005
-//   Added SetPointSizePixels.
-//
-// ****************************************************************************
-
-void
-QvisBoundaryPlotWindow::GetCurrentValues(int which_widget)
-{
-    bool doAll = (which_widget == -1);
-
-    // Do the point size and pointsize var
-    if(doAll)
-    {
-        boundaryAtts->SetPointSize(pointControl->GetPointSize());
-        boundaryAtts->SetPointSizePixels(pointControl->GetPointSizePixels());
-        boundaryAtts->SetPointSizeVar(pointControl->GetPointSizeVar().toStdString());
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  QvisBoundaryPlotWindow::pointTypeChanged
-//
-//  Purpose:
-//    Qt slot function that is called when one of the point type buttons
-//    is clicked.
-//
-//  Arguments:
-//    type   :   The new type
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    November 10, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-QvisBoundaryPlotWindow::pointTypeChanged(int type)
-{
-    boundaryAtts->SetPointType((BoundaryAttributes::PointType) type);
-    SetUpdate(false);
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisBoundaryPlotWindow::pointSizeVarToggled
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the pointSizeVar toggle
-//   button is toggled.
-//
-// Arguments:
-//   val : The new state of the pointSizeVar toggle.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 10, 2004 
-//   
-// ****************************************************************************
-
-void
-QvisBoundaryPlotWindow::pointSizeVarToggled(bool val)
-{
-    boundaryAtts->SetPointSizeVarEnabled(val);
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisBoundaryPlotWindow::processPointSizeVarText
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the
-//   point size variable text and pressed the Enter key.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 10, 2004 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisBoundaryPlotWindow::pointSizeVarChanged(const QString &var)
-{
-    boundaryAtts->SetPointSizeVar(var.toStdString()); 
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisBoundaryPlotWindow::pointSizeChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the
-//   point size text and pressed the Enter key.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 10, 2004 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisBoundaryPlotWindow::pointSizeChanged(double d)
-{
-    boundaryAtts->SetPointSize(d); 
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisBoundaryPlotWindow::pointSizePixelsChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the
-//   point size text and presses the Enter key.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Jul 20 14:25:58 PST 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisBoundaryPlotWindow::pointSizePixelsChanged(int size)
-{
-    boundaryAtts->SetPointSizePixels(size); 
-    Apply();
-}

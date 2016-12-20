@@ -51,7 +51,6 @@ class QvisColorTableWidget;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
-class QvisPointControl;
 
 // ****************************************************************************
 // Class: QvisBoundaryPlotWindow
@@ -78,6 +77,9 @@ class QvisPointControl;
 //   Kathleen Bonnell, Mon Jan 17 17:47:48 MST 2011
 //   Changed colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Tue Dec 20 14:11:42 PST 2016
+//   Remove point control and related slots, GetCurrentValues.
+//
 // ****************************************************************************
 
 class QvisBoundaryPlotWindow : public QvisPostableWindowObserver
@@ -101,7 +103,6 @@ protected:
     void UpdateMultipleArea();
     void UpdateItem(int i);
     bool CompareItem(int i, const QString &name, const QColor &c) const;
-    void GetCurrentValues(int which_widget);
 private slots:
     void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
@@ -117,12 +118,6 @@ private slots:
     void boundarySelectionChanged();
     void overallOpacityChanged(int opacity);
     void smoothingLevelChanged(int index);
-
-    void pointSizeChanged(double d);
-    void pointSizePixelsChanged(int size);
-    void pointTypeChanged(int index);
-    void pointSizeVarToggled(bool on);
-    void pointSizeVarChanged(const QString &);
 
 private:
     int                     plotType;
@@ -144,7 +139,6 @@ private:
     QvisOpacitySlider      *overallOpacity;
     QCheckBox              *wireframeToggle;
     QButtonGroup           *smoothingLevelButtons;
-    QvisPointControl       *pointControl;
 };
 
 #endif

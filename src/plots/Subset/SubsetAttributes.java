@@ -62,15 +62,14 @@ import java.util.Vector;
 
 public class SubsetAttributes extends AttributeSubject implements Plugin
 {
-    private static int SubsetAttributes_numAdditionalAtts = 20;
+    private static int SubsetAttributes_numAdditionalAtts = 19;
 
     // Enum values
     public final static int SUBSET_TYPE_DOMAIN = 0;
     public final static int SUBSET_TYPE_GROUP = 1;
-    public final static int SUBSET_TYPE_MATERIAL = 2;
-    public final static int SUBSET_TYPE_ENUMSCALAR = 3;
-    public final static int SUBSET_TYPE_MESH = 4;
-    public final static int SUBSET_TYPE_UNKNOWN = 5;
+    public final static int SUBSET_TYPE_ENUMSCALAR = 2;
+    public final static int SUBSET_TYPE_MESH = 3;
+    public final static int SUBSET_TYPE_UNKNOWN = 4;
 
     public final static int COLORINGMETHOD_COLORBYSINGLECOLOR = 0;
     public final static int COLORINGMETHOD_COLORBYMULTIPLECOLORS = 1;
@@ -93,7 +92,6 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
         colorType = COLORINGMETHOD_COLORBYMULTIPLECOLORS;
         colorTableName = new String("Default");
         invertColorTable = false;
-        filledFlag = true;
         legendFlag = true;
         lineStyle = 0;
         lineWidth = 0;
@@ -119,7 +117,6 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
         colorType = COLORINGMETHOD_COLORBYMULTIPLECOLORS;
         colorTableName = new String("Default");
         invertColorTable = false;
-        filledFlag = true;
         legendFlag = true;
         lineStyle = 0;
         lineWidth = 0;
@@ -147,7 +144,6 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
         colorType = obj.colorType;
         colorTableName = new String(obj.colorTableName);
         invertColorTable = obj.invertColorTable;
-        filledFlag = obj.filledFlag;
         legendFlag = obj.legendFlag;
         lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
@@ -198,7 +194,6 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
         return ((colorType == obj.colorType) &&
                 (colorTableName.equals(obj.colorTableName)) &&
                 (invertColorTable == obj.invertColorTable) &&
-                (filledFlag == obj.filledFlag) &&
                 (legendFlag == obj.legendFlag) &&
                 (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
@@ -239,113 +234,106 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
         Select(2);
     }
 
-    public void SetFilledFlag(boolean filledFlag_)
-    {
-        filledFlag = filledFlag_;
-        Select(3);
-    }
-
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(4);
+        Select(3);
     }
 
     public void SetLineStyle(int lineStyle_)
     {
         lineStyle = lineStyle_;
-        Select(5);
+        Select(4);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(6);
+        Select(5);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(7);
+        Select(6);
     }
 
     public void SetMultiColor(ColorAttributeList multiColor_)
     {
         multiColor = multiColor_;
-        Select(8);
+        Select(7);
     }
 
     public void SetSubsetNames(Vector subsetNames_)
     {
         subsetNames = subsetNames_;
-        Select(9);
+        Select(8);
     }
 
     public void SetSubsetType(int subsetType_)
     {
         subsetType = subsetType_;
-        Select(10);
+        Select(9);
     }
 
     public void SetOpacity(double opacity_)
     {
         opacity = opacity_;
-        Select(11);
+        Select(10);
     }
 
     public void SetWireframe(boolean wireframe_)
     {
         wireframe = wireframe_;
-        Select(12);
+        Select(11);
     }
 
     public void SetDrawInternal(boolean drawInternal_)
     {
         drawInternal = drawInternal_;
-        Select(13);
+        Select(12);
     }
 
     public void SetSmoothingLevel(int smoothingLevel_)
     {
         smoothingLevel = smoothingLevel_;
-        Select(14);
+        Select(13);
     }
 
     public void SetPointSize(double pointSize_)
     {
         pointSize = pointSize_;
-        Select(15);
+        Select(14);
     }
 
     public void SetPointType(int pointType_)
     {
         pointType = pointType_;
-        Select(16);
+        Select(15);
     }
 
     public void SetPointSizeVarEnabled(boolean pointSizeVarEnabled_)
     {
         pointSizeVarEnabled = pointSizeVarEnabled_;
-        Select(17);
+        Select(16);
     }
 
     public void SetPointSizeVar(String pointSizeVar_)
     {
         pointSizeVar = pointSizeVar_;
-        Select(18);
+        Select(17);
     }
 
     public void SetPointSizePixels(int pointSizePixels_)
     {
         pointSizePixels = pointSizePixels_;
-        Select(19);
+        Select(18);
     }
 
     // Property getting methods
     public int                GetColorType() { return colorType; }
     public String             GetColorTableName() { return colorTableName; }
     public boolean            GetInvertColorTable() { return invertColorTable; }
-    public boolean            GetFilledFlag() { return filledFlag; }
     public boolean            GetLegendFlag() { return legendFlag; }
     public int                GetLineStyle() { return lineStyle; }
     public int                GetLineWidth() { return lineWidth; }
@@ -373,38 +361,36 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(2, buf))
             buf.WriteBool(invertColorTable);
         if(WriteSelect(3, buf))
-            buf.WriteBool(filledFlag);
-        if(WriteSelect(4, buf))
             buf.WriteBool(legendFlag);
-        if(WriteSelect(5, buf))
+        if(WriteSelect(4, buf))
             buf.WriteInt(lineStyle);
-        if(WriteSelect(6, buf))
+        if(WriteSelect(5, buf))
             buf.WriteInt(lineWidth);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(6, buf))
             singleColor.Write(buf);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(7, buf))
             multiColor.Write(buf);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(8, buf))
             buf.WriteStringVector(subsetNames);
-        if(WriteSelect(10, buf))
+        if(WriteSelect(9, buf))
             buf.WriteInt(subsetType);
-        if(WriteSelect(11, buf))
+        if(WriteSelect(10, buf))
             buf.WriteDouble(opacity);
-        if(WriteSelect(12, buf))
+        if(WriteSelect(11, buf))
             buf.WriteBool(wireframe);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(12, buf))
             buf.WriteBool(drawInternal);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(13, buf))
             buf.WriteInt(smoothingLevel);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(14, buf))
             buf.WriteDouble(pointSize);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(15, buf))
             buf.WriteInt(pointType);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(16, buf))
             buf.WriteBool(pointSizeVarEnabled);
-        if(WriteSelect(18, buf))
+        if(WriteSelect(17, buf))
             buf.WriteString(pointSizeVar);
-        if(WriteSelect(19, buf))
+        if(WriteSelect(18, buf))
             buf.WriteInt(pointSizePixels);
     }
 
@@ -422,56 +408,53 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
             SetInvertColorTable(buf.ReadBool());
             break;
         case 3:
-            SetFilledFlag(buf.ReadBool());
-            break;
-        case 4:
             SetLegendFlag(buf.ReadBool());
             break;
-        case 5:
+        case 4:
             SetLineStyle(buf.ReadInt());
             break;
-        case 6:
+        case 5:
             SetLineWidth(buf.ReadInt());
             break;
-        case 7:
+        case 6:
             singleColor.Read(buf);
+            Select(6);
+            break;
+        case 7:
+            multiColor.Read(buf);
             Select(7);
             break;
         case 8:
-            multiColor.Read(buf);
-            Select(8);
-            break;
-        case 9:
             SetSubsetNames(buf.ReadStringVector());
             break;
-        case 10:
+        case 9:
             SetSubsetType(buf.ReadInt());
             break;
-        case 11:
+        case 10:
             SetOpacity(buf.ReadDouble());
             break;
-        case 12:
+        case 11:
             SetWireframe(buf.ReadBool());
             break;
-        case 13:
+        case 12:
             SetDrawInternal(buf.ReadBool());
             break;
-        case 14:
+        case 13:
             SetSmoothingLevel(buf.ReadInt());
             break;
-        case 15:
+        case 14:
             SetPointSize(buf.ReadDouble());
             break;
-        case 16:
+        case 15:
             SetPointType(buf.ReadInt());
             break;
-        case 17:
+        case 16:
             SetPointSizeVarEnabled(buf.ReadBool());
             break;
-        case 18:
+        case 17:
             SetPointSizeVar(buf.ReadString());
             break;
-        case 19:
+        case 18:
             SetPointSizePixels(buf.ReadInt());
             break;
         }
@@ -490,7 +473,6 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
         str = str + boolToString("invertColorTable", invertColorTable, indent) + "\n";
-        str = str + boolToString("filledFlag", filledFlag, indent) + "\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
@@ -502,8 +484,6 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
             str = str + "SUBSET_TYPE_DOMAIN";
         if(subsetType == SUBSET_TYPE_GROUP)
             str = str + "SUBSET_TYPE_GROUP";
-        if(subsetType == SUBSET_TYPE_MATERIAL)
-            str = str + "SUBSET_TYPE_MATERIAL";
         if(subsetType == SUBSET_TYPE_ENUMSCALAR)
             str = str + "SUBSET_TYPE_ENUMSCALAR";
         if(subsetType == SUBSET_TYPE_MESH)
@@ -545,7 +525,6 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
     private int                colorType;
     private String             colorTableName;
     private boolean            invertColorTable;
-    private boolean            filledFlag;
     private boolean            legendFlag;
     private int                lineStyle;
     private int                lineWidth;

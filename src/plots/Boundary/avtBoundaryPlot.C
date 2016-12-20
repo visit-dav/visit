@@ -49,7 +49,7 @@
 #include <avtFacelistFilter.h>
 #include <avtGhostZoneFilter.h>
 #include <avtLevelsLegend.h>
-#include <avtLevelsPointGlyphMapper.h>
+#include <avtLevelsMapper.h>
 #include <avtLookupTable.h>
 #include <avtBoundaryFilter.h>
 #include <avtFeatureEdgesFilter.h>
@@ -84,11 +84,14 @@ using std::vector;
 //    Kathleen Bonnell, Fri Nov 12 10:23:09 PST 2004 
 //    Changed mapper type to avtLevelsPointGlyphMapper.
 //
+//    Kathleen Biagas, Tue Dec 20 14:13:23 PST 2016
+//    Changed maapper back to avtLevelsMapper as point glyphing not supported.
+//
 // ****************************************************************************
 
 avtBoundaryPlot::avtBoundaryPlot()
 {
-    levelsMapper = new avtLevelsPointGlyphMapper();
+    levelsMapper = new avtLevelsMapper();
     levelsLegend = new avtLevelsLegend();
     levelsLegend->SetTitle("Boundary");
     // there is no 'range' per se, so turn off range visibility.
@@ -214,6 +217,9 @@ avtBoundaryPlot::Create()
 //    Brad Whitlock, Tue Jan  8 11:44:18 PST 2013
 //    I added some new glyph types.
 //
+//    Kathleen Biagas, Tue Dec 20 14:13:23 PST 2016
+//    Removed point controls.
+//
 // ****************************************************************************
 
 void
@@ -238,41 +244,6 @@ avtBoundaryPlot::SetAtts(const AttributeGroup *a)
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
         levelsMapper->SetSpecularIsInappropriate(true);
     }
-
-    //
-    // Setup point controls
-    //
-    levelsMapper->SetScale(atts.GetPointSize());
-    if (atts.GetPointSizeVarEnabled() &&
-        atts.GetPointSizeVar() != "default" &&
-        atts.GetPointSizeVar() != "" &&
-        atts.GetPointSizeVar() != "\0")
-    {
-        levelsMapper->ScaleByVar(atts.GetPointSizeVar());
-    }
-    else
-    {
-        levelsMapper->DataScalingOff();
-    }
-
-    if (atts.GetPointType() == BoundaryAttributes::Box)
-        levelsMapper->SetGlyphType(avtPointGlypher::Box);
-    else if (atts.GetPointType() == BoundaryAttributes::Axis)
-        levelsMapper->SetGlyphType(avtPointGlypher::Axis);
-    else if (atts.GetPointType() == BoundaryAttributes::Icosahedron)
-        levelsMapper->SetGlyphType(avtPointGlypher::Icosahedron);
-    else if (atts.GetPointType() == BoundaryAttributes::Octahedron)
-        levelsMapper->SetGlyphType(avtPointGlypher::Octahedron);
-    else if (atts.GetPointType() == BoundaryAttributes::Tetrahedron)
-        levelsMapper->SetGlyphType(avtPointGlypher::Tetrahedron);
-    else if (atts.GetPointType() == BoundaryAttributes::SphereGeometry)
-        levelsMapper->SetGlyphType(avtPointGlypher::SphereGeometry);
-    else if (atts.GetPointType() == BoundaryAttributes::Point)
-        levelsMapper->SetGlyphType(avtPointGlypher::Point);
-    else if (atts.GetPointType() == BoundaryAttributes::Sphere)
-        levelsMapper->SetGlyphType(avtPointGlypher::Sphere);
-    
-    SetPointGlyphSize();
 }
 
 
@@ -524,6 +495,10 @@ avtBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //
 //    Brad Whitlock, Thu Jul 21 15:34:01 PST 2005
 //    Set point glyph size.
+//
+//    Kathleen Biagas, Tue Dec 20 14:13:23 PST 2016
+//    Removed point controls.
+//
 // ****************************************************************************
 
 void
@@ -531,7 +506,6 @@ avtBoundaryPlot::CustomizeBehavior(void)
 {
     SortLabels();
     SetColors();
-    SetPointGlyphSize();
     levelsLegend->SetLookupTable(avtLUT->GetLookupTable());
 
     behavior->SetLegend(levLegendRefPtr);
@@ -548,29 +522,6 @@ avtBoundaryPlot::CustomizeBehavior(void)
     }
 }
 
-// ****************************************************************************
-// Method: avtBoundaryPlot::SetPointGlyphSize
-//
-// Purpose: 
-//   Sets the point glyph size into the mapper.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jul 21 15:24:25 PST 2005
-//
-// Modifications:
-//   Brad Whitlock, Thu Aug 25 10:12:07 PDT 2005
-//   Added sphere points.
-//
-// ****************************************************************************
-
-void
-avtBoundaryPlot::SetPointGlyphSize()
-{
-    // Size used for points when using a point glyph.
-    if(atts.GetPointType() == BoundaryAttributes::Point ||
-       atts.GetPointType() == BoundaryAttributes::Sphere)
-        levelsMapper->SetPointSize(atts.GetPointSizePixels());
-}
 
 // ****************************************************************************
 //  Method: avtBoundaryPlot::SetColors
@@ -766,12 +717,15 @@ avtBoundaryPlot::SetColors()
 //    Hank Childs, Mon Nov 17 13:19:34 PST 2003
 //    Release data associated with smooth filter.
 //
+//    Kathleen Biagas, Tue Dec 20 14:17:20 PST 2016
+//    This plot inherits from avtSurfaceDataPlot instead of avtVolumeDataPlot.
+//
 // ****************************************************************************
  
 void
 avtBoundaryPlot::ReleaseData(void)
 {
-    avtVolumeDataPlot::ReleaseData();
+    avtSurfaceDataPlot::ReleaseData();
  
     if (wf != NULL)
     {

@@ -40,44 +40,6 @@
 #include <DataNode.h>
 
 //
-// Enum conversion methods for BoundaryAttributes::Boundary_Type
-//
-
-static const char *Boundary_Type_strings[] = {
-"Domain", "Group", "Material", 
-"Unknown"};
-
-std::string
-BoundaryAttributes::Boundary_Type_ToString(BoundaryAttributes::Boundary_Type t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
-    return Boundary_Type_strings[index];
-}
-
-std::string
-BoundaryAttributes::Boundary_Type_ToString(int t)
-{
-    int index = (t < 0 || t >= 4) ? 0 : t;
-    return Boundary_Type_strings[index];
-}
-
-bool
-BoundaryAttributes::Boundary_Type_FromString(const std::string &s, BoundaryAttributes::Boundary_Type &val)
-{
-    val = BoundaryAttributes::Domain;
-    for(int i = 0; i < 4; ++i)
-    {
-        if(s == Boundary_Type_strings[i])
-        {
-            val = (Boundary_Type)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for BoundaryAttributes::ColoringMethod
 //
 
@@ -115,45 +77,6 @@ BoundaryAttributes::ColoringMethod_FromString(const std::string &s, BoundaryAttr
     return false;
 }
 
-//
-// Enum conversion methods for BoundaryAttributes::PointType
-//
-
-static const char *PointType_strings[] = {
-"Box", "Axis", "Icosahedron", 
-"Octahedron", "Tetrahedron", "SphereGeometry", 
-"Point", "Sphere"};
-
-std::string
-BoundaryAttributes::PointType_ToString(BoundaryAttributes::PointType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 8) index = 0;
-    return PointType_strings[index];
-}
-
-std::string
-BoundaryAttributes::PointType_ToString(int t)
-{
-    int index = (t < 0 || t >= 8) ? 0 : t;
-    return PointType_strings[index];
-}
-
-bool
-BoundaryAttributes::PointType_FromString(const std::string &s, BoundaryAttributes::PointType &val)
-{
-    val = BoundaryAttributes::Box;
-    for(int i = 0; i < 8; ++i)
-    {
-        if(s == PointType_strings[i])
-        {
-            val = (PointType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
 // ****************************************************************************
 // Method: BoundaryAttributes::BoundaryAttributes
 //
@@ -173,18 +96,12 @@ void BoundaryAttributes::Init()
 {
     colorType = ColorByMultipleColors;
     invertColorTable = false;
-    filledFlag = true;
     legendFlag = true;
     lineStyle = 0;
     lineWidth = 0;
-    boundaryType = Unknown;
     opacity = 1;
     wireframe = false;
     smoothingLevel = 0;
-    pointSize = 0.05;
-    pointType = Point;
-    pointSizeVarEnabled = false;
-    pointSizePixels = 2;
 
     BoundaryAttributes::SelectAll();
 }
@@ -209,22 +126,15 @@ void BoundaryAttributes::Copy(const BoundaryAttributes &obj)
     colorType = obj.colorType;
     colorTableName = obj.colorTableName;
     invertColorTable = obj.invertColorTable;
-    filledFlag = obj.filledFlag;
     legendFlag = obj.legendFlag;
     lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     singleColor = obj.singleColor;
     multiColor = obj.multiColor;
     boundaryNames = obj.boundaryNames;
-    boundaryType = obj.boundaryType;
     opacity = obj.opacity;
     wireframe = obj.wireframe;
     smoothingLevel = obj.smoothingLevel;
-    pointSize = obj.pointSize;
-    pointType = obj.pointType;
-    pointSizeVarEnabled = obj.pointSizeVarEnabled;
-    pointSizeVar = obj.pointSizeVar;
-    pointSizePixels = obj.pointSizePixels;
 
     BoundaryAttributes::SelectAll();
 }
@@ -251,8 +161,7 @@ const AttributeGroup::private_tmfs_t BoundaryAttributes::TmfsStruct = {BOUNDARYA
 
 BoundaryAttributes::BoundaryAttributes() : 
     AttributeSubject(BoundaryAttributes::TypeMapFormatString),
-    colorTableName("Default"), singleColor(), 
-    pointSizeVar("default")
+    colorTableName("Default"), singleColor()
 {
     BoundaryAttributes::Init();
 }
@@ -274,8 +183,7 @@ BoundaryAttributes::BoundaryAttributes() :
 
 BoundaryAttributes::BoundaryAttributes(private_tmfs_t tmfs) : 
     AttributeSubject(tmfs.tmfs),
-    colorTableName("Default"), singleColor(), 
-    pointSizeVar("default")
+    colorTableName("Default"), singleColor()
 {
     BoundaryAttributes::Init();
 }
@@ -389,22 +297,15 @@ BoundaryAttributes::operator == (const BoundaryAttributes &obj) const
     return ((colorType == obj.colorType) &&
             (colorTableName == obj.colorTableName) &&
             (invertColorTable == obj.invertColorTable) &&
-            (filledFlag == obj.filledFlag) &&
             (legendFlag == obj.legendFlag) &&
             (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (singleColor == obj.singleColor) &&
             (multiColor == obj.multiColor) &&
             (boundaryNames == obj.boundaryNames) &&
-            (boundaryType == obj.boundaryType) &&
             (opacity == obj.opacity) &&
             (wireframe == obj.wireframe) &&
-            (smoothingLevel == obj.smoothingLevel) &&
-            (pointSize == obj.pointSize) &&
-            (pointType == obj.pointType) &&
-            (pointSizeVarEnabled == obj.pointSizeVarEnabled) &&
-            (pointSizeVar == obj.pointSizeVar) &&
-            (pointSizePixels == obj.pointSizePixels));
+            (smoothingLevel == obj.smoothingLevel));
 }
 
 // ****************************************************************************
@@ -548,25 +449,18 @@ BoundaryAttributes::NewInstance(bool copy) const
 void
 BoundaryAttributes::SelectAll()
 {
-    Select(ID_colorType,           (void *)&colorType);
-    Select(ID_colorTableName,      (void *)&colorTableName);
-    Select(ID_invertColorTable,    (void *)&invertColorTable);
-    Select(ID_filledFlag,          (void *)&filledFlag);
-    Select(ID_legendFlag,          (void *)&legendFlag);
-    Select(ID_lineStyle,           (void *)&lineStyle);
-    Select(ID_lineWidth,           (void *)&lineWidth);
-    Select(ID_singleColor,         (void *)&singleColor);
-    Select(ID_multiColor,          (void *)&multiColor);
-    Select(ID_boundaryNames,       (void *)&boundaryNames);
-    Select(ID_boundaryType,        (void *)&boundaryType);
-    Select(ID_opacity,             (void *)&opacity);
-    Select(ID_wireframe,           (void *)&wireframe);
-    Select(ID_smoothingLevel,      (void *)&smoothingLevel);
-    Select(ID_pointSize,           (void *)&pointSize);
-    Select(ID_pointType,           (void *)&pointType);
-    Select(ID_pointSizeVarEnabled, (void *)&pointSizeVarEnabled);
-    Select(ID_pointSizeVar,        (void *)&pointSizeVar);
-    Select(ID_pointSizePixels,     (void *)&pointSizePixels);
+    Select(ID_colorType,        (void *)&colorType);
+    Select(ID_colorTableName,   (void *)&colorTableName);
+    Select(ID_invertColorTable, (void *)&invertColorTable);
+    Select(ID_legendFlag,       (void *)&legendFlag);
+    Select(ID_lineStyle,        (void *)&lineStyle);
+    Select(ID_lineWidth,        (void *)&lineWidth);
+    Select(ID_singleColor,      (void *)&singleColor);
+    Select(ID_multiColor,       (void *)&multiColor);
+    Select(ID_boundaryNames,    (void *)&boundaryNames);
+    Select(ID_opacity,          (void *)&opacity);
+    Select(ID_wireframe,        (void *)&wireframe);
+    Select(ID_smoothingLevel,   (void *)&smoothingLevel);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -617,12 +511,6 @@ BoundaryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("invertColorTable", invertColorTable));
     }
 
-    if(completeSave || !FieldsEqual(ID_filledFlag, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("filledFlag", filledFlag));
-    }
-
     if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
     {
         addToParent = true;
@@ -667,12 +555,6 @@ BoundaryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("boundaryNames", boundaryNames));
     }
 
-    if(completeSave || !FieldsEqual(ID_boundaryType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("boundaryType", Boundary_Type_ToString(boundaryType)));
-    }
-
     if(completeSave || !FieldsEqual(ID_opacity, &defaultObject))
     {
         addToParent = true;
@@ -689,36 +571,6 @@ BoundaryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("smoothingLevel", smoothingLevel));
-    }
-
-    if(completeSave || !FieldsEqual(ID_pointSize, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("pointSize", pointSize));
-    }
-
-    if(completeSave || !FieldsEqual(ID_pointType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("pointType", PointType_ToString(pointType)));
-    }
-
-    if(completeSave || !FieldsEqual(ID_pointSizeVarEnabled, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("pointSizeVarEnabled", pointSizeVarEnabled));
-    }
-
-    if(completeSave || !FieldsEqual(ID_pointSizeVar, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("pointSizeVar", pointSizeVar));
-    }
-
-    if(completeSave || !FieldsEqual(ID_pointSizePixels, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("pointSizePixels", pointSizePixels));
     }
 
 
@@ -777,8 +629,6 @@ BoundaryAttributes::SetFromNode(DataNode *parentNode)
         SetColorTableName(node->AsString());
     if((node = searchNode->GetNode("invertColorTable")) != 0)
         SetInvertColorTable(node->AsBool());
-    if((node = searchNode->GetNode("filledFlag")) != 0)
-        SetFilledFlag(node->AsBool());
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("lineStyle")) != 0)
@@ -791,52 +641,12 @@ BoundaryAttributes::SetFromNode(DataNode *parentNode)
         multiColor.SetFromNode(node);
     if((node = searchNode->GetNode("boundaryNames")) != 0)
         SetBoundaryNames(node->AsStringVector());
-    if((node = searchNode->GetNode("boundaryType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
-                SetBoundaryType(Boundary_Type(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            Boundary_Type value;
-            if(Boundary_Type_FromString(node->AsString(), value))
-                SetBoundaryType(value);
-        }
-    }
     if((node = searchNode->GetNode("opacity")) != 0)
         SetOpacity(node->AsDouble());
     if((node = searchNode->GetNode("wireframe")) != 0)
         SetWireframe(node->AsBool());
     if((node = searchNode->GetNode("smoothingLevel")) != 0)
         SetSmoothingLevel(node->AsInt());
-    if((node = searchNode->GetNode("pointSize")) != 0)
-        SetPointSize(node->AsDouble());
-    if((node = searchNode->GetNode("pointType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 8)
-                SetPointType(PointType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            PointType value;
-            if(PointType_FromString(node->AsString(), value))
-                SetPointType(value);
-        }
-    }
-    if((node = searchNode->GetNode("pointSizeVarEnabled")) != 0)
-        SetPointSizeVarEnabled(node->AsBool());
-    if((node = searchNode->GetNode("pointSizeVar")) != 0)
-        SetPointSizeVar(node->AsString());
-    if((node = searchNode->GetNode("pointSizePixels")) != 0)
-        SetPointSizePixels(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -862,13 +672,6 @@ BoundaryAttributes::SetInvertColorTable(bool invertColorTable_)
 {
     invertColorTable = invertColorTable_;
     Select(ID_invertColorTable, (void *)&invertColorTable);
-}
-
-void
-BoundaryAttributes::SetFilledFlag(bool filledFlag_)
-{
-    filledFlag = filledFlag_;
-    Select(ID_filledFlag, (void *)&filledFlag);
 }
 
 void
@@ -914,13 +717,6 @@ BoundaryAttributes::SetBoundaryNames(const stringVector &boundaryNames_)
 }
 
 void
-BoundaryAttributes::SetBoundaryType(BoundaryAttributes::Boundary_Type boundaryType_)
-{
-    boundaryType = boundaryType_;
-    Select(ID_boundaryType, (void *)&boundaryType);
-}
-
-void
 BoundaryAttributes::SetOpacity(double opacity_)
 {
     opacity = opacity_;
@@ -939,41 +735,6 @@ BoundaryAttributes::SetSmoothingLevel(int smoothingLevel_)
 {
     smoothingLevel = smoothingLevel_;
     Select(ID_smoothingLevel, (void *)&smoothingLevel);
-}
-
-void
-BoundaryAttributes::SetPointSize(double pointSize_)
-{
-    pointSize = pointSize_;
-    Select(ID_pointSize, (void *)&pointSize);
-}
-
-void
-BoundaryAttributes::SetPointType(BoundaryAttributes::PointType pointType_)
-{
-    pointType = pointType_;
-    Select(ID_pointType, (void *)&pointType);
-}
-
-void
-BoundaryAttributes::SetPointSizeVarEnabled(bool pointSizeVarEnabled_)
-{
-    pointSizeVarEnabled = pointSizeVarEnabled_;
-    Select(ID_pointSizeVarEnabled, (void *)&pointSizeVarEnabled);
-}
-
-void
-BoundaryAttributes::SetPointSizeVar(const std::string &pointSizeVar_)
-{
-    pointSizeVar = pointSizeVar_;
-    Select(ID_pointSizeVar, (void *)&pointSizeVar);
-}
-
-void
-BoundaryAttributes::SetPointSizePixels(int pointSizePixels_)
-{
-    pointSizePixels = pointSizePixels_;
-    Select(ID_pointSizePixels, (void *)&pointSizePixels);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1002,12 +763,6 @@ bool
 BoundaryAttributes::GetInvertColorTable() const
 {
     return invertColorTable;
-}
-
-bool
-BoundaryAttributes::GetFilledFlag() const
-{
-    return filledFlag;
 }
 
 bool
@@ -1064,12 +819,6 @@ BoundaryAttributes::GetBoundaryNames()
     return boundaryNames;
 }
 
-BoundaryAttributes::Boundary_Type
-BoundaryAttributes::GetBoundaryType() const
-{
-    return Boundary_Type(boundaryType);
-}
-
 double
 BoundaryAttributes::GetOpacity() const
 {
@@ -1086,42 +835,6 @@ int
 BoundaryAttributes::GetSmoothingLevel() const
 {
     return smoothingLevel;
-}
-
-double
-BoundaryAttributes::GetPointSize() const
-{
-    return pointSize;
-}
-
-BoundaryAttributes::PointType
-BoundaryAttributes::GetPointType() const
-{
-    return PointType(pointType);
-}
-
-bool
-BoundaryAttributes::GetPointSizeVarEnabled() const
-{
-    return pointSizeVarEnabled;
-}
-
-const std::string &
-BoundaryAttributes::GetPointSizeVar() const
-{
-    return pointSizeVar;
-}
-
-std::string &
-BoundaryAttributes::GetPointSizeVar()
-{
-    return pointSizeVar;
-}
-
-int
-BoundaryAttributes::GetPointSizePixels() const
-{
-    return pointSizePixels;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1152,12 +865,6 @@ BoundaryAttributes::SelectBoundaryNames()
     Select(ID_boundaryNames, (void *)&boundaryNames);
 }
 
-void
-BoundaryAttributes::SelectPointSizeVar()
-{
-    Select(ID_pointSizeVar, (void *)&pointSizeVar);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1182,25 +889,18 @@ BoundaryAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_colorType:           return "colorType";
-    case ID_colorTableName:      return "colorTableName";
-    case ID_invertColorTable:    return "invertColorTable";
-    case ID_filledFlag:          return "filledFlag";
-    case ID_legendFlag:          return "legendFlag";
-    case ID_lineStyle:           return "lineStyle";
-    case ID_lineWidth:           return "lineWidth";
-    case ID_singleColor:         return "singleColor";
-    case ID_multiColor:          return "multiColor";
-    case ID_boundaryNames:       return "boundaryNames";
-    case ID_boundaryType:        return "boundaryType";
-    case ID_opacity:             return "opacity";
-    case ID_wireframe:           return "wireframe";
-    case ID_smoothingLevel:      return "smoothingLevel";
-    case ID_pointSize:           return "pointSize";
-    case ID_pointType:           return "pointType";
-    case ID_pointSizeVarEnabled: return "pointSizeVarEnabled";
-    case ID_pointSizeVar:        return "pointSizeVar";
-    case ID_pointSizePixels:     return "pointSizePixels";
+    case ID_colorType:        return "colorType";
+    case ID_colorTableName:   return "colorTableName";
+    case ID_invertColorTable: return "invertColorTable";
+    case ID_legendFlag:       return "legendFlag";
+    case ID_lineStyle:        return "lineStyle";
+    case ID_lineWidth:        return "lineWidth";
+    case ID_singleColor:      return "singleColor";
+    case ID_multiColor:       return "multiColor";
+    case ID_boundaryNames:    return "boundaryNames";
+    case ID_opacity:          return "opacity";
+    case ID_wireframe:        return "wireframe";
+    case ID_smoothingLevel:   return "smoothingLevel";
     default:  return "invalid index";
     }
 }
@@ -1225,25 +925,18 @@ BoundaryAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_colorType:           return FieldType_enum;
-    case ID_colorTableName:      return FieldType_colortable;
-    case ID_invertColorTable:    return FieldType_bool;
-    case ID_filledFlag:          return FieldType_bool;
-    case ID_legendFlag:          return FieldType_bool;
-    case ID_lineStyle:           return FieldType_linestyle;
-    case ID_lineWidth:           return FieldType_linewidth;
-    case ID_singleColor:         return FieldType_color;
-    case ID_multiColor:          return FieldType_att;
-    case ID_boundaryNames:       return FieldType_stringVector;
-    case ID_boundaryType:        return FieldType_enum;
-    case ID_opacity:             return FieldType_opacity;
-    case ID_wireframe:           return FieldType_bool;
-    case ID_smoothingLevel:      return FieldType_int;
-    case ID_pointSize:           return FieldType_double;
-    case ID_pointType:           return FieldType_enum;
-    case ID_pointSizeVarEnabled: return FieldType_bool;
-    case ID_pointSizeVar:        return FieldType_variablename;
-    case ID_pointSizePixels:     return FieldType_int;
+    case ID_colorType:        return FieldType_enum;
+    case ID_colorTableName:   return FieldType_colortable;
+    case ID_invertColorTable: return FieldType_bool;
+    case ID_legendFlag:       return FieldType_bool;
+    case ID_lineStyle:        return FieldType_linestyle;
+    case ID_lineWidth:        return FieldType_linewidth;
+    case ID_singleColor:      return FieldType_color;
+    case ID_multiColor:       return FieldType_att;
+    case ID_boundaryNames:    return FieldType_stringVector;
+    case ID_opacity:          return FieldType_opacity;
+    case ID_wireframe:        return FieldType_bool;
+    case ID_smoothingLevel:   return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -1268,25 +961,18 @@ BoundaryAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_colorType:           return "enum";
-    case ID_colorTableName:      return "colortable";
-    case ID_invertColorTable:    return "bool";
-    case ID_filledFlag:          return "bool";
-    case ID_legendFlag:          return "bool";
-    case ID_lineStyle:           return "linestyle";
-    case ID_lineWidth:           return "linewidth";
-    case ID_singleColor:         return "color";
-    case ID_multiColor:          return "att";
-    case ID_boundaryNames:       return "stringVector";
-    case ID_boundaryType:        return "enum";
-    case ID_opacity:             return "opacity";
-    case ID_wireframe:           return "bool";
-    case ID_smoothingLevel:      return "int";
-    case ID_pointSize:           return "double";
-    case ID_pointType:           return "enum";
-    case ID_pointSizeVarEnabled: return "bool";
-    case ID_pointSizeVar:        return "variablename";
-    case ID_pointSizePixels:     return "int";
+    case ID_colorType:        return "enum";
+    case ID_colorTableName:   return "colortable";
+    case ID_invertColorTable: return "bool";
+    case ID_legendFlag:       return "bool";
+    case ID_lineStyle:        return "linestyle";
+    case ID_lineWidth:        return "linewidth";
+    case ID_singleColor:      return "color";
+    case ID_multiColor:       return "att";
+    case ID_boundaryNames:    return "stringVector";
+    case ID_opacity:          return "opacity";
+    case ID_wireframe:        return "bool";
+    case ID_smoothingLevel:   return "int";
     default:  return "invalid index";
     }
 }
@@ -1328,11 +1014,6 @@ BoundaryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (invertColorTable == obj.invertColorTable);
         }
         break;
-    case ID_filledFlag:
-        {  // new scope
-        retval = (filledFlag == obj.filledFlag);
-        }
-        break;
     case ID_legendFlag:
         {  // new scope
         retval = (legendFlag == obj.legendFlag);
@@ -1363,11 +1044,6 @@ BoundaryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (boundaryNames == obj.boundaryNames);
         }
         break;
-    case ID_boundaryType:
-        {  // new scope
-        retval = (boundaryType == obj.boundaryType);
-        }
-        break;
     case ID_opacity:
         {  // new scope
         retval = (opacity == obj.opacity);
@@ -1381,31 +1057,6 @@ BoundaryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_smoothingLevel:
         {  // new scope
         retval = (smoothingLevel == obj.smoothingLevel);
-        }
-        break;
-    case ID_pointSize:
-        {  // new scope
-        retval = (pointSize == obj.pointSize);
-        }
-        break;
-    case ID_pointType:
-        {  // new scope
-        retval = (pointType == obj.pointType);
-        }
-        break;
-    case ID_pointSizeVarEnabled:
-        {  // new scope
-        retval = (pointSizeVarEnabled == obj.pointSizeVarEnabled);
-        }
-        break;
-    case ID_pointSizeVar:
-        {  // new scope
-        retval = (pointSizeVar == obj.pointSizeVar);
-        }
-        break;
-    case ID_pointSizePixels:
-        {  // new scope
-        retval = (pointSizePixels == obj.pointSizePixels);
         }
         break;
     default: retval = false;
@@ -1424,24 +1075,18 @@ BoundaryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //    Added smoothing level.
 //
 //    Kathleen Bonnell, Wed Nov 10 09:37:01 PST 2004
-//    Added needsSecondaryVar. 
+//    Added needsSecondaryVar.
+//
+//    Kathleen Biagas, Tue Dec 20 14:08:20 PST 2016
+//    Removed needSecondaryVar, filledFlag, boundaryType.
 //
 // ****************************************************************************
 bool
 BoundaryAttributes::ChangesRequireRecalculation(const BoundaryAttributes &obj)
 {
-    bool needSecondaryVar = obj.pointSizeVarEnabled &&
-                            pointSizeVar != obj.pointSizeVar &&
-                            obj.pointSizeVar != "default" && 
-                            obj.pointSizeVar != "" &&
-                            obj.pointSizeVar != "\0"; 
-
-    return ((filledFlag != obj.filledFlag) ||
-            (boundaryType != obj.boundaryType) || 
-            (boundaryNames != obj.boundaryNames) ||
+    return ((boundaryNames != obj.boundaryNames) ||
             (wireframe != obj.wireframe) ||
-            (smoothingLevel != obj.smoothingLevel) ||
-            needSecondaryVar);
+            (smoothingLevel != obj.smoothingLevel));
 }
 
 bool
@@ -1454,14 +1099,16 @@ BoundaryAttributes::VarChangeRequiresReset()
 // Method: BoundaryAttributes::ProcessOldVersions
 //
 // Purpose: 
-//   This method creates modifies a DataNode representation of the object
-//   so it conforms to the newest representation of the object, which can
-//   can be read back in.
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
 //
 // Programmer: Jeremy Meredith
 // Creation:   June 18, 2003
 //
 // Modifications:
+//    Kathleen Biagas, Tue Dec 20 14:08:20 PST 2016
+//    Added items for configVersion < 2.13.0: boundaryType, filledFlag,
+//    pointSize, pointSizeVarEnabled, pointSizeVar, pointSizePixels, pointType.
 //
 // ****************************************************************************
 void
@@ -1475,11 +1122,28 @@ BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
     if(searchNode == 0)
         return;
 
-    DataNode *wfNode = searchNode->GetNode("wireframe");
-    if (wfNode == 0)
-        return;
-
     if (VersionLessThan(configVersion, "1.1.5"))
-        searchNode->RemoveNode("wireframe");
+    {
+        if (searchNode->GetNode("wireframe") != 0)
+            searchNode->RemoveNode("wireframe");
+    }
+
+    if (VersionLessThan(configVersion, "2.13.0"))
+    {
+        if (searchNode->GetNode("boundaryType") != 0)
+            searchNode->RemoveNode("boundaryType");
+        if (searchNode->GetNode("pointSize") != 0)
+            searchNode->RemoveNode("pointSize");
+        if (searchNode->GetNode("pointSizeVarEnabled") != 0)
+            searchNode->RemoveNode("pointSizeVarEnabled");
+        if (searchNode->GetNode("pointSizeVar") != 0)
+            searchNode->RemoveNode("pointSizeVar");
+        if (searchNode->GetNode("pointSizePixels") != 0)
+            searchNode->RemoveNode("pointSizePixels");
+        if (searchNode->GetNode("pointType") != 0)
+            searchNode->RemoveNode("pointType");
+        if (searchNode->GetNode("filledFlag") != 0)
+            searchNode->RemoveNode("filledFlag");
+    }
 }
 

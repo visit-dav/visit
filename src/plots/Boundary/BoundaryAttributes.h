@@ -62,29 +62,11 @@
 class BoundaryAttributes : public AttributeSubject
 {
 public:
-    enum Boundary_Type
-    {
-        Domain,
-        Group,
-        Material,
-        Unknown
-    };
     enum ColoringMethod
     {
         ColorBySingleColor,
         ColorByMultipleColors,
         ColorByColorTable
-    };
-    enum PointType
-    {
-        Box,
-        Axis,
-        Icosahedron,
-        Octahedron,
-        Tetrahedron,
-        SphereGeometry,
-        Point,
-        Sphere
     };
 
     // These constructors are for objects of this class
@@ -116,35 +98,26 @@ public:
     void SelectSingleColor();
     void SelectMultiColor();
     void SelectBoundaryNames();
-    void SelectPointSizeVar();
 
     // Property setting methods
     void SetColorType(ColoringMethod colorType_);
     void SetColorTableName(const std::string &colorTableName_);
     void SetInvertColorTable(bool invertColorTable_);
-    void SetFilledFlag(bool filledFlag_);
     void SetLegendFlag(bool legendFlag_);
     void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetSingleColor(const ColorAttribute &singleColor_);
     void SetMultiColor(const ColorAttributeList &multiColor_);
     void SetBoundaryNames(const stringVector &boundaryNames_);
-    void SetBoundaryType(Boundary_Type boundaryType_);
     void SetOpacity(double opacity_);
     void SetWireframe(bool wireframe_);
     void SetSmoothingLevel(int smoothingLevel_);
-    void SetPointSize(double pointSize_);
-    void SetPointType(PointType pointType_);
-    void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
-    void SetPointSizeVar(const std::string &pointSizeVar_);
-    void SetPointSizePixels(int pointSizePixels_);
 
     // Property getting methods
     ColoringMethod           GetColorType() const;
     const std::string        &GetColorTableName() const;
           std::string        &GetColorTableName();
     bool                     GetInvertColorTable() const;
-    bool                     GetFilledFlag() const;
     bool                     GetLegendFlag() const;
     int                      GetLineStyle() const;
     int                      GetLineWidth() const;
@@ -154,36 +127,19 @@ public:
           ColorAttributeList &GetMultiColor();
     const stringVector       &GetBoundaryNames() const;
           stringVector       &GetBoundaryNames();
-    Boundary_Type            GetBoundaryType() const;
     double                   GetOpacity() const;
     bool                     GetWireframe() const;
     int                      GetSmoothingLevel() const;
-    double                   GetPointSize() const;
-    PointType                GetPointType() const;
-    bool                     GetPointSizeVarEnabled() const;
-    const std::string        &GetPointSizeVar() const;
-          std::string        &GetPointSizeVar();
-    int                      GetPointSizePixels() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
     // Enum conversion functions
-    static std::string Boundary_Type_ToString(Boundary_Type);
-    static bool Boundary_Type_FromString(const std::string &, Boundary_Type &);
-protected:
-    static std::string Boundary_Type_ToString(int);
-public:
     static std::string ColoringMethod_ToString(ColoringMethod);
     static bool ColoringMethod_FromString(const std::string &, ColoringMethod &);
 protected:
     static std::string ColoringMethod_ToString(int);
-public:
-    static std::string PointType_ToString(PointType);
-    static bool PointType_FromString(const std::string &, PointType &);
-protected:
-    static std::string PointType_ToString(int);
 public:
 
     // Keyframing methods
@@ -202,22 +158,15 @@ public:
         ID_colorType = 0,
         ID_colorTableName,
         ID_invertColorTable,
-        ID_filledFlag,
         ID_legendFlag,
         ID_lineStyle,
         ID_lineWidth,
         ID_singleColor,
         ID_multiColor,
         ID_boundaryNames,
-        ID_boundaryType,
         ID_opacity,
         ID_wireframe,
         ID_smoothingLevel,
-        ID_pointSize,
-        ID_pointType,
-        ID_pointSizeVarEnabled,
-        ID_pointSizeVar,
-        ID_pointSizePixels,
         ID__LAST
     };
 
@@ -225,27 +174,20 @@ private:
     int                colorType;
     std::string        colorTableName;
     bool               invertColorTable;
-    bool               filledFlag;
     bool               legendFlag;
     int                lineStyle;
     int                lineWidth;
     ColorAttribute     singleColor;
     ColorAttributeList multiColor;
     stringVector       boundaryNames;
-    int                boundaryType;
     double             opacity;
     bool               wireframe;
     int                smoothingLevel;
-    double             pointSize;
-    int                pointType;
-    bool               pointSizeVarEnabled;
-    std::string        pointSizeVar;
-    int                pointSizePixels;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define BOUNDARYATTRIBUTES_TMFS "isbbbiiaas*idbidibsi"
+#define BOUNDARYATTRIBUTES_TMFS "isbbiiaas*dbi"
 
 #endif

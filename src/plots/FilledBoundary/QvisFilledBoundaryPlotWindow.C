@@ -413,6 +413,9 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Mon Jan 17 18:10:28 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Tue Dec 20 14:23:11 PST 2016
+//   Removed filledFlag, boundaryType.
+//
 // ****************************************************************************
 
 void
@@ -447,9 +450,6 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
             break;
         case FilledBoundaryAttributes::ID_invertColorTable:
             colorTableWidget->setInvertColorTable(boundaryAtts->GetInvertColorTable());
-            break;
-        case FilledBoundaryAttributes::ID_filledFlag:
-            // nothing anymore
             break;
         case FilledBoundaryAttributes::ID_legendFlag:
             legendToggle->blockSignals(true);
@@ -486,8 +486,6 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
             break;
         case FilledBoundaryAttributes::ID_boundaryNames:
             updateMultiple = true;
-            break;
-        case FilledBoundaryAttributes::ID_boundaryType:
             break;
         case FilledBoundaryAttributes::ID_opacity:
             overallOpacity->blockSignals(true);

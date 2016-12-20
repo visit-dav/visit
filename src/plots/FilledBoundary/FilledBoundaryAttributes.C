@@ -40,44 +40,6 @@
 #include <DataNode.h>
 
 //
-// Enum conversion methods for FilledBoundaryAttributes::Boundary_Type
-//
-
-static const char *Boundary_Type_strings[] = {
-"Domain", "Group", "Material", 
-"Unknown"};
-
-std::string
-FilledBoundaryAttributes::Boundary_Type_ToString(FilledBoundaryAttributes::Boundary_Type t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
-    return Boundary_Type_strings[index];
-}
-
-std::string
-FilledBoundaryAttributes::Boundary_Type_ToString(int t)
-{
-    int index = (t < 0 || t >= 4) ? 0 : t;
-    return Boundary_Type_strings[index];
-}
-
-bool
-FilledBoundaryAttributes::Boundary_Type_FromString(const std::string &s, FilledBoundaryAttributes::Boundary_Type &val)
-{
-    val = FilledBoundaryAttributes::Domain;
-    for(int i = 0; i < 4; ++i)
-    {
-        if(s == Boundary_Type_strings[i])
-        {
-            val = (Boundary_Type)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for FilledBoundaryAttributes::ColoringMethod
 //
 
@@ -173,11 +135,9 @@ void FilledBoundaryAttributes::Init()
 {
     colorType = ColorByMultipleColors;
     invertColorTable = false;
-    filledFlag = true;
     legendFlag = true;
     lineStyle = 0;
     lineWidth = 0;
-    boundaryType = Unknown;
     opacity = 1;
     wireframe = false;
     drawInternal = false;
@@ -211,14 +171,12 @@ void FilledBoundaryAttributes::Copy(const FilledBoundaryAttributes &obj)
     colorType = obj.colorType;
     colorTableName = obj.colorTableName;
     invertColorTable = obj.invertColorTable;
-    filledFlag = obj.filledFlag;
     legendFlag = obj.legendFlag;
     lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     singleColor = obj.singleColor;
     multiColor = obj.multiColor;
     boundaryNames = obj.boundaryNames;
-    boundaryType = obj.boundaryType;
     opacity = obj.opacity;
     wireframe = obj.wireframe;
     drawInternal = obj.drawInternal;
@@ -394,14 +352,12 @@ FilledBoundaryAttributes::operator == (const FilledBoundaryAttributes &obj) cons
     return ((colorType == obj.colorType) &&
             (colorTableName == obj.colorTableName) &&
             (invertColorTable == obj.invertColorTable) &&
-            (filledFlag == obj.filledFlag) &&
             (legendFlag == obj.legendFlag) &&
             (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (singleColor == obj.singleColor) &&
             (multiColor == obj.multiColor) &&
             (boundaryNames == obj.boundaryNames) &&
-            (boundaryType == obj.boundaryType) &&
             (opacity == obj.opacity) &&
             (wireframe == obj.wireframe) &&
             (drawInternal == obj.drawInternal) &&
@@ -559,14 +515,12 @@ FilledBoundaryAttributes::SelectAll()
     Select(ID_colorType,           (void *)&colorType);
     Select(ID_colorTableName,      (void *)&colorTableName);
     Select(ID_invertColorTable,    (void *)&invertColorTable);
-    Select(ID_filledFlag,          (void *)&filledFlag);
     Select(ID_legendFlag,          (void *)&legendFlag);
     Select(ID_lineStyle,           (void *)&lineStyle);
     Select(ID_lineWidth,           (void *)&lineWidth);
     Select(ID_singleColor,         (void *)&singleColor);
     Select(ID_multiColor,          (void *)&multiColor);
     Select(ID_boundaryNames,       (void *)&boundaryNames);
-    Select(ID_boundaryType,        (void *)&boundaryType);
     Select(ID_opacity,             (void *)&opacity);
     Select(ID_wireframe,           (void *)&wireframe);
     Select(ID_drawInternal,        (void *)&drawInternal);
@@ -628,12 +582,6 @@ FilledBoundaryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bo
         node->AddNode(new DataNode("invertColorTable", invertColorTable));
     }
 
-    if(completeSave || !FieldsEqual(ID_filledFlag, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("filledFlag", filledFlag));
-    }
-
     if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
     {
         addToParent = true;
@@ -676,12 +624,6 @@ FilledBoundaryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bo
     {
         addToParent = true;
         node->AddNode(new DataNode("boundaryNames", boundaryNames));
-    }
-
-    if(completeSave || !FieldsEqual(ID_boundaryType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("boundaryType", Boundary_Type_ToString(boundaryType)));
     }
 
     if(completeSave || !FieldsEqual(ID_opacity, &defaultObject))
@@ -808,8 +750,6 @@ FilledBoundaryAttributes::SetFromNode(DataNode *parentNode)
         SetColorTableName(node->AsString());
     if((node = searchNode->GetNode("invertColorTable")) != 0)
         SetInvertColorTable(node->AsBool());
-    if((node = searchNode->GetNode("filledFlag")) != 0)
-        SetFilledFlag(node->AsBool());
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("lineStyle")) != 0)
@@ -822,22 +762,6 @@ FilledBoundaryAttributes::SetFromNode(DataNode *parentNode)
         multiColor.SetFromNode(node);
     if((node = searchNode->GetNode("boundaryNames")) != 0)
         SetBoundaryNames(node->AsStringVector());
-    if((node = searchNode->GetNode("boundaryType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
-                SetBoundaryType(Boundary_Type(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            Boundary_Type value;
-            if(Boundary_Type_FromString(node->AsString(), value))
-                SetBoundaryType(value);
-        }
-    }
     if((node = searchNode->GetNode("opacity")) != 0)
         SetOpacity(node->AsDouble());
     if((node = searchNode->GetNode("wireframe")) != 0)
@@ -874,36 +798,6 @@ FilledBoundaryAttributes::SetFromNode(DataNode *parentNode)
         SetPointSizeVar(node->AsString());
     if((node = searchNode->GetNode("pointSizePixels")) != 0)
         SetPointSizePixels(node->AsInt());
-    // We are no longer using MultiColor as the source for the "mixed"
-    // color (in clean zones only), but someone may have saved their
-    // settings with the "mixed" color in the list.  Remove it if it's
-    // in there.
-    //
-    // NOTE: This code can be removed in a few months, as soon as
-    // 1.3 is at least a few versions old, since it represents a little
-    // bit of a hack.
-    bool done = false;
-    while (!done)
-    {
-        done = true;
-        size_t index;
-        for (index=0; index<boundaryNames.size(); index++)
-        {
-            if (boundaryNames[index] == "mixed")
-            {
-                done = false;
-                break;
-            }
-        }
-        if (!done)
-        {
-            multiColor.RemoveColors((int)index);
-            for (size_t i=index+1; i<boundaryNames.size(); i++)
-                boundaryNames[i-1] = boundaryNames[i];
-            boundaryNames.resize(boundaryNames.size() - 1);
-        }
-    }
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -929,13 +823,6 @@ FilledBoundaryAttributes::SetInvertColorTable(bool invertColorTable_)
 {
     invertColorTable = invertColorTable_;
     Select(ID_invertColorTable, (void *)&invertColorTable);
-}
-
-void
-FilledBoundaryAttributes::SetFilledFlag(bool filledFlag_)
-{
-    filledFlag = filledFlag_;
-    Select(ID_filledFlag, (void *)&filledFlag);
 }
 
 void
@@ -978,13 +865,6 @@ FilledBoundaryAttributes::SetBoundaryNames(const stringVector &boundaryNames_)
 {
     boundaryNames = boundaryNames_;
     Select(ID_boundaryNames, (void *)&boundaryNames);
-}
-
-void
-FilledBoundaryAttributes::SetBoundaryType(FilledBoundaryAttributes::Boundary_Type boundaryType_)
-{
-    boundaryType = boundaryType_;
-    Select(ID_boundaryType, (void *)&boundaryType);
 }
 
 void
@@ -1093,12 +973,6 @@ FilledBoundaryAttributes::GetInvertColorTable() const
 }
 
 bool
-FilledBoundaryAttributes::GetFilledFlag() const
-{
-    return filledFlag;
-}
-
-bool
 FilledBoundaryAttributes::GetLegendFlag() const
 {
     return legendFlag;
@@ -1150,12 +1024,6 @@ stringVector &
 FilledBoundaryAttributes::GetBoundaryNames()
 {
     return boundaryNames;
-}
-
-FilledBoundaryAttributes::Boundary_Type
-FilledBoundaryAttributes::GetBoundaryType() const
-{
-    return Boundary_Type(boundaryType);
 }
 
 double
@@ -1303,14 +1171,12 @@ FilledBoundaryAttributes::GetFieldName(int index) const
     case ID_colorType:           return "colorType";
     case ID_colorTableName:      return "colorTableName";
     case ID_invertColorTable:    return "invertColorTable";
-    case ID_filledFlag:          return "filledFlag";
     case ID_legendFlag:          return "legendFlag";
     case ID_lineStyle:           return "lineStyle";
     case ID_lineWidth:           return "lineWidth";
     case ID_singleColor:         return "singleColor";
     case ID_multiColor:          return "multiColor";
     case ID_boundaryNames:       return "boundaryNames";
-    case ID_boundaryType:        return "boundaryType";
     case ID_opacity:             return "opacity";
     case ID_wireframe:           return "wireframe";
     case ID_drawInternal:        return "drawInternal";
@@ -1349,14 +1215,12 @@ FilledBoundaryAttributes::GetFieldType(int index) const
     case ID_colorType:           return FieldType_enum;
     case ID_colorTableName:      return FieldType_colortable;
     case ID_invertColorTable:    return FieldType_bool;
-    case ID_filledFlag:          return FieldType_bool;
     case ID_legendFlag:          return FieldType_bool;
     case ID_lineStyle:           return FieldType_linestyle;
     case ID_lineWidth:           return FieldType_linewidth;
     case ID_singleColor:         return FieldType_color;
     case ID_multiColor:          return FieldType_att;
     case ID_boundaryNames:       return FieldType_stringVector;
-    case ID_boundaryType:        return FieldType_enum;
     case ID_opacity:             return FieldType_opacity;
     case ID_wireframe:           return FieldType_bool;
     case ID_drawInternal:        return FieldType_bool;
@@ -1395,14 +1259,12 @@ FilledBoundaryAttributes::GetFieldTypeName(int index) const
     case ID_colorType:           return "enum";
     case ID_colorTableName:      return "colortable";
     case ID_invertColorTable:    return "bool";
-    case ID_filledFlag:          return "bool";
     case ID_legendFlag:          return "bool";
     case ID_lineStyle:           return "linestyle";
     case ID_lineWidth:           return "linewidth";
     case ID_singleColor:         return "color";
     case ID_multiColor:          return "att";
     case ID_boundaryNames:       return "stringVector";
-    case ID_boundaryType:        return "enum";
     case ID_opacity:             return "opacity";
     case ID_wireframe:           return "bool";
     case ID_drawInternal:        return "bool";
@@ -1455,11 +1317,6 @@ FilledBoundaryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) con
         retval = (invertColorTable == obj.invertColorTable);
         }
         break;
-    case ID_filledFlag:
-        {  // new scope
-        retval = (filledFlag == obj.filledFlag);
-        }
-        break;
     case ID_legendFlag:
         {  // new scope
         retval = (legendFlag == obj.legendFlag);
@@ -1488,11 +1345,6 @@ FilledBoundaryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) con
     case ID_boundaryNames:
         {  // new scope
         retval = (boundaryNames == obj.boundaryNames);
-        }
-        break;
-    case ID_boundaryType:
-        {  // new scope
-        retval = (boundaryType == obj.boundaryType);
         }
         break;
     case ID_opacity:
@@ -1571,6 +1423,9 @@ FilledBoundaryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) con
 //    Kathleen Bonnell, Wed Nov 10 09:22:35 PST 2004 
 //    Added needSecondaryVar.
 //
+//    Kathleen Biagas, Thu Dec 15 16:24:11 PST 2016
+//    Removed boundaryType, filledFlag.
+//
 // ****************************************************************************
 bool
 FilledBoundaryAttributes::ChangesRequireRecalculation(const FilledBoundaryAttributes &obj)
@@ -1581,9 +1436,7 @@ FilledBoundaryAttributes::ChangesRequireRecalculation(const FilledBoundaryAttrib
                             obj.pointSizeVar != "" &&
                             obj.pointSizeVar != "\0"; 
 
-    return ((filledFlag != obj.filledFlag) ||
-            (boundaryType != obj.boundaryType) || 
-            (boundaryNames != obj.boundaryNames) ||
+    return ((boundaryNames != obj.boundaryNames) ||
             (wireframe != obj.wireframe) ||
             (drawInternal != obj.drawInternal) ||
             (smoothingLevel != obj.smoothingLevel) ||
@@ -1595,5 +1448,39 @@ bool
 FilledBoundaryAttributes::VarChangeRequiresReset()
 { 
     return true;
+}
+
+// ****************************************************************************
+// Method: FilledBoundaryAttributes::ProcessOldVersions
+//
+// Purpose: 
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 19, 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+FilledBoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
+                                       const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("BoundaryAttributes");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "2.13.0"))
+    {
+        if (searchNode->GetNode("boundaryType") != 0)
+            searchNode->RemoveNode("boundaryType");
+        if (searchNode->GetNode("filledFlag") != 0)
+            searchNode->RemoveNode("filledFlag");
+    }
 }
 

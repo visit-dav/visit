@@ -385,15 +385,15 @@ avtFilledBoundaryFilter::UpdateDataObjectInfo(void)
 //    Hank Childs, Thu Aug 26 22:23:26 PDT 2010
 //    Calculate the extents of the scaling variable.
 //
+//    Kathleen Biagas, Thu Dec 15 16:29:23 PST 2016
+//    Remove if test for Material, as this plot only supports materials.
+//
 // ****************************************************************************
 
 avtContract_p
 avtFilledBoundaryFilter::ModifyContract(avtContract_p spec)
 {
-    if (plotAtts.GetBoundaryType() == FilledBoundaryAttributes::Material)
-    {
-        spec->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
-    }
+    spec->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
     if (plotAtts.GetDrawInternal())
     {
         spec->GetDataRequest()->TurnInternalSurfacesOn();

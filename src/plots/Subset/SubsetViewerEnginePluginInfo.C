@@ -347,6 +347,9 @@ SubsetViewerEnginePluginInfo::GetMenuName() const
 //    Kathleen Biagas, Tue Aug 27 16:59:10 PDT 2013
 //    Add support for groupNames.
 //
+//    Kathleen Biagas, Thu Dec 15 16:13:57 PST 2016
+//    Removed Material as a subset option.
+//
 // ****************************************************************************
 #include <stdio.h>
 
@@ -380,7 +383,6 @@ SubsetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
     std::string vn(plot.GetVariableName());
 
-    const avtMaterialMetaData *mat = NULL;
     const avtScalarMetaData *smd = NULL;
 
     std::string meshName = nonConstmd->MeshForVar(vn);
@@ -459,21 +461,6 @@ SubsetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
                   gIDS.push_back(origin+i);
                   sprintf(temp, "%d", origin+i);
                   sv.push_back(temp);
-              }
-          }
-          break;
-
-      case AVT_MATERIAL_SUBSET :
-          debug5 << "Variable for subset plot is a Material." << endl; 
-          subsetAtts->SetSubsetType(SubsetAttributes::Material);
-          defaultAtts->SetSubsetType(SubsetAttributes::Material);
-          mat = md->GetMaterial(vn);
-          if (mat != NULL)
-          {
-              for(pos = mat->materialNames.begin();
-                  pos != mat->materialNames.end(); ++pos)
-              {
-                  sv.push_back(*pos);
               }
           }
           break;

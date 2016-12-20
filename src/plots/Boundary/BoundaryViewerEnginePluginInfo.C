@@ -328,6 +328,9 @@ BoundaryViewerEnginePluginInfo::GetMenuName() const
 //    Brad Whitlock, Wed Feb 21 14:27:15 PST 2007
 //    Changed API.
 //
+//    Kathleen Biagas, Thu Dec 15 16:51:01 PST 2016
+//    Remove Subset logic as this plot only supports Materials.
+//
 // ****************************************************************************
 
 #include <stdio.h>
@@ -377,70 +380,24 @@ BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     char temp[512];
 
     // 
-    // Create boundary names, based on Boundary Type 
+    // Ensure only Material subsets
     // 
-    avtSubsetType subT = nonConstmd->DetermineSubsetType(vn);
-    switch (subT)
+    if (nonConstmd->DetermineSubsetType(vn) != AVT_MATERIAL_SUBSET)
     {
-      case AVT_DOMAIN_SUBSET : 
-          debug5 << "Variable for boundary plot is a domain Mesh." << endl; 
-          boundaryAtts->SetBoundaryType(BoundaryAttributes::Domain);
-          defaultAtts->SetBoundaryType(BoundaryAttributes::Domain);
-          if (mesh->blockNames.empty())
-          {
-              for (int i = 0; i < mesh->numBlocks; i++)
-              { 
-                  sprintf(temp, "%d", i+mesh->blockOrigin);
-                  sv.push_back(temp);
-              }
-          }
-          else
-          {
-              for(pos = mesh->blockNames.begin();
-                  pos != mesh->blockNames.end(); ++pos)
-              {
-                  sv.push_back(*pos);
-              }
-          }
-          break;
+        EXCEPTION1(InvalidVariableException, vn);
+    }
 
-      case AVT_GROUP_SUBSET :
-          debug5 << "Variable for boundary plot is a group Mesh." << endl; 
-          boundaryAtts->SetBoundaryType(BoundaryAttributes::Group);
-          defaultAtts->SetBoundaryType(BoundaryAttributes::Group);
-          for (size_t i = 0; i < mesh->groupIds.size(); i++)
-          {
-              if (groupSet.count(mesh->groupIds[i]) == 0)
-              {
-                  groupSet.insert(mesh->groupIds[i]);
-                  gIDS.push_back(mesh->groupIds[i]);
-              }
-          }
-          for (size_t i = 0; i < gIDS.size(); i++)
-          {
-              sprintf(temp, "%d", gIDS[i]);
-              sv.push_back(temp);
-          }
-          break;
-
-      case AVT_MATERIAL_SUBSET :
-          debug5 << "Variable for boundary plot is a Material." << endl; 
-          boundaryAtts->SetBoundaryType(BoundaryAttributes::Material);
-          defaultAtts->SetBoundaryType(BoundaryAttributes::Material);
-          mat = md->GetMaterial(vn);
-          if (mat != NULL)
-          {
-              for(pos = mat->materialNames.begin();
-                  pos != mat->materialNames.end(); ++pos)
-              {
-                  sv.push_back(*pos);
-              }
-          }
-          break;
-
-      default:
-          EXCEPTION1(InvalidVariableException, vn);
-          break;
+    // 
+    // Create boundary names.
+    // 
+    mat = md->GetMaterial(vn);
+    if (mat != NULL)
+    {
+        for(pos = mat->materialNames.begin();
+            pos != mat->materialNames.end(); ++pos)
+        {
+            sv.push_back(*pos);
+        }
     }
     
     // 
