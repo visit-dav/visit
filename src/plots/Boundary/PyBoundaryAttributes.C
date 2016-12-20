@@ -104,11 +104,6 @@ PyBoundaryAttributes_ToString(const BoundaryAttributes *atts, const char *prefix
     else
         SNPRINTF(tmpStr, 1000, "%sinvertColorTable = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetFilledFlag())
-        SNPRINTF(tmpStr, 1000, "%sfilledFlag = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sfilledFlag = 0\n", prefix);
-    str += tmpStr;
     if(atts->GetLegendFlag())
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
     else
@@ -148,29 +143,6 @@ PyBoundaryAttributes_ToString(const BoundaryAttributes *atts, const char *prefix
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    const char *boundaryType_names = "Domain, Group, Material, Unknown";
-    switch (atts->GetBoundaryType())
-    {
-      case BoundaryAttributes::Domain:
-          SNPRINTF(tmpStr, 1000, "%sboundaryType = %sDomain  # %s\n", prefix, prefix, boundaryType_names);
-          str += tmpStr;
-          break;
-      case BoundaryAttributes::Group:
-          SNPRINTF(tmpStr, 1000, "%sboundaryType = %sGroup  # %s\n", prefix, prefix, boundaryType_names);
-          str += tmpStr;
-          break;
-      case BoundaryAttributes::Material:
-          SNPRINTF(tmpStr, 1000, "%sboundaryType = %sMaterial  # %s\n", prefix, prefix, boundaryType_names);
-          str += tmpStr;
-          break;
-      case BoundaryAttributes::Unknown:
-          SNPRINTF(tmpStr, 1000, "%sboundaryType = %sUnknown  # %s\n", prefix, prefix, boundaryType_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
     SNPRINTF(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
     str += tmpStr;
     if(atts->GetWireframe())
@@ -179,57 +151,6 @@ PyBoundaryAttributes_ToString(const BoundaryAttributes *atts, const char *prefix
         SNPRINTF(tmpStr, 1000, "%swireframe = 0\n", prefix);
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssmoothingLevel = %d\n", prefix, atts->GetSmoothingLevel());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
-    str += tmpStr;
-    const char *pointType_names = "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
-        "SphereGeometry, Point, Sphere";
-    switch (atts->GetPointType())
-    {
-      case BoundaryAttributes::Box:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case BoundaryAttributes::Axis:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case BoundaryAttributes::Icosahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case BoundaryAttributes::Octahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case BoundaryAttributes::Tetrahedron:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case BoundaryAttributes::SphereGeometry:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case BoundaryAttributes::Point:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case BoundaryAttributes::Sphere:
-          SNPRINTF(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    if(atts->GetPointSizeVarEnabled())
-        SNPRINTF(tmpStr, 1000, "%spointSizeVarEnabled = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%spointSizeVarEnabled = 0\n", prefix);
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSizeVar = \"%s\"\n", prefix, atts->GetPointSizeVar().c_str());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
     str += tmpStr;
     return str;
 }
@@ -321,30 +242,6 @@ BoundaryAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 {
     BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_SetFilledFlag(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the filledFlag in the object.
-    obj->data->SetFilledFlag(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_GetFilledFlag(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetFilledFlag()?1L:0L);
     return retval;
 }
 
@@ -768,39 +665,6 @@ BoundaryAttributes_GetBoundaryNames(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-BoundaryAttributes_SetBoundaryType(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the boundaryType in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetBoundaryType(BoundaryAttributes::Boundary_Type(ival));
-    else
-    {
-        fprintf(stderr, "An invalid boundaryType value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "Domain, Group, Material, Unknown.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_GetBoundaryType(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetBoundaryType()));
-    return retval;
-}
-
-/*static*/ PyObject *
 BoundaryAttributes_SetOpacity(PyObject *self, PyObject *args)
 {
     BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
@@ -872,136 +736,6 @@ BoundaryAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-BoundaryAttributes_SetPointSize(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the pointSize in the object.
-    obj->data->SetPointSize(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_GetPointSize(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetPointSize());
-    return retval;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_SetPointType(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the pointType in the object.
-    if(ival >= 0 && ival < 8)
-        obj->data->SetPointType(BoundaryAttributes::PointType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid pointType value was given. "
-                        "Valid values are in the range of [0,7]. "
-                        "You can also use the following names: "
-                        "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
-                        "SphereGeometry, Point, Sphere.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_GetPointType(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetPointType()));
-    return retval;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the pointSizeVarEnabled in the object.
-    obj->data->SetPointSizeVarEnabled(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_GetPointSizeVarEnabled(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetPointSizeVarEnabled()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the pointSizeVar in the object.
-    obj->data->SetPointSizeVar(std::string(str));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_GetPointSizeVar(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetPointSizeVar().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the pointSizePixels in the object.
-    obj->data->SetPointSizePixels((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-BoundaryAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetPointSizePixels()));
-    return retval;
-}
-
 
 
 PyMethodDef PyBoundaryAttributes_methods[BOUNDARYATTRIBUTES_NMETH] = {
@@ -1012,8 +746,6 @@ PyMethodDef PyBoundaryAttributes_methods[BOUNDARYATTRIBUTES_NMETH] = {
     {"GetColorTableName", BoundaryAttributes_GetColorTableName, METH_VARARGS},
     {"SetInvertColorTable", BoundaryAttributes_SetInvertColorTable, METH_VARARGS},
     {"GetInvertColorTable", BoundaryAttributes_GetInvertColorTable, METH_VARARGS},
-    {"SetFilledFlag", BoundaryAttributes_SetFilledFlag, METH_VARARGS},
-    {"GetFilledFlag", BoundaryAttributes_GetFilledFlag, METH_VARARGS},
     {"SetLegendFlag", BoundaryAttributes_SetLegendFlag, METH_VARARGS},
     {"GetLegendFlag", BoundaryAttributes_GetLegendFlag, METH_VARARGS},
     {"SetLineStyle", BoundaryAttributes_SetLineStyle, METH_VARARGS},
@@ -1026,24 +758,12 @@ PyMethodDef PyBoundaryAttributes_methods[BOUNDARYATTRIBUTES_NMETH] = {
     {"GetMultiColor", BoundaryAttributes_GetMultiColor, METH_VARARGS},
     {"SetBoundaryNames", BoundaryAttributes_SetBoundaryNames, METH_VARARGS},
     {"GetBoundaryNames", BoundaryAttributes_GetBoundaryNames, METH_VARARGS},
-    {"SetBoundaryType", BoundaryAttributes_SetBoundaryType, METH_VARARGS},
-    {"GetBoundaryType", BoundaryAttributes_GetBoundaryType, METH_VARARGS},
     {"SetOpacity", BoundaryAttributes_SetOpacity, METH_VARARGS},
     {"GetOpacity", BoundaryAttributes_GetOpacity, METH_VARARGS},
     {"SetWireframe", BoundaryAttributes_SetWireframe, METH_VARARGS},
     {"GetWireframe", BoundaryAttributes_GetWireframe, METH_VARARGS},
     {"SetSmoothingLevel", BoundaryAttributes_SetSmoothingLevel, METH_VARARGS},
     {"GetSmoothingLevel", BoundaryAttributes_GetSmoothingLevel, METH_VARARGS},
-    {"SetPointSize", BoundaryAttributes_SetPointSize, METH_VARARGS},
-    {"GetPointSize", BoundaryAttributes_GetPointSize, METH_VARARGS},
-    {"SetPointType", BoundaryAttributes_SetPointType, METH_VARARGS},
-    {"GetPointType", BoundaryAttributes_GetPointType, METH_VARARGS},
-    {"SetPointSizeVarEnabled", BoundaryAttributes_SetPointSizeVarEnabled, METH_VARARGS},
-    {"GetPointSizeVarEnabled", BoundaryAttributes_GetPointSizeVarEnabled, METH_VARARGS},
-    {"SetPointSizeVar", BoundaryAttributes_SetPointSizeVar, METH_VARARGS},
-    {"GetPointSizeVar", BoundaryAttributes_GetPointSizeVar, METH_VARARGS},
-    {"SetPointSizePixels", BoundaryAttributes_SetPointSizePixels, METH_VARARGS},
-    {"GetPointSizePixels", BoundaryAttributes_GetPointSizePixels, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1085,8 +805,6 @@ PyBoundaryAttributes_getattr(PyObject *self, char *name)
         return BoundaryAttributes_GetColorTableName(self, NULL);
     if(strcmp(name, "invertColorTable") == 0)
         return BoundaryAttributes_GetInvertColorTable(self, NULL);
-    if(strcmp(name, "filledFlag") == 0)
-        return BoundaryAttributes_GetFilledFlag(self, NULL);
     if(strcmp(name, "legendFlag") == 0)
         return BoundaryAttributes_GetLegendFlag(self, NULL);
     if(strcmp(name, "lineStyle") == 0)
@@ -1108,51 +826,115 @@ PyBoundaryAttributes_getattr(PyObject *self, char *name)
         return BoundaryAttributes_GetMultiColor(self, NULL);
     if(strcmp(name, "boundaryNames") == 0)
         return BoundaryAttributes_GetBoundaryNames(self, NULL);
-    if(strcmp(name, "boundaryType") == 0)
-        return BoundaryAttributes_GetBoundaryType(self, NULL);
-    if(strcmp(name, "Domain") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::Domain));
-    if(strcmp(name, "Group") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::Group));
-    if(strcmp(name, "Material") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::Material));
-    if(strcmp(name, "Unknown") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::Unknown));
-
     if(strcmp(name, "opacity") == 0)
         return BoundaryAttributes_GetOpacity(self, NULL);
     if(strcmp(name, "wireframe") == 0)
         return BoundaryAttributes_GetWireframe(self, NULL);
     if(strcmp(name, "smoothingLevel") == 0)
         return BoundaryAttributes_GetSmoothingLevel(self, NULL);
-    if(strcmp(name, "pointSize") == 0)
-        return BoundaryAttributes_GetPointSize(self, NULL);
-    if(strcmp(name, "pointType") == 0)
-        return BoundaryAttributes_GetPointType(self, NULL);
-    if(strcmp(name, "Box") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::Box));
-    if(strcmp(name, "Axis") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::Axis));
-    if(strcmp(name, "Icosahedron") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::Icosahedron));
-    if(strcmp(name, "Octahedron") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::Octahedron));
-    if(strcmp(name, "Tetrahedron") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::Tetrahedron));
-    if(strcmp(name, "SphereGeometry") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::SphereGeometry));
-    if(strcmp(name, "Point") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::Point));
-    if(strcmp(name, "Sphere") == 0)
-        return PyInt_FromLong(long(BoundaryAttributes::Sphere));
 
-    if(strcmp(name, "pointSizeVarEnabled") == 0)
-        return BoundaryAttributes_GetPointSizeVarEnabled(self, NULL);
-    if(strcmp(name, "pointSizeVar") == 0)
-        return BoundaryAttributes_GetPointSizeVar(self, NULL);
-    if(strcmp(name, "pointSizePixels") == 0)
-        return BoundaryAttributes_GetPointSizePixels(self, NULL);
+    // Try and handle legacy fields
 
+#define DEPRECATED_MESSAGE(type) \
+    fprintf(stdout, "%s is no longer a valid Boundary attribute.\n" \
+                    "It's value is being ignored, " \
+                    "please remove it from your script.\n", type);
+
+    // boundaryType and it's possible enumerations
+    bool boundaryTypeFound = false;
+    if (strcmp(name, "boundaryType") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Domain") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Group") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Material") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Unknown") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    if (boundaryTypeFound)
+    {
+        DEPRECATED_MESSAGE("boundaryType");
+        return PyInt_FromLong(0L);
+    }
+    // pointType and it's possible enumerations
+    bool pointTypeFound = false;
+    if (strcmp(name, "pointType") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Box") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Axis") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Icosahedron") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Octahedron") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Tetrahedron") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "SphereGeometry") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Point") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Sphere") == 0)
+    {
+        pointTypeFound = true;
+    }
+    if (pointTypeFound)
+    {
+        DEPRECATED_MESSAGE("pointType");
+        return PyInt_FromLong(0L);
+    }
+    if (strcmp(name, "pointSize") == 0)
+    {
+        DEPRECATED_MESSAGE("pointSize");
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "pointSizePixels") == 0)
+    {
+        DEPRECATED_MESSAGE("pointSizePixels");
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "pointSizeVarEnabled") == 0)
+    {
+        DEPRECATED_MESSAGE("pointSizeVarEnabled");
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "pointSizeVar") == 0)
+    {
+        DEPRECATED_MESSAGE("pointSizeVar");
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "filledFlag") == 0)
+    {
+        DEPRECATED_MESSAGE("filledFlag");
+        return PyInt_FromLong(0L);
+    }
     return Py_FindMethod(PyBoundaryAttributes_methods, self, name);
 }
 
@@ -1172,8 +954,6 @@ PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = BoundaryAttributes_SetColorTableName(self, tuple);
     else if(strcmp(name, "invertColorTable") == 0)
         obj = BoundaryAttributes_SetInvertColorTable(self, tuple);
-    else if(strcmp(name, "filledFlag") == 0)
-        obj = BoundaryAttributes_SetFilledFlag(self, tuple);
     else if(strcmp(name, "legendFlag") == 0)
         obj = BoundaryAttributes_SetLegendFlag(self, tuple);
     else if(strcmp(name, "lineStyle") == 0)
@@ -1186,25 +966,52 @@ PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = BoundaryAttributes_SetMultiColor(self, tuple);
     else if(strcmp(name, "boundaryNames") == 0)
         obj = BoundaryAttributes_SetBoundaryNames(self, tuple);
-    else if(strcmp(name, "boundaryType") == 0)
-        obj = BoundaryAttributes_SetBoundaryType(self, tuple);
     else if(strcmp(name, "opacity") == 0)
         obj = BoundaryAttributes_SetOpacity(self, tuple);
     else if(strcmp(name, "wireframe") == 0)
         obj = BoundaryAttributes_SetWireframe(self, tuple);
     else if(strcmp(name, "smoothingLevel") == 0)
         obj = BoundaryAttributes_SetSmoothingLevel(self, tuple);
-    else if(strcmp(name, "pointSize") == 0)
-        obj = BoundaryAttributes_SetPointSize(self, tuple);
-    else if(strcmp(name, "pointType") == 0)
-        obj = BoundaryAttributes_SetPointType(self, tuple);
-    else if(strcmp(name, "pointSizeVarEnabled") == 0)
-        obj = BoundaryAttributes_SetPointSizeVarEnabled(self, tuple);
-    else if(strcmp(name, "pointSizeVar") == 0)
-        obj = BoundaryAttributes_SetPointSizeVar(self, tuple);
-    else if(strcmp(name, "pointSizePixels") == 0)
-        obj = BoundaryAttributes_SetPointSizePixels(self, tuple);
 
+    // Try and handle legacy fields
+    if(obj == NULL)
+    {
+        if(strcmp(name, "filledFlag") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "boundaryType") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "pointType") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "pointSize") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "pointSizePixels") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "pointSizeVarEnabled") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "pointSizeVar") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
     if(obj != NULL)
         Py_DECREF(obj);
 

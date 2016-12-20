@@ -48,7 +48,7 @@
 #include <BoundaryAttributes.h>
 
 class     avtLevelsLegend;
-class     avtLevelsPointGlyphMapper;
+class     avtLevelsMapper;
 class     avtLookupTable;
 
 class     avtFeatureEdgesFilter;
@@ -88,10 +88,14 @@ class     avtSmoothPolyDataFilter;
 //    Kathleen Biagas, Wed Feb 29 13:10:11 MST 2012
 //    Add GetExtraInfoForPick.
 //
+//    Kathleen Biagas, Tue Dec 20 13:53:40 PST 2016
+//    Changed inheritance from avtVolumeDataPlot to avtSurfaceDataPlot.
+//    Removed glyph mapper.
+//
 // ****************************************************************************
 
 class
-avtBoundaryPlot : public avtVolumeDataPlot
+avtBoundaryPlot : public avtSurfaceDataPlot
 {
   public:
                               avtBoundaryPlot();
@@ -123,7 +127,7 @@ avtBoundaryPlot : public avtVolumeDataPlot
     avtSmoothPolyDataFilter         *smooth;
 
     BoundaryAttributes         atts;
-    avtLevelsPointGlyphMapper *levelsMapper;
+    avtLevelsMapper           *levelsMapper;
     avtLevelsLegend           *levelsLegend;
     avtLegend_p                levLegendRefPtr;
     avtLookupTable            *avtLUT;

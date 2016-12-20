@@ -1,26 +1,10 @@
 <?xml version="1.0"?>
   <Plugin name="Boundary" type="plot" label="Boundary" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="material" iconFile="Boundary.xpm">
     <Attribute name="BoundaryAttributes" purpose="This class contains the plot attributes for the boundary plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="BoundaryAttributes.code">
-      <Enum name="Boundary_Type">
-        Domain
-        Group
-        Material
-        Unknown
-      </Enum>
       <Enum name="ColoringMethod">
         ColorBySingleColor
         ColorByMultipleColors
         ColorByColorTable
-      </Enum>
-      <Enum name="PointType">
-        Box
-        Axis
-        Icosahedron
-        Octahedron
-        Tetrahedron
-        SphereGeometry
-        Point
-        Sphere
       </Enum>
       <Field name="colorType" label="colorType" type="enum" subtype="ColoringMethod">
         ColorByMultipleColors
@@ -30,9 +14,6 @@
       </Field>
       <Field name="invertColorTable" label="Invert Color table" type="bool">
         false
-      </Field>
-      <Field name="filledFlag" label="filledFlag" type="bool">
-        true
       </Field>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
@@ -49,9 +30,6 @@
       </Field>
       <Field name="boundaryNames" label="boundaryNames" type="stringVector">
       </Field>
-      <Field name="boundaryType" label="boundaryType" type="enum" subtype="Boundary_Type">
-        Unknown
-      </Field>
       <Field name="opacity" label="opacity" type="opacity">
         1.000000
       </Field>
@@ -60,21 +38,6 @@
       </Field>
       <Field name="smoothingLevel" label="Smoothing level" type="int">
         0
-      </Field>
-      <Field name="pointSize" label="Point size" type="double">
-        0.050000
-      </Field>
-      <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
-        Point
-      </Field>
-      <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
-        false
-      </Field>
-      <Field name="pointSizeVar" label="Point size by var" type="variablename" vartypes="01000000000">
-        default
-      </Field>
-      <Field name="pointSizePixels" label="Point size pixels" type="int">
-        2
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

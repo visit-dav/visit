@@ -367,45 +367,18 @@ avtBoundaryFilter::UpdateDataObjectInfo(void)
 //    Kathleen Bonnell, Tue Jul 14 13:42:37 PDT 2009
 //    Added test for MayRequireNodes for turning Node numbers on.
 //
+//    Kathleen Biagas, Tue Dec 20 13:56:56 PST 2016
+//    Removed secondary var request logic as glyphing is not supported.
+//    Removed if-test for Material boundary type, as that is the only
+//    type supported.
+//
 // ****************************************************************************
 
 avtContract_p
 avtBoundaryFilter::ModifyContract(avtContract_p spec)
 {
-    if (plotAtts.GetBoundaryType() == BoundaryAttributes::Material)
-    {
-        spec->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
-    }
+    spec->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
     spec->GetDataRequest()->TurnBoundarySurfaceRepresentationOn();
-
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
-    {
-        string pointVar = plotAtts.GetPointSizeVar();
-        avtDataRequest_p dataRequest = spec->GetDataRequest();
-
-        //
-        // Find out if we REALLY need to add the secondary variable.
-        //
-        if (plotAtts.GetPointSizeVarEnabled() && 
-            pointVar != "default" &&
-            pointVar != "\0" &&
-            pointVar != dataRequest->GetVariable() &&
-            !dataRequest->HasSecondaryVariable(pointVar.c_str()))
-        {
-            spec->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
-        }
-
-        if (spec->GetDataRequest()->MayRequireZones() ||
-            spec->GetDataRequest()->MayRequireNodes())
-        {
-            keepNodeZone = true;
-            spec->GetDataRequest()->TurnNodeNumbersOn();
-        }
-        else
-        {
-            keepNodeZone = false;
-        }
-    }
 
     return spec;
 }

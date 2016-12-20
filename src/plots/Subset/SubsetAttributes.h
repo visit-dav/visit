@@ -66,7 +66,6 @@ public:
     {
         Domain,
         Group,
-        Material,
         EnumScalar,
         Mesh,
         Unknown
@@ -124,7 +123,6 @@ public:
     void SetColorType(ColoringMethod colorType_);
     void SetColorTableName(const std::string &colorTableName_);
     void SetInvertColorTable(bool invertColorTable_);
-    void SetFilledFlag(bool filledFlag_);
     void SetLegendFlag(bool legendFlag_);
     void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
@@ -147,7 +145,6 @@ public:
     const std::string        &GetColorTableName() const;
           std::string        &GetColorTableName();
     bool                     GetInvertColorTable() const;
-    bool                     GetFilledFlag() const;
     bool                     GetLegendFlag() const;
     int                      GetLineStyle() const;
     int                      GetLineWidth() const;
@@ -199,13 +196,13 @@ public:
     // User-defined methods
     bool ChangesRequireRecalculation(const SubsetAttributes &obj);
     virtual bool VarChangeRequiresReset(void);
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
         ID_colorType = 0,
         ID_colorTableName,
         ID_invertColorTable,
-        ID_filledFlag,
         ID_legendFlag,
         ID_lineStyle,
         ID_lineWidth,
@@ -229,7 +226,6 @@ private:
     int                colorType;
     std::string        colorTableName;
     bool               invertColorTable;
-    bool               filledFlag;
     bool               legendFlag;
     int                lineStyle;
     int                lineWidth;
@@ -251,6 +247,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SUBSETATTRIBUTES_TMFS "isbbbiiaas*idbbidibsi"
+#define SUBSETATTRIBUTES_TMFS "isbbiiaas*idbbidibsi"
 
 #endif

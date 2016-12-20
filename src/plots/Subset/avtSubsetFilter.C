@@ -434,15 +434,14 @@ avtSubsetFilter::UpdateDataObjectInfo(void)
 //    Hank Childs, Thu Aug 26 22:23:26 PDT 2010
 //    Calculate the extents of the scaling variable.
 //
+//    Kathleen Biagas, Thu Dec 15 16:16:03 PST 2016
+//    Remove test for Material subset as this plot doesn't accept materials.
+//
 // ****************************************************************************
 
 avtContract_p
 avtSubsetFilter::ModifyContract(avtContract_p spec)
 {
-    if (plotAtts.GetSubsetType() == SubsetAttributes::Material)
-    {
-        spec->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
-    }
     if (plotAtts.GetDrawInternal())
     {
         spec->GetDataRequest()->TurnInternalSurfacesOn();

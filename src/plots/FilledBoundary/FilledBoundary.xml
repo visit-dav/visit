@@ -1,12 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="FilledBoundary" type="plot" label="Filled Boundary" version="1.0" enabled="true" vartype="material" iconFile="FilledBoundary.xpm">
     <Attribute name="FilledBoundaryAttributes" purpose="This class contains the plot attributes for the filled boundary plot." persistent="true" codefile="FilledBoundaryAttributes.code">
-      <Enum name="Boundary_Type">
-        Domain
-        Group
-        Material
-        Unknown
-      </Enum>
       <Enum name="ColoringMethod">
         ColorBySingleColor
         ColorByMultipleColors
@@ -31,9 +25,6 @@
       <Field name="invertColorTable" label="Invert Color table" type="bool">
         false
       </Field>
-      <Field name="filledFlag" label="filledFlag" type="bool">
-        true
-      </Field>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
       </Field>
@@ -48,9 +39,6 @@
       <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList">
       </Field>
       <Field name="boundaryNames" label="boundaryNames" type="stringVector">
-      </Field>
-      <Field name="boundaryType" label="boundaryType" type="enum" subtype="Boundary_Type">
-        Unknown
       </Field>
       <Field name="opacity" label="opacity" type="opacity">
         1.000000
@@ -91,6 +79,8 @@
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="VarChangeRequiresReset" user="true" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
       <Function name="PyFilledBoundaryAttributes_SetDefaults" user="false" member="true">
       </Function>

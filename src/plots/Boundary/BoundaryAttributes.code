@@ -7,24 +7,18 @@ Definition:
 //    Added smoothing level.
 //
 //    Kathleen Bonnell, Wed Nov 10 09:37:01 PST 2004
-//    Added needsSecondaryVar. 
+//    Added needsSecondaryVar.
+//
+//    Kathleen Biagas, Tue Dec 20 14:08:20 PST 2016
+//    Removed needSecondaryVar, filledFlag, boundaryType.
 //
 // ****************************************************************************
 bool
 BoundaryAttributes::ChangesRequireRecalculation(const BoundaryAttributes &obj)
 {
-    bool needSecondaryVar = obj.pointSizeVarEnabled &&
-                            pointSizeVar != obj.pointSizeVar &&
-                            obj.pointSizeVar != "default" && 
-                            obj.pointSizeVar != "" &&
-                            obj.pointSizeVar != "\0"; 
-
-    return ((filledFlag != obj.filledFlag) ||
-            (boundaryType != obj.boundaryType) || 
-            (boundaryNames != obj.boundaryNames) ||
+    return ((boundaryNames != obj.boundaryNames) ||
             (wireframe != obj.wireframe) ||
-            (smoothingLevel != obj.smoothingLevel) ||
-            needSecondaryVar);
+            (smoothingLevel != obj.smoothingLevel));
 }
 
 Function: VarChangeRequiresReset
@@ -43,14 +37,16 @@ Definition:
 // Method: BoundaryAttributes::ProcessOldVersions
 //
 // Purpose: 
-//   This method creates modifies a DataNode representation of the object
-//   so it conforms to the newest representation of the object, which can
-//   can be read back in.
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
 //
 // Programmer: Jeremy Meredith
 // Creation:   June 18, 2003
 //
 // Modifications:
+//    Kathleen Biagas, Tue Dec 20 14:08:20 PST 2016
+//    Added items for configVersion < 2.13.0: boundaryType, filledFlag,
+//    pointSize, pointSizeVarEnabled, pointSizeVar, pointSizePixels, pointType.
 //
 // ****************************************************************************
 void
@@ -64,15 +60,182 @@ BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
     if(searchNode == 0)
         return;
 
-    DataNode *wfNode = searchNode->GetNode("wireframe");
-    if (wfNode == 0)
-        return;
-
     if (VersionLessThan(configVersion, "1.1.5"))
-        searchNode->RemoveNode("wireframe");
+    {
+        if (searchNode->GetNode("wireframe") != 0)
+            searchNode->RemoveNode("wireframe");
+    }
+
+    if (VersionLessThan(configVersion, "2.13.0"))
+    {
+        if (searchNode->GetNode("boundaryType") != 0)
+            searchNode->RemoveNode("boundaryType");
+        if (searchNode->GetNode("pointSize") != 0)
+            searchNode->RemoveNode("pointSize");
+        if (searchNode->GetNode("pointSizeVarEnabled") != 0)
+            searchNode->RemoveNode("pointSizeVarEnabled");
+        if (searchNode->GetNode("pointSizeVar") != 0)
+            searchNode->RemoveNode("pointSizeVar");
+        if (searchNode->GetNode("pointSizePixels") != 0)
+            searchNode->RemoveNode("pointSizePixels");
+        if (searchNode->GetNode("pointType") != 0)
+            searchNode->RemoveNode("pointType");
+        if (searchNode->GetNode("filledFlag") != 0)
+            searchNode->RemoveNode("filledFlag");
+    }
 }
 
 Target: xml2python
+Code: PyBoundaryAttributes_getattr
+Prefix:
+Postfix:
+    // Try and handle legacy fields
+
+#define DEPRECATED_MESSAGE(type) \
+    fprintf(stdout, "%s is no longer a valid Boundary attribute.\n" \
+                    "It's value is being ignored, " \
+                    "please remove it from your script.\n", type);
+
+    // boundaryType and it's possible enumerations
+    bool boundaryTypeFound = false;
+    if (strcmp(name, "boundaryType") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Domain") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Group") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Material") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    else if (strcmp(name, "Unknown") == 0)
+    {
+        boundaryTypeFound = true;
+    }
+    if (boundaryTypeFound)
+    {
+        DEPRECATED_MESSAGE("boundaryType");
+        return PyInt_FromLong(0L);
+    }
+    // pointType and it's possible enumerations
+    bool pointTypeFound = false;
+    if (strcmp(name, "pointType") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Box") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Axis") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Icosahedron") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Octahedron") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Tetrahedron") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "SphereGeometry") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Point") == 0)
+    {
+        pointTypeFound = true;
+    }
+    else if (strcmp(name, "Sphere") == 0)
+    {
+        pointTypeFound = true;
+    }
+    if (pointTypeFound)
+    {
+        DEPRECATED_MESSAGE("pointType");
+        return PyInt_FromLong(0L);
+    }
+    if (strcmp(name, "pointSize") == 0)
+    {
+        DEPRECATED_MESSAGE("pointSize");
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "pointSizePixels") == 0)
+    {
+        DEPRECATED_MESSAGE("pointSizePixels");
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "pointSizeVarEnabled") == 0)
+    {
+        DEPRECATED_MESSAGE("pointSizeVarEnabled");
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "pointSizeVar") == 0)
+    {
+        DEPRECATED_MESSAGE("pointSizeVar");
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "filledFlag") == 0)
+    {
+        DEPRECATED_MESSAGE("filledFlag");
+        return PyInt_FromLong(0L);
+    }
+
+Code: PyBoundaryAttributes_setattr
+Prefix:
+Postfix:
+    // Try and handle legacy fields
+    if(obj == NULL)
+    {
+        if(strcmp(name, "filledFlag") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "boundaryType") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "pointType") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "pointSize") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "pointSizePixels") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "pointSizeVarEnabled") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "pointSizeVar") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+
+
 Function: PyBoundaryAttributes_SetDefaults
 Declaration: PyBoundaryAttributes_SetDefaults
 Definition:
@@ -112,9 +275,9 @@ Definition:
 //    Hank Childs, Wed Aug 14 11:30:18 PDT 2002
 //    Only use the labels from the material we actually have.
 //
-//    Kathleen Bonnell, Thu Sep  5 10:55:47 PDT 2002  
+//    Kathleen Bonnell, Thu Sep  5 10:55:47 PDT 2002
 //    Moved bulk of code to PrivateSetPlotAtts to aid in maintenance, as it is
-//    shared with ResetPlotAtts. 
+//    shared with ResetPlotAtts.
 //
 //    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
 //    I made it use passed in metadata.
@@ -145,8 +308,8 @@ Definition:
 //  Arguments:
 //    atts      The attribute subject to initialize.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   December 5, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 5, 2002
 //
 //  Modifications:
 //    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
@@ -180,16 +343,16 @@ Definition:
 //  Creation:   Fri Sep 7 10:53:06 PDT 2001
 //
 //  Modifications:
-//    Kathleen Bonnell, Mon Apr 29 13:37:14 PDT 2002  
+//    Kathleen Bonnell, Mon Apr 29 13:37:14 PDT 2002
 //    Create labels only from mesh related to varName, not from all
 //    meshes.
 //
 //    Hank Childs, Wed Aug 14 11:30:18 PDT 2002
 //    Only use the labels from the material we actually have.
 //
-//    Kathleen Bonnell, Thu Sep  5 10:55:47 PDT 2002  
+//    Kathleen Bonnell, Thu Sep  5 10:55:47 PDT 2002
 //    Moved code to PrivateSetPlotAtts to aid in maintenance, as the code is
-//    shared with InitializePlotAtts. 
+//    shared with InitializePlotAtts.
 //
 //    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
 //    I made it use passed in metadata.
@@ -213,29 +376,29 @@ Definition:
 //  Method: BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts
 //
 //  Purpose:
-//    Initialize the plot attributes. 
+//    Initialize the plot attributes.
 //
 //  Arguments:
 //    atts          The attribute subject to initialize.
-//    hostName      The host name of the plot. 
+//    hostName      The host name of the plot.
 //    databaseName  The database name of the plot.
 //    varName       The variable name of the plot.
 //
-//  Notes:  
+//  Notes:
 //    This code was pulled from ResetPlotAtts and InitializePlotAtts to
 //    aid in maintenance, and reworkd to support groups.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 5, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 5, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu Dec  5 16:53:22 PST 2002 
+//    Kathleen Bonnell, Thu Dec  5 16:53:22 PST 2002
 //    Changed exception from ImproperUse to InvalidVariable.
 //
 //    Brad Whitlock, Wed Nov 20 14:12:03 PST 2002
 //    I added support for discrete color tables.
 //
-//    Kathleen Bonnell, Thu Sep  4 16:08:46 PDT 2003 
+//    Kathleen Bonnell, Thu Sep  4 16:08:46 PDT 2003
 //    Set colors, subsetNames for defaultAtts so that "Reset" won't zero
 //    out the colors in the gui.
 //
@@ -244,6 +407,9 @@ Definition:
 //
 //    Brad Whitlock, Wed Feb 21 14:27:15 PST 2007
 //    Changed API.
+//
+//    Kathleen Biagas, Thu Dec 15 16:51:01 PST 2016
+//    Remove Subset logic as this plot only supports Materials.
 //
 // ****************************************************************************
 
@@ -261,7 +427,7 @@ Definition:
 #include <InvalidVariableException.h>
 
 void
-BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
+BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &plot)
 {
     BoundaryAttributes *boundaryAtts = (BoundaryAttributes *)atts;
@@ -283,7 +449,7 @@ BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     const avtMaterialMetaData *mat = NULL;
 
     std::string meshName = nonConstmd->MeshForVar(vn);
-    avtMeshMetaData *mesh = 
+    avtMeshMetaData *mesh =
         const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
 
 
@@ -293,74 +459,28 @@ BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     std::vector<int> gIDS;
     char temp[512];
 
-    // 
-    // Create boundary names, based on Boundary Type 
-    // 
-    avtSubsetType subT = nonConstmd->DetermineSubsetType(vn);
-    switch (subT)
+    //
+    // Ensure only Material subsets
+    //
+    if (nonConstmd->DetermineSubsetType(vn) != AVT_MATERIAL_SUBSET)
     {
-      case AVT_DOMAIN_SUBSET : 
-          debug5 << "Variable for boundary plot is a domain Mesh." << endl; 
-          boundaryAtts->SetBoundaryType(BoundaryAttributes::Domain);
-          defaultAtts->SetBoundaryType(BoundaryAttributes::Domain);
-          if (mesh->blockNames.empty())
-          {
-              for (int i = 0; i < mesh->numBlocks; i++)
-              { 
-                  sprintf(temp, "%d", i+mesh->blockOrigin);
-                  sv.push_back(temp);
-              }
-          }
-          else
-          {
-              for(pos = mesh->blockNames.begin();
-                  pos != mesh->blockNames.end(); ++pos)
-              {
-                  sv.push_back(*pos);
-              }
-          }
-          break;
-
-      case AVT_GROUP_SUBSET :
-          debug5 << "Variable for boundary plot is a group Mesh." << endl; 
-          boundaryAtts->SetBoundaryType(BoundaryAttributes::Group);
-          defaultAtts->SetBoundaryType(BoundaryAttributes::Group);
-          for (size_t i = 0; i < mesh->groupIds.size(); i++)
-          {
-              if (groupSet.count(mesh->groupIds[i]) == 0)
-              {
-                  groupSet.insert(mesh->groupIds[i]);
-                  gIDS.push_back(mesh->groupIds[i]);
-              }
-          }
-          for (size_t i = 0; i < gIDS.size(); i++)
-          {
-              sprintf(temp, "%d", gIDS[i]);
-              sv.push_back(temp);
-          }
-          break;
-
-      case AVT_MATERIAL_SUBSET :
-          debug5 << "Variable for boundary plot is a Material." << endl; 
-          boundaryAtts->SetBoundaryType(BoundaryAttributes::Material);
-          defaultAtts->SetBoundaryType(BoundaryAttributes::Material);
-          mat = md->GetMaterial(vn);
-          if (mat != NULL)
-          {
-              for(pos = mat->materialNames.begin();
-                  pos != mat->materialNames.end(); ++pos)
-              {
-                  sv.push_back(*pos);
-              }
-          }
-          break;
-
-      default:
-          EXCEPTION1(InvalidVariableException, vn);
-          break;
+        EXCEPTION1(InvalidVariableException, vn);
     }
-    
-    // 
+
+    //
+    // Create boundary names.
+    //
+    mat = md->GetMaterial(vn);
+    if (mat != NULL)
+    {
+        for(pos = mat->materialNames.begin();
+            pos != mat->materialNames.end(); ++pos)
+        {
+            sv.push_back(*pos);
+        }
+    }
+
+    //
     // Add a color for each boundary name.
     //
     ColorAttribute *ca = new ColorAttribute[sv.size() + 1];

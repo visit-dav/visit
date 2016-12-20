@@ -4,7 +4,6 @@
       <Enum name="Subset_Type">
         Domain
         Group
-        Material
         EnumScalar
         Mesh
         Unknown
@@ -33,9 +32,6 @@
       <Field name="invertColorTable" label="Invert Color table" type="bool">
         false
       </Field>
-      <Field name="filledFlag" label="filledFlag" type="bool">
-        true
-      </Field>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
       </Field>
@@ -51,7 +47,7 @@
       </Field>
       <Field name="subsetNames" label="subsetNames" type="stringVector">
       </Field>
-      <Field name="subsetType" label="subsetType" type="enum" subtype="Subset_Type">
+      <Field name="subsetType" label="subsetType" type="enum" subtype="Subset_Type" internal="true">
         Unknown
       </Field>
       <Field name="opacity" label="opacity" type="opacity">
@@ -84,6 +80,8 @@
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="VarChangeRequiresReset" user="true" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
       <Function name="PySubsetAttributes_SetDefaults" user="false" member="true">
       </Function>
