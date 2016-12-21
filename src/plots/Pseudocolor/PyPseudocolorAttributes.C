@@ -40,6 +40,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <snprintf.h>
+#include <GlyphTypes.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 
@@ -205,35 +206,35 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
         "SphereGeometry, Point, Sphere";
     switch (atts->GetPointType())
     {
-      case PseudocolorAttributes::Box:
+      case Box:
           SNPRINTF(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::Axis:
+      case Axis:
           SNPRINTF(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::Icosahedron:
+      case Icosahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::Octahedron:
+      case Octahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::Tetrahedron:
+      case Tetrahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::SphereGeometry:
+      case SphereGeometry:
           SNPRINTF(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::Point:
+      case Point:
           SNPRINTF(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::Sphere:
+      case Sphere:
           SNPRINTF(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
@@ -888,9 +889,10 @@ PseudocolorAttributes_SetPointType(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the pointType in the object.
     if(ival >= 0 && ival < 8)
-        obj->data->SetPointType(PseudocolorAttributes::PointType(ival));
+    {
+        obj->data->SetPointType(GlyphType(ival));
+    }
     else
     {
         fprintf(stderr, "An invalid pointType value was given. "
@@ -2018,21 +2020,21 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointType") == 0)
         return PseudocolorAttributes_GetPointType(self, NULL);
     if(strcmp(name, "Box") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::Box));
+        return PyInt_FromLong(long(Box));
     if(strcmp(name, "Axis") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::Axis));
+        return PyInt_FromLong(long(Axis));
     if(strcmp(name, "Icosahedron") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::Icosahedron));
+        return PyInt_FromLong(long(Icosahedron));
     if(strcmp(name, "Octahedron") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::Octahedron));
+        return PyInt_FromLong(long(Octahedron));
     if(strcmp(name, "Tetrahedron") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::Tetrahedron));
+        return PyInt_FromLong(long(Tetrahedron));
     if(strcmp(name, "SphereGeometry") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::SphereGeometry));
+        return PyInt_FromLong(long(SphereGeometry));
     if(strcmp(name, "Point") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::Point));
+        return PyInt_FromLong(long(Point));
     if(strcmp(name, "Sphere") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::Sphere));
+        return PyInt_FromLong(long(Sphere));
 
     if(strcmp(name, "pointSizeVarEnabled") == 0)
         return PseudocolorAttributes_GetPointSizeVarEnabled(self, NULL);

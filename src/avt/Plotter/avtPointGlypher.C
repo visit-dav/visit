@@ -361,7 +361,7 @@ avtPointGlypher::SetScale(double s)
 // ****************************************************************************
 
 void
-avtPointGlypher::SetGlyphType(PointGlyphType type)
+avtPointGlypher::SetGlyphType(GlyphType type)
 {
     if (glyphType != type)
     {

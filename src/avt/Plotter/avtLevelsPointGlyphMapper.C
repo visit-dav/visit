@@ -266,7 +266,7 @@ avtLevelsPointGlyphMapper::ScaleByVar(const std::string &sname)
 // ****************************************************************************
 
 void
-avtLevelsPointGlyphMapper::SetGlyphType(PointGlyphType type)
+avtLevelsPointGlyphMapper::SetGlyphType(GlyphType type)
 {
     if (glyphType != type)
     {
@@ -280,7 +280,7 @@ avtLevelsPointGlyphMapper::SetGlyphType(PointGlyphType type)
             avtDataObject_p input = GetInput();
             if (*input != NULL)
             {
-                PointGlyphType tmp = glyphType;
+                GlyphType tmp = glyphType;
                 glyphType = type;
                 avtDataTree_p tree = GetInputDataTree();
                 vtkDataSet **children = tree->GetAllLeaves(nMappers);

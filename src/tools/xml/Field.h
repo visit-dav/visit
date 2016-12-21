@@ -113,6 +113,9 @@
 //    Enablers produced bad code for checkboxes. There is no label. Added
 //    a virtual method, HasLabel() to determine if code should be generated.
 //
+//    Kathleen Biagas, Tue Dec 20 16:04:19 PST 2016
+//    Added GlyphType.
+//
 // ****************************************************************************
 
 
@@ -1812,6 +1815,86 @@ class ScaleMode : public virtual Field
 };
 
 
+//
+// --------------------------------- GlyphType --------------------------------
+//
+class GlyphType : public virtual Field
+{
+  public:
+    int  val;
+    int  nvals;
+  public:
+    GlyphType(const QString &n, const QString &l) : Field("glyphtype",n,l)
+    {
+        nvals = 8;
+    }
+    virtual QString GetCPPName(bool, const QString &)
+    {
+        return "GlyphType";
+    }
+    virtual const char **GetSymbols(int &n) const
+    {
+        static const char *symbols[] = {
+            "Box",
+            "Axis",
+            "Icosahedron",
+            "Octahedron",
+            "Tetrahedron",
+            "SphereGeometry",
+            "Point",
+            "Sphere"
+        };
+        n = nvals;
+        return symbols;
+    }
+    virtual int GetNValues() const
+    {
+        return nvals;
+    }
+    virtual void SetValue(const QString &s, int = 0)
+    {
+        val = -1;
+        int nsym = 0;
+        const char **sym = GetSymbols(nsym);
+        for(int i = 0; val == -1 && i < nsym; ++i)
+        {
+            if(s == sym[i])
+                val = i;
+        }
+        if(val == -1)
+            val = s.toInt();
+        valueSet = true;
+    }
+    virtual std::vector<QString> GetValueAsText()
+    {
+        std::vector<QString> retval;
+        if (valueSet)
+        {
+            int n = 0;
+            const char **sym = GetSymbols(n);
+            if(val >= 0 && val < n)
+                retval.push_back(sym[val]);
+            else
+                retval.push_back(QString().sprintf("%d", val));
+        }
+        return retval;
+    }
+    virtual void Print(QTextStream &out)
+    {
+        Field::Print(out);
+        if (valueSet)
+        {
+            int n = 0;
+            const char **sym = GetSymbols(n);
+            if(val >= 0 && val < n)
+                out << "            value: " << sym[val] << endl;
+            else
+                out << "            value: " << val << endl;
+        }
+    }
+
+};
+
 // ****************************************************************************
 //  Class:  FieldFactory
 //
@@ -1873,6 +1956,7 @@ class FieldFactory
         else if (type == "enum")         f = new Enum(subtype, name, label);
         else if (type == "scalemode")    f = new ScaleMode(name,label);
         else if (type == "MapNode")      f = new MapNode(name,label);
+        else if (type == "glyphtype")    f = new GlyphType(name,label);
 
         // Special built-in AVT enums
         else if (type == "avtCentering")      f = new avtCenteringField(name, label);

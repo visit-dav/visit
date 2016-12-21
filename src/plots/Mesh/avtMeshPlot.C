@@ -361,6 +361,10 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 //    Brad Whitlock, Mon Jan  7 17:00:39 PST 2013
 //    I added some new glyph types.
 //
+//    Kathleen Biagas, Wed Dec 21 08:07:48 PST 2016
+//    Glyph types now in central location, can pass pointType directly to
+//    mapper.
+//
 // ****************************************************************************
 
 void
@@ -411,22 +415,7 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     {
         glyphMapper->DataScalingOff();
     }
-    if (atts.GetPointType() == MeshAttributes::Box)
-        glyphMapper->SetGlyphType(avtPointGlypher::Box);
-    else if (atts.GetPointType() == MeshAttributes::Axis)
-        glyphMapper->SetGlyphType(avtPointGlypher::Axis);
-    else if (atts.GetPointType() == MeshAttributes::Icosahedron)
-        glyphMapper->SetGlyphType(avtPointGlypher::Icosahedron);
-    else if (atts.GetPointType() == MeshAttributes::Octahedron)
-        glyphMapper->SetGlyphType(avtPointGlypher::Octahedron);
-    else if (atts.GetPointType() == MeshAttributes::Tetrahedron)
-        glyphMapper->SetGlyphType(avtPointGlypher::Tetrahedron);
-    else if (atts.GetPointType() == MeshAttributes::SphereGeometry)
-        glyphMapper->SetGlyphType(avtPointGlypher::SphereGeometry);
-    else if (atts.GetPointType() == MeshAttributes::Point)
-        glyphMapper->SetGlyphType(avtPointGlypher::Point);
-    else if (atts.GetPointType() == MeshAttributes::Sphere)
-        glyphMapper->SetGlyphType(avtPointGlypher::Sphere);
+    glyphMapper->SetGlyphType(atts.GetPointType());
 
     SetPointGlyphSize();
 
@@ -1275,8 +1264,7 @@ void
 avtMeshPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == MeshAttributes::Point ||
-       atts.GetPointType() == MeshAttributes::Sphere)
+    if(atts.GetPointType() == Point || atts.GetPointType() == Sphere)
         glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }
 

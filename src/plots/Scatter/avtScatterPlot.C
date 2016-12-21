@@ -429,22 +429,7 @@ avtScatterPlot::SetAtts(const AttributeGroup *a)
     glyphMapper->SetScale(atts.GetPointSize());
     glyphMapper->DataScalingOff();
 
-    if (atts.GetPointType() == ScatterAttributes::Box)
-        glyphMapper->SetGlyphType(avtPointGlypher::Box);
-    else if (atts.GetPointType() == ScatterAttributes::Axis)
-        glyphMapper->SetGlyphType(avtPointGlypher::Axis);
-    else if (atts.GetPointType() == ScatterAttributes::Icosahedron)
-        glyphMapper->SetGlyphType(avtPointGlypher::Icosahedron);
-    else if (atts.GetPointType() == ScatterAttributes::Octahedron)
-        glyphMapper->SetGlyphType(avtPointGlypher::Octahedron);
-    else if (atts.GetPointType() == ScatterAttributes::Tetrahedron)
-        glyphMapper->SetGlyphType(avtPointGlypher::Tetrahedron);
-    else if (atts.GetPointType() == ScatterAttributes::SphereGeometry)
-        glyphMapper->SetGlyphType(avtPointGlypher::SphereGeometry);
-    else if (atts.GetPointType() == ScatterAttributes::Point)
-        glyphMapper->SetGlyphType(avtPointGlypher::Point);
-    else if (atts.GetPointType() == ScatterAttributes::Sphere)
-        glyphMapper->SetGlyphType(avtPointGlypher::Sphere);
+    glyphMapper->SetGlyphType(atts.GetPointType());
 
     // Get color information.
     std::string colorString;
@@ -809,8 +794,7 @@ void
 avtScatterPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == ScatterAttributes::Point ||
-       atts.GetPointType() == ScatterAttributes::Sphere)
+    if(atts.GetPointType() == Point || atts.GetPointType() == Sphere)
         glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }
 

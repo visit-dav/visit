@@ -319,22 +319,7 @@ avtSubsetPlot::SetAtts(const AttributeGroup *a)
     {
         levelsMapper->DataScalingOff();
     }
-    if (atts.GetPointType() == SubsetAttributes::Box)
-        levelsMapper->SetGlyphType(avtPointGlypher::Box);
-    else if (atts.GetPointType() == SubsetAttributes::Axis)
-        levelsMapper->SetGlyphType(avtPointGlypher::Axis);
-    else if (atts.GetPointType() == SubsetAttributes::Icosahedron)
-        levelsMapper->SetGlyphType(avtPointGlypher::Icosahedron);
-    else if (atts.GetPointType() == SubsetAttributes::Octahedron)
-        levelsMapper->SetGlyphType(avtPointGlypher::Octahedron);
-    else if (atts.GetPointType() == SubsetAttributes::Tetrahedron)
-        levelsMapper->SetGlyphType(avtPointGlypher::Tetrahedron);
-    else if (atts.GetPointType() == SubsetAttributes::SphereGeometry)
-        levelsMapper->SetGlyphType(avtPointGlypher::SphereGeometry);
-    else if (atts.GetPointType() == SubsetAttributes::Point)
-        levelsMapper->SetGlyphType(avtPointGlypher::Point);
-    else if (atts.GetPointType() == SubsetAttributes::Sphere)
-        levelsMapper->SetGlyphType(avtPointGlypher::Sphere);
+    levelsMapper->SetGlyphType(atts.GetPointType());
     SetPointGlyphSize();
 }
 
@@ -778,8 +763,7 @@ void
 avtSubsetPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == SubsetAttributes::Point ||
-       atts.GetPointType() == SubsetAttributes::Sphere)
+    if(atts.GetPointType() == Point || atts.GetPointType() == Sphere)
         levelsMapper->SetPointSize(atts.GetPointSizePixels());
 }
 

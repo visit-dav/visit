@@ -80,15 +80,6 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     public final static int OPACITYTYPE_RAMP = 3;
     public final static int OPACITYTYPE_VARIABLERANGE = 4;
 
-    public final static int POINTTYPE_BOX = 0;
-    public final static int POINTTYPE_AXIS = 1;
-    public final static int POINTTYPE_ICOSAHEDRON = 2;
-    public final static int POINTTYPE_OCTAHEDRON = 3;
-    public final static int POINTTYPE_TETRAHEDRON = 4;
-    public final static int POINTTYPE_SPHEREGEOMETRY = 5;
-    public final static int POINTTYPE_POINT = 6;
-    public final static int POINTTYPE_SPHERE = 7;
-
     public final static int LINETYPE_LINE = 0;
     public final static int LINETYPE_TUBE = 1;
     public final static int LINETYPE_RIBBON = 2;
@@ -123,7 +114,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         opacityVarMinFlag = false;
         opacityVarMaxFlag = false;
         pointSize = 0.05;
-        pointType = POINTTYPE_POINT;
+        pointType = 6;
         pointSizeVarEnabled = false;
         pointSizeVar = new String("default");
         pointSizePixels = 2;
@@ -179,7 +170,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         opacityVarMinFlag = false;
         opacityVarMaxFlag = false;
         pointSize = 0.05;
-        pointType = POINTTYPE_POINT;
+        pointType = 6;
         pointSizeVarEnabled = false;
         pointSizeVar = new String("default");
         pointSizePixels = 2;
@@ -448,7 +439,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         Select(17);
     }
 
-    public void SetPointType(int pointType_)
+    public void SetPointType(GlyphType pointType_)
     {
         pointType = pointType_;
         Select(18);
@@ -659,7 +650,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     public boolean        GetOpacityVarMinFlag() { return opacityVarMinFlag; }
     public boolean        GetOpacityVarMaxFlag() { return opacityVarMaxFlag; }
     public double         GetPointSize() { return pointSize; }
-    public int            GetPointType() { return pointType; }
+    public GlyphType      GetPointType() { return pointType; }
     public boolean        GetPointSizeVarEnabled() { return pointSizeVarEnabled; }
     public String         GetPointSizeVar() { return pointSizeVar; }
     public int            GetPointSizePixels() { return pointSizePixels; }
@@ -1007,24 +998,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("opacityVarMinFlag", opacityVarMinFlag, indent) + "\n";
         str = str + boolToString("opacityVarMaxFlag", opacityVarMaxFlag, indent) + "\n";
         str = str + doubleToString("pointSize", pointSize, indent) + "\n";
-        str = str + indent + "pointType = ";
-        if(pointType == POINTTYPE_BOX)
-            str = str + "POINTTYPE_BOX";
-        if(pointType == POINTTYPE_AXIS)
-            str = str + "POINTTYPE_AXIS";
-        if(pointType == POINTTYPE_ICOSAHEDRON)
-            str = str + "POINTTYPE_ICOSAHEDRON";
-        if(pointType == POINTTYPE_OCTAHEDRON)
-            str = str + "POINTTYPE_OCTAHEDRON";
-        if(pointType == POINTTYPE_TETRAHEDRON)
-            str = str + "POINTTYPE_TETRAHEDRON";
-        if(pointType == POINTTYPE_SPHEREGEOMETRY)
-            str = str + "POINTTYPE_SPHEREGEOMETRY";
-        if(pointType == POINTTYPE_POINT)
-            str = str + "POINTTYPE_POINT";
-        if(pointType == POINTTYPE_SPHERE)
-            str = str + "POINTTYPE_SPHERE";
-        str = str + "\n";
+        str = str + intToString("pointType", pointType, indent) + "\n";
         str = str + boolToString("pointSizeVarEnabled", pointSizeVarEnabled, indent) + "\n";
         str = str + stringToString("pointSizeVar", pointSizeVar, indent) + "\n";
         str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
@@ -1110,7 +1084,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     private boolean        opacityVarMinFlag;
     private boolean        opacityVarMaxFlag;
     private double         pointSize;
-    private int            pointType;
+    private GlyphType      pointType;
     private boolean        pointSizeVarEnabled;
     private String         pointSizeVar;
     private int            pointSizePixels;

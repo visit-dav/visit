@@ -77,7 +77,7 @@ class PLOTTER_API  avtLevelsPointGlyphMapper : virtual public avtLevelsMapper,
     virtual                   ~avtLevelsPointGlyphMapper();
 
     virtual void               ScaleByVar(const std::string &);
-    void                       SetGlyphType(PointGlyphType type);
+    void                       SetGlyphType(GlyphType type);
 
   protected:
     virtual void               CustomizeMappers(void);

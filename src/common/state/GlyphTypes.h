@@ -37,67 +37,31 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                      avtVariablePointGlyphMapper.h                        //
+//                              GlyphTypes.h                                 //
 // ************************************************************************* //
 
-#ifndef AVT_VARIABLE_POINT_GLYPH_MAPPER_H
-#define AVT_VARIABLE_POINT_GLYPH_MAPPER_H
+#ifndef GLYPH_TYPES_H
+#define GLYPH_TYPES_H
 
-#include <plotter_exports.h>
+#include <state_exports.h>
+#include <string>
 
-#include <avtVariableMapper.h>
-#include <avtPointGlypher.h>
-
-
-// ****************************************************************************
-//  Class: avtVariablePointGlyphMapper
-//
-//  Purpose:
-//      A mapper for glyph.  This extends the functionality of a mapper by
-//      mapping a glyph onto a dataset with a scalar variable.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   November 12, 2004 
-//
-//  Modifications:
-//    Brad Whitlock, Fri Jul 22 11:21:47 PDT 2005
-//    Added an override for the SetGlyphType method that lets us switch
-//    mapper inputs when we enter of leave point glyphing mode.
-//
-//    Brad Whitlock, Wed Jul 26 13:53:29 PST 2006
-//    Added SetFullFrameScaling.
-//
-//    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
-//    Changed signature of InsertFilters.
-//
-// ****************************************************************************
-
-class PLOTTER_API  avtVariablePointGlyphMapper : virtual public avtVariableMapper,
-                                                 virtual public avtPointGlypher
+enum GlyphType
 {
-  public:
-                               avtVariablePointGlyphMapper();
-    virtual                   ~avtVariablePointGlyphMapper();
-
-    void                       ColorBySingleColor(const unsigned char [3]);
-    void                       ColorBySingleColor(const double [3]);
-    virtual void               ScaleByVar(const std::string &);
-    void                       SetGlyphType(GlyphType type);
-    virtual bool               SetFullFrameScaling(bool, const double *);
-
-  protected:
-    double                     singleColor[3];
-
-    virtual void               CustomizeMappers(void);
-
-    virtual vtkAlgorithmOutput *InsertFilters(vtkDataSet *, int);
-    virtual void               SetUpFilters(int);
-
-  private:
-
+   Box              = 0,
+   Axis,           /* 1 */
+   Icosahedron,    /* 2 */
+   Octahedron,     /* 3 */
+   Tetrahedron,    /* 4 */
+   SphereGeometry, /* 5 */
+   Point,          /* 6 */
+   Sphere          /* 7 */
 };
 
 
+STATE_API std::string GlyphType_ToString(GlyphType m);
+STATE_API std::string GlyphType_ToString(int m);
+STATE_API bool        GlyphType_FromString(const std::string &s, GlyphType &m);
+STATE_API int         GlyphType_NumTypes(void);
+
 #endif
-
-

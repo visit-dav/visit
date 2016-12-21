@@ -39,6 +39,7 @@
 #ifndef SCATTERATTRIBUTES_H
 #define SCATTERATTRIBUTES_H
 #include <string>
+#include <GlyphTypes.h>
 #include <AttributeSubject.h>
 
 #include <ColorAttribute.h>
@@ -72,17 +73,6 @@ public:
         ColorByForegroundColor,
         ColorBySingleColor,
         ColorByColorTable
-    };
-    enum PointType
-    {
-        Box,
-        Axis,
-        Icosahedron,
-        Octahedron,
-        Tetrahedron,
-        SphereGeometry,
-        Point,
-        Sphere
     };
     enum VariableRole
     {
@@ -160,7 +150,7 @@ public:
     void SetVar4SkewFactor(double var4SkewFactor_);
     void SetPointSize(double pointSize_);
     void SetPointSizePixels(int pointSizePixels_);
-    void SetPointType(PointType pointType_);
+    void SetPointType(GlyphType pointType_);
     void SetScaleCube(bool scaleCube_);
     void SetColorType(ColoringMethod colorType_);
     void SetSingleColor(const ColorAttribute &singleColor_);
@@ -207,7 +197,7 @@ public:
     double               GetVar4SkewFactor() const;
     double               GetPointSize() const;
     int                  GetPointSizePixels() const;
-    PointType            GetPointType() const;
+    GlyphType            GetPointType() const;
     bool                 GetScaleCube() const;
     ColoringMethod       GetColorType() const;
     const ColorAttribute &GetSingleColor() const;
@@ -231,11 +221,6 @@ public:
     static bool ColoringMethod_FromString(const std::string &, ColoringMethod &);
 protected:
     static std::string ColoringMethod_ToString(int);
-public:
-    static std::string PointType_ToString(PointType);
-    static bool PointType_FromString(const std::string &, PointType &);
-protected:
-    static std::string PointType_ToString(int);
 public:
     static std::string VariableRole_ToString(VariableRole);
     static bool VariableRole_FromString(const std::string &, VariableRole &);
@@ -333,7 +318,7 @@ private:
     double         var4SkewFactor;
     double         pointSize;
     int            pointSizePixels;
-    int            pointType;
+    GlyphType      pointType;
     bool           scaleCube;
     int            colorType;
     ColorAttribute singleColor;

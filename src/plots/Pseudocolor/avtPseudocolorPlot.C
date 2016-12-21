@@ -627,7 +627,7 @@ avtPseudocolorPlot::NeedZBufferToCompositeEvenIn2D(void)
 {
     if (behavior->GetInfo().GetAttributes().GetTopologicalDimension() <= 1)
     {
-        if (atts.GetPointType() != PseudocolorAttributes::Point)
+        if (atts.GetPointType() != Point)
             return true;
         else if (atts.GetPointSizePixels() != 1)
             return true;
@@ -770,8 +770,8 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     }
 
     if( //(topoDim == 0 || (topoDim > 0 && atts.GetRenderPoints())) &&
-        atts.GetPointType() != PseudocolorAttributes::Point &&
-        atts.GetPointType() != PseudocolorAttributes::Sphere &&
+        atts.GetPointType() != Point &&
+        atts.GetPointType() != Sphere &&
         atts.GetPointSizeVarEnabled() &&
         atts.GetPointSizeVar() != "" &&
         atts.GetPointSizeVar() != "\0" )
@@ -791,22 +791,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
         glyphMapper->DataScalingOff();
     }
 
-    if (atts.GetPointType() == PseudocolorAttributes::Box)
-        glyphMapper->SetGlyphType(avtPointGlypher::Box);
-    else if (atts.GetPointType() == PseudocolorAttributes::Axis)
-        glyphMapper->SetGlyphType(avtPointGlypher::Axis);
-    else if (atts.GetPointType() == PseudocolorAttributes::Icosahedron)
-        glyphMapper->SetGlyphType(avtPointGlypher::Icosahedron);
-    else if (atts.GetPointType() == PseudocolorAttributes::Octahedron)
-        glyphMapper->SetGlyphType(avtPointGlypher::Octahedron);
-    else if (atts.GetPointType() == PseudocolorAttributes::Tetrahedron)
-        glyphMapper->SetGlyphType(avtPointGlypher::Tetrahedron);
-    else if (atts.GetPointType() == PseudocolorAttributes::SphereGeometry)
-        glyphMapper->SetGlyphType(avtPointGlypher::SphereGeometry);
-    else if (atts.GetPointType() == PseudocolorAttributes::Point)
-        glyphMapper->SetGlyphType(avtPointGlypher::Point);
-    else if (atts.GetPointType() == PseudocolorAttributes::Sphere)
-        glyphMapper->SetGlyphType(avtPointGlypher::Sphere);
+    glyphMapper->SetGlyphType(atts.GetPointType());
 
     SetPointGlyphSize();
 
@@ -1318,8 +1303,7 @@ void
 avtPseudocolorPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == PseudocolorAttributes::Point ||
-       atts.GetPointType() == PseudocolorAttributes::Sphere)
+    if(atts.GetPointType() == Point || atts.GetPointType() == Sphere)
         glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }
 

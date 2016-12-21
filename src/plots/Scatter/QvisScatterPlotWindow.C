@@ -1062,8 +1062,7 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
 
     if(updatePointSize)
     {
-        if(atts->GetPointType() != ScatterAttributes::Point &&
-           atts->GetPointType() != ScatterAttributes::Sphere)
+        if(atts->GetPointType() != Point && atts->GetPointType() != Sphere)
         {
             pointSize->setText(DoubleToQString(atts->GetPointSize()));
             pointSizeLabel->setText(tr("Point size"));
@@ -1369,8 +1368,7 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
     // Do pointSize
     if(which_widget == ScatterAttributes::ID_pointSize || doAll)
     {
-        if(atts->GetPointType() == ScatterAttributes::Point ||
-           atts->GetPointType() == ScatterAttributes::Sphere)
+        if(atts->GetPointType() == Point || atts->GetPointType() == Sphere)
         {
             int val;
             if(LineEditGetInt(pointSize, val))
@@ -1861,7 +1859,7 @@ QvisScatterPlotWindow::pointTypeChanged(int val)
     if(val != atts->GetPointType())
     {
         GetCurrentValues(ScatterAttributes::ID_pointSize);
-        atts->SetPointType(ScatterAttributes::PointType(val));
+        atts->SetPointType(GlyphType(val));
         Apply();
     }
 }

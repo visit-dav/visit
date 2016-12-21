@@ -71,15 +71,6 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     public final static int COLORINGMETHOD_COLORBYSINGLECOLOR = 1;
     public final static int COLORINGMETHOD_COLORBYCOLORTABLE = 2;
 
-    public final static int POINTTYPE_BOX = 0;
-    public final static int POINTTYPE_AXIS = 1;
-    public final static int POINTTYPE_ICOSAHEDRON = 2;
-    public final static int POINTTYPE_OCTAHEDRON = 3;
-    public final static int POINTTYPE_TETRAHEDRON = 4;
-    public final static int POINTTYPE_SPHEREGEOMETRY = 5;
-    public final static int POINTTYPE_POINT = 6;
-    public final static int POINTTYPE_SPHERE = 7;
-
     public final static int VARIABLEROLE_COORDINATE0 = 0;
     public final static int VARIABLEROLE_COORDINATE1 = 1;
     public final static int VARIABLEROLE_COORDINATE2 = 2;
@@ -125,7 +116,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         var4SkewFactor = 1;
         pointSize = 0.05;
         pointSizePixels = 1;
-        pointType = POINTTYPE_POINT;
+        pointType = 6;
         scaleCube = true;
         colorType = COLORINGMETHOD_COLORBYFOREGROUNDCOLOR;
         singleColor = new ColorAttribute(255, 0, 0);
@@ -172,7 +163,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         var4SkewFactor = 1;
         pointSize = 0.05;
         pointSizePixels = 1;
-        pointType = POINTTYPE_POINT;
+        pointType = 6;
         scaleCube = true;
         colorType = COLORINGMETHOD_COLORBYFOREGROUNDCOLOR;
         singleColor = new ColorAttribute(255, 0, 0);
@@ -494,7 +485,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         Select(33);
     }
 
-    public void SetPointType(int pointType_)
+    public void SetPointType(GlyphType pointType_)
     {
         pointType = pointType_;
         Select(34);
@@ -571,7 +562,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     public double         GetVar4SkewFactor() { return var4SkewFactor; }
     public double         GetPointSize() { return pointSize; }
     public int            GetPointSizePixels() { return pointSizePixels; }
-    public int            GetPointType() { return pointType; }
+    public GlyphType      GetPointType() { return pointType; }
     public boolean        GetScaleCube() { return scaleCube; }
     public int            GetColorType() { return colorType; }
     public ColorAttribute GetSingleColor() { return singleColor; }
@@ -906,24 +897,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("var4SkewFactor", var4SkewFactor, indent) + "\n";
         str = str + doubleToString("pointSize", pointSize, indent) + "\n";
         str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
-        str = str + indent + "pointType = ";
-        if(pointType == POINTTYPE_BOX)
-            str = str + "POINTTYPE_BOX";
-        if(pointType == POINTTYPE_AXIS)
-            str = str + "POINTTYPE_AXIS";
-        if(pointType == POINTTYPE_ICOSAHEDRON)
-            str = str + "POINTTYPE_ICOSAHEDRON";
-        if(pointType == POINTTYPE_OCTAHEDRON)
-            str = str + "POINTTYPE_OCTAHEDRON";
-        if(pointType == POINTTYPE_TETRAHEDRON)
-            str = str + "POINTTYPE_TETRAHEDRON";
-        if(pointType == POINTTYPE_SPHEREGEOMETRY)
-            str = str + "POINTTYPE_SPHEREGEOMETRY";
-        if(pointType == POINTTYPE_POINT)
-            str = str + "POINTTYPE_POINT";
-        if(pointType == POINTTYPE_SPHERE)
-            str = str + "POINTTYPE_SPHERE";
-        str = str + "\n";
+        str = str + intToString("pointType", pointType, indent) + "\n";
         str = str + boolToString("scaleCube", scaleCube, indent) + "\n";
         str = str + indent + "colorType = ";
         if(colorType == COLORINGMETHOD_COLORBYFOREGROUNDCOLOR)
@@ -976,7 +950,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     private double         var4SkewFactor;
     private double         pointSize;
     private int            pointSizePixels;
-    private int            pointType;
+    private GlyphType      pointType;
     private boolean        scaleCube;
     private int            colorType;
     private ColorAttribute singleColor;

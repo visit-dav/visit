@@ -174,6 +174,9 @@ inline char toupper(char c)
 //    Kathleen Biagas, Tue Jun 21 10:53:31 PDT 2011
 //    Added skeleton MapNode.
 //
+//    Kathleen Biagas, Tue Dec 20 16:04:19 PST 2016
+//    Added GlyphType.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -2812,6 +2815,159 @@ class AttsGeneratorScaleMode : public virtual PythonGeneratorField, public virtu
 };
 
 
+//
+// --------------------------------- GlyphType --------------------------------
+//
+class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonGeneratorField
+{
+  public:
+    AttsGeneratorGlyphType(const QString &n, const QString &l)
+        : Field("glyphtype",n,l), GlyphType(n,l), PythonGeneratorField("glyphtype",n,l) { }
+    virtual void WriteIncludedHeaders(QTextStream &c)
+    {
+        c << "#include <GlyphTypes.h>" << Endl;
+    }
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
+    {
+        c << "    int ival;" << Endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
+        c << "        return NULL;" << Endl;
+        c << Endl;
+        c << "    if(ival >= 0 && ival < " << GetNValues() << ")" << Endl;
+        c << "    {" << Endl;
+        c << "        obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << " = " << GetCPPName(true,className) << "(ival);" << Endl;
+        else
+            c << MethodNameSet() << "(" << GetCPPName(true,className) << "(ival));" << Endl;
+        c << "    }" << Endl;
+        c << "    else" << Endl;
+        c << "    {" << Endl;
+        c << "        fprintf(stderr, \"An invalid " << name
+          << " value was given. \"" << Endl;
+        c << "                        \"Valid values are in the range of [0,"
+          << GetNValues()-1 << "]. \"" << Endl;
+        c << "                        \"You can also use the following names: \""
+          << Endl;
+        c << "                        \"";
+        int values_size = 0;
+        const char **values = GetSymbols(values_size);
+        for(size_t i = 0; i < values_size; ++i)
+        {
+            c << values[i];
+            if(i < values_size - 1)
+                c << ", ";
+            if(i  > 0 && i%4==0)
+                c << "\"\n                        \"";
+        }
+        c << ".\");" << Endl;
+        c << "        return NULL;" << Endl;
+        c << "    }"<< Endl;
+    }
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
+    {
+        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->";
+        if(accessType == AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet()<<"()";
+        c << "));" << Endl;
+    }
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
+    {
+        c << "    const char *" << name << "_names = \"";
+        int values_size = 0;
+        const char **values = GetSymbols(values_size);
+        for(int j = 0; j < values_size; ++j)
+        {
+            c << values[j];
+            if(j < values_size - 1)
+                c << ", ";
+            if(j  > 0 && j%4==0 && j != values_size-1)
+            {
+                c << "\"\n        \"";
+            }
+        }
+        c << "\";" << Endl;
+
+        c << "    switch (atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ")\n    {\n";
+
+        for(int i = 0; i < values_size; ++i)
+        {
+            c << "      case " << values[i] << ":\n";
+            c << "          SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" 
+              << values[i] << "  # %s\\n\", prefix, prefix, " 
+              << name << "_names);" << Endl;
+            c << "          str += tmpStr;" << Endl;
+            c << "          break;" << Endl;
+        }
+        c << "      default:" << Endl;
+        c << "          break;\n    }" << Endl;
+
+        c << Endl;
+           
+#if 0
+        for(int i = 0; i < values_size; ++i)
+        {
+            c << "    ";
+            if(i == 0)
+            {
+                c << "if(atts->";
+                if(accessType == Field::AccessPublic)
+                    c << name;
+                else
+                    c << MethodNameGet() << "()";
+                c << " == " << values[i] << ")" << Endl;
+            }
+            else if(i < values_size - 1)
+            {
+                c << "else if";
+                c << "(atts->";
+                if(accessType == Field::AccessPublic)
+                    c << name;
+                else
+                    c << MethodNameGet() << "()";
+                c << " == " << values[i] << ")" << Endl;
+            }
+            else
+                c << "else" << Endl;
+            c << "    {" << Endl;
+            c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" << values[i] << "  # %s\\n\", prefix, prefix, " << name << "_names);" << Endl;
+            c << "        str += tmpStr;" << Endl;
+            c << "    }" << Endl;
+        }
+        c << Endl;
+#endif
+    }
+    virtual void WriteGetAttr(QTextStream &c, const QString &classname)
+    {
+        if (internal)
+            return;
+        c << "    if(strcmp(name, \"" << name << "\") == 0)" << Endl;
+        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << Endl;
+        int values_size = 0;
+        const char **values = GetSymbols(values_size);
+        for(int i = 0; i < values_size; ++i)
+        {
+            c << "    ";
+            c << "if";
+            c << "(strcmp(name, \"";
+            c << values[i];
+            c << "\") == 0)" << Endl;\
+            c << "        return PyInt_FromLong(long(";
+            c << values[i];
+            c << "));" << Endl;
+        }
+        c << Endl;
+    }
+};
+
+
 // ----------------------------------------------------------------------------
 // Modifications:
 //    Brad Whitlock, Wed Dec 8 15:55:08 PST 2004
@@ -2868,6 +3024,7 @@ class PythonFieldFactory
         else if (type == "avtGhostType")      f = new AttsGeneratoravtGhostType(name, label);
         else if (type == "avtMeshCoordType")  f = new AttsGeneratoravtMeshCoordType(name, label);
         else if (type == "LoadBalanceScheme") f = new AttsGeneratorLoadBalanceScheme(name, label);
+        else if (type == "glyphtype")         f = new AttsGeneratorGlyphType(name,label);
 
         if (!f)
             throw QString("PythonFieldFactory: unknown type for field %1: %2").arg(name).arg(type);

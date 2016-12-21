@@ -213,6 +213,9 @@
 //    no fields, as in the case of derived or place-holder atts that define
 //    no new fields beyond what the base class has defined.
 //
+//    Kathleen Biagas, Tue Dec 20 16:04:19 PST 2016
+//    Added GlyphType.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1575,6 +1578,60 @@ class AttsGeneratorLoadBalanceScheme : public virtual LoadBalanceSchemeField, pu
     AVT_GENERATOR_METHODS
 };
 
+
+//
+// --------------------------------- GlyphType --------------------------------
+//
+class AttsGeneratorGlyphType : public virtual GlyphType , public virtual AttsGeneratorField
+{
+  public:
+    AttsGeneratorGlyphType(const QString &n, const QString &l)
+        : Field("glyphtype",n,l), GlyphType(n,l), AttsGeneratorField("glyphtype",n,l) { }
+    virtual void AddSystemIncludes(UniqueStringList &sl)
+    {
+        sl.AddString("#include <GlyphTypes.h>\n");
+    }
+    virtual QString GetAttributeGroupID()
+    {
+        return "i";
+    }
+    virtual QString DataNodeConversion()
+    {
+        return "AsInt";
+    }
+    virtual void WriteSourceSetDefault(QTextStream &c)
+    {
+        c << "    " << name << " = ";
+        int nsym = 0;
+        const char **sym = GetSymbols(nsym);
+        if(val >= 0 && val < nsym)
+            c << sym[val];
+        else
+            c << val;
+        c << ";" << Endl;
+    }
+    virtual void WriteSourceSetFromNode(QTextStream &c)
+    {
+        c << "    if((node = searchNode->GetNode(\"" << name
+          << "\")) != 0)" << Endl;
+        c << "    {" << Endl;
+        c << "        // Allow enums to be int or string in the config file" << Endl;
+        c << "        if(node->GetNodeType() == INT_NODE)" << Endl;
+        c << "        {" << Endl;
+        c << "            int ival = node->AsInt();" << Endl;
+        c << "            if(ival >= 0 && ival < 8)" << Endl;
+        c << "                Set" << Name << "(GlyphType(ival));" << Endl;
+        c << "        }" << Endl;
+        c << "        else if(node->GetNodeType() == STRING_NODE)" << Endl;
+        c << "        {" << Endl;
+        c << "            GlyphType value;" << Endl;
+        c << "            if(GlyphType_FromString(node->AsString(), value))" << Endl;
+        c << "                Set" << Name << "(value);" << Endl;
+        c << "        }" << Endl;
+        c << "    }" << Endl;
+    }
+};
+
 // ----------------------------------------------------------------------------
 // Modifications:
 //    Brad Whitlock, Wed Dec 8 15:47:03 PST 2004
@@ -1637,6 +1694,7 @@ class AttsFieldFactory
         else if (type == "avtGhostType")      f = new AttsGeneratoravtGhostType(name, label);
         else if (type == "avtMeshCoordType")  f = new AttsGeneratoravtMeshCoordType(name, label);
         else if (type == "LoadBalanceScheme") f = new AttsGeneratorLoadBalanceScheme(name, label);
+        else if (type == "glyphtype")         f = new AttsGeneratorGlyphType(name,label);
 
         if (!f)
             throw QString("AttsFieldFactory: unknown type for field %1: %2").arg(name).arg(type);

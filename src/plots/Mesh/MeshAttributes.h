@@ -39,6 +39,7 @@
 #ifndef MESHATTRIBUTES_H
 #define MESHATTRIBUTES_H
 #include <string>
+#include <GlyphTypes.h>
 #include <AttributeSubject.h>
 
 #include <ColorAttribute.h>
@@ -61,17 +62,6 @@
 class MeshAttributes : public AttributeSubject
 {
 public:
-    enum PointType
-    {
-        Box,
-        Axis,
-        Icosahedron,
-        Octahedron,
-        Tetrahedron,
-        SphereGeometry,
-        Point,
-        Sphere
-    };
     enum SmoothingLevel
     {
         None,
@@ -137,7 +127,7 @@ public:
     void SetSmoothingLevel(SmoothingLevel smoothingLevel_);
     void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
     void SetPointSizeVar(const std::string &pointSizeVar_);
-    void SetPointType(PointType pointType_);
+    void SetPointType(GlyphType pointType_);
     void SetOpaqueMeshIsAppropriate(bool opaqueMeshIsAppropriate_);
     void SetShowInternal(bool showInternal_);
     void SetPointSizePixels(int pointSizePixels_);
@@ -159,7 +149,7 @@ public:
     bool                 GetPointSizeVarEnabled() const;
     const std::string    &GetPointSizeVar() const;
           std::string    &GetPointSizeVar();
-    PointType            GetPointType() const;
+    GlyphType            GetPointType() const;
     bool                 GetOpaqueMeshIsAppropriate() const;
     bool                 GetShowInternal() const;
     int                  GetPointSizePixels() const;
@@ -170,11 +160,6 @@ public:
     virtual void SetFromNode(DataNode *node);
 
     // Enum conversion functions
-    static std::string PointType_ToString(PointType);
-    static bool PointType_FromString(const std::string &, PointType &);
-protected:
-    static std::string PointType_ToString(int);
-public:
     static std::string SmoothingLevel_ToString(SmoothingLevel);
     static bool SmoothingLevel_FromString(const std::string &, SmoothingLevel &);
 protected:
@@ -241,7 +226,7 @@ private:
     int            smoothingLevel;
     bool           pointSizeVarEnabled;
     std::string    pointSizeVar;
-    int            pointType;
+    GlyphType      pointType;
     bool           opaqueMeshIsAppropriate;
     bool           showInternal;
     int            pointSizePixels;

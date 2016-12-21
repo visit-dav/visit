@@ -1089,7 +1089,7 @@ QvisMeshPlotWindow::smoothingLevelChanged(int level)
 void
 QvisMeshPlotWindow::pointTypeChanged(int type)
 {
-    meshAtts->SetPointType((MeshAttributes::PointType) type);
+    meshAtts->SetPointType((GlyphType) type);
     SetUpdate(false);
     Apply();
 }

@@ -191,45 +191,6 @@ PseudocolorAttributes::OpacityType_FromString(const std::string &s, PseudocolorA
 }
 
 //
-// Enum conversion methods for PseudocolorAttributes::PointType
-//
-
-static const char *PointType_strings[] = {
-"Box", "Axis", "Icosahedron", 
-"Octahedron", "Tetrahedron", "SphereGeometry", 
-"Point", "Sphere"};
-
-std::string
-PseudocolorAttributes::PointType_ToString(PseudocolorAttributes::PointType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 8) index = 0;
-    return PointType_strings[index];
-}
-
-std::string
-PseudocolorAttributes::PointType_ToString(int t)
-{
-    int index = (t < 0 || t >= 8) ? 0 : t;
-    return PointType_strings[index];
-}
-
-bool
-PseudocolorAttributes::PointType_FromString(const std::string &s, PseudocolorAttributes::PointType &val)
-{
-    val = PseudocolorAttributes::Box;
-    for(int i = 0; i < 8; ++i)
-    {
-        if(s == PointType_strings[i])
-        {
-            val = (PointType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for PseudocolorAttributes::LineType
 //
 
@@ -1020,7 +981,7 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     if(completeSave || !FieldsEqual(ID_pointType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("pointType", PointType_ToString(pointType)));
+        node->AddNode(new DataNode("pointType", pointType));
     }
 
     if(completeSave || !FieldsEqual(ID_pointSizeVarEnabled, &defaultObject))
@@ -1348,12 +1309,12 @@ PseudocolorAttributes::SetFromNode(DataNode *parentNode)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 8)
-                SetPointType(PointType(ival));
+                SetPointType(GlyphType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            PointType value;
-            if(PointType_FromString(node->AsString(), value))
+            GlyphType value;
+            if(GlyphType_FromString(node->AsString(), value))
                 SetPointType(value);
         }
     }
@@ -1622,7 +1583,7 @@ PseudocolorAttributes::SetPointSize(double pointSize_)
 }
 
 void
-PseudocolorAttributes::SetPointType(PseudocolorAttributes::PointType pointType_)
+PseudocolorAttributes::SetPointType(GlyphType pointType_)
 {
     pointType = pointType_;
     Select(ID_pointType, (void *)&pointType);
@@ -1969,10 +1930,10 @@ PseudocolorAttributes::GetPointSize() const
     return pointSize;
 }
 
-PseudocolorAttributes::PointType
+GlyphType
 PseudocolorAttributes::GetPointType() const
 {
-    return PointType(pointType);
+    return pointType;
 }
 
 bool
@@ -2353,7 +2314,7 @@ PseudocolorAttributes::GetFieldType(int index) const
     case ID_opacityVarMinFlag:        return FieldType_bool;
     case ID_opacityVarMaxFlag:        return FieldType_bool;
     case ID_pointSize:                return FieldType_double;
-    case ID_pointType:                return FieldType_enum;
+    case ID_pointType:                return FieldType_glyphtype;
     case ID_pointSizeVarEnabled:      return FieldType_bool;
     case ID_pointSizeVar:             return FieldType_variablename;
     case ID_pointSizePixels:          return FieldType_int;
@@ -2427,7 +2388,7 @@ PseudocolorAttributes::GetFieldTypeName(int index) const
     case ID_opacityVarMinFlag:        return "bool";
     case ID_opacityVarMaxFlag:        return "bool";
     case ID_pointSize:                return "double";
-    case ID_pointType:                return "enum";
+    case ID_pointType:                return "glyphtype";
     case ID_pointSizeVarEnabled:      return "bool";
     case ID_pointSizeVar:             return "variablename";
     case ID_pointSizePixels:          return "int";

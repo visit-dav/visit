@@ -28,16 +28,6 @@
         Ramp
         VariableRange
       </Enum>
-      <Enum name="PointType">
-        Box
-        Axis
-        Icosahedron
-        Octahedron
-        Tetrahedron
-        SphereGeometry
-        Point
-        Sphere
-      </Enum>
       <Enum name="LineType">
         Line
         Tube
@@ -105,7 +95,7 @@
       <Field name="pointSize" label="Point size" type="double">
         0.050000
       </Field>
-      <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
+      <Field name="pointType" label="Point Type" type="glyphtype">
         Point
       </Field>
       <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">

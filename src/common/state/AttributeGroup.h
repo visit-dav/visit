@@ -116,6 +116,10 @@ class DataNode;
 //
 //    Mark C. Miller, Mon Aug 31 14:07:18 PDT 2009
 //    Added a generic exception class for state object failures.
+//
+//    Kathleen Biagas, Wed Dec 21 07:47:58 PST 2016
+//    Added glyphtype field.
+//
 // ****************************************************************************
 
 class STATE_API AttributeGroup
@@ -156,7 +160,8 @@ public:
         FieldType_attVector,
         FieldType_enum,
         FieldType_scalemode,
-        FieldType_MapNode
+        FieldType_MapNode,
+        FieldType_glyphtype
     };
 
     enum {

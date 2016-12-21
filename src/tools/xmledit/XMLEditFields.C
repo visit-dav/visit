@@ -577,6 +577,9 @@ XMLEditFields::UpdateWindowSingleItem()
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Wed Dec 21 07:52:13 PST 2016
+//    Added glyphtype.
+//
 // ****************************************************************************
 void
 XMLEditFields::UpdateTypeList()
@@ -616,6 +619,7 @@ XMLEditFields::UpdateTypeList()
     type->addItem("avtMeshType");
     type->addItem("avtSubsetType");
     type->addItem("avtVarType");
+    type->addItem("glyphtype");
 
     // Add enums
     for (size_t i=0; i<EnumType::enums.size(); i++)

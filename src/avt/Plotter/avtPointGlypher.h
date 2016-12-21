@@ -44,6 +44,7 @@
 #define AVT_POINT_GLYPHER_H
 
 #include <plotter_exports.h>
+#include <GlyphTypes.h>
 #include <string>
 
 class     vtkAlgorithmOutput;
@@ -74,21 +75,14 @@ class     vtkVisItPolyDataNormals;
 //    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
 //    Changed signature of InsertGlyphs.
 //
+//    Kathleen Biagas, Wed Dec 21 07:50:28 PST 2016
+//    Moved PoinGlyphType enums into common location: GlyphTypes.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtPointGlypher  
 {
   public:
-    typedef enum {Box,
-                  Axis,
-                  Icosahedron,
-                  Point,
-                  Sphere,
-                  Octahedron,
-                  Tetrahedron,
-                  SphereGeometry
-                 } PointGlyphType;
-
                                avtPointGlypher();
     virtual                   ~avtPointGlypher();
 
@@ -96,7 +90,7 @@ class PLOTTER_API  avtPointGlypher
     void                       DataScalingOff(void);
 
     void                       SetScale(double);
-    void                       SetGlyphType(PointGlyphType);
+    void                       SetGlyphType(GlyphType);
 
     void                       ColorByScalarOn(const std::string &);
     void                       ColorByScalarOff(void);
@@ -108,7 +102,7 @@ class PLOTTER_API  avtPointGlypher
     std::string                scalingVarName;
     std::string                coloringVarName;
     int                        scalingVarDim;
-    PointGlyphType             glyphType;
+    GlyphType                  glyphType;
     bool                       dataScaling;
     bool                       colorByScalar;
 
