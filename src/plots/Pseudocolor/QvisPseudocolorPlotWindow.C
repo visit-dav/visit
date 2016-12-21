@@ -1997,7 +1997,7 @@ QvisPseudocolorPlotWindow::processOpacityVarMax()
 void
 QvisPseudocolorPlotWindow::pointTypeChanged(int type)
 {
-    pcAtts->SetPointType((PseudocolorAttributes::PointType) type);
+    pcAtts->SetPointType((GlyphType) type);
     SetUpdate(false);
     Apply();
 }

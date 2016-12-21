@@ -42,6 +42,7 @@
 #include <snprintf.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
+#include <GlyphTypes.h>
 
 // ****************************************************************************
 // Module: PySubsetAttributes
@@ -163,35 +164,35 @@ PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix)
         "SphereGeometry, Point, Sphere";
     switch (atts->GetPointType())
     {
-      case SubsetAttributes::Box:
+      case Box:
           SNPRINTF(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case SubsetAttributes::Axis:
+      case Axis:
           SNPRINTF(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case SubsetAttributes::Icosahedron:
+      case Icosahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case SubsetAttributes::Octahedron:
+      case Octahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case SubsetAttributes::Tetrahedron:
+      case Tetrahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case SubsetAttributes::SphereGeometry:
+      case SphereGeometry:
           SNPRINTF(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case SubsetAttributes::Point:
+      case Point:
           SNPRINTF(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case SubsetAttributes::Sphere:
+      case Sphere:
           SNPRINTF(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
@@ -849,9 +850,10 @@ SubsetAttributes_SetPointType(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the pointType in the object.
     if(ival >= 0 && ival < 8)
-        obj->data->SetPointType(SubsetAttributes::PointType(ival));
+    {
+        obj->data->SetPointType(GlyphType(ival));
+    }
     else
     {
         fprintf(stderr, "An invalid pointType value was given. "
@@ -1061,21 +1063,21 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointType") == 0)
         return SubsetAttributes_GetPointType(self, NULL);
     if(strcmp(name, "Box") == 0)
-        return PyInt_FromLong(long(SubsetAttributes::Box));
+        return PyInt_FromLong(long(Box));
     if(strcmp(name, "Axis") == 0)
-        return PyInt_FromLong(long(SubsetAttributes::Axis));
+        return PyInt_FromLong(long(Axis));
     if(strcmp(name, "Icosahedron") == 0)
-        return PyInt_FromLong(long(SubsetAttributes::Icosahedron));
+        return PyInt_FromLong(long(Icosahedron));
     if(strcmp(name, "Octahedron") == 0)
-        return PyInt_FromLong(long(SubsetAttributes::Octahedron));
+        return PyInt_FromLong(long(Octahedron));
     if(strcmp(name, "Tetrahedron") == 0)
-        return PyInt_FromLong(long(SubsetAttributes::Tetrahedron));
+        return PyInt_FromLong(long(Tetrahedron));
     if(strcmp(name, "SphereGeometry") == 0)
-        return PyInt_FromLong(long(SubsetAttributes::SphereGeometry));
+        return PyInt_FromLong(long(SphereGeometry));
     if(strcmp(name, "Point") == 0)
-        return PyInt_FromLong(long(SubsetAttributes::Point));
+        return PyInt_FromLong(long(Point));
     if(strcmp(name, "Sphere") == 0)
-        return PyInt_FromLong(long(SubsetAttributes::Sphere));
+        return PyInt_FromLong(long(Sphere));
 
     if(strcmp(name, "pointSizeVarEnabled") == 0)
         return SubsetAttributes_GetPointSizeVarEnabled(self, NULL);

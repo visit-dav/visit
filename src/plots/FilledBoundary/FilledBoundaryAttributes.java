@@ -69,15 +69,6 @@ public class FilledBoundaryAttributes extends AttributeSubject implements Plugin
     public final static int COLORINGMETHOD_COLORBYMULTIPLECOLORS = 1;
     public final static int COLORINGMETHOD_COLORBYCOLORTABLE = 2;
 
-    public final static int POINTTYPE_BOX = 0;
-    public final static int POINTTYPE_AXIS = 1;
-    public final static int POINTTYPE_ICOSAHEDRON = 2;
-    public final static int POINTTYPE_OCTAHEDRON = 3;
-    public final static int POINTTYPE_TETRAHEDRON = 4;
-    public final static int POINTTYPE_SPHEREGEOMETRY = 5;
-    public final static int POINTTYPE_POINT = 6;
-    public final static int POINTTYPE_SPHERE = 7;
-
 
     public FilledBoundaryAttributes()
     {
@@ -99,7 +90,7 @@ public class FilledBoundaryAttributes extends AttributeSubject implements Plugin
         cleanZonesOnly = false;
         mixedColor = new ColorAttribute(255, 255, 255);
         pointSize = 0.05;
-        pointType = POINTTYPE_POINT;
+        pointType = 6;
         pointSizeVarEnabled = false;
         pointSizeVar = new String("default");
         pointSizePixels = 2;
@@ -125,7 +116,7 @@ public class FilledBoundaryAttributes extends AttributeSubject implements Plugin
         cleanZonesOnly = false;
         mixedColor = new ColorAttribute(255, 255, 255);
         pointSize = 0.05;
-        pointType = POINTTYPE_POINT;
+        pointType = 6;
         pointSizeVarEnabled = false;
         pointSizeVar = new String("default");
         pointSizePixels = 2;
@@ -310,7 +301,7 @@ public class FilledBoundaryAttributes extends AttributeSubject implements Plugin
         Select(15);
     }
 
-    public void SetPointType(int pointType_)
+    public void SetPointType(GlyphType pointType_)
     {
         pointType = pointType_;
         Select(16);
@@ -351,7 +342,7 @@ public class FilledBoundaryAttributes extends AttributeSubject implements Plugin
     public boolean            GetCleanZonesOnly() { return cleanZonesOnly; }
     public ColorAttribute     GetMixedColor() { return mixedColor; }
     public double             GetPointSize() { return pointSize; }
-    public int                GetPointType() { return pointType; }
+    public GlyphType          GetPointType() { return pointType; }
     public boolean            GetPointSizeVarEnabled() { return pointSizeVarEnabled; }
     public String             GetPointSizeVar() { return pointSizeVar; }
     public int                GetPointSizePixels() { return pointSizePixels; }
@@ -497,24 +488,7 @@ public class FilledBoundaryAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("cleanZonesOnly", cleanZonesOnly, indent) + "\n";
         str = str + indent + "mixedColor = {" + mixedColor.Red() + ", " + mixedColor.Green() + ", " + mixedColor.Blue() + ", " + mixedColor.Alpha() + "}\n";
         str = str + doubleToString("pointSize", pointSize, indent) + "\n";
-        str = str + indent + "pointType = ";
-        if(pointType == POINTTYPE_BOX)
-            str = str + "POINTTYPE_BOX";
-        if(pointType == POINTTYPE_AXIS)
-            str = str + "POINTTYPE_AXIS";
-        if(pointType == POINTTYPE_ICOSAHEDRON)
-            str = str + "POINTTYPE_ICOSAHEDRON";
-        if(pointType == POINTTYPE_OCTAHEDRON)
-            str = str + "POINTTYPE_OCTAHEDRON";
-        if(pointType == POINTTYPE_TETRAHEDRON)
-            str = str + "POINTTYPE_TETRAHEDRON";
-        if(pointType == POINTTYPE_SPHEREGEOMETRY)
-            str = str + "POINTTYPE_SPHEREGEOMETRY";
-        if(pointType == POINTTYPE_POINT)
-            str = str + "POINTTYPE_POINT";
-        if(pointType == POINTTYPE_SPHERE)
-            str = str + "POINTTYPE_SPHERE";
-        str = str + "\n";
+        str = str + intToString("pointType", pointType, indent) + "\n";
         str = str + boolToString("pointSizeVarEnabled", pointSizeVarEnabled, indent) + "\n";
         str = str + stringToString("pointSizeVar", pointSizeVar, indent) + "\n";
         str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
@@ -539,7 +513,7 @@ public class FilledBoundaryAttributes extends AttributeSubject implements Plugin
     private boolean            cleanZonesOnly;
     private ColorAttribute     mixedColor;
     private double             pointSize;
-    private int                pointType;
+    private GlyphType          pointType;
     private boolean            pointSizeVarEnabled;
     private String             pointSizeVar;
     private int                pointSizePixels;

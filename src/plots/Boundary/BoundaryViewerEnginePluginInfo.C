@@ -185,9 +185,9 @@ BoundaryViewerEnginePluginInfo::AllocAvtPlot()
 //    Hank Childs, Wed Aug 14 11:30:18 PDT 2002
 //    Only use the labels from the material we actually have.
 //
-//    Kathleen Bonnell, Thu Sep  5 10:55:47 PDT 2002  
+//    Kathleen Bonnell, Thu Sep  5 10:55:47 PDT 2002
 //    Moved bulk of code to PrivateSetPlotAtts to aid in maintenance, as it is
-//    shared with ResetPlotAtts. 
+//    shared with ResetPlotAtts.
 //
 //    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
 //    I made it use passed in metadata.
@@ -215,8 +215,8 @@ BoundaryViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 //  Arguments:
 //    atts      The attribute subject to initialize.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   December 5, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 5, 2002
 //
 //  Modifications:
 //    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
@@ -247,16 +247,16 @@ BoundaryViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 //  Creation:   Fri Sep 7 10:53:06 PDT 2001
 //
 //  Modifications:
-//    Kathleen Bonnell, Mon Apr 29 13:37:14 PDT 2002  
+//    Kathleen Bonnell, Mon Apr 29 13:37:14 PDT 2002
 //    Create labels only from mesh related to varName, not from all
 //    meshes.
 //
 //    Hank Childs, Wed Aug 14 11:30:18 PDT 2002
 //    Only use the labels from the material we actually have.
 //
-//    Kathleen Bonnell, Thu Sep  5 10:55:47 PDT 2002  
+//    Kathleen Bonnell, Thu Sep  5 10:55:47 PDT 2002
 //    Moved code to PrivateSetPlotAtts to aid in maintenance, as the code is
-//    shared with InitializePlotAtts. 
+//    shared with InitializePlotAtts.
 //
 //    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
 //    I made it use passed in metadata.
@@ -296,29 +296,29 @@ BoundaryViewerEnginePluginInfo::GetMenuName() const
 //  Method: BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts
 //
 //  Purpose:
-//    Initialize the plot attributes. 
+//    Initialize the plot attributes.
 //
 //  Arguments:
 //    atts          The attribute subject to initialize.
-//    hostName      The host name of the plot. 
+//    hostName      The host name of the plot.
 //    databaseName  The database name of the plot.
 //    varName       The variable name of the plot.
 //
-//  Notes:  
+//  Notes:
 //    This code was pulled from ResetPlotAtts and InitializePlotAtts to
 //    aid in maintenance, and reworkd to support groups.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 5, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 5, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu Dec  5 16:53:22 PST 2002 
+//    Kathleen Bonnell, Thu Dec  5 16:53:22 PST 2002
 //    Changed exception from ImproperUse to InvalidVariable.
 //
 //    Brad Whitlock, Wed Nov 20 14:12:03 PST 2002
 //    I added support for discrete color tables.
 //
-//    Kathleen Bonnell, Thu Sep  4 16:08:46 PDT 2003 
+//    Kathleen Bonnell, Thu Sep  4 16:08:46 PDT 2003
 //    Set colors, subsetNames for defaultAtts so that "Reset" won't zero
 //    out the colors in the gui.
 //
@@ -347,7 +347,7 @@ BoundaryViewerEnginePluginInfo::GetMenuName() const
 #include <InvalidVariableException.h>
 
 void
-BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
+BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     const avtPlotMetaData &plot)
 {
     BoundaryAttributes *boundaryAtts = (BoundaryAttributes *)atts;
@@ -369,7 +369,7 @@ BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     const avtMaterialMetaData *mat = NULL;
 
     std::string meshName = nonConstmd->MeshForVar(vn);
-    avtMeshMetaData *mesh = 
+    avtMeshMetaData *mesh =
         const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
 
 
@@ -379,17 +379,17 @@ BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     std::vector<int> gIDS;
     char temp[512];
 
-    // 
+    //
     // Ensure only Material subsets
-    // 
+    //
     if (nonConstmd->DetermineSubsetType(vn) != AVT_MATERIAL_SUBSET)
     {
         EXCEPTION1(InvalidVariableException, vn);
     }
 
-    // 
+    //
     // Create boundary names.
-    // 
+    //
     mat = md->GetMaterial(vn);
     if (mat != NULL)
     {
@@ -399,8 +399,8 @@ BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
             sv.push_back(*pos);
         }
     }
-    
-    // 
+
+    //
     // Add a color for each boundary name.
     //
     ColorAttribute *ca = new ColorAttribute[sv.size() + 1];

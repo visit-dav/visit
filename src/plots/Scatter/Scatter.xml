@@ -27,16 +27,6 @@
         ColorBySingleColor
         ColorByColorTable
       </Enum>
-      <Enum name="PointType">
-        Box
-        Axis
-        Icosahedron
-        Octahedron
-        Tetrahedron
-        SphereGeometry
-        Point
-        Sphere
-      </Enum>
       <Enum name="VariableRole">
         Coordinate0
         Coordinate1
@@ -146,7 +136,7 @@
       <Field name="pointSizePixels" label="Point size pixels" type="int">
         1
       </Field>
-      <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
+      <Field name="pointType" label="Point Type" type="glyphtype">
         Point
       </Field>
       <Field name="scaleCube" label="Scale to cube" type="bool">

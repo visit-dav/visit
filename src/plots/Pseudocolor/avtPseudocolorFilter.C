@@ -216,9 +216,9 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
 
     // Point scaling by a secondary variable
     if( (topoDim == 0 || (topoDim > 0 && plotAtts.GetRenderPoints())) &&
-        plotAtts.GetPointType() != PseudocolorAttributes::Point &&
-        plotAtts.GetPointType() != PseudocolorAttributes::Sphere &&
-        plotAtts.GetPointSizeVarEnabled() && 
+        plotAtts.GetPointType() != Point &&
+        plotAtts.GetPointType() != Sphere &&
+        plotAtts.GetPointSizeVarEnabled() &&
         pointVar != "default" &&
         pointVar != "\0" &&
         pointVar != primaryVar &&

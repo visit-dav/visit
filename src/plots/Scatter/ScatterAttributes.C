@@ -116,45 +116,6 @@ ScatterAttributes::ColoringMethod_FromString(const std::string &s, ScatterAttrib
 }
 
 //
-// Enum conversion methods for ScatterAttributes::PointType
-//
-
-static const char *PointType_strings[] = {
-"Box", "Axis", "Icosahedron", 
-"Octahedron", "Tetrahedron", "SphereGeometry", 
-"Point", "Sphere"};
-
-std::string
-ScatterAttributes::PointType_ToString(ScatterAttributes::PointType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 8) index = 0;
-    return PointType_strings[index];
-}
-
-std::string
-ScatterAttributes::PointType_ToString(int t)
-{
-    int index = (t < 0 || t >= 8) ? 0 : t;
-    return PointType_strings[index];
-}
-
-bool
-ScatterAttributes::PointType_FromString(const std::string &s, ScatterAttributes::PointType &val)
-{
-    val = ScatterAttributes::Box;
-    for(int i = 0; i < 8; ++i)
-    {
-        if(s == PointType_strings[i])
-        {
-            val = (PointType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for ScatterAttributes::VariableRole
 //
 
@@ -933,7 +894,7 @@ ScatterAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
     if(completeSave || !FieldsEqual(ID_pointType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("pointType", PointType_ToString(pointType)));
+        node->AddNode(new DataNode("pointType", pointType));
     }
 
     if(completeSave || !FieldsEqual(ID_scaleCube, &defaultObject))
@@ -1197,12 +1158,12 @@ ScatterAttributes::SetFromNode(DataNode *parentNode)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 8)
-                SetPointType(PointType(ival));
+                SetPointType(GlyphType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            PointType value;
-            if(PointType_FromString(node->AsString(), value))
+            GlyphType value;
+            if(GlyphType_FromString(node->AsString(), value))
                 SetPointType(value);
         }
     }
@@ -1477,7 +1438,7 @@ ScatterAttributes::SetPointSizePixels(int pointSizePixels_)
 }
 
 void
-ScatterAttributes::SetPointType(ScatterAttributes::PointType pointType_)
+ScatterAttributes::SetPointType(GlyphType pointType_)
 {
     pointType = pointType_;
     Select(ID_pointType, (void *)&pointType);
@@ -1757,10 +1718,10 @@ ScatterAttributes::GetPointSizePixels() const
     return pointSizePixels;
 }
 
-ScatterAttributes::PointType
+GlyphType
 ScatterAttributes::GetPointType() const
 {
-    return PointType(pointType);
+    return pointType;
 }
 
 bool
@@ -1974,7 +1935,7 @@ ScatterAttributes::GetFieldType(int index) const
     case ID_var4SkewFactor:   return FieldType_double;
     case ID_pointSize:        return FieldType_double;
     case ID_pointSizePixels:  return FieldType_int;
-    case ID_pointType:        return FieldType_enum;
+    case ID_pointType:        return FieldType_glyphtype;
     case ID_scaleCube:        return FieldType_bool;
     case ID_colorType:        return FieldType_enum;
     case ID_singleColor:      return FieldType_color;
@@ -2039,7 +2000,7 @@ ScatterAttributes::GetFieldTypeName(int index) const
     case ID_var4SkewFactor:   return "double";
     case ID_pointSize:        return "double";
     case ID_pointSizePixels:  return "int";
-    case ID_pointType:        return "enum";
+    case ID_pointType:        return "glyphtype";
     case ID_scaleCube:        return "bool";
     case ID_colorType:        return "enum";
     case ID_singleColor:      return "color";

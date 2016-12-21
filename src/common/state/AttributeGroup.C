@@ -274,6 +274,9 @@ AttributeGroup::CopyAttributes(const AttributeGroup *atts)
 //    Brad Whitlock, Tue Jan  6 14:04:08 PST 2009
 //    Added MapNode.
 //
+//    Kathleen Biagas, Wed Dec 21 07:48:44 PST 2016
+//    Added glyphtype.
+//
 // ****************************************************************************
  
 void
@@ -395,6 +398,9 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
                 *dest = *src;
             }
             break;
+          case FieldType_glyphtype:
+            ConstInterp<int>::InterpScalar(addrOut,addr1,addr2,f);
+            break;
           default:
             cerr << "UNKNOWN TYPE IN AttributeGroup::InterpolateConst\n";
             break;
@@ -438,6 +444,9 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
 //
 //    Brad Whitlock, Tue Jan  6 13:58:42 PST 2009
 //    Added MapNode.
+//
+//    Kathleen Biagas, Wed Dec 21 07:48:44 PST 2016
+//    Added glyphtype.
 //
 // ****************************************************************************
  
@@ -563,6 +572,9 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
                 *dest = *src;
             }
             break;
+          case FieldType_glyphtype:
+            ConstInterp<int>::InterpScalar(addrOut,addr1,addr2,f);
+            break;
           default:
             cerr << "UNKNOWN TYPE IN AttributeGroup::InterpolateLinear\n";
             break;
@@ -596,6 +608,9 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
 //
 //    Brad Whitlock, Tue Jan  6 13:49:46 PST 2009
 //    Added MapNode support.
+//
+//    Kathleen Biagas, Wed Dec 21 07:48:44 PST 2016
+//    Added glyphtype.
 //
 // ****************************************************************************
 
@@ -729,6 +744,10 @@ AttributeGroup::EqualTo(const AttributeGroup *atts) const
             break;
           case FieldType_MapNode:
             if (!(EqualVal<MapNode>::EqualScalar(addr1,addr2)))
+               return false;
+            break;
+          case FieldType_glyphtype:
+            if (!(EqualVal<int>::EqualScalar(addr1,addr2)))
                return false;
             break;
           default:

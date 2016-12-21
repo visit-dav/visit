@@ -40,45 +40,6 @@
 #include <DataNode.h>
 
 //
-// Enum conversion methods for MeshAttributes::PointType
-//
-
-static const char *PointType_strings[] = {
-"Box", "Axis", "Icosahedron", 
-"Octahedron", "Tetrahedron", "SphereGeometry", 
-"Point", "Sphere"};
-
-std::string
-MeshAttributes::PointType_ToString(MeshAttributes::PointType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 8) index = 0;
-    return PointType_strings[index];
-}
-
-std::string
-MeshAttributes::PointType_ToString(int t)
-{
-    int index = (t < 0 || t >= 8) ? 0 : t;
-    return PointType_strings[index];
-}
-
-bool
-MeshAttributes::PointType_FromString(const std::string &s, MeshAttributes::PointType &val)
-{
-    val = MeshAttributes::Box;
-    for(int i = 0; i < 8; ++i)
-    {
-        if(s == PointType_strings[i])
-        {
-            val = (PointType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for MeshAttributes::SmoothingLevel
 //
 
@@ -746,7 +707,7 @@ MeshAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     if(completeSave || !FieldsEqual(ID_pointType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("pointType", PointType_ToString(pointType)));
+        node->AddNode(new DataNode("pointType", pointType));
     }
 
     if(completeSave || !FieldsEqual(ID_opaqueMeshIsAppropriate, &defaultObject))
@@ -896,12 +857,12 @@ MeshAttributes::SetFromNode(DataNode *parentNode)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 8)
-                SetPointType(PointType(ival));
+                SetPointType(GlyphType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            PointType value;
-            if(PointType_FromString(node->AsString(), value))
+            GlyphType value;
+            if(GlyphType_FromString(node->AsString(), value))
                 SetPointType(value);
         }
     }
@@ -1004,7 +965,7 @@ MeshAttributes::SetPointSizeVar(const std::string &pointSizeVar_)
 }
 
 void
-MeshAttributes::SetPointType(MeshAttributes::PointType pointType_)
+MeshAttributes::SetPointType(GlyphType pointType_)
 {
     pointType = pointType_;
     Select(ID_pointType, (void *)&pointType);
@@ -1132,10 +1093,10 @@ MeshAttributes::GetPointSizeVar()
     return pointSizeVar;
 }
 
-MeshAttributes::PointType
+GlyphType
 MeshAttributes::GetPointType() const
 {
-    return PointType(pointType);
+    return pointType;
 }
 
 bool
@@ -1261,7 +1222,7 @@ MeshAttributes::GetFieldType(int index) const
     case ID_smoothingLevel:          return FieldType_enum;
     case ID_pointSizeVarEnabled:     return FieldType_bool;
     case ID_pointSizeVar:            return FieldType_variablename;
-    case ID_pointType:               return FieldType_enum;
+    case ID_pointType:               return FieldType_glyphtype;
     case ID_opaqueMeshIsAppropriate: return FieldType_bool;
     case ID_showInternal:            return FieldType_bool;
     case ID_pointSizePixels:         return FieldType_int;
@@ -1302,7 +1263,7 @@ MeshAttributes::GetFieldTypeName(int index) const
     case ID_smoothingLevel:          return "enum";
     case ID_pointSizeVarEnabled:     return "bool";
     case ID_pointSizeVar:            return "variablename";
-    case ID_pointType:               return "enum";
+    case ID_pointType:               return "glyphtype";
     case ID_opaqueMeshIsAppropriate: return "bool";
     case ID_showInternal:            return "bool";
     case ID_pointSizePixels:         return "int";

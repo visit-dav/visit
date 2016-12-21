@@ -268,22 +268,7 @@ avtFilledBoundaryPlot::SetAtts(const AttributeGroup *a)
         levelsMapper->DataScalingOff();
     }
 
-    if (atts.GetPointType() == FilledBoundaryAttributes::Box)
-        levelsMapper->SetGlyphType(avtPointGlypher::Box);
-    else if (atts.GetPointType() == FilledBoundaryAttributes::Axis)
-        levelsMapper->SetGlyphType(avtPointGlypher::Axis);
-    else if (atts.GetPointType() == FilledBoundaryAttributes::Icosahedron)
-        levelsMapper->SetGlyphType(avtPointGlypher::Icosahedron);
-    else if (atts.GetPointType() == FilledBoundaryAttributes::Octahedron)
-        levelsMapper->SetGlyphType(avtPointGlypher::Octahedron);
-    else if (atts.GetPointType() == FilledBoundaryAttributes::Tetrahedron)
-        levelsMapper->SetGlyphType(avtPointGlypher::Tetrahedron);
-    else if (atts.GetPointType() == FilledBoundaryAttributes::SphereGeometry)
-        levelsMapper->SetGlyphType(avtPointGlypher::SphereGeometry);
-    else if (atts.GetPointType() == FilledBoundaryAttributes::Point)
-        levelsMapper->SetGlyphType(avtPointGlypher::Point);
-    else if (atts.GetPointType() == FilledBoundaryAttributes::Sphere)
-        levelsMapper->SetGlyphType(avtPointGlypher::Sphere);
+    levelsMapper->SetGlyphType(atts.GetPointType());
 
     SetPointGlyphSize();
 }
@@ -595,8 +580,7 @@ void
 avtFilledBoundaryPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == FilledBoundaryAttributes::Point ||
-       atts.GetPointType() == FilledBoundaryAttributes::Sphere)
+    if(atts.GetPointType() == Point || atts.GetPointType() == Sphere)
         levelsMapper->SetPointSize(atts.GetPointSizePixels());
 }
 

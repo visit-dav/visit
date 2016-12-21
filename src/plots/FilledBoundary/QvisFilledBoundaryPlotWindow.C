@@ -1401,7 +1401,7 @@ QvisFilledBoundaryPlotWindow::GetCurrentValues(int which_widget)
 void
 QvisFilledBoundaryPlotWindow::pointTypeChanged(int type)
 {
-    boundaryAtts->SetPointType((FilledBoundaryAttributes::PointType) type);
+    boundaryAtts->SetPointType((GlyphType) type);
     SetUpdate(false);
     Apply();
 }

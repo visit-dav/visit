@@ -120,6 +120,9 @@
 //    Brad Whitlock, Thu Feb  2 11:55:54 PST 2012
 //    Add support for MapNode.
 //
+//    Kathleen Biagas, Tue Dec 20 16:04:19 PST 2016
+//    Added GlyphType.
+//
 // ****************************************************************************
 
 class JavaGeneratorField : public virtual Field
@@ -1709,6 +1712,36 @@ class JavaGeneratorScaleMode : public virtual ScaleMode , public virtual JavaGen
 };
 
 
+//
+// --------------------------------- GlyphType --------------------------------
+//
+class JavaGeneratorGlyphType : public virtual GlyphType , public virtual JavaGeneratorField
+{
+  public:
+    JavaGeneratorGlyphType(const QString &n, const QString &l)
+        : Field("glyphtype",n,l), GlyphType(n,l), JavaGeneratorField("glyphtype",n,l) { }
+
+    virtual void WriteSourceSetDefault(QTextStream &c)
+    {
+        c << "    " << name << " = " << val << ";" << endl;
+    }
+
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
+    {
+        c << indent << "    buf.WriteInt(" << name << ");" << endl;
+    }
+
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
+    {
+        c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
+        return true;
+    }
+    virtual void WriteToString(QTextStream &c, const QString &indent)
+    {
+        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
+    }
+};
+
 // ----------------------------------------------------------------------------
 // Modifications:
 //   Brad Whitlock, Wed Dec 8 15:52:11 PST 2004
@@ -1768,6 +1801,7 @@ class JavaFieldFactory
         else if (type == "avtGhostType")      f = new JavaGeneratorInt(name, label);
         else if (type == "avtMeshCoordType")  f = new JavaGeneratorInt(name, label);
         else if (type == "LoadBalanceScheme") f = new JavaGeneratorInt(name, label);
+        else if (type == "glyphtype")    f = new JavaGeneratorGlyphType(name,label);
 
         if (!f)
             throw QString("JavaFieldFactory: unknown type for field %1: %2").arg(name).arg(type);

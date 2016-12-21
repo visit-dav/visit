@@ -43,6 +43,7 @@
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
 #include <ColorAttribute.h>
+#include <GlyphTypes.h>
 
 // ****************************************************************************
 // Module: PyFilledBoundaryAttributes
@@ -172,35 +173,35 @@ PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *atts, const 
         "SphereGeometry, Point, Sphere";
     switch (atts->GetPointType())
     {
-      case FilledBoundaryAttributes::Box:
+      case Box:
           SNPRINTF(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case FilledBoundaryAttributes::Axis:
+      case Axis:
           SNPRINTF(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case FilledBoundaryAttributes::Icosahedron:
+      case Icosahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case FilledBoundaryAttributes::Octahedron:
+      case Octahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case FilledBoundaryAttributes::Tetrahedron:
+      case Tetrahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case FilledBoundaryAttributes::SphereGeometry:
+      case SphereGeometry:
           SNPRINTF(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case FilledBoundaryAttributes::Point:
+      case Point:
           SNPRINTF(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case FilledBoundaryAttributes::Sphere:
+      case Sphere:
           SNPRINTF(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
@@ -959,9 +960,10 @@ FilledBoundaryAttributes_SetPointType(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the pointType in the object.
     if(ival >= 0 && ival < 8)
-        obj->data->SetPointType(FilledBoundaryAttributes::PointType(ival));
+    {
+        obj->data->SetPointType(GlyphType(ival));
+    }
     else
     {
         fprintf(stderr, "An invalid pointType value was given. "
@@ -1179,21 +1181,21 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointType") == 0)
         return FilledBoundaryAttributes_GetPointType(self, NULL);
     if(strcmp(name, "Box") == 0)
-        return PyInt_FromLong(long(FilledBoundaryAttributes::Box));
+        return PyInt_FromLong(long(Box));
     if(strcmp(name, "Axis") == 0)
-        return PyInt_FromLong(long(FilledBoundaryAttributes::Axis));
+        return PyInt_FromLong(long(Axis));
     if(strcmp(name, "Icosahedron") == 0)
-        return PyInt_FromLong(long(FilledBoundaryAttributes::Icosahedron));
+        return PyInt_FromLong(long(Icosahedron));
     if(strcmp(name, "Octahedron") == 0)
-        return PyInt_FromLong(long(FilledBoundaryAttributes::Octahedron));
+        return PyInt_FromLong(long(Octahedron));
     if(strcmp(name, "Tetrahedron") == 0)
-        return PyInt_FromLong(long(FilledBoundaryAttributes::Tetrahedron));
+        return PyInt_FromLong(long(Tetrahedron));
     if(strcmp(name, "SphereGeometry") == 0)
-        return PyInt_FromLong(long(FilledBoundaryAttributes::SphereGeometry));
+        return PyInt_FromLong(long(SphereGeometry));
     if(strcmp(name, "Point") == 0)
-        return PyInt_FromLong(long(FilledBoundaryAttributes::Point));
+        return PyInt_FromLong(long(Point));
     if(strcmp(name, "Sphere") == 0)
-        return PyInt_FromLong(long(FilledBoundaryAttributes::Sphere));
+        return PyInt_FromLong(long(Sphere));
 
     if(strcmp(name, "pointSizeVarEnabled") == 0)
         return FilledBoundaryAttributes_GetPointSizeVarEnabled(self, NULL);

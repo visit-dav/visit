@@ -81,6 +81,9 @@ pad(const QString &s, int len)
 //    I changed the format of the VISIT_DYNAMIC_EXECUTE macro and fixed up
 //    some function mismatches.
 //
+//    Kathleen Biagas, Tue Dec 20 16:04:19 PST 2016
+//    Added GlyphType.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1434,6 +1437,17 @@ class AttsGeneratorLoadBalanceScheme : public virtual LoadBalanceSchemeField, pu
     AVT_GENERATOR_METHODS
 };
 
+
+//
+// --------------------------------- GlyphType --------------------------------
+//
+class AttsGeneratorGlyphType : public virtual GlyphType , public virtual AttsGeneratorField
+{
+  public:
+    AttsGeneratorGlyphType(const QString &n, const QString &l)
+        : Field("glyphtype",n,l), GlyphType(n,l), AttsGeneratorField("glyphtype",n,l) { }
+};
+
 // ----------------------------------------------------------------------------
 // Modifications:
 //
@@ -1483,6 +1497,7 @@ class AttsFieldFactory
         else if (type == "avtGhostType")      f = new AttsGeneratoravtGhostType(name, label);
         else if (type == "avtMeshCoordType")  f = new AttsGeneratoravtMeshCoordType(name, label);
         else if (type == "LoadBalanceScheme") f = new AttsGeneratorLoadBalanceScheme(name, label);
+        else if (type == "glyphtype")         f = new AttsGeneratorGlyphType(name,label);
 
         if (!f)
             throw QString("AttsFieldFactory: unknown type for field %1: %2").arg(name).arg(type);

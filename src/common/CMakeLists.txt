@@ -68,6 +68,9 @@
 #   Kathleen Biagas, Mon Oct 31 15:23:31 PDT 2016
 #   Add ZLIB_LIB to link libraries for visitcommon on Windows.
 #
+#   Kathleen Biagas, Tue Dec 20 15:43:20 PST 2016
+#   Added GlyphTypes.
+#
 #****************************************************************************/
 
 SET(COMM_SOURCES
@@ -240,6 +243,7 @@ state/GaussianControlPoint.C
 state/GaussianControlPointList.C
 state/GlobalAttributes.C
 state/GlobalLineoutAttributes.C
+state/GlyphTypes.C
 state/LaunchProfile.C
 state/LaunchRPC.C
 state/MachineProfile.C

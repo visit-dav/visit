@@ -1373,7 +1373,7 @@ QvisSubsetPlotWindow::GetCurrentValues(int which_widget)
 void
 QvisSubsetPlotWindow::pointTypeChanged(int type)
 {
-    subsetAtts->SetPointType((SubsetAttributes::PointType) type);
+    subsetAtts->SetPointType((GlyphType) type);
     SetUpdate(false);
     Apply();
 }

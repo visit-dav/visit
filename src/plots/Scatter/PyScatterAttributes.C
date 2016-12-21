@@ -40,6 +40,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <snprintf.h>
+#include <GlyphTypes.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -341,35 +342,35 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
         "SphereGeometry, Point, Sphere";
     switch (atts->GetPointType())
     {
-      case ScatterAttributes::Box:
+      case Box:
           SNPRINTF(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case ScatterAttributes::Axis:
+      case Axis:
           SNPRINTF(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case ScatterAttributes::Icosahedron:
+      case Icosahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case ScatterAttributes::Octahedron:
+      case Octahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case ScatterAttributes::Tetrahedron:
+      case Tetrahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case ScatterAttributes::SphereGeometry:
+      case SphereGeometry:
           SNPRINTF(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case ScatterAttributes::Point:
+      case Point:
           SNPRINTF(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
-      case ScatterAttributes::Sphere:
+      case Sphere:
           SNPRINTF(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
@@ -1329,9 +1330,10 @@ ScatterAttributes_SetPointType(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the pointType in the object.
     if(ival >= 0 && ival < 8)
-        obj->data->SetPointType(ScatterAttributes::PointType(ival));
+    {
+        obj->data->SetPointType(GlyphType(ival));
+    }
     else
     {
         fprintf(stderr, "An invalid pointType value was given. "
@@ -1817,21 +1819,21 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointType") == 0)
         return ScatterAttributes_GetPointType(self, NULL);
     if(strcmp(name, "Box") == 0)
-        return PyInt_FromLong(long(ScatterAttributes::Box));
+        return PyInt_FromLong(long(Box));
     if(strcmp(name, "Axis") == 0)
-        return PyInt_FromLong(long(ScatterAttributes::Axis));
+        return PyInt_FromLong(long(Axis));
     if(strcmp(name, "Icosahedron") == 0)
-        return PyInt_FromLong(long(ScatterAttributes::Icosahedron));
+        return PyInt_FromLong(long(Icosahedron));
     if(strcmp(name, "Octahedron") == 0)
-        return PyInt_FromLong(long(ScatterAttributes::Octahedron));
+        return PyInt_FromLong(long(Octahedron));
     if(strcmp(name, "Tetrahedron") == 0)
-        return PyInt_FromLong(long(ScatterAttributes::Tetrahedron));
+        return PyInt_FromLong(long(Tetrahedron));
     if(strcmp(name, "SphereGeometry") == 0)
-        return PyInt_FromLong(long(ScatterAttributes::SphereGeometry));
+        return PyInt_FromLong(long(SphereGeometry));
     if(strcmp(name, "Point") == 0)
-        return PyInt_FromLong(long(ScatterAttributes::Point));
+        return PyInt_FromLong(long(Point));
     if(strcmp(name, "Sphere") == 0)
-        return PyInt_FromLong(long(ScatterAttributes::Sphere));
+        return PyInt_FromLong(long(Sphere));
 
     if(strcmp(name, "scaleCube") == 0)
         return ScatterAttributes_GetScaleCube(self, NULL);

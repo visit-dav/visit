@@ -39,6 +39,7 @@
 #ifndef PSEUDOCOLORATTRIBUTES_H
 #define PSEUDOCOLORATTRIBUTES_H
 #include <string>
+#include <GlyphTypes.h>
 #include <AttributeSubject.h>
 
 #include <ColorAttribute.h>
@@ -86,17 +87,6 @@ public:
         Constant,
         Ramp,
         VariableRange
-    };
-    enum PointType
-    {
-        Box,
-        Axis,
-        Icosahedron,
-        Octahedron,
-        Tetrahedron,
-        SphereGeometry,
-        Point,
-        Sphere
     };
     enum LineType
     {
@@ -168,7 +158,7 @@ public:
     void SetOpacityVarMinFlag(bool opacityVarMinFlag_);
     void SetOpacityVarMaxFlag(bool opacityVarMaxFlag_);
     void SetPointSize(double pointSize_);
-    void SetPointType(PointType pointType_);
+    void SetPointType(GlyphType pointType_);
     void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
     void SetPointSizeVar(const std::string &pointSizeVar_);
     void SetPointSizePixels(int pointSizePixels_);
@@ -222,7 +212,7 @@ public:
     bool                 GetOpacityVarMinFlag() const;
     bool                 GetOpacityVarMaxFlag() const;
     double               GetPointSize() const;
-    PointType            GetPointType() const;
+    GlyphType            GetPointType() const;
     bool                 GetPointSizeVarEnabled() const;
     const std::string    &GetPointSizeVar() const;
           std::string    &GetPointSizeVar();
@@ -284,11 +274,6 @@ public:
     static bool OpacityType_FromString(const std::string &, OpacityType &);
 protected:
     static std::string OpacityType_ToString(int);
-public:
-    static std::string PointType_ToString(PointType);
-    static bool PointType_FromString(const std::string &, PointType &);
-protected:
-    static std::string PointType_ToString(int);
 public:
     static std::string LineType_ToString(LineType);
     static bool LineType_FromString(const std::string &, LineType &);
@@ -391,7 +376,7 @@ private:
     bool           opacityVarMinFlag;
     bool           opacityVarMaxFlag;
     double         pointSize;
-    int            pointType;
+    GlyphType      pointType;
     bool           pointSizeVarEnabled;
     std::string    pointSizeVar;
     int            pointSizePixels;

@@ -39,6 +39,7 @@
 #ifndef SUBSETATTRIBUTES_H
 #define SUBSETATTRIBUTES_H
 #include <string>
+#include <GlyphTypes.h>
 #include <AttributeSubject.h>
 
 #include <ColorAttribute.h>
@@ -75,17 +76,6 @@ public:
         ColorBySingleColor,
         ColorByMultipleColors,
         ColorByColorTable
-    };
-    enum PointType
-    {
-        Box,
-        Axis,
-        Icosahedron,
-        Octahedron,
-        Tetrahedron,
-        SphereGeometry,
-        Point,
-        Sphere
     };
 
     // These constructors are for objects of this class
@@ -135,7 +125,7 @@ public:
     void SetDrawInternal(bool drawInternal_);
     void SetSmoothingLevel(int smoothingLevel_);
     void SetPointSize(double pointSize_);
-    void SetPointType(PointType pointType_);
+    void SetPointType(GlyphType pointType_);
     void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
     void SetPointSizeVar(const std::string &pointSizeVar_);
     void SetPointSizePixels(int pointSizePixels_);
@@ -160,7 +150,7 @@ public:
     bool                     GetDrawInternal() const;
     int                      GetSmoothingLevel() const;
     double                   GetPointSize() const;
-    PointType                GetPointType() const;
+    GlyphType                GetPointType() const;
     bool                     GetPointSizeVarEnabled() const;
     const std::string        &GetPointSizeVar() const;
           std::string        &GetPointSizeVar();
@@ -180,11 +170,6 @@ public:
     static bool ColoringMethod_FromString(const std::string &, ColoringMethod &);
 protected:
     static std::string ColoringMethod_ToString(int);
-public:
-    static std::string PointType_ToString(PointType);
-    static bool PointType_FromString(const std::string &, PointType &);
-protected:
-    static std::string PointType_ToString(int);
 public:
 
     // Keyframing methods
@@ -238,7 +223,7 @@ private:
     bool               drawInternal;
     int                smoothingLevel;
     double             pointSize;
-    int                pointType;
+    GlyphType          pointType;
     bool               pointSizeVarEnabled;
     std::string        pointSizeVar;
     int                pointSizePixels;
