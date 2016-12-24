@@ -1717,6 +1717,10 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
 //    constructor.  Prevents segv for attempting to access a slot in the
 //    vector that hasn't been allocated yet.
 //
+//    Mark C. Miller, Sat Dec 24 00:35:41 PST 2016
+//    Fix real and potential issues with layer namescheme by ensuring
+//    layer ids as given internally to VisIt are 0...numLayers-1 and that
+//    groupNames are specified explicitly.
 // ****************************************************************************
 
 void
@@ -1967,24 +1971,40 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 }
 
                 //
-                // Handle possible layer namescheme
+                // Handle possible layer namescheme for this mesh
                 //
-                map<int, string> layer_names_map;
-                vector<int> layer_group_ids; 
+                map<int, int> layer_to_nlayer_map;
+                vector<int> block_to_nlayer_map; 
+                vector<string> layer_names; 
+                int nlayer_id = 0;
                 string candidate_layer_namescheme = string(name_w_dir) + "_layer_namescheme";
                 if (DBInqVarExists(dbfile, candidate_layer_namescheme.c_str()))
                 {
                     char *layer_ns_str = (char*) DBGetVar(dbfile, candidate_layer_namescheme.c_str());
                     DBnamescheme *layer_ns = DBMakeNamescheme(layer_ns_str);
-                    for (int b = 0; b < (mm?mm->nblocks:0); b++)
+                    if (layer_ns)
                     {
-                        int layer_id = db_get_index(layer_ns, b);
-                        char layer_name[64];
-                        SNPRINTF(layer_name, sizeof(layer_name), "layer%d", layer_id);
-                        layer_group_ids.push_back(layer_id);
-                        layer_names_map[layer_id] = string(layer_name);
+                        // Normalize layer ids to range 0...numLayers-1 
+                        for (int b = 0; b < (mm?mm->nblocks:0); b++)
+                        {
+                            int layer_id = db_get_index(layer_ns, b);
+                            if (layer_to_nlayer_map.find(layer_id) == 
+                                layer_to_nlayer_map.end())
+                            {
+                                char layer_name[64];
+                                SNPRINTF(layer_name, sizeof(layer_name), "layer_%d", layer_id);
+                                layer_names.push_back(layer_name);
+                                layer_to_nlayer_map[layer_id] = nlayer_id;
+                                nlayer_id++;
+                            }
+                        }
+                        for (int b = 0; b < (mm?mm->nblocks:0); b++)
+                        {
+                            int layer_id = db_get_index(layer_ns, b);
+                            block_to_nlayer_map.push_back(layer_to_nlayer_map[layer_id]);
+                        }
+                        DBFreeNamescheme(layer_ns);
                     }
-                    DBFreeNamescheme(layer_ns);
                     free(layer_ns_str);
                 }
 
@@ -2008,19 +2028,14 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                     md->AddGroupInformation(num_amr_groups, mm?mm->nblocks:0, amr_group_ids);
                     debug1 << "Using AMR levels as Group Information"<<endl;
                 }
-                else if (layer_group_ids.size() > 0 && !is_all_empty)
+                else if (nlayer_id>1 && !is_all_empty)
                 {
-                    vector<string> layer_block_names(layer_names_map.size());
-                    for (map<int,string>::const_iterator it = layer_names_map.begin();
-                         it != layer_names_map.end(); it++)
-                        layer_block_names[it->first] = it->second;
-
-                    mmd->numGroups = (int) layer_names_map.size();
+                    mmd->numGroups = nlayer_id;
                     mmd->groupTitle = "layers";
                     mmd->groupPieceName = "layer";
-                    mmd->blockNames = layer_block_names;
+                    mmd->groupNames = layer_names;
                     md->Add(mmd);
-                    md->AddGroupInformation((int)layer_names_map.size(), mm?mm->nblocks:0, layer_group_ids);
+                    md->AddGroupInformation(nlayer_id, mm?mm->nblocks:0, block_to_nlayer_map);
                     debug1 << "Using Layers as Group Information"<<endl;
                 }
                 else
