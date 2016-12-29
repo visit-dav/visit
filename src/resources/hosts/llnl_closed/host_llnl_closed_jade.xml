@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
     <Field name="host" type="string">jade.llnl.gov</Field>
-    <Field name="hostAliases" type="string">jade#.llnl.gov jade##.llnl.gov jade###.llnl.gov jade# jade## jade###</Field>
+    <Field name="hostAliases" type="string">jade#.llnl.gov jade##.llnl.gov jade###.llnl.gov jade####.llnl.gov jade# jade## jade### jade####</Field>
     <Field name="hostNickname" type="string">LLNL Closed Jade</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
