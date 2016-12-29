@@ -10,12 +10,15 @@
 #   Eric Brugger, Tue Oct 18 16:38:04 PDT 2016
 #   I modified the script to set ppn when running on trinity.
 #
+#   Eric Brugger, Thu Dec 29 13:12:25 PST 2016
+#   I modified the script to set ttc when running on agate.
+#
 ###############################################################################
 
 class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
     def __init__(self, launcher):
         super(JobSubmitter_qsub_LLNL, self).__init__(launcher)
-        self.usettc = self.sectorname() == "inca"
+        self.usettc = (self.sectorname() == "inca") or (self.sectorname() == "agate")
         self.useppn = (self.sectorname() == "graph") or (self.sectorname() == "tr-fe")
 
 

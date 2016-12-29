@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="host" type="string">jade.llnl.gov</Field>
-    <Field name="hostAliases" type="string">jade#.llnl.gov jade##.llnl.gov jade###.llnl.gov jade# jade## jade###</Field>
-    <Field name="hostNickname" type="string">LLNL Closed Jade</Field>
+    <Field name="host" type="string">borax.llnl.gov</Field>
+    <Field name="hostAliases" type="string">borax#.llnl.gov borax##.llnl.gov borax# borax##</Field>
+    <Field name="hostNickname" type="string">LLNL Borax</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
     <Field name="tunnelSSH" type="bool">true</Field>
