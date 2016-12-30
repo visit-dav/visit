@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtGTCFileFormat.h                           //
+//                            avtGTCFileFormat.h                             //
 // ************************************************************************* //
 
 #ifndef AVT_GTC_FILE_FORMAT_H
@@ -45,13 +45,9 @@
 
 #include <avtSTMDFileFormat.h>
 
-// Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
-// in this file uses version 1.6 of the HDF5 API. This is harmless for
-// versions of HDF5 before 1.8 and ensures correct compilation with
-// version 1.8 and thereafter. When, and if, the HDF5 code in this file
-// is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
 #include <hdf5.h>
+
+#include <visit-hdf5.h>
 
 #include <string>
 
@@ -83,13 +79,13 @@ class avtGTCFileFormat : public avtSTMDFileFormat
 
   protected:
     // DATA MEMBERS
-    bool                   Initialize();
+    void                   Initialize();
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
     void                   ReadVariable( int domain, int varIdx, int varDim, float **ptrVar );
     
     std::string            IndexToVarName( int idx ) const;
     int                    VarNameToIndex( const std::string &var ) const;
-    hid_t                  fileHandle, particleHandle;
+
     int                    nVars, nTotalPoints, nPoints;
     bool                   initialized;
     hsize_t                startOffset;                    
@@ -140,6 +136,5 @@ protected:
 };
 
 #endif
-
 
 #endif

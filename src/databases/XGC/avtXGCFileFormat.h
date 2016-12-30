@@ -36,17 +36,19 @@
 *
 *****************************************************************************/
 
-
 // ************************************************************************* //
-//                            avtXGCFileFormat.h                           //
+//                            avtXGCFileFormat.h                             //
 // ************************************************************************* //
 
 #ifndef AVT_XGC_FILE_FORMAT_H
 #define AVT_XGC_FILE_FORMAT_H
 
 #include <avtSTSDFileFormat.h>
+
 #include <hdf5.h>
+
 #include <visit-hdf5.h>
+
 #include <string>
 
 // ****************************************************************************
@@ -97,9 +99,7 @@ class avtXGCFileFormat : public avtSTSDFileFormat
     void Initialize();
 
     bool initialized;
-    std::string fileName;
     int numNodes, numPhi, numTri;
 };
-
 
 #endif
