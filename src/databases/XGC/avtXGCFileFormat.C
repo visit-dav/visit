@@ -42,20 +42,17 @@
 
 #include <avtXGCFileFormat.h>
 
-#include <string>
-
-#include <vtkFloatArray.h>
-#include <vtkGenericCell.h>
-#include <vtkUnstructuredGrid.h>
 #include <avtDatabaseMetaData.h>
-#include <DBOptionsAttributes.h>
-#include <Expression.h>
+
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
 
-using namespace std;
+#include <DebugStream.h>
 
+#include <vtkFloatArray.h>
+#include <vtkGenericCell.h>
+#include <vtkUnstructuredGrid.h>
 
 // ****************************************************************************
 //  Method: avtXGCFileFormat constructor
@@ -68,10 +65,12 @@ using namespace std;
 avtXGCFileFormat::avtXGCFileFormat(const char *filename)
     : avtSTSDFileFormat(filename)
 {
-    fileName = filename;
     numNodes = 0;
     numPhi = 0;
     initialized = false;
+
+    // Make sure that the file is in fact GTC.
+    Initialize();
 }
 
 
@@ -111,16 +110,15 @@ avtXGCFileFormat::FreeUpResources(void)
 void
 avtXGCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    Initialize();
-    
     AddMeshToMetaData(md, "mesh", AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 3);
     AddMeshToMetaData(md, "mesh2D", AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 2, 2);
 
     //Pull out the variables.
-    hid_t vfile = H5Fopen(fileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    hid_t vfile = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT);
     hid_t grp = H5Gopen(vfile, "/", H5P_DEFAULT);
     hsize_t num;
     H5Gget_num_objs(grp, &num);
+
     for (int i = 0; i < num; i++)
     {
         char nm[1024];
@@ -136,12 +134,13 @@ avtXGCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             if (n == 1 && dims[0] == numNodes)
                 AddScalarVarToMetaData(md, nm, "mesh2D", AVT_NODECENT);
             else if (n == 2 && dims[0] == numNodes && dims[1] == numPhi)
-                AddScalarVarToMetaData(md, nm, "mesh", AVT_NODECENT);                
+                AddScalarVarToMetaData(md, nm, "mesh", AVT_NODECENT);
 
             H5Sclose(vS);
             H5Dclose(DS);
         }
     }
+
     H5Gclose(grp);
     H5Fclose(vfile);
 }
@@ -167,16 +166,14 @@ avtXGCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtXGCFileFormat::GetMesh(const char *meshname)
 {
-    string meshFile;
-    string::size_type i0 = fileName.rfind("xgc.");
-    string::size_type i1 = fileName.rfind(".h5");
+    std::string meshFile = GetFilename();
+    std::string::size_type i0 = meshFile.rfind("xgc.");
+    std::string::size_type i1 = meshFile.rfind(".h5");
     
-    if (i0 != string::npos && i1 != string::npos)
-        meshFile = fileName.substr(0,i0+4) + "mesh.h5";
+    if (i0 != std::string::npos && i1 != std::string::npos)
+        meshFile = meshFile.substr(0,i0+4) + "mesh.h5";
     else
         EXCEPTION1(InvalidVariableException, "Invalid mesh filename");
-
-    Initialize();
 
     hsize_t dims[3];
     hid_t file;
@@ -298,8 +295,8 @@ vtkDataArray *
 avtXGCFileFormat::GetVar(const char *varname)
 {
     hid_t file;
-    if ((file = H5Fopen(fileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
-        EXCEPTION1(InvalidFilesException, fileName);
+    if ((file = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
+        EXCEPTION1(InvalidFilesException, GetFilename());
 
     hsize_t dims[10];
     hid_t grp = H5Gopen(file, "/", H5P_DEFAULT);
@@ -316,7 +313,7 @@ avtXGCFileFormat::GetVar(const char *varname)
         H5Dread(vD, H5T_NATIVE_FLOAT, H5S_ALL, vS, H5P_DEFAULT, arr->GetVoidPointer(0));
     else
     {
-        vector<float> tmp(sz);
+        std::vector<float> tmp(sz);
         H5Dread(vD, H5T_NATIVE_FLOAT, H5S_ALL, vS, H5P_DEFAULT, &tmp[0]);
 
         //Need to transpose the array...
@@ -375,34 +372,75 @@ avtXGCFileFormat::GetVectorVar(const char *varname)
 void
 avtXGCFileFormat::Initialize()
 {
+    const char *mName = "avtGTCFileFormat::Initialize: ";
+
     if (initialized)
         return;
 
+    // Init HDF5 and turn off error message printing.
     H5open();
-    H5Eset_auto(H5E_DEFAULT , 0, 0);
-    if (H5Fis_hdf5(fileName.c_str()) < 0)
-        EXCEPTION1(InvalidFilesException, fileName);
-    
+    H5Eset_auto( H5E_DEFAULT, NULL, NULL );
+
+    // Check for a valid XGC file
+    if( H5Fis_hdf5( GetFilename() ) < 0 )
+        EXCEPTION1( InvalidFilesException, GetFilename() );
+
+    hid_t fileHandle;
+    if ((fileHandle = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
+        EXCEPTION1( InvalidFilesException, GetFilename() );
+
     hsize_t dims[1];
-    hid_t vfile = H5Fopen(fileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-    hid_t grp = H5Gopen(vfile, "/", H5P_DEFAULT);
-    hid_t nphiD = H5Dopen(grp, "nphi", H5P_DEFAULT);
-    hid_t nphiS = H5Dget_space(nphiD);
-    H5Sget_simple_extent_dims(nphiS, dims, NULL);
-    H5Dread(nphiD, H5T_NATIVE_INT, H5S_ALL, nphiS, H5P_DEFAULT, &numPhi);
-    H5Dclose(nphiD);
-    H5Sclose(nphiS);
+    
+    hid_t nphiD = H5Dopen(fileHandle, "nphi", H5P_DEFAULT);
+    if(nphiD < 0)
+    {
+      H5Fclose(fileHandle);
+      EXCEPTION1( InvalidFilesException, GetFilename() );
+    }
+    else
+    {
+      hid_t nphiS = H5Dget_space(nphiD);
+      H5Sget_simple_extent_dims(nphiS, dims, NULL);
+      H5Dread(nphiD, H5T_NATIVE_INT, H5S_ALL, nphiS, H5P_DEFAULT, &numPhi);
+      H5Dclose(nphiD);
+      H5Sclose(nphiS);
+    }
 
-    hid_t nnodeD = H5Dopen(grp, "nnode", H5P_DEFAULT);
-    hid_t nnodeS = H5Dget_space(nnodeD);
-    H5Sget_simple_extent_dims(nnodeS, dims, NULL);
-    H5Dread(nnodeD, H5T_NATIVE_INT, H5S_ALL, nnodeS, H5P_DEFAULT, &numNodes);
-    H5Dclose(nnodeD);
-    H5Sclose(nnodeS);
-    H5Gclose(grp);
-    H5Fclose(vfile);
+    
+    hid_t nnodeD = H5Dopen(fileHandle, "nnode", H5P_DEFAULT);
+    if(nnodeD < 0)
+    {
+      H5Fclose(fileHandle);
+      EXCEPTION1( InvalidFilesException, GetFilename() );
+    }
+    else
+    {
+      hid_t nnodeS = H5Dget_space(nnodeD);
+      H5Sget_simple_extent_dims(nnodeS, dims, NULL);
+      H5Dread(nnodeD, H5T_NATIVE_INT, H5S_ALL, nnodeS, H5P_DEFAULT, &numNodes);
+      H5Dclose(nnodeD);
+      H5Sclose(nnodeS);
+    }
 
-    // cout<<"NumNodes: "<<numNodes<<" NumPhi: "<<numPhi<<endl;
+    H5Fclose(fileHandle);
 
+    // At this point consider the file to truly be a XGC file. If
+    // some other file exception will be thrown.
+
+    if( numPhi <= 0 )
+    {
+      debug4 << mName << "Could not determine number of phi slices" << std::endl;
+      
+      H5Fclose(fileHandle);
+      EXCEPTION1( InvalidVariableException, "XGC Dataset Extents - Dataset 'nPhiD' has an invalid value");
+    }
+
+    if(numNodes <= 0)
+    {
+      debug4 << mName << "Could not determine number of nodes" << std::endl;
+      H5Fclose(fileHandle);
+      EXCEPTION1( InvalidVariableException, "XGC Dataset Extents - Dataset 'nnodeD' has an invalid value");
+    }
+    
     initialized = true;
 }

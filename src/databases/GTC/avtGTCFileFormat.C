@@ -42,35 +42,23 @@
 
 #include <avtGTCFileFormat.h>
 
-#include <snprintf.h>
-
-#include <vtkCellType.h>
-#include <vtkFloatArray.h>
-#include <vtkUnstructuredGrid.h>
 #include <avtDatabaseMetaData.h>
 
 #include <InvalidDBTypeException.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
-#include <NonCompliantException.h>
-
-// Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
-// in this file uses version 1.6 of the HDF5 API. This is harmless for
-// versions of HDF5 before 1.8 and ensures correct compilation with
-// version 1.8 and thereafter. When, and if, the HDF5 code in this file
-// is explicitly upgraded to the 1.8 API, this symbol should be removed.
-#define H5_USE_16_API
-#include <hdf5.h>
-#include <visit-hdf5.h>
 
 #include <DebugStream.h>
+
+#include <vtkCellType.h>
+#include <vtkFloatArray.h>
+#include <vtkUnstructuredGrid.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
 #include <avtParallel.h>
 #endif
 
-#include <string>
 #include <vector>
 
 // ****************************************************************************
@@ -84,8 +72,6 @@
 avtGTCFileFormat::avtGTCFileFormat(const char *filename)
     : avtSTMDFileFormat(&filename, 1)
 {
-    fileHandle = -1;
-    particleHandle = -1;
     nVars = 0;
     nTotalPoints = 0;
     nPoints = 0;
@@ -112,17 +98,6 @@ avtGTCFileFormat::avtGTCFileFormat(const char *filename)
 void
 avtGTCFileFormat::FreeUpResources(void)
 {
-    if(fileHandle >= 0)
-    {
-        H5Fclose(fileHandle);
-        fileHandle = -1;
-    }
-    if (particleHandle >= 0)
-    {
-        H5Dclose(particleHandle);
-        particleHandle = -1;
-    }
-
     initialized = false;
 }
 
@@ -145,17 +120,17 @@ avtGTCFileFormat::FreeUpResources(void)
 //
 // ****************************************************************************
 
-bool
+void
 avtGTCFileFormat::Initialize()
 {
     const char *mName = "avtGTCFileFormat::Initialize: ";
 
     if(initialized)
-        return true;
+        return;
 
     // Init HDF5 and turn off error message printing.
     H5open();
-    H5Eset_auto( NULL, NULL );
+    H5Eset_auto( H5E_DEFAULT, NULL, NULL );
 
     //bool err = false;
 
@@ -163,19 +138,23 @@ avtGTCFileFormat::Initialize()
     if( H5Fis_hdf5( GetFilename() ) < 0 )
       EXCEPTION1( InvalidFilesException, GetFilename() );
 
-    if ((fileHandle = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
+    hid_t fileHandle = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (fileHandle < 0)
       EXCEPTION1( InvalidFilesException, GetFilename() );
     
-    if ((particleHandle = H5Dopen(fileHandle, "particle_data")) < 0)
+    hid_t particleHandle = H5Dopen(fileHandle, "particle_data", H5P_DEFAULT);
+    if(particleHandle < 0)
     {
-      H5Fclose(fileHandle);
-      EXCEPTION1( InvalidFilesException, GetFilename() );
+      particleHandle = H5Dopen(fileHandle, "Particles", H5P_DEFAULT);
+      if(particleHandle < 0)
+      {
+        H5Fclose(fileHandle);
+        EXCEPTION1( InvalidFilesException, GetFilename() );
+      }
     }
 
     // At this point consider the file to truly be a GTC file. If
-    // some other file NonCompliantExceptions will be thrown.
-
-    // Continue as normal reporting NonCompliantExceptions
+    // some other file exception will be thrown.
 
     //Check variable's size.
     hid_t dataspace = H5Dget_space(particleHandle);
@@ -206,6 +185,9 @@ avtGTCFileFormat::Initialize()
 
     debug4 << mName << "variable size (" << dims[0] << ", " << dims[1] << ")" << endl;
 
+    H5Dclose(particleHandle);
+    H5Fclose(fileHandle);
+
     nTotalPoints = dims[0];
     nVars = dims[1];
 
@@ -229,8 +211,6 @@ avtGTCFileFormat::Initialize()
 #endif
     
     initialized = true;
-    
-    return initialized;
 }
 
 // ****************************************************************************
@@ -294,7 +274,6 @@ avtGTCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtGTCFileFormat::GetMesh(int domain, const char *meshname)
 {
-    Initialize();
     // Allocate mesh.
     vtkPoints *points  = vtkPoints::New();
     points->SetNumberOfPoints(nPoints);
@@ -342,6 +321,21 @@ void
 avtGTCFileFormat::ReadVariable( int domain, int varIdx, int varDim, float **ptrVar )
 {
     debug5 << "Reading Variable: " << startOffset << " " << nPoints << endl;
+    hid_t fileHandle;
+    if ((fileHandle = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
+      EXCEPTION1( InvalidFilesException, GetFilename() );
+    
+    hid_t particleHandle = H5Dopen(fileHandle, "particle_data", H5P_DEFAULT);
+    if(particleHandle < 0)
+    {
+      particleHandle = H5Dopen(fileHandle, "Particles", H5P_DEFAULT);
+      if(particleHandle < 0)
+      {
+        H5Fclose(fileHandle);
+        EXCEPTION1( InvalidFilesException, GetFilename() );
+      }
+    }
+
     hid_t dataspace = H5Dget_space(particleHandle);
 
     //Select the Var.
@@ -375,6 +369,8 @@ avtGTCFileFormat::ReadVariable( int domain, int varIdx, int varDim, float **ptrV
     
     H5Sclose(memspace);
     H5Sclose(dataspace);
+    H5Dclose(particleHandle);
+    H5Fclose(fileHandle);
 
 #ifdef PARALLEL
     ParallelReadVariable( domain, varDim, var, ids );
@@ -414,8 +410,6 @@ vtkDataArray *
 avtGTCFileFormat::GetVar(int domain, const char *varname)
 {
     const char *mName = "avtGTCFileFormat::GetVar: ";
-
-    Initialize();
 
     // Determine the variable index from the varname
     int varIdx = VarNameToIndex( varname );
@@ -542,7 +536,9 @@ avtGTCFileFormat::VarNameToIndex( const std::string &var ) const
 void
 avtGTCFileFormat::ParallelReadVariable( int domain, int varDim, float *var, float *ids )
 {
-    // Sort the particles into bins. We need to build a package for each processor.
+    // Sort the particles into bins. We need to build a package for
+    // each processor.  
+
     //int ptCnt = nTotalPoints / nProcs;
     //int remainder = nTotalPoints % nProcs;
 
@@ -569,10 +565,10 @@ avtGTCFileFormat::ParallelReadVariable( int domain, int varDim, float *var, floa
 // Method: avtGTCFileFormat::BinData
 //
 // Purpose: 
-//   Bin the data based on ID. Data that belong on other processors is placed into
-//   the parallelBuffer 'array'. Data that remains on "this" process, will be copied
-//   towards the front of the var/ids array. myVarsPtr and myIdsPtr track the end of
-//   this array.
+//   Bin the data based on ID. Data that belong on other processors is
+//   placed into the parallelBuffer 'array'. Data that remains on
+//   "this" process, will be copied towards the front of the var/ids
+//   array. myVarsPtr and myIdsPtr track the end of this array.
 //
 //  Arguments:
 //      dim           Dimension of the variable
