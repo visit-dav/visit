@@ -321,8 +321,9 @@ void
 avtGTCFileFormat::ReadVariable( int domain, int varIdx, int varDim, float **ptrVar )
 {
     debug5 << "Reading Variable: " << startOffset << " " << nPoints << endl;
-    hid_t fileHandle;
-    if ((fileHandle = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT)) < 0)
+
+    hid_t fileHandle = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (fileHandle < 0)
       EXCEPTION1( InvalidFilesException, GetFilename() );
     
     hid_t particleHandle = H5Dopen(fileHandle, "particle_data", H5P_DEFAULT);
@@ -596,7 +597,7 @@ avtGTCFileFormat::BinData( int dim, parallelBuffer **array, float *vars, float *
 
     float *ptrIDs = ids, *ptrVars = vars, *myVars = *myVarsPtr, *myIds = *myIdsPtr;
     float *data = new float[dim+1];
-    
+
     for ( int i = 0; i < nPoints; i++ )
     {
         int id = ((int) *ptrIDs) - 1; //Make the id 0...N-1 for the math below.
@@ -672,10 +673,10 @@ avtGTCFileFormat::GetDataShareMatrix( parallelBuffer **array )
 
     // Allgather is a little overkill, but there isn't much data.
     int err = MPI_Allgather( particleCnts, nProcs, MPI_INT,
-                             gatherCnts, nProcs*nProcs, MPI_INT, VISIT_MPI_COMM );
+                             gatherCnts, nProcs, MPI_INT, VISIT_MPI_COMM );
     if ( err != MPI_SUCCESS )
         EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Allgather() failure." );
-    
+
     return gatherCnts;
 }
 
