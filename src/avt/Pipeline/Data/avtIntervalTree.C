@@ -46,6 +46,7 @@
 #include <mpi.h>
 #endif
 
+#include <avtExecutionManager.h>
 #include <avtParallel.h>
 #include <avtIntervalTree.h>
 #include <float.h>
@@ -403,6 +404,7 @@ avtIntervalTree::CollectInformation(void)
     //
     int totalElements = nElements*vectorSize;
     double *outBuff = new double[totalElements];
+    
     MPI_Allreduce(nodeExtents, outBuff, totalElements, MPI_DOUBLE, MPI_SUM,
                VISIT_MPI_COMM);
 
@@ -707,11 +709,17 @@ CompareFloatInt(const FloatInt *A, const FloatInt *B)
 //    Hank Childs, Mon Sep 13 19:01:26 PDT 2010
 //    Set up the acceleration arrays if requested.
 //
+//    Jeremy Brennan, Mon Dec 12 14:51:00 PDT 2016
+//    Added mutex lock for threaded operation.
+//    nodeExtents is a shared class member, simultaneous writes in threaded
+//    operations cause data corruption.
+//
 // ****************************************************************************
 
 void
 avtIntervalTree::SetIntervals()
 {
+    VisitMutexLock("avtIntervalTree::SetIntervals");
     int parent;
 
     for (int i = nNodes-1 ; i > 0 ; i -= 2)
@@ -731,6 +739,7 @@ avtIntervalTree::SetIntervals()
                   numElementsBeneathThisNode[i-1]+
                   numElementsBeneathThisNode[i];
     }
+    VisitMutexUnlock("avtIntervalTree::SetIntervals");
 }
 
 

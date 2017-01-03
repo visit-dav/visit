@@ -71,6 +71,9 @@ class vtkRectilinearGrid;
 //    Eric Brugger, Thu Jul 31 19:15:11 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Alister Maguire, Tue Nov 15 11:51:26 PST 2016
+//    Added ThreadSafe method.     
+//
 // ****************************************************************************
 
 class avtReflectFilter : public virtual avtSIMODataTreeIterator,
@@ -96,6 +99,7 @@ class avtReflectFilter : public virtual avtSIMODataTreeIterator,
     double                zReflect;
     bool                  zeroOutVelocitiesOnBoundary;
 
+    virtual bool          ThreadSafe(void) { return(true); };
     virtual void          PreExecute(void);
     virtual void          PostExecute(void);
     virtual avtDataTree_p ExecuteDataTree(avtDataRepresentation *);

@@ -41,6 +41,7 @@
 #include <avtDataTree.h>
 #include <avtParallel.h>
 #include <math.h>
+#include <avtExecutionManager.h>
 
 #define N_SUM   0
 #define X_SUM   1
@@ -198,26 +199,43 @@ avtDistanceToBestFitLineExpression::Execute(void)
 //   Kathleen Biagas, Wed Apr 4 12:10:10 PDT 2012
 //   Change float to double.
 //
+//   Alister Maguire, Tue Nov  8 12:44:55 PST 2016
+//   Added thread_sums for thread safety and added
+//   mutex locks where appropriate. 
+//
 // ****************************************************************************
 
 void
 avtDistanceToBestFitLineExpression::DoOperation(vtkDataArray *in1, 
     vtkDataArray *in2, vtkDataArray *out, int ncomps, int ntuples)
 {
+
+    // thread_sums is used to calculate the sum values
+    // before adding them to sums. This is needed when
+    // threading is enabled. 
+    double thread_sums[N_CALC_VALUES]; 
+    for (int i = 0; i < N_CALC_VALUES; ++i)
+        thread_sums[i] = 0.;
+   
     if(pass == 1)
     {
         // Sum up the values required to calculate the best fit line.
-        sums[N_SUM] += double(ntuples);
+        thread_sums[N_SUM] += double(ntuples);
         for(vtkIdType i = 0; i < ntuples; ++i)
         {
             double x = in1->GetTuple1(i);
             double y = in2->GetTuple1(i);
 
-            sums[X_SUM] += double(x);
-            sums[Y_SUM] += double(y);
-            sums[XY_SUM] += double(x * y);
-            sums[X2_SUM] += double(x * x);
+            thread_sums[X_SUM] += double(x);
+            thread_sums[Y_SUM] += double(y);
+            thread_sums[XY_SUM] += double(x * y);
+            thread_sums[X2_SUM] += double(x * x);
         }
+    
+        VisitMutexLock("avtDistanceToBestFitLineExpression::DoOperation");
+        for (int i = 0; i < N_CALC_VALUES; ++i)
+             sums[i] += thread_sums[i];
+        VisitMutexUnlock("avtDistanceToBestFitLineExpression::DoOperation");
     }
     else if(pass == 2)
     {

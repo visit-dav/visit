@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtOnionPeelFilter.h>
+#include <avtExecutionManager.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSetRemoveGhostCells.h>
@@ -97,13 +98,13 @@ using std::vector;
 //    Kathleen Bonnell, Wed Sep 21 17:09:03 PDT 2005 
 //    Add poly_opf, so that polydata input can be returned as polydata output. 
 //
+//    Alister Maguire, Mon Oct 24 11:06:24 PDT 2016
+//    Removed poly_opf and opf for thread safety. They 
+//    are now stack variables in ExecuteData. 
 // ****************************************************************************
 
 avtOnionPeelFilter::avtOnionPeelFilter()
 {
-    opf = NULL;
-    poly_opf = NULL;
-
     encounteredBadSeed = false;
     encounteredGhostSeed = false;
     groupCategory = false;
@@ -120,20 +121,13 @@ avtOnionPeelFilter::avtOnionPeelFilter()
 //    Kathleen Bonnell, Wed Sep 21 17:09:03 PDT 2005 
 //    Add poly_opf.
 //
+//    Alister Maguire, Mon Oct 24 11:06:24 PDT 2016
+//    Removed poly_opf and opf as they no longer exist 
+//    in this scope. 
 // ****************************************************************************
 
 avtOnionPeelFilter::~avtOnionPeelFilter()
 {
-    if (opf)
-    {
-        opf->Delete();
-        opf = NULL;
-    }
-    if (poly_opf)
-    {
-        poly_opf->Delete();
-        poly_opf = NULL;
-    }
 }
 
 
@@ -292,6 +286,10 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Biagas, Tue Sep  9 13:56:00 PDT 2014
 //    Only remove ghost cells if VisIt created them (eg didn't come from db).
 //
+//    Alister Maguire, Mon Oct 24 11:06:24 PDT 2016
+//    Added poly poly_opf as stack variables for thread safety. Also added
+//    threadEncounteredBadSeed and threadEncounteredGhostSeed. 
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -301,7 +299,14 @@ avtOnionPeelFilter::ExecuteData(avtDataRepresentation *in_dr)
     // Get the VTK data set.
     //
     vtkDataSet *in_ds = in_dr->GetDataVTK();
-
+    // These bool values are created to resolve
+    // threading issues, but they are now also integral
+    // for the method when not threaded. 
+    bool threadEncounteredBadSeed   = false;
+    bool threadEncounteredGhostSeed = false;
+    vtkOnionPeelFilter         *opf      = NULL;
+    vtkPolyDataOnionPeelFilter *poly_opf = NULL;
+    
     if (successfullyExecuted)
     {
         return NULL;
@@ -320,10 +325,6 @@ avtOnionPeelFilter::ExecuteData(avtDataRepresentation *in_dr)
         poly_opf  = vtkPolyDataOnionPeelFilter::New();
         poly_opf->SetBadSeedCallback(avtOnionPeelFilter::BadSeedCallback, this);
     }
-
-    encounteredBadSeed = false;
-    encounteredGhostSeed = false;
-
     vector<int> id = atts.GetIndex();
     if (atts.GetLogical())
     {
@@ -336,7 +337,7 @@ avtOnionPeelFilter::ExecuteData(avtDataRepresentation *in_dr)
         }
         if (groupCategory)
         {
-            vtkDataArray *bi_arr = in_ds->GetFieldData()->GetArray("base_index");
+            vtkDataArray *bi_arr = in_ds->GetFieldData()->GetArray("base_index"); 
             int minIJK[3] = { 0, 0, 0};
             int maxIJK[3] = { 0, 0, 0};
             vtkDataArray *rd_arr = in_ds->GetFieldData()->GetArray("avtRealDims");
@@ -360,7 +361,7 @@ avtOnionPeelFilter::ExecuteData(avtDataRepresentation *in_dr)
                 {
                     if (id[i] < minIJK[i] || id[i] > maxIJK[i])
                     {
-                        encounteredBadSeed = true;
+                        threadEncounteredBadSeed = true;
                         return NULL;
                     }
                 }
@@ -495,10 +496,37 @@ avtOnionPeelFilter::ExecuteData(avtDataRepresentation *in_dr)
     { 
         removeGhostCells->Delete(); 
     }
-    successfullyExecuted |= (!encounteredBadSeed && !encounteredGhostSeed);
+
+    VisitMutexLock("avtOnionPeelFilter::ThreadSafeExecuteData");
+    successfullyExecuted |= (!threadEncounteredBadSeed && 
+                             !threadEncounteredGhostSeed);
+    VisitMutexUnlock("avtOnionPeelFilter::ThreadSafeExecuteData");
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(outds,
         in_dr->GetDomain(), in_dr->GetLabel());
+
+    VisitMutexLock("avtOnionPeelFilter::ThreadSafeExecuteData");
+    if (threadEncounteredBadSeed && !encounteredBadSeed)
+    {
+        encounteredBadSeed = true;
+    }
+
+    if (threadEncounteredGhostSeed && !encounteredGhostSeed)
+    {
+        encounteredGhostSeed = true;
+    }
+    VisitMutexUnlock("avtOnionPeelFilter::ThreadSafeExecuteData");
+
+    if (opf)
+    {
+        opf->Delete();
+        opf = NULL;
+    }
+    if (poly_opf)
+    {
+        poly_opf->Delete();
+        poly_opf = NULL;
+    }
 
     return out_dr;
 }
@@ -1073,26 +1101,16 @@ avtOnionPeelFilter::PreExecute()
 //    Kathleen Bonnell, Wed Sep 21 17:09:03 PDT 2005 
 //    Add poly_opf.
 //
+//    Alister Maguire, Mon Oct 24 11:06:24 PDT 2016
+//    Removed Release data as opf and poly_opf are now
+//    stack variables within ExecuteData.    
+//
 // ****************************************************************************
 
 void
 avtOnionPeelFilter::ReleaseData(void)
 {
     avtPluginDataTreeIterator::ReleaseData();
-    if (opf)
-    {
-        opf->SetInputData(NULL);
-        vtkUnstructuredGrid *ug = vtkUnstructuredGrid::New();
-        opf->SetOutput(ug);
-        ug->Delete();
-    }
-    if (poly_opf)
-    {
-        poly_opf->SetInputData(NULL);
-        vtkPolyData *pdata = vtkPolyData::New();
-        poly_opf->SetOutput(pdata);
-        pdata->Delete();
-    }
 }
 
 

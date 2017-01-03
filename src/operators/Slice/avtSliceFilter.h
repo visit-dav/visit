@@ -56,6 +56,7 @@ class vtkRectilinearGrid;
 class vtkTransformFilter;
 class vtkMatrix4x4;
 class vtkSlicer;
+class vtkVisItMatrixToLinearTransform;
 
 
 // ****************************************************************************
@@ -134,6 +135,17 @@ class vtkSlicer;
 //    Eric Brugger, Thu Aug 14 16:33:47 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Alister Maguire, Wed Nov  9 11:06:51 PST 2016
+//    Removed slicer, transform, and celllist for 
+//    thread safety; they are now stack variables.
+//    I also added mtlt as a shared data member so 
+//    that transform can access this value when needed,
+//    added a class declaration for 
+//    vtkVisItMatrixToLinearTransform, and I added 
+//    vtkSlicer and vtkIdType parameters to 
+//    CalculateRectilinearCells, also for thread safety.
+//    ThreadSafe method was also added. 
+//
 // ****************************************************************************
 
 class avtSliceFilter : public avtPluginDataTreeIterator
@@ -148,6 +160,8 @@ class avtSliceFilter : public avtPluginDataTreeIterator
     virtual const char     *GetDescription(void) { return "Slicing"; };
     virtual void            ReleaseData(void);
 
+    virtual bool            ThreadSafe(void) { return true; }
+
     virtual void            SetAtts(const AttributeGroup*);
     virtual bool            Equivalent(const AttributeGroup*);
     void                    ProjectExtents(const double *, double *);
@@ -159,11 +173,9 @@ class avtSliceFilter : public avtPluginDataTreeIterator
     double                        cachedNormal[3];
     bool                          doTransformVectors;
 
-    vtkSlicer                    *slicer;
-    vtkTransformFilter           *transform;
-    vtkIdType                    *celllist;
-    vtkMatrix4x4                 *invTrans;
-    vtkMatrix4x4                 *origTrans;
+    vtkMatrix4x4                    *invTrans;
+    vtkMatrix4x4                    *origTrans;
+    vtkVisItMatrixToLinearTransform *mtlt;
 
     virtual avtContract_p   ModifyContract(avtContract_p);
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
@@ -172,8 +184,10 @@ class avtSliceFilter : public avtPluginDataTreeIterator
 
     virtual void            UpdateDataObjectInfo(void);
 
-    void                    CalculateRectilinearCells(vtkRectilinearGrid *);
-    void                    SetPlaneOrientation(double *);
+    void                    CalculateRectilinearCells(vtkRectilinearGrid *, 
+                                                      vtkSlicer *, 
+                                                      vtkIdType *);
+    void                    SetPlaneOrientation(double *, vtkSlicer *);
 
     void                    GetOrigin(double &, double &, double &);
     void                    GetNormal(double &, double &, double &);

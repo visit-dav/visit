@@ -43,7 +43,7 @@
 #include <avtFacelistFilter.h>
 
 #include <vector>
-
+#include <VisItInit.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCellTypes.h>
@@ -276,6 +276,10 @@ avtFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
 //    Eric Brugger, Mon Jul 21 11:28:02 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Alister Maguire, Wed Dec 14 13:29:36 PST 2016
+//    Added a check for threading. If threads > 1, don't 
+//    retrieve data from memory. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -288,7 +292,9 @@ avtFacelistFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 
     avtFacelist *fl = NULL;
     avtDataValidity &v = GetInput()->GetInfo().GetValidity();
-    if (v.GetUsingAllData() && v.GetZonesPreserved())
+    if (v.GetUsingAllData() && 
+        v.GetZonesPreserved() && 
+        VisItInit::GetNumberOfThreads() <= 1) 
     {
         avtMetaData *md = GetMetaData();
         fl = md->GetExternalFacelist(domain);
@@ -766,7 +772,7 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label,
                    << domain << endl;
             uf->SetInputData((vtkUnstructuredGrid *) in_ds);
             uf->Update();
-            out_ds = uf->GetOutput();
+            out_ds = uf->GetOutput(); 
         }
     }
     else

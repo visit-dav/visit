@@ -95,6 +95,14 @@ class vtkDataArray;
 //    Kathleen Biagas, Tue Jun 9 09:37:12 MST 2015
 //    Changes to 'Replicate', added helper class for 'wrap' option.
 //
+//    Alister Maguire, Mon Oct 24 12:25:39 PDT 2016 
+//    Removed curvilinearFilter, rectilinearFilter, and pointsFilter
+//    for thread safety; they are now stack variables within 
+//    ExecuteData. Added vtkVisItExtractGrid, vtkVisItExtractRectilinearGrid,
+//    and vtkMaskPoints arguments to PrepareFilters. Changed 
+//    successfullyExecuted to atLeastOneThreadSuccessfullyExecuted.
+//    Added ThreadSafe method to header file.  
+//
 // ****************************************************************************
 
 class avtIndexSelectFilter : public avtPluginDataTreeIterator
@@ -116,17 +124,18 @@ class avtIndexSelectFilter : public avtPluginDataTreeIterator
   protected:
     IndexSelectAttributes       atts;
     bool                        haveIssuedWarning;
-    bool                        successfullyExecuted;
-    int                         selID;
+    bool                        atLeastOneThreadSuccessfullyExecuted;
+    int                         selID; 
     bool                        groupCategory;
     bool                        amrMesh;
     int                         amrLevel;
 
-    vtkVisItExtractGrid                  *curvilinearFilter;
-    vtkVisItExtractRectilinearGrid       *rectilinearFilter;
-    vtkMaskPoints                        *pointsFilter;
 
-    void                        PrepareFilters(int [3], int *);
+    virtual bool                ThreadSafe(void) { return(true); };
+    void                        PrepareFilters(int [3], int *, 
+                                               vtkVisItExtractGrid *, 
+                                               vtkVisItExtractRectilinearGrid *,
+                                               vtkMaskPoints *);
 
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void                PreExecute(void);
