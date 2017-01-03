@@ -82,6 +82,9 @@
 #    Jim Eliot, Mon 15 Dec 15:50:16 GMT 2014
 #    Added case for userid "jimeliot".
 #
+#    Garrett Morrison, Mon Jan  2 11:51:16 PST 2017
+#    Added case for usedid "gmorriso".  Also switch Hank's email to UOregon.
+#
 # *****************************************************************************
 
 
@@ -94,9 +97,9 @@ case $1 in
     "js9")
         emaddr=jsmeredith@gmail.com
         ;;
-    # Hank Childs, Lawrence Berkeley National Laboratory
+    # Hank Childs, University of Oregon
     "hrchilds")
-        emaddr=hchilds@lbl.gov
+        emaddr=hank@uoregon.edu
         ;;
     # Mark Miller, Lawrence Livermore National Laboratory
     "miller86")
@@ -217,6 +220,9 @@ case $1 in
     # Iulian Grindeanu
     "iulian")
         emaddr=iulian@mcs.anl.gov
+        ;;
+    "gmorriso")
+        emaddr=gmorriso@uoregon.edu
         ;;
     *)
         emaddr=visit-core-support@elist.ornl.gov
