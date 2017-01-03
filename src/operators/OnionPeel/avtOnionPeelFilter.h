@@ -92,6 +92,11 @@ class vtkPolyDataOnionPeelFilter;
 //
 //    Eric Brugger, Thu Jul 31 11:42:38 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
+//  
+//    Alister Maguire, Mon Oct 24 11:06:24 PDT 2016
+//    Removed opf and poly_opf for thread safety. They are
+//    now stack variables in ExecuteData. Added ThreadSafe
+//    method to header file. 
 //
 // ****************************************************************************
 
@@ -108,6 +113,7 @@ class avtOnionPeelFilter : public avtPluginDataTreeIterator
                              { return "Selecting neighbors for onion peel"; };
     virtual void         ReleaseData(void);
 
+    virtual bool         ThreadSafe(void) { return(true); };
     virtual void         SetAtts(const AttributeGroup*);
     virtual bool         Equivalent(const AttributeGroup*);
 
@@ -117,8 +123,6 @@ class avtOnionPeelFilter : public avtPluginDataTreeIterator
 
   protected:
     OnionPeelAttributes   atts;
-    vtkOnionPeelFilter   *opf;
-    vtkPolyDataOnionPeelFilter   *poly_opf;
 
     int                   badSeed;
     int                   maximumIds;

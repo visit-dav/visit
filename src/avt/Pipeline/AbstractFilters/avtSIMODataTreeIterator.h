@@ -114,7 +114,7 @@ class PIPELINE_API avtSIMODataTreeIterator : virtual public
     virtual avtDataTree_p    ExecuteDataTree(avtDataRepresentation *);
     virtual avtDataTree_p    ExecuteDataTree(vtkDataSet *,int,std::string);
 
-    virtual bool             ThreadSafe(void) { return(true); };
+    virtual bool             ThreadSafe(void) { return(false); };
     void                     FinishExecute(void);
 
     void                     OverrideOriginalSpatialExtents(void)

@@ -138,6 +138,9 @@ protected:
   ~vtkVisItMatrixToLinearTransform() { }
 };
 
+
+
+
 // ****************************************************************************
 //  Method: avtSliceFilter constructor
 //
@@ -180,15 +183,18 @@ protected:
 //    Hank Childs, Fri Aug 19 08:57:27 PDT 2005
 //    Use vtkTransformFilter instead of vtkTransformPolyDataFilter ['6471].
 //
+//    Alister Maguire and Jeremy Brennan, Wed Nov  9 11:06:51 PST 2016
+//    Removed slicer, transform and celllist initializations. They
+//    are now stack variables where needed. Also added mtlt 
+//    initialization. 
+//
 // ****************************************************************************
 
 avtSliceFilter::avtSliceFilter()
 {
-    slicer = vtkSlicer::New();
-    transform = vtkTransformFilter::New();
-    celllist = NULL;
     invTrans = vtkMatrix4x4::New();
     origTrans = vtkMatrix4x4::New();
+    mtlt = vtkVisItMatrixToLinearTransform::New();
     cachedOrigin[0] = 0.;
     cachedOrigin[1] = 0.;
     cachedOrigin[2] = 0.;
@@ -229,25 +235,15 @@ avtSliceFilter::avtSliceFilter()
 //    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004 
 //    Added origTrans. 
 //
+//    Alister Maguire and Jeremy Brennan, Wed Nov  9 11:06:51 PST 2016
+//    Removed slicer, celllist, and transform. They
+//    are now stack variables where needed. 
+//
 // ****************************************************************************
 
 avtSliceFilter::~avtSliceFilter()
 {
-    if (slicer != NULL)
-    {
-        slicer->Delete();
-        slicer = NULL;
-    }
-    if (celllist != NULL)
-    {
-        delete [] celllist;
-        celllist = NULL;
-    }
-    if (transform != NULL)
-    {
-        transform->Delete();
-        transform = NULL;
-    }
+
     if (invTrans!= NULL)
     {
         invTrans->Delete();
@@ -257,6 +253,11 @@ avtSliceFilter::~avtSliceFilter()
     {
         origTrans->Delete();
         origTrans= NULL;
+    }
+    if (mtlt != NULL)
+    {
+        mtlt->Delete();
+        mtlt = NULL;
     }
 }
 
@@ -660,18 +661,11 @@ avtSliceFilter::PreExecute(void)
     cachedOrigin[1] = oy;
     cachedOrigin[2] = oz;
 
-    slicer->SetOrigin(ox, oy, oz);
-    slicer->SetNormal(cachedNormal[0], cachedNormal[1], cachedNormal[2] );
-
     // figure out D in the plane equation
     D = cachedNormal[0]*ox + cachedNormal[1]*oy + cachedNormal[2]*oz;
 
     if (atts.GetProject2d())
         SetUpProjection();
-
-    double bounds[6];
-    GetSpatialExtents(bounds);
-    SetPlaneOrientation(bounds);
 }
 
 
@@ -716,6 +710,10 @@ avtSliceFilter::PreExecute(void)
 //    Brad Whitlock, Wed Jan 23 15:49:33 PST 2008
 //    Use a different, derived transform type and set whether it will 
 //    transform its vectors based on doTransformVectors.
+//
+//    Alister Maguire and Jeremy Brennan, Fri Nov 18 15:30:03 PST 2016
+//    Removed the instantiation of mtlt, as it is now a shared data
+//    member. 
 //
 // ****************************************************************************
 
@@ -819,11 +817,8 @@ avtSliceFilter::SetUpProjection(void)
     vtkMatrix4x4::Multiply4x4(reallyProject,xformToXYPlane,realXformToXYPlane);
 
     // Set the projection matrix for the transform.
-    vtkVisItMatrixToLinearTransform *mtlt = vtkVisItMatrixToLinearTransform::New();
     mtlt->SetInput(realXformToXYPlane);
     mtlt->SetDoTransformVectors(doTransformVectors);
-    transform->SetTransform(mtlt);
-    mtlt->Delete();
 
     // Save the original and inverse matrix.  We probably could have
     // created these in-place and used them instead of the temporary
@@ -1198,11 +1193,31 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //    I modified the routine to return a NULL in the case where it previously
 //    returned an avtDataRepresentation with a NULL vtkDataSet.
 //
+//    Alister Maguire and Jeremy Brennan, Fri Nov 18 15:30:03 PST 2016
+//    Added celllist, slicer, and transform
+//    for thread safety (they are no longer shared members). 
+//
 // ****************************************************************************
 
 avtDataRepresentation *
 avtSliceFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+
+    // 
+    // Create stack vtk objects needed for execution
+    //
+    vtkIdType *celllist = NULL;
+    vtkSlicer *slicer   = vtkSlicer::New();
+    vtkTransformFilter *transform = vtkTransformFilter::New();
+
+    transform->SetTransform(mtlt);
+    slicer->SetOrigin(cachedOrigin[0], cachedOrigin[1], cachedOrigin[2]);
+    slicer->SetNormal(cachedNormal[0], cachedNormal[1], cachedNormal[2] );
+
+    double bounds[6];
+    GetSpatialExtents(bounds);
+    SetPlaneOrientation(bounds, slicer);
+
     //
     // Get the VTK data set and domain number.
     //
@@ -1237,7 +1252,8 @@ avtSliceFilter::ExecuteData(avtDataRepresentation *in_dr)
     
         if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
-            CalculateRectilinearCells((vtkRectilinearGrid *) in_ds);
+            CalculateRectilinearCells((vtkRectilinearGrid *) in_ds, 
+                                      slicer, celllist);
         }
         else
         {
@@ -1280,6 +1296,21 @@ avtSliceFilter::ExecuteData(avtDataRepresentation *in_dr)
         in_dr->GetDomain(), in_dr->GetLabel());
 
     out_ds->Delete();
+
+    if (slicer != NULL)
+    {
+        slicer->Delete();
+    }
+
+    if (celllist != NULL)
+    {
+        delete [] celllist;
+    }
+
+    if (transform != NULL)
+    {
+        transform->Delete();
+    }
     
     return out_dr;
 }
@@ -1904,22 +1935,6 @@ void
 avtSliceFilter::ReleaseData(void)
 {
     avtPluginDataTreeIterator::ReleaseData();
-
-    slicer->SetInputConnection(0, NULL);
-    vtkPolyData *p = vtkPolyData::New();
-    slicer->GetExecutive()->SetOutputData(0, p);
-    p->Delete();
-
-    transform->SetInputConnection(0, NULL);
-    p = vtkPolyData::New();
-    transform->GetExecutive()->SetOutputData(0, p);
-    p->Delete();
-
-    if (celllist != NULL)
-    {
-        delete [] celllist;
-        celllist = NULL;
-    }
 }
 
 
@@ -2288,6 +2303,10 @@ ProjectExtentsCallback(const double *in, double *out, void *args)
 //    VTK filters no longer have a SetOutput method, Use SetOuputData from the
 //    filter's executive instead.  
 //
+//    Alister Maguire and Jeremy Brennan, Fri Nov 18 15:30:03 PST 2016
+//    Added pTransform and pSlicer as stack variables 
+//    for thread safety. 
+//
 // ****************************************************************************
 
 void
@@ -2301,13 +2320,24 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
     b[4] = b_in[4];
     b[5] = b_in[5];
 
+    //Create the transform and slicer used within this method
+    vtkTransformFilter *pTransform = vtkTransformFilter::New();
+    vtkSlicer *pSlicer             = vtkSlicer::New();
+
+    pSlicer->SetOrigin(cachedOrigin[0], cachedOrigin[1], cachedOrigin[2]);
+    pSlicer->SetNormal(cachedNormal[0], cachedNormal[1], cachedNormal[2] );
+
+    pTransform->SetTransform(mtlt);
+    pTransform->SetInputConnection(pSlicer->GetOutputPort());
+    pTransform->Update();
+
     //
     // Clean up leftovers from previous executions.
     //
     vtkPolyData *new_output = vtkPolyData::New();
-    transform->GetExecutive()->SetOutputData(0, new_output);
+    pTransform->GetExecutive()->SetOutputData(0, new_output);
     new_output->Delete();
-    slicer->SetCellList(NULL, 0);
+    pSlicer->SetCellList(NULL, 0);
 
     //
     // It is possible that we are slicing a plane.  If so, put in a little
@@ -2336,7 +2366,7 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
        b[5] += 0.0001*max_dist;
     }
 
-    SetPlaneOrientation(b);
+    SetPlaneOrientation(b, pSlicer);
 
     //
     // Set up a one cell-ed rectilinear grid based on the bounding box.
@@ -2366,15 +2396,15 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
     // Slice and project our bounding box to mimic what would happen to our
     // original dataset.
     //
-    slicer->SetInputData(rgrid);
-    transform->SetInputConnection(slicer->GetOutputPort());
-    transform->Update();
+    pSlicer->SetInputData(rgrid);
+    pTransform->SetInputConnection(pSlicer->GetOutputPort());
+    pTransform->Update();
 
     //
     // Now iterate through the resulting triangles and determine what the 
     // extents are.
     //
-    vtkPolyData *pd = (vtkPolyData *) transform->GetOutput();
+    vtkPolyData *pd = (vtkPolyData *) pTransform->GetOutput();
     double minmax[4] = { +FLT_MAX, -FLT_MAX, +FLT_MAX, -FLT_MAX };
     for (int i = 0 ; i < pd->GetNumberOfCells() ; i++)
     {
@@ -2406,6 +2436,16 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
     b_out[1] = b[1];
     b_out[2] = b[2];
     b_out[3] = b[3];
+
+    if (pSlicer != NULL)
+    {
+        pSlicer->Delete();
+    }
+
+    if (pTransform != NULL)
+    {
+        pTransform->Delete();
+    }
 
     x->Delete();
     y->Delete();
@@ -2441,7 +2481,7 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
 // ****************************************************************************
 
 void
-avtSliceFilter::SetPlaneOrientation(double *b)
+avtSliceFilter::SetPlaneOrientation(double *b, vtkSlicer *slicer)
 {
     double normal[3];
     normal[0] = cachedNormal[0];
@@ -2517,11 +2557,18 @@ avtSliceFilter::SetPlaneOrientation(double *b)
 //    Brad Whitlock, Tue Mar 13 14:37:38 PDT 2012
 //    Change float to double and int to vtkIdType.
 //
+//    Alister Maguire and Jeremy Brennan, Fri Nov 18 15:30:03 PST 2016
+//    Added vtkSlicer and vtkIdType parameters for 
+//    thread safety.     
+//
 // ****************************************************************************
 
 void
-avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
+avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid, 
+                                          vtkSlicer *slicer, 
+                                          vtkIdType *celllist)
 {
+
     int   handle = visitTimer->StartTimer();
     int   i;
 

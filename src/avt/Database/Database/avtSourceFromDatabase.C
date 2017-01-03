@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtSourceFromDatabase.h>
+#include <avtExecutionManager.h>
 
 #include <vtkDataSet.h>
 
@@ -785,6 +786,10 @@ avtSourceFromDatabase::CanDoStreaming(avtContract_p contract)
 //    Hank Childs, Mon Jan 10 20:42:58 PST 2011
 //    Add support for expressions.
 //
+//    Alister Maguire, Mon Jan  2 13:02:11 PST 2017
+//    Added a mutex lock around CacheVTKObject for thread
+//    safety.
+//
 // ****************************************************************************
 
 void
@@ -794,7 +799,9 @@ avtSourceFromDatabase::StoreArbitraryVTKObject(const char *name, int domain,
 {
     std::string name2 = ManageExpressions(name);
     avtVariableCache *cache = database->GetCache();
+    VisitMutexLock("avtSourceFromDatabase::StoreArbitraryVTKObject"); 
     cache->CacheVTKObject(name2.c_str(), type, ts, domain, "", obj);
+    VisitMutexUnlock("avtSourceFromDatabase::StoreArbitraryVTKObject");
 }
 
 

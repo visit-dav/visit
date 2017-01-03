@@ -318,6 +318,10 @@ avtSIMODataTreeIterator::ExecuteDataTreeOnThread(void *cbdata)
 //    sent to the execution manager to schedule the work. This maybe done in
 //    parallel or serial depending on VisIt build or on filter.
 //
+//    Hank Childs, Alister Maguire, Jeremy Brennan, Wed Dec 21 14:52:34 PDT 2016
+//    Modified thread executor to take advantage of virtual bool declared in
+//    the .h filed of filters if ThreadSafe() or not.
+//
 // ****************************************************************************
 
 void
@@ -347,7 +351,17 @@ avtSIMODataTreeIterator::Execute(avtDataTree_p inDT, avtDataTree_p &outDT)
         if( *outDT )
         {
             // Schedule the work to be done.
-            avtExecutionManagerScheduleWork(ExecuteDataTreeOnThread, (void *)work);
+            if (ThreadSafe())
+            {
+                avtExecutionManagerScheduleWork(ExecuteDataTreeOnThread, (void *)work);
+            }
+            else
+            {
+                // Not thread safe, so do it now.
+                outDT = new avtDataTree();
+                work->outDT = outDT;
+                ExecuteDataTreeOnThread(work);
+            }
         }
         else
         {

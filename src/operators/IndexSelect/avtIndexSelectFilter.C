@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtIndexSelectFilter.h>
+#include <avtExecutionManager.h>
 
 #include <vtkCell.h>
 #include <vtkCellArray.h>
@@ -116,16 +117,15 @@ using std::vector;
 //    Kathleen Biagas, Tue Jun 9 09:31:15 MST 2015
 //    Added globalDims, lspace.
 //
+//    Alister  Maguire, Wed Oct 26 11:34:15 PDT 2016
+//    Removed curvilinearFilter, rectilinearFilter, 
+//    and pointsFilter for thread safety. They now
+//    exist as stack variables in ExecuteData. 
+//
 // ****************************************************************************
 
 avtIndexSelectFilter::avtIndexSelectFilter() : lspace()
 {
-    curvilinearFilter = vtkVisItExtractGrid::New();
-    rectilinearFilter = vtkVisItExtractRectilinearGrid::New();
-    pointsFilter = vtkMaskPoints::New();
-    pointsFilter->GenerateVerticesOn();
-    pointsFilter->RandomModeOff();
-    pointsFilter->SingleVertexPerCellOn();
     haveIssuedWarning = false;
     selID             = -1;
     amrLevel          = -1;
@@ -149,25 +149,16 @@ avtIndexSelectFilter::avtIndexSelectFilter() : lspace()
 //    Kathleen Bonnell, Mon Jan 30 15:10:26 PST 2006 
 //    Delete vtkMaskPoints.
 //
+//    Alister  Maguire, Wed Oct 26 11:34:15 PDT 2016
+//    Removed curvilinearFilter, rectilinearFilter, 
+//    and pointsFilter for thread safety. They now
+//    exist as stack variables in ExecuteData. 
+//
 // ****************************************************************************
 
 avtIndexSelectFilter::~avtIndexSelectFilter()
 {
-    if (curvilinearFilter != NULL)
-    {
-        curvilinearFilter->Delete();
-        curvilinearFilter = NULL;
-    }
-    if (rectilinearFilter != NULL)
-    {
-        rectilinearFilter->Delete();
-        rectilinearFilter = NULL;
-    }
-    if (pointsFilter != NULL)
-    {
-        pointsFilter->Delete();
-        pointsFilter = NULL;
-    }
+
 }
 
 
@@ -235,10 +226,17 @@ avtIndexSelectFilter::SetAtts(const AttributeGroup *a)
 //    Added int* amri arg.  Read from this arg if AMR mesh in order to
 //    determine how to correctly compute min/max.
 //
+//    Alister Maguire, Mon Oct 24 12:25:39 PDT 2016
+//    Added vtkVisItExtgracGrid, vtkVisItExtgractRectilinearGrid, 
+//    and vtkMaskPoints arguments for thread safety.
+//
 // ****************************************************************************
 
 void
-avtIndexSelectFilter::PrepareFilters(int groupIndices[3], int *amri)
+avtIndexSelectFilter::PrepareFilters(int groupIndices[3], int *amri, 
+                                     vtkVisItExtractGrid *curvilinearFilter,
+                                     vtkVisItExtractRectilinearGrid *rectilinearFilter, 
+                                     vtkMaskPoints *pointsFilter)
 {
     //
     // Only adjust the base index if we are index selecting by group.
@@ -437,11 +435,28 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Biagas, Tue Jun 9 09:34:17 MST 2015
 //    Move Replicate (wrap) to PostExecute, collect globalDims here instead.
 //
+//    Alister Maguire, Tue Nov  8 12:44:55 PST 2016
+//    Changed curvilinearFilter, rectilinearFilter, and pointsFilter to stack
+//    variables for thread safety; added amrMesh for thread safety; added
+//    mutex locks where necessary.  
+//
 // ****************************************************************************
 
 avtDataRepresentation *
 avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+    
+    vtkVisItExtractGrid            *curvilinearFilter = 
+                                     vtkVisItExtractGrid::New();
+    vtkVisItExtractRectilinearGrid *rectilinearFilter = 
+                                     vtkVisItExtractRectilinearGrid::New();
+    vtkMaskPoints                  *pointsFilter      = vtkMaskPoints::New();
+    bool amrMesh = amrMesh;
+    pointsFilter->GenerateVerticesOn();
+    pointsFilter->RandomModeOff();
+    pointsFilter->SingleVertexPerCellOn();
+
+    //
     //
     // Get the VTK data set.
     //
@@ -453,7 +468,7 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
                   GetTopologicalDimension();
 
     amrMesh = (GetInput()->GetInfo().GetAttributes().GetMeshType() == 
-                AVT_AMR_MESH);
+                     AVT_AMR_MESH);   
 
     vtkIntArray *bi_arr = vtkIntArray::SafeDownCast(
         in_ds->GetFieldData()->GetArray("base_index"));
@@ -487,7 +502,7 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
         {
             removeGhostCells  = vtkDataSetRemoveGhostCells::New();
             removeGhostCells->SetInputData(in_ds);
-    
+
             //
             // There is something buggy about the extents when this filter is 
             // used for repeated executions.  Just force the execution now.
@@ -525,7 +540,9 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
                 {
                     avtCallback::IssueWarning("An internal error occurred and "
                             "the index select operator was not applied.");
+                    VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
                     haveIssuedWarning = true;
+                    VisitMutexUnlock("avtIndexSelectFilter::ThreadSafeExecuteData");
                 }
                 return in_dr;
             }
@@ -534,7 +551,8 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
                 amri = (int*)amrdims->GetVoidPointer(0);
             }
         }
-        PrepareFilters(ind, amri);
+        PrepareFilters(ind, amri, curvilinearFilter, rectilinearFilter, 
+                       pointsFilter);
     
         vtkDataSet *rv = NULL;
         int dstype = ds->GetDataObjectType();
@@ -564,7 +582,9 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
                 avtCallback::IssueWarning("The index select operator was "
                             "applied to a non-structured mesh.  It is not "
                             "being applied.");
-                haveIssuedWarning = true;
+                VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
+                haveIssuedWarning = true; 
+                VisitMutexUnlock("avtIndexSelectFilter::ThreadSafeExecuteData");
             }
             return in_dr;
         }
@@ -591,7 +611,7 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
         //
         vtkUnsignedIntArray *origZones = (vtkUnsignedIntArray *)
                                          in_ds->GetCellData()->
-                                         GetArray("avtOriginalCellNumbers");
+                                         GetArray("avtOriginalCellNumbers"); 
         if (origZones == NULL)
         {
             if (!haveIssuedWarning)
@@ -599,14 +619,16 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
                 avtCallback::IssueWarning("An internal error occurred and the "
                                           "index select operator was not "
                                           "applied.");
+                VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
                 haveIssuedWarning = true;
+                VisitMutexUnlock("avtIndexSelectFilter::ThreadSafeExecuteData");
             }
             return in_dr;
         }
 
         vtkUnsignedIntArray *dims = (vtkUnsignedIntArray *)
                                             in_ds->GetFieldData()->GetArray(
-                                            "avtOriginalStructuredDimensions");
+                                            "avtOriginalStructuredDimensions"); 
         if (dims == NULL)
         {
             if (!haveIssuedWarning)
@@ -614,7 +636,9 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
                 avtCallback::IssueWarning("An internal error occurred and the "
                                           "index select operator was not "
                                           "applied.");
-                haveIssuedWarning = true;
+                VisitMutexLock("avtIndexSelectFilter::ThreadSafeExecuteData");
+                haveIssuedWarning = true; 
+                VisitMutexUnlock("avtIndexSelectFilter::ThreadSafeExecuteData");
             }
             return in_dr;
         }
@@ -732,8 +756,9 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
         }
     }
 
-    successfullyExecuted = true;
-
+    VisitMutexLock("avtIndexSelectFilter::ExecuteData");
+    atLeastOneThreadSuccessfullyExecuted = true;
+    VisitMutexUnlock("avtIndexSelectFilter::ExecuteData");
 
     if ((atts.GetXWrap() || atts.GetYWrap() || atts.GetZWrap()) &&
         topoDim > 0 &&
@@ -777,6 +802,22 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
     if (out_ds != in_ds)
         out_ds->Delete();
 
+    if (curvilinearFilter != NULL)
+    {
+        curvilinearFilter->Delete();
+        curvilinearFilter = NULL;
+    }
+    if (rectilinearFilter != NULL)
+    {
+        rectilinearFilter->Delete();
+        rectilinearFilter = NULL;
+    }
+    if (pointsFilter != NULL)
+    {
+        pointsFilter->Delete();
+        pointsFilter = NULL;
+    }
+    
     return out_dr;
 }
 
@@ -1032,7 +1073,7 @@ void
 avtIndexSelectFilter::PreExecute(void)
 {
     avtPluginDataTreeIterator::PreExecute();
-    successfullyExecuted = false;
+    atLeastOneThreadSuccessfullyExecuted = false;
     if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
         if (atts.GetXIncr()!=1 || atts.GetYIncr()!=1 || atts.GetZIncr()!=1)
@@ -1060,7 +1101,7 @@ void
 avtIndexSelectFilter::PostExecute(void)
 {
     avtPluginDataTreeIterator::PostExecute();
-
+    
     int topoDim =
       GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
 
@@ -1071,7 +1112,7 @@ avtIndexSelectFilter::PostExecute(void)
     // dimension reduction.
     if (topoDim > 0 && dstype != AVT_UNSTRUCTURED_MESH)
     {
-      if (successfullyExecuted)
+      if (atLeastOneThreadSuccessfullyExecuted)
       {
         int newdim =
           GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
@@ -1149,22 +1190,6 @@ void
 avtIndexSelectFilter::ReleaseData(void)
 {
     avtPluginDataTreeIterator::ReleaseData();
-
-    curvilinearFilter->SetInputData(NULL);
-    vtkStructuredGrid *s = vtkStructuredGrid::New();
-    curvilinearFilter->SetOutput(s);
-    s->Delete();
-
-    rectilinearFilter->SetInputData(NULL);
-    vtkRectilinearGrid *r = vtkRectilinearGrid::New();
-    rectilinearFilter->SetOutput(r);
-    r->Delete();
-
-    pointsFilter->SetInputData(NULL);
-    vtkPolyData *p = vtkPolyData::New();
-    pointsFilter->SetOutput(p);
-    p->Delete();
-
     lspace.clear();
 }
 

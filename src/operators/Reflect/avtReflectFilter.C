@@ -43,7 +43,7 @@
 #include <avtReflectFilter.h>
 
 #include <float.h>
-
+#include <VisItInit.h>
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkIdList.h>
@@ -645,7 +645,7 @@ avtReflectFilter::ReflectRectilinear(vtkRectilinearGrid *ds, int dim)
     out->SetDimensions(dims);
     out->GetPointData()->CopyAllocate(ds->GetPointData());
     out->GetCellData()->CopyAllocate(ds->GetCellData());
-
+ 
     //
     // Reflect across X if appropriate.
     //
@@ -901,13 +901,21 @@ avtReflectFilter::ReflectDataArray(vtkDataArray *coords, double val)
 //    Brad Whitlock, Wed Apr 11 23:29:56 PDT 2012
 //    Preserve coordinate type.
 //
+//    Alister Maguire, Tue Nov 15 11:51:26 PST 2016
+//    Added DeepCopy of ds if threads are greater
+//    than 1. 
+//   
 // ****************************************************************************
 
 vtkDataSet *
 avtReflectFilter::ReflectPointSet(vtkPointSet *ds, int dim)
 {
     vtkPointSet *out = (vtkPointSet *) ds->NewInstance();
-    out->ShallowCopy(ds);
+
+    if (VisItInit::GetNumberOfThreads() <= 1)
+        out->ShallowCopy(ds);
+    else
+        out->DeepCopy(ds);
 
     vtkPoints *inPts  = ds->GetPoints();
     vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());

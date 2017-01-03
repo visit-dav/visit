@@ -58,6 +58,9 @@ class     vtkDataArray;
 //  Creation:   Fri Nov 18 14:23:50 PST 2005
 //
 //  Modifications:
+// 
+//  Alister Maguire, Tue Nov 15 11:46:16 PST 2016
+//  Added ThreadSafe method. 
 //
 // ****************************************************************************
 
@@ -72,6 +75,7 @@ class EXPRESSION_API avtDistanceToBestFitLineExpression
                                  { return "avtDistanceToBestFitLineExpression"; }
     virtual const char       *GetDescription(void)
                                  { return "Distance to best fit line"; }
+    virtual bool              ThreadSafe() { return true; };
 
   protected:
     bool                      verticalDifference;

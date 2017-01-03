@@ -126,6 +126,9 @@ class   avtMultiFacelist;
 //    Eric Brugger, Mon Jul 21 11:27:19 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Alister Maguire, Wed Dec 14 13:29:36 PST 2016
+//    Added ThreadSafe method. 
+// 
 // ****************************************************************************
 
 class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
@@ -143,6 +146,7 @@ class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
     void                                 SetForceFaceConsolidation(bool);
     void                                 SetCreateEdgeListFor2DDatasets(bool);
   
+    virtual bool                         ThreadSafe(void) { return(true); };
     void                                 SetMustCreatePolyData(bool val)
                                               { mustCreatePolyData = val; };
 
