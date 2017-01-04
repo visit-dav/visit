@@ -244,13 +244,15 @@ IF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
             ENDIF(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
         ENDFOREACH(ITM ${PYSIDE_MODULE_ITEMS})
     ELSE (NOT WIN32)
-        ADD_CUSTOM_TARGET(pyside_modules ALL)
-        ADD_CUSTOM_COMMAND(TARGET pyside_modules POST_BUILD
+        ADD_CUSTOM_TARGET(pyside_modules ALL
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${PYSIDE_PYTHONPATH}/PySide
                     ${VISIT_LIBRARY_DIR}/site-packages/PySide
             COMMENT "Copying ${PYSIDE_PYTHONPATH}/PySide to ${VISIT_LIBRARY_DIR}/site-packages/PySide"
-            )
+        )
+        if(VISIT_NO_ALLBUILD)
+            add_dependencies(visit_special_builds pyside_modules)
+        endif()
     ENDIF (NOT WIN32)
 ENDIF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
 
