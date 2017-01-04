@@ -1237,7 +1237,7 @@ ENDIF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONE
 
 # Configure PySide Support
 # But not for Qt5 yet..
-IF(NOT DEFINED VISIT_QT5)
+IF(NOT VISIT_QT5)
     IF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
                               AND NOT VISIT_DBIO_ONLY
                               AND NOT VISIT_ENGINE_ONLY
@@ -1250,7 +1250,7 @@ IF(NOT DEFINED VISIT_QT5)
                                  AND NOT VISIT_DBIO_ONLY
                                  AND NOT VISIT_ENGINE_ONLY
                                  AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-ENDIF(NOT DEFINED VISIT_QT5)
+ENDIF(NOT VISIT_QT5)
 
 # Treat GLEW as a 3rd party builtin.
 IF(VISIT_USE_GLEW)
