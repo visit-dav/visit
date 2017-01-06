@@ -404,7 +404,7 @@ QvisSelectionsWindow::CreateCQRangeControls(QWidget *parent)
     updateQueryButton1 = new QPushButton(tr("Update Query"), central);
     connect(updateQueryButton1, SIGNAL(pressed()),
             this, SLOT(updateQuery()));
-    lLayout->addWidget(updateQueryButton1, 0,3);
+    lLayout->addWidget(updateQueryButton1, 0, 3);
 
 
     // Add the variable list.
