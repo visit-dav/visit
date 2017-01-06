@@ -63,14 +63,18 @@
 #include <InvalidVariableException.h>
 #include <ImproperUseException.h>
 
+#ifndef WIN32
 #include <dirent.h>
+#include <unistd.h>
+#else
+#include <io.h>
+#endif
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <string.h>
 
 #include <iostream>
@@ -119,18 +123,73 @@ InitTimeHeader(TimeHeader_t *hdr)
 //    Mark C. Miller, Mon Jul 12 16:03:24 PDT 2010
 //    Replaced use of StringHelpers::FindRE with ExtractRESubstring. Using
 //    the former was simply a bug.
+//
+//    Kathleen Biagas, Fri Jan 6, 11:46:55 MST 2017
+//    Use FileFunctions::ReadAndProcessDirectory in conjunction with
+//    AppendMatchingFiles callback function for cross-platform portability.
+//
 // ****************************************************************************
+
+struct file_match_struct
+{
+    const int *nExpectedMatches;
+    const string *scanfStr;
+    const string *regexStr;
+    vector<string> *fnames;
+};
+
+
+void
+AppendMatchingFiles(void *cbData, const std::string &fullFileName, bool isDir,
+                    bool canAccess, long fileSize)
+{
+    if (isDir)
+        return;
+
+    file_match_struct *ptr = (file_match_struct *)cbData;
+    int nexpectedMatches(*ptr->nExpectedMatches);
+    string scanfStr(*ptr->scanfStr);
+    string regexStr(*ptr->regexStr);
+
+    // fullFileName may contain path, so remove it.
+    string fileName(FileFunctions::Basename(fullFileName));
+
+    // use either scanf pattern or regex pattern to match the entry
+    if (scanfStr != "")
+    {
+        // we use this funky scanf call because we don't really
+        // care about the data, here. Just whether we can get
+        // a match. But, we'll need a place for scanf to store
+        // anything it assigns and so we just stick it into dummy
+        char dummyStr[2048];
+        int nmatch = sscanf(fileName.c_str(), scanfStr.c_str(),
+                         (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
+                         (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
+                         (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
+                         (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
+                         (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
+                         (void*) dummyStr);
+        if (nmatch == nexpectedMatches)
+        {
+            ptr->fnames->push_back(fileName);
+            debug5 << "   Added \"" << fileName << "\"" << endl;
+        }
+    }
+    else if (regexStr != "")
+    {
+        if (StringHelpers::ExtractRESubstr(fileName.c_str(), regexStr.c_str()) != "")
+        {
+            ptr->fnames->push_back(fileName);
+            debug5 << "   Added \"" << fileName << "\"" << endl;
+        }
+    }
+}
+
 
 static int
 GetFilenames(string scanfStr, string regexStr, string rootDir,
     vector<string> &fnames)
 {
-#if !defined(_WIN32)
-
-    DIR *theDir = opendir(rootDir.c_str());
-    if (theDir == 0)
-        return 0;
-
     // if we're using scanf's, compute number of matches we should get
     int nexpectedMatches = 0;
     if (scanfStr != "")
@@ -151,61 +210,15 @@ GetFilenames(string scanfStr, string regexStr, string rootDir,
             EXCEPTION1(ImproperUseException, msg);
         }
     }
+    file_match_struct cbData;
+    cbData.nExpectedMatches = &nexpectedMatches;
+    cbData.scanfStr = &scanfStr;
+    cbData.regexStr = &regexStr;
+    cbData.fnames = &fnames;
+    FileFunctions::ReadAndProcessDirectory(rootDir, AppendMatchingFiles,
+                                          (void*)&cbData, false);
 
-    struct dirent *theDirEnt;
-    while ((theDirEnt = readdir(theDir)) != 0)
-    {
-        //
-        // Some compilers don't support NAME_MAX. Specifically gcc 3.2
-        // and xlC.
-        //
-#ifdef NAME_MAX
-        // check we didn't exceed name length
-        if (strlen(theDirEnt->d_name) >= NAME_MAX) 
-        {
-            char msg[NAME_MAX+1024];
-            SNPRINTF(msg, sizeof(msg), "probable truncation of d_name member "
-                "of dirent struct for entry...\n   \"%s\"", theDirEnt->d_name);
-            EXCEPTION1(ImproperUseException, msg);
-        }
-#endif
-
-        // use either scanf pattern or regex pattern to match the entry
-        if (scanfStr != "")
-        {
-            // we use this funky scanf call because we don't really
-            // care about the data, here. Just whether we can get
-            // a match. But, we'll need a place for scanf to store
-            // anything it assigns and so we just stick it into dummy
-            char dummyStr[2048];
-            int nmatch = sscanf(theDirEnt->d_name, scanfStr.c_str(),
-                             (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
-                             (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
-                             (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
-                             (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
-                             (void*) dummyStr, (void*) dummyStr, (void*) dummyStr,
-                             (void*) dummyStr);
-            if (nmatch == nexpectedMatches)
-            {
-                fnames.push_back(theDirEnt->d_name);
-                debug5 << "   Added \"" << theDirEnt->d_name << "\"" << endl;
-            }
-        }
-        else if (regexStr != "")
-        {
-            if (StringHelpers::ExtractRESubstr(theDirEnt->d_name, regexStr.c_str()) != "")
-            {
-                fnames.push_back(theDirEnt->d_name);
-                debug5 << "   Added \"" << theDirEnt->d_name << "\"" << endl;
-            }
-        }
-    }
-
-    closedir(theDir);
-
-    return fnames.size();
-
-#endif
+    return (int)fnames.size();
 }
 
 // ****************************************************************************
@@ -270,12 +283,16 @@ CompareFNR(const void *a1, const void *a2)
 //    Mark C. Miller, Wed Aug  6 09:50:51 PDT 2008
 //    Made it check for possible stat error before assigning result
 //     
+//    Kathleen Biagas, Fri Jan 6, 11:46:55 MST 2017
+//    Use VISIT_SLASH_STRING when appending fname to rootDir.
+//
 // ****************************************************************************
+
 static void
 SortFilenames(vector<string> &fnames, string cycleRegex, string rootDir)
 {
-    int n = fnames.size();
-    int i;
+    size_t n = fnames.size();
+    size_t i;
 
     FileNameAndRank_t *fnrs = new FileNameAndRank_t[n];
 
@@ -287,7 +304,7 @@ SortFilenames(vector<string> &fnames, string cycleRegex, string rootDir)
         double rank = -1.0;
         if (cycleRegex == "")
         {
-            string fullFileName = rootDir + "/" + fnames[i];
+            string fullFileName = rootDir + VISIT_SLASH_STRING + fnames[i];
             FileFunctions::VisItStat_t stbuf;
             if (FileFunctions::VisItStat(fullFileName.c_str(), &stbuf) == 0)
                 rank = (double) stbuf.st_mtime;
@@ -298,7 +315,7 @@ SortFilenames(vector<string> &fnames, string cycleRegex, string rootDir)
                                                       cycleRegex.c_str());
         }
 
-        fnrs[i].origIndex = i;
+        fnrs[i].origIndex = (int)i;
         fnrs[i].rank = rank; 
     }
 
@@ -335,14 +352,29 @@ SortFilenames(vector<string> &fnames, string cycleRegex, string rootDir)
 //    Jeremy Meredith, Thu Aug  7 15:54:10 EDT 2008
 //    Use %ld format for longs.
 //
+//    Kathleen Biagas, Fri Jan 6, 11:46:55 MST 2017
+//    Use VISIT_SLASH_STRING when appending fname to rootDir.
+//    Added support for Windows.
+//
 // ****************************************************************************
+
 static void 
 ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
 {
     char buf[2048];
-    string fullFileName = rootDir + "/" + fileName;
-    int fd = open(fullFileName.c_str(), O_RDONLY);
-    int nread = read(fd, buf, sizeof(buf)-1);
+    string fullFileName = rootDir + VISIT_SLASH_STRING + fileName;
+    int fd =
+#ifndef WIN32
+        open(fullFileName.c_str(), O_RDONLY);
+#else
+        ::_open(fullFileName.c_str(), _O_RDONLY|_O_BINARY);
+#endif
+    int nread = 
+#ifndef WIN32
+        read(fd, buf, sizeof(buf)-1);
+#else
+        ::_read(fd, buf, sizeof(buf)-1);
+#endif
     if (nread >= (int)sizeof(buf)-1)
     {
         char msg[256];
@@ -535,15 +567,26 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
 //  Programmer: Mark C. Miller 
 //  Creation:   September 13, 2007 
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Jan 6, 11:46:55 MST 2017
+//    Use VISIT_SLASH_STRING when appending fname to rootDir.
+//    Added support for Windows.
+//
 // ****************************************************************************
+
 static void 
 ReadGridHeaders(string rootDir, string fileName, const TimeHeader_t *thdr,
     vector<GridHeader_t> &gridHeaders, map<int, GridHeader_t> &gridHeaderMap)
 {
     // open a grid file
     //char buf[2048];
-    string fullFileName = rootDir + "/" + fileName;
-    int fd = open(fullFileName.c_str(), O_RDONLY);
+    string fullFileName = rootDir + VISIT_SLASH_STRING + fileName;
+    int fd =
+#ifndef WIN32
+        open(fullFileName.c_str(), O_RDONLY);
+#else
+        ::_open(fullFileName.c_str(), _O_RDONLY|_O_BINARY);
+#endif
     int offset = 0;
     int ng = 0;
     while (ng < thdr->ngrids)
@@ -584,6 +627,10 @@ ReadGridHeaders(string rootDir, string fileName, const TimeHeader_t *thdr,
 //    Replaced use of scanf with fgets as former would fail on inputs
 //    containing spaces such as in a regex specification. Also, replaced
 //    explicit ordering of tests for file keywords with loop over fgets.
+//
+//    Kathleen Biagas, Fri Jan 6, 11:46:55 MST 2017
+//    Use VISIT_SLASH_STRING when creating rootDir.
+//
 // ****************************************************************************
 
 avtClawFileFormat::avtClawFileFormat(const char *filename)
@@ -603,10 +650,10 @@ avtClawFileFormat::avtClawFileFormat(const char *filename)
 
     while (fgets(tmpStr, sizeof(tmpStr), bootFile))
     {
-        int n = strlen(tmpStr);
+        size_t n = strlen(tmpStr);
         tmpStr[n-1] = '\0'; // get rid of newline char at end
         if      (STRMATCH("DIR="))
-            rootDir = bootFileDir + "/" + string(STRSTRIP("DIR="));
+            rootDir = bootFileDir + VISIT_SLASH_STRING + string(STRSTRIP("DIR="));
         else if (STRMATCH("TIME_FILES_SCANF="))
             timeScanf = string(STRSTRIP("TIME_FILES_SCANF="));
         else if (STRMATCH("TIME_FILES_REGEX="))
@@ -719,7 +766,7 @@ int
 avtClawFileFormat::GetNTimesteps(void)
 {
     GetFilenames();
-    return timeFilenames.size();
+    return (int)timeFilenames.size();
 }
 
 double
@@ -811,7 +858,7 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     mesh->blockTitle = "grids";
     mesh->blockPieceName = "grid";
     mesh->blockOrigin = 1;
-    mesh->numGroups = levelsMap.size();
+    mesh->numGroups = (int)levelsMap.size();
     mesh->groupTitle = "levels";
     mesh->groupPieceName = "level";
     mesh->groupOrigin = 1;
@@ -830,7 +877,7 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     }
     mesh->blockNames = blockPieceNames;
     md->Add(mesh);
-    md->AddGroupInformation(levelsMap.size(), timeHdr.ngrids, groupIds);
+    md->AddGroupInformation((int)levelsMap.size(), timeHdr.ngrids, groupIds);
 
     //
     // add default plot (but only if we actually have 'levels'
@@ -925,8 +972,8 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
     map<int, GridHeader_t> levelsMap = gridHeaderMaps[timeState];
 
     int num_dims = timeHdr.ndims;
-    size_t num_levels = levelsMap.size();
-    size_t num_patches = gridHdrs.size();
+    int num_levels = (int)levelsMap.size();
+    int num_patches = (int)gridHdrs.size();
 
     // first, look to see if we don't already have it cached
     void_ref_ptr vrTmp = cache->GetVoidRef("any_mesh",
@@ -947,7 +994,7 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
         //
         vector<int> ratios(3,1);
         dn->SetLevelRefinementRatios(0, ratios);
-        for (size_t i = 1; i < num_levels; ++i)
+        for (int i = 1; i < num_levels; ++i)
         {
            ratios[0] = (int) (levelsMap[i-1].dx / levelsMap[i].dx+0.5);
            ratios[1] = (int) (levelsMap[i-1].dy / levelsMap[i].dy+0.5);
@@ -958,7 +1005,7 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
         double lowestX = std::numeric_limits<double>::max();
         double lowestY = std::numeric_limits<double>::max();
         double lowestZ = std::numeric_limits<double>::max();
-        for (size_t i = 0; i < num_patches; ++i)
+        for (int i = 0; i < num_patches; ++i)
         {
             lowestX = std::min(lowestX, gridHdrs[i].xlow);
             lowestY = std::min(lowestY, gridHdrs[i].ylow);
@@ -968,7 +1015,7 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
         //
         // set each domain's level, children and logical extents
         //
-        for (size_t i = 0; i < num_patches; ++i)
+        for (int i = 0; i < num_patches; ++i)
         {
             vector<int> childPatches;
             float x0 = gridHdrs[i].xlow;
@@ -977,7 +1024,7 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
             float y1 = y0 + gridHdrs[i].my * gridHdrs[i].dy;
             float z0 = gridHdrs[i].zlow;
             float z1 = z0 + gridHdrs[i].mz * gridHdrs[i].dz;
-            for (size_t j = 0; j < num_patches; j++)
+            for (int j = 0; j < num_patches; j++)
             {
                 if (gridHdrs[j].AMR_level != gridHdrs[i].AMR_level+1)
                     continue;
@@ -1029,7 +1076,7 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
         sdb = new avtRectilinearDomainBoundaries(canComputeNeighborsFromExtents);
 
         sdb->SetNumDomains(num_patches);
-        for (size_t i = 0 ; i < num_patches ; ++i)
+        for (int i = 0 ; i < num_patches ; ++i)
         {
             int e[6];
             e[0] = (int) (gridHdrs[i].xlow / gridHdrs[i].dx + 0.5);
@@ -1162,6 +1209,10 @@ avtClawFileFormat::GetMesh(int timeState, int domain, const char *meshname)
 //    fix invalid write when null terminating string, and handle
 //    failed file system operations.
 //
+//    Kathleen Biagas, Fri Jan 6, 11:46:55 MST 2017
+//    Use VISIT_SLASH_STRING when appending fname to rootDir.
+//    Added support for Windows.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1197,8 +1248,13 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
 
     // open grid file, seek to correct offset and read the data there
     char *buf = new char[dsLength+1];
-    string fullFileName = rootDir + "/" + gridFilenames[timeState];
-    int fd = open(fullFileName.c_str(), O_RDONLY);
+    string fullFileName = rootDir + VISIT_SLASH_STRING + gridFilenames[timeState];
+    int fd =
+#ifndef WIN32
+        open(fullFileName.c_str(), O_RDONLY);
+#else
+        ::_open(fullFileName.c_str(), _O_RDONLY|_O_BINARY);
+#endif
     if (fd < 0)
     {
         ostringstream oss;
@@ -1207,7 +1263,12 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
         EXCEPTION1(InvalidFilesException, oss.str().c_str());
     }
     lseek(fd, dsOffset, SEEK_SET);
-    ssize_t nread = read(fd, buf, dsLength);
+    size_t nread =
+#ifndef WIN32
+        read(fd, buf, dsLength);
+#else
+        ::_read(fd, buf, dsLength);
+#endif
     if (nread < 0)
     {
         ostringstream oss;
