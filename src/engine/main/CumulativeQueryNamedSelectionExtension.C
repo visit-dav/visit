@@ -132,6 +132,8 @@
 //   
 // ****************************************************************************
 
+#define NBINS 256 // number of bins for the histogram.
+
 class CQHistogramCalculationFilter : public avtDataTreeIterator
 {
 public:
@@ -139,7 +141,7 @@ public:
     {
         double minimum;
         double maximum;
-        double frequency[256];
+        double frequency[NBINS];
     };
 
     CQHistogramCalculationFilter() : avtDataTreeIterator(), histograms()
@@ -221,7 +223,8 @@ protected:
         for(std::map<std::string,Histogram*>::iterator it = histograms.begin();
             it != histograms.end(); ++it)
         {
-            // If we have not created a histogram yet for this variable then do it now.
+            // If we have not created a histogram yet for this
+            // variable then do it now.
             if(it->second == 0)
             {
                 double minmax[2] = {0.,1.};
@@ -231,19 +234,20 @@ protected:
                 debug5 << mName << "Calculated data extents for " << it->first
                        << " [" << minmax[0] << ", " << minmax[1] << "]" << endl;
 
-                std::vector<VISIT_LONG_LONG> hist(256, 0);
+                std::vector<VISIT_LONG_LONG> hist(NBINS, 0);
                 if(!avtDatasetExaminer::CalculateHistogram(ds, it->first, minmax[0], minmax[1], hist))
                 {
                     debug1 << "CalculateHistogram failed" << endl;
                 }
                 
                 it->second = new Histogram;
-                for(int i = 0; i < 256; ++i)
+                for(int i = 0; i < NBINS; ++i)
                     it->second->frequency[i] = (double)hist[i];
 
                 // Print the histogram.
-                debug5 << mName << "Calculated histogram for " << it->first << endl;
-                for(int i = 0; i < 256; ++i)
+                debug5 << mName << "Calculated histogram for "
+                       << it->first << endl;
+                for(int i = 0; i < NBINS; ++i)
                     debug5 << "\thist[" << i << "] = " << hist[i] << endl;
             
                 it->second->minimum = minmax[0];
@@ -273,22 +277,30 @@ protected:
             // Request extents
 //            newContract->SetCalculateVariableExtents(it->first, true);
 
-            // Try and get a histogram. If we can't then request the data as a
-            // secondary variable.
+            // Try and get a histogram. If we can't then request the
+            // data as a secondary variable.
             avtHistogramSpecification hist;
-            hist.SpecifyHistogram(contract->GetDataRequest()->GetTimestep(), it->first, 256);
+            hist.SpecifyHistogram(contract->GetDataRequest()->GetTimestep(), it->first, NBINS);
             if(GetMetaData()->GetHistogram(&hist))
             {
                 it->second = new Histogram;
                 it->second->minimum = hist.GetBounds()[0][0];
-                it->second->maximum = hist.GetBounds()[0][1];
-                for(int i = 0; i < 256; ++i)
-                    it->second->frequency[i] = (double)(hist.GetCounts()[i]);
+                it->second->maximum = hist.GetBounds()[0][NBINS];
+                for(int i = 0; i < NBINS; ++i)
+                    it->second->frequency[i] = double(hist.GetCounts()[i]);
 
                 // Print the histogram.
-                debug5 << mName << "Obtained existing histogram for " << it->first << endl;
-                for(int i = 0; i < 256; ++i)
-                    debug5 << "\thist[" << i << "] = " << hist.GetCounts()[i] << endl;
+                debug5 << mName << "Obtained existing histogram spec. for "
+                       << it->first << endl;
+
+                for(int i = 0; i < NBINS; ++i)
+                    debug5 << "  bin " << i
+                           << "  bounds = ["
+                           << hist.GetBounds()[0][i] << ", "
+                           << hist.GetBounds()[0][i+1] << ") "
+                           << "  count = "
+                           << hist.GetCounts()[i] << "  "
+                           << endl;
             }
             else if(origvar != it->first &&
                     !newContract->GetDataRequest()->HasSecondaryVariable(it->first.c_str()))
@@ -2465,8 +2477,8 @@ BuildSummary(const CQHistogramCalculationFilter &hist)
         {
             debug5 << mName << "Could not locate histogram for " << vars[i]
                    << " so create a default histogram." << endl;
-            double frequency[256];
-            memset(frequency, 0, 256 * sizeof(double));
+            double frequency[NBINS];
+            memset(frequency, 0, NBINS * sizeof(double));
 
             SelectionVariableSummary vs;
             vs.SetName(vars[i]);
