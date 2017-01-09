@@ -13,12 +13,15 @@
 #   Eric Brugger, Thu Dec 29 13:12:25 PST 2016
 #   I modified the script to set ttc when running on agate.
 #
+#   Eric Brugger, Mon Jan  9 13:43:22 PST 2017
+#   I modified the script to no longer set usettc when on inca.
+#
 ###############################################################################
 
 class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
     def __init__(self, launcher):
         super(JobSubmitter_qsub_LLNL, self).__init__(launcher)
-        self.usettc = (self.sectorname() == "inca") or (self.sectorname() == "agate")
+        self.usettc = self.sectorname() == "agate"
         self.useppn = (self.sectorname() == "graph") or (self.sectorname() == "tr-fe")
 
 

@@ -80,6 +80,9 @@
 #   Eric Brugger, Tue Nov 22 16:23:56 PST 2016
 #   I added quartz.
 #
+#   Eric Brugger, Mon Jan  9 13:50:10 PST 2017
+#   I replaced aztec with surface.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -123,7 +126,7 @@ esac
 kickit=true
 ubuntu1104_64=false
 ubuntu1404_64=false
-aztec=true
+surface=true
 quartz=true
 rzzeus=true
 rzuseq=false
@@ -145,7 +148,7 @@ do
          kickit=false
          ubuntu1104_64=false
          ubuntu1404_64=false
-         aztec=false
+         surface=false
          quartz=false
          rzzeus=false
          carver=false
@@ -176,12 +179,12 @@ do
          ubuntu1404_64=true
          shift
          ;;
-      -aztec)
-         aztec=false
+      -surface)
+         surface=false
          shift
          ;;
-      +aztec)
-         aztec=true
+      +surface)
+         surface=true
          shift
          ;;
       -quartz)
@@ -365,20 +368,20 @@ then
 fi
 
 #
-# Install on aztec.
+# Install on surface.
 #
-rm -f aztec
-cat <<EOF > aztec
+rm -f surface
+cat <<EOF > surface
 #!/bin/sh
-./visit-install -private -c llnl_open_cz -g visit -b bdivp -gw -l $ver linux-aztec /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_cz -g visit -b bdivp -gw -l $ver linux-surface /usr/gapps/visit > installlog 2>&1
 cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so.1
 chmod 775 /usr/gapps/visit/$ver+/linux-x86_64/lib/*.304.54
 chgrp visit /usr/gapps/visit/$ver+/linux-x86_64/lib/*.304.54
 rm -f resultlog
-echo "        install of visit on aztec"           > resultlog 2>&1
-echo "       ---------------------------"          >> resultlog 2>&1
+echo "        install of visit on surface"         > resultlog 2>&1
+echo "       -----------------------------"        >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -390,18 +393,18 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): aztec" $emailName < resultlog
+mail -s "VisIt install ($ver): surface" $emailName < resultlog
 EOF
 
-if [ $aztec = true ]
+if [ $surface = true ]
 then
    if [ $test = no ]
    then
-      scp aztec3:/usr/tmp/$user/aztec/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-aztec.tar.gz
-      scp visit$ver2.linux-aztec.tar.gz aztec:
-      scp visit-install aztec:
-      scp aztec aztec:aztec_install
-      ssh aztec "chmod 750 aztec_install;./aztec_install"
+      scp surface86:/usr/tmp/$user/surface/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-surface.tar.gz
+      scp visit$ver2.linux-surface.tar.gz surface:
+      scp visit-install surface:
+      scp surface surface:surface_install
+      ssh surface "chmod 750 surface_install;./surface_install"
    fi
 fi
 
@@ -639,5 +642,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1104_64 ubuntu1404_64 aztec quartz rzuseq rzzeus carver glory vulcan
+   rm -f kickit ubuntu1104_64 ubuntu1404_64 surface quartz rzuseq rzzeus carver glory vulcan
 fi

@@ -82,6 +82,9 @@
 #   Eric Brugger, Mon Nov 21 11:47:57 PST 2016
 #   Added jade.
 #
+#   Eric Brugger, Mon Jan  9 13:33:33 PST 2017
+#   I replaced inca with zin.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -92,7 +95,7 @@ user=`whoami`
 # Parse the execute line, providing default values for error checking.
 #
 hitit=true
-inca=true
+zin=true
 jade=true
 trinity=true
 
@@ -108,7 +111,7 @@ do
    case $1 in
       -none)
          hitit=false
-         inca=false
+         zin=false
          jade=false
          trinity=false
          shift
@@ -121,12 +124,12 @@ do
          hitit=true
          shift
          ;;
-      -inca)
-         inca=false
+      -zin)
+         zin=false
          shift
          ;;
-      +inca)
-         inca=true
+      +zin)
+         zin=true
          shift
          ;;
       -jade)
@@ -160,7 +163,7 @@ then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
    echo "    hitit (B-Div, Linux),"
-   echo "    inca (LC, x86_64)"
+   echo "    zin (LC, x86_64)"
    echo "    jade (LC, x86_64)"
    echo "    trinity (LANL, x86_64)"
    exit
@@ -224,23 +227,23 @@ then
 fi
 
 #
-# Build on inca.
+# Build on zin.
 #
-rm -f inca
-cat <<EOF > inca
+rm -f zin
+cat <<EOF > zin
 #!/bin/sh
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
-if test ! -d /usr/tmp/$user/inca ; then
-   mkdir /usr/tmp/$user/inca
+if test ! -d /usr/tmp/$user/zin ; then
+   mkdir /usr/tmp/$user/zin
 fi
-rm -rf /usr/tmp/$user/inca/visitbuild
-mkdir /usr/tmp/$user/inca/visitbuild
-mv inca_$dist.tar.gz /usr/tmp/$user/inca/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/inca/visitbuild
+rm -rf /usr/tmp/$user/zin/visitbuild
+mkdir /usr/tmp/$user/zin/visitbuild
+mv zin_$dist.tar.gz /usr/tmp/$user/zin/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/zin/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
@@ -251,8 +254,8 @@ make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "        build of visit on inca"         > resultlog 2>&1
-echo "       ------------------------"        >> resultlog 2>&1
+echo "        build of visit on zin"          > resultlog 2>&1
+echo "       -----------------------"         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -264,14 +267,14 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $inca = true ]
+if [ $zin = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on inca"
-      scp inca inca3:inca_buildit
-      scp $dist.tar.gz inca3:inca_$dist.tar.gz
-      ssh inca3 "chmod 750 inca_buildit;./inca_buildit" &
+      echo "Building on zin"
+      scp zin zin497:zin_buildit
+      scp $dist.tar.gz zin497:zin_$dist.tar.gz
+      ssh zin497 "chmod 750 zin_buildit;./zin_buildit" &
    fi
 fi
 
@@ -382,5 +385,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hitit inca jade trinity
+   rm -f hitit zin jade trinity
 fi
