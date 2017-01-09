@@ -44,14 +44,24 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
+IF(DEFINED FASTBIT_VERSION)
+    IF(${FASTBIT_VERSION} VERSION_LESS "2.0.0")
+      SET(FB_INCLUDE include)
+    ELSE(${FASTBIT_VERSION} VERSION_LESS "2.0.0")
+      SET(FB_INCLUDE include/fastbit)
+    ENDIF(${FASTBIT_VERSION} VERSION_LESS "2.0.0")
+ELSE(DEFINED FASTBIT_VERSION)
+  SET(FB_INCLUDE include)
+ENDIF(DEFINED FASTBIT_VERSION)
+
 IF (WIN32)
-    SET_UP_THIRD_PARTY(FASTBIT lib include fastbit)
+    SET_UP_THIRD_PARTY(FASTBIT lib ${FB_INCLUDE} fastbit)
 ELSE (WIN32)
     IF("${VISIT_CMAKE_PLATFORM}" STREQUAL "Linux")
         # Linux requires librt to resolve "clock_gettime"
         # add this as a general dep:
         #SET(FASTBIT_LIBDEP /usr/lib rt "${FASTBIT_LIBDEP}")
     ENDIF("${VISIT_CMAKE_PLATFORM}" STREQUAL "Linux")
-    SET_UP_THIRD_PARTY(FASTBIT lib include fastbit)
+    SET_UP_THIRD_PARTY(FASTBIT lib ${FB_INCLUDE} fastbit)
 ENDIF (WIN32)
 
