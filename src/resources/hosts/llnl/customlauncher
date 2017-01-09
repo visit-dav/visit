@@ -13,7 +13,7 @@
 class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
     def __init__(self, launcher):
         super(JobSubmitter_qsub_LLNL, self).__init__(launcher)
-        self.usettc = self.sectorname() in ("aztec", "borax", "rzalastor")
+        self.usettc = self.sectorname() in ("borax", "rzalastor")
 
     def IsRunningOnXchem(self):
         return self.sectorname() == "xchem"

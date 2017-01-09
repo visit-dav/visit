@@ -48,6 +48,9 @@
 #   Eric Brugger, Mon Nov 21 16:43:04 PST 2016
 #   Added jade.
 #
+#   Eric Brugger, Mon Jan  9 13:52:57 PST 2017
+#   I replaced inca with zin.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -58,7 +61,7 @@ user=`whoami`
 # Parse the execute line, providing default values for error checking.
 #
 hitit=true
-inca=true
+zin=true
 jade=true
 trinity=true
 
@@ -74,7 +77,7 @@ do
    case $1 in
       -none)
          hitit=false
-         inca=false
+         zin=false
          jade=false
          trinity=false
          shift
@@ -87,12 +90,12 @@ do
          hitit=true
          shift
          ;;
-      -inca)
-         inca=false
+      -zin)
+         zin=false
          shift
          ;;
-      +inca)
-         inca=true
+      +zin)
+         zin=true
          shift
          ;;
       -jade)
@@ -177,12 +180,12 @@ then
 fi
 
 #
-# Install on inca.
+# Install on zin.
 #
-rm -f inca
-cat <<EOF > inca
+rm -f zin
+cat <<EOF > zin
 #!/bin/sh
-./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux-x86_64-inca /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux-x86_64-zin /usr/gapps/visit > installlog 2>&1
 cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so.1
@@ -190,8 +193,8 @@ chmod 775 /usr/gapps/visit/$ver+/linux-x86_64/lib/*.304.54
 chgrp visit /usr/gapps/visit/$ver+/linux-x86_64/lib/*.304.54
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
-echo "        install of visit on inca"            >> resultlog 2>&1
-echo "       --------------------------"           >> resultlog 2>&1
+echo "        install of visit on zin"             >> resultlog 2>&1
+echo "       -------------------------"            >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -203,18 +206,18 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mv resultlog resultlog.inca
+mv resultlog resultlog.zin
 EOF
 
-if [ $inca = true ]
+if [ $zin = true ]
 then
    if [ $test = no ]
    then
-      scp inca3:/usr/tmp/$user/inca/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-inca.tar.gz
-      scp visit$ver2.linux-x86_64-inca.tar.gz inca3:
-      scp visit-install inca3:
-      scp inca inca3:inca_install
-      ssh inca3 "chmod 750 inca_install;./inca_install"
+      scp zin497:/usr/tmp/$user/zin/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-zin.tar.gz
+      scp visit$ver2.linux-x86_64-zin.tar.gz zin497:
+      scp visit-install zin497:
+      scp zin zin497:zin_install
+      ssh zin497 "chmod 750 zin_install;./zin_install"
    fi
 fi
 
@@ -310,5 +313,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hitit inca jade trinity
+   rm -f hitit zin jade trinity
 fi

@@ -143,6 +143,9 @@
 #   Eric Brugger, Tue Nov 22 16:07:04 PST 2016
 #   I added quartz.
 #
+#   Eric Brugger, Mon Jan  9 13:46:38 PST 2017
+#   I replaced aztec with surface.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -186,7 +189,7 @@ esac
 kickit=true
 ubuntu1104_64=false
 ubuntu1404_64=false
-aztec=true
+surface=true
 quartz=true
 rzzeus=true
 rzuseq=false
@@ -208,7 +211,7 @@ do
          kickit=false
          ubuntu1104_64=false
          ubuntu1404_64=false
-         aztec=false
+         surface=false
          quartz=false
          rzzeus=false
          rzuseq=false
@@ -241,12 +244,12 @@ do
          ubuntu1404_64=true
          shift
          ;;
-      -aztec)
-         aztec=false
+      -surface)
+         surface=false
          shift
          ;;
-      +aztec)
-         aztec=true
+      +surface)
+         surface=true
          shift
          ;;
       -quartz)
@@ -314,7 +317,7 @@ then
    echo "    kickit (B-Div, Linux, x86_64),"
    echo "    ubuntu1104_64(B-Div, Linux, x86_64),"
    echo "    ubuntu1404_64(B-Div, Linux, x86_64),"
-   echo "    aztec (LC, Linux, x86_64),"
+   echo "    surface (LC, Linux, x86_64),"
    echo "    quartz (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
    echo "    rzuesq (LC, Linux, ppc64-BG/Q),"
@@ -532,21 +535,21 @@ then
 fi
 
 #
-# Build on aztec.
+# Build on surface.
 #
-rm -f aztec
-cat <<EOF > aztec
+rm -f surface
+cat <<EOF > surface
 #!/bin/sh
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
-if test ! -d /usr/tmp/$user/aztec ; then
-   mkdir /usr/tmp/$user/aztec
+if test ! -d /usr/tmp/$user/surface ; then
+   mkdir /usr/tmp/$user/surface
 fi
-rm -rf /usr/tmp/$user/aztec/visitbuild
-mkdir /usr/tmp/$user/aztec/visitbuild
-mv aztec_$dist.tar.gz /usr/tmp/$user/aztec/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/aztec/visitbuild
+rm -rf /usr/tmp/$user/surface/visitbuild
+mkdir /usr/tmp/$user/surface/visitbuild
+mv surface_$dist.tar.gz /usr/tmp/$user/surface/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/surface/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
@@ -557,8 +560,8 @@ make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "        build of visit on aztec"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
+echo "        build of visit on surface"      > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -568,17 +571,17 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): aztec" $emailName < resultlog
+mail  -s "VisIt build ($dist): surface" $emailName < resultlog
 EOF
 
-if [ $aztec = true ]
+if [ $surface = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on aztec"
-      scp aztec aztec:aztec_buildit
-      scp $dist.tar.gz aztec:aztec_$dist.tar.gz
-      ssh aztec3 "chmod 750 aztec_buildit;./aztec_buildit" &
+      echo "Building on surface"
+      scp surface surface:surface_buildit
+      scp $dist.tar.gz surface:surface_$dist.tar.gz
+      ssh surface86 "chmod 750 surface_buildit;./surface_buildit" &
    fi
 fi
 
@@ -935,5 +938,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1104_64 ubuntu1404_64 aztec quartz rzzeus rzuseq carver glory vulcan
+   rm -f kickit ubuntu1104_64 ubuntu1404_64 surface quartz rzzeus rzuseq carver glory vulcan
 fi
