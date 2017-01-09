@@ -62,8 +62,9 @@ function bv_h5part_host_profile
         echo "##" >> $HOSTCONF
         echo "## H5Part" >> $HOSTCONF
         echo "##" >> $HOSTCONF
+        echo "SETUP_APP_VERSION(H5PART $H5PART_VERSION)" >> $HOSTCONF
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR \${VISITHOME}/h5part/$H5PART_VERSION/\${VISITARCH})" \
+            "VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR \${VISITHOME}/h5part/\${H5PART_VERSION}/\${VISITARCH})" \
             >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
@@ -90,6 +91,40 @@ function bv_h5part_dry_run
     if [[ "$DO_H5PART" == "yes" ]] ; then
         echo "Dry run option not set for h5part."
     fi
+}
+
+function apply_h5part_1_6_6_patch
+{
+    info "Patching H5Part"
+    patch -p0 << \EOF
+ diff -rcN H5Part-1.6.6/src/H5Part-orig.c  H5Part-1.6.6/src/H5Part.c
+*** H5Part-1.6.6/src/H5Part-orig.c	2016-12-14 14:04:41.000000000 -0700
+--- H5Part-1.6.6/src/H5Part.c	2016-12-14 14:00:57.000000000 -0700
+***************
+*** 166,171 ****
+--- 166,173 ----
+  	f->xfer_prop = f->dcreate_prop = f->fcreate_prop = H5P_DEFAULT;
+  
+  	f->access_prop = H5Pcreate (H5P_FILE_ACCESS);
++         H5Pset_fclose_degree(f->access_prop, H5F_CLOSE_SEMI);
++ 	
+  	if (f->access_prop < 0) {
+  		HANDLE_H5P_CREATE_ERR;
+  		goto error_cleanup;
+
+EOF
+}
+
+function apply_h5part_patch
+{
+    if [[ ${H5PART_VERSION} == 1.6.6 ]] ; then
+        apply_h5part_1_6_6_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
+    return 0
 }
 
 # ***************************************************************************
@@ -123,6 +158,24 @@ function build_h5part
     fi
 
     #
+    # Apply patches
+    #
+    apply_h5part_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_h5part == 1 ]] ; then
+            warn "Giving up on H5part build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    #
+    # Apply configure
+    #
     info "Configuring H5Part . . ."
     cd $H5PART_BUILD_DIR || error "Can't cd to h5part build dir."
     if [[ "$DO_HDF5" == "yes" ]] ; then
@@ -134,6 +187,7 @@ function build_h5part
         WITHHDF5ARG="--with-hdf5"
         HDF5DYLIB=""
     fi
+
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib":\
                "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":\
