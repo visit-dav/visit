@@ -625,9 +625,17 @@ H5_FQ_Variable::selectLongs(const ibis::bitvector& mask) const {
     return array;
 } // H5_FQ_Variable::selectLongs
 
+#if FASTBIT_IBIS_INT_VERSION < 2000000
 ibis::array_t<char>*
+#else
+ibis::array_t<signed char>*
+#endif
 H5_FQ_Variable::selectBytes(const ibis::bitvector& mask) const {
+#if FASTBIT_IBIS_INT_VERSION < 2000000
     ibis::array_t<char>* array = new ibis::array_t<char>;
+#else    
+    ibis::array_t<signed char>* array = new ibis::array_t<signed char>;
+#endif
     ibis::array_t<char> prop;
     uint32_t i = 0;
     uint32_t tot = mask.cnt();
@@ -952,7 +960,11 @@ int H5_FQ_Variable::searchSorted(const ibis::qContinuousRange& rng,
         << "... entering H5_FQ_Variable::searchSorted to resolve " << rng;
     switch (m_type) {
     case ibis::BYTE: {
+#if FASTBIT_IBIS_INT_VERSION < 2000000
         ibis::array_t<char> vals;
+#else
+        ibis::array_t<signed char> vals;
+#endif
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICC(vals, rng, hits);
@@ -1041,7 +1053,11 @@ int H5_FQ_Variable::searchSorted(const ibis::qDiscreteRange& rng,
         << "... entering H5_FQ_Variable::searchSorted to resolve " << rng;
     switch (m_type) {
     case ibis::BYTE: {
+#if FASTBIT_IBIS_INT_VERSION < 2000000
         ibis::array_t<char> vals;
+#else
+        ibis::array_t<signed char> vals;
+#endif
         ierr = getValuesArray(&vals);
         if (ierr >= 0) {
             ierr = ibis::column::searchSortedICD(vals, rng, hits);
@@ -1238,7 +1254,11 @@ int H5_FQ_Timestep::createIndex(const std::vector<const char *>& names,
     return cnt;
 } // H5_FQ_Timestep::createIndex
 
+#if FASTBIT_IBIS_INT_VERSION < 2000000
 int H5_FQ_Timestep::buildIndexes(const char* binning, int) {
+#else  
+int H5_FQ_Timestep::buildIndexes(const char* binning, int nthr) {
+#endif
     bool binned = false;
     if (binning != 0 && *binning != 0) {
         binned = (strncmp(binning, "<binning null", 13) != 0 &&
@@ -1761,6 +1781,7 @@ long H5_FQ_Timestep::evaluateRangex(const ibis::qContinuousRange& cmp,
         //case ibis::column::KEY:
     case ibis::UINT: {
         ibis::array_t<uint32_t> arr;
+        ibis::array_t<uint32_t> res;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1778,13 +1799,18 @@ long H5_FQ_Timestep::evaluateRangex(const ibis::qContinuousRange& cmp,
                 ->getPointValues(arr, coords);
         }
         if (ierr >= 0)
+#if FASTBIT_IBIS_INT_VERSION < 2000000
             doCompare(arr, mask, hits, cmp);
+#else   
+            doCompare(arr, cmp, mask, res, hits);
+#endif
         else
             hits.set(0, mask.size());
         break;
     }
     case ibis::INT: {
         ibis::array_t<int32_t> arr;
+        ibis::array_t<int32_t> res;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1802,13 +1828,18 @@ long H5_FQ_Timestep::evaluateRangex(const ibis::qContinuousRange& cmp,
                 ->getPointValues(arr, coords);
         }
         if (ierr >= 0)
+#if FASTBIT_IBIS_INT_VERSION < 2000000
             doCompare(arr, mask, hits, cmp);
+#else   
+            doCompare(arr, cmp, mask, res, hits);
+#endif
         else
             hits.set(0, mask.size());
         break;
     }
     case ibis::LONG: {
         ibis::array_t<int64_t> arr;
+        ibis::array_t<int64_t> res;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1826,13 +1857,18 @@ long H5_FQ_Timestep::evaluateRangex(const ibis::qContinuousRange& cmp,
                 ->getPointValues(arr, coords);
         }
         if (ierr >= 0)
+#if FASTBIT_IBIS_INT_VERSION < 2000000
             doCompare(arr, mask, hits, cmp);
+#else   
+            doCompare(arr, cmp, mask, res, hits);
+#endif
         else
             hits.set(0, mask.size());
         break;
     }
     case ibis::FLOAT: {
         ibis::array_t<float> arr;
+        ibis::array_t<float> res;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1850,13 +1886,18 @@ long H5_FQ_Timestep::evaluateRangex(const ibis::qContinuousRange& cmp,
                 ->getPointValues(arr, coords);
         }
         if (ierr >= 0)
+#if FASTBIT_IBIS_INT_VERSION < 2000000
             doCompare(arr, mask, hits, cmp);
+#else   
+            doCompare(arr, cmp, mask, res, hits);
+#endif
         else
             hits.set(0, mask.size());
         break;
     }
     case ibis::DOUBLE: {
         ibis::array_t<double> arr;
+        ibis::array_t<double> res;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1874,7 +1915,11 @@ long H5_FQ_Timestep::evaluateRangex(const ibis::qContinuousRange& cmp,
                 ->getPointValues(arr, coords);
         }
         if (ierr >= 0)
+#if FASTBIT_IBIS_INT_VERSION < 2000000
             doCompare(arr, mask, hits, cmp);
+#else   
+            doCompare(arr, cmp, mask, res, hits);
+#endif
         else
             hits.set(0, mask.size());
         break;
@@ -1909,6 +1954,7 @@ long H5_FQ_Timestep::doScan(const ibis::qRange& cmp,
         //case ibis::column::KEY:
     case ibis::UINT: {
         ibis::array_t<uint32_t> arr;
+        ibis::array_t<uint32_t> res;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1926,13 +1972,18 @@ long H5_FQ_Timestep::doScan(const ibis::qRange& cmp,
                 ->getPointValues(arr, coords);
         }
         if (ierr >= 0)
+#if FASTBIT_IBIS_INT_VERSION < 2000000
             doCompare(arr, mask, hits, cmp);
+#else   
+            doCompare(arr, cmp, mask, res, hits);
+#endif
         else
             hits.set(0, mask.size());
         break;
     }
     case ibis::INT: {
         ibis::array_t<int32_t> arr;
+        ibis::array_t<int32_t> res;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1950,13 +2001,18 @@ long H5_FQ_Timestep::doScan(const ibis::qRange& cmp,
                 ->getPointValues(arr, coords);
         }
         if (ierr >= 0)
+#if FASTBIT_IBIS_INT_VERSION < 2000000
             doCompare(arr, mask, hits, cmp);
+#else   
+            doCompare(arr, cmp, mask, res, hits);
+#endif
         else
             hits.set(0, mask.size());
         break;
     }
     case ibis::LONG: {
         ibis::array_t<int64_t> arr;
+        ibis::array_t<int64_t> res;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1974,13 +2030,18 @@ long H5_FQ_Timestep::doScan(const ibis::qRange& cmp,
                 ->getPointValues(arr, coords);
         }
         if (ierr >= 0)
+#if FASTBIT_IBIS_INT_VERSION < 2000000
             doCompare(arr, mask, hits, cmp);
+#else   
+            doCompare(arr, cmp, mask, res, hits);
+#endif
         else
             hits.set(0, mask.size());
         break;
     }
     case ibis::FLOAT: {
         ibis::array_t<float> arr;
+        ibis::array_t<float> res;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -1998,13 +2059,18 @@ long H5_FQ_Timestep::doScan(const ibis::qRange& cmp,
                 ->getPointValues(arr, coords);
         }
         if (ierr >= 0)
+#if FASTBIT_IBIS_INT_VERSION < 2000000
             doCompare(arr, mask, hits, cmp);
+#else   
+            doCompare(arr, cmp, mask, res, hits);
+#endif
         else
             hits.set(0, mask.size());
         break;
     }
     case ibis::DOUBLE: {
         ibis::array_t<double> arr;
+        ibis::array_t<double> res;
         if (mask.cnt() * mulfactor >= mask.size()) {
             // get all values
             ierr = reinterpret_cast<const H5_FQ_Variable*>((*it).second)
@@ -2022,7 +2088,11 @@ long H5_FQ_Timestep::doScan(const ibis::qRange& cmp,
                 ->getPointValues(arr, coords);
         }
         if (ierr >= 0)
+#if FASTBIT_IBIS_INT_VERSION < 2000000
             doCompare(arr, mask, hits, cmp);
+#else   
+            doCompare(arr, cmp, mask, res, hits);
+#endif
         else
             hits.set(0, mask.size());
         break;

@@ -6,13 +6,12 @@
 #ifdef HAVE_LIBFASTBIT
 
 #include "indexfile.h"
-#include <vector>
-#include <map>
-#include <string>
-#include <assert.h>
 #include "timestep.h"   // H5_FQ_Timestep
 #include "ibis.h"       // H5_FQ_Timestep
 
+#include <vector>
+#include <map>
+#include <string>
 
 /*! \mainpage HDF5-FastQuery
 
@@ -263,26 +262,9 @@ public:
 
     */
     long get1DHistogram(int64_t timestep,
-                        const char* variableName,
-                        std::vector<double> &bounds,
-                        std::vector<uint32_t> &counts);
-
-    long get1DHistogram(int64_t timestep,
                         const char* condition,
                         const char* variableName,
-                        std::vector<double> &bounds,
-                        std::vector<uint32_t> &counts);
-
-    long get1DHistogram(int64_t timestep,
-                        const char* variableName,
-                        uint32_t num_bins,
-                        std::vector<double> &bounds,
-                        std::vector<uint32_t> &counts);
-
-    long get1DHistogram(int64_t timestep,
-                        const char* condition,
-                        const char* variableName,
-                        uint32_t num_bins,
+                        double begin, double end, uint32_t num_bins,
                         std::vector<double> &bounds,
                         std::vector<uint32_t> &counts);
 
@@ -291,8 +273,20 @@ public:
                         const char* variableName,
                         double begin, double end, double stride,
                         std::vector<uint32_t> &counts);
-
-
+  
+    long get1DAdaptiveHistogram(int64_t timestep,
+                                const char *variableName,
+                                uint32_t num_bins,
+                                std::vector<double> &bounds,
+                                std::vector<uint32_t> &counts);
+  
+    long get1DAdaptiveHistogram(int64_t timestep,
+                                const char *condition,
+                                const char *variableName,
+                                uint32_t num_bins,
+                                std::vector<double> &bounds,
+                                std::vector<uint32_t> &counts);
+  
     long get2DHistogram(int64_t timestep,
                         const char *condition,
                         const char *variableName1,

@@ -208,7 +208,7 @@ void H5_Index::openH5PartFile(const std::string& file_location) {
     // open in HDF5_UC file mode
     if (!file_open) {
         if (!file_id.open(file_location.c_str())) {
-            perror("File open failed:  exiting!");
+            perror("openH5PartFile: HDF5_UC file mode, file open failed:  exiting!");
         }
     }
     file_open = true;
@@ -217,7 +217,7 @@ void H5_Index::openH5PartFile(const std::string& file_location) {
     h5partFileOpen = true;
     h5partFile = H5PartOpenFile(file_location.c_str(), H5PART_READ);
     if (!h5partFile) {
-        perror("File open failed:  exiting!");
+        perror("openH5PartFile: H5Part file mode, file open failed:  exiting!");
         exit(0);
     }
     H5PartSetStep(h5partFile,0);
@@ -239,7 +239,7 @@ void H5_Index::openH5PartFile(const std::string& file_location) {
             = H5PartGetDatasetInfo(h5partFile, i, datasetName, lenName,
                                    &datasetType, &datasetNElems);
         if (ierr != H5PART_SUCCESS) {
-            perror("Could not retrieve dataset names!");
+            perror("openH5PartFile: Could not retrieve dataset names!");
         }
         else {
             // std::cout << "datasetName: " << datasetName << "." << std::endl;
@@ -451,7 +451,7 @@ int64_t H5_Index::getH5PartVariableInfo(const std::string& variableName,
         *type = H5_Byte;
     }
     else {
-        perror("getH5PartDatasetSize: Data type not defined in H5Part.");
+        perror("getH5PartVariableInfo: Data type not defined in H5Part.");
         answer = -2;
         return answer;
     }
@@ -468,7 +468,7 @@ int64_t H5_Index::getH5PartVariableInfo(const std::string& variableName,
             H5PartGetDatasetInfo(h5partFile, datasetIdx, datasetName,
                                  lenName, &datasetType, &datasetNElems);
         if (ierr != H5PART_SUCCESS) {
-            perror("Could not retrieve H5PartDatasetInfo!");
+            perror("getH5PartVariableInfo: Could not retrieve H5PartDatasetInfo!");
             answer = -1;
         }
         else {

@@ -1,7 +1,11 @@
 #include "hdf5_fastquery.h"
-#include "base_api.h"
 
 #ifdef HAVE_LIBFASTBIT
+#include <fastbit-config.h>
+
+#include "base_api.h"
+
+#include <assert.h>
 
 /// Constructor.
 ///@arg v Verbose level.  Default to 0.
@@ -25,14 +29,18 @@ HDF5_FQ::HDF5_FQ(const int v, const char* rcfile, const char* logfile)
 }
 
 HDF5_FQ::~HDF5_FQ() {
+#if FASTBIT_IBIS_INT_VERSION < 2000000
     ibis::util::clean(timeSlices);
+#endif
     delete dataFile;
     ibis::fileManager::instance().clear();
     ibis::util::closeLogFile();
 }
 
 void HDF5_FQ::deleteSlices() {
+#if FASTBIT_IBIS_INT_VERSION < 2000000
     ibis::util::clean(timeSlices);
+#endif
 }
 
 void HDF5_FQ::createSlices() {
@@ -81,7 +89,9 @@ void HDF5_FQ::openFile(const std::string &name, const bool useH5PartFile) {
     }
 
     // perform the clean up
+#if FASTBIT_IBIS_INT_VERSION < 2000000
     ibis::util::clean(timeSlices);
+#endif
 // would prefer to simply close the existing file rather than create a new
 // dataFile object, however, it does not seem to work as of May 5, 2009
 //     if (dataFile != 0)
@@ -195,12 +205,20 @@ void HDF5_FQ::getVariableInformation(const std::string &variableName,
 }
 
 void HDF5_FQ::buildSpecificTimeIndex(int64_t time) {
-    timeSlices[time]->buildIndexes();
-}
+#if FASTBIT_IBIS_INT_VERSION < 2000000
+  timeSlices[time]->buildIndexes();
+#else
+  timeSlices[time]->buildIndexes(0,1);
+#endif
+  }
 
 void HDF5_FQ::buildAllIndexes() {
     for(int64_t i=0; i<(int64_t)numTimeSlices(); i++){
-        timeSlices[i]->buildIndexes();
+#if FASTBIT_IBIS_INT_VERSION < 2000000
+      timeSlices[i]->buildIndexes();
+#else
+      timeSlices[i]->buildIndexes(0,1);
+#endif
     }
 }
 
@@ -362,86 +380,81 @@ bool HDF5_FQ::getDataMinMax_Double(const std::string& variableName,
     return ret;
 }
 
-long HDF5_FQ::get1DHistogram(int64_t timestep,
-                             const char* variableName,
-                             std::vector<double> &bounds,
-                             std::vector<uint32_t> &counts) {
-    long err;
-    err = timeSlices[timestep]->getDistribution
-        (variableName, bounds, counts);
-    return err;
-}
 
 long HDF5_FQ::get1DHistogram(int64_t timestep,
                              const char* condition,
                              const char* variableName,
+                             double begin, double end, uint32_t num_bins,
                              std::vector<double> &bounds,
                              std::vector<uint32_t> &counts) {
-    long err;
-    err = timeSlices[timestep]->getDistribution
-        (condition, variableName, bounds, counts);
+
+    double stride = (end - begin)/double(num_bins);
+    // make sure that begin + stride*num_bins > end
+    stride = ibis::util::incrDouble(stride);
+
+    // Fill in the bounds array.
+    bounds.resize(num_bins+1);
+    for (unsigned int i=0; i<=num_bins; ++i)
+      bounds[i] = begin + double(i) * stride;
+    
+    LOGGER(ibis::gVerbose > 0)
+        << "HDF_FQ:: get1DHistogram created "
+        << " bounds [size= " << bounds.size() << "] ";
+
+    long err = timeSlices[timestep]->get1DDistribution(condition,
+                                                       variableName,
+                                                       begin, end, stride,
+                                                       counts);  
+    LOGGER(ibis::gVerbose > 0)
+        << "HDF_FQ:: returned from get1DDistribution call with err=" << err;
     return err;
 }
-
-long HDF5_FQ::get1DHistogram(int64_t timestep,
-                             const char* variableName,
-                             uint32_t num_bins,
-                             std::vector<double> &bounds,
-                             std::vector<uint32_t> &counts) {
-    long err;
-    //  double* bound;
-    //  double* count;
-    counts.resize(num_bins);
-    bounds.resize(num_bins-1);
-
-    err = timeSlices[timestep]->getDistribution
-        (variableName, num_bins, &bounds[0], &counts[0]);
-    return err;
-}
-
-long HDF5_FQ::get1DHistogram(int64_t timestep,
-                             const char* condition,
-                             const char* variableName,
-                             uint32_t num_bins,
-                             std::vector<double> &bounds,
-                             std::vector<uint32_t> &counts) {
-    long err;
-    counts.resize(num_bins);
-    bounds.resize(num_bins-1);
-
-    err = timeSlices[timestep]->getDistribution
-        (condition, variableName, num_bins, &bounds[0], &counts[0]);
-    return err;
-}
-
 
 long HDF5_FQ::get1DHistogram(int64_t timestep,
                              const char* condition,
                              const char* variableName,
                              double begin, double end, double stride,
                              std::vector<uint32_t> &counts) {
-    long err = -1;
-    std::vector<size_t> count;
 
-    assert(0);
-
-    /*
-      err = timeSlices[timestep]->get1DDistribution(condition,
-      variableName,
-      begin, end, stride,
-      count);
-    */
-    //TODO:: transfer result from count to counts;
-    // Check this with John Wu
+    long err = timeSlices[timestep]->get1DDistribution(condition,
+                                                       variableName,
+                                                       begin, end, stride,
+                                                       counts);
+  
     LOGGER(ibis::gVerbose > 0)
-        <<"get1DDistribution w/ strides returned " << err
-        << "count size is " << count.size();
+        << "HDF_FQ:: returned from get1DDistribution call with err=" << err;
+    return err;
+}
 
-    for (unsigned int i=0; i<count.size(); i++)
-        counts.push_back((uint32_t)count[i]);
+long HDF5_FQ::get1DAdaptiveHistogram(int64_t timestep,
+                                     const char *variableName,
+                                     uint32_t num_bins,
+                                     std::vector<double> &bounds,
+                                     std::vector<uint32_t> &counts) {
+  
+    long err = timeSlices[timestep]->get1DDistribution(variableName,
+                                                       num_bins,
+                                                       bounds,
+                                                       counts);
+    LOGGER(ibis::gVerbose > 0)
+        << "HDF_FQ:: returned from get1DDistribution call with err=" << err;
+    return err;
+}
 
-    err = counts.size();
-    count.clear();
+long HDF5_FQ::get1DAdaptiveHistogram(int64_t timestep,
+                                     const char *condition,
+                                     const char *variableName,
+                                     uint32_t num_bins,
+                                     std::vector<double> &bounds,
+                                     std::vector<uint32_t> &counts) {
+  
+    long err = timeSlices[timestep]->get1DDistribution(variableName,
+                                                       condition,
+                                                       num_bins,
+                                                       bounds,
+                                                       counts);
+    LOGGER(ibis::gVerbose > 0)
+        << "HDF_FQ:: returned from get1DDistribution call with err=" << err;
     return err;
 }
 
@@ -454,7 +467,6 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
                              std::vector<double> &bounds1,
                              std::vector<double> &bounds2,
                              std::vector<uint32_t> &counts) {
-    long err;
 
     double stride1;
     stride1 = (end1 - begin1)/num_bins1;
@@ -465,36 +477,21 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
     stride2 = (end2 - begin2)/num_bins2;
     stride2 = ibis::util::incrDouble(stride2);
 
-    err = timeSlices[timestep]->get2DDistribution(condition,
-                                                  variableName1,
-                                                  begin1, end1, stride1,
-                                                  variableName2,
-                                                  begin2, end2, stride2,
-                                                  counts);
+    long err = timeSlices[timestep]->get2DDistribution(condition,
+                                                       variableName1,
+                                                       begin1, end1, stride1,
+                                                       variableName2,
+                                                       begin2, end2, stride2,
+                                                       counts);
 
-    // Fill in the bounds array..
-    /*
-      bounds1.clear();
-      double counter = begin1;
-      while (counter<=end1) {
-      bounds1.push_back(counter);
-      counter = counter + stride1;
-      }
-
-      bounds2.clear();
-      counter = begin2;
-      while(counter<=end2) {
-      bounds2.push_back(counter);
-      counter = counter + stride2;
-      }
-    */
-    bounds1.clear();
+    // Fill in the bounds array.
+    bounds1.resize(num_bins1);
     for (unsigned int i=0; i<=num_bins1; i++)
-        bounds1.push_back(begin1 + i*stride1);
+      bounds1[i] = begin1 + double(i) * stride1;
 
-    bounds2.clear();
+    bounds2.resize(num_bins2);
     for (unsigned int i=0; i<=num_bins2; i++)
-        bounds2.push_back(begin2 + i*stride2);
+      bounds2[i] = begin2 + double(i) * stride2;
 
     LOGGER(ibis::gVerbose > 0)
         << "HDF_FQ:: get2DHistogram created "
@@ -506,29 +503,10 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
 long HDF5_FQ::get2DHistogram(int64_t timestep,
                              const char *condition,
                              const char *variableName1,
-                             const char *variableName2,
-                             std::vector<double> &bounds1,
-                             std::vector<double> &bounds2,
-                             std::vector<uint32_t> &counts) {
-    long err;
-    err = timeSlices[timestep]->getJointDistribution(condition,
-                                                     variableName1,
-                                                     variableName2,
-                                                     bounds1,
-                                                     bounds2,
-                                                     counts);
-    return err;
-}
-
-long HDF5_FQ::get2DHistogram(int64_t timestep,
-                             const char *condition,
-                             const char *variableName1,
                              double begin1, double end1, double stride1,
                              const char *variableName2,
                              double begin2, double end2, double stride2,
                              std::vector<uint32_t> &counts) {
-    long err;
-    std::vector<size_t> count;
 
     LOGGER(ibis::gVerbose > 0)
         << "HDF_FQ:: starting get2DDistribution call with following info"
@@ -536,15 +514,38 @@ long HDF5_FQ::get2DHistogram(int64_t timestep,
         << "] " << variableName2 << "[" << begin2 << "," << end2 << ","
         << stride2 << "] ";
 
-    err = timeSlices[timestep]->get2DDistribution(condition,
-                                                  variableName1,
-                                                  begin1, end1, stride1,
-                                                  variableName2,
-                                                  begin2, end2, stride2,
-                                                  counts);
-
+    long err = timeSlices[timestep]->get2DDistribution(condition,
+                                                       variableName1,
+                                                       begin1, end1, stride1,
+                                                       variableName2,
+                                                       begin2, end2, stride2,
+                                                       counts);
+    
     LOGGER(ibis::gVerbose > 0)
         << "HDF_FQ:: returned from 2DDistribution call with err=" << err;
+    return err;
+}
+
+long HDF5_FQ::get2DHistogram(int64_t timestep,
+                             const char *condition,
+                             const char *variableName1,
+                             const char *variableName2,
+                             std::vector<double> &bounds1,
+                             std::vector<double> &bounds2,
+                             std::vector<uint32_t> &counts) {
+  
+    LOGGER(ibis::gVerbose > 0)
+        << "HDF_FQ:: starting getJointDistribution call with following info"
+        << variableName1 << "  " << variableName2;
+
+    long err = timeSlices[timestep]->getJointDistribution(condition,
+                                                          variableName1,
+                                                          variableName2,
+                                                          bounds1,
+                                                          bounds2,
+                                                          counts);
+    LOGGER(ibis::gVerbose > 0)
+        << "HDF_FQ:: returned from getJointDistribution call with err=" << err;
     return err;
 }
 
@@ -556,7 +557,7 @@ long HDF5_FQ::get2DAdaptiveHistogram(int64_t timestep,
                                      std::vector<double> &bounds1,
                                      std::vector<double> &bounds2,
                                      std::vector<uint32_t> &counts) {
-    long err;
+
     const char* option = "d";
     LOGGER(ibis::gVerbose > 0)
         << "HDF_FQ:: starting get2DAdaptive call with following info" <<
@@ -564,10 +565,11 @@ long HDF5_FQ::get2DAdaptiveHistogram(int64_t timestep,
         variableName2 << ", #bins2 = " << num_bins2 << "." <<
         " Data/index option = " << option;
 
-    err = timeSlices[timestep]->get2DDistribution(variableName1, variableName2,
-                                                  num_bins1, num_bins2,
-                                                  bounds1, bounds2,
-                                                  counts, option);
+    long err = timeSlices[timestep]->get2DDistribution(variableName1,
+                                                       variableName2,
+                                                       num_bins1, num_bins2,
+                                                       bounds1, bounds2,
+                                                       counts, option);
 
     LOGGER(ibis::gVerbose > 0)
         << "HDF_FQ:: returned from First New 2DAdaptiveDistribution call "
@@ -586,14 +588,19 @@ long HDF5_FQ::get2DAdaptiveHistogram(int64_t timestep,
                                      std::vector<double> &bounds1,
                                      std::vector<double> &bounds2,
                                      std::vector<uint32_t> &counts) {
-    long err;
 
-    err = timeSlices[timestep]->get2DDistribution(condition,
-                                                  variableName1, variableName2,
-                                                  num_bins1, num_bins2,
-                                                  bounds1,
-                                                  bounds2,
-                                                  counts);
+    LOGGER(ibis::gVerbose > 0)
+        << "HDF_FQ:: starting get2DAdaptive call with following info" <<
+        variableName1 << ", #bins1 = " << num_bins1 << ", " <<
+        variableName2 << ", #bins2 = " << num_bins2 << ".";
+
+    long err = timeSlices[timestep]->get2DDistribution(condition,
+                                                       variableName1,
+                                                       variableName2,
+                                                       num_bins1, num_bins2,
+                                                       bounds1,
+                                                       bounds2,
+                                                       counts);
     LOGGER(ibis::gVerbose > 0)
         << "HDF_FQ:: returned from Second New 2DAdaptiveDistribution call "
         "with err=" << err;
@@ -613,7 +620,6 @@ long HDF5_FQ::get3DBins(int64_t timestep,
                         std::vector<double> &bounds3,
                         std::vector<uint32_t> &counts,
                         std::vector<ibis::bitvector*> &bitmaps) {
-    long err;
 
     double stride1;
     stride1 = (end1 - begin1)/num_bins1;
@@ -628,12 +634,13 @@ long HDF5_FQ::get3DBins(int64_t timestep,
     stride3 = (end3 - begin3)/num_bins3;
     stride3 = ibis::util::incrDouble(stride3);
 
-    err = timeSlices[timestep]->get3DBins(condition,
-                                          variableName1, begin1, end1, stride1,
-                                          variableName2, begin2, end2, stride2,
-                                          variableName3, begin3, end3, stride3,
-                                          bitmaps);
-
+    long err =
+      timeSlices[timestep]->get3DBins(condition,
+                                      variableName1, begin1, end1, stride1,
+                                      variableName2, begin2, end2, stride2,
+                                      variableName3, begin3, end3, stride3,
+                                      bitmaps);
+    
     //  std::cout << "HDF_FQ:: returned from get3DBins call with err = "
     //  << err << std::endl;
     //  std::cout << "Now setting the counts array " << std::endl;

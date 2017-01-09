@@ -57,15 +57,16 @@
 #include <map>
 #include <string>
 
+// FastBit
 #ifdef HAVE_LIBFASTBIT
-#include "hdf5_fastquery.h"
-#include "HistogramCache.h"
+  #include <fastbit-config.h>
 
-#include <fastbit-config.h>
-#if FASTBIT_IBIS_INT_VERSION < 1020000
-#error "The H5Part plugin requires FastBit 1.2.0 or newer."
-#endif
+  #if FASTBIT_IBIS_INT_VERSION < 1020000
+    #error "The H5Part plugin requires FastBit 1.2.0 or newer."
+  #endif
 
+  #include "hdf5_fastquery.h"
+  #include "HistogramCache.h"
 #endif
 
 class DBOptionsAttributes;
@@ -173,6 +174,7 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     vtkDataArray          *GetFieldVar(int, const char*);
     void                   GetSubBlock(h5part_int64_t gridDims[3], h5part_int64_t subBlockDims[6]);
     std::string            DoubleToString(double x);
+
 #ifdef HAVE_LIBFASTBIT
     void                   ConstructHistogram(avtHistogramSpecification *spec);
 
@@ -183,18 +185,21 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
                                   const std::string &, std::string& );
     void                   PerformQuery();
     
-    // Is there an active query? If value is stringQuery, "queryString" contains
-    // the current query that needs to be run to get the data selection (queryResults).
-    // If value is idListQuery, "queryIdList" contains a list of particle ids (likely
-    // from a named selection).
-    enum { noQuery = 0, stringQuery, idListQuery }
-                           querySpecified;
-    // Are the query results (queryResults) valid? This variable is set to false
-    // by RegisterDataSelection to indicate that there is a new queryString or
-    // queryIdList and that PerformQuery needs to be called to update queryResults
+    // Is there an active query? If value is stringQuery,
+    // "queryString" contains the current query that needs to be run
+    // to get the data selection (queryResults).  If value is
+    // idListQuery, "queryIdList" contains a list of particle ids
+    // (likely from a named selection).
+    enum { noQuery = 0, stringQuery, idListQuery } querySpecified;
+  
+    // Are the query results (queryResults) valid? This variable is
+    // set to false by RegisterDataSelection to indicate that there is
+    // a new queryString or queryIdList and that PerformQuery needs to
+    // be called to update queryResults
     bool                   queryResultsValid;
-    // Is there an active data selection, i.e., does queryResults contain a valid
-    // list of particles indices to load for an active query?
+    // Is there an active data selection, i.e., does queryResults
+    // contain a valid list of particles indices to load for an active
+    // query?
     bool                   dataSelectionActive;
     // The name of the variable which contains the particle id
     std::string            idVariableName;
@@ -204,8 +209,9 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     std::vector<double>    queryIdList;
     // Result from a current query
     std::vector<hsize_t>   queryResults;
-    // The HDF5_FastQuery reader. Used mainly to read index information from file.
-    HDF5_FQ                reader;
+    // The HDF5_FastQuery reader. Used mainly to read index
+    // information from file.
+    HDF5_FQ                fqReader;
     // Histogram cache for already computed histograms
     HistogramCache         histoCache;
 #endif
