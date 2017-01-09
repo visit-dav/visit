@@ -346,8 +346,9 @@ avtThresholdFilter::ProcessOneChunk(
             int selID = iterFind->second;
             if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selID))
             {
-                debug1 << "Bypassing Threshold operator because database plugin claims"
-                    "to have applied selection on " << curVariables[curVarNum] << endl;
+                debug1 << "Bypassing Threshold operator because the database "
+                       << "plugin claims to have applied selection on "
+                       << curVariables[curVarNum] << endl;
                 bypassThreshold = true;
             }
         }
