@@ -1,3 +1,5 @@
+.. _Session files:
+
 Session files
 -------------
 

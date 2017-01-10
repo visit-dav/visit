@@ -1,5 +1,7 @@
-Animation
----------
+.. _Animation basics:
+
+Animation basics
+----------------
 
 Animation is used mainly for looking at how scientific databases evolve over
 time. Databases usually consist of many discrete time steps that contain the

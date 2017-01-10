@@ -1,3 +1,5 @@
+.. _Sphere Tool:
+
 Sphere Tool
 -----------
 

@@ -1,3 +1,5 @@
+.. _Understanding how VisIt works:
+
 Understanding how VisIt works
 -----------------------------
 

@@ -20,11 +20,10 @@ behavior of the view, plot attributes, and database time states over time.
 This chapter emphasizes the flipbook and keyframe approaches and explains how
 to create animations both ways.
 
-
 .. toctree::
     :maxdepth: 2
 
-    Animation
+    Animation_basics
     Keyframing
     Session_files
     Scripting

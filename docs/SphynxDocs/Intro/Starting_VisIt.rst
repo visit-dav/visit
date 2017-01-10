@@ -1,3 +1,5 @@
+.. _Starting VisIt:
+
 Starting VisIt
 --------------
 

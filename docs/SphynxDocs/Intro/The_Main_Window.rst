@@ -1,4 +1,6 @@
-The Main window
+.. _The Main Window:
+
+The Main Window
 ---------------
 
 VisIt's **Main Window**, shown in :numref:`Figure %s <VisIts_Main_window>`,

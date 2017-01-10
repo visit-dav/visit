@@ -1,3 +1,5 @@
+.. _About VisIt:
+
 About VisIt
 -----------
 

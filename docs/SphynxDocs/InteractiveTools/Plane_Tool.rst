@@ -1,3 +1,5 @@
+.. _Plane Tool:
+
 Plane Tool
 ----------
 

@@ -1,3 +1,5 @@
+.. _Downloading VisIt:
+
 Downloading VisIt
 -----------------
 
