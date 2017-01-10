@@ -1,3 +1,5 @@
+.. _How VisIt uses preferences:
+
 How VisIt uses preferences
 --------------------------
 

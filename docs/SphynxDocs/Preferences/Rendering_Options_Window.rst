@@ -1,3 +1,5 @@
+.. _Rendering Options Window:
+
 Rendering Options Window
 ------------------------
 
