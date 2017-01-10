@@ -3,15 +3,12 @@
 Visualization Windows
 =====================
 
-In this chapter, we will discuss how to work with databases in VisIt. A
-database can be either a set of files on disk or a running simulation. You can
-manage both types of databases using the same VisIt windows. First we'll learn
-about :ref:`Supported File Types`, then the :ref:`File Open Window` which
-allows you to browse the local system or a remote host to find your files.
-Next, we'll learn how to open databases for visualization using the
-:ref:`Sources Pane`.  After that we'll learn how to control animation in the
-:ref:`Time Pane` before learning how to examine information about a database
-using the :ref:`File Information Window`.
+A visualization window, also known as a vis window, is a window that
+displays plots and allows you to interact with them using the mouse. The
+vis window not only allows for direct manipulation of plots but it also
+provides a popup menu and toolbar that allow you to switch window modes,
+activate interactive tools, and perform commonly used operations. This
+chapter explains how to manage and use vis windows.
 
 .. toctree::
     :maxdepth: 2
