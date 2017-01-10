@@ -1,4 +1,6 @@
-Multiple Window Operations
+.. _Multiple window operations:
+
+Multiple window operations
 --------------------------
 
 This section focuses on some of the common techniques for exploring multiple

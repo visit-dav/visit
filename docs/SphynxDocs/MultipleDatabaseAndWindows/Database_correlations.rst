@@ -1,3 +1,5 @@
+.. _Database correlations:
+
 Database correlations
 ---------------------
 
