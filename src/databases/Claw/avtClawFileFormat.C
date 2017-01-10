@@ -126,11 +126,11 @@ InitTimeHeader(TimeHeader_t *hdr)
 //
 //    Kathleen Biagas, Fri Jan 6, 11:46:55 MST 2017
 //    Use FileFunctions::ReadAndProcessDirectory in conjunction with
-//    AppendMatchingFiles callback function for cross-platform portability.
+//    ClawAppendMatchingFiles callback function for cross-platform portability.
 //
 // ****************************************************************************
 
-struct file_match_struct
+struct claw_file_match_struct
 {
     const int *nExpectedMatches;
     const string *scanfStr;
@@ -140,13 +140,13 @@ struct file_match_struct
 
 
 void
-AppendMatchingFiles(void *cbData, const std::string &fullFileName, bool isDir,
-                    bool canAccess, long fileSize)
+ClawAppendMatchingFiles(void *cbData, const std::string &fullFileName,
+                        bool isDir, bool canAccess, long fileSize)
 {
     if (isDir)
         return;
 
-    file_match_struct *ptr = (file_match_struct *)cbData;
+    claw_file_match_struct *ptr = (claw_file_match_struct *)cbData;
     int nexpectedMatches(*ptr->nExpectedMatches);
     string scanfStr(*ptr->scanfStr);
     string regexStr(*ptr->regexStr);
@@ -210,12 +210,12 @@ GetFilenames(string scanfStr, string regexStr, string rootDir,
             EXCEPTION1(ImproperUseException, msg);
         }
     }
-    file_match_struct cbData;
+    claw_file_match_struct cbData;
     cbData.nExpectedMatches = &nexpectedMatches;
     cbData.scanfStr = &scanfStr;
     cbData.regexStr = &regexStr;
     cbData.fnames = &fnames;
-    FileFunctions::ReadAndProcessDirectory(rootDir, AppendMatchingFiles,
+    FileFunctions::ReadAndProcessDirectory(rootDir, ClawAppendMatchingFiles,
                                           (void*)&cbData, false);
 
     return (int)fnames.size();
