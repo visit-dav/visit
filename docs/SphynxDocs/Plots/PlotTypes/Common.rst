@@ -52,7 +52,7 @@ selecting a specific color table. In the picture of the
 be changed by selecting the currently named table. A pull-down list
 will appear from which you can select a different table.
 For more information about
-**Color tables**, see :ref:`MakingItPretty_Color_tables`.
+**Color tables**, see :ref:`Color_tables`.
 
 In addition, many plots have options to control colors and
 transparency (opacity) of individual plot elements such as lines on

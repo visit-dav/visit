@@ -1,3 +1,5 @@
+.. _View and data limits:
+
 View and data limits
 --------------------
 
