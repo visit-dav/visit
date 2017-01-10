@@ -1,3 +1,5 @@
+.. _Setting default values:
+
 Setting default values
 ----------------------
 

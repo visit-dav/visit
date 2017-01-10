@@ -1,4 +1,4 @@
-.. _Preferences_How_to_save_your_settings:
+.. _How_to_save_your_settings:
 
 How to save your settings
 -------------------------
