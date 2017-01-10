@@ -29,7 +29,6 @@ Contents:
    Preferences/index
    Help/index
    StartupOptions/index
-   Appendix_C/index
 
 .. Indices and tables
 .. ==================

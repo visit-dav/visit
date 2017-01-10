@@ -27,6 +27,6 @@ VisIt.
     Manual_chapters
     Manual_conventions
     Understanding_how_VisIt_works
-    Starting_VisIt
+    Installing_VisIt
     The_Main_Window
     Getting_started
