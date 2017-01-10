@@ -1,7 +1,7 @@
-.. _Operators:
+.. _Working with Operators:
 
-Operators
----------
+Working with Operators
+----------------------
 
 An operator is a filter applied to a database variable before the compute engine
 uses that variable to generate a plot. VisIt provides several standard operator 
