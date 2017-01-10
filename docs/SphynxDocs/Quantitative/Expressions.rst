@@ -428,7 +428,6 @@ Image Processing Expressions
 Miscellaneous Expressions
 """""""""""""""""""""""""
 
-
 .. _Recenter_Expression_Function:
 
 Recenter Expression Function : ``recenter(expr, ["nodal", "zonal", "toggle"])``

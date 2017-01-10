@@ -1,3 +1,5 @@
+.. _Lighting:
+
 Lighting
 --------
 

@@ -1,3 +1,5 @@
+.. _Rendering Options:
+
 Rendering Options
 -----------------
 
