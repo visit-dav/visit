@@ -9,5 +9,5 @@ each of VisIt's operators.
 .. toctree::
     :maxdepth: 2
 
-    Operators
+    Working_with_Operators
     OperatorTypes/index

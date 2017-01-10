@@ -1,7 +1,7 @@
-.. _Plots:
+.. _Working with Plots:
 
-Plots
------
+Working with Plots
+------------------
 
 A plot is a viewable object, created from a database, that can be displayed
 in a visualization window. VisIt provides several standard plot types that

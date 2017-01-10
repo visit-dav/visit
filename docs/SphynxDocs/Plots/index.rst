@@ -9,5 +9,5 @@ about each of VisIt's different plot types.
 .. toctree::
     :maxdepth: 1
 
-    Plots
+    Working_with_Plots
     PlotTypes/index
