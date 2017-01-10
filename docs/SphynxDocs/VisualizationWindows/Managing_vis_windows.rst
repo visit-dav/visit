@@ -1,3 +1,5 @@
+.. _Managing vis windows:
+
 Managing vis windows
 --------------------
 

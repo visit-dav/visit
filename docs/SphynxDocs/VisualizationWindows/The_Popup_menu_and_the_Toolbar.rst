@@ -1,3 +1,5 @@
+.. _The Popup menu and the Toolbar:
+
 The Popup menu and the Toolbar
 ------------------------------
 
