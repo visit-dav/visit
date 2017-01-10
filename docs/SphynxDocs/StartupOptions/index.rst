@@ -1,3 +1,5 @@
+.. _StartupOptions:
+
 Startup Options
 ---------------
 
