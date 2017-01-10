@@ -1,3 +1,5 @@
+.. _Using vis windows:
+
 Using vis windows
 -----------------
 
