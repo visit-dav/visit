@@ -1,3 +1,5 @@
+.. _Using the Subset Window:
+
 Using the Subset Window
 -----------------------
 

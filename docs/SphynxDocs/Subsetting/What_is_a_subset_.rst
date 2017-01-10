@@ -1,3 +1,5 @@
+.. _What is a subset:
+
 What is a subset?
 -----------------
 

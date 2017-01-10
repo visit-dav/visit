@@ -1,3 +1,5 @@
+.. _Subset Inclusion Lattice:
+
 Subset Inclusion Lattice
 ------------------------
 

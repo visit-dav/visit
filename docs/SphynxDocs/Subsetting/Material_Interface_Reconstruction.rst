@@ -1,3 +1,5 @@
+.. _Material Interface Reconstruction:
+
 Material Interface Reconstruction
 ---------------------------------
 
