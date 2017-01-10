@@ -1,4 +1,4 @@
-Saving the visualization window
+Saving the Visualization Window
 -------------------------------
 
 VisIt allows you to save the contents of any open visualization window to a 
@@ -35,24 +35,20 @@ covered later in this chapter.
 The Save Window
 ~~~~~~~~~~~~~~~
 
-You can open the **Save Window** by selecting **Set save options** from the
+You can open the **Save Window** by selecting **Set Save options...** from the
 **Main Window's File menu**. The **Save Window** contains the controls that
 allow you to set the options that govern how visualizations are saved.
 
 .. _save_window_fig:
 
 .. figure:: images/savewindow.png 
+   :width: 60%
+   :align: center
 
    Save Window
 
 The **Save Window**, shown in :numref:`Figure %s<save_window_fig>`, contains
-three basic groups of controls. The first group allows you to set the file
-information. Use the file information controls to set the name and destination
-of the saved file, as well as its file type and any optional quality parameters
-that may exist for the selected file type. Use the second group of controls
-when saving out an image file to specify the dimensions of the saved image.
-Finally, a group of check boxes near the bottom of the window control
-miscellaneous file saving features. When the save options are set and applied
+four basic groups of controls. The first group, *Filename*, allows you to set the file information. Use the file informtion controls to set the name and destination. If the *Family* checkbox is selected, then each time an image is saved with the same name, a number will be appended to the filename that is one more than the current file with the same name. The second group, *Format options*, allows you to set the file type, compression type, and any optional quality parameters that may exist for the selected file type. Use the third group of controls, *Aspect ratio and resolution*, to specify the dimensions of the saved image. If *Screen capture* is checked, the aspect ratio and width/height will be ignored and the current screen image will be saved. The last group, *Multi-window save*, allows you to set options for each window being saved by clicking on the **Window** drop-down and selecting the appropriate window. When the save options are set and applied
 by clicking the **Apply** button, the active visualization can be saved either
 through the **Save Window** option in the **Main Window's File menu**, by the
 keyboard shortcut *Ctrl+S* , or by clicking the **Save** button in the
