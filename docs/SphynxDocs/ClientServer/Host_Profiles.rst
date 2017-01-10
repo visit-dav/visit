@@ -118,7 +118,7 @@ options to the compute engine and database server through the
 options, you should type them, separated by spaces, into the
 **Additional options** text field. Command line options influence how the
 compute engine and database server are executed. For more information on
-VisIt's command line options, see :ref:`Appendix_A`. Most of the host profiles
+VisIt's command line options, see :ref:`StartupOptions`. Most of the host profiles
 that are installed with VisIt specify the expected installation directory
 for VisIt so VisIt does not have to be in your path on remote computes.
 
@@ -156,7 +156,7 @@ configured. Some computers have multiple launch programs depending on which
 part of the parallel machine you want to use. The figure below shows some
 common parallel-launch options that VisIt currently supports.
 
-.. _parallel_launch_method
+.. _parallel_launch_method:
 
 .. danger::
 
