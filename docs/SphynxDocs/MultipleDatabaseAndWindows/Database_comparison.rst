@@ -1,3 +1,5 @@
+.. _Database comparison:
+
 Database comparison
 -------------------
 
