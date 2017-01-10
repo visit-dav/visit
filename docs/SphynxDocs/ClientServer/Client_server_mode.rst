@@ -55,6 +55,8 @@ VisIt uses *ssh* for authentication and you can set up ssh so that passwords
 are not required. This is called passwordless ssh and once it is set up for a
 computer, VisIt will no longer need to prompt for a password. 
 
+.. _SettingUpPasswordlessSSH:
+
 Setting Up Password-less SSH
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The following instructions describe how to set up **ssh** to allow password-less

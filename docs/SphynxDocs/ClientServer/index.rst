@@ -1,4 +1,4 @@
-.. _ClientServer
+.. _ClientServer:
 
 Client Server
 ====================
