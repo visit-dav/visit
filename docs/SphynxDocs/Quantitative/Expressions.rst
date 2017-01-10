@@ -1,6 +1,11 @@
 Expressions
 -----------
 
+.. danger::
+   Confirm the text here adequately characterizes that an expression has
+   value everywhere over the whole mesh it is defined on. Its a field.
+
+
 Scientific simulations often keep track of several dozen variables as they
 run. However, only a small subset of those variables are usually written
 to a simulation database to save disk space. Sometimes variables can be
@@ -251,6 +256,193 @@ Built-in expressions
 The following table lists built-in expressions that can be used to create
 more advanced expressions. Unless otherwise noted in the description, each
 expression takes scalar variables as its arguments.
+
+.. _Arithmetic_Operator_Expressions:
+
+Arithmetic Operator Expressions (Math Expressions)
+""""""""""""""""""""""""""""""""""""""""""""""""""
+
+In binary arithmetic operator expressions, each operand must evaluate to
+the same type field. For example, both must evaluate to a 
+*scalar* field or both must evaluate to a *material* field.
+
+In addition, if the two expressions differ in centering (e.g. one is *zone*
+or *cell* centered or *piecewise-constant* over mesh cells while the other is
+*node* or *point* centered or *pieceiwse-linear* over mesh cells), VisIt will
+*recenter* any *node*-centered fields to *zone*-centering to compute the
+sum. This may not always be desirable. When it is not, the 
+:ref:`Recenter_Expression_Function` may be used to explicitly control the
+centering of specific operands in an expression.
+
+.. _Sum_Expression_Operator:
+
+Sum Operator (``+``) : ``exprL + exprR``
+    Creates a new expression which is the sum of the ``exprL`` and ``exprR``
+    expressions.
+ 
+.. _Difference_Expression_Operator:
+
+Difference Operator (``-``) : ``exprL - exprR``
+    Creates a new expression which is the difference of the ``exprL`` and
+    ``exprR`` expressions.
+
+.. _Product_Expression_Operator:
+
+Product Operator (``*``) : ``exprL * exprR``
+    Creates a new expression which is the product of the ``exprL`` and
+    ``exprR`` expressions.
+
+.. _Division_Expression_Operator:
+
+Division Operator (``/``) : ``exprL / exprR``
+    Creates a new expression which is quotient after dividing the ``exprL``
+    expression by the ``exprR`` expression.
+
+.. _Exponent_Expression_Operator:
+
+Exponent Operator (``^``) : ``exprL ^ exprR``
+    Creates a new expression which is the product after multiplying the
+    ``exprL`` expression by itself ``exprR`` times.
+
+.. _Logical_AND_Expression_Operator:
+
+Logical AND Operator (``&``) : ``exprL & exprR``
+    Creates a new expression which is the logical *AND* of the ``exprL`` and 
+    ``exprR`` expressions treating each value as a binary bitfield. It is
+    probably most useful for expressions involving integer data but can be
+    applied to expressions involving any type.
+
+.. _Vector_Compose_Expression_Operator:
+
+Vector Compose Operator (``{}``) : ``{expr0, expr1, ... , exprN-1}``
+    Curly braces, *{}* are used to create a new expression of higher tensor rank
+    from 2 or more expression of lower tensor rank.  A common use is to compose 
+    several tensor rank 0 expressions (e.g. scalar expressions) into a tensor
+    rank 1 expression (e.g. a vector expression). The component expressions,
+    ``expr0``, ``expr1``, etc.  must all be the same tensor rank and expression
+    type. For example, they must all be rank 0 (e.g. *scalar* expressions) or
+    they must all be rank 1 (e.g. *vector*) expressions of the same number of
+    components. If they are all scalars, the result is a tensor of rank 1 (e.g.
+    a vector). If they are all vectors, the result is a tensor of rank 2 (e.g.
+    a tensor). The vector compose operator is also used to compose array
+    expressions.
+    
+.. _Vector_Component_Expression_Operator:
+
+Vector Component Operator (``[]``) : ``expr[I]``
+    Square brackets, *[]*, are used to create a new expression of lower tensor
+    rank by extracting a component from an expression of higher tensor rank. 
+    Components are indexed starting from 0. If ``expr``
+    is a tensor of rank 2, the result will be a tensor of rank 1 (e.g. a
+    vector). If ``expr`` is a tensor of rank 1, the result will be a tensor
+    of rank 0 (e.g. a scalar). To obtain the ``J``-th component of the ``I``-th
+    row of a tensor of rank 2, the expression would be ``expr[I][J]``
+
+.. _Associative_Expression_Operator:
+
+Associative Operator (``()``) : ``( exprA OP exprB )``
+    Parenthesis, *()* are used to explicitly group partial results of sub
+    expressions and control evaluation order. 
+
+.. _Absolute_Value_Expression_Function:
+
+Absolute Value Function (``abs()``) : ``abs(expr)``
+    Creates a new expression which is everywhere the absolute value if its
+    argument.
+
+.. _Ceiling_Expression_Function:
+
+Ceiling Function (``ceil()``) : ``ceil(expr)``
+    Creates a new expression which is everywhere the *ceiling* (smallest integer
+    greater than or equal to) of its argument. 
+
+.. _Floor_Expression_Function:
+
+Floor Function (``floor()``) : ``floor(expr)``
+    Creates a new expression which is everywhere the *floor* (greatest integer
+    less than or equal to) of its argument. 
+
+.. _Exponent_Expression_Function:
+
+Exponent Function (``exp()``) :
+    Creates a new expression which is everywhere *e* (base of the natural
+    logorithm) raised to the power of its argument.
+
+Relational, Conditional and Logical Expressions
+"""""""""""""""""""""""""""""""""""""""""""""""
+
+Trigonometric Expressions
+"""""""""""""""""""""""""
+
+Vector Expressions
+""""""""""""""""""
+
+Curl : ``curl(expr)``
+     The curl expression calculates the curl of the input expression, which
+     must evaluate to a vector field. The result is also a vector unless the
+     input data is 2D. When the input data set is 2D, the resulting curl
+     vector always is (0,0,V) so the curl expression instead returns the
+     scalar V.                                                                                                                                      
+Cylindrical Radius : ``cylindrical_radius(expr)``
+     The ``expr`` must be an expression that evaluates to a mesh. The cylindrical
+     radius expression converts the coordinates of the input mesh from cartesian
+     coordinates to cylindrical coordinates and returns the radius component of
+     the cylindrical coordinates.
+
+Tensor Expressions
+""""""""""""""""""
+
+Array Expressions
+"""""""""""""""""
+
+Material Expressions
+""""""""""""""""""""
+
+Mesh Expressions
+""""""""""""""""
+
+Mesh Quality Expressions
+""""""""""""""""""""""""
+
+Minimum Edge Length : ``min_edge_length(expr)``
+    The ``expr`` must be an expression that evaluates to a mesh. The Minimum
+    Edge Length expression calculates the edge length for each edge in a cell,
+    assigning the length of the smallest edge to the entire cell.            
+
+Minimum Side Volume : ``min_side_volume(expr)``
+    The ``expr`` must be an expression that evaluates to a three-dimensional
+    mesh. The Minimum Side Volume expression calculates the side volume for
+    each side in a cell, assigning the value of the smallest side volume to
+    the entire cell.
+
+    A *side* is a tetrahedron that covers one edge of a cell plus parts of the
+    surrounding faces. When a cell has negative side volume, it is usually
+    twisted.
+
+Solution Transfer (Comparison) Expressions
+""""""""""""""""""""""""""""""""""""""""""
+
+Image Processing Expressions
+""""""""""""""""""""""""""""
+
+Miscellaneous Expressions
+"""""""""""""""""""""""""
+
+
+.. _Recenter_Expression_Function:
+
+Recenter Expression Function : ``recenter(expr, ["nodal", "zonal", "toggle"])``
+    This function can be used to recenter ``expr``. The second argument is
+    optional and defaults to *"toggle"* if it is not specified. A value of
+    *"toggle"* for the second argument means that if ``expr`` is *node*
+    centered, it is recentered to *zone* centering and that if ``expr`` is
+    *zone* centered, it is recentered to *ndoe* centering. Note that the
+    quotes are required for the second argument. This function is typically
+    used to force a specific centering among the operands of some other
+    expression.
+
+Time Iteration Expressions
+""""""""""""""""""""""""""
 
 +-----------------------------+----------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Expression                  | Meaning                                                                                                        | Usage                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -1157,15 +1349,6 @@ expression takes scalar variables as its arguments.
 |                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 |                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 |                             |                                                                                                                | *Example: random(MESH)*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-|                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-+-----------------------------+----------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| recenter                    | Recenter variable                                                                                              | **recenter(expr)**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-|                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-|                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-|                             |                                                                                                                | expr must be a database variable or other expression that eventually involves a database variable. Two common types of variable centering are cell-centered and node-centered. The recenter expression switches the centering for the input expression. Use the recenter expression to explicitly force a specific variable centering or to make another variable.                                                                                                                                                                                                    |
-|                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-|                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-|                             |                                                                                                                | *Example: density + recenter(temp)*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 |                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 +-----------------------------+----------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | relative_difference         | Relative difference                                                                                            | **relative_difference(expr**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
