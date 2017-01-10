@@ -1,3 +1,5 @@
+.. _Introduction to interactive tools:
+
 Introduction to interactive tools
 ---------------------------------
 

@@ -1,3 +1,5 @@
+.. _Point Tool:
+
 Point Tool
 ----------
 

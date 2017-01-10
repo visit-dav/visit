@@ -1,3 +1,5 @@
+.. _Movie tools:
+
 Movie tools
 -----------
 

@@ -1,3 +1,5 @@
+.. _Line Tool:
+
 Line Tool
 ---------
 

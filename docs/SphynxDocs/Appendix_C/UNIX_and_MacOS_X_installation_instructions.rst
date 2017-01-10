@@ -1,3 +1,5 @@
+.. _Linux and MacOSX installation instructions:
+
 Linux and MacOSX installation instructions
 ------------------------------------------
 

@@ -1,3 +1,5 @@
+.. _Keyframing:
+
 Keyframing
 ----------
 

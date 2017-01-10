@@ -1,3 +1,5 @@
+.. _Help Window:
+
 Help Window
 -----------
 

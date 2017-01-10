@@ -1,3 +1,5 @@
+.. _Manual conventions:
+
 Manual conventions
 ------------------
 

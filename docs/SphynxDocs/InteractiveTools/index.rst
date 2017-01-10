@@ -2,10 +2,12 @@
 
 Interactive Tools
 =================
+
+In this chapter, we learn about VisIt's interactive tools and how to use them.
+
 .. toctree::
     :maxdepth: 2
 
-    Overview
     Introduction_to_interactive_tools
     Box_Tool
     Line_Tool

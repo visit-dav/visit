@@ -1,3 +1,5 @@
+.. _Checking for new versions:
+
 Checking for new versions
 -------------------------
 

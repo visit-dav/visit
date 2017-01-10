@@ -1,3 +1,5 @@
+.. _Box Tool:
+
 Box Tool
 --------
 
