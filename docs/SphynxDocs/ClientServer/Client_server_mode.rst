@@ -1,5 +1,7 @@
+.. _Client-Server Mode:
+
 Client-Server Mode
-----------------
+------------------
 
 .. danger::
 
