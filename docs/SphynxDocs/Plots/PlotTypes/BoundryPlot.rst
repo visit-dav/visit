@@ -92,15 +92,6 @@ window.
 
    Filled mode and wireframe mode
 
-Drawing internal surfaces
-"""""""""""""""""""""""""
-
-When you make one or more material boundaries transparent, you might want to
-also draw internal surfaces so you can see interior plot details that are
-normally removed to make the plot draw faster. To draw internal surfaces,
-check the **Draw internal surfaces** check box near the bottom of the
-**Boundary plot attributes window** or **FilledBoundary plot attributes window**.
-
 Geometry smoothing
 """"""""""""""""""
 
@@ -140,8 +131,17 @@ Albeit rare, the Boundary and FilledBoundary plots can be used to plot points
 that belong to different materials. Both plots provide controls that allow you
 to set the representation and size of the points. You can change the points'
 representation using the different **Point Type** radio buttons. The available
-options are: **Box**, **Axis**, **Icosahedron**, **Point**, and **Sphere**
-(see). The default point type is **Point** because that is the fastest to draw,
+options are: 
+
+  - **Box** 
+  - **Axis**
+  - **Icosahedron**
+  - **Octahedron**
+  - **Tertrahedron**
+  - **Point**
+  - **Sphere**
+
+The default point type is **Point** because that is the fastest to draw,
 followed by **Sphere**. The other point types create additional geometry and
 can take longer to appear on the screen and subsequently draw. To change the
 size of the points when the point type is set to **Box**, **Axis**, or
