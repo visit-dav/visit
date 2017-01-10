@@ -30,7 +30,7 @@ given computer. The top area also contains controls to create and delete host
 profiles. The bottom area of the window displays all attributes for the
 selected host profile.
 
-Creating a new host profile
+Creating a New Host Profile
 """""""""""""""""""""""""""
 
 You click the **New profile** button to create a new host profile based on
@@ -41,13 +41,13 @@ profile more memorable. If the host profile is for a computer for which there
 are no other host profiles, a tab is created with the name of the new computer
 and the new host profile is added to the new tab.
 
-Deleting a host profile
+Deleting a Host Profile
 """""""""""""""""""""""
 
 If a host profile is no longer useful, you can click on it in the tabbed list
 to select it and then click the **Delete** button to delete it.
 
-Activating a host profile
+Activating a Host Profile
 """""""""""""""""""""""""
 
 Only one host profile can be active for any given computer. When VisIt
@@ -59,7 +59,7 @@ host profile but VisIt will prompt you for a host profile to use before
 launching a compute engine if you have more than one host profile or your only
 host profile has parallel options set for the compute engine.
 
-Setting the host name
+Setting the Host Name
 """""""""""""""""""""
 
 The host name is the name of the computer for which the host profile is
@@ -89,7 +89,7 @@ digit replace it. Appropriate host aliases for the previous example would be:
 name aliases for the host profile, type them into the **Host name aliases**
 text field.
 
-Setting the remote user name
+Setting the Remote User Name
 """"""""""""""""""""""""""""
 
 The remote user name is the name of the account that you want to use when you
@@ -98,7 +98,7 @@ local user name and it is often the case that your desktop user name will not
 match your remote user name. To change the remote user name, type a new user
 name into the **Username** text field in the **Selected profile** settings.
 
-Setting the timeout
+Setting the Timeout
 """""""""""""""""""
 
 The compute engine and database server have a timeout mechanism that causes
@@ -109,7 +109,7 @@ number of minutes into the **Timeout** text field. You can also increase or
 decrease the timeout by clicking on the up and down arrows next to the
 **Timeout** text field.
 
-Providing additional command line options
+Providing Additional Command Line Options
 """""""""""""""""""""""""""""""""""""""""
 
 The **Host Profile Window** allows you to provide additional command line
@@ -122,7 +122,7 @@ VisIt's command line options, see :ref:`Appendix_A`. Most of the host profiles
 that are installed with VisIt specify the expected installation directory
 for VisIt so VisIt does not have to be in your path on remote computes.
 
-Setting parallel options
+Setting Parallel Options
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. _host_profile_parallel:
@@ -146,40 +146,22 @@ once you create a host profile that works for a computer, you rarely need to
 modify it.
 
 
-Setting the parallel launch method
+Setting the Parallel Launch Method
 """"""""""""""""""""""""""""""""""
 
 The parallel launch method option allows you to specify which launch program
 should be used to execute the parallel compute engine. This setting depends on
 the computer where you plan to run the compute engine and how the computer is
 configured. Some computers have multiple launch programs depending on which
-part of the parallel machine you want to use. The table below lists some
-common Operating System/Launch program pairs.
+part of the parallel machine you want to use. The figure below shows some
+common parallel-launch options that VisIt currently supports.
 
+.. _parallel_launch_method
 
 .. danger::
 
-   Update this table ... 
+   Add parallel-launch-method default options image/figure
 
-+------------------+---------------------------------------+
-| Operating System | Launch program                        |
-|                  |                                       |
-+------------------+---------------------------------------+
-| IRIX             | mpirun                                |
-|                  |                                       |
-+------------------+---------------------------------------+
-| AIX              | poe, interactive partition            |
-|                  |                                       |
-+------------------+---------------------------------------+
-| AIX              | psub, batch partition                 |
-|                  |                                       |
-+------------------+---------------------------------------+
-| Linux CHAOS      | psub/srun, both interactive and batch |
-|                  |                                       |
-+------------------+---------------------------------------+
-| Tru64            | dmpirun                               |
-|                  |                                       |
-+------------------+---------------------------------------+
 
 In addition to choosing a launch program, you can also elect to give it
 additional command line options to influence how it launches your compute

@@ -1,10 +1,5 @@
-Distributed mode
+Client-Server Mode
 ----------------
-
-.. danger::
-    
-    Change to Client Server Mode?
-
 
 .. danger::
 
@@ -13,7 +8,7 @@ Distributed mode
 
 When you run VisIt locally, you usually select files, open a database, and
 create plots using the open database. Fortunately, the procedure for running
-VisIt in distributed mode is no different than it is for running in
+VisIt in client-server mode is no different than it is for running in
 single-computer mode. You begin by opening the **File Selection Window**
 and typing the name of the computer where the files are stored into the
 **Host** text field.
@@ -21,7 +16,7 @@ and typing the name of the computer where the files are stored into the
 Once you have told VisIt which host to use when accessing files, VisIt launches
 the VisIt Component Launcher (VCL) on the remote computer. The VCL is a VisIt
 component that runs on remote computers and is responsible for launching other
-VisIt components such as the database server and compute engine ().
+VisIt components such as the metadata server (mdserver) and compute engine.
 
 .. danger::
    
@@ -33,7 +28,7 @@ for the life of your VisIt session and it takes care of launching VisIt
 components on the remote computer.
 
 If VCL was able to launch on the remote computer and if it was able to
-successfully launch the database server, the files for the remote computer
+successfully launch the metadata server, the files for the remote computer
 will be listed in the **File Selection Window**. Add the files to be visualized
 to the **Selected files list** as you would with local files and dismiss the
 **File Selection Window**. Now that you have files from the remote computer at
@@ -58,8 +53,71 @@ remote component from being launched.
 
 VisIt uses *ssh* for authentication and you can set up ssh so that passwords
 are not required. This is called passwordless ssh and once it is set up for a
-computer, VisIt will no longer need to prompt for a password. More information
-about setting up passwordless ssh can be found in :ref:`Appendix_B`.
+computer, VisIt will no longer need to prompt for a password. 
+
+Setting Up Password-less SSH
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The following instructions describe how to set up **ssh** to allow password-less
+authentication among a collection of machines.
+
+On the Local Machine
+""""""""""""""""""""
+
+If you do not already have a **~/.ssh/id_rsa.pub** file, generate the key::
+
+    cd
+
+    ssh-keygen -t rsa
+
+Accept default values by pressing *<Enter>*.  This will generate two files, 
+**~/.ssh/id_rsa** and **~/.ssh/id_rsa.pub**.  The **~/.ssh/id_rsa.pub** file 
+contains your public key in one very long line of text.  This information needs 
+to be concatenated to the **authorized_keys** file on the remote machine, so 
+copy it to a temp file on the remote machine::
+
+     scp ~/.ssh/id_rsa.pub <your-user-name>@<the.remote.machine>:tmp
+
+
+On the Remote Machine
+"""""""""""""""""""""
+
+If you do not already have a **~/.ssh** directory, create one with **r-w-x** 
+permission for the owner only::
+
+    cd
+
+    mkdir .ssh
+
+    chmod 700 .ssh
+
+If you do not already have a **~/.ssh/authorized_keys** file, create an empty 
+one with permission for the owner only::
+
+    cd ~/.ssh
+
+    touch authorized_keys
+
+    chmod 600 authorized_keys 
+
+Concatenate the temporary file you copied into authorized_keys::
+
+    cd ~/.ssh
+
+    cat authorized_keys ~/tmp > authorized_keys
+
+    rm ~/tmp
+
+Completing the Process
+""""""""""""""""""""""
+
+If you have more remote machines you want to access from the same local machine
+using passwordless ssh, repeat the process starting with copying the 
+**~/.ssh/id_rsa.pub** file from the local machine to the remote, and 
+continuing from there.
+
+You can also repeat the above sections, reversing the local and remote 
+machines, in order to allow passwordless ssh to the local machine from the 
+remote machine.
 
 
 Environment
@@ -67,7 +125,7 @@ Environment
 
 It is important to have VisIt in your default search path instead of specifying
 the absolute path to VisIt when starting it. This isn't as important when you
-run VisIt locally, but VisIt may not run properly in distributed mode if it
+run VisIt locally, but VisIt may not run properly in client-server mode if it
 isn't in your default search path on remote machines. If you regularly run
 VisIt using the network configurations provided for LLNL computers then VisIt
 will have host profiles, which are sets of information that tell VisIt how to
@@ -80,16 +138,16 @@ host profiles by default and it will be necessary for you to add VisIt to your
 path on the remote computer. You can add VisIt to your default search path on
 Linux systems by editing the initialization file for your command line shell.
 
-Launch progress window
+Launch Progress Window
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. _remote_vis_launch_progress:
+.. _client_server_launch_progress:
 
 .. figure:: images/launchprogress.png
    
    Launch Progress Window
 
-When VisIt launches a compute engine or database server, it opens the
+When VisIt launches a compute engine or metadata server, it opens the
 **Launch Progress Window** when the component cannot be launched in under four
 seconds. An exception to this rule is that VisIt will always show the
 **Launch Progress Window** when launching a parallel compute engine or any

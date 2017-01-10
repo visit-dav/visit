@@ -25,11 +25,10 @@ Contents:
    Animation/index
    InteractiveTools/index
    MultipleDatabaseAndWindows/index
-   RemoteVisualization/index
+   ClientServer/index
    Preferences/index
    Help/index
    StartupOptions/index
-   Appendix_B/index
    Appendix_C/index
 
 .. Indices and tables

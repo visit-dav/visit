@@ -1,6 +1,6 @@
-.. _RemoteVisualization:
+.. _ClientServer
 
-Remote Visualization
+Client Server
 ====================
 
 
@@ -12,17 +12,17 @@ computer graphics hardware. With ever increasing database sizes, it no longer
 makes sense to copy databases from the computer on which they were generated.
 Instead, it makes more sense to examine the data on the powerful supercomputer
 and use local graphics hardware to draw the visualization. VisIt can run in a
-distributed mode that allows this exact use case. The GUI and viewer run
-locally while the database server and parallel compute engine run on the
-remote supercomputer. Running VisIt in distributed mode is almost as easy as
-running all components locally. This chapter explains the differences between
-running locally and remotely and describes how to run VisIt in distributed
-mode.
+client-server mode that allows this exact use case. The GUI and viewer run
+locally (client) while the database server and parallel compute engine run on 
+the remote supercomputer (server). Running VisIt in client-server mode is 
+almost as easy as running all components locally. This chapter explains the 
+differences between running locally and remotely and describes how to run 
+VisIt in client-server mode.
 
 
 .. toctree::
     :maxdepth: 2
 
-    Distributed_mode
+    Client_server_mode
     Host_Profiles
     Managing_compute_engines
