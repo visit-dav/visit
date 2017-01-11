@@ -24,8 +24,6 @@ VisIt.
 .. toctree::
     :maxdepth: 1 
 
-    Manual_chapters
-    Manual_conventions
     Understanding_how_VisIt_works
     Installing_VisIt
     The_Main_Window
