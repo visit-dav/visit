@@ -593,21 +593,47 @@ Vector and Color Expressions
 .. _Color_Expression_Function:
 
 Color Function (``color()``) : ``color(exprR,exprG,exprB)``
-    Creates a new, *vector*, expression which defines a *color* vector where the
+    Creates a new, RGB *vector*, expression which defines a *color* vector where
     ``exprR`` defines the *red* component, ``exprG`` defines the *green*
     component and ``exprB`` defines the *blue* component of the color vector.
     The resulting expression is suitable for plotting with the
     :ref:`truecolor_plot`. The arguments are used to define color values in
-    the range 0...255. Values outside that range are clamped. If the arguments
-    have much smaller range, it may be appropriate to select a suitable 
-    multiplicative scale factor.
+    the range 0...255. Values outside that range are clamped. No normalization
+    is performed. If the arguments have much smaller or larger range than
+    [0...255], it may be appropriate to select a suitable multiplicative scale
+    factor.
+
+.. _HSVColor_Expression_Function:
+
+HSV Color Function (``hsvcolor()``) : ``hsvcolor(exprH,exprS,exprV)``
+    See :ref:`Color_Expression_Function`. This function is similar to the
+    ``color()`` function but takes *Hue*, *Saturation* and *Value* (Lightness)
+    arguments as inputs and returns an RGB *vector* expression.
 
 .. _Color4_Expression_Function:
 
 Color4 Function (``color4()``) : ``color4(exprR,exprG,exprB,exprA)``
-    See :ref:`Color_Expression_Function`. This function is similar to
+    See :ref:`Color_Expression_Function`. This function is similar to the
     ``color()`` function but also supports *alpha-transparency* as the
     fourth argument, again in the range 0...255.
+
+.. _Colorlookup_Expression_Function:
+
+Colorlookup Function (``colorlookup()``) : ``colorlookup(expr0,tabname,scalmode,skewfac)``
+    Creates a new *vector* expression that is the color that each value in
+    ``expr0`` maps to. The ``tabname`` argument is the name of the color table.
+    The ``expr0`` and ``tabname`` arguments are *required*. The ``scalmode``
+    and ``skewfac`` arguments are optional. Possible values for ``scalmode`` are
+    ``0`` (for *linear* scaling mode), ``1`` (for *log* scaling mode) and ``2``
+    (for *skew* scaling mode). The ``skewfac`` argument is *required* only for
+    a ``scalmode`` of ``2``.
+
+.. _Cross_Product_Expression_Function:
+
+Cross Product Function (``cross()``) : ``cross(exprV0,exprV1)``
+    Creates a new *vector* expression which is the vector cross product created
+    by crossing ``exprV0`` *into* ``exprv1``. Both arguments must be *vector*
+    expression.
 
 Curl : ``curl(expr)``
      The curl expression calculates the curl of the input expression, which
