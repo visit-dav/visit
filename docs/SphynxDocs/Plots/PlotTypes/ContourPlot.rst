@@ -32,8 +32,8 @@ To choose how levels are specified, make a selection from the **Select by**
 menu. The available options are: **N levels, Levels**, and **Percent**.
 **N levels**, the default method, allows you to specify the number of
 levels which will be generated, with 10 being the default.  **Levels**
-requires you to specify real numbers for the levels you want to see.
-**Percent** takes a list of percentages like 50.5 60 40. Using the
+requires you to specify floating point numbers for the levels you want to see.
+**Percent** takes a list of percentages like 50.5, 60, and 40.0. Using the
 numbers just mentioned, the first contour would be placed at the value
 which is 50.5% of the way between the minimum and maximum data values.
 The next contour would be placed at the value which is 60% of the way

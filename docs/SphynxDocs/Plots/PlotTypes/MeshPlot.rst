@@ -84,12 +84,21 @@ to scale the point size with a variable.
 Changing the point type
 """""""""""""""""""""""
 
-The Mesh plot can use five different point types for drawing point meshes. The
+The Mesh plot can use seven different point types for drawing point meshes. The
 Mesh plot draws an object of the desired point type, scaled by the point size,
 for each point in the point mesh. Setting the point type has no effect if the
 plotted mesh is not a point mesh. The different point types are as follows:
-Box, Axis, Icosahedron, Point, and Sphere. Examples of the different point
-types are shown in. To set the point type, select a new point type from the
+
+  - Box 
+  - Axis
+  - Icosahedron
+  - Octahedron
+  - Tetraahedron
+  - Point
+  - Sphere 
+
+Examples of some of the different point
+types are shown below. To set the point type, select a new point type from the
 **Point Type** combo box. When the point type is set to Box, the Mesh plot
 draws a small cube for each point in the point mesh. When the point type is
 set to Axis, the Mesh plot draws there small axis-aligned planes for each point

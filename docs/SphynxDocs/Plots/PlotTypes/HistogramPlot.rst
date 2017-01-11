@@ -72,3 +72,14 @@ used to weight the cells, click on the **Area** radio button to make VisIt use
 surface area or click on the **Revolved volume** radio button to make VisIt use
 the revolved volume of a 2D cell as the weighting multiplier used to group cells
 into the right bins.
+
+Data scaling
+""""""""""""
+
+There are three radio buttons that controls how the data values are scaled. The three 
+options are:
+
+  - **Linear**: no scaling is applied. This is the default option. 
+  - **Log**: the logarithms of all the scalars are binned.
+  - **Square Root**: the square roots of all scalars are binned.
+
