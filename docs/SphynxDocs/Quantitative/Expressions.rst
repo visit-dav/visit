@@ -608,7 +608,7 @@ Color Function (``color()``) : ``color(exprR,exprG,exprB)``
 HSV Color Function (``hsvcolor()``) : ``hsvcolor(exprH,exprS,exprV)``
     See :ref:`Color_Expression_Function`. This function is similar to the
     ``color()`` function but takes *Hue*, *Saturation* and *Value* (Lightness)
-    arguments as inputs and returns an RGB *vector* expression.
+    arguments as inputs and produces an RGB *vector* expression.
 
 .. _Color4_Expression_Function:
 
@@ -628,12 +628,30 @@ Colorlookup Function (``colorlookup()``) : ``colorlookup(expr0,tabname,scalmode,
     (for *skew* scaling mode). The ``skewfac`` argument is *required* only for
     a ``scalmode`` of ``2``.
 
+.. _Dot_Proeduct_Expression_Function:
+
+Dot Product Function (``dot()``) : ``dot(exprV0,exprV1)``
+    Creates a new *scalar* expression which is the vector dot product
+    of ``exprV0`` with ``exprV1``.
+
 .. _Cross_Product_Expression_Function:
 
 Cross Product Function (``cross()``) : ``cross(exprV0,exprV1)``
     Creates a new *vector* expression which is the vector cross product created
     by crossing ``exprV0`` *into* ``exprv1``. Both arguments must be *vector*
     expression.
+
+.. _Magnitude_Expression_Function:
+
+Magnitude Function (``magnitude()``) : ``magnitude(exprV0)``
+    Creates a new *scalar* expression which is everywhere the magnitude of the
+    ``exprV0``.
+
+.. _Normalize_Expresseion_Function:
+
+Normalize Function (``normalize()``) : ``normalize(exprV0)``
+    Creates a new *vector* expression which is everywhere a normalized vector
+    (e.g. same direction but unit magnitude) of ``exprV0``.
 
 Curl : ``curl(expr)``
      The curl expression calculates the curl of the input expression, which
