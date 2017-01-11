@@ -195,7 +195,7 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 void
 QvisPseudocolorPlotWindow::CreateWindowContents()
 {
-    // create atts window a with  a standard tab style layout
+    // create atts window a with a standard tab style layout
     QTabWidget *propertyTabs = new QTabWidget(central);
     topLayout->addWidget(propertyTabs);
 
@@ -213,6 +213,13 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     propertyTabs->addTab(geometryTab, tr("Geometry"));
     CreateGeometryTab(geometryTab);
     
+    // ----------------------------------------------------------------------
+    // Extras tab -- currently not used but setup for future use
+    // ----------------------------------------------------------------------
+    // QWidget *extrasTab = new QWidget(central);
+    // propertyTabs->addTab(extrasTab, tr("Extras"));
+    // CreateExtrasTab(extrasTab);
+    
 //     This code was used to create the accordion style layout 
 
 //     propertyLayout = new QvisCollapsibleLayout(central);
@@ -220,9 +227,9 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 //     propertyLayout->setParent( this );
 //     topLayout->addWidget(propertyLayout);
 //
-//     // // ----------------------------------------------------------------------
-//     // // Data tab
-//     // // ----------------------------------------------------------------------
+//     // ----------------------------------------------------------------------
+//     // Data tab
+//     // ----------------------------------------------------------------------
 //     QWidget *dataTab = new QWidget(central);
 //     CreateDataTab(dataTab);
 //
@@ -231,9 +238,9 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 //
 //     dataFrame->setShow();
 //
-//     // // ----------------------------------------------------------------------
-//     // // Geometry tab
-//     // // ----------------------------------------------------------------------
+//     // ----------------------------------------------------------------------
+//     // Geometry tab
+//     // ----------------------------------------------------------------------
 //     QWidget *geometryTab = new QWidget(central);
 //     CreateGeometryTab(geometryTab);
 //
@@ -242,7 +249,6 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 //
 //     geometryFrame->setHide();
 }
-
 
 
 // ****************************************************************************
