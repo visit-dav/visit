@@ -47,8 +47,6 @@
 #include <vector>
 #include <string>
 
-using namespace std;
-
 // ****************************************************************************
 //  Function: GetM3DC1ReadOptions
 //
@@ -73,7 +71,7 @@ GetM3DC1ReadOptions(void)
 //    rv->SetInt("Number of poloidal planes", 1);
 
     rv->SetEnum("Mesh refinement", 1);
-    vector<string> refinement;
+    std::vector<std::string> refinement;
     refinement.push_back("1");
     refinement.push_back("2");
     refinement.push_back("3");
@@ -88,7 +86,7 @@ GetM3DC1ReadOptions(void)
     rv->SetEnumStrings("Mesh refinement", refinement);
 
     rv->SetEnum("Linear mesh data location", 0);
-    vector<string> centering;
+    std::vector<std::string> centering;
     centering.push_back("Node");
     centering.push_back("Element");
     rv->SetEnumStrings("Linear mesh data location", centering);
