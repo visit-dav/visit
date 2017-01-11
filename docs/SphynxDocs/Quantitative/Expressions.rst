@@ -506,7 +506,7 @@ Logical Or Function (``or()``) : ``or(exprL,exprR)``
 
 .. _Logical_Not_Expression_Function:
 
-Logical Or Function (``not()``) : ``not(expr0)``
+Logical Not Function (``not()``) : ``not(expr0)``
     Creates a new expression which is everywhere the logical *not* of its
     argument. Non-zero values are treated as true whereas zero values are
     treated as false.
