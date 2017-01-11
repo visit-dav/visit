@@ -253,6 +253,9 @@ as a delimiter.
 Built-in expressions
 ~~~~~~~~~~~~~~~~~~~~
 
+.. danger::
+   Add examples for some of the more complicated cases.
+
 The following table lists built-in expressions that can be used to create
 more advanced expressions. Unless otherwise noted in the description, each
 expression takes scalar variables as its arguments.
@@ -326,6 +329,9 @@ Vector Compose Operator (``{}``) : ``{expr0, expr1, ... , exprN-1}``
     a vector). If they are all vectors, the result is a tensor of rank 2 (e.g.
     a tensor). The vector compose operator is also used to compose array
     expressions.
+
+    For example, the expression ``{u, v, w}`` takes three scalar mesh variables
+    named ``u``, ``v`` and ``w`` and creates a vector mesh variable.
     
 .. _Vector_Component_Expression_Operator:
 
@@ -340,36 +346,184 @@ Vector Component Operator (``[]``) : ``expr[I]``
 
 .. _Associative_Expression_Operator:
 
-Associative Operator (``()``) : ``( exprA OP exprB )``
+Associative Operator (``()``) : ``( expr0 OP expr1 )``
     Parenthesis, *()* are used to explicitly group partial results of sub
     expressions and control evaluation order. 
 
+    For example, the expression ``(a + b) / c`` first computes the sum, ``a+b``
+    and then divides by ``c``.
+
 .. _Absolute_Value_Expression_Function:
 
-Absolute Value Function (``abs()``) : ``abs(expr)``
+Absolute Value Function (``abs()``) : ``abs(expr0)``
     Creates a new expression which is everywhere the absolute value if its
     argument.
 
 .. _Ceiling_Expression_Function:
 
-Ceiling Function (``ceil()``) : ``ceil(expr)``
+Ceiling Function (``ceil()``) : ``ceil(expr0)``
     Creates a new expression which is everywhere the *ceiling* (smallest integer
     greater than or equal to) of its argument. 
 
 .. _Floor_Expression_Function:
 
-Floor Function (``floor()``) : ``floor(expr)``
+Floor Function (``floor()``) : ``floor(expr0)``
     Creates a new expression which is everywhere the *floor* (greatest integer
     less than or equal to) of its argument. 
 
+.. _Round_Expression_Function:
+
+Round Function (``round()``) : ``round(expr0)``
+    Creates a new expression which is everywhere the result of rounding
+    its argument.
+
+.. _Square_Expression_Function:
+
+Square Function (``sqr()``) : ``sqr(expr0)``
+    Creates a new expression which is everywhere the result of squaring
+    its argument. 
+
+.. _Square_Root_Expression_Function:
+
+Square Root Function (``sqrt()``) : ``sqrt(expr0)``
+    Creates a new expression which is everywhere the square root of
+    its argument. 
+
 .. _Exponent_Expression_Function:
 
-Exponent Function (``exp()``) :
+Exponent Function (``exp()``) : ``exp(expr0)``
     Creates a new expression which is everywhere *e* (base of the natural
     logorithm) raised to the power of its argument.
 
+.. _Natural_Logarithm_Expression_Function:
+
+Natural Logarithm Function (``ln()``) : ``ln(expr0)``
+    Creates a new expression which is everywhere the natural logarithm of its
+    argument.
+
+.. _Base10_Logarithm_Expression_Function:
+
+Base 10 Logarithm Function (``log10()``) : ``log10(expr0)``
+    Creates a new expression which is everywhere the base 10 logarithm of its
+    argument.
+
+.. _Pairwise_Max_Expression_Function:
+
+Pairwise Max Function (``max()``) : ``max(expr0,exrp1)``
+    Creates a new expression which is everywhere the pairwise maximum of its
+    two arguments.
+
+.. _Pairwise_Min_Expression_Function:
+
+Pairwise Min Function (``min()``) : ``min(expr0,exrp1)``
+    Creates a new expression which is everywhere the pairwise minimum of its
+    two arguments.
+
+.. _Modulo_Expression_Function:
+
+Modulo Function (``mod()``) : ``mod(expr0,exrp1)``
+    Creates a new expression which is everywhere the first argument, ``expr0``,
+    modulo the second argument, ``expr1``.
+
+.. _Random_Expression_Function:
+
+Random Function (``random()``) : ``random(expr0)``
+    Creates a new expression which is everywhere a random number, as computed
+    by :math:`(\text{rand}()%1024)/1024` where ``rand()`` is the standard
+    ``rand()``. The argument, ``expr0``, must be a mesh variable. The seed
+    used on each block of the mesh is the absolute domain number.
+
 Relational, Conditional and Logical Expressions
 """""""""""""""""""""""""""""""""""""""""""""""
+
+The ``if()`` conditional expression is designed to be used in concert with
+relation and logical expressions. Together, these expressions can be used to
+build up more complex expressions in which very different evalutions are
+performed depending on the outcome of other evaluations. For example, the
+``if()`` conditional expression can be used together with one or more
+relational expressions to create a new expression which evaluates to a
+dot-product on part of a mesh and to the magnitude of a divergence operator
+on another part of a mesh.
+
+.. _Equal_Expression_Function:
+
+Equal Function (``eq()``) : ``eq(exprL,exprR)``
+    Creates a new expression which is everywhere a boolean value (1 or 0)
+    indicating whether its two arguments are equal. A value of 1 is produced
+    everywhere the arguments *are* equal and 0 otherwise.
+
+.. _Not_Equal_Expression_Function:
+
+Equal Function (``ne()``) : ``ne(exprL,exprR)``
+    Creates a new expression which is everywhere a boolean value (1 or 0)
+    indicating whether its two arguments are *not* equal. A value of 1
+    is produced everywhere the argments are *not* equal and 0 otherwise.
+    
+.. _Less_Than_Expression_Function:
+
+Less Than Function (``lt()``) : ``lt(exprL,exprR)``
+    Creates a new expression which is everywhere a boolean value (1 or 0)
+    indicating whether ``exprL`` is less than ``exprR``. A value of 1
+    is produced everywhere ``exprL`` is less than ``exprR`` and 0 otherwise.
+
+.. _Less_Than_or_Equal_Expression_Function:
+
+Less Than or Equal Function (``le()``) : ``le(exprL,exprR)``
+    Creates a new expression which is everywhere a boolean value (1 or 0)
+    indicating whether ``exprL`` is less than or equal to ``exprR``. A value
+    of 1 is produced everywhere ``exprL`` is less than or equal to ``exprR``
+    and 0 otherwise.
+
+.. _Greater_Than_Expression_Function:
+
+Greater Than Function (``gt()``) : ``gt(exprL,exprR)``
+    Creates a new expression which is everywhere a boolean value (1 or 0)
+    indicating whether ``exprL`` is greater than ``exprR``. A value of 1
+    is produced everywhere ``exprL`` is greater than ``exprR`` and 0
+    otherwise.
+
+.. _Greater_Than_or_Equal_Expression_Function:
+
+Greater Than or Equal Function (``ge()``) : ``ge(exprL,exprR)``
+    Creates a new expression which is everywhere a boolean value (1 or 0)
+    indicating whether ``exprL`` is greater than or equal to ``exprR``.
+    A value of 1 is produced everywhere ``exprL`` is greater than or equal to
+    ``exprR`` and 0 otherwise.
+
+.. _Logical_And_Expression_Function:
+
+Logical And Function (``and()``) : ``and(exprL,exprR)``
+    Creates a new expression which is everywhere the logical *and* of its two
+    arguments. Non-zero values are treated as true whereas zero values are
+    treated as false.
+
+.. _Logical_Or_Expression_Function:
+
+Logical Or Function (``or()``) : ``or(exprL,exprR)``
+    Creates a new expression which is everywhere the logical *or* of its two
+    arguments. Non-zero values are treated as true whereas zero values are
+    treated as false.
+
+.. _Logical_Not_Expression_Function:
+
+Logical Or Function (``not()``) : ``not(expr0)``
+    Creates a new expression which is everywhere the logical *not* of its
+    argument. Non-zero values are treated as true whereas zero values are
+    treated as false.
+
+.. _If_Expression_Function:
+
+If Function (``if()``) : ``if(exprCondition,exprTrue,exprFalse)``
+    Creates a new expression which is equal to ``exprTrue`` whereever 
+    the condition, ``exprCondition`` is true (e.g. non-zero) and which
+    is equal to ``exprFalse`` wherever ``exprCondition`` is false
+    (e.g zero).
+
+    For example, the expression
+    ``if(and(gt(pressure, 2.0), lt(pressure, 4.0)), pressure, 0.0)``
+    combines the ``if`` expression with the ``gt`` and ``lt`` expressions
+    to create a new expression that is equal to ``pressure`` wherever it is
+    between 2.0 and 4.0 and 0 otherwise.
 
 Trigonometric Expressions
 """""""""""""""""""""""""
