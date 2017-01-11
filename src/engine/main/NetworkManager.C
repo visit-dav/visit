@@ -4343,9 +4343,12 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
 
     if(sel != 0)
     {
-        summary.SetCellCount(sel->GetSize());
+        // Sum the cells and send to all procs.
+        long cellCount = sel->GetSize();
 
-        // Some way to get the total number of cells for the summary...
+        SumLongAcrossAllProcessors(cellCount);
+
+        summary.SetCellCount(cellCount);
     }
 
     return summary;
