@@ -8,10 +8,10 @@ Client-Server Mode
    Add VisIt’s architecture image
 
 
-When you run VisIt locally, you usually select files, open a database, and
+When you run VisIt locally, you usually select files and
 create plots using the open database. Fortunately, the procedure for running
 VisIt in client-server mode is no different than it is for running in
-single-computer mode. You begin by opening the **File Selection Window**
+single-computer mode. You begin by launching the :ref:`File Open Window` 
 and typing the name of the computer where the files are stored into the
 **Host** text field.
 
@@ -31,13 +31,21 @@ components on the remote computer.
 
 If VCL was able to launch on the remote computer and if it was able to
 successfully launch the metadata server, the files for the remote computer
-will be listed in the **File Selection Window**. Add the files to be visualized
-to the **Selected files list** as you would with local files and dismiss the
-**File Selection Window**. Now that you have files from the remote computer at
+will be listed in the **Files** pane of the **File Open Window**, just as if
+you were running locally.  You then select the file or virtual database and
+click **OK**.  Now that you have files from the remote computer at
 your disposal, you can create plots as usual.
 
 Passwords
 ~~~~~~~~~
+
+Sometimes when you try to access files on a remote computer, VisIt prompts you
+for a password by opening a **Password Window**
+(:numref:`Figure %s<remote_vis_password>`). If you are prompted for a
+password, type your password into the window and click the **Ok** button. If
+the password window appears and you decide to abort the launch of the remote
+component, you can click the **Password Window's Cancel** button to stop the
+remote component from being launched.
 
 .. _remote_vis_password:
 
@@ -45,13 +53,18 @@ Passwords
    
    Password Window
 
-Sometimes when you try to access files on a remote computer, VisIt prompts you
-for a password by opening a **Password Window**
-(:numref:`Figure %s<remote_vis_password>`) . If you are prompted for a
-password, type your password into the window and click the **Ok** button. If
-the password window appears and you decide to abort the launch of the remote
-component, you can click the **Password Window's Cancel** button to stop the
-remote component from being launched.
+If your username for the remote machine is not listed correctly, you can
+click on the **Change username** button and a new window will pop up allowing
+you to enter the proper username for the remote system.  
+(:numref:`Figure %s<change_remote_username>`). Enter the correct
+username in the text field provided and click **Confirm username**. Proceed
+with entering the password in the **Password Window**.
+
+.. _change_remote_username:
+
+.. figure:: images/changeusername.png
+   
+   Change Username Window
 
 VisIt uses *ssh* for authentication and you can set up ssh so that passwords
 are not required. This is called passwordless ssh and once it is set up for a
@@ -145,12 +158,6 @@ Linux systems by editing the initialization file for your command line shell.
 Launch Progress Window
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. _client_server_launch_progress:
-
-.. figure:: images/launchprogress.png
-   
-   Launch Progress Window
-
 When VisIt launches a compute engine or metadata server, it opens the
 **Launch Progress Window** when the component cannot be launched in under four
 seconds. An exception to this rule is that VisIt will always show the
@@ -159,20 +166,27 @@ compute engine on MacOS X. VisIt's components frequently launch fast enough
 that it is not necessary to show the **Launch Progress Window** but you will
 often see it if you launch compute engines using a batch system.
 
+.. _client_server_launch_progress:
+
+.. figure:: images/launchprogress.png
+   
+   Launch Progress Window
+
+
 The **Launch Progress Window** indicates VisIt is waiting to hear back from the
 component being launched on the remote computer and gives you some indication
 that VisIt is still alive by animating a set of moving dots representing the
 connection from the local computer to the remote computer. The icon used for
 the remote computer will vary depending on whether a serial or parallel VisIt
 component is being launched. The **Launch Progress Window** for a parallel
-compute engine is shown in. The window is visible until the remote compute
-engine connects back to the viewer or the connection is cancelled. If you get
-tired of waiting for a remote component to launch, you can cancel it by
-clicking the **Cancel** button. Once you cancel the launch of a remote
-component, you can return to your VisIt session. Note that if the remote
-compute is a parallel compute engine launched via a batch system, the engine
-will still run when it is finally scheduled but it will immediately dies since
-VisIt has stopped listening for it. On heavily saturated batch systems, it
-might be prudent for you to manually remove your compute engine job from the
-queue.
+compute engine is shown in :numref:`Figure %s<client_server_launch_progress>`. 
+The window is visible until the remote compute engine connects back to the 
+viewer or the connection is cancelled. If you get tired of waiting for a 
+remote component to launch, you can cancel it by clicking the **Cancel** 
+button. Once you cancel the launch of a remote component, you can return to 
+your VisIt session. Note that if the remote compute is a parallel compute 
+engine launched via a batch system, the engine will still run when it is 
+finally scheduled but it will immediately die since VisIt has stopped 
+listening for it. On heavily saturated batch systems, it might be prudent for 
+you to manually remove your compute engine job from the queue.
 
