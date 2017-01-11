@@ -645,7 +645,8 @@ avtH5PartFileFormat::RegisterDataSelections(
             // string and having FastBit parse it again.
             (*selsApplied)[0] = true;
             querySpecified = idListQuery;
-            avtIdentifierSelection *ids = (avtIdentifierSelection *) *(selList[0]);
+            avtIdentifierSelection *ids =
+              (avtIdentifierSelection *) *(selList[0]);
             queryIdList = ids->GetIdentifiers();
 
             if(!ids->GetIdVariable().empty())
@@ -662,7 +663,8 @@ avtH5PartFileFormat::RegisterDataSelections(
                         std::string("Data Range Selection"))
                 {
                     // Check if the according variable name is available
-                    avtDataRangeSelection *dr = (avtDataRangeSelection *) *(selList[i]);
+                    avtDataRangeSelection *dr =
+                      (avtDataRangeSelection *) *(selList[i]);
                     std::string varName = dr->GetVariable();       
  
                     bool available = particleVarNameToTypeMap.find(varName) !=
@@ -684,13 +686,15 @@ avtH5PartFileFormat::RegisterDataSelections(
                         double min = dr->GetMin();
                         double max = dr->GetMax();
 
-                        std::string min_cond = "(" + DoubleToString(min) + "<=" + varName + ")";
-                        std::string max_cond = "(" + varName + "<=" + DoubleToString(max) + ")";
+                        std::string min_cond =
+                          "(" + DoubleToString(min) + "<=" + varName + ")";
+                        std::string max_cond =
+                          "(" + varName + "<=" + DoubleToString(max) + ")";
 
                         if (queryString.empty())
                             queryString = min_cond + " && " + max_cond;
                         else
-                            queryString = queryString + "&&" + min_cond + "&&" + max_cond;
+                          queryString += " && " + min_cond + " && " + max_cond;
 
                         querySpecified = stringQuery;
                     }
@@ -728,7 +732,7 @@ avtH5PartFileFormat::RegisterDataSelections(
                         if (queryString.empty())
                             queryString = id_string;
                         else
-                            queryString = queryString + "&&" + id_string;
+                            queryString += " && " + id_string;
 
                         querySpecified = stringQuery;
                     }
@@ -914,7 +918,8 @@ avtH5PartFileFormat::SelectParticlesToRead()
                 delete[] indices;
 
                 debug5 << "SelectParticlesToRead(): Rank " << rank
-                       << " All particles in the query read." << std::endl;
+                          << " All particles (" << nParticles << ") "
+                          << " in the query read." << std::endl;
             }
         }
 
@@ -922,12 +927,13 @@ avtH5PartFileFormat::SelectParticlesToRead()
         else
         {
             // Determine what portion of the query will be read by each rank.
-            h5part_int64_t minParticlesPerRank = 100;
+            h5part_int64_t minParticlesPerRank = 1;
             h5part_int64_t particlesPerRank =
               std::max(minParticlesPerRank, (nParticles + nRanks-1) / nRanks);
 
+            // The start is inclusive, the end is exclusive 
             h5part_int64_t myStart = rank * particlesPerRank;
-            h5part_int64_t myEnd =
+            h5part_int64_t myEnd   =
               std::min(myStart + particlesPerRank, nParticles);
             
             // Restrict the view to the particles read on this rank.
@@ -942,8 +948,11 @@ avtH5PartFileFormat::SelectParticlesToRead()
                 delete[] indices;
 
                 debug5 << "SelectParticlesToRead(): Rank " << rank
-                       << " reads particles from " << myStart
-                       << " to " << myEnd-1 << " in the query." << std::endl;
+                          << " reads particles "
+                          << "(" << myEnd - myStart << ")"
+                          << " from " << myStart << " to " << myEnd-1
+                          << " in the query "
+                          << "(" << nParticles << ")." << std::endl;
             }
             // This rank does not have any particles to read.
             else
@@ -994,19 +1003,22 @@ avtH5PartFileFormat::SelectParticlesToRead()
             h5part_int64_t particlesPerRank =
               std::max( minParticlesPerRank, (nParticles + nRanks-1) / nRanks);
 
-            h5part_int64_t idStart = particlesPerRank * rank;
+            // The start is inclusive, the end is inclusive 
+            h5part_int64_t idStart = rank * particlesPerRank;
             h5part_int64_t idEnd   =
               std::min(idStart+particlesPerRank-1, nParticles-1);
 
             // Restrict the view to the particles read on this rank.
             if (idStart < nParticles )
             {
-              H5PartSetView(file, idStart, idEnd);
+                H5PartSetView(file, idStart, idEnd);
               
-              debug5 << "SelectParticlesToRead(): Rank " << rank
-                     << " reads particles from " << idStart
-                     << " to " << idEnd
-                     << " in the file (no query)." << std::endl;
+                debug5 << "SelectParticlesToRead(): Rank " << rank
+                          << " reads particles "
+                          << "(" << idEnd - idStart + 1 << ")"
+                          << " from " << idStart << " to " << idEnd
+                          << " in the query "
+                          << "(" << nParticles << ")." << std::endl;
             }
             // This rank does not have any particles to read.
             else
@@ -2441,8 +2453,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
             if (selectionQuery.empty())
                 selectionQuery = min_cond + " && " + max_cond;
             else
-                selectionQuery =
-                  selectionQuery + "&&" + min_cond + "&&" + max_cond;
+                selectionQuery += " && " + min_cond + " && " + max_cond;
 
             selectionSpecified = true;
         }
@@ -2476,7 +2487,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
                 if (selectionQuery.empty())
                     selectionQuery = id_string;
                 else
-                    selectionQuery = selectionQuery + "&&" + id_string;
+                    selectionQuery += " && " + id_string;
 
                 selectionSpecified = true;
             }
