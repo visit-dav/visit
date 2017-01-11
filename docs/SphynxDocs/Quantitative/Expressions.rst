@@ -435,6 +435,10 @@ Random Function (``random()``) : ``random(expr0)``
 
 Relational, Conditional and Logical Expressions
 """""""""""""""""""""""""""""""""""""""""""""""
+.. danger::
+   Confirm relational and logical expressions produce new, boolean valued
+   expression variables which are themselves plottable in VisIt. Their
+   original intent may have only to be used as args in the IF expression.
 
 The ``if()`` conditional expression is designed to be used in concert with
 relation and logical expressions. Together, these expressions can be used to
