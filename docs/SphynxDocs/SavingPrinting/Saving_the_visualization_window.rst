@@ -84,8 +84,8 @@ extension, and so on.
 
 The file name that VisIt uses to save visualizations is based on the specified
 file name, the file format, and also the family toggle setting. The family
-toggle setting is set by checking the **Family** check box towards the lower
-left part of the **Save Window**.
+toggle setting is set by checking the **Family** check box towards the top 
+right part of the **Save Window**.
 
 The family toggle setting allows you to save series of files that all have
 essentially the same name except for a number that is appended to the file
@@ -137,8 +137,7 @@ using screen capture for your own situation. Screen capture is on by default.
 Setting image resolution
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-You set image resolution using the controls in the **Resolution** control
-group. These controls are disabled unless the file being saved is an image
+You set image resolution using the controls in the **Aspect ratio and resolution**  group. These controls are disabled unless the file being saved is an image
 format and screen capture is not being used. You specify the image height
 and width by typing new values into the **Height** and **Width** text fields.
 If the **Maintain 1:1 aspect** check box is on, VisIt forces the image's
