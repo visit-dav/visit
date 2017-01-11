@@ -435,6 +435,7 @@ Random Function (``random()``) : ``random(expr0)``
 
 Relational, Conditional and Logical Expressions
 """""""""""""""""""""""""""""""""""""""""""""""
+
 .. danger::
    Confirm relational and logical expressions produce new, boolean valued
    expression variables which are themselves plottable in VisIt. Their
@@ -532,8 +533,81 @@ If Function (``if()``) : ``if(exprCondition,exprTrue,exprFalse)``
 Trigonometric Expressions
 """""""""""""""""""""""""
 
-Vector Expressions
-""""""""""""""""""
+.. _Arc_Cosine_Expression_Function:
+
+Arc Cosine Function (``acos()``) : ``acos(expr0)``
+    Creates a new expression which is everywhere the arc cosine of its
+    argument. The returned value is in *radians*.
+
+.. _Arc_Sine_Expression_Function:
+
+Arc Sine Function (``asin()``) : ``asin(expr0)``
+    Creates a new expression which is everywhere the arc sine of its
+    argument. The returned value is in *radians*.
+
+.. _Arc_Tangent_Expression_Function:
+
+Arc Tangent Function (``atan()``) : ``atan(expr0)``
+    Creates a new expression which is everywhere the arc tangent of its
+    argument. The returned value is in *radians*.
+
+.. _Cosine_Expression_Function:
+
+Cosine Function (``cos()``) : ``cos(expr0)``
+    Creates a new expression which is everywhere the cosine of its
+    argument. The argument is treated as in units of *radians*.
+
+.. _Hyperbolic_Cosine_Expression_Function:
+
+Hyperbolic Cosine Function (``cosh()``) : ``cosh(expr0)``
+    Creates a new expression which is everywhere the hyperbolic cosine of its
+    argument. The argument is the *hyperbolic angle*.
+
+.. _Sine_Expression_Function:
+
+Sine Function (``sin()``) : ``sin(expr0)``
+    Creates a new expression which is everywhere the sine of its
+    argument. The argument is treated as in units of *radians*.
+
+.. _Hyperbolic_Sine_Expression_Function:
+
+Hyperbolic Sine Function (``sinh()``) : ``sinh(expr0)``
+    Creates a new expression which is everywhere the hyperbolic sine of its
+    argument. The argument is the *hyperbolic angle*.
+
+.. _Tangent_Expression_Function:
+
+Tangent Function (``tan()``) : ``tan(expr0)``
+    Creates a new expression which is everywhere the tangent of its
+    argument. The argument is treated as in units of *radians*.
+
+.. _Hyperbolic_Tangent_Expression_Function:
+
+Hyperbolic Tangent Function (``tanh()``) : ``tanh(expr0)``
+    Creates a new expression which is everywhere the hyperbolic tangent of its
+    argument. The argument is the *hyperbolic angle*.
+
+Vector and Color Expressions
+""""""""""""""""""""""""""""
+
+.. _Color_Expression_Function:
+
+Color Function (``color()``) : ``color(exprR,exprG,exprB)``
+    Creates a new, *vector*, expression which defines a *color* vector where the
+    ``exprR`` defines the *red* component, ``exprG`` defines the *green*
+    component and ``exprB`` defines the *blue* component of the color vector.
+    The resulting expression is suitable for plotting with the
+    :ref:`truecolor_plot`. The arguments are used to define color values in
+    the range 0...255. Values outside that range are clamped. If the arguments
+    have much smaller range, it may be appropriate to select a suitable 
+    multiplicative scale factor.
+
+.. _Color4_Expression_Function:
+
+Color4 Function (``color4()``) : ``color4(exprR,exprG,exprB,exprA)``
+    See :ref:`Color_Expression_Function`. This function is similar to
+    ``color()`` function but also supports *alpha-transparency* as the
+    fourth argument, again in the range 0...255.
 
 Curl : ``curl(expr)``
      The curl expression calculates the curl of the input expression, which
