@@ -162,6 +162,7 @@ class PIPELINE_API avtZoneIdNamedSelection : public avtNamedSelection
     virtual SELECTION_TYPE  GetType(void) { return ZONE_ID; };
 
     virtual avtContract_p ModifyContract(avtContract_p c0) const;
+    virtual avtDataSelection *CreateSelection(void);
 
     virtual void  Allocate(size_t);
     virtual void  Append(vtkDataSet *ds);
