@@ -623,7 +623,7 @@ avtH5PartFileFormat::RegisterDataSelections(
     int t1 = visitTimer->StartTimer();
 
     //time_t startTime = time(0);
-    debug5 << "Entering avtH5PartFileFormat::RegisterDataSelection(). "
+    debug5 << "avtH5PartFileFormat::RegisterDataSelection() "
            << "useFastBitIndex is " << useFastBitIndex << std::endl;
 
     dataSelectionActive = false;
@@ -643,24 +643,48 @@ avtH5PartFileFormat::RegisterDataSelections(
             // Shortcut: There is only one query and it is a list of
             // identifiers.  Thus, we can skip the step of creating a
             // string and having FastBit parse it again.
+
+            //** NOTE: The five lines below commented out with //**
+            //** could be used if the data selection was originally
+            //** generated from a query within H5Part. However,
+            //** currently there is no mechanism to guarantee that a
+            //** data selection was generated from within H5Part. So
+            //** the fastbit query must be performed.
+          
             (*selsApplied)[0] = true;
+            //** dataSelectionActive = true;
             querySpecified = idListQuery;
+            //** queryResultsValid = true;
+
             avtIdentifierSelection *ids =
               (avtIdentifierSelection *) *(selList[0]);
-            queryIdList = ids->GetIdentifiers();
 
-            if(!ids->GetIdVariable().empty())
-                idVariableName = ids->GetIdVariable();
+            //** if(!ids->GetIdVariable().empty())
+            //**     idVariableName = ids->GetIdVariable();
 
-            debug5 << "Single Identifier Data Selection with "
-                   << queryIdList.size() << " ids specified." << std::endl;
+            const std::vector<double> &identifiers =
+              ids->GetIdentifiers();
+
+            queryIdList.resize(identifiers.size());
+            // queryResults.resize(identifiers.size());
+  
+            for (size_t i = 0 ; i < identifiers.size() ; i++)
+            {
+                queryIdList[i] = identifiers[i];
+                //** queryResults[i] = identifiers[i];
+            }
+            
+            debug5 << "avtH5PartFileFormat::RegisterDataSelection() "
+                   << "single Identifier Data Selection " << idVariableName
+                   << " with " << queryResults.size() << " ids specified."
+                   << std::endl;
         }
         else
         {
             for (size_t i = 0; i < selList.size(); ++i)
             {
                 if (std::string(selList[i]->GetType()) ==
-                        std::string("Data Range Selection"))
+                    std::string("Data Range Selection"))
                 {
                     // Check if the according variable name is available
                     avtDataRangeSelection *dr =
@@ -674,7 +698,8 @@ avtH5PartFileFormat::RegisterDataSelections(
                     // FastBit index exists for this variable.
                     (*selsApplied)[i] = available;
 
-                    debug5 << "H5Part plugin "
+                    debug5 << "avtH5PartFileFormat::RegisterDataSelection() "
+                           << "H5Part plugin "
                            << (available ? "can" : "*cannot*")
                            << " limit read data based on variable " << varName
                            << std::endl;
@@ -700,17 +725,21 @@ avtH5PartFileFormat::RegisterDataSelections(
                     }
                 }
                 else if (std::string(selList[i]->GetType()) ==
-                        std::string("Identifier Data Selection"))
+                         std::string("Identifier Data Selection"))
                 {
-                    debug5 << "RegisterDataSelection() found identifier type"
-                           << " for selList[ " << i << "]" << std::endl;
+                    debug5 << "avtH5PartFileFormat::RegisterDataSelection() "
+                           << "found identifier type for selList[ " << i << "]"
+                           << std::endl;
 
                     (*selsApplied)[i] = true;
                     avtIdentifierSelection *ids =
                         (avtIdentifierSelection *) *(selList[i]);
 
-                    const std::vector<double> &identifiers = ids->GetIdentifiers();
-                    debug5 << "Returned identifiers list size is "
+                    const std::vector<double> &identifiers =
+                      ids->GetIdentifiers();
+
+                    debug5 << "avtH5PartFileFormat::RegisterDataSelection() "
+                           << "Returned identifiers list size is "
                            << identifiers.size() << endl;
 
                     if (identifiers.size())
@@ -764,7 +793,8 @@ avtH5PartFileFormat::RegisterDataSelections(
 // ****************************************************************************
 
 void
-avtH5PartFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
+avtH5PartFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
+                                              int timeState)
 {
     int t1 = visitTimer->StartTimer();
 
@@ -872,7 +902,7 @@ avtH5PartFileFormat::SelectParticlesToRead()
     int t1 = visitTimer->StartTimer();
 
 #ifdef HAVE_LIBFASTBIT
-    // Using fastbit with a query, re-run query if necessary.
+    // Using FastBit with a query, re-run query if necessary.
     if (useFastBitIndex && querySpecified && !queryResultsValid)
     {
         // Re-run query
@@ -881,6 +911,13 @@ avtH5PartFileFormat::SelectParticlesToRead()
         debug5 << "SelectParticlesToRead(): "
                << "Query results invalid: Re-running query." << std::endl;
     }
+    else
+    {
+        debug5 << "SelectParticlesToRead(): "
+               << "Query results valid, have " << queryResults.size()
+               << " particles" << std::endl;
+    }
+    
 #endif // HAVE_LIBFASTBIT
 
 #ifdef PARALLEL
@@ -904,7 +941,9 @@ avtH5PartFileFormat::SelectParticlesToRead()
             
             if( PAR_Rank() )
             {
-                H5PartSetViewIndices(file, NULL, 0);
+                h5part_int64_t *indices = new h5part_int64_t[0];
+                H5PartSetViewIndices(file, indices, 0);
+                delete[] indices;
                 
                 debug5 << "SelectParticlesToRead(): Rank " << rank
                        << " no particles to read." << std::endl;
@@ -939,6 +978,13 @@ avtH5PartFileFormat::SelectParticlesToRead()
             // Restrict the view to the particles read on this rank.
             if (myStart < nParticles)
             {
+                debug5 << "SelectParticlesToRead(): Rank " << rank
+                          << " reads particles "
+                          << "(" << myEnd - myStart << ")"
+                          << " from " << myStart << " to " << myEnd-1
+                          << " in the query "
+                          << "(" << nParticles << ")." << std::endl;
+
                 h5part_int64_t *indices = new h5part_int64_t[myEnd - myStart];
 
                 for (h5part_int64_t i=0, j=myStart; j<myEnd; ++i, ++j)
@@ -946,40 +992,38 @@ avtH5PartFileFormat::SelectParticlesToRead()
                 
                 H5PartSetViewIndices(file, indices, myEnd - myStart);
                 delete[] indices;
-
-                debug5 << "SelectParticlesToRead(): Rank " << rank
-                          << " reads particles "
-                          << "(" << myEnd - myStart << ")"
-                          << " from " << myStart << " to " << myEnd-1
-                          << " in the query "
-                          << "(" << nParticles << ")." << std::endl;
             }
             // This rank does not have any particles to read.
             else
             {
-                H5PartSetViewIndices(file, NULL, 0);
+                h5part_int64_t *indices = new h5part_int64_t[0];
                 
                 debug5 << "SelectParticlesToRead(): Rank " << rank
                        << " no particles to read." << std::endl;
+
+                H5PartSetViewIndices(file, indices, 0);
+                delete[] indices;
             }
         }
     }
     else
     {
 #endif // HAVE_LIBFASTBIT
-        // Not using fastbit or no selection
-        debug5 << "SelectParticlesToRead(): "
-               << "FastBit disabled or no selection active" << std::endl;
+        // Not using FastBit or no selection
+        debug5 << "SelectParticlesToRead(): Rank " << rank
+               << " FastBit disabled or no selection active" << std::endl;
         
         // Read the entire data set on rank zero
         if (disableDomainDecomposition)
         {
-            debug5 << "SelectParticlesToRead(): "
-                   << "Domain decomposition disabled." << std::endl;
+            debug5 << "SelectParticlesToRead(): Rank " << rank
+                   << " domain decomposition disabled." << std::endl;
             
             if( PAR_Rank() )
             {
-                H5PartSetViewIndices(file, NULL, 0);
+                h5part_int64_t *indices = new h5part_int64_t[0];
+                H5PartSetViewIndices(file, indices, 0);
+                delete[] indices;
 
                 debug5 << "SelectParticlesToRead(): Rank " << rank
                        << " no particles to read." << std::endl;
@@ -989,7 +1033,7 @@ avtH5PartFileFormat::SelectParticlesToRead()
                 H5PartSetView(file, -1, -1);
           
                 debug5 << "SelectParticlesToRead(): Rank " << rank
-                       << " All particles in file read (no query)."
+                       << " all particles in file read (no query)."
                        << std::endl;
             }
         }
@@ -1017,18 +1061,19 @@ avtH5PartFileFormat::SelectParticlesToRead()
                           << " reads particles "
                           << "(" << idEnd - idStart + 1 << ")"
                           << " from " << idStart << " to " << idEnd
-                          << " in the query "
+                          << " in the file "
                           << "(" << nParticles << ")." << std::endl;
             }
             // This rank does not have any particles to read.
             else
             {
-                H5PartSetViewIndices(file, NULL, 0);
+                h5part_int64_t *indices = new h5part_int64_t[0];
+                H5PartSetViewIndices(file, indices, 0);
+                delete[] indices;
                 
                 debug5 << "SelectParticlesToRead(): Rank " << rank
                        << " no particles to read." << std::endl;
-            }
-            
+            }            
         }
 #ifdef HAVE_LIBFASTBIT
     }
@@ -1050,19 +1095,20 @@ avtH5PartFileFormat::SelectParticlesToRead()
         delete[] indices;
 
         debug5 << "SelectParticlesToRead(): Serial "
-               << "All particles in the query read." << std::endl;
+               << " all particles (" << queryResults.size()
+               << " in the query read." << std::endl;
     }
     else
     {
 #endif      
-        // Not using fastbit or no selection
+        // Not using FastBit or no selection
         debug5 << "SelectParticlesToRead(): Serial "
                << "FastBit disabled or no selection active" << std::endl;
 
         H5PartSetView(file, -1, -1);
 
         debug5 << "SelectParticlesToRead(): Serial "
-               << "Reading all particles in file (no query)." << std::endl;
+               << " reading all particles in file (no query)." << std::endl;
         
 #ifdef HAVE_LIBFASTBIT
     }
@@ -1290,9 +1336,8 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
     dataset->SetPoints(vtkpoints);
     vtkpoints->Delete();
 
-#ifdef HAVE_LIBFASTBIT
     //
-    // If using the Fastbit index and a data selection was processed
+    // If using the FastBit index and a data selection was processed
     // successfully then dataset with different connectivity from the
     // original full dataset will be produced.  This means that if
     // we're requesting original cell numbers above up in the database
@@ -1300,29 +1345,317 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
     // calculate them here and send them along so named selections
     // will work properly.
     //
-    // The problem is that this step might not be needed.
-    //
+#ifdef PARALLEL
+    h5part_int64_t nRanks = PAR_Size();
+    h5part_int64_t rank   = PAR_Rank();
+
+#ifdef HAVE_LIBFASTBIT
     if (useFastBitIndex && dataSelectionActive && queryResultsValid)
     {
-        debug5 << "avtH5PartFileFormat::GetParticleMesh: "
-               << "Creating avtOriginalCellNumbers early" << std::endl;
+        debug5 << "avtH5PartFileFormat::GetParticleMesh(): Rank " << rank
+               << " FastBit enabled with a selection active" << std::endl;
+
+        // There is a query/selection. Read only those particles.
+        h5part_int64_t nParticles = queryResults.size();
+
+        // No domain decomposition so read all the particles rank zero.
+        if (disableDomainDecomposition)
+        {
+            debug5 << "avtH5PartFileFormat::GetParticleMesh(): Rank " << rank
+                   << " domain decomposition disabled." << std::endl;
+            
+            if( PAR_Rank() )
+            {
+                debug5 << "avtH5PartFileFormat::GetParticleMesh: Rank " << rank
+                       << " not creating avtOriginalCellNumbers early"
+                       << " no particles to read." << std::endl;
+            }
+            else
+            {
+                // All particles selected are placed on this rank.
+                debug5 << "avtH5PartFileFormat::GetParticleMesh: Rank " << rank
+                       << " Creating avtOriginalCellNumbers early"
+                       << " all particles (" << nParticles << ") "
+                       << " in the query read." << std::endl;
+
+                vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
+                origZones->SetName("avtOriginalCellNumbers");
+                origZones->SetNumberOfComponents(2);
+                origZones->SetNumberOfTuples(queryResults.size());
+                unsigned int *iptr =
+                  (unsigned int *) origZones->GetVoidPointer(0);
+
+                for(size_t ii = 0; ii < queryResults.size(); ++ii)
+                {
+                    // domain 0. This format is SD so it's probably okay.
+                    *iptr++ = 0;
+                    *iptr++ = (unsigned int) queryResults[ii];
+
+                    // debug5 << "Domain " << 0 << " cell  " << queryResults[ii]
+                    //     << std::endl;
+                }
+
+                dataset->GetCellData()->AddArray(origZones);
+                origZones->Delete();
+
+                // All particles selected are read.
+                h5part_int64_t *indices =
+                  new h5part_int64_t[queryResults.size()];
+                
+                std::copy(queryResults.begin(), queryResults.end(), indices);
+                H5PartSetViewIndices(file, indices, queryResults.size());
+                delete[] indices;
+            }
+        }
+
+        // Domain decomposition so read only the particles for this rank.
+        else
+        {
+            // Determine what portion of the query will be read by each rank.
+            h5part_int64_t minParticlesPerRank = 1;
+            h5part_int64_t particlesPerRank =
+              std::max(minParticlesPerRank, (nParticles + nRanks-1) / nRanks);
+
+            // The start is inclusive, the end is exclusive 
+            h5part_int64_t myStart = rank * particlesPerRank;
+            h5part_int64_t myEnd   =
+              std::min(myStart + particlesPerRank, nParticles);
+            
+            // Restrict the view to the particles read on this rank.
+            if (myStart < nParticles)
+            {
+                debug5 << "avtH5PartFileFormat::GetParticleMesh: Rank " << rank
+                       << " creating avtOriginalCellNumbers early"
+                       << " for particles "
+                       << "(" << myEnd - myStart << ")"
+                       << " from " << myStart << " to " << myEnd-1
+                       << " in the query "
+                       << "(" << nParticles << ")." << std::endl;
+
+                vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
+                origZones->SetName("avtOriginalCellNumbers");
+                origZones->SetNumberOfComponents(2);
+                origZones->SetNumberOfTuples(myEnd - myStart);
+                unsigned int *iptr =
+                  (unsigned int *) origZones->GetVoidPointer(0);
+
+                for(size_t ii = myStart; ii < myEnd; ++ii)
+                {
+                    // domain 0. This format is SD so it's probably okay.
+                    *iptr++ = 0;
+                    *iptr++ = (unsigned int) queryResults[ii];
+
+                    // debug5 << "Domain " << 0 << " cell  " << queryResults[ii]
+                    //     << std::endl;
+                }
+
+                dataset->GetCellData()->AddArray(origZones);
+                origZones->Delete();
+            }
+            // This rank does not have any particles to read.
+            else
+            {
+              debug5 << "avtH5PartFileFormat::GetParticleMesh: Rank " << rank
+                     << " not creating avtOriginalCellNumbers"
+                     << " no particles to read." << std::endl;
+
+            }
+        }
+    }
+    else
+    {
+#endif // HAVE_LIBFASTBIT
+        // Not using FastBit or no selection
+        debug5 << "avtH5PartFileFormat::GetParticleMesh: Rank " << rank
+               << " FastBit disabled or no selection." << std::endl;
+
+        // Read the entire data set on rank zero
+        if (disableDomainDecomposition)
+        {
+            debug5 << "avtH5PartFileFormat::GetParticleMesh: Rank " << rank
+                   << " domain decomposition disabled." << std::endl;
+            
+            if( PAR_Rank() )
+            {
+                debug5 << "avtH5PartFileFormat::GetParticleMesh: Rank " << rank
+                       << " not creating avtOriginalCellNumbers"
+                       << " no particles to read." << std::endl;
+            }
+            else
+            {
+                h5part_int64_t nParticles = H5PartGetNumParticles(file);
+
+                debug5 << "avtH5PartFileFormat::GetParticleMesh: Rank " << rank
+                       << " creating avtOriginalCellNumbers early"
+                       << " all particles (" << nParticles
+                       << ") in file read (no query)." << std::endl;
+                
+                vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
+                origZones->SetName("avtOriginalCellNumbers");
+                origZones->SetNumberOfComponents(2);
+                origZones->SetNumberOfTuples(nParticles);
+                unsigned int *iptr =
+                  (unsigned int *) origZones->GetVoidPointer(0);
+
+                for(size_t ii = 0; ii < nParticles; ++ii)
+                {
+                    // domain 0. This format is SD so it's probably okay.
+                    *iptr++ = 0;
+
+                    // NOTE: This is a hack because an index is being
+                    // used NOT the particle ID. The particle ID
+                    // shoudl be read and used.
+                    *iptr++ = (unsigned int) ii;
+
+                    // debug5 << "Domain " << 0 << " cell  " << ii
+                    //     << std::endl;
+                }
+
+                dataset->GetCellData()->AddArray(origZones);
+                origZones->Delete();
+            }
+        }
+
+        // Domain decomposition so read only the particles for this rank.
+        else
+        {
+            // Determine what portion of the file will be read by each rank.
+            h5part_int64_t minParticlesPerRank = 1;
+            h5part_int64_t nParticles = H5PartGetNumParticles(file);
+            h5part_int64_t particlesPerRank =
+              std::max( minParticlesPerRank, (nParticles + nRanks-1) / nRanks);
+
+            // The start is inclusive, the end is inclusive 
+            h5part_int64_t idStart = rank * particlesPerRank;
+            h5part_int64_t idEnd   =
+              std::min(idStart+particlesPerRank-1, nParticles-1);
+
+            // Restrict the view to the particles read on this rank.
+            if (idStart < nParticles )
+            {
+                debug5 << "avtH5PartFileFormat::GetParticleMesh: Rank " << rank
+                       << " creating avtOriginalCellNumbers early"
+                       << " reads particles "
+                       << "(" << idEnd - idStart + 1 << ")"
+                       << " from " << idStart << " to " << idEnd
+                       << " in the file "
+                       << "(" << nParticles << ")." << std::endl;
+
+                vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
+                origZones->SetName("avtOriginalCellNumbers");
+                origZones->SetNumberOfComponents(2);
+                origZones->SetNumberOfTuples(idEnd - idStart + 1);
+                unsigned int *iptr =
+                  (unsigned int *) origZones->GetVoidPointer(0);
+
+                for(size_t ii = idStart; ii <= idEnd; ++ii)
+                {
+                    // domain 0. This format is SD so it's probably okay.
+                    *iptr++ = 0;
+                    // NOTE: This is a hack because an index is being
+                    // used NOT the particle ID. The particle ID
+                    // shoudl be read and used.
+                    *iptr++ = (unsigned int) ii;
+
+                    // debug5 << "Domain " << 0 << " cell  " << ii
+                    //     << std::endl;
+                }
+
+                dataset->GetCellData()->AddArray(origZones);
+                origZones->Delete();
+            }
+            // This rank does not have any particles to read.
+            else
+            {
+                debug5 << "avtH5PartFileFormat::GetParticleMesh: Rank " << rank
+                       << " not creating avtOriginalCellNumbers"
+                       << " no particles to read." << std::endl;
+            }
+        }
+#ifdef HAVE_LIBFASTBIT
+    }
+#endif // HAVE_LIBFASTBIT
+
+#else  // PARALLEL
+
+    // Serial read
+#ifdef HAVE_LIBFASTBIT
+    if (useFastBitIndex && dataSelectionActive && queryResultsValid)
+    {
+        // All particles selected are read.
+        debug5 << "avtH5PartFileFormat::GetParticleMesh(): "
+               << " FastBit enabled with a selection active"
+               << " creating avtOriginalCellNumbers early"
+               << " all particles (" << queryResults.size() << ") "
+               << " in the query read." << std::endl;
 
         vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
         origZones->SetName("avtOriginalCellNumbers");
         origZones->SetNumberOfComponents(2);
         origZones->SetNumberOfTuples(queryResults.size());
-        unsigned int *iptr = (unsigned int *)origZones->GetVoidPointer(0);
+        unsigned int *iptr = (unsigned int *) origZones->GetVoidPointer(0);
 
         for(size_t ii = 0; ii < queryResults.size(); ++ii)
         {
-            *iptr++ = 0; // domain 0. This format is SD so it's probably okay.
-            *iptr++ = (unsigned int)queryResults[ii];
+            // domain 0. This format is SD so it's probably okay.
+            *iptr++ = 0;
+            *iptr++ = (unsigned int) queryResults[ii];
+
+            // debug5 << "Domain " << 0
+            //     << " cell  " << queryResults[ii] << std::endl;
         }
 
         dataset->GetCellData()->AddArray(origZones);
         origZones->Delete();
+
+        // All particles selected are read.
+        h5part_int64_t *indices = new h5part_int64_t[queryResults.size()];
+        std::copy(queryResults.begin(), queryResults.end(), indices);
+        H5PartSetViewIndices(file, indices, queryResults.size());
+        delete[] indices;
     }
+    else
+    {
 #endif
+        h5part_int64_t nParticles = H5PartGetNumParticles(file);
+                
+        // Not using FastBit or no selection
+        debug5 << "avtH5PartFileFormat::GetParticleMesh: Serial "
+               << " not using FastBit or no selection"
+               << " creating avtOriginalCellNumbers early"
+               << " all particles (" << nParticles
+               << ") in file read (no query)." << std::endl;
+
+        vtkUnsignedIntArray *origZones = vtkUnsignedIntArray::New();
+        origZones->SetName("avtOriginalCellNumbers");
+        origZones->SetNumberOfComponents(2);
+        origZones->SetNumberOfTuples(nParticles);
+        unsigned int *iptr =
+          (unsigned int *) origZones->GetVoidPointer(0);
+        
+        for(size_t ii = 0; ii < nParticles; ++ii)
+        {
+            // domain 0. This format is SD so it's probably okay.
+            *iptr++ = 0;
+            
+            // NOTE: This is a hack because an index is being
+            // used NOT the particle ID. The particle ID
+            // shoudl be read and used.
+            *iptr++ = (unsigned int) ii;
+            
+            // debug5 << "Domain " << 0 << " cell  " << ii
+            //     << std::endl;
+        }
+        
+        dataset->GetCellData()->AddArray(origZones);
+        origZones->Delete();
+        
+#ifdef HAVE_LIBFASTBIT
+    }
+#endif // HAVE_LIBFASTBIT
+
+#endif // PARALLEL
+
     visitTimer->StopTimer(t1, "H5PartFileFormat::GetParticleMesh()");
 
     return dataset;
@@ -2414,8 +2747,7 @@ avtH5PartFileFormat::ConstructIdentifiersFromDataRangeSelection(
         std::vector<avtDataSelection *> &drs)
 {
     // NOTE: This function is only called from GetAuxiliaryData if
-    // useFastBitIndex is true. We do not need to check that option
-    // here.
+    // useFastBitIndex is true. So no need to check that option here.
     int t1 = visitTimer->StartTimer();
 
     std::string method =
@@ -2692,6 +3024,7 @@ void avtH5PartFileFormat::PerformQuery()
     H5PartSetStep(file, activeTimeStep);
 
     queryResults.clear();
+
     if (querySpecified == stringQuery)
     {
         debug5 << "String query specified: " << queryString << std::endl;
@@ -2720,6 +3053,7 @@ void avtH5PartFileFormat::PerformQuery()
            << std::endl;
 
     queryResultsValid = true;
+
     visitTimer->StopTimer(t1, "H5PartFileFormat::PerformQuery()");
 }
 #endif
