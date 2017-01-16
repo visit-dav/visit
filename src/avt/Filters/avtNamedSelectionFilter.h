@@ -92,6 +92,7 @@ class AVTFILTERS_API avtNamedSelectionFilter : public avtDataTreeIterator
 
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual avtContract_p ModifyContract(avtContract_p);
+    virtual void          UpdateDataObjectInfo(void);
 
     vtkDataSet           *SelectedData(vtkDataSet *in_ds, 
                                        const std::vector<vtkIdType> &ids);
