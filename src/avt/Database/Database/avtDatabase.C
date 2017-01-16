@@ -867,9 +867,9 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         {
             if (selectionsApplied[i])
             {
-                // We need to set these as invalid, or else caching could kick in
-                // and we might end up using acceleration structures across
-                // pipeline executions that were no longer valid.
+                // We need to set these as invalid, or else caching could
+                // kick in and we might end up using acceleration structures
+                // across pipeline executions that were no longer valid.
                 validity.InvalidateZones();
                 validity.InvalidateNodes();
                 break;
