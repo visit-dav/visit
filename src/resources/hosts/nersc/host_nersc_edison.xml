@@ -4,7 +4,7 @@
     <Field name="host" type="string">edison.nersc.gov</Field>
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">edison##</Field>
-    <Field name="directory" type="string">/usr/common/graphics/visit</Field>
+    <Field name="directory" type="string">/usr/common/software/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
