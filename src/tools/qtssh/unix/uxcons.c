@@ -7,8 +7,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <errno.h>
+
 #include <termios.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "putty.h"
 #include "storage.h"
@@ -68,8 +71,40 @@ void notify_remote_exit(void *frontend)
 {
 }
 
-void timer_change_notify(long next)
+void timer_change_notify(unsigned long next)
 {
+}
+
+/*
+ * Wrapper around Unix read(2), suitable for use on a file descriptor
+ * that's been set into nonblocking mode. Handles EAGAIN/EWOULDBLOCK
+ * by means of doing a one-fd select and then trying again; all other
+ * errors (including errors from select) are returned to the caller.
+ */
+static int block_and_read(int fd, void *buf, size_t len)
+{
+    int ret;
+
+    while ((ret = read(fd, buf, len)) < 0 && (
+#ifdef EAGAIN
+               (errno == EAGAIN) ||
+#endif
+#ifdef EWOULDBLOCK
+               (errno == EWOULDBLOCK) ||
+#endif
+               0)) {
+
+        fd_set rfds;
+        FD_ZERO(&rfds);
+        FD_SET(fd, &rfds);
+        ret = select(fd+1, &rfds, NULL, NULL, NULL);
+        assert(ret != 0);
+        if (ret < 0)
+            return ret;
+        assert(FD_ISSET(fd, &rfds));
+    }
+
+    return ret;
 }
 
 int verify_ssh_host_key(void *frontend, char *host, int port, char *keytype,
@@ -161,7 +196,7 @@ int verify_ssh_host_key(void *frontend, char *host, int port, char *keytype,
 	newmode.c_lflag |= ECHO | ISIG | ICANON;
 	tcsetattr(0, TCSANOW, &newmode);
 	line[0] = '\0';
-	if (read(0, line, sizeof(line) - 1) <= 0)
+	if (block_and_read(0, line, sizeof(line) - 1) <= 0)
 	    /* handled below */;
 	tcsetattr(0, TCSANOW, &oldmode);
     }
@@ -214,7 +249,7 @@ int askalg(void *frontend, const char *algtype, const char *algname,
 	newmode.c_lflag |= ECHO | ISIG | ICANON;
 	tcsetattr(0, TCSANOW, &newmode);
 	line[0] = '\0';
-	if (read(0, line, sizeof(line) - 1) <= 0)
+	if (block_and_read(0, line, sizeof(line) - 1) <= 0)
 	    /* handled below */;
 	tcsetattr(0, TCSANOW, &oldmode);
     }
@@ -233,7 +268,7 @@ int askalg(void *frontend, const char *algtype, const char *algname,
  * Ask whether to wipe a session log file before writing to it.
  * Returns 2 for wipe, 1 for append, 0 for cancel (don't log).
  */
-int askappend(void *frontend, Filename filename,
+int askappend(void *frontend, Filename *filename,
 	      void (*callback)(void *ctx, int result), void *ctx)
 {
     static const char msgtemplate[] =
@@ -254,11 +289,11 @@ int askappend(void *frontend, Filename filename,
 
     premsg(&cf);
     if (console_batch_mode) {
-	fprintf(stderr, msgtemplate_batch, FILENAME_MAX, filename.path);
+	fprintf(stderr, msgtemplate_batch, FILENAME_MAX, filename->path);
 	fflush(stderr);
 	return 0;
     }
-    fprintf(stderr, msgtemplate, FILENAME_MAX, filename.path);
+    fprintf(stderr, msgtemplate, FILENAME_MAX, filename->path);
     fflush(stderr);
 
     {
@@ -268,7 +303,7 @@ int askappend(void *frontend, Filename filename,
 	newmode.c_lflag |= ECHO | ISIG | ICANON;
 	tcsetattr(0, TCSANOW, &newmode);
 	line[0] = '\0';
-	if (read(0, line, sizeof(line) - 1) <= 0)
+	if (block_and_read(0, line, sizeof(line) - 1) <= 0)
 	    /* handled below */;
 	tcsetattr(0, TCSANOW, &oldmode);
     }
@@ -319,38 +354,54 @@ void console_provide_logctx(void *logctx)
 void logevent(void *frontend, const char *string)
 {
     struct termios cf;
-    premsg(&cf);
+    if ((flags & FLAG_STDERR) && (flags & FLAG_VERBOSE))
+        premsg(&cf);
     if (console_logctx)
 	log_eventlog(console_logctx, string);
-    postmsg(&cf);
+    if ((flags & FLAG_STDERR) && (flags & FLAG_VERBOSE))
+        postmsg(&cf);
 }
 
 /*
- * Special function to print text to the console for password
- * prompts and the like. Uses /dev/tty or stderr, in that order of
- * preference; also sanitises escape sequences out of the text, on
+ * Special functions to read and print to the console for password
+ * prompts and the like. Uses /dev/tty or stdin/stderr, in that order
+ * of preference; also sanitises escape sequences out of the text, on
  * the basis that it might have been sent by a hostile SSH server
  * doing malicious keyboard-interactive.
  */
-static void console_prompt_text(FILE **confp, const char *data, int len)
+static void console_open(FILE **outfp, int *infd)
+{
+    int fd;
+
+    if ((fd = open("/dev/tty", O_RDWR)) >= 0) {
+        *infd = fd;
+        *outfp = fdopen(*infd, "w");
+    } else {
+        *infd = 0;
+        *outfp = stderr;
+    }
+}
+static void console_close(FILE *outfp, int infd)
+{
+    if (outfp != stderr)
+        fclose(outfp);             /* will automatically close infd too */
+}
+
+static void console_prompt_text(FILE *outfp, const char *data, int len)
 {
     int i;
 
-    if (!*confp) {
-	if ((*confp = fopen("/dev/tty", "w")) == NULL)
-	    *confp = stderr;
-    }
-
     for (i = 0; i < len; i++)
 	if ((data[i] & 0x60) || (data[i] == '\n'))
-	    fputc(data[i], *confp);
-    fflush(*confp);
+	    fputc(data[i], outfp);
+    fflush(outfp);
 }
 
 int console_get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
 {
     size_t curr_prompt;
-    FILE *confp = NULL;
+    FILE *outfp = NULL;
+    int infd;
 
     /*
      * Zero all the results, in case we abort half-way through.
@@ -358,11 +409,13 @@ int console_get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
     {
 	int i;
 	for (i = 0; i < p->n_prompts; i++)
-	    memset(p->prompts[i]->result, 0, p->prompts[i]->result_len);
+            prompt_set_result(p->prompts[i], "");
     }
 
     if (p->n_prompts && console_batch_mode)
 	return 0;
+
+    console_open(&outfp, &infd);
 
     /*
      * Preamble.
@@ -370,50 +423,66 @@ int console_get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
     /* We only print the `name' caption if we have to... */
     if (p->name_reqd && p->name) {
 	size_t l = strlen(p->name);
-	console_prompt_text(&confp, p->name, l);
+	console_prompt_text(outfp, p->name, l);
 	if (p->name[l-1] != '\n')
-	    console_prompt_text(&confp, "\n", 1);
+	    console_prompt_text(outfp, "\n", 1);
     }
     /* ...but we always print any `instruction'. */
     if (p->instruction) {
 	size_t l = strlen(p->instruction);
-	console_prompt_text(&confp, p->instruction, l);
+	console_prompt_text(outfp, p->instruction, l);
 	if (p->instruction[l-1] != '\n')
-	    console_prompt_text(&confp, "\n", 1);
+	    console_prompt_text(outfp, "\n", 1);
     }
 
     for (curr_prompt = 0; curr_prompt < p->n_prompts; curr_prompt++) {
 
 	struct termios oldmode, newmode;
-	int i;
+	int len;
 	prompt_t *pr = p->prompts[curr_prompt];
 
-	tcgetattr(0, &oldmode);
+	tcgetattr(infd, &oldmode);
 	newmode = oldmode;
 	newmode.c_lflag |= ISIG | ICANON;
 	if (!pr->echo)
 	    newmode.c_lflag &= ~ECHO;
 	else
 	    newmode.c_lflag |= ECHO;
-	tcsetattr(0, TCSANOW, &newmode);
+	tcsetattr(infd, TCSANOW, &newmode);
 
-	console_prompt_text(&confp, pr->prompt, strlen(pr->prompt));
+	console_prompt_text(outfp, pr->prompt, strlen(pr->prompt));
 
-	i = read(0, pr->result, pr->result_len - 1);
+        len = 0;
+        while (1) {
+            int ret;
 
-	tcsetattr(0, TCSANOW, &oldmode);
+            prompt_ensure_result_size(pr, len * 5 / 4 + 512);
+            ret = read(infd, pr->result + len, pr->resultsize - len - 1);
+            if (ret <= 0) {
+                len = -1;
+                break;
+            }
+            len += ret;
+            if (pr->result[len - 1] == '\n') {
+                len--;
+                break;
+            }
+        }
 
-	if (i > 0 && pr->result[i-1] == '\n')
-	    i--;
-	pr->result[i] = '\0';
+	tcsetattr(infd, TCSANOW, &oldmode);
 
 	if (!pr->echo)
-	    console_prompt_text(&confp, "\n", 1);
+	    console_prompt_text(outfp, "\n", 1);
 
+        if (len < 0) {
+            console_close(outfp, infd);
+            return 0;                  /* failure due to read error */
+        }
+
+	pr->result[len] = '\0';
     }
 
-    if (confp && confp != stderr)
-	fclose(confp);
+    console_close(outfp, infd);
 
     return 1; /* success */
 }
