@@ -451,9 +451,11 @@ if [ $quartz = true ]
 then
    if [ $test = no ]
    then
-      cp /usr/tmp/$user/quartz/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-quartz.tar.gz
-      cp quartz quartz_install
-      chmod 750 quartz_install;./quartz_install
+      scp quartz386:/usr/tmp/$user/quartz/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-quartz.tar.gz
+      scp visit$ver2.linux-x86_64-quartz.tar.gz quartz:
+      scp visit-install quartz:
+      scp quartz quartz:quartz_install
+      ssh quartz "chmod 750 quartz_install;./quartz_install"
    fi
 fi
 
