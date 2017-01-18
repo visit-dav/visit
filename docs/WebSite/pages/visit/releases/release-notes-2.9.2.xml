@@ -46,7 +46,7 @@
   <li>The <i>Maintain view limits</i> setting on the <i>Advanced</i> tab in the View window is now also saved when saving settings, not just when saving a session.</li>
 </ul>
 
-<p><b><font size="4">Changes for VisIt developers in version 2.9.2</font></b></p>
+<h2>Changes for VisIt developers in version 2.9.2</h2>
 <ul>
   <li>Support was added for using the CUDA profiler. The CUDA profiler is enabled with the "-nvprof" command line option, for example, to launch the serial engine with the CUDA profiler use "visit -nvprof engine_ser".</li>
 </ul>
