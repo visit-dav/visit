@@ -24,14 +24,38 @@ typedef struct FontSpec FontSpec;
 unsigned long parse_blocksize(const char *bs);
 char ctrlparse(char *s, char **next);
 
+size_t host_strcspn(const char *s, const char *set);
+char *host_strchr(const char *s, int c);
+char *host_strrchr(const char *s, int c);
+char *host_strduptrim(const char *s);
+
 char *dupstr(const char *s);
 char *dupcat(const char *s1, ...);
-char *dupprintf(const char *fmt, ...);
+char *dupprintf(const char *fmt, ...)
+#ifdef __GNUC__
+    __attribute__ ((format (printf, 1, 2)))
+#endif
+    ;
 char *dupvprintf(const char *fmt, va_list ap);
+void burnstr(char *string);
+
+/* String-to-Unicode converters that auto-allocate the destination and
+ * work around the rather deficient interface of mb_to_wc.
+ *
+ * These actually live in miscucs.c, not misc.c (the distinction being
+ * that the former is only linked into tools that also have the main
+ * Unicode support). */
+wchar_t *dup_mb_to_wc_c(int codepage, int flags, const char *string, int len);
+wchar_t *dup_mb_to_wc(int codepage, int flags, const char *string);
+
+int toint(unsigned);
 
 char *fgetline(FILE *fp);
+int strstartswith(const char *s, const char *t);
+int strendswith(const char *s, const char *t);
 
 void base64_encode_atom(unsigned char *data, int n, char *out);
+int base64_decode_atom(char *atom, unsigned char *out);
 
 struct bufchain_granule;
 typedef struct bufchain_tag {
@@ -47,7 +71,23 @@ void bufchain_prefix(bufchain *ch, void **data, int *len);
 void bufchain_consume(bufchain *ch, int len);
 void bufchain_fetch(bufchain *ch, void *data, int len);
 
+int validate_manual_hostkey(char *key);
+
 struct tm ltime(void);
+
+/* Wipe sensitive data out of memory that's about to be freed. Simpler
+ * than memset because we don't need the fill char parameter; also
+ * attempts (by fiddly use of volatile) to inhibit the compiler from
+ * over-cleverly trying to optimise the memset away because it knows
+ * the variable is going out of scope. */
+void smemclr(void *b, size_t len);
+
+/* Compare two fixed-length chunks of memory for equality, without
+ * data-dependent control flow (so an attacker with a very accurate
+ * stopwatch can't try to guess where the first mismatching byte was).
+ * Returns 0 for mismatch or 1 for equality (unlike memcmp), hinted at
+ * by the 'eq' in the name. */
+int smemeq(const void *av, const void *bv, size_t len);
 
 /*
  * Debugging functions.
@@ -128,5 +168,10 @@ void debug_memdump(void *buf, int len, int L);
 #define PUT_16BIT_MSB_FIRST(cp, value) ( \
   (cp)[0] = (unsigned char)((value) >> 8), \
   (cp)[1] = (unsigned char)(value) )
+
+/* Replace NULL with the empty string, permitting an idiom in which we
+ * get a string (pointer,length) pair that might be NULL,0 and can
+ * then safely say things like printf("%.*s", length, NULLTOEMPTY(ptr)) */
+#define NULLTOEMPTY(s) ((s)?(s):"")
 
 #endif

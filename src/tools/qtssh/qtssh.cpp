@@ -17,7 +17,7 @@
 #endif
 
 // Static variables.
-static Config                  *qtssh_config = NULL;
+static Conf                  *qtssh_config = NULL;
 static std::vector<std::string> qtssh_commandline;
 
 // ****************************************************************************
@@ -40,6 +40,10 @@ static std::vector<std::string> qtssh_commandline;
 // Creation:   Wed Jun 13 14:02:02 PDT 2012
 //
 // Modifications:
+//     Kevin Griffin, Fri Jan  6 13:39:12 PST 2017
+//     Changed p->prompts[i]->result_len to p->prompts[i]->resultsize
+//     due to the putty upgrade. Also checked for resultsize being zero before
+//     copying to it.
 //   
 // ****************************************************************************
 
@@ -65,9 +69,15 @@ qtssh_handle_prompt(prompts_t *p, int i, unsigned char *in, int inlen)
         if(!s.isEmpty())
         {
             ret = 1;
-            strncpy(p->prompts[i]->result, s.toStdString().c_str(),
-                    p->prompts[i]->result_len);
-            p->prompts[i]->result[p->prompts[i]->result_len-1] = '\0';
+            
+            if(p->prompts[i]->resultsize > 0) {
+                strncpy(p->prompts[i]->result, s.toStdString().c_str(),
+                        p->prompts[i]->resultsize);
+                p->prompts[i]->result[p->prompts[i]->resultsize-1] = '\0';
+            } else {
+                p->prompts[i]->result = dupstr(s.toStdString().c_str());
+                p->prompts[i]->resultsize = s.size();
+            }
         }
     }
     else
@@ -123,6 +133,8 @@ qtssh_strdup(const std::string &s)
 // Creation:   Wed Jun 13 14:02:02 PDT 2012
 //
 // Modifications:
+//     Kevin Griffin, Thu Jan 12 14:29:26 PST 2017
+//     Used strcmp instead of ==, set CONF_username to the new username
 //   
 // ****************************************************************************
 
@@ -134,16 +146,18 @@ qtssh_handle_new_username(const char *host)
     QString username = win.getUsername(host, status);
     if(status == VisItChangeUsernameWindow::UW_Accepted && !username.isEmpty())
     {
+        conf_set_str(qtssh_config, CONF_username, dupstr(username.toStdString().c_str()));
+        
         // Look for -l until the end or we hit an ssh command.
         bool dashL = false;
         for(size_t i = 1; i < qtssh_commandline.size(); ++i)
         {
-            if(qtssh_commandline[i] == "-l")
+            if(strcmp(qtssh_commandline[i].c_str(),"-l") == 0)
             {
                 dashL = true;
                 break;
             }
-            else if(qtssh_commandline[i] == "ssh")
+            else if(strcmp(qtssh_commandline[i].c_str(),"ssh") == 0)
                 break;
         }
 
@@ -162,7 +176,7 @@ qtssh_handle_new_username(const char *host)
         for(size_t i = 1; i < qtssh_commandline.size(); ++i)
         {
             new_argv[index++] = qtssh_strdup(qtssh_commandline[i]);
-            if(qtssh_commandline[i] == "-l")
+            if(strcmp(qtssh_commandline[i].c_str(),"-l") == 0)
             {
                 new_argv[index++] = qtssh_strdup(username.toStdString());
                 ++i;
@@ -212,6 +226,10 @@ qtssh_handle_new_username(const char *host)
 // Creation:   Wed Jun 13 14:02:02 PDT 2012
 //
 // Modifications:
+//     Kevin Griffin, Fri Jan  6 13:39:12 PST 2017
+//     Changed p->prompts[i]->result_len to p->prompts[i]->resultsize
+//     due to the putty upgrade. Added check for resultsize being equal to
+//     zero. Changed struct to new conf_get_* format.
 //   
 // ****************************************************************************
 
@@ -219,41 +237,46 @@ static int
 qtssh_handle_password(prompts_t *p, int i, unsigned char *in, int inlen, bool passphrase)
 {
     VisItPasswordWindow win;
-
+    
     // Get the new password.
 getpassword:
     VisItPasswordWindow::ReturnCode status = VisItPasswordWindow::PW_Rejected;
-    QString password = win.getPassword(QString(qtssh_config->username),
-                                       QString(qtssh_config->host),
+    QString password = win.getPassword(QString(conf_get_str(qtssh_config, CONF_username)),
+                                       QString(conf_get_str(qtssh_config, CONF_host)),
                                        passphrase,
                                        status);
-
+    
     int ret = -1;
     if(status == VisItPasswordWindow::PW_ChangedUsername)
     {
         win.hide();
-
+        
         // The user wanted to get a new username.
-        qtssh_handle_new_username(qtssh_config->host);
-
+        qtssh_handle_new_username(conf_get_str(qtssh_config, CONF_host));
+        
         win.show();
         goto getpassword;
     }
     else if(status == VisItPasswordWindow::PW_Accepted)
     {
         ret = 1;
-
-        // Copy the password back into the prompts.
-        strncpy(p->prompts[i]->result, password.toStdString().c_str(),
-                p->prompts[i]->result_len);
-        p->prompts[i]->result[p->prompts[i]->result_len-1] = '\0';
+        
+        if(p->prompts[i]->resultsize > 0) {
+            // Copy the password back into the prompts.
+            strncpy(p->prompts[i]->result, password.toStdString().c_str(),
+                    p->prompts[i]->resultsize);
+            p->prompts[i]->result[p->prompts[i]->resultsize-1] = '\0';
+        } else {
+            p->prompts[i]->result = dupstr(password.toStdString().c_str());
+            p->prompts[i]->resultsize = password.size();
+        }
     }
     else
     {
         // The user did not want to enter a password. Exit the program.
         exit(0);
     }
-
+    
     return ret;
 }
 
@@ -319,7 +342,7 @@ int qtssh_get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
 // ****************************************************************************
 
 int
-qtssh_init(int *argc, char **argv, Config *cfg)
+qtssh_init(int *argc, char **argv, Conf *cfg)
 {
     // Stash some information we'll need.
     qtssh_config = cfg;
