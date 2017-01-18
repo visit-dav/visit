@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[What's New in VisIt]]></title>
-  <IM>LLNL-WEB-707917</IM>
+  <IM>LLNL-WEB-717999</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[August 31, 2016]]></lastchanged>
+  <lastchanged><![CDATA[January 18, 2017]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,8 +22,10 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
+<h2>January, 2017 - VisIt 2.12.1 released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.12.1 is primarily a bug-fix release that resolves about ten important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.12.1">VisIt 2.12.1 Release Notes</a>.</p>
 <h2>November, 2016 - VisIt 2.12 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.12 contains almost twenty bug-fixes and new features. It is closer to a bug fix release in scope except for the fact that the component protocols changed, necessitating a major release. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.12.0">VisIt 2.12 Release Notes</a>.</p>
+<p>VisIt 2.12 contains many bug-fixes and new features. It is closer to a bug fix release in scope except for the fact that the component protocols changed, necessitating a major release. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.12.0">VisIt 2.12 Release Notes</a>.</p>
 <h2>August, 2016 - VisIt 2.11 released</h2>
 <p>VisIt 2.11 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.11.0">VisIt 2.11 Release Notes</a>.</p>
 <h4>1.  The re-architecting of the Parallel Integral Curve System was completed.</h4>
