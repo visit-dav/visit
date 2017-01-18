@@ -53,16 +53,22 @@
 #   Brad Whitlock, Fri Jun  7 22:03:52 PDT 2013
 #   Static build fixes.
 #
+#   Kevin Griffin, Tue Jan 17 10:29:26 PST 2017
+#   Upgraded source code to version 0.67
+#
 #****************************************************************************/
 
 # All of the platform independent plink sources.
 SET(PLINK_CORE_SOURCES
 be_all_s.c
+callback.c
 cmdline.c
+conf.c
 cproxy.c
 ldisc.c
 logging.c
 misc.c
+noterm.c
 pgssapi.c
 pinger.c
 portfwd.c
@@ -88,6 +94,7 @@ sshrsa.c
 sshsh256.c
 sshsh512.c
 sshsha.c
+sshshare.c
 sshzlib.c
 telnet.c
 timing.c
@@ -99,19 +106,26 @@ x11fwd.c
 
 # All of the windows specific plink sources.
 SET(PLINK_WINDOWS_SOURCES
+errsock.c
 windows/plink.rc
 windows/putty.ico
+windows/wincapi.c
 windows/wincons.c
 windows/windefs.c
 windows/wingss.c
 windows/winhandl.c
+windows/winhsock.c
 windows/winmisc.c
 windows/winnet.c
 windows/winnoise.c
 windows/winnojmp.c
+windows/winnpc.c
+windows/winnps.c
 windows/winpgntc.c
 windows/winproxy.c
+windows/winsecur.c
 windows/winser.c
+windows/winshare.c
 windows/winstore.c
 windows/wintime.c
 windows/winx11.c
@@ -127,9 +141,11 @@ unix/uxgss.c
 unix/uxmisc.c
 unix/uxnet.c
 unix/uxnoise.c
+unix/uxpeer.c
 unix/uxproxy.c
 unix/uxsel.c
 unix/uxser.c
+unix/uxshare.c
 unix/uxsignal.c
 unix/uxstore.c
 )

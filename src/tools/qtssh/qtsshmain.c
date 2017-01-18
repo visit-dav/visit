@@ -15,7 +15,26 @@
 /* LLNL Customize */
 #include "qtssh.h"
 
+static int errs = 0;
+static int using_sftp = 0;
+static int uploading = 0;
+
+int sent_eof = FALSE;
+
 #define WM_AGENT_CALLBACK (WM_APP + 4)
+
+static void tell_char(FILE * stream, char c)
+{
+    fputc(c, stream);
+}
+
+static void tell_str(FILE * stream, char *str)
+{
+    unsigned int i;
+    
+    for (i = 0; i < strlen(str); ++i)
+        tell_char(stream, str[i]);
+}
 
 struct agent_callback {
     void (*callback)(void *, void *, int);
@@ -52,6 +71,19 @@ void modalfatalbox(char *p, ...)
     }
     cleanup_exit(1);
 }
+void nonfatal(char *fmt, ...)
+{
+    char *str, *str2;
+    va_list ap;
+    va_start(ap, fmt);
+    str = dupvprintf(fmt, ap);
+    str2 = dupcat("Error: ", str, "\n", NULL);
+    sfree(str);
+    va_end(ap);
+    tell_str(stderr, str2);
+    sfree(str2);
+    errs++;
+}
 void connection_fatal(void *frontend, char *p, ...)
 {
     va_list ap;
@@ -77,6 +109,9 @@ void cmdline_error(char *p, ...)
     exit(1);
 }
 
+const int share_can_be_downstream = TRUE;
+const int share_can_be_upstream = FALSE;
+
 HANDLE inhandle, outhandle, errhandle;
 struct handle *stdin_handle, *stdout_handle, *stderr_handle;
 DWORD orig_console_mode;
@@ -86,7 +121,7 @@ WSAEVENT netevent;
 
 static Backend *back;
 static void *backhandle;
-static Config cfg;
+static Conf *cfg;
 
 int term_ldisc(Terminal *term, int mode)
 {
@@ -132,7 +167,20 @@ int from_backend_untrusted(void *frontend_handle, const char *data, int len)
     assert(!"Unexpected call to from_backend_untrusted()");
     return 0; /* not reached */
 }
-
+int from_backend_eof(void *frontend)
+{
+    /*
+     * We usually expect to be the party deciding when to close the
+     * connection, so if we see EOF before we sent it ourselves, we
+     * should panic. The exception is if we're using old-style scp and
+     * downloading rather than uploading.
+     */
+    if ((using_sftp || uploading) && !sent_eof) {
+        connection_fatal(frontend,
+                         "Received unexpected end-of-file from server");
+    }
+    return FALSE;
+}
 int get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
 {
     int ret;
@@ -290,10 +338,11 @@ int main(int argc, char **argv)
     int errors;
     int got_host = FALSE;
     int use_subsystem = 0;
-    long now, next;
+    unsigned long now, next;
 
 /* LLNL Customize */
-    qtssh_init(&argc, argv, &cfg);
+    cfg = conf_new();
+    qtssh_init(&argc, argv, cfg);
 
     sklist = NULL;
     skcount = sksize = 0;
@@ -308,10 +357,10 @@ int main(int argc, char **argv)
     /*
      * Process the command line.
      */
-    do_defaults(NULL, &cfg);
+    do_defaults(NULL, cfg);
     loaded_session = FALSE;
-    default_protocol = cfg.protocol;
-    default_port = cfg.port;
+    default_protocol = conf_get_int(cfg, CONF_protocol);
+    default_port = conf_get_int(cfg, CONF_port);
     errors = 0;
     {
 	/*
@@ -321,16 +370,17 @@ int main(int argc, char **argv)
 	if (p) {
 	    const Backend *b = backend_from_name(p);
 	    if (b) {
-		default_protocol = cfg.protocol = b->protocol;
-		default_port = cfg.port = b->default_port;
+		default_protocol = b->protocol;
+                conf_set_int(cfg, CONF_protocol, default_protocol);
+		default_port = b->default_port;
+                conf_set_int(cfg, CONF_port, default_port);
 	    }
 	}
     }
     while (--argc) {
 	char *p = *++argv;
 	if (*p == '-') {
-	    int ret = cmdline_process_param(p, (argc > 1 ? argv[1] : NULL),
-					    1, &cfg);
+	    int ret = cmdline_process_param(p, (argc > 1 ? argv[1] : NULL), 1, cfg);
 	    if (ret == -2) {
 		fprintf(stderr,
 			"plink: option \"%s\" requires an argument\n", p);
@@ -350,22 +400,22 @@ int main(int argc, char **argv)
                 pgp_fingerprints();
                 exit(1);
             } else if (!strcmp(p, "-log")) {
-                cfg.logtype = LGTYP_PACKETS;
-                cfg.logxfovr = LGXF_APN;
+                conf_set_int(cfg, CONF_logtype, LGTYP_PACKETS);
+                conf_set_int(cfg, CONF_logxfovr, LGXF_APN);
                 if (argc <= 1) {
                     fprintf(stderr,
                             "plink: option \"-log\" requires an argument\n");
 		    errors = 1;
 		} else {
                     --argc;
-		    strcpy(cfg.logfilename.path, *++argv);
+                    conf_set_filename(cfg, CONF_logfilename, filename_from_str(*++argv));
 		}
 	    } else {
 		fprintf(stderr, "plink: unknown option \"%s\"\n", p);
 		errors = 1;
 	    }
 	} else if (*p) {
-	    if (!cfg_launchable(&cfg) || !(got_host || loaded_session)) {
+	    if (!conf_launchable(cfg) || !(got_host || loaded_session)) {
 		char *q = p;
 		/*
 		 * If the hostname starts with "telnet:", set the
@@ -378,7 +428,7 @@ int main(int argc, char **argv)
 		    q += 7;
 		    if (q[0] == '/' && q[1] == '/')
 			q += 2;
-		    cfg.protocol = PROT_TELNET;
+		    conf_set_int(cfg, CONF_protocol, PROT_TELNET);
 		    p = q;
 		    while (*p && *p != ':' && *p != '/')
 			p++;
@@ -386,11 +436,11 @@ int main(int argc, char **argv)
 		    if (*p)
 			*p++ = '\0';
 		    if (c == ':')
-			cfg.port = atoi(p);
+			conf_set_int(cfg, CONF_port, atoi(p));
 		    else
-			cfg.port = -1;
-		    strncpy(cfg.host, q, sizeof(cfg.host) - 1);
-		    cfg.host[sizeof(cfg.host) - 1] = '\0';
+			conf_set_int(cfg, CONF_port, -1);
+
+                    conf_set_str(cfg, CONF_host, dupstr(q));
 		    got_host = TRUE;
 		} else {
 		    char *r, *user, *host;
@@ -405,7 +455,8 @@ int main(int argc, char **argv)
 			*r = '\0';
 			b = backend_from_name(p);
 			if (b) {
-			    default_protocol = cfg.protocol = b->protocol;
+			    default_protocol = b->protocol;
+                            conf_set_int(cfg, CONF_protocol, default_protocol);
 			    portnumber = b->default_port;
 			}
 			p = r + 1;
@@ -432,15 +483,15 @@ int main(int argc, char **argv)
 		     * same name as the hostname.
 		     */
 		    {
-			Config cfg2;
-			do_defaults(host, &cfg2);
-			if (loaded_session || !cfg_launchable(&cfg2)) {
+			Conf *cfg2 = conf_new();
+			do_defaults(host, cfg2);
+			if (loaded_session || !conf_launchable(cfg2)) {
 			    /* No settings for this host; use defaults */
 			    /* (or session was already loaded with -load) */
-			    strncpy(cfg.host, host, sizeof(cfg.host) - 1);
-			    cfg.host[sizeof(cfg.host) - 1] = '\0';
-			    cfg.port = default_port;
+                            conf_set_str(cfg, CONF_host, dupstr(host));
+                            conf_set_int(cfg, CONF_port, default_port);
 			    got_host = TRUE;
+                            conf_free(cfg2);
 			} else {
 			    cfg = cfg2;
 			    loaded_session = TRUE;
@@ -449,9 +500,7 @@ int main(int argc, char **argv)
 
 		    if (user) {
 			/* Patch in specified username. */
-			strncpy(cfg.username, user,
-				sizeof(cfg.username) - 1);
-			cfg.username[sizeof(cfg.username) - 1] = '\0';
+                        conf_set_str(cfg, CONF_username, dupstr(user));
 		    }
 
 		}
@@ -478,9 +527,9 @@ int main(int argc, char **argv)
 		}
 		if (cmdlen) command[--cmdlen]='\0';
 				       /* change trailing blank to NUL */
-		cfg.remote_cmd_ptr = command;
-		cfg.remote_cmd_ptr2 = NULL;
-		cfg.nopty = TRUE;      /* command => no terminal */
+                conf_set_str(cfg, CONF_remote_cmd, command);
+                conf_set_str(cfg, CONF_remote_cmd2, NULL);
+                conf_set_int(cfg, CONF_nopty, TRUE);   /* command => no terminal */
 
 		break;		       /* done with cmdline */
 	    }
@@ -490,70 +539,76 @@ int main(int argc, char **argv)
     if (errors)
 	return 1;
 
-    if (!cfg_launchable(&cfg) || !(got_host || loaded_session)) {
+    if (!conf_launchable(cfg) || !(got_host || loaded_session)) {
 	usage();
     }
+  { /* new scope  for the cfgHost and cfgUsername declarations */
+    char *cfgHost = dupstr(conf_get_str(cfg, CONF_host));
+    char *cfgUsername = dupstr(conf_get_str(cfg, CONF_username)); 
 
     /*
      * Trim leading whitespace off the hostname if it's there.
      */
     {
-	int space = strspn(cfg.host, " \t");
-	memmove(cfg.host, cfg.host+space, 1+strlen(cfg.host)-space);
+	int space = strspn(cfgHost, " \t");
+	memmove(cfgHost, cfgHost+space, 1+strlen(cfgHost)-space);
     }
 
     /* See if host is of the form user@host */
-    if (cfg_launchable(&cfg)) {
-	char *atsign = strrchr(cfg.host, '@');
+    if (conf_launchable(cfg)) {
+	char *atsign = strrchr(cfgHost, '@');
 	/* Make sure we're not overflowing the user field */
 	if (atsign) {
-	    if (atsign - cfg.host < sizeof cfg.username) {
-		strncpy(cfg.username, cfg.host, atsign - cfg.host);
-		cfg.username[atsign - cfg.host] = '\0';
+	    if (atsign - cfgHost < sizeof cfgUsername) {
+		strncpy(cfgUsername, cfgHost, atsign - cfgHost);
+		cfgUsername[atsign - cfgHost] = '\0';
 	    }
-	    memmove(cfg.host, atsign + 1, 1 + strlen(atsign + 1));
+	    memmove(cfgHost, atsign + 1, 1 + strlen(atsign + 1));
 	}
     }
 
     /*
      * Perform command-line overrides on session configuration.
      */
-    cmdline_run_saved(&cfg);
+    cmdline_run_saved(cfg);
 
     /*
      * Apply subsystem status.
      */
     if (use_subsystem)
-	cfg.ssh_subsys = TRUE;
+        conf_set_int(cfg, CONF_ssh_subsys, TRUE);
 
     /*
      * Trim a colon suffix off the hostname if it's there.
      */
-    cfg.host[strcspn(cfg.host, ":")] = '\0';
+    cfgHost[strcspn(cfgHost, ":")] = '\0';
 
     /*
      * Remove any remaining whitespace from the hostname.
      */
     {
 	int p1 = 0, p2 = 0;
-	while (cfg.host[p2] != '\0') {
-	    if (cfg.host[p2] != ' ' && cfg.host[p2] != '\t') {
-		cfg.host[p1] = cfg.host[p2];
+	while (cfgHost[p2] != '\0') {
+	    if (cfgHost[p2] != ' ' && cfgHost[p2] != '\t') {
+		cfgHost[p1] = cfgHost[p2];
 		p1++;
 	    }
 	    p2++;
 	}
-	cfg.host[p1] = '\0';
+	cfgHost[p1] = '\0';
     }
 
-    if (!cfg.remote_cmd_ptr && !*cfg.remote_cmd && !*cfg.ssh_nc_host)
+    conf_set_str(cfg, CONF_host, cfgHost);
+    conf_set_str(cfg, CONF_username, cfgUsername);
+  }
+    if (!conf_get_str(cfg, CONF_remote_cmd) && !conf_get_str(cfg, CONF_ssh_nc_host))
 	flags |= FLAG_INTERACTIVE;
 
     /*
      * Select protocol. This is farmed out into a table in a
      * separate file to enable an ssh-free variant.
      */
-    back = backend_from_proto(cfg.protocol);
+    back = backend_from_proto(conf_get_int(cfg, CONF_protocol));
     if (back == NULL) {
 	fprintf(stderr,
 		"Internal fault: Unsupported protocol found\n");
@@ -564,7 +619,7 @@ int main(int argc, char **argv)
      * Select port.
      */
     if (portnumber != -1)
-	cfg.port = portnumber;
+        conf_set_int(cfg, CONF_port, portnumber);
 
     sk_init();
     if (p_WSAEventSelect == NULL) {
@@ -572,8 +627,8 @@ int main(int argc, char **argv)
 	return 1;
     }
 
-    logctx = log_init(NULL, &cfg);
-    if (cfg.logtype == LGTYP_PACKETS)
+    logctx = log_init(NULL, cfg);
+    if (conf_get_int(cfg, CONF_logtype) == LGTYP_PACKETS)
     {
         logfopen(logctx);
     }
@@ -587,11 +642,12 @@ int main(int argc, char **argv)
 	const char *error;
 	char *realhost;
 	/* nodelay is only useful if stdin is a character device (console) */
-	int nodelay = cfg.tcp_nodelay &&
+	int nodelay = conf_get_int(cfg, CONF_tcp_nodelay) &&
 	    (GetFileType(GetStdHandle(STD_INPUT_HANDLE)) == FILE_TYPE_CHAR);
 
-	error = back->init(NULL, &backhandle, &cfg, cfg.host, cfg.port,
-			   &realhost, nodelay, cfg.tcp_keepalives);
+	error = back->init(NULL, &backhandle, cfg, conf_get_str(cfg, CONF_host), 
+                           conf_get_int(cfg, CONF_port), &realhost, nodelay, 
+                           conf_get_int(cfg, CONF_tcp_keepalives));
 	if (error) {
 	    fprintf(stderr, "Unable to open connection:\n%s", error);
 	    return 1;
@@ -740,11 +796,17 @@ int main(int argc, char **argv)
 	    handle_backlog(stdout_handle) + handle_backlog(stderr_handle) == 0)
 	    break;		       /* we closed the connection */
     }
+
+    if(cfg) {
+        conf_free(cfg);
+    }
+
     exitcode = back->exitcode(backhandle);
     if (exitcode < 0) {
 	fprintf(stderr, "Remote process exit code unavailable\n");
 	exitcode = 1;		       /* this is an error condition */
     }
+
     cleanup_exit(exitcode);
     return 0;			       /* placate compiler warning */
 }
