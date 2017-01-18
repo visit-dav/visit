@@ -65,7 +65,7 @@
 <li>The Multi-Pass CSG discretization method was enhanced to only process duplicate boundary surfaces once. This results in better quality discretizations, a reduction in the amount of memory used, and an improvement in processing speed.</ul>
 </ul>
 
-<p><b><font size="4">Changes for VisIt developers in version 2.8.2</font></b></p>
+<h2>Changes for VisIt developers in version 2.8.2</h2>
 <ul>
 <li>The NERSC custom launcher was modified so that the internal launcher will pass -ppn to the mpiexec and mpirun commands when launching parallel jobs.</li>
 </ul>

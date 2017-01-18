@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[Archive of VisIt Releases]]></title>
-  <IM>LLNL-WEB-707917</IM>
+  <IM>LLNL-WEB-717999</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[November 8, 2016]]></lastchanged>
+  <lastchanged><![CDATA[January 18, 2017]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,8 +22,10 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
+<h2>January, 2017 - VisIt 2.12.1 released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.12.1 is primarily a bug-fix release that resolves about ten important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.12.1">VisIt 2.12.1 Release Notes</a>.</p>
 <h2>November, 2016 - VisIt 2.12 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.12 contains almost twenty bug-fixes and new features. It is closer to a bug fix release in scope except for the fact that the component protocols changed, necessitating a major release. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.12.0">VisIt 2.12 Release Notes</a>.</p>
+<p>VisIt 2.12 contains many bug-fixes and new features. It was closer to a bug fix release in scope except for the fact that the component protocols changed, necessitating a major release. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.12.0">VisIt 2.12 Release Notes</a>.</p>
 <h2>August, 2016 - VisIt 2.11 released</h2>
 <p>VisIt 2.11 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.11.0">VisIt 2.11 Release Notes</a>.</p>
 <h4>1.  The re-architecting of the Parallel Integral Curve System was completed.</h4>
@@ -36,7 +38,7 @@
   <li>The <i>viridis_light</i> color table, contributed by Robert Blake of LLNL, formally at John's Hopkins, was added to VisIt. Low saturation on the lower end of viridis can make it hard to use in 3D settings where lighting is applied. This variant helps address this.</li>
 </ul>
 <h2>June, 2016 - VisIt 2.10.3 released</h2>
-<p>VisIt 2.10.3, was primarily a bug-fix release that resolved about twenty important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.10.3">VisIt 2.10.3 Release Notes</a>.</p>
+<p>VisIt 2.10.3 was primarily a bug-fix release that resolved about twenty important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.10.3">VisIt 2.10.3 Release Notes</a>.</p>
 <h2>March, 2016 - VisIt 2.10.2 released</h2>
 <p>VisIt 2.10.2 was primarily a bug-fix release that resolved about ten important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.10.2">VisIt 2.10.2 Release Notes</a>.</p>
 <h2>February, 2016 - VisIt 2.10.1 released</h2>
@@ -55,7 +57,7 @@
 <h4>3.  The <i>Set save options</i> window was overhauled.</h4>
 <p>The options for setting standard save options and advanced multi-window save options have been re-organized into a much simpler interface and a number of bugs in the window have been corrected.</p>
 <h2>June, 2015 - VisIt 2.9.2 released</h2>
-<p>VisIt 2.9.2, was primarily a bug-fix release that resolved over a dozen important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.9.2">VisIt 2.9.2 Release Notes</a>.</p>
+<p>VisIt 2.9.2 was primarily a bug-fix release that resolved over a dozen important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.9.2">VisIt 2.9.2 Release Notes</a>.</p>
 <h2>May, 2015 - VisIt 2.9.1 released</h2>
 <p>VisIt 2.9.1 was primarily a bug-fix release that resolved twenty important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.9.1">VisIt 2.9.1 Release Notes</a>.</p>
 <h2>March, 2015 - VisIt 2.9 released</h2>
@@ -70,7 +72,7 @@
 <h4>3.  VisIt was integrated with <a href="https://www.seedme.org/">SeedMe.org</a>.</h4>
 <p>It is now possible to easily share your visualizations results via the SeedMe python module, which is now included in VisIt's CLI. See the <a href="http://visitusers.org/index.php?title=Seedme">Seedme examples wiki page</a> on visitusers.org, the <a href="https://www.seedme.org/documentation/programmatic-python-usage"> SeedMe programatic guide</a> and the <a href="https://www.seedme.org/cli-guide">SeedMe command line guide</a> for examples.</p>
 <h2>December, 2014 - VisIt 2.8.2 released</h2>
-<p>VisIt 2.8.2, was primarily a bug-fix release that resolved about two dozen important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.8.2">VisIt 2.8.2 Release Notes</a>.</p>
+<p>VisIt 2.8.2 was primarily a bug-fix release that resolved about two dozen important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.8.2">VisIt 2.8.2 Release Notes</a>.</p>
 <h2>October, 2014 - VisIt 2.8.1 released</h2>
 <p>VisIt 2.8.1 was primarily a bug-fix release that resolved over a dozen important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.8.1">VisIt 2.8.1 Release Notes</a>.</p>
 <h2>September, 2014 - VisIt 2.8 released</h2>
@@ -116,7 +118,7 @@
 <h2>January, 2013 - VisIt 2.6.1 Released</h2>
 <p>VisIt 2.6.1 was primarily a bug-fix release that resolved almost three dozen important issues. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.6.1">VisIt 2.6.1 Release Notes</a>.</p>
 <h2>November, 2012 - VisIt 2.6 Released</h2>
-<p>VisIt 2.6, contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.6.0">VisIt 2.6 Release Notes</a>.</p>
+<p>VisIt 2.6 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.6.0">VisIt 2.6 Release Notes</a>.</p>
 <h4>1.  VisIt has been enhanced to better support double precision values.</h4>
 <p>Additional support for processing data in double precision has been added since the 2.5 release.</p>
 <h4>2.  VisIt's launch scripts have been rewritten in Python.</h4>
