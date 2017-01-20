@@ -1,5 +1,7 @@
-Managing compute engines
-------------------------
+.. _ManagingComputeEngines:
+
+Managing Compute Engines
+========================
 
 VisIt can have many compute engines running at the same time. Much of the time
 the compute engines are those that are installed with VisIt but on occasion,
@@ -19,7 +21,7 @@ manage simulations, display their progress, and provide extra controls for the
 simulations.
 
 Compute Engines Window
-~~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 .. _remote_vis_compute_engine_window:
 
@@ -40,7 +42,7 @@ many processors the engine uses and its style of load balancing.
 
 
 Picking a compute engine
-""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 The **Compute Engines Window** has the concept of an active compute engine.
 Only the active compute engine's progress is displayed in the status bars.
@@ -50,7 +52,7 @@ To pick a new active compute engine, choose a compute engine name from the
 that VisIt is running.
 
 Interrupting a compute engine
-"""""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some operations in VisIt may take a long time to complete so most computations
 are broken down into stages. In the event that you do not want to wait for an
@@ -64,7 +66,7 @@ interrupted are sent into the error state and are listed in red in the
 **Plot list** until they are regenerated.
 
 Closing a compute engine
-""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. _remote_vis_close_compute_engine:
 
@@ -77,7 +79,7 @@ You can close a compute engine when you no longer need it by clicking the
 **Yes** in a confirmation dialog window.
 
 Clearing the compute engine's caches
-""""""""""""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As the compute engine processes data, it caches calculation results in case
 they are needed again for additional calculates. This includes meshes and
@@ -89,7 +91,7 @@ computer's other applications, you can click the **Clear cache** button in the
 **Compute Engine Window**.
 
 Simulation Window
-~~~~~~~~~~~~~~~~~
+-----------------
 
 .. _remote_vis_sim_window:
 
@@ -126,3 +128,4 @@ later. This allows the simulation user to provide hooks that allow the user to
 tell the simulation to execute certain commands like writing a restart file.
 Depending on the complexity of the commands that are exposed, VisIt could
 ultimately be used to steer the simulation as well as visualize its results.
+
