@@ -38,6 +38,10 @@ class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
 #   I modified the script to add some paths to the LD_LIBRARY_PATH if running
 #   on cielo.
 #
+#   Eric Brugger, Thu Jan 19 14:51:03 PST 2017
+#   I added code to map login node names on jade and agate to their IP
+#   addresses since they aren't in DNS.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -45,6 +49,22 @@ class LLNLLauncher(MainLauncher):
         super(LLNLLauncher, self).__init__()
 
     def Customize(self):
+        if self.generalArgs.host == "jade188.llnl.gov":
+            self.generalArgs.host = "130.106.201.19"
+        elif self.generalArgs.host == "jade380.llnl.gov":
+            self.generalArgs.host = "130.106.201.20"
+        elif self.generalArgs.host == "jade386.llnl.gov":
+            self.generalArgs.host = "130.106.201.57"
+        elif self.generalArgs.host == "jade764.llnl.gov":
+            self.generalArgs.host = "130.106.201.58"
+        elif self.generalArgs.host == "jade770.llnl.gov":
+            self.generalArgs.host = "130.106.201.59"
+        elif self.generalArgs.host == "jade962.llnl.gov":
+            self.generalArgs.host = "130.106.201.60"
+        elif self.generalArgs.host == "agate2.llnl.gov":
+            self.generalArgs.host = "130.106.204.1"
+        elif self.generalArgs.host == "agate5.llnl.gov":
+            self.generalArgs.host = "130.106.204.3"
         if self.sectorname() == "ci-fe":
             ld_library_paths = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
             added_ld_library_paths = ["/opt/cray/mpt/5.6.0/gni/mpich2-gnu/47/lib", "/opt/gcc/mpc/0.8.1/lib", "/opt/gcc/mpfr/2.4.2/lib", "/opt/gcc/gmp/4.3.2/lib", "/opt/gcc/4.7.2/snos/lib64", "/opt/cray/atp/1.4.1/lib"]
