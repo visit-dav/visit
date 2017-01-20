@@ -1502,7 +1502,7 @@ H5_FQ_Timestep::createEqualitySelectionQuery(const char *varname,
 
     token = sel->id();
     {
-        writeLock lock(this, "createQuery");
+        writeLock lock(this, "createEqualitySelectionQuery");
         qlist[token] = sel;
         LOGGER(ibis::gVerbose > 2)
             << "H5_FQ_Timestep[" << name() << "] has " << qlist.size()
