@@ -25,4 +25,3 @@ VisIt in client-server mode.
 
     Client_server_mode
     Host_Profiles
-    Managing_compute_engines
