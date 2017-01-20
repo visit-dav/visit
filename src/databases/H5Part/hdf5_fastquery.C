@@ -254,11 +254,10 @@ void HDF5_FQ::executeQuery(const char * query, int64_t time,
     tstep->destroyQuery(tok);
 }
 
-int64_t HDF5_FQ::executeEqualitySelectionQuery
-(const char * varname,
- int64_t time,
- const std::vector<double>& identifiers,
- std::vector<hsize_t>& offset) {
+int64_t HDF5_FQ::executeEqualitySelectionQuery(const char * varname,
+                                               int64_t time,
+                                               const std::vector<double>& identifiers,
+                                               std::vector<hsize_t>& offset) {
     H5_FQ_Timestep *tstep = static_cast<H5_FQ_Timestep*>(timeSlices[time]);
     const char* tok =
         tstep->createEqualitySelectionQuery(varname, identifiers);
