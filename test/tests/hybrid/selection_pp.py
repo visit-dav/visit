@@ -103,9 +103,9 @@ Test("selections_cq_pp_02")
 
 
 s.histogramType = s.HistogramMatches
-s.histogramNumBins = 4
-s.histogramStartBin = 3
-s.histogramEndBin = 3
+s.histogramNumBins = 3
+s.histogramStartBin = 2
+s.histogramEndBin = 2
 UpdateNamedSelection(selName, s)
 DrawPlots()
 Test("selections_cq_pp_03")
