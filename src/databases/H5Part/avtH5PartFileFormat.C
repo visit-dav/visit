@@ -1240,6 +1240,7 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
     // Switch to appropriate time step (opens file if necessary)
     ActivateTimestep(timestate);
 
+#ifdef HAVE_LIBFASTBIT
     idVariableName = defaultIdVariableName;
 
     VarNameToInt64Map_t::const_iterator it =
@@ -1250,7 +1251,10 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
     
     // Select particles to actually read
     SelectParticlesToRead( idVariableName.c_str() );
-
+#else
+    SelectParticlesToRead();
+#endif
+    
     // Read data
     h5part_int64_t nPoints = H5PartGetNumParticles(file);
 
@@ -1675,8 +1679,11 @@ avtH5PartFileFormat::GetVar(int timestate, const char *varName)
     ActivateTimestep(timestate);
 
     // Select particles to actually read
+#ifdef HAVE_LIBFASTBIT
     SelectParticlesToRead( varName );
-
+#else
+    SelectParticlesToRead( );
+#endif
     // Read data
     h5part_int64_t nPoints = H5PartGetNumParticles(file);
 
