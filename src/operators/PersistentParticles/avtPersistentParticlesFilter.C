@@ -1186,12 +1186,12 @@ avtPersistentParticlesFilter::ComputeGlobalSizeAndOffset(
 // Creation:   Fri Jan 20 2017
 //
 // ****************************************************************************
-struct {
+struct pair_sort {
   bool operator()(std::pair<int, int> a, std::pair<int, int> b)
   {   
     return a.second < b.second;
   }   
-} pair_sort;
+};
 
 void avtPersistentParticlesFilter::GlobalizeData(
     vtkDataArray *indexVariable, const int component,
@@ -1229,9 +1229,9 @@ void avtPersistentParticlesFilter::GlobalizeData(
     for(int i=0; i<globalSize; ++i)
       indexes[i] = std::pair<int, int>(i, allIds[i]);
 
-    std::sort( indexes.begin(), indexes.end(), pair_sort );
+    std::sort( indexes.begin(), indexes.end(), pair_sort() );
 
-    // Store teh sorted ids and their original index. 
+    // Store the sorted ids and their original index. 
     for(int i=0; i<globalSize; ++i)
     {
       allIds[i]     = indexes[i].second;
