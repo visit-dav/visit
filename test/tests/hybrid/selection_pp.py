@@ -1,7 +1,7 @@
 
-db = data_path("cq_pp_test_data/cq_pp_test.h5part")
+db = data_path("cq_pp_test_data/cq_pp_test_data.h5part")
 
-#db = "/Projects/VisIt/trunk/data/cq_pp_test/cq_pp_test.h5part"
+#db = "/Projects/VisIt/trunk/data/cq_pp_test_data/cq_pp_test_data.h5part"
 
 OpenDatabase(db, 0, "H5Part")
 
