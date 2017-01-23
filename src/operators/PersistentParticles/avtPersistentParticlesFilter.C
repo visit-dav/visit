@@ -62,6 +62,7 @@
 
 #include <map>
 #include <string>
+#include <algorithm>
 
 // ****************************************************************************
 //  Method: avtPersistentParticlesFilter constructor
@@ -1186,7 +1187,7 @@ avtPersistentParticlesFilter::ComputeGlobalSizeAndOffset(
 //
 // ****************************************************************************
 struct {
-  bool operator()(std::pair<int, double> a, std::pair<int, double> b)
+  bool operator()(std::pair<int, int> a, std::pair<int, int> b)
   {   
     return a.second < b.second;
   }   
