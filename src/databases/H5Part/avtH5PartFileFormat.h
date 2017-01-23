@@ -169,7 +169,7 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
   private:
-    void                   SelectParticlesToRead( const char * );
+    void                   SelectParticlesToRead( const char * = 0 );
     vtkDataSet            *GetParticleMesh(int);
     vtkDataSet            *GetFieldMesh(int, const char *);
     vtkDataArray          *GetFieldVar(int, const char*);
