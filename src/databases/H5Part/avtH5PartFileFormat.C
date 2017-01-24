@@ -965,6 +965,9 @@ avtH5PartFileFormat::SelectParticlesToRead( const char *varName )
 {
     int t1 = visitTimer->StartTimer();
 
+    // reset the view so all particles are considered.
+    H5PartSetView(file, -1, -1);
+
 #ifdef HAVE_LIBFASTBIT
     // Using FastBit with a query, re-run query if necessary.
     if (useFastBitIndex && particleVarNameToFastBitMap[ varName ]  &&
@@ -3002,7 +3005,6 @@ void avtH5PartFileFormat::GetDecomp( h5part_int64_t nObjects,
     lastIndex  = -2;
     total = 0;
   }
-  
 #else   
   firstIndex = 0;
   lastIndex = nObjects-1;
