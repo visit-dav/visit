@@ -638,29 +638,41 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
         //Create and initalize the new dataset
         particlePathData = vtkUnstructuredGrid::New();
         particlePathData->SetPoints(vtkPoints::New(currPoints->GetDataType()));
-        vtkPointData* allData = uGrid->GetPointData();
-        particlePathData->GetPointData()->ShallowCopy(allData);
+        particlePathData->GetPointData()->ShallowCopy(uGrid->GetPointData());
         particlePathData->GetCellData()->ShallowCopy(uGrid->GetCellData());
       }
     }
 
     // Free the memory from the GetAllLeaves function call.
     delete [] dsets;
-
+    
+#ifdef PARALLEL
+    int rank   = PAR_Rank();
+    int nProcs = PAR_Size();
+#else
+    int rank   = 0;
+    int nProcs = 1;
+#endif
     // Parallel
 
     // Points can be scattered across ranks and there is no gaurantee
     // that a point will be on the same rank with each times step. As
-    // such, allo fthe data must be collected with each rank
+    // such, all of the data must be collected with each rank
     // connecting the same points each time step.
+
+    // Note this ifdef can be removed with the code used in serial but
+    // there is no need to globalize the data.
+#ifdef PARALLEL
+    int haveDataAcrossAll = haveData;
     
-#ifdef PARALLEL    
+    SumIntAcrossAllProcessors(haveDataAcrossAll);
+
     int globalSize, myOffset, nCellComps, nPointComps;
-    int *allIds, *allIndexes;
-    double *allPoints, *allPointData, *allCellData;
+    int numPerProc[nPorcs], *allIndexes;
+    double *allIds, *allPoints, *allPointData, *allCellData;
 
     // Globalize all of the ids and their indexes into the array.
-    ComputeGlobalSizeAndOffset( currIndexVar, globalSize, myOffset);
+    ComputeGlobalSizeAndOffset( currIndexVar, numPerProc, globalSize, myOffset);
     // The ids are sorted and have their original indexes.
     GlobalizeData( currIndexVar, component, globalSize, myOffset,
                    allIds, allIndexes);
@@ -673,11 +685,9 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     GlobalizeData( currPointData, globalSize, myOffset, nPointComps, allPointData);
     GlobalizeData( currCellData,  globalSize, myOffset, nCellComps, allCellData);
 
-    long int myStart, myEnd, total, nParticles = globalSize;
+    int myStart, myEnd, total, nParticles = globalSize;
     
-    GetDecomp( nParticles, myStart, myEnd, total );
-
-    int rank = PAR_Rank();
+    GetDecomp( numPerProc, myStart, myEnd, total );
     
     // Connect only those particles that belong to this rank.
     if ( total )
@@ -686,16 +696,6 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
              << " connects " << total << " of " << nParticles << " particles "
              << " from " << myStart << " to " << myEnd
              << " in the tree." << std::endl;
-
-      if( !haveData )
-      {
-        avtCallback::IssueWarning("Trying to process particles but "
-                                  "there was no initial data. This is "
-                                  "typically an indication that the "
-                                  "particles were not evenly distributed "
-                                  "across all ranks.");
-        return;
-      }
     }
     // This rank does not have any particles to connect.
     else
@@ -709,15 +709,17 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     // Write the current particles that belong to this rank into a map
     // to decide which ones should be traced. Check if particle ID is
     // unique, if not then stop tracing of that particle.
-    std::map<int, bool> trace;
+    std::map<double, bool> trace;
     int numSkipped = 0;
 
     for( vtkIdType i=myStart; i<=myEnd; ++i )
     {
-        int id = allIds[i];
+        double id = allIds[i];
 
+        debug5 << id << std::endl;
+        
         // If particle ID is not already in the map then true, else false
-        std::map<int, bool >::iterator fP = trace.find( id );
+        std::map<double, bool >::iterator fP = trace.find( id );
  
         trace[id] = (fP==trace.end());
 
@@ -728,14 +730,14 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     // Traverse the particles that belong to this rank.
     for( unsigned int ii=myStart; ii<=myEnd; ++ii )
     {
-      int id    = allIds[ii];
+      double id = allIds[ii];
       int index = allIndexes[ii];
 
       // Trace only if the particle id is unique
       if (trace[id])
       {
           // Get the current particle path if it is already defined
-          std::map<int, vtkIdType>::iterator lastPoint =
+          std::map<double, vtkIdType>::iterator lastPoint =
             particlePaths.find( id );
           
           double* nextPathPoint = &(allPoints[3*index]);
@@ -833,15 +835,15 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     // should be traced. Check if particle ID is unique, if not then
     // stop tracing of that particle
     vtkIdType nPoints = uGrid->GetNumberOfPoints();
-    std::map<int, bool> trace;
+    std::map<double, bool> trace;
     int numSkipped = 0;
 
     for( vtkIdType i=0 ; i<nPoints ;++i )
     {
-        int id = currIndexVar->GetComponent(i, component);
+        double id = currIndexVar->GetComponent(i, component);
 
         // If particle ID is not already in the map then true, else false
-        std::map<int, bool >::iterator fP = trace.find( id );
+        std::map<double, bool >::iterator fP = trace.find( id );
  
         trace[id] = (fP==trace.end());
 
@@ -852,13 +854,13 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     // Traverse all particles
     for( unsigned int i=0; i<nPoints; ++i )
     {
-      int id = currIndexVar->GetComponent(i, component);
+      double id = currIndexVar->GetComponent(i, component);
 
       // Trace only if the particle id is unique
       if (trace[id])
       {
           // Get the current particle path if it is already defined
-          std::map<int, vtkIdType>::iterator lastPoint =
+          std::map<double, vtkIdType>::iterator lastPoint =
             particlePaths.find( id );
 
           // Get the next point and update its coordinates if necessary
@@ -995,7 +997,7 @@ avtPersistentParticlesFilter::Finalize(void)
             avtDataTree_p newTree = new avtDataTree( particlePathData , 0 );
             SetOutputDataTree(newTree);
             particlePaths.clear(); // Clear the map for the next run
-            particlePaths = std::map<int, vtkIdType>();
+            particlePaths = std::map<double, vtkIdType>();
             particlePathData->Delete();
             particlePathData = NULL;
       }
@@ -1125,7 +1127,7 @@ avtPersistentParticlesFilter::UpdateDataObjectInfo(void)
 // ****************************************************************************
 void
 avtPersistentParticlesFilter::ComputeGlobalSizeAndOffset(
-    vtkDataArray *indexVariable,
+    vtkDataArray *indexVariable, int *numPerProc,
     int &globalSize, int &myOffset) const
 {
     const char *mName =
@@ -1143,7 +1145,6 @@ avtPersistentParticlesFilter::ComputeGlobalSizeAndOffset(
 #ifdef PARALLEL
     // Compute the global selection size.
     int *numPerProcIn = new int[PAR_Size()];
-    int *numPerProc   = new int[PAR_Size()];
 
     for (int i = 0 ; i < PAR_Size() ; i++)
         numPerProcIn[i] = 0;
@@ -1161,7 +1162,6 @@ avtPersistentParticlesFilter::ComputeGlobalSizeAndOffset(
         myOffset += numPerProc[i];
 
     delete [] numPerProcIn;
-    delete [] numPerProc;
 #else
     globalSize = (int) nIds;
     myOffset = 0;
@@ -1187,7 +1187,7 @@ avtPersistentParticlesFilter::ComputeGlobalSizeAndOffset(
 //
 // ****************************************************************************
 struct pair_sort {
-  bool operator()(std::pair<int, int> a, std::pair<int, int> b)
+  bool operator()(std::pair<int, double> a, std::pair<int, double> b)
   {   
     return a.second < b.second;
   }   
@@ -1196,9 +1196,9 @@ struct pair_sort {
 void avtPersistentParticlesFilter::GlobalizeData(
     vtkDataArray *indexVariable, const int component,
     const int globalSize, const int myOffset,
-    int *&allIds, int *&allIndexes) const
+    double *&allIds, int *&allIndexes) const
 {
-    allIds     = new int[globalSize];
+    allIds     = new double[globalSize];
     allIndexes = new int[globalSize];
 
     int nIds;
@@ -1211,23 +1211,23 @@ void avtPersistentParticlesFilter::GlobalizeData(
     
 #ifdef PARALLEL
     // Unpack the data into arrays
-    int *sendIds = new int[globalSize];
-    memset(sendIds, 0, sizeof(int) * globalSize);
+    double *sendIds = new double[globalSize];
+    memset(sendIds, 0, sizeof(double) * globalSize);
 
     for(int i = myOffset, j=0; j<nIds; ++i, ++j)
       sendIds[i] = indexVariable->GetComponent(j, component);
  
     // Globalize
-    SumIntArrayAcrossAllProcessors(sendIds, allIds, globalSize);
+    SumDoubleArrayAcrossAllProcessors(sendIds, allIds, globalSize);
 
     // Now sort all of the ids so each rank will have the same ids
     // with each time step.
 
     // NOTE: If the number of ids changes were screwed.    
-    std::vector< std::pair< int, int > > indexes(globalSize);
+    std::vector< std::pair< int, double > > indexes(globalSize);
 
     for(int i=0; i<globalSize; ++i)
-      indexes[i] = std::pair<int, int>(i, allIds[i]);
+      indexes[i] = std::pair<double, double>(i, allIds[i]);
 
     std::sort( indexes.begin(), indexes.end(), pair_sort() );
 
@@ -1438,7 +1438,7 @@ void avtPersistentParticlesFilter::GlobalizeData(
 //   Distribute a set of objects evenly amongst all ranks
 //
 // Arguments:
-//   nObjects   : The number of objects to be distributed
+//   numPerProc : The number of objects belonging to each rank
 //   firstIndex : The index of the first object on this rank
 //   lastIndex  : The index of the lastst object on this rank
 //   total      : The total number of ojects on this rank
@@ -1447,42 +1447,80 @@ void avtPersistentParticlesFilter::GlobalizeData(
 // Creation:   Fri Jan 20 2017 
 //
 // ****************************************************************************
-void avtPersistentParticlesFilter::GetDecomp( long int nObjects,
-                                              long int &firstIndex,
-                                              long int &lastIndex,
-                                              long int &total ) const
+void avtPersistentParticlesFilter::GetDecomp( int *numPerProc,
+                                              int &firstIndex,
+                                              int &lastIndex,
+                                              int &total ) const
 {
 #ifdef PARALLEL
-  long int rank   = PAR_Rank();
-  long int nProcs = PAR_Size();
-
-  long int nObjectsPerProc = (nObjects / nProcs);
-  long int oneExtraUntil   = (nObjects % nProcs);
-    
-  if (rank < oneExtraUntil)
-  {
-    firstIndex = (rank  ) * (nObjectsPerProc+1);
-    lastIndex  = (rank+1) * (nObjectsPerProc+1) - 1;
-
-    total = lastIndex - firstIndex + 1;
-  }
-  else if( nObjectsPerProc ) 
-  {
-    firstIndex = (rank  ) * (nObjectsPerProc) + oneExtraUntil;
-    lastIndex  = (rank+1) * (nObjectsPerProc) + oneExtraUntil - 1;
-
-    total = lastIndex - firstIndex + 1;
-  }
-  else
+  // Check to see if this processor has any data. If not do
+  // redistribute any data to it.
+  if( numPerProc[PAR_Rank()] == 0 )
   {
     firstIndex = -1;
     lastIndex  = -2;
-    total = 0;
+    total      =  0;
   }
   
-#else   
+  // This processor has data so calculate how many objects it will get.
+  else
+  {
+    int rank   = 0;
+    int nProcs = 0;
+    int nObjects = 0;
+
+    // Get the total number of objects, the total number of processors
+    // with data, and the number of processors with data before this
+    // processor.
+    for( int i=0; i<PAR_Size(); ++i)
+    {
+      nObjects += numPerProc[i];
+
+      // The total number of processors with data. 
+      if( numPerProc[i] )
+      {
+        ++nProcs;
+
+        // The number of processors with data before this
+        // processor. This value is a virtual rank, i.e. what the rank
+        // would be considering only those processors with data.
+        if( i < PAR_Rank() )
+          ++rank;
+      }
+    }
+
+    // Get the number of objects per rank and the remainder.
+    int nObjectsPerProc = (nObjects / nProcs);
+    int oneExtraUntil   = (nObjects % nProcs);
+
+    // Ranks with one extra object.
+    if (rank < oneExtraUntil)
+    {
+        firstIndex = (rank  ) * (nObjectsPerProc+1);
+        lastIndex  = (rank+1) * (nObjectsPerProc+1) - 1;
+        
+        total = lastIndex - firstIndex + 1;
+    }
+    // Ranks with the standard number of objects.
+    else if( nObjectsPerProc ) 
+    {
+        firstIndex = (rank  ) * (nObjectsPerProc) + oneExtraUntil;
+        lastIndex  = (rank+1) * (nObjectsPerProc) + oneExtraUntil - 1;
+        
+        total = lastIndex - firstIndex + 1;
+    }
+    // Ranks with no data - only happens when there are more ranks
+    // than objects.
+    else
+    {
+        firstIndex = -1;
+        lastIndex  = -2;
+        total      =  0;
+    }
+  }
+#else
   firstIndex = 0;
-  lastIndex = nObjects-1;
-  total = nObjects;
+  lastIndex = numPerProc[0] - 1;
+  total     = numPerProc[0];
 #endif
 }
