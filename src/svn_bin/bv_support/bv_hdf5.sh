@@ -704,13 +704,13 @@ function build_hdf5
         fi
         #
         # Install into the VisIt third party location.
-        # Avoid building all the test clients by cd src/hl
+        #
+        # Install all targets until we can figure out
+        # how to avoid installing just the tests.
         #
         info "Installing $bt HDF5 . . ."
-        info "(cd src; $MAKE install)"
-        (cd src; $MAKE install)
-        info "(cd hl; $MAKE install)"
-        (cd hl; $MAKE install)
+        $MAKE install
+
         if [[ $? != 0 ]] ; then
             warn "$bt HDF5 install failed.  Giving up"
             return 1
