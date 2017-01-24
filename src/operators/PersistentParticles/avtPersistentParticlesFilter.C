@@ -647,11 +647,11 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     delete [] dsets;
     
 #ifdef PARALLEL
-    int rank   = PAR_Rank();
     int nProcs = PAR_Size();
+    int rank   = PAR_Rank();
 #else
-    int rank   = 0;
     int nProcs = 1;
+    int rank   = 0;
 #endif
     // Parallel
 
@@ -668,11 +668,14 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     SumIntAcrossAllProcessors(haveDataAcrossAll);
 
     int globalSize, myOffset, nCellComps, nPointComps;
-    int numPerProc[nProcs], *allIndexes;
+    int *numPerProc = new int[nProcs];
+    int *allIndexes;
     double *allIds, *allPoints, *allPointData, *allCellData;
 
     // Globalize all of the ids and their indexes into the array.
-    ComputeGlobalSizeAndOffset( currIndexVar, numPerProc, globalSize, myOffset);
+    ComputeGlobalSizeAndOffset( currIndexVar, numPerProc,
+                                globalSize, myOffset );
+    
     // The ids are sorted and have their original indexes.
     GlobalizeData( currIndexVar, component, globalSize, myOffset,
                    allIds, allIndexes);
@@ -688,6 +691,8 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     int myStart, myEnd, total, nParticles = globalSize;
     
     GetDecomp( numPerProc, myStart, myEnd, total );
+
+    delete [] numPerProc;
     
     // Connect only those particles that belong to this rank.
     if ( total )
@@ -1143,22 +1148,25 @@ avtPersistentParticlesFilter::ComputeGlobalSizeAndOffset(
       nIds = 0;
     
 #ifdef PARALLEL
+    int nProcs = PAR_Size();
+    int rank   = PAR_Rank();
+    
     // Compute the global selection size.
-    int *numPerProcIn = new int[PAR_Size()];
+    int *numPerProcIn = new int[nProcs];
 
-    for (int i = 0 ; i < PAR_Size() ; i++)
+    for (int i = 0 ; i < nProcs ; i++)
         numPerProcIn[i] = 0;
 
-    numPerProcIn[PAR_Rank()] = nIds;
+    numPerProcIn[rank] = nIds;
 
-    SumIntArrayAcrossAllProcessors(numPerProcIn, numPerProc, PAR_Size());
+    SumIntArrayAcrossAllProcessors(numPerProcIn, numPerProc, nProcs);
 
     globalSize = 0;
-    for (int i = 0 ; i < PAR_Size() ; ++i)
+    for (int i=0; i<nProcs; ++i)
         globalSize += numPerProc[i];
     
     myOffset = 0;
-    for (int i = 0 ; i < PAR_Rank() ; ++i)
+    for (int i=0; i<rank; ++i)
         myOffset += numPerProc[i];
 
     delete [] numPerProcIn;
