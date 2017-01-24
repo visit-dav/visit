@@ -93,7 +93,7 @@ class avtPersistentParticlesFilter
   protected:
     PersistentParticlesAttributes   atts;
     std::vector<avtDataTree_p>      trees;
-    std::map<int, vtkIdType>        particlePaths;
+    std::map<double, vtkIdType>        particlePaths;
     vtkUnstructuredGrid*            particlePathData;
 
 
@@ -109,11 +109,12 @@ class avtPersistentParticlesFilter
     void IterateTraceData(int, avtDataTree_p);
 
     void ComputeGlobalSizeAndOffset( vtkDataArray *indexVariable,
+                                     int *numPerProc,
                                      int &globalSize, int &myOffset) const;
 
     void GlobalizeData( vtkDataArray *indexVariable, const int component,
                         const int globalSize, const int myOffset,
-                        int *&alIds, int *&allIndexes) const;
+                        double *&alIds, int *&allIndexes) const;
   
     void GlobalizeData( vtkPoints *currPoints,
                         vtkDataArray *currXData,
@@ -126,10 +127,10 @@ class avtPersistentParticlesFilter
                         const int globalSize, const int myOffset,
                         int &nComponents, double *&allData) const;
 
-    void GetDecomp( long int nObjects,
-                    long int &firstIndex,
-                    long int &lastIndex,
-                    long int &total ) const;
+    void GetDecomp( int *numPerProc,
+                    int &firstIndex,
+                    int &lastIndex,
+                    int &total ) const;
 
     std::string mainVariable;   
     int activeTimeStep;
