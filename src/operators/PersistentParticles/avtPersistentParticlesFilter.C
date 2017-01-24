@@ -668,7 +668,7 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     SumIntAcrossAllProcessors(haveDataAcrossAll);
 
     int globalSize, myOffset, nCellComps, nPointComps;
-    int numPerProc[nPorcs], *allIndexes;
+    int numPerProc[nProcs], *allIndexes;
     double *allIds, *allPoints, *allPointData, *allCellData;
 
     // Globalize all of the ids and their indexes into the array.
