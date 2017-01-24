@@ -128,7 +128,7 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
 
     virtual int            GetNTimesteps(void);
 
-    virtual const char    *GetType(void)   { return "H5Part"; };
+    virtual const char    *GetType(void) { return "H5Part"; };
     virtual void           FreeUpResources(void); 
 
 #ifdef HAVE_LIBFASTBIT 
@@ -159,6 +159,7 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     typedef std::map<std::string, h5part_int64_t>
                            VarNameToInt64Map_t;
     VarNameToInt64Map_t    particleVarNameToTypeMap;
+    VarNameToInt64Map_t    particleVarNameToFastBitMap;
     VarNameToInt64Map_t    fieldScalarVarNameToTypeMap;
     VarNameToInt64Map_t    fieldVectorVarNameToTypeMap;
     VarNameToInt64Map_t    fieldVectorVarNameToFieldRankMap;
@@ -168,12 +169,17 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
   private:
-    void                   SelectParticlesToRead();
+    void                   SelectParticlesToRead( const char * = 0 );
     vtkDataSet            *GetParticleMesh(int);
     vtkDataSet            *GetFieldMesh(int, const char *);
     vtkDataArray          *GetFieldVar(int, const char*);
     void                   GetSubBlock(h5part_int64_t gridDims[3], h5part_int64_t subBlockDims[6]);
     std::string            DoubleToString(double x);
+
+    void GetDecomp( h5part_int64_t nObjects,
+                    h5part_int64_t &firstIndex,
+                    h5part_int64_t &lastIndex,
+                    h5part_int64_t &total );
 
 #ifdef HAVE_LIBFASTBIT
     void                   ConstructHistogram(avtHistogramSpecification *spec);
@@ -201,8 +207,10 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     // contain a valid list of particles indices to load for an active
     // query?
     bool                   dataSelectionActive;
-    // The name of the variable which contains the particle id
+    // The name of the current variable which contains the particle id
     std::string            idVariableName;
+    // The name of the default variable which contains the particle id
+    std::string            defaultIdVariableName;
     // String of a possible active stringQuery
     std::string            queryString;
     // List of ids (values if "idVariableName") for a named selection query

@@ -479,6 +479,10 @@ private:
                        int globalSize, int myOffset,
                        double *&allVariables) const;
 
+    void MakeDataUnique(int &globalSize,
+                        CQCellIdentifier *&allIds,
+                        int *&allFrequencies) const;
+
     // Members that we calculate as stage 1 of the selection calculation during
     // frequency calculation.
     std::string idVariable;
@@ -1141,6 +1145,76 @@ CumulativeQuery<CQCellIdentifier, CQSelection>::GlobalizeData(
 }
 
 // ****************************************************************************
+// Method: CumulativeQuery::MakeDataUnique
+//
+// Purpose:
+
+//   Clean up the globalize selection data by removing all duplicates
+//   cell ids and adjusting the frequency. This will occur when cell
+//   ids are on different ranks for differening time steps thus may be
+//   in allIds multiple times.
+//
+// Arguments:
+//   globalSize     : The size of the global selection.
+//   allIds         : The returned array contains the global selection ids
+//   allFrequencies : The returned array contains the global selection frequencies.
+
+//
+// Programmer: Allen Sanderson
+// Creation:   Fri Jan 20 2017
+//
+// ****************************************************************************
+template <class CQCellIdentifier, class CQSelection>
+void
+CumulativeQuery<CQCellIdentifier, CQSelection>::MakeDataUnique(
+    int &globalSize,
+    CQCellIdentifier *&allIds,
+    int *&allFrequencies) const
+{
+#ifdef PARALLEL
+    std::map< CQCellIdentifier, int> idFreqMap;
+    typename std::map< CQCellIdentifier, int>::iterator it;
+
+    // Get each of the unique cell id 
+    for( int i=0; i<globalSize; ++i )
+    {
+        CQCellIdentifier cellid(allIds[i]);
+
+        it = idFreqMap.find(cellid);
+        
+        if( it == idFreqMap.end() )
+          idFreqMap[cellid] = allFrequencies[i];
+        else
+          // We've seen this cell before
+          idFreqMap[cellid] += allFrequencies[i];
+    }
+
+    // If the map size differs from the global size then ids were not
+    // all unique.
+    if( idFreqMap.size() != globalSize )
+    {
+      // Replace the previous
+      globalSize = idFreqMap.size();
+
+      delete[] allIds;
+      delete[] allFrequencies;
+      
+      allIds         = new CQCellIdentifier[globalSize];
+      allFrequencies = new int[globalSize];
+      
+      it = idFreqMap.begin();
+      
+      for( int i=0; i<globalSize; ++i, ++it )
+      {
+          allIds[i]         = it->first;
+          allFrequencies[i] = it->second;
+      }
+    }
+#endif
+}
+
+
+// ****************************************************************************
 // Method: CumulativeQuery::GlobalizeSelection
 //
 // Purpose: 
@@ -1231,6 +1305,10 @@ CumulativeQuery<CQCellIdentifier, CQSelection>::GlobalizeSelection(
     // Globalize the selection data
     GlobalizeData(selection, globalSize, myOffset, allFrequencies);
 
+    // Make sure the ids are all unique if not, adjust the frequency.
+    MakeDataUnique( globalSize, allIds, allFrequencies );   
+
+    //  Globalize across all time steps
     allIdsPerTimeStep = new CQCellIdentifier *[nts];
     allVariablesPerTimeStep = new double *[nts];
 
@@ -2047,7 +2125,7 @@ CQDomainZoneIdSelection::GlobalizeIds(int globalSize, int myOffset,
     for(i = 0; i < globalSize; ++i, ptr += 2)
     {
         allIds[i] = CQDomainZoneId(ptr[0], ptr[1]);
-        debug5 << "glogal keys " << i << "  "  << ptr[0] << "  " << ptr[1]
+        debug5 << "global keys " << i << "  "  << ptr[0] << "  " << ptr[1]
                << std::endl;
     }
     delete [] allKeys;
@@ -2997,8 +3075,8 @@ CumulativeQueryNamedSelectionExtension::GetSelection(avtDataObject_p dob,
     if(props.GetIdVariableType() == SelectionProperties::UseZoneIDForID)
     {
         CQFilter<CumulativeQuery<CQDomainZoneId, CQDomainZoneIdSelection>,
-                 CQDomainZoneIdSelection
-                > cqFilter;
+                 CQDomainZoneIdSelection > cqFilter;
+        
         cqFilter.GetCumulativeQuery().SetIdVariable(GetIdVariable(props));
         CQDomainZoneIdSelection selection;
         ns = GetSelectionEx(dob, contract, props, cache, cqFilter,
@@ -3030,8 +3108,8 @@ CumulativeQueryNamedSelectionExtension::GetSelection(avtDataObject_p dob,
     else if(props.GetIdVariableType() == SelectionProperties::UseVariableForID)
     {
         CQFilter<CumulativeQuery<CQVariableId, CQVariableIdSelection>,
-                 CQVariableIdSelection
-                > cqFilter;
+                 CQVariableIdSelection > cqFilter;
+        
         cqFilter.GetCumulativeQuery().SetIdVariable(GetIdVariable(props));
         CQVariableIdSelection selection;
         ns = GetSelectionEx(dob, contract, props, cache, cqFilter,

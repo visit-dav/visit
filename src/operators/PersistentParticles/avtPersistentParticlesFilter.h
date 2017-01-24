@@ -52,8 +52,10 @@
 #include <string>
 #include <vector>
 
+class vtkPoints;
 class vtkDataSet;
 class vtkUnstructuredGrid;
+class vtkDataSetAttributes;
 
 // ****************************************************************************
 //  Class: avtPersistentParticlesFilter
@@ -88,12 +90,10 @@ class avtPersistentParticlesFilter
     virtual bool         Equivalent(const AttributeGroup*);
     virtual void         ExamineContract(avtContract_p);
 
-
-
   protected:
     PersistentParticlesAttributes   atts;
     std::vector<avtDataTree_p>      trees;
-    std::map<double, vtkIdType>     particlePaths;
+    std::map<double, vtkIdType>        particlePaths;
     vtkUnstructuredGrid*            particlePathData;
 
 
@@ -104,9 +104,33 @@ class avtPersistentParticlesFilter
     virtual avtContract_p           ModifyContract(avtContract_p);  
     virtual void                    UpdateDataObjectInfo(void);
 
-   private:
+  private:
     void IterateMergeData(int, avtDataTree_p);
     void IterateTraceData(int, avtDataTree_p);
+
+    void ComputeGlobalSizeAndOffset( vtkDataArray *indexVariable,
+                                     int *numPerProc,
+                                     int &globalSize, int &myOffset) const;
+
+    void GlobalizeData( vtkDataArray *indexVariable, const int component,
+                        const int globalSize, const int myOffset,
+                        double *&alIds, int *&allIndexes) const;
+  
+    void GlobalizeData( vtkPoints *currPoints,
+                        vtkDataArray *currXData,
+                        vtkDataArray *currYData,
+                        vtkDataArray *currZData,
+                        int globalSize, int myOffset,
+                        double *&allPoints) const;
+
+    void GlobalizeData( vtkDataSetAttributes *attributes,
+                        const int globalSize, const int myOffset,
+                        int &nComponents, double *&allData) const;
+
+    void GetDecomp( int *numPerProc,
+                    int &firstIndex,
+                    int &lastIndex,
+                    int &total ) const;
 
     std::string mainVariable;   
     int activeTimeStep;
