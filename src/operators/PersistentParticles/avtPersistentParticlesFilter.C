@@ -555,9 +555,6 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     if (nds == 0)
         haveData = false;
 
-    // Free the memory from the GetAllLeaves function call.
-    delete [] dsets;
-
     vtkDataSet *currDs = 0;
     vtkPointSet *uGrid = 0;
     vtkPoints *currPoints = 0;
@@ -646,6 +643,9 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
         particlePathData->GetCellData()->ShallowCopy(uGrid->GetCellData());
       }
     }
+
+    // Free the memory from the GetAllLeaves function call.
+    delete [] dsets;
 
     // Parallel
 
