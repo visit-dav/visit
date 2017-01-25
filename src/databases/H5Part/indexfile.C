@@ -310,7 +310,10 @@ std::string H5_Index::getSortedFieldName() const {
         char data[200];
         (void) memset(data, 0, 200);
         H5PartReadFileAttrib(h5partFile, "sortedKey", (void*)&data);
-        result = std::string(data);
+        if( std::string(data) != std::string("unsorted") )
+          result = std::string(data);
+        else
+          result = "";
     }
     else {
         result = "";
