@@ -359,16 +359,22 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     // assume the id var name is "id".
     char sortedKey[maxVarNameLen];
     memset(sortedKey, 0, sizeof(char) * maxVarNameLen);
-    
+
     if (H5PartReadFileAttrib(file, "sortedKey", sortedKey) == H5PART_SUCCESS)
-        defaultIdVariableName = sortedKey;
+    {
+        if( std::string(sortedKey) != std::string("unsorted") )
+            defaultIdVariableName = sortedKey;
+        else
+            // FIXME: This information should be read as attribute from file.
+            defaultIdVariableName = "id";
+    }
     else
         // FIXME: This information should be read as attribute from file.
         defaultIdVariableName = "id";
 
     idVariableName = defaultIdVariableName;
 #endif
-  
+
     // FIXME: Still need to check whether there are duplicate variable
     // names in field, scalar and vector variables and possibly modify
     // the name so that VisIt can distinguish between them.
