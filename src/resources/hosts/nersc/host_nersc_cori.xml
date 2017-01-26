@@ -4,7 +4,7 @@
     <Field name="host" type="string">cori.nersc.gov</Field>
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">"cori## cori##-224"</Field>
-    <Field name="directory" type="string">/usr/common/graphics/visit</Field>
+    <Field name="directory" type="string">/usr/common/software/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
@@ -37,8 +37,8 @@
         <Field name="active" type="bool">false</Field>
         <Field name="arguments" type="stringVector"></Field>
         <Field name="parallel" type="bool">true</Field>
-        <Field name="launchArgsSet" type="bool">false</Field>
-        <Field name="launchArgs" type="string"></Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">"-C haswell"</Field>
         <Field name="sublaunchArgsSet" type="bool">false</Field>
         <Field name="sublaunchArgs" type="string"></Field>
         <Field name="sublaunchPreCmdSet" type="bool">false</Field>
@@ -77,8 +77,8 @@
         <Field name="active" type="bool">false</Field>
         <Field name="arguments" type="stringVector"></Field>
         <Field name="parallel" type="bool">true</Field>
-        <Field name="launchArgsSet" type="bool">false</Field>
-        <Field name="launchArgs" type="string"></Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">"-C haswell"</Field>
         <Field name="sublaunchArgsSet" type="bool">false</Field>
         <Field name="sublaunchArgs" type="string"></Field>
         <Field name="sublaunchPreCmdSet" type="bool">false</Field>
