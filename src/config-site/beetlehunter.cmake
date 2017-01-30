@@ -1,7 +1,7 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /home/biagas2/visit/thirdparty/3.0.0)
+SET(VISITHOME /home/biagas2/visit/thirdparty/3.1.0)
 
 ## Compiler flags.
 ##
@@ -49,6 +49,11 @@ endif()
 ## Python
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.11)
+
+##
+## PySide
+##
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/2.0.0)
 
 ##
 ## Qt
@@ -128,7 +133,8 @@ VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## FastBit
 ##
-VISIT_OPTION_DEFAULT(VISIT_FASTBIT_DIR ${VISITHOME}/fastbit/1.2.0)
+SETUP_APP_VERSION(FASTBIT 2.0.3)
+VISIT_OPTION_DEFAULT(VISIT_FASTBIT_DIR ${VISITHOME}/fastbit/2.0.3)
 
 ##
 ## GDAL
