@@ -8087,6 +8087,11 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
+    else if (DBIsEmptyQuadvar(qv))
+    {
+        DBFreeQuadvar(qv);
+        return NULL;
+    }
 
     const bool DoExpressions = true;
     avtVarType vtype = metadata->DetermineVarType(tvn, !DoExpressions);
@@ -9011,6 +9016,12 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
+    else if (DBIsEmptyUcdvar(uv))
+    {
+        DBFreeUcdvar(uv);
+        return NULL;
+    }
+
 
     //
     // If the region_pnames option is set, this variable is defined
@@ -9172,6 +9183,11 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
+    else if (DBIsEmptyQuadvar(qv))
+    {
+        DBFreeQuadvar(qv);
+        return NULL;
+    }
 
     //
     // Populate the variable.  This assumes it is a scalar variable.
@@ -9285,6 +9301,11 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
+    else if (DBIsEmptyPointvar(mv))
+    {
+        DBFreePointvar(mv);
+        return NULL;
+    }
 
     if(mv->nvals > 1)
     {
@@ -9334,6 +9355,12 @@ avtSiloFileFormat::GetCsgVar(DBfile *dbfile, const char *vname)
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
+    else if (DBIsEmptyCsgvar(csgv))
+    {
+        DBFreeCsgvar(csgv);
+        return NULL;
+    }
+
 
     //
     // Populate the variable.  This assumes it is a scalar variable.
