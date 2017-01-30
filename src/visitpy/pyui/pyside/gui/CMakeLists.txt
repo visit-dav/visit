@@ -41,19 +41,30 @@
 #
 #*****************************************************************************
 
+if(VISIT_QT5)
+    set(pyside_qt_includes
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Gui_INCLUDE_DIRS}
+        ${Qt5OpenGL_INCLUDE_DIRS})
+else()
+    set(pyside_qt_includes
+        ${QT_QTCORE_INCLUDE_DIR}
+        ${QT_QTGUI_INCLUDE_DIR}
+        ${QT_QTOPENGL_INCLUDE_DIR}
+        ${QT_INCLUDE_DIR})
+endif()
+
 set(pyside_gui_include_paths
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${SHIBOKEN_INCLUDE_DIR}
     ${SHIBOKEN_PYTHON_INCLUDE_DIR}
     ${PYSIDE_INCLUDE_DIR}
-    ${QT_QTCORE_INCLUDE_DIR}
-    ${QT_QTGUI_INCLUDE_DIR}
-    ${QT_QTOPENGL_INCLUDE_DIR}
-    ${QT_INCLUDE_DIR}
+    ${pyside_qt_includes}
     ${PYSIDE_INCLUDE_DIR}
     ${PYSIDE_INCLUDE_DIR}/QtCore
     ${PYSIDE_INCLUDE_DIR}/QtGui
     ${PYSIDE_INCLUDE_DIR}/QtOpenGL
+    ${PYSIDE_INCLUDE_DIR}/QtWidgets
     ${VISIT_SOURCE_DIR}/gui/
     ${VISIT_SOURCE_DIR}/gui/main
     ${VISIT_SOURCE_DIR}/viewer/subjectproxy
@@ -71,7 +82,6 @@ set(pyside_gui_include_paths
     ${VISIT_SOURCE_DIR}/common/Exceptions/Pipeline
     ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData/
     ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-    ${VTK_INSTALL_PREFIX}/include/vtk-5.0
     ${VISIT_SOURCE_DIR}/avt/Math
     ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
     ${VISIT_SOURCE_DIR}/winutil

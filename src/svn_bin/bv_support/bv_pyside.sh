@@ -18,6 +18,13 @@ function bv_pyside_enable
     ON_PYSIDE="on"
     DO_QT="yes"
     ON_QT="on"
+    if [[ "$IS_QT5" == "yes" &&  "$PYSIDE_VERSION" == "1.2.2" ]]; then
+        PYSIDE_VERSION="2.0.0"
+        PYSIDE_FILE="pyside2-combined.tar.gz"
+        PYSIDE_BUILD_DIR="pyside2-combined"
+        PYSIDE_MD5_CHECKSUM=""
+        PYSIDE_SHA256_CHECKSUM=""
+    fi
 }
 
 function bv_pyside_disable
@@ -45,19 +52,24 @@ function bv_pyside_depends_on
 
 function bv_pyside_initialize_vars
 {
-    info "initialize Qt vars"
-    if [[ $IS_QT5 == "yes" && $DO_PYSIDE == "yes" ]]; then
-        error "PySide is not supported with Qt5, please disable"
-    fi
+    info "initialize PySide vars"
 }
 
 function bv_pyside_info
 {
-    export PYSIDE_VERSION=${PYSIDE_VERSION:-"1.2.2"}
-    export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-combined-${PYSIDE_VERSION}.tar.gz"}
-    export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"${PYSIDE_FILE%.tar*}"}
-    export PYSIDE_MD5_CHECKSUM="b33dde999cc4eb13933be43f49c1e890"
-    export PYSIDE_SHA256_CHECKSUM=""
+    if [[ "$IS_QT5" == "yes" ]]; then
+        export PYSIDE_VERSION=${PYSIDE_VERSION:-"2.0.0"}
+        export PYSIDE_FILE=${PYSIDE_FILE:-"pyside2-combined.tar.gz"}
+        export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"${PYSIDE_FILE%.tar*}"}
+        export PYSIDE_MD5_CHECKSUM=""
+        export PYSIDE_SHA256_CHECKSUM=""
+    else
+        export PYSIDE_VERSION=${PYSIDE_VERSION:-"1.2.2"}
+        export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-combined-${PYSIDE_VERSION}.tar.gz"}
+        export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"${PYSIDE_FILE%.tar*}"}
+        export PYSIDE_MD5_CHECKSUM="b33dde999cc4eb13933be43f49c1e890"
+        export PYSIDE_SHA256_CHECKSUM=""
+    fi
 }
 
 function bv_pyside_print
@@ -145,29 +157,46 @@ function build_pyside_component
     #
     # Make sure to pass compilers and compiler flags to cmake
     #
+    popts=""
+    popts="${popts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    popts="${popts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+    popts="${popts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
+    popts="${popts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
+    popts="${popts} -DCMAKE_INSTALL_PREFIX:FILEPATH=\"$VISIT_PYSIDE_DIR\""
+    popts="${popts} -DCMAKE_SKIP_BUILD_RPATH:BOOL=false"
+    popts="${popts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=false"
+    popts="${popts} -DCMAKE_INSTALL_RPATH:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
+    popts="${popts} -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=true"
+    popts="${popts} -DCMAKE_INSTALL_NAME_DIR:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
+    popts="${popts} -DCMAKE_BUILD_TYPE:STRING=\"${VISIT_BUILD_MODE}\""
+    popts="${popts} -DALTERNATIVE_QT_INCLUDE_DIR:FILEPATH=\"$ALTERNATIVE_QT_INCLUDE_DIR\""
+    popts="${popts} -DQT_QMAKE_EXECUTABLE:FILEPATH=\"$QT_QMAKE_COMMAND\""
+    popts="${popts} -DENABLE_ICECC:BOOL=false"
+    popts="${popts} -DShiboken_DIR:FILEPATH=\"$VISIT_PYSIDE_DIR/lib/\""
+    popts="${popts} -DPYTHON_EXECUTABLE:FILEPATH=\"$PYTHON_COMMAND\""
+    popts="${popts} -DPYTHON_INCLUDE_PATH:FILEPATH=\"$PYTHON_INCLUDE_DIR\""
+    popts="${popts} -DPYTHON_LIBRARY:FILEPATH=\"$PYTHON_LIBRARY\""
+    popts="${popts} -DDISABLE_DOCSTRINGS:BOOL=true"
+
+    if [[ "$IS_QT5" == "yes" ]]; then
+        popts="${popts} -DBUILD_TESTS:BOOL=false"
+        popts="${popts} -DENABLE_VERSION_SUFFIX:BOOL=false"
+        popts="${popts} -DCMAKE_PREFIX_PATH=${QT_INSTALL_DIR}/lib/cmake"
+    fi
+
+    info "Configuring pyside/$1 . . ."
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     mkdir -p build
     cd build #PySide fails during in source build..
-    info "Configuring pyside/$1 . . ."
-    $CMAKE_COMMAND .. \
-                   -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-                   -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-                   -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
-                   -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-                   -DCMAKE_INSTALL_PREFIX:FILEPATH="$VISIT_PYSIDE_DIR" \
-                   -DCMAKE_SKIP_BUILD_RPATH:BOOL=FALSE\
-                   -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=FALSE\
-                   -DCMAKE_INSTALL_RPATH:FILEPATH="$VISIT_PYSIDE_DIR/lib" \
-                   -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=TRUE\
-                   -DCMAKE_INSTALL_NAME_DIR:FILEPATH="$VISIT_PYSIDE_DIR/lib" \
-                   -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-                   -DALTERNATIVE_QT_INCLUDE_DIR:FILEPATH="$ALTERNATIVE_QT_INCLUDE_DIR" \
-                   -DQT_QMAKE_EXECUTABLE:FILEPATH="$QT_QMAKE_COMMAND" \
-                   -DENABLE_ICECC:BOOL=0 \
-                   -DShiboken_DIR:FILEPATH="$VISIT_PYSIDE_DIR/lib/"\
-                   -DPYTHON_EXECUTABLE:FILEPATH="$PYTHON_COMMAND"\
-                   -DPYTHON_INCLUDE_PATH:FILEPATH="$PYTHON_INCLUDE_DIR"\
-                   -DPYTHON_LIBRARY:FILEPATH="$PYTHON_LIBRARY"\
-                   -DDISABLE_DOCSTRINGS:BOOL=True
+
+
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
+    fi
+    echo "\"${CMAKE_BIN}\"" ${popts} ../ > bv_run_cmake.sh
+
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "pyside/$1 configuration failed."
 
     if [[ $? != 0 ]] ; then
         warn "Cannot configure pyside/$1, giving up."
@@ -207,12 +236,22 @@ function build_pyside
     cd $PYSIDE_BUILD_DIR || error "Can't cd to PySide build dir."
 
 
-    build_pyside_component shiboken-${PYSIDE_VERSION}
+    if [[ "$IS_QT5" == "yes" ]]; then
+        build_pyside_component shiboken2
+    else
+        build_pyside_component shiboken-${PYSIDE_VERSION}
+    fi
+
     if [[ $? != 0 ]] ; then
         return 1
     fi
 
-    build_pyside_component pyside-qt4.8+${PYSIDE_VERSION}
+    if [[ "$IS_QT5" == "yes" ]]; then
+        build_pyside_component pyside2
+    else
+        build_pyside_component pyside-qt4.8+${PYSIDE_VERSION}
+    fi
+
     if [[ $? != 0 ]] ; then
         return 1
     fi
@@ -252,12 +291,20 @@ function bv_pyside_is_installed
         return 0
     fi
 
-    if  [[ ! -e "${VISIT_PYSIDE_DIR}/shiboken-${PYSIDE_VERSION}_success" ||
-                 ! -e "${VISIT_PYSIDE_DIR}/pyside-qt4.8+${PYSIDE_VERSION}_success" ]]; then
-        info "pyside not installed completely"
-        return 0
-    fi
+    if [[ "IS_QT5" == "yes" ]]; then
+        if  [[ ! -e "${VISIT_PYSIDE_DIR}/shiboken2_success" ||
+                 ! -e "${VISIT_PYSIDE_DIR}/pyside2_success" ]]; then
+            info "pyside not installed completely"
+            return 0
+        fi
+    else
 
+        if  [[ ! -e "${VISIT_PYSIDE_DIR}/shiboken-${PYSIDE_VERSION}_success" ||
+                 ! -e "${VISIT_PYSIDE_DIR}/pyside-qt4.8+${PYSIDE_VERSION}_success" ]]; then
+            info "pyside not installed completely"
+            return 0
+        fi
+    fi
     return 1
 }
 
