@@ -98,6 +98,7 @@ function bv_qt_qt5
     QT_MD5_CHECKSUM=""
     QT_SHA256_CHECKSUM=""
     IS_QT5="yes"
+    bv_pyside_disable
 }
 
 function bv_qt_initialize_vars
