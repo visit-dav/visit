@@ -61,43 +61,29 @@ IF(VISIT_PYSIDE_DIR)
     set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/ ${CMAKE_PREFIX_PATH})
     set(CMAKE_LIBRARY_PATH ${VISIT_PYSIDE_DIR}/lib ${CMAKE_LIBRARY_PATH})
 
-    if (VISIT_QT5)
-       set(PYSIDE_VERSION "2.0.0")
-       set(pyside_suffix "2")
-    else()
-       set(PYSIDE_VERSION "1.1.1")
-    endif()
-
-    if(NOT Shiboken${pyside_suffix}_FOUND)
-        find_package(Shiboken${pyside_suffix} ${PYSIDE_VERSION})
-    endif()
-
-    if (NOT PySide${pyside_suffix}_FOUND)
-        find_package(PySide${pyside_suffix} ${PYSIDE_VERSION})
-    endif()
-
-    IF(Shiboken${pyside_suffix}_FOUND)
+    if(NOT Shiboken_FOUND)
+        find_package(Shiboken 1.1.1)
+    endif(NOT Shiboken_FOUND)
+    if (NOT PySide_FOUND)
+        find_package(PySide 1.1.1)
+    endif(NOT PySide_FOUND)
+    IF(Shiboken_FOUND)
         SET(GENERATORRUNNER_BINARY ${SHIBOKEN_BINARY})
-    ENDIF()
+    ENDIF(Shiboken_FOUND)
+
 
 ENDIF(VISIT_PYSIDE_DIR)
 
-IF(NOT PySide${pyside_suffix}_FOUND OR NOT Shiboken${pyside_suffix}_FOUND)
+IF(NOT PySide_FOUND OR NOT Shiboken_FOUND)
     #If we dont have shiboken, force pyside off
     MESSAGE(STATUS "PySide NOT found")
     SET(PySide_FOUND 0)
-else()
-    SET(PySide_FOUND 1)
-ENDIF()
+ENDIF (NOT PySide_FOUND OR NOT Shiboken_FOUND)
+
 
 IF(PySide_FOUND)
-    if(VISIT_QT5)
-        SET_UP_THIRD_PARTY(PYSIDE lib include
-          pyside2-python${PYTHON_VERSION} shiboken2-python${PYTHON_VERSION})
-    else()
-        SET_UP_THIRD_PARTY(PYSIDE lib include
+    SET_UP_THIRD_PARTY(PYSIDE lib include
           pyside-python${PYTHON_VERSION} shiboken-python${PYTHON_VERSION})
-    endif()
     # The PySide module is symlinked into the python install VisIt uses for 
     # dev builds.  For 'make install' and 'make package' we need to actually 
     # install the PySide SOs.

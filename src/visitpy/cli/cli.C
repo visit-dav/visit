@@ -575,76 +575,13 @@ main(int argc, char *argv[])
         if(pyside || pyside_gui)
         {
             int error = 0;
-#if defined(VISIT_QT5)
-            if(!error) 
-            {
-                error |= PyRun_SimpleString((char*)"from PySide2.QtCore import *");
-                if(error) 
-                {
-                    std::cerr   << "Error: Unable to import PySide2.QtCore" 
-                                << std::endl;
-                    return (0); 
-                }
-            }
-            if(!error) 
-            {
-                error |= PyRun_SimpleString((char*)"from PySide2.QtGui import *");
-                if(error) 
-                {
-                    std::cerr   << "Error: Unable to import PySide2.QtGui" 
-                                << std::endl;
-                    return (0); 
-                }
-            }
-            if(!error) 
-            {
-                error |= PyRun_SimpleString((char*)"from PySide2.QtOpenGL import *");
-                if(error) 
-                {
-                    std::cerr   << "Error: Unable to import PySide2.QtUiTools " 
-                                << std::endl;
-                    return (0); 
-                }
-            }
-            if(!error) 
-            {
-                error |= PyRun_SimpleString((char*)"from PySide2.QtUiTools import *");
-                if(error) 
-                {
-                    std::cerr   << "Error: Unable to import PySide2.QtUiTools" 
-                                << std::endl;
-                    return (0); 
-                }
-            }
-            if(!error) 
-            {
-                error |= PyRun_SimpleString((char*)"import visit.pyside_support");
-                if(error) 
-                {
-                    std::cerr   << "Error: Unable to import visit.pyside_support" 
-                                << std::endl;
-                    return (0); 
-                }
-            }
-            if(!error) 
-            {
-                error |= PyRun_SimpleString((char*)"import visit.pyside_hook");
-                if(error) 
-                {
-                    std::cerr   << "Error: Unable to import visit.pyside_hook" 
-                                << std::endl;
-                    return (0); 
-                }
-            }
-
-#else
             if(!error) error |= PyRun_SimpleString((char*)"from PySide.QtCore import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide.QtGui import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide.QtOpenGL import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide.QtUiTools import *");
             if(!error) error |= PyRun_SimpleString((char*)"import visit.pyside_support");
             if(!error) error |= PyRun_SimpleString((char*)"import visit.pyside_hook");
-#endif
+            
             if(error) 
             {
                 std::cerr   << "Error: Unable to initialize PySide components" 
@@ -660,7 +597,6 @@ main(int argc, char *argv[])
 
         if(pyside_gui)
         {
-            std::cout   << "pyside_gui path" << std::endl;
             //pysideviewer needs to be executed before visit import
             //so that visit will use the window..
             // we will only have one instance, init it
@@ -675,116 +611,29 @@ main(int argc, char *argv[])
 
             PyRun_SimpleString((char*)"args = sys.argv");
             if(uifile) //if external file then start VisIt in embedded mode
-            {
-            std::cout   << "adding -pyuiembedded arg" << std::endl;
-                error  = PyRun_SimpleString((char*)"args.append('-pyuiembedded')"); //default to embedded
-                if(error)
-                {
-                    std::cerr   << "Error: Unable to append -pyuiembedded" 
-                            << std::endl;
-                    return (0);
-                }
-            }
-            std::cout   << "Running visit.pyside_gui.PySideGUI.instance" << std::endl;
-            error = PyRun_SimpleString((char*)"tmp = visit.pyside_gui.PySideGUI.instance(args)");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to create pyside_gui.PySideGUI.instance"
-                            << std::endl;
-                return (0);
-            }
-            std::cout   << "Running InitializeViewerProxy" << std::endl;
-            error = PyRun_SimpleString((char*)"visit.InitializeViewerProxy(tmp.GetViewerProxyPtr())");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to initialize viewer proxy"
-                            << std::endl;
-                return (0);
-            }
-            std::cout   << "importing GetRenderWindow" << std::endl;
-            error = PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindow");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to import GetRenderWindow"
-                            << std::endl;
-                return (0);
-            }
-            error = PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindowIds");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to import GetRenderWindowIds"
-                            << std::endl;
-                return (0);
-            }
-            error = PyRun_SimpleString((char*)"from visit.pyside_support import GetUIWindow");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to import GetUIWindow"
-                            << std::endl;
-                return (0);
-            }
-            error = PyRun_SimpleString((char*)"from visit.pyside_support import GetPlotWindow");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to import GetPlotWIndow"
-                            << std::endl;
-                return (0);
-            }
-            error = PyRun_SimpleString((char*)"from visit.pyside_support import GetOperatorWindow");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to import GetOperatorWindow"
-                            << std::endl;
-                return (0);
-            }
-            error = PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindow");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to import GetOtherWindow"
-                            << std::endl;
-                return (0);
-            }
-            error = PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindowNames");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to import GetOtherWindowNames"
-                            << std::endl;
-                return (0);
-            }
+                PyRun_SimpleString((char*)"args.append('-pyuiembedded')"); //default to embedded
+            PyRun_SimpleString((char*)"tmp = visit.pyside_gui.PySideGUI.instance(args)");
+            PyRun_SimpleString((char*)"visit.InitializeViewerProxy(tmp.GetViewerProxyPtr())");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindow");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindowIds");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetUIWindow");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetPlotWindow");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetOperatorWindow");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindow");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindowNames");
 
             if(!uifile && !pyside_viewer)
-            {
-std::cout << "Running GetUiWindow.show()" << std::endl;
-                error = PyRun_SimpleString((char*)"GetUIWindow().show()");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to import GetOtherWindowNames"
-                            << std::endl;
-                return (0);
-            }
-            }
+                PyRun_SimpleString((char*)"GetUIWindow().show()");
         }
 
         // setup source file and source stack variables
-        int error = PyRun_SimpleString((char*)"import os\n"
+        PyRun_SimpleString((char*)"import os\n"
                                   "__visit_script_file__  = '<None>'\n"
                                   "__visit_source_file__  = None\n"
                                   "__visit_source_stack__ = [] \n");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to do import os visit_script_file"
-                            << std::endl;
-                return (0);
-            }
 
 
-        error = PyRun_SimpleString((char*)"visit.Launch()");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to run 'visit.Launch()'"
-                            << std::endl;
-                return (0);
-            }
+        PyRun_SimpleString((char*)"visit.Launch()");
 
         // reload symbols from visit, since they may have changed
         PyRun_SimpleString((char*)"from visit import *");
@@ -805,15 +654,7 @@ std::cout << "Running GetUiWindow.show()" << std::endl;
         }
 
         if(!uifile && (pyside_viewer || pyside_gui))
-       { 
-            int error = PyRun_SimpleString((char*)"visit.ShowAllWindows()");
-            if(error)
-            {
-                std::cerr   << "Error: Unable to run 'visit.ShowAllWindows()'"
-                            << std::endl;
-                return (0);
-            }
-        }
+            PyRun_SimpleString((char*)"visit.ShowAllWindows()");
 
         if(uifile && pyside_gui)
         {
