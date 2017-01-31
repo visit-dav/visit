@@ -82,11 +82,11 @@ PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix
     else
         SNPRINTF(tmpStr, 1000, "%sallTimes = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stimeStateFormat = \"%s\"\n", prefix, atts->GetTimeStateFormat().c_str());
+    SNPRINTF(tmpStr, 1000, "%sdirname = \"%s\"\n", prefix, atts->GetDirname().c_str());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sfilename = \"%s\"\n", prefix, atts->GetFilename().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdirname = \"%s\"\n", prefix, atts->GetDirname().c_str());
+    SNPRINTF(tmpStr, 1000, "%stimeStateFormat = \"%s\"\n", prefix, atts->GetTimeStateFormat().c_str());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sdb_type = \"%s\"\n", prefix, atts->GetDb_type().c_str());
     str += tmpStr;
@@ -157,7 +157,7 @@ ExportDBAttributes_GetAllTimes(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ExportDBAttributes_SetTimeStateFormat(PyObject *self, PyObject *args)
+ExportDBAttributes_SetDirname(PyObject *self, PyObject *args)
 {
     ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
 
@@ -165,18 +165,18 @@ ExportDBAttributes_SetTimeStateFormat(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "s", &str))
         return NULL;
 
-    // Set the timeStateFormat in the object.
-    obj->data->SetTimeStateFormat(std::string(str));
+    // Set the dirname in the object.
+    obj->data->SetDirname(std::string(str));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ExportDBAttributes_GetTimeStateFormat(PyObject *self, PyObject *args)
+ExportDBAttributes_GetDirname(PyObject *self, PyObject *args)
 {
     ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetTimeStateFormat().c_str());
+    PyObject *retval = PyString_FromString(obj->data->GetDirname().c_str());
     return retval;
 }
 
@@ -205,7 +205,7 @@ ExportDBAttributes_GetFilename(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ExportDBAttributes_SetDirname(PyObject *self, PyObject *args)
+ExportDBAttributes_SetTimeStateFormat(PyObject *self, PyObject *args)
 {
     ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
 
@@ -213,18 +213,18 @@ ExportDBAttributes_SetDirname(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "s", &str))
         return NULL;
 
-    // Set the dirname in the object.
-    obj->data->SetDirname(std::string(str));
+    // Set the timeStateFormat in the object.
+    obj->data->SetTimeStateFormat(std::string(str));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ExportDBAttributes_GetDirname(PyObject *self, PyObject *args)
+ExportDBAttributes_GetTimeStateFormat(PyObject *self, PyObject *args)
 {
     ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetDirname().c_str());
+    PyObject *retval = PyString_FromString(obj->data->GetTimeStateFormat().c_str());
     return retval;
 }
 
@@ -415,12 +415,12 @@ PyMethodDef PyExportDBAttributes_methods[EXPORTDBATTRIBUTES_NMETH] = {
     {"Notify", ExportDBAttributes_Notify, METH_VARARGS},
     {"SetAllTimes", ExportDBAttributes_SetAllTimes, METH_VARARGS},
     {"GetAllTimes", ExportDBAttributes_GetAllTimes, METH_VARARGS},
-    {"SetTimeStateFormat", ExportDBAttributes_SetTimeStateFormat, METH_VARARGS},
-    {"GetTimeStateFormat", ExportDBAttributes_GetTimeStateFormat, METH_VARARGS},
-    {"SetFilename", ExportDBAttributes_SetFilename, METH_VARARGS},
-    {"GetFilename", ExportDBAttributes_GetFilename, METH_VARARGS},
     {"SetDirname", ExportDBAttributes_SetDirname, METH_VARARGS},
     {"GetDirname", ExportDBAttributes_GetDirname, METH_VARARGS},
+    {"SetFilename", ExportDBAttributes_SetFilename, METH_VARARGS},
+    {"GetFilename", ExportDBAttributes_GetFilename, METH_VARARGS},
+    {"SetTimeStateFormat", ExportDBAttributes_SetTimeStateFormat, METH_VARARGS},
+    {"GetTimeStateFormat", ExportDBAttributes_GetTimeStateFormat, METH_VARARGS},
     {"SetDb_type", ExportDBAttributes_SetDb_type, METH_VARARGS},
     {"GetDb_type", ExportDBAttributes_GetDb_type, METH_VARARGS},
     {"SetDb_type_fullname", ExportDBAttributes_SetDb_type_fullname, METH_VARARGS},
@@ -463,12 +463,12 @@ PyExportDBAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "allTimes") == 0)
         return ExportDBAttributes_GetAllTimes(self, NULL);
-    if(strcmp(name, "timeStateFormat") == 0)
-        return ExportDBAttributes_GetTimeStateFormat(self, NULL);
-    if(strcmp(name, "filename") == 0)
-        return ExportDBAttributes_GetFilename(self, NULL);
     if(strcmp(name, "dirname") == 0)
         return ExportDBAttributes_GetDirname(self, NULL);
+    if(strcmp(name, "filename") == 0)
+        return ExportDBAttributes_GetFilename(self, NULL);
+    if(strcmp(name, "timeStateFormat") == 0)
+        return ExportDBAttributes_GetTimeStateFormat(self, NULL);
     if(strcmp(name, "db_type") == 0)
         return ExportDBAttributes_GetDb_type(self, NULL);
     if(strcmp(name, "db_type_fullname") == 0)
@@ -497,12 +497,12 @@ PyExportDBAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "allTimes") == 0)
         obj = ExportDBAttributes_SetAllTimes(self, tuple);
-    else if(strcmp(name, "timeStateFormat") == 0)
-        obj = ExportDBAttributes_SetTimeStateFormat(self, tuple);
-    else if(strcmp(name, "filename") == 0)
-        obj = ExportDBAttributes_SetFilename(self, tuple);
     else if(strcmp(name, "dirname") == 0)
         obj = ExportDBAttributes_SetDirname(self, tuple);
+    else if(strcmp(name, "filename") == 0)
+        obj = ExportDBAttributes_SetFilename(self, tuple);
+    else if(strcmp(name, "timeStateFormat") == 0)
+        obj = ExportDBAttributes_SetTimeStateFormat(self, tuple);
     else if(strcmp(name, "db_type") == 0)
         obj = ExportDBAttributes_SetDb_type(self, tuple);
     else if(strcmp(name, "db_type_fullname") == 0)
