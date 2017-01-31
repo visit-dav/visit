@@ -3,15 +3,18 @@
     <Field name="allTimes" label="All time steps" type="bool">
       false
     </Field>
-    <Field name="db_type" label="db_type" type="string">
-    </Field>
-    <Field name="db_type_fullname" label="db_type_fullname" type="string">
+    <Field name="dirname" label="dirname" type="string">
+      "."
     </Field>
     <Field name="filename" label="filename" type="string">
       visit_ex_db
     </Field>
-    <Field name="dirname" label="dirname" type="string">
-      "."
+    <Field name="timeStateFormat" label="timeStateFormat" type="string">
+      _%04d
+    </Field>
+    <Field name="db_type" label="db_type" type="string">
+    </Field>
+    <Field name="db_type_fullname" label="db_type_fullname" type="string">
     </Field>
     <Field name="variables" label="variables" type="stringVector">
     </Field>

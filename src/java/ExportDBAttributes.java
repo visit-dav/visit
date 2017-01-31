@@ -57,17 +57,18 @@ import java.util.Vector;
 
 public class ExportDBAttributes extends AttributeSubject
 {
-    private static int ExportDBAttributes_numAdditionalAtts = 9;
+    private static int ExportDBAttributes_numAdditionalAtts = 10;
 
     public ExportDBAttributes()
     {
         super(ExportDBAttributes_numAdditionalAtts);
 
         allTimes = false;
+        dirname = new String(".");
+        filename = new String("visit_ex_db");
+        timeStateFormat = new String("_%04d");
         db_type = new String("");
         db_type_fullname = new String("");
-        filename = new String("visit_ex_db");
-        dirname = new String(".");
         variables = new Vector();
         writeUsingGroups = false;
         groupSize = 48;
@@ -79,10 +80,11 @@ public class ExportDBAttributes extends AttributeSubject
         super(ExportDBAttributes_numAdditionalAtts + nMoreFields);
 
         allTimes = false;
+        dirname = new String(".");
+        filename = new String("visit_ex_db");
+        timeStateFormat = new String("_%04d");
         db_type = new String("");
         db_type_fullname = new String("");
-        filename = new String("visit_ex_db");
-        dirname = new String(".");
         variables = new Vector();
         writeUsingGroups = false;
         groupSize = 48;
@@ -96,10 +98,11 @@ public class ExportDBAttributes extends AttributeSubject
         int i;
 
         allTimes = obj.allTimes;
+        dirname = new String(obj.dirname);
+        filename = new String(obj.filename);
+        timeStateFormat = new String(obj.timeStateFormat);
         db_type = new String(obj.db_type);
         db_type_fullname = new String(obj.db_type_fullname);
-        filename = new String(obj.filename);
-        dirname = new String(obj.dirname);
         variables = new Vector(obj.variables.size());
         for(i = 0; i < obj.variables.size(); ++i)
             variables.addElement(new String((String)obj.variables.elementAt(i)));
@@ -136,10 +139,11 @@ public class ExportDBAttributes extends AttributeSubject
         }
         // Create the return value
         return ((allTimes == obj.allTimes) &&
+                (dirname.equals(obj.dirname)) &&
+                (filename.equals(obj.filename)) &&
+                (timeStateFormat.equals(obj.timeStateFormat)) &&
                 (db_type.equals(obj.db_type)) &&
                 (db_type_fullname.equals(obj.db_type_fullname)) &&
-                (filename.equals(obj.filename)) &&
-                (dirname.equals(obj.dirname)) &&
                 variables_equal &&
                 (writeUsingGroups == obj.writeUsingGroups) &&
                 (groupSize == obj.groupSize) &&
@@ -153,60 +157,67 @@ public class ExportDBAttributes extends AttributeSubject
         Select(0);
     }
 
-    public void SetDb_type(String db_type_)
+    public void SetDirname(String dirname_)
     {
-        db_type = db_type_;
+        dirname = dirname_;
         Select(1);
-    }
-
-    public void SetDb_type_fullname(String db_type_fullname_)
-    {
-        db_type_fullname = db_type_fullname_;
-        Select(2);
     }
 
     public void SetFilename(String filename_)
     {
         filename = filename_;
+        Select(2);
+    }
+
+    public void SetTimeStateFormat(String timeStateFormat_)
+    {
+        timeStateFormat = timeStateFormat_;
         Select(3);
     }
 
-    public void SetDirname(String dirname_)
+    public void SetDb_type(String db_type_)
     {
-        dirname = dirname_;
+        db_type = db_type_;
         Select(4);
+    }
+
+    public void SetDb_type_fullname(String db_type_fullname_)
+    {
+        db_type_fullname = db_type_fullname_;
+        Select(5);
     }
 
     public void SetVariables(Vector variables_)
     {
         variables = variables_;
-        Select(5);
+        Select(6);
     }
 
     public void SetWriteUsingGroups(boolean writeUsingGroups_)
     {
         writeUsingGroups = writeUsingGroups_;
-        Select(6);
+        Select(7);
     }
 
     public void SetGroupSize(int groupSize_)
     {
         groupSize = groupSize_;
-        Select(7);
+        Select(8);
     }
 
     public void SetOpts(DBOptionsAttributes opts_)
     {
         opts = opts_;
-        Select(8);
+        Select(9);
     }
 
     // Property getting methods
     public boolean             GetAllTimes() { return allTimes; }
+    public String              GetDirname() { return dirname; }
+    public String              GetFilename() { return filename; }
+    public String              GetTimeStateFormat() { return timeStateFormat; }
     public String              GetDb_type() { return db_type; }
     public String              GetDb_type_fullname() { return db_type_fullname; }
-    public String              GetFilename() { return filename; }
-    public String              GetDirname() { return dirname; }
     public Vector              GetVariables() { return variables; }
     public boolean             GetWriteUsingGroups() { return writeUsingGroups; }
     public int                 GetGroupSize() { return groupSize; }
@@ -218,20 +229,22 @@ public class ExportDBAttributes extends AttributeSubject
         if(WriteSelect(0, buf))
             buf.WriteBool(allTimes);
         if(WriteSelect(1, buf))
-            buf.WriteString(db_type);
-        if(WriteSelect(2, buf))
-            buf.WriteString(db_type_fullname);
-        if(WriteSelect(3, buf))
-            buf.WriteString(filename);
-        if(WriteSelect(4, buf))
             buf.WriteString(dirname);
+        if(WriteSelect(2, buf))
+            buf.WriteString(filename);
+        if(WriteSelect(3, buf))
+            buf.WriteString(timeStateFormat);
+        if(WriteSelect(4, buf))
+            buf.WriteString(db_type);
         if(WriteSelect(5, buf))
-            buf.WriteStringVector(variables);
+            buf.WriteString(db_type_fullname);
         if(WriteSelect(6, buf))
-            buf.WriteBool(writeUsingGroups);
+            buf.WriteStringVector(variables);
         if(WriteSelect(7, buf))
-            buf.WriteInt(groupSize);
+            buf.WriteBool(writeUsingGroups);
         if(WriteSelect(8, buf))
+            buf.WriteInt(groupSize);
+        if(WriteSelect(9, buf))
             opts.Write(buf);
     }
 
@@ -243,29 +256,32 @@ public class ExportDBAttributes extends AttributeSubject
             SetAllTimes(buf.ReadBool());
             break;
         case 1:
-            SetDb_type(buf.ReadString());
-            break;
-        case 2:
-            SetDb_type_fullname(buf.ReadString());
-            break;
-        case 3:
-            SetFilename(buf.ReadString());
-            break;
-        case 4:
             SetDirname(buf.ReadString());
             break;
+        case 2:
+            SetFilename(buf.ReadString());
+            break;
+        case 3:
+            SetTimeStateFormat(buf.ReadString());
+            break;
+        case 4:
+            SetDb_type(buf.ReadString());
+            break;
         case 5:
-            SetVariables(buf.ReadStringVector());
+            SetDb_type_fullname(buf.ReadString());
             break;
         case 6:
-            SetWriteUsingGroups(buf.ReadBool());
+            SetVariables(buf.ReadStringVector());
             break;
         case 7:
-            SetGroupSize(buf.ReadInt());
+            SetWriteUsingGroups(buf.ReadBool());
             break;
         case 8:
+            SetGroupSize(buf.ReadInt());
+            break;
+        case 9:
             opts.Read(buf);
-            Select(8);
+            Select(9);
             break;
         }
     }
@@ -274,10 +290,11 @@ public class ExportDBAttributes extends AttributeSubject
     {
         String str = new String();
         str = str + boolToString("allTimes", allTimes, indent) + "\n";
+        str = str + stringToString("dirname", dirname, indent) + "\n";
+        str = str + stringToString("filename", filename, indent) + "\n";
+        str = str + stringToString("timeStateFormat", timeStateFormat, indent) + "\n";
         str = str + stringToString("db_type", db_type, indent) + "\n";
         str = str + stringToString("db_type_fullname", db_type_fullname, indent) + "\n";
-        str = str + stringToString("filename", filename, indent) + "\n";
-        str = str + stringToString("dirname", dirname, indent) + "\n";
         str = str + stringVectorToString("variables", variables, indent) + "\n";
         str = str + boolToString("writeUsingGroups", writeUsingGroups, indent) + "\n";
         str = str + intToString("groupSize", groupSize, indent) + "\n";
@@ -288,10 +305,11 @@ public class ExportDBAttributes extends AttributeSubject
 
     // Attributes
     private boolean             allTimes;
+    private String              dirname;
+    private String              filename;
+    private String              timeStateFormat;
     private String              db_type;
     private String              db_type_fullname;
-    private String              filename;
-    private String              dirname;
     private Vector              variables; // vector of String objects
     private boolean             writeUsingGroups;
     private int                 groupSize;
