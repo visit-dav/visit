@@ -57,8 +57,9 @@
 void ExportDBAttributes::Init()
 {
     allTimes = false;
-    filename = "visit_ex_db";
     dirname = ".";
+    filename = "visit_ex_db";
+    timeStateFormat = "_%04d";
     writeUsingGroups = false;
     groupSize = 48;
 
@@ -83,10 +84,11 @@ void ExportDBAttributes::Init()
 void ExportDBAttributes::Copy(const ExportDBAttributes &obj)
 {
     allTimes = obj.allTimes;
+    dirname = obj.dirname;
+    filename = obj.filename;
+    timeStateFormat = obj.timeStateFormat;
     db_type = obj.db_type;
     db_type_fullname = obj.db_type_fullname;
-    filename = obj.filename;
-    dirname = obj.dirname;
     variables = obj.variables;
     writeUsingGroups = obj.writeUsingGroups;
     groupSize = obj.groupSize;
@@ -249,10 +251,11 @@ ExportDBAttributes::operator == (const ExportDBAttributes &obj) const
 {
     // Create the return value
     return ((allTimes == obj.allTimes) &&
+            (dirname == obj.dirname) &&
+            (filename == obj.filename) &&
+            (timeStateFormat == obj.timeStateFormat) &&
             (db_type == obj.db_type) &&
             (db_type_fullname == obj.db_type_fullname) &&
-            (filename == obj.filename) &&
-            (dirname == obj.dirname) &&
             (variables == obj.variables) &&
             (writeUsingGroups == obj.writeUsingGroups) &&
             (groupSize == obj.groupSize) &&
@@ -401,10 +404,11 @@ void
 ExportDBAttributes::SelectAll()
 {
     Select(ID_allTimes,         (void *)&allTimes);
+    Select(ID_dirname,          (void *)&dirname);
+    Select(ID_filename,         (void *)&filename);
+    Select(ID_timeStateFormat,  (void *)&timeStateFormat);
     Select(ID_db_type,          (void *)&db_type);
     Select(ID_db_type_fullname, (void *)&db_type_fullname);
-    Select(ID_filename,         (void *)&filename);
-    Select(ID_dirname,          (void *)&dirname);
     Select(ID_variables,        (void *)&variables);
     Select(ID_writeUsingGroups, (void *)&writeUsingGroups);
     Select(ID_groupSize,        (void *)&groupSize);
@@ -447,6 +451,24 @@ ExportDBAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("allTimes", allTimes));
     }
 
+    if(completeSave || !FieldsEqual(ID_dirname, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("dirname", dirname));
+    }
+
+    if(completeSave || !FieldsEqual(ID_filename, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("filename", filename));
+    }
+
+    if(completeSave || !FieldsEqual(ID_timeStateFormat, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("timeStateFormat", timeStateFormat));
+    }
+
     if(completeSave || !FieldsEqual(ID_db_type, &defaultObject))
     {
         addToParent = true;
@@ -457,18 +479,6 @@ ExportDBAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("db_type_fullname", db_type_fullname));
-    }
-
-    if(completeSave || !FieldsEqual(ID_filename, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("filename", filename));
-    }
-
-    if(completeSave || !FieldsEqual(ID_dirname, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("dirname", dirname));
     }
 
     if(completeSave || !FieldsEqual(ID_variables, &defaultObject))
@@ -539,14 +549,16 @@ ExportDBAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("allTimes")) != 0)
         SetAllTimes(node->AsBool());
+    if((node = searchNode->GetNode("dirname")) != 0)
+        SetDirname(node->AsString());
+    if((node = searchNode->GetNode("filename")) != 0)
+        SetFilename(node->AsString());
+    if((node = searchNode->GetNode("timeStateFormat")) != 0)
+        SetTimeStateFormat(node->AsString());
     if((node = searchNode->GetNode("db_type")) != 0)
         SetDb_type(node->AsString());
     if((node = searchNode->GetNode("db_type_fullname")) != 0)
         SetDb_type_fullname(node->AsString());
-    if((node = searchNode->GetNode("filename")) != 0)
-        SetFilename(node->AsString());
-    if((node = searchNode->GetNode("dirname")) != 0)
-        SetDirname(node->AsString());
     if((node = searchNode->GetNode("variables")) != 0)
         SetVariables(node->AsStringVector());
     if((node = searchNode->GetNode("writeUsingGroups")) != 0)
@@ -569,6 +581,27 @@ ExportDBAttributes::SetAllTimes(bool allTimes_)
 }
 
 void
+ExportDBAttributes::SetDirname(const std::string &dirname_)
+{
+    dirname = dirname_;
+    Select(ID_dirname, (void *)&dirname);
+}
+
+void
+ExportDBAttributes::SetFilename(const std::string &filename_)
+{
+    filename = filename_;
+    Select(ID_filename, (void *)&filename);
+}
+
+void
+ExportDBAttributes::SetTimeStateFormat(const std::string &timeStateFormat_)
+{
+    timeStateFormat = timeStateFormat_;
+    Select(ID_timeStateFormat, (void *)&timeStateFormat);
+}
+
+void
 ExportDBAttributes::SetDb_type(const std::string &db_type_)
 {
     db_type = db_type_;
@@ -580,20 +613,6 @@ ExportDBAttributes::SetDb_type_fullname(const std::string &db_type_fullname_)
 {
     db_type_fullname = db_type_fullname_;
     Select(ID_db_type_fullname, (void *)&db_type_fullname);
-}
-
-void
-ExportDBAttributes::SetFilename(const std::string &filename_)
-{
-    filename = filename_;
-    Select(ID_filename, (void *)&filename);
-}
-
-void
-ExportDBAttributes::SetDirname(const std::string &dirname_)
-{
-    dirname = dirname_;
-    Select(ID_dirname, (void *)&dirname);
 }
 
 void
@@ -635,6 +654,42 @@ ExportDBAttributes::GetAllTimes() const
 }
 
 const std::string &
+ExportDBAttributes::GetDirname() const
+{
+    return dirname;
+}
+
+std::string &
+ExportDBAttributes::GetDirname()
+{
+    return dirname;
+}
+
+const std::string &
+ExportDBAttributes::GetFilename() const
+{
+    return filename;
+}
+
+std::string &
+ExportDBAttributes::GetFilename()
+{
+    return filename;
+}
+
+const std::string &
+ExportDBAttributes::GetTimeStateFormat() const
+{
+    return timeStateFormat;
+}
+
+std::string &
+ExportDBAttributes::GetTimeStateFormat()
+{
+    return timeStateFormat;
+}
+
+const std::string &
 ExportDBAttributes::GetDb_type() const
 {
     return db_type;
@@ -656,30 +711,6 @@ std::string &
 ExportDBAttributes::GetDb_type_fullname()
 {
     return db_type_fullname;
-}
-
-const std::string &
-ExportDBAttributes::GetFilename() const
-{
-    return filename;
-}
-
-std::string &
-ExportDBAttributes::GetFilename()
-{
-    return filename;
-}
-
-const std::string &
-ExportDBAttributes::GetDirname() const
-{
-    return dirname;
-}
-
-std::string &
-ExportDBAttributes::GetDirname()
-{
-    return dirname;
 }
 
 const stringVector &
@@ -723,15 +754,9 @@ ExportDBAttributes::GetOpts()
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-ExportDBAttributes::SelectDb_type()
+ExportDBAttributes::SelectDirname()
 {
-    Select(ID_db_type, (void *)&db_type);
-}
-
-void
-ExportDBAttributes::SelectDb_type_fullname()
-{
-    Select(ID_db_type_fullname, (void *)&db_type_fullname);
+    Select(ID_dirname, (void *)&dirname);
 }
 
 void
@@ -741,9 +766,21 @@ ExportDBAttributes::SelectFilename()
 }
 
 void
-ExportDBAttributes::SelectDirname()
+ExportDBAttributes::SelectTimeStateFormat()
 {
-    Select(ID_dirname, (void *)&dirname);
+    Select(ID_timeStateFormat, (void *)&timeStateFormat);
+}
+
+void
+ExportDBAttributes::SelectDb_type()
+{
+    Select(ID_db_type, (void *)&db_type);
+}
+
+void
+ExportDBAttributes::SelectDb_type_fullname()
+{
+    Select(ID_db_type_fullname, (void *)&db_type_fullname);
 }
 
 void
@@ -783,10 +820,11 @@ ExportDBAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_allTimes:         return "allTimes";
+    case ID_dirname:          return "dirname";
+    case ID_filename:         return "filename";
+    case ID_timeStateFormat:  return "timeStateFormat";
     case ID_db_type:          return "db_type";
     case ID_db_type_fullname: return "db_type_fullname";
-    case ID_filename:         return "filename";
-    case ID_dirname:          return "dirname";
     case ID_variables:        return "variables";
     case ID_writeUsingGroups: return "writeUsingGroups";
     case ID_groupSize:        return "groupSize";
@@ -816,10 +854,11 @@ ExportDBAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_allTimes:         return FieldType_bool;
+    case ID_dirname:          return FieldType_string;
+    case ID_filename:         return FieldType_string;
+    case ID_timeStateFormat:  return FieldType_string;
     case ID_db_type:          return FieldType_string;
     case ID_db_type_fullname: return FieldType_string;
-    case ID_filename:         return FieldType_string;
-    case ID_dirname:          return FieldType_string;
     case ID_variables:        return FieldType_stringVector;
     case ID_writeUsingGroups: return FieldType_bool;
     case ID_groupSize:        return FieldType_int;
@@ -849,10 +888,11 @@ ExportDBAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_allTimes:         return "bool";
+    case ID_dirname:          return "string";
+    case ID_filename:         return "string";
+    case ID_timeStateFormat:  return "string";
     case ID_db_type:          return "string";
     case ID_db_type_fullname: return "string";
-    case ID_filename:         return "string";
-    case ID_dirname:          return "string";
     case ID_variables:        return "stringVector";
     case ID_writeUsingGroups: return "bool";
     case ID_groupSize:        return "int";
@@ -888,6 +928,21 @@ ExportDBAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (allTimes == obj.allTimes);
         }
         break;
+    case ID_dirname:
+        {  // new scope
+        retval = (dirname == obj.dirname);
+        }
+        break;
+    case ID_filename:
+        {  // new scope
+        retval = (filename == obj.filename);
+        }
+        break;
+    case ID_timeStateFormat:
+        {  // new scope
+        retval = (timeStateFormat == obj.timeStateFormat);
+        }
+        break;
     case ID_db_type:
         {  // new scope
         retval = (db_type == obj.db_type);
@@ -896,16 +951,6 @@ ExportDBAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_db_type_fullname:
         {  // new scope
         retval = (db_type_fullname == obj.db_type_fullname);
-        }
-        break;
-    case ID_filename:
-        {  // new scope
-        retval = (filename == obj.filename);
-        }
-        break;
-    case ID_dirname:
-        {  // new scope
-        retval = (dirname == obj.dirname);
         }
         break;
     case ID_variables:

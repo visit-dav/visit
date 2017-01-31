@@ -277,29 +277,18 @@ void
 QvisExportDBWindow::CreateWindowContents()
 {
     // Create a group box for the file information.
-    QGroupBox *infoBox = new QGroupBox(central);
-    infoBox->setTitle(tr("Output"));
-    topLayout->addWidget(infoBox);
+    QGroupBox *fileBox = new QGroupBox(tr("Output"), central);
+    topLayout->addWidget(fileBox);
 
-    QGridLayout *infoLayout = new QGridLayout(infoBox);
-    infoLayout->setMargin(5);
+    QGridLayout *fileLayout = new QGridLayout(fileBox);
+    fileLayout->setMargin(5);
 
-    allTimes = new QCheckBox(tr("Export all time states"), infoBox);
-    connect(allTimes, SIGNAL(toggled(bool)),
-            this, SLOT(allTimesToggled(bool)));
-    infoLayout->addWidget(allTimes, 0, 0, 1, 2);
-
-    filenameLineEdit = new QLineEdit(infoBox);
-    connect(filenameLineEdit, SIGNAL(returnPressed()), this, SLOT(processFilenameText()));
-    QLabel *filenameLabel = new QLabel(tr("File name"), infoBox);
-    infoLayout->addWidget(filenameLabel, 1, 0);
-    infoLayout->addWidget(filenameLineEdit, 1, 1);
-
-    directoryNameLabel = new QLabel(tr("Directory name"), infoBox);
+    // Directory
+    directoryNameLabel = new QLabel(tr("Directory name"), fileBox);
     
     QHBoxLayout *directoryLayout = new QHBoxLayout();
-    directoryNameLineEdit = new QLineEdit(infoBox);
-    directorySelectButton = new QPushButton("...",infoBox);
+    directoryNameLineEdit = new QLineEdit(fileBox);
+    directorySelectButton = new QPushButton("...",fileBox);
     connect(directoryNameLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processDirectoryNameText()));
     directoryLayout->addWidget(directoryNameLineEdit);
@@ -315,20 +304,55 @@ QvisExportDBWindow::CreateWindowContents()
             this, SLOT(selectOutputDirectory()));
     directoryLayout->setSpacing(0);
     
-    infoLayout->addWidget(directoryNameLabel, 2, 0);
-    infoLayout->addLayout(directoryLayout, 2, 1);
+    fileLayout->addWidget(directoryNameLabel, 0, 0);
+    fileLayout->addLayout(directoryLayout, 0, 1);
 
-    fileFormatComboBox = new QComboBox(infoBox);
+    // File name
+    filenameLineEdit = new QLineEdit(fileBox);
+    connect(filenameLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processFilenameText()));
+    QLabel *filenameLabel = new QLabel(tr("File name"), fileBox);
+    fileLayout->addWidget(filenameLabel, 1, 0);
+    fileLayout->addWidget(filenameLineEdit, 1, 1);
+
+    // All time states
+    QHBoxLayout *allTimesLayout = new QHBoxLayout();
+    allTimes = new QCheckBox(tr("Export all time states  "), fileBox);
+    connect(allTimes, SIGNAL(toggled(bool)),
+            this, SLOT(allTimesToggled(bool)));
+    allTimesLayout->addWidget(allTimes);
+
+    // All time states format
+    timeStateFormatLabel = new QLabel(tr("Format:"), fileBox);
+    allTimesLayout->addWidget(timeStateFormatLabel, Qt::AlignRight);
+
+    timeStateFormatEdit = new QLineEdit("_%04d", fileBox);
+    connect(timeStateFormatEdit, SIGNAL(returnPressed()),
+            this, SLOT(processTimeStateFormatText()));
+
+    allTimesLayout->addWidget(timeStateFormatEdit);
+
+    fileLayout->addLayout(allTimesLayout, 3, 0, 1, 2);
+
+    // Line separator
+    QFrame* line = new QFrame();
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    fileLayout->addWidget(line, 4, 0, 1, 2);
+ 
+    // File format
+    fileFormatComboBox = new QComboBox(fileBox);
     fileFormatComboBox->clear();
 
     connect(fileFormatComboBox, SIGNAL(activated(int)),
            this, SLOT(fileFormatChanged(int)));
-    QLabel *formatLabel = new QLabel(tr("Export to"),infoBox);
-    infoLayout->addWidget(formatLabel, 3, 0);
-    infoLayout->addWidget(fileFormatComboBox, 3, 1);
+    QLabel *fileFormatLabel = new QLabel(tr("Export to"),fileBox);
+    fileLayout->addWidget(fileFormatLabel, 5, 0);
+    fileLayout->addWidget(fileFormatComboBox, 5, 1);
 
-    QGroupBox *varGroup = new QGroupBox(tr("Variables"), infoBox);
-    infoLayout->addWidget(varGroup, 4, 0, 1, 2);
+    // Variables
+    QGroupBox *varGroup = new QGroupBox(tr("Variables"), central);
+    topLayout->addWidget(varGroup);
     QGridLayout *varLayout = new QGridLayout(varGroup);
     varLayout->setMargin(5);
     QButtonGroup *delimGroup = new QButtonGroup(0);
@@ -357,8 +381,8 @@ QvisExportDBWindow::CreateWindowContents()
     varLayout->addWidget(varsLineEdit, 1, 1, 1, 2);
 
     // I/O group box.
-    QGroupBox *ioGroup = new QGroupBox(tr("I/O Options"), infoBox);
-    infoLayout->addWidget(ioGroup, 5, 0, 1, 2);
+    QGroupBox *ioGroup = new QGroupBox(tr("I/O Options"), central);
+    topLayout->addWidget(ioGroup);
     QGridLayout *ioLayout = new QGridLayout(ioGroup);
     ioLayout->setMargin(5);
 
@@ -487,7 +511,16 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
             allTimes->blockSignals(true);
             allTimes->setChecked(exportDBAtts->GetAllTimes());
             allTimes->blockSignals(false);
+
+            timeStateFormatLabel->setEnabled( exportDBAtts->GetAllTimes() );
+            timeStateFormatEdit->setEnabled ( exportDBAtts->GetAllTimes() );
+            
             break;
+
+          case ExportDBAttributes::ID_timeStateFormat:
+            timeStateFormatEdit->setText(exportDBAtts->GetTimeStateFormat().c_str());
+            break;
+
           case ExportDBAttributes::ID_db_type:
             {
                 fileFormatComboBox->blockSignals(true);
@@ -636,8 +669,27 @@ QvisExportDBWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
+    // Time step format
+    if(which_widget == ExportDBAttributes::ID_timeStateFormat || doAll)
+    {
+        temp = timeStateFormatEdit->displayText().simplified();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            exportDBAtts->SetTimeStateFormat(temp.toStdString());
+        }
+        else
+        {
+            msg = tr("The time state format was invalid. "
+                     "Resetting to the last good value \"%1\".").
+                  arg(exportDBAtts->GetFilename().c_str());
+            Message(msg);
+            exportDBAtts->SetTimeStateFormat(exportDBAtts->GetFilename());
+        }
+    }
+
     // Do the file name
-    if(which_widget == 0 || doAll)
+    if(which_widget == ExportDBAttributes::ID_filename || doAll)
     {
         temp = filenameLineEdit->displayText().simplified();
         okay = !temp.isEmpty();
@@ -654,12 +706,16 @@ QvisExportDBWindow::GetCurrentValues(int which_widget)
             exportDBAtts->SetFilename(exportDBAtts->GetFilename());
         }
     }
-    if(which_widget == 1 || doAll)
+    
+    // Directory name
+    if(which_widget == ExportDBAttributes::ID_dirname || doAll)
     {
         temp = directoryNameLineEdit->displayText().simplified();
         exportDBAtts->SetDirname(temp.toStdString());
     }
-    if(which_widget == 2 || doAll)
+
+    // Variables
+    if(which_widget == SelectionProperties::ID_variables || doAll)
     {
         QString temp;
         stringVector vars;
@@ -673,12 +729,12 @@ QvisExportDBWindow::GetCurrentValues(int which_widget)
         exportDBAtts->SetVariables(vars);
     }
 
+    // Group size
     if(which_widget == ExportDBAttributes::ID_groupSize || doAll)
     {
         if (groupSize->value() != exportDBAtts->GetGroupSize())
             exportDBAtts->SetGroupSize(groupSize->value());
     }
-
 }
 
 // ****************************************************************************
@@ -736,6 +792,26 @@ QvisExportDBWindow::apply()
 }
 
 // ****************************************************************************
+// Method: QvisExportDBWindow::processTimeStateFormatText
+//
+// Purpose: 
+//   This is a Qt slot function that sets the file name.
+//
+// Programmer: Hank Childs
+// Creation:   May 25, 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisExportDBWindow::processTimeStateFormatText()
+{
+    GetCurrentValues(ExportDBAttributes::ID_timeStateFormat);
+    Apply();
+}
+
+// ****************************************************************************
 // Method: QvisExportDBWindow::processFilenameText
 //
 // Purpose: 
@@ -751,7 +827,7 @@ QvisExportDBWindow::apply()
 void
 QvisExportDBWindow::processFilenameText()
 {
-    GetCurrentValues(0);
+    GetCurrentValues(ExportDBAttributes::ID_filename);
     Apply();
 }
 
@@ -771,7 +847,7 @@ QvisExportDBWindow::processFilenameText()
 void
 QvisExportDBWindow::processDirectoryNameText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(ExportDBAttributes::ID_dirname);
     Apply();
 }
 
@@ -962,11 +1038,23 @@ QvisExportDBWindow::addVariable(const QString &var)
     variableProcessText();
 }
 
+// ****************************************************************************
+// Method: QvisExportDBWindow::variableProcessText
+//
+// Purpose: 
+//   This is a Qt slot function that sets the variable list.
+//
+// Programmer: Hank Childs
+// Creation:   May 25, 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 void
 QvisExportDBWindow::variableProcessText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(SelectionProperties::ID_variables);
     Apply();
 }
 
@@ -1005,7 +1093,7 @@ QvisExportDBWindow::selectOutputDirectory()
     if(!dirName.isEmpty())
     {
         directoryNameLineEdit->setText(dirName);
-        GetCurrentValues(1);
+        GetCurrentValues(ExportDBAttributes::ID_dirname);
         Apply();
     }
 }
@@ -1032,17 +1120,17 @@ QvisExportDBWindow::selectOutputDirectory()
 // ****************************************************************************
 
 void
-QvisExportDBWindow::delimiterChanged(int val)
+QvisExportDBWindow::delimiterChanged(int value)
 {
-    delimiter = val;
+    delimiter = value;
     UpdateVariablesList();
 }
 
 // ****************************************************************************
 // Method: QvisExportDBWindow::allTimesToggled
 //
-// Purpose:
-//   This is a Qt slot function that we call when the allTimes checkbox is toggled.
+// Purpose: This is a Qt slot function that we call when the allTimes
+//   checkbox is toggled.
 //
 // Arguments:
 //   val  : The new toggle value
@@ -1059,12 +1147,35 @@ QvisExportDBWindow::delimiterChanged(int val)
 // ****************************************************************************
 
 void
-QvisExportDBWindow::allTimesToggled(bool val)
+QvisExportDBWindow::allTimesToggled(bool value)
 {
-    exportDBAtts->SetAllTimes(val);
+    exportDBAtts->SetAllTimes(value);
     SetUpdate(false);
     Apply();
+
+    timeStateFormatLabel->setEnabled(value);
+    timeStateFormatEdit->setEnabled(value);
 }
+
+// ****************************************************************************
+// Method: QvisExportDBWindow::coordinateGroupsToggled
+//
+// Purpose: This is a Qt slot function that we call when the
+//   coordinate parallel writes checkbox is toggled.
+//
+// Arguments:
+//   val  : The new toggle value
+//
+// Returns:    
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 24 14:12:23 EDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void
 QvisExportDBWindow::coordinateGroupsToggled(bool value)
@@ -1076,6 +1187,26 @@ QvisExportDBWindow::coordinateGroupsToggled(bool value)
     groupSizeLabel->setEnabled(value);
     groupSize->setEnabled(value);
 }
+
+// ****************************************************************************
+// Method: QvisExportDBWindow::groupSizeChanged
+//
+// Purpose: This is a Qt slot function that we call when the write
+//   group size is changed.
+//
+// Arguments:
+//   val  : The new value
+//
+// Returns:    
+//
+// Note:       Work partially supported by DOE Grant SC0007548.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 24 14:12:23 EDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void
 QvisExportDBWindow::groupSizeChanged(int value)

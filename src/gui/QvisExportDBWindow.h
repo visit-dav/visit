@@ -130,6 +130,7 @@ protected slots:
     void selectOutputDirectory();
     void delimiterChanged(int);
     void allTimesToggled(bool);
+    void processTimeStateFormatText();
     void coordinateGroupsToggled(bool);
     void groupSizeChanged(int);
 private:
@@ -149,6 +150,8 @@ private:
     QvisVariableButton  *varsButton;
     QLineEdit           *varsLineEdit;
     QCheckBox           *allTimes;
+    QLabel              *timeStateFormatLabel;
+    QLineEdit           *timeStateFormatEdit;
     QCheckBox           *coordinateGroups;
     QLabel              *groupSizeLabel;
     QSpinBox            *groupSize;

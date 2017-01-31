@@ -87,19 +87,21 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectDirname();
+    void SelectFilename();
+    void SelectTimeStateFormat();
     void SelectDb_type();
     void SelectDb_type_fullname();
-    void SelectFilename();
-    void SelectDirname();
     void SelectVariables();
     void SelectOpts();
 
     // Property setting methods
     void SetAllTimes(bool allTimes_);
+    void SetDirname(const std::string &dirname_);
+    void SetFilename(const std::string &filename_);
+    void SetTimeStateFormat(const std::string &timeStateFormat_);
     void SetDb_type(const std::string &db_type_);
     void SetDb_type_fullname(const std::string &db_type_fullname_);
-    void SetFilename(const std::string &filename_);
-    void SetDirname(const std::string &dirname_);
     void SetVariables(const stringVector &variables_);
     void SetWriteUsingGroups(bool writeUsingGroups_);
     void SetGroupSize(int groupSize_);
@@ -107,14 +109,16 @@ public:
 
     // Property getting methods
     bool                      GetAllTimes() const;
+    const std::string         &GetDirname() const;
+          std::string         &GetDirname();
+    const std::string         &GetFilename() const;
+          std::string         &GetFilename();
+    const std::string         &GetTimeStateFormat() const;
+          std::string         &GetTimeStateFormat();
     const std::string         &GetDb_type() const;
           std::string         &GetDb_type();
     const std::string         &GetDb_type_fullname() const;
           std::string         &GetDb_type_fullname();
-    const std::string         &GetFilename() const;
-          std::string         &GetFilename();
-    const std::string         &GetDirname() const;
-          std::string         &GetDirname();
     const stringVector        &GetVariables() const;
           stringVector        &GetVariables();
     bool                      GetWriteUsingGroups() const;
@@ -137,10 +141,11 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_allTimes = 0,
+        ID_dirname,
+        ID_filename,
+        ID_timeStateFormat,
         ID_db_type,
         ID_db_type_fullname,
-        ID_filename,
-        ID_dirname,
         ID_variables,
         ID_writeUsingGroups,
         ID_groupSize,
@@ -150,10 +155,11 @@ public:
 
 private:
     bool                allTimes;
+    std::string         dirname;
+    std::string         filename;
+    std::string         timeStateFormat;
     std::string         db_type;
     std::string         db_type_fullname;
-    std::string         filename;
-    std::string         dirname;
     stringVector        variables;
     bool                writeUsingGroups;
     int                 groupSize;
@@ -163,6 +169,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define EXPORTDBATTRIBUTES_TMFS "bsssss*bia"
+#define EXPORTDBATTRIBUTES_TMFS "bssssss*bia"
 
 #endif

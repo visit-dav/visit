@@ -198,16 +198,18 @@ ExportDBAction::Execute()
             plist->GetTimeSliderStates(plist->GetActiveTimeSlider(), state, nStates);
 
             // Iterate through time and export the current time state.
-            char digits[10];
+            char digits[128];
             std::string filename(exportAtts.GetFilename());
             int status = 0;
             for(int i = 0; i < nStates && status == 0; ++i)
             {
                 // Make a new filename for the exported file.
-                if(nStates >= 10000)
-                    SNPRINTF(digits, 10, "%08d", i);
-                else
-                    SNPRINTF(digits, 10, "%04d", i);
+                // if(nStates >= 10000)
+                //     SNPRINTF(digits, 10, "%08d", i);
+                // else
+                //     SNPRINTF(digits, 10, "%04d", i);
+                SNPRINTF(digits, 10, exportAtts.GetTimeStateFormat().c_str(), i);
+              
                 std::string timeSuffix(digits);
 
                 TRY
