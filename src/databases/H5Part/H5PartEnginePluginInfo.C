@@ -37,6 +37,7 @@
 *****************************************************************************/
 
 #include <H5PartPluginInfo.h>
+#include <avtH5PartWriter.h>
 
 VISIT_DATABASE_PLUGIN_ENTRY(H5Part,Engine)
 
@@ -55,6 +56,6 @@ VISIT_DATABASE_PLUGIN_ENTRY(H5Part,Engine)
 avtDatabaseWriter *
 H5PartEnginePluginInfo::GetWriter(void)
 {
-    return NULL;
+    return new avtH5PartWriter(writeOptions);
 }
 

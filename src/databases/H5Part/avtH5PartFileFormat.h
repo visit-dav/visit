@@ -40,8 +40,8 @@
 //                            avtH5PartFileFormat.h                          //
 // ************************************************************************* //
 
-#ifndef AVT_H5Part_FILE_FORMAT_H
-#define AVT_H5Part_FILE_FORMAT_H
+#ifndef AVT_H5PART_FILE_FORMAT_H
+#define AVT_H5PART_FILE_FORMAT_H
 
 #include <visit-config.h>
 
@@ -51,11 +51,6 @@
 #include <H5Part.h>
 #include <H5Block.h>
 #include <H5BlockTypes.h>
-
-// STL
-#include <vector>
-#include <map>
-#include <string>
 
 // FastBit
 #ifdef HAVE_LIBFASTBIT
@@ -68,6 +63,11 @@
   #include "hdf5_fastquery.h"
   #include "HistogramCache.h"
 #endif
+
+// STL
+#include <vector>
+#include <map>
+#include <string>
 
 class DBOptionsAttributes;
 
@@ -211,6 +211,8 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     std::string            idVariableName;
     // The name of the default variable which contains the particle id
     std::string            defaultIdVariableName;
+    // The name of the variable which contains the sorted particle id
+    std::string            defaultSortedVariableName;
     // String of a possible active stringQuery
     std::string            queryString;
     // List of ids (values if "idVariableName") for a named selection query

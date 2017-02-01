@@ -16,6 +16,7 @@ SET(LIBM_SOURCES
 H5PartMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtH5PartFileFormat.C
+avtH5PartWriter.C
 avtH5PartOptions.C
 hdf5_a.C
 hdf5_d.C
@@ -34,6 +35,7 @@ SET(LIBE_SOURCES
 H5PartEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtH5PartFileFormat.C
+avtH5PartWriter.C
 avtH5PartOptions.C
 hdf5_a.C
 hdf5_d.C

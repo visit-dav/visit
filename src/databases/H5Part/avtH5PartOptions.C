@@ -97,5 +97,8 @@ DBOptionsAttributes *
 GetH5PartWriteOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
+    rv->SetBool("Add FastBit indexing", true);
+    rv->SetBool("Create a parent file", false);
+    rv->SetString("Parent file name", "visit_ex_db_parent");
     return rv;
 }

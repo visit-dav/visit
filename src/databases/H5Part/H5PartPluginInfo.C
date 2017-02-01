@@ -137,7 +137,7 @@ H5PartGeneralPluginInfo::EnabledByDefault() const
 bool
 H5PartGeneralPluginInfo::HasWriter() const
 {
-    return false;
+    return true;
 }
 // ****************************************************************************
 //  Method:  H5PartGeneralPluginInfo::GetDefaultFilePatterns

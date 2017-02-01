@@ -46,11 +46,11 @@
 // VTK
 #include <vtkCellData.h>
 #include <vtkCellTypes.h>
+#include <vtkUnsignedIntArray.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
-#include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
 
 // VisIt
@@ -363,15 +363,25 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     if (H5PartReadFileAttrib(file, "sortedKey", sortedKey) == H5PART_SUCCESS)
     {
         if( std::string(sortedKey) != std::string("unsorted") )
+        {
+            defaultSortedVariableName = sortedKey;
+            // FIXME: This information should be read as attribute from file.
             defaultIdVariableName = sortedKey;
+        }
         else
+        {
+            defaultSortedVariableName = "";
             // FIXME: This information should be read as attribute from file.
             defaultIdVariableName = "id";
+        }
     }
     else
+    {
+        defaultSortedVariableName = "";
         // FIXME: This information should be read as attribute from file.
         defaultIdVariableName = "id";
-
+    }
+    
     idVariableName = defaultIdVariableName;
 #endif
 
@@ -971,7 +981,7 @@ avtH5PartFileFormat::SelectParticlesToRead( const char *varName )
 {
     int t1 = visitTimer->StartTimer();
 
-    // reset the view so all particles are considered.
+    // Reset the view so all particles are considered.
     H5PartSetView(file, -1, -1);
 
 #ifdef HAVE_LIBFASTBIT
@@ -1158,8 +1168,8 @@ avtH5PartFileFormat::SelectParticlesToRead( const char *varName )
         delete[] indices;
 
         debug5 << "SelectParticlesToRead(): Serial "
-               << " all particles (" << queryResults.size()
-               << " in the query read." << std::endl;
+               << "all particles (" << queryResults.size()
+               << ") in the query read." << std::endl;
     }
     else
     {
@@ -1168,10 +1178,14 @@ avtH5PartFileFormat::SelectParticlesToRead( const char *varName )
         debug5 << "SelectParticlesToRead(): Serial "
                << "FastBit disabled or no selection active" << std::endl;
 
+        // Not using FastBit or no selection. Read the whole file.
         H5PartSetView(file, -1, -1);
 
+        h5part_int64_t nParticles = H5PartGetNumParticles(file);
+
         debug5 << "SelectParticlesToRead(): Serial "
-               << " reading all particles in file (no query)." << std::endl;
+               << " reading all particles (" << nParticles
+               << ") in file (no query)." << std::endl;
         
 #ifdef HAVE_LIBFASTBIT
     }
@@ -1397,7 +1411,8 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
     }
     // FIXME: Possibly handle other data types for the coordinates
 
-    for (int i=0; i <particleNSpatialDims; ++i) free(coordsRead[i]);
+    for (int i=0; i <particleNSpatialDims; ++i)
+        free(coordsRead[i]);
 
     dataset->Allocate(nPoints);
 
@@ -2110,7 +2125,17 @@ avtH5PartFileFormat::ActivateTimestep(int ts)
         if (!file)
           EXCEPTION1(InvalidFilesException, "Cannot open file.");
         
-        H5PartSetStep(file, ts);
+        if (H5PartSetStep(file, ts) != H5PART_SUCCESS)
+        {
+          std::ostringstream msg;
+          msg << "Cannot activate time step " << ts << ".";
+
+          debug1 << "avtH5PartFileFormat::ActivateTimestep(): "
+                 << msg.str() << std::endl;
+
+          EXCEPTION2(NonCompliantFileException, "H5Part AcitvateTimestep",
+                     msg.str());
+        }
 
 #ifdef HAVE_LIBFASTBIT
         if (useFastBitIndex)
@@ -2127,12 +2152,14 @@ avtH5PartFileFormat::ActivateTimestep(int ts)
 
         if (H5PartSetStep(file, ts) != H5PART_SUCCESS)
         {
-            debug1 << "avtH5PartFileFormat::ActivateTimestep(): Cannot ";
-            debug1 << "activate time step " << ts << std::endl;
+          std::ostringstream msg;
+          msg << "Cannot activate time step " << ts << ".";
 
-            EXCEPTION2(NonCompliantFileException, "H5Part AcitvateTimestep",
-                       "Cannot activate time step " + DoubleToString(ts) +
-                       std::string("."));
+          debug1 << "avtH5PartFileFormat::ActivateTimestep(): "
+                 << msg.str() << std::endl;
+
+          EXCEPTION2(NonCompliantFileException, "H5Part AcitvateTimestep",
+                     msg.str());
         }
 
 #ifdef HAVE_LIBFASTBIT
@@ -2922,31 +2949,36 @@ void avtH5PartFileFormat::PerformQuery()
 
         if (queryIdList.size() > 0)
         {
+          if( defaultSortedVariableName.size() )
+          {
             // Note: We ignore the number of hits that was returned
-            // fqReader.executeEqualitySelectionQuery(idVariableName.c_str(),
-            //                                     activeTimeStep,
-            //                                     queryIdList,
-            //                                     queryResults);
-
-            std::ostringstream queryStream;
+            fqReader.executeEqualitySelectionQuery(idVariableName.c_str(),
+                                                   activeTimeStep,
+                                                   queryIdList,
+                                                   queryResults);
+          }
+          else
+          {
+              std::ostringstream queryStream;
             
-            for( int i=0; i<queryIdList.size(); ++i)
-            {
-                queryStream << "("
-                      << setprecision(32) << queryIdList[i] << "=="
-                      << idVariableName << ")";
-
-                if( i < queryIdList.size()-1)
-                  queryStream << " || ";            
-            }
-
-            debug5 << "String query specified: " << queryStream.str()
-                   << std::endl;
-            
-            fqReader.executeQuery(queryStream.str().c_str(),
-                                  activeTimeStep, queryResults);
-  
-            dataSelectionActive = true;
+              for( int i=0; i<queryIdList.size(); ++i)
+              {
+                  queryStream << "("
+                              << setprecision(32) << queryIdList[i] << "=="
+                              << idVariableName << ")";
+                  
+                  if( i < queryIdList.size()-1)
+                    queryStream << " || ";            
+              }
+              
+              debug5 << "String query specified: " << queryStream.str()
+                     << std::endl;
+              
+              fqReader.executeQuery(queryStream.str().c_str(),
+                                    activeTimeStep, queryResults);
+          }
+          
+          dataSelectionActive = true;
         }
     }
     else
