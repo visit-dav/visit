@@ -521,10 +521,10 @@ public:
                               double &min,
                               double &max);
 
-        void getDataMinMax_Float(const std::string& variableName,
-                                 int64_t timestep,
-                                 float &min,
-                                 float &max);
+    void getDataMinMax_Float(const std::string& variableName,
+                             int64_t timestep,
+                             float &min,
+                             float &max);
 
     /*!
       \brief Get min time value.
