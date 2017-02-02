@@ -1,3 +1,19 @@
+# ----------------------------------------------------------------------------
+#  CLASSES: nightly
+#
+#  Test Case:  selection_pp.py
+#
+#  Tests:      filter        - named selection
+#              operator      - persistent particles
+#              plot          - pseudocolor
+#
+#  Defect ID:  -
+#
+#  Programmer: Allen Sanderson
+#  Date:       January 27, 2016
+#
+# ----------------------------------------------------------------------------
+
 
 db = data_path("cq_pp_test_data/cq_pp_test_data.h5part")
 
