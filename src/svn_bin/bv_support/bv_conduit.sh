@@ -30,7 +30,7 @@ function bv_conduit_depends_on
 function bv_conduit_info
 {
     export CONDUIT_VERSION=${CONDUIT_VERSION:-"0.2.1"}
-    export CONDUIT_FILE=${SILO_FILE:-"conduit-${CONDUIT_VERSION}.tar.gz"}
+    export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}.tar.gz"}
     export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"0.2.1"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
     export CONDUIT_MD5_CHECKSUM="cd2b42c76f70ac3546582b6da77c6028"
@@ -80,7 +80,7 @@ function bv_conduit_ensure
         ensure_built_or_ready "conduit" $CONDUIT_VERSION $CONDUIT_BUILD_DIR $CONDUIT_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
-            DO_SILO="no"
+            DO_CONDUIT="no"
             error "Unable to build Conduit.  ${CONDUIT_FILE} not found."
         fi
     fi
