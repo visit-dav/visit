@@ -56,6 +56,7 @@
 
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
+#include <snprintf.h>
 
 // H5Part
 #include <H5Part.h>
@@ -746,7 +747,7 @@ avtH5PartWriter::WriteParentFile()
     // Create an external like to the data.
     const int buffSize = 1024;
     char stepName[buffSize];
-    std::snprintf(stepName, buffSize, "Step#%d", timestep);
+    SNPRINTF(stepName, buffSize, "Step#%d", timestep);
     
     if( (status = H5Lcreate_external(filename.c_str(), "Step#0", file_id,
                                      stepName, H5P_DEFAULT, H5P_DEFAULT)) < 0 )
