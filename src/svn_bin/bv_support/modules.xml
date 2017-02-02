@@ -102,6 +102,7 @@
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="conduit"/>
+            <lib name="mfem"/>
             <lib name="cgns"/>
             <lib name="fastbit"/>
             <lib name="gdal"/>
@@ -125,6 +126,7 @@
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="conduit"/>
+            <lib name="mfem"/>
             <lib name="cgns"/>
             <lib name="fastbit"/>
             <lib name="gdal"/>
