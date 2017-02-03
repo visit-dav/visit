@@ -185,7 +185,11 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename)
     conduit::utils::set_info_handler(blueprint_plugin_info_handler);
     // when commented out, conduit warnings and errors will throw exceptions
     conduit::utils::set_warning_handler(blueprint_plugin_warning_handler);
-    conduit::utils::set_error_handler(blueprint_plugin_error_handler);
+    
+    // we rely on exceptions to kick us out of pop db metadata
+    // in the case we have a bad root file, so only uncomment this 
+    // when debugging.
+    // conduit::utils::set_error_handler(blueprint_plugin_error_handler);
 }
 
 avtBlueprintFileFormat::~avtBlueprintFileFormat()
@@ -686,6 +690,11 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         string root_fname = GetFilename();
         std::string root_file(root_fname);
         BP_PLUGIN_INFO("Opening root file " << root_fname);
+        
+        // fast fail check for if this is a valid hdf5 blueprint root file
+        // (if this path doesn't exist, relay will throw an exception)
+        Node n_read_check;
+        relay::io::load(root_file + ":file_pattern", "hdf5",n_read_check);
  
         // TODO: in parallel only 1 processor should read and then broadcast 
     

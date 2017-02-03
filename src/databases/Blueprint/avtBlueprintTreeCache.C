@@ -163,9 +163,6 @@ hdf5ReadSlab(const std::string &file_path,
              const DataType &dtype,
              void *data_ptr)
 {
-    // TODO: this path is crashing, disabled for now
-    return false;
-    
     // assume fetch_path points to a hdf5 dataset
     // open the hdf5 file for reading
     hid_t h5_file_id = H5Fopen(file_path.c_str(),
@@ -232,8 +229,28 @@ hdf5ReadSlab(const std::string &file_path,
                         << " hdf5 dataset number of elements" << h5_nelems);
     }
 
+
+    // we need to compute an offset, stride, and element bytes
+    // that will work for reading in the general case
+    // right now we assume the dest type of data and the hdf5 datasets
+    // data type are compatible  
+    
+    // conduit's offsets, strides, are all in terms of bytes
+    // hdf5's are in terms of elements
+    
+    // what we really want is a way to read bytes from the hdf5 dset with
+    // out any type conversion, but that doesn't exist.
+
+    // general support would include reading a a view of one type that
+    //  points to a buffer of another
+    // (for example a view of doubles that is defined on a buffer of bytes)
+
+    // but hdf5 doens't support slab fetch across datatypes
+    // so for now we make sure the datatype is consistent. 
+
+
     // TODO Enable when using newer conduit
-    // DataType h5_dt = hdf5_dtype_to_conduit_dtype(h5_dtype_id,1);
+    // DataType h5_dt = conduit::relay::io::hdf5_dtype_to_conduit_dtype(h5_dtype_id,1);
     //
     // if( h5_dt.id() != dtype.id() )
     // {
@@ -247,24 +264,9 @@ hdf5ReadSlab(const std::string &file_path,
     //                      "Error closing HDF5 file: " << file_path);
     //
     //     BP_PLUGIN_INFO("Cannot fetch hdf5 slab of buffer and view are"
-    //                    "different data types.")
+    //                     "different data types.")
     //     return false;
     // }
-
-    // TODO:
-
-    // we need to compute an offset, stride, and element bytes
-    // that will work for reading in the general case
-    // right now we assume the dest type of data and the hdf5 datasets
-    // data type are compatible  
-    
-    // conduit's offsets, strides, are all in terms of bytes
-    // hdf5's are in terms of elements, and in some cases we very may 
-    // well have a view of one type that points to a buffer of another
-    // (for example a few of doubles that is defined on a buffer of bytes)
-    //
-    // what we really need is a way to read bytes from the hdf5 dset with
-    // out any type conversion, but that doesn't exist.
 
     hid_t h5_status    = 0;
 
@@ -290,12 +292,19 @@ hdf5ReadSlab(const std::string &file_path,
     CHECK_HDF5_ERROR(h5_status,
                       "Error selecting hyper slab from HDF5 dataspace: " << h5_dspace_id);
 
-    h5_status = H5Dread(h5_dset_id,
-                        h5_dtype_id, // use same data type
-                        H5S_ALL,
-                        h5_dspace_id,
+    hid_t h5_dspace_compact_id = H5Screate_simple(1,
+                                                  &num_ele,
+                                                  NULL);
+
+    CHECK_HDF5_ERROR(h5_dspace_id,"Failed to create HDF5 Dataspace");
+
+    h5_status = H5Dread(h5_dset_id, // data set id
+                        h5_dtype_id, // memory type id  // use same data type?
+                        h5_dspace_compact_id,  // memory space id ...
+                        h5_dspace_id, // file space id
                         H5P_DEFAULT,
                         data_ptr);
+
     // check read
     CHECK_HDF5_ERROR(h5_status,
                       "Error reading bytes from HDF5 dataset: " << h5_dset_id);
@@ -303,6 +312,11 @@ hdf5ReadSlab(const std::string &file_path,
     // close the data space 
     CHECK_HDF5_ERROR(H5Sclose(h5_dspace_id),
                       "Error closing HDF5 data space: " << file_path);
+
+    // close the compact data space 
+    CHECK_HDF5_ERROR(H5Sclose(h5_dspace_compact_id),
+                      "Error closing HDF5 compact memory data space" << file_path);
+
 
     // close the dataset
     CHECK_HDF5_ERROR(H5Dclose(h5_dset_id),
