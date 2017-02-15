@@ -139,9 +139,9 @@ public:
     void    SumIntAcrossAllProcessors(int&);
     void    SumLongAcrossAllProcessors(long&);
     void    SumFloatAcrossAllProcessors(float&);
+    void    SumDoubleAcrossAllProcessors(double&);
     void    SumFloatArrayAcrossAllProcessors(float *, float *, int);
     void    SumFloatArray(float *, float *, int);
-    void    SumDoubleAcrossAllProcessors(double&);
     void    SumDoubleArrayAcrossAllProcessors(double *, double *,int);
     void    SumDoubleArray(double *, double *,int);
     void    SumDoubleArrayInPlace(double *, int);
@@ -152,8 +152,10 @@ public:
     void    UnifyMinMax(double *, int, int=0);
     int     UnifyMaximumValue(int);
     float   UnifyMaximumValue(float);
+    double  UnifyMaximumValue(double);
     int     UnifyMinimumValue(int);
     float   UnifyMinimumValue(float);
+    double  UnifyMinimumValue(double);
     void    UnifyMaximumValue(std::vector<int>&, std::vector<int>&);
     void    UnifyMinimumFloatArrayAcrossAllProcessors(float *, float *, int);
     void    UnifyMaximumFloatArrayAcrossAllProcessors(float *, float *, int);
