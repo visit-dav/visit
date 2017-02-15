@@ -403,10 +403,16 @@ FUNCTION(PYTHON_ADD_HYBRID_MODULE target_name dest_dir setup_file py_sources)
                                ${setup_file}
                                ${py_sources})
     PYTHON_ADD_MODULE(${target_name} ${ARGN})
-    IF(NOT WIN32)
+    if(NOT WIN32)
         SET_TARGET_PROPERTIES(${target_name} PROPERTIES
                                              LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}/${target_name}/)
-    ENDIF(NOT WIN32)
+    else()
+        foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
+            string(TOUPPER ${cfg} UCFG)
+            set_target_properties(${target_name} PROPERTIES
+                 LIBRARY_OUTPUT_DIRECTORY_${UCFG} "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${cfg}/${dest_dir}/${target_name}/")
+        endforeach()
+    endif()
     ADD_DEPENDENCIES(${target_name} "${target_name}_py_setup")
     VISIT_INSTALL_TARGETS_RELATIVE(${dest_dir}/${target_name} ${target_name})
 
