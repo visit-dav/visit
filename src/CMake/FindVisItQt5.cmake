@@ -56,7 +56,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(QT5_INCLUDE_DIRS "")
 set(QT5_LIBRARIES "")
 
-set(visit_qt_modules Core Gui Widgets OpenGL Network PrintSupport Xml UiTools)
+set(visit_qt_modules Core Gui Widgets OpenGL Network PrintSupport Qml Xml UiTools)
 
 if(LINUX)
     set (visit_qt_modules ${visit_qt_modules} X11Extras)
@@ -114,7 +114,7 @@ set(QT_QTNETWORK_LIBRARY ${Qt5Network_LIBRARIES})
 set(QT_QTXML_LIBRARY ${Qt5Xml_LIBRARIES})
 
 # why is core not named the same as the others?
-set(QT_CORE_LIBRARY ${Qt5Core_LIBRARIES})
+set(QT_QTCORE_LIBRARY ${Qt5Core_LIBRARIES})
 
 if (LINUX)
     set(QT_QTX11EXTRAS_LIBRARY ${Qt5X11Extras_LIBRARIES})
@@ -138,6 +138,7 @@ if(NOT VISIT_QT_SKIP_INSTALL)
         Qt5::OpenGL
         Qt5::PrintSupport
         Qt5::Widgets
+        Qt5::Qml
         Qt5::Xml
   )
   if(LINUX)

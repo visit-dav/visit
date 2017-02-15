@@ -229,6 +229,11 @@ ${COMMON_SOURCES}
 ${CLI_SOURCES}
 ${VISIT_CLI_RESOURCE_FILE}
 )
+
+if(VISIT_QT5)
+    set_target_properties(cli PROPERTIES COMPILE_DEFINITIONS VISIT_QT5)
+endif()
+
 TARGET_LINK_LIBRARIES(cli 
 ${cli_IOperator}
 ${cli_SOperator}

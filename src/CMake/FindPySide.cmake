@@ -51,6 +51,9 @@
 #   Exclude '.svn' from INSTALL command, probably a rare case, but a
 #   developer did run into an issue.
 #
+#   Kathleen Biagas, Tue Jan 24 11:13:05 PST 2017
+#   Add support for Qt5, PySide2.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
@@ -61,40 +64,54 @@ IF(VISIT_PYSIDE_DIR)
     set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/ ${CMAKE_PREFIX_PATH})
     set(CMAKE_LIBRARY_PATH ${VISIT_PYSIDE_DIR}/lib ${CMAKE_LIBRARY_PATH})
 
-    if(NOT Shiboken_FOUND)
-        find_package(Shiboken 1.1.1)
-    endif(NOT Shiboken_FOUND)
-    if (NOT PySide_FOUND)
-        find_package(PySide 1.1.1)
-    endif(NOT PySide_FOUND)
-    IF(Shiboken_FOUND)
-        SET(GENERATORRUNNER_BINARY ${SHIBOKEN_BINARY})
-    ENDIF(Shiboken_FOUND)
+    if (VISIT_QT5)
+       set(PYSIDE_VERSION "2.0.0")
+       set(pyside_suffix "2")
+    else()
+       set(PYSIDE_VERSION "1.2.2")
+    endif()
 
+    if(NOT Shiboken${pyside_suffix}_FOUND)
+        find_package(Shiboken${pyside_suffix} ${PYSIDE_VERSION})
+    endif()
+
+    if (NOT PySide${pyside_suffix}_FOUND)
+        find_package(PySide${pyside_suffix} ${PYSIDE_VERSION})
+    endif()
+
+    IF(Shiboken${pyside_suffix}_FOUND)
+        SET(GENERATORRUNNER_BINARY ${SHIBOKEN_BINARY})
+    ENDIF()
 
 ENDIF(VISIT_PYSIDE_DIR)
 
-IF(NOT PySide_FOUND OR NOT Shiboken_FOUND)
+IF(NOT PySide${pyside_suffix}_FOUND OR NOT Shiboken${pyside_suffix}_FOUND)
     #If we dont have shiboken, force pyside off
     MESSAGE(STATUS "PySide NOT found")
     SET(PySide_FOUND 0)
-ENDIF (NOT PySide_FOUND OR NOT Shiboken_FOUND)
-
+else()
+    SET(PySide_FOUND 1)
+ENDIF()
 
 IF(PySide_FOUND)
-    SET_UP_THIRD_PARTY(PYSIDE lib include
+    if(VISIT_QT5)
+        set(pysidename "PySide2")
+        if(NOT WIN32)
+            SET_UP_THIRD_PARTY(PYSIDE lib include
+              pyside2-python${PYTHON_VERSION} shiboken2-python${PYTHON_VERSION})
+        else()
+            SET_UP_THIRD_PARTY(PYSIDE lib include pyside2 shiboken2)
+        endif()
+    else()
+        set(pysidename "PySide")
+        SET_UP_THIRD_PARTY(PYSIDE lib include
           pyside-python${PYTHON_VERSION} shiboken-python${PYTHON_VERSION})
+    endif()
     # The PySide module is symlinked into the python install VisIt uses for 
     # dev builds.  For 'make install' and 'make package' we need to actually 
     # install the PySide SOs.
-    SET(PYSIDE_MODULE_SRC  ${PYSIDE_PYTHONPATH}/PySide/)
-    IF(UNIX)
-        #SET(PYSIDE_MODULE_INSTALLED_DIR ${VISIT_INSTALLED_VERSION_LIB}/python/lib/python${PYTHON_VERSION}/site-packages/PySide/)
-        SET(PYSIDE_MODULE_INSTALLED_DIR ${VISIT_INSTALLED_VERSION_LIB}/site-packages/PySide/)
-    ELSE(UNIX)
-        #SET(PYSIDE_MODULE_INSTALLED_DIR ${VISIT_INSTALLED_VERSION_LIB}/python/Lib/site-packages/PySide/)
-        SET(PYSIDE_MODULE_INSTALLED_DIR ${VISIT_INSTALLED_VERSION_LIB}/site-packages/PySide/)
-    ENDIF(UNIX)
+    SET(PYSIDE_MODULE_SRC  ${PYSIDE_PYTHONPATH}/${pysidename})
+    SET(PYSIDE_MODULE_INSTALLED_DIR ${VISIT_INSTALLED_VERSION_LIB}/site-packages/${pysidename})
 
     FILE(GLOB pysidelibs ${PYSIDE_MODULE_SRC}/*)
     INSTALL(FILES ${pysidelibs}
