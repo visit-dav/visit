@@ -56,6 +56,9 @@
     <Field name="histogramNumBins" label="Number of bins for histogram display" type="int">
       10
     </Field>
+    <Field name="histogramAutoScaleNumBins" label="Automatically scale the number of bins for histogram display" type="bool">
+      false
+    </Field>
     <Field name="histogramStartBin" label="Starting bin for histogram selection" type="int">
       0
     </Field>

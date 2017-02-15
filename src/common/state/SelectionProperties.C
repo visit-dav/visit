@@ -219,6 +219,7 @@ void SelectionProperties::Init()
     combineRule = CombineOr;
     histogramType = HistogramTime;
     histogramNumBins = 10;
+    histogramAutoScaleNumBins = false;
     histogramStartBin = 0;
     histogramEndBin = 9;
 
@@ -256,6 +257,7 @@ void SelectionProperties::Copy(const SelectionProperties &obj)
     combineRule = obj.combineRule;
     histogramType = obj.histogramType;
     histogramNumBins = obj.histogramNumBins;
+    histogramAutoScaleNumBins = obj.histogramAutoScaleNumBins;
     histogramStartBin = obj.histogramStartBin;
     histogramEndBin = obj.histogramEndBin;
     histogramVariable = obj.histogramVariable;
@@ -430,6 +432,7 @@ SelectionProperties::operator == (const SelectionProperties &obj) const
             (combineRule == obj.combineRule) &&
             (histogramType == obj.histogramType) &&
             (histogramNumBins == obj.histogramNumBins) &&
+            (histogramAutoScaleNumBins == obj.histogramAutoScaleNumBins) &&
             (histogramStartBin == obj.histogramStartBin) &&
             (histogramEndBin == obj.histogramEndBin) &&
             (histogramVariable == obj.histogramVariable));
@@ -576,23 +579,24 @@ SelectionProperties::NewInstance(bool copy) const
 void
 SelectionProperties::SelectAll()
 {
-    Select(ID_name,              (void *)&name);
-    Select(ID_source,            (void *)&source);
-    Select(ID_selectionType,     (void *)&selectionType);
-    Select(ID_idVariableType,    (void *)&idVariableType);
-    Select(ID_idVariable,        (void *)&idVariable);
-    Select(ID_variables,         (void *)&variables);
-    Select(ID_variableMins,      (void *)&variableMins);
-    Select(ID_variableMaxs,      (void *)&variableMaxs);
-    Select(ID_minTimeState,      (void *)&minTimeState);
-    Select(ID_maxTimeState,      (void *)&maxTimeState);
-    Select(ID_timeStateStride,   (void *)&timeStateStride);
-    Select(ID_combineRule,       (void *)&combineRule);
-    Select(ID_histogramType,     (void *)&histogramType);
-    Select(ID_histogramNumBins,  (void *)&histogramNumBins);
-    Select(ID_histogramStartBin, (void *)&histogramStartBin);
-    Select(ID_histogramEndBin,   (void *)&histogramEndBin);
-    Select(ID_histogramVariable, (void *)&histogramVariable);
+    Select(ID_name,                      (void *)&name);
+    Select(ID_source,                    (void *)&source);
+    Select(ID_selectionType,             (void *)&selectionType);
+    Select(ID_idVariableType,            (void *)&idVariableType);
+    Select(ID_idVariable,                (void *)&idVariable);
+    Select(ID_variables,                 (void *)&variables);
+    Select(ID_variableMins,              (void *)&variableMins);
+    Select(ID_variableMaxs,              (void *)&variableMaxs);
+    Select(ID_minTimeState,              (void *)&minTimeState);
+    Select(ID_maxTimeState,              (void *)&maxTimeState);
+    Select(ID_timeStateStride,           (void *)&timeStateStride);
+    Select(ID_combineRule,               (void *)&combineRule);
+    Select(ID_histogramType,             (void *)&histogramType);
+    Select(ID_histogramNumBins,          (void *)&histogramNumBins);
+    Select(ID_histogramAutoScaleNumBins, (void *)&histogramAutoScaleNumBins);
+    Select(ID_histogramStartBin,         (void *)&histogramStartBin);
+    Select(ID_histogramEndBin,           (void *)&histogramEndBin);
+    Select(ID_histogramVariable,         (void *)&histogramVariable);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -707,6 +711,12 @@ SelectionProperties::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("histogramNumBins", histogramNumBins));
+    }
+
+    if(completeSave || !FieldsEqual(ID_histogramAutoScaleNumBins, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("histogramAutoScaleNumBins", histogramAutoScaleNumBins));
     }
 
     if(completeSave || !FieldsEqual(ID_histogramStartBin, &defaultObject))
@@ -847,6 +857,8 @@ SelectionProperties::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("histogramNumBins")) != 0)
         SetHistogramNumBins(node->AsInt());
+    if((node = searchNode->GetNode("histogramAutoScaleNumBins")) != 0)
+        SetHistogramAutoScaleNumBins(node->AsBool());
     if((node = searchNode->GetNode("histogramStartBin")) != 0)
         SetHistogramStartBin(node->AsInt());
     if((node = searchNode->GetNode("histogramEndBin")) != 0)
@@ -955,6 +967,13 @@ SelectionProperties::SetHistogramNumBins(int histogramNumBins_)
 {
     histogramNumBins = histogramNumBins_;
     Select(ID_histogramNumBins, (void *)&histogramNumBins);
+}
+
+void
+SelectionProperties::SetHistogramAutoScaleNumBins(bool histogramAutoScaleNumBins_)
+{
+    histogramAutoScaleNumBins = histogramAutoScaleNumBins_;
+    Select(ID_histogramAutoScaleNumBins, (void *)&histogramAutoScaleNumBins);
 }
 
 void
@@ -1102,6 +1121,12 @@ SelectionProperties::GetHistogramNumBins() const
     return histogramNumBins;
 }
 
+bool
+SelectionProperties::GetHistogramAutoScaleNumBins() const
+{
+    return histogramAutoScaleNumBins;
+}
+
 int
 SelectionProperties::GetHistogramStartBin() const
 {
@@ -1196,23 +1221,24 @@ SelectionProperties::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_name:              return "name";
-    case ID_source:            return "source";
-    case ID_selectionType:     return "selectionType";
-    case ID_idVariableType:    return "idVariableType";
-    case ID_idVariable:        return "idVariable";
-    case ID_variables:         return "variables";
-    case ID_variableMins:      return "variableMins";
-    case ID_variableMaxs:      return "variableMaxs";
-    case ID_minTimeState:      return "minTimeState";
-    case ID_maxTimeState:      return "maxTimeState";
-    case ID_timeStateStride:   return "timeStateStride";
-    case ID_combineRule:       return "combineRule";
-    case ID_histogramType:     return "histogramType";
-    case ID_histogramNumBins:  return "histogramNumBins";
-    case ID_histogramStartBin: return "histogramStartBin";
-    case ID_histogramEndBin:   return "histogramEndBin";
-    case ID_histogramVariable: return "histogramVariable";
+    case ID_name:                      return "name";
+    case ID_source:                    return "source";
+    case ID_selectionType:             return "selectionType";
+    case ID_idVariableType:            return "idVariableType";
+    case ID_idVariable:                return "idVariable";
+    case ID_variables:                 return "variables";
+    case ID_variableMins:              return "variableMins";
+    case ID_variableMaxs:              return "variableMaxs";
+    case ID_minTimeState:              return "minTimeState";
+    case ID_maxTimeState:              return "maxTimeState";
+    case ID_timeStateStride:           return "timeStateStride";
+    case ID_combineRule:               return "combineRule";
+    case ID_histogramType:             return "histogramType";
+    case ID_histogramNumBins:          return "histogramNumBins";
+    case ID_histogramAutoScaleNumBins: return "histogramAutoScaleNumBins";
+    case ID_histogramStartBin:         return "histogramStartBin";
+    case ID_histogramEndBin:           return "histogramEndBin";
+    case ID_histogramVariable:         return "histogramVariable";
     default:  return "invalid index";
     }
 }
@@ -1237,23 +1263,24 @@ SelectionProperties::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_name:              return FieldType_string;
-    case ID_source:            return FieldType_string;
-    case ID_selectionType:     return FieldType_enum;
-    case ID_idVariableType:    return FieldType_enum;
-    case ID_idVariable:        return FieldType_string;
-    case ID_variables:         return FieldType_stringVector;
-    case ID_variableMins:      return FieldType_doubleVector;
-    case ID_variableMaxs:      return FieldType_doubleVector;
-    case ID_minTimeState:      return FieldType_int;
-    case ID_maxTimeState:      return FieldType_int;
-    case ID_timeStateStride:   return FieldType_int;
-    case ID_combineRule:       return FieldType_enum;
-    case ID_histogramType:     return FieldType_enum;
-    case ID_histogramNumBins:  return FieldType_int;
-    case ID_histogramStartBin: return FieldType_int;
-    case ID_histogramEndBin:   return FieldType_int;
-    case ID_histogramVariable: return FieldType_string;
+    case ID_name:                      return FieldType_string;
+    case ID_source:                    return FieldType_string;
+    case ID_selectionType:             return FieldType_enum;
+    case ID_idVariableType:            return FieldType_enum;
+    case ID_idVariable:                return FieldType_string;
+    case ID_variables:                 return FieldType_stringVector;
+    case ID_variableMins:              return FieldType_doubleVector;
+    case ID_variableMaxs:              return FieldType_doubleVector;
+    case ID_minTimeState:              return FieldType_int;
+    case ID_maxTimeState:              return FieldType_int;
+    case ID_timeStateStride:           return FieldType_int;
+    case ID_combineRule:               return FieldType_enum;
+    case ID_histogramType:             return FieldType_enum;
+    case ID_histogramNumBins:          return FieldType_int;
+    case ID_histogramAutoScaleNumBins: return FieldType_bool;
+    case ID_histogramStartBin:         return FieldType_int;
+    case ID_histogramEndBin:           return FieldType_int;
+    case ID_histogramVariable:         return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -1278,23 +1305,24 @@ SelectionProperties::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_name:              return "string";
-    case ID_source:            return "string";
-    case ID_selectionType:     return "enum";
-    case ID_idVariableType:    return "enum";
-    case ID_idVariable:        return "string";
-    case ID_variables:         return "stringVector";
-    case ID_variableMins:      return "doubleVector";
-    case ID_variableMaxs:      return "doubleVector";
-    case ID_minTimeState:      return "int";
-    case ID_maxTimeState:      return "int";
-    case ID_timeStateStride:   return "int";
-    case ID_combineRule:       return "enum";
-    case ID_histogramType:     return "enum";
-    case ID_histogramNumBins:  return "int";
-    case ID_histogramStartBin: return "int";
-    case ID_histogramEndBin:   return "int";
-    case ID_histogramVariable: return "string";
+    case ID_name:                      return "string";
+    case ID_source:                    return "string";
+    case ID_selectionType:             return "enum";
+    case ID_idVariableType:            return "enum";
+    case ID_idVariable:                return "string";
+    case ID_variables:                 return "stringVector";
+    case ID_variableMins:              return "doubleVector";
+    case ID_variableMaxs:              return "doubleVector";
+    case ID_minTimeState:              return "int";
+    case ID_maxTimeState:              return "int";
+    case ID_timeStateStride:           return "int";
+    case ID_combineRule:               return "enum";
+    case ID_histogramType:             return "enum";
+    case ID_histogramNumBins:          return "int";
+    case ID_histogramAutoScaleNumBins: return "bool";
+    case ID_histogramStartBin:         return "int";
+    case ID_histogramEndBin:           return "int";
+    case ID_histogramVariable:         return "string";
     default:  return "invalid index";
     }
 }
@@ -1389,6 +1417,11 @@ SelectionProperties::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_histogramNumBins:
         {  // new scope
         retval = (histogramNumBins == obj.histogramNumBins);
+        }
+        break;
+    case ID_histogramAutoScaleNumBins:
+        {  // new scope
+        retval = (histogramAutoScaleNumBins == obj.histogramAutoScaleNumBins);
         }
         break;
     case ID_histogramStartBin:
