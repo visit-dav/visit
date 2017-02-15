@@ -405,6 +405,29 @@ UnifyMinimumValue(float mymin)
 }
 
 // ****************************************************************************
+//  Function: UnifyMinimumValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the minimum
+//      value over all processors.
+//
+//  Arguments:
+//      mymin    The minimum on this processor.
+//
+//  Returns:     The minimum over all processors.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    May 19, 2008
+//
+// ****************************************************************************
+
+double
+UnifyMinimumValue(double mymin)
+{
+    return globalContext.UnifyMinimumValue(mymin);
+}
+
+// ****************************************************************************
 //  Function: UnifyMaximumValue
 //
 //  Purpose:
@@ -450,6 +473,29 @@ UnifyMaximumValue(int mymax)
 
 float
 UnifyMaximumValue(float mymax)
+{
+    return globalContext.UnifyMaximumValue(mymax);
+}
+
+// ****************************************************************************
+//  Function: UnifyMaximumValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the maximum
+//      value over all processors.
+//
+//  Arguments:
+//      mymax    The maximum on this processor.
+//
+//  Returns:     The maximum over all processors.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    May 19, 2008
+//
+// ****************************************************************************
+
+double
+UnifyMaximumValue(double mymax)
 {
     return globalContext.UnifyMaximumValue(mymax);
 }

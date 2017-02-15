@@ -671,6 +671,36 @@ avtParallelContext::UnifyMinimumValue(float mymin)
 
 
 // ****************************************************************************
+//  Function: avtParallelContext::UnifyMinimumValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the minimum
+//      value over all processors.
+//
+//  Arguments:
+//      mymin    The minimum on this processor.
+//
+//  Returns:     The minimum over all processors.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    May 19, 2008
+//
+// ****************************************************************************
+
+double
+avtParallelContext::UnifyMinimumValue(double mymin)
+{
+#ifdef PARALLEL
+    double allmin;
+    MPI_Allreduce(&mymin, &allmin, 1, MPI_DOUBLE, MPI_MIN, this->GetCommunicator());
+    return allmin;
+#else
+    return mymin;
+#endif
+}
+
+
+// ****************************************************************************
 //  Function: avtParallelContext::UnifyMaximumValue
 //
 //  Purpose:
@@ -733,6 +763,35 @@ avtParallelContext::UnifyMaximumValue(float mymax)
 #endif
 }
 
+
+// ****************************************************************************
+//  Function: avtParallelContext::UnifyMaximumValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the maximum
+//      value over all processors.
+//
+//  Arguments:
+//      mymax    The maximum on this processor.
+//
+//  Returns:     The maximum over all processors.
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    May 19, 2008
+//
+// ****************************************************************************
+
+double
+avtParallelContext::UnifyMaximumValue(double mymax)
+{
+#ifdef PARALLEL
+    double allmax;
+    MPI_Allreduce(&mymax, &allmax, 1, MPI_DOUBLE, MPI_MAX, this->GetCommunicator());
+    return allmax;
+#else
+    return mymax;
+#endif
+}
 
 
 // ****************************************************************************
