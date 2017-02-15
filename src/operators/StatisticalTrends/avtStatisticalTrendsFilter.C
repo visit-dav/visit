@@ -192,9 +192,8 @@ avtStatisticalTrendsFilter::ExamineContract(avtContract_p in_contract)
 }
 
 
-
 // ****************************************************************************
-//  Method: avtFTLEFilter::ModifyContract
+//  Method: avtStatisticalTrendsFilter::ModifyContract
 //
 //  Purpose:
 //      Creates a contract the removes the operator-created-expression.
@@ -392,15 +391,8 @@ avtStatisticalTrendsFilter::InitializeTimeLoop(void)
 //    end-time of the iteration.  The iteration over time is performed
 //    using avtExecuteThenTimeLoopFilter::Execute(void)
 //
-//  Programmer: Oliver Ruebel
-//  Creation:   May 07, 2009
-//
-//
-//  Modifications:
-//  
-//    Hank Childs, Thu Jan  7 16:14:55 PST 2010
-//    Add an exception if there are transform operators above stream in the
-//    pipeline.
+//  Programmer: Allen R. Sanderson
+//  Creation:   May 07, 2011
 //
 // ****************************************************************************
 
@@ -413,23 +405,24 @@ avtStatisticalTrendsFilter::Execute(void)
     int nds;
     vtkDataSet **dsets = tree->GetAllLeaves(nds);
 
-    int nds2 = nds;
-    SumIntAcrossAllProcessors(nds2);
-    if (nds2 < 1 || nds > 1)
-    {
-        // Free the memory from the GetAllLeaves function call.
-        delete [] dsets;
-
-        EXCEPTION1(ImproperUseException, "Filter expected only one vtkDataSet"
-                                         " in avtDataTree");
-    }
-
     if (nds == 0)
     {
         // Free the memory from the GetAllLeaves function call.
         delete [] dsets;
 
         return;
+    }
+
+    int nds2 = nds;
+    SumIntAcrossAllProcessors(nds2);
+
+    if (nds2 < 1 || 1 < nds)
+    {
+        // Free the memory from the GetAllLeaves function call.
+        delete [] dsets;
+
+        EXCEPTION1(ImproperUseException, "Filter expected only one vtkDataSet"
+                                         " in avtDataTree");
     }
 
     vtkDataSet *curr_ds = dsets[0];
