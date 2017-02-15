@@ -32,7 +32,7 @@ public:
     
     bool openDataset(const std::string filename);
     
-    unsigned char* getData(const Box box, const int timestate, const char* varname);
+    unsigned char* getData(const VisitIDXIO::Box box, const int timestate, const char* varname);
     
     virtual ~PIDXIO();
 
