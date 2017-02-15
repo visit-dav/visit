@@ -184,7 +184,14 @@ avtVolumeFilter::Execute(void)
     bool artificialMin = atts.GetUseColorVarMin();
     bool artificialMax = atts.GetUseColorVarMax();
     if (!artificialMin || !artificialMax)
+    {
+        // Get the local extents for this rank.
         avtDatasetExaminer::GetDataExtents(ds, minmax, primaryVariable);
+
+        // Get the global extents across all ranks.
+        minmax[0] = UnifyMinimumValue(minmax[0]);
+        minmax[1] = UnifyMaximumValue(minmax[1]);               
+    }    
     minmax[0] = (artificialMin ? atts.GetColorVarMin() : minmax[0]);
     minmax[1] = (artificialMax ? atts.GetColorVarMax() : minmax[1]);
     if (atts.GetScaling() == VolumeAttributes::Log)
@@ -212,27 +219,41 @@ avtVolumeFilter::Execute(void)
         }
     }
 
-    std::string s = std::string(primaryVariable);
-    std::vector<VISIT_LONG_LONG> numvals(numValsInHist, 0);
     int t1 = visitTimer->StartTimer();
-    avtDatasetExaminer::CalculateHistogram(ds, s, minmax[0], minmax[1], numvals);
 
+    // Get the local histogram for this rank.
+    std::vector<VISIT_LONG_LONG> numvals_in(numValsInHist, 0);
+    if( avtDatasetExaminer::CalculateHistogram(ds, primaryVariable,
+                                               minmax[0], minmax[1],
+                                               numvals_in) )
+        
+    {
+      debug1 << "CalculateHistogram failed for "
+             << primaryVariable << std::endl;
+    }
+
+    // Get the global histograms acrosss all ranks.
+    std::vector<VISIT_LONG_LONG> numvals_out(numValsInHist, 0);
+    SumLongLongArrayAcrossAllProcessors( &(numvals_in[0]),
+                                         &(numvals_out[0]), numValsInHist);
+    
     VISIT_LONG_LONG maxVal = 0;
     for (i = 0 ; i < numValsInHist ; i++)
-        if (numvals[i] > maxVal)
-            maxVal = numvals[i];
+        if (numvals_out[i] > maxVal)
+            maxVal = numvals_out[i];
 
     std::vector<float> h1(numValsInHist, 0.);
     if (maxVal != 0)
     {
         for (i = 0 ; i < numValsInHist ; i++)
-            h1[i] = ((double) numvals[i]) / ((double) maxVal);
+            h1[i] = ((double) numvals_out[i]) / ((double) maxVal);
     }
 
     MapNode vhist;
     vhist["histogram_size"] = numValsInHist;
     vhist["histogram_1d"] = h1;
     // vhist["histogram_2d"] = compressedbuf; <<-- not doing this
+    
     visitTimer->StopTimer(t1, "Calculating histogram");
 
     GetOutput()->GetInfo().GetAttributes().AddPlotInformation("VolumeHistogram", vhist);
