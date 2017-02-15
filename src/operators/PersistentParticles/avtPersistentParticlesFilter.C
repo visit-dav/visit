@@ -58,6 +58,9 @@
 #include <avtParallel.h>
 #include <avtIdentifierSelection.h>
 
+#include <avtCallback.h>
+#include <ImproperUseException.h>
+#include <NonCompliantFileException.h>
 #include <DebugStream.h>
 
 #include <map>
@@ -419,8 +422,17 @@ avtPersistentParticlesFilter::IterateMergeData(int ts, avtDataTree_p tree)
         // Free the memory from the GetAllLeaves function call.
         delete [] dsets;
 
-        EXCEPTION1(ImproperUseException, "Filter expected only one vtkDataSet"
-                                         " in avtDataTree");
+        std::stringstream buf;
+
+        buf << "avtPersistentParticlesFilter::IterateMergeData "
+            << "Expected only one vtkDataSet in avtDataTree but found "
+            << nds << " in this rank and found "
+            << nds2 << " across all ranks.";
+        
+        debug1 << "avtPersistentParticlesFilter::IterateMergeData: "
+               << buf.str() << std::endl;
+
+        EXCEPTION1(ImproperUseException, buf.str().c_str() );
     }
 
     if (nds == 0)
@@ -548,8 +560,17 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
         // Free the memory from the GetAllLeaves function call.
         delete [] dsets;
 
-        EXCEPTION1(ImproperUseException, "Filter expected only one vtkDataSet"
-                                         " in avtDataTree");
+        std::stringstream buf;
+
+        buf << "avtPersistentParticlesFilter::IterateTraceData "
+            << "Expected only one vtkDataSet in avtDataTree but found "
+            << nds << " in this rank and found "
+            << nds2 << " across all ranks.";
+        
+        debug1 << "avtPersistentParticlesFilter::IterateMergeData: "
+               << buf.str() << std::endl;
+
+        EXCEPTION1(ImproperUseException, buf.str().c_str() );
     }
 
     if (nds == 0)
