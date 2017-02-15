@@ -835,6 +835,7 @@ VISIT_3RDPARTY_VAR(R_DIR         "Path containing the R library's include and li
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
 VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
 VISIT_3RDPARTY_VAR(UINTAH_DIR    "Path containing the Uintah library's include and lib")
+VISIT_3RDPARTY_VAR(PIDX_DIR      "Path containing the PIDX library's include and lib")
 VISIT_3RDPARTY_VAR(VISUS_DIR     "Path containing the Visus library's include and lib")
 VISIT_3RDPARTY_VAR(VTKM_DIR      "Path containing the VTKm library's include and lib")
 VISIT_3RDPARTY_VAR(XDMF_DIR      "Path containing the Xdmf library's include and lib")
@@ -1453,6 +1454,12 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     IF(UINTAH_FOUND)
         SET(HAVE_LIBUINTAH 1)
     ENDIF(UINTAH_FOUND)
+
+    # Configure PIDX support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
+    IF(PIDX_FOUND)
+        SET(HAVE_LIBPIDX 1)
+    ENDIF(PIDX_FOUND)
 
     # Configure Visus support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisus.cmake)

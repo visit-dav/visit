@@ -21,7 +21,6 @@
             <lib name="conduit"/>
             <lib name="cgns"/>
             <lib name="eavl"/>
-            <lib name="visus"/>
             <lib name="fastbit"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
@@ -37,12 +36,14 @@
             <lib name="mxml"/>
             <lib name="nektarpp"/>
             <lib name="netcdf"/>
+            <lib name="pidx"/>
             <lib name="openssl"/>
             <lib name="pyside"/>
-            <lib name="uintah"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="tcmalloc"/>
+            <lib name="uintah"/>
+            <lib name="visus"/>
             <lib name="vtkm"/>
             <lib name="xdmf"/>
             <lib name="zlib"/>
@@ -76,11 +77,12 @@
             <lib name="netcdf"/>
             <lib name="nektarpp"/>
             <lib name="openssl"/>
+            <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
-            <lib name="visus"/>
             <lib name="uintah"/>
+            <lib name="visus"/>
             <lib name="xdmf"/>
             <lib name="zlib"/>
         </group>
@@ -111,10 +113,11 @@
             <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="nektarpp"/>
+            <lib name="pidx"/>
             <lib name="silo"/>
             <lib name="szip"/>
-            <lib name="visus"/>
             <lib name="uintah"/>
+            <lib name="visus"/>
             <lib name="xdmf"/>
         </group>
 
@@ -135,6 +138,7 @@
             <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="nektarpp"/>
+            <lib name="pidx"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="visus"/>
