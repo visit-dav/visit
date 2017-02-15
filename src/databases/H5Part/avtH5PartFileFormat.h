@@ -167,6 +167,8 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     h5part_int64_t         activeTimeStep;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+    virtual void           GetCycles(std::vector<int> &c);
+    virtual void           GetTimes(std::vector<double> &t);
 
   private:
     void                   SelectParticlesToRead( const char * = 0 );
@@ -176,6 +178,9 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     void                   GetSubBlock(h5part_int64_t gridDims[3], h5part_int64_t subBlockDims[6]);
     std::string            DoubleToString(double x);
 
+    std::vector<int>       cycles;
+    std::vector<double>    times;
+  
     void GetDecomp( h5part_int64_t nObjects,
                     h5part_int64_t &firstIndex,
                     h5part_int64_t &lastIndex,

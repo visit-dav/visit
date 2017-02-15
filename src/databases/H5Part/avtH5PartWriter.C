@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtH5PartWriter.C                           //
+//                              avtH5PartWriter.C                            //
 // ************************************************************************* //
 
 #include <visit-config.h>
@@ -56,7 +56,6 @@
 
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
-#include <snprintf.h>
 
 // H5Part
 #include <H5Part.h>
@@ -98,6 +97,11 @@
 #include <avtParallel.h>
 #endif
 
+#include <unistd.h>
+#include <snprintf.h>
+
+int    avtH5PartWriter::INVALID_CYCLE = -INT_MAX;
+double avtH5PartWriter::INVALID_TIME = -DBL_MAX;
 
 // ****************************************************************************
 //  Method: avtH5PartWriter::avtH5PartWriter
@@ -114,6 +118,7 @@ avtH5PartWriter::avtH5PartWriter(DBOptionsAttributes *writeOpts)
 {
     // Defaults
     addFastBitIndexing = true;
+    sortedKey = std::string("unsorted");
     createParentFile = false;
     
     parentFilename = std::string("visit_ex_db_parent");
@@ -125,20 +130,38 @@ avtH5PartWriter::avtH5PartWriter(DBOptionsAttributes *writeOpts)
         {
             if (writeOpts->GetName(i) == "Add FastBit indexing")
                 addFastBitIndexing = writeOpts->GetBool("Add FastBit indexing");
+
+            else if (writeOpts->GetName(i) == "Sort variable")
+                sortedKey = writeOpts->GetString("Sort variable");
+
             else if (writeOpts->GetName(i) == "Create a parent file")
                 createParentFile = writeOpts->GetBool("Create a parent file");
+
             else if (writeOpts->GetName(i) == "Parent file name")
                 parentFilename = writeOpts->GetString("Parent file name");
 
         }
     }
-
-    parentFilename += std::string(".h5part");     
+    
+    parentFilename += std::string(".h5part");
 }
+
+
+// ****************************************************************************
+//  Method: avtH5PartWriter::~avtH5PartWriter
+//
+//  Purpose:
+//      Destructor
+//
+//  Programmer: Allen Sanderson
+//  Creation:   31 Jan 2017
+//
+// ****************************************************************************
 
 avtH5PartWriter::~avtH5PartWriter()
 {
 }
+
 
 // ****************************************************************************
 //  Method: avtH5PartWriter::OpenFile
@@ -163,6 +186,17 @@ avtH5PartWriter::OpenFile(const std::string &stemname, int nb)
     if (!file)
         EXCEPTION1(InvalidFilesException, filename);
 
+    // This function was once supported by H5Part and will be again in the new
+    // release. Until it is widely available, comment it out.
+    if (H5PartFileIsValid(file) != H5PART_SUCCESS)
+    {
+        debug1 << "avtH5PartWriter::OpenFile: "
+               << "H5PartFileIsValid check failed." << std::endl;
+
+        H5PartCloseFile(file);
+        EXCEPTION1(InvalidFilesException, filename);
+    }
+
     if (H5PartSetStep(file, 0) != H5PART_SUCCESS)
     {
       int ts = GetInput()->GetInfo().GetAttributes().GetTimeIndex();
@@ -171,7 +205,7 @@ avtH5PartWriter::OpenFile(const std::string &stemname, int nb)
       msg << "Cannot activate time step " << ts << " for file"
           << filename << ".";
 
-      debug1 << "avtH5PartWriter::WriteChunk(): "
+      debug1 << "avtH5PartWriter::OpenFile: "
              << msg.str() << std::endl;
 
       EXCEPTION2(NonCompliantFileException, "H5Part WriteChunk",
@@ -197,9 +231,59 @@ avtH5PartWriter::WriteHeaders(const avtDatabaseMetaData *md,
                               const std::vector<std::string> &vectors,
                               const std::vector<std::string> &materials)
 {
+    time     = GetTime();
+    cycle    = GetCycle();
+
+    if(  writeContext.Rank() == 0 )
+    {
+      if (cycle != INVALID_CYCLE)
+      {
+        if( H5PartWriteStepAttrib ( file, "Cycle", H5PART_INT32, &cycle, 1 ) != H5PART_SUCCESS)
+          {
+            debug1 << "avtH5PartWriter::OpenFile: "
+                   << "H5PartWriteStepAttrib failed" << std::endl;
+            
+            H5PartCloseFile(file);
+            EXCEPTION1(InvalidFilesException, filename);
+          }
+      }
+
+      if (time != INVALID_TIME )
+      {
+        if( H5PartWriteStepAttrib ( file, "Time", H5PART_FLOAT64, &time, 1 ) != H5PART_SUCCESS)
+          {
+            debug1 << "avtH5PartWriter::OpenFile: "
+                   << "H5PartWriteStepAttrib failed" << std::endl;
+            
+            H5PartCloseFile(file);
+            EXCEPTION1(InvalidFilesException, filename);
+          }
+      }
+    }
+
     meshname = GetMeshName(md);
     
     variableList = scalars;
+
+    if( addFastBitIndexing )
+    {
+        bool foundSortedKey = false;
+      
+        for( const auto &varName: variableList )
+        {
+            if( varName == sortedKey )
+            {
+                foundSortedKey = true;
+                break;
+            }
+        }
+
+        if( sortedKey != std::string("unsorted") && !foundSortedKey )
+        {
+            EXCEPTION2(NonCompliantFileException, "H5Part WriteHeaders",
+                       "Can not find the specified sortedKey variable");
+        }
+    }
 }
 
 
@@ -248,13 +332,21 @@ avtH5PartWriter::CloseFile(void)
     // The output is serial so if the last rank ...
     if( writeContext.Rank() == writeContext.Size()-1 )
     {
-        // Create a parent file and a link to this file.
-        if( createParentFile )
-            WriteParentFile();
-
         // Add in the FastBit indexing
         if( addFastBitIndexing )
         {
+          // Build the indexes for this time step only which is always
+          // step#0. It like the data will be externally linked.
+          HDF5_FQ fqReader;
+          fqReader.openFile(filename.c_str(), H5PART_APPEND, true);
+          fqReader.buildSpecificTimeIndex(0);
+          fqReader.closeFile();
+        }
+
+        // Create a parent file and a link to this file.
+        if( createParentFile )
+        {
+            WriteParentFile();
         }
     }
 }
@@ -628,7 +720,7 @@ avtH5PartWriter::WriteParentFile()
     else
     {
         file_id = H5Fcreate(parentFilename.c_str(),
-                             H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT);
+                            H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT);
 
         // Failed to create the file so bail out.
         if( file_id < 0 )
@@ -653,7 +745,6 @@ avtH5PartWriter::WriteParentFile()
             // There is zero gaurantee that the data was sorted
             // initally so set the attribute to unsorted.
             std::string aname("sortedKey");
-            std::string attr("unsorted");
           
             // Create the data space for the string attribute.
             hid_t dataspace_id = H5Screate(H5S_SCALAR);
@@ -674,7 +765,7 @@ avtH5PartWriter::WriteParentFile()
                            "H5Tcopy failed");
             }
 
-            hsize_t size = attr.length();
+            hsize_t size = sortedKey.length();
             if( (status = H5Tset_size(type_id, size)) < 0 )
             {
                 H5Sclose(dataspace_id);
@@ -701,7 +792,7 @@ avtH5PartWriter::WriteParentFile()
             }
         
             // Write the attribute data.
-            if( (status = H5Awrite(a_id, type_id, attr.c_str())) < 0 )
+            if( (status = H5Awrite(a_id, type_id, sortedKey.c_str())) < 0 )
             {
                 H5Sclose(dataspace_id);
                 H5Sclose(a_id);
@@ -774,6 +865,9 @@ avtH5PartWriter::WriteParentFile()
         }
     }    
 
-    H5Gclose(index_id);
+    if( addFastBitIndexing )
+      H5Gclose(index_id);
+    
     H5Fclose(file_id);
 }
+

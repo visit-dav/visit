@@ -110,6 +110,7 @@ private:
     static double         INVALID_TIME;
 
     bool addFastBitIndexing;
+    std::string sortedKey;
     bool createParentFile;
     std::string parentFilename;
   

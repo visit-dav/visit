@@ -21,15 +21,15 @@ public:
 
     //open or create a new HDF5_UC file.  Files that are not found
     //will be created using that name
-    void openHDF5File(const char* file_location);
-    void openHDF5File(const std::string& file_location);
+    void openHDF5File(const char* file_location, const char mode);
+    void openHDF5File(const std::string& file_location, const char mode);
 
     //close the current file.
     void closeHDF5File();
     // Return the name of the HDF5 file.
     std::string getFileName() const {return (file_open?file_id.getName():"");}
 
-    void openH5PartFile(const std::string& file_location);
+    void openH5PartFile(const std::string& file_location, const char mode);
     void closeH5PartFile();
 
     //get the list of all variable names in the dataset
@@ -259,9 +259,13 @@ public:
     std::string getSortedFieldName() const;
 
 private:
-    //usefull functions for working with hdf5 files
+    static const int maxVarNameLen = 256; // Maximum variable name length used in H5Part calls
+    static const int maxDims = 255;       // Maximum dimensions
 
-    void openHDF5FileLocal(const char* file_location);
+  //usefull functions for working with hdf5 files
+
+    void openHDF5FileLocal(const char* file_location,
+                           const char mode);
     void string_attribute(const std::string& string_title,
                           const char *label);
     void write_int_attribute(int64_t size, const char *label);

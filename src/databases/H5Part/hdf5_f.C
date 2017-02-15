@@ -1,6 +1,10 @@
 #include "hdf5_f.h"
 #include <visit-hdf5.h>
 
+#define H5PART_READ             0x01
+#define H5PART_WRITE            0x02
+#define H5PART_APPEND           0x04
+
 H5F::H5F(){
         valid = false;
         status = 1;
@@ -23,7 +27,7 @@ bool H5F::close(){
         return test;
 }
 
-bool H5F::open(const char *filename){
+bool H5F::open(const char *filename, const char mode){
 
         //if previously opened, close and open a new one
         if(valid){
@@ -38,8 +42,12 @@ bool H5F::open(const char *filename){
         }H5E_END_TRY;
 
         if(temp > 0){
+            if( mode == H5PART_WRITE || mode == H5PART_APPEND )
+                classID = H5Fopen(filename,H5F_ACC_RDWR,H5P_DEFAULT);
+            else if( mode == H5PART_READ )
                 classID = H5Fopen(filename,H5F_ACC_RDONLY,H5P_DEFAULT);
-                if(classID >=0) valid = true;
+
+            if(classID >=0) valid = true;
         }
 
         else{

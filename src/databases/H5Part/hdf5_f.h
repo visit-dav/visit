@@ -24,7 +24,7 @@ public:
 
     //if the file exists, the file is opened and "true" is returned,
     //otherwise it is created and "false" is returned.
-    bool open(const char *);
+    bool open(const char *, const char mode);
     //close the file
     bool close();
     //test first of a given file exists and return true or false

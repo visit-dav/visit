@@ -43,6 +43,7 @@ public:
       \param useH5PartFile IN: If set to true, H5Part format is assumed.
     */
     void openFile(const char* name,
+                  const char mode,
                   const bool useH5PartFile = false
                   );
 
@@ -54,6 +55,7 @@ public:
       \param useH5PartFile IN: If set to true, H5Part format is assumed.
     */
     void openFile(const std::string & name,
+                  const char mode,
                   const bool useH5PartFile = false
                   );
 
