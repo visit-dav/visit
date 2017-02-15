@@ -148,28 +148,17 @@ IF(UNIX)
     SET_TARGET_PROPERTIES(${module_name} PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY ${VISIT_LIBRARY_DIR}/${dest_dir})
 ELSE(UNIX)
-    # Use a different LIBARARY_OUTPUT_DIRECTORY on windows so visit -cli -pyside
-    # will work from the build directory.  Here's why:
-    #
-    # If VISIT_LIBRARY_DIR/dest_dir is used, the files are output to
-    # lib/Release/visit/site-packages/Release.  This causes problems
-    # with running visit -cli -pyside from the build directory, because
-    # the extra 'Release' at the end of the path is not part of sys.path.
-    # Copying the output files to the directory one below solves the problem
-    # of running from the build, but the INSTALL target fails because 
-    # CMake only translates one of the $(Configuration) macros in the path:
-    # "lib/$(Configuration)/visit/site-packages/$(Configuration)", so the file
-    # "lib/$(Configuration)/visit/site-packages/Release" cannot be
-    # found and the INSTALL target fails.
-    # 
-    # using VISIT_BINARY_DIR/exe works for running from the build dir because
-    # the exe path is part of sys.path and the .pyd files are found and loaded
-    # correctly.  It also works for the INSTALL target, because the files
-    # are copied from the exe dir to the install-dir/lib/site-packages/visit.
-    # 
-    SET_TARGET_PROPERTIES(${module_name} PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/exe)
-    SET_TARGET_PROPERTIES(${module_name} PROPERTIES SUFFIX ".pyd")
+    # set the appropriate suffix 
+    set_target_properties(${module_name} PROPERTIES SUFFIX ".pyd")
+
+    # Since cmake will append $(Configuration) to output directories, we need
+    # to override that by specifying LIBRARY_OUTPUT_DIRECTORY_${Configuration}
+    # for each configuration.
+    foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
+        string(TOUPPER ${cfg} UCFG)
+        set_target_properties(${module_name} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY_${UCFG} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${cfg}/${dest_dir})
+    endforeach()
 ENDIF(UNIX)
 
 target_link_libraries(${module_name}
