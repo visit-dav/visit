@@ -122,7 +122,7 @@ private slots:
     void    idVariableTypeChanged(int);
     void    idVariableChanged(const QString &);
 
-    void    automaticallyApplyChanged(bool val);
+    void    automaticallyApplyToggled(bool val);
     void    UpdateWindowSingleItem();
     void    addSelection();
     void    deleteSelection();
@@ -144,6 +144,7 @@ private slots:
     void    summationChanged(int);
     void    histogramVariableChanged(const QString &);
     void    histogramNumBinsChanged(int);
+    void    histogramAutoScaleNumBinsToggled(bool val);
     void    histogramStartChanged(int);
     void    histogramEndChanged(int);
 
@@ -192,6 +193,7 @@ private:
     QvisVariableButton      *cqHistogramVariable;
     QLabel                  *cqHistogramNumBinsLabel;
     QSpinBox                *cqHistogramNumBins;
+    QCheckBox               *cqHistogramAutoScaleNumBins;
     QLabel                  *cqHistogramMinLabel;
     QSpinBox                *cqHistogramMin;
     QLabel                  *cqHistogramMaxLabel;

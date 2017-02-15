@@ -136,6 +136,7 @@ public:
     void SetCombineRule(CombinationType combineRule_);
     void SetHistogramType(HistogramType histogramType_);
     void SetHistogramNumBins(int histogramNumBins_);
+    void SetHistogramAutoScaleNumBins(bool histogramAutoScaleNumBins_);
     void SetHistogramStartBin(int histogramStartBin_);
     void SetHistogramEndBin(int histogramEndBin_);
     void SetHistogramVariable(const std::string &histogramVariable_);
@@ -161,6 +162,7 @@ public:
     CombinationType    GetCombineRule() const;
     HistogramType      GetHistogramType() const;
     int                GetHistogramNumBins() const;
+    bool               GetHistogramAutoScaleNumBins() const;
     int                GetHistogramStartBin() const;
     int                GetHistogramEndBin() const;
     const std::string  &GetHistogramVariable() const;
@@ -218,6 +220,7 @@ public:
         ID_combineRule,
         ID_histogramType,
         ID_histogramNumBins,
+        ID_histogramAutoScaleNumBins,
         ID_histogramStartBin,
         ID_histogramEndBin,
         ID_histogramVariable,
@@ -239,6 +242,7 @@ private:
     int          combineRule;
     int          histogramType;
     int          histogramNumBins;
+    bool         histogramAutoScaleNumBins;
     int          histogramStartBin;
     int          histogramEndBin;
     std::string  histogramVariable;
@@ -247,6 +251,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SELECTIONPROPERTIES_TMFS "ssiiss*d*d*iiiiiiiis"
+#define SELECTIONPROPERTIES_TMFS "ssiiss*d*d*iiiiiibiis"
 
 #endif

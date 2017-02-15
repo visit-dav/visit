@@ -340,7 +340,7 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
 
     automaticallyApply = new QCheckBox(tr("Automatically apply updated selections"), f2);
     connect(automaticallyApply, SIGNAL(toggled(bool)),
-            this, SLOT(automaticallyApplyChanged(bool)));
+            this, SLOT(automaticallyApplyToggled(bool)));
     definitionLayout->addWidget(automaticallyApply, row,0,1,3);
 
 
@@ -581,6 +581,11 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     connect(cqHistogramNumBins, SIGNAL(valueChanged(int)),
             this, SLOT(histogramNumBinsChanged(int)));
     aLayout->addWidget(cqHistogramNumBins, 2, 1);
+
+    cqHistogramAutoScaleNumBins = new QCheckBox(tr("Automatically scale"));
+    connect(cqHistogramAutoScaleNumBins, SIGNAL(toggled(bool)),
+            this, SLOT(histogramAutoScaleNumBinsToggled(bool)));
+    aLayout->addWidget(cqHistogramAutoScaleNumBins, 2, 2, 1, 2);
 
     //
     // Summation controls
@@ -1198,6 +1203,21 @@ QvisSelectionsWindow::UpdateSelectionProperties()
         cqHistogramNumBins->setValue(defaults.GetHistogramNumBins());
         cqHistogramNumBins->blockSignals(false);
 
+        cqHistogramAutoScaleNumBins->blockSignals(true);
+        cqHistogramAutoScaleNumBins->setChecked(defaults.GetHistogramAutoScaleNumBins());
+        cqHistogramAutoScaleNumBins->blockSignals(false);
+
+        bool setBins = (selectionProps.GetHistogramType() ==
+                        SelectionProperties::HistogramID ||
+                        selectionProps.GetHistogramType() ==
+                        SelectionProperties::HistogramVariable);
+        
+        cqHistogramNumBins->setEnabled(setBins &&
+          !selectionProps.GetHistogramAutoScaleNumBins());
+        cqHistogramNumBinsLabel->setEnabled(setBins &&
+          !selectionProps.GetHistogramAutoScaleNumBins());
+        cqHistogramAutoScaleNumBins->setEnabled(setBins);
+        
         cqHistogramMin->blockSignals(true);
         cqHistogramMin->setValue(defaults.GetHistogramStartBin());
         cqHistogramMin->blockSignals(false);
@@ -1329,12 +1349,22 @@ QvisSelectionsWindow::UpdateSelectionProperties()
         cqHistogramNumBins->blockSignals(true);
         cqHistogramNumBins->setValue(selectionProps.GetHistogramNumBins());
         cqHistogramNumBins->blockSignals(false);
-        bool setBins =
-          selectionProps.GetHistogramType() == SelectionProperties::HistogramID ||
-          selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable;
-        cqHistogramNumBins->setEnabled(setBins);
-        cqHistogramNumBinsLabel->setEnabled(setBins);
 
+        cqHistogramAutoScaleNumBins->blockSignals(true);
+        cqHistogramAutoScaleNumBins->setChecked(selectionProps.GetHistogramAutoScaleNumBins());
+        cqHistogramAutoScaleNumBins->blockSignals(false);
+
+        bool setBins = (selectionProps.GetHistogramType() ==
+                        SelectionProperties::HistogramID ||
+                        selectionProps.GetHistogramType() ==
+                        SelectionProperties::HistogramVariable);
+        
+        cqHistogramNumBins->setEnabled(setBins &&
+            !selectionProps.GetHistogramAutoScaleNumBins());
+        cqHistogramNumBinsLabel->setEnabled(setBins &&
+            !selectionProps.GetHistogramAutoScaleNumBins());
+        cqHistogramAutoScaleNumBins->setEnabled(setBins);
+        
         UpdateMinMaxBins(true, true, true);
 
         cqSummation->blockSignals(true);
@@ -1418,7 +1448,7 @@ QvisSelectionsWindow::UpdateSelectionSummary()
 //
 
 // ****************************************************************************
-// Method: QvisSelectionsWindow::automaticallyApplyChanged
+// Method: QvisSelectionsWindow::automaticallyApplyToggled
 //
 // Purpose: 
 //   Sets the named selection auto apply mode.
@@ -1434,7 +1464,7 @@ QvisSelectionsWindow::UpdateSelectionSummary()
 // ****************************************************************************
 
 void
-QvisSelectionsWindow::automaticallyApplyChanged(bool val)
+QvisSelectionsWindow::automaticallyApplyToggled(bool val)
 {
     GetViewerMethods()->SetNamedSelectionAutoApply(val);
 }
@@ -2052,11 +2082,17 @@ QvisSelectionsWindow::histogramTypeChanged(int value)
     cqHistogramVariableButton->setEnabled(!selectionProps.GetVariables().empty());
     cqHistogramVariable->setEnabled(!selectionProps.GetVariables().empty() &&
             selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable);
-    bool setBins =
-      selectionProps.GetHistogramType() == SelectionProperties::HistogramID ||
-      selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable;
-    cqHistogramNumBins->setEnabled(setBins);
-    cqHistogramNumBinsLabel->setEnabled(setBins);
+
+    bool setBins = (selectionProps.GetHistogramType() ==
+                    SelectionProperties::HistogramID ||
+                    selectionProps.GetHistogramType() ==
+                    SelectionProperties::HistogramVariable);
+
+    cqHistogramNumBins->setEnabled(setBins &&
+      !selectionProps.GetHistogramAutoScaleNumBins());
+    cqHistogramNumBinsLabel->setEnabled(setBins &&
+      !selectionProps.GetHistogramAutoScaleNumBins());
+    cqHistogramAutoScaleNumBins->setEnabled(setBins);
 
     UpdateMinMaxBins(true, true, true);
 }
@@ -2121,6 +2157,39 @@ QvisSelectionsWindow::histogramNumBinsChanged(int index)
     Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
 
     UpdateMinMaxBins(true, true, true);
+}
+
+// ****************************************************************************
+// Method: QvisSelectionsWindow::histogramAutoScaleNumBinsToggled
+//
+// Purpose: 
+//   Sets the named selection auto apply mode.
+//
+// Arguments:
+//   val : Whether the selections update automatically when plots change.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 11 16:22:37 PDT 2010
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSelectionsWindow::histogramAutoScaleNumBinsToggled(bool val)
+{
+    selectionProps.SetHistogramAutoScaleNumBins(val);
+
+    bool setBins = (selectionProps.GetHistogramType() ==
+                    SelectionProperties::HistogramID ||
+                    selectionProps.GetHistogramType() ==
+                    SelectionProperties::HistogramVariable);
+
+    cqHistogramNumBins->setEnabled(setBins &&
+      !selectionProps.GetHistogramAutoScaleNumBins());
+    cqHistogramNumBinsLabel->setEnabled(setBins &&
+      !selectionProps.GetHistogramAutoScaleNumBins());
+    cqHistogramAutoScaleNumBins->setEnabled(setBins);
 }
 
 // ****************************************************************************
