@@ -35,14 +35,30 @@
 # DAMAGE.
 #
 # Modifications:
+#    Kathleen Biagas, Tue Jan 24 11:05:25 PST 2017
+#    Add support for Qt5.
 #
 #*****************************************************************************
 
 set(pyside_hook_sources "")
-set(pyside_hook_gen_sources ${CMAKE_CURRENT_BINARY_DIR}/pyside_hook/pysidehook_wrapper.cpp
-                            ${CMAKE_CURRENT_BINARY_DIR}/pyside_hook/pyside_hook_module_wrapper.cpp)
-set(pyside_hook_include_paths ${QT_INCLUDE_DIR} ${QT_QTCORE_INCLUDE_DIR})
+set(pyside_hook_gen_sources
+    ${CMAKE_CURRENT_BINARY_DIR}/pyside_hook/pysidehook_wrapper.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/pyside_hook/pyside_hook_module_wrapper.cpp)
+
+if(VISIT_QT5)
+    set(pyside_hook_include_paths ${Qt5Core_INCLUDE_DIRS})
+else()
+    set(pyside_hook_include_paths ${QT_INCLUDE_DIR} ${QT_QTCORE_INCLUDE_DIR})
+endif()
+
 set(pyside_hook_link_libs ${QT_QTCORE_LIBRARY})
+
+#
+# If we enable eavl, it will appear in the link line, so add ${EAVL_LIBRARY_DIR}
+#
+IF(EAVL_FOUND)
+    LINK_DIRECTORIES(${EAVL_LIBRARY_DIR})
+ENDIF()
 
 PYSIDE_ADD_MODULE(pyside_hook
                   site-packages/visit

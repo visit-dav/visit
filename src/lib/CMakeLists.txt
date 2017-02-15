@@ -233,22 +233,27 @@ IF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
             GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
             MESSAGE(STATUS "Symlinking ${ITM_ABS} to ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}")
             EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
-                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
-                                    RESULT_VARIABLE PYSIDE_MODULE_SYM_RM)
+                          ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
+                          RESULT_VARIABLE PYSIDE_MODULE_SYM_RM)
             EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
-                                    ${ITM_ABS}
-                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
-                                    RESULT_VARIABLE PYSIDE_MODULE_SYM_CREATE)
+                          ${ITM_ABS}
+                          ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
+                          RESULT_VARIABLE PYSIDE_MODULE_SYM_CREATE)
             IF(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
                 MESSAGE(WARNING "Failed to create PySide module symlink in lib/site-packages/ for ${ITM_ABS}")
             ENDIF(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
         ENDFOREACH(ITM ${PYSIDE_MODULE_ITEMS})
     ELSE (NOT WIN32)
-        ADD_CUSTOM_TARGET(pyside_modules ALL
+      if(VISIT_QT5)
+        set(pysidename "PySide2")
+      else()
+        set(pysidename "PySide")
+      endif()
+      ADD_CUSTOM_TARGET(pyside_modules ALL
             COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    ${PYSIDE_PYTHONPATH}/PySide
-                    ${VISIT_LIBRARY_DIR}/site-packages/PySide
-            COMMENT "Copying ${PYSIDE_PYTHONPATH}/PySide to ${VISIT_LIBRARY_DIR}/site-packages/PySide"
+                    ${PYSIDE_PYTHONPATH}/${pysidename}
+                    ${VISIT_LIBRARY_DIR}/site-packages/${pysidename}
+            COMMENT "Copying ${PYSIDE_PYTHONPATH}/${pysidename} to ${VISIT_LIBRARY_DIR}/site-packages/${pysidename}"
         )
         if(VISIT_NO_ALLBUILD)
             add_dependencies(visit_special_builds pyside_modules)

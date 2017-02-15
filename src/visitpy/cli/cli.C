@@ -575,14 +575,23 @@ main(int argc, char *argv[])
         if(pyside || pyside_gui)
         {
             int error = 0;
+#if defined(VISIT_QT5)
+            if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtCore import *");
+            if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtGui import *");
+            if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtOpenGL import *");
+            if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtUiTools import *");
+
+#else
             if(!error) error |= PyRun_SimpleString((char*)"from PySide.QtCore import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide.QtGui import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide.QtOpenGL import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide.QtUiTools import *");
+#endif
+
             if(!error) error |= PyRun_SimpleString((char*)"import visit.pyside_support");
             if(!error) error |= PyRun_SimpleString((char*)"import visit.pyside_hook");
-            
-            if(error) 
+
+            if(error)
             {
                 std::cerr   << "Error: Unable to initialize PySide components" 
                             << std::endl;
