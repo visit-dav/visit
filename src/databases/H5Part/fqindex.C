@@ -254,17 +254,17 @@ void H5_FQ_IndexUnbinned::readOld(H5_Index& h5file, int64_t tval) {
 
 /// Write the index to an active HDF5 file.
 void H5_FQ_IndexUnbinned::write(H5_Index& h5file) const {
-    // Because the internally stored pointer to H5_Index is a const, the
-    // caller must provide another H5_Index without the const qualifier.
-    // This incoming argument can be same as the internally stored H5_Index
-    // object.
+    // Because the internally stored pointer to H5_Index is a const,
+    // the caller must provide another H5_Index without the const
+    // qualifier.  This incoming argument can be same as the
+    // internally stored H5_Index object.
     const unsigned nobs = bits.size();
     if (nobs == 0) {
         col->logMessage("H5_FQ_IndexUnbinned::write", "no bitmaps to write");
         return;
     }
 
-    if (! isNewIndex) {
+    if (! isNewIndex) { // an existing index
         H5_Index& h5file_ = reinterpret_cast<const H5_FQ_Variable*>(col)->
             getH5Index();
         if (&h5file == &h5file_) {
@@ -293,10 +293,11 @@ void H5_FQ_IndexUnbinned::write(H5_Index& h5file) const {
             }
         }
     }
+    
     bool berr = h5file.createBitmap(nm, tval, offset64[nobs]);
     if (! berr) {
         col->logWarning("H5_FQ_IndexUnbinned::write",
-                "unable to create bitmap dataset for writing");
+                "failed to create bitmap dataset for writing");
         return;
     }
 
@@ -320,7 +321,7 @@ void H5_FQ_IndexUnbinned::write(H5_Index& h5file) const {
     // write the bitmap offsets
     berr = h5file.setBitmapOffsets
         (nm, tval, const_cast<int64_t*>(offset64.begin()), nobs+1);
-    if (berr == false) {
+    if (! berr) {
         LOGGER(ibis::gVerbose > 0)
             << "Warning -- H5_FQ_IndexUnbinned[" << col->partition()->name()
             << "." << col->name() << "]::write failed to write the bitmap "
@@ -971,9 +972,11 @@ void H5_FQ_IndexBinned::readOld(H5_Index& h5file, int64_t tval) {
 
 /// Write the index to an active HDF5 file.
 void H5_FQ_IndexBinned::write(H5_Index& h5file) const {
-    // Because the internally stored pointer to H5_Index is a const, the
-    // caller must provide another H5_Index without the const qualifier.
-    // Clearly, this H5_Index can be same as the internally stored one.
+    // Because the internally stored pointer to H5_Index is a const,
+    // the caller must provide another H5_Index without the const
+    // qualifier.  This incoming argument can be same as the
+    // internally stored H5_Index object.
+    // const unsigned nobs = bits.size();
     if (nobs == 0) {
         col->logMessage("H5_FQ_IndexBinned::write", "no bitmaps to write");
         return;
@@ -983,9 +986,10 @@ void H5_FQ_IndexBinned::write(H5_Index& h5file) const {
         H5_Index& h5file_ = reinterpret_cast<const H5_FQ_Variable*>(col)->
             getH5Index();
         if (&h5file == &h5file_) {
-            if (ibis::gVerbose > 3)
-                col->logMessage("H5_FQ_IndexBinned::write",
-                        "no need to write back to the same file");
+            LOGGER(ibis::gVerbose > 3)
+                << "H5_FQ_IndexBinned[" << col->partition()->name() << "."
+                << col->name() << "]::write -- no need to write to the "
+                "same file " << h5file.getFileName();
             return;
         }
         activate(); // activate all bitmaps before writing to another one
@@ -1014,6 +1018,7 @@ void H5_FQ_IndexBinned::write(H5_Index& h5file) const {
         return;
     }
 
+    ibis::util::timer mytimer("H5_FQ_IndexBinned::write", 3);
     // go through the bitmaps to write each one separately
     for (unsigned i = 0; i < nobs; ++ i) {
         if (offset64[i] < offset64[i+1]) {
@@ -1026,6 +1031,7 @@ void H5_FQ_IndexBinned::write(H5_Index& h5file) const {
                 << "Warning -- H5_FQ_IndexBinned[" << col->partition()->name()
                 << "." << col->name() << "]::write failed to write bitvector "
                 << i << " (" << offset64[i+1]-offset64[i] << " words)";
+            // is there a way to rollback the write operations?
         }
     }
 

@@ -61,9 +61,11 @@ void HDF5_FQ::createSlices() {
     }
 }
 
-void HDF5_FQ::openFile(const char* name, const bool useH5PartFile) {
+void HDF5_FQ::openFile(const char* name,
+                       const char mode,
+                       const bool useH5PartFile) {
     std::string temp = name;
-    openFile(temp, useH5PartFile);
+    openFile(temp, mode, useH5PartFile);
 }
 
 void HDF5_FQ::closeFile() {
@@ -76,7 +78,9 @@ void HDF5_FQ::addNewTimeStep(double timeValue){
     dataFile->insertStep(timeValue);
 }
 
-void HDF5_FQ::openFile(const std::string &name, const bool useH5PartFile) {
+void HDF5_FQ::openFile(const std::string &name,
+                       const char mode,
+                       const bool useH5PartFile) {
     if (dataFile != 0) {
         std::string oldname = dataFile->getFileName();
         if (name.compare(oldname) == 0) {
@@ -101,7 +105,7 @@ void HDF5_FQ::openFile(const std::string &name, const bool useH5PartFile) {
     delete dataFile;
     dataFile = new H5_Index(useH5PartFile);
     // open the new file
-    dataFile->openHDF5File(name);
+    dataFile->openHDF5File(name, mode);
     createSlices();
 }
 

@@ -13,6 +13,7 @@
 /// Constructor
 H5_FQ_Variable::H5_FQ_Variable(const H5_FQ_Timestep *tbl, const char *nm)
     : ibis::column(tbl, ibis::OID, nm), h5file_(tbl->getH5Index()) {
+
     BaseFileInterface::DataType type;
     std::vector<int64_t> dims;
     std::string strnm(nm);
@@ -1272,6 +1273,7 @@ int H5_FQ_Timestep::buildIndexes(const char* binning, int nthr) {
     int cnt = 0;
     for (ibis::part::columnList::const_iterator it = columns.begin();
          it != columns.end(); ++ it) {
+
         // call the constructor to either read an index or build a new one
         if (binned) {
             H5_FQ_IndexBinned

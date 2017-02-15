@@ -10,9 +10,9 @@
 
 #define H5_Indexptr(x) ((H5_Index*)((void*)(x)))
 
-H5UCFile H5UC_Open(char *filename){
+H5UCFile H5UC_Open(char *filename, char mode){
   H5_Index *file = new H5_Index();
-  file->openHDF5File(filename);
+  file->openHDF5File(filename,mode);
   return H5UCptr(file);
 }
 
