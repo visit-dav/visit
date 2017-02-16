@@ -145,6 +145,17 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
         EXCEPTION1(InvalidFilesException, filename);
     }
 
+    // Check for the first time step - if it does not exit bailout as
+    // the file is not a H5Part file.
+    activeTimeStep = 0;
+    if (!H5PartHasStep(file, activeTimeStep))
+    {
+        H5PartCloseFile(file);
+        EXCEPTION1(InvalidFilesException, "Cannot find first time step 0.");
+    }
+
+    // Assume a valid H5Part file from here out.
+    
     // Get number of time steps in file
     numTimestepsInFile = H5PartGetNumSteps(file);
 
