@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="host" type="string">rzcereal.llnl.gov</Field>
-    <Field name="hostAliases" type="string">rzcereal#.llnl.gov rzcereal##.llnl.gov rzcereal# rzcereal##</Field>
-    <Field name="hostNickname" type="string">LLNL RZ Cereal</Field>
+    <Field name="host" type="string">rztrona.llnl.gov</Field>
+    <Field name="hostAliases" type="string">rztrona#.llnl.gov rztrona##.llnl.gov rztrona# rztrona##</Field>
+    <Field name="hostNickname" type="string">LLNL RZ Trona</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">MachineName</Field>
     <Object name="LaunchProfile">
@@ -21,13 +21,13 @@
         <Field name="launchMethod" type="string"></Field>
         <Field name="forceStatic" type="bool">true</Field>
         <Field name="forceDynamic" type="bool">false</Field>
-        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="arguments" type="stringVector"></Field>
         <Field name="parallel" type="bool">false</Field>
     </Object>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">parallel interactive pdebug</Field>
         <Field name="timeout" type="int">480</Field>
-        <Field name="numProcessors" type="int">8</Field>
+        <Field name="numProcessors" type="int">36</Field>
         <Field name="numNodesSet" type="bool">false</Field>
         <Field name="numNodes" type="int">0</Field>
         <Field name="partitionSet" type="bool">true</Field>
@@ -41,13 +41,13 @@
         <Field name="forceStatic" type="bool">true</Field>
         <Field name="forceDynamic" type="bool">false</Field>
         <Field name="active" type="bool">false</Field>
-        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="arguments" type="stringVector"></Field>
         <Field name="parallel" type="bool">true</Field>
     </Object>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">parallel batch pbatch</Field>
         <Field name="timeout" type="int">480</Field>
-        <Field name="numProcessors" type="int">8</Field>
+        <Field name="numProcessors" type="int">36</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="numNodes" type="int">1</Field>
         <Field name="partitionSet" type="bool">true</Field>
@@ -67,7 +67,7 @@
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">parallel mxterm</Field>
         <Field name="timeout" type="int">480</Field>
-        <Field name="numProcessors" type="int">8</Field>
+        <Field name="numProcessors" type="int">36</Field>
         <Field name="numNodesSet" type="bool">false</Field>
         <Field name="numNodes" type="int">0</Field>
         <Field name="partitionSet" type="bool">false</Field>

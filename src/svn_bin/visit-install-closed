@@ -54,6 +54,9 @@
 #   Eric Brugger, Tue Jan 17 17:12:11 PST 2017
 #   I replaced hitit with winnipeg.
 #
+#   Eric Brugger, Fri Feb 17 12:17:29 PST 2017
+#   I changed the bank for all the LLNL systems from bdivp to wbronze.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -151,7 +154,7 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f winnipeg
 cat <<EOF > winnipeg
 #!/bin/sh
-./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux-x86_64-winnipeg /misc/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-winnipeg /misc/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                          > resultlog 2>&1
 echo "        install of visit on winnipeg"      >> resultlog 2>&1
@@ -188,7 +191,7 @@ fi
 rm -f zin
 cat <<EOF > zin
 #!/bin/sh
-./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux-x86_64-zin /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-zin /usr/gapps/visit > installlog 2>&1
 cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so.1
@@ -231,7 +234,7 @@ rm -f jade
 cat <<EOF > jade
 #!/bin/sh
 rm -rf /usr/gapps/visit/toss3
-./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux-x86_64-jade /usr/gapps/visit/toss3 > installlog 2>&1
+./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-jade /usr/gapps/visit/toss3 > installlog 2>&1
 mv /usr/gapps/visit/toss3/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
 rm -rf /usr/gapps/visit/toss3
 sed -i "/arch = \"linux-x86_64\"/ i 16SPACESif GETENV(\"SYS_TYPE\") == \"toss_3_x86_64_ib\" or GETENV(\"SYS_TYPE\") == \"toss_3_x86_64\":" /usr/gapps/visit/$ver+/bin/internallauncher

@@ -9,7 +9,7 @@
         <Field name="arguments" type="stringVector"></Field>
     </Object>
     <Object name="LaunchProfile">
-        <Field name="profileName" type="string">"parallel pbatch"</Field>
+        <Field name="profileName" type="string">"parallel batch pbatch"</Field>
         <Field name="numProcessors" type="int">16</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="numNodes" type="int">1</Field>
@@ -25,7 +25,7 @@
         <Field name="parallel" type="bool">true</Field>
     </Object>
     <Object name="LaunchProfile">
-        <Field name="profileName" type="string">"parallel pgpu"</Field>
+        <Field name="profileName" type="string">"parallel batch pgpu"</Field>
         <Field name="numProcessors" type="int">16</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="numNodes" type="int">1</Field>
@@ -41,7 +41,7 @@
         <Field name="parallel" type="bool">true</Field>
     </Object>
     <Object name="LaunchProfile">
-        <Field name="profileName" type="string">"parallel pvis"</Field>
+        <Field name="profileName" type="string">"parallel batch pvis"</Field>
         <Field name="numProcessors" type="int">16</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="numNodes" type="int">1</Field>

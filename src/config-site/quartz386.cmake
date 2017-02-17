@@ -31,7 +31,7 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/include TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib -Wl,-rpath=/usr/local/tools/mvapich2-gnu/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib")
 
