@@ -722,6 +722,8 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // Creation:   Thu Aug  1 16:42:56 PDT 2013
 //
 // Modifications:
+//   Eric Brugger, Fri Feb 17 14:22:58 PST 2017
+//   I added logic so that inrep is at least 1.
 //   
 // ****************************************************************************
 
@@ -816,7 +818,7 @@ avtBOUTFileFormat::DetermineMeshReplication(Subgrid &grid)
             double delta  = fabs(theta2 - theta);
             maxDeltaAngle = std::max(maxDeltaAngle, delta);
         }
-        jnrep[j] = std::max(std::min(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 240.),6.);
+        jnrep[j] = std::max(std::min(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 240.), 6.);
     }
 
     for (int i = istart; i < iend - 1; ++i)
@@ -831,7 +833,7 @@ avtBOUTFileFormat::DetermineMeshReplication(Subgrid &grid)
             double delta  = fabs(theta2 - theta);
             maxDeltaAngle = std::max(maxDeltaAngle, delta);
         }
-        inrep[i-istart] = std::min(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 240.);
+        inrep[i-istart] = std::max(std::min(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 240.), 1.);
     }
 
 #if 0
