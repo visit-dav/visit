@@ -390,6 +390,11 @@
 #    Eric Brugger, Fri Jan 13 09:41:59 PST 2017
 #    I deleted the host profile for sierra.
 #
+#    Eric Brugger, Fri Feb 17 09:26:52 PST 2017
+#    I corrected the bank setting logic to replace "wbronze" with
+#    the specified bank, since the default bank in all the llnl host
+#    profiles is now "wbronze" instead of "bdivp".
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -1086,6 +1091,7 @@ elif [ "$config" = "llnl_open_rz" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
 elif [ "$config" = "llnl_open_cz" ]; then
    # Copy the files explicitly to avoid the rzgw hosts. We're most likely installing on a cz machine.
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_ansel.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_borax.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_cab.xml      "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_quartz.xml   "$dir"/$version+/.visit/hosts/
@@ -1142,7 +1148,7 @@ fi
 # Do the bank fixup
 if [ "$bank" != "false" ]; then
     for hostfile in `ls $dir/$version+/.visit/hosts`; do
-        sed -i -e "s/bdivp/${bank}/" $dir/$version+/.visit/hosts/$hostfile
+        sed -i -e "s/wbronze/${bank}/" $dir/$version+/.visit/hosts/$hostfile
     done
 fi
 
