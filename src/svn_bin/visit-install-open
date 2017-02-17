@@ -83,6 +83,12 @@
 #   Eric Brugger, Mon Jan  9 13:50:10 PST 2017
 #   I replaced aztec with surface.
 #
+#   Eric Brugger, Tue Feb  7 10:42:05 PST 2017
+#   I added rztrona.
+#
+#   Eric Brugger, Fri Feb 17 12:16:04 PST 2017
+#   I changed the bank for all the LLNL systems from bdivp to wbronze.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -128,6 +134,7 @@ ubuntu1104_64=false
 ubuntu1404_64=false
 surface=true
 quartz=true
+rztrona=true
 rzzeus=true
 rzuseq=false
 carver=true
@@ -150,6 +157,7 @@ do
          ubuntu1404_64=false
          surface=false
          quartz=false
+         rztrona=false
          rzzeus=false
          carver=false
          glory=false
@@ -193,6 +201,14 @@ do
          ;;
       +quartz)
          quartz=true
+         shift
+         ;;
+      -rztrona)
+         rztrona=false
+         shift
+         ;;
+      +rztrona)
+         rztrona=true
          shift
          ;;
       -rzzeus)
@@ -269,7 +285,7 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f kickit
 cat <<EOF > kickit
 #!/bin/sh
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64-rhel7 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b wbronze -gw -l $ver linux-x86_64-rhel7 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on kickit"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -305,7 +321,7 @@ fi
 rm -f ubuntu1104_64
 cat <<EOF > ubuntu1104_64
 #!/bin/sh
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64-ubuntu11 /home/visit/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b wbronze -gw -l $ver linux-x86_64-ubuntu11 /home/visit/visit > installlog 2>&1
 rm -f resultlog
 echo "      install of visit on ubuntu1104_64"      > resultlog 2>&1
 echo "     -----------------------------------"    >> resultlog 2>&1
@@ -339,7 +355,7 @@ fi
 rm -f ubuntu1404_64
 cat <<EOF > ubuntu1404_64
 #!/bin/sh
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64-ubuntu14 /home/brugger1/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b wbronze -gw -l $ver linux-x86_64-ubuntu14 /home/brugger1/visit > installlog 2>&1
 rm -f resultlog
 echo "      install of visit on ubuntu1404_64"      > resultlog 2>&1
 echo "     -----------------------------------"    >> resultlog 2>&1
@@ -373,7 +389,7 @@ fi
 rm -f surface
 cat <<EOF > surface
 #!/bin/sh
-./visit-install -private -c llnl_open_cz -g visit -b bdivp -gw -l $ver linux-surface /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-surface /usr/gapps/visit > installlog 2>&1
 cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so.1
@@ -415,7 +431,7 @@ rm -f quartz
 cat <<EOF > quartz
 #!/bin/sh
 rm -rf /usr/gapps/visit/toss3
-./visit-install -private -c llnl_closed -g visit -b bdivp -gw -l $ver linux-x86_64-quartz /usr/gapps/visit/toss3 > installlog 2>&1
+./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-quartz /usr/gapps/visit/toss3 > installlog 2>&1
 mv /usr/gapps/visit/toss3/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
 rm -rf /usr/gapps/visit/toss3
 sed -i "/arch = \"linux-x86_64\"/ i 16SPACESif GETENV(\"SYS_TYPE\") == \"toss_3_x86_64_ib\" or GETENV(\"SYS_TYPE\") == \"toss_3_x86_64\":" /usr/gapps/visit/$ver+/bin/internallauncher
@@ -460,12 +476,61 @@ then
 fi
 
 #
+# Install on rztrona.
+#
+rm -f rztrona
+cat <<EOF > rztrona
+#!/bin/sh
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rztrona /usr/gapps/visit/toss3 > installlog 2>&1
+mv /usr/gapps/visit/toss3/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
+rm -rf /usr/gapps/visit/toss3
+sed -i "/arch = \"linux-x86_64\"/ i 16SPACESif GETENV(\"SYS_TYPE\") == \"toss_3_x86_64_ib\" or GETENV(\"SYS_TYPE\") == \"toss_3_x86_64\":" /usr/gapps/visit/$ver+/bin/internallauncher
+sed -i "/arch = \"linux-x86_64\"/ i 20SPACESarch = \"linux-x86_64-toss3\"" /usr/gapps/visit/$ver+/bin/internallauncher
+sed -i "/arch = \"linux-x86_64\"/ i 16SPACESelse:" /usr/gapps/visit/$ver+/bin/internallauncher
+sed -i "s/arch = \"linux-x86_64\"/    arch = \"linux-x86_64\"/" /usr/gapps/visit/$ver+/bin/internallauncher
+sed -i "s/16SPACES/                /" /usr/gapps/visit/$ver+/bin/internallauncher
+sed -i "s/20SPACES/                    /" /usr/gapps/visit/$ver+/bin/internallauncher
+cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib
+ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so
+ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so.1
+chmod 775 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/*.304.54
+chgrp visit /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/*.304.54
+rm -f resultlog
+echo "        install of visit on rztrona"          > resultlog 2>&1
+echo "       -----------------------------"         >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+df -k /usr/gapps/visit                              >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss3/bin >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+echo "The database plugins:"                        >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64-toss3/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss3\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail -s "VisIt install ($ver): rztrona" $emailName < resultlog
+EOF
+
+if [ $rztrona = true ]
+then
+   if [ $test = no ]
+   then
+      scp rztrona5:/usr/tmp/$user/rztrona/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-rztrona.tar.gz
+      scp visit$ver2.linux-rztrona.tar.gz rztrona:
+      scp visit-install rztrona:
+      scp rztrona rztrona:rztrona_install
+      ssh rztrona "chmod 750 rztrona_install;./rztrona_install"
+   fi
+fi
+
+#
 # Install on rzzeus.
 #
 rm -f rzzeus
 cat <<EOF > rzzeus
 #!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b bdivp -gw -l $ver linux-rzzeus /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rzzeus /usr/gapps/visit > installlog 2>&1
 cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so.1
@@ -539,7 +604,7 @@ fi
 rm -f carver
 cat <<EOF > carver
 #!/bin/sh
-./visit-install -private -c nersc -b bdivp $ver linux-carver visit > installlog 2>&1
+./visit-install -private -c nersc $ver linux-carver visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on carver"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
