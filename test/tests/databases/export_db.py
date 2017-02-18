@@ -33,6 +33,10 @@
 #    Add Mesh Plot for silo data exported as VTK, to test that mesh name
 #    was properly exported.
 #
+#    Kathleen Biagas, Fri Feb 17, 2017
+#    Update for new VTK export options.  Added test4, which tests the new
+#    options.
+#
 # ----------------------------------------------------------------------------
 import string
 
@@ -151,11 +155,12 @@ def test1():
     e.db_type = "VTK"
     e.filename = "binary_VTK"
     opts = GetExportOptions("VTK")
-    opts['Binary format'] = 1
+    #opts['Binary format'] = 1
+    opts['FileFormat'] = 1
     ExportDatabase(e, opts)
     line = "The binary_VTK.0.vtk file is NOT binary.\n\n"
     visitfile = string.join(open("binary_VTK.visit").readlines())
-    if VTK_check_binary("binary_VTK.0.vtk"):
+    if VTK_check_binary("binary_VTK/binary_VTK.0.vtk"):
         line = "The binary_VTK.0.vtk file is binary.\n\n"
     s = line + visitfile
     TestText("export_db_1_01", s)
@@ -399,16 +404,56 @@ def test3():
     DeleteAllPlots()
 #    CloseDatabase(maindb)
 
+def test4():
+    TestSection("Test VTK multiblock export.")
+    OpenDatabase(silo_data_path("multi_rect3d.silo"))
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
+
+    Test("export_db_4_01")
+
+    e = ExportDBAttributes()
+    e.db_type = "VTK"
+    e.filename = "multi_rect3d_LA"
+    opts = GetExportOptions("VTK")
+    print "Default VTK export options: ", opts
+    opts['FileFormat'] = "Legacy Ascii"
+    ExportDatabase(e, opts)
+    ReplaceDatabase("multi_rect3d_LA.visit")
+    Test("export_db_4_02")
+
+    e.filename = "multi_rect3d_LB"
+    opts['FileFormat'] = "Legacy Binary"
+    ExportDatabase(e, opts)
+    ReplaceDatabase("multi_rect3d_LB.visit")
+    Test("export_db_4_03")
+
+    e.filename = "multi_rect3d_XA"
+    opts['FileFormat'] = "XML Ascii"
+    ExportDatabase(e, opts)
+    ReplaceDatabase("multi_rect3d_XA.vtm")
+    Test("export_db_4_04")
+
+    e.filename = "multi_rect3d_XB"
+    opts['FileFormat'] = "XML Binary"
+    ExportDatabase(e, opts)
+    ReplaceDatabase("multi_rect3d_XB.vtm")
+    Test("export_db_4_05")
+
+    DeleteAllPlots()
+
+
 def main():
     test0()
     test1()
     if GetEngineProperties(GetEngineList()[0]).numProcessors > 1:
-        # We just use 2 processors normally so let's set the write group size to 1
-        # so each rank will write its own data using a different write group. For
-        # certain formats, there will be 1 data file per write group, or in this case
-        # 2 output files.
+        # We just use 2 processors normally so let's set the write group size 
+        # to 1 so each rank will write its own data using a different write 
+        # group. For certain formats, there will be 1 data file per write 
+        # group, or in this case 2 output files.
         test2(1)
     test3()
+    test4()
 
 main()
 Exit()
