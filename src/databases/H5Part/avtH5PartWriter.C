@@ -97,7 +97,9 @@
 #include <avtParallel.h>
 #endif
 
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <snprintf.h>
 
 int    avtH5PartWriter::INVALID_CYCLE = -INT_MAX;
@@ -332,6 +334,7 @@ avtH5PartWriter::CloseFile(void)
     // The output is serial so if the last rank ...
     if( writeContext.Rank() == writeContext.Size()-1 )
     {
+#ifdef HAVE_LIB_FASTBIT
         // Add in the FastBit indexing
         if( addFastBitIndexing )
         {
@@ -342,6 +345,7 @@ avtH5PartWriter::CloseFile(void)
           fqReader.buildSpecificTimeIndex(0);
           fqReader.closeFile();
         }
+#endif
 
         // Create a parent file and a link to this file.
         if( createParentFile )

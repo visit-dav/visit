@@ -55,7 +55,7 @@ class DBOptionsAttributes;
 class vtkUnstructuredGrid;
 class vtkPoints;
 
-class H5PartFile;
+struct H5PartFile;
 
 // ****************************************************************************
 //  Class: avtH5PartWriter
