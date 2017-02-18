@@ -416,7 +416,6 @@ def test4():
     e.db_type = "VTK"
     e.filename = "multi_rect3d_LA"
     opts = GetExportOptions("VTK")
-    print "Default VTK export options: ", opts
     opts['FileFormat'] = "Legacy Ascii"
     ExportDatabase(e, opts)
     ReplaceDatabase("multi_rect3d_LA.visit")
