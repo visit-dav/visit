@@ -930,6 +930,10 @@ void PickleInit()
 //    Jeremy Meredith, Thu Oct 25 10:05:37 EDT 2007
 //    Added support for pre-2.5 versions of Python.
 //
+//    Kathleen Biagas, Fri Feb 17 2017
+//    Allow Enums to be represented by string, add range check for enum
+//    specified as int.
+//
 // ****************************************************************************
 bool
 FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
@@ -974,7 +978,10 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
         }
         if (index == -1)
         {
-            sprintf(msg, "There was no '%s' in the DB options.", name.c_str());
+            if (opts.IsObsolete(name))
+                sprintf(msg, "'%s' is an Obsolete option.", name.c_str());
+            else
+                sprintf(msg, "There was no '%s' in the DB options.", name.c_str());
             VisItErrorFunc(msg);
             return false;
         }
@@ -1036,13 +1043,80 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
             }
             break;
           case DBOptionsAttributes::Enum:
+            // If you modify this section, also check the Enum case in
+            // CreateDictionaryFromDBOptions
             if (PyInt_Check(value))
-                opts.SetEnum(name, PyInt_AS_LONG(value));
+            {
+                // Perform a range check
+                stringVector enumStrings = opts.GetEnumStrings(name);
+                int ival = PyInt_AS_LONG(value);
+                if(ival < 0 || ival >= (int)enumStrings.size())
+                {
+                    sprintf(msg,"'%d' is not a valid enum for '%s'."
+                            "\nValid options are in the range of [0,%d]."
+                            "\nYou can also use the following names: ",
+                            ival, name.c_str(), (int)enumStrings.size()-1);
+                    std::string errorMsg(msg);
+                    for (size_t i = 0; i < enumStrings.size(); ++i)
+                    {
+                        errorMsg += (std::string("\'") +
+                                    enumStrings[i] +
+                                    std::string("\'"));
+                        if (i < enumStrings.size() -1)
+                            errorMsg += ", ";
+                    }
+                    VisItErrorFunc(errorMsg.c_str());
+                    return false;
+                } 
+                else
+                {
+                    opts.SetEnum(name, ival);
+                }
+            }
             else
             {
-                sprintf(msg, "Expected int to set enum '%s'", name.c_str());
-                VisItErrorFunc(msg);
-                return false;
+                if (PyString_Check(value))
+                {
+                    std::string sval(PyString_AS_STRING(value));
+                    size_t rpos = sval.find("#");
+                    if (rpos != std::string::npos)
+                        sval = sval.erase(rpos-1); // remove the space before #
+                    stringVector enumStrings = opts.GetEnumStrings(name);
+                    bool found = false;
+                    for (size_t i = 0; i < enumStrings.size() && !found; ++i)
+                    {
+                        if (sval == enumStrings[i])
+                        {
+                            opts.SetEnum(name, (int)i);
+                            found = true;
+                        }
+                    }
+                    if (!found) 
+                    {
+                        sprintf(msg,"'%s' is not a valid enum string for '%s'."
+                                "\nValid options are in the range of [0,%d]."
+                                "\nYou can also use the following names: ",
+                                sval.c_str(), name.c_str(),
+                                (int)enumStrings.size()-1);
+                        std::string errorMsg(msg);
+                        for (size_t i = 0; i < enumStrings.size(); ++i)
+                        {
+                            errorMsg += (std::string("\'") +
+                                        enumStrings[i] +
+                                        std::string("\'"));
+                            if (i < enumStrings.size() -1)
+                                errorMsg += ", ";
+                        }
+                        VisItErrorFunc(errorMsg.c_str());
+                        return false;
+                    }
+                }
+                else
+                {
+                    sprintf(msg, "Expected int or string to set enum '%s'", name.c_str());
+                    VisItErrorFunc(msg);
+                    return false;
+                }
             }
             break;
         }
@@ -1070,6 +1144,9 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
 //
 //    Jeremy Meredith, Tue Apr 29 15:18:13 EDT 2008
 //    Fixing ABW bug.
+//
+//    Kathleen Biagas, Fri Feb 17 2017
+//    Allow Enums to be represented by string.
 //
 // ****************************************************************************
 PyObject *
@@ -1100,7 +1177,22 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetString(name).c_str()));
             break;
           case DBOptionsAttributes::Enum:
-            PyDict_SetItemString(dict,name,PyInt_FromLong(opts.GetEnum(name)));
+            // If you modify this section, also check the Enum case in
+            // FillDBOptionsFromDictionary
+            int enumIndex = opts.GetEnum(name);
+            stringVector enumStrings = opts.GetEnumStrings(name);
+            std::string itemString(enumStrings[enumIndex]);
+            if (enumStrings.size() > 1)
+            {
+                itemString += " # Options are: ";
+                for (size_t i = 0; i < enumStrings.size(); ++i)
+                {
+                    itemString += enumStrings[i];
+                    if (i != enumStrings.size()-1)
+                        itemString += ", ";
+                }
+            }
+            PyDict_SetItemString(dict,name,PyString_FromString(itemString.c_str()));
             break;
         }
         delete[] name;

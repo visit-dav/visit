@@ -45,7 +45,10 @@
 #include <DBOptionsAttributes.h>
 
 #include <string>
+#include <vector>
 
+using std::string;
+using std::vector;
 
 // ****************************************************************************
 //  Function: GetVTKReadOptions
@@ -84,13 +87,25 @@ GetVTKReadOptions(void)
 //    Kathleen Biagas, Thu Dec 18 14:51:46 PST 2014
 //    Added "XML Format".
 //
+//    Kathleen Biagas, Fri Feb 17 15:50:34 PST 2017
+//    New options so as to be more explicit.
+//
 // ****************************************************************************
 
 DBOptionsAttributes *
 GetVTKWriteOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
-    rv->SetBool("Binary format", false);
-    rv->SetBool("XML format", false);
+    vector<string> fileFormat;
+    fileFormat.push_back("Legacy Ascii");
+    fileFormat.push_back("Legacy Binary");
+    fileFormat.push_back("XML Ascii");
+    fileFormat.push_back("XML Binary");
+    rv->SetEnum("FileFormat", 0);
+    rv->SetEnumStrings("FileFormat", fileFormat);
+
+    rv->SetObsolete("Binary format");
+    rv->SetObsolete("XML format");
+
     return rv;
 }

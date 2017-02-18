@@ -57,8 +57,12 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtParallelContext.h>
+#include <FileFunctions.h>
 
 #include <DBOptionsAttributes.h>
+#ifdef WIN32
+#include <direct.h>
+#endif
 
 using     std::string;
 using     std::vector;
@@ -89,13 +93,24 @@ double avtVTKWriter::INVALID_TIME = -DBL_MAX;
 //    Kathleen Biagas, Tue Sep  1 11:27:23 PDT 2015
 //    Added fileNames.
 //
+//    Kathleen Biagas, Fri Feb 17 15:41:33 PST 2017
+//    Handle new Write options.
+//
 // ****************************************************************************
 
 avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName(), fileNames()
 {
-    doBinary = atts->GetBool("Binary format");
-    doXML = atts->GetBool("XML format");
+    doBinary = false;
+    doXML = false; 
     nblocks = 0;
+
+    switch(atts->GetEnum("FileFormat"))
+    {
+        case 0: doBinary = false; doXML = false; break;
+        case 1: doBinary = true;  doXML = false; break;
+        case 2: doBinary = false; doXML = true;  break;
+        case 3: doBinary = true;  doXML = true;  break;
+    }
 }
 
 
@@ -116,6 +131,9 @@ avtVTKWriter::avtVTKWriter(DBOptionsAttributes *atts) :stem(), meshName(), fileN
 //    Kathleen Biagas, Tue Sep  1 11:27:23 PDT 2015
 //    Clear fileNames if necessary.
 //
+//    Kathleen Biagas, Fri Feb 17 15:43:28 PST 2017
+//    Multi-block files now write individual files to subdir of the same name.
+//
 // ****************************************************************************
 
 void
@@ -125,6 +143,17 @@ avtVTKWriter::OpenFile(const string &stemname, int nb)
     nblocks = nb;
     if (!fileNames.empty())
         fileNames.clear();
+
+    if(nb > 1)
+    {
+       // we want the basename without the extension to use as a sub-dir name
+       mbDirName = FileFunctions::Basename(stem);
+#ifdef WIN32
+       _mkdir(stem.c_str());
+#else
+       mkdir(stem.c_str(), 0777);
+#endif
+    }
 }
 
 
@@ -194,6 +223,9 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Kathleen Biagas, Tue Sep  1 11:28:50 PDT 2015
 //    For multi-block xml, save chunk name in fileNames for later processing.
 //
+//    Kathleen Biagas, Fri Feb 17 15:43:28 PST 2017
+//    Multi-block files now write individual files (chunks) to subdir.
+//
 // ****************************************************************************
 
 void
@@ -201,7 +233,7 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     char chunkname[1024];
     if (nblocks > 1)
-        sprintf(chunkname, "%s.%d", stem.c_str(), chunk);
+        sprintf(chunkname, "%s/%s.%d", stem.c_str(), mbDirName.c_str(), chunk);
     else
         sprintf(chunkname, "%s", stem.c_str());
 
@@ -246,6 +278,8 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
         wrtr->Write();
 
         wrtr->Delete();
+        if (nblocks > 1)
+            fileNames.push_back(chunkname);
     }
     else
     {
@@ -325,11 +359,23 @@ avtVTKWriter::CloseFile(void)
 //    Kathleen Biagas, Wed Oct  7 08:32:53 PDT 2015
 //    Collect fileNames from all processors to proc 0 before writing .vtm file.
 //
-// ****************************************************************************
+//    Kathleen Biagas, Fri Feb 17 15:45:30 PST 2017
+//    Use short filenames instead of full-path for writing names to root.
+//    .vtm expects relative not full paths.
 //
+// ****************************************************************************
+
 void
 avtVTKWriter::WriteRootFile()
 {
+    if (nblocks > 1)
+    {
+        // shorten our full-path-filenames to just the filename
+        for (size_t i = 0; i < fileNames.size(); ++i)
+        {
+            fileNames[i] = mbDirName + string("/") + FileFunctions::Basename(fileNames[i]);
+        }
+    }
 #ifdef PARALLEL
     if (nblocks > 1 && doXML)
     {
@@ -406,9 +452,7 @@ avtVTKWriter::WriteRootFile()
             ofile << "!NBLOCKS " << nblocks << endl;
             for (int i = 0 ; i < nblocks ; i++)
             {
-                char chunkname[1024];
-                SNPRINTF(chunkname, 1024, "%s.%d.vtk", stem.c_str(), i);
-                ofile << chunkname << endl;
+                ofile << fileNames[i] << endl;
             }
         }
     }

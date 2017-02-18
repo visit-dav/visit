@@ -95,6 +95,7 @@ avtVTKWriter : public virtual avtDatabaseWriter
 
     std::string    stem;
     std::string    meshName;
+    std::string    mbDirName;
     double         time;
     int            cycle;
     bool           doBinary;
