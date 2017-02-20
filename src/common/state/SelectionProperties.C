@@ -245,6 +245,7 @@ void SelectionProperties::Copy(const SelectionProperties &obj)
 {
     name = obj.name;
     source = obj.source;
+    host = obj.host;
     selectionType = obj.selectionType;
     idVariableType = obj.idVariableType;
     idVariable = obj.idVariable;
@@ -420,6 +421,7 @@ SelectionProperties::operator == (const SelectionProperties &obj) const
     // Create the return value
     return ((name == obj.name) &&
             (source == obj.source) &&
+            (host == obj.host) &&
             (selectionType == obj.selectionType) &&
             (idVariableType == obj.idVariableType) &&
             (idVariable == obj.idVariable) &&
@@ -581,6 +583,7 @@ SelectionProperties::SelectAll()
 {
     Select(ID_name,                      (void *)&name);
     Select(ID_source,                    (void *)&source);
+    Select(ID_host,                      (void *)&host);
     Select(ID_selectionType,             (void *)&selectionType);
     Select(ID_idVariableType,            (void *)&idVariableType);
     Select(ID_idVariable,                (void *)&idVariable);
@@ -639,6 +642,12 @@ SelectionProperties::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("source", source));
+    }
+
+    if(completeSave || !FieldsEqual(ID_host, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("host", host));
     }
 
     if(completeSave || !FieldsEqual(ID_selectionType, &defaultObject))
@@ -777,6 +786,8 @@ SelectionProperties::SetFromNode(DataNode *parentNode)
         SetName(node->AsString());
     if((node = searchNode->GetNode("source")) != 0)
         SetSource(node->AsString());
+    if((node = searchNode->GetNode("host")) != 0)
+        SetHost(node->AsString());
     if((node = searchNode->GetNode("selectionType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -883,6 +894,13 @@ SelectionProperties::SetSource(const std::string &source_)
 {
     source = source_;
     Select(ID_source, (void *)&source);
+}
+
+void
+SelectionProperties::SetHost(const std::string &host_)
+{
+    host = host_;
+    Select(ID_host, (void *)&host);
 }
 
 void
@@ -1023,6 +1041,18 @@ std::string &
 SelectionProperties::GetSource()
 {
     return source;
+}
+
+const std::string &
+SelectionProperties::GetHost() const
+{
+    return host;
+}
+
+std::string &
+SelectionProperties::GetHost()
+{
+    return host;
 }
 
 SelectionProperties::SelectionType
@@ -1168,6 +1198,12 @@ SelectionProperties::SelectSource()
 }
 
 void
+SelectionProperties::SelectHost()
+{
+    Select(ID_host, (void *)&host);
+}
+
+void
 SelectionProperties::SelectIdVariable()
 {
     Select(ID_idVariable, (void *)&idVariable);
@@ -1223,6 +1259,7 @@ SelectionProperties::GetFieldName(int index) const
     {
     case ID_name:                      return "name";
     case ID_source:                    return "source";
+    case ID_host:                      return "host";
     case ID_selectionType:             return "selectionType";
     case ID_idVariableType:            return "idVariableType";
     case ID_idVariable:                return "idVariable";
@@ -1265,6 +1302,7 @@ SelectionProperties::GetFieldType(int index) const
     {
     case ID_name:                      return FieldType_string;
     case ID_source:                    return FieldType_string;
+    case ID_host:                      return FieldType_string;
     case ID_selectionType:             return FieldType_enum;
     case ID_idVariableType:            return FieldType_enum;
     case ID_idVariable:                return FieldType_string;
@@ -1307,6 +1345,7 @@ SelectionProperties::GetFieldTypeName(int index) const
     {
     case ID_name:                      return "string";
     case ID_source:                    return "string";
+    case ID_host:                      return "string";
     case ID_selectionType:             return "enum";
     case ID_idVariableType:            return "enum";
     case ID_idVariable:                return "string";
@@ -1357,6 +1396,11 @@ SelectionProperties::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_source:
         {  // new scope
         retval = (source == obj.source);
+        }
+        break;
+    case ID_host:
+        {  // new scope
+        retval = (host == obj.host);
         }
         break;
     case ID_selectionType:

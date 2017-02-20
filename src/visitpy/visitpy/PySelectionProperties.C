@@ -80,6 +80,8 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssource = \"%s\"\n", prefix, atts->GetSource().c_str());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%shost = \"%s\"\n", prefix, atts->GetHost().c_str());
+    str += tmpStr;
     const char *selectionType_names = "BasicSelection, CumulativeQuerySelection";
     switch (atts->GetSelectionType())
     {
@@ -282,6 +284,30 @@ SelectionProperties_GetSource(PyObject *self, PyObject *args)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSource().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+SelectionProperties_SetHost(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the host in the object.
+    obj->data->SetHost(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SelectionProperties_GetHost(PyObject *self, PyObject *args)
+{
+    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetHost().c_str());
     return retval;
 }
 
@@ -816,6 +842,8 @@ PyMethodDef PySelectionProperties_methods[SELECTIONPROPERTIES_NMETH] = {
     {"GetName", SelectionProperties_GetName, METH_VARARGS},
     {"SetSource", SelectionProperties_SetSource, METH_VARARGS},
     {"GetSource", SelectionProperties_GetSource, METH_VARARGS},
+    {"SetHost", SelectionProperties_SetHost, METH_VARARGS},
+    {"GetHost", SelectionProperties_GetHost, METH_VARARGS},
     {"SetSelectionType", SelectionProperties_SetSelectionType, METH_VARARGS},
     {"GetSelectionType", SelectionProperties_GetSelectionType, METH_VARARGS},
     {"SetIdVariableType", SelectionProperties_SetIdVariableType, METH_VARARGS},
@@ -880,6 +908,8 @@ PySelectionProperties_getattr(PyObject *self, char *name)
         return SelectionProperties_GetName(self, NULL);
     if(strcmp(name, "source") == 0)
         return SelectionProperties_GetSource(self, NULL);
+    if(strcmp(name, "host") == 0)
+        return SelectionProperties_GetHost(self, NULL);
     if(strcmp(name, "selectionType") == 0)
         return SelectionProperties_GetSelectionType(self, NULL);
     if(strcmp(name, "BasicSelection") == 0)
@@ -958,6 +988,8 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
         obj = SelectionProperties_SetName(self, tuple);
     else if(strcmp(name, "source") == 0)
         obj = SelectionProperties_SetSource(self, tuple);
+    else if(strcmp(name, "host") == 0)
+        obj = SelectionProperties_SetHost(self, tuple);
     else if(strcmp(name, "selectionType") == 0)
         obj = SelectionProperties_SetSelectionType(self, tuple);
     else if(strcmp(name, "idVariableType") == 0)

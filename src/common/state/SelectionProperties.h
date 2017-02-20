@@ -115,6 +115,7 @@ public:
     virtual void SelectAll();
     void SelectName();
     void SelectSource();
+    void SelectHost();
     void SelectIdVariable();
     void SelectVariables();
     void SelectVariableMins();
@@ -124,6 +125,7 @@ public:
     // Property setting methods
     void SetName(const std::string &name_);
     void SetSource(const std::string &source_);
+    void SetHost(const std::string &host_);
     void SetSelectionType(SelectionType selectionType_);
     void SetIdVariableType(IDVariableType idVariableType_);
     void SetIdVariable(const std::string &idVariable_);
@@ -146,6 +148,8 @@ public:
           std::string  &GetName();
     const std::string  &GetSource() const;
           std::string  &GetSource();
+    const std::string  &GetHost() const;
+          std::string  &GetHost();
     SelectionType      GetSelectionType() const;
     IDVariableType     GetIdVariableType() const;
     const std::string  &GetIdVariable() const;
@@ -208,6 +212,7 @@ public:
     enum {
         ID_name = 0,
         ID_source,
+        ID_host,
         ID_selectionType,
         ID_idVariableType,
         ID_idVariable,
@@ -230,6 +235,7 @@ public:
 private:
     std::string  name;
     std::string  source;
+    std::string  host;
     int          selectionType;
     int          idVariableType;
     std::string  idVariable;
@@ -251,6 +257,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SELECTIONPROPERTIES_TMFS "ssiiss*d*d*iiiiiibiis"
+#define SELECTIONPROPERTIES_TMFS "sssiiss*d*d*iiiiiibiis"
 
 #endif
