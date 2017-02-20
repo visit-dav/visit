@@ -91,11 +91,12 @@
 
 bool
 SelectionActionBase::GetNamedSelectionEngineKey(const std::string &selName,
-    EngineKey &ek)
+                                                EngineKey &engineKey)
 {
     bool retval = false;
 
     int index = GetViewerState()->GetSelectionList()->GetSelection(selName);
+
     if(index != -1)
     {
         std::string source(GetViewerState()->GetSelectionList()->
@@ -112,24 +113,30 @@ SelectionActionBase::GetNamedSelectionEngineKey(const std::string &selName,
                 ViewerPlot *plot = plist->GetPlot(j);
                 if(plot->GetPlotName() == source)
                 {
-                    ek = plot->GetEngineKey();
+                    engineKey = plot->GetEngineKey();
                     return true;
                 }
             }
         }
 
-        // There was no plot with the selection's source name. Assume that
-        // it is a database.
-        std::string host, db, sim;
-        GetViewerFileServer()->ExpandDatabaseName(source, host, db);
-        const avtDatabaseMetaData *md = GetViewerFileServer()->GetMetaData(host, db);
-        if (md != NULL)
-        {
-            if(md->GetIsSimulation())
-                sim = db;
-            ek = EngineKey(host, sim);
-            retval = true;
-        }
+        // There was no plot with the selection's source name. Assume
+        // that it is a database.
+        std::string host(GetViewerState()->GetSelectionList()->
+                         GetSelections(index).GetHost());
+
+        std::string db(GetViewerState()->GetSelectionList()->
+                       GetSelections(index).GetSource());
+        
+        const avtDatabaseMetaData *md =
+          GetViewerFileServer()->GetMetaData(host, db);
+        
+        std::string sim;
+        if (md != NULL && md->GetIsSimulation())
+            sim = db;
+
+        engineKey = EngineKey(host, sim);
+
+        retval = true;
     }
 
     return retval;
@@ -346,6 +353,7 @@ CreateNamedSelectionAction::Execute()
     // down to the engine to create the selection.
     int         networkId = -1;
     EngineKey   engineKey;
+    std::string selHost;
     std::string selSource;
 
     //
@@ -374,21 +382,26 @@ CreateNamedSelectionAction::Execute()
         ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
         networkId = plot->GetNetworkID();
         engineKey = plot->GetEngineKey();
-        selSource = plot->GetPlotName();
     }
     else
     {
         //
         // Turn the current selection source into a db and engine key.
         //
-        std::string host, db, sim;
-        GetViewerFileServer()->ExpandDatabaseName(currentProps.GetSource(), host, db);
+        selSource = currentProps.GetSource();
 
-        const avtDatabaseMetaData *md = GetViewerFileServer()->GetMetaData(host, db);
+        std::string host, db;
+        GetViewerFileServer()->ExpandDatabaseName(selSource, host, db);
+
+        const avtDatabaseMetaData *md =
+          GetViewerFileServer()->GetMetaData(host, db);
+        
+        std::string sim;
         if (md != NULL && md->GetIsSimulation())
             sim = db;
-
+        
         engineKey = EngineKey(host, sim);
+        selHost   = host;
         selSource = db;
 
         // We're doing a selection based directly on the database. We need to
@@ -423,6 +436,7 @@ CreateNamedSelectionAction::Execute()
         }
 
         // Set the source for the selection.
+        props.SetHost  (selHost);
         props.SetSource(selSource);
 
         // Remove the summary if it is there.
@@ -567,6 +581,7 @@ InitializeNamedSelectionVariablesAction::Execute()
         return;
 
     int selIndex = GetViewerState()->GetSelectionList()->GetSelection(selName);
+
     if(selIndex < 0)
         return;
     SelectionProperties &props = GetViewerState()->GetSelectionList()->
@@ -865,9 +880,13 @@ UpdateNamedSelectionAction::UpdateNamedSelection(const std::string &selName,
     // to the engine.
     if(networkId == -1)
     {
+        std::string host(props.GetHost());
+        std::string db(props.GetSource());
+
+        // We're doing a selection based directly on the database. We need to
+        // send the expression definitions to the engine since we haven't yet
+        // created any plots.
         ExpressionList exprList;
-        std::string host, db, sim, src(props.GetSource());
-        GetViewerFileServer()->ExpandDatabaseName(src, host, db);
         GetViewerStateManager()->GetVariableMethods()->GetAllExpressions(
             exprList, host, db, ViewerFileServerInterface::ANY_STATE);
         GetViewerEngineManager()->UpdateExpressions(engineKey, exprList);
@@ -876,6 +895,7 @@ UpdateNamedSelectionAction::UpdateNamedSelection(const std::string &selName,
     // Remove the named selection summary.
     int sindex = GetViewerState()->GetSelectionList()->
                      GetSelectionSummary(props.GetName());
+
     if(sindex >= 0)
         GetViewerState()->GetSelectionList()->RemoveSelectionSummary(sindex);
 
