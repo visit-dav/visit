@@ -95,25 +95,25 @@ SelectionActionBase::GetNamedSelectionEngineKey(const std::string &selName,
     if(selIndex < 0)
     {
         GetViewerMessaging()->Error(
-            TR("VisIt cannot get an engine key for %1 selection because "
+            TR("VisIt cannot get an engine key for %1 named selection because "
                "it does not exist").arg(selName));
         return false;
     }
-
-    std::string source(GetViewerState()->GetSelectionList()->
-                       GetSelections(selIndex).GetOriginatingPlot());
 
     // Look for the plot whose name is the same as the originating plot.
     // If we find a match, use the plot's engine key.
     std::vector<ViewerWindow *> windows = windowMgr->GetWindows();
     
+    std::string selSource(GetViewerState()->GetSelectionList()->
+                          GetSelections(selIndex).GetOriginatingPlot());
+
     for(size_t i = 0; i < windows.size(); ++i)
     {
         ViewerPlotList *plist = windows[i]->GetPlotList();
         for(int j = 0; j < plist->GetNumPlots(); ++j)
         {
             ViewerPlot *plot = plist->GetPlot(j);
-            if(plot->GetPlotName() == source)
+            if(plot->GetPlotName() == selSource)
             {
                 engineKey = plot->GetEngineKey();
                 return true;
@@ -137,7 +137,7 @@ SelectionActionBase::GetNamedSelectionEngineKey(const std::string &selName,
         sim = db;
     
     engineKey = EngineKey(host, sim);
-    
+
     return true;
 }
 
@@ -234,25 +234,35 @@ ApplyNamedSelectionAction::Execute()
 {
     std::string selName = args.GetStringArg1();
 
-    // Get some information about the selection.
-    std::string originatingPlot;
-    
-    if( !selName.empty() )
+    if( selName.empty() )
     {
-        int selIndex =
-          GetViewerState()->GetSelectionList()->GetSelection(selName);
-        
-        if(selIndex < 0)
-        {
-            GetViewerMessaging()->Error(
-                 TR("An invalid selection name %1 was provided to VisIt "
-                    "No selection was applied. ").arg(selName));
-            return;
-        }
-
-        originatingPlot = GetViewerState()->GetSelectionList()->
-          GetSelections(selIndex).GetOriginatingPlot();
+      ClearNamedSelection();
+      return;
     }
+    
+    EngineKey engineKey;
+    bool okay = GetNamedSelectionEngineKey(selName, engineKey);
+    if(!okay)
+    {
+        GetViewerMessaging()->Error(
+            TR("VisIt could not determine the source or plot that creates "
+               "the %1 named selection.").arg(selName));
+        return;
+    }
+
+    int selIndex = GetViewerState()->GetSelectionList()->GetSelection(selName);
+        
+    if(selIndex < 0)
+    {
+        GetViewerMessaging()->Error(
+            TR("An invalid named selection %1 was provided to VisIt "
+               "No named selection was applied. ").arg(selName));
+        return;
+    }
+
+    // Get some information about the selection.
+    std::string originatingPlot = GetViewerState()->GetSelectionList()->
+      GetSelections(selIndex).GetOriginatingPlot();
 
     // Get the indices of the plots to which the selection may be applied.
     ViewerPlotList *plist = GetWindow()->GetPlotList();
@@ -260,7 +270,7 @@ ApplyNamedSelectionAction::Execute()
 
     if(GetViewerState()->GetGlobalAttributes()->GetApplySelection())
     {
-        // If we're applying selection to all plots, get all plot ids.
+        // If applying the selection to all plots, get all plot ids.
         for(int i = 0; i < plist->GetNumPlots(); ++i)
             plotIDs.push_back(i);
     }
@@ -270,33 +280,43 @@ ApplyNamedSelectionAction::Execute()
     if (plotIDs.size() <= 0)
     {
         GetViewerMessaging()->Error(
-            TR("To apply a named selection, you must have an active "
-               "plot.  No named selection was applied."));
+            TR("To apply a named selection %1, you must have an active "
+               "plot.  No named selection was applied.").arg(selName));
         return;
     }
 
-    // Make sure that all of the named selections being applied are for
-    // the same engine as the first plot. Also exclude the plot if it
-    // is the originating plot for a selection since we can't apply a
-    // selection to the plot that generates it.
+    // Make sure that the named selection being applied being applied
+    // is one the same engine as the plots. Also exclude the plot if
+    // it is the originating plot for a selection as it can not be
+    // applied to itself.
     intVector ePlotIDs;
-    ViewerPlot *plot0 = plist->GetPlot(plotIDs[0]);
-    const EngineKey &engineKey = plot0->GetEngineKey();
-
+    
     for (size_t i = 0 ; i < plotIDs.size() ; ++i)
     {
         ViewerPlot *plot = plist->GetPlot(plotIDs[i]);
+        
         if (plot->GetEngineKey() != engineKey)
         {
             GetViewerMessaging()->Error(
-                TR("All plots involving a named selection must come from "
-                   "the same engine.  No named selection was applied."));
+                TR("Named selections are engine specific. The plot %1 on "
+                   "the engine %2 involving named selection %3 must be "
+                   "on the engine %4.  No named selection was applied.")
+                .arg(plot->GetPlotDescription())
+                .arg(plot->GetHostName())
+                .arg(selName)
+                .arg(engineKey.HostName()));
             return;
         }
-        else if(plot->GetPlotName() != originatingPlot)
+        else if(plot->GetPlotName() == originatingPlot)
         {
-            ePlotIDs.push_back(plotIDs[i]);
+            GetViewerMessaging()->Error(
+                TR("Can not apply named selection %1 to the plot %2 because "
+                   "the named selection originates from it. No named"
+                   "selection was applied.").arg(selName).arg(originatingPlot));
+            return;
         }
+        else
+            ePlotIDs.push_back(plotIDs[i]);
     }
 
     // Apply the named selection.
@@ -312,7 +332,70 @@ ApplyNamedSelectionAction::Execute()
         plist->UpdatePlotList();
 
         if(!selName.empty())
-            GetViewerMessaging()->Message(TR("Applied named selection"));
+            GetViewerMessaging()->Message(TR("Applied named selection %1.")
+                                          .arg(selName));
+    }
+    CATCH2(VisItException, e)
+    {
+        GetViewerMessaging()->Error(
+            ViewerText("(%1): %2\n").
+            arg(e.GetExceptionType()).
+            arg(e.Message()));
+    }
+    ENDTRY
+}
+
+
+// ****************************************************************************
+// Method: ApplyNamedSelectionAction::ClearNamedSelection
+//
+// Purpose: 
+//   Clears a named selection
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 22 10:57:49 PDT 2014
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ApplyNamedSelectionAction::ClearNamedSelection()
+{
+    // Get the indices of the plots to which the selection may be applied.
+    ViewerPlotList *plist = GetWindow()->GetPlotList();
+    intVector plotIDs;
+
+    if(GetViewerState()->GetGlobalAttributes()->GetApplySelection())
+    {
+        // If applying the clear selection to all plots, get all plot ids.
+        for(int i = 0; i < plist->GetNumPlots(); ++i)
+            plotIDs.push_back(i);
+    }
+    else
+        plist->GetActivePlotIDs(plotIDs, false);
+
+    if (plotIDs.size() <= 0)
+    {
+        GetViewerMessaging()->Error(
+            TR("To apply a named selection, you must have an active "
+               "plot.  No named selection was applied."));
+        return;
+    }
+
+    // Clear the named selection.
+    TRY
+    {
+        for(size_t i = 0; i < plotIDs.size(); ++i)
+        {
+            ViewerPlot *plot = plist->GetPlot(plotIDs[i]);
+            plot->SetNamedSelection("");
+            plot->ClearActors();
+        }
+        plist->RealizePlots(false);
+        plist->UpdatePlotList();
+
+        GetViewerMessaging()->Message(TR("Cleared named selection."));
     }
     CATCH2(VisItException, e)
     {
@@ -355,7 +438,8 @@ CreateNamedSelectionAction::Execute()
     // down to the engine to create the selection.
     int         networkId = -1;
     EngineKey   engineKey;
-    std::string host, db;
+    std::string selHost;
+    std::string selSource;
 
     // Look up some information from the originating plot
     if(useCurrentPlot)
@@ -382,13 +466,15 @@ CreateNamedSelectionAction::Execute()
         ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
         networkId = plot->GetNetworkID();
         engineKey = plot->GetEngineKey();
+        selHost   = plot->GetHostName();
+        selSource = plot->GetPlotName();
     }
     else
     {
         // Turn the current selection source into a host and a db.
-        std::string selSource = currentProps.GetSource();
-
-        GetViewerFileServer()->ExpandDatabaseName(selSource, host, db);
+        std::string host, db;
+        GetViewerFileServer()->ExpandDatabaseName(currentProps.GetSource(),
+                                                  host, db);
 
         const avtDatabaseMetaData *md =
           GetViewerFileServer()->GetMetaData(host, db);
@@ -407,6 +493,11 @@ CreateNamedSelectionAction::Execute()
         GetViewerStateManager()->GetVariableMethods()->GetAllExpressions(
             exprList, host, db, ViewerFileServerInterface::ANY_STATE);
         GetViewerEngineManager()->UpdateExpressions(engineKey, exprList);
+
+        // Note: The source must be just the database name sans the
+        // host name.
+        selHost = host;
+        selSource = db;
     }
 
     TRY
@@ -432,11 +523,9 @@ CreateNamedSelectionAction::Execute()
             }
         }
 
-        // Set the host and source for the selection. Not relevant for
-        // plots just databases. Note: The source must be the just the
-        // database name sans the host.
-        props.SetHost  (host);
-        props.SetSource(db);
+        // Set the host and source for the selection.
+        props.SetHost  (selHost);
+        props.SetSource(selSource);
 
         // Remove the summary if it is there.
         int sumIndex = GetViewerState()->GetSelectionList()->
@@ -446,27 +535,23 @@ CreateNamedSelectionAction::Execute()
             GetViewerState()->GetSelectionList()->
               RemoveSelectionSummary(sumIndex);
 
-        debug1 << mName << "1" << endl;
-
         SelectionSummary summary;
         if (GetViewerEngineManager()->CreateNamedSelection(engineKey, 
             networkId, props, summary))
         {
             GetViewerState()->GetSelectionList()->AddSelectionSummary(summary);
  
-            GetViewerMessaging()->Message(TR("Created named selection"));
-            debug1 << mName << "2" << endl;
-
             // Add a new selection to the selection list.
             if(selIndex < 0)
                 selList->AddSelections(props);
 
-            debug1 << mName << "3" << endl;
-            currentProps = props;
+            GetViewerMessaging()->Message(TR("Created named selection")
+                                        .arg(selName));
         }
         else
         {
-            GetViewerMessaging()->Error(TR("Unable to create named selection."));
+            GetViewerMessaging()->Error(TR("Unable to create named selection %1.")
+                                        .arg(selName));
         }
     }
     CATCH2(VisItException, e)
@@ -478,12 +563,8 @@ CreateNamedSelectionAction::Execute()
     }
     ENDTRY
 
-    debug1 << mName << "4" << endl;
-
     // Send list of selections to the clients.
     selList->Notify();
-
-    debug1 << mName << "5" << endl;
 }
 
 
@@ -515,8 +596,6 @@ LoadNamedSelectionAction::Execute()
     {
         if (GetViewerEngineManager()->LoadNamedSelection(engineKey, selName))
         {
-            GetViewerMessaging()->Message(TR("Loaded named selection"));
-
             // Remove any selection that may already exist by this name.
             int selIndex =
               GetViewerState()->GetSelectionList()->GetSelection(selName);
@@ -531,10 +610,14 @@ LoadNamedSelectionAction::Execute()
             props.SetName(selName);
             GetViewerState()->GetSelectionList()->AddSelections(props);
             GetViewerState()->GetSelectionList()->Notify();
+
+            GetViewerMessaging()->Message(TR("Loaded named selection %")
+                                          .arg(selName));
         }
         else
         {
-            GetViewerMessaging()->Error(TR("Unable to load named selection"));
+            GetViewerMessaging()->Error(TR("Unable to load named selection %1.")
+                                        .arg(selName));
         }
     }
     CATCH2(VisItException, e)
@@ -573,7 +656,7 @@ SaveNamedSelectionAction::Execute()
     {
         GetViewerMessaging()->Error(
             TR("VisIt could not determine the source or plot that creates "
-               "the %1 selection.").arg(selName));
+               "the named selection %1.").arg(selName));
         return;
     }
     
@@ -584,13 +667,11 @@ SaveNamedSelectionAction::Execute()
                                                             selName);
 
         if (okay)
-        {
-            GetViewerMessaging()->Message(TR("Saved named selection"));
-        }
+            GetViewerMessaging()->Message(TR("Saved named selection %1.")
+                                          .arg(selName));
         else
-        {
-            GetViewerMessaging()->Error(TR("Unable to save named selection"));
-        }
+          GetViewerMessaging()->Error(TR("Unable to save named selection %1.")
+                                      .arg(selName));
     }
     CATCH2(VisItException, e)
     {
@@ -648,13 +729,12 @@ DeleteNamedSelectionAction::Execute()
                                                               selName);
 
         if (okay)
-        {
-            GetViewerMessaging()->Message(TR("Deleted named selection"));
-        }
+            GetViewerMessaging()->Message(TR("Deleted named selection %1.")
+                                          .arg(selName));
+
         else
-        {
-            GetViewerMessaging()->Error(TR("Unable to delete named selection"));
-        }
+            GetViewerMessaging()->Error(TR("Unable to delete named selection %1.")
+                                        .arg(selName));
     }
     CATCH2(VisItException, e)
     {
@@ -668,11 +748,6 @@ DeleteNamedSelectionAction::Execute()
     // Make all plots that used the selection have no selection and make
     // them redraw.
     ReplaceNamedSelection(engineKey, selName, "");
-
-    if(okay)
-        GetViewerMessaging()->Message(TR("Deleted named selection"));
-    else
-        GetViewerMessaging()->Error(TR("Unable to delete named selection"));
 
     // Remove the selection from the selection list.
     int selIndex = GetViewerState()->GetSelectionList()->GetSelection(selName);
@@ -717,9 +792,8 @@ InitializeNamedSelectionVariablesAction::Execute()
     if(selIndex < 0)
     {
         GetViewerMessaging()->Error(
-            TR("VisIt cannot update the %1 selection because it does "
-               "not exist").
-            arg(selName));
+            TR("VisIt cannot update the named selection %1 because it does "
+               "not exist").arg(selName));
         return;
     }
 
@@ -791,9 +865,8 @@ UpdateNamedSelectionAction::Execute()
         if(selIndex < 0)
         {
           GetViewerMessaging()->Error(
-              TR("VisIt cannot update the %1 selection because it does "
-                 "not exist").
-              arg(selName));
+              TR("VisIt cannot update the named selection %1 because it does "
+                 "not exist").arg(selName));
           return;
         }
 
@@ -854,8 +927,7 @@ UpdateNamedSelectionAction::UpdateNamedSelection(const std::string &selName,
     {
         GetViewerMessaging()->Error(
             TR("VisIt could not determine the source or plot that creates "
-               "the %1 selection.").
-            arg(selName));
+               "the %1 selection.").arg(selName));
         return;
     }
 
@@ -863,9 +935,8 @@ UpdateNamedSelectionAction::UpdateNamedSelection(const std::string &selName,
     if(selIndex < 0)
     {
         GetViewerMessaging()->Error(
-            TR("VisIt cannot update the %1 selection because it does "
-               "not exist").
-            arg(selName));
+            TR("VisIt cannot update the named selection %1 because it does "
+               "not exist").arg(selName));
         return;
     }
 

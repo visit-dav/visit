@@ -92,6 +92,8 @@ public:
     virtual ~ApplyNamedSelectionAction() {}
 
     virtual void Execute();
+
+    virtual void ClearNamedSelection();
 };
 
 // ****************************************************************************
