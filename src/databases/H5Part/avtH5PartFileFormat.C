@@ -504,10 +504,10 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
       fqReader.openFile(filename, H5PART_READ, true);
 
       // Get FastBit information about particle variables
-      // for ( VarNameToInt64Map_t::const_iterator
-      //        it = particleVarNameToTypeMap.begin();
-      //      it != particleVarNameToTypeMap.end(); ++it)
-      for( const auto &it : particleVarNameToTypeMap )
+      for ( VarNameToInt64Map_t::const_iterator
+             it = particleVarNameToTypeMap.begin();
+           it != particleVarNameToTypeMap.end(); ++it)
+      // for( const auto &it : particleVarNameToTypeMap )
       {
           std::string varName = it.first;
   
