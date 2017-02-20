@@ -509,7 +509,8 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
            it != particleVarNameToTypeMap.end(); ++it)
       // for( const auto &it : particleVarNameToTypeMap )
       {
-          std::string varName = it.first;
+          // std::string varName = it.first;
+          std::string varName = it->first;
   
           // Store information about whether the variable has
           // FastBit information. If the min max is found then
