@@ -270,10 +270,12 @@ avtH5PartWriter::WriteHeaders(const avtDatabaseMetaData *md,
     if( addFastBitIndexing )
     {
         bool foundSortedKey = false;
-      
-        for( const auto &varName: variableList )
+
+     // for( const auto &varName: variableList )
+        for( int i=0; i<variableList.size(); ++i)
         {
-            if( varName == sortedKey )
+         // if( varName == sortedKey )
+            if( variableList[i] == sortedKey )
             {
                 foundSortedKey = true;
                 break;
