@@ -892,6 +892,10 @@ avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile,
 //
 //    Mark C. Miller, Tue Jul 17 20:05:52 PDT 2012
 //    Permit file to be an absolute path instead of relative to toc file.
+//
+//    Mark C. Miller, Tue Feb 21 17:39:22 PST 2017
+//    Added logic to ensure that as other files are opened, the toc file
+//    remains the most recently used (MRU) file.
 // *****************************************************************************
 
 DBfile *
@@ -959,6 +963,7 @@ avtSiloFileFormat::OpenFile(const char *n, bool skipGlobalInfo)
     }
 
     DBfile *dbfile = OpenFile(fileIndex, skipGlobalInfo);
+    UsedFile(tocIndex); // Ensure toc file remains MRU
     return dbfile;
 }
 
@@ -13312,7 +13317,6 @@ avtSiloFileFormat::GetRelativeVarName(const char *initVar, const char *newVar,
 //    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
-//
 // ****************************************************************************
 
 string
