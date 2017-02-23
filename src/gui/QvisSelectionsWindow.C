@@ -1582,6 +1582,7 @@ QvisSelectionsWindow::addSelection()
         SelectionProperties p;
         p.SetName(selName.toStdString());
         p.SetSource(selSource.toStdString());
+
         if(idType == QvisSelectionsDialog::UseZoneIDForID)
             p.SetIdVariableType(SelectionProperties::UseZoneIDForID);
         else if(idType == QvisSelectionsDialog::UseGlobalZoneIDForID)
