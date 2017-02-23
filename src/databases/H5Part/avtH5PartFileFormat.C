@@ -434,9 +434,15 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
         }
     }
 
-#ifdef HAVE_LIBFASTBIT
-    h5part_int64_t numFileAttr = H5PartGetNumFileAttribs( file );
+    // FIXME: This information should be read as attribute
+    // from file.
+    defaultIdVariableName = "id";
 
+    // This key is really only used for FastBit.
+    defaultSortedVariableName = "";
+    
+    h5part_int64_t numFileAttr = H5PartGetNumFileAttribs( file );
+    
     for( h5part_int64_t i=0; i<numFileAttr; ++i )
     {
         char attrib_name[maxVarNameLen];
@@ -463,27 +469,12 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
                     // attribute from file.
                     defaultIdVariableName = sortedKey;
                 }
-                else
-                {
-                    defaultSortedVariableName = "";
-                    // FIXME: This information should be read as
-                    // attribute from file.
-                    defaultIdVariableName = "id";
-                }
-            }
-            else
-            {
-                defaultSortedVariableName = "";
-                // FIXME: This information should be read as attribute
-                // from file.
-                defaultIdVariableName = "id";
             }
         }
     }
 
     idVariableName = defaultIdVariableName;
-#endif
-
+    
     // FIXME: Still need to check whether there are duplicate variable
     // names in field, scalar and vector variables and possibly modify
     // the name so that VisIt can distinguish between them.
@@ -1449,20 +1440,16 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
     // Switch to appropriate time step (opens file if necessary)
     ActivateTimestep(timestate);
 
-#ifdef HAVE_LIBFASTBIT
     idVariableName = defaultIdVariableName;
 
     VarNameToInt64Map_t::const_iterator it =
       particleVarNameToTypeMap.find(idVariableName);
-
+    
     if (it == particleVarNameToTypeMap.end())
       EXCEPTION1(InvalidVariableException, idVariableName);
     
     // Select particles to actually read
     SelectParticlesToRead( idVariableName.c_str() );
-#else
-    SelectParticlesToRead();
-#endif
     
     // Read data
     h5part_int64_t nPoints = H5PartGetNumParticles(file);
@@ -1633,15 +1620,13 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
     vtkpoints->Delete();
 
     //
-    // If using the FastBit index and a data selection was processed
-    // successfully then dataset with different connectivity from the
-    // original full dataset will be produced.  This means that if
-    // we're requesting original cell numbers above up in the database
-    // then the values calculated there would be wrong. We need to
-    // calculate them here and send them along so named selections
-    // will work properly.
+    // If a data selection was processed successfully then dataset
+    // with different connectivity from the original full dataset will
+    // be produced.  This means that if we're requesting original cell
+    // numbers above up in the database then the values calculated
+    // there would be wrong. We need to calculate them here and send
+    // them along so named selections will work properly.
     //
-#ifdef HAVE_LIBFASTBIT
     debug5 << "avtH5PartFileFormat::GetParticleMesh(): "
            << " Creating avtOriginalCellNumbers early" << std::endl;
 
@@ -1754,7 +1739,6 @@ avtH5PartFileFormat::GetParticleMesh(int timestate)
 
     dataset->GetCellData()->AddArray(origZones);
     origZones->Delete();
-#endif
     
     visitTimer->StopTimer(t1, "H5PartFileFormat::GetParticleMesh()");
 
@@ -1933,11 +1917,8 @@ avtH5PartFileFormat::GetVar(int timestate, const char *varName)
     ActivateTimestep(timestate);
 
     // Select particles to actually read
-#ifdef HAVE_LIBFASTBIT
     SelectParticlesToRead( varName );
-#else
-    SelectParticlesToRead( );
-#endif
+
     // Read data
     h5part_int64_t nPoints = H5PartGetNumParticles(file);
 
