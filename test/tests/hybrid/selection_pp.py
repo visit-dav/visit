@@ -94,6 +94,7 @@ s.variables = ("wt")
 
 s.name = selName
 s.source = db
+s.host = "localhost"
 s.selectionType = s.CumulativeQuerySelection
 s.variableMins = (0.75)
 s.variableMaxs = (1.0)
