@@ -84,7 +84,7 @@ public class SelectionProperties extends AttributeSubject
 
         name = new String("");
         source = new String("");
-        host = new String("");
+        host = new String("localhost");
         selectionType = SELECTIONTYPE_BASICSELECTION;
         idVariableType = IDVARIABLETYPE_USEZONEIDFORID;
         idVariable = new String("");
@@ -109,7 +109,7 @@ public class SelectionProperties extends AttributeSubject
 
         name = new String("");
         source = new String("");
-        host = new String("");
+        host = new String("localhost");
         selectionType = SELECTIONTYPE_BASICSELECTION;
         idVariableType = IDVARIABLETYPE_USEZONEIDFORID;
         idVariable = new String("");

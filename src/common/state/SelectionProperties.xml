@@ -25,6 +25,7 @@
     <Field name="source" label="The source of data that defines the selection. This is a plot name or a database name." type="string">
     </Field>
     <Field name="host" label="The host of data that defines the selection." type="string">
+      localhost
     </Field>
     <Field name="selectionType" label="Selection type" type="enum" subtype="SelectionType">
       BasicSelection

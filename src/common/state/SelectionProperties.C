@@ -211,6 +211,7 @@ SelectionProperties::IDVariableType_FromString(const std::string &s, SelectionPr
 
 void SelectionProperties::Init()
 {
+    host = "localhost";
     selectionType = BasicSelection;
     idVariableType = UseZoneIDForID;
     minTimeState = 0;
