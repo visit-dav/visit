@@ -332,23 +332,102 @@ avtOpacityMap::SetTableFloat(unsigned char *arr, int te, double attenuation, flo
 
     tableEntries = te;
     transferFn1D = new _RGBA[tableEntries]();
+    minVisibleScalarIndex =  maxVisibleScalarIndex = -1;
     for (int i = 0 ; i < tableEntries ; i++)
     {
         double bp = tan(1.570796327 * (0.5 - attenuation*0.49999));
         double alpha = pow((float) arr[i*4+3] / 255.f, (float)bp);
         alpha = 1.0 - pow((1.0 - alpha), 1.0/over);
 
-        transferFn1D[i].R = (float)arr[i*4]/255.  *alpha;
+        transferFn1D[i].R = (float)arr[i*4+0]/255.*alpha;
         transferFn1D[i].G = (float)arr[i*4+1]/255.*alpha;
         transferFn1D[i].B = (float)arr[i*4+2]/255.*alpha;
         transferFn1D[i].A = alpha;
+        if (alpha != 0 && minVisibleScalarIndex == -1){
+            minVisibleScalarIndex = i;
+            //debug5 << "starting alpha = 0 at i= " << i << std::endl;
+        }
+
+        //debug5 << i << " : " << transferFn1D[i].R << ", " << transferFn1D[i].G << ", " << transferFn1D[i].B <<  ", " << transferFn1D[i].A << std::endl;
     }
+    for (int i=tableEntries-1; i>=0; i--)
+    {
+        if (transferFn1D[i].A != 0 && maxVisibleScalarIndex == -1){
+            maxVisibleScalarIndex = i;
+            //debug5 << "ending alpha = 0 at i= " << i << std::endl;
+        }
+    }
+
+
+    //debug5 << "minVisibleScalarIndex: " << minVisibleScalarIndex << "   maxVisibleScalarIndex: " << maxVisibleScalarIndex << std::endl;
 
     //
     // We need to set the intermediate vars again since the table size has
     // potentially changed.
     //
     SetIntermediateVars();
+}
+// ****************************************************************************
+//  Method: avtOpacityMap::GetMinVisibleScalar
+//
+//  Purpose:
+//      Get the minimum scalar value that is visible
+//
+//  Programmer: Pascal Grosset
+//  Creation:   July 14, 2016
+//
+// ****************************************************************************
+double avtOpacityMap::GetMinVisibleScalar()
+{
+    return minVisibleScalar;
+}
+
+
+// ****************************************************************************
+//  Method: avtOpacityMap::GetMaxVisibleScalar
+//
+//  Purpose:
+//      Get the maximum scalar value that is visible
+//
+//  Programmer: Pascal Grosset
+//  Creation:   July 14, 2016
+//
+// ****************************************************************************
+double avtOpacityMap::GetMaxVisibleScalar()
+{
+    return maxVisibleScalar;
+}
+
+
+// ****************************************************************************
+//  Method: avtOpacityMap::computeVisibleRange
+//
+//  Purpose:
+//      Compute the scalar range that will be visible
+//
+//  Programmer: Pascal Grosset
+//  Creation:   July 14, 2016
+//
+// ****************************************************************************
+void avtOpacityMap::computeVisibleRange()
+{
+    double scalarRange = max - min;
+    if (minVisibleScalarIndex == 0)
+        minVisibleScalar =  min;
+    else
+        minVisibleScalar = ( ((float)minVisibleScalarIndex/(tableEntries-1)) * scalarRange) + min;
+    
+
+
+    if (maxVisibleScalarIndex == tableEntries-1)
+        maxVisibleScalar =  max;
+    else
+        maxVisibleScalar = ( ((float)maxVisibleScalarIndex/(tableEntries-1)) * scalarRange) + min;
+
+
+     debug5 << "max: " << max << "  min: " << min << "  scalarRange: " << scalarRange << "  minVisibleScalarIndex: " << minVisibleScalarIndex <<
+             "  maxVisibleScalarIndex: " << maxVisibleScalarIndex << "   tableEntries: " << tableEntries << 
+             "  maxVisibleScalar: " << maxVisibleScalar << "   minVisibleScalar: " << minVisibleScalar << std::endl;
 }
 
 // ****************************************************************************

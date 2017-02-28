@@ -77,6 +77,7 @@
 using     std::vector;
 
 bool sortImgMetaDataByDepth(imgMetaData const& before, imgMetaData const& after){ return before.avg_z > after.avg_z; }
+bool sortImgMetaDataByEyeSpaceDepth(imgMetaData const& before, imgMetaData const& after){ return before.eye_z > after.eye_z; }
 
 // ****************************************************************************
 //  Method: avtRayTracer constructor
@@ -113,6 +114,9 @@ avtRayTracer::avtRayTracer()
     view.parallelScale = 10;
     view.orthographic = true;
 
+    panPercentage[0] = 0;
+    panPercentage[1] = 0;
+
     rayfoo         = NULL;
 
     opaqueImage    = NULL;
@@ -133,6 +137,7 @@ avtRayTracer::avtRayTracer()
     kernelBasedSampling = false;
     trilinearInterpolation = false;
     rayCastingSLIVR = false;
+    convexHullOnRCSLIVR = false;
 
     lighting = false;
     lightPosition[0] = lightPosition[1] = lightPosition[2] = 0.0;   lightPosition[3] = 1.0;
@@ -305,6 +310,219 @@ avtRayTracer::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
 
 
 // ****************************************************************************
+//  Function:
+//
+//  Purpose:
+//      Blend images
+//
+//  Programmer: August 14, 2016
+//  Creation:   Pascal Grosset
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtRayTracer::blendImages(float *src, int dimsSrc[2], int posSrc[2], float *dst, int dimsDst[2], int posDst[2])
+{
+    for (int _y=0; _y<dimsSrc[1]; _y++)
+        for (int _x=0; _x<dimsSrc[0]; _x++)
+        {
+            int startingX = posSrc[0];
+            int startingY = posSrc[1];
+
+            if ((startingX + _x) > (posDst[0]+dimsDst[0]))
+                continue;
+
+            if ((startingY + _y) > (posDst[1]+dimsDst[1]))
+                continue;
+
+            int subImgIndex = dimsSrc[0]*_y*4 + _x*4;                                     // index in the subimage
+            int bufferIndex = ( (startingY+_y - posDst[1])*dimsDst[0]*4  + (startingX+_x - posDst[0])*4 );    // index in the big buffer
+
+            // back to Front compositing: composited_i = composited_i-1 * (1.0 - alpha_i) + incoming; alpha = alpha_i-1 * (1- alpha_i)
+            dst[bufferIndex+0] = imgComm.clamp( (dst[bufferIndex+0] * (1.0 - src[subImgIndex+3])) + src[subImgIndex+0] );
+            dst[bufferIndex+1] = imgComm.clamp( (dst[bufferIndex+1] * (1.0 - src[subImgIndex+3])) + src[subImgIndex+1] );
+            dst[bufferIndex+2] = imgComm.clamp( (dst[bufferIndex+2] * (1.0 - src[subImgIndex+3])) + src[subImgIndex+2] );
+            dst[bufferIndex+3] = imgComm.clamp( (dst[bufferIndex+3] * (1.0 - src[subImgIndex+3])) + src[subImgIndex+3] );
+        }
+}
+
+
+
+// ****************************************************************************
+//  Method: avtRayTracer::unProject
+//
+//  Purpose:
+//      Convert from screen coordinates to world coordinates
+//
+//  Programmer: Pascal Grosset
+//  Creation:   August 14, 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtRayTracer::unProject(int _x, int _y, float _z, double _worldCoordinates[3], int _width, int _height, vtkMatrix4x4 *invModelViewProj)
+{
+    // remove panning
+    _x -= round(_width * panPercentage[0]);
+    _y -= round(_height * panPercentage[1]); 
+
+    double worldCoordinates[4] = {0,0,0,1};
+    double in[4] = {0,0,0,1};
+    in[0] = (_x - _width/2. )/(_width/2.);
+    in[1] = (_y - _height/2.)/(_height/2.);
+    in[2] = _z;
+
+    invModelViewProj->MultiplyPoint(in, worldCoordinates);
+
+    if (worldCoordinates[3] == 0)
+        debug5 << "avtMassVoxelExtractor::unProject division by 0 error!" << endl;
+
+    worldCoordinates[0] = worldCoordinates[0]/worldCoordinates[3];
+    worldCoordinates[1] = worldCoordinates[1]/worldCoordinates[3];
+    worldCoordinates[2] = worldCoordinates[2]/worldCoordinates[3];
+    worldCoordinates[3] = worldCoordinates[3]/worldCoordinates[3];
+
+    _worldCoordinates[0] = worldCoordinates[0];
+    _worldCoordinates[1] = worldCoordinates[1];
+    _worldCoordinates[2] = worldCoordinates[2];
+}
+
+
+
+// ****************************************************************************
+//  Method: avtRayTracer::project
+//
+//  Purpose:
+//      Convert world coordinates to screen coordinates
+//
+//  Programmer: Pascal Grosset
+//  Creation:   August 14, 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+double
+avtRayTracer::project(double _worldCoordinates[3], int pos2D[2], int _width, int _height, vtkMatrix4x4 *modelViewProj)
+{
+    double normDevCoord[4];
+    double worldCoordinates[4] = {0,0,0,1};
+    worldCoordinates[0] = _worldCoordinates[0];
+    worldCoordinates[1] = _worldCoordinates[1];
+    worldCoordinates[2] = _worldCoordinates[2];
+
+    // World to Clip space (-1 - 1)
+    modelViewProj->MultiplyPoint(worldCoordinates, normDevCoord);
+
+    if (normDevCoord[3] == 0)
+    {
+        debug5 << "avtMassVoxelExtractor::project division by 0 error!" << endl;
+        debug5 << "worldCoordinates: " << worldCoordinates[0] << ", " << worldCoordinates[1] << ", " << worldCoordinates[2] << "   " << normDevCoord[0] << ", " << normDevCoord[1] << ", " << normDevCoord[2] << endl;
+        debug5 << "Matrix: " << *modelViewProj << endl;
+    }
+
+    normDevCoord[0] = normDevCoord[0]/normDevCoord[3];
+    normDevCoord[1] = normDevCoord[1]/normDevCoord[3];
+    normDevCoord[2] = normDevCoord[2]/normDevCoord[3];
+    normDevCoord[3] = normDevCoord[3]/normDevCoord[3];
+
+    pos2D[0] = round( normDevCoord[0]*(_width/2.)  + (_width/2.)  );
+    pos2D[1] = round( normDevCoord[1]*(_height/2.) + (_height/2.) );
+
+    pos2D[0] += round(_width * panPercentage[0]);
+    pos2D[1] += round(_height * panPercentage[1]);
+
+    return normDevCoord[2];
+}
+
+
+
+// ****************************************************************************
+//  Method: avtRayTracer::project3Dto2D
+//
+//  Purpose:
+//          Compute the extents of a volume
+//
+//  Programmer: Pascal Grosset
+//  Creation:   August 14, 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtRayTracer::project3Dto2D(double _3Dextents[6], int width, int height, vtkMatrix4x4 *modelViewProj, int _2DExtents[4], double depthExtents[2])
+{
+    double _world[3];
+    int _xMin, _xMax, _yMin, _yMax;
+    double _zMin, _zMax;
+    _xMin = _yMin = std::numeric_limits<int>::max();
+    _xMax = _yMax = std::numeric_limits<int>::min();
+
+    _zMin = std::numeric_limits<double>::max();
+    _zMax = std::numeric_limits<double>::min();
+
+    float coordinates[8][3];
+    coordinates[0][0] = _3Dextents[0];   coordinates[0][1] = _3Dextents[2];   coordinates[0][2] = _3Dextents[4];
+    coordinates[1][0] = _3Dextents[1];   coordinates[1][1] = _3Dextents[2];   coordinates[1][2] = _3Dextents[4];
+    coordinates[2][0] = _3Dextents[1];   coordinates[2][1] = _3Dextents[3];   coordinates[2][2] = _3Dextents[4];
+    coordinates[3][0] = _3Dextents[0];   coordinates[3][1] = _3Dextents[3];   coordinates[3][2] = _3Dextents[4];
+
+    coordinates[4][0] = _3Dextents[0];   coordinates[4][1] = _3Dextents[2];   coordinates[4][2] = _3Dextents[5];
+    coordinates[5][0] = _3Dextents[1];   coordinates[5][1] = _3Dextents[2];   coordinates[5][2] = _3Dextents[5];
+    coordinates[6][0] = _3Dextents[1];   coordinates[6][1] = _3Dextents[3];   coordinates[6][2] = _3Dextents[5];
+    coordinates[7][0] = _3Dextents[0];   coordinates[7][1] = _3Dextents[3];   coordinates[7][2] = _3Dextents[5];
+
+    int pos2D[2];
+    double _z;
+    for (int i=0; i<8; i++)
+    {
+        _world[0] = coordinates[i][0];
+        _world[1] = coordinates[i][1];
+        _world[2] = coordinates[i][2];
+        _z = project(_world, pos2D, width, height, modelViewProj);
+
+        // Get min max
+        _2DExtents[0] = _xMin = std::min(_xMin, pos2D[0]);
+        _2DExtents[1] = _xMax = std::max(_xMax, pos2D[0]);
+        _2DExtents[2] = _yMin = std::min(_yMin, pos2D[1]);
+        _2DExtents[3] = _yMax = std::max(_yMax, pos2D[1]);
+
+        depthExtents[0] = _zMin = std::min(_zMin, _z);
+        depthExtents[1] = _zMax = std::max(_zMax, _z);
+    }
+
+
+    debug5 << "_2DExtents " << _2DExtents[0] << ", " << _2DExtents[1] << "   "  << _2DExtents[2] << ", "  << _2DExtents[3] << "     z: " << depthExtents[0] << ", " << depthExtents[1] << endl;
+}
+
+
+
+// ****************************************************************************
+//  Method: avtRayTracer::checkInBounds
+//
+//  Purpose:
+//       Checks whether a coordinate value (coord) falls into a volume (volBounds)
+//
+//  Programmer:
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+avtRayTracer::checkInBounds(double volBounds[6], double coord[3])
+{
+    if (coord[0] > volBounds[0] && coord[0] < volBounds[1])
+        if (coord[1] > volBounds[2] && coord[1] < volBounds[3])
+            if (coord[2] > volBounds[4] && coord[2] < volBounds[5])
+                return true;
+
+    return false;
+}
+// ****************************************************************************
 //  Method: avtRayTracer::Execute
 //
 //  Purpose:
@@ -388,7 +606,7 @@ avtRayTracer::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
 //    Hank Childs, Sun Jan 24 15:35:50 PST 2010
 //    Automatically use the kernel based resampling for point data.
 //
-//    Pascal Grosset & Manasa Prasad, Fri Sep 20 2013
+//    Pascal Grosset & Manasa Prasad, Fri Aug 20 2016
 //    Add the ray casting SLIVR code
 //
 // ****************************************************************************
@@ -416,48 +634,212 @@ avtRayTracer::Execute(void)
 
     double scale[3] = {1,1,1};
     vtkMatrix4x4 *transform = vtkMatrix4x4::New();
-    avtWorldSpaceToImageSpaceTransform::CalculateTransform(view, transform, 
+    avtWorldSpaceToImageSpaceTransform::CalculateTransform(view, transform,
                                                            scale, aspect);
     double newNearPlane, newFarPlane, oldNearPlane, oldFarPlane;
     TightenClippingPlanes(view, transform, newNearPlane, newFarPlane);
-    oldNearPlane = view.nearPlane;
-    oldFarPlane  = view.farPlane;
-    view.nearPlane = newNearPlane;
-    view.farPlane  = newFarPlane;
+    oldNearPlane = view.nearPlane;  oldFarPlane  = view.farPlane;
+    view.nearPlane = newNearPlane;  view.farPlane  = newFarPlane;
     transform->Delete();
 
     avtWorldSpaceToImageSpaceTransform trans(view, aspect);
     trans.SetInput(GetInput());
+
 
     //
     // Extract all of the samples from the dataset.
     //
     avtSamplePointExtractor extractor(screen[0], screen[1], samplesPerRay);
     bool doKernel = kernelBasedSampling;
-    if (trans.GetOutput()->GetInfo().GetAttributes().GetTopologicalDimension()
-        == 0)
+    if (trans.GetOutput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
         doKernel = true;
+
     extractor.SetKernelBasedSampling(doKernel);
     extractor.RegisterRayFunction(rayfoo);
     extractor.SetJittering(true);
     extractor.SetInput(trans.GetOutput());
-    if (trilinearInterpolation || rayCastingSLIVR){
-      extractor.SetTrilinear(trilinearInterpolation);
-        extractor.SetRayCastingSLIVR(rayCastingSLIVR);
+
+
+    if (trilinearInterpolation)
+        extractor.SetTrilinear(true);
+
+
+    //
+    // Ray casting: SLIVR ~ Before Rendering
+    //
+    double dbounds[6];  // Extents of the volume in world coordinates
+    vtkMatrix4x4 *pvm = vtkMatrix4x4::New();
+
+    vtkImageData  *__opaqueImageVTK = NULL;
+    unsigned char *__opaqueImageData = NULL;
+    float         *__opaqueImageZB = NULL;
+
+    int fullImageExtents[4];
+
+
+    //
+    // Ray casting: SLIVR ~ Setup
+    //
+    if (rayCastingSLIVR)
+    {
+        extractor.SetRayCastingSLIVR(true);
+
+        //
+        // Camera Settings
+        vtkCamera *sceneCam = vtkCamera::New();
+        sceneCam->SetPosition(view.camera[0],view.camera[1],view.camera[2]);
+        sceneCam->SetFocalPoint(view.focus[0],view.focus[1],view.focus[2]);
+        sceneCam->SetViewUp(view.viewUp[0],view.viewUp[1],view.viewUp[2]);
+        sceneCam->SetViewAngle(view.viewAngle);
+        sceneCam->SetClippingRange(oldNearPlane, oldFarPlane);
+        if (view.orthographic)
+            sceneCam->ParallelProjectionOn();
+        else
+            sceneCam->ParallelProjectionOff();
+        sceneCam->SetParallelScale(view.parallelScale);
+
+        debug5 << "RT View settings: " << endl;
+        debug5 << "camera: "       << view.camera[0]      << ", " << view.camera[1]     << ", " << view.camera[2] << std::endl;
+        debug5 << "focus: "     << view.focus[0]          << ", " << view.focus[1]      << ", " << view.focus[2] << std::endl;
+        debug5 << "viewUp: "    << view.viewUp[0]         << ", " << view.viewUp[1]     << ", " << view.viewUp[2] << std::endl;
+        debug5 << "viewAngle: "  << view.viewAngle  << std::endl;
+        debug5 << "eyeAngle: "  << view.eyeAngle  << std::endl;
+        debug5 << "parallelScale: "  << view.parallelScale  << std::endl;
+        debug5 << "setScale: "  << view.setScale  << std::endl;
+        debug5 << "nearPlane: " << view.nearPlane   << std::endl;
+        debug5 << "farPlane: " << view.farPlane     << std::endl;
+        debug5 << "imagePan[0]: " << view.imagePan[0]     << std::endl;     // this is a freaking fraction!!!
+        debug5 << "imagePan[1]: " << view.imagePan[1]     << std::endl;
+        debug5 << "imageZoom: " << view.imageZoom     << std::endl;
+        debug5 << "orthographic: " << view.orthographic     << std::endl;
+        debug5 << "shear[0]: " << view.shear[0]     << std::endl;
+        debug5 << "shear[1]: " << view.shear[1]     << std::endl;
+        debug5 << "shear[2]: " << view.shear[2]     << std::endl;
+        debug5 << "oldNearPlane: " << oldNearPlane  << std::endl;
+        debug5 << "oldFarPlane: " <<oldFarPlane     << std::endl;
+        debug5 << "aspect: " << aspect << std::endl << std::endl;
+
+        double _clip[2];
+        _clip[0]=oldNearPlane;  _clip[1]=oldFarPlane;
+
+        panPercentage[0] = view.imagePan[0];
+        panPercentage[1] = view.imagePan[1];
+
+
+        // Scaling
+        vtkMatrix4x4 *scaletrans = vtkMatrix4x4::New();
+        scaletrans->Identity();
+        scaletrans->SetElement(0, 0, scale[0]);
+        scaletrans->SetElement(1, 1, scale[1]);
+        scaletrans->SetElement(2, 2, scale[2]);
+
+        // Zoom and pan portions
+        vtkMatrix4x4 *imageZoomAndPan = vtkMatrix4x4::New();
+        imageZoomAndPan->Identity();
+        imageZoomAndPan->SetElement(0, 0, view.imageZoom);
+        imageZoomAndPan->SetElement(1, 1, view.imageZoom);
+        //imageZoomAndPan->SetElement(0, 3, 2*view.imagePan[0]*view.imageZoom);
+        //imageZoomAndPan->SetElement(1, 3, 2*view.imagePan[1]*view.imageZoom);
+
+        // View
+        vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
+        vtkMatrix4x4 *vm = vtkMatrix4x4::New();
+        vtkMatrix4x4 *vmInit = sceneCam->GetModelViewTransformMatrix();
+
+        vmInit->Transpose();
+        imageZoomAndPan->Transpose();
+        vtkMatrix4x4::Multiply4x4(vmInit, scaletrans, tmp);
+        vtkMatrix4x4::Multiply4x4(tmp, imageZoomAndPan, vm);
+        vm->Transpose();
+
+        // Projection: http://www.codinglabs.net/article_world_view_projection_matrix.aspx
+        vtkMatrix4x4 *p = sceneCam->GetProjectionTransformMatrix(aspect,oldNearPlane, oldFarPlane);
+
+        // The Z buffer that is passed from visit is in clip scape with z limits of -1 and 1
+        // (http://www.codinglabs.net/article_world_view_projection_matrix.aspx). However, using VTK, the
+        // z limits are withing nearz and farz.
+        // (https://fossies.org/dox/VTK-7.0.0/classvtkCamera.html#a77e5d3a6e753ae4068f9a3d91267d0eb)
+        // So, the projection matrix from VTK is hijacked here and adjusted to be within -1 and 1 too
+        // Same as in avtWorldSpaceToImageSpaceTransform::CalculatePerspectiveTransform
+        if (!view.orthographic)
+        {
+            p = sceneCam->GetProjectionTransformMatrix(aspect,oldNearPlane, oldFarPlane);
+            p->SetElement(2, 2, -(oldFarPlane+oldNearPlane)   / (oldFarPlane-oldNearPlane));
+            p->SetElement(2, 3, -(2*oldFarPlane*oldNearPlane) / (oldFarPlane-oldNearPlane));
+        }
+        else
+        {
+            p = sceneCam->GetProjectionTransformMatrix(aspect,oldNearPlane, oldFarPlane);
+            p->SetElement(2, 2, -2.0 / (oldFarPlane-oldNearPlane));
+            p->SetElement(2, 3, -(oldFarPlane + oldNearPlane) / (oldFarPlane-oldNearPlane));
+        }
+
+
+        // pan
+        vtkMatrix4x4 *pantrans = vtkMatrix4x4::New();
+        pantrans->Identity();
+        pantrans->SetElement(0, 3, 2*view.imagePan[0]);
+        pantrans->SetElement(1, 3, 2*view.imagePan[1]);
+
+        vtkMatrix4x4::Multiply4x4(p,vm,pvm);
+
+        debug5 << "pvm: " << *pvm << std::endl;
+
+        //
+        // Cleanup
+        scaletrans->Delete();
+        imageZoomAndPan->Delete();
+        vmInit->Delete();
+        tmp->Delete();
+        vm->Delete();
+        p->Delete();
+
+        //
+        // Get the full image extents of the volume
+        double depthExtents[2];
+
+        GetSpatialExtents(dbounds);
+        project3Dto2D(dbounds, screen[0], screen[1], pvm,  fullImageExtents, depthExtents);
+
+        //debug5 << "Full data extents: " << dbounds[0] << ", " << dbounds[1] << "    " << dbounds[2] << ", " << dbounds[3] << "    " << dbounds[4] << ", " << dbounds[5] << std::endl;
+        //debug5 << "fullImageExtents: " << fullImageExtents[0] << ", " << fullImageExtents[1] << "     " << fullImageExtents[2] << ", " << fullImageExtents[3] << std::endl;
+
+        if (parallelOn == false)
+            extractor.SetRayCastingSLIVRParallel(true);
+
+        extractor.SetJittering(false);
         extractor.SetLighting(lighting);
         extractor.SetLightDirection(lightDirection);
         extractor.SetMatProperties(materialProperties);
-        extractor.SetModelViewMatrix(modelViewMatrix);
-        extractor.SetTransferFn(transferFn1D);
         extractor.SetViewDirection(view_direction);
-        extractor.SetViewUp(view_up);
         extractor.SetTransferFn(transferFn1D);
+        extractor.SetClipPlanes(_clip);
+        extractor.SetPanPercentages(view.imagePan);
+        extractor.SetDepthExtents(depthExtents);
+        extractor.SetMVPMatrix(pvm);
+
+        //
+        // Capture background
+        __opaqueImageVTK = opaqueImage->GetImage().GetImageVTK();
+        __opaqueImageData = (unsigned char *)__opaqueImageVTK->GetScalarPointer(0, 0, 0);
+        __opaqueImageZB  = opaqueImage->GetImage().GetZBuffer();
+
+        //createColorPPM("/home/pascal/Desktop/background", __opaqueImageData, screen[0], screen[1]);
+        //writeOutputToFileByLine("/home/pascal/Desktop/debugImages/RCSLV_depth_1_", __opaqueImageZB, screen[0], screen[1]);
+        //writeDepthBufferToPPM("/home/pascal/Desktop/depthBuffer", __opaqueImageZB, screen[0], screen[1]);
+
+        extractor.setDepthBuffer(__opaqueImageZB, screen[0]*screen[1]);
+        extractor.setRGBBuffer(__opaqueImageData, screen[0], screen[1]);
+
+        int _bufExtents[4] = {0,0,0,0};
+        _bufExtents[1] = screen[0]; _bufExtents[3] = screen[1];
+        extractor.setBufferExtents(_bufExtents);
     }
 
     //
     // For curvilinear and unstructured meshes, it makes sense to convert the
     // cells to image space.  But for rectilinear meshes, it is not the
-    // most efficient strategy.  So set some flags here that allow the 
+    // most efficient strategy.  So set some flags here that allow the
     // extractor to do the extraction in world space.
     //
     if (!kernelBasedSampling)
@@ -465,90 +847,102 @@ avtRayTracer::Execute(void)
         trans.SetPassThruRectilinearGrids(true);
         extractor.SetRectilinearGridsAreInWorldSpace(true, view, aspect);
     }
-    int  timingVolToImg = 0;
+
+
+    int timingVolToImg = 0;
     if (rayCastingSLIVR == true && parallelOn)
         timingVolToImg = visitTimer->StartTimer();
 
+    debug5 << "Raytracing setup done! " << std::endl;
+
+    // Execute raytracer
     avtDataObject_p samples = extractor.GetOutput();
 
+    debug5 << "Raytracing rendering done! " << std::endl;
+
     //
-    // Ray casting: SLIVR
+    // Ray casting: SLIVR ~ After Rendering
     //
-    if (rayCastingSLIVR == true){
-        avtRayCompositer rc(rayfoo);                // only required to force an update - Need to find a way to get rid of that!!!!
+    if (rayCastingSLIVR == true)
+    {
+        debug5 << "Start compositing" << std::endl;
+
+        avtRayCompositer rc(rayfoo);                            // only required to force an update - Need to find a way to get rid of that!!!!
         rc.SetInput(samples);
         avtImage_p image  = rc.GetTypedOutput();
         image->Update(GetGeneralContract());
 
         //
-        // Single Processor
+        // SERIAL : Single Processor
         //
-        if (parallelOn == false){
-            
+        if (parallelOn == false)
+        {
+            debug5 << "Serial compositing!" << std::endl;
+
             //
-            // Get the metadata
-            //
+            // Get the metadata for all patches
             std::vector<imgMetaData> allImgMetaData;          // contains the metadata to composite the image
             int numPatches = extractor.getImgPatchSize();     // get the number of patches
-        
-            for (int i=0; i<numPatches; i++){
+
+            for (int i=0; i<numPatches; i++)
+            {
                 imgMetaData temp;
                 temp = extractor.getImgMetaPatch(i);
                 allImgMetaData.push_back(temp);
             }
-            debug5 << "Number of patches: " << numPatches << std::endl;
+
+            //debug5 << "Number of patches: " << numPatches << std::endl;
 
 
             //
             // Sort with the largest z first
-            //
-            std::sort(allImgMetaData.begin(), allImgMetaData.end(), &sortImgMetaDataByDepth);
+            std::sort(allImgMetaData.begin(), allImgMetaData.end(), &sortImgMetaDataByEyeSpaceDepth);
 
 
             //
-            // Composite the images
+            // Blend images
             //
-            
-            // Creates a buffer to store the composited image
-            float *composedData = new float[screen[0] * screen[1] * 4];
+            int renderedWidth = fullImageExtents[1] - fullImageExtents[0];
+            int renderedHeight = fullImageExtents[3] - fullImageExtents[2];
+            float *composedData = new float[renderedWidth * renderedHeight * 4]();
 
-            for (int i=0; i<(screen[0] * screen[1] * 4); i+=4){
-                composedData[i+0] = background[0]/255.0;   
-                composedData[i+1] = background[1]/255.0; 
-                composedData[i+2] = background[2]/255.0; 
-                composedData[i+3] = 1.0;
-            }
-
-            for (int i=0; i<numPatches; i++){
+            for (int i=0; i<numPatches; i++)
+            {
                 imgMetaData currentPatch = allImgMetaData[i];
 
                 imgData tempImgData;
+                tempImgData.imagePatch = NULL;
                 tempImgData.imagePatch = new float[currentPatch.dims[0] * currentPatch.dims[1] * 4];
                 extractor.getnDelImgData(currentPatch.patchNumber, tempImgData);
 
-                for (int j=0; j<currentPatch.dims[1]; j++){
-                    for (int k=0; k<currentPatch.dims[0]; k++){
-
+                for (int _y=0; _y<currentPatch.dims[1]; _y++)
+                    for (int _x=0; _x<currentPatch.dims[0]; _x++)
+                    {
                         int startingX = currentPatch.screen_ll[0];
-                        int startingY = currentPatch.screen_ll[1]; 
+                        int startingY = currentPatch.screen_ll[1];
 
-                        if ((startingX + k) > screen[0])
+                        if ((startingX + _x) > fullImageExtents[1])
                             continue;
 
-                        if ((startingY + j) > screen[1])
+                        if ((startingY + _y) > fullImageExtents[3])
                             continue;
-                        
-                        int subImgIndex = currentPatch.dims[0]*j*4 + k*4;                                   // index in the subimage 
-                        int bufferIndex = (startingY*screen[0]*4 + j*screen[0]*4) + (startingX*4 + k*4);    // index in the big buffer
 
-                        // back to Front compositing: composited_i = composited_i-1 * (1.0 - alpha_i) + incoming; alpha = alpha_i-1 * (1- alpha_i)
-                        composedData[bufferIndex+0] = imgComm.clamp((composedData[bufferIndex+0] * (1.0 - tempImgData.imagePatch[subImgIndex+3])) + tempImgData.imagePatch[subImgIndex+0]);
-                        composedData[bufferIndex+1] = imgComm.clamp((composedData[bufferIndex+1] * (1.0 - tempImgData.imagePatch[subImgIndex+3])) + tempImgData.imagePatch[subImgIndex+1]);
-                        composedData[bufferIndex+2] = imgComm.clamp((composedData[bufferIndex+2] * (1.0 - tempImgData.imagePatch[subImgIndex+3])) + tempImgData.imagePatch[subImgIndex+2]);
-                        composedData[bufferIndex+3] = imgComm.clamp((composedData[bufferIndex+3] * (1.0 - tempImgData.imagePatch[subImgIndex+3])) + tempImgData.imagePatch[subImgIndex+3]);
+                        int subImgIndex = (_y*currentPatch.dims[0] + _x) * 4;                                                           // index in the subimage
+                        int bufferIndex = ( (((startingY+_y)-fullImageExtents[2]) * renderedWidth)  +  ((startingX+_x)-fullImageExtents[0]) ) * 4;  // index in the big buffer
+
+                        if (composedData[bufferIndex+3] < 1.0)
+                        {
+                            // back to Front compositing: composited_i = composited_i-1 * (1.0 - alpha_i) + incoming; alpha = alpha_i-1 * (1- alpha_i)
+                            float alpha = (1.0 - tempImgData.imagePatch[subImgIndex+3]);
+                            composedData[bufferIndex+0] = imgComm.clamp( (composedData[bufferIndex+0] * alpha) + tempImgData.imagePatch[subImgIndex+0] );
+                            composedData[bufferIndex+1] = imgComm.clamp( (composedData[bufferIndex+1] * alpha) + tempImgData.imagePatch[subImgIndex+1] );
+                            composedData[bufferIndex+2] = imgComm.clamp( (composedData[bufferIndex+2] * alpha) + tempImgData.imagePatch[subImgIndex+2] );
+                            composedData[bufferIndex+3] = imgComm.clamp( (composedData[bufferIndex+3] * alpha) + tempImgData.imagePatch[subImgIndex+3] );
+                        }
                     }
-                }
 
+                //
+                // Clean up data
                 if (tempImgData.imagePatch != NULL)
                     delete []tempImgData.imagePatch;
                 tempImgData.imagePatch = NULL;
@@ -556,689 +950,393 @@ avtRayTracer::Execute(void)
             allImgMetaData.clear();
 
 
-            // Creates an image structure to hold the image
+            debug5 << "Serial compositing done!" << std::endl;
+
+            //
+            // Create image for visit to display
             avtImage_p whole_image;
             whole_image = new avtImage(this);
-
-            float *zbuffer = new float[screen[0] * screen[1]];
-            unsigned char *imgTest = NULL;
 
             vtkImageData *img = avtImageRepresentation::NewImage(screen[0], screen[1]);
             whole_image->GetImage() = img;
 
-            imgTest = new unsigned char[screen[0] * screen[1] * 3];
-            imgTest = whole_image->GetImage().GetRGBBuffer();
-
-            zbuffer = new float[screen[0] * screen[1]]();
-            for (int s=0; s<screen[0] * screen[1]; s++)
-                zbuffer[s] = 20.0;
-            zbuffer = whole_image->GetImage().GetZBuffer();
+            unsigned char *imgFinal = NULL;
+            imgFinal = new unsigned char[screen[0] * screen[1] * 3];
+            imgFinal = whole_image->GetImage().GetRGBBuffer();
 
 
-            // Get the composited image
-            for (int i=0; i< screen[1]; i++)
-                for (int j=0; j<screen[0]; j++){
-                    int bufferIndex = (screen[0]*4*i) + (j*4);
-                    int wholeImgIndex = (screen[0]*3*i) + (j*3);
+            //
+            // Blend in with bounding box and other visit plots
+            vtkMatrix4x4 *Inversepvm = vtkMatrix4x4::New();
+            vtkMatrix4x4::Invert(pvm,Inversepvm);
 
-                    imgTest[wholeImgIndex+0] = (composedData[bufferIndex+0] ) * 255;
-                    imgTest[wholeImgIndex+1] = (composedData[bufferIndex+1] ) * 255;
-                    imgTest[wholeImgIndex+2] = (composedData[bufferIndex+2] ) * 255;
+            int compositedImageWidth = fullImageExtents[1] - fullImageExtents[0];
+            int compositedImageHeight = fullImageExtents[3] - fullImageExtents[2];
+
+            // Having to adjust the dataset bounds by a arbitrary magic number here. Needs to be sorted out at some point!
+            dbounds[5] = dbounds[5]-0.025;
+
+            //debug5 << "Place in image ~ screen " <<  screen[0] << ", " << screen[1] << "   compositedImageWidth: " << compositedImageWidth << "  compositedImageHeight: " << compositedImageHeight
+            //     << "  fullImageExtents: " << fullImageExtents[0] << ", " << fullImageExtents[1] << ", " << fullImageExtents[2] << ", " << fullImageExtents[3] << std::endl;
+            //writeArrayToPPM("/home/pascal/Desktop/debugImages/final_", composedData, compositedImageWidth, compositedImageHeight);
+
+
+            for (int _y=0; _y<screen[1]; _y++)
+                for (int _x=0; _x<screen[0]; _x++)
+                {
+
+                    int index = _y*screen[0] + _x;
+                    int indexComposited = (_y-fullImageExtents[2])*compositedImageWidth + (_x-fullImageExtents[0]);
+
+                    bool insideComposited = false;
+                    if (_x >= fullImageExtents[0] && _x < fullImageExtents[1])
+                         if (_y >= fullImageExtents[2] && _y < fullImageExtents[3])
+                            insideComposited = true;
+
+
+                    if ( insideComposited )
+                    {
+                        if (composedData[indexComposited*4 + 3] == 0)
+                        {
+                            // No data from rendering here!
+                            imgFinal[index*3 + 0] = __opaqueImageData[index*3 + 0];
+                            imgFinal[index*3 + 1] = __opaqueImageData[index*3 + 1];
+                            imgFinal[index*3 + 2] = __opaqueImageData[index*3 + 2];
+                        }
+                        else
+                        {
+                            if (__opaqueImageZB[index] != 1)
+                            {
+                                // Might need to do some blending
+                                double worldCoordinates[3];
+                                float _tempZ = __opaqueImageZB[index] * 2 - 1;
+                                unProject(_x, _y, _tempZ, worldCoordinates, screen[0], screen[1], Inversepvm);
+
+                                //debug5 << "x,y,z: " << _x << ", " << _y << ", " << _tempZ << "   wordld: " << worldCoordinates[0] << ", " << worldCoordinates[1] << ", " << worldCoordinates[2];
+                                if ( checkInBounds(dbounds, worldCoordinates) )
+                                {
+                                    // Completely inside bounding box
+                                    float alpha = composedData[indexComposited*4+3];
+                                    float oneMinusAlpha = (1.0 - composedData[indexComposited*4+3]);
+                                    imgFinal[index*3 + 0] = std::min( ( ((float)__opaqueImageData[index*3 + 0]/255.0) * oneMinusAlpha  +  composedData[indexComposited*4 + 0] ), 1.0) * 255;
+                                    imgFinal[index*3 + 1] = std::min( ( ((float)__opaqueImageData[index*3 + 1]/255.0) * oneMinusAlpha  +  composedData[indexComposited*4 + 1] ), 1.0) * 255;
+                                    imgFinal[index*3 + 2] = std::min( ( ((float)__opaqueImageData[index*3 + 2]/255.0) * oneMinusAlpha  +  composedData[indexComposited*4 + 2] ), 1.0) * 255;
+                                }
+                                else
+                                {
+                                    // Intersect inside with bounding box
+
+                                    double ray[3], tMin, tMax;
+                                    computeRay( view.camera, worldCoordinates, ray);
+                                    if ( intersect(dbounds, ray, view.camera, tMin, tMax) )
+                                    {
+                                        double tIntersect = std::min( (worldCoordinates[0]-view.camera[0])/ray[0],
+                                                            std::min( (worldCoordinates[1]-view.camera[1])/ray[1], (worldCoordinates[2]-view.camera[2])/ray[2] ) );
+
+                                        if (tMin <= tIntersect)
+                                        {
+                                            float alpha = composedData[indexComposited*4+3];
+                                            float oneMinusAlpha = (1.0 - composedData[indexComposited*4+3]);
+                                            imgFinal[index*3 + 0] = std::min( ( ((float)__opaqueImageData[index*3 + 0]/255.0) * oneMinusAlpha  +  composedData[indexComposited*4 + 0] ), 1.0) * 255;
+                                            imgFinal[index*3 + 1] = std::min( ( ((float)__opaqueImageData[index*3 + 1]/255.0) * oneMinusAlpha  +  composedData[indexComposited*4 + 1] ), 1.0) * 255;
+                                            imgFinal[index*3 + 2] = std::min( ( ((float)__opaqueImageData[index*3 + 2]/255.0) * oneMinusAlpha  +  composedData[indexComposited*4 + 2] ), 1.0) * 255;
+                                            // volume infront
+                                        }
+                                        else
+                                        {
+                                            // box infront
+                                            imgFinal[index*3 + 0] = __opaqueImageData[index*3 + 0];
+                                            imgFinal[index*3 + 1] = __opaqueImageData[index*3 + 1];
+                                            imgFinal[index*3 + 2] = __opaqueImageData[index*3 + 2];
+                                            //debug5 << "  intersection - box infront!" << endl;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        imgFinal[index*3 + 0] = (  composedData[indexComposited*4 + 0] ) * 255;
+                                        imgFinal[index*3 + 1] = (  composedData[indexComposited*4 + 1] ) * 255;
+                                        imgFinal[index*3 + 2] = (  composedData[indexComposited*4 + 2] ) * 255;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Inside bounding box but only background - Good
+                                float alpha = composedData[indexComposited*4+3];
+                                float oneMinusAlpha = (1.0 - composedData[indexComposited*4+3]);
+                                imgFinal[index*3 + 0] = std::min( ( ((float)__opaqueImageData[index*3 + 0]/255.0) * oneMinusAlpha  +  composedData[indexComposited*4 + 0] ), 1.0) * 255;
+                                imgFinal[index*3 + 1] = std::min( ( ((float)__opaqueImageData[index*3 + 1]/255.0) * oneMinusAlpha  +  composedData[indexComposited*4 + 1] ), 1.0) * 255;
+                                imgFinal[index*3 + 2] = std::min( ( ((float)__opaqueImageData[index*3 + 2]/255.0) * oneMinusAlpha  +  composedData[indexComposited*4 + 2] ), 1.0) * 255;
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        // Outside bounding box: Use the background - Good
+                        imgFinal[index*3 + 0] = __opaqueImageData[index*3 + 0];
+                        imgFinal[index*3 + 1] = __opaqueImageData[index*3 + 1];
+                        imgFinal[index*3 + 2] = __opaqueImageData[index*3 + 2];
+                    }
+
                 }
 
             img->Delete();
-
-            if (zbuffer != NULL)
-                delete []zbuffer;
-
             SetOutput(whole_image);
+
+            //
+            // Cleanup
+            delete []composedData;
+
             return;
         }
-
 
         //
         // Parallel
         //
 
-        //
-        // -- -- -- Timing -- 
+        debug5 << "Parallel compositing" << std::endl;
+        int  timingCompositinig = visitTimer->StartTimer();
 
-        // imgComm.syncAllProcs();     // only required for time testing purposes
-
-        visitTimer->StopTimer(timingVolToImg, "VolToImg");
-        visitTimer->DumpTimings();
-        
-        int  timingComm = visitTimer->StartTimer();
-        int  timingCommMeta = visitTimer->StartTimer();
-
-       
         //
-        // Getting the patches & send/receive the number of patches that each has to 0
-        //
+        // Get the metadata for all patches
+        std::vector<imgMetaData> allImgMetaData;          // contains the metadata to composite the image
         int numPatches = extractor.getImgPatchSize();     // get the number of patches
-        imgComm.gatherNumPatches(numPatches);
 
-        debug5 << PAR_Rank() << "   avtRayTracer::Execute  - Getting the patches -    numPatches: " << numPatches << "   total assigned: " << extractor.getTotalAssignedPatches() << endl;
+        int imgExtents[4] = {0,0,0,0}; //minX, maxX,  minY, maxY
+        int imgSize[2];                 // x, y
+        float *composedData = NULL;
+        float *localPatchesDepth = NULL;
 
 
-        //
-        // Send/Receive the patches iota metadata to proc 0
-        //
-
-        float *tempSendBuffer = NULL;
-        tempSendBuffer = new float[numPatches*7];
-
-        std::multimap<int, imgMetaData> imgMetaDataMultiMap;
-        imgMetaDataMultiMap.clear();
-        for (int i=0; i<numPatches; i++){
+        debug5 << "Number of patches: " << numPatches << std::endl;
+        for (int i=0; i<numPatches; i++)
+        {
             imgMetaData temp;
             temp = extractor.getImgMetaPatch(i);
-            imgMetaDataMultiMap.insert(  std::pair<int, imgMetaData>   (temp.patchNumber, temp));
 
-            tempSendBuffer[i*7 + 0] = temp.procId;
-            tempSendBuffer[i*7 + 1] = temp.patchNumber;
-            tempSendBuffer[i*7 + 2] = temp.dims[0];
-            tempSendBuffer[i*7 + 3] = temp.dims[1];
-            tempSendBuffer[i*7 + 4] = temp.screen_ll[0];
-            tempSendBuffer[i*7 + 5] = temp.screen_ll[1];
-            tempSendBuffer[i*7 + 6] = temp.avg_z;
+            imgExtents[0]=temp.screen_ll[0];   // minX
+            imgExtents[1]=temp.screen_ur[0];   // maxX
 
-            debug5 << PAR_Rank() << "   ~ has patch #: " << temp.patchNumber << "   avg_z: " << temp.avg_z << endl;
+            imgExtents[2]=temp.screen_ll[1];   // minY
+            imgExtents[3]=temp.screen_ur[1];   // maxY
+
+            imgSize[0] = imgExtents[1]-imgExtents[0];
+            imgSize[1] = imgExtents[3]-imgExtents[2];
+
+            debug5 << "i: " << i << " image (minX, maxX   minY , maxY): " << imgExtents[0] << ", " << imgExtents[1] << "    " << imgExtents[2] << ", " << imgExtents[3] <<
+                                "  size: " << imgSize[0] << " x " << imgSize[1] << std::endl;
         }
-
-        imgComm.gatherIotaMetaData(numPatches*7, tempSendBuffer); 
-
-        delete []tempSendBuffer;
-        tempSendBuffer = NULL;
-
-
-        //
-        // -- -- Timing --
-        visitTimer->StopTimer(timingCommMeta, "Communicating metadata");
-        visitTimer->DumpTimings();
-        debug5 << PAR_Rank() << "   avtRayTracer::Execute  - Send/Receive the patches iota " << endl;
-
-        int  timingCommDecision = visitTimer->StartTimer();
-
-
-        //
-        // Patch allocation Logic & inform other procs about logic
-        // 
-        if (PAR_Rank() == 0)
-            imgComm.patchAllocationLogic();    
-
-        debug5 << PAR_Rank() << "   avtRayTracer::Execute  - imgComm.patchAllocationLogic() " << endl;
-
-        // informationToRecvArray:   (procId, numPatches)           (procId, numPatches)         (procId, numPatches)  ...
-        // informationToSendArray:   (patchNumber, destProcId)     (patchNumber, destProcId)    (patchNumber, destProcId)  ...
-        int totalSendData, totalRecvData, numZDivisions, totalPatchesToCompositeLocally;
-        int *informationToRecvArray, *informationToSendArray, *patchesToCompositeLocally;
-        float *divisionsArray = NULL;
-        informationToRecvArray = informationToSendArray = patchesToCompositeLocally = NULL;
-        totalSendData = totalRecvData = numZDivisions = totalPatchesToCompositeLocally = 0;
-
-        //
-        // Send info about which patch to receive and which patches to send & receive
-        imgComm.scatterNumDataToCompose(totalSendData, totalRecvData, numZDivisions, totalPatchesToCompositeLocally);
-
-        debug5 << PAR_Rank() << " ~  num patches to send: " << totalSendData/2 << " num processors to recv from: " << totalRecvData/2 << "    numZDivisions: " << numZDivisions << "   totalPatchesToCompositeLocally: " <<   totalPatchesToCompositeLocally << endl;
-
-
-        //
-        //receive the information about how many patches to receive from other processors
-        informationToRecvArray = new int[totalRecvData];
-        informationToSendArray = new int[totalSendData];
-        divisionsArray = new float[numZDivisions];
-
-
-        if (totalPatchesToCompositeLocally > 0)
-            patchesToCompositeLocally = new int[totalPatchesToCompositeLocally];
-
-        imgComm.scatterDataToCompose(totalSendData, informationToSendArray, totalRecvData, informationToRecvArray, numZDivisions, divisionsArray, totalPatchesToCompositeLocally, patchesToCompositeLocally);
-        numZDivisions /= 2;   // halve it as it's the size of the array that contains start n end
-
-        
-        //
-        // --- Timing -- //
-        
-        visitTimer->StopTimer(timingCommDecision, "Decision making and informing procs");
-        visitTimer->DumpTimings();
-        
-        int  timingLocalCompositing = visitTimer->StartTimer();
-        
-        
-        //
-        // Local compositing if any is required
-        // 
-        int index = 1;
-        int start, end;
-        start = end = index;
-
-        std::vector<imgData> compositedDataVec;
-        debug5 << PAR_Rank() << " ~  totalPatchesToCompositeLocally: " << totalPatchesToCompositeLocally << endl;
-
-        while (index <= totalPatchesToCompositeLocally){
-            if (patchesToCompositeLocally[index] == -1 || index == totalPatchesToCompositeLocally){
-                end = index-1;
-
-                imgMetaData composedPatch = imgMetaDataMultiMap.find(patchesToCompositeLocally[start])->second;
-                imgMetaData lastPatch = imgMetaDataMultiMap.find(patchesToCompositeLocally[end])->second;
-
-                imgData composedData;
-                composedData.patchNumber    = composedPatch.patchNumber;
-                composedData.procId         = composedPatch.procId;
-
-                int imgBufferWidth = abs(lastPatch.screen_ll[0] + lastPatch.dims[0] - composedPatch.screen_ll[0]);
-                int imgBufferHeight = abs(lastPatch.screen_ll[1] + lastPatch.dims[1] - composedPatch.screen_ll[1]);
-
-                composedData.imagePatch = new float[((imgBufferWidth * imgBufferHeight * 4)) ]();  //size: imgBufferWidth * imgBufferHeight * 4, initialized to 0
-
-                composedPatch.dims[0]   = imgBufferWidth;
-                composedPatch.dims[1]   = imgBufferHeight;
-                composedPatch.inUse     = false;
-
-
-                for (int patchIndex=start; patchIndex<=end; patchIndex++){
-                    imgMetaData currentPatch = imgMetaDataMultiMap.find(patchesToCompositeLocally[patchIndex])->second;
-
-                    int startingX = currentPatch.screen_ll[0] - composedPatch.screen_ll[0];
-                    int startingY = currentPatch.screen_ll[1] - composedPatch.screen_ll[1]; 
-
-                    imgData tempImgData;
-                    tempImgData.imagePatch = new float[currentPatch.dims[0] * currentPatch.dims[1] * 4];
-                    extractor.getnDelImgData(currentPatch.patchNumber, tempImgData);
-
-                    // Assemble the idivisions into 1 layer
-                    for (int j=0; j<currentPatch.dims[1]; j++){
-                        for (int k=0; k<currentPatch.dims[0]; k++){
-
-                            if ((startingX + k) > imgBufferWidth)
-                                continue;
-
-                            if ((startingY + j) > imgBufferHeight)
-                                continue;
-                            
-                            int subImgIndex = currentPatch.dims[0]*j*4 + k*4;                             // index in the subimage 
-                            int bufferIndex = (startingY*imgBufferWidth*4 + j*imgBufferWidth*4) + (startingX*4 + k*4);  // index in the big buffer
-
-                            // back to Front compositing: composited_i = composited_i-1 * (1.0 - alpha_i) + incoming; alpha = alpha_i-1 * (1- alpha_i)
-                            composedData.imagePatch[bufferIndex+0] = (composedData.imagePatch[bufferIndex+0] * (1.0 - tempImgData.imagePatch[subImgIndex+3])) + tempImgData.imagePatch[subImgIndex+0];
-                            composedData.imagePatch[bufferIndex+1] = (composedData.imagePatch[bufferIndex+1] * (1.0 - tempImgData.imagePatch[subImgIndex+3])) + tempImgData.imagePatch[subImgIndex+1];
-                            composedData.imagePatch[bufferIndex+2] = (composedData.imagePatch[bufferIndex+2] * (1.0 - tempImgData.imagePatch[subImgIndex+3])) + tempImgData.imagePatch[subImgIndex+2];
-                            composedData.imagePatch[bufferIndex+3] = (composedData.imagePatch[bufferIndex+3] * (1.0 - tempImgData.imagePatch[subImgIndex+3])) + tempImgData.imagePatch[subImgIndex+3];
-                        }
-                    }
-
-                    if (tempImgData.imagePatch != NULL)
-                        delete []tempImgData.imagePatch;
-                    tempImgData.imagePatch = NULL;
-
-                    imgMetaDataMultiMap.erase(patchesToCompositeLocally[patchIndex]);
-                }
-                start = index+1;
-
-                imgMetaDataMultiMap.insert(std::pair<int,imgMetaData>(composedPatch.patchNumber, composedPatch));
-                compositedDataVec.push_back(composedData);
-            }
-            index++;
-        }
-
-        //
-        // --- Timing -- //
-
-        visitTimer->StopTimer(timingLocalCompositing, "Local compositing");
-        visitTimer->DumpTimings();
-        
-        int  timingLocalWork = visitTimer->StartTimer();
-        
-
-        //
-        // Set the destination for each patch
-        //
-
-        for (int k = 0; k < totalSendData; k+=2){
-            std::multimap<int,imgMetaData>::iterator it = imgMetaDataMultiMap.find(informationToSendArray[k]);
-            (it->second).destProcId = informationToSendArray[k+1];
-        }
-
-        //
-        // storage initialization
-        //        
-        int remainingPatches = 0;
-        std::vector<imgMetaData> allImgMetaData;                        // to contain the metadata to composite
-        std::multimap< std::pair<int,int>, imgData> imgDataToCompose;   // to contain the data to composite
-
-        //std::multimap<int, imgMetaData> imgMetaDataMultiMap;          // contained all the patches it produced
-
-        allImgMetaData.clear();
-        imgDataToCompose.clear();
-
-
-        //
-        // Copying the patches that it will need
-        //
-        std::multimap<int,imgMetaData>::iterator it;
-        for (it = imgMetaDataMultiMap.begin(); it != imgMetaDataMultiMap.end(); ++it ){
-
-            imgMetaData tempImgMetaData = it->second;
-
-            if (tempImgMetaData.destProcId == tempImgMetaData.procId ){
-                imgData tempImgData;
-                tempImgData.imagePatch = new float[it->second.dims[0] * it->second.dims[1] * 4];
-                extractor.getnDelImgData(tempImgMetaData.patchNumber, tempImgData);
-
-                allImgMetaData.push_back(tempImgMetaData);
-                imgDataToCompose.insert( std::pair< std::pair<int,int>, imgData> (  std::pair<int,int>(tempImgMetaData.procId, tempImgMetaData.patchNumber), tempImgData)   );
-
-                remainingPatches++;
-            }    
-        }
-
-
-        //
-        // --- Timing -- //
-        visitTimer->StopTimer(timingLocalWork, "Local compositing patches to send");
-        visitTimer->DumpTimings();
-        
-        int  timingSendReceive = visitTimer->StartTimer();
-        
-
-        //
-        // Sending and receiving from other patches (does a kind of binary swap - half send, half receive and each list gets subdivided)
-        // 
-        int startingProc = 0;
-        int endingProc = PAR_Size() - 1;
-
-        while (startingProc != endingProc){
-            int newStartingProc, newEndingProc, numInOtherHalf;
-            int *procsInOtherList = NULL;
-
-            int numProcessors = endingProc - startingProc + 1;
-            int half = numProcessors/2;
-            int middleProc = startingProc + (half-1);
-            int doFirst = SEND;     //1: send 2: receive
-            
-            if (PAR_Rank() <= middleProc){
-                numInOtherHalf = numProcessors - half;
-                procsInOtherList = new int[numInOtherHalf];
-                
-                for (int i=0; i<numInOtherHalf; i++)
-                    procsInOtherList[i] = startingProc+half+i;
-                
-                doFirst = SEND;
-                newStartingProc = startingProc;
-                newEndingProc = middleProc; 
-            }
-            else{
-                numInOtherHalf = half;
-                procsInOtherList = new int[numInOtherHalf];
-                
-                for (int i=0; i<half; i++)
-                    procsInOtherList[i] = startingProc+i;
-                
-                doFirst = RECEIVE;
-                newStartingProc = middleProc+1;
-                newEndingProc = endingProc;
-            }
-
-            if (doFirst == SEND){
-                //
-                // Send
-                std::set<int> senderListSet;     senderListSet.clear();
-
-                for (int i=0; i<numInOtherHalf; i++)
-                    for(int j = 0; j < totalSendData; j+=2) 
-                        if (informationToSendArray[j+1] == procsInOtherList[i])
-                            senderListSet.insert(informationToSendArray[j+1]);
-                    
-                std::multimap<int,imgMetaData>::iterator it;
-                for (it = imgMetaDataMultiMap.begin(); it != imgMetaDataMultiMap.end(); ++it ){
-
-                    const bool is_in = ((std::find(senderListSet.begin(), senderListSet.end(), it->second.destProcId)) != (senderListSet.end()));
-                    if (is_in){
-                        imgMetaData tempImgMetaData = it->second;
-                        imgData tempImgData;
-                        tempImgData.patchNumber = tempImgMetaData.patchNumber;
-                        tempImgData.procId = tempImgMetaData.procId;
-                        tempImgData.imagePatch = new float[tempImgMetaData.dims[0] * tempImgMetaData.dims[1] * 4];
-                        
-
-                        if(tempImgMetaData.inUse)
-                            extractor.getnDelImgData(tempImgMetaData.patchNumber, tempImgData);
-                        else{
-                            const bool is_inC = (std::find(compositedDataVec.begin(), compositedDataVec.end(), tempImgData)) != compositedDataVec.end();  
-                            if(is_inC) 
-                                tempImgData = *(std::find(compositedDataVec.begin(), compositedDataVec.end(), tempImgData));
-                            else 
-                                debug5 << PAR_Rank() << " Ray casting: SLIVR uuuuuuuh it didn't find the patch" << endl;
-                        }
-
-                        imgComm.sendPointToPoint(tempImgMetaData,tempImgData, numProcessors);
-
-                        if (tempImgData.imagePatch != NULL)
-                            delete []tempImgData.imagePatch;
-                        tempImgData.imagePatch = NULL;
-                    }
-                }
-
-                senderListSet.clear();
-
-                //
-                // Receive
-
-                //
-                // counting how many to receive
-                int numToReceive = 0;
-                for (int i=0; i<totalRecvData/2; i++)
-                    for (int j=0; j<numInOtherHalf; j++)
-                        if ((informationToRecvArray[i*2] == procsInOtherList[j]) && (informationToRecvArray[i*2 + 1] > 0))
-                            numToReceive+=informationToRecvArray[i*2 + 1];
-
-                
-                // does the receive
-                for (int i=0; i<numToReceive; i++){
-                    imgData tempImgData;
-                    imgMetaData tempImgMetaData;
-
-                    imgComm.recvPointToPointMetaData(tempImgMetaData, numProcessors);
-
-                    tempImgData.procId = tempImgMetaData.procId;
-                    tempImgData.patchNumber = tempImgMetaData.patchNumber;
-                    tempImgData.imagePatch = new float[tempImgMetaData.dims[0]*tempImgMetaData.dims[1] * 4];
-                    imgComm.recvPointToPointImgData(tempImgMetaData, tempImgData, numProcessors);
-
-                    allImgMetaData.push_back(tempImgMetaData);
-                    imgDataToCompose.insert( std::pair< std::pair<int,int>, imgData> (std::pair<int,int>(tempImgMetaData.procId, tempImgMetaData.patchNumber), tempImgData));
-                }
-            }else{
-                //
-                // Receive
-        
-                // counting how many to receive
-                int numToReceive = 0;
-                for (int i=0; i<totalRecvData/2; i++)
-                  for (int j=0; j<numInOtherHalf; j++)
-                        if ((informationToRecvArray[i*2] == procsInOtherList[j]) && (informationToRecvArray[i*2 + 1] > 0))
-                            numToReceive+=informationToRecvArray[i*2 + 1];
-
-                // does the receive
-                for (int i=0; i<numToReceive; i++){
-                    imgData tempImgData;
-                    imgMetaData tempImgMetaData;
-
-                    imgComm.recvPointToPointMetaData(tempImgMetaData, numProcessors);
-
-                    tempImgData.procId = tempImgMetaData.procId;
-                    tempImgData.patchNumber = tempImgMetaData.patchNumber;
-                    tempImgData.imagePatch = new float[tempImgMetaData.dims[0]*tempImgMetaData.dims[1] * 4];
-                    imgComm.recvPointToPointImgData(tempImgMetaData, tempImgData, numProcessors);
-
-                    allImgMetaData.push_back(tempImgMetaData);
-                    imgDataToCompose.insert( std::pair< std::pair<int,int>, imgData> (std::pair<int,int>(tempImgMetaData.procId, tempImgMetaData.patchNumber), tempImgData));
-                }
-
-
-                //
-                // Send
-                std::set<int> senderListSet;    senderListSet.clear();
-
-                for (int i=0; i<numInOtherHalf; i++)
-                    for(int j = 0; j < totalSendData; j+=2) 
-                        if (informationToSendArray[j+1] == procsInOtherList[i])
-                            senderListSet.insert(informationToSendArray[j+1]);
-                    
-                
-                std::multimap<int,imgMetaData>::iterator it;
-                for (it = imgMetaDataMultiMap.begin(); it != imgMetaDataMultiMap.end(); ++it ){
-
-                    const bool is_in = ((std::find(senderListSet.begin(), senderListSet.end(), it->second.destProcId)) != (senderListSet.end()));
-                    if (is_in){
-                        imgMetaData tempImgMetaData = it->second;
-                        imgData tempImgData;
-                        tempImgData.patchNumber = tempImgMetaData.patchNumber;
-                        tempImgData.procId = tempImgMetaData.procId;
-                        tempImgData.imagePatch = new float[it->second.dims[0] * it->second.dims[1] * 4];
-
-                        if(tempImgMetaData.inUse)
-                            extractor.getnDelImgData(tempImgMetaData.patchNumber, tempImgData);
-                        else{
-                            const bool is_inC = (std::find(compositedDataVec.begin(), compositedDataVec.end(), tempImgData)) != compositedDataVec.end();  
-                            if(is_inC) 
-                                tempImgData = *(std::find(compositedDataVec.begin(), compositedDataVec.end(), tempImgData));
-                            else 
-                                debug5 << PAR_Rank() << "Ray casting: SLIVR uuuuuuuh it didn't find the patch" << endl;
-                        }
-                        
-
-                        imgComm.sendPointToPoint(tempImgMetaData,tempImgData, numProcessors);
-
-                        if (tempImgData.imagePatch != NULL)
-                            delete []tempImgData.imagePatch;
-                        tempImgData.imagePatch = NULL;
-                    }
-                }
-
-                senderListSet.clear();
-            }
-  
-            if (procsInOtherList != NULL)
-                delete []procsInOtherList;
-            procsInOtherList = NULL;
-    
-            startingProc = newStartingProc;
-            endingProc = newEndingProc;
-        }
-
-        if (informationToRecvArray != NULL)
-            delete []informationToRecvArray;
-        informationToRecvArray = NULL;
-
-        if (informationToSendArray != NULL)
-            delete []informationToSendArray;
-        informationToSendArray = NULL;
-
-
-
-        //
-        // --- Timing -- 
-        
-        visitTimer->StopTimer(timingSendReceive, "Send Receive");
-        visitTimer->DumpTimings();
-        
-        int  timingLocalCompositing2 = visitTimer->StartTimer();
-        
-
-
-        //
-        // Each proc does local compositing and then sends
-        //
-        int imgBufferWidth = screen[0];
-        int imgBufferHeight = screen[1];
-        float *buffer = new float[((imgBufferWidth * imgBufferHeight * 4)) * numZDivisions]();  //size: imgBufferWidth * imgBufferHeight * 4, initialized to 0
-
-        std::sort(allImgMetaData.begin(), allImgMetaData.end(), &sortImgMetaDataByDepth);
-
-        std::multimap< std::pair<int,int>, imgData>::iterator itImgData;
-        int bufferDivisionIndex = 0;
-        int divIndex = 0;
-        int totalSize = (int) allImgMetaData.size();
-
-        debug5 << PAR_Rank() << "   ~   totalSize to compose: " << totalSize << "    numZDivisions: " << numZDivisions << endl;
-
-        for (int k=0; k<numZDivisions; k++){
-            debug5 << PAR_Rank() << "   ~   division boundaries: " << divisionsArray[k*2 + 0] << " to " << divisionsArray[k*2 + 1] << endl;
-        }
-
-        for (int patchIndex=0; patchIndex<totalSize; patchIndex++){
-            if (allImgMetaData[patchIndex].avg_z >= divisionsArray[divIndex*2] && allImgMetaData[patchIndex].avg_z <= divisionsArray[divIndex*2+1]){  //new index
-            }else{
-                for (int z=0; z<numZDivisions; z++){
-                    if (allImgMetaData[patchIndex].avg_z >= divisionsArray[z*2] && allImgMetaData[patchIndex].avg_z <= divisionsArray[z*2+1]) {
-                        divIndex = z;
-                        break;
-                    }  
-                }
-            }
-            bufferDivisionIndex = (imgBufferWidth * imgBufferHeight * 4) * divIndex; 
-
-            int startingX = allImgMetaData[patchIndex].screen_ll[0];
-            int startingY = allImgMetaData[patchIndex].screen_ll[1]; 
-
-            debug5 << PAR_Rank() << "   ~   divIndex: " << divIndex << "    composing patch #: " << allImgMetaData[patchIndex].procId << " ,  " << allImgMetaData[patchIndex].patchNumber << "   size: " << allImgMetaData[patchIndex].dims[0] << " x  " << allImgMetaData[patchIndex].dims[1] << "   avg_z: " << allImgMetaData[patchIndex].avg_z << endl;
-
-
-            itImgData = imgDataToCompose.find( std::pair<int,int>(allImgMetaData[patchIndex].procId, allImgMetaData[patchIndex].patchNumber) );
-            if (itImgData == imgDataToCompose.end()){
-                debug5 << "Error in local compositing - shouldn't happen!!!  " << allImgMetaData[patchIndex].patchNumber << endl;
-                continue;
-            }
-            
-            // Assemble the idivisions into 1 layer
-            for (int j=0; j<allImgMetaData[patchIndex].dims[1]; j++){
-                for (int k=0; k<allImgMetaData[patchIndex].dims[0]; k++){
-
-                    if ((startingX + k) > imgBufferWidth)
-                        continue;
-
-                    if ((startingY + j) > imgBufferHeight)
-                        continue;
-                    
-                    int subImgIndex = allImgMetaData[patchIndex].dims[0]*j*4 + k*4;                             // index in the subimage 
-                    int bufferIndex = (startingY*imgBufferWidth*4 + j*imgBufferWidth*4) + (startingX*4 + k*4);  // index in the big buffer
-
-                    // back to Front compositing: composited_i = composited_i-1 * (1.0 - alpha_i) + incoming; alpha = alpha_i-1 * (1- alpha_i)
-                    buffer[bufferDivisionIndex + bufferIndex+0] = (buffer[bufferDivisionIndex + bufferIndex+0] * (1.0 - itImgData->second.imagePatch[subImgIndex+3])) + itImgData->second.imagePatch[subImgIndex+0];
-                    buffer[bufferDivisionIndex + bufferIndex+1] = (buffer[bufferDivisionIndex + bufferIndex+1] * (1.0 - itImgData->second.imagePatch[subImgIndex+3])) + itImgData->second.imagePatch[subImgIndex+1];
-                    buffer[bufferDivisionIndex + bufferIndex+2] = (buffer[bufferDivisionIndex + bufferIndex+2] * (1.0 - itImgData->second.imagePatch[subImgIndex+3])) + itImgData->second.imagePatch[subImgIndex+2];
-                    buffer[bufferDivisionIndex + bufferIndex+3] = (buffer[bufferDivisionIndex + bufferIndex+3] * (1.0 - itImgData->second.imagePatch[subImgIndex+3])) + itImgData->second.imagePatch[subImgIndex+3];
-                }
-            }
-
-            if (itImgData->second.imagePatch != NULL)
-                delete []itImgData->second.imagePatch;
-            itImgData->second.imagePatch = NULL;
-        }
-
-        allImgMetaData.clear();
-        imgDataToCompose.clear();
-
-        debug5 << PAR_Rank() << "   ~ composing patch done: " << endl;
-
-
-        //
-        // --- Timing -- 
-        visitTimer->StopTimer(timingLocalCompositing2, "Local Comnpositing of received patches");
-        visitTimer->DumpTimings();
-        
-        int  timingRLE = visitTimer->StartTimer();
-        
-
-
-        //
-        // RLE Encoding
-        //
-
-        float *encoding = NULL;
-        int *sizeEncoding = NULL;
-
-        int totalEncodingSize = imgComm.rleEncodeAll(imgBufferWidth,imgBufferHeight, numZDivisions,buffer,  encoding,sizeEncoding);
-
-        if (buffer != NULL)
-            delete []buffer;
-        buffer = NULL;
-        
-        debug5 << PAR_Rank() << "   ~ encoding done!  "<< endl;
-
-        //
-        // --- Timing -- 
-        visitTimer->StopTimer(timingRLE, "RLE ");
-        visitTimer->DumpTimings();
-        
-        int  finalSend = visitTimer->StartTimer();
-        
-
-        //
-        // Proc 0 recieves and does the final assmebly
-        //
-        if (PAR_Rank() == 0)
-            imgComm.setBackground(background);
-
-        // Gather all the images
-        imgComm.gatherEncodingSizes(sizeEncoding, numZDivisions);                                                       // size of images
-        imgComm.gatherAndAssembleEncodedImages(screen[0], screen[1], totalEncodingSize*5, encoding, numZDivisions);     // data from each processor
-
-        debug5 << PAR_Rank() << "   ~ gatherEncodingSizes " << endl;
-
-
-        if (encoding != NULL)
-            delete []encoding;
-        encoding = NULL;
-
-        if (sizeEncoding != NULL)
-            delete []sizeEncoding;
-        sizeEncoding = NULL;
-
-        if (divisionsArray != NULL)
-            delete []divisionsArray;
-        divisionsArray = NULL;
-       
-
-        //
-        // --- Timing -- 
-        visitTimer->StopTimer(finalSend, "Final send ");
-        visitTimer->DumpTimings();
-        
-        visitTimer->StopTimer(timingComm, "Communicating");
-        visitTimer->DumpTimings();
-
-        int  timingCompositinig = visitTimer->StartTimer();
 
 
         //
         // Compositing
         //
 
-        // create images structures to hold these
-        avtImage_p whole_image, tempImage;
-    
-        tempImage = new avtImage(this);     // for processors other than proc 0 ; a dummy
+        // //
+        // // Serial Direct Send
+        //imgComm.serialDirectSend(1, localPatchesDepth, imgExtents, composedData, backgroundColor, screen[0], screen[1]);
+
+
+        //
+        // Parallel Direct Send
+        int tags[2] = {1081, 1681};
+        int tagGather = 2681;
+        int numMPIRanks = imgComm.GetNumProcs();
+        int *regions =  new int[numMPIRanks]();
+
+        imgComm.regionAllocation(numMPIRanks, regions);
+        debug5 << "regionAllocation done!" << std::endl;
+
+        // // 
+        // // Parallel Direct Send
+        //imgComm.parallelDirectSend(composedData, imgExtents, regions, numMPIRanks, tags, fullImageExtents);
+
+
+        debug5 << "Starting parallel compositing!" << std::endl;
+        int myRegionHeight = imgComm.parallelDirectSendManyPatches(extractor.imgDataHashMap, extractor.imageMetaPatchVector, numPatches, regions, numMPIRanks, tags, fullImageExtents);
+        imgComm.gatherImages(regions, numMPIRanks, imgComm.intermediateImage, imgComm.intermediateImageExtents, imgComm.intermediateImageExtents, tagGather, fullImageExtents, myRegionHeight);
+        debug5 << imgComm.GetMyId() << " gather done! " << std::endl;
+
+
+        //
+        // Some cleanup
+
+        if (regions != NULL)
+            delete []regions;
+        regions = NULL;
+
+        if (imgComm.intermediateImage != NULL)
+            delete []imgComm.intermediateImage;
+        imgComm.intermediateImage = NULL;
         
-        // Processor 0 does a special compositing
+
+        imgComm.barrier();
+        debug5 << "Global compositing done!" << std::endl;
+        
+
+        //
+        // Blend with VisIt background at root!
+        //
+
         if (PAR_Rank() == 0)
         {
+            //
+            // Create image for visit to display
+            avtImage_p whole_image;
             whole_image = new avtImage(this);
 
-            float *zbuffer = new float[screen[0] * screen[1]];
-            unsigned char *imgTest = NULL;
-
-            // creates input for the
             vtkImageData *img = avtImageRepresentation::NewImage(screen[0], screen[1]);
             whole_image->GetImage() = img;
 
+            unsigned char *imgFinal = NULL;
+            imgFinal = new unsigned char[screen[0] * screen[1] * 3]();
+            imgFinal = whole_image->GetImage().GetRGBBuffer();
 
-            imgTest = new unsigned char[screen[0] * screen[1] * 3];
-            imgTest = whole_image->GetImage().GetRGBBuffer();
 
-            zbuffer = new float[screen[0] * screen[1]]();
-            for (int s=0; s<screen[0] * screen[1]; s++)
-                zbuffer[s] = 20.0;
-            zbuffer = whole_image->GetImage().GetZBuffer();
+            //
+            // Blend in with bounding box and other visit plots
+            vtkMatrix4x4 *Inversepvm = vtkMatrix4x4::New();
+            vtkMatrix4x4::Invert(pvm,Inversepvm);
+
+            int compositedImageWidth  = imgComm.finalImageExtents[1] - imgComm.finalImageExtents[0];
+            int compositedImageHeight = imgComm.finalImageExtents[3] - imgComm.finalImageExtents[2];
+
+            //debug5 << "Place in image ~ screen " <<  screen[0] << ", " << screen[1] << "   compositedImageWidth: " << compositedImageWidth << "  compositedImageHeight: " << compositedImageHeight
+            //     << "  fullImageExtents: " << fullImageExtents[0] << ", " << fullImageExtents[1] << ", " << fullImageExtents[2] << ", " << fullImageExtents[3] << std::endl;
+            //writeArrayToPPM("/home/pascal/Desktop/debugImages/final_", imgComm.imgBuffer, compositedImageWidth, compositedImageHeight);
+
+            // Having to adjust the dataset bounds by a arbitrary (magic) number here. Needs to be sorted out at some point!
+            //dbounds[5] = dbounds[5]-0.025;
+
+            debug5 << "dbounds: "   << dbounds[0] << ", " << dbounds[1] << "    " << dbounds[2] << ", " << dbounds[3] << "  " << dbounds[4] << ", "<< dbounds[5]  << std::endl;
+
+            dbounds[0] = dbounds[0]+0.00;
+            dbounds[1] = dbounds[1]-0.00;
+
+            dbounds[2] = dbounds[2]+0.00;
+            dbounds[3] = dbounds[3]-0.00;
+
+            dbounds[4] = dbounds[4]+0.00;
+            dbounds[5] = dbounds[5]-0.00;
 
             
-            // Get the composited image
-            imgComm.getcompositedImage(screen[0], screen[1], imgTest); 
+
+
+            for (int _y=0; _y<screen[1]; _y++)
+                for (int _x=0; _x<screen[0]; _x++)
+                {
+                    int index = _y*screen[0] + _x;
+                    int indexComposited = (_y-imgComm.finalImageExtents[2])*compositedImageWidth + (_x-imgComm.finalImageExtents[0]);
+
+                    bool insideComposited = false;
+                    if (_x >= imgComm.finalImageExtents[0] && _x < imgComm.finalImageExtents[1])
+                         if (_y >= imgComm.finalImageExtents[2] && _y < imgComm.finalImageExtents[3])
+                            insideComposited = true;
+
+
+                    if ( insideComposited )
+                    {
+                        if (imgComm.imgBuffer[indexComposited*4 + 3] == 0)
+                        {
+                            // No data from rendering here! - Good
+                            imgFinal[index*3 + 0] = __opaqueImageData[index*3 + 0];
+                            imgFinal[index*3 + 1] = __opaqueImageData[index*3 + 1];
+                            imgFinal[index*3 + 2] = __opaqueImageData[index*3 + 2];
+                        }
+                        else
+                        {
+                            if (__opaqueImageZB[index] != 1)
+                            {
+                                // Might need to do some blending
+                                double worldCoordinates[3];
+                                float _tempZ = __opaqueImageZB[index] * 2 - 1;
+                                unProject(_x, _y, _tempZ, worldCoordinates, screen[0], screen[1], Inversepvm);
+
+                                //debug5 << "x,y,z: " << _x << ", " << _y << ", " << _tempZ << "   wordld: " << worldCoordinates[0] << ", " << worldCoordinates[1] << ", " << worldCoordinates[2];
+                                if ( checkInBounds(dbounds, worldCoordinates) )
+                                {
+                                    // Completely inside bounding box
+                                    float alpha = (1.0 - imgComm.imgBuffer[indexComposited*4+3]);
+                                    imgFinal[index*3 + 0] = std::min( ( ((float)__opaqueImageData[index*3 + 0]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 0] ),1.0) * 255;
+                                    imgFinal[index*3 + 1] = std::min( ( ((float)__opaqueImageData[index*3 + 1]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 1] ),1.0) * 255;
+                                    imgFinal[index*3 + 2] = std::min( ( ((float)__opaqueImageData[index*3 + 2]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 2] ),1.0) * 255;
+                                }
+                                else
+                                {
+                                    // Intersect inside with bounding box
+                                    double ray[3], tMin, tMax;
+                                    computeRay( view.camera, worldCoordinates, ray);
+                                    if ( intersect(dbounds, ray, view.camera, tMin, tMax) )
+                                    {
+                                        double tIntersect = std::min( (worldCoordinates[0]-view.camera[0])/ray[0],
+                                                            std::min( (worldCoordinates[1]-view.camera[1])/ray[1], 
+                                                                      (worldCoordinates[2]-view.camera[2])/ray[2] ) );
+
+                                        if (tMin <= tIntersect)
+                                        {
+                                            float alpha = (1.0 - imgComm.imgBuffer[indexComposited*4+3]);
+                                            imgFinal[index*3 + 0] = std::min( ( ((float)__opaqueImageData[index*3 + 0]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 0] ), 1.0) * 255;
+                                            imgFinal[index*3 + 1] = std::min( ( ((float)__opaqueImageData[index*3 + 1]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 1] ), 1.0) * 255;
+                                            imgFinal[index*3 + 2] = std::min( ( ((float)__opaqueImageData[index*3 + 2]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 2] ), 1.0) * 255;
+                                            // volume infront
+                                        }
+                                        else
+                                        {
+                                            // box infront
+                                            imgFinal[index*3 + 0] = __opaqueImageData[index*3 + 0];
+                                            imgFinal[index*3 + 1] = __opaqueImageData[index*3 + 1];
+                                            imgFinal[index*3 + 2] = __opaqueImageData[index*3 + 2];
+                                            //debug5 << "  intersection - box infront!" << endl;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        float alpha = (1.0 - imgComm.imgBuffer[indexComposited*4+3]);
+                                        imgFinal[index*3 + 0] = std::min( ( ((float)__opaqueImageData[index*3 + 0]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 0] ), 1.0) * 255;
+                                        imgFinal[index*3 + 1] = std::min( ( ((float)__opaqueImageData[index*3 + 1]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 1] ), 1.0) * 255;
+                                        imgFinal[index*3 + 2] = std::min( ( ((float)__opaqueImageData[index*3 + 2]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 2] ), 1.0) * 255;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                //__opaqueImageZB[index] == 1 - Only data, no background : Good
+                                float alpha = (1.0 - imgComm.imgBuffer[indexComposited*4+3]);
+                                imgFinal[index*3 + 0] = std::min( ( ((float)__opaqueImageData[index*3 + 0]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 0] ), 1.0) * 255;
+                                imgFinal[index*3 + 1] = std::min( ( ((float)__opaqueImageData[index*3 + 1]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 1] ), 1.0) * 255;
+                                imgFinal[index*3 + 2] = std::min( ( ((float)__opaqueImageData[index*3 + 2]/255.0) * alpha  +  imgComm.imgBuffer[indexComposited*4 + 2] ), 1.0) * 255;
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        // Outside bounding box: Use the background : Good
+                        imgFinal[index*3 + 0] = __opaqueImageData[index*3 + 0];
+                        imgFinal[index*3 + 1] = __opaqueImageData[index*3 + 1];
+                        imgFinal[index*3 + 2] = __opaqueImageData[index*3 + 2];
+                    }
+
+                }
+
             img->Delete();
-
-            debug5 << PAR_Rank() << "   ~ final: " << endl;
-
-            if (zbuffer != NULL)
-                delete []zbuffer;
+            SetOutput(whole_image);
         }
-        imgComm.syncAllProcs();
 
-        if (PAR_Rank() == 0)
-            tempImage->Copy(*whole_image);
-        SetOutput(tempImage);
+        debug5 << "RC SLIVR: Done!" << std::endl;
+
+
+        //
+        // Cleanup
+        if (composedData != NULL)
+            delete []composedData;
+
+        if (localPatchesDepth != NULL)
+            delete []localPatchesDepth;
+
+        pvm->Delete();
+
 
         visitTimer->StopTimer(timingCompositinig, "Compositing");
         visitTimer->DumpTimings();
@@ -1246,12 +1344,11 @@ avtRayTracer::Execute(void)
         visitTimer->StopTimer(timingIndex, "Ray Tracing");
         visitTimer->DumpTimings();
 
-        extractor.delImgPatches();
-
         return;
     }
 
-#ifdef PARALLEL
+
+  #ifdef PARALLEL
     //
     // Tell the sample point extractor that we would like to send cells
     // instead of sample points when appropriate.
@@ -1266,8 +1363,8 @@ avtRayTracer::Execute(void)
     sampleCommunicator.SetJittering(true);
 
     samples = sampleCommunicator.GetOutput();
-#endif
- 
+  #endif
+
     //
     // Perform compositing on the rays to get the final image.
     //
@@ -1275,6 +1372,8 @@ avtRayTracer::Execute(void)
     rc.SetBackgroundColor(background);
     rc.SetBackgroundMode(backgroundMode);
     rc.SetGradientBackgroundColors(gradBG1, gradBG2);
+
+
     if (*opaqueImage != NULL)
     {
         rc.InsertOpaqueImage(opaqueImage);
@@ -1283,9 +1382,14 @@ avtRayTracer::Execute(void)
         {
             float *opaqueImageZB  = opaqueImage->GetImage().GetZBuffer();
             const int numpixels = screen[0]*screen[1];
+
+            vtkImageData  *_opaqueImageVTK = opaqueImage->GetImage().GetImageVTK();
+            unsigned char *_opaqueImageData = (unsigned char *)_opaqueImageVTK->GetScalarPointer(0, 0, 0);
+
             for (int p = 0 ; p < numpixels ; p++)
             {
-                // We want the value to be between -1 and 1.
+                // The z value in clip space in the depth buifer is between 0 and 1 while it is normal for that
+                // value to be between -1 and 1 instead. This is corrected here.
                 double val = 2*opaqueImageZB[p]-1.0;
 
                 // Map to actual distance from camera.
@@ -1304,9 +1408,9 @@ avtRayTracer::Execute(void)
             const int numpixels = screen[0]*screen[1];
             for (int p = 0 ; p < numpixels ; p++)
             {
-                double val = oldNearPlane + 
+                double val = oldNearPlane +
                              (oldFarPlane-oldNearPlane)*opaqueImageZB[p];
-                opaqueImageZB[p] = (val-newNearPlane) 
+                opaqueImageZB[p] = (val-newNearPlane)
                                  / (newFarPlane-newNearPlane);
             }
         }
@@ -1314,7 +1418,7 @@ avtRayTracer::Execute(void)
     rc.SetInput(samples);
     avtImage_p image = rc.GetTypedOutput();
 
-#ifdef PARALLEL
+  #ifdef PARALLEL
     //
     // Communicate the screen to the root processor.
     //
@@ -1323,7 +1427,7 @@ avtRayTracer::Execute(void)
     CopyTo(dob, image);
     imageCommunicator.SetInput(dob);
     image = imageCommunicator.GetTypedOutput();
-#endif
+  #endif
 
     //
     // Update the pipeline several times, once for each tile.
@@ -1338,7 +1442,7 @@ avtRayTracer::Execute(void)
     if (PAR_Rank() == 0)
     {
         whole_image = new avtImage(this);
-        vtkImageData *img = avtImageRepresentation::NewImage(screen[0], 
+        vtkImageData *img = avtImageRepresentation::NewImage(screen[0],
                                                              screen[1]);
         whole_image->GetImage() = img;
         img->Delete();
@@ -1350,8 +1454,8 @@ avtRayTracer::Execute(void)
             int IEnd = (i == (numDivisions-1) ? screen[0] : (i+1)*IStep);
             int JStart = j*JStep;
             int JEnd = (j == (numDivisions-1) ? screen[1] : (j+1)*JStep);
-    
-#ifdef PARALLEL
+
+  #ifdef PARALLEL
             //
             // Create an image partition that will be passed around between
             // parallel modules in an effort to minimize communication.
@@ -1360,15 +1464,15 @@ avtRayTracer::Execute(void)
             imagePartition.RestrictToTile(IStart, IEnd, JStart, JEnd);
             sampleCommunicator.SetImagePartition(&imagePartition);
             imageCommunicator.SetImagePartition(&imagePartition);
-#endif
+  #endif
             extractor.RestrictToTile(IStart, IEnd, JStart, JEnd);
             image->Update(GetGeneralContract());
             if (PAR_Rank() == 0)
             {
-                unsigned char *whole_rgb = 
+                unsigned char *whole_rgb =
                                         whole_image->GetImage().GetRGBBuffer();
                 unsigned char *tile = image->GetImage().GetRGBBuffer();
-   
+
                 for (int jj = JStart ; jj < JEnd ; jj++)
                     for (int ii = IStart ; ii < IEnd ; ii++)
                     {
@@ -1719,3 +1823,87 @@ avtRayTracer::TightenClippingPlanes(const avtViewInfo &view,
 }
 
 
+// ****************************************************************************
+//  Method: avtRayTracer::computeRay
+//
+//  Purpose:
+//
+//  Programmer:
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtRayTracer::computeRay(double camera[3], double position[3], double ray[3])
+{
+    for (int i=0; i<3; i++)
+        ray[i] = position[i] - camera[i];
+
+    double mag = sqrt( ray[0]*ray[0] + ray[1]*ray[1] + ray[2]*ray[2] );
+
+    for (int i=0; i<3; i++)
+        ray[i] = ray[i]/mag;
+}
+
+
+// ****************************************************************************
+//  Method: avtRayTracer::intersect
+//
+//  Purpose:
+//
+//  Programmer:
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+avtRayTracer::intersect(double bounds[6], double ray[3], double cameraPos[3], double &tMin, double &tMax)
+{
+    double t1, t2, tXMin, tXMax, tYMin, tYMax, tZMin, tZMax;
+    double invRay[3];
+
+    for (int i=0; i<3; i++)
+        invRay[i] = 1.0 / ray[i];
+
+    // X
+    t1 = (bounds[0] - cameraPos[0]) * invRay[0];
+    t2 = (bounds[1] - cameraPos[0]) * invRay[0];
+
+    tXMin = std::min(t1, t2);
+    tXMax = std::max(t1, t2);
+
+
+    // Y
+    t1 = (bounds[2] - cameraPos[1]) * invRay[1];
+    t2 = (bounds[3] - cameraPos[1]) * invRay[1];
+
+    tYMin = std::min(t1, t2);
+    tYMax = std::max(t1, t2);
+
+
+    // Z
+    t1 = (bounds[4] - cameraPos[2]) * invRay[2];
+    t2 = (bounds[5] - cameraPos[2]) * invRay[2];
+
+    tZMin = std::min(t1, t2);
+    tZMax = std::max(t1, t2);
+
+
+    // Comparing
+    if ((tXMin > tYMax) || (tYMin > tXMax))
+        return false;
+
+    tMin = t1 = std::max(tXMin, tYMin);
+    tMax = t2 = std::min(tXMax, tYMax);
+
+
+    if ((t1 > tZMax) || (tZMin > t2))
+        return false;
+
+    tMin = std::max(t1, tZMin);
+    tMax = std::min(t2, tYMax);
+
+    return true;
+}

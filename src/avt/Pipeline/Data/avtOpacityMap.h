@@ -108,13 +108,17 @@ class PIPELINE_API avtOpacityMap
     void                         SetMax(double);
     double                       GetMin(void)     { return min; };
     double                       GetMax(void)     { return max; };
+    double                       GetMinVisibleScalar();
+    double                       GetMaxVisibleScalar();
+    
+    void                         computeVisibleRange();
 
     inline int                   Quantize(const double &);
     int                          GetNumberOfTableEntries(void)
                                                       { return tableEntries; };
 
     float                        QuantizeValF(const double &val);
-    int                         QueryTF(double scalarValue, double color[4]);
+    int                          QueryTF(double scalarValue, double color[4]);
 
   protected:
     RGBA                        *table;
@@ -123,6 +127,8 @@ class PIPELINE_API avtOpacityMap
 
     double                       max, min;
     double                       range, inverseRange, multiplier;
+    int                          minVisibleScalarIndex, maxVisibleScalarIndex;
+    double                       minVisibleScalar, maxVisibleScalar;    
 
     void                         SetIntermediateVars(void);
 
@@ -225,7 +231,8 @@ avtOpacityMap::QuantizeValF(const double &val){
 //
 // ****************************************************************************
 inline int
-avtOpacityMap::QueryTF(double scalarValue, double color[4]){
+avtOpacityMap::QueryTF(double scalarValue, double color[4])
+{
     if (scalarValue <= min){
         int index = 0;
 
