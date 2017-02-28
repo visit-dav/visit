@@ -166,6 +166,13 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     h5part_int64_t         numTimestepsInFile;
     h5part_int64_t         activeTimeStep;
 
+    // The name of the current variable which contains the particle id
+    std::string            idVariableName;
+    // The name of the default variable which contains the particle id
+    std::string            defaultIdVariableName;
+    // The name of the variable which contains the sorted particle id
+    std::string            defaultSortedVariableName;
+
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     virtual void           GetCycles(std::vector<int> &c);
     virtual void           GetTimes(std::vector<double> &t);
@@ -212,12 +219,6 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     // contain a valid list of particles indices to load for an active
     // query?
     bool                   dataSelectionActive;
-    // The name of the current variable which contains the particle id
-    std::string            idVariableName;
-    // The name of the default variable which contains the particle id
-    std::string            defaultIdVariableName;
-    // The name of the variable which contains the sorted particle id
-    std::string            defaultSortedVariableName;
     // String of a possible active stringQuery
     std::string            queryString;
     // List of ids (values if "idVariableName") for a named selection query
