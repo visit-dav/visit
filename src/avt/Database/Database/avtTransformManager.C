@@ -95,7 +95,7 @@
 using std::vector;
 using std::map;
 
-#if defined (_MSC_VER) && !defined(round)
+#if defined (_MSC_VER) && (_MSC_VER < 1800) && !defined(round)
 inline double round(double x) {return (x-floor(x)) > 0.5 ? ceil(x) : floor(x);}
 #endif
 
