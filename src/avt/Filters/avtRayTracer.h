@@ -48,9 +48,13 @@
 #include <avtDatasetToImageFilter.h>
 #include <avtViewInfo.h>
 #include <avtOpacityMap.h>
-#include <map>
+
 #include <avtImgCommunicator.h>
 
+#include <map>
+#include <limits>
+
+#include <vtkCamera.h>
 class   avtRayFunction;
 class   vtkMatrix4x4;
 
@@ -125,19 +129,17 @@ class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
     int                   GetSamplesPerRay(void)  { return samplesPerRay; };
     const int            *GetScreen(void)         { return screen; };
 
-    void                  SetKernelBasedSampling(bool v)
-                                    { kernelBasedSampling = v; };
+    void                  blendImages(float *src, int dimsSrc[2], int posSrc[2], float *dst, int dimsDst[2], int posDst[2]);
+    void                  SetKernelBasedSampling(bool v) { kernelBasedSampling = v; };
 
 
     void                  SetLighting(bool l) {lighting = l; };
     void                  SetLightPosition(double _lightPos[4]) { for (int i=0;i<4;i++) lightPosition[i]=_lightPos[i]; }
     void                  SetLightDirection(double _lightDir[3]) { for (int i=0;i<3;i++) lightDirection[i]=_lightDir[i]; }
     void                  SetMatProperties(double _matProp[4]) { for (int i=0;i<4;i++) materialProperties[i]=_matProp[i]; }
-    void                  SetModelViewMatrix(double _modelViewMatrix[16]) { for (int i=0;i<16;i++) modelViewMatrix[i]=_modelViewMatrix[i]; }
-    void                  SetViewDirection(double *vd){ for (int i=0; i<3; i++) view_direction[i] = vd[i]; }
-    void                  SetViewUp(double *vu){ for (int i=0; i<3; i++) view_up[i] = vu[i]; }
     void                  SetTransferFn(avtOpacityMap *_transferFn1D) {transferFn1D = _transferFn1D; };
 
+    void                  SetViewDirection(double *vd){ for (int i=0; i<3; i++) view_direction[i] = vd[i]; }
     void                  SetTrilinear(bool t) {trilinearInterpolation = t; };
     void                  SetRayCastingSLIVR(bool _rayCastingSLIVR){ rayCastingSLIVR = _rayCastingSLIVR; };
 
@@ -159,14 +161,14 @@ class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
     double                lightPosition[4];
     
     double                lightDirection[3];
-    double                view_direction[3];
-    double                view_up[3];
-
-    double                modelViewMatrix[16];
-
     double                materialProperties[4];
     avtOpacityMap         *transferFn1D;
+    double                view_direction[3];
+    double                panPercentage[2];
+
+
     bool                  rayCastingSLIVR;
+    bool                  convexHullOnRCSLIVR;
     avtImage_p            opaqueImage;
 
     virtual void          Execute(void);
@@ -176,6 +178,13 @@ class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
     void                  TightenClippingPlanes(const avtViewInfo &view,
                                                 vtkMatrix4x4 *,
                                                 double &, double &);
+    void project3Dto2D(double _3Dextents[6], int width, int height, vtkMatrix4x4 *_mvp, int _2DExtents[4], double depthExtents[2]);
+    double project(double _worldCoordinates[3], int pos2D[2], int _width, int _height, vtkMatrix4x4 *_mvp);
+    void unProject(int _x, int _y, float _z, double _worldCoordinates[3], int _width, int _height, vtkMatrix4x4 *invModelViewProj);
+    bool checkInBounds(double volBounds[6], double coord[3]);
+
+    void computeRay(double camera[3], double position[3], double ray[3]);
+    bool intersect(double bounds[6], double ray[3], double cameraPos[3], double &tMin, double &tMax);
 };
 
 
