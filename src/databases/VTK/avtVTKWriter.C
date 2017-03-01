@@ -377,7 +377,7 @@ avtVTKWriter::WriteRootFile()
         }
     }
 #ifdef PARALLEL
-    if (nblocks > 1 && doXML)
+    if (nblocks > 1)
     {
         int tags[3];
         writeContext.GetUniqueMessageTags(tags, 3);
