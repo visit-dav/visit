@@ -336,7 +336,7 @@ avtH5PartWriter::CloseFile(void)
     // The output is serial so if the last rank ...
     if( writeContext.Rank() == writeContext.Size()-1 )
     {
-#ifdef HAVE_LIB_FASTBIT
+#ifdef HAVE_LIBFASTBIT
         // Add in the FastBit indexing
         if( addFastBitIndexing )
         {
@@ -452,7 +452,7 @@ avtH5PartWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
 // ****************************************************************************
 //  Method: avtH5PartWriter::WritePolyData
 //
-//  Purpose: 
+//  Purpose:
 //    Saves a polydata dataset to H5Part format.
 //
 // Arguments:
@@ -461,14 +461,12 @@ avtH5PartWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
 //
 //  Programmer: Allen Sanderson
 //  Creation:   31 Jan 2017
-//   
+//
 // ****************************************************************************
 
 void
 avtH5PartWriter::WritePolyData(vtkPolyData *pd, int chunk)
 {
-    char *varName;
-  
     if(pd->GetPolys()->GetNumberOfCells() > 0)
     {
         H5PartCloseFile(file);
@@ -487,11 +485,11 @@ avtH5PartWriter::WritePolyData(vtkPolyData *pd, int chunk)
 
     int nPoints = pd->GetVerts()->GetNumberOfCells();
     int nlines  = pd->GetLines()->GetNumberOfCells();
-        
+
     H5PartSetChunkSize( file, nPoints );
     H5PartDefineStepName( file, "Step#0", 0 );
 
-    vtkPoints *vtk_pts = pd->GetPoints();    
+    vtkPoints *vtk_pts = pd->GetPoints();
 
     WritePoints(vtk_pts);
     WriteDataArrays(pd);
