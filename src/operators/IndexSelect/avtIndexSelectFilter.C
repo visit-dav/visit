@@ -451,7 +451,6 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
     vtkVisItExtractRectilinearGrid *rectilinearFilter = 
                                      vtkVisItExtractRectilinearGrid::New();
     vtkMaskPoints                  *pointsFilter      = vtkMaskPoints::New();
-    bool amrMesh = amrMesh;
     pointsFilter->GenerateVerticesOn();
     pointsFilter->RandomModeOff();
     pointsFilter->SingleVertexPerCellOn();
@@ -467,7 +466,7 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
     int topoDim = GetInput()->GetInfo().GetAttributes().
                   GetTopologicalDimension();
 
-    amrMesh = (GetInput()->GetInfo().GetAttributes().GetMeshType() == 
+    bool amrMesh = (GetInput()->GetInfo().GetAttributes().GetMeshType() == 
                      AVT_AMR_MESH);   
 
     vtkIntArray *bi_arr = vtkIntArray::SafeDownCast(
