@@ -953,6 +953,9 @@ ReadKey(const char *key, char **keyval)
  *   Kathleen Biagas, Thu Nov  1 11:03:09 PDT 2012
  *   Set PYTHONHOME so cli still works if Python installed on system.
  *
+ *   Kathleen Biagas, Fri Jan 6 18:30:12 MST 2017
+ *   Allow user to specify their own HOME via VISITUSERHOME env var.
+ * 
  *****************************************************************************/
 
 std::string 
@@ -1039,36 +1042,83 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
      * Determine visit user path (Path to My Documents).
      */
     {
-        char visituserpath[MAX_PATH], expvisituserpath[MAX_PATH];
-        bool haveVISITUSERHOME=0;
-        TCHAR szPath[MAX_PATH];
-        struct _stat fs;
-        if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
-                                 SHGFP_TYPE_CURRENT, szPath))) 
+        // Test for user-specified VISITUSERHOME
+        string personalUserHome = WinGetEnv("VISITUSERHOME");
+        if (!personalUserHome.empty())
         {
-            SNPRINTF(visituserpath, 512, "%s\\VisIt", szPath);
-            haveVISITUSERHOME = true;
-        }
-
-        if (haveVISITUSERHOME)
-        {
-            ExpandEnvironmentStrings(visituserpath,expvisituserpath,512);
-            if (_stat(expvisituserpath, &fs) == -1)
+            /* User specified path, check if writeable */
+            struct _stat fs;
+            if (_stat(personalUserHome.c_str(), &fs) == -1)
             {
-                _mkdir(expvisituserpath);
+                char tmp[1024];
+                SNPRINTF(tmp, 1024, "VISITUSERHOME is set in your environment"
+                            " but the specified path does not exist.\n"
+                            "(%s)\n"
+                            "Please specify a valid path for VISITUSERHOME"
+                            " before running VisIt again.\n",
+                            personalUserHome.c_str());
+#ifdef VISIT_WINDOWS_APPLICATION
+                MessageBox(NULL, tmp, "", MB_OK);
+#else
+                fprintf(stderr, tmp);
+#endif
+                exit(0);
+            }
+            if (! (fs.st_mode & _S_IFDIR))
+            {
+                char tmp[1024];
+                SNPRINTF(tmp,1024, "VISITUSERHOME is set in your environment"
+                            " but the specified value is not a folder:\n"
+                            "(%s)\n"
+                            "Please specify a valid folder path for "
+                            "VISITUSERHOME before running VisIt again.\n",
+                            personalUserHome.c_str());
+#ifdef VISIT_WINDOWS_APPLICATION
+                MessageBox(NULL, tmp, "", MB_OK);
+#else
+                fprintf(stderr, tmp);
+#endif
+                exit(0);
+            }
+            sprintf(tmpdir, "%s\\My images", personalUserHome.c_str());
+            if (_stat(tmpdir, &fs) == -1)
+            {
+                _mkdir(tmpdir);
             }
         }
         else
         {
-            strcpy(expvisituserpath, visitpath);
+            char visituserpath[MAX_PATH], expvisituserpath[MAX_PATH];
+            bool haveVISITUSERHOME=0;
+            TCHAR szPath[MAX_PATH];
+            struct _stat fs;
+            if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
+                                     SHGFP_TYPE_CURRENT, szPath))) 
+            {
+                SNPRINTF(visituserpath, 512, "%s\\VisIt", szPath);
+                haveVISITUSERHOME = true;
+            }
+
+            if (haveVISITUSERHOME)
+            {
+                ExpandEnvironmentStrings(visituserpath,expvisituserpath,512);
+                if (_stat(expvisituserpath, &fs) == -1)
+                {
+                    _mkdir(expvisituserpath);
+                }
+            }
+            else
+            {
+                strcpy(expvisituserpath, visitpath);
+            }
+            sprintf(tmpdir, "%s\\My images", expvisituserpath);
+            if (_stat(tmpdir, &fs) == -1)
+            {
+                _mkdir(tmpdir);
+            }
+            sprintf(tmp, "VISITUSERHOME=%s", expvisituserpath);
+            env.push_back(tmp);
         }
-        sprintf(tmpdir, "%s\\My images", expvisituserpath);
-        if (_stat(tmpdir, &fs) == -1)
-        {
-            _mkdir(tmpdir);
-        }
-        sprintf(tmp, "VISITUSERHOME=%s", expvisituserpath);
-        env.push_back(tmp);
     }
 
     /* 
