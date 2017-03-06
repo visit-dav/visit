@@ -142,10 +142,10 @@ FUNCTION(BUILD_DATA_TARGET_IMPL target_name do_parallel)
 
     # cmake gymnastics to implement optional argument sections:
     FOREACH(ARG ${ARGN})
-        IF("${ARG}" STREQUAL "INCLUDE_DIRS" OR
-           "${ARG}" STREQUAL "LIB_DIRS" OR
-           "${ARG}" STREQUAL "LIBS" OR
-           "${ARG}" STREQUAL "DEFS")
+        IF(${ARG} STREQUAL "INCLUDE_DIRS" OR
+           ${ARG} STREQUAL "LIB_DIRS" OR
+           ${ARG} STREQUAL "LIBS" OR
+           ${ARG} STREQUAL "DEFS")
             #switch var name to extend
             SET(ARG_VAR target_${ARG})
         ELSE()
