@@ -55,6 +55,7 @@ while read fline; do
         */src/resources/hosts/*/customlauncher|\
         */src/bin/*.py|\
         */src/svn_bin/*|\
+        */src/bin/visit.c|\
         */windowsbuild/*)
             # Skip these files and directories
             continue
