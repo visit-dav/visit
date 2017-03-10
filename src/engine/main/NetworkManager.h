@@ -459,6 +459,12 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Burlen Loring, Mon Sep  7 05:48:16 PDT 2015
 //    Use long long for cell counts/number of cells everywhere
 //
+//    Eric Brugger, Fri Mar 10 13:08:59 PST 2017
+//    I created a single implementation for deciding whether to go into
+//    scalable rendering mode or not to eliminate a bug where VisIt would
+//    go into scalable rendering mode and immediately go back out and
+//    a blank image would get displayed.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API NetworkManager : public EngineBase
@@ -576,6 +582,11 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     static void   RegisterProgressCallback(ProgressCallback, void *);
 
     static void   SetStereoEnabled();
+
+    static void   CalculateCellCountTotal(std::vector<long long> &,
+                                          const std::vector<float> &,
+                                          std::vector<long long> &,
+                                          long long &);
 
  protected:
     bool               ValidNetworkId(int id) const;

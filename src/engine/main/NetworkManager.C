@@ -5988,6 +5988,12 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 //    Burlen Loring, Mon Oct 26 10:43:34 PDT 2015
 //    make sure ffscale gets applied to all plots in 2d mode.
 //
+//    Eric Brugger, Fri Mar 10 13:17:11 PST 2017
+//    I created a single implementation for deciding whether to go into 
+//    scalable rendering mode or not to eliminate a bug where VisIt would
+//    go into scalable rendering mode and immediately go back out and
+//    a blank image would get displayed.
+//
 // ****************************************************************************
 
 void
@@ -6147,16 +6153,12 @@ NetworkManager::SetUpWindowContents(const intVector &plotIds,
         if (renderState.cellCounts[i] != 0)
             renderState.haveCells[rank] = 1;
     }
+
 #ifdef PARALLEL
     // share the result
     MPI_Allgather(MPI_IN_PLACE, 0, MPI_INT,
         &renderState.haveCells[0], 1, MPI_INT,
         VISIT_MPI_COMM);
-
-    // tally up local cell count for each plot into a global
-    // per-plot count
-    MPI_Allreduce(MPI_IN_PLACE, &renderState.cellCounts[0],
-        nPlotIds, MPI_LONG_LONG, MPI_SUM, VISIT_MPI_COMM);
 #endif
 
     // check for cases when data is gathered to rank 0. when
@@ -6166,8 +6168,53 @@ NetworkManager::SetUpWindowContents(const intVector &plotIds,
         if (renderState.haveCells[i])
             renderState.onlyRootHasCells = false;
 
-    renderState.cellCountTotal = 0;
+    // Determine the cell counts.
+    vector<long long> globalCellCountsTmp(nPlotIds, 0);
+    CalculateCellCountTotal(renderState.cellCounts, cellCountMultiplier,
+        globalCellCountsTmp, renderState.cellCountTotal);
     for (size_t i = 0; i < nPlotIds; ++i)
+        globalCellCounts[plotIds[i]] = globalCellCountsTmp[i];
+}
+
+
+// ****************************************************************************
+//  Method: CalculateCellCountTotal
+//
+//  Purpose: Calculate the total cell count over all plots and processors.
+//
+//  Arguments:
+//    cellCounts          Contains the cell count for the current rank for
+//                        each plot on input and the cell count over all the
+//                        ranks for each plot on output.
+//    cellCountMultiplier Contains the cell count multiplier for each plot.
+//    globalCellCounts    On output it contains the cell counts for each
+//                        plot, factoring in the cellCountMultiplier.
+//    cellCountTotal      On output it contains the total cell count
+//                        over all plots.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 10, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+NetworkManager::CalculateCellCountTotal(vector<long long> &cellCounts,
+    const vector<float> &cellCountMultipliers,
+    vector<long long> &globalCellCounts, long long &cellCountTotal)
+{
+    size_t nPlots = cellCounts.size();
+
+#ifdef PARALLEL
+    // Tally up the local cell counts for each plot into a global
+    // per-plot count.
+    MPI_Allreduce(MPI_IN_PLACE, &cellCounts[0], nPlots, MPI_LONG_LONG,
+        MPI_SUM, VISIT_MPI_COMM);
+#endif
+
+    cellCountTotal = 0;
+    for (size_t i = 0; i < nPlots; ++i)
     {
         // TODO -- don't use INT_MAX
         // notes: 1) INT_MAX appears in engine-viewer communication logic
@@ -6176,14 +6223,13 @@ NetworkManager::SetUpWindowContents(const intVector &plotIds,
         // 3) the default cellCountMultiplier for image based plots
         // (ray cast volume rendering) is INT_MAX. for other plots it is
         // 1.0f.
-        globalCellCounts[plotIds[i]] =
-            (cellCountMultiplier[i] > static_cast<float>(INT_MAX/2)) ? INT_MAX :
-                renderState.cellCounts[i]*cellCountMultiplier[i];
+        globalCellCounts[i] =
+            (cellCountMultipliers[i] > static_cast<float>(INT_MAX/2)) ?
+                INT_MAX : cellCounts[i]*cellCountMultipliers[i];
 
-        renderState.cellCountTotal =
-                ((globalCellCounts[plotIds[i]] == INT_MAX) ||
-                (renderState.cellCountTotal == INT_MAX)) ? INT_MAX :
-                    renderState.cellCountTotal + globalCellCounts[plotIds[i]];
+        cellCountTotal = ((globalCellCounts[i] == INT_MAX) ||
+             (cellCountTotal == INT_MAX)) ?
+                INT_MAX : cellCountTotal + globalCellCounts[i];
     }
 }
 
