@@ -729,8 +729,8 @@ ElementShapeNameToMFEMShape(const std::string &shape_name)
         res =  mfem::Geometry::TETRAHEDRON;
     else if(shape_name == "hex")
         res =  mfem::Geometry::CUBE;
-
-    BP_PLUGIN_INFO("Warning: Unsupported Element Shape: " << shape_name);
+    else
+        BP_PLUGIN_WARNING("Unsupported Element Shape: " << shape_name);
 
     return res;
 }

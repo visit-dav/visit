@@ -50,6 +50,7 @@
 
 #include "DebugStream.h"
 #include "StringHelpers.h"
+#include "TimingsManager.h"
 
 #include "DBOptionsAttributes.h"
 #include "Expression.h"
@@ -291,21 +292,42 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
         BP_PLUGIN_INFO(abs_meshname << " has a boundary topology");
         // mfem case, we need to fetch the boundary topo 
         bndry_topo_name = topo_data_node["boundary_topology"].as_string();
-        
+       
         BP_PLUGIN_INFO("boundary_topology is named: " << bndry_topo_name);
-        if(!bp_index_mesh_node["topologies"].has_child(bndry_topo_name))
+        if(bp_index_mesh_node["topologies"].has_child(bndry_topo_name))
         {
-            BP_PLUGIN_ERROR("boundary_topology '" << bndry_topo_name <<  "' not found");
-        }
-        string bnd_topo_path = bp_index_mesh_node["topologies"][bndry_topo_name]["path"].as_string();
+            const Node &bp_index_boundary_topo_node =bp_index_mesh_node["topologies"][bndry_topo_name];
+        
+            string bnd_topo_path =bp_index_boundary_topo_node["path"].as_string();
 
-        // TODO sanity check:
-        // make sure the boundary topo is defined on the same coordset as the mesh
+            string bnd_topo_coordset_name = bp_index_boundary_topo_node["coordset"].as_string();
+            
+
+            // sanity check:
+            // make sure the boundary topo is defined on the same coordset as the mesh
+            if(bnd_topo_coordset_name != coordset_name)
+            {
+                BP_PLUGIN_WARNING("warning: boundary topology " 
+                                   << "'" << bndry_topo_name << "'"
+                                   << "coordset (" << bnd_topo_coordset_name << ")"
+                                   << " does not match main topology coordset (" << coordset_name << ")");
+
+            }
+
     
-        BP_PLUGIN_INFO("boundary topology path " << bnd_topo_path);
-        m_tree_cache->FetchBlueprintTree(domain,
-                                         bnd_topo_path,
-                                         out["boundary"]);
+            BP_PLUGIN_INFO("boundary topology path " << bnd_topo_path);
+            m_tree_cache->FetchBlueprintTree(domain,
+                                             bnd_topo_path,
+                                             out["boundary"]);
+        }
+        else
+        {
+            
+            BP_PLUGIN_WARNING("boundary_topology '" 
+                               << bndry_topo_name
+                               <<  "' not found in blueprint index");
+        }
+
     }
 
     bool has_grid_func  = topo_data_node.has_child("grid_function");
@@ -670,7 +692,9 @@ void
 avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     BP_PLUGIN_INFO("Begin avtBlueprintFileFormat::PopulateDatabaseMetaData");
-
+    
+    int t_pop_md = visitTimer->StartTimer();
+    
     try
     {
         //
@@ -744,11 +768,12 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     catch(conduit::Error &e)
     {
         BP_PLUGIN_INFO("Conduit Exception in Blueprint Plugin "
-                       << "Populate Databas MetaData: " << endl
+                       << "Populate Database MetaData: " << endl
                        << e.message());
     }
     
     
+    visitTimer->StopTimer(t_pop_md,"PopulateDatabaseMetaData");
     BP_PLUGIN_INFO("End avtBlueprintFileFormat::PopulateDatabaseMetaData");
 }
 
