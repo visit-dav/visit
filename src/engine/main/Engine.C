@@ -2992,39 +2992,51 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
             currentCellCount = (int) 
                    (ui_dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
 
-        // Determine the cell counts.
-        vector<long long> cellCounts;
-        cellCounts.push_back(currentCellCount);
-        vector<float> cellCountMultipliers;
-        cellCountMultipliers.push_back(cellCountMultiplier);
-        vector<long long> globalCellCounts(1);
-        long long cellCountTotal;
-        netmgr->CalculateCellCountTotal(cellCounts, cellCountMultipliers,
-            globalCellCounts, cellCountTotal);
-        int reducedCurrentCellCount = (int) cellCountTotal;
-
+        // test if we've exceeded the scalable threshold already with proc 0's
+        // output
         if (currentTotalGlobalCellCount == INT_MAX ||
             currentCellCount == INT_MAX ||
-            reducedCurrentCellCount == INT_MAX ||
-            reducedCurrentCellCount == INT_MAX-1 || // 'ordinary' overflow
-            currentTotalGlobalCellCount + reducedCurrentCellCount > scalableThreshold)
+            (currentTotalGlobalCellCount + currentCellCount 
+                  > scalableThreshold))
         {
-            if (!thresholdExceeded)
-            {
-                debug5 << "Exceeded scalable threshold of "
-                       << scalableThreshold << endl;
-                if (reducedCurrentCellCount == INT_MAX-1) 
-                    debug5 << "This was due to 'oridinary' overflow in summing cell counts" << endl;
-            }
-            thresholdExceeded = true;
-        }
-        else
-        {
-            currentCellCount = reducedCurrentCellCount;
+            debug5 << "exceeded scalable threshold of " << scalableThreshold
+                   << endl;
+            thresholdExceeded = true; 
         }
 
         if (writer->MustMergeParallelStreams())
         {
+            // Determine the cell counts.
+            vector<long long> cellCounts;
+            cellCounts.push_back(currentCellCount);
+            vector<float> cellCountMultipliers;
+            cellCountMultipliers.push_back(cellCountMultiplier);
+            vector<long long> globalCellCounts(1);
+            long long cellCountTotal;
+            netmgr->CalculateCellCountTotal(cellCounts, cellCountMultipliers,
+                globalCellCounts, cellCountTotal);
+            int reducedCurrentCellCount = (int) cellCountTotal;
+
+            if (currentTotalGlobalCellCount == INT_MAX ||
+                currentCellCount == INT_MAX ||
+                reducedCurrentCellCount == INT_MAX ||
+                reducedCurrentCellCount == INT_MAX-1 || // 'ordinary' overflow
+                currentTotalGlobalCellCount + reducedCurrentCellCount > scalableThreshold)
+            {
+                if (!thresholdExceeded)
+                {
+                    debug5 << "Exceeded scalable threshold of "
+                           << scalableThreshold << endl;
+                    if (reducedCurrentCellCount == INT_MAX-1) 
+                        debug5 << "This was due to 'oridinary' overflow in summing cell counts" << endl;
+                }
+                thresholdExceeded = true;
+            }
+            else
+            {
+                currentCellCount = reducedCurrentCellCount;
+            }
+
             // We only need to do the data exchange if we are below the
             // threshold or we're being asked to send data regardless
             // (the metadata case where we send basically the data
@@ -3098,47 +3110,47 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
     }
     else // non-UI processes
     {
-        avtDataObject_p dob = writer->GetInput();
-
-        if (cellCountMultiplier > INT_MAX/2.)
-            currentCellCount = INT_MAX;
-        else
-            currentCellCount = (int) 
-                      (dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
-
-        // Determine the cell counts.
-        vector<long long> cellCounts;
-        cellCounts.push_back(currentCellCount);
-        vector<float> cellCountMultipliers;
-        cellCountMultipliers.push_back(cellCountMultiplier);
-        vector<long long> globalCellCounts(1);
-        long long cellCountTotal;
-        netmgr->CalculateCellCountTotal(cellCounts, cellCountMultipliers,
-            globalCellCounts, cellCountTotal);
-        int reducedCurrentCellCount = (int) cellCountTotal;
-
-        if (currentTotalGlobalCellCount == INT_MAX ||
-            currentCellCount == INT_MAX ||
-            reducedCurrentCellCount == INT_MAX ||
-            reducedCurrentCellCount == INT_MAX-1 || // 'ordinary' overflow
-            currentTotalGlobalCellCount + reducedCurrentCellCount > scalableThreshold)
-        {
-            if (!thresholdExceeded)
-            {
-                debug5 << "Exceeded scalable threshold of "
-                       << scalableThreshold << endl;
-                if (reducedCurrentCellCount == INT_MAX-1) 
-                    debug5 << "This was due to 'oridinary' overflow in summing cell counts" << endl;
-            }
-            thresholdExceeded = true;
-        }
-        else
-        {
-            currentCellCount = reducedCurrentCellCount;
-        }
-
         if (writer->MustMergeParallelStreams())
         {
+            avtDataObject_p dob = writer->GetInput();
+
+            if (cellCountMultiplier > INT_MAX/2.)
+                currentCellCount = INT_MAX;
+            else
+                currentCellCount = (int) 
+                          (dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
+
+            // Determine the cell counts.
+            vector<long long> cellCounts;
+            cellCounts.push_back(currentCellCount);
+            vector<float> cellCountMultipliers;
+            cellCountMultipliers.push_back(cellCountMultiplier);
+            vector<long long> globalCellCounts(1);
+            long long cellCountTotal;
+            netmgr->CalculateCellCountTotal(cellCounts, cellCountMultipliers,
+                globalCellCounts, cellCountTotal);
+            int reducedCurrentCellCount = (int) cellCountTotal;
+
+            if (currentTotalGlobalCellCount == INT_MAX ||
+                currentCellCount == INT_MAX ||
+                reducedCurrentCellCount == INT_MAX ||
+                reducedCurrentCellCount == INT_MAX-1 || // 'ordinary' overflow
+                currentTotalGlobalCellCount + reducedCurrentCellCount > scalableThreshold)
+            {
+                if (!thresholdExceeded)
+                {
+                    debug5 << "Exceeded scalable threshold of "
+                           << scalableThreshold << endl;
+                    if (reducedCurrentCellCount == INT_MAX-1) 
+                        debug5 << "This was due to 'oridinary' overflow in summing cell counts" << endl;
+                }
+                thresholdExceeded = true;
+            }
+            else
+            {
+                currentCellCount = reducedCurrentCellCount;
+            }
+
             // We only need to do the data exchange if we are below the
             // threshold or we're being asked to send data regardless
             // (the metadata case where we send basically the data
@@ -3156,11 +3168,8 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
         }
         else
         {
-            if (DebugStream::Level5()) 
-            {
-                debug5 << "not sending data to proc 0 because the data object "
-                       << "does not require parallel streams." << endl;
-            }
+            debug5 << "not sending data to proc 0 because the data object "
+                   << "does not require parallel streams." << endl;
         }
     }
 
