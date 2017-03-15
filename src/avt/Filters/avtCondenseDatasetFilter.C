@@ -157,6 +157,11 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    Eric Brugger, Fri Jul 18 16:07:04 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Eric Brugger, Wed Mar 15 12:11:53 PDT 2017
+//    I removed the heuristic to skip relevant points removal for line
+//    data that has many more points than cells since I believe it no
+//    longer applies.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -271,19 +276,6 @@ avtCondenseDatasetFilter::ExecuteData(avtDataRepresentation *in_dr)
              == 0)
     {
         debug5 << "Not taking relevant points because we have a point mesh."
-               << endl;
-        shouldTakeRelevantPoints = false;
-    }
-    else if (!bypassHeuristic &&
-             GetInput()->GetInfo().GetAttributes().GetTopologicalDimension()==1&&
-             nPoints > (nCells*5))
-    {
-        debug5 << "Not taking relevant points because we have a mesh "
-                  "consisting of lines and the number of points is more "
-                  "than 5x the number of cells. This is common with "
-                  "integral curves and we need to skip because the relevant "
-                  "points filter tends to die right now with line data of "
-                  "this kind."
                << endl;
         shouldTakeRelevantPoints = false;
     }
