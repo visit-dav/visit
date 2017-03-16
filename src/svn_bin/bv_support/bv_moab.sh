@@ -147,7 +147,7 @@ function build_moab
         fi
 
         cf_prefix_arg="--prefix=$VISITDIR/moab${cf_par_suffix}/$MOAB_VERSION/$VISITARCH"
-        cf_common_args="--with-pic --disable-fortran --disable-imesh"
+        cf_common_args="--with-pic --disable-fortran --disable-imesh --disable-cgns"
 
         if [[ "DO_STATIC_BUILD" == "yes" ]]; then
             cf_static_args="--enable-static --disable-shared"
