@@ -2861,7 +2861,6 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                         char cwd[512];
                         DBGetDir(dbfile, cwd);
                         meshname = FileFunctions::Absname(cwd,mv->mmesh_name,"/");
-                        meshname.erase(meshname.begin());
                         if (!DBInqVarExists(dbfile, meshname.c_str()))
                         {
                             debug5 << "Although 'mmesh_name' member indicates variable \"" << multivar_names[i] 
@@ -2878,6 +2877,8 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
                             debug5 << "Variable \"" << multivar_names[i] 
                                    << "\" indicates it is defined on mesh \""
                                    << meshname.c_str() << "\"" << endl;
+                            // VisIt won't match this var to its mesh if leading slash is presnet
+                            meshname.erase(meshname.begin());
                         }
                     }
                     else
@@ -3962,7 +3963,6 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                     char cwd[512];
                     DBGetDir(dbfile, cwd);
                     meshname = FileFunctions::Absname(cwd,mm->mmesh_name,"/");
-                    meshname.erase(meshname.begin());
                     if (!DBInqVarExists(dbfile, meshname.c_str()))
                     {
                         debug5 << "Although 'mmesh_name' member indicates material \"" << multimat_names[i]
@@ -3979,6 +3979,8 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                         debug5 << "Material \"" << multimat_names[i]
                                << "\" indicates it is defined on mesh \""
                                << meshname.c_str() << "\"" << endl;
+                        // VisIt won't match this var to its mesh if leading slash is presnet
+                        meshname.erase(meshname.begin());
                     }
                 }
                 else if (!is_all_empty)
