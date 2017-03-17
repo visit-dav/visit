@@ -1725,7 +1725,7 @@ void
 avtDataRequest::SetDiscMode(int mode)
 {
     discMode = mode;
-#ifndef HAVE_BOOST
+#ifndef HAVE_LIBBOOST
     if (discMode == 1) // Adaptive
     {
         debug1 << "Adaptive not available. "

@@ -51,6 +51,9 @@
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
 #   Removed VISIT_MSVC_VERSION from windows handling.
 #
+#   Kathleen Biagas, Fri Mar 17 10:29:19 PDT 2017
+#   Set HAVE_LIBZ when ZLIB_FOUND.
+#
 #****************************************************************************/
 
 # Use the ZLIB_DIR hint from the config-site .cmake file 
@@ -89,4 +92,8 @@ ELSE(WIN32)
         SET(VTKZLIB_LIB vtkzlib)
     ENDIF(VISIT_ZLIB_DIR)
 ENDIF (WIN32)
+
+if(ZLIB_FOUND)
+    set(HAVE_LIBZ true CACHE BOOL "Have lib z")
+endif()
 

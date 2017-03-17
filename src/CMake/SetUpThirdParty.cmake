@@ -59,6 +59,9 @@
 #   Added logic for headers-only installs (like boost).  Pass 'NO_LIBS'
 #   for 'libs' argument to specify a headers-only build. 
 #
+#   Kathleen Biagas, Fri Mar 17 09:15:37 PDT 2017
+#   Set HAVE_LIBXXX when LIBXXX_FOUND.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -109,6 +112,7 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
   SET(lib_dir_var "${pkg}_LIBRARY_DIR")
   SET(lib_var "${pkg}_LIB")
   SET(tp_found "${pkg}_FOUND")
+  SET(have_tp "HAVE_LIB${pkg}")
   SET(lib_skip_install "VISIT_${pkg}_SKIP_INSTALL")
 
   #
@@ -116,6 +120,7 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
   # configure.
   #
   UNSET("${tp_found}")
+  UNSET("${have_tp}")
   SET("${lib_var}" "")
 
   SET("${inc_dir_var}" "${base_dir_val}/${incdirextension}")
@@ -266,7 +271,8 @@ ELSE()
   ENDIF()
 
   # Cache final results
-  SET("${tp_found}"    1                 CACHE BOOL   "${pkg} library found" FORCE)
+  SET("${tp_found}" true CACHE BOOL "${pkg} library found" FORCE)
+  SET("${have_tp}"  true CACHE BOOL "Have ${pkg} library" FORCE)
   SET("${base_dir}"    ${${base_dir}}    CACHE PATH   "${pkg} base directory" FORCE)
   SET("${inc_dir_var}" ${${inc_dir_var}} CACHE PATH   "${pkg} include directory" FORCE)
 

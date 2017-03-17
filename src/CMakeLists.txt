@@ -411,6 +411,10 @@
 #    Kathleen Biagas, Mon Oct 31 15:23:31 PDT 2016
 #    Add ZLIB_INCLUDE_DIR to VISIT_COMMON_INCLUDES when HAVE_ZLIB_H is true.
 #
+#    Kathleen Biagas, Fri Mar 17 12:12:34 PDT 2017
+#    Move setting of HAVE_LIBxxx to SetUpThirdParty or FindXXX in the case
+#    where a special HAVE_XXX is neeeded.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
@@ -1073,19 +1077,10 @@ INCLUDE(${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
 # Configure Nektar++ support. 
 # Do it before the other libraries like boost because many can depend on it.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
-IF(NEKTAR++_FOUND)
-    SET(HAVE_NEKTAR_PP 1)
-ENDIF(NEKTAR++_FOUND)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItDamaris.cmake)
-IF(DAMARIS_FOUND)
-    SET(HAVE_DAMARIS 1)
-ENDIF(DAMARIS_FOUND)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItBoost.cmake)
-IF(BOOST_FOUND)
-  SET(HAVE_BOOST 1)
-ENDIF(BOOST_FOUND)
 
 IF( (VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItPython.cmake)
@@ -1120,9 +1115,6 @@ CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 # Configure Mesa support.
 IF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
-    IF(MESA_FOUND)
-        SET(HAVE_OSMESA 1)
-    ENDIF(MESA_FOUND)
 ENDIF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
 
 # Configure OpenGL support.
@@ -1243,9 +1235,6 @@ IF(NOT VISIT_QT5)
                               AND NOT VISIT_ENGINE_ONLY
                               AND NOT VISIT_SERVER_COMPONENTS_ONLY)
         INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
-        IF(PYSIDE_FOUND)
-            SET(HAVE_PYSIDE 1)
-        ENDIF(PYSIDE_FOUND)
     ENDIF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
                                  AND NOT VISIT_DBIO_ONLY
                                  AND NOT VISIT_ENGINE_ONLY
@@ -1269,9 +1258,6 @@ ENDIF(VISIT_USE_GLEW)
 IF(VISIT_TUVOK)
     SET(TUVOK_LIB tuvok ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} GLEW)
 ENDIF(VISIT_TUVOK)
-
-# Set up boost (interval) library
-SET(HAVE_BILIB 1)
 
 # Set up the SLIVR library if it was enabled.
 IF(VISIT_SLIVR)
@@ -1297,9 +1283,6 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTCMALLOC.cmake)
 
 # zlib
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
-IF(ZLIB_FOUND)
-    SET(HAVE_LIBZ 1)
-ENDIF(ZLIB_FOUND)
 
 # szip and jpeg
 IF(WIN32)
@@ -1317,73 +1300,36 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     # Configure HDF5 support. 
     # Do it before the other libraries since many can depend on it.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF5.cmake)
-    IF(HDF5_FOUND)
-        SET(HAVE_LIBHDF5 1)
-    ENDIF(HDF5_FOUND)
-    IF(HDF5_MPI_FOUND)
-        SET(HAVE_LIBHDF5_MPI 1)
-    ENDIF(HDF5_MPI_FOUND)
 
     # Configure adios support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADIOS.cmake)
-    IF(ADIOS_FOUND)
-        SET(HAVE_LIBADIOS 1)
-    ENDIF(ADIOS_FOUND)
 
     # Configure advio support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADVIO.cmake)
-    IF(ADVIO_FOUND)
-        SET(HAVE_LIBADVIO 1)
-    ENDIF(ADVIO_FOUND)
 
     # Configure Boxlib support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
-    IF(BOXLIB_FOUND)
-        SET(HAVE_LIBBOXLIB 1)
-    ENDIF(BOXLIB_FOUND)
 
     # Configure ccmio support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCCMIO.cmake)
-    IF(CCMIO_FOUND)
-        SET(HAVE_LIBCCMIO 1)
-    ENDIF(CCMIO_FOUND)
 
     # Configure cfitsio support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCFITSIO.cmake)
-    IF(CFITSIO_FOUND)
-        SET(HAVE_LIBCFITSIO 1)
-    ENDIF(CFITSIO_FOUND)
 
     # Configure CGNS support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCGNS.cmake)
-    IF(CGNS_FOUND)
-        SET(HAVE_LIBCGNS 1)
-    ENDIF(CGNS_FOUND)
 
     # Configure Conduit support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
-    IF(CONDUIT_FOUND)
-        SET(HAVE_LIBCONDUIT 1)
-    ENDIF(CONDUIT_FOUND)
-
 
     # Configure eavl support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindEAVL.cmake)
-    IF(EAVL_FOUND)
-        SET(HAVE_LIBEAVL 1)
-    ENDIF(EAVL_FOUND)
 
     # Configure Fastbit support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastBit.cmake)
-    IF(FASTBIT_FOUND)
-        SET(HAVE_LIBFASTBIT 1)
-    ENDIF(FASTBIT_FOUND)
 
     # Configure gdal support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGDAL.cmake)
-    IF(GDAL_FOUND)
-        SET(HAVE_LIBGDAL 1)
-    ENDIF(GDAL_FOUND)
 
     # Configure HDF4 support.
     IF(VISIT_STATIC)
@@ -1392,92 +1338,47 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
       MESSAGE(STATUS "HDF4 disabled for static builds due to collision with NetCDF.")
     ELSE(VISIT_STATIC)
       INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF4.cmake)
-      IF(HDF4_FOUND)
-          SET(HAVE_LIBHDF4 1)
-      ENDIF(HDF4_FOUND)
     ENDIF(VISIT_STATIC)
 
     # Configure h5part support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindH5Part.cmake)
-    IF(H5PART_FOUND)
-        SET(HAVE_LIBH5PART 1)
-    ENDIF(H5PART_FOUND)
 
     # Configure MOAB support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMOAB.cmake)
-    IF(MOAB_FOUND)
-      SET(HAVE_LIBMOAB 1)
-    ENDIF(MOAB_FOUND)
-    IF(MOAB_MPI_FOUND)
-      SET(HAVE_LIBMOAB_MPI 1)
-    ENDIF(MOAB_MPI_FOUND)
 
     # Configure mfem support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMFEM.cmake)
-    IF(MFEM_FOUND)
-        SET(HAVE_LIBMFEM 1)
-    ENDIF(MFEM_FOUND)
 
     # Configure Mili support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMili.cmake)
-    IF(MILI_FOUND)
-        SET(HAVE_LIBMILI 1)
-    ENDIF(MILI_FOUND)
 
     # Configure netcdf support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNetcdf.cmake)
-    IF(NETCDF_FOUND)
-        SET(HAVE_LIBNETCDF 1)
-    ENDIF(NETCDF_FOUND)
 
     # Configure Silo support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
-    IF(SILO_FOUND)
-        SET(HAVE_LIBSILO 1)
-    ENDIF(SILO_FOUND)
 
     # Configure Xdmf support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
-    IF(XDMF_FOUND)
-        SET(HAVE_LIBXDMF 1)
-    ENDIF(XDMF_FOUND)
 
     # Configure MDSplus support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMDSplus.cmake)
-    IF(MDSPLUS_FOUND)
-        SET(HAVE_LIBMDSPLUS 1)
-    ENDIF(MDSPLUS_FOUND)
 
     # Configure Uintah support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindUintah.cmake)
-    IF(UINTAH_FOUND)
-        SET(HAVE_LIBUINTAH 1)
-    ENDIF(UINTAH_FOUND)
 
     # Configure Visus support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisus.cmake)
-    IF(VISUS_FOUND)
-        SET(HAVE_LIBVISUS 1)
-    ENDIF(VISUS_FOUND)
 
     # Configure VTKm support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVTKm.cmake)
-    IF(VTKM_FOUND)
-        SET(HAVE_LIBVTKM 1)
-    ENDIF(VTKM_FOUND)
 
     # Configure GFortran support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)
-    IF(GFORTRAN_FOUND)
-        SET(HAVE_LIBGFORTRAN 1)
-    ENDIF(GFORTRAN_FOUND)
 ENDIF()
 
 # Configure Manta support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindManta.cmake)
-IF(MANTA_FOUND)
-    SET(HAVE_LIBMANTA 1)
-ENDIF(MANTA_FOUND)
 
 
 IF (WIN32 AND VISIT_MAKE_NSIS_INSTALLER)
