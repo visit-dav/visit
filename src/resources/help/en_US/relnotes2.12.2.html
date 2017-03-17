@@ -40,7 +40,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.12.2</font></b></p>
 <ul>
-  <li></li>
+  <li>Setting HAVE_LIBXXX for thirdparty libraries have been moved out of the root CMakeLists.txt file and into the SetUpThirdParty macro, except for the few that use a label other than HAVE_LIBXXX (like Nektar++ which uses HAVE_NEKTAR_PP, where the HAVE_ flag is set in the Find module instead.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
