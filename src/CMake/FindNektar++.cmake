@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Fri Mar 17 10:27:23 PDT 2017
+#   Set HAVE_NETKAR_PP if NEKTAR++_FOUND.
 #
 #****************************************************************************/
 
@@ -85,3 +87,8 @@ SET_UP_THIRD_PARTY(NEKTAR++
     SolverUtils
     SpatialDomains
     StdRegions)
+
+IF(NEKTAR++_FOUND)
+    SET(HAVE_NEKTAR_PP true CACHE BOOL "Have Nektar++ lib")
+ENDIF(NEKTAR++_FOUND)
+
