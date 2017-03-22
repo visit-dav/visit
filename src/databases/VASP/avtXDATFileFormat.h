@@ -89,6 +89,7 @@ class avtXDATFileFormat : public avtMTSDFileFormat
     ifstream in;
     std::string filename;
     bool metadata_read;
+    bool full_header;
 
     bool selective_dynamics;
     bool cartesian;
@@ -110,6 +111,7 @@ class avtXDATFileFormat : public avtMTSDFileFormat
     std::vector<int> element_map;
 
     void OpenFileAtBeginning();
+    void ReadHeader( bool read_full_header = 0 );
     void ReadMetaData();
     void ReadTimestep(int);
 };
