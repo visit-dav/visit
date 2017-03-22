@@ -35,6 +35,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Host profiles were added for the Lawrence Livermore National Laboriatories' Ansel, Jadeita and Mica systems.</li>
   <li>Host profiles were removed for the Lawrence Livermore National Laboratories' Rzalastor, Rzcereal and Rzthriller systems, which were retired.</li>
   <li>The SubdivideQuads operator is now included by default. It is located in the Geometry category in the Operators menu. The operator subdivides quadrilateral surface elements and is typically used to eliminate rendering artifacts that occur in some situations.</li>
+  <li>The custom lancher for LLNL's borax, quartz, rzgenie, rztrona, agate and jade systems was modified to add the paths to the MPI libraries to the LD_LIBRARY_PATH so that VisIt would launch in parallel even if the user didn't have the LD_LIBRARY_PATH set properly.</li>
 </ul>
 
 <a name="Dev_changes"></a>

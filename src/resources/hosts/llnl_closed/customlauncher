@@ -42,6 +42,10 @@ class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
 #   I added code to map login node names on jade and agate to their IP
 #   addresses since they aren't in DNS.
 #
+#   Eric Brugger, Wed Mar 22 14:17:24 PDT 2017
+#   I added the MPI library paths to the LD_LIBRARY_PATH for jade and agate.
+#   I removed the logic that sets the LD_LIBRARY_PATH if running on cielo.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -65,10 +69,11 @@ class LLNLLauncher(MainLauncher):
             self.generalArgs.host = "130.106.204.1"
         elif self.generalArgs.host == "agate5.llnl.gov":
             self.generalArgs.host = "130.106.204.3"
-        if self.sectorname() == "ci-fe":
-            ld_library_paths = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
-            added_ld_library_paths = ["/opt/cray/mpt/5.6.0/gni/mpich2-gnu/47/lib", "/opt/gcc/mpc/0.8.1/lib", "/opt/gcc/mpfr/2.4.2/lib", "/opt/gcc/gmp/4.3.2/lib", "/opt/gcc/4.7.2/snos/lib64", "/opt/cray/atp/1.4.1/lib"]
-            SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_paths))
+
+        if self.sectorname() == "jade" or \
+           self.sectorname() == "agate":
+            mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
