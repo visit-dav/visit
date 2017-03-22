@@ -68,6 +68,9 @@
 #   Kevin Griffin, Wed July 22 18:00:10 PDT 2015
 #   Add SPH Resample Operator 
 #
+#   Eric Brugger, Wed Mar 22 10:34:24 PDT 2017
+#   I moved the SubdivideQuads operator from optional to required.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
@@ -131,6 +134,7 @@ SphereSlice
 SPHResample
 Stagger
 StatisticalTrends
+SubdivideQuads
 SurfaceNormal
 ThreeSlice
 Threshold
@@ -172,7 +176,6 @@ Context
 ConnCompReduce
 MetricThreshold
 RemoveCells
-SubdivideQuads
 SurfCompPrep
 )
 
