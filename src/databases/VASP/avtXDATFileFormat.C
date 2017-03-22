@@ -81,6 +81,7 @@ avtXDATFileFormat::avtXDATFileFormat(const char *fn)
     OpenFileAtBeginning();
 
     metadata_read = false;
+    full_header = false;
 
     natoms = 0;
 
@@ -113,8 +114,10 @@ avtXDATFileFormat::FreeUpResources(void)
     y.clear();
     z.clear();
     species.clear();
+    species_counts.clear();
     element_map.clear();
     metadata_read = false;
+    full_header = false;
 }
 
 
@@ -430,49 +433,47 @@ avtXDATFileFormat::GetVectorVar(int ts, const char *varname)
 //
 // ****************************************************************************
 void
-avtXDATFileFormat::ReadMetaData()
+avtXDATFileFormat::ReadHeader( bool read_full_header )
 {
-    if (metadata_read)
-        return;
-
-    metadata_read = true;
-
     char line[132];
 
-    // this line is the comment line.
-    // At the moment, species look like they are on a different 
-    // line, so I am not attempting to parse this line for an "="
-    // symbol which describes species.  If we want to add it back
-    // in, then pick up the code from the POSCAR reader.
-    in.getline(line, 132);
-
-    // Read the scale and lattice vectors
-    in >> scale;
-    in >> lat[0][0] >> lat[0][1] >> lat[0][2];
-    in >> lat[1][0] >> lat[1][1] >> lat[1][2];
-    in >> lat[2][0] >> lat[2][1] >> lat[2][2];
-
-    // error check
-    if (scale == 0)
+    if( read_full_header )
+    {
+      // this line is the comment line.
+      // At the moment, species look like they are on a different 
+      // line, so I am not attempting to parse this line for an "="
+      // symbol which describes species.  If we want to add it back
+      // in, then pick up the code from the POSCAR reader.
+      in.getline(line, 132);
+      
+      // Read the scale and lattice vectors
+      in >> scale;
+      in >> lat[0][0] >> lat[0][1] >> lat[0][2];
+      in >> lat[1][0] >> lat[1][1] >> lat[1][2];
+      in >> lat[2][0] >> lat[2][1] >> lat[2][2];
+      
+      // error check
+      if (scale == 0)
         EXCEPTION2(InvalidFilesException, filename.c_str(), "Scale was not "
                    "a nonzero real number; does not match XDAT format.");
 
-    for (int i=0; i<3; i++)
+      for (int i=0; i<3; i++)
         for (int j=0; j<3; j++)
-            unitCell[i][j] = scale*lat[i][j];
+          unitCell[i][j] = scale*lat[i][j];
 
-    in.getline(line, 132); // skip rest of the last lattice line
+      in.getline(line, 132); // skip rest of the last lattice line
+      
+      // get atom counts, and optionally, element types
+      in.getline(line, 132);
+      string atomtypeline(line);
+      string atomcountline(line);
+      
+      std::istringstream type_in(atomtypeline);
+      string tmp_element;
 
-    // get atom counts, and optionally, element types
-    in.getline(line, 132);
-    string atomtypeline(line);
-    string atomcountline(line);
-
-    std::istringstream type_in(atomtypeline);
-    string tmp_element;
-    if ((type_in >> tmp_element) &&
-        ElementNameToAtomicNumber(tmp_element.c_str()) > 0)
-    {
+      if ((type_in >> tmp_element) &&
+          ElementNameToAtomicNumber(tmp_element.c_str()) > 0)
+      {
         // We've got an element types line to parse.
         // This overrides any earlier "types =" from above:
         element_map.clear();
@@ -481,35 +482,38 @@ avtXDATFileFormat::ReadMetaData()
         // Read the rest:
         while (type_in >> tmp_element)
         {
-            element_map.push_back(ElementNameToAtomicNumber(tmp_element.c_str()));
+          element_map.push_back(ElementNameToAtomicNumber(tmp_element.c_str()));
         }
+        
         // We need to read the next line for the atom counts: we set it up
         // to use this past line in the event we didn't have a species line:
         in.getline(line, 132);
         atomcountline = line;
-    }
+      }
 
-    natoms = 0;
-    int tmp_count;
-    std::istringstream count_in(atomcountline);
-    while (count_in >> tmp_count)
-    {
+      natoms = 0;
+      int tmp_count;
+      species_counts.clear();
+      std::istringstream count_in(atomcountline);
+      while (count_in >> tmp_count)
+      {
         species_counts.push_back(tmp_count);
         natoms += tmp_count;
-    }
+      }
 
-    // error check
-    if (natoms == 0)
+      // error check
+      if (natoms == 0)
         EXCEPTION2(InvalidFilesException, filename.c_str(),
-                 "Could not parse atom counts; does not match XDAT format.");
+                   "Could not parse atom counts; does not match XDAT format.");
 
-    // If we tried to create an element map, but it did not have the
-    // same number of values as the species counts, it is invalid.
-    if (element_map.size() > 0 && element_map.size() != species_counts.size())
-    {
+      // If we tried to create an element map, but it did not have the
+      // same number of values as the species counts, it is invalid.
+      if (element_map.size() > 0 && element_map.size() != species_counts.size())
+      {
         element_map.clear();
+      }
     }
-
+    
     // next line is either Selective dynamics or Cartesian/Direct
     selective_dynamics = false;
     in.getline(line, 132);
@@ -526,18 +530,87 @@ avtXDATFileFormat::ReadMetaData()
         cartesian = true;
     }
     // if it's not c/k, then it's "Direct"
+}
 
+
+// ****************************************************************************
+//  Method:  avtXDATFileFormat::ReadMetaData
+//
+//  Purpose:
+//    Read the metadata and atoms.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  8, 2008
+//
+//  Modifications:
+//   Jeremy Meredith, Tue Dec 29 13:41:16 EST 2009
+//   Added some error checks.
+//
+//    Jeremy Meredith, Mon Jan 24 17:03:27 EST 2011
+//    In newer VASP flavors, there is an optional line with atomic symbols
+//    above the line which lists the counts of atoms for each species
+//    type.  This line takes precedence over any "types=" line in the header.
+//
+// ****************************************************************************
+void
+avtXDATFileFormat::ReadMetaData()
+{
+    if (metadata_read)
+        return;
+
+    metadata_read = true;
+
+    // New format has a full header; the title, scale, unit cell,
+    // species, and number of each species and other information which
+    // is at each time step
+    char line[132];
+    
+    // This line is the title line.
+    // At the moment, species look like they are on a different 
+    // line, so I am not attempting to parse this line for an "="
+    // symbol which describes species.  If we want to add it back
+    // in, then pick up the code from the POSCAR reader.
+    in.getline(line, 132);
+    string titleline(line);
+
+    // Reset to the begininng of the file to read the full header.
+    in.seekg(0);
+    
+    ReadHeader(1);
+
+    // Read all of the atoms for the first time step.
+    for (int i=0; i<natoms; i++)
+      in.getline(line,132);
+
+    // Get the next line and check for a full header.
+    in.getline(line, 132);
+
+    if( string(line) == titleline )
+      full_header = true;
+
+    // Reset to the begininng of the file to read each time step
+    in.seekg(0);
+    
     // count the timesteps!
-    while (in)
+    while( in.peek() != EOF )
     {
-        file_positions.push_back(in.tellg());
+        // If a full header point to that start point.
+        if( full_header )
+          file_positions.push_back(in.tellg());
 
+        // Read the full header for the first time step.
+        ReadHeader(file_positions.size() == 0 || full_header );
+        
+        // If a partial header point to the first atom after the header.
+        if( !full_header )
+          file_positions.push_back(in.tellg());
+
+        // Read all of the atoms.
         for (int i=0; i<natoms; i++)
             in.getline(line,132);
-
-        in.getline(line, 132); // direct/cartesian or selective dynamics
-        if (line[0] == 's' || line[0] == 'S')
-            in.getline(line, 132); // direct/cartesian
     }
 }
 
@@ -548,7 +621,9 @@ avtXDATFileFormat::ReadTimestep(int timestep)
 
     OpenFileAtBeginning();
     in.seekg(file_positions[timestep]);
-
+    if( full_header )
+      ReadHeader( full_header );
+      
     char line[132];
 
     // read the atoms
