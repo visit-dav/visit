@@ -54,7 +54,7 @@
 #include <string>
 
 class     vtkDataSet;
-
+class     vtkThreshold;
 
 // ****************************************************************************
 //  Class: avtThresholdFilter
@@ -94,6 +94,11 @@ class     vtkDataSet;
 //    Eric Brugger, Wed Aug 20 17:01:30 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kevin Griffin, Thu Mar 23 08:25:21 PDT 2017
+//    Feature #2646: Allow a list of threshold ranges for each variable.
+//    An input of "1-10, 12, 20-30" would threshold a variable, var, as
+//    such: 1 <= var <= 10 OR var == 12 OR 20 <= var <= 30.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtThresholdFilter : public avtPluginStructuredChunkDataTreeIterator
@@ -128,6 +133,11 @@ class AVTFILTERS_API avtThresholdFilter : public avtPluginStructuredChunkDataTre
 
     virtual void          UpdateDataObjectInfo(void);
     virtual void          PreExecute(void);
+
+  private:
+    vtkDataSet           *ThresholdOnRanges(vtkDataSet *, vtkThreshold *, const char *, const std::string, const int);
+    bool                  IsSimpleRange(const std::string);
+    stringVector          GetRangeList(const std::string);
 };
 
 

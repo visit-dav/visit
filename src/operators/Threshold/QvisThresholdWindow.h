@@ -91,6 +91,9 @@ class QButtonGroup;
 //   Cyrus Harrison, Thu Aug 21 08:45:29 PDT 2008
 //   Qt4 Port.
 //
+//   Kevin Griffin, Mon Feb  6 13:48:42 PST 2017
+//   Feature #2646 categorical option for threshold
+//
 // ****************************************************************************
 
 class QvisThresholdWindow : public QvisOperatorWindow
@@ -113,6 +116,7 @@ protected:
 private slots:
     void                variableAddedToList(const QString &variableToAdd);
     void                selectedVariableDeleted();
+    void                boundsInputTypeChanged(int buttonID);
     void                outputMeshTypeChanged(int buttonID);
     void                apply();
 
@@ -124,12 +128,14 @@ private:
     void                SetZoneIncludeSelectEnabled(bool val);
     void                SetTableWidth();
     void                SetLowerUpper(int idx, double lower, double upper);
+    bool                IsSimpleBounds(const QString &);
 
     ThresholdAttributes *atts;
 
     QTableWidget        *threshVars;
     QButtonGroup        *outputMeshType;
-     stringVector        guiFullVarNames;
+    QButtonGroup        *boundsInputType;
+    stringVector        guiFullVarNames;
 };
 
 #endif
