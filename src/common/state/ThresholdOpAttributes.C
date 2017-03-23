@@ -1053,6 +1053,9 @@ ThresholdOpAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // Creation:   Thu Sep 28 12:07:05 PDT 2006
 //
 // Modifications:
+//
+//    Kevin Griffin, Wed Feb 15 11:50:13 PDT 2017
+//    Added boundsRange field.
 //   
 // ****************************************************************************
 
@@ -1075,7 +1078,7 @@ ThresholdOpAttributes::SupplyMissingDefaultsIfAppropriate()
     
     if (boundsRange.size() > 1) return;
     totalEntryCount += boundsRange.size();
-    
+
     if ((totalEntryCount & 3) == 0) return;
     
     stringVector singleVarName;
@@ -1107,8 +1110,8 @@ ThresholdOpAttributes::SupplyMissingDefaultsIfAppropriate()
         singleUpperBound.push_back(+1e+37);
         SetUpperBounds(singleUpperBound);
     }
-    
-    if (boundsRange.size() == 0)
+
+    if(boundsRange.size() == 0)
     {
         singleBoundsRange.push_back("min-max");
         SetBoundsRange(singleBoundsRange);
@@ -1134,6 +1137,9 @@ ThresholdOpAttributes::SupplyMissingDefaultsIfAppropriate()
 //   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
 //   Rewritten to support new Threshold GUI; no more shown variable.
 //
+//   Kevin Griffin, Wed Feb 15 11:50:13 PDT 2017
+//   Added boundsRange check.
+//
 // ****************************************************************************
 
 bool
@@ -1143,7 +1149,8 @@ ThresholdOpAttributes::AttributesAreConsistent() const
     
     if ((zonePortions.size() != varListSize) ||
         (lowerBounds.size()  != varListSize) ||
-        (upperBounds.size()  != varListSize))
+        (upperBounds.size()  != varListSize) ||
+        (boundsRange.size() != varListSize))
     {
         return false;
     }
@@ -1163,6 +1170,9 @@ ThresholdOpAttributes::AttributesAreConsistent() const
 // Creation:   Tue Mar 13 19:51:29 PDT 2007
 //
 // Modifications:
+//
+//   Kevin Griffin, Wed Feb 15 11:50:13 PDT 2017
+//   Added boundsRange
 //   
 // ****************************************************************************
 #include <DebugStream.h>
@@ -1174,13 +1184,15 @@ ThresholdOpAttributes::ForceAttributeConsistency()
     double boundValue;
     bool consistent = ((zonePortions.size() == varListSize) &&
                        ( lowerBounds.size() == varListSize) &&
-                       ( upperBounds.size() == varListSize));
+                       ( upperBounds.size() == varListSize) &&
+                       ( boundsRange.size() == varListSize));
                        
     if (!consistent)
     {
         if (zonePortions.size() > varListSize) zonePortions.resize(varListSize);
         if ( lowerBounds.size() > varListSize)  lowerBounds.resize(varListSize);
         if ( upperBounds.size() > varListSize)  upperBounds.resize(varListSize);
+        if ( boundsRange.size() > varListSize)  boundsRange.resize(varListSize);
 
         for (varNum = 0; varNum < varListSize; varNum++ )
         {
@@ -1190,6 +1202,8 @@ ThresholdOpAttributes::ForceAttributeConsistency()
                 lowerBounds.push_back(-1e+37);
             if (upperBounds.size() < varListSize)
                 upperBounds.push_back(+1e+37);
+            if (boundsRange.size() < varListSize)
+                boundsRange.push_back("min-max");
         }
     }
 

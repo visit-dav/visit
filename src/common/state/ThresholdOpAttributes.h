@@ -76,7 +76,7 @@ public:
         Default,
         Custom
     };
- 
+
     // These constructors are for objects of this class
     ThresholdOpAttributes();
     ThresholdOpAttributes(const ThresholdOpAttributes &obj);
