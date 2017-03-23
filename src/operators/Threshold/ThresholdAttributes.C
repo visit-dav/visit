@@ -470,6 +470,12 @@ ThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("outputMeshType", outputMeshType));
     }
 
+    if(completeSave || !FieldsEqual(ID_boundsInputType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("boundsInputType", boundsInputType));
+    }
+
     if(completeSave || !FieldsEqual(ID_listedVarNames, &defaultObject))
     {
         addToParent = true;
@@ -543,6 +549,8 @@ ThresholdAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("outputMeshType")) != 0)
         SetOutputMeshType(node->AsInt());
+    if((node = searchNode->GetNode("boundsInputType")) != 0)
+        SetBoundsInputType(node->AsInt());
     if((node = searchNode->GetNode("listedVarNames")) != 0)
         SetListedVarNames(node->AsStringVector());
     if((node = searchNode->GetNode("zonePortions")) != 0)
