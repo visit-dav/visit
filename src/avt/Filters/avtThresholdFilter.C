@@ -496,6 +496,42 @@ avtThresholdFilter::IsSimpleRange(const std::string range)
 }
 
 // ****************************************************************************
+//  Method: avtThresholdFilter::CheckForMinMax
+//
+//  Purpose: Check the string for min or max.
+//
+//  Arguments:
+//      str     The low or high range string to check
+//
+//  Returns: If the string contains 'min' or 'max' it will replace the string
+//           with -1e+37 or 1e+37, respectively. Otherwise the original string
+//           is returned.
+//
+//  Programmer: Kevin Griffin
+//  Creation:   Thu Mar 23 08:25:21 PDT 2017
+//
+//  Modifications:
+// ****************************************************************************
+std::string
+avtThresholdFilter::CheckForMinMax(const std::string str)
+{
+    size_t minPos = str.find("min");
+    size_t maxPos = str.find("max");
+    
+    if(minPos != std::string::npos)
+    {
+        return std::string("-1e+37");
+    }
+    
+    if(maxPos != std::string::npos)
+    {
+        return std::string("1e+37");
+    }
+    
+    return str;
+}
+
+// ****************************************************************************
 //  Method: avtThresholdFilter::GetRangeList
 //
 //  Purpose: Parse the range string and create a list of ranges.
@@ -556,6 +592,10 @@ avtThresholdFilter::GetRangeList(const std::string rangeStr)
 //  Creation:   Thu Mar 23 08:25:21 PDT 2017
 //
 //  Modifications:
+//    Kevin Griffin, Fri Mar 24 11:36:58 PDT 2017
+//    Changed the range symbol from '-' to ':' so it wouldn't conflict with
+//    negative numbers. Also allow the use of 'min' and 'max' in ranges.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -596,18 +636,21 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
             continue;
         }
         
-        double threshLow = -9e+36; // min
-        double threshHigh = 9e+36; // max
+        double threshLow = 0;
+        double threshHigh = 0;
         
-        size_t pos = rangeTokens[i].find("-");
+        size_t pos = rangeTokens[i].find(":");
         if(pos != std::string::npos)
         {
-            threshLow = atof(rangeTokens[i].substr(0, pos).c_str());
-            threshHigh = atof(rangeTokens[i].substr(pos+1).c_str());
+            std::string lowStr = rangeTokens[i].substr(0, pos).c_str();
+            std::string highStr = rangeTokens[i].substr(pos+1).c_str();
+        
+            threshLow = atof(CheckForMinMax(lowStr).c_str());
+            threshHigh = atof(CheckForMinMax(highStr).c_str());
         }
         else // single number
         {
-            threshLow = atof(rangeTokens[i].c_str());
+            threshLow = atof(CheckForMinMax(rangeTokens[i]).c_str());
             threshHigh = threshLow;
         }
         
@@ -705,6 +748,10 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
 //    Added support for variables with multiple threshold ranges
 //    (Feature #2646).
 //
+//    Kevin Griffin, Fri Mar 24 11:36:58 PDT 2017
+//    Changed the range symbol from '-' to ':' so it wouldn't conflict with
+//    negative numbers. Also allow the use of 'min' and 'max' in ranges.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -765,18 +812,18 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
                         continue;
                     }
                     
-                    double threshLow = -9e+36; // min
-                    double threshHigh = 9e+36; // max
+                    double threshLow = 0;
+                    double threshHigh = 0;
                     
-                    size_t pos = rangeTokens[i].find("-");
+                    size_t pos = rangeTokens[i].find(":");
                     if(pos != std::string::npos)
                     {
-                        threshLow = atof(rangeTokens[i].substr(0, pos).c_str());
-                        threshHigh = atof(rangeTokens[i].substr(pos+1).c_str());
+                        threshLow = atof(CheckForMinMax(rangeTokens[i].substr(0, pos)).c_str());
+                        threshHigh = atof(CheckForMinMax(rangeTokens[i].substr(pos+1)).c_str());
                     }
                     else // single number
                     {
-                        threshLow = atof(rangeTokens[i].c_str());
+                        threshLow = atof(CheckForMinMax(rangeTokens[i]).c_str());
                         threshHigh = threshLow;
                     }
                     
@@ -841,18 +888,18 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
                         continue;
                     }
                     
-                    double threshLow = -9e+36; // min
-                    double threshHigh = 9e+36; // max
+                    double threshLow = 0;
+                    double threshHigh = 0;
                     
-                    size_t pos = rangeTokens[i].find("-");
+                    size_t pos = rangeTokens[i].find(":");
                     if(pos != std::string::npos)
                     {
-                        threshLow = atof(rangeTokens[i].substr(0, pos).c_str());
-                        threshHigh = atof(rangeTokens[i].substr(pos+1).c_str());
+                        threshLow = atof(CheckForMinMax(rangeTokens[i].substr(0, pos)).c_str());
+                        threshHigh = atof(CheckForMinMax(rangeTokens[i].substr(pos+1)).c_str());
                     }
                     else // single number
                     {
-                        threshLow = atof(rangeTokens[i].c_str());
+                        threshLow = atof(CheckForMinMax(rangeTokens[i]).c_str());
                         threshHigh = threshLow;
                     }
                     

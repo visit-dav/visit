@@ -1113,7 +1113,7 @@ ThresholdOpAttributes::SupplyMissingDefaultsIfAppropriate()
 
     if(boundsRange.size() == 0)
     {
-        singleBoundsRange.push_back("min-max");
+        singleBoundsRange.push_back("min:max");
         SetBoundsRange(singleBoundsRange);
     }
 }
@@ -1203,7 +1203,7 @@ ThresholdOpAttributes::ForceAttributeConsistency()
             if (upperBounds.size() < varListSize)
                 upperBounds.push_back(+1e+37);
             if (boundsRange.size() < varListSize)
-                boundsRange.push_back("min-max");
+                boundsRange.push_back("min:max");
         }
     }
 

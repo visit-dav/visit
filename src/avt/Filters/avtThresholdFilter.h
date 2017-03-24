@@ -138,6 +138,7 @@ class AVTFILTERS_API avtThresholdFilter : public avtPluginStructuredChunkDataTre
     vtkDataSet           *ThresholdOnRanges(vtkDataSet *, vtkThreshold *, const char *, const std::string, const int);
     bool                  IsSimpleRange(const std::string);
     stringVector          GetRangeList(const std::string);
+    std::string           CheckForMinMax(const std::string);
 };
 
 
