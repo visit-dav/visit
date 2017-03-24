@@ -2926,6 +2926,10 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
 //    go into scalable rendering mode and immediately go back out and
 //    a blank image would get displayed.
 //
+//    Eric Brugger, Fri Mar 24 13:00:28 PDT 2017
+//    I corrected a bug in the counting of cells where the cell count was
+//    multiplied by cell count multiplier twice.
+//
 // ****************************************************************************
 
 bool
@@ -3009,8 +3013,10 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
             // Determine the cell counts.
             vector<long long> cellCounts;
             cellCounts.push_back(currentCellCount);
+            // We set the cellCountMultiplier to 1 since the
+            // currentCellCount already has that factored into it.
             vector<float> cellCountMultipliers;
-            cellCountMultipliers.push_back(cellCountMultiplier);
+            cellCountMultipliers.push_back(1.);
             vector<long long> globalCellCounts(1);
             long long cellCountTotal;
             netmgr->CalculateCellCountTotal(cellCounts, cellCountMultipliers,
@@ -3123,8 +3129,10 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
             // Determine the cell counts.
             vector<long long> cellCounts;
             cellCounts.push_back(currentCellCount);
+            // We set the cellCountMultiplier to 1 since the
+            // currentCellCount already has that factored into it.
             vector<float> cellCountMultipliers;
-            cellCountMultipliers.push_back(cellCountMultiplier);
+            cellCountMultipliers.push_back(1.);
             vector<long long> globalCellCounts(1);
             long long cellCountTotal;
             netmgr->CalculateCellCountTotal(cellCounts, cellCountMultipliers,
