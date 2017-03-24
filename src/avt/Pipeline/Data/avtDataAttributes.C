@@ -53,6 +53,7 @@
 #include <PlotInfoAttributes.h>
 #include <StringHelpers.h>
 
+#include <DebugStream.h>
 #include <BadIndexException.h>
 #include <ImproperUseException.h>
 #include <InvalidMergeException.h>
@@ -1776,7 +1777,7 @@ avtDataAttributes::GetOriginalDataExtents(const char *varname)
         //
         const char *varname_to_print = (varname != NULL ? varname
                                          : "<null>");
-        string reason = "Attempting to retrieve data extents of non-existent ";
+        string reason = "Attempting to retrieve data extents of non-existent";
         reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
@@ -1822,7 +1823,7 @@ avtDataAttributes::GetThisProcsOriginalDataExtents(const char *varname)
         //
         const char *varname_to_print = (varname != NULL ? varname
                                          : "<null>");
-        string reason = "Attempting to retrieve data extents of non-existent ";
+        string reason = "Attempting to retrieve data extents of non-existent";
         reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
@@ -1863,7 +1864,7 @@ avtDataAttributes::GetVariableComponentExtents(const char *varname)
         //
         const char *varname_to_print = (varname != NULL ? varname
                                          : "<null>");
-        string reason = "Attempting to retrieve data extents of non-existent ";
+        string reason = "Attempting to retrieve data extents of non-existent";
         reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
@@ -1909,7 +1910,7 @@ avtDataAttributes::GetDesiredDataExtents(const char *varname)
         //
         const char *varname_to_print = (varname != NULL ? varname
                                          : "<null>");
-        string reason = "Attempting to retrieve data extents of non-existent ";
+        string reason = "Attempting to retrieve data extents of non-existent";
         reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
@@ -1955,7 +1956,7 @@ avtDataAttributes::GetActualDataExtents(const char *varname)
         //
         const char *varname_to_print = (varname != NULL ? varname
                                          : "<null>");
-        string reason = "Attempting to retrieve data extents of non-existent ";
+        string reason = "Attempting to retrieve data extents of non-existent";
         reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
@@ -2001,7 +2002,7 @@ avtDataAttributes::GetThisProcsActualDataExtents(const char *varname)
         //
         const char *varname_to_print = (varname != NULL ? varname
                                          : "<null>");
-        string reason = "Attempting to retrieve data extents of non-existent ";
+        string reason = "Attempting to retrieve data extents of non-existent";
         reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
@@ -2146,7 +2147,7 @@ avtDataAttributes::SetVariableDimension(int vd, const char *varname)
         //
         const char *varname_to_print = (varname != NULL ? varname
                                          : "<null>");
-        string reason = "Attempting to set dimension of non-existent ";
+        string reason = "Attempting to set dimension of non-existent";
         reason = reason +  " variable: " + varname_to_print + ".\n";
         EXCEPTION1(ImproperUseException, reason);
     }
@@ -2226,8 +2227,10 @@ avtDataAttributes::GetVariableDimension(const char *varname) const
         //
         const char *varname_to_print = (varname != NULL ? varname
                                          : "<null>");
-        string reason = "Attempting to retrieve dimension of non-existent ";
+        string reason = "Attempting to retrieve dimension of non-existent";
         reason = reason +  " variable: " + varname_to_print + ".\n";
+        debug5 << reason << std::endl;
+        std::cerr << reason << std::endl;
         EXCEPTION1(ImproperUseException, reason);
     }
 
@@ -5491,4 +5494,3 @@ avtDataAttributes::VarInfo::~VarInfo()
         componentExtents = NULL;
     }
 }
-
