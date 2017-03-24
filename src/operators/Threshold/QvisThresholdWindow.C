@@ -512,7 +512,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
         curVarNames.push_back(std::string("default"));
         curLowerBounds.push_back(-1e+37);
         curUpperBounds.push_back(+1e+37);
-        curBoundsRange.push_back("min-max");
+        curBoundsRange.push_back("-1e+37:1e+37");
         curZonePortions.push_back((int)ThresholdAttributes::PartOfZone);
     
         atts->SetListedVarNames(curVarNames);
@@ -552,7 +552,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
             
             if(!boundsText.trimmed().isEmpty() && IsSimpleBounds(boundsText))
             {
-                QStringList minmaxTokens = boundsText.split("-", QString::SkipEmptyParts);
+                QStringList minmaxTokens = boundsText.split(":", QString::SkipEmptyParts);
                 
                 if(minmaxTokens.length() == 1)
                 {
@@ -618,7 +618,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
         
         if(isDefault)
         {
-            boundsText = DoubleToQString(lowerBound).append("-").append(DoubleToQString(upperBound));
+            boundsText = DoubleToQString(lowerBound).append(":").append(DoubleToQString(upperBound));
             curBoundsRange.push_back(boundsText.toStdString());
         }
         
@@ -659,7 +659,7 @@ QvisThresholdWindow::IsSimpleBounds(const QString &boundsText)
         return true;
     }
     
-    QStringList tokens = boundsText.split("-", QString::SkipEmptyParts);
+    QStringList tokens = boundsText.split(":", QString::SkipEmptyParts);
     return (tokens.length() <= 2);
 }
 
@@ -774,16 +774,16 @@ QvisThresholdWindow::boundsInputTypeChanged(int buttonID)
             {
                 for (size_t varNum = 0; varNum < atts->GetBoundsRange().size(); varNum++ )
                 {
-                    std::string range = atts->GetBoundsRange()[varNum]; // lowerbound - upperbound
+                    std::string range = atts->GetBoundsRange()[varNum]; // lowerbound : upperbound
                     threshVars->setItem((int)varNum, 1, new QTableWidgetItem(QString(range.c_str())));
                 }
             }
             else
             {
-                threshVars->setItem(0, 1, new QTableWidgetItem(QString("min-max")));
+                threshVars->setItem(0, 1, new QTableWidgetItem(QString("min:max")));
                 
                 stringVector boundsRange;
-                boundsRange.push_back("min-max");
+                boundsRange.push_back("min:max");
                 atts->SetBoundsRange(boundsRange);
             }
         }
@@ -981,7 +981,7 @@ QvisThresholdWindow::AddNewRowToVariablesList(const QString &variableName)
     }
     else
     {
-        threshVars->setItem(nrows, col++, new QTableWidgetItem(tr("min-max")));
+        threshVars->setItem(nrows, col++, new QTableWidgetItem(tr("min:max")));
     }
     
     QComboBox *cbox = new QComboBox();
