@@ -2994,7 +2994,7 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
             currentCellCount = INT_MAX;
         else
             currentCellCount = (int) 
-                   (ui_dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
+              (ui_dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
 
         // test if we've exceeded the scalable threshold already with proc 0's
         // output
@@ -3033,8 +3033,11 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
                 {
                     debug5 << "Exceeded scalable threshold of "
                            << scalableThreshold << endl;
-                    if (reducedCurrentCellCount == INT_MAX-1) 
-                        debug5 << "This was due to 'oridinary' overflow in summing cell counts" << endl;
+                    if (reducedCurrentCellCount == INT_MAX-1)
+                    {
+                        debug5 << "This was due to 'oridinary' overflow "
+                               << "in summing cell counts" << endl;
+                    }
                 }
                 thresholdExceeded = true;
             }
@@ -3124,7 +3127,7 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
                 currentCellCount = INT_MAX;
             else
                 currentCellCount = (int) 
-                          (dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
+                  (dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
 
             // Determine the cell counts.
             vector<long long> cellCounts;
@@ -3149,8 +3152,11 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
                 {
                     debug5 << "Exceeded scalable threshold of "
                            << scalableThreshold << endl;
-                    if (reducedCurrentCellCount == INT_MAX-1) 
-                        debug5 << "This was due to 'oridinary' overflow in summing cell counts" << endl;
+                    if (reducedCurrentCellCount == INT_MAX-1)
+                    {
+                        debug5 << "This was due to 'oridinary' overflow "
+                               << "in summing cell counts" << endl;
+                    }
                 }
                 thresholdExceeded = true;
             }
