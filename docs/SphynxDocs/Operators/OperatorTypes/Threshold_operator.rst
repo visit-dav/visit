@@ -25,8 +25,7 @@ Setting the variable range
 """"""""""""""""""""""""""
 
 The Threshold operator uses a range of values to determine which cells from the 
-database should be kept in the visualization. You specify the range of values by
-lower and upper bounds on the threshold variable. Cells with values below the 
+database should be kept in the visualization. For the **Default** bounds input, you specify the range of values by lower and upper bounds on the threshold variable. Cells with values below the 
 lower bound or with values above the upper bound are removed from the 
 visualization. To specify a new lower bound, type a new number or the special 
 keyword: min into the **Threshold operator attributes window's** 
@@ -38,26 +37,39 @@ a new upper bound, type a new number or the special keyword: max into the
 
 .. figure:: images/thresholdwindow.png
 
-  Threshold operator attributes window
+  Threshold operator attributes window - Default
+
+For the **Custom** bounds input, you can specify a list of ranges in the **Range** text field. A colon - ':' defines a range and a comma - ',' defines a logical OR. The range shown in :numref:`Figure %s <customthresholdwindow>` has the following meaning:
+
+.. code::
+
+   1 <= default <= 10 OR default = 17 OR 23 <= default <= max
+
+Numbers, commas, and colons are the only valid symbols that can be used in specifing a range list.
+
+.. _customthresholdwindow:
+
+.. figure:: images/threshold_custom.png
+
+  Threshold operator attributes window - Custom
 
 When the threshold variable is a nodal quantity, the cell being considered by 
 the Threshold operator has values at each node in the cell. In this case, the 
 Threshold operator provides a control that determines whether or not to keep the
 cell if some nodes have values in the threshold range or if all nodes have 
 values in the threshold range. More cells are usually removed from the 
-visualization when all nodes must be in the threshold range. Click the **Some**
-radio button to allow cells where at least one value is in the threshold range 
-into the visualization. Click the **All** radio button to require that all 
-nodal values exist in the threshold range.
+visualization when all nodes must be in the threshold range. Select **Part in range**
+from the **Show zone if** combo box to allow cells where at least one value is in the threshold range 
+into the visualization. Select **All in range** from the **Show zone if** combo box to require that all nodal values exist in the threshold range.
 
 Setting the threshold variable
 """"""""""""""""""""""""""""""
 
 The Threshold operator uses the threshold variable to determine whether cells 
 remain in the visualization. The threshold variable is usually the plotted 
-variable in which case the **Variable** variable button displays: default. To 
+variable in which case the **Variable** column displays: default. To 
 specify a threshold variable other than the plotted variable, click on the
-**Variable** variable button and select a new scalar variable from the list of a
+**Add variable** variable button and select a new scalar variable from the list of a
 vailable variables.
 
 You might set the threshold variable when you apply the Threshold operator to 
