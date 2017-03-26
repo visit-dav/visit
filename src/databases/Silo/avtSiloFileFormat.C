@@ -2181,42 +2181,34 @@ avtSiloFileFormat::ReadQuadmeshes(DBfile *dbfile,
                 extents_to_use = extents;
             }
 
-            if (!DBIsEmptyQuadmesh(qm))
-            {
-                avtMeshMetaData *mmd = new avtMeshMetaData(NULL,
-                                                       extents_to_use,
-                                                       name_w_dir, 1, 0,
-                                                       qm->origin, 0,
-                                                       qm->ndims, qm->ndims,
-                                                       mt);
-                if (qm->units[0] != NULL)
-                    mmd->xUnits = qm->units[0];
-                if (qm->units[1] != NULL)
-                    mmd->yUnits = qm->units[1];
-                if (qm->units[2] != NULL)
-                    mmd->zUnits = qm->units[2];
+            avtMeshMetaData *mmd = new avtMeshMetaData(NULL,
+                                                   extents_to_use,
+                                                   name_w_dir, 1, 0,
+                                                   qm->origin, 0,
+                                                   qm->ndims, qm->ndims,
+                                                   mt);
+            if (qm->units[0] != NULL)
+                mmd->xUnits = qm->units[0];
+            if (qm->units[1] != NULL)
+                mmd->yUnits = qm->units[1];
+            if (qm->units[2] != NULL)
+                mmd->zUnits = qm->units[2];
 
-                if (qm->labels[0] != NULL)
-                    mmd->xLabel = qm->labels[0];
-                if (qm->labels[1] != NULL)
-                    mmd->yLabel = qm->labels[1];
-                if (qm->labels[2] != NULL)
-                    mmd->zLabel = qm->labels[2];
+            if (qm->labels[0] != NULL)
+                mmd->xLabel = qm->labels[0];
+            if (qm->labels[1] != NULL)
+                mmd->yLabel = qm->labels[1];
+            if (qm->labels[2] != NULL)
+                mmd->zLabel = qm->labels[2];
 
-                if (qm->ndims == 2 && qm->coord_sys == DB_CYLINDRICAL)
-                    mmd->meshCoordType = AVT_RZ;
+            if (qm->ndims == 2 && qm->coord_sys == DB_CYLINDRICAL)
+                mmd->meshCoordType = AVT_RZ;
     
-                mmd->validVariable = valid_var;
-                mmd->groupTitle = "blocks";
-                mmd->groupPieceName = "block";
-                mmd->hideFromGUI = qm->guihide;
-                md->Add(mmd);
-
-            }
-            else
-            {
-                debug1 << "Skipping/ignoring empty quad mesh \"" << qmesh_names[i] << "\"" << endl;
-            }
+            mmd->validVariable = valid_var;
+            mmd->groupTitle = "blocks";
+            mmd->groupPieceName = "block";
+            mmd->hideFromGUI = qm->guihide;
+            md->Add(mmd);
         }
         CATCHALL
         {
@@ -2332,39 +2324,32 @@ avtSiloFileFormat::ReadUcdmeshes(DBfile *dbfile,
             if (um->topo_dim != -1)
                 tdims = um->topo_dim;
 
-            if (!DBIsEmptyUcdmesh(um))
-            {
-                avtMeshMetaData *mmd = new avtMeshMetaData(NULL,
-                    extents_to_use, name_w_dir, 1, 0, um->origin, 0,
-                    um->ndims, tdims, AVT_UNSTRUCTURED_MESH);
-                if (um->units[0] != NULL)
-                   mmd->xUnits = um->units[0];
-                if (um->units[1] != NULL)
-                   mmd->yUnits = um->units[1];
-                if (um->units[2] != NULL)
-                   mmd->zUnits = um->units[2];
+            avtMeshMetaData *mmd = new avtMeshMetaData(NULL,
+                extents_to_use, name_w_dir, 1, 0, um->origin, 0,
+                um->ndims, tdims, AVT_UNSTRUCTURED_MESH);
+            if (um->units[0] != NULL)
+               mmd->xUnits = um->units[0];
+            if (um->units[1] != NULL)
+               mmd->yUnits = um->units[1];
+            if (um->units[2] != NULL)
+               mmd->zUnits = um->units[2];
 
-                if (um->labels[0] != NULL)
-                    mmd->xLabel = um->labels[0];
-                if (um->labels[1] != NULL)
-                    mmd->yLabel = um->labels[1];
-                if (um->labels[2] != NULL)
-                    mmd->zLabel = um->labels[2];
+            if (um->labels[0] != NULL)
+                mmd->xLabel = um->labels[0];
+            if (um->labels[1] != NULL)
+                mmd->yLabel = um->labels[1];
+            if (um->labels[2] != NULL)
+                mmd->zLabel = um->labels[2];
 
-                if (um->ndims == 2 && um->coord_sys == DB_CYLINDRICAL)
-                    mmd->meshCoordType = AVT_RZ;
+            if (um->ndims == 2 && um->coord_sys == DB_CYLINDRICAL)
+                mmd->meshCoordType = AVT_RZ;
 
-                mmd->groupTitle = "blocks";
-                mmd->groupPieceName = "block";
-                mmd->disjointElements = hasDisjointElements;
-                mmd->validVariable = valid_var;
-                mmd->hideFromGUI = um->guihide;
-                md->Add(mmd);
-            }
-            else
-            {
-                debug1 << "Skipping/ignoring empty ucd mesh \"" << ucdmesh_names[i] << "\"" << endl;
-            }
+            mmd->groupTitle = "blocks";
+            mmd->groupPieceName = "block";
+            mmd->disjointElements = hasDisjointElements;
+            mmd->validVariable = valid_var;
+            mmd->hideFromGUI = um->guihide;
+            md->Add(mmd);
         }
         CATCHALL
         {
@@ -2422,36 +2407,29 @@ avtSiloFileFormat::ReadPointmeshes(DBfile *dbfile,
                 pm = DBAllocPointmesh(); // to fool code block below
             }
 
-            if (!DBIsEmptyPointmesh(pm))
-            {
-                avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir, 1, 0,pm->origin,
-                    0, pm->ndims, 0, AVT_POINT_MESH);
+            avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir, 1, 0,pm->origin,
+                0, pm->ndims, 0, AVT_POINT_MESH);
 
-                mmd->groupTitle = "blocks";
-                mmd->hideFromGUI = pm->guihide;
-                mmd->groupPieceName = "block";
-                mmd->validVariable = valid_var;
+            mmd->groupTitle = "blocks";
+            mmd->hideFromGUI = pm->guihide;
+            mmd->groupPieceName = "block";
+            mmd->validVariable = valid_var;
 
-                if (pm->units[0] != NULL)
-                    mmd->xUnits = pm->units[0];
-                if (pm->units[1] != NULL)
-                    mmd->yUnits = pm->units[1];
-                if (pm->units[2] != NULL)
-                    mmd->zUnits = pm->units[2];
+            if (pm->units[0] != NULL)
+                mmd->xUnits = pm->units[0];
+            if (pm->units[1] != NULL)
+                mmd->yUnits = pm->units[1];
+            if (pm->units[2] != NULL)
+                mmd->zUnits = pm->units[2];
 
-                if (pm->labels[0] != NULL)
-                    mmd->xLabel = pm->labels[0];
-                if (pm->labels[1] != NULL)
-                    mmd->yLabel = pm->labels[1];
-                if (pm->labels[2] != NULL)
-                    mmd->zLabel = pm->labels[2];
+            if (pm->labels[0] != NULL)
+                mmd->xLabel = pm->labels[0];
+            if (pm->labels[1] != NULL)
+                mmd->yLabel = pm->labels[1];
+            if (pm->labels[2] != NULL)
+                mmd->zLabel = pm->labels[2];
 
-                md->Add(mmd);
-            }
-            else
-            {
-                debug1 << "Skipping/ignoring empty point mesh \"" << ptmesh_names[i] << "\"" << endl;
-            }
+            md->Add(mmd);
         }
         CATCHALL
         {
@@ -2602,42 +2580,35 @@ avtSiloFileFormat::ReadCSGmeshes(DBfile *dbfile,
                extents_to_use = extents;
            }
 
-           if (!DBIsEmptyCsgmesh(csgm))
+           avtMeshMetaData *mmd = new avtMeshMetaData(NULL,
+               extents_to_use, name_w_dir, csgm->zones->nzones, 0, csgm->origin, 0,
+               csgm->ndims, csgm->ndims, AVT_CSG_MESH);
+           if (csgm->units[0] != NULL)
+              mmd->xUnits = csgm->units[0];
+           if (csgm->units[1] != NULL)
+              mmd->yUnits = csgm->units[1];
+           if (csgm->units[2] != NULL)
+              mmd->zUnits = csgm->units[2];
+
+           if (csgm->labels[0] != NULL)
+               mmd->xLabel = csgm->labels[0];
+           if (csgm->labels[1] != NULL)
+               mmd->yLabel = csgm->labels[1];
+           if (csgm->labels[2] != NULL)
+               mmd->zLabel = csgm->labels[2];
+
+           mmd->blockTitle = "regions";
+           mmd->validVariable = valid_var;
+           mmd->hideFromGUI = csgm->guihide;
+           if (csgm->zones->zonenames)
            {
-               avtMeshMetaData *mmd = new avtMeshMetaData(NULL,
-                   extents_to_use, name_w_dir, csgm->zones->nzones, 0, csgm->origin, 0,
-                   csgm->ndims, csgm->ndims, AVT_CSG_MESH);
-               if (csgm->units[0] != NULL)
-                  mmd->xUnits = csgm->units[0];
-               if (csgm->units[1] != NULL)
-                  mmd->yUnits = csgm->units[1];
-               if (csgm->units[2] != NULL)
-                  mmd->zUnits = csgm->units[2];
-
-               if (csgm->labels[0] != NULL)
-                   mmd->xLabel = csgm->labels[0];
-               if (csgm->labels[1] != NULL)
-                   mmd->yLabel = csgm->labels[1];
-               if (csgm->labels[2] != NULL)
-                   mmd->zLabel = csgm->labels[2];
-
-               mmd->blockTitle = "regions";
-               mmd->validVariable = valid_var;
-               mmd->hideFromGUI = csgm->guihide;
-               if (csgm->zones->zonenames)
-               {
-                   vector<string> znames;
-                   for (j = 0; j < (size_t)csgm->zones->nzones; j++)
-                       znames.push_back(csgm->zones->zonenames[j]);
-                   mmd->blockNames = znames;
-               }
-
-               md->Add(mmd);
+               vector<string> znames;
+               for (j = 0; j < (size_t)csgm->zones->nzones; j++)
+                   znames.push_back(csgm->zones->zonenames[j]);
+               mmd->blockNames = znames;
            }
-           else
-           {
-                debug1 << "Skipping/ignoring empty csg mesh \"" << csgmesh_names[i] << "\"" << endl;
-           }
+
+           md->Add(mmd);
         }
         CATCHALL
         {
@@ -3189,80 +3160,74 @@ avtSiloFileFormat::ReadQuadvars(DBfile *dbfile,
                 qv = DBAllocQuadvar();
             }
 
-            if (!DBIsEmptyQuadvar(qv))
-            {
-                char meshname[256];
-                DBInqMeshname(correctFile, realvar.c_str(), meshname);
-                meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
+            char meshname[256];
+            DBInqMeshname(correctFile, realvar.c_str(), meshname);
+            meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
 
-                //
-                // Get the centering information.
-                //
-                avtCentering   centering = (qv->align[0] == 0. ? AVT_NODECENT :
+            //
+            // Get the centering information.
+            //
+            avtCentering   centering = (qv->align[0] == 0. ? AVT_NODECENT :
                                                              AVT_ZONECENT);
-                bool guiHide = qv->guihide;
+            bool guiHide = qv->guihide;
 
-                //
-                // If this variable is defined on material subset(s), determine
-                // the associated material numbers and indi
-                //
-                vector<int> selectedMats;
-                if (qv->region_pnames)
-                    valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
-                        meshname_w_dir, qv->region_pnames, &selectedMats);
+            //
+            // If this variable is defined on material subset(s), determine
+            // the associated material numbers and indi
+            //
+            vector<int> selectedMats;
+            if (qv->region_pnames)
+                valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
+                    meshname_w_dir, qv->region_pnames, &selectedMats);
 
-                //
-                // Get the dimension of the variable.
-                //
-                if (qv->nvals == 1)
+            //
+            // Get the dimension of the variable.
+            //
+            if (qv->nvals == 1)
+            {
+                avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
+                                             meshname_w_dir, centering);
+                smd->treatAsASCII = (qv->ascii_labels);
+                smd->validVariable = valid_var;
+                smd->hideFromGUI = guiHide;
+                smd->matRestricted = selectedMats;
+                if(qv->units != 0)
                 {
-                    avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
-                                                            meshname_w_dir, centering);
-                    smd->treatAsASCII = (qv->ascii_labels);
-                    smd->validVariable = valid_var;
-                    smd->hideFromGUI = guiHide;
-                    smd->matRestricted = selectedMats;
-                    if(qv->units != 0)
-                    {
-                        smd->hasUnits = true;
-                        smd->units = string(qv->units);
-                    }
+                    smd->hasUnits = true;
+                    smd->units = string(qv->units);
+                }
 
-                    if (qv->missing_value != DB_MISSING_VALUE_NOT_SET)
-                    {
-                        double arr[2] = {0., 0.};
-                        arr[0] = qv->missing_value;
-                        smd->SetMissingData(arr);
-                        smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
-                    }
-                    md->Add(smd);
-                }
-                else if (qv->ascii_labels)
+                if (qv->missing_value != DB_MISSING_VALUE_NOT_SET)
                 {
-                    avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir, meshname_w_dir, centering);
-                    lmd->validVariable = valid_var;
-                    lmd->hideFromGUI = guiHide;
-                    lmd->matRestricted = selectedMats;
-                    md->Add(lmd);
+                    double arr[2] = {0., 0.};
+                    arr[0] = qv->missing_value;
+                    smd->SetMissingData(arr);
+                    smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
                 }
-                else
-                {
-                    avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
-                                                 meshname_w_dir, centering, qv->nvals);
-                    vmd->validVariable = valid_var;
-                    vmd->hideFromGUI = guiHide;
-                    vmd->matRestricted = selectedMats;
-                    if(qv->units != 0)
-                    {
-                        vmd->hasUnits = true;
-                        vmd->units = string(qv->units);
-                    }
-                    md->Add(vmd);
-                }
+                md->Add(smd);
+            }
+            else if (qv->ascii_labels)
+            {
+                avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir,
+                                            meshname_w_dir, centering);
+                lmd->validVariable = valid_var;
+                lmd->hideFromGUI = guiHide;
+                lmd->matRestricted = selectedMats;
+                md->Add(lmd);
             }
             else
             {
-                debug1 << "Skipping/ignoring empty quad var \"" << qvar_names[i] << "\"" << endl;
+                avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
+                                             meshname_w_dir, centering, qv->nvals);
+                vmd->validVariable = valid_var;
+                vmd->hideFromGUI = guiHide;
+                vmd->matRestricted = selectedMats;
+                if(qv->units != 0)
+                {
+                    vmd->hasUnits = true;
+                    vmd->units = string(qv->units);
+                }
+                md->Add(vmd);
             }
         }
         CATCHALL
@@ -3320,79 +3285,72 @@ avtSiloFileFormat::ReadUcdvars(DBfile *dbfile,
                 uv = DBAllocUcdvar();
             }
 
-            if (!DBIsEmptyUcdvar(uv))
+            char meshname[256];
+            DBInqMeshname(correctFile, realvar.c_str(), meshname);
+            meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
+
+            //
+            // Get the centering information.
+            //
+            avtCentering centering = (uv->centering == DB_ZONECENT ? AVT_ZONECENT
+                                                               : AVT_NODECENT);
+            bool guiHide = uv->guihide;
+
+            //
+            // If this variable is defined on material subset(s), determine
+            // the associated material numbers and indi
+            //
+            vector<int> selectedMats;
+            if (uv->region_pnames)
+                valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
+                    meshname_w_dir, uv->region_pnames, &selectedMats);
+            //
+            // Get the dimension of the variable.
+            //
+            if (uv->nvals == 1)
             {
-                char meshname[256];
-                DBInqMeshname(correctFile, realvar.c_str(), meshname);
-                meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
-
-                //
-                // Get the centering information.
-                //
-                avtCentering centering = (uv->centering == DB_ZONECENT ? AVT_ZONECENT
-                                                                   : AVT_NODECENT);
-                bool guiHide = uv->guihide;
-
-                //
-                // If this variable is defined on material subset(s), determine
-                // the associated material numbers and indi
-                //
-                vector<int> selectedMats;
-                if (uv->region_pnames)
-                    valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
-                        meshname_w_dir, uv->region_pnames, &selectedMats);
-                //
-                // Get the dimension of the variable.
-                //
-                if (uv->nvals == 1)
+                avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
+                                                    meshname_w_dir, centering);
+                smd->validVariable = valid_var;
+                smd->treatAsASCII = (uv->ascii_labels);
+                smd->hideFromGUI = guiHide;
+                smd->matRestricted = selectedMats;
+                if(uv->units != 0)
                 {
-                    avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
-                                                        meshname_w_dir, centering);
-                    smd->validVariable = valid_var;
-                    smd->treatAsASCII = (uv->ascii_labels);
-                    smd->hideFromGUI = guiHide;
-                    smd->matRestricted = selectedMats;
-                    if(uv->units != 0)
-                    {
-                        smd->hasUnits = true;
-                        smd->units = string(uv->units);
-                    }
+                    smd->hasUnits = true;
+                    smd->units = string(uv->units);
+                }
 
-                    if (uv->missing_value != DB_MISSING_VALUE_NOT_SET)
-                    {
-                        double arr[2] = {0., 0.};
-                        arr[0] = uv->missing_value;
-                        smd->SetMissingData(arr);
-                        smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
-                    }
-                    md->Add(smd);
-                }
-                else if (uv->ascii_labels)
+                if (uv->missing_value != DB_MISSING_VALUE_NOT_SET)
                 {
-                    avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir, meshname_w_dir, centering);
-                    lmd->validVariable = valid_var;
-                    lmd->hideFromGUI = guiHide;
-                    lmd->matRestricted = selectedMats;
-                    md->Add(lmd);
+                    double arr[2] = {0., 0.};
+                    arr[0] = uv->missing_value;
+                    smd->SetMissingData(arr);
+                    smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
                 }
-                else
-                {
-                    avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
-                                                 meshname_w_dir, centering, uv->nvals);
-                    vmd->validVariable = valid_var;
-                    vmd->hideFromGUI = guiHide;
-                    vmd->matRestricted = selectedMats;
-                    if(uv->units != 0)
-                    {
-                        vmd->hasUnits = true;
-                        vmd->units = string(uv->units);
-                    }
-                    md->Add(vmd);
-                }
+                md->Add(smd);
+            }
+            else if (uv->ascii_labels)
+            {
+                avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir, meshname_w_dir, centering);
+                lmd->validVariable = valid_var;
+                lmd->hideFromGUI = guiHide;
+                lmd->matRestricted = selectedMats;
+                md->Add(lmd);
             }
             else
             {
-                debug1 << "Skipping/ignoring empty ucd var \"" << ucdvar_names[i] << "\"" << endl;
+                avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
+                                             meshname_w_dir, centering, uv->nvals);
+                vmd->validVariable = valid_var;
+                vmd->hideFromGUI = guiHide;
+                vmd->matRestricted = selectedMats;
+                if(uv->units != 0)
+                {
+                    vmd->hasUnits = true;
+                    vmd->units = string(uv->units);
+                }
+                md->Add(vmd);
             }
         }
         CATCHALL
@@ -3457,55 +3415,48 @@ avtSiloFileFormat::ReadPointvars(DBfile *dbfile,
             //
             // Get the dimension of the variable.
             //
-            if (!DBIsEmptyPointvar(pv))
+            bool guiHide = pv->guihide;
+            meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
+            if (pv->nvals == 1)
             {
-                bool guiHide = pv->guihide;
-                meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
-                if (pv->nvals == 1)
+                avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
+                                                meshname_w_dir, AVT_NODECENT);
+                smd->treatAsASCII = (pv->ascii_labels);
+                smd->validVariable = valid_var;
+                smd->hideFromGUI = guiHide;
+                if(pv->units != 0)
                 {
-                    avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
-                                                    meshname_w_dir, AVT_NODECENT);
-                    smd->treatAsASCII = (pv->ascii_labels);
-                    smd->validVariable = valid_var;
-                    smd->hideFromGUI = guiHide;
-                    if(pv->units != 0)
-                    {
-                        smd->hasUnits = true;
-                        smd->units = string(pv->units);
-                    }
-                    if (pv->missing_value != DB_MISSING_VALUE_NOT_SET)
-                    {
-                        double arr[2] = {0., 0.};
-                        arr[0] = pv->missing_value;
-                        smd->SetMissingData(arr);
-                        smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
-                    }
-                    md->Add(smd);
+                    smd->hasUnits = true;
+                    smd->units = string(pv->units);
                 }
-                else if (pv->ascii_labels)
+                if (pv->missing_value != DB_MISSING_VALUE_NOT_SET)
                 {
-                    avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir, meshname_w_dir, AVT_NODECENT);
-                    lmd->validVariable = valid_var;
-                    lmd->hideFromGUI = guiHide;
-                    md->Add(lmd);
+                    double arr[2] = {0., 0.};
+                    arr[0] = pv->missing_value;
+                    smd->SetMissingData(arr);
+                    smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
                 }
-                else
-                {
-                    avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
-                                              meshname_w_dir, AVT_NODECENT, pv->nvals);
-                    vmd->validVariable = valid_var;
-                    vmd->hideFromGUI = guiHide;
-                    if(pv->units != 0)
-                    {
-                        vmd->hasUnits = true;
-                        vmd->units = string(pv->units);
-                    }
-                    md->Add(vmd);
-                }
+                md->Add(smd);
+            }
+            else if (pv->ascii_labels)
+            {
+                avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir, meshname_w_dir, AVT_NODECENT);
+                lmd->validVariable = valid_var;
+                lmd->hideFromGUI = guiHide;
+                md->Add(lmd);
             }
             else
             {
-                debug1 << "Skipping/ignoring empty point var \"" << ptvar_names[i] << "\"" << endl;
+                avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
+                                          meshname_w_dir, AVT_NODECENT, pv->nvals);
+                vmd->validVariable = valid_var;
+                vmd->hideFromGUI = guiHide;
+                if(pv->units != 0)
+                {
+                    vmd->hasUnits = true;
+                    vmd->units = string(pv->units);
+                }
+                md->Add(vmd);
             }
         }
         CATCHALL
@@ -3564,84 +3515,77 @@ avtSiloFileFormat::ReadCSGvars(DBfile *dbfile,
                 csgv = DBAllocCsgvar();
             }
 
-            if (!DBIsEmptyCsgvar(csgv))
+            char meshname[256]; 
+            DBInqMeshname(correctFile, realvar.c_str(), meshname);
+
+            //
+            // Get the centering information.
+            //
+            // AVT doesn't have a 'boundary centering'. So, use node centering.
+            avtCentering centering = (csgv->centering == DB_BNDCENT ? AVT_NODECENT
+                                                                   : AVT_ZONECENT);
+            bool guiHide = csgv->guihide;
+
+            //
+            // If this variable is defined on material subset(s), determine
+            // the associated material numbers and indi
+            //
+            vector<int> selectedMats;
+            if (csgv->region_pnames)
+                valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
+                    meshname_w_dir, csgv->region_pnames, &selectedMats);
+
+            //
+            // Get the dimension of the variable.
+            //
+            meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
+            if (csgv->nvals == 1)
             {
-                char meshname[256]; 
-                DBInqMeshname(correctFile, realvar.c_str(), meshname);
-
-                //
-                // Get the centering information.
-                //
-                // AVT doesn't have a 'boundary centering'. So, use node centering.
-                avtCentering centering = (csgv->centering == DB_BNDCENT ? AVT_NODECENT
-                                                                       : AVT_ZONECENT);
-                bool guiHide = csgv->guihide;
-
-                //
-                // If this variable is defined on material subset(s), determine
-                // the associated material numbers and indi
-                //
-                vector<int> selectedMats;
-                if (csgv->region_pnames)
-                    valid_var = GetRestrictedMaterialIndices(md, name_w_dir,
-                        meshname_w_dir, csgv->region_pnames, &selectedMats);
-
-                //
-                // Get the dimension of the variable.
-                //
-                meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
-                if (csgv->nvals == 1)
+                avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
+                                                    meshname_w_dir, centering);
+                smd->treatAsASCII = (csgv->ascii_labels);
+                smd->validVariable = valid_var;
+                smd->hideFromGUI = guiHide;
+                smd->matRestricted = selectedMats;
+                if(csgv->units != 0)
                 {
-                    avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
-                                                        meshname_w_dir, centering);
-                    smd->treatAsASCII = (csgv->ascii_labels);
-                    smd->validVariable = valid_var;
-                    smd->hideFromGUI = guiHide;
-                    smd->matRestricted = selectedMats;
-                    if(csgv->units != 0)
-                    {
-                        smd->hasUnits = true;
-                        smd->units = string(csgv->units);
-                    }
+                    smd->hasUnits = true;
+                    smd->units = string(csgv->units);
+                }
 
 #ifdef DBOPT_MISSING_VALUE
-                    if (csgv->missing_value != DB_MISSING_VALUE_NOT_SET)
-                    {
-                        double arr[2] = {0., 0.};
-                        arr[0] = csgv->missing_value;
-                        smd->SetMissingData(arr);
-                        smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
-                    }
+                if (csgv->missing_value != DB_MISSING_VALUE_NOT_SET)
+                {
+                    double arr[2] = {0., 0.};
+                    arr[0] = csgv->missing_value;
+                    smd->SetMissingData(arr);
+                    smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+                }
 #endif
 
-                    md->Add(smd);
-                }
-                else if (csgv->ascii_labels)
-                {
-                    avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir, meshname_w_dir, centering);
-                    lmd->validVariable = valid_var;
-                    lmd->hideFromGUI = guiHide;
-                    lmd->matRestricted = selectedMats;
-                    md->Add(lmd);
-                }
-                else
-                {
-                    avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
-                                                 meshname_w_dir, centering, csgv->nvals);
-                    vmd->validVariable = valid_var;
-                    vmd->hideFromGUI = guiHide;
-                    vmd->matRestricted = selectedMats;
-                    if(csgv->units != 0)
-                    {
-                        vmd->hasUnits = true;
-                        vmd->units = string(csgv->units);
-                    }
-                    md->Add(vmd);
-                }
+                md->Add(smd);
+            }
+            else if (csgv->ascii_labels)
+            {
+                avtLabelMetaData *lmd = new avtLabelMetaData(name_w_dir, meshname_w_dir, centering);
+                lmd->validVariable = valid_var;
+                lmd->hideFromGUI = guiHide;
+                lmd->matRestricted = selectedMats;
+                md->Add(lmd);
             }
             else
             {
-                debug1 << "Skipping/ignoring empty csg var \"" << csgvar_names[i] << "\"" << endl;
+                avtVectorMetaData *vmd = new avtVectorMetaData(name_w_dir,
+                                             meshname_w_dir, centering, csgv->nvals);
+                vmd->validVariable = valid_var;
+                vmd->hideFromGUI = guiHide;
+                vmd->matRestricted = selectedMats;
+                if(csgv->units != 0)
+                {
+                    vmd->hasUnits = true;
+                    vmd->units = string(csgv->units);
+                }
+                md->Add(vmd);
             }
         }
         CATCHALL
@@ -3702,67 +3646,59 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
                 mat = DBAllocMaterial();
             }
 
-            if (!DBIsEmptyMaterial(mat))
-            {
-                char meshname[256];
-                DBInqMeshname(correctFile, realvar.c_str(), meshname);
+            char meshname[256];
+            DBInqMeshname(correctFile, realvar.c_str(), meshname);
 
+            //
+            // Give the materials names based on their material number.  If
+            // they have names in the Silo file, use those as well.
+            //
+            vector<string>  matnames;
+            vector<string>  matcolors;
+            for (j = 0 ; j < mat->nmat ; j++)
+            {
                 //
-                // Give the materials names based on their material number.  If
-                // they have names in the Silo file, use those as well.
+                // Deal with material names
                 //
-                vector<string>  matnames;
-                vector<string>  matcolors;
-                for (j = 0 ; j < mat->nmat ; j++)
+                char *num = NULL;
+                int dlen = int(log10(float(mat->matnos[j]+1))) + 1;
+                if (mat->matnames == NULL || mat->matnames[j] == NULL)
                 {
-                    //
-                    // Deal with material names
-                    //
-                    char *num = NULL;
-                    int dlen = int(log10(float(mat->matnos[j]+1))) + 1;
-                    if (mat->matnames == NULL || mat->matnames[j] == NULL)
-                    {
-                        num = new char[dlen + 2];
-                        sprintf(num, "%d", mat->matnos[j]);
-                    }
-                    else
-                    {
-                        int len = strlen(mat->matnames[j]);
-                        num = new char[len + 1 + dlen + 1];
-                        sprintf(num, "%d %s", mat->matnos[j], mat->matnames[j]);
-                    }
-                    matnames.push_back(num);
-                    delete[] num;
-
-                    //
-                    // Deal with material colors
-                    //
-                    if (mat->matcolors)
-                    {
-                        if (mat->matcolors[j] && mat->matcolors[j][0])
-                            matcolors.push_back(mat->matcolors[j]);
-                        else
-                            matcolors.push_back("");
-                    }
+                    num = new char[dlen + 2];
+                    sprintf(num, "%d", mat->matnos[j]);
                 }
-
-                meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
-                avtMaterialMetaData *mmd;
-                if (matcolors.size())
-                    mmd = new avtMaterialMetaData(name_w_dir, meshname_w_dir,
-                                                  mat->nmat, matnames, matcolors);
                 else
-                    mmd = new avtMaterialMetaData(name_w_dir, meshname_w_dir,
-                                                  mat->nmat, matnames);
-                mmd->validVariable = valid_var;
-                mmd->hideFromGUI = mat->guihide;
-                md->Add(mmd);
-            }
-            else
-            {
-                debug1 << "Skipping/ignoring empty material \"" << mat_names[i] << "\"" << endl;
+                {
+                    int len = strlen(mat->matnames[j]);
+                    num = new char[len + 1 + dlen + 1];
+                    sprintf(num, "%d %s", mat->matnos[j], mat->matnames[j]);
+                }
+                matnames.push_back(num);
+                delete[] num;
+
+                //
+                // Deal with material colors
+                //
+                if (mat->matcolors)
+                {
+                    if (mat->matcolors[j] && mat->matcolors[j][0])
+                        matcolors.push_back(mat->matcolors[j]);
+                    else
+                        matcolors.push_back("");
+                }
             }
 
+            meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
+            avtMaterialMetaData *mmd;
+            if (matcolors.size())
+                mmd = new avtMaterialMetaData(name_w_dir, meshname_w_dir,
+                                              mat->nmat, matnames, matcolors);
+            else
+                mmd = new avtMaterialMetaData(name_w_dir, meshname_w_dir,
+                                              mat->nmat, matnames);
+            mmd->validVariable = valid_var;
+            mmd->hideFromGUI = mat->guihide;
+            md->Add(mmd);
         }
         CATCHALL
         {
@@ -4092,51 +4028,44 @@ avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
                 spec = DBAllocMatspecies();
             }
 
-            if (!DBIsEmptyMatspecies(spec))
-            {
-                char meshname[256];
-                GetMeshname(dbfile, spec->matname, meshname);
+            char meshname[256];
+            GetMeshname(dbfile, spec->matname, meshname);
 
-                vector<int>   numSpecies;
-                vector<vector<string> > speciesNames;
-                int spec_name_idx =0;
-                ostringstream oss;
-                for (j = 0 ; j < spec->nmat ; j++)
-                {
-                    numSpecies.push_back(spec->nmatspec[j]);
-                    vector<string>  tmp_string_vector;
-                    //
-                    // Species do not currently have names, so just use their index.
-                    //
-                    for (k = 0 ; k < spec->nmatspec[j] ; k++)
-                    {
-                        oss.str("");
-                        oss << (k+1);
-                        if(spec->specnames != NULL)
-                        {
-                            //
-                            //add spec name if it exists
-                            //
-                            oss << " ("
-                                << string(spec->specnames[spec_name_idx])
-                                << ")";
-                            spec_name_idx++;
-                        }
-                        tmp_string_vector.push_back(oss.str());
-                    }
-                    speciesNames.push_back(tmp_string_vector);
-                }
-                meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
-                avtSpeciesMetaData *smd = new avtSpeciesMetaData(name_w_dir,
-                                          meshname_w_dir, spec->matname, spec->nmat,
-                                          numSpecies, speciesNames);
-                //smd->hideFromGUI = spec->guihide;
-                md->Add(smd);
-            }
-            else
+            vector<int>   numSpecies;
+            vector<vector<string> > speciesNames;
+            int spec_name_idx =0;
+            ostringstream oss;
+            for (j = 0 ; j < spec->nmat ; j++)
             {
-                debug1 << "Skipping/ignoring empty species \"" << matspecies_names[i] << "\"" << endl;
+                numSpecies.push_back(spec->nmatspec[j]);
+                vector<string>  tmp_string_vector;
+                //
+                // Species do not currently have names, so just use their index.
+                //
+                for (k = 0 ; k < spec->nmatspec[j] ; k++)
+                {
+                    oss.str("");
+                    oss << (k+1);
+                    if(spec->specnames != NULL)
+                    {
+                        //
+                        //add spec name if it exists
+                        //
+                        oss << " ("
+                            << string(spec->specnames[spec_name_idx])
+                            << ")";
+                        spec_name_idx++;
+                    }
+                    tmp_string_vector.push_back(oss.str());
+                }
+                speciesNames.push_back(tmp_string_vector);
             }
+            meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
+            avtSpeciesMetaData *smd = new avtSpeciesMetaData(name_w_dir,
+                                      meshname_w_dir, spec->matname, spec->nmat,
+                                      numSpecies, speciesNames);
+            //smd->hideFromGUI = spec->guihide;
+            md->Add(smd);
         }
         CATCHALL
         {
