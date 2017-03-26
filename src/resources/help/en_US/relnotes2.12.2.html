@@ -27,6 +27,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A bug was corrected with the BOUT++ database reader, where holes in the mesh or other artifacts would appear when two adjacent radial rows in the mesh had the exact same zshift values.</li>
   <li>A bug was corrected where VisIt would sometimes go into scalable rendering mode and then immediately go back out again, resulting in a blank image.</li>
   <li>Fixed memory leak in Radial Resample and added support for point and cell data.</li>
+  <li>In the presence of multi-block objects for which no block-level sub-objects exist, the Silo plugin could
+      invalidate all objects in a database. Although this problem is fixed, attempts to open any such poorly
+      constructed Silo file can lead to <b>unacceptable</b> performance issues simply opening a file. Such Silo
+      files are considered <b>invalid></b>.</li>
+  <li>Fixed a problem where fuzzy logic to match multi-vars to multi-meshes was getting inadvertently triggered
+      even for multi-var objects that correctly specified their multi-mesh via the DBOPT_MMESH option.</li>
+  <li>Removed logic to skip empty single-block mesh and variable objects from getting added to database metadata
+      to ensure existence of such objects does not vary with time.</li>
 </ul>
 
 <a name="Enhancements"></a>
