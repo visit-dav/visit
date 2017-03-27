@@ -311,6 +311,9 @@ ThresholdAttributes::TypeName() const
 //   Jeremy Meredith, Tue Apr 22 14:31:20 EDT 2008
 //   Removed Extents tool.  (Functionality subsumed by axis restriction tool.)
 //
+//   Kevin Griffin, Wed Feb 15 11:50:13 PDT 2017
+//   Added boundsRange
+//
 // ****************************************************************************
 
 bool
@@ -333,6 +336,7 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
         stringVector toolVarNames = arAtts->GetNames();
         doubleVector toolMinima   = arAtts->GetMinima();
         doubleVector toolMaxima   = arAtts->GetMaxima();
+        char buffer[50];
 
         for (size_t lv=0; lv < listedVarNames.size(); lv++)
         {
@@ -342,6 +346,8 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
                 {
                     lowerBounds[lv] = toolMinima[tv];
                     upperBounds[lv] = toolMaxima[tv];
+                    snprintf(buffer, sizeof(buffer), "%g:%g",toolMinima[tv],toolMaxima[tv]);
+                    boundsRange[lv] =  string(buffer);
                 }
                 else if (toolVarNames[tv] == defaultVarName &&
                          listedVarNames[lv] == "default" &&
@@ -349,6 +355,8 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
                 {
                     lowerBounds[lv] = toolMinima[tv];
                     upperBounds[lv] = toolMaxima[tv];
+                    snprintf(buffer, sizeof(buffer), "%g:%g",toolMinima[tv],toolMaxima[tv]);
+                    boundsRange[lv] =  string(buffer);
                 }
             }
         }
@@ -450,6 +458,9 @@ ThresholdAttributes::SelectAll()
 // Creation:   omitted
 //
 // Modifications:
+//
+//   Kevin Griffin, Wed Feb 15 11:50:13 PDT 2017
+//   Added boundsRange
 //   
 // ****************************************************************************
 
@@ -498,6 +509,12 @@ ThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("upperBounds", upperBounds));
+    }
+
+    if(completeSave || !FieldsEqual(ID_boundsRange, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("boundsRange", boundsRange));
     }
 
     if(completeSave || !FieldsEqual(ID_defaultVarName, &defaultObject))
@@ -559,6 +576,8 @@ ThresholdAttributes::SetFromNode(DataNode *parentNode)
         SetLowerBounds(node->AsDoubleVector());
     if((node = searchNode->GetNode("upperBounds")) != 0)
         SetUpperBounds(node->AsDoubleVector());
+    if((node = searchNode->GetNode("boundsRange")) != 0)
+        SetBoundsRange(node->AsStringVector());
     if((node = searchNode->GetNode("defaultVarName")) != 0)
         SetDefaultVarName(node->AsString());
     if((node = searchNode->GetNode("defaultVarIsScalar")) != 0)

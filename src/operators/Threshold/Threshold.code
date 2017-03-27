@@ -224,7 +224,7 @@ ThresholdAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("upperBounds")) != 0)
         SetUpperBounds(node->AsDoubleVector());
     if((node = searchNode->GetNode("boundsRange")) != 0)
-        SetUpperBounds(node->AsStringVector());
+        SetBoundsRange(node->AsStringVector());
     if((node = searchNode->GetNode("defaultVarName")) != 0)
         SetDefaultVarName(node->AsString());
     if((node = searchNode->GetNode("defaultVarIsScalar")) != 0)
