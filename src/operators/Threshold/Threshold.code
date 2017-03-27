@@ -66,7 +66,7 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
                     lowerBounds[lv] = toolMinima[tv];
                     upperBounds[lv] = toolMaxima[tv];
                     snprintf(buffer, sizeof(buffer), "%g:%g",toolMinima[tv],toolMaxima[tv]);
-                    boundsRange[lv] =  string(buffer);
+                    boundsRange[lv] =  std::string(buffer);
                 }
                 else if (toolVarNames[tv] == defaultVarName &&
                          listedVarNames[lv] == "default" &&
@@ -75,7 +75,7 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
                     lowerBounds[lv] = toolMinima[tv];
                     upperBounds[lv] = toolMaxima[tv];
                     snprintf(buffer, sizeof(buffer), "%g:%g",toolMinima[tv],toolMaxima[tv]);
-                    boundsRange[lv] =  string(buffer);
+                    boundsRange[lv] =  std::string(buffer);
                 }
             }
         }
@@ -224,7 +224,7 @@ ThresholdAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("upperBounds")) != 0)
         SetUpperBounds(node->AsDoubleVector());
     if((node = searchNode->GetNode("boundsRange")) != 0)
-        SetUpperBounds(node->AsStringVector());
+        SetBoundsRange(node->AsStringVector());
     if((node = searchNode->GetNode("defaultVarName")) != 0)
         SetDefaultVarName(node->AsString());
     if((node = searchNode->GetNode("defaultVarIsScalar")) != 0)
