@@ -1322,6 +1322,8 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
             ExtendBoundsIfNeeded(bounds);
         }
         
+         visitTimer->StopTimer(timerHandle, "avtSPHResample::Sample - stop 1");
+        
         // Synchronize moments
         if(data.size() > 0)
         {
@@ -1332,6 +1334,8 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
             sphData fakeData(0, Dim);
             SynchMoments(fakeData);
         }
+        
+        timerHandle = visitTimer->StartTimer();
         
         // Compute A and B Correction Values
         for(int i=0; i<data.size(); i++)
@@ -1626,6 +1630,8 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
         }
     } // End Else
     
+    visitTimer->StopTimer(timerHandle, "avtSPHResample::Sample - stop 2");
+    
     // Synchronize scalar values
     if(data.size() > 0)
     {
@@ -1642,7 +1648,7 @@ avtSPHResampleFilter::Sample(vector<sphData>& data)
         appender->Delete();
     }
     
-    visitTimer->StopTimer(timerHandle, "avtSPHResample::Sample");
+//    visitTimer->StopTimer(timerHandle, "avtSPHResample::Sample");
 }
 
 // ****************************************************************************
