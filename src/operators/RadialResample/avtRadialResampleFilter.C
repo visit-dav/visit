@@ -288,21 +288,22 @@ avtRadialResampleFilter::Execute()
             std::string varName = GetInput()->GetInfo().GetAttributes().GetVariableName(i);
             
             int numVarDataComps = GetInput()->GetInfo().GetAttributes().GetVariableDimension(varName.c_str());
-            debug5 << "Number of Components: " << numVarDataComps <<  endl;
+            debug5 << "varName: " << varName << " Number of Components: " << numVarDataComps <<  endl;
             
+            // Get the scalar values from the current grid (inputArray) and
+            // interpolate for the new grid (var)
             vars[i] = vtkDoubleArray::New();
             vars[i]->SetName(varName.c_str());
             vars[i]->SetNumberOfTuples(rrgNumOfPoints);
             vars[i]->SetNumberOfComponents(numVarDataComps);
             
-            // Get the scalar values from the current grid (inputArray) and
-            // interpolate for the new grid (var)
-            double *inputArrayDataVals = new double[numVarDataComps];       /* orginal variable value */
-                 /* variable values after weight applied */
+            /* orginal variable value */
+            double *inputArrayDataVals = new double[numVarDataComps];
+            /* variable values after weight applied */
+            double *outputArrayDataVals = new double[numVarDataComps];
             
             for(j=0; j<rrgNumOfPoints; j++)
             {
-                double *outputArrayDataVals = new double[numVarDataComps];
                 rrg->GetPoint(j, pos);
                
                 for(int compIdx=0; compIdx<numVarDataComps; compIdx++)
@@ -316,12 +317,12 @@ avtRadialResampleFilter::Execute()
                     vtkDataArray *inputArray = dataSet->GetPointData()->GetArray(varName.c_str());
                     if(inputArray != NULL)
                     {
-                        fieldAssocs[k] = vtkDataObject::FIELD_ASSOCIATION_POINTS;
+                        fieldAssocs[i] = vtkDataObject::FIELD_ASSOCIATION_POINTS;
                     }
                     else
                     {
                         inputArray = dataSet->GetCellData()->GetArray(varName.c_str());
-                        fieldAssocs[k] = vtkDataObject::FIELD_ASSOCIATION_CELLS;
+                        fieldAssocs[i] = vtkDataObject::FIELD_ASSOCIATION_CELLS;
                     }
                     
                     if(inputArray != NULL)
@@ -347,7 +348,6 @@ avtRadialResampleFilter::Execute()
                 }
                 
                 vars[i]->SetTuple(j, outputArrayDataVals);
-                delete [] outputArrayDataVals;
             }
             
             // Reduction if running in parallel: MPI_Reduce
@@ -357,6 +357,7 @@ avtRadialResampleFilter::Execute()
             
             // Memory Cleanup
             delete [] inputArrayDataVals;
+            delete [] outputArrayDataVals;
         }
         
         if(PAR_Rank() == 0)
@@ -948,15 +949,15 @@ avtRadialResampleFilter::ModifyContract(avtContract_p in_contract)
 void
 avtRadialResampleFilter::UpdateDataObjectInfo(void)
 {
-    avtDataAttributes &inAtts   = GetInput()->GetInfo().GetAttributes();
+//    avtDataAttributes &inAtts   = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     avtDataValidity   &outValidity = GetOutput()->GetInfo().GetValidity();
-    int spatialDim = inAtts.GetSpatialDimension();
-    
-    outAtts.SetTopologicalDimension(spatialDim);
+//    int spatialDim = inAtts.GetSpatialDimension();
+//    
+//    outAtts.SetTopologicalDimension(spatialDim);
     
     outValidity.InvalidateZones();
-    outValidity.InvalidateNodes();
+//    outValidity.InvalidateNodes();
     
     if(!resampleVarName.empty() && outAtts.ValidActiveVariable())
     {
