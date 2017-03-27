@@ -347,7 +347,7 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
                     lowerBounds[lv] = toolMinima[tv];
                     upperBounds[lv] = toolMaxima[tv];
                     snprintf(buffer, sizeof(buffer), "%g:%g",toolMinima[tv],toolMaxima[tv]);
-                    boundsRange[lv] =  string(buffer);
+                    boundsRange[lv] =  std::string(buffer);
                 }
                 else if (toolVarNames[tv] == defaultVarName &&
                          listedVarNames[lv] == "default" &&
@@ -356,7 +356,7 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
                     lowerBounds[lv] = toolMinima[tv];
                     upperBounds[lv] = toolMaxima[tv];
                     snprintf(buffer, sizeof(buffer), "%g:%g",toolMinima[tv],toolMaxima[tv]);
-                    boundsRange[lv] =  string(buffer);
+                    boundsRange[lv] =  std::string(buffer);
                 }
             }
         }
