@@ -280,9 +280,6 @@ avtThresholdFilter::Equivalent(const AttributeGroup *a)
 //    Eric Brugger, Wed Aug 20 17:06:55 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
-//    Kevin Griffin, Thu Mar 23 08:25:21 PDT 2017
-//    Add capability to threshold on multiple ranges (Feature #2646).
-//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -333,7 +330,6 @@ avtThresholdFilter::ProcessOneChunk(
     const intVector    curZonePortions = atts.GetZonePortions();
     const doubleVector curLowerBounds  = atts.GetLowerBounds();
     const doubleVector curUpperBounds  = atts.GetUpperBounds();
-    const stringVector curBoundsRange = atts.GetBoundsRange();
     
     const char *curVarName;
     char errMsg[1024];
@@ -360,65 +356,57 @@ avtThresholdFilter::ProcessOneChunk(
         {
             curVarName = curVariables[curVarNum].c_str();
             
-            if(atts.GetBoundsInputType() == ThresholdOpAttributes::Default || IsSimpleRange(curBoundsRange[curVarNum]))
+            threshold->SetInputData(curOutDataSet);
+            // We registered curOutDataSet so it wouldn't be deleted.  But now that
+            // we have fed it back into the threshold filter, we are done with it.
+            // So decrement its reference count.
+            if (curOutDataSet != in_ds)
+                curOutDataSet->Delete();
+
+            threshold->SetInputArrayToProcess(
+                0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS,
+                vtkDataSetAttributes::SCALARS);
+
+            if (curZonePortions[curVarNum] == (int)ThresholdOpAttributes::PartOfZone)
             {
-                threshold->SetInputData(curOutDataSet);
-                // We registered curOutDataSet so it wouldn't be deleted.  But now that
-                // we have fed it back into the threshold filter, we are done with it.
-                // So decrement its reference count.
-                if (curOutDataSet != in_ds)
-                    curOutDataSet->Delete();
-                
-                threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS,
-                                                  vtkDataSetAttributes::SCALARS);
-                
-                if (curZonePortions[curVarNum] == (int)ThresholdOpAttributes::PartOfZone)
-                {
-                    threshold->AllScalarsOff();
-                }
-                else if (curZonePortions[curVarNum] == (int)ThresholdOpAttributes::EntireZone)
-                {
-                    threshold->AllScalarsOn();
-                }
-                else
-                {
-                    debug1 << "Invalid zone inclusion option encountered "
-                    << "in Threshold operator attributes." << endl;
-                    threshold->AllScalarsOff();
-                }
-                
-                threshold->ThresholdBetween(curLowerBounds[curVarNum], curUpperBounds[curVarNum]);
-                
-                if (curOutDataSet->GetPointData()->GetArray(curVarName) != NULL)
-                {
-                    threshold->SetInputArrayToProcess(
-                                                      0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, curVarName);
-                }
-                else if (curOutDataSet->GetCellData()->GetArray(curVarName) != NULL)
-                {
-                    threshold->SetInputArrayToProcess(
-                                                      0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, curVarName);
-                }
-                else
-                {
-                    threshold->Delete();
-                    
-                    sprintf (errMsg, "Data for variable \"%s\" is not currently available.", curVarName);
-                    debug1 << errMsg << endl;
-                    EXCEPTION1(VisItException, errMsg);
-                }
-                
-                threshold->Update();
-                curOutDataSet = threshold->GetOutput();
+                threshold->AllScalarsOff();
+            }
+            else if (curZonePortions[curVarNum] == (int)ThresholdOpAttributes::EntireZone)
+            {
+                threshold->AllScalarsOn();
             }
             else
             {
-                curOutDataSet = ThresholdOnRanges(curOutDataSet,
-                                                  threshold,
-                                                  curVarName,
-                                                  curBoundsRange[curVarNum],
-                                                  curZonePortions[curVarNum]);
+                debug1 << "Invalid zone inclusion option encountered "
+                    << "in Threshold operator attributes." << endl;
+                threshold->AllScalarsOff();
             }
+
+            threshold->ThresholdBetween(
+                curLowerBounds[curVarNum], curUpperBounds[curVarNum]);
+        
+            if (curOutDataSet->GetPointData()->GetArray(curVarName) != NULL)
+            {
+                threshold->SetInputArrayToProcess(
+                    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, curVarName);
+            }
+            else if (curOutDataSet->GetCellData()->GetArray(curVarName) != NULL)
+            {
+                threshold->SetInputArrayToProcess(
+                    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, curVarName);
+            }
+            else
+            {
+                threshold->Delete();
+        
+                sprintf (errMsg, "Data for variable \"%s\" is not currently available.",
+                        curVarName);
+                debug1 << errMsg << endl;
+                EXCEPTION1(VisItException, errMsg);
+            }
+
+            threshold->Update();
+            curOutDataSet = threshold->GetOutput();
         }
 
         if (curOutDataSet->GetNumberOfCells() <= 0)
@@ -462,258 +450,6 @@ avtThresholdFilter::ProcessOneChunk(
     return out_dr;
 }
 
-// ****************************************************************************
-//  Method: avtThresholdFilter::IsSimpleRange
-//
-//  Purpose: Determine if a range string consists of only one range or is
-//           empty.
-//
-//  Arguments:
-//      range           The range string to examine.
-//
-//  Returns: true if there is only one or no range in range string, otherwise
-//           false
-//
-//  Programmer: Kevin Griffin
-//  Creation:   Thu Mar 23 08:25:21 PDT 2017
-//
-//  Modifications:
-// ****************************************************************************
-
-bool
-avtThresholdFilter::IsSimpleRange(const std::string range)
-{
-    if(range.empty())
-    {
-        return true;
-    }
-        
-    
-    std::size_t pos = range.find(",");
-    
-    return (pos == std::string::npos);
-}
-
-// ****************************************************************************
-//  Method: avtThresholdFilter::CheckForMinMax
-//
-//  Purpose: Check the string for min or max.
-//
-//  Arguments:
-//      str     The low or high range string to check
-//
-//  Returns: If the string contains 'min' or 'max' it will replace the string
-//           with -1e+37 or 1e+37, respectively. Otherwise the original string
-//           is returned.
-//
-//  Programmer: Kevin Griffin
-//  Creation:   Thu Mar 23 08:25:21 PDT 2017
-//
-//  Modifications:
-// ****************************************************************************
-std::string
-avtThresholdFilter::CheckForMinMax(const std::string str)
-{
-    size_t minPos = str.find("min");
-    size_t maxPos = str.find("max");
-    
-    if(minPos != std::string::npos)
-    {
-        return std::string("-1e+37");
-    }
-    
-    if(maxPos != std::string::npos)
-    {
-        return std::string("1e+37");
-    }
-    
-    return str;
-}
-
-// ****************************************************************************
-//  Method: avtThresholdFilter::GetRangeList
-//
-//  Purpose: Parse the range string and create a list of ranges.
-//
-//  Arguments:
-//      rangeStr           The range string to parse.
-//
-//  Returns: A vector of ranges
-//
-//  Programmer: Kevin Griffin
-//  Creation:   Thu Mar 23 08:25:21 PDT 2017
-//
-//  Modifications:
-// ****************************************************************************
-
-stringVector
-avtThresholdFilter::GetRangeList(const std::string rangeStr)
-{
-    stringVector rangeTokens;
-    
-    if(rangeStr.empty())
-    {
-        return rangeTokens;
-    }
-    
-    // Create list of ranges
-    std::size_t pos = rangeStr.find(",");
-    std::size_t startPos = 0;
-    
-    while(pos != std::string::npos)
-    {
-        rangeTokens.push_back(rangeStr.substr(startPos, pos-startPos));
-        startPos = pos+1;
-        pos = rangeStr.find(",", startPos);
-    }
-    
-    rangeTokens.push_back(rangeStr.substr(startPos));
-    
-    return rangeTokens;
-}
-
-// ****************************************************************************
-//  Method: avtThresholdFilter::ThresholdOnRanges
-//
-//  Purpose: Threshold the dataset on a custom range
-//
-//  Arguments:
-//      in_ds           The input VTK dataset.
-//      threshold       The VTK threshold operator.
-//      varName         The threshold variable name.
-//      rangeStr        The range string consisting of a comma separated list
-//                      of min-max and/or minmax (e.g. "1-10, 13, 20-6")
-//      curZonePortion  Contains the value of the "Show zone if" option
-//
-//  Returns: The dataset after the threshold range has been applied
-//
-//  Programmer: Kevin Griffin
-//  Creation:   Thu Mar 23 08:25:21 PDT 2017
-//
-//  Modifications:
-//    Kevin Griffin, Fri Mar 24 11:36:58 PDT 2017
-//    Changed the range symbol from '-' to ':' so it wouldn't conflict with
-//    negative numbers. Also allow the use of 'min' and 'max' in ranges.
-//
-// ****************************************************************************
-
-vtkDataSet *
-avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
-                                      vtkThreshold *threshold,
-                                      const char *varName,
-                                      const std::string rangeStr,
-                                      const int curZonePortion)
-{
-    // Create list of ranges
-    stringVector rangeTokens = GetRangeList(rangeStr);
-    
-    // Setup Threshold Data Array
-    const char *keeperName = "_avt_threshold_keeper";
-    const vtkDataObject::FieldAssociations FIELD_ASSOC = (in_ds->GetPointData()->GetArray(varName) != NULL) ? vtkDataObject::FIELD_ASSOCIATION_POINTS
-                                                                                                            : vtkDataObject::FIELD_ASSOCIATION_CELLS;
-    
-    vtkDataArray *curVarArray = (FIELD_ASSOC == vtkDataObject::FIELD_ASSOCIATION_POINTS) ? in_ds->GetPointData()->GetArray(varName)
-                                                                                         : in_ds->GetCellData()->GetArray(varName);
-    
-    vtkIntArray *keeper = vtkIntArray::New();
-    keeper->SetName(keeperName);
-    
-    int keeperSize = curVarArray->GetSize();
-    keeper->SetNumberOfTuples(keeperSize);
-    
-    // Initialize keeper
-    for(int i=0; i<keeperSize; i++)
-    {
-        keeper->SetTuple1(i, 0);
-    }
-    
-    // Determine what data we want to keep based on the ranges
-    for(int i=0; i<rangeTokens.size(); i++)
-    {
-        if(rangeTokens[i].empty())
-        {
-            continue;
-        }
-        
-        double threshLow = 0;
-        double threshHigh = 0;
-        
-        size_t pos = rangeTokens[i].find(":");
-        if(pos != std::string::npos)
-        {
-            std::string lowStr = rangeTokens[i].substr(0, pos).c_str();
-            std::string highStr = rangeTokens[i].substr(pos+1).c_str();
-        
-            threshLow = atof(CheckForMinMax(lowStr).c_str());
-            threshHigh = atof(CheckForMinMax(highStr).c_str());
-        }
-        else // single number
-        {
-            threshLow = atof(CheckForMinMax(rangeTokens[i]).c_str());
-            threshHigh = threshLow;
-        }
-        
-        debug5 << "threshLow: " << threshLow << " threshHigh: " << threshHigh << endl;
-        
-        for(int j=0; j<curVarArray->GetSize(); j++)
-        {
-            double value = curVarArray->GetTuple1(j);
-            
-            if((value >= threshLow) && (value <= threshHigh))
-            {
-                keeper->SetTuple1(j, 1);
-            }
-        }
-    }
-    
-    // Add threshold array to the dataset
-    if(FIELD_ASSOC == vtkDataObject::FIELD_ASSOCIATION_POINTS)
-    {
-        in_ds->GetPointData()->AddArray(keeper);
-    }
-    else
-    {
-        in_ds->GetCellData()->AddArray(keeper);
-    }
-    
-    // Ready to threshold
-    threshold->SetInputData(in_ds);
-    threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS, vtkDataSetAttributes::SCALARS);
-    
-    if (curZonePortion == (int)ThresholdOpAttributes::PartOfZone)
-    {
-        threshold->AllScalarsOff();
-    }
-    else if (curZonePortion == (int)ThresholdOpAttributes::EntireZone)
-    {
-        threshold->AllScalarsOn();
-    }
-    else
-    {
-        debug1 << "Invalid zone inclusion option encountered "
-        << "in Threshold operator attributes." << endl;
-        threshold->AllScalarsOff();
-    }
-    
-    threshold->ThresholdBetween(1, 1);
-    threshold->SetInputArrayToProcess(0, 0, 0, FIELD_ASSOC, keeperName);
-    threshold->Update();
-    
-    in_ds = threshold->GetOutput();
-    
-    if(FIELD_ASSOC == vtkDataObject::FIELD_ASSOCIATION_POINTS)
-    {
-        in_ds->GetPointData()->RemoveArray(keeperName);
-    }
-    else
-    {
-        in_ds->GetCellData()->RemoveArray(keeperName);
-    }
-    
-    keeper->Delete();
-    
-    return in_ds;
-}
 
 // ****************************************************************************
 //  Method: avtThresholdFilter::ThresholdToPointMesh
@@ -743,20 +479,11 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
 //    Switch to GetTuple1 since this operation is not common. Change how
 //    points are allocated.
 //
-//    Kevin Griffin, Thu Mar 23 08:25:21 PDT 2017
-//    Added support for variables with multiple threshold ranges
-//    (Feature #2646).
-//
-//    Kevin Griffin, Fri Mar 24 11:36:58 PDT 2017
-//    Changed the range symbol from '-' to ':' so it wouldn't conflict with
-//    negative numbers. Also allow the use of 'min' and 'max' in ranges.
-//
 // ****************************************************************************
 
 vtkDataSet *
 avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
 {
-    
     const stringVector curVariables = atts.GetListedVarNames();
     int curVarCount = (int)curVariables.size();
     int curVarNum;
@@ -781,8 +508,6 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
     const intVector    curZonePortions = atts.GetZonePortions();
     const doubleVector curLowerBounds  = atts.GetLowerBounds();
     const doubleVector curUpperBounds  = atts.GetUpperBounds();
-    const stringVector curBoundsRange = atts.GetBoundsRange();
-    
     int inPointCount = in_ds->GetNumberOfPoints();
     int plotPointCount = 0;
     int inPointID;
@@ -793,51 +518,9 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
         for (curVarNum = 0; curVarNum < curVarCount; curVarNum++)
         {
             doubleValue = valueArrays[curVarNum]->GetTuple1(inPointID);
-            
-            if((atts.GetBoundsInputType() == ThresholdOpAttributes::Default) || IsSimpleRange(curBoundsRange[curVarNum]))
-            {
-                if (doubleValue < curLowerBounds[curVarNum]) break;
-                if (doubleValue > curUpperBounds[curVarNum]) break;
-            }
-            else
-            {
-                bool breakLoop = true;
-                stringVector rangeTokens = GetRangeList(curBoundsRange[curVarNum]);
-                
-                for(int i=0; i<rangeTokens.size(); i++)
-                {
-                    if(rangeTokens[i].empty())
-                    {
-                        continue;
-                    }
-                    
-                    double threshLow = 0;
-                    double threshHigh = 0;
-                    
-                    size_t pos = rangeTokens[i].find(":");
-                    if(pos != std::string::npos)
-                    {
-                        threshLow = atof(CheckForMinMax(rangeTokens[i].substr(0, pos)).c_str());
-                        threshHigh = atof(CheckForMinMax(rangeTokens[i].substr(pos+1)).c_str());
-                    }
-                    else // single number
-                    {
-                        threshLow = atof(CheckForMinMax(rangeTokens[i]).c_str());
-                        threshHigh = threshLow;
-                    }
-                    
-                    if((doubleValue >= threshLow) && (doubleValue <= threshHigh))
-                    {
-                        breakLoop = false;
-                        break;
-                    }
-                }
-                
-                if(breakLoop)
-                {
-                    break;
-                }
-            }
+
+            if (doubleValue < curLowerBounds[curVarNum]) break;
+            if (doubleValue > curUpperBounds[curVarNum]) break;
         }
 
         if (curVarNum >= curVarCount) plotPointCount++;
@@ -869,51 +552,9 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
         for (curVarNum = 0; curVarNum < curVarCount; curVarNum++)
         {
             doubleValue = valueArrays[curVarNum]->GetTuple1(inPointID);
-            
-            if((atts.GetBoundsInputType() == ThresholdOpAttributes::Default) || IsSimpleRange(curBoundsRange[curVarNum]))
-            {
-                if (doubleValue < curLowerBounds[curVarNum]) break;
-                if (doubleValue > curUpperBounds[curVarNum]) break;
-            }
-            else
-            {
-                bool breakLoop = true;
-                stringVector rangeTokens = GetRangeList(curBoundsRange[curVarNum]);
-                
-                for(int i=0; i<rangeTokens.size(); i++)
-                {
-                    if(rangeTokens[i].empty())
-                    {
-                        continue;
-                    }
-                    
-                    double threshLow = 0;
-                    double threshHigh = 0;
-                    
-                    size_t pos = rangeTokens[i].find(":");
-                    if(pos != std::string::npos)
-                    {
-                        threshLow = atof(CheckForMinMax(rangeTokens[i].substr(0, pos)).c_str());
-                        threshHigh = atof(CheckForMinMax(rangeTokens[i].substr(pos+1)).c_str());
-                    }
-                    else // single number
-                    {
-                        threshLow = atof(CheckForMinMax(rangeTokens[i]).c_str());
-                        threshHigh = threshLow;
-                    }
-                    
-                    if((doubleValue >= threshLow) && (doubleValue <= threshHigh))
-                    {
-                        breakLoop = false;
-                        break;
-                    }
-                }
-                
-                if(breakLoop)
-                {
-                    break;
-                }
-            }
+
+            if (doubleValue < curLowerBounds[curVarNum]) break;
+            if (doubleValue > curUpperBounds[curVarNum]) break;
         }
 
         bool shouldAdd = true;

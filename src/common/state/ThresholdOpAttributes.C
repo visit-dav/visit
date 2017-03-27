@@ -113,43 +113,6 @@ ThresholdOpAttributes::ZonePortion_FromString(const std::string &s, ThresholdOpA
     return false;
 }
 
-//
-// Enum conversion methods for ThresholdOpAttributes::BoundsInputType
-//
-
-static const char *BoundsInputType_strings[] = {
-"Default", "Custom"};
-
-std::string
-ThresholdOpAttributes::BoundsInputType_ToString(ThresholdOpAttributes::BoundsInputType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return BoundsInputType_strings[index];
-}
-
-std::string
-ThresholdOpAttributes::BoundsInputType_ToString(int t)
-{
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return BoundsInputType_strings[index];
-}
-
-bool
-ThresholdOpAttributes::BoundsInputType_FromString(const std::string &s, ThresholdOpAttributes::BoundsInputType &val)
-{
-    val = ThresholdOpAttributes::Default;
-    for(int i = 0; i < 2; ++i)
-    {
-        if(s == BoundsInputType_strings[i])
-        {
-            val = (BoundsInputType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
 // ****************************************************************************
 // Method: ThresholdOpAttributes::ThresholdOpAttributes
 //
@@ -168,7 +131,6 @@ ThresholdOpAttributes::BoundsInputType_FromString(const std::string &s, Threshol
 void ThresholdOpAttributes::Init()
 {
     outputMeshType = 0;
-    boundsInputType = 0;
     listedVarNames.push_back("default");
     defaultVarName = "default";
     defaultVarIsScalar = false;
@@ -194,14 +156,12 @@ void ThresholdOpAttributes::Init()
 void ThresholdOpAttributes::Copy(const ThresholdOpAttributes &obj)
 {
     outputMeshType = obj.outputMeshType;
-    boundsInputType = obj.boundsInputType;
     listedVarNames = obj.listedVarNames;
     zonePortions = obj.zonePortions;
     lowerBounds = obj.lowerBounds;
     upperBounds = obj.upperBounds;
     defaultVarName = obj.defaultVarName;
     defaultVarIsScalar = obj.defaultVarIsScalar;
-    boundsRange = obj.boundsRange;
 
     ThresholdOpAttributes::SelectAll();
 }
@@ -360,14 +320,12 @@ ThresholdOpAttributes::operator == (const ThresholdOpAttributes &obj) const
 {
     // Create the return value
     return ((outputMeshType == obj.outputMeshType) &&
-            (boundsInputType == obj.boundsInputType) &&
             (listedVarNames == obj.listedVarNames) &&
             (zonePortions == obj.zonePortions) &&
             (lowerBounds == obj.lowerBounds) &&
             (upperBounds == obj.upperBounds) &&
             (defaultVarName == obj.defaultVarName) &&
-            (defaultVarIsScalar == obj.defaultVarIsScalar) &&
-            (boundsRange == obj.boundsRange));
+            (defaultVarIsScalar == obj.defaultVarIsScalar));
 }
 
 // ****************************************************************************
@@ -512,14 +470,12 @@ void
 ThresholdOpAttributes::SelectAll()
 {
     Select(ID_outputMeshType,     (void *)&outputMeshType);
-    Select(ID_boundsInputType,    (void *)&boundsInputType);
     Select(ID_listedVarNames,     (void *)&listedVarNames);
     Select(ID_zonePortions,       (void *)&zonePortions);
     Select(ID_lowerBounds,        (void *)&lowerBounds);
     Select(ID_upperBounds,        (void *)&upperBounds);
     Select(ID_defaultVarName,     (void *)&defaultVarName);
     Select(ID_defaultVarIsScalar, (void *)&defaultVarIsScalar);
-    Select(ID_boundsRange,        (void *)&boundsRange);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -558,12 +514,6 @@ ThresholdOpAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("outputMeshType", outputMeshType));
     }
 
-    if(completeSave || !FieldsEqual(ID_boundsInputType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("boundsInputType", boundsInputType));
-    }
-
     if(completeSave || !FieldsEqual(ID_listedVarNames, &defaultObject))
     {
         addToParent = true;
@@ -598,12 +548,6 @@ ThresholdOpAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("defaultVarIsScalar", defaultVarIsScalar));
-    }
-
-    if(completeSave || !FieldsEqual(ID_boundsRange, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("boundsRange", boundsRange));
     }
 
 
@@ -644,8 +588,6 @@ ThresholdOpAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("outputMeshType")) != 0)
         SetOutputMeshType(node->AsInt());
-    if((node = searchNode->GetNode("boundsInputType")) != 0)
-        SetBoundsInputType(node->AsInt());
     if((node = searchNode->GetNode("listedVarNames")) != 0)
         SetListedVarNames(node->AsStringVector());
     if((node = searchNode->GetNode("zonePortions")) != 0)
@@ -658,8 +600,6 @@ ThresholdOpAttributes::SetFromNode(DataNode *parentNode)
         SetDefaultVarName(node->AsString());
     if((node = searchNode->GetNode("defaultVarIsScalar")) != 0)
         SetDefaultVarIsScalar(node->AsBool());
-    if((node = searchNode->GetNode("boundsRange")) != 0)
-        SetBoundsRange(node->AsStringVector());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -671,13 +611,6 @@ ThresholdOpAttributes::SetOutputMeshType(int outputMeshType_)
 {
     outputMeshType = outputMeshType_;
     Select(ID_outputMeshType, (void *)&outputMeshType);
-}
-
-void
-ThresholdOpAttributes::SetBoundsInputType(int boundsInputType_)
-{
-    boundsInputType = boundsInputType_;
-    Select(ID_boundsInputType, (void *)&boundsInputType);
 }
 
 void
@@ -722,13 +655,6 @@ ThresholdOpAttributes::SetDefaultVarIsScalar(bool defaultVarIsScalar_)
     Select(ID_defaultVarIsScalar, (void *)&defaultVarIsScalar);
 }
 
-void
-ThresholdOpAttributes::SetBoundsRange(const stringVector &boundsRange_)
-{
-    boundsRange = boundsRange_;
-    Select(ID_boundsRange, (void *)&boundsRange);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -737,12 +663,6 @@ int
 ThresholdOpAttributes::GetOutputMeshType() const
 {
     return outputMeshType;
-}
-
-int
-ThresholdOpAttributes::GetBoundsInputType() const
-{
-    return boundsInputType;
 }
 
 const stringVector &
@@ -811,18 +731,6 @@ ThresholdOpAttributes::GetDefaultVarIsScalar() const
     return defaultVarIsScalar;
 }
 
-const stringVector &
-ThresholdOpAttributes::GetBoundsRange() const
-{
-    return boundsRange;
-}
-
-stringVector &
-ThresholdOpAttributes::GetBoundsRange()
-{
-    return boundsRange;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -857,12 +765,6 @@ ThresholdOpAttributes::SelectDefaultVarName()
     Select(ID_defaultVarName, (void *)&defaultVarName);
 }
 
-void
-ThresholdOpAttributes::SelectBoundsRange()
-{
-    Select(ID_boundsRange, (void *)&boundsRange);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -888,14 +790,12 @@ ThresholdOpAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_outputMeshType:     return "outputMeshType";
-    case ID_boundsInputType:    return "boundsInputType";
     case ID_listedVarNames:     return "listedVarNames";
     case ID_zonePortions:       return "zonePortions";
     case ID_lowerBounds:        return "lowerBounds";
     case ID_upperBounds:        return "upperBounds";
     case ID_defaultVarName:     return "defaultVarName";
     case ID_defaultVarIsScalar: return "defaultVarIsScalar";
-    case ID_boundsRange:        return "boundsRange";
     default:  return "invalid index";
     }
 }
@@ -921,14 +821,12 @@ ThresholdOpAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_outputMeshType:     return FieldType_int;
-    case ID_boundsInputType:    return FieldType_int;
     case ID_listedVarNames:     return FieldType_stringVector;
     case ID_zonePortions:       return FieldType_intVector;
     case ID_lowerBounds:        return FieldType_doubleVector;
     case ID_upperBounds:        return FieldType_doubleVector;
     case ID_defaultVarName:     return FieldType_string;
     case ID_defaultVarIsScalar: return FieldType_bool;
-    case ID_boundsRange:        return FieldType_stringVector;
     default:  return FieldType_unknown;
     }
 }
@@ -954,14 +852,12 @@ ThresholdOpAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_outputMeshType:     return "int";
-    case ID_boundsInputType:    return "int";
     case ID_listedVarNames:     return "stringVector";
     case ID_zonePortions:       return "intVector";
     case ID_lowerBounds:        return "doubleVector";
     case ID_upperBounds:        return "doubleVector";
     case ID_defaultVarName:     return "string";
     case ID_defaultVarIsScalar: return "bool";
-    case ID_boundsRange:        return "stringVector";
     default:  return "invalid index";
     }
 }
@@ -991,11 +887,6 @@ ThresholdOpAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_outputMeshType:
         {  // new scope
         retval = (outputMeshType == obj.outputMeshType);
-        }
-        break;
-    case ID_boundsInputType:
-        {  // new scope
-        retval = (boundsInputType == obj.boundsInputType);
         }
         break;
     case ID_listedVarNames:
@@ -1028,11 +919,6 @@ ThresholdOpAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (defaultVarIsScalar == obj.defaultVarIsScalar);
         }
         break;
-    case ID_boundsRange:
-        {  // new scope
-        retval = (boundsRange == obj.boundsRange);
-        }
-        break;
     default: retval = false;
     }
 
@@ -1053,9 +939,6 @@ ThresholdOpAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // Creation:   Thu Sep 28 12:07:05 PDT 2006
 //
 // Modifications:
-//
-//    Kevin Griffin, Wed Feb 15 11:50:13 PDT 2017
-//    Added boundsRange field.
 //   
 // ****************************************************************************
 
@@ -1076,16 +959,12 @@ ThresholdOpAttributes::SupplyMissingDefaultsIfAppropriate()
     if (upperBounds.size() > 1) return;
     totalEntryCount += upperBounds.size();
     
-    if (boundsRange.size() > 1) return;
-    totalEntryCount += boundsRange.size();
-
     if ((totalEntryCount & 3) == 0) return;
     
     stringVector singleVarName;
     intVector    singleZonePortion;
     doubleVector singleLowerBound;
     doubleVector singleUpperBound;
-    stringVector singleBoundsRange;
     
     if (listedVarNames.size() == 0)
     {
@@ -1110,12 +989,6 @@ ThresholdOpAttributes::SupplyMissingDefaultsIfAppropriate()
         singleUpperBound.push_back(+1e+37);
         SetUpperBounds(singleUpperBound);
     }
-
-    if(boundsRange.size() == 0)
-    {
-        singleBoundsRange.push_back("min:max");
-        SetBoundsRange(singleBoundsRange);
-    }
 }
 
 // ****************************************************************************
@@ -1137,9 +1010,6 @@ ThresholdOpAttributes::SupplyMissingDefaultsIfAppropriate()
 //   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
 //   Rewritten to support new Threshold GUI; no more shown variable.
 //
-//   Kevin Griffin, Wed Feb 15 11:50:13 PDT 2017
-//   Added boundsRange check.
-//
 // ****************************************************************************
 
 bool
@@ -1149,8 +1019,7 @@ ThresholdOpAttributes::AttributesAreConsistent() const
     
     if ((zonePortions.size() != varListSize) ||
         (lowerBounds.size()  != varListSize) ||
-        (upperBounds.size()  != varListSize) ||
-        (boundsRange.size() != varListSize))
+        (upperBounds.size()  != varListSize))
     {
         return false;
     }
@@ -1170,9 +1039,6 @@ ThresholdOpAttributes::AttributesAreConsistent() const
 // Creation:   Tue Mar 13 19:51:29 PDT 2007
 //
 // Modifications:
-//
-//   Kevin Griffin, Wed Feb 15 11:50:13 PDT 2017
-//   Added boundsRange
 //   
 // ****************************************************************************
 #include <DebugStream.h>
@@ -1184,15 +1050,13 @@ ThresholdOpAttributes::ForceAttributeConsistency()
     double boundValue;
     bool consistent = ((zonePortions.size() == varListSize) &&
                        ( lowerBounds.size() == varListSize) &&
-                       ( upperBounds.size() == varListSize) &&
-                       ( boundsRange.size() == varListSize));
+                       ( upperBounds.size() == varListSize));
                        
     if (!consistent)
     {
         if (zonePortions.size() > varListSize) zonePortions.resize(varListSize);
         if ( lowerBounds.size() > varListSize)  lowerBounds.resize(varListSize);
         if ( upperBounds.size() > varListSize)  upperBounds.resize(varListSize);
-        if ( boundsRange.size() > varListSize)  boundsRange.resize(varListSize);
 
         for (varNum = 0; varNum < varListSize; varNum++ )
         {
@@ -1202,8 +1066,6 @@ ThresholdOpAttributes::ForceAttributeConsistency()
                 lowerBounds.push_back(-1e+37);
             if (upperBounds.size() < varListSize)
                 upperBounds.push_back(+1e+37);
-            if (boundsRange.size() < varListSize)
-                boundsRange.push_back("min:max");
         }
     }
 

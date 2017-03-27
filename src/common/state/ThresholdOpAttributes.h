@@ -71,11 +71,6 @@ public:
         EntireZone,
         PartOfZone
     };
-    enum BoundsInputType
-    {
-        Default,
-        Custom
-    };
 
     // These constructors are for objects of this class
     ThresholdOpAttributes();
@@ -107,18 +102,14 @@ public:
     void SelectLowerBounds();
     void SelectUpperBounds();
     void SelectDefaultVarName();
-    void SelectBoundsRange();
     void SetOutputMeshType(int outputMeshType_);
-    void SetBoundsInputType(int boundsInputType_);
     void SetListedVarNames(const stringVector &listedVarNames_);
     void SetZonePortions(const intVector &zonePortions_);
     void SetLowerBounds(const doubleVector &lowerBounds_);
     void SetUpperBounds(const doubleVector &upperBounds_);
     void SetDefaultVarName(const std::string &defaultVarName_);
     void SetDefaultVarIsScalar(bool defaultVarIsScalar_);
-    void SetBoundsRange(const stringVector &boundsRange_);
     int                GetOutputMeshType() const;
-    int                GetBoundsInputType() const;
     const stringVector &GetListedVarNames() const;
           stringVector &GetListedVarNames();
     const intVector    &GetZonePortions() const;
@@ -130,8 +121,6 @@ public:
     const std::string  &GetDefaultVarName() const;
           std::string  &GetDefaultVarName();
     bool               GetDefaultVarIsScalar() const;
-    const stringVector &GetBoundsRange() const;
-          stringVector &GetBoundsRange();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -147,11 +136,6 @@ public:
     static bool ZonePortion_FromString(const std::string &, ZonePortion &);
 protected:
     static std::string ZonePortion_ToString(int);
-public:
-    static std::string BoundsInputType_ToString(BoundsInputType);
-    static bool BoundsInputType_FromString(const std::string &, BoundsInputType &);
-protected:
-    static std::string BoundsInputType_ToString(int);
 public:
 
     // Keyframing methods
@@ -169,33 +153,29 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_outputMeshType = 0,
-        ID_boundsInputType,
         ID_listedVarNames,
         ID_zonePortions,
         ID_lowerBounds,
         ID_upperBounds,
         ID_defaultVarName,
         ID_defaultVarIsScalar,
-        ID_boundsRange,
         ID__LAST
     };
 
 protected:
     int          outputMeshType;
-    int          boundsInputType;
     stringVector listedVarNames;
     intVector    zonePortions;
     doubleVector lowerBounds;
     doubleVector upperBounds;
     std::string  defaultVarName;
     bool         defaultVarIsScalar;
-    stringVector boundsRange;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define THRESHOLDOPATTRIBUTES_TMFS "iis*i*d*d*sbs*"
+#define THRESHOLDOPATTRIBUTES_TMFS "is*i*d*d*sb"
 
 #endif
