@@ -143,6 +143,9 @@ avtConnComponentsExpression::~avtConnComponentsExpression()
 //    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
 //    modifications enable ghost neighbors or boundary neighbors
 //
+//    Cyrus Harrison, Wed Mar 29 14:03:59 PDT 2017
+//    Fix typo and string parsing logic.
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
@@ -191,21 +194,32 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
 
             if(enable < 0 || enable > 2)
             {
-
                 EXCEPTION2(ExpressionException, outputVariableName,
-                "avtConnComponents: Invalid second argument.\n"
-                " Valid options are: 0,1,2");
-
+                "avtConnComponents: Invalid optional second argument.\n"
+                " Valid options are: 1,0 or \"true\",\"false\"");
             }
             enableGhostNeighbors = enable;
         }
+        else if((second_type == "StringConst"))
+        {
+            std::string sval =
+                        dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
+            if(sval == "true")
+                enableGhostNeighbors = 1;
+            else if(sval == "false")
+                enableGhostNeighbors = 0;
+            else
+            {
+                EXCEPTION2(ExpressionException, outputVariableName,
+                           "avtConnComponents: Invalid optional second argument.\n"
+                           " Valid options are: 1,0 or \"true\",\"false\"");
+            }
+        }
         else // invalid arg type
         {
-
             EXCEPTION2(ExpressionException, outputVariableName,
-            "avtGradientExpression: Expects an integer or string second "
-            "argument.\n"
-            " Valid options are: 1,0 or \"true\",\"false\"");
+                       "avtConnComponents: Invalid optional second argument.\n"
+                       " Valid options are: 1,0 or \"true\",\"false\"");
         }
     }
 
