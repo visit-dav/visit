@@ -20,5 +20,8 @@
       <Include file="header" quoted="false">
         DebugStream.h
       </Include>
+      <Include file="source" quoted="false">
+        snprintf.h
+      </Include>
     </Attribute>
   </Plugin>

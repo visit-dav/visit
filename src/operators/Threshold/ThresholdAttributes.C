@@ -38,6 +38,7 @@
 
 #include <ThresholdAttributes.h>
 #include <DataNode.h>
+#include <snprintf.h>
 
 // ****************************************************************************
 // Method: ThresholdAttributes::ThresholdAttributes
@@ -346,7 +347,7 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
                 {
                     lowerBounds[lv] = toolMinima[tv];
                     upperBounds[lv] = toolMaxima[tv];
-                    snprintf(buffer, sizeof(buffer), "%g:%g",toolMinima[tv],toolMaxima[tv]);
+                    SNPRINTF(buffer, sizeof(buffer), "%g:%g",toolMinima[tv],toolMaxima[tv]);
                     boundsRange[lv] =  std::string(buffer);
                 }
                 else if (toolVarNames[tv] == defaultVarName &&
@@ -355,7 +356,7 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
                 {
                     lowerBounds[lv] = toolMinima[tv];
                     upperBounds[lv] = toolMaxima[tv];
-                    snprintf(buffer, sizeof(buffer), "%g:%g",toolMinima[tv],toolMaxima[tv]);
+                    SNPRINTF(buffer, sizeof(buffer), "%g:%g",toolMinima[tv],toolMaxima[tv]);
                     boundsRange[lv] =  std::string(buffer);
                 }
             }
