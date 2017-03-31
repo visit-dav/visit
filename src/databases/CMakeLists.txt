@@ -189,6 +189,9 @@
 #    Kathleen Biagas, Fri Jan 6 12:43:32 MST 2017 
 #    Enable Claw on Windows.
 #
+#    Kathleen Biagas, Fri Mar 31 08:57:41 PDT 2017
+#    Remove VCellMTMD plugin, no longer needed/used. (Per Jim Schaff at UCHC).
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -364,7 +367,6 @@ CHECK_THIRDPARTY_SATISIFED(MFEM    MFEM)
 
 # special cases for windows
 IF(WIN32)
-    CHECK_THIRDPARTY_SATISIFED(VCellMTMD ZLIB)
     CHECK_THIRDPARTY_SATISIFED(H5Part H5PART)
 ELSE()
     CHECK_THIRDPARTY_SATISIFED(H5Part FASTBIT H5PART)
@@ -474,9 +476,6 @@ IF (NOT WIN32)
         Vis5D
         ZipWrapper
     )
-    IF(NOT VISIT_STATIC AND NOT VISIT_DBIO_ONLY)
-        LIST(APPEND REQUIRED_DATABASE_PLUGINS VCellMTMD)
-    ENDIF(NOT VISIT_STATIC AND NOT VISIT_DBIO_ONLY)
     SET(OPTIONAL_DATABASE_PLUGINS
         Hex
         MRTest
