@@ -14,6 +14,7 @@ operators that you rarely use.
     Box_operator
     Clip_operator
     Cone_operator
+    ConnectedComponents_operator
     Cylinder_operator
     Decimate_operator
     DeferExpression_operator
