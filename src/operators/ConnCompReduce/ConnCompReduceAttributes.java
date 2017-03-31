@@ -77,7 +77,7 @@ public class ConnCompReduceAttributes extends AttributeSubject implements Plugin
 
     public ConnCompReduceAttributes(ConnCompReduceAttributes obj)
     {
-        super(ConnCompReduceAttributes_numAdditionalAtts);
+        super(obj);
 
         target = obj.target;
 

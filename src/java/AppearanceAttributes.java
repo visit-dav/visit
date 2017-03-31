@@ -94,7 +94,7 @@ public class AppearanceAttributes extends AttributeSubject
 
     public AppearanceAttributes(AppearanceAttributes obj)
     {
-        super(AppearanceAttributes_numAdditionalAtts);
+        super(obj);
 
         useSystemDefault = obj.useSystemDefault;
         background = new String(obj.background);

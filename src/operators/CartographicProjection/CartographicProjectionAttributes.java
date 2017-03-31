@@ -93,7 +93,7 @@ public class CartographicProjectionAttributes extends AttributeSubject implement
 
     public CartographicProjectionAttributes(CartographicProjectionAttributes obj)
     {
-        super(CartographicProjectionAttributes_numAdditionalAtts);
+        super(obj);
 
         projectionID = obj.projectionID;
         centralMeridian = obj.centralMeridian;

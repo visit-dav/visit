@@ -138,7 +138,7 @@ public class ViewAttributes extends AttributeSubject
 
     public ViewAttributes(ViewAttributes obj)
     {
-        super(ViewAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

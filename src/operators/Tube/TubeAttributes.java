@@ -94,7 +94,7 @@ public class TubeAttributes extends AttributeSubject implements Plugin
 
     public TubeAttributes(TubeAttributes obj)
     {
-        super(TubeAttributes_numAdditionalAtts);
+        super(obj);
 
         scaleByVarFlag = obj.scaleByVarFlag;
         tubeRadiusType = obj.tubeRadiusType;

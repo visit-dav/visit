@@ -99,7 +99,7 @@ public class EllipsoidSliceAttributes extends AttributeSubject implements Plugin
 
     public EllipsoidSliceAttributes(EllipsoidSliceAttributes obj)
     {
-        super(EllipsoidSliceAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

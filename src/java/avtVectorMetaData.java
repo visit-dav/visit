@@ -74,7 +74,7 @@ public class avtVectorMetaData extends avtVarMetaData
 
     public avtVectorMetaData(avtVectorMetaData obj)
     {
-        super(avtVectorMetaData_numAdditionalAtts);
+        super(obj);
 
         varDim = obj.varDim;
 

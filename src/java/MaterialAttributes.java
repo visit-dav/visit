@@ -104,7 +104,7 @@ public class MaterialAttributes extends AttributeSubject
 
     public MaterialAttributes(MaterialAttributes obj)
     {
-        super(MaterialAttributes_numAdditionalAtts);
+        super(obj);
 
         smoothing = obj.smoothing;
         forceMIR = obj.forceMIR;

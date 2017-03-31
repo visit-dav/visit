@@ -123,7 +123,7 @@ public class Plot extends AttributeSubject
 
     public Plot(Plot obj)
     {
-        super(Plot_numAdditionalAtts);
+        super(obj);
 
         int i;
 

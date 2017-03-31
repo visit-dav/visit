@@ -98,7 +98,7 @@ public class ViewCurveAttributes extends AttributeSubject
 
     public ViewCurveAttributes(ViewCurveAttributes obj)
     {
-        super(ViewCurveAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

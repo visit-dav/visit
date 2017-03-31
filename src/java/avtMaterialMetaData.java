@@ -79,7 +79,7 @@ public class avtMaterialMetaData extends avtBaseVarMetaData
 
     public avtMaterialMetaData(avtMaterialMetaData obj)
     {
-        super(avtMaterialMetaData_numAdditionalAtts);
+        super(obj);
 
         int i;
 

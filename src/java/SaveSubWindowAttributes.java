@@ -90,7 +90,7 @@ public class SaveSubWindowAttributes extends AttributeSubject
 
     public SaveSubWindowAttributes(SaveSubWindowAttributes obj)
     {
-        super(SaveSubWindowAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -99,7 +99,7 @@ public class SPHResampleAttributes extends AttributeSubject implements Plugin
 
     public SPHResampleAttributes(SPHResampleAttributes obj)
     {
-        super(SPHResampleAttributes_numAdditionalAtts);
+        super(obj);
 
         minX = obj.minX;
         maxX = obj.maxX;

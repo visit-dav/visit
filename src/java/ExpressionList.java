@@ -75,7 +75,7 @@ public class ExpressionList extends AttributeSubject
 
     public ExpressionList(ExpressionList obj)
     {
-        super(ExpressionList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

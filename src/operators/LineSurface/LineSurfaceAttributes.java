@@ -97,7 +97,7 @@ public class LineSurfaceAttributes extends AttributeSubject implements Plugin
 
     public LineSurfaceAttributes(LineSurfaceAttributes obj)
     {
-        super(LineSurfaceAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

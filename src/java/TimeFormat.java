@@ -82,7 +82,7 @@ public class TimeFormat extends AttributeSubject
 
     public TimeFormat(TimeFormat obj)
     {
-        super(TimeFormat_numAdditionalAtts);
+        super(obj);
 
         displayMode = obj.displayMode;
         precision = obj.precision;

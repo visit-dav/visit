@@ -96,7 +96,7 @@ public class ToroidalPoloidalProjection extends AttributeSubject implements Plug
 
     public ToroidalPoloidalProjection(ToroidalPoloidalProjection obj)
     {
-        super(ToroidalPoloidalProjection_numAdditionalAtts);
+        super(obj);
 
         int i;
 

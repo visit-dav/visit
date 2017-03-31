@@ -75,7 +75,7 @@ public class ColorAttributeList extends AttributeSubject
 
     public ColorAttributeList(ColorAttributeList obj)
     {
-        super(ColorAttributeList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -79,7 +79,7 @@ public class DisplaceAttributes extends AttributeSubject implements Plugin
 
     public DisplaceAttributes(DisplaceAttributes obj)
     {
-        super(DisplaceAttributes_numAdditionalAtts);
+        super(obj);
 
         factor = obj.factor;
         variable = new String(obj.variable);

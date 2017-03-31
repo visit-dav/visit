@@ -128,7 +128,7 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
 
     public SubsetAttributes(SubsetAttributes obj)
     {
-        super(SubsetAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 
@@ -297,7 +297,7 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
         Select(14);
     }
 
-    public void SetPointType(GlyphType pointType_)
+    public void SetPointType(int pointType_)
     {
         pointType = pointType_;
         Select(15);
@@ -337,7 +337,7 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
     public boolean            GetDrawInternal() { return drawInternal; }
     public int                GetSmoothingLevel() { return smoothingLevel; }
     public double             GetPointSize() { return pointSize; }
-    public GlyphType          GetPointType() { return pointType; }
+    public int GetPointType() { return pointType; }
     public boolean            GetPointSizeVarEnabled() { return pointSizeVarEnabled; }
     public String             GetPointSizeVar() { return pointSizeVar; }
     public int                GetPointSizePixels() { return pointSizePixels; }
@@ -511,7 +511,7 @@ public class SubsetAttributes extends AttributeSubject implements Plugin
     private boolean            drawInternal;
     private int                smoothingLevel;
     private double             pointSize;
-    private GlyphType          pointType;
+    private int pointType;
     private boolean            pointSizeVarEnabled;
     private String             pointSizeVar;
     private int                pointSizePixels;

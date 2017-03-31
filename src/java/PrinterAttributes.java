@@ -92,7 +92,7 @@ public class PrinterAttributes extends AttributeSubject
 
     public PrinterAttributes(PrinterAttributes obj)
     {
-        super(PrinterAttributes_numAdditionalAtts);
+        super(obj);
 
         printerName = new String(obj.printerName);
         printProgram = new String(obj.printProgram);

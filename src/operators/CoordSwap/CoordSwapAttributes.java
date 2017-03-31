@@ -87,7 +87,7 @@ public class CoordSwapAttributes extends AttributeSubject implements Plugin
 
     public CoordSwapAttributes(CoordSwapAttributes obj)
     {
-        super(CoordSwapAttributes_numAdditionalAtts);
+        super(obj);
 
         newCoord1 = obj.newCoord1;
         newCoord2 = obj.newCoord2;

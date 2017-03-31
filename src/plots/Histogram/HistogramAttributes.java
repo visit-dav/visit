@@ -135,7 +135,7 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
 
     public HistogramAttributes(HistogramAttributes obj)
     {
-        super(HistogramAttributes_numAdditionalAtts);
+        super(obj);
 
         basedOn = obj.basedOn;
         histogramType = obj.histogramType;

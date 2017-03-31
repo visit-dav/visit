@@ -81,7 +81,7 @@ public class ExtractPointFunction2DAttributes extends AttributeSubject implement
 
     public ExtractPointFunction2DAttributes(ExtractPointFunction2DAttributes obj)
     {
-        super(ExtractPointFunction2DAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

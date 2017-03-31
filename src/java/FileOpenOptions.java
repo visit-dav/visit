@@ -86,7 +86,7 @@ public class FileOpenOptions extends AttributeSubject
 
     public FileOpenOptions(FileOpenOptions obj)
     {
-        super(FileOpenOptions_numAdditionalAtts);
+        super(obj);
 
         int i;
 

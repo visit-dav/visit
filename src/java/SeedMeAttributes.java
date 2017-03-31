@@ -160,7 +160,7 @@ public class SeedMeAttributes extends AttributeSubject
 
     public SeedMeAttributes(SeedMeAttributes obj)
     {
-        super(SeedMeAttributes_numAdditionalAtts);
+        super(obj);
 
         collectionMode = obj.collectionMode;
         collectionID = obj.collectionID;

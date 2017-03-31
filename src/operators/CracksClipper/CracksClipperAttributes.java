@@ -91,7 +91,7 @@ public class CracksClipperAttributes extends AttributeSubject implements Plugin
 
     public CracksClipperAttributes(CracksClipperAttributes obj)
     {
-        super(CracksClipperAttributes_numAdditionalAtts);
+        super(obj);
 
         crack1Var = new String(obj.crack1Var);
         crack2Var = new String(obj.crack2Var);

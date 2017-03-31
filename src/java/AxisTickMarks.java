@@ -82,7 +82,7 @@ public class AxisTickMarks extends AttributeSubject
 
     public AxisTickMarks(AxisTickMarks obj)
     {
-        super(AxisTickMarks_numAdditionalAtts);
+        super(obj);
 
         visible = obj.visible;
         majorMinimum = obj.majorMinimum;

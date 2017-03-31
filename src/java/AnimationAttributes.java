@@ -92,7 +92,7 @@ public class AnimationAttributes extends AttributeSubject
 
     public AnimationAttributes(AnimationAttributes obj)
     {
-        super(AnimationAttributes_numAdditionalAtts);
+        super(obj);
 
         animationMode = obj.animationMode;
         pipelineCachingMode = obj.pipelineCachingMode;

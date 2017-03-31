@@ -133,7 +133,7 @@ public class AnnotationAttributes extends AttributeSubject
 
     public AnnotationAttributes(AnnotationAttributes obj)
     {
-        super(AnnotationAttributes_numAdditionalAtts);
+        super(obj);
 
         axes2D = new Axes2D(obj.axes2D);
         axes3D = new Axes3D(obj.axes3D);

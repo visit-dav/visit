@@ -77,7 +77,7 @@ public class FFTAttributes extends AttributeSubject implements Plugin
 
     public FFTAttributes(FFTAttributes obj)
     {
-        super(FFTAttributes_numAdditionalAtts);
+        super(obj);
 
         dummy = obj.dummy;
 

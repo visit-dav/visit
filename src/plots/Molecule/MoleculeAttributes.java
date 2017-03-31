@@ -143,7 +143,7 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
 
     public MoleculeAttributes(MoleculeAttributes obj)
     {
-        super(MoleculeAttributes_numAdditionalAtts);
+        super(obj);
 
         drawAtomsAs = obj.drawAtomsAs;
         scaleRadiusBy = obj.scaleRadiusBy;

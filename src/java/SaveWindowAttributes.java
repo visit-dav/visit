@@ -136,7 +136,7 @@ public class SaveWindowAttributes extends AttributeSubject
 
     public SaveWindowAttributes(SaveWindowAttributes obj)
     {
-        super(SaveWindowAttributes_numAdditionalAtts);
+        super(obj);
 
         outputToCurrentDirectory = obj.outputToCurrentDirectory;
         outputDirectory = new String(obj.outputDirectory);

@@ -124,7 +124,7 @@ public class FilledBoundaryAttributes extends AttributeSubject implements Plugin
 
     public FilledBoundaryAttributes(FilledBoundaryAttributes obj)
     {
-        super(FilledBoundaryAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 
@@ -301,7 +301,7 @@ public class FilledBoundaryAttributes extends AttributeSubject implements Plugin
         Select(15);
     }
 
-    public void SetPointType(GlyphType pointType_)
+    public void SetPointType(int pointType_)
     {
         pointType = pointType_;
         Select(16);
@@ -342,7 +342,7 @@ public class FilledBoundaryAttributes extends AttributeSubject implements Plugin
     public boolean            GetCleanZonesOnly() { return cleanZonesOnly; }
     public ColorAttribute     GetMixedColor() { return mixedColor; }
     public double             GetPointSize() { return pointSize; }
-    public GlyphType          GetPointType() { return pointType; }
+    public int GetPointType() { return pointType; }
     public boolean            GetPointSizeVarEnabled() { return pointSizeVarEnabled; }
     public String             GetPointSizeVar() { return pointSizeVar; }
     public int                GetPointSizePixels() { return pointSizePixels; }
@@ -513,7 +513,7 @@ public class FilledBoundaryAttributes extends AttributeSubject implements Plugin
     private boolean            cleanZonesOnly;
     private ColorAttribute     mixedColor;
     private double             pointSize;
-    private GlyphType          pointType;
+    private int pointType;
     private boolean            pointSizeVarEnabled;
     private String             pointSizeVar;
     private int                pointSizePixels;

@@ -130,7 +130,7 @@ public class SelectionProperties extends AttributeSubject
 
     public SelectionProperties(SelectionProperties obj)
     {
-        super(SelectionProperties_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -80,7 +80,7 @@ public class PointAttributes extends AttributeSubject
 
     public PointAttributes(PointAttributes obj)
     {
-        super(PointAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

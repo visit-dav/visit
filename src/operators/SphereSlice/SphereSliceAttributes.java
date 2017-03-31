@@ -85,7 +85,7 @@ public class SphereSliceAttributes extends AttributeSubject implements Plugin
 
     public SphereSliceAttributes(SphereSliceAttributes obj)
     {
-        super(SphereSliceAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

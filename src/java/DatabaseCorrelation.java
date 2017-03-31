@@ -103,7 +103,7 @@ public class DatabaseCorrelation extends AttributeSubject
 
     public DatabaseCorrelation(DatabaseCorrelation obj)
     {
-        super(DatabaseCorrelation_numAdditionalAtts);
+        super(obj);
 
         int i;
 

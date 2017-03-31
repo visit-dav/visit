@@ -121,7 +121,7 @@ public class IndexSelectAttributes extends AttributeSubject implements Plugin
 
     public IndexSelectAttributes(IndexSelectAttributes obj)
     {
-        super(IndexSelectAttributes_numAdditionalAtts);
+        super(obj);
 
         maxDim = obj.maxDim;
         dim = obj.dim;

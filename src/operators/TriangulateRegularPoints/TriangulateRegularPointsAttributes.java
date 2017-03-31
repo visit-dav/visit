@@ -83,7 +83,7 @@ public class TriangulateRegularPointsAttributes extends AttributeSubject impleme
 
     public TriangulateRegularPointsAttributes(TriangulateRegularPointsAttributes obj)
     {
-        super(TriangulateRegularPointsAttributes_numAdditionalAtts);
+        super(obj);
 
         useXGridSpacing = obj.useXGridSpacing;
         xGridSpacing = obj.xGridSpacing;

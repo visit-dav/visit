@@ -79,7 +79,7 @@ public class MergeOperatorAttributes extends AttributeSubject implements Plugin
 
     public MergeOperatorAttributes(MergeOperatorAttributes obj)
     {
-        super(MergeOperatorAttributes_numAdditionalAtts);
+        super(obj);
 
         parallelMerge = obj.parallelMerge;
         tolerance = obj.tolerance;

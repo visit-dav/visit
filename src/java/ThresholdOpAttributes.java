@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class ThresholdOpAttributes extends AttributeSubject
 {
-    private static int ThresholdOpAttributes_numAdditionalAtts = 7;
+    private static int ThresholdOpAttributes_numAdditionalAtts = 9;
 
     // Enum values
     public final static int OUTPUTMESHTYPE_INPUTZONES = 0;
@@ -68,12 +68,16 @@ public class ThresholdOpAttributes extends AttributeSubject
     public final static int ZONEPORTION_ENTIREZONE = 0;
     public final static int ZONEPORTION_PARTOFZONE = 1;
 
+    public final static int BOUNDSINPUTTYPE_DEFAULT = 0;
+    public final static int BOUNDSINPUTTYPE_CUSTOM = 1;
+
 
     public ThresholdOpAttributes()
     {
         super(ThresholdOpAttributes_numAdditionalAtts);
 
         outputMeshType = 0;
+        boundsInputType = 0;
         listedVarNames = new Vector();
         listedVarNames.addElement(new String("default"));
         zonePortions = new Vector();
@@ -81,6 +85,7 @@ public class ThresholdOpAttributes extends AttributeSubject
         upperBounds = new Vector();
         defaultVarName = new String("default");
         defaultVarIsScalar = false;
+        boundsRange = new Vector();
     }
 
     public ThresholdOpAttributes(int nMoreFields)
@@ -88,6 +93,7 @@ public class ThresholdOpAttributes extends AttributeSubject
         super(ThresholdOpAttributes_numAdditionalAtts + nMoreFields);
 
         outputMeshType = 0;
+        boundsInputType = 0;
         listedVarNames = new Vector();
         listedVarNames.addElement(new String("default"));
         zonePortions = new Vector();
@@ -95,15 +101,17 @@ public class ThresholdOpAttributes extends AttributeSubject
         upperBounds = new Vector();
         defaultVarName = new String("default");
         defaultVarIsScalar = false;
+        boundsRange = new Vector();
     }
 
     public ThresholdOpAttributes(ThresholdOpAttributes obj)
     {
-        super(ThresholdOpAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 
         outputMeshType = obj.outputMeshType;
+        boundsInputType = obj.boundsInputType;
         listedVarNames = new Vector(obj.listedVarNames.size());
         for(i = 0; i < obj.listedVarNames.size(); ++i)
             listedVarNames.addElement(new String((String)obj.listedVarNames.elementAt(i)));
@@ -130,6 +138,10 @@ public class ThresholdOpAttributes extends AttributeSubject
 
         defaultVarName = new String(obj.defaultVarName);
         defaultVarIsScalar = obj.defaultVarIsScalar;
+        boundsRange = new Vector(obj.boundsRange.size());
+        for(i = 0; i < obj.boundsRange.size(); ++i)
+            boundsRange.addElement(new String((String)obj.boundsRange.elementAt(i)));
+
 
         SelectAll();
     }
@@ -184,14 +196,25 @@ public class ThresholdOpAttributes extends AttributeSubject
             Double upperBounds2 = (Double)obj.upperBounds.elementAt(i);
             upperBounds_equal = upperBounds1.equals(upperBounds2);
         }
+        // Compare the elements in the boundsRange vector.
+        boolean boundsRange_equal = (obj.boundsRange.size() == boundsRange.size());
+        for(i = 0; (i < boundsRange.size()) && boundsRange_equal; ++i)
+        {
+            // Make references to String from Object.
+            String boundsRange1 = (String)boundsRange.elementAt(i);
+            String boundsRange2 = (String)obj.boundsRange.elementAt(i);
+            boundsRange_equal = boundsRange1.equals(boundsRange2);
+        }
         // Create the return value
         return ((outputMeshType == obj.outputMeshType) &&
+                (boundsInputType == obj.boundsInputType) &&
                 listedVarNames_equal &&
                 zonePortions_equal &&
                 lowerBounds_equal &&
                 upperBounds_equal &&
                 (defaultVarName.equals(obj.defaultVarName)) &&
-                (defaultVarIsScalar == obj.defaultVarIsScalar));
+                (defaultVarIsScalar == obj.defaultVarIsScalar) &&
+                boundsRange_equal);
     }
 
     // Property setting methods
@@ -201,50 +224,64 @@ public class ThresholdOpAttributes extends AttributeSubject
         Select(0);
     }
 
+    public void SetBoundsInputType(int boundsInputType_)
+    {
+        boundsInputType = boundsInputType_;
+        Select(1);
+    }
+
     public void SetListedVarNames(Vector listedVarNames_)
     {
         listedVarNames = listedVarNames_;
-        Select(1);
+        Select(2);
     }
 
     public void SetZonePortions(Vector zonePortions_)
     {
         zonePortions = zonePortions_;
-        Select(2);
+        Select(3);
     }
 
     public void SetLowerBounds(Vector lowerBounds_)
     {
         lowerBounds = lowerBounds_;
-        Select(3);
+        Select(4);
     }
 
     public void SetUpperBounds(Vector upperBounds_)
     {
         upperBounds = upperBounds_;
-        Select(4);
+        Select(5);
     }
 
     public void SetDefaultVarName(String defaultVarName_)
     {
         defaultVarName = defaultVarName_;
-        Select(5);
+        Select(6);
     }
 
     public void SetDefaultVarIsScalar(boolean defaultVarIsScalar_)
     {
         defaultVarIsScalar = defaultVarIsScalar_;
-        Select(6);
+        Select(7);
+    }
+
+    public void SetBoundsRange(Vector boundsRange_)
+    {
+        boundsRange = boundsRange_;
+        Select(8);
     }
 
     // Property getting methods
     public int     GetOutputMeshType() { return outputMeshType; }
+    public int     GetBoundsInputType() { return boundsInputType; }
     public Vector  GetListedVarNames() { return listedVarNames; }
     public Vector  GetZonePortions() { return zonePortions; }
     public Vector  GetLowerBounds() { return lowerBounds; }
     public Vector  GetUpperBounds() { return upperBounds; }
     public String  GetDefaultVarName() { return defaultVarName; }
     public boolean GetDefaultVarIsScalar() { return defaultVarIsScalar; }
+    public Vector  GetBoundsRange() { return boundsRange; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -252,17 +289,21 @@ public class ThresholdOpAttributes extends AttributeSubject
         if(WriteSelect(0, buf))
             buf.WriteInt(outputMeshType);
         if(WriteSelect(1, buf))
-            buf.WriteStringVector(listedVarNames);
+            buf.WriteInt(boundsInputType);
         if(WriteSelect(2, buf))
-            buf.WriteIntVector(zonePortions);
+            buf.WriteStringVector(listedVarNames);
         if(WriteSelect(3, buf))
-            buf.WriteDoubleVector(lowerBounds);
+            buf.WriteIntVector(zonePortions);
         if(WriteSelect(4, buf))
-            buf.WriteDoubleVector(upperBounds);
+            buf.WriteDoubleVector(lowerBounds);
         if(WriteSelect(5, buf))
-            buf.WriteString(defaultVarName);
+            buf.WriteDoubleVector(upperBounds);
         if(WriteSelect(6, buf))
+            buf.WriteString(defaultVarName);
+        if(WriteSelect(7, buf))
             buf.WriteBool(defaultVarIsScalar);
+        if(WriteSelect(8, buf))
+            buf.WriteStringVector(boundsRange);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -273,22 +314,28 @@ public class ThresholdOpAttributes extends AttributeSubject
             SetOutputMeshType(buf.ReadInt());
             break;
         case 1:
-            SetListedVarNames(buf.ReadStringVector());
+            SetBoundsInputType(buf.ReadInt());
             break;
         case 2:
-            SetZonePortions(buf.ReadIntVector());
+            SetListedVarNames(buf.ReadStringVector());
             break;
         case 3:
-            SetLowerBounds(buf.ReadDoubleVector());
+            SetZonePortions(buf.ReadIntVector());
             break;
         case 4:
-            SetUpperBounds(buf.ReadDoubleVector());
+            SetLowerBounds(buf.ReadDoubleVector());
             break;
         case 5:
-            SetDefaultVarName(buf.ReadString());
+            SetUpperBounds(buf.ReadDoubleVector());
             break;
         case 6:
+            SetDefaultVarName(buf.ReadString());
+            break;
+        case 7:
             SetDefaultVarIsScalar(buf.ReadBool());
+            break;
+        case 8:
+            SetBoundsRange(buf.ReadStringVector());
             break;
         }
     }
@@ -297,23 +344,27 @@ public class ThresholdOpAttributes extends AttributeSubject
     {
         String str = new String();
         str = str + intToString("outputMeshType", outputMeshType, indent) + "\n";
+        str = str + intToString("boundsInputType", boundsInputType, indent) + "\n";
         str = str + stringVectorToString("listedVarNames", listedVarNames, indent) + "\n";
         str = str + intVectorToString("zonePortions", zonePortions, indent) + "\n";
         str = str + doubleVectorToString("lowerBounds", lowerBounds, indent) + "\n";
         str = str + doubleVectorToString("upperBounds", upperBounds, indent) + "\n";
         str = str + stringToString("defaultVarName", defaultVarName, indent) + "\n";
         str = str + boolToString("defaultVarIsScalar", defaultVarIsScalar, indent) + "\n";
+        str = str + stringVectorToString("boundsRange", boundsRange, indent) + "\n";
         return str;
     }
 
 
     // Attributes
     private int     outputMeshType;
+    private int     boundsInputType;
     private Vector  listedVarNames; // vector of String objects
     private Vector  zonePortions; // vector of Integer objects
     private Vector  lowerBounds; // vector of Double objects
     private Vector  upperBounds; // vector of Double objects
     private String  defaultVarName;
     private boolean defaultVarIsScalar;
+    private Vector  boundsRange; // vector of String objects
 }
 

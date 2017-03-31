@@ -100,7 +100,7 @@ public class LagrangianAttributes extends AttributeSubject implements Plugin
 
     public LagrangianAttributes(LagrangianAttributes obj)
     {
-        super(LagrangianAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

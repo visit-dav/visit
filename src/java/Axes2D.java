@@ -100,7 +100,7 @@ public class Axes2D extends AttributeSubject
 
     public Axes2D(Axes2D obj)
     {
-        super(Axes2D_numAdditionalAtts);
+        super(obj);
 
         visible = obj.visible;
         autoSetTicks = obj.autoSetTicks;

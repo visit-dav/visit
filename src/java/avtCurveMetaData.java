@@ -88,7 +88,7 @@ public class avtCurveMetaData extends avtVarMetaData
 
     public avtCurveMetaData(avtCurveMetaData obj)
     {
-        super(avtCurveMetaData_numAdditionalAtts);
+        super(obj);
 
         xUnits = new String(obj.xUnits);
         xLabel = new String(obj.xLabel);

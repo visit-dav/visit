@@ -108,7 +108,7 @@ public class LinearTransformAttributes extends AttributeSubject
 
     public LinearTransformAttributes(LinearTransformAttributes obj)
     {
-        super(LinearTransformAttributes_numAdditionalAtts);
+        super(obj);
 
         m00 = obj.m00;
         m01 = obj.m01;

@@ -108,7 +108,7 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
 
     public BoundaryAttributes(BoundaryAttributes obj)
     {
-        super(BoundaryAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

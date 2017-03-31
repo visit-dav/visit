@@ -80,7 +80,7 @@ public class SILRestrictionAttributes extends AttributeSubject
 
     public SILRestrictionAttributes(SILRestrictionAttributes obj)
     {
-        super(SILRestrictionAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

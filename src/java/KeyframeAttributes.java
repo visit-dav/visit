@@ -78,7 +78,7 @@ public class KeyframeAttributes extends AttributeSubject
 
     public KeyframeAttributes(KeyframeAttributes obj)
     {
-        super(KeyframeAttributes_numAdditionalAtts);
+        super(obj);
 
         enabled = obj.enabled;
         nFrames = obj.nFrames;

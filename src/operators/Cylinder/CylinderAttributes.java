@@ -95,7 +95,7 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
 
     public CylinderAttributes(CylinderAttributes obj)
     {
-        super(CylinderAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

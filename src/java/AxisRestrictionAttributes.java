@@ -80,7 +80,7 @@ public class AxisRestrictionAttributes extends AttributeSubject
 
     public AxisRestrictionAttributes(AxisRestrictionAttributes obj)
     {
-        super(AxisRestrictionAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -81,7 +81,7 @@ public class FluxAttributes extends AttributeSubject implements Plugin
 
     public FluxAttributes(FluxAttributes obj)
     {
-        super(FluxAttributes_numAdditionalAtts);
+        super(obj);
 
         flowField = new String(obj.flowField);
         weight = obj.weight;

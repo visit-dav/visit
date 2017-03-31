@@ -198,7 +198,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
 
     public VolumeAttributes(VolumeAttributes obj)
     {
-        super(VolumeAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

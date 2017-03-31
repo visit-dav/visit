@@ -93,7 +93,7 @@ public class ProjectAttributes extends AttributeSubject implements Plugin
 
     public ProjectAttributes(ProjectAttributes obj)
     {
-        super(ProjectAttributes_numAdditionalAtts);
+        super(obj);
 
         projectionType = obj.projectionType;
         vectorTransformMethod = obj.vectorTransformMethod;

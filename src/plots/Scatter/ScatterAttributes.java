@@ -174,7 +174,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
 
     public ScatterAttributes(ScatterAttributes obj)
     {
-        super(ScatterAttributes_numAdditionalAtts);
+        super(obj);
 
         var1 = new String(obj.var1);
         var1Role = obj.var1Role;
@@ -485,7 +485,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
         Select(33);
     }
 
-    public void SetPointType(GlyphType pointType_)
+    public void SetPointType(int pointType_)
     {
         pointType = pointType_;
         Select(34);
@@ -562,7 +562,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     public double         GetVar4SkewFactor() { return var4SkewFactor; }
     public double         GetPointSize() { return pointSize; }
     public int            GetPointSizePixels() { return pointSizePixels; }
-    public GlyphType      GetPointType() { return pointType; }
+    public int GetPointType() { return pointType; }
     public boolean        GetScaleCube() { return scaleCube; }
     public int            GetColorType() { return colorType; }
     public ColorAttribute GetSingleColor() { return singleColor; }
@@ -950,7 +950,7 @@ public class ScatterAttributes extends AttributeSubject implements Plugin
     private double         var4SkewFactor;
     private double         pointSize;
     private int            pointSizePixels;
-    private GlyphType      pointType;
+    private int pointType;
     private boolean        scaleCube;
     private int            colorType;
     private ColorAttribute singleColor;

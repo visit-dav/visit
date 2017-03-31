@@ -79,7 +79,7 @@ public class SelectionList extends AttributeSubject
 
     public SelectionList(SelectionList obj)
     {
-        super(SelectionList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

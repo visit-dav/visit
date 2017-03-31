@@ -1726,6 +1726,32 @@ class JavaGeneratorGlyphType : public virtual GlyphType , public virtual JavaGen
         c << "    " << name << " = " << val << ";" << endl;
     }
 
+    virtual void WriteSourceAttribute(QTextStream &h, int w)
+    {
+        h << "    private int " << name << ";" << endl;
+    }
+
+    virtual void WriteSourceSetFunction(QTextStream &c, const QString &classname)
+    {
+        // Write prototype.
+        c << "    public void Set" << Name << "(int ";
+        c << name << "_)" << endl;
+        c << "    {" << endl;
+        if (!isArray)
+        {
+            c << "        " << name << " = " << name << "_;" << endl;
+            c << "        Select(" << OffsetPlus(classname) << index << ");" << endl;
+        }
+        c << "    }" << endl;
+        c << endl;
+    }
+
+    virtual void WriteSourceGetFunction(QTextStream &c, int w)
+    {
+        c << "    public int Get" << Name << "() { return "
+          << name << "; }" << endl;
+    }
+
     virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
     {
         c << indent << "    buf.WriteInt(" << name << ");" << endl;
@@ -2119,7 +2145,7 @@ private:
     {
         c << "    public " << name << "(" << name << " obj)" << endl;
         c << "    {" << endl;
-        c << "        super(" << name << "_numAdditionalAtts);" << endl;
+        c << "        super(obj);" << endl;
         c << endl;
 
         bool skipLine = false;
@@ -2269,8 +2295,11 @@ private:
         {
             h << "        super.WriteAtts(buf);" << endl;
             h << endl;
-            h << "        int offset = (new " << name << "()).Offset();" << endl;
-            oplus = "offset + ";
+            if (fields.size() > 0)
+            {
+                h << "        int offset = (new " << name << "()).Offset();" << endl;
+                oplus = "offset + ";
+            }
         }
         for (size_t i = 0; i < fields.size(); ++i)
         {
@@ -2293,6 +2322,7 @@ private:
         {
             h << "    public void ReadAtts(int id, CommunicationBuffer buf)" << endl;
             h << "    {" << endl;
+            if (fields.size() > 0)
             h << "        int offset = (new " << name << "()).Offset();" << endl;
             if(fields.size() > 1)
             {
@@ -2319,6 +2349,10 @@ private:
                 h << "        else" << endl;
                 h << "            super.ReadAtts(id, buf);" << endl;
             }
+            else
+            {
+                h << "        super.ReadAtts(id, buf);" << endl;
+            }
         }
         else
         {
@@ -2341,6 +2375,10 @@ private:
             {
                 if(!fields[0]->WriteSourceReadAtts(h, "        "))
                     h << "        Select(0);" << endl;
+            }
+            else
+            {
+                h << "        super.ReadAtts(id, buf);" << endl;
             }
         }
 

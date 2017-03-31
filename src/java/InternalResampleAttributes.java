@@ -108,7 +108,7 @@ public class InternalResampleAttributes extends AttributeSubject
 
     public InternalResampleAttributes(InternalResampleAttributes obj)
     {
-        super(InternalResampleAttributes_numAdditionalAtts);
+        super(obj);
 
         useTargetVal = obj.useTargetVal;
         targetVal = obj.targetVal;

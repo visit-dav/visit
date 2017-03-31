@@ -84,7 +84,7 @@ public class TraceHistoryAttributes extends AttributeSubject implements Plugin
 
     public TraceHistoryAttributes(TraceHistoryAttributes obj)
     {
-        super(TraceHistoryAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

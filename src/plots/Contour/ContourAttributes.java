@@ -134,7 +134,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
 
     public ContourAttributes(ContourAttributes obj)
     {
-        super(ContourAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

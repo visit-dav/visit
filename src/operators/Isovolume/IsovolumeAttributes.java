@@ -81,7 +81,7 @@ public class IsovolumeAttributes extends AttributeSubject implements Plugin
 
     public IsovolumeAttributes(IsovolumeAttributes obj)
     {
-        super(IsovolumeAttributes_numAdditionalAtts);
+        super(obj);
 
         lbound = obj.lbound;
         ubound = obj.ubound;

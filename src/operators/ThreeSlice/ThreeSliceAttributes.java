@@ -83,7 +83,7 @@ public class ThreeSliceAttributes extends AttributeSubject implements Plugin
 
     public ThreeSliceAttributes(ThreeSliceAttributes obj)
     {
-        super(ThreeSliceAttributes_numAdditionalAtts);
+        super(obj);
 
         x = obj.x;
         y = obj.y;

@@ -145,7 +145,7 @@ public class LabelAttributes extends AttributeSubject implements Plugin
 
     public LabelAttributes(LabelAttributes obj)
     {
-        super(LabelAttributes_numAdditionalAtts);
+        super(obj);
 
         varType = obj.varType;
         legendFlag = obj.legendFlag;

@@ -79,7 +79,7 @@ public class ExternalSurfaceAttributes extends AttributeSubject implements Plugi
 
     public ExternalSurfaceAttributes(ExternalSurfaceAttributes obj)
     {
-        super(ExternalSurfaceAttributes_numAdditionalAtts);
+        super(obj);
 
         removeGhosts = obj.removeGhosts;
         edgesIn2D = obj.edgesIn2D;

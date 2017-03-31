@@ -90,7 +90,7 @@ public class MessageAttributes extends AttributeSubject
 
     public MessageAttributes(MessageAttributes obj)
     {
-        super(MessageAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

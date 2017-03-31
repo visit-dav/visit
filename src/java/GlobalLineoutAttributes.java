@@ -98,7 +98,7 @@ public class GlobalLineoutAttributes extends AttributeSubject
 
     public GlobalLineoutAttributes(GlobalLineoutAttributes obj)
     {
-        super(GlobalLineoutAttributes_numAdditionalAtts);
+        super(obj);
 
         Dynamic = obj.Dynamic;
         createWindow = obj.createWindow;

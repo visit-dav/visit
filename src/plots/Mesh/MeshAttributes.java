@@ -126,7 +126,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
 
     public MeshAttributes(MeshAttributes obj)
     {
-        super(MeshAttributes_numAdditionalAtts);
+        super(obj);
 
         legendFlag = obj.legendFlag;
         lineStyle = obj.lineStyle;
@@ -257,7 +257,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         Select(11);
     }
 
-    public void SetPointType(GlyphType pointType_)
+    public void SetPointType(int pointType_)
     {
         pointType = pointType_;
         Select(12);
@@ -300,7 +300,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
     public int            GetSmoothingLevel() { return smoothingLevel; }
     public boolean        GetPointSizeVarEnabled() { return pointSizeVarEnabled; }
     public String         GetPointSizeVar() { return pointSizeVar; }
-    public GlyphType      GetPointType() { return pointType; }
+    public int GetPointType() { return pointType; }
     public boolean        GetOpaqueMeshIsAppropriate() { return opaqueMeshIsAppropriate; }
     public boolean        GetShowInternal() { return showInternal; }
     public int            GetPointSizePixels() { return pointSizePixels; }
@@ -466,7 +466,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
     private int            smoothingLevel;
     private boolean        pointSizeVarEnabled;
     private String         pointSizeVar;
-    private GlyphType      pointType;
+    private int pointType;
     private boolean        opaqueMeshIsAppropriate;
     private boolean        showInternal;
     private int            pointSizePixels;

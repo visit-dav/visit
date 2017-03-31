@@ -78,7 +78,7 @@ public class ProgrammableOpAttributes extends AttributeSubject implements Plugin
 
     public ProgrammableOpAttributes(ProgrammableOpAttributes obj)
     {
-        super(ProgrammableOpAttributes_numAdditionalAtts);
+        super(obj);
 
         scriptMap = new String(obj.scriptMap);
 

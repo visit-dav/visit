@@ -119,7 +119,7 @@ public class MultiCurveAttributes extends AttributeSubject implements Plugin
 
     public MultiCurveAttributes(MultiCurveAttributes obj)
     {
-        super(MultiCurveAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

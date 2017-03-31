@@ -74,7 +74,7 @@ public class SimulationCommand extends AttributeSubject
 
     public SimulationCommand(SimulationCommand obj)
     {
-        super(SimulationCommand_numAdditionalAtts);
+        super(obj);
 
         command = new String(obj.command);
 

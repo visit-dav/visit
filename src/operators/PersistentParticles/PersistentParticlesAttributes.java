@@ -102,7 +102,7 @@ public class PersistentParticlesAttributes extends AttributeSubject implements P
 
     public PersistentParticlesAttributes(PersistentParticlesAttributes obj)
     {
-        super(PersistentParticlesAttributes_numAdditionalAtts);
+        super(obj);
 
         startIndex = obj.startIndex;
         stopIndex = obj.stopIndex;

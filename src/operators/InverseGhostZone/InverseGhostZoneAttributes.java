@@ -89,7 +89,7 @@ public class InverseGhostZoneAttributes extends AttributeSubject implements Plug
 
     public InverseGhostZoneAttributes(InverseGhostZoneAttributes obj)
     {
-        super(InverseGhostZoneAttributes_numAdditionalAtts);
+        super(obj);
 
         requestGhostZones = obj.requestGhostZones;
         showDuplicated = obj.showDuplicated;

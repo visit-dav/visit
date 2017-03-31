@@ -137,7 +137,7 @@ public class MetricThresholdAttributes extends AttributeSubject implements Plugi
 
     public MetricThresholdAttributes(MetricThresholdAttributes obj)
     {
-        super(MetricThresholdAttributes_numAdditionalAtts);
+        super(obj);
 
         preset = obj.preset;
         Hexahedron = obj.Hexahedron;

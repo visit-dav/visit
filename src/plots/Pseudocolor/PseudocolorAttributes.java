@@ -206,7 +206,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
 
     public PseudocolorAttributes(PseudocolorAttributes obj)
     {
-        super(PseudocolorAttributes_numAdditionalAtts);
+        super(obj);
 
         scaling = obj.scaling;
         skewFactor = obj.skewFactor;
@@ -439,7 +439,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         Select(17);
     }
 
-    public void SetPointType(GlyphType pointType_)
+    public void SetPointType(int pointType_)
     {
         pointType = pointType_;
         Select(18);
@@ -650,7 +650,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     public boolean        GetOpacityVarMinFlag() { return opacityVarMinFlag; }
     public boolean        GetOpacityVarMaxFlag() { return opacityVarMaxFlag; }
     public double         GetPointSize() { return pointSize; }
-    public GlyphType      GetPointType() { return pointType; }
+    public int GetPointType() { return pointType; }
     public boolean        GetPointSizeVarEnabled() { return pointSizeVarEnabled; }
     public String         GetPointSizeVar() { return pointSizeVar; }
     public int            GetPointSizePixels() { return pointSizePixels; }
@@ -1084,7 +1084,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     private boolean        opacityVarMinFlag;
     private boolean        opacityVarMaxFlag;
     private double         pointSize;
-    private GlyphType      pointType;
+    private int pointType;
     private boolean        pointSizeVarEnabled;
     private String         pointSizeVar;
     private int            pointSizePixels;

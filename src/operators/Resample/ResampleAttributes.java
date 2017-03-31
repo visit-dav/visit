@@ -113,7 +113,7 @@ public class ResampleAttributes extends AttributeSubject implements Plugin
 
     public ResampleAttributes(ResampleAttributes obj)
     {
-        super(ResampleAttributes_numAdditionalAtts);
+        super(obj);
 
         useExtents = obj.useExtents;
         startX = obj.startX;

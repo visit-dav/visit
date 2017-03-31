@@ -79,7 +79,7 @@ public class ClientInformation extends AttributeSubject
 
     public ClientInformation(ClientInformation obj)
     {
-        super(ClientInformation_numAdditionalAtts);
+        super(obj);
 
         int i;
 

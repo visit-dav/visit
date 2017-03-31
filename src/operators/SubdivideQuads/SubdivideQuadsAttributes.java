@@ -85,7 +85,7 @@ public class SubdivideQuadsAttributes extends AttributeSubject implements Plugin
 
     public SubdivideQuadsAttributes(SubdivideQuadsAttributes obj)
     {
-        super(SubdivideQuadsAttributes_numAdditionalAtts);
+        super(obj);
 
         threshold = obj.threshold;
         maxSubdivs = obj.maxSubdivs;

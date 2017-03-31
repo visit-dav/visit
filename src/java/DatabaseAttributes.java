@@ -74,7 +74,7 @@ public class DatabaseAttributes extends AttributeSubject
 
     public DatabaseAttributes(DatabaseAttributes obj)
     {
-        super(DatabaseAttributes_numAdditionalAtts);
+        super(obj);
 
         state = obj.state;
 

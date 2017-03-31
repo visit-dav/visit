@@ -77,7 +77,7 @@ public class EdgeAttributes extends AttributeSubject implements Plugin
 
     public EdgeAttributes(EdgeAttributes obj)
     {
-        super(EdgeAttributes_numAdditionalAtts);
+        super(obj);
 
         dummy = obj.dummy;
 

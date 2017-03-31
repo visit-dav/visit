@@ -82,7 +82,7 @@ public class NamespaceAttributes extends AttributeSubject
 
     public NamespaceAttributes(NamespaceAttributes obj)
     {
-        super(NamespaceAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -79,7 +79,7 @@ public class EngineList extends AttributeSubject
 
     public EngineList(EngineList obj)
     {
-        super(EngineList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -87,7 +87,7 @@ public class DatabaseCorrelationList extends AttributeSubject
 
     public DatabaseCorrelationList(DatabaseCorrelationList obj)
     {
-        super(DatabaseCorrelationList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

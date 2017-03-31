@@ -279,7 +279,7 @@ public class LimitCycleAttributes extends AttributeSubject implements Plugin
 
     public LimitCycleAttributes(LimitCycleAttributes obj)
     {
-        super(LimitCycleAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

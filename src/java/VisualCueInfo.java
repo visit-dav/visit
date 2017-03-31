@@ -98,7 +98,7 @@ public class VisualCueInfo extends AttributeSubject
 
     public VisualCueInfo(VisualCueInfo obj)
     {
-        super(VisualCueInfo_numAdditionalAtts);
+        super(obj);
 
         int i;
 

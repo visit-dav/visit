@@ -86,7 +86,7 @@ public class PluginManagerAttributes extends AttributeSubject
 
     public PluginManagerAttributes(PluginManagerAttributes obj)
     {
-        super(PluginManagerAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -138,7 +138,7 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
 
     public WellBoreAttributes(WellBoreAttributes obj)
     {
-        super(WellBoreAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

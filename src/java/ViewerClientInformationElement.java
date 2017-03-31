@@ -84,7 +84,7 @@ public class ViewerClientInformationElement extends AttributeSubject
 
     public ViewerClientInformationElement(ViewerClientInformationElement obj)
     {
-        super(ViewerClientInformationElement_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -111,7 +111,7 @@ public class View2DAttributes extends AttributeSubject
 
     public View2DAttributes(View2DAttributes obj)
     {
-        super(View2DAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

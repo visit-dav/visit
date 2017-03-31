@@ -82,7 +82,7 @@ public class GaussianControlPoint extends AttributeSubject
 
     public GaussianControlPoint(GaussianControlPoint obj)
     {
-        super(GaussianControlPoint_numAdditionalAtts);
+        super(obj);
 
         x = obj.x;
         height = obj.height;

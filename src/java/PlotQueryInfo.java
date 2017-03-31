@@ -92,7 +92,7 @@ public class PlotQueryInfo extends AttributeSubject
 
     public PlotQueryInfo(PlotQueryInfo obj)
     {
-        super(PlotQueryInfo_numAdditionalAtts);
+        super(obj);
 
         changeType = obj.changeType;
         oldFrameIndex = obj.oldFrameIndex;

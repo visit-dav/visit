@@ -83,7 +83,7 @@ public class DelaunayAttributes extends AttributeSubject implements Plugin
 
     public DelaunayAttributes(DelaunayAttributes obj)
     {
-        super(DelaunayAttributes_numAdditionalAtts);
+        super(obj);
 
         dimension = obj.dimension;
 

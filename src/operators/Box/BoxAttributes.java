@@ -96,7 +96,7 @@ public class BoxAttributes extends AttributeSubject implements Plugin
 
     public BoxAttributes(BoxAttributes obj)
     {
-        super(BoxAttributes_numAdditionalAtts);
+        super(obj);
 
         amount = obj.amount;
         minx = obj.minx;

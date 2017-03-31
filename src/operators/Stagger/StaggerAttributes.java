@@ -81,7 +81,7 @@ public class StaggerAttributes extends AttributeSubject implements Plugin
 
     public StaggerAttributes(StaggerAttributes obj)
     {
-        super(StaggerAttributes_numAdditionalAtts);
+        super(obj);
 
         offsetX = obj.offsetX;
         offsetY = obj.offsetY;

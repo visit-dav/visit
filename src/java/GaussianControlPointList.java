@@ -75,7 +75,7 @@ public class GaussianControlPointList extends AttributeSubject
 
     public GaussianControlPointList(GaussianControlPointList obj)
     {
-        super(GaussianControlPointList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

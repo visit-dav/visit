@@ -93,7 +93,7 @@ public class FiveFoldTetSubdivisionAttributes extends AttributeSubject implement
 
     public FiveFoldTetSubdivisionAttributes(FiveFoldTetSubdivisionAttributes obj)
     {
-        super(FiveFoldTetSubdivisionAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

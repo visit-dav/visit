@@ -84,7 +84,7 @@ public class SelectionVariableSummary extends AttributeSubject
 
     public SelectionVariableSummary(SelectionVariableSummary obj)
     {
-        super(SelectionVariableSummary_numAdditionalAtts);
+        super(obj);
 
         int i;
 

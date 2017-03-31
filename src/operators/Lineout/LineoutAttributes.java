@@ -103,7 +103,7 @@ public class LineoutAttributes extends AttributeSubject implements Plugin
 
     public LineoutAttributes(LineoutAttributes obj)
     {
-        super(LineoutAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

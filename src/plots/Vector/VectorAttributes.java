@@ -151,7 +151,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
 
     public VectorAttributes(VectorAttributes obj)
     {
-        super(VectorAttributes_numAdditionalAtts);
+        super(obj);
 
         glyphLocation = obj.glyphLocation;
         useStride = obj.useStride;

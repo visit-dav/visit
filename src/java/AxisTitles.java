@@ -84,7 +84,7 @@ public class AxisTitles extends AttributeSubject
 
     public AxisTitles(AxisTitles obj)
     {
-        super(AxisTitles_numAdditionalAtts);
+        super(obj);
 
         visible = obj.visible;
         font = new FontAttributes(obj.font);

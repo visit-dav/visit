@@ -274,7 +274,7 @@ public class LCSAttributes extends AttributeSubject implements Plugin
 
     public LCSAttributes(LCSAttributes obj)
     {
-        super(LCSAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -82,7 +82,7 @@ public class EngineProperties extends AttributeSubject
 
     public EngineProperties(EngineProperties obj)
     {
-        super(EngineProperties_numAdditionalAtts);
+        super(obj);
 
         numNodes = obj.numNodes;
         numProcessors = obj.numProcessors;

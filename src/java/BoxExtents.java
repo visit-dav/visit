@@ -86,7 +86,7 @@ public class BoxExtents extends AttributeSubject
 
     public BoxExtents(BoxExtents obj)
     {
-        super(BoxExtents_numAdditionalAtts);
+        super(obj);
 
         int i;
 
