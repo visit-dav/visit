@@ -105,7 +105,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
 
     public OnionPeelAttributes(OnionPeelAttributes obj)
     {
-        super(OnionPeelAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -150,7 +150,7 @@ public class LaunchProfile extends AttributeSubject
 
     public LaunchProfile(LaunchProfile obj)
     {
-        super(LaunchProfile_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -75,7 +75,7 @@ public class VisualCueList extends AttributeSubject
 
     public VisualCueList(VisualCueList obj)
     {
-        super(VisualCueList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

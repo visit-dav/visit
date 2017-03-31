@@ -146,7 +146,7 @@ public class View3DAttributes extends AttributeSubject
 
     public View3DAttributes(View3DAttributes obj)
     {
-        super(View3DAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

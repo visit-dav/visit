@@ -97,7 +97,7 @@ public class avtSimulationInformation extends AttributeSubject
 
     public avtSimulationInformation(avtSimulationInformation obj)
     {
-        super(avtSimulationInformation_numAdditionalAtts);
+        super(obj);
 
         int i;
 

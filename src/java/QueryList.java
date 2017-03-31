@@ -131,7 +131,7 @@ public class QueryList extends AttributeSubject
 
     public QueryList(QueryList obj)
     {
-        super(QueryList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

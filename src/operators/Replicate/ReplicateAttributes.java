@@ -121,7 +121,7 @@ public class ReplicateAttributes extends AttributeSubject implements Plugin
 
     public ReplicateAttributes(ReplicateAttributes obj)
     {
-        super(ReplicateAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

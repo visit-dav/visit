@@ -100,7 +100,7 @@ public class RevolveAttributes extends AttributeSubject implements Plugin
 
     public RevolveAttributes(RevolveAttributes obj)
     {
-        super(RevolveAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -105,7 +105,7 @@ public class Expression extends AttributeSubject
 
     public Expression(Expression obj)
     {
-        super(Expression_numAdditionalAtts);
+        super(obj);
 
         name = new String(obj.name);
         definition = new String(obj.definition);

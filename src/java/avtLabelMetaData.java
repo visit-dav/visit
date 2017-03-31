@@ -72,7 +72,7 @@ public class avtLabelMetaData extends avtVarMetaData
 
     public avtLabelMetaData(avtLabelMetaData obj)
     {
-        super(avtLabelMetaData_numAdditionalAtts);
+        super(obj);
 
 
         SelectAll();
@@ -102,12 +102,11 @@ public class avtLabelMetaData extends avtVarMetaData
     {
         super.WriteAtts(buf);
 
-        int offset = (new avtLabelMetaData()).Offset();
     }
 
     public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        int offset = (new avtLabelMetaData()).Offset();
+        super.ReadAtts(id, buf);
     }
 
     public String toString(String indent)

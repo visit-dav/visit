@@ -81,7 +81,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
     public MultiresControlAttributes(MultiresControlAttributes obj)
     {
-        super(MultiresControlAttributes_numAdditionalAtts);
+        super(obj);
 
         resolution = obj.resolution;
         maxResolution = obj.maxResolution;

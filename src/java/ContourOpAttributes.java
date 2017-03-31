@@ -99,7 +99,7 @@ public class ContourOpAttributes extends AttributeSubject
 
     public ContourOpAttributes(ContourOpAttributes obj)
     {
-        super(ContourOpAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

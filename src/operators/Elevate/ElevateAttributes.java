@@ -104,7 +104,7 @@ public class ElevateAttributes extends AttributeSubject implements Plugin
 
     public ElevateAttributes(ElevateAttributes obj)
     {
-        super(ElevateAttributes_numAdditionalAtts);
+        super(obj);
 
         useXYLimits = obj.useXYLimits;
         limitsMode = obj.limitsMode;

@@ -88,7 +88,7 @@ public class NameschemeAttributes extends AttributeSubject
 
     public NameschemeAttributes(NameschemeAttributes obj)
     {
-        super(NameschemeAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

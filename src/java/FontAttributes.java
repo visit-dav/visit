@@ -90,7 +90,7 @@ public class FontAttributes extends AttributeSubject
 
     public FontAttributes(FontAttributes obj)
     {
-        super(FontAttributes_numAdditionalAtts);
+        super(obj);
 
         font = obj.font;
         scale = obj.scale;

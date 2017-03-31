@@ -127,7 +127,7 @@ public class ConstructDataBinningAttributes extends AttributeSubject
 
     public ConstructDataBinningAttributes(ConstructDataBinningAttributes obj)
     {
-        super(ConstructDataBinningAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

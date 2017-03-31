@@ -134,7 +134,7 @@ public class WindowAttributes extends AttributeSubject
 
     public WindowAttributes(WindowAttributes obj)
     {
-        super(WindowAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

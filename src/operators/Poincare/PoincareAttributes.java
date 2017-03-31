@@ -357,7 +357,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
     public PoincareAttributes(PoincareAttributes obj)
     {
-        super(PoincareAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

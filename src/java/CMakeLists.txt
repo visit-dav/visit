@@ -59,6 +59,9 @@
 #   'pack' target now will create examples and docs (if not already built), 
 #   as well as creating the jar file and the jvisit tarball for distribution.
 #
+#   Kathleen Biagas, Fri Mar 31 12:56:33 PDT 2017
+#   Added TryThreshold and TryPointGlyphing examples.
+#
 #****************************************************************************/
 
 PROJECT(JavaClient Java)
@@ -243,7 +246,9 @@ PlotTypes.java
 RunViewer.java 
 TryAnnotations.java 
 TryLighting.java 
+TryPointGlyphing.java 
 TryQuery.java 
+TryThreshold.java 
 )
 
 # Some preliminary work to aid in creating the tarball

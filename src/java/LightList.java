@@ -90,7 +90,7 @@ public class LightList extends AttributeSubject
 
     public LightList(LightList obj)
     {
-        super(LightList_numAdditionalAtts);
+        super(obj);
 
         light0 = new LightAttributes(obj.light0);
         light1 = new LightAttributes(obj.light1);

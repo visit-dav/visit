@@ -94,7 +94,7 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
 
     public TopologyAttributes(TopologyAttributes obj)
     {
-        super(TopologyAttributes_numAdditionalAtts);
+        super(obj);
 
         lineWidth = obj.lineWidth;
         lineStyle = obj.lineStyle;

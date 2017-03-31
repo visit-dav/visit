@@ -94,7 +94,7 @@ public class InteractorAttributes extends AttributeSubject
 
     public InteractorAttributes(InteractorAttributes obj)
     {
-        super(InteractorAttributes_numAdditionalAtts);
+        super(obj);
 
         showGuidelines = obj.showGuidelines;
         clampSquare = obj.clampSquare;

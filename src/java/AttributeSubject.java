@@ -61,13 +61,17 @@ import java.util.Vector;
 //   Brad Whitlock, Mon Feb 25 14:09:31 PST 2008
 //   Added methods to help with string conversion. Added javadoc comments.
 //
+//   Kathleen Biagas, Fri Mar 31 13:36:59 PDT 2017
+//   Added a copy constructor that behaves similar to the constructor that
+//   takes an int.
+//
 // ****************************************************************************
 /**
  * Base class for state objects.
  *
  * @author Brad Whitlock
  */
-public abstract class AttributeSubject extends java.lang.Object
+public abstract class AttributeSubject
 {
     /**
      * Constructor for the AttributeSubject class.
@@ -79,6 +83,20 @@ public abstract class AttributeSubject extends java.lang.Object
 
         observers = new Vector();
         selected = new boolean[nAtts];
+        UnSelectAll();
+        attributeId = 0;
+    }
+
+    /**
+     * Copy Constructor for the AttributeSubject class.
+     * @param obj The attribute subject to copy.
+     */
+    public AttributeSubject(AttributeSubject obj)
+    {
+        super();
+
+        observers = new Vector();
+        selected = new boolean[obj.NumAttributes()];
         UnSelectAll();
         attributeId = 0;
     }

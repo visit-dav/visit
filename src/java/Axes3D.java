@@ -122,7 +122,7 @@ public class Axes3D extends AttributeSubject
 
     public Axes3D(Axes3D obj)
     {
-        super(Axes3D_numAdditionalAtts);
+        super(obj);
 
         int i;
 

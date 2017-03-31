@@ -141,7 +141,7 @@ public class SliceAttributes extends AttributeSubject implements Plugin
 
     public SliceAttributes(SliceAttributes obj)
     {
-        super(SliceAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

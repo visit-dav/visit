@@ -100,7 +100,7 @@ public class StatusAttributes extends AttributeSubject
 
     public StatusAttributes(StatusAttributes obj)
     {
-        super(StatusAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

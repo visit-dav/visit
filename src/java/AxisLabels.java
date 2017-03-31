@@ -78,7 +78,7 @@ public class AxisLabels extends AttributeSubject
 
     public AxisLabels(AxisLabels obj)
     {
-        super(AxisLabels_numAdditionalAtts);
+        super(obj);
 
         visible = obj.visible;
         font = new FontAttributes(obj.font);

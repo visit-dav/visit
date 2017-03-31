@@ -83,7 +83,7 @@ public class AMRStitchCellAttributes extends AttributeSubject implements Plugin
 
     public AMRStitchCellAttributes(AMRStitchCellAttributes obj)
     {
-        super(AMRStitchCellAttributes_numAdditionalAtts);
+        super(obj);
 
         CreateCellsOfType = obj.CreateCellsOfType;
 

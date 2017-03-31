@@ -76,7 +76,7 @@ public class PostponedAction extends AttributeSubject
 
     public PostponedAction(PostponedAction obj)
     {
-        super(PostponedAction_numAdditionalAtts);
+        super(obj);
 
         RPC = new ViewerRPC(obj.RPC);
         window = obj.window;

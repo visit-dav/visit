@@ -114,7 +114,7 @@ public class ParallelCoordinatesAttributes extends AttributeSubject implements P
 
     public ParallelCoordinatesAttributes(ParallelCoordinatesAttributes obj)
     {
-        super(ParallelCoordinatesAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

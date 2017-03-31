@@ -98,7 +98,7 @@ public class TensorAttributes extends AttributeSubject implements Plugin
 
     public TensorAttributes(TensorAttributes obj)
     {
-        super(TensorAttributes_numAdditionalAtts);
+        super(obj);
 
         useStride = obj.useStride;
         stride = obj.stride;

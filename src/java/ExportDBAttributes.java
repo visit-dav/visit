@@ -93,7 +93,7 @@ public class ExportDBAttributes extends AttributeSubject
 
     public ExportDBAttributes(ExportDBAttributes obj)
     {
-        super(ExportDBAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

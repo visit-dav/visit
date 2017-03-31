@@ -75,7 +75,7 @@ public class HostProfileList extends AttributeSubject
 
     public HostProfileList(HostProfileList obj)
     {
-        super(HostProfileList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

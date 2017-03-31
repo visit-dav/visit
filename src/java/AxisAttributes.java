@@ -80,7 +80,7 @@ public class AxisAttributes extends AttributeSubject
 
     public AxisAttributes(AxisAttributes obj)
     {
-        super(AxisAttributes_numAdditionalAtts);
+        super(obj);
 
         title = new AxisTitles(obj.title);
         label = new AxisLabels(obj.label);

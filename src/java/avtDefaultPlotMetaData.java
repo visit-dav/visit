@@ -79,7 +79,7 @@ public class avtDefaultPlotMetaData extends AttributeSubject
 
     public avtDefaultPlotMetaData(avtDefaultPlotMetaData obj)
     {
-        super(avtDefaultPlotMetaData_numAdditionalAtts);
+        super(obj);
 
         int i;
 

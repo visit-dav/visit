@@ -96,7 +96,7 @@ public class LightAttributes extends AttributeSubject
 
     public LightAttributes(LightAttributes obj)
     {
-        super(LightAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

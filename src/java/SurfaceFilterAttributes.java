@@ -103,7 +103,7 @@ public class SurfaceFilterAttributes extends AttributeSubject
 
     public SurfaceFilterAttributes(SurfaceFilterAttributes obj)
     {
-        super(SurfaceFilterAttributes_numAdditionalAtts);
+        super(obj);
 
         limitsMode = obj.limitsMode;
         minFlag = obj.minFlag;

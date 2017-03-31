@@ -82,7 +82,7 @@ public class SphereAttributes extends AttributeSubject
 
     public SphereAttributes(SphereAttributes obj)
     {
-        super(SphereAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

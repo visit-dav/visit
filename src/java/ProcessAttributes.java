@@ -84,7 +84,7 @@ public class ProcessAttributes extends AttributeSubject
 
     public ProcessAttributes(ProcessAttributes obj)
     {
-        super(ProcessAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

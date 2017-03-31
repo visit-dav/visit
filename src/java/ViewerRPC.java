@@ -358,7 +358,7 @@ public class ViewerRPC extends AttributeSubject
 
     public ViewerRPC(ViewerRPC obj)
     {
-        super(ViewerRPC_numAdditionalAtts);
+        super(obj);
 
         int i;
 

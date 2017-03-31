@@ -84,7 +84,7 @@ public class SimulationUIValues extends AttributeSubject
 
     public SimulationUIValues(SimulationUIValues obj)
     {
-        super(SimulationUIValues_numAdditionalAtts);
+        super(obj);
 
         host = new String(obj.host);
         sim = new String(obj.sim);

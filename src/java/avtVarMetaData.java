@@ -88,7 +88,7 @@ public class avtVarMetaData extends avtBaseVarMetaData
 
     public avtVarMetaData(avtVarMetaData obj)
     {
-        super(avtVarMetaData_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -124,7 +124,7 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
 
     public SurfaceAttributes(SurfaceAttributes obj)
     {
-        super(SurfaceAttributes_numAdditionalAtts);
+        super(obj);
 
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;

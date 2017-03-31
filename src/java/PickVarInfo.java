@@ -109,7 +109,7 @@ public class PickVarInfo extends AttributeSubject
 
     public PickVarInfo(PickVarInfo obj)
     {
-        super(PickVarInfo_numAdditionalAtts);
+        super(obj);
 
         int i;
 

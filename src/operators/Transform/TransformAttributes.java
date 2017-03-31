@@ -185,7 +185,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
 
     public TransformAttributes(TransformAttributes obj)
     {
-        super(TransformAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

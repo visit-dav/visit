@@ -100,7 +100,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
 
     public QueryOverTimeAttributes(QueryOverTimeAttributes obj)
     {
-        super(QueryOverTimeAttributes_numAdditionalAtts);
+        super(obj);
 
         timeType = obj.timeType;
         startTimeFlag = obj.startTimeFlag;

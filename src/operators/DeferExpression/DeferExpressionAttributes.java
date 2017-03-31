@@ -78,7 +78,7 @@ public class DeferExpressionAttributes extends AttributeSubject implements Plugi
 
     public DeferExpressionAttributes(DeferExpressionAttributes obj)
     {
-        super(DeferExpressionAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

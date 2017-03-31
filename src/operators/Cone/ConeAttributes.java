@@ -113,7 +113,7 @@ public class ConeAttributes extends AttributeSubject implements Plugin
 
     public ConeAttributes(ConeAttributes obj)
     {
-        super(ConeAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

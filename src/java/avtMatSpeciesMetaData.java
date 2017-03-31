@@ -79,7 +79,7 @@ public class avtMatSpeciesMetaData extends AttributeSubject
 
     public avtMatSpeciesMetaData(avtMatSpeciesMetaData obj)
     {
-        super(avtMatSpeciesMetaData_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -83,7 +83,7 @@ public class DualMeshAttributes extends AttributeSubject implements Plugin
 
     public DualMeshAttributes(DualMeshAttributes obj)
     {
-        super(DualMeshAttributes_numAdditionalAtts);
+        super(obj);
 
         mode = obj.mode;
 

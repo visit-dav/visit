@@ -254,7 +254,7 @@ public class LineSamplerAttributes extends AttributeSubject implements Plugin
 
     public LineSamplerAttributes(LineSamplerAttributes obj)
     {
-        super(LineSamplerAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

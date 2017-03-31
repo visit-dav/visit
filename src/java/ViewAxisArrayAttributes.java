@@ -94,7 +94,7 @@ public class ViewAxisArrayAttributes extends AttributeSubject
 
     public ViewAxisArrayAttributes(ViewAxisArrayAttributes obj)
     {
-        super(ViewAxisArrayAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

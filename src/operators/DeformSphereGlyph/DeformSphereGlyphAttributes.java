@@ -81,7 +81,7 @@ public class DeformSphereGlyphAttributes extends AttributeSubject implements Plu
 
     public DeformSphereGlyphAttributes(DeformSphereGlyphAttributes obj)
     {
-        super(DeformSphereGlyphAttributes_numAdditionalAtts);
+        super(obj);
 
         var = new String(obj.var);
         scale = obj.scale;

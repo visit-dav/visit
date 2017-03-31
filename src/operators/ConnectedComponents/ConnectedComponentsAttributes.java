@@ -77,7 +77,7 @@ public class ConnectedComponentsAttributes extends AttributeSubject implements P
 
     public ConnectedComponentsAttributes(ConnectedComponentsAttributes obj)
     {
-        super(ConnectedComponentsAttributes_numAdditionalAtts);
+        super(obj);
 
         EnableGhostNeighborsOptimization = obj.EnableGhostNeighborsOptimization;
 

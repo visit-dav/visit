@@ -82,7 +82,7 @@ public class avtBaseVarMetaData extends AttributeSubject
 
     public avtBaseVarMetaData(avtBaseVarMetaData obj)
     {
-        super(avtBaseVarMetaData_numAdditionalAtts);
+        super(obj);
 
         name = new String(obj.name);
         originalName = new String(obj.originalName);

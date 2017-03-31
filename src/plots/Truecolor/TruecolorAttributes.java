@@ -79,7 +79,7 @@ public class TruecolorAttributes extends AttributeSubject implements Plugin
 
     public TruecolorAttributes(TruecolorAttributes obj)
     {
-        super(TruecolorAttributes_numAdditionalAtts);
+        super(obj);
 
         opacity = obj.opacity;
         lightingFlag = obj.lightingFlag;

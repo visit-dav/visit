@@ -140,7 +140,7 @@ public class CreateBondsAttributes extends AttributeSubject implements Plugin
 
     public CreateBondsAttributes(CreateBondsAttributes obj)
     {
-        super(CreateBondsAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

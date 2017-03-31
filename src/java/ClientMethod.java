@@ -83,7 +83,7 @@ public class ClientMethod extends AttributeSubject
 
     public ClientMethod(ClientMethod obj)
     {
-        super(ClientMethod_numAdditionalAtts);
+        super(obj);
 
         int i;
 

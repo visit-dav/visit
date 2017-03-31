@@ -95,7 +95,7 @@ public class SILArrayAttributes extends AttributeSubject
 
     public SILArrayAttributes(SILArrayAttributes obj)
     {
-        super(SILArrayAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

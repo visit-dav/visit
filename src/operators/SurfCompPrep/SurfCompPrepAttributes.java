@@ -125,7 +125,7 @@ public class SurfCompPrepAttributes extends AttributeSubject implements Plugin
 
     public SurfCompPrepAttributes(SurfCompPrepAttributes obj)
     {
-        super(SurfCompPrepAttributes_numAdditionalAtts);
+        super(obj);
 
         surfaceType = obj.surfaceType;
         coordSystem = obj.coordSystem;

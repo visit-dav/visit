@@ -252,7 +252,7 @@ public class avtMeshMetaData extends AttributeSubject
 
     public avtMeshMetaData(avtMeshMetaData obj)
     {
-        super(avtMeshMetaData_numAdditionalAtts);
+        super(obj);
 
         int i;
 

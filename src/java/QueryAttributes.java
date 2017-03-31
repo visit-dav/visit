@@ -120,7 +120,7 @@ public class QueryAttributes extends AttributeSubject
 
     public QueryAttributes(QueryAttributes obj)
     {
-        super(QueryAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

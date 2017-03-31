@@ -75,7 +75,7 @@ public class ThresholdAttributes extends ThresholdOpAttributes implements Plugin
 
     public ThresholdAttributes(ThresholdAttributes obj)
     {
-        super(ThresholdAttributes_numAdditionalAtts);
+        super(obj);
 
 
         SelectAll();
@@ -108,12 +108,11 @@ public class ThresholdAttributes extends ThresholdOpAttributes implements Plugin
     {
         super.WriteAtts(buf);
 
-        int offset = (new ThresholdAttributes()).Offset();
     }
 
     public void ReadAtts(int id, CommunicationBuffer buf)
     {
-        int offset = (new ThresholdAttributes()).Offset();
+        super.ReadAtts(id, buf);
     }
 
     public String toString(String indent)

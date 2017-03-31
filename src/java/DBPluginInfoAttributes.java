@@ -88,7 +88,7 @@ public class DBPluginInfoAttributes extends AttributeSubject
 
     public DBPluginInfoAttributes(DBPluginInfoAttributes obj)
     {
-        super(DBPluginInfoAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

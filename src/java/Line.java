@@ -106,7 +106,7 @@ public class Line extends AttributeSubject
 
     public Line(Line obj)
     {
-        super(Line_numAdditionalAtts);
+        super(obj);
 
         int i;
 

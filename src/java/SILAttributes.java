@@ -98,7 +98,7 @@ public class SILAttributes extends AttributeSubject
 
     public SILAttributes(SILAttributes obj)
     {
-        super(SILAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

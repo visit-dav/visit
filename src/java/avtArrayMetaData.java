@@ -77,7 +77,7 @@ public class avtArrayMetaData extends avtVarMetaData
 
     public avtArrayMetaData(avtArrayMetaData obj)
     {
-        super(avtArrayMetaData_numAdditionalAtts);
+        super(obj);
 
         int i;
 

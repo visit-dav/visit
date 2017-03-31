@@ -89,7 +89,7 @@ public class SmoothOperatorAttributes extends AttributeSubject implements Plugin
 
     public SmoothOperatorAttributes(SmoothOperatorAttributes obj)
     {
-        super(SmoothOperatorAttributes_numAdditionalAtts);
+        super(obj);
 
         numIterations = obj.numIterations;
         relaxationFactor = obj.relaxationFactor;

@@ -141,7 +141,7 @@ public class PDFAttributes extends AttributeSubject implements Plugin
 
     public PDFAttributes(PDFAttributes obj)
     {
-        super(PDFAttributes_numAdditionalAtts);
+        super(obj);
 
         var1 = new String(obj.var1);
         var1MinFlag = obj.var1MinFlag;

@@ -74,7 +74,7 @@ public class SyncAttributes extends AttributeSubject
 
     public SyncAttributes(SyncAttributes obj)
     {
-        super(SyncAttributes_numAdditionalAtts);
+        super(obj);
 
         syncTag = obj.syncTag;
 

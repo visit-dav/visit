@@ -123,7 +123,7 @@ public class MovieAttributes extends AttributeSubject
 
     public MovieAttributes(MovieAttributes obj)
     {
-        super(MovieAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

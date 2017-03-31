@@ -102,7 +102,7 @@ public class PlaneAttributes extends AttributeSubject
 
     public PlaneAttributes(PlaneAttributes obj)
     {
-        super(PlaneAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

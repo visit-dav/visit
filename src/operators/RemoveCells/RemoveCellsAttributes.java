@@ -81,7 +81,7 @@ public class RemoveCellsAttributes extends AttributeSubject implements Plugin
 
     public RemoveCellsAttributes(RemoveCellsAttributes obj)
     {
-        super(RemoveCellsAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

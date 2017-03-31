@@ -79,7 +79,7 @@ public class SiloDumpAttributes extends AttributeSubject implements Plugin
 
     public SiloDumpAttributes(SiloDumpAttributes obj)
     {
-        super(SiloDumpAttributes_numAdditionalAtts);
+        super(obj);
 
         filename = new String(obj.filename);
         display = obj.display;

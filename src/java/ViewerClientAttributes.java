@@ -98,7 +98,7 @@ public class ViewerClientAttributes extends AttributeSubject
 
     public ViewerClientAttributes(ViewerClientAttributes obj)
     {
-        super(ViewerClientAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

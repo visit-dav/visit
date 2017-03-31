@@ -75,7 +75,7 @@ public class AnnotationObjectList extends AttributeSubject
 
     public AnnotationObjectList(AnnotationObjectList obj)
     {
-        super(AnnotationObjectList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

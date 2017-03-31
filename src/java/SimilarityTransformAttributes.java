@@ -125,7 +125,7 @@ public class SimilarityTransformAttributes extends AttributeSubject
 
     public SimilarityTransformAttributes(SimilarityTransformAttributes obj)
     {
-        super(SimilarityTransformAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

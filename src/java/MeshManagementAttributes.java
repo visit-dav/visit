@@ -100,7 +100,7 @@ public class MeshManagementAttributes extends AttributeSubject
 
     public MeshManagementAttributes(MeshManagementAttributes obj)
     {
-        super(MeshManagementAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

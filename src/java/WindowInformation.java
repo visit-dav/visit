@@ -148,7 +148,7 @@ public class WindowInformation extends AttributeSubject
 
     public WindowInformation(WindowInformation obj)
     {
-        super(WindowInformation_numAdditionalAtts);
+        super(obj);
 
         int i;
 

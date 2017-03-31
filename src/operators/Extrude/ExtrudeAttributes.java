@@ -89,7 +89,7 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
 
     public ExtrudeAttributes(ExtrudeAttributes obj)
     {
-        super(ExtrudeAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

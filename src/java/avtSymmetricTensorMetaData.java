@@ -74,7 +74,7 @@ public class avtSymmetricTensorMetaData extends avtVarMetaData
 
     public avtSymmetricTensorMetaData(avtSymmetricTensorMetaData obj)
     {
-        super(avtSymmetricTensorMetaData_numAdditionalAtts);
+        super(obj);
 
         dim = obj.dim;
 

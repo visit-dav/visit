@@ -91,7 +91,7 @@ public class ColorControlPointList extends AttributeSubject
 
     public ColorControlPointList(ColorControlPointList obj)
     {
-        super(ColorControlPointList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

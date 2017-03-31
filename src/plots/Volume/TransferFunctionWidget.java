@@ -111,7 +111,7 @@ public class TransferFunctionWidget extends AttributeSubject
 
     public TransferFunctionWidget(TransferFunctionWidget obj)
     {
-        super(TransferFunctionWidget_numAdditionalAtts);
+        super(obj);
 
         int i;
 

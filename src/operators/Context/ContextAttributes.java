@@ -94,7 +94,7 @@ public class ContextAttributes extends AttributeSubject implements Plugin
 
     public ContextAttributes(ContextAttributes obj)
     {
-        super(ContextAttributes_numAdditionalAtts);
+        super(obj);
 
         offset = obj.offset;
         low = obj.low;

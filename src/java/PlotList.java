@@ -75,7 +75,7 @@ public class PlotList extends AttributeSubject
 
     public PlotList(PlotList obj)
     {
-        super(PlotList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

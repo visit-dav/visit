@@ -106,7 +106,7 @@ public class IsosurfaceAttributes extends AttributeSubject implements Plugin
 
     public IsosurfaceAttributes(IsosurfaceAttributes obj)
     {
-        super(IsosurfaceAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

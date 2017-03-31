@@ -118,7 +118,7 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
 
     public ReflectAttributes(ReflectAttributes obj)
     {
-        super(ReflectAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

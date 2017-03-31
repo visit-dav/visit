@@ -77,7 +77,7 @@ public class DecimateAttributes extends AttributeSubject implements Plugin
 
     public DecimateAttributes(DecimateAttributes obj)
     {
-        super(DecimateAttributes_numAdditionalAtts);
+        super(obj);
 
         target = obj.target;
 

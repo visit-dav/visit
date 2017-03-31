@@ -85,7 +85,7 @@ public class ZoneDumpAttributes extends AttributeSubject implements Plugin
 
     public ZoneDumpAttributes(ZoneDumpAttributes obj)
     {
-        super(ZoneDumpAttributes_numAdditionalAtts);
+        super(obj);
 
         variable = new String(obj.variable);
         lowerBound = obj.lowerBound;

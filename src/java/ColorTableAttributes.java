@@ -83,7 +83,7 @@ public class ColorTableAttributes extends AttributeSubject
 
     public ColorTableAttributes(ColorTableAttributes obj)
     {
-        super(ColorTableAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

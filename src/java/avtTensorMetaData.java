@@ -74,7 +74,7 @@ public class avtTensorMetaData extends avtVarMetaData
 
     public avtTensorMetaData(avtTensorMetaData obj)
     {
-        super(avtTensorMetaData_numAdditionalAtts);
+        super(obj);
 
         dim = obj.dim;
 

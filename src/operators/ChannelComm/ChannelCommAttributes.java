@@ -81,7 +81,7 @@ public class ChannelCommAttributes extends AttributeSubject implements Plugin
 
     public ChannelCommAttributes(ChannelCommAttributes obj)
     {
-        super(ChannelCommAttributes_numAdditionalAtts);
+        super(obj);
 
         numInX = obj.numInX;
         numInY = obj.numInY;

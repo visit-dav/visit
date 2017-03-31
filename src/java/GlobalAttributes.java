@@ -140,7 +140,7 @@ public class GlobalAttributes extends AttributeSubject
 
     public GlobalAttributes(GlobalAttributes obj)
     {
-        super(GlobalAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

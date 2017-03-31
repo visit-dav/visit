@@ -84,7 +84,7 @@ public class AxesArray extends AttributeSubject
 
     public AxesArray(AxesArray obj)
     {
-        super(AxesArray_numAdditionalAtts);
+        super(obj);
 
         visible = obj.visible;
         ticksVisible = obj.ticksVisible;

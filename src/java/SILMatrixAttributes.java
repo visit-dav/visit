@@ -86,7 +86,7 @@ public class SILMatrixAttributes extends AttributeSubject
 
     public SILMatrixAttributes(SILMatrixAttributes obj)
     {
-        super(SILMatrixAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

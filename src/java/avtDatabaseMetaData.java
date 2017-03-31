@@ -147,7 +147,7 @@ public class avtDatabaseMetaData extends AttributeSubject
 
     public avtDatabaseMetaData(avtDatabaseMetaData obj)
     {
-        super(avtDatabaseMetaData_numAdditionalAtts);
+        super(obj);
 
         int i;
 

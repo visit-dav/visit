@@ -269,7 +269,7 @@ public class PickAttributes extends AttributeSubject
 
     public PickAttributes(PickAttributes obj)
     {
-        super(PickAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

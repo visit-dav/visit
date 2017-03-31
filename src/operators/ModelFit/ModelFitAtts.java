@@ -117,7 +117,7 @@ public class ModelFitAtts extends AttributeSubject implements Plugin
 
     public ModelFitAtts(ModelFitAtts obj)
     {
-        super(ModelFitAtts_numAdditionalAtts);
+        super(obj);
 
         int i;
 

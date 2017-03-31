@@ -108,7 +108,7 @@ public class DBOptionsAttributes extends AttributeSubject
 
     public DBOptionsAttributes(DBOptionsAttributes obj)
     {
-        super(DBOptionsAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

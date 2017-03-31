@@ -85,7 +85,7 @@ public class AxisAlignedSlice4DAttributes extends AttributeSubject implements Pl
 
     public AxisAlignedSlice4DAttributes(AxisAlignedSlice4DAttributes obj)
     {
-        super(AxisAlignedSlice4DAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

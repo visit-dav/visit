@@ -74,7 +74,7 @@ public class PlotInfoAttributes extends AttributeSubject
 
     public PlotInfoAttributes(PlotInfoAttributes obj)
     {
-        super(PlotInfoAttributes_numAdditionalAtts);
+        super(obj);
 
         data = new MapNode(obj.data);
 

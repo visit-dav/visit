@@ -367,7 +367,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
 
     public IntegralCurveAttributes(IntegralCurveAttributes obj)
     {
-        super(IntegralCurveAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

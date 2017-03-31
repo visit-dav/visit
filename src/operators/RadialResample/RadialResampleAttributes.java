@@ -103,7 +103,7 @@ public class RadialResampleAttributes extends AttributeSubject implements Plugin
 
     public RadialResampleAttributes(RadialResampleAttributes obj)
     {
-        super(RadialResampleAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

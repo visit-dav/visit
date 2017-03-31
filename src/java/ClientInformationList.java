@@ -75,7 +75,7 @@ public class ClientInformationList extends AttributeSubject
 
     public ClientInformationList(ClientInformationList obj)
     {
-        super(ClientInformationList_numAdditionalAtts);
+        super(obj);
 
         int i;
 

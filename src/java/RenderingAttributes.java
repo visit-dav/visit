@@ -172,7 +172,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
 
     public RenderingAttributes(RenderingAttributes obj)
     {
-        super(RenderingAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

@@ -129,7 +129,7 @@ public class avtScalarMetaData extends avtVarMetaData
 
     public avtScalarMetaData(avtScalarMetaData obj)
     {
-        super(avtScalarMetaData_numAdditionalAtts);
+        super(obj);
 
         int i;
 

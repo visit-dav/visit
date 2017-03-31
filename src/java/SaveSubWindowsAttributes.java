@@ -104,7 +104,7 @@ public class SaveSubWindowsAttributes extends AttributeSubject
 
     public SaveSubWindowsAttributes(SaveSubWindowsAttributes obj)
     {
-        super(SaveSubWindowsAttributes_numAdditionalAtts);
+        super(obj);
 
         win1 = new SaveSubWindowAttributes(obj.win1);
         win2 = new SaveSubWindowAttributes(obj.win2);

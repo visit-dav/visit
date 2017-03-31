@@ -152,7 +152,7 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
 
     public DataBinningAttributes(DataBinningAttributes obj)
     {
-        super(DataBinningAttributes_numAdditionalAtts);
+        super(obj);
 
         numDimensions = obj.numDimensions;
         dim1BinBasedOn = obj.dim1BinBasedOn;

@@ -108,7 +108,7 @@ public class avtSubsetsMetaData extends avtVarMetaData
 
     public avtSubsetsMetaData(avtSubsetsMetaData obj)
     {
-        super(avtSubsetsMetaData_numAdditionalAtts);
+        super(obj);
 
         int i;
 

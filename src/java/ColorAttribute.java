@@ -83,7 +83,7 @@ public class ColorAttribute extends AttributeSubject
 
     public ColorAttribute(ColorAttribute obj)
     {
-        super(ColorAttribute_numAdditionalAtts);
+        super(obj);
 
         int i;
 

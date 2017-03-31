@@ -110,7 +110,7 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
 
     public StatisticalTrendsAttributes(StatisticalTrendsAttributes obj)
     {
-        super(StatisticalTrendsAttributes_numAdditionalAtts);
+        super(obj);
 
         startIndex = obj.startIndex;
         stopIndex = obj.stopIndex;

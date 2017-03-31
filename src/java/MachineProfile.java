@@ -125,7 +125,7 @@ public class MachineProfile extends AttributeSubject
 
     public MachineProfile(MachineProfile obj)
     {
-        super(MachineProfile_numAdditionalAtts);
+        super(obj);
 
         int i;
 

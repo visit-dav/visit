@@ -162,7 +162,7 @@ public class ClipAttributes extends AttributeSubject implements Plugin
 
     public ClipAttributes(ClipAttributes obj)
     {
-        super(ClipAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

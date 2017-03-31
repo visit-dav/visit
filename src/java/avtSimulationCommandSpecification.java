@@ -103,7 +103,7 @@ public class avtSimulationCommandSpecification extends AttributeSubject
 
     public avtSimulationCommandSpecification(avtSimulationCommandSpecification obj)
     {
-        super(avtSimulationCommandSpecification_numAdditionalAtts);
+        super(obj);
 
         name = new String(obj.name);
         argumentType = obj.argumentType;

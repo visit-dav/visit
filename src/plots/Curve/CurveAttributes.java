@@ -159,7 +159,7 @@ public class CurveAttributes extends AttributeSubject implements Plugin
 
     public CurveAttributes(CurveAttributes obj)
     {
-        super(CurveAttributes_numAdditionalAtts);
+        super(obj);
 
         showLines = obj.showLines;
         lineStyle = obj.lineStyle;

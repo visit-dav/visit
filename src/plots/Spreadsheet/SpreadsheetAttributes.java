@@ -118,7 +118,7 @@ public class SpreadsheetAttributes extends AttributeSubject implements Plugin
 
     public SpreadsheetAttributes(SpreadsheetAttributes obj)
     {
-        super(SpreadsheetAttributes_numAdditionalAtts);
+        super(obj);
 
         int i;
 

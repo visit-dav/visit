@@ -82,7 +82,7 @@ public class SurfaceNormalAttributes extends AttributeSubject implements Plugin
 
     public SurfaceNormalAttributes(SurfaceNormalAttributes obj)
     {
-        super(SurfaceNormalAttributes_numAdditionalAtts);
+        super(obj);
 
         centering = obj.centering;
 
