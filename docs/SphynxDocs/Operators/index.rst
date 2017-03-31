@@ -10,4 +10,5 @@ each of VisIt's operators.
     :maxdepth: 2
 
     Working_with_Operators
+    Operators_that_Generate_New_Variables
     OperatorTypes/index
