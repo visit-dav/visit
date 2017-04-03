@@ -53,6 +53,9 @@
 /* Define if you have the FastBit library. */
 #cmakedefine HAVE_LIBFASTBIT 
 
+/* Define if you have the FastQuery library. */
+#cmakedefine HAVE_LIBFASTQUERY
+
 /* Define if you have the GLEW library. */
 #cmakedefine HAVE_LIBGLEW
 
