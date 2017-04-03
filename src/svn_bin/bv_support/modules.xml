@@ -22,6 +22,7 @@
             <lib name="cgns"/>
             <lib name="eavl"/>
             <lib name="fastbit"/>
+            <lib name="fastquery"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
             <lib name="hdf4"/>
@@ -70,6 +71,7 @@
             <lib name="cgns"/>
             <lib name="gdal"/>
             <lib name="fastbit"/>
+            <lib name="fastquery"/>
             <lib name="hdf5"/>
             <lib name="h5part"/>
             <lib name="mpich"/>
@@ -107,6 +109,7 @@
             <lib name="mfem"/>
             <lib name="cgns"/>
             <lib name="fastbit"/>
+            <lib name="fastquery"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
@@ -132,6 +135,7 @@
             <lib name="mfem"/>
             <lib name="cgns"/>
             <lib name="fastbit"/>
+            <lib name="fastquery"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
