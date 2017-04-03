@@ -706,5 +706,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1104_64 ubuntu1404_64 surface quartz rzuseq rzzeus carver glory vulcan
+   rm -f kickit ubuntu1104_64 ubuntu1404_64 surface quartz rztrona rzzeus rzuseq carver glory vulcan
 fi
