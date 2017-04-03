@@ -54,8 +54,6 @@
 #include <QRadioButton>
 #include <QvisVariableButton.h>
 
-#include <avtTestGreaterThanExpression.h>
-
 
 // ****************************************************************************
 // Method: QvisThresholdWindow::QvisThresholdWindow
