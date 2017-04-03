@@ -265,8 +265,8 @@ export OPENGLLIB=-L/opt/cudatoolkit-6.0/lib64 -lcudart -lcuda
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/surface86.cmake
 fi
-/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake \
-    -DVISIT_CONFIG_SITE=config-site/surface86.cmake \
+/usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/cmake/3.0.2/linux-x86_64_gcc-4.9/bin/cmake \
+    -DVISIT_CONFIG_SITE=config-site/surface86-test.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DVISIT_BUILD_ALL_PLUGINS=1 \
     -DVISIT_DATA_MANUAL_EXAMPLES:BOOL=ON \
@@ -407,5 +407,5 @@ chmod 750 $testHost
 if test "$testHost" = "surface" ; then
     scp surface surface:surface_testit
     subTag=`date +%Y-%m-%d-%H:%M`
-    ssh surface "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=12:00:00 -o surface_testit_$subTag.out -q pbatch -A views -z ./surface_testit"
+    ssh surface "module load gnu/4.9.2;msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=12:00:00 -o surface_testit_$subTag.out -q pbatch -A views -z ./surface_testit"
 fi
