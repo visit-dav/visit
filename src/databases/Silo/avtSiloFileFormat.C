@@ -4046,7 +4046,7 @@ avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
                 {
                     oss.str("");
                     oss << (k+1);
-                    if(spec->specnames != NULL)
+                    if(spec->specnames && spec->specnames[spec_name_idx])
                     {
                         //
                         //add spec name if it exists
@@ -4054,8 +4054,8 @@ avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
                         oss << " ("
                             << string(spec->specnames[spec_name_idx])
                             << ")";
-                        spec_name_idx++;
                     }
+                    spec_name_idx++;
                     tmp_string_vector.push_back(oss.str());
                 }
                 speciesNames.push_back(tmp_string_vector);
