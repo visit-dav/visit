@@ -63,7 +63,9 @@
                     {"category":"operators","file":"ic_streamlines.py"},
                     {"category":"operators","file":"ic_pathlines.py"},
                     {"category":"operators","file":"ic_geometry.py"},
-                    {"category":"operators","file":"ic_pics.py"}
+                    {"category":"operators","file":"ic_pics.py"},
+                    {"category":"hybrid","file":"merge_tree.py","cases":["rect2d_mtree","rect2d_localt_mt"]},
+                    {"category":"rendering","file":"view.py","cases":["view_16","view_17"]}
                   ]},
  {"mode":"parallel","tests":[
                     {"category":"simulation","file":"zerocopy.py","cases":["zerocopy02"]},
@@ -110,7 +112,9 @@
                     {"category":"operators","file":"ic_pathlines.py"},
                     {"category":"operators","file":"ic_geometry.py"},
                     {"category":"operators","file":"ic_pics.py"},
-                    {"category":"operators","file":"lcs_operator.py"}
+                    {"category":"operators","file":"lcs_operator.py"},
+                    {"category":"hybrid","file":"merge_tree.py","cases":["rect2d_mtree","rect2d_localt_mt"]},
+                    {"category":"rendering","file":"view.py","cases":["view_16","view_17"]}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"simulation","file":"zerocopy.py","cases":["zerocopy02"]},
@@ -148,6 +152,8 @@
                     {"category":"operators","file":"ic_pathlines.py"},
                     {"category":"operators","file":"ic_geometry.py"},
                     {"category":"operators","file":"ic_pics.py"},
-                    {"category":"operators","file":"lcs_operator.py"}
+                    {"category":"operators","file":"lcs_operator.py"},
+                    {"category":"hybrid","file":"merge_tree.py","cases":["rect2d_mtree","rect2d_localt_mt"]},
+                    {"category":"rendering","file":"view.py","cases":["view_16","view_17"]}
                     ]}
 ]}
