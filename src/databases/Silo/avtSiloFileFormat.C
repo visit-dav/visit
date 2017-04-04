@@ -4113,6 +4113,9 @@ avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
 //
 //    Mark C. Miller, Tue Feb  2 15:01:05 PST 2016
 //    Add support for all-empty multi-matspecies.
+//
+//    Mark C. Miller, 04Apr17
+//    Adjust logic for building species names to allow nulls in Silo's names.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
@@ -4224,7 +4227,7 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
                     {
                         oss.str("");
                         oss << (k+1);
-                        if(spec->specnames != NULL)
+                        if(spec->specnames && spec->specnames[spec_name_idx])
                         {
                             //
                             //add spec name if it exists
@@ -4232,8 +4235,8 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
                             oss << " ("
                                 << string(spec->specnames[spec_name_idx])
                                 << ")";
-                            spec_name_idx++;
                         }
+                        spec_name_idx++;
                         tmp_string_vector.push_back(oss.str());
                     }
                     speciesNames.push_back(tmp_string_vector);
