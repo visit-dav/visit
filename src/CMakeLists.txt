@@ -1719,9 +1719,9 @@ ENDFUNCTION(MAC_NIB_INSTALL)
 #dummy revision, in case commands fail
 SET(VISIT_SVN_REVISION "Unknown")
 # Get the subversion revision number
-IF(EXISTS SVN_REVISION)
-    FILE(STRINGS SVN_REVISION VISIT_SVN_REVISION)
-ELSE(EXISTS SVN_REVISION)
+IF(EXISTS ${VISIT_SOURCE_DIR}/SVN_REVISION)
+    FILE(STRINGS ${VISIT_SOURCE_DIR}/SVN_REVISION VISIT_SVN_REVISION)
+ELSE(EXISTS ${VISIT_SOURCE_DIR}/SVN_REVISION)
     IF (EXISTS ${VISIT_SOURCE_DIR}/.svn)
         # Only try and determine the version number if it looks like
         # we're in a working copy (a .svn directory should be present)
@@ -1739,7 +1739,7 @@ ELSE(EXISTS SVN_REVISION)
             ENDIF(WIN32)
         ENDIF(Subversion_FOUND)
     ENDIF (EXISTS ${VISIT_SOURCE_DIR}/.svn)
-ENDIF(EXISTS SVN_REVISION)
+ENDIF(EXISTS ${VISIT_SOURCE_DIR}/SVN_REVISION)
 
 #-----------------------------------------------------------------------------
 # Set up resource files for Windows applications.
