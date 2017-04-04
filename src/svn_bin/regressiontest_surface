@@ -269,7 +269,7 @@ if test "$branch" = "trunk" ; then
     export PATH=/opt/rh/devtoolset-3/root/usr/bin:\$PATH
     export GNU_INCLUDES=/opt/rh/devtoolset-3/root/usr/include/c++/4.9.2
     export GNU_LIBS=/opt/rh/devtoolset-3/root/usr/lib64:/opt/rh/devtoolset-3/root/usr/lib/gcc/x86_64-redhat-linux/4.9.2
-    export LD_LIBRARY_PATH=/opt/rh/devtoolset-3/root/usr/lib64:/opt/rh/devtoolset-3/root/usr/lib/gcc/x86_64-redhat-linux/4.9.2
+    export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/rh/devtoolset-3/root/usr/lib64:/opt/rh/devtoolset-3/root/usr/lib/gcc/x86_64-redhat-linux/4.9.2
     export _LMFILES_=/opt/modules/modulefiles/gnu/4.9.2
     /usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/cmake/3.0.2/linux-x86_64_gcc-4.9/bin/cmake \
         -DVISIT_CONFIG_SITE=config-site/surface86-test.cmake \
@@ -282,7 +282,7 @@ if test "$branch" = "trunk" ; then
         -DCMAKE_MAKE_PROGRAM:FILEPATH="/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make" \
         . >> ../buildlog 2>&1
 else
-    /usr/workspace/wsa/visit/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.9/bin/cmake \
+    /usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake \
         -DVISIT_CONFIG_SITE=config-site/surface86.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
