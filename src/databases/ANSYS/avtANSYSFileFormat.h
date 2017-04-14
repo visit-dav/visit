@@ -58,6 +58,9 @@
 //
 //  Modifications:
 //
+//    Mark C. Miller, 12Apr17
+//    Adjust interface to Interpret methods to support more flexibility in
+//    format string.
 // ****************************************************************************
 
 class avtANSYSFileFormat : public avtSTSDFileFormat
@@ -94,9 +97,10 @@ public:
 
 protected:
     bool ReadFile(const char *, int nLines);
-    void InterpretFormatString(char *line, int &firstFieldWidth, int &fieldStart,
-                               int &fieldWidth, int &expectedLineLength) const;
-    void Interpret(const char *fmt, int &fieldWidth, int &linelen) const;
+    void InterpretFormatString(char *line, int numFields, int &firstFieldWidth,
+             int &fieldStart, int &fieldWidth, int &expectedLineLength) const;
+    void Interpret(const char *fmt, bool isstd, int &numFields,
+             int &fieldWidth, int &linelen) const;
 
     // DATA MEMBERS
     vtkDataSet            *meshDS;

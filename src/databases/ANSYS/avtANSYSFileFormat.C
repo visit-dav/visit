@@ -42,6 +42,8 @@
 
 #include <avtANSYSFileFormat.h>
 
+#include <errno.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string>
@@ -60,6 +62,7 @@
 #include <vtkFloatArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 
 #include <InvalidVariableException.h>
@@ -192,7 +195,37 @@ avtANSYSFileFormat::ActivateTimestep()
 //    Brad Whitlock, Wed May 16 12:02:53 PDT 2012
 //    Change how we read the lines so it is more robust.
 //
+//    Mark C. Miller, Thu Apr 13 16:28:01 PDT 2017
+//    Change atof() to strtod() and added some basic error checking of
+//    read floating point values. Corrected logic for NBLOCK and EBLOCK
+//    parsing to interpret field count after *first* comma and not second.
+//    Changed interface to InterpretFormatString to accept field count arg.
 // ****************************************************************************
+
+#define CHECK_COORD_COMPONENT(Coord)                                \
+do {                                                                \
+    int _errno = errno;                                             \
+    char msg[512] = "Further warnings will be supressed";           \
+    if (_errno != 0 && invalidCoordCompWarning++ < 5)               \
+    {                                                               \
+        if (invalidCoordCompWarning < 5)                            \
+            SNPRINTF(msg, sizeof(msg),"Encountered invalid value "  \
+                "\"%s\" (%s) at or near line %d", strerror(_errno), \
+                valstart, lineIndex);                               \
+        debug1 << msg;                                              \
+        TRY                                                         \
+        {                                                           \
+            if (!avtCallback::IssueWarning(msg))                    \
+                cerr << msg << endl;                                \
+        }                                                           \
+        CATCH(VisItException)                                       \
+        {                                                           \
+            cerr << msg << endl;                                    \
+        }                                                           \
+        ENDTRY                                                      \
+    }                                                               \
+    endptr = 0;                                                     \
+} while (0)
 
 bool
 avtANSYSFileFormat::ReadFile(const char *name, int nLines)
@@ -200,6 +233,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
     const char *mName = "avtANSYSFileFormat::ReadFile: ";
     const char *timerName = "Reading ANSYS file";
     int total = visitTimer->StartTimer();
+    int invalidCoordCompWarning = 0;
     
     debug4 << mName << endl;
 
@@ -289,18 +323,21 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
         {
             char *valstart = line + fieldStart;
             char *valend = valstart + fieldWidth;
-            pt[2] = atof(valstart);
+            char *endptr = 0;
+            pt[2] = strtod(valstart, &endptr);
+            CHECK_COORD_COMPONENT(pt[2]);
 
             valstart -= fieldWidth;
             valend -= fieldWidth;
             *valend = '\0';
-            pt[1] = atof(valstart);
+            pt[1] = strtod(valstart, &endptr);
+            CHECK_COORD_COMPONENT(pt[1]);
 
             valstart -= fieldWidth;
             valend -= fieldWidth;
             *valend = '\0';
-            pt[0] = atof(valstart);
-
+            pt[0] = strtod(valstart, &endptr);
+            CHECK_COORD_COMPONENT(pt[0]);
 #if 0
             debug4 << pt[0] << ", " << pt[1] << ", " << pt[2] << endl;
 #endif
@@ -354,18 +391,21 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
         }
         else if(STRNCASECMP(line, "NBLOCK", 6) == 0)
         {
+            int numFields = 6;
             char *comma = strstr(line, ",");
             if(comma != 0)
             {
+                char *cols = comma + 1;
+                numFields = atoi(cols);
+                debug4 << mName << "Coordinate data stored in "
+                       << numFields << " columns." << endl;
                 char *comma2 = strstr(comma+1, ",");
                 if(comma2 != 0)
                 {
                     *comma2 = '\0';
-                    char *cols = comma + 1;
-                    debug4 << mName << "Coordinate data stored in "
-                           << atoi(cols) << " columns." << endl;
                     recognized = true;
                 }
+                recognized = true;
             }
 
             // Get the field format string. Use it to set expectedLineLength,
@@ -373,7 +413,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
             ifile.getline(line, 1024);
             if(line[0] == '(')
             {
-                InterpretFormatString(line, firstFieldWidth, fieldStart, fieldWidth,
+                InterpretFormatString(line, numFields, firstFieldWidth, fieldStart, fieldWidth,
                                       expectedLineLength);
                 debug4 << mName << "firstFieldWidth=" << firstFieldWidth
                        << ", fieldStart=" << fieldStart
@@ -390,18 +430,21 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
         }
         else if(STRNCASECMP(line, "EBLOCK", 6) == 0)
         {
+            int numFields;
             char *comma = strstr(line, ",");
             if(comma != 0)
             {
+                char *cols = comma + 1;
+                numFields = atoi(cols);
+                debug4 << mName << "Connectivity data stored in "
+                       << numFields << " columns." << endl;
                 char *comma2 = strstr(comma+1, ",");
                 if(comma2 != 0)
                 {
                     *comma2 = '\0';
-                    char *cols = comma + 1;
-                    debug4 << mName << "Connectivity data stored in "
-                           << atoi(cols) << " columns." << endl;
                     recognized = true;
                 }
+                recognized = true;
             }
 
             // Get the field format string. Use it to set expectedLineLength,
@@ -409,7 +452,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
             ifile.getline(line, 1024);
             if(line[0] == '(')
             {
-                InterpretFormatString(line, firstFieldWidth, fieldStart, fieldWidth,
+                InterpretFormatString(line, numFields, firstFieldWidth, fieldStart, fieldWidth,
                                       expectedLineLength);
                 debug4 << mName << "firstFieldWidth=" << firstFieldWidth
                        << ", fieldStart=" << fieldStart
@@ -477,31 +520,121 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Apr 13 16:29:45 PDT 2017
+//
+//    Used this reference...
+//        http://www.ansys.stuba.sk/html/prog_55/g-int/INS3.htm
+//
+//    Added logic to accept and track total field count and counts of integer
+//    'i' and floating point, 'e' fields. ANSYS files and ANSYS format
+//    documentation has some conflicting information regarding these format
+//    strings. Lets try to clarify that information here. Here is an example
+//    of an NBLOCK segment defining a block of nodes of an ANSYS file...
+//
+//        NBLOCK ,6,SOLID
+//        (3i8,6e16.9)
+//        1       0       0-8.499200642E-02-8.218053728E-02-5.578922108E-02
+//        2       0       0-8.494276553E-02-7.795915008E-02-5.406552181E-02
+//        3       0       0-1.196498796E-01-7.090078294E-02-2.062848397E-02
+//        ...
+//        
+//    The integer after the *first* comma on the NBLOCK line is a count of the
+//    number of fields (columns) in the data. The format line, (3i8,6e16.9)
+//    defines the data type and field width of those fields. Here, the NBLOCK
+//    line tells us there are 6 fields. The parentha-format-line tells us that
+//    there are '3' columns of integer ('i') values each '8' digits in length
+//    followed by '6' columns of floating point ('e') values, '16' characters
+//    in length with '9' digits after the decimal point. Typically, the first
+//    3 integer fields define the node #, solid #, line # of the node and next
+//    3 fields define the floating point coordinates of the node. But wait,
+//    there are clearly only 3 columns of floating point data here. Why is there
+//    a '6' before the 'e'? Shouldn't that be a '3' there? IMHO, yes. However,
+//    I believe this is a proliferant bug in many ANSYS file instances. There
+//    *are* cases where there may be 6 floating point fields, 3 for
+//    coordinates as we have here plus 3 for a "rotational vector". In that
+//    case, however, I believe the proper specification should look something
+//    like...
+//
+//       NBLOCK,9
+//       (1i8,6e10.3)
+//             1-8.499E-02-8.218E-02-5.5788E-02 1.000E+00 0.000E+00 0.000E+00
+//             2-8.942E-02-7.795E-02-5.4061E-02 8.931E-01 2.011E-02 0.000E+00
+//
+//    where I have artificially shrunk the floating point field width to a
+//    number small enough, 10, that we can fit 6 fields in the example here.
+//    However, the ANSYS file format documentation for NBLOCK directive is
+//    erroneous here too because it says that fields 7-9 will exist *only* if 
+//    NBLOCK specifies a number of fields > 3. Thats incorrect. fields 7-9
+//    should exist, IMHO, only if NBLOCK specifies > 6 fields (e.g. 9).
+//    However, the ANSYS documentation goes on to say that the format string
+//    will *always* be 3i8,6e16.9 and that is what has lead to a situation
+//    where most ANSYS files have an NBLOCK directive that disagrees with
+//    the format string in field counts.
+//
+//    Summary:
+
+//    1) Fields are back-to-back with no guarantee of spaces separating fields.
+//    2) The field count specified in NBLOCK doesn't agree with the sum of 'i'
+//       and 'e' field counts from the format string.
+//    3) Instead of *always* 3 integer (e.g. '3i8') fields with whitespace
+//       being used for optional solid # and line # fields, a field count of
+//       '1' is specified (e.g '1i8')
+//    
+//    I adjusted logic here to use the "old" way if numFields read in BLOCK
+//    directive is indeed 6 but otherwise treat the file as though the
+//    field count in NBLOCK directive *should*be* the sum of 'i' ane 'e'
+//    fields in the format string and, if it is, assume the data producer
+//    knew what it as doing and treat the data as it specifies.
+//        
 // ****************************************************************************
 
 void
-avtANSYSFileFormat::Interpret(const char *fmt, int &fieldWidth,
-    int &linelen) const
+avtANSYSFileFormat::Interpret(const char *fmt, bool isstd, int &numFields,
+    int &fieldWidth, int &linelen) const
 {
     int i0, i1, i2;
+    bool goodFormat = true;
 
     debug4 << "avtANSYSFileFormat::Interpret: " << fmt << endl;
 
     // Example: 6e16.9
     if(sscanf(fmt, "%de%d.%d", &i0, &i1, &i2) == 3)
     {
-        linelen = i0 * i1 / 2;
-        fieldWidth = i1;
+        if (isstd) // std (buggy) ANSYS format string
+        {
+            //linelen = i0 * i1 / 2;
+            linelen = 3 * i1;
+            fieldWidth = i1;
+        }
+        else if (numFields == i0)
+        {
+            linelen = i0 * (i1+1);
+            fieldWidth = i1;
+        }
+        else
+        {
+            goodFormat = false;
+        }
     }
     // Example: 19i7
     else if(sscanf(fmt, "%di%d", &i0, &i1) == 2)
     {
         linelen = i0 * i1;
         fieldWidth = i1;
+        if (!isstd) // std (buggy) ANSYS format string
+            numFields -= i0;
     }
     else
     {
-        debug1 << "Invalid format string: " << fmt << endl;
+        goodFormat = false;
+    }
+
+    if (!goodFormat)
+    {
+        char msg[128];
+        SNPRINTF(msg, sizeof(msg), "Invalid field formatting string: "
+            "numFields=%d, fmt=\"%s\"", numFields, fmt);
+        EXCEPTION1(InvalidFilesException, msg);
     }
 }
 
@@ -531,8 +664,9 @@ avtANSYSFileFormat::Interpret(const char *fmt, int &fieldWidth,
 // ****************************************************************************
 
 void
-avtANSYSFileFormat::InterpretFormatString(char *line, int &firstFieldWidth,
-    int &fieldStart, int &fieldWidth, int &expectedLineLength) const
+avtANSYSFileFormat::InterpretFormatString(char *line, int numFields,
+    int &firstFieldWidth, int &fieldStart, int &fieldWidth,
+    int &expectedLineLength) const
 {
     char *fmt = line + 1;
     char *ptr = 0;
@@ -540,6 +674,7 @@ avtANSYSFileFormat::InterpretFormatString(char *line, int &firstFieldWidth,
     expectedLineLength = 0;
     bool keepGoing = true;
     bool first = true;
+    bool isStdNBLOCKFmt = numFields==6 && strncasecmp(line, "(3i8,6e16.9)", 12)==0;
     while(keepGoing)
     {
         int linelen = 0;
@@ -547,7 +682,7 @@ avtANSYSFileFormat::InterpretFormatString(char *line, int &firstFieldWidth,
         if((ptr = strstr(fmt, ",")) != 0)
         {
             *ptr = '\0';
-            Interpret(fmt, fieldWidth, linelen);
+            Interpret(fmt, isStdNBLOCKFmt, numFields, fieldWidth, linelen);
             if(first)
             {
                 first = false;
@@ -559,7 +694,7 @@ avtANSYSFileFormat::InterpretFormatString(char *line, int &firstFieldWidth,
         else if((ptr = strstr(fmt, ")")) != 0)
         {
             *ptr = '\0';
-            Interpret(fmt, fieldWidth, linelen);
+            Interpret(fmt, isStdNBLOCKFmt, numFields, fieldWidth, linelen);
             if(first)
             {
                 first = false;
