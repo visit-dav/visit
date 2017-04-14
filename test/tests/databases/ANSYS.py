@@ -185,6 +185,14 @@ def test3(datapath):
     DeleteActivePlots()
     CloseDatabase(pjoin(datapath,db))
 
+def test4(datapath):
+    db = "cubeF.inp"
+    TestSection(db)
+    OpenDatabase(pjoin(datapath,db))
+    AddMeshPlot()
+    DrawPlots()
+    Test("ansys4_1")
+
 def main():
     # Set up the window background color
     a = GetAnnotationAttributes()
@@ -199,6 +207,7 @@ def main():
     test1(datapath)
     test2(datapath)
     test3(datapath)
+    test4(datapath)
 
 main()
 Exit()
