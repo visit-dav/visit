@@ -202,9 +202,23 @@ avtANSYSFileFormat::ActivateTimestep()
 //    Changed interface to InterpretFormatString to accept field count arg.
 // ****************************************************************************
 
+int
+get_errno()
+{
+   int eno = 0;
+#ifdef WIN32
+    _get_errno(&eno);
+#else
+    eno = errno;
+#endif
+    return eno;
+}
+
+
+
 #define CHECK_COORD_COMPONENT(Coord)                                \
 do {                                                                \
-    int _errno = errno;                                             \
+    int _errno = get_errno();                                       \
     char msg[512] = "Further warnings will be supressed";           \
     if (_errno != 0 && invalidCoordCompWarning++ < 5)               \
     {                                                               \
@@ -674,7 +688,7 @@ avtANSYSFileFormat::InterpretFormatString(char *line, int numFields,
     expectedLineLength = 0;
     bool keepGoing = true;
     bool first = true;
-    bool isStdNBLOCKFmt = numFields==6 && strncasecmp(line, "(3i8,6e16.9)", 12)==0;
+    bool isStdNBLOCKFmt = numFields==6 && STRNCASECMP(line, "(3i8,6e16.9)", 12)==0;
     while(keepGoing)
     {
         int linelen = 0;
