@@ -264,6 +264,7 @@ export OPENGLLIB=-L/opt/cudatoolkit-6.0/lib64 -lcudart -lcuda
 
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/surface86.cmake
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/surface86-test.cmake
 fi
 if test "$branch" = "trunk" ; then
     export PATH=/opt/rh/devtoolset-3/root/usr/bin:\$PATH
