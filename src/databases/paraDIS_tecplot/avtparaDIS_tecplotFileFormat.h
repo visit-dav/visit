@@ -90,7 +90,7 @@ class avtparaDIS_tecplotFileFormat : public avtSTSDFileFormat
     virtual const char    *GetType(void)   { return "paraDIS_tecplot"; };
     virtual void           FreeUpResources(void); 
     
-    void AddCellToMesh(vtkUnstructuredGrid *linemesh, vector<int> &cell);
+    void AddCellToMesh(vtkUnstructuredGrid *linemesh, std::vector<int> &cell);
     vtkDataSet    * GetTecplotMesh(const char *meshname); 
     virtual vtkDataSet    *GetMesh(const char *);
     
@@ -107,8 +107,8 @@ class avtparaDIS_tecplotFileFormat : public avtSTSDFileFormat
     int mVerbosity; 
     int mProcNum, mNumProcs;
     
-    string mFileType; 
-    vector<string> mVariableNames; 
+    std::string mFileType; 
+    std::vector<std::string> mVariableNames; 
     unsigned int mNumElems, mNumPoints, mNumVars; 
     bool mRotateTecplotPoints; 
     rclib::Point<float> mOldOrientation, mNewOrientation; 
