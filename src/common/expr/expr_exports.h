@@ -40,6 +40,7 @@
 #define EXPR_EXPORTS_H
 
 #if defined(_WIN32)
+#if defined(VISIT_BUILD_SHARED_LIBS)
 # if defined(EXPR_EXPORTS) || defined(visitcommon_EXPORTS)
 #   define EXPR_API  __declspec(dllexport)
 #   define EXPR_API2 __declspec(dllexport)
@@ -47,6 +48,10 @@
 #   define EXPR_API  __declspec(dllimport)
 #   define EXPR_API2 __declspec(dllimport)
 # endif
+#else
+#define EXPR_API
+#define EXPR_API2
+#endif
 # ifdef _MSC_VER
 // Turn off warning about lack of DLL interface
 #   pragma warning(disable:4251)

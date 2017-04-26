@@ -40,7 +40,11 @@
 #define DATABASE_PLUGIN_EXPORTS_H
 
 #if defined(_WIN32)
+#if defined(VISIT_BUILD_SHARED_LIBS)
 # define DBP_EXPORT __declspec(dllexport)
+#else
+#define DBP_EXPORT
+#endif
 #else
 # if __GNUC__ >= 4
 #   define DBP_EXPORT __attribute__((visibility("default")))

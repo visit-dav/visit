@@ -40,11 +40,15 @@
 #define AVTEXCEPTION_EXPORTS_H
 
 #if defined(_WIN32)
+#if defined(VISIT_BUILD_SHARED_LIBS)
 # if defined(AVTEXCEPTION_EXPORTS) || defined(visitcommon_EXPORTS)
 #   define AVTEXCEPTION_API __declspec(dllexport)
 # else
 #   define AVTEXCEPTION_API __declspec(dllimport)
 # endif
+#else
+#define AVTEXCEPTION_API
+#endif
 # if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
 #   pragma warning(disable:4251)

@@ -40,10 +40,14 @@
 #define DBATTS_EXPORTS_H
 
 #if defined(_WIN32)
+#if defined(VISIT_BUILD_SHARED_LIBS)
 #if defined(AVTDBATTS_EXPORTS) || defined(avtdbatts_EXPORTS)
 #define DBATTS_API __declspec(dllexport)
 #else
 #define DBATTS_API __declspec(dllimport)
+#endif
+#else
+#define DBATTS_API
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about signed/unsigned comparison.

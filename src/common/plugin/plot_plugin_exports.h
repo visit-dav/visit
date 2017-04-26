@@ -40,7 +40,11 @@
 #define PLOT_PLUGIN_EXPORTS_H
 
 #if defined(_WIN32)
+#if defined(VISIT_BUILD_SHARED_LIBS)
 # define PLOT_EXPORT __declspec(dllexport)
+#else
+#define PLOT_EXPORT
+#endif
 #else
 # if __GNUC__ >= 4
 #   define PLOT_EXPORT __attribute__((visibility("default")))

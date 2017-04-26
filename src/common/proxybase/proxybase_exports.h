@@ -40,11 +40,15 @@
 #define PROXYBASE_EXPORTS_H
 
 #if defined(_WIN32)
+#if defined(VISIT_BUILD_SHARED_LIBS)
 # if defined(PROXYBASE_EXPORTS) || defined(visitcommon_EXPORTS)
 #   define PROXYBASE_API __declspec(dllexport)
 # else
 #   define PROXYBASE_API __declspec(dllimport)
 # endif
+#else
+#define PROXYBASE_API
+#endif
 # if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
 #   pragma warning(disable:4251)
