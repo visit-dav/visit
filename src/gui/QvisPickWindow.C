@@ -1023,11 +1023,17 @@ QvisPickWindow::UpdateTimeOptions()
 //   Jonathan Byrd Mon Feb 4, 2013
 //   Record data concerning the latest pick in the pickRecord array
 //
+//   Kathleen Biagas, Tue Apr 25 17:09:57 PDT 2017
+//   Added call to ResizeTabs, in case user changed #tabs without clicking
+//   'Apply' before perfoming picks.  It's a no-op if #tabs hasn't changed.
+//
 // ****************************************************************************
 
 void
 QvisPickWindow::UpdatePage()
 {
+    ResizeTabs(); // no-op if numtabs hasn't changed
+
     QString pickLetter(pickAtts->GetPickLetter().c_str());
 
     if (!savePicks && pickAtts->GetClearWindow())
