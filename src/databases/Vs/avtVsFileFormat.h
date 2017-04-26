@@ -41,6 +41,7 @@ class VsStructuredMesh;
 class VsRectilinearMesh;
 class VsRegistry;
 class VsReader;
+class DBOptionsAttributes;
 
 /**
  * avtSTMDFileFormat is a base class for multi-domain, single-time
