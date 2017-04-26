@@ -134,6 +134,8 @@ public:
 
 typedef vtkFoamArrayVector<vtkIntArray> vtkFoamIntArrayVector;
 typedef vtkFoamArrayVector<vtkFloatArray> vtkFoamFloatArrayVector;
+namespace
+{
 struct vtkFoamIntVectorVector;
 
 struct vtkFoamError;
@@ -145,6 +147,7 @@ template <typename T> struct vtkFoamReadValue;
 struct vtkFoamEntryValue;
 struct vtkFoamEntry;
 struct vtkFoamDict;
+}
 
 //-----------------------------------------------------------------------------
 // class visit_vtkOpenFOAMReaderPrivate
@@ -342,6 +345,9 @@ private:
 };
 
 vtkStandardNewMacro(visit_vtkOpenFOAMReaderPrivate);
+
+namespace
+{
 
 //-----------------------------------------------------------------------------
 // struct vtkFoamIntVectorVector
@@ -3676,6 +3682,8 @@ void vtkFoamEntry::Read(vtkFoamIOobject& io)
       throw vtkFoamError() << "Unmatched " << *this->Superclass::back();
       }
     }
+}
+
 }
 
 //-----------------------------------------------------------------------------
