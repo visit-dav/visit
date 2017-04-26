@@ -45,6 +45,8 @@
 #include <string>
 #include <vector>
 
+namespace avtOUTCARNamespace
+{
 struct Atom
 {
     int elementtype_index;
@@ -58,6 +60,7 @@ struct Atom
     float vy;
     float vz;
 };
+}
 
 // ****************************************************************************
 //  Class: avtOUTCARFileFormat
@@ -141,7 +144,7 @@ class avtOUTCARFileFormat : public avtMTSDFileFormat
     std::vector<float>               mags,magp,magd,magtot;
 
     std::vector<float>               free_energy;
-    std::vector< std::vector<Atom> > allatoms;
+    std::vector< std::vector<avtOUTCARNamespace::Atom> > allatoms;
 
     std::vector<UCV> unitCell;
     double potim;

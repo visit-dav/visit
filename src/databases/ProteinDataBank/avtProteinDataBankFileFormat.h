@@ -67,6 +67,8 @@ class DBOptionsAttributes;
 //    Added compound support.
 //
 // ****************************************************************************
+namespace avtProteinDataBankNamespace
+{
 struct Atom
 {
     int   serial;
@@ -94,6 +96,7 @@ struct Atom
     Atom(const char *line, int compound=0);
     void Print(ostream &out);
 };
+}
 
 
 struct ConnectRecord
@@ -149,7 +152,7 @@ class avtProteinDataBankFileFormat : public avtSTSDFileFormat
 
     bool metadata_read;
     int  nmodels;
-    std::vector< std::vector<Atom> >    allatoms;
+    std::vector< std::vector<avtProteinDataBankNamespace::Atom> >    allatoms;
     std::vector< std::pair<int, int> >  bonds;
 
     std::vector<ConnectRecord>       connect;

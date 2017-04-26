@@ -68,6 +68,8 @@ using std::string;
 using std::vector;
 using std::pair;
 
+using avtProteinDataBankNamespace::Atom;
+
 string
 TrimTrailingSpaces(char *s)
 {
