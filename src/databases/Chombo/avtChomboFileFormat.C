@@ -96,6 +96,30 @@
 #include <visit-hdf5.h>
 using     std::string;
 
+namespace
+{
+class vtkFileCloseSemiProperty
+{
+public:
+  vtkFileCloseSemiProperty ()
+  {
+    this->Fapl = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(this->Fapl, H5F_CLOSE_SEMI);
+  }
+  ~vtkFileCloseSemiProperty ()
+  {
+    H5Pclose(this->Fapl);
+  }
+  operator hid_t() const
+  {
+    return this->Fapl;
+  }
+
+
+private:
+  hid_t Fapl;
+};
+}
 
 // ****************************************************************************
 //  Method: avtChomboFileFormat constructor
@@ -443,7 +467,7 @@ avtChomboFileFormat::InitializeReader(void)
     //
     // Open file
     //
-    file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+    file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, vtkFileCloseSemiProperty ());
     if (file_handle < 0)
     {
         EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -1347,7 +1371,7 @@ avtChomboFileFormat::InitializeReader(void)
             FileFunctions::VisItStat_t fs;
             if (FileFunctions::VisItStat(mappingFilename.c_str(), &fs) == 0)
             {
-                hid_t mapping_file_handle = H5Fopen(mappingFilename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+                hid_t mapping_file_handle = H5Fopen(mappingFilename.c_str(), H5F_ACC_RDONLY, vtkFileCloseSemiProperty ());
                 if (mapping_file_handle > 0)
                 {
                     hid_t slash = H5Gopen(mapping_file_handle, "/");
@@ -2608,7 +2632,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 
         if (file_handle < 0)
         {
-            file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+            file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, vtkFileCloseSemiProperty ());
             if (file_handle < 0)
             {
                 EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -3072,7 +3096,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         SNPRINTF(name, 1024, "level_%d", level);
         if (file_handle < 0)
         {
-            file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+            file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, vtkFileCloseSemiProperty ());
             if (file_handle < 0)
             {
                 EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -3186,7 +3210,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         {
             if (file_handle < 0)
             {
-                file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+                file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, vtkFileCloseSemiProperty ());
                 if (file_handle < 0)
                 {
                     EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -3421,7 +3445,7 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
             SNPRINTF(name, 1024, "level_%d", level);
             if (file_handle < 0)
             {
-                file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+                file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, vtkFileCloseSemiProperty ());
                 if (file_handle < 0)
                 {
                     EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "

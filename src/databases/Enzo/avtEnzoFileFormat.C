@@ -82,6 +82,31 @@
 #include <visit-hdf5.h>
 #endif
 
+namespace
+{
+class vtkFileCloseSemiProperty
+{
+public:
+  vtkFileCloseSemiProperty ()
+  {
+    this->Fapl = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(this->Fapl, H5F_CLOSE_SEMI);
+  }
+  ~vtkFileCloseSemiProperty ()
+  {
+    H5Pclose(this->Fapl);
+  }
+  operator hid_t() const
+  {
+    return this->Fapl;
+  }
+
+
+private:
+  hid_t Fapl;
+};
+}
+
 using std::string;
 using std::vector;
 
@@ -629,7 +654,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
 #endif
     {
 #ifdef HAVE_LIBHDF5
-        hid_t fileId = H5Fopen(gridFileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+        hid_t fileId = H5Fopen(gridFileName.c_str(), H5F_ACC_RDONLY, vtkFileCloseSemiProperty ());
         if (fileId < 0)
         {
 #ifdef HAVE_LIBHDF4
@@ -1434,7 +1459,7 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
             return NULL;
         }
 
-        hid_t fileId = H5Fopen(particleFileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+        hid_t fileId = H5Fopen(particleFileName.c_str(), H5F_ACC_RDONLY, vtkFileCloseSemiProperty ());
         if (fileId < 0)
         {
             EXCEPTION1(InvalidFilesException, particleFileName.c_str());
@@ -1870,7 +1895,7 @@ avtEnzoFileFormat::GetVar(int domain, const char *varname)
         // HDF5 STUFF
         string gridFileName = grids[domain+1].gridFileName;
 
-        hid_t fileId = H5Fopen(gridFileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+        hid_t fileId = H5Fopen(gridFileName.c_str(), H5F_ACC_RDONLY, vtkFileCloseSemiProperty ());
         if (fileId < 0)
         {
             EXCEPTION1(InvalidFilesException, gridFileName.c_str());
