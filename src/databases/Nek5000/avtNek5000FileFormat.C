@@ -386,7 +386,7 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
 {
     string tag;
     char buf[2048];
-    ifstream  f(filename);
+    ifstream  f(filename, std::ios::binary);
     int ii;
 
     // Process a tag at a time until all lines have been read
@@ -2363,7 +2363,7 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
     c = 0;
 
     GetFileName(curTimestep, 0, meshfilename, (int)fileTemplate.size() + 64);
-    f.open(meshfilename);
+    f.open(meshfilename, std::ios::binary);
 
     if (!bParFormat)
     {
@@ -2803,7 +2803,7 @@ avtNek5000FileFormat::GetBoundingBoxIntervalTree(int timestep)
                     (iBlockSize[0]*iBlockSize[1]*iBlockSize[2]);
 
         GetFileName(timestep, ii, blockfilename, (int)fileTemplate.size() + 64);
-        f.open(blockfilename);
+        f.open(blockfilename, std::ios::binary);
         if (!f.is_open())
         {
             errorReadingData = 1;
@@ -3043,7 +3043,7 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
         long iMDSize = iBBSize + iDESize;
 
         GetFileName(timestep, ii, blockfilename, (int)fileTemplate.size() + 64);
-        f.open(blockfilename);
+        f.open(blockfilename, std::ios::binary);
         if (!f.is_open())
         {
             errorReadingData = 1;
