@@ -39,6 +39,7 @@
 // ************************************************************************* //
 //                        avtImageRepresentation.C                           //
 // ************************************************************************* //
+#include <vtkAbstractArray.h>
 #include <vtkCharArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkFloatArray.h>
