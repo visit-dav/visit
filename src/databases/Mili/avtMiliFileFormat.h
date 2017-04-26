@@ -55,6 +55,7 @@ extern "C" {
 
 #include <avtMTMDFileFormat.h>
 #include <avtTypes.h>
+#include "vtkType.h"
 
 class avtMaterial;
 class vtkDataArray;
@@ -282,7 +283,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     void                  IssueWarning(const char *msg, int key);
     void                  ReadMesh(int dom);
     void                  ValidateVariables(int dom);
-    avtMaterial *         ConstructMaterials(std::vector<std::vector<int*> >&,
+    avtMaterial *         ConstructMaterials(std::vector<std::vector<vtkIdType*> >&,
                                              std::vector<std::vector<int> >&,
                                              int);
     int                   GetVariableIndex(const char *);

@@ -261,7 +261,7 @@ class BQuad
   public:
                    BQuad() { ordering_case = 255; matched = false; };
 
-    int            AssignNodes(const vtkIdType *);
+    vtkIdType      AssignNodes(const vtkIdType *);
     bool           Equals(BQuad *);
     bool           Equals(BTri *);
     void           AddInRemainingTriangle(BTri *, int);
@@ -309,7 +309,7 @@ typedef enum
     Q3012, Q3021, Q3102, Q3120, Q3201, Q3210
 }  QUAD_ORDERING_CASES;
 
-static int quad_reorder_list[24][4] = 
+static vtkIdType quad_reorder_list[24][4] = 
     { { -1, 0, 1, 2 }, { -1, 0, 2, 1 }, { -1, 1, 0, 2 }, { -1, 2, 0, 1 },
       { -1, 1, 2, 0 }, { -1, 2, 1, 0 },
       { 0, -1, 1, 2 }, { 0, -1, 2, 1 }, { 1, -1, 0, 2 }, { 2, -1, 0, 1 },
@@ -320,7 +320,7 @@ static int quad_reorder_list[24][4] =
       { 1, 2, 0, -1 }, { 2, 1, 0, -1 } 
     };
 
-static int quad_map_back_list[24][3] =
+static vtkIdType quad_map_back_list[24][3] =
     {
          { 1, 2, 3 }, { 1, 3, 2 }, { 2, 1, 3 },
          { 2, 3, 1 }, { 3, 1, 2 }, { 3, 2, 1 },
@@ -357,7 +357,7 @@ class BTri
   public:
                    BTri() { ordering_case = 255; matched = false; };
 
-    int            AssignNodes(const vtkIdType *);
+    vtkIdType      AssignNodes(const vtkIdType *);
     inline bool    Equals(BTri *&t)
                    {
                       if (t->nodes[0] == nodes[0] && t->nodes[1] == nodes[1])
@@ -437,7 +437,7 @@ class BLine
   public:
                    BLine() { ordering_case = 255; matched = false; };
 
-    int            AssignNodes(const vtkIdType *);
+    vtkIdType      AssignNodes(const vtkIdType *);
     inline bool    Equals(BLine *l)
                    {
                        return l->nodes[0] == nodes[0];
@@ -844,10 +844,10 @@ BQuad::RegisterMemoryManager(BQuadMemoryManager *mm)
 //
 // ****************************************************************************
 
-int
+vtkIdType
 BQuad::AssignNodes(const vtkIdType *n)
 {
-    int smallest = 0;
+    vtkIdType smallest = 0;
     if (n[1] < n[smallest])
        smallest = 1;
     if (n[2] < n[smallest])
@@ -1114,7 +1114,7 @@ BQuad::OutputCell(int node0, vtkPolyData *pd, vtkCellData *in_cd,
                  vtkCellData *out_cd)
 {
     vtkIdType n[4];
-    int *list = quad_reorder_list[ordering_case];
+    vtkIdType *list = quad_reorder_list[ordering_case];
     n[0] = (list[0] == -1 ? node0 : nodes[list[0]]);
     n[1] = (list[1] == -1 ? node0 : nodes[list[1]]);
     n[2] = (list[2] == -1 ? node0 : nodes[list[2]]);
@@ -1241,10 +1241,10 @@ BQuad::AddInRemainingTriangle(BTri *t, int node_0)
 void
 BQuad::AddInRemainingTriangle(int n, int node_0)
 {
-    int orig_quad_index = quad_map_back_list[ordering_case][n];
-    int *neighbors = quad_reorder_list[ordering_case];
+    vtkIdType orig_quad_index = quad_map_back_list[ordering_case][n];
+    vtkIdType *neighbors = quad_reorder_list[ordering_case];
 
-    int n_list[3];
+    vtkIdType n_list[3];
     n_list[0] = neighbors[(orig_quad_index+3)%4];
     n_list[1] = neighbors[orig_quad_index];
     n_list[2] = neighbors[(orig_quad_index+1)%4];
@@ -1291,10 +1291,10 @@ BTri::RegisterMemoryManager(BTriMemoryManager *mm)
 //
 // ****************************************************************************
 
-int
+vtkIdType
 BTri::AssignNodes(const vtkIdType *n)
 {
-    int smallest = 0;
+    vtkIdType smallest = 0;
     if (n[0] < n[1])
     {
         if (n[1] < n[2])
@@ -1455,10 +1455,10 @@ BLine::RegisterMemoryManager(BLineMemoryManager *mm)
 //
 // ****************************************************************************
 
-int
+vtkIdType
 BLine::AssignNodes(const vtkIdType *n)
 {
-    int smallest = 0;
+    vtkIdType smallest = 0;
     if (n[0] < n[1])
     {
         ordering_case = T01;
@@ -2355,7 +2355,7 @@ BHashEntryList::AddTri(const vtkIdType *node_list, int orig_zone, int cell_value
 {
     nfaces++;
     BTri *tri = tmm.GetFreeTri();
-    int hash_index = tri->AssignNodes(node_list);
+    vtkIdType hash_index = tri->AssignNodes(node_list);
     tri->SetOriginalZone(orig_zone);
     tri->SetCellValue(cell_value);
     if (list[hash_index] == NULL)
@@ -2390,7 +2390,7 @@ BHashEntryList::AddQuad(const vtkIdType *node_list, int orig_zone, int cell_valu
 {
     nfaces++;
     BQuad *quad = qmm.GetFreeQuad();
-    int hash_index = quad->AssignNodes(node_list);
+    vtkIdType hash_index = quad->AssignNodes(node_list);
     quad->SetOriginalZone(orig_zone);
     quad->SetCellValue(cell_value);
     if (list[hash_index] == NULL)
@@ -2541,7 +2541,7 @@ BHashEntryList2D::AddLine(const vtkIdType *node_list, int orig_zone, int cell_va
 {
     nlines++;
     BLine *line = lmm.GetFreeLine();
-    int hash_index = line->AssignNodes(node_list);
+    vtkIdType hash_index = line->AssignNodes(node_list);
     line->SetOriginalZone(orig_zone);
     line->SetCellValue(cell_value);
     if (list[hash_index] == NULL)

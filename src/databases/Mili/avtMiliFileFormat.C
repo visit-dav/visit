@@ -1271,8 +1271,8 @@ avtMiliFileFormat::ReadMesh(int dom)
         // Make one pass through the data and read all of the connectivity
         // information.
         //
-        vector < vector<int *> > conn_list;
-        vector < vector<int *> > mat_list;
+        vector < vector<vtkIdType *> > conn_list;
+        vector < vector<vtkIdType *> > mat_list;
         vector < vector<int> > list_size;
         conn_list.resize(n_elem_types);
         list_size.resize(n_elem_types);
@@ -1305,8 +1305,28 @@ avtMiliFileFormat::ReadMesh(int dom)
                 int *part = new int[nelems];
                 mc_load_conns(dbid[dom], mesh_id, short_name, conn, mat, part);
 
+#ifdef VTK_USE_64BIT_IDS
+                // Convert from int to idtype so we can compile with 64-bit support.
+                vtkIdType *connIdType = new vtkIdType[nelems * conn_count[i]];
+                for (int idx = 0; idx < nelems < conn_count[i]; ++idx)
+                {
+                    connIdType[idx] = conn[idx];
+                }
+                delete [] conn;
+
+                vtkIdType *matIdType = new vtkIdType[nelems];
+                for (int idx = 0; idx < nelems; ++idx)
+                {
+                    matIdType[idx] = mat[idx];
+                }
+                delete [] mat;
+
+                conn_list[i].push_back(connIdType);
+                mat_list[i].push_back(matIdType);
+#else
                 conn_list[i].push_back(conn);
                 mat_list[i].push_back(mat);
+#endif
                 list_size[i].push_back(nelems);
                 connectivity_offset[dom].push_back(ncells[dom][mesh_id]);
                 element_group_name[dom].push_back(short_name);
@@ -1353,7 +1373,7 @@ avtMiliFileFormat::ReadMesh(int dom)
         {
             for (j = 0 ; j < conn_list[i].size(); j++)
             {
-                int *conn = conn_list[i][j];
+                vtkIdType *conn = conn_list[i][j];
                 int nelems = list_size[i][j];
                 for (k = 0 ; k < nelems ; k++)
                 {
@@ -1580,7 +1600,7 @@ avtMiliFileFormat::ValidateVariables(int dom)
 // ****************************************************************************
 
 avtMaterial *
-avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
+avtMiliFileFormat::ConstructMaterials(vector< vector<vtkIdType *> > &mat_list,
                                       vector< vector<int> > &list_size, 
                                       int meshId)
 {
@@ -1602,10 +1622,10 @@ avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
     {
         for (gr = 0; gr < mat_list[elem].size(); ++gr)
         {
-            int *ml = mat_list[elem][gr];
+            vtkIdType *ml = mat_list[elem][gr];
             for (i = 0; i < list_size[elem][gr]; ++i)
             {
-                int mat = ml[i]; 
+                int mat = static_cast<int>(ml[i]);
                 mlist[count++] = mat;
             }
         }
