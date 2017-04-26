@@ -209,7 +209,7 @@ avtLAMMPSDumpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 
     avtMeshMetaData *mmd_bbox = new avtMeshMetaData("unitCell", 1, 0,0,0,
                                                     3, 1,
-                                                    AVT_UNSTRUCTURED_MESH);
+                                                    AVT_POINT_MESH);
     for (int i=0; i<9; i++)
         mmd_bbox->unitCellVectors[i] = 0;
     mmd_bbox->unitCellVectors[0] = xMax - xMin;
