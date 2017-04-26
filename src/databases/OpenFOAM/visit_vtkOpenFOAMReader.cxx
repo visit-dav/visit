@@ -8298,7 +8298,7 @@ int visit_vtkOpenFOAMReader::GetSelectionArrayStatus(vtkDataArraySelection *s,
 void visit_vtkOpenFOAMReader::SetSelectionArrayStatus(vtkDataArraySelection *s,
     const char* name, int status)
 {
-  unsigned long int mTime = s->GetMTime();
+  vtkMTimeType mTime = s->GetMTime();
   if (status)
     {
     s->EnableArray(name);
@@ -8321,7 +8321,7 @@ const char *visit_vtkOpenFOAMReader::GetSelectionArrayName(vtkDataArraySelection
 
 void visit_vtkOpenFOAMReader::DisableAllSelectionArrays(vtkDataArraySelection *s)
 {
-  unsigned long int mTime = s->GetMTime();
+  vtkMTimeType mTime = s->GetMTime();
   s->DisableAllArrays();
   if (mTime != s->GetMTime())
     {
@@ -8331,7 +8331,7 @@ void visit_vtkOpenFOAMReader::DisableAllSelectionArrays(vtkDataArraySelection *s
 
 void visit_vtkOpenFOAMReader::EnableAllSelectionArrays(vtkDataArraySelection *s)
 {
-  unsigned long int mTime = s->GetMTime();
+  vtkMTimeType mTime = s->GetMTime();
   s->EnableAllArrays();
   if (mTime != s->GetMTime())
     {
@@ -8668,7 +8668,7 @@ bool visit_vtkOpenFOAMReader::SetTimeValue(const double timeValue)
       = visit_vtkOpenFOAMReaderPrivate::SafeDownCast(this->Readers->GetNextItemAsObject()))
       != NULL)
     {
-    const unsigned long mTime = reader->GetMTime();
+    vtkMTimeType mTime = reader->GetMTime();
     reader->SetTimeValue(timeValue);
     if (reader->GetMTime() != mTime)
       {
