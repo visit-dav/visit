@@ -3070,21 +3070,6 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
             return NULL;
         }
 
-        //
-        // VTK creates a trivial producer for each data set.  It later does
-        // garbage collection and that takes a long time if we have a lot
-        // of trivial producers.  Make one trivial producer for all
-        // data sets here.
-        //
-        static vtkTrivialProducer* tp = NULL;
-        if(tp == NULL)
-        {
-            tp = vtkTrivialProducer::New();
-            vtkVisItUtility::RegisterStaticVTKObject(tp);
-        }
-        tp->SetOutput(mesh);
-        tp->SetOutput(NULL);
-
         AssociateBounds(mesh);
 
         if (CachingRecommended(mesh) && Interface->CanCacheVariable(real_meshname))
