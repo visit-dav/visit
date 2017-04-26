@@ -231,7 +231,7 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         // faceZones and cellZones if present.
         reader->SetReadZones(1);
     }
-    reader->Update();
+    reader->UpdateTimeStep(timeSteps[timeState]);
 
     stringVector lagrangianPatches;
     stringVector meshNames; // for non-lagrangian meshes
