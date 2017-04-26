@@ -309,7 +309,6 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
  
         vtkCellArray *lines = vtkCellArray::New();
         pd->SetLines(lines);
-        lines->Delete();
         for (int k = 0 ; k < 12 ; k++)
         {
             lines->InsertNextCell(2);
@@ -317,6 +316,7 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
             lines->InsertCellPoint(voxVerticesFromEdges[k][1]);
         }
 
+        lines->FastDelete();
         return pd;
     }
 
@@ -328,9 +328,7 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
     vtkPoints   *pts = vtkPoints::New();
 
     pts->SetNumberOfPoints(nAtoms[timestep]);
-    pd->SetPoints(pts);
-    pts->Delete();
-    for (int j = 0 ; j < nAtoms[timestep] ; j++)
+    for (vtkIdType j = 0 ; j < nAtoms[timestep] ; j++)
     {
         double x = vars[xIndex][j];
         double y = vars[yIndex][j];
@@ -343,16 +341,27 @@ avtLAMMPSDumpFileFormat::GetMesh(int timestep, const char *name)
             z = zMin + (zMax-zMin) * z;
         pts->SetPoint(j, x, y, z);
     }
+    pd->SetPoints(pts);
+    pts->FastDelete();
+
+    const vtkIdType numCells = nAtoms[timestep];
+    const vtkIdType arrayLen = numCells * 2; // vertices
+    vtkIdTypeArray *rawCellArray = vtkIdTypeArray::New();
+    rawCellArray->SetNumberOfValues(arrayLen);
+
+    vtkIdType pointId = 0;
+    for (vtkIdType k = 0; k < arrayLen; k += 2, ++pointId)
+    {
+        rawCellArray->SetValue(k, 1);
+        rawCellArray->SetValue(k + 1, pointId);
+    }
  
     vtkCellArray *verts = vtkCellArray::New();
+    verts->SetCells(numCells, rawCellArray);
     pd->SetVerts(verts);
-    verts->Delete();
-    for (int k = 0 ; k < nAtoms[timestep] ; k++)
-    {
-        verts->InsertNextCell(1);
-        verts->InsertCellPoint(k);
-    }
 
+    rawCellArray->FastDelete();
+    verts->FastDelete();
 
     return pd;
 }
