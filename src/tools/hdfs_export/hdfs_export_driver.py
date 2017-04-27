@@ -91,7 +91,7 @@ def main():
                 continue
             curve = md.GetCurves(c).name
             var_list = [curve, curve.replace("Scalar_Curves/","")]
-            descendOutDir(outDir,keyBase,curve.replace('/','~'))
+            descendOutDir(outDir,keyBase,curve.replace('/','~'),[1,1,1])
             print "[Exporting curve %s for time index %d]" %(curve,tidx)
             export(outDir,keyBase,user,dbfile,tidx,curve,var_list)
             ascendOutDir(outDir,keyBase)
