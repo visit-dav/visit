@@ -45,6 +45,8 @@
 
 #include <avtMTMDFileFormat.h>
 
+#include <map>
+#include <string>
 #include <vector>
 
 class avtMaterial;
@@ -86,6 +88,8 @@ class avtHDFSFileFormat : public avtMTMDFileFormat
   protected:
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     avtMaterial           *GetMaterial(int, int, const char *);
+
+    std::map<std::string,int> varInfoMap;
 };
 
 

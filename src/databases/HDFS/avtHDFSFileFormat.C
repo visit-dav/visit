@@ -187,6 +187,7 @@ avtHDFSFileFormat::GetNTimesteps(void)
 void
 avtHDFSFileFormat::FreeUpResources(void)
 {
+    varInfoMap.clear();
 }
 
 
@@ -215,14 +216,14 @@ strrepl(char *s, char orig, char repl)
 }
 
 static int
-sscanhdfs(char *s, char *fmt, ...)
+sscanhdfs(char *s, char const *fmt, ...)
 {
     int n;
     va_list ap;
 
     va_start(ap, fmt);
     strrepl(s, ',', ' ');
-    strrepl(fmt, ',', ' ');
+    //strrepl(fmt, ',', ' ');
     n = vsscanf(s, fmt, ap);
     va_end(ap);
     return n;
@@ -282,6 +283,10 @@ avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
             if (vfile().eof()) break;
             sscanhdfs(line, "%s %d %d %d", vname, &cent, &dtyp, &ncomps);
 
+            int varInfo = cent<<16 | dtyp<<8 | ncomps;
+            string varKey = string(mname) + ":" + string(vname);
+            varInfoMap[varKey] = varInfo;
+
             avtCentering avcent = cent==0?AVT_NODECENT:AVT_ZONECENT;
             if (string(vname) == "materials")
                 AddMaterialToMetaData(md, "material", mname, ncomps);
@@ -315,7 +320,7 @@ avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mname)
     {
         tfile().getline(line, sizeof(line));
         if (tfile().eof()) break;
-        sscanf(line, "%18s,", zkey);
+        sscanhdfs(line, "%s", zkey);
         zoneKeyMap[zkey] = nzones++;
     }
     tfile.close();
@@ -349,16 +354,18 @@ avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mname)
     while (!matfile().eof())
     {
         p = line;
-        sscanf(p, "%18s", zkey);
+        sscanhdfs(p, "%s", zkey); // changes ',' to ' '
         int zoneIdx = zoneKeyMap[zkey];
-        p+=19;
+        p = strchr(p, ' ')+1;
         i = 0;
         while (i < nmats)
         {
             sscanf(p, "%f", &vfracs[i][zoneIdx]);
             i++;
-            p = strchr(p, ',')+1;
+            p = strchr(p, ' ')+1;
         }
+        // getline at bottom of loop because first line was used
+        // above to get material count
         matfile().getline(line, sizeof(line));
     }
     matfile.close();
@@ -492,7 +499,6 @@ avtHDFSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 #endif
 }
 
-
 // ****************************************************************************
 //  Method: avtHDFSFileFormat::GetVar
 //
@@ -513,11 +519,78 @@ avtHDFSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 //  Creation:   Tue Apr 25 16:33:45 PST 2017
 //
 // ****************************************************************************
-
 vtkDataArray *
 avtHDFSFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
-    return 0;
+    string varKey = metadata->MeshForVar(varname) + ":" + string(varname);
+    if (varInfoMap.find(varKey) == varInfoMap.end())
+        return 0;
+
+    int varInfo = varInfoMap[varKey];
+    int cent = (varInfo&0x00FF0000)>>16;
+    int dtyp = (varInfo&0x0000FF00)>>8;
+    int ncomps = (varInfo&0x000000FF);
+
+    avtCentering avcent = (avtCentering) cent;
+
+    char tmp[512];
+    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/%s.txt.gz",
+        filename, timestate, metadata->MeshForVar(varname).c_str(), domain,
+        avcent == AVT_NODECENT ? "coords" : "topology");
+
+    int nents = 0;
+    map<string, int> eKeyMap;
+    visit_ifstream efile;
+
+    char line[256], ekey[32];
+    efile.open(tmp);
+    while (!efile().eof())
+    {
+        efile().getline(line, sizeof(line));
+        if (efile().eof()) break;
+        sscanhdfs(line, "%s", ekey);
+        eKeyMap[ekey] = nents++;
+    }
+    efile.close();
+
+    vtkDataArray *darr = vtkDataArray::CreateDataArray(dtyp);
+    darr->SetNumberOfComponents(ncomps);
+    darr->SetNumberOfTuples(nents);
+    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/%s.txt.gz",
+        filename, timestate, metadata->MeshForVar(varname).c_str(), domain, varname);
+    visit_ifstream vfile(tmp);
+    while (!vfile().eof())
+    {
+        int i, eIdx;
+        char *p, vkey[32];
+        double val;
+
+        vfile().getline(line, sizeof(line));
+        if (vfile().eof()) break;
+
+        p = line;
+        sscanhdfs(p, "%s", vkey); // changes ',' to ' '
+        eIdx = eKeyMap[vkey];
+        p = strchr(p, ' ')+1;
+        i = 0;
+        while (i < ncomps)
+        {
+            switch (dtyp)
+            {
+                case VTK_CHAR: {char v; sscanhdfs(p, "%hhd", &v); val=(double)v; break;};
+                case VTK_SHORT: {short v; sscanhdfs(p, "%hd", &v); val=(double)v; break;};
+                case VTK_INT: {int v; sscanhdfs(p, "%d", &v); val=(double)v; break;};
+                case VTK_LONG: {long v; sscanhdfs(p, "%ld", &v); val=(double)v; break;};
+                case VTK_LONG_LONG: {long long v; sscanhdfs(p, "%lld", &v); val=(double)v; break;};
+                case VTK_FLOAT: {float v; sscanhdfs(p, "%g", &v); val=(double)v; break;};
+                case VTK_DOUBLE: {double v; sscanhdfs(p, "%lg", &v); val=(double)v; break;};
+            }
+            darr->SetComponent(eIdx, i, val);
+            i++;
+            p = strchr(p, ' ')+1;
+        }
+    }
+    return darr;
 }
 
 
@@ -545,5 +618,5 @@ avtHDFSFileFormat::GetVar(int timestate, int domain, const char *varname)
 vtkDataArray *
 avtHDFSFileFormat::GetVectorVar(int timestate, int domain,const char *varname)
 {
-    return 0;
+    return GetVar(timestate, domain, varname);
 }
