@@ -17,6 +17,9 @@ class CellExportQuery(SimplePythonQuery):
         keyBase = self.arguments[0]['keybase']
         outDir = self.arguments[0]['outdir']
         zCmd = self.arguments[0]['compressCmd']
+        zExt = 'gz'
+        if 'bzip' in zCmd:
+            zExt = 'bz2'
         descendOutDir(outDir,keyBase,"%06d"%domain_id)
         outpath = '/'.join(outDir)
         keybase = ''.join(keyBase)
@@ -28,6 +31,10 @@ class CellExportQuery(SimplePythonQuery):
         var_arrays = [ v for v in var_arrays if not v[2] is None ]
         nodals = [ v for v in var_arrays if v[1] == "nodal"]
         zonals = [ v for v in var_arrays if v[1] == "zonal"]
+
+        # varname, centering (0...3), data type, # comps
+        vfname = "%s/variables.txt.%s"%(outpath,zExt)
+        vf = os.popen("%s > %s"%(zCmd,vfname),"w")
 
         #
         # Handle ghost information
@@ -50,27 +57,35 @@ class CellExportQuery(SimplePythonQuery):
                     ghostNodes.SetTuple1(cell.GetPointId(j),0)
 
         # do nodal coordinate data
-        fname = "%s/coords.txt.bz2"%outpath
+        vf.write("coords,0,11,3\n")
+        fname = "%s/coords.txt.%s"%(outpath,zExt)
         f = os.popen("%s > %s"%(zCmd,fname),"w")
         for i in xrange(npoints):
             pt = ds_in.GetPoint(i)
             ghost = False
             if ghostNodes:
                 ghost = ghostNodes.GetTuple1(i) != 0
-            f.write("%s,%d,%g,%g,%g\n"%(NodeIDKey(keybase,i,ghost), ghost,pt[0], pt[1], pt[2]))
+            f.write("%s,%d,%g,%g,%g\n"%(NodeIDKey(keybase,i,ghost), ghost, pt[0], pt[1], pt[2]))
         f.close()
 
         # should do nodal global node ids too
 
         # do other nodal variables
         for narr in nodals:
-            fname = "%s/%s_nodal.txt.bz2"%(outpath,narr[0].replace("Scalar_Curves/","").replace('/','~'))
+            nv_name = narr[0].replace("Scalar_Curves/","").replace('/','~')
+            ncomps = narr[2].GetNumberOfComponents()
+            dtyp = narr[2].GetDataType()
+            vf.write("%s,0,%d,%d\n"%(nv_name,dtyp,ncomps))
+            fname = "%s/%s.txt.%s"%(outpath,nv_name,zExt)
             f = os.popen("%s > %s"%(zCmd,fname),"w")
             for i in xrange(npoints):
                 ghost = False
                 if ghostNodes:
                     ghost = ghostNodes.GetTuple1(i) != 0
-                f.write("%s,%g\n"%(NodeIDKey(keybase,i,ghost), narr[2].GetTuple1(i)))
+                linebuf = "%s"%NodeIDKey(keybase,i,ghost)
+                for j in xrange(ncomps):
+                    linebuf += ",%g"%narr[2].GetComponent(i,j)
+                f.write("%s\n"%linebuf)
             f.close()
 
         if ncells <= 0:
@@ -78,7 +93,8 @@ class CellExportQuery(SimplePythonQuery):
             return
 
         # do zonal connectivity data
-        fname = "%s/topology.txt.bz2"%outpath
+        vf.write("topology,3,11,0\n")
+        fname = "%s/topology.txt.%s"%(outpath,zExt)
         f = os.popen("%s > %s"%(zCmd,fname),"w")
         for i in xrange(ncells):
             cell = ds_in.GetCell(i)
@@ -98,33 +114,42 @@ class CellExportQuery(SimplePythonQuery):
 
         # do other zonal variables
         for zarr in zonals:
-            fname = "%s/%s_zonal.txt.bz2"%(outpath,zarr[0].replace("Scalar_Curves/","").replace('/','~'))
+            zv_name = zarr[0].replace("Scalar_Curves/","").replace('/','~')
+            ncomps = zarr[2].GetNumberOfComponents()
+            dtyp = zarr[2].GetDataType()
+            vf.write("%s,3,%d,%d\n"%(zv_name,dtyp,ncomps))
+            fname = "%s/%s.txt.%s"%(outpath,zv_name,zExt)
             f = os.popen("%s > %s"%(zCmd,fname),"w")
             for i in xrange(ncells):
                 type = ds_in.GetCell(i).GetCellType()
                 ghost = False
                 if ghostZones:
                     ghost = ghostZones.GetTuple1(i) != 0
-                f.write("%s,%g\n"%(EntityTypeIDKey(type,keybase,i,ghost),zarr[2].GetTuple1(i)))
-            f.close()
-
-        # do materials, if any
-        matarr = ds_in.GetCellData().GetArray("materials")
-        if matarr:
-            fname = "%s/materials.txt.bz2"%outpath
-            f = os.popen("%s > %s"%(zCmd,fname),"w")
-            nmats = matarr.GetNumberOfComponents()
-            for i in xrange(ncells):
-                ghost = False
-                if ghostZones:
-                    ghost = ghostZones.GetTuple1(i) != 0
-                type = ds_in.GetCell(i).GetCellType()
                 linebuf = "%s"%EntityTypeIDKey(type,keybase,i,ghost)
-                for j in xrange(nmats):
-                    linebuf += ",%g"%matarr.GetComponent(i,j)
+                for j in xrange(ncomps):
+                    linebuf += ",%g"%zarr[2].GetComponent(i,j)
                 f.write("%s\n"%linebuf)
             f.close()
 
+        # do materials, if any
+#        matarr = ds_in.GetCellData().GetArray("materials")
+#        if matarr:
+#            nmats = matarr.GetNumberOfComponents()
+#            vf.write("materials,3,11,%d\n"%nmats)
+#            fname = "%s/materials.txt.%s"%(outpath,zExt)
+#            f = os.popen("%s > %s"%(zCmd,fname),"w")
+#            for i in xrange(ncells):
+#                ghost = False
+#                if ghostZones:
+#                    ghost = ghostZones.GetTuple1(i) != 0
+#                type = ds_in.GetCell(i).GetCellType()
+#                linebuf = "%s"%EntityTypeIDKey(type,keybase,i,ghost)
+#                for j in xrange(nmats):
+#                    linebuf += ",%g"%matarr.GetComponent(i,j)
+#                f.write("%s\n"%linebuf)
+#            f.close()
+
+        vf.close()
         ascendOutDir(outDir,keyBase)
 
     def post_execute(self):

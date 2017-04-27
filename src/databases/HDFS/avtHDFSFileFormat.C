@@ -262,48 +262,41 @@ avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
         if (ifile().eof()) break;
         sscanhdfs(line, "%s %s %d %d %d", mkey, mname, &nblocks, &sdims, &tdims);
 
-        AddMeshToMetaData(md, mname, AVT_UNSTRUCTURED_MESH, NULL, nblocks, 0, sdims, tdims);
+        if (nblocks == sdims == tdims == 1)
+        {
+            avtCurveMetaData *cmd = new avtCurveMetaData(mname);
+            md->Add(cmd);
+        }
+        else
+            AddMeshToMetaData(md, mname, AVT_UNSTRUCTURED_MESH, NULL, nblocks, 0, sdims, tdims);
 
         // Use block 0 to determine variables
-        SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/000000", filename, timeState, mname);
-        DIR *dirp;
-        struct dirent *dentp;
-        dirp = opendir(tmp);
-        while (dirp && (dentp = readdir(dirp)) != NULL)
+        SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/000000/variables.txt.gz", filename, timeState, mname);
+        visit_ifstream vfile(tmp);
+        while (!vfile().eof())
         {
-            char *dummy = "**dummy**";
-            char vname[256];
-            avtCentering cent = AVT_UNKNOWN_CENT;
-            int len = strlen(dentp->d_name);
-            char *p = len>13?&dentp->d_name[len-13]:dummy;
+            char vname[128];
+            int cent, dtyp, ncomps;
 
-            if (!strncmp(p, "_nodal.txt.gz", 13))
-            {
-                *p = '\0';
-                AddScalarVarToMetaData(md, vname, mname, AVT_NODECENT);
-            }
-            else if (!strncmp(&dentp->d_name[len-13], "_zonal.txt.gz", 13))
-            {
-                *p = '\0';
-                AddScalarVarToMetaData(md, vname, mname, AVT_ZONECENT);
-            }
-            else if (!strncmp(dentp->d_name, "materials.txt.gz", 16))
-            {
-                int nmats = 0;
-                char matline[512], *p = &matline[0];
-                SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/000000/materials.txt.gz",
-                    filename, timeState, mname);
-                visit_ifstream matfile(tmp);
-                matfile().getline(matline, sizeof(matline));
-                while ((p = strchr(p, ',')) != NULL)
-                {
-                    p++;
-                    nmats++;
-                }
-                AddMaterialToMetaData(md, "material", mname, nmats);
-            }
+            vfile().getline(line, sizeof(line));
+            if (vfile().eof()) break;
+            sscanhdfs(line, "%s %d %d %d", vname, &cent, &dtyp, &ncomps);
+
+            avtCentering avcent = cent==0?AVT_NODECENT:AVT_ZONECENT;
+            if (string(vname) == "materials")
+                AddMaterialToMetaData(md, "material", mname, ncomps);
+            else if (ncomps == 1)
+                AddScalarVarToMetaData(md, vname, mname, avcent);
+            else if (ncomps == sdims)
+                AddVectorVarToMetaData(md, vname, mname, avcent, ncomps);
+            else if (ncomps == sdims*sdims/2+1)
+                AddSymmetricTensorVarToMetaData(md, vname, mname, avcent, ncomps);
+            else if (ncomps == sdims*sdims)
+                AddTensorVarToMetaData(md, vname, mname, avcent, ncomps);
+            else
+                AddArrayVarToMetaData(md, vname, ncomps, mname, avcent);
         }
-        closedir(dirp);
+        vfile.close();
     }
 }
 
@@ -402,7 +395,6 @@ avtHDFSFileFormat::GetAuxiliaryData(const char *var, int timestep,
 
     return rv;
 }
-
 
 // ****************************************************************************
 //  Method: avtHDFSFileFormat::GetMesh
