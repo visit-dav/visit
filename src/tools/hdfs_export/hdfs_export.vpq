@@ -16,6 +16,7 @@ class CellExportQuery(SimplePythonQuery):
 
         keyBase = self.arguments[0]['keybase']
         outDir = self.arguments[0]['outdir']
+        zCmd = self.arguments[0]['compressCmd']
         descendOutDir(outDir,keyBase,"%06d"%domain_id)
         outpath = '/'.join(outDir)
         keybase = ''.join(keyBase)
@@ -50,7 +51,7 @@ class CellExportQuery(SimplePythonQuery):
 
         # do nodal coordinate data
         fname = "%s/coords.txt.bz2"%outpath
-        f = os.popen("bzip2 --best > %s"%fname,"w")
+        f = os.popen("%s > %s"%(zCmd,fname),"w")
         for i in xrange(npoints):
             pt = ds_in.GetPoint(i)
             ghost = False
@@ -63,8 +64,8 @@ class CellExportQuery(SimplePythonQuery):
 
         # do other nodal variables
         for narr in nodals:
-            fname = "%s/%s.txt.bz2"%(outpath,narr[0].replace("Scalar_Curves/","").replace('/','~'))
-            f = os.popen("bzip2 --best > %s"%fname,"w")
+            fname = "%s/%s_nodal.txt.bz2"%(outpath,narr[0].replace("Scalar_Curves/","").replace('/','~'))
+            f = os.popen("%s > %s"%(zCmd,fname),"w")
             for i in xrange(npoints):
                 ghost = False
                 if ghostNodes:
@@ -78,7 +79,7 @@ class CellExportQuery(SimplePythonQuery):
 
         # do zonal connectivity data
         fname = "%s/topology.txt.bz2"%outpath
-        f = os.popen("bzip2 --best > %s"%fname,"w")
+        f = os.popen("%s > %s"%(zCmd,fname),"w")
         for i in xrange(ncells):
             cell = ds_in.GetCell(i)
             npts = cell.GetNumberOfPoints()
@@ -97,8 +98,8 @@ class CellExportQuery(SimplePythonQuery):
 
         # do other zonal variables
         for zarr in zonals:
-            fname = "%s/%s.txt.bz2"%(outpath,zarr[0].replace("Scalar_Curves/","").replace('/','~'))
-            f = os.popen("bzip2 --best > %s"%fname,"w")
+            fname = "%s/%s_zonal.txt.bz2"%(outpath,zarr[0].replace("Scalar_Curves/","").replace('/','~'))
+            f = os.popen("%s > %s"%(zCmd,fname),"w")
             for i in xrange(ncells):
                 type = ds_in.GetCell(i).GetCellType()
                 ghost = False
@@ -111,7 +112,7 @@ class CellExportQuery(SimplePythonQuery):
         matarr = ds_in.GetCellData().GetArray("materials")
         if matarr:
             fname = "%s/materials.txt.bz2"%outpath
-            f = os.popen("bzip2 --best > %s"%fname,"w")
+            f = os.popen("%s > %s"%(zCmd,fname),"w")
             nmats = matarr.GetNumberOfComponents()
             for i in xrange(ncells):
                 ghost = False

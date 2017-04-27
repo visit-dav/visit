@@ -153,7 +153,7 @@ std::vector<std::string>
 HDFSGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("*.txt.bz2");
+    defaultPatterns.push_back("states.txt.gz");
 
     return defaultPatterns;
 }

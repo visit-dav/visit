@@ -292,7 +292,8 @@ class DATABASE_API avtFileFormat
     void       AddSymmetricTensorVarToMetaData(avtDatabaseMetaData *,
                               std::string, std::string, avtCentering, int = 3);
     void       AddMaterialToMetaData(avtDatabaseMetaData *, std::string,
-                                     std::string,int,std::vector<std::string>);
+                   std::string,int,
+                   std::vector<std::string> = std::vector<std::string>());
     void       AddSpeciesToMetaData(avtDatabaseMetaData *, std::string,
                                     std::string, std::string, int,
                                     std::vector<int>,

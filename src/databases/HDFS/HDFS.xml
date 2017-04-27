@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-  <Plugin name="HDFS" type="database" label="HDFS" version="1.0" dbtype="STSD">
+  <Plugin name="HDFS" type="database" label="HDFS" version="1.0" dbtype="MTMD">
     <FilePatterns>
-        *.txt.bz2
+        states.txt.gz
     </FilePatterns>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>

@@ -607,6 +607,15 @@ avtFileFormat::AddMaterialToMetaData(avtDatabaseMetaData *md, string name,
     mat->name = name;
     mat->meshName = mesh;
     mat->numMaterials = nmats;
+    if (matnames.size() == 0)
+    {
+        for (int i = 0; i < nmats; i++)
+        {
+            char num[8];
+            SNPRINTF(num, sizeof(num), "%d", i);
+            matnames.push_back(num);
+        }
+    }
     mat->materialNames = matnames;
 
     md->Add(mat);
