@@ -47,6 +47,7 @@
 
 #include <vector>
 
+class avtMaterial;
 
 // ****************************************************************************
 //  Class: avtHDFSFileFormat

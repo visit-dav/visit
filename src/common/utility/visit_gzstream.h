@@ -633,38 +633,60 @@ public:
    /** Simple factory to create ifstream or igzstream depending on whether
        named file appears to be a gzip'd compressed file.
        https://refspecs.linuxbase.org/LSB_3.0.0/LSB-PDA/LSB-PDA/zlib-gzopen-1.html. */
-    visit_ifstream() : strm(0) {};
+    visit_ifstream() : strm(0),ifstrm(0),igzstrm(0) {};
     visit_ifstream(char const *name, char const *mode = "r") {
 #ifdef HAVE_LIBZ
         if (maybe_gz(name))
-            strm = new igzstream(name,mode);
+        {
+            igzstrm = new igzstream(name,mode);
+            strm = igzstrm;
+            ifstrm = 0;
+        }
         else
 #endif
         {
             std::ios_base::openmode m = (std::ios_base::openmode) 0x0;
             if (strchr(mode,'r')) m |= std::ios_base::in;
             if (strchr(mode,'b')) m |= std::ios_base::binary;
-            strm = new std::ifstream(name,m);
+            ifstrm = new std::ifstream(name,m);
+            strm = ifstrm;
+            igzstrm = 0;
         }
     };
     void open(char const *name, char const *mode = "rb") {
-        if (strm) delete strm;
+        if (igzstrm) delete igzstrm;
+        else if (ifstrm) delete ifstrm;
 #ifdef HAVE_LIBZ
         if (maybe_gz(name))
-            strm = new igzstream(name,mode);
+        {
+            igzstrm = new igzstream(name,mode);
+            strm = igzstrm;
+            ifstrm = 0;
+        }
         else
 #endif
         {
             std::ios_base::openmode m = (std::ios_base::openmode) 0x0;
             if (strchr(mode,'r')) m |= std::ios_base::in;
             if (strchr(mode,'b')) m |= std::ios_base::binary;
-            strm = new std::ifstream(name,m);
+            ifstrm = new std::ifstream(name,m);
+            strm = ifstrm;
+            igzstrm = 0;
         }
     };
     std::istream &operator()(void) const { return *strm; };
+    void close(void)
+    {
+        if (igzstrm) igzstrm->close();
+        else if (ifstrm) ifstrm->close();
+    };
    ~visit_ifstream() { delete strm; };
 private:
    std::istream *strm;
+   std::ifstream *ifstrm;
+#ifdef HAVE_LIBZ
+   igzstream *igzstrm;
+#endif
    static bool maybe_gz(const char *fn) {
        unsigned short hdr = 0x0000;
        std::ifstream strm(fn,std::ios_base::binary|std::ios_base::in);

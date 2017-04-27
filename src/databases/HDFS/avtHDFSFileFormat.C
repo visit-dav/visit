@@ -54,6 +54,7 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtMaterial.h>
 
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
@@ -290,11 +291,15 @@ avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
             {
                 int nmats = 0;
                 char matline[512], *p = &matline[0];
-                SNPRINTF(tmp, sizeof(tmp), "%s/%06d/materials.txt.gz", filename, timeState);
+                SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/000000/materials.txt.gz",
+                    filename, timeState, mname);
                 visit_ifstream matfile(tmp);
                 matfile().getline(matline, sizeof(matline));
                 while ((p = strchr(p, ',')) != NULL)
+                {
+                    p++;
                     nmats++;
+                }
                 AddMaterialToMetaData(md, "material", mname, nmats);
             }
         }
@@ -304,21 +309,94 @@ avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
 
 
 avtMaterial *
-avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mat)
+avtHDFSFileFormat::GetMaterial(int tim, int dom, char const *mname)
 {
-    return 0;
+    // read topology data first (to get # of zones and keys for zones)
+    char tmp[512], line[512], zkey[32];
+    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/topology.txt.gz",
+        filename, tim, mname, dom);
+    map<string, int> zoneKeyMap;
+    int nzones = 0;
+    visit_ifstream tfile(tmp);
+    while (!tfile().eof())
+    {
+        tfile().getline(line, sizeof(line));
+        if (tfile().eof()) break;
+        sscanf(line, "%18s,", zkey);
+        zoneKeyMap[zkey] = nzones++;
+    }
+    tfile.close();
+
+    // Read first line of materials to get material count
+    int i, nmats = 0;
+    char *p = &line[0];
+    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/materials.txt.gz",
+        filename, tim, mname, dom);
+    visit_ifstream matfile(tmp);
+    matfile().getline(line, sizeof(line));
+    while ((p = strchr(p, ',')) != NULL)
+    {
+        p++;
+        nmats++;
+    }
+
+    // allocate things we'll need to build material object
+    int *matnos = new int[nmats];
+    char **matnames = new char*[nmats];
+    float **vfracs = new float*[nmats];
+    for (i = 0; i < nmats; i++)
+    {
+        vfracs[i] = new float[nzones];
+        matnos[i] = i;
+        SNPRINTF(tmp, sizeof(tmp), "%d", i);
+        matnames[i] = strdup(tmp);
+    }
+
+    // Read material file storing volume fractions
+    while (!matfile().eof())
+    {
+        p = line;
+        sscanf(p, "%18s", zkey);
+        int zoneIdx = zoneKeyMap[zkey];
+        p+=19;
+        i = 0;
+        while (i < nmats)
+        {
+            sscanf(p, "%f", &vfracs[i][zoneIdx]);
+            i++;
+            p = strchr(p, ',')+1;
+        }
+        matfile().getline(line, sizeof(line));
+    }
+    matfile.close();
+
+    // construct the material object
+    char domName[256];
+    SNPRINTF(domName, sizeof(domName), "%d", dom);
+    avtMaterial *mat = new avtMaterial(nmats, matnos, matnames, 1, &nzones, 0, vfracs, domName);
+
+    for (i = 0; i < nmats; i++)
+    {
+        delete [] vfracs[i];
+        free(matnames[i]);
+    }
+    delete [] matnos;
+    delete [] vfracs;
+    delete [] matnames;
+
+    return mat;
 }
 
 void *
 avtHDFSFileFormat::GetAuxiliaryData(const char *var, int timestep, 
-    int domain, const char *type, void *args, DestructorFunction &)
+    int domain, const char *type, void *args, DestructorFunction &df)
 {
 
     void *rv = NULL;
 
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-        rv = (void *) GetMaterial(timestep, domain, var);
+        rv = (void *) GetMaterial(timestep, domain, metadata->MeshForVar(var).c_str());
         df = avtMaterial::Destruct;
     }
 
