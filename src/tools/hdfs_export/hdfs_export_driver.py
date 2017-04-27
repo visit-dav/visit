@@ -36,7 +36,7 @@ from hdfs_export_utils import *
 # Based heavily on original code written by Cyrus Harrison for JSON export
 #
 
-def export(outdir,keybase,user,dbfile,tidx,mesh,var_list,compress=False):
+def export(outdir,keybase,user,dbfile,tidx,mesh,var_list,compressCmd="gzip -6"):
     result = AddPlot("Mesh", mesh)
     if result != 1:
         result = AddPlot("Curve", mesh)
@@ -46,9 +46,11 @@ def export(outdir,keybase,user,dbfile,tidx,mesh,var_list,compress=False):
     DrawPlots()
     tval = query("Time")
     cval = query("Cycle")
-    kargs = {"keybase":keybase,"outdir":outdir,"user":user,"dbfile":dbfile,"mesh":mesh,"time":tval,"cycle":cval}
+    kargs = {"keybase":keybase,"outdir":outdir,"user":user,
+        "dbfile":dbfile,"mesh":mesh,"time":tval,"cycle":cval,
+        "compressCmd":compressCmd}
     sdir   = os.path.split(os.path.abspath(__visit_source_file__))[0]
-    PythonQuery(file=(pjoin(sdir,"hdfs_export.vpq")),vars=var_list,args=[kargs,compress])
+    PythonQuery(file=(pjoin(sdir,"hdfs_export.vpq")),vars=var_list,args=[kargs])
     DeleteAllPlots()
 
 def main():
@@ -99,7 +101,9 @@ def main():
             if md.GetMeshes(m).hideFromGUI == 1:
                 continue
             mesh = md.GetMeshes(m).name
-            descendOutDir(outDir,keyBase,mesh.replace('/','~'))
+            mdata = [md.GetMeshes(m).numBlocks,md.GetMeshes(m).spatialDimension,md.GetMeshes(m).topologicalDimension]
+            # num blocks, spatial dim, topo dim, extents?
+            descendOutDir(outDir,keyBase,mesh.replace('/','~'),mdata)
             var_list = ["__foo__"] # work-around mesh name overwriting first var
             for i in range(md.GetNumScalars()):
                 if md.GetScalars(i).validVariable == 0:
