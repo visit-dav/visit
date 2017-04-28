@@ -27,6 +27,12 @@
 #include <GL/glx.h>
 #endif
 
+#ifdef Q_OS_OSX
+#include "osxHelper.h"
+#include <QSysInfo>
+#endif
+
+
 // ****************************************************************************
 // Class: vtkQtRenderWindowPrivate
 //
@@ -46,6 +52,10 @@
 //
 //   Brad Whitlock, Fri Apr  6 11:39:00 PDT 2012
 //   Add path for stereo initialization.
+//   
+//   Kevin Griffin, Thu Apr 27 11:32:52 PDT 2017
+//   Disabled High DPI (Retina) for QT5 on OSX until the bug that causes the 
+//   viewer to display random content is fixed.
 //
 // ****************************************************************************
 
@@ -86,6 +96,12 @@ public:
         // the channel seems to be benign. In addition, the 2D view
         // bounds and picking are off.
         gl = new QVTKWidget(w);
+#ifdef Q_OS_OSX
+        if(QSysInfo::macVersion() >= QSysInfo::MV_YOSEMITE) // OSX 10.10
+        {
+            disableGLHiDPI(gl->winId());            
+        }
+#endif
 
         gl->GetRenderWindow()->AlphaBitPlanesOn();
         gl->GetRenderWindow()->SetStereoRender( stereo );
@@ -118,6 +134,7 @@ vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMain
     d = new vtkQtRenderWindowPrivate(this, false);
     setIconSize(QSize(20,20));
 
+    setUnifiedTitleAndToolBarOnMac(false);
     setAnimated(false);
 
     setWindowFlags(f);
@@ -132,6 +149,7 @@ vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFla
     d = new vtkQtRenderWindowPrivate(this, stereo);
     setIconSize(QSize(20,20));
 
+    setUnifiedTitleAndToolBarOnMac(false);
     setAnimated(false);
 
     setWindowFlags(f);
