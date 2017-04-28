@@ -38,14 +38,26 @@
 #    Kathleen Biagas, Tue Feb 5 15:15:27 PST 2013
 #    Removed GUISupport, we use VTK's version now.
 #
+#    Kevin Griffin, Tue Apr 25 11:43:15 PDT 2017
+#    Added Cocoa framework for OSX helper function.
+#
 #****************************************************************************/
+IF(APPLE)
+    SET(VTKQT_SOURCES 
+            osxHelper.mm
+            vtkQtRenderWindow.C
+            vtkQtImagePrinter.C
+    )
+ELSE(APPLE)
+    SET(VTKQT_SOURCES
+            vtkQtRenderWindow.C
+            vtkQtImagePrinter.C
+    )
+ENDIF(APPLE)
 
-SET(VTKQT_SOURCES
-vtkQtRenderWindow.C
-vtkQtImagePrinter.C
-)
 
 INCLUDE_DIRECTORIES(
+${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_BINARY_DIR}/include
 ${VISIT_SOURCE_DIR}/include
 ${VISIT_SOURCE_DIR}/vtkqt
@@ -64,13 +76,20 @@ ADD_LIBRARY(vtkqt ${VTKQT_SOURCES})
 
 # Specify the libraries to link against on Windows & Mac
 IF(HAVE_LIB_R)
-    TARGET_LINK_LIBRARIES(vtkqt vtkCommonCore vtkGUISupportQtOpenGL vtkIOImage vtkRenderingOpenGL vtkRenderingFreeTypeOpenGL ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_gl_LIBRARY} vtkFiltersStatisticsGnuR)
+        TARGET_LINK_LIBRARIES(vtkqt vtkCommonCore vtkGUISupportQtOpenGL vtkIOImage vtkRenderingOpenGL vtkRenderingFreeTypeOpenGL ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_gl_LIBRARY} vtkFiltersStatisticsGnuR)
 ELSE(HAVE_LIB_R)
-    TARGET_LINK_LIBRARIES(vtkqt vtkCommonCore vtkGUISupportQtOpenGL vtkIOImage vtkRenderingOpenGL vtkRenderingFreeTypeOpenGL ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_gl_LIBRARY})
+         TARGET_LINK_LIBRARIES(vtkqt vtkCommonCore vtkGUISupportQtOpenGL vtkIOImage vtkRenderingOpenGL vtkRenderingFreeTypeOpenGL ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_gl_LIBRARY})
 ENDIF(HAVE_LIB_R)
+
+IF(APPLE)
+        SET_TARGET_PROPERTIES(vtkqt PROPERTIES 
+                COMPILE_FLAGS "-std=c++03"
+                LINK_FLAGS "-framework Cocoa"
+        )
+ENDIF(APPLE)
+
 # Add vtk definitions
 ADD_TARGET_DEFINITIONS(vtkqt "${VTK_DEFINITIONS}")
-
 
 VISIT_INSTALL_TARGETS(vtkqt)
 
