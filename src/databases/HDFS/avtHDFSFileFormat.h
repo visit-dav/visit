@@ -76,6 +76,8 @@ class avtHDFSFileFormat : public avtMTMDFileFormat
                                int domain, const char *type, void *args, 
                                DestructorFunction &);
 
+    virtual void           GetCycles(std::vector<int> &cycles);
+    virtual void           GetTimes(std::vector<double> &times);
     virtual int            GetNTimesteps(void);
 
     virtual const char    *GetType(void)   { return "HDFS"; };

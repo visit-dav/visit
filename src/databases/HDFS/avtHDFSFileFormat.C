@@ -44,6 +44,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
@@ -72,6 +73,31 @@
 
 using std::map;
 using std::string;
+using std::vector;
+
+static void
+strrepl(char *s, char orig, char repl)
+{
+    int i, n;
+    if (!s) return;
+    n = strlen(s);
+    for (i = 0; i < n; i++)
+        if (s[i] == orig) s[i] = repl;
+}
+
+static int
+sscanhdfs(char *s, char const *fmt, ...)
+{
+    int n;
+    va_list ap;
+
+    va_start(ap, fmt);
+    strrepl(s, ',', ' ');
+    //strrepl(fmt, ',', ' ');
+    n = vsscanf(s, fmt, ap);
+    va_end(ap);
+    return n;
+}
 
 // ****************************************************************************
 //  Method: avtHDFSFileFormat constructor
@@ -169,6 +195,39 @@ avtHDFSFileFormat::GetNTimesteps(void)
     return CountLinesInFile(filename, "states.txt.gz");
 }
 
+void
+avtHDFSFileFormat::GetCycles(vector<int> &cycles)
+{
+    char tmp[256], key[32];
+    int cycle, index;
+    float time;
+    SNPRINTF(tmp, sizeof(tmp), "%s/states.txt.gz", filename);
+    visit_ifstream ifile(tmp);
+    while (!ifile().eof())
+    {
+        ifile().getline(tmp, sizeof(tmp));
+        if (ifile().eof()) break;
+        sscanhdfs(tmp, "%s %d %g %d", key, &index, &time, &cycle);
+        cycles.push_back(cycle); 
+    }
+}
+
+void
+avtHDFSFileFormat::GetTimes(vector<double> &times)
+{
+    char tmp[256], key[32];
+    int cycle, index;
+    float time;
+    SNPRINTF(tmp, sizeof(tmp), "%s/states.txt.gz", filename);
+    visit_ifstream ifile(tmp);
+    while (!ifile().eof())
+    {
+        ifile().getline(tmp, sizeof(tmp));
+        if (ifile().eof()) break;
+        sscanhdfs(tmp, "%s %d %g %d", key, &index, &time, &cycle);
+        times.push_back(time); 
+    }
+}
 
 // ****************************************************************************
 //  Method: avtHDFSFileFormat::FreeUpResources
@@ -187,9 +246,7 @@ avtHDFSFileFormat::GetNTimesteps(void)
 void
 avtHDFSFileFormat::FreeUpResources(void)
 {
-    varInfoMap.clear();
 }
-
 
 // ****************************************************************************
 //  Method: avtHDFSFileFormat::PopulateDatabaseMetaData
@@ -203,31 +260,6 @@ avtHDFSFileFormat::FreeUpResources(void)
 //  Creation:   Tue Apr 25 16:33:45 PST 2017
 //
 // ****************************************************************************
-
-
-static void
-strrepl(char *s, char orig, char repl)
-{
-    int i, n;
-    if (!s) return;
-    n = strlen(s);
-    for (i = 0; i < n; i++)
-        if (s[i] == orig) s[i] = repl;
-}
-
-static int
-sscanhdfs(char *s, char const *fmt, ...)
-{
-    int n;
-    va_list ap;
-
-    va_start(ap, fmt);
-    strrepl(s, ',', ' ');
-    //strrepl(fmt, ',', ' ');
-    n = vsscanf(s, fmt, ap);
-    va_end(ap);
-    return n;
-}
 
 void
 avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
@@ -428,11 +460,8 @@ avtHDFSFileFormat::GetAuxiliaryData(const char *var, int timestep,
 vtkDataSet *
 avtHDFSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
-#if defined(_WIN32)
-    // Figure out gzcat via popen doesn't appear portable.
-    return NULL;
-#else
     // open the coords.txt.gz file and read it
+    char line[256];
     char key[32];
     double c[3];
     int ghost;
@@ -440,19 +469,22 @@ avtHDFSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     map<string, int> nodeKeyMap;
     vtkPoints *points = vtkPoints::New();
     vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
-    char gzcmd[512];
-    SNPRINTF(gzcmd, sizeof(gzcmd), "gzcat %s/%06d/%s/%06d/coords.txt.gz",
+    char tmp[512];
+    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/coords.txt.gz",
         filename, timestate, meshname, domain);
-    FILE *coords_file = popen(gzcmd, "r");
+    visit_ifstream cfile(tmp);
     int i = 0;
-    while (fscanf(coords_file, "%18s,%d,%lg,%lg,%lg\n", key, &ghost, &c[0], &c[1], &c[2])==5)
+    while (!cfile().eof())
     {
+        cfile().getline(line, sizeof(line));
+        if (cfile().eof()) break;
+        sscanhdfs(line, "%s %d %lg %lg %lg", key, &ghost, &c[0], &c[1], &c[2]);
         points->InsertNextPoint(c[0],c[1],c[2]);
         nodeKeyMap[string(key)] = i++;
         ghostNodes->InsertNextTuple1((unsigned char) ghost);
         if (ghost) hasGhostNodes = true;
     }
-    pclose(coords_file);
+    cfile.close();
 
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->SetPoints(points);
@@ -467,26 +499,33 @@ avtHDFSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
     bool hasGhostZones = false;
     vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-    SNPRINTF(gzcmd, sizeof(gzcmd), "gzcat %s/%06d/%s/%06d/topology.txt.gz",
+    SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/topology.txt.gz",
         filename, timestate, meshname, domain);
-    FILE *topo_file = popen(gzcmd, "r");
+    visit_ifstream tfile(tmp);
+    char *p;
     int cnt, type;
-    while (fscanf(topo_file, "%18s,%d,%d,%d", key, &ghost, &type, &cnt)==4)
+    while (!tfile().eof())
     {
-        vtkIdType ids[10];
+        tfile().getline(line, sizeof(line));
+        if (tfile().eof()) break;
+        sscanhdfs(line, "%s %d %d %d", key, &ghost, &type, &cnt);
+        p = line;
+        p = strchr(p, ' ')+1;
+        p = strchr(p, ' ')+1;
+        p = strchr(p, ' ')+1;
+        p = strchr(p, ' ')+1;
+        vtkIdType ids[64];
         for (i = 0; i < cnt; i++)
         {
-            if (i == cnt - 1)
-                fscanf(topo_file, ",%18s", key);
-            else
-                fscanf(topo_file, ",%18s", key);
+            sscanf(p, "%s", key);
+            p = strchr(p, ' ')+1;
             ids[i] = (vtkIdType) nodeKeyMap[string(key)];
         }
         ugrid->InsertNextCell(type, cnt, ids);
         ghostZones->InsertNextTuple1((unsigned char) ghost);
         if (ghost) hasGhostZones = true;
     }
-    pclose(topo_file);
+    tfile.close();
 
     if (hasGhostZones)
     {
@@ -496,7 +535,6 @@ avtHDFSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     ghostZones->Delete();
 
     return ugrid;
-#endif
 }
 
 // ****************************************************************************
