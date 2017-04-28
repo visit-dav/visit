@@ -4,9 +4,11 @@ function bv_python_initialize
     export ON_PYTHON="on"
     export FORCE_PYTHON="no"
     export USE_SYSTEM_PYTHON="no"
+    export BUILD_MPI4PY="no"
     export VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-""}
     add_extra_commandline_args "python" "system-python" 0 "Using system python"
     add_extra_commandline_args "python" "alt-python-dir" 1 "Using alternate python directory"
+    add_extra_commandline_args "python" "mpi4py" 0 "Build mpi4py"
 }
 
 function bv_python_enable
@@ -95,6 +97,12 @@ function bv_python_system_python
     python_set_vars_helper #set vars..
 }
 
+function bv_python_mpi4py
+{
+    echo "configuring for building mpi4py"
+    export BUILD_MPI4PY="yes"
+}
+
 function bv_python_alt_python_dir
 {
     echo "Using alternate python directory"
@@ -157,6 +165,10 @@ function bv_python_info
     export NUMPY_URL=${NUMPY_URL:-"https://pypi.python.org/packages/16/f5/b432f028134dd30cfbf6f21b8264a9938e5e0f75204e72453af08d67eb0b/"}
     export NUMPY_FILE=${NUMPY_FILE:-"numpy-1.11.2.tar.gz"}
     export NUMPY_BUILD_DIR=${NUMPY_BUILD_DIR:-"numpy-1.11.2"}
+
+    export MPI4PY_URL=${MPI4PY_URL:-"https://pypi.python.org/pypi/mpi4py"}
+    export MPI4PY_FILE=${MPI4PY_FILE:-"mpi4py-2.0.0.tar.gz"}
+    export MPI4PY_BUILD_DIR=${MPI4PY_BUILD_DIR:-"mpi4py-2.0.0"}
 }
 
 function bv_python_print
@@ -172,6 +184,7 @@ function bv_python_print_usage
     printf "%-15s %s [%s]\n" "--python" "Build Python" "built by default unless --no-thirdparty flag is used"
     printf "%-15s %s [%s]\n" "--system-python" "Use the system installed Python"
     printf "%-15s %s [%s]\n" "--alt-python-dir" "Use Python from an alternative directory"
+    printf "%-15s %s [%s]\n" "--mpi4py" "Build mpi4py with Python"
 }
 
 function bv_python_host_profile
@@ -640,6 +653,45 @@ function build_seedme
 }
 
 # *************************************************************************** #
+#                                  build_mpi4py                               #
+# *************************************************************************** #
+function build_mpi4py
+{
+    # download
+    if ! test -f ${MPI4PY_FILE} ; then
+        download_file ${MPI4PY_FILE}
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${MPI4PY_FILE}"
+            return 1
+        fi
+    fi
+
+    # extract
+    if ! test -d ${MPI4PY_BUILD_DIR} ; then
+        info "Extracting mpi4py ..."
+        uncompress_untar ${MPI4PY_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${MPI4PY_FILE}"
+            return 1
+        fi
+    fi
+
+    # install
+    pushd $MPI4PY_BUILD_DIR > /dev/null
+    info "Installing mpi4py (~ 2 min) ..."
+    ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    popd > /dev/null
+
+    # fix the perms
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/python"
+        chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    return 0
+}
+
+# *************************************************************************** #
 #                                  build_numpy                                #
 # *************************************************************************** #
 function build_numpy
@@ -711,7 +763,6 @@ function build_numpy
         chgrp -R ${GROUP} "$VISITDIR/python"
     fi
 
-    info "Done with numpy."
     return 0
 }
 
@@ -766,6 +817,15 @@ function bv_python_build
                 warn "numpy build failed."
             fi
             info "Done building the numpy module."
+
+            if [[ "$BUILD_MPI4PY" == "yes" ]]; then
+                info "Building the mpi4py module"
+                build_mpi4py
+                if [[ $? != 0 ]] ; then
+                    warn "mpi4py build failed."
+                fi
+                info "Done building the mpi4py module"
+            fi
 
             info "Building the pyparsing module"
             build_pyparsing
