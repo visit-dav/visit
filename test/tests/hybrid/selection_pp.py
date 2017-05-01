@@ -22,8 +22,11 @@ db = data_path("cq_pp_test_data/cq_pp_test_data.h5part")
 OpenDatabase(db, 0, "H5Part")
 
 AddPlot("Pseudocolor", "id", 1, 0)
+pc = PseudocolorAttributes()
+pc.pointSizePixels =  10
+SetPlotOptions(pc)
 DrawPlots()
-# Begin spontaneous state
+
 View3DAtts = View3DAttributes()
 View3DAtts.viewNormal = (0.286696, -0.8594, 0.423364)
 View3DAtts.focus = (4.5, 4.6, 2.6)
@@ -43,49 +46,6 @@ View3DAtts.axis3DScales = (1, 1, 1)
 View3DAtts.shear = (0, 0, 1)
 View3DAtts.windowValid = 1
 SetView3D(View3DAtts)
-# End spontaneous state
-
-ViewCurveAtts = ViewCurveAttributes()
-ViewCurveAtts.domainCoords = (0, 1)
-ViewCurveAtts.rangeCoords = (0, 1)
-ViewCurveAtts.viewportCoords = (0.2, 0.95, 0.15, 0.95)
-ViewCurveAtts.domainScale = ViewCurveAtts.LINEAR  # LINEAR, LOG
-ViewCurveAtts.rangeScale = ViewCurveAtts.LINEAR  # LINEAR, LOG
-SetViewCurve(ViewCurveAtts)
-View2DAtts = View2DAttributes()
-View2DAtts.windowCoords = (0, 1, 0, 1)
-View2DAtts.viewportCoords = (0.2, 0.95, 0.15, 0.95)
-View2DAtts.fullFrameActivationMode = View2DAtts.Auto  # On, Off, Auto
-View2DAtts.fullFrameAutoThreshold = 100
-View2DAtts.xScale = View2DAtts.LINEAR  # LINEAR, LOG
-View2DAtts.yScale = View2DAtts.LINEAR  # LINEAR, LOG
-View2DAtts.windowValid = 0
-SetView2D(View2DAtts)
-View3DAtts = View3DAttributes()
-View3DAtts.viewNormal = (0.286696, -0.8594, 0.423364)
-View3DAtts.focus = (4.5, 4.6, 2.6)
-View3DAtts.viewUp = (0.0488582, 0.454456, 0.889428)
-View3DAtts.viewAngle = 30
-View3DAtts.parallelScale = 7.06527
-View3DAtts.nearPlane = -14.1305
-View3DAtts.farPlane = 14.1305
-View3DAtts.imagePan = (0, 0)
-View3DAtts.imageZoom = 1
-View3DAtts.perspective = 0
-View3DAtts.eyeAngle = 2
-View3DAtts.centerOfRotationSet = 0
-View3DAtts.centerOfRotation = (4.5, 4.6, 2.6)
-View3DAtts.axis3DScaleFlag = 0
-View3DAtts.axis3DScales = (1, 1, 1)
-View3DAtts.shear = (0, 0, 1)
-View3DAtts.windowValid = 1
-SetView3D(View3DAtts)
-ViewAxisArrayAtts = ViewAxisArrayAttributes()
-ViewAxisArrayAtts.domainCoords = (0, 1)
-ViewAxisArrayAtts.rangeCoords = (0, 1)
-ViewAxisArrayAtts.viewportCoords = (0.15, 0.9, 0.1, 0.85)
-SetViewAxisArray(ViewAxisArrayAtts)
-
 
 SetActivePlots(0)
 selName = "selection1"
