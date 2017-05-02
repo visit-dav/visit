@@ -40,9 +40,37 @@
 #include <QvisStripChart.h>
 
 #include <QScrollArea>
+#include <QtGui/QInputDialog>
+#include <QtGui/QMouseEvent>
 
 #include <sstream>
 #include <iostream>
+
+QvisTabBar::QvisTabBar(QWidget *parent) :
+    QTabBar(parent)
+{
+}
+ 
+void QvisTabBar::mouseDoubleClickEvent(QMouseEvent *e)
+{
+    if (e->button () != Qt::LeftButton) {
+        QTabBar::mouseDoubleClickEvent (e);
+        return;
+    }
+ 
+    int idx = currentIndex ();
+    bool ok = true;
+    QString newName = QInputDialog::getText (
+                this, tr ("Change Name"),
+                tr ("Insert New Tab Name"),
+                QLineEdit::Normal,
+                tabText (idx),
+                &ok);
+ 
+    if (ok) {
+        setTabText (idx, newName);
+    }
+}
 
 // ****************************************************************************
 // Method: VisItSimStripChart::VisItSimStripChart
@@ -67,6 +95,9 @@ QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent,
                                                   int winX, int winY )
     : QTabWidget(parent)
 {
+    QvisTabBar* myTab = new QvisTabBar;
+    setTabBar(myTab);
+
     // initialize vector array with strip chart data. This keeps all
     // the associated data together. It also make sure that the number
     // of strip chart widgets is consistant.
@@ -319,7 +350,7 @@ QvisStripChartTabWidget::clear( const unsigned int index )
 //   Tabs method allows the tab label to be set programatically.
 //
 // Arguments:
-//   tabIndex : index for the tab page to be changed
+//   tabIndex : index of the tab page to be changed
 //   newLabel : Label to replace the existing label on the tap page.
 //
 // Programmer: Shelly Prevost
@@ -348,14 +379,38 @@ QvisStripChartTabWidget::setTabLabel(unsigned int tabIndex,
 }   
 
 // ****************************************************************************
-// Method: VisItSimStripChart::setVarLabel
+// Method: VisItSimStripChart::setCurveTitle
 //
 // Purpose: 
-//   Tabs method allows the tab label to be set programatically.
+//   Tabs method allows the curve name to be set programatically.
 //
 // Arguments:
-//   tabIndex : index for the tab page to be changed
-//   newLabel : Label to replace the existing label on the tap page.
+//   curveIndex : index of the curve to be changed
+//   newLabel   : Label to replace the existing label on the tap page.
+//
+// Programmer: Shelly Prevost
+// Creation:   Mon Oct 15 14:27:29 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisStripChartTabWidget::setCurveTitle(unsigned int curveIndex,
+                                       const QString &newTitle)
+{
+    stripCharts[currentStripChart]->setCurveTitle(curveIndex, newTitle);
+}
+
+// ****************************************************************************
+// Method: VisItSimStripChart::setCurveTitle
+//
+// Purpose: 
+//   Tabs method allows the curve name to be set programatically.
+//
+// Arguments:
+//   tabIndex   : index of the tab page
+//   curveIndex : index of the curve to be changed
+//   newLabel   : Label to replace the existing label on the tap page.
 //
 // Programmer: Shelly Prevost
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
@@ -377,8 +432,8 @@ QvisStripChartTabWidget::setCurveTitle(unsigned int tabIndex,
 // Purpose: 
 //   
 // Arguments:
-//   name : the name of the strip chart widget wanted.
-//   var  : The name of the strip chart curve wanted.
+//   tabIndex   : index of the tab page
+//   curveIndex : index of the curve
 //   x    : data x value, i.e. the cycle
 //   y    : data y value, i.e. the current value of the variable being plotted.
 //
@@ -395,3 +450,4 @@ QvisStripChartTabWidget::addDataPoint( unsigned int tabIndex,
 {
     stripCharts[tabIndex]->addDataPoint(curveIndex, x, y);
 }
+x
