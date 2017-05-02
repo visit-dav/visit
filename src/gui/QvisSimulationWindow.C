@@ -1082,12 +1082,12 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
           
           else if(uiValues->GetName() == "STRIP_CHART_CLEAR_MENU")
           {
-            stripChartMgr->clearMenu();
+            // stripChartMgr->clearMenu();
           }
           
           else if(uiValues->GetName() == "STRIP_CHART_ADD_MENU_ITEM")
           {
-            stripChartMgr->addMenuItem( uiValues->GetSvalue().c_str() );
+            // stripChartMgr->addMenuItem( uiValues->GetSvalue().c_str() );
           }
           
           else if(uiValues->GetName() == "STRIP_CHART_CLEAR")
