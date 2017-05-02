@@ -450,4 +450,4 @@ QvisStripChartTabWidget::addDataPoint( unsigned int tabIndex,
 {
     stripCharts[tabIndex]->addDataPoint(curveIndex, x, y);
 }
-x
+
