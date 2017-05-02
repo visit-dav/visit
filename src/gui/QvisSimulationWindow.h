@@ -136,12 +136,16 @@ private:
 
     void ConnectUIChildren(QObject *obj, SimCommandSlots *cc);
     void CreateCustomUIWindow();
-    void UpdateUIComponent(QWidget *window, const QString &name, const QString &value, bool e);
+    void UpdateUIComponent(QWidget *window,
+                           const QString &name, const QString &value, bool e);
 
-    void getTableCMD( const char *cmd,
-                      unsigned int &row, unsigned int &column, char *name );
-    void getTableCMD( const char *cmd, unsigned int &row, unsigned int &column,
-                      double &x, double &y );
+    void parseCompositeCMD( const char *cmd, unsigned int &index, char *name );
+    void parseCompositeCMD( const char *cmd,
+                            unsigned int &row, unsigned int &column,
+                            char *name );
+    void parseCompositeCMD( const char *cmd,
+                            unsigned int &row, unsigned int &column,
+                            double &x, double &y );
     std::string getNextString( std::string &cmd, const std::string delimiter );
                                                                               
 private slots:
@@ -153,10 +157,13 @@ private slots:
     void clearCache();
     void showCustomUIWindow();
     void executePushButtonCommand(const QString &cmd);
-    void executeEnableTimeRange(const QString &cmd);
-    void executeStartCommand(const QString &cmd);
-    void executeStopCommand(const QString &cmd);
-    void executeStepCommand(const QString &cmd);
+    void executeEnableTimeRange(const QString &value);
+    void executeStartCommand(const QString &value);
+    void executeStopCommand(const QString &value);
+    void executeStepCommand(const QString &value);
+
+public:    
+    void setStripChartVar(const QString &value);
 
 private:
     EngineList           *engines;
