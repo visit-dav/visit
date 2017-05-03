@@ -86,6 +86,7 @@
 #ifdef _WIN32
 #define FSEEK _fseeki64
 #define strcasecmp stricmp
+#include <Shlwapi.h> // for PathIsRelative
 #else
 #define FSEEK fseek
 #endif
@@ -953,7 +954,11 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     char filename[1024];
     sprintf(filename, file_pattern.c_str(), dom);
     char qual_filename[1024];
+#ifdef WIN32
+    if (PathIsRelative(filename))
+#else
     if (filename[0] != '/')
+#endif
         sprintf(qual_filename, "%s%s", path, filename);
     else
         strcpy(qual_filename, filename);
