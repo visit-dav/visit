@@ -134,6 +134,12 @@ vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMain
     d = new vtkQtRenderWindowPrivate(this, false);
     setIconSize(QSize(20,20));
 
+#ifdef Q_OS_OSX
+    // Fixes the issue with the left corner of the toolbar being
+    // rendered over.
+    QCoreApplication::setAttribute(Qt::AA_ImmediateWidgetCreation);
+#endif
+
     setUnifiedTitleAndToolBarOnMac(false);
     setAnimated(false);
 
@@ -148,6 +154,12 @@ vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFla
 {
     d = new vtkQtRenderWindowPrivate(this, stereo);
     setIconSize(QSize(20,20));
+
+#ifdef Q_OS_OSX
+    // Fixes the issue with the left corner of the toolbar being
+    // rendered over.
+    QCoreApplication::setAttribute(Qt::AA_ImmediateWidgetCreation);
+#endif
 
     setUnifiedTitleAndToolBarOnMac(false);
     setAnimated(false);
