@@ -40,7 +40,7 @@
 #include <QvisStripChart.h>
 
 #include <QScrollArea>
-#include <QtGui/QInputDialog>
+#include <QInputDialog>
 #include <QtGui/QMouseEvent>
 
 #include <sstream>
