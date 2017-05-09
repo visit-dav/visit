@@ -18,13 +18,6 @@ function bv_pyside_enable
     ON_PYSIDE="on"
     DO_QT="yes"
     ON_QT="on"
-    if [[ "$IS_QT5" == "yes" &&  "$PYSIDE_VERSION" == "1.2.2" ]]; then
-        PYSIDE_VERSION="2.0.0-2017.02.14"
-        PYSIDE_FILE="pyside2-combined.2017.02.14.tar.gz"
-        PYSIDE_BUILD_DIR="pyside2-combined"
-        PYSIDE_MD5_CHECKSUM=""
-        PYSIDE_SHA256_CHECKSUM=""
-    fi
 }
 
 function bv_pyside_disable
@@ -53,6 +46,25 @@ function bv_pyside_depends_on
 function bv_pyside_initialize_vars
 {
     info "initialize PySide vars"
+    if [[ "$IS_QT5" == "yes" &&  "$PYSIDE_VERSION" == "1.2.2" ]]; then
+        unset PYSIDE_VERSION
+        unset PYSIDE_FILE
+        unset PYSIDE_BUILD_DIR
+        unset PYSIDE_MD5_CHECKSUM
+        export PYSIDE_VERSION=${PYSIDE_VERSION:-"2.0.0-2017.02.14"}
+        export PYSIDE_FILE=${PYSIDE_FILE:-"pyside2-combined.2017.02.14.tar.gz"}
+        export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"pyside2-combined"}
+        export PYSIDE_MD5_CHECKSUM=""
+    elif [[ "$IS_QT5" == "no" &&  "$PYSIDE_VERSION" == "2.0.0-2017.02.14" ]]; then
+        unset PYSIDE_VERSION
+        unset PYSIDE_FILE
+        unset PYSIDE_BUILD_DIR
+        unset PYSIDE_MD5_CHECKSUM
+        export PYSIDE_VERSION=${PYSIDE_VERSION:-"1.2.2"}
+        export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-combined-${PYSIDE_VERSION}.tar.gz"}
+        export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"${PYSIDE_FILE%.tar*}"}
+        export PYSIDE_MD5_CHECKSUM="b33dde999cc4eb13933be43f49c1e890"
+    fi
 }
 
 function bv_pyside_info
