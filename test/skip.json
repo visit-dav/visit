@@ -36,6 +36,7 @@
                     {"category":"unit","file":"stringhelpers.py","platform":"win"},
                     {"category":"unit","file":"utility.py","platform":"win"},
                     {"category":"hybrid","file":"movie.py","platform":"win"},
+                    {"category":"hybrid","file":"selection_pp.py","platform":"win"},
                     {"category":"operators" ,"file": "ic_pathlines.py","platform":"win"},
                     {"category":"operators" ,"file": "ic_pics.py","platform":"win"},
                     {"category":"operators" ,"file": "ic_streamlines.py","platform":"win"},
