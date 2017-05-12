@@ -99,10 +99,10 @@ function bv_cmake_bin_cmake_dir
 
 function bv_cmake_info
 {
-    export CMAKE_FILE=${CMAKE_FILE:-"cmake-3.0.2.tar.gz"}
-    export CMAKE_VERSION=${CMAKE_VERSION:-"3.0.2"}
-    export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-3.0.2"}
-    export CMAKE_MD5_CHECKSUM="db4c687a31444a929d2fdc36c4dfb95f"
+    export CMAKE_FILE=${CMAKE_FILE:-"cmake-3.8.1.tar.gz"}
+    export CMAKE_VERSION=${CMAKE_VERSION:-"3.8.1"}
+    export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-3.8.1"}
+    export CMAKE_MD5_CHECKSUM="e8ef820ddf7a650845252bca846696e7"
     export CMAKE_SHA256_CHECKSUM=""
 }
 
@@ -460,7 +460,7 @@ function bv_cmake_build
         if [[ $? == 0 ]] ; then
             info "Skipping CMake build.  CMake is already installed."
         else
-            info "Building CMake (~2 minutes)"
+            info "Building CMake (~5 minutes)"
             build_cmake
             if [[ $? != 0 ]] ; then
                 error "Unable to build or install CMake.  Bailing out."
